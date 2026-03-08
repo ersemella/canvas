@@ -1,0 +1,94 @@
+{
+  "name": "snake-main",
+  "entities": [
+    {
+      "id": "snake-head",
+      "tags": ["snake", "player"],
+      "components": {
+        "Transform": {
+          "position": { "x": 300, "y": 200 },
+          "rotation": 0,
+          "scale": { "x": 1, "y": 1 }
+        },
+        "Renderable": {
+          "width": 18,
+          "height": 18,
+          "zIndex": 10,
+          "layer": "entities",
+          "color": "#4ade80"
+        },
+        "RigidBody": {
+          "velocity": { "x": 0, "y": 0 },
+          "isKinematic": true,
+          "gravityScale": 0
+        },
+        "Collider": {
+          "shape": "aabb",
+          "width": 18,
+          "height": 18,
+          "isTrigger": false,
+          "layer": "player",
+          "mask": ["wall", "food", "snake-body"]
+        },
+        "Input": {
+          "actionMap": {
+            "move_up": ["ArrowUp", "KeyW"],
+            "move_down": ["ArrowDown", "KeyS"],
+            "move_left": ["ArrowLeft", "KeyA"],
+            "move_right": ["ArrowRight", "KeyD"]
+          }
+        },
+        "Script": {
+          "hooks": [
+            { "name": "snakeMovement", "config": { "speed": 8, "gridSize": 20 } },
+            { "name": "snakeGrowth", "config": {} },
+            { "name": "snakeDeath", "config": {} }
+          ]
+        }
+      }
+    },
+    {
+      "id": "food",
+      "tags": ["food"],
+      "components": {
+        "Transform": {
+          "position": { "x": 100, "y": 100 },
+          "rotation": 0,
+          "scale": { "x": 1, "y": 1 }
+        },
+        "Renderable": {
+          "width": 14,
+          "height": 14,
+          "zIndex": 5,
+          "layer": "entities",
+          "color": "#f87171"
+        },
+        "Collider": {
+          "shape": "aabb",
+          "width": 14,
+          "height": 14,
+          "isTrigger": true,
+          "layer": "food",
+          "mask": []
+        },
+        "Script": {
+          "hooks": [
+            {
+              "name": "foodSpawn",
+              "config": { "gridSize": 20, "canvasWidth": 600, "canvasHeight": 400 }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "score-display",
+      "tags": ["ui"],
+      "components": {
+        "Script": {
+          "hooks": [{ "name": "scoreDisplay", "config": {} }]
+        }
+      }
+    }
+  ]
+}
