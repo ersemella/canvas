@@ -281,26 +281,32 @@ export class SolitaireSystem extends BaseSystem {
     }
   }
 
-  private handleMouseUp(mx: number, my: number, events: SystemContext['events']): void {
+  // Returns true when the dragged lead card's rect overlaps the target rect.
+  // Using card dimensions for both means any visual overlap registers as a hit.
+  private overlaps(leadPos: {x: number; y: number}, targetPos: {x: number; y: number}): boolean {
+    return (
+      Math.abs(leadPos.x - targetPos.x) < CARD_W &&
+      Math.abs(leadPos.y - targetPos.y) < CARD_H
+    );
+  }
+
+  private handleMouseUp(_mx: number, _my: number, events: SystemContext['events']): void {
     if (!this.drag) return;
 
     const leadCd = this.getCardData(this.drag.cards[0]!)?.data;
-    if (!leadCd) {
+    const leadT = this.getTransform(this.drag.cards[0]!);
+    if (!leadCd || !leadT) {
       this.revertDrag();
       return;
     }
 
+    const leadPos = leadT.position;
     let targetPileId: string | null = null;
 
     for (let i = 0; i < 4 && !targetPileId; i++) {
       const pid = `f${i}`;
       const anchor = pileAnchor(pid);
-      if (
-        mx >= anchor.x - CARD_W / 2 &&
-        mx <= anchor.x + CARD_W / 2 &&
-        my >= anchor.y - CARD_H / 2 &&
-        my <= anchor.y + CARD_H / 2
-      ) {
+      if (this.overlaps(leadPos, anchor)) {
         if (this.drag.cards.length === 1 && this.canDropOnFoundation(pid, leadCd)) {
           targetPileId = pid;
         }
@@ -311,20 +317,14 @@ export class SolitaireSystem extends BaseSystem {
       for (let i = 0; i < 7 && !targetPileId; i++) {
         const pid = `t${i}`;
         const pile = this.piles.get(pid) ?? [];
-        const anchorX = colX(i);
-        let anchorY: number;
+        let targetPos: {x: number; y: number};
         if (pile.length === 0) {
-          anchorY = TABLEAU_Y;
+          targetPos = pileAnchor(pid);
         } else {
           const topT = this.getTransform(pile[pile.length - 1]!);
-          anchorY = topT ? topT.position.y : TABLEAU_Y;
+          targetPos = topT ? topT.position : pileAnchor(pid);
         }
-        if (
-          mx >= anchorX - CARD_W / 2 &&
-          mx <= anchorX + CARD_W / 2 &&
-          my >= anchorY - CARD_H / 2 &&
-          my <= anchorY + CARD_H / 2
-        ) {
+        if (this.overlaps(leadPos, targetPos)) {
           if (this.canDropOnTableau(pid, leadCd)) {
             targetPileId = pid;
           }
