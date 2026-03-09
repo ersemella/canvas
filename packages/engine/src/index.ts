@@ -30,31 +30,41 @@ export {ScriptComponent} from 'components/ScriptComponent';
 export type {HookEntry} from 'components/ScriptComponent';
 export {TagComponent} from 'components/TagComponent';
 
-// Systems
+// Systems — core (flat)
 export {InputSystem, inputService} from 'systems/InputSystem';
 export {InputFlushSystem} from 'systems/InputFlushSystem';
-export {PhysicsSystem} from 'systems/PhysicsSystem';
-export {CollisionSystem} from 'systems/CollisionSystem';
-export {AnimationSystem} from 'systems/AnimationSystem';
-export {AISystem} from 'systems/AISystem';
-export {ScriptSystem} from 'systems/ScriptSystem';
-export {AudioSystem} from 'systems/AudioSystem';
-export {UISystem} from 'systems/UISystem';
 export {RendererSystem} from 'systems/RendererSystem';
-export {GridMovementSystem} from 'systems/GridMovementSystem';
-export type {GridMovementData} from 'systems/GridMovementSystem';
-export {CollectSystem} from 'systems/CollectSystem';
-export type {CollectibleData} from 'systems/CollectSystem';
-export {RespawnSystem} from 'systems/RespawnSystem';
-export type {RespawnData} from 'systems/RespawnSystem';
 export {TriggerSystem} from 'systems/TriggerSystem';
 export type {TriggerData} from 'systems/TriggerSystem';
-export {BoundsTriggerSystem} from 'systems/BoundsTriggerSystem';
-export type {BoundsTriggerData} from 'systems/BoundsTriggerSystem';
-export {OverlapTriggerSystem} from 'systems/OverlapTriggerSystem';
-export type {OverlapTriggerData} from 'systems/OverlapTriggerSystem';
-export {TrailSystem} from 'systems/TrailSystem';
-export type {TrailData} from 'systems/TrailSystem';
+
+// Systems — physics (mutually exclusive with grid)
+export {PhysicsSystem} from 'systems/physics/PhysicsSystem';
+export {CollisionSystem} from 'systems/physics/CollisionSystem';
+
+// Systems — grid (mutually exclusive with physics)
+export {GridMovementSystem} from 'systems/grid/GridMovementSystem';
+export type {GridMovementData} from 'systems/grid/GridMovementSystem';
+export {CollectSystem} from 'systems/grid/CollectSystem';
+export type {CollectibleData} from 'systems/grid/CollectSystem';
+export {RespawnSystem} from 'systems/grid/RespawnSystem';
+export type {RespawnData} from 'systems/grid/RespawnSystem';
+export {BoundsTriggerSystem} from 'systems/grid/BoundsTriggerSystem';
+export type {BoundsTriggerData} from 'systems/grid/BoundsTriggerSystem';
+export {OverlapTriggerSystem} from 'systems/grid/OverlapTriggerSystem';
+export type {OverlapTriggerData} from 'systems/grid/OverlapTriggerSystem';
+export {TrailSystem} from 'systems/grid/TrailSystem';
+export type {TrailData} from 'systems/grid/TrailSystem';
+
+// Systems — animation
+export {AnimationSystem} from 'systems/animation/AnimationSystem';
+
+// Systems — script
+export {ScriptSystem} from 'systems/script/ScriptSystem';
+
+// Systems — stubs
+export {AISystem} from 'systems/stubs/AISystem';
+export {AudioSystem} from 'systems/stubs/AudioSystem';
+export {UISystem} from 'systems/stubs/UISystem';
 
 // Hooks
 export {HookRegistry} from 'hooks/HookRegistry';

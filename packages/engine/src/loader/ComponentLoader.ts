@@ -1,17 +1,17 @@
 import {ComponentRegistry, registerDataComponent, type IComponent} from 'core/Component';
 import {SystemRegistry} from 'core/SystemRegistry';
-import type {GridMovementData} from 'systems/GridMovementSystem';
-import type {CollectibleData} from 'systems/CollectSystem';
-import type {RespawnData} from 'systems/RespawnSystem';
-import type {BoundsTriggerData} from 'systems/BoundsTriggerSystem';
-import type {OverlapTriggerData} from 'systems/OverlapTriggerSystem';
-import type {TrailData} from 'systems/TrailSystem';
-import {GridMovementSystem} from 'systems/GridMovementSystem';
-import {CollectSystem} from 'systems/CollectSystem';
-import {RespawnSystem} from 'systems/RespawnSystem';
-import {BoundsTriggerSystem} from 'systems/BoundsTriggerSystem';
-import {OverlapTriggerSystem} from 'systems/OverlapTriggerSystem';
-import {TrailSystem} from 'systems/TrailSystem';
+import type {GridMovementData} from 'systems/grid/GridMovementSystem';
+import type {CollectibleData} from 'systems/grid/CollectSystem';
+import type {RespawnData} from 'systems/grid/RespawnSystem';
+import type {BoundsTriggerData} from 'systems/grid/BoundsTriggerSystem';
+import type {OverlapTriggerData} from 'systems/grid/OverlapTriggerSystem';
+import type {TrailData} from 'systems/grid/TrailSystem';
+import {GridMovementSystem} from 'systems/grid/GridMovementSystem';
+import {CollectSystem} from 'systems/grid/CollectSystem';
+import {RespawnSystem} from 'systems/grid/RespawnSystem';
+import {BoundsTriggerSystem} from 'systems/grid/BoundsTriggerSystem';
+import {OverlapTriggerSystem} from 'systems/grid/OverlapTriggerSystem';
+import {TrailSystem} from 'systems/grid/TrailSystem';
 
 // Register all built-in components
 import {TransformComponent} from 'components/TransformComponent';

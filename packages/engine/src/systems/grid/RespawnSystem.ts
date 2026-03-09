@@ -1,7 +1,7 @@
 import {BaseSystem, type SystemContext} from 'core/System';
 import type {DataComponent} from 'core/Component';
 import type {TransformComponent} from 'components/TransformComponent';
-import type {CollectibleData} from 'systems/CollectSystem';
+import type {CollectibleData} from 'systems/grid/CollectSystem';
 
 export interface RespawnData {
   gridSize: number;

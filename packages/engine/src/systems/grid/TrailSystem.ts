@@ -2,8 +2,8 @@ import {BaseSystem, type SystemContext} from 'core/System';
 import {DataComponent} from 'core/Component';
 import {TransformComponent} from 'components/TransformComponent';
 import {RenderableComponent} from 'components/RenderableComponent';
-import type {GridMovementData} from 'systems/GridMovementSystem';
-import type {CollectibleData} from 'systems/CollectSystem';
+import type {GridMovementData} from 'systems/grid/GridMovementSystem';
+import type {CollectibleData} from 'systems/grid/CollectSystem';
 
 export interface TrailSegmentTemplate {
   renderable: {width: number; height: number; zIndex?: number; layer?: string; color?: string};
