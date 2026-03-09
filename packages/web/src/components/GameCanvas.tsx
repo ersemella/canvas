@@ -2,19 +2,8 @@ import {useEffect, useRef, useState, useCallback} from 'react';
 import {
   World,
   InputSystem,
-  PhysicsSystem,
-  CollisionSystem,
-  AnimationSystem,
-  AISystem,
-  ScriptSystem,
-  AudioSystem,
-  UISystem,
+  InputFlushSystem,
   RendererSystem,
-  GridMovementSystem,
-  CollectSystem,
-  RespawnSystem,
-  BoundsDeathSystem,
-  CollisionDeathSystem,
   registerBuiltinComponents,
   loadScene,
 } from '@canvas/engine';
@@ -48,18 +37,7 @@ export function GameCanvas({sceneData, systems, width = 600, height = 400}: Prop
     worldRef.current = world;
 
     world.registerSystem(new InputSystem());
-    world.registerSystem(new PhysicsSystem());
-    world.registerSystem(new CollisionSystem());
-    world.registerSystem(new AnimationSystem());
-    world.registerSystem(new AISystem());
-    world.registerSystem(new GridMovementSystem());
-    world.registerSystem(new CollectSystem());
-    world.registerSystem(new RespawnSystem());
-    world.registerSystem(new BoundsDeathSystem());
-    world.registerSystem(new CollisionDeathSystem());
-    world.registerSystem(new ScriptSystem());
-    world.registerSystem(new AudioSystem());
-    world.registerSystem(new UISystem());
+    world.registerSystem(new InputFlushSystem());
     world.registerSystem(new RendererSystem());
 
     for (const system of systems ?? []) {

@@ -62,9 +62,6 @@ export class ScriptSystem extends BaseSystem {
         entry.instance.onUpdate(ctx);
       }
     }
-
-    // Flush input at end of script processing
-    inputService.flush();
   }
 
   onDestroy(context: Omit<SystemContext, 'deltaTime'>): void {

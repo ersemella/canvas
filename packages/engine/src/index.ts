@@ -31,6 +31,7 @@ export {TagComponent} from 'components/TagComponent';
 
 // Systems
 export {InputSystem, inputService} from 'systems/InputSystem';
+export {InputFlushSystem} from 'systems/InputFlushSystem';
 export {PhysicsSystem} from 'systems/PhysicsSystem';
 export {CollisionSystem} from 'systems/CollisionSystem';
 export {AnimationSystem} from 'systems/AnimationSystem';
