@@ -3,7 +3,7 @@ export {World} from 'core/World';
 export {Scene} from 'core/Scene';
 export {Entity} from 'core/Entity';
 export type {IEntity} from 'core/Entity';
-export {BaseComponent, ComponentRegistry} from 'core/Component';
+export {BaseComponent, ComponentRegistry, DataComponent, registerDataComponent} from 'core/Component';
 export type {IComponent} from 'core/Component';
 export {BaseSystem} from 'core/System';
 export type {SystemContext} from 'core/System';
@@ -39,6 +39,16 @@ export {ScriptSystem} from 'systems/ScriptSystem';
 export {AudioSystem} from 'systems/AudioSystem';
 export {UISystem} from 'systems/UISystem';
 export {RendererSystem} from 'systems/RendererSystem';
+export {GridMovementSystem} from 'systems/GridMovementSystem';
+export type {GridMovementData} from 'systems/GridMovementSystem';
+export {CollectSystem} from 'systems/CollectSystem';
+export type {CollectibleData} from 'systems/CollectSystem';
+export {RespawnSystem} from 'systems/RespawnSystem';
+export type {RespawnData} from 'systems/RespawnSystem';
+export {BoundsDeathSystem} from 'systems/BoundsDeathSystem';
+export type {BoundsDeathData} from 'systems/BoundsDeathSystem';
+export {CollisionDeathSystem} from 'systems/CollisionDeathSystem';
+export type {CollisionDeathData} from 'systems/CollisionDeathSystem';
 
 // Hooks
 export {HookRegistry} from 'hooks/HookRegistry';

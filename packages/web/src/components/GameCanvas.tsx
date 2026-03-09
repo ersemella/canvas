@@ -10,19 +10,25 @@ import {
   AudioSystem,
   UISystem,
   RendererSystem,
+  GridMovementSystem,
+  CollectSystem,
+  RespawnSystem,
+  BoundsDeathSystem,
+  CollisionDeathSystem,
   registerBuiltinComponents,
   loadScene,
 } from '@canvas/engine';
-import type {SceneData} from '@canvas/engine';
+import type {SceneData, BaseSystem} from '@canvas/engine';
 import styles from './GameCanvas.module.css';
 
 interface Props {
   sceneData: SceneData;
+  systems?: BaseSystem[];
   width?: number;
   height?: number;
 }
 
-export function GameCanvas({sceneData, width = 600, height = 400}: Props) {
+export function GameCanvas({sceneData, systems, width = 600, height = 400}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<World | null>(null);
   const [gameOver, setGameOver] = useState(false);
@@ -46,16 +52,25 @@ export function GameCanvas({sceneData, width = 600, height = 400}: Props) {
     world.registerSystem(new CollisionSystem());
     world.registerSystem(new AnimationSystem());
     world.registerSystem(new AISystem());
+    world.registerSystem(new GridMovementSystem());
+    world.registerSystem(new CollectSystem());
+    world.registerSystem(new RespawnSystem());
+    world.registerSystem(new BoundsDeathSystem());
+    world.registerSystem(new CollisionDeathSystem());
     world.registerSystem(new ScriptSystem());
     world.registerSystem(new AudioSystem());
     world.registerSystem(new UISystem());
     world.registerSystem(new RendererSystem());
 
+    for (const system of systems ?? []) {
+      world.registerSystem(system);
+    }
+
     const scene = loadScene(sceneData);
     world.loadScene(scene);
     world.start();
 
-    const unsubScore = world.events.on('score:increment', () => {
+    const unsubScore = world.events.on('entity:collected', () => {
       setScore((s) => s + 1);
     });
 
@@ -69,7 +84,7 @@ export function GameCanvas({sceneData, width = 600, height = 400}: Props) {
       unsubDied();
       world.stop();
     };
-  }, [sceneData, restartKey]);
+  }, [sceneData, systems, restartKey]);
 
   const restart = useCallback(() => {
     setRestartKey((k) => k + 1);

@@ -1,4 +1,9 @@
-import {ComponentRegistry, type IComponent} from 'core/Component';
+import {ComponentRegistry, registerDataComponent, type IComponent} from 'core/Component';
+import type {GridMovementData} from 'systems/GridMovementSystem';
+import type {CollectibleData} from 'systems/CollectSystem';
+import type {RespawnData} from 'systems/RespawnSystem';
+import type {BoundsDeathData} from 'systems/BoundsDeathSystem';
+import type {CollisionDeathData} from 'systems/CollisionDeathSystem';
 
 // Register all built-in components
 import {TransformComponent} from 'components/TransformComponent';
@@ -53,6 +58,12 @@ export function registerBuiltinComponents(): void {
     'Tag',
     (d) => new TagComponent(d as ConstructorParameters<typeof TagComponent>[0])
   );
+
+  registerDataComponent<GridMovementData>('GridMovement');
+  registerDataComponent<CollectibleData>('Collectible');
+  registerDataComponent<RespawnData>('Respawn');
+  registerDataComponent<BoundsDeathData>('BoundsDeath');
+  registerDataComponent<CollisionDeathData>('CollisionDeath');
 }
 
 export function loadComponents(

@@ -28,7 +28,7 @@
           "height": 18,
           "isTrigger": false,
           "layer": "player",
-          "mask": ["wall", "food", "snake-body"]
+          "mask": []
         },
         "Input": {
           "actionMap": {
@@ -38,12 +38,31 @@
             "move_right": ["ArrowRight", "KeyD"]
           }
         },
-        "Script": {
-          "hooks": [
-            {"name": "snakeMovement", "config": {"speed": 8, "gridSize": 20}},
-            {"name": "snakeGrowth", "config": {}},
-            {"name": "snakeDeath", "config": {}}
-          ]
+        "GridMovement": {
+          "direction": "right",
+          "directionQueue": [],
+          "moveTimer": 0,
+          "speed": 8,
+          "gridSize": 20,
+          "prevX": 300,
+          "prevY": 200,
+          "moved": false
+        },
+        "BoundsDeath": {
+          "width": 600,
+          "height": 400,
+          "deathEvent": "snake:died",
+          "dead": false
+        },
+        "CollisionDeath": {
+          "targetTag": "snake-body",
+          "deathEvent": "snake:died",
+          "dead": false,
+          "graceId": null
+        },
+        "SnakeBody": {
+          "segments": [],
+          "newSegmentId": null
         }
       }
     },
@@ -71,22 +90,13 @@
           "layer": "food",
           "mask": []
         },
-        "Script": {
-          "hooks": [
-            {
-              "name": "foodSpawn",
-              "config": {"gridSize": 20, "canvasWidth": 600, "canvasHeight": 400}
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": "score-display",
-      "tags": ["ui"],
-      "components": {
-        "Script": {
-          "hooks": [{"name": "scoreDisplay", "config": {}}]
+        "Collectible": {
+          "collected": false
+        },
+        "Respawn": {
+          "gridSize": 20,
+          "width": 600,
+          "height": 400
         }
       }
     }

@@ -2,12 +2,13 @@ import {useEffect, useState} from 'react';
 import {useParams, Navigate} from 'react-router-dom';
 import {GameCanvas} from 'components/GameCanvas';
 import {games} from 'registry/games';
-import type {SceneData} from '@canvas/engine';
+import type {SceneData, BaseSystem} from '@canvas/engine';
 import styles from './GamePage.module.css';
 
 export function GamePage() {
   const {gameId} = useParams<{gameId: string}>();
   const [sceneData, setSceneData] = useState<SceneData | null>(null);
+  const [gameSystems, setGameSystems] = useState<BaseSystem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,6 +22,7 @@ export function GamePage() {
       .then((mod) => {
         mod.default.register();
         setSceneData(mod.default.getSceneData());
+        setGameSystems(mod.default.getSystems());
         setLoading(false);
       })
       .catch((err: Error) => {
@@ -53,7 +55,7 @@ export function GamePage() {
     <div className={styles.page}>
       <h2 className={styles.title}>{gameDescriptor.title}</h2>
       <div className={styles.canvasWrapper}>
-        <GameCanvas sceneData={sceneData} width={600} height={400} />
+        <GameCanvas sceneData={sceneData} systems={gameSystems} width={600} height={400} />
       </div>
     </div>
   );

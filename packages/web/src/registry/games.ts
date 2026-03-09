@@ -9,6 +9,7 @@ export interface GameDescriptor {
 export interface GameModule {
   register(): void;
   getSceneData(): import('@canvas/engine').SceneData;
+  getSystems(): import('@canvas/engine').BaseSystem[];
 }
 
 export const games: GameDescriptor[] = [
