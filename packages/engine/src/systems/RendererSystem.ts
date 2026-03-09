@@ -48,11 +48,14 @@ export class RendererSystem extends BaseSystem {
           renderable.width,
           renderable.height
         );
+        const topLeft = renderable.textAnchor === 'top-left';
         ctx.font = `bold ${renderable.fontSize ?? 14}px monospace`;
         ctx.fillStyle = renderable.textColor ?? '#000000';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(renderable.text, 0, 0);
+        ctx.textAlign = topLeft ? 'left' : 'center';
+        ctx.textBaseline = topLeft ? 'top' : 'middle';
+        const tx = topLeft ? -renderable.width / 2 + 4 : 0;
+        const ty = topLeft ? -renderable.height / 2 + 4 : 0;
+        ctx.fillText(renderable.text, tx, ty);
       }
 
       ctx.restore();

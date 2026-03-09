@@ -97,6 +97,7 @@ function buildScene(): SceneData {
             visible: true,
             text,
             textColor,
+            ...(faceUp ? {textAnchor: 'top-left' as const} : {}),
           },
           Card: {rank: card.rank, suit: card.suit, faceUp, pileId, posInPile: pos},
         },

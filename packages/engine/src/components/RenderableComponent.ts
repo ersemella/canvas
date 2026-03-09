@@ -14,6 +14,7 @@ export class RenderableComponent extends BaseComponent {
   text?: string;
   fontSize?: number;
   textColor?: string;
+  textAnchor?: 'center' | 'top-left';
 
   constructor(
     data: {
@@ -27,6 +28,7 @@ export class RenderableComponent extends BaseComponent {
       text?: string;
       fontSize?: number;
       textColor?: string;
+      textAnchor?: 'center' | 'top-left';
     } = {}
   ) {
     super();
@@ -40,5 +42,6 @@ export class RenderableComponent extends BaseComponent {
     if (data.text !== undefined) this.text = data.text;
     if (data.fontSize !== undefined) this.fontSize = data.fontSize;
     if (data.textColor !== undefined) this.textColor = data.textColor;
+    if (data.textAnchor !== undefined) this.textAnchor = data.textAnchor;
   }
 }
