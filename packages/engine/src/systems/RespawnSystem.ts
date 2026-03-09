@@ -25,8 +25,9 @@ export class RespawnSystem extends BaseSystem {
       const {gridSize, width, height} = respawn.data;
       const cols = Math.floor(width / gridSize);
       const rows = Math.floor(height / gridSize);
-      transform.position.x = Math.floor(Math.random() * cols) * gridSize;
-      transform.position.y = Math.floor(Math.random() * rows) * gridSize;
+      const half = gridSize / 2;
+      transform.position.x = Math.floor(Math.random() * cols) * gridSize + half;
+      transform.position.y = Math.floor(Math.random() * rows) * gridSize + half;
       collectible.data.collected = false;
     }
   }

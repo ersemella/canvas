@@ -6,7 +6,7 @@
       "tags": ["snake", "player"],
       "components": {
         "Transform": {
-          "position": {"x": 300, "y": 200},
+          "position": {"x": 310, "y": 210},
           "rotation": 0,
           "scale": {"x": 1, "y": 1}
         },
@@ -44,8 +44,8 @@
           "moveTimer": 0,
           "speed": 8,
           "gridSize": 20,
-          "prevX": 300,
-          "prevY": 200,
+          "prevX": 310,
+          "prevY": 210,
           "moved": false
         },
         "BoundsDeath": {
@@ -71,7 +71,7 @@
       "tags": ["food"],
       "components": {
         "Transform": {
-          "position": {"x": 100, "y": 100},
+          "position": {"x": 110, "y": 110},
           "rotation": 0,
           "scale": {"x": 1, "y": 1}
         },
