@@ -7,7 +7,7 @@ export function createSnakeMovementHook(_config: Record<string, unknown>): Lifec
   return {
     onInit(ctx: HookContext) {
       ctx.state['direction'] = 'right' as Direction;
-      ctx.state['nextDirection'] = 'right' as Direction;
+      ctx.state['directionQueue'] = [] as Direction[];
       ctx.state['moveTimer'] = 0;
       ctx.state['segments'] = [] as string[];
 
@@ -23,24 +23,34 @@ export function createSnakeMovementHook(_config: Record<string, unknown>): Lifec
       const gridSize = (ctx.config['gridSize'] as number | undefined) ?? 20;
       const moveInterval = 1 / speed;
 
-      // Buffer directional input — prevent reversing
-      const dir = ctx.state['direction'] as Direction;
-      if (ctx.input.isActionJustPressed('move_up') && dir !== 'down') {
-        ctx.state['nextDirection'] = 'up';
-      } else if (ctx.input.isActionJustPressed('move_down') && dir !== 'up') {
-        ctx.state['nextDirection'] = 'down';
-      } else if (ctx.input.isActionJustPressed('move_left') && dir !== 'right') {
-        ctx.state['nextDirection'] = 'left';
-      } else if (ctx.input.isActionJustPressed('move_right') && dir !== 'left') {
-        ctx.state['nextDirection'] = 'right';
+      // Buffer directional input into a queue (max 2) — validate each
+      // entry against the direction preceding it, not the current one,
+      // so consecutive queued turns don't cancel each other out.
+      const queue = ctx.state['directionQueue'] as Direction[];
+      const opposite: Record<Direction, Direction> = {up: 'down', down: 'up', left: 'right', right: 'left'};
+      const actions: [string, Direction][] = [
+        ['move_up', 'up'],
+        ['move_down', 'down'],
+        ['move_left', 'left'],
+        ['move_right', 'right'],
+      ];
+      for (const [action, newDir] of actions) {
+        if (!ctx.input.isActionJustPressed(action)) continue;
+        const lastQueued = queue.at(-1) ?? (ctx.state['direction'] as Direction);
+        if (newDir !== opposite[lastQueued] && queue.length < 2) {
+          queue.push(newDir);
+        }
+        break;
       }
 
       ctx.state['moveTimer'] = ((ctx.state['moveTimer'] as number) ?? 0) + ctx.deltaTime;
       if ((ctx.state['moveTimer'] as number) < moveInterval) return;
       ctx.state['moveTimer'] = 0;
 
-      // Commit buffered direction
-      ctx.state['direction'] = ctx.state['nextDirection'];
+      // Pop next direction from queue, or hold current
+      if (queue.length > 0) {
+        ctx.state['direction'] = queue.shift()!;
+      }
 
       const transform = ctx.entity.getComponent<TransformComponent>('Transform');
       if (!transform) return;
