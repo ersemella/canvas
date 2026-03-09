@@ -1,5 +1,54 @@
+.wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .canvas {
   display: block;
   background: #000;
   border-radius: 8px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+}
+
+.gameOverTitle {
+  color: #fff;
+  font-family: monospace;
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.gameOverScore {
+  color: #aaa;
+  font-family: monospace;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.restartButton {
+  margin-top: 8px;
+  padding: 10px 28px;
+  background: #4ade80;
+  color: #000;
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.restartButton:hover {
+  background: #22c55e;
 }
