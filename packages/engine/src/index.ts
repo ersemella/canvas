@@ -47,6 +47,8 @@ export {CollectSystem} from 'systems/CollectSystem';
 export type {CollectibleData} from 'systems/CollectSystem';
 export {RespawnSystem} from 'systems/RespawnSystem';
 export type {RespawnData} from 'systems/RespawnSystem';
+export {TriggerSystem} from 'systems/TriggerSystem';
+export type {TriggerData} from 'systems/TriggerSystem';
 export {BoundsTriggerSystem} from 'systems/BoundsTriggerSystem';
 export type {BoundsTriggerData} from 'systems/BoundsTriggerSystem';
 export {OverlapTriggerSystem} from 'systems/OverlapTriggerSystem';

@@ -13,6 +13,22 @@ export interface GameManifest {
   scene: SceneData;
 }
 
+const EXCLUSIVE_FAMILIES: string[][] = [
+  ['PhysicsSystem', 'GridMovementSystem'],
+  ['CollisionSystem', 'GridMovementSystem'],
+];
+
+function validateExclusiveFamilies(names: string[]): void {
+  for (const family of EXCLUSIVE_FAMILIES) {
+    const found = family.filter((n) => names.includes(n));
+    if (found.length > 1) {
+      throw new Error(
+        `Incompatible systems: [${found.join(', ')}]. Pick at most one from [${family.join(', ')}].`
+      );
+    }
+  }
+}
+
 export function createGameModule(manifest: GameManifest): GameModule {
   return {
     register(): void {},
@@ -20,6 +36,7 @@ export function createGameModule(manifest: GameManifest): GameModule {
       return manifest.scene;
     },
     getSystems(): BaseSystem[] {
+      validateExclusiveFamilies(manifest.systems);
       return manifest.systems.map((name) => SystemRegistry.create(name));
     },
   };

@@ -1,31 +1,24 @@
-import {BaseSystem, type SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
+import type {SystemContext} from 'core/System';
+import type {IEntity} from 'core/Entity';
 import type {TransformComponent} from 'components/TransformComponent';
+import {TriggerSystem, type TriggerData} from 'systems/TriggerSystem';
 
-export interface BoundsTriggerData {
+export interface BoundsTriggerData extends TriggerData {
   width: number;
   height: number;
-  event: string;
-  triggered: boolean;
 }
 
-export class BoundsTriggerSystem extends BaseSystem {
+export class BoundsTriggerSystem extends TriggerSystem<BoundsTriggerData> {
   readonly priority = 255;
+  protected readonly componentName = 'BoundsTrigger';
 
-  onUpdate(context: SystemContext): void {
-    const {scene, events} = context;
-    const entities = scene.query({all: ['BoundsTrigger', 'Transform']});
-
-    for (const entity of entities) {
-      const bt = entity.getComponent<DataComponent<BoundsTriggerData>>('BoundsTrigger');
-      const transform = entity.getComponent<TransformComponent>('Transform');
-      if (!bt || !transform || bt.data.triggered) continue;
-
-      const {x, y} = transform.position;
-      if (x < 0 || y < 0 || x >= bt.data.width || y >= bt.data.height) {
-        bt.data.triggered = true;
-        events.emit(bt.data.event, {entityId: entity.id});
-      }
-    }
+  protected checkCondition(
+    _entity: IEntity,
+    transform: TransformComponent,
+    data: BoundsTriggerData,
+    _context: SystemContext
+  ): boolean {
+    const {x, y} = transform.position;
+    return x < 0 || y < 0 || x >= data.width || y >= data.height;
   }
 }
