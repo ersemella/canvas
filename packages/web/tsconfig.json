@@ -9,11 +9,13 @@
     "resolveJsonModule": true,
     "paths": {
       "@canvas/engine": ["../../engine/src/index.ts"],
-      "@canvas/games-snake": ["../../games/snake/game.json"]
+      "@canvas/games-snake": ["../../games/snake/game.json"],
+      "@canvas/games-solitaire": ["../../games/solitaire/src/index.ts"]
     }
   },
   "include": ["src"],
   "references": [
-    {"path": "../engine"}
+    {"path": "../engine"},
+    {"path": "../games/solitaire"}
   ]
 }

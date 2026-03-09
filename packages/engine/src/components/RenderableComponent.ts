@@ -11,6 +11,9 @@ export class RenderableComponent extends BaseComponent {
   layer: string;
   visible: boolean;
   color: string;
+  text?: string;
+  fontSize?: number;
+  textColor?: string;
 
   constructor(
     data: {
@@ -21,6 +24,9 @@ export class RenderableComponent extends BaseComponent {
       layer?: string;
       visible?: boolean;
       color?: string;
+      text?: string;
+      fontSize?: number;
+      textColor?: string;
     } = {}
   ) {
     super();
@@ -31,5 +37,8 @@ export class RenderableComponent extends BaseComponent {
     this.layer = data.layer ?? 'default';
     this.visible = data.visible ?? true;
     this.color = data.color ?? '#ffffff';
+    if (data.text !== undefined) this.text = data.text;
+    if (data.fontSize !== undefined) this.fontSize = data.fontSize;
+    if (data.textColor !== undefined) this.textColor = data.textColor;
   }
 }

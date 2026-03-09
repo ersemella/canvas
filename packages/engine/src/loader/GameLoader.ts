@@ -7,11 +7,13 @@ export interface GameModule {
   getSceneData(): SceneData;
   getSystems(): BaseSystem[];
   getEvents(): Record<string, string>;
+  getCanvas(): {width: number; height: number} | undefined;
 }
 
 export interface GameManifest {
   systems: string[];
   events?: Record<string, string>;
+  canvas?: {width: number; height: number};
   scene: SceneData;
 }
 
@@ -43,6 +45,9 @@ export function createGameModule(manifest: GameManifest): GameModule {
     },
     getEvents(): Record<string, string> {
       return manifest.events ?? {};
+    },
+    getCanvas(): {width: number; height: number} | undefined {
+      return manifest.canvas;
     },
   };
 }

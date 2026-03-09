@@ -11,6 +11,7 @@ export function GamePage() {
   const [sceneData, setSceneData] = useState<SceneData | null>(null);
   const [gameSystems, setGameSystems] = useState<BaseSystem[]>([]);
   const [gameEvents, setGameEvents] = useState<Record<string, string>>({});
+  const [canvasSize, setCanvasSize] = useState({width: 600, height: 400});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,6 +28,8 @@ export function GamePage() {
         setSceneData(mod.default.getSceneData());
         setGameSystems(mod.default.getSystems());
         setGameEvents(mod.default.getEvents());
+        const size = mod.default.getCanvas();
+        if (size) setCanvasSize(size);
         setLoading(false);
       })
       .catch((err: Error) => {
@@ -59,7 +62,7 @@ export function GamePage() {
     <div className={styles.page}>
       <h2 className={styles.title}>{gameDescriptor.title}</h2>
       <div className={styles.canvasWrapper}>
-        <GameCanvas sceneData={sceneData} systems={gameSystems} events={gameEvents} width={600} height={400} />
+        <GameCanvas sceneData={sceneData} systems={gameSystems} events={gameEvents} width={canvasSize.width} height={canvasSize.height} />
       </div>
     </div>
   );

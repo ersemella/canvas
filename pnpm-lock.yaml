@@ -54,24 +54,9 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(jsdom@23.2.0)
 
-  packages/games/snake:
-    dependencies:
-      '@canvas/engine':
-        specifier: workspace:*
-        version: link:../../engine
-    devDependencies:
-      '@canvas/configs':
-        specifier: workspace:*
-        version: link:../../../configs
-      jsdom:
-        specifier: ^23.0.0
-        version: 23.2.0
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21
-      vitest:
-        specifier: ^1.0.0
-        version: 1.6.1(jsdom@23.2.0)
+  packages/games/snake: {}
+
+  packages/games/solitaire: {}
 
   packages/web:
     dependencies:
@@ -81,6 +66,9 @@ importers:
       '@canvas/games-snake':
         specifier: workspace:*
         version: link:../games/snake
+      '@canvas/games-solitaire':
+        specifier: workspace:*
+        version: link:../games/solitaire
       react:
         specifier: ^18.0.0
         version: 18.3.1

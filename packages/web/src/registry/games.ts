@@ -20,4 +20,11 @@ export const games: GameDescriptor[] = [
         default: createGameModule(m.default as GameManifest),
       })),
   },
+  {
+    id: 'solitaire',
+    title: 'Solitaire',
+    description: 'Classic Klondike solitaire. Build up the foundations from Ace to King.',
+    thumbnail: '/thumbnails/solitaire.png',
+    load: () => import('@canvas/games-solitaire').then((m) => ({default: m.default})),
+  },
 ];

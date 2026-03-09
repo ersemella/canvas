@@ -39,6 +39,22 @@ export class RendererSystem extends BaseSystem {
         renderable.height
       );
 
+      if (renderable.text) {
+        ctx.strokeStyle = '#cccccc';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(
+          -renderable.width / 2,
+          -renderable.height / 2,
+          renderable.width,
+          renderable.height
+        );
+        ctx.font = `bold ${renderable.fontSize ?? 14}px monospace`;
+        ctx.fillStyle = renderable.textColor ?? '#000000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(renderable.text, 0, 0);
+      }
+
       ctx.restore();
     }
   }

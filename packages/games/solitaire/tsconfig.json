@@ -1,0 +1,15 @@
+{
+  "extends": "../../../configs/tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "composite": true,
+    "paths": {
+      "@canvas/engine": ["../../engine/src/index.ts"]
+    }
+  },
+  "include": ["src"],
+  "references": [
+    {"path": "../../engine"}
+  ]
+}

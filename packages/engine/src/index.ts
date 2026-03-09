@@ -29,6 +29,7 @@ export {AudioSourceComponent} from 'components/AudioSourceComponent';
 export {ScriptComponent} from 'components/ScriptComponent';
 export type {HookEntry} from 'components/ScriptComponent';
 export {TagComponent} from 'components/TagComponent';
+export type {CardData} from 'components/CardComponent';
 
 // Systems — core (flat)
 export {InputSystem, inputService} from 'systems/InputSystem';
@@ -36,6 +37,7 @@ export {InputFlushSystem} from 'systems/InputFlushSystem';
 export {RendererSystem} from 'systems/RendererSystem';
 export {TriggerSystem} from 'systems/TriggerSystem';
 export type {TriggerData} from 'systems/TriggerSystem';
+export {MouseSystem, mouseService} from 'systems/MouseSystem';
 
 // Systems — physics (mutually exclusive with grid)
 export {PhysicsSystem} from 'systems/physics/PhysicsSystem';
