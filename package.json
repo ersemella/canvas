@@ -5,7 +5,7 @@
     "dev": "pnpm --filter @canvas/web dev",
     "build": "pnpm --filter @canvas/engine build && pnpm --filter @canvas/games-snake build && pnpm --filter @canvas/web build",
     "test": "vitest --workspace vitest.workspace.ts",
-    "typecheck": "pnpm -r exec tsc --noEmit",
+    "typecheck": "tsc -b",
     "lint": "eslint packages --ext .ts,.tsx",
     "format": "prettier --write packages"
   },

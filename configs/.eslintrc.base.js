@@ -8,6 +8,11 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', {
+      argsIgnorePattern: '^_',
+      varsIgnorePattern: '^_',
+      caughtErrorsIgnorePattern: '^_',
+    }],
   },
   overrides: [
     {
@@ -18,7 +23,7 @@ module.exports = {
           {
             patterns: [
               {
-                group: ['../*', './*'],
+                group: ['../*'],
                 message: 'Use absolute imports instead of relative imports.',
               },
             ],

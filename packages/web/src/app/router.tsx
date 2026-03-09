@@ -12,7 +12,6 @@ function Layout({children}: {children: React.ReactNode}) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter([
   {
     path: '/',

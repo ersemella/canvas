@@ -1,9 +1,8 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useParams, Navigate} from 'react-router-dom';
 import {GameCanvas} from 'components/GameCanvas';
 import {games} from 'registry/games';
 import type {SceneData} from '@canvas/engine';
-import type {GameModule} from 'registry/games';
 import styles from './GamePage.module.css';
 
 export function GamePage() {

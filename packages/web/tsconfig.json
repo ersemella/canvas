@@ -11,5 +11,9 @@
       "@canvas/games-snake": ["../../games/snake/src/index.ts"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {"path": "../engine"},
+    {"path": "../games/snake"}
+  ]
 }

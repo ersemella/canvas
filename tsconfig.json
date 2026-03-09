@@ -1,6 +1,8 @@
 {
   "files": [],
   "references": [
-    { "path": "./packages/engine" }
+    {"path": "./packages/engine"},
+    {"path": "./packages/games/snake"},
+    {"path": "./packages/web"}
   ]
 }
