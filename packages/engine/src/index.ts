@@ -1,4 +1,5 @@
 // Core
+export {SystemRegistry} from 'core/SystemRegistry';
 export {World} from 'core/World';
 export {Scene} from 'core/Scene';
 export {Entity} from 'core/Entity';
@@ -50,13 +51,17 @@ export {BoundsDeathSystem} from 'systems/BoundsDeathSystem';
 export type {BoundsDeathData} from 'systems/BoundsDeathSystem';
 export {CollisionDeathSystem} from 'systems/CollisionDeathSystem';
 export type {CollisionDeathData} from 'systems/CollisionDeathSystem';
+export {TrailSystem} from 'systems/TrailSystem';
+export type {TrailData} from 'systems/TrailSystem';
 
 // Hooks
 export {HookRegistry} from 'hooks/HookRegistry';
 export type {LifecycleHook, HookContext, HookFactory} from 'hooks/types';
 
 // Loaders
-export {registerBuiltinComponents, loadComponents} from 'loader/ComponentLoader';
+export {registerBuiltinComponents, loadComponents, registerBuiltinSystems} from 'loader/ComponentLoader';
+export {createGameModule} from 'loader/GameLoader';
+export type {GameModule, GameManifest} from 'loader/GameLoader';
 export {loadEntity} from 'loader/EntityLoader';
 export type {EntityData} from 'loader/EntityLoader';
 export {loadHooks} from 'loader/HookLoader';

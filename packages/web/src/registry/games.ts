@@ -1,3 +1,6 @@
+import {createGameModule} from '@canvas/engine';
+import type {GameModule, GameManifest} from '@canvas/engine';
+
 export interface GameDescriptor {
   id: string;
   title: string;
@@ -6,18 +9,15 @@ export interface GameDescriptor {
   load: () => Promise<{default: GameModule}>;
 }
 
-export interface GameModule {
-  register(): void;
-  getSceneData(): import('@canvas/engine').SceneData;
-  getSystems(): import('@canvas/engine').BaseSystem[];
-}
-
 export const games: GameDescriptor[] = [
   {
     id: 'snake',
     title: 'Snake',
     description: 'Classic snake game. Eat food, grow longer, avoid walls and yourself.',
     thumbnail: '/thumbnails/snake.png',
-    load: () => import('@canvas/games-snake') as Promise<{default: GameModule}>,
+    load: () =>
+      import('@canvas/games-snake').then((m) => ({
+        default: createGameModule(m.default as GameManifest),
+      })),
   },
 ];

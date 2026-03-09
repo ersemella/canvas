@@ -1,9 +1,17 @@
 import {ComponentRegistry, registerDataComponent, type IComponent} from 'core/Component';
+import {SystemRegistry} from 'core/SystemRegistry';
 import type {GridMovementData} from 'systems/GridMovementSystem';
 import type {CollectibleData} from 'systems/CollectSystem';
 import type {RespawnData} from 'systems/RespawnSystem';
 import type {BoundsDeathData} from 'systems/BoundsDeathSystem';
 import type {CollisionDeathData} from 'systems/CollisionDeathSystem';
+import type {TrailData} from 'systems/TrailSystem';
+import {GridMovementSystem} from 'systems/GridMovementSystem';
+import {CollectSystem} from 'systems/CollectSystem';
+import {RespawnSystem} from 'systems/RespawnSystem';
+import {BoundsDeathSystem} from 'systems/BoundsDeathSystem';
+import {CollisionDeathSystem} from 'systems/CollisionDeathSystem';
+import {TrailSystem} from 'systems/TrailSystem';
 
 // Register all built-in components
 import {TransformComponent} from 'components/TransformComponent';
@@ -16,6 +24,19 @@ import {AIAgentComponent} from 'components/AIAgentComponent';
 import {AudioSourceComponent} from 'components/AudioSourceComponent';
 import {ScriptComponent} from 'components/ScriptComponent';
 import {TagComponent} from 'components/TagComponent';
+
+let systemsRegistered = false;
+
+export function registerBuiltinSystems(): void {
+  if (systemsRegistered) return;
+  systemsRegistered = true;
+  SystemRegistry.register('GridMovementSystem', GridMovementSystem);
+  SystemRegistry.register('CollectSystem', CollectSystem);
+  SystemRegistry.register('RespawnSystem', RespawnSystem);
+  SystemRegistry.register('BoundsDeathSystem', BoundsDeathSystem);
+  SystemRegistry.register('CollisionDeathSystem', CollisionDeathSystem);
+  SystemRegistry.register('TrailSystem', TrailSystem);
+}
 
 export function registerBuiltinComponents(): void {
   ComponentRegistry.register(
@@ -64,6 +85,7 @@ export function registerBuiltinComponents(): void {
   registerDataComponent<RespawnData>('Respawn');
   registerDataComponent<BoundsDeathData>('BoundsDeath');
   registerDataComponent<CollisionDeathData>('CollisionDeath');
+  registerDataComponent<TrailData>('Trail');
 }
 
 export function loadComponents(

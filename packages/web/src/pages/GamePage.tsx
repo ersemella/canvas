@@ -3,6 +3,7 @@ import {useParams, Navigate} from 'react-router-dom';
 import {GameCanvas} from 'components/GameCanvas';
 import {games} from 'registry/games';
 import type {SceneData, BaseSystem} from '@canvas/engine';
+import {registerBuiltinSystems} from '@canvas/engine';
 import styles from './GamePage.module.css';
 
 export function GamePage() {
@@ -17,6 +18,7 @@ export function GamePage() {
   useEffect(() => {
     if (!gameDescriptor) return;
 
+    registerBuiltinSystems();
     gameDescriptor
       .load()
       .then((mod) => {

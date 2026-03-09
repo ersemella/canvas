@@ -6,14 +6,14 @@
     "jsx": "react-jsx",
     "outDir": "dist",
     "baseUrl": "src",
+    "resolveJsonModule": true,
     "paths": {
       "@canvas/engine": ["../../engine/src/index.ts"],
-      "@canvas/games-snake": ["../../games/snake/src/index.ts"]
+      "@canvas/games-snake": ["../../games/snake/game.json"]
     }
   },
   "include": ["src"],
   "references": [
-    {"path": "../engine"},
-    {"path": "../games/snake"}
+    {"path": "../engine"}
   ]
 }
