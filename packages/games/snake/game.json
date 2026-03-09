@@ -7,6 +7,10 @@
     "BoundsTriggerSystem",
     "OverlapTriggerSystem"
   ],
+  "events": {
+    "onScore": "entity:collected",
+    "onDeath": "snake:died"
+  },
   "scene": {
     "name": "snake-main",
     "entities": [

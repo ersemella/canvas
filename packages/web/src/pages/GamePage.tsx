@@ -10,6 +10,7 @@ export function GamePage() {
   const {gameId} = useParams<{gameId: string}>();
   const [sceneData, setSceneData] = useState<SceneData | null>(null);
   const [gameSystems, setGameSystems] = useState<BaseSystem[]>([]);
+  const [gameEvents, setGameEvents] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,6 +26,7 @@ export function GamePage() {
         mod.default.register();
         setSceneData(mod.default.getSceneData());
         setGameSystems(mod.default.getSystems());
+        setGameEvents(mod.default.getEvents());
         setLoading(false);
       })
       .catch((err: Error) => {
@@ -57,7 +59,7 @@ export function GamePage() {
     <div className={styles.page}>
       <h2 className={styles.title}>{gameDescriptor.title}</h2>
       <div className={styles.canvasWrapper}>
-        <GameCanvas sceneData={sceneData} systems={gameSystems} width={600} height={400} />
+        <GameCanvas sceneData={sceneData} systems={gameSystems} events={gameEvents} width={600} height={400} />
       </div>
     </div>
   );

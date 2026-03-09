@@ -48,6 +48,7 @@ export class CollisionSystem extends BaseSystem {
         );
 
         if (rectA.intersects(rectB)) {
+          // Consumed by physics-based game listeners; no listener in grid-movement games.
           events.emit<CollisionEvent>('collision:enter', {entityA: a.id, entityB: b.id});
         }
       }

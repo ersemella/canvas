@@ -13,11 +13,12 @@ import styles from './GameCanvas.module.css';
 interface Props {
   sceneData: SceneData;
   systems?: BaseSystem[];
+  events?: Record<string, string>;
   width?: number;
   height?: number;
 }
 
-export function GameCanvas({sceneData, systems, width = 600, height = 400}: Props) {
+export function GameCanvas({sceneData, systems, events, width = 600, height = 400}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<World | null>(null);
   const [gameOver, setGameOver] = useState(false);
@@ -48,21 +49,22 @@ export function GameCanvas({sceneData, systems, width = 600, height = 400}: Prop
     world.loadScene(scene);
     world.start();
 
-    const unsubScore = world.events.on('entity:collected', () => {
-      setScore((s) => s + 1);
-    });
+    const {onScore, onDeath} = events ?? {};
 
-    const unsubDied = world.events.on('snake:died', () => {
-      world.stop();
-      setGameOver(true);
-    });
+    const unsubScore = onScore
+      ? world.events.on(onScore, () => setScore((s) => s + 1))
+      : undefined;
+
+    const unsubDied = onDeath
+      ? world.events.on(onDeath, () => { world.stop(); setGameOver(true); })
+      : undefined;
 
     return () => {
-      unsubScore();
-      unsubDied();
+      unsubScore?.();
+      unsubDied?.();
       world.stop();
     };
-  }, [sceneData, systems, restartKey]);
+  }, [sceneData, systems, events, restartKey]);
 
   const restart = useCallback(() => {
     setRestartKey((k) => k + 1);

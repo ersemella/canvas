@@ -6,10 +6,12 @@ export interface GameModule {
   register(): void;
   getSceneData(): SceneData;
   getSystems(): BaseSystem[];
+  getEvents(): Record<string, string>;
 }
 
 export interface GameManifest {
   systems: string[];
+  events?: Record<string, string>;
   scene: SceneData;
 }
 
@@ -38,6 +40,9 @@ export function createGameModule(manifest: GameManifest): GameModule {
     getSystems(): BaseSystem[] {
       validateExclusiveFamilies(manifest.systems);
       return manifest.systems.map((name) => SystemRegistry.create(name));
+    },
+    getEvents(): Record<string, string> {
+      return manifest.events ?? {};
     },
   };
 }
