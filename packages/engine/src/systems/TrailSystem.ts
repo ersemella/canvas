@@ -4,7 +4,6 @@ import {TransformComponent} from 'components/TransformComponent';
 import {RenderableComponent} from 'components/RenderableComponent';
 import type {GridMovementData} from 'systems/GridMovementSystem';
 import type {CollectibleData} from 'systems/CollectSystem';
-import type {CollisionDeathData} from 'systems/CollisionDeathSystem';
 
 export interface TrailSegmentTemplate {
   renderable: {width: number; height: number; zIndex?: number; layer?: string; color?: string};
@@ -20,7 +19,7 @@ export class TrailSystem extends BaseSystem {
   readonly priority = 210;
 
   onUpdate(context: SystemContext): void {
-    const {scene, world} = context;
+    const {scene, world, events} = context;
 
     const headEntities = scene.query({all: ['Trail', 'GridMovement', 'Transform']});
     const head = headEntities[0];
@@ -78,11 +77,7 @@ export class TrailSystem extends BaseSystem {
       });
 
       trailData.segments.push(newSeg.id);
-
-      const cd = head.getComponent<DataComponent<CollisionDeathData>>('CollisionDeath');
-      if (cd) {
-        cd.data.graceId = newSeg.id;
-      }
+      events.emit('trail:segmentSpawned', {entityId: newSeg.id});
 
       break;
     }

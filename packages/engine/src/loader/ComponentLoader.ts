@@ -3,14 +3,14 @@ import {SystemRegistry} from 'core/SystemRegistry';
 import type {GridMovementData} from 'systems/GridMovementSystem';
 import type {CollectibleData} from 'systems/CollectSystem';
 import type {RespawnData} from 'systems/RespawnSystem';
-import type {BoundsDeathData} from 'systems/BoundsDeathSystem';
-import type {CollisionDeathData} from 'systems/CollisionDeathSystem';
+import type {BoundsTriggerData} from 'systems/BoundsTriggerSystem';
+import type {OverlapTriggerData} from 'systems/OverlapTriggerSystem';
 import type {TrailData} from 'systems/TrailSystem';
 import {GridMovementSystem} from 'systems/GridMovementSystem';
 import {CollectSystem} from 'systems/CollectSystem';
 import {RespawnSystem} from 'systems/RespawnSystem';
-import {BoundsDeathSystem} from 'systems/BoundsDeathSystem';
-import {CollisionDeathSystem} from 'systems/CollisionDeathSystem';
+import {BoundsTriggerSystem} from 'systems/BoundsTriggerSystem';
+import {OverlapTriggerSystem} from 'systems/OverlapTriggerSystem';
 import {TrailSystem} from 'systems/TrailSystem';
 
 // Register all built-in components
@@ -33,8 +33,8 @@ export function registerBuiltinSystems(): void {
   SystemRegistry.register('GridMovementSystem', GridMovementSystem);
   SystemRegistry.register('CollectSystem', CollectSystem);
   SystemRegistry.register('RespawnSystem', RespawnSystem);
-  SystemRegistry.register('BoundsDeathSystem', BoundsDeathSystem);
-  SystemRegistry.register('CollisionDeathSystem', CollisionDeathSystem);
+  SystemRegistry.register('BoundsTriggerSystem', BoundsTriggerSystem);
+  SystemRegistry.register('OverlapTriggerSystem', OverlapTriggerSystem);
   SystemRegistry.register('TrailSystem', TrailSystem);
 }
 
@@ -83,8 +83,8 @@ export function registerBuiltinComponents(): void {
   registerDataComponent<GridMovementData>('GridMovement');
   registerDataComponent<CollectibleData>('Collectible');
   registerDataComponent<RespawnData>('Respawn');
-  registerDataComponent<BoundsDeathData>('BoundsDeath');
-  registerDataComponent<CollisionDeathData>('CollisionDeath');
+  registerDataComponent<BoundsTriggerData>('BoundsTrigger');
+  registerDataComponent<OverlapTriggerData>('OverlapTrigger');
   registerDataComponent<TrailData>('Trail');
 }
 

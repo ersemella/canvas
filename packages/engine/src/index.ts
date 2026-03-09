@@ -47,10 +47,10 @@ export {CollectSystem} from 'systems/CollectSystem';
 export type {CollectibleData} from 'systems/CollectSystem';
 export {RespawnSystem} from 'systems/RespawnSystem';
 export type {RespawnData} from 'systems/RespawnSystem';
-export {BoundsDeathSystem} from 'systems/BoundsDeathSystem';
-export type {BoundsDeathData} from 'systems/BoundsDeathSystem';
-export {CollisionDeathSystem} from 'systems/CollisionDeathSystem';
-export type {CollisionDeathData} from 'systems/CollisionDeathSystem';
+export {BoundsTriggerSystem} from 'systems/BoundsTriggerSystem';
+export type {BoundsTriggerData} from 'systems/BoundsTriggerSystem';
+export {OverlapTriggerSystem} from 'systems/OverlapTriggerSystem';
+export type {OverlapTriggerData} from 'systems/OverlapTriggerSystem';
 export {TrailSystem} from 'systems/TrailSystem';
 export type {TrailData} from 'systems/TrailSystem';
 

@@ -4,8 +4,8 @@
     "CollectSystem",
     "TrailSystem",
     "RespawnSystem",
-    "BoundsDeathSystem",
-    "CollisionDeathSystem"
+    "BoundsTriggerSystem",
+    "OverlapTriggerSystem"
   ],
   "scene": {
     "name": "snake-main",
@@ -57,17 +57,16 @@
             "prevY": 210,
             "moved": false
           },
-          "BoundsDeath": {
+          "BoundsTrigger": {
             "width": 600,
             "height": 400,
-            "deathEvent": "snake:died",
-            "dead": false
+            "event": "snake:died",
+            "triggered": false
           },
-          "CollisionDeath": {
+          "OverlapTrigger": {
             "targetTag": "snake-body",
-            "deathEvent": "snake:died",
-            "dead": false,
-            "graceId": null
+            "event": "snake:died",
+            "triggered": false
           },
           "Trail": {
             "segments": [],
