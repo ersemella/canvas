@@ -1,4 +1,4 @@
-import type { LifecycleHook, HookContext } from '@canvas/engine';
+import type {LifecycleHook, HookContext} from '@canvas/engine';
 
 export function createScoreDisplayHook(_config: Record<string, unknown>): LifecycleHook {
   return {
@@ -17,7 +17,7 @@ export function createScoreDisplayHook(_config: Record<string, unknown>): Lifecy
 
     onUpdate(ctx: HookContext) {
       // Access the canvas 2D context via world
-      const world = ctx.world as unknown as { ctx?: CanvasRenderingContext2D };
+      const world = ctx.world as unknown as {ctx?: CanvasRenderingContext2D};
       const canvasCtx = world.ctx;
       if (!canvasCtx) return;
 

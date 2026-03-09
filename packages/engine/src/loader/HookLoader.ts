@@ -1,5 +1,5 @@
-import { HookRegistry } from '../hooks/HookRegistry';
-import type { ScriptComponent } from '../components/ScriptComponent';
+import {HookRegistry} from 'hooks/HookRegistry';
+import type {ScriptComponent} from 'components/ScriptComponent';
 
 export function loadHooks(script: ScriptComponent): void {
   for (const entry of script.hooks) {

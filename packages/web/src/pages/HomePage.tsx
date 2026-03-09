@@ -1,6 +1,5 @@
-import React from 'react';
-import { GameCard } from '../components/GameCard';
-import { games } from '../registry/games';
+import {GameCard} from 'components/GameCard';
+import {games} from 'registry/games';
 import styles from './HomePage.module.css';
 
 export function HomePage() {

@@ -5,9 +5,10 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "outDir": "dist",
+    "baseUrl": "src",
     "paths": {
-      "@canvas/engine": ["../engine/src/index.ts"],
-      "@canvas/games-snake": ["../games/snake/src/index.ts"]
+      "@canvas/engine": ["../../engine/src/index.ts"],
+      "@canvas/games-snake": ["../../games/snake/src/index.ts"]
     }
   },
   "include": ["src"]

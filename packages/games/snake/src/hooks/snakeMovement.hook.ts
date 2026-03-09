@@ -1,5 +1,5 @@
-import type { LifecycleHook, HookContext } from '@canvas/engine';
-import type { TransformComponent } from '@canvas/engine';
+import type {LifecycleHook, HookContext} from '@canvas/engine';
+import type {TransformComponent} from '@canvas/engine';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
 
@@ -13,7 +13,7 @@ export function createSnakeMovementHook(_config: Record<string, unknown>): Lifec
 
       // Listen for new segments being added
       ctx.state['unsubSegment'] = ctx.events.on('snake:segment:added', (data: unknown) => {
-        const { id } = data as { id: string };
+        const {id} = data as {id: string};
         (ctx.state['segments'] as string[]).push(id);
       });
     },
@@ -57,7 +57,7 @@ export function createSnakeMovementHook(_config: Record<string, unknown>): Lifec
 
       // Move body segments — each follows the one before it
       const segments = (ctx.state['segments'] as string[]) ?? [];
-      let prevPos = { x: prevX, y: prevY };
+      let prevPos = {x: prevX, y: prevY};
       for (const segId of segments) {
         const seg = ctx.scene.getEntity(segId);
         if (!seg) continue;
@@ -67,11 +67,11 @@ export function createSnakeMovementHook(_config: Record<string, unknown>): Lifec
         const tempY = segTransform.position.y;
         segTransform.position.x = prevPos.x;
         segTransform.position.y = prevPos.y;
-        prevPos = { x: tempX, y: tempY };
+        prevPos = {x: tempX, y: tempY};
       }
 
       // Notify other hooks of the new head position
-      ctx.events.emit('snake:moved', { x: transform.position.x, y: transform.position.y });
+      ctx.events.emit('snake:moved', {x: transform.position.x, y: transform.position.y});
     },
 
     onDestroy(ctx: HookContext) {

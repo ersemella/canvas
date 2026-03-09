@@ -1,10 +1,9 @@
-import React from 'react';
-import { createBrowserRouter } from 'react-router-dom';
-import { HomePage } from '../pages/HomePage';
-import { GamePage } from '../pages/GamePage';
-import { NavBar } from '../components/NavBar';
+import {createBrowserRouter} from 'react-router-dom';
+import {HomePage} from 'pages/HomePage';
+import {GamePage} from 'pages/GamePage';
+import {NavBar} from 'components/NavBar';
 
-function Layout({ children }: { children: React.ReactNode }) {
+function Layout({children}: {children: React.ReactNode}) {
   return (
     <>
       <NavBar />

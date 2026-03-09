@@ -1,13 +1,12 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import type { GameDescriptor } from '../registry/games';
+import {Link} from 'react-router-dom';
+import type {GameDescriptor} from 'registry/games';
 import styles from './GameCard.module.css';
 
 interface Props {
   game: GameDescriptor;
 }
 
-export function GameCard({ game }: Props) {
+export function GameCard({game}: Props) {
   return (
     <div className={styles.card}>
       <div className={styles.thumbnail}>

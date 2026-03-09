@@ -1,12 +1,12 @@
-import { BaseSystem, type SystemContext } from '../core/System';
-import type { AnimatorComponent } from '../components/AnimatorComponent';
+import {BaseSystem, type SystemContext} from 'core/System';
+import type {AnimatorComponent} from 'components/AnimatorComponent';
 
 export class AnimationSystem extends BaseSystem {
   readonly priority = 300;
 
   onUpdate(context: SystemContext): void {
-    const { scene, deltaTime } = context;
-    const entities = scene.query({ all: ['Animator'] });
+    const {scene, deltaTime} = context;
+    const entities = scene.query({all: ['Animator']});
 
     for (const entity of entities) {
       const animator = entity.getComponent<AnimatorComponent>('Animator')!;

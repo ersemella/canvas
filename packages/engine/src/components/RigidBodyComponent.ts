@@ -1,5 +1,5 @@
-import { BaseComponent } from '../core/Component';
-import { Vec2 } from '../math/Vec2';
+import {BaseComponent} from 'core/Component';
+import {Vec2} from 'math/Vec2';
 
 export class RigidBodyComponent extends BaseComponent {
   readonly componentType = 'RigidBody';
@@ -11,7 +11,7 @@ export class RigidBodyComponent extends BaseComponent {
 
   constructor(
     data: {
-      velocity?: { x: number; y: number };
+      velocity?: {x: number; y: number};
       isKinematic?: boolean;
       gravityScale?: number;
     } = {}

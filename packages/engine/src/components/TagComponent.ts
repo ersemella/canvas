@@ -1,4 +1,4 @@
-import { BaseComponent } from '../core/Component';
+import {BaseComponent} from 'core/Component';
 
 export class TagComponent extends BaseComponent {
   readonly componentType = 'Tag';
@@ -6,7 +6,7 @@ export class TagComponent extends BaseComponent {
 
   value: string;
 
-  constructor(data: { value?: string } = {}) {
+  constructor(data: {value?: string} = {}) {
     super();
     this.value = data.value ?? '';
   }

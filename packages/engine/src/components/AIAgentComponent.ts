@@ -1,4 +1,4 @@
-import { BaseComponent } from '../core/Component';
+import {BaseComponent} from 'core/Component';
 
 export class AIAgentComponent extends BaseComponent {
   readonly componentType = 'AIAgent';
@@ -7,7 +7,7 @@ export class AIAgentComponent extends BaseComponent {
   behaviorTree: string;
   state: Record<string, unknown>;
 
-  constructor(data: { behaviorTree?: string; state?: Record<string, unknown> } = {}) {
+  constructor(data: {behaviorTree?: string; state?: Record<string, unknown>} = {}) {
     super();
     this.behaviorTree = data.behaviorTree ?? '';
     this.state = data.state ?? {};

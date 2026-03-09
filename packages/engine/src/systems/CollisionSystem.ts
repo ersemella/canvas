@@ -1,7 +1,7 @@
-import { BaseSystem, type SystemContext } from '../core/System';
-import type { TransformComponent } from '../components/TransformComponent';
-import type { ColliderComponent } from '../components/ColliderComponent';
-import { Rect } from '../math/Rect';
+import {BaseSystem, type SystemContext} from 'core/System';
+import type {TransformComponent} from 'components/TransformComponent';
+import type {ColliderComponent} from 'components/ColliderComponent';
+import {Rect} from 'math/Rect';
 
 export interface CollisionEvent {
   entityA: string;
@@ -12,8 +12,8 @@ export class CollisionSystem extends BaseSystem {
   readonly priority = 200;
 
   onUpdate(context: SystemContext): void {
-    const { scene, events } = context;
-    const entities = scene.query({ all: ['Transform', 'Collider'] });
+    const {scene, events} = context;
+    const entities = scene.query({all: ['Transform', 'Collider']});
 
     for (let i = 0; i < entities.length; i++) {
       for (let j = i + 1; j < entities.length; j++) {
@@ -48,7 +48,7 @@ export class CollisionSystem extends BaseSystem {
         );
 
         if (rectA.intersects(rectB)) {
-          events.emit<CollisionEvent>('collision:enter', { entityA: a.id, entityB: b.id });
+          events.emit<CollisionEvent>('collision:enter', {entityA: a.id, entityB: b.id});
         }
       }
     }

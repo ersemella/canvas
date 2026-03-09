@@ -1,5 +1,8 @@
 export class Vec2 {
-  constructor(public x: number = 0, public y: number = 0) {}
+  constructor(
+    public x: number = 0,
+    public y: number = 0
+  ) {}
 
   add(other: Vec2): Vec2 {
     return new Vec2(this.x + other.x, this.y + other.y);
@@ -42,7 +45,7 @@ export class Vec2 {
     return new Vec2(1, 1);
   }
 
-  static from(obj: { x: number; y: number }): Vec2 {
+  static from(obj: {x: number; y: number}): Vec2 {
     return new Vec2(obj.x, obj.y);
   }
 }

@@ -1,15 +1,9 @@
-import { defineConfig } from 'vite';
+import {defineConfig} from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@canvas/engine': resolve(__dirname, '../engine/src/index.ts'),
-      '@canvas/games-snake': resolve(__dirname, '../games/snake/src/index.ts'),
-    },
-  },
+  plugins: [react(), tsconfigPaths()],
   server: {
     port: 3000,
   },

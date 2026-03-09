@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { loadScene } from './SceneLoader';
-import { registerBuiltinComponents } from './ComponentLoader';
-import { HookRegistry } from '../hooks/HookRegistry';
-import type { HookContext } from '../hooks/types';
-import type { ScriptComponent } from '../components/ScriptComponent';
+import {describe, it, expect, beforeAll} from 'vitest';
+import {loadScene} from 'loader/SceneLoader';
+import {registerBuiltinComponents} from 'loader/ComponentLoader';
+import {HookRegistry} from 'hooks/HookRegistry';
+import type {HookContext} from 'hooks/types';
+import type {ScriptComponent} from 'components/ScriptComponent';
 
 beforeAll(() => {
   registerBuiltinComponents();
@@ -22,9 +22,9 @@ describe('loadScene', () => {
           tags: ['player'],
           components: {
             Transform: {
-              position: { x: 10, y: 20 },
+              position: {x: 10, y: 20},
               rotation: 0,
-              scale: { x: 1, y: 1 },
+              scale: {x: 1, y: 1},
             },
           },
         },
@@ -45,7 +45,7 @@ describe('loadScene', () => {
         {
           id: 'e2',
           components: {
-            Script: { hooks: [{ name: 'testHook', config: {} }] },
+            Script: {hooks: [{name: 'testHook', config: {}}]},
           },
         },
       ],

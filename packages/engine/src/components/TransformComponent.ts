@@ -1,5 +1,5 @@
-import { BaseComponent } from '../core/Component';
-import { Vec2 } from '../math/Vec2';
+import {BaseComponent} from 'core/Component';
+import {Vec2} from 'math/Vec2';
 
 export class TransformComponent extends BaseComponent {
   readonly componentType = 'Transform';
@@ -11,9 +11,9 @@ export class TransformComponent extends BaseComponent {
 
   constructor(
     data: {
-      position?: { x: number; y: number };
+      position?: {x: number; y: number};
       rotation?: number;
-      scale?: { x: number; y: number };
+      scale?: {x: number; y: number};
     } = {}
   ) {
     super();

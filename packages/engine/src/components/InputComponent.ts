@@ -1,4 +1,4 @@
-import { BaseComponent } from '../core/Component';
+import {BaseComponent} from 'core/Component';
 
 export class InputComponent extends BaseComponent {
   readonly componentType = 'Input';
@@ -6,7 +6,7 @@ export class InputComponent extends BaseComponent {
 
   actionMap: Record<string, string[]>;
 
-  constructor(data: { actionMap?: Record<string, string[]> } = {}) {
+  constructor(data: {actionMap?: Record<string, string[]>} = {}) {
     super();
     this.actionMap = data.actionMap ?? {};
   }

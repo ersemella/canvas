@@ -1,4 +1,4 @@
-import { BaseComponent } from '../core/Component';
+import {BaseComponent} from 'core/Component';
 
 export class AudioSourceComponent extends BaseComponent {
   readonly componentType = 'AudioSource';

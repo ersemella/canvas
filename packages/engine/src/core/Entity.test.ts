@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { Entity } from './Entity';
-import { BaseComponent } from './Component';
+import {describe, it, expect} from 'vitest';
+import {Entity} from 'core/Entity';
+import {BaseComponent} from 'core/Component';
 
 class TestComponent extends BaseComponent {
   readonly componentType = 'Test';

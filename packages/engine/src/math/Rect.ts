@@ -1,4 +1,4 @@
-import { Vec2 } from './Vec2';
+import {Vec2} from 'math/Vec2';
 
 export class Rect {
   constructor(
@@ -22,19 +22,13 @@ export class Rect {
 
   intersects(other: Rect): boolean {
     return (
-      this.x < other.right &&
-      this.right > other.x &&
-      this.y < other.bottom &&
-      this.bottom > other.y
+      this.x < other.right && this.right > other.x && this.y < other.bottom && this.bottom > other.y
     );
   }
 
   contains(point: Vec2): boolean {
     return (
-      point.x >= this.x &&
-      point.x <= this.right &&
-      point.y >= this.y &&
-      point.y <= this.bottom
+      point.x >= this.x && point.x <= this.right && point.y >= this.y && point.y <= this.bottom
     );
   }
 

@@ -1,5 +1,5 @@
-import { BaseSystem, type SystemContext } from '../core/System';
-import type { InputComponent } from '../components/InputComponent';
+import {BaseSystem, type SystemContext} from 'core/System';
+import type {InputComponent} from 'components/InputComponent';
 
 class InputServiceImpl {
   private pressed: Set<string> = new Set();
@@ -54,7 +54,7 @@ export class InputSystem extends BaseSystem {
   readonly priority = 0;
 
   onInit(context: Omit<SystemContext, 'deltaTime'>): void {
-    const entities = context.scene.query({ all: ['Input'] });
+    const entities = context.scene.query({all: ['Input']});
     for (const entity of entities) {
       const input = entity.getComponent<InputComponent>('Input');
       if (input) {

@@ -1,8 +1,8 @@
-import { BaseSystem, type SystemContext } from '../core/System';
-import type { ScriptComponent } from '../components/ScriptComponent';
-import { inputService } from './InputSystem';
-import type { HookContext } from '../hooks/types';
-import type { IEntity } from '../core/Entity';
+import {BaseSystem, type SystemContext} from 'core/System';
+import type {ScriptComponent} from 'components/ScriptComponent';
+import {inputService} from 'systems/InputSystem';
+import type {HookContext} from 'hooks/types';
+import type {IEntity} from 'core/Entity';
 
 function buildHookContext(
   entity: IEntity,
@@ -30,7 +30,7 @@ export class ScriptSystem extends BaseSystem {
   private entityStates: Map<string, Map<string, Record<string, unknown>>> = new Map();
 
   onInit(context: Omit<SystemContext, 'deltaTime'>): void {
-    const entities = context.scene.query({ all: ['Script'] });
+    const entities = context.scene.query({all: ['Script']});
     for (const entity of entities) {
       const script = entity.getComponent<ScriptComponent>('Script')!;
       const hookStates = new Map<string, Record<string, unknown>>();
@@ -50,7 +50,7 @@ export class ScriptSystem extends BaseSystem {
   }
 
   onUpdate(context: SystemContext): void {
-    const entities = context.scene.query({ all: ['Script'] });
+    const entities = context.scene.query({all: ['Script']});
     for (const entity of entities) {
       const script = entity.getComponent<ScriptComponent>('Script')!;
       const hookStates = this.entityStates.get(entity.id) ?? new Map();
@@ -68,7 +68,7 @@ export class ScriptSystem extends BaseSystem {
   }
 
   onDestroy(context: Omit<SystemContext, 'deltaTime'>): void {
-    const entities = context.scene.query({ all: ['Script'] });
+    const entities = context.scene.query({all: ['Script']});
     for (const entity of entities) {
       const script = entity.getComponent<ScriptComponent>('Script')!;
       const hookStates = this.entityStates.get(entity.id) ?? new Map();

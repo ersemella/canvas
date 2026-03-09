@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
   World,
   InputSystem,
@@ -13,7 +13,7 @@ import {
   registerBuiltinComponents,
   loadScene,
 } from '@canvas/engine';
-import type { SceneData } from '@canvas/engine';
+import type {SceneData} from '@canvas/engine';
 import styles from './GameCanvas.module.css';
 
 interface Props {
@@ -22,7 +22,7 @@ interface Props {
   height?: number;
 }
 
-export function GameCanvas({ sceneData, width = 600, height = 400 }: Props) {
+export function GameCanvas({sceneData, width = 600, height = 400}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export function GameCanvas({ sceneData, width = 600, height = 400 }: Props) {
 
     registerBuiltinComponents();
 
-    const world = new World({ canvas });
+    const world = new World({canvas});
     world.registerSystem(new InputSystem());
     world.registerSystem(new PhysicsSystem());
     world.registerSystem(new CollisionSystem());
@@ -51,12 +51,5 @@ export function GameCanvas({ sceneData, width = 600, height = 400 }: Props) {
     };
   }, [sceneData]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      className={styles.canvas}
-    />
-  );
+  return <canvas ref={canvasRef} width={width} height={height} className={styles.canvas} />;
 }

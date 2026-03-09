@@ -2,8 +2,10 @@
   "extends": "../../../configs/tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
+    "baseUrl": "src",
     "paths": {
-      "@canvas/engine": ["../../engine/src/index.ts"]
+      "@canvas/engine": ["../../../engine/src/index.ts"],
+      "@data/*": ["../data/*"]
     }
   },
   "include": ["src", "data"]

@@ -1,4 +1,4 @@
-import { BaseSystem, type SystemContext } from '../core/System';
+import {BaseSystem, type SystemContext} from 'core/System';
 
 export class AISystem extends BaseSystem {
   readonly priority = 400;

@@ -1,7 +1,7 @@
-import { Scene } from '../core/Scene';
-import { loadEntity, type EntityData } from './EntityLoader';
-import { loadHooks } from './HookLoader';
-import { ScriptComponent } from '../components/ScriptComponent';
+import {Scene} from 'core/Scene';
+import {loadEntity, type EntityData} from 'loader/EntityLoader';
+import {loadHooks} from 'loader/HookLoader';
+import {ScriptComponent} from 'components/ScriptComponent';
 
 export interface SceneData {
   name: string;

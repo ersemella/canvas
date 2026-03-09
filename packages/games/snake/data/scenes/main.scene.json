@@ -6,9 +6,9 @@
       "tags": ["snake", "player"],
       "components": {
         "Transform": {
-          "position": { "x": 300, "y": 200 },
+          "position": {"x": 300, "y": 200},
           "rotation": 0,
-          "scale": { "x": 1, "y": 1 }
+          "scale": {"x": 1, "y": 1}
         },
         "Renderable": {
           "width": 18,
@@ -18,7 +18,7 @@
           "color": "#4ade80"
         },
         "RigidBody": {
-          "velocity": { "x": 0, "y": 0 },
+          "velocity": {"x": 0, "y": 0},
           "isKinematic": true,
           "gravityScale": 0
         },
@@ -40,9 +40,9 @@
         },
         "Script": {
           "hooks": [
-            { "name": "snakeMovement", "config": { "speed": 8, "gridSize": 20 } },
-            { "name": "snakeGrowth", "config": {} },
-            { "name": "snakeDeath", "config": {} }
+            {"name": "snakeMovement", "config": {"speed": 8, "gridSize": 20}},
+            {"name": "snakeGrowth", "config": {}},
+            {"name": "snakeDeath", "config": {}}
           ]
         }
       }
@@ -52,9 +52,9 @@
       "tags": ["food"],
       "components": {
         "Transform": {
-          "position": { "x": 100, "y": 100 },
+          "position": {"x": 100, "y": 100},
           "rotation": 0,
-          "scale": { "x": 1, "y": 1 }
+          "scale": {"x": 1, "y": 1}
         },
         "Renderable": {
           "width": 14,
@@ -75,7 +75,7 @@
           "hooks": [
             {
               "name": "foodSpawn",
-              "config": { "gridSize": 20, "canvasWidth": 600, "canvasHeight": 400 }
+              "config": {"gridSize": 20, "canvasWidth": 600, "canvasHeight": 400}
             }
           ]
         }
@@ -86,7 +86,7 @@
       "tags": ["ui"],
       "components": {
         "Script": {
-          "hooks": [{ "name": "scoreDisplay", "config": {} }]
+          "hooks": [{"name": "scoreDisplay", "config": {}}]
         }
       }
     }

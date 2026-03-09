@@ -1,6 +1,6 @@
-import type { LifecycleHook, HookContext } from '@canvas/engine';
-import { MathUtils } from '@canvas/engine';
-import type { TransformComponent } from '@canvas/engine';
+import type {LifecycleHook, HookContext} from '@canvas/engine';
+import {MathUtils} from '@canvas/engine';
+import type {TransformComponent} from '@canvas/engine';
 
 export function createFoodSpawnHook(_config: Record<string, unknown>): LifecycleHook {
   return {

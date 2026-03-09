@@ -1,4 +1,4 @@
-import type { LifecycleHook, HookContext } from '@canvas/engine';
+import type {LifecycleHook, HookContext} from '@canvas/engine';
 
 export function createSnakeDeathHook(_config: Record<string, unknown>): LifecycleHook {
   return {
@@ -8,7 +8,7 @@ export function createSnakeDeathHook(_config: Record<string, unknown>): Lifecycl
       // Listen for body/wall collisions via the collision system
       ctx.state['unsubCollision'] = ctx.events.on('collision:enter', (event: unknown) => {
         if (ctx.state['dead']) return;
-        const collision = event as { entityA: string; entityB: string };
+        const collision = event as {entityA: string; entityB: string};
         const headId = ctx.entity.id;
         if (collision.entityA !== headId && collision.entityB !== headId) return;
 
@@ -25,7 +25,7 @@ export function createSnakeDeathHook(_config: Record<string, unknown>): Lifecycl
       // Wall detection via position check (canvas boundary)
       ctx.state['unsubWall'] = ctx.events.on('snake:moved', (pos: unknown) => {
         if (ctx.state['dead']) return;
-        const { x, y } = pos as { x: number; y: number };
+        const {x, y} = pos as {x: number; y: number};
         if (x < 0 || y < 0 || x >= 600 || y >= 400) {
           ctx.state['dead'] = true;
           ctx.events.emit('snake:died', {});

@@ -1,5 +1,5 @@
-import { Entity } from '../core/Entity';
-import { loadComponents } from './ComponentLoader';
+import {Entity} from 'core/Entity';
+import {loadComponents} from 'loader/ComponentLoader';
 
 export interface EntityData {
   id?: string;

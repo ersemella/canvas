@@ -1,7 +1,7 @@
-import { Scene } from './Scene';
-import { Entity } from './Entity';
-import { EventBus } from './EventBus';
-import type { BaseSystem, SystemContext } from './System';
+import {Scene} from 'core/Scene';
+import {Entity} from 'core/Entity';
+import {EventBus} from 'core/EventBus';
+import type {BaseSystem, SystemContext} from 'core/System';
 
 export interface WorldOptions {
   canvas: HTMLCanvasElement;

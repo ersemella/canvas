@@ -1,16 +1,16 @@
-import { ComponentRegistry, type IComponent } from '../core/Component';
+import {ComponentRegistry, type IComponent} from 'core/Component';
 
 // Register all built-in components
-import { TransformComponent } from '../components/TransformComponent';
-import { RenderableComponent } from '../components/RenderableComponent';
-import { RigidBodyComponent } from '../components/RigidBodyComponent';
-import { ColliderComponent } from '../components/ColliderComponent';
-import { InputComponent } from '../components/InputComponent';
-import { AnimatorComponent } from '../components/AnimatorComponent';
-import { AIAgentComponent } from '../components/AIAgentComponent';
-import { AudioSourceComponent } from '../components/AudioSourceComponent';
-import { ScriptComponent } from '../components/ScriptComponent';
-import { TagComponent } from '../components/TagComponent';
+import {TransformComponent} from 'components/TransformComponent';
+import {RenderableComponent} from 'components/RenderableComponent';
+import {RigidBodyComponent} from 'components/RigidBodyComponent';
+import {ColliderComponent} from 'components/ColliderComponent';
+import {InputComponent} from 'components/InputComponent';
+import {AnimatorComponent} from 'components/AnimatorComponent';
+import {AIAgentComponent} from 'components/AIAgentComponent';
+import {AudioSourceComponent} from 'components/AudioSourceComponent';
+import {ScriptComponent} from 'components/ScriptComponent';
+import {TagComponent} from 'components/TagComponent';
 
 export function registerBuiltinComponents(): void {
   ComponentRegistry.register(
@@ -58,7 +58,5 @@ export function registerBuiltinComponents(): void {
 export function loadComponents(
   componentData: Record<string, Record<string, unknown>>
 ): IComponent[] {
-  return Object.entries(componentData).map(([type, data]) =>
-    ComponentRegistry.create(type, data)
-  );
+  return Object.entries(componentData).map(([type, data]) => ComponentRegistry.create(type, data));
 }

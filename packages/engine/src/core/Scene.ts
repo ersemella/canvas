@@ -1,5 +1,5 @@
-import type { IEntity } from './Entity';
-import { Query, type QueryDescriptor } from './Query';
+import type {IEntity} from 'core/Entity';
+import {Query, type QueryDescriptor} from 'core/Query';
 
 export class Scene {
   readonly name: string;

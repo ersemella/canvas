@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
 
 interface AppState {
   activeGameId: string | null;
@@ -7,5 +7,5 @@ interface AppState {
 
 export const useAppStore = create<AppState>((set) => ({
   activeGameId: null,
-  setActiveGameId: (id) => set({ activeGameId: id }),
+  setActiveGameId: (id) => set({activeGameId: id}),
 }));

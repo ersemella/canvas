@@ -1,4 +1,4 @@
-import type { HookFactory, LifecycleHook } from './types';
+import type {HookFactory, LifecycleHook} from 'hooks/types';
 
 export class HookRegistry {
   private static factories: Map<string, HookFactory> = new Map();

@@ -1,5 +1,5 @@
-import { nanoid } from 'nanoid';
-import type { IComponent } from './Component';
+import {nanoid} from 'nanoid';
+import type {IComponent} from 'core/Component';
 
 export interface IEntity {
   readonly id: string;

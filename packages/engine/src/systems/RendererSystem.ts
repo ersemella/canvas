@@ -1,17 +1,17 @@
-import { BaseSystem, type SystemContext } from '../core/System';
-import type { TransformComponent } from '../components/TransformComponent';
-import type { RenderableComponent } from '../components/RenderableComponent';
+import {BaseSystem, type SystemContext} from 'core/System';
+import type {TransformComponent} from 'components/TransformComponent';
+import type {RenderableComponent} from 'components/RenderableComponent';
 
 export class RendererSystem extends BaseSystem {
   readonly priority = 1000;
 
   onUpdate(context: SystemContext): void {
-    const { scene, ctx, canvas } = context;
+    const {scene, ctx, canvas} = context;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const entities = scene
-      .query({ all: ['Transform', 'Renderable'] })
+      .query({all: ['Transform', 'Renderable']})
       .filter((e) => {
         const r = e.getComponent<RenderableComponent>('Renderable')!;
         return r.visible;

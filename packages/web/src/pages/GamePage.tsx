@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
-import { GameCanvas } from '../components/GameCanvas';
-import { games } from '../registry/games';
-import type { SceneData } from '@canvas/engine';
-import type { GameModule } from '../registry/games';
+import React, {useEffect, useState} from 'react';
+import {useParams, Navigate} from 'react-router-dom';
+import {GameCanvas} from 'components/GameCanvas';
+import {games} from 'registry/games';
+import type {SceneData} from '@canvas/engine';
+import type {GameModule} from 'registry/games';
 import styles from './GamePage.module.css';
 
 export function GamePage() {
-  const { gameId } = useParams<{ gameId: string }>();
+  const {gameId} = useParams<{gameId: string}>();
   const [sceneData, setSceneData] = useState<SceneData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

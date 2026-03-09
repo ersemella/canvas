@@ -1,4 +1,4 @@
-import type { IEntity } from './Entity';
+import type {IEntity} from 'core/Entity';
 
 export interface QueryDescriptor {
   all?: string[];
@@ -19,7 +19,7 @@ export class Query {
   }
 
   matches(entity: IEntity): boolean {
-    const { all = [], any = [], none = [], tags = [] } = this.descriptor;
+    const {all = [], any = [], none = [], tags = []} = this.descriptor;
 
     if (all.length > 0 && !all.every((c) => entity.hasComponent(c))) return false;
     if (any.length > 0 && !any.some((c) => entity.hasComponent(c))) return false;

@@ -1,8 +1,8 @@
-import type { IEntity } from '../core/Entity';
-import type { World } from '../core/World';
-import type { Scene } from '../core/Scene';
-import type { EventBus } from '../core/EventBus';
-import type { Entity } from '../core/Entity';
+import type {IEntity} from 'core/Entity';
+import type {World} from 'core/World';
+import type {Scene} from 'core/Scene';
+import type {EventBus} from 'core/EventBus';
+import type {Entity} from 'core/Entity';
 
 export interface HookContext {
   entity: IEntity;

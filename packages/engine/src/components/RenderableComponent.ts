@@ -1,4 +1,4 @@
-import { BaseComponent } from '../core/Component';
+import {BaseComponent} from 'core/Component';
 
 export class RenderableComponent extends BaseComponent {
   readonly componentType = 'Renderable';
