@@ -35,7 +35,7 @@ function repositionFood(ctx: HookContext): void {
 
   const transform = ctx.entity.getComponent<TransformComponent>('Transform');
   if (transform) {
-    transform.position.x = col * gridSize + gridSize / 2;
-    transform.position.y = row * gridSize + gridSize / 2;
+    transform.position.x = col * gridSize;
+    transform.position.y = row * gridSize;
   }
 }
