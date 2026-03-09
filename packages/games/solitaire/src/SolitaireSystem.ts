@@ -10,7 +10,7 @@ const MARGIN_X = 14;
 const FACE_DOWN_STEP = 20;
 const FACE_UP_STEP = 28;
 const TOP_Y = 58;
-const TABLEAU_Y = 130;
+const TABLEAU_Y = 168;
 
 const rankLabels = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const redSuits = new Set(['♥', '♦']);
@@ -122,7 +122,7 @@ export class SolitaireSystem extends BaseSystem {
       renderable.textColor = redSuits.has(cd.data.suit) ? '#cc0000' : '#000000';
     } else {
       renderable.color = '#1a3a8c';
-      renderable.text = '';
+      renderable.text = ' ';
     }
   }
 

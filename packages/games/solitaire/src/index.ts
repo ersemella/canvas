@@ -9,7 +9,7 @@ const MARGIN_X = 14;
 const MARGIN_Y = 10;
 
 const TOP_Y = MARGIN_Y + CARD_H / 2;       // 58
-const TABLEAU_Y = 130;
+const TABLEAU_Y = 168;
 
 const suits = ['♠', '♥', '♦', '♣'] as const;
 const rankLabels = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -45,6 +45,7 @@ function buildScene(): SceneData {
   ];
 
   for (const slot of slots) {
+    const isStock = slot.id === 'stock';
     entities.push({
       id: slot.id,
       tags: ['slot'],
@@ -56,8 +57,10 @@ function buildScene(): SceneData {
           color: '#2a4a2a',
           zIndex: -1,
           visible: true,
-          text: '',
-          textColor: '#2a4a2a',
+          // Stock shows ↩ when empty (visible under no cards); others show nothing
+          text: isStock ? '↩' : '',
+          textColor: '#88cc88',
+          fontSize: 22,
         },
       },
     });
@@ -79,7 +82,7 @@ function buildScene(): SceneData {
       const faceUp = pos === col;
       const pileId = `t${col}`;
       const cardId = `card-${card.suit}-${card.rank}`;
-      const text = faceUp ? rankLabels[card.rank]! + card.suit : undefined;
+      const text = faceUp ? rankLabels[card.rank]! + card.suit : ' ';
       const textColor = faceUp && redSuits.has(card.suit) ? '#cc0000' : '#000000';
 
       entities.push({
@@ -92,7 +95,8 @@ function buildScene(): SceneData {
             color: faceUp ? '#ffffff' : '#1a3a8c',
             zIndex: pos,
             visible: true,
-            ...(text !== undefined ? {text, textColor} : {}),
+            text,
+            textColor,
           },
           Card: {rank: card.rank, suit: card.suit, faceUp, pileId, posInPile: pos},
         },
@@ -118,6 +122,7 @@ function buildScene(): SceneData {
           color: '#1a3a8c',
           zIndex: pos,
           visible: true,
+          text: ' ',
         },
         Card: {rank: card.rank, suit: card.suit, faceUp: false, pileId: 'stock', posInPile: pos},
       },
