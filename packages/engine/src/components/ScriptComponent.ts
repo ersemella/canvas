@@ -1,10 +1,10 @@
 import {BaseComponent} from 'core/Component';
-import type {LifecycleHook} from 'hooks/types';
+import type {AnyLifecycleHook} from 'hooks/types';
 
 export interface HookEntry {
   name: string;
   config: Record<string, unknown>;
-  instance?: LifecycleHook;
+  instance?: AnyLifecycleHook;
 }
 
 export class ScriptComponent extends BaseComponent {

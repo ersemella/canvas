@@ -1,31 +1,35 @@
-import type {LifecycleHook, HookContext} from '@canvas/engine';
+import type {HookFactory, HookContext} from '@canvas/engine';
 import {MathUtils} from '@canvas/engine';
 import type {TransformComponent} from '@canvas/engine';
 
-export function createFoodSpawnHook(_config: Record<string, unknown>): LifecycleHook {
-  return {
-    onInit(ctx: HookContext) {
-      // Reposition food whenever the snake eats it
-      ctx.state['unsubscribe'] = ctx.events.on('snake:eat', () => {
-        repositionFood(ctx);
-      });
-
-      // Set initial random position
-      repositionFood(ctx);
-    },
-
-    onUpdate(_ctx: HookContext) {},
-
-    onDestroy(ctx: HookContext) {
-      (ctx.state['unsubscribe'] as (() => void) | undefined)?.();
-    },
-  };
+interface FoodSpawnState {
+  unsubscribe: () => void;
 }
 
-function repositionFood(ctx: HookContext): void {
-  const gridSize = (ctx.config['gridSize'] as number | undefined) ?? 20;
-  const w = (ctx.config['canvasWidth'] as number | undefined) ?? 600;
-  const h = (ctx.config['canvasHeight'] as number | undefined) ?? 400;
+interface FoodSpawnConfig {
+  gridSize: number;
+  canvasWidth: number;
+  canvasHeight: number;
+}
+
+export const createFoodSpawnHook: HookFactory<FoodSpawnState, FoodSpawnConfig> = (_config) => ({
+  onInit(ctx) {
+    ctx.state.unsubscribe = ctx.events.on('snake:eat', () => {
+      repositionFood(ctx);
+    });
+
+    repositionFood(ctx);
+  },
+
+  onDestroy(ctx) {
+    ctx.state.unsubscribe();
+  },
+});
+
+function repositionFood(ctx: HookContext<FoodSpawnState, FoodSpawnConfig>): void {
+  const gridSize = ctx.config.gridSize ?? 20;
+  const w = ctx.config.canvasWidth ?? 600;
+  const h = ctx.config.canvasHeight ?? 400;
 
   const cols = Math.floor(w / gridSize);
   const rows = Math.floor(h / gridSize);

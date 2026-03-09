@@ -56,7 +56,7 @@ export class ScriptSystem extends BaseSystem {
       const hookStates = this.entityStates.get(entity.id) ?? new Map();
 
       for (const entry of script.hooks) {
-        if (!entry.instance) continue;
+        if (!entry.instance?.onUpdate) continue;
         const state = hookStates.get(entry.name) ?? {};
         const ctx = buildHookContext(entity, context, state, entry.config);
         entry.instance.onUpdate(ctx);
