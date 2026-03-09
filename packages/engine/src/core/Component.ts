@@ -38,5 +38,5 @@ export class ComponentRegistry {
 }
 
 export function registerDataComponent<T extends object>(type: string): void {
-  ComponentRegistry.register(type, (data) => new DataComponent<T>(type, data as T));
+  ComponentRegistry.register(type, (data) => new DataComponent<T>(type, structuredClone(data) as T));
 }
