@@ -1,6 +1,7 @@
 {
   "name": "canvas-monorepo",
   "private": true,
+  "packageManager": "pnpm@10.31.0",
   "scripts": {
     "dev": "pnpm --filter @canvas/web dev",
     "build": "pnpm --filter @canvas/engine build && pnpm --filter @canvas/games-snake build && pnpm --filter @canvas/web build",
