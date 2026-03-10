@@ -82,10 +82,10 @@ export function GamePage() {
     return (
       <div style={{
         display: 'flex',
-        height: '100vh',
         background: '#1a1a2e',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
+        paddingTop: '24px',
       }}>
         <GameCanvas
           sceneData={sceneData}

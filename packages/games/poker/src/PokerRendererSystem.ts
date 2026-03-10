@@ -3,16 +3,16 @@ import type { SystemContext } from '@canvas/engine';
 import type { PokerGameState, Card } from './types';
 
 const SEAT_POSITIONS: [number, number][] = [
-  [400, 490], // P0 Hero
-  [140, 410], // P1
-  [120, 160], // P2
-  [400, 90],  // P3
-  [680, 160], // P4
-  [660, 410], // P5
+  [400, 472], // P0 Hero
+  [148, 398], // P1
+  [125, 160], // P2
+  [400, 125], // P3
+  [675, 160], // P4
+  [652, 398], // P5
 ];
 
 const COMMUNITY_X = 400;
-const COMMUNITY_Y = 290;
+const COMMUNITY_Y = 278;
 
 function rankStr(rank: number): string {
   if (rank === 14) return 'A';
@@ -75,7 +75,7 @@ export class PokerRendererSystem extends BaseSystem {
     // Draw oval table
     ctx.save();
     ctx.beginPath();
-    ctx.ellipse(400, 290, 340, 220, 0, 0, Math.PI * 2);
+    ctx.ellipse(400, 285, 315, 195, 0, 0, Math.PI * 2);
     ctx.fillStyle = '#1a7a3a';
     ctx.fill();
     ctx.strokeStyle = '#8B4513';
@@ -86,7 +86,7 @@ export class PokerRendererSystem extends BaseSystem {
     // Felt inner ring
     ctx.save();
     ctx.beginPath();
-    ctx.ellipse(400, 290, 325, 205, 0, 0, Math.PI * 2);
+    ctx.ellipse(400, 285, 300, 180, 0, 0, Math.PI * 2);
     ctx.strokeStyle = '#145a2a';
     ctx.lineWidth = 3;
     ctx.stroke();
@@ -111,7 +111,7 @@ export class PokerRendererSystem extends BaseSystem {
     ctx.font = 'bold 16px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`Pot: $${gs.pot}`, COMMUNITY_X, COMMUNITY_Y - 50);
+    ctx.fillText(`Pot: $${gs.pot}`, COMMUNITY_X, COMMUNITY_Y - 45);
     ctx.restore();
 
     // Player seats
@@ -216,12 +216,12 @@ export class PokerRendererSystem extends BaseSystem {
     if (gs.showdownResult) {
       ctx.save();
       ctx.fillStyle = 'rgba(0,0,0,0.65)';
-      ctx.fillRect(160, 225, 480, 80);
+      ctx.fillRect(160, 218, 480, 80);
       ctx.fillStyle = '#ffd700';
       ctx.font = 'bold 26px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(gs.showdownResult, 400, 265);
+      ctx.fillText(gs.showdownResult, 400, 258);
       ctx.restore();
     }
   }
