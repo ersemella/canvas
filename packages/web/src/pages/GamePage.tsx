@@ -86,6 +86,7 @@ export function GamePage() {
         justifyContent: 'center',
         paddingTop: '24px',
       }}>
+        <div style={{display: 'flex', borderRadius: '8px', overflow: 'hidden'}}>
         <GameCanvas
           sceneData={sceneData}
           systems={gameSystems}
@@ -105,6 +106,7 @@ export function GamePage() {
         }}>
           {worldEvents && <SidePanel events={worldEvents} />}
           <GameLog entries={logEntries} />
+        </div>
         </div>
       </div>
     );
