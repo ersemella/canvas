@@ -4,7 +4,13 @@
   "type": "module",
   "main": "src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
+  },
+  "typesVersions": {
+    "*": {
+      "server": ["src/server.ts"]
+    }
   },
   "scripts": {},
   "dependencies": {

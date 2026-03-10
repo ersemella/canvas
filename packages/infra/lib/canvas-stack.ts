@@ -1,13 +1,15 @@
+import * as path from 'path';
 import * as cdk from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import {NodejsFunction, OutputFormat} from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as apigwv2 from '@aws-cdk/aws-apigatewayv2-alpha';
 import * as integrations from '@aws-cdk/aws-apigatewayv2-integrations-alpha';
 import * as apigwv2cfn from 'aws-cdk-lib/aws-apigatewayv2';
-import { Construct } from 'constructs';
+import {Construct} from 'constructs';
 
-const STUB_HANDLER = 'exports.handler = async () => ({ statusCode: 200 })';
+const handlersRoot = path.join(__dirname, '../../handlers/src');
 
 export class CanvasStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -18,8 +20,8 @@ export class CanvasStack extends cdk.Stack {
     //   Room:       pk=ROOM#{roomId}  sk=METADATA
     //   Connection: pk=ROOM#{roomId}  sk=CONN#{connectionId}  gsi1pk=CONN#{connectionId}
     const table = new dynamodb.Table(this, 'RoomTable', {
-      partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
+      partitionKey: {name: 'pk', type: dynamodb.AttributeType.STRING},
+      sortKey: {name: 'sk', type: dynamodb.AttributeType.STRING},
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       timeToLiveAttribute: 'ttl',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -28,51 +30,65 @@ export class CanvasStack extends cdk.Stack {
     // GSI1: lets WS disconnect handler look up room by connectionId
     table.addGlobalSecondaryIndex({
       indexName: 'gsi1',
-      partitionKey: { name: 'gsi1pk', type: dynamodb.AttributeType.STRING },
+      partitionKey: {name: 'gsi1pk', type: dynamodb.AttributeType.STRING},
     });
 
-    // --- HTTP Lambda stubs ---
-    const createRoom = new lambda.Function(this, 'CreateRoom', {
+    const bundling = {
+      format: OutputFormat.CJS,
+      target: 'node20',
+      externalModules: ['@aws-sdk/*'],
+    };
+
+    const commonEnv = {TABLE_NAME: table.tableName};
+
+    // --- HTTP Lambda functions ---
+    const createRoom = new NodejsFunction(this, 'CreateRoom', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(STUB_HANDLER),
-      environment: { TABLE_NAME: table.tableName },
+      entry: path.join(handlersRoot, 'handlers/createRoom.ts'),
+      handler: 'handler',
+      environment: {...commonEnv, GAME_TYPE: 'poker'},
+      bundling,
     });
 
-    const getRoom = new lambda.Function(this, 'GetRoom', {
+    const getRoom = new NodejsFunction(this, 'GetRoom', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(STUB_HANDLER),
-      environment: { TABLE_NAME: table.tableName },
+      entry: path.join(handlersRoot, 'handlers/getRoom.ts'),
+      handler: 'handler',
+      environment: commonEnv,
+      bundling,
     });
 
-    const joinRoom = new lambda.Function(this, 'JoinRoom', {
+    const joinRoom = new NodejsFunction(this, 'JoinRoom', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(STUB_HANDLER),
-      environment: { TABLE_NAME: table.tableName },
+      entry: path.join(handlersRoot, 'handlers/joinRoom.ts'),
+      handler: 'handler',
+      environment: commonEnv, // WS_ENDPOINT injected below after stage is created
+      bundling,
     });
 
-    // --- WebSocket Lambda stubs (WS_ENDPOINT added after stage is created) ---
-    const wsConnect = new lambda.Function(this, 'WsConnect', {
+    // --- WebSocket Lambda functions (WS_ENDPOINT added after stage is created) ---
+    const wsConnect = new NodejsFunction(this, 'WsConnect', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(STUB_HANDLER),
-      environment: { TABLE_NAME: table.tableName },
+      entry: path.join(handlersRoot, 'handlers/wsConnect.ts'),
+      handler: 'handler',
+      environment: commonEnv,
+      bundling,
     });
 
-    const wsDisconnect = new lambda.Function(this, 'WsDisconnect', {
+    const wsDisconnect = new NodejsFunction(this, 'WsDisconnect', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(STUB_HANDLER),
-      environment: { TABLE_NAME: table.tableName },
+      entry: path.join(handlersRoot, 'handlers/wsDisconnect.ts'),
+      handler: 'handler',
+      environment: commonEnv,
+      bundling,
     });
 
-    const wsDefault = new lambda.Function(this, 'WsDefault', {
+    const wsDefault = new NodejsFunction(this, 'WsDefault', {
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(STUB_HANDLER),
-      environment: { TABLE_NAME: table.tableName },
+      entry: path.join(handlersRoot, 'handlers/wsDefault.ts'),
+      handler: 'handler',
+      environment: commonEnv,
+      bundling,
     });
 
     // Grant all functions read/write access to the table
@@ -136,7 +152,7 @@ export class CanvasStack extends cdk.Stack {
     });
 
     // Inject WS_ENDPOINT now that stage URL is available
-    for (const fn of [wsConnect, wsDisconnect, wsDefault]) {
+    for (const fn of [joinRoom, wsConnect, wsDisconnect, wsDefault]) {
       fn.addEnvironment('WS_ENDPOINT', wsStage.callbackUrl);
     }
 
@@ -151,8 +167,8 @@ export class CanvasStack extends cdk.Stack {
     }
 
     // --- Outputs ---
-    new cdk.CfnOutput(this, 'HttpApiUrl', { value: httpApi.url ?? '' });
-    new cdk.CfnOutput(this, 'WsApiUrl', { value: wsStage.url });
-    new cdk.CfnOutput(this, 'TableName', { value: table.tableName });
+    new cdk.CfnOutput(this, 'HttpApiUrl', {value: httpApi.url ?? ''});
+    new cdk.CfnOutput(this, 'WsApiUrl', {value: wsStage.url});
+    new cdk.CfnOutput(this, 'TableName', {value: table.tableName});
   }
 }

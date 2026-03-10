@@ -8,6 +8,7 @@ on:
       - "packages/web/**"
       - "packages/engine/**"
       - "packages/games/**"
+      - "packages/handlers/**"
 
 jobs:
   deploy:
