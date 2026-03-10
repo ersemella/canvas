@@ -123,8 +123,10 @@ export class PokerSystem extends BaseSystem {
       p.isBB = false;
     }
 
-    // Rotate dealer
-    gs.dealerIndex = gs.handNumber === 1 ? 0 : (gs.dealerIndex + 1) % 6;
+    // Rotate dealer (randomize on first hand)
+    gs.dealerIndex = gs.handNumber === 1
+      ? Math.floor(Math.random() * 6)
+      : (gs.dealerIndex + 1) % 6;
 
     // Assign roles
     const dealerIdx = gs.dealerIndex;

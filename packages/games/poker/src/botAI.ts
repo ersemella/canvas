@@ -17,27 +17,14 @@ export function decideBotAction(
 ): PokerAction {
   if (!player.holeCards) return { type: 'fold' };
 
-  const strength = handStrength(player.holeCards, gameState.communityCards);
-
-  // Apply style modifier
-  let threshold = strength;
-  if (player.style === 'tight') threshold -= 10;
-  if (player.style === 'loose') threshold += 15;
-  if (player.style === 'aggressive') threshold += 5;
-
-  // Add randomness ±20%
-  threshold += (Math.random() - 0.5) * 40;
-  threshold = Math.max(0, Math.min(100, threshold));
-
   const callAmount = gameState.currentBet - player.currentBet;
   const canCheck = callAmount === 0;
   const costRatio = player.chips > 0 ? callAmount / player.chips : 1;
 
-  // Pre-flop: weaker hand evaluation (no community cards)
-  const isPreflop = gameState.communityCards.length === 0;
+  let threshold: number;
 
-  if (isPreflop) {
-    // Simple pre-flop heuristic
+  // Pre-flop: card-rank heuristic only (can't evaluate 5-card hands yet)
+  if (gameState.communityCards.length === 0) {
     const [c1, c2] = player.holeCards;
     const high = Math.max(c1.rank, c2.rank);
     const low = Math.min(c1.rank, c2.rank);
@@ -47,6 +34,14 @@ export function decideBotAction(
     if (player.style === 'aggressive') threshold += 15;
     if (player.style === 'tight') threshold -= 10;
     threshold += (Math.random() - 0.5) * 30;
+  } else {
+    // Post-flop: use full hand strength
+    threshold = handStrength(player.holeCards, gameState.communityCards);
+    if (player.style === 'tight') threshold -= 10;
+    if (player.style === 'loose') threshold += 15;
+    if (player.style === 'aggressive') threshold += 5;
+    threshold += (Math.random() - 0.5) * 40;
+    threshold = Math.max(0, Math.min(100, threshold));
   }
 
   if (threshold > 70) {
