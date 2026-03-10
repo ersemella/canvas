@@ -1,0 +1,335 @@
+{
+  "version": "35.0.0",
+  "artifacts": {
+    "CanvasStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "CanvasStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "CanvasStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "CanvasStack.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/895b6e651ac09cb795c5b93e22cee535d18c0304aec0b54511fcec7089449b20.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "CanvasStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "CanvasStack.assets"
+      ],
+      "metadata": {
+        "/CanvasStack/RoomTable/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RoomTableA2D324D8"
+          }
+        ],
+        "/CanvasStack/CreateRoom/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CreateRoomServiceRole85FE9B42"
+          }
+        ],
+        "/CanvasStack/CreateRoom/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CreateRoomServiceRoleDefaultPolicyB743A4A6"
+          }
+        ],
+        "/CanvasStack/CreateRoom/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CreateRoomC411A5EA"
+          }
+        ],
+        "/CanvasStack/GetRoom/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetRoomServiceRoleB045BF48"
+          }
+        ],
+        "/CanvasStack/GetRoom/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetRoomServiceRoleDefaultPolicyF2192BEC"
+          }
+        ],
+        "/CanvasStack/GetRoom/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetRoom9F2581A2"
+          }
+        ],
+        "/CanvasStack/JoinRoom/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "JoinRoomServiceRole02A08A91"
+          }
+        ],
+        "/CanvasStack/JoinRoom/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "JoinRoomServiceRoleDefaultPolicy66D2E6CA"
+          }
+        ],
+        "/CanvasStack/JoinRoom/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "JoinRoomB703429C"
+          }
+        ],
+        "/CanvasStack/WsConnect/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsConnectServiceRoleCFFF046B"
+          }
+        ],
+        "/CanvasStack/WsConnect/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsConnectServiceRoleDefaultPolicyB3EFDBD1"
+          }
+        ],
+        "/CanvasStack/WsConnect/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsConnect41AA3906"
+          }
+        ],
+        "/CanvasStack/WsDisconnect/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsDisconnectServiceRole807438D6"
+          }
+        ],
+        "/CanvasStack/WsDisconnect/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsDisconnectServiceRoleDefaultPolicyAB1BA126"
+          }
+        ],
+        "/CanvasStack/WsDisconnect/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsDisconnect817EF55B"
+          }
+        ],
+        "/CanvasStack/WsDefault/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsDefaultServiceRole1721FB24"
+          }
+        ],
+        "/CanvasStack/WsDefault/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsDefaultServiceRoleDefaultPolicy4CC27795"
+          }
+        ],
+        "/CanvasStack/WsDefault/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsDefault7F3FFA47"
+          }
+        ],
+        "/CanvasStack/HttpApi/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiF5A9A8A7"
+          }
+        ],
+        "/CanvasStack/HttpApi/DefaultStage/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiDefaultStage3EEB07D6"
+          }
+        ],
+        "/CanvasStack/HttpApi/POST--rooms/CreateRoomInteg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiPOSTroomsCreateRoomIntegAFE35A96"
+          }
+        ],
+        "/CanvasStack/HttpApi/POST--rooms/CreateRoomInteg-Permission": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiPOSTroomsCreateRoomIntegPermission07AE41D6"
+          }
+        ],
+        "/CanvasStack/HttpApi/POST--rooms/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiPOSTroomsFD65FE66"
+          }
+        ],
+        "/CanvasStack/HttpApi/GET--rooms--{roomId}/GetRoomInteg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiGETroomsroomIdGetRoomInteg12E96FD6"
+          }
+        ],
+        "/CanvasStack/HttpApi/GET--rooms--{roomId}/GetRoomInteg-Permission": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiGETroomsroomIdGetRoomIntegPermission81B7119F"
+          }
+        ],
+        "/CanvasStack/HttpApi/GET--rooms--{roomId}/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiGETroomsroomId2E84012F"
+          }
+        ],
+        "/CanvasStack/HttpApi/POST--rooms--{roomId}--join/JoinRoomInteg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiPOSTroomsroomIdjoinJoinRoomIntegAADCD0C8"
+          }
+        ],
+        "/CanvasStack/HttpApi/POST--rooms--{roomId}--join/JoinRoomInteg-Permission": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiPOSTroomsroomIdjoinJoinRoomIntegPermission8EED83D0"
+          }
+        ],
+        "/CanvasStack/HttpApi/POST--rooms--{roomId}--join/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiPOSTroomsroomIdjoinBD5A9227"
+          }
+        ],
+        "/CanvasStack/WsApi/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApi88D84716"
+          }
+        ],
+        "/CanvasStack/WsApi/$connect-Route/WsConnectInteg-Permission": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApiconnectRouteWsConnectIntegPermissionA35E5DEA"
+          }
+        ],
+        "/CanvasStack/WsApi/$connect-Route/WsConnectInteg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApiconnectRouteWsConnectInteg64630E0A"
+          }
+        ],
+        "/CanvasStack/WsApi/$connect-Route/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApiconnectRoute3B404673"
+          }
+        ],
+        "/CanvasStack/WsApi/$disconnect-Route/WsDisconnectInteg-Permission": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApidisconnectRouteWsDisconnectIntegPermissionA3BB7242"
+          }
+        ],
+        "/CanvasStack/WsApi/$disconnect-Route/WsDisconnectInteg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApidisconnectRouteWsDisconnectInteg27E92E27"
+          }
+        ],
+        "/CanvasStack/WsApi/$disconnect-Route/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApidisconnectRoute52949C4E"
+          }
+        ],
+        "/CanvasStack/WsApi/$default-Route/WsDefaultInteg-Permission": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApidefaultRouteWsDefaultIntegPermission0A89B6FA"
+          }
+        ],
+        "/CanvasStack/WsApi/$default-Route/WsDefaultInteg/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApidefaultRouteWsDefaultInteg8C00396D"
+          }
+        ],
+        "/CanvasStack/WsApi/$default-Route/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApidefaultRoute688BE5A5"
+          }
+        ],
+        "/CanvasStack/WsStage/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsStage9AD02499"
+          }
+        ],
+        "/CanvasStack/HttpApiUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HttpApiUrl"
+          }
+        ],
+        "/CanvasStack/WsApiUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WsApiUrl"
+          }
+        ],
+        "/CanvasStack/TableName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "TableName"
+          }
+        ],
+        "/CanvasStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/CanvasStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/CanvasStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/CanvasStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "CanvasStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

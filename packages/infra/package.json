@@ -1,0 +1,24 @@
+{
+  "name": "@canvas/infra",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy": "cdk deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-apigatewayv2-alpha": "2.114.1-alpha.0",
+    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "2.114.1-alpha.0",
+    "aws-cdk-lib": "2.114.1",
+    "constructs": "^10.0.0"
+  },
+  "devDependencies": {
+    "@canvas/configs": "workspace:*",
+    "@types/node": "^22.0.0",
+    "aws-cdk": "2.114.1",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.3.0"
+  }
+}
