@@ -47,6 +47,13 @@ importers:
       '@canvas/engine':
         specifier: workspace:*
         version: link:../../engine
+    devDependencies:
+      '@types/react':
+        specifier: ^18.0.0
+        version: 18.3.28
+      react:
+        specifier: ^18.0.0
+        version: 18.3.1
 
   packages/games/snake: {}
 

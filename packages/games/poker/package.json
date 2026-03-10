@@ -9,5 +9,12 @@
   "scripts": {},
   "dependencies": {
     "@canvas/engine": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "react": "^18.0.0"
   }
 }

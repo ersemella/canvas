@@ -8,6 +8,7 @@ export interface GameModule {
   getSystems(): BaseSystem[];
   getEvents(): Record<string, string>;
   getCanvas(): {width: number; height: number} | undefined;
+  getSidePanel?(): unknown;
 }
 
 export interface GameManifest {

@@ -1,23 +1,23 @@
-import { useState } from 'react';
-import type { PokerUiState, PokerAction } from '@canvas/games-poker';
-import { pokerActionService } from '@canvas/games-poker';
+import {useState} from 'react';
+import type {PokerUiState, PokerAction} from './types';
+import {pokerActionService} from './pokerActionService';
 
 interface Props {
   uiState: PokerUiState;
 }
 
-export function PokerActionPanel({ uiState }: Props) {
+export function PokerActionPanel({uiState}: Props) {
   const [raiseAmount, setRaiseAmount] = useState(uiState.minRaise);
 
   const submit = (action: PokerAction) => {
     pokerActionService.submit(action);
   };
 
-  const { isHeroTurn, availableActions, callAmount, minRaise, maxRaise } = uiState;
+  const {isHeroTurn, availableActions, callAmount, minRaise, maxRaise} = uiState;
 
   if (!isHeroTurn) {
     return (
-      <div style={{ padding: '16px', color: '#888', fontStyle: 'italic', textAlign: 'center' }}>
+      <div style={{padding: '16px', color: '#888', fontStyle: 'italic', textAlign: 'center'}}>
         {uiState.phase === 'waiting' ? 'Next hand starting...' :
          uiState.phase === 'showdown' ? 'Showdown!' :
          'Waiting for other players...'}
@@ -26,31 +26,31 @@ export function PokerActionPanel({ uiState }: Props) {
   }
 
   return (
-    <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <div style={{ color: '#ffd700', fontWeight: 'bold', marginBottom: '4px' }}>Your Turn</div>
+    <div style={{padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px'}}>
+      <div style={{color: '#ffd700', fontWeight: 'bold', marginBottom: '4px'}}>Your Turn</div>
 
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <div style={{display: 'flex', gap: '8px', flexWrap: 'wrap'}}>
         {availableActions.includes('fold') && (
-          <button onClick={() => submit({ type: 'fold' })} style={btnStyle('#c0392b')}>
+          <button onClick={() => submit({type: 'fold'})} style={btnStyle('#c0392b')}>
             Fold
           </button>
         )}
         {availableActions.includes('check') && (
-          <button onClick={() => submit({ type: 'check' })} style={btnStyle('#27ae60')}>
+          <button onClick={() => submit({type: 'check'})} style={btnStyle('#27ae60')}>
             Check
           </button>
         )}
         {availableActions.includes('call') && (
-          <button onClick={() => submit({ type: 'call' })} style={btnStyle('#2980b9')}>
+          <button onClick={() => submit({type: 'call'})} style={btnStyle('#2980b9')}>
             Call ${callAmount}
           </button>
         )}
       </div>
 
       {availableActions.includes('raise') && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px' }}>
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-            <label style={{ color: '#ccc', fontSize: '12px' }}>Raise to:</label>
+        <div style={{display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px'}}>
+          <div style={{display: 'flex', gap: '6px', alignItems: 'center'}}>
+            <label style={{color: '#ccc', fontSize: '12px'}}>Raise to:</label>
             <input
               type="number"
               min={minRaise}
@@ -73,10 +73,10 @@ export function PokerActionPanel({ uiState }: Props) {
             max={maxRaise}
             value={raiseAmount}
             onChange={e => setRaiseAmount(Number(e.target.value))}
-            style={{ width: '100%' }}
+            style={{width: '100%'}}
           />
           <button
-            onClick={() => submit({ type: 'raise', amount: raiseAmount })}
+            onClick={() => submit({type: 'raise', amount: raiseAmount})}
             style={btnStyle('#8e44ad')}
           >
             Raise to ${raiseAmount}

@@ -9,7 +9,7 @@ import {
   registerBuiltinComponents,
   loadScene,
 } from '@canvas/engine';
-import type {SceneData, BaseSystem} from '@canvas/engine';
+import type {SceneData, BaseSystem, EventBus} from '@canvas/engine';
 import styles from './GameCanvas.module.css';
 
 interface Props {
@@ -18,9 +18,10 @@ interface Props {
   events?: Record<string, string>;
   width?: number;
   height?: number;
+  onReady?: (events: EventBus) => void;
 }
 
-export function GameCanvas({sceneData, systems, events, width = 600, height = 400}: Props) {
+export function GameCanvas({sceneData, systems, events, width = 600, height = 400, onReady}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<World | null>(null);
   const [gameOver, setGameOver] = useState(false);
@@ -52,6 +53,7 @@ export function GameCanvas({sceneData, systems, events, width = 600, height = 40
     const scene = loadScene(sceneData);
     world.loadScene(scene);
     world.start();
+    onReady?.(world.events);
 
     const {onScore, onDeath} = events ?? {};
 

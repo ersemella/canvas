@@ -1,15 +1,19 @@
-import { useEffect, useRef } from 'react';
-import type { LogEntry } from '@canvas/games-poker';
+import {useEffect, useRef} from 'react';
+
+interface LogEntry {
+  text: string;
+  timestamp: number;
+}
 
 interface Props {
   entries: LogEntry[];
 }
 
-export function PokerLog({ entries }: Props) {
+export function GameLog({entries}: Props) {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endRef.current?.scrollIntoView({behavior: 'smooth'});
   }, [entries]);
 
   return (

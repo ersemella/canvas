@@ -426,5 +426,6 @@ export class PokerSystem extends BaseSystem {
     };
 
     this.eventsRef.emit('poker:ui_update', uiState);
+    this.eventsRef.emit('game:log_update', uiState.log);
   }
 }
