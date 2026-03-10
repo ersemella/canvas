@@ -4,7 +4,6 @@
   "scripts": {
     "dev": "pnpm --filter @canvas/web dev",
     "build": "pnpm --filter @canvas/engine build && pnpm --filter @canvas/games-snake build && pnpm --filter @canvas/web build",
-    "test": "vitest --workspace vitest.workspace.ts",
     "typecheck": "tsc -b",
     "lint": "eslint packages --ext .ts,.tsx",
     "format": "prettier --write packages"
@@ -15,7 +14,6 @@
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
     "typescript": "^5.3.0",
-    "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^1.0.0"
+    "vite-tsconfig-paths": "^6.1.1"
   }
 }
