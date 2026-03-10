@@ -1,7 +1,5 @@
 import {Scene} from 'core/Scene';
 import {loadEntity, type EntityData} from 'loader/EntityLoader';
-import {loadHooks} from 'loader/HookLoader';
-import {ScriptComponent} from 'components/ScriptComponent';
 
 export interface SceneData {
   name: string;
@@ -10,18 +8,9 @@ export interface SceneData {
 
 export function loadScene(data: SceneData): Scene {
   const scene = new Scene(data.name);
-
   for (const entityData of data.entities) {
-    const entity = loadEntity(entityData);
-
-    const script = entity.getComponent<ScriptComponent>('Script');
-    if (script) {
-      loadHooks(script);
-    }
-
-    scene.addEntity(entity);
+    scene.addEntity(loadEntity(entityData));
   }
-
   return scene;
 }
 

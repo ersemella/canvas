@@ -25,10 +25,6 @@ import {RenderableComponent} from 'components/RenderableComponent';
 import {RigidBodyComponent} from 'components/RigidBodyComponent';
 import {ColliderComponent} from 'components/ColliderComponent';
 import {InputComponent} from 'components/InputComponent';
-import {AnimatorComponent} from 'components/AnimatorComponent';
-import {AIAgentComponent} from 'components/AIAgentComponent';
-import {AudioSourceComponent} from 'components/AudioSourceComponent';
-import {ScriptComponent} from 'components/ScriptComponent';
 import {TagComponent} from 'components/TagComponent';
 
 let systemsRegistered = false;
@@ -67,22 +63,6 @@ export function registerBuiltinComponents(): void {
   ComponentRegistry.register(
     'Input',
     (d) => new InputComponent(d as ConstructorParameters<typeof InputComponent>[0])
-  );
-  ComponentRegistry.register(
-    'Animator',
-    (d) => new AnimatorComponent(d as ConstructorParameters<typeof AnimatorComponent>[0])
-  );
-  ComponentRegistry.register(
-    'AIAgent',
-    (d) => new AIAgentComponent(d as ConstructorParameters<typeof AIAgentComponent>[0])
-  );
-  ComponentRegistry.register(
-    'AudioSource',
-    (d) => new AudioSourceComponent(d as ConstructorParameters<typeof AudioSourceComponent>[0])
-  );
-  ComponentRegistry.register(
-    'Script',
-    (d) => new ScriptComponent(d as ConstructorParameters<typeof ScriptComponent>[0])
   );
   ComponentRegistry.register(
     'Tag',

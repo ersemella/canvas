@@ -23,11 +23,6 @@ export {RenderableComponent} from 'components/RenderableComponent';
 export {RigidBodyComponent} from 'components/RigidBodyComponent';
 export {ColliderComponent} from 'components/ColliderComponent';
 export {InputComponent} from 'components/InputComponent';
-export {AnimatorComponent} from 'components/AnimatorComponent';
-export {AIAgentComponent} from 'components/AIAgentComponent';
-export {AudioSourceComponent} from 'components/AudioSourceComponent';
-export {ScriptComponent} from 'components/ScriptComponent';
-export type {HookEntry} from 'components/ScriptComponent';
 export {TagComponent} from 'components/TagComponent';
 export type {CardData} from 'components/CardComponent';
 export type {DraggableData} from 'components/DraggableComponent';
@@ -65,28 +60,12 @@ export type {OverlapTriggerData} from 'systems/grid/OverlapTriggerSystem';
 export {TrailSystem} from 'systems/grid/TrailSystem';
 export type {TrailData} from 'systems/grid/TrailSystem';
 
-// Systems — animation
-export {AnimationSystem} from 'systems/animation/AnimationSystem';
-
-// Systems — script
-export {ScriptSystem} from 'systems/script/ScriptSystem';
-
-// Systems — stubs
-export {AISystem} from 'systems/stubs/AISystem';
-export {AudioSystem} from 'systems/stubs/AudioSystem';
-export {UISystem} from 'systems/stubs/UISystem';
-
-// Hooks
-export {HookRegistry} from 'hooks/HookRegistry';
-export type {LifecycleHook, HookContext, HookFactory} from 'hooks/types';
-
 // Loaders
 export {registerBuiltinComponents, loadComponents, registerBuiltinSystems} from 'loader/ComponentLoader';
 export {createGameModule} from 'loader/GameLoader';
 export type {GameModule, GameManifest} from 'loader/GameLoader';
 export {loadEntity} from 'loader/EntityLoader';
 export type {EntityData} from 'loader/EntityLoader';
-export {loadHooks} from 'loader/HookLoader';
 export {loadScene, loadSceneFromURL} from 'loader/SceneLoader';
 export type {SceneData} from 'loader/SceneLoader';
 export {assetLoader} from 'loader/AssetLoader';

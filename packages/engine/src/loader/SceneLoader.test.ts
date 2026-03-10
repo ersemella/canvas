@@ -1,15 +1,9 @@
 import {describe, it, expect, beforeAll} from 'vitest';
 import {loadScene} from 'loader/SceneLoader';
 import {registerBuiltinComponents} from 'loader/ComponentLoader';
-import {HookRegistry} from 'hooks/HookRegistry';
-import type {HookContext} from 'hooks/types';
-import type {ScriptComponent} from 'components/ScriptComponent';
 
 beforeAll(() => {
   registerBuiltinComponents();
-  HookRegistry.register('testHook', (_config) => ({
-    onUpdate(_ctx: HookContext) {},
-  }));
 });
 
 describe('loadScene', () => {
@@ -36,23 +30,5 @@ describe('loadScene', () => {
     expect(entity).toBeDefined();
     expect(entity?.hasTag('player')).toBe(true);
     expect(entity?.hasComponent('Transform')).toBe(true);
-  });
-
-  it('loads hooks into ScriptComponent', () => {
-    const scene = loadScene({
-      name: 'hook-test',
-      entities: [
-        {
-          id: 'e2',
-          components: {
-            Script: {hooks: [{name: 'testHook', config: {}}]},
-          },
-        },
-      ],
-    });
-
-    const entity = scene.getEntity('e2');
-    const script = entity?.getComponent<ScriptComponent>('Script');
-    expect(script?.hooks[0]?.instance).toBeDefined();
   });
 });
