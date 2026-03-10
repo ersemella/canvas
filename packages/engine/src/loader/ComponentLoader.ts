@@ -13,6 +13,7 @@ import {BoundsTriggerSystem} from 'systems/grid/BoundsTriggerSystem';
 import {OverlapTriggerSystem} from 'systems/grid/OverlapTriggerSystem';
 import {TrailSystem} from 'systems/grid/TrailSystem';
 import {MouseSystem} from 'systems/MouseSystem';
+import {CardRendererSystem} from 'systems/CardRendererSystem';
 import type {CardData} from 'components/CardComponent';
 
 // Register all built-in components
@@ -39,6 +40,7 @@ export function registerBuiltinSystems(): void {
   SystemRegistry.register('OverlapTriggerSystem', OverlapTriggerSystem);
   SystemRegistry.register('TrailSystem', TrailSystem);
   SystemRegistry.register('MouseSystem', MouseSystem);
+  SystemRegistry.register('CardRendererSystem', CardRendererSystem);
 }
 
 export function registerBuiltinComponents(): void {

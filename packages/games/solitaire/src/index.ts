@@ -1,5 +1,5 @@
 import type {GameModule, SceneData, EntityData} from '@canvas/engine';
-import {SystemRegistry, MouseSystem} from '@canvas/engine';
+import {SystemRegistry, MouseSystem, CardRendererSystem} from '@canvas/engine';
 import {SolitaireSystem} from './SolitaireSystem';
 
 const CARD_W = 70;
@@ -139,7 +139,7 @@ export default {
     return buildScene();
   },
   getSystems() {
-    return [new MouseSystem(), new SolitaireSystem()];
+    return [new MouseSystem(), new CardRendererSystem(), new SolitaireSystem()];
   },
   getEvents() {
     return {onDeath: 'solitaire:won'};
