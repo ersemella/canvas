@@ -28,6 +28,11 @@ jobs:
 
       - run: npm install -g wrangler
 
+      - run: wrangler pages project create canvas --production-branch=main || true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - run: wrangler pages deploy packages/web/dist --project-name=canvas --commit-dirty=true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
