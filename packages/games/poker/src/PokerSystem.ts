@@ -54,7 +54,6 @@ export class PokerSystem extends BaseSystem {
 
   onInit(context: Omit<SystemContext, 'deltaTime'>): void {
     this.eventsRef = context.events;
-    this.startHand();
   }
 
   onUpdate(context: SystemContext): void {
@@ -87,6 +86,7 @@ export class PokerSystem extends BaseSystem {
 
     if (actingPlayer.folded || actingPlayer.allIn) {
       this.advanceActingIndex();
+      this.emitUiUpdate();
       return;
     }
 
