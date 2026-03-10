@@ -56,6 +56,12 @@ export class RendererSystem extends BaseSystem {
         const tx = topLeft ? -renderable.width / 2 + 4 : 0;
         const ty = topLeft ? -renderable.height / 2 + 4 : 0;
         ctx.fillText(renderable.text, tx, ty);
+        if (topLeft) {
+          ctx.save();
+          ctx.rotate(Math.PI);
+          ctx.fillText(renderable.text, tx, ty);
+          ctx.restore();
+        }
       }
 
       ctx.restore();
