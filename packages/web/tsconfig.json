@@ -11,13 +11,15 @@
       "@canvas/engine": ["../../engine/src/index.ts"],
       "@canvas/games-snake": ["../../games/snake/game.json"],
       "@canvas/games-solitaire": ["../../games/solitaire/src/index.ts"],
-      "@canvas/games-poker": ["../../games/poker/src/index.ts"]
+      "@canvas/games-poker": ["../../games/poker/src/index.ts"],
+      "@canvas/games-sudoku": ["../../games/sudoku/src/index.ts"]
     }
   },
   "include": ["src"],
   "references": [
     {"path": "../engine"},
     {"path": "../games/solitaire"},
-    {"path": "../games/poker"}
+    {"path": "../games/poker"},
+    {"path": "../games/sudoku"}
   ]
 }

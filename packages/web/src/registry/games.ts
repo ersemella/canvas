@@ -30,4 +30,10 @@ export const games: GameDescriptor[] = [
     description: 'Single-player Texas Hold\'em against 5 bots. 5/10 blinds, 1000 starting chips.',
     load: () => import('@canvas/games-poker').then((m) => ({default: m.default})),
   },
+  {
+    id: 'sudoku',
+    title: 'Sudoku',
+    description: 'Classic 9×9 Sudoku. Fill the grid with digits 1–9, no repeats in any row, column, or box.',
+    load: () => import('@canvas/games-sudoku').then((m) => ({default: m.default})),
+  },
 ];

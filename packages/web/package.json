@@ -14,6 +14,7 @@
     "@canvas/games-snake": "workspace:*",
     "@canvas/games-solitaire": "workspace:*",
     "@canvas/games-poker": "workspace:*",
+    "@canvas/games-sudoku": "workspace:*",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0"

@@ -59,6 +59,8 @@ importers:
 
   packages/games/solitaire: {}
 
+  packages/games/sudoku: {}
+
   packages/handlers:
     dependencies:
       '@aws-sdk/client-apigatewaymanagementapi':
@@ -138,6 +140,9 @@ importers:
       '@canvas/games-solitaire':
         specifier: workspace:*
         version: link:../games/solitaire
+      '@canvas/games-sudoku':
+        specifier: workspace:*
+        version: link:../games/sudoku
       react:
         specifier: ^18.0.0
         version: 18.3.1
