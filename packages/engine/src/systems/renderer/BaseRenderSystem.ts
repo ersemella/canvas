@@ -1,5 +1,5 @@
 import {BaseSystem} from 'core/System';
-import {renderQueue} from 'systems/renderQueue';
+import {renderQueue} from 'systems/renderer/renderQueue';
 import type {TransformComponent} from 'components/TransformComponent';
 import type {RenderableComponent} from 'components/RenderableComponent';
 

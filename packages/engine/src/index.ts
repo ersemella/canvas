@@ -34,11 +34,11 @@ export type {CardData} from 'components/CardComponent';
 // Systems — core (flat)
 export {InputSystem, inputService} from 'systems/InputSystem';
 export {InputFlushSystem} from 'systems/InputFlushSystem';
-export {RendererSystem} from 'systems/RendererSystem';
-export {RectRendererSystem} from 'systems/RectRendererSystem';
-export {CardRendererSystem} from 'systems/CardRendererSystem';
-export {RenderFlushSystem} from 'systems/RenderFlushSystem';
-export {BaseRenderSystem} from 'systems/BaseRenderSystem';
+export {RendererSystem} from 'systems/renderer/RendererSystem';
+export {RectRendererSystem} from 'systems/renderer/RectRendererSystem';
+export {CardRendererSystem} from 'systems/renderer/CardRendererSystem';
+export {RenderFlushSystem} from 'systems/renderer/RenderFlushSystem';
+export {BaseRenderSystem} from 'systems/renderer/BaseRenderSystem';
 export {TriggerSystem} from 'systems/TriggerSystem';
 export type {TriggerData} from 'systems/TriggerSystem';
 export {MouseSystem, mouseService} from 'systems/MouseSystem';

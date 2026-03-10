@@ -1,5 +1,5 @@
 import {BaseSystem, type SystemContext} from 'core/System';
-import {renderQueue} from 'systems/renderQueue';
+import {renderQueue} from 'systems/renderer/renderQueue';
 
 // Sorts all pending render commands by zIndex and executes them.
 // Must run after all renderer systems that push to the render queue.

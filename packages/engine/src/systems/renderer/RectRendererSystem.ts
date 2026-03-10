@@ -1,5 +1,5 @@
 import {type SystemContext} from 'core/System';
-import {BaseRenderSystem} from 'systems/BaseRenderSystem';
+import {BaseRenderSystem} from 'systems/renderer/BaseRenderSystem';
 import type {TransformComponent} from 'components/TransformComponent';
 import type {RenderableComponent} from 'components/RenderableComponent';
 

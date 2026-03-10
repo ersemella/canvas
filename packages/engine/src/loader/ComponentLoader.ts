@@ -13,7 +13,7 @@ import {BoundsTriggerSystem} from 'systems/grid/BoundsTriggerSystem';
 import {OverlapTriggerSystem} from 'systems/grid/OverlapTriggerSystem';
 import {TrailSystem} from 'systems/grid/TrailSystem';
 import {MouseSystem} from 'systems/MouseSystem';
-import {CardRendererSystem} from 'systems/CardRendererSystem';
+import {CardRendererSystem} from 'systems/renderer/CardRendererSystem';
 import type {CardData} from 'components/CardComponent';
 
 // Register all built-in components
