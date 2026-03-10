@@ -76,7 +76,7 @@ export function GameCanvas({sceneData, systems, events, width = 600, height = 40
       {gameOver && (
         <div className={styles.overlay}>
           <p className={styles.gameOverTitle}>Game Over</p>
-          <p className={styles.gameOverScore}>Score: {score}</p>
+          {events?.onScore && <p className={styles.gameOverScore}>Score: {score}</p>}
           <button className={styles.restartButton} onClick={restart}>
             Play Again
           </button>
