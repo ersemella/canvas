@@ -20,6 +20,7 @@ export function GamePage() {
   useEffect(() => {
     if (!gameDescriptor) return;
 
+    if (!gameDescriptor.load) return;
     registerBuiltinSystems();
     gameDescriptor
       .load()

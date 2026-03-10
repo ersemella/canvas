@@ -5,7 +5,8 @@ export interface GameDescriptor {
   id: string;
   title: string;
   description: string;
-  load: () => Promise<{default: GameModule}>;
+  route?: string;
+  load?: () => Promise<{default: GameModule}>;
 }
 
 export const games: GameDescriptor[] = [
@@ -23,5 +24,11 @@ export const games: GameDescriptor[] = [
     title: 'Solitaire',
     description: 'Classic Klondike solitaire. Build up the foundations from Ace to King.',
     load: () => import('@canvas/games-solitaire').then((m) => ({default: m.default})),
+  },
+  {
+    id: 'poker',
+    title: 'Texas Hold\'em Poker',
+    description: 'Single-player Texas Hold\'em against 5 bots. 5/10 blinds, 1000 starting chips.',
+    route: '/play/poker',
   },
 ];
