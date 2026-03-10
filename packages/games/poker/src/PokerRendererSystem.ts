@@ -70,7 +70,8 @@ export class PokerRendererSystem extends BaseSystem {
     const gs = this.gameState;
 
     // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#2e3f5c';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw oval table
     ctx.save();
