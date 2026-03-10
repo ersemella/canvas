@@ -120,10 +120,9 @@ export class SolitaireSystem extends BaseSystem {
       renderable.color = '#ffffff';
       renderable.text = rankLabels[cd.data.rank]! + cd.data.suit;
       renderable.textColor = redSuits.has(cd.data.suit) ? '#cc0000' : '#000000';
-      renderable.textAnchor = 'top-left';
     } else {
       renderable.color = '#1a3a8c';
-      renderable.text = ' ';
+      renderable.text = '';
     }
   }
 

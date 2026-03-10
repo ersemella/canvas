@@ -82,7 +82,7 @@ function buildScene(): SceneData {
       const faceUp = pos === col;
       const pileId = `t${col}`;
       const cardId = `card-${card.suit}-${card.rank}`;
-      const text = faceUp ? rankLabels[card.rank]! + card.suit : ' ';
+      const text = faceUp ? rankLabels[card.rank]! + card.suit : '';
       const textColor = faceUp && redSuits.has(card.suit) ? '#cc0000' : '#000000';
 
       entities.push({
@@ -97,7 +97,6 @@ function buildScene(): SceneData {
             visible: true,
             text,
             textColor,
-            ...(faceUp ? {textAnchor: 'top-left' as const} : {}),
           },
           Card: {rank: card.rank, suit: card.suit, faceUp, pileId, posInPile: pos},
         },
@@ -123,7 +122,6 @@ function buildScene(): SceneData {
           color: '#1a3a8c',
           zIndex: pos,
           visible: true,
-          text: ' ',
         },
         Card: {rank: card.rank, suit: card.suit, faceUp: false, pileId: 'stock', posInPile: pos},
       },
