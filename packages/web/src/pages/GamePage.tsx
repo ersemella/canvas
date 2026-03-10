@@ -82,7 +82,6 @@ export function GamePage() {
     return (
       <div style={{
         display: 'flex',
-        background: '#1a1a2e',
         alignItems: 'flex-start',
         justifyContent: 'center',
         paddingTop: '24px',
