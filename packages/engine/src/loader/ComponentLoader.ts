@@ -13,8 +13,11 @@ import {BoundsTriggerSystem} from 'systems/grid/BoundsTriggerSystem';
 import {OverlapTriggerSystem} from 'systems/grid/OverlapTriggerSystem';
 import {TrailSystem} from 'systems/grid/TrailSystem';
 import {MouseSystem} from 'systems/MouseSystem';
+import {DragDropSystem} from 'systems/DragDropSystem';
 import {CardRendererSystem} from 'systems/renderer/CardRendererSystem';
 import type {CardData} from 'components/CardComponent';
+import type {DraggableData} from 'components/DraggableComponent';
+import type {DropTargetData} from 'components/DropTargetComponent';
 
 // Register all built-in components
 import {TransformComponent} from 'components/TransformComponent';
@@ -40,6 +43,7 @@ export function registerBuiltinSystems(): void {
   SystemRegistry.register('OverlapTriggerSystem', OverlapTriggerSystem);
   SystemRegistry.register('TrailSystem', TrailSystem);
   SystemRegistry.register('MouseSystem', MouseSystem);
+  SystemRegistry.register('DragDropSystem', DragDropSystem);
   SystemRegistry.register('CardRendererSystem', CardRendererSystem);
 }
 
@@ -92,6 +96,8 @@ export function registerBuiltinComponents(): void {
   registerDataComponent<OverlapTriggerData>('OverlapTrigger');
   registerDataComponent<TrailData>('Trail');
   registerDataComponent<CardData>('Card');
+  registerDataComponent<DraggableData>('Draggable');
+  registerDataComponent<DropTargetData>('DropTarget');
 }
 
 export function loadComponents(

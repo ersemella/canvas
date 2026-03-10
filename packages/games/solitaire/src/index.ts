@@ -1,23 +1,7 @@
 import type {GameModule, SceneData, EntityData} from '@canvas/engine';
-import {SystemRegistry, MouseSystem, CardRendererSystem} from '@canvas/engine';
+import {SystemRegistry, MouseSystem, CardRendererSystem, DragDropSystem} from '@canvas/engine';
 import {SolitaireSystem} from './SolitaireSystem';
-
-const CARD_W = 70;
-const CARD_H = 96;
-const COL_STEP = 82;
-const MARGIN_X = 14;
-const MARGIN_Y = 10;
-
-const TOP_Y = MARGIN_Y + CARD_H / 2;       // 58
-const TABLEAU_Y = 168;
-
-const suits = ['♠', '♥', '♦', '♣'] as const;
-const rankLabels = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-const redSuits = new Set(['♥', '♦']);
-
-function colX(col: number): number {
-  return MARGIN_X + CARD_W / 2 + col * COL_STEP;
-}
+import {CARD_W, CARD_H, TOP_Y, TABLEAU_Y, suits, rankLabels, redSuits, colX} from './constants';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = arr.slice();
@@ -46,6 +30,8 @@ function buildScene(): SceneData {
 
   for (const slot of slots) {
     const isStock = slot.id === 'stock';
+    const isWaste = slot.id === 'waste';
+    const isDropTarget = !isStock && !isWaste;
     entities.push({
       id: slot.id,
       tags: ['slot'],
@@ -62,6 +48,7 @@ function buildScene(): SceneData {
           textColor: '#88cc88',
           fontSize: 22,
         },
+        ...(isDropTarget ? {DropTarget: {targetId: slot.id}} : {}),
       },
     });
   }
@@ -99,6 +86,7 @@ function buildScene(): SceneData {
             textColor,
           },
           Card: {rank: card.rank, suit: card.suit, faceUp, pileId, posInPile: pos},
+          Draggable: {enabled: faceUp},
         },
       });
     }
@@ -124,6 +112,7 @@ function buildScene(): SceneData {
           visible: true,
         },
         Card: {rank: card.rank, suit: card.suit, faceUp: false, pileId: 'stock', posInPile: pos},
+        Draggable: {enabled: false},
       },
     });
   }
@@ -139,7 +128,7 @@ export default {
     return buildScene();
   },
   getSystems() {
-    return [new MouseSystem(), new CardRendererSystem(), new SolitaireSystem()];
+    return [new MouseSystem(), new DragDropSystem(), new CardRendererSystem(), new SolitaireSystem()];
   },
   getEvents() {
     return {onDeath: 'solitaire:won'};

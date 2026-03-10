@@ -30,6 +30,8 @@ export {ScriptComponent} from 'components/ScriptComponent';
 export type {HookEntry} from 'components/ScriptComponent';
 export {TagComponent} from 'components/TagComponent';
 export type {CardData} from 'components/CardComponent';
+export type {DraggableData} from 'components/DraggableComponent';
+export type {DropTargetData} from 'components/DropTargetComponent';
 
 // Systems — core (flat)
 export {InputSystem, inputService} from 'systems/InputSystem';
@@ -42,6 +44,8 @@ export {BaseRenderSystem} from 'systems/renderer/BaseRenderSystem';
 export {TriggerSystem} from 'systems/TriggerSystem';
 export type {TriggerData} from 'systems/TriggerSystem';
 export {MouseSystem, mouseService} from 'systems/MouseSystem';
+export {DragDropSystem} from 'systems/DragDropSystem';
+export type {DragDropBeforePayload, DragDropDroppedPayload} from 'systems/DragDropSystem';
 
 // Systems — physics (mutually exclusive with grid)
 export {PhysicsSystem} from 'systems/physics/PhysicsSystem';
