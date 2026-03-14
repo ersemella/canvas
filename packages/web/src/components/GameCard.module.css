@@ -1,0 +1,12 @@
+.card {
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--mantine-color-violet-5);
+}
+
+.description {
+  line-height: 1.5;
+}

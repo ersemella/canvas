@@ -5,6 +5,7 @@ import {Paper, Title, Text, List, Button, Group, TextInput, Stack, Box} from '@m
 import {notifications} from '@mantine/notifications';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameLog} from 'components/GameLog';
+import gameLayout from 'styles/gameLayout.module.css';
 import {registerBuiltinSystems} from '@canvas/engine';
 import type {EventBus, BaseSystem} from '@canvas/engine';
 import type {PokerNetworkAdapter, PublicPokerState} from '@canvas/games-poker';
@@ -270,7 +271,7 @@ export function PokerRoomPage() {
 
       {gameStarted && (
         <Box>
-          <Box style={{display: 'flex', borderRadius: 8, overflow: 'hidden'}}>
+          <Box className={gameLayout.canvasWithPanel!}>
             <GameCanvas
               sceneData={sceneData}
               systems={systems}
@@ -279,17 +280,7 @@ export function PokerRoomPage() {
               height={580}
               onReady={handleReady}
             />
-            <Box
-              style={{
-                width: 280,
-                height: 580,
-                background: '#16213e',
-                display: 'flex',
-                flexDirection: 'column',
-                borderLeft: '1px solid var(--mantine-color-dark-4)',
-                flexShrink: 0,
-              }}
-            >
+            <Box className={gameLayout.sidePanel!} style={{height: 580}}>
               {worldEvents && SidePanel && <SidePanel events={worldEvents} />}
               <GameLog entries={logEntries} />
             </Box>

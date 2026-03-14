@@ -5,6 +5,8 @@ import {Center, Loader, Text, Box, Title, Stack} from '@mantine/core';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameLog} from 'components/GameLog';
 import {games} from 'registry/games';
+import gameLayout from 'styles/gameLayout.module.css';
+import styles from './GamePage.module.css';
 import type {SceneData, BaseSystem, EventBus} from '@canvas/engine';
 import {registerBuiltinSystems} from '@canvas/engine';
 
@@ -81,8 +83,8 @@ export function GamePage() {
 
   if (SidePanel) {
     return (
-      <Box style={{display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 24}}>
-        <Box style={{display: 'flex', borderRadius: 8, overflow: 'hidden'}}>
+      <Box className={styles.withSidePanel!}>
+        <Box className={gameLayout.canvasWithPanel!}>
           <GameCanvas
             sceneData={sceneData}
             systems={gameSystems}
@@ -91,17 +93,7 @@ export function GamePage() {
             height={canvasSize.height}
             onReady={handleReady}
           />
-          <Box
-            style={{
-              width: 280,
-              height: canvasSize.height,
-              background: '#16213e',
-              display: 'flex',
-              flexDirection: 'column',
-              borderLeft: '1px solid var(--mantine-color-dark-4)',
-              flexShrink: 0,
-            }}
-          >
+          <Box className={gameLayout.sidePanel!} style={{height: canvasSize.height}}>
             {worldEvents && <SidePanel events={worldEvents} />}
             <GameLog entries={logEntries} />
           </Box>
@@ -113,7 +105,7 @@ export function GamePage() {
   return (
     <Stack align="center" py="xl" gap="lg">
       <Title order={2} fz="xl">{gameDescriptor.title}</Title>
-      <Box style={{borderRadius: 8, overflow: 'hidden'}}>
+      <Box className={styles.canvasRound!}>
         <GameCanvas
           sceneData={sceneData}
           systems={gameSystems}

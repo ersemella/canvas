@@ -1,11 +1,12 @@
 import {Link} from 'react-router-dom';
 import {AppShell, Group, Anchor} from '@mantine/core';
+import styles from './NavBar.module.css';
 
 export function NavBar() {
   return (
-    <AppShell.Header h={56} style={{borderBottom: '1px solid var(--mantine-color-dark-4)'}}>
+    <AppShell.Header h={56} className={styles.header!}>
       <Group h="100%" px="xl">
-        <Anchor component={Link} to="/" fw={700} fz="lg" c="violet.4" style={{letterSpacing: '-0.02em', textDecoration: 'none'}}>
+        <Anchor component={Link} to="/" fw={700} fz="lg" c="violet.4" className={styles.brand!}>
           Canvas Games
         </Anchor>
       </Group>

@@ -1,5 +1,6 @@
 import {useEffect, useRef, useState, useCallback} from 'react';
 import {Box, Button, Overlay, Text, Stack} from '@mantine/core';
+import styles from './GameCanvas.module.css';
 import {
   World,
   InputSystem,
@@ -77,8 +78,8 @@ export function GameCanvas({sceneData, systems, events, width = 600, height = 40
   }, []);
 
   return (
-    <Box pos="relative" style={{display: 'inline-block'}}>
-      <canvas ref={canvasRef} width={width} height={height} style={{display: 'block', background: '#000'}} />
+    <Box pos="relative" className={styles.wrapper!}>
+      <canvas ref={canvasRef} width={width} height={height} className={styles.canvas!} />
       {gameOver && (
         <Overlay color="#000" backgroundOpacity={0.7}>
           <Stack align="center" justify="center" h="100%" gap="xs">

@@ -1,5 +1,6 @@
 import {useEffect, useRef} from 'react';
 import {ScrollArea, Text, Stack, Box} from '@mantine/core';
+import styles from './GameLog.module.css';
 
 interface LogEntry {
   text: string;
@@ -18,7 +19,7 @@ export function GameLog({entries}: Props) {
   }, [entries]);
 
   return (
-    <Box style={{flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0}}>
+    <Box className={styles.container!}>
       <Text
         fz={12}
         fw="bold"
@@ -26,11 +27,11 @@ export function GameLog({entries}: Props) {
         tt="uppercase"
         px="md"
         py={8}
-        style={{borderBottom: '1px solid var(--mantine-color-dark-4)'}}
+        className={styles.label!}
       >
         Game Log
       </Text>
-      <ScrollArea style={{flex: 1}} p="xs">
+      <ScrollArea className={styles.scroll!} p="xs">
         <Stack gap={4}>
           {entries.map((entry, i) => (
             <Text

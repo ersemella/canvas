@@ -1,0 +1,14 @@
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.label {
+  border-bottom: 1px solid var(--mantine-color-dark-4);
+}
+
+.scroll {
+  flex: 1;
+}

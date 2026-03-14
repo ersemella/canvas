@@ -1,0 +1,11 @@
+.withSidePanel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 24px;
+}
+
+.canvasRound {
+  border-radius: 8px;
+  overflow: hidden;
+}
