@@ -48,6 +48,7 @@ export function PokerRoomPage() {
   const [worldEvents, setWorldEvents] = useState<EventBus | null>(null);
   const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const adapterRef = useRef<PokerNetworkAdapter | null>(null);
@@ -189,7 +190,10 @@ export function PokerRoomPage() {
   }
 
   function handleCopyLink() {
-    void navigator.clipboard.writeText(window.location.href);
+    void navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   }
 
   // Name entry prompt (when navigating directly to the URL)
@@ -301,20 +305,39 @@ export function PokerRoomPage() {
           </div>
 
           <div style={{display: 'flex', gap: '8px'}}>
-            <button
-              onClick={handleCopyLink}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #555',
-                background: 'transparent',
-                color: '#eee',
-                cursor: 'pointer',
-              }}
-            >
-              Copy Invite Link
-            </button>
+            <div style={{flex: 1, position: 'relative'}}>
+              <button
+                onClick={handleCopyLink}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #555',
+                  background: 'transparent',
+                  color: '#eee',
+                  cursor: 'pointer',
+                }}
+              >
+                Copy Invite Link
+              </button>
+              {copied && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 'calc(100% + 6px)',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: '#2ecc71',
+                  color: '#fff',
+                  padding: '4px 10px',
+                  borderRadius: '4px',
+                  fontSize: '13px',
+                  whiteSpace: 'nowrap',
+                  pointerEvents: 'none',
+                }}>
+                  Link copied!
+                </div>
+              )}
+            </div>
             <button
               onClick={handleStartGame}
               disabled={players.length < 2}
