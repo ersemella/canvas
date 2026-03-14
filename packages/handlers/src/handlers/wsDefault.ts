@@ -68,6 +68,27 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
       break;
     }
 
+    case 'nextHand': {
+      if (room.status !== 'in_progress' || !room.gameState) break;
+      const gs = room.gameState as {players: Array<{connectionId: string; chips: number}>};
+      const updatedPlayers = room.players.map((rp) => {
+        const sp = gs.players.find((p) => p.connectionId === rp.connectionId);
+        return {...rp, chips: sp?.chips ?? rp.chips};
+      });
+      const newState = gameModule.createInitialState(updatedPlayers);
+      await roomRepo.updateGameState(conn.roomId, newState);
+      const connections = await roomRepo.getConnectionsByRoom(conn.roomId);
+      await Promise.all(
+        connections.map((c) =>
+          sendToConnection(wsEndpoint, c.connectionId, {
+            type: 'gameStarted',
+            state: gameModule.getPublicState(newState, c.connectionId),
+          })
+        )
+      );
+      break;
+    }
+
     default:
       await sendToConnection(wsEndpoint, connectionId, {
         type: 'error',

@@ -6,7 +6,7 @@ import {RoomNotFoundError, RoomFullError, GameInProgressError} from 'lib/errors'
 const roomService = new RoomService(process.env['TABLE_NAME']!);
 // WS_ENDPOINT is the callback URL (https://…/prod); strip trailing path for the
 // client-facing wss:// URL that the frontend passes to new WebSocket().
-const WS_URL = (process.env['WS_ENDPOINT'] ?? '').replace(/^https/, 'wss').replace(/\/[^/]+$/, '');
+const WS_URL = (process.env['WS_ENDPOINT'] ?? '').replace(/^https/, 'wss');
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const roomId = event.pathParameters?.['roomId'];

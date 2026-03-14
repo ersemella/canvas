@@ -7,6 +7,9 @@ export {PokerSystem, createInitialState} from './PokerSystem';
 export {PokerRendererSystem} from './PokerRendererSystem';
 export {pokerActionService} from './pokerActionService';
 export type {PokerGameState, PokerUiState, PokerAction, Player, Card, LogEntry, Phase, ActionType} from './types';
+export type {PublicPokerState, PublicPlayer} from './publicTypes';
+export type {PokerNetworkAdapter} from './networkAdapter';
+export {createMultiplayerModule} from './multiplayerModule';
 
 const gameState = createInitialState();
 

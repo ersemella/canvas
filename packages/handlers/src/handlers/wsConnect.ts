@@ -6,7 +6,7 @@ type WsConnectEvent = APIGatewayProxyWebsocketEventV2 & {
 };
 import {RoomService} from 'services/RoomService';
 import {RoomRepository} from 'repositories/RoomRepository';
-import {broadcastToRoom} from 'lib/wsClient';
+import {broadcastToRoom, sendToConnection} from 'lib/wsClient';
 import {RoomNotFoundError, RoomFullError, GameInProgressError} from 'lib/errors';
 
 const tableName = process.env['TABLE_NAME']!;
@@ -31,6 +31,7 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (rawEvent) => {
       type: 'playerJoined',
       players: room.players.map((p) => ({name: p.name, seatIndex: p.seatIndex})),
     });
+    await sendToConnection(wsEndpoint, connectionId, {type: 'connected', connectionId});
     return {statusCode: 200};
   } catch (err) {
     if (
