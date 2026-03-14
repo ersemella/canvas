@@ -24,6 +24,7 @@ interface WsMessage {
   state?: PublicPokerState;
 }
 
+
 function storageKey(roomId: string) {
   return `poker_name_${roomId}`;
 }
@@ -112,6 +113,7 @@ export function PokerRoomPage() {
           switch (msg.type) {
             case 'connected':
               if (msg.connectionId) ad.myConnectionId = msg.connectionId;
+              if (msg.players) setPlayers(msg.players);
               break;
             case 'playerJoined':
             case 'playerLeft':

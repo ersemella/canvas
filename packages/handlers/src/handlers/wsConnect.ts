@@ -38,23 +38,24 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (rawEvent) => {
         await roomRepo.saveRoom(existingRoom);
         await roomRepo.deleteConnection(roomId, oldConnectionId);
         await roomRepo.saveConnection({connectionId, roomId, playerName, joinedAt: Math.floor(Date.now() / 1000)});
+        const players = existingRoom.players.map((p) => ({name: p.name, seatIndex: p.seatIndex}));
+        // Broadcast to existing connections only — PostToConnection rejects the
+        // connecting socket's own connectionId from within $connect
         const connections = await roomRepo.getConnectionsByRoom(roomId);
-        await broadcastToRoom(wsEndpoint, connections, {
-          type: 'playerJoined',
-          players: existingRoom.players.map((p) => ({name: p.name, seatIndex: p.seatIndex})),
-        });
-        await sendToConnection(wsEndpoint, connectionId, {type: 'connected', connectionId});
+        const others = connections.filter((c) => c.connectionId !== connectionId);
+        await broadcastToRoom(wsEndpoint, others, {type: 'playerJoined', players});
+        // Include player list in connected so the joining player gets initial state
+        await sendToConnection(wsEndpoint, connectionId, {type: 'connected', connectionId, players});
         return {statusCode: 200};
       }
     }
 
     const room = await roomService.joinRoom({roomId, playerName, connectionId});
+    const players = room.players.map((p) => ({name: p.name, seatIndex: p.seatIndex}));
     const connections = await roomRepo.getConnectionsByRoom(roomId);
-    await broadcastToRoom(wsEndpoint, connections, {
-      type: 'playerJoined',
-      players: room.players.map((p) => ({name: p.name, seatIndex: p.seatIndex})),
-    });
-    await sendToConnection(wsEndpoint, connectionId, {type: 'connected', connectionId});
+    const others = connections.filter((c) => c.connectionId !== connectionId);
+    await broadcastToRoom(wsEndpoint, others, {type: 'playerJoined', players});
+    await sendToConnection(wsEndpoint, connectionId, {type: 'connected', connectionId, players});
     return {statusCode: 200};
   } catch (err) {
     if (
