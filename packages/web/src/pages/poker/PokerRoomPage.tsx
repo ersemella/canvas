@@ -24,14 +24,21 @@ interface WsMessage {
   state?: PublicPokerState;
 }
 
+function storageKey(roomId: string) {
+  return `poker_name_${roomId}`;
+}
+
 export function PokerRoomPage() {
   const {roomId} = useParams<{roomId: string}>();
   const location = useLocation();
   const navigate = useNavigate();
   const locationState = location.state as {name?: string} | null;
 
-  const [name, setName] = useState(locationState?.name ?? '');
-  const [nameSubmitted, setNameSubmitted] = useState(!!locationState?.name);
+  const savedName = roomId ? (localStorage.getItem(storageKey(roomId)) ?? '') : '';
+  const initialName = locationState?.name ?? savedName;
+
+  const [name, setName] = useState(initialName);
+  const [nameSubmitted, setNameSubmitted] = useState(!!initialName);
   const [nameInput, setNameInput] = useState('');
 
   const [players, setPlayers] = useState<SeatInfo[]>([]);
@@ -45,6 +52,13 @@ export function PokerRoomPage() {
   const adapterRef = useRef<PokerNetworkAdapter | null>(null);
   const gameModuleRef = useRef<ReturnType<typeof createMultiplayerModule> | null>(null);
   const systemsRef = useRef<BaseSystem[]>([]);
+
+  // Persist name to localStorage whenever it's committed
+  useEffect(() => {
+    if (nameSubmitted && roomId && name) {
+      localStorage.setItem(storageKey(roomId), name);
+    }
+  }, [nameSubmitted, roomId, name]);
 
   // Build module once when name is submitted
   useEffect(() => {
