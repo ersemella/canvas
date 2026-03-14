@@ -1,4 +1,5 @@
 import {createBrowserRouter} from 'react-router-dom';
+import {AppShell} from '@mantine/core';
 import {HomePage} from 'pages/HomePage';
 import {GamePage} from 'pages/GamePage';
 import {PokerLobbyPage} from 'pages/poker/PokerLobbyPage';
@@ -7,10 +8,10 @@ import {NavBar} from 'components/NavBar';
 
 function Layout({children}: {children: React.ReactNode}) {
   return (
-    <>
+    <AppShell header={{height: 56}}>
       <NavBar />
-      <main>{children}</main>
-    </>
+      <AppShell.Main>{children}</AppShell.Main>
+    </AppShell>
   );
 }
 

@@ -1,6 +1,8 @@
 import {useEffect, useRef, useState, useMemo, useCallback} from 'react';
 import type {ComponentType} from 'react';
 import {useParams, useLocation, useNavigate} from 'react-router-dom';
+import {Paper, Title, Text, List, Button, Group, TextInput, Stack, Box} from '@mantine/core';
+import {notifications} from '@mantine/notifications';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameLog} from 'components/GameLog';
 import {registerBuiltinSystems} from '@canvas/engine';
@@ -48,7 +50,6 @@ export function PokerRoomPage() {
   const [worldEvents, setWorldEvents] = useState<EventBus | null>(null);
   const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const adapterRef = useRef<PokerNetworkAdapter | null>(null);
@@ -191,176 +192,85 @@ export function PokerRoomPage() {
 
   function handleCopyLink() {
     void navigator.clipboard.writeText(window.location.href).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      notifications.show({message: 'Link copied!', color: 'green', autoClose: 2000});
     });
   }
 
   // Name entry prompt (when navigating directly to the URL)
   if (!nameSubmitted) {
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: '80px',
-        gap: '16px',
-        color: '#eee',
-      }}>
-        <h2 style={{color: '#ffd700'}}>Join Room {roomId}</h2>
-        <input
-          type="text"
-          value={nameInput}
-          onChange={(e) => setNameInput(e.target.value)}
+      <Stack align="center" pt={80} gap="md">
+        <Title order={2} c="yellow">Join Room {roomId}</Title>
+        <TextInput
           placeholder="Enter your name"
+          value={nameInput}
+          onChange={(e) => setNameInput(e.currentTarget.value)}
           maxLength={20}
-          style={{
-            padding: '8px 12px',
-            borderRadius: '4px',
-            border: '1px solid #555',
-            background: '#0f3460',
-            color: '#eee',
-            fontSize: '16px',
-          }}
         />
-        <button
+        <Button
           onClick={() => {
             if (!nameInput.trim()) return;
             setName(nameInput.trim());
             setNameSubmitted(true);
           }}
-          style={{
-            padding: '10px 24px',
-            borderRadius: '4px',
-            border: 'none',
-            background: '#ffd700',
-            color: '#1a1a2e',
-            fontWeight: 'bold',
-            fontSize: '16px',
-            cursor: 'pointer',
-          }}
+          color="yellow"
+          c="dark.9"
+          fw="bold"
         >
           Join
-        </button>
-      </div>
+        </Button>
+      </Stack>
     );
   }
 
   if (error) {
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: '80px',
-        gap: '16px',
-        color: '#eee',
-      }}>
-        <p style={{color: '#e74c3c'}}>{error}</p>
-        <button onClick={() => navigate('/play/poker')} style={{
-          padding: '10px 24px',
-          borderRadius: '4px',
-          border: 'none',
-          background: '#ffd700',
-          color: '#1a1a2e',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-        }}>
+      <Stack align="center" pt={80} gap="md">
+        <Text c="red.4">{error}</Text>
+        <Button onClick={() => navigate('/play/poker')} color="yellow" c="dark.9" fw="bold">
           Back to Lobby
-        </button>
-      </div>
+        </Button>
+      </Stack>
     );
   }
 
   const SidePanel = (gameModuleRef.current?.getSidePanel?.() ?? null) as ComponentType<{events: EventBus}> | null;
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      paddingTop: '24px',
-      color: '#eee',
-    }}>
+    <Stack align="center" pt="xl">
       {!gameStarted && (
-        <div style={{
-          background: '#16213e',
-          border: '1px solid #333',
-          borderRadius: '8px',
-          padding: '32px',
-          minWidth: '360px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-        }}>
-          <h2 style={{color: '#ffd700', margin: 0}}>Room: {roomId}</h2>
-
-          <div>
-            <p style={{color: '#aaa', margin: '0 0 8px'}}>Players ({players.length}):</p>
-            <ul style={{margin: 0, padding: '0 0 0 20px'}}>
-              {players.map((p, i) => (
-                <li key={i} style={{marginBottom: '4px'}}>{p.name}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div style={{display: 'flex', gap: '8px'}}>
-            <div style={{flex: 1, position: 'relative'}}>
-              <button
-                onClick={handleCopyLink}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid #555',
-                  background: 'transparent',
-                  color: '#eee',
-                  cursor: 'pointer',
-                }}
-              >
-                Copy Invite Link
-              </button>
-              {copied && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: 'calc(100% + 6px)',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: '#2ecc71',
-                  color: '#fff',
-                  padding: '4px 10px',
-                  borderRadius: '4px',
-                  fontSize: '13px',
-                  whiteSpace: 'nowrap',
-                  pointerEvents: 'none',
-                }}>
-                  Link copied!
-                </div>
-              )}
+        <Paper bg="dark.7" withBorder p="xl" radius="md" miw={360}>
+          <Stack gap="md">
+            <Title order={2} c="yellow">Room: {roomId}</Title>
+            <div>
+              <Text c="dimmed" mb={8}>Players ({players.length}):</Text>
+              <List>
+                {players.map((p, i) => (
+                  <List.Item key={i}>{p.name}</List.Item>
+                ))}
+              </List>
             </div>
-            <button
-              onClick={handleStartGame}
-              disabled={players.length < 2}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: '4px',
-                border: 'none',
-                background: players.length < 2 ? '#555' : '#ffd700',
-                color: players.length < 2 ? '#888' : '#1a1a2e',
-                fontWeight: 'bold',
-                cursor: players.length < 2 ? 'not-allowed' : 'pointer',
-              }}
-            >
-              Start Game
-            </button>
-          </div>
-        </div>
+            <Group grow>
+              <Button variant="outline" onClick={handleCopyLink}>
+                Copy Invite Link
+              </Button>
+              <Button
+                onClick={handleStartGame}
+                disabled={players.length < 2}
+                color="yellow"
+                c="dark.9"
+                fw="bold"
+              >
+                Start Game
+              </Button>
+            </Group>
+          </Stack>
+        </Paper>
       )}
 
       {gameStarted && (
-        <div>
-          <div style={{display: 'flex', borderRadius: '8px', overflow: 'hidden'}}>
+        <Box>
+          <Box style={{display: 'flex', borderRadius: 8, overflow: 'hidden'}}>
             <GameCanvas
               sceneData={sceneData}
               systems={systems}
@@ -369,41 +279,31 @@ export function PokerRoomPage() {
               height={580}
               onReady={handleReady}
             />
-            <div style={{
-              width: '280px',
-              height: '580px',
-              background: '#16213e',
-              display: 'flex',
-              flexDirection: 'column',
-              borderLeft: '1px solid #333',
-              flexShrink: 0,
-            }}>
+            <Box
+              style={{
+                width: 280,
+                height: 580,
+                background: '#16213e',
+                display: 'flex',
+                flexDirection: 'column',
+                borderLeft: '1px solid var(--mantine-color-dark-4)',
+                flexShrink: 0,
+              }}
+            >
               {worldEvents && SidePanel && <SidePanel events={worldEvents} />}
               <GameLog entries={logEntries} />
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           {showdown && (
-            <div style={{marginTop: '16px', textAlign: 'center'}}>
-              <button
-                onClick={handleNextHand}
-                style={{
-                  padding: '10px 32px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  background: '#ffd700',
-                  color: '#1a1a2e',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                }}
-              >
+            <Stack align="center" mt="md">
+              <Button onClick={handleNextHand} color="yellow" c="dark.9" fw="bold" size="md" px={32}>
                 Next Hand
-              </button>
-            </div>
+              </Button>
+            </Stack>
           )}
-        </div>
+        </Box>
       )}
-    </div>
+    </Stack>
   );
 }

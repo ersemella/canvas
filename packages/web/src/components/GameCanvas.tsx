@@ -1,4 +1,5 @@
 import {useEffect, useRef, useState, useCallback} from 'react';
+import {Box, Button, Overlay, Text, Stack} from '@mantine/core';
 import {
   World,
   InputSystem,
@@ -10,7 +11,6 @@ import {
   loadScene,
 } from '@canvas/engine';
 import type {SceneData, BaseSystem, EventBus} from '@canvas/engine';
-import styles from './GameCanvas.module.css';
 
 interface Props {
   sceneData: SceneData;
@@ -77,17 +77,19 @@ export function GameCanvas({sceneData, systems, events, width = 600, height = 40
   }, []);
 
   return (
-    <div className={styles.wrapper}>
-      <canvas ref={canvasRef} width={width} height={height} className={styles.canvas} />
+    <Box pos="relative" style={{display: 'inline-block'}}>
+      <canvas ref={canvasRef} width={width} height={height} style={{display: 'block', background: '#000'}} />
       {gameOver && (
-        <div className={styles.overlay}>
-          <p className={styles.gameOverTitle}>Game Over</p>
-          {events?.onScore && <p className={styles.gameOverScore}>Score: {score}</p>}
-          <button className={styles.restartButton} onClick={restart}>
-            Play Again
-          </button>
-        </div>
+        <Overlay color="#000" backgroundOpacity={0.7}>
+          <Stack align="center" justify="center" h="100%" gap="xs">
+            <Text ff="monospace" fz="2rem" fw="bold" c="white">Game Over</Text>
+            {events?.onScore && <Text ff="monospace" fz="1.2rem" c="gray.4">Score: {score}</Text>}
+            <Button mt={8} color="green" onClick={restart} ff="monospace" fw="bold">
+              Play Again
+            </Button>
+          </Stack>
+        </Overlay>
       )}
-    </div>
+    </Box>
   );
 }

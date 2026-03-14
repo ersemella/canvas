@@ -1,4 +1,5 @@
 import {useEffect, useRef} from 'react';
+import {ScrollArea, Text, Stack, Box} from '@mantine/core';
 
 interface LogEntry {
   text: string;
@@ -17,42 +18,34 @@ export function GameLog({entries}: Props) {
   }, [entries]);
 
   return (
-    <div style={{
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: 0,
-    }}>
-      <div style={{
-        padding: '8px 16px',
-        fontWeight: 'bold',
-        color: '#aaa',
-        fontSize: '12px',
-        borderBottom: '1px solid #333',
-        textTransform: 'uppercase',
-      }}>
+    <Box style={{flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0}}>
+      <Text
+        fz={12}
+        fw="bold"
+        c="dimmed"
+        tt="uppercase"
+        px="md"
+        py={8}
+        style={{borderBottom: '1px solid var(--mantine-color-dark-4)'}}
+      >
         Game Log
-      </div>
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '8px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
-      }}>
-        {entries.map((entry, i) => (
-          <div key={i} style={{
-            color: entry.text.startsWith('---') ? '#ffd700' : '#ccc',
-            fontSize: '12px',
-            fontFamily: 'monospace',
-            fontWeight: entry.text.startsWith('---') ? 'bold' : 'normal',
-          }}>
-            {entry.text}
-          </div>
-        ))}
-        <div ref={endRef} />
-      </div>
-    </div>
+      </Text>
+      <ScrollArea style={{flex: 1}} p="xs">
+        <Stack gap={4}>
+          {entries.map((entry, i) => (
+            <Text
+              key={i}
+              ff="monospace"
+              fz={12}
+              c={entry.text.startsWith('---') ? 'yellow' : 'gray.4'}
+              fw={entry.text.startsWith('---') ? 'bold' : 'normal'}
+            >
+              {entry.text}
+            </Text>
+          ))}
+          <div ref={endRef} />
+        </Stack>
+      </ScrollArea>
+    </Box>
   );
 }

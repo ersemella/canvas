@@ -1,19 +1,17 @@
+import {Container, Title, Text, SimpleGrid} from '@mantine/core';
 import {GameCard} from 'components/GameCard';
 import {games} from 'registry/games';
-import styles from './HomePage.module.css';
 
 export function HomePage() {
   return (
-    <div className={styles.page}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Games</h1>
-        <p className={styles.subtitle}>HTML5 canvas games built with a custom ECS engine</p>
-      </div>
-      <div className={styles.grid}>
+    <Container size="xl" py="xl">
+      <Title order={1} mb={8}>Games</Title>
+      <Text c="dimmed" mb="xl">HTML5 canvas games built with a custom ECS engine</Text>
+      <SimpleGrid cols={{base: 1, sm: 2, md: 3}} spacing="lg">
         {games.map((game) => (
           <GameCard key={game.id} game={game} />
         ))}
-      </div>
-    </div>
+      </SimpleGrid>
+    </Container>
   );
 }

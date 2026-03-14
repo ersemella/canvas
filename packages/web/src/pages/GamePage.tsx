@@ -1,12 +1,12 @@
 import {useEffect, useState, useCallback} from 'react';
 import type {ComponentType} from 'react';
 import {useParams, Navigate} from 'react-router-dom';
+import {Center, Loader, Text, Box, Title, Stack} from '@mantine/core';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameLog} from 'components/GameLog';
 import {games} from 'registry/games';
 import type {SceneData, BaseSystem, EventBus} from '@canvas/engine';
 import {registerBuiltinSystems} from '@canvas/engine';
-import styles from './GamePage.module.css';
 
 type LogEntry = {text: string; timestamp: number};
 
@@ -60,17 +60,18 @@ export function GamePage() {
 
   if (loading) {
     return (
-      <div className={styles.center}>
-        <p>Loading {gameDescriptor.title}...</p>
-      </div>
+      <Center h="calc(100vh - 56px)">
+        <Loader size="sm" />
+        <Text ml="sm">Loading {gameDescriptor.title}...</Text>
+      </Center>
     );
   }
 
   if (error) {
     return (
-      <div className={styles.center}>
-        <p className={styles.error}>Failed to load game: {error}</p>
-      </div>
+      <Center h="calc(100vh - 56px)">
+        <Text c="red.4">Failed to load game: {error}</Text>
+      </Center>
     );
   }
 
@@ -80,42 +81,39 @@ export function GamePage() {
 
   if (SidePanel) {
     return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        paddingTop: '24px',
-      }}>
-        <div style={{display: 'flex', borderRadius: '8px', overflow: 'hidden'}}>
-        <GameCanvas
-          sceneData={sceneData}
-          systems={gameSystems}
-          events={gameEvents}
-          width={canvasSize.width}
-          height={canvasSize.height}
-          onReady={handleReady}
-        />
-        <div style={{
-          width: '280px',
-          height: `${canvasSize.height}px`,
-          background: '#16213e',
-          display: 'flex',
-          flexDirection: 'column',
-          borderLeft: '1px solid #333',
-          flexShrink: 0,
-        }}>
-          {worldEvents && <SidePanel events={worldEvents} />}
-          <GameLog entries={logEntries} />
-        </div>
-        </div>
-      </div>
+      <Box style={{display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 24}}>
+        <Box style={{display: 'flex', borderRadius: 8, overflow: 'hidden'}}>
+          <GameCanvas
+            sceneData={sceneData}
+            systems={gameSystems}
+            events={gameEvents}
+            width={canvasSize.width}
+            height={canvasSize.height}
+            onReady={handleReady}
+          />
+          <Box
+            style={{
+              width: 280,
+              height: canvasSize.height,
+              background: '#16213e',
+              display: 'flex',
+              flexDirection: 'column',
+              borderLeft: '1px solid var(--mantine-color-dark-4)',
+              flexShrink: 0,
+            }}
+          >
+            {worldEvents && <SidePanel events={worldEvents} />}
+            <GameLog entries={logEntries} />
+          </Box>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className={styles.page}>
-      <h2 className={styles.title}>{gameDescriptor.title}</h2>
-      <div className={styles.canvasWrapper}>
+    <Stack align="center" py="xl" gap="lg">
+      <Title order={2} fz="xl">{gameDescriptor.title}</Title>
+      <Box style={{borderRadius: 8, overflow: 'hidden'}}>
         <GameCanvas
           sceneData={sceneData}
           systems={gameSystems}
@@ -124,7 +122,7 @@ export function GamePage() {
           height={canvasSize.height}
           onReady={handleReady}
         />
-      </div>
-    </div>
+      </Box>
+    </Stack>
   );
 }

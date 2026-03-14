@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import {Container, Paper, Title, TextInput, Button, Text, Stack, Divider} from '@mantine/core';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
 
@@ -46,112 +47,35 @@ export function PokerLobbyPage() {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      paddingTop: '80px',
-      gap: '24px',
-      color: '#eee',
-    }}>
-      <h1 style={{fontSize: '2rem', color: '#ffd700', margin: 0}}>Texas Hold&apos;em Poker</h1>
-
-      <div style={{
-        background: '#16213e',
-        border: '1px solid #333',
-        borderRadius: '8px',
-        padding: '32px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-        minWidth: '320px',
-      }}>
-        <div>
-          <label style={{display: 'block', marginBottom: '6px', color: '#aaa'}}>
-            Username
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+    <Container size="xs" pt={80}>
+      <Title order={1} ta="center" c="yellow" mb="xl">Texas Hold&apos;em Poker</Title>
+      <Paper bg="dark.7" withBorder p="xl" radius="md">
+        <Stack gap="md">
+          <TextInput
+            label="Username"
             placeholder="Enter your name"
+            value={name}
+            onChange={(e) => setName(e.currentTarget.value)}
             maxLength={20}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              border: '1px solid #555',
-              background: '#0f3460',
-              color: '#eee',
-              fontSize: '16px',
-              boxSizing: 'border-box',
-            }}
           />
-        </div>
-
-        <button
-          onClick={handleCreate}
-          disabled={loading}
-          style={{
-            padding: '10px',
-            borderRadius: '4px',
-            border: 'none',
-            background: '#ffd700',
-            color: '#1a1a2e',
-            fontWeight: 'bold',
-            fontSize: '16px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {loading ? 'Creating...' : 'Create Room'}
-        </button>
-
-        <div style={{textAlign: 'center', color: '#666'}}>— or —</div>
-
-        <div>
-          <label style={{display: 'block', marginBottom: '6px', color: '#aaa'}}>
-            Room Code
-          </label>
-          <input
-            type="text"
-            value={roomCode}
-            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+          <Button onClick={() => void handleCreate()} loading={loading} fullWidth color="yellow" c="dark.9" fw="bold">
+            Create Room
+          </Button>
+          <Divider label="or" labelPosition="center" />
+          <TextInput
+            label="Room Code"
             placeholder="ENTER CODE"
+            value={roomCode}
+            onChange={(e) => setRoomCode(e.currentTarget.value.toUpperCase())}
             maxLength={8}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              border: '1px solid #555',
-              background: '#0f3460',
-              color: '#eee',
-              fontSize: '16px',
-              letterSpacing: '2px',
-              boxSizing: 'border-box',
-            }}
+            styles={{input: {letterSpacing: '2px'}}}
           />
-        </div>
-
-        <button
-          onClick={handleJoin}
-          style={{
-            padding: '10px',
-            borderRadius: '4px',
-            border: '1px solid #ffd700',
-            background: 'transparent',
-            color: '#ffd700',
-            fontWeight: 'bold',
-            fontSize: '16px',
-            cursor: 'pointer',
-          }}
-        >
-          Join Room
-        </button>
-
-        {error && (
-          <p style={{color: '#e74c3c', margin: 0, textAlign: 'center'}}>{error}</p>
-        )}
-      </div>
-    </div>
+          <Button onClick={handleJoin} fullWidth variant="outline" color="yellow" fw="bold">
+            Join Room
+          </Button>
+          {error && <Text c="red.4" ta="center">{error}</Text>}
+        </Stack>
+      </Paper>
+    </Container>
   );
 }
