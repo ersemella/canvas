@@ -12,3 +12,15 @@
   border-left: 1px solid var(--mantine-color-dark-4);
   flex-shrink: 0;
 }
+
+@media (max-width: 768px) {
+  .canvasWithPanel {
+    flex-direction: column;
+  }
+  .sidePanel {
+    width: 100%;
+    height: auto !important;
+    border-left: none;
+    border-top: 1px solid var(--mantine-color-dark-4);
+  }
+}

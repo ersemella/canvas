@@ -1,8 +1,11 @@
 .wrapper {
   display: inline-block;
+  max-width: 100%;
 }
 
 .canvas {
   display: block;
   background: #000;
+  max-width: 100%;
+  height: auto;
 }

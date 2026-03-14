@@ -5,6 +5,13 @@
   padding-top: 24px;
 }
 
+@media (max-width: 768px) {
+  .withSidePanel {
+    padding-top: 0;
+    align-items: stretch;
+  }
+}
+
 .canvasRound {
   border-radius: 8px;
   overflow: hidden;

@@ -21,17 +21,23 @@ export class MouseSystem extends BaseSystem {
     const rect = () => canvas.getBoundingClientRect();
     this.downHandler = (e) => {
       const r = rect();
-      mouseService.position = {x: e.clientX - r.left, y: e.clientY - r.top};
+      const scaleX = r.width / canvas.width;
+      const scaleY = r.height / canvas.height;
+      mouseService.position = {x: (e.clientX - r.left) / scaleX, y: (e.clientY - r.top) / scaleY};
       mouseService.isDown = true;
       mouseService.justDown = true;
     };
     this.moveHandler = (e) => {
       const r = rect();
-      mouseService.position = {x: e.clientX - r.left, y: e.clientY - r.top};
+      const scaleX = r.width / canvas.width;
+      const scaleY = r.height / canvas.height;
+      mouseService.position = {x: (e.clientX - r.left) / scaleX, y: (e.clientY - r.top) / scaleY};
     };
     this.upHandler = (e) => {
       const r = rect();
-      mouseService.position = {x: e.clientX - r.left, y: e.clientY - r.top};
+      const scaleX = r.width / canvas.width;
+      const scaleY = r.height / canvas.height;
+      mouseService.position = {x: (e.clientX - r.left) / scaleX, y: (e.clientY - r.top) / scaleY};
       mouseService.isDown = false;
       mouseService.justUp = true;
     };

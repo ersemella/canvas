@@ -240,7 +240,7 @@ export function PokerRoomPage() {
   return (
     <Stack align="center" pt="xl">
       {!gameStarted && (
-        <Paper bg="dark.7" withBorder p="xl" radius="md" miw={360}>
+        <Paper bg="dark.7" withBorder p="xl" radius="md" miw={{base: '100%', sm: 360}}>
           <Stack gap="md">
             <Title order={2} c="yellow">Room: {roomId}</Title>
             <div>
