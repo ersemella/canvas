@@ -81,10 +81,14 @@ export function PokerRoomPage() {
     systemsRef.current = mod.getSystems();
 
     // Join room via HTTP then open WebSocket
+    let cancelled = false;
+    const abortController = new AbortController();
+
     fetch(`${API_URL}/rooms/${roomId}/join`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({playerName: name}),
+      signal: abortController.signal,
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -94,6 +98,7 @@ export function PokerRoomPage() {
         return res.json() as Promise<{wsUrl: string}>;
       })
       .then(({wsUrl}) => {
+        if (cancelled) return;
         const ws = new WebSocket(
           `${wsUrl}?roomId=${encodeURIComponent(roomId)}&playerName=${encodeURIComponent(name)}`,
         );
@@ -135,9 +140,14 @@ export function PokerRoomPage() {
           // Connection closed — no action needed
         };
       })
-      .catch((err: Error) => setError(err.message));
+      .catch((err: Error) => {
+        if (cancelled) return;
+        setError(err.message);
+      });
 
     return () => {
+      cancelled = true;
+      abortController.abort();
       wsRef.current?.close();
       wsRef.current = null;
     };

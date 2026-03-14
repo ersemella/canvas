@@ -25,6 +25,29 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (rawEvent) => {
   if (!roomId || !playerName) return {statusCode: 400};
 
   try {
+    // Check for existing player with the same name (reconnect after refresh)
+    const existingRoom = await roomRepo.getRoom(roomId);
+    if (existingRoom) {
+      const existingPlayer = existingRoom.players.find((p) => p.name === playerName);
+      if (existingPlayer) {
+        const oldConnectionId = existingPlayer.connectionId;
+        existingPlayer.connectionId = connectionId;
+        if (existingRoom.hostConnectionId === oldConnectionId) {
+          existingRoom.hostConnectionId = connectionId;
+        }
+        await roomRepo.saveRoom(existingRoom);
+        await roomRepo.deleteConnection(roomId, oldConnectionId);
+        await roomRepo.saveConnection({connectionId, roomId, playerName, joinedAt: Math.floor(Date.now() / 1000)});
+        const connections = await roomRepo.getConnectionsByRoom(roomId);
+        await broadcastToRoom(wsEndpoint, connections, {
+          type: 'playerJoined',
+          players: existingRoom.players.map((p) => ({name: p.name, seatIndex: p.seatIndex})),
+        });
+        await sendToConnection(wsEndpoint, connectionId, {type: 'connected', connectionId});
+        return {statusCode: 200};
+      }
+    }
+
     const room = await roomService.joinRoom({roomId, playerName, connectionId});
     const connections = await roomRepo.getConnectionsByRoom(roomId);
     await broadcastToRoom(wsEndpoint, connections, {
