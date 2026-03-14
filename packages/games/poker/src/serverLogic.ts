@@ -130,6 +130,12 @@ function advancePhase(state: ServerPokerGameState): void {
       resolveShowdown(state);
       break;
   }
+
+  // If all remaining non-folded players are all-in, no one can act —
+  // auto-advance through remaining phases until showdown.
+  if (state.phase !== 'showdown' && isBettingRoundOver(state)) {
+    advancePhase(state);
+  }
 }
 
 export function startHand(players: RoomPlayer[]): ServerPokerGameState {

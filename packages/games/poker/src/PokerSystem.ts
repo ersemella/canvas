@@ -327,6 +327,13 @@ export class PokerSystem extends BaseSystem {
         return;
     }
 
+    // If all remaining non-folded players are all-in, no one can act —
+    // auto-advance through remaining phases until showdown.
+    if (this.isBettingRoundOver()) {
+      this.advancePhase();
+      return;
+    }
+
     this.botTimer = 0;
     this.emitUiUpdate();
   }
