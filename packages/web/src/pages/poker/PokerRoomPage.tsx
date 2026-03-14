@@ -137,6 +137,9 @@ export function PokerRoomPage() {
           }
         };
 
+        ws.onopen = () => {
+          ws.send(JSON.stringify({action: 'sync'}));
+        };
         ws.onerror = () => setError('WebSocket connection error.');
         ws.onclose = () => {
           // Connection closed — no action needed

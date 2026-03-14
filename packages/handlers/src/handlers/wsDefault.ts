@@ -28,6 +28,21 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
   }
 
   switch (body.action) {
+    case 'sync': {
+      await sendToConnection(wsEndpoint, connectionId, {
+        type: 'connected',
+        connectionId,
+        players: room.players.map((p) => ({name: p.name, seatIndex: p.seatIndex})),
+      });
+      if (room.status === 'in_progress' && room.gameState && gameModule) {
+        await sendToConnection(wsEndpoint, connectionId, {
+          type: 'gameStarted',
+          state: gameModule.getPublicState(room.gameState, connectionId),
+        });
+      }
+      break;
+    }
+
     case 'startGame': {
       if (room.status === 'in_progress') break;
       const newState = gameModule.createInitialState(room.players);
