@@ -15,6 +15,22 @@ export abstract class BaseSystem {
   abstract readonly priority: number;
 
   onInit(_context: Omit<SystemContext, 'deltaTime'>): void {}
-  abstract onUpdate(context: SystemContext): void;
+  onUpdate(_context: SystemContext): void {}
   onDestroy(_context: Omit<SystemContext, 'deltaTime'>): void {}
+}
+
+export abstract class ReactiveSystem extends BaseSystem {
+  private _dirty = true;
+
+  protected markDirty(): void {
+    this._dirty = true;
+  }
+
+  abstract onDirty(context: SystemContext): void;
+
+  onUpdate(context: SystemContext): void {
+    if (!this._dirty) return;
+    this._dirty = false;
+    this.onDirty(context);
+  }
 }

@@ -1,4 +1,4 @@
-import {BaseSystem} from '@canvas/engine';
+import {ReactiveSystem} from '@canvas/engine';
 import type {SystemContext, RenderableComponent} from '@canvas/engine';
 import {generatePuzzle} from './generator';
 import type {SudokuState} from './types';
@@ -7,12 +7,13 @@ export const GRID_X = 25;
 export const GRID_Y = 25;
 export const CELL_SIZE = 50;
 
-export class SudokuSystem extends BaseSystem {
+export class SudokuSystem extends ReactiveSystem {
   readonly priority = 100;
 
   state: SudokuState | null = null;
   conflicts: Set<string> = new Set();
-  dirty = true;
+
+  triggerUpdate(): void { this.markDirty(); }
 
   private cellBg: RenderableComponent[][] = [];
   private cellNum: RenderableComponent[][] = [];
@@ -53,9 +54,8 @@ export class SudokuSystem extends BaseSystem {
     }
   }
 
-  onUpdate({events}: SystemContext): void {
-    if (!this.state || !this.dirty) return;
-    this.dirty = false;
+  onDirty({events}: SystemContext): void {
+    if (!this.state) return;
     const state = this.state;
 
     // --- Conflict detection ---

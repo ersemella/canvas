@@ -62,6 +62,6 @@ export class SudokuInputSystem extends BaseSystem {
       }
     }
 
-    if (changed) this.game.dirty = true;
+    if (changed) this.game.triggerUpdate();
   }
 }

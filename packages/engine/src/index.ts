@@ -6,7 +6,7 @@ export {Entity} from 'core/Entity';
 export type {IEntity} from 'core/Entity';
 export {BaseComponent, ComponentRegistry, DataComponent, registerDataComponent} from 'core/Component';
 export type {IComponent} from 'core/Component';
-export {BaseSystem} from 'core/System';
+export {BaseSystem, ReactiveSystem} from 'core/System';
 export type {SystemContext} from 'core/System';
 export {Query} from 'core/Query';
 export type {QueryDescriptor} from 'core/Query';
