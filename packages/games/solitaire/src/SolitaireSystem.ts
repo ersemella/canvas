@@ -139,7 +139,7 @@ export class SolitaireSystem extends BaseSystem {
         }
         const renderable = this.getRenderable(entityId);
         if (renderable) {
-          renderable.zIndex = i;
+          renderable.zIndex = i * 2;
         }
       }
     }
