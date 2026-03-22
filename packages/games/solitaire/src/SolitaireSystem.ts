@@ -1,9 +1,9 @@
-import {BaseSystem, mouseService} from '@canvas/engine';
+import {BaseSystem} from '@canvas/engine';
 import type {SystemContext, Scene, EventBus} from '@canvas/engine';
 import type {DataComponent, RenderableComponent, TransformComponent} from '@canvas/engine';
 import type {CardData, DraggableData} from '@canvas/engine';
-import type {DragDropBeforePayload, DragDropDroppedPayload} from '@canvas/engine';
-import {CARD_W, CARD_H, TOP_Y, TABLEAU_Y, FACE_DOWN_STEP, FACE_UP_STEP, rankLabels, redSuits, colX} from './constants';
+import type {DragDropBeforePayload, DragDropDroppedPayload, ClickPayload} from '@canvas/engine';
+import {TOP_Y, TABLEAU_Y, FACE_DOWN_STEP, FACE_UP_STEP, rankLabels, redSuits, colX} from './constants';
 
 function pileAnchor(pileId: string): {x: number; y: number} {
   if (pileId === 'stock') return {x: colX(0), y: TOP_Y};
@@ -62,6 +62,11 @@ export class SolitaireSystem extends BaseSystem {
       for (let i = idx + 1; i < pile.length; i++) {
         addToDrag(pile[i]!);
       }
+    });
+
+    // Subscribe: stock click → deal
+    events.on<ClickPayload>('click', ({entityId}: ClickPayload) => {
+      if (entityId === 'stock') this.dealFromStock();
     });
 
     // Subscribe: validate drop and commit or reject
@@ -246,23 +251,6 @@ export class SolitaireSystem extends BaseSystem {
       if ((this.piles.get(`f${i}`) ?? []).length !== 13) return;
     }
     this.eventsRef?.emit('solitaire:won', {});
-  }
-
-  onUpdate(_context: SystemContext): void {
-    const {position, justDown} = mouseService;
-
-    // Handle stock area clicks (stock cards are not draggable)
-    if (justDown) {
-      const stockAnchor = pileAnchor('stock');
-      if (
-        position.x >= stockAnchor.x - CARD_W / 2 &&
-        position.x <= stockAnchor.x + CARD_W / 2 &&
-        position.y >= stockAnchor.y - CARD_H / 2 &&
-        position.y <= stockAnchor.y + CARD_H / 2
-      ) {
-        this.dealFromStock();
-      }
-    }
   }
 
   private dealFromStock(): void {

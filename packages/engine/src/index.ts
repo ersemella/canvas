@@ -40,6 +40,9 @@ export type {TriggerData} from 'systems/TriggerSystem';
 export {MouseSystem, mouseService} from 'systems/MouseSystem';
 export {DragDropSystem} from 'systems/DragDropSystem';
 export type {DragDropBeforePayload, DragDropDroppedPayload} from 'systems/DragDropSystem';
+export {ClickSystem} from 'systems/ClickSystem';
+export type {ClickPayload} from 'systems/ClickSystem';
+export type {ClickableData} from 'components/ClickableComponent';
 
 // Systems — physics (mutually exclusive with grid)
 export {PhysicsSystem} from 'systems/physics/PhysicsSystem';

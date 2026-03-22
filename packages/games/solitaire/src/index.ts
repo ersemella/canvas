@@ -44,6 +44,7 @@ function buildScene(): SceneData {
           zIndex: -1,
           visible: true,
         },
+        ...(isStock ? {Clickable: {enabled: true}} : {}),
         ...(isDropTarget ? {DropTarget: {targetId: slot.id}} : {}),
       },
     });

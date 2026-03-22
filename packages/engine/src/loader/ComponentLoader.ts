@@ -15,10 +15,12 @@ import {TrailSystem} from 'systems/grid/TrailSystem';
 import {MouseSystem} from 'systems/MouseSystem';
 import {DragDropSystem} from 'systems/DragDropSystem';
 import {ChildTransformSystem} from 'systems/ChildTransformSystem';
+import {ClickSystem} from 'systems/ClickSystem';
 import type {CardData} from 'components/CardComponent';
 import type {DraggableData} from 'components/DraggableComponent';
 import type {DropTargetData} from 'components/DropTargetComponent';
 import type {ChildOfData} from 'components/ChildOfComponent';
+import type {ClickableData} from 'components/ClickableComponent';
 
 // Register all built-in components
 import {TransformComponent} from 'components/TransformComponent';
@@ -42,6 +44,7 @@ export function registerBuiltinSystems(): void {
   SystemRegistry.register('MouseSystem', MouseSystem);
   SystemRegistry.register('DragDropSystem', DragDropSystem);
   SystemRegistry.register('ChildTransformSystem', ChildTransformSystem);
+  SystemRegistry.register('ClickSystem', ClickSystem);
 }
 
 export function registerBuiltinComponents(): void {
