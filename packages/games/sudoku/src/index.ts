@@ -1,6 +1,7 @@
 import type {GameModule, SceneData, EntityData} from '@canvas/engine';
 import {MouseSystem} from '@canvas/engine';
 import {SudokuSystem, GRID_X, GRID_Y, CELL_SIZE} from './SudokuSystem';
+import {SudokuInputSystem} from './SudokuInputSystem';
 
 function buildScene(): SceneData {
   const entities: EntityData[] = [];
@@ -144,7 +145,8 @@ export default {
     return buildScene();
   },
   getSystems() {
-    return [new MouseSystem(), new SudokuSystem()];
+    const game = new SudokuSystem();
+    return [new MouseSystem(), new SudokuInputSystem(game), game];
   },
   getEvents() {
     return {onDeath: 'sudoku:complete'};

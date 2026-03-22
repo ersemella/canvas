@@ -1,4 +1,4 @@
-import {BaseSystem, inputService, mouseService} from '@canvas/engine';
+import {BaseSystem} from '@canvas/engine';
 import type {SystemContext, RenderableComponent} from '@canvas/engine';
 import {generatePuzzle} from './generator';
 import type {SudokuState} from './types';
@@ -12,6 +12,7 @@ export class SudokuSystem extends BaseSystem {
 
   state: SudokuState | null = null;
   conflicts: Set<string> = new Set();
+  dirty = true;
 
   private cellBg: RenderableComponent[][] = [];
   private cellNum: RenderableComponent[][] = [];
@@ -52,52 +53,10 @@ export class SudokuSystem extends BaseSystem {
     }
   }
 
-  onUpdate(context: SystemContext): void {
-    const {events} = context;
-    if (!this.state) return;
+  onUpdate({events}: SystemContext): void {
+    if (!this.state || !this.dirty) return;
+    this.dirty = false;
     const state = this.state;
-
-    // --- Input ---
-    if (!state.complete) {
-      if (inputService.isActionJustPressed('moveUp')) {
-        if (state.selectedRow === -1) { state.selectedRow = 0; state.selectedCol = 0; }
-        else state.selectedRow = Math.max(0, state.selectedRow - 1);
-      }
-      if (inputService.isActionJustPressed('moveDown')) {
-        if (state.selectedRow === -1) { state.selectedRow = 0; state.selectedCol = 0; }
-        else state.selectedRow = Math.min(8, state.selectedRow + 1);
-      }
-      if (inputService.isActionJustPressed('moveLeft')) {
-        if (state.selectedCol === -1) { state.selectedRow = 0; state.selectedCol = 0; }
-        else state.selectedCol = Math.max(0, state.selectedCol - 1);
-      }
-      if (inputService.isActionJustPressed('moveRight')) {
-        if (state.selectedCol === -1) { state.selectedRow = 0; state.selectedCol = 0; }
-        else state.selectedCol = Math.min(8, state.selectedCol + 1);
-      }
-
-      if (mouseService.justDown) {
-        const col = Math.floor((mouseService.position.x - GRID_X) / CELL_SIZE);
-        const row = Math.floor((mouseService.position.y - GRID_Y) / CELL_SIZE);
-        if (row >= 0 && row <= 8 && col >= 0 && col <= 8) {
-          state.selectedRow = row;
-          state.selectedCol = col;
-        }
-      }
-
-      const r = state.selectedRow;
-      const c = state.selectedCol;
-      if (r >= 0 && c >= 0 && state.given[r]![c] === 0) {
-        for (let d = 1; d <= 9; d++) {
-          if (inputService.isActionJustPressed(`num${d}`)) {
-            state.board[r]![c] = d;
-          }
-        }
-        if (inputService.isActionJustPressed('clear')) {
-          state.board[r]![c] = 0;
-        }
-      }
-    }
 
     // --- Conflict detection ---
     const conflicts = new Set<string>();
