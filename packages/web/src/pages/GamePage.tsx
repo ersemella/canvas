@@ -3,6 +3,7 @@ import type {ComponentType} from 'react';
 import {useParams, Navigate} from 'react-router-dom';
 import {Center, Loader, Text, Box, Title, Stack} from '@mantine/core';
 import {GameCanvas} from 'components/GameCanvas';
+import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {GameLog} from 'components/GameLog';
 import {games} from 'registry/games';
 import gameLayout from 'styles/gameLayout.module.css';
@@ -85,14 +86,16 @@ export function GamePage() {
     return (
       <Box className={styles.withSidePanel!}>
         <Box className={gameLayout.canvasWithPanel!}>
-          <GameCanvas
-            sceneData={sceneData}
-            systems={gameSystems}
-            events={gameEvents}
-            width={canvasSize.width}
-            height={canvasSize.height}
-            onReady={handleReady}
-          />
+          <GameErrorBoundary>
+            <GameCanvas
+              sceneData={sceneData}
+              systems={gameSystems}
+              events={gameEvents}
+              width={canvasSize.width}
+              height={canvasSize.height}
+              onReady={handleReady}
+            />
+          </GameErrorBoundary>
           <Box className={gameLayout.sidePanel!} style={{height: canvasSize.height}}>
             {worldEvents && <SidePanel events={worldEvents} />}
             <GameLog entries={logEntries} />
@@ -106,14 +109,16 @@ export function GamePage() {
     <Stack align="center" py="xl" gap="lg">
       <Title order={2} fz="xl">{gameDescriptor.title}</Title>
       <Box className={styles.canvasRound!}>
-        <GameCanvas
-          sceneData={sceneData}
-          systems={gameSystems}
-          events={gameEvents}
-          width={canvasSize.width}
-          height={canvasSize.height}
-          onReady={handleReady}
-        />
+        <GameErrorBoundary>
+          <GameCanvas
+            sceneData={sceneData}
+            systems={gameSystems}
+            events={gameEvents}
+            width={canvasSize.width}
+            height={canvasSize.height}
+            onReady={handleReady}
+          />
+        </GameErrorBoundary>
       </Box>
     </Stack>
   );
