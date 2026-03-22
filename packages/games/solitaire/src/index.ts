@@ -102,6 +102,7 @@ function buildScene(): SceneData {
           },
           Card: {rank: card.rank, suit: card.suit, faceUp, pileId, posInPile: pos},
           Draggable: {enabled: faceUp},
+          DragGroup: {groupId: pileId, groupOrder: pos},
         },
       });
 
@@ -170,6 +171,7 @@ function buildScene(): SceneData {
         },
         Card: {rank: card.rank, suit: card.suit, faceUp: false, pileId: 'stock', posInPile: pos},
         Draggable: {enabled: false},
+        DragGroup: {groupId: '', groupOrder: 0},
       },
     });
 

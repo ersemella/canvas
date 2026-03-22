@@ -1,8 +1,8 @@
 import {BaseSystem} from '@canvas/engine';
 import type {SystemContext, Scene, EventBus} from '@canvas/engine';
 import type {DataComponent, RenderableComponent, TransformComponent} from '@canvas/engine';
-import type {CardData, DraggableData} from '@canvas/engine';
-import type {DragDropBeforePayload, DragDropDroppedPayload, ClickPayload} from '@canvas/engine';
+import type {CardData, DraggableData, DragGroupData} from '@canvas/engine';
+import type {DragDropDroppedPayload, ClickPayload} from '@canvas/engine';
 import {TOP_Y, TABLEAU_Y, FACE_DOWN_STEP, FACE_UP_STEP, rankLabels, redSuits, colX} from './constants';
 
 function pileAnchor(pileId: string): {x: number; y: number} {
@@ -50,20 +50,6 @@ export class SolitaireSystem extends BaseSystem {
 
     this.recomputeAllPositions();
 
-    // Subscribe: add group members for tableau group drag
-    events.on<DragDropBeforePayload>('dragdrop:before', ({primaryId, addToDrag}: DragDropBeforePayload) => {
-      const cd = this.getCardData(primaryId);
-      if (!cd) return;
-      const {pileId} = cd.data;
-      if (!pileId.startsWith('t')) return;
-      const pile = this.piles.get(pileId) ?? [];
-      const idx = pile.indexOf(primaryId);
-      if (idx === -1) return;
-      for (let i = idx + 1; i < pile.length; i++) {
-        addToDrag(pile[i]!);
-      }
-    });
-
     // Subscribe: stock click → deal
     events.on<ClickPayload>('click', ({entityId}: ClickPayload) => {
       if (entityId === 'stock') this.dealFromStock();
@@ -95,6 +81,11 @@ export class SolitaireSystem extends BaseSystem {
         reject();
       }
     });
+  }
+
+  private setDragGroup(entityId: string, groupId: string, groupOrder: number): void {
+    const dg = this.scene?.getEntity(entityId)?.getComponent<DataComponent<DragGroupData>>('DragGroup');
+    if (dg) { dg.data.groupId = groupId; dg.data.groupOrder = groupOrder; }
   }
 
   private setDraggable(entityId: string, enabled: boolean): void {
@@ -229,6 +220,7 @@ export class SolitaireSystem extends BaseSystem {
       cd.data.pileId = targetPileId;
       cd.data.posInPile = targetPile.length;
       targetPile.push(cardId);
+      this.setDragGroup(cardId, targetPileId.startsWith('t') ? targetPileId : '', cd.data.posInPile);
     }
 
     // Flip newly exposed top card in origin pile
@@ -284,6 +276,7 @@ export class SolitaireSystem extends BaseSystem {
         cd.data.posInPile = wastePile.length;
         this.updateCardVisuals(id);
         this.setDraggable(id, true);
+        this.setDragGroup(id, '', 0);
       }
       wastePile.push(id);
     }

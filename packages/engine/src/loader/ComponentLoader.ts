@@ -21,6 +21,7 @@ import type {DraggableData} from 'components/DraggableComponent';
 import type {DropTargetData} from 'components/DropTargetComponent';
 import type {ChildOfData} from 'components/ChildOfComponent';
 import type {ClickableData} from 'components/ClickableComponent';
+import type {DragGroupData} from 'components/DragGroupComponent';
 
 // Register all built-in components
 import {TransformComponent} from 'components/TransformComponent';
@@ -84,6 +85,7 @@ export function registerBuiltinComponents(): void {
   registerDataComponent<DropTargetData>('DropTarget');
   registerDataComponent<ChildOfData>('ChildOf');
   registerDataComponent<ClickableData>('Clickable');
+  registerDataComponent<DragGroupData>('DragGroup');
 }
 
 export function loadComponents(

@@ -5,6 +5,7 @@ export interface ChildOfData {
   offsetX: number;
   offsetY: number;
   zIndexOffset: number;
+  syncZIndex?: boolean; // defaults to true; set false to sync position only
 }
 
 registerDataComponent<ChildOfData>('ChildOf');

@@ -27,7 +27,9 @@ export class ChildTransformSystem extends BaseSystem {
 
       childT.position.x = parentT.position.x + offsetX;
       childT.position.y = parentT.position.y + offsetY;
-      childR.zIndex = parentR.zIndex + zIndexOffset;
+      if (childOf.data.syncZIndex !== false) {
+        childR.zIndex = parentR.zIndex + zIndexOffset;
+      }
     }
   }
 }

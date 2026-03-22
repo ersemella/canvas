@@ -28,6 +28,7 @@ export type {CardData} from 'components/CardComponent';
 export type {DraggableData} from 'components/DraggableComponent';
 export type {DropTargetData} from 'components/DropTargetComponent';
 export type {ChildOfData} from 'components/ChildOfComponent';
+export type {DragGroupData} from 'components/DragGroupComponent';
 export type {RenderType} from 'components/RenderableComponent';
 
 // Systems — core (flat)

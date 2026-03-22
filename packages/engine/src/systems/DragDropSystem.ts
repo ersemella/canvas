@@ -5,6 +5,7 @@ import type {TransformComponent} from 'components/TransformComponent';
 import type {RenderableComponent} from 'components/RenderableComponent';
 import type {DraggableData} from 'components/DraggableComponent';
 import type {DropTargetData} from 'components/DropTargetComponent';
+import type {DragGroupData} from 'components/DragGroupComponent';
 import {mouseService} from 'systems/MouseSystem';
 
 export interface DragDropBeforePayload {
@@ -65,7 +66,24 @@ export class DragDropSystem extends BaseSystem {
         const primaryId = best.id;
         const entityIds: string[] = [primaryId];
 
-        // Let the game add group members synchronously
+        // Auto-add DragGroup members with higher groupOrder in the same group
+        const primaryGroup = best.getComponent<DataComponent<DragGroupData>>('DragGroup');
+        if (primaryGroup && primaryGroup.data.groupId !== '') {
+          const {groupId, groupOrder} = primaryGroup.data;
+          const groupEntities = scene.query({all: ['DragGroup', 'Transform', 'Renderable']});
+          const members: Array<{id: string; order: number}> = [];
+          for (const entity of groupEntities) {
+            if (entity.id === primaryId) continue;
+            const g = entity.getComponent<DataComponent<DragGroupData>>('DragGroup')!;
+            if (g.data.groupId === groupId && g.data.groupOrder > groupOrder) {
+              members.push({id: entity.id, order: g.data.groupOrder});
+            }
+          }
+          members.sort((a, b) => a.order - b.order);
+          for (const m of members) entityIds.push(m.id);
+        }
+
+        // Let the game add additional group members synchronously
         events.emit<DragDropBeforePayload>('dragdrop:before', {
           primaryId,
           addToDrag: (id: string) => {
