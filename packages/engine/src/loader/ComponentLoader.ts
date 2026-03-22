@@ -83,6 +83,7 @@ export function registerBuiltinComponents(): void {
   registerDataComponent<DraggableData>('Draggable');
   registerDataComponent<DropTargetData>('DropTarget');
   registerDataComponent<ChildOfData>('ChildOf');
+  registerDataComponent<ClickableData>('Clickable');
 }
 
 export function loadComponents(
