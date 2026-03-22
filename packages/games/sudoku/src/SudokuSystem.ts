@@ -1,5 +1,5 @@
-import {ReactiveSystem} from '@canvas/engine';
-import type {SystemContext, RenderableComponent} from '@canvas/engine';
+import {ReactiveSystem, inputService} from '@canvas/engine';
+import type {SystemContext, RenderableComponent, GridCursorPayload} from '@canvas/engine';
 import {generatePuzzle} from './generator';
 import type {SudokuState} from './types';
 
@@ -13,12 +13,16 @@ export class SudokuSystem extends ReactiveSystem {
   state: SudokuState | null = null;
   conflicts: Set<string> = new Set();
 
-  triggerUpdate(): void { this.markDirty(); }
-
   private cellBg: RenderableComponent[][] = [];
   private cellNum: RenderableComponent[][] = [];
 
-  onInit({scene}: Omit<SystemContext, 'deltaTime'>): void {
+  onInit({scene, events}: Omit<SystemContext, 'deltaTime'>): void {
+    events.on<GridCursorPayload>('cursor:moved', ({row, col}) => {
+      if (!this.state) return;
+      this.state.selectedRow = row;
+      this.state.selectedCol = col;
+      this.markDirty();
+    });
     const given = generatePuzzle();
     this.state = {
       given,
@@ -51,6 +55,31 @@ export class SudokuSystem extends ReactiveSystem {
           }
         }
       }
+    }
+  }
+
+  onUpdate(context: SystemContext): void {
+    this.handleDigitInput();
+    super.onUpdate(context);
+  }
+
+  private handleDigitInput(): void {
+    const state = this.state;
+    if (!state || state.complete) return;
+    const r = state.selectedRow;
+    const c = state.selectedCol;
+    if (r < 0 || c < 0 || state.given[r]![c] !== 0) return;
+
+    for (let d = 1; d <= 9; d++) {
+      if (inputService.isActionJustPressed(`num${d}`)) {
+        state.board[r]![c] = d;
+        this.markDirty();
+        return;
+      }
+    }
+    if (inputService.isActionJustPressed('clear')) {
+      state.board[r]![c] = 0;
+      this.markDirty();
     }
   }
 

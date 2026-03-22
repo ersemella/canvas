@@ -44,6 +44,12 @@ export type {DragDropBeforePayload, DragDropDroppedPayload} from 'systems/DragDr
 export {ClickSystem} from 'systems/ClickSystem';
 export type {ClickPayload} from 'systems/ClickSystem';
 export type {ClickableData} from 'components/ClickableComponent';
+export {GridCursorSystem} from 'systems/GridCursorSystem';
+export type {GridCursorPayload} from 'systems/GridCursorSystem';
+export type {GridCursorData} from 'components/GridCursorComponent';
+export {PileLayoutSystem} from 'systems/PileLayoutSystem';
+export type {PileLayoutData} from 'components/PileLayoutComponent';
+export type {PileMemberData} from 'components/PileMemberComponent';
 
 // Systems — physics (mutually exclusive with grid)
 export {PhysicsSystem} from 'systems/physics/PhysicsSystem';

@@ -1,7 +1,9 @@
-import type {GameModule, SceneData, EntityData} from '@canvas/engine';
-import {SystemRegistry, MouseSystem, DragDropSystem} from '@canvas/engine';
+import {createGameModule, SystemRegistry} from '@canvas/engine';
+import type {EntityData} from '@canvas/engine';
 import {SolitaireSystem} from './SolitaireSystem';
-import {CARD_W, CARD_H, TOP_Y, TABLEAU_Y, suits, rankLabels, redSuits, colX} from './constants';
+import {CARD_W, CARD_H, TOP_Y, TABLEAU_Y, FACE_UP_STEP, FACE_DOWN_STEP, suits, rankLabels, redSuits, colX} from './constants';
+
+SystemRegistry.register('SolitaireSystem', SolitaireSystem);
 
 function shuffle<T>(arr: T[]): T[] {
   const a = arr.slice();
@@ -14,18 +16,18 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-function buildScene(): SceneData {
+function buildScene() {
   const entities: EntityData[] = [];
 
   // Slot entities
-  const slots: Array<{id: string; x: number; y: number}> = [
+  const slots: Array<{id: string; x: number; y: number; isTableau?: boolean}> = [
     {id: 'stock', x: colX(0), y: TOP_Y},
     {id: 'waste', x: colX(1), y: TOP_Y},
     {id: 'f0', x: colX(3), y: TOP_Y},
     {id: 'f1', x: colX(4), y: TOP_Y},
     {id: 'f2', x: colX(5), y: TOP_Y},
     {id: 'f3', x: colX(6), y: TOP_Y},
-    ...Array.from({length: 7}, (_, i) => ({id: `t${i}`, x: colX(i), y: TABLEAU_Y})),
+    ...Array.from({length: 7}, (_, i) => ({id: `t${i}`, x: colX(i), y: TABLEAU_Y, isTableau: true})),
   ];
 
   for (const slot of slots) {
@@ -43,6 +45,14 @@ function buildScene(): SceneData {
           color: '#2a4a2a',
           zIndex: -1,
           visible: true,
+        },
+        PileLayout: {
+          pileId: slot.id,
+          anchorX: slot.x,
+          anchorY: slot.y,
+          expandedStep: slot.isTableau ? FACE_UP_STEP : 0,
+          collapsedStep: slot.isTableau ? FACE_DOWN_STEP : 0,
+          trackTop: slot.isTableau === true,
         },
         ...(isStock ? {Clickable: {enabled: true}} : {}),
         ...(isDropTarget ? {DropTarget: {targetId: slot.id}} : {}),
@@ -103,6 +113,7 @@ function buildScene(): SceneData {
           Card: {rank: card.rank, suit: card.suit, faceUp, pileId, posInPile: pos},
           Draggable: {enabled: faceUp},
           DragGroup: {groupId: pileId, groupOrder: pos},
+          PileMember: {pileId, posInPile: pos, expanded: faceUp},
         },
       });
 
@@ -172,6 +183,7 @@ function buildScene(): SceneData {
         Card: {rank: card.rank, suit: card.suit, faceUp: false, pileId: 'stock', posInPile: pos},
         Draggable: {enabled: false},
         DragGroup: {groupId: '', groupOrder: 0},
+        PileMember: {pileId: 'stock', posInPile: pos, expanded: false},
       },
     });
 
@@ -217,20 +229,9 @@ function buildScene(): SceneData {
   return {name: 'solitaire', entities};
 }
 
-export default {
-  register(): void {
-    SystemRegistry.register('SolitaireSystem', SolitaireSystem);
-  },
-  getSceneData(): SceneData {
-    return buildScene();
-  },
-  getSystems() {
-    return [new MouseSystem(), new DragDropSystem(), new SolitaireSystem()];
-  },
-  getEvents() {
-    return {onDeath: 'solitaire:won'};
-  },
-  getCanvas() {
-    return {width: 700, height: 580};
-  },
-} satisfies GameModule;
+export default createGameModule({
+  canvas: {width: 700, height: 580},
+  systems: ['MouseSystem', 'DragDropSystem', 'SolitaireSystem', 'PileLayoutSystem'],
+  events: {onDeath: 'solitaire:won'},
+  scene: buildScene(),
+});

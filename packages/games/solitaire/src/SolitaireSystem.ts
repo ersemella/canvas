@@ -1,20 +1,10 @@
 import {BaseSystem} from '@canvas/engine';
 import type {SystemContext, Scene, EventBus} from '@canvas/engine';
-import type {DataComponent, RenderableComponent, TransformComponent} from '@canvas/engine';
-import type {CardData, DraggableData, DragGroupData} from '@canvas/engine';
+import type {DataComponent, RenderableComponent} from '@canvas/engine';
+import type {CardData, DraggableData, DragGroupData, PileMemberData} from '@canvas/engine';
 import type {DragDropDroppedPayload, ClickPayload} from '@canvas/engine';
-import {TOP_Y, TABLEAU_Y, FACE_DOWN_STEP, FACE_UP_STEP, rankLabels, redSuits, colX} from './constants';
+import {rankLabels, redSuits} from './constants';
 
-function pileAnchor(pileId: string): {x: number; y: number} {
-  if (pileId === 'stock') return {x: colX(0), y: TOP_Y};
-  if (pileId === 'waste') return {x: colX(1), y: TOP_Y};
-  if (pileId === 'f0') return {x: colX(3), y: TOP_Y};
-  if (pileId === 'f1') return {x: colX(4), y: TOP_Y};
-  if (pileId === 'f2') return {x: colX(5), y: TOP_Y};
-  if (pileId === 'f3') return {x: colX(6), y: TOP_Y};
-  const col = parseInt(pileId[1]!);
-  return {x: colX(col), y: TABLEAU_Y};
-}
 
 export class SolitaireSystem extends BaseSystem {
   readonly priority = 100;
@@ -48,7 +38,7 @@ export class SolitaireSystem extends BaseSystem {
       this.piles.set(pileId, cards.map((c) => c.entityId));
     }
 
-    this.recomputeAllPositions();
+    this.syncPileMembers();
 
     // Subscribe: stock click → deal
     events.on<ClickPayload>('click', ({entityId}: ClickPayload) => {
@@ -101,60 +91,25 @@ export class SolitaireSystem extends BaseSystem {
     return this.scene?.getEntity(entityId)?.getComponent<RenderableComponent>('Renderable');
   }
 
-  private getTransform(entityId: string): TransformComponent | undefined {
-    return this.scene?.getEntity(entityId)?.getComponent<TransformComponent>('Transform');
+
+  private getPileMember(entityId: string): DataComponent<PileMemberData> | undefined {
+    return this.scene?.getEntity(entityId)?.getComponent<DataComponent<PileMemberData>>('PileMember');
   }
 
-  private cardY(pileId: string, posInPile: number): number {
-    const anchor = pileAnchor(pileId);
-    if (!pileId.startsWith('t')) return anchor.y;
-
-    const pile = this.piles.get(pileId) ?? [];
-    let y = anchor.y;
-    for (let i = 0; i < posInPile && i < pile.length; i++) {
-      const cd = this.getCardData(pile[i]!);
-      y += cd?.data.faceUp ? FACE_UP_STEP : FACE_DOWN_STEP;
-    }
-    return y;
-  }
-
-  private recomputeAllPositions(): void {
+  private syncPileMembers(): void {
     for (const [pileId, pile] of this.piles) {
-      const anchor = pileAnchor(pileId);
       for (let i = 0; i < pile.length; i++) {
         const entityId = pile[i]!;
-        const transform = this.getTransform(entityId);
-        if (transform) {
-          transform.position.x = anchor.x;
-          transform.position.y = this.cardY(pileId, i);
-        }
-        const renderable = this.getRenderable(entityId);
-        if (renderable) {
-          renderable.zIndex = i * 2;
+        const cd = this.getCardData(entityId);
+        const member = this.getPileMember(entityId);
+        if (member && cd) {
+          member.data.pileId = pileId;
+          member.data.posInPile = i;
+          member.data.expanded = cd.data.faceUp;
         }
       }
     }
-
-    // Update tableau slot transforms to follow pile tops (for DropTarget overlap detection)
-    for (let col = 0; col < 7; col++) {
-      const pileId = `t${col}`;
-      const pile = this.piles.get(pileId) ?? [];
-      const slotEntity = this.scene?.getEntity(pileId);
-      if (!slotEntity) continue;
-      const slotT = slotEntity.getComponent<TransformComponent>('Transform');
-      if (!slotT) continue;
-      if (pile.length === 0) {
-        const anchor = pileAnchor(pileId);
-        slotT.position.x = anchor.x;
-        slotT.position.y = anchor.y;
-      } else {
-        const topT = this.getTransform(pile[pile.length - 1]!);
-        if (topT) {
-          slotT.position.x = topT.position.x;
-          slotT.position.y = topT.position.y;
-        }
-      }
-    }
+    this.eventsRef?.emit('pile:layout_dirty', {});
   }
 
   private getLabelRenderable(cardId: string, suffix: 'tl' | 'br'): RenderableComponent | undefined {
@@ -234,7 +189,7 @@ export class SolitaireSystem extends BaseSystem {
       }
     }
 
-    this.recomputeAllPositions();
+    this.syncPileMembers();
     this.checkWin();
   }
 
@@ -290,6 +245,6 @@ export class SolitaireSystem extends BaseSystem {
       if (cd) cd.data.posInPile = i;
     }
 
-    this.recomputeAllPositions();
+    this.syncPileMembers();
   }
 }

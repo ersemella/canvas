@@ -1,9 +1,10 @@
-import type {GameModule, SceneData, EntityData} from '@canvas/engine';
-import {MouseSystem} from '@canvas/engine';
+import {createGameModule, SystemRegistry} from '@canvas/engine';
+import type {EntityData} from '@canvas/engine';
 import {SudokuSystem, GRID_X, GRID_Y, CELL_SIZE} from './SudokuSystem';
-import {SudokuInputSystem} from './SudokuInputSystem';
 
-function buildScene(): SceneData {
+SystemRegistry.register('SudokuSystem', SudokuSystem);
+
+function buildScene() {
   const entities: EntityData[] = [];
 
   // Input handler entity
@@ -11,6 +12,7 @@ function buildScene(): SceneData {
     id: 'board',
     components: {
       Transform: {position: {x: 0, y: 0}, rotation: 0, scale: {x: 1, y: 1}},
+      GridCursor: {rows: 9, cols: 9, cellSize: CELL_SIZE, originX: GRID_X, originY: GRID_Y, selectedRow: -1, selectedCol: -1},
       Input: {
         actionMap: {
           num1: ['Digit1', 'Numpad1'],
@@ -69,7 +71,6 @@ function buildScene(): SceneData {
   // Thin grid lines (between cells, not at box borders)
   const thinIndices = [1, 2, 4, 5, 7, 8];
   for (const i of thinIndices) {
-    // Vertical
     entities.push({
       id: `vline-${i}`,
       components: {
@@ -80,7 +81,6 @@ function buildScene(): SceneData {
         Renderable: {width: 1, height: 9 * CELL_SIZE, color: '#999999', zIndex: 2},
       },
     });
-    // Horizontal
     entities.push({
       id: `hline-${i}`,
       components: {
@@ -139,19 +139,9 @@ function buildScene(): SceneData {
   return {name: 'sudoku', entities};
 }
 
-export default {
-  register(): void {},
-  getSceneData(): SceneData {
-    return buildScene();
-  },
-  getSystems() {
-    const game = new SudokuSystem();
-    return [new MouseSystem(), new SudokuInputSystem(game), game];
-  },
-  getEvents() {
-    return {onDeath: 'sudoku:complete'};
-  },
-  getCanvas() {
-    return {width: 500, height: 520};
-  },
-} satisfies GameModule;
+export default createGameModule({
+  canvas: {width: 500, height: 520},
+  systems: ['MouseSystem', 'GridCursorSystem', 'SudokuSystem'],
+  events: {onDeath: 'sudoku:complete'},
+  scene: buildScene(),
+});

@@ -16,12 +16,17 @@ import {MouseSystem} from 'systems/MouseSystem';
 import {DragDropSystem} from 'systems/DragDropSystem';
 import {ChildTransformSystem} from 'systems/ChildTransformSystem';
 import {ClickSystem} from 'systems/ClickSystem';
+import {GridCursorSystem} from 'systems/GridCursorSystem';
+import {PileLayoutSystem} from 'systems/PileLayoutSystem';
 import type {CardData} from 'components/CardComponent';
 import type {DraggableData} from 'components/DraggableComponent';
 import type {DropTargetData} from 'components/DropTargetComponent';
 import type {ChildOfData} from 'components/ChildOfComponent';
 import type {ClickableData} from 'components/ClickableComponent';
 import type {DragGroupData} from 'components/DragGroupComponent';
+import type {GridCursorData} from 'components/GridCursorComponent';
+import type {PileLayoutData} from 'components/PileLayoutComponent';
+import type {PileMemberData} from 'components/PileMemberComponent';
 
 // Register all built-in components
 import {TransformComponent} from 'components/TransformComponent';
@@ -46,6 +51,8 @@ export function registerBuiltinSystems(): void {
   SystemRegistry.register('DragDropSystem', DragDropSystem);
   SystemRegistry.register('ChildTransformSystem', ChildTransformSystem);
   SystemRegistry.register('ClickSystem', ClickSystem);
+  SystemRegistry.register('GridCursorSystem', GridCursorSystem);
+  SystemRegistry.register('PileLayoutSystem', PileLayoutSystem);
 }
 
 export function registerBuiltinComponents(): void {
@@ -86,6 +93,9 @@ export function registerBuiltinComponents(): void {
   registerDataComponent<ChildOfData>('ChildOf');
   registerDataComponent<ClickableData>('Clickable');
   registerDataComponent<DragGroupData>('DragGroup');
+  registerDataComponent<GridCursorData>('GridCursor');
+  registerDataComponent<PileLayoutData>('PileLayout');
+  registerDataComponent<PileMemberData>('PileMember');
 }
 
 export function loadComponents(
