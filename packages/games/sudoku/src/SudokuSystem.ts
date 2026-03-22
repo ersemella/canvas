@@ -1,11 +1,11 @@
 import {BaseSystem, inputService, mouseService} from '@canvas/engine';
-import type {SystemContext} from '@canvas/engine';
+import type {SystemContext, RenderableComponent} from '@canvas/engine';
 import {generatePuzzle} from './generator';
 import type {SudokuState} from './types';
 
-const GRID_X = 25;
-const GRID_Y = 25;
-const CELL_SIZE = 50;
+export const GRID_X = 25;
+export const GRID_Y = 25;
+export const CELL_SIZE = 50;
 
 export class SudokuSystem extends BaseSystem {
   readonly priority = 100;
@@ -13,7 +13,10 @@ export class SudokuSystem extends BaseSystem {
   state: SudokuState | null = null;
   conflicts: Set<string> = new Set();
 
-  onInit(_context: Omit<SystemContext, 'deltaTime'>): void {
+  private cellBg: RenderableComponent[][] = [];
+  private cellNum: RenderableComponent[][] = [];
+
+  onInit({scene}: Omit<SystemContext, 'deltaTime'>): void {
     const given = generatePuzzle();
     this.state = {
       given,
@@ -23,6 +26,30 @@ export class SudokuSystem extends BaseSystem {
       complete: false,
     };
     this.conflicts = new Set();
+
+    // Cache entity renderables and set initial state
+    for (let row = 0; row < 9; row++) {
+      this.cellBg[row] = [];
+      this.cellNum[row] = [];
+      for (let col = 0; col < 9; col++) {
+        const bg = scene.getEntity(`cell-${row}-${col}`)
+          ?.getComponent<RenderableComponent>('Renderable');
+        const num = scene.getEntity(`cell-${row}-${col}-num`)
+          ?.getComponent<RenderableComponent>('Renderable');
+
+        if (bg) this.cellBg[row]![col] = bg;
+        if (num) {
+          this.cellNum[row]![col] = num;
+          const val = given[row]![col]!;
+          if (val !== 0) {
+            num.text = String(val);
+            num.bold = true;
+            num.textColor = '#1a1a2e';
+            num.visible = true;
+          }
+        }
+      }
+    }
   }
 
   onUpdate(context: SystemContext): void {
@@ -104,6 +131,54 @@ export class SudokuSystem extends BaseSystem {
     }
     this.conflicts = conflicts;
 
+    // --- Update entity renderables ---
+    const sr = state.selectedRow;
+    const sc = state.selectedCol;
+
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        const bg = this.cellBg[row]![col];
+        const num = this.cellNum[row]![col];
+
+        if (bg) {
+          let color = '#ffffff';
+          if (sr >= 0 && sc >= 0) {
+            const sameBox =
+              Math.floor(row / 3) === Math.floor(sr / 3) &&
+              Math.floor(col / 3) === Math.floor(sc / 3);
+            if (row === sr && col === sc) {
+              color = '#b3d9ff';
+            } else if (row === sr || col === sc || sameBox) {
+              color = '#e8f4ff';
+            }
+          }
+          bg.color = color;
+        }
+
+        if (num) {
+          const val = state.board[row]![col]!;
+          if (val === 0) {
+            num.visible = false;
+          } else {
+            const isGiven = state.given[row]![col] !== 0;
+            const isConflict = conflicts.has(`${row},${col}`);
+            num.text = String(val);
+            num.visible = true;
+            if (isConflict && !isGiven) {
+              num.textColor = '#c0392b';
+              num.bold = false;
+            } else if (isGiven) {
+              num.textColor = '#1a1a2e';
+              num.bold = true;
+            } else {
+              num.textColor = '#1a5276';
+              num.bold = false;
+            }
+          }
+        }
+      }
+    }
+
     // --- Win detection ---
     if (!state.complete) {
       let hasEmpty = false;
@@ -119,6 +194,3 @@ export class SudokuSystem extends BaseSystem {
     }
   }
 }
-
-// Constants exported for the render system
-export {GRID_X, GRID_Y, CELL_SIZE};

@@ -27,15 +27,14 @@ export {TagComponent} from 'components/TagComponent';
 export type {CardData} from 'components/CardComponent';
 export type {DraggableData} from 'components/DraggableComponent';
 export type {DropTargetData} from 'components/DropTargetComponent';
+export type {ChildOfData} from 'components/ChildOfComponent';
+export type {RenderType} from 'components/RenderableComponent';
 
 // Systems — core (flat)
 export {InputSystem, inputService} from 'systems/InputSystem';
 export {InputFlushSystem} from 'systems/InputFlushSystem';
-export {RendererSystem} from 'systems/renderer/RendererSystem';
-export {RectRendererSystem} from 'systems/renderer/RectRendererSystem';
-export {CardRendererSystem} from 'systems/renderer/CardRendererSystem';
-export {RenderFlushSystem} from 'systems/renderer/RenderFlushSystem';
-export {BaseRenderSystem} from 'systems/renderer/BaseRenderSystem';
+export {RenderSystem} from 'systems/RenderSystem';
+export {ChildTransformSystem} from 'systems/ChildTransformSystem';
 export {TriggerSystem} from 'systems/TriggerSystem';
 export type {TriggerData} from 'systems/TriggerSystem';
 export {MouseSystem, mouseService} from 'systems/MouseSystem';

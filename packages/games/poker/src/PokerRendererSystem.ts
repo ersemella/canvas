@@ -57,7 +57,7 @@ function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, card: Car
 }
 
 export class PokerRendererSystem extends BaseSystem {
-  readonly priority = 993;
+  readonly priority = 996;
   private gameState: PokerGameState;
 
   constructor(gameState: PokerGameState) {

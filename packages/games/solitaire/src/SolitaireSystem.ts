@@ -51,7 +51,7 @@ export class SolitaireSystem extends BaseSystem {
     this.recomputeAllPositions();
 
     // Subscribe: add group members for tableau group drag
-    events.on<DragDropBeforePayload>('dragdrop:before', ({primaryId, addToDrag}) => {
+    events.on<DragDropBeforePayload>('dragdrop:before', ({primaryId, addToDrag}: DragDropBeforePayload) => {
       const cd = this.getCardData(primaryId);
       if (!cd) return;
       const {pileId} = cd.data;
@@ -65,7 +65,7 @@ export class SolitaireSystem extends BaseSystem {
     });
 
     // Subscribe: validate drop and commit or reject
-    events.on<DragDropDroppedPayload>('dragdrop:dropped', ({entityIds, targetId, accept, reject}) => {
+    events.on<DragDropDroppedPayload>('dragdrop:dropped', ({entityIds, targetId, accept, reject}: DragDropDroppedPayload) => {
       if (!targetId) {
         reject();
         return;
@@ -161,17 +161,31 @@ export class SolitaireSystem extends BaseSystem {
     }
   }
 
+  private getLabelRenderable(cardId: string, suffix: 'tl' | 'br'): RenderableComponent | undefined {
+    return this.scene?.getEntity(`${cardId}-label-${suffix}`)?.getComponent<RenderableComponent>('Renderable');
+  }
+
   private updateCardVisuals(entityId: string): void {
     const cd = this.getCardData(entityId);
     const renderable = this.getRenderable(entityId);
     if (!cd || !renderable) return;
     if (cd.data.faceUp) {
       renderable.color = '#ffffff';
-      renderable.text = rankLabels[cd.data.rank]! + cd.data.suit;
-      renderable.textColor = redSuits.has(cd.data.suit) ? '#cc0000' : '#000000';
+      const labelText = rankLabels[cd.data.rank]! + cd.data.suit;
+      const labelColor = redSuits.has(cd.data.suit) ? '#cc0000' : '#000000';
+      for (const suffix of ['tl', 'br'] as const) {
+        const lr = this.getLabelRenderable(entityId, suffix);
+        if (!lr) continue;
+        lr.text = labelText;
+        lr.textColor = labelColor;
+        lr.visible = true;
+      }
     } else {
       renderable.color = '#1a3a8c';
-      renderable.text = '';
+      for (const suffix of ['tl', 'br'] as const) {
+        const lr = this.getLabelRenderable(entityId, suffix);
+        if (lr) lr.visible = false;
+      }
     }
   }
 

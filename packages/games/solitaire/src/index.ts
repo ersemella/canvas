@@ -1,5 +1,5 @@
 import type {GameModule, SceneData, EntityData} from '@canvas/engine';
-import {SystemRegistry, MouseSystem, CardRendererSystem, DragDropSystem} from '@canvas/engine';
+import {SystemRegistry, MouseSystem, DragDropSystem} from '@canvas/engine';
 import {SolitaireSystem} from './SolitaireSystem';
 import {CARD_W, CARD_H, TOP_Y, TABLEAU_Y, suits, rankLabels, redSuits, colX} from './constants';
 
@@ -43,15 +43,29 @@ function buildScene(): SceneData {
           color: '#2a4a2a',
           zIndex: -1,
           visible: true,
-          // Stock shows ↩ when empty (visible under no cards); others show nothing
-          text: isStock ? '↩' : '',
-          textColor: '#88cc88',
-          fontSize: 22,
         },
         ...(isDropTarget ? {DropTarget: {targetId: slot.id}} : {}),
       },
     });
   }
+
+  // Static label for stock slot (↩ symbol)
+  entities.push({
+    id: 'stock-label',
+    components: {
+      Transform: {position: {x: colX(0), y: TOP_Y}, rotation: 0, scale: {x: 1, y: 1}},
+      Renderable: {
+        renderType: 'text',
+        width: 0,
+        height: 0,
+        zIndex: -1,
+        visible: true,
+        text: '↩',
+        textColor: '#88cc88',
+        fontSize: 22,
+      },
+    },
+  });
 
   // Build and shuffle deck
   const deck = shuffle(
@@ -69,8 +83,8 @@ function buildScene(): SceneData {
       const faceUp = pos === col;
       const pileId = `t${col}`;
       const cardId = `card-${card.suit}-${card.rank}`;
-      const text = faceUp ? rankLabels[card.rank]! + card.suit : '';
-      const textColor = faceUp && redSuits.has(card.suit) ? '#cc0000' : '#000000';
+      const labelText = faceUp ? rankLabels[card.rank]! + card.suit : '';
+      const labelColor = faceUp && redSuits.has(card.suit) ? '#cc0000' : '#000000';
 
       entities.push({
         id: cardId,
@@ -82,11 +96,51 @@ function buildScene(): SceneData {
             color: faceUp ? '#ffffff' : '#1a3a8c',
             zIndex: pos,
             visible: true,
-            text,
-            textColor,
+            borderColor: '#cccccc',
+            borderWidth: 1,
           },
           Card: {rank: card.rank, suit: card.suit, faceUp, pileId, posInPile: pos},
           Draggable: {enabled: faceUp},
+        },
+      });
+
+      // Top-left label
+      entities.push({
+        id: `${cardId}-label-tl`,
+        components: {
+          Transform: {position: {x: colX(col), y: TABLEAU_Y}, rotation: 0, scale: {x: 1, y: 1}},
+          Renderable: {
+            renderType: 'text',
+            width: 0,
+            height: 0,
+            zIndex: pos + 1,
+            visible: faceUp,
+            text: labelText,
+            textColor: labelColor,
+            fontSize: 14,
+            textAnchor: 'top-left',
+          },
+          ChildOf: {parentId: cardId, offsetX: -(CARD_W / 2) + 4, offsetY: -(CARD_H / 2) + 4, zIndexOffset: 1},
+        },
+      });
+
+      // Bottom-right label (mirrored via rotation=π)
+      entities.push({
+        id: `${cardId}-label-br`,
+        components: {
+          Transform: {position: {x: colX(col), y: TABLEAU_Y}, rotation: Math.PI, scale: {x: 1, y: 1}},
+          Renderable: {
+            renderType: 'text',
+            width: 0,
+            height: 0,
+            zIndex: pos + 1,
+            visible: faceUp,
+            text: labelText,
+            textColor: labelColor,
+            fontSize: 14,
+            textAnchor: 'top-left',
+          },
+          ChildOf: {parentId: cardId, offsetX: (CARD_W / 2) - 4, offsetY: (CARD_H / 2) - 4, zIndexOffset: 1},
         },
       });
     }
@@ -110,9 +164,49 @@ function buildScene(): SceneData {
           color: '#1a3a8c',
           zIndex: pos,
           visible: true,
+          borderColor: '#cccccc',
+          borderWidth: 1,
         },
         Card: {rank: card.rank, suit: card.suit, faceUp: false, pileId: 'stock', posInPile: pos},
         Draggable: {enabled: false},
+      },
+    });
+
+    // Top-left label (hidden for face-down stock cards)
+    entities.push({
+      id: `${cardId}-label-tl`,
+      components: {
+        Transform: {position: {x: colX(0), y: TOP_Y}, rotation: 0, scale: {x: 1, y: 1}},
+        Renderable: {
+          renderType: 'text',
+          width: 0,
+          height: 0,
+          zIndex: pos + 1,
+          visible: false,
+          text: '',
+          fontSize: 14,
+          textAnchor: 'top-left',
+        },
+        ChildOf: {parentId: cardId, offsetX: -(CARD_W / 2) + 4, offsetY: -(CARD_H / 2) + 4, zIndexOffset: 1},
+      },
+    });
+
+    // Bottom-right label (hidden for face-down stock cards)
+    entities.push({
+      id: `${cardId}-label-br`,
+      components: {
+        Transform: {position: {x: colX(0), y: TOP_Y}, rotation: Math.PI, scale: {x: 1, y: 1}},
+        Renderable: {
+          renderType: 'text',
+          width: 0,
+          height: 0,
+          zIndex: pos + 1,
+          visible: false,
+          text: '',
+          fontSize: 14,
+          textAnchor: 'top-left',
+        },
+        ChildOf: {parentId: cardId, offsetX: (CARD_W / 2) - 4, offsetY: (CARD_H / 2) - 4, zIndexOffset: 1},
       },
     });
   }
@@ -128,7 +222,7 @@ export default {
     return buildScene();
   },
   getSystems() {
-    return [new MouseSystem(), new DragDropSystem(), new CardRendererSystem(), new SolitaireSystem()];
+    return [new MouseSystem(), new DragDropSystem(), new SolitaireSystem()];
   },
   getEvents() {
     return {onDeath: 'solitaire:won'};

@@ -5,9 +5,8 @@ import {
   World,
   InputSystem,
   InputFlushSystem,
-  RendererSystem,
-  RectRendererSystem,
-  RenderFlushSystem,
+  RenderSystem,
+  ChildTransformSystem,
   registerBuiltinComponents,
   loadScene,
 } from '@canvas/engine';
@@ -43,9 +42,8 @@ export function GameCanvas({sceneData, systems, events, width = 600, height = 40
 
     world.registerSystem(new InputSystem());
     world.registerSystem(new InputFlushSystem());
-    world.registerSystem(new RendererSystem());
-    world.registerSystem(new RectRendererSystem());
-    world.registerSystem(new RenderFlushSystem());
+    world.registerSystem(new RenderSystem());
+    world.registerSystem(new ChildTransformSystem());
 
     for (const system of systems ?? []) {
       world.registerSystem(system);
