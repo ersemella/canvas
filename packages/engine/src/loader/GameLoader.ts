@@ -1,6 +1,9 @@
 import type {BaseSystem} from 'core/System';
-import type {SceneData} from 'loader/SceneLoader';
+import type {SceneData} from 'types/manifest';
 import {SystemRegistry} from 'core/SystemRegistry';
+import type {GameManifest, SystemName} from 'types/manifest';
+
+export type {GameManifest, SystemName} from 'types/manifest';
 
 export interface GameModule {
   register(): void;
@@ -11,21 +14,14 @@ export interface GameModule {
   getSidePanel?(): unknown;
 }
 
-export interface GameManifest {
-  systems: string[];
-  events?: Record<string, string>;
-  canvas?: {width: number; height: number};
-  scene: SceneData;
-}
-
 const EXCLUSIVE_FAMILIES: string[][] = [
   ['PhysicsSystem', 'GridMovementSystem'],
   ['CollisionSystem', 'GridMovementSystem'],
 ];
 
-function validateExclusiveFamilies(names: string[]): void {
+function validateExclusiveFamilies(names: SystemName[]): void {
   for (const family of EXCLUSIVE_FAMILIES) {
-    const found = family.filter((n) => names.includes(n));
+    const found = family.filter((n) => (names as string[]).includes(n));
     if (found.length > 1) {
       throw new Error(
         `Incompatible systems: [${found.join(', ')}]. Pick at most one from [${family.join(', ')}].`
@@ -34,14 +30,7 @@ function validateExclusiveFamilies(names: string[]): void {
   }
 }
 
-export async function loadGameManifestFromURL(url: string): Promise<GameModule> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to load game manifest from ${url}: ${res.statusText}`);
-  const manifest = (await res.json()) as GameManifest;
-  return createGameModule(manifest);
-}
-
-export function validateManifestSystems(systems: string[]): void {
+export function validateManifestSystems(systems: SystemName[]): void {
   const unknown = systems.filter((name) => !SystemRegistry.has(name));
   if (unknown.length > 0) {
     throw new Error(
@@ -49,6 +38,13 @@ export function validateManifestSystems(systems: string[]): void {
       `Only built-in engine systems can be used in static manifests.`
     );
   }
+}
+
+export async function loadGameManifestFromURL(url: string): Promise<GameModule> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load game manifest from ${url}: ${res.statusText}`);
+  const manifest = (await res.json()) as GameManifest;
+  return createGameModule(manifest);
 }
 
 export function createGameModule(manifest: GameManifest): GameModule {
@@ -63,7 +59,9 @@ export function createGameModule(manifest: GameManifest): GameModule {
       return manifest.systems.map((name) => SystemRegistry.create(name));
     },
     getEvents(): Record<string, string> {
-      return manifest.events ?? {};
+      const result: Record<string, string> = {};
+      if (manifest.events?.onDeath) result['onDeath'] = manifest.events.onDeath;
+      return result;
     },
     getCanvas(): {width: number; height: number} | undefined {
       return manifest.canvas;

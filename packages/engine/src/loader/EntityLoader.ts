@@ -1,11 +1,8 @@
 import {Entity} from 'core/Entity';
 import {loadComponents} from 'loader/ComponentLoader';
+import type {EntityData} from 'types/manifest';
 
-export interface EntityData {
-  id?: string;
-  tags?: string[];
-  components?: Record<string, Record<string, unknown>>;
-}
+export type {EntityData} from 'types/manifest';
 
 export function loadEntity(data: EntityData): Entity {
   const entity = new Entity(data.id);
@@ -17,7 +14,8 @@ export function loadEntity(data: EntityData): Entity {
   }
 
   if (data.components) {
-    const components = loadComponents(data.components);
+    const raw = data.components as Record<string, Record<string, unknown>>;
+    const components = loadComponents(raw);
     for (const component of components) {
       entity.addComponent(component);
     }

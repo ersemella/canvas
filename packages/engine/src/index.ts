@@ -76,10 +76,23 @@ export type {TrailData} from 'systems/grid/TrailSystem';
 
 // Loaders
 export {registerBuiltinComponents, loadComponents, registerBuiltinSystems} from 'loader/ComponentLoader';
-export {createGameModule, loadGameManifestFromURL, validateManifestSystems} from 'loader/GameLoader';
-export type {GameModule, GameManifest} from 'loader/GameLoader';
 export {loadEntity} from 'loader/EntityLoader';
-export type {EntityData} from 'loader/EntityLoader';
 export {loadScene, loadSceneFromURL} from 'loader/SceneLoader';
-export type {SceneData} from 'loader/SceneLoader';
+export {createGameModule, loadGameManifestFromURL, validateManifestSystems} from 'loader/GameLoader';
+export type {GameModule} from 'loader/GameLoader';
+
+// Manifest types — the primary interface for game authors
+export type {
+  GameManifest,
+  SystemName,
+  EntityData,
+  EntityComponents,
+  SceneData,
+  TransformData,
+  RenderableData,
+  RectRenderableData,
+  TextRenderableData,
+  CircleRenderableData,
+  InputData,
+} from 'types/manifest';
 export {assetLoader} from 'loader/AssetLoader';

@@ -1,10 +1,8 @@
 import {Scene} from 'core/Scene';
-import {loadEntity, type EntityData} from 'loader/EntityLoader';
+import {loadEntity} from 'loader/EntityLoader';
+import type {SceneData} from 'types/manifest';
 
-export interface SceneData {
-  name: string;
-  entities: EntityData[];
-}
+export type {SceneData} from 'types/manifest';
 
 export function loadScene(data: SceneData): Scene {
   const scene = new Scene(data.name);
