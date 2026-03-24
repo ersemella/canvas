@@ -335,14 +335,15 @@ export interface EntityComponents {
  * | System | Priority | Purpose |
  * |---|---|---|
  * | `InputSystem` | 0 | Captures raw keyboard state each frame |
- * | `MouseSystem` | 950 | Captures mouse/touch state, flushes at end of frame |
- * | `DragDropSystem` | 50 | Detects drag gestures and emits drop events |
- * | `ClickSystem` | 60 | Detects clicks and emits click events |
- * | `PileLayoutSystem` | 200 | Positions `PileMember` entities within their pile |
- * | `CardPileSystem` | 100 | Evaluates card game rules from `CardPileConfig` |
+ * | `DragDropSystem` | 49 | Detects drag gestures and emits drop events |
+ * | `ClickSystem` | 55 | Detects clicks and emits click events (skipped if drag consumed the release) |
  * | `GridCursorSystem` | 50 | Routes keyboard input to grid cell selection |
+ * | `CardPileSystem` | 100 | Evaluates card game rules from `CardPileConfig` |
  * | `GridPuzzleSystem` | 100 | Evaluates grid puzzle rules from `GridPuzzleConfig` |
- * | `InputFlushSystem` | 950 | Clears just-pressed state at end of frame |
+ * | `PileLayoutSystem` | 120 | Positions `PileMember` entities within their pile |
+ * | `ChildTransformSystem` | 150 | Syncs child entity positions to their parent |
+ * | `MouseSystem` | 950 | Captures mouse/touch state, flushes at end of frame |
+ * | `InputFlushSystem` | 951 | Clears just-pressed state at end of frame |
  */
 export type SystemName =
   | 'InputSystem'

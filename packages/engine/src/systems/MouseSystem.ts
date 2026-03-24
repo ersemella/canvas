@@ -5,9 +5,14 @@ export const mouseService = {
   isDown: false,
   justDown: false,
   justUp: false,
+  upConsumed: false,
+  consumeUp() {
+    this.upConsumed = true;
+  },
   flush() {
     this.justDown = false;
     this.justUp = false;
+    this.upConsumed = false;
   },
 };
 

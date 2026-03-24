@@ -11,10 +11,10 @@ export interface ClickPayload {
 }
 
 export class ClickSystem extends BaseSystem {
-  readonly priority = 50;
+  readonly priority = 55;
 
   onUpdate({scene, events}: SystemContext): void {
-    if (!mouseService.justUp) return;
+    if (!mouseService.justUp || mouseService.upConsumed) return;
 
     const entities = scene.query({all: ['Clickable', 'Transform', 'Renderable']});
     let best = null;

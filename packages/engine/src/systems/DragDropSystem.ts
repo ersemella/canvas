@@ -21,7 +21,7 @@ export interface DragDropDroppedPayload {
 }
 
 export class DragDropSystem extends BaseSystem {
-  readonly priority = 50;
+  readonly priority = 49;
 
   private drag: {
     entityIds: string[];
@@ -173,6 +173,7 @@ export class DragDropSystem extends BaseSystem {
       }
 
       this.drag = null;
+      mouseService.consumeUp();
     }
   }
 }

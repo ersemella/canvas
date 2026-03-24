@@ -31,6 +31,7 @@ export class CardPileSystem extends BaseSystem {
   private piles: Map<string, string[]> = new Map();
   private config: CardPileConfigData | null = null;
   private colorGroupOf: Map<string, string> = new Map();
+  private pileAnchorCache: Map<string, {x: number; y: number}> = new Map();
   private scene: Scene | null = null;
   private eventsRef: EventBus | null = null;
 
@@ -54,6 +55,12 @@ export class CardPileSystem extends BaseSystem {
 
     for (const id of config.pileIds) {
       this.piles.set(id, []);
+    }
+
+    // Build pile anchor cache from PileLayout entities
+    for (const e of scene.query({all: ['PileLayout']})) {
+      const pl = e.getComponent<DataComponent<PileLayoutData>>('PileLayout')!;
+      this.pileAnchorCache.set(pl.data.pileId, {x: pl.data.anchorX, y: pl.data.anchorY});
     }
 
     // If a DeckConfig entity exists, generate and deal the deck instead of reading scene cards
@@ -340,12 +347,7 @@ export class CardPileSystem extends BaseSystem {
   }
 
   private getPileAnchor(pileId: string): {x: number; y: number} {
-    const entities = this.scene?.query({all: ['PileLayout']}) ?? [];
-    for (const e of entities) {
-      const pl = e.getComponent<DataComponent<PileLayoutData>>('PileLayout')!;
-      if (pl.data.pileId === pileId) return {x: pl.data.anchorX, y: pl.data.anchorY};
-    }
-    return {x: 0, y: 0};
+    return this.pileAnchorCache.get(pileId) ?? {x: 0, y: 0};
   }
 
   private initializeDeck(deckConfig: DeckConfigData): void {

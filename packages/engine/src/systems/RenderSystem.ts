@@ -50,19 +50,33 @@ export class RenderSystem extends BaseSystem {
   }
 
   private drawRect(ctx: CanvasRenderingContext2D, r: RenderableComponent): void {
-    ctx.fillStyle = r.color;
-    ctx.fillRect(-r.width / 2, -r.height / 2, r.width, r.height);
-    if (r.borderColor !== undefined) {
-      ctx.strokeStyle = r.borderColor;
-      ctx.lineWidth = r.borderWidth ?? 1;
-      ctx.strokeRect(-r.width / 2, -r.height / 2, r.width, r.height);
+    const x = -r.width / 2;
+    const y = -r.height / 2;
+    if (r.radius !== undefined && r.radius > 0) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, r.width, r.height, r.radius);
+      ctx.fillStyle = r.color;
+      ctx.fill();
+      if (r.borderColor !== undefined) {
+        ctx.strokeStyle = r.borderColor;
+        ctx.lineWidth = r.borderWidth ?? 1;
+        ctx.stroke();
+      }
+    } else {
+      ctx.fillStyle = r.color;
+      ctx.fillRect(x, y, r.width, r.height);
+      if (r.borderColor !== undefined) {
+        ctx.strokeStyle = r.borderColor;
+        ctx.lineWidth = r.borderWidth ?? 1;
+        ctx.strokeRect(x, y, r.width, r.height);
+      }
     }
   }
 
   private drawText(ctx: CanvasRenderingContext2D, r: RenderableComponent): void {
     const text = r.text;
     if (!text) return;
-    const weight = r.bold !== false ? 'bold ' : '';
+    const weight = r.bold === true ? 'bold ' : '';
     ctx.font = `${weight}${r.fontSize ?? 14}px ${r.fontFamily ?? 'monospace'}`;
     ctx.fillStyle = r.textColor ?? '#000000';
     if (r.textAnchor === 'top-left') {
