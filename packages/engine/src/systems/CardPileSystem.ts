@@ -181,6 +181,10 @@ export class CardPileSystem extends BaseSystem {
               this.setDraggable(topId, true);
             }
           }
+        } else if (behavior.type === 'dealFromStock' && originPileId === behavior.wasteId) {
+          if (originPile.length > 0) {
+            this.setDraggable(originPile[originPile.length - 1]!, true);
+          }
         }
       }
     }
