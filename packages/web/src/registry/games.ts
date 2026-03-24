@@ -22,7 +22,7 @@ export const games: GameDescriptor[] = [
     id: 'solitaire',
     title: 'Solitaire',
     description: 'Classic Klondike solitaire. Build up the foundations from Ace to King.',
-    load: () => import('@canvas/games-solitaire').then((m) => ({default: m.default})),
+    load: () => import('@canvas/games-solitaire').then((m) => ({default: createGameModule(m.default as GameManifest)})),
   },
   {
     id: 'poker',
@@ -34,6 +34,6 @@ export const games: GameDescriptor[] = [
     id: 'sudoku',
     title: 'Sudoku',
     description: 'Classic 9×9 Sudoku. Fill the grid with digits 1–9, no repeats in any row, column, or box.',
-    load: () => import('@canvas/games-sudoku').then((m) => ({default: m.default})),
+    load: () => import('@canvas/games-sudoku').then((m) => ({default: createGameModule(m.default as GameManifest)})),
   },
 ];

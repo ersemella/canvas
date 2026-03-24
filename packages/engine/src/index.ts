@@ -50,6 +50,11 @@ export type {GridCursorData} from 'components/GridCursorComponent';
 export {PileLayoutSystem} from 'systems/PileLayoutSystem';
 export type {PileLayoutData} from 'components/PileLayoutComponent';
 export type {PileMemberData} from 'components/PileMemberComponent';
+export {CardPileSystem} from 'systems/CardPileSystem';
+export type {CardPileConfigData, DropRule, DropCondition, BehaviorConfig, WinCondition, TargetMatch} from 'components/CardPileConfigComponent';
+export {GridPuzzleSystem} from 'systems/GridPuzzleSystem';
+export type {GridPuzzleConfigData, GridPuzzleData, PuzzleConstraint, PuzzleVisuals} from 'components/GridPuzzleConfigComponent';
+export type {DeckConfigData, DealPatternConfig} from 'components/DeckConfigComponent';
 
 // Systems — physics (mutually exclusive with grid)
 export {PhysicsSystem} from 'systems/physics/PhysicsSystem';
@@ -71,7 +76,7 @@ export type {TrailData} from 'systems/grid/TrailSystem';
 
 // Loaders
 export {registerBuiltinComponents, loadComponents, registerBuiltinSystems} from 'loader/ComponentLoader';
-export {createGameModule} from 'loader/GameLoader';
+export {createGameModule, loadGameManifestFromURL, validateManifestSystems} from 'loader/GameLoader';
 export type {GameModule, GameManifest} from 'loader/GameLoader';
 export {loadEntity} from 'loader/EntityLoader';
 export type {EntityData} from 'loader/EntityLoader';

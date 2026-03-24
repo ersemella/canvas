@@ -18,7 +18,12 @@ import {ChildTransformSystem} from 'systems/ChildTransformSystem';
 import {ClickSystem} from 'systems/ClickSystem';
 import {GridCursorSystem} from 'systems/GridCursorSystem';
 import {PileLayoutSystem} from 'systems/PileLayoutSystem';
+import {CardPileSystem} from 'systems/CardPileSystem';
+import {GridPuzzleSystem} from 'systems/GridPuzzleSystem';
 import type {CardData} from 'components/CardComponent';
+import type {CardPileConfigData} from 'components/CardPileConfigComponent';
+import type {GridPuzzleConfigData, GridPuzzleData} from 'components/GridPuzzleConfigComponent';
+import type {DeckConfigData} from 'components/DeckConfigComponent';
 import type {DraggableData} from 'components/DraggableComponent';
 import type {DropTargetData} from 'components/DropTargetComponent';
 import type {ChildOfData} from 'components/ChildOfComponent';
@@ -53,6 +58,8 @@ export function registerBuiltinSystems(): void {
   SystemRegistry.register('ClickSystem', ClickSystem);
   SystemRegistry.register('GridCursorSystem', GridCursorSystem);
   SystemRegistry.register('PileLayoutSystem', PileLayoutSystem);
+  SystemRegistry.register('CardPileSystem', CardPileSystem);
+  SystemRegistry.register('GridPuzzleSystem', GridPuzzleSystem);
 }
 
 export function registerBuiltinComponents(): void {
@@ -96,6 +103,10 @@ export function registerBuiltinComponents(): void {
   registerDataComponent<GridCursorData>('GridCursor');
   registerDataComponent<PileLayoutData>('PileLayout');
   registerDataComponent<PileMemberData>('PileMember');
+  registerDataComponent<CardPileConfigData>('CardPileConfig');
+  registerDataComponent<GridPuzzleConfigData>('GridPuzzleConfig');
+  registerDataComponent<GridPuzzleData>('GridPuzzle');
+  registerDataComponent<DeckConfigData>('DeckConfig');
 }
 
 export function loadComponents(

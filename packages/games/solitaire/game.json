@@ -1,0 +1,665 @@
+{
+  "canvas": {
+    "width": 700,
+    "height": 580
+  },
+  "systems": [
+    "MouseSystem",
+    "DragDropSystem",
+    "ClickSystem",
+    "CardPileSystem",
+    "PileLayoutSystem"
+  ],
+  "events": {
+    "onDeath": "solitaire:won"
+  },
+  "scene": {
+    "name": "solitaire",
+    "entities": [
+      {
+        "id": "game-config",
+        "components": {
+          "CardPileConfig": {
+            "pileIds": [
+              "stock",
+              "waste",
+              "f0",
+              "f1",
+              "f2",
+              "f3",
+              "t0",
+              "t1",
+              "t2",
+              "t3",
+              "t4",
+              "t5",
+              "t6"
+            ],
+            "colorGroups": {
+              "red": [
+                "♥",
+                "♦"
+              ],
+              "black": [
+                "♠",
+                "♣"
+              ]
+            },
+            "rankLabels": [
+              "",
+              "A",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "J",
+              "Q",
+              "K"
+            ],
+            "dropRules": [
+              {
+                "target": {
+                  "prefix": "f"
+                },
+                "maxGroupSize": 1,
+                "conditions": [
+                  {
+                    "type": "sameSuit"
+                  },
+                  {
+                    "type": "rankDelta",
+                    "value": 1
+                  }
+                ],
+                "emptyConditions": [
+                  {
+                    "type": "rankEquals",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "target": {
+                  "prefix": "t"
+                },
+                "conditions": [
+                  {
+                    "type": "alternateColor"
+                  },
+                  {
+                    "type": "rankDelta",
+                    "value": -1
+                  }
+                ],
+                "emptyConditions": [
+                  {
+                    "type": "rankEquals",
+                    "value": 13
+                  }
+                ]
+              }
+            ],
+            "behaviors": [
+              {
+                "type": "dealFromStock",
+                "stockId": "stock",
+                "wasteId": "waste",
+                "count": 1
+              },
+              {
+                "type": "flipOriginTopOnDrop",
+                "originMatch": {
+                  "prefix": "t"
+                }
+              }
+            ],
+            "winCondition": {
+              "type": "allPilesFull",
+              "piles": [
+                "f0",
+                "f1",
+                "f2",
+                "f3"
+              ],
+              "size": 13
+            },
+            "events": {
+              "onWin": "solitaire:won"
+            }
+          }
+        }
+      },
+      {
+        "id": "deck-config",
+        "components": {
+          "DeckConfig": {
+            "suits": [
+              "♠",
+              "♥",
+              "♦",
+              "♣"
+            ],
+            "ranks": 13,
+            "cardWidth": 70,
+            "cardHeight": 96,
+            "dealPattern": {
+              "type": "klondike",
+              "tableauPrefix": "t",
+              "stockId": "stock",
+              "tableauCount": 7
+            }
+          }
+        }
+      },
+      {
+        "id": "stock",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 49,
+              "y": 58
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "stock",
+            "anchorX": 49,
+            "anchorY": 58,
+            "expandedStep": 0,
+            "collapsedStep": 0,
+            "trackTop": false
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "waste",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 131,
+              "y": 58
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "waste",
+            "anchorX": 131,
+            "anchorY": 58,
+            "expandedStep": 0,
+            "collapsedStep": 0,
+            "trackTop": false
+          }
+        }
+      },
+      {
+        "id": "f0",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 295,
+              "y": 58
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "f0",
+            "anchorX": 295,
+            "anchorY": 58,
+            "expandedStep": 0,
+            "collapsedStep": 0,
+            "trackTop": false
+          },
+          "DropTarget": {
+            "targetId": "f0"
+          }
+        }
+      },
+      {
+        "id": "f1",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 377,
+              "y": 58
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "f1",
+            "anchorX": 377,
+            "anchorY": 58,
+            "expandedStep": 0,
+            "collapsedStep": 0,
+            "trackTop": false
+          },
+          "DropTarget": {
+            "targetId": "f1"
+          }
+        }
+      },
+      {
+        "id": "f2",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 459,
+              "y": 58
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "f2",
+            "anchorX": 459,
+            "anchorY": 58,
+            "expandedStep": 0,
+            "collapsedStep": 0,
+            "trackTop": false
+          },
+          "DropTarget": {
+            "targetId": "f2"
+          }
+        }
+      },
+      {
+        "id": "f3",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 541,
+              "y": 58
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "f3",
+            "anchorX": 541,
+            "anchorY": 58,
+            "expandedStep": 0,
+            "collapsedStep": 0,
+            "trackTop": false
+          },
+          "DropTarget": {
+            "targetId": "f3"
+          }
+        }
+      },
+      {
+        "id": "t0",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 49,
+              "y": 168
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "t0",
+            "anchorX": 49,
+            "anchorY": 168,
+            "expandedStep": 28,
+            "collapsedStep": 20,
+            "trackTop": true
+          },
+          "DropTarget": {
+            "targetId": "t0"
+          }
+        }
+      },
+      {
+        "id": "t1",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 131,
+              "y": 168
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "t1",
+            "anchorX": 131,
+            "anchorY": 168,
+            "expandedStep": 28,
+            "collapsedStep": 20,
+            "trackTop": true
+          },
+          "DropTarget": {
+            "targetId": "t1"
+          }
+        }
+      },
+      {
+        "id": "t2",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 213,
+              "y": 168
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "t2",
+            "anchorX": 213,
+            "anchorY": 168,
+            "expandedStep": 28,
+            "collapsedStep": 20,
+            "trackTop": true
+          },
+          "DropTarget": {
+            "targetId": "t2"
+          }
+        }
+      },
+      {
+        "id": "t3",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 295,
+              "y": 168
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "t3",
+            "anchorX": 295,
+            "anchorY": 168,
+            "expandedStep": 28,
+            "collapsedStep": 20,
+            "trackTop": true
+          },
+          "DropTarget": {
+            "targetId": "t3"
+          }
+        }
+      },
+      {
+        "id": "t4",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 377,
+              "y": 168
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "t4",
+            "anchorX": 377,
+            "anchorY": 168,
+            "expandedStep": 28,
+            "collapsedStep": 20,
+            "trackTop": true
+          },
+          "DropTarget": {
+            "targetId": "t4"
+          }
+        }
+      },
+      {
+        "id": "t5",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 459,
+              "y": 168
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "t5",
+            "anchorX": 459,
+            "anchorY": 168,
+            "expandedStep": 28,
+            "collapsedStep": 20,
+            "trackTop": true
+          },
+          "DropTarget": {
+            "targetId": "t5"
+          }
+        }
+      },
+      {
+        "id": "t6",
+        "tags": [
+          "slot"
+        ],
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 541,
+              "y": 168
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 96,
+            "color": "#2a4a2a",
+            "zIndex": -1,
+            "visible": true
+          },
+          "PileLayout": {
+            "pileId": "t6",
+            "anchorX": 541,
+            "anchorY": 168,
+            "expandedStep": 28,
+            "collapsedStep": 20,
+            "trackTop": true
+          },
+          "DropTarget": {
+            "targetId": "t6"
+          }
+        }
+      },
+      {
+        "id": "stock-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 49,
+              "y": 58
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": -1,
+            "visible": true,
+            "text": "↩",
+            "textColor": "#88cc88",
+            "fontSize": 22
+          }
+        }
+      }
+    ]
+  }
+}

@@ -34,6 +34,23 @@ function validateExclusiveFamilies(names: string[]): void {
   }
 }
 
+export async function loadGameManifestFromURL(url: string): Promise<GameModule> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load game manifest from ${url}: ${res.statusText}`);
+  const manifest = (await res.json()) as GameManifest;
+  return createGameModule(manifest);
+}
+
+export function validateManifestSystems(systems: string[]): void {
+  const unknown = systems.filter((name) => !SystemRegistry.has(name));
+  if (unknown.length > 0) {
+    throw new Error(
+      `Game manifest references unregistered system(s): ${unknown.map((n) => `"${n}"`).join(', ')}. ` +
+      `Only built-in engine systems can be used in static manifests.`
+    );
+  }
+}
+
 export function createGameModule(manifest: GameManifest): GameModule {
   return {
     register(): void {},
@@ -42,6 +59,7 @@ export function createGameModule(manifest: GameManifest): GameModule {
     },
     getSystems(): BaseSystem[] {
       validateExclusiveFamilies(manifest.systems);
+      validateManifestSystems(manifest.systems);
       return manifest.systems.map((name) => SystemRegistry.create(name));
     },
     getEvents(): Record<string, string> {
