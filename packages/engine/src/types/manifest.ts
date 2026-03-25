@@ -426,6 +426,18 @@ export interface SceneData {
  */
 export interface GameManifest {
   /**
+   * Display metadata for the game — used by loaders and the game browser.
+   * Required when the manifest is hosted remotely (e.g. on S3), so the
+   * game list can be built without loading every manifest up front.
+   */
+  meta?: {
+    /** Human-readable game title shown in the game browser. */
+    title: string;
+    /** One-sentence description shown on the game card. */
+    description: string;
+  };
+
+  /**
    * Canvas dimensions in pixels.
    * If omitted, the canvas fills its container.
    */

@@ -5,7 +5,8 @@ import {Center, Loader, Text, Box, Title, Stack} from '@mantine/core';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {GameLog} from 'components/GameLog';
-import {games} from 'registry/games';
+import {getGames} from 'registry/games';
+import type {GameDescriptor} from 'registry/games';
 import gameLayout from 'styles/gameLayout.module.css';
 import styles from './GamePage.module.css';
 import type {SceneData, BaseSystem, EventBus} from '@canvas/engine';
@@ -15,6 +16,9 @@ type LogEntry = {text: string; timestamp: number};
 
 export function GamePage() {
   const {gameId} = useParams<{gameId: string}>();
+
+  // undefined = still resolving the game list; null = game not found
+  const [gameDescriptor, setGameDescriptor] = useState<GameDescriptor | null | undefined>(undefined);
   const [sceneData, setSceneData] = useState<SceneData | null>(null);
   const [gameSystems, setGameSystems] = useState<BaseSystem[]>([]);
   const [gameEvents, setGameEvents] = useState<Record<string, string>>({});
@@ -25,7 +29,11 @@ export function GamePage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const gameDescriptor = games.find((g) => g.id === gameId);
+  useEffect(() => {
+    getGames().then((g) => {
+      setGameDescriptor(g.find((d) => d.id === gameId) ?? null);
+    });
+  }, [gameId]);
 
   useEffect(() => {
     if (!gameDescriptor) return;
@@ -59,7 +67,16 @@ export function GamePage() {
     return worldEvents.on<LogEntry[]>('game:log_update', setLogEntries);
   }, [worldEvents, sidePanel]);
 
-  if (!gameDescriptor) return <Navigate to="/" replace />;
+  // Still resolving the game list
+  if (gameDescriptor === undefined) {
+    return (
+      <Center h="calc(100vh - 56px)">
+        <Loader size="sm" />
+      </Center>
+    );
+  }
+
+  if (gameDescriptor === null) return <Navigate to="/" replace />;
 
   if (loading) {
     return (

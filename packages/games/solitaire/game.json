@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "title": "Solitaire",
+    "description": "Classic Klondike solitaire. Build up the foundations from Ace to King."
+  },
   "canvas": {
     "width": 700,
     "height": 580
@@ -44,6 +48,10 @@
                 "♠",
                 "♣"
               ]
+            },
+            "groupColors": {
+              "red": "#cc0000",
+              "black": "#000000"
             },
             "rankLabels": [
               "",
@@ -130,10 +138,6 @@
             },
             "events": {
               "onWin": "solitaire:won"
-            },
-            "groupColors": {
-              "red": "#cc0000",
-              "black": "#000000"
             }
           }
         }

@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "title": "Sudoku",
+    "description": "Classic 9×9 Sudoku. Fill the grid with digits 1–9, no repeats in any row, column, or box."
+  },
   "canvas": {
     "width": 500,
     "height": 520
@@ -29,6 +33,7 @@
             ],
             "boxRows": 3,
             "boxCols": 3,
+            "boxHighlight": true,
             "winCondition": "noEmptyNoConflict",
             "generator": "sudoku",
             "inputActions": {
@@ -44,8 +49,7 @@
             },
             "events": {
               "onWin": "sudoku:complete"
-            },
-            "boxHighlight": true
+            }
           }
         }
       },

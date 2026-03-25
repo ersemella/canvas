@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 import {NodejsFunction, OutputFormat} from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as apigwv2 from '@aws-cdk/aws-apigatewayv2-alpha';
 import * as integrations from '@aws-cdk/aws-apigatewayv2-integrations-alpha';
@@ -166,9 +167,33 @@ export class CanvasStack extends cdk.Stack {
       fn.addToRolePolicy(manageConnectionsPolicy);
     }
 
+    // --- Game Manifests Bucket ---
+    // Public-read S3 bucket that hosts static game.json manifests and an
+    // index.json listing. The web app fetches index.json at load time and
+    // then lazy-loads each manifest on demand.
+    const manifestsBucket = new s3.Bucket(this, 'ManifestsBucket', {
+      objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_ENFORCED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS,
+      publicReadAccess: true,
+      cors: [
+        {
+          allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.HEAD],
+          allowedOrigins: ['*'],
+          allowedHeaders: ['*'],
+          maxAge: 3600,
+        },
+      ],
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
     // --- Outputs ---
     new cdk.CfnOutput(this, 'HttpApiUrl', {value: httpApi.url ?? ''});
     new cdk.CfnOutput(this, 'WsApiUrl', {value: wsStage.url});
     new cdk.CfnOutput(this, 'TableName', {value: table.tableName});
+    new cdk.CfnOutput(this, 'ManifestsBucketName', {value: manifestsBucket.bucketName});
+    new cdk.CfnOutput(this, 'ManifestsBucketUrl', {
+      value: `https://${manifestsBucket.bucketName}.s3.${this.region}.amazonaws.com`,
+    });
   }
 }
