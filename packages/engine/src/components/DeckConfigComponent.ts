@@ -9,6 +9,8 @@ export interface DeckConfigData {
   cardWidth: number;
   cardHeight: number;
   dealPattern: DealPatternConfig;
+  /** Suffixes for per-card label entities: `{cardId}-label-{suffix}`. Defaults to ['tl', 'br']. */
+  labelSuffixes?: string[];
 }
 
 registerDataComponent<DeckConfigData>('DeckConfig');

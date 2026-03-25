@@ -93,6 +93,7 @@ const manifest = {
             constraints: ['noRepeatInRow', 'noRepeatInCol', 'noRepeatInBox'],
             boxRows: 3,
             boxCols: 3,
+            boxHighlight: true,
             winCondition: 'noEmptyNoConflict',
             generator: 'sudoku',
             inputActions: {digitPrefix: 'num', clear: 'clear'},

@@ -3,7 +3,6 @@ import {DataComponent} from 'core/Component';
 import {TransformComponent} from 'components/TransformComponent';
 import {RenderableComponent} from 'components/RenderableComponent';
 import type {GridMovementData} from 'systems/grid/GridMovementSystem';
-import type {CollectibleData} from 'systems/grid/CollectSystem';
 
 export interface TrailSegmentTemplate {
   renderable: {width: number; height: number; zIndex?: number; layer?: string; color?: string};
@@ -17,6 +16,18 @@ export interface TrailData {
 
 export class TrailSystem extends BaseSystem {
   readonly priority = 210;
+
+  private pendingGrowth = 0;
+
+  onInit({scene, events}: Omit<SystemContext, 'deltaTime'>): void {
+    events.on('entity:collected', () => {
+      const head = scene.query({all: ['Trail', 'GridMovement']})[0];
+      if (!head) return;
+      const gm = head.getComponent<DataComponent<GridMovementData>>('GridMovement');
+      if (!gm?.data.moved) return;
+      this.pendingGrowth++;
+    });
+  }
 
   onUpdate(context: SystemContext): void {
     const {scene, world, events} = context;
@@ -61,12 +72,8 @@ export class TrailSystem extends BaseSystem {
       prevPos = {x: tempX, y: tempY};
     }
 
-    // Check for growth
-    const collectibles = scene.query({all: ['Collectible']});
-    for (const collectible of collectibles) {
-      const colComp = collectible.getComponent<DataComponent<CollectibleData>>('Collectible');
-      if (!colComp?.data.collected) continue;
-
+    // Spawn any pending growth segments at the tail position
+    for (let i = 0; i < this.pendingGrowth; i++) {
       const template = trailData.segmentTemplate;
       const newSeg = world.spawn(scene, (seg) => {
         seg.addComponent(new TransformComponent({position: {x: tailPos.x, y: tailPos.y}}));
@@ -78,8 +85,7 @@ export class TrailSystem extends BaseSystem {
 
       trailData.segments.push(newSeg.id);
       events.emit('trail:segmentSpawned', {entityId: newSeg.id});
-
-      break;
     }
+    this.pendingGrowth = 0;
   }
 }

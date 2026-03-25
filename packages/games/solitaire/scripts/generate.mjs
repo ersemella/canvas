@@ -51,6 +51,7 @@ const manifest = {
           CardPileConfig: {
             pileIds: ['stock', 'waste', 'f0', 'f1', 'f2', 'f3', 't0', 't1', 't2', 't3', 't4', 't5', 't6'],
             colorGroups: {red: ['♥', '♦'], black: ['♠', '♣']},
+            groupColors: {red: '#cc0000', black: '#000000'},
             rankLabels: RANK_LABELS,
             dropRules: [
               {

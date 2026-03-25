@@ -96,3 +96,5 @@ export type {
   InputData,
 } from 'types/manifest';
 export {assetLoader} from 'loader/AssetLoader';
+export {puzzleGenerators} from 'generators/puzzleGenerators';
+export type {PuzzleGeneratorFn} from 'generators/puzzleGenerators';

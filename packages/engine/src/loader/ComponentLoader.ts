@@ -6,6 +6,7 @@ import type {RespawnData} from 'systems/grid/RespawnSystem';
 import type {BoundsTriggerData} from 'systems/grid/BoundsTriggerSystem';
 import type {OverlapTriggerData} from 'systems/grid/OverlapTriggerSystem';
 import type {TrailData} from 'systems/grid/TrailSystem';
+import 'generators/sudokuGenerator';
 import {GridMovementSystem} from 'systems/grid/GridMovementSystem';
 import {CollectSystem} from 'systems/grid/CollectSystem';
 import {RespawnSystem} from 'systems/grid/RespawnSystem';

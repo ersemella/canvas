@@ -30,6 +30,7 @@ export class CardPileSystem extends BaseSystem {
 
   private piles: Map<string, string[]> = new Map();
   private config: CardPileConfigData | null = null;
+  private deckConfig: DeckConfigData | null = null;
   private colorGroupOf: Map<string, string> = new Map();
   private pileAnchorCache: Map<string, {x: number; y: number}> = new Map();
   private scene: Scene | null = null;
@@ -67,6 +68,7 @@ export class CardPileSystem extends BaseSystem {
     const deckConfigEntity = scene.query({all: ['DeckConfig']})[0];
     if (deckConfigEntity) {
       const deckData = deckConfigEntity.getComponent<DataComponent<DeckConfigData>>('DeckConfig')!.data;
+      this.deckConfig = deckData;
       this.initializeDeck(deckData);
     } else {
       const cardEntities = scene.query({all: ['Card', 'Transform', 'Renderable']});
@@ -289,11 +291,13 @@ export class CardPileSystem extends BaseSystem {
     const faceUpColor = config?.faceUpColor ?? DEFAULT_FACE_UP_COLOR;
     const faceDownColor = config?.faceDownColor ?? DEFAULT_FACE_DOWN_COLOR;
 
+    const suffixes = this.deckConfig?.labelSuffixes ?? ['tl', 'br'];
     if (cd.data.faceUp) {
       renderable.color = faceUpColor;
       const labelText = (rankLabels[cd.data.rank] ?? '') + cd.data.suit;
-      const labelColor = this.colorGroupOf.get(cd.data.suit) === 'red' ? '#cc0000' : '#000000';
-      for (const suffix of ['tl', 'br'] as const) {
+      const group = this.colorGroupOf.get(cd.data.suit) ?? '';
+      const labelColor = this.config?.groupColors?.[group] ?? '#000000';
+      for (const suffix of suffixes) {
         const lr = this.getLabelRenderable(entityId, suffix);
         if (!lr) continue;
         lr.text = labelText;
@@ -302,7 +306,7 @@ export class CardPileSystem extends BaseSystem {
       }
     } else {
       renderable.color = faceDownColor;
-      for (const suffix of ['tl', 'br'] as const) {
+      for (const suffix of suffixes) {
         const lr = this.getLabelRenderable(entityId, suffix);
         if (lr) lr.visible = false;
       }
@@ -321,7 +325,7 @@ export class CardPileSystem extends BaseSystem {
     return this.scene?.getEntity(entityId)?.getComponent<DataComponent<PileMemberData>>('PileMember');
   }
 
-  private getLabelRenderable(cardId: string, suffix: 'tl' | 'br'): RenderableComponent | undefined {
+  private getLabelRenderable(cardId: string, suffix: string): RenderableComponent | undefined {
     return this.scene?.getEntity(`${cardId}-label-${suffix}`)?.getComponent<RenderableComponent>('Renderable');
   }
 
@@ -380,7 +384,8 @@ export class CardPileSystem extends BaseSystem {
         const faceUp = pos === col;
         const cardId = `card-${card.suit}-${card.rank}`;
         const labelText = faceUp ? (rankLabels[card.rank] ?? '') + card.suit : '';
-        const labelColor = this.colorGroupOf.get(card.suit) === 'red' ? '#cc0000' : '#000000';
+        const group = this.colorGroupOf.get(card.suit) ?? '';
+        const labelColor = this.config?.groupColors?.[group] ?? '#000000';
         this.createCardEntity(cardId, card.rank, card.suit, faceUp, pileId, pos, deckConfig, labelText, labelColor);
         this.piles.get(pileId)!.push(cardId);
       }
@@ -431,30 +436,25 @@ export class CardPileSystem extends BaseSystem {
       },
     }));
 
-    scene.addEntity(loadEntity({
-      id: `${cardId}-label-tl`,
-      components: {
-        Transform: {position: {x: anchor.x, y: anchor.y}, rotation: 0, scale: {x: 1, y: 1}},
-        Renderable: {
-          renderType: 'text', width: 0, height: 0,
-          zIndex: posInPile + 1, visible: faceUp,
-          text: labelText, textColor: labelColor, fontSize: 14, textAnchor: 'top-left',
+    const suffixes = deckConfig.labelSuffixes ?? ['tl', 'br'];
+    const labelSlots = [
+      {offsetX: -hw + 4, offsetY: -hh + 4, rotation: 0},
+      {offsetX: hw - 4, offsetY: hh - 4, rotation: Math.PI},
+    ];
+    for (let i = 0; i < suffixes.length && i < labelSlots.length; i++) {
+      const slot = labelSlots[i]!;
+      scene.addEntity(loadEntity({
+        id: `${cardId}-label-${suffixes[i]}`,
+        components: {
+          Transform: {position: {x: anchor.x, y: anchor.y}, rotation: slot.rotation, scale: {x: 1, y: 1}},
+          Renderable: {
+            renderType: 'text', width: 0, height: 0,
+            zIndex: posInPile + 1, visible: faceUp,
+            text: labelText, textColor: labelColor, fontSize: 14, textAnchor: 'top-left',
+          },
+          ChildOf: {parentId: cardId, offsetX: slot.offsetX, offsetY: slot.offsetY, zIndexOffset: 1},
         },
-        ChildOf: {parentId: cardId, offsetX: -hw + 4, offsetY: -hh + 4, zIndexOffset: 1},
-      },
-    }));
-
-    scene.addEntity(loadEntity({
-      id: `${cardId}-label-br`,
-      components: {
-        Transform: {position: {x: anchor.x, y: anchor.y}, rotation: Math.PI, scale: {x: 1, y: 1}},
-        Renderable: {
-          renderType: 'text', width: 0, height: 0,
-          zIndex: posInPile + 1, visible: faceUp,
-          text: labelText, textColor: labelColor, fontSize: 14, textAnchor: 'top-left',
-        },
-        ChildOf: {parentId: cardId, offsetX: hw - 4, offsetY: hh - 4, zIndexOffset: 1},
-      },
-    }));
+      }));
+    }
   }
 }

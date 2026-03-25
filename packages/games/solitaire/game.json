@@ -130,6 +130,10 @@
             },
             "events": {
               "onWin": "solitaire:won"
+            },
+            "groupColors": {
+              "red": "#cc0000",
+              "black": "#000000"
             }
           }
         }

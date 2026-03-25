@@ -29,6 +29,8 @@ export type WinCondition =
 export interface CardPileConfigData {
   pileIds: string[];
   colorGroups?: Record<string, string[]>;
+  /** CSS label text color per color group name. E.g. `{red: '#cc0000', black: '#000000'}`. */
+  groupColors?: Record<string, string>;
   rankLabels?: string[];
   faceUpColor?: string;
   faceDownColor?: string;

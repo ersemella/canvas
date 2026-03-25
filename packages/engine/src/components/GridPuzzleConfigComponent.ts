@@ -18,8 +18,12 @@ export interface GridPuzzleConfigData {
   constraints: PuzzleConstraint[];
   boxRows?: number;
   boxCols?: number;
+  /** Highlight cells in the same box as the selected cell. Requires boxRows/boxCols. */
+  boxHighlight?: boolean;
+  /** Prefix for cell entity IDs. Cells are named `{cellPrefix}-{row}-{col}`. Defaults to 'cell'. */
+  cellPrefix?: string;
   winCondition: 'noEmptyNoConflict';
-  generator?: 'sudoku';
+  generator?: string;
   inputActions?: {digitPrefix?: string; clear?: string};
   visuals?: PuzzleVisuals;
   events?: {onWin?: string};
