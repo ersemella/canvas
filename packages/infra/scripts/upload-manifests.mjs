@@ -31,9 +31,10 @@ const s3 = new S3Client({region: REGION});
 
 /** Games to upload. Add new manifest games here. */
 const MANIFEST_GAMES = [
-  {id: 'snake',     path: 'packages/games/snake/game.json'},
-  {id: 'solitaire', path: 'packages/games/solitaire/game.json'},
-  {id: 'sudoku',    path: 'packages/games/sudoku/game.json'},
+  {id: 'snake',      path: 'packages/games/snake/game.json'},
+  {id: 'solitaire',  path: 'packages/games/solitaire/game.json'},
+  {id: 'sudoku',     path: 'packages/games/sudoku/game.json'},
+  {id: 'blackjack',  path: 'packages/games/blackjack/game.json'},
 ];
 
 async function putObject(key, body, contentType = 'application/json') {

@@ -27,6 +27,7 @@ import type {GridCursorData} from 'components/GridCursorComponent';
 import type {CardPileConfigData} from 'components/CardPileConfigComponent';
 import type {DeckConfigData} from 'components/DeckConfigComponent';
 import type {GridPuzzleConfigData, GridPuzzleData} from 'components/GridPuzzleConfigComponent';
+import type {BlackjackConfigData} from 'components/BlackjackConfigComponent';
 
 // ─── Primitives ──────────────────────────────────────────────────────────────
 
@@ -322,6 +323,14 @@ export interface EntityComponents {
    * Populated at runtime by {@link GridPuzzleSystem} when `generator` is set.
    */
   GridPuzzle?: GridPuzzleData;
+
+  // ── Blackjack ────────────────────────────────────────────────────────────
+
+  /**
+   * Blackjack game rules and layout configuration. Place on a dedicated config entity.
+   * Requires {@link BlackjackSystem} in the system list.
+   */
+  BlackjackConfig?: BlackjackConfigData;
 }
 
 // ─── Systems ─────────────────────────────────────────────────────────────────
@@ -354,7 +363,8 @@ export type SystemName =
   | 'PileLayoutSystem'
   | 'CardPileSystem'
   | 'GridCursorSystem'
-  | 'GridPuzzleSystem';
+  | 'GridPuzzleSystem'
+  | 'BlackjackSystem';
 
 // ─── Scene ───────────────────────────────────────────────────────────────────
 

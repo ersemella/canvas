@@ -54,6 +54,8 @@ export {CardPileSystem} from 'systems/CardPileSystem';
 export type {CardPileConfigData, DropRule, DropCondition, BehaviorConfig, WinCondition, TargetMatch} from 'components/CardPileConfigComponent';
 export {GridPuzzleSystem} from 'systems/GridPuzzleSystem';
 export type {GridPuzzleConfigData, GridPuzzleData, PuzzleConstraint, PuzzleVisuals} from 'components/GridPuzzleConfigComponent';
+export {BlackjackSystem} from 'systems/BlackjackSystem';
+export type {BlackjackConfigData} from 'components/BlackjackConfigComponent';
 export type {DeckConfigData, DealPatternConfig} from 'components/DeckConfigComponent';
 
 // Systems — physics (mutually exclusive with grid)
