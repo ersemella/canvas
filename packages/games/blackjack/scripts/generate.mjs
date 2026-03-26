@@ -14,7 +14,7 @@ const outPath = resolve(__dirname, '../game.json');
 // ── Layout constants ───────────────────────────────────────────────────────
 
 const W = 500;
-const H = 520;
+const H = 400;
 const CX = W / 2; // 250
 
 const CARD_W = 60;
@@ -22,10 +22,10 @@ const CARD_H = 84;
 const CARD_GAP = 8;
 const MAX_CARDS = 10;
 
-const DEALER_CARD_Y = 143;
-const PLAYER_CARD_Y = 313;
+const DEALER_CARD_Y = 96;
+const PLAYER_CARD_Y = 234;
 
-const FELT = '#0a5c2a';
+const FELT = '#000000';
 const WHITE = '#ffffff';
 const LABEL_COLOR = '#a8d5a2';
 const GOLD = '#f1c40f';
@@ -142,7 +142,7 @@ entities.push({
 entities.push({
   id: 'dealer-label',
   components: {
-    Transform: transform(40, 58),
+    Transform: transform(40, 12),
     Renderable: text('DEALER', LABEL_COLOR, 11, {bold: true, anchor: 'top-left', zIndex: 3}),
   },
 });
@@ -150,7 +150,7 @@ entities.push({
 entities.push({
   id: 'dealer-value',
   components: {
-    Transform: transform(40, 74),
+    Transform: transform(40, 26),
     Renderable: text('', WHITE, 15, {bold: true, anchor: 'top-left', zIndex: 3}),
   },
 });
@@ -165,7 +165,7 @@ for (let i = 0; i < MAX_CARDS; i++) {
 entities.push({
   id: 'player-label',
   components: {
-    Transform: transform(40, 228),
+    Transform: transform(40, 150),
     Renderable: text('YOUR HAND', LABEL_COLOR, 11, {bold: true, anchor: 'top-left', zIndex: 3}),
   },
 });
@@ -173,7 +173,7 @@ entities.push({
 entities.push({
   id: 'player-value',
   components: {
-    Transform: transform(40, 244),
+    Transform: transform(40, 164),
     Renderable: text('', WHITE, 15, {bold: true, anchor: 'top-left', zIndex: 3}),
   },
 });
@@ -188,7 +188,7 @@ for (let i = 0; i < MAX_CARDS; i++) {
 entities.push({
   id: 'status-text',
   components: {
-    Transform: transform(CX, 393),
+    Transform: transform(CX, 295),
     Renderable: text('Place your bet and deal', GOLD, 15, {bold: true, zIndex: 3}),
   },
 });
@@ -196,31 +196,31 @@ entities.push({
 entities.push({
   id: 'balance-text',
   components: {
-    Transform: transform(CX, 423),
+    Transform: transform(CX, 315),
     Renderable: text('Balance: $1000', WHITE, 12, {zIndex: 3}),
   },
 });
 
-// ── Bet controls row (y=454) ───────────────────────────────────────────────
+// ── Bet controls row (y=338) ───────────────────────────────────────────────
 
-entities.push(...makeButton('bet-down-btn', 162, 454, 70, 28, '-$10', BTN_BET));
+entities.push(...makeButton('bet-down-btn', 162, 338, 70, 28, '-$10', BTN_BET));
 
 entities.push({
   id: 'bet-amount',
   components: {
-    Transform: transform(CX, 454),
+    Transform: transform(CX, 338),
     Renderable: text('$10', WHITE, 16, {bold: true, zIndex: 3}),
   },
 });
 
-entities.push(...makeButton('bet-up-btn', 338, 454, 70, 28, '+$10', BTN_BET));
+entities.push(...makeButton('bet-up-btn', 338, 338, 70, 28, '+$10', BTN_BET));
 
-// ── Action buttons row (y=490) ─────────────────────────────────────────────
+// ── Action buttons row (y=370) ─────────────────────────────────────────────
 
-entities.push(...makeButton('hit-btn', 75, 490, 80, 32, 'HIT', DIM));
-entities.push(...makeButton('stand-btn', 195, 490, 80, 32, 'STAND', DIM));
-entities.push(...makeButton('double-btn', 315, 490, 80, 32, 'DOUBLE', DIM));
-entities.push(...makeButton('deal-btn', 425, 490, 70, 32, 'DEAL', BTN_DEAL));
+entities.push(...makeButton('hit-btn', 75, 370, 80, 32, 'HIT', DIM));
+entities.push(...makeButton('stand-btn', 195, 370, 80, 32, 'STAND', DIM));
+entities.push(...makeButton('double-btn', 315, 370, 80, 32, 'DOUBLE', DIM));
+entities.push(...makeButton('deal-btn', 425, 370, 70, 32, 'DEAL', BTN_DEAL));
 
 // ── BlackjackConfig entity ─────────────────────────────────────────────────
 

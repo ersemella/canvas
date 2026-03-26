@@ -5,7 +5,7 @@
   },
   "canvas": {
     "width": 500,
-    "height": 520
+    "height": 400
   },
   "systems": [
     "MouseSystem",
@@ -24,7 +24,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 260
+              "y": 200
             },
             "rotation": 0,
             "scale": {
@@ -34,8 +34,8 @@
           },
           "Renderable": {
             "width": 500,
-            "height": 520,
-            "color": "#0a5c2a",
+            "height": 400,
+            "color": "#000000",
             "zIndex": 0,
             "visible": true
           }
@@ -47,7 +47,7 @@
           "Transform": {
             "position": {
               "x": 40,
-              "y": 58
+              "y": 12
             },
             "rotation": 0,
             "scale": {
@@ -73,7 +73,7 @@
           "Transform": {
             "position": {
               "x": 40,
-              "y": 74
+              "y": 26
             },
             "rotation": 0,
             "scale": {
@@ -99,7 +99,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -125,7 +125,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -157,7 +157,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -183,7 +183,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -215,7 +215,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -241,7 +241,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -273,7 +273,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -299,7 +299,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -331,7 +331,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -357,7 +357,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -389,7 +389,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -415,7 +415,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -447,7 +447,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -473,7 +473,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -505,7 +505,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -531,7 +531,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -563,7 +563,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -589,7 +589,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -621,7 +621,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -647,7 +647,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 143
+              "y": 96
             },
             "rotation": 0,
             "scale": {
@@ -679,7 +679,7 @@
           "Transform": {
             "position": {
               "x": 40,
-              "y": 228
+              "y": 150
             },
             "rotation": 0,
             "scale": {
@@ -705,7 +705,7 @@
           "Transform": {
             "position": {
               "x": 40,
-              "y": 244
+              "y": 164
             },
             "rotation": 0,
             "scale": {
@@ -731,7 +731,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -757,7 +757,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -789,7 +789,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -815,7 +815,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -847,7 +847,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -873,7 +873,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -905,7 +905,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -931,7 +931,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -963,7 +963,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -989,7 +989,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1021,7 +1021,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1047,7 +1047,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1079,7 +1079,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1105,7 +1105,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1137,7 +1137,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1163,7 +1163,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1195,7 +1195,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1221,7 +1221,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1253,7 +1253,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1279,7 +1279,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 313
+              "y": 234
             },
             "rotation": 0,
             "scale": {
@@ -1311,7 +1311,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 393
+              "y": 295
             },
             "rotation": 0,
             "scale": {
@@ -1337,7 +1337,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 423
+              "y": 315
             },
             "rotation": 0,
             "scale": {
@@ -1363,7 +1363,7 @@
           "Transform": {
             "position": {
               "x": 162,
-              "y": 454
+              "y": 338
             },
             "rotation": 0,
             "scale": {
@@ -1390,7 +1390,7 @@
           "Transform": {
             "position": {
               "x": 162,
-              "y": 454
+              "y": 338
             },
             "rotation": 0,
             "scale": {
@@ -1422,7 +1422,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 454
+              "y": 338
             },
             "rotation": 0,
             "scale": {
@@ -1448,7 +1448,7 @@
           "Transform": {
             "position": {
               "x": 338,
-              "y": 454
+              "y": 338
             },
             "rotation": 0,
             "scale": {
@@ -1475,7 +1475,7 @@
           "Transform": {
             "position": {
               "x": 338,
-              "y": 454
+              "y": 338
             },
             "rotation": 0,
             "scale": {
@@ -1507,7 +1507,7 @@
           "Transform": {
             "position": {
               "x": 75,
-              "y": 490
+              "y": 370
             },
             "rotation": 0,
             "scale": {
@@ -1534,7 +1534,7 @@
           "Transform": {
             "position": {
               "x": 75,
-              "y": 490
+              "y": 370
             },
             "rotation": 0,
             "scale": {
@@ -1566,7 +1566,7 @@
           "Transform": {
             "position": {
               "x": 195,
-              "y": 490
+              "y": 370
             },
             "rotation": 0,
             "scale": {
@@ -1593,7 +1593,7 @@
           "Transform": {
             "position": {
               "x": 195,
-              "y": 490
+              "y": 370
             },
             "rotation": 0,
             "scale": {
@@ -1625,7 +1625,7 @@
           "Transform": {
             "position": {
               "x": 315,
-              "y": 490
+              "y": 370
             },
             "rotation": 0,
             "scale": {
@@ -1652,7 +1652,7 @@
           "Transform": {
             "position": {
               "x": 315,
-              "y": 490
+              "y": 370
             },
             "rotation": 0,
             "scale": {
@@ -1684,7 +1684,7 @@
           "Transform": {
             "position": {
               "x": 425,
-              "y": 490
+              "y": 370
             },
             "rotation": 0,
             "scale": {
@@ -1711,7 +1711,7 @@
           "Transform": {
             "position": {
               "x": 425,
-              "y": 490
+              "y": 370
             },
             "rotation": 0,
             "scale": {
@@ -1745,8 +1745,8 @@
             "minBet": 10,
             "numDecks": 1,
             "dealerHitSoft17": false,
-            "dealerCenterY": 143,
-            "playerCenterY": 313,
+            "dealerCenterY": 96,
+            "playerCenterY": 234,
             "canvasCenterX": 250,
             "cardWidth": 60,
             "cardHeight": 84,
