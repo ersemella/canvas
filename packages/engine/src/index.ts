@@ -58,8 +58,6 @@ export {BlackjackSystem} from 'systems/BlackjackSystem';
 export type {BlackjackConfigData} from 'components/BlackjackConfigComponent';
 export {Shoe} from 'util/Shoe';
 export type {PlayingCard} from 'util/Shoe';
-export {renderCardHand, rankLabel, suitColor, cardXPositions} from 'util/CardHandRenderer';
-export type {HandCard, CardSlot, CardHandLayout} from 'util/CardHandRenderer';
 export type {DeckConfigData, DealPatternConfig} from 'components/DeckConfigComponent';
 
 // Systems — physics (mutually exclusive with grid)
