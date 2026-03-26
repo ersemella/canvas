@@ -1,7 +1,7 @@
 import {useEffect, useState, useCallback} from 'react';
 import type {ComponentType} from 'react';
-import {useParams, Navigate} from 'react-router-dom';
-import {Center, Loader, Text, Box, Title, Stack} from '@mantine/core';
+import {useParams, Navigate, Link} from 'react-router-dom';
+import {Center, Loader, Text, Box, Title, Stack, Button} from '@mantine/core';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {GameLog} from 'components/GameLog';
@@ -90,7 +90,10 @@ export function GamePage() {
   if (error) {
     return (
       <Center h="calc(100vh - 56px)">
-        <Text c="red.4">Failed to load game: {error}</Text>
+        <Stack align="center" gap="sm" maw={480}>
+          <Text c="red.4">Failed to load game: {error}</Text>
+          <Button component={Link} to="/" variant="light">Back to home</Button>
+        </Stack>
       </Center>
     );
   }
