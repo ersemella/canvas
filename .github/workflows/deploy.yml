@@ -26,6 +26,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm --filter @canvas/web build
+        env:
+          VITE_MANIFESTS_BASE_URL: ${{ secrets.VITE_MANIFESTS_BASE_URL }}
 
       - run: npm install -g wrangler
 
