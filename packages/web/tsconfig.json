@@ -9,10 +9,7 @@
     "resolveJsonModule": true,
     "paths": {
       "@canvas/engine": ["../../engine/src/index.ts"],
-      "@canvas/games-snake": ["../../games/snake/game.json"],
-      "@canvas/games-solitaire": ["../../games/solitaire/game.json"],
-      "@canvas/games-poker": ["../../games/poker/src/index.ts"],
-      "@canvas/games-sudoku": ["../../games/sudoku/game.json"]
+      "@canvas/games-poker": ["../../games/poker/src/index.ts"]
     }
   },
   "include": ["src"],

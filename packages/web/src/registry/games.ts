@@ -1,5 +1,5 @@
-import {createGameModule, loadGameManifestFromURL} from '@canvas/engine';
-import type {GameModule, GameManifest} from '@canvas/engine';
+import {loadGameManifestFromURL} from '@canvas/engine';
+import type {GameModule} from '@canvas/engine';
 
 export interface GameDescriptor {
   id: string;
@@ -26,38 +26,13 @@ const STATIC_GAMES: GameDescriptor[] = [
   },
 ];
 
-// Local manifest games — used as fallback when VITE_MANIFESTS_BASE_URL is not set (dev).
-const LOCAL_MANIFEST_GAMES: GameDescriptor[] = [
-  {
-    id: 'snake',
-    title: 'Snake',
-    description: 'Classic snake game. Eat food, grow longer, avoid walls and yourself.',
-    load: () =>
-      import('@canvas/games-snake').then((m) => ({default: createGameModule(m.default as GameManifest)})),
-  },
-  {
-    id: 'solitaire',
-    title: 'Solitaire',
-    description: 'Classic Klondike solitaire. Build up the foundations from Ace to King.',
-    load: () =>
-      import('@canvas/games-solitaire').then((m) => ({default: createGameModule(m.default as GameManifest)})),
-  },
-  {
-    id: 'sudoku',
-    title: 'Sudoku',
-    description: 'Classic 9×9 Sudoku. Fill the grid with digits 1–9, no repeats in any row, column, or box.',
-    load: () =>
-      import('@canvas/games-sudoku').then((m) => ({default: createGameModule(m.default as GameManifest)})),
-  },
-];
-
 async function loadManifestGames(): Promise<GameDescriptor[]> {
   const baseUrl = import.meta.env.VITE_MANIFESTS_BASE_URL;
-  if (!baseUrl) return LOCAL_MANIFEST_GAMES;
+  if (!baseUrl) return [];
 
   try {
     const res = await fetch(`${baseUrl}/index.json`);
-    if (!res.ok) return LOCAL_MANIFEST_GAMES;
+    if (!res.ok) return [];
     const entries = (await res.json()) as RemoteGameEntry[];
     return entries.map((entry) => ({
       id: entry.id,
@@ -66,7 +41,7 @@ async function loadManifestGames(): Promise<GameDescriptor[]> {
       load: () => loadGameManifestFromURL(entry.url).then((module) => ({default: module})),
     }));
   } catch {
-    return LOCAL_MANIFEST_GAMES;
+    return [];
   }
 }
 

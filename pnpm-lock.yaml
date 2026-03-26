@@ -137,15 +137,6 @@ importers:
       '@canvas/games-poker':
         specifier: workspace:*
         version: link:../games/poker
-      '@canvas/games-snake':
-        specifier: workspace:*
-        version: link:../games/snake
-      '@canvas/games-solitaire':
-        specifier: workspace:*
-        version: link:../games/solitaire
-      '@canvas/games-sudoku':
-        specifier: workspace:*
-        version: link:../games/sudoku
       '@mantine/core':
         specifier: ^8.3.17
         version: 8.3.17(@mantine/hooks@8.3.17(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
