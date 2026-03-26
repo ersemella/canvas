@@ -43,7 +43,7 @@ async function putObject(key, body, contentType = 'application/json') {
     Key: key,
     Body: body,
     ContentType: contentType,
-    CacheControl: 'public, max-age=3600',
+    CacheControl: 'no-cache',
   }));
   console.log(`  uploaded: ${key}`);
 }
