@@ -3,29 +3,15 @@ import type {SystemContext} from 'core/System';
 import type {DataComponent} from 'core/Component';
 import type {EventBus} from 'core/EventBus';
 import type {Scene} from 'core/Scene';
-import type {TransformComponent} from 'components/TransformComponent';
 import type {RenderableComponent} from 'components/RenderableComponent';
 import type {ClickableData} from 'components/ClickableComponent';
 import type {BlackjackConfigData} from 'components/BlackjackConfigComponent';
 import type {ClickPayload} from 'systems/ClickSystem';
+import {Shoe} from 'util/Shoe';
+import {renderCardHand} from 'util/CardHandRenderer';
+import type {HandCard, CardSlot} from 'util/CardHandRenderer';
 
 type Phase = 'betting' | 'player' | 'dealer' | 'result' | 'gameover';
-
-interface HandCard {
-  suit: string;
-  rank: number;
-  faceUp: boolean;
-}
-
-interface CardSlot {
-  bg: RenderableComponent;
-  label: RenderableComponent;
-  transform: TransformComponent;
-}
-
-const CARD_BACK_COLOR = '#1a5c96';
-const CARD_BACK_BORDER = '#0d3d6b';
-const CARD_FACE_BORDER = '#888888';
 
 const BTN_HIT = '#2ecc71';
 const BTN_STAND = '#e74c3c';
@@ -42,7 +28,7 @@ export class BlackjackSystem extends BaseSystem {
   private eventsRef: EventBus | null = null;
 
   private phase: Phase = 'betting';
-  private shoe: HandCard[] = [];
+  private shoe: Shoe | null = null;
   private playerHand: HandCard[] = [];
   private dealerHand: HandCard[] = [];
   private balance = 0;
@@ -82,6 +68,7 @@ export class BlackjackSystem extends BaseSystem {
 
     this.balance = cfg.startingBalance;
     this.bet = cfg.minBet;
+    this.shoe = new Shoe(cfg.numDecks);
 
     // Cache card slots
     for (let i = 0; i < cfg.maxCards; i++) {
@@ -129,7 +116,6 @@ export class BlackjackSystem extends BaseSystem {
     this.betUpBg = getBg(cfg.betUpButtonId);
     this.betDownBg = getBg(cfg.betDownButtonId);
 
-    this.initShoe();
     this.updateUI();
     this.updateCardVisuals();
 
@@ -287,32 +273,12 @@ export class BlackjackSystem extends BaseSystem {
   }
 
   private dealCard(to: 'player' | 'dealer', faceUp: boolean): void {
-    if (this.shoe.length === 0) this.initShoe();
-    const card = this.shoe.pop()!;
-    const handCard: HandCard = {suit: card.suit, rank: card.rank, faceUp};
+    const {rank, suit} = this.shoe!.deal();
+    const handCard: HandCard = {rank, suit, faceUp};
     if (to === 'player') {
       this.playerHand.push(handCard);
     } else {
       this.dealerHand.push(handCard);
-    }
-  }
-
-  private initShoe(): void {
-    const numDecks = this.config?.numDecks ?? 1;
-    const suits = ['\u2660', '\u2665', '\u2666', '\u2663']; // ♠♥♦♣
-    this.shoe = [];
-    for (let d = 0; d < numDecks; d++) {
-      for (const suit of suits) {
-        for (let rank = 1; rank <= 13; rank++) {
-          this.shoe.push({suit, rank, faceUp: true});
-        }
-      }
-    }
-    for (let i = this.shoe.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = this.shoe[i]!;
-      this.shoe[i] = this.shoe[j]!;
-      this.shoe[j] = tmp;
     }
   }
 
@@ -332,75 +298,17 @@ export class BlackjackSystem extends BaseSystem {
     return {total, soft};
   }
 
-  private cardXPositions(count: number): number[] {
-    const cfg = this.config!;
-    const cx = cfg.canvasCenterX;
-    const cw = cfg.cardWidth;
-    const gap = cfg.cardGap;
-    if (count === 0) return [];
-    if (count === 1) return [cx];
-    const maxStep = cw + gap;
-    const step = Math.min(maxStep, (cfg.canvasCenterX * 1.6) / (count - 1));
-    const totalW = step * (count - 1) + cw;
-    const startX = cx - totalW / 2 + cw / 2;
-    return Array.from({length: count}, (_, i) => startX + i * step);
-  }
-
-  private rankLabel(rank: number): string {
-    if (rank === 1) return 'A';
-    if (rank === 11) return 'J';
-    if (rank === 12) return 'Q';
-    if (rank === 13) return 'K';
-    return String(rank);
-  }
-
-  private suitColor(suit: string): string {
-    return suit === '\u2665' || suit === '\u2666' ? '#cc2200' : '#111111';
-  }
-
   private updateCardVisuals(): void {
     const cfg = this.config;
     if (!cfg) return;
-
-    const updateSlots = (hand: HandCard[], slots: CardSlot[], centerY: number): void => {
-      const xs = this.cardXPositions(hand.length);
-      for (let i = 0; i < slots.length; i++) {
-        const slot = slots[i]!;
-        if (i >= hand.length) {
-          slot.bg.visible = false;
-          slot.label.visible = false;
-          continue;
-        }
-        const card = hand[i]!;
-        slot.transform.position.x = xs[i]!;
-        slot.transform.position.y = centerY;
-        slot.bg.visible = true;
-        slot.bg.width = cfg.cardWidth;
-        slot.bg.height = cfg.cardHeight;
-        slot.bg.zIndex = 10 + i;
-        slot.bg.radius = 4;
-
-        if (card.faceUp) {
-          slot.bg.color = '#ffffff';
-          slot.bg.borderColor = CARD_FACE_BORDER;
-          slot.bg.borderWidth = 1;
-          slot.label.visible = true;
-          slot.label.text = `${this.rankLabel(card.rank)}${card.suit}`;
-          slot.label.textColor = this.suitColor(card.suit);
-          slot.label.fontSize = 14;
-          slot.label.bold = true;
-          slot.label.zIndex = 11 + i;
-        } else {
-          slot.bg.color = CARD_BACK_COLOR;
-          slot.bg.borderColor = CARD_BACK_BORDER;
-          slot.bg.borderWidth = 1;
-          slot.label.visible = false;
-        }
-      }
+    const layout = {
+      canvasCenterX: cfg.canvasCenterX,
+      cardWidth: cfg.cardWidth,
+      cardHeight: cfg.cardHeight,
+      cardGap: cfg.cardGap,
     };
-
-    updateSlots(this.playerHand, this.playerSlots, cfg.playerCenterY);
-    updateSlots(this.dealerHand, this.dealerSlots, cfg.dealerCenterY);
+    renderCardHand(this.playerHand, this.playerSlots, cfg.playerCenterY, layout);
+    renderCardHand(this.dealerHand, this.dealerSlots, cfg.dealerCenterY, layout);
   }
 
   private updateUI(): void {
