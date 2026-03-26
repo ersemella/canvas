@@ -251,9 +251,8 @@ export class BlackjackSystem extends BaseSystem {
 
     while (true) {
       const dv = this.handValue(this.dealerHand, true);
-      if (dv.total > 21) break;
-      if (dv.total > 17) break;
-      if (dv.total === 17 && (!dv.soft || !cfg.dealerHitSoft17)) break;
+      const shouldHit = dv.total < 17 || (dv.soft && dv.total === 17 && cfg.dealerHitSoft17);
+      if (!shouldHit) break;
       this.dealCard('dealer', true);
     }
 

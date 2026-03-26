@@ -137,15 +137,6 @@ entities.push({
   },
 });
 
-// Title
-entities.push({
-  id: 'title',
-  components: {
-    Transform: transform(CX, 22),
-    Renderable: text('BLACKJACK', GOLD, 22, {bold: true, zIndex: 3}),
-  },
-});
-
 // ── Dealer section ─────────────────────────────────────────────────────────
 
 entities.push({

@@ -42,32 +42,6 @@
         }
       },
       {
-        "id": "title",
-        "components": {
-          "Transform": {
-            "position": {
-              "x": 250,
-              "y": 22
-            },
-            "rotation": 0,
-            "scale": {
-              "x": 1,
-              "y": 1
-            }
-          },
-          "Renderable": {
-            "renderType": "text",
-            "text": "BLACKJACK",
-            "textColor": "#f1c40f",
-            "fontSize": 22,
-            "bold": true,
-            "textAnchor": "center",
-            "zIndex": 3,
-            "visible": true
-          }
-        }
-      },
-      {
         "id": "dealer-label",
         "components": {
           "Transform": {
