@@ -7,20 +7,20 @@ const roomService = new RoomService(process.env['TABLE_NAME']!);
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const body = JSON.parse(event.body ?? '{}') as {
     hostName?: string;
-    gameType?: string;
+    serverSystem?: string;
     maxPlayers?: number;
   };
 
-  if (!body.hostName || !body.gameType) {
-    return badRequest('Missing hostName or gameType');
+  if (!body.hostName || !body.serverSystem) {
+    return badRequest('Missing hostName or serverSystem');
   }
 
   const maxPlayers = body.maxPlayers ?? 6;
   const result = await roomService.createRoom({
     hostName: body.hostName,
-    gameType: body.gameType,
+    serverSystem: body.serverSystem,
     maxPlayers,
   });
 
-  return ok({roomId: result.roomId, gameType: result.room.gameType});
+  return ok({roomId: result.roomId, serverSystem: result.room.serverSystem});
 };

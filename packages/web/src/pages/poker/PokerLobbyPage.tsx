@@ -22,7 +22,7 @@ export function PokerLobbyPage() {
       const res = await fetch(`${API_URL}/rooms`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({hostName: name.trim(), gameType: 'poker', maxPlayers: 6}),
+        body: JSON.stringify({hostName: name.trim(), serverSystem: 'PokerServerSystem', maxPlayers: 6}),
       });
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const data = (await res.json()) as {roomId: string};

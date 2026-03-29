@@ -17,14 +17,7 @@ export interface RemoteGameEntry {
 }
 
 // Games with custom TypeScript logic that cannot be expressed as pure manifests.
-const STATIC_GAMES: GameDescriptor[] = [
-  {
-    id: 'poker',
-    title: "Texas Hold'em Poker",
-    description: "Single-player Texas Hold'em against 5 bots. 5/10 blinds, 1000 starting chips.",
-    load: () => import('@canvas/games-poker').then((m) => ({default: m.default})),
-  },
-];
+const STATIC_GAMES: GameDescriptor[] = [];
 
 async function loadManifestGames(): Promise<GameDescriptor[]> {
   const baseUrl = import.meta.env.VITE_MANIFESTS_BASE_URL;

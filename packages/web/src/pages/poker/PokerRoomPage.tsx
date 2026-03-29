@@ -1,17 +1,12 @@
-import {useEffect, useRef, useState, useMemo, useCallback} from 'react';
-import type {ComponentType} from 'react';
+import {useEffect, useRef, useState, useCallback} from 'react';
 import {useParams, useLocation, useNavigate} from 'react-router-dom';
 import {Paper, Title, Text, List, Button, Group, TextInput, Stack, Box} from '@mantine/core';
 import {notifications} from '@mantine/notifications';
 import {GameCanvas} from 'components/GameCanvas';
-import {GameLog} from 'components/GameLog';
 import gameLayout from 'styles/gameLayout.module.css';
-import {registerBuiltinSystems} from '@canvas/engine';
-import type {EventBus, BaseSystem} from '@canvas/engine';
-import type {PokerNetworkAdapter, PublicPokerState} from '@canvas/games-poker';
-import {createMultiplayerModule} from '@canvas/games-poker';
-
-type LogEntry = {text: string; timestamp: number};
+import {registerBuiltinComponents, registerBuiltinSystems, createGameModule} from '@canvas/engine';
+import type {EventBus, GameManifest} from '@canvas/engine';
+import pokerManifest from '@canvas/games-poker/game.json';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
 
@@ -24,9 +19,9 @@ interface WsMessage {
   type: string;
   connectionId?: string;
   players?: SeatInfo[];
-  state?: PublicPokerState;
+  state?: unknown;
+  [key: string]: unknown;
 }
-
 
 function storageKey(roomId: string) {
   return `poker_name_${roomId}`;
@@ -48,43 +43,26 @@ export function PokerRoomPage() {
   const [players, setPlayers] = useState<SeatInfo[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [showdown, setShowdown] = useState(false);
-  const [worldEvents, setWorldEvents] = useState<EventBus | null>(null);
-  const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
-  const adapterRef = useRef<PokerNetworkAdapter | null>(null);
-  const gameModuleRef = useRef<ReturnType<typeof createMultiplayerModule> | null>(null);
-  const systemsRef = useRef<BaseSystem[]>([]);
+  const worldEventsRef = useRef<EventBus | null>(null);
+  const unsubWsSendRef = useRef<(() => void) | null>(null);
 
-  // Persist name to localStorage whenever it's committed
+  // Persist name
   useEffect(() => {
     if (nameSubmitted && roomId && name) {
       localStorage.setItem(storageKey(roomId), name);
     }
   }, [nameSubmitted, roomId, name]);
 
-  // Build module once when name is submitted
+  // Join room and open WebSocket
   useEffect(() => {
     if (!nameSubmitted || !roomId) return;
 
     registerBuiltinSystems();
+    registerBuiltinComponents();
 
-    const adapter: PokerNetworkAdapter = {
-      myConnectionId: '',
-      latestState: null,
-      dirty: false,
-      sendAction(action) {
-        wsRef.current?.send(JSON.stringify({action: 'playerAction', payload: action}));
-      },
-    };
-    adapterRef.current = adapter;
-
-    const mod = createMultiplayerModule(adapter);
-    gameModuleRef.current = mod;
-    systemsRef.current = mod.getSystems();
-
-    // Join room via HTTP then open WebSocket
     let cancelled = false;
     const abortController = new AbortController();
 
@@ -95,10 +73,7 @@ export function PokerRoomPage() {
       signal: abortController.signal,
     })
       .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Join failed: ${res.status} ${text}`);
-        }
+        if (!res.ok) throw new Error(`Join failed: ${res.status} ${await res.text()}`);
         return res.json() as Promise<{wsUrl: string}>;
       })
       .then(({wsUrl}) => {
@@ -110,12 +85,8 @@ export function PokerRoomPage() {
 
         ws.onmessage = (event) => {
           const msg = JSON.parse(event.data as string) as WsMessage;
-          const ad = adapterRef.current;
-          if (!ad) return;
-
           switch (msg.type) {
             case 'connected':
-              if (msg.connectionId) ad.myConnectionId = msg.connectionId;
               if (msg.players) setPlayers(msg.players);
               break;
             case 'playerJoined':
@@ -123,30 +94,26 @@ export function PokerRoomPage() {
               if (msg.players) setPlayers(msg.players);
               break;
             case 'gameStarted':
-              if (msg.state) {
-                ad.latestState = msg.state;
-                ad.dirty = true;
-              }
               setGameStarted(true);
               setShowdown(false);
               break;
-            case 'stateUpdate':
-              if (msg.state) {
-                ad.latestState = msg.state;
-                ad.dirty = true;
-                setShowdown(msg.state.phase === 'showdown');
-              }
+            case 'stateUpdate': {
+              const st = msg.state as {phase?: string} | undefined;
+              if (st?.phase === 'showdown') setShowdown(true);
+              else setShowdown(false);
               break;
+            }
           }
+          // Bridge all messages to ECS EventBus
+          // Server sends {type, state?} — translate to {type, payload}
+          worldEventsRef.current?.emit<{type: string; payload?: unknown}>('ws:message', {
+            type: msg.type,
+            payload: msg.state ?? msg,
+          });
         };
 
-        ws.onopen = () => {
-          ws.send(JSON.stringify({action: 'sync'}));
-        };
+        ws.onopen = () => ws.send(JSON.stringify({action: 'sync'}));
         ws.onerror = () => setError('WebSocket connection error.');
-        ws.onclose = () => {
-          // Connection closed — no action needed
-        };
       })
       .catch((err: Error) => {
         if (cancelled) return;
@@ -161,27 +128,19 @@ export function PokerRoomPage() {
     };
   }, [nameSubmitted, roomId, name]);
 
-  // Subscribe to log updates once worldEvents is available
-  useEffect(() => {
-    if (!worldEvents) return;
-    return worldEvents.on<LogEntry[]>('game:log_update', setLogEntries);
-  }, [worldEvents]);
-
   const handleReady = useCallback((events: EventBus) => {
-    setWorldEvents(events);
+    worldEventsRef.current = events;
+
+    // Bridge ECS ws:send → WebSocket (translate type→action for Lambda protocol)
+    unsubWsSendRef.current = events.on<{type: string; payload?: unknown}>('ws:send', (msg: {type: string; payload?: unknown}) => {
+      wsRef.current?.send(JSON.stringify({action: msg.type, payload: msg.payload}));
+    });
   }, []);
 
-  const systems = useMemo(() => {
-    return systemsRef.current;
-    // Re-derive only when game starts so GameCanvas doesn't re-initialize
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStarted]);
-
-  const sceneData = useMemo(
-    () => gameModuleRef.current?.getSceneData() ?? {name: 'poker-mp', entities: []},
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameStarted],
-  );
+  // Unsubscribe ws:send bridge on unmount
+  useEffect(() => {
+    return () => { unsubWsSendRef.current?.(); };
+  }, []);
 
   function handleStartGame() {
     wsRef.current?.send(JSON.stringify({action: 'startGame'}));
@@ -189,6 +148,7 @@ export function PokerRoomPage() {
 
   function handleNextHand() {
     wsRef.current?.send(JSON.stringify({action: 'nextHand'}));
+    setShowdown(false);
   }
 
   function handleCopyLink() {
@@ -197,7 +157,8 @@ export function PokerRoomPage() {
     });
   }
 
-  // Name entry prompt (when navigating directly to the URL)
+  const gameModule = createGameModule(pokerManifest as GameManifest);
+
   if (!nameSubmitted) {
     return (
       <Stack align="center" pt={80} gap="md">
@@ -235,7 +196,7 @@ export function PokerRoomPage() {
     );
   }
 
-  const SidePanel = (gameModuleRef.current?.getSidePanel?.() ?? null) as ComponentType<{events: EventBus}> | null;
+  const canvasSize = gameModule.getCanvas() ?? {width: 1120, height: 620};
 
   return (
     <Stack align="center" pt="xl">
@@ -273,19 +234,14 @@ export function PokerRoomPage() {
         <Box>
           <Box className={gameLayout.canvasWithPanel!}>
             <GameCanvas
-              sceneData={sceneData}
-              systems={systems}
-              events={{}}
-              width={800}
-              height={580}
+              sceneData={gameModule.getSceneData()}
+              systems={gameModule.getSystems()}
+              events={gameModule.getEvents()}
+              width={canvasSize.width}
+              height={canvasSize.height}
               onReady={handleReady}
             />
-            <Box className={gameLayout.sidePanel!} style={{height: 580}}>
-              {worldEvents && SidePanel && <SidePanel events={worldEvents} />}
-              <GameLog entries={logEntries} />
-            </Box>
           </Box>
-
           {showdown && (
             <Stack align="center" mt="md">
               <Button onClick={handleNextHand} color="yellow" c="dark.9" fw="bold" size="md" px={32}>

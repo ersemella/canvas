@@ -35,6 +35,7 @@ const MANIFEST_GAMES = [
   {id: 'solitaire',  path: 'packages/games/solitaire/game.json'},
   {id: 'sudoku',     path: 'packages/games/sudoku/game.json'},
   {id: 'blackjack',  path: 'packages/games/blackjack/game.json'},
+  {id: 'poker',      path: 'packages/games/poker/game.json'},
 ];
 
 async function putObject(key, body, contentType = 'application/json') {

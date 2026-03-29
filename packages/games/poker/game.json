@@ -1,0 +1,687 @@
+{
+  "meta": {
+    "title": "Texas Hold'em Poker",
+    "description": "Single-player Texas Hold'em against 5 bots. 5/10 blinds, 1000 starting chips."
+  },
+  "canvas": {
+    "width": 1120,
+    "height": 620
+  },
+  "systems": [
+    "MouseSystem",
+    "ClickSystem",
+    "SidePanelSystem",
+    "NetworkSystem",
+    "PokerSystem",
+    "PokerRendererSystem"
+  ],
+  "scene": {
+    "name": "poker-main",
+    "entities": [
+      {
+        "id": "panel-bg",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 310 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 300,
+            "height": 620,
+            "color": "#15151e",
+            "zIndex": 1,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "panel-title",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 26 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 280,
+            "height": 22,
+            "color": "#000",
+            "textColor": "#ffd700",
+            "text": "Texas Hold'em",
+            "fontSize": 15,
+            "bold": true,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "divider-top",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 44 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 272,
+            "height": 1,
+            "color": "#444",
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "pot-label",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 66 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 60,
+            "height": 16,
+            "color": "#000",
+            "textColor": "#999",
+            "text": "POT",
+            "fontSize": 12,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "pot-value",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 88 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 200,
+            "height": 22,
+            "color": "#000",
+            "textColor": "#ffd700",
+            "text": "$0",
+            "fontSize": 18,
+            "bold": true,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "divider-pot",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 108 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 272,
+            "height": 1,
+            "color": "#333",
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "hero-chips-label",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 128 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 120,
+            "height": 16,
+            "color": "#000",
+            "textColor": "#999",
+            "text": "YOUR CHIPS",
+            "fontSize": 12,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "hero-chips-value",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 150 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 200,
+            "height": 20,
+            "color": "#000",
+            "textColor": "#2ecc71",
+            "text": "$1000",
+            "fontSize": 16,
+            "bold": true,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "divider-chips",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 168 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 272,
+            "height": 1,
+            "color": "#333",
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "phase-text",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 188 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 272,
+            "height": 16,
+            "color": "#000",
+            "textColor": "#ffffff",
+            "text": "Waiting...",
+            "fontSize": 12,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "divider-phase",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 205 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 272,
+            "height": 1,
+            "color": "#2a2a2a",
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "log-0",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 222 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 272,
+            "height": 14,
+            "color": "#000",
+            "textColor": "#e0e0e0",
+            "text": "",
+            "fontSize": 11,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "log-1",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 238 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 272,
+            "height": 14,
+            "color": "#000",
+            "textColor": "#b0b0b0",
+            "text": "",
+            "fontSize": 11,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "log-2",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 254 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 272,
+            "height": 14,
+            "color": "#000",
+            "textColor": "#808080",
+            "text": "",
+            "fontSize": 11,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "log-3",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 270 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 272,
+            "height": 14,
+            "color": "#000",
+            "textColor": "#606060",
+            "text": "",
+            "fontSize": 11,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "log-4",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 286 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 272,
+            "height": 14,
+            "color": "#000",
+            "textColor": "#404040",
+            "text": "",
+            "fontSize": 11,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "divider-log",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 304 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 272,
+            "height": 1,
+            "color": "#333",
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "raise-label",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 326 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 272,
+            "height": 14,
+            "color": "#000",
+            "textColor": "#888",
+            "text": "Raise Amount",
+            "fontSize": 11,
+            "zIndex": 2,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "raise-down-btn",
+        "components": {
+          "Transform": {
+            "position": { "x": 928, "y": 356 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 36,
+            "height": 36,
+            "color": "#555",
+            "radius": 4,
+            "zIndex": 3,
+            "visible": true
+          },
+          "Clickable": { "enabled": false }
+        }
+      },
+      {
+        "id": "raise-down-label",
+        "components": {
+          "Transform": {
+            "position": { "x": 928, "y": 356 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 36,
+            "height": 36,
+            "color": "#000",
+            "textColor": "#fff",
+            "text": "−",
+            "fontSize": 18,
+            "bold": true,
+            "zIndex": 4,
+            "visible": true
+          },
+          "ChildOf": { "parentId": "raise-down-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+        }
+      },
+      {
+        "id": "raise-amount",
+        "components": {
+          "Transform": {
+            "position": { "x": 970, "y": 356 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 60,
+            "height": 36,
+            "color": "#000",
+            "textColor": "#fff",
+            "text": "$20",
+            "fontSize": 14,
+            "bold": true,
+            "zIndex": 3,
+            "visible": true
+          }
+        }
+      },
+      {
+        "id": "raise-up-btn",
+        "components": {
+          "Transform": {
+            "position": { "x": 1012, "y": 356 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 36,
+            "height": 36,
+            "color": "#555",
+            "radius": 4,
+            "zIndex": 3,
+            "visible": true
+          },
+          "Clickable": { "enabled": false }
+        }
+      },
+      {
+        "id": "raise-up-label",
+        "components": {
+          "Transform": {
+            "position": { "x": 1012, "y": 356 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 36,
+            "height": 36,
+            "color": "#000",
+            "textColor": "#fff",
+            "text": "+",
+            "fontSize": 18,
+            "bold": true,
+            "zIndex": 4,
+            "visible": true
+          },
+          "ChildOf": { "parentId": "raise-up-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+        }
+      },
+      {
+        "id": "fold-btn",
+        "components": {
+          "Transform": {
+            "position": { "x": 910, "y": 414 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 110,
+            "height": 44,
+            "color": "#4a4a4a",
+            "radius": 6,
+            "zIndex": 3,
+            "visible": true
+          },
+          "Clickable": { "enabled": false }
+        }
+      },
+      {
+        "id": "fold-label",
+        "components": {
+          "Transform": {
+            "position": { "x": 910, "y": 414 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 110,
+            "height": 44,
+            "color": "#000",
+            "textColor": "#fff",
+            "text": "FOLD",
+            "fontSize": 13,
+            "bold": true,
+            "zIndex": 4,
+            "visible": true
+          },
+          "ChildOf": { "parentId": "fold-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+        }
+      },
+      {
+        "id": "check-btn",
+        "components": {
+          "Transform": {
+            "position": { "x": 1030, "y": 414 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 110,
+            "height": 44,
+            "color": "#4a4a4a",
+            "radius": 6,
+            "zIndex": 3,
+            "visible": true
+          },
+          "Clickable": { "enabled": false }
+        }
+      },
+      {
+        "id": "check-label",
+        "components": {
+          "Transform": {
+            "position": { "x": 1030, "y": 414 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 110,
+            "height": 44,
+            "color": "#000",
+            "textColor": "#fff",
+            "text": "CHECK",
+            "fontSize": 13,
+            "bold": true,
+            "zIndex": 4,
+            "visible": true
+          },
+          "ChildOf": { "parentId": "check-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+        }
+      },
+      {
+        "id": "call-btn",
+        "components": {
+          "Transform": {
+            "position": { "x": 910, "y": 476 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 110,
+            "height": 44,
+            "color": "#4a4a4a",
+            "radius": 6,
+            "zIndex": 3,
+            "visible": true
+          },
+          "Clickable": { "enabled": false }
+        }
+      },
+      {
+        "id": "call-label",
+        "components": {
+          "Transform": {
+            "position": { "x": 910, "y": 476 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 110,
+            "height": 44,
+            "color": "#000",
+            "textColor": "#fff",
+            "text": "CALL",
+            "fontSize": 13,
+            "bold": true,
+            "zIndex": 4,
+            "visible": true
+          },
+          "ChildOf": { "parentId": "call-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+        }
+      },
+      {
+        "id": "raise-btn",
+        "components": {
+          "Transform": {
+            "position": { "x": 1030, "y": 476 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "rect",
+            "width": 110,
+            "height": 44,
+            "color": "#4a4a4a",
+            "radius": 6,
+            "zIndex": 3,
+            "visible": true
+          },
+          "Clickable": { "enabled": false }
+        }
+      },
+      {
+        "id": "raise-btn-label",
+        "components": {
+          "Transform": {
+            "position": { "x": 1030, "y": 476 },
+            "rotation": 0,
+            "scale": { "x": 1, "y": 1 }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 110,
+            "height": 44,
+            "color": "#000",
+            "textColor": "#fff",
+            "text": "RAISE",
+            "fontSize": 13,
+            "bold": true,
+            "zIndex": 4,
+            "visible": true
+          },
+          "ChildOf": { "parentId": "raise-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+        }
+      },
+      {
+        "id": "poker-config",
+        "components": {
+          "PokerConfig": {
+            "smallBlind": 5,
+            "bigBlind": 10,
+            "startingChips": 1000,
+            "potValueId": "pot-value",
+            "heroChipsId": "hero-chips-value",
+            "phaseTextId": "phase-text",
+            "logIds": ["log-0", "log-1", "log-2", "log-3", "log-4"],
+            "foldBtnId": "fold-btn",
+            "checkBtnId": "check-btn",
+            "callBtnId": "call-btn",
+            "raiseBtnId": "raise-btn",
+            "raiseDownId": "raise-down-btn",
+            "raiseAmountId": "raise-amount",
+            "raiseUpId": "raise-up-btn"
+          }
+        }
+      }
+    ]
+  }
+}

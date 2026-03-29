@@ -28,6 +28,7 @@ import type {CardPileConfigData} from 'components/CardPileConfigComponent';
 import type {DeckConfigData} from 'components/DeckConfigComponent';
 import type {GridPuzzleConfigData, GridPuzzleData} from 'components/GridPuzzleConfigComponent';
 import type {BlackjackConfigData} from 'components/BlackjackConfigComponent';
+import type {PokerConfigData} from 'components/PokerConfigComponent';
 
 // ─── Primitives ──────────────────────────────────────────────────────────────
 
@@ -331,6 +332,14 @@ export interface EntityComponents {
    * Requires {@link BlackjackSystem} in the system list.
    */
   BlackjackConfig?: BlackjackConfigData;
+
+  // ── Poker ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Poker game rules and panel entity IDs. Place on a dedicated config entity.
+   * Requires {@link PokerSystem} and {@link PokerRendererSystem} in the system list.
+   */
+  PokerConfig?: PokerConfigData;
 }
 
 // ─── Systems ─────────────────────────────────────────────────────────────────
@@ -364,7 +373,11 @@ export type SystemName =
   | 'CardPileSystem'
   | 'GridCursorSystem'
   | 'GridPuzzleSystem'
-  | 'BlackjackSystem';
+  | 'BlackjackSystem'
+  | 'SidePanelSystem'
+  | 'NetworkSystem'
+  | 'PokerSystem'
+  | 'PokerRendererSystem';
 
 // ─── Scene ───────────────────────────────────────────────────────────────────
 
@@ -483,6 +496,14 @@ export interface GameManifest {
     /** The event name that ends the game. Must match the event emitted by the win-condition system. */
     onDeath?: string;
   };
+
+  /**
+   * Name of the Lambda-side server system that handles this game's actions.
+   * When present, the room creation request sends this value to the server
+   * so the Lambda can dispatch WS messages to the correct handler.
+   * Example: `"PokerServerSystem"`
+   */
+  serverSystem?: string;
 
   /** The initial world state — all entities and their starting components. */
   scene: SceneData;

@@ -13,7 +13,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
   return ok({
     roomId: room.roomId,
-    gameType: room.gameType,
+    serverSystem: room.serverSystem,
     status: room.status,
     players: room.players.map((p) => ({name: p.name, seatIndex: p.seatIndex})),
     maxPlayers: room.maxPlayers,

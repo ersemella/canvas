@@ -22,7 +22,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     if (room.status === 'in_progress') return badRequest('Game already in progress');
     if (room.players.length >= room.maxPlayers) return badRequest('Room is full');
 
-    return ok({roomId, wsUrl: WS_URL, gameType: room.gameType});
+    return ok({roomId, wsUrl: WS_URL, serverSystem: room.serverSystem});
   } catch (err) {
     if (err instanceof RoomNotFoundError) return notFound(err.message);
     if (err instanceof RoomFullError || err instanceof GameInProgressError)

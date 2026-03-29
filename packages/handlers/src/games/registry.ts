@@ -1,6 +1,6 @@
-import type {ServerGameModule} from './ServerGameModule';
-import {pokerServerConfig} from '@canvas/games-poker/server';
+import type {ServerSystem} from './ServerGameModule';
+import {pokerServerSystem} from '@canvas/games-poker/server';
 
-export const gameRegistry = new Map<string, ServerGameModule>([
-  [pokerServerConfig.gameType, pokerServerConfig as ServerGameModule],
+export const serverSystemRegistry = new Map<string, ServerSystem>([
+  [pokerServerSystem.systemName, pokerServerSystem as ServerSystem],
 ]);

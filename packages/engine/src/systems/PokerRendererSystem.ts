@@ -1,9 +1,25 @@
-import { BaseSystem } from '@canvas/engine';
-import type { SystemContext } from '@canvas/engine';
-import type { PokerGameState, Card } from './types';
+/**
+ * PokerRendererSystem — direct canvas rendering for the poker table area.
+ *
+ * Runs at priority 996 (after RenderSystem at 995). RenderSystem clears the
+ * full canvas and draws panel entities; this system then paints the poker
+ * table over the left 820px without touching the panel column.
+ *
+ * Reads game state from the sharedPokerState module shim, updated by
+ * PokerSystem after every state change.
+ */
+
+import {BaseSystem} from 'core/System';
+import type {SystemContext} from 'core/System';
+import {sharedPokerState} from 'systems/pokerGameState';
+import type {PokerGameState, PokerCard} from 'systems/pokerTypes';
+
+const TABLE_WIDTH = 820;
+const TABLE_CENTER_X = 400;
+const TABLE_CENTER_Y = 285;
 
 const SEAT_POSITIONS: [number, number][] = [
-  [400, 472], // P0 Hero
+  [400, 472], // P0 hero
   [148, 398], // P1
   [125, 160], // P2
   [400, 125], // P3
@@ -11,8 +27,8 @@ const SEAT_POSITIONS: [number, number][] = [
   [652, 398], // P5
 ];
 
-const COMMUNITY_X = 400;
-const COMMUNITY_Y = 278;
+const COMMUNITY_X = TABLE_CENTER_X;
+const COMMUNITY_Y = TABLE_CENTER_Y - 7;
 
 function rankStr(rank: number): string {
   if (rank === 14) return 'A';
@@ -22,7 +38,13 @@ function rankStr(rank: number): string {
   return String(rank);
 }
 
-function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, card: Card | null, faceUp: boolean): void {
+function drawCard(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  card: PokerCard | null,
+  faceUp: boolean
+): void {
   const w = 50, h = 70;
   const cx = x - w / 2;
   const cy = y - h / 2;
@@ -58,25 +80,28 @@ function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, card: Car
 
 export class PokerRendererSystem extends BaseSystem {
   readonly priority = 996;
-  private gameState: PokerGameState;
 
-  constructor(gameState: PokerGameState) {
-    super();
-    this.gameState = gameState;
+  onUpdate({ctx, canvas}: SystemContext): void {
+    const gs = sharedPokerState;
+    if (!gs) {
+      // Draw blank table background so panel entities remain visible
+      ctx.fillStyle = '#2e3f5c';
+      ctx.fillRect(0, 0, TABLE_WIDTH, canvas.height);
+      return;
+    }
+
+    this.draw(ctx, canvas.height, gs);
   }
 
-  onUpdate(context: SystemContext): void {
-    const { ctx, canvas } = context;
-    const gs = this.gameState;
-
-    // Clear canvas
+  private draw(ctx: CanvasRenderingContext2D, canvasHeight: number, gs: PokerGameState): void {
+    // Fill table area only — panel column already drawn by RenderSystem
     ctx.fillStyle = '#2e3f5c';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, TABLE_WIDTH, canvasHeight);
 
-    // Draw oval table
+    // Oval table
     ctx.save();
     ctx.beginPath();
-    ctx.ellipse(400, 285, 315, 195, 0, 0, Math.PI * 2);
+    ctx.ellipse(TABLE_CENTER_X, TABLE_CENTER_Y, 315, 195, 0, 0, Math.PI * 2);
     ctx.fillStyle = '#1a7a3a';
     ctx.fill();
     ctx.strokeStyle = '#8B4513';
@@ -87,23 +112,20 @@ export class PokerRendererSystem extends BaseSystem {
     // Felt inner ring
     ctx.save();
     ctx.beginPath();
-    ctx.ellipse(400, 285, 300, 180, 0, 0, Math.PI * 2);
+    ctx.ellipse(TABLE_CENTER_X, TABLE_CENTER_Y, 300, 180, 0, 0, Math.PI * 2);
     ctx.strokeStyle = '#145a2a';
     ctx.lineWidth = 3;
     ctx.stroke();
     ctx.restore();
 
     // Community cards
-    const comm = gs.communityCards;
     const totalComm = 5;
-    const cardW = 50;
-    const gap = 8;
+    const cardW = 50, gap = 8;
     const totalWidth = totalComm * cardW + (totalComm - 1) * gap;
     const startX = COMMUNITY_X - totalWidth / 2 + cardW / 2;
     for (let i = 0; i < totalComm; i++) {
-      const card = comm[i] ?? null;
-      const showFace = card !== null;
-      drawCard(ctx, startX + i * (cardW + gap), COMMUNITY_Y, card, showFace);
+      const card = gs.communityCards[i] ?? null;
+      drawCard(ctx, startX + i * (cardW + gap), COMMUNITY_Y, card, card !== null);
     }
 
     // Pot
@@ -116,9 +138,11 @@ export class PokerRendererSystem extends BaseSystem {
     ctx.restore();
 
     // Player seats
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < gs.players.length; i++) {
       const player = gs.players[i]!;
-      const [sx, sy] = SEAT_POSITIONS[i]!;
+      const pos = SEAT_POSITIONS[i];
+      if (!pos) continue;
+      const [sx, sy] = pos;
       const isActing = gs.actingIndex === i && (gs.phase !== 'waiting' && gs.phase !== 'showdown');
 
       // Seat background
@@ -140,20 +164,16 @@ export class PokerRendererSystem extends BaseSystem {
       }
       ctx.restore();
 
-      // Name
+      // Name + chips + bet
       ctx.save();
       ctx.fillStyle = player.folded ? '#888' : '#fff';
       ctx.font = 'bold 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(player.name, sx, sy - 12);
-
-      // Chips
       ctx.fillStyle = '#ffd700';
       ctx.font = '11px sans-serif';
       ctx.fillText(`$${player.chips}`, sx, sy + 4);
-
-      // Current bet
       if (player.currentBet > 0) {
         ctx.fillStyle = '#fff';
         ctx.font = '10px sans-serif';
@@ -161,7 +181,7 @@ export class PokerRendererSystem extends BaseSystem {
       }
       ctx.restore();
 
-      // Badges (dealer, SB, BB)
+      // Dealer / SB / BB badge
       const badgeX = sx + 50;
       const badgeY = sy - 20;
       if (player.isDealer) {
@@ -204,9 +224,7 @@ export class PokerRendererSystem extends BaseSystem {
 
       // Hole cards
       if (player.holeCards && !player.folded) {
-        const isHero = i === 0;
-        const isShowdown = gs.phase === 'showdown';
-        const faceUp = isHero || isShowdown;
+        const faceUp = i === 0 || gs.phase === 'showdown';
         const cardY = sy - 65;
         drawCard(ctx, sx - 28, cardY, player.holeCards[0], faceUp);
         drawCard(ctx, sx + 28, cardY, player.holeCards[1], faceUp);
@@ -222,7 +240,7 @@ export class PokerRendererSystem extends BaseSystem {
       ctx.font = 'bold 26px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(gs.showdownResult, 400, 258);
+      ctx.fillText(gs.showdownResult, TABLE_CENTER_X, 258);
       ctx.restore();
     }
   }

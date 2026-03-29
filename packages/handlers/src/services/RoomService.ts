@@ -15,14 +15,14 @@ export class RoomService {
 
   async createRoom(input: {
     hostName: string;
-    gameType: string;
+    serverSystem: string;
     maxPlayers: number;
   }): Promise<{roomId: string; room: RoomRecord}> {
     const roomId = randomUUID().slice(0, 8).toUpperCase();
     const now = Math.floor(Date.now() / 1000);
     const room: RoomRecord = {
       roomId,
-      gameType: input.gameType,
+      serverSystem: input.serverSystem,
       hostConnectionId: '',
       players: [],
       maxPlayers: input.maxPlayers,

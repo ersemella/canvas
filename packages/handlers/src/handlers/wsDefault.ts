@@ -1,6 +1,6 @@
 import type {APIGatewayProxyWebsocketHandlerV2} from 'aws-lambda';
 import {RoomRepository} from 'repositories/RoomRepository';
-import {gameRegistry} from 'games/registry';
+import {serverSystemRegistry} from 'games/registry';
 import {sendToConnection} from 'lib/wsClient';
 
 const tableName = process.env['TABLE_NAME']!;
@@ -18,11 +18,11 @@ export const handler: APIGatewayProxyWebsocketHandlerV2 = async (event) => {
   const room = await roomRepo.getRoom(conn.roomId);
   if (!room) return {statusCode: 200};
 
-  const gameModule = gameRegistry.get(room.gameType);
+  const gameModule = serverSystemRegistry.get(room.serverSystem);
   if (!gameModule) {
     await sendToConnection(wsEndpoint, connectionId, {
       type: 'error',
-      message: 'Unknown game type',
+      message: 'Unknown server system',
     });
     return {statusCode: 200};
   }

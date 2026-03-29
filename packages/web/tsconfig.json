@@ -9,7 +9,8 @@
     "resolveJsonModule": true,
     "paths": {
       "@canvas/engine": ["../../engine/src/index.ts"],
-      "@canvas/games-poker": ["../../games/poker/src/index.ts"]
+      "@canvas/games-poker": ["../../games/poker/src/index.ts"],
+      "@canvas/games-poker/game.json": ["../../games/poker/game.json"]
     }
   },
   "include": ["src"],

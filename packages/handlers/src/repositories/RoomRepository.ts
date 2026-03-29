@@ -13,7 +13,7 @@ export type {RoomPlayer};
 
 export interface RoomRecord {
   roomId: string;
-  gameType: string;
+  serverSystem: string;
   hostConnectionId: string;
   players: RoomPlayer[];
   maxPlayers: number;
