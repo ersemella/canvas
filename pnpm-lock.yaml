@@ -42,18 +42,9 @@ importers:
         specifier: ^5.0.0
         version: 5.4.21(@types/node@22.19.15)
 
-  packages/games/poker:
-    dependencies:
-      '@canvas/engine':
-        specifier: workspace:*
-        version: link:../../engine
-    devDependencies:
-      '@types/react':
-        specifier: ^18.0.0
-        version: 18.3.28
-      react:
-        specifier: ^18.0.0
-        version: 18.3.1
+  packages/games/blackjack: {}
+
+  packages/games/poker: {}
 
   packages/games/snake: {}
 
