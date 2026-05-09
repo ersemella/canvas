@@ -17,7 +17,7 @@ export function GameCard({game}: Props) {
     >
       <Title order={3} fz="md" fw={600} mb={8}>{game.title}</Title>
       <Text fz="sm" c="dimmed" mb="md" className={styles.description!}>{game.description}</Text>
-      <Button component={Link} to={`/play/${game.id}`} color="violet" size="sm" fw={600}>
+      <Button component={Link} to={`/play/${game.id}`} color="green" size="sm" fw={600}>
         Play
       </Button>
     </Card>
