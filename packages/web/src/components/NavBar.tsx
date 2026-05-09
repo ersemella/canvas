@@ -6,7 +6,7 @@ export function NavBar() {
   return (
     <AppShell.Header h={56} className={styles.header!}>
       <Group h="100%" px="xl">
-        <Anchor component={Link} to="/" fw={700} fz="lg" c="violet.4" className={styles.brand!}>
+        <Anchor component={Link} to="/" fw={700} fz="lg" c="green.4" className={styles.brand!}>
           Canvas Games
         </Anchor>
       </Group>
