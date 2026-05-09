@@ -8,7 +8,7 @@ import '@mantine/notifications/styles.css';
 import './index.css';
 
 const theme = createTheme({
-  primaryColor: 'violet',
+  primaryColor: 'green',
   fontFamily: 'system-ui, -apple-system, sans-serif',
 });
 

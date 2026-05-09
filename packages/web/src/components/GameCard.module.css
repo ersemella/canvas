@@ -4,7 +4,7 @@
 
 .card:hover {
   transform: translateY(-2px);
-  border-color: var(--mantine-color-violet-5);
+  border-color: var(--mantine-color-green-5);
 }
 
 .description {
