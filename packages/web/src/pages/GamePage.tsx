@@ -102,31 +102,41 @@ export function GamePage() {
 
   const SidePanel = sidePanel;
 
+  const backButton = (
+    <Button component={Link} to="/" variant="subtle" color="gray" size="sm">
+      ← Back to home
+    </Button>
+  );
+
   if (SidePanel) {
     return (
       <Box className={styles.withSidePanel!}>
-        <Box className={gameLayout.canvasWithPanel!}>
-          <GameErrorBoundary>
-            <GameCanvas
-              sceneData={sceneData}
-              systems={gameSystems}
-              events={gameEvents}
-              width={canvasSize.width}
-              height={canvasSize.height}
-              onReady={handleReady}
-            />
-          </GameErrorBoundary>
-          <Box className={gameLayout.sidePanel!} style={{height: canvasSize.height}}>
-            {worldEvents && <SidePanel events={worldEvents} />}
-            <GameLog entries={logEntries} />
+        <Stack gap="sm" align="flex-start">
+          {backButton}
+          <Box className={gameLayout.canvasWithPanel!}>
+            <GameErrorBoundary>
+              <GameCanvas
+                sceneData={sceneData}
+                systems={gameSystems}
+                events={gameEvents}
+                width={canvasSize.width}
+                height={canvasSize.height}
+                onReady={handleReady}
+              />
+            </GameErrorBoundary>
+            <Box className={gameLayout.sidePanel!} style={{height: canvasSize.height}}>
+              {worldEvents && <SidePanel events={worldEvents} />}
+              <GameLog entries={logEntries} />
+            </Box>
           </Box>
-        </Box>
+        </Stack>
       </Box>
     );
   }
 
   return (
     <Stack align="center" py="xl" gap="lg">
+      {backButton}
       <Title order={2} fz="xl">{gameDescriptor.title}</Title>
       <Box className={styles.canvasRound!}>
         <GameErrorBoundary>
