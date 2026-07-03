@@ -1,7 +1,7 @@
 import {useEffect, useState, useCallback} from 'react';
 import type {ComponentType} from 'react';
 import {useParams, Navigate, Link} from 'react-router-dom';
-import {Center, Loader, Text, Box, Title, Stack, Group, Button} from '@mantine/core';
+import {Center, Loader, Text, Box, Title, Stack, Button} from '@mantine/core';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {GameLog} from 'components/GameLog';
@@ -136,10 +136,12 @@ export function GamePage() {
 
   return (
     <Stack align="center" py="xl" gap="lg">
-      <Group gap="sm" align="center">
-        {backButton}
-        <Title order={2} fz="xl">{gameDescriptor.title}</Title>
-      </Group>
+      <Box pos="relative" w="100%">
+        <Box pos="absolute" left={0} top="50%" style={{transform: 'translateY(-50%)'}}>
+          {backButton}
+        </Box>
+        <Title order={2} fz="xl" ta="center">{gameDescriptor.title}</Title>
+      </Box>
       <Box className={styles.canvasRound!}>
         <GameErrorBoundary>
           <GameCanvas
