@@ -3,6 +3,6 @@
   "references": [
     {"path": "./packages/engine"},
     {"path": "./packages/web"},
-    {"path": "./packages/infra"}
+    {"path": "./packages/server"}
   ]
 }

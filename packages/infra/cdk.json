@@ -1,4 +1,0 @@
-{
-  "app": "node_modules/.bin/ts-node --prefer-ts-exts bin/infra.ts",
-  "context": {}
-}
