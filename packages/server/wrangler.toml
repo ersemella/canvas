@@ -17,6 +17,6 @@ new_sqlite_classes = ["GameRoom", "ManifestRegistry"]
 # Production secrets are set via:
 #   wrangler secret put MANIFEST_ADMIN_TOKEN
 #
-# Local dev uses [vars] below. Override per-developer in `.dev.vars` if desired.
-[vars]
-MANIFEST_ADMIN_TOKEN = "local-dev-token"
+# Local dev reads MANIFEST_ADMIN_TOKEN from a gitignored `.dev.vars` file
+# (see `.dev.vars.example`) — never from [vars] here, since anything in
+# wrangler.toml is also applied to the production deploy in CI.
