@@ -18,7 +18,7 @@ interface UploadBody {
 
 /**
  * Singleton DurableObject (`idFromName('global')`) holding all game manifests
- * and the index. Replaces the S3 ManifestsBucket from the old AWS stack.
+ * and the index.
  *
  * Storage layout:
  *   - 'index' -> ManifestIndexEntry[]

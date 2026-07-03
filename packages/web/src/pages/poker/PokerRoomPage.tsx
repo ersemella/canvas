@@ -131,7 +131,7 @@ export function PokerRoomPage() {
   const handleReady = useCallback((events: EventBus) => {
     worldEventsRef.current = events;
 
-    // Bridge ECS ws:send → WebSocket (translate type→action for Lambda protocol)
+    // Bridge ECS ws:send → WebSocket (translate type→action for the GameRoom DO protocol)
     unsubWsSendRef.current = events.on<{type: string; payload?: unknown}>('ws:send', (msg: {type: string; payload?: unknown}) => {
       wsRef.current?.send(JSON.stringify({action: msg.type, payload: msg.payload}));
     });

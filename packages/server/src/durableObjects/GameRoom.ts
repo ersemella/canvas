@@ -17,12 +17,9 @@ const DEFAULT_CHIPS = 1000;
  * One DurableObject instance per room. The room ID maps deterministically via
  * `idFromName(roomId)` so any Worker request reaches the same DO.
  *
- * Replaces: RoomTable + 6 Lambdas (createRoom, getRoom, joinRoom, wsConnect,
- * wsDisconnect, wsDefault) + ApiGw HTTP + ApiGw WebSocket.
- *
  * Uses the WebSocket Hibernation API: `state.acceptWebSocket` lets the DO
  * evict from memory while connections stay open at the edge. Wake-up on
- * incoming message is ~10ms, no Lambda-style cold start.
+ * incoming message is ~10ms.
  */
 export class GameRoom implements DurableObject {
   private state: DurableObjectState;
@@ -316,7 +313,7 @@ export class GameRoom implements DurableObject {
     this.meta.players = this.meta.players.filter((p) => p.connectionId !== att.connectionId);
 
     if (this.meta.players.length === 0) {
-      // Empty room — clear all storage immediately (mirrors current Lambda behavior).
+      // Empty room — clear all storage immediately.
       await this.state.storage.deleteAll();
       this.meta = null;
       this.gameState = null;

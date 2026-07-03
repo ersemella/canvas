@@ -498,10 +498,10 @@ export interface GameManifest {
   };
 
   /**
-   * Name of the Lambda-side server system that handles this game's actions.
+   * Name of the server-side game system that handles this game's actions.
    * When present, the room creation request sends this value to the server
-   * so the Lambda can dispatch WS messages to the correct handler.
-   * Example: `"PokerServerSystem"`
+   * so the GameRoom Durable Object can dispatch WS messages to the correct
+   * handler. Example: `"PokerServerSystem"`
    */
   serverSystem?: string;
 

@@ -1,4 +1,4 @@
-/** CORS helpers. Matches the previous API Gateway config (`allowOrigins: ['*']`). */
+/** CORS helpers. */
 
 const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
