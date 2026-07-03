@@ -2,7 +2,6 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_URL: string;
-  readonly VITE_MANIFESTS_BASE_URL?: string;
 }
 
 declare module '*.module.css' {

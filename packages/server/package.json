@@ -1,0 +1,21 @@
+{
+  "name": "@canvas/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "upload-manifests": "node scripts/upload-manifests.mjs"
+  },
+  "dependencies": {
+    "@canvas/games-poker": "workspace:*"
+  },
+  "devDependencies": {
+    "@canvas/configs": "workspace:*",
+    "@cloudflare/workers-types": "^4.20250101.0",
+    "typescript": "^5.3.0",
+    "wrangler": "^3.90.0"
+  }
+}

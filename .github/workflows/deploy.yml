@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Pages
+name: Deploy to Cloudflare
 
 on:
   workflow_dispatch:
@@ -8,10 +8,39 @@ on:
       - "packages/web/**"
       - "packages/engine/**"
       - "packages/games/**"
-      - "packages/handlers/**"
+      - "packages/server/**"
 
 jobs:
-  deploy:
+  deploy-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Deploy Worker (canvas-server)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: packages/server
+          command: deploy
+
+      - name: Upload manifests to ManifestRegistry DO
+        run: node packages/server/scripts/upload-manifests.mjs
+        env:
+          SERVER_URL: ${{ secrets.SERVER_URL }}
+          MANIFEST_ADMIN_TOKEN: ${{ secrets.MANIFEST_ADMIN_TOKEN }}
+
+  deploy-pages:
+    needs: deploy-server
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +56,7 @@ jobs:
 
       - run: pnpm --filter @canvas/web build
         env:
-          VITE_MANIFESTS_BASE_URL: ${{ secrets.VITE_MANIFESTS_BASE_URL }}
+          VITE_API_URL: ${{ secrets.SERVER_URL }}
 
       - run: npm install -g wrangler
 
