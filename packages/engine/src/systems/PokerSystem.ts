@@ -53,6 +53,8 @@ interface PublicPokerState {
   communityCards: PokerCard[];
   pot: number;
   currentBet: number;
+  /** Smallest total a raise must reach; absent from older servers. */
+  minRaiseTo?: number;
   actingConnectionId: string | null;
   showdownResult: string | null;
   log: Array<{text: string}>;
@@ -114,10 +116,12 @@ export class PokerSystem extends BaseSystem {
 
   private isMultiplayer = false;
   private myConnectionId: string | null = null;
+  private serverMinRaiseTo: number | null = null;
 
   private unsubClick: (() => void) | null = null;
   private unsubWsMessage: (() => void) | null = null;
   private unsubNetConfigure: (() => void) | null = null;
+  private unsubNetAttached: (() => void) | null = null;
 
   onInit({scene, events}: Omit<SystemContext, 'deltaTime'>): void {
     this.eventsRef = events;
@@ -138,13 +142,10 @@ export class PokerSystem extends BaseSystem {
 
     this.unsubClick = events.on<ClickPayload>('click', this.onEntityClick);
     this.unsubWsMessage = events.on<WsMessagePayload>('ws:message', this.onWsMessage);
-    this.unsubNetConfigure = events.on<NetworkConfigPayload>('network:configure', () => {
-      this.isMultiplayer = true;
-      // Reset to a clean waiting state; server will send gameStarted
-      this.gameState = createInitialState(this.cfg?.startingChips ?? DEFAULT_CHIPS);
-      setSharedPokerState(this.gameState);
-      this.emitSidePanelUpdate();
-    });
+    this.unsubNetConfigure = events.on<NetworkConfigPayload>('network:configure', this.enterMultiplayer);
+    // Emitted by a host page that owns the WebSocket itself and bridges it
+    // through ws:message / ws:send (the poker room page does this).
+    this.unsubNetAttached = events.on('network:attached', this.enterMultiplayer);
 
     this.emitSidePanelUpdate();
   }
@@ -196,7 +197,16 @@ export class PokerSystem extends BaseSystem {
     this.unsubClick?.();
     this.unsubWsMessage?.();
     this.unsubNetConfigure?.();
+    this.unsubNetAttached?.();
   }
+
+  private readonly enterMultiplayer = (): void => {
+    this.isMultiplayer = true;
+    // Reset to a clean waiting state; server will send gameStarted
+    this.gameState = createInitialState(this.cfg?.startingChips ?? DEFAULT_CHIPS);
+    setSharedPokerState(this.gameState);
+    this.emitSidePanelUpdate();
+  };
 
   // ── Event handlers ──────────────────────────────────────────────────────────
 
@@ -205,9 +215,7 @@ export class PokerSystem extends BaseSystem {
     const gs = this.gameState;
 
     if (cfg && entityId === cfg.raiseDownId) {
-      const hero = gs.players[0]!;
-      const minRaise = gs.currentBet + this.bb;
-      this.raiseAmount = Math.max(minRaise, this.raiseAmount - this.bb);
+      this.raiseAmount = Math.max(this.minRaiseTo(), this.raiseAmount - this.bb);
       this.emitSidePanelUpdate();
       return;
     }
@@ -241,6 +249,7 @@ export class PokerSystem extends BaseSystem {
     }
     if (type === 'gameStarted' || type === 'stateUpdate') {
       const pub = payload as PublicPokerState;
+      this.serverMinRaiseTo = pub.minRaiseTo ?? null;
       this.gameState = this.publicToLocal(pub);
       setSharedPokerState(this.gameState);
       this.clampRaiseAmount();
@@ -522,9 +531,13 @@ export class PokerSystem extends BaseSystem {
     const gs = this.gameState;
     const hero = gs.players[0];
     if (!hero) return;
-    const minRaise = gs.currentBet + this.bb;
     const maxRaise = hero.chips + hero.currentBet;
-    this.raiseAmount = Math.max(minRaise, Math.min(maxRaise, this.raiseAmount));
+    this.raiseAmount = Math.max(this.minRaiseTo(), Math.min(maxRaise, this.raiseAmount));
+  }
+
+  /** Server-provided minimum in multiplayer (tracks re-raise sizes); one big blind over the bet otherwise. */
+  private minRaiseTo(): number {
+    return this.serverMinRaiseTo ?? this.gameState.currentBet + this.bb;
   }
 
   private entityIdToAction(entityId: string): {type: ActionType; amount?: number} | null {

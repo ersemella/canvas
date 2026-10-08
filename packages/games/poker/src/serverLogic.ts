@@ -1,10 +1,19 @@
 import {buildDeck, shuffle, deal} from './deck';
-import {findWinner} from './handEvaluator';
+import {evaluate7CardHand, compareScores} from './handEvaluator';
+import type {HandScore} from './handEvaluator';
 import type {PokerAction, Card, LogEntry} from './types';
 import type {ServerPlayer, ServerPokerGameState, RoomPlayer} from './serverTypes';
 
 const SB = 5;
 const BB = 10;
+
+const ACTION_TYPES = new Set<string>(['fold', 'check', 'call', 'raise']);
+
+/**
+ * Thrown for an action the rules don't allow. GameRoom relays the message to
+ * the player who sent it and leaves the game state unchanged.
+ */
+export class PokerActionError extends Error {}
 
 function cardStr(card: Card): string {
   const rankStr =
@@ -32,9 +41,28 @@ function addLog(state: ServerPokerGameState, text: string): void {
   }
 }
 
+/** Moves `amount` from a player's stack into the pot. */
+function putChips(state: ServerPokerGameState, player: ServerPlayer, amount: number): void {
+  player.chips -= amount;
+  player.currentBet += amount;
+  player.totalContributed = (player.totalContributed ?? 0) + amount;
+  state.pot += amount;
+  if (player.chips === 0) player.allIn = true;
+}
+
 function isBettingRoundOver(state: ServerPokerGameState): boolean {
   const active = state.players.filter((p) => !p.folded && !p.allIn);
   return active.every((p) => p.hasActed && p.currentBet === state.currentBet);
+}
+
+/**
+ * True when nobody is left with a decision this hand: every remaining player
+ * is all-in, or one player is left with chips and has already matched the bet.
+ * The rest of the board is then dealt straight to showdown.
+ */
+function noFurtherBetting(state: ServerPokerGameState): boolean {
+  const active = state.players.filter((p) => !p.folded && !p.allIn);
+  return active.length <= 1 && active.every((p) => p.currentBet >= state.currentBet);
 }
 
 function findNextActiveIndex(players: readonly ServerPlayer[], startIdx: number): number {
@@ -47,29 +75,88 @@ function findNextActiveIndex(players: readonly ServerPlayer[], startIdx: number)
   return startIdx;
 }
 
+/**
+ * Splits the pot into a main pot and side pots by contribution level, then
+ * awards each to the best hand(s) among the players eligible for it. Tied
+ * hands split the pot; odd chips go to the winner closest to the dealer's left.
+ */
 function resolveShowdown(state: ServerPokerGameState): void {
   state.phase = 'showdown';
+  state.wentToShowdown = true;
 
-  const result = findWinner(
-    state.players.map((p, i) => ({id: i, holeCards: p.holeCards, folded: p.folded})),
-    state.communityCards
-  );
-
-  const winner = state.players[result.winnerIndex];
-  if (winner) {
-    winner.chips += state.pot;
-    state.showdownResult = `${winner.name} wins $${state.pot} with ${result.handName}!`;
-    addLog(state, '--- Showdown ---');
-    for (const p of state.players) {
-      if (!p.folded && p.holeCards) {
-        addLog(state, `${p.name}: ${cardsStr(p.holeCards)}`);
-      }
+  const n = state.players.length;
+  const scores = new Map<number, HandScore>();
+  state.players.forEach((p, i) => {
+    if (!p.folded && p.holeCards) {
+      scores.set(i, evaluate7CardHand([...p.holeCards, ...state.communityCards]));
     }
-    addLog(state, state.showdownResult);
-  } else {
-    state.showdownResult = 'No winner';
+  });
+
+  // Seat order starting left of the dealer, for odd-chip distribution.
+  const orderFromDealer = Array.from({length: n}, (_, k) => (state.dealerIndex + 1 + k) % n);
+
+  const remaining = state.players.map((p) => p.totalContributed ?? 0);
+  const pots: Array<{amount: number; eligible: number[]}> = [];
+  for (;;) {
+    const live = [...scores.keys()].filter((i) => remaining[i]! > 0);
+    if (live.length === 0) break;
+    const level = Math.min(...live.map((i) => remaining[i]!));
+    let amount = 0;
+    for (let i = 0; i < n; i++) {
+      const take = Math.min(remaining[i]!, level);
+      amount += take;
+      remaining[i] = remaining[i]! - take;
+    }
+    pots.push({amount, eligible: live});
+  }
+  // Chips folded players put in beyond the last live player's level.
+  const leftover = remaining.reduce((a, b) => a + b, 0);
+  if (leftover > 0 && pots.length > 0) pots[pots.length - 1]!.amount += leftover;
+
+  addLog(state, '--- Showdown ---');
+  for (const [i, score] of scores) {
+    const p = state.players[i]!;
+    addLog(state, `${p.name}: ${cardsStr(p.holeCards!)} (${score.name})`);
   }
 
+  const summaries: string[] = [];
+  pots.forEach((pot, potIdx) => {
+    let best: HandScore | null = null;
+    let winners: number[] = [];
+    for (const i of pot.eligible) {
+      const score = scores.get(i)!;
+      const cmp = best ? compareScores(score, best) : 1;
+      if (cmp > 0) {
+        best = score;
+        winners = [i];
+      } else if (cmp === 0) {
+        winners.push(i);
+      }
+    }
+    winners.sort((a, b) => orderFromDealer.indexOf(a) - orderFromDealer.indexOf(b));
+
+    const share = Math.floor(pot.amount / winners.length);
+    let odd = pot.amount - share * winners.length;
+    for (const w of winners) {
+      state.players[w]!.chips += share + (odd > 0 ? 1 : 0);
+      if (odd > 0) odd--;
+    }
+
+    const names = winners.map((w) => state.players[w]!.name);
+    const potName = pots.length === 1 ? '' : potIdx === 0 ? 'main pot ' : `side pot ${potIdx} `;
+    const handName = best ? ` with ${best.name}` : '';
+    // A side pot only one player could win is just their uncalled chips coming back.
+    const text =
+      pot.eligible.length === 1
+        ? `${names[0]} gets back $${pot.amount} uncalled`
+        : winners.length === 1
+          ? `${names[0]} wins ${potName}$${pot.amount}${handName}`
+          : `${names.join(' and ')} split ${potName}$${pot.amount}${handName}`;
+    summaries.push(text);
+    addLog(state, text);
+  });
+
+  state.showdownResult = summaries.length > 0 ? summaries.join(' · ') : 'No winner';
   state.pot = 0;
 }
 
@@ -81,6 +168,7 @@ function advancePhase(state: ServerPokerGameState): void {
     p.hasActed = false;
   }
   state.currentBet = 0;
+  state.lastRaiseSize = BB;
 
   const startIdx = (state.dealerIndex + 1) % n;
   state.actingIndex = findNextActiveIndex(state.players, startIdx);
@@ -131,15 +219,29 @@ function advancePhase(state: ServerPokerGameState): void {
       break;
   }
 
-  // If all remaining non-folded players are all-in, no one can act —
-  // auto-advance through remaining phases until showdown.
-  if (state.phase !== 'showdown' && isBettingRoundOver(state)) {
+  // If nobody has a decision left (all-in), deal the remaining streets.
+  if (state.phase !== 'showdown' && noFurtherBetting(state)) {
     advancePhase(state);
   }
 }
 
-export function startHand(players: RoomPlayer[]): ServerPokerGameState {
+/**
+ * Deals a new hand. Players with no chips sit out. When `previous` is given
+ * the button moves to the next seat after the previous dealer; otherwise the
+ * first dealer is chosen at random.
+ */
+export function startHand(
+  roomPlayers: RoomPlayer[],
+  previous?: ServerPokerGameState | null,
+): ServerPokerGameState {
+  const players = roomPlayers
+    .filter((p) => p.chips > 0)
+    .sort((a, b) => a.seatIndex - b.seatIndex);
+  if (players.length < 2) {
+    throw new PokerActionError('At least two players with chips are needed to deal a hand');
+  }
   const n = players.length;
+
   const serverPlayers: ServerPlayer[] = players.map((p) => ({
     connectionId: p.connectionId,
     seatIndex: p.seatIndex,
@@ -147,6 +249,7 @@ export function startHand(players: RoomPlayer[]): ServerPokerGameState {
     chips: p.chips,
     holeCards: null,
     currentBet: 0,
+    totalContributed: 0,
     folded: false,
     allIn: false,
     hasActed: false,
@@ -155,9 +258,17 @@ export function startHand(players: RoomPlayer[]): ServerPokerGameState {
     isBB: false,
   }));
 
-  const dealerIndex = Math.floor(Math.random() * n);
-  const sbIdx = (dealerIndex + 1) % n;
-  const bbIdx = (dealerIndex + 2) % n;
+  let dealerIndex: number;
+  const prevDealerSeat = previous?.players[previous.dealerIndex]?.seatIndex;
+  if (prevDealerSeat === undefined) {
+    dealerIndex = Math.floor(Math.random() * n);
+  } else {
+    const next = serverPlayers.findIndex((p) => p.seatIndex > prevDealerSeat);
+    dealerIndex = next === -1 ? 0 : next;
+  }
+  // Heads-up, the dealer posts the small blind and acts first preflop.
+  const sbIdx = n === 2 ? dealerIndex : (dealerIndex + 1) % n;
+  const bbIdx = (sbIdx + 1) % n;
 
   serverPlayers[dealerIndex]!.isDealer = true;
   serverPlayers[sbIdx]!.isSB = true;
@@ -172,103 +283,111 @@ export function startHand(players: RoomPlayer[]): ServerPokerGameState {
     p.holeCards = [r1.card, r2.card];
   }
 
-  const sbPlayer = serverPlayers[sbIdx]!;
-  const bbPlayer = serverPlayers[bbIdx]!;
-  const sbAmount = Math.min(SB, sbPlayer.chips);
-  const bbAmount = Math.min(BB, bbPlayer.chips);
-
-  sbPlayer.chips -= sbAmount;
-  sbPlayer.currentBet = sbAmount;
-  if (sbPlayer.chips === 0) sbPlayer.allIn = true;
-
-  bbPlayer.chips -= bbAmount;
-  bbPlayer.currentBet = bbAmount;
-  if (bbPlayer.chips === 0) bbPlayer.allIn = true;
-
-  const pot = sbAmount + bbAmount;
-  const now = Date.now();
-  const log: LogEntry[] = [
-    {text: '--- Hand #1 ---', timestamp: now},
-    {text: `${sbPlayer.name} posts SB $${sbAmount}`, timestamp: now},
-    {text: `${bbPlayer.name} posts BB $${bbAmount}`, timestamp: now},
-  ];
-
-  const actingIndex = (bbIdx + 1) % n;
-
-  return {
+  const handNumber = (previous?.handNumber ?? 0) + 1;
+  const state: ServerPokerGameState = {
     phase: 'preflop',
     players: serverPlayers,
     deck,
     communityCards: [],
-    pot,
+    pot: 0,
     currentBet: BB,
-    actingIndex,
+    lastRaiseSize: BB,
+    actingIndex: 0,
     dealerIndex,
-    handNumber: 1,
-    log,
+    handNumber,
+    log: [],
     showdownResult: null,
+    wentToShowdown: false,
   };
+
+  const sbPlayer = serverPlayers[sbIdx]!;
+  const bbPlayer = serverPlayers[bbIdx]!;
+  const sbAmount = Math.min(SB, sbPlayer.chips);
+  const bbAmount = Math.min(BB, bbPlayer.chips);
+  putChips(state, sbPlayer, sbAmount);
+  putChips(state, bbPlayer, bbAmount);
+
+  addLog(state, `--- Hand #${handNumber} ---`);
+  addLog(state, `${sbPlayer.name} posts SB $${sbAmount}`);
+  addLog(state, `${bbPlayer.name} posts BB $${bbAmount}`);
+
+  state.actingIndex = findNextActiveIndex(serverPlayers, (bbIdx + 1) % n);
+  if (noFurtherBetting(state)) advancePhase(state);
+
+  return state;
 }
 
+/**
+ * Applies one player's action and returns the new state. Throws
+ * PokerActionError when the action isn't legal; the input state is never
+ * modified.
+ */
 export function applyAction(
   state: ServerPokerGameState,
   connectionId: string,
-  action: PokerAction
+  action: PokerAction,
 ): ServerPokerGameState {
+  if (state.phase === 'showdown' || state.phase === 'waiting') {
+    throw new PokerActionError('The hand is over');
+  }
+  const acting = state.players[state.actingIndex];
+  if (!acting || acting.connectionId !== connectionId) {
+    throw new PokerActionError('Not your turn');
+  }
+  if (!action || typeof action !== 'object' || !ACTION_TYPES.has(action.type)) {
+    throw new PokerActionError('Unknown action');
+  }
+
   const s: ServerPokerGameState = JSON.parse(JSON.stringify(state)) as ServerPokerGameState;
+  s.lastRaiseSize ??= BB;
   const n = s.players.length;
-
-  const acting = s.players[s.actingIndex];
-  if (!acting || acting.connectionId !== connectionId) return s;
-
-  const player = acting;
+  const player = s.players[s.actingIndex]!;
   const callAmount = s.currentBet - player.currentBet;
 
   switch (action.type) {
     case 'fold':
       player.folded = true;
-      addLog(s, `${player.name} folds`);
+      addLog(s, `${player.name} ${action.timedOut ? 'ran out of time and folds' : 'folds'}`);
       break;
 
     case 'check':
       if (callAmount > 0) {
-        player.folded = true;
-        addLog(s, `${player.name} folds`);
-      } else {
-        addLog(s, `${player.name} checks`);
+        throw new PokerActionError(`You can't check — it's $${callAmount} to call`);
       }
+      addLog(s, `${player.name} ${action.timedOut ? 'ran out of time and checks' : 'checks'}`);
       break;
 
     case 'call': {
+      if (callAmount === 0) {
+        addLog(s, `${player.name} checks`);
+        break;
+      }
       const amount = Math.min(callAmount, player.chips);
-      player.chips -= amount;
-      player.currentBet += amount;
-      s.pot += amount;
-      if (player.chips === 0) player.allIn = true;
+      putChips(s, player, amount);
       addLog(s, `${player.name} calls $${amount}`);
       break;
     }
 
     case 'raise': {
-      const raiseTotal = Math.min(
-        action.amount ?? s.currentBet * 2,
-        player.chips + player.currentBet
-      );
-      const raiseExtra = raiseTotal - player.currentBet;
-      const actualPay = Math.min(raiseExtra, player.chips);
-      player.chips -= actualPay;
-      player.currentBet += actualPay;
-      s.pot += actualPay;
-      if (player.chips === 0) player.allIn = true;
-      if (player.currentBet > s.currentBet) {
-        s.currentBet = player.currentBet;
-        for (const p of s.players) {
-          if (p.connectionId !== connectionId && !p.folded && !p.allIn) {
-            p.hasActed = false;
-          }
-        }
+      if (typeof action.amount !== 'number' || !Number.isFinite(action.amount)) {
+        throw new PokerActionError('Raise amount is missing');
       }
-      addLog(s, `${player.name} raises to $${player.currentBet}`);
+      const maxTo = player.chips + player.currentBet;
+      if (maxTo <= s.currentBet) {
+        throw new PokerActionError("You don't have enough chips to raise — call instead");
+      }
+      // Requests below the minimum raise are bumped up to it; a player who
+      // can't afford the minimum may still go all-in for less.
+      const minTo = s.currentBet + s.lastRaiseSize;
+      const target = Math.min(Math.max(Math.floor(action.amount), minTo), maxTo);
+      const raiseSize = target - s.currentBet;
+      putChips(s, player, target - player.currentBet);
+      if (raiseSize >= s.lastRaiseSize) s.lastRaiseSize = raiseSize;
+      s.currentBet = target;
+      for (const p of s.players) {
+        if (p !== player && !p.folded && !p.allIn) p.hasActed = false;
+      }
+      addLog(s, `${player.name} raises to $${target}${player.allIn ? ' (all-in)' : ''}`);
       break;
     }
   }
@@ -282,6 +401,7 @@ export function applyAction(
     s.showdownResult = `${winner.name} wins $${s.pot}!`;
     addLog(s, s.showdownResult);
     s.phase = 'showdown';
+    s.wentToShowdown = false;
     s.pot = 0;
     return s;
   }
@@ -289,28 +409,33 @@ export function applyAction(
   if (isBettingRoundOver(s)) {
     advancePhase(s);
   } else {
-    let next = (s.actingIndex + 1) % n;
-    for (let attempts = 0; attempts < n; attempts++) {
-      const p = s.players[next]!;
-      if (!p.folded && !p.allIn) {
-        s.actingIndex = next;
-        break;
-      }
-      next = (next + 1) % n;
-    }
+    s.actingIndex = findNextActiveIndex(s.players, (s.actingIndex + 1) % n);
   }
 
   return s;
 }
 
+/** The action taken for a player whose turn timer runs out: check if free, else fold. */
+export function timeoutAction(state: ServerPokerGameState): PokerAction | null {
+  if (state.phase === 'showdown' || state.phase === 'waiting') return null;
+  const acting = state.players[state.actingIndex];
+  if (!acting) return null;
+  return {type: acting.currentBet >= state.currentBet ? 'check' : 'fold', timedOut: true};
+}
+
 export function getPublicState(state: ServerPokerGameState, viewerConnectionId: string): unknown {
-  const isShowdown = state.phase === 'showdown';
+  // Hole cards are only shown for hands that reached a real showdown and
+  // weren't folded; a hand won by everyone else folding stays hidden.
+  const revealAll = state.phase === 'showdown' && state.wentToShowdown;
+  const acting = state.phase === 'showdown' ? undefined : state.players[state.actingIndex];
   return {
     phase: state.phase,
     communityCards: state.communityCards,
     pot: state.pot,
     currentBet: state.currentBet,
-    actingConnectionId: state.players[state.actingIndex]?.connectionId ?? null,
+    minRaiseTo: state.currentBet + (state.lastRaiseSize ?? BB),
+    handNumber: state.handNumber,
+    actingConnectionId: acting?.connectionId ?? null,
     showdownResult: state.showdownResult,
     log: state.log,
     players: state.players.map((p) => ({
@@ -323,7 +448,8 @@ export function getPublicState(state: ServerPokerGameState, viewerConnectionId: 
       isDealer: p.isDealer,
       isSB: p.isSB,
       isBB: p.isBB,
-      holeCards: p.connectionId === viewerConnectionId || isShowdown ? p.holeCards : null,
+      holeCards:
+        p.connectionId === viewerConnectionId || (revealAll && !p.folded) ? p.holeCards : null,
     })),
   };
 }

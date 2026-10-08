@@ -18,6 +18,9 @@ export interface PublicPokerState {
   communityCards: Card[];
   pot: number;
   currentBet: number;
+  /** Smallest total bet a raise must reach this street. */
+  minRaiseTo: number;
+  handNumber: number;
   actingConnectionId: string | null;
   showdownResult: string | null;
   log: LogEntry[];

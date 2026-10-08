@@ -14,7 +14,7 @@ Browser (@canvas/web)                    Cloudflare Worker (@canvas/server)
                                                      ▼
                                    GameRoom (Durable Object) × 1 per room
                                      idFromName(roomId) · WebSocket
-                                     Hibernation · SQLite storage · TTL alarm
+                                     Hibernation · SQLite storage · alarm timers
 
                                    ManifestRegistry (Durable Object) · singleton
                                      idFromName('global') · game.json store + index
@@ -115,10 +115,11 @@ backend is coupled to Cloudflare's DO model.
 1. **Host creates a room** — `POST /rooms` with `{hostName, serverSystem: 'PokerServerSystem', maxPlayers}`. The Worker generates an 8-char room ID and calls `/init` on the corresponding `GameRoom` stub, retrying on a 409 (deterministic-ID collision).
 2. **Players join** — `POST /rooms/:id/join` validates capacity and hand-in-progress state, then hands back a `wsUrl` the Worker builds from the request's own host.
 3. **WebSocket upgrade** — `GET /rooms/:id/ws` reaches `GameRoom.handleWsUpgrade`, which seats a new player or reclaims an existing seat by name (reconnect), then accepts the socket via `state.acceptWebSocket` and serializes `{connectionId, playerName}` onto it so identity survives hibernation.
-4. **Host starts the hand** — a `startGame` action calls `pokerServerSystem.createInitialState`; the resulting state is persisted and a per-viewer `getPublicState` is broadcast so each socket sees only its own hole cards.
-5. **Players act** — each `playerAction` is checked against `actingConnectionId(state)` before `handleAction` runs — the server rejects out-of-turn moves rather than trusting the client.
+4. **Host starts the hand** — only the host's `startGame` is accepted. It calls `pokerServerSystem.createInitialState`; the resulting state is persisted and a per-viewer `getPublicState` is broadcast so each socket sees only its own hole cards.
+5. **Players act** — each `playerAction` is checked against `actingConnectionId(state)`, then `handleAction` validates the move itself (raise amounts, checking into a bet) and throws a player-facing error for anything illegal, which is sent back to that socket only. The acting player has 30s (10s while disconnected) before the room applies `timeoutAction` (check, else fold).
 6. **State fans out** — `broadcastPerViewer` re-derives a redacted view for every connected socket and pushes a `stateUpdate` after each action.
-7. **Room expires or empties** — a 24h alarm set at room creation clears storage if no sockets remain when it fires; if the last player disconnects earlier, `removePlayer` deletes all storage immediately instead of waiting for the alarm.
+7. **Next hand** — once `isHandOver`, any seated player may send `nextHand`; mid-hand or duplicate requests are ignored. Chips carry over, the button moves one seat, and players who are disconnected or out of chips sit the hand out.
+8. **Disconnects and expiry** — in the lobby a closed socket frees its seat. During a game the seat and chips are held so the player can rejoin by name and pick up their cards. One storage alarm serves three timers: the turn deadline, a 5-minute grace period after the last socket closes (then storage is deleted), and the 24h TTL, which is pushed back while sockets are still open.
 
 ## Drawbacks & inefficiencies
 
@@ -170,14 +171,6 @@ becomes one.
 on the one route where a same-origin restriction would otherwise add a
 layer.
 `packages/server/src/cors.ts`
-
-**Minor — Room TTL cleanup is alarm-dependent with no re-arm.** The 24h
-expiry alarm only clears storage if `getWebSockets().length === 0` when it
-fires; if sockets are still open at that instant, the room is never
-rescheduled for a later check. Storage cost is negligible per room, but
-long-lived rooms with intermittently-connected players won't reliably clean
-up.
-`packages/server/src/durableObjects/GameRoom.ts` (alarm)
 
 **Minor — The custom-game escape hatch is unused.** `STATIC_GAMES` in the
 web registry exists specifically for games that "cannot be expressed as

@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState, useCallback} from 'react';
+import {useEffect, useMemo, useRef, useState, useCallback} from 'react';
 import {useParams, useLocation, useNavigate} from 'react-router-dom';
 import {Paper, Title, Text, List, Button, Group, TextInput, Stack, Box} from '@mantine/core';
 import {notifications} from '@mantine/notifications';
@@ -12,6 +12,8 @@ import {API_URL} from 'config/api';
 interface SeatInfo {
   name: string;
   seatIndex: number;
+  isHost?: boolean;
+  connected?: boolean;
 }
 
 interface WsMessage {
@@ -19,7 +21,15 @@ interface WsMessage {
   connectionId?: string;
   players?: SeatInfo[];
   state?: unknown;
+  message?: string;
+  turnDeadline?: number | null;
   [key: string]: unknown;
+}
+
+interface TableState {
+  phase?: string;
+  actingConnectionId?: string | null;
+  players?: Array<{connectionId: string; name: string}>;
 }
 
 function storageKey(roomId: string) {
@@ -43,6 +53,9 @@ export function PokerRoomPage() {
   const [gameStarted, setGameStarted] = useState(false);
   const [showdown, setShowdown] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [table, setTable] = useState<TableState | null>(null);
+  const [turnDeadline, setTurnDeadline] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   const wsRef = useRef<WebSocket | null>(null);
   const worldEventsRef = useRef<EventBus | null>(null);
@@ -93,15 +106,17 @@ export function PokerRoomPage() {
               if (msg.players) setPlayers(msg.players);
               break;
             case 'gameStarted':
-              setGameStarted(true);
-              setShowdown(false);
-              break;
             case 'stateUpdate': {
-              const st = msg.state as {phase?: string} | undefined;
-              if (st?.phase === 'showdown') setShowdown(true);
-              else setShowdown(false);
+              const st = msg.state as TableState | undefined;
+              setGameStarted(true);
+              setShowdown(st?.phase === 'showdown');
+              setTable(st ?? null);
+              setTurnDeadline(msg.turnDeadline ?? null);
               break;
             }
+            case 'error':
+              notifications.show({message: msg.message ?? 'Action rejected', color: 'red', autoClose: 3000});
+              break;
           }
           // Bridge all messages to ECS EventBus
           // Server sends {type, state?} — translate to {type, payload}
@@ -134,7 +149,19 @@ export function PokerRoomPage() {
     unsubWsSendRef.current = events.on<{type: string; payload?: unknown}>('ws:send', (msg: {type: string; payload?: unknown}) => {
       wsRef.current?.send(JSON.stringify({action: msg.type, payload: msg.payload}));
     });
+
+    // Put PokerSystem in server-driven mode, then re-request the current state:
+    // the messages that started the game arrived before this canvas existed.
+    events.emit('network:attached', {});
+    wsRef.current?.send(JSON.stringify({action: 'sync'}));
   }, []);
+
+  // Tick once a second while someone's turn timer is running.
+  useEffect(() => {
+    if (!turnDeadline) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [turnDeadline]);
 
   // Unsubscribe ws:send bridge on unmount
   useEffect(() => {
@@ -156,7 +183,18 @@ export function PokerRoomPage() {
     });
   }
 
-  const gameModule = createGameModule(pokerManifest as GameManifest);
+  // Built once: GameCanvas rebuilds its World whenever these props change identity.
+  const game = useMemo(() => {
+    registerBuiltinSystems();
+    registerBuiltinComponents();
+    const module = createGameModule(pokerManifest as GameManifest);
+    return {
+      sceneData: module.getSceneData(),
+      systems: module.getSystems(),
+      events: module.getEvents(),
+      canvasSize: module.getCanvas() ?? {width: 1120, height: 620},
+    };
+  }, []);
 
   if (!nameSubmitted) {
     return (
@@ -195,7 +233,12 @@ export function PokerRoomPage() {
     );
   }
 
-  const canvasSize = gameModule.getCanvas() ?? {width: 1120, height: 620};
+  const canvasSize = game.canvasSize;
+  const isHost = players.some((p) => p.name === name && p.isHost);
+  const hostName = players.find((p) => p.isHost)?.name;
+  const disconnected = players.filter((p) => p.connected === false).map((p) => p.name);
+  const actingName = table?.players?.find((p) => p.connectionId === table.actingConnectionId)?.name;
+  const secondsLeft = turnDeadline ? Math.max(0, Math.ceil((turnDeadline - now) / 1000)) : null;
 
   return (
     <Stack align="center" pt="xl">
@@ -215,15 +258,21 @@ export function PokerRoomPage() {
               <Button variant="outline" onClick={handleCopyLink}>
                 Copy Invite Link
               </Button>
-              <Button
-                onClick={handleStartGame}
-                disabled={players.length < 2}
-                color="yellow"
-                c="dark.9"
-                fw="bold"
-              >
-                Start Game
-              </Button>
+              {isHost ? (
+                <Button
+                  onClick={handleStartGame}
+                  disabled={players.length < 2}
+                  color="yellow"
+                  c="dark.9"
+                  fw="bold"
+                >
+                  Start Game
+                </Button>
+              ) : (
+                <Text c="dimmed" ta="center" size="sm">
+                  Waiting for {hostName ?? 'the host'} to start
+                </Text>
+              )}
             </Group>
           </Stack>
         </Paper>
@@ -233,14 +282,25 @@ export function PokerRoomPage() {
         <Box>
           <Box className={gameLayout.canvasWithPanel!}>
             <GameCanvas
-              sceneData={gameModule.getSceneData()}
-              systems={gameModule.getSystems()}
-              events={gameModule.getEvents()}
+              sceneData={game.sceneData}
+              systems={game.systems}
+              events={game.events}
               width={canvasSize.width}
               height={canvasSize.height}
               onReady={handleReady}
             />
           </Box>
+          {!showdown && actingName && (
+            <Text ta="center" mt="sm" c="dimmed" size="sm">
+              {actingName === name ? 'Your turn' : `${actingName} to act`}
+              {secondsLeft !== null && ` · ${secondsLeft}s`}
+            </Text>
+          )}
+          {disconnected.length > 0 && (
+            <Text ta="center" mt={4} c="orange.4" size="sm">
+              Disconnected: {disconnected.join(', ')} — seat held until they rejoin
+            </Text>
+          )}
           {showdown && (
             <Stack align="center" mt="md">
               <Button onClick={handleNextHand} color="yellow" c="dark.9" fw="bold" size="md" px={32}>

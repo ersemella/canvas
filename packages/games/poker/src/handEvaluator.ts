@@ -13,7 +13,7 @@ const HAND_RANKS = {
   STRAIGHT_FLUSH: 8,
 };
 
-interface HandScore {
+export interface HandScore {
   rank: number;
   tiebreakers: number[];
   name: string;
@@ -104,7 +104,7 @@ export function evaluate7CardHand(cards: Card[]): HandScore {
   return best!;
 }
 
-function compareScores(a: HandScore, b: HandScore): number {
+export function compareScores(a: HandScore, b: HandScore): number {
   if (a.rank !== b.rank) return a.rank - b.rank;
   for (let i = 0; i < Math.min(a.tiebreakers.length, b.tiebreakers.length); i++) {
     if (a.tiebreakers[i] !== b.tiebreakers[i]) return a.tiebreakers[i]! - b.tiebreakers[i]!;

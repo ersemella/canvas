@@ -12,6 +12,12 @@ import {serverSystemRegistry} from '../games/registry';
 
 const TTL_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_CHIPS = 1000;
+/** How long a connected player has to act before the timeout action is applied. */
+const TURN_MS = 30_000;
+/** Shorter limit when the acting player's socket is gone, so the table isn't held up. */
+const DISCONNECTED_TURN_MS = 10_000;
+/** How long an empty room survives, so everyone refreshing at once doesn't lose the game. */
+const EMPTY_ROOM_GRACE_MS = 5 * 60 * 1000;
 
 /**
  * One DurableObject instance per room. The room ID maps deterministically via
@@ -20,6 +26,9 @@ const DEFAULT_CHIPS = 1000;
  * Uses the WebSocket Hibernation API: `state.acceptWebSocket` lets the DO
  * evict from memory while connections stay open at the edge. Wake-up on
  * incoming message is ~10ms.
+ *
+ * A single storage alarm drives three timers: the acting player's turn
+ * deadline, the empty-room grace period, and the 24h room TTL.
  */
 export class GameRoom implements DurableObject {
   private state: DurableObjectState;
@@ -74,10 +83,12 @@ export class GameRoom implements DurableObject {
       status: 'waiting',
       createdAt: now,
       expiresAt: now + TTL_MS,
+      turnDeadline: null,
+      emptySince: null,
     };
     this.meta = meta;
     await this.state.storage.put('meta', meta);
-    await this.state.storage.setAlarm(meta.expiresAt);
+    await this.scheduleAlarm();
     return json({ok: true, roomId: meta.roomId, serverSystem: meta.serverSystem});
   }
 
@@ -123,10 +134,7 @@ export class GameRoom implements DurableObject {
     // Reconnect-by-name vs new seat
     const connectionId = crypto.randomUUID();
     const existingPlayer = this.meta.players.find((p) => p.name === playerName);
-    const liveAttachments = this.state.getWebSockets().map((s) => attachmentOf(s));
-    const hasLiveSocket = existingPlayer
-      ? liveAttachments.some((a) => a?.playerName === playerName)
-      : false;
+    const hasLiveSocket = existingPlayer ? this.liveNames().has(playerName) : false;
 
     if (existingPlayer && !hasLiveSocket) {
       // Reclaim the seat: swap the connectionId.
@@ -135,7 +143,7 @@ export class GameRoom implements DurableObject {
       if (this.meta.hostConnectionId === oldId) {
         this.meta.hostConnectionId = connectionId;
       }
-      // The acting player in the game state (if any) also needs the new id.
+      // The player's seat in the game state (if any) also needs the new id.
       if (this.gameState) {
         const gs = this.gameState as {players?: Array<{connectionId: string}>};
         const sp = gs.players?.find((p) => p.connectionId === oldId);
@@ -149,12 +157,11 @@ export class GameRoom implements DurableObject {
       if (this.meta.status === 'in_progress') {
         return new Response('game in progress', {status: 400});
       }
-      const seatIndex = this.meta.players.length;
       const player: RoomPlayer = {
         connectionId,
         name: playerName,
         chips: DEFAULT_CHIPS,
-        seatIndex,
+        seatIndex: this.firstFreeSeat(),
       };
       this.meta.players.push(player);
       if (!this.meta.hostConnectionId) this.meta.hostConnectionId = connectionId;
@@ -163,6 +170,7 @@ export class GameRoom implements DurableObject {
       return new Response('player name taken', {status: 409});
     }
 
+    this.meta.emptySince = null;
     await this.state.storage.put('meta', this.meta);
 
     // Open the socket and accept it via Hibernation API.
@@ -170,6 +178,9 @@ export class GameRoom implements DurableObject {
     const [client, server] = Object.values(pair) as [WebSocket, WebSocket];
     server.serializeAttachment({connectionId, playerName} satisfies SocketAttachment);
     this.state.acceptWebSocket(server);
+
+    // A disconnected acting player who comes back gets a full turn again.
+    if (this.isActing(connectionId)) await this.resetTurnTimer();
 
     // Immediately send `connected` to the new socket and broadcast `playerJoined` to others.
     const players = this.publicPlayers();
@@ -191,13 +202,13 @@ export class GameRoom implements DurableObject {
     try {
       body = JSON.parse(text) as WsClientMessage;
     } catch {
-      ws.send(json_str<WsServerMessage>({type: 'error', message: 'invalid json'}));
+      sendError(ws, 'invalid json');
       return;
     }
 
     const gameModule = serverSystemRegistry.get(this.meta.serverSystem);
     if (!gameModule) {
-      ws.send(json_str<WsServerMessage>({type: 'error', message: 'Unknown server system'}));
+      sendError(ws, 'Unknown server system');
       return;
     }
 
@@ -205,33 +216,42 @@ export class GameRoom implements DurableObject {
       case 'sync':
         return this.handleSync(ws, att, gameModule);
       case 'startGame':
-        return this.handleStartGame(gameModule);
+        return this.handleStartGame(ws, att, gameModule);
       case 'playerAction':
         return this.handlePlayerAction(ws, att, gameModule, body.payload);
       case 'nextHand':
-        return this.handleNextHand(gameModule);
+        return this.handleNextHand(ws, gameModule);
       default:
-        ws.send(
-          json_str<WsServerMessage>({type: 'error', message: `Unknown action: ${body.action ?? ''}`}),
-        );
+        sendError(ws, `Unknown action: ${body.action ?? ''}`);
     }
   }
 
   async webSocketClose(ws: WebSocket): Promise<void> {
-    await this.removePlayer(ws);
+    await this.handleSocketGone(ws);
   }
 
   async webSocketError(ws: WebSocket): Promise<void> {
-    await this.removePlayer(ws);
+    await this.handleSocketGone(ws);
   }
 
   async alarm(): Promise<void> {
-    // TTL-driven cleanup. Only delete if no live sockets remain.
-    if (this.state.getWebSockets().length === 0) {
-      await this.state.storage.deleteAll();
-      this.meta = null;
-      this.gameState = null;
+    if (!this.meta) return;
+    const now = Date.now();
+    const noSockets = this.state.getWebSockets().length === 0;
+
+    if (noSockets && this.meta.emptySince && now >= this.meta.emptySince + EMPTY_ROOM_GRACE_MS) {
+      return this.deleteRoom();
     }
+    if (now >= this.meta.expiresAt) {
+      if (noSockets) return this.deleteRoom();
+      // Still in use: keep it for another TTL period.
+      this.meta.expiresAt = now + TTL_MS;
+      await this.state.storage.put('meta', this.meta);
+    }
+    if (this.meta.turnDeadline && now >= this.meta.turnDeadline) {
+      await this.applyTurnTimeout();
+    }
+    await this.scheduleAlarm();
   }
 
   // --- Action handlers ---
@@ -250,21 +270,32 @@ export class GameRoom implements DurableObject {
         json_str<WsServerMessage>({
           type: 'gameStarted',
           state: gameModule.getPublicState(this.gameState, att.connectionId),
+          turnDeadline: this.meta.turnDeadline ?? null,
         }),
       );
     }
   }
 
-  private async handleStartGame(gameModule: ServerSystem): Promise<void> {
+  private async handleStartGame(
+    ws: WebSocket,
+    att: SocketAttachment,
+    gameModule: ServerSystem,
+  ): Promise<void> {
     if (!this.meta || this.meta.status === 'in_progress') return;
-    const newState = gameModule.createInitialState(this.meta.players);
+    if (att.connectionId !== this.meta.hostConnectionId) {
+      sendError(ws, 'Only the host can start the game');
+      return;
+    }
+    let newState: unknown;
+    try {
+      newState = gameModule.createInitialState(this.meta.players, null);
+    } catch (err) {
+      sendError(ws, errorMessage(err));
+      return;
+    }
     this.gameState = newState;
     this.meta.status = 'in_progress';
-    await this.state.storage.put({meta: this.meta, gameState: newState});
-    this.broadcastPerViewer((cid) => ({
-      type: 'gameStarted',
-      state: gameModule.getPublicState(newState, cid),
-    }));
+    await this.commitGameState(gameModule, 'gameStarted');
   }
 
   private async handlePlayerAction(
@@ -276,64 +307,198 @@ export class GameRoom implements DurableObject {
     if (!this.meta || !this.gameState) return;
     const actingId = gameModule.actingConnectionId(this.gameState);
     if (actingId !== att.connectionId) {
-      ws.send(json_str<WsServerMessage>({type: 'error', message: 'Not your turn'}));
+      sendError(ws, 'Not your turn');
       return;
     }
-    const newState = gameModule.handleAction(this.gameState, att.connectionId, payload);
-    this.gameState = newState;
-    await this.state.storage.put('gameState', newState);
-    this.broadcastPerViewer((cid) => ({
-      type: 'stateUpdate',
-      state: gameModule.getPublicState(newState, cid),
-    }));
+    try {
+      this.gameState = gameModule.handleAction(this.gameState, att.connectionId, payload);
+    } catch (err) {
+      sendError(ws, errorMessage(err));
+      return;
+    }
+    await this.commitGameState(gameModule, 'stateUpdate');
   }
 
-  private async handleNextHand(gameModule: ServerSystem): Promise<void> {
+  /**
+   * Deals the next hand once the current one is over. Any seated player may
+   * ask, but only after showdown — a request mid-hand (or a second click after
+   * someone else already dealt) is ignored. Disconnected players sit out.
+   */
+  private async handleNextHand(ws: WebSocket, gameModule: ServerSystem): Promise<void> {
     if (!this.meta || this.meta.status !== 'in_progress' || !this.gameState) return;
+    if (!gameModule.isHandOver(this.gameState)) return;
+
     const gs = this.gameState as {players: Array<{connectionId: string; chips: number}>};
-    const updatedPlayers: RoomPlayer[] = this.meta.players.map((rp) => {
+    this.meta.players = this.meta.players.map((rp) => {
       const sp = gs.players.find((p) => p.connectionId === rp.connectionId);
       return {...rp, chips: sp?.chips ?? rp.chips};
     });
-    this.meta.players = updatedPlayers;
-    const newState = gameModule.createInitialState(updatedPlayers);
+    await this.state.storage.put('meta', this.meta);
+
+    const live = this.liveNames();
+    const dealtIn = this.meta.players.filter((p) => live.has(p.name));
+    let newState: unknown;
+    try {
+      newState = gameModule.createInitialState(dealtIn, this.gameState);
+    } catch (err) {
+      sendError(ws, errorMessage(err));
+      return;
+    }
     this.gameState = newState;
-    await this.state.storage.put({meta: this.meta, gameState: newState});
+    await this.commitGameState(gameModule, 'gameStarted');
+  }
+
+  /** Applies the game's timeout action for whoever is acting, then broadcasts. */
+  private async applyTurnTimeout(): Promise<void> {
+    if (!this.meta || !this.gameState) return;
+    const gameModule = serverSystemRegistry.get(this.meta.serverSystem);
+    if (!gameModule) return;
+    const actingId = gameModule.actingConnectionId(this.gameState);
+    const action = gameModule.timeoutAction(this.gameState);
+    if (!actingId || !action) {
+      this.meta.turnDeadline = null;
+      await this.state.storage.put('meta', this.meta);
+      return;
+    }
+    try {
+      this.gameState = gameModule.handleAction(this.gameState, actingId, action);
+    } catch {
+      // The timeout action is always legal; if not, stop the timer rather than loop.
+      this.meta.turnDeadline = null;
+      await this.state.storage.put('meta', this.meta);
+      return;
+    }
+    await this.commitGameState(gameModule, 'stateUpdate');
+  }
+
+  /** Persists the game state, restarts the turn timer, and sends each viewer their view. */
+  private async commitGameState(
+    gameModule: ServerSystem,
+    type: 'gameStarted' | 'stateUpdate',
+  ): Promise<void> {
+    if (!this.meta) return;
+    const state = this.gameState;
+    this.meta.turnDeadline = this.computeTurnDeadline(gameModule);
+    await this.state.storage.put({meta: this.meta, gameState: state});
+    await this.scheduleAlarm();
+    const turnDeadline = this.meta.turnDeadline;
     this.broadcastPerViewer((cid) => ({
-      type: 'gameStarted',
-      state: gameModule.getPublicState(newState, cid),
+      type,
+      state: gameModule.getPublicState(state, cid),
+      turnDeadline,
     }));
   }
 
-  // --- Player removal + broadcast helpers ---
+  // --- Disconnects, timers, and cleanup ---
 
-  private async removePlayer(ws: WebSocket): Promise<void> {
+  /**
+   * In the lobby, a closed socket frees the seat. Once a game is running the
+   * seat (and chips) are held so the player can reconnect by name; their
+   * turns time out meanwhile and they sit out new hands until they return.
+   */
+  private async handleSocketGone(ws: WebSocket): Promise<void> {
     const att = attachmentOf(ws);
     if (!att || !this.meta) return;
-    this.meta.players = this.meta.players.filter((p) => p.connectionId !== att.connectionId);
 
-    if (this.meta.players.length === 0) {
-      // Empty room — clear all storage immediately.
-      await this.state.storage.deleteAll();
-      this.meta = null;
-      this.gameState = null;
-      return;
+    if (this.meta.status === 'waiting') {
+      this.meta.players = this.meta.players.filter((p) => p.connectionId !== att.connectionId);
     }
 
+    const live = this.liveNames(ws);
     if (this.meta.hostConnectionId === att.connectionId) {
-      this.meta.hostConnectionId = this.meta.players[0]!.connectionId;
+      // Hand the host role to someone still connected; if nobody is, the
+      // first player to (re)join an empty lobby becomes host.
+      const nextHost = this.meta.players.find((p) => live.has(p.name));
+      if (nextHost) this.meta.hostConnectionId = nextHost.connectionId;
+      else if (this.meta.status === 'waiting') this.meta.hostConnectionId = '';
     }
+
+    if (live.size === 0) this.meta.emptySince = Date.now();
+
+    // Don't hold the table for a full turn while the acting player is gone.
+    if (this.isActing(att.connectionId) && this.meta.turnDeadline) {
+      this.meta.turnDeadline = Math.min(this.meta.turnDeadline, Date.now() + DISCONNECTED_TURN_MS);
+    }
+
     await this.state.storage.put('meta', this.meta);
+    await this.scheduleAlarm();
 
     this.broadcastExcept(att.connectionId, {
       type: 'playerLeft',
       connectionId: att.connectionId,
-      players: this.publicPlayers(),
+      players: this.publicPlayers(ws),
     });
   }
 
-  private publicPlayers(): PublicPlayerSummary[] {
-    return (this.meta?.players ?? []).map((p) => ({name: p.name, seatIndex: p.seatIndex}));
+  private async resetTurnTimer(): Promise<void> {
+    if (!this.meta) return;
+    const gameModule = serverSystemRegistry.get(this.meta.serverSystem);
+    if (!gameModule) return;
+    this.meta.turnDeadline = this.computeTurnDeadline(gameModule);
+    await this.state.storage.put('meta', this.meta);
+    await this.scheduleAlarm();
+  }
+
+  private computeTurnDeadline(gameModule: ServerSystem): number | null {
+    if (!this.meta || !this.gameState || this.meta.status !== 'in_progress') return null;
+    const actingId = gameModule.actingConnectionId(this.gameState);
+    if (!actingId) return null;
+    const acting = this.meta.players.find((p) => p.connectionId === actingId);
+    const connected = acting ? this.liveNames().has(acting.name) : false;
+    return Date.now() + (connected ? TURN_MS : DISCONNECTED_TURN_MS);
+  }
+
+  /** Points the storage alarm at whichever timer is due first. */
+  private async scheduleAlarm(): Promise<void> {
+    if (!this.meta) return;
+    const due = [
+      this.meta.expiresAt,
+      this.meta.turnDeadline ?? Infinity,
+      this.meta.emptySince ? this.meta.emptySince + EMPTY_ROOM_GRACE_MS : Infinity,
+    ];
+    await this.state.storage.setAlarm(Math.min(...due));
+  }
+
+  private async deleteRoom(): Promise<void> {
+    await this.state.storage.deleteAll();
+    this.meta = null;
+    this.gameState = null;
+  }
+
+  // --- Helpers ---
+
+  private isActing(connectionId: string): boolean {
+    if (!this.meta || !this.gameState) return false;
+    const gameModule = serverSystemRegistry.get(this.meta.serverSystem);
+    return gameModule?.actingConnectionId(this.gameState) === connectionId;
+  }
+
+  /** Names with an open socket, optionally ignoring one that is closing. */
+  private liveNames(except?: WebSocket): Set<string> {
+    const names = new Set<string>();
+    for (const s of this.state.getWebSockets()) {
+      if (s === except) continue;
+      const a = attachmentOf(s);
+      if (a) names.add(a.playerName);
+    }
+    return names;
+  }
+
+  private firstFreeSeat(): number {
+    const taken = new Set(this.meta?.players.map((p) => p.seatIndex));
+    let seat = 0;
+    while (taken.has(seat)) seat++;
+    return seat;
+  }
+
+  private publicPlayers(closing?: WebSocket): PublicPlayerSummary[] {
+    const live = this.liveNames(closing);
+    return (this.meta?.players ?? []).map((p) => ({
+      name: p.name,
+      seatIndex: p.seatIndex,
+      isHost: p.connectionId === this.meta?.hostConnectionId,
+      connected: live.has(p.name),
+    }));
   }
 
   private broadcastExcept(connectionId: string, msg: WsServerMessage): void {
@@ -370,6 +535,14 @@ function attachmentOf(ws: WebSocket): SocketAttachment | null {
   const obj = a as Partial<SocketAttachment>;
   if (typeof obj.connectionId !== 'string' || typeof obj.playerName !== 'string') return null;
   return {connectionId: obj.connectionId, playerName: obj.playerName};
+}
+
+function sendError(ws: WebSocket, message: string): void {
+  ws.send(json_str<WsServerMessage>({type: 'error', message}));
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : 'Something went wrong';
 }
 
 function json(body: unknown, status = 200): Response {

@@ -43,6 +43,8 @@ export interface PokerGameState {
 export interface PokerAction {
   type: ActionType;
   amount?: number;
+  /** Set by the server when the player's turn timer ran out. */
+  timedOut?: boolean;
 }
 
 export interface PokerUiState {
