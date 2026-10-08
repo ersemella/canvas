@@ -73,3 +73,38 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  # Plays real games against production right after each deploy: the
+  # raw-WebSocket protocol suite and the two-browser suite (see
+  # .claude/skills/verify). Creates a short-lived test room in production.
+  smoke-prod:
+    needs: deploy-pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # The protocol suite uses Node's built-in WebSocket (Node 22+).
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E against production
+        run: pnpm e2e
+        env:
+          E2E_API_URL: ${{ secrets.SERVER_URL }}
+          E2E_WEB_URL: ${{ vars.PAGES_URL || 'https://canvas-bdg.pages.dev' }}
+
+      - name: Upload screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: e2e-results/
+          if-no-files-found: ignore

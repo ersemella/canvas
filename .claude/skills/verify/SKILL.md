@@ -40,6 +40,8 @@ E2E_API_URL=https://canvas-server.esemella.workers.dev E2E_WEB_URL=https://canva
 
 This creates a real room in production (it expires on its own). In a cloud session both hosts must be allowed in the environment's network settings first.
 
+CI does exactly this after every deploy: the `smoke-prod` job in `.github/workflows/deploy.yml` runs `pnpm e2e` against production and uploads `e2e-results/` as a run artifact. When it fails, download that artifact and look at the screenshots and logs before changing code.
+
 ## Gotchas when writing suites
 
 - Canvas buttons have no DOM: click by canvas coordinates, scaled from the scene size (1120×620 for poker) to the canvas's on-screen box. Button centers live in `packages/games/poker/game.json`.

@@ -21,8 +21,8 @@ const outDir = join(root, 'e2e-results');
 mkdirSync(outDir, {recursive: true});
 
 const external = Boolean(process.env.E2E_API_URL && process.env.E2E_WEB_URL);
-const API_URL = process.env.E2E_API_URL ?? 'http://127.0.0.1:8787';
-const WEB_URL = process.env.E2E_WEB_URL ?? 'http://localhost:3000';
+const API_URL = (process.env.E2E_API_URL ?? 'http://127.0.0.1:8787').replace(/\/+$/, '');
+const WEB_URL = (process.env.E2E_WEB_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 
 const servers = [];
 
@@ -103,11 +103,11 @@ try {
       join(root, 'packages/web')
     );
     console.log('Starting wrangler dev and vite…');
-    await waitFor(`${API_URL}/health`, 'Worker');
-    await waitFor(WEB_URL, 'Web app');
   } else {
     console.log(`Using running servers: API ${API_URL}, web ${WEB_URL}`);
   }
+  await waitFor(`${API_URL}/health`, 'Worker');
+  await waitFor(WEB_URL, 'Web app');
   for (const suite of suites) {
     console.log(`\n▶ ${suite}`);
     if ((await runSuite(suite)) !== 0) failed++;

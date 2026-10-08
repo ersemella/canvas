@@ -1,7 +1,8 @@
 /** Small shared helpers for the e2e suites (no test framework needed). */
 
-export const API_URL = process.env.E2E_API_URL ?? 'http://127.0.0.1:8787';
-export const WEB_URL = process.env.E2E_WEB_URL ?? 'http://localhost:3000';
+// Trailing slashes stripped so `${API_URL}/rooms` never becomes `//rooms`.
+export const API_URL = (process.env.E2E_API_URL ?? 'http://127.0.0.1:8787').replace(/\/+$/, '');
+export const WEB_URL = (process.env.E2E_WEB_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 export const OUT_DIR = process.env.E2E_OUT_DIR ?? 'e2e-results';
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
