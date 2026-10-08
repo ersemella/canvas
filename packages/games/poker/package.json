@@ -7,11 +7,16 @@
   },
   "typesVersions": {
     "*": {
-      "server": ["src/server.ts"]
+      "server": [
+        "src/server.ts"
+      ]
     }
   },
   "scripts": {
-    "build": "echo 'game.json already committed — no build step needed'"
+    "build": "echo 'game.json already committed \u2014 no build step needed'",
+    "test": "vitest run"
   },
-  "dependencies": {}
+  "devDependencies": {
+    "vitest": "^3.2.7"
+  }
 }
