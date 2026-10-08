@@ -30,9 +30,14 @@ export function GamePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getGames().then((g) => {
-      setGameDescriptor(g.find((d) => d.id === gameId) ?? null);
-    });
+    getGames()
+      .then((g) => {
+        setGameDescriptor(g.find((d) => d.id === gameId) ?? null);
+      })
+      .catch((err: Error) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, [gameId]);
 
   useEffect(() => {
@@ -67,6 +72,17 @@ export function GamePage() {
     return worldEvents.on<LogEntry[]>('game:log_update', setLogEntries);
   }, [worldEvents, sidePanel]);
 
+  if (error) {
+    return (
+      <Center h="calc(100vh - 56px)">
+        <Stack align="center" gap="sm" maw={480}>
+          <Text c="red.4">Failed to load game: {error}</Text>
+          <Button component={Link} to="/" variant="light">Back to home</Button>
+        </Stack>
+      </Center>
+    );
+  }
+
   // Still resolving the game list
   if (gameDescriptor === undefined) {
     return (
@@ -83,17 +99,6 @@ export function GamePage() {
       <Center h="calc(100vh - 56px)">
         <Loader size="sm" />
         <Text ml="sm">Loading {gameDescriptor.title}...</Text>
-      </Center>
-    );
-  }
-
-  if (error) {
-    return (
-      <Center h="calc(100vh - 56px)">
-        <Stack align="center" gap="sm" maw={480}>
-          <Text c="red.4">Failed to load game: {error}</Text>
-          <Button component={Link} to="/" variant="light">Back to home</Button>
-        </Stack>
       </Center>
     );
   }

@@ -1,8 +1,7 @@
 import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Container, Paper, Title, TextInput, Button, Text, Stack, Divider} from '@mantine/core';
-
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+import {API_URL} from 'config/api';
 
 export function PokerLobbyPage() {
   const navigate = useNavigate();

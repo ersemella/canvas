@@ -7,8 +7,7 @@ import gameLayout from 'styles/gameLayout.module.css';
 import {registerBuiltinComponents, registerBuiltinSystems, createGameModule} from '@canvas/engine';
 import type {EventBus, GameManifest} from '@canvas/engine';
 import pokerManifest from '@canvas/games-poker/game.json';
-
-const API_URL = import.meta.env.VITE_API_URL ?? '';
+import {API_URL} from 'config/api';
 
 interface SeatInfo {
   name: string;
