@@ -5,8 +5,10 @@
  * blackjack ends the hand before the player acts, naturals pay 3:2, the shoe
  * reshuffles between hands).
  *
- * Reads game state through `window.__canvasWorld`, which GameCanvas only sets
- * on the Vite dev server — so this suite skips itself against production.
+ * The deep checks read game state through `window.__canvasWorld`, which
+ * GameCanvas only sets on the Vite dev server. Against production the suite
+ * still checks the game list and that every game renders without errors,
+ * then skips the rest.
  */
 import {chromium} from 'playwright';
 import {join} from 'node:path';
@@ -16,12 +18,19 @@ const shot = (page, name) => page.screenshot({path: join(OUT_DIR, `games-${name}
 
 const browser = await chromium.launch();
 const page = await browser.newPage({viewport: {width: 1300, height: 900}});
-page.on('pageerror', (e) => console.log('  [page error]', e.message));
+const pageErrors = [];
+page.on('pageerror', (e) => {
+  pageErrors.push(e.message);
+  console.log('  [page error]', e.message);
+});
 
 async function openGame(id) {
   await page.goto(`${WEB_URL}/play/${id}`);
   await page.locator('canvas').waitFor({timeout: 15_000});
-  await page.waitForFunction(() => window.__canvasWorld?.getScene(), null, {timeout: 10_000});
+  // Only the dev server exposes the world; don't wait long for it elsewhere.
+  await page
+    .waitForFunction(() => window.__canvasWorld?.getScene(), null, {timeout: 3_000})
+    .catch(() => {});
 }
 
 try {
@@ -31,9 +40,21 @@ try {
   const cards = await page.getByRole('link', {name: /play/i}).count();
   check('game list shows all 5 games', cards === 5, cards);
 
+  // Every game opens to a canvas without throwing (works against production).
+  for (const id of ['snake', 'solitaire', 'sudoku', 'blackjack']) {
+    const errorsBefore = pageErrors.length;
+    await openGame(id);
+    await sleep(500);
+    check(
+      `${id} renders without errors`,
+      pageErrors.length === errorsBefore,
+      pageErrors.slice(errorsBefore)
+    );
+  }
+
   await openGame('snake');
   if (!(await page.evaluate(() => Boolean(window.__canvasWorld)))) {
-    console.log('  (skipped: no __canvasWorld — not a dev-server build)');
+    console.log('  (deep checks skipped: no __canvasWorld — not a dev-server build)');
     await browser.close();
     finish();
   }
