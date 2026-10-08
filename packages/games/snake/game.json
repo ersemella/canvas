@@ -63,19 +63,23 @@
             "actionMap": {
               "move_up": [
                 "ArrowUp",
-                "KeyW"
+                "KeyW",
+                "SwipeUp"
               ],
               "move_down": [
                 "ArrowDown",
-                "KeyS"
+                "KeyS",
+                "SwipeDown"
               ],
               "move_left": [
                 "ArrowLeft",
-                "KeyA"
+                "KeyA",
+                "SwipeLeft"
               ],
               "move_right": [
                 "ArrowRight",
-                "KeyD"
+                "KeyD",
+                "SwipeRight"
               ]
             }
           },
@@ -87,7 +91,11 @@
             "gridSize": 20,
             "prevX": 310,
             "prevY": 210,
-            "moved": false
+            "moved": false,
+            "speedUp": {
+              "perCollect": 0.5,
+              "max": 18
+            }
           },
           "BoundsTrigger": {
             "width": 600,

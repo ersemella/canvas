@@ -8,6 +8,7 @@ import {inputService} from 'systems/InputSystem';
 import type {GridCursorPayload} from 'systems/GridCursorSystem';
 import type {GridPuzzleConfigData, GridPuzzleData, PuzzleConstraint} from 'components/GridPuzzleConfigComponent';
 import {puzzleGenerators} from 'generators/puzzleGenerators';
+import type {ClickPayload} from 'systems/ClickSystem';
 
 const DEFAULT_VISUALS = {
   selectedColor: '#b3d9ff',
@@ -75,6 +76,15 @@ export class GridPuzzleSystem extends ReactiveSystem {
       }
     }
 
+    const numpad = config.numpad;
+    if (numpad) {
+      events.on<ClickPayload>('click', ({entityId}) => {
+        if (!entityId.startsWith(`${numpad.buttonPrefix}-`)) return;
+        const key = entityId.slice(numpad.buttonPrefix.length + 1);
+        this.setSelectedCell(key === 'clear' ? 0 : Number(key));
+      });
+    }
+
     events.on<GridCursorPayload>('cursor:moved', ({row, col}: GridCursorPayload) => {
       const pe = scene.query({all: ['GridPuzzle']})[0];
       if (!pe) return;
@@ -94,26 +104,30 @@ export class GridPuzzleSystem extends ReactiveSystem {
     const config = this.config;
     if (!config) return;
 
-    const puzzle = this.getPuzzleData();
-    if (!puzzle || puzzle.complete || !puzzle.board) return;
-
-    const r = puzzle.selectedRow;
-    const c = puzzle.selectedCol;
-    if (r < 0 || c < 0 || (puzzle.given?.[r]?.[c] ?? 0) !== 0) return;
-
     const digitPrefix = config.inputActions?.digitPrefix ?? 'num';
     for (let d = config.minValue; d <= config.maxValue; d++) {
       if (inputService.isActionJustPressed(`${digitPrefix}${d}`)) {
-        puzzle.board[r]![c] = d;
-        this.markDirty();
+        this.setSelectedCell(d);
         return;
       }
     }
 
     if (inputService.isActionJustPressed(config.inputActions?.clear ?? 'clear')) {
-      puzzle.board[r]![c] = 0;
-      this.markDirty();
+      this.setSelectedCell(0);
     }
+  }
+
+  /** Writes `value` (0 clears) into the selected cell unless it's a given or the puzzle is done. */
+  private setSelectedCell(value: number): void {
+    const config = this.config;
+    const puzzle = this.getPuzzleData();
+    if (!config || !puzzle || puzzle.complete || !puzzle.board) return;
+    if (value !== 0 && (value < config.minValue || value > config.maxValue || !Number.isInteger(value))) return;
+    const r = puzzle.selectedRow;
+    const c = puzzle.selectedCol;
+    if (r < 0 || c < 0 || (puzzle.given?.[r]?.[c] ?? 0) !== 0) return;
+    puzzle.board[r]![c] = value;
+    this.markDirty();
   }
 
   onDirty({events}: SystemContext): void {

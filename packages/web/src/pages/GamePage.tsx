@@ -127,6 +127,7 @@ export function GamePage() {
                 width={canvasSize.width}
                 height={canvasSize.height}
                 onReady={handleReady}
+                bestScoreKey={`canvas:best:${gameId}`}
               />
             </GameErrorBoundary>
             <Box className={gameLayout.sidePanel!} style={{height: canvasSize.height}}>
@@ -156,6 +157,7 @@ export function GamePage() {
             width={canvasSize.width}
             height={canvasSize.height}
             onReady={handleReady}
+            bestScoreKey={`canvas:best:${gameId}`}
           />
         </GameErrorBoundary>
       </Box>

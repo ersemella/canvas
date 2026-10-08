@@ -27,6 +27,8 @@ export interface CardHandLayout {
   cardWidth: number;
   cardHeight: number;
   cardGap: number;
+  /** Horizontal space the hand may use; cards overlap to fit. Defaults to the canvas width. */
+  maxWidth?: number;
 }
 
 const CARD_FACE_COLOR = '#ffffff';
@@ -53,7 +55,8 @@ export function cardXPositions(count: number, layout: CardHandLayout): number[] 
   if (count === 0) return [];
   if (count === 1) return [layout.canvasCenterX];
   const maxStep = layout.cardWidth + layout.cardGap;
-  const step = Math.min(maxStep, (layout.canvasCenterX * 1.6) / (count - 1));
+  const span = layout.maxWidth !== undefined ? layout.maxWidth - layout.cardWidth : layout.canvasCenterX * 1.6;
+  const step = Math.min(maxStep, span / (count - 1));
   const totalW = step * (count - 1) + layout.cardWidth;
   const startX = layout.canvasCenterX - totalW / 2 + layout.cardWidth / 2;
   return Array.from({length: count}, (_, i) => startX + i * step);

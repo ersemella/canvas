@@ -5,10 +5,11 @@
   },
   "canvas": {
     "width": 500,
-    "height": 520
+    "height": 600
   },
   "systems": [
     "MouseSystem",
+    "ClickSystem",
     "GridCursorSystem",
     "GridPuzzleSystem"
   ],
@@ -39,6 +40,9 @@
             "inputActions": {
               "digitPrefix": "num",
               "clear": "clear"
+            },
+            "numpad": {
+              "buttonPrefix": "numpad"
             },
             "visuals": {
               "selectedColor": "#b3d9ff",
@@ -4632,12 +4636,552 @@
         }
       },
       {
+        "id": "numpad-1",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 47.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#dde8f3",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-1-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 47.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "1",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#1a5276"
+          }
+        }
+      },
+      {
+        "id": "numpad-2",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 92.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#dde8f3",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-2-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 92.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "2",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#1a5276"
+          }
+        }
+      },
+      {
+        "id": "numpad-3",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 137.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#dde8f3",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-3-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 137.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "3",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#1a5276"
+          }
+        }
+      },
+      {
+        "id": "numpad-4",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 182.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#dde8f3",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-4-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 182.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "4",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#1a5276"
+          }
+        }
+      },
+      {
+        "id": "numpad-5",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 227.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#dde8f3",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-5-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 227.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "5",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#1a5276"
+          }
+        }
+      },
+      {
+        "id": "numpad-6",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 272.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#dde8f3",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-6-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 272.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "6",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#1a5276"
+          }
+        }
+      },
+      {
+        "id": "numpad-7",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 317.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#dde8f3",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-7-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 317.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "7",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#1a5276"
+          }
+        }
+      },
+      {
+        "id": "numpad-8",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 362.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#dde8f3",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-8-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 362.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "8",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#1a5276"
+          }
+        }
+      },
+      {
+        "id": "numpad-9",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 407.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#dde8f3",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-9-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 407.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "9",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#1a5276"
+          }
+        }
+      },
+      {
+        "id": "numpad-clear",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 452.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 40,
+            "height": 40,
+            "color": "#f3d6d6",
+            "radius": 6,
+            "zIndex": 5
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "numpad-clear-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 452.5,
+              "y": 513
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "width": 0,
+            "height": 0,
+            "zIndex": 6,
+            "visible": true,
+            "text": "✕",
+            "fontSize": 20,
+            "fontFamily": "Arial",
+            "bold": true,
+            "textColor": "#a23b3b"
+          }
+        }
+      },
+      {
         "id": "status",
         "components": {
           "Transform": {
             "position": {
               "x": 250,
-              "y": 495
+              "y": 580
             },
             "rotation": 0,
             "scale": {
@@ -4651,11 +5195,11 @@
             "height": 0,
             "zIndex": 4,
             "visible": true,
-            "text": "Sudoku — use arrow keys or click + 1–9",
+            "text": "Tap a cell, then a number — or use the arrow keys and 1–9",
             "fontSize": 14,
             "fontFamily": "Arial",
             "bold": false,
-            "textColor": "#333333"
+            "textColor": "#cccccc"
           }
         }
       }

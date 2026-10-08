@@ -1,11 +1,11 @@
 {
   "meta": {
     "title": "Blackjack",
-    "description": "Single-player Blackjack against the house. Start with $1,000 — min bet $10."
+    "description": "Single-player Blackjack against the house — split, double, insurance and surrender. Start with $1,000, min bet $10."
   },
   "canvas": {
     "width": 500,
-    "height": 400
+    "height": 440
   },
   "systems": [
     "MouseSystem",
@@ -24,7 +24,7 @@
           "Transform": {
             "position": {
               "x": 250,
-              "y": 200
+              "y": 220
             },
             "rotation": 0,
             "scale": {
@@ -34,7 +34,7 @@
           },
           "Renderable": {
             "width": 500,
-            "height": 400,
+            "height": 440,
             "color": "#000000",
             "zIndex": 0,
             "visible": true
@@ -1306,6 +1306,818 @@
         }
       },
       {
+        "id": "p-card-10",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-10-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-10",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-11",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-11-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-11",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-12",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-12-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-12",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-13",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-13-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-13",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-14",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-14-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-14",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-15",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-15-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-15",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-16",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-16-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-16",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-17",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-17-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-17",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-18",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-18-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-18",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-19",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-19-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-19",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-20",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-20-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-20",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-21",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-21-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-21",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-22",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-22-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-22",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "p-card-23",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 60,
+            "height": 84,
+            "color": "#1a5c96",
+            "zIndex": 10,
+            "visible": false,
+            "borderColor": "#0d3d6b",
+            "borderWidth": 1,
+            "radius": 4
+          }
+        }
+      },
+      {
+        "id": "p-card-23-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 250,
+              "y": 234
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "",
+            "textColor": "#ffffff",
+            "fontSize": 14,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 11,
+            "visible": false
+          },
+          "ChildOf": {
+            "parentId": "p-card-23",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
         "id": "status-text",
         "components": {
           "Transform": {
@@ -1738,6 +2550,242 @@
         }
       },
       {
+        "id": "split-btn",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 75,
+              "y": 410
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 80,
+            "height": 30,
+            "color": "#555555",
+            "zIndex": 5,
+            "visible": true,
+            "radius": 4
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "split-btn-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 75,
+              "y": 410
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "SPLIT",
+            "textColor": "#ffffff",
+            "fontSize": 12,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 6,
+            "visible": true
+          },
+          "ChildOf": {
+            "parentId": "split-btn",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "surrender-btn",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 195,
+              "y": 410
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 80,
+            "height": 30,
+            "color": "#555555",
+            "zIndex": 5,
+            "visible": true,
+            "radius": 4
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "surrender-btn-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 195,
+              "y": 410
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "SURRENDER",
+            "textColor": "#ffffff",
+            "fontSize": 12,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 6,
+            "visible": true
+          },
+          "ChildOf": {
+            "parentId": "surrender-btn",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "insurance-btn",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 315,
+              "y": 410
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 80,
+            "height": 30,
+            "color": "#555555",
+            "zIndex": 5,
+            "visible": true,
+            "radius": 4
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "insurance-btn-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 315,
+              "y": 410
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "INSURE",
+            "textColor": "#ffffff",
+            "fontSize": 12,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 6,
+            "visible": true
+          },
+          "ChildOf": {
+            "parentId": "insurance-btn",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
+        "id": "no-insurance-btn",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 425,
+              "y": 410
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "width": 70,
+            "height": 30,
+            "color": "#555555",
+            "zIndex": 5,
+            "visible": true,
+            "radius": 4
+          },
+          "Clickable": {
+            "enabled": true
+          }
+        }
+      },
+      {
+        "id": "no-insurance-btn-label",
+        "components": {
+          "Transform": {
+            "position": {
+              "x": 425,
+              "y": 410
+            },
+            "rotation": 0,
+            "scale": {
+              "x": 1,
+              "y": 1
+            }
+          },
+          "Renderable": {
+            "renderType": "text",
+            "text": "NO INS.",
+            "textColor": "#ffffff",
+            "fontSize": 12,
+            "bold": true,
+            "textAnchor": "center",
+            "zIndex": 6,
+            "visible": true
+          },
+          "ChildOf": {
+            "parentId": "no-insurance-btn",
+            "offsetX": 0,
+            "offsetY": 0,
+            "zIndexOffset": 1
+          }
+        }
+      },
+      {
         "id": "blackjack-config",
         "components": {
           "BlackjackConfig": {
@@ -1764,7 +2812,13 @@
             "doubleButtonId": "double-btn",
             "dealButtonId": "deal-btn",
             "betUpButtonId": "bet-up-btn",
-            "betDownButtonId": "bet-down-btn"
+            "betDownButtonId": "bet-down-btn",
+            "splitButtonId": "split-btn",
+            "surrenderButtonId": "surrender-btn",
+            "insuranceButtonId": "insurance-btn",
+            "noInsuranceButtonId": "no-insurance-btn",
+            "maxHands": 4,
+            "tableWidth": 500
           }
         }
       }

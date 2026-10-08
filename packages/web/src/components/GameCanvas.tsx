@@ -24,13 +24,44 @@ interface Props {
   width?: number;
   height?: number;
   onReady?: (events: EventBus) => void;
+  /** localStorage key for this game's best score; omit to not track one. */
+  bestScoreKey?: string | undefined;
 }
 
-export function GameCanvas({sceneData, createSystems, events, width = 600, height = 400, onReady}: Props) {
+function readBest(key: string | undefined): number {
+  if (!key) return 0;
+  try {
+    return Number(localStorage.getItem(key)) || 0;
+  } catch {
+    return 0; // storage blocked (private mode, sandboxed iframe)
+  }
+}
+
+function writeBest(key: string, value: number): void {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch {
+    // best score just won't persist
+  }
+}
+
+export function GameCanvas({sceneData, createSystems, events, width = 600, height = 400, onReady, bestScoreKey}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<World | null>(null);
   const [outcome, setOutcome] = useState<'lost' | 'won' | null>(null);
   const [score, setScore] = useState(0);
+  const [best, setBest] = useState(() => readBest(bestScoreKey));
+  const [newBest, setNewBest] = useState(false);
+
+  // Record a new best when a scored game ends.
+  useEffect(() => {
+    if (!outcome || !events?.onScore || !bestScoreKey) return;
+    if (score > best) {
+      writeBest(bestScoreKey, score);
+      setBest(score);
+      setNewBest(true);
+    }
+  }, [outcome, score, best, events, bestScoreKey]);
   const [restartKey, setRestartKey] = useState(0);
 
   useEffect(() => {
@@ -38,6 +69,7 @@ export function GameCanvas({sceneData, createSystems, events, width = 600, heigh
     if (!canvas) return;
 
     setOutcome(null);
+    setNewBest(false);
     setScore(0);
 
     registerBuiltinComponents();
@@ -93,6 +125,7 @@ export function GameCanvas({sceneData, createSystems, events, width = 600, heigh
       {events?.onScore && !outcome && (
         <Text className={styles.score!} ff="monospace" fw="bold" c="white">
           Score: {score}
+          {bestScoreKey && best > 0 ? `  ·  Best: ${Math.max(best, score)}` : ''}
         </Text>
       )}
       {outcome && (
@@ -102,6 +135,11 @@ export function GameCanvas({sceneData, createSystems, events, width = 600, heigh
               {outcome === 'won' ? 'You win!' : 'Game Over'}
             </Text>
             {events?.onScore && <Text ff="monospace" fz="1.2rem" c="gray.4">Score: {score}</Text>}
+            {events?.onScore && bestScoreKey && (
+              <Text ff="monospace" fz="1rem" c={newBest ? 'yellow.4' : 'gray.5'}>
+                {newBest ? 'New best!' : `Best: ${best}`}
+              </Text>
+            )}
             <Button mt={8} color="green" onClick={restart} ff="monospace" fw="bold">
               Play Again
             </Button>

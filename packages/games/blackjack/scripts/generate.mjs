@@ -14,13 +14,15 @@ const outPath = resolve(__dirname, '../game.json');
 // ── Layout constants ───────────────────────────────────────────────────────
 
 const W = 500;
-const H = 400;
+const H = 440;
 const CX = W / 2; // 250
 
 const CARD_W = 60;
 const CARD_H = 84;
 const CARD_GAP = 8;
 const MAX_CARDS = 10;
+// Player slots are shared between split hands (up to 4).
+const PLAYER_SLOTS = 24;
 
 const DEALER_CARD_Y = 96;
 const PLAYER_CARD_Y = 234;
@@ -179,7 +181,7 @@ entities.push({
 });
 
 // Player card slots
-for (let i = 0; i < MAX_CARDS; i++) {
+for (let i = 0; i < PLAYER_SLOTS; i++) {
   entities.push(...makeCardSlot(`p-card-${i}`, CX, PLAYER_CARD_Y));
 }
 
@@ -222,6 +224,13 @@ entities.push(...makeButton('stand-btn', 195, 370, 80, 32, 'STAND', DIM));
 entities.push(...makeButton('double-btn', 315, 370, 80, 32, 'DOUBLE', DIM));
 entities.push(...makeButton('deal-btn', 425, 370, 70, 32, 'DEAL', BTN_DEAL));
 
+// ── Second action row (y=410): split, surrender, insurance ─────────────────
+
+entities.push(...makeButton('split-btn', 75, 410, 80, 30, 'SPLIT', DIM));
+entities.push(...makeButton('surrender-btn', 195, 410, 80, 30, 'SURRENDER', DIM));
+entities.push(...makeButton('insurance-btn', 315, 410, 80, 30, 'INSURE', DIM));
+entities.push(...makeButton('no-insurance-btn', 425, 410, 70, 30, 'NO INS.', DIM));
+
 // ── BlackjackConfig entity ─────────────────────────────────────────────────
 
 entities.push({
@@ -252,6 +261,12 @@ entities.push({
       dealButtonId: 'deal-btn',
       betUpButtonId: 'bet-up-btn',
       betDownButtonId: 'bet-down-btn',
+      splitButtonId: 'split-btn',
+      surrenderButtonId: 'surrender-btn',
+      insuranceButtonId: 'insurance-btn',
+      noInsuranceButtonId: 'no-insurance-btn',
+      maxHands: 4,
+      tableWidth: W,
     },
   },
 });
@@ -261,7 +276,7 @@ entities.push({
 const manifest = {
   meta: {
     title: 'Blackjack',
-    description: 'Single-player Blackjack against the house. Start with $1,000 — min bet $10.',
+    description: 'Single-player Blackjack against the house — split, double, insurance and surrender. Start with $1,000, min bet $10.',
   },
   canvas: {width: W, height: H},
   systems: ['MouseSystem', 'ClickSystem', 'BlackjackSystem'],

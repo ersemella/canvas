@@ -38,6 +38,25 @@ export interface CardPileConfigData {
   behaviors: BehaviorConfig[];
   winCondition?: WinCondition;
   events?: {onWin?: string};
+  /** Clicking `buttonId` undoes the last move (drop, draw, auto-move). */
+  undo?: {buttonId: string; maxDepth?: number};
+  /**
+   * Double-clicking/tapping a playable top card moves it to the first pile
+   * matching `targets` that legally accepts it (e.g. the foundations).
+   */
+  autoMove?: {targets: TargetMatch};
+  /**
+   * Once stock and waste are empty and every card is face up, cards are moved
+   * to the autoMove targets one by one until the game is won.
+   */
+  autoFinish?: {intervalMs?: number};
+  /** Text entity that reports "no moves left" and other status messages. */
+  statusTextId?: string;
+  /**
+   * Clicking `buttonId` cycles the dealFromStock count through `options`
+   * (e.g. draw 1 / draw 3); `labelId` shows the current mode.
+   */
+  drawToggle?: {buttonId: string; labelId: string; options: number[]};
 }
 
 registerDataComponent<CardPileConfigData>('CardPileConfig');

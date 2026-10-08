@@ -75,10 +75,41 @@ function buildGridLines() {
   return entities;
 }
 
+// On-screen number pad under the grid: 1–9 and clear, so the game plays by
+// tap/click alone.
+const PAD_Y = GRID_Y + 9 * CELL_SIZE + 38;
+const PAD_SIZE = 40;
+const PAD_STEP = 45;
+
+function buildNumpad() {
+  const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear'];
+  const startX = GRID_X + (9 * CELL_SIZE - (keys.length - 1) * PAD_STEP) / 2;
+  const entities = [];
+  keys.forEach((key, i) => {
+    const x = startX + i * PAD_STEP;
+    entities.push({
+      id: `numpad-${key}`,
+      components: {
+        Transform: {position: {x, y: PAD_Y}, rotation: 0, scale: {x: 1, y: 1}},
+        Renderable: {width: PAD_SIZE, height: PAD_SIZE, color: key === 'clear' ? '#f3d6d6' : '#dde8f3', radius: 6, zIndex: 5},
+        Clickable: {enabled: true},
+      },
+    });
+    entities.push({
+      id: `numpad-${key}-label`,
+      components: {
+        Transform: {position: {x, y: PAD_Y}, rotation: 0, scale: {x: 1, y: 1}},
+        Renderable: {renderType: 'text', width: 0, height: 0, zIndex: 6, visible: true, text: key === 'clear' ? '✕' : key, fontSize: 20, fontFamily: 'Arial', bold: true, textColor: key === 'clear' ? '#a23b3b' : '#1a5276'},
+      },
+    });
+  });
+  return entities;
+}
+
 const manifest = {
   meta: {title: 'Sudoku', description: 'Classic 9×9 Sudoku. Fill the grid with digits 1–9, no repeats in any row, column, or box.'},
-  canvas: {width: 500, height: 520},
-  systems: ['MouseSystem', 'GridCursorSystem', 'GridPuzzleSystem'],
+  canvas: {width: 500, height: 600},
+  systems: ['MouseSystem', 'ClickSystem', 'GridCursorSystem', 'GridPuzzleSystem'],
   events: {onWin: 'sudoku:complete'},
   scene: {
     name: 'sudoku',
@@ -98,6 +129,7 @@ const manifest = {
             winCondition: 'noEmptyNoConflict',
             generator: 'sudoku',
             inputActions: {digitPrefix: 'num', clear: 'clear'},
+            numpad: {buttonPrefix: 'numpad'},
             visuals: {
               selectedColor: '#b3d9ff',
               relatedColor: '#e8f4ff',
@@ -128,11 +160,12 @@ const manifest = {
       },
       ...buildCellEntities(),
       ...buildGridLines(),
+      ...buildNumpad(),
       {
         id: 'status',
         components: {
-          Transform: {position: {x: 250, y: 495}, rotation: 0, scale: {x: 1, y: 1}},
-          Renderable: {renderType: 'text', width: 0, height: 0, zIndex: 4, visible: true, text: 'Sudoku — use arrow keys or click + 1–9', fontSize: 14, fontFamily: 'Arial', bold: false, textColor: '#333333'},
+          Transform: {position: {x: 250, y: 580}, rotation: 0, scale: {x: 1, y: 1}},
+          Renderable: {renderType: 'text', width: 0, height: 0, zIndex: 4, visible: true, text: 'Tap a cell, then a number — or use the arrow keys and 1–9', fontSize: 14, fontFamily: 'Arial', bold: false, textColor: '#cccccc'},
         },
       },
     ],

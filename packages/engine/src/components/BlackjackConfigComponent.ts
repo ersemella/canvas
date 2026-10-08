@@ -34,6 +34,16 @@ export interface BlackjackConfigData {
   dealButtonId: string;
   betUpButtonId: string;
   betDownButtonId: string;
+  // Optional actions; each is enabled only when its button exists.
+  splitButtonId?: string;
+  surrenderButtonId?: string;
+  /** Offered when the dealer shows an Ace: insure for half the bet, pays 2:1. */
+  insuranceButtonId?: string;
+  noInsuranceButtonId?: string;
+  /** Most hands a player can split into (default 4). */
+  maxHands?: number;
+  /** Width split between hands when the player has split (defaults to 2 × canvasCenterX). */
+  tableWidth?: number;
 }
 
 registerDataComponent<BlackjackConfigData>('BlackjackConfig');

@@ -38,6 +38,25 @@ const slotEntity = (id, x, y, isTableau = false, isStock = false, isDropTarget =
   },
 });
 
+// Undo and draw-mode buttons sit in the empty slot between waste and foundations.
+const button = (id, label, y) => [
+  {
+    id,
+    components: {
+      Transform: {position: {x: colX(2), y}, rotation: 0, scale: {x: 1, y: 1}},
+      Renderable: {width: CARD_W, height: 40, color: '#355e35', radius: 6, zIndex: 1, visible: true},
+      Clickable: {enabled: true},
+    },
+  },
+  {
+    id: `${id}-label`,
+    components: {
+      Transform: {position: {x: colX(2), y}, rotation: 0, scale: {x: 1, y: 1}},
+      Renderable: {renderType: 'text', width: 0, height: 0, zIndex: 2, visible: true, text: label, textColor: '#e8f5e8', fontSize: 14, bold: true},
+    },
+  },
+];
+
 const manifest = {
   meta: {title: 'Solitaire', description: 'Classic Klondike solitaire. Build up the foundations from Ace to King.'},
   canvas: {width: 700, height: 580},
@@ -73,6 +92,11 @@ const manifest = {
             ],
             winCondition: {type: 'allPilesFull', piles: ['f0', 'f1', 'f2', 'f3'], size: 13},
             events: {onWin: 'solitaire:won'},
+            undo: {buttonId: 'undo-btn'},
+            autoMove: {targets: {prefix: 'f'}},
+            autoFinish: {intervalMs: 120},
+            statusTextId: 'status-text',
+            drawToggle: {buttonId: 'draw-btn', labelId: 'draw-btn-label', options: [1, 3]},
           },
         },
       },
@@ -95,6 +119,15 @@ const manifest = {
       slotEntity('f2', colX(5), TOP_Y, false, false, true),
       slotEntity('f3', colX(6), TOP_Y, false, false, true),
       ...Array.from({length: 7}, (_, i) => slotEntity(`t${i}`, colX(i), TABLEAU_Y, true, false, true)),
+      ...button('undo-btn', 'Undo', TOP_Y - 25),
+      ...button('draw-btn', 'Draw 1', TOP_Y + 25),
+      {
+        id: 'status-text',
+        components: {
+          Transform: {position: {x: 350, y: 562}, rotation: 0, scale: {x: 1, y: 1}},
+          Renderable: {renderType: 'text', width: 0, height: 0, zIndex: 1000, visible: false, text: '', textColor: '#ffd54f', fontSize: 16, bold: true},
+        },
+      },
       {
         id: 'stock-label',
         components: {

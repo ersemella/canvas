@@ -12,14 +12,40 @@ import {Shoe} from 'util/Shoe';
 import {renderCardHand} from 'util/CardHandRenderer';
 import type {HandCard, CardSlot} from 'util/CardHandRenderer';
 
-type Phase = 'betting' | 'player' | 'dealer' | 'result' | 'gameover';
+type Phase = 'betting' | 'insurance' | 'player' | 'dealer' | 'result';
 
-const BTN_HIT = '#2ecc71';
-const BTN_STAND = '#e74c3c';
-const BTN_DOUBLE = '#f39c12';
-const BTN_DEAL = '#3498db';
-const BTN_BET = '#7f8c8d';
+/** One of the player's hands; there are several after a split. */
+interface PlayerHand {
+  cards: HandCard[];
+  bet: number;
+  done: boolean;
+  doubled: boolean;
+  /** Split aces get exactly one card each and can't be hit. */
+  splitAces: boolean;
+}
+
+interface Button {
+  clickable: DataComponent<ClickableData>;
+  bg: RenderableComponent;
+  color: string;
+}
+
 const BTN_DIM = '#555555';
+const BUTTON_COLORS: Record<string, string> = {
+  hit: '#2ecc71',
+  stand: '#e74c3c',
+  double: '#f39c12',
+  deal: '#3498db',
+  betUp: '#7f8c8d',
+  betDown: '#7f8c8d',
+  split: '#9b59b6',
+  surrender: '#95a5a6',
+  insurance: '#16a085',
+  noInsurance: '#7f8c8d',
+};
+
+/** Card value for splitting: tens and faces all count as 10. */
+const splitValue = (c: HandCard) => Math.min(c.rank, 10);
 
 export class BlackjackSystem extends BaseSystem {
   readonly priority = 100;
@@ -30,10 +56,13 @@ export class BlackjackSystem extends BaseSystem {
 
   private phase: Phase = 'betting';
   private shoe: Shoe | null = null;
-  private playerHand: HandCard[] = [];
+  private hands: PlayerHand[] = [];
+  private active = 0;
   private dealerHand: HandCard[] = [];
   private balance = 0;
+  /** The bet chosen with the +/- buttons, staked on each new round. */
   private bet = 0;
+  private insuranceBet = 0;
 
   private playerSlots: CardSlot[] = [];
   private dealerSlots: CardSlot[] = [];
@@ -44,19 +73,7 @@ export class BlackjackSystem extends BaseSystem {
   private dealerValueText: RenderableComponent | null = null;
   private statusText: RenderableComponent | null = null;
 
-  private hitClickable: DataComponent<ClickableData> | null = null;
-  private standClickable: DataComponent<ClickableData> | null = null;
-  private doubleClickable: DataComponent<ClickableData> | null = null;
-  private dealClickable: DataComponent<ClickableData> | null = null;
-  private betUpClickable: DataComponent<ClickableData> | null = null;
-  private betDownClickable: DataComponent<ClickableData> | null = null;
-
-  private hitBg: RenderableComponent | null = null;
-  private standBg: RenderableComponent | null = null;
-  private doubleBg: RenderableComponent | null = null;
-  private dealBg: RenderableComponent | null = null;
-  private betUpBg: RenderableComponent | null = null;
-  private betDownBg: RenderableComponent | null = null;
+  private buttons: Partial<Record<keyof typeof BUTTON_COLORS, Button>> = {};
 
   onInit({scene, events}: Omit<SystemContext, 'deltaTime'>): void {
     this.scene = scene;
@@ -71,225 +88,324 @@ export class BlackjackSystem extends BaseSystem {
     this.bet = cfg.minBet;
     this.shoe = new Shoe(cfg.numDecks);
 
-    // Cache card slots
-    for (let i = 0; i < cfg.maxCards; i++) {
-      const pBgEntity = scene.getEntity(`${cfg.playerCardPrefix}-${i}`);
-      const pBg = pBgEntity?.getComponent<RenderableComponent>('Renderable');
-      const pTf = pBgEntity?.getComponent<TransformComponent>('Transform');
-      const pLabel = scene.getEntity(`${cfg.playerCardPrefix}-${i}-label`)?.getComponent<RenderableComponent>('Renderable');
-      if (pBg && pTf && pLabel) {
-        this.playerSlots.push({bg: pBg, label: pLabel, transform: pTf});
-      }
+    this.playerSlots = this.collectSlots(cfg.playerCardPrefix);
+    this.dealerSlots = this.collectSlots(cfg.dealerCardPrefix);
 
-      const dBgEntity = scene.getEntity(`${cfg.dealerCardPrefix}-${i}`);
-      const dBg = dBgEntity?.getComponent<RenderableComponent>('Renderable');
-      const dTf = dBgEntity?.getComponent<TransformComponent>('Transform');
-      const dLabel = scene.getEntity(`${cfg.dealerCardPrefix}-${i}-label`)?.getComponent<RenderableComponent>('Renderable');
-      if (dBg && dTf && dLabel) {
-        this.dealerSlots.push({bg: dBg, label: dLabel, transform: dTf});
-      }
+    const renderable = (id: string) => scene.getEntity(id)?.getComponent<RenderableComponent>('Renderable') ?? null;
+    this.balanceText = renderable(cfg.balanceTextId);
+    this.betText = renderable(cfg.betTextId);
+    this.playerValueText = renderable(cfg.playerValueTextId);
+    this.dealerValueText = renderable(cfg.dealerValueTextId);
+    this.statusText = renderable(cfg.statusTextId);
+
+    const ids: Record<keyof typeof BUTTON_COLORS, string | undefined> = {
+      hit: cfg.hitButtonId,
+      stand: cfg.standButtonId,
+      double: cfg.doubleButtonId,
+      deal: cfg.dealButtonId,
+      betUp: cfg.betUpButtonId,
+      betDown: cfg.betDownButtonId,
+      split: cfg.splitButtonId,
+      surrender: cfg.surrenderButtonId,
+      insurance: cfg.insuranceButtonId,
+      noInsurance: cfg.noInsuranceButtonId,
+    };
+    for (const [name, id] of Object.entries(ids)) {
+      const entity = id ? scene.getEntity(id) : undefined;
+      const clickable = entity?.getComponent<DataComponent<ClickableData>>('Clickable');
+      const bg = entity?.getComponent<RenderableComponent>('Renderable');
+      if (clickable && bg) this.buttons[name] = {clickable, bg, color: BUTTON_COLORS[name]!};
     }
 
-    // Cache UI text refs
-    this.balanceText = scene.getEntity(cfg.balanceTextId)?.getComponent<RenderableComponent>('Renderable') ?? null;
-    this.betText = scene.getEntity(cfg.betTextId)?.getComponent<RenderableComponent>('Renderable') ?? null;
-    this.playerValueText = scene.getEntity(cfg.playerValueTextId)?.getComponent<RenderableComponent>('Renderable') ?? null;
-    this.dealerValueText = scene.getEntity(cfg.dealerValueTextId)?.getComponent<RenderableComponent>('Renderable') ?? null;
-    this.statusText = scene.getEntity(cfg.statusTextId)?.getComponent<RenderableComponent>('Renderable') ?? null;
-
-    // Cache button clickables
-    const getClickable = (id: string): DataComponent<ClickableData> | null =>
-      scene.getEntity(id)?.getComponent<DataComponent<ClickableData>>('Clickable') ?? null;
-    this.hitClickable = getClickable(cfg.hitButtonId);
-    this.standClickable = getClickable(cfg.standButtonId);
-    this.doubleClickable = getClickable(cfg.doubleButtonId);
-    this.dealClickable = getClickable(cfg.dealButtonId);
-    this.betUpClickable = getClickable(cfg.betUpButtonId);
-    this.betDownClickable = getClickable(cfg.betDownButtonId);
-
-    // Cache button backgrounds for color updates
-    const getBg = (id: string): RenderableComponent | null =>
-      scene.getEntity(id)?.getComponent<RenderableComponent>('Renderable') ?? null;
-    this.hitBg = getBg(cfg.hitButtonId);
-    this.standBg = getBg(cfg.standButtonId);
-    this.doubleBg = getBg(cfg.doubleButtonId);
-    this.dealBg = getBg(cfg.dealButtonId);
-    this.betUpBg = getBg(cfg.betUpButtonId);
-    this.betDownBg = getBg(cfg.betDownButtonId);
-
-    this.updateUI();
-    this.updateCardVisuals();
-
-    events.on<ClickPayload>('click', this.onClickHandler);
+    this.render();
+    events.on<ClickPayload>('click', this.onClick);
   }
 
   onUpdate(_context: SystemContext): void {
-    // All logic handled via event listeners registered in onInit
+    // Event-driven: everything happens in the click handler.
   }
 
-  private readonly onClickHandler = ({entityId}: ClickPayload): void => {
+  // ── Input ────────────────────────────────────────────────────────────────
+
+  private readonly onClick = ({entityId}: ClickPayload): void => {
     const cfg = this.config;
-    const scene = this.scene;
-    const events = this.eventsRef;
-    if (!cfg || !scene || !events) return;
+    if (!cfg) return;
+    const is = (name: keyof typeof BUTTON_COLORS) =>
+      this.buttons[name]?.clickable.data.enabled && entityId === this.buttonId(name);
 
     if (this.phase === 'betting') {
-      if (entityId === cfg.betUpButtonId) {
-        this.bet = Math.min(this.bet + cfg.minBet, this.balance);
-        this.updateUI();
-      } else if (entityId === cfg.betDownButtonId) {
-        this.bet = Math.max(this.bet - cfg.minBet, cfg.minBet);
-        this.updateUI();
-      } else if (entityId === cfg.dealButtonId) {
-        this.startDeal(events);
-      }
+      if (is('betUp')) this.bet = Math.min(this.bet + cfg.minBet, this.balance);
+      else if (is('betDown')) this.bet = Math.max(this.bet - cfg.minBet, cfg.minBet);
+      else if (is('deal')) return this.startDeal();
+      this.render();
+    } else if (this.phase === 'insurance') {
+      if (is('insurance')) this.takeInsurance(true);
+      else if (is('noInsurance')) this.takeInsurance(false);
     } else if (this.phase === 'player') {
-      if (entityId === cfg.hitButtonId) {
-        this.doHit(events);
-      } else if (entityId === cfg.standButtonId) {
-        this.doStand(events);
-      } else if (entityId === cfg.doubleButtonId && this.playerHand.length === 2) {
-        this.doDouble(events);
+      if (is('hit')) this.hit();
+      else if (is('stand')) this.stand();
+      else if (is('double')) this.double();
+      else if (is('split')) this.split();
+      else if (is('surrender')) this.surrender();
+    } else if (this.phase === 'result' && is('deal')) {
+      if (this.balance < cfg.minBet) {
+        this.eventsRef?.emit('blackjack:gameover', {});
+        return;
       }
-    } else if (this.phase === 'result') {
-      if (entityId === cfg.dealButtonId) {
-        const cfg2 = this.config!;
-        if (this.balance < cfg2.minBet) {
-          events.emit('blackjack:gameover', {});
-          return;
-        }
-        this.phase = 'betting';
-        this.bet = Math.min(this.bet, this.balance);
-        if (this.bet < cfg2.minBet) this.bet = cfg2.minBet;
-        this.playerHand = [];
-        this.dealerHand = [];
-        this.updateUI();
-        this.updateCardVisuals();
-      }
+      this.phase = 'betting';
+      this.bet = Math.max(cfg.minBet, Math.min(this.bet, this.balance));
+      this.hands = [];
+      this.dealerHand = [];
+      this.render();
     }
   };
 
-  private startDeal(events: EventBus): void {
-    if (this.bet > this.balance) this.bet = this.balance;
-    // Shuffle between hands, never during one.
-    this.shoe!.reshuffleIfLow();
-    this.balance -= this.bet;
-    this.playerHand = [];
-    this.dealerHand = [];
+  private buttonId(name: keyof typeof BUTTON_COLORS): string | undefined {
+    const cfg = this.config!;
+    return {
+      hit: cfg.hitButtonId,
+      stand: cfg.standButtonId,
+      double: cfg.doubleButtonId,
+      deal: cfg.dealButtonId,
+      betUp: cfg.betUpButtonId,
+      betDown: cfg.betDownButtonId,
+      split: cfg.splitButtonId,
+      surrender: cfg.surrenderButtonId,
+      insurance: cfg.insuranceButtonId,
+      noInsurance: cfg.noInsuranceButtonId,
+    }[name];
+  }
 
-    this.dealCard('player', true);
-    this.dealCard('dealer', true);
-    this.dealCard('player', true);
-    this.dealCard('dealer', false); // hole card
+  // ── Round flow ───────────────────────────────────────────────────────────
+
+  private startDeal(): void {
+    this.shoe!.reshuffleIfLow(); // shuffle between hands, never during one
+    this.bet = Math.min(this.bet, this.balance);
+    this.balance -= this.bet;
+    this.hands = [{cards: [], bet: this.bet, done: false, doubled: false, splitAces: false}];
+    this.active = 0;
+    this.dealerHand = [];
+    this.insuranceBet = 0;
+
+    const hand = this.hands[0]!;
+    hand.cards.push(this.draw(true));
+    this.dealerHand.push(this.draw(true));
+    hand.cards.push(this.draw(true));
+    this.dealerHand.push(this.draw(false)); // hole card
+
+    if (this.dealerHand[0]!.rank === 1 && this.buttons.insurance && this.balance >= this.insuranceCost()) {
+      this.phase = 'insurance';
+      this.setStatus(`Dealer shows an Ace — insurance for $${this.insuranceCost()}?`);
+      this.render();
+      return;
+    }
+    this.settleNaturals('');
+  }
+
+  private insuranceCost(): number {
+    return Math.floor(this.hands[0]!.bet / 2);
+  }
+
+  private takeInsurance(yes: boolean): void {
+    if (yes) {
+      this.insuranceBet = this.insuranceCost();
+      this.balance -= this.insuranceBet;
+    }
+    this.settleNaturals(yes ? 'insured' : '');
+  }
+
+  /**
+   * The dealer peeks for blackjack before the player acts, so naturals are
+   * settled here; insurance (if taken) is paid or lost at the same moment.
+   */
+  private settleNaturals(insurance: '' | 'insured'): void {
+    const hand = this.hands[0]!;
+    const playerNatural = this.total(hand.cards) === 21;
+    const dealerNatural = this.total(this.dealerHand) === 21;
+
+    let note = '';
+    if (insurance) {
+      if (dealerNatural) {
+        this.balance += this.insuranceBet * 3; // stake back + 2:1
+        note = ' Insurance pays 2:1.';
+      } else {
+        note = ' Insurance lost.';
+      }
+    }
+
+    if (playerNatural || dealerNatural) {
+      this.revealDealer();
+      if (playerNatural && dealerNatural) {
+        this.balance += hand.bet;
+        this.finish(`Push — both have Blackjack!${note}`);
+      } else if (playerNatural) {
+        this.balance += Math.floor(hand.bet * 2.5); // 3:2
+        this.finish(`Blackjack! 🃏 You win!${note}`);
+      } else {
+        this.finish(`Dealer has Blackjack.${note}`);
+      }
+      return;
+    }
 
     this.phase = 'player';
-    if (this.statusText) this.statusText.text = 'Hit, stand, or double';
+    this.setStatus(`${note.trim() ? `No dealer Blackjack —${note.toLowerCase()} ` : ''}Your move`.trim());
+    this.render();
+  }
 
-    // Naturals are settled before the player acts. The dealer "peeks" at the
-    // hole card, so a dealer blackjack ends the hand immediately — the player
-    // never gets to hit or double into it.
-    const playerNatural = this.handValue(this.playerHand, true).total === 21;
-    const dealerNatural = this.handValue(this.dealerHand, true).total === 21;
-    if (playerNatural || dealerNatural) {
-      this.dealerHand.forEach((c) => { c.faceUp = true; });
-      if (playerNatural && dealerNatural) {
-        this.balance += this.bet; // push
-        this.setResult('Push — both have Blackjack!', events);
-      } else if (playerNatural) {
-        this.balance += Math.floor(this.bet * 2.5); // 3:2 payout
-        this.setResult('Blackjack! \uD83C\uDCCF You win!', events);
-      } else {
-        this.setResult('Dealer has Blackjack.', events);
-      }
-    } else {
-      this.updateUI();
-      this.updateCardVisuals();
+  private hit(): void {
+    const hand = this.current();
+    if (!hand || hand.splitAces) return;
+    hand.cards.push(this.draw(true));
+    if (this.total(hand.cards) >= 21) hand.done = true;
+    this.advance();
+  }
+
+  private stand(): void {
+    const hand = this.current();
+    if (!hand) return;
+    hand.done = true;
+    this.advance();
+  }
+
+  private double(): void {
+    const hand = this.current();
+    if (!hand || !this.canDouble(hand)) return;
+    this.balance -= hand.bet;
+    hand.bet *= 2;
+    hand.doubled = true;
+    hand.cards.push(this.draw(true));
+    hand.done = true;
+    this.advance();
+  }
+
+  private split(): void {
+    const hand = this.current();
+    if (!hand || !this.canSplit(hand)) return;
+    this.balance -= hand.bet;
+    const moved = hand.cards.pop()!;
+    const aces = moved.rank === 1;
+    const newHand: PlayerHand = {cards: [moved], bet: hand.bet, done: false, doubled: false, splitAces: aces};
+    hand.splitAces = aces;
+    this.hands.splice(this.active + 1, 0, newHand);
+    hand.cards.push(this.draw(true));
+    newHand.cards.push(this.draw(true));
+    // Split aces get one card each; any hand that reached 21 stands.
+    for (const h of [hand, newHand]) if (aces || this.total(h.cards) === 21) h.done = true;
+    this.advance();
+  }
+
+  private surrender(): void {
+    const hand = this.current();
+    if (!hand || !this.canSurrender()) return;
+    this.balance += Math.floor(hand.bet / 2);
+    this.revealDealer();
+    this.finish('You surrender — half your bet is returned.');
+  }
+
+  /** Moves to the next unfinished hand, or to the dealer when all are done. */
+  private advance(): void {
+    const next = this.hands.findIndex((h) => !h.done);
+    if (next !== -1) {
+      this.active = next;
+      this.setStatus(this.hands.length > 1 ? `Hand ${next + 1} of ${this.hands.length}` : 'Your move');
+      this.render();
+      return;
     }
+    this.dealerTurn();
   }
 
-  private doHit(events: EventBus): void {
-    this.dealCard('player', true);
-    const pv = this.handValue(this.playerHand, true);
-    if (pv.total > 21) {
-      this.dealerHand.forEach((c) => { c.faceUp = true; });
-      this.setResult('Bust! Dealer wins.', events);
-    } else {
-      this.updateUI();
-      this.updateCardVisuals();
-    }
-  }
-
-  private doStand(events: EventBus): void {
-    this.runDealerTurn(events);
-  }
-
-  private doDouble(events: EventBus): void {
-    const extra = Math.min(this.bet, this.balance);
-    this.balance -= extra;
-    this.bet += extra;
-    this.dealCard('player', true);
-    const pv = this.handValue(this.playerHand, true);
-    if (pv.total > 21) {
-      this.dealerHand.forEach((c) => { c.faceUp = true; });
-      this.setResult('Bust! Dealer wins.', events);
-    } else {
-      this.runDealerTurn(events);
-    }
-  }
-
-  private runDealerTurn(events: EventBus): void {
-    this.phase = 'dealer';
+  private dealerTurn(): void {
     const cfg = this.config!;
-    this.dealerHand.forEach((c) => { c.faceUp = true; });
+    this.phase = 'dealer';
+    this.revealDealer();
 
-    while (true) {
-      const dv = this.handValue(this.dealerHand, true);
-      const shouldHit = dv.total < 17 || (dv.soft && dv.total === 17 && cfg.dealerHitSoft17);
-      if (!shouldHit) break;
-      this.dealCard('dealer', true);
+    // The dealer only draws if some hand is still alive.
+    if (this.hands.some((h) => this.total(h.cards) <= 21)) {
+      for (;;) {
+        const {total, soft} = this.value(this.dealerHand, true);
+        if (total > 17 || (total === 17 && !(soft && cfg.dealerHitSoft17))) break;
+        this.dealerHand.push(this.draw(true));
+      }
     }
 
-    const pv = this.handValue(this.playerHand, true);
-    const dv = this.handValue(this.dealerHand, true);
+    const dealer = this.total(this.dealerHand);
+    const results = this.hands.map((h) => {
+      const p = this.total(h.cards);
+      if (p > 21) return 'bust';
+      if (dealer > 21 || p > dealer) {
+        this.balance += h.bet * 2;
+        return 'win';
+      }
+      if (p === dealer) {
+        this.balance += h.bet;
+        return 'push';
+      }
+      return 'lose';
+    });
 
-    if (dv.total > 21) {
-      this.balance += this.bet * 2;
-      this.setResult('Dealer busts — You win!', events);
-    } else if (pv.total > dv.total) {
-      this.balance += this.bet * 2;
-      this.setResult('You win!', events);
-    } else if (pv.total === dv.total) {
-      this.balance += this.bet;
-      this.setResult('Push — tie!', events);
+    if (results.length === 1) {
+      const r = results[0]!;
+      this.finish(
+        r === 'bust' ? 'Bust! Dealer wins.'
+        : r === 'push' ? 'Push — tie!'
+        : r === 'lose' ? 'Dealer wins.'
+        : dealer > 21 ? 'Dealer busts — You win!'
+        : 'You win!',
+      );
     } else {
-      this.setResult('Dealer wins.', events);
+      const words = {win: 'win', lose: 'lose', push: 'push', bust: 'bust'};
+      this.finish(results.map((r, i) => `Hand ${i + 1}: ${words[r as keyof typeof words]}`).join(' · '));
     }
   }
 
-  private setResult(msg: string, events: EventBus): void {
+  private finish(message: string): void {
     const cfg = this.config!;
     this.phase = 'result';
-    if (this.statusText) this.statusText.text = msg;
-    this.updateUI();
-    this.updateCardVisuals();
-
-    if (this.balance < cfg.minBet) {
-      if (this.statusText) this.statusText.text = `${msg} Out of chips!`;
-      // Emit gameover on next deal button click (player sees the final result first)
-    }
+    this.setStatus(this.balance < cfg.minBet ? `${message} Out of chips!` : message);
+    this.render();
   }
 
-  private dealCard(to: 'player' | 'dealer', faceUp: boolean): void {
+  // ── Rules helpers ────────────────────────────────────────────────────────
+
+  private current(): PlayerHand | undefined {
+    return this.phase === 'player' ? this.hands[this.active] : undefined;
+  }
+
+  private canDouble(hand: PlayerHand): boolean {
+    return hand.cards.length === 2 && !hand.splitAces && !hand.done && this.balance >= hand.bet;
+  }
+
+  private canSplit(hand: PlayerHand): boolean {
+    const [a, b] = hand.cards;
+    return (
+      Boolean(this.buttons.split) &&
+      hand.cards.length === 2 &&
+      !hand.done &&
+      splitValue(a!) === splitValue(b!) &&
+      this.hands.length < (this.config?.maxHands ?? 4) &&
+      this.balance >= hand.bet
+    );
+  }
+
+  /** Late surrender: only as the very first decision of an unsplit hand. */
+  private canSurrender(): boolean {
+    return Boolean(this.buttons.surrender) && this.hands.length === 1 && this.hands[0]!.cards.length === 2;
+  }
+
+  private draw(faceUp: boolean): HandCard {
     const {rank, suit} = this.shoe!.deal();
-    const handCard: HandCard = {rank, suit, faceUp};
-    if (to === 'player') {
-      this.playerHand.push(handCard);
-    } else {
-      this.dealerHand.push(handCard);
-    }
+    return {rank, suit, faceUp};
   }
 
-  private handValue(cards: HandCard[], includeHidden: boolean): {total: number; soft: boolean} {
+  private revealDealer(): void {
+    for (const c of this.dealerHand) c.faceUp = true;
+  }
+
+  private total(cards: HandCard[]): number {
+    return this.value(cards, true).total;
+  }
+
+  private value(cards: HandCard[], includeHidden: boolean): {total: number; soft: boolean} {
     let total = 0;
     let aces = 0;
     for (const card of cards) {
@@ -297,85 +413,109 @@ export class BlackjackSystem extends BaseSystem {
       total += Math.min(card.rank, 10);
       if (card.rank === 1) aces++;
     }
-    let soft = false;
-    if (aces > 0 && total + 10 <= 21) {
-      total += 10;
-      soft = true;
-    }
-    return {total, soft};
+    if (aces > 0 && total + 10 <= 21) return {total: total + 10, soft: true};
+    return {total, soft: false};
   }
 
-  private updateCardVisuals(): void {
+  private valueLabel(cards: HandCard[]): string {
+    const {total, soft} = this.value(cards, false);
+    if (total === 0) return '';
+    // Only an unsplit two-card 21 is a blackjack (a split hand's 21 pays 1:1).
+    const unsplit = cards !== this.hands[0]?.cards || this.hands.length === 1;
+    if (unsplit && cards.length === 2 && total === 21 && cards.every((c) => c.faceUp)) return 'Blackjack';
+    return soft && total < 21 ? `${total - 10} / ${total}` : String(total);
+  }
+
+  // ── Rendering ────────────────────────────────────────────────────────────
+
+  private collectSlots(prefix: string): CardSlot[] {
+    const slots: CardSlot[] = [];
+    for (let i = 0; ; i++) {
+      const bgEntity = this.scene!.getEntity(`${prefix}-${i}`);
+      const bg = bgEntity?.getComponent<RenderableComponent>('Renderable');
+      const transform = bgEntity?.getComponent<TransformComponent>('Transform');
+      const label = this.scene!.getEntity(`${prefix}-${i}-label`)?.getComponent<RenderableComponent>('Renderable');
+      if (!bg || !transform || !label) return slots;
+      slots.push({bg, label, transform});
+    }
+  }
+
+  private setStatus(text: string): void {
+    if (this.statusText) this.statusText.text = text;
+  }
+
+  private render(): void {
     const cfg = this.config;
     if (!cfg) return;
-    const layout = {
+
+    // Cards: the dealer centered; split hands share the table width.
+    const base = {
       canvasCenterX: cfg.canvasCenterX,
       cardWidth: cfg.cardWidth,
       cardHeight: cfg.cardHeight,
       cardGap: cfg.cardGap,
     };
-    renderCardHand(this.playerHand, this.playerSlots, cfg.playerCenterY, layout);
-    renderCardHand(this.dealerHand, this.dealerSlots, cfg.dealerCenterY, layout);
-  }
+    renderCardHand(this.dealerHand, this.dealerSlots, cfg.dealerCenterY, base);
 
-  private updateUI(): void {
-    const cfg = this.config;
-    if (!cfg) return;
+    const n = Math.max(1, this.hands.length);
+    const tableWidth = cfg.tableWidth ?? cfg.canvasCenterX * 2;
+    const perHand = Math.floor(this.playerSlots.length / n);
+    for (let i = 0; i < n; i++) {
+      const slots = this.playerSlots.slice(i * perHand, (i + 1) * perHand);
+      const hand = this.hands[i]?.cards ?? [];
+      if (n === 1) {
+        renderCardHand(hand, slots, cfg.playerCenterY, base);
+        continue;
+      }
+      const area = tableWidth / n;
+      const lift = this.phase === 'player' && i === this.active ? -10 : 0;
+      renderCardHand(hand, slots, cfg.playerCenterY + lift, {
+        ...base,
+        canvasCenterX: area * (i + 0.5),
+        maxWidth: area - 12,
+      });
+    }
+    for (const slot of this.playerSlots.slice(n * perHand)) {
+      slot.bg.visible = false;
+      slot.label.visible = false;
+    }
 
+    // Text
     if (this.balanceText) this.balanceText.text = `Balance: $${this.balance}`;
     if (this.betText) this.betText.text = `$${this.bet}`;
-
-    // Player hand value
     if (this.playerValueText) {
-      if (this.playerHand.length > 0) {
-        const {total, soft} = this.handValue(this.playerHand, false);
-        this.playerValueText.text = soft ? `${total - 10} / ${total}` : String(total);
-        this.playerValueText.visible = true;
-      } else {
-        this.playerValueText.text = '';
-      }
+      this.playerValueText.text =
+        this.hands.length <= 1
+          ? this.valueLabel(this.hands[0]?.cards ?? [])
+          : this.hands
+              .map((h, i) => {
+                const mark = this.phase === 'player' && i === this.active ? '▶' : '';
+                return `${mark}${this.valueLabel(h.cards)}${h.doubled ? ' ×2' : ''}`;
+              })
+              .join('   ');
     }
+    if (this.dealerValueText) this.dealerValueText.text = this.valueLabel(this.dealerHand);
+    if (this.phase === 'betting') this.setStatus('Place your bet and deal');
 
-    // Dealer hand value (visible cards only, or all after reveal)
-    if (this.dealerValueText) {
-      if (this.dealerHand.length > 0) {
-        const {total, soft} = this.handValue(this.dealerHand, false);
-        if (total > 0) {
-          this.dealerValueText.text = soft ? `${total - 10} / ${total}` : String(total);
-        } else {
-          this.dealerValueText.text = '';
-        }
-        this.dealerValueText.visible = true;
-      } else {
-        this.dealerValueText.text = '';
-      }
+    // Buttons
+    const hand = this.current();
+    const enabled: Record<keyof typeof BUTTON_COLORS, boolean> = {
+      hit: Boolean(hand && !hand.splitAces),
+      stand: Boolean(hand),
+      double: Boolean(hand && this.canDouble(hand)),
+      split: Boolean(hand && this.canSplit(hand)),
+      surrender: Boolean(hand && this.canSurrender()),
+      deal: this.phase === 'betting' || this.phase === 'result',
+      betUp: this.phase === 'betting' && this.bet < this.balance,
+      betDown: this.phase === 'betting' && this.bet > cfg.minBet,
+      insurance: this.phase === 'insurance',
+      noInsurance: this.phase === 'insurance',
+    };
+    for (const [name, button] of Object.entries(this.buttons)) {
+      if (!button) continue;
+      const on = enabled[name] ?? false;
+      button.clickable.data.enabled = on;
+      button.bg.color = on ? button.color : BTN_DIM;
     }
-
-    if (this.phase === 'betting' && this.statusText) {
-      this.statusText.text = 'Place your bet and deal';
-    }
-
-    // Button enable/disable + color
-    const isBetting = this.phase === 'betting';
-    const isPlayer = this.phase === 'player';
-    const isResult = this.phase === 'result';
-    const canDouble = isPlayer && this.playerHand.length === 2 && this.balance >= this.bet;
-    const canDeal = isBetting || isResult;
-    const canBetUp = isBetting && this.bet < this.balance;
-    const canBetDown = isBetting && this.bet > cfg.minBet;
-
-    if (this.hitClickable) this.hitClickable.data.enabled = isPlayer;
-    if (this.standClickable) this.standClickable.data.enabled = isPlayer;
-    if (this.doubleClickable) this.doubleClickable.data.enabled = canDouble;
-    if (this.dealClickable) this.dealClickable.data.enabled = canDeal;
-    if (this.betUpClickable) this.betUpClickable.data.enabled = canBetUp;
-    if (this.betDownClickable) this.betDownClickable.data.enabled = canBetDown;
-
-    if (this.hitBg) this.hitBg.color = isPlayer ? BTN_HIT : BTN_DIM;
-    if (this.standBg) this.standBg.color = isPlayer ? BTN_STAND : BTN_DIM;
-    if (this.doubleBg) this.doubleBg.color = canDouble ? BTN_DOUBLE : BTN_DIM;
-    if (this.dealBg) this.dealBg.color = canDeal ? BTN_DEAL : BTN_DIM;
-    if (this.betUpBg) this.betUpBg.color = canBetUp ? BTN_BET : BTN_DIM;
-    if (this.betDownBg) this.betDownBg.color = canBetDown ? BTN_BET : BTN_DIM;
   }
 }

@@ -25,6 +25,12 @@ export interface GridPuzzleConfigData {
   winCondition: 'noEmptyNoConflict';
   generator?: string;
   inputActions?: {digitPrefix?: string; clear?: string};
+  /**
+   * On-screen number pad. Clickable entities `{buttonPrefix}-{n}` for each
+   * value and `{buttonPrefix}-clear` fill or clear the selected cell, so the
+   * puzzle plays without a keyboard. Requires ClickSystem.
+   */
+  numpad?: {buttonPrefix: string};
   visuals?: PuzzleVisuals;
   events?: {onWin?: string};
 }

@@ -33,7 +33,7 @@ authoritative game state and WebSocket hub.
 
 | Package | Role | Notes |
 |---|---|---|
-| `@canvas/engine` | ECS core, built-in components/systems, manifest loader | Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and every system a manifest can reference — including a self-contained single-player poker simulation. |
+| `@canvas/engine` | ECS core, built-in components/systems, manifest loader | Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and every system a manifest can reference — including a self-contained single-player poker simulation. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
 | `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Loads manifests from the Worker, instantiates a `World` per game, and is the only package with a UI framework. |
 | `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the two Durable Object classes it hosts. |
 | `games/poker` | Server-authoritative Texas Hold'em logic | Exports a `ServerSystem` consumed by `GameRoom`; has its own deck, hand evaluator, and public-state redaction. |
