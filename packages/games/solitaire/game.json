@@ -15,7 +15,7 @@
     "PileLayoutSystem"
   ],
   "events": {
-    "onDeath": "solitaire:won"
+    "onWin": "solitaire:won"
   },
   "scene": {
     "name": "solitaire",

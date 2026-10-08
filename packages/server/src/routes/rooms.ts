@@ -61,6 +61,17 @@ export async function handleRoomsRoute(
 }
 
 async function createRoom(request: Request, env: Env): Promise<Response> {
+  // Every room is its own Durable Object, so cap how fast one client can make them.
+  if (env.ROOM_CREATE_LIMITER) {
+    const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+    const {success} = await env.ROOM_CREATE_LIMITER.limit({key: ip});
+    if (!success) {
+      return new Response(JSON.stringify({error: 'too_many_rooms', message: 'Too many rooms created — try again in a minute'}), {
+        status: 429,
+        headers: {'Content-Type': 'application/json', 'Retry-After': '60'},
+      });
+    }
+  }
   const body = (await request.json().catch(() => ({}))) as {
     hostName?: string;
     serverSystem?: string;

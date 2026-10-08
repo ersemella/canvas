@@ -79,7 +79,7 @@ const manifest = {
   meta: {title: 'Sudoku', description: 'Classic 9×9 Sudoku. Fill the grid with digits 1–9, no repeats in any row, column, or box.'},
   canvas: {width: 500, height: 520},
   systems: ['MouseSystem', 'GridCursorSystem', 'GridPuzzleSystem'],
-  events: {onDeath: 'sudoku:complete'},
+  events: {onWin: 'sudoku:complete'},
   scene: {
     name: 'sudoku',
     entities: [

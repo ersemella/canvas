@@ -20,7 +20,7 @@ export function GamePage() {
   // undefined = still resolving the game list; null = game not found
   const [gameDescriptor, setGameDescriptor] = useState<GameDescriptor | null | undefined>(undefined);
   const [sceneData, setSceneData] = useState<SceneData | null>(null);
-  const [gameSystems, setGameSystems] = useState<BaseSystem[]>([]);
+  const [createSystems, setCreateSystems] = useState<(() => BaseSystem[]) | null>(null);
   const [gameEvents, setGameEvents] = useState<Record<string, string>>({});
   const [canvasSize, setCanvasSize] = useState({width: 600, height: 400});
   const [sidePanel, setSidePanel] = useState<ComponentType<{events: EventBus}> | null>(null);
@@ -49,7 +49,7 @@ export function GamePage() {
       .then((mod) => {
         mod.default.register();
         setSceneData(mod.default.getSceneData());
-        setGameSystems(mod.default.getSystems());
+        setCreateSystems(() => () => mod.default.getSystems());
         setGameEvents(mod.default.getEvents());
         const size = mod.default.getCanvas();
         if (size) setCanvasSize(size);
@@ -122,7 +122,7 @@ export function GamePage() {
             <GameErrorBoundary>
               <GameCanvas
                 sceneData={sceneData}
-                systems={gameSystems}
+                createSystems={createSystems ?? undefined}
                 events={gameEvents}
                 width={canvasSize.width}
                 height={canvasSize.height}
@@ -151,7 +151,7 @@ export function GamePage() {
         <GameErrorBoundary>
           <GameCanvas
             sceneData={sceneData}
-            systems={gameSystems}
+            createSystems={createSystems ?? undefined}
             events={gameEvents}
             width={canvasSize.width}
             height={canvasSize.height}

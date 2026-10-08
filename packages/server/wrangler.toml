@@ -10,6 +10,13 @@ class_name = "GameRoom"
 name = "MANIFEST_REGISTRY"
 class_name = "ManifestRegistry"
 
+# Caps POST /rooms at 10 per minute per client IP (src/routes/rooms.ts).
+[[unsafe.bindings]]
+name = "ROOM_CREATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["GameRoom", "ManifestRegistry"]

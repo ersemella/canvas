@@ -74,8 +74,15 @@ export interface PublicPlayerSummary {
   connected: boolean;
 }
 
+/** Workers Rate Limiting binding (configured in wrangler.toml). */
+export interface RateLimiter {
+  limit(options: {key: string}): Promise<{success: boolean}>;
+}
+
 export interface Env {
   GAME_ROOM: DurableObjectNamespace;
   MANIFEST_REGISTRY: DurableObjectNamespace;
   MANIFEST_ADMIN_TOKEN: string;
+  /** Caps room creation per client IP. Optional so a missing binding never blocks play. */
+  ROOM_CREATE_LIMITER?: RateLimiter;
 }

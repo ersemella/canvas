@@ -1,7 +1,10 @@
 /**
  * Generic multi-deck card shoe for any card game.
  * Deals standard playing cards (rank 1–13, four suits).
- * Automatically rebuilds and reshuffles when exhausted.
+ *
+ * Call `reshuffleIfLow()` between rounds so a fresh shoe never has to be
+ * opened mid-round. `deal()` still rebuilds as a last resort if the shoe runs
+ * dry, but that can duplicate cards already on the table.
  */
 
 export interface PlayingCard {
@@ -26,6 +29,16 @@ export class Shoe {
 
   get remaining(): number {
     return this.cards.length;
+  }
+
+  /**
+   * Rebuilds and reshuffles when fewer than `minCards` remain (default: a
+   * quarter of the shoe, at least 20 cards). Returns true if it reshuffled.
+   */
+  reshuffleIfLow(minCards = Math.max(20, Math.floor((this.numDecks * 52) / 4))): boolean {
+    if (this.cards.length >= minCards) return false;
+    this.build();
+    return true;
   }
 
   private build(): void {

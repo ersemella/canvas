@@ -170,8 +170,9 @@ export class BlackjackSystem extends BaseSystem {
   };
 
   private startDeal(events: EventBus): void {
-    const cfg = this.config!;
     if (this.bet > this.balance) this.bet = this.balance;
+    // Shuffle between hands, never during one.
+    this.shoe!.reshuffleIfLow();
     this.balance -= this.bet;
     this.playerHand = [];
     this.dealerHand = [];
@@ -182,18 +183,23 @@ export class BlackjackSystem extends BaseSystem {
     this.dealCard('dealer', false); // hole card
 
     this.phase = 'player';
+    if (this.statusText) this.statusText.text = 'Hit, stand, or double';
 
-    // Check for player blackjack (natural 21 in 2 cards)
-    const pv = this.handValue(this.playerHand, true);
-    if (pv.total === 21) {
-      const dv = this.handValue(this.dealerHand, true);
+    // Naturals are settled before the player acts. The dealer "peeks" at the
+    // hole card, so a dealer blackjack ends the hand immediately — the player
+    // never gets to hit or double into it.
+    const playerNatural = this.handValue(this.playerHand, true).total === 21;
+    const dealerNatural = this.handValue(this.dealerHand, true).total === 21;
+    if (playerNatural || dealerNatural) {
       this.dealerHand.forEach((c) => { c.faceUp = true; });
-      if (dv.total === 21) {
+      if (playerNatural && dealerNatural) {
         this.balance += this.bet; // push
         this.setResult('Push — both have Blackjack!', events);
-      } else {
+      } else if (playerNatural) {
         this.balance += Math.floor(this.bet * 2.5); // 3:2 payout
         this.setResult('Blackjack! \uD83C\uDCCF You win!', events);
+      } else {
+        this.setResult('Dealer has Blackjack.', events);
       }
     } else {
       this.updateUI();

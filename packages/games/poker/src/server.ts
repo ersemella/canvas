@@ -2,8 +2,13 @@ import {startHand, applyAction, getPublicState, timeoutAction} from './serverLog
 import type {ServerPokerGameState, RoomPlayer} from './serverTypes';
 import type {PokerAction} from './types';
 
+export type {ServerPokerGameState} from './serverTypes';
+export type {PokerAction} from './types';
+
 // ServerSystem interface inlined here to avoid a circular workspace dependency.
-// Must stay structurally identical to ServerSystem in @canvas/server/src/types.ts.
+// It mirrors ServerSystem in @canvas/server/src/types.ts; the server's game
+// registry assigns pokerServerSystem to that type without a cast, so any
+// drift between the two copies fails `pnpm typecheck`.
 interface ServerSystem<TState = unknown, TAction = unknown> {
   systemName: string;
   createInitialState(players: RoomPlayer[], previous?: TState | null): TState;

@@ -81,7 +81,9 @@ it's a retry loop standing in for a uniqueness guarantee.
 One singleton DO (`idFromName('global')`) stores every `game.json` and a
 generated index; GET routes wrap it in `caches.default` with a 60s TTL, and
 `POST /manifests/upload` is gated by a bearer token compared against a
-Worker secret.
+Worker secret. An upload purges the cached index and every uploaded game's
+manifest, and the upload route sends no CORS headers (only the deploy
+script calls it).
 
 **Tradeoff** — every manifest read in production, worldwide, funnels through
 one DO instance (mitigated almost entirely by the cache) and one write path
@@ -135,42 +137,26 @@ a hand-ranking bug — has to be found and re-applied twice, and the two modes
 can silently drift apart.
 `packages/engine/src/systems/PokerSystem.ts` · `packages/games/poker/src/serverLogic.ts`
 
-**Notable — No automated tests anywhere in the repo.** No test runner is
-configured in any `package.json`, and no `*.test.ts` / `*.spec.ts` file
-exists. That leaves hand evaluation, ECS math, manifest validation, and the
-Durable Object room logic — including turn-order enforcement and
-reconnect-by-name — with zero regression coverage.
+**Moderate — Test coverage is thin outside poker.** `pnpm test` (Vitest)
+covers the poker rules engine and a couple of engine utilities, and `pnpm
+e2e` drives the real Worker and web app in browsers (poker protocol, a
+two-browser poker game, and the single-player games). There are still no
+unit tests for the ECS core, manifest validation, or the other games'
+systems; the e2e suite is the main guard there. See `.claude/skills/verify`.
 
-**Moderate — `ServerSystem` is duplicated by hand across a workspace
-boundary.** The `ServerSystem` interface is defined once in
-`@canvas/server/src/types.ts` and re-declared, verbatim, inline inside
-`games/poker/src/server.ts` — the comment there explains it's to dodge a
-circular workspace dependency. It works via structural typing, but nothing
-enforces the two copies stay in sync if either changes.
-`packages/server/src/types.ts` · `packages/games/poker/src/server.ts`
+**Minor — `ServerSystem` is declared twice across a workspace boundary.**
+`games/poker/src/server.ts` inlines a copy of the interface from
+`@canvas/server/src/types.ts` to avoid a circular dependency. The server's
+game registry assigns `pokerServerSystem` to its own `ServerSystem` type
+without a cast, so the copies can't drift without `pnpm typecheck` (run in
+CI) failing — but a second server game will need the same treatment.
+`packages/server/src/games/registry.ts`
 
-**Moderate — Manifest cache invalidation is partial.** `POST
-/manifests/upload` only purges the cached `index.json` entry; individual
-`/manifests/<id>/game.json` cache entries are left to expire on their own
-60s TTL (the code comment acknowledges this: "we don't know the per-game
-ids without re-parsing"). A deploy can serve a stale per-game manifest for
-up to a minute.
-`packages/server/src/routes/manifests.ts`
-
-**Moderate — No rate limiting on room creation or connections.** `POST
-/rooms` and the WebSocket upgrade path have no throttling. Since each room
-is its own Durable Object, a scripted client could cheaply spin up many
-rooms — a low-cost nuisance today, but there's no guard in place before it
-becomes one.
+**Minor — Room creation is throttled per IP, connections aren't.** `POST
+/rooms` is capped at 10/minute per client IP by a Workers Rate Limiting
+binding (`ROOM_CREATE_LIMITER` in `wrangler.toml`). Joining and WebSocket
+upgrades have no limit, but they only reach rooms that already exist.
 `packages/server/src/routes/rooms.ts`
-
-**Minor — Wildcard CORS on a bearer-token-gated write endpoint.**
-`Access-Control-Allow-Origin: *` applies uniformly, including to `POST
-/manifests/upload`. CORS isn't the real defense here — the bearer token is
-— but the wildcard means the browser-side origin check contributes nothing
-on the one route where a same-origin restriction would otherwise add a
-layer.
-`packages/server/src/cors.ts`
 
 **Minor — The custom-game escape hatch is unused.** `STATIC_GAMES` in the
 web registry exists specifically for games that "cannot be expressed as
@@ -186,8 +172,9 @@ GitHub Actions, triggered on push to `main` for any of `web/`, `engine/`,
 
 | Stage | Target | Notes |
 |---|---|---|
-| `deploy-server` | Cloudflare Worker (`canvas-server`) | `wrangler deploy`, then `upload-manifests.mjs` pushes every game's `game.json` into the `ManifestRegistry` DO. |
+| `deploy-server` | Cloudflare Worker (`canvas-server`) | Runs `pnpm -r typecheck` and `pnpm test` first and stops on failure; then `wrangler deploy`, then `upload-manifests.mjs` pushes every game's `game.json` into the `ManifestRegistry` DO. |
 | `deploy-pages` | Cloudflare Pages (static `@canvas/web` build) | Runs after `deploy-server` via `needs:`, and bakes `VITE_API_URL` into the build at compile time — the API origin can't change without a rebuild. |
+| `smoke-prod` | Production | After `deploy-pages`, runs `pnpm e2e` against the live Worker and Pages site (Playwright + Chromium) and uploads screenshots/logs as an artifact. Reports problems; doesn't roll back. |
 
 Secrets (`MANIFEST_ADMIN_TOKEN`) are deliberately kept out of
 `wrangler.toml` `[vars]` — a comment in the file explains that anything
@@ -199,9 +186,9 @@ there also lands in the production deploy — and are instead set via
 - Should the two poker implementations converge on one rules engine, with
   the single-player mode running the server logic locally instead of
   reimplementing it?
-- What's the minimum test surface worth adding first — the hand evaluator
-  and DO turn-order checks are the highest-value, lowest-effort targets.
+- Which engine systems most need unit tests next? Manifest validation and
+  the card-pile rules (solitaire) have no coverage below the e2e suite.
 - Does the manifest model need a real non-manifest game to validate the
   `STATIC_GAMES` escape hatch before the next game is built?
-- At what room-creation rate does the lack of throttling become worth
-  addressing?
+- Is 10 rooms/minute per IP the right cap, and should joins or WebSocket
+  upgrades get a limit too?

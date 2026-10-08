@@ -190,7 +190,7 @@ export function PokerRoomPage() {
     const module = createGameModule(pokerManifest as GameManifest);
     return {
       sceneData: module.getSceneData(),
-      systems: module.getSystems(),
+      createSystems: () => module.getSystems(),
       events: module.getEvents(),
       canvasSize: module.getCanvas() ?? {width: 1120, height: 620},
     };
@@ -283,7 +283,7 @@ export function PokerRoomPage() {
           <Box className={gameLayout.canvasWithPanel!}>
             <GameCanvas
               sceneData={game.sceneData}
-              systems={game.systems}
+              createSystems={game.createSystems}
               events={game.events}
               width={canvasSize.width}
               height={canvasSize.height}

@@ -42,7 +42,7 @@ const manifest = {
   meta: {title: 'Solitaire', description: 'Classic Klondike solitaire. Build up the foundations from Ace to King.'},
   canvas: {width: 700, height: 580},
   systems: ['MouseSystem', 'DragDropSystem', 'ClickSystem', 'CardPileSystem', 'PileLayoutSystem'],
-  events: {onDeath: 'solitaire:won'},
+  events: {onWin: 'solitaire:won'},
   scene: {
     name: 'solitaire',
     entities: [

@@ -450,7 +450,7 @@ export interface SceneData {
 export interface GameManifest {
   /**
    * Display metadata for the game — used by loaders and the game browser.
-   * Required when the manifest is hosted remotely (e.g. on S3), so the
+   * Required when the manifest is hosted remotely (e.g. served by the Worker), so the
    * game list can be built without loading every manifest up front.
    */
   meta?: {
@@ -482,19 +482,22 @@ export interface GameManifest {
   systems: SystemName[];
 
   /**
-   * Engine-level event bindings.
-   * Currently supports `onDeath` — the event name that signals game over.
-   * When this event is emitted from any system, the engine stops the game
-   * and navigates back to the game list.
+   * Engine-level event bindings. When `onDeath` or `onWin` is emitted from any
+   * system, the shell stops the game and shows a "Game Over" or "You win!"
+   * overlay with a Play Again button. `onScore` increments a visible score.
    *
    * @example
    * ```json
-   * { "onDeath": "my-game:complete" }
+   * { "onWin": "my-game:complete", "onScore": "entity:collected" }
    * ```
    */
   events?: {
-    /** The event name that ends the game. Must match the event emitted by the win-condition system. */
+    /** Event that ends the game as a loss; the shell shows "Game Over". */
     onDeath?: string;
+    /** Event that ends the game as a win; the shell shows "You win!". */
+    onWin?: string;
+    /** Event emitted once per point scored; the shell keeps and displays the count. */
+    onScore?: string;
   };
 
   /**

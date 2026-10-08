@@ -23,7 +23,10 @@ export function PokerLobbyPage() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({hostName: name.trim(), serverSystem: 'PokerServerSystem', maxPlayers: 6}),
       });
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {message?: string} | null;
+        throw new Error(body?.message ?? `Server error: ${res.status}`);
+      }
       const data = (await res.json()) as {roomId: string};
       navigate(`/play/poker/${data.roomId}`, {state: {name: name.trim()}});
     } catch (err) {

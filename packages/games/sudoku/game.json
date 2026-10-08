@@ -13,7 +13,7 @@
     "GridPuzzleSystem"
   ],
   "events": {
-    "onDeath": "sudoku:complete"
+    "onWin": "sudoku:complete"
   },
   "scene": {
     "name": "sudoku",

@@ -26,6 +26,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # Gates both jobs: deploy-pages waits on this one.
+      - name: Typecheck
+        run: pnpm -r --if-present typecheck
+
       - name: Unit tests
         run: pnpm test
 

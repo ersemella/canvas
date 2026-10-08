@@ -43,24 +43,37 @@ export async function handleManifestsRoute(
         headers: {'Content-Type': 'application/json'},
       });
     }
+    const body = await request.text();
     const r = await stub.fetch('https://do/upload', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: await request.text(),
+      body,
     });
-    // Best-effort cache invalidation for the affected manifests.
-    try {
-      const cache = caches.default;
-      const origin = url.origin;
-      await cache.delete(`${origin}/manifests/index.json`);
-      // We don't know the per-game ids without re-parsing; rely on 60s TTL.
-    } catch {
-      // ignore cache errors
-    }
+    if (r.ok) await purgeManifestCache(url.origin, body);
     return r;
   }
 
   return new Response('not found', {status: 404});
+}
+
+/** Drops the cached index and every uploaded game's manifest so new versions are served at once. */
+async function purgeManifestCache(origin: string, uploadBody: string): Promise<void> {
+  let ids: string[] = [];
+  try {
+    const parsed = JSON.parse(uploadBody) as {games?: Array<{id?: unknown}>};
+    ids = (parsed.games ?? []).map((g) => g.id).filter((id): id is string => typeof id === 'string');
+  } catch {
+    // The DO already accepted the body, so this shouldn't happen; still purge the index.
+  }
+  const urls = [
+    `${origin}/manifests/index.json`,
+    ...ids.map((id) => `${origin}/manifests/${encodeURIComponent(id)}/game.json`),
+  ];
+  try {
+    await Promise.all(urls.map((u) => caches.default.delete(u)));
+  } catch {
+    // Cache errors only mean a stale entry lives out its 60s TTL.
+  }
 }
 
 async function cached(request: Request, build: () => Promise<Response>): Promise<Response> {

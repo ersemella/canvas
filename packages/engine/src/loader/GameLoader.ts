@@ -61,6 +61,8 @@ export function createGameModule(manifest: GameManifest): GameModule {
     getEvents(): Record<string, string> {
       const result: Record<string, string> = {};
       if (manifest.events?.onDeath) result['onDeath'] = manifest.events.onDeath;
+      if (manifest.events?.onWin) result['onWin'] = manifest.events.onWin;
+      if (manifest.events?.onScore) result['onScore'] = manifest.events.onScore;
       return result;
     },
     getCanvas(): {width: number; height: number} | undefined {

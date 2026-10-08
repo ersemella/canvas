@@ -17,17 +17,18 @@ Add new rules tests next to the code as `*.test.ts`.
 
 `scripts/e2e/run.mjs` starts `wrangler dev` (127.0.0.1:8787) and Vite (localhost:3000), runs every `scripts/e2e/*.e2e.mjs` suite, then stops both servers. Pass a filter to run a subset: `pnpm e2e protocol`.
 
-| Suite                    | What it proves                                                                                                                                                                                                                                                                                                      |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `poker-protocol.e2e.mjs` | Raw WebSocket clients against the Worker: host-only start, negative raise can't mint chips, out-of-turn and check-into-a-bet rejected, mid-hand `nextHand` ignored, fold-wins hide cards, button rotates, seat held on disconnect, reconnect by name returns the same cards, disconnected player times out in ~10s. |
-| `poker-browser.e2e.mjs`  | Two Chromium windows: host vs guest lobby views, a full hand played by clicking the canvas buttons, next hand, refresh mid-hand, the 30s turn timeout.                                                                                                                                                              |
+| Suite                    | What it proves                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `games.e2e.mjs`          | Single-player games in Chromium: all 5 games listed; Snake score counts, food never spawns on the snake, Game Over shows the score; Sudoku solved with real key presses ends on "You win!"; Blackjack dealer-natural peek, 3:2 natural payout, between-hand reshuffle, cards drawn on screen and still drawn after Play Again. Uses `window.__canvasWorld` (dev server only), so it skips itself against production. |
+| `poker-protocol.e2e.mjs` | Raw WebSocket clients against the Worker: host-only start, negative raise can't mint chips, out-of-turn and check-into-a-bet rejected, mid-hand `nextHand` ignored, fold-wins hide cards, button rotates, seat held on disconnect, reconnect by name returns the same cards, disconnected player times out in ~10s.                                                                                                  |
+| `poker-browser.e2e.mjs`  | Two Chromium windows: host vs guest lobby views, a full hand played by clicking the canvas buttons, next hand, refresh mid-hand, the 30s turn timeout.                                                                                                                                                                                                                                                               |
 
 Output goes to `e2e-results/` (gitignored): `poker-*.png` screenshots, plus `wrangler.log` and `vite.log`. **Look at the screenshots** when a browser check fails — the canvas is drawn, so the DOM can't show what's on the table. A healthy run shows real player names (not "Bot1…"), your own hole cards, and the log in the side panel.
 
 ### Requirements
 
 - Node 22+ (the protocol suite uses the built-in `WebSocket`).
-- Ports 8787 and 3000 free. If a previous run was interrupted, stop stray `wrangler`/`vite` processes first.
+- Ports 8787 and 3000 free. The runner refuses to start if either is already answering (a leftover server would serve stale code); stop stray `wrangler`/`vite`/`workerd` processes first.
 - Chromium for Playwright. Cloud sessions have it preinstalled; on a laptop run `pnpm exec playwright install chromium` once.
 
 ### Against a deployed site

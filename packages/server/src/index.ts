@@ -10,9 +10,8 @@ export {GameRoom, ManifestRegistry};
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    if (request.method === 'OPTIONS') return preflight();
-
     const url = new URL(request.url);
+    if (request.method === 'OPTIONS') return preflight(url);
 
     if (url.pathname === '/' || url.pathname === '/health') {
       return withCors(
@@ -20,17 +19,18 @@ export default {
           status: 200,
           headers: {'Content-Type': 'application/json'},
         }),
+        url,
       );
     }
 
     if (url.pathname.startsWith('/rooms')) {
-      return withCors(await handleRoomsRoute(request, env, url));
+      return withCors(await handleRoomsRoute(request, env, url), url);
     }
 
     if (url.pathname.startsWith('/manifests')) {
-      return withCors(await handleManifestsRoute(request, env, url));
+      return withCors(await handleManifestsRoute(request, env, url), url);
     }
 
-    return withCors(new Response('not found', {status: 404}));
+    return withCors(new Response('not found', {status: 404}), url);
   },
 } satisfies ExportedHandler<Env>;

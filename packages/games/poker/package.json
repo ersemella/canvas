@@ -14,7 +14,8 @@
   },
   "scripts": {
     "build": "echo 'game.json already committed \u2014 no build step needed'",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "vitest": "^3.2.7"
