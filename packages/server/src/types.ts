@@ -58,8 +58,8 @@ export interface RateLimiter {
 
 export interface Env {
   GAME_ROOM: DurableObjectNamespace;
+  /** Retired ManifestRegistry DO; still bound until its class is deleted. Unused. */
   MANIFEST_REGISTRY: DurableObjectNamespace;
-  MANIFEST_ADMIN_TOKEN: string;
   /** Caps room creation per client IP. Optional so a missing binding never blocks play. */
   ROOM_CREATE_LIMITER?: RateLimiter;
 }

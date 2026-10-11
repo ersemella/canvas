@@ -40,12 +40,6 @@ jobs:
           workingDirectory: packages/server
           command: deploy
 
-      - name: Upload manifests to ManifestRegistry DO
-        run: node packages/server/scripts/upload-manifests.mjs
-        env:
-          SERVER_URL: ${{ secrets.SERVER_URL }}
-          MANIFEST_ADMIN_TOKEN: ${{ secrets.MANIFEST_ADMIN_TOKEN }}
-
   deploy-pages:
     needs: deploy-server
     runs-on: ubuntu-latest

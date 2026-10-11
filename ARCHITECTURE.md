@@ -8,16 +8,13 @@ connection. Everything else is a static, declarative manifest.
 
 ```
 Browser (@canvas/web)                    Cloudflare Worker (@canvas/server)
-  React + react-router                      routes: /rooms, /manifests
+  React + react-router                      routes: /rooms
   @canvas/engine ECS + Canvas2D  <——HTTP/WS——>
                                                      │ DO stub
                                                      ▼
                                    GameRoom (Durable Object) × 1 per room
                                      idFromName(roomId) · WebSocket
                                      Hibernation · SQLite storage · alarm timers
-
-                                   ManifestRegistry (Durable Object) · singleton
-                                     idFromName('global') · game.json store + index
 ```
 
 Static assets (the `@canvas/web` build output) ship separately via Cloudflare
@@ -25,7 +22,7 @@ Pages — see [Deployment topology](#deployment-topology).
 
 Four of five games (`snake`, `blackjack`, `solitaire`, `sudoku`) are pure
 client-side manifests: a `game.json` describing a scene and a list of
-built-in engine systems, fetched and rendered entirely in the browser. Only
+engine systems, bundled into the web build and rendered entirely in the browser. Only
 `poker` runs against the server, using a `GameRoom` Durable Object as the
 authoritative game state and WebSocket hub.
 
@@ -34,10 +31,10 @@ authoritative game state and WebSocket hub.
 | Package | Role | Notes |
 |---|---|---|
 | `@canvas/engine` | ECS core, built-in components/systems, manifest loader | Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and every system a manifest can reference — including a self-contained single-player poker simulation. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
-| `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Loads manifests from the Worker, instantiates a `World` per game, and is the only package with a UI framework. |
-| `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the two Durable Object classes it hosts. |
-| `games/poker` | Server-authoritative Texas Hold'em logic | Exports a `ServerSystem` consumed by `GameRoom`; has its own deck, hand evaluator, and public-state redaction. |
-| `games/{snake,blackjack,solitaire,sudoku}` | Manifest generators | `game.json` plus a build-time `generate.mjs` script; no runtime code — all behavior is declared. |
+| `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Builds in the games listed in `src/platform.games.ts`, instantiates a `World` per game, and is the only package with a UI framework. |
+| `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` Durable Object. Multiplayer games' server rules are listed in `src/games/registry.ts`. |
+| `games/poker` | Poker `GameDefinition` + server-authoritative Texas Hold'em logic | `.` exports the game definition; `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom`, with its own deck, hand evaluator, and public-state redaction. |
+| `games/{snake,blackjack,solitaire,sudoku}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. |
 | `configs` | Shared tsconfig / eslint base | — |
 
 ## Key decisions
@@ -56,14 +53,12 @@ fairly game-specific despite living in the generic engine. The line between
 ### Games are declared as JSON manifests, not code
 `game.json` lists entities, components, and a `systems: SystemName[]` array
 checked against `SystemRegistry` at load time (`validateManifestSystems`,
-`GameLoader.ts`). Adding a game means writing data, not shipping new client
-code — and the Worker can serve new games without a web redeploy.
+`GameLoader.ts`). A game package can also register its own systems,
+components, puzzle generators and deal patterns in its `register()` (the
+engine's plugin API, listed in `engine/src/index.ts`), which runs before
+its systems are created.
 
-**Tradeoff** — any behavior a manifest can't express has to be built into
-the engine as a new generic system first. The escape hatch for genuinely
-custom logic (`STATIC_GAMES` in `web/src/registry/games.ts`) exists but is
-currently empty — every shipped game fits the manifest model, so that path
-is unexercised.
+**Tradeoff** — the more a game registers, the less of it is plain data.
 
 ### One Durable Object per room, addressed by `idFromName`
 `GameRoom` instances are deterministically keyed by room ID, so any Worker
@@ -77,17 +72,17 @@ times rather than using a globally unique ID from the start
 (`rooms.ts:createRoom`) — pragmatic given an 8-char, 33-symbol alphabet, but
 it's a retry loop standing in for a uniqueness guarantee.
 
-### Single global ManifestRegistry DO, fronted by the edge cache
-One singleton DO (`idFromName('global')`) stores every `game.json` and a
-generated index; GET routes wrap it in `caches.default` with a 60s TTL, and
-`POST /manifests/upload` is gated by a bearer token compared against a
-Worker secret. An upload purges the cached index and every uploaded game's
-manifest, and the upload route sends no CORS headers (only the deploy
-script calls it).
+### Manifests are bundled into the web build
+Each game package exports a `GameDefinition` (its `game.json` plus an
+optional `register()`), and `packages/web/src/platform.games.ts` lists the
+games the platform builds in — the one place that names them. The web shell
+builds its game list from it; nothing is fetched at runtime.
 
-**Tradeoff** — every manifest read in production, worldwide, funnels through
-one DO instance (mitigated almost entirely by the cache) and one write path
-with no versioning — an upload replaces the index outright.
+**Tradeoff** — adding or changing a game means a web redeploy. This replaced
+a singleton `ManifestRegistry` Durable Object that the deploy uploaded every
+`game.json` into (bearer-token gated, index replaced on every upload). That
+class is retired and unreachable, but still bound in `wrangler.toml` until a
+`deleted_classes` migration removes it.
 
 ### Multiplayer is server-authoritative for exactly one game
 Only poker has a `ServerSystem` (`createInitialState` / `handleAction` /
@@ -102,12 +97,12 @@ independent rule implementations now exist for the same game — see
 
 ### Migrated off AWS Lambda/S3 onto Workers + Durable Objects
 Git history (`19275b0`, `fda4905`) shows a full teardown of
-`packages/infra` and `packages/handlers` in favor of a Worker + two DO
-classes. This collapses "API server," "game-room state store," and
-"manifest CDN" into one deploy target with no separate database or
+`packages/infra` and `packages/handlers` in favor of a Worker + Durable
+Objects. This collapses "API server" and "game-room state store" into one
+deploy target with no separate database or
 object-storage service to provision.
 
-**Tradeoff** — all room and manifest state now lives in Durable Object
+**Tradeoff** — all room state now lives in Durable Object
 storage rather than a general-purpose datastore — fine at current scale,
 but there's no analytics/query surface over past rooms, and the whole
 backend is coupled to Cloudflare's DO model.
@@ -144,26 +139,11 @@ two-browser poker game, and the single-player games). There are still no
 unit tests for the ECS core, manifest validation, or the other games'
 systems; the e2e suite is the main guard there. See `.claude/skills/verify`.
 
-**Minor — `ServerSystem` is declared twice across a workspace boundary.**
-`games/poker/src/server.ts` inlines a copy of the interface from
-`@canvas/server/src/types.ts` to avoid a circular dependency. The server's
-game registry assigns `pokerServerSystem` to its own `ServerSystem` type
-without a cast, so the copies can't drift without `pnpm typecheck` (run in
-CI) failing — but a second server game will need the same treatment.
-`packages/server/src/games/registry.ts`
-
 **Minor — Room creation is throttled per IP, connections aren't.** `POST
 /rooms` is capped at 10/minute per client IP by a Workers Rate Limiting
 binding (`ROOM_CREATE_LIMITER` in `wrangler.toml`). Joining and WebSocket
 upgrades have no limit, but they only reach rooms that already exist.
 `packages/server/src/routes/rooms.ts`
-
-**Minor — The custom-game escape hatch is unused.** `STATIC_GAMES` in the
-web registry exists specifically for games that "cannot be expressed as
-pure manifests," but the array is empty — every shipped game currently fits
-the declarative model. That's a sign the abstraction hasn't been
-stress-tested against a real non-manifest game yet.
-`packages/web/src/registry/games.ts`
 
 ## Deployment topology
 
@@ -172,14 +152,14 @@ GitHub Actions, triggered on push to `main` for any of `web/`, `engine/`,
 
 | Stage | Target | Notes |
 |---|---|---|
-| `deploy-server` | Cloudflare Worker (`canvas-server`) | Runs `pnpm -r typecheck` and `pnpm test` first and stops on failure; then `wrangler deploy`, then `upload-manifests.mjs` pushes every game's `game.json` into the `ManifestRegistry` DO. |
+| `deploy-server` | Cloudflare Worker (`canvas-server`) | Runs `pnpm -r typecheck` and `pnpm test` first and stops on failure; then `wrangler deploy`. |
 | `deploy-pages` | Cloudflare Pages (static `@canvas/web` build) | Runs after `deploy-server` via `needs:`, and bakes `VITE_API_URL` into the build at compile time — the API origin can't change without a rebuild. |
 | `smoke-prod` | Production | After `deploy-pages`, runs `pnpm e2e` against the live Worker and Pages site (Playwright + Chromium) and uploads screenshots/logs as an artifact. Reports problems; doesn't roll back. |
 
-Secrets (`MANIFEST_ADMIN_TOKEN`) are deliberately kept out of
-`wrangler.toml` `[vars]` — a comment in the file explains that anything
-there also lands in the production deploy — and are instead set via
-`wrangler secret put` in CI and read from a gitignored `.dev.vars` locally.
+The Worker currently needs no secrets. Any future one stays out of
+`wrangler.toml` `[vars]` — anything there also lands in the production
+deploy — and is set with `wrangler secret put`, and read from a gitignored
+`.dev.vars` locally.
 
 ## Open questions
 
@@ -188,7 +168,5 @@ there also lands in the production deploy — and are instead set via
   reimplementing it?
 - Which engine systems most need unit tests next? Manifest validation and
   the card-pile rules (solitaire) have no coverage below the e2e suite.
-- Does the manifest model need a real non-manifest game to validate the
-  `STATIC_GAMES` escape hatch before the next game is built?
 - Is 10 rooms/minute per IP the right cap, and should joins or WebSocket
   upgrades get a limit too?

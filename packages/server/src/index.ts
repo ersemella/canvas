@@ -2,7 +2,6 @@ import type {Env} from './types';
 import {GameRoom} from './durableObjects/GameRoom';
 import {ManifestRegistry} from './durableObjects/ManifestRegistry';
 import {handleRoomsRoute} from './routes/rooms';
-import {handleManifestsRoute} from './routes/manifests';
 import {withCors, preflight} from './cors';
 
 // DO classes must be re-exported so the runtime can find them.
@@ -25,10 +24,6 @@ export default {
 
     if (url.pathname.startsWith('/rooms')) {
       return withCors(await handleRoomsRoute(request, env, url), url);
-    }
-
-    if (url.pathname.startsWith('/manifests')) {
-      return withCors(await handleManifestsRoute(request, env, url), url);
     }
 
     return withCors(new Response('not found', {status: 404}), url);

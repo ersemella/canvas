@@ -21,9 +21,10 @@ simple = { limit = 10, period = 60 }
 tag = "v1"
 new_sqlite_classes = ["GameRoom", "ManifestRegistry"]
 
-# Production secrets are set via:
-#   wrangler secret put MANIFEST_ADMIN_TOKEN
-#
-# Local dev reads MANIFEST_ADMIN_TOKEN from a gitignored `.dev.vars` file
-# (see `.dev.vars.example`) — never from [vars] here, since anything in
+# ManifestRegistry is retired (manifests are bundled into the web build) but
+# still bound here until a deleted_classes migration removes it; see the
+# follow-ups in docs/plans/engine-platform-split.md.
+
+# Secrets, if one is ever needed: `wrangler secret put NAME`, and locally a
+# gitignored `.dev.vars` file — never [vars] here, since anything in
 # wrangler.toml is also applied to the production deploy in CI.

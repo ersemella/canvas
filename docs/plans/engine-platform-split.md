@@ -1,7 +1,7 @@
 # Plan: split Canvas into engine, platform, and per-game packages
 
-Status: **approved, not started.** Written 2026-10-11 as a hand-off to a fresh
-Claude Code session. Read this whole file, then `ARCHITECTURE.md` and
+Status: **in progress — Phases 1–2 done** (see [Progress and deviations](#progress-and-deviations)).
+Written 2026-10-11 as a hand-off to a fresh Claude Code session. Read this whole file, then `ARCHITECTURE.md` and
 `CLAUDE.md`, before changing anything.
 
 ## Goal
@@ -233,3 +233,52 @@ of this plan; stop and report.
 
 Report: what moved where, anything you decided differently from this plan and
 why, and any follow-ups. Leave this file in place with its status updated.
+
+## Progress and deviations
+
+Recorded by the session carrying out the plan.
+
+### Phase 1 — done
+- Deal patterns: `dealPatterns` registry (`engine/src/generators/dealPatterns.ts`);
+  a pattern returns placements (`{pileId, card, faceUp}`) and `CardPileSystem`
+  creates the entities. `DealPatternConfig` is `{type: string, ...options}`.
+- `SystemName` is `BuiltinSystemName | (string & {})`, so editors still
+  suggest built-in names. `EntityComponents` takes game-registered
+  components through an index signature.
+- `ServerSystem`/`RoomPlayer` live in `engine/src/server.ts`, exported as a
+  separate DOM-free entry, **`@canvas/engine/server`**, as well as from the
+  main entry. The Worker can't typecheck the engine's main entry (no DOM
+  lib; the engine uses `baseUrl` bare imports), so the server and the
+  poker package's server side import the subpath.
+- Packages that reference the engine project typecheck with `tsc -b`
+  (as `web` already did); `tsc --noEmit` fails on a clean checkout.
+
+### Phase 2 — done, with two deviations
+- **The server side isn't in `GameDefinition`.** A game's `.` entry exports
+  its `GameDefinition` (id, manifest, `register`); a multiplayer game's
+  server rules are a separate DOM-free `./server` entry. Putting `server` on
+  the definition would make the Worker import client code (canvas systems,
+  DOM types). So there are two lists, both in the platform:
+  `web/src/platform.games.ts` (every game, client side) and
+  `server/src/games/registry.ts` (server rules of multiplayer games).
+- **`ManifestRegistry` is retired but not deleted.** Manifests are bundled
+  (2a), and the `/manifests` routes, `upload-manifests.mjs`, the deploy
+  upload step, the cache purge, the CORS special case, and the
+  `MANIFEST_ADMIN_TOKEN` usage are gone (2b). The class itself remains as a
+  stub returning 410, still bound in `wrangler.toml`, with its stored
+  manifest copies intact. Deleting it takes a `deleted_classes` migration,
+  which permanently deletes the namespace and stops wrangler from rolling
+  back past that deploy — irreversible in production, so it's left for the
+  owner. To finish: remove the `MANIFEST_REGISTRY` binding, the stub class
+  and its export from `server/src/index.ts`, and the `Env` field, then add
+
+  ```toml
+  [[migrations]]
+  tag = "v2"
+  deleted_classes = ["ManifestRegistry"]
+  ```
+
+  Then delete the now-unused `MANIFEST_ADMIN_TOKEN` Worker secret
+  (`wrangler secret delete MANIFEST_ADMIN_TOKEN`) and GitHub Actions secret.
+- `STATIC_GAMES` (the empty escape hatch in the web registry) is gone: any
+  game can now ship code through `register()`.

@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "typecheck": "tsc --noEmit",
-    "upload-manifests": "node scripts/upload-manifests.mjs"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@canvas/engine": "workspace:*",

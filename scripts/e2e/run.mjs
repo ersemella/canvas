@@ -25,22 +25,6 @@ const API_URL = (process.env.E2E_API_URL ?? 'http://127.0.0.1:8787').replace(/\/
 const WEB_URL = (process.env.E2E_WEB_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
 
 const servers = [];
-const LOCAL_ADMIN_TOKEN = 'e2e-local-token';
-
-/** Loads every game.json into the local ManifestRegistry, as the deploy does. */
-function uploadManifests() {
-  return new Promise((res, rej) => {
-    const child = spawn(
-      process.execPath,
-      [join(root, 'packages/server/scripts/upload-manifests.mjs')],
-      {
-        stdio: 'inherit',
-        env: {...process.env, SERVER_URL: API_URL, MANIFEST_ADMIN_TOKEN: LOCAL_ADMIN_TOKEN},
-      }
-    );
-    child.on('exit', (code) => (code === 0 ? res() : rej(new Error('manifest upload failed'))));
-  });
-}
 
 function startServer(name, cmd, args, cwd) {
   const log = openSync(join(outDir, `${name}.log`), 'w');
@@ -128,8 +112,6 @@ try {
         '127.0.0.1',
         '--port',
         '8787',
-        '--var',
-        `MANIFEST_ADMIN_TOKEN:${LOCAL_ADMIN_TOKEN}`,
       ],
       join(root, 'packages/server')
     );
@@ -145,7 +127,6 @@ try {
   }
   await waitFor(`${API_URL}/health`, 'Worker');
   await waitFor(WEB_URL, 'Web app');
-  if (!external) await uploadManifests();
   for (const suite of suites) {
     console.log(`\n▶ ${suite}`);
     if ((await runSuite(suite)) !== 0) failed++;
