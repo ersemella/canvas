@@ -1,5 +1,3 @@
-import {puzzleGenerators} from 'generators/puzzleGenerators';
-
 function shuffleArr<T>(arr: T[]): T[] {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -69,7 +67,7 @@ function solveCount(grid: number[][]): number {
   return 1;
 }
 
-function generateSudoku(): number[][] {
+export function generateSudoku(): number[][] {
   const grid: number[][] = Array.from({length: 9}, () => Array.from({length: 9}, () => 0));
   fillDiagonalBoxes(grid);
   solveFill(grid);
@@ -87,5 +85,3 @@ function generateSudoku(): number[][] {
   }
   return grid;
 }
-
-puzzleGenerators.register('sudoku', () => generateSudoku());

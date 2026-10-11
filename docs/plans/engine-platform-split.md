@@ -1,6 +1,6 @@
 # Plan: split Canvas into engine, platform, and per-game packages
 
-Status: **in progress — Phases 1–3 done** (see [Progress and deviations](#progress-and-deviations)).
+Status: **in progress — Phases 1–4 done** (see [Progress and deviations](#progress-and-deviations)).
 Written 2026-10-11 as a hand-off to a fresh Claude Code session. Read this whole file, then `ARCHITECTURE.md` and
 `CLAUDE.md`, before changing anything.
 
@@ -289,3 +289,11 @@ Recorded by the session carrying out the plan.
   config component no longer self-registers on import.
 - The engine now exports its card-hand helpers (`renderCardHand`,
   `rankLabel`, `suitColor`, `cardXPositions` and their types) as public API.
+
+### Phase 4 — done
+- `generateSudoku` lives in `games/sudoku/src/sudokuGenerator.ts` and
+  `dealKlondike` in `games/solitaire/src/klondikeDeal.ts`, both plain
+  exported functions that the game's `register()` installs under the names
+  the manifests already use (`sudoku`, `klondike`). Neither self-registers
+  on import any more.
+- Snake needed nothing: its manifest lists only generic grid systems.

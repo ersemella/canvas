@@ -2,7 +2,7 @@ import {registerDataComponent} from 'core/Component';
 
 /**
  * How a generated deck is dealt. `type` names a function registered with
- * `dealPatterns.register` (the engine ships `klondike`); the other fields are
+ * `dealPatterns.register` (a game registers its own in `register()`); the other fields are
  * that pattern's own options.
  */
 export interface DealPatternConfig {

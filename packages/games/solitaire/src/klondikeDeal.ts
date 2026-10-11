@@ -1,5 +1,4 @@
-import {dealPatterns} from 'generators/dealPatterns';
-import type {DealPlacement} from 'generators/dealPatterns';
+import type {DealPatternFn, DealPlacement} from '@canvas/engine';
 
 export interface KlondikeDealConfig {
   type: 'klondike';
@@ -8,9 +7,11 @@ export interface KlondikeDealConfig {
   tableauCount: number;
 }
 
-// Tableau column n gets n+1 cards with only the top one face up; the rest go
-// face down to the stock.
-dealPatterns.register('klondike', (deck, config) => {
+/**
+ * Tableau column n gets n+1 cards with only the top one face up; the rest go
+ * face down to the stock.
+ */
+export const dealKlondike: DealPatternFn = (deck, config) => {
   const pattern = config as unknown as KlondikeDealConfig;
   const placements: DealPlacement[] = [];
   let deckIndex = 0;
@@ -26,4 +27,4 @@ dealPatterns.register('klondike', (deck, config) => {
     placements.push({pileId: pattern.stockId, card: deck[deckIndex++]!, faceUp: false});
   }
   return placements;
-});
+};
