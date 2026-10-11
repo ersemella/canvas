@@ -1,16 +1,17 @@
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
-import type {EventBus} from 'core/EventBus';
-import type {Scene} from 'core/Scene';
-import type {TransformComponent} from 'components/TransformComponent';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import type {ClickableData} from 'components/ClickableComponent';
-import type {BlackjackConfigData} from 'components/BlackjackConfigComponent';
-import type {ClickPayload} from 'systems/ClickSystem';
-import {Shoe} from 'util/Shoe';
-import {renderCardHand} from 'util/CardHandRenderer';
-import type {HandCard, CardSlot} from 'util/CardHandRenderer';
+import {BaseSystem, Shoe, renderCardHand} from '@canvas/engine';
+import type {
+  SystemContext,
+  DataComponent,
+  EventBus,
+  Scene,
+  TransformComponent,
+  RenderableComponent,
+  ClickableData,
+  ClickPayload,
+  HandCard,
+  CardSlot,
+} from '@canvas/engine';
+import type {BlackjackConfigData} from './BlackjackConfigComponent';
 
 type Phase = 'betting' | 'insurance' | 'player' | 'dealer' | 'result';
 

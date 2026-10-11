@@ -1,5 +1,3 @@
-import {registerDataComponent} from 'core/Component';
-
 export interface BlackjackConfigData {
   // Game rules
   startingBalance: number;
@@ -45,5 +43,3 @@ export interface BlackjackConfigData {
   /** Width split between hands when the player has split (defaults to 2 × canvasCenterX). */
   tableWidth?: number;
 }
-
-registerDataComponent<BlackjackConfigData>('BlackjackConfig');

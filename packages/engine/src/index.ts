@@ -54,8 +54,6 @@ export {CardPileSystem} from 'systems/CardPileSystem';
 export type {CardPileConfigData, DropRule, DropCondition, BehaviorConfig, WinCondition, TargetMatch} from 'components/CardPileConfigComponent';
 export {GridPuzzleSystem} from 'systems/GridPuzzleSystem';
 export type {GridPuzzleConfigData, GridPuzzleData, PuzzleConstraint, PuzzleVisuals} from 'components/GridPuzzleConfigComponent';
-export {BlackjackSystem} from 'systems/BlackjackSystem';
-export type {BlackjackConfigData} from 'components/BlackjackConfigComponent';
 export {PokerSystem} from 'systems/PokerSystem';
 export {PokerRendererSystem} from 'systems/PokerRendererSystem';
 export type {PokerConfigData} from 'components/PokerConfigComponent';
@@ -65,6 +63,8 @@ export {NetworkSystem} from 'systems/NetworkSystem';
 export type {NetworkConfigPayload, WsSendPayload, WsMessagePayload} from 'systems/NetworkSystem';
 export {Shoe} from 'util/Shoe';
 export type {PlayingCard} from 'util/Shoe';
+export {renderCardHand, rankLabel, suitColor, cardXPositions} from 'util/CardHandRenderer';
+export type {HandCard, CardSlot, CardHandLayout} from 'util/CardHandRenderer';
 export type {DeckConfigData, DealPatternConfig} from 'components/DeckConfigComponent';
 
 // Systems — physics (mutually exclusive with grid)
