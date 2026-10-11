@@ -349,6 +349,13 @@ Recorded by the session carrying out the plan.
    registry from games that ship a `./server` entry. Today a multiplayer
    game is listed in `web/src/platform.games.ts` and
    `server/src/games/registry.ts`.
-4. Unchanged from before and still open: merging the two poker rule
+4. **A production timing check is tight.** Phase 6's first `smoke-prod`
+   run failed one check, "disconnected player's turn times out", which waits
+   16 s for a 10 s timeout. The deployed Worker was byte-identical to Phase
+   5's, which passed the same check, and a re-run passed. The likely cause
+   is Durable Object alarm latency in production. Widening that window in
+   `scripts/e2e/poker-protocol.e2e.mjs`, or asserting on `turnDeadline`
+   instead of wall-clock time, would stop it flaking.
+5. Unchanged from before and still open: merging the two poker rule
    implementations (now both inside `games/poker`), and unit tests for the
    ECS core and manifest validation.
