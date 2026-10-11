@@ -4,9 +4,9 @@ import {Paper, Title, Text, List, Button, Group, TextInput, Stack, Box} from '@m
 import {notifications} from '@mantine/notifications';
 import {GameCanvas} from 'components/GameCanvas';
 import gameLayout from 'styles/gameLayout.module.css';
-import {registerBuiltinComponents, registerBuiltinSystems, createGameModule} from '@canvas/engine';
-import type {EventBus, GameManifest} from '@canvas/engine';
-import pokerManifest from '@canvas/games-poker/game.json';
+import {registerBuiltinComponents, registerBuiltinSystems} from '@canvas/engine';
+import type {EventBus} from '@canvas/engine';
+import {createModuleFor, findGame} from 'registry/games';
 import {API_URL} from 'config/api';
 
 interface SeatInfo {
@@ -187,7 +187,8 @@ export function PokerRoomPage() {
   const game = useMemo(() => {
     registerBuiltinSystems();
     registerBuiltinComponents();
-    const module = createGameModule(pokerManifest as GameManifest);
+    const module = createModuleFor(findGame('poker')!);
+    module.register();
     return {
       sceneData: module.getSceneData(),
       createSystems: () => module.getSystems(),

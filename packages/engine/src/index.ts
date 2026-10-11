@@ -90,7 +90,7 @@ export {registerBuiltinComponents, loadComponents, registerBuiltinSystems} from 
 export {loadEntity} from 'loader/EntityLoader';
 export {loadScene, loadSceneFromURL} from 'loader/SceneLoader';
 export {createGameModule, loadGameManifestFromURL, validateManifestSystems} from 'loader/GameLoader';
-export type {GameModule} from 'loader/GameLoader';
+export type {GameModule, GameDefinition} from 'loader/GameLoader';
 
 // Manifest types — the primary interface for game authors
 export type {

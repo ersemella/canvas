@@ -48,7 +48,11 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.19.15)
 
-  packages/games/blackjack: {}
+  packages/games/blackjack:
+    dependencies:
+      '@canvas/engine':
+        specifier: workspace:*
+        version: link:../../engine
 
   packages/games/poker:
     dependencies:
@@ -60,11 +64,23 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.19.15)
 
-  packages/games/snake: {}
+  packages/games/snake:
+    dependencies:
+      '@canvas/engine':
+        specifier: workspace:*
+        version: link:../../engine
 
-  packages/games/solitaire: {}
+  packages/games/solitaire:
+    dependencies:
+      '@canvas/engine':
+        specifier: workspace:*
+        version: link:../../engine
 
-  packages/games/sudoku: {}
+  packages/games/sudoku:
+    dependencies:
+      '@canvas/engine':
+        specifier: workspace:*
+        version: link:../../engine
 
   packages/server:
     dependencies:
@@ -93,9 +109,21 @@ importers:
       '@canvas/engine':
         specifier: workspace:*
         version: link:../engine
+      '@canvas/games-blackjack':
+        specifier: workspace:*
+        version: link:../games/blackjack
       '@canvas/games-poker':
         specifier: workspace:*
         version: link:../games/poker
+      '@canvas/games-snake':
+        specifier: workspace:*
+        version: link:../games/snake
+      '@canvas/games-solitaire':
+        specifier: workspace:*
+        version: link:../games/solitaire
+      '@canvas/games-sudoku':
+        specifier: workspace:*
+        version: link:../games/sudoku
       '@mantine/core':
         specifier: ^8.3.17
         version: 8.3.17(@mantine/hooks@8.3.17(react@18.3.1))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

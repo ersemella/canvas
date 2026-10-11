@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "type": "module",
   "exports": {
+    ".": "./src/index.ts",
+    "./game.json": "./game.json",
     "./server": "./src/server.ts"
   },
   "typesVersions": {
@@ -17,10 +19,10 @@
     "test": "vitest run",
     "typecheck": "tsc -b"
   },
-  "devDependencies": {
-    "vitest": "^3.2.7"
-  },
   "dependencies": {
     "@canvas/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7"
   }
 }

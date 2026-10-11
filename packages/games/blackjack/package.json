@@ -2,7 +2,16 @@
   "name": "@canvas/games-blackjack",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./game.json": "./game.json"
+  },
   "scripts": {
-    "build": "node scripts/generate.mjs"
+    "build": "node scripts/generate.mjs",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@canvas/engine": "workspace:*"
   }
 }

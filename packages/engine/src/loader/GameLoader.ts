@@ -14,6 +14,21 @@ export interface GameModule {
   getSidePanel?(): unknown;
 }
 
+/**
+ * What a game package exports: its manifest plus a hook that registers the
+ * game's own systems, components, puzzle generators and deal patterns (see
+ * the plugin API in the engine's index). The platform builds games in from a
+ * list of these. A multiplayer game's server rules are a separate,
+ * DOM-free `./server` entry exporting a `ServerSystem`.
+ */
+export interface GameDefinition {
+  /** URL-safe id, e.g. `blackjack` (the shell serves it at `/play/<id>`). */
+  id: string;
+  manifest: GameManifest;
+  /** Called before the game's systems are created; may run more than once. */
+  register?(): void;
+}
+
 const EXCLUSIVE_FAMILIES: string[][] = [
   ['PhysicsSystem', 'GridMovementSystem'],
   ['CollisionSystem', 'GridMovementSystem'],
@@ -47,9 +62,9 @@ export async function loadGameManifestFromURL(url: string): Promise<GameModule> 
   return createGameModule(manifest);
 }
 
-export function createGameModule(manifest: GameManifest): GameModule {
+export function createGameModule(manifest: GameManifest, register: () => void = () => {}): GameModule {
   return {
-    register(): void {},
+    register,
     getSceneData(): SceneData {
       return manifest.scene;
     },
