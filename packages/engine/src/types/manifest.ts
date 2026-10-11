@@ -340,12 +340,20 @@ export interface EntityComponents {
    * Requires {@link PokerSystem} and {@link PokerRendererSystem} in the system list.
    */
   PokerConfig?: PokerConfigData;
+
+  // ── Game-defined ─────────────────────────────────────────────────────────
+
+  /**
+   * Components a game registers itself (`registerDataComponent` in its
+   * `register()`), keyed by the registered name.
+   */
+  [component: string]: unknown;
 }
 
 // ─── Systems ─────────────────────────────────────────────────────────────────
 
 /**
- * All built-in system names that can be referenced in a game manifest.
+ * System names the engine registers itself (`registerBuiltinSystems`).
  *
  * Systems are instantiated in the order listed and run every frame in
  * ascending priority order (each system class declares its own priority).
@@ -363,7 +371,7 @@ export interface EntityComponents {
  * | `MouseSystem` | 950 | Captures mouse/touch state, flushes at end of frame |
  * | `InputFlushSystem` | 951 | Clears just-pressed state at end of frame |
  */
-export type SystemName =
+export type BuiltinSystemName =
   | 'InputSystem'
   | 'InputFlushSystem'
   | 'MouseSystem'
@@ -378,6 +386,13 @@ export type SystemName =
   | 'NetworkSystem'
   | 'PokerSystem'
   | 'PokerRendererSystem';
+
+/**
+ * Any system name a manifest can list: a {@link BuiltinSystemName}, or a name
+ * a game registered with `SystemRegistry.register` in its `register()`.
+ * Checked against the registry when the game's systems are created.
+ */
+export type SystemName = BuiltinSystemName | (string & {});
 
 // ─── Scene ───────────────────────────────────────────────────────────────────
 
@@ -472,12 +487,12 @@ export interface GameManifest {
   };
 
   /**
-   * Ordered list of built-in systems to run each frame.
+   * Ordered list of systems to run each frame.
    * Systems execute in ascending priority order regardless of list order.
-   * All names must be registered engine built-ins — manifests cannot
-   * reference custom systems.
+   * Every name must be registered by the time the game loads: an engine
+   * built-in, or a system the game registered in its `register()`.
    *
-   * @see {@link SystemName} for all available systems and their priorities.
+   * @see {@link BuiltinSystemName} for the built-in systems and their priorities.
    */
   systems: SystemName[];
 

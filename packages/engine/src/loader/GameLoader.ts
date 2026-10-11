@@ -35,7 +35,7 @@ export function validateManifestSystems(systems: SystemName[]): void {
   if (unknown.length > 0) {
     throw new Error(
       `Game manifest references unregistered system(s): ${unknown.map((n) => `"${n}"`).join(', ')}. ` +
-      `Only built-in engine systems can be used in static manifests.`
+      `Register engine built-ins with registerBuiltinSystems() and game systems in the game's register() before loading it.`
     );
   }
 }

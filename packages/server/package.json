@@ -10,6 +10,7 @@
     "upload-manifests": "node scripts/upload-manifests.mjs"
   },
   "dependencies": {
+    "@canvas/engine": "workspace:*",
     "@canvas/games-poker": "workspace:*"
   },
   "devDependencies": {

@@ -96,6 +96,7 @@ export type {GameModule} from 'loader/GameLoader';
 export type {
   GameManifest,
   SystemName,
+  BuiltinSystemName,
   EntityData,
   EntityComponents,
   SceneData,
@@ -107,5 +108,18 @@ export type {
   InputData,
 } from 'types/manifest';
 export {assetLoader} from 'loader/AssetLoader';
+
+// Plugin API — how a game adds its own pieces before it loads:
+//   SystemRegistry.register(name, SystemClass)   systems a manifest can list
+//   registerDataComponent<T>(name)               plain-data components
+//   ComponentRegistry.register(name, factory)    components with behavior
+//   puzzleGenerators.register(name, fn)          GridPuzzleConfig.generator
+//   dealPatterns.register(name, fn)              DeckConfig.dealPattern.type
 export {puzzleGenerators} from 'generators/puzzleGenerators';
 export type {PuzzleGeneratorFn} from 'generators/puzzleGenerators';
+export {dealPatterns} from 'generators/dealPatterns';
+export type {DealPatternFn, DealPlacement, DealtCard} from 'generators/dealPatterns';
+
+// Multiplayer contract between the platform's room server and a game's server
+// logic. Also available DOM-free as `@canvas/engine/server`.
+export type {ServerSystem, RoomPlayer} from './server';

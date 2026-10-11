@@ -1,33 +1,10 @@
 /**
- * Server-side types. Mirrors the contract previously defined in
- * `packages/handlers/src/games/ServerGameModule.ts` so `@canvas/games-poker/server`
- * can be plugged in via a structural type assertion.
+ * Server-side types. The game contract (`ServerSystem`, `RoomPlayer`) comes
+ * from the engine so the server and every game share one definition.
  */
 
-export interface RoomPlayer {
-  connectionId: string;
-  name: string;
-  chips: number;
-  seatIndex: number;
-}
-
-export interface ServerSystem<TState = unknown, TAction = unknown> {
-  systemName: string;
-  /**
-   * Deals a new round for `players`. `previous` is the last round's state, so
-   * games can carry things like the dealer button forward. May throw (e.g.
-   * not enough players); the message is sent back to whoever asked.
-   */
-  createInitialState(players: RoomPlayer[], previous?: TState | null): TState;
-  /** Returns the new state, or throws with a player-facing message for an illegal action. */
-  handleAction(state: TState, connectionId: string, action: TAction): TState;
-  getPublicState(state: TState, viewerConnectionId: string): unknown;
-  actingConnectionId(state: TState): string | null;
-  /** True once the round is finished and a new one may be dealt. */
-  isHandOver(state: TState): boolean;
-  /** Action applied for the acting player when their turn timer expires. */
-  timeoutAction(state: TState): TAction | null;
-}
+import type {RoomPlayer, ServerSystem} from '@canvas/engine/server';
+export type {RoomPlayer, ServerSystem};
 
 /** Persisted in DO storage under the `meta` key. */
 export interface RoomRecord {

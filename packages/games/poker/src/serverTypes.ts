@@ -1,11 +1,7 @@
 import type {Card, Phase, LogEntry} from './types';
 
-export interface RoomPlayer {
-  connectionId: string;
-  name: string;
-  chips: number;
-  seatIndex: number;
-}
+import type {RoomPlayer} from '@canvas/engine/server';
+export type {RoomPlayer};
 
 export interface ServerPlayer {
   connectionId: string;

@@ -1,7 +1,14 @@
 import {registerDataComponent} from 'core/Component';
 
-export type DealPatternConfig =
-  | {type: 'klondike'; tableauPrefix: string; stockId: string; tableauCount: number};
+/**
+ * How a generated deck is dealt. `type` names a function registered with
+ * `dealPatterns.register` (the engine ships `klondike`); the other fields are
+ * that pattern's own options.
+ */
+export interface DealPatternConfig {
+  type: string;
+  [option: string]: unknown;
+}
 
 export interface DeckConfigData {
   suits: string[];

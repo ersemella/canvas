@@ -13,11 +13,14 @@
     }
   },
   "scripts": {
-    "build": "echo 'game.json already committed \u2014 no build step needed'",
+    "build": "echo 'game.json already committed — no build step needed'",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b"
   },
   "devDependencies": {
     "vitest": "^3.2.7"
+  },
+  "dependencies": {
+    "@canvas/engine": "workspace:*"
   }
 }

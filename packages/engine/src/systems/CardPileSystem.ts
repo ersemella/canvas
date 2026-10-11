@@ -18,7 +18,8 @@ import type {
   BehaviorConfig,
   TargetMatch,
 } from 'components/CardPileConfigComponent';
-import type {DeckConfigData, DealPatternConfig} from 'components/DeckConfigComponent';
+import type {DeckConfigData} from 'components/DeckConfigComponent';
+import {dealPatterns} from 'generators/dealPatterns';
 import {loadEntity} from 'loader/EntityLoader';
 import {mouseService} from 'systems/MouseSystem';
 import type {TransformComponent} from 'components/TransformComponent';
@@ -577,40 +578,21 @@ export class CardPileSystem extends BaseSystem {
     const shuffled = this.shuffleDeck(deck);
 
     const pattern = deckConfig.dealPattern;
-    if (pattern.type === 'klondike') {
-      this.dealKlondike(shuffled, deckConfig, pattern);
+    const deal = dealPatterns.get(pattern.type);
+    if (!deal) {
+      throw new Error(`Unknown deal pattern "${pattern.type}". Register it with dealPatterns.register().`);
     }
-  }
 
-  private dealKlondike(
-    deck: Array<{rank: number; suit: string}>,
-    deckConfig: DeckConfigData,
-    pattern: Extract<DealPatternConfig, {type: 'klondike'}>,
-  ): void {
     const rankLabels = this.config?.rankLabels ?? DEFAULT_RANK_LABELS;
-    let deckIndex = 0;
-
-    for (let col = 0; col < pattern.tableauCount; col++) {
-      const pileId = `${pattern.tableauPrefix}${col}`;
-      for (let pos = 0; pos <= col; pos++) {
-        const card = deck[deckIndex++]!;
-        const faceUp = pos === col;
-        const cardId = `card-${card.suit}-${card.rank}`;
-        const labelText = faceUp ? (rankLabels[card.rank] ?? '') + card.suit : '';
-        const group = this.colorGroupOf.get(card.suit) ?? '';
-        const labelColor = this.config?.groupColors?.[group] ?? '#000000';
-        this.createCardEntity(cardId, card.rank, card.suit, faceUp, pileId, pos, deckConfig, labelText, labelColor);
-        this.piles.get(pileId)!.push(cardId);
-      }
-    }
-
-    let pos = 0;
-    while (deckIndex < deck.length) {
-      const card = deck[deckIndex++]!;
+    for (const {pileId, card, faceUp} of deal(shuffled, pattern)) {
+      const pile = this.piles.get(pileId);
+      if (!pile) throw new Error(`Deal pattern "${pattern.type}" dealt to unknown pile "${pileId}"`);
       const cardId = `card-${card.suit}-${card.rank}`;
-      this.createCardEntity(cardId, card.rank, card.suit, false, pattern.stockId, pos, deckConfig, '', '#000000');
-      this.piles.get(pattern.stockId)!.push(cardId);
-      pos++;
+      const labelText = faceUp ? (rankLabels[card.rank] ?? '') + card.suit : '';
+      const group = this.colorGroupOf.get(card.suit) ?? '';
+      const labelColor = this.config?.groupColors?.[group] ?? '#000000';
+      this.createCardEntity(cardId, card.rank, card.suit, faceUp, pileId, pile.length, deckConfig, labelText, labelColor);
+      pile.push(cardId);
     }
   }
 

@@ -51,6 +51,10 @@ importers:
   packages/games/blackjack: {}
 
   packages/games/poker:
+    dependencies:
+      '@canvas/engine':
+        specifier: workspace:*
+        version: link:../../engine
     devDependencies:
       vitest:
         specifier: ^3.2.7
@@ -64,6 +68,9 @@ importers:
 
   packages/server:
     dependencies:
+      '@canvas/engine':
+        specifier: workspace:*
+        version: link:../engine
       '@canvas/games-poker':
         specifier: workspace:*
         version: link:../games/poker
