@@ -3,7 +3,7 @@
  * Internal to the engine — not exported from index.ts.
  */
 
-import type {PokerCard} from 'util/handEvaluator';
+import type {PokerCard} from './handEvaluator';
 export type {PokerCard};
 
 export type Phase = 'waiting' | 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';

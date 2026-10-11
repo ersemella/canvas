@@ -27,7 +27,6 @@ import type {GridCursorData} from 'components/GridCursorComponent';
 import type {CardPileConfigData} from 'components/CardPileConfigComponent';
 import type {DeckConfigData} from 'components/DeckConfigComponent';
 import type {GridPuzzleConfigData, GridPuzzleData} from 'components/GridPuzzleConfigComponent';
-import type {PokerConfigData} from 'components/PokerConfigComponent';
 
 // ─── Primitives ──────────────────────────────────────────────────────────────
 
@@ -324,14 +323,6 @@ export interface EntityComponents {
    */
   GridPuzzle?: GridPuzzleData;
 
-  // ── Poker ─────────────────────────────────────────────────────────────────
-
-  /**
-   * Poker game rules and panel entity IDs. Place on a dedicated config entity.
-   * Requires {@link PokerSystem} and {@link PokerRendererSystem} in the system list.
-   */
-  PokerConfig?: PokerConfigData;
-
   // ── Game-defined ─────────────────────────────────────────────────────────
 
   /**
@@ -373,9 +364,7 @@ export type BuiltinSystemName =
   | 'GridCursorSystem'
   | 'GridPuzzleSystem'
   | 'SidePanelSystem'
-  | 'NetworkSystem'
-  | 'PokerSystem'
-  | 'PokerRendererSystem';
+  | 'NetworkSystem';
 
 /**
  * Any system name a manifest can list: a {@link BuiltinSystemName}, or a name

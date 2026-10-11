@@ -9,17 +9,20 @@
  * game constants. Drives the SidePanelSystem via sidepanel:update events.
  */
 
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
-import type {PokerConfigData} from 'components/PokerConfigComponent';
-import {buildPokerDeck, shuffleDeck, dealCard, findWinner} from 'util/handEvaluator';
-import {decideBotAction} from 'util/botAI';
-import {setSharedPokerState} from 'systems/pokerGameState';
-import type {PokerGameState, PokerPlayer, PokerCard, Phase, ActionType} from 'systems/pokerTypes';
-import type {ClickPayload} from 'systems/ClickSystem';
-import type {WsMessagePayload, NetworkConfigPayload} from 'systems/NetworkSystem';
-import type {SidePanelUpdatePayload} from 'systems/SidePanelSystem';
+import {BaseSystem} from '@canvas/engine';
+import type {
+  SystemContext,
+  DataComponent,
+  ClickPayload,
+  WsMessagePayload,
+  NetworkConfigPayload,
+  SidePanelUpdatePayload,
+} from '@canvas/engine';
+import type {PokerConfigData} from './PokerConfigComponent';
+import {buildPokerDeck, shuffleDeck, dealCard, findWinner} from './handEvaluator';
+import {decideBotAction} from './botAI';
+import {setSharedPokerState} from './pokerGameState';
+import type {PokerGameState, PokerPlayer, PokerCard, Phase, ActionType} from './pokerTypes';
 
 const DEFAULT_SB = 5;
 const DEFAULT_BB = 10;

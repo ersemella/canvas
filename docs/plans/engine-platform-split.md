@@ -1,6 +1,6 @@
 # Plan: split Canvas into engine, platform, and per-game packages
 
-Status: **in progress — Phases 1–4 done** (see [Progress and deviations](#progress-and-deviations)).
+Status: **in progress — Phases 1–5 done** (see [Progress and deviations](#progress-and-deviations)).
 Written 2026-10-11 as a hand-off to a fresh Claude Code session. Read this whole file, then `ARCHITECTURE.md` and
 `CLAUDE.md`, before changing anything.
 
@@ -297,3 +297,13 @@ Recorded by the session carrying out the plan.
   the manifests already use (`sudoku`, `klondike`). Neither self-registers
   on import any more.
 - Snake needed nothing: its manifest lists only generic grid systems.
+
+### Phase 5 — done
+- Poker's client code is in `games/poker/src/client/` (`PokerSystem`,
+  `PokerRendererSystem`, `pokerGameState`, `pokerTypes`,
+  `PokerConfigComponent`, `botAI`, and the client `handEvaluator`); the
+  subfolder keeps it apart from the server-side `handEvaluator.ts`/`types.ts`.
+  The game's `register()` registers the two systems and `PokerConfig`.
+- `SidePanelSystem` and `NetworkSystem` stay in the engine (they have no
+  poker knowledge); recorded in `ARCHITECTURE.md`.
+- The Worker bundle size is unchanged: it imports only `./server`.

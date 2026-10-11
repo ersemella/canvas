@@ -30,10 +30,10 @@ authoritative game state and WebSocket hub.
 
 | Package | Role | Notes |
 |---|---|---|
-| `@canvas/engine` | ECS core, built-in components/systems, manifest loader | Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and every system a manifest can reference — including a self-contained single-player poker simulation. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
+| `@canvas/engine` | ECS core, generic components/systems, manifest loader, plugin API | Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and game-agnostic systems (grid, physics, drag/drop, click, card piles, grid puzzles, side panel, network). No game-specific code: games add their own through `register()`. `@canvas/engine/server` is a DOM-free entry with the `ServerSystem` contract. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
 | `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Builds in the games listed in `src/platform.games.ts`, instantiates a `World` per game, and is the only package with a UI framework. |
 | `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` Durable Object. Multiplayer games' server rules are listed in `src/games/registry.ts`. |
-| `games/poker` | Poker `GameDefinition` + server-authoritative Texas Hold'em logic | `.` exports the game definition; `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom`, with its own deck, hand evaluator, and public-state redaction. |
+| `games/poker` | Poker client systems + server-authoritative Texas Hold'em logic | `.` exports the game definition, whose `register()` adds the table systems in `src/client/` (`PokerSystem`, `PokerRendererSystem`, bot AI, a hand evaluator); `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom`, with its own deck, hand evaluator, and public-state redaction. |
 | `games/{snake,blackjack,solitaire,sudoku}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. |
 | `configs` | Shared tsconfig / eslint base | — |
 
@@ -72,6 +72,14 @@ times rather than using a globally unique ID from the start
 (`rooms.ts:createRoom`) — pragmatic given an 8-char, 33-symbol alphabet, but
 it's a retry loop standing in for a uniqueness guarantee.
 
+### Side panel and network systems stay in the engine
+`SidePanelSystem` (DOM-free button/text panel driven by events) and
+`NetworkSystem` (bridges the world's event bus to a WebSocket) are only used
+by poker today, but neither knows anything about poker, so they stay in the
+engine as generic building blocks for the next panel-based or networked game.
+
+**Tradeoff** — the engine carries two systems no other game exercises yet.
+
 ### Manifests are bundled into the web build
 Each game package exports a `GameDefinition` (its `game.json` plus an
 optional `register()`), and `packages/web/src/platform.games.ts` lists the
@@ -90,8 +98,9 @@ Only poker has a `ServerSystem` (`createInitialState` / `handleAction` /
 turn order server-side and sends each viewer a redacted `getPublicState` so
 opponents' hole cards never reach the client.
 
-**Tradeoff** — the engine also ships a fully separate, single-player poker
-implementation (`PokerSystem.ts`) for the non-multiplayer path. Two
+**Tradeoff** — the poker package also ships a fully separate, single-player
+poker implementation (`client/PokerSystem.ts`, bot mode) that the UI can't
+currently reach (`/play/poker` always opens the multiplayer lobby). Two
 independent rule implementations now exist for the same game — see
 [Drawbacks](#drawbacks--inefficiencies).
 
@@ -126,11 +135,12 @@ cost to leave alone.
 **Notable — Poker rules are implemented twice.** The single-player path
 (`PokerSystem.ts`, 651 lines, bot AI included) and the multiplayer path
 (`games/poker/src/serverLogic.ts`) are independent implementations of Texas
-Hold'em, each with its *own* hand evaluator (`engine/util/handEvaluator.ts`
-vs. `games/poker/src/handEvaluator.ts`). A rules fix — a side-pot edge case,
+Hold'em, each with its *own* hand evaluator (`games/poker/src/client/handEvaluator.ts`
+vs. `games/poker/src/handEvaluator.ts`). Both now live in the poker package,
+which makes merging them a package-local change. A rules fix — a side-pot edge case,
 a hand-ranking bug — has to be found and re-applied twice, and the two modes
 can silently drift apart.
-`packages/engine/src/systems/PokerSystem.ts` · `packages/games/poker/src/serverLogic.ts`
+`packages/games/poker/src/client/PokerSystem.ts` · `packages/games/poker/src/serverLogic.ts`
 
 **Moderate — Test coverage is thin outside poker.** `pnpm test` (Vitest)
 covers the poker rules engine and a couple of engine utilities, and `pnpm

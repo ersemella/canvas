@@ -3,7 +3,7 @@
  * Used by PokerSystem to decide bot actions each tick.
  */
 
-import {evaluate7CardHand, type PokerCard} from 'util/handEvaluator';
+import {evaluate7CardHand, type PokerCard} from './handEvaluator';
 
 type ActionType = 'fold' | 'check' | 'call' | 'raise';
 

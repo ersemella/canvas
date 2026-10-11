@@ -4,7 +4,7 @@
  * PokerRendererSystem reads it in onUpdate.
  */
 
-import type {PokerGameState} from 'systems/pokerTypes';
+import type {PokerGameState} from './pokerTypes';
 
 export let sharedPokerState: PokerGameState | null = null;
 

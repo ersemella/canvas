@@ -9,10 +9,10 @@
  * PokerSystem after every state change.
  */
 
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import {sharedPokerState} from 'systems/pokerGameState';
-import type {PokerGameState, PokerCard} from 'systems/pokerTypes';
+import {BaseSystem} from '@canvas/engine';
+import type {SystemContext} from '@canvas/engine';
+import {sharedPokerState} from './pokerGameState';
+import type {PokerGameState, PokerCard} from './pokerTypes';
 
 const TABLE_WIDTH = 820;
 const TABLE_CENTER_X = 400;

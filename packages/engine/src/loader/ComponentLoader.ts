@@ -22,9 +22,6 @@ import {CardPileSystem} from 'systems/CardPileSystem';
 import {GridPuzzleSystem} from 'systems/GridPuzzleSystem';
 import {SidePanelSystem} from 'systems/SidePanelSystem';
 import {NetworkSystem} from 'systems/NetworkSystem';
-import {PokerSystem} from 'systems/PokerSystem';
-import {PokerRendererSystem} from 'systems/PokerRendererSystem';
-import type {PokerConfigData} from 'components/PokerConfigComponent';
 import type {CardData} from 'components/CardComponent';
 import type {CardPileConfigData} from 'components/CardPileConfigComponent';
 import type {GridPuzzleConfigData, GridPuzzleData} from 'components/GridPuzzleConfigComponent';
@@ -67,8 +64,6 @@ export function registerBuiltinSystems(): void {
   SystemRegistry.register('GridPuzzleSystem', GridPuzzleSystem);
   SystemRegistry.register('SidePanelSystem', SidePanelSystem);
   SystemRegistry.register('NetworkSystem', NetworkSystem);
-  SystemRegistry.register('PokerSystem', PokerSystem);
-  SystemRegistry.register('PokerRendererSystem', PokerRendererSystem);
 }
 
 export function registerBuiltinComponents(): void {
@@ -116,7 +111,6 @@ export function registerBuiltinComponents(): void {
   registerDataComponent<GridPuzzleConfigData>('GridPuzzleConfig');
   registerDataComponent<GridPuzzleData>('GridPuzzle');
   registerDataComponent<DeckConfigData>('DeckConfig');
-  registerDataComponent<PokerConfigData>('PokerConfig');
 }
 
 export function loadComponents(
