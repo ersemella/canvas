@@ -1,7 +1,7 @@
-import {type SystemContext} from 'core/System';
-import type {IEntity} from 'core/Entity';
-import type {TransformComponent} from 'components/TransformComponent';
-import {TriggerSystem, type TriggerData} from 'systems/TriggerSystem';
+import {type SystemContext} from '../../core/System';
+import type {IEntity} from '../../core/Entity';
+import type {TransformComponent} from '../../components/TransformComponent';
+import {TriggerSystem, type TriggerData} from '../TriggerSystem';
 
 export interface OverlapTriggerData extends TriggerData {
   targetTag: string;

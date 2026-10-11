@@ -1,4 +1,4 @@
-import {registerDataComponent} from 'core/Component';
+import {registerDataComponent} from '../core/Component';
 
 export interface PileLayoutData {
   pileId: string;

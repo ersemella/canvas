@@ -1,6 +1,6 @@
 # Plan: split Canvas into engine, platform, and per-game packages
 
-Status: **in progress — Phases 1–5 done** (see [Progress and deviations](#progress-and-deviations)).
+Status: **done** — all six phases merged and deployed 2026-10-11, with the deviations and follow-ups under [Progress and deviations](#progress-and-deviations). The one step left undone is deleting the retired `ManifestRegistry` Durable Object, an irreversible production change left for the owner.
 Written 2026-10-11 as a hand-off to a fresh Claude Code session. Read this whole file, then `ARCHITECTURE.md` and
 `CLAUDE.md`, before changing anything.
 
@@ -307,3 +307,48 @@ Recorded by the session carrying out the plan.
 - `SidePanelSystem` and `NetworkSystem` stay in the engine (they have no
   poker knowledge); recorded in `ARCHITECTURE.md`.
 - The Worker bundle size is unchanged: it imports only `./server`.
+
+### Phase 6 — done
+- **Boundaries:** `scripts/check-boundaries.mjs` (`pnpm check:boundaries`)
+  runs first in `deploy.yml`. It fails if the engine imports any workspace
+  package or a relative path outside itself, or if a game imports anything
+  but `@canvas/engine`, `@canvas/engine/server` and its own files.
+- **Buildable engine:** its imports are now relative (they were `baseUrl`
+  bare specifiers like `'core/System'`, which a published `.d.ts` can't
+  resolve). `pnpm --filter @canvas/engine build` (`tsc -b`) emits ESM +
+  `.d.ts` to `dist/`, and `main`/`types`/`exports` point there, with
+  `files: ["dist"]`. In-repo consumers still resolve the engine to `src/`
+  through tsconfig `paths` (web, games, and now the server for
+  `@canvas/engine/server`), so dev, e2e and CI need no build step. Checked
+  by packing the engine and typechecking (strict, without `skipLibCheck`)
+  and bundling a small game with a custom system in a project outside the
+  repo. The unused Vite library config is gone.
+- Each game declares `@canvas/engine` as a `peerDependency` (`workspace:^`),
+  plus a `devDependency` for local work.
+- **Standalone dev pages:** `pnpm dev` in any game package serves
+  `dev/index.html` through `dev/vite.config.ts` (kept out of the package
+  root so Vitest doesn't use it), running the game via the engine's new
+  `runGame(definition, canvas)`. Checked in Chromium for all five games.
+  For poker this runs the single-player bot mode, which the platform UI
+  still never opens.
+- `ARCHITECTURE.md` (package layout, boundaries, decisions, drawbacks) and
+  the `verify` skill are updated. The root `build` script no longer calls
+  the nonexistent `@canvas/games-snake build`.
+
+## Follow-ups
+
+1. **Delete `ManifestRegistry`** when the owner is ready (steps under
+   Phase 2 above). Irreversible: it drops the namespace and its stored
+   manifest copies, and wrangler then refuses rollbacks past that deploy.
+   After that, delete the `MANIFEST_ADMIN_TOKEN` Worker and GitHub secrets.
+2. Moving packages into their own repos (out of scope here): publish
+   `@canvas/engine` from its `dist/`; swap each consumer's tsconfig
+   `paths` entry for the published version; give each game repo its
+   `dev/` page as its dev loop.
+3. Consider one game list for both sides, e.g. a generated server
+   registry from games that ship a `./server` entry. Today a multiplayer
+   game is listed in `web/src/platform.games.ts` and
+   `server/src/games/registry.ts`.
+4. Unchanged from before and still open: merging the two poker rule
+   implementations (now both inside `games/poker`), and unit tests for the
+   ECS core and manifest validation.

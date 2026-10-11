@@ -16,8 +16,8 @@
  * and drained in onUpdate to keep all game logic on the main thread.
  */
 
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
+import {BaseSystem} from '../core/System';
+import type {SystemContext} from '../core/System';
 
 export interface NetworkConfigPayload {
   wsUrl: string;

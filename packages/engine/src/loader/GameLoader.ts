@@ -1,9 +1,9 @@
-import type {BaseSystem} from 'core/System';
-import type {SceneData} from 'types/manifest';
-import {SystemRegistry} from 'core/SystemRegistry';
-import type {GameManifest, SystemName} from 'types/manifest';
+import type {BaseSystem} from '../core/System';
+import type {SceneData} from '../types/manifest';
+import {SystemRegistry} from '../core/SystemRegistry';
+import type {GameManifest, SystemName} from '../types/manifest';
 
-export type {GameManifest, SystemName} from 'types/manifest';
+export type {GameManifest, SystemName} from '../types/manifest';
 
 export interface GameModule {
   register(): void;

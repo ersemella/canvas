@@ -1,5 +1,5 @@
-import {BaseSystem, type SystemContext} from 'core/System';
-import {inputService} from 'systems/InputSystem';
+import {BaseSystem, type SystemContext} from '../core/System';
+import {inputService} from './InputSystem';
 
 export class InputFlushSystem extends BaseSystem {
   readonly priority = 951;

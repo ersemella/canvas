@@ -1,4 +1,4 @@
-import type {DealPatternConfig} from 'components/DeckConfigComponent';
+import type {DealPatternConfig} from '../components/DeckConfigComponent';
 
 export interface DealtCard {
   rank: number;

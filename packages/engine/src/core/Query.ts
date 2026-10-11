@@ -1,4 +1,4 @@
-import type {IEntity} from 'core/Entity';
+import type {IEntity} from './Entity';
 
 export interface QueryDescriptor {
   all?: string[];

@@ -1,17 +1,23 @@
 ---
 name: verify
-description: Verify Canvas behavior for real — run the unit tests and the end-to-end suites that start the Worker and web app locally and drive them with real browsers. Use after changing game rules, the GameRoom Durable Object, the poker room page, or engine systems poker uses, and whenever asked to check, test, or manually verify that multiplayer poker works.
+description: Verify Canvas behavior for real — check package boundaries, run the unit tests and the end-to-end suites that start the Worker and web app locally and drive them with real browsers. Use after changing game rules, the engine, a game package, the GameRoom Durable Object, or the poker room page, and whenever asked to check, test, or manually verify that the games or multiplayer poker work.
 ---
 
 # Verifying Canvas
 
-Two layers. Run both after any change that touches poker or the room server; they take about a minute together.
+Run all of these after a change to the engine, a game, or the room server: `pnpm check:boundaries`, `pnpm -r --if-present typecheck`, `pnpm test`, `pnpm e2e`. Together they take a few minutes.
+
+## 0. Package boundaries — `pnpm check:boundaries`
+
+`scripts/check-boundaries.mjs` fails if `packages/engine` imports any workspace package, or a `packages/games/*` package imports anything but `@canvas/engine` / `@canvas/engine/server` and its own files (no deep engine paths, no other game, no `@canvas/web`/`@canvas/server`). CI runs it before typecheck.
 
 ## 1. Unit tests — `pnpm test`
 
-Runs every workspace package's `test` script (currently `packages/games/poker`, Vitest). Covers the poker rules engine (`serverLogic.ts`): action validation and exploit attempts, min-raise sizing, side pots, split pots and odd chips, heads-up blinds, button rotation, busted players sitting out, what each viewer can see, timeout actions, and a fuzz test that plays ~2,000 random hands with illegal actions mixed in and asserts chips are conserved.
+Runs every workspace package's `test` script (Vitest in `packages/engine` and `packages/games/poker`). The engine's cover `Shoe` and the Snake respawn rules. Poker's cover its server rules engine (`serverLogic.ts`): action validation and exploit attempts, min-raise sizing, side pots, split pots and odd chips, heads-up blinds, button rotation, busted players sitting out, what each viewer can see, timeout actions, and a fuzz test that plays ~2,000 random hands with illegal actions mixed in and asserts chips are conserved.
 
-Add new rules tests next to the code as `*.test.ts`.
+Add new rules tests next to the code as `*.test.ts`, in the package that owns the code.
+
+To look at one game without the platform, run `pnpm dev` inside its package (`packages/games/<id>`): Vite serves `dev/index.html`, which runs the game through the engine's `runGame()`. Standalone, poker runs its single-player bot mode (the platform always opens the multiplayer room instead).
 
 ## 2. End-to-end — `pnpm e2e`
 

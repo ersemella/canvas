@@ -6,12 +6,12 @@
  * Renderable / Clickable components — no game logic lives here.
  */
 
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {Scene} from 'core/Scene';
-import type {DataComponent} from 'core/Component';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import type {ClickableData} from 'components/ClickableComponent';
+import {BaseSystem} from '../core/System';
+import type {SystemContext} from '../core/System';
+import type {Scene} from '../core/Scene';
+import type {DataComponent} from '../core/Component';
+import type {RenderableComponent} from '../components/RenderableComponent';
+import type {ClickableData} from '../components/ClickableComponent';
 
 export interface SidePanelButtonUpdate {
   id: string;

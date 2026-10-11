@@ -1,6 +1,6 @@
-import type {Scene} from 'core/Scene';
-import type {World} from 'core/World';
-import type {EventBus} from 'core/EventBus';
+import type {Scene} from './Scene';
+import type {World} from './World';
+import type {EventBus} from './EventBus';
 
 export interface SystemContext {
   scene: Scene;

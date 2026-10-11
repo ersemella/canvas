@@ -1,8 +1,8 @@
-import {Entity} from 'core/Entity';
-import {loadComponents} from 'loader/ComponentLoader';
-import type {EntityData} from 'types/manifest';
+import {Entity} from '../core/Entity';
+import {loadComponents} from './ComponentLoader';
+import type {EntityData} from '../types/manifest';
 
-export type {EntityData} from 'types/manifest';
+export type {EntityData} from '../types/manifest';
 
 export function loadEntity(data: EntityData): Entity {
   const entity = new Entity(data.id);

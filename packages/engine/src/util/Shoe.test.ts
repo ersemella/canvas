@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {Shoe} from 'util/Shoe';
+import {Shoe} from './Shoe';
 
 describe('Shoe', () => {
   it('deals 52 distinct cards per deck', () => {

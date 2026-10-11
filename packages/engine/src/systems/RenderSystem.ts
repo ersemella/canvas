@@ -1,7 +1,7 @@
-import {BaseSystem, type SystemContext} from 'core/System';
-import type {TransformComponent} from 'components/TransformComponent';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import type {IEntity} from 'core/Entity';
+import {BaseSystem, type SystemContext} from '../core/System';
+import type {TransformComponent} from '../components/TransformComponent';
+import type {RenderableComponent} from '../components/RenderableComponent';
+import type {IEntity} from '../core/Entity';
 
 export class RenderSystem extends BaseSystem {
   readonly priority = 995;

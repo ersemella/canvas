@@ -1,6 +1,6 @@
-import {BaseSystem, type SystemContext} from 'core/System';
-import type {TransformComponent} from 'components/TransformComponent';
-import type {RigidBodyComponent} from 'components/RigidBodyComponent';
+import {BaseSystem, type SystemContext} from '../../core/System';
+import type {TransformComponent} from '../../components/TransformComponent';
+import type {RigidBodyComponent} from '../../components/RigidBodyComponent';
 
 const GRAVITY = 980; // pixels/s²
 

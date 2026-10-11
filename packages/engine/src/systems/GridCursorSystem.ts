@@ -1,9 +1,9 @@
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
-import type {GridCursorData} from 'components/GridCursorComponent';
-import {inputService} from 'systems/InputSystem';
-import {mouseService} from 'systems/MouseSystem';
+import {BaseSystem} from '../core/System';
+import type {SystemContext} from '../core/System';
+import type {DataComponent} from '../core/Component';
+import type {GridCursorData} from '../components/GridCursorComponent';
+import {inputService} from './InputSystem';
+import {mouseService} from './MouseSystem';
 
 export interface GridCursorPayload {
   entityId: string;

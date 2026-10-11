@@ -1,5 +1,5 @@
-import {BaseSystem, type SystemContext} from 'core/System';
-import type {InputComponent} from 'components/InputComponent';
+import {BaseSystem, type SystemContext} from '../core/System';
+import type {InputComponent} from '../components/InputComponent';
 
 /** Minimum finger travel, in CSS pixels, for a touch to count as a swipe. */
 const SWIPE_MIN_PX = 30;

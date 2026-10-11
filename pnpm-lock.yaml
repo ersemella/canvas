@@ -41,46 +41,72 @@ importers:
       '@canvas/configs':
         specifier: workspace:*
         version: link:../../configs
-      vite:
-        specifier: ^5.0.0
-        version: 5.4.21(@types/node@22.19.15)
       vitest:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.19.15)
 
   packages/games/blackjack:
-    dependencies:
+    devDependencies:
       '@canvas/engine':
         specifier: workspace:*
         version: link:../../engine
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@22.19.15)
+      vite-tsconfig-paths:
+        specifier: ^6.1.1
+        version: 6.1.1(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.15))
 
   packages/games/poker:
-    dependencies:
+    devDependencies:
       '@canvas/engine':
         specifier: workspace:*
         version: link:../../engine
-    devDependencies:
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@22.19.15)
+      vite-tsconfig-paths:
+        specifier: ^6.1.1
+        version: 6.1.1(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.15))
       vitest:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.19.15)
 
   packages/games/snake:
-    dependencies:
+    devDependencies:
       '@canvas/engine':
         specifier: workspace:*
         version: link:../../engine
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@22.19.15)
+      vite-tsconfig-paths:
+        specifier: ^6.1.1
+        version: 6.1.1(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.15))
 
   packages/games/solitaire:
-    dependencies:
+    devDependencies:
       '@canvas/engine':
         specifier: workspace:*
         version: link:../../engine
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@22.19.15)
+      vite-tsconfig-paths:
+        specifier: ^6.1.1
+        version: 6.1.1(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.15))
 
   packages/games/sudoku:
-    dependencies:
+    devDependencies:
       '@canvas/engine':
         specifier: workspace:*
         version: link:../../engine
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@22.19.15)
+      vite-tsconfig-paths:
+        specifier: ^6.1.1
+        version: 6.1.1(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.15))
 
   packages/server:
     dependencies:
@@ -1906,6 +1932,7 @@ packages:
   tsconfck@3.1.6:
     resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
     engines: {node: ^18 || >=20}
+    deprecated: unmaintained
     hasBin: true
     peerDependencies:
       typescript: ^5.0.0

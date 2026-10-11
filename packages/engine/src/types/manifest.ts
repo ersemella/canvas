@@ -15,18 +15,18 @@
  */
 
 // ─── Component data types imported from their definitions ────────────────────
-import type {CardData} from 'components/CardComponent';
-import type {DraggableData} from 'components/DraggableComponent';
-import type {DropTargetData} from 'components/DropTargetComponent';
-import type {DragGroupData} from 'components/DragGroupComponent';
-import type {PileMemberData} from 'components/PileMemberComponent';
-import type {PileLayoutData} from 'components/PileLayoutComponent';
-import type {ClickableData} from 'components/ClickableComponent';
-import type {ChildOfData} from 'components/ChildOfComponent';
-import type {GridCursorData} from 'components/GridCursorComponent';
-import type {CardPileConfigData} from 'components/CardPileConfigComponent';
-import type {DeckConfigData} from 'components/DeckConfigComponent';
-import type {GridPuzzleConfigData, GridPuzzleData} from 'components/GridPuzzleConfigComponent';
+import type {CardData} from '../components/CardComponent';
+import type {DraggableData} from '../components/DraggableComponent';
+import type {DropTargetData} from '../components/DropTargetComponent';
+import type {DragGroupData} from '../components/DragGroupComponent';
+import type {PileMemberData} from '../components/PileMemberComponent';
+import type {PileLayoutData} from '../components/PileLayoutComponent';
+import type {ClickableData} from '../components/ClickableComponent';
+import type {ChildOfData} from '../components/ChildOfComponent';
+import type {GridCursorData} from '../components/GridCursorComponent';
+import type {CardPileConfigData} from '../components/CardPileConfigComponent';
+import type {DeckConfigData} from '../components/DeckConfigComponent';
+import type {GridPuzzleConfigData, GridPuzzleData} from '../components/GridPuzzleConfigComponent';
 
 // ─── Primitives ──────────────────────────────────────────────────────────────
 

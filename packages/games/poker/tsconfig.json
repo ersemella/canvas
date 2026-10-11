@@ -21,6 +21,7 @@
   },
   "include": [
     "src",
+    "dev",
     "game.json"
   ],
   "references": [

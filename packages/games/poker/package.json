@@ -15,14 +15,18 @@
     }
   },
   "scripts": {
+    "dev": "vite --config dev/vite.config.ts",
     "build": "echo 'game.json already committed — no build step needed'",
     "test": "vitest run",
     "typecheck": "tsc -b"
   },
-  "dependencies": {
-    "@canvas/engine": "workspace:*"
+  "peerDependencies": {
+    "@canvas/engine": "workspace:^"
   },
   "devDependencies": {
+    "@canvas/engine": "workspace:*",
+    "vite": "^5.0.0",
+    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.7"
   }
 }

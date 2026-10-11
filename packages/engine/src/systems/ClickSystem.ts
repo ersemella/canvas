@@ -1,10 +1,10 @@
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
-import type {TransformComponent} from 'components/TransformComponent';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import type {ClickableData} from 'components/ClickableComponent';
-import {mouseService} from 'systems/MouseSystem';
+import {BaseSystem} from '../core/System';
+import type {SystemContext} from '../core/System';
+import type {DataComponent} from '../core/Component';
+import type {TransformComponent} from '../components/TransformComponent';
+import type {RenderableComponent} from '../components/RenderableComponent';
+import type {ClickableData} from '../components/ClickableComponent';
+import {mouseService} from './MouseSystem';
 
 export interface ClickPayload {
   entityId: string;

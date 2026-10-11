@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {pickFreeCell} from 'systems/grid/RespawnSystem';
+import {pickFreeCell} from './RespawnSystem';
 
 describe('pickFreeCell', () => {
   it('never picks an occupied cell', () => {

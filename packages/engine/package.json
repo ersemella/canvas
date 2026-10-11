@@ -3,23 +3,32 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "description": "Canvas game engine: ECS core, Canvas2D rendering, input, loaders and generic systems.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./server": "./src/server.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "vite build",
+    "build": "tsc -b",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "devDependencies": {
-    "@canvas/configs": "workspace:*",
-    "vite": "^5.0.0",
-    "vitest": "^3.2.7"
-  },
   "dependencies": {
     "nanoid": "^5.0.0"
+  },
+  "devDependencies": {
+    "@canvas/configs": "workspace:*",
+    "vitest": "^3.2.7"
   }
 }

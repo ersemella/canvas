@@ -1,9 +1,9 @@
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
-import type {TransformComponent} from 'components/TransformComponent';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import type {ChildOfData} from 'components/ChildOfComponent';
+import {BaseSystem} from '../core/System';
+import type {SystemContext} from '../core/System';
+import type {DataComponent} from '../core/Component';
+import type {TransformComponent} from '../components/TransformComponent';
+import type {RenderableComponent} from '../components/RenderableComponent';
+import type {ChildOfData} from '../components/ChildOfComponent';
 
 export class ChildTransformSystem extends BaseSystem {
   readonly priority = 150;

@@ -1,6 +1,6 @@
-import {BaseSystem, type SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
-import type {TransformComponent} from 'components/TransformComponent';
+import {BaseSystem, type SystemContext} from '../../core/System';
+import type {DataComponent} from '../../core/Component';
+import type {TransformComponent} from '../../components/TransformComponent';
 
 export interface CollectibleData {
   collected: boolean;

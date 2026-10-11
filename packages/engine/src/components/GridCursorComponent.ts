@@ -1,4 +1,4 @@
-import {registerDataComponent} from 'core/Component';
+import {registerDataComponent} from '../core/Component';
 
 export interface GridCursorData {
   rows: number;

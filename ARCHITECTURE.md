@@ -30,25 +30,43 @@ authoritative game state and WebSocket hub.
 
 | Package | Role | Notes |
 |---|---|---|
-| `@canvas/engine` | ECS core, generic components/systems, manifest loader, plugin API | Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and game-agnostic systems (grid, physics, drag/drop, click, card piles, grid puzzles, side panel, network). No game-specific code: games add their own through `register()`. `@canvas/engine/server` is a DOM-free entry with the `ServerSystem` contract. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
+| `@canvas/engine` | ECS core, generic components/systems, manifest loader, plugin API | Built with `tsc -b` to `dist/` (ESM + `.d.ts`), which its `exports` point at; inside the repo every consumer resolves it to `src/` through tsconfig `paths`, so nothing needs a build first. Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and game-agnostic systems (grid, physics, drag/drop, click, card piles, grid puzzles, side panel, network). No game-specific code: games add their own through `register()`. `@canvas/engine/server` is a DOM-free entry with the `ServerSystem` contract. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
 | `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Builds in the games listed in `src/platform.games.ts`, instantiates a `World` per game, and is the only package with a UI framework. |
 | `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` Durable Object. Multiplayer games' server rules are listed in `src/games/registry.ts`. |
 | `games/poker` | Poker client systems + server-authoritative Texas Hold'em logic | `.` exports the game definition, whose `register()` adds the table systems in `src/client/` (`PokerSystem`, `PokerRendererSystem`, bot AI, a hand evaluator); `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom`, with its own deck, hand evaluator, and public-state redaction. |
-| `games/{snake,blackjack,solitaire,sudoku}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. |
+| `games/{snake,blackjack,solitaire,sudoku}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. Blackjack registers `BlackjackSystem`, Sudoku its puzzle generator, Solitaire the Klondike deal; Snake is manifest-only. |
 | `configs` | Shared tsconfig / eslint base | — |
+
+Every game package depends on the engine as a `peerDependency`, imports
+only `@canvas/engine` / `@canvas/engine/server`, and has a standalone dev
+page (`pnpm dev` in the package: `dev/index.html` runs the game through the
+engine's `runGame()` with no web shell or Worker).
+
+### Package boundaries
+
+```
+@canvas/engine  ←  @canvas/games-*  ←  platform (@canvas/web, @canvas/server)
+```
+
+`scripts/check-boundaries.mjs` (`pnpm check:boundaries`, run first in the
+deploy workflow) fails if the engine imports any workspace package, or a
+game imports anything but the engine's two public entries and its own
+files. Moving a package into its own repository is file-moving plus
+publishing the engine; nothing reaches across these lines.
 
 ## Key decisions
 
 ### Entity-component-system engine shared by every game
 One `World` loop, one set of components (`Transform`, `Renderable`,
-`Draggable`, …), and a fixed library of systems (drag-drop, grid movement,
-physics, card piles) cover snake, card games, and puzzles from the same
-runtime.
+`Draggable`, …), and a library of generic systems (drag-drop, grid movement,
+physics, card piles, grid puzzles) cover snake, card games, and puzzles from
+the same runtime. Anything only one game needs (Blackjack's rules, poker's
+table, Sudoku's generator, the Klondike deal) lives in that game's package
+and is registered through the plugin API.
 
-**Tradeoff** — systems are built for the union of every game's needs, so
-components like `PokerConfigComponent` or `GridPuzzleConfigComponent` are
-fairly game-specific despite living in the generic engine. The line between
-"engine primitive" and "one game's config schema" has already blurred.
+**Tradeoff** — the generic systems are still shaped by the games that drove
+them: `GridPuzzleConfig` and `CardPileConfig` are rich, data-driven rule
+schemas that only Sudoku and Solitaire use today.
 
 ### Games are declared as JSON manifests, not code
 `game.json` lists entities, components, and a `systems: SystemName[]` array
@@ -149,6 +167,17 @@ two-browser poker game, and the single-player games). There are still no
 unit tests for the ECS core, manifest validation, or the other games'
 systems; the e2e suite is the main guard there. See `.claude/skills/verify`.
 
+**Minor — Multiplayer games are listed twice.** `web/src/platform.games.ts`
+lists every game's client definition, and `server/src/games/registry.ts`
+lists the server rules of the multiplayer ones. They're separate because the
+Worker must import only a game's DOM-free `./server` entry. Adding a
+multiplayer game means touching both.
+
+**Minor — A retired Durable Object is still deployed.** `ManifestRegistry`
+is an unreachable stub kept bound in `wrangler.toml` with its old stored
+manifests, because deleting it (a `deleted_classes` migration) is permanent
+and blocks rolling back past that deploy. See the plan's follow-ups.
+
 **Minor — Room creation is throttled per IP, connections aren't.** `POST
 /rooms` is capped at 10/minute per client IP by a Workers Rate Limiting
 binding (`ROOM_CREATE_LIMITER` in `wrangler.toml`). Joining and WebSocket
@@ -162,7 +191,7 @@ GitHub Actions, triggered on push to `main` for any of `web/`, `engine/`,
 
 | Stage | Target | Notes |
 |---|---|---|
-| `deploy-server` | Cloudflare Worker (`canvas-server`) | Runs `pnpm -r typecheck` and `pnpm test` first and stops on failure; then `wrangler deploy`. |
+| `deploy-server` | Cloudflare Worker (`canvas-server`) | Runs `pnpm check:boundaries`, `pnpm -r typecheck` and `pnpm test` first and stops on failure; then `wrangler deploy`. |
 | `deploy-pages` | Cloudflare Pages (static `@canvas/web` build) | Runs after `deploy-server` via `needs:`, and bakes `VITE_API_URL` into the build at compile time — the API origin can't change without a rebuild. |
 | `smoke-prod` | Production | After `deploy-pages`, runs `pnpm e2e` against the live Worker and Pages site (Playwright + Chromium) and uploads screenshots/logs as an artifact. Reports problems; doesn't roll back. |
 

@@ -1,12 +1,12 @@
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
-import type {TransformComponent} from 'components/TransformComponent';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import type {DraggableData} from 'components/DraggableComponent';
-import type {DropTargetData} from 'components/DropTargetComponent';
-import type {DragGroupData} from 'components/DragGroupComponent';
-import {mouseService} from 'systems/MouseSystem';
+import {BaseSystem} from '../core/System';
+import type {SystemContext} from '../core/System';
+import type {DataComponent} from '../core/Component';
+import type {TransformComponent} from '../components/TransformComponent';
+import type {RenderableComponent} from '../components/RenderableComponent';
+import type {DraggableData} from '../components/DraggableComponent';
+import type {DropTargetData} from '../components/DropTargetComponent';
+import type {DragGroupData} from '../components/DragGroupComponent';
+import {mouseService} from './MouseSystem';
 
 export interface DragDropBeforePayload {
   primaryId: string;

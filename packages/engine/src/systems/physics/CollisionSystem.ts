@@ -1,7 +1,7 @@
-import {BaseSystem, type SystemContext} from 'core/System';
-import type {TransformComponent} from 'components/TransformComponent';
-import type {ColliderComponent} from 'components/ColliderComponent';
-import {Rect} from 'math/Rect';
+import {BaseSystem, type SystemContext} from '../../core/System';
+import type {TransformComponent} from '../../components/TransformComponent';
+import type {ColliderComponent} from '../../components/ColliderComponent';
+import {Rect} from '../../math/Rect';
 
 export interface CollisionEvent {
   entityA: string;

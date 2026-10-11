@@ -1,11 +1,11 @@
-import {ReactiveSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {Scene} from 'core/Scene';
-import type {DataComponent} from 'core/Component';
-import type {TransformComponent} from 'components/TransformComponent';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import type {PileLayoutData} from 'components/PileLayoutComponent';
-import type {PileMemberData} from 'components/PileMemberComponent';
+import {ReactiveSystem} from '../core/System';
+import type {SystemContext} from '../core/System';
+import type {Scene} from '../core/Scene';
+import type {DataComponent} from '../core/Component';
+import type {TransformComponent} from '../components/TransformComponent';
+import type {RenderableComponent} from '../components/RenderableComponent';
+import type {PileLayoutData} from '../components/PileLayoutComponent';
+import type {PileMemberData} from '../components/PileMemberComponent';
 
 export class PileLayoutSystem extends ReactiveSystem {
   readonly priority = 120;

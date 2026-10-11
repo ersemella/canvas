@@ -1,28 +1,28 @@
-import {BaseSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {Scene} from 'core/Scene';
-import type {EventBus} from 'core/EventBus';
-import type {DataComponent} from 'core/Component';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import type {CardData} from 'components/CardComponent';
-import type {DraggableData} from 'components/DraggableComponent';
-import type {DragGroupData} from 'components/DragGroupComponent';
-import type {PileMemberData} from 'components/PileMemberComponent';
-import type {PileLayoutData} from 'components/PileLayoutComponent';
-import type {ClickPayload} from 'systems/ClickSystem';
-import type {DragDropDroppedPayload} from 'systems/DragDropSystem';
+import {BaseSystem} from '../core/System';
+import type {SystemContext} from '../core/System';
+import type {Scene} from '../core/Scene';
+import type {EventBus} from '../core/EventBus';
+import type {DataComponent} from '../core/Component';
+import type {RenderableComponent} from '../components/RenderableComponent';
+import type {CardData} from '../components/CardComponent';
+import type {DraggableData} from '../components/DraggableComponent';
+import type {DragGroupData} from '../components/DragGroupComponent';
+import type {PileMemberData} from '../components/PileMemberComponent';
+import type {PileLayoutData} from '../components/PileLayoutComponent';
+import type {ClickPayload} from './ClickSystem';
+import type {DragDropDroppedPayload} from './DragDropSystem';
 import type {
   CardPileConfigData,
   DropRule,
   DropCondition,
   BehaviorConfig,
   TargetMatch,
-} from 'components/CardPileConfigComponent';
-import type {DeckConfigData} from 'components/DeckConfigComponent';
-import {dealPatterns} from 'generators/dealPatterns';
-import {loadEntity} from 'loader/EntityLoader';
-import {mouseService} from 'systems/MouseSystem';
-import type {TransformComponent} from 'components/TransformComponent';
+} from '../components/CardPileConfigComponent';
+import type {DeckConfigData} from '../components/DeckConfigComponent';
+import {dealPatterns} from '../generators/dealPatterns';
+import {loadEntity} from '../loader/EntityLoader';
+import {mouseService} from './MouseSystem';
+import type {TransformComponent} from '../components/TransformComponent';
 
 /** One undo step: every pile's cards (bottom to top) with their face-up state. */
 type Snapshot = Array<[string, Array<{id: string; faceUp: boolean}>]>;

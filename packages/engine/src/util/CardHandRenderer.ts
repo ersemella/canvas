@@ -5,9 +5,9 @@
  * positions and styles those slots based on the current hand state.
  */
 
-import type {PlayingCard} from 'util/Shoe';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import type {TransformComponent} from 'components/TransformComponent';
+import type {PlayingCard} from './Shoe';
+import type {RenderableComponent} from '../components/RenderableComponent';
+import type {TransformComponent} from '../components/TransformComponent';
 
 /** A card in a player's or dealer's hand. */
 export interface HandCard extends PlayingCard {

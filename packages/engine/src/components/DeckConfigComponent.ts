@@ -1,4 +1,4 @@
-import {registerDataComponent} from 'core/Component';
+import {registerDataComponent} from '../core/Component';
 
 /**
  * How a generated deck is dealt. `type` names a function registered with

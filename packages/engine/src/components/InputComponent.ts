@@ -1,4 +1,4 @@
-import {BaseComponent} from 'core/Component';
+import {BaseComponent} from '../core/Component';
 
 export class InputComponent extends BaseComponent {
   readonly componentType = 'Input';

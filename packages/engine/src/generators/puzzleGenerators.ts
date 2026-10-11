@@ -1,4 +1,4 @@
-import type {GridPuzzleConfigData} from 'components/GridPuzzleConfigComponent';
+import type {GridPuzzleConfigData} from '../components/GridPuzzleConfigComponent';
 
 export type PuzzleGeneratorFn = (config: GridPuzzleConfigData) => number[][];
 

@@ -1,5 +1,5 @@
-import {BaseComponent} from 'core/Component';
-import {Vec2} from 'math/Vec2';
+import {BaseComponent} from '../core/Component';
+import {Vec2} from '../math/Vec2';
 
 export class TransformComponent extends BaseComponent {
   readonly componentType = 'Transform';

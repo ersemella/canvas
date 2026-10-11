@@ -1,9 +1,9 @@
-import {BaseSystem, type SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
-import type {Scene} from 'core/Scene';
-import type {TransformComponent} from 'components/TransformComponent';
-import type {CollectibleData} from 'systems/grid/CollectSystem';
-import type {TrailData} from 'systems/grid/TrailSystem';
+import {BaseSystem, type SystemContext} from '../../core/System';
+import type {DataComponent} from '../../core/Component';
+import type {Scene} from '../../core/Scene';
+import type {TransformComponent} from '../../components/TransformComponent';
+import type {CollectibleData} from './CollectSystem';
+import type {TrailData} from './TrailSystem';
 
 export interface RespawnData {
   gridSize: number;

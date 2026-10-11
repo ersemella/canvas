@@ -6,9 +6,20 @@
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": "src",
-    "lib": ["ES2022"],
-    "types": ["@cloudflare/workers-types"],
-    "noEmit": true
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "@cloudflare/workers-types"
+    ],
+    "noEmit": true,
+    "paths": {
+      "@canvas/engine/server": [
+        "../engine/src/server.ts"
+      ]
+    }
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

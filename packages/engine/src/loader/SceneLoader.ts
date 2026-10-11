@@ -1,8 +1,8 @@
-import {Scene} from 'core/Scene';
-import {loadEntity} from 'loader/EntityLoader';
-import type {SceneData} from 'types/manifest';
+import {Scene} from '../core/Scene';
+import {loadEntity} from './EntityLoader';
+import type {SceneData} from '../types/manifest';
 
-export type {SceneData} from 'types/manifest';
+export type {SceneData} from '../types/manifest';
 
 export function loadScene(data: SceneData): Scene {
   const scene = new Scene(data.name);

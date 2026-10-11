@@ -1,14 +1,14 @@
-import {ReactiveSystem} from 'core/System';
-import type {SystemContext} from 'core/System';
-import type {EventBus} from 'core/EventBus';
-import type {Scene} from 'core/Scene';
-import type {DataComponent} from 'core/Component';
-import type {RenderableComponent} from 'components/RenderableComponent';
-import {inputService} from 'systems/InputSystem';
-import type {GridCursorPayload} from 'systems/GridCursorSystem';
-import type {GridPuzzleConfigData, GridPuzzleData, PuzzleConstraint} from 'components/GridPuzzleConfigComponent';
-import {puzzleGenerators} from 'generators/puzzleGenerators';
-import type {ClickPayload} from 'systems/ClickSystem';
+import {ReactiveSystem} from '../core/System';
+import type {SystemContext} from '../core/System';
+import type {EventBus} from '../core/EventBus';
+import type {Scene} from '../core/Scene';
+import type {DataComponent} from '../core/Component';
+import type {RenderableComponent} from '../components/RenderableComponent';
+import {inputService} from './InputSystem';
+import type {GridCursorPayload} from './GridCursorSystem';
+import type {GridPuzzleConfigData, GridPuzzleData, PuzzleConstraint} from '../components/GridPuzzleConfigComponent';
+import {puzzleGenerators} from '../generators/puzzleGenerators';
+import type {ClickPayload} from './ClickSystem';
 
 const DEFAULT_VISUALS = {
   selectedColor: '#b3d9ff',

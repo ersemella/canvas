@@ -8,9 +8,15 @@
     "./game.json": "./game.json"
   },
   "scripts": {
+    "dev": "vite --config dev/vite.config.ts",
     "typecheck": "tsc -b"
   },
-  "dependencies": {
-    "@canvas/engine": "workspace:*"
+  "peerDependencies": {
+    "@canvas/engine": "workspace:^"
+  },
+  "devDependencies": {
+    "@canvas/engine": "workspace:*",
+    "vite": "^5.0.0",
+    "vite-tsconfig-paths": "^6.1.1"
   }
 }

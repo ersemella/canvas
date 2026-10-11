@@ -1,7 +1,7 @@
-import {BaseSystem, type SystemContext} from 'core/System';
-import type {DataComponent} from 'core/Component';
-import type {TransformComponent} from 'components/TransformComponent';
-import {inputService} from 'systems/InputSystem';
+import {BaseSystem, type SystemContext} from '../../core/System';
+import type {DataComponent} from '../../core/Component';
+import type {TransformComponent} from '../../components/TransformComponent';
+import {inputService} from '../InputSystem';
 
 type Direction = 'up' | 'down' | 'left' | 'right';
 

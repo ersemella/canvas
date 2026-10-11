@@ -1,4 +1,4 @@
-import type {BaseSystem} from 'core/System';
+import type {BaseSystem} from './System';
 
 export class SystemRegistry {
   private static ctors: Map<string, new () => BaseSystem> = new Map();

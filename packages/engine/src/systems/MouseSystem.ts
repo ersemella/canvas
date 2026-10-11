@@ -1,4 +1,4 @@
-import {BaseSystem, type SystemContext} from 'core/System';
+import {BaseSystem, type SystemContext} from '../core/System';
 
 /** Max gap and distance between two releases for them to count as a double click/tap. */
 const DOUBLE_MS = 350;
