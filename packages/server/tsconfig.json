@@ -3,8 +3,6 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "outDir": "dist",
-    "rootDir": "src",
     "baseUrl": "src",
     "lib": [
       "ES2022"
@@ -15,11 +13,12 @@
     "noEmit": true,
     "paths": {
       "@canvas/engine/server": [
-        "../engine/src/server.ts"
+        "../../engine/src/server.ts"
       ]
     }
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ]
 }
