@@ -72,7 +72,14 @@ function runSuite(file) {
   return new Promise((res) => {
     const child = spawn(process.execPath, [join(here, file)], {
       stdio: 'inherit',
-      env: {...process.env, E2E_API_URL: API_URL, E2E_WEB_URL: WEB_URL, E2E_OUT_DIR: outDir},
+      env: {
+        ...process.env,
+        E2E_API_URL: API_URL,
+        E2E_WEB_URL: WEB_URL,
+        E2E_OUT_DIR: outDir,
+        // Suites that need test-only server code skip themselves against a deployed site.
+        E2E_LOCAL: external ? '' : '1',
+      },
     });
     child.on('exit', (code) => res(code ?? 1));
   });
@@ -108,6 +115,8 @@ try {
         'exec',
         'wrangler',
         'dev',
+        // The production Worker plus a test-only async game (never deployed).
+        'test/e2e-worker.ts',
         '--ip',
         '127.0.0.1',
         '--port',

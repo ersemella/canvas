@@ -120,4 +120,4 @@ export type {DealPatternFn, DealPlacement, DealtCard} from './generators/dealPat
 
 // Multiplayer contract between the platform's room server and a game's server
 // logic. Also available DOM-free as `@canvas/engine/server`.
-export type {ServerSystem, RoomPlayer} from './server';
+export type {ServerSystem, RoomPlayer, RoomPolicy} from './server';

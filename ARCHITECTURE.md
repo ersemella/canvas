@@ -126,6 +126,34 @@ opponents' hole cards never reach the client.
 vs-bots mode. (A single-player bot mode with its own copy of the rules
 existed, but no UI reached it, so it was removed rather than kept in sync.)
 
+### Room timing is a per-game policy, so async games fit too
+How a room runs — turn timers, how long it lives, whether lobby seats are
+held, who is dealt into a new round, and how a returning player proves a
+seat is theirs — comes from the game's optional `ServerSystem.room`
+(`RoomPolicy`, in `@canvas/engine/server`). `packages/server/src/roomPolicy.ts`
+holds the defaults and the timer math as pure, unit-tested functions;
+`GameRoom` does only the I/O. The defaults are real-time play, exactly what
+poker had before policies existed (poker sets none): 30s turns, 10s when
+the acting player is disconnected, deletion 5 minutes after the room
+empties, a 24h TTL extended only while someone is connected, lobby seats
+freed on disconnect, new hands dealt to connected players, rejoin by name.
+
+An async game (hours between turns, games lasting days) sets no turn limit,
+keeps empty rooms, extends the TTL on every join and move, holds lobby
+seats, deals absent players into new rounds, and uses `seatIdentity:
+'token'`: the server gives each seat a secret in its `connected` message,
+and only that token (as `seatToken` on join and on the WebSocket URL)
+reclaims the seat; a newer connection with it replaces an older one.
+`scripts/e2e/rooms-async.e2e.mjs` proves this end to end with a test-only
+game (`packages/server/test/`) registered only by the local e2e Worker entry.
+
+**Tradeoff** — the platform runs async rooms, but no async game ships yet,
+and an async game would also need what real-time play doesn't: a way to tell
+players it's their turn (email or push), a "my games" list in the web app,
+and somewhere for the client to keep seat tokens across devices. A seat
+token travels in the WebSocket URL, which browsers can't avoid (no custom
+headers on WebSocket), so it can appear in request logs.
+
 ### Migrated off AWS Lambda/S3 onto Workers + Durable Objects
 Git history (`19275b0`, `fda4905`) shows a full teardown of
 `packages/infra` and `packages/handlers` in favor of a Worker + Durable
@@ -139,6 +167,8 @@ but there's no analytics/query surface over past rooms, and the whole
 backend is coupled to Cloudflare's DO model.
 
 ## Room lifecycle: a poker hand end-to-end
+
+With the default (real-time) room policy; see *Room timing is a per-game policy* for what a game can change.
 
 1. **Host creates a room** — `POST /rooms` with `{hostName, serverSystem: 'PokerServerSystem', maxPlayers}`. The Worker generates an 8-char room ID and calls `/init` on the corresponding `GameRoom` stub, retrying on a 409 (deterministic-ID collision).
 2. **Players join** — `POST /rooms/:id/join` validates capacity and hand-in-progress state, then hands back a `wsUrl` the Worker builds from the request's own host.

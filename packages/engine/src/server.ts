@@ -28,4 +28,58 @@ export interface ServerSystem<TState = unknown, TAction = unknown> {
   isHandOver(state: TState): boolean;
   /** Action applied for the acting player when their turn timer expires. */
   timeoutAction(state: TState): TAction | null;
+  /** How the platform runs this game's rooms. Omit for real-time defaults. */
+  room?: RoomPolicy;
+}
+
+/**
+ * How the platform runs a room for this game: turn timers, how long rooms
+ * live, and how players reclaim seats. Every field is optional and defaults
+ * to real-time play (the values poker uses):
+ *
+ * | Field                       | Default        |
+ * |-----------------------------|----------------|
+ * | `turnTimeoutMs`             | 30 s           |
+ * | `disconnectedTurnTimeoutMs` | 10 s           |
+ * | `emptyRoomGraceMs`          | 5 min          |
+ * | `ttlMs`                     | 24 h           |
+ * | `ttlExtendsOn`              | `'connections'`|
+ * | `holdLobbySeats`            | `false`        |
+ * | `newRoundSeats`             | `'connected'`  |
+ * | `seatIdentity`              | `'name'`       |
+ *
+ * An async game (turns that take hours, games that last days) would set
+ * something like `{turnTimeoutMs: null, disconnectedTurnTimeoutMs: null,
+ * emptyRoomGraceMs: null, ttlMs: 14 days, ttlExtendsOn: 'activity',
+ * holdLobbySeats: true, newRoundSeats: 'all', seatIdentity: 'token'}`.
+ */
+export interface RoomPolicy {
+  /** How long the acting player has before the game's `timeoutAction` applies. `null`: no limit. */
+  turnTimeoutMs?: number | null;
+  /**
+   * Shorter limit while the acting player is disconnected, so a table isn't
+   * held up. `null`: being disconnected doesn't shorten the turn.
+   */
+  disconnectedTurnTimeoutMs?: number | null;
+  /** How long a room with nobody connected survives. `null`: an empty room is never deleted for being empty. */
+  emptyRoomGraceMs?: number | null;
+  /** Room lifetime. */
+  ttlMs?: number;
+  /**
+   * What pushes the expiry back by another `ttlMs`:
+   * `'connections'` — only reaching it while someone is connected;
+   * `'activity'` — also every join and every committed move.
+   */
+  ttlExtendsOn?: 'connections' | 'activity';
+  /** Keep a player's lobby seat when their socket closes (otherwise it's freed). */
+  holdLobbySeats?: boolean;
+  /** Who is dealt into the next round (`nextHand`): only connected players, or every seat. */
+  newRoundSeats?: 'connected' | 'all';
+  /**
+   * How a returning player proves a seat is theirs: `'name'` — by joining
+   * with the same name; `'token'` — with the secret `seatToken` the server
+   * sends in that seat's first `connected` message (the name alone is
+   * refused, and a new connection with the token replaces an old one).
+   */
+  seatIdentity?: 'name' | 'token';
 }

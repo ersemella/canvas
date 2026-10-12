@@ -3,8 +3,8 @@
  * from the engine so the server and every game share one definition.
  */
 
-import type {RoomPlayer, ServerSystem} from '@canvas/engine/server';
-export type {RoomPlayer, ServerSystem};
+import type {RoomPlayer, RoomPolicy, ServerSystem} from '@canvas/engine/server';
+export type {RoomPlayer, RoomPolicy, ServerSystem};
 
 /** Persisted in DO storage under the `meta` key. */
 export interface RoomRecord {
@@ -20,6 +20,11 @@ export interface RoomRecord {
   turnDeadline?: number | null;
   /** When the last socket closed; the room is deleted after a grace period. */
   emptySince?: number | null;
+  /**
+   * Secret per seat, keyed by player name, for games with
+   * `seatIdentity: 'token'`. Never sent to anyone but that seat's owner.
+   */
+  seatTokens?: Record<string, string>;
 }
 
 /** Per-WebSocket attachment surviving hibernation. */
@@ -36,7 +41,13 @@ export interface WsClientMessage {
 
 /** Outbound WS messages to the client. */
 export type WsServerMessage =
-  | {type: 'connected'; connectionId: string; players: PublicPlayerSummary[]}
+  | {
+      type: 'connected';
+      connectionId: string;
+      players: PublicPlayerSummary[];
+      /** Only for `seatIdentity: 'token'` games, only to the seat's owner: keep it to reclaim the seat. */
+      seatToken?: string;
+    }
   | {type: 'playerJoined'; players: PublicPlayerSummary[]}
   | {type: 'playerLeft'; connectionId: string; players: PublicPlayerSummary[]}
   | {type: 'gameStarted'; state: unknown; turnDeadline?: number | null}
