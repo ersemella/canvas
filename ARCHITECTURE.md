@@ -151,7 +151,9 @@ game (`packages/server/test/`) registered only by the local e2e Worker entry.
 and an async game would also need what real-time play doesn't: a way to tell
 players it's their turn (email or push), a "my games" list in the web app,
 and somewhere for the client to keep seat tokens across devices. That work
-is planned in `docs/plans/async-games.md`, to start once an async game exists. A seat
+is planned in `docs/plans/async-games.md`, to start once an async game exists;
+its decision log records the choices made so far (no accounts, no email, turn
+deadlines per game, hand-rolled Web Push) and when to revisit them. A seat
 token travels in the WebSocket URL, which browsers can't avoid (no custom
 headers on WebSocket), so it can appear in request logs.
 

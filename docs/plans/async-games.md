@@ -1,8 +1,8 @@
 # Plan: what an async game needs beyond room support
 
-Status: **parked until an async game exists.** Written 2026-10-12. Start
-when someone is building a game whose turns take hours and whose games last
-days. Read this whole file, then `ARCHITECTURE.md` (especially *Room timing
+Status: **parked until an async game exists.** Written 2026-10-12;
+decisions D1–D4 made the same day (see *Decisions*). Start when someone is
+building a game whose turns take hours and whose games last days. Read this whole file, then `ARCHITECTURE.md` (especially *Room timing
 is a per-game policy*), `CLAUDE.md`, and `.claude/skills/verify/SKILL.md`,
 before changing anything.
 
@@ -11,7 +11,8 @@ before changing anything.
 A player can start or join an async game, close the tab, get told when it's
 their turn (even days later, on another device), come back to the right
 seat, and see all their open games in one place — without changing how
-poker (real-time) plays.
+poker (real-time) plays. No accounts (D1), no email (D2): identity is the
+seat token, and notifications are web push only.
 
 ## What already exists (don't rebuild it)
 
@@ -53,31 +54,106 @@ your games, and nothing tells you it's your turn.
 - **Develop against the test game first**, then the real one. Extend
   `asyncTestGame` (and give it a tiny client if a phase needs a browser)
   rather than waiting on the real game's rules.
-- Secrets (VAPID private key, email API key) go in `wrangler secret put` and
+- Secrets (the VAPID private key) go in `wrangler secret put` and
   a gitignored `.dev.vars` locally — never `wrangler.toml` `[vars]`.
 
-## Decisions to make before starting
+## Decisions (made 2026-10-12)
 
-Ask the owner; each changes the work below.
+Made by the owner before any async game exists. Each records why, what it
+means for the phases below, and what would be a reason to revisit it. To
+change one, edit its entry here (keep the old reasoning, add a dated
+"Revised" note) and adjust the affected phases.
 
-1. **Accounts or not?** Recommended: **no accounts** for v1. Identity stays
-   the per-room seat token kept in the browser, moved between devices with
-   a rejoin link (Phase 2). Accounts would replace Phases 2–3's
-   browser-side bookkeeping but add sign-in, recovery and a user store.
-2. **Email fallback?** Web push doesn't reach iPhone users unless they add
-   the site to their Home Screen (iOS 16.4+), and can be blocked or
-   dropped. Email reaches everyone but needs a provider (Cloudflare Email
-   Service, Resend, Postmark…), address collection with consent, and
-   unsubscribe. Recommended: push first (Phase 4), email as an optional
-   Phase 5 once there are real players.
-3. **Turn deadlines for the async game.** None at all, or a long one (e.g.
-   3 days, then the game's `timeoutAction`)? Reminders before it (Phase 6)?
-   This is a game-design call per game; the room policy supports both.
-4. **Push library or hand-rolled?** Web Push needs RFC 8291 payload
-   encryption and a VAPID (RFC 8292) ES256 JWT. Both are doable with the
-   Workers WebCrypto API; a small Workers-compatible library saves code.
-   Pick one that runs on Workers without Node built-ins, or hand-roll
-   (~150 lines) with test vectors.
+### D1. No accounts
+
+**Decision:** players don't sign up or sign in. Identity is the per-room
+**seat token** the server already issues, kept in the browser, and moved
+to another device with a rejoin link (Phase 2).
+
+**Why:** no sign-in flow, password or email recovery, or user database to
+build, secure and pay for; joining stays "open the link, type a name",
+same as poker.
+
+**Consequences:**
+- A player's games live in that browser's storage. Clearing site data,
+  or switching device without the rejoin link, loses the seat. Phase 2
+  must make the rejoin link easy to find, and decide what happens to a
+  lost seat.
+- "My games" (Phase 3) is built from browser storage, so it's per device.
+- Push subscriptions are per seat and per device, not per person.
+
+**Revisit if:** losing seats becomes a real complaint, players want one
+list across devices, or a feature needs a stable identity (friends,
+ratings, matchmaking, history across rooms).
+
+### D2. No email
+
+**Decision:** no email notifications or fallback. Push is the only "your
+turn" channel; Phase 5 is dropped.
+
+**Why:** email needs a provider and its key, collecting addresses with
+consent, unsubscribe handling, bounce handling and storing personal data —
+too much for a first async game.
+
+**Consequences:**
+- iPhone/iPad players get notified only after adding the site to their
+  Home Screen (iOS 16.4+), so Phase 4's install explanation matters.
+  Players who decline notifications must check back themselves; the
+  "my games" list (Phase 3) is their fallback.
+- No personal data is stored beyond a display name and push
+  subscriptions.
+
+**Revisit if:** a meaningful share of players miss turns (especially on
+iOS), or games stall waiting for people who never got a notification.
+The Phase 5 design that was dropped: collect an address per seat with
+consent, store it with the seat and delete it with the room, send when
+there's no push subscription or after ~30 min without a move (via the room
+alarm), signed unsubscribe link, provider key via `wrangler secret`,
+per-address rate limit.
+
+### D3. Turn deadlines are decided per game
+
+**Decision:** the platform doesn't impose an async turn deadline. Each
+game sets its own in its room policy: none (`turnTimeoutMs: null`) or a
+long limit followed by its `timeoutAction`, and optionally reminders
+(Phase 6).
+
+**Why:** the right deadline depends on the game. A board game can wait
+indefinitely; a game with more players needs a limit so one person can't
+stall everyone. The room policy already supports both.
+
+**Consequences:**
+- Every async game must choose and document its deadline, and its
+  `timeoutAction` must be a sensible move if it has one.
+- Phase 6 adds a reminder option to the room policy (off by default)
+  rather than a platform-wide rule.
+
+**Revisit if:** most async games end up choosing the same values. Then
+make those the default for async policies.
+
+### D4. Custom push implementation
+
+**Decision:** hand-roll Web Push in the Worker using the WebCrypto API:
+RFC 8291 payload encryption (`aes128gcm`) and an RFC 8292 VAPID ES256 JWT.
+No push library or third-party push service.
+
+**Why:** no dependency to vet for Workers compatibility (most push
+libraries need Node built-ins); the code is small (roughly 150 lines); and
+nothing extra ships in the Worker bundle.
+
+**Consequences:**
+- The code is ours to get right. Test it against the RFC 8291 example
+  vectors in unit tests, and end to end against a local fake push
+  endpoint that decrypts what it receives (Phase 4).
+- Keep it in one module (e.g. `packages/server/src/webPush.ts`) with no
+  game or room knowledge, so it could be swapped for a library later.
+- Handle push-service responses ourselves: `404`/`410` drop the
+  subscription; `429`/`5xx` are not retried (the next turn change sends
+  again).
+
+**Revisit if:** a Workers-native push library appears that is small and
+maintained, or push delivery bugs trace back to our encryption or VAPID
+code.
 
 ## Phases
 
@@ -117,8 +193,9 @@ pages; poker suites unchanged.
   land in request logs): accept it as the first WebSocket message
   (`{action: 'auth', seatToken}`) before seating. Server change, token
   games only; keep the URL form working for one deploy if it shipped.
-- Lost token (cleared storage, no link saved): the seat is gone. Decide
-  whether the host may release a seat, or accept the loss for v1.
+- Lost token (cleared storage, no link saved): with no accounts (D1) the
+  seat can't be recovered. Decide whether the host may release a seat so
+  someone can take it, or accept the loss for v1.
 
 Acceptance: e2e — reload keeps the seat; a second browser context with the
 rejoin link takes the seat and the first sees the "opened elsewhere"
@@ -149,7 +226,10 @@ Client:
   tap). On grant: `pushManager.subscribe` with the VAPID public key
   (`VITE_VAPID_PUBLIC_KEY`), then send the subscription to the room.
 
-Server:
+Server (hand-rolled, per D4):
+- `packages/server/src/webPush.ts`: RFC 8291 `aes128gcm` encryption and an
+  RFC 8292 VAPID ES256 JWT with WebCrypto; no game or room knowledge.
+  Unit-tested against the RFC 8291 example vectors.
 - New WebSocket action `subscribePush` (token games only) storing the
   subscription per seat in DO storage beside `seatTokens`; never broadcast;
   deleted with the room. Allow unsubscribing.
@@ -174,20 +254,18 @@ notification from a simulated push event.
 Acceptance: the above suites pass; `smoke-prod` unaffected (push checks
 local-only); poker never sends pushes.
 
-### Phase 5 — Email fallback (only if decided)
+### Phase 5 — Email fallback: dropped
 
-- Collect an address per seat with explicit consent; store with the seat,
-  deleted with the room; every email has an unsubscribe link (a signed URL
-  that clears it).
-- Send when it's your turn and you have no push subscription, or after a
-  delay (e.g. 30 min) with no move — use the room alarm (see Phase 6).
-- Provider key via `wrangler secret`; rate-limit sends per address.
+Not doing this; see D2, which keeps the dropped design in case it's
+revisited.
 
 ### Phase 6 — Reminders, deadlines and game end
 
 - Room policy: `remindAfterMs` (e.g. 24h into a turn: send a reminder).
   `nextAlarmAt`/`decideAlarm` in `roomPolicy.ts` gain the reminder time;
   unit tests as for the existing timers.
+- Deadlines are each game's choice (D3); the reminder option is off by
+  default.
 - Long turn deadlines already work (`turnTimeoutMs`, e.g. 3 days →
   `timeoutAction`); notify the timed-out player and the next one.
 - **Game over.** `GameRoom` only knows "hand over" (`isHandOver`). An async
@@ -210,7 +288,8 @@ Async rooms live for days and hold storage, and pushes are outbound calls:
 
 ## Out of scope
 
-- Accounts, sign-in, friends lists, matchmaking, public room listings.
+- Accounts, sign-in, friends lists, matchmaking, public room listings (D1).
+- Email notifications (D2).
 - Native mobile apps.
 - Changing poker's real-time behavior or moving poker onto the generic
   pages (optional, separate, only with its suites unchanged).
@@ -219,5 +298,5 @@ Async rooms live for days and hold storage, and pushes are outbound calls:
 
 Update this file's status, record decisions and deviations per phase (as
 the engine-split plan does), update `ARCHITECTURE.md` (room lifecycle for
-async games, push/email, data kept per seat) and the `verify` skill (new
+async games, push, data kept per seat) and the `verify` skill (new
 suites and the local push endpoint).
