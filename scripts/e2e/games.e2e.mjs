@@ -123,12 +123,22 @@ try {
   );
   check('Snake speeds up as it eats (8 → 9.5)', speedAfter3 === 9.5, speedAfter3);
 
-  // Steer into the top wall.
+  // Steer into the top wall. Food can spawn in the way, so count what's eaten
+  // on the way and expect that on top of the 3.
+  await page.evaluate(() => {
+    window.__extraFood = 0;
+    window.__canvasWorld.events.on('entity:collected', () => window.__extraFood++);
+  });
   const s = await snakeState();
   if (s.dir === 'down') (await page.keyboard.press('ArrowLeft'), await sleep(200));
   await page.keyboard.press('ArrowUp');
   await page.getByText('Game Over').waitFor({timeout: 10_000});
-  check('death shows Game Over with the final score', await page.getByText('Score: 3').isVisible());
+  const finalScore = 3 + (await page.evaluate(() => window.__extraFood));
+  check(
+    'death shows Game Over with the final score',
+    await page.getByText(`Score: ${finalScore}`, {exact: true}).isVisible(),
+    finalScore
+  );
   check('a first scored game is a new best', await page.getByText('New best!').isVisible());
   await shot(page, 'snake-game-over');
   await page.getByRole('button', {name: 'Play Again'}).click();
@@ -139,10 +149,13 @@ try {
         .speed
   );
   check('Play Again resets the speed', speedReset === 8, speedReset);
-  check('best score is shown during the next game', await page.getByText('Best: 3').isVisible());
+  check(
+    'best score is shown during the next game',
+    await page.getByText(`Best: ${finalScore}`).isVisible()
+  );
   await page.reload();
   await page.locator('canvas').waitFor();
-  check('best score survives a reload', await page.getByText('Best: 3').isVisible());
+  check('best score survives a reload', await page.getByText(`Best: ${finalScore}`).isVisible());
 
   // ── Sudoku ───────────────────────────────────────────────────────────────
   await openGame('sudoku');
