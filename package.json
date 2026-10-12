@@ -7,6 +7,8 @@
     "build": "pnpm --filter @canvas/engine build && pnpm --filter @canvas/web build",
     "typecheck": "tsc -b",
     "check:boundaries": "node scripts/check-boundaries.mjs",
+    "games:gen": "node scripts/gen-game-registry.mjs",
+    "games:check": "node scripts/gen-game-registry.mjs --check",
     "lint": "eslint packages --ext .ts,.tsx",
     "format": "prettier --write packages",
     "test": "pnpm -r --if-present test",

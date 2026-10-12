@@ -29,6 +29,9 @@ jobs:
       - name: Package boundaries
         run: pnpm check:boundaries
 
+      - name: Generated game list is current
+        run: pnpm games:check
+
       - name: Typecheck
         run: pnpm -r --if-present typecheck
 

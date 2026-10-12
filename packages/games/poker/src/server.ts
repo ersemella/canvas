@@ -16,3 +16,7 @@ export const pokerServerSystem: ServerSystem<ServerPokerGameState, PokerAction> 
   isHandOver: (state) => state.phase === 'showdown',
   timeoutAction,
 };
+
+// Each game's `./server` entry default-exports its ServerSystem; the platform's
+// generated registry (packages/server/src/games/registry.ts) imports it.
+export default pokerServerSystem;

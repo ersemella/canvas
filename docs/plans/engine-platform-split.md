@@ -345,10 +345,9 @@ Recorded by the session carrying out the plan.
    `@canvas/engine` from its `dist/`; swap each consumer's tsconfig
    `paths` entry for the published version; give each game repo its
    `dev/` page as its dev loop.
-3. Consider one game list for both sides, e.g. a generated server
-   registry from games that ship a `./server` entry. Today a multiplayer
-   game is listed in `web/src/platform.games.ts` and
-   `server/src/games/registry.ts`.
+3. ~~Consider one game list for both sides.~~ Done 2026-10-12:
+   `platform.games.json` is the only list, and `pnpm games:gen` generates
+   both registries and the platform's per-game dependencies from it.
 4. **A production timing check is tight.** Phase 6's first `smoke-prod`
    run failed one check, "disconnected player's turn times out", which waits
    16 s for a 10 s timeout. The deployed Worker was byte-identical to Phase

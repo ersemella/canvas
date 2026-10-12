@@ -5,11 +5,11 @@ description: Verify Canvas behavior for real — check package boundaries, run t
 
 # Verifying Canvas
 
-Run all of these after a change to the engine, a game, or the room server: `pnpm check:boundaries`, `pnpm -r --if-present typecheck`, `pnpm test`, `pnpm e2e`. Together they take a few minutes.
+Run all of these after a change to the engine, a game, or the room server: `pnpm check:boundaries`, `pnpm games:check`, `pnpm -r --if-present typecheck`, `pnpm test`, `pnpm e2e`. Together they take a few minutes.
 
 ## 0. Package boundaries — `pnpm check:boundaries`
 
-`scripts/check-boundaries.mjs` fails if `packages/engine` imports any workspace package, or a `packages/games/*` package imports anything but `@canvas/engine` / `@canvas/engine/server` and its own files (no deep engine paths, no other game, no `@canvas/web`/`@canvas/server`). CI runs it before typecheck.
+`scripts/check-boundaries.mjs` fails if `packages/engine` imports any workspace package, or a `packages/games/*` package imports anything but `@canvas/engine` / `@canvas/engine/server` and its own files (no deep engine paths, no other game, no `@canvas/web`/`@canvas/server`). CI runs it before typecheck, along with `pnpm games:check`, which fails if the files generated from `platform.games.json` (the game list) are stale — fix with `pnpm games:gen`.
 
 ## 1. Unit tests — `pnpm test`
 

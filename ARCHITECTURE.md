@@ -31,8 +31,8 @@ authoritative game state and WebSocket hub.
 | Package | Role | Notes |
 |---|---|---|
 | `@canvas/engine` | ECS core, generic components/systems, manifest loader, plugin API | Built with `tsc -b` to `dist/` (ESM + `.d.ts`), which its `exports` point at; inside the repo every consumer resolves it to `src/` through tsconfig `paths`, so nothing needs a build first. Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and game-agnostic systems (grid, physics, drag/drop, click, card piles, grid puzzles, side panel, network). No game-specific code: games add their own through `register()`. `@canvas/engine/server` is a DOM-free entry with the `ServerSystem` contract. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
-| `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Builds in the games listed in `src/platform.games.ts`, instantiates a `World` per game, and is the only package with a UI framework. |
-| `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` Durable Object. Multiplayer games' server rules are listed in `src/games/registry.ts`. |
+| `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Builds in the games listed in `src/platform.games.ts` (generated), instantiates a `World` per game, and is the only package with a UI framework. |
+| `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` Durable Object. Multiplayer games' server rules are registered in `src/games/registry.ts` (generated). |
 | `games/poker` | Poker client systems + server-authoritative Texas Hold'em logic | `.` exports the game definition, whose `register()` adds the table's client systems in `src/client/` (`PokerSystem` sends actions and turns server state into a view, `PokerRendererSystem` draws it); `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom` — the only implementation of the rules, with the deck, hand evaluator, and public-state redaction. |
 | `games/{snake,blackjack,solitaire,sudoku}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. Blackjack registers `BlackjackSystem`, Sudoku its puzzle generator, Solitaire the Klondike deal; Snake is manifest-only. |
 | `configs` | Shared tsconfig / eslint base | — |
@@ -100,9 +100,15 @@ engine as generic building blocks for the next panel-based or networked game.
 
 ### Manifests are bundled into the web build
 Each game package exports a `GameDefinition` (its `game.json` plus an
-optional `register()`), and `packages/web/src/platform.games.ts` lists the
-games the platform builds in — the one place that names them. The web shell
-builds its game list from it; nothing is fetched at runtime.
+optional `register()`). `platform.games.json` at the repo root lists the
+games the platform builds in, in home-page order — the one place that names
+them. `pnpm games:gen` (`scripts/gen-game-registry.mjs`) generates from it
+the web's `src/platform.games.ts`, the Worker's `src/games/registry.ts`
+(games whose package exports `./server`, which default-exports a
+`ServerSystem`), and the web/server `package.json` dependencies and web
+tsconfig paths. The deploy runs `pnpm games:check` and fails if any of
+those are stale. The web shell builds its game list from the generated
+file; nothing is fetched at runtime.
 
 **Tradeoff** — adding or changing a game means a web redeploy. This replaced
 a singleton `ManifestRegistry` Durable Object that the deploy uploaded every
@@ -155,12 +161,6 @@ two-browser poker game, and the single-player games). There are still no
 unit tests for the ECS core, manifest validation, or the other games'
 systems; the e2e suite is the main guard there. See `.claude/skills/verify`.
 
-**Minor — Multiplayer games are listed twice.** `web/src/platform.games.ts`
-lists every game's client definition, and `server/src/games/registry.ts`
-lists the server rules of the multiplayer ones. They're separate because the
-Worker must import only a game's DOM-free `./server` entry. Adding a
-multiplayer game means touching both.
-
 **Minor — A retired Durable Object is still deployed.** `ManifestRegistry`
 is an unreachable stub kept bound in `wrangler.toml` with its old stored
 manifests, because deleting it (a `deleted_classes` migration) is permanent
@@ -179,7 +179,7 @@ GitHub Actions, triggered on push to `main` for any of `web/`, `engine/`,
 
 | Stage | Target | Notes |
 |---|---|---|
-| `deploy-server` | Cloudflare Worker (`canvas-server`) | Runs `pnpm check:boundaries`, `pnpm -r typecheck` and `pnpm test` first and stops on failure; then `wrangler deploy`. |
+| `deploy-server` | Cloudflare Worker (`canvas-server`) | Runs `pnpm check:boundaries`, `pnpm games:check`, `pnpm -r typecheck` and `pnpm test` first and stops on failure; then `wrangler deploy`. |
 | `deploy-pages` | Cloudflare Pages (static `@canvas/web` build) | Runs after `deploy-server` via `needs:`, and bakes `VITE_API_URL` into the build at compile time — the API origin can't change without a rebuild. |
 | `smoke-prod` | Production | After `deploy-pages`, runs `pnpm e2e` against the live Worker and Pages site (Playwright + Chromium) and uploads screenshots/logs as an artifact. Reports problems; doesn't roll back. |
 
