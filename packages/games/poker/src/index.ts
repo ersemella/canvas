@@ -1,8 +1,8 @@
 // Poker package. The client entry (this file) is the game definition the web
 // shell builds in: the table's systems under ./client. The server-authoritative
 // rules are the DOM-free `./server` entry (server.ts), imported by the
-// platform Worker. The two sides are separate rule implementations — see
-// "Poker rules are implemented twice" in ARCHITECTURE.md.
+// platform Worker. The server is the only place the rules run; the client
+// sends actions and draws the state it is sent.
 
 import {SystemRegistry, registerDataComponent} from '@canvas/engine';
 import type {GameDefinition, GameManifest} from '@canvas/engine';

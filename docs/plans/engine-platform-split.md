@@ -356,6 +356,9 @@ Recorded by the session carrying out the plan.
    is Durable Object alarm latency in production. Widening that window in
    `scripts/e2e/poker-protocol.e2e.mjs`, or asserting on `turnDeadline`
    instead of wall-clock time, would stop it flaking.
-5. Unchanged from before and still open: merging the two poker rule
-   implementations (now both inside `games/poker`), and unit tests for the
-   ECS core and manifest validation.
+5. Still open from before: unit tests for the ECS core and manifest
+   validation.
+
+Resolved since (2026-10-12): single-player poker was removed instead of
+merged, so the server's `serverLogic.ts` is the only implementation of the
+poker rules.

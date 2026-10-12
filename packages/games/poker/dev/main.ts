@@ -1,7 +1,7 @@
 // Standalone dev page: `pnpm dev` in this package runs the game against the
 // engine alone, no web shell or Worker.
-// With no server attached, PokerSystem plays its single-player mode against
-// bots — the platform itself always uses the multiplayer room.
+// Poker's state comes only from the platform's room server, so standalone
+// this shows the empty table; play it through the platform.
 
 import {runGame} from '@canvas/engine';
 import game from '../src/index';

@@ -150,9 +150,8 @@ export function PokerRoomPage() {
       wsRef.current?.send(JSON.stringify({action: msg.type, payload: msg.payload}));
     });
 
-    // Put PokerSystem in server-driven mode, then re-request the current state:
-    // the messages that started the game arrived before this canvas existed.
-    events.emit('network:attached', {});
+    // Re-request the current state: the messages that started the game
+    // arrived before this canvas existed.
     wsRef.current?.send(JSON.stringify({action: 'sync'}));
   }, []);
 

@@ -665,9 +665,7 @@
         "id": "poker-config",
         "components": {
           "PokerConfig": {
-            "smallBlind": 5,
             "bigBlind": 10,
-            "startingChips": 1000,
             "potValueId": "pot-value",
             "heroChipsId": "hero-chips-value",
             "phaseTextId": "phase-text",

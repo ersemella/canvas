@@ -4,9 +4,8 @@
  */
 
 export interface PokerConfigData {
-  smallBlind: number;
+  /** Raise buttons step by this; the server's blinds are fixed at 5/10. */
   bigBlind: number;
-  startingChips: number;
 
   // Panel entity IDs driven by SidePanelSystem
   potValueId: string;

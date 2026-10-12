@@ -1,47 +1,35 @@
 /**
- * Shared types for PokerSystem and PokerRendererSystem.
- * Internal to the engine — not exported from index.ts.
+ * The client's view of a hand, built from the server's per-viewer
+ * `PublicPokerState` with the viewer rotated to seat 0. Shared by
+ * PokerSystem (writes it) and PokerRendererSystem (draws it).
  */
 
-import type {PokerCard} from './handEvaluator';
-export type {PokerCard};
+import type {Card, Phase} from '../types';
 
-export type Phase = 'waiting' | 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
-export type ActionType = 'fold' | 'check' | 'call' | 'raise';
+export type {Card as PokerCard, Phase, ActionType, PokerAction} from '../types';
 
 export interface PokerPlayer {
-  id: number; // 0 = hero in single-player; rotated so viewer is 0 in multiplayer
   name: string;
   chips: number;
-  holeCards: [PokerCard, PokerCard] | null;
+  holeCards: [Card, Card] | null;
   currentBet: number;
   folded: boolean;
   allIn: boolean;
-  hasActed: boolean;
   isDealer: boolean;
   isSB: boolean;
   isBB: boolean;
-  style: 'tight' | 'loose' | 'aggressive';
-  /** connectionId for multiplayer mode; null in single-player */
-  connectionId: string | null;
+  connectionId: string;
 }
 
 export interface PokerGameState {
   phase: Phase;
+  /** Seat 0 is the viewer. */
   players: PokerPlayer[];
-  deck: PokerCard[];
-  communityCards: PokerCard[];
+  communityCards: Card[];
   pot: number;
   currentBet: number;
   actingIndex: number;
-  dealerIndex: number;
-  handNumber: number;
-  /** Last 50 log lines, newest pushed last */
+  /** Log lines, newest last. */
   log: string[];
   showdownResult: string | null;
-}
-
-export interface PokerAction {
-  type: ActionType;
-  amount?: number;
 }

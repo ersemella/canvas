@@ -33,7 +33,7 @@ authoritative game state and WebSocket hub.
 | `@canvas/engine` | ECS core, generic components/systems, manifest loader, plugin API | Built with `tsc -b` to `dist/` (ESM + `.d.ts`), which its `exports` point at; inside the repo every consumer resolves it to `src/` through tsconfig `paths`, so nothing needs a build first. Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and game-agnostic systems (grid, physics, drag/drop, click, card piles, grid puzzles, side panel, network). No game-specific code: games add their own through `register()`. `@canvas/engine/server` is a DOM-free entry with the `ServerSystem` contract. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
 | `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Builds in the games listed in `src/platform.games.ts`, instantiates a `World` per game, and is the only package with a UI framework. |
 | `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` Durable Object. Multiplayer games' server rules are listed in `src/games/registry.ts`. |
-| `games/poker` | Poker client systems + server-authoritative Texas Hold'em logic | `.` exports the game definition, whose `register()` adds the table systems in `src/client/` (`PokerSystem`, `PokerRendererSystem`, bot AI, a hand evaluator); `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom`, with its own deck, hand evaluator, and public-state redaction. |
+| `games/poker` | Poker client systems + server-authoritative Texas Hold'em logic | `.` exports the game definition, whose `register()` adds the table's client systems in `src/client/` (`PokerSystem` sends actions and turns server state into a view, `PokerRendererSystem` draws it); `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom` — the only implementation of the rules, with the deck, hand evaluator, and public-state redaction. |
 | `games/{snake,blackjack,solitaire,sudoku}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. Blackjack registers `BlackjackSystem`, Sudoku its puzzle generator, Solitaire the Klondike deal; Snake is manifest-only. |
 | `configs` | Shared tsconfig / eslint base | — |
 
@@ -116,11 +116,9 @@ Only poker has a `ServerSystem` (`createInitialState` / `handleAction` /
 turn order server-side and sends each viewer a redacted `getPublicState` so
 opponents' hole cards never reach the client.
 
-**Tradeoff** — the poker package also ships a fully separate, single-player
-poker implementation (`client/PokerSystem.ts`, bot mode) that the UI can't
-currently reach (`/play/poker` always opens the multiplayer lobby). Two
-independent rule implementations now exist for the same game — see
-[Drawbacks](#drawbacks--inefficiencies).
+**Tradeoff** — poker can only be played online: there's no offline or
+vs-bots mode. (A single-player bot mode with its own copy of the rules
+existed, but no UI reached it, so it was removed rather than kept in sync.)
 
 ### Migrated off AWS Lambda/S3 onto Workers + Durable Objects
 Git history (`19275b0`, `fda4905`) shows a full teardown of
@@ -149,16 +147,6 @@ backend is coupled to Cloudflare's DO model.
 
 Findings from reading the current implementation, ranked by how much they'd
 cost to leave alone.
-
-**Notable — Poker rules are implemented twice.** The single-player path
-(`PokerSystem.ts`, 651 lines, bot AI included) and the multiplayer path
-(`games/poker/src/serverLogic.ts`) are independent implementations of Texas
-Hold'em, each with its *own* hand evaluator (`games/poker/src/client/handEvaluator.ts`
-vs. `games/poker/src/handEvaluator.ts`). Both now live in the poker package,
-which makes merging them a package-local change. A rules fix — a side-pot edge case,
-a hand-ranking bug — has to be found and re-applied twice, and the two modes
-can silently drift apart.
-`packages/games/poker/src/client/PokerSystem.ts` · `packages/games/poker/src/serverLogic.ts`
 
 **Moderate — Test coverage is thin outside poker.** `pnpm test` (Vitest)
 covers the poker rules engine and a couple of engine utilities, and `pnpm
@@ -202,9 +190,6 @@ deploy — and is set with `wrangler secret put`, and read from a gitignored
 
 ## Open questions
 
-- Should the two poker implementations converge on one rules engine, with
-  the single-player mode running the server logic locally instead of
-  reimplementing it?
 - Which engine systems most need unit tests next? Manifest validation and
   the card-pile rules (solitaire) have no coverage below the e2e suite.
 - Is 10 rooms/minute per IP the right cap, and should joins or WebSocket

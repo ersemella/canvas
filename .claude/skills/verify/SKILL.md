@@ -17,7 +17,7 @@ Runs every workspace package's `test` script (Vitest in `packages/engine` and `p
 
 Add new rules tests next to the code as `*.test.ts`, in the package that owns the code.
 
-To look at one game without the platform, run `pnpm dev` inside its package (`packages/games/<id>`): Vite serves `dev/index.html`, which runs the game through the engine's `runGame()`. Standalone, poker runs its single-player bot mode (the platform always opens the multiplayer room instead).
+To look at one game without the platform, run `pnpm dev` inside its package (`packages/games/<id>`): Vite serves `dev/index.html`, which runs the game through the engine's `runGame()`. Poker's standalone page shows an empty table: its state comes only from the platform's room server.
 
 ## 2. End-to-end — `pnpm e2e`
 
@@ -29,7 +29,7 @@ To look at one game without the platform, run `pnpm dev` inside its package (`pa
 | `poker-protocol.e2e.mjs` | Raw WebSocket clients against the Worker: host-only start, negative raise can't mint chips, out-of-turn and check-into-a-bet rejected, mid-hand `nextHand` ignored, fold-wins hide cards, button rotates, seat held on disconnect, reconnect by name returns the same cards, disconnected player times out in ~10s.                                                                                                                                                                                                                                                                                                              |
 | `poker-browser.e2e.mjs`  | Two Chromium windows: host vs guest lobby views, a full hand played by clicking the canvas buttons, next hand, refresh mid-hand, the 30s turn timeout.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
-Output goes to `e2e-results/` (gitignored): `poker-*.png` screenshots, plus `wrangler.log` and `vite.log`. **Look at the screenshots** when a browser check fails — the canvas is drawn, so the DOM can't show what's on the table. A healthy run shows real player names (not "Bot1…"), your own hole cards, and the log in the side panel.
+Output goes to `e2e-results/` (gitignored): `poker-*.png` screenshots, plus `wrangler.log` and `vite.log`. **Look at the screenshots** when a browser check fails — the canvas is drawn, so the DOM can't show what's on the table. A healthy run shows the players' real names at the table, your own hole cards, and the log in the side panel. An empty table means no server state reached the canvas.
 
 ### Requirements
 

@@ -94,7 +94,7 @@ export class NetworkSystem extends BaseSystem {
     };
 
     ws.onerror = () => {
-      // Connection errors are silent — game falls back to single-player
+      // Connection errors are silent; the game just gets no state updates
     };
   }
 }
