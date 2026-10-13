@@ -2,7 +2,8 @@
 
 Status: **proposed — feasibility checked, nothing built.** Written
 2026-10-13; revised the same day (D1, D3 replaced; D5, D6 added — see
-*Decisions*). D1 and D7 are confirmed by the owner; the rest are proposals. Read this whole file, then `ARCHITECTURE.md` (especially
+*Decisions*); D8 (ghost invaders) added later that day. D1 and D7 are
+confirmed by the owner; the rest are proposals. Read this whole file, then `ARCHITECTURE.md` (especially
 *Multiplayer is server-authoritative* and *Room timing is a per-game
 policy*), `docs/plans/async-games.md`, `CLAUDE.md`, and
 `.claude/skills/verify/SKILL.md`, before changing anything.
@@ -34,6 +35,9 @@ plan settles on:
   a second player; no third room, no copy of the host's level.
 - **The character crosses breaks as a server-signed snapshot**, so a client
   can't forge stats or replay an old save to undo a death.
+- **When no live player is available, a ghost invades instead:** an
+  AI-controlled copy of another player's character from the same depth
+  (D8), so invasions happen even with few players online.
 
 ## What already fits (don't rebuild it)
 
@@ -285,6 +289,65 @@ options poker never uses on the code path poker relies on.
 - `wrangler.toml`: bindings and one migration adding `LevelRoom` and
   `Matchmaker` (`new_sqlite_classes`).
 
+### D8. Ghost invaders when no live player is available
+
+**Proposal:** if a level's invadable window passes with no live invader,
+the level room may (with some probability, tuned in play) bring in a
+**ghost**: an AI-controlled copy of another player's character from the
+same depth, entering at one of the level's fixed spawn points like a live
+invader.
+
+**Why:** live invasions need two players at the same depth at the same
+time, which at low player counts will rarely happen. Asynchronous ghosts
+make the multiplayer felt at any player count — the approach of NetHack's
+bones files, Dungeon Crawl Stone Soup's ghosts, and the snapshot battles of
+Super Auto Pets, Backpack Battles and The Bazaar. Most of the machinery is
+already in this plan: signed snapshots (D5), the matchmaker per depth, the
+spawn points, and adding a player mid-level (Phase 2).
+
+**How:**
+- **Where ghosts come from.** When a level room starts from a verified
+  snapshot, it offers a copy of the character (stats and gear only — no run
+  ID or signature) to that depth's matchmaker, which keeps a capped pool
+  per depth (e.g. the latest few hundred, in its SQLite storage). Proposal:
+  living characters, as they enter a level; including characters at the
+  moment they died is an option (closer to NetHack, and a stronger pool
+  near the depth where runs tend to end).
+- **Who plays it.** The game's own AI, driving a player-shaped character.
+  It lives entirely inside the host's level room: no ticket, no hand-off,
+  no cross-room outcome, and nothing happens to the player it was copied
+  from.
+- **Stakes for the host:** the same as a live invasion (D2) — the host can
+  die. What the host wins from beating a ghost is decided with D2's
+  rewards; it shouldn't be more than from a live invader.
+- **Live first.** A live invader always takes precedence: a ghost is only
+  chosen after the window passes, and a level that got a ghost is no longer
+  invadable.
+
+**The repeat-ghost problem.** A dies to B's ghost at depth n. A's run is
+over (permadeath); in A's next run, at the same depth, A could meet B's
+ghost again. Accepted as a trade-off by the owner (2026-10-13) — meeting
+the ghost that killed you can even be a draw. Cheap ways to make it rarer,
+to choose from in play:
+- **Retire ghosts.** Remove a ghost from the pool after it kills someone,
+  or after a few encounters — as NetHack deletes a bones file once a game
+  has loaded it.
+- **Pick from a large pool, at random.** With hundreds of ghosts per depth,
+  a repeat is unlikely without any bookkeeping.
+- **Recently met list.** The browser sends the IDs of ghosts it met
+  recently with "next level", and the room avoids them. With no accounts
+  (D4) this is a preference, not a guarantee — clearing storage resets it,
+  and that's harmless.
+
+**Consequences:**
+- The ghost needs AI written for a player-shaped character (gear,
+  abilities), beyond the level's ordinary enemies.
+- Ghost entries are copies of player builds; they hold no names unless the
+  game chooses to show the original player's display name (a privacy
+  choice to make then).
+- A pool per depth means one more thing stored by each matchmaker DO;
+  capped, so bounded.
+
 ## Design: an invasion
 
 ```
@@ -387,7 +450,22 @@ level n+1; C at another depth isn't; after the invasion B's pre-invasion
 snapshot no longer works and the new one does; killing a room mid-flow and
 retrying neither duplicates nor loses B's character.
 
-### Phase 4 — Hardening
+### Phase 4 — Ghost invaders
+
+The per-depth ghost pool in the matchmaker, level rooms offering
+characters to it, the ghost fallback after the invadable window, the AI
+for player-shaped characters, and the chosen repeat-ghost rule (D8).
+
+Acceptance: unit tests for the ghost AI and pool (cap, retirement,
+avoidance); e2e — a level with no live invader gets a ghost at a spawn
+point and can be killed by it; a level that got a live invader never also
+gets a ghost.
+
+(Ghosts need less than live invasions — no tickets, hand-off or outcome —
+so this phase could instead come before Phase 3, to test how invasions
+feel before building the live flow. Decide when Phase 2 is done.)
+
+### Phase 5 — Hardening
 
 Disconnects during an invasion (D2), rate limits on "next level" calls and
 matchmaker registration, abuse cases (deliberately idling as an invader),
