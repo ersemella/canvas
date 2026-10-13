@@ -2,7 +2,7 @@
 
 Status: **proposed — feasibility checked, nothing built.** Written
 2026-10-13; revised the same day (D1, D3 replaced; D5, D6 added — see
-*Decisions*). Read this whole file, then `ARCHITECTURE.md` (especially
+*Decisions*). D1 is confirmed by the owner; the rest are proposals. Read this whole file, then `ARCHITECTURE.md` (especially
 *Multiplayer is server-authoritative* and *Room timing is a per-game
 policy*), `docs/plans/async-games.md`, `CLAUDE.md`, and
 `.claude/skills/verify/SKILL.md`, before changing anything.
@@ -83,7 +83,8 @@ plan settles on:
 
 ## Decisions
 
-Proposed, not yet confirmed by the owner. Same format as the async plan:
+D1 is confirmed (2026-10-13); the others are proposed, not yet confirmed
+by the owner. Same format as the async plan:
 to change one, edit its entry, keep the old reasoning, add a dated
 "Revised" note.
 
@@ -115,21 +116,22 @@ invade.
 | Matching pool | A's whole level is a window, not a few seconds at a door |
 | Timers that change mid-level | Never needed: levels are always timed |
 
-**Consequences (owner to decide):**
-- **Timed solo play with permadeath.** A phone call or a closed tab
+**Consequences (decided by the owner, 2026-10-13):**
+- **Timed solo play with permadeath — kept.** A phone call or a closed tab
   mid-level means the character keeps taking timeout actions while enemies
-  attack, and may die. Use a generous solo timer and a timeout action that
-  defends or holds position rather than skipping — or keep the pressure as
-  part of the game.
-- **No way to avoid invaders** except by depth, which is the only balance.
-  Decide whether there's an offline mode, or a limit such as one invasion
-  per level.
-- **B may expect their own level and land in someone else's.** Fine if the
-  rules make it clear; the break screen can say "you may be sent to invade".
-  Optionally let B choose to invade.
-- **Where the invader appears.** The host may be anywhere, including
-  mid-fight. The game needs a spawn rule (e.g. the level entrance, or out
-  of the host's sight).
+  attack, and may die. That pressure is part of the game. The timeout
+  action and timer length are still the game's to tune (a timeout action
+  that defends or holds position is kinder than skipping).
+- **Invasions are always on.** No offline mode and no opt-out; depth is the
+  only balance. At most one invader per level (above).
+- **B may land in someone else's level instead of their own — accepted.**
+  It's a known rule of the game; the matchmaker decides, and B doesn't
+  choose whether to invade. The break screen should still say "you may be
+  sent to invade".
+- **Invaders appear at fixed points in the map.** Level generation places
+  invader spawn points; the details (how many, how one is picked, what if
+  the host is standing on it) are to be worked out with the level design,
+  before Phase 3.
 
 **Revised 2026-10-13.** Replaces the first proposal: *mutual opt-in at the
 door* — on reaching the door after level N, each player chose *Continue
@@ -314,7 +316,8 @@ unless asked), each verified with `pnpm check:boundaries`,
 
 ### Phase 1 — Solo roguelite: breaks in the browser, levels on the server
 
-New `packages/games/roguelite`: seeded level generation, movement, combat,
+New `packages/games/roguelite`: seeded level generation (placing invader
+spawn points from the start, per D1, even though nothing uses them yet), movement, combat,
 enemy AI, doors, permadeath (server); the break and its deterministic rules
 (shared); the break and level screens (client). Platform: level rooms by
 name with start data and tombstones, snapshot signing, the secret.
@@ -338,8 +341,9 @@ invader; poker suites unchanged.
 ### Phase 3 — Matchmaker and invasions
 
 The `Matchmaker` DO, registration of invadable levels, the reserve/ticket/
-outcome flow through the invader's next-level room, the invasion outcome
-(D2), and the break screen's "you may be sent to invade" notice.
+outcome flow through the invader's next-level room, the invader spawning
+at one of the level's fixed points (D1), the invasion outcome (D2), and
+the break screen's "you may be sent to invade" notice.
 
 Acceptance: e2e with three browser contexts — B (depth n) is sent into A's
 level n+1; C at another depth isn't; after the invasion B's pre-invasion
