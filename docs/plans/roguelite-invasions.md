@@ -4,8 +4,9 @@ Status: **proposed — feasibility checked, nothing built.** Written
 2026-10-13 and revised several times that day; this version is
 **ghost-only** (no live invasions). The earlier designs and why they were
 dropped are under [How the design got here](#how-the-design-got-here).
-Decisions confirmed by the owner: D1, D7 (as a separate class), D8's
-one-ghost rule, D9's reward kinds. The rest are proposals. Read this whole
+All decisions D1–D9 are confirmed by the owner (2026-10-13); what's left
+open is tuning (chances, caps, N) and the `RunSystem` contract's exact
+shape, settled while building. Read this whole
 file, then `ARCHITECTURE.md`, `CLAUDE.md`, and
 `.claude/skills/verify/SKILL.md`, before changing anything.
 
@@ -92,9 +93,9 @@ here*.
 
 ### D2. What a ghost encounter means
 
-Mostly settled by D8 and D9; open:
+Settled with D8 and D9:
 
-- **Rewards for the player who beats a ghost.** Proposal: part of the
+- **Rewards for the player who beats a ghost** (confirmed): part of the
   ghost's gear drops, so fighting is worth more than avoiding — no more
   than an ordinary level's best loot. (NetHack's bones levels work this
   way: the dead character's gear is the reward for facing its ghost.)
@@ -106,7 +107,7 @@ questions belonged to live invasions and are gone.
 
 ### D3. One Durable Object per run
 
-**Proposal:** a run is one room, `idFromName('run:' + runId)`, for its
+**Decision (owner, 2026-10-13):** a run is one room, `idFromName('run:' + runId)`, for its
 whole life: character, current level (generated once, from a seed, and
 stored — reloading can't re-roll it), the between-levels screen, and the
 outcome. The between-levels screen is just a state of the run (gear,
@@ -177,7 +178,7 @@ code path untouched.
   `./server` exports it; `scripts/gen-game-registry.mjs` learns to tell it
   from a `ServerSystem` (e.g. a `kind` field) and generates a registry for
   each.
-- **Plain HTTP, no WebSocket (proposal).** With one player and no timer,
+- **Plain HTTP, no WebSocket** (confirmed). With one player and no timer,
   nothing needs pushing: each action is one request returning the new
   view. Routes like `POST /runs` (start), `GET /runs/:id` (view),
   `POST /runs/:id/actions`; the player key in the body proves ownership.
@@ -194,13 +195,26 @@ D3 it's a per-run room instead.
 
 ### D8. Ghosts: one per level, from a pool per depth
 
-**Decision (owner, 2026-10-13): at most one ghost per level.** Never a
-second, even after the first is beaten.
+**Decisions (owner, 2026-10-13):**
+- **At most one ghost per level.** Never a second, even after the first is
+  beaten.
+- **A player faces a ghost from a given run at most once, ever.** A run
+  leaves a ghost at every depth it clears; once a player has faced any of
+  them, no ghost from that run is picked for that player again, at any
+  depth, in any of their runs. This keeps runs from going stale (the same
+  build, a bit stronger, level after level) and stops a player getting
+  stuck behind one hard — possibly just lucky — build.
+- **The measure of a ghost is unique players killed** (D9). With the rule
+  above, every kill by a run's ghosts is a different player.
 
-**Proposal for the rest:**
+**How (confirmed proposals):**
+- **Ghost identity is its source run.** Each ghost carries a **lineage
+  ID**, an opaque hash of the source run's ID; the pool for a depth holds
+  at most one ghost per lineage. "Faced" means the ghost was placed in your
+  level, whether or not you fought it.
 - **Where ghosts come from.** When a run clears level n and moves on, its
   room offers a copy of the character (stats and gear; the owner's
-  player-key hash; no run ID) to the **ghost pool for depth n** — a DO,
+  player-key hash; the lineage ID) to the **ghost pool for depth n** — a DO,
   `idFromName('ghosts:' + n)`, holding a capped pool in SQLite (e.g. the
   latest few hundred, plus legends). Optionally also the character at the
   moment of death (closer to NetHack; a stronger pool where runs end).
@@ -213,14 +227,20 @@ second, even after the first is beaten.
   ghost from pool n:
   - **Never their own** (same player-key hash) — also removes the easiest
     way to farm kills.
-  - **Nemesis first:** the ledger (D9) remembers which ghosts killed this
-    player; one of those at this depth is preferred.
-  - Otherwise **weighted by kills**, so a deadly ghost becomes a known
-    threat at its depth ("Ghost of Mira — 7 kills"); ghosts with no kills
-    are picked at random from the large pool.
-  - **A ceiling:** cap how often one ghost is picked, and retire it as a
-    **legend** after N kills — it stays on the depth's legends list but
+  - **Never a lineage they've faced.** The player's ledger (D9) keeps the
+    lineage IDs they've faced. The run's room asks the pool for a short
+    list of candidates (say 20), asks the ledger which are new, takes the
+    first, and records it as faced in the same step.
+  - **Weighted by unique kills**, so a deadly run becomes a known threat
+    ("Ghost of Mira — 7 players slain"), while each player meets it at
+    most once; ghosts with no kills are picked at random from the large
+    pool.
+  - **A ceiling:** cap how often one lineage is picked, and retire it as a
+    **legend** after N unique kills — it stays on the legends lists but
     stops invading — so one strong build can't own a depth.
+  - **If every candidate is used up** (a veteran player at a quiet depth),
+    the level simply has no ghost. Ghosts get rarer for players who've
+    met everyone; a larger player base fixes that.
 - **Who plays it.** The game's AI, driving a player-shaped character
   (gear, abilities), inside the run's room. Nothing happens to the player
   it was copied from, except credit for kills (D9).
@@ -236,24 +256,36 @@ Showing "Ghost of <name>" displays a player-chosen name to strangers:
 needs a length limit and a basic filter.
 
 **Revised 2026-10-13:** first a fallback when no live invader came, with
-repeats treated as a problem; repeats then became a feature (killers stay,
-nemesis, legends); now ghosts are the only invaders.
+repeats treated as a problem; repeats then became a feature (killers stay
+in the pool, a **nemesis** rule preferring the ghost that killed you,
+legends); then ghosts became the only invaders. Finally the owner made
+each run's ghost a once-per-player encounter: the nemesis rule is dropped
+(it would make you face the same run again), and the goal is unique
+players killed rather than total kills.
 
 ### D9. A ghost's kills reward its owner: recognition and unlocks
 
 **Decision (owner, 2026-10-13):** when a ghost kills a player, its owner
-earns **recognition** (a kill tally, "your ghost has slain N players",
+earns **recognition** (unique players slain, "your ghost has slain N players",
 legend status) and **permanent unlocks** carried across runs (e.g.
 starting classes, items offered between levels, cosmetics). Not resources
 in a current run: easy to farm, and they snowball.
 
-**How (proposal):**
+**The score is unique players killed** (owner, 2026-10-13), per run and
+per player:
+- **Per run** — what a ghost lineage is known for and what makes it a
+  legend. Automatically unique, since each player faces a run once (D8).
+- **Per player, lifetime** — distinct victims across all of the owner's
+  runs (a victim killed by two of your runs counts once here). Unlocks are
+  earned from this number.
+
+**How (confirmed proposals):**
 - **A ledger per player:** a DO, `idFromName('player:' + keyHash)`,
-  holding the active run (D3), best depth reached, kill tally, nemesis
-  ghosts, legends, and unlocks. When a ghost kills a player, the run's room
-  credits the owner's ledger, keyed by that run and level, so a retry
-  can't count it twice; and records the ghost as the victim's nemesis in
-  the victim's ledger.
+  holding the active run (D3), best depth reached, the lineages this
+  player has faced (D8), the set of victims' key hashes and the counts
+  derived from it, legends, and unlocks. When a ghost kills a player, the
+  run's room credits the owner's ledger with the victim's key hash, keyed
+  by victim and lineage, so a retry can't count it twice.
 - **Reading it.** The home and between-levels screens show the tally and
   new unlocks. Unlocks chosen for a new run are checked against the ledger
   by the run's room when it creates the run.
@@ -264,11 +296,14 @@ in a current run: easy to farm, and they snowball.
   once it exists; until then the tally shows on the next visit.
 
 **Consequences:**
-- **Farming:** a player with two browsers (two keys) can feed one's runs
-  to the other's ghost. Each sacrificial run must reach that depth first,
-  so it's slow, and with no accounts it can't be reliably detected. Keep
-  unlocks about options, not power, and cap credited kills per ghost per
-  day.
+- **Farming is much harder:** an alt key adds at most one kill per run,
+  and one to the lifetime count ever. Farming means many keys (new browser
+  profiles), each playing a run to the right depth to be killed — slow,
+  and with no accounts not reliably detectable, so keep unlocks about
+  options, not power. A daily cap on credited kills is likely unneeded;
+  add one only if farming shows up.
+- **Storage per ledger grows** with lineages faced and victims (one short
+  hash each): a few kilobytes for a heavy player. Fine.
 - **Lost key, lost rewards** (D4).
 
 ## Design: a ghost encounter
@@ -278,18 +313,19 @@ in a current run: easy to farm, and they snowball.
  clears level n ──────► offer character copy ─────► add to pool n
  next level ──────────► generate level n+1;
                         ghost this level? (seeded)
-                        if yes: pick ghost ────────► nemesis? kill-weighted;
+                        if yes: candidates ────────► weighted by unique kills,
                                                      never the player's own
-                        ◄──────────── ghost G ──────┘
+                        ◄──────── candidates ───────┘
+                        which are new? ────────────────────────────────► (victim ledger)
+                        ◄──── first new: G; marked faced ───────────────┘
  moves ───────────────► player turn, enemies, G
    ... G kills the player ...
-                        run over ─────────────────► G.kills += 1 ─► (legend after N)
-                                        ───────────────────────────► nemesis += G
-                                        ─────────────────────────────────────────────► credit (idempotent)
+                        run over ─────────────────► G's lineage: unique kills += 1 ─► (legend after N)
+                                        ─────────────────────────────────────────────► credit victim hash (idempotent)
 ```
 
-- **Every step is safe to repeat:** offers are keyed by run and level,
-  credits by run, level and ghost.
+- **Every step is safe to repeat:** offers are keyed by lineage and
+  depth, "faced" by player and lineage, credits by victim and lineage.
 - **Who to trust:** only rooms talk to pools and ledgers. The browser sends
   its player key and actions, never a depth, outcome or character.
 
@@ -313,16 +349,44 @@ in a current run: easy to farm, and they snowball.
 |---|---|---|
 | A run | `RunRoom` | while active; deleted a few days after it ends |
 | Ghost pool, legends | `GhostPool` per depth | permanently; pool capped |
-| Tally, unlocks, nemesis, active run | `PlayerLedger` per key | permanently; small |
+| Active run, lineages faced, victims, unlocks | `PlayerLedger` per key | permanently; a few KB |
 
-From Cloudflare's docs (checked 2026-10-13): an object with no request in
-flight isn't billed for duration; on Workers Paid, storage beyond the
-included amount is billed (since January 2026). **Workers Free** allows
-**10 ms of CPU per request** and **100,000 Durable Object requests a day**.
-Enemy and ghost AI run inside each action, and every action is a request,
-so plan on **Workers Paid** (30 s CPU by default, no daily cap) beyond
-testing, and keep the AI cheap either way. Add the budget alert from the
-async plan's Phase 7.
+**The owner's account is on Workers Free (2026-10-13); stay on it until
+usage says otherwise.** From Cloudflare's docs (checked 2026-10-13), Free
+allows, per day, shared across the whole account (poker included):
+
+| Limit (Free) | Per | What uses it here |
+|---|---|---|
+| 100,000 Worker requests | day | every action |
+| 100,000 Durable Object requests | day | every action, plus room-to-room calls |
+| 100,000 SQLite rows written | day | saving the run after each action; credits |
+| 5 million rows read | day | rarely the constraint |
+| 13,000 GB-s DO duration | day | ~28 hours of active objects; idle ones are free |
+| 5 GB stored | total | runs, pools, ledgers — far below |
+| 10 ms CPU | request | enemy and ghost AI, level generation |
+
+Going over a daily limit makes further operations **fail until 00:00
+UTC** — the game (and poker) stop working for everyone, rather than
+costing money. Rough capacity: one request and about one row written per
+action, so ~100,000 actions a day — at ~200 actions a level, about 500
+levels a day (e.g. 50 daily players clearing 10 levels each). Plenty for
+building, testing and a small audience.
+
+To stretch Free:
+- **Multi-step actions.** A roguelike "travel to" / "explore" command that
+  moves several tiles in one request, stopping when an enemy or ghost comes
+  into view. One of the biggest savings, and good for play anyway.
+- **One row per save:** store the run's state as one value, written once
+  per action; no alarms on `RunRoom` (each `setAlarm()` is a row written).
+- **Cheap AI:** keep each action well under 10 ms (small grids, BFS/A*
+  bounded to the visible area, few enemies acting per turn); generate
+  levels within the same budget, or across a couple of requests.
+
+**Move to Workers Paid** ($5/month minimum; 30 s CPU by default, no daily
+caps, pay beyond generous monthly allowances) when the dashboard shows
+daily usage regularly past ~70% of a limit, or CPU errors (`1102`,
+`exceededCpu`) appear. On Paid, add the budget alert from the async plan's
+Phase 7.
 
 What's missing is a **query across objects** (no global leaderboard or
 analytics), already noted in `ARCHITECTURE.md`; a D1 database answers that
@@ -341,7 +405,9 @@ unless asked), each verified with `pnpm check:boundaries`,
 New `packages/games/roguelite`: seeded level generation (placing ghost
 spawn points from the start, unused until Phase 2), movement, combat,
 enemy AI, doors, the between-levels screen, permadeath (server); the level
-and between-levels screens (client). Turn order as actors with
+and between-levels screens (client). A multi-step "travel/explore" action,
+one row per save, and AI within the Free plan's 10 ms (see *Long-lived
+storage and cost*). Turn order as actors with
 controllers, a `mode` field on runs, and versioned full views in responses
 (the PvP seams). Platform: the player key, the
 `RunSystem` contract and registry support, `RunRoom`, its routes, and a
@@ -354,31 +420,37 @@ another player key can't act on the run.
 
 ### Phase 2 — Ghosts
 
-`GhostPool`, offering characters at each cleared level, the seeded
-ghost-per-level roll, picking (never your own, nemesis, kill-weighted,
-pick cap, legends), the ghost AI, spawning at a fixed point, and the
-one-ghost rule.
+`GhostPool`, offering characters at each cleared level (one per lineage
+per depth), the seeded ghost-per-level roll, picking (never your own,
+never a lineage you've faced, weighted by unique kills, pick cap,
+legends), recording "faced" in the ledger, the ghost AI, spawning at a
+fixed point, and the one-ghost rule.
 
-Acceptance: unit tests for the pool (cap, weighting, own-ghost exclusion,
-legend retirement) and the ghost AI; e2e — two player keys: A clears level
-n, B later gets A's ghost on level n+1 at a spawn point; never a second
-ghost in that level; a reload doesn't re-roll the ghost.
+Acceptance: unit tests for the pool (cap, one per lineage, weighting,
+own-ghost exclusion, legend retirement) and the ghost AI; e2e — two player
+keys: A clears levels n and n+1; B gets A's ghost on level n+1 at a spawn
+point, and never again on level n+2 or in a later run; never a second
+ghost in a level; a reload doesn't re-roll the ghost; with every
+candidate faced, the level has no ghost.
 
 ### Phase 3 — Rewards
 
-Crediting kills to the owner's ledger (idempotent, daily cap), nemesis
-recording, the tally and unlocks on screen, unlocks checked at run start,
-the per-depth legends list, ghost names with a length limit and filter.
+Crediting kills to the owner's ledger by victim (idempotent), unique
+players slain per run and per player, unlocks from the lifetime count,
+the tally and unlocks on screen, unlocks checked at run start, the
+legends lists, ghost names with a length limit and filter.
 
-Acceptance: unit tests for the ledger (a repeated credit counts once; the
-daily cap holds); e2e — A's ghost kills B; A sees the kill and its unlock
-and can start a run with it; B's next run at that depth prefers A's ghost.
+Acceptance: unit tests for the ledger (a repeated credit counts once; a
+victim killed by two of A's runs counts once for A's lifetime and once for
+each run); e2e — A's ghost kills B; A sees the kill and its unlock and can
+start a run with it.
 
 ### Phase 4 — Hardening
 
 Rate limits on starting runs and on actions, abuse cases (run churn to
-seed the pool, farming patterns), the budget alert, and moving to Workers
-Paid if not already.
+seed the pool, farming with many keys), watching daily usage against the
+Free limits, and moving to Workers Paid (with a budget alert) if usage or
+CPU errors call for it.
 
 ## Future: opt-in PvP
 
@@ -386,23 +458,27 @@ Not planned for building yet; recorded so the standard game's design
 leaves room for it. Owner's direction (2026-10-13): a future PvP version
 that players opt into.
 
-**Shape (to decide when it's taken up):**
-- **Opt-in per run.** A player chooses a PvP run when starting it (say,
+**Owner's preference (2026-10-13): an arena first.** Live invasions
+remain the more unique idea and stay recorded as a possible later mode.
+
+**Shape:**
+- **Arena (first).** Opted-in characters at the same depth meet in a
+  separate duel room, outside levels, from the between-levels screen.
+  Smaller: no joining a running level, and a two-player timed turn-based
+  room is close to what `GameRoom` and a `ServerSystem` already do; the
+  characters are copied in from their `RunRoom`s server to server, so no
+  signed snapshots are needed. Open: whether losing a duel ends the run
+  (permadeath) or only costs something.
+- **Live invasions (possibly later).** A player chooses a PvP run when starting it (say,
   *Hunted*). Only PvP runs can invade or be invaded by live players, and
   only PvP runs are timed, so standard runs stay untimed and strategic.
   Live invaders still come at most one per level (D8's rule); with no live
   match, a ghost invades as in the standard game, so PvP runs aren't
   empty at low player counts.
-- **Or an arena.** Opted-in characters at the same depth meet in a
-  separate duel room, outside levels, from the between-levels screen.
-  Smaller: no joining a running level, and a two-player timed turn-based
-  room is close to what `GameRoom` and a `ServerSystem` already do; the
-  characters are copied in from their `RunRoom`s server to server, so no
-  signed snapshots are needed.
 - PvP runs would likely keep their own ghost pools and rewards, so the
   standard game's balance doesn't depend on them.
 
-**What it would add** (most was designed in revision 2 — see *How the
+**What live invasions would add** (most was designed in revision 2 — see *How the
 design got here* and its commits): live matchmaking per depth, a turn
 timer and timeout action for PvP runs (the pure timer maths in
 `packages/server/src/roomPolicy.ts` is reusable), a WebSocket on
@@ -420,9 +496,10 @@ client-held snapshot, so D5 and D6 stay withdrawn.
 - No timer logic in the standard rules; timers, if they come, belong to
   the PvP mode's room settings.
 
-**Main risk, unchanged from revision 2:** live matches need two opted-in
-players at the same depth at the same time; the ghost fallback keeps PvP
-runs playable when that doesn't happen.
+**Main risk, for both shapes:** live matches need two opted-in
+players at the same depth at the same time. When that doesn't happen, a
+ghost stands in — an arena duel against a ghost, or a ghost invasion in a
+PvP run — so the mode stays playable at low player counts.
 
 ## Out of scope
 
