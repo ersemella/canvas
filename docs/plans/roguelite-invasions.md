@@ -2,8 +2,9 @@
 
 Status: **proposed — feasibility checked, nothing built.** Written
 2026-10-13; revised the same day (D1, D3 replaced; D5, D6 added — see
-*Decisions*); D8 (ghost invaders) added later that day. D1 and D7 are
-confirmed by the owner; the rest are proposals. Read this whole file, then `ARCHITECTURE.md` (especially
+*Decisions*); D8 (ghost invaders) and D9 (ghost rewards) added later that
+day. D1, D7 and D9's reward kinds are confirmed by the owner; the rest are
+proposals. Read this whole file, then `ARCHITECTURE.md` (especially
 *Multiplayer is server-authoritative* and *Room timing is a per-game
 policy*), `docs/plans/async-games.md`, `CLAUDE.md`, and
 `.claude/skills/verify/SKILL.md`, before changing anything.
@@ -192,6 +193,14 @@ run ID and the latest signed snapshot. Clearing site data loses the run,
 which fits permadeath. No cross-device history or leaderboard. Revisit with
 that plan if leaderboards are wanted.
 
+**Revised 2026-10-13 (D9).** Ghost rewards need an identity that outlives a
+run, so D9 adds an anonymous **player key**: a random secret the browser
+keeps, of which the server stores only a hash. Still no sign-in, email or
+recovery, and still per device — clearing site data loses it, and its
+rewards. This is the "feature needs a stable identity" case this decision
+said to revisit; the answer is the smallest identity that works, not
+accounts.
+
 ### D5. The character crosses breaks as a signed snapshot
 
 **Proposal:** when a level ends (or an invasion does), the level room
@@ -324,20 +333,26 @@ spawn points, and adding a player mid-level (Phase 2).
   chosen after the window passes, and a level that got a ghost is no longer
   invadable.
 
-**The repeat-ghost problem.** A dies to B's ghost at depth n. A's run is
-over (permadeath); in A's next run, at the same depth, A could meet B's
-ghost again. Accepted as a trade-off by the owner (2026-10-13) — meeting
-the ghost that killed you can even be a draw. Cheap ways to make it rarer,
-to choose from in play:
-- **Retire ghosts.** Remove a ghost from the pool after it kills someone,
-  or after a few encounters — as NetHack deletes a bones file once a game
-  has loaded it.
-- **Pick from a large pool, at random.** With hundreds of ghosts per depth,
-  a repeat is unlikely without any bookkeeping.
-- **Recently met list.** The browser sends the IDs of ghosts it met
-  recently with "next level", and the room avoids them. With no accounts
-  (D4) this is a preference, not a guarantee — clearing storage resets it,
-  and that's harmless.
+**Repeat ghosts are a feature.** A dies to B's ghost at depth n; in A's
+next run, at the same depth, A may meet it again — on purpose:
+- **Killers stay in the pool**, and a ghost's chance of being picked grows
+  with its kills, so a deadly ghost becomes a known threat at its depth
+  ("Ghost of Mira — 7 kills").
+- **Nemesis.** The browser keeps the IDs of the ghosts that killed it and
+  sends them with "next level"; the room prefers one of them when it brings
+  in a ghost at that depth. Only a preference — a tampered list only
+  changes which ghost you meet — so it needs no server identity.
+- **A ceiling,** so one strong build can't own a depth: cap how often a
+  ghost is picked, and retire it as a **legend** after N kills (it stays on
+  the depth's legends list, D9, but stops invading).
+
+**Revised 2026-10-13.** First written as "the repeat-ghost problem",
+accepted as a trade-off, with ways to make repeats rarer: retire a ghost
+after a kill or a few encounters (as NetHack deletes a bones file once
+loaded), pick at random from a large pool, or avoid a browser-sent
+"recently met" list. The owner made repeats a goal instead, with rewards
+for the ghost's owner (D9); the random large pool still applies to ghosts
+with no kills.
 
 **Consequences:**
 - The ghost needs AI written for a player-shaped character (gear,
@@ -346,7 +361,74 @@ to choose from in play:
   game chooses to show the original player's display name (a privacy
   choice to make then).
 - A pool per depth means one more thing stored by each matchmaker DO;
-  capped, so bounded.
+  capped, so bounded. Legends are kept beyond the cap.
+
+### D9. A ghost's kills reward its owner: recognition and unlocks
+
+**Decision (owner, 2026-10-13):** when a ghost kills a player, the player
+it was copied from earns **recognition** (a kill tally, a "your ghost has
+slain N players" message, legend status) and **permanent unlocks** that
+carry across runs (e.g. starting classes, items offered in breaks,
+cosmetics). Not resources in the current run: too easy to farm, and they
+snowball (stronger players → stronger ghosts → more rewards).
+
+**How (proposal):**
+- **Player key.** The browser makes a random secret once and keeps it in
+  `localStorage` (D4's revision). The server stores only its SHA-256 hash.
+  It's sent in the "next level" body, never in a URL.
+- **Ghost records carry the owner's hash** (never the key), added when the
+  level room offers the character to the pool (D8).
+- **A ledger per player:** a small DO, `idFromName('player:' + hash)`,
+  holding the kill tally, legend ghosts, and unlocks earned. When a ghost
+  kills someone, the level room tells the owner's ledger, keyed by that
+  level's ID, so a retry can't count a kill twice.
+- **Reading it.** The break screen fetches the player's ledger (key in the
+  request body; the Worker hashes it) to show the tally and new unlocks.
+  Unlocks are free to show; using one at the start of a run is checked by
+  the level room against the ledger, and written into the run's first
+  signed snapshot.
+- **Legends list per depth:** the matchmaker already holds the ghost pool
+  with kill counts, so a "deadliest ghosts at this depth" list is free.
+  A global leaderboard is not (it needs a query across all ledgers — a D1
+  database or an aggregating DO); out of scope.
+- **Notification** of a kill can reuse the async plan's Web Push work once
+  it exists; until then the tally shows on the next visit.
+
+**Consequences:**
+- **Farming.** A player can feed their own runs to their own ghost; each
+  sacrificial run must reach that depth first, so it's slow, and with no
+  accounts it can't be reliably detected. Keep unlocks about options, not
+  power, and cap credited kills per ghost per day.
+- **Names.** Showing "Ghost of <name>" displays a player-chosen name to
+  strangers: needs a length limit and a basic filter.
+- **Lost key, lost rewards.** Per device, like everything under D4. A
+  "move to another device" link (the key in a URL fragment, as the async
+  plan's rejoin link) can come later.
+- **Storage.** One small ledger per player key, kept indefinitely (see
+  *Long-lived storage* below).
+
+## Long-lived storage
+
+Durable Object storage is **durable until deleted**: nothing expires on its
+own. `GameRoom` rooms disappear because `GameRoom` deletes its own storage
+on its TTL alarm (`deleteRoom()`), not because the platform does; the
+retired `ManifestRegistry` still holds its old manifests. Classes created
+with `new_sqlite_classes`, as every class here is, get a SQLite database
+of up to 10 GB per object, on the Workers Free plan too (within its
+account-wide limits). What this plan keeps for good:
+
+| What | Where | Size |
+|---|---|---|
+| Level tombstones (D6) | each `LevelRoom` | a few bytes per level played |
+| Ghost pool and legends (D8) | each `Matchmaker` (per depth) | capped pool + legends |
+| Ledger: tally, unlocks (D9) | one `PlayerLedger` per player key | small |
+
+Storage is billed on Workers Paid beyond the included amount (since
+January 2026); check usage on the Durable Objects dashboard once players
+arrive, and add the budget alert from the async plan's Phase 7. What's
+missing is a **query across objects** (no "top ghosts anywhere"), which
+`ARCHITECTURE.md` already notes; a D1 database is the answer if that's
+ever wanted.
 
 ## Design: an invasion
 
@@ -393,8 +475,9 @@ to choose from in play:
   registry generator taught to tell it from `ServerSystem` (D7).
 - **Room-to-room routes** (`/invasion/reserve`, `/outcome`, …) on
   `LevelRoom`, reachable only through the DO stub.
-- **A `Matchmaker` DO class.**
-- `wrangler.toml`: bindings for both, in one migration.
+- **A `Matchmaker` DO class** (also holds the ghost pool and legends).
+- **A `PlayerLedger` DO class** (D9), in Phase 4.
+- `wrangler.toml`: bindings and `new_sqlite_classes` migrations for each.
 - **No changes to `GameRoom`, `RoomPolicy` or `routes/rooms.ts`.**
 - **Signing:** HMAC sign/verify with WebCrypto in one small server module
   with no game knowledge, plus the `RUN_SIGNING_KEY` secret.
@@ -454,12 +537,18 @@ retrying neither duplicates nor loses B's character.
 
 The per-depth ghost pool in the matchmaker, level rooms offering
 characters to it, the ghost fallback after the invadable window, the AI
-for player-shaped characters, and the chosen repeat-ghost rule (D8).
+for player-shaped characters, kill-weighted picks, nemesis and legends
+(D8). Then rewards (D9): the player key, the `PlayerLedger` DO (binding and
+migration), crediting kills, the break screen's tally and unlocks, unlocks
+checked at run start, and the per-depth legends list.
 
-Acceptance: unit tests for the ghost AI and pool (cap, retirement,
-avoidance); e2e — a level with no live invader gets a ghost at a spawn
-point and can be killed by it; a level that got a live invader never also
-gets a ghost.
+Acceptance: unit tests for the ghost AI and pool (cap, kill weighting,
+legend retirement, nemesis preference) and the ledger (a repeated credit
+counts once; the daily cap holds); e2e — a level with no live invader gets
+a ghost at a spawn point; when it kills the player, the owner's browser
+sees the kill and its unlock; a dead player's next run at that depth
+prefers that ghost; a level that got a live invader never also gets a
+ghost.
 
 (Ghosts need less than live invasions — no tickets, hand-off or outcome —
 so this phase could instead come before Phase 3, to test how invasions
@@ -474,7 +563,9 @@ key rotation, and the async plan's Phase 7 guards where they apply.
 ## Out of scope
 
 - Opt-in invasions (see D1's revision note).
-- Accounts, leaderboards, cross-device runs (D4).
+- Accounts and cross-device runs (D4); moving a player key between
+  devices (D9, later).
+- A global leaderboard (D9) — per-depth legends only.
 - More than one invader at a time.
 - Matchmaking for any other game.
 
