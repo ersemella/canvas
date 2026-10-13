@@ -2,7 +2,7 @@
 
 Status: **proposed — feasibility checked, nothing built.** Written
 2026-10-13; revised the same day (D1, D3 replaced; D5, D6 added — see
-*Decisions*). D1 is confirmed by the owner; the rest are proposals. Read this whole file, then `ARCHITECTURE.md` (especially
+*Decisions*). D1 and D7 are confirmed by the owner; the rest are proposals. Read this whole file, then `ARCHITECTURE.md` (especially
 *Multiplayer is server-authoritative* and *Room timing is a per-game
 policy*), `docs/plans/async-games.md`, `CLAUDE.md`, and
 `.claude/skills/verify/SKILL.md`, before changing anything.
@@ -37,16 +37,20 @@ plan settles on:
 
 ## What already fits (don't rebuild it)
 
+Level rooms get their own Durable Object class (D7), so these are patterns
+and pure code to reuse from `GameRoom` and `@canvas/engine/server`, not
+`GameRoom` itself.
+
 - **Server-authoritative rules.** Levels run on the server: a client can't
   fake combat or an invasion, and permadeath survives a reload. A
   `ServerSystem` (`packages/engine/src/server.ts`) does this: `handleAction`
   applies a move and then runs the enemy AI's turns inside the same call.
   Grid AI and turn-based rules are well within Worker CPU limits.
 - **Turn order.** `actingConnectionId(state)` names one actor at a time —
-  player → invader → AI. `GameRoom` already rejects out-of-turn actions.
-- **Timers.** Levels are always timed, so a fixed `RoomPolicy` is enough —
-  no timer that changes with game state. `GameRoom` already sets no
-  deadline when nobody is acting.
+  player → invader → AI. `GameRoom` shows how to reject out-of-turn actions.
+- **Timers.** Levels are always timed, so fixed timer settings are enough —
+  no timer that changes with game state. The timer maths in
+  `packages/server/src/roomPolicy.ts` is pure and can be reused as is.
 - **Hidden information.** `getPublicState(state, viewer)` sends each socket
   its own view — fog of war.
 - **Shared rules code.** A game package already ships code to both the
@@ -61,17 +65,18 @@ plan settles on:
 
 1. **Signed character snapshots** (D5): a format, an HMAC signing key, and
    checks on the server when a snapshot is used.
-2. **Level rooms addressed by run and level** (D6): today rooms get random
-   IDs from `POST /rooms`, start from a lobby, and delete everything on
-   expiry. A level room is named `run:<runId>:<n>`, starts at once from a
-   snapshot, and leaves a small permanent record behind.
+2. **A level room class** (D6, D7): `GameRoom` rooms get random IDs from
+   `POST /rooms`, start from a lobby, and delete everything on expiry. A
+   level room is named `run:<runId>:<n>`, starts at once from a snapshot,
+   admits an invader mid-game, and leaves a small permanent record behind.
 3. **Matchmaking.** Rooms are found only by link or code; the async plan
    puts matchmaking out of scope (its D1). This game needs a matchmaker
    that knows which levels are running at which depth. Scoped to this game.
-4. **Joining a running game.** `handleJoin` and `handleWsUpgrade` refuse
-   newcomers once `status === 'in_progress'`, and `createInitialState` is
-   the only way players enter the game state. The invader needs a
-   ticket-gated join and a hook to add (and later remove) a player.
+4. **Joining a running game.** `GameRoom` refuses newcomers once a game is
+   in progress, and `createInitialState` is the only way players enter its
+   game state. The level room needs a ticket-gated join and rules hooks to
+   add (and later remove) a player — built into the new class, so
+   `GameRoom` doesn't change.
 5. **Client pages.** The web's multiplayer UI is poker-only. Needs the
    game's own page: a break screen (client-only) and a level screen
    (WebSocket).
@@ -83,8 +88,8 @@ plan settles on:
 
 ## Decisions
 
-D1 is confirmed (2026-10-13); the others are proposed, not yet confirmed
-by the owner. Same format as the async plan:
+D1 and D7 are confirmed (2026-10-13); the others are proposed, not yet
+confirmed by the owner. Same format as the async plan:
 to change one, edit its entry, keep the old reasoning, add a dated
 "Revised" note.
 
@@ -245,6 +250,41 @@ considered: it's eventually consistent, so it can't stop a quick replay.)
 Revisit if that ever matters; a snapshot expiry (e.g. 90 days) would let
 tombstones go too, at the cost of a time limit on breaks.
 
+### D7. Level rooms are their own Durable Object class
+
+**Decision (owner, 2026-10-13):** a new `LevelRoom` class in
+`@canvas/server`, not an extension of `GameRoom`.
+
+**Why:** almost everything a level needs is the opposite of what
+`GameRoom` does: named by run and level rather than a random code, no lobby
+or host start, starts from signed start data, admits a player mid-game by
+ticket, talks to other rooms and the matchmaker, and keeps a tombstone
+instead of deleting itself. Bending `GameRoom` to all of that would put
+options poker never uses on the code path poker relies on.
+
+**Consequences:**
+- **Poker is untouched by construction:** no `GameRoom`, `routes/rooms.ts`
+  or `RoomPolicy` changes for this game. The poker suites remain the guard,
+  but nothing they cover changes.
+- **Its own rules contract.** Rather than optional hooks on `ServerSystem`
+  that `GameRoom` would ignore, add a `LevelSystem` interface to
+  `@canvas/engine/server`: start from data (snapshot + break actions),
+  `handleAction`, `getPublicState`, `actingConnectionId`, `timeoutAction`,
+  `addPlayer` / `removePlayer`, and functions that report the level's end
+  and build each player's next snapshot. The game package's `./server`
+  exports it; `scripts/gen-game-registry.mjs` must tell the two kinds apart
+  (e.g. a `kind` field, or a separate export) and generate a registry for
+  each.
+- **Some duplication with `GameRoom`:** WebSocket hibernation, socket
+  attachments, per-viewer broadcast, the alarm. Reuse the pure pieces
+  (`roomPolicy.ts` timer maths, small helpers moved to a shared module if
+  they're copied otherwise); don't refactor `GameRoom` just to share code.
+- **New routes:** e.g. `POST /runs/:runId/levels/:n` (start or resume,
+  body = snapshot + break actions) and its WebSocket, in their own route
+  module; room-to-room calls stay reachable only through the DO stub.
+- `wrangler.toml`: bindings and one migration adding `LevelRoom` and
+  `Matchmaker` (`new_sqlite_classes`).
+
 ## Design: an invasion
 
 ```
@@ -282,21 +322,17 @@ tombstones go too, at the cost of a time limit on breaks.
 
 ## Platform changes (opt-in per game; poker must not change)
 
-- **Level rooms.** Either extend `GameRoom` or give the game its own DO
-  class; decide in Phase 1. Extending `GameRoom` keeps hibernation, timers
-  and per-viewer state, and needs:
-  - a route that addresses a room by name (`run:<runId>:<n>`) instead of
-    `POST /rooms`' random ID, and starts it at once from a body
-    (snapshot + break actions) with no lobby or host `startGame`;
-  - start data passed to `createInitialState` (e.g. an optional
-    `start(data)` hook, or a third argument);
-  - a policy option to leave a tombstone instead of `deleteAll()`.
-- **Joining a running game:** `ServerSystem` hooks
-  `addPlayer(state, player, data)` / `removePlayer(state, connectionId)`
-  and a ticket-gated join in `GameRoom`.
-- **Room-to-room routes** (`/invasion/reserve`, `/outcome`, …) reachable
-  only through the DO stub, never through `routes/rooms.ts`.
-- **A `Matchmaker` DO class:** new `wrangler.toml` binding and migration.
+- **A `LevelRoom` DO class** (D7): addressed by `run:<runId>:<n>`, started
+  from signed start data, always timed, a ticket-gated join for the
+  invader, a tombstone when the level ends. Its own routes
+  (`/runs/:runId/levels/:n`, WebSocket), separate from `routes/rooms.ts`.
+- **A `LevelSystem` rules contract** in `@canvas/engine/server`, and the
+  registry generator taught to tell it from `ServerSystem` (D7).
+- **Room-to-room routes** (`/invasion/reserve`, `/outcome`, …) on
+  `LevelRoom`, reachable only through the DO stub.
+- **A `Matchmaker` DO class.**
+- `wrangler.toml`: bindings for both, in one migration.
+- **No changes to `GameRoom`, `RoomPolicy` or `routes/rooms.ts`.**
 - **Signing:** HMAC sign/verify with WebCrypto in one small server module
   with no game knowledge, plus the `RUN_SIGNING_KEY` secret.
 - Game logic — what a snapshot holds, the break rules, how an outcome is
@@ -319,8 +355,9 @@ unless asked), each verified with `pnpm check:boundaries`,
 New `packages/games/roguelite`: seeded level generation (placing invader
 spawn points from the start, per D1, even though nothing uses them yet), movement, combat,
 enemy AI, doors, permadeath (server); the break and its deterministic rules
-(shared); the break and level screens (client). Platform: level rooms by
-name with start data and tombstones, snapshot signing, the secret.
+(shared); the break and level screens (client). Platform: the `LevelSystem`
+contract and registry support, `LevelRoom` (named, started from a snapshot,
+timed, tombstones), its routes, snapshot signing, the secret.
 
 Acceptance: unit tests for generation (seeded), combat, AI, and break
 replay (same result in browser and server; illegal actions refused); e2e
@@ -330,13 +367,13 @@ refused.
 
 ### Phase 2 — Joining a running game
 
-The `addPlayer`/`removePlayer` hooks and the ticket-gated join, proven
-first with the e2e test game (`packages/server/test/`), then used by the
-roguelite with a manually issued ticket (no matchmaker yet).
+The `addPlayer`/`removePlayer` hooks and `LevelRoom`'s ticket-gated join,
+used by the roguelite with a manually issued ticket (a test-only route in
+the local e2e Worker entry; no matchmaker yet).
 
 Acceptance: e2e — a second browser joins a running level with a ticket and
 is refused without one or with a used one; turn order includes the
-invader; poker suites unchanged.
+invader; poker suites unchanged (and `GameRoom` untouched).
 
 ### Phase 3 — Matchmaker and invasions
 
