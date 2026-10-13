@@ -77,9 +77,14 @@ untimed turns make the game strategic and permadeath fair.
   build but plays like our AI. It deserves real design effort; later,
   ghosts could copy simple habits from their owner (favourite abilities,
   aggression), as Forza's Drivatars and Killer Instinct's Shadows do.
-- **Live invasions are not a later phase.** Adding them would bring timers
-  back and make a strategic game timed — a change to the game's identity,
-  not an extension.
+- **Bad runs are inconsequential; good runs are memorable.** A run that
+  dies early leaves ghosts only in shallow pools, where kill-weighted picks
+  rarely choose them; a strong run leaves a ghost that keeps killing,
+  becomes a legend, and earns its owner unlocks (D8, D9).
+- **Live invasions only as a separate, opt-in mode** (see *Future: opt-in
+  PvP*). Adding them to the standard game would bring timers back and make
+  a strategic game timed — a change to its identity. As a mode a player
+  chooses per run, the standard game stays untimed.
 
 **Revised 2026-10-13** (twice): replaces *mutual opt-in at the door*, then
 *always-on live invasions with timed levels*. See *How the design got
@@ -179,6 +184,11 @@ code path untouched.
   Simpler than the socket handling in `GameRoom`, and reloading is just a
   `GET`.
 
+Plain HTTP is fine for the standard mode; opt-in PvP (future) would add a
+WebSocket to the same room for pushing the other player's moves. Keep that
+cheap: every response carries the whole public view and a version number,
+so a socket can later push exactly the same message.
+
 **Revised 2026-10-13:** decided for per-level rooms (`LevelRoom`); with
 D3 it's a per-run room instead.
 
@@ -214,6 +224,12 @@ second, even after the first is beaten.
 - **Who plays it.** The game's AI, driving a player-shaped character
   (gear, abilities), inside the run's room. Nothing happens to the player
   it was copied from, except credit for kills (D9).
+- **A ghost is a player-shaped actor with an AI controller.** Model turn
+  order as a list of actors, each with a controller (the player's actions,
+  the enemy AI, the ghost AI), rather than hard-coding "player, then
+  enemies, then ghost". It costs nothing now and is the main thing that
+  makes opt-in PvP (future) possible: a live invader is the same actor
+  with a human controller.
 
 **Consequences:** the ghost AI is a significant piece of game work (D1).
 Showing "Ghost of <name>" displays a player-chosen name to strangers:
@@ -325,7 +341,9 @@ unless asked), each verified with `pnpm check:boundaries`,
 New `packages/games/roguelite`: seeded level generation (placing ghost
 spawn points from the start, unused until Phase 2), movement, combat,
 enemy AI, doors, the between-levels screen, permadeath (server); the level
-and between-levels screens (client). Platform: the player key, the
+and between-levels screens (client). Turn order as actors with
+controllers, a `mode` field on runs, and versioned full views in responses
+(the PvP seams). Platform: the player key, the
 `RunSystem` contract and registry support, `RunRoom`, its routes, and a
 minimal `PlayerLedger` (active run, best depth).
 
@@ -362,9 +380,54 @@ Rate limits on starting runs and on actions, abuse cases (run churn to
 seed the pool, farming patterns), the budget alert, and moving to Workers
 Paid if not already.
 
+## Future: opt-in PvP
+
+Not planned for building yet; recorded so the standard game's design
+leaves room for it. Owner's direction (2026-10-13): a future PvP version
+that players opt into.
+
+**Shape (to decide when it's taken up):**
+- **Opt-in per run.** A player chooses a PvP run when starting it (say,
+  *Hunted*). Only PvP runs can invade or be invaded by live players, and
+  only PvP runs are timed, so standard runs stay untimed and strategic.
+  Live invaders still come at most one per level (D8's rule); with no live
+  match, a ghost invades as in the standard game, so PvP runs aren't
+  empty at low player counts.
+- **Or an arena.** Opted-in characters at the same depth meet in a
+  separate duel room, outside levels, from the between-levels screen.
+  Smaller: no joining a running level, and a two-player timed turn-based
+  room is close to what `GameRoom` and a `ServerSystem` already do; the
+  characters are copied in from their `RunRoom`s server to server, so no
+  signed snapshots are needed.
+- PvP runs would likely keep their own ghost pools and rewards, so the
+  standard game's balance doesn't depend on them.
+
+**What it would add** (most was designed in revision 2 — see *How the
+design got here* and its commits): live matchmaking per depth, a turn
+timer and timeout action for PvP runs (the pure timer maths in
+`packages/server/src/roomPolicy.ts` is reusable), a WebSocket on
+`RunRoom`, a ticket-gated join for the invader, and moving the invader's
+character between rooms with an idempotent outcome. Because runs live
+entirely on the server (D3), the hand-off is between two rooms only — no
+client-held snapshot, so D5 and D6 stay withdrawn.
+
+**Seams to keep now** (cheap, in Phases 1–2):
+- Turn order as actors with controllers (D8).
+- A `mode` field on every run (`'standard'` for now), stored with the run
+  and with its ghost and ledger records.
+- Responses carry the whole public view and a version number (D7), so a
+  socket can push the same message later.
+- No timer logic in the standard rules; timers, if they come, belong to
+  the PvP mode's room settings.
+
+**Main risk, unchanged from revision 2:** live matches need two opted-in
+players at the same depth at the same time; the ghost fallback keeps PvP
+runs playable when that doesn't happen.
+
 ## Out of scope
 
-- Live invasions and turn timers (D1).
+- Live invasions and turn timers in the standard game (D1); opt-in PvP is
+  a future mode (above), not part of these phases.
 - Accounts, cross-device runs, moving a player key (D4, later).
 - A global leaderboard (D9).
 - More than one ghost in a level (D8).
