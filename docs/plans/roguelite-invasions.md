@@ -257,6 +257,14 @@ D3 it's a per-run room instead.
 Showing "Ghost of <name>" displays a player-chosen name to strangers:
 needs a length limit and a basic filter.
 
+**From prior art** (see *Prior art*): Nioh's revenants are the closest
+existing ghost mechanic — before fighting one, the player sees its owner's
+level, name, cause of death and loot rarity. Show a ghost's name, depth
+and unique kills when it appears; it makes the encounter personal. Nioh 2
+also changed revenant drops from exact copies of the dead player's gear to
+randomised stats, which supports D2's rule that a beaten ghost drops only
+*part* of its gear, capped at an ordinary level's best loot.
+
 **Revised 2026-10-13:** first a fallback when no live invader came, with
 repeats treated as a problem; repeats then became a feature (killers stay
 in the pool, a **nemesis** rule preferring the ghost that killed you,
@@ -296,6 +304,13 @@ per player:
   database); out of scope.
 - **Notification** of a kill could reuse the async plan's Web Push work
   once it exists; until then the tally shows on the next visit.
+- **A ghost's story** (idea, from Dragon's Dogma's pawns, see *Prior
+  art*): instead of only a number, show what the ghost did — "killed Ash
+  at depth 5", "beaten by Rook at depth 7". The ledger already receives
+  every credit; keeping the victim's display name and depth with it makes
+  recognition far more vivid for little cost. Replays of a ghost's kills
+  (as Clash of Clans and The Mighty Quest show raid replays) would need
+  each encounter's actions stored — possible later, not planned.
 
 **Consequences:**
 - **Farming is much harder:** an alt key adds at most one kill per run,
@@ -399,6 +414,12 @@ Constraints to keep in mind while answering:
 12. **Ghost strength.** A depth-n ghost comes from a run that cleared n but
     may be unusually strong or weak. Scale ghosts towards a target for the
     depth, or use them exactly as built? Affects the ghost AI and balance.
+    Prior art: the snapshot-battle roguelites (Super Auto Pets, Backpack
+    Battles, The Bazaar) match on rank or record as well as round, so new
+    players don't meet veteran builds; Nioh scales revenants to the level
+    they're found at. Options here: scale towards a depth target, or pick
+    candidates closer to the player's own strength (needs a strength
+    score per ghost), or both.
 
 ### Can wait
 
@@ -577,6 +598,86 @@ client-held snapshot, so D5 and D6 stay withdrawn.
 players at the same depth at the same time. When that doesn't happen, a
 ghost stands in — an arena duel against a ghost, or a ghost invasion in a
 PvP run — so the mode stays playable at low player counts.
+
+**Lessons from games that shipped live invasions** (see *Prior art*), for
+when PvP is picked up again:
+- **Everyone gives players control, with an AI fallback.** Deathloop
+  offers three settings — single player (only an AI invader), friends
+  only, online — and the invader is AI whenever no human takes the slot;
+  Dying Light and Sniper Elite 5 let players turn invasions off. Opt-in
+  plus a ghost fallback matches this.
+- **Don't punish the victim.** Watch Dogs first made the opt-out cost all
+  progress (notoriety reset to zero), then changed so victims never lose
+  notoriety. Reward the invader's risk; don't tax the invaded.
+- **Supply and demand of targets.** When Elden Ring restricted who can be
+  invaded (only players in co-op or using an item), invaders were funnelled
+  into fewer worlds. With opt-in, invaders may far outnumber targets, or
+  the reverse — plan for the imbalance (ghosts fill gaps on both sides).
+- **Give an invasion an objective and an end.** Deathloop's invasion locks
+  the exits until the hunted player hacks a jammer, which flips who is
+  hunting whom; it also caps invasions per loop. Pure "kill the host"
+  stalls. (Same questions as the old D2: how an invasion ends.)
+- **Limit frequency, and give the host an edge.** Souls games and
+  Deathloop both cap how often a host is invaded; Souls games added host
+  advantages over time to keep invasions fair.
+- **Disconnects need rules from day one.** Watch Dogs was patched after
+  launch to deter quitting mid-invasion.
+- **It's expensive.** Doom Eternal announced a Souls-style invasion mode
+  and cancelled it in 2021, citing development problems. Turn-based helps
+  (no netcode for real-time action), but the matchmaking, hand-off and
+  balancing work is real — another reason it's parked.
+- **Turn-based is rare.** The one turn-based example found is Athena
+  Crisis, where a friend can join a campaign — including by taking over
+  the enemy AI — triggered by items found in the campaign. A variant worth
+  remembering: the invader controls the level's monsters rather than a
+  character (as in Crawl).
+
+## Prior art
+
+Researched 2026-10-13/14 (from memory, plus web searches for the live
+invasion games; details not checked against each game). No game found
+does exactly this game's ghosts — AI copies of other players' characters
+invading your dungeon at the same depth, at most once per run, scored by
+unique players killed — but each part exists somewhere.
+
+**Ghosts (asynchronous copies of players):**
+
+| Game | What it does | Lesson |
+|---|---|---|
+| Nioh 1–3 (revenants) | A dead player's grave summons an AI copy with their level and gear; beat it for loot | Closest match. Show the owner's details before the fight (D8); Nioh 2 moved drops from exact gear copies to randomised stats (D2) |
+| NetHack, Dungeon Crawl Stone Soup | A dead character's ghost and gear can appear in another player's game at the same depth; NetHack's bones file is used once | Same-depth idea; ghosts there are weak loot guardians, not full builds |
+| Super Auto Pets, Backpack Battles, The Bazaar | Each round, fight a saved copy of another player's build from the same round | Structurally closest; they also match by rank/record (question 12) |
+| Tekken 7/8 Ghost Battle, Killer Instinct Shadows, Forza Drivatars | AI learns a player's habits; others fight or race it | Players enjoy fighting someone's *style* — the later "ghosts copy habits" idea (D1) |
+| Dragon's Dogma 1/2 (pawns) | Your AI companion is hired into others' games; you're rewarded and hear what it did | Closest to D9's reward loop; tell the ghost's story (D9) |
+| Clash of Clans, The Mighty Quest for Epic Loot | Others raid your AI-defended base; you earn when defences win and can watch replays | Owner rewards for an AI proxy work; replays are a strong but costly extra (D9) |
+| Spelunky, Mario Kart, Trackmania | Race against replays of other players | Ghosts that can't interact; not this mechanic |
+| Middle-earth: Shadow of Mordor (Nemesis System) | An enemy that kills you is remembered, promoted and grows in renown (single-player) | Close in spirit to legends. Warner Bros. holds a US patent on the Nemesis System; this design differs (real players' ghosts, a fame score, no promotion hierarchy, nemesis rule dropped), but get legal advice before making ghosts remember and adapt to individual players |
+
+**Live invasions** (lessons under *Future: opt-in PvP*): Demon's Souls,
+Dark Souls, Bloodborne and Elden Ring; Deathloop; Watch Dogs; Dying Light
+(Be the Zombie); Sniper Elite 5; Doom Eternal (announced, cancelled);
+Napoleon: Total War (a friend takes the enemy army in your campaign, real
+time); Athena Crisis (turn-based).
+
+Sources (web searches, 2026-10-14):
+- Deathloop: [TechRadar](https://www.techradar.com/how-to/deathloop-invasion-tips-and-how-to-win-as-julianna),
+  [Shacknews](https://www.shacknews.com/article/126631/how-to-turn-off-pvp-invasions-deathloop),
+  [The AU Review](https://www.theaureview.com/games/deathloop-review-ps5/)
+- Watch Dogs: [Watch Dogs Wiki](https://watchdogs.fandom.com/wiki/Online_Hacking),
+  [Engadget](https://www.engadget.com/2014-06-27-watch-dogs-multiplayer-tuned-to-keep-you-playing.html),
+  [GamingBolt](https://gamingbolt.com/watch-dogs-player-invasions-occur-during-free-roam-wont-disrupt-campaign-missions/amp)
+- Elden Ring: [Inverse](https://inverse.com/gaming/elden-ring-co-op-details-multiplayer-coop),
+  [Sportskeeda](https://sportskeeda.com/esports/top-5-features-elden-ring-s-closed-network-test-will-excite-players)
+- Dying Light: [Game Informer](https://gameinformer.com/games/dying_light/b/playstation4/archive/2014/08/14/invade-the-worlds-of-your-friends-in-dying-light.aspx),
+  [Gematsu](https://www.gematsu.com/2014/10/dying-light-trailer-shows-asymmetric-multiplayer)
+- Sniper Elite 5: [Rebellion support](https://support.rebellion.com/hc/en-gb/articles/5232302039069-What-is-Invasion-Mode-or-can-I-turn-it-off)
+- Doom Eternal: [GameSpot](https://gamespot.com/articles/doom-eternals-invasion-mode-has-been-canceled-will-be-replaced-with-horde-mode/1100-6493540/),
+  [PC Gamer](https://www.pcgamer.com/doom-eternal-invasion)
+- Athena Crisis: [Pocket Gamer](https://www.pocketgamer.com/athena-crisis/invasions-update);
+  Napoleon: Total War: [Gaming Nexus](https://gamingnexus.com/News/16065/Napoleon-Total-War-pits-players-against-one-another2c-in-the-single-player-campaign)
+- Nioh: [Nioh 2 wiki (Fextralife)](https://nioh2.wiki.fextralife.com/Online),
+  [SegmentNext](https://segmentnext.com/2017/02/08/nioh-easy-glory-farming-guide-how-to-farm-glory-fast-tips),
+  [SamuraiGamers](https://samurai-gamers.com/nioh/sword-mounds-bloody-graves-nioh)
 
 ## Out of scope
 
