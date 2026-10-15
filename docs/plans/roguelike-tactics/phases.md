@@ -18,11 +18,30 @@ unless asked), each verified with `pnpm check:boundaries`,
 
 ### Before Phase 1
 
-Decided 2026-10-15: the run structure (a route map, open question 34)
-and previews versus hidden stats (D11). Still needed — **starting values**
-for the combat design's TBDs that Phase 1 uses: the cost scale (open
-question 1), map size and shape (9), the minimum turn cost; the knockback
-lock limit (5) can wait for PvP but is cheap to decide now.
+Decided 2026-10-15: the run structure (a route map, open question 34),
+previews versus hidden stats (D11), and the consistency review (README).
+
+Still needed — a **Phase 1 brief**, so a fresh session doesn't invent its
+own answers:
+- **Defaults for every TBD Phase 1 touches**, as tunable values in one
+  config module: costs (typical, quick, slow action; per hex; minimum
+  turn cost), the speed cap and stat→modifier mapping, the starting offset,
+  the fixed tie order, move/act order within a turn and any movement cap,
+  map size and shape, the flanking effect, hazard trigger, conceal
+  strength, `defenceConstant` and minimum damage, the variance cap, the
+  line-of-fire border case, whether delayed actions are in.
+- **Prototype content:** 3–4 heroes from the roster with abilities (the
+  keyword vocabulary they use, 10.8) and one enemy band — needs the
+  owner's review.
+- **Enemy AI:** a few sentences of behaviour.
+- **One hand-made map** (map generation is out of scope).
+- **The game's page:** its own route and page in `@canvas/web`, like
+  poker's (the generic `/play/:gameId` page runs browser-only games),
+  talking to `/runs`.
+- **Visuals:** plain shapes and text; the design language (open question
+  15) comes later.
+- **A pointer in `CLAUDE.md`** to `docs/plans/README.md`, so a fresh
+  session finds the plans.
 
 ### Phase 1 — One fight
 

@@ -47,6 +47,7 @@ Maps can contain three types of special tile:
 ### 6.6 Deployment (Decided)
 - Each side has a **deployment zone**: a set of starting hexes. Before the fight, players place their units anywhere within their zone, with full visibility of the map and enemy positions. Placement is the first decision of the fight.
 - **PvP:** zones are on opposite ends of the map, on symmetric or mirrored maps.
+- **Rival caravan fights** *(added (owner, 2026-10-15))*: use the PvP-style maps above — symmetric or mirrored, opposite deployment zones — a fair mirror match against another player's build ([ghosts.md](ghosts.md) D2).
 - **PvE:** zones are commonly on opposite ends, but vary by map. Examples: split starts, being surrounded, defending a central point, or starting already engaged. Enemy positions are set by the map.
 - **Engagement distance:** the gap between zones should allow contact within about 1 to 2 turns of typical movement. The approach should be a meaningful timeline decision (rushing in costs ticks), not dead time.
 - Watch: heavily armoured units arrive later because of the speed versus defence tradeoff (section 4.5), and ranged units may get free hits during the approach. Short gaps and obstacles that block early sight lines mitigate both.

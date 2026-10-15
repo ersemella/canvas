@@ -5,9 +5,9 @@ imported 2026-10-15) defines the game. The multiplayer design — ghosts as
 **rival caravans**, built **last** — is settled (D1–D11, owner,
 2026-10-13 to 10-15). Built in this repository (D10).
 
-**Next step:** answer the questions from the consistency review (below),
-then pick starting values for costs and map size
-([phases.md](phases.md#before-phase-1)) and start Phase 1. The combat
+**Next step: a Phase 1 brief** — defaults for the rules Phase 1 touches,
+prototype heroes' abilities, the AI, one map, and the game's page — then
+Phase 1 ([phases.md](phases.md#before-phase-1)). The combat
 design's other open questions sit at the end of each topic file. PvP is
 parked ([pvp.md](pvp.md)).
 
@@ -119,40 +119,22 @@ From the combat design's section 14 (original numbers):
     in Slay the Spire or Monster Train). Node types and layout are Phase
     2's design work ([phases.md](phases.md)).
 
-## Questions from the consistency review (2026-10-15)
+## Consistency review (2026-10-15) — all decided
 
-Places where two parts of the plan disagree or leave a gap. Each has a
-suggestion; none is decided.
+Six places where parts of the plan disagreed, decided by the owner the
+same day and recorded in their topic files:
 
-1. **What "stage" means on a route map.** Rival caravans are matched by
-   stage (D8), defined as fights won. On a route map two players at the
-   same point can have won different numbers of fights (one took rests and
-   bazaars). *Suggested:* stage = position along the road (the route
-   map's row or step), which is also what difficulty scales with.
-2. **Are recruitment offers seeded?** The combat design leaves it open
-   (10.7); the architecture assumed yes (D3). *Suggested:* yes — the whole
-   route map, encounters and offers come from the run's seed, so restarting
-   can't reroll them.
-3. **Where unlocks come from.** D9 earns them from your caravans' kills;
-   the combat design suggests unlocks from fights won (10.7). *Suggested:*
-   both — unlocks from fights won (everyone progresses), and separate
-   recognition-flavoured unlocks (cosmetics, titles) from caravan kills, so
-   power never depends on other players dying.
-4. **Stats of gear and recruits you're offered.** D11 shows your own
-   units' stats; it doesn't say whether gear in a bazaar or a recruit in
-   an offer shows exact stats before you take it. Rarity (9.4–9.5) was
-   designed as the shortcut for hidden stats. *Suggested:* show exact stats
-   for anything you could own (consistent with own units), and keep rarity
-   as the quick read for enemies.
-5. **A caravan's hero joining you:** with its gear and upgrades, or bare
-   like any recruit (10.9)? And can it duplicate a hero you already have
-   (duplicates in one party are open, 10.4)? *Suggested:* bare, like any
-   recruit, and only offered if it isn't already in your party.
-6. **Rival caravan maps and deployment.** D2 gives caravan fights their
-   own maps; the combat design's PvP maps are symmetric or mirrored with
-   opposite deployment zones (6.6, 12). *Suggested:* use PvP-style maps for
-   caravan fights — a fair mirror match against another player's build,
-   and the same maps a future arena (pvp.md) would need.
+1. **Stage** = a run's position along the road on the route map, not
+   fights won ([ghosts.md](ghosts.md), glossary).
+2. **Recruitment offers are seeded**, like the route map and encounters
+   (10.7).
+3. **Unlocks come from both** fights won (progression) and your caravans'
+   kills (recognition) (10.7, D9).
+4. **Full information except enemies' stats:** gear and recruits you're
+   offered show exact stats (7.1, D11).
+5. **No duplicate heroes in one party; recruits start with nothing**,
+   including a beaten caravan's hero (10.4, 10.7, D2).
+6. **Rival caravan fights use PvP-style maps** (6.6, D2).
 
 ## Out of scope
 

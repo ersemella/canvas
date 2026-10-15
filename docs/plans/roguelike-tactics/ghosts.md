@@ -17,9 +17,8 @@ copy of one character invading your level at a fixed spawn point. The
 combat design (owner, 2026-10-15) makes the game a party of up to four
 heroes fighting a series of battles, and ghosts **rival caravans**: copies
 of another player's party (combat design 11.2, 15.3). The rules carry over;
-"level" becomes "fight", "depth" becomes **stage** (fights won so far — on
-the route map this may change; see question 1 of the consistency review in
-[README.md](README.md)), and
+"level" becomes "fight", "depth" becomes **stage** — a run's position along
+the road on the route map (decided by the owner, 2026-10-15), and
 "character" becomes "party". The earlier version is in
 [history.md](history.md) and in git history.
 
@@ -67,16 +66,21 @@ levels → fights, for the combat design. See [history.md](history.md).
   (NetHack's bones levels and Nioh's revenants work this way.)
 - **A beaten caravan's hero can join you** (decided, owner 2026-10-15):
   one of its heroes may appear in your next recruitment offer (combat
-  design 10.6), as a defeated rival's hand joining you. Open details: which
-  hero, whether it brings its gear or upgrades (recruits normally join
-  without upgrades, 10.9), and duplicates (see [README.md](README.md)).
+  design 10.6), as a defeated rival's hand joining you. It joins **with
+  nothing**, like any recruit, and is only offered if that hero isn't
+  already in your party (no duplicates in one party, 10.4) — both decided
+  (owner, 2026-10-15). Which of its heroes is offered: open (suggest: the one that
+  dealt the most damage).
 - **Losing heroes to a rival caravan** is ordinary permanent death (10.3);
   losing the whole party ends the run, and that **party wipe** is what
   credits the caravan's owner (D9).
 - **Rival caravan fights get their own maps** (decided, owner 2026-10-15),
   distinct from ordinary encounter maps — for example built around a race
-  to a point, fitting the setting's race along the road (15.2). Map and
-  objective design open.
+  to a point, fitting the setting's race along the road (15.2). They use
+  **PvP-style maps** (decided by the owner, 2026-10-15): symmetric or mirrored, with
+  opposite deployment zones (6.6, 12) — a fair mirror match against
+  another player's build, and the maps a future arena would need.
+  Objectives open.
 
 **Revised 2026-10-13:** the invader-death, disconnect and invasion-ending
 questions belonged to live invasions and are gone. **Revised 2026-10-15:**
@@ -102,8 +106,8 @@ for the combat design (gear from a party; heroes die individually).
   an opaque hash of the source run's ID; the pool for a stage holds at
   most one caravan per lineage. "Faced" means the caravan was placed in
   your fight, whether or not you won.
-- **Where caravans come from.** When a run wins its n-th fight and moves
-  on, its room offers a copy of the party — heroes, gear, milestone
+- **Where caravans come from.** When a run moves on from stage n (its
+  position along the road), its room offers a copy of the party — heroes, gear, milestone
   upgrades, ultimate state as the combat design defines it; the owner's
   player-key hash; the lineage ID — to the **pool for stage n**, a DO,
   `idFromName('ghosts:' + n)`, holding a capped pool in SQLite (e.g. the
@@ -115,8 +119,9 @@ for the combat design (gear from a party; heroes die individually).
   these fights sit in a run depends on the run structure (open question
   34, see [README.md](README.md)). The caravan deploys in its side's
   **deployment zone** (combat design 6.6), like any enemy band.
-- **Which caravan.** A player who has won n fights, about to fight their
-  (n+1)-th, gets a caravan from pool n:
+- **Which caravan.** A player reaching a rival caravan node at stage n+1
+  gets a caravan from pool n — copies of parties that reached the same
+  point on the road:
   - **Never their own** (same player-key hash) — also removes the easiest
     way to farm kills.
   - **Never a lineage they've faced.** The player's ledger (D9) keeps the
@@ -173,9 +178,9 @@ per player:
   legend. Automatically unique, since each player faces a run once (D8).
 - **Per player, lifetime** — distinct victims across all of the owner's
   runs (a victim killed by two of your runs counts once here). Unlocks are
-  earned from this number. (Whether unlocks also come from fights won,
-  as the combat design suggests in 10.7: consistency review question 3 in
-  [README.md](README.md).)
+  earned from this number: **recognition unlocks** (cosmetics, titles).
+  Progression unlocks come from fights won (decided by the owner 2026-10-15; 10.7), so
+  power never depends on other players dying.
 
 **A kill is a full party wipe** (decided, owner 2026-10-15): a player
 counts as slain only when the rival caravan kills their whole party, which
@@ -224,7 +229,7 @@ legend threshold N (D8) should be small; tune it in play.
 
 ```
  Player (browser)        RunRoom run:R               Pool (stage n)              Ledger (victim)   Ledger (owner)
- wins fight n ────────► offer party copy ─────────► add to pool n
+ leaves stage n ──────► offer party copy ─────────► add to pool n
  next fight ──────────► generate encounter n+1;
                         rival caravan? (seeded)
                         if yes: candidates ────────► weighted by unique kills,

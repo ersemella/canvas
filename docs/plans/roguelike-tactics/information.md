@@ -24,6 +24,7 @@ Section numbers are the original document's.
 | Turn order | Yes | The timeline, including the resolved order of ties and any scheduled delayed actions. |
 | Stats (health, speed, defence, power, influence) | Not directly | No stat sheet. Rarity acts as a rough indicator of strength (section 9). Exact values become discoverable through previews and the timeline. **Revised 2026-10-15 (owner, D11):** this now applies to **enemy** units only; your own units' stats are fully viewable. |
 | Action outcomes | Yes, before committing | Previews show full numbers (section 7.2). |
+| Gear and recruits you're offered *(added (owner, 2026-10-15))* | Yes | Exact stats shown before you choose. **In general players have full information except for enemies' stats** (D11). |
 | Enemy intent (what an enemy plans to do next) | No | Not shown, except delayed actions already declared on the timeline. |
 
 ### 7.2 Previews (Decided)

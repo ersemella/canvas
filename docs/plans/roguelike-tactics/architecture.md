@@ -149,6 +149,10 @@ and status for the combat design.
   instant, with no request per hover. Careful players can still work
   enemy stats out — the design intends that (7.2).
 
+- **Everything else: full information** (owner, 2026-10-15): gear and
+  recruits you're offered show exact stats. Only enemies' stats are
+  hidden.
+
 **This changes the combat design's 7.1** (stats hidden for every unit) to
 hidden for **enemies** only; see the revision notes in
 [information.md](information.md) and [goals.md](goals.md).

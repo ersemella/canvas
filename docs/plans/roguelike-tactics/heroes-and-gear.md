@@ -96,7 +96,7 @@ Each hero has four gear slots:
 
 ### 10.4 Duplicates (Decided)
 - The same hero can appear on **opposing** sides: in PvP, and when fighting a ghost team (a saved player build), if ghost teams are used.
-- Whether a single party can contain duplicates of the same hero is TBD.
+- Whether a single party can contain duplicates of the same hero is TBD. **Decided (owner, 2026-10-15): no duplicates within one party.** Recruitment offers never include a hero already in the party.
 
 ### 10.5 Rationale
 - Composition (which heroes) and gear (what they carry) form two clearly separate build layers, supporting the goal of distinguishing build from play.
@@ -112,17 +112,17 @@ Each hero has four gear slots:
 ### 10.7 Open Questions on Recruitment
 - **Starting heroes:** how many (1 or 2), and whether they are chosen freely. A free choice removes any reason to restart at the very beginning, since randomness only enters once restarting costs progress.
 - **Offer frequency and size:** how often offers appear and how many heroes each shows.
-- **Recruit gear:** recruits join without milestone upgrades and earn them by reaching milestones (decided, 10.9). Whether they come with any gear is TBD.
+- **Recruit gear:** recruits join without milestone upgrades and earn them by reaching milestones (decided, 10.9). Whether they come with any gear is TBD. **Decided (owner, 2026-10-15): recruits start with nothing** — no gear, no upgrades (including a beaten rival caravan's hero, [ghosts.md](ghosts.md) D2).
 - **Guaranteed relevance:** whether each offer must include at least one hero sharing a keyword with the current team. Bad offers drive restarts, so usable offers reduce the incentive.
-- **Seeded offers:** whether offers are determined by the run's seed, so restarting does not reroll the same run, and fixed seeds (e.g., daily runs) are comparable between players.
-- **Progression rewards:** whether unlocks come from fights won rather than runs started, so abandoning a run always costs something.
+- **Seeded offers:** whether offers are determined by the run's seed, so restarting does not reroll the same run, and fixed seeds (e.g., daily runs) are comparable between players. **Decided (owner, 2026-10-15): yes** — the route map, encounters and offers all come from the run's seed.
+- **Progression rewards:** whether unlocks come from fights won rather than runs started, so abandoning a run always costs something. **Decided (owner, 2026-10-15): both sources** — progression unlocks from fights won, and recognition unlocks (cosmetics, titles) from your rival caravans' kills ([ghosts.md](ghosts.md) D9), so power never depends on other players dying.
 - **Replacing lost heroes:** recruitment offers are the natural path to replacing heroes lost to permanent death. Whether any special replacement mechanic is needed is TBD.
 
 ### 10.8 Open Questions on Heroes
 - **Keyword vocabulary:** a defined set of common conditions and effects (for example burn, push, on-flank, on-kill) that abilities and gear both reference. This is the key enabler of hero synergies and broadly useful gear, and should be designed before individual heroes.
 - **Preventing solved compositions:** 12 heroes give 495 possible teams of 4, and fixed synergies tend to concentrate play on a few dominant teams.
 - **Prototype scope:** validating the system with 6 to 8 heroes before building all 12.
-- Duplicates within a single party (10.4).
+- ~~Duplicates within a single party (10.4).~~ Decided: not allowed.
 
 **Ideas for preventing solved compositions and improving run variety (Proposed, not adopted)**
 - **Multiple keyword hooks per hero:** each hero connects to at least two keywords, so it fits several teams rather than one exclusive pairing.
