@@ -65,7 +65,7 @@ Each hero has four gear slots:
 - Number of tiers and visual treatment TBD.
 
 ### 9.5 Rarity Rationale
-- Because stats are not directly shown, rarity gives a dependable shortcut for evaluating gear.
+- Because stats are not directly shown, rarity gives a dependable shortcut for evaluating gear. *(Since D11, 2026-10-15, your own heroes' stats are shown, so rarity matters most for reading enemies' gear; see the open question in [README.md](README.md) on gear you're offered.)*
 - Narrow advantages keep lower-rarity gear relevant for builds that do not need the improved dimension.
 
 ### 9.6 Consumables (Decided)

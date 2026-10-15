@@ -22,7 +22,7 @@ Section numbers are the original document's.
 | Abilities of all units (allies and enemies) | Yes | Diegetic design language: visual cues on characters and gear indicate their abilities. Must be consistent across the whole game. |
 | Action costs | Yes | Fixed and public for every ability. |
 | Turn order | Yes | The timeline, including the resolved order of ties and any scheduled delayed actions. |
-| Stats (health, speed, defence, power, influence) | Not directly | No stat sheet. Rarity acts as a rough indicator of strength (section 9). Exact values become discoverable through previews and the timeline. |
+| Stats (health, speed, defence, power, influence) | Not directly | No stat sheet. Rarity acts as a rough indicator of strength (section 9). Exact values become discoverable through previews and the timeline. **Revised 2026-10-15 (owner, D11):** this now applies to **enemy** units only; your own units' stats are fully viewable. |
 | Action outcomes | Yes, before committing | Previews show full numbers (section 7.2). |
 | Enemy intent (what an enemy plans to do next) | No | Not shown, except delayed actions already declared on the timeline. |
 
@@ -44,7 +44,7 @@ Previews intentionally make stats discoverable. Attentive players can deduce hea
 ### 7.4 Complete Information at Fight Start (Decided)
 - Every fight starts with complete information: the full map, all special tiles, all enemy units, their positions and their abilities.
 - There is no fog of war.
-- Uncertainty comes from hidden stats (discoverable through play), narrow damage variance, and opponents' decisions, not from unseen units.
+- Uncertainty comes from hidden stats (discoverable through play), narrow damage variance, and opponents' decisions, not from unseen units. (Since D11, 2026-10-15: enemies' hidden stats; your own are shown.)
 - Reinforcements are never a surprise: they appear on the timeline before they arrive (section 3.8).
 - Information before the fight is a run-level concern: the run map may show partial information about upcoming encounters (for example, enemy types but not exact composition), so uncertainty affects build decisions rather than in-combat play. Run structure is out of scope for this document.
 - Rationale: losses caused by unseen threats cannot be attributed to build or play. On compact maps, fog of war adds rules (vision ranges, line of sight) with little payoff. Previews and the timeline both assume all units are visible.

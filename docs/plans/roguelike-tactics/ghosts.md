@@ -4,6 +4,10 @@ The game's multiplayer: a **ghost** is a **rival caravan**, an
 AI-controlled copy of another player's party met as a fight; how one is
 picked, and what its kills earn. Decisions D1, D2, D8, D9.
 
+**Build order (owner, 2026-10-15): rival caravans are the last step** —
+built after the solo game, its run structure and hardening
+([phases.md](phases.md)).
+
 > Part of the roguelike tactics plan — start at [README.md](README.md),
 > which has the status, the next step and an index of every decision.
 
@@ -13,7 +17,9 @@ copy of one character invading your level at a fixed spawn point. The
 combat design (owner, 2026-10-15) makes the game a party of up to four
 heroes fighting a series of battles, and ghosts **rival caravans**: copies
 of another player's party (combat design 11.2, 15.3). The rules carry over;
-"level" becomes "fight", "depth" becomes **stage** (fights won so far), and
+"level" becomes "fight", "depth" becomes **stage** (fights won so far — on
+the route map this may change; see question 1 of the consistency review in
+[README.md](README.md)), and
 "character" becomes "party". The earlier version is in
 [history.md](history.md) and in git history.
 
@@ -58,15 +64,19 @@ levels → fights, for the combat design. See [history.md](history.md).
 - **Rewards for beating a rival caravan** (confirmed 2026-10-13 for
   ghosts): part of its gear drops, so the fight is worth more than an
   ordinary one — but no more than an ordinary fight's best reward.
-  (NetHack's bones levels and Nioh's revenants work this way.) *Idea, not
-  adopted:* one of its heroes could appear in the next recruitment offer
-  (combat design 10.6), as a defeated rival's hand joining you.
+  (NetHack's bones levels and Nioh's revenants work this way.)
+- **A beaten caravan's hero can join you** (decided, owner 2026-10-15):
+  one of its heroes may appear in your next recruitment offer (combat
+  design 10.6), as a defeated rival's hand joining you. Open details: which
+  hero, whether it brings its gear or upgrades (recruits normally join
+  without upgrades, 10.9), and duplicates (see [README.md](README.md)).
 - **Losing heroes to a rival caravan** is ordinary permanent death (10.3);
-  losing the whole party ends the run. The caravan's owner is credited
-  (D9).
-- **Open:** whether rival caravan fights use their own maps and objectives
-  (for example a race to a point, fitting the setting's race along the
-  road, 15.2) or the ordinary encounter maps.
+  losing the whole party ends the run, and that **party wipe** is what
+  credits the caravan's owner (D9).
+- **Rival caravan fights get their own maps** (decided, owner 2026-10-15),
+  distinct from ordinary encounter maps — for example built around a race
+  to a point, fitting the setting's race along the road (15.2). Map and
+  objective design open.
 
 **Revised 2026-10-13:** the invader-death, disconnect and invasion-ending
 questions belonged to live invasions and are gone. **Revised 2026-10-15:**
@@ -163,13 +173,15 @@ per player:
   legend. Automatically unique, since each player faces a run once (D8).
 - **Per player, lifetime** — distinct victims across all of the owner's
   runs (a victim killed by two of your runs counts once here). Unlocks are
-  earned from this number.
+  earned from this number. (Whether unlocks also come from fights won,
+  as the combat design suggests in 10.7: consistency review question 3 in
+  [README.md](README.md).)
 
-**Open (2026-10-15): what counts as a kill** now that heroes die one at a
-time. Proposal: a player counts as slain when the rival caravan kills at
-least one of their heroes (permanent death makes each a real loss); the
-caravan's story names which heroes. The alternative — only when it wins
-the fight or ends the run — is rarer and harsher.
+**A kill is a full party wipe** (decided, owner 2026-10-15): a player
+counts as slain only when the rival caravan kills their whole party, which
+ends the run. Heroes it kills along the way are named in the caravan's
+story but don't count. Kills are rarer than they would be per hero, so the
+legend threshold N (D8) should be small; tune it in play.
 
 **How (confirmed proposals):**
 - **A ledger per player:** a DO, `idFromName('player:' + keyHash)`,
@@ -192,7 +204,8 @@ the fight or ends the run — is rarer and harsher.
   [prior-art.md](prior-art.md)): show what it did — "killed Ash's Batyr at
   stage 5", "beaten by Rook at stage 7". The ledger already receives every
   credit; keeping the victim's display name, heroes and stage with it makes
-  recognition far more vivid for little cost. Replays would need each
+  recognition far more vivid for little cost ("killed Ash's Batyr" is a
+  story line; only a party wipe counts as a kill). Replays would need each
   fight's actions stored — possible later, not planned (combat is
   deterministic, so a replay is the actions plus the seed).
 
@@ -220,7 +233,7 @@ the fight or ends the run — is rarer and harsher.
                         which are new? ────────────────────────────────► (victim ledger)
                         ◄──── first new: G; marked faced ───────────────┘
  deploy, act ─────────► timeline: player units, G's units (AI)
-   ... G kills one of the player's heroes ...
+   ... G wipes the player's party (run over) ...
                         ──────────────────────────► G's lineage: unique kills += 1 ─► (legend after N)
                                         ─────────────────────────────────────────────► credit victim hash (idempotent)
 ```

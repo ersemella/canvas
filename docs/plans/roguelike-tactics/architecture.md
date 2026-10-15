@@ -4,6 +4,7 @@ How the game runs on the platform: one Durable Object per run, the player
 key, the classes and routes it adds, platform constraints, and what it
 costs on the Free plan. Decisions D3, D4, D7, D11.
 
+
 > Part of the roguelike tactics plan — start at [README.md](README.md),
 > which has the status, the next step and an index of every decision.
 
@@ -23,10 +24,11 @@ hidden stats, not one character exploring levels under fog of war.
   (no hit chance, capped damage variance from gear), so the server can
   replay and verify a fight from its seed and actions.
 - **Hidden information.** No fog of war — every fight starts with complete
-  information ([information.md](information.md), 7.4) — but **stats are
-  hidden** and learned through previews (7.1, 7.2). The server sends a
-  per-viewer view without stats, as `getPublicState` does for poker; see
-  D11 for previews.
+  information ([information.md](information.md), 7.4) — but **enemy stats
+  are hidden** and learned through previews (7.1, 7.2); your own units'
+  stats are shown (D11). The server sends a per-viewer view with enemy
+  stats replaced by derived numbers, as `getPublicState` redacts for
+  poker.
 - **Durable Object storage is long-lived** — kept until code deletes it
   (`GameRoom` rooms vanish because `GameRoom` deletes itself). SQLite-backed
   classes get up to 10 GB per object, on the Free plan too.
@@ -91,7 +93,8 @@ code path untouched.
 - **Its own rules contract**, `RunSystem` in `@canvas/engine/server`
   (proposal): create a run (seed, unlocks), apply an action (the player's
   action, then every unit's turn up to the player's next one on the
-  shared clock), a public view, a preview (D11), the run's status (in a
+  shared clock), a public view (with derived numbers for enemies, D11),
+  the run's status (in a
   fight / between fights / over), the character copy offered
   as a ghost — since 2026-10-15 the party copy offered as a rival
   caravan, placing it in its deployment zone, and its events (killed a
@@ -129,33 +132,39 @@ and status for the combat design.
   class, added in the phase that needs it.
 - **No changes to `GameRoom`, `RoomPolicy` or `routes/rooms.ts`.**
 
-### D11. Previews and hidden stats (open, 2026-10-15)
+### D11. Previews and hidden stats
 
-The combat design hides stats (7.1) but shows exact previews of every
-action (7.2), including while hovering over destination hexes. A browser
-can only compute previews itself if it has the stats — then they're
-hidden on screen only, and anyone who looks at the network traffic sees
-them. Options:
+**Decision (owner, 2026-10-15):**
+- **Your own units: stats fully viewable.** The browser gets your heroes'
+  full stats and shows them (a stat sheet), and computes previews of your
+  own actions' effects on your own units locally.
+- **Enemy units: derived numbers only** (was option 3 below). The browser
+  never receives an enemy's raw stats (speed, defence, power, influence).
+  It gets what previews need, for this fight's current state: for each of
+  your units' abilities against each enemy, the final damage (min–max,
+  8.1) after that enemy's defence, and the effect magnitudes (push
+  distance, status strength) that land on it; each enemy's current health;
+  and the timeline (7.1), which already shows when each enemy acts. The
+  server sends these with every new state, so previews are local and
+  instant, with no request per hover. Careful players can still work
+  enemy stats out — the design intends that (7.2).
 
-1. **Previews from the server.** Every preview is a request. Stats stay
-   truly hidden, but hovering generates many requests: against the Free
-   plan's 100,000 a day (below), and with network latency on every hover.
-   Mitigation: one request returns previews for all of a unit's options
-   at once (every reachable hex and every action/target pair), cached
-   until the state changes.
-2. **Stats sent to the browser, hidden in the UI.** Previews are instant
-   and free; stats are hidden from casual view but not secret. Players
-   could build a tool that shows them, which undercuts discovering stats
-   through play (design goal 3) for those who use one.
-3. **A mix:** the browser gets just enough to preview (for example the
-   final damage per attacker/target pair for this fight, not the stats
-   behind it). Previews are local, and stats stay hidden behind derived
-   numbers — though careful players could still work stats out, which the
-   design intends anyway (7.2: "previews intentionally make stats
-   discoverable").
+**This changes the combat design's 7.1** (stats hidden for every unit) to
+hidden for **enemies** only; see the revision notes in
+[information.md](information.md) and [goals.md](goals.md).
 
-**Suggested:** option 3, or option 1 with all of a turn's previews in one
-request. Decide before Phase 1's combat screen.
+**Options weighed (2026-10-15):** (1) every preview a server request —
+truly hidden, but a request per hover against the Free plan's 100,000 a
+day, with latency; (2) all stats sent to the browser and hidden in the UI
+only — free and instant, but anyone reading the network traffic sees them;
+(3) derived numbers — chosen for enemies.
+
+**Consequences:**
+- The derived numbers must be recomputed and sent after every change that
+  affects them (a buff, a gear effect, a push, a death) — part of each
+  action's response, so no extra requests.
+- **Rival caravans** (D8) are enemies: their stats are hidden the same way,
+  though their owner saw them in their own run.
 
 ## Platform constraints
 
@@ -188,8 +197,8 @@ allows, per day, shared across the whole account (poker included):
 
 | Limit (Free) | Per | What uses it here |
 |---|---|---|
-| 100,000 Worker requests | day | every action, every preview request (D11) |
-| 100,000 Durable Object requests | day | every action and preview, plus room-to-room calls |
+| 100,000 Worker requests | day | every action (previews are local, D11) |
+| 100,000 Durable Object requests | day | every action, plus room-to-room calls |
 | 100,000 SQLite rows written | day | saving the run after each action; credits |
 | 5 million rows read | day | rarely the constraint |
 | 13,000 GB-s DO duration | day | ~28 hours of active objects; idle ones are free |
@@ -201,14 +210,15 @@ UTC** — the game (and poker) stop working for everyone, rather than
 costing money. Rough capacity: one request and about one row written per
 action, so ~100,000 actions a day. A fight with four heroes might take
 ~40–80 player actions (plus deployment), so on the order of 1,000–2,000
-fights a day — fewer if previews are requests (D11). Plenty for building,
+fights a day. Plenty for building,
 testing and a small audience.
 
 To stretch Free:
 - **One request per turn:** a unit's move and action (5.1) are sent
   together, and the response includes every AI turn up to the player's
   next turn, so the clock never needs a request of its own.
-- **Previews in bulk or local** (D11).
+- **Previews are local** (D11): own units from their stats, enemies from
+  derived numbers sent with each state.
 - **One row per save:** store the run's state as one value, written once
   per action; no alarms on `RunRoom` (each `setAlarm()` is a row written).
 - **Cheap AI:** the AI may take several turns in one request (until the

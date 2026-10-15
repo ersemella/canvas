@@ -74,3 +74,7 @@ Section numbers are the original document's.
 | **PvP (Player versus Player)** | Matches where two human players control opposing parties. |
 | **PvE (Player versus Environment)** | Matches against computer-controlled enemies. |
 | **TBD** | To be determined. A value or rule not yet decided. |
+| **Rival caravan** | *(Added 2026-10-15.)* An AI-controlled copy of another player's party, met as a fight on its own map; the game's ghosts. See [ghosts.md](ghosts.md). |
+| **Route map** | *(Added 2026-10-15.)* The run's map of the road, with route choices between nodes (fights, rests, bazaars, recruitment), as in Slay the Spire. Open question 34, decided. |
+| **Stage** | *(Added 2026-10-15.)* How far a run has come; rival caravans are matched by it. Exact definition on the route map is open (see [README.md](README.md)). |
+| **Party wipe** | *(Added 2026-10-15.)* Every hero in the party dead; the run ends. A rival caravan that wipes a party counts a kill (D9). |

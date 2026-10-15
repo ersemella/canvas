@@ -20,7 +20,7 @@ undo a death. No snapshots, nothing to replay. See [history.md](history.md).
 ### D10. Built in this repository, for now
 
 **Decision (owner, 2026-10-15):** the game is built here, in the `canvas`
-monorepo, as the plan's phases describe (`packages/games/roguelite`, with
+monorepo, as the plan's phases describe (`packages/games/roguelite` — since 2026-10-15 `packages/games/roguelike-tactics` — with
 `RunRoom`, `GhostPool` and `PlayerLedger` in `@canvas/server`). A
 separate repository was chosen and then dropped the same day.
 
