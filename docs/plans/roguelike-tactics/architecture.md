@@ -185,7 +185,8 @@ only — free and instant, but anyone reading the network traffic sees them;
   deployment, hex selection and previews must work on a phone (no hover:
   previews on first tap, commit on second).
 - **The timeline** (3.1, 7.1) is the centrepiece of the UI and needs room
-  on screen beside the map.
+  on screen beside the map: one pip per tick over a window of roughly the
+  next 30 ticks (revised 2026-10-15).
 
 ## Long-lived storage and cost
 

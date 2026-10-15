@@ -22,18 +22,17 @@ Section numbers are the original document's.
 | **Unit** | Any combatant on the map, whether player-controlled or enemy. |
 | **Turn** | A single unit's opportunity to act. Turns are individual, not per side. |
 | **Shared clock** | A single number line of time used by all units in a combat. Turn order is determined by positions on this clock. |
-| **Tick** | One unit of time on the shared clock. All costs and durations are measured in ticks. |
+| **Tick** | One unit of time on the shared clock. All costs and durations are measured in ticks. Ticks are whole numbers on a coarse scale (typical action about 10), drawn as one pip each on the timeline (revised 2026-10-15). |
 | **Current tick** | The point on the shared clock where the acting unit's turn takes place. |
 | **Next turn tick** | The tick at which a unit will take its next turn. Each unit has exactly one. |
-| **Timeline** | The visible display of upcoming turns for all units, in the order they will occur. |
-| **Turn cost** | The total number of ticks a turn adds before that unit's next turn: movement cost plus action cost, after modifiers. |
+| **Timeline** | The visible display of upcoming turns for all units, in the order they will occur. Drawn as one pip per tick over a window of roughly the next 30 ticks, with units, delayed actions and reinforcements on their pips (revised 2026-10-15). |
+| **Turn cost** | The total number of ticks a turn adds before that unit's next turn: movement cost plus action cost, with a minimum. |
 | **Action cost** | The ticks added by the action used on a turn. Every ability defines its own fixed action cost. |
 | **Movement cost** | The ticks added by moving: a fixed number of ticks per hex moved. |
 | **Standard turn** | A reference turn with a typical action and typical movement. Used to anchor tuning; not a separate rule. |
 | **Quick / slow action** | An action whose cost is lower / higher than a typical action. |
 | **Minimum turn cost** | A floor on turn cost. No turn can cost less than this, including a turn where the unit does nothing. |
-| **Speed** | A unit stat that sets starting order, breaks ties, and slightly reduces action cost. See section 4. |
-| **Speed modifier** | The percentage by which speed reduces action cost. Capped. |
+| **Speed** | A unit stat that sets starting order and is the first tie-breaker. It does not reduce action cost (revised 2026-10-15). See section 4. |
 | **Tie** | Two or more units (or delayed actions) scheduled on the same tick. Also called a collision. |
 | **Push** | *Revised 2026-10-15 (owner):* physically moves a unit away from the attacker by a number of hexes ([phase-1-brief.md](phase-1-brief.md), section 3). The timeline effect this term used to mean is now **Delay**. |
 | **Delay** | *(Added 2026-10-15.)* An effect that moves another unit's next turn tick later — what the combat design calls a push in sections 3–4 and 12. |

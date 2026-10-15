@@ -21,7 +21,7 @@ Section numbers are the original document's.
 | Reinforcements | Yes | Shown on the timeline as scheduled entries with a known arrival tick and spawn location. |
 | Abilities of all units (allies and enemies) | Yes | Diegetic design language: visual cues on characters and gear indicate their abilities. Must be consistent across the whole game. |
 | Action costs | Yes | Fixed and public for every ability. |
-| Turn order | Yes | The timeline, including the resolved order of ties and any scheduled delayed actions. |
+| Turn order | Yes | The timeline, including the resolved order of ties and any scheduled delayed actions. *(Revised 2026-10-15, owner:)* drawn as discrete pips or segments, one per tick, over a window of roughly the next 30 ticks; unit portraits, delayed actions and reinforcements sit on their pips, so players can count costs directly (3.3). Window size open (open question 1). |
 | Stats (health, speed, defence, power, influence) | Not directly | No stat sheet. Rarity acts as a rough indicator of strength (section 9). Exact values become discoverable through previews and the timeline. **Revised 2026-10-15 (owner, D11):** this now applies to **enemy** units only; your own units' stats are fully viewable. |
 | Action outcomes | Yes, before committing | Previews show full numbers (section 7.2). |
 | Gear and recruits you're offered *(added (owner, 2026-10-15))* | Yes | Exact stats shown before you choose. **In general players have full information except for enemies' stats** (D11). |
@@ -30,7 +30,7 @@ Section numbers are the original document's.
 ### 7.2 Previews (Decided)
 Before committing, the player sees:
 - Damage dealt (or damage range, if variance applies) and the target's resulting health, with full numbers.
-- The acting unit's resulting position on the timeline.
+- The acting unit's resulting position on the timeline (the pip it lands on).
 - Any change to other units' positions (pushes, pulls).
 - Whether line of fire to a target is clear, and which unit blocks it if not.
 - For area abilities, every affected unit and the damage or effect each receives, allies included.

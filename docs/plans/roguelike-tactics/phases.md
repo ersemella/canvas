@@ -26,7 +26,7 @@ own answers. **Drafted 2026-10-15: [phase-1-brief.md](phase-1-brief.md)**
 (awaiting the owner's answers in its section 10). It covers:
 - **Defaults for every TBD Phase 1 touches**, as tunable values in one
   config module: costs (typical, quick, slow action; per hex; minimum
-  turn cost), the speed cap and stat→modifier mapping, the starting offset,
+  turn cost), the starting order method,
   the fixed tie order, move/act order within a turn and any movement cap,
   map size and shape, the flanking effect, hazard trigger, conceal
   strength, `defenceConstant` and minimum damage, the variance cap, the

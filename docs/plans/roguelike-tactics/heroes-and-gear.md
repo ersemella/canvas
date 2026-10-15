@@ -18,7 +18,7 @@ The stat set is kept small, because stats are hidden and players learn them thro
 | Stat | Role | Modified by gear? |
 |---|---|---|
 | **Health** | Hit points. | Mostly fixed. Each hero has a different health value, but it does not scale meaningfully during a run. |
-| **Speed** | Starting order, tie-breaking, and a small action cost reduction (section 4). | Yes, and weighed against defence (4.5). |
+| **Speed** | Starting order and tie-breaking (section 4). No action cost reduction (revised 2026-10-15). | Yes, and weighed against defence (4.5). |
 | **Defence** | Reduces incoming damage by a percentage (formula below). | Yes. |
 | **Power** | Scales direct damage. | Yes. |
 | **Influence** | Scales effect strength (9.2). | Yes. |

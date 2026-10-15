@@ -43,6 +43,7 @@ Maps can contain three types of special tile:
 - Hexes give uniform distances in all directions and clean flanking rules.
 - Known tradeoffs: straight-line and cone-shaped area effects only align cleanly in 6 directions and need careful design; room-like layouts look less natural than on square grids.
 - Per-hex movement cost interacts with pushes: a pushed unit loses both tempo and repositioning opportunities. Tune these together.
+- *(Revised 2026-10-15, owner:)* with coarse ticks (3.3), movement is relatively expensive: 4 hexes cost 40% of a typical action. This favours short moves on compact maps. A typical action of 12 would soften it (open question 1).
 
 ### 6.6 Deployment (Decided)
 - Each side has a **deployment zone**: a set of starting hexes. Before the fight, players place their units anywhere within their zone, with full visibility of the map and enemy positions. Placement is the first decision of the fight.
@@ -50,7 +51,7 @@ Maps can contain three types of special tile:
 - **Rival caravan fights** *(added (owner, 2026-10-15))*: use the PvP-style maps above — symmetric or mirrored, opposite deployment zones — a fair mirror match against another player's build ([ghosts.md](ghosts.md) D2).
 - **PvE:** zones are commonly on opposite ends, but vary by map. Examples: split starts, being surrounded, defending a central point, or starting already engaged. Enemy positions are set by the map.
 - **Engagement distance:** the gap between zones should allow contact within about 1 to 2 turns of typical movement. The approach should be a meaningful timeline decision (rushing in costs ticks), not dead time.
-- Watch: heavily armoured units arrive later because of the speed versus defence tradeoff (section 4.5), and ranged units may get free hits during the approach. Short gaps and obstacles that block early sight lines mitigate both.
+- Watch: heavily armoured units arrive later because of the speed versus defence tradeoff (section 4.5), and ranged units may get free hits during the approach. Short gaps and obstacles that block early sight lines mitigate both. *(Revised 2026-10-15, owner: speed no longer reduces cost, so armour does not slow the approach itself; armoured units lose only starting order and ties (4.1, 3.4). Rushing in still costs ticks, and more so now that movement is relatively expensive (6.5).)*
 
 ### 6.7 Line of Fire and Friendly Fire (Decided)
 Friendly fire is used as a positioning cost that limits ranged characters, not as a random punishment. Because combat is deterministic and previewed, it is never accidental.

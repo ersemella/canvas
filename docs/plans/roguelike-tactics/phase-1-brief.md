@@ -9,7 +9,7 @@ page and the API.
 > which has the status, the next step and an index of every decision.
 
 **Status: confirmed by the owner, 2026-10-15** (answers in section 10),
-except how speed works at the 10-tick scale (section 2). Items marked **[owner]** were reviewed by the owner; everything else is a default the
+including how speed works (section 2, revised 2026-10-15). Items marked **[owner]** were reviewed by the owner; everything else is a default the
 builder may use as written. All numbers are **tuning placeholders**: put
 them in one config module (`packages/games/silk-road-tactics/src/rules/config.ts`)
 so play-testing can change them without touching rules code. Section
@@ -38,9 +38,9 @@ fight's end ends the run.
 
 | Open question | Default for Phase 1 |
 |---|---|
-| 1. Costs | Typical action **10**, quick **6**, slow **15** ticks; movement **1 per hex**; minimum turn cost **4** (a turn doing nothing costs 4). Scale set by the owner, 2026-10-15 (the design's example was 100/60/150/7, 3.3). Moving 5 hexes now costs half a typical action (was about a third). |
-| 2. Speed **[owner]** | Speed stat 0–10, cap **10%**. At a 10-tick scale a percentage reduction mostly rounds to 0 (10% of 10 is 1 tick; 4% is 0.4 → 0), so 4.3's cost reduction barely works. **Placeholder until the owner chooses:** speed sets starting order and breaks ties (3.4, 4.1) and gives **no** cost reduction (a config switch). Armour lowers speed (4.5): see gear, below. |
-| 3. Starting offset | `12 − speed ÷ 2` (rounded down), where 12 is a standard turn (typical action + 2 hexes): higher speed starts earlier; equal offsets fall to the tie rules (speed first). |
+| 1. Costs | Typical action **10**, quick **6**, slow **15** ticks; movement **1 per hex**; minimum turn cost **3** (a turn doing nothing costs 3). All whole numbers (3.3). Scale set by the owner, 2026-10-15 (the design's example was 100/60/150/7, 3.3). Moving 5 hexes now costs half a typical action (was about a third). |
+| 2. Speed **[owner]** | Decided 2026-10-15: speed sets starting order and is the first tie-breaker (3.4, 4.1); it does **not** reduce action cost (4.3). Turn cost is `max(minimumTurnCost, hexesMoved × moveCostPerHex + actionCost)`. Speed stat 0 to 10, used only for ordering. Armour lowers speed (4.5): see gear, below. |
+| 3. Starting order | All units start at **tick 0** and the tie rules decide the opening order (speed first), as 4.1 proposes. Method not final: a small whole-tick offset per speed tier is the alternative, so keep it a config switch. |
 | 4. Fixed tie order | After speed and first-scheduled: alternate sides starting with the **player's** side, then party slot order. |
 | 5. Knockback lock limit | Applies to **Delay** (the timeline effect, section 3): a unit can be delayed at most **10 ticks in total** between two of its own turns; further delays are reduced to fit (the preview shows the reduced amount). |
 | 6. Delayed actions | One in Phase 1 (Volley, below). **[owner]** Cancelled if the caster dies before it resolves; units can step out of its area; otherwise it can't be interrupted. |
@@ -80,16 +80,16 @@ Confirmed by the owner 2026-10-15, with two changes from the first draft:
 | **Guard N%** | The target takes N% less damage for **10 ticks** (stacks with defence; doesn't stack with itself). |
 | **On-flank** | An extra effect when the target is flanked (6.3). |
 
-**What a tick is:** an abstract unit of time on the shared clock (3.1).
-Each unit has one next-turn tick; the clock jumps to the lowest and that
-unit acts, so any tick *can* be a turn but many are skipped. 10 is the
-cost of a typical action, not the length of a turn: a unit taking one
-returns 10 ticks later, and everyone due in between acts first. With a
-10-tick scale (owner, 2026-10-15) ties are more common than the combat
-design intended (3.3 asked for a fine scale); the tie rules (3.4) settle
-them deterministically, and the timeline shows the resolved order. A
-10-tick duration lasts roughly until the affected unit's next turn after
-a typical action. All durations are in the config module.
+**What a tick is:** a whole-number unit of time on the shared clock
+(3.1, 3.3). Each unit has one next-turn tick; the clock jumps to the
+lowest and that unit acts, so any tick *can* be a turn but many are
+skipped. 10 is the cost of a typical action, not the length of a turn: a
+unit taking one returns 10 ticks later, and everyone due in between acts
+first. Ticks are coarse so the timeline can show one pip per tick (section
+9). Ties are common at this scale; the tie rules (3.4) settle them
+deterministically, and the timeline shows the resolved order. A 10-tick
+duration lasts roughly until the affected unit's next turn after a
+typical action. All durations are in the config module.
 
 ## 4. Prototype heroes [owner]
 
@@ -223,12 +223,12 @@ illegal move.
   geometry and picking are new: the engine's grids are square); the
   **timeline**, your selected hero's **stat sheet**, and the **preview**
   as a side panel.
-- **The timeline shows the next 16 turns — not ticks — as cards in
-  order** (one card per upcoming turn, so none is ever empty; Mana
-  Khemia style, owner 2026-10-15), including delayed actions as their own
-  cards; ticks stay underneath for the rules and appear only as a small
-  detail on each card. The rules are the shared clock, not slots — the
-  combat design rejected a slot-based timeline (section 13). Phone: board on top, timeline below; tap a hex or
+- **The timeline is drawn as pips, one per tick** (owner, 2026-10-15),
+  over a window of roughly the next 30 ticks. Unit portraits, delayed
+  actions and reinforcements sit on their pips, and units sharing a tick
+  are stacked in their resolved tie order, so players can count costs
+  directly (7.1). Window size is open (open question 1). This replaces an
+  earlier idea of showing the next 16 turns as cards. Phone: board on top, timeline below; tap a hex or
   target to preview, tap again to commit (no hover).
 - **Visuals:** plain shapes and text — coloured hexes for tile types,
   circles with a letter for heroes, outline colour for side. The design
@@ -253,10 +253,18 @@ illegal move.
 
 **Later answers (2026-10-15):** **Delay stays** as a core mechanic
 alongside physical Push. The **Elephant Rider resists Push as a passive**
-(roster; not in Phase 1). The timeline shows the next 16 turns as cards
-(section 9).
+(roster; not in Phase 1). The timeline showing the next 16 turns as
+cards was later replaced by pips, one per tick (section 9).
 
 **Later still (2026-10-15):** title **Silk Road Tactics**; tick scale
 **10** for a typical action (section 2).
 
-**Still open:** how speed works at the 10-tick scale (section 2, row 2).
+**Later (2026-10-15):** ticks are coarse whole numbers drawn as pips on
+the timeline; speed sets starting order and breaks ties and no longer
+reduces cost (section 2, rows 1 to 3; timeline.md 3.3 and 4).
+
+**Still open** (none blocks Phase 1; all are config values):
+- The exact typical action cost, 10 or 12 (12 makes movement relatively
+  cheaper).
+- The size of the visible timeline window (roughly 30 ticks).
+- The starting order method: all units at tick 0, or a per-tier offset.
