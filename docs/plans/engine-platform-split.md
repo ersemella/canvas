@@ -1,8 +1,11 @@
 # Plan: split Canvas into engine, platform, and per-game packages
 
 Status: **done** — all six phases merged and deployed 2026-10-11, with the deviations and follow-ups under [Progress and deviations](#progress-and-deviations). The one step left undone is deleting the retired `ManifestRegistry` Durable Object, an irreversible production change left for the owner.
-Written 2026-10-11 as a hand-off to a fresh Claude Code session. Read this whole file, then `ARCHITECTURE.md` and
-`CLAUDE.md`, before changing anything.
+Written 2026-10-11 as a hand-off to a fresh Claude Code session. **The work is finished, so don't read the whole file:** for open
+work read [Follow-ups](#follow-ups); for why something was done a
+certain way, the matching phase under
+[Progress and deviations](#progress-and-deviations). `ARCHITECTURE.md`
+describes the result.
 
 ## Goal
 

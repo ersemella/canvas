@@ -2,9 +2,11 @@
 
 Status: **parked until an async game exists.** Written 2026-10-12;
 decisions D1–D4 made the same day (see *Decisions*). Start when someone is
-building a game whose turns take hours and whose games last days. Read this whole file, then `ARCHITECTURE.md` (especially *Room timing
-is a per-game policy*), `CLAUDE.md`, and `.claude/skills/verify/SKILL.md`,
-before changing anything.
+building a game whose turns take hours and whose games last days. **When
+starting that work,** read this whole file, then `ARCHITECTURE.md`
+(especially *Room timing is a per-game policy*), `CLAUDE.md`, and
+`.claude/skills/verify/SKILL.md`, before changing anything. **For a
+question about it,** read only *Decisions* and the phase it concerns.
 
 ## Goal
 
