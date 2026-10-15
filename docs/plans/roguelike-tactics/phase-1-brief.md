@@ -80,8 +80,15 @@ Confirmed by the owner 2026-10-15, with two changes from the first draft:
 | **Guard N%** | The target takes N% less damage for **100 ticks** (stacks with defence; doesn't stack with itself). |
 | **On-flank** | An extra effect when the target is flanked (6.3). |
 
-Scale check: a typical turn is about 100–114 ticks, so 100 ticks is about
-one of the target's turns. All durations are in the config module.
+**What a tick is:** an abstract unit of time on the shared clock (3.1).
+Each unit has one next-turn tick; the clock jumps to the lowest and that
+unit acts, so any tick *can* be a turn but most are skipped. 100 is the
+cost of a typical action, not the length of a turn: a unit taking one
+returns 100 ticks later, and everyone due in between acts first. The
+scale is fine-grained so small differences survive rounding (a 10% speed
+modifier is 10 ticks of 100; a hex costs 7) and ties stay rare (3.3).
+So a 100-tick duration lasts roughly until the affected unit's next turn
+after a typical action. All durations are in the config module.
 
 ## 4. Prototype heroes [owner]
 
@@ -214,7 +221,12 @@ illegal move.
 - **Layout:** the hex board drawn with the engine on the canvas (hex
   geometry and picking are new: the engine's grids are square); the
   **timeline**, your selected hero's **stat sheet**, and the **preview**
-  as a side panel. Phone: board on top, timeline below; tap a hex or
+  as a side panel.
+- **The timeline shows the next 16 turns as cards in order** (Mana
+  Khemia style, owner 2026-10-15), including delayed actions as their own
+  cards; ticks stay underneath for the rules and appear only as a small
+  detail on each card. The rules are the shared clock, not slots — the
+  combat design rejected a slot-based timeline (section 13). Phone: board on top, timeline below; tap a hex or
   target to preview, tap again to commit (no hover).
 - **Visuals:** plain shapes and text — coloured hexes for tile types,
   circles with a letter for heroes, outline colour for side. The design
@@ -238,9 +250,9 @@ illegal move.
 5. **Three against four:** confirmed.
 6. **Title:** must include "Silk Road"; candidates in section 9.
 
-**Still open:**
-- The working title (section 9).
-- Whether **Delay** (the renamed timeline effect, 3.5) stays as a core
-  mechanic alongside the new physical Push — assumed yes in this brief.
-- Whether the Elephant Rider resists Push, Delay or both (roster; not
-  needed for Phase 1).
+**Later answers (2026-10-15):** **Delay stays** as a core mechanic
+alongside physical Push. The **Elephant Rider resists Push as a passive**
+(roster; not in Phase 1). The timeline shows the next 16 turns as cards
+(section 9).
+
+**Still open:** the working title (section 9).

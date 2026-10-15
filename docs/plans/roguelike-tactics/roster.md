@@ -34,7 +34,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | 8 | Sha'ir | Abbasid Arabia | The pre-Islamic Arab poet, believed to be inspired by jinn, whose satire was feared as a curse on enemies | Historical and folklore | Bard | Support | Buffer and curser: verses inspire allies, satire weakens enemies | None | Recited verse (no weapon; a rebab as a possible prop) |
 | 9 | Strategos | Byzantium | The Byzantine general and military governor | Historical | Warlord / commander | Support | Commander: directs allies, pulls their turns earlier | Optional horse | Sword and banner |
 | 10 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
-| 11 | Elephant Rider | South India | The war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists pushes | War elephant | Ankus (elephant goad) and spear |
+| 11 | Elephant Rider | South India | The war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Push (passive; decided 2026-10-15) | War elephant | Ankus (elephant goad) and spear |
 | 12 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
 
 **Stat profiles (relative, untuned)**
@@ -59,7 +59,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed.
 
 **Notes**
-- **Four distinct tanks:** the Cataphract charges in, the Batyr holds the front line, the Elephant Rider cannot be moved (push resistance matters because pushes manipulate the timeline; *since 2026-10-15 "push" is physical displacement and the timeline effect is Delay — whether the Elephant Rider resists both is open*), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
+- **Four distinct tanks:** the Cataphract charges in, the Batyr holds the front line, the Elephant Rider cannot be moved (push resistance matters because pushes manipulate the timeline; *since 2026-10-15 "push" is physical displacement and the timeline effect is Delay; **decided (owner, 2026-10-15): the Elephant Rider resists Push as a passive**, not Delay*), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
 - **Support covers three needs:** healing (Alchemist), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by delaying enemies).
 - **Two djinn-related heroes:** the Djinn-Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
 - **Damage covers four niches:** caster (Fox-Spirit Sorcerer), ranged (Horse Archer), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
@@ -93,3 +93,8 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 ## Open questions (from section 14, original numbers)
 
 33. Hero roster: signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
+
+**Passives (noted 2026-10-15):** the Elephant Rider's Push resistance is
+the first **passive** — an always-on trait rather than an action. The
+combat design has no passive abilities yet; how passives are shown
+(design language, 7.1) and whether other heroes get one is open.
