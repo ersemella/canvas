@@ -113,6 +113,12 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   gear) to prevent a death spiral after a death: rejected, because a death
   is meant to start a death spiral with a low chance of recovery. Recruits
   join at base level with basic gear, and deaths don't change recruitment.
+- **A movement cap based on speed** (for example
+  `floor(M × speed / (speed + K))`): set aside, because speed already sets
+  how often a unit acts, its cost per hex and its starting slot; adding
+  reach would make it the default best stat and give the largest reach to
+  units that already act first. A per-hero cap modified by boots was the
+  suggested alternative; the cap stays a single global value for now.
 - **Consumables usable in combat** as actions with their own cost:
   replaced by consumables used only between fights (stat buffs or statuses
   for the next combat, or health recovery), keeping combat about the
