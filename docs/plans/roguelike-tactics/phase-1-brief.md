@@ -109,7 +109,7 @@ profiles (15.8) into numbers:
 Medium 10, influence Low 5; sabre)
 - *Sabre Cut* — melee, adjacent; 10 damage. Typical (10).
 - *Hold the Line* — Guard 25% on self and every adjacent ally. Typical
-  (100).
+  (10).
 - *Shove the Line* — melee, adjacent; 4 damage; Push 1. Quick (6).
 
 **Kalari Duelist** (Damage; health Medium 32, speed High 7, defence Low
