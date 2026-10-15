@@ -54,22 +54,6 @@ game imports anything but the engine's two public entries and its own
 files. Moving a package into its own repository is file-moving plus
 publishing the engine; nothing reaches across these lines.
 
-### Engine releases for other repositories
-
-Games outside this repo depend on the engine as a git dependency on a
-release tag: `"@canvas/engine": "github:ersemella/canvas#engine-v<version>"`.
-The **Release engine** workflow (`.github/workflows/release-engine.yml`,
-run by hand) builds `packages/engine`, commits only the built package
-(`package.json` without workspace-only fields, plus `dist/`) on its own —
-no branch — and pushes it as the tag `engine-v<version>`, the version
-being `packages/engine/package.json`'s. Bump that version before running
-it; an existing tag is never overwritten. The tree comes from
-`scripts/release-engine.mjs`. The built JavaScript uses extensionless
-relative imports, so consumers load it through a bundler (Vite, esbuild,
-Wrangler), not plain Node. The first consumer is the standalone roguelike
-in `ersemella/roguelike-tactics` (see
-`docs/plans/roguelite-invasions.md`).
-
 ## Key decisions
 
 ### Entity-component-system engine shared by every game

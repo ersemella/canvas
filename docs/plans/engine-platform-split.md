@@ -344,10 +344,7 @@ Recorded by the session carrying out the plan.
 2. Moving packages into their own repos (out of scope here): publish
    `@canvas/engine` from its `dist/`; swap each consumer's tsconfig
    `paths` entry for the published version; give each game repo its
-   `dev/` page as its dev loop. **Publishing done 2026-10-15:** engine
-   releases are git tags, `engine-v<version>`, made by the *Release
-   engine* workflow (see `ARCHITECTURE.md`, *Engine releases for other
-   repositories*).
+   `dev/` page as its dev loop.
 3. ~~Consider one game list for both sides.~~ Done 2026-10-12:
    `platform.games.json` is the only list, and `pnpm games:gen` generates
    both registries and the platform's per-game dependencies from it.
