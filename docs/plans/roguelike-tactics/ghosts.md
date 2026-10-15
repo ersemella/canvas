@@ -87,7 +87,7 @@ the game strategic and permadeath fair.
   state as the combat design defines it; the owner's player-key hash; the
   lineage ID) to the **pool for stage n**, a Durable Object,
   `idFromName('ghosts:' + n)`, holding a capped pool in SQLite (for example
-  the latest few hundred, plus legends). Whether consumables are copied is
+  the latest few hundred, plus legends). Whether active consumable buffs are copied is
   open question 25.
 - **Whether a node is a rival caravan fight** is decided when the run's
   route map is generated, from the run's seed, so a reload can't re-roll

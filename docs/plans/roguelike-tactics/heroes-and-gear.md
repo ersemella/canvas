@@ -72,10 +72,13 @@ Each hero has four gear slots:
 
 ### 9.6 Consumables (Decided)
 - Consumables exist, but are limited.
-- **In combat,** using a consumable is an action with its own action cost, so the track prices it like any other action.
+- **Used only between fights,** never in combat. Each one does one of:
+  - **a stat buff** for the next combat (for example +defence),
+  - **a status effect** applied at the start of the next combat (for example Guard on the first turn),
+  - **health recovery**, one of the sources of recovery between fights (10.11).
 - **A small shared party inventory** limits how many can be carried, preventing hoarding.
-- **Out of combat,** consumables are one of the sources of recovery between fights (10.11).
-- Whether consumables are allowed in PvP and in ghost builds is TBD.
+- Buffs and statuses from consumables last for the next combat only, and are shown on the affected heroes' stat sheets and cards.
+- Rationale: keeping consumables out of combat keeps every in-combat turn about the heroes' own abilities and the track, and makes using one a planning decision between fights (prepare for a known encounter on the route map, or heal now).
 
 ## 10. Party and Heroes
 
@@ -172,7 +175,7 @@ Each hero has four gear slots:
 | Defence formula | Percentage reduction: defence / (defence + constant) | Flat reduction | Diminishing returns; never reaches full immunity; works across all damage sizes |
 | Power split | Power (direct damage) and Influence (effect strength) | Single power stat; physical/magical split | Follows the keyword system; a physical/magical split would need two defence stats and halve gear relevance |
 | Gear slots | Boots, gloves, armour, helmet | Including a weapon slot | Weapons are unique per hero and tied to abilities and visual language |
-| Consumables | Limited; actions with costs in combat; shared party inventory; part of recovery | No consumables; unlimited consumables | Flexibility without hoarding; priced by the track |
+| Consumables | Limited; used only between fights; stat buffs or statuses for the next combat, or health recovery; shared party inventory | Usable in combat as actions with their own cost; no consumables; unlimited consumables | Keeps combat about abilities and the track; makes preparation between fights a decision; no hoarding |
 | Hero progression | Milestone upgrades from a randomized, hero-specific pool; no stat growth; recruits start without upgrades and earn them by reaching milestones | Experience levels with stat growth | Build variety without stat inflation |
 | Ultimates | Once per combat; an action, a charged ability or a track entity, defined per ultimate | Charge meter filled by keyword actions; cooldown-based ultimates; no ultimates | Hero identity and fight arcs; a simple, visible limit makes each use a decision |
 | Recovery | Partial after each fight; full from rests or consumables | Full heal after each fight; no healing between fights | Meaningful attrition without single-fight run losses |
@@ -186,6 +189,6 @@ Each hero has four gear slots:
 22. Final name for the Influence stat (section 9.2).
 23. Value of `defenceConstant`, and whether a minimum of 1 damage applies (section 9.1).
 24. Which gear slots carry keyword modifiers, and whether any gear modifies health.
-25. Whether consumables are allowed in PvP and ghost builds.
+25. Whether a rival caravan copy carries the consumable buffs active when it was copied, and whether consumables can be used before a PvP duel.
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
 37. **Damage buckets:** whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and guard), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).

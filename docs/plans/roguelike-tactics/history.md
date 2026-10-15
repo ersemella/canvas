@@ -104,6 +104,10 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   a request per tap against the Free plan, with latency), and all stats
   sent to the browser and hidden only in the UI (anyone reading the
   network traffic sees them).
+- **Consumables usable in combat** as actions with their own cost:
+  replaced by consumables used only between fights (stat buffs or statuses
+  for the next combat, or health recovery), keeping combat about the
+  heroes' abilities and the track.
 - **Health and damage in single digits:** percentage bonuses rounded away
   (for example Burn 2 with influence 15 stayed 2), so health and damage
   are on a ×10 scale.
