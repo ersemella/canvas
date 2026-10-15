@@ -55,8 +55,8 @@ the game strategic and permadeath fair.
   worth more than an ordinary one, but no more than an ordinary fight's
   best reward (as NetHack's bones levels and Nioh's revenants do).
 - **A beaten caravan's hero can join you:** one of its heroes may appear
-  in your next recruitment offer (10.6). It joins **with nothing**, like
-  any recruit, and is offered only if that hero isn't already in your
+  in your next recruitment offer (10.6). It joins like any recruit
+  (10.6), and is offered only if that hero isn't already in your
   party (no duplicates in one party, 10.4). Which hero is offered: open
   (suggested: the one that dealt the most damage).
 - **Losing heroes to it** is ordinary permanent death (10.3). Losing the
@@ -113,7 +113,7 @@ the game strategic and permadeath fair.
     the node is an ordinary fight.
 - **What the player sees.** Everything shown for any enemy (complete
   information, section 7): heroes, positions, abilities through the design
-  language; stats stay hidden (D11). At the start of the fight, also the
+  language, and stats, as for any enemy (D11). At the start of the fight, also the
   owner's name and the caravan's unique kills (the Nioh lesson,
   [prior-art.md](prior-art.md)).
 - **Units have controllers.** Each card on the track is driven by a

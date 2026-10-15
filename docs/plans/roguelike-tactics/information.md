@@ -21,10 +21,11 @@ tuning. Section numbers are the combat design's.
 | Reinforcements | Yes | Shown on the track in advance, with a known arrival slot and spawn location. |
 | Abilities of all units (allies and enemies) | Yes | Diegetic design language: visual cues on characters and gear indicate their abilities. Must be consistent across the whole game. |
 | Action costs | Yes | Fixed and public for every ability. |
-| Turn order | Yes | The track: a scrollable window of roughly the next 30 slots, with every unit's and track entity's card in its slot (never two in one), so players can count placement directly (3.2, 3.3). A charging card shows what it will trigger. Statuses show as a small marker on a unit's card; their exact slots appear in the tap preview. **Tapping a card previews it**: a unit's turn (who acts and when; for your own units also their stats and options), a charged ability (target and outcome) or a reinforcement (arrival and spawn hex), limited to what the player can know: enemy intent stays hidden. Default window size open (open question 1). |
-| Stats (health, speed, defence, power, influence) | Own units: yes. Enemies: not directly | Your own units' stats are shown on a stat sheet. Enemies have no stat sheet: rarity acts as a rough indicator of strength (section 9), and exact values become discoverable through previews and the track (D11). |
+| Turn order | Yes | The track: a scrollable window of roughly the next 30 slots, with every unit's and track entity's card in its slot (never two in one), so players can count placement directly (3.2, 3.3). A charging card shows what it will trigger. Statuses show as a small marker on a unit's card; their exact slots appear in the tap preview. **Tapping a card previews it**: a unit's turn (who acts and when; with the unit's stats and ability options, enemies included), a charged ability (target and outcome) or a reinforcement (arrival and spawn hex), limited to what the player can know: enemy intent stays hidden. Default window size open (open question 1). |
+| Stats (health, speed, defence, power, influence) | Yes, every unit | Every unit has a stat sheet, enemies included (D11). |
 | Action outcomes | Yes, before committing | Previews show full numbers (section 7.2). |
-| Gear and recruits you're offered | Yes | Exact stats shown before you choose. **In general players have full information except for enemies' stats** (D11). |
+| Gear and recruits you're offered | Yes | Exact stats shown before you choose. **Players have full information;** only opponents' intent is hidden (D11). |
+| Enemy options | Yes | Each enemy's ability options can be previewed with their effects (7.2). |
 | Enemy intent (what an enemy plans to do next) | No | Not shown, except charged abilities already started (their card shows what they will trigger). |
 
 ### 7.2 Previews (Decided)
@@ -36,16 +37,17 @@ Before committing, the player sees:
 - For area abilities, every affected unit and the damage or effect each receives, allies included.
 - While choosing a destination hex, the movement cost and resulting slot for that destination.
 
-Previews intentionally make stats discoverable. Attentive players can deduce health, defence, power and speed from previews and track behavior. Knowledge is earned through play rather than given in menus.
+**Enemy options (Decided).** Selecting an enemy previews each ability it could use on its next turn, with the same detail as your own previews: the targets it could reach (after moving, within its movement cap), the damage and effects each would receive, pushes, delays and its resulting slot. The preview shows options, never which one the enemy will choose.
 
 ### 7.3 Rationale
-- Enemy intent is not shown because the system may support PvP, where revealing a human opponent's plan is not possible.
+- Enemy intent is not shown: this is a strategy game, and reading what an opponent might do, from options that are fully visible, is part of play. It also keeps PvE compatible with PvP, where a human's plan can't be revealed.
+- Stats are shown for every unit, enemies included. Hidden enemy stats were revealed by the first full-number preview anyway, so they added a chore rather than uncertainty, and they made it harder to read an enemy's options.
 - There is no fog of war (see 7.4).
 
 ### 7.4 Complete Information at Fight Start (Decided)
 - Every fight starts with complete information: the full map, all special tiles, all enemy units, their positions and their abilities.
 - There is no fog of war.
-- Uncertainty comes from hidden stats (discoverable through play), narrow damage variance, and opponents' decisions, not from unseen units. (Since D11, 2026-10-15: enemies' hidden stats; your own are shown.)
+- Uncertainty comes from opponents' decisions and narrow damage variance, not from unseen units or hidden stats.
 - Reinforcements are never a surprise: they appear on the track before they arrive (section 3.8).
 - Information before the fight is a run-level concern: the run map may show partial information about upcoming encounters (for example, enemy types but not exact composition), so uncertainty affects build decisions rather than in-combat play. Run structure is out of scope for this document.
 - Rationale: losses caused by unseen threats cannot be attributed to build or play. On compact maps, fog of war adds rules (vision ranges, line of sight) with little payoff. Previews and the track both assume all units are visible.
@@ -73,8 +75,8 @@ Previews intentionally make stats discoverable. Attentive players can deduce hea
 |---|---|---|---|
 | Fog of war | None; complete information at fight start | Full fog of war, line-of-sight vision | Preserves attribution; fog adds little on compact maps; previews and track assume full visibility |
 | Reinforcements | Telegraphed on the track | Surprise arrivals | Pressure without unfair surprise |
-| Enemy intent | Not shown | Telegraphed intent | Supports possible PvP |
-| Stats | Own units shown; enemies hidden, discoverable via previews (D11) | All stats hidden; all stats shown | Avoids a solved feeling and rewards learning opponents, while your own build stays fully readable |
+| Enemy intent | Not shown; every enemy option can be previewed | Telegraphed intent | A strategy game: reading an opponent's likely choice from visible options is part of play; also supports possible PvP |
+| Stats | Shown for every unit, enemies included (D11) | All stats hidden; enemy stats hidden but discoverable through previews | Hidden stats were revealed by the first preview anyway; complete information keeps outcomes attributable |
 | Previews | Full numbers | Output only, health bars without numbers | Clear attribution of outcomes |
 | Hit chance | None (always hit) | Percentage hit chance | Avoids frustrating misses and preserves attribution |
 | Damage | Fixed by default, narrow capped variance via gear | Fully fixed, wide variance | Avoids solved feeling while staying predictable |

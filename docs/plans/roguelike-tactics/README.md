@@ -22,7 +22,7 @@ recruited during the run from a roster of twelve, travels a **route map**
 of the road (fights, caravanserais, bazaars, recruitment) and fights on
 compact hex maps. Turn order is a track of slots: each action's cost,
 divided by the unit's speed, sets how far its card moves; information is complete and randomness minimal;
-your own heroes' stats are shown, enemies' are hidden but discoverable.
+every unit's stats are shown, enemies' included; only opponents' intent is hidden.
 Heroes who die are gone for the run; a party wipe ends it.
 
 Multiplayer is asynchronous: some fights, on their own maps, are against a
@@ -52,7 +52,7 @@ Always read this file first. Then:
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Rival caravans, the pool, rewards, the ledger | [ghosts.md](ghosts.md) |
-| Server classes, routes, previews vs hidden stats, platform constraints, Free-plan limits | [architecture.md](architecture.md) |
+| Server classes, routes, previews, platform constraints, Free-plan limits | [architecture.md](architecture.md) |
 | Building Phase 1 | [phase-1-brief.md](phase-1-brief.md) and [phases.md](phases.md#phase-1-one-fight), then the topic files the brief cites |
 | Building a phase | [phases.md](phases.md), plus the topic files that phase names; then `CLAUDE.md` and `.claude/skills/verify/SKILL.md`, and the parts of `ARCHITECTURE.md` it touches |
 | Revisiting an abandoned approach | [history.md](history.md) |
@@ -99,7 +99,7 @@ run's seed. **Multiplayer and architecture** decisions are numbered:
 | D8 | Rival caravans: at most one per fight; a player faces each run's caravan at most once; pool per stage | [ghosts.md](ghosts.md) |
 | D9 | A caravan's kills reward its owner: a kill is a full party wipe; unique players slain; recognition unlocks | [ghosts.md](ghosts.md) |
 | D10 | Built in this repository, for now | [architecture.md](architecture.md) |
-| D11 | Own units' stats fully viewable; enemies send the browser derived numbers only | [architecture.md](architecture.md) |
+| D11 | Complete information: every unit's stats shown, enemies' included; enemy ability options can be previewed; only intent is hidden | [architecture.md](architecture.md) |
 
 D5 and D6 were withdrawn ([history.md](history.md)).
 

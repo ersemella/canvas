@@ -98,12 +98,21 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   Push means physically moving a unit.
 - **The timeline as the next 16 turns shown as cards,** then as one pip
   per tick: replaced by the track of slots.
-- **Stats hidden for every unit,** including your own: only enemies' stats
-  are hidden (D11).
-- **D11 alternatives:** every preview a server request (truly hidden, but
-  a request per tap against the Free plan, with latency), and all stats
-  sent to the browser and hidden only in the UI (anyone reading the
-  network traffic sees them).
+- **Stats hidden for every unit,** including your own; then **enemy stats
+  hidden** but discoverable through previews, with the browser sent only
+  derived numbers (damage after defence, effect magnitudes). Replaced by
+  complete information (D11): the first full-number preview revealed the
+  stats anyway, so hiding them added a chore rather than uncertainty.
+  Ways considered to keep them hidden: every preview a server request (a
+  request per tap against the Free plan, with latency), and stats sent but
+  hidden only in the UI (visible in network traffic).
+- **Health mostly fixed per hero:** replaced by health modified by gear,
+  because damage grows through the run and fixed health let it outgrow
+  defence, collapsing late fights into whoever strikes first.
+- **Recruits joining with nothing** (no gear, no upgrades): replaced by
+  recruits joining at the party's upgrade level with lower-level gear,
+  because each permanent death otherwise weakened the party further (a
+  death spiral).
 - **Consumables usable in combat** as actions with their own cost:
   replaced by consumables used only between fights (stat buffs or statuses
   for the next combat, or health recovery), keeping combat about the

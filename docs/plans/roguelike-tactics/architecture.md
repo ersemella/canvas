@@ -18,11 +18,11 @@ costs on the Free plan. Decisions D3, D4, D7, D10, D11.
   the Worker, like poker's `./server`. Combat is deterministic (no hit
   chance, capped damage variance from gear), so the server can replay and
   verify a fight from its seed and actions.
-- **Hidden information.** No fog of war: every fight starts with complete
-  information ([information.md](information.md), 7.4). **Enemy stats are
-  hidden** and learned through previews; your own units' stats are shown
-  (D11). The server sends a per-viewer view with enemy stats replaced by
-  derived numbers, as `getPublicState` redacts for poker.
+- **Hidden information.** No fog of war and no hidden stats: every fight
+  starts with complete information, every unit's stats included
+  ([information.md](information.md), 7.4; D11). What stays hidden is what
+  the AI will choose and the run's seed (future encounters, offers and
+  damage rolls), so the view never carries either.
 - **Durable Object storage is long-lived:** kept until code deletes it
   (`GameRoom` rooms vanish because `GameRoom` deletes itself).
   SQLite-backed classes get up to 10 GB per object, on the Free plan too.
@@ -78,8 +78,7 @@ code path untouched.
 - **Its own rules contract**, `RunSystem` in `@canvas/engine/server`
   (exact shape settled while building): create a run (seed, unlocks),
   apply an action (the player's turn, then every card's turn up to the
-  player's next one on the track), a public view (with derived
-  numbers for enemies, D11), the run's status (in a fight, between fights,
+  player's next one on the track), a public view (D11), the run's status (in a fight, between fights,
   over), the party copy offered as a rival caravan, placing a caravan in
   its deployment zone, and its events (killed a hero, wiped a party,
   defeated). The game package's `./server` exports it;
@@ -93,33 +92,28 @@ code path untouched.
   every response carries the whole public view and a version number, so a
   socket can later push exactly the same message.
 
-### D11. Previews and hidden stats
+### D11. Complete information, previews in the browser
 
-- **Your own units: stats fully viewable.** The browser gets your heroes'
-  full stats, shows them on a stat sheet, and computes previews of your
-  actions locally.
-- **Gear and recruits you're offered** show exact stats. Players have full
-  information except for enemies' stats.
-- **Enemy units: derived numbers only.** The browser never receives an
-  enemy's raw stats (speed, defence, power, influence). It gets what
-  previews need for the fight's current state: for each of your units'
-  abilities against each enemy, the final damage (min to max, 8.1) after
-  that enemy's defence and the effect magnitudes that land on it; each
-  enemy's current health; and the track (7.1), with every card's slot. The server sends these with every new state, so
-  previews are local and instant, with no request per tap. Careful players
-  can still work enemy stats out; the design intends that (7.2).
+- **Every unit's stats are sent and shown,** enemies' included, on each
+  unit's stat sheet. Gear and recruits you're offered show exact stats.
+- **Previews are computed in the browser** from the view: your own
+  actions, and each enemy's ability options (what it could reach and the
+  effect of each ability, 7.2), never which one it will choose.
+- **Hidden:** the AI's choice, which the server makes only when the
+  enemy's card is reached, and the run's seed, which would reveal damage
+  rolls (8.1), encounters and offers.
 
-**Why:** a request per preview would keep stats truly hidden but cost a
-request per tap against the Free plan and add latency; sending enemy stats
-to the browser would let anyone reading the network traffic see them.
-Derived numbers keep previews free and instant while revealing only what
-play would reveal anyway.
+**Why:** hidden enemy stats were revealed by the first full-number preview
+anyway, so they added a chore rather than uncertainty; this is a strategy
+game, where the uncertainty is the opponent's choice. Sending stats also
+keeps previews free and instant with no request per tap, and removes the
+redaction that hidden stats needed.
 
 **Consequences:**
-- The derived numbers are recomputed and sent after every change that
-  affects them (a buff, a gear effect, a push, a death), as part of each
-  action's response, so no extra requests.
-- **Rival caravans** (D8) are enemies: their stats are hidden the same way.
+- The view carries no secrets except what the server never computes
+  ahead (the AI's choice) and the seed, so there is nothing to redact per
+  viewer in a fight.
+- **Rival caravans** (D8) are enemies: their stats are shown the same way.
 
 ### D10. Built in this repository, for now
 

@@ -102,6 +102,7 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 ### 5.2 No Cooldowns (Decided)
 - Abilities have no cooldowns. An ability can be used on any turn; ultimates once per combat (3.7).
 - Action cost is therefore the main thing that prices an ability's power. Strong abilities must cost more (or be charged abilities). Low-cost abilities must be roughly comparable in power to each other, or the strongest cheap ability will be used every turn.
+- **Paying after acting.** A cost is paid after the action resolves, so it prices power only when the unit's next turn matters: a killing blow, the last turns of a fight, or a unit about to die pays little real cost. Handled case by case, per ability: where it matters, the ability is charged (paid before it resolves, 3.7) or priced for it.
 
 ### 5.3 Rationale
 - Fixed costs make every action's timing consequences readable and context-free.

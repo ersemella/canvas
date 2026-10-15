@@ -22,8 +22,8 @@ refer to the combat design (see the map in the README).
 track and action economy; a hex map with obstacle, hazard and
 conceal tiles; flanking, line of fire, area abilities with friendly fire,
 one charged arcing ability; physical pushes and track delays with the
-delay limit; the defence formula; previews; your stat sheet; enemy derived
-numbers (D11); four prototype heroes; one enemy band and its AI; the
+delay limit; the defence formula; previews; stat sheets for every unit; previews
+of enemy ability options (D11); four prototype heroes; one enemy band and its AI; the
 track UI.
 
 **Not in Phase 1:** ultimates (10.10), consumables (9.6), gear rarity and
@@ -207,16 +207,16 @@ header (never the URL, D4). The server stores only its SHA-256 hash.
 | `POST /runs/:id/turn` | One turn of the acting unit: `{move?: hex[], action: {ability, target}}`. The response contains every AI turn up to your next one (D7). |
 
 **The view** (versioned, sent whole each time): the map; every unit's
-position, health, statuses and abilities; **your units' full stats**;
-**enemy derived numbers** for previews (D11): per your unit × ability ×
-enemy, damage after defence, delay slots and burn damage (push distances
-are fixed and computed locally from the map); the track (every card's
+position, health, statuses and abilities; **every unit's full stats**, enemies'
+included (D11); the track (every card's
 slot, charging abilities and their targets, each card's remaining delay
 budget); the fight's status;
 the log of what the AI did since your last turn.
 
 Previews of moves and actions are computed in the browser from the view,
-including where the acting card will land after yielding. The server re-validates every
+including where the acting card will land after yielding, and so are
+previews of each enemy's ability options (7.2). The view never carries
+the run's seed or the AI's choice. The server re-validates every
 turn, so a bad preview can't cause an illegal move.
 
 ## 9. The page
@@ -230,7 +230,7 @@ turn, so a bad preview can't cause an illegal move.
   `silk-road-tactics`).
 - **Layout:** the hex board drawn with the engine on the canvas (hex
   geometry and picking are new: the engine's grids are square); the
-  **track**, your selected hero's **stat sheet**, and the **preview**
+  **track**, the selected unit's **stat sheet**, and the **preview**
   as a side panel. Phone: board on top, track below; tap a hex or
   target to preview, tap again to commit (no hover).
 - **The track is drawn as slots,** a window of roughly the next 30, and
@@ -239,7 +239,7 @@ turn, so a bad preview can't cause an illegal move.
   charging card shows what it will trigger. Statuses (burn, guard) show
   only as a small marker on a unit's card; their exact slots appear in the
   tap preview. **Tapping a card previews it:** a unit's turn (who acts and
-  when; your own units' stats and options too), a charged ability (its
+  when, with the unit's stats and ability options, enemies included), a charged ability (its
   target and outcome), or a reinforcement (arrival and spawn hex), only as
   far as the player can know it: enemy intent stays hidden (7.1).
 - **Visuals:** plain shapes and text: coloured hexes for tile types,

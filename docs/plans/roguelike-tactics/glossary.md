@@ -50,7 +50,7 @@ tuning. Section numbers are the combat design's.
 | **Diegetic** | Information communicated through the game world itself (character appearance, gear visuals, animations) rather than through menus or text overlays. |
 | **Design language** | A consistent set of visual conventions (shapes, colors, silhouettes, effects) that let players recognize what something does without reading a description. |
 | **Stats** | Numerical attributes of a unit or item: health, speed, defence, power and influence. See section 9.1. |
-| **Health** | A hero's hit points. Set per hero and mostly fixed for the run. |
+| **Health** | A unit's hit points. Each hero has a base value; gear can raise it. |
 | **Defence** | A stat that reduces incoming damage by a percentage with diminishing returns (section 9.1). |
 | **Power** | A stat that scales direct damage. |
 | **Influence** | A stat that scales effect strength: status effects, push distance, healing and shields. Working name (section 9.2). |
