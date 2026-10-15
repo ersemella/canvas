@@ -8,7 +8,8 @@ All decisions D1–D9 are confirmed by the owner (2026-10-13); what's left
 open is tuning (chances, caps, N) and the `RunSystem` contract's exact
 shape, settled while building. **Next step: answer the base game's open
 questions** (see *Base game design: open questions*), then level design.
-PvP is parked (see *Future: opt-in PvP*). Read this whole
+PvP is parked (see *Future: opt-in PvP*). The game is built **in this
+repository** for now (D10). Read this whole
 file, then `ARCHITECTURE.md`, `CLAUDE.md`, and
 `.claude/skills/verify/SKILL.md`, before changing anything.
 
@@ -322,6 +323,38 @@ per player:
 - **Storage per ledger grows** with lineages faced and victims (one short
   hash each): a few kilobytes for a heavy player. Fine.
 - **Lost key, lost rewards** (D4).
+
+### D10. Built in this repository, for now
+
+**Decision (owner, 2026-10-15):** the game is built here, in the `canvas`
+monorepo, as the plan's phases describe (`packages/games/roguelite`, with
+`RunRoom`, `GhostPool` and `PlayerLedger` in `@canvas/server`). A
+separate repository was chosen and then dropped the same day.
+
+**What was learned, for if it's revisited:**
+- Three shapes were weighed: stay here; a game repo built into the arcade
+  (needs a published engine and `gen-game-registry.mjs` taking external
+  packages, and most of this game's code — its Durable Objects and routes
+  — would still live here, so most changes span two repos); or a
+  **standalone game** with its own Worker, Durable Objects, page and
+  deploy, using a published engine. The standalone shape was the one
+  chosen, with the engine as a git dependency (`canvas` is public, so no
+  token).
+- **A plain git dependency on the engine doesn't work:** it installs an
+  empty package, because the engine ships only its built `dist/`, which
+  isn't committed, and nothing builds it on install. What works (tested
+  locally): a tag holding only the built package — `package.json` without
+  workspace-only fields, plus `dist/` — consumed as
+  `github:ersemella/canvas#engine-v<version>`; it installs, typechecks and
+  bundles. A script and a manual *Release engine* workflow that publish
+  such tags were added in `782cd97` and reverted when the split was
+  dropped; restore them from there.
+- The built engine uses extensionless relative imports, so it only loads
+  through a bundler (Vite, esbuild, Wrangler), not plain Node.
+- GitHub repositories can't be created from a Claude Code cloud session's
+  GitHub integration (403); the owner creates them.
+- Open then: the same Cloudflare account as `canvas` shares the Free
+  plan's daily limits with poker; a separate account would not.
 
 ## Design: a ghost encounter
 
