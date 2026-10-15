@@ -46,7 +46,7 @@ own answers. **Drafted 2026-10-15: [phase-1-brief.md](phase-1-brief.md)**
 
 ### Phase 1 — One fight
 
-New `packages/games/roguelike-tactics` (rules, server; client): a single
+New `packages/games/silk-road-tactics` (rules, server; client): a single
 fight per the combat design — the shared clock, speed, action economy
 ([timeline.md](timeline.md)); a compact hex map with obstacles, hazards,
 conceal, deployment, flanking and line of fire ([map.md](map.md));

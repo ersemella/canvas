@@ -1,4 +1,6 @@
-# Plan: roguelike tactics (working name)
+# Plan: Silk Road Tactics
+
+*(Title decided 2026-10-15; the folder keeps its earlier name, `roguelike-tactics`.)*
 
 Status: **designed, nothing built.** The **combat design** (draft v1.7,
 imported 2026-10-15) defines the game. The multiplayer design — ghosts as

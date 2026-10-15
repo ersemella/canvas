@@ -33,6 +33,8 @@ This model is in the same family as the turn systems of Mana Khemia, Final Fanta
 5. Deaths remove the unit from the clock. No other unit is affected.
 
 ### 3.3 Costs (Decided, values TBD)
+*(Revised 2026-10-15, owner: the scale is **10** for a typical action — quick 6, slow 15, 1 per hex — not the 100-based example below; see [phase-1-brief.md](phase-1-brief.md), section 2, including what it means for speed in 4.3.)*
+
 - Every action has a **fixed, public action cost**. The same ability always costs the same ticks in every combat, before the speed modifier.
 - Costs should use a fine-grained scale so ties are rare. Example scale (illustrative): typical action = 100, quick action = 60, slow action = 150, movement = 7 per hex.
 - `minimumTurnCost` ensures a turn where the unit does nothing still costs time, and prevents near-free turns from chaining. Value TBD.

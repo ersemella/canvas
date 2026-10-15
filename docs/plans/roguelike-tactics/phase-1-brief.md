@@ -9,9 +9,9 @@ page and the API.
 > which has the status, the next step and an index of every decision.
 
 **Status: confirmed by the owner, 2026-10-15** (answers in section 10),
-except the working title. Items marked **[owner]** were reviewed by the owner; everything else is a default the
+except how speed works at the 10-tick scale (section 2). Items marked **[owner]** were reviewed by the owner; everything else is a default the
 builder may use as written. All numbers are **tuning placeholders**: put
-them in one config module (`packages/games/roguelike-tactics/src/rules/config.ts`)
+them in one config module (`packages/games/silk-road-tactics/src/rules/config.ts`)
 so play-testing can change them without touching rules code. Section
 numbers ("3.4") refer to the combat design (see the map in the README).
 
@@ -38,11 +38,11 @@ fight's end ends the run.
 
 | Open question | Default for Phase 1 |
 |---|---|
-| 1. Costs | Typical action **100**, quick **60**, slow **150** ticks; movement **7 per hex**; minimum turn cost **40** (a turn doing nothing costs 40). These are the design's own illustrative numbers (3.3). |
-| 2. Speed | Speed stat 0–10; `speedModifier = min(speed × 1%, 10%)`. Cap **10%** (at the low end of 4.4's target). Armour lowers speed (4.5): see gear, below. |
-| 3. Starting offset | `roundDown(114 × (1 − speedModifier))`, where 114 is a standard turn (typical action + 2 hexes). |
+| 1. Costs | Typical action **10**, quick **6**, slow **15** ticks; movement **1 per hex**; minimum turn cost **4** (a turn doing nothing costs 4). Scale set by the owner, 2026-10-15 (the design's example was 100/60/150/7, 3.3). Moving 5 hexes now costs half a typical action (was about a third). |
+| 2. Speed **[owner]** | Speed stat 0–10, cap **10%**. At a 10-tick scale a percentage reduction mostly rounds to 0 (10% of 10 is 1 tick; 4% is 0.4 → 0), so 4.3's cost reduction barely works. **Placeholder until the owner chooses:** speed sets starting order and breaks ties (3.4, 4.1) and gives **no** cost reduction (a config switch). Armour lowers speed (4.5): see gear, below. |
+| 3. Starting offset | `12 − speed ÷ 2` (rounded down), where 12 is a standard turn (typical action + 2 hexes): higher speed starts earlier; equal offsets fall to the tie rules (speed first). |
 | 4. Fixed tie order | After speed and first-scheduled: alternate sides starting with the **player's** side, then party slot order. |
-| 5. Knockback lock limit | Applies to **Delay** (the timeline effect, section 3): a unit can be delayed at most **100 ticks in total** between two of its own turns; further delays are reduced to fit (the preview shows the reduced amount). |
+| 5. Knockback lock limit | Applies to **Delay** (the timeline effect, section 3): a unit can be delayed at most **10 ticks in total** between two of its own turns; further delays are reduced to fit (the preview shows the reduced amount). |
 | 6. Delayed actions | One in Phase 1 (Volley, below). **[owner]** Cancelled if the caster dies before it resolves; units can step out of its area; otherwise it can't be interrupted. |
 | 8. Move and act order | Move then act, or act then move — not split around the action. |
 | 28. Movement cap | **5 hexes** per turn. |
@@ -76,19 +76,20 @@ Confirmed by the owner 2026-10-15, with two changes from the first draft:
 |---|---|
 | **Push N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the pushed unit takes **2 damage**, and a unit it hits also takes 2 (ignoring defence). Entering a hazard triggers it. Costs the pushed unit no ticks. |
 | **Delay N** | Moves the target's next turn later by N ticks (3.5, formerly "push"), subject to the lock limit (3.6). |
-| **Burn N** | The target takes N damage every **25 ticks** for **100 ticks** (4 times), ignoring defence. |
-| **Guard N%** | The target takes N% less damage for **100 ticks** (stacks with defence; doesn't stack with itself). |
+| **Burn N** | The target takes N damage every **3 ticks** for **12 ticks** (4 times), ignoring defence. |
+| **Guard N%** | The target takes N% less damage for **10 ticks** (stacks with defence; doesn't stack with itself). |
 | **On-flank** | An extra effect when the target is flanked (6.3). |
 
 **What a tick is:** an abstract unit of time on the shared clock (3.1).
 Each unit has one next-turn tick; the clock jumps to the lowest and that
-unit acts, so any tick *can* be a turn but most are skipped. 100 is the
+unit acts, so any tick *can* be a turn but many are skipped. 10 is the
 cost of a typical action, not the length of a turn: a unit taking one
-returns 100 ticks later, and everyone due in between acts first. The
-scale is fine-grained so small differences survive rounding (a 10% speed
-modifier is 10 ticks of 100; a hex costs 7) and ties stay rare (3.3).
-So a 100-tick duration lasts roughly until the affected unit's next turn
-after a typical action. All durations are in the config module.
+returns 10 ticks later, and everyone due in between acts first. With a
+10-tick scale (owner, 2026-10-15) ties are more common than the combat
+design intended (3.3 asked for a fine scale); the tie rules (3.4) settle
+them deterministically, and the timeline shows the resolved order. A
+10-tick duration lasts roughly until the affected unit's next turn after
+a typical action. All durations are in the config module.
 
 ## 4. Prototype heroes [owner]
 
@@ -106,35 +107,35 @@ profiles (15.8) into numbers:
 
 **Batyr** (Tank; health High 44, speed Medium 4, defence High 20, power
 Medium 10, influence Low 5; sabre)
-- *Sabre Cut* — melee, adjacent; 10 damage. Typical (100).
+- *Sabre Cut* — melee, adjacent; 10 damage. Typical (10).
 - *Hold the Line* — Guard 25% on self and every adjacent ally. Typical
   (100).
-- *Shove the Line* — melee, adjacent; 4 damage; Push 1. Quick (60).
+- *Shove the Line* — melee, adjacent; 4 damage; Push 1. Quick (6).
 
 **Kalari Duelist** (Damage; health Medium 32, speed High 7, defence Low
 5, power High 15, influence Low 5; urumi)
 - *Quick Cut* — melee, adjacent; 6 damage; on-flank: Push 1 (out of the
-  flank). Quick (60).
+  flank). Quick (6).
 - *Whirling Urumi* — area: all six adjacent hexes, allies included;
-  7 damage each. Typical (100).
+  7 damage each. Typical (10).
 
 **Horse Archer** (Damage; health Low 24, speed High 7, defence Low 5,
 power High 15, influence Low 5; composite bow; mounted, reflected only in
 stats)
 - *Aimed Shot* — direct ranged, range 5, needs line of fire; 9 damage.
-  Typical (100).
+  Typical (10).
 - *Volley* — **arcing, delayed:** targets a hex in range 6, ignoring line
-  of fire; resolves **120 ticks later** on that hex and its six
-  neighbours, allies included; 7 damage each. Slow (150).
+  of fire; resolves **12 ticks later** on that hex and its six
+  neighbours, allies included; 7 damage each. Slow (15).
 
 **Djinn-Binder** (Support/control; health Low 24, speed Medium 4, defence
 Low 5, power Low 5, influence High 15; sealed brass vessel)
 - *Bound Gust* — direct ranged, range 4, needs line of fire; 3 damage;
-  Delay 40. Typical (100).
+  Delay 4. Typical (10).
 - *Ifrit's Breath* — direct ranged, range 3, needs line of fire; Burn 2.
-  Typical (100).
+  Typical (10).
 - *The Djinn Stirs* — area: a hex in range 3 and its neighbours, allies
-  included; Push 1 outward from the centre and Delay 20 each. Slow (150).
+  included; Push 1 outward from the centre and Delay 2 each. Slow (15).
 
 Every hero can also **Wait** (no action; minimum turn cost applies).
 
@@ -159,10 +160,10 @@ On each enemy unit's turn, deterministically:
    fire respected), plus Wait.
 2. Score each option with the same rules as previews: damage dealt +
    **30** if it kills + **10** if the target is flanked; burn counts its
-   total damage; delay counts its ticks ÷ 5; push counts its collision and
+   total damage; delay counts its ticks × 2; push counts its collision and
    hazard damage, + 5 if it breaks a flank on an ally; minus damage to the AI's own
    allies × 1.5 (friendly fire only when clearly worth it); minus
-   (turn cost ÷ 10), so cheap good turns win ties.
+   (turn cost in ticks), so cheap good turns win ties.
 3. For Volley, score assuming targets don't move.
 4. Take the highest score; break ties by the lowest unit slot, then
    target slot, then hex index. No randomness.
@@ -214,7 +215,7 @@ illegal move.
 
 ## 9. The page
 
-- **Route:** `/play/roguelike-tactics`, its own page in `@canvas/web`
+- **Route:** `/play/silk-road-tactics`, its own page in `@canvas/web`
   like poker's (`packages/web/src/app/router.tsx`, before the generic
   `/play/:gameId`, which only runs browser-only games). Listed on the home
   page through `platform.games.json` like every game.
@@ -222,7 +223,8 @@ illegal move.
   geometry and picking are new: the engine's grids are square); the
   **timeline**, your selected hero's **stat sheet**, and the **preview**
   as a side panel.
-- **The timeline shows the next 16 turns as cards in order** (Mana
+- **The timeline shows the next 16 turns — not ticks — as cards in
+  order** (one card per upcoming turn, so none is ever empty; Mana
   Khemia style, owner 2026-10-15), including delayed actions as their own
   cards; ticks stay underneath for the rules and appear only as a small
   detail on each card. The rules are the shared clock, not slots — the
@@ -231,13 +233,12 @@ illegal move.
 - **Visuals:** plain shapes and text — coloured hexes for tile types,
   circles with a letter for heroes, outline colour for side. The design
   language (open question 15) comes later.
-- **Working title [owner]:** shown on the home page and the page heading;
-  must include "Silk Road" (owner, 2026-10-15). Candidates:
-  *Silk Road Tactics*, *Silk Road Caravans*, *Caravans of the Silk Road*,
-  *Silk Road: Rival Caravans*, *The Silk Road Charter* (the prize, 15.2),
-  *Silk Road: The Closing Road* (the season, 15.2), *Last Caravan on the
-  Silk Road*, *Silk Road Gambit*. Until one is picked: *Silk Road
-  Tactics*.
+- **Title: Silk Road Tactics** (owner, 2026-10-15) — on the home page,
+  the page heading and the package name (`@canvas/games-silk-road-tactics`,
+  game ID `silk-road-tactics`). Other candidates considered: *Silk Road
+  Caravans*, *Caravans of the Silk Road*, *Silk Road: Rival Caravans*,
+  *The Silk Road Charter*, *Silk Road: The Closing Road*, *Last Caravan on
+  the Silk Road*, *Silk Road Gambit*.
 
 ## 10. Owner's answers (2026-10-15)
 
@@ -255,4 +256,7 @@ alongside physical Push. The **Elephant Rider resists Push as a passive**
 (roster; not in Phase 1). The timeline shows the next 16 turns as cards
 (section 9).
 
-**Still open:** the working title (section 9).
+**Later still (2026-10-15):** title **Silk Road Tactics**; tick scale
+**10** for a typical action (section 2).
+
+**Still open:** how speed works at the 10-tick scale (section 2, row 2).
