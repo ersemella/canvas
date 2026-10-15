@@ -5,9 +5,8 @@ imported 2026-10-15) defines the game. The multiplayer design — ghosts as
 **rival caravans**, built **last** — is settled (D1–D11, owner,
 2026-10-13 to 10-15). Built in this repository (D10).
 
-**Next step: a Phase 1 brief** — defaults for the rules Phase 1 touches,
-prototype heroes' abilities, the AI, one map, and the game's page — then
-Phase 1 ([phases.md](phases.md#before-phase-1)). The combat
+**Next step: the owner confirms the Phase 1 brief**
+([phase-1-brief.md](phase-1-brief.md), section 10), then Phase 1. The combat
 design's other open questions sit at the end of each topic file. PvP is
 parked ([pvp.md](pvp.md)).
 
@@ -57,6 +56,7 @@ Always read this file first. Then:
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Rival caravans, the pool, rewards, the ledger | [ghosts.md](ghosts.md) |
 | Server classes, routes, previews vs hidden stats, platform constraints, Free-plan limits | [architecture.md](architecture.md) |
+| Building Phase 1 | [phase-1-brief.md](phase-1-brief.md) and [phases.md](phases.md#phase-1--one-fight), then the topic files the brief cites |
 | Building a phase | [phases.md](phases.md), plus the topic files that phase names; then `CLAUDE.md` and `.claude/skills/verify/SKILL.md`, and the parts of `ARCHITECTURE.md` it touches |
 | Revisiting a past or withdrawn decision | [history.md](history.md) |
 | Other games: copies of players, live invasions | [prior-art.md](prior-art.md); games the combat design draws on: [references.md](references.md) |

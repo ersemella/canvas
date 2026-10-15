@@ -22,7 +22,8 @@ Decided 2026-10-15: the run structure (a route map, open question 34),
 previews versus hidden stats (D11), and the consistency review (README).
 
 Still needed — a **Phase 1 brief**, so a fresh session doesn't invent its
-own answers:
+own answers. **Drafted 2026-10-15: [phase-1-brief.md](phase-1-brief.md)**
+(awaiting the owner's answers in its section 10). It covers:
 - **Defaults for every TBD Phase 1 touches**, as tunable values in one
   config module: costs (typical, quick, slow action; per hex; minimum
   turn cost), the speed cap and stat→modifier mapping, the starting offset,
