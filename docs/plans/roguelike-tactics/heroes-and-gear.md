@@ -2,23 +2,25 @@
 
 Stats, gear, consumables, party size, heroes, recruitment, milestone upgrades, ultimates and recovery.
 
-> Part of the roguelike tactics plan — start at [README.md](README.md),
+> Part of the roguelike tactics plan. Start at [README.md](README.md),
 > which maps every combat-design section number ("section 3.4") to its
-> file and indexes every decision.
+> file and indexes every decision. Abandoned approaches are in
+> [history.md](history.md).
 
-From the combat design document (draft v1.7, owner, 2026-10-15). Rules
-are marked **Decided** or **Proposed**; numbers marked TBD are tuning.
-Section numbers are the original document's.
+Rules are marked **Decided** or **Proposed**; numbers marked TBD are
+tuning. Section numbers are the combat design's.
 
 ## 9. Stats, Gear and Consumables
 
 ### 9.1 Stats (Decided)
-The stat set is kept small, because stats are hidden and players learn them through previews. Fewer stats are easier to discover.
+The stat set is kept small, because enemies' stats are hidden and players learn them through previews (D11). Fewer stats are easier to discover.
+
+**Scale (Decided):** health and damage use a ×10 scale (hits of tens to a hundred or so, health in the hundreds), so percentage bonuses from stats and gear survive rounding. Ticks are a separate, coarse scale (3.3).
 
 | Stat | Role | Modified by gear? |
 |---|---|---|
 | **Health** | Hit points. | Mostly fixed. Each hero has a different health value, but it does not scale meaningfully during a run. |
-| **Speed** | Starting order and tie-breaking (section 4). No action cost reduction (revised 2026-10-15). | Yes, and weighed against defence (4.5). |
+| **Speed** | Starting order and tie-breaking (section 4). No cost reduction. | Yes, and weighed against defence (4.4). |
 | **Defence** | Reduces incoming damage by a percentage (formula below). | Yes. |
 | **Power** | Scales direct damage. | Yes. |
 | **Influence** | Scales effect strength (9.2). | Yes. |
@@ -34,7 +36,7 @@ damageTaken     = roundDown(incomingDamage × (1 − damageReduction))
 ```
 - `defenceConstant` is a single global value, TBD.
 - Properties: defence equal to the constant gives 50% reduction; reduction approaches but never reaches 100%; each additional point of defence is worth slightly less than the last (diminishing returns), so stacking defence cannot make a unit invulnerable.
-- Rounding follows the global rule (round down). Whether a minimum of 1 damage applies is TBD.
+- Rounding follows the global rule (round down). Whether a minimum of 1 damage applies is TBD (Phase 1: yes).
 
 ### 9.2 Power and Influence (Decided)
 The offensive stat is split in two:
@@ -95,8 +97,8 @@ Each hero has four gear slots:
 - A hero who dies in combat is **lost for the rest of the run.**
 
 ### 10.4 Duplicates (Decided)
-- The same hero can appear on **opposing** sides: in PvP, and when fighting a ghost team (a saved player build), if ghost teams are used.
-- Whether a single party can contain duplicates of the same hero is TBD. **Decided (owner, 2026-10-15): no duplicates within one party.** Recruitment offers never include a hero already in the party.
+- The same hero can appear on **opposing** sides: in PvP, and against a rival caravan (a saved player build).
+- **No duplicates within one party.** Recruitment offers never include a hero already in the party.
 
 ### 10.5 Rationale
 - Composition (which heroes) and gear (what they carry) form two clearly separate build layers, supporting the goal of distinguishing build from play.
@@ -108,21 +110,20 @@ Each hero has four gear slots:
 - The party is **built up during the run.** Players start with a subset of their final party and recruit the rest between fights.
 - Recruitment offers are **limited and random**: each offer presents a small, randomly selected set of heroes.
 - Rejected alternative: offering a random subset of heroes to choose from at the start of the run. Players could restart repeatedly until they got the team they wanted, adding friction without adding variety.
+- **Recruits start with nothing:** no gear and no milestone upgrades, which they earn by reaching milestones (10.9). This includes a beaten rival caravan's hero ([ghosts.md](ghosts.md), D2).
+- **Offers are seeded:** the route map, encounters and offers all come from the run's seed, so restarting does not reroll them, and fixed seeds (for example daily runs) are comparable between players.
+- **Unlocks come from two sources:** progression unlocks from fights won, so abandoning a run always costs something; recognition unlocks (cosmetics, titles) from your rival caravans' kills ([ghosts.md](ghosts.md), D9), so power never depends on other players dying.
 
 ### 10.7 Open Questions on Recruitment
 - **Starting heroes:** how many (1 or 2), and whether they are chosen freely. A free choice removes any reason to restart at the very beginning, since randomness only enters once restarting costs progress.
 - **Offer frequency and size:** how often offers appear and how many heroes each shows.
-- **Recruit gear:** recruits join without milestone upgrades and earn them by reaching milestones (decided, 10.9). Whether they come with any gear is TBD. **Decided (owner, 2026-10-15): recruits start with nothing** — no gear, no upgrades (including a beaten rival caravan's hero, [ghosts.md](ghosts.md) D2).
 - **Guaranteed relevance:** whether each offer must include at least one hero sharing a keyword with the current team. Bad offers drive restarts, so usable offers reduce the incentive.
-- **Seeded offers:** whether offers are determined by the run's seed, so restarting does not reroll the same run, and fixed seeds (e.g., daily runs) are comparable between players. **Decided (owner, 2026-10-15): yes** — the route map, encounters and offers all come from the run's seed.
-- **Progression rewards:** whether unlocks come from fights won rather than runs started, so abandoning a run always costs something. **Decided (owner, 2026-10-15): both sources** — progression unlocks from fights won, and recognition unlocks (cosmetics, titles) from your rival caravans' kills ([ghosts.md](ghosts.md) D9), so power never depends on other players dying.
 - **Replacing lost heroes:** recruitment offers are the natural path to replacing heroes lost to permanent death. Whether any special replacement mechanic is needed is TBD.
 
 ### 10.8 Open Questions on Heroes
 - **Keyword vocabulary:** a defined set of common conditions and effects (for example burn, push, on-flank, on-kill) that abilities and gear both reference. This is the key enabler of hero synergies and broadly useful gear, and should be designed before individual heroes.
 - **Preventing solved compositions:** 12 heroes give 495 possible teams of 4, and fixed synergies tend to concentrate play on a few dominant teams.
 - **Prototype scope:** validating the system with 6 to 8 heroes before building all 12.
-- ~~Duplicates within a single party (10.4).~~ Decided: not allowed.
 
 **Ideas for preventing solved compositions and improving run variety (Proposed, not adopted)**
 - **Multiple keyword hooks per hero:** each hero connects to at least two keywords, so it fits several teams rather than one exclusive pairing.
@@ -189,3 +190,4 @@ Each hero has four gear slots:
 25. Whether consumables are allowed in PvP and ghost builds.
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
 27. Whether ultimate charge carries between fights.
+37. **Damage buckets:** whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and guard), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).

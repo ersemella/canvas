@@ -2,13 +2,13 @@
 
 Regular enemies, bosses and distinct mechanics, and difficulty scaling. Rival caravans (other players' parties) are in [ghosts.md](ghosts.md).
 
-> Part of the roguelike tactics plan — start at [README.md](README.md),
+> Part of the roguelike tactics plan. Start at [README.md](README.md),
 > which maps every combat-design section number ("section 3.4") to its
-> file and indexes every decision.
+> file and indexes every decision. Abandoned approaches are in
+> [history.md](history.md).
 
-From the combat design document (draft v1.7, owner, 2026-10-15). Rules
-are marked **Decided** or **Proposed**; numbers marked TBD are tuning.
-Section numbers are the original document's.
+Rules are marked **Decided** or **Proposed**; numbers marked TBD are
+tuning. Section numbers are the combat design's.
 
 ## 11. Enemies
 
@@ -20,8 +20,7 @@ Section numbers are the original document's.
 ### 11.2 Rationale
 - Regular enemies teach players what gear and abilities exist, and reinforce the design language: the same visual cues mean the same thing on both sides.
 - Distinct mechanics on bosses create memorable threats that force builds to adapt, without making encounters unreadable.
-- Enemies built from player options also provide a natural path to asynchronous PvP using saved player builds ("ghost" builds), as in Backpack Battles and Super Auto Pets. Not decided; noted as a possibility.
-  - **Revised 2026-10-15 (owner):** decided — ghosts are **rival caravans**, copies of other players' parties met as a fight, played by the enemy AI. See [ghosts.md](ghosts.md) (D8, D9).
+- Enemies built from player options also give a natural path to asynchronous multiplayer using saved player builds, as in Backpack Battles and Super Auto Pets: **rival caravans**, copies of other players' parties met as a fight and played by the enemy AI ([ghosts.md](ghosts.md), D8, D9).
 
 ### 11.3 Example Distinct Mechanics (Illustrative, not decided)
 

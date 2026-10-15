@@ -2,13 +2,13 @@
 
 Definitions of the combat design's terms. Look terms up here; no need to read it through.
 
-> Part of the roguelike tactics plan — start at [README.md](README.md),
+> Part of the roguelike tactics plan. Start at [README.md](README.md),
 > which maps every combat-design section number ("section 3.4") to its
-> file and indexes every decision.
+> file and indexes every decision. Abandoned approaches are in
+> [history.md](history.md).
 
-From the combat design document (draft v1.7, owner, 2026-10-15). Rules
-are marked **Decided** or **Proposed**; numbers marked TBD are tuning.
-Section numbers are the original document's.
+Rules are marked **Decided** or **Proposed**; numbers marked TBD are
+tuning. Section numbers are the combat design's.
 
 ## 2. Glossary
 
@@ -22,20 +22,20 @@ Section numbers are the original document's.
 | **Unit** | Any combatant on the map, whether player-controlled or enemy. |
 | **Turn** | A single unit's opportunity to act. Turns are individual, not per side. |
 | **Shared clock** | A single number line of time used by all units in a combat. Turn order is determined by positions on this clock. |
-| **Tick** | One unit of time on the shared clock. All costs and durations are measured in ticks. Ticks are whole numbers on a coarse scale (typical action about 10), drawn as one pip each on the timeline (revised 2026-10-15). |
+| **Tick** | One unit of time on the shared clock. All costs and durations are measured in ticks. Ticks are whole numbers on a coarse scale (typical action about 10), drawn as one pip each on the timeline. |
 | **Current tick** | The point on the shared clock where the acting unit's turn takes place. |
 | **Next turn tick** | The tick at which a unit will take its next turn. Each unit has exactly one. |
-| **Timeline** | The visible display of upcoming turns for all units, in the order they will occur. Drawn as one pip per tick over a window of roughly the next 30 ticks, with units, delayed actions and reinforcements on their pips (revised 2026-10-15). |
+| **Timeline** | The visible display of upcoming turns for all units, in the order they will occur. Drawn as one pip per tick over a scrollable window of roughly the next 30 ticks, with units, delayed actions and reinforcements on their pips; tapping an entry previews it (7.1). |
 | **Turn cost** | The total number of ticks a turn adds before that unit's next turn: movement cost plus action cost, with a minimum. |
 | **Action cost** | The ticks added by the action used on a turn. Every ability defines its own fixed action cost. |
 | **Movement cost** | The ticks added by moving: a fixed number of ticks per hex moved. |
 | **Standard turn** | A reference turn with a typical action and typical movement. Used to anchor tuning; not a separate rule. |
 | **Quick / slow action** | An action whose cost is lower / higher than a typical action. |
 | **Minimum turn cost** | A floor on turn cost. No turn can cost less than this, including a turn where the unit does nothing. |
-| **Speed** | A unit stat that sets starting order and is the first tie-breaker. It does not reduce action cost (revised 2026-10-15). See section 4. |
-| **Tie** | Two or more units (or delayed actions) scheduled on the same tick. Also called a collision. Since 2026-10-15, collisions between units resolve to separate ticks: the tie order (3.4) decides who keeps the tick, and the others move to the next free tick. |
-| **Push** | *Revised 2026-10-15 (owner):* physically moves a unit away from the attacker by a number of hexes ([phase-1-brief.md](phase-1-brief.md), section 3). The timeline effect this term used to mean is now **Delay**. |
-| **Delay** | *(Added 2026-10-15.)* An effect that moves another unit's next turn tick later — what the combat design calls a push in sections 3–4 and 12. |
+| **Speed** | A unit stat that sets starting order and is the first tie-breaker. It does not reduce action cost. See section 4. |
+| **Tie** | Two or more units (or delayed actions) that would be scheduled on the same tick. Also called a collision. Units never share a tick: the tie order (3.4) decides who keeps it, and the others move to the next free tick. |
+| **Push** | Physically moves a unit away from the attacker by a number of hexes ([phase-1-brief.md](phase-1-brief.md), section 3). Not a timeline effect; see Delay. |
+| **Delay** | An effect that moves another unit's next turn tick later (3.5), within the delay limit (3.6). |
 | **Delayed action** | An action that is declared on one turn but takes effect later, at a scheduled tick shown on the timeline. |
 | **Action** | The single ability or attack a unit may use on its turn. Optional. |
 | **Move** | Relocating a unit across hexes on its turn. Optional. |
@@ -74,7 +74,7 @@ Section numbers are the original document's.
 | **PvP (Player versus Player)** | Matches where two human players control opposing parties. |
 | **PvE (Player versus Environment)** | Matches against computer-controlled enemies. |
 | **TBD** | To be determined. A value or rule not yet decided. |
-| **Rival caravan** | *(Added 2026-10-15.)* An AI-controlled copy of another player's party, met as a fight on its own map; the game's ghosts. See [ghosts.md](ghosts.md). |
-| **Route map** | *(Added 2026-10-15.)* The run's map of the road, with route choices between nodes (fights, rests, bazaars, recruitment), as in Slay the Spire. Open question 34, decided. |
-| **Stage** | *(Added 2026-10-15.)* A run's **position along the road** on the route map (its row or step), not fights won; rival caravans are matched by it, and difficulty scales with it. |
-| **Party wipe** | *(Added 2026-10-15.)* Every hero in the party dead; the run ends. A rival caravan that wipes a party counts a kill (D9). |
+| **Rival caravan** | An AI-controlled copy of another player's party, met as a fight on its own map; the game's ghosts. See [ghosts.md](ghosts.md). |
+| **Route map** | The run's map of the road, with route choices between nodes (fights, rests, bazaars, recruitment), as in Slay the Spire. |
+| **Stage** | A run's **position along the road** on the route map (its row or step); rival caravans are matched by it, and difficulty scales with it. |
+| **Party wipe** | Every hero in the party dead; the run ends. A rival caravan that wipes a party counts a kill (D9). |

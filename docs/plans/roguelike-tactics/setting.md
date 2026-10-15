@@ -2,13 +2,13 @@
 
 The fantasy Silk Road: premise, why caravans race, how the setting maps onto the systems, cultures, folklore and care notes. The hero roster is in [roster.md](roster.md).
 
-> Part of the roguelike tactics plan — start at [README.md](README.md),
+> Part of the roguelike tactics plan. Start at [README.md](README.md),
 > which maps every combat-design section number ("section 3.4") to its
-> file and indexes every decision.
+> file and indexes every decision. Abandoned approaches are in
+> [history.md](history.md).
 
-From the combat design document (draft v1.7, owner, 2026-10-15). Rules
-are marked **Decided** or **Proposed**; numbers marked TBD are tuning.
-Section numbers are the original document's.
+Rules are marked **Decided** or **Proposed**; numbers marked TBD are
+tuning. Section numbers are the combat design's.
 
 ## 15. Setting (Draft)
 

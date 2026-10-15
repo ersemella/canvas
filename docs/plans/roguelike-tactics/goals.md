@@ -2,13 +2,13 @@
 
 Design goals, intended feel and the types of fun the game aims for. Read first for any design work.
 
-> Part of the roguelike tactics plan — start at [README.md](README.md),
+> Part of the roguelike tactics plan. Start at [README.md](README.md),
 > which maps every combat-design section number ("section 3.4") to its
-> file and indexes every decision.
+> file and indexes every decision. Abandoned approaches are in
+> [history.md](history.md).
 
-From the combat design document (draft v1.7, owner, 2026-10-15). Rules
-are marked **Decided** or **Proposed**; numbers marked TBD are tuning.
-Section numbers are the original document's.
+Rules are marked **Decided** or **Proposed**; numbers marked TBD are
+tuning. Section numbers are the combat design's.
 
 ## 1. Design Goals
 
@@ -16,7 +16,7 @@ Section numbers are the original document's.
    - **Build:** choosing the right gear for each character and the right combination of characters in the party.
    - **Play:** making good decisions during combat.
 2. **Make outcomes attributable.** After a win or loss, a player should be able to tell whether the build or the in-combat decisions were responsible. Randomness inside combat is kept small and visible for this reason.
-3. **Avoid a "solved" feeling.** Combat should not reduce to identical, precise arithmetic every turn. Small, visible variance and hidden-but-discoverable stats support this. *(Revised 2026-10-15, D11: enemy stats are hidden-but-discoverable; your own units' stats are shown.)*
+3. **Avoid a "solved" feeling.** Combat should not reduce to identical, precise arithmetic every turn. Small, visible variance and hidden-but-discoverable enemy stats support this (your own units' stats are shown, D11).
 4. **Treat time as a shared resource.** Turn order is a single timeline that every player is trying to manipulate. Deciding how much to do on a turn, and affecting when other units act, are core strategic decisions.
 5. **Stay PvP-ready.** The system may later support player-versus-player matches, so it must not depend on information or mechanics that only work against a computer-controlled opponent.
 
@@ -37,7 +37,7 @@ Using the eight types of fun from the MDA framework (Hunicke, LeBlanc and Zubek)
 | **Challenge** (game as obstacle course) | **Primary** | Deterministic combat, full information, previews, clear attribution of outcomes, permanent death, difficulty from better enemies rather than bigger numbers. |
 | **Expression** (game as self-discovery) | Strong secondary | Team building through recruitment, gear and milestone upgrades; the main source of run-to-run identity. |
 | **Discovery** (game as uncharted territory) | Secondary | Hidden enemy stats learned through previews (own stats are shown, D11); finding combinations of heroes and keywords. |
-| **Fellowship** (game as social framework) | Situational | Only if PvP or ghost builds ship. *Revised 2026-10-15:* ghost builds ship as rival caravans ([ghosts.md](ghosts.md)), so this is at least secondary: other players' runs appear in yours, and your caravan's kills earn recognition. |
+| **Fellowship** (game as social framework) | Secondary | Rival caravans ([ghosts.md](ghosts.md)): other players' runs appear in yours, and your caravan's kills earn recognition. More if PvP ships. |
 | **Fantasy** (game as make-believe) | Light | Heroes with signature weapons and distinct identities; the design is mechanics-first. |
 | **Narrative** (game as drama) | Low | Only emergent stories from runs, such as a hero lost at a bad moment. |
 | **Sensation** (game as sense-pleasure) | Low | Turn-based and readable by design, with few moment-to-moment thrills. |

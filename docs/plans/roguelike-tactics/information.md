@@ -2,13 +2,13 @@
 
 What players can see, previews, complete information, and randomness.
 
-> Part of the roguelike tactics plan — start at [README.md](README.md),
+> Part of the roguelike tactics plan. Start at [README.md](README.md),
 > which maps every combat-design section number ("section 3.4") to its
-> file and indexes every decision.
+> file and indexes every decision. Abandoned approaches are in
+> [history.md](history.md).
 
-From the combat design document (draft v1.7, owner, 2026-10-15). Rules
-are marked **Decided** or **Proposed**; numbers marked TBD are tuning.
-Section numbers are the original document's.
+Rules are marked **Decided** or **Proposed**; numbers marked TBD are
+tuning. Section numbers are the combat design's.
 
 ## 7. Information and Visibility
 
@@ -21,10 +21,10 @@ Section numbers are the original document's.
 | Reinforcements | Yes | Shown on the timeline as scheduled entries with a known arrival tick and spawn location. |
 | Abilities of all units (allies and enemies) | Yes | Diegetic design language: visual cues on characters and gear indicate their abilities. Must be consistent across the whole game. |
 | Action costs | Yes | Fixed and public for every ability. |
-| Turn order | Yes | The timeline, including the resolved order of ties and any scheduled delayed actions. *(Revised 2026-10-15, owner:)* drawn as discrete pips or segments, one per tick, over a window of roughly the next 30 ticks; unit portraits, delayed actions and reinforcements sit on their pips, so players can count costs directly (3.3). The timeline **scrolls** to show later ticks. **Tapping an entry previews it**: a unit's turn (who acts and when; for your own units also their stats and options) or the effect that will occur (a delayed action's area and outcome, a reinforcement's arrival and spawn hex), limited to what the player can know: enemy intent stays hidden. Default window size open (open question 1). |
-| Stats (health, speed, defence, power, influence) | Not directly | No stat sheet. Rarity acts as a rough indicator of strength (section 9). Exact values become discoverable through previews and the timeline. **Revised 2026-10-15 (owner, D11):** this now applies to **enemy** units only; your own units' stats are fully viewable. |
+| Turn order | Yes | The timeline: one pip or segment per tick over a window of roughly the next 30 ticks, scrolling to later ticks. Unit portraits, delayed actions and reinforcements sit on their pips (never two units on one), so players can count costs directly (3.3, 3.4). Statuses show as a small marker on a unit's portrait; their exact ticks appear in the tap preview. **Tapping an entry previews it**: a unit's turn (who acts and when; for your own units also their stats and options) or the effect that will occur (a delayed action's area and outcome, a reinforcement's arrival and spawn hex), limited to what the player can know: enemy intent stays hidden. Default window size open (open question 1). |
+| Stats (health, speed, defence, power, influence) | Own units: yes. Enemies: not directly | Your own units' stats are shown on a stat sheet. Enemies have no stat sheet: rarity acts as a rough indicator of strength (section 9), and exact values become discoverable through previews and the timeline (D11). |
 | Action outcomes | Yes, before committing | Previews show full numbers (section 7.2). |
-| Gear and recruits you're offered *(added (owner, 2026-10-15))* | Yes | Exact stats shown before you choose. **In general players have full information except for enemies' stats** (D11). |
+| Gear and recruits you're offered | Yes | Exact stats shown before you choose. **In general players have full information except for enemies' stats** (D11). |
 | Enemy intent (what an enemy plans to do next) | No | Not shown, except delayed actions already declared on the timeline. |
 
 ### 7.2 Previews (Decided)
@@ -74,7 +74,7 @@ Previews intentionally make stats discoverable. Attentive players can deduce hea
 | Fog of war | None; complete information at fight start | Full fog of war, line-of-sight vision | Preserves attribution; fog adds little on compact maps; previews and timeline assume full visibility |
 | Reinforcements | Telegraphed on the timeline | Surprise arrivals | Pressure without unfair surprise |
 | Enemy intent | Not shown | Telegraphed intent | Supports possible PvP |
-| Stats | Hidden, discoverable via previews | Fully shown | Avoids solved feeling; rewards learning |
+| Stats | Own units shown; enemies hidden, discoverable via previews (D11) | All stats hidden; all stats shown | Avoids a solved feeling and rewards learning opponents, while your own build stays fully readable |
 | Previews | Full numbers | Output only, health bars without numbers | Clear attribution of outcomes |
 | Hit chance | None (always hit) | Percentage hit chance | Avoids frustrating misses and preserves attribution |
 | Damage | Fixed by default, narrow capped variance via gear | Fully fixed, wide variance | Avoids solved feeling while staying predictable |

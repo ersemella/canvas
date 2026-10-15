@@ -1,19 +1,17 @@
 # Roguelike tactics: prior art
 
-> Part of the roguelike tactics plan — start at [README.md](README.md),
+> Part of the roguelike tactics plan. Start at [README.md](README.md),
 > which has the status, the next step and an index of every decision.
 
 ## Prior art
 
 Researched 2026-10-13/14 (from memory, plus web searches for the live
 invasion games; details not checked against each game). No game found
-does exactly this game's ghosts — AI copies of other players' characters
-invading your dungeon at the same depth, at most once per run, scored by
-unique players killed — but each part exists somewhere. (Researched for
-the dungeon-crawl version; since 2026-10-15 ghosts are rival caravans,
-copies of whole parties met as a fight, which brings the game closer to
-the snapshot battlers below — Backpack Battles, Super Auto Pets, The
-Bazaar.)
+does exactly this game's ghosts: AI-controlled copies of other players'
+parties, met as a fight at the same stage of the road, at most once per
+run, scored by unique players killed. Each part exists somewhere; the
+closest structurally are the snapshot battlers (Backpack Battles, Super
+Auto Pets, The Bazaar) and Nioh's revenants.
 
 **Ghosts (asynchronous copies of players):**
 
