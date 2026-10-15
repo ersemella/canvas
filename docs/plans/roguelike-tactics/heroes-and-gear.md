@@ -25,7 +25,7 @@ The stat set is kept small, so every unit's stat sheet, enemies' included (D11),
 | **Power** | Scales direct damage. | Yes. |
 | **Influence** | Scales effect strength (9.2). | Yes. |
 
-- **Health and defence both grow with gear,** so a hero's defensive side keeps pace with damage, which grows through power and gear bonuses. If health stayed fixed, damage would outgrow it late in a run and fights would collapse into whoever strikes first. Defence is a percentage reduction (formula below), so it holds its value as incoming damage grows. Recruits join with gear and upgrades (10.6), so growing health doesn't leave them far behind.
+- **Health and defence both grow with gear,** so a hero's defensive side keeps pace with damage, which grows through power and gear bonuses. If health stayed fixed, damage would outgrow it late in a run and fights would collapse into whoever strikes first. Defence is a percentage reduction (formula below), so it holds its value as incoming damage grows. A recruit joins at base level (10.6), so it starts behind the party's grown heroes; that is intended.
 - **No movement stat.** It was not distinct enough from speed. How far a unit moves is governed by per-hex movement cost (6.2), which boots can modify. Whether there is a hard maximum on hexes per turn is TBD.
 - **No accuracy, evasion or critical hits**, since every attack hits (section 8).
 
@@ -113,8 +113,9 @@ Each hero has four gear slots:
 - The party is **built up during the run.** Players start with a subset of their final party and recruit the rest between fights.
 - Recruitment offers are **limited and random**: each offer presents a small, randomly selected set of heroes.
 - Rejected alternative: offering a random subset of heroes to choose from at the start of the run. Players could restart repeatedly until they got the team they wanted, adding friction without adding variety.
-- **Recruits join at the party's level:** with as many milestone upgrades as the party's heroes have earned (10.9), but with lower-level gear than the party's. The player can then equip them from the party's gear inventory. This includes a beaten rival caravan's hero ([ghosts.md](ghosts.md), D2).
-- Rationale: a recruit who joined with nothing would make each permanent death weaken the party further, making the next death more likely (a death spiral). Joining at the party's level keeps a death costly (the lost hero's gear, and a weaker replacement until re-equipped) without deciding the run.
+- **Recruits join at base level:** no milestone upgrades and basic gear. They earn upgrades by reaching milestones (10.9). This includes a beaten rival caravan's hero ([ghosts.md](ghosts.md), D2).
+- **Deaths don't change recruitment:** offers come at their usual points in the run, whether or not a hero has died.
+- Rationale: **a hero's death is meant to start a death spiral.** The replacement is weaker than the hero it replaces, so the party is weaker in the next fight and the next death is more likely. Recovering is possible but unlikely. This gives permanent death its weight: protecting heroes matters more than any single fight's reward.
 - **Offers are seeded:** the route map, encounters and offers all come from the run's seed, so restarting does not reroll them, and fixed seeds (for example daily runs) are comparable between players.
 - **Unlocks come from two sources:** progression unlocks from fights won, so abandoning a run always costs something; recognition unlocks (cosmetics, titles) from your rival caravans' kills ([ghosts.md](ghosts.md), D9), so power never depends on other players dying.
 
@@ -144,8 +145,8 @@ Each hero has four gear slots:
 - At a few milestones per run, each hero is offered a choice of upgrades that modify their abilities, generally along keyword lines.
 - The offered upgrades are **randomized but specific to each hero**, drawn from that hero's own upgrade pool. This is similar to how boons are offered in Hades.
 - **No raw stat growth from upgrades**, keeping gear and rarity meaningful and matching the principle of minimal stat inflation.
-- **Recruits join with upgrades.** A recruit joins with as many milestone upgrades as the party has earned (10.6), chosen from its own pool, and earns later milestones like any other hero.
-- Milestones are tracked per hero (for example, fights participated in or survived). Exact milestone criteria TBD.
+- **Recruits earn upgrades too, but not on joining.** A recruit joins with no milestone upgrades (10.6) and must reach milestones like any other hero to earn them.
+- Because recruits must reach milestones themselves, milestones are tracked per hero (for example, fights participated in or survived). Exact milestone criteria TBD.
 - Permanent death also loses a hero's upgrades, raising the stakes further.
 - Number of milestones per run and number of choices per offer are TBD (working assumption: 2 or 3 milestones, choice of 2).
 
@@ -171,15 +172,15 @@ Each hero has four gear slots:
 | Heroes | Pool of ~12 heroes with unique abilities and base stats; gear modifies stats and common conditions/effects | Generic classes; fully custom characters | Separates composition and gear into clear build layers; fixed identities aid readability |
 | Hero death | Permanent for the run | Revive between fights with a penalty | Raises stakes; forces adaptation |
 | Stats | Health, speed, defence, power, influence; all modified by gear | Larger stat sets; movement stat; accuracy and evasion | Small enough to read on every unit's stat sheet; movement was not distinct from speed |
-| Health scaling | Modified by gear, like defence | Mostly fixed per hero; upgradeable constitution stat | Fixed health let damage outgrow it, so late fights collapsed into whoever strikes first; recruits join with gear, so they aren't left behind |
+| Health scaling | Modified by gear, like defence | Mostly fixed per hero; upgradeable constitution stat | Fixed health let damage outgrow it, so late fights collapsed into whoever strikes first; a recruit starting behind is intended (10.6) |
 | Defence formula | Percentage reduction: defence / (defence + constant) | Flat reduction | Diminishing returns; never reaches full immunity; works across all damage sizes |
 | Power split | Power (direct damage) and Influence (effect strength) | Single power stat; physical/magical split | Follows the keyword system; a physical/magical split would need two defence stats and halve gear relevance |
 | Gear slots | Boots, gloves, armour, helmet | Including a weapon slot | Weapons are unique per hero and tied to abilities and visual language |
 | Consumables | Limited; used only between fights; stat buffs or statuses for the next combat, or health recovery; shared party inventory | Usable in combat as actions with their own cost; no consumables; unlimited consumables | Keeps combat about abilities and the track; makes preparation between fights a decision; no hoarding |
-| Hero progression | Milestone upgrades from a randomized, hero-specific pool; no stat growth; recruits join with as many upgrades as the party has earned | Experience levels with stat growth | Build variety without stat inflation |
+| Hero progression | Milestone upgrades from a randomized, hero-specific pool; no stat growth; recruits join without upgrades and earn them by reaching milestones | Experience levels with stat growth | Build variety without stat inflation |
 | Ultimates | Once per combat; an action, a charged ability or a track entity, defined per ultimate | Charge meter filled by keyword actions; cooldown-based ultimates; no ultimates | Hero identity and fight arcs; a simple, visible limit makes each use a decision |
 | Recovery | Partial after each fight; full from rests or consumables | Full heal after each fight; no healing between fights | Meaningful attrition without single-fight run losses |
-| Recruits | Join at the party's upgrade level, with lower-level gear; equipped from the party's gear inventory | Join with nothing | Prevents a death spiral after permanent death |
+| Recruits | Join at base level with basic gear; offers unaffected by deaths | Join at the party's upgrade level; special replacement mechanics after a death | A death is meant to start a death spiral with a low chance of recovery, giving permanent death its weight |
 | Party formation | Recruit heroes during the run from limited, random offers | Full team chosen at start; random subset of heroes offered at start | Adds a draft layer and run-to-run variety; a random starting subset encourages restarting until the desired team appears |
 | Duplicates | Allowed across opposing sides (PvP, ghost teams) | Unique heroes across both sides | Avoids blocking picks based on the opponent |
 
@@ -192,6 +193,5 @@ Each hero has four gear slots:
 24. Which gear slots carry keyword modifiers.
 25. Whether a rival caravan copy carries the consumable buffs active when it was copied ([ghosts.md](ghosts.md)).
 38. Whether consumables can be used before a PvP duel, and which ones ([pvp.md](pvp.md)).
-39. Recruits (10.6): how "the party's level" is counted when heroes have earned different numbers of upgrades; how much lower a recruit's gear is; whether a dead hero's gear returns to the party's gear inventory.
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
 37. **Damage buckets:** whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and guard), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).

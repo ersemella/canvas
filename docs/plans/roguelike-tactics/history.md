@@ -109,10 +109,10 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 - **Health mostly fixed per hero:** replaced by health modified by gear,
   because damage grows through the run and fixed health let it outgrow
   defence, collapsing late fights into whoever strikes first.
-- **Recruits joining with nothing** (no gear, no upgrades): replaced by
-  recruits joining at the party's upgrade level with lower-level gear,
-  because each permanent death otherwise weakened the party further (a
-  death spiral).
+- **Recruits joining at the party's upgrade level** (with lower-level
+  gear) to prevent a death spiral after a death: rejected, because a death
+  is meant to start a death spiral with a low chance of recovery. Recruits
+  join at base level with basic gear, and deaths don't change recruitment.
 - **Consumables usable in combat** as actions with their own cost:
   replaced by consumables used only between fights (stat buffs or statuses
   for the next combat, or health recovery), keeping combat about the
