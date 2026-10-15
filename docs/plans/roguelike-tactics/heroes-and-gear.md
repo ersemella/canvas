@@ -15,12 +15,12 @@ tuning. Section numbers are the combat design's.
 ### 9.1 Stats (Decided)
 The stat set is kept small, because enemies' stats are hidden and players learn them through previews (D11). Fewer stats are easier to discover.
 
-**Scale (Decided):** health and damage use a ×10 scale (hits of tens to a hundred or so, health in the hundreds), so percentage bonuses from stats and gear survive rounding. Ticks are a separate, coarse scale (3.3).
+**Scale (Decided):** health and damage use a ×10 scale (hits of tens to a hundred or so, health in the hundreds), so percentage bonuses from stats and gear survive rounding. Action costs (about 100 for a typical action) and track slots are separate scales (3.2).
 
 | Stat | Role | Modified by gear? |
 |---|---|---|
 | **Health** | Hit points. | Mostly fixed. Each hero has a different health value, but it does not scale meaningfully during a run. |
-| **Speed** | Starting order and tie-breaking (section 4). No cost reduction. | Yes, and weighed against defence (4.4). |
+| **Speed** | Divides action and movement cost, so it sets how often a unit acts; also its starting slot (section 4). | Yes, and weighed against defence (4.2). |
 | **Defence** | Reduces incoming damage by a percentage (formula below). | Yes. |
 | **Power** | Scales direct damage. | Yes. |
 | **Influence** | Scales effect strength (9.2). | Yes. |
@@ -72,7 +72,7 @@ Each hero has four gear slots:
 
 ### 9.6 Consumables (Decided)
 - Consumables exist, but are limited.
-- **In combat,** using a consumable is an action with its own action cost, so the timeline prices it like any other action.
+- **In combat,** using a consumable is an action with its own action cost, so the track prices it like any other action.
 - **A small shared party inventory** limits how many can be carried, preventing hoarding.
 - **Out of combat,** consumables are one of the sources of recovery between fights (10.11).
 - Whether consumables are allowed in PvP and in ghost builds is TBD.
@@ -148,11 +148,10 @@ Each hero has four gear slots:
 
 ### 10.10 Ultimates (Decided)
 - Each hero has an **ultimate**: their most powerful ability.
-- **Charged, not on cooldown:** each hero has an ultimate meter, filled by actions tied to that hero's keywords (for example, applying burn). This is consistent with having no cooldowns.
-- **Visible:** charge levels are shown for all units, enemies included, consistent with complete information.
-- **Priced on the timeline:** using an ultimate is an action with its own action cost, and may be a delayed action (3.7) so opponents can answer it.
+- **Once per combat.** Each ultimate can be used once per fight. This is the ultimate's whole limit: there is no charge meter and no cooldown.
+- **Priced on the track:** an ultimate may be an ordinary action with its own cost, a charged ability, or a track entity (3.7); that is defined per ultimate. Charged and track-entity ultimates are visible on the track, so opponents can answer them.
+- **Visible:** whether each unit, enemies included, still has its ultimate is shown, consistent with complete information.
 - **Gear can modify ultimates** like any other ability.
-- Whether charge carries between fights or resets each fight is TBD.
 
 ### 10.11 Recovery Between Fights (Decided)
 - **Partial recovery:** heroes recover a portion of their health after each fight.
@@ -173,9 +172,9 @@ Each hero has four gear slots:
 | Defence formula | Percentage reduction: defence / (defence + constant) | Flat reduction | Diminishing returns; never reaches full immunity; works across all damage sizes |
 | Power split | Power (direct damage) and Influence (effect strength) | Single power stat; physical/magical split | Follows the keyword system; a physical/magical split would need two defence stats and halve gear relevance |
 | Gear slots | Boots, gloves, armour, helmet | Including a weapon slot | Weapons are unique per hero and tied to abilities and visual language |
-| Consumables | Limited; actions with costs in combat; shared party inventory; part of recovery | No consumables; unlimited consumables | Flexibility without hoarding; priced by the timeline |
+| Consumables | Limited; actions with costs in combat; shared party inventory; part of recovery | No consumables; unlimited consumables | Flexibility without hoarding; priced by the track |
 | Hero progression | Milestone upgrades from a randomized, hero-specific pool; no stat growth; recruits start without upgrades and earn them by reaching milestones | Experience levels with stat growth | Build variety without stat inflation |
-| Ultimates | Charge meter filled by keyword actions; visible to all; action cost on the timeline | Cooldown-based ultimates; no ultimates | Hero identity and fight arcs, consistent with no cooldowns and complete information |
+| Ultimates | Once per combat; an action, a charged ability or a track entity, defined per ultimate | Charge meter filled by keyword actions; cooldown-based ultimates; no ultimates | Hero identity and fight arcs; a simple, visible limit makes each use a decision |
 | Recovery | Partial after each fight; full from rests or consumables | Full heal after each fight; no healing between fights | Meaningful attrition without single-fight run losses |
 | Party formation | Recruit heroes during the run from limited, random offers | Full team chosen at start; random subset of heroes offered at start | Adds a draft layer and run-to-run variety; a random starting subset encourages restarting until the desired team appears |
 | Duplicates | Allowed across opposing sides (PvP, ghost teams) | Unique heroes across both sides | Avoids blocking picks based on the opponent |
@@ -189,5 +188,4 @@ Each hero has four gear slots:
 24. Which gear slots carry keyword modifiers, and whether any gear modifies health.
 25. Whether consumables are allowed in PvP and ghost builds.
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
-27. Whether ultimate charge carries between fights.
 37. **Damage buckets:** whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and guard), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).

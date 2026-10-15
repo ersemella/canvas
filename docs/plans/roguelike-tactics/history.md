@@ -59,20 +59,45 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 
 ## Combat
 
-- **A fine-grained tick scale** (typical action 100, quick 60, slow 150,
-  movement 7 per hex): rejected because ticks could not be shown visually.
-  Ticks are coarse whole numbers drawn one pip per tick.
-- **Speed as a percentage reduction of action cost**, capped (10% to
-  15%) and rounded down, with a starting offset derived from the same
-  percentage: rejected because at the coarse scale it rounds to 0 on quick
-  actions. **A flat per-tier cost reduction** was considered and not
-  adopted, for simplicity. Speed sets starting order and breaks ties only.
-- **Units sharing a tick and acting in tie order:** replaced by collisions
-  resolving to separate ticks, so every unit has its own pip.
-- **"Push" as the timeline effect:** the timeline effect is called Delay;
+- **A shared clock of fine-grained ticks** (typical action 100, quick 60,
+  slow 150, movement 7 per hex), with speed reducing action cost by a
+  capped percentage. Replaced first by coarse ticks (ticks could not be
+  shown visually), then by the track.
+- **A shared clock of coarse whole-number ticks** (typical action 10,
+  quick 6, slow 15, 1 tick per hex, minimum turn cost about 3), drawn one
+  pip per tick, with speed affecting only starting order and tie-breaks:
+  speed barely mattered (a percentage reduction rounds to 0 on quick
+  actions, and a flat per-tier reduction was not adopted); collisions let
+  the faster unit keep the tick and bump the incumbent, which needed bumps
+  to count towards the delay limit; and a minimum turn cost below a short
+  move made short moves free and allowed chained near-free turns. Replaced
+  by the **track**: fine-grained costs divided by speed + C into coarse
+  slots, so speed works in small steps while the track stays countable.
+- **Starting order at tick 0 with tie rules spreading units out,** or a
+  per-tier offset: replaced by the placement formula with a starting cost.
+- **Units sharing a tick and acting in tie order:** replaced by one card
+  per slot.
+- **Move-only and wait turns** priced by a minimum turn cost: replaced by
+  requiring an action on every turn.
+- **Unlimited movement with an exponentially rising cost per hex:**
+  considered and dropped for a movement cap, because costs are paid after
+  the turn and a long dash could still strike first.
+- **Delayed actions as separate timeline entries** (declared, then
+  resolving at a scheduled point, cancelled if the caster died): replaced
+  by charged abilities on the character's own card, plus track entities
+  for effects that act independently (such as summons).
+- **Ultimates charged by a meter** filled by keyword actions: replaced by
+  once per combat.
+- **An event order within a tick** (expiries, damage over time, delayed
+  actions, then the unit): replaced by effects acting at the beginning of
+  a slot, before that slot's card.
+- **Enemy tie ranks in the derived numbers** (so the browser could preview
+  who kept a contested tick): unneeded once the arriving card always
+  yields.
+- **"Push" as the timeline effect:** the track effect is called Delay;
   Push means physically moving a unit.
-- **The timeline as the next 16 turns shown as cards** (Mana Khemia
-  style): replaced by pips, one per tick, so players count costs directly.
+- **The timeline as the next 16 turns shown as cards,** then as one pip
+  per tick: replaced by the track of slots.
 - **Stats hidden for every unit,** including your own: only enemies' stats
   are hidden (D11).
 - **D11 alternatives:** every preview a server request (truly hidden, but
@@ -82,8 +107,6 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 - **Health and damage in single digits:** percentage bonuses rounded away
   (for example Burn 2 with influence 15 stayed 2), so health and damage
   are on a ×10 scale.
-- **Burn every 50 ticks for 200, guard for 200** (at the old 100-tick
-  scale): too long; now burn every 3 ticks for 12 and guard for 10.
 
 ## Repository (D10)
 

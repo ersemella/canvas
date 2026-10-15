@@ -75,7 +75,7 @@ See [prior-art.md](prior-art.md) for sources.
 Not yet in scope, but the design must not block it:
 - All information rules in section 7 apply equally to both sides.
 - Deployment zones are on opposite ends of symmetric or mirrored maps (section 6.6).
-- Speed concentrates first-mover advantage, strongly: it decides starting order and the frequent collisions of the coarse tick scale (3.3, 3.4, 4.1). If testing shows this matters, add a small starting offset in favour of the side that moves second.
+- Speed concentrates first-mover advantage, strongly: it decides how often each side acts and who starts first (3.2, 3.4). If testing shows this matters, add a small starting offset in favour of the side that moves second.
 - The delay limit (section 3.6) is required before PvP.
 - A turn timer will likely be needed. TBD.
 - The variance cap (section 8.1) applies.

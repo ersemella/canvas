@@ -20,8 +20,8 @@ Tactics timeline and a Darkest Dungeon roster", on a **fantasy Silk Road**
 where rival caravans race along the road. A party of up to four heroes,
 recruited during the run from a roster of twelve, travels a **route map**
 of the road (fights, caravanserais, bazaars, recruitment) and fights on
-compact hex maps. Turn order is a shared clock of whole-number ticks that
-every action is priced on; information is complete and randomness minimal;
+compact hex maps. Turn order is a track of slots: each action's cost,
+divided by the unit's speed, sets how far its card moves; information is complete and randomness minimal;
 your own heroes' stats are shown, enemies' are hidden but discoverable.
 Heroes who die are gone for the run; a party wipe ends it.
 

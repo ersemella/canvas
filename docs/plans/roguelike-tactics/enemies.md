@@ -15,7 +15,7 @@ tuning. Section numbers are the combat design's.
 ### 11.1 Hybrid Enemy Design (Decided)
 - **Regular enemies** are built from the same gear, abilities and character options available to players. They follow the same rules, costs and design language.
 - **Bosses and a smaller set of distinct monsters** use the same base systems but each add one distinct mechanic of their own.
-- A distinct mechanic should **bend one existing rule** (the timeline, the map, or the build system) rather than introduce a new system. Players already understand the rule, so the twist stays readable through the timeline, the map, previews and the shared design language.
+- A distinct mechanic should **bend one existing rule** (the track, the map, or the build system) rather than introduce a new system. Players already understand the rule, so the twist stays readable through the track, the map, previews and the shared design language.
 
 ### 11.2 Rationale
 - Regular enemies teach players what gear and abilities exist, and reinforce the design language: the same visual cues mean the same thing on both sides.
@@ -26,14 +26,14 @@ tuning. Section numbers are the combat design's.
 
 | Rule bent | Example | What it tests |
 |---|---|---|
-| Timeline | **Two heads, two turns:** a boss with two separate timeline entries, each with its own action set. Pushing one head delays only that head. | Timeline control and target priority |
-| Timeline | **Scheduled cataclysm:** recurring environmental events placed on the timeline as delayed actions (a collapsing ceiling, a flood). | Racing the clock; positioning before known events |
-| Timeline | **Tempo tax:** an aura that increases action or movement cost for units near the boss. | Speed versus defence tradeoff; ranged versus melee |
+| Track | **Two heads, two turns:** a boss with two separate track entries, each with its own action set. Delaying one head delays only that head. | Track control and target priority |
+| Track | **Scheduled cataclysm:** recurring environmental events placed on the track as track entities (a collapsing ceiling, a flood). | Racing the clock; positioning before known events |
+| Track | **Tempo tax:** an aura that increases action or movement cost for units near the boss. | Speed versus defence tradeoff; ranged versus melee |
 | Space | **Multi-hex body:** a large boss occupying several hexes, with parts (arms, a shield) that can be targeted and destroyed separately. | Positioning; flanking over a larger footprint |
 | Space | **Terrain shaper:** converts tiles into hazards or conceal over time. | Adapting to a changing map |
 | Space | **Vulnerable only when flanked:** takes reduced damage unless flanked. | Positional play and movement cost decisions |
 | Build | **Mimic:** copies the last ability used against it. | Build variety; punishes one-dimensional builds |
-| Build | **Summoner:** schedules reinforcements on the timeline. | Burst builds (kill before arrival) versus sustain builds (outlast) |
+| Build | **Summoner:** schedules reinforcements on the track. | Burst builds (kill before arrival) versus sustain builds (outlast) |
 
 ---
 
@@ -49,8 +49,8 @@ Difficulty rises over a run mainly by making enemies better built, not by inflat
 - **Encounter pressure:**
   - Harder deployment layouts (split, surrounded, far from cover).
   - Harsher maps: more hazards, less conceal, sight lines that favor enemy ranged units.
-  - Timeline pressure: reinforcements arriving sooner, scheduled cataclysms, more enemy push abilities.
-  - Objectives beyond defeating all enemies: survive a number of ticks, protect a unit, defeat a target before reinforcements arrive.
+  - Track pressure: reinforcements arriving sooner, scheduled cataclysms, more enemy push abilities.
+  - Objectives beyond defeating all enemies: survive a number of slots, protect a unit, defeat a target before reinforcements arrive.
 - **Elite affixes:** later regular enemies may carry one rule-bending trait drawn from the boss toolkit (section 11.3), such as a tempo-tax aura or being vulnerable only when flanked. This scales complexity rather than numbers.
 - **Optional risk:** players can choose harder fights for better rewards (similar to Monster Train's Trials), letting strong builds push themselves and weaker builds play safe.
 
@@ -62,7 +62,7 @@ Difficulty rises over a run mainly by making enemies better built, not by inflat
 - List of elite affixes and when they begin appearing.
 - Objective types and how often they appear.
 - Structure of optional risk choices (which fights, what reward).
-- Whether enemy AI behavior improves over the run (focus fire, flanking, timeline manipulation).
+- Whether enemy AI behavior improves over the run (focus fire, flanking, track manipulation).
 - Recovery tuning: amount recovered after each fight and frequency of rest opportunities (section 10.11).
 - Overall difficulty curve and tuning targets.
 

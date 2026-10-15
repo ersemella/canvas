@@ -17,13 +17,13 @@ tuning. Section numbers are the combat design's.
    - **Play:** making good decisions during combat.
 2. **Make outcomes attributable.** After a win or loss, a player should be able to tell whether the build or the in-combat decisions were responsible. Randomness inside combat is kept small and visible for this reason.
 3. **Avoid a "solved" feeling.** Combat should not reduce to identical, precise arithmetic every turn. Small, visible variance and hidden-but-discoverable enemy stats support this (your own units' stats are shown, D11).
-4. **Treat time as a shared resource.** Turn order is a single timeline that every player is trying to manipulate. Deciding how much to do on a turn, and affecting when other units act, are core strategic decisions.
+4. **Treat time as a shared resource.** Turn order is a single track that every player is trying to manipulate. Deciding how much to do on a turn, and affecting when other units act, are core strategic decisions.
 5. **Stay PvP-ready.** The system may later support player-versus-player matches, so it must not depend on information or mechanics that only work against a computer-controlled opponent.
 
 ### 1.1 Intended Feel
 A readable tactical duel about tempo, wrapped in a drafting roguelike.
 
-- **In combat:** chess with a clock. Nothing on the board is hidden and nothing is left to chance, so every turn asks what an action is worth and how much time to spend on it. The timeline is the centrepiece: players trade tempo for power, push enemies back and line up delayed actions. A lost fight should make clear why: the team could not answer something, or time was spent badly.
+- **In combat:** chess with a clock. Nothing on the board is hidden and nothing is left to chance, so every turn asks what an action is worth and how much time to spend on it. The track is the centrepiece: players trade tempo for power, delay enemies, charge abilities and place track entities. A lost fight should make clear why: the team could not answer something, or time was spent badly.
 - **Between fights:** building a band rather than a deck. The party starts small, grows through recruitment offers, and each hero develops along their own path through gear and upgrades. Permanent death and limited recovery give the run weight.
 - **Tone:** tense, but rarely surprising. Difficulty comes from smarter, better-built enemies and tighter situations, not from bigger numbers or bad luck.
 - **Short pitch:** Into the Breach with a Final Fantasy Tactics timeline and a Darkest Dungeon roster.

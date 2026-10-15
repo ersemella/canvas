@@ -21,23 +21,22 @@ tuning. Section numbers are the combat design's.
 | **Party** | The group of characters a player controls in combat. Maximum of 4. |
 | **Unit** | Any combatant on the map, whether player-controlled or enemy. |
 | **Turn** | A single unit's opportunity to act. Turns are individual, not per side. |
-| **Shared clock** | A single number line of time used by all units in a combat. Turn order is determined by positions on this clock. |
-| **Tick** | One unit of time on the shared clock. All costs and durations are measured in ticks. Ticks are whole numbers on a coarse scale (typical action about 10), drawn as one pip each on the timeline. |
-| **Current tick** | The point on the shared clock where the acting unit's turn takes place. |
-| **Next turn tick** | The tick at which a unit will take its next turn. Each unit has exactly one. |
-| **Timeline** | The visible display of upcoming turns for all units, in the order they will occur. Drawn as one pip per tick over a scrollable window of roughly the next 30 ticks, with units, delayed actions and reinforcements on their pips; tapping an entry previews it (7.1). |
-| **Turn cost** | The total number of ticks a turn adds before that unit's next turn: movement cost plus action cost, with a minimum. |
-| **Action cost** | The ticks added by the action used on a turn. Every ability defines its own fixed action cost. |
-| **Movement cost** | The ticks added by moving: a fixed number of ticks per hex moved. |
+| **Track** | The row of numbered slots that sets turn order. Every unit and track entity has a card in one slot; the track advances slot by slot and each card acts when reached (3.1). Drawn as a scrollable window of roughly the next 30 slots; tapping a card previews it (7.1). |
+| **Slot** | One position on the track. Durations are measured in slots. Two cards never share a slot. |
+| **Card** | A unit's or track entity's marker on the track. |
+| **Placement** | How far a card moves after a turn: (action cost + movement cost) ÷ (speed + C), rounded down, at least 1 slot (3.2). |
+| **C** | A global constant added to speed in the placement formula; a larger C flattens speed's effect. |
+| **Action cost** | The fixed cost of the action used on a turn, on a fine-grained scale (a basic attack is about 100). Every ability defines its own. |
+| **Movement cost** | The cost added by moving: a fixed amount per hex moved, divided by speed like the action cost. |
 | **Standard turn** | A reference turn with a typical action and typical movement. Used to anchor tuning; not a separate rule. |
 | **Quick / slow action** | An action whose cost is lower / higher than a typical action. |
-| **Minimum turn cost** | A floor on turn cost. No turn can cost less than this, including a turn where the unit does nothing. |
-| **Speed** | A unit stat that sets starting order and is the first tie-breaker. It does not reduce action cost. See section 4. |
-| **Tie** | Two or more units (or delayed actions) that would be scheduled on the same tick. Also called a collision. Units never share a tick: the tie order (3.4) decides who keeps it, and the others move to the next free tick. |
-| **Push** | Physically moves a unit away from the attacker by a number of hexes ([phase-1-brief.md](phase-1-brief.md), section 3). Not a timeline effect; see Delay. |
-| **Delay** | An effect that moves another unit's next turn tick later (3.5), within the delay limit (3.6). |
-| **Delayed action** | An action that is declared on one turn but takes effect later, at a scheduled tick shown on the timeline. |
-| **Action** | The single ability or attack a unit may use on its turn. Optional. |
+| **Speed** | A unit stat that divides action and movement cost (placement), sets the starting slot, and orders cards placed at the same moment. See section 4. |
+| **Collision** | A card placed on an occupied slot. The arriving card yields to the next free slot (3.3). |
+| **Push** | Physically moves a unit away from the attacker by a number of hexes ([phase-1-brief.md](phase-1-brief.md), section 3). Not a track effect; see Delay. |
+| **Delay** | An effect that moves a card later on the track (3.5), within the delay limit (3.6). |
+| **Charged ability** | An ability with a charge cost and a recovery cost: the character's card first moves by the charge cost; when reached, the ability triggers and the card moves by the recovery cost (3.7). |
+| **Track entity** | A card that acts independently of the character who created it, for example a summoned zombie (3.7). |
+| **Action** | The single ability or attack a unit uses on its turn. Required: an action ends the turn (5.1). |
 | **Move** | Relocating a unit across hexes on its turn. Optional. |
 | **Ability** | Any action a unit can perform, including basic attacks. Abilities are granted by characters and gear. |
 | **Hex / hex grid** | The map is divided into hexagonal tiles ("hexes"). Each hex has 6 neighbors. |
@@ -59,7 +58,7 @@ tuning. Section numbers are the combat design's.
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory. |
 | **Milestone upgrade** | A choice of ability upgrade offered to a hero at set points in a run. |
-| **Ultimate** | A hero's most powerful ability, used once its charge meter is full. |
+| **Ultimate** | A hero's most powerful ability, usable once per combat. It may be an action, a charged ability or a track entity (3.7). |
 | **Keyword** | A named, shared condition or effect (for example burn, push, on-flank, on-kill) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |
 | **Ghost team / ghost build** | A saved party build from another player, used as an opponent. **Decided 2026-10-15:** ghosts are **rival caravans**, met as a fight; see [ghosts.md](ghosts.md) (D8). |

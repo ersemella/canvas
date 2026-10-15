@@ -20,8 +20,8 @@ with it.
 Other players appear only as rival caravans controlled by the AI. No live
 player ever joins your fight, so there are **no real-time turn timers**
 and no timeout actions; closing the tab mid-fight is safe and the run
-waits. (The shared clock is game time, not real time: "chess with a
-clock" means the tick timeline in [timeline.md](timeline.md).)
+waits. (The track is game time, not real time: "chess with a clock" means
+the track in [timeline.md](timeline.md).)
 
 **Why:** almost everything hard about live multiplayer exists only
 because two humans share a fight: timers so one can't stall the other,
@@ -116,7 +116,7 @@ the game strategic and permadeath fair.
   language; stats stay hidden (D11). At the start of the fight, also the
   owner's name and the caravan's unique kills (the Nioh lesson,
   [prior-art.md](prior-art.md)).
-- **Units have controllers.** Each unit on the timeline is driven by a
+- **Units have controllers.** Each card on the track is driven by a
   controller (the player, the enemy AI). A rival caravan is AI-controlled
   units; a live PvP opponent (future) would be the same units with a human
   controller.
@@ -190,7 +190,7 @@ the way are named in the caravan's story but don't count.
                         ◄──────── candidates ───────┘
                         which are new? ────────────────────────────────► (victim ledger)
                         ◄──── first new: G; marked faced ───────────────┘
- deploy, act ─────────► timeline: player units, G's units (AI)
+ deploy, act ─────────► track: player units, G's units (AI)
    ... G wipes the player's party (run over) ...
                         ──────────────────────────► G's lineage: unique kills += 1 ─► (legend after N)
                                         ─────────────────────────────────────────────► credit victim hash (idempotent)

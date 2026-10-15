@@ -19,7 +19,7 @@ A **fantasy Silk Road**. Caravans of travellers from many cultures race along th
 - **The Charter:** once a generation, the ruler at the road's end grants the trade monopoly to the first caravan to arrive with its cargo intact. Arriving second means nothing, so every rival has a reason to fight.
 - **The Closing Road:** the passes are open for only one season. On the sea routes, sailing depended on the monsoon winds, so missing the season means waiting months. This gives the run urgency.
 - Alternative considered: **The Secret**, a prize every caravan carries or chases, inspired by the account in Procopius of monks smuggling silkworm eggs to Byzantium.
-- Thematic tie: on the road, the caravan that loses time loses everything, which reinforces the timeline as a shared resource (Design Goal 4).
+- Thematic tie: on the road, the caravan that loses time loses everything, which reinforces the track as a shared resource (Design Goal 4).
 
 ### 15.3 How the Setting Maps onto the Systems (Proposed)
 

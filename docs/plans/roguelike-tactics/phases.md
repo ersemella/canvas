@@ -20,14 +20,14 @@ every open rule Phase 1 touches, the prototype heroes, the AI, the map,
 the API and the page.
 
 New `packages/games/silk-road-tactics` (rules, server; client): a single
-fight per the combat design: the shared clock and action economy
+fight per the combat design: the track and action economy
 ([timeline.md](timeline.md)); a compact hex map with obstacles, hazards,
 conceal, deployment, flanking and line of fire ([map.md](map.md));
 complete information and previews (local: own units from their stats,
 enemies from derived numbers, D11) ([information.md](information.md));
 stats, starter gear and the defence formula; your heroes' stat sheet; four
 prototype heroes; one enemy band built from the same heroes and gear, with
-a simple AI. The timeline UI. Platform: the player key, the `RunSystem`
+a simple AI. The track UI. Platform: the player key, the `RunSystem`
 contract and registry support, `RunRoom`, its routes, and a minimal
 `PlayerLedger` (active run). One request per player turn (move and action,
 AI turns up to the player's next turn); hex rules and AI within the Free
@@ -35,8 +35,8 @@ plan's 10 ms ([architecture.md](architecture.md#long-lived-storage-and-cost)).
 The PvP seams: units with controllers, a `mode` field on runs, versioned
 full views in responses.
 
-Acceptance: unit tests for the clock (ordering, collisions and cascades,
-the delay limit, minimum cost), hex geometry and line of fire, the damage
+Acceptance: unit tests for the track (placement formula, collisions and
+cascades, the delay limit, charged abilities, effects over time), hex geometry and line of fire, the damage
 formula, previews matching outcomes, determinism (same seed and actions,
 same fight), and that no enemy raw stat reaches the browser; e2e deploys,
 plays and wins or loses a fight; a reload resumes it exactly; another

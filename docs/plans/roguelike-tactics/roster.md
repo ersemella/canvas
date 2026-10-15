@@ -16,7 +16,7 @@ Twelve heroes drawn from **six cultures**. Cultures most central to the Silk Roa
 **Mechanical roles**
 - **Tank:** protects allies, absorbs or prevents damage, holds space.
 - **Damage:** primary source of kills.
-- **Support:** heals, buffs, or controls the board and the timeline.
+- **Support:** heals, buffs, or controls the board and the track.
 
 The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, random recruitment offers (10.6) can usually supply each role.
 
@@ -56,7 +56,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
-- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed affects starting order and ties, not cost (section 4).
+- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
 
 **Notes**
 - **Four distinct tanks:** the Cataphract charges in, the Batyr holds the front line, the Elephant Rider cannot be moved (it resists Push as a passive, but not Delay), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
@@ -64,7 +64,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - **Two djinn-related heroes:** the Djinn-Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
 - **Damage covers four niches:** caster (Fox-Spirit Sorcerer), ranged (Horse Archer), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
 - **Djinn as religious-adjacent material:** djinn also appear in the Qur'an. Keep to the *Arabian Nights* folklore framing (15.5). In "The Fisherman and the Jinni", the jinni was sealed in his jar by Solomon, a prophet in Islam; use the motif of a djinn sealed in a vessel without the religious figure.
-- **Speed:** three heroes can have high speed (Horse Archer, Kalari Duelist, mounted Strategos). The Varangian Guard pays for its damage with low speed. Speed affects starting order and ties, not cost (4.5); collisions are common at the coarse tick scale, so high speed still matters a lot. Keep it rare.
+- **Speed:** three heroes can have high speed (Horse Archer, Kalari Duelist, mounted Strategos). The Varangian Guard pays for its damage with low speed. Speed divides every cost, so it sets how often a hero acts (4.1, with diminishing returns); keep high speed rare.
 - **Only four damage heroes:** gear and upgrades can shift tanks and supports toward damage; guaranteed role coverage in recruitment offers would also help (10.7).
 - **Area damage:** there is no dedicated area-damage hero; area abilities can live on casters such as the Fox-Spirit Sorcerer.
 - **Boss conflict:** the multi-hex boss example (11.3) should use a creature other than a war elephant, so it reads differently from the Elephant Rider.

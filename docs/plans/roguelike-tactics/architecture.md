@@ -77,8 +77,8 @@ code path untouched.
   `RoomPolicy` or `routes/rooms.ts`.
 - **Its own rules contract**, `RunSystem` in `@canvas/engine/server`
   (exact shape settled while building): create a run (seed, unlocks),
-  apply an action (the player's turn, then every unit's turn up to the
-  player's next one on the shared clock), a public view (with derived
+  apply an action (the player's turn, then every card's turn up to the
+  player's next one on the track), a public view (with derived
   numbers for enemies, D11), the run's status (in a fight, between fights,
   over), the party copy offered as a rival caravan, placing a caravan in
   its deployment zone, and its events (killed a hero, wiped a party,
@@ -105,9 +105,7 @@ code path untouched.
   previews need for the fight's current state: for each of your units'
   abilities against each enemy, the final damage (min to max, 8.1) after
   that enemy's defence and the effect magnitudes that land on it; each
-  enemy's current health; each enemy's **tie rank** against your units, so
-  the browser can preview who keeps a contested tick (3.4); and the
-  timeline (7.1). The server sends these with every new state, so
+  enemy's current health; and the track (7.1), with every card's slot. The server sends these with every new state, so
   previews are local and instant, with no request per tap. Careful players
   can still work enemy stats out; the design intends that (7.2).
 
@@ -162,9 +160,9 @@ what was learned is in [history.md](history.md).
 - **Touch play.** The arcade supports touch (Pointer Events, swipe keys);
   deployment, hex selection and previews must work on a phone (no hover:
   previews on first tap, commit on second).
-- **The timeline** (3.1, 7.1) is the centrepiece of the UI and needs room
-  on screen beside the map: one pip per tick over a window of roughly the
-  next 30 ticks, scrollable, with entries that preview when tapped.
+- **The track** (3.1, 7.1) is the centrepiece of the UI and needs room
+  on screen beside the map: a scrollable window of roughly the next 30
+  slots, with cards that preview when tapped.
 
 ## Long-lived storage and cost
 
