@@ -1,10 +1,10 @@
-# Roguelite: how the design got here
+# Roguelike tactics: how the design got here
 
 Earlier designs, withdrawn decisions (D5, D6) and the repository decision
 (D10). Read when revisiting a past choice; not needed for day-to-day work.
 
-> Part of the roguelite plan — start at [README.md](README.md), which has
-> the status, the next step and an index of every decision.
+> Part of the roguelike tactics plan — start at [README.md](README.md),
+> which has the status, the next step and an index of every decision.
 
 ### D5. Withdrawn: signed character snapshots
 
@@ -78,3 +78,37 @@ All on 2026-10-13. Full texts are in git history
    for timers, safe points, signed snapshots, per-level rooms, tickets and
    live matchmaking at once, and makes the game strategic and workable at
    any player count. The cost: no live human opponent (D1).
+5. **The combat design defines the game** (2026-10-15, owner). A combat
+   design document (draft v1.7, written in a separate Claude session) was
+   imported and split into this folder (goals, glossary, timeline, map,
+   information, heroes-and-gear, enemies, setting, roster, references).
+   It makes the game a party of up to four heroes fighting a series of
+   battles on compact hex maps, with a shared-clock timeline, complete
+   information and hidden stats — replacing the dungeon-crawl
+   assumptions (one character, levels with doors, fog of war). Ghosts
+   became **rival caravans** (D8): copies of other players' parties met
+   as a fight; spawn points became deployment zones; depth became stage.
+   The folder was renamed from `docs/plans/roguelite/` to
+   `docs/plans/roguelike-tactics/`.
+
+## Superseded: the dungeon-crawl base game questions
+
+Written 2026-10-13 as `base-game.md`, before the combat design existed:
+twelve questions to answer before level design, each with a suggested
+default. None was answered; the combat design answers or retires them.
+Full text in git history.
+
+| # | Question (suggested default) | Now |
+|---|---|---|
+| 1 | Run length and win condition (fixed depth, final boss) | Open: run structure, combat design open question 34 |
+| 2 | What stops resting forever (no regeneration from waiting) | Retired: fights are separate; partial recovery between fights (10.11) |
+| 3 | Map size and the screen (one screen, ~30×20 tiles) | Compact hex maps (6.1), size open (open question 9) |
+| 4 | Map structure (rooms and corridors) | Hex encounter maps with obstacle, hazard and conceal tiles (6.4) |
+| 5 | Movement and turns (8 directions, one action per turn) | Hex movement priced on the shared clock (3–5) |
+| 6 | Vision (line of sight, remembered tiles) | No fog of war; complete information (7.4) |
+| 7 | The exit door | Retired: no doors; fights, and the run structure (34) |
+| 8 | Ghost spawn points (2–3 points, appear after N turns, warn, hunt) | Deployment zones (6.6); rival caravans (D8) |
+| 9 | Combat (melee only or ranged and spells) | Line of fire, area and arcing attacks (6.7) |
+| 10 | What a level contains | Encounters and enemies (11) |
+| 11 | Between levels | Recovery, recruitment, milestone upgrades, bazaars (9–10, 15.3) |
+| 12 | Ghost strength (scale to depth, or as built) | Difficulty through enemy builds (11.4); rival caravans come from the same stage; revisit in play |

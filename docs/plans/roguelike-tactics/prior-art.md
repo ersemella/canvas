@@ -1,7 +1,7 @@
-# Roguelite: prior art
+# Roguelike tactics: prior art
 
-> Part of the roguelite plan — start at [README.md](README.md), which has
-> the status, the next step and an index of every decision.
+> Part of the roguelike tactics plan — start at [README.md](README.md),
+> which has the status, the next step and an index of every decision.
 
 ## Prior art
 
@@ -9,7 +9,11 @@ Researched 2026-10-13/14 (from memory, plus web searches for the live
 invasion games; details not checked against each game). No game found
 does exactly this game's ghosts — AI copies of other players' characters
 invading your dungeon at the same depth, at most once per run, scored by
-unique players killed — but each part exists somewhere.
+unique players killed — but each part exists somewhere. (Researched for
+the dungeon-crawl version; since 2026-10-15 ghosts are rival caravans,
+copies of whole parties met as a fight, which brings the game closer to
+the snapshot battlers below — Backpack Battles, Super Auto Pets, The
+Bazaar.)
 
 **Ghosts (asynchronous copies of players):**
 

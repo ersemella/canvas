@@ -1,9 +1,13 @@
-# Roguelite: opt-in PvP (parked)
+# Roguelike tactics: opt-in PvP (parked)
 
-> Part of the roguelite plan — start at [README.md](README.md), which has
-> the status, the next step and an index of every decision.
+> Part of the roguelike tactics plan — start at [README.md](README.md),
+> which has the status, the next step and an index of every decision.
 
 ## Future: opt-in PvP
+
+*Written for the dungeon-crawl version (levels, depth, characters); read
+"level" as fight, "depth" as stage and "character" as party. Only the
+arena and section 12 were revised for the combat design (2026-10-15).*
 
 **Parked (owner, 2026-10-13): ignore PvP for now.** Recorded only so the
 standard game's design leaves room for it. Owner's direction (2026-10-13): a future PvP version
@@ -13,8 +17,12 @@ that players opt into.
 remain the more unique idea and stay recorded as a possible later mode.
 
 **Shape:**
-- **Arena (first).** Opted-in characters at the same depth meet in a
-  separate duel room, outside levels, from the between-levels screen.
+- **Arena (first).** Opted-in parties at the same stage meet in a
+  separate duel room, between fights. **Revised 2026-10-15:** the combat
+  design fits this directly — a fight between two parties on a symmetric
+  or mirrored map with opposite deployment zones (6.6, section 12 below),
+  where a rival caravan is the same fight with the AI in place of a
+  human.
   Smaller: no joining a running level, and a two-player timed turn-based
   room is close to what `GameRoom` and a `ServerSystem` already do; the
   characters are copied in from their `RunRoom`s server to server, so no
@@ -83,3 +91,17 @@ when PvP is picked up again:
   the enemy AI — triggered by items found in the campaign. A variant worth
   remembering: the invader controls the level's monsters rather than a
   character (as in Crawl).
+
+## 12. PvP Considerations (from the combat design)
+
+Not yet in scope, but the design must not block it:
+- All information rules in section 7 apply equally to both sides.
+- Deployment zones are on opposite ends of symmetric or mirrored maps (section 6.6).
+- Speed concentrates first-mover advantage. If testing shows this matters, add a small starting offset in favor of the side that moves second.
+- The knockback lock limit (section 3.6) is required before PvP.
+- A turn timer will likely be needed. TBD.
+- The variance cap (section 8.1) applies.
+
+Open question (from section 14):
+
+17. PvP turn timer and second-mover offset.
