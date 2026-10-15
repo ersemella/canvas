@@ -47,10 +47,14 @@ When two or more units have the same `nextTurnTick`, resolve in this order:
 Note: because speed is checked first, a faster unit landing on a slower unit's tick acts before it. This is an intended build reward. The timeline preview must always show the resolved order.
 
 ### 3.5 Pushes and Timeline Manipulation (Decided)
+*(Revised 2026-10-15, owner: the timeline effect below is now called **Delay**; **Push** now means physically displacing a unit — see [phase-1-brief.md](phase-1-brief.md), section 3.)*
+
 - Abilities may push another unit's `nextTurnTick` later by a stated number of ticks. Abilities may also pull an ally's turn earlier. Specific abilities TBD.
 - A pushed unit that lands on an occupied tick is resolved by the tie rules (section 3.4).
 
 ### 3.6 Knockback Lock Limit (Proposed)
+*(Since 2026-10-15 this limits **Delay**, the renamed timeline push.)*
+
 Repeated pushes can keep an enemy from ever acting. Mana Khemia was criticized for exactly this, and in PvP it becomes a lockout loop. Proposed limit, one of:
 - Diminishing returns on repeated pushes against the same unit.
 - A cap on total push a unit can receive before its next turn.

@@ -35,7 +35,8 @@ Section numbers are the original document's.
 | **Speed** | A unit stat that sets starting order, breaks ties, and slightly reduces action cost. See section 4. |
 | **Speed modifier** | The percentage by which speed reduces action cost. Capped. |
 | **Tie** | Two or more units (or delayed actions) scheduled on the same tick. Also called a collision. |
-| **Push** | An effect that moves another unit's next turn tick later. |
+| **Push** | *Revised 2026-10-15 (owner):* physically moves a unit away from the attacker by a number of hexes ([phase-1-brief.md](phase-1-brief.md), section 3). The timeline effect this term used to mean is now **Delay**. |
+| **Delay** | *(Added 2026-10-15.)* An effect that moves another unit's next turn tick later — what the combat design calls a push in sections 3–4 and 12. |
 | **Delayed action** | An action that is declared on one turn but takes effect later, at a scheduled tick shown on the timeline. |
 | **Action** | The single ability or attack a unit may use on its turn. Optional. |
 | **Move** | Relocating a unit across hexes on its turn. Optional. |

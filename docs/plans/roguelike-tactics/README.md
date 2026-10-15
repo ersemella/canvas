@@ -5,8 +5,9 @@ imported 2026-10-15) defines the game. The multiplayer design — ghosts as
 **rival caravans**, built **last** — is settled (D1–D11, owner,
 2026-10-13 to 10-15). Built in this repository (D10).
 
-**Next step: the owner confirms the Phase 1 brief**
-([phase-1-brief.md](phase-1-brief.md), section 10), then Phase 1. The combat
+**Next step: Phase 1**, from the confirmed
+[phase-1-brief.md](phase-1-brief.md) (only the working title is open —
+*Silk Road Tactics* until one is picked). The combat
 design's other open questions sit at the end of each topic file. PvP is
 parked ([pvp.md](pvp.md)).
 

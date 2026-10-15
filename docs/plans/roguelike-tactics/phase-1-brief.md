@@ -8,8 +8,8 @@ page and the API.
 > Part of the roguelike tactics plan — start at [README.md](README.md),
 > which has the status, the next step and an index of every decision.
 
-**Status: draft, 2026-10-15.** Items marked **[owner]** need the owner's
-confirmation before Phase 1 starts; everything else is a default the
+**Status: confirmed by the owner, 2026-10-15** (answers in section 10),
+except the working title. Items marked **[owner]** were reviewed by the owner; everything else is a default the
 builder may use as written. All numbers are **tuning placeholders**: put
 them in one config module (`packages/games/roguelike-tactics/src/rules/config.ts`)
 so play-testing can change them without touching rules code. Section
@@ -20,7 +20,8 @@ numbers ("3.4") refer to the combat design (see the map in the README).
 **In Phase 1:** one fight, from deployment to victory or defeat. The
 shared clock, speed, action economy; a hex map with obstacle, hazard and
 conceal tiles; flanking, line of fire, area abilities with friendly fire,
-one arcing delayed action; pushes on the timeline with a lock limit; the
+one arcing delayed action; physical pushes and timeline delays with a
+lock limit; the
 defence formula; previews; your stat sheet; enemy derived numbers (D11);
 four prototype heroes; one enemy band and its AI; the timeline UI.
 
@@ -41,7 +42,7 @@ fight's end ends the run.
 | 2. Speed | Speed stat 0–10; `speedModifier = min(speed × 1%, 10%)`. Cap **10%** (at the low end of 4.4's target). Armour lowers speed (4.5): see gear, below. |
 | 3. Starting offset | `roundDown(114 × (1 − speedModifier))`, where 114 is a standard turn (typical action + 2 hexes). |
 | 4. Fixed tie order | After speed and first-scheduled: alternate sides starting with the **player's** side, then party slot order. |
-| 5. Knockback lock limit | A unit can be pushed at most **100 ticks in total** between two of its own turns; further pushes are reduced to fit (and the preview shows the reduced amount). |
+| 5. Knockback lock limit | Applies to **Delay** (the timeline effect, section 3): a unit can be delayed at most **100 ticks in total** between two of its own turns; further delays are reduced to fit (the preview shows the reduced amount). |
 | 6. Delayed actions | One in Phase 1 (Volley, below). **[owner]** Cancelled if the caster dies before it resolves; units can step out of its area; otherwise it can't be interrupted. |
 | 8. Move and act order | Move then act, or act then move — not split around the action. |
 | 28. Movement cap | **5 hexes** per turn. |
@@ -60,20 +61,27 @@ the design yet):
 - `rawDamage = roundDown(base × (1 + power / 50))`, then +25% if flanked,
   −50% if a ranged attack on a concealed target, then the defence formula
   (9.1), minimum 1.
-- `effect = roundDown(base × (1 + influence / 50))` for push ticks, burn
-  damage and guard strength.
+- `effect = roundDown(base × (1 + influence / 50))` for delay ticks, burn
+  damage and guard strength. Push distance is fixed per ability (whole
+  hexes), not scaled.
 
-## 3. Keywords for Phase 1 [owner]
+## 3. Keywords for Phase 1
 
 The combat design says the keyword vocabulary comes before heroes (10.8).
-A minimal set for Phase 1:
+Confirmed by the owner 2026-10-15, with two changes from the first draft:
+**Push** now means physical displacement (the timeline effect is renamed
+**Delay**), and burn and guard last half as long.
 
 | Keyword | Meaning |
 |---|---|
-| **Push** | Moves the target's next turn later by N ticks (3.5), subject to the lock limit. |
-| **Burn** | The target takes N damage every 50 ticks for 200 ticks (4 times), ignoring defence. |
-| **Guard** | The target takes N% less damage for 200 ticks (stacks with defence; doesn't stack with itself). |
+| **Push N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the pushed unit takes **2 damage**, and a unit it hits also takes 2 (ignoring defence). Entering a hazard triggers it. Costs the pushed unit no ticks. |
+| **Delay N** | Moves the target's next turn later by N ticks (3.5, formerly "push"), subject to the lock limit (3.6). |
+| **Burn N** | The target takes N damage every **25 ticks** for **100 ticks** (4 times), ignoring defence. |
+| **Guard N%** | The target takes N% less damage for **100 ticks** (stacks with defence; doesn't stack with itself). |
 | **On-flank** | An extra effect when the target is flanked (6.3). |
+
+Scale check: a typical turn is about 100–114 ticks, so 100 ticks is about
+one of the target's turns. All durations are in the config module.
 
 ## 4. Prototype heroes [owner]
 
@@ -94,11 +102,12 @@ Medium 10, influence Low 5; sabre)
 - *Sabre Cut* — melee, adjacent; 10 damage. Typical (100).
 - *Hold the Line* — Guard 25% on self and every adjacent ally. Typical
   (100).
-- *Shove the Line* — melee, adjacent; 4 damage; Push 30. Quick (60).
+- *Shove the Line* — melee, adjacent; 4 damage; Push 1. Quick (60).
 
 **Kalari Duelist** (Damage; health Medium 32, speed High 7, defence Low
 5, power High 15, influence Low 5; urumi)
-- *Quick Cut* — melee, adjacent; 6 damage; on-flank: Push 20. Quick (60).
+- *Quick Cut* — melee, adjacent; 6 damage; on-flank: Push 1 (out of the
+  flank). Quick (60).
 - *Whirling Urumi* — area: all six adjacent hexes, allies included;
   7 damage each. Typical (100).
 
@@ -114,11 +123,11 @@ stats)
 **Djinn-Binder** (Support/control; health Low 24, speed Medium 4, defence
 Low 5, power Low 5, influence High 15; sealed brass vessel)
 - *Bound Gust* — direct ranged, range 4, needs line of fire; 3 damage;
-  Push 40. Typical (100).
+  Delay 40. Typical (100).
 - *Ifrit's Breath* — direct ranged, range 3, needs line of fire; Burn 2.
   Typical (100).
 - *The Djinn Stirs* — area: a hex in range 3 and its neighbours, allies
-  included; Push 25 each. Slow (150).
+  included; Push 1 outward from the centre and Delay 20 each. Slow (150).
 
 Every hero can also **Wait** (no action; minimum turn cost applies).
 
@@ -143,7 +152,8 @@ On each enemy unit's turn, deterministically:
    fire respected), plus Wait.
 2. Score each option with the same rules as previews: damage dealt +
    **30** if it kills + **10** if the target is flanked; burn counts its
-   total damage; push counts its ticks ÷ 5; minus damage to the AI's own
+   total damage; delay counts its ticks ÷ 5; push counts its collision and
+   hazard damage, + 5 if it breaks a flank on an ally; minus damage to the AI's own
    allies × 1.5 (friendly fire only when clearly worth it); minus
    (turn cost ÷ 10), so cheap good turns win ties.
 3. For Volley, score assuming targets don't move.
@@ -185,9 +195,10 @@ header (never the URL, D4). The server stores only its SHA-256 hash.
 **The view** (versioned, sent whole each time): the map; every unit's
 position, health, statuses and abilities; **your units' full stats**;
 **enemy derived numbers** for previews (D11) — per your unit × ability ×
-enemy: damage after defence, push ticks, burn damage; the timeline
-(upcoming turns in resolved order, delayed actions, the knockback budget
-left); the fight's status; the log of what the AI did since your last
+enemy: damage after defence, delay ticks, burn damage (push distances are
+fixed and computed locally from the map); the timeline
+(upcoming turns in resolved order, delayed actions, each unit's remaining
+delay budget); the fight's status; the log of what the AI did since your last
 turn.
 
 Previews of moves and actions are computed in the browser from the view.
@@ -208,21 +219,28 @@ illegal move.
 - **Visuals:** plain shapes and text — coloured hexes for tile types,
   circles with a letter for heroes, outline colour for side. The design
   language (open question 15) comes later.
-- **Working title [owner]:** shown on the home page and the page heading.
-  Suggestion: *Caravan Tactics* until there's a real name.
+- **Working title [owner]:** shown on the home page and the page heading;
+  must include "Silk Road" (owner, 2026-10-15). Candidates:
+  *Silk Road Tactics*, *Silk Road Caravans*, *Caravans of the Silk Road*,
+  *Silk Road: Rival Caravans*, *The Silk Road Charter* (the prize, 15.2),
+  *Silk Road: The Closing Road* (the season, 15.2), *Last Caravan on the
+  Silk Road*, *Silk Road Gambit*. Until one is picked: *Silk Road
+  Tactics*.
 
-## 10. Questions for the owner
+## 10. Owner's answers (2026-10-15)
 
-1. **Deferrals (section 1):** ultimates, consumables, variance, gear
-   choices and the rest wait for later phases. OK?
-2. **Keywords (section 3):** push, burn, guard and on-flank as the first
-   vocabulary. OK, or different keywords?
-3. **The four heroes and their abilities (section 4):** Batyr, Kalari
-   Duelist, Horse Archer and Djinn-Binder, with the abilities listed.
-   Change any hero, ability or number you don't like — this sets the
-   game's first feel.
-4. **Delayed actions (section 2, row 6):** cancelled if the caster dies;
-   units can step out of the area. OK?
-5. **The enemy band (section 5):** three against four for the first
-   fight. OK, or an even fight?
-6. **Working title (section 9).**
+1. **Deferrals:** confirmed.
+2. **Keywords:** confirmed with changes — Push is physical displacement,
+   the timeline effect is Delay; burn and guard shortened (section 3).
+3. **Heroes:** confirmed "for now"; abilities updated for the new Push and
+   Delay.
+4. **Delayed actions:** confirmed.
+5. **Three against four:** confirmed.
+6. **Title:** must include "Silk Road"; candidates in section 9.
+
+**Still open:**
+- The working title (section 9).
+- Whether **Delay** (the renamed timeline effect, 3.5) stays as a core
+  mechanic alongside the new physical Push — assumed yes in this brief.
+- Whether the Elephant Rider resists Push, Delay or both (roster; not
+  needed for Phase 1).
