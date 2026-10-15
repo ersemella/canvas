@@ -80,6 +80,7 @@ Not yet in scope, but the design must not block it:
 - A turn timer will likely be needed. TBD.
 - The variance cap (section 8.1) applies.
 
-Open question (original number):
+Open questions (original numbers):
 
 17. PvP turn timer and second-mover offset.
+38. Whether consumables (used only between fights, 9.6) can be used before a PvP duel, and which ones.

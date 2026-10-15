@@ -142,8 +142,8 @@ defence Low 5, power Low 5, influence High 15; sealed brass vessel)
 - *The Djinn Stirs*: area, a hex in range 3 and its neighbours, allies
   included; Push 1 outward from the centre and Delay 2 each. Slow (150).
 
-Every hero also has **Hold**: a quick action (60) with no effect, so a
-unit can always end its turn (an action is required, 5.1).
+Every hero also has **Hold** (decided): a quick action (60) with no
+effect, so a unit can always end its turn (an action is required, 5.1).
 
 **Starter gear** (fixed in Phase 1; the four-slot model of 9.3 exists in
 code, but only armour is filled): Batyr and Djinn-Binder wear medium

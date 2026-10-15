@@ -93,6 +93,8 @@ On its turn, a unit:
 - **must use one action** (an ability, an attack, or a basic action), which ends its turn, and
 - **may move once,** up to a maximum number of hexes (TBD), each hex adding movement cost.
 
+Every hero has **Hold**, a quick action with no effect, so a unit can always end its turn (cost in [phase-1-brief.md](phase-1-brief.md), section 4).
+
 There are no turns without an action, so every turn has a real cost. The exception is a charged ability's trigger turn (3.7), where the ability resolves and the unit does nothing else.
 
 Order within a turn (move before acting, act before moving, or splitting movement around the action) is TBD.
@@ -119,7 +121,7 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 | Track entities | Some abilities place independent cards (for example summons); activation costs an action | Only units on the track | Summons and similar effects act on their own timeline and can be manipulated like units |
 | Ultimates | Once per combat; may be an action, a charged ability or a track entity | Charge meter filled by keyword actions | Simple, visible limit that makes each ultimate a decision |
 | Movement | One move per turn, capped; cost per hex divided by speed | Unlimited movement with exponential cost per hex; uncapped linear cost | A cap prevents act-now-pay-later strikes across the map |
-| Turns | An action is required to end a turn | Move-only and wait turns with a minimum cost | No near-free turns to chain |
+| Turns | An action is required to end a turn; every hero has Hold, a quick action with no effect | Move-only and wait turns with a minimum cost; each hero's cheapest real ability as the fallback | No near-free turns to chain |
 | Delay limit | Cap on total delay between a card's own turns | Diminishing returns on repeated delays; a guaranteed turn after a set delay | Simple, previewable, and prevents lockout |
 | Pulls | No earlier than the next slot | Moving a card to any earlier slot | Cannot skip the track; as Final Fantasy Tactics' Quick |
 | Effects over time | Do not occupy slots; act at the beginning of a slot, on slots each effect defines; expire after the affected unit acts | Effects as track entries; effects on the affected unit's turns only | Keeps the track for cards; each effect stays exact and previewable |

@@ -87,8 +87,8 @@ the game strategic and permadeath fair.
   state as the combat design defines it; the owner's player-key hash; the
   lineage ID) to the **pool for stage n**, a Durable Object,
   `idFromName('ghosts:' + n)`, holding a capped pool in SQLite (for example
-  the latest few hundred, plus legends). Whether active consumable buffs are copied is
-  open question 25.
+  the latest few hundred, plus legends). Whether active consumable buffs
+  (9.6) are copied is open (below).
 - **Whether a node is a rival caravan fight** is decided when the run's
   route map is generated, from the run's seed, so a reload can't re-roll
   it. The caravan deploys in its side's **deployment zone** (6.6), like
@@ -200,3 +200,10 @@ the way are named in the caravan's story but don't count.
   stage, "faced" by player and lineage, credits by victim and lineage.
 - **Who to trust:** only rooms talk to pools and ledgers. The browser sends
   its player key and actions, never a stage, outcome or party.
+
+## Open questions (original numbers)
+
+25. Whether a rival caravan copy carries the consumable buffs (9.6) active
+    when it was copied. Consumables are used only between fights and last
+    for the next combat, so a copy taken between fights may hold buffs
+    meant for a fight it never plays.

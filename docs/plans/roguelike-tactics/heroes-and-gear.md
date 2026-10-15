@@ -189,6 +189,7 @@ Each hero has four gear slots:
 22. Final name for the Influence stat (section 9.2).
 23. Value of `defenceConstant`, and whether a minimum of 1 damage applies (section 9.1).
 24. Which gear slots carry keyword modifiers, and whether any gear modifies health.
-25. Whether a rival caravan copy carries the consumable buffs active when it was copied, and whether consumables can be used before a PvP duel.
+25. Whether a rival caravan copy carries the consumable buffs active when it was copied ([ghosts.md](ghosts.md)).
+38. Whether consumables can be used before a PvP duel, and which ones ([pvp.md](pvp.md)).
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
 37. **Damage buckets:** whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and guard), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).
