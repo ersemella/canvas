@@ -27,7 +27,7 @@ This model is in the same family as the turn systems of Mana Khemia, Final Fanta
    ```
    - `actionCost` is 0 if the unit used no action.
    - Speed does not change turn cost (section 4). *(Revised 2026-10-15, owner: coarse whole-number ticks; speed no longer reduces action cost.)*
-4. No other unit's `nextTurnTick` changes as a result of a unit's own turn cost. A quick turn simply lands earlier on the clock; it does not displace anyone.
+4. No other unit's `nextTurnTick` changes as a result of a unit's own turn cost. A quick turn simply lands earlier on the clock; it does not displace anyone. *(Revised 2026-10-15, owner: one exception. Units never share a tick: if a unit lands on an occupied tick, the collision rule in 3.4 can move the unit that loses the tie to a later free tick.)*
 5. Deaths remove the unit from the clock. No other unit is affected.
 
 ### 3.3 Costs (Decided, values TBD)
@@ -39,10 +39,12 @@ This model is in the same family as the turn systems of Mana Khemia, Final Fanta
 - `minimumTurnCost` ensures a turn where the unit does nothing still costs time, and prevents near-free turns from chaining. Value TBD (about 3).
 - `moveCostPerHex` may be modified by unit or gear. TBD.
 - **Consequences of the coarse scale:**
-  - **Ties are common rather than rare.** The tie rules (3.4) decide turns often. Accepted because they are deterministic and the timeline shows the resolved order.
+  - **Collisions are common rather than rare.** Since 2026-10-15 they resolve to separate ticks (3.4): the unit that loses the tie order moves to the next free tick, so losing a collision costs at least 1 tick. Accepted because it is deterministic and shown on the timeline.
   - **Movement is relatively expensive:** 4 hexes cost 40% of a typical action. This supports "rushing in costs time" (6.6) but favours short moves on compact maps. A typical action of 12 would soften this (open question 1).
 
 ### 3.4 Ties (Decided)
+*(Revised 2026-10-15, owner: collisions resolve to separate ticks. Two units never share a tick. The order below decides which unit keeps a contested tick; each other unit moves to the next free tick after it, in the same order. Every unit therefore has a tick of its own on the timeline.)*
+
 When two or more units have the same `nextTurnTick`, resolve in this order:
 1. **Higher speed acts first.** Speed here means the unit's final speed stat after gear.
 2. **If speed is equal, first scheduled acts first.** The unit whose `nextTurnTick` was set to that value earlier keeps its place.
@@ -50,7 +52,7 @@ When two or more units have the same `nextTurnTick`, resolve in this order:
 
 Note: because speed is checked first, a faster unit landing on a slower unit's tick acts before it. This is an intended build reward. The timeline preview must always show the resolved order.
 
-*(Revised 2026-10-15, owner:)* with coarse ticks (3.3), ties are common, so this order decides turns often and speed, as the first tie-breaker, matters a lot. That is acceptable because the order is deterministic and shown on the timeline.
+*(Revised 2026-10-15, owner:)* with coarse ticks (3.3), collisions are common, so this order decides turns often and speed, as the first tie-breaker, matters a lot: the faster unit keeps the tick and the slower one moves to the next free tick. A move can cascade (the next tick may also be taken), always to the first free tick. Units scheduled at the same moment, such as at combat start (4.1) or by one area Delay, spread over consecutive free ticks in this order. That is acceptable because it is deterministic and shown on the timeline. Whether delayed actions also take a tick of their own, or keep sharing a tick and resolving first (3.7), is open (open question 6).
 
 ### 3.5 Pushes and Timeline Manipulation (Decided)
 *(Revised 2026-10-15, owner: the timeline effect below is now called **Delay**; **Push** now means physically displacing a unit — see [phase-1-brief.md](phase-1-brief.md), section 3.)*
@@ -87,12 +89,12 @@ All durations (buffs, debuffs, damage over time) are measured in whole ticks on 
 *(Revised 2026-10-15, owner: speed now only sets starting order and acts as the first tie-breaker. It no longer reduces action cost; the percentage reduction, its cap and its rounding rules (draft v1.7's 4.3 and 4.4) are removed. See the decision log.)*
 
 ### 4.1 Starting Order (Proposed, not final)
-- **Proposed:** all units start at tick 0, and the tie rules (3.4) decide the opening order, so higher speed acts first.
+- **Proposed:** all units start at tick 0, and the tie rules (3.4) decide the opening order, so higher speed acts first. Because collisions resolve to separate ticks, the units spread over ticks 0, 1, 2 and so on in that order.
 - **Alternative:** a small whole-tick starting offset per speed tier, so faster tiers start earlier.
 - Either way, higher speed gives an earlier first turn. Method open (open question 3).
 
 ### 4.2 Tie-breaking (Decided)
-See section 3.4. Speed is the first tie-breaker. With coarse ticks, ties are common, so this is now speed's main effect during a fight.
+See section 3.4. Speed is the first tie-breaker. With coarse ticks, collisions are common and resolve to separate ticks, so this is now speed's main effect during a fight: the faster unit keeps a contested tick.
 
 ### 4.3 No Action Cost Reduction (Decided)
 - Speed does **not** reduce action cost or movement cost. Turn cost is `max(minimumTurnCost, hexesMoved × moveCostPerHex + actionCost)` (3.2).
@@ -110,7 +112,7 @@ See section 3.4. Speed is the first tie-breaker. With coarse ticks, ties are com
 ### 4.6 Rationale: Speed as a Universal Stat
 *(Revised 2026-10-15, owner: rewritten for speed without cost reduction.)*
 - Draft v1.7's concern: ticks are a single currency, so any action cost reduction from speed benefits every build and pushes speed toward being universally desirable. Speed no longer reduces cost, which removes that route to dominance.
-- Speed's value now comes from **starting order and tie-breaking**. Because ties are common at the coarse scale (3.3), speed still matters a lot. The speed versus defence tradeoff (4.5) remains its opportunity cost.
+- Speed's value now comes from **starting order and tie-breaking**. Because collisions are common at the coarse scale (3.3) and the loser moves to a later tick, speed still matters a lot. The speed versus defence tradeoff (4.5) remains its opportunity cost.
 - Durations in ticks (3.9) no longer favour fast units: speed does not change how often a unit acts, only its order within a tick.
 
 ## 5. Action Economy
@@ -142,7 +144,7 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 | Turn cost | Movement per hex + action cost, with a minimum | Uniform cost per turn | Moving and acting together always costs more; doing nothing still costs time |
 | Cooldowns | None | Cooldowns in turns or ticks | Simplicity; action cost prices power instead |
 | Tick scale | Coarse whole-number ticks (typical action about 10); timeline drawn one pip per tick (revised 2026-10-15) | Fine-grained scale with a typical action around 100 (draft v1.7) | The fine scale was rejected because ticks could not be shown visually; coarse ticks let players count costs on the timeline. Ties become common, accepted as deterministic and shown |
-| Ties | Speed, then first scheduled, then fixed order | First scheduled only | Gives speed a clear build role while staying deterministic; with coarse ticks, ties are common and this order decides turns often |
+| Ties | Speed, then first scheduled, then fixed order; since 2026-10-15 collisions resolve to separate ticks (the loser moves to the next free tick) | First scheduled only; units sharing a tick and acting in order (draft v1.7) | Gives speed a clear build role while staying deterministic; with coarse ticks, collisions are common and this order decides turns often; one unit per tick keeps the timeline readable |
 | Speed effect on cost | None: speed sets starting order and breaks ties only (revised 2026-10-15) | Percentage reduction of action cost, capped and rounded down (draft v1.7); flat per-tier reduction; applying to movement | The percentage reduction was rejected because at the coarse scale it rounds to 0 on quick actions; a flat per-tier reduction was considered and not adopted, in favour of simplicity |
 | Speed strength | Order and ties only (revised 2026-10-15) | Cost reduction kept minimal (draft v1.7); moving tempo to gear-specific modifiers; limiting speed to certain action categories | Removes the universal-stat risk of cost reduction; speed still matters because ties are frequent |
 | Speed vs defence | Speed weighed against defence (details TBD) | No tradeoff | Gives speed an opportunity cost so it is a build choice, not a default |
@@ -154,7 +156,7 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 
 1. Cost scale and values: typical, quick and slow action costs; `moveCostPerHex`; `minimumTurnCost`.
    - *(Revised 2026-10-15)* Scale now coarse (3.3). Still open: the exact typical action cost, 10 or 12 (12 softens movement cost).
-   - *(Added 2026-10-15)* Size of the visible timeline window (roughly the next 30 ticks, 7.1).
+   - *(Added 2026-10-15)* Default size of the visible timeline window (roughly the next 30 ticks; the timeline scrolls beyond it, 7.1).
 2. ~~Speed stat to `speedModifier` mapping, and the exact cap.~~ Removed 2026-10-15: speed no longer reduces cost (4.3).
    - Speed versus defence mechanism: gear weight lowering speed, or competing stats on gear (section 4.5).
    - ~~Whether tick-based durations over-reward speed.~~ Resolved 2026-10-15: speed no longer changes how often a unit acts (4.6).
@@ -162,6 +164,7 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 4. Fixed fallback order for ties.
 5. Knockback lock limit: which mechanism (section 3.6).
 6. Delayed actions: which abilities are delayed, and whether they can be interrupted (section 3.7).
+   - *(Added 2026-10-15)* Whether a delayed action takes a tick of its own when it collides with a unit (3.4), or shares the tick and resolves first (3.7).
 7. Scheduling of units that enter mid-combat (section 3.8).
 8. Order of move and action within a turn, and maximum movement per turn.
 28. Whether there is a hard maximum on hexes moved per turn.

@@ -40,8 +40,8 @@ fight's end ends the run.
 |---|---|
 | 1. Costs | Typical action **10**, quick **6**, slow **15** ticks; movement **1 per hex**; minimum turn cost **3** (a turn doing nothing costs 3). All whole numbers (3.3). Scale set by the owner, 2026-10-15 (the design's example was 100/60/150/7, 3.3). Moving 5 hexes now costs half a typical action (was about a third). |
 | 2. Speed **[owner]** | Decided 2026-10-15: speed sets starting order and is the first tie-breaker (3.4, 4.1); it does **not** reduce action cost (4.3). Turn cost is `max(minimumTurnCost, hexesMoved × moveCostPerHex + actionCost)`. Speed stat 0 to 10, used only for ordering. Armour lowers speed (4.5): see gear, below. |
-| 3. Starting order | All units start at **tick 0** and the tie rules decide the opening order (speed first), as 4.1 proposes. Method not final: a small whole-tick offset per speed tier is the alternative, so keep it a config switch. |
-| 4. Fixed tie order | After speed and first-scheduled: alternate sides starting with the **player's** side, then party slot order. |
+| 3. Starting order | All units start at **tick 0** and the tie rules decide the opening order (speed first), as 4.1 proposes; collisions spread them over ticks 0, 1, 2 and so on. Method not final: a small whole-tick offset per speed tier is the alternative, so keep it a config switch. |
+| 4. Fixed tie order | After speed and first-scheduled: alternate sides starting with the **player's** side, then party slot order. **Collisions resolve to separate ticks** (owner, 2026-10-15): the winner keeps the tick, each loser moves to the next free tick in tie order (3.4). Delayed actions keep sharing a tick and resolve first (3.7) until open question 6 is settled. |
 | 5. Knockback lock limit | Applies to **Delay** (the timeline effect, section 3): a unit can be delayed at most **10 ticks in total** between two of its own turns; further delays are reduced to fit (the preview shows the reduced amount). |
 | 6. Delayed actions | One in Phase 1 (Volley, below). **[owner]** Cancelled if the caster dies before it resolves; units can step out of its area; otherwise it can't be interrupted. |
 | 8. Move and act order | Move then act, or act then move — not split around the action. |
@@ -86,8 +86,8 @@ lowest and that unit acts, so any tick *can* be a turn but many are
 skipped. 10 is the cost of a typical action, not the length of a turn: a
 unit taking one returns 10 ticks later, and everyone due in between acts
 first. Ticks are coarse so the timeline can show one pip per tick (section
-9). Ties are common at this scale; the tie rules (3.4) settle them
-deterministically, and the timeline shows the resolved order. A 10-tick
+9). Collisions are common at this scale; they resolve to separate ticks
+in tie order (3.4), deterministically, and the timeline shows the result. A 10-tick
 duration lasts roughly until the affected unit's next turn after a
 typical action. All durations are in the config module.
 
@@ -224,10 +224,15 @@ illegal move.
   **timeline**, your selected hero's **stat sheet**, and the **preview**
   as a side panel.
 - **The timeline is drawn as pips, one per tick** (owner, 2026-10-15),
-  over a window of roughly the next 30 ticks. Unit portraits, delayed
-  actions and reinforcements sit on their pips, and units sharing a tick
-  are stacked in their resolved tie order, so players can count costs
-  directly (7.1). Window size is open (open question 1). This replaces an
+  over a window of roughly the next 30 ticks, and **scrolls** to later
+  ticks. Unit portraits, delayed actions and reinforcements sit on their
+  pips; units never share a pip (collisions resolve to separate ticks,
+  row 4), so players can count costs directly (7.1). **Tapping an entry
+  previews it** (owner, 2026-10-15): a unit's turn (who acts and when;
+  your own units' stats and options too) or the effect that will occur (a
+  delayed action's area and outcome, a reinforcement's arrival and spawn
+  hex), only as far as the player can know it: enemy intent stays hidden
+  (7.1). Default window size is open (open question 1). This replaces an
   earlier idea of showing the next 16 turns as cards. Phone: board on top, timeline below; tap a hex or
   target to preview, tap again to commit (no hover).
 - **Visuals:** plain shapes and text — coloured hexes for tile types,
@@ -263,8 +268,15 @@ cards was later replaced by pips, one per tick (section 9).
 the timeline; speed sets starting order and breaks ties and no longer
 reduces cost (section 2, rows 1 to 3; timeline.md 3.3 and 4).
 
+**Later still (2026-10-15):** burn every 3 ticks for 12 and guard for 10
+confirmed; the timeline scrolls and previews an entry when tapped;
+collisions resolve to separate ticks (section 2, row 4; section 9).
+
 **Still open** (none blocks Phase 1; all are config values):
 - The exact typical action cost, 10 or 12 (12 makes movement relatively
   cheaper).
-- The size of the visible timeline window (roughly 30 ticks).
+- The default size of the visible timeline window (roughly 30 ticks; it
+  scrolls).
+- Whether a delayed action takes its own tick when it collides with a unit
+  (open question 6).
 - The starting order method: all units at tick 0, or a per-tier offset.

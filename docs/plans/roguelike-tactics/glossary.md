@@ -33,7 +33,7 @@ Section numbers are the original document's.
 | **Quick / slow action** | An action whose cost is lower / higher than a typical action. |
 | **Minimum turn cost** | A floor on turn cost. No turn can cost less than this, including a turn where the unit does nothing. |
 | **Speed** | A unit stat that sets starting order and is the first tie-breaker. It does not reduce action cost (revised 2026-10-15). See section 4. |
-| **Tie** | Two or more units (or delayed actions) scheduled on the same tick. Also called a collision. |
+| **Tie** | Two or more units (or delayed actions) scheduled on the same tick. Also called a collision. Since 2026-10-15, collisions between units resolve to separate ticks: the tie order (3.4) decides who keeps the tick, and the others move to the next free tick. |
 | **Push** | *Revised 2026-10-15 (owner):* physically moves a unit away from the attacker by a number of hexes ([phase-1-brief.md](phase-1-brief.md), section 3). The timeline effect this term used to mean is now **Delay**. |
 | **Delay** | *(Added 2026-10-15.)* An effect that moves another unit's next turn tick later — what the combat design calls a push in sections 3–4 and 12. |
 | **Delayed action** | An action that is declared on one turn but takes effect later, at a scheduled tick shown on the timeline. |
