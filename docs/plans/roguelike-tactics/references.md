@@ -43,9 +43,9 @@ tuning. Section numbers are the combat design's.
 - [The Thinker's Garden: Magical treasure hunting in Islamic Egypt](https://thethinkersgarden.com/magical-treasure-hunting-in-islamic-egypt/)
 
 **Setting sources: hero roster (15.8)**
-- Xiangxi Corpse Driver: [Wikipedia: Jiangshi](https://en.wikipedia.org/wiki/Jiangshi) (corpse drivers carrying bodies home from Xiangxi on bamboo poles, which made them appear to hop)
 - Simurgh Caller: [Wikipedia: Simurgh](https://en.wikipedia.org/wiki/Simurgh)
 - The travelling fox (15.6): [Wikipedia: Fox spirit](https://en.wikipedia.org/wiki/Fox_spirit)
+- Fangshi's hand cannon: [Wikipedia: Heilongjiang hand cannon](https://en.wikipedia.org/wiki/Heilongjiang_hand_cannon)
 - Fangshi: [Wikipedia: Fangshi](https://en.wikipedia.org/wiki/Fangshi); [EBSCO Research Starters: Invention of gunpowder and guns](https://www.ebsco.com/research-starters/history/invention-gunpowder-and-guns) (Daoist alchemists seeking an elixir of life, 9th century)
 - Cataphract: [Wikipedia: Military of the Sasanian Empire](https://wikipedia.com/wiki/Sasanian_army)
 - Baatar: [Wikipedia: Baghatur](https://en.wikipedia.org/wiki/Baghatur) (Turkic and Mongolic title meaning "hero" or "valiant warrior"); [Wikipedia: Military of the Mongol Empire](https://en.wikipedia.org/wiki/Military_of_the_Mongol_Empire)
