@@ -47,7 +47,7 @@ Terminology: **Push** moves a card later on the track and **Pull** earlier; **Di
 - A pushed or pulled card that lands on an occupied slot yields (3.3).
 
 ### 3.6 Push Limit (Decided, value TBD)
-Repeated pushes could keep a unit from ever acting. Mana Khemia was criticized for exactly this, and in PvP it becomes a lockout loop. A card can be moved later by at most a set number of slots in total between two of its own turns, counting Push and any yielding that follows it. Further pushes are reduced to fit, and the preview shows the reduced amount. Value TBD.
+Repeated pushes could keep a unit from ever acting. Mana Khemia was criticized for exactly this, and in PvP it becomes a lockout loop. A card can be moved later by at most a set number of slots in total between two of its own turns, counting Push and any yielding that follows it. A turn lost to Frozen or Dazed counts as a turn and resets the limit ([keywords.md](keywords.md), 17.5). Further pushes are reduced to fit, and the preview shows the reduced amount. Value TBD.
 
 ### 3.7 Charged Abilities and Track Entities (Decided)
 **Charged abilities.** Some abilities have a **charge cost** and a **recovery cost**.

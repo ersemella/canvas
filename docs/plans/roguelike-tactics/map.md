@@ -23,7 +23,7 @@ tuning. Section numbers are the combat design's.
 ### 6.3 Flanking (Decided)
 - A target is **flanked** when two units hostile to it occupy hexes directly opposite each other across the target (for example, the hexes to its north-east and south-west).
 - **A flanked unit is Vulnerable** ([keywords.md](keywords.md), 17.6): it takes **25%** more damage (Phase 1 value; tuning) from every source for as long as it stays flanked. The status appears when the flank forms and disappears when it breaks (a flanker moves, is displaced or dies); it has no duration, and Cleanse doesn't remove it.
-- It doesn't stack with Vulnerable from an ability: the stronger applies (17.2).
+- Flanking combines as **max** with Vulnerable from other sources ([keywords.md](keywords.md), 17.2): the stronger applies.
 - Abilities and gear can add more through **On-flank**.
 - Each hex has exactly 3 pairs of opposite neighbors, so "opposite" is unambiguous.
 

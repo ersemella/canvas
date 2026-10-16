@@ -87,7 +87,7 @@ The keyword vocabulary comes before heroes (10.8); the full list is in
 | **Displace N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the displaced unit takes **20 damage**, and a unit it hits also takes 20 (ignoring defence). Entering a hazard triggers it. Doesn't move the displaced unit's card. |
 | **Push N** | Moves the target's card N slots later (3.5); it yields if that slot is taken; subject to the push limit (3.6). |
 | **Burn N** | The target takes N damage at the beginning of every **3rd slot** for **12 slots** (4 times), ignoring defence (3.9). |
-| **Barrier N** | Absorbs the next N damage the target would take, after every other step, for **10 slots** or until used up. A second Barrier doesn't stack: only the strongest absorbs, each running its own duration ([keywords.md](keywords.md), 17.2). |
+| **Barrier N** | Absorbs the next N damage the target would take, after every other step, for **10 slots** or until used up. How a second Barrier combines is set by its source ([keywords.md](keywords.md), 17.2); Phase 1 uses max. |
 | **On-flank** | An extra effect when the target is flanked (6.3). |
 
 **How the track works, in one paragraph:** cards sit in numbered slots;
@@ -99,6 +99,10 @@ Effects over time act at the beginning of a slot, before that slot's card
 (3.9).
 
 ## 4. Prototype heroes
+
+**Provisional (2026-10-16):** the heroes' abilities below need a couple
+more design passes before they are built; treat them as placeholders.
+Stats, costs and the four niches stand.
 
 Four heroes from the roster, one per niche Phase 1 needs to test: a front
 line, fast melee with flanking, ranged with line of fire and a delayed

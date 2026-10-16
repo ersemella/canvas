@@ -38,15 +38,22 @@ vocabulary. Guard (Phase 1 draft) is removed; Barrier replaces it.
 - **Durations are in slots** (3.9), not turns: "for N ticks" in an effect's
   description means N slots. A duration that ends on the affected unit's
   turn expires after it acts (3.9).
-- **A status doesn't stack with itself, but every application runs its
-  own duration.** While several applications of the same status are
-  active, only the **strongest** applies; when it expires, the next
-  strongest still running takes over. Example: Vulnerable 30% for 5
-  slots and Vulnerable 15% for 20 slots, applied together, give 30% for
-  5 slots, then 15% for the remaining 15. Statuses with no strength
-  (Frozen, Taunt, Stealth and others) simply last until the latest
-  application ends. Different statuses always combine. **Exception: Burn
-  stacks** (17.6): every Burn deals its damage.
+- **Repeated statuses: the source decides how they combine.** Whatever
+  applies a status (an ability, gear, an upgrade, flanking) states how it
+  combines with applications of the same status already on the target:
+  - **Additive:** the values add while both run (Vulnerable 30% and 15%
+    give 45%).
+  - **Multiplicative:** the multipliers multiply (Vulnerable 30% and 15%
+    give ×1.3 × 1.15, so 49.5%).
+  - **Replace:** the new application removes the existing ones.
+  - **Max:** only the strongest applies; when it expires, the next
+    strongest still running takes over (Vulnerable 30% for 5 slots and
+    15% for 20 slots give 30% for 5 slots, then 15% for 15).
+  Except under Replace, every application runs its own duration. For a
+  status with no strength (Frozen, Taunt, Stealth and others), the modes
+  apply to duration: additive extends it, max keeps the longest.
+  Different statuses always combine. The preview shows the combined
+  result.
 - **Complete information** (D11): every status, its strength and its
   remaining slots is public, shown as a marker on the card with exact
   slots in the tap preview (7.1). Previews include every effect.
@@ -115,6 +122,10 @@ turn in a row**. After a lost turn, the unit can't lose its next turn to
 either (the preview shows the immunity). Without this, chained freezes,
 like chained pushes (3.6), would be a lockout loop in PvP.
 
+**A lost turn resets the push and pull limits** like any turn (3.6,
+17.3): a unit can be pushed to the limit, lose a turn, and be pushed to
+the limit again, about two turns at most.
+
 **A lost turn doesn't count toward an ultimate** (10.10): only turns the
 unit actually takes do, so control never brings an enemy's ultimate
 closer.
@@ -138,7 +149,7 @@ shield its allies.
 
 | Keyword | Rule |
 |---|---|
-| **Burn N** | N damage at the beginning of every 3rd slot for 12 slots, ignoring defence (Phase 1). **Stacks:** each Burn applied runs on its own schedule alongside any others, and the preview lists each one. |
+| **Burn N** | N damage at the beginning of every 3rd slot for 12 slots, ignoring defence (Phase 1). An additive Burn runs on its own schedule alongside any others, each dealing its damage, and the preview lists each one. |
 | **Pierce** | The attack's damage skips the defence step. Barrier and Vulnerable still apply. |
 | **Lifesteal N%** | The attacker heals N% of the damage it dealt (to health and barrier, after every reduction), rounded down. It is healing: Antiheal blocks it. |
 | **Vulnerable N%** | The unit takes N% more damage for a duration. **Being flanked** makes a unit Vulnerable 25% for as long as the flank holds (6.3). |
@@ -167,7 +178,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
 
 ### 17.8 Cleanse and Dispel (Decided 2026-10-16; rules Proposed)
 - **Cleanse** removes every **harmful status applied by an ability**
-  from the target: Burn (all stacks), Frozen, Dazed, Slowed, Taunt,
+  from the target: Burn (every application), Frozen, Dazed, Slowed, Taunt,
   Vulnerable, Antiheal, Cursed and stat downs. It doesn't affect
   flanking: Vulnerable from a flank lasts as long as the flank (6.3).
 - It doesn't undo what already happened: a Push or Displace already
@@ -192,9 +203,8 @@ Barrier; Cursed lowers the max that overhealth sits above.
 ### 17.9 Stat changes (Decided)
 - **Speed, power, influence and defence** can be raised or lowered by a
   fixed number of points for a duration, shown on the stat sheet.
-- Buffs to a stat follow 17.2: each runs its own duration and only the
-  strongest applies; the same for debuffs. The strongest buff and the
-  strongest debuff on a stat both apply.
+- Repeated buffs or debuffs to a stat combine as their source states
+  (17.2). Buffs and debuffs on the same stat both apply.
 - Floors: speed at least 1 (it divides costs, 3.2); the others at least 0.
 - Speed changes take effect at the unit's next placement (3.2): a card
   already on the track doesn't move. Slowed is a movement-cap effect;
@@ -221,10 +231,11 @@ Barrier; Cursed lowers the max that overhealth sits above.
 | Terms | **Push** and **Pull** move cards on the track (later, earlier); **Displace** moves units across hexes | Delay and Push (Phase 1 draft); Delay, Boost, Push and Pull | One consistent pair for the track, one word for the board; owner's call |
 | Rules | 17.2 to 17.7 and 17.9 as proposed | | Confirmed by the owner, 2026-10-16 |
 | Taunt | Can't be dodged: the unit must attack the taunter if any reachable hex allows it; a charged ability is redirected to the taunter | Dodged by Hold; dodged by Hold or any non-damaging ability | Owner's call: a Hold escape made Taunt the same as Dazed; redirecting a charge gives Taunt a use no other effect has |
-| Burn | Stacks | A new Burn replaces a weaker one | Owner's call; rewards repeated burn applications |
+| Burn | Combines as its source states, like every status; additive Burns each deal their damage | Always stacks; a new Burn replaces a weaker one | Owner's call; follows the source-defined rule |
 | Barrier and overhealth | Both kept | Merged into Barrier | Owner's call; different counters |
 | Removal | Cleanse removes harmful statuses; Dispel, a separate effect, removes beneficial ones; neither touches passives | One effect removing both; no removal | Owner's call; each is a clear counter with an obvious target |
-| Same status twice | Each application runs its own duration; only the strongest applies at a time | A stronger application replaces a weaker one | Owner's call; nothing applied is wasted, and the result is still one number |
+| Same status twice | The source states how it combines: additive, multiplicative, replace or max; each application runs its own duration except under replace | One global rule (strongest replaces weaker; then strongest applies at a time); Burn as the only stacking status | Owner's call: how an effect combines is part of its design, and a lever for gear and upgrades |
+| Lost turns and budgets | A lost turn resets the push and pull limits like any turn | Budgets carry over a lost turn | Owner's call; the longest legal lockout is about two turns |
 | Lost turns | Don't count toward ultimates; a Frozen unit can't be displaced | Counting every turn | Control shouldn't bring an enemy's ultimate closer; owner's call |
 | Guard | Removed; Barrier covers damage protection | Keeping both | Owner's call: outdated |
 | Charged abilities | Fizzle on a lost trigger turn | Trigger anyway | Owner's call; control answers a visible charge |
@@ -232,5 +243,4 @@ Barrier; Cursed lowers the max that overhealth sits above.
 ## Open questions (original numbers continue from 39)
 
 41. Pull limit value, and whether pushes and pulls share one budget.
-50. Whether a lost turn resets the push and pull limits like any turn (3.6, 17.3).
 48. Which effects are statuses (with durations), which ability properties, and which hero passives.
