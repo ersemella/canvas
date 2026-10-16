@@ -102,6 +102,9 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   board** (2026-10-16): replaced by Push and Pull for the track and
   Displace for the board, so each pair of words means one thing
   ([keywords.md](keywords.md)).
+- **Taunt dodged by Hold** (2026-10-16): a taunted unit could Hold
+  instead of attacking the taunter. Replaced by a taunt that can't be
+  dodged, because Hold made it the same as Dazed ([keywords.md](keywords.md)).
 - **The timeline as the next 16 turns shown as cards,** then as one pip
   per tick: replaced by the track of slots.
 - **Stats hidden for every unit,** including your own; then **enemy stats

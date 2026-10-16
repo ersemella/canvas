@@ -93,7 +93,7 @@ keeps moving, so control costs the target a turn, not the fight.
 | **Frozen** | On its turn, the unit neither moves nor acts: a forced Hold. |
 | **Dazed** | On its turn, the unit may move but can't act: a forced Hold, plus any movement cost. |
 | **Slowed N** | The unit's movement cap (one global value, 4 in Phase 1) is reduced by N, to at least 1 hex. |
-| **Taunt** | While taunted, if the taunter is a legal target from the hex the unit chose, the unit must use an ability that targets the taunter (or includes it in its area), **or Hold**. Hold is the only way to dodge a taunt. Otherwise the unit is free. Ends early if the taunter dies. |
+| **Taunt** | While taunted, if the unit can attack the taunter from any hex it can reach this turn, it **must**: its action is an ability that targets the taunter or includes it in its area. Hold, other abilities and moving out of reach are not allowed. Only when no reachable hex and no ability can hit the taunter is the unit free. A **charging** unit's ability is redirected to the taunter instead (below). Ends early if the taunter dies. |
 | **Stealth** | The unit can't be **targeted** by direct or arcing ranged abilities. Area abilities centred elsewhere still hit it, melee still targets it, and it still blocks line of fire. Ends when the unit uses a damaging ability. Its identity and position stay visible (D11). Distinct from the conceal tile, which only halves ranged damage. |
 
 **Lockout guard:** Frozen and Dazed can make a unit lose at most **one
@@ -105,6 +105,16 @@ like chained pushes (3.6), would be a lockout loop in PvP.
 or Dazed, **the charge fizzles**: nothing triggers and the card moves by
 the recovery cost. This makes control a fourth answer to a visible charge
 (with pushing the charger back, killing it, and stepping out of the area).
+
+**Taunt and charged abilities:** a charged ability's target is fixed when
+charging starts (3.7), so Taunt is the one effect that changes it. If the
+charging unit is taunted when its card is reached, a damaging charged
+ability triggers on the **taunter** instead: a single-target ability
+targets it, and an area ability is centred on its hex at that moment, as
+long as the taunter is within the ability's range from the charger's hex.
+Out of range, the original target stands. The preview shows the
+redirected target. A tank can taunt a charging Volley onto itself to
+shield its allies.
 
 ### 17.6 Damage effects (Decided)
 
@@ -191,7 +201,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
 | Effect list | The owner's list (17.1), plus Phase 1's Guard and On-flank, plus Cleanse and Dispel | | Owner's call, 2026-10-16 |
 | Terms | **Push** and **Pull** move cards on the track (later, earlier); **Displace** moves units across hexes | Delay and Push (Phase 1 draft); Delay, Boost, Push and Pull | One consistent pair for the track, one word for the board; owner's call |
 | Rules | 17.2 to 17.7 and 17.9 as proposed | | Confirmed by the owner, 2026-10-16 |
-| Taunt | Dodged only by Hold | Any non-damaging ability also dodges | Owner's call; a taunt costs the target either its attack choice or its turn |
+| Taunt | Can't be dodged: the unit must attack the taunter if any reachable hex allows it; a charged ability is redirected to the taunter | Dodged by Hold; dodged by Hold or any non-damaging ability | Owner's call: a Hold escape made Taunt the same as Dazed; redirecting a charge gives Taunt a use no other effect has |
 | Burn | Stacks | A new Burn replaces a weaker one | Owner's call; rewards repeated burn applications |
 | Barrier and overhealth | Both kept | Merged into Barrier | Owner's call; different counters |
 | Removal | Cleanse removes harmful statuses; Dispel, a separate effect, removes beneficial ones; neither touches passives | One effect removing both; no removal | Owner's call; each is a clear counter with an obvious target |
