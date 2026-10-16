@@ -198,6 +198,8 @@ Learned:
 
 ## Names
 
+- **Alchemist** (2026-10-16): renamed the **Fangshi**, the Chinese name
+  for the masters of alchemy, medicine and divination; owner's call.
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical
   name for an elephant's driver; owner's call.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game

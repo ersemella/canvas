@@ -26,7 +26,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | Corpse Driver | Tang China | Jiangshi (hopping corpses) and the folk profession of escorting corpses home | Folklore | Necromancer | Tank | Minion screen: jiangshi block lines of fire and melee | None | Bell and staff |
 | 2 | Fox-Spirit Sorcerer | Tang China | Huli jing, fox spirits who take human form | Folklore | Sorcerer | Damage | Fox-fire caster: area damage and Burn; trickery only keeps itself alive | None | Fan |
-| 3 | Alchemist | Tang China | Chinese alchemists seeking elixirs, whose work led to gunpowder | Historical | Alchemist | Support | Healer: elixirs and remedies | None | Elixir gourd |
+| 3 | Fangshi | Tang China | The fangshi ("masters of methods"), Chinese alchemists and healers seeking elixirs, whose work led to gunpowder | Historical | Alchemist | Support | Healer: elixirs and remedies | None | Elixir gourd |
 | 4 | Cataphract | Persia and Sogdiana | Sasanian heavily armoured cavalry (savaran) | Historical | Knight / paladin | Tank | Mobile charger | Armoured horse | Heavy lance |
 | 5 | Baatar | Mongol | The baatar (Turkic batyr), the steppe's renowned warrior, who fought as a mounted archer | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
 | 6 | Bökh | Mongol | Champion wrestlers (bökh), the highlight of the naadam games and of feasts in the epics | Historical | Brawler / grappler | Tank | Grappler: grabs, pins and throws enemies to hold the front line | None | Bare hands (wrestling vest) |
@@ -43,7 +43,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 |---|---|---|---|---|---|
 | Corpse Driver | Medium | Medium | Low | Low | High |
 | Fox-Spirit Sorcerer | Low | Medium | Low | High | Medium |
-| Alchemist | Medium | Medium | Low | Low | High |
+| Fangshi | Medium | Medium | Low | Low | High |
 | Cataphract | High | Medium | High | Medium | Low |
 | Baatar | Low | High | Low | High | Low |
 | Bökh | High | Medium | High | Medium | Low |
@@ -60,7 +60,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 **Notes**
 - **Four distinct tanks:** the Cataphract charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Baatar), the Mahout cannot be moved (it resists Displace as a passive, but not Push), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
-- **Support covers three needs:** healing (Alchemist), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by pushing enemies back on the track).
+- **Support covers three needs:** healing (Fangshi), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by pushing enemies back on the track).
 - **Two djinn-related heroes:** the Djinn-Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
 - **Damage covers four niches:** area caster (Fox-Spirit Sorcerer), ranged (Baatar), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
 - **The Fox-Spirit Sorcerer is damage, not support (Proposed):** its kit is fox fire (huli jing and kitsune are both linked to spirit fire): area attacks and Burn, so its damage comes from power up front and influence over time. Its trickery serves only itself, slipping away after it strikes (Stealth, short Displace of itself, swapping places with an illusion), never decoys or cover for allies; those would make it a third controller beside the Strategos and Djinn-Binder. Fragile (low health and defence) is the price of its damage.
