@@ -59,7 +59,7 @@ The character's own card is the pending effect, so it is visible and answerable:
 
 **Track entities.** Some abilities place a separate card on the track that acts independently of the character, for example a summoned zombie. The character pays an action cost to activate it, as for any action. The entity then takes its own turns from its own card, with its own placement rules defined by the ability. Track entities occupy slots and follow the collision (3.3) and delay (3.5) rules like any card.
 
-**Ultimates** are each hero's most powerful ability, usable **once per combat** (10.10). An ultimate may be an ordinary action, a charged ability or a track entity; that is defined per ultimate. Not every ultimate goes on the track, and not every track entity is an ultimate.
+**Ultimates** are each hero's most powerful ability, usable **once per combat**, and only after the hero has completed a set number of turns in the fight, shown publicly (10.10). An ultimate may be an ordinary action, a charged ability or a track entity; that is defined per ultimate. Not every ultimate goes on the track, and not every track entity is an ultimate.
 
 ### 3.8 New Units (Proposed)
 Units that enter mid-combat (summons, reinforcements) are placed with the starting formula (3.4) counted from the current slot, and yield like any card (3.3). TBD.
@@ -100,7 +100,7 @@ There are no turns without an action, so every turn has a real cost. The excepti
 Order within a turn (move before acting, act before moving, or splitting movement around the action) is TBD.
 
 ### 5.2 No Cooldowns (Decided)
-- Abilities have no cooldowns. An ability can be used on any turn; ultimates once per combat (3.7).
+- Abilities have no cooldowns. An ability can be used on any turn; ultimates once per combat, after their unlock (3.7).
 - Action cost is therefore the main thing that prices an ability's power. Strong abilities must cost more (or be charged abilities). Low-cost abilities must be roughly comparable in power to each other, or the strongest cheap ability will be used every turn.
 - **Paying after acting.** A cost is paid after the action resolves, so it prices power only when the unit's next turn matters: a killing blow, the last turns of a fight, or a unit about to die pays little real cost. Handled case by case, per ability: where it matters, the ability is charged (paid before it resolves, 3.7) or priced for it.
 
@@ -120,7 +120,7 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 | Speed vs defence | Speed weighed against defence (details TBD) | No tradeoff | Gives speed an opportunity cost so it is a build choice, not a default |
 | Charged abilities | Charge cost then trigger then recovery cost, on the character's own card | Delayed actions as separate track entries; immediate resolution | The pending effect is visible and answerable without separate entries or interrupt rules |
 | Track entities | Some abilities place independent cards (for example summons); activation costs an action | Only units on the track | Summons and similar effects act on their own timeline and can be manipulated like units |
-| Ultimates | Once per combat; may be an action, a charged ability or a track entity | Charge meter filled by keyword actions | Simple, visible limit that makes each ultimate a decision |
+| Ultimates | Unlocked after a set number of the hero's turns, shown publicly; once per combat; may be an action, a charged ability or a track entity | Usable from the start; charge meter filled by keyword actions | Fights build toward ultimates; a visible unlock is a threat the other side can answer, for example by delaying the hero |
 | Movement | One move per turn, capped by a single global value; cost per hex divided by speed | Unlimited movement with exponential cost per hex; uncapped linear cost; a cap based on speed; a per-hero cap modified by gear | A cap prevents act-now-pay-later strikes across the map; one global value keeps speed from also setting reach, for now |
 | Turns | An action is required to end a turn; every hero has Hold, a quick action with no effect | Move-only and wait turns with a minimum cost; each hero's cheapest real ability as the fallback | No near-free turns to chain |
 | Delay limit | Cap on total delay between a card's own turns | Diminishing returns on repeated delays; a guaranteed turn after a set delay | Simple, previewable, and prevents lockout |

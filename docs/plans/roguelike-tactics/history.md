@@ -88,6 +88,9 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   for effects that act independently (such as summons).
 - **Ultimates charged by a meter** filled by keyword actions: replaced by
   once per combat.
+- **Ultimates usable from the start of a fight:** replaced by an unlock
+  after the hero completes a set number of turns, shown publicly, so
+  fights build toward ultimates and the other side can see one coming.
 - **An event order within a tick** (expiries, damage over time, delayed
   actions, then the unit): replaced by effects acting at the beginning of
   a slot, before that slot's card.

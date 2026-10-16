@@ -152,9 +152,11 @@ Each hero has four gear slots:
 
 ### 10.10 Ultimates (Decided)
 - Each hero has an **ultimate**: their most powerful ability.
-- **Once per combat.** Each ultimate can be used once per fight. This is the ultimate's whole limit: there is no charge meter and no cooldown.
+- **Unlocked by turns taken.** An ultimate becomes usable only once its hero has completed a set number of turns in the current fight. Every completed turn counts, whatever action it used. The count starts at zero each fight.
+- **Once per combat.** Once unlocked, each ultimate can be used once per fight. There is no charge meter and no cooldown.
 - **Priced on the track:** an ultimate may be an ordinary action with its own cost, a charged ability, or a track entity (3.7); that is defined per ultimate. Charged and track-entity ultimates are visible on the track, so opponents can answer them.
-- **Visible:** whether each unit, enemies included, still has its ultimate is shown, consistent with complete information.
+- **Public:** for every unit, on both sides, its progress toward its ultimate (turns completed and turns needed), whether it is ready, and whether it has been used are shown on its card and stat sheet, consistent with complete information.
+- Rationale: ultimates are held back from the opening, so a fight builds toward them, and an ultimate that is about to unlock is a visible threat the other side can play around: delaying the hero also delays the unlock, and defeating it first prevents it. Counting turns, rather than filling a meter from specific actions, keeps the rule simple and the count easy to read. Fast units unlock sooner, since they take turns more often.
 - **Gear can modify ultimates** like any other ability.
 
 ### 10.11 Recovery Between Fights (Decided)
@@ -178,7 +180,7 @@ Each hero has four gear slots:
 | Gear slots | Boots, gloves, armour, helmet | Including a weapon slot | Weapons are unique per hero and tied to abilities and visual language |
 | Consumables | Limited; used only between fights; stat buffs or statuses for the next combat, or health recovery; shared party inventory | Usable in combat as actions with their own cost; no consumables; unlimited consumables | Keeps combat about abilities and the track; makes preparation between fights a decision; no hoarding |
 | Hero progression | Milestone upgrades from a randomized, hero-specific pool; no stat growth; recruits join without upgrades and earn them by reaching milestones | Experience levels with stat growth | Build variety without stat inflation |
-| Ultimates | Once per combat; an action, a charged ability or a track entity, defined per ultimate | Charge meter filled by keyword actions; cooldown-based ultimates; no ultimates | Hero identity and fight arcs; a simple, visible limit makes each use a decision |
+| Ultimates | Unlocked after the hero completes a set number of turns in the fight, shown publicly; then once per combat; an action, a charged ability or a track entity, defined per ultimate | Usable from the start of the fight; charge meter filled by keyword actions; cooldown-based ultimates; no ultimates | Fights build toward ultimates; a visible unlock gives the other side a threat to play around; once per combat makes each use a decision |
 | Recovery | Partial after each fight; full from rests or consumables | Full heal after each fight; no healing between fights | Meaningful attrition without single-fight run losses |
 | Recruits | Join at base level with basic gear; offers unaffected by deaths | Join at the party's upgrade level; special replacement mechanics after a death | A death is meant to start a death spiral with a low chance of recovery, giving permanent death its weight |
 | Party formation | Recruit heroes during the run from limited, random offers | Full team chosen at start; random subset of heroes offered at start | Adds a draft layer and run-to-run variety; a random starting subset encourages restarting until the desired team appears |
@@ -192,6 +194,7 @@ Each hero has four gear slots:
 23. Value of `defenceConstant`, and whether a minimum of 1 damage applies (section 9.1).
 24. Which gear slots carry keyword modifiers.
 25. Whether a rival caravan copy carries the consumable buffs active when it was copied ([ghosts.md](ghosts.md)).
-38. Whether consumables can be used before a PvP duel, and which ones ([pvp.md](pvp.md)).
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
 37. **Damage buckets:** whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and guard), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).
+38. Whether consumables can be used before a PvP duel, and which ones ([pvp.md](pvp.md)).
+39. The number of turns that unlocks an ultimate (10.10): one value for every hero, or set per ultimate.
