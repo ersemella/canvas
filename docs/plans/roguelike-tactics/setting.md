@@ -76,6 +76,7 @@ This list is the wider setting palette. Heroes come from six of these cultures (
 - **The travelling fox:** fox spirits appear in Chinese (huli jing), Korean (gumiho) and Japanese (kitsune) folklore. A creature that changes as it travels along the road would make a strong Silk Road motif, as a recurring enemy or boss now that no hero is a fox spirit.
 - **Treasure manuals:** Egypt's treasure-hunting manuals suit a bazaar or loot mechanic: hidden treasures, spirit guardians and rituals to get past them.
 - **Tsukumogami** suit gear: heirloom items that come alive.
+- **Sun Wukong as a boss** (owner's call, 2026-10-16): the Monkey King of *Journey to the West*, a novel about a Silk Road journey; an extending staff, a cloud-somersault leap, clones from his hairs. Not a hero, since he is also worshipped in some temples (15.5); as an enemy, keep to the novel's trickster, not the deity.
 - **Arwe and Liyongo** are strong boss and hero material. Arwe's recorded versions include later Christian additions; keep to the pre-Christian serpent-king core.
 
 ### 15.7 Care Notes

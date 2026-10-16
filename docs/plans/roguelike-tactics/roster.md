@@ -99,7 +99,7 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 
 ## Open questions (from section 14, original numbers)
 
-33. Hero roster. **The open Tang China slot** (a tank, to keep 4/4/4): a Shaolin warrior monk, or Sun Wukong of *Journey to the West* (a damage hero; also worshipped in some temples, against 15.5). Tabled 2026-10-16: a Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
+33. Hero roster. **The open Tang China slot** (a tank, to keep 4/4/4): a Shaolin warrior monk (Sun Wukong goes to bosses instead, 15.6). Tabled 2026-10-16: a Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
 **Passives:** the Mahout's Displace resistance is the first
 **passive**, an always-on trait rather than an action. The
