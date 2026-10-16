@@ -48,7 +48,7 @@ fight's end ends the run.
 | 28. Movement cap | **4 hexes** per turn. |
 | 9. Map | Offset rectangle, **9 columns × 7 rows**, pointy-top hexes. Fits a 600-pixel-wide board beside the track panel. |
 | 10. Passing through allies | Allowed (can't end on an occupied hex). Enemies block. |
-| 11. Flanking effect | Attacks against a flanked target deal **+25%** damage. |
+| 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Vulnerable from abilities is not in Phase 1. |
 | 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering and at the start of each turn spent on it. Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
 | 23. Defence | `defenceConstant` = **20**; minimum **1** damage from any hit. |
 | 29. Line of fire along a hex border | **Blocked if either** hex on the border is occupied. |
@@ -64,9 +64,11 @@ health of 240 to 440, so percentage bonuses survive rounding.
 
 **Damage and effect formulas** (Phase 1 order; whether the general model
 uses damage buckets is open, [heroes-and-gear.md](heroes-and-gear.md)):
-- `damage = roundDown(base × (1 + power / 50))`, then +25% if flanked,
-  then 50% less if a ranged attack on a concealed target, then the defence
+- `damage = roundDown(base × (1 + power / 50))`, then 50% less if a
+  ranged attack on a concealed target, then +25% if flanked (Vulnerable), then the defence
   formula (9.1), then guard; minimum 1. Each step rounds down.
+- Burn, hazard and collision damage skip the defence formula but still
+  take +25% if the unit is flanked (Vulnerable applies to every source).
 - `effect = roundDown(base × (1 + influence / 50))` for push slots, burn
   damage and guard strength. Displace distance is fixed per ability (whole
   hexes), not scaled.

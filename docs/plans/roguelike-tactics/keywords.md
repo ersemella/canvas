@@ -123,13 +123,13 @@ shield its allies.
 | **Burn N** | N damage at the beginning of every 3rd slot for 12 slots, ignoring defence (Phase 1). **Stacks:** each Burn applied runs on its own schedule alongside any others, and the preview lists each one. |
 | **Pierce** | The attack's damage skips the defence step. Guard, Barrier and Vulnerable still apply. |
 | **Lifesteal N%** | The attacker heals N% of the damage it dealt (to health and barrier, after every reduction), rounded down. It is healing: Antiheal blocks it. |
-| **Vulnerable N%** | The unit takes N% more damage for a duration. The mirror of Guard. |
+| **Vulnerable N%** | The unit takes N% more damage for a duration. The mirror of Guard. **Being flanked** makes a unit Vulnerable 25% for as long as the flank holds (6.3). |
 | **Guard N%** | N% less damage for 10 slots (Phase 1). |
 | **Barrier N** | Absorbs the next N damage the unit would take, after every other reduction, until used up or it expires. Not healing, so Antiheal doesn't block it. |
 | **Immortal** | The unit's health can't be reduced: damage to it becomes 0 (no minimum 1), burn included. Displace still moves it; other statuses still apply. Short durations only. |
 
-**Damage order** (extends the Phase 1 order): base × power; flank +25%;
-ranged on conceal −50%; **Vulnerable**; defence (skipped by **Pierce**);
+**Damage order** (extends the Phase 1 order): base × power;
+ranged on conceal −50%; **Vulnerable** (including from a flank); defence (skipped by **Pierce**);
 Guard; minimum 1; **Barrier** absorbs; **Immortal** sets it to 0. Each step
 rounds down. Burn and collision damage skip defence as now, then take
 Vulnerable, Guard, Barrier and Immortal. This is a stopgap until damage

@@ -22,7 +22,9 @@ tuning. Section numbers are the combat design's.
 
 ### 6.3 Flanking (Decided)
 - A target is **flanked** when two units hostile to it occupy hexes directly opposite each other across the target (for example, the hexes to its north-east and south-west).
-- Flanked targets suffer a penalty or grant attackers a bonus. Specific effect TBD.
+- **A flanked unit is Vulnerable** ([keywords.md](keywords.md), 17.6): it takes **25%** more damage (Phase 1 value; tuning) from every source for as long as it stays flanked. The status appears when the flank forms and disappears when it breaks (a flanker moves, is displaced or dies); it has no duration, and Cleanse doesn't remove it.
+- It doesn't stack with Vulnerable from an ability: the stronger applies (17.2).
+- Abilities and gear can add more through **On-flank**.
 - Each hex has exactly 3 pairs of opposite neighbors, so "opposite" is unambiguous.
 
 ### 6.4 Map Modifiers (Decided)
@@ -89,6 +91,7 @@ Friendly fire is used as a positioning cost that limits ranged characters, not a
 
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
+| Flanking | The flanked unit is Vulnerable while flanked | A flat damage bonus to attackers; ignoring defence; pinning; pushing the card on each hit | One rule players already know from the keyword list; the board state shows it |
 | Grid | Compact hex grid | No grid, rows, square grid, gridless | Uniform distances, clean flanking |
 | Map modifiers | Three tile types: obstacle, hazard, conceal; no elevation or facing | Full terrain systems | Readability, with enough variety for positional decisions |
 | Friendly fire | Direct ranged attacks need a clear line of fire (any unit blocks); area abilities hit allies; arcing attacks ignore line of fire at a higher cost; gear and upgrades can exempt allies | No friendly fire; stray shots hitting units in the path | Limits ranged power through positioning; deterministic and previewed, so never accidental |
@@ -98,7 +101,6 @@ Friendly fire is used as a positioning cost that limits ranged characters, not a
 
 9. Map size and shape.
 10. Whether units can pass through allied units.
-11. Specific flanking effect.
 12. Map modifier details: hazard trigger timing and effects; whether conceal grants full ranged immunity or a reduction; whether conceal hides the occupant's identity; which tiles block line of fire (section 6.7).
    - Deployment zone sizes, engagement distance, and the set of PvE deployment layouts.
 29. Hex line-of-fire edge case: when the line runs exactly along the border between two hexes, whether it is blocked if either hex is occupied or only if both are (section 6.7).

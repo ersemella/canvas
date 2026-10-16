@@ -43,7 +43,7 @@ tuning. Section numbers are the combat design's.
 | **Ability** | Any action a unit can perform, including basic attacks. Abilities are granted by characters and gear. |
 | **Hex / hex grid** | The map is divided into hexagonal tiles ("hexes"). Each hex has 6 neighbors. |
 | **Adjacent** | Two hexes that share an edge. |
-| **Flanking** | A positional bonus gained by surrounding an enemy. Defined in section 6.3. |
+| **Flanking** | Two hostile units on opposite sides of a unit. A flanked unit is Vulnerable while the flank holds (6.3). |
 | **Line of fire** | The straight path between a direct ranged attacker and its target. Must be clear of units for the attack to reach the target. Defined in section 6.7. |
 | **Area ability** | An ability that affects every unit in a set of hexes rather than a single target. |
 | **Arcing attack** | A ranged attack that travels over units and ignores line of fire, at a higher cost. |
