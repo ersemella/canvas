@@ -33,7 +33,10 @@ tuning. Section numbers are the combat design's.
 | **Speed** | A unit stat that divides action and movement cost (placement), sets the starting slot, and orders cards placed at the same moment. See section 4. |
 | **Collision** | A card placed on an occupied slot. The arriving card yields to the next free slot (3.3). |
 | **Push** | Physically moves a unit away from the attacker by a number of hexes ([phase-1-brief.md](phase-1-brief.md), section 3). Not a track effect; see Delay. |
+| **Pull** | Physically moves a unit toward the attacker by a number of hexes (17.4). Not a track effect; see Boost. |
 | **Delay** | An effect that moves a card later on the track (3.5), within the delay limit (3.6). |
+| **Boost** | An effect that moves a card earlier on the track, never earlier than the next slot (3.5, 17.3). |
+| **Status** | A keyword effect on a unit for a duration in slots, such as Burn, Frozen or Barrier; public, shown on its card (17.2). |
 | **Charged ability** | An ability with a charge cost and a recovery cost: the character's card first moves by the charge cost; when reached, the ability triggers and the card moves by the recovery cost (3.7). |
 | **Track entity** | A card that acts independently of the character who created it, for example a summoned zombie (3.7). |
 | **Action** | The single ability or attack a unit uses on its turn. Required: an action ends the turn (5.1). |
@@ -59,7 +62,7 @@ tuning. Section numbers are the combat design's.
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |
 | **Milestone upgrade** | A choice of ability upgrade offered to a hero at set points in a run. |
 | **Ultimate** | A hero's most powerful ability, unlocked after the hero completes a set number of turns in the fight (shown publicly), then usable once per combat. It may be an action, a charged ability or a track entity (3.7). |
-| **Keyword** | A named, shared condition or effect (for example burn, push, on-flank, on-kill) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8). |
+| **Keyword** | A named, shared condition or effect (for example burn, push, on-flank, on-kill) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |
 | **Ghost team / ghost build** | A saved party build from another player, used as an opponent. **Decided 2026-10-15:** ghosts are **rival caravans**, met as a fight; see [ghosts.md](ghosts.md) (D8). |
 | **Deployment zone** | The set of hexes where a side places its units before a fight (6.6). |

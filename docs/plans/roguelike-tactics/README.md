@@ -6,6 +6,7 @@ settled. Built in this repository (D10). The folder name,
 `roguelike-tactics`, predates the title.
 
 **Next step: Phase 1**, from [phase-1-brief.md](phase-1-brief.md). The
+keyword list is decided and its rules proposed ([keywords.md](keywords.md)). The
 combat design's other open questions are at the end of each topic file.
 PvP is parked ([pvp.md](pvp.md)).
 
@@ -48,6 +49,7 @@ Always read this file first. Then:
 | Maps, movement, line of fire, deployment | [map.md](map.md) |
 | Visibility, previews, randomness | [information.md](information.md) |
 | Stats, gear, party, heroes' systems, recruitment, upgrades | [heroes-and-gear.md](heroes-and-gear.md) |
+| Keywords and effects: statuses, track and board effects, damage, healing, stat changes | [keywords.md](keywords.md) |
 | The twelve heroes | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
@@ -79,6 +81,7 @@ The combat design's rules cite each other by section number ("section
 | 15.1 to 15.7 Setting | [setting.md](setting.md) |
 | 15.8 Hero roster | [roster.md](roster.md) |
 | 16 References | [references.md](references.md) |
+| 17 Keywords and effects | [keywords.md](keywords.md) |
 
 ## Decisions
 

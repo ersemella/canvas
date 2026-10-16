@@ -99,6 +99,9 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   yields.
 - **"Push" as the timeline effect:** the track effect is called Delay;
   Push means physically moving a unit.
+- **"Pull" as the track effect moving a card earlier** (2026-10-16):
+  renamed Boost; Pull now means physically moving a unit toward the
+  attacker ([keywords.md](keywords.md)).
 - **The timeline as the next 16 turns shown as cards,** then as one pip
   per tick: replaced by the track of slots.
 - **Stats hidden for every unit,** including your own; then **enemy stats

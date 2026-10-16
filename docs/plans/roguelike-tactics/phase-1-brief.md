@@ -29,8 +29,8 @@ track UI.
 **Not in Phase 1:** ultimates (10.10), consumables (9.6), gear rarity and
 gear choices (fixed starter gear only), damage variance (8.1: every value
 fixed), milestone upgrades, recruitment, the route map, recovery,
-reinforcements, summons and other track entities (3.7, 3.8), pulls
-(3.5), passives, elite affixes,
+reinforcements, summons and other track entities (3.7, 3.8), boosts
+(3.5), the other keywords ([keywords.md](keywords.md)), passives, elite affixes,
 rival caravans. Each is a later phase's work.
 
 A Phase 1 "run" is a single fight: starting a run starts the fight; the

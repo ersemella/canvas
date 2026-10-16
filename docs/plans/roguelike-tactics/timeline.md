@@ -40,11 +40,11 @@ startSlot = roundDown(startCost / (speed + C))
 ```
 Higher speed starts earlier. Collisions resolve as in 3.3.
 
-### 3.5 Delay, Pulls and Track Manipulation (Decided)
-Terminology: **Delay** moves a card later on the track; **Push** physically moves a unit across hexes (see the keywords in [phase-1-brief.md](phase-1-brief.md), section 3).
+### 3.5 Delay, Boosts and Track Manipulation (Decided)
+Terminology: **Delay** moves a card later on the track and **Boost** earlier; **Push** and **Pull** physically move a unit across hexes (keywords in [keywords.md](keywords.md)).
 - Abilities may **delay** a card by a stated number of slots: an enemy's, an ally's, or a track entity's (3.7).
-- Abilities may **pull** a card earlier, but never earlier than the next slot.
-- A delayed or pulled card that lands on an occupied slot yields (3.3).
+- Abilities may **boost** a card earlier, but never earlier than the next slot. A boost limit is proposed ([keywords.md](keywords.md), 17.3).
+- A delayed or boosted card that lands on an occupied slot yields (3.3).
 
 ### 3.6 Delay Limit (Decided, value TBD)
 Repeated delays could keep a unit from ever acting. Mana Khemia was criticized for exactly this, and in PvP it becomes a lockout loop. A card can be moved later by at most a set number of slots in total between two of its own turns, counting Delay and any yielding that follows it. Further delays are reduced to fit, and the preview shows the reduced amount. Value TBD.
@@ -124,7 +124,7 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 | Movement | One move per turn, capped by a single global value; cost per hex divided by speed | Unlimited movement with exponential cost per hex; uncapped linear cost; a cap based on speed; a per-hero cap modified by gear | A cap prevents act-now-pay-later strikes across the map; one global value keeps speed from also setting reach, for now |
 | Turns | An action is required to end a turn; every hero has Hold, a quick action with no effect | Move-only and wait turns with a minimum cost; each hero's cheapest real ability as the fallback | No near-free turns to chain |
 | Delay limit | Cap on total delay between a card's own turns | Diminishing returns on repeated delays; a guaranteed turn after a set delay | Simple, previewable, and prevents lockout |
-| Pulls | No earlier than the next slot | Moving a card to any earlier slot | Cannot skip the track; as Final Fantasy Tactics' Quick |
+| Boosts | No earlier than the next slot | Moving a card to any earlier slot | Cannot skip the track; as Final Fantasy Tactics' Quick |
 | Effects over time | Do not occupy slots; act at the beginning of a slot, on slots each effect defines; expire after the affected unit acts | Effects as track entries; effects on the affected unit's turns only | Keeps the track for cards; each effect stays exact and previewable |
 | Cooldowns | None | Cooldowns in turns or slots | Simplicity; action cost prices power instead |
 

@@ -125,7 +125,7 @@ Each hero has four gear slots:
 - **Guaranteed relevance:** whether each offer must include at least one hero sharing a keyword with the current team. Bad offers drive restarts, so usable offers reduce the incentive.
 
 ### 10.8 Open Questions on Heroes
-- **Keyword vocabulary:** a defined set of common conditions and effects (for example burn, push, on-flank, on-kill) that abilities and gear both reference. This is the key enabler of hero synergies and broadly useful gear, and should be designed before individual heroes.
+- **Keyword vocabulary:** a defined set of common conditions and effects (for example burn, push, on-flank, on-kill) that abilities and gear both reference. The effects are listed, with proposed rules, in [keywords.md](keywords.md); conditions (on-flank, on-kill and others) are still open. This is the key enabler of hero synergies and broadly useful gear, and should be designed before individual heroes.
 - **Preventing solved compositions:** 12 heroes give 495 possible teams of 4, and fixed synergies tend to concentrate play on a few dominant teams.
 - **Prototype scope:** validating the system with 6 to 8 heroes before building all 12.
 
