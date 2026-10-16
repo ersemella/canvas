@@ -116,12 +116,12 @@ profiles (15.8) into numbers:
 | Medium | 320 | 4 | 10 | 10 | 10 |
 | High | 440 | 7 | 20 | 15 | 15 |
 
-**Batyr** (Tank; health High 440, speed Medium 4, defence High 20, power
-Medium 10, influence Low 5; sabre)
-- *Sabre Cut*: melee, adjacent; 100 damage. Typical (100).
+**Steppe Wrestler** (Tank; health High 440, speed Medium 4, defence High 20, power
+Medium 10, influence Low 5; bare hands)
+- *Grapple*: melee, adjacent; 100 damage. Typical (100).
 - *Hold the Line*: Barrier 60 on self and every adjacent ally. Typical
   (100).
-- *Shove the Line*: melee, adjacent; 40 damage; Displace 1. Quick (60).
+- *Throw*: melee, adjacent; 40 damage; Displace 1. Quick (60).
 
 **Kalari Duelist** (Damage; health Medium 320, speed High 7, defence Low
 5, power High 15, influence Low 5; urumi)
@@ -154,14 +154,14 @@ Every hero also has **Hold** (decided): a quick action (60) with no
 effect, so a unit can always end its turn (an action is required, 5.1).
 
 **Starter gear** (fixed in Phase 1; the four-slot model of 9.3 exists in
-code, but only armour is filled): Batyr and Djinn-Binder wear medium
+code, but only armour is filled): Steppe Wrestler and Djinn-Binder wear medium
 armour (+5 defence, −1 speed); the Kalari Duelist and Horse Archer wear
 light armour (+2 defence, no speed cost). Table values above exclude
 armour.
 
 ## 5. The enemy band
 
-A band built from the same heroes and gear (11.1): Batyr, Kalari Duelist
+A band built from the same heroes and gear (11.1): Steppe Wrestler, Kalari Duelist
 and Horse Archer, **three against your four**, so a simple AI is a fair
 first opponent. Duplicates across sides are allowed (10.4).
 

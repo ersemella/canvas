@@ -29,7 +29,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | 3 | Alchemist | Tang China | Chinese alchemists seeking elixirs, whose work led to gunpowder | Historical | Alchemist | Support | Healer: elixirs and remedies | None | Elixir gourd |
 | 4 | Cataphract | Persia and Sogdiana | Sasanian heavily armoured cavalry (savaran) | Historical | Knight / paladin | Tank | Mobile charger | Armoured horse | Heavy lance |
 | 5 | Horse Archer | Steppe peoples | Mounted archers of the Turkic and Mongol steppe | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
-| 6 | Batyr | Steppe peoples | The batyr or baatar, the hero-warrior of steppe tradition | Historical | Barbarian | Tank | Frontline holder | None | Sabre |
+| 6 | Steppe Wrestler | Steppe peoples | Champion wrestlers of the steppe (Mongol bökh, Turkic küresh), whose bouts feature in the epics | Historical | Brawler / grappler | Tank | Grappler: grabs, pins and throws enemies to hold the front line | None | Bare hands (wrestling vest) |
 | 7 | Djinn-Binder | Abbasid Arabia | Djinn sealed in vessels and bound to serve, from the *Arabian Nights* tradition (for example "The Fisherman and the Jinni") | Folklore | Wizard | Support | Controller: a bound djinn pushes back and disrupts enemy turns | None | Sealed brass vessel |
 | 8 | Sha'ir | Abbasid Arabia | The pre-Islamic Arab poet, believed to be inspired by jinn, whose satire was feared as a curse on enemies | Historical and folklore | Bard | Support | Buffer and curser: verses inspire allies, satire weakens enemies | None | Recited verse (no weapon; a rebab as a possible prop) |
 | 9 | Strategos | Byzantium | The Byzantine general and military governor | Historical | Warlord / commander | Support | Commander: directs allies, pulls their turns earlier | Optional horse | Sword and banner |
@@ -46,7 +46,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | Alchemist | Medium | Medium | Low | Low | High |
 | Cataphract | High | Medium | High | Medium | Low |
 | Horse Archer | Low | High | Low | High | Low |
-| Batyr | High | Medium | High | Medium | Low |
+| Steppe Wrestler | High | Medium | High | Medium | Low |
 | Djinn-Binder | Low | Medium | Low | Low | High |
 | Sha'ir | Medium | Medium | Medium | Low | High |
 | Strategos | Medium | Medium (High if mounted) | Medium | Medium | High |
@@ -59,7 +59,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
 
 **Notes**
-- **Four distinct tanks:** the Cataphract charges in, the Batyr holds the front line, the Elephant Rider cannot be moved (it resists Displace as a passive, but not Push), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
+- **Four distinct tanks:** the Cataphract charges in, the Steppe Wrestler holds the front line by grappling (on foot, unlike the steppe's mounted Horse Archer), the Elephant Rider cannot be moved (it resists Displace as a passive, but not Push), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
 - **Support covers three needs:** healing (Alchemist), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by pushing enemies back on the track).
 - **Two djinn-related heroes:** the Djinn-Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
 - **Damage covers four niches:** area caster (Fox-Spirit Sorcerer), ranged (Horse Archer), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
@@ -80,6 +80,7 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 - Greek fire engineer rejected: it described a weapon, not a role or figure.
 - Star-Reader replaced by the Djinn-Binder (a stronger fantasy wizard than real astronomers); Geomancer (Arabic sand divination) considered.
 - Hakawati replaced by the Sha'ir; Naqqal (Persian epic storyteller) and Akyn (steppe poet-singer) considered.
+- Batyr replaced by the Steppe Wrestler: *batyr* is a title for any renowned steppe warrior, and those warriors were mostly mounted archers, so it didn't stand apart from the Horse Archer.
 - Tomb Robber replaced by the Varangian Guard (heavy melee damage); Medjay (Egyptian desert scouts) considered.
 - Nizari "Assassins" avoided: the term originated as a slur against a religious community that still exists.
 - Shadow Puppeteer, Simurgh Caller, Caravan Guard, Senapati, Monsoon Navigator and others considered and not used; several remain options for expansion.
@@ -90,11 +91,12 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 |---|---|---|---|
 | Hero roster | 12 heroes from 6 cultures, based on roles rather than named figures; 4 tanks, 4 damage, 4 support | One hero per culture across 12 cultures; named historical and legendary figures | Central cultures get more depth; named figures can be culturally sensitive; balanced roles suit random recruitment |
 | Fox-Spirit Sorcerer | Proposed: an area-damage and Burn caster whose tricks protect only itself | Trickster caster with illusions, decoys and conceal | Its specialty read as support while its role is damage; leaves control to the Strategos and Djinn-Binder |
+| Steppe tank | Steppe Wrestler, a grappler fighting on foot | Batyr (steppe hero-warrior); wolf guard (böri); shaman-protector | Batyr is a generic title and steppe warriors were horse archers, so it overlapped the Horse Archer; owner's call, 2026-10-16 |
 | Mounts | Reflected only in base stats | Dedicated mount mechanics (cheaper movement, charge, dismounting) | Simplicity; the speed versus defence tradeoff already expresses mounts |
 
 ## Open questions (from section 14, original numbers)
 
-33. Hero roster: signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
+33. Hero roster (tabled 2026-10-16: a second Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
 **Passives:** the Elephant Rider's Displace resistance is the first
 **passive**, an always-on trait rather than an action. The

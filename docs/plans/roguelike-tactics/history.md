@@ -154,6 +154,14 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   decoys and cover protect the party, and none of it kills. Replaced by
   an area-damage and Burn caster whose tricks protect only itself.
 
+- **Batyr as the steppe tank** (2026-10-16): the steppe hero-warrior
+  holding the front line with a sabre. *Batyr* (baghatur) is a title for
+  any renowned warrior, and steppe warriors were mounted archers, so it
+  didn't stand apart from the Horse Archer. Replaced by the Steppe
+  Wrestler. Also weighed: a wolf guard (the Türk khagan's guards were
+  called "wolves", böri), too close to the Varangian Guard; a
+  shaman-protector, closer to support.
+
 ## Repository (D10)
 
 A **standalone repository** with its own Worker, Durable Objects, page and
