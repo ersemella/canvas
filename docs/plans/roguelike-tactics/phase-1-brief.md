@@ -66,11 +66,14 @@ health of 240 to 440, so percentage bonuses survive rounding.
 uses damage buckets is open, [heroes-and-gear.md](heroes-and-gear.md)):
 - `damage = roundDown(base × (1 + power / 50))`, then 50% less if a
   ranged attack on a concealed target, then +25% if flanked (Vulnerable), then the defence
-  formula (9.1), then guard; minimum 1. Each step rounds down.
+  formula (9.1); minimum 1; then Barrier absorbs. Each step rounds down.
 - Burn, hazard and collision damage skip the defence formula but still
-  take +25% if the unit is flanked (Vulnerable applies to every source).
+  take +25% if the unit is flanked (Vulnerable applies to every source),
+  then Barrier.
+- Several units displaced by one ability move one at a time, farthest
+  from the centre first ([keywords.md](keywords.md), 17.4).
 - `effect = roundDown(base × (1 + influence / 50))` for push slots, burn
-  damage and guard strength. Displace distance is fixed per ability (whole
+  damage and Barrier strength. Displace distance is fixed per ability (whole
   hexes), not scaled.
 
 ## 3. Keywords for Phase 1
@@ -84,7 +87,7 @@ The keyword vocabulary comes before heroes (10.8); the full list is in
 | **Displace N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the displaced unit takes **20 damage**, and a unit it hits also takes 20 (ignoring defence). Entering a hazard triggers it. Doesn't move the displaced unit's card. |
 | **Push N** | Moves the target's card N slots later (3.5); it yields if that slot is taken; subject to the push limit (3.6). |
 | **Burn N** | The target takes N damage at the beginning of every **3rd slot** for **12 slots** (4 times), ignoring defence (3.9). |
-| **Guard N%** | The target takes N% less damage for **10 slots** (doesn't stack with itself: a new Guard replaces the old one). |
+| **Barrier N** | Absorbs the next N damage the target would take, after every other step, for **10 slots** or until used up. A second Barrier doesn't stack: only the strongest absorbs, each running its own duration ([keywords.md](keywords.md), 17.2). |
 | **On-flank** | An extra effect when the target is flanked (6.3). |
 
 **How the track works, in one paragraph:** cards sit in numbered slots;
@@ -112,7 +115,7 @@ profiles (15.8) into numbers:
 **Batyr** (Tank; health High 440, speed Medium 4, defence High 20, power
 Medium 10, influence Low 5; sabre)
 - *Sabre Cut*: melee, adjacent; 100 damage. Typical (100).
-- *Hold the Line*: Guard 25% on self and every adjacent ally. Typical
+- *Hold the Line*: Barrier 60 on self and every adjacent ally. Typical
   (100).
 - *Shove the Line*: melee, adjacent; 40 damage; Displace 1. Quick (60).
 
@@ -237,7 +240,7 @@ turn, so a bad preview can't cause an illegal move.
 - **The track is drawn as slots,** a window of roughly the next 30, and
   **scrolls** to later slots. Unit and entity cards sit in their slots
   (never two in one), so players can count placement directly (7.1). A
-  charging card shows what it will trigger. Statuses (burn, guard) show
+  charging card shows what it will trigger. Statuses (burn, barrier) show
   only as a small marker on a unit's card; their exact slots appear in the
   tap preview. **Tapping a card previews it:** a unit's turn (who acts and
   when, with the unit's stats and ability options, enemies included), a charged ability (its

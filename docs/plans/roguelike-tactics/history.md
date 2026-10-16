@@ -59,6 +59,12 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 
 ## Combat
 
+- **Guard N%** (Phase 1 draft, until 2026-10-16): N% less damage for
+  10 slots, Batyr's Hold the Line. Removed as outdated; Barrier covers
+  damage protection ([keywords.md](keywords.md)).
+- **A stronger status replacing a weaker one** (until 2026-10-16):
+  replaced by each application running its own duration, with only the
+  strongest applying at a time.
 - **Narrow, capped damage variance from gear** (until 2026-10-16):
   damage ranges such as 5 to 6, previewed as a minimum and maximum.
   Replaced by set numbers so every preview is exact; critical hits, dodge

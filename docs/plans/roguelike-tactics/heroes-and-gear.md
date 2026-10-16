@@ -74,7 +74,7 @@ Each hero has four gear slots:
 - Consumables exist, but are limited.
 - **Used only between fights,** never in combat. Each one does one of:
   - **a stat buff** for the next combat (for example +defence),
-  - **a status effect** applied at the start of the next combat (for example Guard on the first turn),
+  - **a status effect** applied at the start of the next combat (for example a Barrier at the start of the fight),
   - **health recovery**, one of the sources of recovery between fights (10.11).
 - **A small shared party inventory** limits how many can be carried, preventing hoarding.
 - Buffs and statuses from consumables last for the next combat only, and are shown on the affected heroes' stat sheets and cards.
@@ -152,7 +152,7 @@ Each hero has four gear slots:
 
 ### 10.10 Ultimates (Decided)
 - Each hero has an **ultimate**: their most powerful ability.
-- **Unlocked by turns taken.** An ultimate becomes usable only once its hero has completed a set number of turns in the current fight. Every completed turn counts, whatever action it used. The count starts at zero each fight.
+- **Unlocked by turns taken.** An ultimate becomes usable only once its hero has completed a set number of turns in the current fight. Every completed turn counts, whatever action it used, except a turn lost to Frozen or Dazed ([keywords.md](keywords.md), 17.5). The count starts at zero each fight.
 - **Once per combat.** Once unlocked, each ultimate can be used once per fight. There is no charge meter and no cooldown.
 - **Priced on the track:** an ultimate may be an ordinary action with its own cost, a charged ability, or a track entity (3.7); that is defined per ultimate. Charged and track-entity ultimates are visible on the track, so opponents can answer them.
 - **Public:** for every unit, on both sides, its progress toward its ultimate (turns completed and turns needed), whether it is ready, and whether it has been used are shown on its card and stat sheet, consistent with complete information.
@@ -195,6 +195,6 @@ Each hero has four gear slots:
 24. Which gear slots carry keyword modifiers.
 25. Whether a rival caravan copy carries the consumable buffs active when it was copied ([ghosts.md](ghosts.md)).
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
-37. **Damage buckets:** whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and guard), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).
+37. **Damage buckets:** whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and barrier), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).
 38. Whether consumables can be used before a PvP duel, and which ones ([pvp.md](pvp.md)).
 39. The number of turns that unlocks an ultimate (10.10): one value for every hero, or set per ultimate.
