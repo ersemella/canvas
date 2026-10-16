@@ -59,6 +59,11 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 
 ## Combat
 
+- **Narrow, capped damage variance from gear** (until 2026-10-16):
+  damage ranges such as 5 to 6, previewed as a minimum and maximum.
+  Replaced by set numbers so every preview is exact; critical hits, dodge
+  chance, accuracy and evasion were considered and not included
+  ([information.md](information.md), 8.1).
 - **A shared clock of fine-grained ticks** (typical action 100, quick 60,
   slow 150, movement 7 per hex), with speed reducing action cost by a
   capped percentage. Replaced first by coarse ticks (ticks could not be

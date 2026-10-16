@@ -69,7 +69,6 @@ tuning. Section numbers are the combat design's.
 | **Tank / Damage / Support** | The three mechanical roles of heroes: protecting allies, dealing damage, and healing, buffing or controlling (15.8). |
 | **Caravanserai** | A roadside inn on the Silk Road; in the setting, a rest point between fights (15.3). |
 | **Preview** | A display of an action's exact outcome, shown before the player commits to it. |
-| **Variance** | A range of possible values for a result, such as damage of 5 to 6 instead of exactly 5. |
 | **Deterministic** | Producing the same result every time given the same inputs. No chance-based outcomes. |
 | **Rarity** | A tier assigned to gear indicating its relative power. |
 | **PvP (Player versus Player)** | Matches where two human players control opposing parties. |

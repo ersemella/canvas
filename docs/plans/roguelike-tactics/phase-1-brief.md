@@ -27,8 +27,7 @@ of enemy ability options (D11); four prototype heroes; one enemy band and its AI
 track UI.
 
 **Not in Phase 1:** ultimates (10.10), consumables (9.6), gear rarity and
-gear choices (fixed starter gear only), damage variance (8.1: every value
-fixed), milestone upgrades, recruitment, the route map, recovery,
+gear choices (fixed starter gear only), milestone upgrades, recruitment, the route map, recovery,
 reinforcements, summons and other track entities (3.7, 3.8), pulls
 (3.5), the other keywords ([keywords.md](keywords.md)), passives, elite affixes,
 rival caravans. Each is a later phase's work.
@@ -51,7 +50,6 @@ fight's end ends the run.
 | 10. Passing through allies | Allowed (can't end on an occupied hex). Enemies block. |
 | 11. Flanking effect | Attacks against a flanked target deal **+25%** damage. |
 | 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering and at the start of each turn spent on it. Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
-| 13. Variance cap | 20% of the base value (unused in Phase 1: no variance). |
 | 23. Defence | `defenceConstant` = **20**; minimum **1** damage from any hit. |
 | 29. Line of fire along a hex border | **Blocked if either** hex on the border is occupied. |
 | 30. Arcing attacks | Priced as a charged ability (Volley). |

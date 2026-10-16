@@ -16,7 +16,7 @@ costs on the Free plan. Decisions D3, D4, D7, D10, D11.
   overpowered party, seed the pool with it and farm kills, and permadeath
   couldn't be enforced. The rules are a module in the game package run by
   the Worker, like poker's `./server`. Combat is deterministic (no hit
-  chance, capped damage variance from gear), so the server can replay and
+  chance, no damage variance), so the server can replay and
   verify a fight from its seed and actions.
 - **Hidden information.** No fog of war and no hidden stats: every fight
   starts with complete information, every unit's stats included

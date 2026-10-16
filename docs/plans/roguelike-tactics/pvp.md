@@ -78,7 +78,7 @@ Not yet in scope, but the design must not block it:
 - Speed concentrates first-mover advantage, strongly: it decides how often each side acts and who starts first (3.2, 3.4). If testing shows this matters, add a small starting offset in favour of the side that moves second.
 - The push limit (section 3.6) is required before PvP.
 - A turn timer will likely be needed. TBD.
-- The variance cap (section 8.1) applies.
+- Combat has no chance at all (section 8.1).
 
 Open questions (original numbers):
 

@@ -16,7 +16,7 @@ tuning. Section numbers are the combat design's.
    - **Build:** choosing the right gear for each character and the right combination of characters in the party.
    - **Play:** making good decisions during combat.
 2. **Make outcomes attributable.** After a win or loss, a player should be able to tell whether the build or the in-combat decisions were responsible. Randomness inside combat is kept small and visible for this reason.
-3. **Avoid a "solved" feeling.** Combat should not reduce to identical, precise arithmetic every turn. Small, visible variance and opponents' hidden intent support this: every option on the board is visible and previewable, but not which one an opponent will choose.
+3. **Avoid a "solved" feeling.** Combat should not reduce to identical, precise arithmetic every turn. Opponents' hidden intent and the track support this, not chance: every option on the board is visible and previewable, but not which one an opponent will choose.
 4. **Treat time as a shared resource.** Turn order is a single track that every player is trying to manipulate. Deciding how much to do on a turn, and affecting when other units act, are core strategic decisions.
 5. **Stay PvP-ready.** The system may later support player-versus-player matches, so it must not depend on information or mechanics that only work against a computer-controlled opponent.
 

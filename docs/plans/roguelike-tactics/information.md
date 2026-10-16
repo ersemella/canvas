@@ -30,7 +30,7 @@ tuning. Section numbers are the combat design's.
 
 ### 7.2 Previews (Decided)
 Before committing, the player sees:
-- Damage dealt (or damage range, if variance applies) and the target's resulting health, with full numbers.
+- Damage dealt and the target's resulting health, with full numbers.
 - The acting unit's resulting slot on the track, after any yielding.
 - Any change to other units' positions (displacement).
 - Whether line of fire to a target is clear, and which unit blocks it if not.
@@ -47,7 +47,7 @@ Before committing, the player sees:
 ### 7.4 Complete Information at Fight Start (Decided)
 - Every fight starts with complete information: the full map, all special tiles, all enemy units, their positions and their abilities.
 - There is no fog of war.
-- Uncertainty comes from opponents' decisions and narrow damage variance, not from unseen units or hidden stats.
+- Uncertainty comes only from opponents' decisions, not from unseen units, hidden stats or chance.
 - Reinforcements are never a surprise: they appear on the track before they arrive (section 3.8).
 - Information before the fight is a run-level concern: the run map may show partial information about upcoming encounters (for example, enemy types but not exact composition), so uncertainty affects build decisions rather than in-combat play. Run structure is out of scope for this document.
 - Rationale: losses caused by unseen threats cannot be attributed to build or play. On compact maps, fog of war adds rules (vision ranges, line of sight) with little payoff. Previews and the track both assume all units are visible.
@@ -58,16 +58,13 @@ Before committing, the player sees:
 
 ### 8.1 Rules (Decided)
 - **No chance to miss.** Every attack and ability that targets a valid unit hits.
-- **Damage is fixed by default.**
-- **Gear introduces variance.** Gear can widen damage into a narrow range (for example, 5 to 6 instead of 5), and has a strong influence on whether and how much variance a character has.
-- **Variance is always previewed** as a minimum and maximum.
-- **Variance is capped.** A global maximum spread applies regardless of gear. Cap value TBD.
+- **No damage variance (Decided 2026-10-16).** Every damage, healing and effect value is a set number, computed from the ability, stats, gear and situation. Gear changes those numbers, never widens them into a range.
+- **No critical hits, dodge chance, accuracy or evasion** (Decided 2026-10-16), nor deterministic stand-ins for them.
 
 ### 8.2 Rationale
-- Roguelikes already generate variety at the run level (map layouts, rewards, enemy encounters). Keeping combat nearly deterministic preserves attribution.
-- Narrow variance prevents combat from becoming precise, repetitive arithmetic.
-- Tying variance to gear makes it partly a build decision.
-- The cap protects PvP integrity.
+- Roguelikes already generate variety at the run level (map layouts, rewards, enemy encounters, recruitment offers). Fully deterministic combat keeps every outcome attributable and every preview exact.
+- Combat avoids a solved feeling through opponents' hidden intent and the track (goal 3), not through chance.
+- No chance in combat means nothing to cap or argue about in PvP.
 
 ## Decision log (from section 13)
 
@@ -79,9 +76,8 @@ Before committing, the player sees:
 | Stats | Shown for every unit, enemies included (D11) | All stats hidden; enemy stats hidden but discoverable through previews | Hidden stats were revealed by the first preview anyway; complete information keeps outcomes attributable |
 | Previews | Full numbers | Output only, health bars without numbers | Clear attribution of outcomes |
 | Hit chance | None (always hit) | Percentage hit chance | Avoids frustrating misses and preserves attribution |
-| Damage | Fixed by default, narrow capped variance via gear | Fully fixed, wide variance | Avoids solved feeling while staying predictable |
+| Damage | Set numbers; no variance | Narrow capped variance from gear (until 2026-10-16); wide variance; critical hits | Exact previews and full attribution; hidden intent and the track keep combat from feeling solved |
 
 ## Open questions (from section 14, original numbers)
 
-13. Global variance cap value.
 15. Design language specification: how abilities, rarity and action costs are communicated visually.
