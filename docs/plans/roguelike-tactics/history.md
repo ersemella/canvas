@@ -157,8 +157,10 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 - **Batyr as the steppe tank** (2026-10-16): the steppe hero-warrior
   holding the front line with a sabre. *Batyr* (baghatur) is a title for
   any renowned warrior, and steppe warriors were mounted archers, so it
-  didn't stand apart from the Horse Archer. Replaced by the Steppe
-  Wrestler. Also weighed: a wolf guard (the Türk khagan's guards were
+  didn't stand apart from the Horse Archer. Replaced by a wrestler,
+  named the Bökh, and the title went to the horse archer, renamed the
+  Baatar (the Mongol forms; "Horse Archer" and "Steppe Wrestler" were
+  the earlier names). Also weighed: a wolf guard (the Türk khagan's guards were
   called "wolves", böri), too close to the Varangian Guard; a
   shaman-protector, closer to support.
 
