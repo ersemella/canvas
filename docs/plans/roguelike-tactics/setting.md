@@ -73,11 +73,29 @@ This list is the wider setting palette. Heroes come from six of these cultures (
 
 ### 15.6 Design Hooks
 - **Journey stories:** many of these traditions centre on a journey (*Journey to the West*, Sinbad, the Shipwrecked Sailor, Rostam's labours), which fits a game about travelling the road.
-- **The travelling fox:** fox spirits appear in Chinese (huli jing), Korean (gumiho) and Japanese (kitsune) folklore. A creature that changes as it travels along the road would make a strong Silk Road motif, as a recurring enemy or boss now that no hero is a fox spirit.
+- **The travelling fox:** fox spirits appear in Chinese (huli jing), Korean (gumiho) and Japanese (kitsune) folklore. A creature that changes as it travels along the road would make a strong Silk Road motif, as a recurring boss now that no hero is a fox spirit (see the nine-tailed fox below).
 - **Treasure manuals:** Egypt's treasure-hunting manuals suit a bazaar or loot mechanic: hidden treasures, spirit guardians and rituals to get past them.
 - **Tsukumogami** suit gear: heirloom items that come alive.
-- **Sun Wukong as a boss** (owner's call, 2026-10-16): the Monkey King of *Journey to the West*, a novel about a Silk Road journey; an extending staff, a cloud-somersault leap, clones from his hairs. Not a hero, since he is also worshipped in some temples (15.5); as an enemy, keep to the novel's trickster, not the deity.
 - **Arwe and Liyongo** are strong boss and hero material. Arwe's recorded versions include later Christian additions; keep to the pre-Christian serpent-king core.
+
+### 15.6a Boss candidates (Proposed, owner's list 2026-10-16)
+Named fictional characters and folklore creatures. Each suggests a mechanic from the boss toolkit (11.3); the pairing is a starting point, not decided.
+
+| Boss | Culture | Source | Suggested mechanic (11.3) |
+|---|---|---|---|
+| **Sun Wukong**, the Monkey King | Tang China | *Journey to the West*, a novel about a Silk Road journey | Mimic or Summoner: clones from his hairs; an extending staff hits along a line; a cloud-somersault leap across the map |
+| **Bull Demon King and Princess Iron Fan** | Tang China | *Journey to the West* | Two heads, two turns (two units, two track entries); her fan's gale displaces the party, his fire mountain shapes terrain |
+| **The nine-tailed fox** | India, China, Japan | The legend of one fox spirit moving along the road: Lady Kayō in India, Daji in China (*Investiture of the Gods*), Tamamo-no-Mae in Japan | A recurring boss in a new form at each stage of the road (the travelling fox, 15.6) |
+| **Lutsen, the demon king of the north** | Tibet | *Epic of King Gesar* | Multi-hex body or two heads, two turns: a many-headed man-eating giant |
+| **The kings of Hor** | Tibet | *Epic of King Gesar*: they raid Gesar's kingdom and abduct his queen while he is away | Summoner: a raiding host; a rescue objective |
+| **Tepegöz** | Turkic steppe | *Book of Dede Korkut*: the one-eyed giant slain by Basat | Vulnerable only when flanked, or only in its one eye |
+| **The White Div** | Persia | *Shahnameh*: the last of Rostam's Seven Labours | Terrain shaper: a div's darkness and sorcery over the map |
+| **Zahhak**, the serpent-shouldered king | Persia | *Shahnameh* | Two heads, two turns: the serpents on his shoulders act on their own entries |
+
+- **Gesar himself is never fought.** He is venerated in Tibetan and Mongolian tradition (15.5) and his epic is still performed as a sacred tradition; the bosses are his enemies, and he stays off-screen as the epic's hero.
+- **Sun Wukong** is a boss, not a hero, since he is also worshipped in some temples (15.5); keep to the novel's trickster, not the deity. Owner's call.
+- **Daji** is based on a historical consort; present the fox through its fictional versions.
+- **Tibet** gets a boss stage from the Gesar epic, though it has no hero (15.7: cultures should not only supply monsters, so pair it with Tibetan places and neutral characters).
 
 ### 15.7 Care Notes
 - **Balance across cultures:** each culture should contribute both heroes and creatures. If one culture only ever supplies monsters, that reads badly.
