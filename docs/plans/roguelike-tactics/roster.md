@@ -25,7 +25,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | # | Name | Culture | Inspiration (historical, folklore or mythical role) | Type | Fantasy RPG archetype | Mechanical role | Specialty | Mount | Signature weapon (proposed) |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | Corpse Driver | Tang China | Jiangshi (hopping corpses) and the folk profession of escorting corpses home | Folklore | Necromancer | Tank | Minion screen: jiangshi block lines of fire and melee | None | Bell and staff |
-| 2 | Fox-Spirit Sorcerer | Tang China | Huli jing, fox spirits who take human form | Folklore | Sorcerer | Damage | Trickster caster: illusions and decoys, uses conceal | None | Fan |
+| 2 | Fox-Spirit Sorcerer | Tang China | Huli jing, fox spirits who take human form | Folklore | Sorcerer | Damage | Fox-fire caster: area damage and Burn; trickery only keeps itself alive | None | Fan |
 | 3 | Alchemist | Tang China | Chinese alchemists seeking elixirs, whose work led to gunpowder | Historical | Alchemist | Support | Healer: elixirs and remedies | None | Elixir gourd |
 | 4 | Cataphract | Persia and Sogdiana | Sasanian heavily armoured cavalry (savaran) | Historical | Knight / paladin | Tank | Mobile charger | Armoured horse | Heavy lance |
 | 5 | Horse Archer | Steppe peoples | Mounted archers of the Turkic and Mongol steppe | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
@@ -62,11 +62,12 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - **Four distinct tanks:** the Cataphract charges in, the Batyr holds the front line, the Elephant Rider cannot be moved (it resists Displace as a passive, but not Push), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
 - **Support covers three needs:** healing (Alchemist), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by pushing enemies back on the track).
 - **Two djinn-related heroes:** the Djinn-Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
-- **Damage covers four niches:** caster (Fox-Spirit Sorcerer), ranged (Horse Archer), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
+- **Damage covers four niches:** area caster (Fox-Spirit Sorcerer), ranged (Horse Archer), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
+- **The Fox-Spirit Sorcerer is damage, not support (Proposed):** its kit is fox fire (huli jing and kitsune are both linked to spirit fire): area attacks and Burn, so its damage comes from power up front and influence over time. Its trickery serves only itself, slipping away after it strikes (Stealth, short Displace of itself, swapping places with an illusion), never decoys or cover for allies; those would make it a third controller beside the Strategos and Djinn-Binder. Fragile (low health and defence) is the price of its damage.
 - **Djinn as religious-adjacent material:** djinn also appear in the Qur'an. Keep to the *Arabian Nights* folklore framing (15.5). In "The Fisherman and the Jinni", the jinni was sealed in his jar by Solomon, a prophet in Islam; use the motif of a djinn sealed in a vessel without the religious figure.
 - **Speed:** three heroes can have high speed (Horse Archer, Kalari Duelist, mounted Strategos). The Varangian Guard pays for its damage with low speed. Speed divides every cost, so it sets how often a hero acts (4.1, with diminishing returns); keep high speed rare.
 - **Only four damage heroes:** gear and upgrades can shift tanks and supports toward damage; guaranteed role coverage in recruitment offers would also help (10.7).
-- **Area damage:** there is no dedicated area-damage hero; area abilities can live on casters such as the Fox-Spirit Sorcerer.
+- **Area damage:** the Fox-Spirit Sorcerer is the area-damage hero; its areas follow the friendly-fire rules like any other.
 - **Boss conflict:** the multi-hex boss example (11.3) should use a creature other than a war elephant, so it reads differently from the Elephant Rider.
 - **Unverified details:** signature weapons are proposals and need research for accuracy (for example, what corpse drivers carried).
 
@@ -88,6 +89,7 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Hero roster | 12 heroes from 6 cultures, based on roles rather than named figures; 4 tanks, 4 damage, 4 support | One hero per culture across 12 cultures; named historical and legendary figures | Central cultures get more depth; named figures can be culturally sensitive; balanced roles suit random recruitment |
+| Fox-Spirit Sorcerer | Proposed: an area-damage and Burn caster whose tricks protect only itself | Trickster caster with illusions, decoys and conceal | Its specialty read as support while its role is damage; leaves control to the Strategos and Djinn-Binder |
 | Mounts | Reflected only in base stats | Dedicated mount mechanics (cheaper movement, charge, dismounting) | Simplicity; the speed versus defence tradeoff already expresses mounts |
 
 ## Open questions (from section 14, original numbers)

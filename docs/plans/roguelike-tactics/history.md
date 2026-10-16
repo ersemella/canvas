@@ -147,6 +147,13 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   (for example Burn 2 with influence 15 stayed 2), so health and damage
   are on a ×10 scale.
 
+## Roster
+
+- **Fox-Spirit Sorcerer as a trickster caster** (2026-10-16): illusions
+  and decoys, using conceal tiles. Labelled damage but played as support:
+  decoys and cover protect the party, and none of it kills. Replaced by
+  an area-damage and Burn caster whose tricks protect only itself.
+
 ## Repository (D10)
 
 A **standalone repository** with its own Worker, Durable Objects, page and
