@@ -153,6 +153,14 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   and decoys, using conceal tiles. Labelled damage but played as support:
   decoys and cover protect the party, and none of it kills. Replaced by
   an area-damage and Burn caster whose tricks protect only itself.
+- **Fox-Spirit Sorcerer as a fox-fire caster** (2026-10-16): area damage
+  and Burn, tricks protecting only itself. Replaced by the Simurgh Caller
+  (Persia and Sogdiana) so every hero culture has two heroes. Also
+  weighed: a thunder-rite master (Song-era, close to the Xiangxi Corpse
+  Driver's Daoist ritual), a gu sorcerer (risks an ethnic stereotype of
+  southern minorities), a storm-calling wu, an Egyptian lector-priest
+  magician (would restore an African hero, as a seventh culture), an
+  onmyōji.
 
 - **Batyr as the steppe tank** (2026-10-16): the steppe hero-warrior
   holding the front line with a sabre. *Batyr* (baghatur) is a title for

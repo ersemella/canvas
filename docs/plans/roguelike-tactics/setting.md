@@ -73,7 +73,7 @@ This list is the wider setting palette. Heroes come from six of these cultures (
 
 ### 15.6 Design Hooks
 - **Journey stories:** many of these traditions centre on a journey (*Journey to the West*, Sinbad, the Shipwrecked Sailor, Rostam's labours), which fits a game about travelling the road.
-- **The travelling fox:** fox spirits appear in Chinese (huli jing), Korean (gumiho) and Japanese (kitsune) folklore. A creature that changes as it travels along the road would make a strong Silk Road motif.
+- **The travelling fox:** fox spirits appear in Chinese (huli jing), Korean (gumiho) and Japanese (kitsune) folklore. A creature that changes as it travels along the road would make a strong Silk Road motif, as a recurring enemy or boss now that no hero is a fox spirit.
 - **Treasure manuals:** Egypt's treasure-hunting manuals suit a bazaar or loot mechanic: hidden treasures, spirit guardians and rituals to get past them.
 - **Tsukumogami** suit gear: heirloom items that come alive.
 - **Arwe and Liyongo** are strong boss and hero material. Arwe's recorded versions include later Christian additions; keep to the pre-Christian serpent-king core.
@@ -82,7 +82,7 @@ This list is the wider setting palette. Heroes come from six of these cultures (
 - **Balance across cultures:** each culture should contribute both heroes and creatures. If one culture only ever supplies monsters, that reads badly.
 - **Folklore over living religion:** see 15.5.
 - **Readability over authenticity:** cultural variety must not break the design language. A burn effect should look the same whether it comes from a Persian mage or a Chinese alchemist.
-- **Weighting:** in the hero roster (15.8), Tang China has three heroes as the most central culture. Other cultures can be strengthened through places, neutral characters and expansion heroes.
+- **Weighting:** in the hero roster (15.8), each of the six hero cultures has two heroes. Other cultures can be strengthened through places, neutral characters and expansion heroes.
 - **The Mongols' era:** the Mongol Empire's Pax Mongolica is 13th to 14th century, centuries after Tang China, Nara and the early Abbasids; in their time the steppe was ruled by Turkic khaganates. The Mongols are chosen as the iconic steppe empire of the Silk Road; fantasy allows the mix.
 - **Egypt's era:** during the Silk Road period Egypt was Ptolemaic, Roman, then Islamic. The pharaonic look is more iconic but anachronistic; fantasy allows either.
 - **Research gaps:** Aksumite and Swahili folklore need proper research before design work.
