@@ -164,6 +164,16 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   called "wolves", böri), too close to the Varangian Guard; a
   shaman-protector, closer to support.
 
+## Setting
+
+- **"Steppe peoples (Turkic and Mongol)"** as one culture (renamed
+  **Mongol**, 2026-10-16): it matched the setting's 7th to 8th century
+  core, when the steppe was ruled by the Göktürk and Uyghur khaganates.
+  Its Turkic material left with the rename: the *Book of Dede Korkut*,
+  the *Epic of Manas*, Asena (grey wolf ancestress of the Göktürks),
+  albasty (a Turkic demon), Tepegöz (a one-eyed giant). Still options for
+  places, creatures or an expansion culture.
+
 ## Repository (D10)
 
 A **standalone repository** with its own Worker, Durable Objects, page and

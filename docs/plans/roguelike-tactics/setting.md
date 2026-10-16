@@ -55,7 +55,7 @@ This list is the wider setting palette. Heroes come from six of these cultures (
 | 1 | **Tang China** | Source of silk; eastern heart of the road | Silk, lacquer, jade, Tang armour | Huli jing (fox spirits), qilin, jiangshi, the bestiary of the *Classic of Mountains and Seas* | *Journey to the West* and Sun Wukong, a novel inspired by the monk Xuanzang's real Silk Road journey to India |
 | 2 | **Silla Korea** | Eastern end; Roman and Persian glass in royal tombs | Gold crowns, jade ornaments, tomb guardians | Dokkaebi (mischievous goblins with clubs), gumiho, bulgae (fire dogs that chase the sun and moon), imugi (serpents trying to become dragons) | Folk tales of tricking dokkaebi out of their treasure |
 | 3 | **Nara Japan** | Eastern terminus (the Shōsōin) | Early court style, before the samurai era | Kitsune, tengu, oni, kappa, tsukumogami (objects that come alive after a hundred years) | Tales of fox wives and oni-slaying heroes |
-| 4 | **Steppe peoples (Turkic and Mongol)** | Horse empires that controlled and protected the routes | Felt tents, horse archers, steppe gold | Almas (Mongolian wildman), albasty (a Turkic demon), Tepegöz (a one-eyed giant) | *Book of Dede Korkut*, *Epic of Manas*, Asena (grey wolf ancestress of the Göktürks) |
+| 4 | **Mongol** | The steppe horse empire that united and policed the road | Gers (felt tents), horse archers, horsetail banners, steppe gold | Almas (wildman), mangus (many-headed ogre of the epics) | *Epic of Jangar*, the grey wolf and fallow doe (ancestors in the *Secret History of the Mongols*), wrestling at the naadam games |
 | 5 | **Tibet** | Controlled the Tarim Basin for about two decades from 670 | High-altitude fortresses, distinctive armour | Migoi (the yeti), mountain spirits | *Epic of King Gesar* |
 | 6 | **Persia and Sogdiana** | Sogdians were the road's merchant class; Persia the empire behind them | Sasanian silver, cataphract cavalry, Sogdian murals | Simurgh, divs (such as the White Div), peris, the manticore (originally Persian "man-eater") | *Shahnameh*: Rostam's Seven Labours, Zahhak the serpent-shouldered king |
 | 7 | **South India** | Maritime trade hub; the Chola raided Srivijaya in 1025 | Temple carving, bronze, chakram and urumi | Vetala (corpse-dwelling spirits), yali (lion-like guardians on temple pillars), makara (sea beasts) | *Vikram and the Vetala*, the *Panchatantra* fables |
@@ -83,6 +83,7 @@ This list is the wider setting palette. Heroes come from six of these cultures (
 - **Folklore over living religion:** see 15.5.
 - **Readability over authenticity:** cultural variety must not break the design language. A burn effect should look the same whether it comes from a Persian mage or a Chinese alchemist.
 - **Weighting:** in the hero roster (15.8), Tang China has three heroes as the most central culture. Other cultures can be strengthened through places, neutral characters and expansion heroes.
+- **The Mongols' era:** the Mongol Empire's Pax Mongolica is 13th to 14th century, centuries after Tang China, Nara and the early Abbasids; in their time the steppe was ruled by Turkic khaganates. The Mongols are chosen as the iconic steppe empire of the Silk Road; fantasy allows the mix.
 - **Egypt's era:** during the Silk Road period Egypt was Ptolemaic, Roman, then Islamic. The pharaonic look is more iconic but anachronistic; fantasy allows either.
 - **Research gaps:** Aksumite and Swahili folklore need proper research before design work.
 - **Consultation:** if the project goes beyond a prototype, cultural consultants for each region are recommended.
@@ -92,6 +93,7 @@ This list is the wider setting palette. Heroes come from six of these cultures (
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Setting | Fantasy Silk Road; folklore over religion as source material | Stopped Clock, Fallen Star, Succession, Last Refuge, Grand Melee, Ascent | Rivalry between caravans explains rival bands and ghost teams; folklore supplies creatures and bosses; caravanserais and bazaars map onto recovery and gear |
+| Steppe culture | **Mongol**, with Mongol folklore | Steppe peoples (Turkic and Mongol); Turkic khaganates (period-accurate) | The iconic steppe empire of the Silk Road, matching the heroes' Mongol names (Bökh, Baatar); owner's call, 2026-10-16 |
 
 ## Open questions (from section 14, original numbers)
 
