@@ -198,6 +198,9 @@ Learned:
 
 ## Names
 
+- **Corpse Driver** (2026-10-16): renamed the **Xiangxi Corpse Driver**,
+  after western Hunan, where the legends are set; owner's call. "Xiangxi"
+  alone (a place, not a role) and "Ganshi" (the practice) were weighed.
 - **Alchemist** (2026-10-16): renamed the **Fangshi**, the Chinese name
   for the masters of alchemy, medicine and divination; owner's call.
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical

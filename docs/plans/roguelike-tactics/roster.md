@@ -24,7 +24,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 | # | Name | Culture | Inspiration (historical, folklore or mythical role) | Type | Fantasy RPG archetype | Mechanical role | Specialty | Mount | Signature weapon (proposed) |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | Corpse Driver | Tang China | Jiangshi (hopping corpses) and the folk profession of escorting corpses home | Folklore | Necromancer | Tank | Minion screen: jiangshi block lines of fire and melee | None | Bell and staff |
+| 1 | Xiangxi Corpse Driver | Tang China | Jiangshi (hopping corpses) and the folk profession of escorting corpses home (ganshi), told of western Hunan (Xiangxi) | Folklore | Necromancer | Tank | Minion screen: jiangshi block lines of fire and melee | None | Bell and staff |
 | 2 | Fox-Spirit Sorcerer | Tang China | Huli jing, fox spirits who take human form | Folklore | Sorcerer | Damage | Fox-fire caster: area damage and Burn; trickery only keeps itself alive | None | Fan |
 | 3 | Fangshi | Tang China | The fangshi ("masters of methods"), Chinese alchemists and healers seeking elixirs, whose work led to gunpowder | Historical | Alchemist | Support | Healer: elixirs and remedies | None | Elixir gourd |
 | 4 | Cataphract | Persia and Sogdiana | Sasanian heavily armoured cavalry (savaran) | Historical | Knight / paladin | Tank | Mobile charger | Armoured horse | Heavy lance |
@@ -41,7 +41,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 | Name | Health | Speed | Defence | Power | Influence |
 |---|---|---|---|---|---|
-| Corpse Driver | Medium | Medium | Low | Low | High |
+| Xiangxi Corpse Driver | Medium | Medium | Low | Low | High |
 | Fox-Spirit Sorcerer | Low | Medium | Low | High | Medium |
 | Fangshi | Medium | Medium | Low | Low | High |
 | Cataphract | High | Medium | High | Medium | Low |
@@ -59,7 +59,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
 
 **Notes**
-- **Four distinct tanks:** the Cataphract charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Baatar), the Mahout cannot be moved (it resists Displace as a passive, but not Push), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
+- **Four distinct tanks:** the Cataphract charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Baatar), the Mahout cannot be moved (it resists Displace as a passive, but not Push), and the Xiangxi Corpse Driver protects with jiangshi rather than its own body. The Xiangxi Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
 - **Support covers three needs:** healing (Fangshi), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by pushing enemies back on the track).
 - **Two djinn-related heroes:** the Djinn-Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
 - **Damage covers four niches:** area caster (Fox-Spirit Sorcerer), ranged (Baatar), fast melee (Kalari Duelist), heavy melee (Varangian Guard).

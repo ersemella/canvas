@@ -43,7 +43,7 @@ tuning. Section numbers are the combat design's.
 - [The Thinker's Garden: Magical treasure hunting in Islamic Egypt](https://thethinkersgarden.com/magical-treasure-hunting-in-islamic-egypt/)
 
 **Setting sources: hero roster (15.8)**
-- Corpse Driver: [Wikipedia: Jiangshi](https://en.wikipedia.org/wiki/Jiangshi) (corpse drivers carrying bodies home from Xiangxi on bamboo poles, which made them appear to hop)
+- Xiangxi Corpse Driver: [Wikipedia: Jiangshi](https://en.wikipedia.org/wiki/Jiangshi) (corpse drivers carrying bodies home from Xiangxi on bamboo poles, which made them appear to hop)
 - Fox-Spirit Sorcerer: [Wikipedia: Fox spirit](https://en.wikipedia.org/wiki/Fox_spirit)
 - Fangshi: [Wikipedia: Fangshi](https://en.wikipedia.org/wiki/Fangshi); [EBSCO Research Starters: Invention of gunpowder and guns](https://www.ebsco.com/research-starters/history/invention-gunpowder-and-guns) (Daoist alchemists seeking an elixir of life, 9th century)
 - Cataphract: [Wikipedia: Military of the Sasanian Empire](https://wikipedia.com/wiki/Sasanian_army)
