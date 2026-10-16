@@ -26,7 +26,7 @@ for later phases.
 | Control | Frozen, Dazed, Slowed, Taunt, Stealth |
 | Damage | Burn, Pierce, Lifesteal, Vulnerable, Guard, Barrier, Immortal |
 | Health | Heal, Overhealth, Antiheal, Cursed |
-| Removal | Cleanse |
+| Removal | Cleanse, Dispel |
 | Stats | Speed, power, influence and defence up or down |
 
 **Terms (Decided):** **Push** and **Pull** always mean the **track**
@@ -138,7 +138,7 @@ buckets are settled (open question 37).
 they differ in what counters them. Antiheal stops overhealth, not
 Barrier; Cursed lowers the max that overhealth sits above.
 
-### 17.8 Cleanse (Decided 2026-10-16; rule Proposed)
+### 17.8 Cleanse and Dispel (Decided 2026-10-16; rules Proposed)
 - **Cleanse** removes every **harmful status** from the target: Burn (all
   stacks), Frozen, Dazed, Slowed, Taunt, Vulnerable, Antiheal, Cursed and
   stat downs.
@@ -147,8 +147,19 @@ Barrier; Cursed lowers the max that overhealth sits above.
   max health returns).
 - Cleansing a unit that already lost a turn doesn't reset the lockout
   guard (17.5).
-- Beneficial statuses are untouched. Removing an enemy's buffs (a dispel)
-  is a separate question (open question 49).
+- Beneficial statuses are untouched.
+- **Dispel** is the mirror: it removes every **beneficial status** from the
+  target: Guard, Barrier, overhealth, Immortal, Stealth, stat ups, and
+  Unstoppable, Inevitable, Pierce or Lifesteal when granted as a status
+  for a duration.
+- Dispel doesn't touch **passives** (the Elephant Rider's Unstoppable, a
+  boss's Inevitable) or **ability properties** (an attack that always
+  pierces): only statuses with a duration. It doesn't undo what already
+  happened: damage a Barrier absorbed stays absorbed, and a Pull already
+  applied stays.
+- Harmful statuses are untouched, so Dispel on an ally is never useful
+  and Cleanse on an enemy never helps it; abilities still define their
+  own targets.
 
 ### 17.9 Stat changes (Decided)
 - **Speed, power, influence and defence** can be raised or lowered by a
@@ -171,22 +182,22 @@ Barrier; Cursed lowers the max that overhealth sits above.
 - Each effect has a counter in the list: Inevitable against track control,
   Unstoppable against Displace and Frozen, Antiheal against healing,
   Pierce against defence, a lost turn against a charged ability, Cleanse
-  against harmful statuses.
+  against harmful statuses, Dispel against beneficial ones.
 
 ## Decision log
 
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
-| Effect list | The owner's list (17.1), plus Phase 1's Guard and On-flank, plus Cleanse | | Owner's call, 2026-10-16 |
+| Effect list | The owner's list (17.1), plus Phase 1's Guard and On-flank, plus Cleanse and Dispel | | Owner's call, 2026-10-16 |
 | Terms | **Push** and **Pull** move cards on the track (later, earlier); **Displace** moves units across hexes | Delay and Push (Phase 1 draft); Delay, Boost, Push and Pull | One consistent pair for the track, one word for the board; owner's call |
 | Rules | 17.2 to 17.7 and 17.9 as proposed | | Confirmed by the owner, 2026-10-16 |
 | Taunt | Dodged only by Hold | Any non-damaging ability also dodges | Owner's call; a taunt costs the target either its attack choice or its turn |
 | Burn | Stacks | A new Burn replaces a weaker one | Owner's call; rewards repeated burn applications |
 | Barrier and overhealth | Both kept | Merged into Barrier | Owner's call; different counters |
+| Removal | Cleanse removes harmful statuses; Dispel, a separate effect, removes beneficial ones; neither touches passives | One effect removing both; no removal | Owner's call; each is a clear counter with an obvious target |
 | Charged abilities | Fizzle on a lost trigger turn | Trigger anyway | Owner's call; control answers a visible charge |
 
 ## Open questions (original numbers continue from 39)
 
 41. Pull limit value, and whether pushes and pulls share one budget.
 48. Which effects are statuses (with durations), which ability properties, and which hero passives.
-49. A dispel (removing an enemy's beneficial statuses): wanted, and is it part of Cleanse?
