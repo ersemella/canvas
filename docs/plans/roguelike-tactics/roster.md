@@ -34,7 +34,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | 8 | Sha'ir | Abbasid Arabia | The pre-Islamic Arab poet, believed to be inspired by jinn, whose satire was feared as a curse on enemies | Historical and folklore | Bard | Support | Buffer and curser: verses inspire allies, satire weakens enemies | None | Recited verse (no weapon; a rebab as a possible prop) |
 | 9 | Strategos | Byzantium | The Byzantine general and military governor | Historical | Warlord / commander | Support | Commander: directs allies, pulls their turns earlier | Optional horse | Sword and banner |
 | 10 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
-| 11 | Elephant Rider | South India | The war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Displace (passive) | War elephant | Ankus (elephant goad) and spear |
+| 11 | Mahout | South India | The mahout, driver of the war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Displace (passive) | War elephant | Ankus (elephant goad) and spear |
 | 12 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
 
 **Stat profiles (relative, untuned)**
@@ -51,7 +51,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | Sha'ir | Medium | Medium | Medium | Low | High |
 | Strategos | Medium | Medium (High if mounted) | Medium | Medium | High |
 | Kalari Duelist | Medium | High | Low | High | Low |
-| Elephant Rider | Very high | Very low | Very high | Medium | Medium |
+| Mahout | Very high | Very low | Very high | Medium | Medium |
 | Varangian Guard | High | Low | Medium | High | Low |
 
 **Mounts (Decided)**
@@ -59,7 +59,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
 
 **Notes**
-- **Four distinct tanks:** the Cataphract charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Baatar), the Elephant Rider cannot be moved (it resists Displace as a passive, but not Push), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
+- **Four distinct tanks:** the Cataphract charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Baatar), the Mahout cannot be moved (it resists Displace as a passive, but not Push), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
 - **Support covers three needs:** healing (Alchemist), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by pushing enemies back on the track).
 - **Two djinn-related heroes:** the Djinn-Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
 - **Damage covers four niches:** area caster (Fox-Spirit Sorcerer), ranged (Baatar), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
@@ -68,7 +68,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - **Speed:** three heroes can have high speed (Baatar, Kalari Duelist, mounted Strategos). The Varangian Guard pays for its damage with low speed. Speed divides every cost, so it sets how often a hero acts (4.1, with diminishing returns); keep high speed rare.
 - **Only four damage heroes:** gear and upgrades can shift tanks and supports toward damage; guaranteed role coverage in recruitment offers would also help (10.7).
 - **Area damage:** the Fox-Spirit Sorcerer is the area-damage hero; its areas follow the friendly-fire rules like any other.
-- **Boss conflict:** the multi-hex boss example (11.3) should use a creature other than a war elephant, so it reads differently from the Elephant Rider.
+- **Boss conflict:** the multi-hex boss example (11.3) should use a creature other than a war elephant, so it reads differently from the Mahout.
 - **Unverified details:** signature weapons are proposals and need research for accuracy (for example, what corpse drivers carried).
 
 **Cultures without heroes**
@@ -98,7 +98,7 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 
 33. Hero roster (tabled 2026-10-16: a second Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
-**Passives:** the Elephant Rider's Displace resistance is the first
+**Passives:** the Mahout's Displace resistance is the first
 **passive**, an always-on trait rather than an action. The
 combat design has no passive abilities yet; how passives are shown
 (design language, 7.1) and whether other heroes get one is open.
