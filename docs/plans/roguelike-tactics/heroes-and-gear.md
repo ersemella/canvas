@@ -41,7 +41,7 @@ damageTaken     = roundDown(incomingDamage × (1 − damageReduction))
 ### 9.2 Power and Influence (Decided)
 The offensive stat is split in two:
 - **Power:** scales direct damage.
-- **Influence:** scales effect strength: status effect magnitude and duration, push distance, healing and shields.
+- **Influence:** scales effect strength: status effect magnitude and duration, displacement distance, healing and shields.
 
 "Influence" is a working name, chosen over "Potency" because Potency reads as a synonym for Power. Alternatives considered: Finesse, Control, Efficacy.
 
@@ -125,13 +125,13 @@ Each hero has four gear slots:
 - **Guaranteed relevance:** whether each offer must include at least one hero sharing a keyword with the current team. Bad offers drive restarts, so usable offers reduce the incentive.
 
 ### 10.8 Open Questions on Heroes
-- **Keyword vocabulary:** a defined set of common conditions and effects (for example burn, push, on-flank, on-kill) that abilities and gear both reference. The effects are listed, with proposed rules, in [keywords.md](keywords.md); conditions (on-flank, on-kill and others) are still open. This is the key enabler of hero synergies and broadly useful gear, and should be designed before individual heroes.
+- **Keyword vocabulary:** a defined set of common conditions and effects (for example burn, displace, on-flank, on-kill) that abilities and gear both reference. The effects and their rules are in [keywords.md](keywords.md); conditions (on-flank, on-kill and others) are still open. This is the key enabler of hero synergies and broadly useful gear, and should be designed before individual heroes.
 - **Preventing solved compositions:** 12 heroes give 495 possible teams of 4, and fixed synergies tend to concentrate play on a few dominant teams.
 - **Prototype scope:** validating the system with 6 to 8 heroes before building all 12.
 
 **Ideas for preventing solved compositions and improving run variety (Proposed, not adopted)**
 - **Multiple keyword hooks per hero:** each hero connects to at least two keywords, so it fits several teams rather than one exclusive pairing.
-- **Bridge gear:** gear that converts or links keywords (for example, "push effects also apply burn"), letting unexpected pairings work.
+- **Bridge gear:** gear that converts or links keywords (for example, "displace effects also apply burn"), letting unexpected pairings work.
 - **Avoid stacking team-wide auras,** which compound with 4 heroes and push teams toward the same picks.
 - **Hero variants:** alternative starting kits or upgrade paths, so a hero can fill different roles across runs.
 - **Run modifiers:** run-wide rules that favour certain keywords, shifting which teams are strong.
@@ -156,7 +156,7 @@ Each hero has four gear slots:
 - **Once per combat.** Once unlocked, each ultimate can be used once per fight. There is no charge meter and no cooldown.
 - **Priced on the track:** an ultimate may be an ordinary action with its own cost, a charged ability, or a track entity (3.7); that is defined per ultimate. Charged and track-entity ultimates are visible on the track, so opponents can answer them.
 - **Public:** for every unit, on both sides, its progress toward its ultimate (turns completed and turns needed), whether it is ready, and whether it has been used are shown on its card and stat sheet, consistent with complete information.
-- Rationale: ultimates are held back from the opening, so a fight builds toward them, and an ultimate that is about to unlock is a visible threat the other side can play around: delaying the hero also delays the unlock, and defeating it first prevents it. Counting turns, rather than filling a meter from specific actions, keeps the rule simple and the count easy to read. Fast units unlock sooner, since they take turns more often.
+- Rationale: ultimates are held back from the opening, so a fight builds toward them, and an ultimate that is about to unlock is a visible threat the other side can play around: pushing the hero's card also delays the unlock, and defeating it first prevents it. Counting turns, rather than filling a meter from specific actions, keeps the rule simple and the count easy to read. Fast units unlock sooner, since they take turns more often.
 - **Gear can modify ultimates** like any other ability.
 
 ### 10.11 Recovery Between Fights (Decided)

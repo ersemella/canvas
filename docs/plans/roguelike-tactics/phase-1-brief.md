@@ -21,15 +21,15 @@ refer to the combat design (see the map in the README).
 **In Phase 1:** one fight, from deployment to victory or defeat. The
 track and action economy; a hex map with obstacle, hazard and
 conceal tiles; flanking, line of fire, area abilities with friendly fire,
-one charged arcing ability; physical pushes and track delays with the
-delay limit; the defence formula; previews; stat sheets for every unit; previews
+one charged arcing ability; displacement and track pushes with the
+push limit; the defence formula; previews; stat sheets for every unit; previews
 of enemy ability options (D11); four prototype heroes; one enemy band and its AI; the
 track UI.
 
 **Not in Phase 1:** ultimates (10.10), consumables (9.6), gear rarity and
 gear choices (fixed starter gear only), damage variance (8.1: every value
 fixed), milestone upgrades, recruitment, the route map, recovery,
-reinforcements, summons and other track entities (3.7, 3.8), boosts
+reinforcements, summons and other track entities (3.7, 3.8), pulls
 (3.5), the other keywords ([keywords.md](keywords.md)), passives, elite affixes,
 rival caravans. Each is a later phase's work.
 
@@ -43,7 +43,7 @@ fight's end ends the run.
 | 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement **10 per hex**; starting cost **50**; `C` = **6**. With speed 4, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). Speed stat 1 to 10. Armour lowers speed (4.2): see gear, below. |
 | 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
-| 5. Delay limit | A card can be delayed by at most **10 slots in total** between two of its own turns, counting yielding after a delay (3.6). Further delays are reduced to fit; the preview shows the reduced amount. |
+| 5. Push limit | A card can be pushed by at most **10 slots in total** between two of its own turns, counting yielding after a push (3.6). Further pushes are reduced to fit; the preview shows the reduced amount. |
 | 6. Charged abilities | One in Phase 1 (Volley, below). |
 | 8. Move and act order | Move then act, or act then move; not split around the action. Every turn must include an action (5.1). |
 | 28. Movement cap | **4 hexes** per turn. |
@@ -69,19 +69,20 @@ uses damage buckets is open, [heroes-and-gear.md](heroes-and-gear.md)):
 - `damage = roundDown(base × (1 + power / 50))`, then +25% if flanked,
   then 50% less if a ranged attack on a concealed target, then the defence
   formula (9.1), then guard; minimum 1. Each step rounds down.
-- `effect = roundDown(base × (1 + influence / 50))` for delay slots, burn
-  damage and guard strength. Push distance is fixed per ability (whole
+- `effect = roundDown(base × (1 + influence / 50))` for push slots, burn
+  damage and guard strength. Displace distance is fixed per ability (whole
   hexes), not scaled.
 
 ## 3. Keywords for Phase 1
 
-The keyword vocabulary comes before heroes (10.8). **Push** is physical
-displacement; **Delay** moves a card on the track.
+The keyword vocabulary comes before heroes (10.8); the full list is in
+[keywords.md](keywords.md). **Displace** moves a unit across hexes;
+**Push** moves a card later on the track.
 
 | Keyword | Meaning |
 |---|---|
-| **Push N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the pushed unit takes **20 damage**, and a unit it hits also takes 20 (ignoring defence). Entering a hazard triggers it. Doesn't move the pushed unit's card. |
-| **Delay N** | Moves the target's card N slots later (3.5); it yields if that slot is taken; subject to the delay limit (3.6). |
+| **Displace N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the displaced unit takes **20 damage**, and a unit it hits also takes 20 (ignoring defence). Entering a hazard triggers it. Doesn't move the displaced unit's card. |
+| **Push N** | Moves the target's card N slots later (3.5); it yields if that slot is taken; subject to the push limit (3.6). |
 | **Burn N** | The target takes N damage at the beginning of every **3rd slot** for **12 slots** (4 times), ignoring defence (3.9). |
 | **Guard N%** | The target takes N% less damage for **10 slots** (doesn't stack with itself: a new Guard replaces the old one). |
 | **On-flank** | An extra effect when the target is flanked (6.3). |
@@ -113,11 +114,11 @@ Medium 10, influence Low 5; sabre)
 - *Sabre Cut*: melee, adjacent; 100 damage. Typical (100).
 - *Hold the Line*: Guard 25% on self and every adjacent ally. Typical
   (100).
-- *Shove the Line*: melee, adjacent; 40 damage; Push 1. Quick (60).
+- *Shove the Line*: melee, adjacent; 40 damage; Displace 1. Quick (60).
 
 **Kalari Duelist** (Damage; health Medium 320, speed High 7, defence Low
 5, power High 15, influence Low 5; urumi)
-- *Quick Cut*: melee, adjacent; 60 damage; on-flank: Push 1 (out of the
+- *Quick Cut*: melee, adjacent; 60 damage; on-flank: Displace 1 (out of the
   flank). Quick (60).
 - *Whirling Urumi*: area, all six adjacent hexes, allies included; 70
   damage each. Typical (100).
@@ -136,11 +137,11 @@ stats)
 **Djinn-Binder** (Support/control; health Low 240, speed Medium 4,
 defence Low 5, power Low 5, influence High 15; sealed brass vessel)
 - *Bound Gust*: direct ranged, range 4, needs line of fire; 30 damage;
-  Delay 4. Typical (100).
+  Push 4. Typical (100).
 - *Ifrit's Breath*: direct ranged, range 3, needs line of fire; Burn 20.
   Typical (100).
 - *The Djinn Stirs*: area, a hex in range 3 and its neighbours, allies
-  included; Push 1 outward from the centre and Delay 2 each. Slow (150).
+  included; Displace 1 outward from the centre and Push 2 each. Slow (150).
 
 Every hero also has **Hold** (decided): a quick action (60) with no
 effect, so a unit can always end its turn (an action is required, 5.1).
@@ -165,7 +166,7 @@ On each enemy unit's turn, deterministically:
    fire respected), including Hold.
 2. Score each option with the same rules as previews: damage dealt,
    **+300** if it kills, **+100** if the target is flanked; burn counts its
-   total damage; delay counts its slots × 20; push counts its collision and
+   total damage; push counts its slots × 20; displace counts its collision and
    hazard damage, **+50** if it breaks a flank on an ally; minus damage to
    the AI's own allies × 1.5 (friendly fire only when clearly worth it);
    minus the slots the turn moves the card × 10, so cheap good turns win
@@ -209,7 +210,7 @@ header (never the URL, D4). The server stores only its SHA-256 hash.
 **The view** (versioned, sent whole each time): the map; every unit's
 position, health, statuses and abilities; **every unit's full stats**, enemies'
 included (D11); the track (every card's
-slot, charging abilities and their targets, each card's remaining delay
+slot, charging abilities and their targets, each card's remaining push
 budget); the fight's status;
 the log of what the AI did since your last turn.
 

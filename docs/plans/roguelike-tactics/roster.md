@@ -30,11 +30,11 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | 4 | Cataphract | Persia and Sogdiana | Sasanian heavily armoured cavalry (savaran) | Historical | Knight / paladin | Tank | Mobile charger | Armoured horse | Heavy lance |
 | 5 | Horse Archer | Steppe peoples | Mounted archers of the Turkic and Mongol steppe | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
 | 6 | Batyr | Steppe peoples | The batyr or baatar, the hero-warrior of steppe tradition | Historical | Barbarian | Tank | Frontline holder | None | Sabre |
-| 7 | Djinn-Binder | Abbasid Arabia | Djinn sealed in vessels and bound to serve, from the *Arabian Nights* tradition (for example "The Fisherman and the Jinni") | Folklore | Wizard | Support | Controller: a bound djinn delays and disrupts enemy turns | None | Sealed brass vessel |
+| 7 | Djinn-Binder | Abbasid Arabia | Djinn sealed in vessels and bound to serve, from the *Arabian Nights* tradition (for example "The Fisherman and the Jinni") | Folklore | Wizard | Support | Controller: a bound djinn pushes back and disrupts enemy turns | None | Sealed brass vessel |
 | 8 | Sha'ir | Abbasid Arabia | The pre-Islamic Arab poet, believed to be inspired by jinn, whose satire was feared as a curse on enemies | Historical and folklore | Bard | Support | Buffer and curser: verses inspire allies, satire weakens enemies | None | Recited verse (no weapon; a rebab as a possible prop) |
-| 9 | Strategos | Byzantium | The Byzantine general and military governor | Historical | Warlord / commander | Support | Commander: directs allies, boosts their turns earlier | Optional horse | Sword and banner |
+| 9 | Strategos | Byzantium | The Byzantine general and military governor | Historical | Warlord / commander | Support | Commander: directs allies, pulls their turns earlier | Optional horse | Sword and banner |
 | 10 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
-| 11 | Elephant Rider | South India | The war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Push (passive) | War elephant | Ankus (elephant goad) and spear |
+| 11 | Elephant Rider | South India | The war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Displace (passive) | War elephant | Ankus (elephant goad) and spear |
 | 12 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
 
 **Stat profiles (relative, untuned)**
@@ -59,8 +59,8 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
 
 **Notes**
-- **Four distinct tanks:** the Cataphract charges in, the Batyr holds the front line, the Elephant Rider cannot be moved (it resists Push as a passive, but not Delay), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
-- **Support covers three needs:** healing (Alchemist), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by delaying enemies).
+- **Four distinct tanks:** the Cataphract charges in, the Batyr holds the front line, the Elephant Rider cannot be moved (it resists Displace as a passive, but not Push), and the Corpse Driver protects with jiangshi rather than its own body. The Corpse Driver's minion strength comes from high influence; its own health is medium so that permanent death is not too punishing.
+- **Support covers three needs:** healing (Alchemist), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by pushing enemies back on the track).
 - **Two djinn-related heroes:** the Djinn-Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
 - **Damage covers four niches:** caster (Fox-Spirit Sorcerer), ranged (Horse Archer), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
 - **Djinn as religious-adjacent material:** djinn also appear in the Qur'an. Keep to the *Arabian Nights* folklore framing (15.5). In "The Fisherman and the Jinni", the jinni was sealed in his jar by Solomon, a prophet in Islam; use the motif of a djinn sealed in a vessel without the religious figure.
@@ -94,7 +94,7 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 
 33. Hero roster: signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
-**Passives:** the Elephant Rider's Push resistance is the first
+**Passives:** the Elephant Rider's Displace resistance is the first
 **passive**, an always-on trait rather than an action. The
 combat design has no passive abilities yet; how passives are shown
 (design language, 7.1) and whether other heroes get one is open.

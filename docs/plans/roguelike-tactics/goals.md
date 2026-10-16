@@ -23,7 +23,7 @@ tuning. Section numbers are the combat design's.
 ### 1.1 Intended Feel
 A readable tactical duel about tempo, wrapped in a drafting roguelike.
 
-- **In combat:** chess with a clock. Nothing on the board is hidden and nothing is left to chance, so every turn asks what an action is worth and how much time to spend on it. The track is the centrepiece: players trade tempo for power, delay enemies, charge abilities and place track entities. A lost fight should make clear why: the team could not answer something, or time was spent badly.
+- **In combat:** chess with a clock. Nothing on the board is hidden and nothing is left to chance, so every turn asks what an action is worth and how much time to spend on it. The track is the centrepiece: players trade tempo for power, push enemies back, charge abilities and place track entities. A lost fight should make clear why: the team could not answer something, or time was spent badly.
 - **Between fights:** building a band rather than a deck. The party starts small, grows through recruitment offers, and each hero develops along their own path through gear and upgrades. Permanent death and limited recovery give the run weight.
 - **Tone:** tense, but rarely surprising. Difficulty comes from smarter, better-built enemies and tighter situations, not from bigger numbers or bad luck.
 - **Short pitch:** Into the Breach with a Final Fantasy Tactics timeline and a Darkest Dungeon roster.

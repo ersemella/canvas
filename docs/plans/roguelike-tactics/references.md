@@ -21,7 +21,7 @@ tuning. Section numbers are the combat design's.
 - **Overwatch (Stadium mode):** fixed hero kits modified by upgrades acquired during a match.
 - **Hades:** randomized, source-specific upgrade offers (boons), the model for milestone upgrades.
 - **XCOM, Divinity: Original Sin 2, Baldur's Gate 3:** area effects that damage allies.
-- **Into the Breach, Tactical Breach Wizards:** deterministic, previewed tactical turns built around positioning and pushes.
+- **Into the Breach, Tactical Breach Wizards:** deterministic, previewed tactical turns built around positioning and displacement.
 - **Darkest Dungeon:** permanent death, attrition between fights, and a roster of distinct heroes.
 - **MDA framework (Hunicke, LeBlanc, Zubek, 2004):** source of the eight types of fun used in section 1.2.
 

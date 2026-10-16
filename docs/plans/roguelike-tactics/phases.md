@@ -36,7 +36,7 @@ The PvP seams: units with controllers, a `mode` field on runs, versioned
 full views in responses.
 
 Acceptance: unit tests for the track (placement formula, collisions and
-cascades, the delay limit, charged abilities, effects over time), hex geometry and line of fire, the damage
+cascades, the push limit, charged abilities, effects over time), hex geometry and line of fire, the damage
 formula, previews matching outcomes, determinism (same seed and actions,
 same fight), and that the view never carries the run's seed; e2e deploys,
 plays and wins or loses a fight; a reload resumes it exactly; another

@@ -32,12 +32,12 @@ tuning. Section numbers are the combat design's.
 Before committing, the player sees:
 - Damage dealt (or damage range, if variance applies) and the target's resulting health, with full numbers.
 - The acting unit's resulting slot on the track, after any yielding.
-- Any change to other units' positions (pushes, pulls).
+- Any change to other units' positions (displacement).
 - Whether line of fire to a target is clear, and which unit blocks it if not.
 - For area abilities, every affected unit and the damage or effect each receives, allies included.
 - While choosing a destination hex, the movement cost and resulting slot for that destination.
 
-**Enemy options (Decided).** Selecting an enemy previews each ability it could use on its next turn, with the same detail as your own previews: the targets it could reach (after moving, within its movement cap), the damage and effects each would receive, pushes, delays and its resulting slot. The preview shows options, never which one the enemy will choose.
+**Enemy options (Decided).** Selecting an enemy previews each ability it could use on its next turn, with the same detail as your own previews: the targets it could reach (after moving, within its movement cap), the damage and effects each would receive, displacement, pushes and pulls, and its resulting slot. The preview shows options, never which one the enemy will choose.
 
 ### 7.3 Rationale
 - Enemy intent is not shown: this is a strategy game, and reading what an opponent might do, from options that are fully visible, is part of play. It also keeps PvE compatible with PvP, where a human's plan can't be revealed.

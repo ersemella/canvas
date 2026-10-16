@@ -40,14 +40,14 @@ startSlot = roundDown(startCost / (speed + C))
 ```
 Higher speed starts earlier. Collisions resolve as in 3.3.
 
-### 3.5 Delay, Boosts and Track Manipulation (Decided)
-Terminology: **Delay** moves a card later on the track and **Boost** earlier; **Push** and **Pull** physically move a unit across hexes (keywords in [keywords.md](keywords.md)).
-- Abilities may **delay** a card by a stated number of slots: an enemy's, an ally's, or a track entity's (3.7).
-- Abilities may **boost** a card earlier, but never earlier than the next slot. A boost limit is proposed ([keywords.md](keywords.md), 17.3).
-- A delayed or boosted card that lands on an occupied slot yields (3.3).
+### 3.5 Push, Pull and Track Manipulation (Decided)
+Terminology: **Push** moves a card later on the track and **Pull** earlier; **Displace** physically moves a unit across hexes (keywords in [keywords.md](keywords.md)). Push and Pull never mean the board.
+- Abilities may **push** a card later by a stated number of slots: an enemy's, an ally's, or a track entity's (3.7).
+- Abilities may **pull** a card earlier, but never earlier than the next slot, within a pull limit ([keywords.md](keywords.md), 17.3).
+- A pushed or pulled card that lands on an occupied slot yields (3.3).
 
-### 3.6 Delay Limit (Decided, value TBD)
-Repeated delays could keep a unit from ever acting. Mana Khemia was criticized for exactly this, and in PvP it becomes a lockout loop. A card can be moved later by at most a set number of slots in total between two of its own turns, counting Delay and any yielding that follows it. Further delays are reduced to fit, and the preview shows the reduced amount. Value TBD.
+### 3.6 Push Limit (Decided, value TBD)
+Repeated pushes could keep a unit from ever acting. Mana Khemia was criticized for exactly this, and in PvP it becomes a lockout loop. A card can be moved later by at most a set number of slots in total between two of its own turns, counting Push and any yielding that follows it. Further pushes are reduced to fit, and the preview shows the reduced amount. Value TBD.
 
 ### 3.7 Charged Abilities and Track Entities (Decided)
 **Charged abilities.** Some abilities have a **charge cost** and a **recovery cost**.
@@ -55,9 +55,9 @@ Repeated delays could keep a unit from ever acting. Mana Khemia was criticized f
 2. When that card's turn comes, the ability **triggers immediately**: the character takes no other action and no movement that turn.
 3. The card is then placed forward by the recovery cost, typically a standard action cost.
 
-The character's own card is the pending effect, so it is visible and answerable: delaying the character delays the effect, and defeating the character prevents it. What the ability targets (a fixed hex or area, or a unit it follows) is defined per ability.
+The character's own card is the pending effect, so it is visible and answerable: pushing the character's card delays the effect, and defeating the character prevents it. What the ability targets (a fixed hex or area, or a unit it follows) is defined per ability.
 
-**Track entities.** Some abilities place a separate card on the track that acts independently of the character, for example a summoned zombie. The character pays an action cost to activate it, as for any action. The entity then takes its own turns from its own card, with its own placement rules defined by the ability. Track entities occupy slots and follow the collision (3.3) and delay (3.5) rules like any card.
+**Track entities.** Some abilities place a separate card on the track that acts independently of the character, for example a summoned zombie. The character pays an action cost to activate it, as for any action. The entity then takes its own turns from its own card, with its own placement rules defined by the ability. Track entities occupy slots and follow the collision (3.3) and push and pull (3.5) rules like any card.
 
 **Ultimates** are each hero's most powerful ability, usable **once per combat**, and only after the hero has completed a set number of turns in the fight, shown publicly (10.10). An ultimate may be an ordinary action, a charged ability or a track entity; that is defined per ultimate. Not every ultimate goes on the track, and not every track entity is an ultimate.
 
@@ -120,11 +120,11 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 | Speed vs defence | Speed weighed against defence (details TBD) | No tradeoff | Gives speed an opportunity cost so it is a build choice, not a default |
 | Charged abilities | Charge cost then trigger then recovery cost, on the character's own card | Delayed actions as separate track entries; immediate resolution | The pending effect is visible and answerable without separate entries or interrupt rules |
 | Track entities | Some abilities place independent cards (for example summons); activation costs an action | Only units on the track | Summons and similar effects act on their own timeline and can be manipulated like units |
-| Ultimates | Unlocked after a set number of the hero's turns, shown publicly; once per combat; may be an action, a charged ability or a track entity | Usable from the start; charge meter filled by keyword actions | Fights build toward ultimates; a visible unlock is a threat the other side can answer, for example by delaying the hero |
+| Ultimates | Unlocked after a set number of the hero's turns, shown publicly; once per combat; may be an action, a charged ability or a track entity | Usable from the start; charge meter filled by keyword actions | Fights build toward ultimates; a visible unlock is a threat the other side can answer, for example by pushing the hero's card |
 | Movement | One move per turn, capped by a single global value; cost per hex divided by speed | Unlimited movement with exponential cost per hex; uncapped linear cost; a cap based on speed; a per-hero cap modified by gear | A cap prevents act-now-pay-later strikes across the map; one global value keeps speed from also setting reach, for now |
 | Turns | An action is required to end a turn; every hero has Hold, a quick action with no effect | Move-only and wait turns with a minimum cost; each hero's cheapest real ability as the fallback | No near-free turns to chain |
-| Delay limit | Cap on total delay between a card's own turns | Diminishing returns on repeated delays; a guaranteed turn after a set delay | Simple, previewable, and prevents lockout |
-| Boosts | No earlier than the next slot | Moving a card to any earlier slot | Cannot skip the track; as Final Fantasy Tactics' Quick |
+| Push limit | Cap on total push between a card's own turns | Diminishing returns on repeated pushes; a guaranteed turn after a set delay | Simple, previewable, and prevents lockout |
+| Pulls | No earlier than the next slot | Moving a card to any earlier slot | Cannot skip the track; as Final Fantasy Tactics' Quick |
 | Effects over time | Do not occupy slots; act at the beginning of a slot, on slots each effect defines; expire after the affected unit acts | Effects as track entries; effects on the affected unit's turns only | Keeps the track for cards; each effect stays exact and previewable |
 | Cooldowns | None | Cooldowns in turns or slots | Simplicity; action cost prices power instead |
 
@@ -133,7 +133,7 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 1. Cost values: typical, quick and slow action costs, `moveCostPerHex`, the starting cost, and `C` (aim: a typical turn 8 to 12 slots ahead). Default size of the visible track window (roughly 30 slots).
 2. Speed versus defence mechanism: gear weight lowering speed, or competing stats on gear (4.2).
 4. Fixed order for cards placed at the same moment (3.3).
-5. Delay limit value (3.6).
+5. Push limit value (3.6).
 6. Which abilities are charged, their charge and recovery costs, and what each targets (3.7).
 7. Scheduling of units and track entities that enter mid-combat (3.8).
 8. Order of move and action within a turn.

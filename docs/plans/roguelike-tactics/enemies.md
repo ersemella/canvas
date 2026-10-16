@@ -26,7 +26,7 @@ tuning. Section numbers are the combat design's.
 
 | Rule bent | Example | What it tests |
 |---|---|---|
-| Track | **Two heads, two turns:** a boss with two separate track entries, each with its own action set. Delaying one head delays only that head. | Track control and target priority |
+| Track | **Two heads, two turns:** a boss with two separate track entries, each with its own action set. Pushing one head delays only that head. | Track control and target priority |
 | Track | **Scheduled cataclysm:** recurring environmental events placed on the track as track entities (a collapsing ceiling, a flood). | Racing the clock; positioning before known events |
 | Track | **Tempo tax:** an aura that increases action or movement cost for units near the boss. | Speed versus defence tradeoff; ranged versus melee |
 | Space | **Multi-hex body:** a large boss occupying several hexes, with parts (arms, a shield) that can be targeted and destroyed separately. | Positioning; flanking over a larger footprint |
@@ -42,7 +42,7 @@ Difficulty rises over a run mainly by making enemies better built, not by inflat
 
 **Primary curve: enemy builds**
 - **Gear rarity:** later enemies carry higher-rarity gear, following the same rarity rules as player gear (section 9).
-- **Composition synergy:** early enemy groups have little synergy; later groups combine keywords deliberately (for example, one enemy pushes and another punishes pushed targets).
+- **Composition synergy:** early enemy groups have little synergy; later groups combine keywords deliberately (for example, one enemy displaces and another punishes displaced targets).
 - **Unit count:** larger enemy groups later in the run, within a cap that keeps turns fast. Cap TBD.
 
 **Layered on top**

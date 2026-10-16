@@ -6,7 +6,7 @@ settled. Built in this repository (D10). The folder name,
 `roguelike-tactics`, predates the title.
 
 **Next step: Phase 1**, from [phase-1-brief.md](phase-1-brief.md). The
-keyword list is decided and its rules proposed ([keywords.md](keywords.md)). The
+keywords and their rules are decided ([keywords.md](keywords.md)). The
 combat design's other open questions are at the end of each topic file.
 PvP is parked ([pvp.md](pvp.md)).
 

@@ -42,7 +42,7 @@ Maps can contain three types of special tile:
 ### 6.5 Rationale
 - Hexes give uniform distances in all directions and clean flanking rules.
 - Known tradeoffs: straight-line and cone-shaped area effects only align cleanly in 6 directions and need careful design; room-like layouts look less natural than on square grids.
-- Per-hex movement cost interacts with pushes: a pushed unit loses both tempo and repositioning opportunities. Tune these together.
+- Per-hex movement cost interacts with displacement: a displaced unit loses both tempo and repositioning opportunities. Tune these together.
 - Movement is capped per turn (5.1), and every hex adds to the turn's cost, so moving and acting in one turn always costs more than acting alone.
 
 ### 6.6 Deployment (Decided)
