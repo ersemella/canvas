@@ -79,7 +79,7 @@ vocabulary. Guard (Phase 1 draft) is removed; Barrier replaces it.
 | **Inevitable** | The card can't be moved by Push, Pull or Swap, **from allies and enemies alike**. It still yields when placed after its own turn (3.3). A status with a duration, or a passive on bosses and elites (11.3). |
 
 **Why a pull limit:** without one, pulling an ally right after its turn
-gives it an extra turn, and a Strategos-style support could chain extra
+gives it an extra turn, and a commander-style support could chain extra
 turns for one damage dealer. A limit mirrors the push limit and is just
 as previewable.
 

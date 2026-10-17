@@ -172,6 +172,14 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   called "wolves", böri), too close to the Varangian Guard; a
   shaman-protector, closer to support.
 
+- **Sha'ir and Strategos** (removed 2026-10-17; owner's call): the
+  Abbasid Arabia support (Bard: buffs from verse, curses from satire;
+  medium health, defence and speed, high influence; recited verse) and
+  the Byzantium support (Warlord: directs allies, pulls their turns
+  earlier; optional horse for high speed; sword and banner). Their slots
+  are open (open question 33). Sources: [Britannica: shāʿir](https://www.britannica.com/art/shair);
+  [Wikipedia: Strategos](https://wikipedia.com/wiki/Strategos).
+
 ## Setting
 
 - **"Steppe peoples (Turkic and Mongol)"** as one culture (renamed

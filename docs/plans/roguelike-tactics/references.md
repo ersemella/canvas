@@ -51,8 +51,6 @@ tuning. Section numbers are the combat design's.
 - Mangudai: [Wikipedia: Manghud](https://en.wikipedia.org/wiki/Manghud) (sources differ on what the mangudai units were); [Wikipedia: Military of the Mongol Empire](https://en.wikipedia.org/wiki/Military_of_the_Mongol_Empire)
 - Bökh: [Wikipedia: Mongolian wrestling](https://en.wikipedia.org/wiki/Mongolian_wrestling)
 - Genie Binder: [Sacred Texts: The Fisherman and the Jinni (Burton translation)](https://sacred-texts.com/neu/burt1k1/tale02.htm)
-- Sha'ir: [Britannica: shāʿir](https://www.britannica.com/art/shair) (poetry believed inspired by jinn; satire as "the shāʿir's most potent form of magic")
-- Strategos: [Wikipedia: Strategos](https://wikipedia.com/wiki/Strategos)
 - Modao Vanguard: [Wikipedia: Changdao](https://en.wikipedia.org/wiki/Changdao) (Tang sources equate the modao with the changdao; elite vanguard infantry); [Wikipedia: Li Siye](https://en.wikipedia.org/wiki/Li_Siye)
 - Kalari Duelist: [Wikipedia: Urumi](https://en.wikipedia.org/wiki/Urumi); [Kerala Tourism: Kalaripayattu](https://keralatourism.org/kalaripayattu/disciplines/angathari)
 - Mahout: [World History Encyclopedia: Elephants in ancient Indian warfare](https://www.worldhistory.org/article/1241/elephants-in-ancient-indian-warfare)
