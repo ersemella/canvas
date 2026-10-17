@@ -24,8 +24,8 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 | # | Name | Culture | Inspiration (historical, folklore or mythical role) | Type | Fantasy RPG archetype | Mechanical role | Specialty | Mount | Signature weapon (proposed) |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | Alchemist | Tang China | The fangshi ("masters of methods"), Chinese alchemists and healers seeking elixirs, whose work led to gunpowder | Historical | Alchemist | Support | Healer: elixirs and remedies | None | Elixir gourd |
-| 2 | Cataphract | Persia and Sogdiana | The cataphracts, armoured heavy cavalry; in Persia the savaran (aswaran), the Sasanian armoured noble cavalry. Heavy cavalry of this kind served many armies on the road | Historical | Knight / paladin | Tank | Mobile charger | Armoured horse | Heavy lance |
+| 1 | Waidan Alchemist | Tang China | The fangshi ("masters of methods"), Chinese alchemists and healers, and *waidan* ("external alchemy"), the making of elixirs by heating minerals and metals in sealed crucibles; Chinese alchemists seeking an elixir of life discovered gunpowder | Historical | Alchemist | Support | Healer: elixirs and remedies | None | Elixir gourd |
+| 2 | Persian Cataphract | Persia and Sogdiana | The cataphracts, armoured heavy cavalry; in Persia the savaran (aswaran), the Sasanian armoured noble cavalry. Heavy cavalry of this kind served many armies on the road | Historical | Knight / paladin | Tank | Mobile charger | Armoured horse | Heavy lance |
 | 3 | Simurgh Summoner | Persia and Sogdiana | The Simurgh of the *Shahnameh*, the great bird that comes when one of its feathers is burned | Folklore | Summoner / sorcerer | Damage | Area caster: burns Simurgh feathers to call down sweeping strikes and fire (Burn) | None | Simurgh feathers and a brazier |
 | 4 | Mangudai Outrider | Mongol | The mangudai, units of the Mongol army (sources disagree on what they were: light cavalry, vanguards or "suicide troops"); Mongol warriors fought as mounted archers | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
 | 5 | Bökh Champion | Mongol | Champion wrestlers (bökh), the highlight of the naadam games and of feasts in the epics | Historical | Brawler / grappler | Tank | Grappler: grabs, pins and throws enemies to hold the front line | None | Bare hands (wrestling vest) |
@@ -41,8 +41,8 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 | Name | Health | Speed | Defence | Power | Influence |
 |---|---|---|---|---|---|
-| Alchemist | Medium | Medium | Low | Low | High |
-| Cataphract | High | Medium | High | Medium | Low |
+| Waidan Alchemist | Medium | Medium | Low | Low | High |
+| Persian Cataphract | High | Medium | High | Medium | Low |
 | Simurgh Summoner | Low | Medium | Low | High | Medium |
 | Mangudai Outrider | Low | High | Low | High | Low |
 | Bökh Champion | High | Medium | High | Medium | Low |
@@ -56,11 +56,11 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
-- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
+- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Persian Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
 
 **Notes**
-- **Distinct tanks:** the Cataphract charges in, the Bökh Champion holds the front line by grappling (on foot, unlike the mounted Mangudai Outrider), and the Mahout Bulwark cannot be moved (it resists Displace as a passive, but not Push). The Modao Vanguard draws attacks onto itself (Taunt, including redirecting charged abilities, 17.5) and punishes enemies who close in.
-- **Support needs:** healing (Alchemist), control on the track (Jinn Binder, pushing enemies back), curses (Sahira Enchantress) and control in space (Yadachi Storm Caller, storms that slow and displace). Buffs and turn-order acceleration are uncovered.
+- **Distinct tanks:** the Persian Cataphract charges in, the Bökh Champion holds the front line by grappling (on foot, unlike the mounted Mangudai Outrider), and the Mahout Bulwark cannot be moved (it resists Displace as a passive, but not Push). The Modao Vanguard draws attacks onto itself (Taunt, including redirecting charged abilities, 17.5) and punishes enemies who close in.
+- **Support needs:** healing (Waidan Alchemist), control on the track (Jinn Binder, pushing enemies back), curses (Sahira Enchantress) and control in space (Yadachi Storm Caller, storms that slow and displace). Buffs and turn-order acceleration are uncovered.
 - **The Yadachi Storm Caller (Proposed):** a storm controller, not a damage caster: its storms slow and move enemies, while the Simurgh Summoner's strikes hurt and burn. The *Secret History*'s storm that turns back on its casters suggests a risk mechanic (a storm that can hit its own side). The yadachi tradition is folk belief rather than an organised religion, but it sits near steppe shamanism, which is still practised; keep it to weather-working and away from shamanic ritual (15.5).
 - **Two Arabian Nights magic users:** the Jinn Binder acts through a bound spirit that moves enemies on the track; the Sahira Enchantress casts directly, transforming enemies to weaken them. Keep their visual language distinct (a smoky spirit from a brass vessel versus spells that change a unit's shape).
 - **The Sahira Enchantress (Proposed):** a fictional role drawn from the *Nights*' enchantresses, who are mostly villains there; the hero keeps their transformation magic and turns it on the party's enemies. Its signature props need research.
@@ -71,7 +71,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - **Jinn as religious-adjacent material:** jinn also appear in the Qur'an. Keep to the *Arabian Nights* folklore framing (15.5). In "The Fisherman and the Jinni", the jinni was sealed in his jar by Solomon, a prophet in Islam; use the motif of a jinn sealed in a vessel without the religious figure.
 - **Speed:** two heroes have high speed (Mangudai Outrider, Kalari Duelist). The Varangian Guard pays for its damage with low speed, the Modao Vanguard for its armour. Speed divides every cost, so it sets how often a hero acts (4.1, with diminishing returns); keep high speed rare.
 - **Only four damage heroes:** gear and upgrades can shift tanks and supports toward damage; guaranteed role coverage in recruitment offers would also help (10.7).
-- **The Alchemist's ultimate (Proposed): the hand cannon.** A single shot, direct ranged at long range, needing line of fire, for large damage with **Pierce**. Based on the Heilongjiang hand cannon (about 1288, Yuan dynasty), the oldest surviving metal gun, and on the alchemists' discovery of gunpowder; an era stretch like the Mongols'. It gives the healer one decisive shot without making it a damage hero; the ultimate rules (10.10) keep it to once per fight, unlocked by turns.
+- **The Waidan Alchemist's ultimate (Proposed): the hand cannon.** A single shot, direct ranged at long range, needing line of fire, for large damage with **Pierce**. Based on the Heilongjiang hand cannon (about 1288, Yuan dynasty), the oldest surviving metal gun, and on the alchemists' discovery of gunpowder; an era stretch like the Mongols'. It gives the healer one decisive shot without making it a damage hero; the ultimate rules (10.10) keep it to once per fight, unlocked by turns.
 - **Area damage:** the Simurgh Summoner is the area-damage hero; its areas follow the friendly-fire rules like any other.
 - **Boss conflict:** the multi-hex boss example (11.3) should use a creature other than a war elephant, so it reads differently from the Mahout Bulwark.
 - **Unverified details:** signature weapons are proposals and need research for accuracy (for example, the Simurgh Summoner's brazier).

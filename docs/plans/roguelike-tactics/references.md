@@ -45,9 +45,9 @@ tuning. Section numbers are the combat design's.
 **Setting sources: hero roster (15.8)**
 - Simurgh Summoner: [Wikipedia: Simurgh](https://en.wikipedia.org/wiki/Simurgh)
 - The travelling fox (15.6): [Wikipedia: Fox spirit](https://en.wikipedia.org/wiki/Fox_spirit)
-- Alchemist's hand cannon: [Wikipedia: Heilongjiang hand cannon](https://en.wikipedia.org/wiki/Heilongjiang_hand_cannon)
-- Alchemist (fangshi): [Wikipedia: Fangshi](https://en.wikipedia.org/wiki/Fangshi); [EBSCO Research Starters: Invention of gunpowder and guns](https://www.ebsco.com/research-starters/history/invention-gunpowder-and-guns) (Daoist alchemists seeking an elixir of life, 9th century)
-- Cataphract (savaran): [Wikipedia: Military of the Sasanian Empire](https://wikipedia.com/wiki/Sasanian_army)
+- Waidan Alchemist's hand cannon: [Wikipedia: Heilongjiang hand cannon](https://en.wikipedia.org/wiki/Heilongjiang_hand_cannon)
+- Waidan Alchemist (fangshi, waidan): [Wikipedia: Fangshi](https://en.wikipedia.org/wiki/Fangshi); [Wikipedia: Waidan](https://en.wikipedia.org/wiki/Waidan); [EBSCO Research Starters: Invention of gunpowder and guns](https://www.ebsco.com/research-starters/history/invention-gunpowder-and-guns) (Daoist alchemists seeking an elixir of life, 9th century)
+- Persian Cataphract (savaran): [Wikipedia: Military of the Sasanian Empire](https://wikipedia.com/wiki/Sasanian_army)
 - Mangudai Outrider: [Wikipedia: Manghud](https://en.wikipedia.org/wiki/Manghud) (sources differ on what the mangudai units were); [Wikipedia: Military of the Mongol Empire](https://en.wikipedia.org/wiki/Military_of_the_Mongol_Empire)
 - Bökh Champion: [Wikipedia: Mongolian wrestling](https://en.wikipedia.org/wiki/Mongolian_wrestling)
 - Yadachi Storm Caller: [Wikipedia: Yada Tashy](https://en.wikipedia.org/wiki/Yada_Tashy); [Medievalists.net: The Secret History of the Mongols and Western Literature](https://www.medievalists.net/2011/07/the-secret-history-of-the-mongols-and-western-literature/) (*Secret History* 143: a storm raised with a magic stone turns back on its casters)

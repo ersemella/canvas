@@ -271,6 +271,13 @@ Learned:
   English through 18th-century translations of the *Nights*, which ties
   it to the folklore framing, but it carries a wish-granting cartoon
   association and doesn't fit the native term plus English role pattern.
+- **Alchemist, Cataphract** (2026-10-17): renamed the **Waidan
+  Alchemist** (*waidan*, "external alchemy", elixirs made by heating
+  minerals and metals) and the **Persian Cataphract**; owner's calls.
+  Weighed: Fangshi Alchemist, Tang or Chinese Alchemist (a dynasty or
+  nationality label), Daoist Alchemist (a living religion, 15.5); Savar
+  Cataphract (more consistent with the native-term pattern, but
+  "Persian" reads instantly).
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical
   name for an elephant's driver; owner's call.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game
