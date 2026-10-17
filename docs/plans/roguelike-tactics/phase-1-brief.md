@@ -130,7 +130,7 @@ Medium 10, influence Low 5; bare hands)
 - *Whirling Urumi*: area, all six adjacent hexes, allies included; 70
   damage each. Typical (100).
 
-**Baatar** (Damage; health Low 240, speed High 7, defence Low 5,
+**Mangudai** (Damage; health Low 240, speed High 7, defence Low 5,
 power High 15, influence Low 5; composite bow; mounted, reflected only in
 stats)
 - *Aimed Shot*: direct ranged, range 5, needs line of fire; 90 damage.
@@ -141,7 +141,7 @@ stats)
   allies included, for 70 damage each. The target hex is fixed when
   charging starts; units can step out of the area.
 
-**Djinn-Binder** (Support/control; health Low 240, speed Medium 4,
+**Genie Binder** (Support/control; health Low 240, speed Medium 4,
 defence Low 5, power Low 5, influence High 15; sealed brass vessel)
 - *Bound Gust*: direct ranged, range 4, needs line of fire; 30 damage;
   Push 4. Typical (100).
@@ -154,15 +154,15 @@ Every hero also has **Hold** (decided): a quick action (60) with no
 effect, so a unit can always end its turn (an action is required, 5.1).
 
 **Starter gear** (fixed in Phase 1; the four-slot model of 9.3 exists in
-code, but only armour is filled): the Bökh and Djinn-Binder wear medium
-armour (+5 defence, −1 speed); the Kalari Duelist and Baatar wear
+code, but only armour is filled): the Bökh and Genie Binder wear medium
+armour (+5 defence, −1 speed); the Kalari Duelist and Mangudai wear
 light armour (+2 defence, no speed cost). Table values above exclude
 armour.
 
 ## 5. The enemy band
 
 A band built from the same heroes and gear (11.1): Bökh, Kalari Duelist
-and Baatar, **three against your four**, so a simple AI is a fair
+and Mangudai, **three against your four**, so a simple AI is a fair
 first opponent. Duplicates across sides are allowed (10.4).
 
 ## 6. Enemy AI

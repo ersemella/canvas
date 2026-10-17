@@ -219,6 +219,17 @@ Learned:
   place in time and on the road. Its slot is open.
 - **Alchemist** (2026-10-16): renamed the **Fangshi**, the Chinese name
   for the masters of alchemy, medicine and divination; owner's call.
+- **Fangshi** (2026-10-17): renamed back to the **Alchemist**; owner's
+  call. The fangshi remain its inspiration.
+- **Savar** (2026-10-17): renamed back to the **Cataphract**; owner's
+  call. The savaran remain its inspiration.
+- **Djinn-Binder** (2026-10-17): renamed the **Genie Binder**; owner's
+  call. The spirit it commands is still called a djinn.
+- **Baatar** (2026-10-17): the horse archer renamed the **Mangudai**;
+  owner's call. *Baatar* (baghatur) was a title for any renowned
+  warrior; the mangudai were Mongol army units, though sources disagree
+  on what they were (light cavalry, vanguards or "suicide troops"), and
+  the name is best known from *Age of Empires II*'s horse archer.
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical
   name for an elephant's driver; owner's call.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game
