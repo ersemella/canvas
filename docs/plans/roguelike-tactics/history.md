@@ -258,6 +258,9 @@ Learned:
   Simurgh Caller became a Summoner so "Caller" stays with the Yadachi.
   Also weighed: Mahout Warden, Mangudai Archer, Yadachi Rainmaker,
   Yadachi Weatherworker, Bökh Wrestler.
+- **Bökh** (2026-10-17): renamed the **Bökh Champion**, after the
+  champion wrestlers of the naadam games; owner's call. "Bökh Wrestler"
+  was redundant (bökh means wrestling) and "Bökh Grappler" was weighed.
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical
   name for an elephant's driver; owner's call.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game
