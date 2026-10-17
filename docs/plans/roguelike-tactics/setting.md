@@ -25,7 +25,7 @@ A **fantasy Silk Road**. Caravans of travellers from many cultures race along th
 
 | System | Silk Road version |
 |---|---|
-| Run stages | Stretches of road: steppe, desert, mountain pass, oasis city, river crossing, sea crossing. |
+| Run stages | Stretches of road: steppe, desert, mountain pass, oasis city, river crossing, sea crossing; grouped into six **worlds**, one per civilization (15.3a). |
 | Recovery between fights (10.11) | **Caravanserais** (historical roadside inns) as rest points: partial recovery plus occasional full rests. |
 | Gear offers and consumables (9) | Bazaars and traders along the route. |
 | Recruitment (10.6) | Hiring travellers at caravanserais: guards, scholars, exiles, mystics from many cultures. |
@@ -33,6 +33,24 @@ A **fantasy Silk Road**. Caravans of travellers from many cultures race along th
 | Distinct monsters and bosses (11.1) | Folklore creatures and guardians of the road. |
 | Map tiles (6.4) | Sandstorms and smoke as conceal; quicksand and salt flats as hazards; ruins and rocks as obstacles. |
 | Heroes and signature weapons (10.2) | Each hero's culture gives a distinct silhouette and weapon, supporting the diegetic design language. |
+
+### 15.3a Worlds (Decided, owner's call 2026-10-17)
+The road is divided into six **worlds**, one for each civilization the caravan passes. Each world is a part of the route map made of several levels (stages), and a run passes through them in this order:
+
+| # | World | Culture (15.5) | Home heroes (15.8) |
+|---|---|---|---|
+| 1 | **Mongolia** | Mongol | Mangudai Outrider, Bökh Champion, Yadachi Storm Caller |
+| 2 | **China** | Tang China | Waidan Alchemist, Modao Vanguard |
+| 3 | **India** | South India | Kalari Duelist, Mahout Bulwark |
+| 4 | **Persia** | Persia and Sogdiana | Persian Cataphract, Simurgh Summoner |
+| 5 | **Arabia** | Abbasid Arabia | Jinn Binder, Sahira Enchantress |
+| 6 | **Byzantine** | Byzantium | Varangian Guard |
+
+- **The order is fixed,** the same in every run; route choices (the route map) vary within a world, not the order of worlds.
+- **The road runs east to west** and ends in the Byzantine world, where the ruler at the road's end grants the Charter (15.2).
+- **The six worlds are the six hero cultures,** so every hero has a home world, and every world supplies both heroes and creatures (15.7).
+- **Levels and stages:** a world's levels are stages of the route map (glossary), so stage numbers keep counting across worlds and rival caravan pools stay per stage ([ghosts.md](ghosts.md), D8). The number of levels per world is TBD (Phase 2).
+- **Cultures without a world** (Silla Korea, Nara Japan, Tibet, Srivijaya and Java, Egypt, Aksum) remain sources for places, neutral characters, creatures and bosses inside the six worlds. Where each appears is open (question 33).
 
 ### 15.4 Historical Reach of the Road
 The Silk Road was a network, not a single route. The overland core ran through China, Central Asia, Persia and the Middle East; the wider network, including the Maritime Silk Road, reached:
@@ -112,8 +130,10 @@ Named fictional characters and folklore creatures. Each suggests a mechanic from
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Setting | Fantasy Silk Road; folklore over religion as source material | Stopped Clock, Fallen Star, Succession, Last Refuge, Grand Melee, Ascent | Rivalry between caravans explains rival bands and ghost teams; folklore supplies creatures and bosses; caravanserais and bazaars map onto recovery and gear |
+| Run structure | Six **worlds** of several levels each, in a fixed order: Mongolia, China, India, Persia, Arabia, Byzantine (15.3a) | Stretches of road only, with no grouping by culture | One world per hero culture gives each culture a home and the run a journey from east to west; owner's call, 2026-10-17 |
 | Steppe culture | **Mongol**, with Mongol folklore | Steppe peoples (Turkic and Mongol); Turkic khaganates (period-accurate) | The iconic steppe empire of the Silk Road, matching the heroes' Mongol names (Bökh Champion, Mangudai Outrider); owner's call, 2026-10-16 |
 
 ## Open questions (from section 14, original numbers)
 
 32. Setting: confirm the prize (Charter and Closing Road are proposed) and Egypt's era.
+33. Worlds (15.3a): how many levels each world has; whether each world ends in a boss; and where the cultures without a world appear (for example Tibet's Gesar bosses in the China world's mountain passes, the nine-tailed fox in India and then China, Egypt and Aksum on Arabia's Red Sea coast).
