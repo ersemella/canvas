@@ -89,7 +89,7 @@ as previewable.
 |---|---|
 | **Displace N away** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stopping early at an obstacle, another unit or the map edge deals **20 collision damage** to the displaced unit, and 20 to a unit it hits, ignoring defence. Entering a hazard triggers it. Doesn't move the card. |
 | **Displace N toward** | The same, toward the attacker (or the area's centre). Ending adjacent to the attacker is not a collision. |
-| **Unstoppable** | Immune to Frozen and Displace, **from allies and enemies alike**. Doesn't block track effects (Push, Pull, Swap) or Dazed and Slowed. The Mahout's passive (it resists Displace but not Push, 15.8) is permanent Unstoppable. |
+| **Unstoppable** | Immune to Frozen and Displace, **from allies and enemies alike**. Doesn't block track effects (Push, Pull, Swap) or Dazed and Slowed. The Mahout Bulwark's passive (it resists Displace but not Push, 15.8) is permanent Unstoppable. |
 
 "Displace N" with no direction means away. Other directions (sideways, to
 a chosen hex) can be defined per ability.
@@ -191,7 +191,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
   target: Barrier, overhealth, Immortal, Stealth, stat ups, and
   Unstoppable, Inevitable, Pierce or Lifesteal when granted as a status
   for a duration.
-- Dispel doesn't touch **passives** (the Mahout's Unstoppable, a
+- Dispel doesn't touch **passives** (the Mahout Bulwark's Unstoppable, a
   boss's Inevitable) or **ability properties** (an attack that always
   pierces): only statuses with a duration. It doesn't undo what already
   happened: damage a Barrier absorbed stays absorbed, and a Pull already

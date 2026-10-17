@@ -43,19 +43,19 @@ tuning. Section numbers are the combat design's.
 - [The Thinker's Garden: Magical treasure hunting in Islamic Egypt](https://thethinkersgarden.com/magical-treasure-hunting-in-islamic-egypt/)
 
 **Setting sources: hero roster (15.8)**
-- Simurgh Caller: [Wikipedia: Simurgh](https://en.wikipedia.org/wiki/Simurgh)
+- Simurgh Summoner: [Wikipedia: Simurgh](https://en.wikipedia.org/wiki/Simurgh)
 - The travelling fox (15.6): [Wikipedia: Fox spirit](https://en.wikipedia.org/wiki/Fox_spirit)
 - Alchemist's hand cannon: [Wikipedia: Heilongjiang hand cannon](https://en.wikipedia.org/wiki/Heilongjiang_hand_cannon)
 - Alchemist (fangshi): [Wikipedia: Fangshi](https://en.wikipedia.org/wiki/Fangshi); [EBSCO Research Starters: Invention of gunpowder and guns](https://www.ebsco.com/research-starters/history/invention-gunpowder-and-guns) (Daoist alchemists seeking an elixir of life, 9th century)
 - Cataphract (savaran): [Wikipedia: Military of the Sasanian Empire](https://wikipedia.com/wiki/Sasanian_army)
-- Mangudai: [Wikipedia: Manghud](https://en.wikipedia.org/wiki/Manghud) (sources differ on what the mangudai units were); [Wikipedia: Military of the Mongol Empire](https://en.wikipedia.org/wiki/Military_of_the_Mongol_Empire)
+- Mangudai Outrider: [Wikipedia: Manghud](https://en.wikipedia.org/wiki/Manghud) (sources differ on what the mangudai units were); [Wikipedia: Military of the Mongol Empire](https://en.wikipedia.org/wiki/Military_of_the_Mongol_Empire)
 - Bökh: [Wikipedia: Mongolian wrestling](https://en.wikipedia.org/wiki/Mongolian_wrestling)
-- Yadachi: [Wikipedia: Yada Tashy](https://en.wikipedia.org/wiki/Yada_Tashy); [Medievalists.net: The Secret History of the Mongols and Western Literature](https://www.medievalists.net/2011/07/the-secret-history-of-the-mongols-and-western-literature/) (*Secret History* 143: a storm raised with a magic stone turns back on its casters)
+- Yadachi Storm Caller: [Wikipedia: Yada Tashy](https://en.wikipedia.org/wiki/Yada_Tashy); [Medievalists.net: The Secret History of the Mongols and Western Literature](https://www.medievalists.net/2011/07/the-secret-history-of-the-mongols-and-western-literature/) (*Secret History* 143: a storm raised with a magic stone turns back on its casters)
 - Genie Binder: [Sacred Texts: The Fisherman and the Jinni (Burton translation)](https://sacred-texts.com/neu/burt1k1/tale02.htm)
 - Modao Vanguard: [Wikipedia: Changdao](https://en.wikipedia.org/wiki/Changdao) (Tang sources equate the modao with the changdao; elite vanguard infantry); [Wikipedia: Li Siye](https://en.wikipedia.org/wiki/Li_Siye)
 - Sorceress: [SparkNotes: The Story of Jullanar of the Sea](https://www.sparknotes.com/lit/arabian-nights/section13/) (Queen Lab); [Arabian Nights Wiki: The Second Kalandar's Tale](https://arabiannights.fandom.com/wiki/The_Second_Kalandar%27s_Tale)
 - Kalari Duelist: [Wikipedia: Urumi](https://en.wikipedia.org/wiki/Urumi); [Kerala Tourism: Kalaripayattu](https://keralatourism.org/kalaripayattu/disciplines/angathari)
-- Mahout: [World History Encyclopedia: Elephants in ancient Indian warfare](https://www.worldhistory.org/article/1241/elephants-in-ancient-indian-warfare)
+- Mahout Bulwark: [World History Encyclopedia: Elephants in ancient Indian warfare](https://www.worldhistory.org/article/1241/elephants-in-ancient-indian-warfare)
 - Varangian Guard: [World History Encyclopedia: Varangian Guard](https://worldhistory.org/Varangian_Guard)
 
 **Not yet sourced (general knowledge, check during research)**

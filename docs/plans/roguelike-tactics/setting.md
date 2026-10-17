@@ -112,7 +112,7 @@ Named fictional characters and folklore creatures. Each suggests a mechanic from
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Setting | Fantasy Silk Road; folklore over religion as source material | Stopped Clock, Fallen Star, Succession, Last Refuge, Grand Melee, Ascent | Rivalry between caravans explains rival bands and ghost teams; folklore supplies creatures and bosses; caravanserais and bazaars map onto recovery and gear |
-| Steppe culture | **Mongol**, with Mongol folklore | Steppe peoples (Turkic and Mongol); Turkic khaganates (period-accurate) | The iconic steppe empire of the Silk Road, matching the heroes' Mongol names (Bökh, Mangudai); owner's call, 2026-10-16 |
+| Steppe culture | **Mongol**, with Mongol folklore | Steppe peoples (Turkic and Mongol); Turkic khaganates (period-accurate) | The iconic steppe empire of the Silk Road, matching the heroes' Mongol names (Bökh, Mangudai Outrider); owner's call, 2026-10-16 |
 
 ## Open questions (from section 14, original numbers)
 

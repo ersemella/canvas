@@ -251,6 +251,13 @@ Learned:
   warrior; the mangudai were Mongol army units, though sources disagree
   on what they were (light cavalry, vanguards or "suicide troops"), and
   the name is best known from *Age of Empires II*'s horse archer.
+- **Mahout, Mangudai, Yadachi, Simurgh Caller** (2026-10-17): renamed
+  the **Mahout Bulwark**, **Mangudai Outrider**, **Yadachi Storm Caller**
+  and **Simurgh Summoner**, so names pair a native term with an English
+  role (like the Kalari Duelist and Modao Vanguard); owner's call. The
+  Simurgh Caller became a Summoner so "Caller" stays with the Yadachi.
+  Also weighed: Mahout Warden, Mangudai Archer, Yadachi Rainmaker,
+  Yadachi Weatherworker, Bökh Wrestler.
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical
   name for an elephant's driver; owner's call.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game
