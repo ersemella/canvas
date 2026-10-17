@@ -47,7 +47,7 @@ tuning. Section numbers are the combat design's.
 - The travelling fox (15.6): [Wikipedia: Fox spirit](https://en.wikipedia.org/wiki/Fox_spirit)
 - Fangshi's hand cannon: [Wikipedia: Heilongjiang hand cannon](https://en.wikipedia.org/wiki/Heilongjiang_hand_cannon)
 - Fangshi: [Wikipedia: Fangshi](https://en.wikipedia.org/wiki/Fangshi); [EBSCO Research Starters: Invention of gunpowder and guns](https://www.ebsco.com/research-starters/history/invention-gunpowder-and-guns) (Daoist alchemists seeking an elixir of life, 9th century)
-- Cataphract: [Wikipedia: Military of the Sasanian Empire](https://wikipedia.com/wiki/Sasanian_army)
+- Savar: [Wikipedia: Military of the Sasanian Empire](https://wikipedia.com/wiki/Sasanian_army)
 - Baatar: [Wikipedia: Baghatur](https://en.wikipedia.org/wiki/Baghatur) (Turkic and Mongolic title meaning "hero" or "valiant warrior"); [Wikipedia: Military of the Mongol Empire](https://en.wikipedia.org/wiki/Military_of_the_Mongol_Empire)
 - Bökh: [Wikipedia: Mongolian wrestling](https://en.wikipedia.org/wiki/Mongolian_wrestling)
 - Djinn-Binder: [Sacred Texts: The Fisherman and the Jinni (Burton translation)](https://sacred-texts.com/neu/burt1k1/tale02.htm)

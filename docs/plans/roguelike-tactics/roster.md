@@ -25,7 +25,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support** (3 tanks until the op
 | # | Name | Culture | Inspiration (historical, folklore or mythical role) | Type | Fantasy RPG archetype | Mechanical role | Specialty | Mount | Signature weapon (proposed) |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | Fangshi | Tang China | The fangshi ("masters of methods"), Chinese alchemists and healers seeking elixirs, whose work led to gunpowder | Historical | Alchemist | Support | Healer: elixirs and remedies | None | Elixir gourd |
-| 2 | Cataphract | Persia and Sogdiana | Sasanian heavily armoured cavalry (savaran) | Historical | Knight / paladin | Tank | Mobile charger | Armoured horse | Heavy lance |
+| 2 | Savar | Persia and Sogdiana | The savaran (aswaran), the Sasanian armoured noble cavalry; heavy cavalry of this kind (cataphracts) served many armies on the road | Historical | Knight / paladin | Tank | Mobile charger | Armoured horse | Heavy lance |
 | 3 | Simurgh Caller | Persia and Sogdiana | The Simurgh of the *Shahnameh*, the great bird that comes when one of its feathers is burned | Folklore | Summoner / sorcerer | Damage | Area caster: burns Simurgh feathers to call down sweeping strikes and fire (Burn) | None | Simurgh feathers and a brazier |
 | 4 | Baatar | Mongol | The baatar (Turkic batyr), the steppe's renowned warrior, who fought as a mounted archer | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
 | 5 | Bökh | Mongol | Champion wrestlers (bökh), the highlight of the naadam games and of feasts in the epics | Historical | Brawler / grappler | Tank | Grappler: grabs, pins and throws enemies to hold the front line | None | Bare hands (wrestling vest) |
@@ -41,7 +41,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support** (3 tanks until the op
 | Name | Health | Speed | Defence | Power | Influence |
 |---|---|---|---|---|---|
 | Fangshi | Medium | Medium | Low | Low | High |
-| Cataphract | High | Medium | High | Medium | Low |
+| Savar | High | Medium | High | Medium | Low |
 | Simurgh Caller | Low | Medium | Low | High | Medium |
 | Baatar | Low | High | Low | High | Low |
 | Bökh | High | Medium | High | Medium | Low |
@@ -54,10 +54,10 @@ The roster is balanced at **4 tanks, 4 damage, 4 support** (3 tanks until the op
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
-- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
+- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Savar's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
 
 **Notes**
-- **Distinct tanks:** the Cataphract charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Baatar), and the Mahout cannot be moved (it resists Displace as a passive, but not Push). The fourth (the open Tang China slot) should protect in a way none of these does.
+- **Distinct tanks:** the Savar charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Baatar), and the Mahout cannot be moved (it resists Displace as a passive, but not Push). The fourth (the open Tang China slot) should protect in a way none of these does.
 - **Support covers three needs:** healing (Fangshi), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Djinn-Binder by pushing enemies back on the track).
 - **Two djinn-related heroes:** the Djinn-Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
 - **Damage covers four niches:** area caster (Simurgh Caller), ranged (Baatar), fast melee (Kalari Duelist), heavy melee (Varangian Guard).

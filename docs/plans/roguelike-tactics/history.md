@@ -209,6 +209,10 @@ Learned:
 - **Corpse Driver** (2026-10-16): renamed the **Xiangxi Corpse Driver**,
   after western Hunan, where the legends are set; owner's call. "Xiangxi"
   alone (a place, not a role) and "Ganshi" (the practice) were weighed.
+- **Cataphract** (2026-10-17): renamed the **Savar**. Armoured heavy
+  cavalry served Persia, Byzantium, the steppe and China alike, so the
+  Greek name said "heavy cavalry", not Persia. The Daylamite (Persian
+  shield-wall infantry) was weighed as a replacement.
 - **Corpse Driver, then Xiangxi Corpse Driver** (removed 2026-10-16): a
   tank screening allies with jiangshi minions (medium health, high
   influence). Its legends are Qing-era and set in Hunan, so it was out of
