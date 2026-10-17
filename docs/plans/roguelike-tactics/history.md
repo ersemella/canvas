@@ -177,7 +177,10 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   medium health, defence and speed, high influence; recited verse) and
   the Byzantium support (Warlord: directs allies, pulls their turns
   earlier; optional horse for high speed; sword and banner). Their slots
-  are open (open question 33). Sources: [Britannica: shāʿir](https://www.britannica.com/art/shair);
+  were opened (open question 33). The Abbasid slot went to the
+  **Sorceress** (2026-10-17; owner's call), from the *Arabian Nights*'
+  enchantresses; also weighed: Scheherazade, a bimaristan physician,
+  a geomancer. Sources: [Britannica: shāʿir](https://www.britannica.com/art/shair);
   [Wikipedia: Strategos](https://wikipedia.com/wiki/Strategos).
 
 ## Setting
