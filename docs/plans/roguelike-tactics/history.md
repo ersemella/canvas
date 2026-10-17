@@ -265,6 +265,12 @@ Learned:
   (*sāḥira*, Arabic for sorceress), to pair a native term with an
   English role; owner's call. "Sahira Hexer" and "Sahira Shapeshifter"
   were weighed.
+- **Genie Binder** (2026-10-17): renamed the **Jinn Binder**, and the
+  docs now spell the spirits "jinn" (the transliteration of the Arabic,
+  as scholars use it) rather than "djinn"; owner's call. "Genie" entered
+  English through 18th-century translations of the *Nights*, which ties
+  it to the folklore framing, but it carries a wish-granting cartoon
+  association and doesn't fit the native term plus English role pattern.
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical
   name for an elephant's driver; owner's call.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game

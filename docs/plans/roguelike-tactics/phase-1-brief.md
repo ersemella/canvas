@@ -141,20 +141,20 @@ stats)
   allies included, for 70 damage each. The target hex is fixed when
   charging starts; units can step out of the area.
 
-**Genie Binder** (Support/control; health Low 240, speed Medium 4,
+**Jinn Binder** (Support/control; health Low 240, speed Medium 4,
 defence Low 5, power Low 5, influence High 15; sealed brass vessel)
 - *Bound Gust*: direct ranged, range 4, needs line of fire; 30 damage;
   Push 4. Typical (100).
 - *Ifrit's Breath*: direct ranged, range 3, needs line of fire; Burn 20.
   Typical (100).
-- *The Djinn Stirs*: area, a hex in range 3 and its neighbours, allies
+- *The Jinn Stirs*: area, a hex in range 3 and its neighbours, allies
   included; Displace 1 outward from the centre and Push 2 each. Slow (150).
 
 Every hero also has **Hold** (decided): a quick action (60) with no
 effect, so a unit can always end its turn (an action is required, 5.1).
 
 **Starter gear** (fixed in Phase 1; the four-slot model of 9.3 exists in
-code, but only armour is filled): the Bökh Champion and Genie Binder wear medium
+code, but only armour is filled): the Bökh Champion and Jinn Binder wear medium
 armour (+5 defence, −1 speed); the Kalari Duelist and Mangudai Outrider wear
 light armour (+2 defence, no speed cost). Table values above exclude
 armour.
