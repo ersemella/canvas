@@ -53,7 +53,7 @@ tuning. Section numbers are the combat design's.
 - Yadachi Storm Caller: [Wikipedia: Yada Tashy](https://en.wikipedia.org/wiki/Yada_Tashy); [Medievalists.net: The Secret History of the Mongols and Western Literature](https://www.medievalists.net/2011/07/the-secret-history-of-the-mongols-and-western-literature/) (*Secret History* 143: a storm raised with a magic stone turns back on its casters)
 - Genie Binder: [Sacred Texts: The Fisherman and the Jinni (Burton translation)](https://sacred-texts.com/neu/burt1k1/tale02.htm)
 - Modao Vanguard: [Wikipedia: Changdao](https://en.wikipedia.org/wiki/Changdao) (Tang sources equate the modao with the changdao; elite vanguard infantry); [Wikipedia: Li Siye](https://en.wikipedia.org/wiki/Li_Siye)
-- Sorceress: [SparkNotes: The Story of Jullanar of the Sea](https://www.sparknotes.com/lit/arabian-nights/section13/) (Queen Lab); [Arabian Nights Wiki: The Second Kalandar's Tale](https://arabiannights.fandom.com/wiki/The_Second_Kalandar%27s_Tale)
+- Sahira Enchantress: [SparkNotes: The Story of Jullanar of the Sea](https://www.sparknotes.com/lit/arabian-nights/section13/) (Queen Lab); [Arabian Nights Wiki: The Second Kalandar's Tale](https://arabiannights.fandom.com/wiki/The_Second_Kalandar%27s_Tale)
 - Kalari Duelist: [Wikipedia: Urumi](https://en.wikipedia.org/wiki/Urumi); [Kerala Tourism: Kalaripayattu](https://keralatourism.org/kalaripayattu/disciplines/angathari)
 - Mahout Bulwark: [World History Encyclopedia: Elephants in ancient Indian warfare](https://www.worldhistory.org/article/1241/elephants-in-ancient-indian-warfare)
 - Varangian Guard: [World History Encyclopedia: Varangian Guard](https://worldhistory.org/Varangian_Guard)

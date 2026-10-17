@@ -261,6 +261,10 @@ Learned:
 - **Bökh** (2026-10-17): renamed the **Bökh Champion**, after the
   champion wrestlers of the naadam games; owner's call. "Bökh Wrestler"
   was redundant (bökh means wrestling) and "Bökh Grappler" was weighed.
+- **Sorceress** (2026-10-17): renamed the **Sahira Enchantress**
+  (*sāḥira*, Arabic for sorceress), to pair a native term with an
+  English role; owner's call. "Sahira Hexer" and "Sahira Shapeshifter"
+  were weighed.
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical
   name for an elephant's driver; owner's call.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game
