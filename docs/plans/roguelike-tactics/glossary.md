@@ -60,7 +60,7 @@ tuning. Section numbers are the combat design's.
 | **Gear slot** | One of four equipment positions on a hero: boots, gloves, armour, helmet. |
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |
-| **Milestone upgrade** | A choice of ability upgrade offered to a hero at set points in a run. |
+| **Milestone upgrade** | A hero-specific adjustment to one of that hero's abilities (its shape or an added effect), chosen from an offer at set points in a run (10.9). Unlike gear, it carries no transferable modifier. |
 | **Ultimate** | A hero's most powerful ability, unlocked after the hero completes a set number of turns in the fight (shown publicly), then usable once per combat. It may be an action, a charged ability or a track entity (3.7). |
 | **Keyword** | A named, shared condition or effect (for example burn, displace, on-flank, on-kill) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |

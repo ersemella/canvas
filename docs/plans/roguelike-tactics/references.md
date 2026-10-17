@@ -19,7 +19,7 @@ tuning. Section numbers are the combat design's.
 - **Slice & Dice:** combat-only roguelike structure with a distinct monster roster.
 - **Backpack Battles, Super Auto Pets:** combat-only runs against other players' saved builds.
 - **Overwatch (Stadium mode):** fixed hero kits modified by upgrades acquired during a match.
-- **Hades:** randomized, source-specific upgrade offers (boons), the model for milestone upgrades and for gear choices; the Mirror of Night, the model for steering offers (10.12). Lessons below.
+- **Hades:** randomized, source-specific upgrade offers (boons), the model for how milestone upgrades are offered and for gear choices; the Daedalus Hammer's weapon-specific upgrades, the model for what milestone upgrades contain (10.9); the Mirror of Night, the model for steering offers (10.12). Lessons below.
 - **Path of Exile:** deep gear and passive systems that support theorycrafting. Lessons below.
 - **Slay the Spire, Monster Train, Balatro:** theorycrafting inside a run, by adapting to drafted offers from a known pool.
 - **XCOM, Divinity: Original Sin 2, Baldur's Gate 3:** area effects that damage allies.
@@ -58,6 +58,7 @@ Written 2026-10-17 from memory; details not checked against each game. The rules
 | A boon changes a verb (Zeus's attack chains lightning, Poseidon's knocks back) | An item that only changes numbers isn't a choice (9.7) |
 | Each god owns a theme (Zeus Jolted, Ares Doom, Demeter Chill) | Each keyword family has one clear identity |
 | One boon per verb slot (Attack, Special, Cast, Dash, Call) | Tie each gear slot to a verb, so items compete (9.3) |
+| Boons are transferable (the same Zeus boon on any weapon); Daedalus Hammer upgrades change one weapon's behaviour | Gear holds transferable modifiers; milestone upgrades hold hero-specific adjustments (10.9) |
 | Rarity scales the same effect | The fine-grained numbers live inside a qualitative choice (9.4) |
 | Duo and legendary boons need specific prerequisites | Bridge gear with prerequisites; taking an item early is a bet (9.7) |
 | Doors show which god's boon is behind them | Route nodes show their keyword family (9.7) |
