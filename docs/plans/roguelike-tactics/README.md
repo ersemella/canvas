@@ -53,6 +53,7 @@ Always read this file first. Then:
 | The twelve heroes | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
+| Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |
 | Rival caravans, the pool, rewards, the ledger | [ghosts.md](ghosts.md) |
 | Server classes, routes, previews, platform constraints, Free-plan limits | [architecture.md](architecture.md) |
 | Building Phase 1 | [phase-1-brief.md](phase-1-brief.md) and [phases.md](phases.md#phase-1-one-fight), then the topic files the brief cites |
