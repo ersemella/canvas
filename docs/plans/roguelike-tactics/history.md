@@ -180,7 +180,11 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   were opened (open question 33). The Abbasid slot went to the
   **Sorceress** (2026-10-17; owner's call), from the *Arabian Nights*'
   enchantresses; also weighed: Scheherazade, a bimaristan physician,
-  a geomancer. Sources: [Britannica: shāʿir](https://www.britannica.com/art/shair);
+  a geomancer.
+  The remaining support slot went to the **Yadachi** (2026-10-17;
+  owner's call), a Mongol storm controller, leaving Byzantium with one
+  hero; Byzantine options had been an automaton engineer and an akrites
+  scout. Sources: [Britannica: shāʿir](https://www.britannica.com/art/shair);
   [Wikipedia: Strategos](https://wikipedia.com/wiki/Strategos).
 
 ## Setting

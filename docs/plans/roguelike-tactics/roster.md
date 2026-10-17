@@ -11,14 +11,14 @@ Rules are marked **Decided** or **Proposed**; numbers marked TBD are
 tuning. Section numbers are the combat design's.
 
 ### 15.8 Hero Roster (Decided, working roster)
-Twelve heroes drawn from **six cultures**, two heroes each. One slot is **open**: Byzantium's support, since the Strategos was removed (open question 33). Every hero is based on a **role** (a profession, unit or folklore type) or a **named fictional character** (from a novel, epic or folk tale); never a real historical individual, since real figures can be culturally sensitive. Figures still worshipped today stay out (15.5).
+Twelve heroes drawn from **six cultures**, two heroes each except the **Mongol**, which has three, and **Byzantium**, which has one since the Strategos was removed and the Yadachi added (open question 33). Every hero is based on a **role** (a profession, unit or folklore type) or a **named fictional character** (from a novel, epic or folk tale); never a real historical individual, since real figures can be culturally sensitive. Figures still worshipped today stay out (15.5).
 
 **Mechanical roles**
 - **Tank:** protects allies, absorbs or prevents damage, holds space.
 - **Damage:** primary source of kills.
 - **Support:** heals, buffs, or controls the board and the track.
 
-The roster is balanced at **4 tanks, 4 damage, 4 support** (3 supports until the open slot is filled), so that limited, random recruitment offers (10.6) can usually supply each role.
+The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, random recruitment offers (10.6) can usually supply each role.
 
 **Identity and role**
 
@@ -29,12 +29,13 @@ The roster is balanced at **4 tanks, 4 damage, 4 support** (3 supports until the
 | 3 | Simurgh Caller | Persia and Sogdiana | The Simurgh of the *Shahnameh*, the great bird that comes when one of its feathers is burned | Folklore | Summoner / sorcerer | Damage | Area caster: burns Simurgh feathers to call down sweeping strikes and fire (Burn) | None | Simurgh feathers and a brazier |
 | 4 | Mangudai | Mongol | The mangudai, units of the Mongol army (sources disagree on what they were: light cavalry, vanguards or "suicide troops"); Mongol warriors fought as mounted archers | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
 | 5 | Bökh | Mongol | Champion wrestlers (bökh), the highlight of the naadam games and of feasts in the epics | Historical | Brawler / grappler | Tank | Grappler: grabs, pins and throws enemies to hold the front line | None | Bare hands (wrestling vest) |
-| 6 | Genie Binder | Abbasid Arabia | Djinn sealed in vessels and bound to serve, from the *Arabian Nights* tradition (for example "The Fisherman and the Jinni") | Folklore | Wizard | Support | Controller: a bound djinn pushes back and disrupts enemy turns | None | Sealed brass vessel |
-| 7 | Sorceress | Abbasid Arabia | The enchantresses of the *Arabian Nights*: Queen Lab, who turned the men of her city into beasts, and the king's daughter in "The Second Kalandar's Tale", who fought an ifrit in a battle of transformations | Folklore | Witch / enchanter | Support | Curser (Proposed): transformations weaken enemies (stats down, Slowed) | None | Spells and enchanted water (proposed, unverified) |
-| 8 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
-| 9 | Mahout | South India | The mahout, driver of the war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Displace (passive) | War elephant | Ankus (elephant goad) and spear |
-| 10 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
-| 11 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger (Proposed): taunts enemies onto itself and cuts down those who close in with wide sweeps | None | Modao (long two-handed blade) |
+| 6 | Yadachi | Mongol | The yadachi, Turkic and Mongol weather-workers believed born with the power to steer storms and hail, and the rain stone (*yada*, *jada*) poured over with water to summon them; in the *Secret History of the Mongols* (143) a storm called this way turns back on its casters | Folklore | Druid / storm caller | Support | Storm controller (Proposed): storms and hail over areas slow enemies and drive them across the board (Slowed, Displace); bad weather can be turned away from allies | None | Rain stone and water |
+| 7 | Genie Binder | Abbasid Arabia | Djinn sealed in vessels and bound to serve, from the *Arabian Nights* tradition (for example "The Fisherman and the Jinni") | Folklore | Wizard | Support | Controller: a bound djinn pushes back and disrupts enemy turns | None | Sealed brass vessel |
+| 8 | Sorceress | Abbasid Arabia | The enchantresses of the *Arabian Nights*: Queen Lab, who turned the men of her city into beasts, and the king's daughter in "The Second Kalandar's Tale", who fought an ifrit in a battle of transformations | Folklore | Witch / enchanter | Support | Curser (Proposed): transformations weaken enemies (stats down, Slowed) | None | Spells and enchanted water (proposed, unverified) |
+| 9 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
+| 10 | Mahout | South India | The mahout, driver of the war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Displace (passive) | War elephant | Ankus (elephant goad) and spear |
+| 11 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
+| 12 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger (Proposed): taunts enemies onto itself and cuts down those who close in with wide sweeps | None | Modao (long two-handed blade) |
 
 **Stat profiles (relative, untuned)**
 
@@ -45,6 +46,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support** (3 supports until the
 | Simurgh Caller | Low | Medium | Low | High | Medium |
 | Mangudai | Low | High | Low | High | Low |
 | Bökh | High | Medium | High | Medium | Low |
+| Yadachi | Low | Medium | Low | Low | High |
 | Genie Binder | Low | Medium | Low | Low | High |
 | Sorceress | Medium | Medium | Low | Low | High |
 | Kalari Duelist | Medium | High | Low | High | Low |
@@ -58,7 +60,8 @@ The roster is balanced at **4 tanks, 4 damage, 4 support** (3 supports until the
 
 **Notes**
 - **Distinct tanks:** the Cataphract charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Mangudai), and the Mahout cannot be moved (it resists Displace as a passive, but not Push). The Modao Vanguard draws attacks onto itself (Taunt, including redirecting charged abilities, 17.5) and punishes enemies who close in.
-- **Support needs:** healing (Alchemist), control on the track (Genie Binder, pushing enemies back) and curses (Sorceress). Buffs, and control in space and turn order, are uncovered until the open slot is filled.
+- **Support needs:** healing (Alchemist), control on the track (Genie Binder, pushing enemies back), curses (Sorceress) and control in space (Yadachi, storms that slow and displace). Buffs and turn-order acceleration are uncovered.
+- **The Yadachi (Proposed):** a storm controller, not a damage caster: its storms slow and move enemies, while the Simurgh Caller's strikes hurt and burn. The *Secret History*'s storm that turns back on its casters suggests a risk mechanic (a storm that can hit its own side). The yadachi tradition is folk belief rather than an organised religion, but it sits near steppe shamanism, which is still practised; keep it to weather-working and away from shamanic ritual (15.5).
 - **Two Arabian Nights magic users:** the Genie Binder acts through a bound spirit that moves enemies on the track; the Sorceress casts directly, transforming enemies to weaken them. Keep their visual language distinct (a smoky spirit from a brass vessel versus spells that change a unit's shape).
 - **The Sorceress (Proposed):** a fictional role drawn from the *Nights*' enchantresses, who are mostly villains there; the hero keeps their transformation magic and turns it on the party's enemies. Its signature props need research.
 - **Damage covers four niches:** area caster (Simurgh Caller), ranged (Mangudai), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
@@ -93,14 +96,14 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
-| Hero roster | 12 heroes from 6 cultures, two each, based on roles or named fictional characters; 4 tanks, 4 damage, 4 support (Byzantium's support slot open since 2026-10-17) | One hero per culture across 12 cultures; named historical figures; roles only (until 2026-10-16) | Every culture gets depth; real figures can be culturally sensitive, fictional ones are fair game (owner's call); balanced roles suit random recruitment |
+| Hero roster | 12 heroes from 6 cultures, two each, based on roles or named fictional characters; 4 tanks, 4 damage, 4 support (since 2026-10-17 the Mongol has three heroes and Byzantium one) | One hero per culture across 12 cultures; named historical figures; roles only (until 2026-10-16) | Every culture gets depth; real figures can be culturally sensitive, fictional ones are fair game (owner's call); balanced roles suit random recruitment |
 | Area-damage caster | The Simurgh Caller (Persia and Sogdiana); its kit (area strikes and Burn) Proposed | Fox-Spirit Sorcerer as a trickster (illusions, decoys, conceal), then as a fox-fire caster; a thunder-rite master; a gu sorcerer; an Egyptian magician; an onmyōji | The trickster read as support; moving the slot to Persia gives every culture two heroes; owner's call, 2026-10-16 |
 | Steppe heroes | Bökh, a wrestler and grappler fighting on foot (tank); the horse archer is named Mangudai | Batyr (steppe hero-warrior) as the tank beside a Horse Archer; the archer named Baatar (until 2026-10-17); wolf guard (böri); shaman-protector | Batyr is a generic title and steppe warriors were horse archers, so the title fits the archer; the proper Mongol terms; owner's calls, 2026-10-16 and 2026-10-17 |
 | Mounts | Reflected only in base stats | Dedicated mount mechanics (cheaper movement, charge, dismounting) | Simplicity; the speed versus defence tradeoff already expresses mounts |
 
 ## Open questions (from section 14, original numbers)
 
-33. Hero roster. **The open Byzantium slot** (a support, to keep 4/4/4; the Strategos was removed 2026-10-17; the Abbasid slot went to the Sorceress). Ideas so far: a Byzantine automaton engineer (mechanikos), an akrites-style scout. The Tang China tank slot is filled by the Modao Vanguard (2026-10-17); a Shaolin warrior monk was the earlier candidate (Sun Wukong goes to bosses instead, 15.6). Tabled 2026-10-16: a Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
+33. Hero roster. **Culture balance** (since 2026-10-17): the Yadachi made the Mongol three heroes and Byzantium has one (the Strategos was removed; the Abbasid slot went to the Sorceress). Options: accept it, or add a second Byzantine hero (ideas: a Byzantine automaton engineer, mechanikos; an akrites-style scout; Digenis Akritas, replacing the Varangian Guard as a local damage hero). The Tang China tank slot is filled by the Modao Vanguard (2026-10-17); a Shaolin warrior monk was the earlier candidate (Sun Wukong goes to bosses instead, 15.6). Tabled 2026-10-16: a Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
 **Passives:** the Mahout's Displace resistance is the first
 **passive**, an always-on trait rather than an action. The
