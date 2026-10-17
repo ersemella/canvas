@@ -25,6 +25,7 @@ A readable tactical duel about tempo, wrapped in a drafting roguelike.
 
 - **In combat:** chess with a clock. Nothing on the board is hidden and nothing is left to chance, so every turn asks what an action is worth and how much time to spend on it. The track is the centrepiece: players trade tempo for power, push enemies back, charge abilities and place track entities. A lost fight should make clear why: the team could not answer something, or time was spent badly.
 - **Between fights:** building a band rather than a deck. The party starts small, grows through recruitment offers, and each hero develops along their own path through gear and upgrades. Permanent death and limited recovery give the run weight.
+- **Theorycrafting:** working out team compositions and gear builds is a puzzle in its own right, between runs and inside one. It comes from how keywords and rules interact and how bonuses stack, not from collecting small numeric upgrades ([heroes-and-gear.md](heroes-and-gear.md), 9.7).
 - **Tone:** tense, but rarely surprising. Difficulty comes from smarter, better-built enemies and tighter situations, not from bigger numbers or bad luck.
 - **Short pitch:** Into the Breach with a Final Fantasy Tactics timeline and a Darkest Dungeon roster.
 - **Setting:** a fantasy Silk Road, where rival caravans from many cultures race along the road and try to stop each other (section 15).
@@ -35,7 +36,7 @@ Using the eight types of fun from the MDA framework (Hunicke, LeBlanc and Zubek)
 | Type of fun | Fit | Where it comes from |
 |---|---|---|
 | **Challenge** (game as obstacle course) | **Primary** | Deterministic combat, full information, previews, clear attribution of outcomes, permanent death, difficulty from better enemies rather than bigger numbers. |
-| **Expression** (game as self-discovery) | Strong secondary | Team building through recruitment, gear and milestone upgrades; the main source of run-to-run identity. |
+| **Expression** (game as self-discovery) | Strong secondary | Team building through recruitment, gear and milestone upgrades, and theorycrafting builds; the main source of run-to-run identity. |
 | **Discovery** (game as uncharted territory) | Secondary | Finding combinations of heroes and keywords; learning how each enemy band and boss plays. |
 | **Fellowship** (game as social framework) | Secondary | Rival caravans ([ghosts.md](ghosts.md)): other players' runs appear in yours, and your caravan's kills earn recognition. More if PvP ships. |
 | **Fantasy** (game as make-believe) | Light | Heroes with signature weapons and distinct identities; the design is mechanics-first. |
@@ -43,7 +44,7 @@ Using the eight types of fun from the MDA framework (Hunicke, LeBlanc and Zubek)
 | **Sensation** (game as sense-pleasure) | Low | Turn-based and readable by design, with few moment-to-moment thrills. |
 | **Submission** (game as pastime) | Low | Fights demand attention; not designed to be played on autopilot. |
 
-**Design test:** a feature that mainly serves challenge or expression fits the game. A feature that mainly serves sensation or submission (spectacle, grinding, idle progression) probably pulls against it.
+**Design test:** a feature that mainly serves challenge or expression fits the game. A feature that mainly serves sensation or submission (spectacle, grinding, idle progression) probably pulls against it. A gear grind of many small percentage bonuses is Submission, so gear is designed as choices rather than a grind ([heroes-and-gear.md](heroes-and-gear.md), 9.7).
 
 ## Open questions (from section 14, original numbers)
 

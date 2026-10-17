@@ -16,6 +16,7 @@ tuning. Section numbers are the combat design's.
 |---|---|
 | **Roguelike** | A game structured as a series of independent attempts ("runs"). Each run has randomized content, and progress within a run is lost when it ends. |
 | **Run** | One full attempt through the game, from start to victory or defeat. |
+| **Bridge gear** | Gear that converts or links keywords (for example, displace effects also apply burn), letting unexpected pairings work (9.7). Proposed. |
 | **Build** | A player's choices outside of combat: which characters are in the party (composition) and which gear each character has equipped. |
 | **Composition** | The specific set of characters in the party. |
 | **Party** | The group of characters a player controls in combat. Maximum of 4. |

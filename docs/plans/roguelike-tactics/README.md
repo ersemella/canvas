@@ -59,7 +59,7 @@ Always read this file first. Then:
 | Building Phase 1 | [phase-1-brief.md](phase-1-brief.md) and [phases.md](phases.md#phase-1-one-fight), then the topic files the brief cites |
 | Building a phase | [phases.md](phases.md), plus the topic files that phase names; then `CLAUDE.md` and `.claude/skills/verify/SKILL.md`, and the parts of `ARCHITECTURE.md` it touches |
 | Revisiting an abandoned approach | [history.md](history.md) |
-| Other games: copies of players, live invasions | [prior-art.md](prior-art.md); games the combat design draws on: [references.md](references.md) |
+| Other games: copies of players, live invasions | [prior-art.md](prior-art.md); games the combat design draws on, and gear and build lessons from Path of Exile and Hades: [references.md](references.md) |
 | PvP (parked: only if the owner asks) | [pvp.md](pvp.md) |
 
 ## Combat design section to file

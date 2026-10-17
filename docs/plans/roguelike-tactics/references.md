@@ -19,11 +19,55 @@ tuning. Section numbers are the combat design's.
 - **Slice & Dice:** combat-only roguelike structure with a distinct monster roster.
 - **Backpack Battles, Super Auto Pets:** combat-only runs against other players' saved builds.
 - **Overwatch (Stadium mode):** fixed hero kits modified by upgrades acquired during a match.
-- **Hades:** randomized, source-specific upgrade offers (boons), the model for milestone upgrades.
+- **Hades:** randomized, source-specific upgrade offers (boons), the model for milestone upgrades and for gear choices; the Mirror of Night, the model for steering offers (10.12). Lessons below.
+- **Path of Exile:** deep gear and passive systems that support theorycrafting. Lessons below.
+- **Slay the Spire, Monster Train, Balatro:** theorycrafting inside a run, by adapting to drafted offers from a known pool.
 - **XCOM, Divinity: Original Sin 2, Baldur's Gate 3:** area effects that damage allies.
 - **Into the Breach, Tactical Breach Wizards:** deterministic, previewed tactical turns built around positioning and displacement.
 - **Darkest Dungeon:** permanent death, attrition between fights, and a roster of distinct heroes.
 - **MDA framework (Hunicke, LeBlanc, Zubek, 2004):** source of the eight types of fun used in section 1.2.
+
+## Gear and build lessons
+
+Written 2026-10-17 from memory; details not checked against each game. The rules they led to are in [heroes-and-gear.md](heroes-and-gear.md) (9.3, 9.4, 9.7, 10.12).
+
+**Path of Exile: what makes it theorycraftable**
+
+| What it does | Lesson |
+|---|---|
+| Every skill carries tags (Fire, Projectile, Spell, Area, Minion) and every modifier applies by tag | Keywords work as tags; ability and gear keywords share names (9.7) |
+| Keystones (Chaos Inoculation, Resolute Technique) remove a rule at a cost; damage conversion lets fire modifiers apply to a physical attack; triggers (Cast on Crit); build-enabling uniques (Headhunter, Mjölner) | Builds start from rule-changers, and the drawback is the puzzle: bridge gear and top-rarity build-enablers (9.4, 9.7) |
+| "Increased" bonuses add together, "more" bonuses multiply, and the rule is public | Players can reason about a bonus's marginal value; publish the stacking rule (question 37) |
+| Hundreds of passive nodes and over ten gear slots, so small bonuses add up | Small bonuses only matter at scale; this game has at most 16 items per party, so take the structure, not the granularity |
+
+**Path of Exile: what to avoid**
+
+| Problem | Lesson |
+|---|---|
+| Serious players plan in Path of Building, an outside tool, because the game can't show its own math (Diablo 2's speed breakpoints lived in fan-made tables) | Build-aware previews show what an item does to the hero's abilities |
+| Every item needs life and resistances before it can be interesting | Keep survival stats from becoming a tax on every slot; cap gear's share of stats |
+| Most drops are junk; players filter loot | Drafted offers of real options |
+| Damage and defence escalate together until fights are decided in one shot | Cap stat growth from gear (9.1, 9.7) |
+| A few players solve builds and most copy them from guides | Make a run's best answer depend on what it offered, especially on seeded runs |
+| Builds are planned before playing, with trade giving access to any item | A roguelike can't promise an item: plan around a public, stable gear pool and adapt, as in Slay the Spire |
+
+**Hades: why boons always matter**
+
+| What it does | Lesson |
+|---|---|
+| A boon changes a verb (Zeus's attack chains lightning, Poseidon's knocks back) | An item that only changes numbers isn't a choice (9.7) |
+| Each god owns a theme (Zeus Jolted, Ares Doom, Demeter Chill) | Each keyword family has one clear identity |
+| One boon per verb slot (Attack, Special, Cast, Dash, Call) | Tie each gear slot to a verb, so items compete (9.3) |
+| Rarity scales the same effect | The fine-grained numbers live inside a qualitative choice (9.4) |
+| Duo and legendary boons need specific prerequisites | Bridge gear with prerequisites; taking an item early is a bet (9.7) |
+| Doors show which god's boon is behind them | Route nodes show their keyword family (9.7) |
+| Pom of Power only levels a boon, and is taken instead of a new one | A numeric-only upgrade competes with a real alternative (9.7) |
+| Keepsakes, rerolls and the Mirror of Night steer offers and soften bad runs | Steering offers across runs (10.12) |
+
+**Hades: where it doesn't carry over**
+- **Builds are meant to break the game:** one character in real time against fixed encounters. Here rival caravans copy builds and PvP may follow, so power stays bounded.
+- **Scale:** about 20 or more boons per run for one hero, against far fewer items split across four heroes; an offer says which hero it's for.
+- **Some Mirror upgrades are raw power** (extra health, Death Defiance); only the ones that influence chance carry over (10.12).
 
 **Setting sources: history of the road (15.4)**
 - [Korea Herald: Sogdian warrior statues at Silla royal tombs](https://www.koreaherald.com/article/2984536)

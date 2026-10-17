@@ -26,6 +26,7 @@ The stat set is kept small, so every unit's stat sheet, enemies' included (D11),
 | **Influence** | Scales effect strength (9.2). | Yes. |
 
 - **Health and defence both grow with gear,** so a hero's defensive side keeps pace with damage, which grows through power and gear bonuses. If health stayed fixed, damage would outgrow it late in a run and fights would collapse into whoever strikes first. Defence is a percentage reduction (formula below), so it holds its value as incoming damage grows. A recruit joins at base level (10.6), so it starts behind the party's grown heroes; that is intended.
+  - **Watch (Proposed, 9.7):** this is the first step of an inflation spiral (one stat grows, so the others must follow), and it risks making health and defence a tax on every gear slot. 9.7 proposes capping gear's share of a hero's stats, which may let health stay mostly fixed.
 - **No movement stat.** It was not distinct enough from speed. How far a unit moves is governed by per-hex movement cost (6.2), which boots can modify. Whether there is a hard maximum on hexes per turn is TBD.
 - **No accuracy, evasion or critical hits**, since every attack hits (section 8).
 
@@ -57,6 +58,7 @@ Each hero has four gear slots:
 | **Armour** | Defence; main source of the speed versus defence tradeoff. |
 | **Helmet** | Ability and keyword modifiers. |
 
+- **Proposed: each slot modifies one verb** (as each Hades boon slot does: Attack, Special, Cast, Dash, Call), for example gloves the basic ability, helmet the signature ability, boots movement, armour reactions and defence. Two items for the same verb then compete for one slot, so taking one means giving up the other. Mapping TBD (question 49).
 - **Weapons are not a gear slot.** Each hero has a unique signature weapon, closely tied to their abilities and to the visual design language. It cannot be swapped.
 - Which slots can carry keyword modifiers (conditions and effects) is TBD.
 
@@ -65,6 +67,7 @@ Each hero has four gear slots:
 - The advantage can be **narrow**: a higher-rarity item may be stronger in one specific dimension rather than across the board.
 - Rarity is communicated through the diegetic design language.
 - Number of tiers and visual treatment TBD.
+- **Proposed (9.7):** rarity scales the *same* effect, as Hades boon rarity does (a rare and an epic version of an item do the same thing, the epic one more of it), and the top tier holds **build-enablers**: rule-changers with a drawback, like Path of Exile's uniques. Their power is a new rule rather than bigger numbers, which needs this section's "reliably stronger" restated for that tier.
 
 ### 9.5 Rarity Rationale
 - Rarity gives a dependable shortcut for comparing gear at a glance, on your heroes and on enemies; exact stats are shown too (D11).
@@ -79,6 +82,39 @@ Each hero has four gear slots:
 - **A small shared party inventory** limits how many can be carried, preventing hoarding.
 - Buffs and statuses from consumables last for the next combat only, and are shown on the affected heroes' stat sheets and cards.
 - Rationale: keeping consumables out of combat keeps every in-combat turn about the heroes' own abilities and the track, and makes using one a planning decision between fights (prepare for a known encounter on the route map, or heal now).
+
+### 9.7 Gear Design: Choices, Not a Grind
+Lessons from Path of Exile and Hades, and the reasons for them, are in [references.md](references.md#gear-and-build-lessons).
+
+**Gear carries keyword or rule modifiers (Decided 2026-10-17):** a keyword an item applies, a condition it adds, a rule it bends. **Proposed:** that is an item's main job, and stats are its secondary part; an item that only changes numbers is not a choice worth offering.
+
+**Goal: theorycrafting as problem solving (Decided 2026-10-17).** Players should be able to reason about team compositions and gear builds, between runs and inside one, as a puzzle ([goals.md](goals.md), 1.1). The theorycrafting comes from how rules interact and how bonuses stack, not from the size of small bonuses.
+
+**No gear grind (Proposed).** Many small percentage bonuses (+6% power against +5% defence) were the original reason for fine-grained combat math. They work against strategy here:
+- **They rarely make decisions:** a choice between two small numbers has an obvious answer or barely matters.
+- **They blur attribution (goal 2):** a gap made of twenty small bonuses can't be traced after a loss.
+- **A run is too short for a grind to pay off:** at most 16 items per party, perhaps 10 to 20 gear decisions per run, and power resets every run. A grind's reward is volume, which this game doesn't have; Path of Exile's small bonuses matter only because hundreds of them add up.
+- **They push inflation:** health already had to scale with gear (9.1).
+
+The ×10 scale stays: the defence formula, the influence formula ([keywords.md](keywords.md)) and the track need it whatever gear does. Gear is Expression in the types of fun (1.2), not Submission.
+
+**Proposed rules**
+- **Stat lines are few and chunky:** at most one stat line per item, in coarse steps (for example +10% or +20%), sized around **breakpoints**. A stat line is worth having when it changes what dies or who acts first (a hit that now kills, a card that now lands a slot earlier); full information makes those breakpoints strategic.
+- **Cap gear's share of a hero's stats** relative to the hero's base, so the recruit gap (10.6) stays deliberate rather than set by accident, and survival stats don't become a tax on every slot.
+- **Keywords work as tags.** Gear modifiers apply by keyword, as Path of Exile's modifiers apply by skill tag ("your burn effects..."), and ability and gear keywords use the same names.
+- **Bridge gear is a first-class item type:** gear that converts or links keywords ("displace effects also apply burn"), as Path of Exile's damage conversion lets fire modifiers apply to a physical attack.
+- **Bridge gear can have prerequisites,** as Hades duo and legendary boons do (for example: requires a burn item and a displace item on this hero). Taking an item early is then also a bet on a later combination.
+- **Rarity scales the same effect; the top tier enables builds** (9.4).
+- **Publish the stacking rule** (question 37): an "increased"/"more" style rule, as in Path of Exile (bonuses in one group add, groups multiply), lets players reason about what a bonus is worth. Hidden or ad hoc stacking makes percentages noise.
+- **Build-aware previews:** a gear offer shows what it does to this hero's actual abilities ("Lance now hits for 84 instead of 72, enough to kill the archer"), so evaluating a build never needs a spreadsheet or an outside calculator (Path of Exile needs Path of Building; Diablo 2's speed breakpoints lived in fan-made tables).
+- **Drafted offers:** each gear offer is a choice between a few real options, never a pile of mostly useless drops; an offer says which hero each item is for, or the choice of hero is part of the decision.
+- **A numeric-only upgrade competes with a real alternative,** as Hades's Pom of Power is taken instead of a new boon: upgrading an item's rarity costs the chance to take a new item.
+- **Route nodes show what they offer:** a bazaar or reward node on the route map shows its keyword family before the player picks a route, as Hades doors show which god's boon is behind them, so choosing a route is also a build decision (Phase 2).
+- **A public gear compendium:** the full gear pool is known and stable, so players can plan between runs ("if I find X for hero Y") and adapt to what a run offers, as in Slay the Spire, Monster Train or Balatro, rather than plan a fixed build in advance as Path of Exile players do.
+
+**Watch**
+- **Copied builds:** in Path of Exile a few players solve builds and most copy them. Seeded and daily runs (10.6) invite the same; making each run's best answer depend on what it offered keeps the problem-solving with each player.
+- **Bounded power:** Hades builds are meant to break the game; here rival caravans copy builds ([ghosts.md](ghosts.md)) and PvP may follow, so build power stays bounded.
 
 ## 10. Party and Heroes
 
@@ -131,12 +167,12 @@ Each hero has four gear slots:
 
 **Ideas for preventing solved compositions and improving run variety (Proposed, not adopted)**
 - **Multiple keyword hooks per hero:** each hero connects to at least two keywords, so it fits several teams rather than one exclusive pairing.
-- **Bridge gear:** gear that converts or links keywords (for example, "displace effects also apply burn"), letting unexpected pairings work.
+- **Bridge gear:** gear that converts or links keywords (for example, "displace effects also apply burn"), letting unexpected pairings work. Now proposed as a first-class item type (9.7).
 - **Avoid stacking team-wide auras,** which compound with 4 heroes and push teams toward the same picks.
 - **Hero variants:** alternative starting kits or upgrade paths, so a hero can fill different roles across runs.
 - **Run modifiers:** run-wide rules that favour certain keywords, shifting which teams are strong.
 - **Varied bosses** testing different axes (burst, sustain, positioning, tempo).
-- **Drafted gear offers** (choices between limited options) rather than shops with full access.
+- **Drafted gear offers** (choices between limited options) rather than shops with full access. Now proposed in 9.7.
 - **Track win rates by team** to find and tune dominant compositions.
 - Already adopted: recruitment during the run from limited, random offers (10.6).
 
@@ -165,6 +201,19 @@ Each hero has four gear slots:
 - Rationale: damage from each fight carries forward (attrition), giving every fight and every optional risk weight, without a single bad fight ending the run on its own. Combined with permanent death, this makes resource management a core part of the run.
 - Recovery amount and rest frequency are TBD.
 
+### 10.12 Steering Offers Across Runs (Proposed)
+A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks from fights won (10.6), that lets players influence what a run offers. It answers 10.7's problem: bad offers drive restarts.
+
+**Influence chance, never add power**
+- **Allowed:** rerolls of an offer (as Fated Persuasion), better rarity odds (as God's Pride), and a **keyword bias** chosen at the start of a run that makes one keyword family appear more often (as a Hades keepsake guarantees a god's boon).
+- **Not allowed:** raw power, such as extra health or a revive (as the Mirror's Death Defiance). Rival caravans would carry their owner's upgrades into other players' runs ([ghosts.md](ghosts.md)), and a win could come from upgrades rather than build or play (goal 2).
+- **Exclusive choices:** each Mirror row has two alternatives the player switches between, so the layer is a loadout choice (Expression) rather than a ladder (grinding). The same here.
+
+**Constraints**
+- **Seeded runs:** rerolls must not break comparisons between players on the same seed. Either draw rerolls from the seed's stream, so the same number of rerolls gives the same offers, or use a fixed steering loadout on daily runs. TBD (question 50).
+- **Rarity odds are still power:** better odds raise a run's strength, not only its variance. Keep the bonus small, or pair it with a difficulty dial as Hades pairs the Mirror with Heat; optional risk ([enemies.md](enemies.md), 11.4) could be that dial.
+- **Setting:** a diegetic name, for example trade contacts or a caravan charter ([setting.md](setting.md)). TBD.
+
 ## Decision log (from section 13)
 
 | Area | Decision | Alternatives considered | Reason |
@@ -185,6 +234,7 @@ Each hero has four gear slots:
 | Recruits | Join at base level with basic gear; offers unaffected by deaths | Join at the party's upgrade level; special replacement mechanics after a death | A death is meant to start a death spiral with a low chance of recovery, giving permanent death its weight |
 | Party formation | Recruit heroes during the run from limited, random offers | Full team chosen at start; random subset of heroes offered at start | Adds a draft layer and run-to-run variety; a random starting subset encourages restarting until the desired team appears |
 | Duplicates | Allowed across opposing sides (PvP, ghost teams) | Unique heroes across both sides | Avoids blocking picks based on the opponent |
+| Gear content (2026-10-17) | Gear carries keyword or rule modifiers; the goal is theorycrafting as problem solving | Gear as stat sticks; a gear grind of many small percentage bonuses (not ruled out yet, 9.7 proposes against it) | A choice about what a hero does is a decision; comparing small numbers is not |
 
 ## Open questions (from section 14, original numbers)
 
@@ -192,9 +242,11 @@ Each hero has four gear slots:
 20. Recruitment and hero questions listed in sections 10.7 and 10.8.
 22. Final name for the Influence stat (section 9.2).
 23. Value of `defenceConstant`, and whether a minimum of 1 damage applies (section 9.1).
-24. Which gear slots carry keyword modifiers.
+24. Which gear slots carry keyword modifiers. Gear carries them (9.7, decided 2026-10-17); whether every slot does, and which modifiers suit which slot, is still open (see question 49).
 25. Whether a rival caravan copy carries the consumable buffs active when it was copied ([ghosts.md](ghosts.md)).
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
-37. **Damage buckets:** whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and barrier), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).
+37. **Damage buckets** (9.7 proposes publishing the rule, in the style of Path of Exile's "increased" and "more"): whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and barrier), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).
 38. Whether consumables can be used before a PvP duel, and which ones ([pvp.md](pvp.md)).
 39. The number of turns that unlocks an ultimate (10.10): one value for every hero, or set per ultimate.
+49. Whether each gear slot modifies one verb (9.3), and the mapping; the proposed gear rules in 9.7 (stat line count and steps, the cap on gear's share of stats, bridge gear prerequisites, what top-rarity items are).
+50. Steering offers across runs (10.12): which tools, how large the rarity bonus is, whether a difficulty dial offsets it, and how rerolls stay compatible with seeded and daily runs.
