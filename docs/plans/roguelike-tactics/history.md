@@ -216,7 +216,13 @@ Learned:
 - **Corpse Driver, then Xiangxi Corpse Driver** (removed 2026-10-16): a
   tank screening allies with jiangshi minions (medium health, high
   influence). Its legends are Qing-era and set in Hunan, so it was out of
-  place in time and on the road. Its slot is open.
+  place in time and on the road. Its slot went to the **Modao
+  Vanguard** (2026-10-17), the Tang modao troops as a role; "Modao Guard"
+  and "Modao Blademaster" were weighed for the name, and "infantry" was
+  too plain. Also weighed for the slot: a Shaolin warrior monk, Sha
+  Wujing and Zhu Bajie (*Journey to the West*), Mulan, Lu Zhishen
+  (*Water Margin*). Li Siye, the best-known modao user, is a real
+  general, so the hero is a role.
 - **Alchemist** (2026-10-16): renamed the **Fangshi**, the Chinese name
   for the masters of alchemy, medicine and divination; owner's call.
 - **Fangshi** (2026-10-17): renamed back to the **Alchemist**; owner's

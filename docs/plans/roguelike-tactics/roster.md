@@ -11,14 +11,14 @@ Rules are marked **Decided** or **Proposed**; numbers marked TBD are
 tuning. Section numbers are the combat design's.
 
 ### 15.8 Hero Roster (Decided, working roster)
-Twelve heroes drawn from **six cultures**, two heroes each. One slot is **open**: Tang China's tank, since the Xiangxi Corpse Driver was removed (candidates in open question 33). Every hero is based on a **role** (a profession, unit or folklore type) or a **named fictional character** (from a novel, epic or folk tale); never a real historical individual, since real figures can be culturally sensitive. Figures still worshipped today stay out (15.5).
+Twelve heroes drawn from **six cultures**, two heroes each. Every hero is based on a **role** (a profession, unit or folklore type) or a **named fictional character** (from a novel, epic or folk tale); never a real historical individual, since real figures can be culturally sensitive. Figures still worshipped today stay out (15.5).
 
 **Mechanical roles**
 - **Tank:** protects allies, absorbs or prevents damage, holds space.
 - **Damage:** primary source of kills.
 - **Support:** heals, buffs, or controls the board and the track.
 
-The roster is balanced at **4 tanks, 4 damage, 4 support** (3 tanks until the open slot is filled), so that limited, random recruitment offers (10.6) can usually supply each role.
+The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, random recruitment offers (10.6) can usually supply each role.
 
 **Identity and role**
 
@@ -35,6 +35,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support** (3 tanks until the op
 | 9 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
 | 10 | Mahout | South India | The mahout, driver of the war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Displace (passive) | War elephant | Ankus (elephant goad) and spear |
 | 11 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
+| 12 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger (Proposed): taunts enemies onto itself and cuts down those who close in with wide sweeps | None | Modao (long two-handed blade) |
 
 **Stat profiles (relative, untuned)**
 
@@ -51,13 +52,14 @@ The roster is balanced at **4 tanks, 4 damage, 4 support** (3 tanks until the op
 | Kalari Duelist | Medium | High | Low | High | Low |
 | Mahout | Very high | Very low | Very high | Medium | Medium |
 | Varangian Guard | High | Low | Medium | High | Low |
+| Modao Vanguard | High | Low | High | Medium | Low |
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
 - A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
 
 **Notes**
-- **Distinct tanks:** the Cataphract charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Mangudai), and the Mahout cannot be moved (it resists Displace as a passive, but not Push). The fourth (the open Tang China slot) should protect in a way none of these does.
+- **Distinct tanks:** the Cataphract charges in, the Bökh holds the front line by grappling (on foot, unlike the mounted Mangudai), and the Mahout cannot be moved (it resists Displace as a passive, but not Push). The Modao Vanguard draws attacks onto itself (Taunt, including redirecting charged abilities, 17.5) and punishes enemies who close in.
 - **Support covers three needs:** healing (Alchemist), buffs and curses (Sha'ir), and control (Strategos in space and turn order, Genie Binder by pushing enemies back on the track).
 - **Two djinn-related heroes:** the Genie Binder commands a bound djinn; the Sha'ir draws inspiration from jinn through words. Keep their visual language and abilities distinct (a spirit acting on the board versus spoken verse).
 - **Damage covers four niches:** area caster (Simurgh Caller), ranged (Mangudai), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
@@ -65,7 +67,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support** (3 tanks until the op
 - **Two summoners of great spirits:** the Genie Binder's djinn pushes and disrupts; the Simurgh strikes and burns. Keep their visual language distinct (a smoky spirit from a brass vessel versus a vast bird from the sky).
 - **The Simurgh as religious-adjacent material:** it has roots in Zoroastrian texts, a living religion. Keep to the *Shahnameh*'s epic framing (15.5).
 - **Djinn as religious-adjacent material:** djinn also appear in the Qur'an. Keep to the *Arabian Nights* folklore framing (15.5). In "The Fisherman and the Jinni", the jinni was sealed in his jar by Solomon, a prophet in Islam; use the motif of a djinn sealed in a vessel without the religious figure.
-- **Speed:** three heroes can have high speed (Mangudai, Kalari Duelist, mounted Strategos). The Varangian Guard pays for its damage with low speed. Speed divides every cost, so it sets how often a hero acts (4.1, with diminishing returns); keep high speed rare.
+- **Speed:** three heroes can have high speed (Mangudai, Kalari Duelist, mounted Strategos). The Varangian Guard pays for its damage with low speed, the Modao Vanguard for its armour. Speed divides every cost, so it sets how often a hero acts (4.1, with diminishing returns); keep high speed rare.
 - **Only four damage heroes:** gear and upgrades can shift tanks and supports toward damage; guaranteed role coverage in recruitment offers would also help (10.7).
 - **The Alchemist's ultimate (Proposed): the hand cannon.** A single shot, direct ranged at long range, needing line of fire, for large damage with **Pierce**. Based on the Heilongjiang hand cannon (about 1288, Yuan dynasty), the oldest surviving metal gun, and on the alchemists' discovery of gunpowder; an era stretch like the Mongols'. It gives the healer one decisive shot without making it a damage hero; the ultimate rules (10.10) keep it to once per fight, unlocked by turns.
 - **Area damage:** the Simurgh Caller is the area-damage hero; its areas follow the friendly-fire rules like any other.
@@ -99,7 +101,7 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 
 ## Open questions (from section 14, original numbers)
 
-33. Hero roster. **The open Tang China slot** (a tank, to keep 4/4/4): a Shaolin warrior monk (Sun Wukong goes to bosses instead, 15.6). Tabled 2026-10-16: a Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
+33. Hero roster. The Tang China tank slot is filled by the Modao Vanguard (2026-10-17); a Shaolin warrior monk was the earlier candidate (Sun Wukong goes to bosses instead, 15.6). Tabled 2026-10-16: a Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
 **Passives:** the Mahout's Displace resistance is the first
 **passive**, an always-on trait rather than an action. The
