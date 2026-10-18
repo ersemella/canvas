@@ -126,9 +126,23 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   Ways considered to keep them hidden: every preview a server request (a
   request per tap against the Free plan, with latency), and stats sent but
   hidden only in the UI (visible in network traffic).
-- **Health mostly fixed per hero:** replaced by health modified by gear,
-  because damage grows through the run and fixed health let it outgrow
-  defence, collapsing late fights into whoever strikes first.
+- **Health mostly fixed per hero, then health modified by gear:** health
+  was first made to grow with gear, because damage grew through the run
+  and fixed health let it outgrow defence, collapsing late fights into
+  whoever strikes first. Reversed 2026-10-18: health is fixed per hero
+  again and gear never raises it. Damage now grows far less (power scales
+  only base damage and healing, keyword effects are unscaled, gear carries
+  keywords first), so the original reason no longer holds.
+- **Influence, a second offensive stat** (scaling effect strength: status
+  magnitude or duration, push slots, healing, Barrier), chosen so damage
+  and effect builds wanted different stats. Folded into power 2026-10-18:
+  every influence item was wasted on a power hero and the reverse (the
+  reason a physical/magical split was rejected); build identity now comes
+  from keyword modifiers on gear; and it counted twice in places (it scaled
+  magnitude for some effects and duration for others, an item could carry
+  both influence and an influence-scaled effect, and influence damage
+  skipped defence). Power now scales only base damage and base healing;
+  keyword effects are fixed by their source.
 - **Recruits joining at the party's upgrade level** (with lower-level
   gear) to prevent a death spiral after a death: rejected, because a death
   is meant to start a death spiral with a low chance of recovery. Recruits

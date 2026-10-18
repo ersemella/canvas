@@ -27,7 +27,7 @@ for later phases.
 | Damage | Burn, Pierce, Lifesteal, Vulnerable, Barrier, Immortal |
 | Health | Heal, Overhealth, Antiheal, Cursed |
 | Removal | Cleanse, Dispel |
-| Stats | Speed, power, influence and defence up or down |
+| Stats | Speed, power and defence up or down |
 
 **Terms (Decided):** **Push** and **Pull** always mean the **track**
 (moving a card later or earlier); **Displace** always means the **board**
@@ -57,13 +57,16 @@ vocabulary. Guard (Phase 1 draft) is removed; Barrier replaces it.
 - **Complete information** (D11): every status, its strength and its
   remaining slots is public, shown as a marker on the card with exact
   slots in the tap preview (7.1). Previews include every effect.
-- **Influence scales magnitude** for values on the ×10 scale (burn, heal,
-  barrier, overhealth, cursed) and for Push and Pull slots:
-  `effect = roundDown(base × (1 + influence / 50))`. **Small or percentage
-  values** (stat changes, Vulnerable, Slowed) are fixed per
-  ability, so rounding doesn't erase them (history: single-digit health);
-  influence scales their **duration** instead. Displace distances are
-  fixed (Phase 1 rule).
+- **Effect values are fixed by their source (Decided 2026-10-18).** No
+  stat scales a keyword effect: Burn, Barrier, overhealth, Cursed,
+  collision damage, Push and Pull slots, Displace distances, stat
+  changes, Vulnerable, Slowed and every duration keep the value the
+  ability, gear or upgrade states. Gear and milestone upgrades change
+  them directly ([heroes-and-gear.md](heroes-and-gear.md), 9.7, 10.9).
+  **Power** scales only an ability's own base damage and base healing
+  (a Heal the ability itself states), not a Heal added by gear or an
+  upgrade (9.2). Influence, which scaled effect values, was folded into
+  power ([history.md](history.md)).
 - **An effect can be an ability property or a status.** Pierce and
   Lifesteal are usually properties of an attack ("Pierce: this attack
   ignores defence"), but a buff can grant them for a duration ("your
@@ -201,7 +204,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
   own targets.
 
 ### 17.9 Stat changes (Decided)
-- **Speed, power, influence and defence** can be raised or lowered by a
+- **Speed, power and defence** can be raised or lowered by a
   fixed number of points for a duration, shown on the stat sheet.
 - Repeated buffs or debuffs to a stat combine as their source states
   (17.2). Buffs and debuffs on the same stat both apply.

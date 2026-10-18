@@ -39,20 +39,22 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 **Stat profiles (relative, untuned)**
 
-| Name | Health | Speed | Defence | Power | Influence |
-|---|---|---|---|---|---|
-| Waidan Alchemist | Medium | Medium | Low | Low | High |
-| Persian Cataphract | High | Medium | High | Medium | Low |
-| Simurgh Summoner | Low | Medium | Low | High | Medium |
-| Mangudai Outrider | Low | High | Low | High | Low |
-| Bökh Champion | High | Medium | High | Medium | Low |
-| Yadachi Storm Caller | Low | Medium | Low | Low | High |
-| Jinn Binder | Low | Medium | Low | Low | High |
-| Sahira Enchantress | Medium | Medium | Low | Low | High |
-| Kalari Duelist | Medium | High | Low | High | Low |
-| Mahout Bulwark | Very high | Very low | Very high | Medium | Medium |
-| Varangian Guard | High | Low | Medium | High | Low |
-| Modao Vanguard | High | Low | High | Medium | Low |
+Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gear.md), 9.2). Power scales only base damage and base healing, so the control supports (Yadachi Storm Caller, Jinn Binder, Sahira Enchantress), whose effects no longer scale with any stat, keep low power; the Waidan Alchemist, a healer, rises from low to medium because power now scales its heals. Health is fixed per hero (9.1).
+
+| Name | Health | Speed | Defence | Power |
+|---|---|---|---|---|
+| Waidan Alchemist | Medium | Medium | Low | Medium |
+| Persian Cataphract | High | Medium | High | Medium |
+| Simurgh Summoner | Low | Medium | Low | High |
+| Mangudai Outrider | Low | High | Low | High |
+| Bökh Champion | High | Medium | High | Medium |
+| Yadachi Storm Caller | Low | Medium | Low | Low |
+| Jinn Binder | Low | Medium | Low | Low |
+| Sahira Enchantress | Medium | Medium | Low | Low |
+| Kalari Duelist | Medium | High | Low | High |
+| Mahout Bulwark | Very high | Very low | Very high | Medium |
+| Varangian Guard | High | Low | Medium | High |
+| Modao Vanguard | High | Low | High | Medium |
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
@@ -65,7 +67,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 - **Two Arabian Nights magic users:** the Jinn Binder acts through a bound spirit that moves enemies on the track; the Sahira Enchantress casts directly, transforming enemies to weaken them. Keep their visual language distinct (a smoky spirit from a brass vessel versus spells that change a unit's shape).
 - **The Sahira Enchantress (Proposed):** a fictional role drawn from the *Nights*' enchantresses, who are mostly villains there; the hero keeps their transformation magic and turns it on the party's enemies. Its signature props need research.
 - **Damage covers four niches:** area caster (Simurgh Summoner), ranged (Mangudai Outrider), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
-- **The Simurgh Summoner (Proposed):** each ability burns a feather; the Simurgh's strikes sweep areas and leave fire (Burn), so its damage comes from power up front and influence over time. The Simurgh appears for the strike and leaves; it never stays on the board which keeps it apart from the Jinn Binder's bound jinn. Its abilities hurt; control stays with the supports. Fragile (low health and defence) is the price of its damage.
+- **The Simurgh Summoner (Proposed):** each ability burns a feather; the Simurgh's strikes sweep areas and leave fire (Burn), so its damage comes in two parts: a big hit up front, scaled by power, and burns left behind, whose values are set by the abilities. The Simurgh appears for the strike and leaves; it never stays on the board which keeps it apart from the Jinn Binder's bound jinn. Its abilities hurt; control stays with the supports. Fragile (low health and defence) is the price of its damage.
 - **Two summoners of great spirits:** the Jinn Binder's jinn pushes and disrupts; the Simurgh strikes and burns. Keep their visual language distinct (a smoky spirit from a brass vessel versus a vast bird from the sky).
 - **The Simurgh as religious-adjacent material:** it has roots in Zoroastrian texts, a living religion. Keep to the *Shahnameh*'s epic framing (15.5).
 - **Jinn as religious-adjacent material:** jinn also appear in the Qur'an. Keep to the *Arabian Nights* folklore framing (15.5). In "The Fisherman and the Jinni", the jinni was sealed in his jar by Solomon, a prophet in Islam; use the motif of a jinn sealed in a vessel without the religious figure.

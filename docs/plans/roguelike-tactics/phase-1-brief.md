@@ -72,9 +72,10 @@ uses damage buckets is open, [heroes-and-gear.md](heroes-and-gear.md)):
   then Barrier.
 - Several units displaced by one ability move one at a time, farthest
   from the centre first ([keywords.md](keywords.md), 17.4).
-- `effect = roundDown(base × (1 + influence / 50))` for push slots, burn
-  damage and Barrier strength. Displace distance is fixed per ability (whole
-  hexes), not scaled.
+- Push slots, Burn damage, Barrier strength and Displace distance are
+  fixed per ability, not scaled by any stat (power scales only an
+  ability's base damage and base healing; influence was folded into
+  power, [heroes-and-gear.md](heroes-and-gear.md), 9.2).
 
 ## 3. Keywords for Phase 1
 
@@ -109,29 +110,29 @@ line, fast melee with flanking, ranged with line of fire and a delayed
 arcing area, and track control. Stats turn the roster's relative
 profiles (15.8) into numbers:
 
-| Profile | Health | Speed | Defence | Power | Influence |
-|---|---|---|---|---|---|
-| Very low | n/a | 1 | n/a | n/a | n/a |
-| Low | 240 | 2 | 5 | 5 | 5 |
-| Medium | 320 | 4 | 10 | 10 | 10 |
-| High | 440 | 7 | 20 | 15 | 15 |
+| Profile | Health | Speed | Defence | Power |
+|---|---|---|---|---|
+| Very low | n/a | 1 | n/a | n/a |
+| Low | 240 | 2 | 5 | 5 |
+| Medium | 320 | 4 | 10 | 10 |
+| High | 440 | 7 | 20 | 15 |
 
 **Bökh Champion** (Tank; health High 440, speed Medium 4, defence High 20, power
-Medium 10, influence Low 5; bare hands)
+Medium 10; bare hands)
 - *Grapple*: melee, adjacent; 100 damage. Typical (100).
 - *Hold the Line*: Barrier 60 on self and every adjacent ally. Typical
   (100).
 - *Throw*: melee, adjacent; 40 damage; Displace 1. Quick (60).
 
 **Kalari Duelist** (Damage; health Medium 320, speed High 7, defence Low
-5, power High 15, influence Low 5; urumi)
+5, power High 15; urumi)
 - *Quick Cut*: melee, adjacent; 60 damage; on-flank: Displace 1 (out of the
   flank). Quick (60).
 - *Whirling Urumi*: area, all six adjacent hexes, allies included; 70
   damage each. Typical (100).
 
 **Mangudai Outrider** (Damage; health Low 240, speed High 7, defence Low 5,
-power High 15, influence Low 5; composite bow; mounted, reflected only in
+power High 15; composite bow; mounted, reflected only in
 stats)
 - *Aimed Shot*: direct ranged, range 5, needs line of fire; 90 damage.
   Typical (100).
@@ -142,7 +143,7 @@ stats)
   charging starts; units can step out of the area.
 
 **Jinn Binder** (Support/control; health Low 240, speed Medium 4,
-defence Low 5, power Low 5, influence High 15; sealed brass vessel)
+defence Low 5, power Low 5; sealed brass vessel)
 - *Bound Gust*: direct ranged, range 4, needs line of fire; 30 damage;
   Push 4. Typical (100).
 - *Ifrit's Breath*: direct ranged, range 3, needs line of fire; Burn 20.

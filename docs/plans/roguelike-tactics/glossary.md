@@ -52,11 +52,10 @@ tuning. Section numbers are the combat design's.
 | **Map modifier** | Any feature of the map beyond plain, walkable hexes, such as obstacles or hazards. |
 | **Diegetic** | Information communicated through the game world itself (character appearance, gear visuals, animations) rather than through menus or text overlays. |
 | **Design language** | A consistent set of visual conventions (shapes, colors, silhouettes, effects) that let players recognize what something does without reading a description. |
-| **Stats** | Numerical attributes of a unit or item: health, speed, defence, power and influence. See section 9.1. |
-| **Health** | A unit's hit points. Each hero has a base value; gear can raise it. |
+| **Stats** | Numerical attributes of a unit or item: health, speed, defence and power. See section 9.1. |
+| **Health** | A unit's hit points. Fixed per hero; gear and upgrades never raise it (9.1). |
 | **Defence** | A stat that reduces incoming damage by a percentage with diminishing returns (section 9.1). |
-| **Power** | A stat that scales direct damage. |
-| **Influence** | A stat that scales effect strength: status effects, displacement distance, healing and shields. Working name (section 9.2). |
+| **Power** | The one offensive stat: scales an ability's base damage and base healing, not keyword effects (9.2). |
 | **Gear slot** | One of four equipment positions on a hero: boots, gloves, armour, helmet. |
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |

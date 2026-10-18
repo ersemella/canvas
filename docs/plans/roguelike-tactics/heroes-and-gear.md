@@ -19,14 +19,15 @@ The stat set is kept small, so every unit's stat sheet, enemies' included (D11),
 
 | Stat | Role | Modified by gear? |
 |---|---|---|
-| **Health** | Hit points. Each hero has a different base value. | Yes. |
+| **Health** | Hit points. Fixed per hero: each hero has its own value. | **No** (Decided 2026-10-18). |
 | **Speed** | Divides action and movement cost, so it sets how often a unit acts; also its starting slot (section 4). | Yes, and weighed against defence (4.2). |
 | **Defence** | Reduces incoming damage by a percentage (formula below). | Yes. |
-| **Power** | Scales direct damage. | Yes. |
-| **Influence** | Scales effect strength (9.2). | Yes. |
+| **Power** | Scales an ability's base damage and base healing (9.2). | Yes. |
 
-- **Health and defence both grow with gear,** so a hero's defensive side keeps pace with damage, which grows through power and gear bonuses. If health stayed fixed, damage would outgrow it late in a run and fights would collapse into whoever strikes first. Defence is a percentage reduction (formula below), so it holds its value as incoming damage grows. A recruit joins at base level (10.6), so it starts behind the party's grown heroes; that is intended.
-  - **Watch (Proposed, 9.7):** this is the first step of an inflation spiral (one stat grows, so the others must follow), and it risks making health and defence a tax on every gear slot. 9.7 proposes capping gear's share of a hero's stats, which may let health stay mostly fixed.
+- **Health is fixed per hero (Decided 2026-10-18):** it varies between heroes but is not a core stat to build: gear, milestone upgrades and stat changes (17.9) never raise max health. Health is part of who a hero is, like the signature weapon. Healing, overhealth and Barrier restore or protect health; they don't raise the maximum.
+  - **Why it holds now:** health was once made to grow with gear because damage outgrew fixed health late in a run ([history.md](history.md)). Damage now grows far less: power scales only an ability's base damage (9.2), keyword effects don't scale with any stat, gear carries keywords first (9.7), and difficulty comes from better-built enemies (11.4). Defence still grows with gear and, as a percentage reduction (formula below), holds its value as incoming damage grows.
+  - **Watch:** if late fights still collapse into whoever strikes first, limit power from gear before reconsidering health.
+  - A recruit joins at base level (10.6), so it starts behind the party's equipped heroes in speed, defence and power, not in health; that is intended.
 - **No movement stat.** It was not distinct enough from speed. How far a unit moves is governed by per-hex movement cost (6.2), which boots can modify. Whether there is a hard maximum on hexes per turn is TBD.
 - **No accuracy, evasion or critical hits**, since every attack hits (section 8).
 
@@ -39,14 +40,20 @@ damageTaken     = roundDown(incomingDamage × (1 − damageReduction))
 - Properties: defence equal to the constant gives 50% reduction; reduction approaches but never reaches 100%; each additional point of defence is worth slightly less than the last (diminishing returns), so stacking defence cannot make a unit invulnerable.
 - Rounding follows the global rule (round down). Whether a minimum of 1 damage applies is TBD (Phase 1: yes).
 
-### 9.2 Power and Influence (Decided)
-The offensive stat is split in two:
-- **Power:** scales direct damage.
-- **Influence:** scales effect strength: status effect magnitude and duration, displacement distance, healing and shields.
+### 9.2 Power (Decided 2026-10-18)
+There is **one offensive stat, power.** Influence, a second stat for effect strength, was folded into it ([history.md](history.md)).
 
-"Influence" is a working name, chosen over "Potency" because Potency reads as a synonym for Power. Alternatives considered: Finesse, Control, Efficacy.
+- **Power scales an ability's base damage and base healing:** the damage of a hit and the healing of a heal that the ability itself states.
+  `value = roundDown(base × (1 + power / 50))`.
+- **Power scales nothing else.** Keyword effects keep the value their source states: Burn, collision damage, Barrier, overhealth, Cursed and other extra damage or protection, Push and Pull slots, Displace distances, stat changes and every duration. Keyword modifiers from gear and milestone upgrades are separate from power, and change these values directly ("Burn +10", "Push +2", "lasts 5 slots longer").
+- **Roles come from base values, not stats.** A healer's heal has a high base and its attack a low one, so power makes it heal well and hit weakly. Power is a hero's overall strength; the kit decides where it goes.
 
-Rationale: this split follows the keyword system, giving damage-focused and effect-focused builds distinct stats. A physical versus magical split was considered and not recommended: it would require a matching split of defence and would halve how many gear pieces are relevant to each hero.
+Rationale:
+- **Gear relevance:** a second offensive stat made every item for it useless on heroes built around the other, the reason a physical versus magical split was rejected.
+- **Build identity comes from keywords** now that gear carries keyword modifiers (9.7), so a separate effect stat added little.
+- **Nothing counts twice:** one stat scales one kind of number. Influence scaled magnitude for some effects and duration for others; with gear adding both its stat and its effects, the same stat could amplify an item's own effect, and influence-scaled damage (Burn) skipped defence while power-scaled damage didn't.
+- **Readability:** one fewer number on every unit's stat sheet (D11).
+- **Track control stays a build choice:** Push and Pull slots, the track's most sensitive numbers, change only through deliberate gear and upgrade choices, not as a side effect of stat growth.
 
 ### 9.3 Gear Slots (Decided)
 Each hero has four gear slots:
@@ -94,13 +101,13 @@ Lessons from Path of Exile and Hades, and the reasons for them, are in [referenc
 - **They rarely make decisions:** a choice between two small numbers has an obvious answer or barely matters.
 - **They blur attribution (goal 2):** a gap made of twenty small bonuses can't be traced after a loss.
 - **A run is too short for a grind to pay off:** at most 16 items per party, perhaps 10 to 20 gear decisions per run, and power resets every run. A grind's reward is volume, which this game doesn't have; Path of Exile's small bonuses matter only because hundreds of them add up.
-- **They push inflation:** health already had to scale with gear (9.1).
+- **They push inflation:** health once had to scale with gear to keep up with damage (since reversed, 9.1).
 
-The ×10 scale stays: the defence formula, the influence formula ([keywords.md](keywords.md)) and the track need it whatever gear does. Gear is Expression in the types of fun (1.2), not Submission.
+The ×10 scale stays: the defence formula, the power formula (9.2) and keyword values such as Burn need it whatever gear does. Gear is Expression in the types of fun (1.2), not Submission.
 
 **Proposed rules**
 - **Stat lines are few and chunky:** at most one stat line per item, in coarse steps (for example +10% or +20%), sized around **breakpoints**. A stat line is worth having when it changes what dies or who acts first (a hit that now kills, a card that now lands a slot earlier); full information makes those breakpoints strategic.
-- **Cap gear's share of a hero's stats** relative to the hero's base, so the recruit gap (10.6) stays deliberate rather than set by accident, and survival stats don't become a tax on every slot.
+- **Cap gear's share of a hero's stats** relative to the hero's base, so the recruit gap (10.6) stays deliberate rather than set by accident, and defence doesn't become a tax on every slot.
 - **Keywords work as tags.** Gear modifiers apply by keyword, as Path of Exile's modifiers apply by skill tag ("your burn effects..."), and ability and gear keywords use the same names.
 - **Bridge gear is a first-class item type:** gear that converts or links keywords ("displace effects also apply burn"), as Path of Exile's damage conversion lets fire modifiers apply to a physical attack.
 - **Bridge gear can have prerequisites,** as Hades duo and legendary boons do (for example: requires a burn item and a displace item on this hero). Taking an item early is then also a bet on a later combination.
@@ -224,10 +231,10 @@ A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks f
 | Party size | Up to 4 | Solo, larger squads | Balances composition depth and turn speed |
 | Heroes | Pool of ~12 heroes with unique abilities and base stats; gear modifies stats and common conditions/effects | Generic classes; fully custom characters | Separates composition and gear into clear build layers; fixed identities aid readability |
 | Hero death | Permanent for the run | Revive between fights with a penalty | Raises stakes; forces adaptation |
-| Stats | Health, speed, defence, power, influence; all modified by gear | Larger stat sets; movement stat; accuracy and evasion | Small enough to read on every unit's stat sheet; movement was not distinct from speed |
-| Health scaling | Modified by gear, like defence | Mostly fixed per hero; upgradeable constitution stat | Fixed health let damage outgrow it, so late fights collapsed into whoever strikes first; a recruit starting behind is intended (10.6) |
+| Stats (2026-10-18) | Health, speed, defence, power; gear modifies speed, defence and power; health is fixed per hero | Larger stat sets; movement stat; accuracy and evasion; a separate influence stat | Small enough to read on every unit's stat sheet; movement was not distinct from speed |
+| Health scaling (2026-10-18) | Fixed per hero; not modified by gear, upgrades or stat changes | Modified by gear, like defence (the previous decision); upgradeable constitution stat | Health is part of a hero's identity; with power scaling only base damage and keyword effects unscaled, damage no longer outgrows it |
 | Defence formula | Percentage reduction: defence / (defence + constant) | Flat reduction | Diminishing returns; never reaches full immunity; works across all damage sizes |
-| Power split | Power (direct damage) and Influence (effect strength) | Single power stat; physical/magical split | Follows the keyword system; a physical/magical split would need two defence stats and halve gear relevance |
+| Power (2026-10-18) | One offensive stat: power scales an ability's base damage and base healing; keyword effects and durations are unscaled | Power plus influence (effect strength, the previous decision); physical/magical split | Keeps every offensive item relevant to every hero; build identity comes from keywords; nothing scales twice |
 | Gear slots | Boots, gloves, armour, helmet | Including a weapon slot | Weapons are unique per hero and tied to abilities and visual language |
 | Consumables | Limited; used only between fights; stat buffs or statuses for the next combat, or health recovery; shared party inventory | Usable in combat as actions with their own cost; no consumables; unlimited consumables | Keeps combat about abilities and the track; makes preparation between fights a decision; no hoarding |
 | Hero progression | Milestone upgrades from a randomized, hero-specific pool; no stat growth; recruits join without upgrades and earn them by reaching milestones | Experience levels with stat growth | Build variety without stat inflation |
@@ -242,7 +249,6 @@ A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks f
 
 14. Number of rarity tiers and their visual treatment.
 20. Recruitment and hero questions listed in sections 10.7 and 10.8.
-22. Final name for the Influence stat (section 9.2).
 23. Value of `defenceConstant`, and whether a minimum of 1 damage applies (section 9.1).
 24. Which gear slots carry keyword modifiers. Gear carries them (9.7, decided 2026-10-17); whether every slot does, and which modifiers suit which slot, is still open (see question 49).
 25. Whether a rival caravan copy carries the consumable buffs active when it was copied ([ghosts.md](ghosts.md)).

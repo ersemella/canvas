@@ -22,7 +22,7 @@ tuning. Section numbers are the combat design's.
 | Abilities of all units (allies and enemies) | Yes | Diegetic design language: visual cues on characters and gear indicate their abilities. Must be consistent across the whole game. |
 | Action costs | Yes | Fixed and public for every ability. |
 | Turn order | Yes | The track: a scrollable window of roughly the next 30 slots, with every unit's and track entity's card in its slot (never two in one), so players can count placement directly (3.2, 3.3). A charging card shows what it will trigger. Statuses show as a small marker on a unit's card; their exact slots appear in the tap preview. **Tapping a card previews it**: a unit's turn (who acts and when; with the unit's stats and ability options, enemies included), a charged ability (target and outcome) or a reinforcement (arrival and spawn hex), limited to what the player can know: enemy intent stays hidden. Default window size open (open question 1). |
-| Stats (health, speed, defence, power, influence) | Yes, every unit | Every unit has a stat sheet, enemies included (D11). |
+| Stats (health, speed, defence, power) | Yes, every unit | Every unit has a stat sheet, enemies included (D11). |
 | Action outcomes | Yes, before committing | Previews show full numbers (section 7.2). |
 | Gear and recruits you're offered | Yes | Exact stats shown before you choose. **Players have full information;** only opponents' intent is hidden (D11). |
 | Enemy options | Yes | Each enemy's ability options can be previewed with their effects (7.2). |
