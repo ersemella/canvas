@@ -9,8 +9,10 @@ page and the API.
 > which has the status, the next step and an index of every decision.
 > Abandoned approaches are in [history.md](history.md).
 
-**Status: confirmed by the owner.** Everything here is usable as written;
-the few open items are listed in section 10 and are config values. All
+**Status: confirmed by the owner, except the prototype heroes (section
+4),** whose abilities and stat numbers are still to be designed. Everything
+else is usable as written; the other open items are listed in section 10
+and are config values. All
 numbers are **tuning placeholders**: put them in one config module
 (`packages/games/silk-road-tactics/src/rules/config.ts`) so play-testing
 can change them without touching rules code. Section numbers ("3.4")
@@ -21,7 +23,7 @@ refer to the combat design (see the map in the README).
 **In Phase 1:** one fight, from deployment to victory or defeat. The
 track and action economy; a hex map with obstacle, hazard and
 conceal tiles; flanking, line of fire, area abilities with friendly fire,
-one charged arcing ability; displacement and track pushes with the
+one charged arcing ability (the Mangudai Outrider's, to be designed); displacement and track pushes with the
 push limit; the defence formula; previews; stat sheets for every unit; previews
 of enemy ability options (D11); four prototype heroes; one enemy band and its AI; the
 track UI.
@@ -43,7 +45,7 @@ fight's end ends the run.
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). Speed stat 1 to 10. Armour lowers speed (4.2): see gear, below. |
 | 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
 | 5. Push limit | A card can be pushed by at most **10 slots in total** between two of its own turns, counting yielding after a push (3.6). Further pushes are reduced to fit; the preview shows the reduced amount. |
-| 6. Charged abilities | One in Phase 1 (Volley, below). |
+| 6. Charged abilities | One in Phase 1: the Mangudai Outrider's arcing area ability (section 4). |
 | 8. Move and act order | Move then act, or act then move; not split around the action. Every turn must include an action (5.1). |
 | 28. Movement cap | **4 hexes** per turn. |
 | 9. Map | Offset rectangle, **9 columns × 7 rows**, pointy-top hexes. Fits a 600-pixel-wide board beside the track panel. |
@@ -52,15 +54,15 @@ fight's end ends the run.
 | 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering and at the start of each turn spent on it. Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
 | 23. Defence | `defenceConstant` = **20**; minimum **1** damage from any hit. |
 | 29. Line of fire along a hex border | **Blocked if either** hex on the border is occupied. |
-| 30. Arcing attacks | Priced as a charged ability (Volley). |
+| 30. Arcing attacks | Priced as a charged ability, with a charge cost and a recovery cost (3.7). |
 | 31. Ally exemption | Not in Phase 1 (no gear choices); area abilities hit allies. |
 
 **Worked example:** a speed 4 hero (speed + C = 10) moving 2 hexes and
 making a typical attack: (100 + 2 × 10) ÷ 10 = 12 slots ahead. A speed 7
 hero doing the same: 120 ÷ 13 = 9.23, so 9 slots.
 
-**Health and damage are on a ×10 scale** (decided): hits of 30 to 100 and
-health of 240 to 440, so percentage bonuses survive rounding.
+**Health and damage are on a ×10 scale** (decided): hits of tens to about
+a hundred, health in the hundreds, so percentage bonuses survive rounding.
 
 **Damage and effect formulas** (Phase 1 order; whether the general model
 uses damage buckets is open, [heroes-and-gear.md](heroes-and-gear.md)):
@@ -101,64 +103,31 @@ Effects over time act at the beginning of a slot, before that slot's card
 
 ## 4. Prototype heroes
 
-**Provisional (2026-10-16):** the heroes' abilities below need a couple
-more design passes before they are built; treat them as placeholders.
-Stats, costs and the four niches stand.
+**Not yet designed (2026-10-18):** the heroes' abilities and stat numbers
+are for the owner to design before Phase 1 is built. Earlier drafts were
+removed; don't fill the gap with invented abilities. Only the four niches,
+the heroes and their stat bands stand.
 
 Four heroes from the roster, one per niche Phase 1 needs to test: a front
 line, fast melee with flanking, ranged with line of fire and a delayed
-arcing area, and track control. Stats turn the roster's relative
-profiles (15.8) into numbers:
+arcing area, and track control. Stat bands come from the roster's relative
+profiles (15.8); numbers for each band are set when the abilities are.
 
-| Profile | Health | Speed | Defence | Power |
-|---|---|---|---|---|
-| Very low | n/a | 1 | n/a | n/a |
-| Low | 240 | 2 | 5 | 5 |
-| Medium | 320 | 4 | 10 | 10 |
-| High | 440 | 7 | 20 | 15 |
-
-**Bökh Champion** (Tank; health High 440, speed Medium 4, defence High 20, power
-Medium 10; bare hands)
-- *Grapple*: melee, adjacent; 100 damage. Typical (100).
-- *Hold the Line*: Barrier 60 on self and every adjacent ally. Typical
-  (100).
-- *Throw*: melee, adjacent; 40 damage; Displace 1. Quick (60).
-
-**Kalari Duelist** (Damage; health Medium 320, speed High 7, defence Low
-5, power High 15; urumi)
-- *Quick Cut*: melee, adjacent; 60 damage; on-flank: Displace 1 (out of the
-  flank). Quick (60).
-- *Whirling Urumi*: area, all six adjacent hexes, allies included; 70
-  damage each. Typical (100).
-
-**Mangudai Outrider** (Damage; health Low 240, speed High 7, defence Low 5,
-power High 15; composite bow; mounted, reflected only in
-stats)
-- *Aimed Shot*: direct ranged, range 5, needs line of fire; 90 damage.
-  Typical (100).
-- *Volley*: **charged, arcing:** targets a hex in range 6, ignoring line
-  of fire; charge cost **30**, recovery cost **100** (3.7). When the
-  archer's card is next reached, it hits that hex and its six neighbours,
-  allies included, for 70 damage each. The target hex is fixed when
-  charging starts; units can step out of the area.
-
-**Jinn Binder** (Support/control; health Low 240, speed Medium 4,
-defence Low 5, power Low 5; sealed brass vessel)
-- *Bound Gust*: direct ranged, range 4, needs line of fire; 30 damage;
-  Push 4. Typical (100).
-- *Ifrit's Breath*: direct ranged, range 3, needs line of fire; Burn 20.
-  Typical (100).
-- *The Jinn Stirs*: area, a hex in range 3 and its neighbours, allies
-  included; Displace 1 outward from the centre and Push 2 each. Slow (150).
+| Hero | Niche | Health | Speed | Defence | Power | Signature weapon |
+|---|---|---|---|---|---|---|
+| **Bökh Champion** | Front line (tank) | High | Medium | High | Medium | Bare hands |
+| **Kalari Duelist** | Fast melee with flanking | Medium | High | Low | High | Urumi |
+| **Mangudai Outrider** | Ranged, line of fire, a delayed arcing area | Low | High | Low | High | Composite bow (mounted, reflected only in stats) |
+| **Jinn Binder** | Track control | Low | Medium | Low | Low | Sealed brass vessel |
 
 Every hero also has **Hold** (decided): a quick action (60) with no
 effect, so a unit can always end its turn (an action is required, 5.1).
 
 **Starter gear** (fixed in Phase 1; the four-slot model of 9.3 exists in
-code, but only armour is filled): the Bökh Champion and Jinn Binder wear medium
-armour (+5 defence, −1 speed); the Kalari Duelist and Mangudai Outrider wear
-light armour (+2 defence, no speed cost). Table values above exclude
-armour.
+code, but only armour is filled): the Bökh Champion and Jinn Binder wear
+medium armour (more defence, some speed cost); the Kalari Duelist and
+Mangudai Outrider wear light armour (a little defence, no speed cost).
+Values are set with the stat numbers.
 
 ## 5. The enemy band
 
@@ -179,7 +148,7 @@ On each enemy unit's turn, deterministically:
    the AI's own allies × 1.5 (friendly fire only when clearly worth it);
    minus the slots the turn moves the card × 10, so cheap good turns win
    ties.
-3. For Volley, score assuming targets don't move.
+3. For charged abilities, score assuming targets don't move.
 4. Take the highest score; break ties by the lowest unit slot, then
    target slot, then hex index. No randomness.
 
@@ -257,7 +226,10 @@ turn, so a bad preview can't cause an illegal move.
 
 ## 10. Open for Phase 1
 
-None blocks Phase 1; all are config values:
+**Blocks Phase 1:** the prototype heroes' abilities and stat numbers
+(section 4), for the owner to design.
+
+The rest don't block Phase 1; all are config values:
 - Cost values and `C` (open question 1): the defaults aim for a typical
   turn about 10 slots ahead.
 - The default size of the visible track window (roughly 30 slots).

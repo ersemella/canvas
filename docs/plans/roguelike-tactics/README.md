@@ -5,7 +5,9 @@ the multiplayer design (ghosts as **rival caravans**, built last) is
 settled. Built in this repository (D10). The folder name,
 `roguelike-tactics`, predates the title.
 
-**Next step: Phase 1**, from [phase-1-brief.md](phase-1-brief.md). The
+**Next step: Phase 1**, from [phase-1-brief.md](phase-1-brief.md), once
+the owner has designed the prototype heroes' abilities and stat numbers
+(its section 4). The
 keywords and their rules are decided ([keywords.md](keywords.md)). The
 combat design's other open questions are at the end of each topic file.
 PvP is parked ([pvp.md](pvp.md)).

@@ -145,7 +145,7 @@ ability triggers on the **taunter** instead: a single-target ability
 targets it, and an area ability is centred on its hex at that moment, as
 long as the taunter is within the ability's range from the charger's hex.
 Out of range, the original target stands. The preview shows the
-redirected target. A tank can taunt a charging Volley onto itself to
+redirected target. A tank can taunt a charging area attack onto itself to
 shield its allies.
 
 ### 17.6 Damage effects (Decided)
