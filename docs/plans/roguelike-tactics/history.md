@@ -59,6 +59,9 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 
 ## Combat
 
+- **Frozen** (until 2026-10-18): no movement and no action, a lost turn.
+  Replaced by Immobilized, which removes only movement; Dazed covers a
+  lost turn ([keywords.md](keywords.md), 17.5).
 - **Guard N%** (Phase 1 draft, until 2026-10-16): N% less damage for
   10 slots, Batyr's Hold the Line. Removed as outdated; Barrier covers
   damage protection ([keywords.md](keywords.md)).

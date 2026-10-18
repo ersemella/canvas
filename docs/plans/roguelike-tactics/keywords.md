@@ -23,7 +23,7 @@ for later phases.
 |---|---|
 | Track | Push, Pull, Swap, Inevitable |
 | Board | Displace, Unstoppable |
-| Control | Frozen, Dazed, Slowed, Taunt, Stealth |
+| Control | Immobilized, Dazed, Slowed, Taunt, Stealth |
 | Damage | Burn, Pierce, Lifesteal, Vulnerable, Barrier, Immortal |
 | Health | Heal, Overhealth, Antiheal, Cursed |
 | Removal | Cleanse, Dispel |
@@ -50,7 +50,7 @@ vocabulary. Guard (Phase 1 draft) is removed; Barrier replaces it.
     strongest still running takes over (Vulnerable 30% for 5 slots and
     15% for 20 slots give 30% for 5 slots, then 15% for 15).
   Except under Replace, every application runs its own duration. For a
-  status with no strength (Frozen, Taunt, Stealth and others), the modes
+  status with no strength (Immobilized, Taunt, Stealth and others), the modes
   apply to duration: additive extends it, max keeps the longest.
   Different statuses always combine. The preview shows the combined
   result.
@@ -92,14 +92,15 @@ as previewable.
 |---|---|
 | **Displace N away** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stopping early at an obstacle, another unit or the map edge deals **20 collision damage** to the displaced unit, and 20 to a unit it hits, ignoring defence. Entering a hazard triggers it. Doesn't move the card. |
 | **Displace N toward** | The same, toward the attacker (or the area's centre). Ending adjacent to the attacker is not a collision. |
-| **Unstoppable** | Immune to Frozen and Displace, **from allies and enemies alike**. Doesn't block track effects (Push, Pull, Swap) or Dazed and Slowed. The Mahout Bulwark's passive (it resists Displace but not Push, 15.8) is permanent Unstoppable. |
+| **Unstoppable** | Immune to Immobilized and Displace, **from allies and enemies alike**. Doesn't block track effects (Push, Pull, Swap) or Dazed and Slowed. The Mahout Bulwark's passive (it resists Displace but not Push, 15.8) is permanent Unstoppable. |
 
 "Displace N" with no direction means away. Other directions (sideways, to
 a chosen hex) can be defined per ability.
 
 - **Displacement is instant:** it resolves completely when the ability
-  resolves, so nothing (a freeze, a turn) happens part-way through it.
-- **A Frozen unit can't be displaced** (17.5).
+  resolves, so nothing (an Immobilized status, a turn) happens part-way
+  through it.
+- **An Immobilized unit can't be displaced** (17.5).
 - **Several units displaced at once** (an area ability) move one at a
   time: for Displace away, the unit farthest from the centre first; for
   Displace toward, the nearest first. Ties follow the fixed order for
@@ -107,23 +108,25 @@ a chosen hex) can be defined per ability.
   before the next one moves.
 
 ### 17.5 Control effects (Decided)
-Every turn must use an action (5.1). Losing a turn is modelled as a
-**forced Hold**: the unit's card is reached, it takes no action, and its
-card moves forward by Hold's cost (60) like any turn (3.2). The track
-keeps moving, so control costs the target a turn, not the fight.
+Every turn must use an action (5.1). Losing a turn (Dazed) is modelled
+as a **forced Hold**: the unit's card is reached, it takes no action, and
+its card moves forward by Hold's cost (60), plus any movement, like any
+turn (3.2). The track keeps moving, so control costs the target a turn,
+not the fight.
 
 | Keyword | Rule |
 |---|---|
-| **Frozen** | On its turn, the unit neither moves nor acts: a forced Hold. It also can't be displaced while Frozen. |
+| **Immobilized** | The unit can't move: no movement on its turn, and no ability that moves it (a charge, a leap, a dash, swapping hexes) can be used. It **still acts** with any ability that doesn't move it. It also can't be displaced, by allies or enemies. Not a lost turn. |
 | **Dazed** | On its turn, the unit may move but can't act: a forced Hold, plus any movement cost. |
 | **Slowed N** | The unit's movement cap (one global value, 4 in Phase 1) is reduced by N, to at least 1 hex. |
 | **Taunt** | While taunted, if the unit can attack the taunter from any hex it can reach this turn, it **must**: its action is an ability that targets the taunter or includes it in its area. Hold, other abilities and moving out of reach are not allowed. Only when no reachable hex and no ability can hit the taunter is the unit free. A **charging** unit's ability is redirected to the taunter instead (below). Ends early if the taunter dies. |
 | **Stealth** | The unit can't be **targeted** by **hostile** direct or arcing ranged abilities (allies' ranged heals and buffs still reach it). Area abilities centred elsewhere still hit it, melee still targets it, and it still blocks line of fire. Ends when the unit uses a damaging ability. Its identity and position stay visible (D11). Distinct from the conceal tile, which only halves ranged damage. |
 
-**Lockout guard:** Frozen and Dazed can make a unit lose at most **one
-turn in a row**. After a lost turn, the unit can't lose its next turn to
-either (the preview shows the immunity). Without this, chained freezes,
-like chained pushes (3.6), would be a lockout loop in PvP.
+**Lockout guard:** Dazed can make a unit lose at most **one turn in a
+row**. After a lost turn, the unit can't lose its next turn to Dazed (the
+preview shows the immunity). Without this, chained dazes, like chained
+pushes (3.6), would be a lockout loop in PvP. Immobilized doesn't need
+the guard, since the unit still acts.
 
 **A lost turn resets the push and pull limits** like any turn (3.6,
 17.3): a unit can be pushed to the limit, lose a turn, and be pushed to
@@ -133,9 +136,9 @@ the limit again, about two turns at most.
 unit actually takes do, so control never brings an enemy's ultimate
 closer.
 
-**Charged abilities:** if a charging unit's trigger turn is lost to Frozen
-or Dazed, **the charge fizzles**: nothing triggers and the card moves by
-the recovery cost. This makes control a fourth answer to a visible charge
+**Charged abilities:** if a charging unit's trigger turn is lost to
+Dazed, **the charge fizzles**: nothing triggers and the card moves by
+the recovery cost. This makes Dazed a fourth answer to a visible charge
 (with pushing the charger back, killing it, and stepping out of the area).
 
 **Taunt and charged abilities:** a charged ability's target is fixed when
@@ -181,7 +184,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
 
 ### 17.8 Cleanse and Dispel (Decided 2026-10-16; rules Proposed)
 - **Cleanse** removes every **harmful status applied by an ability**
-  from the target: Burn (every application), Frozen, Dazed, Slowed, Taunt,
+  from the target: Burn (every application), Immobilized, Dazed, Slowed, Taunt,
   Vulnerable, Antiheal, Cursed and stat downs. It doesn't affect
   flanking: Vulnerable from a flank lasts as long as the flank (6.3).
 - It doesn't undo what already happened: a Push or Displace already
@@ -222,7 +225,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
   locks a unit out or gives one unlimited extra turns. That keeps the
   vocabulary PvP-ready (goal 5).
 - Each effect has a counter in the list: Inevitable against track control,
-  Unstoppable against Displace and Frozen, Antiheal against healing,
+  Unstoppable against Displace and Immobilized, Antiheal against healing,
   Pierce against defence, a lost turn against a charged ability, Cleanse
   against harmful statuses, Dispel against beneficial ones.
 
@@ -239,7 +242,8 @@ Barrier; Cursed lowers the max that overhealth sits above.
 | Removal | Cleanse removes harmful statuses; Dispel, a separate effect, removes beneficial ones; neither touches passives | One effect removing both; no removal | Owner's call; each is a clear counter with an obvious target |
 | Same status twice | The source states how it combines: additive, multiplicative, replace or max; each application runs its own duration except under replace | One global rule (strongest replaces weaker; then strongest applies at a time); Burn as the only stacking status | Owner's call: how an effect combines is part of its design, and a lever for gear and upgrades |
 | Lost turns and budgets | A lost turn resets the push and pull limits like any turn | Budgets carry over a lost turn | Owner's call; the longest legal lockout is about two turns |
-| Lost turns | Don't count toward ultimates; a Frozen unit can't be displaced | Counting every turn | Control shouldn't bring an enemy's ultimate closer; owner's call |
+| Lost turns | Don't count toward ultimates | Counting every turn | Control shouldn't bring an enemy's ultimate closer; owner's call |
+| Immobilized | Replaces Frozen: removes movement, including abilities that move the unit, and prevents displacement; the unit still acts | Frozen: no movement and no action, a lost turn | Owner's call; Dazed already covers losing a turn |
 | Guard | Removed; Barrier covers damage protection | Keeping both | Owner's call: outdated |
 | Charged abilities | Fizzle on a lost trigger turn | Trigger anyway | Owner's call; control answers a visible charge |
 

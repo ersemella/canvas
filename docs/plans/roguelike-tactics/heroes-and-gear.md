@@ -198,7 +198,7 @@ The ×10 scale stays: the defence formula, the power formula (9.2) and keyword v
 
 ### 10.10 Ultimates (Decided)
 - Each hero has an **ultimate**: their most powerful ability.
-- **Unlocked by turns taken.** An ultimate becomes usable only once its hero has completed a set number of turns in the current fight. Every completed turn counts, whatever action it used, except a turn lost to Frozen or Dazed ([keywords.md](keywords.md), 17.5). The count starts at zero each fight.
+- **Unlocked by turns taken.** An ultimate becomes usable only once its hero has completed a set number of turns in the current fight. Every completed turn counts, whatever action it used, except a turn lost to Dazed ([keywords.md](keywords.md), 17.5). The count starts at zero each fight.
 - **Once per combat.** Once unlocked, each ultimate can be used once per fight. There is no charge meter and no cooldown.
 - **Priced on the track:** an ultimate may be an ordinary action with its own cost, a charged ability, or a track entity (3.7); that is defined per ultimate. Charged and track-entity ultimates are visible on the track, so opponents can answer them.
 - **Public:** for every unit, on both sides, its progress toward its ultimate (turns completed and turns needed), whether it is ready, and whether it has been used are shown on its card and stat sheet, consistent with complete information.

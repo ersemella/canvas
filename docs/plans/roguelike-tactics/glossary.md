@@ -36,7 +36,7 @@ tuning. Section numbers are the combat design's.
 | **Displace** | Physically moves a unit to another hex, away from or toward the attacker by a number of hexes (17.4). The only board movement effect; see Push and Pull for the track. |
 | **Push** | An effect that moves a card later on the track (3.5), within the push limit (3.6). Never board movement; see Displace. |
 | **Pull** | An effect that moves a card earlier on the track, never earlier than the next slot, within the pull limit (3.5, 17.3). Never board movement; see Displace. |
-| **Status** | A keyword effect on a unit for a duration in slots, such as Burn, Frozen or Barrier; public, shown on its card (17.2). |
+| **Status** | A keyword effect on a unit for a duration in slots, such as Burn, Immobilized or Barrier; public, shown on its card (17.2). |
 | **Charged ability** | An ability with a charge cost and a recovery cost: the character's card first moves by the charge cost; when reached, the ability triggers and the card moves by the recovery cost (3.7). |
 | **Track entity** | A card that acts independently of the character who created it, for example a summoned zombie (3.7). |
 | **Action** | The single ability or attack a unit uses on its turn. Required: an action ends the turn (5.1). |
