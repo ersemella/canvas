@@ -39,7 +39,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 **Stat profiles (relative, untuned)**
 
-Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gear.md), 9.2). Power scales only base damage and base healing, so the control supports (Yadachi Storm Caller, Jinn Binder, Sahira Enchantress), whose effects no longer scale with any stat, keep low power; the Waidan Alchemist, a healer, rises from low to medium because power now scales its heals. Health is fixed per hero (9.1).
+Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gear.md), 9.2). Power scales only base damage and base healing, so the control supports (Yadachi Storm Caller, Jinn Binder, Sahira Enchantress), whose effects no longer scale with any stat, keep low power; the Waidan Alchemist, a healer, rises from low to medium because power now scales its heals. Health is fixed per hero, in three tiers (Low 240, Medium 320, High 440) plus the war elephant's Very high (9.1).
 
 | Name | Health | Speed | Defence | Power |
 |---|---|---|---|---|
