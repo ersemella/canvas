@@ -200,6 +200,12 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   hero; Byzantine options had been an automaton engineer and an akrites
   scout. Sources: [Britannica: shāʿir](https://www.britannica.com/art/shair);
   [Wikipedia: Strategos](https://wikipedia.com/wiki/Strategos).
+  The Yadachi's culture moved from Mongol to **Turkic** (2026-10-18;
+  owner's call): the yadachi and *yada tashy* are Turkic folk belief
+  (Turkish, Azeri, Kazakh, Kyrgyz, Bashkir); the Mongols shared only the
+  stone (*jada*, *Secret History* 143). Weighed: keeping it Mongol under
+  the same name, or renaming it after the Mongol stone (Jada Storm
+  Caller).
 
 ## Setting
 
