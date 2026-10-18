@@ -209,6 +209,8 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   The Mongolia region was then widened to the **Steppe** region (Mongol
   and Turkic; owner's call, 2026-10-18), so the Yadachi has a home
   without a seventh region.
+  The spelling changed from **Yadachi** to **Yadachy** (2026-10-18;
+  owner's call), following the Wikipedia article's form.
 
 ## Setting
 
