@@ -93,7 +93,7 @@ The combat design's rules cite each other by section number ("section
 Run-level decisions: a run is a **route map with route choices** (as in
 Slay the Spire or Monster Train; node types and layout are Phase 2's
 design work), passing through six **regions** of several levels each, in
-a fixed order: Mongolia, China, India, Persia, Arabia, Byzantine
+a fixed order: Steppe, China, India, Persia, Arabia, Byzantine
 ([setting.md](setting.md), 15.3a); route maps, encounters and recruitment offers come from the
 run's seed. **Multiplayer and architecture** decisions are numbered:
 

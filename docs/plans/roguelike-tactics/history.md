@@ -206,6 +206,9 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   stone (*jada*, *Secret History* 143). Weighed: keeping it Mongol under
   the same name, or renaming it after the Mongol stone (Jada Storm
   Caller).
+  The Mongolia region was then widened to the **Steppe** region (Mongol
+  and Turkic; owner's call, 2026-10-18), so the Yadachi has a home
+  without a seventh region.
 
 ## Setting
 

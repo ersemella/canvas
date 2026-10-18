@@ -77,5 +77,5 @@ tuning. Section numbers are the combat design's.
 | **Rival caravan** | An AI-controlled copy of another player's party, met as a fight on its own map; the game's ghosts. See [ghosts.md](ghosts.md). |
 | **Route map** | The run's map of the road, with route choices between nodes (fights, rests, bazaars, recruitment), as in Slay the Spire. |
 | **Stage** | A run's **position along the road** on the route map (its row or step); rival caravans are matched by it, and difficulty scales with it. |
-| **Region** | One of the six civilizations a run passes through, in order: Mongolia, China, India, Persia, Arabia, Byzantine. Each is a part of the route map made of several levels (stages) (15.3a). |
+| **Region** | One of the six civilizations a run passes through, in order: Steppe (Mongol and Turkic), China, India, Persia, Arabia, Byzantine. Each is a part of the route map made of several levels (stages) (15.3a). |
 | **Party wipe** | Every hero in the party dead; the run ends. A rival caravan that wipes a party counts a kill (D9). |

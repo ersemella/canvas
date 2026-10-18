@@ -39,7 +39,7 @@ The road is divided into six **regions**, one for each civilization the caravan 
 
 | # | Region | Culture (15.5) | Home heroes (15.8) |
 |---|---|---|---|
-| 1 | **Mongolia** | Mongol (and Turkic, for the Yadachi) | Mangudai Outrider, Bökh Champion, Yadachi Storm Caller (Turkic) |
+| 1 | **Steppe** | Mongol and Turkic | Mangudai Outrider, Bökh Champion (Mongol); Yadachi Storm Caller (Turkic) |
 | 2 | **China** | Tang China | Waidan Alchemist, Modao Vanguard |
 | 3 | **India** | South India | Kalari Duelist, Mahout Bulwark |
 | 4 | **Persia** | Persia and Sogdiana | Persian Cataphract, Simurgh Summoner |
@@ -48,7 +48,7 @@ The road is divided into six **regions**, one for each civilization the caravan 
 
 - **The order is fixed,** the same in every run; route choices (the route map) vary within a region, not the order of regions.
 - **The road runs east to west** and ends in the Byzantine region, where the ruler at the road's end grants the Charter (15.2).
-- **The six regions are the hero cultures,** so every hero has a home region (the Turkic Yadachi Storm Caller's is Mongolia, the steppe; open question 33), and every region supplies both heroes and creatures (15.7).
+- **The six regions are home to the hero cultures,** one each except the Steppe, home to both the Mongol and the Turkic peoples, so every hero has a home region, and every region supplies both heroes and creatures (15.7).
 - **Levels and stages:** a region's levels are stages of the route map (glossary), so stage numbers keep counting across regions and rival caravan pools stay per stage ([ghosts.md](ghosts.md), D8). The number of levels per region is TBD (Phase 2).
 - **Cultures without a region** (Silla Korea, Nara Japan, Tibet, Srivijaya and Java, Egypt, Aksum) remain sources for places, neutral characters, creatures and bosses inside the six regions. Where each appears is open (question 33).
 
@@ -130,8 +130,8 @@ Named fictional characters and folklore creatures. Each suggests a mechanic from
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Setting | Fantasy Silk Road; folklore over religion as source material | Stopped Clock, Fallen Star, Succession, Last Refuge, Grand Melee, Ascent | Rivalry between caravans explains rival bands and ghost teams; folklore supplies creatures and bosses; caravanserais and bazaars map onto recovery and gear |
-| Run structure | Six **regions** of several levels each, in a fixed order: Mongolia, China, India, Persia, Arabia, Byzantine (15.3a) | Stretches of road only, with no grouping by culture; "worlds" as the name (owner preferred "region") | One region per hero culture gives each culture a home and the run a journey from east to west; owner's call, 2026-10-17 |
-| Steppe culture | **Mongol**, with Mongol folklore | Steppe peoples (Turkic and Mongol); Turkic khaganates (period-accurate) | The iconic steppe empire of the Silk Road, matching the heroes' Mongol names (Bökh Champion, Mangudai Outrider); owner's call, 2026-10-16 |
+| Run structure | Six **regions** of several levels each, in a fixed order: Steppe, China, India, Persia, Arabia, Byzantine (15.3a) | Stretches of road only, with no grouping by culture; "worlds" as the name (owner preferred "region") | One region per hero culture gives each culture a home and the run a journey from east to west; owner's call, 2026-10-17. The first region, Mongolia, widened to the **Steppe** (Mongol and Turkic) when the Turkic Yadachi Storm Caller joined; the Turkic khaganates ruled the Mongolian steppe in the setting's 7th to 8th century core; owner's call, 2026-10-18 |
+| Steppe culture | **Mongol**, with Mongol folklore; since 2026-10-18 the Steppe region also holds Turkic heroes and folklore (the Yadachi Storm Caller) | Steppe peoples (Turkic and Mongol); Turkic khaganates (period-accurate) | The iconic steppe empire of the Silk Road, matching the heroes' Mongol names (Bökh Champion, Mangudai Outrider); owner's call, 2026-10-16 |
 
 ## Open questions (from section 14, original numbers)
 
