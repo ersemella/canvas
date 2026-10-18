@@ -115,7 +115,7 @@ profiles (15.8); numbers for each band are set when the abilities are.
 
 | Hero | Niche | Health | Speed | Defence | Power | Signature weapon |
 |---|---|---|---|---|---|---|
-| **Bökh Champion** | Front line (tank) | High | Medium | High | Medium | Bare hands |
+| **Bökh Champion** | Front line (tank) | High | Medium | Medium | Low | Bare hands |
 | **Kalari Duelist** | Fast melee with flanking | Medium | High | Low | High | Urumi |
 | **Mangudai Outrider** | Ranged, line of fire, a delayed arcing area | Low | High | Low | High | Composite bow (mounted, reflected only in stats) |
 | **Jinn Binder** | Track control | Low | Medium | Low | Low | Sealed brass vessel |

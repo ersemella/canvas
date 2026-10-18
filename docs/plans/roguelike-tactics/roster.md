@@ -39,7 +39,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 
 **Stat profiles (relative, untuned)**
 
-Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gear.md), 9.2). Power scales only base damage and base healing, so the control supports (Yadachy Storm Caller, Jinn Binder, Sahira Enchantress), whose effects no longer scale with any stat, keep low power; the Waidan Alchemist, a healer, rises from low to medium because power now scales its heals. Health is fixed per hero, in three tiers (Low, Medium, High) plus the war elephant's Very high (9.1).
+Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gear.md), 9.2). Power scales only base damage and base healing, so the control supports whose effects no longer scale with any stat (Jinn Binder, Sahira Enchantress) keep low power; the Waidan Alchemist, a healer, rises from low to medium because power now scales its heals. Health is fixed per hero, in three tiers (Low, Medium, High) plus the war elephant's Very high (9.1).
 
 | Name | Health | Speed | Defence | Power |
 |---|---|---|---|---|
@@ -47,8 +47,8 @@ Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gea
 | Persian Cataphract | High | Medium | High | Medium |
 | Simurgh Summoner | Low | Medium | Low | High |
 | Mangudai Outrider | Low | High | Low | High |
-| Bökh Champion | High | Medium | High | Medium |
-| Yadachy Storm Caller | Low | Medium | Low | Low |
+| Bökh Champion | High | Medium | Medium | Low |
+| Yadachy Storm Caller | Medium | Medium | Medium | Medium |
 | Jinn Binder | Low | Medium | Low | Low |
 | Sahira Enchantress | Medium | Medium | Low | Low |
 | Kalari Duelist | Medium | High | Low | High |
