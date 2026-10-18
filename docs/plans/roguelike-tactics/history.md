@@ -208,7 +208,9 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   core, when the steppe was ruled by the Göktürk and Uyghur khaganates.
   Its Turkic material left with the rename: the *Book of Dede Korkut*,
   the *Epic of Manas*, Asena (grey wolf ancestress of the Göktürks),
-  albasty (a Turkic demon), Tepegöz (a one-eyed giant). Still options for
+  albasty (a Turkic demon), Tepegöz (a one-eyed giant). The Yadachi Storm
+  Caller (2026-10-18) brought the Turkic culture back as a hero culture,
+  homed in the Mongolia region. Still options for
   places, creatures or an expansion culture.
 
 ## Repository (D10)

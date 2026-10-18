@@ -39,7 +39,7 @@ The road is divided into six **regions**, one for each civilization the caravan 
 
 | # | Region | Culture (15.5) | Home heroes (15.8) |
 |---|---|---|---|
-| 1 | **Mongolia** | Mongol | Mangudai Outrider, Bökh Champion, Yadachi Storm Caller |
+| 1 | **Mongolia** | Mongol (and Turkic, for the Yadachi) | Mangudai Outrider, Bökh Champion, Yadachi Storm Caller (Turkic) |
 | 2 | **China** | Tang China | Waidan Alchemist, Modao Vanguard |
 | 3 | **India** | South India | Kalari Duelist, Mahout Bulwark |
 | 4 | **Persia** | Persia and Sogdiana | Persian Cataphract, Simurgh Summoner |
@@ -48,7 +48,7 @@ The road is divided into six **regions**, one for each civilization the caravan 
 
 - **The order is fixed,** the same in every run; route choices (the route map) vary within a region, not the order of regions.
 - **The road runs east to west** and ends in the Byzantine region, where the ruler at the road's end grants the Charter (15.2).
-- **The six regions are the six hero cultures,** so every hero has a home region, and every region supplies both heroes and creatures (15.7).
+- **The six regions are the hero cultures,** so every hero has a home region (the Turkic Yadachi Storm Caller's is Mongolia, the steppe; open question 33), and every region supplies both heroes and creatures (15.7).
 - **Levels and stages:** a region's levels are stages of the route map (glossary), so stage numbers keep counting across regions and rival caravan pools stay per stage ([ghosts.md](ghosts.md), D8). The number of levels per region is TBD (Phase 2).
 - **Cultures without a region** (Silla Korea, Nara Japan, Tibet, Srivijaya and Java, Egypt, Aksum) remain sources for places, neutral characters, creatures and bosses inside the six regions. Where each appears is open (question 33).
 
@@ -66,7 +66,7 @@ Twelve cultures, chosen for both historical relevance and variety in culture, ae
 
 **Folklore over religion (Decided):** creatures, epic heroes and folk tales are the source material. Deities, saints and figures still worshipped today are left out.
 
-This list is the wider setting palette. Heroes come from six of these cultures (15.8); the folklore below remains a source for creatures, bosses, places and neutral characters.
+This list is the wider setting palette. Heroes come from six of these cultures, plus the Turkic steppe for the Yadachi Storm Caller (15.8); the folklore below remains a source for creatures, bosses, places and neutral characters.
 
 | # | Culture | Role on the road | Aesthetic | Folklore creatures | Heroes and tales |
 |---|---|---|---|---|---|
@@ -119,7 +119,7 @@ Named fictional characters and folklore creatures. Each suggests a mechanic from
 - **Balance across cultures:** each culture should contribute both heroes and creatures. If one culture only ever supplies monsters, that reads badly.
 - **Folklore over living religion:** see 15.5.
 - **Readability over authenticity:** cultural variety must not break the design language. A burn effect should look the same whether it comes from a Persian mage or a Chinese alchemist.
-- **Weighting:** in the hero roster (15.8), each of the six hero cultures has two heroes. Other cultures can be strengthened through places, neutral characters and expansion heroes.
+- **Weighting:** in the hero roster (15.8), each hero culture has two heroes, except Turkic and Byzantium, with one each. Other cultures can be strengthened through places, neutral characters and expansion heroes.
 - **The Mongols' era:** the Mongol Empire's Pax Mongolica is 13th to 14th century, centuries after Tang China, Nara and the early Abbasids; in their time the steppe was ruled by Turkic khaganates. The Mongols are chosen as the iconic steppe empire of the Silk Road; fantasy allows the mix.
 - **Egypt's era:** during the Silk Road period Egypt was Ptolemaic, Roman, then Islamic. The pharaonic look is more iconic but anachronistic; fantasy allows either.
 - **Research gaps:** Aksumite and Swahili folklore need proper research before design work.
