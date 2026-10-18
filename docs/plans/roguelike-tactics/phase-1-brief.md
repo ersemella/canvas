@@ -24,7 +24,8 @@ refer to the combat design (see the map in the README).
 **In Phase 1:** one fight, from deployment to victory or defeat. The
 track and action economy; a hex map with obstacle, hazard and
 conceal tiles; flanking, line of fire, area abilities with friendly fire,
-one charged arcing ability (the Mangudai Outrider's Volley);
+two charged abilities (the Mangudai Outrider's arcing Volley and the
+Storm Caller's Freeze);
 displacement; a temporary board effect (the Storm Caller's hail); the
 keywords of section 3; **ultimates** (10.10, brought in 2026-10-18); the
 defence formula; previews; stat sheets for every unit; previews
@@ -49,7 +50,7 @@ fight's end ends the run.
 | 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement **10 per hex**; starting cost **50**; `C` = **6**. With speed 4, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). Speed stat 1 to 10. Armour lowers speed (4.2): see gear, below. |
 | 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
-| 6. Charged abilities | One in Phase 1: the Mangudai Outrider's Volley, an arcing area ultimate (section 4). |
+| 6. Charged abilities | Two in Phase 1, both ultimates: the Mangudai Outrider's Volley (arcing area) and the Storm Caller's Freeze (section 4). |
 | 39. Ultimate unlock | One value for every hero: usable after **3 completed turns** in the fight (10.10); once per fight. |
 | 8. Move and act order | Move then act, or act then move; not split around the action. Every turn must include an action (5.1). |
 | 28. Movement cap | **4 hexes** per turn. |
@@ -137,33 +138,34 @@ reading of the owner's one-line descriptions; the owner can change them
 
 | Ability | Rule |
 |---|---|
-| **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it hits the **first unit** on that line, ally or enemy, and stops at an obstacle *(proposed: a straight hex line instead of free-angle line of fire; friendly fire like any blocked shot)*. Base damage TBD. Typical cost. |
-| **Dash** | Moves the Outrider **3 hexes in a straight line** along one hex direction. Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. *(Proposed:* it can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn's action, so normal movement can come before or after it.) Not usable while Immobilized. Quick cost. |
-| **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage TBD, allies included. Charge and recovery costs TBD (3.7). The Phase 1 charged ability. |
+| **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it stops at the **first unit** on that line or at an obstacle. An enemy takes base damage TBD; an **ally stops the arrow but takes no damage** (owner's call, 2026-10-18), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
+| **Dash** | Moves the Outrider **3 hexes in a straight line** along one hex direction. Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn's action, so normal movement can come before or after it (confirmed 2026-10-18). Not usable while Immobilized. Quick cost. |
+| **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage TBD, allies included. Charge and recovery costs TBD (3.7). |
 
 **Yadachy Storm Caller**
 
 | Ability | Rule |
 |---|---|
 | **Clear the Storm** | Every **ally** within radius TBD of the caster, the caster included, is **healed** (base heal TBD, scaled by power) and **cleansed**. Enemies in the area are unaffected. Typical cost. |
-| **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it is **Slowed TBD** and **Vulnerable TBD%** for TBD slots. Hits any side. *(Proposed: needs no line of fire, since hail falls from above, and isn't charged; this departs from rule 30, that arcing attacks are charged, because hail deals no damage.)* Typical cost. |
+| **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it is **Slowed TBD** and **Vulnerable TBD%** for TBD slots. Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justifies). Typical cost. |
 | **Gale** | Melee: **Displace 1** away and **Slowed TBD** for TBD slots. An Immobilized target is slowed but not moved. Typical cost. |
-| **Freeze** (ultimate) | Targets a hex within range TBD; every unit in the area (radius TBD), allies included, is **Immobilized** and **Vulnerable TBD%** for TBD slots. *(Proposed: instant, not charged; same targeting as Hail.)* |
+| **Freeze** (ultimate) | A **charged** area with a **casting time** (owner's call, 2026-10-18): targets any hex within maximum range TBD, no line of fire needed. When the charge triggers, every unit in the area (radius TBD), allies included, is **Immobilized** and **Vulnerable TBD%** for TBD slots. Charge and recovery costs TBD (3.7); like any charge, it shows on the track and can be answered by stepping out, pushing, killing or dazing the caster. |
 
 **Bökh Champion**
 
 | Ability | Rule |
 |---|---|
-| **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. A hazard there triggers. *(Proposed: no damage of its own; the damage is where it lands.)* Typical cost. |
+| **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
 | **Pin** | Melee: the Champion **and** the target are **Immobilized** for TBD slots, and the target is **Vulnerable TBD%** for the same. Both still act. Typical cost. |
-| **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction; *(proposed:)* it stops early at an obstacle, an enemy or the map edge, without collision damage to itself. Then every unit adjacent to the Champion's final hex, allies included, is **Displaced 1** away from it (farthest first, 17.4). Collisions deal their usual damage. Not usable while Immobilized. Cost TBD. |
+| **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction and **completes the line**: only an **obstacle** or an **Unstoppable** unit in its path stops it early (owner's call, 2026-10-18), and the map edge ends it. Step by step, every unit in the path or adjacent to a hex the Champion enters is hit **once**: it takes base damage TBD and is **Displaced 1** away from the Champion's hex at that moment (several at once: farthest first, 17.4); collisions deal their usual damage. *(Proposed:* allies are displaced but take no Rampage damage, as with the bow; a unit in the path that couldn't be displaced, or was displaced ahead, is passed through; an **Immobilized** unit in the path stops the charge like an Unstoppable one, since it can't be displaced; if the last hex is occupied, the Champion ends on the last free hex it passed.) Not usable while Immobilized. Cost TBD. |
 
 **Interactions to know** (they follow from the keyword rules, not new
 rules): an Immobilized unit can't be displaced, so a pinned or frozen
-target is immune to Throw, Gale and Rampage; and a pinning Champion
-can't Rampage. Throw and Gale onto quicksand, or Freeze before Volley
-lands (frozen units can't step out of the area), are the obvious
-combinations. Hail's and Pin's Vulnerable don't stack with each other or
+target is immune to Throw's and Gale's displacement and stops a
+Rampage in its path; and a pinning Champion can't Rampage. Throw and
+Gale onto quicksand, and Freeze triggering before Volley lands (frozen
+units can't step out of the area), are the obvious combinations; the
+two charges' timing on the track is what makes the second one work. Hail's and Pin's Vulnerable don't stack with each other or
 a flank (max, section 2).
 
 **Starter gear** (fixed in Phase 1; the four-slot model of 9.3 exists in
@@ -280,14 +282,9 @@ turn, so a bad preview can't cause an illegal move.
 values marked TBD (section 4), for the owner to set.
 
 **Ability details to confirm** (section 4 uses the proposed reading
-until the owner says otherwise):
-- Composite Bow: a straight hex line hitting the first unit, rather than
-  the free-angle line of fire of 6.7.
-- Dash: blocked by obstacles and enemies; counts as the turn's action.
-- Hail and Freeze: no line of fire, not charged.
-- Throw: no damage of its own.
-- Rampage: stops at the first enemy; displaces only units adjacent to
-  its end hex, by 1; no damage beyond collisions.
+until the owner says otherwise): Rampage's handling of allies (displaced,
+no damage), of units it passes through, of an Immobilized unit in its
+path (stops it), and of an occupied last hex.
 
 The rest don't block Phase 1; all are config values:
 - Cost values and `C` (open question 1): the defaults aim for a typical
