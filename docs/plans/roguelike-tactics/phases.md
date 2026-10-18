@@ -25,8 +25,8 @@ fight per the combat design: the track and action economy
 conceal, deployment, flanking and line of fire ([map.md](map.md));
 complete information and previews (local, computed from the view, enemy
 ability options included, D11) ([information.md](information.md));
-stats, starter gear and the defence formula; every unit's stat sheet; four
-prototype heroes; one enemy band built from the same heroes and gear, with
+stats, starter gear and the defence formula; every unit's stat sheet; three
+prototype heroes and their ultimates; one enemy band built from the same heroes and gear, with
 a simple AI. The track UI. Platform: the player key, the `RunSystem`
 contract and registry support, `RunRoom`, its routes, and a minimal
 `PlayerLedger` (active run). One request per player turn (move and action,

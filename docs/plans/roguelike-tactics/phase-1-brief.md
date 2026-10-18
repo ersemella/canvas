@@ -9,10 +9,11 @@ page and the API.
 > which has the status, the next step and an index of every decision.
 > Abandoned approaches are in [history.md](history.md).
 
-**Status: confirmed by the owner, except the prototype heroes (section
-4),** whose abilities and stat numbers are still to be designed. Everything
-else is usable as written; the other open items are listed in section 10
-and are config values. All
+**Status: confirmed by the owner, except the prototype heroes' numbers
+(section 4).** The three heroes and their abilities are the owner's
+(2026-10-18); their stat numbers and ability values (damage, ranges,
+areas, durations, costs) are still to be set, and a few ability details
+are open (section 10). Everything else is usable as written. All
 numbers are **tuning placeholders**: put them in one config module
 (`packages/games/silk-road-tactics/src/rules/config.ts`) so play-testing
 can change them without touching rules code. Section numbers ("3.4")
@@ -23,16 +24,20 @@ refer to the combat design (see the map in the README).
 **In Phase 1:** one fight, from deployment to victory or defeat. The
 track and action economy; a hex map with obstacle, hazard and
 conceal tiles; flanking, line of fire, area abilities with friendly fire,
-one charged arcing ability (the Mangudai Outrider's, to be designed); displacement and track pushes with the
-push limit; the defence formula; previews; stat sheets for every unit; previews
-of enemy ability options (D11); four prototype heroes; one enemy band and its AI; the
+one charged arcing ability (the Mangudai Outrider's Volley);
+displacement; a temporary board effect (the Storm Caller's hail); the
+keywords of section 3; **ultimates** (10.10, brought in 2026-10-18); the
+defence formula; previews; stat sheets for every unit; previews
+of enemy ability options (D11); three prototype heroes; one enemy band and its AI; the
 track UI.
 
-**Not in Phase 1:** ultimates (10.10), consumables (9.6), gear rarity and
+**Not in Phase 1:** consumables (9.6), gear rarity and
 gear choices (fixed starter gear only), milestone upgrades, recruitment, the route map, recovery,
-reinforcements, summons and other track entities (3.7, 3.8), pulls
-(3.5), the other keywords ([keywords.md](keywords.md)), passives, elite affixes,
-rival caravans. Each is a later phase's work.
+reinforcements, summons and other track entities (3.7, 3.8), Push and
+the push limit, pulls (3.5), the other keywords ([keywords.md](keywords.md)), passives, elite affixes,
+rival caravans. Each is a later phase's work. No Phase 1 hero pushes
+cards on the track, so track control is tested later, with the Jinn
+Binder.
 
 A Phase 1 "run" is a single fight: starting a run starts the fight; the
 fight's end ends the run.
@@ -44,13 +49,13 @@ fight's end ends the run.
 | 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement **10 per hex**; starting cost **50**; `C` = **6**. With speed 4, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). Speed stat 1 to 10. Armour lowers speed (4.2): see gear, below. |
 | 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
-| 5. Push limit | A card can be pushed by at most **10 slots in total** between two of its own turns, counting yielding after a push (3.6). Further pushes are reduced to fit; the preview shows the reduced amount. |
-| 6. Charged abilities | One in Phase 1: the Mangudai Outrider's arcing area ability (section 4). |
+| 6. Charged abilities | One in Phase 1: the Mangudai Outrider's Volley, an arcing area ultimate (section 4). |
+| 39. Ultimate unlock | One value for every hero: usable after **3 completed turns** in the fight (10.10); once per fight. |
 | 8. Move and act order | Move then act, or act then move; not split around the action. Every turn must include an action (5.1). |
 | 28. Movement cap | **4 hexes** per turn. |
 | 9. Map | Offset rectangle, **9 columns × 7 rows**, pointy-top hexes. Fits a 600-pixel-wide board beside the track panel. |
 | 10. Passing through allies | Allowed (can't end on an occupied hex). Enemies block. |
-| 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Vulnerable from abilities is not in Phase 1. |
+| 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so pin, hail and a flank don't stack. |
 | 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering and at the start of each turn spent on it. Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
 | 23. Defence | `defenceConstant` = **20**; minimum **1** damage from any hit. |
 | 29. Line of fire along a hex border | **Blocked if either** hex on the border is occupied. |
@@ -67,31 +72,37 @@ a hundred, health in the hundreds, so percentage bonuses survive rounding.
 **Damage and effect formulas** (Phase 1 order; whether the general model
 uses damage buckets is open, [heroes-and-gear.md](heroes-and-gear.md)):
 - `damage = roundDown(base × (1 + power / 50))`, then 50% less if a
-  ranged attack on a concealed target, then +25% if flanked (Vulnerable), then the defence
-  formula (9.1); minimum 1; then Barrier absorbs. Each step rounds down.
-- Burn, hazard and collision damage skip the defence formula but still
-  take +25% if the unit is flanked (Vulnerable applies to every source),
-  then Barrier.
+  ranged attack on a concealed target, then Vulnerable (a flank's or an
+  ability's, by max), then the defence formula (9.1); minimum 1. Each step
+  rounds down.
+- Hazard and collision damage skip the defence formula but still take
+  Vulnerable (it applies to every source).
 - Several units displaced by one ability move one at a time, farthest
   from the centre first ([keywords.md](keywords.md), 17.4).
-- Push slots, Burn damage, Barrier strength and Displace distance are
-  fixed per ability, not scaled by any stat (power scales only an
-  ability's base damage and base healing; influence was folded into
-  power, [heroes-and-gear.md](heroes-and-gear.md), 9.2).
+- Displace distances, Slowed, Vulnerable and every duration are fixed
+  per ability, not scaled by any stat (power scales only an ability's
+  base damage and base healing, so Clear the Storm's heal scales;
+  influence was folded into power,
+  [heroes-and-gear.md](heroes-and-gear.md), 9.2).
 
 ## 3. Keywords for Phase 1
 
 The keyword vocabulary comes before heroes (10.8); the full list is in
-[keywords.md](keywords.md). **Displace** moves a unit across hexes;
-**Push** moves a card later on the track.
+[keywords.md](keywords.md). **Displace** moves a unit across hexes
+(Push, which moves a card on the track, isn't in Phase 1).
 
 | Keyword | Meaning |
 |---|---|
 | **Displace N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the displaced unit takes **20 damage**, and a unit it hits also takes 20 (ignoring defence). Entering a hazard triggers it. Doesn't move the displaced unit's card. |
-| **Push N** | Moves the target's card N slots later (3.5); it yields if that slot is taken; subject to the push limit (3.6). |
-| **Burn N** | The target takes N damage at the beginning of every **3rd slot** for **12 slots** (4 times), ignoring defence (3.9). |
-| **Barrier N** | Absorbs the next N damage the target would take, after every other step, for **10 slots** or until used up. How a second Barrier combines is set by its source ([keywords.md](keywords.md), 17.2); Phase 1 uses max. |
-| **On-flank** | An extra effect when the target is flanked (6.3). |
+| **Displace to a hex** | The Bökh Champion's Throw: the target is set down on a chosen free hex the ability names. No collision, since the hex is free; a hazard there triggers. |
+| **Immobilized** | No movement, and no ability that moves the unit (Dash, Rampage); can't be displaced. It still acts (17.5). |
+| **Slowed N** | Movement cap lowered by N, to at least 1 hex (17.5). Combines by max. |
+| **Vulnerable N%** | Takes N% more damage from every source (17.6). Combines by max, flanks included (section 2). |
+| **Heal N** | Restores N health, up to max health; scaled by power when the ability states it (17.7). |
+| **Cleanse** | Removes every harmful status applied by an ability: Immobilized, Slowed, Vulnerable (not a flank's). Already-applied displacement stays (17.8). |
+
+Burn, Barrier, Push and On-flank are no longer in Phase 1: no Phase 1
+ability uses them.
 
 **How the track works, in one paragraph:** cards sit in numbered slots;
 the track advances slot by slot and each card acts when reached. After an
@@ -103,37 +114,71 @@ Effects over time act at the beginning of a slot, before that slot's card
 
 ## 4. Prototype heroes
 
-**Not yet designed (2026-10-18):** the heroes' abilities and stat numbers
-are for the owner to design before Phase 1 is built. Earlier drafts were
-removed; don't fill the gap with invented abilities. Only the four niches,
-the heroes and their stat bands stand.
-
-Four heroes from the roster, one per niche Phase 1 needs to test: a front
-line, fast melee with flanking, ranged with line of fire and a delayed
-arcing area, and track control. Stat bands come from the roster's relative
-profiles (15.8); numbers for each band are set when the abilities are.
+**Abilities: the owner's (2026-10-18).** Three heroes from the roster:
+a front line, ranged with a delayed arcing area, and a support that
+controls space and heals. The Kalari Duelist and Jinn Binder wait for a
+later phase. Flanking is still tested, by every hero. Stat bands come
+from the roster's relative profiles (15.8); their numbers, and the
+values marked TBD below, are still to be set, in the config module.
 
 | Hero | Niche | Health | Speed | Defence | Power | Signature weapon |
 |---|---|---|---|---|---|---|
-| **Bökh Champion** | Front line (tank) | High | Medium | Medium | Low | Bare hands |
-| **Kalari Duelist** | Fast melee with flanking | Medium | High | Low | High | Urumi |
-| **Mangudai Outrider** | Ranged, line of fire, a delayed arcing area | Low | High | Low | High | Composite bow (mounted, reflected only in stats) |
-| **Jinn Binder** | Track control | Low | Medium | Low | Low | Sealed brass vessel |
+| **Bökh Champion** | Front line (tank): grabs, pins, throws | High | Medium | Medium | Low | Bare hands |
+| **Mangudai Outrider** | Ranged in straight lines, mobility, a delayed arcing area | Low | High | Low | High | Composite bow (mounted, reflected only in stats) |
+| **Yadachy Storm Caller** | Support: slows and moves enemies, heals and cleanses allies | Medium | Medium | Medium | Medium | Rain stone and water |
 
-Every hero also has **Hold** (decided): a quick action (60) with no
-effect, so a unit can always end its turn (an action is required, 5.1).
+"Melee" means an adjacent hex. Every hero also has **Hold** (decided): a
+quick action (60) with no effect, so a unit can always end its turn (an
+action is required, 5.1). Rules marked *(proposed)* are this brief's
+reading of the owner's one-line descriptions; the owner can change them
+(section 10).
+
+**Mangudai Outrider**
+
+| Ability | Rule |
+|---|---|
+| **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it hits the **first unit** on that line, ally or enemy, and stops at an obstacle *(proposed: a straight hex line instead of free-angle line of fire; friendly fire like any blocked shot)*. Base damage TBD. Typical cost. |
+| **Dash** | Moves the Outrider **3 hexes in a straight line** along one hex direction. Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. *(Proposed:* it can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn's action, so normal movement can come before or after it.) Not usable while Immobilized. Quick cost. |
+| **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage TBD, allies included. Charge and recovery costs TBD (3.7). The Phase 1 charged ability. |
+
+**Yadachy Storm Caller**
+
+| Ability | Rule |
+|---|---|
+| **Clear the Storm** | Every **ally** within radius TBD of the caster, the caster included, is **healed** (base heal TBD, scaled by power) and **cleansed**. Enemies in the area are unaffected. Typical cost. |
+| **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it is **Slowed TBD** and **Vulnerable TBD%** for TBD slots. Hits any side. *(Proposed: needs no line of fire, since hail falls from above, and isn't charged; this departs from rule 30, that arcing attacks are charged, because hail deals no damage.)* Typical cost. |
+| **Gale** | Melee: **Displace 1** away and **Slowed TBD** for TBD slots. An Immobilized target is slowed but not moved. Typical cost. |
+| **Freeze** (ultimate) | Targets a hex within range TBD; every unit in the area (radius TBD), allies included, is **Immobilized** and **Vulnerable TBD%** for TBD slots. *(Proposed: instant, not charged; same targeting as Hail.)* |
+
+**Bökh Champion**
+
+| Ability | Rule |
+|---|---|
+| **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. A hazard there triggers. *(Proposed: no damage of its own; the damage is where it lands.)* Typical cost. |
+| **Pin** | Melee: the Champion **and** the target are **Immobilized** for TBD slots, and the target is **Vulnerable TBD%** for the same. Both still act. Typical cost. |
+| **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction; *(proposed:)* it stops early at an obstacle, an enemy or the map edge, without collision damage to itself. Then every unit adjacent to the Champion's final hex, allies included, is **Displaced 1** away from it (farthest first, 17.4). Collisions deal their usual damage. Not usable while Immobilized. Cost TBD. |
+
+**Interactions to know** (they follow from the keyword rules, not new
+rules): an Immobilized unit can't be displaced, so a pinned or frozen
+target is immune to Throw, Gale and Rampage; and a pinning Champion
+can't Rampage. Throw and Gale onto quicksand, or Freeze before Volley
+lands (frozen units can't step out of the area), are the obvious
+combinations. Hail's and Pin's Vulnerable don't stack with each other or
+a flank (max, section 2).
 
 **Starter gear** (fixed in Phase 1; the four-slot model of 9.3 exists in
-code, but only armour is filled): the Bökh Champion and Jinn Binder wear
-medium armour (more defence, some speed cost); the Kalari Duelist and
-Mangudai Outrider wear light armour (a little defence, no speed cost).
-Values are set with the stat numbers.
+code, but only armour is filled): the Bökh Champion and Yadachy Storm
+Caller wear medium armour (more defence, some speed cost); the Mangudai
+Outrider wears light armour (a little defence, no speed cost). Values are
+set with the stat numbers.
 
 ## 5. The enemy band
 
-A band built from the same heroes and gear (11.1): Bökh Champion, Kalari Duelist
-and Mangudai Outrider, **three against your four**, so a simple AI is a fair
-first opponent. Duplicates across sides are allowed (10.4).
+A band built from the same heroes and gear (11.1): Bökh Champion,
+Mangudai Outrider and Yadachy Storm Caller, **three against your three**
+(owner's call, 2026-10-18; the AI is weaker than a player, so even
+numbers are still a fair first opponent). Duplicates across sides are
+allowed (10.4).
 
 ## 6. Enemy AI
 
@@ -142,13 +187,17 @@ On each enemy unit's turn, deterministically:
    staying put, and from each every legal ability and target (line of
    fire respected), including Hold.
 2. Score each option with the same rules as previews: damage dealt,
-   **+300** if it kills, **+100** if the target is flanked; burn counts its
-   total damage; push counts its slots × 20; displace counts its collision and
-   hazard damage, **+50** if it breaks a flank on an ally; minus damage to
+   **+300** if it kills, **+100** if the target is flanked; displace counts its collision and
+   hazard damage, **+50** if it breaks a flank on an ally; healing counts
+   as damage; each status applied to an enemy (or removed from an ally)
+   counts **+40** per point of Slowed, **+2** per slot of Immobilized and
+   **+2** per Vulnerable % (tuning placeholders); the same applied to
+   its own allies counts against it; minus damage to
    the AI's own allies × 1.5 (friendly fire only when clearly worth it);
    minus the slots the turn moves the card × 10, so cheap good turns win
    ties.
-3. For charged abilities, score assuming targets don't move.
+3. For charged abilities, score assuming targets don't move. Use an
+   ultimate as soon as its option scores highest; no saving it.
 4. Take the highest score; break ties by the lowest unit slot, then
    target slot, then hex index. No randomness.
 
@@ -187,8 +236,9 @@ header (never the URL, D4). The server stores only its SHA-256 hash.
 **The view** (versioned, sent whole each time): the map; every unit's
 position, health, statuses and abilities; **every unit's full stats**, enemies'
 included (D11); the track (every card's
-slot, charging abilities and their targets, each card's remaining push
-budget); the fight's status;
+slot, charging abilities and their targets); every unit's ultimate
+progress (10.10); temporary board effects (hail) and their remaining
+slots; the fight's status;
 the log of what the AI did since your last turn.
 
 Previews of moves and actions are computed in the browser from the view,
@@ -214,7 +264,7 @@ turn, so a bad preview can't cause an illegal move.
 - **The track is drawn as slots,** a window of roughly the next 30, and
   **scrolls** to later slots. Unit and entity cards sit in their slots
   (never two in one), so players can count placement directly (7.1). A
-  charging card shows what it will trigger. Statuses (burn, barrier) show
+  charging card shows what it will trigger. Statuses (Slowed, Vulnerable, Immobilized) and ultimate progress show
   only as a small marker on a unit's card; their exact slots appear in the
   tap preview. **Tapping a card previews it:** a unit's turn (who acts and
   when, with the unit's stats and ability options, enemies included), a charged ability (its
@@ -226,8 +276,18 @@ turn, so a bad preview can't cause an illegal move.
 
 ## 10. Open for Phase 1
 
-**Blocks Phase 1:** the prototype heroes' abilities and stat numbers
-(section 4), for the owner to design.
+**Blocks Phase 1:** the prototype heroes' stat numbers and the ability
+values marked TBD (section 4), for the owner to set.
+
+**Ability details to confirm** (section 4 uses the proposed reading
+until the owner says otherwise):
+- Composite Bow: a straight hex line hitting the first unit, rather than
+  the free-angle line of fire of 6.7.
+- Dash: blocked by obstacles and enemies; counts as the turn's action.
+- Hail and Freeze: no line of fire, not charged.
+- Throw: no damage of its own.
+- Rampage: stops at the first enemy; displaces only units adjacent to
+  its end hex, by 1; no damage beyond collisions.
 
 The rest don't block Phase 1; all are config values:
 - Cost values and `C` (open question 1): the defaults aim for a typical
