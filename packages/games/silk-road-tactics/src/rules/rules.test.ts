@@ -1,12 +1,13 @@
 import {describe, expect, it} from 'vitest';
-import {hexDistance, offsetToHex} from '@canvas/engine/server';
+import {hexDistance, hexKey, hexToOffset, hexToPixel, offsetToHex} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, AI, RULES} from './config';
 import {isFlanked, lineOfFire, movementCap, reachableHexes, unitAt, vulnerablePercent} from './board';
-import {ABILITIES} from './abilities';
+import {ABILITIES, arrowLanes} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, defaultDeployment, deploy, mapOf} from './fight';
 import {previewTurn} from './preview';
+import {SALT_FLATS, onMap} from './map';
 import {abilityDamage} from './resolve';
 import {createRun, handleRunAction, runView} from './run';
 import {freeSlotFrom, nextCard, placeCard, simultaneousOrder, slotsForward, turnCost} from './track';
@@ -73,6 +74,16 @@ describe('the track', () => {
     expect(unit(s, 'p-mangudai').slot).toBe(Math.floor(RULES.startCost / (unit(s, 'p-mangudai').speed + RULES.C)));
   });
 
+  it('spaces the starting cards by speed, as far apart as a typical turn would put them', () => {
+    const s = createFight(0);
+    deploy(s, defaultDeployment(s));
+    const fast = unit(s, 'p-mangudai');
+    const slow = unit(s, 'p-bokh');
+    expect(slow.slot! - fast.slot!).toBeGreaterThanOrEqual(
+      slotsForward(RULES.cost.typical, slow.speed) - slotsForward(RULES.cost.typical, fast.speed)
+    );
+  });
+
   it('expires a status after the slot it ends on, so it covers that turn (3.9)', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-bokh': at(7, 5)});
     const b = unit(s, 'p-bokh');
@@ -117,6 +128,28 @@ describe('the track', () => {
 });
 
 describe('the board', () => {
+  it('has a hex at column −1 on odd rows, making an exact left-right mirror', () => {
+    const map = SALT_FLATS;
+    expect(map.hexes).toHaveLength(9 * 4 + 10 * 3);
+    for (const row of [1, 3, 5]) expect(onMap(map, at(-1, row))).toBe(true);
+    for (const row of [0, 2, 4, 6]) expect(onMap(map, at(-1, row))).toBe(false);
+    expect(onMap(map, at(9, 1))).toBe(false);
+    // Mirror about the board's centre line (x of column 4, even rows).
+    const layout = {orientation: 'pointy' as const, size: 1, origin: {x: 0, y: 0}};
+    const mid = hexToPixel(at(4, 0), layout).x;
+    const mirror = (h: Hex) => {
+      const p = hexToPixel(h, layout);
+      return SALT_FLATS.hexes.find((m) => {
+        const q = hexToPixel(m, layout);
+        return Math.abs(q.x - (2 * mid - p.x)) < 1e-9 && q.y === p.y;
+      });
+    };
+    for (const h of map.hexes) expect(mirror(h)).toBeDefined();
+    const zone = new Set(map.deployment.enemy.map(hexKey));
+    for (const h of map.deployment.player) expect(zone.has(hexKey(mirror(h)!))).toBe(true);
+    expect(map.deployment.player.some((h) => hexToOffset(h).col === -1)).toBe(true);
+  });
+
   it('passes allies, is blocked by enemies and obstacles, never ends on a unit', () => {
     const s = setup({'p-bokh': at(0, 3), 'p-storm': at(1, 3), 'e-bokh': at(1, 2)});
     const reach = reachableHexes(s, mapOf(s), unit(s, 'p-bokh'));
@@ -216,6 +249,23 @@ describe('damage', () => {
 });
 
 describe('abilities', () => {
+  it('shows every bow lane to its range, stopping at the first unit or an obstacle', () => {
+    const s = setup({'p-mangudai': at(-1, 3), 'e-bokh': at(8, 6)});
+    const from = at(-1, 3);
+    const east = (l: ReturnType<typeof arrowLanes>) => l[0]!;
+    // Nothing in the way: the lane still runs its full range.
+    let lanes = arrowLanes(s, mapOf(s), from);
+    expect(lanes).toHaveLength(6);
+    expect(east(lanes)).toEqual({hexes: [at(0, 3), at(1, 3), at(2, 3), at(3, 3), at(4, 3)]});
+    expect(ABILITIES.bow.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([]);
+    // A unit in it: the lane ends there, and that unit is the bow's target.
+    unit(s, 'e-bokh').hex = at(2, 3);
+    lanes = arrowLanes(s, mapOf(s), from);
+    expect(east(lanes).hexes).toEqual([at(0, 3), at(1, 3), at(2, 3)]);
+    expect(east(lanes).hit!.id).toBe('e-bokh');
+    expect(ABILITIES.bow.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([{hex: at(2, 3)}]);
+  });
+
   it('the bow hits the first unit on its line, an ally included, never past it', () => {
     const s = setup({'p-mangudai': at(0, 0), 'p-bokh': at(1, 0), 'e-bokh': at(3, 0), 'e-storm': at(0, 6)});
     const m = unit(s, 'p-mangudai');

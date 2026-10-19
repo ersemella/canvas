@@ -38,7 +38,7 @@ check('the view never carries the seed', !/seed/i.test(raw));
 
 check('another key can’t see the run', (await api(`/runs/${runId}`, bob)).status === 403);
 const placements = (fight) =>
-  fight.units.filter((u) => u.side === 'player').map((u, i) => ({unitId: u.id, hex: [{q: 0, r: 2}, {q: 0, r: 3}, {q: -2, r: 4}][i]}));
+  fight.units.filter((u) => u.side === 'player').map((u, i) => ({unitId: u.id, hex: [{q: 0, r: 2}, {q: -1, r: 3}, {q: -2, r: 4}][i]}));
 check(
   'another key can’t act on the run',
   (await api(`/runs/${runId}/deploy`, bob, {method: 'POST', body: JSON.stringify({placements: placements(started.body.view.fight)})})).status === 403
@@ -51,7 +51,7 @@ const outside = await api(`/runs/${runId}/deploy`, alice, {
 });
 check('deploying outside the zone is refused', outside.status === 400, outside.body);
 
-// The map's default placement (odd-r: (col 1,row 2), (1,3), (0,4)).
+// The map's default placement (odd-r: (col 1,row 2), (0,3), (0,4)).
 const deployed = await api(`/runs/${runId}/deploy`, alice, {method: 'POST', body: JSON.stringify({placements: placements(started.body.view.fight)})});
 check('deploying starts the fight', deployed.status === 200 && deployed.body.view.fight.phase === 'fight', deployed.body);
 check('the response stops on one of your units', /^p-/.test(deployed.body.view.fight.awaiting ?? ''), deployed.body.view.fight.awaiting);
@@ -80,11 +80,11 @@ page.on('pageerror', (e) => {
   console.log('  [page error]', e.message);
 });
 
-/** Clicks a hex on the board canvas, scaled from the 600×400 scene to the canvas on screen. */
+/** Clicks a hex on the board canvas, scaled from the 600×460 scene to the canvas on screen. */
 async function tapHex(hex) {
   const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
   const box = await page.locator('canvas').boundingBox();
-  await page.mouse.click(box.x + (x * box.width) / 600, box.y + (y * box.height) / 400);
+  await page.mouse.click(box.x + (x * box.width) / 600, box.y + (y * box.height) / 460);
   await sleep(150);
 }
 const state = () => page.evaluate(() => window.__tactics?.run);
@@ -128,10 +128,10 @@ try {
     finish();
   }
 
-  // Move the Outrider (default at col 1,row 3) to another zone hex by tapping.
+  // Move the Outrider (default at col 0, row 3) to another zone hex by tapping.
   let run = await state();
   const outrider = 'p-mangudai';
-  await tapHex({q: 0, r: 3}); // select it (axial of col 1,row 3... see below)
+  await tapHex({q: -1, r: 3}); // select it (axial of col 0, row 3)
   await tapHex({q: -3, r: 6}); // col 0, row 6
   await page.getByRole('button', {name: 'Start the fight'}).click();
   await page.getByText(/^Your turn:/).waitFor({timeout: 15_000});
@@ -153,7 +153,7 @@ try {
     for (const [dq, dr] of dirs) {
       const h = {q: me.hex.q + dq, r: me.hex.r + dr};
       const col = h.q + (h.r - (h.r & 1)) / 2;
-      if (h.r < 0 || h.r > 6 || col < 0 || col > 8) continue;
+      if (h.r < 0 || h.r > 6 || col < -(h.r & 1) || col > 8) continue;
       if (t.units.some((u) => u.alive && u.hex && u.hex.q === h.q && u.hex.r === h.r)) continue;
       if (['3,2', '2,4', '3,3', '5,3'].includes(`${col},${h.r}`)) continue;
       return h;
@@ -179,6 +179,20 @@ try {
   check('tapping an enemy shows its stat sheet', (await sheet.textContent()).includes('enemy'));
   check('the sheet lists what it could do', await sheet.getByText(/Could do next turn/).isVisible());
   await shot(page, 'enemy-sheet');
+
+  // Hovering a hex shows what it does, without planning a move.
+  const quicksand = {q: 2, r: 3}; // col 3, row 3
+  const versionBeforeHover = (await state()).view.version;
+  {
+    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), quicksand);
+    const box = await page.locator('canvas').boundingBox();
+    await page.mouse.move(box.x + (x * box.width) / 600, box.y + (y * box.height) / 460);
+    await sleep(150);
+  }
+  const info = page.getByTestId('hex-info');
+  check('hovering quicksand shows its rule', (await info.textContent()).includes('Quicksand'));
+  check('hovering changes nothing', (await state()).view.version === versionBeforeHover);
+  await shot(page, 'hover');
 
   // A reload resumes the run exactly.
   const snapshot = JSON.stringify(run.view);

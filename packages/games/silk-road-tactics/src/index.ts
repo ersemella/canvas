@@ -4,10 +4,11 @@
 // previews. The server-authoritative rules run in the platform's RunRoom
 // through the DOM-free `./server` entry; the page sends turns over HTTP.
 
-import {SystemRegistry, offsetRectangle} from '@canvas/engine';
+import {SystemRegistry} from '@canvas/engine';
 import type {EntityData, GameDefinition, GameManifest} from '@canvas/engine';
 import manifest from '../game.json';
-import {BOARD_LAYOUT, TacticsBoardSystem} from './client/TacticsBoardSystem';
+import {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem} from './client/TacticsBoardSystem';
+import {TacticsInputSystem} from './client/TacticsInputSystem';
 import {SALT_FLATS, tileAt} from './rules/map';
 import type {Tile} from './rules/map';
 
@@ -27,10 +28,12 @@ function boardEntities(): EntityData[] {
       id: 'board',
       components: {
         Transform: transform(BOARD_LAYOUT.origin.x, BOARD_LAYOUT.origin.y),
-        HexGrid: {orientation: 'pointy', size: BOARD_LAYOUT.size, columns: map.columns, rows: map.rows},
+        // Places the tiles. Its rectangle is nominal: taps are picked against
+        // the map's own hexes by TacticsInputSystem (odd rows reach column −1).
+        HexGrid: {orientation: 'pointy', size: BOARD_LAYOUT.size, columns: 9, rows: 7},
       },
     },
-    ...offsetRectangle(map.columns, map.rows).map((h) => ({
+    ...map.hexes.map((h) => ({
       id: `tile-${h.q}-${h.r}`,
       components: {
         Transform: transform(0, 0),
@@ -56,6 +59,7 @@ export const silkRoadTactics: GameDefinition = {
   },
   register() {
     SystemRegistry.register('TacticsBoardSystem', TacticsBoardSystem);
+    SystemRegistry.register('TacticsInputSystem', TacticsInputSystem);
   },
 };
 
@@ -63,19 +67,23 @@ export default silkRoadTactics;
 
 // What the platform's page uses: the board's drawing contract and the
 // rules, run locally for previews (D11).
-export {BOARD_LAYOUT, TacticsBoardSystem};
+export {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem};
 export type {BoardScene, HighlightKind} from './client/TacticsBoardSystem';
-export {ABILITIES, abilitiesOf, unusableReason} from './rules/abilities';
-export type {AbilityDef} from './rules/abilities';
+export type {TacticsCardPayload, TacticsHoverPayload, TacticsTapPayload} from './client/TacticsInputSystem';
+export {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './rules/abilities';
+export type {AbilityDef, ArrowLane} from './rules/abilities';
+export {TILE_INFO, hailInfo} from './rules/info';
+export type {HexInfo} from './rules/info';
 export {ABILITY, HEROES, RULES} from './rules/config';
 export {isFlanked, movementCap, reachableHexes, statusSlotsLeft, statusValue, unitAt} from './rules/board';
 export type {Reach} from './rules/board';
 export {actingUnit, cloneFight, defaultDeployment, mapOf} from './rules/fight';
 export {enterHex, unitName} from './rules/resolve';
+export {slotsForward, turnCost} from './rules/track';
 export {previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
-export {SALT_FLATS} from './rules/map';
+export {SALT_FLATS, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';
 export type {RunView} from './rules/run';
 export type * from './rules/types';

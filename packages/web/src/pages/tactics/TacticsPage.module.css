@@ -50,17 +50,37 @@
   font-weight: 600;
 }
 
-.track {
-  display: flex;
-  flex-direction: column;
+.abilityCost {
+  margin-left: 6px;
+  font-size: 10px;
+  opacity: 0.7;
 }
 
-.trackRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 15px;
+.abilityName {
+  color: var(--mantine-color-gray-3);
+}
+
+.cost {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1px 10px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cost > b {
+  text-align: right;
+}
+
+.costTotal {
+  border-top: 1px solid var(--mantine-color-dark-4);
+  padding-top: 2px;
+}
+
+.costWide {
+  grid-column: 1 / -1;
   font-size: 12px;
+  color: var(--mantine-color-dimmed);
 }
 
 .slotNo {
@@ -70,43 +90,6 @@
   font-size: 11px;
   text-align: right;
   display: inline-block;
-}
-
-.card {
-  flex: 1;
-  text-align: left;
-  border: none;
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 12px;
-  color: #fff;
-  cursor: pointer;
-}
-
-.cardPlayer {
-  background: #1e3a8a;
-}
-
-.cardEnemy {
-  background: #7f1d1d;
-}
-
-.cardActing {
-  outline: 2px solid #fde047;
-}
-
-.marker {
-  margin-left: 4px;
-  color: #fb923c;
-}
-
-.ghostCard {
-  flex: 1;
-  border: 1px dashed #fde047;
-  border-radius: 4px;
-  padding: 0 6px;
-  color: #fde047;
-  font-size: 11px;
 }
 
 .stats {

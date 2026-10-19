@@ -12,7 +12,12 @@ import type {AbilityId, HeroId} from './types';
 export const RULES = {
   /** Track (3.2, 3.4): slotsForward = floor(cost / (speed + C)). */
   C: 6,
-  startCost: 50,
+  /**
+   * Starting slots (3.4) use a typical action's cost, so the opening order
+   * is spaced by speed like any later turn (owner, 2026-10-19; was 50,
+   * which bunched every card into slots 3 to 8).
+   */
+  startCost: 100,
   moveCostPerHex: 10,
   cost: {typical: 100, quick: 60, slow: 150},
   /** Hexes per turn (5.1); Slowed lowers it, to at least 1. */

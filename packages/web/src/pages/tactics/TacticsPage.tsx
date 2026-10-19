@@ -2,7 +2,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {Alert, Badge, Box, Button, Center, Group, Loader, Paper, Stack, Text, Title} from '@mantine/core';
 import {hexDistance, hexEquals, hexKey, hexToPixel, hexesInRange, registerBuiltinComponents, registerBuiltinSystems} from '@canvas/engine';
-import type {EventBus, Hex, HexGridClickPayload} from '@canvas/engine';
+import type {EventBus, Hex} from '@canvas/engine';
 import {
   ABILITIES,
   ABILITY,
@@ -10,8 +10,10 @@ import {
   HEROES,
   RULES,
   SALT_FLATS,
+  SCENE_SIZE,
   abilitiesOf,
   actingUnit,
+  arrowLanes,
   chooseAiTurn,
   cloneFight,
   defaultDeployment,
@@ -19,6 +21,8 @@ import {
   mapOf,
   previewTurn,
   reachableHexes,
+  slotsForward,
+  turnCost,
   unitAt,
   unusableReason,
 } from '@canvas/games-silk-road-tactics';
@@ -29,6 +33,9 @@ import type {
   FightState,
   HighlightKind,
   Reach,
+  TacticsCardPayload,
+  TacticsHoverPayload,
+  TacticsTapPayload,
   TurnInput,
   Unit,
 } from '@canvas/games-silk-road-tactics';
@@ -37,7 +44,7 @@ import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
-import {StatSheet, TrackPanel, TurnPreviewBox, FightLog} from './TacticsPanels';
+import {HexInspector, StatSheet, TurnPreviewBox, FightLog} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 /** Area abilities: their radius, to highlight the area around a chosen hex. */
@@ -52,7 +59,9 @@ const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
  * the server (a RunRoom); this page draws its view, previews turns with the
  * same rules locally (D11), and sends each turn as one request. Tap a hex to
  * plan a move, pick an ability, tap a target to preview, tap it again (or
- * Confirm) to commit.
+ * Confirm) to commit; with an ability picked, tapping a hex you can reach
+ * still re-plans the move. Hovering a hex, or tapping it in Inspect mode,
+ * shows what's there without planning anything.
  */
 export function TacticsPage() {
   const [run, setRun] = useState<RunResponse | null>(null);
@@ -66,6 +75,10 @@ export function TacticsPage() {
   const [target, setTarget] = useState<ActionTarget | null>(null);
   const [deployAt, setDeployAt] = useState<Record<string, Hex>>({});
   const [confirmAbandon, setConfirmAbandon] = useState(false);
+  /** Inspect mode: taps show what's on a hex instead of planning (for touch, which can't hover). */
+  const [inspecting, setInspecting] = useState(false);
+  const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
+  const [hover, setHover] = useState<TacticsHoverPayload>({hex: null, unitId: null});
   const eventsRef = useRef<EventBus | null>(null);
   const [worldReady, setWorldReady] = useState(0);
 
@@ -170,6 +183,11 @@ export function TacticsPage() {
   const onHex = useCallback(
     (h: Hex) => {
       if (!fight || busy) return;
+      if (inspecting) {
+        setPinnedHex(h);
+        setSelectedId(unitAt(fight, h)?.id ?? null);
+        return;
+      }
       if (fight.phase === 'deploy') {
         const here = Object.entries(deployAt).find(([, at]) => hexEquals(at, h))?.[0];
         const sel = selectedId && deployAt[selectedId] ? selectedId : null;
@@ -203,6 +221,13 @@ export function TacticsPage() {
           else setTarget(ability === 'throw' ? {hex: h} : match);
           return;
         }
+        // Not a target: a hex it can reach re-plans the move, keeping the ability.
+        const reach = reaches.find((r) => hexEquals(r.hex, h));
+        if (reach) {
+          setPlannedMove(reach.path.length > 0 ? reach : null);
+          setTarget(null);
+          return;
+        }
         setSelectedId(unitAt(fight, h)?.id ?? selectedId);
         return;
       }
@@ -214,7 +239,7 @@ export function TacticsPage() {
       }
       setSelectedId(unitAt(fight, h)?.id ?? null);
     },
-    [fight, busy, deployAt, selectedId, acting, ability, target, targets, reaches, commit, map]
+    [fight, busy, inspecting, deployAt, selectedId, acting, ability, target, targets, reaches, commit, map]
   );
 
   const onHexRef = useRef(onHex);
@@ -222,20 +247,57 @@ export function TacticsPage() {
 
   // ── What the board draws ───────────────────────────────────────────────────
 
+  /** The hex being looked at: under the mouse, else the one tapped in Inspect mode. */
+  const inspectHex = hover.hex ?? (inspecting ? pinnedHex : null);
+  const inspectedUnit = fight && inspectHex && fight.phase !== 'deploy' ? unitAt(fight, inspectHex) : undefined;
+  /** Where the inspected unit could move this turn, if it isn't the acting one. */
+  const inspectReach = useMemo(
+    () =>
+      fight && inspectedUnit && inspectedUnit.id !== acting?.id
+        ? reachableHexes(fight, mapOf(fight), inspectedUnit).filter((r) => r.path.length > 0)
+        : [],
+    [fight, inspectedUnit, acting]
+  );
+
+  /** The bow's six lanes from where the archer will stand, hit or not. */
+  const lanes = useMemo(
+    () => (ability === 'bow' && moved?.unit.alive ? arrowLanes(moved.state, mapOf(moved.state), moved.unit.hex!) : []),
+    [ability, moved]
+  );
+
   const scene: BoardScene = useMemo(() => {
     const highlights: {hex: Hex; kind: HighlightKind}[] = [];
-    const out: BoardScene = {fight, highlights, selectedUnitId: selectedId ?? acting?.id ?? null, preview: []};
+    const out: BoardScene = {
+      fight,
+      highlights,
+      selectedUnitId: selectedId ?? acting?.id ?? null,
+      preview: [],
+      previewSlot: preview?.slot ?? null,
+    };
     if (!fight) return out;
     if (fight.phase === 'deploy') {
       for (const h of map.deployment.player) if (!map.tiles[hexKey(h)]) highlights.push({hex: h, kind: 'zone'});
       out.positions = deployAt;
       return out;
     }
+    for (const r of inspectReach) highlights.push({hex: r.hex, kind: 'inspect'});
     if (!acting) return out;
     for (const h of plannedMove?.path ?? []) highlights.push({hex: h, kind: 'path'});
+    const onPath = (h: Hex) => plannedMove?.path.some((p) => hexEquals(p, h));
     if (!ability) {
-      for (const r of reaches) if (r.path.length > 0 && !plannedMove?.path.some((p) => hexEquals(p, r.hex))) highlights.push({hex: r.hex, kind: 'move'});
+      for (const r of reaches) if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'move'});
     } else {
+      // Still movable: a dotted outline, under the ability's own highlights.
+      for (const r of reaches) if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'reach'});
+      if (lanes.length > 0) {
+        out.arrows = [];
+        for (const lane of lanes) {
+          const last = lane.hexes[lane.hexes.length - 1];
+          if (!last) continue;
+          out.arrows.push({from: moved!.unit.hex!, to: last, hits: Boolean(lane.hit)});
+          for (const h of lane.hit ? lane.hexes.slice(0, -1) : lane.hexes) highlights.push({hex: h, kind: 'lane'});
+        }
+      }
       const shown = new Set<string>();
       const throwing = ability === 'throw' && target?.hex;
       for (const t of targets) {
@@ -259,7 +321,7 @@ export function TacticsPage() {
       out.preview = [{unitId: acting.id, to: plannedMove.hex, hpAfter: acting.hp, hpBefore: acting.hp, killed: false}];
     }
     return out;
-  }, [fight, selectedId, acting, deployAt, plannedMove, ability, reaches, targets, target, preview, map]);
+  }, [fight, selectedId, acting, deployAt, plannedMove, ability, reaches, targets, target, preview, map, inspectReach, lanes, moved]);
 
   useEffect(() => {
     eventsRef.current?.emit('tactics:board', scene);
@@ -278,7 +340,9 @@ export function TacticsPage() {
 
   const onReady = useCallback((events: EventBus) => {
     eventsRef.current = events;
-    events.on<HexGridClickPayload>('hexgrid:click', ({hex}) => onHexRef.current(hex));
+    events.on<TacticsTapPayload>('tactics:tap', ({hex}) => onHexRef.current(hex));
+    events.on<TacticsCardPayload>('tactics:card', ({unitId}) => setSelectedId(unitId));
+    events.on<TacticsHoverPayload>('tactics:hover', setHover);
     setWorldReady((n) => n + 1);
   }, []);
 
@@ -343,7 +407,7 @@ export function TacticsPage() {
   }
 
   const finished = fight.phase === 'won' || fight.phase === 'lost';
-  const selected = fight.units.find((u) => u.id === (selectedId ?? acting?.id)) ?? null;
+  const selected = fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
 
   return (
     <Stack align="center" py="md" gap="sm" px="md">
@@ -351,7 +415,13 @@ export function TacticsPage() {
       <div className={styles.layout}>
         <div className={styles.board}>
           <GameErrorBoundary>
-            <GameCanvas sceneData={game.sceneData} createSystems={game.createSystems} width={600} height={400} onReady={onReady} />
+            <GameCanvas
+              sceneData={game.sceneData}
+              createSystems={game.createSystems}
+              width={SCENE_SIZE.width}
+              height={SCENE_SIZE.height}
+              onReady={onReady}
+            />
           </GameErrorBoundary>
           {finished && (
             <Paper className={styles.result!} p="lg" radius="md">
@@ -404,6 +474,8 @@ export function TacticsPage() {
             !finished && (
               <TurnControls
                 unit={acting}
+                currentSlot={fight.currentSlot}
+                landingSlot={preview?.slot ?? null}
                 ability={ability}
                 plannedMove={plannedMove}
                 onAbility={chooseAbility}
@@ -445,10 +517,27 @@ export function TacticsPage() {
               {confirmAbandon ? 'Tap again: abandon (counts as a defeat) and start over' : 'Abandon run'}
             </Button>
           )}
-          {fight.phase !== 'deploy' && (
-            <TrackPanel fight={fight} previewSlot={preview?.slot ?? null} actingId={acting?.id ?? null} onSelect={setSelectedId} />
+          <Group justify="space-between" gap="xs">
+            <Text fz="xs" c="dimmed">
+              {inspecting ? 'Inspect: tap any hex to see what’s there.' : 'Hover a hex, or use Inspect, to see what’s there.'}
+            </Text>
+            <Button
+              size="compact-xs"
+              variant={inspecting ? 'filled' : 'light'}
+              color="grape"
+              onClick={() => {
+                setInspecting(!inspecting);
+                setPinnedHex(null);
+              }}
+            >
+              {inspecting ? 'Done inspecting' : 'Inspect'}
+            </Button>
+          </Group>
+          {inspectHex ? (
+            <HexInspector fight={fight} hex={inspectHex} positions={fight.phase === 'deploy' ? deployAt : undefined} />
+          ) : (
+            selected && <StatSheet fight={fight} unit={selected} />
           )}
-          {selected && <StatSheet fight={fight} unit={selected} />}
           <FightLog fight={fight} />
         </div>
       </div>
@@ -458,6 +547,9 @@ export function TacticsPage() {
 
 function TurnControls(props: {
   unit: Unit;
+  currentSlot: number;
+  /** The previewed slot the card lands on, after yielding; null without a preview. */
+  landingSlot: number | null;
   ability: AbilityId | null;
   plannedMove: Reach | null;
   onAbility: (id: AbilityId) => void;
@@ -478,11 +570,7 @@ function TurnControls(props: {
         </Group>
         <Group justify="space-between">
           <Text fz="sm" c="dimmed">
-            {hexes > 0
-              ? `Move ${hexes} hex${hexes > 1 ? 'es' : ''} (+${hexes * RULES.moveCostPerHex} cost)`
-              : ability
-                ? 'No move'
-                : 'Tap a hex to move (optional), then pick an action.'}
+            {hexes > 0 || ability ? 'This turn:' : 'Tap a hex to move (optional), then pick an action.'}
           </Text>
           {hexes > 0 && (
             <Button size="compact-xs" variant="subtle" color="gray" onClick={props.onClearMove}>
@@ -490,6 +578,9 @@ function TurnControls(props: {
             </Button>
           )}
         </Group>
+        {(hexes > 0 || ability) && (
+          <TurnCost unit={unit} currentSlot={props.currentSlot} landingSlot={props.landingSlot} hexes={hexes} ability={ability} />
+        )}
         <div className={styles.abilities}>
           {abilitiesOf(unit).map((def) => {
             const reason = unusableReason(unit, def);
@@ -506,18 +597,59 @@ function TurnControls(props: {
               >
                 {def.name}
                 {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
+                <span className={styles.abilityCost}>{def.cost}</span>
               </Button>
             );
           })}
         </div>
         {ability && (
           <Text fz="xs" c="dimmed">
-            {ABILITIES[ability].summary} Cost {ABILITIES[ability].cost}
-            {ABILITIES[ability].charged ? ` to charge, ${ABILITIES[ability].recoveryCost} to recover` : ''}.
+            {ABILITIES[ability].summary}
+            {ability === 'bow' ? ' Dashed lanes miss; tap a dotted hex to move first.' : ''}
           </Text>
         )}
         {props.children}
       </Stack>
     </Paper>
+  );
+}
+
+/**
+ * The turn's cost, added up (3.2): movement plus the action, divided by
+ * speed + C, is how many slots the card moves.
+ */
+function TurnCost(props: {unit: Unit; currentSlot: number; landingSlot: number | null; hexes: number; ability: AbilityId | null}) {
+  const {unit, hexes, ability} = props;
+  const def = ability ? ABILITIES[ability] : null;
+  const moveCost = hexes * RULES.moveCostPerHex;
+  const total = turnCost(def?.cost ?? 0, hexes);
+  const slots = slotsForward(total, unit.speed);
+  const nominal = props.currentSlot + slots;
+  return (
+    <div className={styles.cost}>
+      <span>{hexes > 0 ? `Move ${hexes} hex${hexes > 1 ? 'es' : ''} × ${RULES.moveCostPerHex}` : 'No move'}</span>
+      <b>{moveCost}</b>
+      {def ? (
+        <>
+          <span>
+            {def.name}
+            {def.charged ? ' (charge)' : ''}
+          </span>
+          <b>+ {def.cost}</b>
+          <span className={styles.costTotal}>Total</span>
+          <b className={styles.costTotal}>{total}</b>
+          <span className={styles.costWide}>
+            {total} ÷ (speed {unit.speed} + {RULES.C}) = <b>{slots} slots</b>: your card goes from slot {props.currentSlot} to{' '}
+            <b>
+              {props.landingSlot ?? nominal}
+            </b>
+            {props.landingSlot !== null && props.landingSlot !== nominal ? ` (${nominal} is taken, so it yields)` : ''}
+            {def.charged ? `. It triggers there, then recovers ${def.recoveryCost}.` : '.'}
+          </span>
+        </>
+      ) : (
+        <span className={styles.costWide}>Pick an action to see the total.</span>
+      )}
+    </div>
   );
 }

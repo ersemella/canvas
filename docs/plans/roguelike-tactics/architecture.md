@@ -151,7 +151,9 @@ what was learned is in [history.md](history.md).
   runs along a border, for rule 29. Drawing is the `hex` render type;
   `HexGridSystem` places `HexPosition` entities on a `HexGrid` and turns
   taps into `hexgrid:click`. The rules themselves (movement, line of fire,
-  6.7) belong in the game package.
+  6.7) belong in the game package. Silk Road Tactics picks its own taps
+  and hover (`TacticsInputSystem`), since its board isn't a rectangle and
+  its track cards are on the canvas.
 - **No camera in the engine.** Games render to a fixed canvas (600×400 by
   default, `packages/web/src/pages/GamePage.tsx`); nothing scrolls. The
   compact maps (6.1) should fit one screen, so a camera may never be

@@ -12,14 +12,11 @@ import {
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {RULES} from './config';
-import {tileAt} from './map';
+import {onMap, tileAt} from './map';
 import type {MapData} from './map';
 import type {FightState, Status, StatusKind, Unit} from './types';
 
-export function onMap(map: MapData, h: Hex): boolean {
-  const {col, row} = hexToOffset(h);
-  return col >= 0 && col < map.columns && row >= 0 && row < map.rows;
-}
+export {onMap};
 
 /** On the map and not an obstacle: a unit may stand here. */
 export function walkable(map: MapData, h: Hex): boolean {

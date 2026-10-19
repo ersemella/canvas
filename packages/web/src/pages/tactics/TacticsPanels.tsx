@@ -1,6 +1,23 @@
 import {useMemo} from 'react';
-import {Badge, Button, Group, Paper, ScrollArea, Stack, Text} from '@mantine/core';
-import {ABILITIES, HEROES, RULES, isFlanked, statusSlotsLeft, statusValue, unitName, unitOptions} from '@canvas/games-silk-road-tactics';
+import {Badge, Button, Group, Paper, Stack, Text} from '@mantine/core';
+import {hexEquals} from '@canvas/engine';
+import type {Hex} from '@canvas/engine';
+import {
+  ABILITIES,
+  HEROES,
+  RULES,
+  TILE_INFO,
+  abilitiesOf,
+  hailInfo,
+  isFlanked,
+  mapOf,
+  movementCap,
+  statusSlotsLeft,
+  statusValue,
+  tileAt,
+  unitName,
+  unitOptions,
+} from '@canvas/games-silk-road-tactics';
 import type {AbilityId, FightState, TurnPreview, Unit} from '@canvas/games-silk-road-tactics';
 import styles from './TacticsPage.module.css';
 
@@ -58,62 +75,38 @@ export function TurnPreviewBox(props: {
   );
 }
 
-/**
- * The track (3.1, 7.1): the next slots, one card per slot, so placement can
- * be counted. Tap a card to see its unit's stat sheet.
- */
-export function TrackPanel(props: {
-  fight: FightState;
-  actingId: string | null;
-  previewSlot: number | null;
-  onSelect: (id: string) => void;
-}) {
-  const {fight} = props;
-  const start = fight.currentSlot;
-  const bySlot = new Map(fight.units.filter((u) => u.alive && u.slot !== null).map((u) => [u.slot!, u]));
-  const rows = Array.from({length: RULES.trackWindow}, (_, i) => start + i);
-  const later = fight.units.filter((u) => u.alive && u.slot !== null && u.slot >= start + RULES.trackWindow);
+/** What's on a hex: its tile's rule, any hail, and the unit standing there (D11). */
+export function HexInspector({fight, hex, positions}: {fight: FightState; hex: Hex; positions?: Record<string, Hex> | undefined}) {
+  const tile = tileAt(mapOf(fight), hex);
+  const info = TILE_INFO[tile];
+  const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
+  const unit = fight.units.find((u) => {
+    const at = positions?.[u.id] ?? u.hex;
+    return u.alive && at && hexEquals(at, hex);
+  });
+  // Plain sand under a unit says nothing worth a card.
+  const showTile = tile !== 'sand' || hail || !unit;
   return (
-    <Paper bg="dark.7" p="sm" radius="md">
-      <Text fw={600} mb={4}>
-        Track
-      </Text>
-      <ScrollArea h={170} type="auto" offsetScrollbars>
-        <div className={styles.track}>
-          {rows.map((slot) => {
-            const u = bySlot.get(slot);
-            const ghost = props.previewSlot === slot && u?.id !== props.actingId;
-            return (
-              <div key={slot} className={styles.trackRow} data-slot={slot}>
-                <span className={styles.slotNo}>{slot}</span>
-                {u ? (
-                  <button
-                    type="button"
-                    className={`${styles.card} ${u.side === 'player' ? styles.cardPlayer : styles.cardEnemy} ${u.id === props.actingId ? styles.cardActing : ''}`}
-                    onClick={() => props.onSelect(u.id)}
-                  >
-                    <b>{HEROES[u.hero].letter}</b> {HEROES[u.hero].name}
-                    {u.charging && <em> · {ABILITIES[u.charging.ability].name}!</em>}
-                    {u.statuses.length > 0 && <span className={styles.marker}>●</span>}
-                  </button>
-                ) : ghost ? (
-                  <span className={styles.ghostCard}>your card lands here</span>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      </ScrollArea>
-      {later.length > 0 && (
-        <Text fz="xs" c="dimmed" mt={4}>
-          Later: {later.map((u) => `${HEROES[u.hero].letter} (${u.slot})`).join(', ')}
-        </Text>
+    <Stack gap={8} data-testid="hex-info">
+      {showTile && (
+        <Paper bg="dark.7" p="sm" radius="md">
+          <Text fw={600}>{info.name}</Text>
+          <Text fz="xs" c="dimmed">
+            {info.detail}
+          </Text>
+          {hail && (
+            <Text fz="xs" c="cyan.3" mt={4}>
+              <b>Hail.</b> {hailInfo(hail, fight.currentSlot).detail}
+            </Text>
+          )}
+        </Paper>
       )}
-    </Paper>
+      {unit && <StatSheet fight={fight} unit={unit} />}
+    </Stack>
   );
 }
 
-/** Every unit's stat sheet, enemies' included, with what it could do (D11). */
+/** Every unit's stat sheet, enemies' included: its abilities, and for an enemy what it could do (D11). */
 export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
   const options = useMemo(
     () => (unit.side === 'enemy' && unit.alive && unit.hex && fight.phase === 'fight' ? unitOptions(fight, unit) : []),
@@ -149,7 +142,9 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
         <span>Power</span>
         <b>{unit.power}</b>
         <span>Card</span>
-        <b>{unit.alive ? `slot ${unit.slot}` : 'fallen'}</b>
+        <b>{!unit.alive ? 'fallen' : unit.slot === null ? 'not placed' : `slot ${unit.slot}`}</b>
+        <span>Move</span>
+        <b>{movementCap(unit)} hexes</b>
         <span>{ABILITIES[ult].name}</span>
         <b>
           {unit.ultimateUsed
@@ -169,6 +164,17 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
           Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
         </Text>
       )}
+      <Stack gap={2} mt={6}>
+        <Text fz="xs" fw={600}>
+          Abilities (cost ÷ (speed {unit.speed} + {RULES.C}) = slots):
+        </Text>
+        {abilitiesOf(unit).map((def) => (
+          <Text key={def.id} fz="xs" c="dimmed">
+            <b className={styles.abilityName}>{def.name}</b> · {def.cost}
+            {def.charged ? ` to charge, ${def.recoveryCost} to recover` : ''}: {def.summary}
+          </Text>
+        ))}
+      </Stack>
       {options.length > 0 && (
         <Stack gap={2} mt={6}>
           <Text fz="xs" fw={600}>

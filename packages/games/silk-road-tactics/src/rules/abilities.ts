@@ -70,16 +70,33 @@ const hold: AbilityDef = {
 
 // ─── Mangudai Outrider ───────────────────────────────────────────────────────
 
-/** The first unit along a hex direction within range, unless an obstacle comes first. */
-function firstUnitInLine(state: FightState, map: MapData, from: Hex, dir: number, range: number): Unit | undefined {
-  let h = from;
-  for (let i = 0; i < range; i++) {
-    h = hexNeighbor(h, dir);
-    if (!onMap(map, h) || tileAt(map, h) === 'obstacle') return undefined;
-    const u = unitAt(state, h);
-    if (u) return u;
-  }
-  return undefined;
+/** An arrow's flight along one hex direction: the hexes it crosses, and the unit it stops at. */
+export interface ArrowLane {
+  hexes: Hex[];
+  hit?: Unit;
+}
+
+/**
+ * The bow's six lanes from `from`: each runs up to its range and stops at
+ * the first unit (which it hits), an obstacle or the map's edge. For the
+ * page to show where an arrow can fly, hit or not.
+ */
+export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLane[] {
+  return DIRECTIONS.map((dir) => {
+    const lane: ArrowLane = {hexes: []};
+    let h = from;
+    for (let i = 0; i < ABILITY.bow.range; i++) {
+      h = hexNeighbor(h, dir);
+      if (!onMap(map, h) || tileAt(map, h) === 'obstacle') break;
+      lane.hexes.push(h);
+      const u = unitAt(state, h);
+      if (u) {
+        lane.hit = u;
+        break;
+      }
+    }
+    return lane;
+  });
 }
 
 const bow: AbilityDef = {
@@ -90,10 +107,10 @@ const bow: AbilityDef = {
   charged: false,
   cost: ABILITY.bow.cost,
   movesSelf: false,
-  targets(state, map, user, from) {
-    return DIRECTIONS.map((d) => firstUnitInLine(state, map, from, d, ABILITY.bow.range))
-      .filter((u): u is Unit => u !== undefined)
-      .map((u) => ({hex: u.hex!}));
+  targets(state, map, _user, from) {
+    return arrowLanes(state, map, from)
+      .filter((lane) => lane.hit)
+      .map((lane) => ({hex: lane.hit!.hex!}));
   },
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;

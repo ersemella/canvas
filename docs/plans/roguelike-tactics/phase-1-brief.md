@@ -47,7 +47,7 @@ fight's end ends the run.
 
 | Open question | Default for Phase 1 |
 |---|---|
-| 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement **10 per hex**; starting cost **50**; `C` = **6**. With speed 4, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
+| 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement **10 per hex**; starting cost **100**, a typical action (owner, 2026-10-19; was 50, which bunched all six cards into slots 3 to 8); `C` = **6**. With speed 4, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). Speed stat 1 to 10. Armour lowers speed (4.2): see gear, below. |
 | 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
 | 6. Charged abilities | Two in Phase 1, both ultimates: the Mangudai Outrider's Volley (arcing area) and the Storm Caller's Freeze (section 4). |
@@ -214,8 +214,9 @@ unit: well within the Free plan's 10 ms
 One hand-made map, **"The Salt Flats Crossing"** (map generation is out of
 scope), mirrored left to right like the PvP-style maps (6.6):
 
-- **Deployment zones:** the two leftmost columns (player) and the two
-  rightmost columns (enemy), rows 1 to 7. Five columns between them:
+- **Deployment zones:** the two leftmost hexes of each row (player) and
+  the two rightmost (enemy), rows 1 to 7. Odd rows have a tenth hex at
+  column −1, so neither side edge is notched (owner, 2026-10-19). Five columns between them:
   contact in about one to two turns of movement (6.6).
 - **Obstacles (ruins):** 4 hexes, two on each half, mirrored, breaking the
   long sight lines down the middle row.
@@ -335,14 +336,32 @@ confirm or change:
   Storm's placeholder radius went from 2 to 1 with it, so stepping clear
   of enemies is possible; the AI counts healing or cleansing an enemy
   against an option.
-- **The map's coordinates** are in `src/rules/map.ts`; on an odd-r
-  rectangle the left-right mirror is by column, exact to within half a
-  hex on odd rows. The enemy's placement is one of three layouts, chosen
-  by the run's seed.
+- **The map's coordinates** are in `src/rules/map.ts`. Odd rows reach
+  column −1 (owner, 2026-10-19), which makes the board an exact
+  left-right mirror; only the quicksand, placed before that, is off it by
+  a hex. The enemy's placement is one of three layouts, chosen by the
+  run's seed.
 - **Line of fire** (rule 29) is implemented and tested, but no Phase 1
   ability needs it: the bow fires along hex lines.
 - **The page** plans move-then-act only; the server also accepts
-  act-then-move (`actFirst`).
+  act-then-move (`actFirst`). With an ability chosen, tapping a hex the
+  unit can reach re-plans the move and keeps the ability. The turn panel
+  adds the turn up: movement, the action, the total ÷ (speed + C), and
+  the slot the card lands on (owner, 2026-10-19).
+- **The track is on the canvas** (owner, 2026-10-19), above the board, as
+  a row of cards in turn order like Mana Khemia's rather than section 9's
+  window of slots in the side panel: each card shows its slot number,
+  unit and health, a dashed card shows where the planned turn lands, and
+  tapping a card shows its unit's sheet. Every unit has one card, so all
+  of them fit.
+- **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
+  Inspect mode (for touch), shows its tile's rule, any hail, and the unit
+  there: stats, every ability with its cost, where it could move this
+  turn (outlined on the board), and for an enemy what it could do.
+- **The bow shows its six lanes** to full range (owner, 2026-10-19),
+  dashed where the arrow would miss and solid to a unit it would hit.
+  Range is still the placeholder 5, and the deployment zones are 6 hexes
+  apart, so the opening turn has no target without moving.
 - **Deployed** to `main` with the owner's approval (2026-10-19): the
   `v2` migration in `wrangler.toml` adds `RunRoom` and `PlayerLedger`.
 
