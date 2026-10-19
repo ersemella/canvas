@@ -32,8 +32,11 @@ import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 export interface AbilityDef {
   id: AbilityId;
   name: string;
-  /** One line for the side panel. */
-  summary: string;
+  /**
+   * One line for the side panel, with damage and healing scaled by the
+   * user's power (defence, Vulnerable and conceal still apply on the hit).
+   */
+  summary(user: Unit): string;
   ultimate: boolean;
   /** Charged (3.7): the card moves by `cost`, then the ability triggers when reached. */
   charged: boolean;
@@ -86,7 +89,7 @@ function direction(from: Hex, to: Hex): number {
 const hold: AbilityDef = {
   id: 'hold',
   name: 'Hold',
-  summary: 'Quick action with no effect: end the turn.',
+  summary: () => 'Quick action with no effect: end the turn.',
   ultimate: false,
   charged: false,
   cost: ABILITY.hold.cost,
@@ -129,7 +132,8 @@ export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLan
 const bow: AbilityDef = {
   id: 'bow',
   name: 'Composite Bow',
-  summary: `Arrow along a hex line, range ${ABILITY.bow.range}; hits the first unit, ally or enemy.`,
+  summary: (user) =>
+    `Arrow along a hex line, range ${ABILITY.bow.range}; hits the first unit, ally or enemy, for ${scaled(ABILITY.bow.damage, user.power)} damage.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.bow.cost,
@@ -167,7 +171,8 @@ function dashEnd(
 const dash: AbilityDef = {
   id: 'dash',
   name: 'Dash',
-  summary: `Ride ${ABILITY.dash.distance} hexes in a straight line; passes allies, not enemies or ruins.`,
+  summary: () =>
+    `Ride ${ABILITY.dash.distance} hexes in a straight line; passes allies, not enemies or ruins.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.dash.cost,
@@ -187,7 +192,8 @@ const dash: AbilityDef = {
 const volley: AbilityDef = {
   id: 'volley',
   name: 'Volley',
-  summary: `Ultimate, charged: arrows arc onto a hex within ${ABILITY.volley.range}, hitting every unit within ${ABILITY.volley.radius}, allies too.`,
+  summary: (user) =>
+    `Ultimate, charged: arrows arc onto a hex within ${ABILITY.volley.range}, hitting every unit within ${ABILITY.volley.radius}, allies too, for ${scaled(ABILITY.volley.damage, user.power)} damage.`,
   ultimate: true,
   charged: true,
   cost: ABILITY.volley.chargeCost,
@@ -207,7 +213,8 @@ const volley: AbilityDef = {
 const sunlight: AbilityDef = {
   id: 'sunlight',
   name: 'Sunlight',
-  summary: `Heals and cleanses every unit within ${ABILITY.sunlight.radius}, itself and enemies included.`,
+  summary: (user) =>
+    `Heals ${scaled(ABILITY.sunlight.heal, user.power)} and cleanses every unit within ${ABILITY.sunlight.radius}, itself and enemies included.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.sunlight.cost,
@@ -225,7 +232,8 @@ const sunlight: AbilityDef = {
 const hail: AbilityDef = {
   id: 'hail',
   name: 'Hail',
-  summary: `A hex within ${ABILITY.hail.range} becomes hail for ${ABILITY.hail.hexSlots} slots: whoever is struck there takes damage, then is Slowed ${ABILITY.hail.slowed}, Vulnerable ${ABILITY.hail.vulnerable}%.`,
+  summary: (user) =>
+    `A hex within ${ABILITY.hail.range} becomes hail for ${ABILITY.hail.hexSlots} slots: whoever is struck there takes ${scaled(ABILITY.hail.damage, user.power)} damage, then is Slowed ${ABILITY.hail.slowed}, Vulnerable ${ABILITY.hail.vulnerable}%.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.hail.cost,
@@ -253,7 +261,7 @@ const hail: AbilityDef = {
 const gale: AbilityDef = {
   id: 'gale',
   name: 'Gale',
-  summary: `Melee: Displace ${ABILITY.gale.displace} away and Slowed ${ABILITY.gale.slowed}.`,
+  summary: () => `Melee: Displace ${ABILITY.gale.displace} away and Slowed ${ABILITY.gale.slowed}.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.gale.cost,
@@ -275,7 +283,8 @@ const gale: AbilityDef = {
 const freeze: AbilityDef = {
   id: 'freeze',
   name: 'Freeze',
-  summary: `Ultimate, charged: units within ${ABILITY.freeze.radius} of a hex within ${ABILITY.freeze.range} are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
+  summary: () =>
+    `Ultimate, charged: units within ${ABILITY.freeze.radius} of a hex within ${ABILITY.freeze.range} are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
   ultimate: true,
   charged: true,
   cost: ABILITY.freeze.chargeCost,
@@ -297,7 +306,8 @@ const freeze: AbilityDef = {
 const throwAbility: AbilityDef = {
   id: 'throw',
   name: 'Throw',
-  summary: 'Melee: throw the target to another free hex next to you, with damage.',
+  summary: (user) =>
+    `Melee: ${scaled(ABILITY.throw.damage, user.power)} damage, and the target is thrown to another free hex next to you.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.throw.cost,
@@ -322,7 +332,8 @@ const throwAbility: AbilityDef = {
 const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
-  summary: `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots; it is Vulnerable ${ABILITY.pin.vulnerable}%.`,
+  summary: () =>
+    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots; it is Vulnerable ${ABILITY.pin.vulnerable}%.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.pin.cost,
@@ -342,7 +353,8 @@ const pin: AbilityDef = {
 const rampage: AbilityDef = {
   id: 'rampage',
   name: 'Rampage',
-  summary: `Ultimate: charge ${ABILITY.rampage.distance} hexes in a line; everything in or beside the path is hit and knocked aside.`,
+  summary: (user) =>
+    `Ultimate: charge ${ABILITY.rampage.distance} hexes in a line; everything in or beside the path takes ${scaled(ABILITY.rampage.damage, user.power)} damage and is knocked aside.`,
   ultimate: true,
   charged: false,
   cost: ABILITY.rampage.cost,
