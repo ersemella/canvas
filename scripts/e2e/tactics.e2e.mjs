@@ -196,6 +196,7 @@ try {
   const sheet = page.getByTestId('stat-sheet');
   check('tapping an enemy shows its stat sheet', (await sheet.textContent()).includes('enemy'));
   check('the sheet leaves out what it could do next turn', !(await sheet.textContent()).includes('Could do next turn'));
+  check('the sheet doesn’t list Hold', !(await sheet.textContent()).includes('Hold'));
   await shot(page, 'enemy-sheet');
 
   // Hovering a hex shows what it does, without planning a move.

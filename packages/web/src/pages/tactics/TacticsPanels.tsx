@@ -142,12 +142,15 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
         <Text fz="xs" fw={600}>
           Abilities
         </Text>
-        {abilitiesOf(unit).map((def) => (
-          <Text key={def.id} fz="xs" c="dimmed">
-            <b className={styles.abilityName}>{def.name}</b> · {def.cost}
-            {def.charged ? ` to charge, ${def.recoveryCost} to recover` : ''}: {def.summary}
-          </Text>
-        ))}
+        {abilitiesOf(unit)
+          // Hold isn't offered as an action: End turn is.
+          .filter((def) => def.id !== 'hold')
+          .map((def) => (
+            <Text key={def.id} fz="xs" c="dimmed">
+              <b className={styles.abilityName}>{def.name}</b> · {def.cost}
+              {def.charged ? ` to charge, ${def.recoveryCost} to recover` : ''}: {def.summary}
+            </Text>
+          ))}
       </Stack>
     </Paper>
   );
