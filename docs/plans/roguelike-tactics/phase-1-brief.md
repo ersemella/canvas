@@ -320,10 +320,12 @@ confirm or change:
   (`AI.perHexFromEnemy`), or an AI with nothing in reach holds forever;
   ending a move on quicksand counts its next-turn damage against the
   option; ground-targeted abilities (hail, Volley, Freeze) are tried once
-  per target hex, from the cheapest hex in range, to stay within 10 ms of
-  CPU (measured over ~3,700 requests in AI-vs-AI fights: median 1.7 ms,
-  99th percentile 9.3 ms, under 1% above 10 ms). The AI always moves
-  before acting.
+  per target hex, from the cheapest hex in range. The search is capped
+  in simulated options (150 per AI turn, 300 per request, at least 40
+  each; owner's call), a count rather than a time so fights stay
+  deterministic: over ~3,800 AI-vs-AI requests, median 1.3 ms, 99th
+  percentile 5.7 ms, none above 10 ms. The AI always moves before
+  acting.
 - **Gale on an Immobilized target displaces it,** following the
   2026-10-19 rule (Immobilized units can be displaced) over section 4's
   older line ("slowed but not moved").

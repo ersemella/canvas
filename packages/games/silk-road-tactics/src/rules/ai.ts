@@ -30,23 +30,35 @@ function statusPoints(u: Unit, slot: number): number {
   );
 }
 
+/** What scoring compares against, per living unit: computed once per AI turn, not per option. */
+type Baseline = Map<string, {points: number; flanked: boolean}>;
+
+function baselineOf(state: FightState): Baseline {
+  return new Map(
+    state.units
+      .filter((u) => u.alive)
+      .map((u) => [u.id, {points: statusPoints(u, state.currentSlot), flanked: isFlanked(state, u)}])
+  );
+}
+
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
-export function scoreOutcome(before: FightState, after: FightState, actor: Unit): number {
+export function scoreOutcome(before: FightState, after: FightState, actor: Unit, baseline = baselineOf(before)): number {
   let score = 0;
   for (const b of before.units) {
     if (!b.alive) continue;
     const a = after.units.find((u) => u.id === b.id)!;
+    const base = baseline.get(b.id)!;
     const lost = b.hp - a.hp;
-    const statusDelta = statusPoints(a, before.currentSlot) - statusPoints(b, before.currentSlot);
+    const statusDelta = statusPoints(a, before.currentSlot) - base.points;
     if (hostile(b, actor)) {
       score += Math.max(0, lost) + statusDelta;
       if (!a.alive) score += AI.kill;
-      if (lost > 0 && isFlanked(before, b)) score += AI.flankedTarget;
+      if (lost > 0 && base.flanked) score += AI.flankedTarget;
     } else {
       // Healing counts as damage; friendly fire only when clearly worth it.
       score += lost > 0 ? -lost * AI.friendlyDamageFactor : -lost;
       score -= statusDelta;
-      if (isFlanked(before, b) && a.alive && !isFlanked(after, a)) score += AI.breaksAllyFlank;
+      if (base.flanked && a.alive && !isFlanked(after, a)) score += AI.breaksAllyFlank;
     }
   }
   const me = after.units.find((u) => u.id === actor.id)!;
@@ -71,11 +83,14 @@ function groundRadius(def: AbilityDef): number | undefined {
 }
 
 /**
- * Every option for `unit` this turn (moving first), scored. A ground
- * target is only tried where it would affect a unit, and only from the
- * cheapest hex that reaches it (the outcome doesn't depend on the hex).
+ * Every option for `unit` this turn (moving first), scored, up to `limit`
+ * simulations (nearest moves first). A ground target is only tried where
+ * it would affect a unit, and only from the cheapest hex that reaches it
+ * (the outcome doesn't depend on the hex).
  */
-export function scoreOptions(state: FightState, unit: Unit): ScoredOption[] {
+export function scoreOptions(state: FightState, unit: Unit, limit = Infinity, budget?: SearchBudget): ScoredOption[] {
+  let simulations = 0;
+  const baseline = baselineOf(state);
   const map = mapOf(state);
   const out: ScoredOption[] = [];
   const groundTried = new Set<string>();
@@ -99,9 +114,12 @@ export function scoreOptions(state: FightState, unit: Unit): ScoredOption[] {
         }
         const input: TurnInput = {action: {ability: def.id, target}};
         if (reach.path.length > 0) input.move = reach.path;
+        if (simulations >= limit) return out;
+        simulations++;
+        if (budget) budget.left--;
         const after = simulate(state, unit.id, input, true);
         if (!after) continue;
-        out.push({input, score: scoreOutcome(state, after, unit), after});
+        out.push({input, score: scoreOutcome(state, after, unit, baseline), after});
       }
     }
   }
@@ -129,10 +147,20 @@ export function simulate(state: FightState, unitId: string, input: TurnInput, tr
   return sim;
 }
 
-/** The AI's turn: the highest score, ties to the first option found. */
-export function chooseAiTurn(state: FightState, unit: Unit): TurnInput {
+/** Simulations left for the AI turns in one request; see `AI.requestSimulations`. */
+export interface SearchBudget {
+  left: number;
+}
+
+/**
+ * The AI's turn: the highest score among a capped search, ties to the
+ * first option found. With a request's `budget`, the cap shrinks as
+ * earlier AI turns spend it, never below `AI.minSimulations`.
+ */
+export function chooseAiTurn(state: FightState, unit: Unit, budget?: SearchBudget): TurnInput {
+  const limit = budget ? Math.max(AI.minSimulations, Math.min(AI.maxSimulations, budget.left)) : AI.maxSimulations;
   let best: ScoredOption | undefined;
-  for (const option of scoreOptions(state, unit)) {
+  for (const option of scoreOptions(state, unit, limit, budget)) {
     if (!best || option.score > best.score) best = option;
   }
   return best?.input ?? {action: {ability: 'hold'}};

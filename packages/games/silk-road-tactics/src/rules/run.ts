@@ -5,6 +5,8 @@
 import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
+import type {SearchBudget} from './ai';
+import {AI} from './config';
 import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, deploy} from './fight';
 import type {AbilityId, ActionTarget, FightState, RunAction} from './types';
 
@@ -80,7 +82,9 @@ export function handleRunAction(run: RunState, raw: RunAction): RunState {
     const {type: _type, ...input} = action;
     applyTurn(fight, unit, input);
   }
-  advance(fight, chooseAiTurn);
+  // The AI turns this action sets off share one search budget (AI.requestSimulations).
+  const budget: SearchBudget = {left: AI.requestSimulations};
+  advance(fight, (state, unit) => chooseAiTurn(state, unit, budget));
   return {seed: run.seed, version: run.version + 1, fight};
 }
 

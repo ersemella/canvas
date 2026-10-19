@@ -37,14 +37,17 @@ Every stat and ability value marked TBD in the brief's section 4 has a
 guess in `packages/games/silk-road-tactics/src/rules/config.ts`, so the
 fight can be played. Balance means nothing until the real numbers are in.
 
-### 3. CPU per request is near the Free plan's limit (watch)
+### 3. CPU per request: capped (watch)
 
-The enemy AI runs inside the request. Over about 3,700 AI-vs-AI requests:
-median 1.7 ms, 99th percentile 9.3 ms, under 1% over the 10 ms limit
-([architecture.md](architecture.md#long-lived-storage-and-cost)). More
-heroes, bigger maps or more abilities will push it up. **Decide when it
-matters:** move to Workers Paid ($5/month) or cap the AI's search.
-Watch for errors `1102` or `exceededCpu` in the dashboard.
+The enemy AI runs inside the request. Its search is now capped (owner's
+call, 2026-10-19): one AI turn simulates at most 150 options and all the
+AI turns in one request share 300, each getting at least 40 (`AI` in
+`config.ts`). Over about 3,800 AI-vs-AI requests: median 1.3 ms, 99th
+percentile 5.7 ms, worst 10.0 ms, none over the Free plan's 10 ms
+([architecture.md](architecture.md#long-lived-storage-and-cost)); fight
+results were the same as uncapped. More heroes, bigger maps or more
+abilities will need the cap revisited, or Workers Paid ($5/month). Watch
+for errors `1102` or `exceededCpu` in the dashboard.
 
 ### 4. `pnpm lint` fails across the repository (cleanup, no decision)
 

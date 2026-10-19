@@ -136,9 +136,11 @@ one value and returns the whole view (never the seed). Finished runs are
 deleted three days later by an alarm. `GameRoom`, `RoomPolicy` and
 `routes/rooms.ts` are untouched. Design: `docs/plans/roguelike-tactics/architecture.md`.
 
-**Tradeoff** — CPU per request grows with the AI's search; it stays within
-the Free plan's 10 ms only because maps are compact and ground-targeted
-abilities are tried once per target (see `rules/ai.ts`).
+**Tradeoff** — the enemy AI runs inside the request, so CPU grows with its
+search. To stay within the Free plan's 10 ms, the search is capped by a
+count of simulated options per AI turn and per request (`AI` in the game's
+`rules/config.ts`), not by time, so fights stay deterministic; a capped AI
+can miss a far-move option.
 
 ### Multiplayer is server-authoritative for exactly one game
 Only poker has a `ServerSystem` (`createInitialState` / `handleAction` /

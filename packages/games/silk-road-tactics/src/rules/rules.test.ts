@@ -1,10 +1,10 @@
 import {describe, expect, it} from 'vitest';
 import {hexDistance, offsetToHex} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, RULES} from './config';
+import {ABILITY, AI, RULES} from './config';
 import {isFlanked, lineOfFire, movementCap, reachableHexes, unitAt, vulnerablePercent} from './board';
 import {ABILITIES} from './abilities';
-import {chooseAiTurn, simulate} from './ai';
+import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, defaultDeployment, deploy, mapOf} from './fight';
 import {previewTurn} from './preview';
 import {abilityDamage} from './resolve';
@@ -319,6 +319,22 @@ describe('previews, the AI and the run', () => {
     expect(['won', 'lost']).toContain(run.fight.phase);
     // Generous for a test machine; the Worker's limit is 10 ms per request.
     expect(worst).toBeLessThan(200);
+  });
+
+  it('caps the AI’s search per request, deterministically', () => {
+    let run = createRun(0);
+    run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
+    const enemy = run.fight.units.find((u) => u.side === 'enemy')!;
+    expect(scoreOptions(run.fight, enemy, 10)).toHaveLength(10);
+    const budget = {left: AI.requestSimulations};
+    const first = chooseAiTurn(run.fight, enemy, budget);
+    expect(budget.left).toBeLessThan(AI.requestSimulations);
+    expect(AI.requestSimulations - budget.left).toBeLessThanOrEqual(AI.maxSimulations);
+    // An exhausted budget still allows the minimum search, and the same budget gives the same choice.
+    const starved = {left: 0};
+    chooseAiTurn(run.fight, enemy, starved);
+    expect(-starved.left).toBeLessThanOrEqual(AI.minSimulations);
+    expect(chooseAiTurn(run.fight, enemy, {left: AI.requestSimulations})).toEqual(first);
   });
 
   it('refuses a turn that isn’t legal without changing the run', () => {

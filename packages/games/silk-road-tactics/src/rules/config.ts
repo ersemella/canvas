@@ -126,6 +126,17 @@ export const AI = {
    * movement costs, small next to any real effect.
    */
   perHexFromEnemy: 15,
+  /**
+   * The search cap, counted in simulated options (a few hundredths of a ms
+   * each), nearest moves first, so a request stays within the Free plan's
+   * 10 ms of CPU. A count, not a time limit, so fights stay deterministic.
+   * One AI turn tries at most `maxSimulations`; all the AI turns in one
+   * request share `requestSimulations`, but each gets at least
+   * `minSimulations`.
+   */
+  maxSimulations: 150,
+  requestSimulations: 300,
+  minSimulations: 40,
 } as const;
 
 /** The party, in party slot order, for both sides in Phase 1 (brief section 5). */
