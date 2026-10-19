@@ -270,6 +270,7 @@ try {
   }
   const phoneSheet = phone.getByTestId('stat-sheet');
   check('phone: tapping an enemy shows its details', (await phoneSheet.textContent()).includes('enemy'));
+  check('phone: no “could do next turn” on an enemy', !(await phoneSheet.textContent()).includes('Could do next turn'));
   check('phone: the details start on screen', await phoneSheet.evaluate((el) => el.getBoundingClientRect().top < window.innerHeight));
   check('phone: the action section stays on screen', await inViewport(phoneMove));
   // No Hold button: with nothing picked, the big button ends the turn.

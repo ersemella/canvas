@@ -131,9 +131,11 @@ export function HexInspector({
 
 /** Every unit's stat sheet, enemies' included: its abilities, and for an enemy what it could do (D11). */
 export function StatSheet({fight, unit, compact = false}: {fight: FightState; unit: Unit; compact?: boolean}) {
+  // What an enemy could do next turn: desktop only (phones leave it out, owner 2026-10-19).
   const options = useMemo(
-    () => (unit.side === 'enemy' && unit.alive && unit.hex && fight.phase === 'fight' ? unitOptions(fight, unit) : []),
-    [fight, unit]
+    () =>
+      !compact && unit.side === 'enemy' && unit.alive && unit.hex && fight.phase === 'fight' ? unitOptions(fight, unit) : [],
+    [fight, unit, compact]
   );
   const slot = fight.currentSlot;
   const statuses = [

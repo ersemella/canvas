@@ -369,6 +369,8 @@ confirm or change:
   There is no Hold button: with no action picked the button reads **End
   turn** and sends Hold (after the move, if any). Tapping a chosen target
   again doesn't commit; only the button does (desktop keeps both).
+  An enemy's details leave out what it could do next turn (desktop keeps
+  it, D11).
 - **The track is on the canvas** (owner, 2026-10-19), above the board, as
   a row of cards in turn order like Mana Khemia's rather than section 9's
   window of slots in the side panel: each card shows its slot number,
