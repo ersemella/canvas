@@ -8,6 +8,7 @@ import {hexDistance, hexEquals, hexKey} from '@canvas/engine/server';
 import {ABILITY, AI, RULES} from './config';
 import {hostile, isFlanked, reachableHexes, statusSlotsLeft, statusValue} from './board';
 import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
+import {slotsForward, turnCost} from './track';
 import {RuleError, applyTurn, cloneFight, mapOf} from './fight';
 import {enterHex, hailDamage, rawDamage} from './resolve';
 import {tileAt} from './map';
@@ -123,7 +124,14 @@ export function scoreOptions(state: FightState, unit: Unit, limit = Infinity, bu
         if (budget) budget.left--;
         const after = simulate(state, unit.id, input, true);
         if (!after) continue;
-        out.push({input, score: scoreOutcome(state, after, unit, baseline), after});
+        let score = scoreOutcome(state, after, unit, baseline);
+        if (def.id === 'hold') {
+          // Price the Hold's time as AI.holdScoringCost (see config.ts).
+          const hexes = reach.path.length;
+          const extra = slotsForward(turnCost(AI.holdScoringCost, hexes), unit.speed) - slotsForward(turnCost(def.cost, hexes), unit.speed);
+          score -= Math.max(0, extra) * AI.perSlotMoved;
+        }
+        out.push({input, score, after});
       }
     }
   }

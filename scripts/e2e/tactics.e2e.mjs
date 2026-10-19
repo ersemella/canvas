@@ -175,7 +175,7 @@ try {
   check('Swap order puts the move first', (await stepsText()) === '1Move 1 hex2Hold', await stepsText());
   await page.getByRole('button', {name: /Swap order/}).click();
   const confirm = page.getByRole('button', {name: /^Confirm/});
-  check('Confirm shows the total cost and landing slot', /cost 70 → slot \d+/.test(await confirm.textContent()), await confirm.textContent());
+  check('Confirm shows the total cost and landing slot', /cost 40 → slot \d+/.test(await confirm.textContent()), await confirm.textContent());
   await sleep(200);
   await shot(page, 'preview');
   await confirm.click();

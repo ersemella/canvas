@@ -199,7 +199,16 @@ export function applyTurn(state: FightState, unit: Unit, input: TurnInput, trust
   state.awaiting = null;
   checkEnd(state);
   if (unit.alive) placeCard(state, unit, state.currentSlot + slotsForward(turnCost(def.cost, path.length), unit.speed));
-  unit.turnsTaken++;
+  if (countsTowardUltimate(input)) unit.turnsTaken++;
+}
+
+/**
+ * A turn counts toward the ultimate (10.10) unless it only Holds: with
+ * Hold this cheap, Holding in place would otherwise unlock it in a few
+ * slots (owner, 2026-10-19).
+ */
+export function countsTowardUltimate(input: TurnInput): boolean {
+  return input.action.ability !== 'hold' || (input.move?.length ?? 0) > 0;
 }
 
 /** A deep copy for previews and the AI; drops the log unless asked. */

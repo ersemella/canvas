@@ -101,7 +101,13 @@ export const HEROES: Record<HeroId, HeroStats> = {
 
 /** Ability values. Costs follow the brief; everything else is PLACEHOLDER. */
 export const ABILITY = {
-  hold: {cost: RULES.cost.quick},
+  /**
+   * Cheaper than a quick action (owner, 2026-10-19; was 60), so a turn
+   * that only moves isn't priced like an attack, and waiting a few slots
+   * to react is a real option. Holding without moving doesn't count
+   * toward the ultimate (see `countsTowardUltimate`).
+   */
+  hold: {cost: 30},
   bow: {cost: RULES.cost.typical, range: 5, damage: 120},
   dash: {cost: RULES.cost.quick, distance: 3},
   volley: {range: 5, radius: 1, damage: 135, chargeCost: 40, recoveryCost: RULES.cost.typical},
@@ -131,6 +137,14 @@ export const AI = {
    * movement costs, small next to any real effect.
    */
   perHexFromEnemy: 15,
+  /**
+   * Not in the brief: the AI scores a Hold's time as if it cost this much,
+   * not its real cost. Scoring one turn at a time, it took the cheap Hold's
+   * saved slots at face value with no plan for using them: at 30 it Held on
+   * 54% of its turns and 9 in 300 AI-vs-AI fights stalled (9% and none
+   * when Hold cost 60).
+   */
+  holdScoringCost: 60,
   /**
    * The search cap, counted in simulated options (a few hundredths of a ms
    * each), nearest moves first, so a request stays within the Free plan's

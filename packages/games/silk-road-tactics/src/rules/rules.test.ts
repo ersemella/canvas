@@ -343,6 +343,19 @@ describe('abilities', () => {
 });
 
 describe('previews, the AI and the run', () => {
+  it('a Hold without a move is cheap and doesn’t count toward the ultimate', () => {
+    const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(8, 0)});
+    const m = unit(s, 'p-mangudai');
+    m.slot = s.currentSlot = 100;
+    applyTurn(s, m, {action: {ability: 'hold'}});
+    expect(m.slot).toBe(100 + slotsForward(ABILITY.hold.cost, m.speed));
+    expect(m.turnsTaken).toBe(0);
+    // Moving, then Holding, does count.
+    s.currentSlot = m.slot!;
+    applyTurn(s, m, {move: [at(1, 3)], action: {ability: 'hold'}});
+    expect(m.turnsTaken).toBe(1);
+  });
+
   it('acts then moves: the move starts where the action left the unit', () => {
     const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(3, 3)});
     const m = unit(s, 'p-mangudai');

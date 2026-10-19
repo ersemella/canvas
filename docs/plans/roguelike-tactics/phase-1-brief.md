@@ -129,8 +129,10 @@ values marked TBD below, are still to be set, in the config module.
 | **Yadachy Storm Caller** | Support: slows and moves enemies, heals and cleanses whoever stands near it | Medium | Medium | Medium | Medium | Rain stone and water |
 
 "Melee" means an adjacent hex. Every hero also has **Hold** (decided): a
-quick action (60) with no effect, so a unit can always end its turn (an
-action is required, 5.1). Rules marked *(proposed)* are this brief's
+**30-cost** action with no effect (owner, 2026-10-19; was a quick action,
+60), so a unit can always end its turn (an action is required, 5.1). A
+turn that only Holds, without moving, doesn't count toward the ultimate
+(10.10); a cheap Hold would otherwise unlock it in a few slots. Rules marked *(proposed)* are this brief's
 reading of the owner's one-line descriptions; the owner can change them
 (section 10).
 
@@ -319,6 +321,9 @@ confirm or change:
   D3).
 - **AI additions** (section 6): a small pull toward the nearest enemy
   (`AI.perHexFromEnemy`), or an AI with nothing in reach holds forever;
+  a Hold's time is scored as if it cost 60 (`AI.holdScoringCost`), since
+  at its real 30 the AI Held on 54% of its turns and 9 in 300 AI-vs-AI
+  fights stalled (12% and none with it, as before the change);
   ending a move on quicksand counts its next-turn damage against the
   option; ground-targeted abilities (hail, Volley, Freeze) are tried once
   per target hex, from the cheapest hex in range. The search is capped
