@@ -28,11 +28,13 @@ export const RULES = {
   defenceConstant: 20,
   minimumDamage: 1,
   /**
-   * Quicksand: on entering, and every slot a unit stands on it, whoever's
-   * turn it is (owner, 2026-10-19; was 40 at the start of each of the
-   * unit's own turns, ~4 a slot for a speed-4 hero's typical turn).
+   * Quicksand: every slot a unit stands on it, whoever's turn it is
+   * (owner, 2026-10-19; was 40 at the start of each of the unit's own
+   * turns, ~4 a slot for a speed-4 hero's typical turn).
    */
   hazardDamage: 4,
+  /** Quicksand: on entering it, passing through included, so crossing it still costs. */
+  hazardEnterDamage: 40,
   /** Sandstorm: ranged attacks against its occupant deal this much less. */
   concealReduction: 0.5,
   /** A flanked unit is Vulnerable this much while flanked (6.3). */

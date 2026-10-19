@@ -297,7 +297,7 @@ describe('damage', () => {
     const s = setup({'p-bokh': at(2, 3), 'e-bokh': at(8, 0)});
     const b = unit(s, 'p-bokh');
     applyTurn(s, b, {move: [at(3, 3)], action: {ability: 'hold'}});
-    expect(b.hp).toBe(b.maxHp - RULES.hazardDamage);
+    expect(b.hp).toBe(b.maxHp - RULES.hazardEnterDamage);
   });
 
   it('hurts a unit on quicksand every slot the track passes, turn or not', () => {

@@ -127,7 +127,7 @@ export function applyHail(ctx: Ctx, unit: Unit): void {
 /** Quicksand under a unit, on entering (each slot on it is `sinkInQuicksand`). */
 export function applyHazard(ctx: Ctx, unit: Unit): void {
   if (!onQuicksand(ctx.map, unit)) return;
-  const d = rawDamage(ctx.state, unit, RULES.hazardDamage);
+  const d = rawDamage(ctx.state, unit, RULES.hazardEnterDamage);
   applyDamage(ctx, unit, d, `Quicksand drags at ${unitName(unit)} for ${d}`);
 }
 
