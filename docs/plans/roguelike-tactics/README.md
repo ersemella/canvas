@@ -15,7 +15,8 @@ settled. Built in this repository (D10). The folder name,
 
 **Next step:** the owner sets the three prototype heroes' stat numbers and
 ability values (replacing the placeholders in `src/rules/config.ts`) and
-decides how a stalled fight ends (phase-1-brief.md, section 11); then Phase 2
+decides how a stalled fight ends; everything waiting on the owner is in
+[owner-decisions.md](owner-decisions.md). Then Phase 2
 ([phases.md](phases.md)). The
 keywords and their rules are decided ([keywords.md](keywords.md)). The
 combat design's other open questions are at the end of each topic file.
@@ -54,6 +55,7 @@ Always read this file first. Then:
 
 | Task | Read |
 |---|---|
+| What's broken or waiting on the owner | [owner-decisions.md](owner-decisions.md) |
 | Any design work | [goals.md](goals.md) (design goals, intended feel, types of fun) |
 | Looking up a term | [glossary.md](glossary.md): look up, don't read through |
 | Turn order, speed, what a turn can do | [timeline.md](timeline.md) |
