@@ -35,7 +35,8 @@ export const asyncTestGame: ServerSystem<CountState, CountAction> = {
   },
   handleAction(state, connectionId, action) {
     if (state.total >= 10) throw new Error('The round is over');
-    if (state.players[state.acting]?.connectionId !== connectionId) throw new Error('Not your turn');
+    if (state.players[state.acting]?.connectionId !== connectionId)
+      throw new Error('Not your turn');
     if (action.add !== 1 && action.add !== 2) throw new Error('Add 1 or 2');
     return {
       ...state,
@@ -44,7 +45,8 @@ export const asyncTestGame: ServerSystem<CountState, CountAction> = {
     };
   },
   getPublicState: (state) => state,
-  actingConnectionId: (state) => (state.total >= 10 ? null : (state.players[state.acting]?.connectionId ?? null)),
+  actingConnectionId: (state) =>
+    state.total >= 10 ? null : (state.players[state.acting]?.connectionId ?? null),
   isHandOver: (state) => state.total >= 10,
   timeoutAction: () => ({add: 1}),
   room: {

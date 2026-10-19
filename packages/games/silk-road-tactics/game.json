@@ -7,12 +7,7 @@
     "width": 600,
     "height": 460
   },
-  "systems": [
-    "MouseSystem",
-    "HexGridSystem",
-    "TacticsInputSystem",
-    "TacticsBoardSystem"
-  ],
+  "systems": ["MouseSystem", "HexGridSystem", "TacticsInputSystem", "TacticsBoardSystem"],
   "scene": {
     "name": "silk-road-tactics-main",
     "entities": []

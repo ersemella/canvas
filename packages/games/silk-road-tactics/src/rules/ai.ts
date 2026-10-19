@@ -38,12 +38,20 @@ function baselineOf(state: FightState): Baseline {
   return new Map(
     state.units
       .filter((u) => u.alive)
-      .map((u) => [u.id, {points: statusPoints(u, state.currentSlot), flanked: isFlanked(state, u)}])
+      .map((u) => [
+        u.id,
+        {points: statusPoints(u, state.currentSlot), flanked: isFlanked(state, u)},
+      ])
   );
 }
 
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
-export function scoreOutcome(before: FightState, after: FightState, actor: Unit, baseline = baselineOf(before)): number {
+export function scoreOutcome(
+  before: FightState,
+  after: FightState,
+  actor: Unit,
+  baseline = baselineOf(before)
+): number {
   let score = 0;
   for (const b of before.units) {
     if (!b.alive) continue;
@@ -70,10 +78,13 @@ export function scoreOutcome(before: FightState, after: FightState, actor: Unit,
     score -= rawDamage(after, me, RULES.hazardDamage) * AI.friendlyDamageFactor;
   }
   // So does ending on hail.
-  const hail = me.alive && me.hex ? after.effects.find((e) => hexEquals(e.hex, me.hex!)) : undefined;
+  const hail =
+    me.alive && me.hex ? after.effects.find((e) => hexEquals(e.hex, me.hex!)) : undefined;
   if (hail) score -= hailDamage(after, me, hail) * AI.friendlyDamageFactor;
   if (me.hex) {
-    const gaps = after.units.filter((u) => u.alive && u.hex && hostile(u, me)).map((u) => hexDistance(u.hex!, me.hex!));
+    const gaps = after.units
+      .filter((u) => u.alive && u.hex && hostile(u, me))
+      .map((u) => hexDistance(u.hex!, me.hex!));
     if (gaps.length > 0) score -= Math.min(...gaps) * AI.perHexFromEnemy;
   }
   return score;
@@ -93,7 +104,12 @@ function groundRadius(def: AbilityDef): number | undefined {
  * it would affect a unit, and only from the cheapest hex that reaches it
  * (the outcome doesn't depend on the hex).
  */
-export function scoreOptions(state: FightState, unit: Unit, limit = Infinity, budget?: SearchBudget): ScoredOption[] {
+export function scoreOptions(
+  state: FightState,
+  unit: Unit,
+  limit = Infinity,
+  budget?: SearchBudget
+): ScoredOption[] {
   let simulations = 0;
   const baseline = baselineOf(state);
   const map = mapOf(state);
@@ -104,7 +120,8 @@ export function scoreOptions(state: FightState, unit: Unit, limit = Infinity, bu
     // Where the unit stands after this move, to list targets from there.
     const moved = cloneFight(state);
     const mu = moved.units.find((u) => u.id === unit.id)!;
-    for (const h of reach.path) if (mu.alive) enterHex({state: moved, map, slot: state.currentSlot}, mu, h);
+    for (const h of reach.path)
+      if (mu.alive) enterHex({state: moved, map, slot: state.currentSlot}, mu, h);
     if (!mu.alive) continue;
 
     for (const def of abilitiesOf(unit)) {
@@ -114,7 +131,10 @@ export function scoreOptions(state: FightState, unit: Unit, limit = Infinity, bu
         if (radius !== undefined) {
           const key = `${def.id}:${hexKey(target.hex!)}`;
           if (groundTried.has(key)) continue;
-          if (!moved.units.some((u) => u.alive && u.hex && hexDistance(u.hex, target.hex!) <= radius)) continue;
+          if (
+            !moved.units.some((u) => u.alive && u.hex && hexDistance(u.hex, target.hex!) <= radius)
+          )
+            continue;
           groundTried.add(key);
         }
         const input: TurnInput = {action: {ability: def.id, target}};
@@ -128,7 +148,9 @@ export function scoreOptions(state: FightState, unit: Unit, limit = Infinity, bu
         if (def.id === 'hold') {
           // Price the Hold's time as AI.holdScoringCost (see config.ts).
           const hexes = reach.path.length;
-          const extra = slotsForward(turnCost(AI.holdScoringCost, hexes), unit.speed) - slotsForward(turnCost(def.cost, hexes), unit.speed);
+          const extra =
+            slotsForward(turnCost(AI.holdScoringCost, hexes), unit.speed) -
+            slotsForward(turnCost(def.cost, hexes), unit.speed);
           score -= Math.max(0, extra) * AI.perSlotMoved;
         }
         out.push({input, score, after});
@@ -143,7 +165,12 @@ export function scoreOptions(state: FightState, unit: Unit, limit = Infinity, bu
  * ability is resolved immediately, assuming its targets don't move (brief
  * section 6), so its effect can be scored and previewed.
  */
-export function simulate(state: FightState, unitId: string, input: TurnInput, trustTarget = false): FightState | null {
+export function simulate(
+  state: FightState,
+  unitId: string,
+  input: TurnInput,
+  trustTarget = false
+): FightState | null {
   const sim = cloneFight(state);
   const su = sim.units.find((u) => u.id === unitId)!;
   try {
@@ -154,7 +181,9 @@ export function simulate(state: FightState, unitId: string, input: TurnInput, tr
   }
   if (su.charging) {
     const def = ABILITIES[su.charging.ability];
-    def.resolve({state: sim, map: mapOf(sim), slot: sim.currentSlot}, su, {hex: su.charging.target});
+    def.resolve({state: sim, map: mapOf(sim), slot: sim.currentSlot}, su, {
+      hex: su.charging.target,
+    });
   }
   return sim;
 }
@@ -170,7 +199,9 @@ export interface SearchBudget {
  * earlier AI turns spend it, never below `AI.minSimulations`.
  */
 export function chooseAiTurn(state: FightState, unit: Unit, budget?: SearchBudget): TurnInput {
-  const limit = budget ? Math.max(AI.minSimulations, Math.min(AI.maxSimulations, budget.left)) : AI.maxSimulations;
+  const limit = budget
+    ? Math.max(AI.minSimulations, Math.min(AI.maxSimulations, budget.left))
+    : AI.maxSimulations;
   let best: ScoredOption | undefined;
   for (const option of scoreOptions(state, unit, limit, budget)) {
     if (!best || option.score > best.score) best = option;

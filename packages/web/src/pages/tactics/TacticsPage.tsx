@@ -1,6 +1,14 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Alert, Button, Center, Group, Loader, Paper, Stack, Text} from '@mantine/core';
-import {hexDistance, hexEquals, hexKey, hexToPixel, hexesInRange, registerBuiltinComponents, registerBuiltinSystems} from '@canvas/engine';
+import {
+  hexDistance,
+  hexEquals,
+  hexKey,
+  hexToPixel,
+  hexesInRange,
+  registerBuiltinComponents,
+  registerBuiltinSystems,
+} from '@canvas/engine';
 import type {EventBus, Hex} from '@canvas/engine';
 import {
   ABILITIES,
@@ -124,7 +132,9 @@ export function TacticsPage() {
       resetTurn();
       setError(null);
       if (r.view.fight.phase === 'deploy') {
-        setDeployAt(Object.fromEntries(defaultDeployment(r.view.fight).map((d) => [d.unitId, d.hex])));
+        setDeployAt(
+          Object.fromEntries(defaultDeployment(r.view.fight).map((d) => [d.unitId, d.hex]))
+        );
       }
     },
     [resetTurn]
@@ -174,7 +184,8 @@ export function TacticsPage() {
 
   const reaches = useMemo(() => {
     if (!fight || !acting) return [];
-    if (actFirst) return acted?.unit.alive ? reachableHexes(acted.state, mapOf(acted.state), acted.unit) : [];
+    if (actFirst)
+      return acted?.unit.alive ? reachableHexes(acted.state, mapOf(acted.state), acted.unit) : [];
     return reachableHexes(fight, mapOf(fight), acting);
   }, [fight, acting, actFirst, acted]);
 
@@ -184,7 +195,8 @@ export function TacticsPage() {
     const state = cloneFight(fight);
     const unit = state.units.find((u) => u.id === acting.id)!;
     if (!actFirst) {
-      for (const h of plannedMove?.path ?? []) enterHex({state, map: mapOf(state), slot: state.currentSlot}, unit, h);
+      for (const h of plannedMove?.path ?? [])
+        enterHex({state, map: mapOf(state), slot: state.currentSlot}, unit, h);
     }
     return {state, unit};
   }, [fight, acting, plannedMove, actFirst]);
@@ -238,7 +250,9 @@ export function TacticsPage() {
       setMoving(false);
       if (!id) return setTarget(null);
       // Abilities with no target (Hold, Sunlight) preview at once.
-      const own = moved ? ABILITIES[id].targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!) : [];
+      const own = moved
+        ? ABILITIES[id].targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!)
+        : [];
       setTarget(own.length === 1 && own[0]!.hex === undefined ? {} : null);
     },
     [moved, actFirst, clearMove]
@@ -274,8 +288,12 @@ export function TacticsPage() {
   const slotsLater = useCallback(
     (actionCost: number) => {
       if (!fight || !acting) return 0;
-      const taken = new Set(fight.units.filter((u) => u.alive && u !== acting && u.slot !== null).map((u) => u.slot));
-      let slot = fight.currentSlot + slotsForward(turnCost(actionCost, plannedMove?.path.length ?? 0), acting.speed);
+      const taken = new Set(
+        fight.units.filter((u) => u.alive && u !== acting && u.slot !== null).map((u) => u.slot)
+      );
+      let slot =
+        fight.currentSlot +
+        slotsForward(turnCost(actionCost, plannedMove?.path.length ?? 0), acting.speed);
       while (taken.has(slot)) slot++;
       return slot - fight.currentSlot;
     },
@@ -287,7 +305,11 @@ export function TacticsPage() {
     const out = new Set<AbilityId>();
     if (!acting || !moved?.unit.alive) return out;
     for (const def of abilitiesOf(acting)) {
-      if (def.targetsUnit && def.targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!).length === 0) out.add(def.id);
+      if (
+        def.targetsUnit &&
+        def.targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!).length === 0
+      )
+        out.add(def.id);
     }
     return out;
   }, [acting, moved]);
@@ -299,7 +321,10 @@ export function TacticsPage() {
   const moveSlots = useMemo(() => {
     if (!acting || !plannedMove || plannedMove.path.length === 0) return null;
     const cost = ABILITIES[ability ?? 'hold'].cost;
-    return slotsForward(turnCost(cost, plannedMove.path.length), acting.speed) - slotsForward(cost, acting.speed);
+    return (
+      slotsForward(turnCost(cost, plannedMove.path.length), acting.speed) -
+      slotsForward(cost, acting.speed)
+    );
   }, [acting, plannedMove, ability]);
 
   /** The same turn in the other order, if it's legal: Swap order offers it. */
@@ -334,13 +359,16 @@ export function TacticsPage() {
           setPlannedMove(reach.path.length > 0 ? reach : null);
           if (reach.path.length === 0) setActFirst(false);
           // Moving first changes where the action is taken from.
-          else if (!actFirst) setTarget(ability && targets.length === 1 && targets[0]!.hex === undefined ? {} : null);
+          else if (!actFirst)
+            setTarget(ability && targets.length === 1 && targets[0]!.hex === undefined ? {} : null);
           setMoving(false);
           return;
         }
       } else if (acting && ability) {
         if (ability === 'throw' && target?.hex) {
-          const landing = targets.find((t) => hexEquals(t.hex!, target.hex!) && hexEquals(t.to!, h));
+          const landing = targets.find(
+            (t) => hexEquals(t.hex!, target.hex!) && hexEquals(t.to!, h)
+          );
           if (landing) {
             // Tapping the chosen landing again does nothing: only Confirm commits.
             if (!target.to || !hexEquals(target.to, h)) chooseTarget(landing);
@@ -350,7 +378,8 @@ export function TacticsPage() {
         const match = targets.find((t) => t.hex && hexEquals(t.hex, h));
         if (match) {
           // Tapping the chosen target again does nothing: only Confirm commits.
-          const same = target?.hex && hexEquals(target.hex, h) && (ability !== 'throw' || target.to);
+          const same =
+            target?.hex && hexEquals(target.hex, h) && (ability !== 'throw' || target.to);
           if (!same) chooseTarget(ability === 'throw' ? {hex: h} : match);
           return;
         }
@@ -359,7 +388,21 @@ export function TacticsPage() {
       setPinnedHex(h);
       setSelectedId(unitAt(fight, h)?.id ?? null);
     },
-    [fight, busy, deployAt, selectedId, acting, moving, reaches, actFirst, ability, target, targets, chooseTarget, map]
+    [
+      fight,
+      busy,
+      deployAt,
+      selectedId,
+      acting,
+      moving,
+      reaches,
+      actFirst,
+      ability,
+      target,
+      targets,
+      chooseTarget,
+      map,
+    ]
   );
 
   const onHexRef = useRef(onHex);
@@ -369,7 +412,8 @@ export function TacticsPage() {
 
   /** The hex being looked at: under the mouse, else the one last tapped. */
   const inspectHex = hover.hex ?? pinnedHex;
-  const inspectedUnit = fight && inspectHex && fight.phase !== 'deploy' ? unitAt(fight, inspectHex) : undefined;
+  const inspectedUnit =
+    fight && inspectHex && fight.phase !== 'deploy' ? unitAt(fight, inspectHex) : undefined;
   /** Where the inspected unit could move this turn, if it isn't the acting one. */
   const inspectReach = useMemo(
     () =>
@@ -381,7 +425,10 @@ export function TacticsPage() {
 
   /** The bow's six lanes from where the archer will stand, hit or not. */
   const lanes = useMemo(
-    () => (ability === 'bow' && moved?.unit.alive ? arrowLanes(moved.state, mapOf(moved.state), moved.unit.hex!) : []),
+    () =>
+      ability === 'bow' && moved?.unit.alive
+        ? arrowLanes(moved.state, mapOf(moved.state), moved.unit.hex!)
+        : [],
     [ability, moved]
   );
 
@@ -396,7 +443,8 @@ export function TacticsPage() {
     };
     if (!fight) return out;
     if (fight.phase === 'deploy') {
-      for (const h of map.deployment.player) if (!map.tiles[hexKey(h)]) highlights.push({hex: h, kind: 'zone'});
+      for (const h of map.deployment.player)
+        if (!map.tiles[hexKey(h)]) highlights.push({hex: h, kind: 'zone'});
       out.positions = deployAt;
       return out;
     }
@@ -405,7 +453,8 @@ export function TacticsPage() {
     for (const h of plannedMove?.path ?? []) highlights.push({hex: h, kind: 'path'});
     const onPath = (h: Hex) => plannedMove?.path.some((p) => hexEquals(p, h));
     if (moving) {
-      for (const r of reaches) if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'move'});
+      for (const r of reaches)
+        if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'move'});
     } else if (ability) {
       if (lanes.length > 0) {
         out.arrows = [];
@@ -413,7 +462,8 @@ export function TacticsPage() {
           const last = lane.hexes[lane.hexes.length - 1];
           if (!last) continue;
           out.arrows.push({from: moved!.unit.hex!, to: last, hits: Boolean(lane.hit)});
-          for (const h of lane.hit ? lane.hexes.slice(0, -1) : lane.hexes) highlights.push({hex: h, kind: 'lane'});
+          for (const h of lane.hit ? lane.hexes.slice(0, -1) : lane.hexes)
+            highlights.push({hex: h, kind: 'lane'});
         }
       }
       const shown = new Set<string>();
@@ -427,7 +477,8 @@ export function TacticsPage() {
       if (target?.hex) {
         const radius = AREA_RADIUS[ability];
         if (radius) {
-          for (const h of hexesInRange(target.hex, radius)) if (hexDistance(h, target.hex) <= radius) highlights.push({hex: h, kind: 'area'});
+          for (const h of hexesInRange(target.hex, radius))
+            if (hexDistance(h, target.hex) <= radius) highlights.push({hex: h, kind: 'area'});
         }
         highlights.push({hex: target.hex, kind: 'chosen'});
         if (target.to) highlights.push({hex: target.to, kind: 'chosen'});
@@ -435,16 +486,51 @@ export function TacticsPage() {
     }
     // Numbered badges where each step happens, in the order they resolve.
     const actionHex = target?.hex ?? (actFirst || !plannedMove ? acting.hex : plannedMove.hex);
-    const stepHexes = [plannedMove && !moving ? plannedMove.hex : null, action && actionHex ? actionHex : null];
+    const stepHexes = [
+      plannedMove && !moving ? plannedMove.hex : null,
+      action && actionHex ? actionHex : null,
+    ];
     if (actFirst) stepHexes.reverse();
     out.steps = stepHexes.filter((h): h is Hex => h !== null).map((hex, i) => ({hex, n: i + 1}));
     if (preview) {
-      out.preview = preview.changes.map((c) => ({unitId: c.unitId, to: c.to, hpAfter: c.hpAfter, hpBefore: c.hpBefore, killed: c.killed}));
+      out.preview = preview.changes.map((c) => ({
+        unitId: c.unitId,
+        to: c.to,
+        hpAfter: c.hpAfter,
+        hpBefore: c.hpBefore,
+        killed: c.killed,
+      }));
     } else if (plannedMove && !actFirst) {
-      out.preview = [{unitId: acting.id, to: plannedMove.hex, hpAfter: acting.hp, hpBefore: acting.hp, killed: false}];
+      out.preview = [
+        {
+          unitId: acting.id,
+          to: plannedMove.hex,
+          hpAfter: acting.hp,
+          hpBefore: acting.hp,
+          killed: false,
+        },
+      ];
     }
     return out;
-  }, [fight, selectedId, acting, deployAt, plannedMove, actFirst, moving, ability, action, reaches, targets, target, preview, map, inspectReach, lanes, moved]);
+  }, [
+    fight,
+    selectedId,
+    acting,
+    deployAt,
+    plannedMove,
+    actFirst,
+    moving,
+    ability,
+    action,
+    reaches,
+    targets,
+    target,
+    preview,
+    map,
+    inspectReach,
+    lanes,
+    moved,
+  ]);
 
   useEffect(() => {
     eventsRef.current?.emit('tactics:board', scene);
@@ -500,8 +586,9 @@ export function TacticsPage() {
         <Paper bg="dark.7" withBorder p="xl" radius="md" maw={520}>
           <Stack gap="md">
             <Text>
-              Three heroes of the steppe — a Bökh Champion, a Mangudai Outrider and a Yadachy Storm Caller — meet a rival
-              band on the Salt Flats Crossing. Every unit's stats are shown; only what the enemy will choose is hidden.
+              Three heroes of the steppe — a Bökh Champion, a Mangudai Outrider and a Yadachy Storm
+              Caller — meet a rival band on the Salt Flats Crossing. Every unit's stats are shown;
+              only what the enemy will choose is hidden.
             </Text>
             <Text c="dimmed" fz="sm">
               Prototype: one fight. Hero numbers are placeholders.
@@ -517,67 +604,74 @@ export function TacticsPage() {
   }
 
   const finished = fight.phase === 'won' || fight.phase === 'lost';
-  const selected = fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
+  const selected =
+    fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
 
   // The action section (deployment or the turn) and the detail section
   // (what's tapped or hovered). Phones put details first under the board and
   // pin the actions to the bottom of the screen.
-  const actions = fight.phase === 'deploy' ? (
-    <Paper bg="dark.7" p="sm" radius="md">
-      <Stack gap="xs">
-        <Text fw={600}>Deploy your heroes</Text>
-        <Text fz="sm" c="dimmed">
-          Tap a hero, then a hex in the blue zone, to move it. The enemy's band is already in place.
-        </Text>
-        <Button
-          color="yellow"
-          c="dark.9"
-          fw="bold"
-          loading={busy}
-          onClick={() =>
-            void send(() =>
-              runsApi.deploy(run.runId, {
-                placements: Object.entries(deployAt).map(([unitId, hex]) => ({unitId, hex})),
-              })
-            )
-          }
+  const actions =
+    fight.phase === 'deploy' ? (
+      <Paper bg="dark.7" p="sm" radius="md">
+        <Stack gap="xs">
+          <Text fw={600}>Deploy your heroes</Text>
+          <Text fz="sm" c="dimmed">
+            Tap a hero, then a hex in the blue zone, to move it. The enemy's band is already in
+            place.
+          </Text>
+          <Button
+            color="yellow"
+            c="dark.9"
+            fw="bold"
+            loading={busy}
+            onClick={() =>
+              void send(() =>
+                runsApi.deploy(run.runId, {
+                  placements: Object.entries(deployAt).map(([unitId, hex]) => ({unitId, hex})),
+                })
+              )
+            }
+          >
+            Start the fight
+          </Button>
+        </Stack>
+      </Paper>
+    ) : (
+      acting &&
+      !finished && (
+        <TurnControls
+          phone={phone}
+          slotsLater={slotsLater}
+          moveSlots={moveSlots}
+          outOfReach={outOfReach}
+          unit={acting}
+          ability={ability}
+          plannedMove={plannedMove}
+          actFirst={actFirst}
+          canSwap={canSwap}
+          onSwap={() => setActFirst(!actFirst)}
+          moving={moving}
+          canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
+          onMove={toggleMove}
+          onAbility={chooseAbility}
         >
-          Start the fight
-        </Button>
-      </Stack>
-    </Paper>
-  ) : (
-    acting &&
-    !finished && (
-      <TurnControls
-        phone={phone}
-        slotsLater={slotsLater}
-        moveSlots={moveSlots}
-        outOfReach={outOfReach}
-        unit={acting}
-        ability={ability}
-        plannedMove={plannedMove}
-        actFirst={actFirst}
-        canSwap={canSwap}
-        onSwap={() => setActFirst(!actFirst)}
-        moving={moving}
-        canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
-        onMove={toggleMove}
-        onAbility={chooseAbility}
-      >
-        <ConfirmButton
-          endTurn={endsWithHold}
-          fight={fight}
-          preview={preview}
-          needsTarget={!input}
-          busy={busy}
-          onConfirm={() => commit()}
-        />
-      </TurnControls>
-    )
-  );
+          <ConfirmButton
+            endTurn={endsWithHold}
+            fight={fight}
+            preview={preview}
+            needsTarget={!input}
+            busy={busy}
+            onConfirm={() => commit()}
+          />
+        </TurnControls>
+      )
+    );
   const details = inspectHex ? (
-    <HexInspector fight={fight} hex={inspectHex} positions={fight.phase === 'deploy' ? deployAt : undefined} />
+    <HexInspector
+      fight={fight}
+      hex={inspectHex}
+      positions={fight.phase === 'deploy' ? deployAt : undefined}
+    />
   ) : (
     selected && <StatSheet fight={fight} unit={selected} />
   );
@@ -602,7 +696,9 @@ export function TacticsPage() {
                   {fight.phase === 'won' ? 'Victory' : 'Defeat'}
                 </Text>
                 <Text c="dimmed" fz="sm">
-                  {fight.phase === 'won' ? 'The rival band is scattered.' : 'Your caravan has fallen.'}
+                  {fight.phase === 'won'
+                    ? 'The rival band is scattered.'
+                    : 'Your caravan has fallen.'}
                 </Text>
                 <Button color="yellow" c="dark.9" fw="bold" onClick={startRun} loading={busy}>
                   New fight
@@ -666,7 +762,9 @@ function TurnControls(props: {
   // The steps in the order they resolve, named only.
   const moveStep = moving || (plannedMove?.path.length ?? 0) > 0 ? 'Move' : null;
   const actionStep = ability ? ABILITIES[ability].name : null;
-  const steps = (props.actFirst ? [actionStep, moveStep] : [moveStep, actionStep]).filter((x): x is string => x !== null);
+  const steps = (props.actFirst ? [actionStep, moveStep] : [moveStep, actionStep]).filter(
+    (x): x is string => x !== null
+  );
   const size = phone ? 'compact-sm' : 'xs';
   return (
     <Paper bg={phone ? 'transparent' : 'dark.7'} p={phone ? 0 : 'sm'} radius="md">
@@ -688,7 +786,9 @@ function TurnControls(props: {
             onClick={props.onMove}
           >
             Move
-            {props.moveSlots !== null && <span className={styles.abilityCost}>+{props.moveSlots}</span>}
+            {props.moveSlots !== null && (
+              <span className={styles.abilityCost}>+{props.moveSlots}</span>
+            )}
           </Button>
           {abilitiesOf(unit)
             // No Hold button: Confirm reads End turn with no action picked.
@@ -701,7 +801,8 @@ function TurnControls(props: {
                     ? 'No one in any of the bow’s lanes.'
                     : 'No one next to you to target.'
                   : null);
-              const lockedUlt = def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
+              const lockedUlt =
+                def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
               return (
                 <Button
                   key={def.id}
@@ -732,7 +833,13 @@ function TurnControls(props: {
               ))}
             </ol>
             {props.canSwap && (
-              <Button size="compact-xs" variant="light" color="gray" onClick={props.onSwap} title="Do the other step first">
+              <Button
+                size="compact-xs"
+                variant="light"
+                color="gray"
+                onClick={props.onSwap}
+                title="Do the other step first"
+              >
                 ⇅ Swap order
               </Button>
             )}

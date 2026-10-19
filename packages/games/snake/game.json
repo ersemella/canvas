@@ -20,10 +20,7 @@
     "entities": [
       {
         "id": "snake-head",
-        "tags": [
-          "snake",
-          "player"
-        ],
+        "tags": ["snake", "player"],
         "components": {
           "Transform": {
             "position": {
@@ -61,26 +58,10 @@
           },
           "Input": {
             "actionMap": {
-              "move_up": [
-                "ArrowUp",
-                "KeyW",
-                "SwipeUp"
-              ],
-              "move_down": [
-                "ArrowDown",
-                "KeyS",
-                "SwipeDown"
-              ],
-              "move_left": [
-                "ArrowLeft",
-                "KeyA",
-                "SwipeLeft"
-              ],
-              "move_right": [
-                "ArrowRight",
-                "KeyD",
-                "SwipeRight"
-              ]
+              "move_up": ["ArrowUp", "KeyW", "SwipeUp"],
+              "move_down": ["ArrowDown", "KeyS", "SwipeDown"],
+              "move_left": ["ArrowLeft", "KeyA", "SwipeLeft"],
+              "move_right": ["ArrowRight", "KeyD", "SwipeRight"]
             }
           },
           "GridMovement": {
@@ -118,18 +99,14 @@
                 "layer": "entities",
                 "color": "#22c55e"
               },
-              "tags": [
-                "snake-body"
-              ]
+              "tags": ["snake-body"]
             }
           }
         }
       },
       {
         "id": "food",
-        "tags": [
-          "food"
-        ],
+        "tags": ["food"],
         "components": {
           "Transform": {
             "position": {

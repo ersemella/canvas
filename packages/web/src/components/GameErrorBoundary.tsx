@@ -23,7 +23,9 @@ export class GameErrorBoundary extends Component<Props, State> {
       return (
         <Center h={300}>
           <Stack align="center" gap="sm" maw={480}>
-            <Text ff="monospace" fw="bold" fz="lg" c="red.4">Something went wrong</Text>
+            <Text ff="monospace" fw="bold" fz="lg" c="red.4">
+              Something went wrong
+            </Text>
             <Text c="dimmed" ta="center" fz="sm">
               The game crashed unexpectedly. This is likely a bug.
             </Text>

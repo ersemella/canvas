@@ -29,7 +29,11 @@ export function resolveRoomPolicy(policy: RoomPolicy | undefined): ResolvedRoomP
 }
 
 /** Deadline for the acting player's turn, or null if this game has no turn limit. */
-export function turnDeadline(policy: ResolvedRoomPolicy, now: number, actingConnected: boolean): number | null {
+export function turnDeadline(
+  policy: ResolvedRoomPolicy,
+  now: number,
+  actingConnected: boolean
+): number | null {
   const limit =
     !actingConnected && policy.disconnectedTurnTimeoutMs !== null
       ? policy.disconnectedTurnTimeoutMs
@@ -41,14 +45,17 @@ export function turnDeadline(policy: ResolvedRoomPolicy, now: number, actingConn
 export function deadlineAfterDisconnect(
   policy: ResolvedRoomPolicy,
   current: number | null,
-  now: number,
+  now: number
 ): number | null {
   if (current === null || policy.disconnectedTurnTimeoutMs === null) return current;
   return Math.min(current, now + policy.disconnectedTurnTimeoutMs);
 }
 
 /** When an empty room gets deleted, or Infinity if it never is for being empty. */
-export function emptyRoomDeletionAt(policy: ResolvedRoomPolicy, emptySince: number | null | undefined): number {
+export function emptyRoomDeletionAt(
+  policy: ResolvedRoomPolicy,
+  emptySince: number | null | undefined
+): number {
   if (!emptySince || policy.emptyRoomGraceMs === null) return Infinity;
   return emptySince + policy.emptyRoomGraceMs;
 }
@@ -57,7 +64,11 @@ type AlarmFields = Pick<RoomRecord, 'expiresAt' | 'turnDeadline' | 'emptySince'>
 
 /** The one storage alarm points at whichever timer is due first. */
 export function nextAlarmAt(policy: ResolvedRoomPolicy, meta: AlarmFields): number {
-  return Math.min(meta.expiresAt, meta.turnDeadline ?? Infinity, emptyRoomDeletionAt(policy, meta.emptySince));
+  return Math.min(
+    meta.expiresAt,
+    meta.turnDeadline ?? Infinity,
+    emptyRoomDeletionAt(policy, meta.emptySince)
+  );
 }
 
 export type AlarmDecision =
@@ -69,7 +80,7 @@ export function decideAlarm(
   policy: ResolvedRoomPolicy,
   meta: AlarmFields,
   now: number,
-  noSockets: boolean,
+  noSockets: boolean
 ): AlarmDecision {
   if (noSockets && now >= emptyRoomDeletionAt(policy, meta.emptySince)) return {kind: 'delete'};
   let expiresAt = meta.expiresAt;
@@ -83,6 +94,10 @@ export function decideAlarm(
 }
 
 /** Expiry after a join or a committed move: pushed back only for `ttlExtendsOn: 'activity'`. */
-export function expiryAfterActivity(policy: ResolvedRoomPolicy, expiresAt: number, now: number): number {
+export function expiryAfterActivity(
+  policy: ResolvedRoomPolicy,
+  expiresAt: number,
+  now: number
+): number {
   return policy.ttlExtendsOn === 'activity' ? Math.max(expiresAt, now + policy.ttlMs) : expiresAt;
 }

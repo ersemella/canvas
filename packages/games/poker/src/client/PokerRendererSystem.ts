@@ -45,7 +45,8 @@ function drawCard(
   card: PokerCard | null,
   faceUp: boolean
 ): void {
-  const w = 50, h = 70;
+  const w = 50,
+    h = 70;
   const cx = x - w / 2;
   const cy = y - h / 2;
 
@@ -120,7 +121,8 @@ export class PokerRendererSystem extends BaseSystem {
 
     // Community cards
     const totalComm = 5;
-    const cardW = 50, gap = 8;
+    const cardW = 50,
+      gap = 8;
     const totalWidth = totalComm * cardW + (totalComm - 1) * gap;
     const startX = COMMUNITY_X - totalWidth / 2 + cardW / 2;
     for (let i = 0; i < totalComm; i++) {
@@ -143,7 +145,7 @@ export class PokerRendererSystem extends BaseSystem {
       const pos = SEAT_POSITIONS[i];
       if (!pos) continue;
       const [sx, sy] = pos;
-      const isActing = gs.actingIndex === i && (gs.phase !== 'waiting' && gs.phase !== 'showdown');
+      const isActing = gs.actingIndex === i && gs.phase !== 'waiting' && gs.phase !== 'showdown';
 
       // Seat background
       ctx.save();

@@ -26,7 +26,8 @@ export interface MapData {
 
 const ROWS = 7;
 /** The columns of a row: odd rows start half a hex further left. */
-const columnsOf = (row: number): number[] => Array.from({length: row & 1 ? 10 : 9}, (_, i) => i - (row & 1));
+const columnsOf = (row: number): number[] =>
+  Array.from({length: row & 1 ? 10 : 9}, (_, i) => i - (row & 1));
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
 
 const special: [OffsetCoord, Tile][] = [

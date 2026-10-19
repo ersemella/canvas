@@ -4,21 +4,12 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "baseUrl": "src",
-    "lib": [
-      "ES2022"
-    ],
-    "types": [
-      "@cloudflare/workers-types"
-    ],
+    "lib": ["ES2022"],
+    "types": ["@cloudflare/workers-types"],
     "noEmit": true,
     "paths": {
-      "@canvas/engine/server": [
-        "../../engine/src/server.ts"
-      ]
+      "@canvas/engine/server": ["../../engine/src/server.ts"]
     }
   },
-  "include": [
-    "src",
-    "test"
-  ]
+  "include": ["src", "test"]
 }

@@ -22,7 +22,11 @@ const TILE_COLOR: Record<Tile, string> = {
 /** The board: a HexGrid entity and one hex entity per tile of the map. */
 function boardEntities(): EntityData[] {
   const map = SALT_FLATS;
-  const transform = (x: number, y: number) => ({position: {x, y}, rotation: 0, scale: {x: 1, y: 1}});
+  const transform = (x: number, y: number) => ({
+    position: {x, y},
+    rotation: 0,
+    scale: {x: 1, y: 1},
+  });
   return [
     {
       id: 'board',
@@ -69,13 +73,24 @@ export default silkRoadTactics;
 // rules, run locally for previews (D11).
 export {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem};
 export type {BoardScene, HighlightKind} from './client/TacticsBoardSystem';
-export type {TacticsCardPayload, TacticsHoverPayload, TacticsTapPayload} from './client/TacticsInputSystem';
+export type {
+  TacticsCardPayload,
+  TacticsHoverPayload,
+  TacticsTapPayload,
+} from './client/TacticsInputSystem';
 export {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './rules/abilities';
 export type {AbilityDef, ArrowLane} from './rules/abilities';
 export {TILE_INFO, hailInfo} from './rules/info';
 export type {HexInfo} from './rules/info';
 export {ABILITY, HEROES, RULES} from './rules/config';
-export {isFlanked, movementCap, reachableHexes, statusSlotsLeft, statusValue, unitAt} from './rules/board';
+export {
+  isFlanked,
+  movementCap,
+  reachableHexes,
+  statusSlotsLeft,
+  statusValue,
+  unitAt,
+} from './rules/board';
 export type {Reach} from './rules/board';
 export {actingUnit, cloneFight, defaultDeployment, mapOf} from './rules/fight';
 export {enterHex, unitName} from './rules/resolve';

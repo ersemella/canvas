@@ -17,7 +17,9 @@ export function turnCost(actionCost: number, hexesMoved: number): number {
 
 /** The first free slot at or after `slot` (3.3: the arriving card yields). */
 export function freeSlotFrom(state: FightState, slot: number, ignore?: Unit): number {
-  const taken = new Set(state.units.filter((u) => u.alive && u !== ignore && u.slot !== null).map((u) => u.slot));
+  const taken = new Set(
+    state.units.filter((u) => u.alive && u !== ignore && u.slot !== null).map((u) => u.slot)
+  );
   let s = slot;
   while (taken.has(s)) s++;
   return s;
@@ -43,8 +45,12 @@ export function simultaneousOrder(units: Unit[]): Unit[] {
   const out: Unit[] = [];
   for (const speed of [...bySpeed.keys()].sort((a, b) => b - a)) {
     const group = bySpeed.get(speed)!;
-    const player = group.filter((u) => u.side === 'player').sort((a, b) => a.partyIndex - b.partyIndex);
-    const enemy = group.filter((u) => u.side === 'enemy').sort((a, b) => a.partyIndex - b.partyIndex);
+    const player = group
+      .filter((u) => u.side === 'player')
+      .sort((a, b) => a.partyIndex - b.partyIndex);
+    const enemy = group
+      .filter((u) => u.side === 'enemy')
+      .sort((a, b) => a.partyIndex - b.partyIndex);
     for (let i = 0; i < Math.max(player.length, enemy.length); i++) {
       if (player[i]) out.push(player[i]!);
       if (enemy[i]) out.push(enemy[i]!);

@@ -93,7 +93,7 @@ export function PokerRoomPage() {
       .then(({wsUrl}) => {
         if (cancelled) return;
         const ws = new WebSocket(
-          `${wsUrl}?roomId=${encodeURIComponent(roomId)}&playerName=${encodeURIComponent(name)}`,
+          `${wsUrl}?roomId=${encodeURIComponent(roomId)}&playerName=${encodeURIComponent(name)}`
         );
         wsRef.current = ws;
 
@@ -117,7 +117,11 @@ export function PokerRoomPage() {
               break;
             }
             case 'error':
-              notifications.show({message: msg.message ?? 'Action rejected', color: 'red', autoClose: 3000});
+              notifications.show({
+                message: msg.message ?? 'Action rejected',
+                color: 'red',
+                autoClose: 3000,
+              });
               break;
           }
           // Bridge all messages to ECS EventBus
@@ -148,9 +152,12 @@ export function PokerRoomPage() {
     worldEventsRef.current = events;
 
     // Bridge ECS ws:send → WebSocket (translate type→action for the GameRoom DO protocol)
-    unsubWsSendRef.current = events.on<{type: string; payload?: unknown}>('ws:send', (msg: {type: string; payload?: unknown}) => {
-      wsRef.current?.send(JSON.stringify({action: msg.type, payload: msg.payload}));
-    });
+    unsubWsSendRef.current = events.on<{type: string; payload?: unknown}>(
+      'ws:send',
+      (msg: {type: string; payload?: unknown}) => {
+        wsRef.current?.send(JSON.stringify({action: msg.type, payload: msg.payload}));
+      }
+    );
 
     // Re-request the current state: the messages that started the game
     // arrived before this canvas existed.
@@ -166,7 +173,9 @@ export function PokerRoomPage() {
 
   // Unsubscribe ws:send bridge on unmount
   useEffect(() => {
-    return () => { unsubWsSendRef.current?.(); };
+    return () => {
+      unsubWsSendRef.current?.();
+    };
   }, []);
 
   function handleStartGame() {
@@ -201,7 +210,9 @@ export function PokerRoomPage() {
   if (!nameSubmitted) {
     return (
       <Stack align="center" pt={80} gap="md">
-        <Title order={2} c="yellow">Join Room {roomId}</Title>
+        <Title order={2} c="yellow">
+          Join Room {roomId}
+        </Title>
         <TextInput
           placeholder="Enter your name"
           value={nameInput}
@@ -247,9 +258,13 @@ export function PokerRoomPage() {
       {!gameStarted && (
         <Paper bg="dark.7" withBorder p="xl" radius="md" miw={{base: '100%', sm: 360}}>
           <Stack gap="md">
-            <Title order={2} c="yellow">Room: {roomId}</Title>
+            <Title order={2} c="yellow">
+              Room: {roomId}
+            </Title>
             <div>
-              <Text c="dimmed" mb={8}>Players ({players.length}):</Text>
+              <Text c="dimmed" mb={8}>
+                Players ({players.length}):
+              </Text>
               <List>
                 {players.map((p, i) => (
                   <List.Item key={i}>{p.name}</List.Item>
@@ -305,7 +320,14 @@ export function PokerRoomPage() {
           )}
           {showdown && (
             <Stack align="center" mt="md">
-              <Button onClick={handleNextHand} color="yellow" c="dark.9" fw="bold" size="md" px={32}>
+              <Button
+                onClick={handleNextHand}
+                color="yellow"
+                c="dark.9"
+                fw="bold"
+                size="md"
+                px={32}
+              >
                 Next Hand
               </Button>
             </Stack>

@@ -57,7 +57,10 @@ export function createFight(seed: number): FightState {
     mode: 'solo',
     phase: 'deploy',
     currentSlot: 0,
-    units: [...PARTY.map((_, i) => makeUnit('player', i)), ...PARTY.map((_, i) => makeUnit('enemy', i))],
+    units: [
+      ...PARTY.map((_, i) => makeUnit('player', i)),
+      ...PARTY.map((_, i) => makeUnit('enemy', i)),
+    ],
     effects: [],
     log: [],
     awaiting: null,
@@ -70,7 +73,9 @@ export function createFight(seed: number): FightState {
 /** The player's default placement, for the deployment screen. */
 export function defaultDeployment(state: FightState): Deployment[] {
   const map = mapOf(state);
-  return state.units.filter((u) => u.side === 'player').map((u, i) => ({unitId: u.id, hex: map.playerLayout[i]!}));
+  return state.units
+    .filter((u) => u.side === 'player')
+    .map((u, i) => ({unitId: u.id, hex: map.playerLayout[i]!}));
 }
 
 /** Places the player's party in its zone and starts the clock (brief section 8). */
@@ -104,7 +109,10 @@ export function actingUnit(state: FightState): Unit | undefined {
  * Runs the track until a human-controlled unit's turn (start-of-turn
  * effects applied) or the fight's end. `chooseAi` picks each AI turn.
  */
-export function advance(state: FightState, chooseAi: (state: FightState, unit: Unit) => TurnInput): void {
+export function advance(
+  state: FightState,
+  chooseAi: (state: FightState, unit: Unit) => TurnInput
+): void {
   const map = mapOf(state);
   // A safety bound; a fight never takes anywhere near this many cards.
   for (let guard = 0; guard < 10_000 && state.phase === 'fight' && !state.awaiting; guard++) {
@@ -143,7 +151,8 @@ function triggerCharge(ctx: Ctx, unit: Unit): void {
   unit.charging = null;
   def.resolve(ctx, unit, {hex: target});
   checkEnd(ctx.state);
-  if (unit.alive) placeCard(ctx.state, unit, ctx.slot + slotsForward(def.recoveryCost!, unit.speed));
+  if (unit.alive)
+    placeCard(ctx.state, unit, ctx.slot + slotsForward(def.recoveryCost!, unit.speed));
   unit.turnsTaken++;
 }
 
@@ -155,7 +164,12 @@ function triggerCharge(ctx: Ctx, unit: Unit): void {
  * doesn't throw. `trustTarget` skips re-listing the targets, for the AI's
  * own options, which it took from that list.
  */
-export function applyTurn(state: FightState, unit: Unit, input: TurnInput, trustTarget = false): void {
+export function applyTurn(
+  state: FightState,
+  unit: Unit,
+  input: TurnInput,
+  trustTarget = false
+): void {
   const map = mapOf(state);
   const ctx: Ctx = {state, map, slot: state.currentSlot};
   const def = ABILITIES[input.action.ability];
@@ -177,7 +191,10 @@ export function applyTurn(state: FightState, unit: Unit, input: TurnInput, trust
   const act = () => {
     if (!unit.alive) return;
     const target = input.action.target ?? {};
-    if (!trustTarget && !def.targets(state, map, unit, unit.hex!).some((t) => sameTarget(t, target))) {
+    if (
+      !trustTarget &&
+      !def.targets(state, map, unit, unit.hex!).some((t) => sameTarget(t, target))
+    ) {
       throw new RuleError(`${def.name} can’t target that.`);
     }
     if (def.ultimate) unit.ultimateUsed = true;
@@ -198,7 +215,12 @@ export function applyTurn(state: FightState, unit: Unit, input: TurnInput, trust
   }
   state.awaiting = null;
   checkEnd(state);
-  if (unit.alive) placeCard(state, unit, state.currentSlot + slotsForward(turnCost(def.cost, path.length), unit.speed));
+  if (unit.alive)
+    placeCard(
+      state,
+      unit,
+      state.currentSlot + slotsForward(turnCost(def.cost, path.length), unit.speed)
+    );
   if (countsTowardUltimate(input)) unit.turnsTaken++;
 }
 

@@ -5,25 +5,13 @@
     "outDir": "dist",
     "composite": true,
     "resolveJsonModule": true,
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "paths": {
-      "@canvas/engine": [
-        "../../engine/src/index.ts"
-      ],
-      "@canvas/engine/server": [
-        "../../engine/src/server.ts"
-      ]
+      "@canvas/engine": ["../../engine/src/index.ts"],
+      "@canvas/engine/server": ["../../engine/src/server.ts"]
     }
   },
-  "include": [
-    "src",
-    "dev",
-    "game.json"
-  ],
+  "include": ["src", "dev", "game.json"],
   "references": [
     {
       "path": "../../engine"

@@ -40,7 +40,8 @@ export function livingUnits(state: FightState): Unit[] {
 /** Strongest active value of a status (combine by max); 0 if none. */
 export function statusValue(unit: Unit, kind: StatusKind): number {
   let best = 0;
-  for (const s of unit.statuses) if (s.kind === kind) best = Math.max(best, kind === 'immobilized' ? 1 : s.value);
+  for (const s of unit.statuses)
+    if (s.kind === kind) best = Math.max(best, kind === 'immobilized' ? 1 : s.value);
   return best;
 }
 
@@ -84,7 +85,10 @@ export function isFlanked(state: FightState, unit: Unit): boolean {
 
 /** Vulnerable % in effect: an ability's or a flank's, by max (brief section 2). */
 export function vulnerablePercent(state: FightState, unit: Unit): number {
-  return Math.max(statusValue(unit, 'vulnerable'), isFlanked(state, unit) ? RULES.flankVulnerable : 0);
+  return Math.max(
+    statusValue(unit, 'vulnerable'),
+    isFlanked(state, unit) ? RULES.flankVulnerable : 0
+  );
 }
 
 export function movementCap(unit: Unit): number {
@@ -147,15 +151,23 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
 }
 
 /** Checks a submitted path; returns a player-facing reason if it's illegal. */
-export function invalidPath(state: FightState, map: MapData, unit: Unit, path: Hex[]): string | null {
+export function invalidPath(
+  state: FightState,
+  map: MapData,
+  unit: Unit,
+  path: Hex[]
+): string | null {
   if (path.length === 0) return null;
   if (!unit.hex) return 'That unit is not on the board.';
   if (path.length > movementCap(unit)) {
-    return isImmobilized(unit) ? 'That unit is Immobilized.' : 'That move is longer than the unit can go.';
+    return isImmobilized(unit)
+      ? 'That unit is Immobilized.'
+      : 'That move is longer than the unit can go.';
   }
   let from = unit.hex;
   for (const h of path) {
-    if (!hexNeighbors(from).some((n) => hexEquals(n, h))) return 'Each step must be to an adjacent hex.';
+    if (!hexNeighbors(from).some((n) => hexEquals(n, h)))
+      return 'Each step must be to an adjacent hex.';
     if (!walkable(map, h)) return 'That path crosses an obstacle or leaves the map.';
     const other = unitAt(state, h);
     if (other && other !== unit && hostile(other, unit)) return 'Enemies block movement.';

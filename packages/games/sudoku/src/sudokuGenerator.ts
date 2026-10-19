@@ -2,14 +2,20 @@ function shuffleArr<T>(arr: T[]): T[] {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    const tmp = a[i]!; a[i] = a[j]!; a[j] = tmp;
+    const tmp = a[i]!;
+    a[i] = a[j]!;
+    a[j] = tmp;
   }
   return a;
 }
 
 function sudokuIsValid(grid: number[][], row: number, col: number, val: number): boolean {
-  for (let c = 0; c < 9; c++) { if (grid[row]![c] === val) return false; }
-  for (let r = 0; r < 9; r++) { if (grid[r]![col] === val) return false; }
+  for (let c = 0; c < 9; c++) {
+    if (grid[row]![c] === val) return false;
+  }
+  for (let r = 0; r < 9; r++) {
+    if (grid[r]![col] === val) return false;
+  }
   const br = Math.floor(row / 3) * 3;
   const bc = Math.floor(col / 3) * 3;
   for (let r = br; r < br + 3; r++) {

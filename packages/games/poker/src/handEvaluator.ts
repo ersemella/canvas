@@ -1,4 +1,4 @@
-import type { Card } from './types';
+import type {Card} from './types';
 
 // Hand ranks (higher = better)
 const HAND_RANKS = {
@@ -20,29 +20,20 @@ export interface HandScore {
 }
 
 function scoreFiveCards(cards: Card[]): HandScore {
-  const ranks = cards.map(c => c.rank).sort((a, b) => b - a);
-  const suits = cards.map(c => c.suit);
+  const ranks = cards.map((c) => c.rank).sort((a, b) => b - a);
+  const suits = cards.map((c) => c.suit);
 
-  const isFlush = suits.every(s => s === suits[0]);
+  const isFlush = suits.every((s) => s === suits[0]);
 
   // Check straight
   let isStraight = false;
   let straightHigh = ranks[0]!;
-  if (
-    ranks[0]! - ranks[4]! === 4 &&
-    new Set(ranks).size === 5
-  ) {
+  if (ranks[0]! - ranks[4]! === 4 && new Set(ranks).size === 5) {
     isStraight = true;
     straightHigh = ranks[0]!;
   }
   // Wheel: A-2-3-4-5
-  if (
-    ranks[0] === 14 &&
-    ranks[1] === 5 &&
-    ranks[2] === 4 &&
-    ranks[3] === 3 &&
-    ranks[4] === 2
-  ) {
+  if (ranks[0] === 14 && ranks[1] === 5 && ranks[2] === 4 && ranks[3] === 3 && ranks[4] === 2) {
     isStraight = true;
     straightHigh = 5;
   }
@@ -53,41 +44,53 @@ function scoreFiveCards(cards: Card[]): HandScore {
   const counts = Array.from(freq.entries()).sort((a, b) => b[1] - a[1] || b[0] - a[0]);
 
   if (isFlush && isStraight) {
-    return { rank: HAND_RANKS.STRAIGHT_FLUSH, tiebreakers: [straightHigh], name: 'Straight Flush' };
+    return {rank: HAND_RANKS.STRAIGHT_FLUSH, tiebreakers: [straightHigh], name: 'Straight Flush'};
   }
   if (counts[0]![1] === 4) {
-    return { rank: HAND_RANKS.FOUR_OF_A_KIND, tiebreakers: [counts[0]![0], counts[1]![0]], name: 'Four of a Kind' };
+    return {
+      rank: HAND_RANKS.FOUR_OF_A_KIND,
+      tiebreakers: [counts[0]![0], counts[1]![0]],
+      name: 'Four of a Kind',
+    };
   }
   if (counts[0]![1] === 3 && counts[1]![1] === 2) {
-    return { rank: HAND_RANKS.FULL_HOUSE, tiebreakers: [counts[0]![0], counts[1]![0]], name: 'Full House' };
+    return {
+      rank: HAND_RANKS.FULL_HOUSE,
+      tiebreakers: [counts[0]![0], counts[1]![0]],
+      name: 'Full House',
+    };
   }
   if (isFlush) {
-    return { rank: HAND_RANKS.FLUSH, tiebreakers: ranks, name: 'Flush' };
+    return {rank: HAND_RANKS.FLUSH, tiebreakers: ranks, name: 'Flush'};
   }
   if (isStraight) {
-    return { rank: HAND_RANKS.STRAIGHT, tiebreakers: [straightHigh], name: 'Straight' };
+    return {rank: HAND_RANKS.STRAIGHT, tiebreakers: [straightHigh], name: 'Straight'};
   }
   if (counts[0]![1] === 3) {
-    const kickers = counts.slice(1).map(c => c[0]);
-    return { rank: HAND_RANKS.THREE_OF_A_KIND, tiebreakers: [counts[0]![0], ...kickers], name: 'Three of a Kind' };
+    const kickers = counts.slice(1).map((c) => c[0]);
+    return {
+      rank: HAND_RANKS.THREE_OF_A_KIND,
+      tiebreakers: [counts[0]![0], ...kickers],
+      name: 'Three of a Kind',
+    };
   }
   if (counts[0]![1] === 2 && counts[1]![1] === 2) {
     const kicker = counts[2]![0];
     const pairs = [counts[0]![0], counts[1]![0]].sort((a, b) => b - a);
-    return { rank: HAND_RANKS.TWO_PAIR, tiebreakers: [...pairs, kicker], name: 'Two Pair' };
+    return {rank: HAND_RANKS.TWO_PAIR, tiebreakers: [...pairs, kicker], name: 'Two Pair'};
   }
   if (counts[0]![1] === 2) {
-    const kickers = counts.slice(1).map(c => c[0]);
-    return { rank: HAND_RANKS.PAIR, tiebreakers: [counts[0]![0], ...kickers], name: 'Pair' };
+    const kickers = counts.slice(1).map((c) => c[0]);
+    return {rank: HAND_RANKS.PAIR, tiebreakers: [counts[0]![0], ...kickers], name: 'Pair'};
   }
-  return { rank: HAND_RANKS.HIGH_CARD, tiebreakers: ranks, name: 'High Card' };
+  return {rank: HAND_RANKS.HIGH_CARD, tiebreakers: ranks, name: 'High Card'};
 }
 
 function combinations<T>(arr: T[], k: number): T[][] {
   if (k === 0) return [[]];
   if (arr.length < k) return [];
   const [first, ...rest] = arr;
-  const withFirst = combinations(rest, k - 1).map(c => [first!, ...c]);
+  const withFirst = combinations(rest, k - 1).map((c) => [first!, ...c]);
   const withoutFirst = combinations(rest, k);
   return [...withFirst, ...withoutFirst];
 }
@@ -118,7 +121,7 @@ export interface WinnerResult {
 }
 
 export function findWinner(
-  players: Array<{ id: number; holeCards: [Card, Card] | null; folded: boolean }>,
+  players: Array<{id: number; holeCards: [Card, Card] | null; folded: boolean}>,
   communityCards: Card[]
 ): WinnerResult {
   let bestScore: HandScore | null = null;

@@ -13,7 +13,15 @@ import type {TacticsHoverPayload} from './TacticsInputSystem';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
-export type HighlightKind = 'zone' | 'move' | 'path' | 'target' | 'chosen' | 'area' | 'lane' | 'inspect';
+export type HighlightKind =
+  | 'zone'
+  | 'move'
+  | 'path'
+  | 'target'
+  | 'chosen'
+  | 'area'
+  | 'lane'
+  | 'inspect';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {
@@ -96,7 +104,9 @@ export class TacticsBoardSystem extends BaseSystem {
         this.scene = scene;
       })
     );
-    this.cleanup.push(bus.on<TacticsHoverPayload>('tactics:hover', (hover) => (this.hover = hover)));
+    this.cleanup.push(
+      bus.on<TacticsHoverPayload>('tactics:hover', (hover) => (this.hover = hover))
+    );
   }
 
   onDestroy(): void {
@@ -108,12 +118,14 @@ export class TacticsBoardSystem extends BaseSystem {
   private startAdvance(before: FightState | null, after: FightState | null): void {
     if (!before || !after || before.mapId !== after.mapId || before.phase === 'deploy') return;
     if (after.currentSlot <= before.currentSlot) return;
-    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)
+      return;
     const prev = this.advance;
     const from = prev ? Math.floor(trackStart(prev)) : before.currentSlot;
     const spent = new Map(prev?.spent);
     for (const u of before.units) {
-      if (u.alive && u.slot !== null && u.slot >= before.currentSlot && u.slot < after.currentSlot) spent.set(u.slot, u);
+      if (u.alive && u.slot !== null && u.slot >= before.currentSlot && u.slot < after.currentSlot)
+        spent.set(u.slot, u);
     }
     this.advance = {from, to: after.currentSlot, spent, elapsed: 0};
   }
@@ -130,7 +142,8 @@ export class TacticsBoardSystem extends BaseSystem {
       const [q, r] = key.split(',').map(Number);
       drawTileMark(ctx, center({q: q!, r: r!}), tile);
     }
-    for (const effect of fight.effects) drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1);
+    for (const effect of fight.effects)
+      drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1);
     // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
     const previewedTo = new Map(this.scene.preview.map((p) => [p.unitId, p]));
     for (const u of fight.units) {
@@ -159,7 +172,15 @@ export class TacticsBoardSystem extends BaseSystem {
         faded: Boolean(moved || p?.killed),
         hp: u.hp,
       });
-      if (p && moved && !p.killed) drawUnit(ctx, u, p.to!, {fight, acting: false, selected: false, faded: false, ghost: true, hp: p.hpAfter});
+      if (p && moved && !p.killed)
+        drawUnit(ctx, u, p.to!, {
+          fight,
+          acting: false,
+          selected: false,
+          faded: false,
+          ghost: true,
+          hp: p.hpAfter,
+        });
       if (p && p.hpAfter !== p.hpBefore) {
         const at = center(p.to ?? hex);
         drawDamage(ctx, at.x, at.y - 22, p.hpBefore - p.hpAfter, p.killed);
@@ -175,10 +196,17 @@ export class TacticsBoardSystem extends BaseSystem {
     }
 
     if (fight.phase !== 'deploy') {
-      drawTrack(ctx, fight, trackCards(fight, this.scene.previewSlot ?? null), this.scene.previewSlot ?? null, this.advance, {
-        selected: this.scene.selectedUnitId,
-        hovered: this.hover.unitId,
-      });
+      drawTrack(
+        ctx,
+        fight,
+        trackCards(fight, this.scene.previewSlot ?? null),
+        this.scene.previewSlot ?? null,
+        this.advance,
+        {
+          selected: this.scene.selectedUnitId,
+          hovered: this.hover.unitId,
+        }
+      );
     }
     if (this.hover.hex) drawHover(ctx, fight, this.hover.hex, this.scene.positions);
   }
@@ -294,7 +322,14 @@ function drawStepBadge(ctx: CanvasRenderingContext2D, h: Hex, n: number, index: 
   label(ctx, `${n}`, x, y + 0.5, '#111827', 10, true);
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+): void {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -349,7 +384,13 @@ function drawTrack(
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 2;
     roundRect(ctx, cx, cy, deck.cardW, deck.h, 5);
-    ctx.fillStyle = !u ? '#1f2937' : ghost ? '#3f3a1c' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
+    ctx.fillStyle = !u
+      ? '#1f2937'
+      : ghost
+        ? '#3f3a1c'
+        : u.side === 'player'
+          ? '#1e3a8a'
+          : '#7f1d1d';
     ctx.fill();
     ctx.shadowColor = 'transparent';
     ctx.setLineDash(ghost ? [3, 2] : []);
@@ -396,7 +437,12 @@ function drawTrack(
 }
 
 /** The hovered hex: outlined, with a tooltip of its tile, hail and unit. */
-function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex, positions?: Record<string, Hex>): void {
+function drawHover(
+  ctx: CanvasRenderingContext2D,
+  fight: FightState,
+  h: Hex,
+  positions?: Record<string, Hex>
+): void {
   fillHex(ctx, h, {fill: 'rgba(255,255,255,0.08)', stroke: '#ffffff'});
   const map = MAPS[fight.mapId]!;
   const lines: {text: string; color: string; bold?: boolean}[] = [];
@@ -406,12 +452,20 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex, pos
   });
   if (unit) {
     // The side shows in the colour, as on the board: just the hero's name.
-    lines.push({text: `${HEROES[unit.hero].name}  ${unit.hp}/${unit.maxHp}`, color: SIDE_COLOR[unit.side], bold: true});
+    lines.push({
+      text: `${HEROES[unit.hero].name}  ${unit.hp}/${unit.maxHp}`,
+      color: SIDE_COLOR[unit.side],
+      bold: true,
+    });
   }
   const tile = tileAt(map, h);
   if (tile !== 'sand' || !unit) {
     const info = TILE_INFO[tile];
-    lines.push({text: tile === 'sand' ? info.name : `${info.name}: ${info.short}`, color: '#f3f4f6', bold: !unit});
+    lines.push({
+      text: tile === 'sand' ? info.name : `${info.name}: ${info.short}`,
+      color: '#f3f4f6',
+      bold: !unit,
+    });
   }
   const hail = fight.effects.find((e) => hexEquals(e.hex, h));
   if (hail) {
@@ -446,7 +500,11 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex, pos
 }
 
 /** Each tile type has its own shape, not only its own colour (art direction). */
-function drawTileMark(ctx: CanvasRenderingContext2D, c: {x: number; y: number}, tile: string): void {
+function drawTileMark(
+  ctx: CanvasRenderingContext2D,
+  c: {x: number; y: number},
+  tile: string
+): void {
   ctx.save();
   if (tile === 'obstacle') {
     // Ruins: stacked blocks.
@@ -533,7 +591,14 @@ function drawUnit(
   ctx: CanvasRenderingContext2D,
   u: Unit,
   hex: Hex,
-  opts: {fight: FightState; acting: boolean; selected: boolean; faded: boolean; ghost?: boolean; hp: number}
+  opts: {
+    fight: FightState;
+    acting: boolean;
+    selected: boolean;
+    faded: boolean;
+    ghost?: boolean;
+    hp: number;
+  }
 ): void {
   const c = center(hex);
   ctx.save();
@@ -581,7 +646,13 @@ function drawUnit(
   ctx.restore();
 }
 
-function drawDamage(ctx: CanvasRenderingContext2D, x: number, y: number, amount: number, killed: boolean): void {
+function drawDamage(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  amount: number,
+  killed: boolean
+): void {
   const text = killed ? `-${amount} ✕` : amount > 0 ? `-${amount}` : `+${-amount}`;
   ctx.save();
   ctx.font = 'bold 13px monospace';
@@ -592,7 +663,15 @@ function drawDamage(ctx: CanvasRenderingContext2D, x: number, y: number, amount:
   label(ctx, text, x, y, amount >= 0 ? '#fca5a5' : '#86efac', 13, true);
 }
 
-function label(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string, size: number, bold = false): void {
+function label(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  color: string,
+  size: number,
+  bold = false
+): void {
   ctx.save();
   ctx.font = `${bold ? 'bold ' : ''}${size}px system-ui, sans-serif`;
   ctx.fillStyle = color;

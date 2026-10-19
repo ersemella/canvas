@@ -14,7 +14,8 @@ const {onWin, onDeath, onScore} = game.manifest.events ?? {};
 let score = 0;
 if (onScore) world.events.on(onScore, () => (status.textContent = `Score: ${++score}`));
 if (onWin) world.events.on(onWin, () => (status.textContent = 'You win! Reload to play again.'));
-if (onDeath) world.events.on(onDeath, () => {
-  world.stop();
-  status.textContent = 'Game over. Reload to play again.';
-});
+if (onDeath)
+  world.events.on(onDeath, () => {
+    world.stop();
+    status.textContent = 'Game over. Reload to play again.';
+  });

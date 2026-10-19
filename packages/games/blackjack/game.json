@@ -7,11 +7,7 @@
     "width": 500,
     "height": 440
   },
-  "systems": [
-    "MouseSystem",
-    "ClickSystem",
-    "BlackjackSystem"
-  ],
+  "systems": ["MouseSystem", "ClickSystem", "BlackjackSystem"],
   "events": {
     "onDeath": "blackjack:gameover"
   },

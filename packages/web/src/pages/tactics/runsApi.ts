@@ -25,7 +25,10 @@ export function playerKey(): string {
   }
   if (!memoryKey) {
     const bytes = crypto.getRandomValues(new Uint8Array(32));
-    memoryKey = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    memoryKey = btoa(String.fromCharCode(...bytes))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
   }
   try {
     localStorage.setItem(KEY_STORAGE, memoryKey);
@@ -38,7 +41,11 @@ export function playerKey(): string {
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
-    headers: {'Content-Type': 'application/json', Authorization: `Bearer ${playerKey()}`, ...init.headers},
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${playerKey()}`,
+      ...init.headers,
+    },
   });
   const body = (await res.json().catch(() => null)) as {message?: string} | null;
   if (!res.ok) throw new Error(body?.message ?? `Server error: ${res.status}`);
@@ -48,7 +55,10 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
 export const runsApi = {
   active: () => call<{activeRunId: string | null}>('/runs/active'),
   get: (runId: string) => call<RunResponse>(`/runs/${runId}`),
-  start: () => call<RunResponse>('/runs', {method: 'POST', body: JSON.stringify({game: 'silk-road-tactics'})}),
-  deploy: (runId: string, body: unknown) => call<RunResponse>(`/runs/${runId}/deploy`, {method: 'POST', body: JSON.stringify(body)}),
-  turn: (runId: string, body: unknown) => call<RunResponse>(`/runs/${runId}/turn`, {method: 'POST', body: JSON.stringify(body)}),
+  start: () =>
+    call<RunResponse>('/runs', {method: 'POST', body: JSON.stringify({game: 'silk-road-tactics'})}),
+  deploy: (runId: string, body: unknown) =>
+    call<RunResponse>(`/runs/${runId}/deploy`, {method: 'POST', body: JSON.stringify(body)}),
+  turn: (runId: string, body: unknown) =>
+    call<RunResponse>(`/runs/${runId}/turn`, {method: 'POST', body: JSON.stringify(body)}),
 };

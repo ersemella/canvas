@@ -2,15 +2,39 @@ import {describe, expect, it} from 'vitest';
 import {hexDistance, hexKey, hexToOffset, hexToPixel, offsetToHex} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, AI, RULES} from './config';
-import {isFlanked, lineOfFire, movementCap, reachableHexes, unitAt, vulnerablePercent} from './board';
+import {
+  isFlanked,
+  lineOfFire,
+  movementCap,
+  reachableHexes,
+  unitAt,
+  vulnerablePercent,
+} from './board';
 import {ABILITIES, arrowLanes} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
-import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, defaultDeployment, deploy, mapOf} from './fight';
+import {
+  RuleError,
+  actingUnit,
+  advance,
+  applyTurn,
+  cloneFight,
+  createFight,
+  defaultDeployment,
+  deploy,
+  mapOf,
+} from './fight';
 import {afterAction, previewTurn} from './preview';
 import {SALT_FLATS, onMap} from './map';
 import {abilityDamage} from './resolve';
 import {createRun, handleRunAction, runView} from './run';
-import {freeSlotFrom, nextCard, placeCard, simultaneousOrder, slotsForward, turnCost} from './track';
+import {
+  freeSlotFrom,
+  nextCard,
+  placeCard,
+  simultaneousOrder,
+  slotsForward,
+  turnCost,
+} from './track';
 import type {FightState, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
@@ -71,7 +95,9 @@ describe('the track', () => {
     deploy(s, defaultDeployment(s));
     const slots = s.units.map((u) => u.slot);
     expect(new Set(slots).size).toBe(6);
-    expect(unit(s, 'p-mangudai').slot).toBe(Math.floor(RULES.startCost / (unit(s, 'p-mangudai').speed + RULES.C)));
+    expect(unit(s, 'p-mangudai').slot).toBe(
+      Math.floor(RULES.startCost / (unit(s, 'p-mangudai').speed + RULES.C))
+    );
   });
 
   it('spaces the starting cards by speed, as far apart as a typical turn would put them', () => {
@@ -123,7 +149,11 @@ describe('the track', () => {
   it('keeps the ultimate locked until enough turns are taken', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 1)});
     const m = unit(s, 'p-mangudai');
-    expect(() => applyTurn(cloneFight(s), unit(cloneFight(s), m.id), {action: {ability: 'volley', target: {hex: at(5, 1)}}})).toThrow(RuleError);
+    expect(() =>
+      applyTurn(cloneFight(s), unit(cloneFight(s), m.id), {
+        action: {ability: 'volley', target: {hex: at(5, 1)}},
+      })
+    ).toThrow(RuleError);
   });
 });
 
@@ -169,7 +199,15 @@ describe('the board', () => {
     const before = reachableHexes(s, mapOf(s), b).find((r) => hexKey(r.hex) === hexKey(dest))!;
     expect(before.path).toHaveLength(2);
     const hailed = before.path[0]!;
-    s.effects.push({kind: 'hail', hex: hailed, untilSlot: 999, damage: 50, slowed: 2, vulnerable: 25, statusSlots: 10});
+    s.effects.push({
+      kind: 'hail',
+      hex: hailed,
+      untilSlot: 999,
+      damage: 50,
+      slowed: 2,
+      vulnerable: 25,
+      statusSlots: 10,
+    });
     const after = reachableHexes(s, mapOf(s), b).find((r) => hexKey(r.hex) === hexKey(dest))!;
     expect(after.path).toHaveLength(2);
     expect(after.path.map(hexKey)).not.toContain(hexKey(hailed));
@@ -222,7 +260,9 @@ describe('damage', () => {
     const b = unit(s, 'e-bokh');
     const base = 60;
     const scaled = Math.floor(base * (1 + m.power / 50));
-    const expected = Math.floor((scaled * RULES.defenceConstant) / (b.defence + RULES.defenceConstant));
+    const expected = Math.floor(
+      (scaled * RULES.defenceConstant) / (b.defence + RULES.defenceConstant)
+    );
     expect(abilityDamage(s, mapOf(s), m, b, base, false)).toBe(expected);
     b.statuses.push({kind: 'vulnerable', value: 25, untilSlot: 999});
     const vuln = Math.floor(scaled * 1.25);
@@ -276,15 +316,30 @@ describe('abilities', () => {
     lanes = arrowLanes(s, mapOf(s), from);
     expect(east(lanes).hexes).toEqual([at(0, 3), at(1, 3), at(2, 3)]);
     expect(east(lanes).hit!.id).toBe('e-bokh');
-    expect(ABILITIES.bow.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([{hex: at(2, 3)}]);
+    expect(ABILITIES.bow.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([
+      {hex: at(2, 3)},
+    ]);
   });
 
   it('the bow hits the first unit on its line, an ally included, never past it', () => {
-    const s = setup({'p-mangudai': at(0, 0), 'p-bokh': at(1, 0), 'e-bokh': at(3, 0), 'e-storm': at(0, 6)});
+    const s = setup({
+      'p-mangudai': at(0, 0),
+      'p-bokh': at(1, 0),
+      'e-bokh': at(3, 0),
+      'e-storm': at(0, 6),
+    });
     const m = unit(s, 'p-mangudai');
     const targets = ABILITIES.bow.targets(s, mapOf(s), m, m.hex!);
-    expect(targets.some((t) => t.hex!.q === unit(s, 'e-bokh').hex!.q && t.hex!.r === unit(s, 'e-bokh').hex!.r)).toBe(false);
-    expect(targets.some((t) => t.hex!.q === unit(s, 'p-bokh').hex!.q && t.hex!.r === unit(s, 'p-bokh').hex!.r)).toBe(true);
+    expect(
+      targets.some(
+        (t) => t.hex!.q === unit(s, 'e-bokh').hex!.q && t.hex!.r === unit(s, 'e-bokh').hex!.r
+      )
+    ).toBe(false);
+    expect(
+      targets.some(
+        (t) => t.hex!.q === unit(s, 'p-bokh').hex!.q && t.hex!.r === unit(s, 'p-bokh').hex!.r
+      )
+    ).toBe(true);
     const hp = unit(s, 'p-bokh').hp;
     applyTurn(s, m, {action: {ability: 'bow', target: {hex: at(1, 0)}}});
     expect(unit(s, 'p-bokh').hp).toBeLessThan(hp);
@@ -301,7 +356,12 @@ describe('abilities', () => {
   });
 
   it('Rampage hits each unit once and knocks it aside', () => {
-    const s = setup({'p-bokh': at(1, 0), 'e-bokh': at(3, 0), 'e-storm': at(2, 1), 'e-mangudai': at(8, 6)});
+    const s = setup({
+      'p-bokh': at(1, 0),
+      'e-bokh': at(3, 0),
+      'e-storm': at(2, 1),
+      'e-mangudai': at(8, 6),
+    });
     const b = unit(s, 'p-bokh');
     b.turnsTaken = RULES.ultimateUnlockTurns;
     const hp = [unit(s, 'e-bokh').hp, unit(s, 'e-storm').hp];
@@ -322,7 +382,12 @@ describe('abilities', () => {
   });
 
   it('Sunlight heals and cleanses every unit within its radius, enemies included', () => {
-    const s = setup({'p-storm': at(1, 3), 'p-bokh': at(1, 2), 'e-bokh': at(2, 3), 'e-mangudai': at(8, 6)});
+    const s = setup({
+      'p-storm': at(1, 3),
+      'p-bokh': at(1, 2),
+      'e-bokh': at(2, 3),
+      'e-mangudai': at(8, 6),
+    });
     expect(hexDistance(at(1, 3), at(1, 2))).toBeLessThanOrEqual(ABILITY.sunlight.radius);
     expect(hexDistance(at(1, 3), at(2, 3))).toBeLessThanOrEqual(ABILITY.sunlight.radius);
     unit(s, 'p-bokh').hp = 100;
@@ -348,7 +413,9 @@ describe('abilities', () => {
     const bokh = unit(s, 'e-bokh');
     const hp = bokh.hp;
     const scaledHail = Math.floor(ABILITY.hail.damage * (1 + unit(s, 'p-storm').power / 50));
-    const expected = Math.floor((scaledHail * RULES.defenceConstant) / (bokh.defence + RULES.defenceConstant));
+    const expected = Math.floor(
+      (scaledHail * RULES.defenceConstant) / (bokh.defence + RULES.defenceConstant)
+    );
     applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'hail', target: {hex: at(3, 1)}}});
     expect(expected).toBeGreaterThan(1);
     expect(unit(s, 'e-bokh').hp).toBe(hp - expected);
@@ -385,12 +452,19 @@ describe('previews, the AI and the run', () => {
     const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(2, 3)});
     const pin = {ability: 'pin' as const, target: {hex: at(2, 3)}};
     const after = afterAction(s, 'p-bokh', pin)!;
-    expect(reachableHexes(after.state, mapOf(after.state), after.unit).filter((r) => r.path.length > 0)).toEqual([]);
-    expect(() => applyTurn(s, unit(s, 'p-bokh'), {action: pin, move: [at(0, 3)], actFirst: true})).toThrow(RuleError);
+    expect(
+      reachableHexes(after.state, mapOf(after.state), after.unit).filter((r) => r.path.length > 0)
+    ).toEqual([]);
+    expect(() =>
+      applyTurn(s, unit(s, 'p-bokh'), {action: pin, move: [at(0, 3)], actFirst: true})
+    ).toThrow(RuleError);
   });
 
   it('a preview matches the outcome', () => {
-    const run = handleRunAction(createRun(3), {type: 'deploy', placements: defaultDeployment(createRun(3).fight)});
+    const run = handleRunAction(createRun(3), {
+      type: 'deploy',
+      placements: defaultDeployment(createRun(3).fight),
+    });
     const acting = actingUnit(run.fight)!;
     const reach = reachableHexes(run.fight, mapOf(run.fight), acting);
     const input: TurnInput = {move: reach[reach.length - 1]!.path, action: {ability: 'hold'}};
@@ -463,9 +537,18 @@ describe('previews, the AI and the run', () => {
     let run = createRun(1);
     run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
     const before = JSON.stringify(run);
-    expect(() => handleRunAction(run, {type: 'turn', action: {ability: 'rampage', target: {hex: {q: 99, r: 99}}}})).toThrow(RuleError);
+    expect(() =>
+      handleRunAction(run, {
+        type: 'turn',
+        action: {ability: 'rampage', target: {hex: {q: 99, r: 99}}},
+      })
+    ).toThrow(RuleError);
     expect(JSON.stringify(run)).toBe(before);
-    expect(simulate(run.fight, actingUnit(run.fight)!.id, {action: {ability: 'bow', target: {hex: {q: 99, r: 99}}}})).toBeNull();
+    expect(
+      simulate(run.fight, actingUnit(run.fight)!.id, {
+        action: {ability: 'bow', target: {hex: {q: 99, r: 99}}},
+      })
+    ).toBeNull();
     expect(nextCard(run.fight)).toBeDefined();
   });
 });

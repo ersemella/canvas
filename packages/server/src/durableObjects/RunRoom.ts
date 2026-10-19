@@ -34,8 +34,10 @@ export class RunRoom implements DurableObject {
     if (!system) return json({error: 'unknown_game', message: 'This game no longer runs.'}, 410);
 
     if (request.method === 'GET' && url.pathname === '/view') return json(respond(record, system));
-    if (request.method === 'POST' && url.pathname === '/action') return this.action(request, record, system);
-    if (request.method === 'POST' && url.pathname === '/abandon') return this.abandon(record, system);
+    if (request.method === 'POST' && url.pathname === '/action')
+      return this.action(request, record, system);
+    if (request.method === 'POST' && url.pathname === '/abandon')
+      return this.abandon(record, system);
     return json({error: 'not_found'}, 404);
   }
 
@@ -45,7 +47,12 @@ export class RunRoom implements DurableObject {
 
   private async init(request: Request): Promise<Response> {
     if (await this.state.storage.get('run')) return json({error: 'exists'}, 409);
-    const body = (await request.json()) as {runId: string; game: string; ownerHash: string; seed: number};
+    const body = (await request.json()) as {
+      runId: string;
+      game: string;
+      ownerHash: string;
+      seed: number;
+    };
     const system = runSystemRegistry.get(body.game);
     if (!system) return json({error: 'unknown_game', message: 'Unknown game.'}, 400);
     const now = Date.now();
@@ -63,13 +70,17 @@ export class RunRoom implements DurableObject {
   }
 
   private async action(request: Request, record: RunRecord, system: RunSystem): Promise<Response> {
-    if (record.status !== 'active') return json({error: 'finished', message: 'This run is over.'}, 409);
+    if (record.status !== 'active')
+      return json({error: 'finished', message: 'This run is over.'}, 409);
     const action = await request.json().catch(() => null);
     let next: unknown;
     try {
       next = system.handleAction(record.state, action);
     } catch (err) {
-      return json({error: 'illegal', message: err instanceof Error ? err.message : 'Illegal action.'}, 400);
+      return json(
+        {error: 'illegal', message: err instanceof Error ? err.message : 'Illegal action.'},
+        400
+      );
     }
     record.state = next;
     record.status = system.status(next);
@@ -93,15 +104,26 @@ export class RunRoom implements DurableObject {
   /** A finished run leaves the ledger's active slot and is deleted after a few days. */
   private async finish(record: RunRecord): Promise<void> {
     const ledger = this.env.PLAYER_LEDGER.get(this.env.PLAYER_LEDGER.idFromName(record.ownerHash));
-    await ledger.fetch('https://do/ended', {method: 'POST', body: JSON.stringify({runId: record.runId})});
+    await ledger.fetch('https://do/ended', {
+      method: 'POST',
+      body: JSON.stringify({runId: record.runId}),
+    });
     await this.state.storage.setAlarm(Date.now() + KEEP_FINISHED_MS);
   }
 }
 
 function respond(record: RunRecord, system: RunSystem): RunResponse {
-  return {runId: record.runId, game: record.game, status: record.status, view: system.getView(record.state)};
+  return {
+    runId: record.runId,
+    game: record.game,
+    status: record.status,
+    view: system.getView(record.state),
+  };
 }
 
 function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {status, headers: {'Content-Type': 'application/json'}});
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {'Content-Type': 'application/json'},
+  });
 }

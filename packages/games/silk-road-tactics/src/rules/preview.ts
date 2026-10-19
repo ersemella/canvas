@@ -38,12 +38,17 @@ function statusWords(before: Unit, after: Unit, slot: number): string[] {
   if (vuln > statusValue(before, 'vulnerable')) out.push(`Vulnerable ${vuln}%`);
   const imm = statusSlotsLeft(after, 'immobilized', slot);
   if (imm > statusSlotsLeft(before, 'immobilized', slot)) out.push(`Immobilized ${imm} slots`);
-  if (before.statuses.length > 0 && after.statuses.length === 0 && after.alive) out.push('Cleansed');
+  if (before.statuses.length > 0 && after.statuses.length === 0 && after.alive)
+    out.push('Cleansed');
   return out;
 }
 
 /** What `input` would do for the acting unit, or null if it's illegal. */
-export function previewTurn(state: FightState, unitId: string, input: TurnInput): TurnPreview | null {
+export function previewTurn(
+  state: FightState,
+  unitId: string,
+  input: TurnInput
+): TurnPreview | null {
   const after = simulate(state, unitId, input);
   if (!after) return null;
   return {
@@ -58,7 +63,11 @@ export function previewTurn(state: FightState, unitId: string, input: TurnInput)
  * act-then-move turn moves from (an ability may have moved or Immobilized
  * the unit). Null if the action is illegal.
  */
-export function afterAction(state: FightState, unitId: string, action: TurnAction): {state: FightState; unit: Unit} | null {
+export function afterAction(
+  state: FightState,
+  unitId: string,
+  action: TurnAction
+): {state: FightState; unit: Unit} | null {
   const sim = cloneFight(state);
   const unit = sim.units.find((u) => u.id === unitId)!;
   try {
@@ -119,6 +128,10 @@ export function unitOptions(state: FightState, unit: Unit): EnemyOption[] {
   }
   return [...byAbility].map(([ability, effects]) => ({
     ability,
-    effects: [...effects].map(([unitId, e]) => ({unitId, damage: e.damage, statuses: [...e.statuses]})),
+    effects: [...effects].map(([unitId, e]) => ({
+      unitId,
+      damage: e.damage,
+      statuses: [...e.statuses],
+    })),
   }));
 }

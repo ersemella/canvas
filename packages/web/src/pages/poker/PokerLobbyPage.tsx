@@ -23,7 +23,11 @@ export function PokerLobbyPage() {
       const res = await fetch(`${API_URL}/rooms`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({hostName: name.trim(), serverSystem: 'PokerServerSystem', maxPlayers: 6}),
+        body: JSON.stringify({
+          hostName: name.trim(),
+          serverSystem: 'PokerServerSystem',
+          maxPlayers: 6,
+        }),
       });
       if (!res.ok) {
         const body = (await res.json().catch(() => null)) as {message?: string} | null;
@@ -61,7 +65,14 @@ export function PokerLobbyPage() {
             onChange={(e) => setName(e.currentTarget.value)}
             maxLength={20}
           />
-          <Button onClick={() => void handleCreate()} loading={loading} fullWidth color="yellow" c="dark.9" fw="bold">
+          <Button
+            onClick={() => void handleCreate()}
+            loading={loading}
+            fullWidth
+            color="yellow"
+            c="dark.9"
+            fw="bold"
+          >
             Create Room
           </Button>
           <Divider label="or" labelPosition="center" />
@@ -76,7 +87,11 @@ export function PokerLobbyPage() {
           <Button onClick={handleJoin} fullWidth variant="outline" color="yellow" fw="bold">
             Join Room
           </Button>
-          {error && <Text c="red.4" ta="center">{error}</Text>}
+          {error && (
+            <Text c="red.4" ta="center">
+              {error}
+            </Text>
+          )}
         </Stack>
       </Paper>
     </Container>

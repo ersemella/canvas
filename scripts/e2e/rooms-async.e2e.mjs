@@ -21,7 +21,16 @@ function connect(roomId, name, seatToken) {
   const q = new URLSearchParams({playerName: name});
   if (seatToken) q.set('seatToken', seatToken);
   const ws = new WebSocket(`${WS_BASE}/rooms/${roomId}/ws?${q}`);
-  const c = {ws, name, msgs: [], id: null, token: null, state: null, players: null, closeCode: null};
+  const c = {
+    ws,
+    name,
+    msgs: [],
+    id: null,
+    token: null,
+    state: null,
+    players: null,
+    closeCode: null,
+  };
   ws.onmessage = (e) => {
     const m = JSON.parse(e.data);
     c.msgs.push(m);
@@ -86,7 +95,10 @@ check('reclaiming returns the same seat and token', B?.token === benToken, B?.to
 // ── No turn timeout while the acting player is away ─────────────────────────
 send(A, 'startGame');
 await sleep(400);
-check('the game starts with no turn deadline', A.msgs.find((m) => m.type === 'gameStarted')?.turnDeadline === null);
+check(
+  'the game starts with no turn deadline',
+  A.msgs.find((m) => m.type === 'gameStarted')?.turnDeadline === null
+);
 const first = actingName(B.state);
 const away = first === 'Ann' ? A : B;
 const stays = away === A ? B : A;
@@ -97,7 +109,8 @@ console.log('  … waiting 12s (poker would time a disconnected player out after
 await sleep(12_000);
 check(
   'a disconnected player keeps their turn (no timeout move)',
-  stays.msgs.filter((m) => m.type === 'stateUpdate').length === updatesBefore && stays.state.total === 0,
+  stays.msgs.filter((m) => m.type === 'stateUpdate').length === updatesBefore &&
+    stays.state.total === 0,
   stays.state
 );
 
@@ -105,7 +118,10 @@ check(
 const back = await connect(room, away.name, awayToken);
 send(back, 'sync');
 await sleep(300);
-check('the returning player sees the game and has the move', back.state && actingName(back.state) === back.name);
+check(
+  'the returning player sees the game and has the move',
+  back.state && actingName(back.state) === back.name
+);
 if (back === null || !back.state) finish();
 if (away === A) A = back;
 else B = back;
@@ -124,14 +140,22 @@ send(A, 'nextHand');
 await sleep(400);
 check(
   'a new round deals in a disconnected player',
-  A.state.round === 2 && A.state.players.map((p) => p.name).sort().join() === 'Ann,Ben',
+  A.state.round === 2 &&
+    A.state.players
+      .map((p) => p.name)
+      .sort()
+      .join() === 'Ann,Ben',
   A.state
 );
 
 // ── A newer connection replaces an old one ──────────────────────────────────
 const A2 = await connect(room, 'Ann', annToken);
 await sleep(400);
-check('reconnecting with the token replaces the old socket', A.closeCode === 4000 && A2?.token === annToken, A.closeCode);
+check(
+  'reconnecting with the token replaces the old socket',
+  A.closeCode === 4000 && A2?.token === annToken,
+  A.closeCode
+);
 A2?.ws.close();
 
 // ── Poker (default policy) is untouched ─────────────────────────────────────
@@ -140,7 +164,9 @@ const P = await connect(pokerRoom, 'Pia');
 await sleep(250);
 check(
   'a poker room sends no seat token',
-  P && P.msgs.find((m) => m.type === 'connected') && !('seatToken' in P.msgs.find((m) => m.type === 'connected'))
+  P &&
+    P.msgs.find((m) => m.type === 'connected') &&
+    !('seatToken' in P.msgs.find((m) => m.type === 'connected'))
 );
 P?.ws.close();
 

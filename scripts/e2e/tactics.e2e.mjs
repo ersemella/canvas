@@ -19,7 +19,10 @@ const key = () => randomBytes(32).toString('base64url');
 const api = async (path, playerKey, init = {}) => {
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
-    headers: {'Content-Type': 'application/json', ...(playerKey ? {Authorization: `Bearer ${playerKey}`} : {})},
+    headers: {
+      'Content-Type': 'application/json',
+      ...(playerKey ? {Authorization: `Bearer ${playerKey}`} : {}),
+    },
   });
   return {status: res.status, body: await res.json().catch(() => null)};
 };
@@ -29,47 +32,118 @@ const shot = (page, name) => page.screenshot({path: join(OUT_DIR, `tactics-${nam
 const alice = key();
 const bob = key();
 
-check('a run needs a player key', (await api('/runs', null, {method: 'POST', body: '{"game":"silk-road-tactics"}'})).status === 401);
-const started = await api('/runs', alice, {method: 'POST', body: JSON.stringify({game: 'silk-road-tactics'})});
-check('starting a run returns its view', started.status === 201 && started.body?.view?.fight?.phase === 'deploy', started);
+check(
+  'a run needs a player key',
+  (await api('/runs', null, {method: 'POST', body: '{"game":"silk-road-tactics"}'})).status === 401
+);
+const started = await api('/runs', alice, {
+  method: 'POST',
+  body: JSON.stringify({game: 'silk-road-tactics'}),
+});
+check(
+  'starting a run returns its view',
+  started.status === 201 && started.body?.view?.fight?.phase === 'deploy',
+  started
+);
 const runId = started.body.runId;
 const raw = JSON.stringify(started.body);
 check('the view never carries the seed', !/seed/i.test(raw));
 
 check('another key can’t see the run', (await api(`/runs/${runId}`, bob)).status === 403);
 const placements = (fight) =>
-  fight.units.filter((u) => u.side === 'player').map((u, i) => ({unitId: u.id, hex: [{q: 0, r: 2}, {q: -1, r: 3}, {q: -2, r: 4}][i]}));
+  fight.units
+    .filter((u) => u.side === 'player')
+    .map((u, i) => ({
+      unitId: u.id,
+      hex: [
+        {q: 0, r: 2},
+        {q: -1, r: 3},
+        {q: -2, r: 4},
+      ][i],
+    }));
 check(
   'another key can’t act on the run',
-  (await api(`/runs/${runId}/deploy`, bob, {method: 'POST', body: JSON.stringify({placements: placements(started.body.view.fight)})})).status === 403
+  (
+    await api(`/runs/${runId}/deploy`, bob, {
+      method: 'POST',
+      body: JSON.stringify({placements: placements(started.body.view.fight)}),
+    })
+  ).status === 403
 );
-check('the key’s active run is remembered', (await api('/runs/active', alice)).body?.activeRunId === runId);
+check(
+  'the key’s active run is remembered',
+  (await api('/runs/active', alice)).body?.activeRunId === runId
+);
 
 const outside = await api(`/runs/${runId}/deploy`, alice, {
   method: 'POST',
-  body: JSON.stringify({placements: started.body.view.fight.units.filter((u) => u.side === 'player').map((u, i) => ({unitId: u.id, hex: {q: 4 + i, r: 3}}))}),
+  body: JSON.stringify({
+    placements: started.body.view.fight.units
+      .filter((u) => u.side === 'player')
+      .map((u, i) => ({unitId: u.id, hex: {q: 4 + i, r: 3}})),
+  }),
 });
 check('deploying outside the zone is refused', outside.status === 400, outside.body);
 
 // The map's default placement (odd-r: (col 1,row 2), (0,3), (0,4)).
-const deployed = await api(`/runs/${runId}/deploy`, alice, {method: 'POST', body: JSON.stringify({placements: placements(started.body.view.fight)})});
-check('deploying starts the fight', deployed.status === 200 && deployed.body.view.fight.phase === 'fight', deployed.body);
-check('the response stops on one of your units', /^p-/.test(deployed.body.view.fight.awaiting ?? ''), deployed.body.view.fight.awaiting);
+const deployed = await api(`/runs/${runId}/deploy`, alice, {
+  method: 'POST',
+  body: JSON.stringify({placements: placements(started.body.view.fight)}),
+});
+check(
+  'deploying starts the fight',
+  deployed.status === 200 && deployed.body.view.fight.phase === 'fight',
+  deployed.body
+);
+check(
+  'the response stops on one of your units',
+  /^p-/.test(deployed.body.view.fight.awaiting ?? ''),
+  deployed.body.view.fight.awaiting
+);
 const version = deployed.body.view.version;
 
-const bad = await api(`/runs/${runId}/turn`, alice, {method: 'POST', body: JSON.stringify({action: {ability: 'rampage', target: {hex: {q: 50, r: 50}}}})});
-check('an illegal turn is refused with a reason', bad.status === 400 && typeof bad.body?.message === 'string', bad.body);
-check('a refused turn changes nothing', (await api(`/runs/${runId}`, alice)).body.view.version === version);
+const bad = await api(`/runs/${runId}/turn`, alice, {
+  method: 'POST',
+  body: JSON.stringify({action: {ability: 'rampage', target: {hex: {q: 50, r: 50}}}}),
+});
+check(
+  'an illegal turn is refused with a reason',
+  bad.status === 400 && typeof bad.body?.message === 'string',
+  bad.body
+);
+check(
+  'a refused turn changes nothing',
+  (await api(`/runs/${runId}`, alice)).body.view.version === version
+);
 
-const held = await api(`/runs/${runId}/turn`, alice, {method: 'POST', body: JSON.stringify({action: {ability: 'hold'}})});
-check('a turn returns the next view, AI turns included', held.status === 200 && held.body.view.version === version + 1, held.body?.message);
+const held = await api(`/runs/${runId}/turn`, alice, {
+  method: 'POST',
+  body: JSON.stringify({action: {ability: 'hold'}}),
+});
+check(
+  'a turn returns the next view, AI turns included',
+  held.status === 200 && held.body.view.version === version + 1,
+  held.body?.message
+);
 
-const second = await api('/runs', alice, {method: 'POST', body: JSON.stringify({game: 'silk-road-tactics'})});
-check('starting another run abandons the first', (await api(`/runs/${runId}`, alice)).body?.status === 'abandoned');
-check('the new run is the active one', (await api('/runs/active', alice)).body?.activeRunId === second.body.runId);
+const second = await api('/runs', alice, {
+  method: 'POST',
+  body: JSON.stringify({game: 'silk-road-tactics'}),
+});
+check(
+  'starting another run abandons the first',
+  (await api(`/runs/${runId}`, alice)).body?.status === 'abandoned'
+);
+check(
+  'the new run is the active one',
+  (await api('/runs/active', alice)).body?.activeRunId === second.body.runId
+);
 const abandoned = await api(`/runs/${second.body.runId}/abandon`, alice, {method: 'POST'});
 check('a run can be abandoned', abandoned.body?.status === 'abandoned', abandoned.body);
-check('an abandoned run is no longer active', (await api('/runs/active', alice)).body?.activeRunId === null);
+check(
+  'an abandoned run is no longer active',
+  (await api('/runs/active', alice)).body?.activeRunId === null
+);
 
 // ── The page ─────────────────────────────────────────────────────────────────
 const browser = await chromium.launch();
@@ -88,7 +162,8 @@ async function tapHex(hex) {
   await sleep(150);
 }
 const state = () => page.evaluate(() => window.__tactics?.run);
-const waitIdle = () => page.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {timeout: 15_000});
+const waitIdle = () =>
+  page.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {timeout: 15_000});
 
 /** Abandons the page's active run through the API (the page has no button for it), so none is left behind. */
 async function abandonOn(p) {
@@ -132,7 +207,11 @@ try {
   await waitIdle();
   run = await state();
   const placed = run.view.fight.units.find((u) => u.id === outrider).hex;
-  check('tapping a hero then a zone hex moves it before the fight', placed.q === -3 && placed.r === 6, placed);
+  check(
+    'tapping a hero then a zone hex moves it before the fight',
+    placed.q === -3 && placed.r === 6,
+    placed
+  );
   await sleep(300);
   await shot(page, 'fight');
 
@@ -145,7 +224,10 @@ try {
       !(await bar.getByText('Canvas Games').count()),
     await bar.textContent()
   );
-  check('the page doesn’t repeat the title', (await page.getByText('Silk Road Tactics').count()) === 1);
+  check(
+    'the page doesn’t repeat the title',
+    (await page.getByText('Silk Road Tactics').count()) === 1
+  );
 
   // One turn with real taps: Dash first, then Move, Confirm. The Outrider
   // (fastest, so first) is at col 0, row 6 after the deployment above.
@@ -157,7 +239,10 @@ try {
   // Without Move, a tap only looks at the hex.
   await tapHex(dest);
   const moveButton = page.getByRole('button', {name: /^Move/});
-  check('a tap without Move plans nothing', (await moveButton.getAttribute('aria-pressed')) === 'false');
+  check(
+    'a tap without Move plans nothing',
+    (await moveButton.getAttribute('aria-pressed')) === 'false'
+  );
   check('there is no Hold button', !(await page.getByRole('button', {name: /^Hold/}).count()));
   // Act first, then move: Dash and its hex, then Move and a hex.
   await page.getByRole('button', {name: /^Dash/}).click();
@@ -167,37 +252,78 @@ try {
   await moveButton.click();
   await tapHex(dest);
   const stepsText = () => page.getByTestId('turn-steps').textContent();
-  check('Move after the action plans act-then-move', (await stepsText()) === '1Dash2Move', await stepsText());
-  check('Move stays highlighted while a move is planned', (await moveButton.getAttribute('aria-pressed')) === 'true');
-  check('the Move button shows what the move adds', /^Move\+\d+$/.test(await moveButton.textContent()), await moveButton.textContent());
+  check(
+    'Move after the action plans act-then-move',
+    (await stepsText()) === '1Dash2Move',
+    await stepsText()
+  );
+  check(
+    'Move stays highlighted while a move is planned',
+    (await moveButton.getAttribute('aria-pressed')) === 'true'
+  );
+  check(
+    'the Move button shows what the move adds',
+    /^Move\+\d+$/.test(await moveButton.textContent()),
+    await moveButton.textContent()
+  );
   // Tapping it again undoes the move and keeps the action; plan it again.
   await moveButton.click();
-  check('tapping Move again undoes the move', (await moveButton.getAttribute('aria-pressed')) === 'false' && (await stepsText()) === '1Dash');
+  check(
+    'tapping Move again undoes the move',
+    (await moveButton.getAttribute('aria-pressed')) === 'false' && (await stepsText()) === '1Dash'
+  );
   await moveButton.click();
   await tapHex(dest);
   // Moving first would leave the Dash short of its hex: no Swap order.
-  check('Swap order is offered only when the other order is legal', !(await page.getByRole('button', {name: /Swap order/}).count()));
+  check(
+    'Swap order is offered only when the other order is legal',
+    !(await page.getByRole('button', {name: /Swap order/}).count())
+  );
   const confirm = page.getByRole('button', {name: /^Confirm/});
   const confirmText = await confirm.textContent();
-  check('Confirm says when the next turn comes, in slots from now', /^Confirm · next turn \+\d+$/.test(confirmText), confirmText);
+  check(
+    'Confirm says when the next turn comes, in slots from now',
+    /^Confirm · next turn \+\d+$/.test(confirmText),
+    confirmText
+  );
   const dashText = await page.getByRole('button', {name: /^Dash/}).textContent();
-  check('the ability button shows the same slots as Confirm', dashText.endsWith(confirmText.split(' ').pop()), [dashText, confirmText]);
+  check(
+    'the ability button shows the same slots as Confirm',
+    dashText.endsWith(confirmText.split(' ').pop()),
+    [dashText, confirmText]
+  );
   await sleep(200);
   await shot(page, 'preview');
   await confirm.click();
-  await page.waitForFunction((v) => window.__tactics.run.view.version > v, before, {timeout: 15_000});
+  await page.waitForFunction((v) => window.__tactics.run.view.version > v, before, {
+    timeout: 15_000,
+  });
   run = await state();
   const movedUnit = run.view.fight.units.find((u) => u.id === acting.id);
-  check('the turn moved the unit with real taps', !movedUnit.alive || (movedUnit.hex.q === dest.q && movedUnit.hex.r === dest.r), movedUnit.hex);
+  check(
+    'the turn moved the unit with real taps',
+    !movedUnit.alive || (movedUnit.hex.q === dest.q && movedUnit.hex.r === dest.r),
+    movedUnit.hex
+  );
 
   // An enemy's stat sheet.
   const enemy = run.view.fight.units.find((u) => u.side === 'enemy' && u.alive);
   await tapHex(enemy.hex);
   const sheet = page.getByTestId('stat-sheet');
-  check('tapping an enemy shows its stat sheet, its name a badge in the enemy’s colour', (await sheet.locator('[data-side="enemy"]').count()) === 1);
-  check('the sheet leaves out what it could do next turn', !(await sheet.textContent()).includes('Could do next turn'));
+  check(
+    'tapping an enemy shows its stat sheet, its name a badge in the enemy’s colour',
+    (await sheet.locator('[data-side="enemy"]').count()) === 1
+  );
+  check(
+    'the sheet leaves out what it could do next turn',
+    !(await sheet.textContent()).includes('Could do next turn')
+  );
   check('the sheet doesn’t list Hold', !(await sheet.textContent()).includes('Hold'));
-  check('the sheet gives abilities in slots, not costs', /· \+\d+/.test(await sheet.textContent()) && !/· \d{2,}/.test(await sheet.textContent()), (await sheet.textContent()).slice(0, 200));
+  check(
+    'the sheet gives abilities in slots, not costs',
+    /· \+\d+/.test(await sheet.textContent()) && !/· \d{2,}/.test(await sheet.textContent()),
+    (await sheet.textContent()).slice(0, 200)
+  );
   await shot(page, 'enemy-sheet');
 
   // Hovering a hex shows what it does, without planning a move.
@@ -230,7 +356,9 @@ try {
       await waitIdle();
       const v = r.view.version;
       await page.evaluate(() => window.__tactics.autoTurn());
-      await page.waitForFunction((x) => window.__tactics.run.view.version > x, v, {timeout: 15_000});
+      await page.waitForFunction((x) => window.__tactics.run.view.version > x, v, {
+        timeout: 15_000,
+      });
     }
     return (await state()).view.fight.phase !== 'fight';
   };
@@ -245,7 +373,11 @@ try {
     check('abandoning starts a fresh run', (await state()).runId !== stalled);
   }
   run = await state();
-  check('the fight ends in victory or defeat', ['won', 'lost'].includes(run.view.fight.phase), run.view.fight.phase);
+  check(
+    'the fight ends in victory or defeat',
+    ['won', 'lost'].includes(run.view.fight.phase),
+    run.view.fight.phase
+  );
   check('the result is shown', await page.getByText(/^(Victory|Defeat)$/).isVisible());
   await sleep(300);
   await shot(page, 'end');
@@ -259,9 +391,14 @@ try {
   await phone.getByRole('button', {name: 'Start the fight'}).click();
   const phoneMove = phone.getByRole('button', {name: 'Move', exact: true});
   await phoneMove.waitFor({timeout: 15_000});
-  await phone.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {timeout: 15_000});
+  await phone.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {
+    timeout: 15_000,
+  });
   await sleep(300);
-  check('phone: no turn heading or hints', !(await phone.getByText(/^Your turn:|Tap a hex to look/).count()));
+  check(
+    'phone: no turn heading or hints',
+    !(await phone.getByText(/^Your turn:|Tap a hex to look/).count())
+  );
   const phoneBar = phone.locator('header');
   check(
     'phone: the top bar has Back and the title, not the site name',
@@ -270,10 +407,17 @@ try {
       !(await phoneBar.getByText('Canvas Games').count()),
     await phoneBar.textContent()
   );
-  check('phone: the page doesn’t repeat the title', (await phone.getByText('Silk Road Tactics').count()) === 1);
+  check(
+    'phone: the page doesn’t repeat the title',
+    (await phone.getByText('Silk Road Tactics').count()) === 1
+  );
   const canvasBox = await phone.locator('canvas').boundingBox();
   const viewportWidth = phone.viewportSize().width;
-  check('phone: the board runs edge to edge', Math.abs(canvasBox.x) <= 1 && Math.abs(canvasBox.width - viewportWidth) <= 1, [canvasBox, viewportWidth]);
+  check(
+    'phone: the board runs edge to edge',
+    Math.abs(canvasBox.x) <= 1 && Math.abs(canvasBox.width - viewportWidth) <= 1,
+    [canvasBox, viewportWidth]
+  );
   const inViewport = (locator) =>
     locator.evaluate((el) => {
       const r = el.getBoundingClientRect();
@@ -289,9 +433,18 @@ try {
     await sleep(300);
   }
   const phoneSheet = phone.getByTestId('stat-sheet');
-  check('phone: tapping an enemy shows its details', (await phoneSheet.locator('[data-side="enemy"]').count()) === 1);
-  check('phone: no “could do next turn” on an enemy', !(await phoneSheet.textContent()).includes('Could do next turn'));
-  check('phone: the details start on screen', await phoneSheet.evaluate((el) => el.getBoundingClientRect().top < window.innerHeight));
+  check(
+    'phone: tapping an enemy shows its details',
+    (await phoneSheet.locator('[data-side="enemy"]').count()) === 1
+  );
+  check(
+    'phone: no “could do next turn” on an enemy',
+    !(await phoneSheet.textContent()).includes('Could do next turn')
+  );
+  check(
+    'phone: the details start on screen',
+    await phoneSheet.evaluate((el) => el.getBoundingClientRect().top < window.innerHeight)
+  );
   check('phone: the action section stays on screen', await inViewport(phoneMove));
   // Tapping away from the board (here, on the details) goes back to the unit whose turn it is.
   await phoneSheet.tap();
@@ -310,13 +463,22 @@ try {
     await phone.tap('canvas', {position: {x: (x * box.width) / 600, y: (y * box.height) / 460}});
     await sleep(250);
     const planned = phone.getByRole('button', {name: /^Move/});
-    check('phone: a planned move shows its slots in the Move button', /^Move\+\d+$/.test(await planned.textContent()), await planned.textContent());
+    check(
+      'phone: a planned move shows its slots in the Move button',
+      /^Move\+\d+$/.test(await planned.textContent()),
+      await planned.textContent()
+    );
     await planned.click(); // undo it
     check('phone: undoing the move clears them', (await planned.textContent()) === 'Move');
   }
   // No Hold button: with nothing picked, the big button ends the turn.
   check('phone: no Hold button', !(await phone.getByRole('button', {name: /^Hold/}).count()));
-  check('phone: with nothing picked, the button ends the turn', /^End turn · next turn \+\d+$/.test(await phone.getByRole('button', {name: /^End turn/}).textContent()));
+  check(
+    'phone: with nothing picked, the button ends the turn',
+    /^End turn · next turn \+\d+$/.test(
+      await phone.getByRole('button', {name: /^End turn/}).textContent()
+    )
+  );
   // Tapping a target twice doesn't commit: only the button does.
   const tapOn = async (hex) => {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
@@ -329,24 +491,41 @@ try {
   await phone.getByRole('button', {name: /^Composite Bow/}).click();
   await tapOn(mine);
   await tapOn(mine);
-  check('phone: a second tap on the target doesn’t commit', (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion);
+  check(
+    'phone: a second tap on the target doesn’t commit',
+    (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion
+  );
   const phoneConfirm = await phone.getByRole('button', {name: /^Confirm/}).textContent();
-  check('phone: Confirm says when the next turn comes, in slots from now', /^Confirm · next turn \+\d+$/.test(phoneConfirm), phoneConfirm);
+  check(
+    'phone: Confirm says when the next turn comes, in slots from now',
+    /^Confirm · next turn \+\d+$/.test(phoneConfirm),
+    phoneConfirm
+  );
   const bowText = await phone.getByRole('button', {name: /^Composite Bow/}).textContent();
-  check('phone: the ability button shows the same slots as Confirm', bowText.endsWith(phoneConfirm.split(' ').pop()), [bowText, phoneConfirm]);
-  check('phone: steps name only the action', (await phone.getByTestId('turn-steps').textContent()) === '1Composite Bow');
+  check(
+    'phone: the ability button shows the same slots as Confirm',
+    bowText.endsWith(phoneConfirm.split(' ').pop()),
+    [bowText, phoneConfirm]
+  );
+  check(
+    'phone: steps name only the action',
+    (await phone.getByTestId('turn-steps').textContent()) === '1Composite Bow'
+  );
   {
     const y = async (l) => (await l.boundingBox()).y;
     const stepsY = await y(phone.getByTestId('turn-steps'));
     check(
       'phone: the steps sit below the buttons and above Confirm',
-      stepsY > (await y(phoneMove)) && stepsY < (await y(phone.getByRole('button', {name: /^Confirm/}))),
+      stepsY > (await y(phoneMove)) &&
+        stepsY < (await y(phone.getByRole('button', {name: /^Confirm/}))),
       stepsY
     );
   }
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-full.png'), fullPage: true});
-  const overflow = await phone.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  const overflow = await phone.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
   check('phone: no sideways scroll', overflow <= 1, overflow);
   await abandonOn(phone);
 } finally {

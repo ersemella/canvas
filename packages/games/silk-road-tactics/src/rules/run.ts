@@ -30,7 +30,8 @@ const isInt = (n: unknown): n is number => Number.isInteger(n) && Math.abs(n as 
 
 function parseHex(raw: unknown): Hex {
   const h = raw as Hex | null;
-  if (!h || typeof h !== 'object' || !isInt(h.q) || !isInt(h.r)) throw new RuleError('Malformed hex.');
+  if (!h || typeof h !== 'object' || !isInt(h.q) || !isInt(h.r))
+    throw new RuleError('Malformed hex.');
   return {q: h.q, r: h.r};
 }
 
@@ -39,7 +40,8 @@ export function parseAction(raw: unknown): RunAction {
   const a = raw as Record<string, unknown> | null;
   if (!a || typeof a !== 'object') throw new RuleError('Malformed action.');
   if (a.type === 'deploy') {
-    if (!Array.isArray(a.placements) || a.placements.length > 10) throw new RuleError('Malformed placements.');
+    if (!Array.isArray(a.placements) || a.placements.length > 10)
+      throw new RuleError('Malformed placements.');
     return {
       type: 'deploy',
       placements: a.placements.map((p: {unitId?: unknown; hex?: unknown}) => {
@@ -49,8 +51,14 @@ export function parseAction(raw: unknown): RunAction {
     };
   }
   if (a.type === 'turn') {
-    const action = a.action as {ability?: unknown; target?: {hex?: unknown; to?: unknown}} | undefined;
-    if (!action || typeof action.ability !== 'string' || !Object.hasOwn(ABILITIES, action.ability)) {
+    const action = a.action as
+      | {ability?: unknown; target?: {hex?: unknown; to?: unknown}}
+      | undefined;
+    if (
+      !action ||
+      typeof action.ability !== 'string' ||
+      !Object.hasOwn(ABILITIES, action.ability)
+    ) {
       throw new RuleError('Unknown ability.');
     }
     const out: RunAction = {type: 'turn', action: {ability: action.ability as AbilityId}};

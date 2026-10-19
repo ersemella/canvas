@@ -44,7 +44,10 @@ export class HexGridSystem extends BaseSystem {
     const grids = new Map<string, {data: HexGridData; layout: HexLayout}>();
     for (const entity of scene.query({all: ['HexGrid', 'Transform']})) {
       const data = entity.getComponent<DataComponent<HexGridData>>('HexGrid')!.data;
-      grids.set(entity.id, {data, layout: hexGridLayout(data, entity.getComponent<TransformComponent>('Transform')!)});
+      grids.set(entity.id, {
+        data,
+        layout: hexGridLayout(data, entity.getComponent<TransformComponent>('Transform')!),
+      });
     }
 
     for (const entity of scene.query({all: ['HexPosition', 'Transform']})) {

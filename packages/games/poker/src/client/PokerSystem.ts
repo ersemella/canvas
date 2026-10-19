@@ -163,8 +163,8 @@ export class PokerSystem extends BaseSystem {
     if (!hero) return;
 
     const callAmount = gs.currentBet - hero.currentBet;
-    const isHeroTurn = isActiveBettingPhase(gs.phase) &&
-      gs.actingIndex === 0 && !hero.folded && !hero.allIn;
+    const isHeroTurn =
+      isActiveBettingPhase(gs.phase) && gs.actingIndex === 0 && !hero.folded && !hero.allIn;
 
     const minRaise = gs.currentBet + this.bb;
     const maxRaise = hero.chips + hero.currentBet;

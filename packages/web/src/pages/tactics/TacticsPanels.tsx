@@ -38,7 +38,15 @@ export function ConfirmButton(props: {
   const {fight, preview} = props;
   if (props.needsTarget) return null;
   return (
-    <Button color="yellow" c="dark.9" fw="bold" size="sm" loading={props.busy} disabled={!preview} onClick={props.onConfirm}>
+    <Button
+      color="yellow"
+      c="dark.9"
+      fw="bold"
+      size="sm"
+      loading={props.busy}
+      disabled={!preview}
+      onClick={props.onConfirm}
+    >
       {preview
         ? `${props.endTurn ? 'End turn' : 'Confirm'} · next turn +${(preview.slot ?? fight.currentSlot) - fight.currentSlot}`
         : 'Can’t do that'}
@@ -47,7 +55,15 @@ export function ConfirmButton(props: {
 }
 
 /** What's on a hex: its tile's rule, any hail, and the unit standing there (D11). */
-export function HexInspector({fight, hex, positions}: {fight: FightState; hex: Hex; positions?: Record<string, Hex> | undefined}) {
+export function HexInspector({
+  fight,
+  hex,
+  positions,
+}: {
+  fight: FightState;
+  hex: Hex;
+  positions?: Record<string, Hex> | undefined;
+}) {
   const tile = tileAt(mapOf(fight), hex);
   const info = TILE_INFO[tile];
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
@@ -81,8 +97,12 @@ export function HexInspector({fight, hex, positions}: {fight: FightState; hex: H
 export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
   const slot = fight.currentSlot;
   const statuses = [
-    statusValue(unit, 'immobilized') ? `Immobilized (${statusSlotsLeft(unit, 'immobilized', slot)} slots)` : null,
-    statusValue(unit, 'slowed') ? `Slowed ${statusValue(unit, 'slowed')} (${statusSlotsLeft(unit, 'slowed', slot)} slots)` : null,
+    statusValue(unit, 'immobilized')
+      ? `Immobilized (${statusSlotsLeft(unit, 'immobilized', slot)} slots)`
+      : null,
+    statusValue(unit, 'slowed')
+      ? `Slowed ${statusValue(unit, 'slowed')} (${statusSlotsLeft(unit, 'slowed', slot)} slots)`
+      : null,
     statusValue(unit, 'vulnerable')
       ? `Vulnerable ${statusValue(unit, 'vulnerable')}% (${statusSlotsLeft(unit, 'vulnerable', slot)} slots)`
       : null,
@@ -149,8 +169,12 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
           .map((def) => (
             <Text key={def.id} fz="xs" c="dimmed">
               {/* In this unit's slots: the action alone, before any move or yielding. */}
-              <b className={styles.abilityName}>{def.name}</b> · +{slotsForward(def.cost, unit.speed)}
-              {def.charged ? ` to charge, +${slotsForward(def.recoveryCost!, unit.speed)} to recover` : ''}: {def.summary}
+              <b className={styles.abilityName}>{def.name}</b> · +
+              {slotsForward(def.cost, unit.speed)}
+              {def.charged
+                ? ` to charge, +${slotsForward(def.recoveryCost!, unit.speed)} to recover`
+                : ''}
+              : {def.summary}
             </Text>
           ))}
       </Stack>

@@ -22,9 +22,9 @@
         "id": "panel-bg",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 310 },
+            "position": {"x": 970, "y": 310},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -40,9 +40,9 @@
         "id": "panel-title",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 26 },
+            "position": {"x": 970, "y": 26},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -62,9 +62,9 @@
         "id": "divider-top",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 44 },
+            "position": {"x": 970, "y": 44},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -80,9 +80,9 @@
         "id": "pot-label",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 66 },
+            "position": {"x": 970, "y": 66},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -101,9 +101,9 @@
         "id": "pot-value",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 88 },
+            "position": {"x": 970, "y": 88},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -123,9 +123,9 @@
         "id": "divider-pot",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 108 },
+            "position": {"x": 970, "y": 108},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -141,9 +141,9 @@
         "id": "hero-chips-label",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 128 },
+            "position": {"x": 970, "y": 128},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -162,9 +162,9 @@
         "id": "hero-chips-value",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 150 },
+            "position": {"x": 970, "y": 150},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -184,9 +184,9 @@
         "id": "divider-chips",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 168 },
+            "position": {"x": 970, "y": 168},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -202,9 +202,9 @@
         "id": "phase-text",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 188 },
+            "position": {"x": 970, "y": 188},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -223,9 +223,9 @@
         "id": "divider-phase",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 205 },
+            "position": {"x": 970, "y": 205},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -241,9 +241,9 @@
         "id": "log-0",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 222 },
+            "position": {"x": 970, "y": 222},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -262,9 +262,9 @@
         "id": "log-1",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 238 },
+            "position": {"x": 970, "y": 238},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -283,9 +283,9 @@
         "id": "log-2",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 254 },
+            "position": {"x": 970, "y": 254},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -304,9 +304,9 @@
         "id": "log-3",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 270 },
+            "position": {"x": 970, "y": 270},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -325,9 +325,9 @@
         "id": "log-4",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 286 },
+            "position": {"x": 970, "y": 286},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -346,9 +346,9 @@
         "id": "divider-log",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 304 },
+            "position": {"x": 970, "y": 304},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -364,9 +364,9 @@
         "id": "raise-label",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 326 },
+            "position": {"x": 970, "y": 326},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -385,9 +385,9 @@
         "id": "raise-down-btn",
         "components": {
           "Transform": {
-            "position": { "x": 928, "y": 356 },
+            "position": {"x": 928, "y": 356},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -398,16 +398,16 @@
             "zIndex": 3,
             "visible": true
           },
-          "Clickable": { "enabled": false }
+          "Clickable": {"enabled": false}
         }
       },
       {
         "id": "raise-down-label",
         "components": {
           "Transform": {
-            "position": { "x": 928, "y": 356 },
+            "position": {"x": 928, "y": 356},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -421,16 +421,16 @@
             "zIndex": 4,
             "visible": true
           },
-          "ChildOf": { "parentId": "raise-down-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+          "ChildOf": {"parentId": "raise-down-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1}
         }
       },
       {
         "id": "raise-amount",
         "components": {
           "Transform": {
-            "position": { "x": 970, "y": 356 },
+            "position": {"x": 970, "y": 356},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -450,9 +450,9 @@
         "id": "raise-up-btn",
         "components": {
           "Transform": {
-            "position": { "x": 1012, "y": 356 },
+            "position": {"x": 1012, "y": 356},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -463,16 +463,16 @@
             "zIndex": 3,
             "visible": true
           },
-          "Clickable": { "enabled": false }
+          "Clickable": {"enabled": false}
         }
       },
       {
         "id": "raise-up-label",
         "components": {
           "Transform": {
-            "position": { "x": 1012, "y": 356 },
+            "position": {"x": 1012, "y": 356},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -486,16 +486,16 @@
             "zIndex": 4,
             "visible": true
           },
-          "ChildOf": { "parentId": "raise-up-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+          "ChildOf": {"parentId": "raise-up-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1}
         }
       },
       {
         "id": "fold-btn",
         "components": {
           "Transform": {
-            "position": { "x": 910, "y": 414 },
+            "position": {"x": 910, "y": 414},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -506,16 +506,16 @@
             "zIndex": 3,
             "visible": true
           },
-          "Clickable": { "enabled": false }
+          "Clickable": {"enabled": false}
         }
       },
       {
         "id": "fold-label",
         "components": {
           "Transform": {
-            "position": { "x": 910, "y": 414 },
+            "position": {"x": 910, "y": 414},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -529,16 +529,16 @@
             "zIndex": 4,
             "visible": true
           },
-          "ChildOf": { "parentId": "fold-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+          "ChildOf": {"parentId": "fold-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1}
         }
       },
       {
         "id": "check-btn",
         "components": {
           "Transform": {
-            "position": { "x": 1030, "y": 414 },
+            "position": {"x": 1030, "y": 414},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -549,16 +549,16 @@
             "zIndex": 3,
             "visible": true
           },
-          "Clickable": { "enabled": false }
+          "Clickable": {"enabled": false}
         }
       },
       {
         "id": "check-label",
         "components": {
           "Transform": {
-            "position": { "x": 1030, "y": 414 },
+            "position": {"x": 1030, "y": 414},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -572,16 +572,16 @@
             "zIndex": 4,
             "visible": true
           },
-          "ChildOf": { "parentId": "check-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+          "ChildOf": {"parentId": "check-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1}
         }
       },
       {
         "id": "call-btn",
         "components": {
           "Transform": {
-            "position": { "x": 910, "y": 476 },
+            "position": {"x": 910, "y": 476},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -592,16 +592,16 @@
             "zIndex": 3,
             "visible": true
           },
-          "Clickable": { "enabled": false }
+          "Clickable": {"enabled": false}
         }
       },
       {
         "id": "call-label",
         "components": {
           "Transform": {
-            "position": { "x": 910, "y": 476 },
+            "position": {"x": 910, "y": 476},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -615,16 +615,16 @@
             "zIndex": 4,
             "visible": true
           },
-          "ChildOf": { "parentId": "call-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+          "ChildOf": {"parentId": "call-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1}
         }
       },
       {
         "id": "raise-btn",
         "components": {
           "Transform": {
-            "position": { "x": 1030, "y": 476 },
+            "position": {"x": 1030, "y": 476},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "rect",
@@ -635,16 +635,16 @@
             "zIndex": 3,
             "visible": true
           },
-          "Clickable": { "enabled": false }
+          "Clickable": {"enabled": false}
         }
       },
       {
         "id": "raise-btn-label",
         "components": {
           "Transform": {
-            "position": { "x": 1030, "y": 476 },
+            "position": {"x": 1030, "y": 476},
             "rotation": 0,
-            "scale": { "x": 1, "y": 1 }
+            "scale": {"x": 1, "y": 1}
           },
           "Renderable": {
             "renderType": "text",
@@ -658,7 +658,7 @@
             "zIndex": 4,
             "visible": true
           },
-          "ChildOf": { "parentId": "raise-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1 }
+          "ChildOf": {"parentId": "raise-btn", "offsetX": 0, "offsetY": 0, "zIndexOffset": 1}
         }
       },
       {

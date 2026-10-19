@@ -19,7 +19,9 @@ export function GamePage() {
   const {gameId} = useParams<{gameId: string}>();
 
   // undefined = still resolving the game list; null = game not found
-  const [gameDescriptor, setGameDescriptor] = useState<GameDescriptor | null | undefined>(undefined);
+  const [gameDescriptor, setGameDescriptor] = useState<GameDescriptor | null | undefined>(
+    undefined
+  );
   const [sceneData, setSceneData] = useState<SceneData | null>(null);
   const [createSystems, setCreateSystems] = useState<(() => BaseSystem[]) | null>(null);
   const [gameEvents, setGameEvents] = useState<Record<string, string>>({});
@@ -80,7 +82,9 @@ export function GamePage() {
       <Center h="calc(100vh - 56px)">
         <Stack align="center" gap="sm" maw={480}>
           <Text c="red.4">Failed to load game: {error}</Text>
-          <Button component={Link} to="/" variant="light">Back to home</Button>
+          <Button component={Link} to="/" variant="light">
+            Back to home
+          </Button>
         </Stack>
       </Center>
     );
@@ -128,7 +132,10 @@ export function GamePage() {
                 bestScoreKey={`canvas:best:${gameId}`}
               />
             </GameErrorBoundary>
-            <Box className={gameLayout.sidePanel!} style={{height: canvasSize.height * (canvasSize.scale ?? 1)}}>
+            <Box
+              className={gameLayout.sidePanel!}
+              style={{height: canvasSize.height * (canvasSize.scale ?? 1)}}
+            >
               {worldEvents && <SidePanel events={worldEvents} />}
               <GameLog entries={logEntries} />
             </Box>

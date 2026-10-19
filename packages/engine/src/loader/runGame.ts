@@ -23,7 +23,12 @@ export function runGame(game: GameDefinition, canvas: HTMLCanvasElement): World 
   module.register();
 
   // Same default as the web shell when the manifest doesn't size the canvas.
-  const {width, height, scale = 1, pixelArt = false} = module.getCanvas() ?? {width: 600, height: 400};
+  const {
+    width,
+    height,
+    scale = 1,
+    pixelArt = false,
+  } = module.getCanvas() ?? {width: 600, height: 400};
   canvas.width = width * scale;
   canvas.height = height * scale;
 

@@ -11,7 +11,7 @@ const CARD_H = 96;
 const COL_STEP = 82;
 const MARGIN_X = 14;
 const MARGIN_Y = 10;
-const TOP_Y = MARGIN_Y + CARD_H / 2;   // 58
+const TOP_Y = MARGIN_Y + CARD_H / 2; // 58
 const TABLEAU_Y = 168;
 const FACE_UP_STEP = 28;
 const FACE_DOWN_STEP = 20;
@@ -44,7 +44,14 @@ const button = (id, label, y) => [
     id,
     components: {
       Transform: {position: {x: colX(2), y}, rotation: 0, scale: {x: 1, y: 1}},
-      Renderable: {width: CARD_W, height: 40, color: '#355e35', radius: 6, zIndex: 1, visible: true},
+      Renderable: {
+        width: CARD_W,
+        height: 40,
+        color: '#355e35',
+        radius: 6,
+        zIndex: 1,
+        visible: true,
+      },
       Clickable: {enabled: true},
     },
   },
@@ -52,13 +59,26 @@ const button = (id, label, y) => [
     id: `${id}-label`,
     components: {
       Transform: {position: {x: colX(2), y}, rotation: 0, scale: {x: 1, y: 1}},
-      Renderable: {renderType: 'text', width: 0, height: 0, zIndex: 2, visible: true, text: label, textColor: '#e8f5e8', fontSize: 14, bold: true},
+      Renderable: {
+        renderType: 'text',
+        width: 0,
+        height: 0,
+        zIndex: 2,
+        visible: true,
+        text: label,
+        textColor: '#e8f5e8',
+        fontSize: 14,
+        bold: true,
+      },
     },
   },
 ];
 
 const manifest = {
-  meta: {title: 'Solitaire', description: 'Classic Klondike solitaire. Build up the foundations from Ace to King.'},
+  meta: {
+    title: 'Solitaire',
+    description: 'Classic Klondike solitaire. Build up the foundations from Ace to King.',
+  },
   canvas: {width: 700, height: 580},
   systems: ['MouseSystem', 'DragDropSystem', 'ClickSystem', 'CardPileSystem', 'PileLayoutSystem'],
   events: {onWin: 'solitaire:won'},
@@ -69,7 +89,21 @@ const manifest = {
         id: 'game-config',
         components: {
           CardPileConfig: {
-            pileIds: ['stock', 'waste', 'f0', 'f1', 'f2', 'f3', 't0', 't1', 't2', 't3', 't4', 't5', 't6'],
+            pileIds: [
+              'stock',
+              'waste',
+              'f0',
+              'f1',
+              'f2',
+              'f3',
+              't0',
+              't1',
+              't2',
+              't3',
+              't4',
+              't5',
+              't6',
+            ],
             colorGroups: {red: ['♥', '♦'], black: ['♠', '♣']},
             groupColors: {red: '#cc0000', black: '#000000'},
             rankLabels: RANK_LABELS,
@@ -118,21 +152,42 @@ const manifest = {
       slotEntity('f1', colX(4), TOP_Y, false, false, true),
       slotEntity('f2', colX(5), TOP_Y, false, false, true),
       slotEntity('f3', colX(6), TOP_Y, false, false, true),
-      ...Array.from({length: 7}, (_, i) => slotEntity(`t${i}`, colX(i), TABLEAU_Y, true, false, true)),
+      ...Array.from({length: 7}, (_, i) =>
+        slotEntity(`t${i}`, colX(i), TABLEAU_Y, true, false, true)
+      ),
       ...button('undo-btn', 'Undo', TOP_Y - 25),
       ...button('draw-btn', 'Draw 1', TOP_Y + 25),
       {
         id: 'status-text',
         components: {
           Transform: {position: {x: 350, y: 562}, rotation: 0, scale: {x: 1, y: 1}},
-          Renderable: {renderType: 'text', width: 0, height: 0, zIndex: 1000, visible: false, text: '', textColor: '#ffd54f', fontSize: 16, bold: true},
+          Renderable: {
+            renderType: 'text',
+            width: 0,
+            height: 0,
+            zIndex: 1000,
+            visible: false,
+            text: '',
+            textColor: '#ffd54f',
+            fontSize: 16,
+            bold: true,
+          },
         },
       },
       {
         id: 'stock-label',
         components: {
           Transform: {position: {x: colX(0), y: TOP_Y}, rotation: 0, scale: {x: 1, y: 1}},
-          Renderable: {renderType: 'text', width: 0, height: 0, zIndex: -1, visible: true, text: '↩', textColor: '#88cc88', fontSize: 22},
+          Renderable: {
+            renderType: 'text',
+            width: 0,
+            height: 0,
+            zIndex: -1,
+            visible: true,
+            text: '↩',
+            textColor: '#88cc88',
+            fontSize: 22,
+          },
         },
       },
     ],

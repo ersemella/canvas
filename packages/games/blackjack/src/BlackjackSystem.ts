@@ -82,7 +82,8 @@ export class BlackjackSystem extends BaseSystem {
 
     const configEntity = scene.query({all: ['BlackjackConfig']})[0];
     if (!configEntity) return;
-    this.config = configEntity.getComponent<DataComponent<BlackjackConfigData>>('BlackjackConfig')!.data;
+    this.config =
+      configEntity.getComponent<DataComponent<BlackjackConfigData>>('BlackjackConfig')!.data;
     const cfg = this.config;
 
     this.balance = cfg.startingBalance;
@@ -92,7 +93,8 @@ export class BlackjackSystem extends BaseSystem {
     this.playerSlots = this.collectSlots(cfg.playerCardPrefix);
     this.dealerSlots = this.collectSlots(cfg.dealerCardPrefix);
 
-    const renderable = (id: string) => scene.getEntity(id)?.getComponent<RenderableComponent>('Renderable') ?? null;
+    const renderable = (id: string) =>
+      scene.getEntity(id)?.getComponent<RenderableComponent>('Renderable') ?? null;
     this.balanceText = renderable(cfg.balanceTextId);
     this.betText = renderable(cfg.betTextId);
     this.playerValueText = renderable(cfg.playerValueTextId);
@@ -194,7 +196,11 @@ export class BlackjackSystem extends BaseSystem {
     hand.cards.push(this.draw(true));
     this.dealerHand.push(this.draw(false)); // hole card
 
-    if (this.dealerHand[0]!.rank === 1 && this.buttons.insurance && this.balance >= this.insuranceCost()) {
+    if (
+      this.dealerHand[0]!.rank === 1 &&
+      this.buttons.insurance &&
+      this.balance >= this.insuranceCost()
+    ) {
       this.phase = 'insurance';
       this.setStatus(`Dealer shows an Ace — insurance for $${this.insuranceCost()}?`);
       this.render();
@@ -249,7 +255,9 @@ export class BlackjackSystem extends BaseSystem {
     }
 
     this.phase = 'player';
-    this.setStatus(`${note.trim() ? `No dealer Blackjack —${note.toLowerCase()} ` : ''}Your move`.trim());
+    this.setStatus(
+      `${note.trim() ? `No dealer Blackjack —${note.toLowerCase()} ` : ''}Your move`.trim()
+    );
     this.render();
   }
 
@@ -285,7 +293,13 @@ export class BlackjackSystem extends BaseSystem {
     this.balance -= hand.bet;
     const moved = hand.cards.pop()!;
     const aces = moved.rank === 1;
-    const newHand: PlayerHand = {cards: [moved], bet: hand.bet, done: false, doubled: false, splitAces: aces};
+    const newHand: PlayerHand = {
+      cards: [moved],
+      bet: hand.bet,
+      done: false,
+      doubled: false,
+      splitAces: aces,
+    };
     hand.splitAces = aces;
     this.hands.splice(this.active + 1, 0, newHand);
     hand.cards.push(this.draw(true));
@@ -308,7 +322,9 @@ export class BlackjackSystem extends BaseSystem {
     const next = this.hands.findIndex((h) => !h.done);
     if (next !== -1) {
       this.active = next;
-      this.setStatus(this.hands.length > 1 ? `Hand ${next + 1} of ${this.hands.length}` : 'Your move');
+      this.setStatus(
+        this.hands.length > 1 ? `Hand ${next + 1} of ${this.hands.length}` : 'Your move'
+      );
       this.render();
       return;
     }
@@ -347,15 +363,21 @@ export class BlackjackSystem extends BaseSystem {
     if (results.length === 1) {
       const r = results[0]!;
       this.finish(
-        r === 'bust' ? 'Bust! Dealer wins.'
-        : r === 'push' ? 'Push — tie!'
-        : r === 'lose' ? 'Dealer wins.'
-        : dealer > 21 ? 'Dealer busts — You win!'
-        : 'You win!',
+        r === 'bust'
+          ? 'Bust! Dealer wins.'
+          : r === 'push'
+            ? 'Push — tie!'
+            : r === 'lose'
+              ? 'Dealer wins.'
+              : dealer > 21
+                ? 'Dealer busts — You win!'
+                : 'You win!'
       );
     } else {
       const words = {win: 'win', lose: 'lose', push: 'push', bust: 'bust'};
-      this.finish(results.map((r, i) => `Hand ${i + 1}: ${words[r as keyof typeof words]}`).join(' · '));
+      this.finish(
+        results.map((r, i) => `Hand ${i + 1}: ${words[r as keyof typeof words]}`).join(' · ')
+      );
     }
   }
 
@@ -390,7 +412,11 @@ export class BlackjackSystem extends BaseSystem {
 
   /** Late surrender: only as the very first decision of an unsplit hand. */
   private canSurrender(): boolean {
-    return Boolean(this.buttons.surrender) && this.hands.length === 1 && this.hands[0]!.cards.length === 2;
+    return (
+      Boolean(this.buttons.surrender) &&
+      this.hands.length === 1 &&
+      this.hands[0]!.cards.length === 2
+    );
   }
 
   private draw(faceUp: boolean): HandCard {
@@ -423,7 +449,8 @@ export class BlackjackSystem extends BaseSystem {
     if (total === 0) return '';
     // Only an unsplit two-card 21 is a blackjack (a split hand's 21 pays 1:1).
     const unsplit = cards !== this.hands[0]?.cards || this.hands.length === 1;
-    if (unsplit && cards.length === 2 && total === 21 && cards.every((c) => c.faceUp)) return 'Blackjack';
+    if (unsplit && cards.length === 2 && total === 21 && cards.every((c) => c.faceUp))
+      return 'Blackjack';
     return soft && total < 21 ? `${total - 10} / ${total}` : String(total);
   }
 
@@ -435,7 +462,9 @@ export class BlackjackSystem extends BaseSystem {
       const bgEntity = this.scene!.getEntity(`${prefix}-${i}`);
       const bg = bgEntity?.getComponent<RenderableComponent>('Renderable');
       const transform = bgEntity?.getComponent<TransformComponent>('Transform');
-      const label = this.scene!.getEntity(`${prefix}-${i}-label`)?.getComponent<RenderableComponent>('Renderable');
+      const label = this.scene!.getEntity(
+        `${prefix}-${i}-label`
+      )?.getComponent<RenderableComponent>('Renderable');
       if (!bg || !transform || !label) return slots;
       slots.push({bg, label, transform});
     }

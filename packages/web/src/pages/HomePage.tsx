@@ -30,7 +30,9 @@ export function HomePage() {
   } else if (error) {
     content = (
       <Alert color="red" title="Couldn't load games" maw={560}>
-        <Text size="sm" mb="sm">{error}</Text>
+        <Text size="sm" mb="sm">
+          {error}
+        </Text>
         <Button size="xs" variant="light" color="red" onClick={load}>
           Retry
         </Button>
@@ -50,8 +52,12 @@ export function HomePage() {
 
   return (
     <Container size="xl" py="xl">
-      <Title order={1} mb={8}>Games</Title>
-      <Text c="dimmed" mb="xl">HTML5 canvas games built with a custom ECS engine</Text>
+      <Title order={1} mb={8}>
+        Games
+      </Title>
+      <Text c="dimmed" mb="xl">
+        HTML5 canvas games built with a custom ECS engine
+      </Text>
       {content}
     </Container>
   );

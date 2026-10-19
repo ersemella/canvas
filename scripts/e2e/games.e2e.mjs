@@ -574,7 +574,10 @@ try {
       !(await bar.getByText('Canvas Games').count()),
     await bar.textContent()
   );
-  check('phone: the page doesn’t repeat Back and the title', !(await tp.getByText('← Back to home').count()));
+  check(
+    'phone: the page doesn’t repeat Back and the title',
+    !(await tp.getByText('← Back to home').count())
+  );
   const tGiven = await tp.evaluate(
     () =>
       window.__canvasWorld

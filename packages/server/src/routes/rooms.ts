@@ -10,11 +10,7 @@ import type {Env} from '../types';
  *   POST /rooms/:id/join        -> validate, return wsUrl
  *   GET  /rooms/:id/ws          -> WebSocket upgrade (forwards to DO)
  */
-export async function handleRoomsRoute(
-  request: Request,
-  env: Env,
-  url: URL,
-): Promise<Response> {
+export async function handleRoomsRoute(request: Request, env: Env, url: URL): Promise<Response> {
   // POST /rooms — create a fresh room.
   if (request.method === 'POST' && url.pathname === '/rooms') {
     return createRoom(request, env);
@@ -44,7 +40,7 @@ export async function handleRoomsRoute(
     const wsUrl = buildWsUrl(url, roomId);
     return new Response(
       JSON.stringify({roomId: data.roomId, wsUrl, serverSystem: data.serverSystem}),
-      {status: 200, headers: {'Content-Type': 'application/json'}},
+      {status: 200, headers: {'Content-Type': 'application/json'}}
     );
   }
 
@@ -66,10 +62,16 @@ async function createRoom(request: Request, env: Env): Promise<Response> {
     const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
     const {success} = await env.ROOM_CREATE_LIMITER.limit({key: ip});
     if (!success) {
-      return new Response(JSON.stringify({error: 'too_many_rooms', message: 'Too many rooms created — try again in a minute'}), {
-        status: 429,
-        headers: {'Content-Type': 'application/json', 'Retry-After': '60'},
-      });
+      return new Response(
+        JSON.stringify({
+          error: 'too_many_rooms',
+          message: 'Too many rooms created — try again in a minute',
+        }),
+        {
+          status: 429,
+          headers: {'Content-Type': 'application/json', 'Retry-After': '60'},
+        }
+      );
     }
   }
   const body = (await request.json().catch(() => ({}))) as {
@@ -99,10 +101,10 @@ async function createRoom(request: Request, env: Env): Promise<Response> {
     });
     if (r.ok) {
       const data = (await r.json()) as {roomId: string; serverSystem: string};
-      return new Response(
-        JSON.stringify({roomId: data.roomId, serverSystem: data.serverSystem}),
-        {status: 200, headers: {'Content-Type': 'application/json'}},
-      );
+      return new Response(JSON.stringify({roomId: data.roomId, serverSystem: data.serverSystem}), {
+        status: 200,
+        headers: {'Content-Type': 'application/json'},
+      });
     }
     if (r.status !== 409) return r;
     // 409: deterministic id collision; try again.

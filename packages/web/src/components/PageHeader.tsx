@@ -13,7 +13,9 @@ const PageHeaderContext = createContext<{
 
 export function PageHeaderProvider({children}: {children: React.ReactNode}) {
   const [header, setHeader] = useState<PageHeader | null>(null);
-  return <PageHeaderContext.Provider value={{header, setHeader}}>{children}</PageHeaderContext.Provider>;
+  return (
+    <PageHeaderContext.Provider value={{header, setHeader}}>{children}</PageHeaderContext.Provider>
+  );
 }
 
 export function useCurrentPageHeader(): PageHeader | null {

@@ -16,7 +16,10 @@ export class PlayerLedger implements DurableObject {
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
-    const record = (await this.state.storage.get<LedgerRecord>('ledger')) ?? {activeRunId: null, runsStarted: 0};
+    const record = (await this.state.storage.get<LedgerRecord>('ledger')) ?? {
+      activeRunId: null,
+      runsStarted: 0,
+    };
 
     if (request.method === 'GET' && url.pathname === '/active') {
       return json({activeRunId: record.activeRunId});
@@ -24,12 +27,16 @@ export class PlayerLedger implements DurableObject {
     if (request.method === 'POST' && url.pathname === '/start') {
       const {runId} = (await request.json()) as {runId: string};
       const previous = record.activeRunId;
-      await this.state.storage.put('ledger', {activeRunId: runId, runsStarted: record.runsStarted + 1});
+      await this.state.storage.put('ledger', {
+        activeRunId: runId,
+        runsStarted: record.runsStarted + 1,
+      });
       return json({previousRunId: previous});
     }
     if (request.method === 'POST' && url.pathname === '/ended') {
       const {runId} = (await request.json()) as {runId: string};
-      if (record.activeRunId === runId) await this.state.storage.put('ledger', {...record, activeRunId: null});
+      if (record.activeRunId === runId)
+        await this.state.storage.put('ledger', {...record, activeRunId: null});
       return json({ok: true});
     }
     return json({error: 'not_found'}, 404);
@@ -37,5 +44,8 @@ export class PlayerLedger implements DurableObject {
 }
 
 function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {status, headers: {'Content-Type': 'application/json'}});
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {'Content-Type': 'application/json'},
+  });
 }

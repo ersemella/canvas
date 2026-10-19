@@ -12,4 +12,11 @@ import blackjack from '@canvas/games-blackjack';
 import poker from '@canvas/games-poker';
 import silkRoadTactics from '@canvas/games-silk-road-tactics';
 
-export const PLATFORM_GAMES: readonly GameDefinition[] = [snake, solitaire, sudoku, blackjack, poker, silkRoadTactics];
+export const PLATFORM_GAMES: readonly GameDefinition[] = [
+  snake,
+  solitaire,
+  sudoku,
+  blackjack,
+  poker,
+  silkRoadTactics,
+];

@@ -13,7 +13,15 @@ export function NavBar() {
     return (
       <AppShell.Header h={56} className={styles.header!}>
         <div className={styles.pageHeader}>
-          <Button component={Link} to={header.backTo} variant="subtle" color="gray" size="sm" px={6} aria-label="Back">
+          <Button
+            component={Link}
+            to={header.backTo}
+            variant="subtle"
+            color="gray"
+            size="sm"
+            px={6}
+            aria-label="Back"
+          >
             ← Back
           </Button>
           <Text fw={700} fz="lg" truncate="end" className={styles.pageTitle!}>

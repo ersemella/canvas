@@ -110,16 +110,20 @@ export function GameCanvas({
 
     const {onScore, onDeath, onWin} = events ?? {};
 
-    const unsubScore = onScore
-      ? world.events.on(onScore, () => setScore((s) => s + 1))
-      : undefined;
+    const unsubScore = onScore ? world.events.on(onScore, () => setScore((s) => s + 1)) : undefined;
 
     const unsubDied = onDeath
-      ? world.events.on(onDeath, () => { world.stop(); setOutcome('lost'); })
+      ? world.events.on(onDeath, () => {
+          world.stop();
+          setOutcome('lost');
+        })
       : undefined;
 
     const unsubWon = onWin
-      ? world.events.on(onWin, () => { world.stop(); setOutcome('won'); })
+      ? world.events.on(onWin, () => {
+          world.stop();
+          setOutcome('won');
+        })
       : undefined;
 
     return () => {
@@ -136,7 +140,12 @@ export function GameCanvas({
 
   return (
     <Box pos="relative" className={styles.wrapper!}>
-      <canvas ref={canvasRef} width={width * scale} height={height * scale} className={styles.canvas!} />
+      <canvas
+        ref={canvasRef}
+        width={width * scale}
+        height={height * scale}
+        className={styles.canvas!}
+      />
       {events?.onScore && !outcome && (
         <Text className={styles.score!} ff="monospace" fw="bold" c="white">
           Score: {score}
@@ -149,7 +158,11 @@ export function GameCanvas({
             <Text ff="monospace" fz="2rem" fw="bold" c={outcome === 'won' ? 'green.4' : 'white'}>
               {outcome === 'won' ? 'You win!' : 'Game Over'}
             </Text>
-            {events?.onScore && <Text ff="monospace" fz="1.2rem" c="gray.4">Score: {score}</Text>}
+            {events?.onScore && (
+              <Text ff="monospace" fz="1.2rem" c="gray.4">
+                Score: {score}
+              </Text>
+            )}
             {events?.onScore && bestScoreKey && (
               <Text ff="monospace" fz="1rem" c={newBest ? 'yellow.4' : 'gray.5'}>
                 {newBest ? 'New best!' : `Best: ${best}`}

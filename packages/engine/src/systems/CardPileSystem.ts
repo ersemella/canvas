@@ -54,7 +54,8 @@ export class CardPileSystem extends BaseSystem {
     const configEntity = configEntities[0];
     if (!configEntity) return;
 
-    const configComp = configEntity.getComponent<DataComponent<CardPileConfigData>>('CardPileConfig')!;
+    const configComp =
+      configEntity.getComponent<DataComponent<CardPileConfigData>>('CardPileConfig')!;
     const config = configComp.data;
     this.config = config;
 
@@ -77,7 +78,8 @@ export class CardPileSystem extends BaseSystem {
     // If a DeckConfig entity exists, generate and deal the deck instead of reading scene cards
     const deckConfigEntity = scene.query({all: ['DeckConfig']})[0];
     if (deckConfigEntity) {
-      const deckData = deckConfigEntity.getComponent<DataComponent<DeckConfigData>>('DeckConfig')!.data;
+      const deckData =
+        deckConfigEntity.getComponent<DataComponent<DeckConfigData>>('DeckConfig')!.data;
       this.deckConfig = deckData;
       this.initializeDeck(deckData);
     } else {
@@ -91,7 +93,10 @@ export class CardPileSystem extends BaseSystem {
       }
       for (const [pileId, cards] of byPile) {
         cards.sort((a, b) => a.posInPile - b.posInPile);
-        this.piles.set(pileId, cards.map((c) => c.entityId));
+        this.piles.set(
+          pileId,
+          cards.map((c) => c.entityId)
+        );
       }
     }
 
@@ -111,25 +116,38 @@ export class CardPileSystem extends BaseSystem {
       if (entityId === config.drawToggle?.buttonId) this.cycleDrawCount();
     });
 
-    events.on<DragDropDroppedPayload>('dragdrop:dropped', ({entityIds, targetId, accept, reject}: DragDropDroppedPayload) => {
-      if (!targetId) {reject(); return;}
-      const leadCard = this.getCardData(entityIds[0]!)?.data;
-      if (!leadCard) {reject(); return;}
+    events.on<DragDropDroppedPayload>(
+      'dragdrop:dropped',
+      ({entityIds, targetId, accept, reject}: DragDropDroppedPayload) => {
+        if (!targetId) {
+          reject();
+          return;
+        }
+        const leadCard = this.getCardData(entityIds[0]!)?.data;
+        if (!leadCard) {
+          reject();
+          return;
+        }
 
-      const rule = this.findDropRule(targetId, entityIds.length);
-      if (!rule) {reject(); return;}
+        const rule = this.findDropRule(targetId, entityIds.length);
+        if (!rule) {
+          reject();
+          return;
+        }
 
-      const pile = this.piles.get(targetId) ?? [];
-      const conditions = pile.length === 0 ? (rule.emptyConditions ?? []) : rule.conditions;
-      const topCard = pile.length > 0 ? this.getCardData(pile[pile.length - 1]!)?.data : undefined;
+        const pile = this.piles.get(targetId) ?? [];
+        const conditions = pile.length === 0 ? (rule.emptyConditions ?? []) : rule.conditions;
+        const topCard =
+          pile.length > 0 ? this.getCardData(pile[pile.length - 1]!)?.data : undefined;
 
-      if (this.evaluateConditions(conditions, leadCard, topCard)) {
-        this.commitDrop(entityIds, targetId);
-        accept();
-      } else {
-        reject();
+        if (this.evaluateConditions(conditions, leadCard, topCard)) {
+          this.commitDrop(entityIds, targetId);
+          accept();
+        } else {
+          reject();
+        }
       }
-    });
+    );
   }
 
   private matchesPile(match: TargetMatch, pileId: string): boolean {
@@ -158,7 +176,11 @@ export class CardPileSystem extends BaseSystem {
     return false;
   }
 
-  private evaluateConditions(conditions: DropCondition[], card: CardData, top: CardData | undefined): boolean {
+  private evaluateConditions(
+    conditions: DropCondition[],
+    card: CardData,
+    top: CardData | undefined
+  ): boolean {
     for (const cond of conditions) {
       if (cond.type === 'sameSuit') {
         if (!top || card.suit !== top.suit) return false;
@@ -197,7 +219,10 @@ export class CardPileSystem extends BaseSystem {
 
     if (this.config) {
       for (const behavior of this.config.behaviors) {
-        if (behavior.type === 'flipOriginTopOnDrop' && this.matchesPile(behavior.originMatch, originPileId)) {
+        if (
+          behavior.type === 'flipOriginTopOnDrop' &&
+          this.matchesPile(behavior.originMatch, originPileId)
+        ) {
           if (originPile.length > 0) {
             const topId = originPile[originPile.length - 1]!;
             const topCard = this.getCardData(topId);
@@ -279,14 +304,17 @@ export class CardPileSystem extends BaseSystem {
 
   private stockBehavior(): Extract<BehaviorConfig, {type: 'dealFromStock'}> | undefined {
     return this.config?.behaviors.find(
-      (b): b is Extract<BehaviorConfig, {type: 'dealFromStock'}> => b.type === 'dealFromStock',
+      (b): b is Extract<BehaviorConfig, {type: 'dealFromStock'}> => b.type === 'dealFromStock'
     );
   }
 
   private pushHistory(): void {
     const snap: Snapshot = [];
     for (const [pileId, ids] of this.piles) {
-      snap.push([pileId, ids.map((id) => ({id, faceUp: this.getCardData(id)?.data.faceUp ?? false}))]);
+      snap.push([
+        pileId,
+        ids.map((id) => ({id, faceUp: this.getCardData(id)?.data.faceUp ?? false})),
+      ]);
     }
     this.history.push(snap);
     const max = this.config?.undo?.maxDepth ?? 500;
@@ -297,7 +325,10 @@ export class CardPileSystem extends BaseSystem {
     const snap = this.history.pop();
     if (!snap || this.won) return;
     for (const [pileId, cards] of snap) {
-      this.piles.set(pileId, cards.map((c) => c.id));
+      this.piles.set(
+        pileId,
+        cards.map((c) => c.id)
+      );
       const group = this.isGroupPile(pileId);
       cards.forEach((c, i) => {
         const cd = this.getCardData(c.id);
@@ -363,7 +394,11 @@ export class CardPileSystem extends BaseSystem {
       const t = entity?.getComponent<TransformComponent>('Transform');
       const r = entity?.getComponent<RenderableComponent>('Renderable');
       if (!t || !r) continue;
-      if (Math.abs(pos.x - t.position.x) <= r.width / 2 && Math.abs(pos.y - t.position.y) <= r.height / 2) return id;
+      if (
+        Math.abs(pos.x - t.position.x) <= r.width / 2 &&
+        Math.abs(pos.y - t.position.y) <= r.height / 2
+      )
+        return id;
     }
     return null;
   }
@@ -376,7 +411,11 @@ export class CardPileSystem extends BaseSystem {
     if (!rule) return false;
     const pile = this.piles.get(targetId) ?? [];
     const top = pile.length > 0 ? this.getCardData(pile[pile.length - 1]!)?.data : undefined;
-    return this.evaluateConditions(pile.length === 0 ? (rule.emptyConditions ?? []) : rule.conditions, lead, top);
+    return this.evaluateConditions(
+      pile.length === 0 ? (rule.emptyConditions ?? []) : rule.conditions,
+      lead,
+      top
+    );
   }
 
   private autoTargets(): string[] {
@@ -396,7 +435,11 @@ export class CardPileSystem extends BaseSystem {
 
   private canAutoFinish(): boolean {
     const stock = this.stockBehavior();
-    if (stock && ((this.piles.get(stock.stockId)?.length ?? 0) > 0 || (this.piles.get(stock.wasteId)?.length ?? 0) > 0)) {
+    if (
+      stock &&
+      ((this.piles.get(stock.stockId)?.length ?? 0) > 0 ||
+        (this.piles.get(stock.wasteId)?.length ?? 0) > 0)
+    ) {
       return false;
     }
     const targets = new Set(this.autoTargets());
@@ -433,7 +476,10 @@ export class CardPileSystem extends BaseSystem {
       ? [...(this.piles.get(stock.stockId) ?? []), ...(this.piles.get(stock.wasteId) ?? [])]
       : [];
     for (const id of fromStock) {
-      if (targets.some((t) => t !== stock?.stockId && t !== stock?.wasteId && this.canDrop([id], t))) return true;
+      if (
+        targets.some((t) => t !== stock?.stockId && t !== stock?.wasteId && this.canDrop([id], t))
+      )
+        return true;
     }
     const auto = new Set(this.autoTargets());
     for (const [pileId, ids] of this.piles) {
@@ -457,7 +503,8 @@ export class CardPileSystem extends BaseSystem {
     const id = this.config?.statusTextId;
     const status = id ? this.getRenderable(id) : undefined;
     if (!status) return;
-    status.text = this.won || this.hasUsefulMove() ? '' : 'No moves left — use Undo, or go back for a new deal';
+    status.text =
+      this.won || this.hasUsefulMove() ? '' : 'No moves left — use Undo, or go back for a new deal';
     status.visible = status.text !== '';
   }
 
@@ -536,21 +583,32 @@ export class CardPileSystem extends BaseSystem {
   }
 
   private getPileMember(entityId: string): DataComponent<PileMemberData> | undefined {
-    return this.scene?.getEntity(entityId)?.getComponent<DataComponent<PileMemberData>>('PileMember');
+    return this.scene
+      ?.getEntity(entityId)
+      ?.getComponent<DataComponent<PileMemberData>>('PileMember');
   }
 
   private getLabelRenderable(cardId: string, suffix: string): RenderableComponent | undefined {
-    return this.scene?.getEntity(`${cardId}-label-${suffix}`)?.getComponent<RenderableComponent>('Renderable');
+    return this.scene
+      ?.getEntity(`${cardId}-label-${suffix}`)
+      ?.getComponent<RenderableComponent>('Renderable');
   }
 
   private setDraggable(entityId: string, enabled: boolean): void {
-    const draggable = this.scene?.getEntity(entityId)?.getComponent<DataComponent<DraggableData>>('Draggable');
+    const draggable = this.scene
+      ?.getEntity(entityId)
+      ?.getComponent<DataComponent<DraggableData>>('Draggable');
     if (draggable) draggable.data.enabled = enabled;
   }
 
   private setDragGroup(entityId: string, groupId: string, groupOrder: number): void {
-    const dg = this.scene?.getEntity(entityId)?.getComponent<DataComponent<DragGroupData>>('DragGroup');
-    if (dg) {dg.data.groupId = groupId; dg.data.groupOrder = groupOrder;}
+    const dg = this.scene
+      ?.getEntity(entityId)
+      ?.getComponent<DataComponent<DragGroupData>>('DragGroup');
+    if (dg) {
+      dg.data.groupId = groupId;
+      dg.data.groupOrder = groupOrder;
+    }
   }
 
   // --- Deck initialization ---
@@ -559,7 +617,9 @@ export class CardPileSystem extends BaseSystem {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      const tmp = a[i]!; a[i] = a[j]!; a[j] = tmp;
+      const tmp = a[i]!;
+      a[i] = a[j]!;
+      a[j] = tmp;
     }
     return a;
   }
@@ -580,18 +640,31 @@ export class CardPileSystem extends BaseSystem {
     const pattern = deckConfig.dealPattern;
     const deal = dealPatterns.get(pattern.type);
     if (!deal) {
-      throw new Error(`Unknown deal pattern "${pattern.type}". Register it with dealPatterns.register().`);
+      throw new Error(
+        `Unknown deal pattern "${pattern.type}". Register it with dealPatterns.register().`
+      );
     }
 
     const rankLabels = this.config?.rankLabels ?? DEFAULT_RANK_LABELS;
     for (const {pileId, card, faceUp} of deal(shuffled, pattern)) {
       const pile = this.piles.get(pileId);
-      if (!pile) throw new Error(`Deal pattern "${pattern.type}" dealt to unknown pile "${pileId}"`);
+      if (!pile)
+        throw new Error(`Deal pattern "${pattern.type}" dealt to unknown pile "${pileId}"`);
       const cardId = `card-${card.suit}-${card.rank}`;
       const labelText = faceUp ? (rankLabels[card.rank] ?? '') + card.suit : '';
       const group = this.colorGroupOf.get(card.suit) ?? '';
       const labelColor = this.config?.groupColors?.[group] ?? '#000000';
-      this.createCardEntity(cardId, card.rank, card.suit, faceUp, pileId, pile.length, deckConfig, labelText, labelColor);
+      this.createCardEntity(
+        cardId,
+        card.rank,
+        card.suit,
+        faceUp,
+        pileId,
+        pile.length,
+        deckConfig,
+        labelText,
+        labelColor
+      );
       pile.push(cardId);
     }
   }
@@ -605,7 +678,7 @@ export class CardPileSystem extends BaseSystem {
     posInPile: number,
     deckConfig: DeckConfigData,
     labelText: string,
-    labelColor: string,
+    labelColor: string
   ): void {
     const scene = this.scene!;
     const anchor = this.getPileAnchor(pileId);
@@ -615,21 +688,27 @@ export class CardPileSystem extends BaseSystem {
     const hw = deckConfig.cardWidth / 2;
     const hh = deckConfig.cardHeight / 2;
 
-    scene.addEntity(loadEntity({
-      id: cardId,
-      components: {
-        Transform: {position: {x: anchor.x, y: anchor.y}, rotation: 0, scale: {x: 1, y: 1}},
-        Renderable: {
-          width: deckConfig.cardWidth, height: deckConfig.cardHeight,
-          color: faceUp ? faceUpColor : faceDownColor,
-          zIndex: posInPile, visible: true, borderColor: '#cccccc', borderWidth: 1,
+    scene.addEntity(
+      loadEntity({
+        id: cardId,
+        components: {
+          Transform: {position: {x: anchor.x, y: anchor.y}, rotation: 0, scale: {x: 1, y: 1}},
+          Renderable: {
+            width: deckConfig.cardWidth,
+            height: deckConfig.cardHeight,
+            color: faceUp ? faceUpColor : faceDownColor,
+            zIndex: posInPile,
+            visible: true,
+            borderColor: '#cccccc',
+            borderWidth: 1,
+          },
+          Card: {rank, suit, faceUp, pileId, posInPile},
+          Draggable: {enabled: faceUp},
+          DragGroup: {groupId, groupOrder: posInPile},
+          PileMember: {pileId, posInPile, expanded: faceUp},
         },
-        Card: {rank, suit, faceUp, pileId, posInPile},
-        Draggable: {enabled: faceUp},
-        DragGroup: {groupId, groupOrder: posInPile},
-        PileMember: {pileId, posInPile, expanded: faceUp},
-      },
-    }));
+      })
+    );
 
     const suffixes = deckConfig.labelSuffixes ?? ['tl', 'br'];
     const labelSlots = [
@@ -638,18 +717,35 @@ export class CardPileSystem extends BaseSystem {
     ];
     for (let i = 0; i < suffixes.length && i < labelSlots.length; i++) {
       const slot = labelSlots[i]!;
-      scene.addEntity(loadEntity({
-        id: `${cardId}-label-${suffixes[i]}`,
-        components: {
-          Transform: {position: {x: anchor.x, y: anchor.y}, rotation: slot.rotation, scale: {x: 1, y: 1}},
-          Renderable: {
-            renderType: 'text', width: 0, height: 0,
-            zIndex: posInPile + 1, visible: faceUp,
-            text: labelText, textColor: labelColor, fontSize: 14, textAnchor: 'top-left',
+      scene.addEntity(
+        loadEntity({
+          id: `${cardId}-label-${suffixes[i]}`,
+          components: {
+            Transform: {
+              position: {x: anchor.x, y: anchor.y},
+              rotation: slot.rotation,
+              scale: {x: 1, y: 1},
+            },
+            Renderable: {
+              renderType: 'text',
+              width: 0,
+              height: 0,
+              zIndex: posInPile + 1,
+              visible: faceUp,
+              text: labelText,
+              textColor: labelColor,
+              fontSize: 14,
+              textAnchor: 'top-left',
+            },
+            ChildOf: {
+              parentId: cardId,
+              offsetX: slot.offsetX,
+              offsetY: slot.offsetY,
+              zIndexOffset: 1,
+            },
           },
-          ChildOf: {parentId: cardId, offsetX: slot.offsetX, offsetY: slot.offsetY, zIndexOffset: 1},
-        },
-      }));
+        })
+      );
     }
   }
 }

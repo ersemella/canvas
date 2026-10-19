@@ -232,11 +232,9 @@ function advancePhase(state: ServerPokerGameState): void {
  */
 export function startHand(
   roomPlayers: RoomPlayer[],
-  previous?: ServerPokerGameState | null,
+  previous?: ServerPokerGameState | null
 ): ServerPokerGameState {
-  const players = roomPlayers
-    .filter((p) => p.chips > 0)
-    .sort((a, b) => a.seatIndex - b.seatIndex);
+  const players = roomPlayers.filter((p) => p.chips > 0).sort((a, b) => a.seatIndex - b.seatIndex);
   if (players.length < 2) {
     throw new PokerActionError('At least two players with chips are needed to deal a hand');
   }
@@ -325,7 +323,7 @@ export function startHand(
 export function applyAction(
   state: ServerPokerGameState,
   connectionId: string,
-  action: PokerAction,
+  action: PokerAction
 ): ServerPokerGameState {
   if (state.phase === 'showdown' || state.phase === 'waiting') {
     throw new PokerActionError('The hand is over');

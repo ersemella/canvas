@@ -215,7 +215,9 @@ export class GameRoom implements DurableObject {
 
     // Immediately send `connected` to the new socket and broadcast `playerJoined` to others.
     const players = this.publicPlayers();
-    server.send(json_str<WsServerMessage>(this.connectedMessage(connectionId, playerName, players)));
+    server.send(
+      json_str<WsServerMessage>(this.connectedMessage(connectionId, playerName, players))
+    );
     this.broadcastExcept(connectionId, {type: 'playerJoined', players});
 
     return new Response(null, {status: 101, webSocket: client});
@@ -286,8 +288,8 @@ export class GameRoom implements DurableObject {
     if (!this.meta) return;
     ws.send(
       json_str<WsServerMessage>(
-        this.connectedMessage(att.connectionId, att.playerName, this.publicPlayers()),
-      ),
+        this.connectedMessage(att.connectionId, att.playerName, this.publicPlayers())
+      )
     );
     if (this.meta.status === 'in_progress' && this.gameState) {
       ws.send(
@@ -295,7 +297,7 @@ export class GameRoom implements DurableObject {
           type: 'gameStarted',
           state: gameModule.getPublicState(this.gameState, att.connectionId),
           turnDeadline: this.meta.turnDeadline ?? null,
-        }),
+        })
       );
     }
   }
@@ -303,7 +305,7 @@ export class GameRoom implements DurableObject {
   private async handleStartGame(
     ws: WebSocket,
     att: SocketAttachment,
-    gameModule: ServerSystem,
+    gameModule: ServerSystem
   ): Promise<void> {
     if (!this.meta || this.meta.status === 'in_progress') return;
     if (att.connectionId !== this.meta.hostConnectionId) {
@@ -326,7 +328,7 @@ export class GameRoom implements DurableObject {
     ws: WebSocket,
     att: SocketAttachment,
     gameModule: ServerSystem,
-    payload: unknown,
+    payload: unknown
   ): Promise<void> {
     if (!this.meta || !this.gameState) return;
     const actingId = gameModule.actingConnectionId(this.gameState);
@@ -401,7 +403,7 @@ export class GameRoom implements DurableObject {
   /** Persists the game state, restarts the turn timer, and sends each viewer their view. */
   private async commitGameState(
     gameModule: ServerSystem,
-    type: 'gameStarted' | 'stateUpdate',
+    type: 'gameStarted' | 'stateUpdate'
   ): Promise<void> {
     if (!this.meta) return;
     const state = this.gameState;
@@ -442,14 +444,19 @@ export class GameRoom implements DurableObject {
       // first player to (re)join an empty lobby becomes host.
       const nextHost = this.meta.players.find((p) => live.has(p.name));
       if (nextHost) this.meta.hostConnectionId = nextHost.connectionId;
-      else if (this.meta.status === 'waiting' && !policy.holdLobbySeats) this.meta.hostConnectionId = '';
+      else if (this.meta.status === 'waiting' && !policy.holdLobbySeats)
+        this.meta.hostConnectionId = '';
     }
 
     if (live.size === 0) this.meta.emptySince = Date.now();
 
     // Don't hold the table for a full turn while the acting player is gone.
     if (this.isActing(att.connectionId)) {
-      this.meta.turnDeadline = deadlineAfterDisconnect(policy, this.meta.turnDeadline ?? null, Date.now());
+      this.meta.turnDeadline = deadlineAfterDisconnect(
+        policy,
+        this.meta.turnDeadline ?? null,
+        Date.now()
+      );
     }
 
     await this.state.storage.put('meta', this.meta);
@@ -508,7 +515,7 @@ export class GameRoom implements DurableObject {
   private connectedMessage(
     connectionId: string,
     playerName: string,
-    players: PublicPlayerSummary[],
+    players: PublicPlayerSummary[]
   ): WsServerMessage {
     const seatToken =
       this.policy().seatIdentity === 'token' ? this.meta?.seatTokens?.[playerName] : undefined;

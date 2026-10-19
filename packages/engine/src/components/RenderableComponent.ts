@@ -73,7 +73,8 @@ export class RenderableComponent extends BaseComponent {
         frameHeight: data.frameHeight ?? 32,
       };
       if (data.frame !== undefined) sprite.frame = data.frame;
-      if (data.animation !== undefined) sprite.animation = {...data.animation, frames: [...data.animation.frames]};
+      if (data.animation !== undefined)
+        sprite.animation = {...data.animation, frames: [...data.animation.frames]};
       if (data.pivot !== undefined) sprite.pivot = {...data.pivot};
       if (data.flipX !== undefined) sprite.flipX = data.flipX;
       this.sprite = sprite;

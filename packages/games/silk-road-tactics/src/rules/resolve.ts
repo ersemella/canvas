@@ -45,7 +45,8 @@ export function abilityDamage(
   ranged: boolean
 ): number {
   let d = scaled(base, attacker.power);
-  if (ranged && target.hex && tileAt(map, target.hex) === 'conceal') d = Math.floor(d * (1 - RULES.concealReduction));
+  if (ranged && target.hex && tileAt(map, target.hex) === 'conceal')
+    d = Math.floor(d * (1 - RULES.concealReduction));
   return throughDefence(state, target, d);
 }
 
@@ -67,7 +68,14 @@ export function rawDamage(state: FightState, target: Unit, amount: number): numb
   return Math.floor(amount * (1 + vulnerablePercent(state, target) / 100));
 }
 
-export function hit(ctx: Ctx, attacker: Unit, target: Unit, base: number, ranged: boolean, what: string): void {
+export function hit(
+  ctx: Ctx,
+  attacker: Unit,
+  target: Unit,
+  base: number,
+  ranged: boolean,
+  what: string
+): void {
   if (!target.alive) return;
   const d = abilityDamage(ctx.state, ctx.map, attacker, target, base, ranged);
   applyDamage(ctx, target, d, `${what} hits ${unitName(target)} for ${d}`);
@@ -148,7 +156,12 @@ export function displace(ctx: Ctx, unit: Unit, direction: number, distance: numb
         applyDamage(ctx, unit, d, `${unitName(unit)} slams into ${unitName(other)} for ${d}`);
         applyDamage(ctx, other, d2, `${unitName(other)} takes ${d2} from the collision`);
       } else {
-        applyDamage(ctx, unit, d, `${unitName(unit)} is slammed into ${onMap(ctx.map, next) ? 'ruins' : 'the edge'} for ${d}`);
+        applyDamage(
+          ctx,
+          unit,
+          d,
+          `${unitName(unit)} is slammed into ${onMap(ctx.map, next) ? 'ruins' : 'the edge'} for ${d}`
+        );
       }
       return;
     }

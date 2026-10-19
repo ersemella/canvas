@@ -55,7 +55,8 @@ export function cardXPositions(count: number, layout: CardHandLayout): number[] 
   if (count === 0) return [];
   if (count === 1) return [layout.canvasCenterX];
   const maxStep = layout.cardWidth + layout.cardGap;
-  const span = layout.maxWidth !== undefined ? layout.maxWidth - layout.cardWidth : layout.canvasCenterX * 1.6;
+  const span =
+    layout.maxWidth !== undefined ? layout.maxWidth - layout.cardWidth : layout.canvasCenterX * 1.6;
   const step = Math.min(maxStep, span / (count - 1));
   const totalW = step * (count - 1) + layout.cardWidth;
   const startX = layout.canvasCenterX - totalW / 2 + layout.cardWidth / 2;
@@ -70,7 +71,7 @@ export function renderCardHand(
   hand: HandCard[],
   slots: CardSlot[],
   centerY: number,
-  layout: CardHandLayout,
+  layout: CardHandLayout
 ): void {
   const xs = cardXPositions(hand.length, layout);
   for (let i = 0; i < slots.length; i++) {

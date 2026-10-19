@@ -55,7 +55,8 @@ function trackEntries(fight: FightState, previewSlot: number | null) {
   const entries = fight.units
     .filter((u) => u.alive && u.slot !== null)
     .map((u) => ({unitId: u.id, slot: u.slot!, ghost: false}));
-  if (fight.awaiting && previewSlot !== null) entries.push({unitId: fight.awaiting, slot: previewSlot, ghost: true});
+  if (fight.awaiting && previewSlot !== null)
+    entries.push({unitId: fight.awaiting, slot: previewSlot, ghost: true});
   return entries.sort((a, b) => a.slot - b.slot || Number(a.ghost) - Number(b.ghost));
 }
 
@@ -65,13 +66,25 @@ function trackEntries(fight: FightState, previewSlot: number | null) {
  * the deck it lands. `start` is the slot in front; while spent cards lift
  * away after a turn it lags behind the fight's, and may be fractional.
  */
-export function trackSlots(fight: FightState, previewSlot: number | null, start = fight.currentSlot): TrackSlots {
+export function trackSlots(
+  fight: FightState,
+  previewSlot: number | null,
+  start = fight.currentSlot
+): TrackSlots {
   const entries = trackEntries(fight, previewSlot);
   const last = entries.length > 0 ? entries[entries.length - 1]!.slot : start;
   const count = Math.max(MIN_SLOT_CELLS, last - start + 1);
   const x0 = TRACK_AREA.x + 6;
   const w = (TRACK_AREA.width - 12) / (count - 1 + DECK_CARD_STRIPS);
-  return {start, count, x0, w, cardW: w * DECK_CARD_STRIPS, y: TRACK_AREA.y + 7, h: TRACK_AREA.height - 14};
+  return {
+    start,
+    count,
+    x0,
+    w,
+    cardW: w * DECK_CARD_STRIPS,
+    y: TRACK_AREA.y + 7,
+    h: TRACK_AREA.height - 14,
+  };
 }
 
 /**
@@ -80,7 +93,13 @@ export function trackSlots(fight: FightState, previewSlot: number | null, start 
  */
 export function trackCards(fight: FightState, previewSlot: number | null): TrackCard[] {
   const {start, x0, w, cardW, y, h} = trackSlots(fight, previewSlot);
-  return trackEntries(fight, previewSlot).map((e) => ({...e, x: x0 + (e.slot - start) * w + cardW - w, y, w, h}));
+  return trackEntries(fight, previewSlot).map((e) => ({
+    ...e,
+    x: x0 + (e.slot - start) * w + cardW - w,
+    y,
+    w,
+    h,
+  }));
 }
 
 export function cardAt(cards: TrackCard[], p: {x: number; y: number}): TrackCard | undefined {

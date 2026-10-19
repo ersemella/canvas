@@ -143,7 +143,10 @@ export class RenderSystem extends BaseSystem {
     if (!img) return; // still loading (or failed)
 
     const {frames, fps} = sprite.animation ?? {frames: [], fps: 0};
-    const frame = frames.length > 0 ? frames[Math.floor(this.time * fps) % frames.length]! : (sprite.frame ?? 0);
+    const frame =
+      frames.length > 0
+        ? frames[Math.floor(this.time * fps) % frames.length]!
+        : (sprite.frame ?? 0);
     const perRow = Math.max(1, Math.floor(img.width / sprite.frameWidth));
     const sx = (frame % perRow) * sprite.frameWidth;
     const sy = Math.floor(frame / perRow) * sprite.frameHeight;

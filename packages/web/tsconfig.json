@@ -2,42 +2,22 @@
   "extends": "../../configs/tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "outDir": "dist",
     "baseUrl": "src",
     "resolveJsonModule": true,
     "paths": {
-      "@canvas/engine": [
-        "../../engine/src/index.ts"
-      ],
-      "@canvas/games-snake": [
-        "../../games/snake/src/index.ts"
-      ],
-      "@canvas/games-solitaire": [
-        "../../games/solitaire/src/index.ts"
-      ],
-      "@canvas/games-sudoku": [
-        "../../games/sudoku/src/index.ts"
-      ],
-      "@canvas/games-blackjack": [
-        "../../games/blackjack/src/index.ts"
-      ],
-      "@canvas/games-poker": [
-        "../../games/poker/src/index.ts"
-      ],
-      "@canvas/games-silk-road-tactics": [
-        "../../games/silk-road-tactics/src/index.ts"
-      ]
+      "@canvas/engine": ["../../engine/src/index.ts"],
+      "@canvas/games-snake": ["../../games/snake/src/index.ts"],
+      "@canvas/games-solitaire": ["../../games/solitaire/src/index.ts"],
+      "@canvas/games-sudoku": ["../../games/sudoku/src/index.ts"],
+      "@canvas/games-blackjack": ["../../games/blackjack/src/index.ts"],
+      "@canvas/games-poker": ["../../games/poker/src/index.ts"],
+      "@canvas/games-silk-road-tactics": ["../../games/silk-road-tactics/src/index.ts"]
     }
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "references": [
     {
       "path": "../engine"

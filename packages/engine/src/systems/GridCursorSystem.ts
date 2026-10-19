@@ -24,23 +24,31 @@ export class GridCursorSystem extends BaseSystem {
       let changed = false;
 
       if (inputService.isActionJustPressed('moveUp')) {
-        if (selectedRow === -1) { selectedRow = 0; selectedCol = 0; }
-        else selectedRow = Math.max(0, selectedRow - 1);
+        if (selectedRow === -1) {
+          selectedRow = 0;
+          selectedCol = 0;
+        } else selectedRow = Math.max(0, selectedRow - 1);
         changed = true;
       }
       if (inputService.isActionJustPressed('moveDown')) {
-        if (selectedRow === -1) { selectedRow = 0; selectedCol = 0; }
-        else selectedRow = Math.min(rows - 1, selectedRow + 1);
+        if (selectedRow === -1) {
+          selectedRow = 0;
+          selectedCol = 0;
+        } else selectedRow = Math.min(rows - 1, selectedRow + 1);
         changed = true;
       }
       if (inputService.isActionJustPressed('moveLeft')) {
-        if (selectedCol === -1) { selectedRow = 0; selectedCol = 0; }
-        else selectedCol = Math.max(0, selectedCol - 1);
+        if (selectedCol === -1) {
+          selectedRow = 0;
+          selectedCol = 0;
+        } else selectedCol = Math.max(0, selectedCol - 1);
         changed = true;
       }
       if (inputService.isActionJustPressed('moveRight')) {
-        if (selectedCol === -1) { selectedRow = 0; selectedCol = 0; }
-        else selectedCol = Math.min(cols - 1, selectedCol + 1);
+        if (selectedCol === -1) {
+          selectedRow = 0;
+          selectedCol = 0;
+        } else selectedCol = Math.min(cols - 1, selectedCol + 1);
         changed = true;
       }
 
@@ -57,7 +65,11 @@ export class GridCursorSystem extends BaseSystem {
       if (changed) {
         cursor.data.selectedRow = selectedRow;
         cursor.data.selectedCol = selectedCol;
-        events.emit<GridCursorPayload>('cursor:moved', {entityId: entity.id, row: selectedRow, col: selectedCol});
+        events.emit<GridCursorPayload>('cursor:moved', {
+          entityId: entity.id,
+          row: selectedRow,
+          col: selectedCol,
+        });
       }
     }
   }

@@ -6,7 +6,11 @@ import type {DataComponent} from '../core/Component';
 import type {RenderableComponent} from '../components/RenderableComponent';
 import {inputService} from './InputSystem';
 import type {GridCursorPayload} from './GridCursorSystem';
-import type {GridPuzzleConfigData, GridPuzzleData, PuzzleConstraint} from '../components/GridPuzzleConfigComponent';
+import type {
+  GridPuzzleConfigData,
+  GridPuzzleData,
+  PuzzleConstraint,
+} from '../components/GridPuzzleConfigComponent';
 import {puzzleGenerators} from '../generators/puzzleGenerators';
 import type {ClickPayload} from './ClickSystem';
 
@@ -34,7 +38,8 @@ export class GridPuzzleSystem extends ReactiveSystem {
 
     const configEntity = scene.query({all: ['GridPuzzleConfig']})[0];
     if (!configEntity) return;
-    this.config = configEntity.getComponent<DataComponent<GridPuzzleConfigData>>('GridPuzzleConfig')!.data;
+    this.config =
+      configEntity.getComponent<DataComponent<GridPuzzleConfigData>>('GridPuzzleConfig')!.data;
     const config = this.config;
 
     const puzzleEntity = scene.query({all: ['GridPuzzle']})[0];
@@ -60,8 +65,12 @@ export class GridPuzzleSystem extends ReactiveSystem {
       this.cellBg[row] = [];
       this.cellNum[row] = [];
       for (let col = 0; col < cols; col++) {
-        const bg = scene.getEntity(`${prefix}-${row}-${col}`)?.getComponent<RenderableComponent>('Renderable');
-        const num = scene.getEntity(`${prefix}-${row}-${col}-num`)?.getComponent<RenderableComponent>('Renderable');
+        const bg = scene
+          .getEntity(`${prefix}-${row}-${col}`)
+          ?.getComponent<RenderableComponent>('Renderable');
+        const num = scene
+          .getEntity(`${prefix}-${row}-${col}-num`)
+          ?.getComponent<RenderableComponent>('Renderable');
         if (bg) this.cellBg[row]![col] = bg;
         if (num) {
           this.cellNum[row]![col] = num;
@@ -122,7 +131,11 @@ export class GridPuzzleSystem extends ReactiveSystem {
     const config = this.config;
     const puzzle = this.getPuzzleData();
     if (!config || !puzzle || puzzle.complete || !puzzle.board) return;
-    if (value !== 0 && (value < config.minValue || value > config.maxValue || !Number.isInteger(value))) return;
+    if (
+      value !== 0 &&
+      (value < config.minValue || value > config.maxValue || !Number.isInteger(value))
+    )
+      return;
     const r = puzzle.selectedRow;
     const c = puzzle.selectedCol;
     if (r < 0 || c < 0 || (puzzle.given?.[r]?.[c] ?? 0) !== 0) return;
@@ -188,7 +201,10 @@ export class GridPuzzleSystem extends ReactiveSystem {
       let hasEmpty = false;
       outer: for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          if (puzzle.board[r]![c] === 0) {hasEmpty = true; break outer;}
+          if (puzzle.board[r]![c] === 0) {
+            hasEmpty = true;
+            break outer;
+          }
         }
       }
       if (!hasEmpty && conflicts.size === 0) {
@@ -205,7 +221,11 @@ export class GridPuzzleSystem extends ReactiveSystem {
     return entity.getComponent<DataComponent<GridPuzzleData>>('GridPuzzle')!.data;
   }
 
-  private evaluateConstraints(board: number[][], constraints: PuzzleConstraint[], config: GridPuzzleConfigData): Set<string> {
+  private evaluateConstraints(
+    board: number[][],
+    constraints: PuzzleConstraint[],
+    config: GridPuzzleConfigData
+  ): Set<string> {
     const conflicts = new Set<string>();
     const {rows, cols} = config;
 
@@ -217,7 +237,8 @@ export class GridPuzzleSystem extends ReactiveSystem {
             if (val === 0) continue;
             for (let c2 = 0; c2 < cols; c2++) {
               if (c2 !== col && board[row]![c2] === val) {
-                conflicts.add(`${row},${col}`); conflicts.add(`${row},${c2}`);
+                conflicts.add(`${row},${col}`);
+                conflicts.add(`${row},${c2}`);
               }
             }
           }
@@ -229,7 +250,8 @@ export class GridPuzzleSystem extends ReactiveSystem {
             if (val === 0) continue;
             for (let r2 = 0; r2 < rows; r2++) {
               if (r2 !== row && board[r2]![col] === val) {
-                conflicts.add(`${row},${col}`); conflicts.add(`${r2},${col}`);
+                conflicts.add(`${row},${col}`);
+                conflicts.add(`${r2},${col}`);
               }
             }
           }
@@ -246,7 +268,8 @@ export class GridPuzzleSystem extends ReactiveSystem {
             for (let r2 = br; r2 < br + bRows; r2++) {
               for (let c2 = bc; c2 < bc + bCols; c2++) {
                 if ((r2 !== row || c2 !== col) && board[r2]![c2] === val) {
-                  conflicts.add(`${row},${col}`); conflicts.add(`${r2},${c2}`);
+                  conflicts.add(`${row},${col}`);
+                  conflicts.add(`${r2},${c2}`);
                 }
               }
             }
@@ -258,12 +281,21 @@ export class GridPuzzleSystem extends ReactiveSystem {
     return conflicts;
   }
 
-  private isRelated(row: number, col: number, sr: number, sc: number, config: GridPuzzleConfigData): boolean {
+  private isRelated(
+    row: number,
+    col: number,
+    sr: number,
+    sc: number,
+    config: GridPuzzleConfigData
+  ): boolean {
     if (row === sr || col === sc) return true;
     if (config.boxHighlight) {
       const bRows = config.boxRows ?? 3;
       const bCols = config.boxCols ?? 3;
-      if (Math.floor(row / bRows) === Math.floor(sr / bRows) && Math.floor(col / bCols) === Math.floor(sc / bCols)) {
+      if (
+        Math.floor(row / bRows) === Math.floor(sr / bRows) &&
+        Math.floor(col / bCols) === Math.floor(sc / bCols)
+      ) {
         return true;
       }
     }

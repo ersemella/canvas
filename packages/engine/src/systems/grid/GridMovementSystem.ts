@@ -23,7 +23,9 @@ export class GridMovementSystem extends BaseSystem {
 
   onInit({scene, events}: Omit<SystemContext, 'deltaTime'>): void {
     events.on<{collectorId: string}>('entity:collected', ({collectorId}) => {
-      const gm = scene.getEntity(collectorId)?.getComponent<DataComponent<GridMovementData>>('GridMovement');
+      const gm = scene
+        .getEntity(collectorId)
+        ?.getComponent<DataComponent<GridMovementData>>('GridMovement');
       const speedUp = gm?.data.speedUp;
       if (gm && speedUp) gm.data.speed = Math.min(speedUp.max, gm.data.speed + speedUp.perCollect);
     });

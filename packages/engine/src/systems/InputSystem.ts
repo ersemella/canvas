@@ -37,7 +37,13 @@ class InputServiceImpl {
       start = null;
       if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_MIN_PX) return;
       const code =
-        Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'SwipeRight' : 'SwipeLeft') : dy > 0 ? 'SwipeDown' : 'SwipeUp';
+        Math.abs(dx) > Math.abs(dy)
+          ? dx > 0
+            ? 'SwipeRight'
+            : 'SwipeLeft'
+          : dy > 0
+            ? 'SwipeDown'
+            : 'SwipeUp';
       this.justPressed.add(code);
       this.justReleased.add(code);
     });

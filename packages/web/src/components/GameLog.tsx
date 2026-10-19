@@ -20,15 +20,7 @@ export function GameLog({entries}: Props) {
 
   return (
     <Box className={styles.container!}>
-      <Text
-        fz={12}
-        fw="bold"
-        c="dimmed"
-        tt="uppercase"
-        px="md"
-        py={8}
-        className={styles.label!}
-      >
+      <Text fz={12} fw="bold" c="dimmed" tt="uppercase" px="md" py={8} className={styles.label!}>
         Game Log
       </Text>
       <ScrollArea className={styles.scroll!} p="xs">

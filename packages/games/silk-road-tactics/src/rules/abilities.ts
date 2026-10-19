@@ -3,10 +3,26 @@
  * legal targets from a hex (for validation, previews and the AI) and
  * resolves on the fight state. Values come from config.ts.
  */
-import {hexDirectionTo, hexDistance, hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
+import {
+  hexDirectionTo,
+  hexDistance,
+  hexEquals,
+  hexNeighbor,
+  hexNeighbors,
+  hexesInRange,
+} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES, RULES} from './config';
-import {addStatus, cleanse, hostile, isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
+import {
+  addStatus,
+  cleanse,
+  hostile,
+  isImmobilized,
+  onMap,
+  sortByHex,
+  unitAt,
+  walkable,
+} from './board';
 import {applyHail, enterHex, displace, heal, hit, log, scaled, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
@@ -47,7 +63,12 @@ function adjacentUnits(state: FightState, from: Hex, keep: (u: Unit) => boolean)
     .map((u) => ({hex: u.hex!}));
 }
 
-function hexesWithin(map: MapData, from: Hex, range: number, keep: (h: Hex) => boolean = () => true): ActionTarget[] {
+function hexesWithin(
+  map: MapData,
+  from: Hex,
+  range: number,
+  keep: (h: Hex) => boolean = () => true
+): ActionTarget[] {
   return sortByHex(
     hexesInRange(from, range).filter((h) => onMap(map, h) && keep(h)),
     (h) => h
@@ -125,7 +146,13 @@ const bow: AbilityDef = {
   },
 };
 
-function dashEnd(state: FightState, map: MapData, user: Unit, from: Hex, dir: number): Hex | undefined {
+function dashEnd(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  from: Hex,
+  dir: number
+): Hex | undefined {
   let h = from;
   for (let i = 0; i < ABILITY.dash.distance; i++) {
     h = hexNeighbor(h, dir);
@@ -236,7 +263,11 @@ const gale: AbilityDef = {
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)}'s gale strikes ${unitName(u)}.`);
-    addStatus(u, {kind: 'slowed', value: ABILITY.gale.slowed, untilSlot: ctx.slot + ABILITY.gale.slowedSlots});
+    addStatus(u, {
+      kind: 'slowed',
+      value: ABILITY.gale.slowed,
+      untilSlot: ctx.slot + ABILITY.gale.slowedSlots,
+    });
     displace(ctx, u, direction(user.hex!, u.hex!), ABILITY.gale.displace);
   },
 };
@@ -338,7 +369,9 @@ const rampage: AbilityDef = {
       const victims = ctx.state.units.filter(
         (u) => u.alive && u.hex && !hitAlready.has(u.id) && hexDistance(u.hex, pos) <= 1
       );
-      victims.sort((a, b) => hexDistance(b.hex!, pos) - hexDistance(a.hex!, pos) || unitOrder(a) - unitOrder(b));
+      victims.sort(
+        (a, b) => hexDistance(b.hex!, pos) - hexDistance(a.hex!, pos) || unitOrder(a) - unitOrder(b)
+      );
       for (const u of victims) {
         hitAlready.add(u.id);
         hit(ctx, user, u, ABILITY.rampage.damage, false, 'The Rampage');
@@ -378,18 +411,21 @@ export function abilitiesOf(unit: Unit): AbilityDef[] {
 
 /** Why the unit can't use the ability at all right now, or null if it can. */
 export function unusableReason(unit: Unit, ability: AbilityDef): string | null {
-  if (!HEROES[unit.hero].abilities.includes(ability.id)) return 'That unit doesn’t have that ability.';
+  if (!HEROES[unit.hero].abilities.includes(ability.id))
+    return 'That unit doesn’t have that ability.';
   if (ability.ultimate) {
     if (unit.ultimateUsed) return 'The ultimate has already been used this fight.';
     if (unit.turnsTaken < RULES.ultimateUnlockTurns) {
       return `The ultimate unlocks after ${RULES.ultimateUnlockTurns} turns, not counting Holds without a move (${unit.turnsTaken} so far).`;
     }
   }
-  if (ability.movesSelf && isImmobilized(unit)) return 'An Immobilized unit can’t use an ability that moves it.';
+  if (ability.movesSelf && isImmobilized(unit))
+    return 'An Immobilized unit can’t use an ability that moves it.';
   return null;
 }
 
 export function sameTarget(a: ActionTarget, b: ActionTarget): boolean {
-  const eq = (x?: Hex, y?: Hex) => (x === undefined ? y === undefined : y !== undefined && hexEquals(x, y));
+  const eq = (x?: Hex, y?: Hex) =>
+    x === undefined ? y === undefined : y !== undefined && hexEquals(x, y);
   return eq(a.hex, b.hex) && eq(a.to, b.to);
 }

@@ -30,8 +30,7 @@ function sourceFiles(dir) {
   return out;
 }
 
-const SPECIFIER =
-  /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+|\brequire\s*\(\s*)(['"])([^'"]+)\1/g;
+const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+|\brequire\s*\(\s*)(['"])([^'"]+)\1/g;
 
 function specifiers(file) {
   // Drop comments so examples in docs don't count as imports.
@@ -48,14 +47,14 @@ function staysInside(file, spec, pkgDir) {
 }
 
 const violations = [];
-const report = (file, spec, why) =>
-  violations.push(`${relative(root, file)}: '${spec}' — ${why}`);
+const report = (file, spec, why) => violations.push(`${relative(root, file)}: '${spec}' — ${why}`);
 
 // Engine: nothing from the workspace, and relative imports stay in the engine.
 const engineDir = join(root, 'packages/engine');
 for (const file of sourceFiles(join(engineDir, 'src'))) {
   for (const spec of specifiers(file)) {
-    if (spec.startsWith('@canvas/')) report(file, spec, 'the engine must not import workspace packages');
+    if (spec.startsWith('@canvas/'))
+      report(file, spec, 'the engine must not import workspace packages');
     else if (spec.startsWith('.') && !staysInside(file, spec, engineDir))
       report(file, spec, 'relative import leaves the engine package');
   }
@@ -76,9 +75,11 @@ for (const game of readdirSync(gamesDir)) {
     for (const file of files) {
       for (const spec of specifiers(file)) {
         if (spec.startsWith('.')) {
-          if (!staysInside(file, spec, gameDir)) report(file, spec, 'relative import leaves the game package');
+          if (!staysInside(file, spec, gameDir))
+            report(file, spec, 'relative import leaves the game package');
         } else if (spec.startsWith('@canvas/engine')) {
-          if (!ENGINE_PUBLIC.has(spec)) report(file, spec, 'deep engine import; use @canvas/engine');
+          if (!ENGINE_PUBLIC.has(spec))
+            report(file, spec, 'deep engine import; use @canvas/engine');
         } else if (spec.startsWith('@canvas/')) {
           report(file, spec, 'games may import only @canvas/engine');
         }

@@ -264,7 +264,10 @@ export function offsetRectangle(
 // ─── Pixels ──────────────────────────────────────────────────────────────────
 
 /** Width and height of one hex in pixels for a centre-to-vertex `size`. */
-export function hexDimensions(orientation: HexOrientation, size: number): {width: number; height: number} {
+export function hexDimensions(
+  orientation: HexOrientation,
+  size: number
+): {width: number; height: number} {
   return orientation === 'pointy'
     ? {width: SQRT3 * size, height: 2 * size}
     : {width: 2 * size, height: SQRT3 * size};

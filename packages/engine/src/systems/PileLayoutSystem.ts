@@ -29,7 +29,11 @@ export class PileLayoutSystem extends ReactiveSystem {
     const layoutEntities = this.scene.query({all: ['PileLayout', 'Transform']});
     const memberEntities = this.scene.query({all: ['PileMember', 'Transform', 'Renderable']});
 
-    type MemberEntry = {transform: TransformComponent; renderable: RenderableComponent; data: PileMemberData};
+    type MemberEntry = {
+      transform: TransformComponent;
+      renderable: RenderableComponent;
+      data: PileMemberData;
+    };
     const piles = new Map<string, MemberEntry[]>();
     for (const entity of memberEntities) {
       const member = entity.getComponent<DataComponent<PileMemberData>>('PileMember')!;
@@ -74,7 +78,11 @@ export class PileLayoutSystem extends ReactiveSystem {
 
     // Group PileMember entities by pileId
     const memberEntities = this.scene.query({all: ['PileMember', 'Transform', 'Renderable']});
-    type MemberEntry = {transform: TransformComponent; renderable: RenderableComponent; data: PileMemberData};
+    type MemberEntry = {
+      transform: TransformComponent;
+      renderable: RenderableComponent;
+      data: PileMemberData;
+    };
     const piles = new Map<string, MemberEntry[]>();
 
     for (const entity of memberEntities) {

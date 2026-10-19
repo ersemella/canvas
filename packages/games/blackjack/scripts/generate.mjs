@@ -276,7 +276,8 @@ entities.push({
 const manifest = {
   meta: {
     title: 'Blackjack',
-    description: 'Single-player Blackjack against the house — split, double, insurance and surrender. Start with $1,000, min bet $10.',
+    description:
+      'Single-player Blackjack against the house — split, double, insurance and surrender. Start with $1,000, min bet $10.',
   },
   canvas: {width: W, height: H},
   systems: ['MouseSystem', 'ClickSystem', 'BlackjackSystem'],

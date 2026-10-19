@@ -1,9 +1,6 @@
 import {registerDataComponent} from '../core/Component';
 
-export type TargetMatch =
-  | {prefix: string}
-  | {ids: string[]}
-  | {tag: string};
+export type TargetMatch = {prefix: string} | {ids: string[]} | {tag: string};
 
 export type DropCondition =
   | {type: 'sameSuit'}

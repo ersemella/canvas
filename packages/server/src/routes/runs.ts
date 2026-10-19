@@ -18,7 +18,8 @@ import {runSystemRegistry} from '../games/registry';
  */
 export async function handleRunsRoute(request: Request, env: Env, url: URL): Promise<Response> {
   const owner = await playerKeyHash(request);
-  if (!owner) return json({error: 'no_player_key', message: 'Missing or malformed player key.'}, 401);
+  if (!owner)
+    return json({error: 'no_player_key', message: 'Missing or malformed player key.'}, 401);
 
   if (url.pathname === '/runs' && request.method === 'POST') return startRun(request, env, owner);
   if (url.pathname === '/runs/active' && request.method === 'GET') {
@@ -34,11 +35,13 @@ export async function handleRunsRoute(request: Request, env: Env, url: URL): Pro
   if (request.method === 'GET' && sub === '') return room.fetch('https://do/view', {headers});
   if (request.method === 'POST' && (sub === '/deploy' || sub === '/turn')) {
     const body = await readBody(request);
-    if (body === undefined) return json({error: 'bad_request', message: 'Malformed request body.'}, 400);
+    if (body === undefined)
+      return json({error: 'bad_request', message: 'Malformed request body.'}, 400);
     const action = {...(body as object), type: sub === '/deploy' ? 'deploy' : 'turn'};
     return room.fetch('https://do/action', {method: 'POST', headers, body: JSON.stringify(action)});
   }
-  if (request.method === 'POST' && sub === '/abandon') return room.fetch('https://do/abandon', {method: 'POST', headers});
+  if (request.method === 'POST' && sub === '/abandon')
+    return room.fetch('https://do/abandon', {method: 'POST', headers});
   return json({error: 'not_found'}, 404);
 }
 
@@ -48,12 +51,16 @@ async function startRun(request: Request, env: Env, owner: string): Promise<Resp
     const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
     const {success} = await env.ROOM_CREATE_LIMITER.limit({key: `runs:${ip}`});
     if (!success) {
-      return json({error: 'too_many_runs', message: 'Too many runs started — try again in a minute'}, 429);
+      return json(
+        {error: 'too_many_runs', message: 'Too many runs started — try again in a minute'},
+        429
+      );
     }
   }
   const body = ((await readBody(request)) ?? {}) as {game?: unknown};
   const game = typeof body.game === 'string' ? body.game : '';
-  if (!runSystemRegistry.has(game)) return json({error: 'unknown_game', message: 'Unknown game.'}, 400);
+  if (!runSystemRegistry.has(game))
+    return json({error: 'unknown_game', message: 'Unknown game.'}, 400);
 
   for (let attempt = 0; attempt < 5; attempt++) {
     const runId = randomId();
@@ -67,10 +74,16 @@ async function startRun(request: Request, env: Env, owner: string): Promise<Resp
     const run = (await init.json()) as RunResponse;
 
     // One active run per key (D3): the previous one is abandoned.
-    const started = await ledger(env, owner).fetch('https://do/start', {method: 'POST', body: JSON.stringify({runId})});
+    const started = await ledger(env, owner).fetch('https://do/start', {
+      method: 'POST',
+      body: JSON.stringify({runId}),
+    });
     const {previousRunId} = (await started.json()) as {previousRunId: string | null};
     if (previousRunId && previousRunId !== runId) {
-      await runRoom(env, previousRunId).fetch('https://do/abandon', {method: 'POST', headers: {'X-Owner': owner}});
+      await runRoom(env, previousRunId).fetch('https://do/abandon', {
+        method: 'POST',
+        headers: {'X-Owner': owner},
+      });
     }
     return json(run, 201);
   }
@@ -106,5 +119,8 @@ function randomId(): string {
 }
 
 function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {status, headers: {'Content-Type': 'application/json'}});
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {'Content-Type': 'application/json'},
+  });
 }

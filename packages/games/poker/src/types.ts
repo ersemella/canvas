@@ -7,14 +7,14 @@ export interface Card {
 }
 
 export interface Player {
-  id: number;         // 0 = hero
+  id: number; // 0 = hero
   name: string;
   chips: number;
   holeCards: [Card, Card] | null;
   currentBet: number; // bet amount this round
   folded: boolean;
   allIn: boolean;
-  hasActed: boolean;  // acted this betting round
+  hasActed: boolean; // acted this betting round
   isDealer: boolean;
   isSB: boolean;
   isBB: boolean;
@@ -32,8 +32,8 @@ export interface PokerGameState {
   deck: Card[];
   communityCards: Card[];
   pot: number;
-  currentBet: number;   // highest bet this round
-  actingIndex: number;  // whose turn
+  currentBet: number; // highest bet this round
+  actingIndex: number; // whose turn
   dealerIndex: number;
   handNumber: number;
   log: LogEntry[];
