@@ -284,6 +284,16 @@ export function TacticsPage() {
     [fight, acting, plannedMove]
   );
 
+  /**
+   * The slots the planned move adds to the turn, with the chosen action (or
+   * Hold, which ends a turn with no action): its own cost in slots.
+   */
+  const moveSlots = useMemo(() => {
+    if (!acting || !plannedMove || plannedMove.path.length === 0) return null;
+    const cost = ABILITIES[ability ?? 'hold'].cost;
+    return slotsForward(turnCost(cost, plannedMove.path.length), acting.speed) - slotsForward(cost, acting.speed);
+  }, [acting, plannedMove, ability]);
+
   /** The same turn in the other order, if it's legal: Swap order offers it. */
   const canSwap = useMemo(() => {
     if (!fight || !acting || !input?.move || endsWithHold) return false;
@@ -559,6 +569,7 @@ export function TacticsPage() {
       <TurnControls
         compact={compact}
         slotsLater={slotsLater}
+        moveSlots={moveSlots}
         unit={acting}
         ability={ability}
         plannedMove={plannedMove}
@@ -659,6 +670,8 @@ function TurnControls(props: {
   compact: boolean;
   /** How many slots after now the next turn comes for an action of this cost, with the planned move. */
   slotsLater: (actionCost: number) => number;
+  /** Phones: what the planned move adds, in slots, shown in the Move button. */
+  moveSlots: number | null;
   unit: Unit;
   ability: AbilityId | null;
   plannedMove: Reach | null;
@@ -751,6 +764,7 @@ function TurnControls(props: {
             onClick={props.onMove}
           >
             Move
+            {compact && props.moveSlots !== null && <span className={styles.abilityCost}>+{props.moveSlots}</span>}
           </Button>
           {abilitiesOf(unit)
             // Phones end the turn from Confirm instead of a Hold button.

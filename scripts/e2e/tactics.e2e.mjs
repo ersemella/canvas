@@ -290,6 +290,18 @@ try {
   await sleep(200);
   const backTo = await phoneSheet.textContent();
   check('phone: tapping away shows the acting unit again', backTo.includes('Mangudai Outrider') && backTo.includes('yours'), backTo.slice(0, 60));
+  // A planned move shows what it adds, in slots, inside the Move button.
+  {
+    await phoneMove.click();
+    const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), {q: 0, r: 3}); // col 1, row 3: free sand
+    const box = await phone.locator('canvas').boundingBox();
+    await phone.tap('canvas', {position: {x: (x * box.width) / 600, y: (y * box.height) / 460}});
+    await sleep(250);
+    const planned = phone.getByRole('button', {name: /^Move/});
+    check('phone: a planned move shows its slots in the Move button', /^Move\+\d+$/.test(await planned.textContent()), await planned.textContent());
+    await planned.click(); // undo it
+    check('phone: undoing the move clears them', (await planned.textContent()) === 'Move');
+  }
   // No Hold button: with nothing picked, the big button ends the turn.
   check('phone: no Hold button', !(await phone.getByRole('button', {name: /^Hold/}).count()));
   check('phone: with nothing picked, the button ends the turn', /^End turn · next turn \+\d+$/.test(await phone.getByRole('button', {name: /^End turn/}).textContent()));

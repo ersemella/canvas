@@ -386,7 +386,9 @@ confirm or change:
   left and each later one tucked behind, with no numbers; the planned
   turn's landing card is dashed; each
   ability button shows how many slots later the next turn would come
-  (yielding included), and the button reads "Confirm · next turn +8".
+  (yielding included), a planned move shows what it adds in the Move
+  button ("Move +2", with the chosen action or Hold), and the button reads
+  "Confirm · next turn +8".
   Now is on the left, in reading order.
 - **The track is on the canvas** (owner, 2026-10-19), above the board, as
   a row of cards in turn order like Mana Khemia's rather than section 9's
