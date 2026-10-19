@@ -396,6 +396,11 @@ confirm or change:
   unit and health, a dashed card shows where the planned turn lands, and
   tapping a card shows its unit's sheet. Every unit has one card, so all
   of them fit.
+- **Units on the board** (owner, 2026-10-19): a unit's whole hex is
+  tinted with its side's colour (blue yours, red the enemy's) inside a
+  hex border of that colour, instead of a coloured ring round its circle;
+  the border is yellow on the unit whose turn it is and white on the one
+  selected. The tint sits under move and target highlights.
 - **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
   Inspect mode (for touch), shows its tile's rule, any hail, and the unit
   there: stats, every ability with its cost, where it could move this

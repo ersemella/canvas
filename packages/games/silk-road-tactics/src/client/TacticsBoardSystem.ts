@@ -36,6 +36,8 @@ export interface BoardScene {
 }
 
 const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
+/** The tint over the whole hex a unit stands on: its side's colour. */
+const SIDE_TINT = {player: 'rgba(59,130,246,0.38)', enemy: 'rgba(239,68,68,0.38)'};
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
 const SHORT_NAME = {bokh: 'Bökh', mangudai: 'Mangudai', storm: 'Storm'};
 interface HighlightStyle {
@@ -91,6 +93,16 @@ export class TacticsBoardSystem extends BaseSystem {
       drawTileMark(ctx, center({q: q!, r: r!}), tile);
     }
     for (const effect of fight.effects) drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1);
+    // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
+    const previewedTo = new Map(this.scene.preview.map((p) => [p.unitId, p]));
+    for (const u of fight.units) {
+      const hex = this.scene.positions?.[u.id] ?? u.hex;
+      if (!u.alive || !hex) continue;
+      const p = previewedTo.get(u.id);
+      const moved = Boolean(p?.to && hexKey(p.to) !== hexKey(hex));
+      tintHex(ctx, hex, SIDE_TINT[u.side], moved || p?.killed ? 0.4 : 1);
+      if (p?.to && moved && !p.killed) tintHex(ctx, p.to, SIDE_TINT[u.side], 0.7);
+    }
     for (const h of this.scene.highlights) fillHex(ctx, h.hex, HIGHLIGHT[h.kind]);
     for (const a of this.scene.arrows ?? []) drawArrow(ctx, a.from, a.to, a.hits);
     for (const u of fight.units) if (u.alive && u.charging) drawCharge(ctx, u);
@@ -157,6 +169,15 @@ function fillHex(ctx: CanvasRenderingContext2D, h: Hex, style: HighlightStyle): 
   ctx.strokeStyle = style.stroke;
   ctx.lineWidth = 2;
   ctx.stroke();
+  ctx.restore();
+}
+
+function tintHex(ctx: CanvasRenderingContext2D, h: Hex, color: string, alpha: number): void {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  hexPath(ctx, h, 1);
+  ctx.fillStyle = color;
+  ctx.fill();
   ctx.restore();
 }
 
@@ -514,22 +535,21 @@ function drawUnit(
   const c = center(hex);
   ctx.save();
   ctx.globalAlpha = opts.faded ? 0.35 : opts.ghost ? 0.85 : 1;
-  if (opts.acting || opts.selected) {
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, 19, 0, Math.PI * 2);
-    ctx.strokeStyle = opts.acting ? '#fde047' : '#ffffff';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-  }
+  // The hex's border: yellow on the unit whose turn it is, white when
+  // selected, otherwise its side's colour (the hex is tinted to match).
+  hexPath(ctx, hex, 2.5);
+  if (opts.ghost) ctx.setLineDash([5, 4]);
+  ctx.strokeStyle = opts.acting ? '#fde047' : opts.selected ? '#ffffff' : SIDE_COLOR[u.side];
+  ctx.lineWidth = opts.acting || opts.selected ? 3.5 : 3;
+  ctx.stroke();
+  ctx.setLineDash([]);
   ctx.beginPath();
   ctx.arc(c.x, c.y, 15, 0, Math.PI * 2);
   ctx.fillStyle = HERO_COLOR[u.hero];
   ctx.fill();
-  if (opts.ghost) ctx.setLineDash([4, 3]);
-  ctx.strokeStyle = SIDE_COLOR[u.side];
-  ctx.lineWidth = 3.5;
+  ctx.strokeStyle = 'rgba(17,24,39,0.8)';
+  ctx.lineWidth = 1.5;
   ctx.stroke();
-  ctx.setLineDash([]);
   label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, '#ffffff', 15, true);
 
   // Health bar.
