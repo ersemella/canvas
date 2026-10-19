@@ -100,10 +100,15 @@ export interface Reach {
   path: Hex[];
 }
 
+/** Entering this hex hurts: quicksand or hail. */
+function harmful(state: FightState, map: MapData, h: Hex): boolean {
+  return tileAt(map, h) === 'hazard' || state.effects.some((e) => hexEquals(e.hex, h));
+}
+
 /**
  * Every hex the unit can end its move on, with the shortest path to it
- * (fewest quicksand hexes among equally short ones), the start included
- * with an empty path. Allies can be passed, enemies and obstacles can't;
+ * (fewest quicksand or hail hexes among equally short ones), the start
+ * included with an empty path. Allies can be passed, enemies and obstacles can't;
  * a move can't end on another unit (brief section 2).
  */
 export function reachableHexes(state: FightState, map: MapData, unit: Unit): Reach[] {
@@ -121,7 +126,7 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
         const other = unitAt(state, h);
         if (other && other !== unit && hostile(other, unit)) continue;
         const key = hexKey(h);
-        const hazards = fromBest.hazards + (tileAt(map, h) === 'hazard' ? 1 : 0);
+        const hazards = fromBest.hazards + (harmful(state, map, h) ? 1 : 0);
         const seen = best.get(key);
         // Only improve within the same step count (BFS layers).
         if (seen && (seen.path.length < step + 1 || seen.hazards <= hazards)) continue;
