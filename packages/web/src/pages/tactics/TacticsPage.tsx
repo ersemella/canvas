@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore} from 'react';
 import {Link} from 'react-router-dom';
 import {Alert, Badge, Box, Button, Center, Group, Loader, Paper, Stack, Text, Title} from '@mantine/core';
 import {hexDistance, hexEquals, hexKey, hexToPixel, hexesInRange, registerBuiltinComponents, registerBuiltinSystems} from '@canvas/engine';
@@ -54,6 +54,20 @@ const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
   hail: 0,
 };
 
+/** The CSS module's phone breakpoint. */
+const PHONE_QUERY = '(max-width: 960px)';
+
+function useMediaQuery(query: string): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const list = window.matchMedia(query);
+      list.addEventListener('change', onChange);
+      return () => list.removeEventListener('change', onChange);
+    },
+    () => window.matchMedia(query).matches
+  );
+}
+
 /**
  * Silk Road Tactics: one fight against the AI (Phase 1). The run lives on
  * the server (a RunRoom); this page draws its view, previews turns with the
@@ -83,6 +97,8 @@ export function TacticsPage() {
   /** The hex last tapped to inspect (touch can't hover). */
   const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
   const [hover, setHover] = useState<TacticsHoverPayload>({hex: null, unitId: null});
+  /** Phone widths (the CSS breakpoint): a pared-down action section pinned below the details. */
+  const compact = useMediaQuery(PHONE_QUERY);
   const eventsRef = useRef<EventBus | null>(null);
   const [worldReady, setWorldReady] = useState(0);
 
@@ -476,6 +492,73 @@ export function TacticsPage() {
   const finished = fight.phase === 'won' || fight.phase === 'lost';
   const selected = fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
 
+  // The action section (deployment or the turn) and the detail section
+  // (what's tapped or hovered). Phones put details first under the board and
+  // pin the actions to the bottom of the screen.
+  const actions = fight.phase === 'deploy' ? (
+    <Paper bg="dark.7" p="sm" radius="md">
+      <Stack gap="xs">
+        <Text fw={600}>Deploy your heroes</Text>
+        <Text fz="sm" c="dimmed">
+          Tap a hero, then a hex in the blue zone, to move it. The enemy's band is already in place.
+        </Text>
+        <Button
+          color="yellow"
+          c="dark.9"
+          fw="bold"
+          loading={busy}
+          onClick={() =>
+            void send(() =>
+              runsApi.deploy(run.runId, {
+                placements: Object.entries(deployAt).map(([unitId, hex]) => ({unitId, hex})),
+              })
+            )
+          }
+        >
+          Start the fight
+        </Button>
+      </Stack>
+    </Paper>
+  ) : (
+    acting &&
+    !finished && (
+      <TurnControls
+        compact={compact}
+        unit={acting}
+        ability={ability}
+        plannedMove={plannedMove}
+        actFirst={actFirst}
+        actionReady={action !== null}
+        targetName={targetName}
+        canSwap={canSwap}
+        onSwap={() => setActFirst(!actFirst)}
+        moving={moving}
+        canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
+        onMove={toggleMove}
+        onAbility={chooseAbility}
+      >
+        {ability && (
+          <TurnPreviewBox
+            compact={compact}
+            fight={fight}
+            actingId={acting.id}
+            ability={ability}
+            preview={preview}
+            cost={turnCost(ABILITIES[ability].cost, plannedMove?.path.length ?? 0)}
+            needsTarget={!input}
+            busy={busy}
+            onConfirm={() => commit()}
+          />
+        )}
+      </TurnControls>
+    )
+  );
+  const details = inspectHex ? (
+    <HexInspector fight={fight} hex={inspectHex} positions={fight.phase === 'deploy' ? deployAt : undefined} compact={compact} />
+  ) : (
+    selected && <StatSheet fight={fight} unit={selected} compact={compact} />
+  );
+
   return (
     <Stack align="center" py="md" gap="sm" px="md">
       {header}
@@ -512,66 +595,18 @@ export function TacticsPage() {
               {error}
             </Alert>
           )}
-          {fight.phase === 'deploy' ? (
-            <Paper bg="dark.7" p="sm" radius="md">
-              <Stack gap="xs">
-                <Text fw={600}>Deploy your heroes</Text>
-                <Text fz="sm" c="dimmed">
-                  Tap a hero, then a hex in the blue zone, to move it. The enemy's band is already in place.
-                </Text>
-                <Button
-                  color="yellow"
-                  c="dark.9"
-                  fw="bold"
-                  loading={busy}
-                  onClick={() =>
-                    void send(() =>
-                      runsApi.deploy(run.runId, {
-                        placements: Object.entries(deployAt).map(([unitId, hex]) => ({unitId, hex})),
-                      })
-                    )
-                  }
-                >
-                  Start the fight
-                </Button>
-              </Stack>
-            </Paper>
+          {compact ? (
+            <>
+              <section className={styles.details} aria-label="Details">
+                {details}
+              </section>
+              {actions && <section className={styles.actionBar}>{actions}</section>}
+            </>
           ) : (
-            acting &&
-            !finished && (
-              <TurnControls
-                unit={acting}
-                ability={ability}
-                plannedMove={plannedMove}
-                actFirst={actFirst}
-                actionReady={action !== null}
-                targetName={targetName}
-                canSwap={canSwap}
-                onSwap={() => setActFirst(!actFirst)}
-                moving={moving}
-                canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
-                onMove={toggleMove}
-                onAbility={chooseAbility}
-              >
-                {ability && (
-                  <TurnPreviewBox
-                    fight={fight}
-                    actingId={acting.id}
-                    ability={ability}
-                    preview={preview}
-                    cost={turnCost(ABILITIES[ability].cost, plannedMove?.path.length ?? 0)}
-                    needsTarget={!input}
-                    busy={busy}
-                    onConfirm={() => commit()}
-                  />
-                )}
-              </TurnControls>
-            )
-          )}
-          {inspectHex ? (
-            <HexInspector fight={fight} hex={inspectHex} positions={fight.phase === 'deploy' ? deployAt : undefined} />
-          ) : (
-            selected && <StatSheet fight={fight} unit={selected} />
+            <>
+              {actions}
+              {details}
+            </>
           )}
         </div>
       </div>
@@ -580,6 +615,8 @@ export function TacticsPage() {
 }
 
 function TurnControls(props: {
+  /** Phones: no heading or hints, steps named only, no costs or summaries. */
+  compact: boolean;
   unit: Unit;
   ability: AbilityId | null;
   plannedMove: Reach | null;
@@ -601,14 +638,17 @@ function TurnControls(props: {
   const hexes = plannedMove?.path.length ?? 0;
   const moveText = hexes > 0 ? `move ${hexes} hex${hexes > 1 ? 'es' : ''}` : null;
   const actionText = ability ? ABILITIES[ability].name : null;
-  const moveStep = moving ? 'Move: tap a highlighted hex' : moveText ? `M${moveText.slice(1)}` : null;
+  const {compact} = props;
+  const moveStep = compact ? (moving || moveText ? 'Move' : null) : moving ? 'Move: tap a highlighted hex' : moveText ? `M${moveText.slice(1)}` : null;
   const actionStep = actionText
-    ? props.actionReady
+    ? compact
+      ? actionText
+      : props.actionReady
       ? `${actionText}${props.targetName ? ` → ${props.targetName}` : ''}`
       : `${actionText}: tap a target`
     : null;
   const steps = (props.actFirst ? [actionStep, moveStep] : [moveStep, actionStep]).filter((x): x is string => x !== null);
-  const hint = moving
+  const hint = moving || compact
     ? null
     : !actionText
       ? moveText
@@ -620,17 +660,19 @@ function TurnControls(props: {
           ? 'Pick Move now to move first.'
           : null;
   return (
-    <Paper bg="dark.7" p="sm" radius="md">
-      <Stack gap={6}>
-        <Group justify="space-between">
-          <Text fw={600}>Your turn: {HEROES[unit.hero].name}</Text>
-          <Badge color="yellow" variant="light">
-            slot {unit.slot}
-          </Badge>
-        </Group>
+    <Paper bg={compact ? 'transparent' : 'dark.7'} p={compact ? 0 : 'sm'} radius="md">
+      <Stack gap={compact ? 8 : 6}>
+        {!compact && (
+          <Group justify="space-between">
+            <Text fw={600}>Your turn: {HEROES[unit.hero].name}</Text>
+            <Badge color="yellow" variant="light">
+              slot {unit.slot}
+            </Badge>
+          </Group>
+        )}
         {steps.length > 0 && (
           <Group gap="xs" justify="space-between" wrap="nowrap">
-            <ol className={styles.steps} data-testid="turn-steps">
+            <ol className={compact ? `${styles.steps} ${styles.stepsInline}` : styles.steps} data-testid="turn-steps">
               {steps.map((step, i) => (
                 <li key={step}>
                   <span className={styles.stepNo}>{i + 1}</span>
@@ -652,7 +694,7 @@ function TurnControls(props: {
         )}
         <div className={styles.abilities}>
           <Button
-            size="xs"
+            size={compact ? 'compact-sm' : 'xs'}
             variant={moving || plannedMove ? 'filled' : 'light'}
             color="teal"
             disabled={!props.canMove}
@@ -674,7 +716,7 @@ function TurnControls(props: {
             return (
               <Button
                 key={def.id}
-                size="xs"
+                size={compact ? 'compact-sm' : 'xs'}
                 variant={ability === def.id ? 'filled' : 'light'}
                 color={def.ultimate ? 'grape' : 'blue'}
                 disabled={reason !== null}
@@ -683,12 +725,12 @@ function TurnControls(props: {
               >
                 {def.name}
                 {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
-                <span className={styles.abilityCost}>{def.cost}</span>
+                {!compact && <span className={styles.abilityCost}>{def.cost}</span>}
               </Button>
             );
           })}
         </div>
-        {ability && (
+        {ability && !compact && (
           <Text fz="xs" c="dimmed">
             {ABILITIES[ability].summary}
             {ability === 'bow' ? ' Dashed lanes miss.' : ''}

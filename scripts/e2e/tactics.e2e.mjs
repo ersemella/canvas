@@ -243,14 +243,40 @@ try {
   await shot(page, 'end');
   check('no page errors', pageErrors.length === 0, pageErrors);
 
-  // A phone: board on top, panels below, no sideways scroll.
+  // A phone: board on top, details below, the action section pinned to the
+  // bottom of the screen; no heading or hints; no sideways scroll.
   const phone = await browser.newPage({...devices['iPhone 13']});
   await phone.goto(`${WEB_URL}/play/silk-road-tactics`);
   await phone.getByRole('button', {name: 'Start a fight'}).click();
   await phone.getByRole('button', {name: 'Start the fight'}).click();
-  await phone.getByText(/^Your turn:/).waitFor({timeout: 15_000});
+  const phoneMove = phone.getByRole('button', {name: 'Move', exact: true});
+  await phoneMove.waitFor({timeout: 15_000});
+  await phone.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {timeout: 15_000});
   await sleep(300);
-  await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png'), fullPage: true});
+  check('phone: no turn heading or hints', !(await phone.getByText(/^Your turn:|Tap a hex to look/).count()));
+  const inViewport = (locator) =>
+    locator.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return r.top >= 0 && r.bottom <= window.innerHeight + 1;
+    });
+  // Tap an enemy: its details show right under the board, the actions stay on screen.
+  const phoneFight = await phone.evaluate(() => window.__tactics.run.view.fight);
+  const foe = phoneFight.units.find((u) => u.side === 'enemy' && u.alive).hex;
+  {
+    const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), foe);
+    const box = await phone.locator('canvas').boundingBox();
+    await phone.tap('canvas', {position: {x: (x * box.width) / 600, y: (y * box.height) / 460}});
+    await sleep(300);
+  }
+  const phoneSheet = phone.getByTestId('stat-sheet');
+  check('phone: tapping an enemy shows its details', (await phoneSheet.textContent()).includes('enemy'));
+  check('phone: the details start on screen', await phoneSheet.evaluate((el) => el.getBoundingClientRect().top < window.innerHeight));
+  check('phone: the action section stays on screen', await inViewport(phoneMove));
+  await phone.getByRole('button', {name: /^Hold/}).click();
+  check('phone: Confirm is the only text in the action section', /^Confirm · cost 60 → slot \d+$/.test(await phone.getByRole('button', {name: /^Confirm/}).textContent()));
+  check('phone: steps name only the action', (await phone.getByTestId('turn-steps').textContent()) === '1Hold');
+  await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});
+  await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-full.png'), fullPage: true});
   const overflow = await phone.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   check('phone: no sideways scroll', overflow <= 1, overflow);
   await abandonOn(phone);

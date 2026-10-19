@@ -359,6 +359,13 @@ confirm or change:
   per turn, not split around the action (section 2).
   The Confirm button shows the turn's total cost and the slot the card
   lands on.
+- **Phones** (≤ 960px, owner, 2026-10-19; desktop to follow): under the
+  board, the **detail section** (what's tapped) comes first, and the
+  **action section** is pinned to the bottom of the screen, set off by a
+  yellow rule. The action section has no heading, hints, slot pill,
+  ability costs or summaries: just the numbered steps (named only: "1
+  Composite Bow, 2 Move"), Swap order, the buttons, and Confirm with the
+  total cost and landing slot. The board shows the preview's outcome.
 - **The track is on the canvas** (owner, 2026-10-19), above the board, as
   a row of cards in turn order like Mana Khemia's rather than section 9's
   window of slots in the side panel: each card shows its slot number,

@@ -26,6 +26,8 @@ const nameOf = (fight: FightState, id: string) => unitName(fight.units.find((u) 
 
 /** The previewed outcome of the planned turn, with full numbers (7.2). */
 export function TurnPreviewBox(props: {
+  /** Phones: only the Confirm button; the board shows the outcome. */
+  compact: boolean;
   fight: FightState;
   actingId: string;
   ability: AbilityId;
@@ -37,6 +39,14 @@ export function TurnPreviewBox(props: {
   onConfirm: () => void;
 }) {
   const {fight, preview} = props;
+  if (props.compact) {
+    if (props.needsTarget) return null;
+    return (
+      <Button color="yellow" c="dark.9" fw="bold" size="sm" loading={props.busy} disabled={!preview} onClick={props.onConfirm}>
+        {preview ? `Confirm · cost ${props.cost} → slot ${preview.slot}` : 'Can’t do that'}
+      </Button>
+    );
+  }
   if (props.needsTarget) {
     return (
       <Text fz="sm" c="yellow.3">
@@ -77,7 +87,17 @@ export function TurnPreviewBox(props: {
 }
 
 /** What's on a hex: its tile's rule, any hail, and the unit standing there (D11). */
-export function HexInspector({fight, hex, positions}: {fight: FightState; hex: Hex; positions?: Record<string, Hex> | undefined}) {
+export function HexInspector({
+  fight,
+  hex,
+  positions,
+  compact = false,
+}: {
+  fight: FightState;
+  hex: Hex;
+  positions?: Record<string, Hex> | undefined;
+  compact?: boolean;
+}) {
   const tile = tileAt(mapOf(fight), hex);
   const info = TILE_INFO[tile];
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
@@ -102,13 +122,13 @@ export function HexInspector({fight, hex, positions}: {fight: FightState; hex: H
           )}
         </Paper>
       )}
-      {unit && <StatSheet fight={fight} unit={unit} />}
+      {unit && <StatSheet fight={fight} unit={unit} compact={compact} />}
     </Stack>
   );
 }
 
 /** Every unit's stat sheet, enemies' included: its abilities, and for an enemy what it could do (D11). */
-export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
+export function StatSheet({fight, unit, compact = false}: {fight: FightState; unit: Unit; compact?: boolean}) {
   const options = useMemo(
     () => (unit.side === 'enemy' && unit.alive && unit.hex && fight.phase === 'fight' ? unitOptions(fight, unit) : []),
     [fight, unit]
@@ -167,7 +187,7 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
       )}
       <Stack gap={2} mt={6}>
         <Text fz="xs" fw={600}>
-          Abilities (cost ÷ (speed {unit.speed} + {RULES.C}) = slots):
+          {compact ? 'Abilities' : `Abilities (cost ÷ (speed ${unit.speed} + ${RULES.C}) = slots):`}
         </Text>
         {abilitiesOf(unit).map((def) => (
           <Text key={def.id} fz="xs" c="dimmed">
