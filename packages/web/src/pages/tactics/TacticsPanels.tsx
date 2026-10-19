@@ -92,9 +92,9 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
   return (
     <Paper bg="dark.7" p="sm" radius="md" data-testid="stat-sheet">
       <Group justify="space-between" mb={4}>
-        <Text fw={600}>{HEROES[unit.hero].name}</Text>
-        <Badge color={sideColor(unit)} variant="light">
-          {unit.side === 'player' ? 'yours' : 'enemy'}
+        {/* The name, in its side's colour: blue yours, red the enemy's, as on the board. */}
+        <Badge color={sideColor(unit)} variant="light" size="lg" tt="none" data-side={unit.side}>
+          {HEROES[unit.hero].name}
         </Badge>
       </Group>
       <div className={styles.stats}>

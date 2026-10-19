@@ -6,7 +6,6 @@ import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
 import {hailInfo, TILE_INFO} from '../rules/info';
 import {MAPS, tileAt} from '../rules/map';
-import {unitName} from '../rules/resolve';
 import type {FightState, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
 import type {TrackCard} from './layout';
@@ -338,7 +337,8 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex, pos
     return u.alive && at && hexEquals(at, h);
   });
   if (unit) {
-    lines.push({text: `${unitName(unit)}  ${unit.hp}/${unit.maxHp}`, color: SIDE_COLOR[unit.side], bold: true});
+    // The side shows in the colour, as on the board: just the hero's name.
+    lines.push({text: `${HEROES[unit.hero].name}  ${unit.hp}/${unit.maxHp}`, color: SIDE_COLOR[unit.side], bold: true});
   }
   const tile = tileAt(map, h);
   if (tile !== 'sand' || !unit) {

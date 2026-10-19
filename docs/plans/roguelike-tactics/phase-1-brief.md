@@ -373,7 +373,10 @@ confirm or change:
   button does. The board shows the preview's outcome. Tapping anywhere but
   the board or the action section stops inspecting: the details go back
   to the unit whose turn it is. An enemy's details leave out what it could
-  do next turn.
+  do next turn. A unit's name in the details is a badge in its side's
+  colour (blue yours, red the enemy's), with no "yours"/"enemy" label; the
+  board's hover tooltip names the hero without "Your"/"Enemy", its colour
+  giving the side.
 - **Timing is shown in slots from now**, never costs or absolute slot
   numbers (owner, 2026-10-19). The track, on the canvas above the board,
   is a fanned deck as in Mana Khemia (rather than section 9's window of

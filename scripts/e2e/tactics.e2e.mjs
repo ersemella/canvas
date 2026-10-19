@@ -194,7 +194,7 @@ try {
   const enemy = run.view.fight.units.find((u) => u.side === 'enemy' && u.alive);
   await tapHex(enemy.hex);
   const sheet = page.getByTestId('stat-sheet');
-  check('tapping an enemy shows its stat sheet', (await sheet.textContent()).includes('enemy'));
+  check('tapping an enemy shows its stat sheet, its name a badge in the enemy’s colour', (await sheet.locator('[data-side="enemy"]').count()) === 1);
   check('the sheet leaves out what it could do next turn', !(await sheet.textContent()).includes('Could do next turn'));
   check('the sheet doesn’t list Hold', !(await sheet.textContent()).includes('Hold'));
   check('the sheet gives abilities in slots, not costs', /· \+\d+/.test(await sheet.textContent()) && !/· \d{2,}/.test(await sheet.textContent()), (await sheet.textContent()).slice(0, 200));
@@ -289,7 +289,7 @@ try {
     await sleep(300);
   }
   const phoneSheet = phone.getByTestId('stat-sheet');
-  check('phone: tapping an enemy shows its details', (await phoneSheet.textContent()).includes('enemy'));
+  check('phone: tapping an enemy shows its details', (await phoneSheet.locator('[data-side="enemy"]').count()) === 1);
   check('phone: no “could do next turn” on an enemy', !(await phoneSheet.textContent()).includes('Could do next turn'));
   check('phone: the details start on screen', await phoneSheet.evaluate((el) => el.getBoundingClientRect().top < window.innerHeight));
   check('phone: the action section stays on screen', await inViewport(phoneMove));
@@ -297,7 +297,11 @@ try {
   await phoneSheet.tap();
   await sleep(200);
   const backTo = await phoneSheet.textContent();
-  check('phone: tapping away shows the acting unit again', backTo.includes('Mangudai Outrider') && backTo.includes('yours'), backTo.slice(0, 60));
+  check(
+    'phone: tapping away shows the acting unit again',
+    (await phoneSheet.locator('[data-side="player"]').textContent()) === 'Mangudai Outrider',
+    backTo.slice(0, 60)
+  );
   // A planned move shows what it adds, in slots, inside the Move button.
   {
     await phoneMove.click();
