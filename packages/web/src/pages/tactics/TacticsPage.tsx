@@ -239,7 +239,7 @@ export function TacticsPage() {
       setAbility(id);
       setMoving(false);
       if (!id) return setTarget(null);
-      // Abilities with no target (Hold, Clear the Storm) preview at once.
+      // Abilities with no target (Hold, Sunlight) preview at once.
       const own = moved ? ABILITIES[id].targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!) : [];
       setTarget(own.length === 1 && own[0]!.hex === undefined ? {} : null);
     },

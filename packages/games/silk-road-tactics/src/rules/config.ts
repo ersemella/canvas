@@ -94,7 +94,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     defence: 10,
     power: 25,
     armour: 'medium',
-    abilities: ['clearStorm', 'hail', 'gale', 'freeze', 'hold'],
+    abilities: ['sunlight', 'hail', 'gale', 'freeze', 'hold'],
     ultimate: 'freeze',
   },
 };
@@ -116,7 +116,7 @@ export const ABILITY = {
    * 37 healed, under a fifth of a bow hit). Over 1,000 AI-vs-AI fights from
    * random deployments: no stalls (17 at 25), and fights shorter.
    */
-  clearStorm: {cost: RULES.cost.typical, radius: 1, heal: 40},
+  sunlight: {cost: RULES.cost.typical, radius: 1, heal: 40},
   hail: {cost: RULES.cost.typical, range: 4, damage: 50, hexSlots: 20, slowed: 2, vulnerable: 25, statusSlots: 10},
   gale: {cost: RULES.cost.typical, displace: 1, slowed: 1, slowedSlots: 10},
   freeze: {range: 4, radius: 1, immobilizedSlots: 15, vulnerable: 25, chargeCost: 40, recoveryCost: RULES.cost.typical},

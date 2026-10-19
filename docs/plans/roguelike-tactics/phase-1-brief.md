@@ -82,7 +82,7 @@ uses damage buckets is open, [heroes-and-gear.md](heroes-and-gear.md)):
   from the centre first ([keywords.md](keywords.md), 17.4).
 - Displace distances, Slowed, Vulnerable and every duration are fixed
   per ability, not scaled by any stat (power scales only an ability's
-  base damage and base healing, so Clear the Storm's heal scales;
+  base damage and base healing, so Sunlight's heal scales;
   influence was folded into power,
   [heroes-and-gear.md](heroes-and-gear.md), 9.2).
 
@@ -148,7 +148,7 @@ reading of the owner's one-line descriptions; the owner can change them
 
 | Ability | Rule |
 |---|---|
-| **Clear the Storm** | Every **unit** within radius TBD of the caster, the caster and **enemies included** (6.7, 2026-10-19), is **healed** (base heal TBD, scaled by power) and **cleansed**. Cleansing an enemy removes the party's own control from it, so the Storm Caller steps clear of enemies first. Typical cost. |
+| **Sunlight** (Clear the Storm until 2026-10-19, owner) | Every **unit** within radius TBD of the caster, the caster and **enemies included** (6.7, 2026-10-19), is **healed** (base heal TBD, scaled by power) and **cleansed**. Cleansing an enemy removes the party's own control from it, so the Storm Caller steps clear of enemies first. Typical cost. |
 | **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it takes **base damage 50** (owner, 2026-10-19; scaled by the caster's power when cast, then Vulnerable and defence as any hit), then is **Slowed TBD** and **Vulnerable TBD%** for TBD slots. Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justified; it now deals damage, so whether it stays uncharged is open). Typical cost. |
 | **Gale** | Melee: **Displace 1** away and **Slowed TBD** for TBD slots. An Immobilized target is slowed but not moved. Typical cost. |
 | **Freeze** (ultimate) | A **charged** area with a **casting time** (owner's call, 2026-10-18): targets any hex within maximum range TBD, no line of fire needed. When the charge triggers, every unit in the area (radius TBD), allies included, is **Immobilized** and **Vulnerable TBD%** for TBD slots. Charge and recovery costs TBD (3.7); like any charge, it shows on the track and can be answered by stepping out, pushing, killing or dazing the caster. |
@@ -339,8 +339,8 @@ confirm or change:
   any adjacent unit, allies included (Pin targeted enemies only until the
   2026-10-19 rule, 6.7).
 - **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage
-  damage allies, and Clear the Storm heals and cleanses enemies. Clear the
-  Storm's placeholder radius went from 2 to 1 with it, so stepping clear
+  damage allies, and Sunlight heals and cleanses enemies. Sunlight's
+  placeholder radius went from 2 to 1 with it, so stepping clear
   of enemies is possible; the AI counts healing or cleansing an enemy
   against an option.
 - **The map's coordinates** are in `src/rules/map.ts`. Odd rows reach

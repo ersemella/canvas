@@ -177,20 +177,20 @@ const volley: AbilityDef = {
 
 // ─── Yadachy Storm Caller ────────────────────────────────────────────────────
 
-const clearStorm: AbilityDef = {
-  id: 'clearStorm',
-  name: 'Clear the Storm',
-  summary: `Heals and cleanses every unit within ${ABILITY.clearStorm.radius}, itself and enemies included.`,
+const sunlight: AbilityDef = {
+  id: 'sunlight',
+  name: 'Sunlight',
+  summary: `Heals and cleanses every unit within ${ABILITY.sunlight.radius}, itself and enemies included.`,
   ultimate: false,
   charged: false,
-  cost: ABILITY.clearStorm.cost,
+  cost: ABILITY.sunlight.cost,
   movesSelf: false,
   targets: () => [{}],
   resolve(ctx, user) {
-    log(ctx, `${unitName(user)} clears the storm.`);
-    for (const u of unitsInArea(ctx.state, user.hex!, ABILITY.clearStorm.radius)) {
+    log(ctx, `${unitName(user)} calls down sunlight.`);
+    for (const u of unitsInArea(ctx.state, user.hex!, ABILITY.sunlight.radius)) {
       cleanse(u);
-      heal(ctx, u, scaled(ABILITY.clearStorm.heal, user.power));
+      heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
     }
   },
 };
@@ -363,7 +363,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   bow,
   dash,
   volley,
-  clearStorm,
+  sunlight,
   hail,
   gale,
   freeze,
