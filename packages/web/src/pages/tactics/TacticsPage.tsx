@@ -810,7 +810,7 @@ function TurnControls(props: {
                   variant={ability === def.id ? 'filled' : 'light'}
                   color={def.ultimate ? 'grape' : 'blue'}
                   disabled={reason !== null}
-                  title={reason ?? def.summary}
+                  title={reason ?? def.summary(unit)}
                   onClick={() => props.onAbility(ability === def.id ? null : def.id)}
                 >
                   {def.name}

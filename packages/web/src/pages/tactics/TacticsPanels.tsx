@@ -177,7 +177,7 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
               {def.charged
                 ? ` to charge, +${slotsForward(def.recoveryCost!, unit.speed)} to recover`
                 : ''}
-              : {def.summary}
+              : {def.summary(unit)}
             </Text>
           ))}
       </Stack>
