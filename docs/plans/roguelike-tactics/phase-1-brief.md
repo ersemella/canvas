@@ -377,9 +377,10 @@ confirm or change:
   An enemy's details leave out what it could do next turn (desktop keeps
   it, D11).
   Timing is shown in slots from now, never costs or absolute slot
-  numbers: the track draws every slot from **NOW** on as a cell, empty
-  ones included (+1, +2, …, as Mana Khemia shows empty spaces), with each
-  card in its cell and the planned turn's landing cell dashed; each
+  numbers: the track is a fanned deck as in Mana Khemia, a card for every
+  slot from now on, empty ones blank, the current one in front at the
+  left and each later one tucked behind, with no numbers; the planned
+  turn's landing card is dashed; each
   ability button shows how many slots later the next turn would come
   (yielding included), and the button reads "Confirm · next turn +8".
   Now is on the left, in reading order.

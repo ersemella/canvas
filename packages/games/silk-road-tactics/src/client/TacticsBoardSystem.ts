@@ -295,9 +295,10 @@ function drawTrack(
 }
 
 /**
- * The track as a row of slots from now on (phones): every slot a cell,
- * empty ones included, numbered from now, each unit's card in its cell;
- * the planned turn's landing cell is dashed and marked with how far it is.
+ * The track as a fanned deck (phones), as in Mana Khemia: a card for every
+ * slot from now on, empty ones blank, the current one in front at the left
+ * and each later one tucked behind the one before, showing a strip with
+ * its unit. The planned turn's landing card is dashed.
  */
 function drawSlotTrack(
   ctx: CanvasRenderingContext2D,
@@ -307,64 +308,66 @@ function drawSlotTrack(
   opts: {selected: string | null; hovered: string | null}
 ): void {
   const {x, y, width, height} = TRACK_AREA;
-  const {start, count, x0, w} = trackSlots(fight, previewSlot);
+  const deck = trackSlots(fight, previewSlot);
   ctx.save();
   roundRect(ctx, x, y, width, height, 8);
   ctx.fillStyle = 'rgba(17,24,39,0.92)';
   ctx.fill();
   ctx.restore();
 
-  const occupied = new Map(cards.map((c) => [c.slot, c]));
-  const cellY = y + 22;
-  const cellH = height - 28;
-  for (let i = 0; i < count; i++) {
-    const cx = x0 + i * w;
-    const card = occupied.get(start + i);
-    // Empty cells: a faint outline, so distances can be counted.
+  const bySlot = new Map(cards.map((c) => [c.slot, c]));
+  // Back to front, so each card covers the left of the one behind it.
+  for (let i = deck.count - 1; i >= 0; i--) {
+    const card = bySlot.get(deck.start + i);
+    const cx = deck.x0 + i * deck.w;
+    const u = card ? fight.units.find((v) => v.id === card.unitId)! : null;
+    const acting = Boolean(card && !card.ghost && u!.id === fight.awaiting);
     ctx.save();
-    roundRect(ctx, cx + 1, cellY, w - 2, cellH, 4);
-    ctx.strokeStyle = 'rgba(255,255,255,0.14)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.restore();
-    const text = i === 0 ? 'NOW' : `+${i}`;
-    const color = card?.ghost ? '#fde047' : i === 0 ? '#fde047' : card ? '#f3f4f6' : '#6b7280';
-    label(ctx, text, cx + w / 2, y + 12, color, i === 0 ? 9 : 10, Boolean(card) || i === 0);
-  }
-
-  for (const card of cards) {
-    const u = fight.units.find((v) => v.id === card.unitId)!;
-    const acting = !card.ghost && u.id === fight.awaiting;
-    const {x: cx, y: cy, w: cw, h} = card;
-    const mid = cx + cw / 2;
-    ctx.save();
-    if (card.ghost) ctx.globalAlpha = 0.85;
-    roundRect(ctx, cx, cy, cw, h, 4);
-    ctx.fillStyle = card.ghost ? 'rgba(253,224,71,0.12)' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    roundRect(ctx, cx, deck.y, deck.cardW, deck.h, 5);
+    ctx.fillStyle = !u ? '#1f2937' : card!.ghost ? '#3f3a1c' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
     ctx.fill();
-    ctx.setLineDash(card.ghost ? [3, 2] : []);
-    ctx.strokeStyle = card.ghost || acting ? '#fde047' : u.id === opts.selected || u.id === opts.hovered ? '#ffffff' : SIDE_COLOR[u.side];
-    ctx.lineWidth = acting || card.ghost ? 2.5 : 1.5;
+    ctx.shadowColor = 'transparent';
+    ctx.setLineDash(card?.ghost ? [3, 2] : []);
+    ctx.strokeStyle = !u
+      ? 'rgba(255,255,255,0.18)'
+      : card!.ghost || acting
+        ? '#fde047'
+        : u.id === opts.selected || u.id === opts.hovered
+          ? '#ffffff'
+          : SIDE_COLOR[u.side];
+    ctx.lineWidth = acting || card?.ghost ? 2.5 : 1.25;
     ctx.stroke();
     ctx.setLineDash([]);
-    const r = Math.min(11, cw / 2 - 2);
-    ctx.beginPath();
-    ctx.arc(mid, cy + h / 2 - 4, r, 0, Math.PI * 2);
-    ctx.fillStyle = HERO_COLOR[u.hero];
-    ctx.fill();
-    ctx.strokeStyle = SIDE_COLOR[u.side];
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    label(ctx, HEROES[u.hero].letter, mid, cy + h / 2 - 3, '#ffffff', 11, true);
-    if (!card.ghost) {
-      const frac = Math.max(0, u.hp / u.maxHp);
-      ctx.fillStyle = '#111827';
-      ctx.fillRect(cx + 3, cy + h - 9, cw - 6, 3);
-      ctx.fillStyle = frac > 0.5 ? '#4ade80' : frac > 0.25 ? '#facc15' : '#f87171';
-      ctx.fillRect(cx + 3, cy + h - 9, (cw - 6) * frac, 3);
+
+    if (u && card) {
+      // The unit sits in the strip that shows; the front card shows whole.
+      const front = i === 0;
+      const mid = front ? cx + deck.cardW / 2 : card.x + card.w / 2;
+      const barX = front ? cx + 5 : card.x + 3;
+      const barW = front ? deck.cardW - 10 : card.w - 6;
+      const r = Math.min(11, card.w / 2 - 2);
+      ctx.globalAlpha = card.ghost ? 0.8 : 1;
+      ctx.beginPath();
+      ctx.arc(mid, deck.y + deck.h / 2 - 4, r, 0, Math.PI * 2);
+      ctx.fillStyle = HERO_COLOR[u.hero];
+      ctx.fill();
+      ctx.strokeStyle = SIDE_COLOR[u.side];
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      label(ctx, HEROES[u.hero].letter, mid, deck.y + deck.h / 2 - 3, '#ffffff', 11, true);
+      if (!card.ghost) {
+        const frac = Math.max(0, u.hp / u.maxHp);
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(barX, deck.y + deck.h - 10, barW, 3);
+        ctx.fillStyle = frac > 0.5 ? '#4ade80' : frac > 0.25 ? '#facc15' : '#f87171';
+        ctx.fillRect(barX, deck.y + deck.h - 10, barW * frac, 3);
+      }
+      // A charging card: its ability triggers when this slot comes up.
+      if (u.charging && !card.ghost) label(ctx, '!', card.x + card.w - 5, deck.y + 8, '#d8b4fe', 12, true);
     }
-    // A charging card: its ability triggers when this slot comes up.
-    if (u.charging && !card.ghost) label(ctx, '!', cx + cw - 5, cy + 7, '#d8b4fe', 12, true);
     ctx.restore();
   }
 }
