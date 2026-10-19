@@ -39,10 +39,10 @@ try {
   await page.getByRole('heading', {name: 'Games'}).waitFor();
   await page.getByRole('link', {name: /play/i}).first().waitFor({timeout: 15_000});
   const cards = await page.getByRole('link', {name: /play/i}).count();
-  check('game list shows all 5 games', cards === 5, cards);
+  check('game list shows all 6 games', cards === 6, cards);
 
   // Every game opens to a canvas without throwing (works against production).
-  for (const id of ['snake', 'solitaire', 'sudoku', 'blackjack']) {
+  for (const id of ['snake', 'solitaire', 'sudoku', 'blackjack', 'silk-road-tactics']) {
     const errorsBefore = pageErrors.length;
     await openGame(id);
     await sleep(500);

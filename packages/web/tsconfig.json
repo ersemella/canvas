@@ -29,6 +29,9 @@
       ],
       "@canvas/games-poker": [
         "../../games/poker/src/index.ts"
+      ],
+      "@canvas/games-silk-road-tactics": [
+        "../../games/silk-road-tactics/src/index.ts"
       ]
     }
   },
@@ -53,6 +56,9 @@
     },
     {
       "path": "../games/poker"
+    },
+    {
+      "path": "../games/silk-road-tactics"
     }
   ]
 }

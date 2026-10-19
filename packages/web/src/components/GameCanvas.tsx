@@ -21,8 +21,13 @@ interface Props {
    */
   createSystems?: (() => BaseSystem[]) | undefined;
   events?: Record<string, string>;
+  /** Scene size in scene pixels; the canvas is `scale` times as large. */
   width?: number;
   height?: number;
+  /** Whole-number factor the scene is drawn at (the manifest's `canvas.scale`). */
+  scale?: number | undefined;
+  /** Keep pixels sharp (the manifest's `canvas.pixelArt`). */
+  pixelArt?: boolean | undefined;
   onReady?: (events: EventBus) => void;
   /** localStorage key for this game's best score; omit to not track one. */
   bestScoreKey?: string | undefined;
@@ -45,7 +50,17 @@ function writeBest(key: string, value: number): void {
   }
 }
 
-export function GameCanvas({sceneData, createSystems, events, width = 600, height = 400, onReady, bestScoreKey}: Props) {
+export function GameCanvas({
+  sceneData,
+  createSystems,
+  events,
+  width = 600,
+  height = 400,
+  scale = 1,
+  pixelArt = false,
+  onReady,
+  bestScoreKey,
+}: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<World | null>(null);
   const [outcome, setOutcome] = useState<'lost' | 'won' | null>(null);
@@ -74,7 +89,7 @@ export function GameCanvas({sceneData, createSystems, events, width = 600, heigh
 
     registerBuiltinComponents();
 
-    const world = new World({canvas});
+    const world = new World({canvas, scale, pixelArt});
     worldRef.current = world;
 
     world.registerSystem(new InputSystem());
@@ -113,7 +128,7 @@ export function GameCanvas({sceneData, createSystems, events, width = 600, heigh
       unsubWon?.();
       world.stop();
     };
-  }, [sceneData, createSystems, events, restartKey]);
+  }, [sceneData, createSystems, events, scale, pixelArt, restartKey]);
 
   const restart = useCallback(() => {
     setRestartKey((k) => k + 1);
@@ -121,7 +136,7 @@ export function GameCanvas({sceneData, createSystems, events, width = 600, heigh
 
   return (
     <Box pos="relative" className={styles.wrapper!}>
-      <canvas ref={canvasRef} width={width} height={height} className={styles.canvas!} />
+      <canvas ref={canvasRef} width={width * scale} height={height * scale} className={styles.canvas!} />
       {events?.onScore && !outcome && (
         <Text className={styles.score!} ff="monospace" fw="bold" c="white">
           Score: {score}

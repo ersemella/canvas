@@ -27,6 +27,8 @@ import type {GridCursorData} from '../components/GridCursorComponent';
 import type {CardPileConfigData} from '../components/CardPileConfigComponent';
 import type {DeckConfigData} from '../components/DeckConfigComponent';
 import type {GridPuzzleConfigData, GridPuzzleData} from '../components/GridPuzzleConfigComponent';
+import type {HexGridData, HexPositionData} from '../components/HexGridComponent';
+import type {HexOrientation} from '../math/Hex';
 
 // ─── Primitives ──────────────────────────────────────────────────────────────
 
@@ -144,11 +146,89 @@ export interface CircleRenderableData {
 }
 
 /**
+ * Renders a regular hexagon centred on the entity's position, e.g. one tile
+ * of a hex map (see {@link HexGridData}).
+ *
+ * @example
+ * ```json
+ * { "renderType": "hex", "radius": 20, "orientation": "pointy", "color": "#c2a366", "zIndex": 0 }
+ * ```
+ */
+export interface HexRenderableData {
+  renderType: 'hex';
+  /** Centre-to-vertex distance in pixels; match the grid's `size`. */
+  radius: number;
+  /** `'pointy'` (a vertex at the top, the default) or `'flat'`. */
+  orientation?: HexOrientation;
+  /** Draw order — higher values appear in front. */
+  zIndex?: number;
+  /** Whether the hexagon is visible. Defaults to `true`. */
+  visible?: boolean;
+  /** CSS color string for the fill. Defaults to `'#ffffff'`. */
+  color?: string;
+  /** CSS color string for the border. Omit to draw no border. */
+  borderColor?: string;
+  /** Border thickness in pixels. */
+  borderWidth?: number;
+}
+
+/**
+ * Draws one frame of a sprite sheet. The image loads on first use (through
+ * the engine's `assetLoader`); nothing is drawn until it has. Frames are
+ * `frameWidth` × `frameHeight` cells read left to right, top to bottom.
+ * Positions are rounded to whole pixels so pixel art stays crisp; pair with
+ * `canvas.pixelArt`.
+ *
+ * @example
+ * ```json
+ * {
+ *   "renderType": "sprite", "image": "/sprites/outrider.png",
+ *   "frameWidth": 24, "frameHeight": 32, "pivot": {"x": 0.5, "y": 1},
+ *   "animation": {"frames": [0, 1], "fps": 2}, "zIndex": 10
+ * }
+ * ```
+ */
+export interface SpriteRenderableData {
+  renderType: 'sprite';
+  /** URL of the sprite sheet image. */
+  image: string;
+  /** Width of one frame in the sheet, in image pixels. */
+  frameWidth: number;
+  /** Height of one frame in the sheet, in image pixels. */
+  frameHeight: number;
+  /** Drawn width in scene pixels. Defaults to `frameWidth`. */
+  width?: number;
+  /** Drawn height in scene pixels. Defaults to `frameHeight`. */
+  height?: number;
+  /** Frame to draw when there's no `animation`. Defaults to `0`. */
+  frame?: number;
+  /** Loops through `frames` at `fps` frames per second; overrides `frame`. */
+  animation?: {frames: number[]; fps: number};
+  /**
+   * Point of the sprite placed at the entity's position, as fractions of its
+   * size: `{x: 0.5, y: 0.5}` (the default) is the centre, `{x: 0.5, y: 1}`
+   * the bottom middle (a unit standing on its tile).
+   */
+  pivot?: {x: number; y: number};
+  /** Mirror horizontally (e.g. units facing left). */
+  flipX?: boolean;
+  /** Draw order — higher values appear in front. */
+  zIndex?: number;
+  /** Whether the sprite is visible. Defaults to `true`. */
+  visible?: boolean;
+}
+
+/**
  * Visual rendering data for an entity. Discriminated by `renderType`.
  *
  * Omitting `renderType` (or setting it to `'rect'`) renders a rectangle.
  */
-export type RenderableData = RectRenderableData | TextRenderableData | CircleRenderableData;
+export type RenderableData =
+  | RectRenderableData
+  | TextRenderableData
+  | CircleRenderableData
+  | HexRenderableData
+  | SpriteRenderableData;
 
 // ─── Input ───────────────────────────────────────────────────────────────────
 
@@ -207,7 +287,7 @@ export interface EntityComponents {
   Transform?: TransformData;
 
   /**
-   * Visual appearance — rectangle, text, or circle.
+   * Visual appearance — rectangle, text, circle, hexagon or sprite.
    * Entities without this component are not rendered.
    */
   Renderable?: RenderableData;
@@ -217,6 +297,22 @@ export interface EntityComponents {
    * Systems read from the shared `inputService` singleton.
    */
   Input?: InputData;
+
+  // ── Hex grid ────────────────────────────────────────────────────────────
+
+  /**
+   * A hex map whose hex (0, 0) is centred on this entity's Transform
+   * position. Taps on it emit `hexgrid:click`.
+   * Requires {@link HexGridSystem} in the system list.
+   */
+  HexGrid?: HexGridData;
+
+  /**
+   * Places this entity on a hex of a {@link HexGridData} grid: its Transform
+   * position follows the hex's centre.
+   * Requires {@link HexGridSystem} in the system list.
+   */
+  HexPosition?: HexPositionData;
 
   // ── Drag and drop ───────────────────────────────────────────────────────
 
@@ -346,6 +442,7 @@ export interface EntityComponents {
  * | `DragDropSystem` | 49 | Detects drag gestures and emits drop events |
  * | `ClickSystem` | 55 | Detects clicks and emits click events (skipped if drag consumed the release) |
  * | `GridCursorSystem` | 50 | Routes keyboard input to grid cell selection |
+ * | `HexGridSystem` | 56 | Places `HexPosition` entities on their hex; emits `hexgrid:click` on taps |
  * | `CardPileSystem` | 100 | Evaluates card game rules from `CardPileConfig` |
  * | `GridPuzzleSystem` | 100 | Evaluates grid puzzle rules from `GridPuzzleConfig` |
  * | `PileLayoutSystem` | 120 | Positions `PileMember` entities within their pile |
@@ -363,8 +460,33 @@ export type BuiltinSystemName =
   | 'CardPileSystem'
   | 'GridCursorSystem'
   | 'GridPuzzleSystem'
+  | 'HexGridSystem'
   | 'SidePanelSystem'
   | 'NetworkSystem';
+
+/**
+ * The scene's size and how it is drawn. With `scale`, the scene is drawn at
+ * `width` × `height` and scaled up onto a canvas `scale` times as large:
+ * entity positions, sizes and pointer coordinates all stay in scene pixels.
+ *
+ * @example Pixel art drawn at 300×200 and shown at 600×400:
+ * ```json
+ * { "width": 300, "height": 200, "scale": 2, "pixelArt": true }
+ * ```
+ */
+export interface CanvasConfig {
+  /** Scene width in pixels. */
+  width: number;
+  /** Scene height in pixels. */
+  height: number;
+  /** Whole-number factor the scene is scaled by onto the canvas. Defaults to `1`. */
+  scale?: number;
+  /**
+   * Keep pixels sharp: no image smoothing when drawing sprites or scaling,
+   * and `image-rendering: pixelated` when the browser resizes the canvas.
+   */
+  pixelArt?: boolean;
+}
 
 /**
  * Any system name a manifest can list: a {@link BuiltinSystemName}, or a name
@@ -455,15 +577,10 @@ export interface GameManifest {
   };
 
   /**
-   * Canvas dimensions in pixels.
-   * If omitted, the canvas fills its container.
+   * The scene's size in pixels, and how it is scaled onto the canvas.
+   * If omitted, the shell uses 600×400.
    */
-  canvas?: {
-    /** Canvas width in pixels. */
-    width: number;
-    /** Canvas height in pixels. */
-    height: number;
-  };
+  canvas?: CanvasConfig;
 
   /**
    * Ordered list of systems to run each frame.

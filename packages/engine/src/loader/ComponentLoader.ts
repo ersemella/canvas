@@ -20,6 +20,7 @@ import {GridCursorSystem} from '../systems/GridCursorSystem';
 import {PileLayoutSystem} from '../systems/PileLayoutSystem';
 import {CardPileSystem} from '../systems/CardPileSystem';
 import {GridPuzzleSystem} from '../systems/GridPuzzleSystem';
+import {HexGridSystem} from '../systems/HexGridSystem';
 import {SidePanelSystem} from '../systems/SidePanelSystem';
 import {NetworkSystem} from '../systems/NetworkSystem';
 import type {CardData} from '../components/CardComponent';
@@ -32,6 +33,7 @@ import type {ChildOfData} from '../components/ChildOfComponent';
 import type {ClickableData} from '../components/ClickableComponent';
 import type {DragGroupData} from '../components/DragGroupComponent';
 import type {GridCursorData} from '../components/GridCursorComponent';
+import type {HexGridData, HexPositionData} from '../components/HexGridComponent';
 import type {PileLayoutData} from '../components/PileLayoutComponent';
 import type {PileMemberData} from '../components/PileMemberComponent';
 
@@ -62,6 +64,7 @@ export function registerBuiltinSystems(): void {
   SystemRegistry.register('PileLayoutSystem', PileLayoutSystem);
   SystemRegistry.register('CardPileSystem', CardPileSystem);
   SystemRegistry.register('GridPuzzleSystem', GridPuzzleSystem);
+  SystemRegistry.register('HexGridSystem', HexGridSystem);
   SystemRegistry.register('SidePanelSystem', SidePanelSystem);
   SystemRegistry.register('NetworkSystem', NetworkSystem);
 }
@@ -111,6 +114,8 @@ export function registerBuiltinComponents(): void {
   registerDataComponent<GridPuzzleConfigData>('GridPuzzleConfig');
   registerDataComponent<GridPuzzleData>('GridPuzzle');
   registerDataComponent<DeckConfigData>('DeckConfig');
+  registerDataComponent<HexGridData>('HexGrid');
+  registerDataComponent<HexPositionData>('HexPosition');
 }
 
 export function loadComponents(

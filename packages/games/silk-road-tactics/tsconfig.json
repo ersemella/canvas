@@ -1,0 +1,32 @@
+{
+  "extends": "../../../configs/tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "composite": true,
+    "resolveJsonModule": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "paths": {
+      "@canvas/engine": [
+        "../../engine/src/index.ts"
+      ],
+      "@canvas/engine/server": [
+        "../../engine/src/server.ts"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "dev",
+    "game.json"
+  ],
+  "references": [
+    {
+      "path": "../../engine"
+    }
+  ]
+}

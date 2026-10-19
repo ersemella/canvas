@@ -2,12 +2,21 @@ import {BaseSystem, type SystemContext} from '../core/System';
 import type {TransformComponent} from '../components/TransformComponent';
 import type {RenderableComponent} from '../components/RenderableComponent';
 import type {IEntity} from '../core/Entity';
+import {hexCorners} from '../math/Hex';
+import {assetLoader} from '../loader/AssetLoader';
 
 export class RenderSystem extends BaseSystem {
   readonly priority = 995;
 
-  onUpdate({scene, ctx, canvas}: SystemContext): void {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  /** Seconds since the system started, for sprite animations. */
+  private time = 0;
+
+  onUpdate({scene, world, ctx, deltaTime}: SystemContext): void {
+    this.time += deltaTime;
+    // Draw in scene pixels; the world's scale maps them onto the canvas.
+    ctx.setTransform(world.scale, 0, 0, world.scale, 0, 0);
+    ctx.imageSmoothingEnabled = !world.pixelArt;
+    ctx.clearRect(0, 0, world.width, world.height);
 
     const entities = scene.query({all: ['Transform', 'Renderable']});
     const visible = entities.filter((e) => {
@@ -30,7 +39,12 @@ export class RenderSystem extends BaseSystem {
     const renderable = entity.getComponent<RenderableComponent>('Renderable')!;
 
     ctx.save();
-    ctx.translate(transform.position.x, transform.position.y);
+    if (renderable.renderType === 'sprite') {
+      // Whole pixels, so pixel art doesn't blur between them.
+      ctx.translate(Math.round(transform.position.x), Math.round(transform.position.y));
+    } else {
+      ctx.translate(transform.position.x, transform.position.y);
+    }
     ctx.rotate(transform.rotation);
     ctx.scale(transform.scale.x, transform.scale.y);
 
@@ -43,6 +57,12 @@ export class RenderSystem extends BaseSystem {
         break;
       case 'circle':
         this.drawCircle(ctx, renderable);
+        break;
+      case 'hex':
+        this.drawHex(ctx, renderable);
+        break;
+      case 'sprite':
+        this.drawSprite(ctx, renderable);
         break;
     }
 
@@ -100,5 +120,46 @@ export class RenderSystem extends BaseSystem {
       ctx.lineWidth = r.borderWidth ?? 1;
       ctx.stroke();
     }
+  }
+
+  private drawHex(ctx: CanvasRenderingContext2D, r: RenderableComponent): void {
+    const corners = hexCorners(r.orientation ?? 'pointy', r.radius ?? r.height / 2);
+    ctx.beginPath();
+    corners.forEach(({x, y}, i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+    ctx.closePath();
+    ctx.fillStyle = r.color;
+    ctx.fill();
+    if (r.borderColor !== undefined) {
+      ctx.strokeStyle = r.borderColor;
+      ctx.lineWidth = r.borderWidth ?? 1;
+      ctx.stroke();
+    }
+  }
+
+  private drawSprite(ctx: CanvasRenderingContext2D, r: RenderableComponent): void {
+    const sprite = r.sprite;
+    if (!sprite) return;
+    const img = assetLoader.requestImage(sprite.image);
+    if (!img) return; // still loading (or failed)
+
+    const {frames, fps} = sprite.animation ?? {frames: [], fps: 0};
+    const frame = frames.length > 0 ? frames[Math.floor(this.time * fps) % frames.length]! : (sprite.frame ?? 0);
+    const perRow = Math.max(1, Math.floor(img.width / sprite.frameWidth));
+    const sx = (frame % perRow) * sprite.frameWidth;
+    const sy = Math.floor(frame / perRow) * sprite.frameHeight;
+
+    const pivot = sprite.pivot ?? {x: 0.5, y: 0.5};
+    if (sprite.flipX === true) ctx.scale(-1, 1);
+    ctx.drawImage(
+      img,
+      sx,
+      sy,
+      sprite.frameWidth,
+      sprite.frameHeight,
+      Math.round(-pivot.x * r.width),
+      Math.round(-pivot.y * r.height),
+      r.width,
+      r.height
+    );
   }
 }

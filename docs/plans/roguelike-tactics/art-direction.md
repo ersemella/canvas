@@ -77,18 +77,20 @@ Into the Breach shows enemy targets in advance; this game hides intent
 (D11), so the track ([timeline.md](timeline.md)) carries that load. Its
 cards use each unit's **portrait**.
 
-## Engine work (Proposed)
+## Engine work (built 2026-10-19)
 
-- **Sprites.** `RenderableComponent` supports only `rect`, `text` and
-  `circle`, and `RenderSystem` never calls `drawImage`. Add a `sprite`
-  render type: a sprite-sheet image, a frame, and simple frame animation,
-  loaded through `AssetLoader`.
-- **Scaled rendering.** Draw to an offscreen canvas at the internal
-  resolution and copy it up with smoothing off, or scale the context;
-  either way, round positions to whole art pixels.
-- Hex rendering and picking are already new work
-  ([architecture.md](architecture.md), platform constraints); the sprite
-  system belongs with them.
+- **Sprites.** A `sprite` render type: a sprite-sheet image, frame size,
+  a frame or a looping animation (`frames`, `fps`), a pivot (`{x: 0.5,
+  y: 1}` stands a unit on its hex), `flipX`; loaded on first use through
+  `assetLoader`. Positions round to whole pixels.
+- **Scaled rendering.** The manifest's `canvas: {width: 300, height: 200,
+  scale: 2, pixelArt: true}` draws the scene at 300×200 and scales the
+  context 2× onto a 600×400 canvas, with smoothing off and CSS
+  `image-rendering: pixelated`. Positions, sizes and pointer coordinates
+  stay in scene pixels. The game doesn't use it yet: Phase 1 is
+  code-drawn shapes, and small text at 2× is the open question below.
+- Hex rendering and picking: see [architecture.md](architecture.md),
+  platform constraints.
 
 ## Art budget (Proposed)
 

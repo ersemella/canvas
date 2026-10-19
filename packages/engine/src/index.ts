@@ -16,6 +16,7 @@ export {EventBus} from './core/EventBus';
 export {Vec2} from './math/Vec2';
 export {Rect} from './math/Rect';
 export {MathUtils} from './math/MathUtils';
+export * from './math/Hex';
 
 // Components
 export {TransformComponent} from './components/TransformComponent';
@@ -29,7 +30,7 @@ export type {DraggableData} from './components/DraggableComponent';
 export type {DropTargetData} from './components/DropTargetComponent';
 export type {ChildOfData} from './components/ChildOfComponent';
 export type {DragGroupData} from './components/DragGroupComponent';
-export type {RenderType} from './components/RenderableComponent';
+export type {RenderType, SpriteData} from './components/RenderableComponent';
 
 // Systems — core (flat)
 export {InputSystem, inputService} from './systems/InputSystem';
@@ -47,6 +48,9 @@ export type {ClickableData} from './components/ClickableComponent';
 export {GridCursorSystem} from './systems/GridCursorSystem';
 export type {GridCursorPayload} from './systems/GridCursorSystem';
 export type {GridCursorData} from './components/GridCursorComponent';
+export {HexGridSystem, hexGridLayout, isOnHexGrid} from './systems/HexGridSystem';
+export type {HexGridClickPayload} from './systems/HexGridSystem';
+export type {HexGridData, HexPositionData} from './components/HexGridComponent';
 export {PileLayoutSystem} from './systems/PileLayoutSystem';
 export type {PileLayoutData} from './components/PileLayoutComponent';
 export type {PileMemberData} from './components/PileMemberComponent';
@@ -103,6 +107,9 @@ export type {
   RectRenderableData,
   TextRenderableData,
   CircleRenderableData,
+  HexRenderableData,
+  SpriteRenderableData,
+  CanvasConfig,
   InputData,
 } from './types/manifest';
 export {assetLoader} from './loader/AssetLoader';

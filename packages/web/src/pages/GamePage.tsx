@@ -9,7 +9,7 @@ import {getGames} from 'registry/games';
 import type {GameDescriptor} from 'registry/games';
 import gameLayout from 'styles/gameLayout.module.css';
 import styles from './GamePage.module.css';
-import type {SceneData, BaseSystem, EventBus} from '@canvas/engine';
+import type {SceneData, BaseSystem, EventBus, CanvasConfig} from '@canvas/engine';
 import {registerBuiltinSystems} from '@canvas/engine';
 
 type LogEntry = {text: string; timestamp: number};
@@ -22,7 +22,7 @@ export function GamePage() {
   const [sceneData, setSceneData] = useState<SceneData | null>(null);
   const [createSystems, setCreateSystems] = useState<(() => BaseSystem[]) | null>(null);
   const [gameEvents, setGameEvents] = useState<Record<string, string>>({});
-  const [canvasSize, setCanvasSize] = useState({width: 600, height: 400});
+  const [canvasSize, setCanvasSize] = useState<CanvasConfig>({width: 600, height: 400});
   const [sidePanel, setSidePanel] = useState<ComponentType<{events: EventBus}> | null>(null);
   const [worldEvents, setWorldEvents] = useState<EventBus | null>(null);
   const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
@@ -126,11 +126,13 @@ export function GamePage() {
                 events={gameEvents}
                 width={canvasSize.width}
                 height={canvasSize.height}
+                scale={canvasSize.scale}
+                pixelArt={canvasSize.pixelArt}
                 onReady={handleReady}
                 bestScoreKey={`canvas:best:${gameId}`}
               />
             </GameErrorBoundary>
-            <Box className={gameLayout.sidePanel!} style={{height: canvasSize.height}}>
+            <Box className={gameLayout.sidePanel!} style={{height: canvasSize.height * (canvasSize.scale ?? 1)}}>
               {worldEvents && <SidePanel events={worldEvents} />}
               <GameLog entries={logEntries} />
             </Box>
@@ -156,6 +158,8 @@ export function GamePage() {
             events={gameEvents}
             width={canvasSize.width}
             height={canvasSize.height}
+            scale={canvasSize.scale}
+            pixelArt={canvasSize.pixelArt}
             onReady={handleReady}
             bestScoreKey={`canvas:best:${gameId}`}
           />

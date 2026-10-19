@@ -20,8 +20,8 @@ Browser (@canvas/web)                    Cloudflare Worker (@canvas/server)
 Static assets (the `@canvas/web` build output) ship separately via Cloudflare
 Pages — see [Deployment topology](#deployment-topology).
 
-Four of five games (`snake`, `blackjack`, `solitaire`, `sudoku`) are pure
-client-side manifests: a `game.json` describing a scene and a list of
+Five of six games (`snake`, `blackjack`, `solitaire`, `sudoku`, and
+`silk-road-tactics`, so far an empty scene) are pure client-side manifests: a `game.json` describing a scene and a list of
 engine systems, bundled into the web build and rendered entirely in the browser. Only
 `poker` runs against the server, using a `GameRoom` Durable Object as the
 authoritative game state and WebSocket hub.
@@ -30,11 +30,11 @@ authoritative game state and WebSocket hub.
 
 | Package | Role | Notes |
 |---|---|---|
-| `@canvas/engine` | ECS core, generic components/systems, manifest loader, plugin API | Built with `tsc -b` to `dist/` (ESM + `.d.ts`), which its `exports` point at; inside the repo every consumer resolves it to `src/` through tsconfig `paths`, so nothing needs a build first. Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and game-agnostic systems (grid, physics, drag/drop, click, card piles, grid puzzles, side panel, network). No game-specific code: games add their own through `register()`. `@canvas/engine/server` is a DOM-free entry with the `ServerSystem` contract. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
+| `@canvas/engine` | ECS core, generic components/systems, manifest loader, plugin API | Built with `tsc -b` to `dist/` (ESM + `.d.ts`), which its `exports` point at; inside the repo every consumer resolves it to `src/` through tsconfig `paths`, so nothing needs a build first. Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and game-agnostic systems (grid, hex grid, physics, drag/drop, click, card piles, grid puzzles, side panel, network). No game-specific code: games add their own through `register()`. `@canvas/engine/server` is a DOM-free entry with the `ServerSystem` contract and the hex geometry (`math/Hex`), so a game's server rules and its renderer share one. Rendering: rects, text, circles, hexagons and sprite-sheet frames (loaded through `assetLoader`); a manifest's `canvas.scale` draws the scene at a low resolution scaled up by a whole number, and `canvas.pixelArt` keeps the pixels sharp. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
 | `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Builds in the games listed in `src/platform.games.ts` (generated), instantiates a `World` per game, and is the only package with a UI framework. |
 | `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` Durable Object. Multiplayer games' server rules are registered in `src/games/registry.ts` (generated). |
 | `games/poker` | Poker client systems + server-authoritative Texas Hold'em logic | `.` exports the game definition, whose `register()` adds the table's client systems in `src/client/` (`PokerSystem` sends actions and turns server state into a view, `PokerRendererSystem` draws it); `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom` — the only implementation of the rules, with the deck, hand evaluator, and public-state redaction. |
-| `games/{snake,blackjack,solitaire,sudoku}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. Blackjack registers `BlackjackSystem`, Sudoku its puzzle generator, Solitaire the Klondike deal; Snake is manifest-only. |
+| `games/{snake,blackjack,solitaire,sudoku,silk-road-tactics}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. Blackjack registers `BlackjackSystem`, Sudoku its puzzle generator, Solitaire the Klondike deal; Snake is manifest-only. Silk Road Tactics (the tactical roguelike in `docs/plans/roguelike-tactics/`) is an empty scene until its Phase 1. |
 | `configs` | Shared tsconfig / eslint base | — |
 
 Every game package depends on the engine as a `peerDependency`, imports

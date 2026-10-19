@@ -1,7 +1,7 @@
 import type {BaseSystem} from '../core/System';
 import type {SceneData} from '../types/manifest';
 import {SystemRegistry} from '../core/SystemRegistry';
-import type {GameManifest, SystemName} from '../types/manifest';
+import type {CanvasConfig, GameManifest, SystemName} from '../types/manifest';
 
 export type {GameManifest, SystemName} from '../types/manifest';
 
@@ -10,7 +10,7 @@ export interface GameModule {
   getSceneData(): SceneData;
   getSystems(): BaseSystem[];
   getEvents(): Record<string, string>;
-  getCanvas(): {width: number; height: number} | undefined;
+  getCanvas(): CanvasConfig | undefined;
   getSidePanel?(): unknown;
 }
 
@@ -80,7 +80,7 @@ export function createGameModule(manifest: GameManifest, register: () => void = 
       if (manifest.events?.onScore) result['onScore'] = manifest.events.onScore;
       return result;
     },
-    getCanvas(): {width: number; height: number} | undefined {
+    getCanvas(): CanvasConfig | undefined {
       return manifest.canvas;
     },
   };

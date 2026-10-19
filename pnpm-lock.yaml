@@ -72,6 +72,18 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.19.15)
 
+  packages/games/silk-road-tactics:
+    devDependencies:
+      '@canvas/engine':
+        specifier: workspace:*
+        version: link:../../engine
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@22.19.15)
+      vite-tsconfig-paths:
+        specifier: ^6.1.1
+        version: 6.1.1(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.15))
+
   packages/games/snake:
     devDependencies:
       '@canvas/engine':
@@ -144,6 +156,9 @@ importers:
       '@canvas/games-poker':
         specifier: workspace:*
         version: link:../games/poker
+      '@canvas/games-silk-road-tactics':
+        specifier: workspace:*
+        version: link:../games/silk-road-tactics
       '@canvas/games-snake':
         specifier: workspace:*
         version: link:../games/snake

@@ -1,6 +1,11 @@
 # Plan: Silk Road Tactics
 
-Status: **designed, nothing built.** The combat design defines the game;
+Status: **designed; the package and engine groundwork are built**
+(2026-10-19): `packages/games/silk-road-tactics` is listed on the home
+page and shows an empty canvas, and the engine has hex geometry, a hex
+grid system, sprites and scaled pixel-art rendering
+([architecture.md](architecture.md), [art-direction.md](art-direction.md)).
+No rules, server or UI yet. The combat design defines the game;
 the multiplayer design (ghosts as **rival caravans**, built last) is
 settled. Built in this repository (D10). The folder name,
 `roguelike-tactics`, predates the title.

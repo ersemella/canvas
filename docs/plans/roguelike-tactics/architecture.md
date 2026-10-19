@@ -142,11 +142,16 @@ what was learned is in [history.md](history.md).
 
 ## Platform constraints
 
-- **No hex grid in the engine.** The engine's grid systems are square
-  (`GridMovementSystem`, `GridCursorSystem`); hex coordinates, distance,
-  neighbours, line of fire across hexes (6.7) and hex rendering and
-  picking are new work: rules in the game package, rendering possibly as a
-  new engine system.
+- **Hex grid in the engine (built 2026-10-19).** Hex geometry is
+  `packages/engine/src/math/Hex.ts`, exported from `@canvas/engine` and,
+  DOM-free, from `@canvas/engine/server` so the rules and the renderer
+  share it: axial coordinates, distance, neighbours and opposite pairs
+  (flanking, 6.3), straight hex lines, areas and rings, offset-rectangle
+  maps, pixel conversion. `hexLineSides` returns both hexes where a line
+  runs along a border, for rule 29. Drawing is the `hex` render type;
+  `HexGridSystem` places `HexPosition` entities on a `HexGrid` and turns
+  taps into `hexgrid:click`. The rules themselves (movement, line of fire,
+  6.7) belong in the game package.
 - **No camera in the engine.** Games render to a fixed canvas (600×400 by
   default, `packages/web/src/pages/GamePage.tsx`); nothing scrolls. The
   compact maps (6.1) should fit one screen, so a camera may never be

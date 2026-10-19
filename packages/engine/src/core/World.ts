@@ -6,12 +6,22 @@ import type {BaseSystem, SystemContext} from './System';
 export interface WorldOptions {
   canvas: HTMLCanvasElement;
   targetFPS?: number;
+  /**
+   * Whole-number factor the scene is drawn at onto the canvas (the
+   * manifest's `canvas.scale`): the scene is the canvas size divided by it.
+   * Defaults to 1.
+   */
+  scale?: number;
+  /** No image smoothing, and `image-rendering: pixelated` on the canvas. */
+  pixelArt?: boolean;
 }
 
 export class World {
   readonly canvas: HTMLCanvasElement;
   readonly ctx: CanvasRenderingContext2D;
   readonly events: EventBus = new EventBus();
+  readonly scale: number;
+  readonly pixelArt: boolean;
 
   private systems: BaseSystem[] = [];
   private currentScene: Scene | null = null;
@@ -24,6 +34,19 @@ export class World {
     const ctx = options.canvas.getContext('2d');
     if (!ctx) throw new Error('Failed to get 2D context from canvas');
     this.ctx = ctx;
+    this.scale = options.scale ?? 1;
+    this.pixelArt = options.pixelArt ?? false;
+    if (this.pixelArt) this.canvas.style.imageRendering = 'pixelated';
+  }
+
+  /** Scene width in scene pixels (the canvas width divided by `scale`). */
+  get width(): number {
+    return this.canvas.width / this.scale;
+  }
+
+  /** Scene height in scene pixels (the canvas height divided by `scale`). */
+  get height(): number {
+    return this.canvas.height / this.scale;
   }
 
   registerSystem(system: BaseSystem): void {

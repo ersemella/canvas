@@ -26,7 +26,7 @@ export const mouseService = {
 };
 
 /**
- * Tracks the pointer over the canvas in canvas coordinates. Uses Pointer
+ * Tracks the pointer over the canvas in scene coordinates. Uses Pointer
  * Events, so mouse, touch and pen all drive the same `mouseService` state —
  * taps click and touch drags drag. The pointer is captured on press so a
  * drag released outside the canvas still ends.
@@ -35,12 +35,13 @@ export class MouseSystem extends BaseSystem {
   readonly priority = 950;
   private handlers: Array<[string, (e: PointerEvent) => void]> = [];
 
-  onInit({canvas}: Omit<SystemContext, 'deltaTime'>): void {
+  onInit({canvas, world}: Omit<SystemContext, 'deltaTime'>): void {
+    // Scene coordinates: canvas pixels divided by the world's scale.
     const toCanvas = (e: PointerEvent) => {
       const r = canvas.getBoundingClientRect();
       return {
-        x: (e.clientX - r.left) / (r.width / canvas.width),
-        y: (e.clientY - r.top) / (r.height / canvas.height),
+        x: (e.clientX - r.left) / (r.width / canvas.width) / world.scale,
+        y: (e.clientY - r.top) / (r.height / canvas.height) / world.scale,
       };
     };
     // Ignore extra fingers; the first pointer down drives everything.

@@ -1,9 +1,12 @@
 /**
  * Multiplayer contract between the platform's room server (`GameRoom` in
- * `@canvas/server`) and a game's server-side rules. Types only and free of
- * DOM and engine runtime imports, so a Worker can depend on it: import it as
- * `@canvas/engine/server`.
+ * `@canvas/server`) and a game's server-side rules, plus DOM-free helpers
+ * a game's server rules share with its client (hex geometry). Free of DOM
+ * and of the engine's ECS runtime, so a Worker can depend on it: import it
+ * as `@canvas/engine/server`.
  */
+
+export * from './math/Hex';
 
 export interface RoomPlayer {
   connectionId: string;

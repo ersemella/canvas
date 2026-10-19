@@ -1,0 +1,22 @@
+{
+  "name": "@canvas/games-silk-road-tactics",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./game.json": "./game.json"
+  },
+  "scripts": {
+    "dev": "vite --config dev/vite.config.ts",
+    "typecheck": "tsc -b"
+  },
+  "peerDependencies": {
+    "@canvas/engine": "workspace:^"
+  },
+  "devDependencies": {
+    "@canvas/engine": "workspace:*",
+    "vite": "^5.0.0",
+    "vite-tsconfig-paths": "^6.1.1"
+  }
+}

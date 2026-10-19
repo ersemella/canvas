@@ -1,4 +1,4 @@
 {
   "$comment": "The games the platform builds in, in home-page order — the only list of them. After editing, run `pnpm games:gen` (then `pnpm install` if a game was added or removed). CI fails if the generated files are stale.",
-  "games": ["snake", "solitaire", "sudoku", "blackjack", "poker"]
+  "games": ["snake", "solitaire", "sudoku", "blackjack", "poker", "silk-road-tactics"]
 }
