@@ -366,8 +366,8 @@ confirm or change:
   lands on.
 - **The turn's controls** (owner, 2026-10-19, phones first, then desktop):
   the action section has no heading, hints, slot pill or summaries: the
-  numbered steps (named only: "1 Composite Bow, 2 Move"), Swap order, the
-  buttons, and one button below them. There is no Hold button: with no
+  buttons, then the numbered steps (named only: "1 Composite Bow, 2
+  Move") with Swap order, then one button to commit. There is no Hold button: with no
   action picked the button reads **End turn** and sends Hold (after the
   move, if any). Tapping a chosen target again doesn't commit; only the
   button does. The board shows the preview's outcome. Tapping anywhere but
@@ -384,6 +384,8 @@ confirm or change:
   many slots later the next turn would come (yielding included), a
   planned move shows what it adds in the Move button ("Move +2", with the
   chosen action or Hold), and the button reads "Confirm · next turn +8".
+  A unit's details list each ability in its slots too ("Composite Bow ·
+  +7"): the action alone, before any move or yielding.
 - **The top bar** shows Back and the page's title instead of the site
   name, for every game (owner, 2026-10-19).
 - **Phones** (≤ 960px) change only the layout: the board runs edge to

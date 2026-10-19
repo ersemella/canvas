@@ -671,23 +671,6 @@ function TurnControls(props: {
   return (
     <Paper bg={phone ? 'transparent' : 'dark.7'} p={phone ? 0 : 'sm'} radius="md">
       <Stack gap={8}>
-        {steps.length > 0 && (
-          <Group gap="xs" justify="space-between" wrap="nowrap">
-            <ol className={`${styles.steps} ${styles.stepsInline}`} data-testid="turn-steps">
-              {steps.map((step, i) => (
-                <li key={step}>
-                  <span className={styles.stepNo}>{i + 1}</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-            {props.canSwap && (
-              <Button size="compact-xs" variant="light" color="gray" onClick={props.onSwap} title="Do the other step first">
-                ⇅ Swap order
-              </Button>
-            )}
-          </Group>
-        )}
         <div className={styles.abilities}>
           <Button
             size={size}
@@ -737,6 +720,24 @@ function TurnControls(props: {
               );
             })}
         </div>
+        {/* The planned steps in order, just above the button that commits them. */}
+        {steps.length > 0 && (
+          <Group gap="xs" justify="space-between" wrap="nowrap">
+            <ol className={`${styles.steps} ${styles.stepsInline}`} data-testid="turn-steps">
+              {steps.map((step, i) => (
+                <li key={step}>
+                  <span className={styles.stepNo}>{i + 1}</span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+            {props.canSwap && (
+              <Button size="compact-xs" variant="light" color="gray" onClick={props.onSwap} title="Do the other step first">
+                ⇅ Swap order
+              </Button>
+            )}
+          </Group>
+        )}
         {props.children}
       </Stack>
     </Paper>

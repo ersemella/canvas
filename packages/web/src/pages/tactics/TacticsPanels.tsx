@@ -11,6 +11,7 @@ import {
   isFlanked,
   mapOf,
   movementCap,
+  slotsForward,
   statusSlotsLeft,
   statusValue,
   tileAt,
@@ -147,8 +148,9 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
           .filter((def) => def.id !== 'hold')
           .map((def) => (
             <Text key={def.id} fz="xs" c="dimmed">
-              <b className={styles.abilityName}>{def.name}</b> · {def.cost}
-              {def.charged ? ` to charge, ${def.recoveryCost} to recover` : ''}: {def.summary}
+              {/* In this unit's slots: the action alone, before any move or yielding. */}
+              <b className={styles.abilityName}>{def.name}</b> · +{slotsForward(def.cost, unit.speed)}
+              {def.charged ? ` to charge, +${slotsForward(def.recoveryCost!, unit.speed)} to recover` : ''}: {def.summary}
             </Text>
           ))}
       </Stack>

@@ -197,6 +197,7 @@ try {
   check('tapping an enemy shows its stat sheet', (await sheet.textContent()).includes('enemy'));
   check('the sheet leaves out what it could do next turn', !(await sheet.textContent()).includes('Could do next turn'));
   check('the sheet doesn’t list Hold', !(await sheet.textContent()).includes('Hold'));
+  check('the sheet gives abilities in slots, not costs', /· \+\d+/.test(await sheet.textContent()) && !/· \d{2,}/.test(await sheet.textContent()), (await sheet.textContent()).slice(0, 200));
   await shot(page, 'enemy-sheet');
 
   // Hovering a hex shows what it does, without planning a move.
@@ -330,6 +331,15 @@ try {
   const bowText = await phone.getByRole('button', {name: /^Composite Bow/}).textContent();
   check('phone: the ability button shows the same slots as Confirm', bowText.endsWith(phoneConfirm.split(' ').pop()), [bowText, phoneConfirm]);
   check('phone: steps name only the action', (await phone.getByTestId('turn-steps').textContent()) === '1Composite Bow');
+  {
+    const y = async (l) => (await l.boundingBox()).y;
+    const stepsY = await y(phone.getByTestId('turn-steps'));
+    check(
+      'phone: the steps sit below the buttons and above Confirm',
+      stepsY > (await y(phoneMove)) && stepsY < (await y(phone.getByRole('button', {name: /^Confirm/}))),
+      stepsY
+    );
+  }
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-full.png'), fullPage: true});
   const overflow = await phone.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
