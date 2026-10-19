@@ -4,6 +4,6 @@ Read only the plan your task needs; each says what else to read.
 
 | Plan | Status | Read when |
 |---|---|---|
-| [roguelike-tactics/](roguelike-tactics/README.md) | Phase 1 built (one fight against the AI) on a branch, with placeholder hero numbers; the owner sets the real numbers and approves deploying the new Durable Objects | Working on Silk Road Tactics, the tactical roguelike (combat design, rival caravans, architecture). Split by topic: start at its README, which says which file a task needs |
+| [roguelike-tactics/](roguelike-tactics/README.md) | Phase 1 built and deployed (one fight against the AI), with placeholder hero numbers; the owner sets the real numbers and decides how stalled fights end | Working on Silk Road Tactics, the tactical roguelike (combat design, rival caravans, architecture). Split by topic: start at its README, which says which file a task needs |
 | [async-games.md](async-games.md) | Parked until an async game exists | Building a game whose turns take hours (seat tokens, push, "my games") |
 | [engine-platform-split.md](engine-platform-split.md) | Done 2026-10-11; history and follow-ups | Revisiting why the engine, games and platform are separate packages, or picking up one of its follow-ups |

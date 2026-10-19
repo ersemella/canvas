@@ -337,7 +337,6 @@ confirm or change:
   ability needs it: the bow fires along hex lines.
 - **The page** plans move-then-act only; the server also accepts
   act-then-move (`actFirst`).
-- **Not deployed:** the new Durable Object classes need a `v2`
-  migration in `wrangler.toml`; deleting a class later is permanent, so
-  merging to `main` waits for the owner.
+- **Deployed** to `main` with the owner's approval (2026-10-19): the
+  `v2` migration in `wrangler.toml` adds `RunRoom` and `PlayerLedger`.
 

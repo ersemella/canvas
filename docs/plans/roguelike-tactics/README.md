@@ -15,7 +15,7 @@ settled. Built in this repository (D10). The folder name,
 
 **Next step:** the owner sets the three prototype heroes' stat numbers and
 ability values (replacing the placeholders in `src/rules/config.ts`) and
-approves deploying the two new Durable Object classes; then Phase 2
+decides how a stalled fight ends (phase-1-brief.md, section 11); then Phase 2
 ([phases.md](phases.md)). The
 keywords and their rules are decided ([keywords.md](keywords.md)). The
 combat design's other open questions are at the end of each topic file.
