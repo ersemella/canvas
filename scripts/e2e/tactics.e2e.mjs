@@ -5,6 +5,10 @@
  * a turn played with real taps and its preview, an enemy's stat sheet, a
  * reload that resumes exactly, and the fight played to victory or defeat
  * (the remaining turns chosen by the AI through a dev-server hook).
+ *
+ * Against production (no dev hook) the page part only starts and deploys
+ * a fight. Every run the suite starts is abandoned at the end, so smoke
+ * tests don't leave active runs behind.
  */
 import {chromium, devices} from 'playwright';
 import {join} from 'node:path';
@@ -63,6 +67,9 @@ check('a turn returns the next view, AI turns included', held.status === 200 && 
 const second = await api('/runs', alice, {method: 'POST', body: JSON.stringify({game: 'silk-road-tactics'})});
 check('starting another run abandons the first', (await api(`/runs/${runId}`, alice)).body?.status === 'abandoned');
 check('the new run is the active one', (await api('/runs/active', alice)).body?.activeRunId === second.body.runId);
+const abandoned = await api(`/runs/${second.body.runId}/abandon`, alice, {method: 'POST'});
+check('a run can be abandoned', abandoned.body?.status === 'abandoned', abandoned.body);
+check('an abandoned run is no longer active', (await api('/runs/active', alice)).body?.activeRunId === null);
 
 // ── The page ─────────────────────────────────────────────────────────────────
 const browser = await chromium.launch();
@@ -83,13 +90,43 @@ async function tapHex(hex) {
 const state = () => page.evaluate(() => window.__tactics?.run);
 const waitIdle = () => page.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {timeout: 15_000});
 
+/** Abandons the page's active run (the button asks twice), so none is left behind. */
+async function abandonOn(p) {
+  const button = p.getByRole('button', {name: 'Abandon run'});
+  if (!(await button.isVisible().catch(() => false))) return;
+  await button.click();
+  await p.getByRole('button', {name: /Tap again/}).click();
+  await p.getByRole('button', {name: 'Start the fight'}).waitFor({timeout: 15_000});
+  // That started a fresh run in deployment; it ends with the page's key, unplayed.
+  const key = await p.evaluate(() => localStorage.getItem('canvas:playerKey'));
+  const {body} = await api('/runs/active', key);
+  if (body?.activeRunId) await api(`/runs/${body.activeRunId}/abandon`, key, {method: 'POST'});
+}
+
 try {
   await page.goto(`${WEB_URL}/play/silk-road-tactics`);
   await page.getByRole('button', {name: 'Start a fight'}).click();
   await page.getByRole('button', {name: 'Start the fight'}).waitFor({timeout: 15_000});
-  await page.waitForFunction(() => window.__tactics);
+  const devServer = await page
+    .waitForFunction(() => window.__tactics, null, {timeout: 3_000})
+    .then(() => true)
+    .catch(() => false);
   await sleep(300);
   await shot(page, 'deploy');
+
+  if (!devServer) {
+    // Production: no dev hook, so just start a fight and leave it.
+    await page.getByRole('button', {name: 'Start the fight'}).click();
+    await page.getByText(/^Your turn:/).waitFor({timeout: 15_000});
+    await sleep(300);
+    await shot(page, 'fight');
+    check('the page starts and deploys a fight', true);
+    check('no page errors', pageErrors.length === 0, pageErrors);
+    console.log('  (deep checks skipped: no __tactics hook — not a dev-server build)');
+    await abandonOn(page);
+    await browser.close();
+    finish();
+  }
 
   // Move the Outrider (default at col 1,row 3) to another zone hex by tapping.
   let run = await state();
@@ -189,6 +226,7 @@ try {
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png'), fullPage: true});
   const overflow = await phone.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   check('phone: no sideways scroll', overflow <= 1, overflow);
+  await abandonOn(phone);
 } finally {
   await browser.close();
 }
