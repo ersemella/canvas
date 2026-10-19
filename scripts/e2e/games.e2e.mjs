@@ -42,7 +42,8 @@ try {
   check('game list shows all 6 games', cards === 6, cards);
 
   // Every game opens to a canvas without throwing (works against production).
-  for (const id of ['snake', 'solitaire', 'sudoku', 'blackjack', 'silk-road-tactics']) {
+  // Silk Road Tactics has its own page and suite (tactics.e2e.mjs).
+  for (const id of ['snake', 'solitaire', 'sudoku', 'blackjack']) {
     const errorsBefore = pageErrors.length;
     await openGame(id);
     await sleep(500);

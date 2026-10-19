@@ -1,15 +1,20 @@
 {
   "meta": {
     "title": "Silk Road Tactics",
-    "description": "A turn-based tactical roguelike on a fantasy Silk Road. Lead a caravan of heroes through hex-map fights. In development."
+    "description": "A turn-based tactical roguelike on a fantasy Silk Road: three heroes against a rival band on a hex map. Prototype: one fight."
   },
   "canvas": {
     "width": 600,
     "height": 400
   },
-  "systems": [],
+  "systems": [
+    "MouseSystem",
+    "HexGridSystem",
+    "TacticsBoardSystem"
+  ],
   "scene": {
     "name": "silk-road-tactics-main",
     "entities": []
-  }
+  },
+  "$comment": "The board's entities are built from the map in src/index.ts."
 }

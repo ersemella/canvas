@@ -1,0 +1,202 @@
+/**
+ * Board rules on the hex map: who stands where, movement, flanking, line
+ * of fire and statuses (map.md, section 6; keywords.md, 17.5–17.6).
+ */
+import {
+  hexEquals,
+  hexKey,
+  hexLineSides,
+  hexNeighbors,
+  hexOppositePairs,
+  hexToOffset,
+} from '@canvas/engine/server';
+import type {Hex} from '@canvas/engine/server';
+import {RULES} from './config';
+import {tileAt} from './map';
+import type {MapData} from './map';
+import type {FightState, Status, StatusKind, Unit} from './types';
+
+export function onMap(map: MapData, h: Hex): boolean {
+  const {col, row} = hexToOffset(h);
+  return col >= 0 && col < map.columns && row >= 0 && row < map.rows;
+}
+
+/** On the map and not an obstacle: a unit may stand here. */
+export function walkable(map: MapData, h: Hex): boolean {
+  return onMap(map, h) && tileAt(map, h) !== 'obstacle';
+}
+
+export function unitAt(state: FightState, h: Hex): Unit | undefined {
+  return state.units.find((u) => u.alive && u.hex !== null && hexEquals(u.hex, h));
+}
+
+export function hostile(a: Unit, b: Unit): boolean {
+  return a.side !== b.side;
+}
+
+export function livingUnits(state: FightState): Unit[] {
+  return state.units.filter((u) => u.alive);
+}
+
+// ─── Statuses ────────────────────────────────────────────────────────────────
+
+/** Strongest active value of a status (combine by max); 0 if none. */
+export function statusValue(unit: Unit, kind: StatusKind): number {
+  let best = 0;
+  for (const s of unit.statuses) if (s.kind === kind) best = Math.max(best, kind === 'immobilized' ? 1 : s.value);
+  return best;
+}
+
+/** Slots left on the longest status of a kind at `slot` (inclusive), for previews and AI. */
+export function statusSlotsLeft(unit: Unit, kind: StatusKind, slot: number): number {
+  let best = 0;
+  for (const s of unit.statuses) if (s.kind === kind) best = Math.max(best, s.untilSlot - slot + 1);
+  return best;
+}
+
+export function isImmobilized(unit: Unit): boolean {
+  return unit.statuses.some((s) => s.kind === 'immobilized');
+}
+
+export function addStatus(unit: Unit, status: Status): void {
+  unit.statuses.push(status);
+}
+
+/** Removes statuses that ended before `slot` (they cover their last slot, 3.9). */
+export function expireStatuses(unit: Unit, slot: number): void {
+  unit.statuses = unit.statuses.filter((s) => s.untilSlot >= slot);
+}
+
+/** Cleanse: every harmful status from an ability (not a flank's Vulnerable). */
+export function cleanse(unit: Unit): void {
+  unit.statuses = [];
+}
+
+/**
+ * A unit is flanked when two units hostile to it stand directly opposite
+ * each other across it (6.3).
+ */
+export function isFlanked(state: FightState, unit: Unit): boolean {
+  if (!unit.hex) return false;
+  return hexOppositePairs(unit.hex).some(([a, b]) => {
+    const ua = unitAt(state, a);
+    const ub = unitAt(state, b);
+    return ua !== undefined && ub !== undefined && hostile(ua, unit) && hostile(ub, unit);
+  });
+}
+
+/** Vulnerable % in effect: an ability's or a flank's, by max (brief section 2). */
+export function vulnerablePercent(state: FightState, unit: Unit): number {
+  return Math.max(statusValue(unit, 'vulnerable'), isFlanked(state, unit) ? RULES.flankVulnerable : 0);
+}
+
+export function movementCap(unit: Unit): number {
+  if (isImmobilized(unit)) return 0;
+  return Math.max(1, RULES.movementCap - statusValue(unit, 'slowed'));
+}
+
+// ─── Movement ────────────────────────────────────────────────────────────────
+
+export interface Reach {
+  hex: Hex;
+  /** Hexes entered, start excluded. */
+  path: Hex[];
+}
+
+/**
+ * Every hex the unit can end its move on, with the shortest path to it
+ * (fewest quicksand hexes among equally short ones), the start included
+ * with an empty path. Allies can be passed, enemies and obstacles can't;
+ * a move can't end on another unit (brief section 2).
+ */
+export function reachableHexes(state: FightState, map: MapData, unit: Unit): Reach[] {
+  if (!unit.hex) return [];
+  const cap = movementCap(unit);
+  const best = new Map<string, {path: Hex[]; hazards: number}>();
+  best.set(hexKey(unit.hex), {path: [], hazards: 0});
+  let frontier: Hex[] = [unit.hex];
+  for (let step = 0; step < cap; step++) {
+    const next = new Map<string, Hex>();
+    for (const from of frontier) {
+      const fromBest = best.get(hexKey(from))!;
+      for (const h of hexNeighbors(from)) {
+        if (!walkable(map, h)) continue;
+        const other = unitAt(state, h);
+        if (other && other !== unit && hostile(other, unit)) continue;
+        const key = hexKey(h);
+        const hazards = fromBest.hazards + (tileAt(map, h) === 'hazard' ? 1 : 0);
+        const seen = best.get(key);
+        // Only improve within the same step count (BFS layers).
+        if (seen && (seen.path.length < step + 1 || seen.hazards <= hazards)) continue;
+        best.set(key, {path: [...fromBest.path, h], hazards});
+        next.set(key, h);
+      }
+    }
+    frontier = [...next.values()];
+  }
+  const out: Reach[] = [];
+  for (const {path} of best.values()) {
+    const hex = path.length > 0 ? path[path.length - 1]! : unit.hex;
+    const other = unitAt(state, hex);
+    if (other && other !== unit) continue;
+    out.push({hex, path});
+  }
+  return sortByHex(out, (r) => r.hex);
+}
+
+/** Checks a submitted path; returns a player-facing reason if it's illegal. */
+export function invalidPath(state: FightState, map: MapData, unit: Unit, path: Hex[]): string | null {
+  if (path.length === 0) return null;
+  if (!unit.hex) return 'That unit is not on the board.';
+  if (path.length > movementCap(unit)) {
+    return isImmobilized(unit) ? 'That unit is Immobilized.' : 'That move is longer than the unit can go.';
+  }
+  let from = unit.hex;
+  for (const h of path) {
+    if (!hexNeighbors(from).some((n) => hexEquals(n, h))) return 'Each step must be to an adjacent hex.';
+    if (!walkable(map, h)) return 'That path crosses an obstacle or leaves the map.';
+    const other = unitAt(state, h);
+    if (other && other !== unit && hostile(other, unit)) return 'Enemies block movement.';
+    from = h;
+  }
+  const end = unitAt(state, from);
+  if (end && end !== unit) return 'A move can’t end on another unit.';
+  return null;
+}
+
+// ─── Line of fire ────────────────────────────────────────────────────────────
+
+/**
+ * A direct ranged attack's line of fire (6.7): the line between hex centres
+ * may not pass a hex holding another unit or an obstacle; where it runs
+ * along a border it is blocked if either hex is (rule 29). Conceal doesn't
+ * block. Returns the first blocking unit, if one does.
+ */
+export function lineOfFire(
+  state: FightState,
+  map: MapData,
+  from: Hex,
+  to: Hex
+): {clear: boolean; blocker?: Unit} {
+  const steps = hexLineSides(from, to).slice(1, -1);
+  for (const step of steps) {
+    for (const h of step) {
+      const u = unitAt(state, h);
+      if (u) return {clear: false, blocker: u};
+      if (tileAt(map, h) === 'obstacle') return {clear: false};
+    }
+  }
+  return {clear: true};
+}
+
+// ─── Ordering ────────────────────────────────────────────────────────────────
+
+/** Sorts by offset row then column: the "hex index" used to break ties. */
+export function sortByHex<T>(items: T[], hexOf: (t: T) => Hex): T[] {
+  return [...items].sort((a, b) => hexIndex(hexOf(a)) - hexIndex(hexOf(b)));
+}
+
+export function hexIndex(h: Hex): number {
+  const {col, row} = hexToOffset(h);
+  return row * 100 + col;
+}

@@ -5,11 +5,20 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./server": "./src/server.ts",
     "./game.json": "./game.json"
+  },
+  "typesVersions": {
+    "*": {
+      "server": [
+        "src/server.ts"
+      ]
+    }
   },
   "scripts": {
     "dev": "vite --config dev/vite.config.ts",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@canvas/engine": "workspace:^"
@@ -17,6 +26,10 @@
   "devDependencies": {
     "@canvas/engine": "workspace:*",
     "vite": "^5.0.0",
-    "vite-tsconfig-paths": "^6.1.1"
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^3.2.7"
+  },
+  "canvas": {
+    "serverKind": "run"
   }
 }

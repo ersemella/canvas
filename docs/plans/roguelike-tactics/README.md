@@ -1,18 +1,22 @@
 # Plan: Silk Road Tactics
 
-Status: **designed; the package and engine groundwork are built**
-(2026-10-19): `packages/games/silk-road-tactics` is listed on the home
-page and shows an empty canvas, and the engine has hex geometry, a hex
-grid system, sprites and scaled pixel-art rendering
-([architecture.md](architecture.md), [art-direction.md](art-direction.md)).
-No rules, server or UI yet. The combat design defines the game;
+Status: **Phase 1 built (2026-10-19), with placeholder hero numbers.**
+One fight against the AI plays end to end: the rules in
+`packages/games/silk-road-tactics/src/rules/`, `RunRoom` and
+`PlayerLedger` in `@canvas/server`, the page at `/play/silk-road-tactics`.
+What the builder decided and where it departs from the brief is in
+[phase-1-brief.md](phase-1-brief.md#11-as-built-2026-10-19). The engine
+has hex geometry, a hex grid system, sprites and scaled pixel-art
+rendering ([architecture.md](architecture.md),
+[art-direction.md](art-direction.md)). The combat design defines the game;
 the multiplayer design (ghosts as **rival caravans**, built last) is
 settled. Built in this repository (D10). The folder name,
 `roguelike-tactics`, predates the title.
 
-**Next step: Phase 1**, from [phase-1-brief.md](phase-1-brief.md), once
-the owner has set the three prototype heroes' stat numbers and ability
-values (its section 4; their abilities are designed, 2026-10-18). The
+**Next step:** the owner sets the three prototype heroes' stat numbers and
+ability values (replacing the placeholders in `src/rules/config.ts`) and
+approves deploying the two new Durable Object classes; then Phase 2
+([phases.md](phases.md)). The
 keywords and their rules are decided ([keywords.md](keywords.md)). The
 combat design's other open questions are at the end of each topic file.
 PvP is parked ([pvp.md](pvp.md)).

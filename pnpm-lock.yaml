@@ -83,6 +83,9 @@ importers:
       vite-tsconfig-paths:
         specifier: ^6.1.1
         version: 6.1.1(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.15))
+      vitest:
+        specifier: ^3.2.7
+        version: 3.2.7(@types/node@22.19.15)
 
   packages/games/snake:
     devDependencies:
@@ -128,6 +131,9 @@ importers:
       '@canvas/games-poker':
         specifier: workspace:*
         version: link:../games/poker
+      '@canvas/games-silk-road-tactics':
+        specifier: workspace:*
+        version: link:../games/silk-road-tactics
     devDependencies:
       '@canvas/configs':
         specifier: workspace:*

@@ -293,3 +293,51 @@ The rest don't block Phase 1; all are config values:
 - The default size of the visible track window (roughly 30 slots).
 - The fixed order for simultaneous placement (open question 4).
 - Move and act order (open question 8).
+
+## 11. As built (2026-10-19)
+
+Phase 1 is built: `packages/games/silk-road-tactics` (rules in
+`src/rules/`, `./server` exporting the `RunSystem`), `RunRoom`,
+`PlayerLedger` and `/runs` in `@canvas/server`, and the page in
+`@canvas/web` (`pages/tactics/`). The builder's choices, for the owner to
+confirm or change:
+
+- **Placeholder numbers.** Every hero stat and ability value marked TBD
+  in section 4 has a placeholder in `src/rules/config.ts`, marked as such,
+  from the roster's bands (health 300/420/540, speed 4 and 7, power
+  10/25/40) so a fight can be played. Tuned once against AI-vs-AI fights
+  that stalled: damage up (Bökh Champions pinned each other forever,
+  since the AI's status weights outscored their small damage) and Clear
+  the Storm's heal down (a Storm Caller out-healed a Champion).
+- **Open: a fight can stall.** A fight ends only by elimination, and the
+  Storm Caller has no damaging ability, so when Storm Callers are all one
+  side (or both sides) has left, nothing can finish it: in AI-vs-AI fights
+  from random deployments, about 1 in 20 stalled this way. Options for the
+  owner: a fight limit (the track reaching some slot), damage on Gale or
+  hail, or a surrender rule. Until then the page has **Abandon run**
+  (counts as a defeat, D3).
+- **AI additions** (section 6): a small pull toward the nearest enemy
+  (`AI.perHexFromEnemy`), or an AI with nothing in reach holds forever;
+  ending a move on quicksand counts its next-turn damage against the
+  option; ground-targeted abilities (hail, Volley, Freeze) are tried once
+  per target hex, from the cheapest hex in range, to stay within 10 ms of
+  CPU (measured over ~3,700 requests in AI-vs-AI fights: median 1.7 ms,
+  99th percentile 9.3 ms, under 1% above 10 ms). The AI always moves
+  before acting.
+- **Gale on an Immobilized target displaces it,** following the
+  2026-10-19 rule (Immobilized units can be displaced) over section 4's
+  older line ("slowed but not moved").
+- **Dash** goes exactly 3 hexes. **Pin** targets enemies; **Throw** and
+  **Gale** any adjacent unit, allies included.
+- **The map's coordinates** are in `src/rules/map.ts`; on an odd-r
+  rectangle the left-right mirror is by column, exact to within half a
+  hex on odd rows. The enemy's placement is one of three layouts, chosen
+  by the run's seed.
+- **Line of fire** (rule 29) is implemented and tested, but no Phase 1
+  ability needs it: the bow fires along hex lines.
+- **The page** plans move-then-act only; the server also accepts
+  act-then-move (`actFirst`).
+- **Not deployed:** the new Durable Object classes need a `v2`
+  migration in `wrangler.toml`; deleting a class later is permanent, so
+  merging to `main` waits for the owner.
+

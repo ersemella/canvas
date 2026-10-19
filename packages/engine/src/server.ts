@@ -16,6 +16,8 @@ export interface RoomPlayer {
 }
 
 export interface ServerSystem<TState = unknown, TAction = unknown> {
+  /** Runs in a multiplayer `GameRoom` (the default when omitted). */
+  kind?: 'room';
   systemName: string;
   /**
    * Deals a new round for `players`. `previous` is the last round's state, so
@@ -85,4 +87,27 @@ export interface RoomPolicy {
    * refused, and a new connection with the token replaces an old one).
    */
   seatIdentity?: 'name' | 'token';
+}
+
+/**
+ * Rules of a single-player run, played over plain HTTP in its own
+ * `RunRoom` Durable Object (one per run, owned by an anonymous player key;
+ * docs/plans/roguelike-tactics/architecture.md, D3 and D7). The room
+ * stores the state and calls these; the game owns every rule.
+ */
+export interface RunSystem<TState = unknown, TAction = unknown, TView = unknown> {
+  kind: 'run';
+  systemName: string;
+  /** A new run from a server-chosen seed, which must never reach the player. */
+  createRun(seed: number): TState;
+  /**
+   * Applies one player action and everything that follows it up to the
+   * player's next decision (AI turns included). Returns the new state
+   * without mutating `state`; throws with a player-facing message for an
+   * illegal action.
+   */
+  handleAction(state: TState, action: TAction): TState;
+  /** Everything the player may see, sent whole on every response: never the seed. */
+  getView(state: TState): TView;
+  status(state: TState): 'active' | 'won' | 'lost';
 }

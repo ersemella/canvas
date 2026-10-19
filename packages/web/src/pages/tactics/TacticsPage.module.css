@@ -1,0 +1,128 @@
+.layout {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  max-width: 100%;
+}
+
+.board {
+  position: relative;
+  flex-shrink: 1;
+  min-width: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.panel {
+  width: 330px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.result {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(17, 24, 39, 0.92);
+}
+
+.abilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.preview {
+  border-top: 1px solid var(--mantine-color-dark-4);
+  padding-top: 6px;
+}
+
+.damage {
+  color: var(--mantine-color-red-4);
+  font-weight: 600;
+}
+
+.heal {
+  color: var(--mantine-color-green-4);
+  font-weight: 600;
+}
+
+.track {
+  display: flex;
+  flex-direction: column;
+}
+
+.trackRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 15px;
+  font-size: 12px;
+}
+
+.slotNo {
+  width: 28px;
+  color: var(--mantine-color-dark-2);
+  font-family: monospace;
+  font-size: 11px;
+  text-align: right;
+  display: inline-block;
+}
+
+.card {
+  flex: 1;
+  text-align: left;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.cardPlayer {
+  background: #1e3a8a;
+}
+
+.cardEnemy {
+  background: #7f1d1d;
+}
+
+.cardActing {
+  outline: 2px solid #fde047;
+}
+
+.marker {
+  margin-left: 4px;
+  color: #fb923c;
+}
+
+.ghostCard {
+  flex: 1;
+  border: 1px dashed #fde047;
+  border-radius: 4px;
+  padding: 0 6px;
+  color: #fde047;
+  font-size: 11px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr;
+  gap: 2px 10px;
+  font-size: 13px;
+}
+
+/* Phone: board on top, the track and panels below (brief section 9). */
+@media (max-width: 960px) {
+  .layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .panel {
+    width: 100%;
+  }
+}

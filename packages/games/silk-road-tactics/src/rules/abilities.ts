@@ -1,0 +1,372 @@
+/**
+ * The three prototype heroes' abilities (brief section 4). Each lists its
+ * legal targets from a hex (for validation, previews and the AI) and
+ * resolves on the fight state. Values come from config.ts.
+ */
+import {hexDirectionTo, hexDistance, hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
+import type {Hex} from '@canvas/engine/server';
+import {ABILITY, HEROES, RULES} from './config';
+import {addStatus, cleanse, hostile, isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
+import {enterHex, displace, heal, hit, log, scaled, unitName} from './resolve';
+import type {Ctx} from './resolve';
+import {tileAt} from './map';
+import type {MapData} from './map';
+import type {AbilityId, ActionTarget, FightState, Unit} from './types';
+
+export interface AbilityDef {
+  id: AbilityId;
+  name: string;
+  /** One line for the side panel. */
+  summary: string;
+  ultimate: boolean;
+  /** Charged (3.7): the card moves by `cost`, then the ability triggers when reached. */
+  charged: boolean;
+  /** Action cost, or the charge cost for a charged ability. */
+  cost: number;
+  recoveryCost?: number;
+  /** Moves the user, so Immobilized forbids it (17.5). */
+  movesSelf: boolean;
+  /** Legal targets with the user standing on `from`. */
+  targets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[];
+  /** Resolves the ability now (a charged one triggers here). */
+  resolve(ctx: Ctx, user: Unit, target: ActionTarget): void;
+}
+
+const DIRECTIONS = [0, 1, 2, 3, 4, 5];
+
+function adjacentUnits(state: FightState, from: Hex, keep: (u: Unit) => boolean): ActionTarget[] {
+  return hexNeighbors(from)
+    .map((h) => unitAt(state, h))
+    .filter((u): u is Unit => u !== undefined && keep(u))
+    .map((u) => ({hex: u.hex!}));
+}
+
+function hexesWithin(map: MapData, from: Hex, range: number, keep: (h: Hex) => boolean = () => true): ActionTarget[] {
+  return sortByHex(
+    hexesInRange(from, range).filter((h) => onMap(map, h) && keep(h)),
+    (h) => h
+  ).map((hex) => ({hex}));
+}
+
+function unitsInArea(state: FightState, center: Hex, radius: number): Unit[] {
+  return state.units.filter((u) => u.alive && u.hex && hexDistance(u.hex, center) <= radius);
+}
+
+function direction(from: Hex, to: Hex): number {
+  return hexDirectionTo(from, to)!;
+}
+
+const hold: AbilityDef = {
+  id: 'hold',
+  name: 'Hold',
+  summary: 'Quick action with no effect: end the turn.',
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.hold.cost,
+  movesSelf: false,
+  targets: () => [{}],
+  resolve: (ctx, user) => log(ctx, `${unitName(user)} holds.`),
+};
+
+// ─── Mangudai Outrider ───────────────────────────────────────────────────────
+
+/** The first unit along a hex direction within range, unless an obstacle comes first. */
+function firstUnitInLine(state: FightState, map: MapData, from: Hex, dir: number, range: number): Unit | undefined {
+  let h = from;
+  for (let i = 0; i < range; i++) {
+    h = hexNeighbor(h, dir);
+    if (!onMap(map, h) || tileAt(map, h) === 'obstacle') return undefined;
+    const u = unitAt(state, h);
+    if (u) return u;
+  }
+  return undefined;
+}
+
+const bow: AbilityDef = {
+  id: 'bow',
+  name: 'Composite Bow',
+  summary: `Arrow along a hex line, range ${ABILITY.bow.range}; hits the first unit (an ally stops it unharmed).`,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.bow.cost,
+  movesSelf: false,
+  targets(state, map, user, from) {
+    return DIRECTIONS.map((d) => firstUnitInLine(state, map, from, d, ABILITY.bow.range))
+      .filter((u): u is Unit => u !== undefined && hostile(u, user))
+      .map((u) => ({hex: u.hex!}));
+  },
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    hit(ctx, user, u, ABILITY.bow.damage, true, `${unitName(user)}'s arrow`);
+  },
+};
+
+function dashEnd(state: FightState, map: MapData, user: Unit, from: Hex, dir: number): Hex | undefined {
+  let h = from;
+  for (let i = 0; i < ABILITY.dash.distance; i++) {
+    h = hexNeighbor(h, dir);
+    if (!walkable(map, h)) return undefined;
+    const u = unitAt(state, h);
+    if (u && u !== user && hostile(u, user)) return undefined;
+  }
+  const end = unitAt(state, h);
+  return end && end !== user ? undefined : h;
+}
+
+const dash: AbilityDef = {
+  id: 'dash',
+  name: 'Dash',
+  summary: `Ride ${ABILITY.dash.distance} hexes in a straight line; passes allies, not enemies or ruins.`,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.dash.cost,
+  movesSelf: true,
+  targets(state, map, user, from) {
+    return DIRECTIONS.map((d) => dashEnd(state, map, user, from, d))
+      .filter((h): h is Hex => h !== undefined)
+      .map((hex) => ({hex}));
+  },
+  resolve(ctx, user, target) {
+    // Hexes passed have no effect; the one it ends on does.
+    enterHex(ctx, user, target.hex!);
+    log(ctx, `${unitName(user)} dashes.`);
+  },
+};
+
+const volley: AbilityDef = {
+  id: 'volley',
+  name: 'Volley',
+  summary: `Ultimate, charged: arrows arc onto a hex within ${ABILITY.volley.range}, hitting every unit within ${ABILITY.volley.radius}, allies too.`,
+  ultimate: true,
+  charged: true,
+  cost: ABILITY.volley.chargeCost,
+  recoveryCost: ABILITY.volley.recoveryCost,
+  movesSelf: false,
+  targets: (_state, map, _user, from) => hexesWithin(map, from, ABILITY.volley.range),
+  resolve(ctx, user, target) {
+    log(ctx, `${unitName(user)}'s Volley lands.`);
+    for (const u of unitsInArea(ctx.state, target.hex!, ABILITY.volley.radius)) {
+      hit(ctx, user, u, ABILITY.volley.damage, true, 'The Volley');
+    }
+  },
+};
+
+// ─── Yadachy Storm Caller ────────────────────────────────────────────────────
+
+const clearStorm: AbilityDef = {
+  id: 'clearStorm',
+  name: 'Clear the Storm',
+  summary: `Heals and cleanses every ally within ${ABILITY.clearStorm.radius}, itself included.`,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.clearStorm.cost,
+  movesSelf: false,
+  targets: () => [{}],
+  resolve(ctx, user) {
+    log(ctx, `${unitName(user)} clears the storm.`);
+    for (const u of unitsInArea(ctx.state, user.hex!, ABILITY.clearStorm.radius)) {
+      if (hostile(u, user)) continue;
+      cleanse(u);
+      heal(ctx, u, scaled(ABILITY.clearStorm.heal, user.power));
+    }
+  },
+};
+
+const hail: AbilityDef = {
+  id: 'hail',
+  name: 'Hail',
+  summary: `A hex within ${ABILITY.hail.range} becomes hail for ${ABILITY.hail.hexSlots} slots: Slowed ${ABILITY.hail.slowed}, Vulnerable ${ABILITY.hail.vulnerable}%.`,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.hail.cost,
+  movesSelf: false,
+  targets: (_state, map, _user, from) =>
+    hexesWithin(map, from, ABILITY.hail.range, (h) => tileAt(map, h) !== 'obstacle'),
+  resolve(ctx, user, target) {
+    const h = target.hex!;
+    ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, h));
+    ctx.state.effects.push({
+      kind: 'hail',
+      hex: h,
+      untilSlot: ctx.slot + ABILITY.hail.hexSlots,
+      slowed: ABILITY.hail.slowed,
+      vulnerable: ABILITY.hail.vulnerable,
+      statusSlots: ABILITY.hail.statusSlots,
+    });
+    log(ctx, `${unitName(user)} calls down hail.`);
+    const u = unitAt(ctx.state, h);
+    if (u) {
+      const untilSlot = ctx.slot + ABILITY.hail.statusSlots;
+      addStatus(u, {kind: 'slowed', value: ABILITY.hail.slowed, untilSlot});
+      addStatus(u, {kind: 'vulnerable', value: ABILITY.hail.vulnerable, untilSlot});
+    }
+  },
+};
+
+const gale: AbilityDef = {
+  id: 'gale',
+  name: 'Gale',
+  summary: `Melee: Displace ${ABILITY.gale.displace} away and Slowed ${ABILITY.gale.slowed}.`,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.gale.cost,
+  movesSelf: false,
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)}'s gale strikes ${unitName(u)}.`);
+    addStatus(u, {kind: 'slowed', value: ABILITY.gale.slowed, untilSlot: ctx.slot + ABILITY.gale.slowedSlots});
+    displace(ctx, u, direction(user.hex!, u.hex!), ABILITY.gale.displace);
+  },
+};
+
+const freeze: AbilityDef = {
+  id: 'freeze',
+  name: 'Freeze',
+  summary: `Ultimate, charged: units within ${ABILITY.freeze.radius} of a hex within ${ABILITY.freeze.range} are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
+  ultimate: true,
+  charged: true,
+  cost: ABILITY.freeze.chargeCost,
+  recoveryCost: ABILITY.freeze.recoveryCost,
+  movesSelf: false,
+  targets: (_state, map, _user, from) => hexesWithin(map, from, ABILITY.freeze.range),
+  resolve(ctx, user, target) {
+    log(ctx, `${unitName(user)}'s Freeze takes hold.`);
+    const untilSlot = ctx.slot + ABILITY.freeze.immobilizedSlots;
+    for (const u of unitsInArea(ctx.state, target.hex!, ABILITY.freeze.radius)) {
+      addStatus(u, {kind: 'immobilized', value: 0, untilSlot});
+      addStatus(u, {kind: 'vulnerable', value: ABILITY.freeze.vulnerable, untilSlot});
+    }
+  },
+};
+
+// ─── Bökh Champion ───────────────────────────────────────────────────────────
+
+const throwAbility: AbilityDef = {
+  id: 'throw',
+  name: 'Throw',
+  summary: 'Melee: throw the target to another free hex next to you, with damage.',
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.throw.cost,
+  movesSelf: false,
+  targets(state, map, user, from) {
+    const landing = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
+    const out: ActionTarget[] = [];
+    for (const t of adjacentUnits(state, from, (u) => u !== user)) {
+      for (const to of sortByHex(landing, (h) => h)) out.push({hex: t.hex!, to});
+    }
+    return out;
+  },
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
+    hit(ctx, user, u, ABILITY.throw.damage, false, 'The throw');
+    if (u.alive) enterHex(ctx, u, target.to!);
+  },
+};
+
+const pin: AbilityDef = {
+  id: 'pin',
+  name: 'Pin',
+  summary: `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots; it is Vulnerable ${ABILITY.pin.vulnerable}%.`,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.pin.cost,
+  movesSelf: false,
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => hostile(u, user)),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    const untilSlot = ctx.slot + ABILITY.pin.slots;
+    addStatus(user, {kind: 'immobilized', value: 0, untilSlot});
+    addStatus(u, {kind: 'immobilized', value: 0, untilSlot});
+    addStatus(u, {kind: 'vulnerable', value: ABILITY.pin.vulnerable, untilSlot});
+    log(ctx, `${unitName(user)} pins ${unitName(u)}.`);
+  },
+};
+
+const rampage: AbilityDef = {
+  id: 'rampage',
+  name: 'Rampage',
+  summary: `Ultimate: charge ${ABILITY.rampage.distance} hexes in a line; everything in or beside the path is hit and knocked aside.`,
+  ultimate: true,
+  charged: false,
+  cost: ABILITY.rampage.cost,
+  movesSelf: true,
+  targets(_state, map, _user, from) {
+    // The target is the first hex in the chosen direction.
+    return DIRECTIONS.map((d) => hexNeighbor(from, d))
+      .filter((h) => walkable(map, h))
+      .map((hex) => ({hex}));
+  },
+  resolve(ctx, user, target) {
+    const dir = direction(user.hex!, target.hex!);
+    log(ctx, `${unitName(user)} rampages.`);
+    const hitAlready = new Set<string>([user.id]);
+    let pos = user.hex!;
+    let lastFree = pos;
+    for (let i = 0; i < ABILITY.rampage.distance; i++) {
+      const next = hexNeighbor(pos, dir);
+      // Only an obstacle (or an Unstoppable unit, none in Phase 1) stops it; the edge ends it.
+      if (!walkable(ctx.map, next)) break;
+      pos = next;
+      // Everyone in the hex entered or beside it, hit once: farthest first,
+      // so those beside it (distance 1) before the one in the path (0).
+      const victims = ctx.state.units.filter(
+        (u) => u.alive && u.hex && !hitAlready.has(u.id) && hexDistance(u.hex, pos) <= 1
+      );
+      victims.sort((a, b) => hexDistance(b.hex!, pos) - hexDistance(a.hex!, pos) || unitOrder(a) - unitOrder(b));
+      for (const u of victims) {
+        hitAlready.add(u.id);
+        if (hostile(u, user)) hit(ctx, user, u, ABILITY.rampage.damage, false, 'The Rampage');
+        if (!u.alive) continue;
+        // In the path: knocked ahead; beside it: away from the Champion's hex.
+        const away = hexEquals(u.hex!, pos) ? dir : direction(pos, u.hex!);
+        displace(ctx, u, away, ABILITY.rampage.displace);
+      }
+      if (!unitAt(ctx.state, pos)) lastFree = pos;
+    }
+    // Ends on the last free hex it passed if the last one is taken.
+    if (user.alive) enterHex(ctx, user, lastFree);
+  },
+};
+
+function unitOrder(u: Unit): number {
+  return (u.side === 'player' ? 0 : 10) + u.partyIndex;
+}
+
+export const ABILITIES: Record<AbilityId, AbilityDef> = {
+  hold,
+  bow,
+  dash,
+  volley,
+  clearStorm,
+  hail,
+  gale,
+  freeze,
+  throw: throwAbility,
+  pin,
+  rampage,
+};
+
+export function abilitiesOf(unit: Unit): AbilityDef[] {
+  return HEROES[unit.hero].abilities.map((id) => ABILITIES[id]);
+}
+
+/** Why the unit can't use the ability at all right now, or null if it can. */
+export function unusableReason(unit: Unit, ability: AbilityDef): string | null {
+  if (!HEROES[unit.hero].abilities.includes(ability.id)) return 'That unit doesn’t have that ability.';
+  if (ability.ultimate) {
+    if (unit.ultimateUsed) return 'The ultimate has already been used this fight.';
+    if (unit.turnsTaken < RULES.ultimateUnlockTurns) {
+      return `The ultimate unlocks after ${RULES.ultimateUnlockTurns} turns (${unit.turnsTaken} so far).`;
+    }
+  }
+  if (ability.movesSelf && isImmobilized(unit)) return 'An Immobilized unit can’t use an ability that moves it.';
+  return null;
+}
+
+export function sameTarget(a: ActionTarget, b: ActionTarget): boolean {
+  const eq = (x?: Hex, y?: Hex) => (x === undefined ? y === undefined : y !== undefined && hexEquals(x, y));
+  return eq(a.hex, b.hex) && eq(a.to, b.to);
+}

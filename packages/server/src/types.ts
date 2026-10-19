@@ -3,8 +3,8 @@
  * from the engine so the server and every game share one definition.
  */
 
-import type {RoomPlayer, RoomPolicy, ServerSystem} from '@canvas/engine/server';
-export type {RoomPlayer, RoomPolicy, ServerSystem};
+import type {RoomPlayer, RoomPolicy, RunSystem, ServerSystem} from '@canvas/engine/server';
+export type {RoomPlayer, RoomPolicy, RunSystem, ServerSystem};
 
 /** Persisted in DO storage under the `meta` key. */
 export interface RoomRecord {
@@ -67,8 +67,40 @@ export interface RateLimiter {
   limit(options: {key: string}): Promise<{success: boolean}>;
 }
 
+/** A single-player run, stored by its `RunRoom` under the `run` key. */
+export interface RunRecord {
+  runId: string;
+  /** The game id, a key of `runSystemRegistry`. */
+  game: string;
+  /** SHA-256 hex of the owner's player key; the key itself is never stored. */
+  ownerHash: string;
+  /** The game's run state (seed included): never sent as is. */
+  state: unknown;
+  status: 'active' | 'won' | 'lost' | 'abandoned';
+  createdAt: number;
+  updatedAt: number;
+}
+
+/** Every `/runs` response: the run's whole public view. */
+export interface RunResponse {
+  runId: string;
+  game: string;
+  status: RunRecord['status'];
+  view: unknown;
+}
+
+/** A player key's ledger, stored by its `PlayerLedger` under the `ledger` key. */
+export interface LedgerRecord {
+  activeRunId: string | null;
+  runsStarted: number;
+}
+
 export interface Env {
   GAME_ROOM: DurableObjectNamespace;
+  /** One per single-player run (`idFromName('run:' + runId)`). */
+  RUN_ROOM: DurableObjectNamespace;
+  /** One per player key (`idFromName(keyHash)`). */
+  PLAYER_LEDGER: DurableObjectNamespace;
   /** Retired ManifestRegistry DO; still bound until its class is deleted. Unused. */
   MANIFEST_REGISTRY: DurableObjectNamespace;
   /** Caps room creation per client IP. Optional so a missing binding never blocks play. */

@@ -4,6 +4,7 @@ import {HomePage} from 'pages/HomePage';
 import {GamePage} from 'pages/GamePage';
 import {PokerLobbyPage} from 'pages/poker/PokerLobbyPage';
 import {PokerRoomPage} from 'pages/poker/PokerRoomPage';
+import {TacticsPage} from 'pages/tactics/TacticsPage';
 import {NavBar} from 'components/NavBar';
 
 function Layout({children}: {children: React.ReactNode}) {
@@ -37,6 +38,15 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
     element: (
       <Layout>
         <PokerRoomPage />
+      </Layout>
+    ),
+  },
+  {
+    // Its own page: the run lives on the server (a RunRoom), not in the browser.
+    path: '/play/silk-road-tactics',
+    element: (
+      <Layout>
+        <TacticsPage />
       </Layout>
     ),
   },
