@@ -263,6 +263,9 @@ try {
     await phoneBar.textContent()
   );
   check('phone: the page doesn’t repeat the title', (await phone.getByText('Silk Road Tactics').count()) === 1);
+  const canvasBox = await phone.locator('canvas').boundingBox();
+  const viewportWidth = phone.viewportSize().width;
+  check('phone: the board runs edge to edge', Math.abs(canvasBox.x) <= 1 && Math.abs(canvasBox.width - viewportWidth) <= 1, [canvasBox, viewportWidth]);
   const inViewport = (locator) =>
     locator.evaluate((el) => {
       const r = el.getBoundingClientRect();

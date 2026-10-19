@@ -364,7 +364,9 @@ confirm or change:
   per turn, not split around the action (section 2).
   The Confirm button shows the turn's total cost and the slot the card
   lands on.
-- **Phones** (≤ 960px, owner, 2026-10-19; desktop to follow): under the
+- **Phones** (≤ 960px, owner, 2026-10-19; desktop to follow): the board
+  runs edge to edge, right under the top bar (which shows Back and the
+  title). Under the
   board, the **detail section** (what's tapped) comes first, and the
   **action section** is pinned to the bottom of the screen, set off by a
   yellow rule. The action section has no heading, hints, slot pill,

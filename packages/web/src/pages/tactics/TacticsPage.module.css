@@ -130,4 +130,15 @@
   .panel {
     width: 100%;
   }
+  /* The board runs edge to edge: out through the page's side padding, square corners. */
+  .board {
+    margin: 0 calc(-1 * var(--mantine-spacing-md));
+    border-radius: 0;
+  }
+  .board > :first-child {
+    display: block;
+  }
+  .board :global(canvas) {
+    width: 100%;
+  }
 }

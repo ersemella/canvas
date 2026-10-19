@@ -579,7 +579,7 @@ export function TacticsPage() {
   );
 
   return (
-    <Stack align="center" py="md" gap="sm" px="md">
+    <Stack align="center" pt={compact ? 0 : 'md'} pb="md" gap="sm" px="md">
       {header}
       <div className={styles.layout}>
         <div className={styles.board}>
