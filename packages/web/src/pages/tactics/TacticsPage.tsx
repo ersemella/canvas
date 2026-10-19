@@ -284,12 +284,12 @@ export function TacticsPage() {
     [fight, acting, plannedMove]
   );
 
-  /** Melee abilities with no one next to where the action is taken from: their buttons are disabled. */
+  /** Abilities aimed at a unit (melee, the bow) with no unit to aim at from where the action is taken: disabled. */
   const outOfReach = useMemo(() => {
     const out = new Set<AbilityId>();
     if (!acting || !moved?.unit.alive) return out;
     for (const def of abilitiesOf(acting)) {
-      if (def.melee && def.targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!).length === 0) out.add(def.id);
+      if (def.targetsUnit && def.targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!).length === 0) out.add(def.id);
     }
     return out;
   }, [acting, moved]);
@@ -683,7 +683,7 @@ function TurnControls(props: {
   slotsLater: (actionCost: number) => number;
   /** Phones: what the planned move adds, in slots, shown in the Move button. */
   moveSlots: number | null;
-  /** Melee abilities with no one in reach, disabled (unless already chosen, so they can be put down). */
+  /** Unit-aimed abilities with no one to aim at, disabled (unless already chosen, so they can be put down). */
   outOfReach: Set<AbilityId>;
   unit: Unit;
   ability: AbilityId | null;
@@ -785,7 +785,11 @@ function TurnControls(props: {
             .map((def) => {
             const reason =
               unusableReason(unit, def) ??
-              (props.outOfReach.has(def.id) && ability !== def.id ? 'No one next to you to target.' : null);
+              (props.outOfReach.has(def.id) && ability !== def.id
+                ? def.id === 'bow'
+                  ? 'No one in any of the bow’s lanes.'
+                  : 'No one next to you to target.'
+                : null);
             const lockedUlt = def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
             return (
               <Button

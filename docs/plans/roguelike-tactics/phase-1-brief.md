@@ -396,10 +396,13 @@ confirm or change:
   unit and health, a dashed card shows where the planned turn lands, and
   tapping a card shows its unit's sheet. Every unit has one card, so all
   of them fit.
-- **Melee buttons** (Throw, Pin, Gale; owner, 2026-10-19) are disabled
-  when no unit is next to the hex the action would be taken from (after
-  the planned move, or where the unit stands when acting first), unless
-  already chosen, so it can be put down.
+- **Abilities aimed at a unit** (Throw, Pin, Gale and the Composite Bow;
+  owner, 2026-10-19) are disabled when there's no unit to aim at from the
+  hex the action would be taken from (after the planned move, or where the
+  unit stands when acting first): no one adjacent, or no one in any of the
+  bow's lanes. An already chosen one stays enabled so it can be put down.
+  Ground-targeted abilities (hail, Volley, Freeze) stay enabled: an empty
+  hex is a legitimate target for them.
 - **Units on the board** (owner, 2026-10-19): a unit's whole hex is
   tinted with its side's colour (blue yours, red the enemy's) inside a
   hex border of that colour, instead of a coloured ring round its circle;
