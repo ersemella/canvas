@@ -23,6 +23,10 @@ function connect(roomId, name) {
 }
 const send = (c, action, payload) => c.ws.send(JSON.stringify({action, payload}));
 const lastError = (c) => [...c.msgs].reverse().find((m) => m.type === 'error')?.message;
+/** Waits until `cond()` holds or `ms` passes: a fixed sleep is too short over the internet. */
+async function until(cond, ms = 3000) {
+  for (const end = Date.now() + ms; !cond() && Date.now() < end; ) await sleep(25);
+}
 const chipsTotal = (st) => st.players.reduce((a, p) => a + p.chips, 0) + st.pot;
 const join = (room, playerName) =>
   fetch(`${API_URL}/rooms/${room}/join`, {
@@ -45,7 +49,7 @@ check(
 );
 
 send(B, 'startGame');
-await sleep(250);
+await until(() => lastError(B));
 check(
   'non-host cannot start',
   lastError(B) === 'Only the host can start the game' && !B.state,
