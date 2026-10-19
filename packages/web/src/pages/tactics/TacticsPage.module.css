@@ -60,6 +60,36 @@
   color: var(--mantine-color-gray-3);
 }
 
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stepNo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fde047;
+  color: #111827;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .stats {
   display: grid;
   grid-template-columns: auto 1fr auto 1fr;

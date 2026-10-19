@@ -162,13 +162,18 @@ try {
   await page.getByRole('button', {name: /^Hold/}).click();
   await moveButton.click();
   await tapHex(dest);
-  check('Move after the action plans act-then-move', await page.getByText(/Hold, then move 1 hex/).isVisible());
+  const stepsText = () => page.getByTestId('turn-steps').textContent();
+  check('Move after the action plans act-then-move', /^1Hold2Move 1 hex$/.test(await stepsText()), await stepsText());
   check('Move stays highlighted while a move is planned', (await moveButton.getAttribute('aria-pressed')) === 'true');
   // Tapping it again undoes the move and keeps the action; plan it again.
   await moveButton.click();
-  check('tapping Move again undoes the move', (await moveButton.getAttribute('aria-pressed')) === 'false' && (await page.getByText(/^Hold\./).isVisible()));
+  check('tapping Move again undoes the move', (await moveButton.getAttribute('aria-pressed')) === 'false' && (await stepsText()) === '1Hold');
   await moveButton.click();
   await tapHex(dest);
+  // Swap order flips the steps when the other order is legal too.
+  await page.getByRole('button', {name: /Swap order/}).click();
+  check('Swap order puts the move first', (await stepsText()) === '1Move 1 hex2Hold', await stepsText());
+  await page.getByRole('button', {name: /Swap order/}).click();
   const confirm = page.getByRole('button', {name: /^Confirm/});
   check('Confirm shows the total cost and landing slot', /cost 70 → slot \d+/.test(await confirm.textContent()), await confirm.textContent());
   await sleep(200);

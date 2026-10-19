@@ -61,7 +61,9 @@ const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
  * hovering a hex shows what's there; Move, then a hex, plans the move;
  * an ability, then a target, previews the action; tap the target again
  * (or Confirm) to commit. Move after the action is picked to act first,
- * then move (brief section 2: one move, before or after, not split).
+ * then move (brief section 2: one move, before or after, not split); the
+ * turn panel numbers the steps, the board marks where each happens, and
+ * Swap order flips them when the other order is legal too.
  */
 export function TacticsPage() {
   const [run, setRun] = useState<RunResponse | null>(null);
@@ -237,6 +239,21 @@ export function TacticsPage() {
     setMoving(true);
   }, [moving, plannedMove, actFirst, action, target, clearMove]);
 
+  /** The same turn in the other order, if it's legal: Swap order offers it. */
+  const canSwap = useMemo(() => {
+    if (!fight || !acting || !input?.move) return false;
+    const other: TurnInput = {action: input.action, move: input.move};
+    if (!input.actFirst) other.actFirst = true;
+    return previewTurn(fight, acting.id, other) !== null;
+  }, [fight, acting, input]);
+
+  const targetName = useMemo(() => {
+    const h = target?.hex;
+    const u = h && moved ? unitAt(moved.state, h) : undefined;
+    if (u) return u.id === acting?.id ? 'yourself' : `${u.side === 'player' ? 'your' : 'enemy'} ${HEROES[u.hero].name}`;
+    return h ? 'that hex' : null;
+  }, [target, moved, acting]);
+
   // ── Taps on the board ──────────────────────────────────────────────────────
 
   const onHex = useCallback(
@@ -360,13 +377,18 @@ export function TacticsPage() {
         if (target.to) highlights.push({hex: target.to, kind: 'chosen'});
       }
     }
+    // Numbered badges where each step happens, in the order they resolve.
+    const actionHex = target?.hex ?? (actFirst || !plannedMove ? acting.hex : plannedMove.hex);
+    const stepHexes = [plannedMove && !moving ? plannedMove.hex : null, action && actionHex ? actionHex : null];
+    if (actFirst) stepHexes.reverse();
+    out.steps = stepHexes.filter((h): h is Hex => h !== null).map((hex, i) => ({hex, n: i + 1}));
     if (preview) {
       out.preview = preview.changes.map((c) => ({unitId: c.unitId, to: c.to, hpAfter: c.hpAfter, hpBefore: c.hpBefore, killed: c.killed}));
     } else if (plannedMove && !actFirst) {
       out.preview = [{unitId: acting.id, to: plannedMove.hex, hpAfter: acting.hp, hpBefore: acting.hp, killed: false}];
     }
     return out;
-  }, [fight, selectedId, acting, deployAt, plannedMove, actFirst, moving, ability, reaches, targets, target, preview, map, inspectReach, lanes, moved]);
+  }, [fight, selectedId, acting, deployAt, plannedMove, actFirst, moving, ability, action, reaches, targets, target, preview, map, inspectReach, lanes, moved]);
 
   useEffect(() => {
     eventsRef.current?.emit('tactics:board', scene);
@@ -523,6 +545,9 @@ export function TacticsPage() {
                 plannedMove={plannedMove}
                 actFirst={actFirst}
                 actionReady={action !== null}
+                targetName={targetName}
+                canSwap={canSwap}
+                onSwap={() => setActFirst(!actFirst)}
                 moving={moving}
                 canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
                 onMove={toggleMove}
@@ -561,6 +586,11 @@ function TurnControls(props: {
   actFirst: boolean;
   /** The action has its target: Move now means acting first. */
   actionReady: boolean;
+  /** Who or what the action targets, for the step list. */
+  targetName: string | null;
+  /** Both steps are planned and the turn is also legal the other way round. */
+  canSwap: boolean;
+  onSwap: () => void;
   moving: boolean;
   canMove: boolean;
   onMove: () => void;
@@ -571,21 +601,24 @@ function TurnControls(props: {
   const hexes = plannedMove?.path.length ?? 0;
   const moveText = hexes > 0 ? `move ${hexes} hex${hexes > 1 ? 'es' : ''}` : null;
   const actionText = ability ? ABILITIES[ability].name : null;
-  const plan = moving
-    ? props.actFirst
-      ? `${actionText} first: tap a hex to move to after it.`
-      : 'Tap a highlighted hex to move to.'
-    : props.actFirst && moveText && actionText
-      ? `${actionText}, then ${moveText}.`
-      : moveText && actionText
-        ? `M${moveText.slice(1)}, then ${actionText}.`
-        : moveText
-          ? `M${moveText.slice(1)}. Now pick an action.`
-          : actionText
-            ? props.actionReady
-              ? `${actionText}. Pick Move to move after it, or confirm.`
-              : `${actionText}. Pick Move to move first, or tap a target.`
-            : 'Tap a hex to look at it. Pick Move, an action, or both.';
+  const moveStep = moving ? 'Move: tap a highlighted hex' : moveText ? `M${moveText.slice(1)}` : null;
+  const actionStep = actionText
+    ? props.actionReady
+      ? `${actionText}${props.targetName ? ` → ${props.targetName}` : ''}`
+      : `${actionText}: tap a target`
+    : null;
+  const steps = (props.actFirst ? [actionStep, moveStep] : [moveStep, actionStep]).filter((x): x is string => x !== null);
+  const hint = moving
+    ? null
+    : !actionText
+      ? moveText
+        ? 'Now pick an action.'
+        : 'Tap a hex to look at it. Pick Move, an action, or both.'
+      : !moveText && props.actionReady
+        ? 'Pick Move to move after it, or confirm.'
+        : !moveText
+          ? 'Pick Move now to move first.'
+          : null;
   return (
     <Paper bg="dark.7" p="sm" radius="md">
       <Stack gap={6}>
@@ -595,9 +628,28 @@ function TurnControls(props: {
             slot {unit.slot}
           </Badge>
         </Group>
-        <Text fz="sm" c="dimmed">
-          {plan}
-        </Text>
+        {steps.length > 0 && (
+          <Group gap="xs" justify="space-between" wrap="nowrap">
+            <ol className={styles.steps} data-testid="turn-steps">
+              {steps.map((step, i) => (
+                <li key={step}>
+                  <span className={styles.stepNo}>{i + 1}</span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+            {props.canSwap && (
+              <Button size="compact-xs" variant="light" color="gray" onClick={props.onSwap} title="Do the other step first">
+                ⇅ Swap order
+              </Button>
+            )}
+          </Group>
+        )}
+        {hint && (
+          <Text fz="sm" c="dimmed">
+            {hint}
+          </Text>
+        )}
         <div className={styles.abilities}>
           <Button
             size="xs"
