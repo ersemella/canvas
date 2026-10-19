@@ -62,11 +62,11 @@ function trackEntries(fight: FightState, previewSlot: number | null) {
 /**
  * The track as a fanned deck, as in Mana Khemia: every slot from now on is
  * a card, empty ones included, so a turn's cost reads as how far back in
- * the deck it lands.
+ * the deck it lands. `start` is the slot in front; while spent cards lift
+ * away after a turn it lags behind the fight's, and may be fractional.
  */
-export function trackSlots(fight: FightState, previewSlot: number | null): TrackSlots {
+export function trackSlots(fight: FightState, previewSlot: number | null, start = fight.currentSlot): TrackSlots {
   const entries = trackEntries(fight, previewSlot);
-  const start = fight.currentSlot;
   const last = entries.length > 0 ? entries[entries.length - 1]!.slot : start;
   const count = Math.max(MIN_SLOT_CELLS, last - start + 1);
   const x0 = TRACK_AREA.x + 6;

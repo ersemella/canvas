@@ -55,6 +55,23 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   inspect: {fill: 'rgba(192,132,252,0.12)', stroke: 'rgba(192,132,252,0.75)', dash: [5, 3]},
 };
 
+/** Seconds one spent card takes to lift off the track. */
+const CARD_LIFT_SECONDS = 0.18;
+/** The most a whole advance takes, however many slots it passes. */
+const ADVANCE_MAX_SECONDS = 1.2;
+
+/**
+ * The track running on after a turn: the cards from `from` up to `to` (the
+ * next turn's) lift away one by one and the deck slides up behind them.
+ */
+interface TrackAdvance {
+  from: number;
+  to: number;
+  /** The units whose cards sat in the passed slots, as they were before. */
+  spent: Map<number, Unit>;
+  elapsed: number;
+}
+
 /**
  * Draws everything over the board's tiles (which are hex entities): the
  * track of cards along the top (3.1, as in Mana Khemia), tile markings,
@@ -68,11 +85,17 @@ export class TacticsBoardSystem extends BaseSystem {
   readonly priority = 996;
   private scene: BoardScene = {fight: null, highlights: [], selectedUnitId: null, preview: []};
   private hover: TacticsHoverPayload = {hex: null, unitId: null};
+  private advance: TrackAdvance | null = null;
   private cleanup: (() => void)[] = [];
 
   onInit({events}: Omit<SystemContext, 'deltaTime'>): void {
     const bus: EventBus = events;
-    this.cleanup.push(bus.on<BoardScene>('tactics:board', (scene) => (this.scene = scene)));
+    this.cleanup.push(
+      bus.on<BoardScene>('tactics:board', (scene) => {
+        this.startAdvance(this.scene.fight, scene.fight);
+        this.scene = scene;
+      })
+    );
     this.cleanup.push(bus.on<TacticsHoverPayload>('tactics:hover', (hover) => (this.hover = hover)));
   }
 
@@ -81,9 +104,27 @@ export class TacticsBoardSystem extends BaseSystem {
     this.cleanup = [];
   }
 
-  onUpdate({ctx}: SystemContext): void {
+  /** A turn moved the track on: animate the cards it passed, from wherever the deck shows now. */
+  private startAdvance(before: FightState | null, after: FightState | null): void {
+    if (!before || !after || before.mapId !== after.mapId || before.phase === 'deploy') return;
+    if (after.currentSlot <= before.currentSlot) return;
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const prev = this.advance;
+    const from = prev ? Math.floor(trackStart(prev)) : before.currentSlot;
+    const spent = new Map(prev?.spent);
+    for (const u of before.units) {
+      if (u.alive && u.slot !== null && u.slot >= before.currentSlot && u.slot < after.currentSlot) spent.set(u.slot, u);
+    }
+    this.advance = {from, to: after.currentSlot, spent, elapsed: 0};
+  }
+
+  onUpdate({ctx, deltaTime}: SystemContext): void {
     const {fight} = this.scene;
     if (!fight) return;
+    if (this.advance) {
+      this.advance.elapsed += deltaTime;
+      if (trackStart(this.advance) >= this.advance.to) this.advance = null;
+    }
     const map = MAPS[fight.mapId]!;
     for (const [key, tile] of Object.entries(map.tiles)) {
       const [q, r] = key.split(',').map(Number);
@@ -134,13 +175,27 @@ export class TacticsBoardSystem extends BaseSystem {
     }
 
     if (fight.phase !== 'deploy') {
-      drawTrack(ctx, fight, trackCards(fight, this.scene.previewSlot ?? null), this.scene.previewSlot ?? null, {
+      drawTrack(ctx, fight, trackCards(fight, this.scene.previewSlot ?? null), this.scene.previewSlot ?? null, this.advance, {
         selected: this.scene.selectedUnitId,
         hovered: this.hover.unitId,
       });
     }
     if (this.hover.hex) drawHover(ctx, fight, this.hover.hex, this.scene.positions);
   }
+}
+
+/**
+ * The slot in front of the deck partway through an advance: each passed
+ * card in turn eases off over its share of the time.
+ */
+function trackStart(a: TrackAdvance): number {
+  const n = a.to - a.from;
+  const step = Math.min(CARD_LIFT_SECONDS, ADVANCE_MAX_SECONDS / n);
+  const u = a.elapsed / step;
+  if (u >= n) return a.to;
+  const k = Math.floor(u);
+  const t = u - k;
+  return a.from + k + t * t * (3 - 2 * t);
 }
 
 function center(h: Hex): {x: number; y: number} {
@@ -253,17 +308,21 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
  * The track as a fanned deck, as in Mana Khemia: a card for every
  * slot from now on, empty ones blank, the current one in front at the left
  * and each later one tucked behind the one before, showing a strip with
- * its unit. The planned turn's landing card is dashed.
+ * its unit. The planned turn's landing card is dashed. After a turn, the
+ * cards it passed lift up off the track one by one, the rest sliding
+ * forward, until the next turn's card is in front.
  */
 function drawTrack(
   ctx: CanvasRenderingContext2D,
   fight: FightState,
   cards: TrackCard[],
   previewSlot: number | null,
+  advance: TrackAdvance | null,
   opts: {selected: string | null; hovered: string | null}
 ): void {
   const {x, y, width, height} = TRACK_AREA;
-  const deck = trackSlots(fight, previewSlot);
+  const start = advance ? trackStart(advance) : fight.currentSlot;
+  const deck = trackSlots(fight, previewSlot, start);
   ctx.save();
   roundRect(ctx, x, y, width, height, 8);
   ctx.fillStyle = 'rgba(17,24,39,0.92)';
@@ -272,56 +331,65 @@ function drawTrack(
 
   const bySlot = new Map(cards.map((c) => [c.slot, c]));
   // Back to front, so each card covers the left of the one behind it.
-  for (let i = deck.count - 1; i >= 0; i--) {
-    const card = bySlot.get(deck.start + i);
+  for (let slot = Math.ceil(start + deck.count - 1); slot >= Math.floor(start); slot--) {
+    const passed = advance !== null && slot < advance.to;
+    const spent = passed ? advance.spent.get(slot) : undefined;
+    const card = passed ? undefined : bySlot.get(slot);
+    const u = spent ?? (card ? fight.units.find((v) => v.id === card.unitId)! : null);
+    const ghost = Boolean(card?.ghost);
+    const acting = Boolean(card && !ghost && u!.id === fight.awaiting);
+    // How far back in the deck it sits (0 in front), and how far a passed card has lifted.
+    const i = Math.max(0, slot - start);
+    const lift = passed ? Math.min(1, Math.max(0, start - slot)) : 0;
     const cx = deck.x0 + i * deck.w;
-    const u = card ? fight.units.find((v) => v.id === card.unitId)! : null;
-    const acting = Boolean(card && !card.ghost && u!.id === fight.awaiting);
+    const cy = deck.y - lift * (deck.y + deck.h + 4);
     ctx.save();
+    ctx.globalAlpha = 1 - lift * 0.6;
     ctx.shadowColor = 'rgba(0,0,0,0.6)';
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 2;
-    roundRect(ctx, cx, deck.y, deck.cardW, deck.h, 5);
-    ctx.fillStyle = !u ? '#1f2937' : card!.ghost ? '#3f3a1c' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
+    roundRect(ctx, cx, cy, deck.cardW, deck.h, 5);
+    ctx.fillStyle = !u ? '#1f2937' : ghost ? '#3f3a1c' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
     ctx.fill();
     ctx.shadowColor = 'transparent';
-    ctx.setLineDash(card?.ghost ? [3, 2] : []);
+    ctx.setLineDash(ghost ? [3, 2] : []);
     ctx.strokeStyle = !u
       ? 'rgba(255,255,255,0.18)'
-      : card!.ghost || acting
+      : ghost || acting
         ? '#fde047'
         : u.id === opts.selected || u.id === opts.hovered
           ? '#ffffff'
           : SIDE_COLOR[u.side];
-    ctx.lineWidth = acting || card?.ghost ? 2.5 : 1.25;
+    ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
     ctx.stroke();
     ctx.setLineDash([]);
 
-    if (u && card) {
-      // The unit sits in the strip that shows; the front card shows whole.
-      const front = i === 0;
-      const mid = front ? cx + deck.cardW / 2 : card.x + card.w / 2;
-      const barX = front ? cx + 5 : card.x + 3;
-      const barW = front ? deck.cardW - 10 : card.w - 6;
-      const r = Math.min(11, card.w / 2 - 2);
-      ctx.globalAlpha = card.ghost ? 0.8 : 1;
+    if (u) {
+      // The unit sits in the strip that shows; the front card shows whole,
+      // and a card sliding to the front carries its unit across to the middle.
+      const back = Math.min(1, i);
+      const mid = cx + deck.cardW / 2 + back * (deck.cardW / 2 - deck.w / 2);
+      const barX = cx + 5 + back * (deck.cardW - deck.w - 2);
+      const barW = deck.cardW - 10 - back * (deck.cardW - deck.w - 4);
+      const r = Math.min(11, deck.w / 2 - 2);
+      if (ghost) ctx.globalAlpha = 0.8;
       ctx.beginPath();
-      ctx.arc(mid, deck.y + deck.h / 2 - 4, r, 0, Math.PI * 2);
+      ctx.arc(mid, cy + deck.h / 2 - 4, r, 0, Math.PI * 2);
       ctx.fillStyle = HERO_COLOR[u.hero];
       ctx.fill();
       ctx.strokeStyle = SIDE_COLOR[u.side];
       ctx.lineWidth = 1.5;
       ctx.stroke();
-      label(ctx, HEROES[u.hero].letter, mid, deck.y + deck.h / 2 - 3, '#ffffff', 11, true);
-      if (!card.ghost) {
+      label(ctx, HEROES[u.hero].letter, mid, cy + deck.h / 2 - 3, '#ffffff', 11, true);
+      if (!ghost) {
         const frac = Math.max(0, u.hp / u.maxHp);
         ctx.fillStyle = '#111827';
-        ctx.fillRect(barX, deck.y + deck.h - 10, barW, 3);
+        ctx.fillRect(barX, cy + deck.h - 10, barW, 3);
         ctx.fillStyle = frac > 0.5 ? '#4ade80' : frac > 0.25 ? '#facc15' : '#f87171';
-        ctx.fillRect(barX, deck.y + deck.h - 10, barW * frac, 3);
+        ctx.fillRect(barX, cy + deck.h - 10, barW * frac, 3);
       }
       // A charging card: its ability triggers when this slot comes up.
-      if (u.charging && !card.ghost) label(ctx, '!', card.x + card.w - 5, deck.y + 8, '#d8b4fe', 12, true);
+      if (u.charging && !ghost) label(ctx, '!', cx + deck.cardW - 5, cy + 8, '#d8b4fe', 12, true);
     }
     ctx.restore();
   }
