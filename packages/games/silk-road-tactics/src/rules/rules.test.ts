@@ -162,6 +162,19 @@ describe('the board', () => {
     expect(reach.every((r) => r.path.length <= RULES.movementCap)).toBe(true);
   });
 
+  it('routes around hail as well as quicksand when an equally short path exists', () => {
+    const s = setup({'p-bokh': at(0, 3), 'e-bokh': at(8, 3)});
+    const b = unit(s, 'p-bokh');
+    const dest = at(0, 5); // via (0, 4) or (1, 4)
+    const before = reachableHexes(s, mapOf(s), b).find((r) => hexKey(r.hex) === hexKey(dest))!;
+    expect(before.path).toHaveLength(2);
+    const hailed = before.path[0]!;
+    s.effects.push({kind: 'hail', hex: hailed, untilSlot: 999, damage: 50, slowed: 2, vulnerable: 25, statusSlots: 10});
+    const after = reachableHexes(s, mapOf(s), b).find((r) => hexKey(r.hex) === hexKey(dest))!;
+    expect(after.path).toHaveLength(2);
+    expect(after.path.map(hexKey)).not.toContain(hexKey(hailed));
+  });
+
   it('can’t move while Immobilized, and moves less while Slowed', () => {
     const s = setup({'p-bokh': at(0, 3), 'e-bokh': at(8, 3)});
     const b = unit(s, 'p-bokh');
