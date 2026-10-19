@@ -61,7 +61,7 @@ fight's end ends the run.
 | 23. Defence | `defenceConstant` = **20**; minimum **1** damage from any hit. |
 | 29. Line of fire along a hex border | **Blocked if either** hex on the border is occupied. |
 | 30. Arcing attacks | Priced as a charged ability, with a charge cost and a recovery cost (3.7). |
-| 31. Ally exemption | Not in Phase 1 (no gear choices); area abilities hit allies. |
+| 31. Ally exemption | Not in Phase 1 (no gear choices); every ability affects allies and enemies alike (6.7, 2026-10-19). |
 
 **Worked example:** a speed 4 hero (speed + C = 10) moving 2 hexes and
 making a typical attack: (100 + 2 × 10) ÷ 10 = 12 slots ahead. A speed 7
@@ -126,7 +126,7 @@ values marked TBD below, are still to be set, in the config module.
 |---|---|---|---|---|---|---|
 | **Bökh Champion** | Front line (tank): grabs, pins, throws | High | Medium | Medium | Low | Bare hands |
 | **Mangudai Outrider** | Ranged in straight lines, mobility, a delayed arcing area | Low | High | Low | High | Composite bow (mounted, reflected only in stats) |
-| **Yadachy Storm Caller** | Support: slows and moves enemies, heals and cleanses allies | Medium | Medium | Medium | Medium | Rain stone and water |
+| **Yadachy Storm Caller** | Support: slows and moves enemies, heals and cleanses whoever stands near it | Medium | Medium | Medium | Medium | Rain stone and water |
 
 "Melee" means an adjacent hex. Every hero also has **Hold** (decided): a
 quick action (60) with no effect, so a unit can always end its turn (an
@@ -138,7 +138,7 @@ reading of the owner's one-line descriptions; the owner can change them
 
 | Ability | Rule |
 |---|---|
-| **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it stops at the **first unit** on that line or at an obstacle. An enemy takes base damage TBD; an **ally stops the arrow but takes no damage** (owner's call, 2026-10-18), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
+| **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it stops at the **first unit** on that line or at an obstacle. That unit, **ally or enemy**, takes base damage TBD (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
 | **Dash** | Moves the Outrider **3 hexes in a straight line** along one hex direction. Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn's action, so normal movement can come before or after it (confirmed 2026-10-18). Not usable while Immobilized. Quick cost. |
 | **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage TBD, allies included. Charge and recovery costs TBD (3.7). |
 
@@ -146,7 +146,7 @@ reading of the owner's one-line descriptions; the owner can change them
 
 | Ability | Rule |
 |---|---|
-| **Clear the Storm** | Every **ally** within radius TBD of the caster, the caster included, is **healed** (base heal TBD, scaled by power) and **cleansed**. Enemies in the area are unaffected. Typical cost. |
+| **Clear the Storm** | Every **unit** within radius TBD of the caster, the caster and **enemies included** (6.7, 2026-10-19), is **healed** (base heal TBD, scaled by power) and **cleansed**. Cleansing an enemy removes the party's own control from it, so the Storm Caller steps clear of enemies first. Typical cost. |
 | **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it is **Slowed TBD** and **Vulnerable TBD%** for TBD slots. Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justifies). Typical cost. |
 | **Gale** | Melee: **Displace 1** away and **Slowed TBD** for TBD slots. An Immobilized target is slowed but not moved. Typical cost. |
 | **Freeze** (ultimate) | A **charged** area with a **casting time** (owner's call, 2026-10-18): targets any hex within maximum range TBD, no line of fire needed. When the charge triggers, every unit in the area (radius TBD), allies included, is **Immobilized** and **Vulnerable TBD%** for TBD slots. Charge and recovery costs TBD (3.7); like any charge, it shows on the track and can be answered by stepping out, pushing, killing or dazing the caster. |
@@ -157,7 +157,7 @@ reading of the owner's one-line descriptions; the owner can change them
 |---|---|
 | **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
 | **Pin** | Melee: the Champion **and** the target are **Immobilized** for TBD slots, and the target is **Vulnerable TBD%** for the same. Both still act. Typical cost. |
-| **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction and **completes the line**: only an **obstacle** or an **Unstoppable** unit in its path stops it early (owner's call, 2026-10-18), and the map edge ends it. Step by step, every unit in the path or adjacent to a hex the Champion enters is hit **once**: it takes base damage TBD and is **Displaced 1** away from the Champion's hex at that moment (several at once: farthest first, 17.4); collisions deal their usual damage. *(Proposed:* allies are displaced but take no Rampage damage, as with the bow; a unit in the path that couldn't be displaced (a collision), or was displaced ahead, is passed through; if the last hex is occupied, the Champion ends on the last free hex it passed.) Not usable while Immobilized. Cost TBD. |
+| **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction and **completes the line**: only an **obstacle** or an **Unstoppable** unit in its path stops it early (owner's call, 2026-10-18), and the map edge ends it. Step by step, every unit in the path or adjacent to a hex the Champion enters is hit **once**: it takes base damage TBD and is **Displaced 1** away from the Champion's hex at that moment (several at once: farthest first, 17.4); collisions deal their usual damage. Allies take the damage too (6.7, 2026-10-19). *(Proposed:* a unit in the path that couldn't be displaced (a collision), or was displaced ahead, is passed through; if the last hex is occupied, the Champion ends on the last free hex it passed.) Not usable while Immobilized. Cost TBD. |
 
 **Interactions to know** (they follow from the keyword rules, not new
 rules): an Immobilized unit can still be displaced (owner's call,
@@ -284,8 +284,8 @@ turn, so a bad preview can't cause an illegal move.
 values marked TBD (section 4), for the owner to set.
 
 **Ability details to confirm** (section 4 uses the proposed reading
-until the owner says otherwise): Rampage's handling of allies (displaced,
-no damage), and of units it passes through and an occupied last hex.
+until the owner says otherwise): Rampage's handling of units it passes
+through and of an occupied last hex.
 
 The rest don't block Phase 1; all are config values:
 - Cost values and `C` (open question 1): the defaults aim for a typical
@@ -329,8 +329,14 @@ confirm or change:
 - **Gale on an Immobilized target displaces it,** following the
   2026-10-19 rule (Immobilized units can be displaced) over section 4's
   older line ("slowed but not moved").
-- **Dash** goes exactly 3 hexes. **Pin** targets enemies; **Throw** and
-  **Gale** any adjacent unit, allies included.
+- **Dash** goes exactly 3 hexes. **Pin**, **Throw** and **Gale** target
+  any adjacent unit, allies included (Pin targeted enemies only until the
+  2026-10-19 rule, 6.7).
+- **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage
+  damage allies, and Clear the Storm heals and cleanses enemies. Clear the
+  Storm's placeholder radius went from 2 to 1 with it, so stepping clear
+  of enemies is possible; the AI counts healing or cleansing an enemy
+  against an option.
 - **The map's coordinates** are in `src/rules/map.ts`; on an odd-r
   rectangle the left-right mirror is by column, exact to within half a
   hex on odd rows. The enemy's placement is one of three layouts, chosen

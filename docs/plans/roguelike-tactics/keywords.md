@@ -203,9 +203,10 @@ Barrier; Cursed lowers the max that overhealth sits above.
   pierces): only statuses with a duration. It doesn't undo what already
   happened: damage a Barrier absorbed stays absorbed, and a Pull already
   applied stays.
-- Harmful statuses are untouched, so Dispel on an ally is never useful
-  and Cleanse on an enemy never helps it; abilities still define their
-  own targets.
+- Harmful statuses are untouched, so Dispel on an ally removes only its
+  buffs, and Cleanse on an enemy frees it of the party's control. Every
+  ability reaches allies and enemies alike ([map.md](map.md), 6.7), so a
+  Cleanse or Dispel in an area hits both sides.
 
 ### 17.9 Stat changes (Decided)
 - **Speed, power and defence** can be raised or lowered by a

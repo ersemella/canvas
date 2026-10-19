@@ -85,14 +85,14 @@ function firstUnitInLine(state: FightState, map: MapData, from: Hex, dir: number
 const bow: AbilityDef = {
   id: 'bow',
   name: 'Composite Bow',
-  summary: `Arrow along a hex line, range ${ABILITY.bow.range}; hits the first unit (an ally stops it unharmed).`,
+  summary: `Arrow along a hex line, range ${ABILITY.bow.range}; hits the first unit, ally or enemy.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.bow.cost,
   movesSelf: false,
   targets(state, map, user, from) {
     return DIRECTIONS.map((d) => firstUnitInLine(state, map, from, d, ABILITY.bow.range))
-      .filter((u): u is Unit => u !== undefined && hostile(u, user))
+      .filter((u): u is Unit => u !== undefined)
       .map((u) => ({hex: u.hex!}));
   },
   resolve(ctx, user, target) {
@@ -156,7 +156,7 @@ const volley: AbilityDef = {
 const clearStorm: AbilityDef = {
   id: 'clearStorm',
   name: 'Clear the Storm',
-  summary: `Heals and cleanses every ally within ${ABILITY.clearStorm.radius}, itself included.`,
+  summary: `Heals and cleanses every unit within ${ABILITY.clearStorm.radius}, itself and enemies included.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.clearStorm.cost,
@@ -165,7 +165,6 @@ const clearStorm: AbilityDef = {
   resolve(ctx, user) {
     log(ctx, `${unitName(user)} clears the storm.`);
     for (const u of unitsInArea(ctx.state, user.hex!, ABILITY.clearStorm.radius)) {
-      if (hostile(u, user)) continue;
       cleanse(u);
       heal(ctx, u, scaled(ABILITY.clearStorm.heal, user.power));
     }
@@ -274,7 +273,7 @@ const pin: AbilityDef = {
   charged: false,
   cost: ABILITY.pin.cost,
   movesSelf: false,
-  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => hostile(u, user)),
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     const untilSlot = ctx.slot + ABILITY.pin.slots;
@@ -318,7 +317,7 @@ const rampage: AbilityDef = {
       victims.sort((a, b) => hexDistance(b.hex!, pos) - hexDistance(a.hex!, pos) || unitOrder(a) - unitOrder(b));
       for (const u of victims) {
         hitAlready.add(u.id);
-        if (hostile(u, user)) hit(ctx, user, u, ABILITY.rampage.damage, false, 'The Rampage');
+        hit(ctx, user, u, ABILITY.rampage.damage, false, 'The Rampage');
         if (!u.alive) continue;
         // In the path: knocked ahead; beside it: away from the Champion's hex.
         const away = hexEquals(u.hex!, pos) ? dir : direction(pos, u.hex!);

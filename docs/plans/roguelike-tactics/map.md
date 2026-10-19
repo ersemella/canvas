@@ -58,6 +58,13 @@ Maps can contain three types of special tile:
 ### 6.7 Line of Fire and Friendly Fire (Decided)
 Friendly fire is used as a positioning cost that limits ranged characters, not as a random punishment. Because combat is deterministic and previewed, it is never accidental.
 
+**Abilities don't know sides (Decided 2026-10-19, owner's call)**
+- Every ability affects **every unit it reaches**, ally or enemy: attacks damage allies, heals and cleanses reach enemies, statuses land on whoever is hit. An ability's text never filters by side.
+- This covers areas, lines and paths (a bow's arrow, a charge's path) and single targets: any unit in reach can be targeted.
+- The preview shows every unit affected and how (section 7.2), so it is never accidental.
+- The only way to leave allies out is the **ally-exemption keyword** from gear and upgrades (below); no ability has it built in.
+- Not covered: movement rules (passing through allies, 6.2) and line of fire, which are about the board, not an ability's effect.
+
 **Direct ranged attacks**
 - A direct ranged attack needs a **clear line of fire**: the straight line from the centre of the attacker's hex to the centre of the target's hex must not pass through a hex occupied by another unit.
 - **Any unit blocks**, ally or enemy. A blocked attack cannot be made against that target. No one is damaged.
@@ -66,7 +73,7 @@ Friendly fire is used as a positioning cost that limits ranged characters, not a
 - Melee attacks against adjacent hexes are unaffected.
 
 **Area abilities**
-- Area abilities affect **every unit in the area, allies included**.
+- Area abilities affect **every unit in the area, allies included**, as every ability does (above).
 - The preview shows all affected units and the damage or effect each receives, allies included, before the player commits (section 7.2).
 
 **Arcing attacks**
@@ -74,17 +81,20 @@ Friendly fire is used as a positioning cost that limits ranged characters, not a
 - They pay for this by being charged abilities (3.7), with a charge and a recovery cost. Exact pricing per ability TBD.
 
 **Exempting allies**
-- Gear and milestone upgrades can make an area ability **exclude allies**. This is a build lever, and is expected to be defined as a keyword in the keyword vocabulary.
+- Gear and milestone upgrades can make an ability **exclude allies** (an attack) or **exclude enemies** (a heal, a cleanse or a buff). This is a build lever, the only way to filter by side, and is expected to be defined as a keyword in the keyword vocabulary. It arrives with gear in Phase 2.
 
 **Rationale**
 - Once melee heroes engage, they tend to block their own ranged allies' lines, so ranged heroes must spend time repositioning to a clear angle. This limits ranged power through positioning rather than stat penalties.
 - Area friendly fire makes formation a real decision without adding randomness.
+- Extending it to every ability, heals included, gives one rule with no per-ability exceptions, makes supports position as carefully as attackers, and turns ally exemption into a real build choice (goal 1). The *Secret History*'s storm that turns back on its casters fits the setting (15.8).
 - Rejected alternative: stray shots that hit units along the path on a miss (as in Battle Brothers or Jagged Alliance). This depends on hit chance, which this design does not use (section 8).
 - Rejected alternative: no friendly fire at all (as in Fire Emblem). Positioning around allies would not matter, and ranged characters would face no natural limit.
 
 **Risks**
 - **Clutter:** with up to 8 or more units on a compact map, lines may be blocked so often that ranged heroes feel stuck. Map size, obstacle layout and engagement distance (6.6) must be tuned with this in mind.
-- **Permanent death:** area damage to allies is costly when heroes are lost for the run. Expect players to avoid friendly-fire abilities unless allies can be exempted; tune availability of exemption accordingly.
+- **Permanent death:** area damage to allies is costly when heroes are lost for the run. Expect players to avoid friendly-fire abilities unless allies can be exempted; tune availability of exemption accordingly, so it doesn't become a must-pick.
+- **Area support:** a heal or buff that reaches enemies is weak in a melee, which pushes support designs toward single targets and small radii; keep the supports distinct.
+- **Stalls:** healing that reaches enemies makes fights longer (see the stalled-fight issue in [owner-decisions.md](owner-decisions.md)).
 - **AI:** enemy AI must respect line of fire and avoid friendly fire, or deliberately accept it where that is the stronger play.
 
 ## Decision log (from section 13)
@@ -94,7 +104,7 @@ Friendly fire is used as a positioning cost that limits ranged characters, not a
 | Flanking | The flanked unit is Vulnerable while flanked | A flat damage bonus to attackers; ignoring defence; pinning; pushing the card on each hit | One rule players already know from the keyword list; the board state shows it |
 | Grid | Compact hex grid | No grid, rows, square grid, gridless | Uniform distances, clean flanking |
 | Map modifiers | Three tile types: obstacle, hazard, conceal; no elevation or facing | Full terrain systems | Readability, with enough variety for positional decisions |
-| Friendly fire | Direct ranged attacks need a clear line of fire (any unit blocks); area abilities hit allies; arcing attacks ignore line of fire at a higher cost; gear and upgrades can exempt allies | No friendly fire; stray shots hitting units in the path | Limits ranged power through positioning; deterministic and previewed, so never accidental |
+| Friendly fire | Every ability affects every unit it reaches, ally or enemy, heals included (2026-10-19); direct ranged attacks need a clear line of fire (any unit blocks); arcing attacks ignore line of fire at a higher cost; gear and upgrades can exempt allies | No friendly fire; stray shots hitting units in the path; friendly fire for areas only, with single-target and path abilities and heals filtered by side (until 2026-10-19) | Limits ranged power through positioning; deterministic and previewed, so never accidental |
 | Deployment | Player placement within deployment zones; opposite and mirrored in PvP, varied in PvE | Fixed spawn positions | Placement is a meaningful first decision; variety keeps PvE openings fresh |
 
 ## Open questions (from section 14, original numbers)
@@ -105,4 +115,4 @@ Friendly fire is used as a positioning cost that limits ranged characters, not a
    - Deployment zone sizes, engagement distance, and the set of PvE deployment layouts.
 29. Hex line-of-fire edge case: when the line runs exactly along the border between two hexes, whether it is blocked if either hex is occupied or only if both are (section 6.7).
 30. Pricing of arcing attacks: charge and recovery costs per ability.
-31. Name and availability of the ally-exemption keyword for area abilities.
+31. Name and availability of the ally-exemption keyword (for attacks; and its mirror, enemy exemption, for heals and buffs).

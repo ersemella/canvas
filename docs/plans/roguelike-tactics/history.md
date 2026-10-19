@@ -169,6 +169,15 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   (for example Burn 2 with influence 15 stayed 2), so health and damage
   are on a ×10 scale.
 
+- **Friendly fire for areas only** (until 2026-10-19): area abilities
+  hit allies, but other abilities chose their side. The Composite Bow's
+  arrow stopped at an ally without hurting it (owner's call, 2026-10-18),
+  Rampage displaced allies without damaging them (proposed), Clear the
+  Storm healed and cleansed only allies, and Pin targeted only enemies.
+  Replaced by one rule, abilities don't know sides
+  ([map.md](map.md), 6.7): fewer exceptions to learn, supports must
+  position too, and ally exemption becomes a build lever.
+
 ## Roster
 
 - **Fox-Spirit Sorcerer as a trickster caster** (2026-10-16): illusions

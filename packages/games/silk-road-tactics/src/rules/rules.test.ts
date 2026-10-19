@@ -216,13 +216,15 @@ describe('damage', () => {
 });
 
 describe('abilities', () => {
-  it('the bow hits the first unit on its line, never past an ally', () => {
+  it('the bow hits the first unit on its line, an ally included, never past it', () => {
     const s = setup({'p-mangudai': at(0, 0), 'p-bokh': at(1, 0), 'e-bokh': at(3, 0), 'e-storm': at(0, 6)});
     const m = unit(s, 'p-mangudai');
     const targets = ABILITIES.bow.targets(s, mapOf(s), m, m.hex!);
     expect(targets.some((t) => t.hex!.q === unit(s, 'e-bokh').hex!.q && t.hex!.r === unit(s, 'e-bokh').hex!.r)).toBe(false);
-    unit(s, 'p-bokh').hex = at(0, 1);
-    expect(ABILITIES.bow.targets(s, mapOf(s), m, m.hex!).length).toBeGreaterThan(0);
+    expect(targets.some((t) => t.hex!.q === unit(s, 'p-bokh').hex!.q && t.hex!.r === unit(s, 'p-bokh').hex!.r)).toBe(true);
+    const hp = unit(s, 'p-bokh').hp;
+    applyTurn(s, m, {action: {ability: 'bow', target: {hex: at(1, 0)}}});
+    expect(unit(s, 'p-bokh').hp).toBeLessThan(hp);
   });
 
   it('Pin then Throw: the target lands where chosen, still Immobilized', () => {
@@ -247,15 +249,28 @@ describe('abilities', () => {
     expect(unitAt(s, b.hex!)).toBe(b);
   });
 
-  it('Clear the Storm heals and cleanses allies only', () => {
+  it('Rampage hits allies too', () => {
+    const s = setup({'p-bokh': at(1, 0), 'p-storm': at(2, 1), 'e-bokh': at(8, 6)});
+    const b = unit(s, 'p-bokh');
+    b.turnsTaken = RULES.ultimateUnlockTurns;
+    const hp = unit(s, 'p-storm').hp;
+    applyTurn(s, b, {action: {ability: 'rampage', target: {hex: at(2, 0)}}});
+    expect(unit(s, 'p-storm').hp).toBeLessThan(hp);
+  });
+
+  it('Clear the Storm heals and cleanses every unit within its radius, enemies included', () => {
     const s = setup({'p-storm': at(1, 3), 'p-bokh': at(1, 2), 'e-bokh': at(2, 3), 'e-mangudai': at(8, 6)});
+    expect(hexDistance(at(1, 3), at(1, 2))).toBeLessThanOrEqual(ABILITY.clearStorm.radius);
+    expect(hexDistance(at(1, 3), at(2, 3))).toBeLessThanOrEqual(ABILITY.clearStorm.radius);
     unit(s, 'p-bokh').hp = 100;
     unit(s, 'p-bokh').statuses.push({kind: 'slowed', value: 2, untilSlot: 999});
     unit(s, 'e-bokh').hp = 100;
+    unit(s, 'e-bokh').statuses.push({kind: 'vulnerable', value: 25, untilSlot: 999});
     applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'clearStorm'}});
     expect(unit(s, 'p-bokh').hp).toBeGreaterThan(100);
     expect(unit(s, 'p-bokh').statuses).toHaveLength(0);
-    expect(unit(s, 'e-bokh').hp).toBe(100);
+    expect(unit(s, 'e-bokh').hp).toBeGreaterThan(100);
+    expect(unit(s, 'e-bokh').statuses).toHaveLength(0);
   });
 
   it('hail slows and exposes whoever stands on it', () => {

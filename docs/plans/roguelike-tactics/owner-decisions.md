@@ -76,7 +76,7 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Composite Bow | range 5, damage 80 |
 | Dash | 3 hexes, quick (60) |
 | Volley (ultimate) | range 5, radius 1, damage 90, charge 40, recovery 100 |
-| Clear the Storm | radius 2, heal 25 |
+| Clear the Storm | radius 1 (was 2 until it reached enemies, 2026-10-19), heal 25 |
 | Hail | range 4, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
 | Gale | Displace 1, Slowed 1 for 10 slots, no damage |
 | Freeze (ultimate) | range 4, radius 1, Immobilized and Vulnerable 25% for 15 slots, charge 40, recovery 100 |
@@ -88,8 +88,9 @@ Damage is scaled by power: `base × (1 + power / 50)`.
 
 ### 3. Rampage details (brief section 10)
 
-Built as proposed: allies in the path are displaced but take no damage; a
-unit that couldn't be displaced, or was pushed ahead, is passed through;
+Allies in the path take the damage like anyone (the 2026-10-19 rule,
+[map.md](map.md), 6.7), which makes Rampage mainly an opening move once
+the front lines meet. Built as proposed: a unit that couldn't be displaced, or was pushed ahead, is passed through;
 if the last hex is taken, the Champion stops on the last free hex it
 passed. Confirm or change.
 
@@ -102,8 +103,6 @@ confirm or change:
   rule; the brief's section 4 still says "slowed but not moved" and
   should be corrected whichever way you decide.
 - **Dash goes exactly 3 hexes** (not "up to 3").
-- **Pin targets enemies only; Throw and Gale any adjacent unit,** allies
-  included (so you can throw an ally out of danger).
 - **The AI's additions:** a pull toward the nearest enemy, and counting
   the quicksand it will take next turn. Without the pull, units with
   nothing in reach hold forever.
@@ -112,6 +111,13 @@ confirm or change:
   seed.
 
 ### 5. Before Phase 2 (not blocking now)
+
+- **Taunt on allies:** under the 2026-10-19 rule every ability reaches
+  allies, so a Taunt that catches an ally forces it to attack the taunter,
+  your own tank. Accept it (the preview shows it), or rule it out
+  explicitly. Needed when the Modao Vanguard arrives.
+- **The exemption keyword:** its name, and how often gear and upgrades
+  offer it (open question 31). Too common and it becomes a must-pick.
 
 - **The route map:** node types and layout, the Phase 2 design work
   ([phases.md](phases.md#phase-2-a-run-on-the-route-map)).

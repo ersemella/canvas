@@ -51,7 +51,8 @@ export function scoreOutcome(before: FightState, after: FightState, actor: Unit,
     const lost = b.hp - a.hp;
     const statusDelta = statusPoints(a, before.currentSlot) - base.points;
     if (hostile(b, actor)) {
-      score += Math.max(0, lost) + statusDelta;
+      // Healing an enemy counts against the turn, as damage counts for it.
+      score += lost + statusDelta;
       if (!a.alive) score += AI.kill;
       if (lost > 0 && base.flanked) score += AI.flankedTarget;
     } else {
