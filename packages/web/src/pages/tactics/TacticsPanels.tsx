@@ -30,6 +30,8 @@ export function TurnPreviewBox(props: {
   actingId: string;
   ability: AbilityId;
   preview: TurnPreview | null;
+  /** The turn's total cost: movement plus the action. */
+  cost: number;
   needsTarget: boolean;
   busy: boolean;
   onConfirm: () => void;
@@ -64,9 +66,8 @@ export function TurnPreviewBox(props: {
           {c.statuses.length > 0 && ` · ${c.statuses.join(', ')}`}
         </Text>
       ))}
-      <Text fz="sm">Your card → slot {preview.slot}</Text>
       <Button color="yellow" c="dark.9" fw="bold" size="sm" loading={props.busy} onClick={props.onConfirm}>
-        Confirm
+        Confirm · cost {props.cost} → slot {preview.slot}
       </Button>
       <Text fz="xs" c="dimmed">
         Or tap the target again.

@@ -160,13 +160,19 @@ try {
     }
     return null;
   });
+  // Without Move, a tap only looks at the hex.
   await tapHex(dest);
-  check('a planned move shows its cost', await page.getByText(/Move 1 hex/).isVisible());
+  check('a tap without Move plans nothing', !(await page.getByRole('button', {name: 'Stay'}).isVisible()));
+  // Act first, then move: Hold, then Move and a hex.
   await page.getByRole('button', {name: /^Hold/}).click();
-  check('the preview shows where the card lands', await page.getByText(/Your card → slot \d+/).isVisible());
+  await page.getByRole('button', {name: 'Move', exact: true}).click();
+  await tapHex(dest);
+  check('Move after the action plans act-then-move', await page.getByText(/Hold, then move 1 hex/).isVisible());
+  const confirm = page.getByRole('button', {name: /^Confirm/});
+  check('Confirm shows the total cost and landing slot', /cost 70 → slot \d+/.test(await confirm.textContent()), await confirm.textContent());
   await sleep(200);
   await shot(page, 'preview');
-  await page.getByRole('button', {name: 'Confirm'}).click();
+  await confirm.click();
   await page.waitForFunction((v) => window.__tactics.run.view.version > v, before, {timeout: 15_000});
   run = await state();
   const movedUnit = run.view.fight.units.find((u) => u.id === acting.id);

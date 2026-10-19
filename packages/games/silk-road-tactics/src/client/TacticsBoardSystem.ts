@@ -14,7 +14,7 @@ import type {TacticsHoverPayload} from './TacticsInputSystem';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
-export type HighlightKind = 'zone' | 'move' | 'path' | 'target' | 'chosen' | 'area' | 'lane' | 'reach' | 'inspect';
+export type HighlightKind = 'zone' | 'move' | 'path' | 'target' | 'chosen' | 'area' | 'lane' | 'inspect';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {
@@ -48,8 +48,6 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   area: {fill: 'rgba(251,146,60,0.28)', stroke: 'rgba(251,146,60,0.9)'},
   /** Hexes an arrow flies over. */
   lane: {fill: 'rgba(253,224,71,0.14)', stroke: 'rgba(253,224,71,0.35)'},
-  /** Where the acting unit could still move while an ability is chosen. */
-  reach: {fill: 'rgba(255,255,255,0)', stroke: 'rgba(255,255,255,0.5)', dash: [4, 4]},
   /** Where an inspected unit could move. */
   inspect: {fill: 'rgba(192,132,252,0.12)', stroke: 'rgba(192,132,252,0.75)', dash: [5, 3]},
 };

@@ -13,6 +13,7 @@ import {
   SCENE_SIZE,
   abilitiesOf,
   actingUnit,
+  afterAction,
   arrowLanes,
   chooseAiTurn,
   cloneFight,
@@ -21,7 +22,6 @@ import {
   mapOf,
   previewTurn,
   reachableHexes,
-  slotsForward,
   turnCost,
   unitAt,
   unusableReason,
@@ -57,11 +57,11 @@ const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
 /**
  * Silk Road Tactics: one fight against the AI (Phase 1). The run lives on
  * the server (a RunRoom); this page draws its view, previews turns with the
- * same rules locally (D11), and sends each turn as one request. Tap a hex to
- * plan a move, pick an ability, tap a target to preview, tap it again (or
- * Confirm) to commit; with an ability picked, tapping a hex you can reach
- * still re-plans the move. Hovering a hex, or tapping it in Inspect mode,
- * shows what's there without planning anything.
+ * same rules locally (D11), and sends each turn as one request. Tapping or
+ * hovering a hex shows what's there; Move, then a hex, plans the move;
+ * an ability, then a target, previews the action; tap the target again
+ * (or Confirm) to commit. Move after the action is picked to act first,
+ * then move (brief section 2: one move, before or after, not split).
  */
 export function TacticsPage() {
   const [run, setRun] = useState<RunResponse | null>(null);
@@ -75,8 +75,11 @@ export function TacticsPage() {
   const [target, setTarget] = useState<ActionTarget | null>(null);
   const [deployAt, setDeployAt] = useState<Record<string, Hex>>({});
   const [confirmAbandon, setConfirmAbandon] = useState(false);
-  /** Inspect mode: taps show what's on a hex instead of planning (for touch, which can't hover). */
-  const [inspecting, setInspecting] = useState(false);
+  /** Picking where to move: taps on reachable hexes plan the move; otherwise taps inspect. */
+  const [moving, setMoving] = useState(false);
+  /** The planned move comes after the action. */
+  const [actFirst, setActFirst] = useState(false);
+  /** The hex last tapped to inspect (touch can't hover). */
   const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
   const [hover, setHover] = useState<TacticsHoverPayload>({hex: null, unitId: null});
   const eventsRef = useRef<EventBus | null>(null);
@@ -89,6 +92,8 @@ export function TacticsPage() {
     setPlannedMove(null);
     setAbility(null);
     setTarget(null);
+    setMoving(false);
+    setActFirst(false);
   }, []);
 
   const receive = useCallback(
@@ -131,16 +136,36 @@ export function TacticsPage() {
   // ── The acting unit's options ──────────────────────────────────────────────
 
   const acting = fight ? actingUnit(fight) : undefined;
-  const reaches = useMemo(() => (fight && acting ? reachableHexes(fight, mapOf(fight), acting) : []), [fight, acting]);
 
-  /** The fight with the planned move made, to list targets from where the unit will stand. */
+  /** The action with its target chosen, ready to preview. */
+  const action = useMemo(() => {
+    if (!ability || !target) return null;
+    if (ability === 'throw' && !target.to) return null;
+    return {ability, target};
+  }, [ability, target]);
+
+  /** Acting first: the fight after the action, where the move starts from. */
+  const acted = useMemo(
+    () => (fight && acting && actFirst && action ? afterAction(fight, acting.id, action) : null),
+    [fight, acting, actFirst, action]
+  );
+
+  const reaches = useMemo(() => {
+    if (!fight || !acting) return [];
+    if (actFirst) return acted?.unit.alive ? reachableHexes(acted.state, mapOf(acted.state), acted.unit) : [];
+    return reachableHexes(fight, mapOf(fight), acting);
+  }, [fight, acting, actFirst, acted]);
+
+  /** Where the action is taken from: after the planned move, unless acting first. */
   const moved = useMemo(() => {
     if (!fight || !acting) return null;
     const state = cloneFight(fight);
     const unit = state.units.find((u) => u.id === acting.id)!;
-    for (const h of plannedMove?.path ?? []) enterHex({state, map: mapOf(state), slot: state.currentSlot}, unit, h);
+    if (!actFirst) {
+      for (const h of plannedMove?.path ?? []) enterHex({state, map: mapOf(state), slot: state.currentSlot}, unit, h);
+    }
     return {state, unit};
-  }, [fight, acting, plannedMove]);
+  }, [fight, acting, plannedMove, actFirst]);
 
   const targets = useMemo(() => {
     if (!ability || !moved || !moved.unit.alive) return [];
@@ -148,12 +173,14 @@ export function TacticsPage() {
   }, [ability, moved]);
 
   const input: TurnInput | null = useMemo(() => {
-    if (!ability || !target) return null;
-    if (ability === 'throw' && !target.to) return null;
-    const out: TurnInput = {action: {ability, target}};
-    if (plannedMove && plannedMove.path.length > 0) out.move = plannedMove.path;
+    if (!action) return null;
+    const out: TurnInput = {action};
+    if (plannedMove && plannedMove.path.length > 0) {
+      out.move = plannedMove.path;
+      if (actFirst) out.actFirst = true;
+    }
     return out;
-  }, [ability, target, plannedMove]);
+  }, [action, plannedMove, actFirst]);
 
   const preview = useMemo(
     () => (fight && acting && input ? previewTurn(fight, acting.id, input) : null),
@@ -168,26 +195,46 @@ export function TacticsPage() {
     [run, input, send]
   );
 
+  const clearMove = useCallback(() => {
+    setPlannedMove(null);
+    setActFirst(false);
+    setMoving(false);
+  }, []);
+
+  /** A new action, or none: a move planned after the old one no longer follows from it. */
   const chooseAbility = useCallback(
-    (id: AbilityId) => {
+    (id: AbilityId | null) => {
+      if (actFirst) clearMove();
       setAbility(id);
+      setMoving(false);
+      if (!id) return setTarget(null);
       // Abilities with no target (Hold, Clear the Storm) preview at once.
       const own = moved ? ABILITIES[id].targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!) : [];
       setTarget(own.length === 1 && own[0]!.hex === undefined ? {} : null);
     },
-    [moved]
+    [moved, actFirst, clearMove]
   );
+
+  const chooseTarget = useCallback(
+    (t: ActionTarget) => {
+      if (actFirst) clearMove();
+      setTarget(t);
+    },
+    [actFirst, clearMove]
+  );
+
+  /** Move: pick a hex. Before the action, or after it once one is chosen with its target. */
+  const startMove = useCallback(() => {
+    if (moving) return setMoving(false);
+    if (!plannedMove) setActFirst(action !== null);
+    setMoving(true);
+  }, [moving, plannedMove, action]);
 
   // ── Taps on the board ──────────────────────────────────────────────────────
 
   const onHex = useCallback(
     (h: Hex) => {
       if (!fight || busy) return;
-      if (inspecting) {
-        setPinnedHex(h);
-        setSelectedId(unitAt(fight, h)?.id ?? null);
-        return;
-      }
       if (fight.phase === 'deploy') {
         const here = Object.entries(deployAt).find(([, at]) => hexEquals(at, h))?.[0];
         const sel = selectedId && deployAt[selectedId] ? selectedId : null;
@@ -201,16 +248,22 @@ export function TacticsPage() {
         else setSelectedId(unitAt(fight, h)?.id ?? null);
         return;
       }
-      if (!acting) {
-        setSelectedId(unitAt(fight, h)?.id ?? null);
-        return;
-      }
-      if (ability) {
+      if (acting && moving) {
+        const reach = reaches.find((r) => hexEquals(r.hex, h));
+        if (reach) {
+          setPlannedMove(reach.path.length > 0 ? reach : null);
+          if (reach.path.length === 0) setActFirst(false);
+          // Moving first changes where the action is taken from.
+          else if (!actFirst) setTarget(ability && targets.length === 1 && targets[0]!.hex === undefined ? {} : null);
+          setMoving(false);
+          return;
+        }
+      } else if (acting && ability) {
         if (ability === 'throw' && target?.hex) {
           const landing = targets.find((t) => hexEquals(t.hex!, target.hex!) && hexEquals(t.to!, h));
           if (landing) {
             if (target.to && hexEquals(target.to, h)) commit();
-            else setTarget(landing);
+            else chooseTarget(landing);
             return;
           }
         }
@@ -218,28 +271,15 @@ export function TacticsPage() {
         if (match) {
           const same = target?.hex && hexEquals(target.hex, h) && (ability !== 'throw' || target.to);
           if (same) commit();
-          else setTarget(ability === 'throw' ? {hex: h} : match);
+          else chooseTarget(ability === 'throw' ? {hex: h} : match);
           return;
         }
-        // Not a target: a hex it can reach re-plans the move, keeping the ability.
-        const reach = reaches.find((r) => hexEquals(r.hex, h));
-        if (reach) {
-          setPlannedMove(reach.path.length > 0 ? reach : null);
-          setTarget(null);
-          return;
-        }
-        setSelectedId(unitAt(fight, h)?.id ?? selectedId);
-        return;
       }
-      const reach = reaches.find((r) => hexEquals(r.hex, h));
-      if (reach) {
-        setPlannedMove(reach.path.length > 0 ? reach : null);
-        setSelectedId(acting.id);
-        return;
-      }
+      // Anything else: look at the hex.
+      setPinnedHex(h);
       setSelectedId(unitAt(fight, h)?.id ?? null);
     },
-    [fight, busy, inspecting, deployAt, selectedId, acting, ability, target, targets, reaches, commit, map]
+    [fight, busy, deployAt, selectedId, acting, moving, reaches, actFirst, ability, target, targets, commit, chooseTarget, map]
   );
 
   const onHexRef = useRef(onHex);
@@ -247,8 +287,8 @@ export function TacticsPage() {
 
   // ── What the board draws ───────────────────────────────────────────────────
 
-  /** The hex being looked at: under the mouse, else the one tapped in Inspect mode. */
-  const inspectHex = hover.hex ?? (inspecting ? pinnedHex : null);
+  /** The hex being looked at: under the mouse, else the one last tapped. */
+  const inspectHex = hover.hex ?? pinnedHex;
   const inspectedUnit = fight && inspectHex && fight.phase !== 'deploy' ? unitAt(fight, inspectHex) : undefined;
   /** Where the inspected unit could move this turn, if it isn't the acting one. */
   const inspectReach = useMemo(
@@ -284,11 +324,9 @@ export function TacticsPage() {
     if (!acting) return out;
     for (const h of plannedMove?.path ?? []) highlights.push({hex: h, kind: 'path'});
     const onPath = (h: Hex) => plannedMove?.path.some((p) => hexEquals(p, h));
-    if (!ability) {
+    if (moving) {
       for (const r of reaches) if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'move'});
-    } else {
-      // Still movable: a dotted outline, under the ability's own highlights.
-      for (const r of reaches) if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'reach'});
+    } else if (ability) {
       if (lanes.length > 0) {
         out.arrows = [];
         for (const lane of lanes) {
@@ -317,11 +355,11 @@ export function TacticsPage() {
     }
     if (preview) {
       out.preview = preview.changes.map((c) => ({unitId: c.unitId, to: c.to, hpAfter: c.hpAfter, hpBefore: c.hpBefore, killed: c.killed}));
-    } else if (plannedMove) {
+    } else if (plannedMove && !actFirst) {
       out.preview = [{unitId: acting.id, to: plannedMove.hex, hpAfter: acting.hp, hpBefore: acting.hp, killed: false}];
     }
     return out;
-  }, [fight, selectedId, acting, deployAt, plannedMove, ability, reaches, targets, target, preview, map, inspectReach, lanes, moved]);
+  }, [fight, selectedId, acting, deployAt, plannedMove, actFirst, moving, ability, reaches, targets, target, preview, map, inspectReach, lanes, moved]);
 
   useEffect(() => {
     eventsRef.current?.emit('tactics:board', scene);
@@ -474,18 +512,16 @@ export function TacticsPage() {
             !finished && (
               <TurnControls
                 unit={acting}
-                currentSlot={fight.currentSlot}
-                landingSlot={preview?.slot ?? null}
                 ability={ability}
                 plannedMove={plannedMove}
+                actFirst={actFirst}
+                moving={moving}
+                canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
+                onMove={startMove}
                 onAbility={chooseAbility}
                 onClearMove={() => {
-                  setPlannedMove(null);
-                  setTarget(null);
-                }}
-                onCancel={() => {
-                  setAbility(null);
-                  setTarget(null);
+                  if (!actFirst) setTarget(null);
+                  clearMove();
                 }}
               >
                 {ability && (
@@ -494,6 +530,7 @@ export function TacticsPage() {
                     actingId={acting.id}
                     ability={ability}
                     preview={preview}
+                    cost={turnCost(ABILITIES[ability].cost, plannedMove?.path.length ?? 0)}
                     needsTarget={!input}
                     busy={busy}
                     onConfirm={() => commit()}
@@ -517,22 +554,6 @@ export function TacticsPage() {
               {confirmAbandon ? 'Tap again: abandon (counts as a defeat) and start over' : 'Abandon run'}
             </Button>
           )}
-          <Group justify="space-between" gap="xs">
-            <Text fz="xs" c="dimmed">
-              {inspecting ? 'Inspect: tap any hex to see what’s there.' : 'Hover a hex, or use Inspect, to see what’s there.'}
-            </Text>
-            <Button
-              size="compact-xs"
-              variant={inspecting ? 'filled' : 'light'}
-              color="grape"
-              onClick={() => {
-                setInspecting(!inspecting);
-                setPinnedHex(null);
-              }}
-            >
-              {inspecting ? 'Done inspecting' : 'Inspect'}
-            </Button>
-          </Group>
           {inspectHex ? (
             <HexInspector fight={fight} hex={inspectHex} positions={fight.phase === 'deploy' ? deployAt : undefined} />
           ) : (
@@ -547,18 +568,33 @@ export function TacticsPage() {
 
 function TurnControls(props: {
   unit: Unit;
-  currentSlot: number;
-  /** The previewed slot the card lands on, after yielding; null without a preview. */
-  landingSlot: number | null;
   ability: AbilityId | null;
   plannedMove: Reach | null;
-  onAbility: (id: AbilityId) => void;
+  actFirst: boolean;
+  moving: boolean;
+  canMove: boolean;
+  onMove: () => void;
+  onAbility: (id: AbilityId | null) => void;
   onClearMove: () => void;
-  onCancel: () => void;
   children?: React.ReactNode;
 }) {
-  const {unit, ability, plannedMove} = props;
+  const {unit, ability, plannedMove, moving} = props;
   const hexes = plannedMove?.path.length ?? 0;
+  const moveText = hexes > 0 ? `move ${hexes} hex${hexes > 1 ? 'es' : ''}` : null;
+  const actionText = ability ? ABILITIES[ability].name : null;
+  const plan = moving
+    ? props.actFirst
+      ? `${actionText} first: tap a hex to move to after it.`
+      : 'Tap a highlighted hex to move to.'
+    : props.actFirst && moveText && actionText
+      ? `${actionText}, then ${moveText}.`
+      : moveText && actionText
+        ? `M${moveText.slice(1)}, then ${actionText}.`
+        : moveText
+          ? `M${moveText.slice(1)}. Now pick an action.`
+          : actionText
+            ? `${actionText}. Pick Move before or after choosing a target.`
+            : 'Tap a hex to look at it. Pick Move, an action, or both.';
   return (
     <Paper bg="dark.7" p="sm" radius="md">
       <Stack gap={6}>
@@ -568,20 +604,27 @@ function TurnControls(props: {
             slot {unit.slot}
           </Badge>
         </Group>
-        <Group justify="space-between">
+        <Group justify="space-between" wrap="nowrap">
           <Text fz="sm" c="dimmed">
-            {hexes > 0 || ability ? 'This turn:' : 'Tap a hex to move (optional), then pick an action.'}
+            {plan}
           </Text>
-          {hexes > 0 && (
+          {hexes > 0 && !moving && (
             <Button size="compact-xs" variant="subtle" color="gray" onClick={props.onClearMove}>
               Stay
             </Button>
           )}
         </Group>
-        {(hexes > 0 || ability) && (
-          <TurnCost unit={unit} currentSlot={props.currentSlot} landingSlot={props.landingSlot} hexes={hexes} ability={ability} />
-        )}
         <div className={styles.abilities}>
+          <Button
+            size="xs"
+            variant={moving ? 'filled' : 'light'}
+            color="teal"
+            disabled={!props.canMove}
+            title={props.canMove ? 'Move up to your movement cap, before or after the action' : 'Can’t move now'}
+            onClick={props.onMove}
+          >
+            Move
+          </Button>
           {abilitiesOf(unit).map((def) => {
             const reason = unusableReason(unit, def);
             const lockedUlt = def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
@@ -593,7 +636,7 @@ function TurnControls(props: {
                 color={def.ultimate ? 'grape' : 'blue'}
                 disabled={reason !== null}
                 title={reason ?? def.summary}
-                onClick={() => (ability === def.id ? props.onCancel() : props.onAbility(def.id))}
+                onClick={() => props.onAbility(ability === def.id ? null : def.id)}
               >
                 {def.name}
                 {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
@@ -605,51 +648,11 @@ function TurnControls(props: {
         {ability && (
           <Text fz="xs" c="dimmed">
             {ABILITIES[ability].summary}
-            {ability === 'bow' ? ' Dashed lanes miss; tap a dotted hex to move first.' : ''}
+            {ability === 'bow' ? ' Dashed lanes miss.' : ''}
           </Text>
         )}
         {props.children}
       </Stack>
     </Paper>
-  );
-}
-
-/**
- * The turn's cost, added up (3.2): movement plus the action, divided by
- * speed + C, is how many slots the card moves.
- */
-function TurnCost(props: {unit: Unit; currentSlot: number; landingSlot: number | null; hexes: number; ability: AbilityId | null}) {
-  const {unit, hexes, ability} = props;
-  const def = ability ? ABILITIES[ability] : null;
-  const moveCost = hexes * RULES.moveCostPerHex;
-  const total = turnCost(def?.cost ?? 0, hexes);
-  const slots = slotsForward(total, unit.speed);
-  const nominal = props.currentSlot + slots;
-  return (
-    <div className={styles.cost}>
-      <span>{hexes > 0 ? `Move ${hexes} hex${hexes > 1 ? 'es' : ''} × ${RULES.moveCostPerHex}` : 'No move'}</span>
-      <b>{moveCost}</b>
-      {def ? (
-        <>
-          <span>
-            {def.name}
-            {def.charged ? ' (charge)' : ''}
-          </span>
-          <b>+ {def.cost}</b>
-          <span className={styles.costTotal}>Total</span>
-          <b className={styles.costTotal}>{total}</b>
-          <span className={styles.costWide}>
-            {total} ÷ (speed {unit.speed} + {RULES.C}) = <b>{slots} slots</b>: your card goes from slot {props.currentSlot} to{' '}
-            <b>
-              {props.landingSlot ?? nominal}
-            </b>
-            {props.landingSlot !== null && props.landingSlot !== nominal ? ` (${nominal} is taken, so it yields)` : ''}
-            {def.charged ? `. It triggers there, then recovers ${def.recoveryCost}.` : '.'}
-          </span>
-        </>
-      ) : (
-        <span className={styles.costWide}>Pick an action to see the total.</span>
-      )}
-    </div>
   );
 }

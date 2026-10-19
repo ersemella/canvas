@@ -6,7 +6,7 @@ import {isFlanked, lineOfFire, movementCap, reachableHexes, unitAt, vulnerablePe
 import {ABILITIES, arrowLanes} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, defaultDeployment, deploy, mapOf} from './fight';
-import {previewTurn} from './preview';
+import {afterAction, previewTurn} from './preview';
 import {SALT_FLATS, onMap} from './map';
 import {abilityDamage} from './resolve';
 import {createRun, handleRunAction, runView} from './run';
@@ -343,6 +343,26 @@ describe('abilities', () => {
 });
 
 describe('previews, the AI and the run', () => {
+  it('acts then moves: the move starts where the action left the unit', () => {
+    const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(3, 3)});
+    const m = unit(s, 'p-mangudai');
+    const shot = {ability: 'bow' as const, target: {hex: at(3, 3)}};
+    // Shoot from range, then step back out of reach.
+    const turn: TurnInput = {action: shot, move: [at(-1, 3)], actFirst: true};
+    expect(previewTurn(s, m.id, turn)).not.toBeNull();
+    applyTurn(s, m, turn);
+    expect(m.hex).toEqual(at(-1, 3));
+    expect(unit(s, 'e-bokh').hp).toBeLessThan(unit(s, 'e-bokh').maxHp);
+  });
+
+  it('a Pin first leaves nothing to move: the unit is Immobilized', () => {
+    const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(2, 3)});
+    const pin = {ability: 'pin' as const, target: {hex: at(2, 3)}};
+    const after = afterAction(s, 'p-bokh', pin)!;
+    expect(reachableHexes(after.state, mapOf(after.state), after.unit).filter((r) => r.path.length > 0)).toEqual([]);
+    expect(() => applyTurn(s, unit(s, 'p-bokh'), {action: pin, move: [at(0, 3)], actFirst: true})).toThrow(RuleError);
+  });
+
   it('a preview matches the outcome', () => {
     const run = handleRunAction(createRun(3), {type: 'deploy', placements: defaultDeployment(createRun(3).fight)});
     const acting = actingUnit(run.fight)!;

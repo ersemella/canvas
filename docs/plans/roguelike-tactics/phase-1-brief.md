@@ -343,11 +343,13 @@ confirm or change:
   run's seed.
 - **Line of fire** (rule 29) is implemented and tested, but no Phase 1
   ability needs it: the bow fires along hex lines.
-- **The page** plans move-then-act only; the server also accepts
-  act-then-move (`actFirst`). With an ability chosen, tapping a hex the
-  unit can reach re-plans the move and keeps the ability. The turn panel
-  adds the turn up: movement, the action, the total ÷ (speed + C), and
-  the slot the card lands on (owner, 2026-10-19).
+- **The page** (owner, 2026-10-19): tapping or hovering a hex only shows
+  what's there; a **Move** button plans the move. Pressing Move before
+  choosing an action (or before its target) moves first; pressing it after
+  acts first, then moves from where the action left the unit (the server's
+  `actFirst`). One move per turn, not split around the action (section 2).
+  The Confirm button shows the turn's total cost and the slot the card
+  lands on.
 - **The track is on the canvas** (owner, 2026-10-19), above the board, as
   a row of cards in turn order like Mana Khemia's rather than section 9's
   window of slots in the side panel: each card shows its slot number,

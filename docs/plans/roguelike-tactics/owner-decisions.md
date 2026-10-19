@@ -110,7 +110,10 @@ confirm or change:
 - **The AI's additions:** a pull toward the nearest enemy, and counting
   the quicksand it will take next turn. Without the pull, units with
   nothing in reach hold forever.
-- **The page plans move-then-act only;** the server accepts act-then-move.
+- **One move per turn, before or after the action, not split around it**
+  (section 2; the page offers both orders since 2026-10-19). Splitting it
+  (move, act, move, within the cap) is open: it would allow hit-and-run
+  with every ranged hero.
 - **The enemy's starting layout** is one of three, picked by the run's
   seed.
 

@@ -80,7 +80,7 @@ export type {Reach} from './rules/board';
 export {actingUnit, cloneFight, defaultDeployment, mapOf} from './rules/fight';
 export {enterHex, unitName} from './rules/resolve';
 export {slotsForward, turnCost} from './rules/track';
-export {previewTurn, unitOptions} from './rules/preview';
+export {afterAction, previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
 export {SALT_FLATS, onMap, tileAt} from './rules/map';
