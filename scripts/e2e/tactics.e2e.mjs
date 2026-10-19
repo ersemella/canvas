@@ -272,9 +272,24 @@ try {
   check('phone: tapping an enemy shows its details', (await phoneSheet.textContent()).includes('enemy'));
   check('phone: the details start on screen', await phoneSheet.evaluate((el) => el.getBoundingClientRect().top < window.innerHeight));
   check('phone: the action section stays on screen', await inViewport(phoneMove));
-  await phone.getByRole('button', {name: /^Hold/}).click();
-  check('phone: Confirm is the only text in the action section', /^Confirm · cost 60 → slot \d+$/.test(await phone.getByRole('button', {name: /^Confirm/}).textContent()));
-  check('phone: steps name only the action', (await phone.getByTestId('turn-steps').textContent()) === '1Hold');
+  // No Hold button: with nothing picked, the big button ends the turn.
+  check('phone: no Hold button', !(await phone.getByRole('button', {name: /^Hold/}).count()));
+  check('phone: with nothing picked, the button ends the turn', /^End turn · cost 60 → slot \d+$/.test(await phone.getByRole('button', {name: /^End turn/}).textContent()));
+  // Tapping a target twice doesn't commit: only the button does.
+  const tapOn = async (hex) => {
+    const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
+    const box = await phone.locator('canvas').boundingBox();
+    await phone.tap('canvas', {position: {x: (x * box.width) / 600, y: (y * box.height) / 460}});
+    await sleep(250);
+  };
+  const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
+  const mine = phoneFight.units.find((u) => u.id === 'p-bokh').hex; // in the Outrider's line at the start
+  await phone.getByRole('button', {name: /^Composite Bow/}).click();
+  await tapOn(mine);
+  await tapOn(mine);
+  check('phone: a second tap on the target doesn’t commit', (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion);
+  check('phone: Confirm is the only text in the action section', /^Confirm · cost 100 → slot \d+$/.test(await phone.getByRole('button', {name: /^Confirm/}).textContent()));
+  check('phone: steps name only the action', (await phone.getByTestId('turn-steps').textContent()) === '1Composite Bow');
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-full.png'), fullPage: true});
   const overflow = await phone.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

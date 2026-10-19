@@ -28,6 +28,8 @@ const nameOf = (fight: FightState, id: string) => unitName(fight.units.find((u) 
 export function TurnPreviewBox(props: {
   /** Phones: only the Confirm button; the board shows the outcome. */
   compact: boolean;
+  /** No action picked: Confirm ends the turn with Hold. */
+  endTurn?: boolean;
   fight: FightState;
   actingId: string;
   ability: AbilityId;
@@ -43,7 +45,7 @@ export function TurnPreviewBox(props: {
     if (props.needsTarget) return null;
     return (
       <Button color="yellow" c="dark.9" fw="bold" size="sm" loading={props.busy} disabled={!preview} onClick={props.onConfirm}>
-        {preview ? `Confirm · cost ${props.cost} → slot ${preview.slot}` : 'Can’t do that'}
+        {preview ? `${props.endTurn ? 'End turn' : 'Confirm'} · cost ${props.cost} → slot ${preview.slot}` : 'Can’t do that'}
       </Button>
     );
   }

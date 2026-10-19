@@ -189,15 +189,22 @@ export function TacticsPage() {
     return ABILITIES[ability].targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!);
   }, [ability, moved]);
 
+  /**
+   * Phones have no Hold button: with no action picked, Confirm ends the turn
+   * with Hold (after the move, if one is planned).
+   */
+  const endsWithHold = compact && !ability;
+
   const input: TurnInput | null = useMemo(() => {
-    if (!action) return null;
-    const out: TurnInput = {action};
+    const chosen = action ?? (endsWithHold ? {ability: 'hold' as const, target: {}} : null);
+    if (!chosen) return null;
+    const out: TurnInput = {action: chosen};
     if (plannedMove && plannedMove.path.length > 0) {
       out.move = plannedMove.path;
       if (actFirst) out.actFirst = true;
     }
     return out;
-  }, [action, plannedMove, actFirst]);
+  }, [action, endsWithHold, plannedMove, actFirst]);
 
   const preview = useMemo(
     () => (fight && acting && input ? previewTurn(fight, acting.id, input) : null),
@@ -257,11 +264,11 @@ export function TacticsPage() {
 
   /** The same turn in the other order, if it's legal: Swap order offers it. */
   const canSwap = useMemo(() => {
-    if (!fight || !acting || !input?.move) return false;
+    if (!fight || !acting || !input?.move || endsWithHold) return false;
     const other: TurnInput = {action: input.action, move: input.move};
     if (!input.actFirst) other.actFirst = true;
     return previewTurn(fight, acting.id, other) !== null;
-  }, [fight, acting, input]);
+  }, [fight, acting, input, endsWithHold]);
 
   const targetName = useMemo(() => {
     const h = target?.hex;
@@ -302,16 +309,19 @@ export function TacticsPage() {
         if (ability === 'throw' && target?.hex) {
           const landing = targets.find((t) => hexEquals(t.hex!, target.hex!) && hexEquals(t.to!, h));
           if (landing) {
-            if (target.to && hexEquals(target.to, h)) commit();
-            else chooseTarget(landing);
+            // A second tap commits on desktop; phones commit only with Confirm.
+            if (target.to && hexEquals(target.to, h)) {
+              if (!compact) commit();
+            } else chooseTarget(landing);
             return;
           }
         }
         const match = targets.find((t) => t.hex && hexEquals(t.hex, h));
         if (match) {
           const same = target?.hex && hexEquals(target.hex, h) && (ability !== 'throw' || target.to);
-          if (same) commit();
-          else chooseTarget(ability === 'throw' ? {hex: h} : match);
+          if (same) {
+            if (!compact) commit();
+          } else chooseTarget(ability === 'throw' ? {hex: h} : match);
           return;
         }
       }
@@ -319,7 +329,7 @@ export function TacticsPage() {
       setPinnedHex(h);
       setSelectedId(unitAt(fight, h)?.id ?? null);
     },
-    [fight, busy, deployAt, selectedId, acting, moving, reaches, actFirst, ability, target, targets, commit, chooseTarget, map]
+    [fight, busy, deployAt, selectedId, acting, moving, reaches, actFirst, ability, target, targets, commit, chooseTarget, map, compact]
   );
 
   const onHexRef = useRef(onHex);
@@ -537,14 +547,15 @@ export function TacticsPage() {
         onMove={toggleMove}
         onAbility={chooseAbility}
       >
-        {ability && (
+        {(ability || endsWithHold) && (
           <TurnPreviewBox
             compact={compact}
+            endTurn={endsWithHold}
             fight={fight}
             actingId={acting.id}
-            ability={ability}
+            ability={ability ?? 'hold'}
             preview={preview}
-            cost={turnCost(ABILITIES[ability].cost, plannedMove?.path.length ?? 0)}
+            cost={turnCost(ABILITIES[ability ?? 'hold'].cost, plannedMove?.path.length ?? 0)}
             needsTarget={!input}
             busy={busy}
             onConfirm={() => commit()}
@@ -710,7 +721,10 @@ function TurnControls(props: {
           >
             Move
           </Button>
-          {abilitiesOf(unit).map((def) => {
+          {abilitiesOf(unit)
+            // Phones end the turn from Confirm instead of a Hold button.
+            .filter((def) => !(compact && def.id === 'hold'))
+            .map((def) => {
             const reason = unusableReason(unit, def);
             const lockedUlt = def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
             return (
