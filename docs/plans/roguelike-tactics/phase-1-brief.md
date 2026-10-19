@@ -349,7 +349,9 @@ confirm or change:
   what's there; a **Move** button plans the move. Pressing Move before
   choosing an action (or before its target) moves first; pressing it after
   acts first, then moves from where the action left the unit (the server's
-  `actFirst`). One move per turn, not split around the action (section 2).
+  `actFirst`). Move stays highlighted while a move is planned, alongside
+  the action; tapping it again undoes the move. One move per turn, not
+  split around the action (section 2).
   The Confirm button shows the turn's total cost and the slot the card
   lands on.
 - **The track is on the canvas** (owner, 2026-10-19), above the board, as

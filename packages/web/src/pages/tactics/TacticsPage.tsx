@@ -222,12 +222,20 @@ export function TacticsPage() {
     [actFirst, clearMove]
   );
 
-  /** Move: pick a hex. Before the action, or after it once one is chosen with its target. */
-  const startMove = useCallback(() => {
+  /**
+   * The Move toggle. On: pick a hex, before the action, or after it once one
+   * is chosen with its target. Off again: undo the planned move.
+   */
+  const toggleMove = useCallback(() => {
+    if (plannedMove) {
+      // A target picked from the moved-to hex no longer holds; a targetless action (Hold) does.
+      if (!actFirst && target?.hex) setTarget(null);
+      return clearMove();
+    }
     if (moving) return setMoving(false);
-    if (!plannedMove) setActFirst(action !== null);
+    setActFirst(action !== null);
     setMoving(true);
-  }, [moving, plannedMove, action]);
+  }, [moving, plannedMove, actFirst, action, target, clearMove]);
 
   // ── Taps on the board ──────────────────────────────────────────────────────
 
@@ -514,14 +522,11 @@ export function TacticsPage() {
                 ability={ability}
                 plannedMove={plannedMove}
                 actFirst={actFirst}
+                actionReady={action !== null}
                 moving={moving}
                 canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
-                onMove={startMove}
+                onMove={toggleMove}
                 onAbility={chooseAbility}
-                onClearMove={() => {
-                  if (!actFirst) setTarget(null);
-                  clearMove();
-                }}
               >
                 {ability && (
                   <TurnPreviewBox
@@ -554,11 +559,12 @@ function TurnControls(props: {
   ability: AbilityId | null;
   plannedMove: Reach | null;
   actFirst: boolean;
+  /** The action has its target: Move now means acting first. */
+  actionReady: boolean;
   moving: boolean;
   canMove: boolean;
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
-  onClearMove: () => void;
   children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving} = props;
@@ -576,7 +582,9 @@ function TurnControls(props: {
         : moveText
           ? `M${moveText.slice(1)}. Now pick an action.`
           : actionText
-            ? `${actionText}. Pick Move before or after choosing a target.`
+            ? props.actionReady
+              ? `${actionText}. Pick Move to move after it, or confirm.`
+              : `${actionText}. Pick Move to move first, or tap a target.`
             : 'Tap a hex to look at it. Pick Move, an action, or both.';
   return (
     <Paper bg="dark.7" p="sm" radius="md">
@@ -587,23 +595,23 @@ function TurnControls(props: {
             slot {unit.slot}
           </Badge>
         </Group>
-        <Group justify="space-between" wrap="nowrap">
-          <Text fz="sm" c="dimmed">
-            {plan}
-          </Text>
-          {hexes > 0 && !moving && (
-            <Button size="compact-xs" variant="subtle" color="gray" onClick={props.onClearMove}>
-              Stay
-            </Button>
-          )}
-        </Group>
+        <Text fz="sm" c="dimmed">
+          {plan}
+        </Text>
         <div className={styles.abilities}>
           <Button
             size="xs"
-            variant={moving ? 'filled' : 'light'}
+            variant={moving || plannedMove ? 'filled' : 'light'}
             color="teal"
             disabled={!props.canMove}
-            title={props.canMove ? 'Move up to your movement cap, before or after the action' : 'Can’t move now'}
+            aria-pressed={moving || plannedMove !== null}
+            title={
+              plannedMove
+                ? 'Tap to undo the move'
+                : props.canMove
+                  ? 'Move up to your movement cap, before or after the action'
+                  : 'Can’t move now'
+            }
             onClick={props.onMove}
           >
             Move

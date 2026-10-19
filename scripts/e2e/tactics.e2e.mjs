@@ -156,12 +156,19 @@ try {
   });
   // Without Move, a tap only looks at the hex.
   await tapHex(dest);
-  check('a tap without Move plans nothing', !(await page.getByRole('button', {name: 'Stay'}).isVisible()));
+  const moveButton = page.getByRole('button', {name: 'Move', exact: true});
+  check('a tap without Move plans nothing', (await moveButton.getAttribute('aria-pressed')) === 'false');
   // Act first, then move: Hold, then Move and a hex.
   await page.getByRole('button', {name: /^Hold/}).click();
-  await page.getByRole('button', {name: 'Move', exact: true}).click();
+  await moveButton.click();
   await tapHex(dest);
   check('Move after the action plans act-then-move', await page.getByText(/Hold, then move 1 hex/).isVisible());
+  check('Move stays highlighted while a move is planned', (await moveButton.getAttribute('aria-pressed')) === 'true');
+  // Tapping it again undoes the move and keeps the action; plan it again.
+  await moveButton.click();
+  check('tapping Move again undoes the move', (await moveButton.getAttribute('aria-pressed')) === 'false' && (await page.getByText(/^Hold\./).isVisible()));
+  await moveButton.click();
+  await tapHex(dest);
   const confirm = page.getByRole('button', {name: /^Confirm/});
   check('Confirm shows the total cost and landing slot', /cost 70 → slot \d+/.test(await confirm.textContent()), await confirm.textContent());
   await sleep(200);
