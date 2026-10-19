@@ -371,6 +371,13 @@ confirm or change:
   again doesn't commit; only the button does (desktop keeps both).
   An enemy's details leave out what it could do next turn (desktop keeps
   it, D11).
+  Timing is shown in slots from now, never costs or absolute slot
+  numbers: the track draws every slot from **NOW** on as a cell, empty
+  ones included (+1, +2, …, as Mana Khemia shows empty spaces), with each
+  card in its cell and the planned turn's landing cell dashed; each
+  ability button shows how many slots later the next turn would come
+  (yielding included), and the button reads "Confirm · next turn +8".
+  Now is on the left, in reading order.
 - **The track is on the canvas** (owner, 2026-10-19), above the board, as
   a row of cards in turn order like Mana Khemia's rather than section 9's
   window of slots in the side panel: each card shows its slot number,

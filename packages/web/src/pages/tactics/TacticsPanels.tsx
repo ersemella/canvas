@@ -45,7 +45,9 @@ export function TurnPreviewBox(props: {
     if (props.needsTarget) return null;
     return (
       <Button color="yellow" c="dark.9" fw="bold" size="sm" loading={props.busy} disabled={!preview} onClick={props.onConfirm}>
-        {preview ? `${props.endTurn ? 'End turn' : 'Confirm'} · cost ${props.cost} → slot ${preview.slot}` : 'Can’t do that'}
+        {preview
+          ? `${props.endTurn ? 'End turn' : 'Confirm'} · next turn +${(preview.slot ?? fight.currentSlot) - fight.currentSlot}`
+          : 'Can’t do that'}
       </Button>
     );
   }
@@ -166,8 +168,18 @@ export function StatSheet({fight, unit, compact = false}: {fight: FightState; un
         <b>{unit.defence}</b>
         <span>Power</span>
         <b>{unit.power}</b>
-        <span>Card</span>
-        <b>{!unit.alive ? 'fallen' : unit.slot === null ? 'not placed' : `slot ${unit.slot}`}</b>
+        <span>{compact ? 'Next turn' : 'Card'}</span>
+        <b>
+          {!unit.alive
+            ? 'fallen'
+            : unit.slot === null
+              ? 'not placed'
+              : compact
+                ? unit.slot === fight.currentSlot
+                  ? 'now'
+                  : `+${unit.slot - fight.currentSlot}`
+                : `slot ${unit.slot}`}
+        </b>
         <span>Move</span>
         <b>{movementCap(unit)} hexes</b>
         <span>{ABILITIES[ult].name}</span>

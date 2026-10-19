@@ -36,13 +36,50 @@ const CARD_GAP = 6;
 const CARD_MAX_WIDTH = 66;
 const LABEL_WIDTH = 34;
 
-/** The track's cards in slot order, with the previewed landing card if any. */
-export function trackCards(fight: FightState, previewSlot: number | null): TrackCard[] {
+/**
+ * How the track is drawn. `cards`: one card per unit, side by side, with
+ * absolute slot numbers. `slots` (phones): every slot from now on is a
+ * cell, empty ones included, numbered from now (+1, +2, …), so a turn's
+ * cost reads as a distance.
+ */
+export type TrackStyle = 'cards' | 'slots';
+
+/** The `slots` style's cells: at least this many, more when a card lies further out. */
+const MIN_SLOT_CELLS = 18;
+
+export interface TrackSlots {
+  /** The slot of the first cell (now). */
+  start: number;
+  count: number;
+  x0: number;
+  /** Cell width. */
+  w: number;
+}
+
+function trackEntries(fight: FightState, previewSlot: number | null) {
   const entries = fight.units
     .filter((u) => u.alive && u.slot !== null)
     .map((u) => ({unitId: u.id, slot: u.slot!, ghost: false}));
   if (fight.awaiting && previewSlot !== null) entries.push({unitId: fight.awaiting, slot: previewSlot, ghost: true});
-  entries.sort((a, b) => a.slot - b.slot || Number(a.ghost) - Number(b.ghost));
+  return entries.sort((a, b) => a.slot - b.slot || Number(a.ghost) - Number(b.ghost));
+}
+
+export function trackSlots(fight: FightState, previewSlot: number | null): TrackSlots {
+  const entries = trackEntries(fight, previewSlot);
+  const start = fight.currentSlot;
+  const last = entries.length > 0 ? entries[entries.length - 1]!.slot : start;
+  const count = Math.max(MIN_SLOT_CELLS, last - start + 1);
+  const x0 = TRACK_AREA.x + 6;
+  return {start, count, x0, w: (TRACK_AREA.width - 12) / count};
+}
+
+/** The track's cards in slot order, with the previewed landing card if any. */
+export function trackCards(fight: FightState, previewSlot: number | null, style: TrackStyle = 'cards'): TrackCard[] {
+  const entries = trackEntries(fight, previewSlot);
+  if (style === 'slots') {
+    const {start, x0, w} = trackSlots(fight, previewSlot);
+    return entries.map((e) => ({...e, x: x0 + (e.slot - start) * w + 1, y: TRACK_AREA.y + 22, w: w - 2, h: TRACK_AREA.height - 28}));
+  }
   const inner = TRACK_AREA.width - LABEL_WIDTH - 2 * CARD_GAP;
   const w = Math.min(CARD_MAX_WIDTH, (inner - CARD_GAP * (entries.length - 1)) / Math.max(1, entries.length));
   const h = TRACK_AREA.height - 12;

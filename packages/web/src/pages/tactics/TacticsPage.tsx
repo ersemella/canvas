@@ -22,6 +22,7 @@ import {
   mapOf,
   previewTurn,
   reachableHexes,
+  slotsForward,
   turnCost,
   unitAt,
   unusableReason,
@@ -262,6 +263,21 @@ export function TacticsPage() {
     setMoving(true);
   }, [moving, plannedMove, actFirst, action, target, clearMove]);
 
+  /**
+   * Slots from now to the next turn after an action of `actionCost` and the
+   * planned move: the placement formula, then yielding past taken slots (3.3).
+   */
+  const slotsLater = useCallback(
+    (actionCost: number) => {
+      if (!fight || !acting) return 0;
+      const taken = new Set(fight.units.filter((u) => u.alive && u !== acting && u.slot !== null).map((u) => u.slot));
+      let slot = fight.currentSlot + slotsForward(turnCost(actionCost, plannedMove?.path.length ?? 0), acting.speed);
+      while (taken.has(slot)) slot++;
+      return slot - fight.currentSlot;
+    },
+    [fight, acting, plannedMove]
+  );
+
   /** The same turn in the other order, if it's legal: Swap order offers it. */
   const canSwap = useMemo(() => {
     if (!fight || !acting || !input?.move || endsWithHold) return false;
@@ -363,6 +379,7 @@ export function TacticsPage() {
       selectedUnitId: selectedId ?? acting?.id ?? null,
       preview: [],
       previewSlot: preview?.slot ?? null,
+      trackStyle: compact ? 'slots' : 'cards',
     };
     if (!fight) return out;
     if (fight.phase === 'deploy') {
@@ -414,7 +431,7 @@ export function TacticsPage() {
       out.preview = [{unitId: acting.id, to: plannedMove.hex, hpAfter: acting.hp, hpBefore: acting.hp, killed: false}];
     }
     return out;
-  }, [fight, selectedId, acting, deployAt, plannedMove, actFirst, moving, ability, action, reaches, targets, target, preview, map, inspectReach, lanes, moved]);
+  }, [fight, selectedId, acting, deployAt, plannedMove, actFirst, moving, ability, action, reaches, targets, target, preview, map, inspectReach, lanes, moved, compact]);
 
   useEffect(() => {
     eventsRef.current?.emit('tactics:board', scene);
@@ -534,6 +551,7 @@ export function TacticsPage() {
     !finished && (
       <TurnControls
         compact={compact}
+        slotsLater={slotsLater}
         unit={acting}
         ability={ability}
         plannedMove={plannedMove}
@@ -626,8 +644,10 @@ export function TacticsPage() {
 }
 
 function TurnControls(props: {
-  /** Phones: no heading or hints, steps named only, no costs or summaries. */
+  /** Phones: no heading or hints, steps named only, no summaries; buttons show slots, not costs. */
   compact: boolean;
+  /** How many slots after now the next turn comes for an action of this cost, with the planned move. */
+  slotsLater: (actionCost: number) => number;
   unit: Unit;
   ability: AbilityId | null;
   plannedMove: Reach | null;
@@ -739,7 +759,10 @@ function TurnControls(props: {
               >
                 {def.name}
                 {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
-                {!compact && <span className={styles.abilityCost}>{def.cost}</span>}
+                <span className={styles.abilityCost}>
+                  {/* Phones: how many slots later the next turn comes, with the planned move. */}
+                  {compact ? `+${props.slotsLater(def.cost)}` : def.cost}
+                </span>
               </Button>
             );
           })}

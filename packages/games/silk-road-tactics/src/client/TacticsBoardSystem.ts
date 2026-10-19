@@ -8,8 +8,8 @@ import {hailInfo, TILE_INFO} from '../rules/info';
 import {MAPS, tileAt} from '../rules/map';
 import {unitName} from '../rules/resolve';
 import type {FightState, Unit} from '../rules/types';
-import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards} from './layout';
-import type {TrackCard} from './layout';
+import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
+import type {TrackCard, TrackStyle} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
@@ -29,6 +29,8 @@ export interface BoardScene {
   previewSlot?: number | null;
   /** Arrow flights to draw (the bow's lanes): `hits` when it ends on a unit. */
   arrows?: {from: Hex; to: Hex; hits: boolean}[];
+  /** How the track is drawn; `cards` by default. */
+  trackStyle?: TrackStyle;
   /** The planned turn's steps, numbered in the order they resolve, at the hex each happens. */
   steps?: {hex: Hex; n: number}[];
 }
@@ -123,10 +125,11 @@ export class TacticsBoardSystem extends BaseSystem {
     }
 
     if (fight.phase !== 'deploy') {
-      drawTrack(ctx, fight, trackCards(fight, this.scene.previewSlot ?? null), {
-        selected: this.scene.selectedUnitId,
-        hovered: this.hover.unitId,
-      });
+      const style = this.scene.trackStyle ?? 'cards';
+      const cards = trackCards(fight, this.scene.previewSlot ?? null, style);
+      const opts = {selected: this.scene.selectedUnitId, hovered: this.hover.unitId};
+      if (style === 'slots') drawSlotTrack(ctx, fight, cards, this.scene.previewSlot ?? null, opts);
+      else drawTrack(ctx, fight, cards, opts);
     }
     if (this.hover.hex) drawHover(ctx, fight, this.hover.hex, this.scene.positions);
   }
@@ -287,6 +290,81 @@ function drawTrack(
     }
     const caption = card.ghost ? 'lands' : u.charging ? `${ABILITIES[u.charging.ability].name}!` : acting ? 'NOW' : SHORT_NAME[u.hero];
     label(ctx, caption, mid, cy + h - 9, card.ghost || acting ? '#fde047' : u.charging ? '#d8b4fe' : '#d1d5db', 9, acting || Boolean(u.charging));
+    ctx.restore();
+  }
+}
+
+/**
+ * The track as a row of slots from now on (phones): every slot a cell,
+ * empty ones included, numbered from now, each unit's card in its cell;
+ * the planned turn's landing cell is dashed and marked with how far it is.
+ */
+function drawSlotTrack(
+  ctx: CanvasRenderingContext2D,
+  fight: FightState,
+  cards: TrackCard[],
+  previewSlot: number | null,
+  opts: {selected: string | null; hovered: string | null}
+): void {
+  const {x, y, width, height} = TRACK_AREA;
+  const {start, count, x0, w} = trackSlots(fight, previewSlot);
+  ctx.save();
+  roundRect(ctx, x, y, width, height, 8);
+  ctx.fillStyle = 'rgba(17,24,39,0.92)';
+  ctx.fill();
+  ctx.restore();
+
+  const occupied = new Map(cards.map((c) => [c.slot, c]));
+  const cellY = y + 22;
+  const cellH = height - 28;
+  for (let i = 0; i < count; i++) {
+    const cx = x0 + i * w;
+    const card = occupied.get(start + i);
+    // Empty cells: a faint outline, so distances can be counted.
+    ctx.save();
+    roundRect(ctx, cx + 1, cellY, w - 2, cellH, 4);
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+    const text = i === 0 ? 'NOW' : `+${i}`;
+    const color = card?.ghost ? '#fde047' : i === 0 ? '#fde047' : card ? '#f3f4f6' : '#6b7280';
+    label(ctx, text, cx + w / 2, y + 12, color, i === 0 ? 9 : 10, Boolean(card) || i === 0);
+  }
+
+  for (const card of cards) {
+    const u = fight.units.find((v) => v.id === card.unitId)!;
+    const acting = !card.ghost && u.id === fight.awaiting;
+    const {x: cx, y: cy, w: cw, h} = card;
+    const mid = cx + cw / 2;
+    ctx.save();
+    if (card.ghost) ctx.globalAlpha = 0.85;
+    roundRect(ctx, cx, cy, cw, h, 4);
+    ctx.fillStyle = card.ghost ? 'rgba(253,224,71,0.12)' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
+    ctx.fill();
+    ctx.setLineDash(card.ghost ? [3, 2] : []);
+    ctx.strokeStyle = card.ghost || acting ? '#fde047' : u.id === opts.selected || u.id === opts.hovered ? '#ffffff' : SIDE_COLOR[u.side];
+    ctx.lineWidth = acting || card.ghost ? 2.5 : 1.5;
+    ctx.stroke();
+    ctx.setLineDash([]);
+    const r = Math.min(11, cw / 2 - 2);
+    ctx.beginPath();
+    ctx.arc(mid, cy + h / 2 - 4, r, 0, Math.PI * 2);
+    ctx.fillStyle = HERO_COLOR[u.hero];
+    ctx.fill();
+    ctx.strokeStyle = SIDE_COLOR[u.side];
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    label(ctx, HEROES[u.hero].letter, mid, cy + h / 2 - 3, '#ffffff', 11, true);
+    if (!card.ghost) {
+      const frac = Math.max(0, u.hp / u.maxHp);
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(cx + 3, cy + h - 9, cw - 6, 3);
+      ctx.fillStyle = frac > 0.5 ? '#4ade80' : frac > 0.25 ? '#facc15' : '#f87171';
+      ctx.fillRect(cx + 3, cy + h - 9, (cw - 6) * frac, 3);
+    }
+    // A charging card: its ability triggers when this slot comes up.
+    if (u.charging && !card.ghost) label(ctx, '!', cx + cw - 5, cy + 7, '#d8b4fe', 12, true);
     ctx.restore();
   }
 }

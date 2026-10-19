@@ -275,7 +275,7 @@ try {
   check('phone: the action section stays on screen', await inViewport(phoneMove));
   // No Hold button: with nothing picked, the big button ends the turn.
   check('phone: no Hold button', !(await phone.getByRole('button', {name: /^Hold/}).count()));
-  check('phone: with nothing picked, the button ends the turn', /^End turn · cost 60 → slot \d+$/.test(await phone.getByRole('button', {name: /^End turn/}).textContent()));
+  check('phone: with nothing picked, the button ends the turn', /^End turn · next turn \+\d+$/.test(await phone.getByRole('button', {name: /^End turn/}).textContent()));
   // Tapping a target twice doesn't commit: only the button does.
   const tapOn = async (hex) => {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
@@ -289,7 +289,10 @@ try {
   await tapOn(mine);
   await tapOn(mine);
   check('phone: a second tap on the target doesn’t commit', (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion);
-  check('phone: Confirm is the only text in the action section', /^Confirm · cost 100 → slot \d+$/.test(await phone.getByRole('button', {name: /^Confirm/}).textContent()));
+  const confirmText = await phone.getByRole('button', {name: /^Confirm/}).textContent();
+  check('phone: Confirm says when the next turn comes, in slots from now', /^Confirm · next turn \+\d+$/.test(confirmText), confirmText);
+  const bowText = await phone.getByRole('button', {name: /^Composite Bow/}).textContent();
+  check('phone: the ability button shows the same slots as Confirm', bowText.endsWith(confirmText.split(' ').pop()), [bowText, confirmText]);
   check('phone: steps name only the action', (await phone.getByTestId('turn-steps').textContent()) === '1Composite Bow');
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-full.png'), fullPage: true});
