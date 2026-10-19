@@ -111,7 +111,12 @@ export const ABILITY = {
   bow: {cost: RULES.cost.typical, range: 5, damage: 120},
   dash: {cost: RULES.cost.quick, distance: 3},
   volley: {range: 5, radius: 1, damage: 135, chargeCost: 40, recoveryCost: RULES.cost.typical},
-  clearStorm: {cost: RULES.cost.typical, radius: 1, heal: 25},
+  /**
+   * Heal 40, 60 at the Storm Caller's power (owner, 2026-10-19; was 25,
+   * 37 healed, under a fifth of a bow hit). Over 1,000 AI-vs-AI fights from
+   * random deployments: no stalls (17 at 25), and fights shorter.
+   */
+  clearStorm: {cost: RULES.cost.typical, radius: 1, heal: 40},
   hail: {cost: RULES.cost.typical, range: 4, damage: 50, hexSlots: 20, slowed: 2, vulnerable: 25, statusSlots: 10},
   gale: {cost: RULES.cost.typical, displace: 1, slowed: 1, slowedSlots: 10},
   freeze: {range: 4, radius: 1, immobilizedSlots: 15, vulnerable: 25, chargeCost: 40, recoveryCost: RULES.cost.typical},
