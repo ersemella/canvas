@@ -90,7 +90,24 @@ export function TacticsPage() {
   const compact = useIsPhone();
   usePageHeader('Silk Road Tactics');
   const eventsRef = useRef<EventBus | null>(null);
+  const boardRef = useRef<HTMLDivElement | null>(null);
+  const actionsRef = useRef<HTMLElement | null>(null);
   const [worldReady, setWorldReady] = useState(0);
+
+  // Phones: a tap anywhere but the board or the action section stops
+  // inspecting, and the details go back to the unit whose turn it is. A
+  // click, not a touch, so scrolling the details doesn't count.
+  useEffect(() => {
+    if (!compact) return;
+    const onClick = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (boardRef.current?.contains(t) || actionsRef.current?.contains(t)) return;
+      setPinnedHex(null);
+      setSelectedId(null);
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, [compact]);
 
   const fight: FightState | null = run?.view.fight ?? null;
   const map = SALT_FLATS;
@@ -582,7 +599,7 @@ export function TacticsPage() {
     <Stack align="center" pt={compact ? 0 : 'md'} pb="md" gap="sm" px="md">
       {header}
       <div className={styles.layout}>
-        <div className={styles.board}>
+        <div className={styles.board} ref={boardRef}>
           <GameErrorBoundary>
             <GameCanvas
               sceneData={game.sceneData}
@@ -619,7 +636,11 @@ export function TacticsPage() {
               <section className={styles.details} aria-label="Details">
                 {details}
               </section>
-              {actions && <section className={styles.actionBar}>{actions}</section>}
+              {actions && (
+                <section className={styles.actionBar} ref={actionsRef}>
+                  {actions}
+                </section>
+              )}
             </>
           ) : (
             <>

@@ -285,6 +285,11 @@ try {
   check('phone: no “could do next turn” on an enemy', !(await phoneSheet.textContent()).includes('Could do next turn'));
   check('phone: the details start on screen', await phoneSheet.evaluate((el) => el.getBoundingClientRect().top < window.innerHeight));
   check('phone: the action section stays on screen', await inViewport(phoneMove));
+  // Tapping away from the board (here, on the details) goes back to the unit whose turn it is.
+  await phoneSheet.tap();
+  await sleep(200);
+  const backTo = await phoneSheet.textContent();
+  check('phone: tapping away shows the acting unit again', backTo.includes('Mangudai Outrider') && backTo.includes('yours'), backTo.slice(0, 60));
   // No Hold button: with nothing picked, the big button ends the turn.
   check('phone: no Hold button', !(await phone.getByRole('button', {name: /^Hold/}).count()));
   check('phone: with nothing picked, the button ends the turn', /^End turn · next turn \+\d+$/.test(await phone.getByRole('button', {name: /^End turn/}).textContent()));

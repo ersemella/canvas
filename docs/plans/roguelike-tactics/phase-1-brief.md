@@ -376,6 +376,8 @@ confirm or change:
   There is no Hold button: with no action picked the button reads **End
   turn** and sends Hold (after the move, if any). Tapping a chosen target
   again doesn't commit; only the button does (desktop keeps both).
+  Tapping anywhere but the board or the action section stops inspecting:
+  the details go back to the unit whose turn it is.
   An enemy's details leave out what it could do next turn (desktop keeps
   it, D11).
   Timing is shown in slots from now, never costs or absolute slot
