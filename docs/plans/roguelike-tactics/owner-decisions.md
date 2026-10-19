@@ -15,11 +15,14 @@ belongs to, as the README says, and remove it here.
 
 A fight ends only when one side is eliminated. While the Yadachy Storm
 Caller had no damaging ability, about 1 in 20 AI-vs-AI fights from random
-deployments went on forever: one side called hail, the other cleared the
-storm. Hail now deals base damage 50 (owner, 2026-10-19), 39 a hit on a
-Yadachy against Clear the Storm's 37 heal, and none of 1,000 such fights
-stalled (58 before). Nothing guarantees an end yet; a lower heal or one
-of the options below would.
+deployments went on forever: one side called hail, the other healed it
+off. Hail now deals base damage 50 (owner, 2026-10-19), 39 a hit on a
+Yadachy, and none of 1,000 such fights stalled (58 before). Sunlight's
+heal (the ability was Clear the Storm until 2026-10-19) then went from
+37 to 60 (owner, 2026-10-19), because it felt weak: over 1,000 fights
+from random deployments, none stalled (17 at 37), and fights got
+shorter; at 90 healed, 3% stalled again. Nothing guarantees an end yet;
+one of the options below would.
 
 **Today:** nothing on the page ends it: the **Abandon run** button was
 removed (owner, 2026-10-19). Only `POST /runs/:id/abandon` does (a
@@ -32,7 +35,7 @@ options below is built.
 - **Damage for the Storm Caller:** a little base damage on Gale or hail.
 - **A surrender rule:** a side that can't damage the other concedes, or
   the player may claim the win when no enemy can damage them.
-- **Stronger finishers:** Clear the Storm heals less, or the Champion
+- **Stronger finishers:** Sunlight heals less, or the Champion
   and Outrider deal more (numbers, section 2 below).
 
 ### 2. Hero numbers are placeholders (decision: section 2)
@@ -83,7 +86,7 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Composite Bow | range 5, **damage 120 (owner, 2026-10-19: 2 hits kill a Mangudai, 4 a Yadachy)** |
 | Dash | 3 hexes, quick (60) |
 | Volley (ultimate) | range 5, radius 1, **damage 135 (owner, 2026-10-19)**, charge 40, recovery 100 |
-| Clear the Storm | radius 1 (was 2 until it reached enemies, 2026-10-19), heal 25 |
+| Sunlight | radius 1 (was 2 until it reached enemies, 2026-10-19), **heal 40, 60 at its power (owner, 2026-10-19; was 25)** |
 | Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
 | Gale | Displace 1, Slowed 1 for 10 slots, no damage |
 | Freeze (ultimate) | range 4, radius 1, Immobilized and Vulnerable 25% for 15 slots, charge 40, recovery 100 |

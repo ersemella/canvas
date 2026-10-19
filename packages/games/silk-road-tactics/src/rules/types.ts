@@ -12,7 +12,7 @@ export type AbilityId =
   | 'bow'
   | 'dash'
   | 'volley'
-  | 'clearStorm'
+  | 'sunlight'
   | 'hail'
   | 'gale'
   | 'freeze'

@@ -321,15 +321,15 @@ describe('abilities', () => {
     expect(unit(s, 'p-storm').hp).toBeLessThan(hp);
   });
 
-  it('Clear the Storm heals and cleanses every unit within its radius, enemies included', () => {
+  it('Sunlight heals and cleanses every unit within its radius, enemies included', () => {
     const s = setup({'p-storm': at(1, 3), 'p-bokh': at(1, 2), 'e-bokh': at(2, 3), 'e-mangudai': at(8, 6)});
-    expect(hexDistance(at(1, 3), at(1, 2))).toBeLessThanOrEqual(ABILITY.clearStorm.radius);
-    expect(hexDistance(at(1, 3), at(2, 3))).toBeLessThanOrEqual(ABILITY.clearStorm.radius);
+    expect(hexDistance(at(1, 3), at(1, 2))).toBeLessThanOrEqual(ABILITY.sunlight.radius);
+    expect(hexDistance(at(1, 3), at(2, 3))).toBeLessThanOrEqual(ABILITY.sunlight.radius);
     unit(s, 'p-bokh').hp = 100;
     unit(s, 'p-bokh').statuses.push({kind: 'slowed', value: 2, untilSlot: 999});
     unit(s, 'e-bokh').hp = 100;
     unit(s, 'e-bokh').statuses.push({kind: 'vulnerable', value: 25, untilSlot: 999});
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'clearStorm'}});
+    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight'}});
     expect(unit(s, 'p-bokh').hp).toBeGreaterThan(100);
     expect(unit(s, 'p-bokh').statuses).toHaveLength(0);
     expect(unit(s, 'e-bokh').hp).toBeGreaterThan(100);
