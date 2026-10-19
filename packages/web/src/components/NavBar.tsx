@@ -1,17 +1,15 @@
 import {Link} from 'react-router-dom';
 import {AppShell, Group, Anchor, Button, Text} from '@mantine/core';
 import {useCurrentPageHeader} from './PageHeader';
-import {useIsPhone} from './useIsPhone';
 import styles from './NavBar.module.css';
 
 /**
- * The top bar: the site name, or on phones, when the page has set one
+ * The top bar: the site name, or, when the page has set one
  * (usePageHeader), a back link and the page's title instead.
  */
 export function NavBar() {
   const header = useCurrentPageHeader();
-  const phone = useIsPhone();
-  if (phone && header) {
+  if (header) {
     return (
       <AppShell.Header h={56} className={styles.header!}>
         <div className={styles.pageHeader}>

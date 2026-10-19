@@ -1,12 +1,11 @@
 import {useEffect, useState, useCallback} from 'react';
 import type {ComponentType} from 'react';
 import {useParams, Navigate, Link} from 'react-router-dom';
-import {Center, Loader, Text, Box, Title, Stack, Button} from '@mantine/core';
+import {Center, Loader, Text, Box, Stack, Button} from '@mantine/core';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {GameLog} from 'components/GameLog';
 import {usePageHeader} from 'components/PageHeader';
-import {useIsPhone} from 'components/useIsPhone';
 import {getGames} from 'registry/games';
 import type {GameDescriptor} from 'registry/games';
 import gameLayout from 'styles/gameLayout.module.css';
@@ -30,8 +29,7 @@ export function GamePage() {
   const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  // Phones show the title and Back in the top bar instead of on the page.
-  const phone = useIsPhone();
+  // The title and Back are in the top bar, not on the page.
   usePageHeader(gameDescriptor?.title);
 
   useEffect(() => {
@@ -112,17 +110,10 @@ export function GamePage() {
 
   const SidePanel = sidePanel;
 
-  const backButton = phone ? null : (
-    <Button component={Link} to="/" variant="subtle" color="gray" size="sm">
-      ← Back to home
-    </Button>
-  );
-
   if (SidePanel) {
     return (
       <Box className={styles.withSidePanel!}>
         <Stack gap="sm" align="flex-start">
-          {backButton}
           <Box className={gameLayout.canvasWithPanel!}>
             <GameErrorBoundary>
               <GameCanvas
@@ -149,14 +140,6 @@ export function GamePage() {
 
   return (
     <Stack align="center" py="xl" gap="lg">
-      {!phone && (
-        <Box pos="relative" w="100%">
-          <Box pos="absolute" left={0} top="50%" style={{transform: 'translateY(-50%)'}}>
-            {backButton}
-          </Box>
-          <Title order={2} fz="xl" ta="center">{gameDescriptor.title}</Title>
-        </Box>
-      )}
       <Box className={styles.canvasRound!}>
         <GameErrorBoundary>
           <GameCanvas

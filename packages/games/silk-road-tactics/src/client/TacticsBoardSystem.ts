@@ -9,7 +9,7 @@ import {MAPS, tileAt} from '../rules/map';
 import {unitName} from '../rules/resolve';
 import type {FightState, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
-import type {TrackCard, TrackStyle} from './layout';
+import type {TrackCard} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
@@ -29,8 +29,6 @@ export interface BoardScene {
   previewSlot?: number | null;
   /** Arrow flights to draw (the bow's lanes): `hits` when it ends on a unit. */
   arrows?: {from: Hex; to: Hex; hits: boolean}[];
-  /** How the track is drawn; `cards` by default. */
-  trackStyle?: TrackStyle;
   /** The planned turn's steps, numbered in the order they resolve, at the hex each happens. */
   steps?: {hex: Hex; n: number}[];
 }
@@ -39,7 +37,6 @@ const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
 /** The tint over the whole hex a unit stands on: its side's colour. */
 const SIDE_TINT = {player: 'rgba(59,130,246,0.38)', enemy: 'rgba(239,68,68,0.38)'};
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
-const SHORT_NAME = {bokh: 'Bökh', mangudai: 'Mangudai', storm: 'Storm'};
 interface HighlightStyle {
   fill: string;
   stroke: string;
@@ -137,11 +134,10 @@ export class TacticsBoardSystem extends BaseSystem {
     }
 
     if (fight.phase !== 'deploy') {
-      const style = this.scene.trackStyle ?? 'cards';
-      const cards = trackCards(fight, this.scene.previewSlot ?? null, style);
-      const opts = {selected: this.scene.selectedUnitId, hovered: this.hover.unitId};
-      if (style === 'slots') drawSlotTrack(ctx, fight, cards, this.scene.previewSlot ?? null, opts);
-      else drawTrack(ctx, fight, cards, opts);
+      drawTrack(ctx, fight, trackCards(fight, this.scene.previewSlot ?? null), this.scene.previewSlot ?? null, {
+        selected: this.scene.selectedUnitId,
+        hovered: this.hover.unitId,
+      });
     }
     if (this.hover.hex) drawHover(ctx, fight, this.hover.hex, this.scene.positions);
   }
@@ -254,74 +250,12 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 }
 
 /**
- * The track as a row of cards in turn order, Mana Khemia style: each shows
- * its slot, the unit and its health; the acting card is first and marked
- * NOW, and a dashed card shows where the planned turn would put it.
- */
-function drawTrack(
-  ctx: CanvasRenderingContext2D,
-  fight: FightState,
-  cards: TrackCard[],
-  opts: {selected: string | null; hovered: string | null}
-): void {
-  const {x, y, width, height} = TRACK_AREA;
-  ctx.save();
-  roundRect(ctx, x, y, width, height, 8);
-  ctx.fillStyle = 'rgba(17,24,39,0.92)';
-  ctx.fill();
-  ctx.translate(x + 17, y + height / 2);
-  ctx.rotate(-Math.PI / 2);
-  label(ctx, 'TRACK', 0, 0, '#9ca3af', 10, true);
-  ctx.restore();
-
-  for (const card of cards) {
-    const u = fight.units.find((v) => v.id === card.unitId)!;
-    const acting = !card.ghost && u.id === fight.awaiting;
-    const {x: cx, y: cy, w, h} = card;
-    ctx.save();
-    if (card.ghost) ctx.globalAlpha = 0.75;
-    roundRect(ctx, cx, cy, w, h, 6);
-    ctx.fillStyle = card.ghost ? 'rgba(253,224,71,0.08)' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
-    ctx.fill();
-    ctx.setLineDash(card.ghost ? [4, 3] : []);
-    ctx.strokeStyle = card.ghost || acting ? '#fde047' : u.id === opts.selected || u.id === opts.hovered ? '#ffffff' : SIDE_COLOR[u.side];
-    ctx.lineWidth = acting || card.ghost ? 2.5 : 1.5;
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    const mid = cx + w / 2;
-    label(ctx, `${card.slot}`, mid, cy + 10, card.ghost ? '#fde047' : '#ffffff', 12, true);
-
-    ctx.beginPath();
-    ctx.arc(mid, cy + 32, 12, 0, Math.PI * 2);
-    ctx.fillStyle = HERO_COLOR[u.hero];
-    ctx.fill();
-    ctx.strokeStyle = SIDE_COLOR[u.side];
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    label(ctx, HEROES[u.hero].letter, mid, cy + 33, '#ffffff', 12, true);
-
-    if (!card.ghost) {
-      const bw = w - 14;
-      const frac = Math.max(0, u.hp / u.maxHp);
-      ctx.fillStyle = '#111827';
-      ctx.fillRect(cx + 7, cy + 47, bw, 3);
-      ctx.fillStyle = frac > 0.5 ? '#4ade80' : frac > 0.25 ? '#facc15' : '#f87171';
-      ctx.fillRect(cx + 7, cy + 47, bw * frac, 3);
-    }
-    const caption = card.ghost ? 'lands' : u.charging ? `${ABILITIES[u.charging.ability].name}!` : acting ? 'NOW' : SHORT_NAME[u.hero];
-    label(ctx, caption, mid, cy + h - 9, card.ghost || acting ? '#fde047' : u.charging ? '#d8b4fe' : '#d1d5db', 9, acting || Boolean(u.charging));
-    ctx.restore();
-  }
-}
-
-/**
- * The track as a fanned deck (phones), as in Mana Khemia: a card for every
+ * The track as a fanned deck, as in Mana Khemia: a card for every
  * slot from now on, empty ones blank, the current one in front at the left
  * and each later one tucked behind the one before, showing a strip with
  * its unit. The planned turn's landing card is dashed.
  */
-function drawSlotTrack(
+function drawTrack(
   ctx: CanvasRenderingContext2D,
   fight: FightState,
   cards: TrackCard[],

@@ -364,38 +364,32 @@ confirm or change:
   per turn, not split around the action (section 2).
   The Confirm button shows the turn's total cost and the slot the card
   lands on.
-- **Phones** (≤ 960px, owner, 2026-10-19; desktop to follow): the board
-  runs edge to edge, right under the top bar (which shows Back and the
-  title). Under the
-  board, the **detail section** (what's tapped) comes first, and the
-  **action section** is pinned to the bottom of the screen, set off by a
-  yellow rule. The action section has no heading, hints, slot pill,
-  ability costs or summaries: just the numbered steps (named only: "1
-  Composite Bow, 2 Move"), Swap order, the buttons, and Confirm with the
-  total cost and landing slot. The board shows the preview's outcome.
-  There is no Hold button: with no action picked the button reads **End
-  turn** and sends Hold (after the move, if any). Tapping a chosen target
-  again doesn't commit; only the button does (desktop keeps both).
-  Tapping anywhere but the board or the action section stops inspecting:
-  the details go back to the unit whose turn it is.
-  An enemy's details leave out what it could do next turn (desktop keeps
-  it, D11).
-  Timing is shown in slots from now, never costs or absolute slot
-  numbers: the track is a fanned deck as in Mana Khemia, a card for every
-  slot from now on, empty ones blank, the current one in front at the
-  left and each later one tucked behind, with no numbers; the planned
-  turn's landing card is dashed; each
-  ability button shows how many slots later the next turn would come
-  (yielding included), a planned move shows what it adds in the Move
-  button ("Move +2", with the chosen action or Hold), and the button reads
-  "Confirm · next turn +8".
-  Now is on the left, in reading order.
-- **The track is on the canvas** (owner, 2026-10-19), above the board, as
-  a row of cards in turn order like Mana Khemia's rather than section 9's
-  window of slots in the side panel: each card shows its slot number,
-  unit and health, a dashed card shows where the planned turn lands, and
-  tapping a card shows its unit's sheet. Every unit has one card, so all
-  of them fit.
+- **The turn's controls** (owner, 2026-10-19, phones first, then desktop):
+  the action section has no heading, hints, slot pill or summaries: the
+  numbered steps (named only: "1 Composite Bow, 2 Move"), Swap order, the
+  buttons, and one button below them. There is no Hold button: with no
+  action picked the button reads **End turn** and sends Hold (after the
+  move, if any). Tapping a chosen target again doesn't commit; only the
+  button does. The board shows the preview's outcome. Tapping anywhere but
+  the board or the action section stops inspecting: the details go back
+  to the unit whose turn it is. An enemy's details leave out what it could
+  do next turn.
+- **Timing is shown in slots from now**, never costs or absolute slot
+  numbers (owner, 2026-10-19). The track, on the canvas above the board,
+  is a fanned deck as in Mana Khemia (rather than section 9's window of
+  slots in the side panel): a card for every slot from now on, empty ones
+  blank, the current one in front at the left and each later one tucked
+  behind, with no numbers; the planned turn's landing card is dashed, and
+  tapping a card shows its unit's sheet. Each ability button shows how
+  many slots later the next turn would come (yielding included), a
+  planned move shows what it adds in the Move button ("Move +2", with the
+  chosen action or Hold), and the button reads "Confirm · next turn +8".
+- **The top bar** shows Back and the page's title instead of the site
+  name, for every game (owner, 2026-10-19).
+- **Phones** (≤ 960px) change only the layout: the board runs edge to
+  edge; under it the **detail section** (what's tapped) comes first, and
+  the **action section** is pinned to the bottom of the screen, set off
+  by a yellow rule.
 - **Abilities aimed at a unit** (Throw, Pin, Gale and the Composite Bow;
   owner, 2026-10-19) are disabled when there's no unit to aim at from the
   hex the action would be taken from (after the planned move, or where the

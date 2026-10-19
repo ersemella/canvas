@@ -32,19 +32,7 @@ export interface TrackCard {
   h: number;
 }
 
-const CARD_GAP = 6;
-const CARD_MAX_WIDTH = 66;
-const LABEL_WIDTH = 34;
-
-/**
- * How the track is drawn. `cards`: one card per unit, side by side, with
- * absolute slot numbers. `slots` (phones): every slot from now on is a
- * card, empty ones included, overlapping like a fanned deck as in Mana
- * Khemia, so a turn's cost reads as how far back in the deck it lands.
- */
-export type TrackStyle = 'cards' | 'slots';
-
-/** The `slots` style's cells: at least this many, more when a card lies further out. */
+/** The deck's cards: at least this many, more when a unit's card lies further out. */
 const MIN_SLOT_CELLS = 18;
 
 export interface TrackSlots {
@@ -71,6 +59,11 @@ function trackEntries(fight: FightState, previewSlot: number | null) {
   return entries.sort((a, b) => a.slot - b.slot || Number(a.ghost) - Number(b.ghost));
 }
 
+/**
+ * The track as a fanned deck, as in Mana Khemia: every slot from now on is
+ * a card, empty ones included, so a turn's cost reads as how far back in
+ * the deck it lands.
+ */
 export function trackSlots(fight: FightState, previewSlot: number | null): TrackSlots {
   const entries = trackEntries(fight, previewSlot);
   const start = fight.currentSlot;
@@ -81,24 +74,13 @@ export function trackSlots(fight: FightState, previewSlot: number | null): Track
   return {start, count, x0, w, cardW: w * DECK_CARD_STRIPS, y: TRACK_AREA.y + 7, h: TRACK_AREA.height - 14};
 }
 
-/** The track's cards in slot order, with the previewed landing card if any. */
-export function trackCards(fight: FightState, previewSlot: number | null, style: TrackStyle = 'cards'): TrackCard[] {
-  const entries = trackEntries(fight, previewSlot);
-  if (style === 'slots') {
-    // Each card's rectangle is the strip of it that shows, for taps.
-    const {start, x0, w, cardW, y, h} = trackSlots(fight, previewSlot);
-    return entries.map((e) => ({...e, x: x0 + (e.slot - start) * w + cardW - w, y, w, h}));
-  }
-  const inner = TRACK_AREA.width - LABEL_WIDTH - 2 * CARD_GAP;
-  const w = Math.min(CARD_MAX_WIDTH, (inner - CARD_GAP * (entries.length - 1)) / Math.max(1, entries.length));
-  const h = TRACK_AREA.height - 12;
-  return entries.map((e, i) => ({
-    ...e,
-    x: TRACK_AREA.x + LABEL_WIDTH + CARD_GAP + i * (w + CARD_GAP),
-    y: TRACK_AREA.y + 6,
-    w,
-    h,
-  }));
+/**
+ * Each unit's card on the track, in slot order, with the previewed landing
+ * card if any; its rectangle is the strip of it that shows, for taps.
+ */
+export function trackCards(fight: FightState, previewSlot: number | null): TrackCard[] {
+  const {start, x0, w, cardW, y, h} = trackSlots(fight, previewSlot);
+  return trackEntries(fight, previewSlot).map((e) => ({...e, x: x0 + (e.slot - start) * w + cardW - w, y, w, h}));
 }
 
 export function cardAt(cards: TrackCard[], p: {x: number; y: number}): TrackCard | undefined {

@@ -111,7 +111,7 @@ try {
   if (!devServer) {
     // Production: no dev hook, so just start a fight and leave it.
     await page.getByRole('button', {name: 'Start the fight'}).click();
-    await page.getByText(/^Your turn:/).waitFor({timeout: 15_000});
+    await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
     await sleep(300);
     await shot(page, 'fight');
     check('the page starts and deploys a fight', true);
@@ -128,7 +128,7 @@ try {
   await tapHex({q: -1, r: 3}); // select it (axial of col 0, row 3)
   await tapHex({q: -3, r: 6}); // col 0, row 6
   await page.getByRole('button', {name: 'Start the fight'}).click();
-  await page.getByText(/^Your turn:/).waitFor({timeout: 15_000});
+  await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
   await waitIdle();
   run = await state();
   const placed = run.view.fight.units.find((u) => u.id === outrider).hex;
@@ -136,46 +136,52 @@ try {
   await sleep(300);
   await shot(page, 'fight');
 
-  // One turn with real taps: move one hex, pick Hold, see the preview, confirm.
+  // The top bar: Back and the game's title, on desktop too.
+  const bar = page.locator('header');
+  check(
+    'the top bar has Back and the title, not the site name',
+    (await bar.getByRole('link', {name: 'Back'}).isVisible()) &&
+      (await bar.getByText('Silk Road Tactics').isVisible()) &&
+      !(await bar.getByText('Canvas Games').count()),
+    await bar.textContent()
+  );
+  check('the page doesn’t repeat the title', (await page.getByText('Silk Road Tactics').count()) === 1);
+
+  // One turn with real taps: Dash first, then Move, Confirm. The Outrider
+  // (fastest, so first) is at col 0, row 6 after the deployment above.
   const before = run.view.version;
   const acting = run.view.fight.units.find((u) => u.id === run.view.fight.awaiting);
-  const dest = await page.evaluate(() => {
-    const t = window.__tactics.run.view.fight;
-    const me = t.units.find((u) => u.id === t.awaiting);
-    // A free neighbouring zone-side hex: try each direction.
-    const dirs = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
-    for (const [dq, dr] of dirs) {
-      const h = {q: me.hex.q + dq, r: me.hex.r + dr};
-      const col = h.q + (h.r - (h.r & 1)) / 2;
-      if (h.r < 0 || h.r > 6 || col < -(h.r & 1) || col > 8) continue;
-      if (t.units.some((u) => u.alive && u.hex && u.hex.q === h.q && u.hex.r === h.r)) continue;
-      if (['3,2', '2,4', '3,3', '5,3'].includes(`${col},${h.r}`)) continue;
-      return h;
-    }
-    return null;
-  });
+  check('the Outrider acts first', acting.id === outrider, acting.id);
+  const dashTo = {q: 0, r: 6}; // 3 hexes east along row 6
+  const dest = {q: -2, r: 6}; // one hex east of where it started
   // Without Move, a tap only looks at the hex.
   await tapHex(dest);
-  const moveButton = page.getByRole('button', {name: 'Move', exact: true});
+  const moveButton = page.getByRole('button', {name: /^Move/});
   check('a tap without Move plans nothing', (await moveButton.getAttribute('aria-pressed')) === 'false');
-  // Act first, then move: Hold, then Move and a hex.
-  await page.getByRole('button', {name: /^Hold/}).click();
+  check('there is no Hold button', !(await page.getByRole('button', {name: /^Hold/}).count()));
+  // Act first, then move: Dash and its hex, then Move and a hex.
+  await page.getByRole('button', {name: /^Dash/}).click();
+  await tapHex(dashTo);
+  await tapHex(dashTo); // a second tap on the target doesn't commit
+  check('a second tap on the target doesn’t commit', (await state()).view.version === before);
   await moveButton.click();
   await tapHex(dest);
   const stepsText = () => page.getByTestId('turn-steps').textContent();
-  check('Move after the action plans act-then-move', /^1Hold2Move 1 hex$/.test(await stepsText()), await stepsText());
+  check('Move after the action plans act-then-move', (await stepsText()) === '1Dash2Move', await stepsText());
   check('Move stays highlighted while a move is planned', (await moveButton.getAttribute('aria-pressed')) === 'true');
+  check('the Move button shows what the move adds', /^Move\+\d+$/.test(await moveButton.textContent()), await moveButton.textContent());
   // Tapping it again undoes the move and keeps the action; plan it again.
   await moveButton.click();
-  check('tapping Move again undoes the move', (await moveButton.getAttribute('aria-pressed')) === 'false' && (await stepsText()) === '1Hold');
+  check('tapping Move again undoes the move', (await moveButton.getAttribute('aria-pressed')) === 'false' && (await stepsText()) === '1Dash');
   await moveButton.click();
   await tapHex(dest);
-  // Swap order flips the steps when the other order is legal too.
-  await page.getByRole('button', {name: /Swap order/}).click();
-  check('Swap order puts the move first', (await stepsText()) === '1Move 1 hex2Hold', await stepsText());
-  await page.getByRole('button', {name: /Swap order/}).click();
+  // Moving first would leave the Dash short of its hex: no Swap order.
+  check('Swap order is offered only when the other order is legal', !(await page.getByRole('button', {name: /Swap order/}).count()));
   const confirm = page.getByRole('button', {name: /^Confirm/});
-  check('Confirm shows the total cost and landing slot', /cost 40 → slot \d+/.test(await confirm.textContent()), await confirm.textContent());
+  const confirmText = await confirm.textContent();
+  check('Confirm says when the next turn comes, in slots from now', /^Confirm · next turn \+\d+$/.test(confirmText), confirmText);
+  const dashText = await page.getByRole('button', {name: /^Dash/}).textContent();
+  check('the ability button shows the same slots as Confirm', dashText.endsWith(confirmText.split(' ').pop()), [dashText, confirmText]);
   await sleep(200);
   await shot(page, 'preview');
   await confirm.click();
@@ -184,12 +190,12 @@ try {
   const movedUnit = run.view.fight.units.find((u) => u.id === acting.id);
   check('the turn moved the unit with real taps', !movedUnit.alive || (movedUnit.hex.q === dest.q && movedUnit.hex.r === dest.r), movedUnit.hex);
 
-  // An enemy's stat sheet, with its options (D11).
+  // An enemy's stat sheet.
   const enemy = run.view.fight.units.find((u) => u.side === 'enemy' && u.alive);
   await tapHex(enemy.hex);
   const sheet = page.getByTestId('stat-sheet');
   check('tapping an enemy shows its stat sheet', (await sheet.textContent()).includes('enemy'));
-  check('the sheet lists what it could do', await sheet.getByText(/Could do next turn/).isVisible());
+  check('the sheet leaves out what it could do next turn', !(await sheet.textContent()).includes('Could do next turn'));
   await shot(page, 'enemy-sheet');
 
   // Hovering a hex shows what it does, without planning a move.
@@ -233,7 +239,7 @@ try {
     await page.reload();
     await page.getByRole('button', {name: 'Start a fight'}).click();
     await page.getByRole('button', {name: 'Start the fight'}).click({timeout: 15_000});
-    await page.getByText(/^Your turn:/).waitFor({timeout: 15_000});
+    await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
     check('abandoning starts a fresh run', (await state()).runId !== stalled);
   }
   run = await state();
@@ -318,10 +324,10 @@ try {
   await tapOn(mine);
   await tapOn(mine);
   check('phone: a second tap on the target doesn’t commit', (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion);
-  const confirmText = await phone.getByRole('button', {name: /^Confirm/}).textContent();
-  check('phone: Confirm says when the next turn comes, in slots from now', /^Confirm · next turn \+\d+$/.test(confirmText), confirmText);
+  const phoneConfirm = await phone.getByRole('button', {name: /^Confirm/}).textContent();
+  check('phone: Confirm says when the next turn comes, in slots from now', /^Confirm · next turn \+\d+$/.test(phoneConfirm), phoneConfirm);
   const bowText = await phone.getByRole('button', {name: /^Composite Bow/}).textContent();
-  check('phone: the ability button shows the same slots as Confirm', bowText.endsWith(confirmText.split(' ').pop()), [bowText, confirmText]);
+  check('phone: the ability button shows the same slots as Confirm', bowText.endsWith(phoneConfirm.split(' ').pop()), [bowText, phoneConfirm]);
   check('phone: steps name only the action', (await phone.getByTestId('turn-steps').textContent()) === '1Composite Bow');
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-full.png'), fullPage: true});

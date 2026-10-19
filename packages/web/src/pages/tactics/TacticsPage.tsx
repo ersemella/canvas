@@ -1,13 +1,11 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Link} from 'react-router-dom';
-import {Alert, Badge, Box, Button, Center, Group, Loader, Paper, Stack, Text, Title} from '@mantine/core';
+import {Alert, Button, Center, Group, Loader, Paper, Stack, Text} from '@mantine/core';
 import {hexDistance, hexEquals, hexKey, hexToPixel, hexesInRange, registerBuiltinComponents, registerBuiltinSystems} from '@canvas/engine';
 import type {EventBus, Hex} from '@canvas/engine';
 import {
   ABILITIES,
   ABILITY,
   BOARD_LAYOUT,
-  HEROES,
   RULES,
   SALT_FLATS,
   SCENE_SIZE,
@@ -47,7 +45,7 @@ import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
-import {HexInspector, StatSheet, TurnPreviewBox} from './TacticsPanels';
+import {ConfirmButton, HexInspector, StatSheet} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 /** Area abilities: their radius, to highlight the area around a chosen hex. */
@@ -87,18 +85,18 @@ export function TacticsPage() {
   const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
   const [hover, setHover] = useState<TacticsHoverPayload>({hex: null, unitId: null});
   /** Phone widths (the CSS breakpoint): a pared-down action section pinned below the details. */
-  const compact = useIsPhone();
+  /** Phone widths: layout only (the board edge to edge, details first, actions pinned below). */
+  const phone = useIsPhone();
   usePageHeader('Silk Road Tactics');
   const eventsRef = useRef<EventBus | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
   const actionsRef = useRef<HTMLElement | null>(null);
   const [worldReady, setWorldReady] = useState(0);
 
-  // Phones: a tap anywhere but the board or the action section stops
-  // inspecting, and the details go back to the unit whose turn it is. A
-  // click, not a touch, so scrolling the details doesn't count.
+  // A tap anywhere but the board or the action section stops inspecting,
+  // and the details go back to the unit whose turn it is. A click, not a
+  // touch, so scrolling the details doesn't count.
   useEffect(() => {
-    if (!compact) return;
     const onClick = (e: MouseEvent) => {
       const t = e.target as Node;
       if (boardRef.current?.contains(t) || actionsRef.current?.contains(t)) return;
@@ -107,7 +105,7 @@ export function TacticsPage() {
     };
     document.addEventListener('click', onClick);
     return () => document.removeEventListener('click', onClick);
-  }, [compact]);
+  }, []);
 
   const fight: FightState | null = run?.view.fight ?? null;
   const map = SALT_FLATS;
@@ -197,10 +195,10 @@ export function TacticsPage() {
   }, [ability, moved]);
 
   /**
-   * Phones have no Hold button: with no action picked, Confirm ends the turn
+   * There's no Hold button: with no action picked, the button ends the turn
    * with Hold (after the move, if one is planned).
    */
-  const endsWithHold = compact && !ability;
+  const endsWithHold = !ability;
 
   const input: TurnInput | null = useMemo(() => {
     const chosen = action ?? (endsWithHold ? {ability: 'hold' as const, target: {}} : null);
@@ -312,13 +310,6 @@ export function TacticsPage() {
     return previewTurn(fight, acting.id, other) !== null;
   }, [fight, acting, input, endsWithHold]);
 
-  const targetName = useMemo(() => {
-    const h = target?.hex;
-    const u = h && moved ? unitAt(moved.state, h) : undefined;
-    if (u) return u.id === acting?.id ? 'yourself' : `${u.side === 'player' ? 'your' : 'enemy'} ${HEROES[u.hero].name}`;
-    return h ? 'that hex' : null;
-  }, [target, moved, acting]);
-
   // ── Taps on the board ──────────────────────────────────────────────────────
 
   const onHex = useCallback(
@@ -351,19 +342,16 @@ export function TacticsPage() {
         if (ability === 'throw' && target?.hex) {
           const landing = targets.find((t) => hexEquals(t.hex!, target.hex!) && hexEquals(t.to!, h));
           if (landing) {
-            // A second tap commits on desktop; phones commit only with Confirm.
-            if (target.to && hexEquals(target.to, h)) {
-              if (!compact) commit();
-            } else chooseTarget(landing);
+            // Tapping the chosen landing again does nothing: only Confirm commits.
+            if (!target.to || !hexEquals(target.to, h)) chooseTarget(landing);
             return;
           }
         }
         const match = targets.find((t) => t.hex && hexEquals(t.hex, h));
         if (match) {
+          // Tapping the chosen target again does nothing: only Confirm commits.
           const same = target?.hex && hexEquals(target.hex, h) && (ability !== 'throw' || target.to);
-          if (same) {
-            if (!compact) commit();
-          } else chooseTarget(ability === 'throw' ? {hex: h} : match);
+          if (!same) chooseTarget(ability === 'throw' ? {hex: h} : match);
           return;
         }
       }
@@ -371,7 +359,7 @@ export function TacticsPage() {
       setPinnedHex(h);
       setSelectedId(unitAt(fight, h)?.id ?? null);
     },
-    [fight, busy, deployAt, selectedId, acting, moving, reaches, actFirst, ability, target, targets, commit, chooseTarget, map, compact]
+    [fight, busy, deployAt, selectedId, acting, moving, reaches, actFirst, ability, target, targets, chooseTarget, map]
   );
 
   const onHexRef = useRef(onHex);
@@ -405,7 +393,6 @@ export function TacticsPage() {
       selectedUnitId: selectedId ?? acting?.id ?? null,
       preview: [],
       previewSlot: preview?.slot ?? null,
-      trackStyle: compact ? 'slots' : 'cards',
     };
     if (!fight) return out;
     if (fight.phase === 'deploy') {
@@ -457,7 +444,7 @@ export function TacticsPage() {
       out.preview = [{unitId: acting.id, to: plannedMove.hex, hpAfter: acting.hp, hpBefore: acting.hp, killed: false}];
     }
     return out;
-  }, [fight, selectedId, acting, deployAt, plannedMove, actFirst, moving, ability, action, reaches, targets, target, preview, map, inspectReach, lanes, moved, compact]);
+  }, [fight, selectedId, acting, deployAt, plannedMove, actFirst, moving, ability, action, reaches, targets, target, preview, map, inspectReach, lanes, moved]);
 
   useEffect(() => {
     eventsRef.current?.emit('tactics:board', scene);
@@ -507,23 +494,9 @@ export function TacticsPage() {
     );
   }
 
-  // Phones show the title and Back in the top bar instead (usePageHeader).
-  const header = compact ? null : (
-    <Group justify="space-between" w="100%" wrap="nowrap">
-      <Button component={Link} to="/" variant="subtle" color="gray" size="sm" px={4}>
-        ← Home
-      </Button>
-      <Title order={2} fz="xl" ta="center">
-        Silk Road Tactics
-      </Title>
-      <Box w={70} />
-    </Group>
-  );
-
   if (!run || !fight || run.status === 'abandoned') {
     return (
       <Stack align="center" py="xl" gap="lg" px="md">
-        {header}
         <Paper bg="dark.7" withBorder p="xl" radius="md" maw={520}>
           <Stack gap="md">
             <Text>
@@ -577,7 +550,7 @@ export function TacticsPage() {
     acting &&
     !finished && (
       <TurnControls
-        compact={compact}
+        phone={phone}
         slotsLater={slotsLater}
         moveSlots={moveSlots}
         outOfReach={outOfReach}
@@ -585,8 +558,6 @@ export function TacticsPage() {
         ability={ability}
         plannedMove={plannedMove}
         actFirst={actFirst}
-        actionReady={action !== null}
-        targetName={targetName}
         canSwap={canSwap}
         onSwap={() => setActFirst(!actFirst)}
         moving={moving}
@@ -594,32 +565,25 @@ export function TacticsPage() {
         onMove={toggleMove}
         onAbility={chooseAbility}
       >
-        {(ability || endsWithHold) && (
-          <TurnPreviewBox
-            compact={compact}
-            endTurn={endsWithHold}
-            fight={fight}
-            actingId={acting.id}
-            ability={ability ?? 'hold'}
-            preview={preview}
-            cost={turnCost(ABILITIES[ability ?? 'hold'].cost, plannedMove?.path.length ?? 0)}
-            needsTarget={!input}
-            busy={busy}
-            onConfirm={() => commit()}
-          />
-        )}
+        <ConfirmButton
+          endTurn={endsWithHold}
+          fight={fight}
+          preview={preview}
+          needsTarget={!input}
+          busy={busy}
+          onConfirm={() => commit()}
+        />
       </TurnControls>
     )
   );
   const details = inspectHex ? (
-    <HexInspector fight={fight} hex={inspectHex} positions={fight.phase === 'deploy' ? deployAt : undefined} compact={compact} />
+    <HexInspector fight={fight} hex={inspectHex} positions={fight.phase === 'deploy' ? deployAt : undefined} />
   ) : (
-    selected && <StatSheet fight={fight} unit={selected} compact={compact} />
+    selected && <StatSheet fight={fight} unit={selected} />
   );
 
   return (
-    <Stack align="center" pt={compact ? 0 : 'md'} pb="md" gap="sm" px="md">
-      {header}
+    <Stack align="center" pt={phone ? 0 : 'md'} pb="md" gap="sm" px="md">
       <div className={styles.layout}>
         <div className={styles.board} ref={boardRef}>
           <GameErrorBoundary>
@@ -653,7 +617,7 @@ export function TacticsPage() {
               {error}
             </Alert>
           )}
-          {compact ? (
+          {phone ? (
             <>
               <section className={styles.details} aria-label="Details">
                 {details}
@@ -677,11 +641,11 @@ export function TacticsPage() {
 }
 
 function TurnControls(props: {
-  /** Phones: no heading or hints, steps named only, no summaries; buttons show slots, not costs. */
-  compact: boolean;
+  /** Phones: smaller buttons, inline steps, no panel of its own (the pinned action bar is one). */
+  phone: boolean;
   /** How many slots after now the next turn comes for an action of this cost, with the planned move. */
   slotsLater: (actionCost: number) => number;
-  /** Phones: what the planned move adds, in slots, shown in the Move button. */
+  /** What the planned move adds, in slots, shown in the Move button. */
   moveSlots: number | null;
   /** Unit-aimed abilities with no one to aim at, disabled (unless already chosen, so they can be put down). */
   outOfReach: Set<AbilityId>;
@@ -689,10 +653,6 @@ function TurnControls(props: {
   ability: AbilityId | null;
   plannedMove: Reach | null;
   actFirst: boolean;
-  /** The action has its target: Move now means acting first. */
-  actionReady: boolean;
-  /** Who or what the action targets, for the step list. */
-  targetName: string | null;
   /** Both steps are planned and the turn is also legal the other way round. */
   canSwap: boolean;
   onSwap: () => void;
@@ -702,45 +662,18 @@ function TurnControls(props: {
   onAbility: (id: AbilityId | null) => void;
   children?: React.ReactNode;
 }) {
-  const {unit, ability, plannedMove, moving} = props;
-  const hexes = plannedMove?.path.length ?? 0;
-  const moveText = hexes > 0 ? `move ${hexes} hex${hexes > 1 ? 'es' : ''}` : null;
-  const actionText = ability ? ABILITIES[ability].name : null;
-  const {compact} = props;
-  const moveStep = compact ? (moving || moveText ? 'Move' : null) : moving ? 'Move: tap a highlighted hex' : moveText ? `M${moveText.slice(1)}` : null;
-  const actionStep = actionText
-    ? compact
-      ? actionText
-      : props.actionReady
-      ? `${actionText}${props.targetName ? ` → ${props.targetName}` : ''}`
-      : `${actionText}: tap a target`
-    : null;
+  const {unit, ability, plannedMove, moving, phone} = props;
+  // The steps in the order they resolve, named only.
+  const moveStep = moving || (plannedMove?.path.length ?? 0) > 0 ? 'Move' : null;
+  const actionStep = ability ? ABILITIES[ability].name : null;
   const steps = (props.actFirst ? [actionStep, moveStep] : [moveStep, actionStep]).filter((x): x is string => x !== null);
-  const hint = moving || compact
-    ? null
-    : !actionText
-      ? moveText
-        ? 'Now pick an action.'
-        : 'Tap a hex to look at it. Pick Move, an action, or both.'
-      : !moveText && props.actionReady
-        ? 'Pick Move to move after it, or confirm.'
-        : !moveText
-          ? 'Pick Move now to move first.'
-          : null;
+  const size = phone ? 'compact-sm' : 'xs';
   return (
-    <Paper bg={compact ? 'transparent' : 'dark.7'} p={compact ? 0 : 'sm'} radius="md">
-      <Stack gap={compact ? 8 : 6}>
-        {!compact && (
-          <Group justify="space-between">
-            <Text fw={600}>Your turn: {HEROES[unit.hero].name}</Text>
-            <Badge color="yellow" variant="light">
-              slot {unit.slot}
-            </Badge>
-          </Group>
-        )}
+    <Paper bg={phone ? 'transparent' : 'dark.7'} p={phone ? 0 : 'sm'} radius="md">
+      <Stack gap={8}>
         {steps.length > 0 && (
           <Group gap="xs" justify="space-between" wrap="nowrap">
-            <ol className={compact ? `${styles.steps} ${styles.stepsInline}` : styles.steps} data-testid="turn-steps">
+            <ol className={`${styles.steps} ${styles.stepsInline}`} data-testid="turn-steps">
               {steps.map((step, i) => (
                 <li key={step}>
                   <span className={styles.stepNo}>{i + 1}</span>
@@ -755,14 +688,9 @@ function TurnControls(props: {
             )}
           </Group>
         )}
-        {hint && (
-          <Text fz="sm" c="dimmed">
-            {hint}
-          </Text>
-        )}
         <div className={styles.abilities}>
           <Button
-            size={compact ? 'compact-sm' : 'xs'}
+            size={size}
             variant={moving || plannedMove ? 'filled' : 'light'}
             color="teal"
             disabled={!props.canMove}
@@ -777,46 +705,38 @@ function TurnControls(props: {
             onClick={props.onMove}
           >
             Move
-            {compact && props.moveSlots !== null && <span className={styles.abilityCost}>+{props.moveSlots}</span>}
+            {props.moveSlots !== null && <span className={styles.abilityCost}>+{props.moveSlots}</span>}
           </Button>
           {abilitiesOf(unit)
-            // Phones end the turn from Confirm instead of a Hold button.
-            .filter((def) => !(compact && def.id === 'hold'))
+            // No Hold button: Confirm reads End turn with no action picked.
+            .filter((def) => def.id !== 'hold')
             .map((def) => {
-            const reason =
-              unusableReason(unit, def) ??
-              (props.outOfReach.has(def.id) && ability !== def.id
-                ? def.id === 'bow'
-                  ? 'No one in any of the bow’s lanes.'
-                  : 'No one next to you to target.'
-                : null);
-            const lockedUlt = def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
-            return (
-              <Button
-                key={def.id}
-                size={compact ? 'compact-sm' : 'xs'}
-                variant={ability === def.id ? 'filled' : 'light'}
-                color={def.ultimate ? 'grape' : 'blue'}
-                disabled={reason !== null}
-                title={reason ?? def.summary}
-                onClick={() => props.onAbility(ability === def.id ? null : def.id)}
-              >
-                {def.name}
-                {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
-                <span className={styles.abilityCost}>
-                  {/* Phones: how many slots later the next turn comes, with the planned move. */}
-                  {compact ? `+${props.slotsLater(def.cost)}` : def.cost}
-                </span>
-              </Button>
-            );
-          })}
+              const reason =
+                unusableReason(unit, def) ??
+                (props.outOfReach.has(def.id) && ability !== def.id
+                  ? def.id === 'bow'
+                    ? 'No one in any of the bow’s lanes.'
+                    : 'No one next to you to target.'
+                  : null);
+              const lockedUlt = def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
+              return (
+                <Button
+                  key={def.id}
+                  size={size}
+                  variant={ability === def.id ? 'filled' : 'light'}
+                  color={def.ultimate ? 'grape' : 'blue'}
+                  disabled={reason !== null}
+                  title={reason ?? def.summary}
+                  onClick={() => props.onAbility(ability === def.id ? null : def.id)}
+                >
+                  {def.name}
+                  {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
+                  {/* How many slots later the next turn comes, with the planned move. */}
+                  <span className={styles.abilityCost}>+{props.slotsLater(def.cost)}</span>
+                </Button>
+              );
+            })}
         </div>
-        {ability && !compact && (
-          <Text fz="xs" c="dimmed">
-            {ABILITIES[ability].summary}
-            {ability === 'bow' ? ' Dashed lanes miss.' : ''}
-          </Text>
-        )}
         {props.children}
       </Stack>
     </Paper>

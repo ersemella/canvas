@@ -7,7 +7,7 @@
   text-decoration: none;
 }
 
-/* Phones: Back on the left, the page's title centred over the whole bar. */
+/* A page's own bar: Back on the left, its title centred over the whole bar. */
 .pageHeader {
   position: relative;
   height: 100%;

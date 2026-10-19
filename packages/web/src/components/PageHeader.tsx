@@ -1,6 +1,6 @@
 import {createContext, useContext, useEffect, useState} from 'react';
 
-/** What the top bar shows for the current page on phones: its title, and where Back goes. */
+/** What the top bar shows for the current page: its title, and where Back goes. */
 export interface PageHeader {
   title: string;
   backTo: string;
@@ -21,8 +21,8 @@ export function useCurrentPageHeader(): PageHeader | null {
 }
 
 /**
- * Puts the page's title and a back link in the top bar on phones, in place
- * of the site name, while the page is shown. A null title leaves the site name.
+ * Puts the page's title and a back link in the top bar, in place of the
+ * site name, while the page is shown. A null title leaves the site name.
  */
 export function usePageHeader(title: string | null | undefined, backTo = '/'): void {
   const {setHeader} = useContext(PageHeaderContext);
