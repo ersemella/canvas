@@ -26,6 +26,8 @@ export interface AbilityDef {
   recoveryCost?: number;
   /** Moves the user, so Immobilized forbids it (17.5). */
   movesSelf: boolean;
+  /** Targets an adjacent unit only. */
+  melee?: boolean;
   /** Legal targets with the user standing on `from`. */
   targets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[];
   /** Resolves the ability now (a charged one triggers here). */
@@ -224,6 +226,7 @@ const gale: AbilityDef = {
   charged: false,
   cost: ABILITY.gale.cost,
   movesSelf: false,
+  melee: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
@@ -263,6 +266,7 @@ const throwAbility: AbilityDef = {
   charged: false,
   cost: ABILITY.throw.cost,
   movesSelf: false,
+  melee: true,
   targets(state, map, user, from) {
     const landing = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
     const out: ActionTarget[] = [];
@@ -287,6 +291,7 @@ const pin: AbilityDef = {
   charged: false,
   cost: ABILITY.pin.cost,
   movesSelf: false,
+  melee: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;

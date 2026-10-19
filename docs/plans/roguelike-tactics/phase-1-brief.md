@@ -396,6 +396,10 @@ confirm or change:
   unit and health, a dashed card shows where the planned turn lands, and
   tapping a card shows its unit's sheet. Every unit has one card, so all
   of them fit.
+- **Melee buttons** (Throw, Pin, Gale; owner, 2026-10-19) are disabled
+  when no unit is next to the hex the action would be taken from (after
+  the planned move, or where the unit stands when acting first), unless
+  already chosen, so it can be put down.
 - **Units on the board** (owner, 2026-10-19): a unit's whole hex is
   tinted with its side's colour (blue yours, red the enemy's) inside a
   hex border of that colour, instead of a coloured ring round its circle;

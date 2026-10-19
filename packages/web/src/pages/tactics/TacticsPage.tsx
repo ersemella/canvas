@@ -284,6 +284,16 @@ export function TacticsPage() {
     [fight, acting, plannedMove]
   );
 
+  /** Melee abilities with no one next to where the action is taken from: their buttons are disabled. */
+  const outOfReach = useMemo(() => {
+    const out = new Set<AbilityId>();
+    if (!acting || !moved?.unit.alive) return out;
+    for (const def of abilitiesOf(acting)) {
+      if (def.melee && def.targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!).length === 0) out.add(def.id);
+    }
+    return out;
+  }, [acting, moved]);
+
   /**
    * The slots the planned move adds to the turn, with the chosen action (or
    * Hold, which ends a turn with no action): its own cost in slots.
@@ -570,6 +580,7 @@ export function TacticsPage() {
         compact={compact}
         slotsLater={slotsLater}
         moveSlots={moveSlots}
+        outOfReach={outOfReach}
         unit={acting}
         ability={ability}
         plannedMove={plannedMove}
@@ -672,6 +683,8 @@ function TurnControls(props: {
   slotsLater: (actionCost: number) => number;
   /** Phones: what the planned move adds, in slots, shown in the Move button. */
   moveSlots: number | null;
+  /** Melee abilities with no one in reach, disabled (unless already chosen, so they can be put down). */
+  outOfReach: Set<AbilityId>;
   unit: Unit;
   ability: AbilityId | null;
   plannedMove: Reach | null;
@@ -770,7 +783,9 @@ function TurnControls(props: {
             // Phones end the turn from Confirm instead of a Hold button.
             .filter((def) => !(compact && def.id === 'hold'))
             .map((def) => {
-            const reason = unusableReason(unit, def);
+            const reason =
+              unusableReason(unit, def) ??
+              (props.outOfReach.has(def.id) && ability !== def.id ? 'No one next to you to target.' : null);
             const lockedUlt = def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
             return (
               <Button
