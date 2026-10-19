@@ -2,9 +2,13 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {Container, Paper, Title, TextInput, Button, Text, Stack, Divider} from '@mantine/core';
 import {API_URL} from 'config/api';
+import {usePageHeader} from 'components/PageHeader';
+import {useIsPhone} from 'components/useIsPhone';
 
 export function PokerLobbyPage() {
   const navigate = useNavigate();
+  const phone = useIsPhone();
+  usePageHeader('Texas Hold’em Poker');
   const [name, setName] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -50,7 +54,7 @@ export function PokerLobbyPage() {
 
   return (
     <Container size="xs" pt={80}>
-      <Title order={1} ta="center" c="yellow" mb="xl">Texas Hold&apos;em Poker</Title>
+      {!phone && <Title order={1} ta="center" c="yellow" mb="xl">Texas Hold&apos;em Poker</Title>}
       <Paper bg="dark.7" withBorder p="xl" radius="md">
         <Stack gap="md">
           <TextInput

@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {Alert, Badge, Box, Button, Center, Group, Loader, Paper, Stack, Text, Title} from '@mantine/core';
 import {hexDistance, hexEquals, hexKey, hexToPixel, hexesInRange, registerBuiltinComponents, registerBuiltinSystems} from '@canvas/engine';
@@ -42,6 +42,8 @@ import type {
 } from '@canvas/games-silk-road-tactics';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
+import {usePageHeader} from 'components/PageHeader';
+import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
@@ -54,20 +56,6 @@ const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
   freeze: ABILITY.freeze.radius,
   hail: 0,
 };
-
-/** The CSS module's phone breakpoint. */
-const PHONE_QUERY = '(max-width: 960px)';
-
-function useMediaQuery(query: string): boolean {
-  return useSyncExternalStore(
-    (onChange) => {
-      const list = window.matchMedia(query);
-      list.addEventListener('change', onChange);
-      return () => list.removeEventListener('change', onChange);
-    },
-    () => window.matchMedia(query).matches
-  );
-}
 
 /**
  * Silk Road Tactics: one fight against the AI (Phase 1). The run lives on
@@ -99,7 +87,8 @@ export function TacticsPage() {
   const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
   const [hover, setHover] = useState<TacticsHoverPayload>({hex: null, unitId: null});
   /** Phone widths (the CSS breakpoint): a pared-down action section pinned below the details. */
-  const compact = useMediaQuery(PHONE_QUERY);
+  const compact = useIsPhone();
+  usePageHeader('Silk Road Tactics');
   const eventsRef = useRef<EventBus | null>(null);
   const [worldReady, setWorldReady] = useState(0);
 
@@ -481,7 +470,8 @@ export function TacticsPage() {
     );
   }
 
-  const header = (
+  // Phones show the title and Back in the top bar instead (usePageHeader).
+  const header = compact ? null : (
     <Group justify="space-between" w="100%" wrap="nowrap">
       <Button component={Link} to="/" variant="subtle" color="gray" size="sm" px={4}>
         ← Home

@@ -565,6 +565,16 @@ try {
   };
 
   await openTouch('sudoku');
+  // Phones: the top bar shows Back and the game's title instead of the site name.
+  const bar = tp.locator('header');
+  check(
+    'phone: the top bar has Back and the game title, not the site name',
+    (await bar.getByRole('link', {name: 'Back'}).isVisible()) &&
+      (await bar.getByText('Sudoku').isVisible()) &&
+      !(await bar.getByText('Canvas Games').count()),
+    await bar.textContent()
+  );
+  check('phone: the page doesn’t repeat Back and the title', !(await tp.getByText('← Back to home').count()));
   const tGiven = await tp.evaluate(
     () =>
       window.__canvasWorld

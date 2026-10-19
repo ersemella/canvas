@@ -6,13 +6,16 @@ import {PokerLobbyPage} from 'pages/poker/PokerLobbyPage';
 import {PokerRoomPage} from 'pages/poker/PokerRoomPage';
 import {TacticsPage} from 'pages/tactics/TacticsPage';
 import {NavBar} from 'components/NavBar';
+import {PageHeaderProvider} from 'components/PageHeader';
 
 function Layout({children}: {children: React.ReactNode}) {
   return (
-    <AppShell header={{height: 56}}>
-      <NavBar />
-      <AppShell.Main>{children}</AppShell.Main>
-    </AppShell>
+    <PageHeaderProvider>
+      <AppShell header={{height: 56}}>
+        <NavBar />
+        <AppShell.Main>{children}</AppShell.Main>
+      </AppShell>
+    </PageHeaderProvider>
   );
 }
 

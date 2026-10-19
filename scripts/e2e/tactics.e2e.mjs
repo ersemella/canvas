@@ -254,6 +254,15 @@ try {
   await phone.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {timeout: 15_000});
   await sleep(300);
   check('phone: no turn heading or hints', !(await phone.getByText(/^Your turn:|Tap a hex to look/).count()));
+  const phoneBar = phone.locator('header');
+  check(
+    'phone: the top bar has Back and the title, not the site name',
+    (await phoneBar.getByRole('link', {name: 'Back'}).isVisible()) &&
+      (await phoneBar.getByText('Silk Road Tactics').isVisible()) &&
+      !(await phoneBar.getByText('Canvas Games').count()),
+    await phoneBar.textContent()
+  );
+  check('phone: the page doesn’t repeat the title', (await phone.getByText('Silk Road Tactics').count()) === 1);
   const inViewport = (locator) =>
     locator.evaluate((el) => {
       const r = el.getBoundingClientRect();

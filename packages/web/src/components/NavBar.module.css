@@ -6,3 +6,19 @@
   letter-spacing: -0.02em;
   text-decoration: none;
 }
+
+/* Phones: Back on the left, the page's title centred over the whole bar. */
+.pageHeader {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+
+.pageTitle {
+  position: absolute;
+  left: 88px;
+  right: 88px;
+  text-align: center;
+}

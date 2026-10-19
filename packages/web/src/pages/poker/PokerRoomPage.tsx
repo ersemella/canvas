@@ -3,6 +3,7 @@ import {useParams, useLocation, useNavigate} from 'react-router-dom';
 import {Paper, Title, Text, List, Button, Group, TextInput, Stack, Box} from '@mantine/core';
 import {notifications} from '@mantine/notifications';
 import {GameCanvas} from 'components/GameCanvas';
+import {usePageHeader} from 'components/PageHeader';
 import gameLayout from 'styles/gameLayout.module.css';
 import {registerBuiltinComponents, registerBuiltinSystems} from '@canvas/engine';
 import type {EventBus} from '@canvas/engine';
@@ -40,6 +41,7 @@ export function PokerRoomPage() {
   const {roomId} = useParams<{roomId: string}>();
   const location = useLocation();
   const navigate = useNavigate();
+  usePageHeader('Texas Hold’em Poker', '/play/poker');
   const locationState = location.state as {name?: string} | null;
 
   const savedName = roomId ? (localStorage.getItem(storageKey(roomId)) ?? '') : '';
