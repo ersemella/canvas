@@ -100,7 +100,8 @@ a chosen hex) can be defined per ability.
 - **Displacement is instant:** it resolves completely when the ability
   resolves, so nothing (an Immobilized status, a turn) happens part-way
   through it.
-- **An Immobilized unit can't be displaced** (17.5).
+- **An Immobilized unit can still be displaced** (17.5); only
+  Unstoppable prevents it.
 - **Several units displaced at once** (an area ability) move one at a
   time: for Displace away, the unit farthest from the centre first; for
   Displace toward, the nearest first. Ties follow the fixed order for
@@ -116,7 +117,7 @@ not the fight.
 
 | Keyword | Rule |
 |---|---|
-| **Immobilized** | The unit can't move: no movement on its turn, and no ability that moves it (a charge, a leap, a dash, swapping hexes) can be used. It **still acts** with any ability that doesn't move it. It also can't be displaced, by allies or enemies. Not a lost turn. |
+| **Immobilized** | The unit can't move: no movement on its turn, and no ability that moves it (a charge, a leap, a dash, swapping hexes) can be used. It **still acts** with any ability that doesn't move it. It **can still be displaced** by allies and enemies, and stays Immobilized where it lands (owner's call, 2026-10-19). Not a lost turn. |
 | **Dazed** | On its turn, the unit may move but can't act: a forced Hold, plus any movement cost. |
 | **Slowed N** | The unit's movement cap (one global value, 4 in Phase 1) is reduced by N, to at least 1 hex. |
 | **Taunt** | While taunted, if the unit can attack the taunter from any hex it can reach this turn, it **must**: its action is an ability that targets the taunter or includes it in its area. Hold, other abilities and moving out of reach are not allowed. Only when no reachable hex and no ability can hit the taunter is the unit free. A **charging** unit's ability is redirected to the taunter instead (below). Ends early if the taunter dies. |
@@ -243,7 +244,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
 | Same status twice | The source states how it combines: additive, multiplicative, replace or max; each application runs its own duration except under replace | One global rule (strongest replaces weaker; then strongest applies at a time); Burn as the only stacking status | Owner's call: how an effect combines is part of its design, and a lever for gear and upgrades |
 | Lost turns and budgets | A lost turn resets the push and pull limits like any turn | Budgets carry over a lost turn | Owner's call; the longest legal lockout is about two turns |
 | Lost turns | Don't count toward ultimates | Counting every turn | Control shouldn't bring an enemy's ultimate closer; owner's call |
-| Immobilized | Replaces Frozen: removes movement, including abilities that move the unit, and prevents displacement; the unit still acts | Frozen: no movement and no action, a lost turn | Owner's call; Dazed already covers losing a turn |
+| Immobilized | Replaces Frozen: removes movement, including abilities that move the unit; the unit still acts and can still be displaced (2026-10-19) | Frozen: no movement and no action, a lost turn; Immobilized also preventing displacement (until 2026-10-19) | Owner's call; Dazed already covers losing a turn; displacing a held unit gives the Bökh Champion's Pin then Throw its flow, and leaves Unstoppable as the one answer to Displace |
 | Guard | Removed; Barrier covers damage protection | Keeping both | Owner's call: outdated |
 | Charged abilities | Fizzle on a lost trigger turn | Trigger anyway | Owner's call; control answers a visible charge |
 

@@ -96,7 +96,7 @@ The keyword vocabulary comes before heroes (10.8); the full list is in
 |---|---|
 | **Displace N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the displaced unit takes **20 damage**, and a unit it hits also takes 20 (ignoring defence). Entering a hazard triggers it. Doesn't move the displaced unit's card. |
 | **Displace to a hex** | The Bökh Champion's Throw: the target is set down on a chosen free hex the ability names. No collision, since the hex is free; a hazard there triggers. |
-| **Immobilized** | No movement, and no ability that moves the unit (Dash, Rampage); can't be displaced. It still acts (17.5). |
+| **Immobilized** | No movement, and no ability that moves the unit (Dash, Rampage). It still acts, and can still be displaced, staying Immobilized where it lands (17.5). |
 | **Slowed N** | Movement cap lowered by N, to at least 1 hex (17.5). Combines by max. |
 | **Vulnerable N%** | Takes N% more damage from every source (17.6). Combines by max, flanks included (section 2). |
 | **Heal N** | Restores N health, up to max health; scaled by power when the ability states it (17.7). |
@@ -157,13 +157,15 @@ reading of the owner's one-line descriptions; the owner can change them
 |---|---|
 | **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
 | **Pin** | Melee: the Champion **and** the target are **Immobilized** for TBD slots, and the target is **Vulnerable TBD%** for the same. Both still act. Typical cost. |
-| **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction and **completes the line**: only an **obstacle** or an **Unstoppable** unit in its path stops it early (owner's call, 2026-10-18), and the map edge ends it. Step by step, every unit in the path or adjacent to a hex the Champion enters is hit **once**: it takes base damage TBD and is **Displaced 1** away from the Champion's hex at that moment (several at once: farthest first, 17.4); collisions deal their usual damage. *(Proposed:* allies are displaced but take no Rampage damage, as with the bow; a unit in the path that couldn't be displaced, or was displaced ahead, is passed through; an **Immobilized** unit in the path stops the charge like an Unstoppable one, since it can't be displaced; if the last hex is occupied, the Champion ends on the last free hex it passed.) Not usable while Immobilized. Cost TBD. |
+| **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction and **completes the line**: only an **obstacle** or an **Unstoppable** unit in its path stops it early (owner's call, 2026-10-18), and the map edge ends it. Step by step, every unit in the path or adjacent to a hex the Champion enters is hit **once**: it takes base damage TBD and is **Displaced 1** away from the Champion's hex at that moment (several at once: farthest first, 17.4); collisions deal their usual damage. *(Proposed:* allies are displaced but take no Rampage damage, as with the bow; a unit in the path that couldn't be displaced (a collision), or was displaced ahead, is passed through; if the last hex is occupied, the Champion ends on the last free hex it passed.) Not usable while Immobilized. Cost TBD. |
 
 **Interactions to know** (they follow from the keyword rules, not new
-rules): an Immobilized unit can't be displaced, so a pinned or frozen
-target is immune to Throw's and Gale's displacement and stops a
-Rampage in its path; and a pinning Champion can't Rampage. Throw and
-Gale onto quicksand, and Freeze triggering before Volley lands (frozen
+rules): an Immobilized unit can still be displaced (owner's call,
+2026-10-19), so the Champion's flow is **Pin, then Throw**: the target
+lands where the Champion chooses, still Immobilized and Vulnerable, and
+can't walk back. Frozen units can likewise be thrown, blown back or
+rampaged through. A pinning Champion can't Rampage. Throw and
+Gale onto quicksand (a held unit then stays in it), and Freeze triggering before Volley lands (frozen
 units can't step out of the area), are the obvious combinations; the
 two charges' timing on the track is what makes the second one work. Hail's and Pin's Vulnerable don't stack with each other or
 a flank (max, section 2).
@@ -283,8 +285,7 @@ values marked TBD (section 4), for the owner to set.
 
 **Ability details to confirm** (section 4 uses the proposed reading
 until the owner says otherwise): Rampage's handling of allies (displaced,
-no damage), of units it passes through, of an Immobilized unit in its
-path (stops it), and of an occupied last hex.
+no damage), and of units it passes through and an occupied last hex.
 
 The rest don't block Phase 1; all are config values:
 - Cost values and `C` (open question 1): the defaults aim for a typical

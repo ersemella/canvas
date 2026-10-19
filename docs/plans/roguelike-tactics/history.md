@@ -62,6 +62,11 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 - **Frozen** (until 2026-10-18): no movement and no action, a lost turn.
   Replaced by Immobilized, which removes only movement; Dazed covers a
   lost turn ([keywords.md](keywords.md), 17.5).
+- **Immobilized preventing displacement** (2026-10-18 to 2026-10-19):
+  an Immobilized unit couldn't be displaced by allies or enemies.
+  Removed so the Bökh Champion can Pin a target and then Throw it, and
+  so Rampage isn't stopped by held units; Unstoppable remains the
+  immunity to Displace ([keywords.md](keywords.md), 17.4, 17.5).
 - **Guard N%** (Phase 1 draft, until 2026-10-16): N% less damage for
   10 slots, Batyr's Hold the Line. Removed as outdated; Barrier covers
   damage protection ([keywords.md](keywords.md)).
