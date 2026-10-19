@@ -106,6 +106,9 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
     statusValue(unit, 'vulnerable')
       ? `Vulnerable ${statusValue(unit, 'vulnerable')}% (${statusSlotsLeft(unit, 'vulnerable', slot)} slots)`
       : null,
+    statusValue(unit, 'crushed')
+      ? `Crushed: ${statusValue(unit, 'crushed')} damage a slot (${statusSlotsLeft(unit, 'crushed', slot)} slots)`
+      : null,
     unit.alive && isFlanked(fight, unit) ? `Flanked: Vulnerable ${RULES.flankVulnerable}%` : null,
   ].filter(Boolean);
   const ult = HEROES[unit.hero].ultimate;

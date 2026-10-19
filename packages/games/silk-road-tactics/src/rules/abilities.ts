@@ -151,10 +151,11 @@ function dashEnd(
   map: MapData,
   user: Unit,
   from: Hex,
-  dir: number
+  dir: number,
+  distance: number
 ): Hex | undefined {
   let h = from;
-  for (let i = 0; i < ABILITY.dash.distance; i++) {
+  for (let i = 0; i < distance; i++) {
     h = hexNeighbor(h, dir);
     if (!walkable(map, h)) return undefined;
     const u = unitAt(state, h);
@@ -167,15 +168,20 @@ function dashEnd(
 const dash: AbilityDef = {
   id: 'dash',
   name: 'Dash',
-  summary: `Ride ${ABILITY.dash.distance} hexes in a straight line; passes allies, not enemies or ruins.`,
+  summary: `Ride up to ${ABILITY.dash.distance} hexes in a straight line; passes allies, not enemies or ruins.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.dash.cost,
   movesSelf: true,
   targets(state, map, user, from) {
-    return DIRECTIONS.map((d) => dashEnd(state, map, user, from, d))
-      .filter((h): h is Hex => h !== undefined)
-      .map((hex) => ({hex}));
+    const out: ActionTarget[] = [];
+    for (let n = 1; n <= ABILITY.dash.distance; n++) {
+      for (const d of DIRECTIONS) {
+        const hex = dashEnd(state, map, user, from, d, n);
+        if (hex) out.push({hex});
+      }
+    }
+    return out;
   },
   resolve(ctx, user, target) {
     // Hexes passed have no effect; the one it ends on does.
@@ -322,7 +328,7 @@ const throwAbility: AbilityDef = {
 const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
-  summary: `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots; it is Vulnerable ${ABILITY.pin.vulnerable}%.`,
+  summary: `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots; it is Vulnerable ${ABILITY.pin.vulnerable}% and takes ${ABILITY.pin.damagePerSlot} damage every slot.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.pin.cost,
@@ -335,6 +341,7 @@ const pin: AbilityDef = {
     addStatus(user, {kind: 'immobilized', value: 0, untilSlot});
     addStatus(u, {kind: 'immobilized', value: 0, untilSlot});
     addStatus(u, {kind: 'vulnerable', value: ABILITY.pin.vulnerable, untilSlot});
+    addStatus(u, {kind: 'crushed', value: ABILITY.pin.damagePerSlot, untilSlot});
     log(ctx, `${unitName(user)} pins ${unitName(u)}.`);
   },
 };

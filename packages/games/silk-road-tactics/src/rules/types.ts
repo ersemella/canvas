@@ -20,7 +20,7 @@ export type AbilityId =
   | 'pin'
   | 'rampage';
 
-export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable';
+export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable' | 'crushed';
 
 /**
  * A status from an ability. Active through `untilSlot` inclusive, so one
@@ -29,7 +29,7 @@ export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable';
  */
 export interface Status {
   kind: StatusKind;
-  /** Slowed: hexes; Vulnerable: percent; Immobilized: unused (0). */
+  /** Slowed: hexes; Vulnerable: percent; Crushed: damage per slot; Immobilized: unused (0). */
   value: number;
   untilSlot: number;
 }

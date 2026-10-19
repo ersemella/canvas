@@ -5,7 +5,7 @@
 import {hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {RULES, HEROES} from './config';
-import {addStatus, onMap, unitAt, vulnerablePercent} from './board';
+import {addStatus, onMap, statusValue, unitAt, vulnerablePercent} from './board';
 import {tileAt} from './map';
 import type {MapData} from './map';
 import type {FightState, HailEffect, Unit} from './types';
@@ -63,7 +63,7 @@ export function hailDamage(state: FightState, target: Unit, hail: HailEffect): n
   return throughDefence(state, target, hail.damage ?? 0);
 }
 
-/** Hazard and collision damage: skip defence, still take Vulnerable. */
+/** Hazard, collision and Crushed damage: skip defence, still take Vulnerable. */
 export function rawDamage(state: FightState, target: Unit, amount: number): number {
   return Math.floor(amount * (1 + vulnerablePercent(state, target) / 100));
 }
@@ -124,7 +124,7 @@ export function applyHail(ctx: Ctx, unit: Unit): void {
   log(ctx, `Hail batters ${unitName(unit)}: Slowed ${hail.slowed}, Vulnerable ${hail.vulnerable}%`);
 }
 
-/** Quicksand under a unit, on entering (each slot on it is `sinkInQuicksand`). */
+/** Quicksand under a unit, on entering (each slot on it is `damageEachSlot`). */
 export function applyHazard(ctx: Ctx, unit: Unit): void {
   if (!onQuicksand(ctx.map, unit)) return;
   const d = rawDamage(ctx.state, unit, RULES.hazardEnterDamage);
@@ -136,21 +136,28 @@ function onQuicksand(map: MapData, unit: Unit): boolean {
 }
 
 /**
- * The track moves from slot `from` to `ctx.slot`: every unit on quicksand
- * takes its damage for each slot passed, `from` excluded, whether or not
- * anyone's card was on it. `expire` runs at each slot first, so Vulnerable
- * counts only while it lasts. One log line per unit.
+ * The track moves from slot `from` to `ctx.slot`: every unit on quicksand,
+ * and every Crushed unit, takes its damage for each slot passed, `from`
+ * excluded, whether or not anyone's card was on it. `expire` runs at each
+ * slot first, so Vulnerable and Crushed count only while they last. One
+ * log line per unit and cause.
  */
-export function sinkInQuicksand(ctx: Ctx, from: number, expire: (slot: number) => void): void {
-  const total = new Map<Unit, number>();
+export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) => void): void {
+  const sinking = new Map<Unit, number>();
+  const crushed = new Map<Unit, number>();
+  const add = (m: Map<Unit, number>, u: Unit, d: number) => m.set(u, (m.get(u) ?? 0) + d);
   for (let s = from + 1; s <= ctx.slot; s++) {
     expire(s);
     for (const u of ctx.state.units) {
-      if (onQuicksand(ctx.map, u))
-        total.set(u, (total.get(u) ?? 0) + rawDamage(ctx.state, u, RULES.hazardDamage));
+      if (!u.alive) continue;
+      if (onQuicksand(ctx.map, u)) add(sinking, u, rawDamage(ctx.state, u, RULES.hazardDamage));
+      const crush = statusValue(u, 'crushed');
+      if (crush > 0) add(crushed, u, rawDamage(ctx.state, u, crush));
     }
   }
-  for (const [u, d] of total) applyDamage(ctx, u, d, `Quicksand drags at ${unitName(u)} for ${d}`);
+  for (const [u, d] of sinking)
+    applyDamage(ctx, u, d, `Quicksand drags at ${unitName(u)} for ${d}`);
+  for (const [u, d] of crushed) applyDamage(ctx, u, d, `The pin crushes ${unitName(u)} for ${d}`);
 }
 
 /** Moves a unit onto a hex; `triggers` applies the hex's hazard and hail. */

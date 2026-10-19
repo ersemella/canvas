@@ -84,14 +84,14 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Ability | Placeholder values |
 |---|---|
 | Composite Bow | range 5, **damage 120 (owner, 2026-10-19: 2 hits kill a Mangudai, 4 a Yadachy)** |
-| Dash | 3 hexes, quick (60) |
+| Dash | **up to 3 hexes (owner, 2026-10-19; was exactly 3)**, quick (60) |
 | Volley (ultimate) | range 5, radius 1, **damage 135 (owner, 2026-10-19)**, charge 40, recovery 100 |
 | Sunlight | radius 1 (was 2 until it reached enemies, 2026-10-19), **heal 40, 60 at its power (owner, 2026-10-19; was 25)** |
 | Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
 | Gale | Displace 1, Slowed 1 for 10 slots, no damage |
 | Freeze (ultimate) | range 4, radius 1, Immobilized and Vulnerable 25% for 15 slots, charge 40, recovery 100 |
 | Throw | damage 80 |
-| Pin | 12 slots, Vulnerable 25% |
+| Pin | 12 slots, Vulnerable 25%, **4 damage a slot to the target (owner, 2026-10-19)** |
 | Rampage (ultimate) | 3 hexes, damage 100, Displace 1, slow (150) |
 
 Damage is scaled by power: `base × (1 + power / 50)`.
@@ -112,7 +112,6 @@ confirm or change:
 - **Gale displaces an Immobilized target**, following the 2026-10-19
   rule; the brief's section 4 still says "slowed but not moved" and
   should be corrected whichever way you decide.
-- **Dash goes exactly 3 hexes** (not "up to 3").
 - **The AI's additions:** a pull toward the nearest enemy, and counting
   the quicksand it will take before its next turn. Without the pull, units with
   nothing in reach hold forever.

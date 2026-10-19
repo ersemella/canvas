@@ -373,6 +373,32 @@ describe('abilities', () => {
     expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
   });
 
+  it('Pin crushes its target every slot while it lasts', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const target = unit(s, 'e-storm');
+    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    // The Champion's card is next; push it past the pin so the target's turn comes first.
+    unit(s, 'p-bokh').slot = 200;
+    target.slot = ABILITY.pin.slots + 8;
+    advance(s, chooseAiTurn);
+    // Slots 1 to 12 crush it, through its own Vulnerable; nothing after.
+    const perSlot = Math.floor(ABILITY.pin.damagePerSlot * (1 + ABILITY.pin.vulnerable / 100));
+    expect(actingUnit(s)!.id).toBe('e-storm');
+    expect(target.hp).toBe(target.maxHp - ABILITY.pin.slots * perSlot);
+  });
+
+  it('Dash rides any distance up to its limit', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(8, 0)});
+    const m = unit(s, 'p-mangudai');
+    const ends = ABILITIES.dash
+      .targets(s, SALT_FLATS, m, m.hex!)
+      .map((t) => hexDistance(t.hex!, m.hex!));
+    expect(new Set(ends)).toEqual(
+      new Set(Array.from({length: ABILITY.dash.distance}, (_, i) => i + 1))
+    );
+  });
+
   it('Rampage hits each unit once and knocks it aside', () => {
     const s = setup({
       'p-bokh': at(1, 0),

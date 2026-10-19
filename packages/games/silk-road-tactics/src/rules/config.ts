@@ -115,6 +115,11 @@ export const ABILITY = {
    */
   hold: {cost: 30},
   bow: {cost: RULES.cost.typical, range: 5, damage: 120},
+  /**
+   * Up to `distance` hexes (owner, 2026-10-19; was exactly 3, which on this
+   * board often had no free hex to end on: chosen on 5% of the Outrider's
+   * turns in AI-vs-AI fights, 17% with "up to").
+   */
   dash: {cost: RULES.cost.quick, distance: 3},
   volley: {range: 5, radius: 1, damage: 135, chargeCost: 40, recoveryCost: RULES.cost.typical},
   /**
@@ -142,7 +147,13 @@ export const ABILITY = {
     recoveryCost: RULES.cost.typical,
   },
   throw: {cost: RULES.cost.typical, damage: 80},
-  pin: {cost: RULES.cost.typical, slots: 12, vulnerable: 25},
+  /**
+   * The target also takes `damagePerSlot` every slot while pinned, like
+   * quicksand: 48, 60 with Pin's own Vulnerable (owner, 2026-10-19). Over
+   * 1,500 AI-vs-AI fights Pin went from 1% of the Champion's turns to 30%,
+   * and none stalled; at 8 a slot, Sunlight's cleanse took over and 40 did.
+   */
+  pin: {cost: RULES.cost.typical, slots: 12, vulnerable: 25, damagePerSlot: 4},
   rampage: {cost: RULES.cost.slow, distance: 3, damage: 100, displace: 1},
 } as const;
 
@@ -154,6 +165,8 @@ export const AI = {
   perSlowed: 40,
   perImmobilizedSlot: 2,
   perVulnerablePercent: 2,
+  /** Not in the brief: per point of damage a Crushed status will still deal. */
+  perCrushDamage: 1,
   friendlyDamageFactor: 1.5,
   perSlotMoved: 10,
   /**

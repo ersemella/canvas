@@ -38,6 +38,12 @@ function statusWords(before: Unit, after: Unit, slot: number): string[] {
   if (vuln > statusValue(before, 'vulnerable')) out.push(`Vulnerable ${vuln}%`);
   const imm = statusSlotsLeft(after, 'immobilized', slot);
   if (imm > statusSlotsLeft(before, 'immobilized', slot)) out.push(`Immobilized ${imm} slots`);
+  const crush = statusValue(after, 'crushed');
+  if (
+    crush > 0 &&
+    statusSlotsLeft(after, 'crushed', slot) > statusSlotsLeft(before, 'crushed', slot)
+  )
+    out.push(`Crushed ${crush} a slot`);
   if (before.statuses.length > 0 && after.statuses.length === 0 && after.alive)
     out.push('Cleansed');
   return out;

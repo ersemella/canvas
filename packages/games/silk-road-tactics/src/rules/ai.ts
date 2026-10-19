@@ -22,12 +22,16 @@ export interface ScoredOption {
   after: FightState;
 }
 
-/** Status points for scoring: Slowed per point, Immobilized per slot, Vulnerable per %. */
+/**
+ * Status points for scoring: Slowed per point, Immobilized per slot,
+ * Vulnerable per %, and Crushed per point of damage it has left to deal.
+ */
 function statusPoints(u: Unit, slot: number): number {
   return (
     AI.perSlowed * statusValue(u, 'slowed') +
     AI.perImmobilizedSlot * statusSlotsLeft(u, 'immobilized', slot) +
-    AI.perVulnerablePercent * statusValue(u, 'vulnerable')
+    AI.perVulnerablePercent * statusValue(u, 'vulnerable') +
+    AI.perCrushDamage * statusValue(u, 'crushed') * statusSlotsLeft(u, 'crushed', slot)
   );
 }
 

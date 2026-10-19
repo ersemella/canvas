@@ -141,7 +141,7 @@ reading of the owner's one-line descriptions; the owner can change them
 | Ability | Rule |
 |---|---|
 | **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it stops at the **first unit** on that line or at an obstacle. That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
-| **Dash** | Moves the Outrider **3 hexes in a straight line** along one hex direction. Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn's action, so normal movement can come before or after it (confirmed 2026-10-18). Not usable while Immobilized. Quick cost. |
+| **Dash** | Moves the Outrider **up to 3 hexes in a straight line** along one hex direction (owner, 2026-10-19; was exactly 3). Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn's action, so normal movement can come before or after it (confirmed 2026-10-18). Not usable while Immobilized. Quick cost. |
 | **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage **135** (owner, 2026-10-19), allies included. Charge and recovery costs TBD (3.7). |
 
 **Yadachy Storm Caller**
@@ -158,7 +158,7 @@ reading of the owner's one-line descriptions; the owner can change them
 | Ability | Rule |
 |---|---|
 | **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
-| **Pin** | Melee: the Champion **and** the target are **Immobilized** for TBD slots, and the target is **Vulnerable TBD%** for the same. Both still act. Typical cost. |
+| **Pin** | Melee: the Champion **and** the target are **Immobilized** for TBD slots, and the target is **Vulnerable TBD%** and **Crushed** for the same: it takes **4 damage every slot** (owner, 2026-10-19), ignoring defence like quicksand, Vulnerable still adding. Sunlight's cleanse removes it. Both still act. Typical cost. |
 | **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction and **completes the line**: only an **obstacle** or an **Unstoppable** unit in its path stops it early (owner's call, 2026-10-18), and the map edge ends it. Step by step, every unit in the path or adjacent to a hex the Champion enters is hit **once**: it takes base damage TBD and is **Displaced 1** away from the Champion's hex at that moment (several at once: farthest first, 17.4); collisions deal their usual damage. Allies take the damage too (6.7, 2026-10-19). *(Proposed:* a unit in the path that couldn't be displaced (a collision), or was displaced ahead, is passed through; if the last hex is occupied, the Champion ends on the last free hex it passed.) Not usable while Immobilized. Cost TBD. |
 
 **Interactions to know** (they follow from the keyword rules, not new
@@ -335,7 +335,7 @@ confirm or change:
 - **Gale on an Immobilized target displaces it,** following the
   2026-10-19 rule (Immobilized units can be displaced) over section 4's
   older line ("slowed but not moved").
-- **Dash** goes exactly 3 hexes. **Pin**, **Throw** and **Gale** target
+- **Dash** goes up to 3 hexes (owner, 2026-10-19; exactly 3 until then). **Pin**, **Throw** and **Gale** target
   any adjacent unit, allies included (Pin targeted enemies only until the
   2026-10-19 rule, 6.7).
 - **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage

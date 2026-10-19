@@ -7,7 +7,7 @@ import {hexEquals, hexKey} from '@canvas/engine/server';
 import {ARMOUR, HEROES, PARTY} from './config';
 import {expireStatuses, invalidPath, walkable} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
-import {applyHail, checkEnd, enterHex, log, sinkInQuicksand, unitName} from './resolve';
+import {applyHail, checkEnd, enterHex, log, damageEachSlot, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS} from './map';
 import type {MapData} from './map';
@@ -121,7 +121,7 @@ export function advance(
     const ctx: Ctx = {state, map, slot: unit.slot!};
     beginSlot(ctx);
 
-    // Start of the turn: hail (brief section 2); quicksand ticked in beginSlot.
+    // Start of the turn: hail (brief section 2); quicksand and Crushed ticked in beginSlot.
     applyHail(ctx, unit);
     if (!unit.alive) continue;
 
@@ -139,13 +139,13 @@ export function advance(
 
 /**
  * The track reaches `ctx.slot`: effects act at the beginning of each slot
- * passed (3.9), here expiry and quicksand.
+ * passed (3.9), here expiry, quicksand and Crushed.
  */
 function beginSlot(ctx: Ctx): void {
   const {state, slot} = ctx;
   const from = state.currentSlot;
   state.currentSlot = slot;
-  sinkInQuicksand(ctx, from, (s) => {
+  damageEachSlot(ctx, from, (s) => {
     for (const u of state.units) expireStatuses(u, s);
   });
   for (const u of state.units) expireStatuses(u, slot);
