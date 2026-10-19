@@ -114,7 +114,7 @@ confirm or change:
   should be corrected whichever way you decide.
 - **Dash goes exactly 3 hexes** (not "up to 3").
 - **The AI's additions:** a pull toward the nearest enemy, and counting
-  the quicksand it will take next turn. Without the pull, units with
+  the quicksand it will take before its next turn. Without the pull, units with
   nothing in reach hold forever.
 - **One move per turn, before or after the action, not split around it**
   (section 2; the page offers both orders since 2026-10-19). Splitting it

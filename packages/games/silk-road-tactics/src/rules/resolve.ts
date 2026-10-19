@@ -124,11 +124,33 @@ export function applyHail(ctx: Ctx, unit: Unit): void {
   log(ctx, `Hail batters ${unitName(unit)}: Slowed ${hail.slowed}, Vulnerable ${hail.vulnerable}%`);
 }
 
-/** Quicksand under a unit: on entering, and at the start of each turn on it. */
+/** Quicksand under a unit, on entering (each slot on it is `sinkInQuicksand`). */
 export function applyHazard(ctx: Ctx, unit: Unit): void {
-  if (!unit.alive || !unit.hex || tileAt(ctx.map, unit.hex) !== 'hazard') return;
+  if (!onQuicksand(ctx.map, unit)) return;
   const d = rawDamage(ctx.state, unit, RULES.hazardDamage);
   applyDamage(ctx, unit, d, `Quicksand drags at ${unitName(unit)} for ${d}`);
+}
+
+function onQuicksand(map: MapData, unit: Unit): boolean {
+  return unit.alive && !!unit.hex && tileAt(map, unit.hex) === 'hazard';
+}
+
+/**
+ * The track moves from slot `from` to `ctx.slot`: every unit on quicksand
+ * takes its damage for each slot passed, `from` excluded, whether or not
+ * anyone's card was on it. `expire` runs at each slot first, so Vulnerable
+ * counts only while it lasts. One log line per unit.
+ */
+export function sinkInQuicksand(ctx: Ctx, from: number, expire: (slot: number) => void): void {
+  const total = new Map<Unit, number>();
+  for (let s = from + 1; s <= ctx.slot; s++) {
+    expire(s);
+    for (const u of ctx.state.units) {
+      if (onQuicksand(ctx.map, u))
+        total.set(u, (total.get(u) ?? 0) + rawDamage(ctx.state, u, RULES.hazardDamage));
+    }
+  }
+  for (const [u, d] of total) applyDamage(ctx, u, d, `Quicksand drags at ${unitName(u)} for ${d}`);
 }
 
 /** Moves a unit onto a hex; `triggers` applies the hex's hazard and hail. */

@@ -73,9 +73,10 @@ export function scoreOutcome(
   }
   const me = after.units.find((u) => u.id === actor.id)!;
   if (me.slot !== null) score -= (me.slot - before.currentSlot) * AI.perSlotMoved;
-  // Ending on quicksand costs its damage again at the start of the next turn.
-  if (me.alive && me.hex && tileAt(mapOf(after), me.hex) === 'hazard') {
-    score -= rawDamage(after, me, RULES.hazardDamage) * AI.friendlyDamageFactor;
+  // Ending on quicksand costs its damage every slot until the next turn, at least.
+  if (me.alive && me.hex && me.slot !== null && tileAt(mapOf(after), me.hex) === 'hazard') {
+    const slots = me.slot - before.currentSlot;
+    score -= slots * rawDamage(after, me, RULES.hazardDamage) * AI.friendlyDamageFactor;
   }
   // So does ending on hail.
   const hail =

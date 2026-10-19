@@ -26,8 +26,8 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
   },
   hazard: {
     name: 'Quicksand',
-    short: `${RULES.hazardDamage} damage on entering`,
-    detail: `${RULES.hazardDamage} damage to a unit entering it, passing through included, and at the start of each turn it begins here. Ignores defence; Vulnerable still adds.`,
+    short: `${RULES.hazardDamage} damage on entering and every slot`,
+    detail: `${RULES.hazardDamage} damage to a unit entering it, passing through included, and again every slot it stands here, whoever's turn it is. Ignores defence; Vulnerable still adds.`,
   },
   conceal: {
     name: 'Sandstorm',

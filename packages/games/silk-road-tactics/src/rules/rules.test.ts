@@ -299,6 +299,24 @@ describe('damage', () => {
     applyTurn(s, b, {move: [at(3, 3)], action: {ability: 'hold'}});
     expect(b.hp).toBe(b.maxHp - RULES.hazardDamage);
   });
+
+  it('hurts a unit on quicksand every slot the track passes, turn or not', () => {
+    const s = setup({'p-bokh': at(3, 3), 'p-storm': at(0, 0), 'e-bokh': at(8, 0)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const b = unit(s, 'p-bokh');
+    b.slot = 200;
+    unit(s, 'p-storm').slot = 10;
+    advance(s, chooseAiTurn);
+    // Slots 1 to 10 passed: the Storm Caller's turn, not the Bökh's.
+    expect(actingUnit(s)!.id).toBe('p-storm');
+    expect(b.hp).toBe(b.maxHp - 10 * RULES.hazardDamage);
+    // Another unit's turn on the same slot passes no more.
+    s.awaiting = null;
+    unit(s, 'p-storm').slot = null;
+    unit(s, 'e-bokh').slot = 10;
+    advance(s, chooseAiTurn);
+    expect(b.hp).toBe(b.maxHp - 10 * RULES.hazardDamage);
+  });
 });
 
 describe('abilities', () => {

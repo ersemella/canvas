@@ -57,7 +57,7 @@ fight's end ends the run.
 | 9. Map | Offset rectangle, **9 columns × 7 rows**, pointy-top hexes. Fits a 600-pixel-wide board beside the track panel. |
 | 10. Passing through allies | Allowed (can't end on an occupied hex). Enemies block. |
 | 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so pin, hail and a flank don't stack. |
-| 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering and at the start of each turn spent on it. Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
+| 12. Hazards and conceal | Hazard (quicksand): **4 damage** on entering and every slot spent on it, whoever's turn it is (owner, 2026-10-19; was 40 on entering and at the start of each of the unit's own turns). Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
 | 23. Defence | `defenceConstant` = **20**; minimum **1** damage from any hit. |
 | 29. Line of fire along a hex border | **Blocked if either** hex on the border is occupied. |
 | 30. Arcing attacks | Priced as a charged ability, with a charge cost and a recovery cost (3.7). |
@@ -324,8 +324,8 @@ confirm or change:
   a Hold's time is scored as if it cost 60 (`AI.holdScoringCost`), since
   at its real 30 the AI Held on 54% of its turns and 9 in 300 AI-vs-AI
   fights stalled (12% and none with it, as before the change);
-  ending a move on quicksand counts its next-turn damage against the
-  option; ground-targeted abilities (hail, Volley, Freeze) are tried once
+  ending a move on quicksand counts its damage for every slot until its
+  next turn against the option; ground-targeted abilities (hail, Volley, Freeze) are tried once
   per target hex, from the cheapest hex in range. The search is capped
   in simulated options (150 per AI turn, 300 per request, at least 40
   each; owner's call), a count rather than a time so fights stay

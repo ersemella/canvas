@@ -7,7 +7,7 @@ import {hexEquals, hexKey} from '@canvas/engine/server';
 import {ARMOUR, HEROES, PARTY} from './config';
 import {expireStatuses, invalidPath, walkable} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
-import {applyHail, applyHazard, checkEnd, enterHex, log, unitName} from './resolve';
+import {applyHail, checkEnd, enterHex, log, sinkInQuicksand, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS} from './map';
 import type {MapData} from './map';
@@ -118,11 +118,10 @@ export function advance(
   for (let guard = 0; guard < 10_000 && state.phase === 'fight' && !state.awaiting; guard++) {
     const unit = nextCard(state);
     if (!unit) return;
-    beginSlot(state, unit.slot!);
-    const ctx: Ctx = {state, map, slot: state.currentSlot};
+    const ctx: Ctx = {state, map, slot: unit.slot!};
+    beginSlot(ctx);
 
-    // Start of the turn: quicksand, then hail (brief section 2).
-    applyHazard(ctx, unit);
+    // Start of the turn: hail (brief section 2); quicksand ticked in beginSlot.
     applyHail(ctx, unit);
     if (!unit.alive) continue;
 
@@ -138,9 +137,17 @@ export function advance(
   }
 }
 
-/** The track reaches `slot`: effects act at the beginning of a slot (3.9), here expiry. */
-function beginSlot(state: FightState, slot: number): void {
+/**
+ * The track reaches `ctx.slot`: effects act at the beginning of each slot
+ * passed (3.9), here expiry and quicksand.
+ */
+function beginSlot(ctx: Ctx): void {
+  const {state, slot} = ctx;
+  const from = state.currentSlot;
   state.currentSlot = slot;
+  sinkInQuicksand(ctx, from, (s) => {
+    for (const u of state.units) expireStatuses(u, s);
+  });
   for (const u of state.units) expireStatuses(u, slot);
   state.effects = state.effects.filter((e) => e.untilSlot >= slot);
 }
