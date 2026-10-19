@@ -313,8 +313,10 @@ confirm or change:
 - **A fight could stall** while the Storm Caller had no damaging ability:
   about 1 in 20 AI-vs-AI fights from random deployments went on forever.
   Hail now deals damage (owner, 2026-10-19), and none of 1,000 such fights
-  stalled (58 before). Nothing guarantees an end, so **Abandon run**
-  (counts as a defeat, D3) stays.
+  stalled (58 before). Nothing guarantees an end. The page's **Abandon
+  run** button was removed (owner, 2026-10-19), with the fight log; the
+  server still keeps the log and `/runs/:id/abandon` (counts as a defeat,
+  D3).
 - **AI additions** (section 6): a small pull toward the nearest enemy
   (`AI.perHexFromEnemy`), or an AI with nothing in reach holds forever;
   ending a move on quicksand counts its next-turn damage against the

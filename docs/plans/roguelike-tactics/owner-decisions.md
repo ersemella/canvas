@@ -21,7 +21,10 @@ Yadachy against Clear the Storm's 37 heal, and none of 1,000 such fights
 stalled (58 before). Nothing guarantees an end yet; a lower heal or one
 of the options below would.
 
-**Today:** the page's **Abandon run** button ends it as a defeat (D3).
+**Today:** nothing on the page ends it: the **Abandon run** button was
+removed (owner, 2026-10-19). Only `POST /runs/:id/abandon` does (a
+defeat, D3), so a stalled fight leaves the player stuck until one of the
+options below is built.
 
 **Options:**
 - **A fight limit:** the fight ends when the track reaches a set slot;

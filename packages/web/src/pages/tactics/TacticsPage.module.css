@@ -60,15 +60,6 @@
   color: var(--mantine-color-gray-3);
 }
 
-.slotNo {
-  width: 28px;
-  color: var(--mantine-color-dark-2);
-  font-family: monospace;
-  font-size: 11px;
-  text-align: right;
-  display: inline-block;
-}
-
 .stats {
   display: grid;
   grid-template-columns: auto 1fr auto 1fr;

@@ -197,21 +197,3 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
     </Paper>
   );
 }
-
-export function FightLog({fight}: {fight: FightState}) {
-  const entries = fight.log.slice(-14).reverse();
-  return (
-    <Paper bg="dark.7" p="sm" radius="md">
-      <Text fw={600} mb={4}>
-        Log
-      </Text>
-      <Stack gap={1}>
-        {entries.map((e, i) => (
-          <Text key={`${fight.log.length - i}`} fz="xs" c={i === 0 ? 'gray.3' : 'dimmed'}>
-            <span className={styles.slotNo}>{e.slot}</span> {e.text}
-          </Text>
-        ))}
-      </Stack>
-    </Paper>
-  );
-}

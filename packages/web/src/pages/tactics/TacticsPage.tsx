@@ -44,7 +44,7 @@ import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
-import {HexInspector, StatSheet, TurnPreviewBox, FightLog} from './TacticsPanels';
+import {HexInspector, StatSheet, TurnPreviewBox} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 /** Area abilities: their radius, to highlight the area around a chosen hex. */
@@ -74,7 +74,6 @@ export function TacticsPage() {
   const [ability, setAbility] = useState<AbilityId | null>(null);
   const [target, setTarget] = useState<ActionTarget | null>(null);
   const [deployAt, setDeployAt] = useState<Record<string, Hex>>({});
-  const [confirmAbandon, setConfirmAbandon] = useState(false);
   /** Picking where to move: taps on reachable hexes plan the move; otherwise taps inspect. */
   const [moving, setMoving] = useState(false);
   /** The planned move comes after the action. */
@@ -539,27 +538,11 @@ export function TacticsPage() {
               </TurnControls>
             )
           )}
-          {fight.phase === 'fight' && (
-            <Button
-              size="compact-xs"
-              variant="subtle"
-              color={confirmAbandon ? 'red' : 'gray'}
-              onClick={() => {
-                if (!confirmAbandon) return setConfirmAbandon(true);
-                setConfirmAbandon(false);
-                startRun();
-              }}
-              onBlur={() => setConfirmAbandon(false)}
-            >
-              {confirmAbandon ? 'Tap again: abandon (counts as a defeat) and start over' : 'Abandon run'}
-            </Button>
-          )}
           {inspectHex ? (
             <HexInspector fight={fight} hex={inspectHex} positions={fight.phase === 'deploy' ? deployAt : undefined} />
           ) : (
             selected && <StatSheet fight={fight} unit={selected} />
           )}
-          <FightLog fight={fight} />
         </div>
       </div>
     </Stack>

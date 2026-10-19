@@ -90,14 +90,8 @@ async function tapHex(hex) {
 const state = () => page.evaluate(() => window.__tactics?.run);
 const waitIdle = () => page.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {timeout: 15_000});
 
-/** Abandons the page's active run (the button asks twice), so none is left behind. */
+/** Abandons the page's active run through the API (the page has no button for it), so none is left behind. */
 async function abandonOn(p) {
-  const button = p.getByRole('button', {name: 'Abandon run'});
-  if (!(await button.isVisible().catch(() => false))) return;
-  await button.click();
-  await p.getByRole('button', {name: /Tap again/}).click();
-  await p.getByRole('button', {name: 'Start the fight'}).waitFor({timeout: 15_000});
-  // That started a fresh run in deployment; it ends with the page's key, unplayed.
   const key = await p.evaluate(() => localStorage.getItem('canvas:playerKey'));
   const {body} = await api('/runs/active', key);
   if (body?.activeRunId) await api(`/runs/${body.activeRunId}/abandon`, key, {method: 'POST'});
@@ -223,8 +217,9 @@ try {
   for (let attempt = 0; attempt < 3 && !(await playOut()); attempt++) {
     console.log('  (fight stalled; abandoning it for a fresh one)');
     const stalled = (await state()).runId;
-    await page.getByRole('button', {name: 'Abandon run'}).click();
-    await page.getByRole('button', {name: /Tap again/}).click();
+    await abandonOn(page);
+    await page.reload();
+    await page.getByRole('button', {name: 'Start a fight'}).click();
     await page.getByRole('button', {name: 'Start the fight'}).click({timeout: 15_000});
     await page.getByText(/^Your turn:/).waitFor({timeout: 15_000});
     check('abandoning starts a fresh run', (await state()).runId !== stalled);
