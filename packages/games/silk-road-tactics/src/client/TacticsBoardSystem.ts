@@ -46,9 +46,9 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   zone: {fill: 'rgba(96,165,250,0.18)', stroke: 'rgba(96,165,250,0.5)'},
   move: {fill: 'rgba(255,255,255,0.18)', stroke: 'rgba(255,255,255,0.55)'},
   path: {fill: 'rgba(250,204,21,0.25)', stroke: 'rgba(250,204,21,0.8)'},
-  /** Hexes an ability can target: teal, so it never reads as the enemy's red tint. */
-  target: {fill: 'rgba(45,212,191,0.15)', stroke: 'rgba(45,212,191,0.95)'},
-  chosen: {fill: 'rgba(45,212,191,0.4)', stroke: '#fde047'},
+  /** Hexes an ability can target: the inspect purple, outlined solid, so it never reads as the enemy's red tint. */
+  target: {fill: 'rgba(192,132,252,0.18)', stroke: 'rgba(192,132,252,0.95)'},
+  chosen: {fill: 'rgba(192,132,252,0.45)', stroke: '#fde047'},
   area: {fill: 'rgba(251,146,60,0.28)', stroke: 'rgba(251,146,60,0.9)'},
   /** Hexes an arrow flies over. */
   lane: {fill: 'rgba(253,224,71,0.14)', stroke: 'rgba(253,224,71,0.35)'},
