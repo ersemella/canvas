@@ -65,6 +65,8 @@ export interface HailEffect {
   kind: 'hail';
   hex: Hex;
   untilSlot: number;
+  /** Damage per hit, already scaled by the caster's power; defence still applies. */
+  damage: number;
   slowed: number;
   vulnerable: number;
   statusSlots: number;

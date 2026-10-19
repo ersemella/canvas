@@ -7,7 +7,7 @@ import {hexDirectionTo, hexDistance, hexEquals, hexNeighbor, hexNeighbors, hexes
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES, RULES} from './config';
 import {addStatus, cleanse, hostile, isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
-import {enterHex, displace, heal, hit, log, scaled, unitName} from './resolve';
+import {applyHail, enterHex, displace, heal, hit, log, scaled, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -174,7 +174,7 @@ const clearStorm: AbilityDef = {
 const hail: AbilityDef = {
   id: 'hail',
   name: 'Hail',
-  summary: `A hex within ${ABILITY.hail.range} becomes hail for ${ABILITY.hail.hexSlots} slots: Slowed ${ABILITY.hail.slowed}, Vulnerable ${ABILITY.hail.vulnerable}%.`,
+  summary: `A hex within ${ABILITY.hail.range} becomes hail for ${ABILITY.hail.hexSlots} slots: whoever is struck there takes damage, then is Slowed ${ABILITY.hail.slowed}, Vulnerable ${ABILITY.hail.vulnerable}%.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.hail.cost,
@@ -188,17 +188,14 @@ const hail: AbilityDef = {
       kind: 'hail',
       hex: h,
       untilSlot: ctx.slot + ABILITY.hail.hexSlots,
+      damage: scaled(ABILITY.hail.damage, user.power),
       slowed: ABILITY.hail.slowed,
       vulnerable: ABILITY.hail.vulnerable,
       statusSlots: ABILITY.hail.statusSlots,
     });
     log(ctx, `${unitName(user)} calls down hail.`);
     const u = unitAt(ctx.state, h);
-    if (u) {
-      const untilSlot = ctx.slot + ABILITY.hail.statusSlots;
-      addStatus(u, {kind: 'slowed', value: ABILITY.hail.slowed, untilSlot});
-      addStatus(u, {kind: 'vulnerable', value: ABILITY.hail.vulnerable, untilSlot});
-    }
+    if (u) applyHail(ctx, u);
   },
 };
 

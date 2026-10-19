@@ -8,7 +8,7 @@ import {RULES, HEROES} from './config';
 import {addStatus, onMap, unitAt, vulnerablePercent} from './board';
 import {tileAt} from './map';
 import type {MapData} from './map';
-import type {FightState, Unit} from './types';
+import type {FightState, HailEffect, Unit} from './types';
 
 export interface Ctx {
   state: FightState;
@@ -46,9 +46,20 @@ export function abilityDamage(
 ): number {
   let d = scaled(base, attacker.power);
   if (ranged && target.hex && tileAt(map, target.hex) === 'conceal') d = Math.floor(d * (1 - RULES.concealReduction));
-  d = Math.floor(d * (1 + vulnerablePercent(state, target) / 100));
+  return throughDefence(state, target, d);
+}
+
+/** Vulnerable, then defence, then the minimum: the end of every ability's hit. */
+function throughDefence(state: FightState, target: Unit, damage: number): number {
+  let d = Math.floor(damage * (1 + vulnerablePercent(state, target) / 100));
   d = Math.floor((d * RULES.defenceConstant) / (target.defence + RULES.defenceConstant));
   return Math.max(RULES.minimumDamage, d);
+}
+
+/** What a hail hex deals its occupant: the scaled damage it was cast with, through Vulnerable and defence. */
+export function hailDamage(state: FightState, target: Unit, hail: HailEffect): number {
+  // Hail saved in a fight from before hail dealt damage has no `damage`.
+  return throughDefence(state, target, hail.damage ?? 0);
 }
 
 /** Hazard and collision damage: skip defence, still take Vulnerable. */
@@ -91,11 +102,14 @@ export function checkEnd(state: FightState): void {
   else if (!state.units.some((u) => u.alive && u.side === 'player')) state.phase = 'lost';
 }
 
-/** Hail on a hex applies its statuses to whoever is there. */
+/** Hail on a hex hits whoever is there, then applies its statuses (so its own Vulnerable waits for the next hit). */
 export function applyHail(ctx: Ctx, unit: Unit): void {
   if (!unit.alive || !unit.hex) return;
   const hail = ctx.state.effects.find((e) => hexEquals(e.hex, unit.hex!));
   if (!hail) return;
+  const d = hailDamage(ctx.state, unit, hail);
+  applyDamage(ctx, unit, d, `Hail strikes ${unitName(unit)} for ${d}`);
+  if (!unit.alive) return;
   const untilSlot = ctx.slot + hail.statusSlots;
   addStatus(unit, {kind: 'slowed', value: hail.slowed, untilSlot});
   addStatus(unit, {kind: 'vulnerable', value: hail.vulnerable, untilSlot});

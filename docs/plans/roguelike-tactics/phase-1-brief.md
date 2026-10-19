@@ -147,7 +147,7 @@ reading of the owner's one-line descriptions; the owner can change them
 | Ability | Rule |
 |---|---|
 | **Clear the Storm** | Every **unit** within radius TBD of the caster, the caster and **enemies included** (6.7, 2026-10-19), is **healed** (base heal TBD, scaled by power) and **cleansed**. Cleansing an enemy removes the party's own control from it, so the Storm Caller steps clear of enemies first. Typical cost. |
-| **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it is **Slowed TBD** and **Vulnerable TBD%** for TBD slots. Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justifies). Typical cost. |
+| **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it takes **base damage 50** (owner, 2026-10-19; scaled by the caster's power when cast, then Vulnerable and defence as any hit), then is **Slowed TBD** and **Vulnerable TBD%** for TBD slots. Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justified; it now deals damage, so whether it stays uncharged is open). Typical cost. |
 | **Gale** | Melee: **Displace 1** away and **Slowed TBD** for TBD slots. An Immobilized target is slowed but not moved. Typical cost. |
 | **Freeze** (ultimate) | A **charged** area with a **casting time** (owner's call, 2026-10-18): targets any hex within maximum range TBD, no line of fire needed. When the charge triggers, every unit in the area (radius TBD), allies included, is **Immobilized** and **Vulnerable TBD%** for TBD slots. Charge and recovery costs TBD (3.7); like any charge, it shows on the track and can be answered by stepping out, pushing, killing or dazing the caster. |
 
@@ -309,13 +309,11 @@ confirm or change:
   that stalled: damage up (Bökh Champions pinned each other forever,
   since the AI's status weights outscored their small damage) and Clear
   the Storm's heal down (a Storm Caller out-healed a Champion).
-- **Open: a fight can stall.** A fight ends only by elimination, and the
-  Storm Caller has no damaging ability, so when Storm Callers are all one
-  side (or both sides) has left, nothing can finish it: in AI-vs-AI fights
-  from random deployments, about 1 in 20 stalled this way. Options for the
-  owner: a fight limit (the track reaching some slot), damage on Gale or
-  hail, or a surrender rule. Until then the page has **Abandon run**
-  (counts as a defeat, D3).
+- **A fight could stall** while the Storm Caller had no damaging ability:
+  about 1 in 20 AI-vs-AI fights from random deployments went on forever.
+  Hail now deals damage (owner, 2026-10-19), and none of 1,000 such fights
+  stalled (58 before). Nothing guarantees an end, so **Abandon run**
+  (counts as a defeat, D3) stays.
 - **AI additions** (section 6): a small pull toward the nearest enemy
   (`AI.perHexFromEnemy`), or an AI with nothing in reach holds forever;
   ending a move on quicksand counts its next-turn damage against the

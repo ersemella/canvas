@@ -279,6 +279,17 @@ describe('abilities', () => {
     expect(movementCap(unit(s, 'e-bokh'))).toBe(RULES.movementCap - ABILITY.hail.slowed);
     expect(s.effects).toHaveLength(1);
   });
+
+  it('hail strikes whoever stands on it, before its own Vulnerable', () => {
+    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 1), 'e-mangudai': at(8, 6)});
+    const bokh = unit(s, 'e-bokh');
+    const hp = bokh.hp;
+    const scaledHail = Math.floor(ABILITY.hail.damage * (1 + unit(s, 'p-storm').power / 50));
+    const expected = Math.floor((scaledHail * RULES.defenceConstant) / (bokh.defence + RULES.defenceConstant));
+    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'hail', target: {hex: at(3, 1)}}});
+    expect(expected).toBeGreaterThan(1);
+    expect(unit(s, 'e-bokh').hp).toBe(hp - expected);
+  });
 });
 
 describe('previews, the AI and the run', () => {

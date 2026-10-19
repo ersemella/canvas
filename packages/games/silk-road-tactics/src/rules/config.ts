@@ -101,7 +101,7 @@ export const ABILITY = {
   dash: {cost: RULES.cost.quick, distance: 3},
   volley: {range: 5, radius: 1, damage: 135, chargeCost: 40, recoveryCost: RULES.cost.typical},
   clearStorm: {cost: RULES.cost.typical, radius: 1, heal: 25},
-  hail: {cost: RULES.cost.typical, range: 4, hexSlots: 20, slowed: 2, vulnerable: 25, statusSlots: 10},
+  hail: {cost: RULES.cost.typical, range: 4, damage: 50, hexSlots: 20, slowed: 2, vulnerable: 25, statusSlots: 10},
   gale: {cost: RULES.cost.typical, displace: 1, slowed: 1, slowedSlots: 10},
   freeze: {range: 4, radius: 1, immobilizedSlots: 15, vulnerable: 25, chargeCost: 40, recoveryCost: RULES.cost.typical},
   throw: {cost: RULES.cost.typical, damage: 80},

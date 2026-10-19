@@ -4,12 +4,12 @@
  * previews; the best score wins, ties to the first in a fixed order
  * (shorter moves first, then hex index). No randomness.
  */
-import {hexDistance, hexKey} from '@canvas/engine/server';
+import {hexDistance, hexEquals, hexKey} from '@canvas/engine/server';
 import {ABILITY, AI, RULES} from './config';
 import {hostile, isFlanked, reachableHexes, statusSlotsLeft, statusValue} from './board';
 import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
 import {RuleError, applyTurn, cloneFight, mapOf} from './fight';
-import {enterHex, rawDamage} from './resolve';
+import {enterHex, hailDamage, rawDamage} from './resolve';
 import {tileAt} from './map';
 import type {AbilityDef} from './abilities';
 import type {FightState, TurnInput, Unit} from './types';
@@ -68,6 +68,9 @@ export function scoreOutcome(before: FightState, after: FightState, actor: Unit,
   if (me.alive && me.hex && tileAt(mapOf(after), me.hex) === 'hazard') {
     score -= rawDamage(after, me, RULES.hazardDamage) * AI.friendlyDamageFactor;
   }
+  // So does ending on hail.
+  const hail = me.alive && me.hex ? after.effects.find((e) => hexEquals(e.hex, me.hex!)) : undefined;
+  if (hail) score -= hailDamage(after, me, hail) * AI.friendlyDamageFactor;
   if (me.hex) {
     const gaps = after.units.filter((u) => u.alive && u.hex && hostile(u, me)).map((u) => hexDistance(u.hex!, me.hex!));
     if (gaps.length > 0) score -= Math.min(...gaps) * AI.perHexFromEnemy;

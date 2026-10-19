@@ -11,14 +11,15 @@ belongs to, as the README says, and remove it here.
 
 ## Issues
 
-### 1. Some fights can never end (needs a decision)
+### 1. Some fights could never end (eased; watch)
 
-A fight ends only when one side is eliminated. The Yadachy Storm Caller
-has no damaging ability, so once the side that could still win can't
-out-damage the healing (typically a Storm Caller, alone or beside a
-Champion, against a Storm Caller), turns go on forever: one side calls
-hail, the other clears the storm. In AI-vs-AI fights from random
-deployments, about 1 in 20 stalled this way. A player can hit it too.
+A fight ends only when one side is eliminated. While the Yadachy Storm
+Caller had no damaging ability, about 1 in 20 AI-vs-AI fights from random
+deployments went on forever: one side called hail, the other cleared the
+storm. Hail now deals base damage 50 (owner, 2026-10-19), 39 a hit on a
+Yadachy against Clear the Storm's 37 heal, and none of 1,000 such fights
+stalled (58 before). Nothing guarantees an end yet; a lower heal or one
+of the options below would.
 
 **Today:** the page's **Abandon run** button ends it as a defeat (D3).
 
@@ -59,7 +60,10 @@ it only needs doing.
 
 ### 1. How a stalled fight ends
 
-See issue 1. Blocks a fair fight against the AI, not the build.
+See issue 1. Hail's damage ended the stalls seen in testing; a guaranteed
+end (a fight limit, a lower heal) is still yours to decide. Hail now
+deals damage but isn't charged, against rule 30 (arcing attacks are
+charged): keep it uncharged, or make it charged?
 
 ### 2. The prototype heroes' numbers
 
@@ -77,7 +81,7 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Dash | 3 hexes, quick (60) |
 | Volley (ultimate) | range 5, radius 1, **damage 135 (owner, 2026-10-19)**, charge 40, recovery 100 |
 | Clear the Storm | radius 1 (was 2 until it reached enemies, 2026-10-19), heal 25 |
-| Hail | range 4, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
+| Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
 | Gale | Displace 1, Slowed 1 for 10 slots, no damage |
 | Freeze (ultimate) | range 4, radius 1, Immobilized and Vulnerable 25% for 15 slots, charge 40, recovery 100 |
 | Throw | damage 80 |
