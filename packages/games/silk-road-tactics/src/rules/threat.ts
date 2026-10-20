@@ -152,12 +152,18 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         const from = board.get(id(fq, fr)) === 'conceal' || fogAt(state, {q: fq, r: fr});
         const d = from ? Math.floor(bow * (1 - RULES.obscuredReduction)) : bow;
         for (const [dq, dr] of AXIAL) {
+          // Halved once beyond the first Obscured hex it flies through.
+          let through = d;
           for (let i = 1; i <= ABILITY.bow.range; i++) {
-            const k = id(fq + dq * i, fr + dr * i);
+            const q = fq + dq * i;
+            const r = fr + dr * i;
+            const k = id(q, r);
             const tile = board.get(k);
             if (tile === undefined || tile === 'obstacle') break;
-            mark(hexes, k, 'ranged', d);
+            mark(hexes, k, 'ranged', through);
             if (occupied.has(k) && k !== id(e.hex.q, e.hex.r)) break;
+            if (through === d && (tile === 'conceal' || fogAt(state, {q, r})))
+              through = Math.floor(d * (1 - RULES.obscuredReduction));
           }
         }
       }

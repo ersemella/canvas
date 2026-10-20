@@ -33,7 +33,7 @@ of enemy ability options (D11); three prototype heroes; one enemy band and its A
 track UI.
 
 **Not in Phase 1:** consumables (9.6), gear rarity and
-gear choices (fixed starter gear only), milestone upgrades, recruitment, the route map, recovery,
+gear of any kind (owner, 2026-10-20: heroes use their base stats; the fixed starter armour was removed), milestone upgrades, recruitment, the route map, recovery,
 reinforcements, summons and other track entities (3.7, 3.8), Push and
 the push limit, pulls (3.5), the other keywords ([keywords.md](keywords.md)), passives, elite affixes,
 rival caravans. Each is a later phase's work. No Phase 1 hero pushes
@@ -48,7 +48,7 @@ fight's end ends the run.
 | Open question | Default for Phase 1 |
 |---|---|
 | 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement action **20 + 10 per hex**; starting cost **100**, a typical action (owner, 2026-10-19; was 50, which bunched all six cards into slots 3 to 8); `C` = **25** and `speedScale` = **5**: slots = cost × 5 ÷ (speed + 25) (owner, 2026-10-20, putting speed on the shared stat scale; was cost ÷ (speed + 6) with speeds 5 times smaller, the same placements). With speed 25, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
-| 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). On the shared stat scale, Low 10 / Medium 25 / High 40 (owner, 2026-10-20; was 1 to 10). Armour lowers speed (4.2): see gear, below. |
+| 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). On the shared stat scale, Low 10 / Medium 25 / High 40 (owner, 2026-10-20; was 1 to 10). No gear in Phase 1, so nothing lowers it (4.2's armour trade-off waits for gear). |
 | 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
 | 6. Charged abilities | Two in Phase 1, both ultimates: the Mangudai Outrider's Volley (arcing area) and the Storm Caller's Freeze (section 4). |
 | 39. Ultimate unlock | One value for every hero: usable after **3 completed turns** in the fight (10.10); once per fight. |
@@ -56,7 +56,7 @@ fight's end ends the run.
 | 28. Movement cap | **4 hexes** per movement action (owner, 2026-10-20; restored from 3 with separate movement). |
 | 9. Map | Offset rectangle, **8 columns × 9 rows** (owner, 2026-10-20; was 9 × 7, then briefly 7 × 7 and 8 × 8), pointy-top hexes, odd rows one hex wider. Drawn at hex size 42 on a 672 × 696 canvas beside the track panel. |
 | 10. Passing through units | Allies and enemies block ordinary walking. Movement abilities keep their own traversal rules (owner, 2026-10-20). |
-| 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so pin, hail and a flank don't stack. |
+| 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so Freeze and a flank don't stack (Pin and hail had Vulnerable too until 2026-10-20). |
 | 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering (passing through included), then **4 damage** every slot spent on it (both doubled, to **80** and **8**, owner, 2026-10-20, once defence applied), whoever's turn it is (owner, 2026-10-19; was 40 on entering and at the start of each of the unit's own turns). Both go through Vulnerable and **defence** (owner, 2026-10-19; they ignored defence until then). Conceal (sandstorm): its occupant is **Obscured**, as in fog: ranged hits on it, and by it, deal **50% less** (owner, 2026-10-20; only hits on it before); the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
 | 23. Defence | `defenceConstant` = **50** (owner, 2026-10-20, with defence on the shared stat scale; was 20 with every defence 2.5 times smaller, the same reductions); minimum **1** damage from any hit. |
 | 29. Line of fire along a hex border | **Blocked if either** hex on the border is occupied. |
@@ -73,8 +73,9 @@ a hundred, health in the hundreds, so percentage bonuses survive rounding.
 **Damage and effect formulas** (Phase 1 order; whether the general model
 uses damage buckets is open, [heroes-and-gear.md](heroes-and-gear.md)):
 - `damage = roundDown(base × (1 + power / 50))`, then 50% less if a
-  ranged attack on an Obscured target and 50% less if by an Obscured
-  attacker (sandstorm or fog, 17.6), then Vulnerable (a flank's or an
+  ranged attack on an Obscured target, 50% less if by an Obscured
+  attacker, and 50% less if an arrow flew through an Obscured hex
+  (sandstorm or fog, 17.6), then Vulnerable (a flank's or an
   ability's, by max), then the defence formula (9.1); minimum 1. Each step
   rounds down.
 - Hazard and collision damage skip the defence formula but still take
@@ -141,7 +142,7 @@ reading of the owner's one-line descriptions; the owner can change them
 
 | Ability | Rule |
 |---|---|
-| **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it stops at the **first unit** on that line or at an obstacle. That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
+| **Composite Bow** | Fires an arrow along one of the six hex directions, with **no range limit** (owner, 2026-10-20; range 5 before); it stops at the **first unit** on that line, an obstacle or the map's edge. Flying through an **Obscured** hex on the way halves it once more (owner, 2026-10-20), on top of the archer's or target's own. That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
 | **Dash** | Moves the Outrider **up to 3 hexes in a straight line** along one hex direction (owner, 2026-10-20; restored from 2 with separate movement). Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn’s action, so it cannot be combined with ordinary movement (2026-10-20). Not usable while Immobilized. Cost 40 (owner, 2026-10-20; was quick, 60, which cost more than walking the same hexes). |
 | **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage **200** (owner, 2026-10-20; 135 before), allies included. Charge and recovery costs TBD (3.7). |
 
@@ -149,8 +150,8 @@ reading of the owner's one-line descriptions; the owner can change them
 
 | Ability | Rule |
 |---|---|
-| **Sunlight** (Clear the Storm until 2026-10-19, owner) | **One unit** within range 4, the caster or an **enemy** included (6.7, 2026-10-19), is **healed** (base heal 50, scaled by power: owner, 2026-10-20) and **cleansed** (owner, 2026-10-20; it was every unit within a radius of the caster, which under separate movement took a turn of positioning first). Cleansing an enemy removes the party's own control from it. Typical cost. |
-| **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it takes **base damage 50** (owner, 2026-10-19; scaled by the caster's power when cast, then Vulnerable and defence as any hit), then is **Slowed TBD** and **Vulnerable TBD%** for TBD slots. Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justified; it now deals damage, so whether it stays uncharged is open). Typical cost. |
+| **Sunlight** (Clear the Storm until 2026-10-19, owner) | **One unit** within range 4, the caster or an **enemy** included (6.7, 2026-10-19), is **healed** (base heal 35, scaled by power: owner, 2026-10-20; 50 earlier that day) and **cleansed** (owner, 2026-10-20; it was every unit within a radius of the caster, which under separate movement took a turn of positioning first). Cleansing an enemy removes the party's own control from it. Quick cost, 60 (owner, 2026-10-20; typical before). |
+| **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it takes **base damage 50** (owner, 2026-10-19; scaled by the caster's power when cast, then Vulnerable and defence as any hit), then is **Slowed** for TBD slots (no Vulnerable since 2026-10-20, owner; Freeze and flanking keep it). Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justified; it now deals damage, so whether it stays uncharged is open). Typical cost. |
 | **Fog** (replaced Gale, owner, 2026-10-20) | Targets a hex within range **4** (no line of fire needed); it and every hex within **1** of it become **fog for 20 slots**, a temporary board effect. Units in fog are **Obscured** (17.6), as in a sandstorm: a **ranged** hit on one deals **50% less** (not on top of a sandstorm's), and so does a ranged hit **by** one; an archer in fog shooting into fog deals 75% less. Melee, hail and quicksand aren't affected; fog doesn't block line of fire. Hits any side. New fog replaces old fog on the same hex. Typical cost. |
 | **Freeze** (ultimate) | A **charged** area with a **casting time** (owner's call, 2026-10-18): targets any hex within maximum range TBD, no line of fire needed. When the charge triggers, every unit in the area (radius TBD), allies included, takes base damage **60** and is then **Immobilized** and **Vulnerable 50%** for 20 slots (owner, 2026-10-20: ultimates buffed; no damage, 25% for 15 before). Charge and recovery costs TBD (3.7); like any charge, it shows on the track and can be answered by stepping out, pushing, killing or dazing the caster. |
 
@@ -159,25 +160,24 @@ reading of the owner's one-line descriptions; the owner can change them
 | Ability | Rule |
 |---|---|
 | **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
-| **Pin** | Melee: the Champion **and** the target are **Immobilized** for TBD slots, and the target is **Vulnerable TBD%**, **Crushed** and **Taunted** by the Champion for the same (owner, 2026-10-19). Crushed: base **6** damage every slot (8 until 2026-10-20), scaled by the Champion's power, through Vulnerable and defence like quicksand. Taunted (17.5): while it can affect the Champion from any hex it can reach, its action must target the Champion or include it in its area, or be a Hold (owner, 2026-10-20), and a damaging charge is drawn onto the Champion if in range; it ends if the Champion dies. Sunlight's cleanse of the target removes them all (breaking the pin). Both still act. The pin **breaks** if the target is cleansed or the two are no longer adjacent (either displaced away), clearing **every status the Pin gave either unit** (owner, 2026-10-20). Cleansing the Champion doesn't break it: the Champion stays Immobilized. Typical cost. |
+| **Pin** | Melee: the Champion **and** the target are **Immobilized** for TBD slots, and the target is **Crushed** and **Taunted** by the Champion for the same (owner, 2026-10-19; it was also Vulnerable until 2026-10-20). Crushed: base **6** damage every slot (8 until 2026-10-20), scaled by the Champion's power, through Vulnerable and defence like quicksand. Taunted (17.5): while it can affect the Champion from any hex it can reach, its action must target the Champion or include it in its area, or be a Hold (owner, 2026-10-20), and a damaging charge is drawn onto the Champion if in range; it ends if the Champion dies. Sunlight's cleanse of the target removes them all (breaking the pin). Both still act. The pin **breaks** if the target is cleansed or the two are no longer adjacent (either displaced away), clearing **every status the Pin gave either unit** (owner, 2026-10-20). Cleansing the Champion doesn't break it: the Champion stays Immobilized. Typical cost. |
 | **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction and **completes the line**: only an **obstacle** or an **Unstoppable** unit in its path stops it early (owner's call, 2026-10-18), and the map edge ends it. Step by step, every unit in the path or adjacent to a hex the Champion enters is hit **once**: it takes base damage TBD and is **Displaced 1** away from the Champion's hex at that moment (several at once: farthest first, 17.4); collisions deal their usual damage. Allies take the damage too (6.7, 2026-10-19). *(Proposed:* a unit in the path that couldn't be displaced (a collision), or was displaced ahead, is passed through; if the last hex is occupied, the Champion ends on the last free hex it passed.) Not usable while Immobilized. Base damage 160, typical cost (owner, 2026-10-20: ultimates buffed; 100 and slow before). |
 
 **Interactions to know** (they follow from the keyword rules, not new
 rules): an Immobilized unit can still be displaced (owner's call,
 2026-10-19), so the Champion's flow is **Pin, then Throw**: the target
-lands where the Champion chooses, still Immobilized and Vulnerable, and
+lands where the Champion chooses, still Immobilized, and
 can't walk back; it lands beside the Champion, so the Champion stays held too. Frozen units can likewise be thrown, blown back or
 rampaged through. A pinning Champion can't Rampage. Throw onto
 quicksand (a held unit then stays in it), and Freeze triggering before Volley lands (frozen
 units can't step out of the area), are the obvious combinations; the
-two charges' timing on the track is what makes the second one work. Hail's and Pin's Vulnerable don't stack with each other or
-a flank (max, section 2).
+two charges' timing on the track is what makes the second one work. Freeze's Vulnerable doesn't stack with a
+flank's (max, section 2).
 
-**Starter gear** (fixed in Phase 1; the four-slot model of 9.3 exists in
-code, but only armour is filled): the Bökh Champion and Yadachy Storm
-Caller wear medium armour (more defence, some speed cost); the Mangudai
-Outrider wears light armour (a little defence, no speed cost). Values are
-set with the stat numbers.
+**No gear in Phase 1** (owner, 2026-10-20): heroes fight with their base
+stats only. Starter armour (medium on the Bökh Champion and Yadachy Storm
+Caller, light on the Mangudai Outrider) was removed so the numbers on the
+stat sheet are the hero's own; gear arrives with the route map (Phase 2).
 
 ## 5. The enemy band
 
