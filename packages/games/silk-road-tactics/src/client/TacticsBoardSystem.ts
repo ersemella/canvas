@@ -124,6 +124,32 @@ const MARK = {r: 6.5, step: 15};
 /** How far above the hex's centre the markers' row is centred. */
 const MARKS_Y = HEALTH_BAR.y + HEALTH_BAR.h + 5 + MARK.r;
 
+/**
+ * Where a looked-at unit's health bar and status markers go: above it,
+ * markers on top, or, when the track would cover that (the top row),
+ * below its feet with the markers under the bar. `top` and `bottom` bound
+ * the lot, so the tooltip can keep clear of it.
+ */
+function healthStack(
+  hex: Hex,
+  marks: number
+): {barY: number; marksY: number; top: number; bottom: number} {
+  const c = center(hex);
+  const barY = c.y - HEALTH_BAR.y - HEALTH_BAR.h;
+  const marksY = c.y - MARKS_Y;
+  const top = (marks > 0 ? marksY - MARK.r : barY) - 2;
+  if (top >= TRACK_AREA.y + TRACK_AREA.height + 2)
+    return {barY, marksY, top, bottom: c.y - HEALTH_BAR.y + 2};
+  const below = c.y + SPRITE_FEET + 6;
+  const belowMarks = below + HEALTH_BAR.h + 5 + MARK.r;
+  return {
+    barY: below,
+    marksY: belowMarks,
+    top: below - 2,
+    bottom: (marks > 0 ? belowMarks + MARK.r : below + HEALTH_BAR.h) + 2,
+  };
+}
+
 /** The hovered hex's outline. */
 const HOVER: HighlightStyle = {fill: 'rgba(255,255,255,0.08)', stroke: '#ffffff'};
 
@@ -276,8 +302,10 @@ export class TacticsBoardSystem extends BaseSystem {
       if (!u.alive || !hex || !looked.has(u.id)) continue;
       const p = previewed.get(u.id);
       const at = p?.to && !p.killed ? p.to : hex;
-      drawHealthBar(ctx, u, at, p?.hpBefore ?? u.hp, p?.hpAfter);
-      drawStatusMarks(ctx, statusMarks(fight, u), at);
+      const marks = statusMarks(fight, u);
+      const stack = healthStack(at, marks.length);
+      drawHealthBar(ctx, u, at, stack.barY, p?.hpBefore ?? u.hp, p?.hpAfter);
+      drawStatusMarks(ctx, marks, at, stack.marksY);
     }
 
     const badgesAt = new Map<string, number>();
@@ -638,14 +666,13 @@ function drawHover(
   const boxH = lines.length * lh + 8;
   const c = center(h);
   const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, c.x - w / 2));
-  // Above the hex (and a unit's health bar and statuses), or below it when that would cover the track.
-  const clear = !unit
-    ? 36 * HEX_SCALE
-    : statusMarks(fight, unit).length > 0
-      ? MARKS_Y + MARK.r + 3
-      : HEALTH_BAR.y + HEALTH_BAR.h + 4;
-  const above = c.y - clear - boxH;
-  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? c.y + 36 * HEX_SCALE : above;
+  // Above the hex (and a unit's health bar and statuses), or below it (and
+  // them, when they're below too) when that would cover the track.
+  const stack = unit && healthStack(h, statusMarks(fight, unit).length);
+  const aboveStack = stack && stack.top < c.y ? stack.top : c.y - 36 * HEX_SCALE;
+  const above = aboveStack - 2 - boxH;
+  const belowStack = stack && stack.bottom > c.y ? stack.bottom + 2 : c.y + 36 * HEX_SCALE;
+  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? belowStack : above;
   roundRect(ctx, bx, by, w, boxH, 5);
   ctx.fillStyle = 'rgba(17,24,39,0.94)';
   ctx.fill();
@@ -997,10 +1024,14 @@ function statusMarks(fight: FightState, u: Unit): [string, string][] {
   return marks;
 }
 
-/** A looked-at unit's status markers, in a centred row above its health bar. */
-function drawStatusMarks(ctx: CanvasRenderingContext2D, marks: [string, string][], hex: Hex): void {
+/** A looked-at unit's status markers, in a centred row at `y` (see `healthStack`). */
+function drawStatusMarks(
+  ctx: CanvasRenderingContext2D,
+  marks: [string, string][],
+  hex: Hex,
+  y: number
+): void {
   const c = center(hex);
-  const y = c.y - MARKS_Y;
   marks.forEach(([m, color], i) => {
     const x = c.x + (i - (marks.length - 1) / 2) * MARK.step;
     ctx.save();
@@ -1025,8 +1056,8 @@ function unitAt(fight: FightState, h: Hex, positions?: Record<string, Hex>): Uni
 }
 
 /**
- * A looked-at unit's health, floating above its sprite, under its status markers;
- * just the bar (the numbers are in the page's details). A previewed change
+ * A looked-at unit's health, floating over (or under) its sprite at `y`
+ * (see `healthStack`); just the bar (the numbers are in the page's details). A previewed change
  * shows the health it would lose as a pale stretch past the bar's end (or
  * gain, in green).
  */
@@ -1034,13 +1065,13 @@ function drawHealthBar(
   ctx: CanvasRenderingContext2D,
   u: Unit,
   hex: Hex,
+  y: number,
   hp: number,
   hpAfter?: number
 ): void {
   const c = center(hex);
   const {w, h} = HEALTH_BAR;
   const x = c.x - w / 2;
-  const y = c.y - HEALTH_BAR.y - h;
   const after = hpAfter ?? hp;
   const frac = (n: number) => Math.min(1, Math.max(0, n / u.maxHp));
   ctx.save();
