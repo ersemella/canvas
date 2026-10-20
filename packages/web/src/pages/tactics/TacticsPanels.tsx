@@ -322,17 +322,18 @@ export function StatSheet({
 
 /**
  * One ability on the stat sheet: its name and cost, in this unit's slots
- * (the action alone, before any move or yielding), its range and how long
- * it lasts, then what it does. An
- * ultimate also shows how far it is from being ready.
+ * (the action alone, before any move or yielding) and how long it lasts,
+ * then what it does. An ultimate also shows how far it is from being ready.
  */
 function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
-  const cost = def.charged
+  const slots = def.charged
     ? `Charge +${slotsForward(def.cost, unit.speed)} · Recovery +${slotsForward(def.recoveryCost!, unit.speed)}`
     : `Action +${slotsForward(def.cost, unit.speed)}`;
+  const cost = def.duration === undefined ? slots : `Lasts ${def.duration} slots · ${slots}`;
   return (
     <div>
-      <Group justify="space-between" gap={6} wrap="nowrap">
+      {/* The cost drops under the name when they don't fit side by side. */}
+      <Group justify="space-between" gap={6}>
         <Group gap={6} wrap="nowrap">
           <Text fz="xs" fw={600} c="gray.3">
             {def.name}
@@ -352,16 +353,6 @@ function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?:
           {cost}
         </Text>
       </Group>
-      {(def.range !== undefined || def.duration !== undefined) && (
-        <Text fz={11} c="gray.4">
-          {[
-            def.range !== undefined && `Range ${def.range}`,
-            def.duration !== undefined && `Lasts ${def.duration} slots`,
-          ]
-            .filter(Boolean)
-            .join(' · ')}
-        </Text>
-      )}
       <Text fz="xs" c="dimmed">
         {def.summary(unit)}
       </Text>
