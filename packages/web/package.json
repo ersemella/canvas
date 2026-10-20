@@ -17,6 +17,7 @@
     "@canvas/games-snake": "workspace:*",
     "@canvas/games-solitaire": "workspace:*",
     "@canvas/games-sudoku": "workspace:*",
+    "@fontsource/cinzel": "5.3.0",
     "@mantine/core": "^8.3.17",
     "@mantine/hooks": "^8.3.17",
     "@mantine/notifications": "^8.3.17",

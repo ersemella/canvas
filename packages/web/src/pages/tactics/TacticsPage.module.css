@@ -26,11 +26,10 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(17, 24, 39, 0.92);
 }
 
 .preview {
-  border-top: 1px solid var(--mantine-color-dark-4);
+  border-top: 1px solid var(--srt-brass-dim);
   padding-top: 6px;
 }
 
@@ -57,15 +56,16 @@
   flex-direction: column;
   align-items: center;
   padding: 4px 0;
-  border-radius: 6px;
-  background: var(--mantine-color-dark-6);
+  border: 1px solid rgba(212, 169, 78, 0.28);
+  border-radius: 3px;
+  background: rgba(18, 12, 7, 0.65);
 }
 
 .coreStats > div > :first-child {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--mantine-color-dimmed);
+  color: var(--srt-parchment-dim);
 }
 
 .coreStats b {
@@ -149,9 +149,9 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 4px;
-  border-radius: 10px;
-  background: rgba(17, 24, 39, 0.94);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(18, 12, 7, 0.96);
+  border: 1px solid var(--srt-brass-dim);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
   cursor: pointer;
 }
@@ -215,8 +215,10 @@
   gap: 6px;
   margin-top: 6px;
   padding: 6px 8px;
-  border-radius: 6px;
-  background: var(--mantine-color-dark-5);
+  border: 1px solid var(--srt-brass-dim);
+  border-left: 3px solid var(--srt-brass);
+  border-radius: 3px;
+  background: var(--srt-ink);
   box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.4);
 }
 
@@ -226,7 +228,7 @@
   flex-wrap: wrap;
   gap: 2px 12px;
   font-size: 12px;
-  color: var(--mantine-color-gray-4);
+  color: var(--srt-parchment-dim);
 }
 
 .statuses {
@@ -249,32 +251,191 @@
   all: unset;
   cursor: pointer;
   padding: 3px 9px;
-  border-radius: 999px;
+  border: 1px solid var(--srt-brass-dim);
+  border-radius: 3px;
+  font-family: var(--srt-display);
   font-size: 13px;
-  font-weight: 600;
-  color: var(--mantine-color-gray-2);
-  background: var(--mantine-color-dark-5);
+  font-weight: 700;
+  color: var(--srt-parchment);
+  background: rgba(18, 12, 7, 0.65);
 }
 .abilityChipUltimate {
-  color: var(--mantine-color-grape-2);
-  background: rgba(190, 75, 219, 0.22);
+  color: var(--srt-tyrian-text);
+  border-color: var(--srt-tyrian-edge);
+  background: rgba(110, 42, 99, 0.35);
 }
 .abilityChip[aria-pressed='true'] {
   outline: 1px solid currentColor;
 }
 .abilityChipNote {
   margin-left: 6px;
+  font-family: var(--mantine-font-family);
   font-size: 11px;
   font-weight: 500;
   opacity: 0.75;
 }
 .abilitySummary {
-  color: var(--mantine-color-gray-4);
+  color: var(--srt-parchment-dim);
 }
 
 /* A keyword from an ability's text, explained under it. */
 .nestedRule {
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px solid var(--mantine-color-dark-3);
+  border-top: 1px solid var(--srt-brass-dim);
+}
+
+/*
+ * The caravan's look (art-direction.md): the panels as tooled leather with
+ * brass studs, the buttons as brass-edged tiles, names in an inscription
+ * face, a woven band over the actions. Only surfaces, borders and type
+ * change: every label, layout and state reads as before.
+ */
+.page,
+.menu {
+  --srt-ink: #120c07;
+  --srt-leather: #2b1d12;
+  --srt-leather-hi: #3b2817;
+  --srt-brass: #d4a94e;
+  --srt-brass-dim: #7d6130;
+  --srt-parchment: #f1e4c6;
+  --srt-parchment-dim: #bba985;
+  --srt-lapis: #24508f;
+  --srt-lapis-hi: #3768b4;
+  --srt-lapis-text: #a9c6f5;
+  --srt-carmine-text: #f3a08f;
+  --srt-saffron: #e39a1f;
+  --srt-saffron-hi: #f7c75a;
+  --srt-tyrian: #6e2a63;
+  --srt-tyrian-edge: #a65597;
+  --srt-tyrian-text: #ecb6df;
+  --srt-display: 'Cinzel', Georgia, serif;
+  /* Mantine's text and dimmed text, warmed to the leather. */
+  --mantine-color-text: var(--srt-parchment);
+  --mantine-color-dimmed: var(--srt-parchment-dim);
+}
+
+/* Names and headings: an inscription face. */
+.display {
+  font-family: var(--srt-display);
+  letter-spacing: 0.02em;
+}
+
+/* A panel: leather, a fine inner brass rule and a stud in each corner. */
+.plaque.plaque {
+  color: var(--srt-parchment);
+  border: 1px solid var(--srt-brass-dim);
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 0 1px var(--srt-ink),
+    inset 0 0 0 2px rgba(212, 169, 78, 0.22);
+  background:
+    linear-gradient(var(--srt-brass), var(--srt-brass)) left 4px top 4px / 3px 3px no-repeat,
+    linear-gradient(var(--srt-brass), var(--srt-brass)) right 4px top 4px / 3px 3px no-repeat,
+    linear-gradient(var(--srt-brass), var(--srt-brass)) left 4px bottom 4px / 3px 3px no-repeat,
+    linear-gradient(var(--srt-brass), var(--srt-brass)) right 4px bottom 4px / 3px 3px no-repeat,
+    linear-gradient(180deg, var(--srt-leather-hi), var(--srt-leather) 45%, #20150c);
+}
+
+/* A woven band, like a carpet's edge, over the action section. */
+.band::before {
+  content: '';
+  display: block;
+  height: 6px;
+  margin-bottom: 10px;
+  background:
+    linear-gradient(135deg, var(--srt-ink) 25%, transparent 25%) -3px 0 / 6px 6px,
+    linear-gradient(225deg, var(--srt-ink) 25%, transparent 25%) -3px 0 / 6px 6px,
+    linear-gradient(90deg, var(--srt-brass-dim), #8e3a2a 50%, var(--srt-brass-dim));
+  border-top: 1px solid var(--srt-brass-dim);
+  border-bottom: 1px solid var(--srt-brass-dim);
+  opacity: 0.85;
+}
+
+/* Move and the abilities: brass-edged tiles; the picked one inlaid in lapis. */
+.tile.tile {
+  color: var(--srt-parchment);
+  border: 1px solid var(--srt-brass-dim);
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--srt-leather-hi), #23170d);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 180, 0.12),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.45);
+}
+.tile.tile:hover:not(:disabled) {
+  border-color: var(--srt-brass);
+  background: linear-gradient(180deg, #47311c, #2a1c10);
+}
+.tile.tile[aria-pressed='true'] {
+  color: #fff;
+  border-color: var(--srt-brass);
+  background: linear-gradient(180deg, var(--srt-lapis-hi), var(--srt-lapis));
+  box-shadow:
+    0 0 0 1px var(--srt-brass),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.tile.tileUltimate {
+  color: var(--srt-tyrian-text);
+  border-color: var(--srt-tyrian-edge);
+}
+.tile.tileUltimate[aria-pressed='true'] {
+  color: #fff;
+  border-color: var(--srt-tyrian-text);
+  background: linear-gradient(180deg, #8c3a7e, var(--srt-tyrian));
+  box-shadow: 0 0 0 1px var(--srt-tyrian-text);
+}
+.tile.tile:disabled {
+  color: rgba(241, 228, 198, 0.5);
+  border-color: #4a3822;
+  background: #19110a;
+  box-shadow: none;
+}
+/* The name in the inscription face; numbers (a charge, the cost) stay plain, to scan. */
+.tileName {
+  font-family: var(--srt-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.tileNote {
+  white-space: pre;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Confirm: a saffron seal; while it waits for a target, an outline asking for one. Its slots stay in the plain face. */
+.seal.seal {
+  color: var(--srt-ink);
+  border: 1px solid var(--srt-saffron-hi);
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--srt-saffron-hi), var(--srt-saffron));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 0 rgba(120, 60, 0, 0.45);
+}
+.seal.seal:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fbd57a, #eba630);
+}
+.seal.seal:disabled {
+  color: var(--srt-parchment-dim);
+  border: 1px dashed var(--srt-brass-dim);
+  background: rgba(43, 29, 18, 0.6);
+  box-shadow: none;
+}
+
+/* The run's ⋯ and its menu. */
+.menuButton.menuButton {
+  color: var(--srt-brass);
+}
+.menu.menu {
+  color: var(--srt-parchment);
+  border: 1px solid var(--srt-brass-dim);
+  border-radius: 3px;
+  background: var(--srt-leather);
+}
+.menu :global(.mantine-Menu-item[data-hovered]) {
+  background: var(--srt-leather-hi);
+}
+.menu :global(.mantine-Menu-arrow) {
+  border-color: var(--srt-brass-dim);
+  background: var(--srt-leather);
 }

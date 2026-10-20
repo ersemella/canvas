@@ -77,6 +77,18 @@ Into the Breach shows enemy targets in advance; this game hides intent
 (D11), so the track ([timeline.md](timeline.md)) carries that load. Its
 cards use each unit's **portrait**.
 
+## Panels (built 2026-10-20)
+
+The page's HTML panels (the action section, stat sheets, tooltips, the
+result) follow the setting without changing layout, labels or states:
+tooled-leather plaques with a fine brass rule and corner studs, Move and
+the abilities as brass-edged tiles (the picked one inlaid in lapis, an
+ultimate in Tyrian purple), Confirm as a saffron seal, a woven band over
+the actions, and names in Cinzel. Numbers (costs, charge, stats) stay in
+the plain face, since Cinzel's figures are small and slow to scan. The
+tokens are `--srt-*` in `TacticsPage.module.css`. The track is drawn on
+the canvas and keeps its own colours.
+
 ## Engine work (built 2026-10-19)
 
 - **Sprites.** A `sprite` render type: a sprite-sheet image, frame size,
