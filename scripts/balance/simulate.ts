@@ -60,7 +60,8 @@ export function runBalance(options: Options) {
     const start = performance.now();
     for (let sample = 0; sample < deployments.length; sample++) {
       for (const priority of ['player', 'enemy'] as const) {
-        const state = createFight(0);
+        // The sample's own ruins and quicksand, the same in every variant.
+        const state = createFight(sample);
         state.experiment = {
           blockAllUnits: variant.blockAllUnits,
           separateMovement: variant.separateMovement,

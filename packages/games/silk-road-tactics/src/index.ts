@@ -9,15 +9,10 @@ import type {EntityData, GameDefinition, GameManifest} from '@canvas/engine';
 import manifest from '../game.json';
 import {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem} from './client/TacticsBoardSystem';
 import {TacticsInputSystem} from './client/TacticsInputSystem';
-import {SALT_FLATS, tileAt} from './rules/map';
-import type {Tile} from './rules/map';
+import {SALT_FLATS} from './rules/map';
 
-const TILE_COLOR: Record<Tile, string> = {
-  sand: '#d4b483',
-  obstacle: '#8a7864',
-  hazard: '#a8834a',
-  conceal: '#bfb6a3',
-};
+/** Under the board system's tile art; plain sand, since each fight has its own ruins. */
+const SAND = '#d4b483';
 
 /** The board: a HexGrid entity and one hex entity per tile of the map. */
 function boardEntities(): EntityData[] {
@@ -44,7 +39,7 @@ function boardEntities(): EntityData[] {
         Renderable: {
           renderType: 'hex' as const,
           radius: BOARD_LAYOUT.size - 0.5,
-          color: TILE_COLOR[tileAt(map, h)],
+          color: SAND,
           borderColor: '#8c7350',
           borderWidth: 1,
           zIndex: 0,

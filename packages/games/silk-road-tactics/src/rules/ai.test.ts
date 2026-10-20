@@ -13,6 +13,8 @@ const unit = (s: FightState, id: string) => s.units.find((u) => u.id === id)!;
 const stats = (): SearchStats => ({completedDepth: 0, cutoffs: 0, work: 0});
 function setup(placements: Record<string, Hex>): FightState {
   const s = createFight(0);
+  // The fixed layout, which these tests place units around.
+  delete s.tiles;
   s.phase = 'fight';
   for (const u of s.units) {
     u.alive = u.id in placements;

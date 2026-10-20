@@ -13,7 +13,8 @@ import {fogAt, isFlanked, statusValue} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
 import {fogInfo, hailInfo, TILE_INFO} from '../rules/info';
-import {MAPS, tileAt, type Tile} from '../rules/map';
+import {tileAt, type Tile} from '../rules/map';
+import {mapOf} from '../rules/fight';
 import type {AbilityId, FightState, StatusKind, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
 import type {TrackCard, TrackSlots} from './layout';
@@ -344,7 +345,7 @@ export class TacticsBoardSystem extends BaseSystem {
       slide.elapsed += deltaTime;
       if (slide.elapsed >= CARD_SLIDE_SECONDS) this.slides.delete(id);
     }
-    const map = MAPS[fight.mapId]!;
+    const map = mapOf(fight);
     // The board's weather moves with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
     for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), t);
@@ -783,7 +784,7 @@ function drawYield(
 
 /** The hovered hex's tooltip: its tile, hail and unit (the outline is drawn under the units). */
 function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): void {
-  const map = MAPS[fight.mapId]!;
+  const map = mapOf(fight);
   const lines: {text: string; color: string; bold?: boolean}[] = [];
   const unit = unitAt(fight, h);
   if (unit) {
@@ -1132,7 +1133,7 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
   if (!e) return;
   const k = play.progress;
   const fight = play.display;
-  const map = MAPS[fight.mapId]!;
+  const map = mapOf(fight);
   const u = fight.units.find((v) => v.id === e.unitId);
   if (!u) return;
   const titleY = (h: Hex) => center(h).y - (HEALTH_BAR.y + HEALTH_BAR.h + 12);
