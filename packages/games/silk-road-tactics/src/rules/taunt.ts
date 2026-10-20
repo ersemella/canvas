@@ -40,6 +40,7 @@ export function affectsHex(
     case 'pin':
       return near(target.hex, 0);
     case 'hail':
+    case 'sunlight':
       return near(target.hex, 0);
     case 'volley':
       return near(target.hex, ABILITY.volley.radius);
@@ -47,8 +48,6 @@ export function affectsHex(
       return near(target.hex, ABILITY.freeze.radius);
     case 'fog':
       return near(target.hex, ABILITY.fog.radius);
-    case 'sunlight':
-      return near(from, ABILITY.sunlight.radius);
     case 'rampage': {
       // In or beside a hex of the charge's path.
       const dir = hexDirectionTo(from, target.hex!)!;

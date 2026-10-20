@@ -233,19 +233,20 @@ const sunlight: AbilityDef = {
   id: 'sunlight',
   name: 'Sunlight',
   summary: (user) =>
-    `Heals ${scaled(ABILITY.sunlight.heal, user.power)} and cleanses every unit within ${ABILITY.sunlight.radius}, itself and enemies included.`,
+    `Heals ${scaled(ABILITY.sunlight.heal, user.power)} and cleanses one unit within ${ABILITY.sunlight.range}, itself or an enemy included.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.sunlight.cost,
   movesSelf: false,
-  targets: () => [{}],
-  resolve(ctx, user) {
-    log(ctx, `${unitName(user)} calls down sunlight.`);
-    for (const u of unitsInArea(ctx.state, user.hex!, ABILITY.sunlight.radius)) {
-      cleanse(u);
-      breakPins(ctx, u, true);
-      heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
-    }
+  targetsUnit: true,
+  targets: (state, map, _user, from) =>
+    hexesWithin(map, from, ABILITY.sunlight.range, (h) => unitAt(state, h) !== undefined),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} calls down sunlight on ${unitName(u)}.`);
+    cleanse(u);
+    breakPins(ctx, u, true);
+    heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
   },
 };
 

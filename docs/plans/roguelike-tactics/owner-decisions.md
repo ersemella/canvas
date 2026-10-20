@@ -100,7 +100,7 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Composite Bow | range 5, **damage 120 (owner, 2026-10-19: 2 hits kill a Mangudai, 4 a Yadachy)** |
 | Dash | **up to 3 hexes (owner, 2026-10-20; restored from 2 with separate movement)**, **cost 40 (owner, 2026-10-20; was quick, 60, more than walking 3 hexes)** |
 | Volley (ultimate) | range 5, radius 1, **damage 200 (owner, 2026-10-20; 135 from 2026-10-19)**, charge 40, recovery 100 |
-| Sunlight | radius 1 (was 2 until it reached enemies, 2026-10-19), **heal 40, 60 at its power (owner, 2026-10-19; was 25)** |
+| Sunlight | **one unit within 4 (owner, 2026-10-20; was everyone within 1 of the caster, 2 until 2026-10-19)**, **heal 40, 60 at its power (owner, 2026-10-19; was 25)** |
 | Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
 | Fog (replaced Gale, owner, 2026-10-20) | range 4, radius 1, 20 slots; ranged hits into or out of it deal 50% less |
 | Freeze (ultimate) | range 4, radius 1, **damage 60, then Immobilized and Vulnerable 50% for 20 slots (owner, 2026-10-20; was no damage, 25% for 15)**, charge 40, recovery 100 |
