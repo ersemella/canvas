@@ -35,7 +35,7 @@ import sandstormImage from './tiles/sandstorm.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
-export type HighlightKind = 'move' | 'path' | 'target' | 'chosen' | 'area' | 'lane' | 'inspect';
+export type HighlightKind = 'path' | 'target' | 'chosen' | 'area' | 'lane' | 'melee';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {
@@ -94,16 +94,15 @@ interface HighlightStyle {
   dash?: number[];
 }
 const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
-  move: {fill: 'rgba(255,255,255,0.18)', stroke: 'rgba(255,255,255,0.55)'},
   path: {fill: 'rgba(250,204,21,0.25)', stroke: 'rgba(250,204,21,0.8)'},
-  /** Hexes an ability can target: the inspect purple, outlined solid, so it never reads as the enemy's red tint. */
+  /** Hexes an ability can target: purple, outlined solid, so it never reads as the enemy's red tint. */
   target: {fill: 'rgba(192,132,252,0.18)', stroke: 'rgba(192,132,252,0.95)'},
   chosen: {fill: 'rgba(192,132,252,0.45)', stroke: '#fde047'},
   area: {fill: 'rgba(251,146,60,0.28)', stroke: 'rgba(251,146,60,0.9)'},
   /** Hexes an arrow flies over. */
   lane: {fill: 'rgba(253,224,71,0.14)', stroke: 'rgba(253,224,71,0.35)'},
-  /** Where an inspected unit could move. */
-  inspect: {fill: 'rgba(192,132,252,0.12)', stroke: 'rgba(192,132,252,0.75)', dash: [5, 3]},
+  /** The hexes a melee ability reaches, around its targets. */
+  melee: {fill: 'rgba(192,132,252,0.12)', stroke: 'rgba(192,132,252,0.75)', dash: [5, 3]},
 };
 
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */

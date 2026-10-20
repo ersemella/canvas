@@ -4,6 +4,7 @@ import {
   hexDistance,
   hexEquals,
   hexKey,
+  hexNeighbors,
   hexToPixel,
   hexesInRange,
   registerBuiltinComponents,
@@ -21,6 +22,7 @@ import {
   arrowLanes,
   chooseAiTurn,
   mapOf,
+  onMap,
   previewTurn,
   reachableHexes,
   slotsForward,
@@ -81,7 +83,10 @@ export function TacticsPage() {
   const [plannedMove, setPlannedMove] = useState<Reach | null>(null);
   const [ability, setAbility] = useState<AbilityId | null>(null);
   const [target, setTarget] = useState<ActionTarget | null>(null);
-  /** Picking where to move: taps on reachable hexes plan the move; otherwise taps inspect. */
+  /**
+   * Picking where to move, as an ability picks its target: taps on reachable
+   * hexes plan (or change) the move, which stays open until Confirm; other taps inspect.
+   */
   const [moving, setMoving] = useState(false);
   /** The hex last tapped to inspect (touch can't hover). */
   const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
@@ -322,10 +327,10 @@ export function TacticsPage() {
       }
       if (!fight || busy) return;
       if (acting && moving) {
-        const reach = reaches.find((r) => hexEquals(r.hex, h));
+        const reach = reaches.find((r) => r.path.length > 0 && hexEquals(r.hex, h));
         if (reach) {
-          setPlannedMove(reach.path.length > 0 ? reach : null);
-          setMoving(false);
+          // Tapping the chosen hex again does nothing: only Confirm commits.
+          if (!plannedMove || !hexEquals(plannedMove.hex, h)) setPlannedMove(reach);
           return;
         }
       } else if (acting && ability) {
@@ -352,7 +357,19 @@ export function TacticsPage() {
       setPinnedHex(h);
       setSelectedId(unitAt(fight, h)?.id ?? null);
     },
-    [fight, busy, playing, acting, moving, reaches, ability, target, targets, chooseTarget]
+    [
+      fight,
+      busy,
+      playing,
+      acting,
+      moving,
+      reaches,
+      plannedMove,
+      ability,
+      target,
+      targets,
+      chooseTarget,
+    ]
   );
 
   const onHexRef = useRef(onHex);
@@ -363,15 +380,6 @@ export function TacticsPage() {
   /** The hex being looked at: under the mouse, else the one last tapped. */
   const inspectHex = hover.hex ?? pinnedHex;
   const inspectedUnit = fight && inspectHex ? unitAt(fight, inspectHex) : undefined;
-  /** Where the inspected unit could move this turn, if it isn't the acting one. */
-  const inspectReach = useMemo(
-    () =>
-      fight && inspectedUnit && inspectedUnit.id !== acting?.id
-        ? reachableHexes(fight, mapOf(fight), inspectedUnit).filter((r) => r.path.length > 0)
-        : [],
-    [fight, inspectedUnit, acting]
-  );
-
   /**
    * On a phone, the unit the details feature (the one on the inspected hex,
    * else the tapped or acting one) shows its health and statuses on the board.
@@ -401,7 +409,6 @@ export function TacticsPage() {
       aimSlot: preview?.aimSlot ?? null,
     };
     if (!fight) return out;
-    for (const r of inspectReach) highlights.push({hex: r.hex, kind: 'inspect'});
     if (!acting) return out;
     if (ability && isAttack(ability)) {
       // Every enemy, and the allies in the line of fire: those it can target
@@ -416,11 +423,16 @@ export function TacticsPage() {
       for (const c of preview?.changes ?? []) if (c.hpAfter < c.hpBefore) ids.add(c.unitId);
       out.healthUnitIds = [...ids];
     }
-    for (const h of plannedMove?.path ?? []) highlights.push({hex: h, kind: 'path'});
-    const onPath = (h: Hex) => plannedMove?.path.some((p) => hexEquals(p, h));
     if (moving) {
+      // Like an ability's targets: every reachable hex stays open to pick,
+      // the planned one chosen and the steps on the way to it marked.
+      const onPath = (h: Hex) => plannedMove?.path.some((p) => hexEquals(p, h));
       for (const r of reaches)
-        if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'move'});
+        if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'target'});
+      if (plannedMove) {
+        for (const h of plannedMove.path.slice(0, -1)) highlights.push({hex: h, kind: 'path'});
+        highlights.push({hex: plannedMove.hex, kind: 'chosen'});
+      }
     } else if (ability) {
       if (lanes.length > 0) {
         out.arrows = [];
@@ -432,6 +444,10 @@ export function TacticsPage() {
             highlights.push({hex: h, kind: 'lane'});
         }
       }
+      // A melee ability's reach: the hexes next to the user, under its targets.
+      if (ABILITIES[ability].melee && abilityContext?.unit.alive)
+        for (const h of hexNeighbors(abilityContext.unit.hex!))
+          if (onMap(mapOf(abilityContext.state), h)) highlights.push({hex: h, kind: 'melee'});
       const shown = new Set<string>();
       const throwing = ability === 'throw' && target?.hex;
       for (const t of targets) {
@@ -484,7 +500,6 @@ export function TacticsPage() {
     targets,
     target,
     preview,
-    inspectReach,
     lanes,
     abilityContext,
   ]);
