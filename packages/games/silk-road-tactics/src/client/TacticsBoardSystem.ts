@@ -33,7 +33,7 @@ import sandImage from './tiles/sand.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
-export type HighlightKind = 'path' | 'reach' | 'target' | 'chosen' | 'area';
+export type HighlightKind = 'path' | 'target' | 'chosen' | 'area';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {
@@ -46,6 +46,8 @@ export interface BoardScene {
   healthUnitIds?: string[];
   /** Previewed outcome: where units end up and their health. */
   preview: {unitId: string; to: Hex | null; hpAfter: number; hpBefore: number; killed: boolean}[];
+  /** A planned move's route, from where the unit stands to where it ends: a line along it. */
+  path?: Hex[];
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
   /** The slot the planned turn's cost aims at; when it's taken, the card yields on to `previewSlot`. */
@@ -101,13 +103,11 @@ const yellow = (fill: number, stroke: number): HighlightStyle => ({
 const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   /** The steps of a planned move. */
   path: yellow(0.25, 0.8),
-  /** Hexes an ability reaches with no one there to aim at (the bow's lanes, melee, Sunlight's range). */
-  reach: yellow(0.14, 0.35),
   /** Hexes an ability can target, or a move can end on: outlined solid, so it shows over a unit's tint. */
   target: yellow(0.14, 0.9),
-  /** The area an aimed ability strikes around its target. */
-  area: yellow(0.3, 0.9),
-  chosen: {fill: `rgba(${TARGET_YELLOW},0.45)`, stroke: '#fde047'},
+  /** The whole area an aimed ability strikes, around its target. */
+  area: yellow(0.42, 1),
+  chosen: yellow(0.6, 1),
 };
 
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
@@ -375,6 +375,7 @@ export class TacticsBoardSystem extends BaseSystem {
     for (const h of scene.highlights) fillHex(ctx, h.hex, HIGHLIGHT[h.kind]);
     // The hovered hex's outline goes under the units, so it never crosses a sprite.
     if (this.hover.hex) fillHex(ctx, this.hover.hex, HOVER);
+    if (scene.path && scene.path.length > 1) drawPath(ctx, scene.path);
     for (const u of fight.units) if (u.alive && u.charging) drawCharge(ctx, map, u);
 
     const previewed = new Map(scene.preview.map((p) => [p.unitId, p]));
@@ -1558,6 +1559,38 @@ function bankMask(
   return {x: x0, y: y0, width: bw, height: bh};
 }
 
+/** A planned move's route: a line through the hexes' centres, with a head on the last. */
+function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
+  const points = path.map(center);
+  const a = points[points.length - 2]!;
+  const b = points[points.length - 1]!;
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const ux = (b.x - a.x) / len;
+  const uy = (b.y - a.y) / len;
+  // Stop short of the last centre, so the head sits clear of the ghost's feet.
+  const end = {x: b.x - ux * 12, y: b.y - uy * 12};
+  ctx.save();
+  ctx.strokeStyle = '#fde047';
+  ctx.fillStyle = '#fde047';
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 3;
+  ctx.beginPath();
+  ctx.moveTo(points[0]!.x, points[0]!.y);
+  for (const p of points.slice(1, -1)) ctx.lineTo(p.x, p.y);
+  ctx.lineTo(end.x, end.y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(end.x + ux * 8, end.y + uy * 8);
+  ctx.lineTo(end.x - ux * 4 - uy * 7, end.y - uy * 4 + ux * 7);
+  ctx.lineTo(end.x - ux * 4 + uy * 7, end.y - uy * 4 - ux * 7);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
 function drawCharge(ctx: CanvasRenderingContext2D, map: MapData, u: Unit): void {
   const {ability, target} = u.charging!;
   const radius = ability === 'volley' ? ABILITY.volley.radius : ABILITY.freeze.radius;
@@ -1568,7 +1601,9 @@ function drawCharge(ctx: CanvasRenderingContext2D, map: MapData, u: Unit): void 
       const h = {q: target.q + q, r: target.r + r};
       if (hexDistance(h, target) > radius || !onMap(map, h)) continue;
       hexPath(ctx, h, 4);
-      ctx.strokeStyle = SIDE_COLOR[u.side];
+      ctx.fillStyle = `rgba(${TARGET_YELLOW},0.2)`;
+      ctx.fill();
+      ctx.strokeStyle = HIGHLIGHT.target.stroke;
       ctx.lineWidth = 2;
       ctx.stroke();
     }

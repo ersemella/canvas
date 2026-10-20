@@ -726,8 +726,8 @@ try {
   await phone.getByRole('button', {name: /^Dash/}).click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
   check(
-    'phone: with no target yet, Confirm stays, disabled, saying what to pick',
-    await phone.getByRole('button', {name: 'Pick a target'}).isDisabled()
+    'phone: with no target yet, the button still ends the turn (as with Move)',
+    await phone.getByRole('button', {name: /^End turn/}).isEnabled()
   );
   {
     const after = await phone

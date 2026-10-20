@@ -14,10 +14,12 @@ import {
   ABILITIES,
   ABILITY,
   BOARD_LAYOUT,
+  HEROES,
   RULES,
   SCENE_SIZE,
   abilitiesOf,
   actingUnit,
+  allowedTargets,
   chooseAiTurn,
   mapOf,
   onMap,
@@ -25,10 +27,12 @@ import {
   reachableHexes,
   slotsForward,
   turnCost,
+  taunterOf,
   unitAt,
   unusableReason,
 } from '@canvas/games-silk-road-tactics';
 import type {
+  AbilityDef,
   AbilityId,
   ActionTarget,
   BoardScene,
@@ -56,8 +60,34 @@ import styles from './TacticsPage.module.css';
 const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
   volley: ABILITY.volley.radius,
   freeze: ABILITY.freeze.radius,
+  fog: ABILITY.fog.radius,
   hail: 0,
 };
+
+/** Why an ability has nothing to target, when that disables it. */
+const NO_TARGET: Partial<Record<AbilityId, string>> = {
+  bow: 'No enemy in any of the bow’s lanes.',
+  sunlight: 'No ally in range to heal.',
+  throw: 'No enemy next to you, or nowhere free to throw them.',
+  pin: 'No enemy next to you to pin.',
+  dash: 'Nowhere to dash to.',
+  rampage: 'No way clear to rampage.',
+};
+
+/**
+ * What the player may pick for an ability: its allowed targets (see
+ * `allowedTargets`), and for one aimed at a unit only enemies, or for
+ * Sunlight only allies. The rules allow friendly fire; the page doesn't
+ * offer it (an area can still catch allies).
+ */
+function playerTargets(state: FightState, unit: Unit, def: AbilityDef): ActionTarget[] {
+  const targets = allowedTargets(state, mapOf(state), unit, def);
+  if (!def.targetsUnit) return targets;
+  return targets.filter((t) => {
+    const u = t.hex && unitAt(state, t.hex);
+    return u && (def.id === 'sunlight') === (u.side === unit.side);
+  });
+}
 
 /** Abilities that deal damage: aiming one shows the health of whoever it could hit. */
 const isAttack = (id: AbilityId) => 'damage' in ABILITY[id] || 'damagePerSlot' in ABILITY[id];
@@ -220,26 +250,20 @@ export function TacticsPage() {
     [fight, acting]
   );
 
+  /** What the chosen ability may target (under a binding taunt, only what affects the taunter). */
   const targets = useMemo(() => {
     if (!ability || !abilityContext || !abilityContext.unit.alive) return [];
-    return ABILITIES[ability].targets(
-      abilityContext.state,
-      mapOf(abilityContext.state),
-      abilityContext.unit,
-      abilityContext.unit.hex!
-    );
+    return playerTargets(abilityContext.state, abilityContext.unit, ABILITIES[ability]);
   }, [ability, abilityContext]);
 
   /**
-   * There's no Hold button: with no action picked, the button ends the turn
-   * with Hold (or selects a separate move action if a path is planned).
+   * There's no Hold button: with no action ready (nothing picked, or Move or
+   * an ability still waiting on its hex), the button ends the turn with Hold.
    */
-  const endsWithHold = !ability && !plannedMove;
+  const endsWithHold = !action && !plannedMove;
 
-  const input: TurnInput | null = useMemo(() => {
-    const chosen = action ?? (!ability ? {ability: 'hold' as const, target: {}} : null);
-    if (!chosen) return null;
-    const out: TurnInput = {action: chosen};
+  const input: TurnInput = useMemo(() => {
+    const out: TurnInput = {action: action ?? {ability: 'hold', target: {}}};
     if (plannedMove && plannedMove.path.length > 0) {
       out.move = plannedMove.path;
     }
@@ -313,21 +337,26 @@ export function TacticsPage() {
     [acting]
   );
 
-  /** Abilities aimed at a unit (melee, the bow) with no unit to aim at from where the action is taken: disabled. */
+  /**
+   * Abilities with nothing they may target from where the unit stands, and
+   * why: disabled. Under a binding taunt that's anything that can't affect the taunter.
+   */
   const outOfReach = useMemo(() => {
-    const out = new Set<AbilityId>();
+    const out = new Map<AbilityId, string>();
     if (!acting || !abilityContext?.unit.alive) return out;
+    const {state, unit} = abilityContext;
+    const map = mapOf(state);
     for (const def of abilitiesOf(acting)) {
-      if (
-        def.targetsUnit &&
-        def.targets(
-          abilityContext.state,
-          mapOf(abilityContext.state),
-          abilityContext.unit,
-          abilityContext.unit.hex!
-        ).length === 0
-      )
-        out.add(def.id);
+      if (def.id === 'hold' || playerTargets(state, unit, def).length > 0) continue;
+      const taunter = taunterOf(state, unit);
+      out.set(
+        def.id,
+        taunter &&
+          def.targets(state, map, unit, unit.hex!).length > 0 &&
+          allowedTargets(state, map, unit, def).length === 0
+          ? `Taunted: this can’t reach ${HEROES[taunter.hero].name}.`
+          : (NO_TARGET[def.id] ?? 'Nothing to target from here.')
+      );
     }
     return out;
   }, [acting, abilityContext]);
@@ -430,13 +459,6 @@ export function TacticsPage() {
     ? ((inspectHex ? inspectedUnit?.id : (selectedId ?? acting?.id)) ?? null)
     : null;
 
-  /** A unit-aimed ability's range, anyone there or not (the bow's lanes, melee, Sunlight's range). */
-  const reach = useMemo(() => {
-    const def = ability && ABILITIES[ability];
-    if (!def?.reach || !abilityContext?.unit.alive) return [];
-    return def.reach(abilityContext.state, mapOf(abilityContext.state), abilityContext.unit.hex!);
-  }, [ability, abilityContext]);
-
   const scene: BoardScene = useMemo(() => {
     const highlights: {hex: Hex; kind: HighlightKind}[] = [];
     const out: BoardScene = {
@@ -472,19 +494,12 @@ export function TacticsPage() {
       if (plannedMove) {
         for (const h of plannedMove.path.slice(0, -1)) highlights.push({hex: h, kind: 'path'});
         highlights.push({hex: plannedMove.hex, kind: 'chosen'});
+        if (acting.hex) out.path = [acting.hex, ...plannedMove.path];
       }
     } else if (ability) {
-      // Every hex it can aim at; a unit-aimed ability's whole range under them.
+      // Only what it may target; once Throw's target is picked, where it can land.
       const shown = new Set<string>();
       const throwing = ability === 'throw' && target?.hex;
-      const targetKeys = new Set(
-        targets.flatMap((t) =>
-          throwing ? (t.to ? [hexKey(t.to)] : []) : t.hex ? [hexKey(t.hex)] : []
-        )
-      );
-      if (!throwing)
-        for (const h of reach)
-          if (!targetKeys.has(hexKey(h))) highlights.push({hex: h, kind: 'reach'});
       for (const t of targets) {
         const h = throwing ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
         if (!h || shown.has(hexKey(h))) continue;
@@ -537,7 +552,6 @@ export function TacticsPage() {
     targets,
     target,
     preview,
-    reach,
     abilityContext,
   ]);
 
@@ -643,13 +657,6 @@ export function TacticsPage() {
         endTurn={endsWithHold}
         fight={fight}
         preview={preview}
-        needsTarget={
-          input
-            ? null
-            : ability === 'throw' && target?.hex
-              ? 'Pick where to throw'
-              : 'Pick a target'
-        }
         size={phone ? 'lg' : 'sm'}
         busy={busy || playing}
         onConfirm={() => commit()}
@@ -761,8 +768,8 @@ function TurnControls(props: {
   slotsLater: (actionCost: number) => number;
   /** The move action's cost in slots (a range until a hex is picked), shown in the Move button. */
   moveSlots: string | null;
-  /** Unit-aimed abilities with no one to aim at, disabled (unless already chosen, so they can be put down). */
-  outOfReach: Set<AbilityId>;
+  /** Abilities with nothing to target, and why: disabled (unless already chosen, so they can be put down). */
+  outOfReach: Map<AbilityId, string>;
   unit: Unit;
   ability: AbilityId | null;
   plannedMove: Reach | null;
@@ -827,11 +834,7 @@ function TurnControls(props: {
           {defs.map((def) => {
             const reason =
               unusableReason(unit, def) ??
-              (props.outOfReach.has(def.id) && ability !== def.id
-                ? def.id === 'bow'
-                  ? 'No one in any of the bow’s lanes.'
-                  : 'No one next to you to target.'
-                : null);
+              (ability !== def.id ? (props.outOfReach.get(def.id) ?? null) : null);
             const lockedUlt =
               def.ultimate && !unit.ultimateUsed && unit.ultimateCharge < RULES.ultimateCharge;
             return (

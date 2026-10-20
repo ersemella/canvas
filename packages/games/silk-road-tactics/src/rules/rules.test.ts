@@ -21,6 +21,7 @@ import {
 import {ABILITIES, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
+import {allowedTargets} from './taunt';
 import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, mapOf} from './fight';
 import {afterAction, previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
@@ -586,6 +587,8 @@ describe('abilities', () => {
     );
     expect(tryTurn(s, m.id, {action: {ability: 'hold'}})).not.toThrow();
     expect(chooseAiTurn(s, m).action).toEqual({ability: 'bow', target: {hex: at(1, 1)}});
+    // The page offers the same: only the Champion.
+    expect(allowedTargets(s, SALT_FLATS, m, ABILITIES.bow)).toEqual([{hex: at(1, 1)}]);
     // The taunt ends with the taunter.
     unit(s, 'p-bokh').alive = false;
     unit(s, 'p-bokh').hex = null;
