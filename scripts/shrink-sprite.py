@@ -56,9 +56,20 @@ def background(p):
     return (r > 170 and b > 170 and g < 130) or (b > 90 and r > 90 and g < 0.6 * min(r, b))
 
 
-def shadow(p, y):
+def grey(p):
     r, g, b = p
-    return y > H * 0.86 and abs(r - g) < 14 and abs(g - b) < 14 and 45 < r < 115
+    return abs(r - g) < 14 and abs(g - b) < 14 and 45 < r < 115
+
+
+# The shadow's own grey: the commonest grey along the bottom rows. Matching
+# only that keeps dark grey legs or boots just above it from turning to shadow.
+bottom = Counter(px[x, y] for y in range(int(H * 0.95), H) for x in range(W) if grey(px[x, y]))
+SHADE = bottom.most_common(1)[0][0] if bottom else None
+
+
+def shadow(p, y):
+    return (SHADE is not None and y > H * 0.86
+            and max(abs(a - b) for a, b in zip(p, SHADE)) <= 12)
 
 
 def line(p):
