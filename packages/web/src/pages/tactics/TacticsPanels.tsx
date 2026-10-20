@@ -21,7 +21,7 @@ import {
   tileAt,
   unitName,
 } from '@canvas/games-silk-road-tactics';
-import type {FightState, TurnPreview, Unit} from '@canvas/games-silk-road-tactics';
+import type {AbilityDef, FightState, TurnPreview, Unit} from '@canvas/games-silk-road-tactics';
 import styles from './TacticsPage.module.css';
 
 const sideColor = (u: Unit) => (u.side === 'player' ? 'blue' : 'red');
@@ -155,49 +155,44 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
       : null,
     unit.alive && isFlanked(fight, unit) ? `Flanked: Vulnerable ${RULES.flankVulnerable}%` : null,
   ].filter(Boolean);
-  const ult = HEROES[unit.hero].ultimate;
+  const ult = ABILITIES[HEROES[unit.hero].ultimate];
+  // Hold isn't offered as an action (End turn is), and the ultimate gets its own section.
+  const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold' && !def.ultimate);
   return (
     <Paper bg="dark.7" p="sm" radius="md" data-testid="stat-sheet">
-      <Group justify="space-between" mb={4}>
+      <Group justify="space-between" mb={6}>
         {/* The name, in its side's colour: blue yours, red the enemy's, as on the board. */}
         <Badge color={sideColor(unit)} variant="light" size="lg" tt="none" data-side={unit.side}>
           {HEROES[unit.hero].name}
         </Badge>
       </Group>
-      <div className={styles.stats}>
-        <span>Health</span>
-        <b>
-          {unit.hp} / {unit.maxHp}
-        </b>
-        <span>Speed</span>
-        <b>{unit.speed}</b>
-        <span>Defence</span>
-        <b>{unit.defence}</b>
-        <span>Power</span>
-        <b>{unit.power}</b>
-        <span>Next turn</span>
-        <b>
-          {!unit.alive
-            ? 'fallen'
-            : unit.slot === null
-              ? 'not placed'
-              : unit.slot === fight.currentSlot
-                ? 'now'
-                : `+${unit.slot - fight.currentSlot}`}
-        </b>
-        <span>Move</span>
-        <b>{movementCap(unit)} hexes</b>
-        <span>{ABILITIES[ult].name}</span>
-        <b>
-          {unit.ultimateUsed
-            ? 'used'
-            : unit.turnsTaken >= RULES.ultimateUnlockTurns
-              ? 'ready'
-              : `${unit.turnsTaken}/${RULES.ultimateUnlockTurns} turns`}
-        </b>
+      <div className={styles.vitals}>
+        <span>
+          Health{' '}
+          <b>
+            {unit.hp} / {unit.maxHp}
+          </b>
+        </span>
+        <span>
+          Move <b>{movementCap(unit)} spaces</b>
+        </span>
+      </div>
+      <div className={styles.coreStats}>
+        <div>
+          <span>Speed</span>
+          <b>{unit.speed}</b>
+        </div>
+        <div>
+          <span>Power</span>
+          <b>{unit.power}</b>
+        </div>
+        <div>
+          <span>Defence</span>
+          <b>{unit.defence}</b>
+        </div>
       </div>
       {statuses.length > 0 && (
-        <Text fz="xs" c="orange.3" mt={4}>
+        <Text fz="xs" c="orange.3" mt={6}>
           {statuses.join(' · ')}
         </Text>
       )}
@@ -206,25 +201,66 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
           Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
         </Text>
       )}
-      <Stack gap={2} mt={6}>
+      <Stack gap={6} mt={8}>
         <Text fz="xs" fw={600}>
           Abilities
         </Text>
-        {abilitiesOf(unit)
-          // Hold isn't offered as an action: End turn is.
-          .filter((def) => def.id !== 'hold')
-          .map((def) => (
-            <Text key={def.id} fz="xs" c="dimmed">
-              {/* In this unit's slots: the action alone, before any move or yielding. */}
-              <b className={styles.abilityName}>{def.name}</b> · +
-              {slotsForward(def.cost, unit.speed)}
-              {def.charged
-                ? ` to charge, +${slotsForward(def.recoveryCost!, unit.speed)} to recover`
-                : ''}
-              : {def.summary(unit)}
-            </Text>
-          ))}
+        {abilities.map((def) => (
+          <AbilityLine key={def.id} unit={unit} def={def} />
+        ))}
+        <Text fz="xs" fw={600} mt={2}>
+          Ultimate
+        </Text>
+        <AbilityLine
+          unit={unit}
+          def={ult}
+          charge={
+            unit.ultimateUsed
+              ? 'Used'
+              : unit.turnsTaken >= RULES.ultimateUnlockTurns
+                ? 'Ready'
+                : `${unit.turnsTaken}/${RULES.ultimateUnlockTurns} turns`
+          }
+        />
       </Stack>
     </Paper>
+  );
+}
+
+/**
+ * One ability on the stat sheet: its name and cost, in this unit's slots
+ * (the action alone, before any move or yielding), then what it does. An
+ * ultimate also shows how far it is from being ready.
+ */
+function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
+  const cost = def.charged
+    ? `Charge +${slotsForward(def.cost, unit.speed)} · Recovery +${slotsForward(def.recoveryCost!, unit.speed)}`
+    : `Action +${slotsForward(def.cost, unit.speed)}`;
+  return (
+    <div>
+      <Group justify="space-between" gap={6} wrap="nowrap">
+        <Group gap={6} wrap="nowrap">
+          <Text fz="xs" fw={600} c="gray.3">
+            {def.name}
+          </Text>
+          {charge && (
+            <Badge
+              size="xs"
+              variant="light"
+              color={charge === 'Ready' ? 'yellow' : 'gray'}
+              tt="none"
+            >
+              {charge}
+            </Badge>
+          )}
+        </Group>
+        <Text fz={11} c="dimmed" style={{whiteSpace: 'nowrap'}}>
+          {cost}
+        </Text>
+      </Group>
+      <Text fz="xs" c="dimmed">
+        {def.summary(unit)}
+      </Text>
+    </div>
   );
 }

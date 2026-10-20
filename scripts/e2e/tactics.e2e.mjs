@@ -364,7 +364,13 @@ try {
   check('the sheet doesn’t list Hold', !(await sheet.textContent()).includes('Hold'));
   check(
     'the sheet gives abilities in slots, not costs',
-    /· \+\d+/.test(await sheet.textContent()) && !/· \d{2,}/.test(await sheet.textContent()),
+    /(Action|Charge) \+\d+/.test(await sheet.textContent()) &&
+      !/(Action|Charge|Recovery) \d/.test(await sheet.textContent()),
+    (await sheet.textContent()).slice(0, 200)
+  );
+  check(
+    'the sheet says spaces, not hexes, and has no next turn',
+    !/\bhex|Next turn/i.test(await sheet.textContent()),
     (await sheet.textContent()).slice(0, 200)
   );
   await shot(page, 'enemy-sheet');
