@@ -3,6 +3,7 @@ import {
   hexDirectionTo,
   hexDistance,
   hexKey,
+  hexNeighbors,
   hexToOffset,
   hexToPixel,
   offsetToHex,
@@ -22,7 +23,7 @@ import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, mapOf} from './fight';
 import {afterAction, previewTurn} from './preview';
-import {SALT_FLATS, onMap} from './map';
+import {SALT_FLATS, onMap, tileAt} from './map';
 import {abilityDamage, displace, scaled} from './resolve';
 import {createRun, handleRunAction, runView} from './run';
 import {
@@ -43,6 +44,8 @@ const at = (col: number, row: number): Hex => offsetToHex({col, row});
  */
 function setup(placements: Record<string, Hex>): FightState {
   const state = createFight(0);
+  // The fixed layout, which these tests place units around.
+  delete state.tiles;
   state.phase = 'fight';
   let slot = 100;
   for (const u of state.units) {
@@ -229,6 +232,46 @@ describe('the board', () => {
       const [q, r] = key.split(',').map(Number);
       expect(map.tiles[hexKey(mirror({q: q!, r: r!})!)]).toBe(tile);
     }
+  });
+
+  it('scatters each fight’s ruins and quicksand by its seed: mirrored, clear of the edges, the board connected', () => {
+    const count = (tiles: Record<string, string>, t: string) =>
+      Object.values(tiles).filter((v) => v === t).length;
+    const conceal = Object.keys(SALT_FLATS.tiles).filter((k) => SALT_FLATS.tiles[k] === 'conceal');
+    const layouts = new Set<string>();
+    for (let seed = 0; seed < 40; seed++) {
+      const s = createFight(seed);
+      const map = mapOf(s);
+      expect(map.tiles).toBe(s.tiles);
+      expect(JSON.stringify(createFight(seed).tiles)).toBe(JSON.stringify(s.tiles));
+      expect(count(map.tiles, 'obstacle')).toBe(4);
+      expect(count(map.tiles, 'hazard')).toBe(2);
+      for (const k of conceal) expect(map.tiles[k]).toBe('conceal');
+      const ruinRows = [];
+      for (const [key, tile] of Object.entries(map.tiles)) {
+        const [q, r] = key.split(',').map(Number);
+        const {col, row} = hexToOffset({q: q!, r: r!});
+        // Mirrored, and two columns clear of each edge.
+        expect(map.tiles[hexKey(offsetToHex({col: (row & 1 ? 6 : 7) - col, row}))]).toBe(tile);
+        if (tile !== 'conceal') expect(col >= (row & 1 ? 1 : 2) && col <= 5).toBe(true);
+        if (tile === 'obstacle') ruinRows.push(row);
+      }
+      expect(ruinRows.filter((r) => r <= 3)).toHaveLength(2);
+      expect(ruinRows.filter((r) => r >= 5)).toHaveLength(2);
+      // Every open hex can be walked to from every other.
+      const open = map.hexes.filter((h) => tileAt(map, h) !== 'obstacle');
+      const seen = new Set([hexKey(open[0]!)]);
+      const queue = [open[0]!];
+      for (let h; (h = queue.shift()); )
+        for (const n of hexNeighbors(h))
+          if (onMap(map, n) && tileAt(map, n) !== 'obstacle' && !seen.has(hexKey(n))) {
+            seen.add(hexKey(n));
+            queue.push(n);
+          }
+      expect(seen.size).toBe(open.length);
+      layouts.add(JSON.stringify(s.tiles));
+    }
+    expect(layouts.size).toBeGreaterThan(20);
   });
 
   it('blocks allies, enemies and obstacles, routing around units', () => {

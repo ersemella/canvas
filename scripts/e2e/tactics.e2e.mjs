@@ -381,7 +381,12 @@ try {
   await shot(page, 'enemy-sheet');
 
   // Hovering a hex shows what it does, without planning a move.
-  const quicksand = {q: 1, r: 3}; // col 2, row 3
+  // Each fight places its own quicksand: find one in the view.
+  const [qq, qr] = Object.entries((await state()).view.fight.tiles)
+    .find(([, t]) => t === 'hazard')[0]
+    .split(',')
+    .map(Number);
+  const quicksand = {q: qq, r: qr};
   const versionBeforeHover = (await state()).view.version;
   {
     const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), quicksand);

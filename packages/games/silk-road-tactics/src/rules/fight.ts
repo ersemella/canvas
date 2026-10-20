@@ -10,16 +10,23 @@ import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
 import {applyHail, checkEnd, enterHex, log, damageEachSlot, record, unitName} from './resolve';
 import type {Ctx} from './resolve';
-import {MAPS, SALT_FLATS} from './map';
-import type {MapData} from './map';
+import {MAPS, SALT_FLATS, randomTiles} from './map';
+import type {MapData, Tile} from './map';
 import {nextCard, placeCard, placeStartingCards, slotsForward, turnCost} from './track';
 import type {FightState, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
 export class RuleError extends Error {}
 
+const fightMaps = new WeakMap<Record<string, Tile>, MapData>();
+
+/** The fight's map, with the fight's own ruins and quicksand when it has them. */
 export function mapOf(state: FightState): MapData {
-  return MAPS[state.mapId]!;
+  const map = MAPS[state.mapId]!;
+  if (!state.tiles) return map;
+  let own = fightMaps.get(state.tiles);
+  if (!own) fightMaps.set(state.tiles, (own = {...map, tiles: state.tiles}));
+  return own;
 }
 
 function makeUnit(side: Side, partyIndex: number): Unit {
@@ -49,8 +56,9 @@ function makeUnit(side: Side, partyIndex: number): Unit {
 
 /**
  * A new fight on the Salt Flats, already under way: the seed scatters the
- * player's party along the leftmost column and the enemy's along the
- * rightmost (owner, 2026-10-20; there is no deployment step).
+ * ruins and quicksand, the player's party along the leftmost column and
+ * the enemy's along the rightmost (owner, 2026-10-20; there is no
+ * deployment step).
  */
 export function createFight(seed: number): FightState {
   const map = SALT_FLATS;
@@ -69,12 +77,13 @@ export function createFight(seed: number): FightState {
     awaiting: null,
   };
   const random = seededRandom(seed);
+  state.tiles = randomTiles(random);
   for (const side of ['player', 'enemy'] as const) {
     const hexes = shuffled(map.startColumns[side], random);
     state.units.filter((u) => u.side === side).forEach((u, i) => (u.hex = hexes[i]!));
   }
   placeStartingCards(state);
-  log({state, map, slot: 0}, 'The fight begins.');
+  log({state, map: mapOf(state), slot: 0}, 'The fight begins.');
   return state;
 }
 

@@ -1,6 +1,6 @@
 import {BaseSystem, mouseService} from '@canvas/engine';
 import type {Hex, SystemContext} from '@canvas/engine';
-import {MAPS} from '../rules/map';
+import {mapOf} from '../rules/fight';
 import {cardAt, hexAt, sameHex, trackCards} from './layout';
 import type {BoardScene} from './TacticsBoardSystem';
 
@@ -52,7 +52,7 @@ export class TacticsInputSystem extends BaseSystem {
   onUpdate({events}: SystemContext): void {
     const fight = this.scene?.fight;
     if (!fight) return;
-    const map = MAPS[fight.mapId]!;
+    const map = mapOf(fight);
     const cards = trackCards(fight, this.scene!.previewSlot ?? null);
     const p = mouseService.position;
 
