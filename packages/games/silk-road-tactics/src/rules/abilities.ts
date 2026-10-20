@@ -66,8 +66,6 @@ export interface AbilityDef {
    * empty hex on purpose (hail to deny it, a charge where enemies will be).
    */
   targetsUnit?: boolean;
-  /** Aimed at a neighbouring unit: the page outlines the hexes next to the user while it's picked. */
-  melee?: boolean;
   /** Legal targets with the user standing on `from`. */
   targets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[];
   /** Resolves the ability now (a charged one triggers here). */
@@ -343,7 +341,6 @@ const throwAbility: AbilityDef = {
   cost: ABILITY.throw.cost,
   movesSelf: false,
   targetsUnit: true,
-  melee: true,
   targets(state, map, user, from) {
     const landing = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
     const out: ActionTarget[] = [];
@@ -371,7 +368,6 @@ const pin: AbilityDef = {
   cost: ABILITY.pin.cost,
   movesSelf: false,
   targetsUnit: true,
-  melee: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;

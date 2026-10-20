@@ -102,6 +102,23 @@ export function tauntBinds(state: FightState, map: MapData, unit: Unit, taunter:
 }
 
 /**
+ * The targets `def` may take from where `unit` stands: all of them, or
+ * under a binding taunt only those that affect the taunter (as a turn is
+ * checked). For the page, so it shows and offers only what it may pick.
+ */
+export function allowedTargets(
+  state: FightState,
+  map: MapData,
+  unit: Unit,
+  def: AbilityDef
+): ActionTarget[] {
+  const targets = def.targets(state, map, unit, unit.hex!);
+  const taunter = taunterOf(state, unit);
+  if (!taunter || !tauntBinds(state, map, unit, taunter)) return targets;
+  return targets.filter((t) => obeysTaunt(map, def, unit.hex!, t, taunter));
+}
+
+/**
  * A damaging charged ability triggering while taunted lands on the
  * taunter instead, if the taunter is a legal target from the charger's hex.
  */

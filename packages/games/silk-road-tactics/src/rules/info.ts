@@ -16,23 +16,25 @@ export interface HexInfo {
 }
 
 const obscured = Math.round(RULES.obscuredReduction * 100);
+/** An Obscured attacker hitting an Obscured target: both cuts, one after the other. */
+const bothObscured = Math.round((1 - (1 - RULES.obscuredReduction) ** 2) * 100);
 
 export const TILE_INFO: Record<Tile, HexInfo> = {
   sand: {name: 'Sand', short: 'Open ground', detail: 'Open ground: no effect.'},
   obstacle: {
     name: 'Ruins',
     short: 'Blocks movement and arrows',
-    detail: `Impassable. Blocks movement, arrows and line of fire. A unit displaced into ruins takes ${RULES.collisionDamage} damage (ignores defence).`,
+    detail: `Blocks movement and arrows. A unit knocked into it takes ${RULES.collisionDamage} damage.`,
   },
   hazard: {
     name: 'Quicksand',
     short: `${RULES.hazardEnterDamage} damage on entering, ${RULES.hazardDamage} every slot`,
-    detail: `${RULES.hazardEnterDamage} damage to a unit entering it, passing through included, then ${RULES.hazardDamage} every slot it stands here, whoever's turn it is, through Vulnerable and defence.`,
+    detail: `${RULES.hazardEnterDamage} damage on entering, passing through too, then ${RULES.hazardDamage} every slot a unit stays.`,
   },
   conceal: {
     name: 'Sandstorm',
     short: `Obscured: ranged hits in or out deal ${obscured}% less`,
-    detail: `Obscured: ranged hits on a unit here deal ${obscured}% less, and so do ranged hits by a unit here. Doesn't block arrows or line of fire, and the unit stays visible.`,
+    detail: 'A unit here is Obscured.',
   },
 };
 
@@ -41,7 +43,7 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
   return {
     name: 'Hail',
     short: `${hail.damage ?? 0} damage, Slowed ${hail.slowed}`,
-    detail: `For ${left} more slot${left === 1 ? '' : 's'}: a unit here when it lands, entering it or starting its turn here takes ${hail.damage ?? 0} damage (before Vulnerable and defence), then is Slowed ${hail.slowed} for ${hail.statusSlots} slots.`,
+    detail: `${left} more slot${left === 1 ? '' : 's'}. A unit here as it lands, entering, or starting its turn here takes ${hail.damage ?? 0} damage and is Slowed ${hail.slowed} for ${hail.statusSlots} slots.`,
   };
 }
 
@@ -50,6 +52,79 @@ export function fogInfo(fog: FogEffect, currentSlot: number): HexInfo {
   return {
     name: 'Fog',
     short: `Obscured: ranged hits in or out deal ${obscured}% less`,
-    detail: `For ${left} more slot${left === 1 ? '' : 's'}, Obscured: ranged hits on a unit here deal ${obscured}% less (not on top of a sandstorm), and so do ranged hits by a unit here. Doesn't block arrows or line of fire.`,
+    detail: `${left} more slot${left === 1 ? '' : 's'}. A unit here is Obscured.`,
   };
 }
+
+/**
+ * The words the stat sheet marks as keywords, statuses and stats alike:
+ * tapping one shows its rule (keywords.md, section 17). Built from the rule
+ * values like the tiles'.
+ */
+export type KeywordId =
+  | 'speed'
+  | 'power'
+  | 'defence'
+  | 'slots'
+  | 'charged'
+  | 'ultimate'
+  | 'melee'
+  | 'immobilized'
+  | 'slowed'
+  | 'vulnerable'
+  | 'taunted'
+  | 'crushed'
+  | 'flanked'
+  | 'obscured'
+  | 'cleanse';
+
+export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
+  speed: {name: 'Speed', detail: 'Higher speed: actions cost fewer slots, so turns come sooner.'},
+  power: {
+    name: 'Power',
+    detail: 'Scales damage and healing. Already counted in the numbers shown.',
+  },
+  defence: {
+    name: 'Defence',
+    detail: `Cuts damage taken: ${RULES.defenceConstant} defence halves it.`,
+  },
+  slots: {
+    name: 'Cost',
+    detail: 'Slots until its next turn. A taken slot pushes the card to the next free one.',
+  },
+  charged: {
+    name: 'Charged',
+    detail: 'Goes off when the charge runs out, then the recovery passes before its next turn.',
+  },
+  ultimate: {
+    name: 'Ultimate',
+    detail: `Once a fight, after ${RULES.ultimateCharge} action cost spent.`,
+  },
+  melee: {name: 'Melee', detail: 'Targets a unit next to the user.'},
+  immobilized: {
+    name: 'Immobilized',
+    detail: 'Can’t move, or use abilities that move it. Can still act and be knocked away.',
+  },
+  slowed: {
+    name: 'Slowed',
+    detail: `Moves this many fewer spaces (normally ${RULES.movementCap}, at least 1).`,
+  },
+  vulnerable: {
+    name: 'Vulnerable',
+    detail: 'Takes this much more damage. Only the largest counts.',
+  },
+  taunted: {
+    name: 'Taunted',
+    detail: 'Must attack the taunter, or end its turn, while it can reach it.',
+  },
+  crushed: {name: 'Crushed', detail: 'Takes this much damage every slot.'},
+  flanked: {
+    name: 'Flanked',
+    detail: `Enemies on opposite sides: Vulnerable ${RULES.flankVulnerable}% while they stay.`,
+  },
+  obscured: {
+    name: 'Obscured',
+    detail: `In a sandstorm or fog: its ranged hits, and ranged hits on it, deal ${obscured}% less (${bothObscured}% when both are). Doesn’t block arrows.`,
+  },
+  cleanse: {name: 'Cleanse', detail: 'Removes harmful statuses from abilities.'},
+};

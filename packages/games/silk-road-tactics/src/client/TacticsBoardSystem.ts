@@ -9,7 +9,7 @@ import {
 } from '@canvas/engine';
 import type {EventBus, Hex, SystemContext} from '@canvas/engine';
 import {HEROES} from '../rules/config';
-import {fogAt, isFlanked, statusValue} from '../rules/board';
+import {fogAt, isFlanked, onMap, statusValue} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
 import {fogInfo, hailInfo, TILE_INFO} from '../rules/info';
@@ -33,7 +33,7 @@ import sandImage from './tiles/sand.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
-export type HighlightKind = 'path' | 'target' | 'chosen' | 'area' | 'lane' | 'melee';
+export type HighlightKind = 'path' | 'target' | 'chosen' | 'area';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {
@@ -46,12 +46,12 @@ export interface BoardScene {
   healthUnitIds?: string[];
   /** Previewed outcome: where units end up and their health. */
   preview: {unitId: string; to: Hex | null; hpAfter: number; hpBefore: number; killed: boolean}[];
+  /** A planned move's route, from where the unit stands to where it ends: a line along it. */
+  path?: Hex[];
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
   /** The slot the planned turn's cost aims at; when it's taken, the card yields on to `previewSlot`. */
   aimSlot?: number | null;
-  /** Arrow flights to draw (the bow's lanes): `hits` when it ends on a unit. */
-  arrows?: {from: Hex; to: Hex; hits: boolean}[];
 }
 
 const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
@@ -91,16 +91,23 @@ interface HighlightStyle {
   stroke: string;
   dash?: number[];
 }
+/**
+ * Targeting is all one yellow (the bow's lanes'), stronger the closer it is
+ * to what's picked, so it never reads as either side's tint.
+ */
+const TARGET_YELLOW = '253,224,71';
+const yellow = (fill: number, stroke: number): HighlightStyle => ({
+  fill: `rgba(${TARGET_YELLOW},${fill})`,
+  stroke: `rgba(${TARGET_YELLOW},${stroke})`,
+});
 const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
-  path: {fill: 'rgba(250,204,21,0.25)', stroke: 'rgba(250,204,21,0.8)'},
-  /** Hexes an ability can target: purple, outlined solid, so it never reads as the enemy's red tint. */
-  target: {fill: 'rgba(192,132,252,0.18)', stroke: 'rgba(192,132,252,0.95)'},
-  chosen: {fill: 'rgba(192,132,252,0.45)', stroke: '#fde047'},
-  area: {fill: 'rgba(251,146,60,0.28)', stroke: 'rgba(251,146,60,0.9)'},
-  /** Hexes an arrow flies over. */
-  lane: {fill: 'rgba(253,224,71,0.14)', stroke: 'rgba(253,224,71,0.35)'},
-  /** The hexes a melee ability reaches, around its targets. */
-  melee: {fill: 'rgba(192,132,252,0.12)', stroke: 'rgba(192,132,252,0.75)', dash: [5, 3]},
+  /** The steps of a planned move. */
+  path: yellow(0.25, 0.8),
+  /** Hexes an ability can target, or a move can end on: outlined solid, so it shows over a unit's tint. */
+  target: yellow(0.14, 0.9),
+  /** The whole area an aimed ability strikes, around its target. */
+  area: yellow(0.42, 1),
+  chosen: yellow(0.6, 1),
 };
 
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
@@ -368,11 +375,16 @@ export class TacticsBoardSystem extends BaseSystem {
     for (const h of scene.highlights) fillHex(ctx, h.hex, HIGHLIGHT[h.kind]);
     // The hovered hex's outline goes under the units, so it never crosses a sprite.
     if (this.hover.hex) fillHex(ctx, this.hover.hex, HOVER);
-    for (const a of scene.arrows ?? []) drawArrow(ctx, a.from, a.to, a.hits);
-    for (const u of fight.units) if (u.alive && u.charging) drawCharge(ctx, u);
+    if (scene.path && scene.path.length > 1) drawPath(ctx, scene.path);
+    for (const u of fight.units) if (u.alive && u.charging) drawCharge(ctx, map, u);
 
     const previewed = new Map(scene.preview.map((p) => [p.unitId, p]));
     const acting = fight.awaiting;
+    // A unit's border covers its hex's outline, so a targeted unit rings itself.
+    const targeted = new Map<string, 'target' | 'chosen'>();
+    for (const h of scene.highlights)
+      if (h.kind === 'chosen' || (h.kind === 'target' && !targeted.has(hexKey(h.hex))))
+        targeted.set(hexKey(h.hex), h.kind);
     for (const u of fight.units) {
       const hex = u.hex;
       if (!u.alive || !hex) continue;
@@ -383,6 +395,7 @@ export class TacticsBoardSystem extends BaseSystem {
         selected: u.id === scene.selectedUnitId || u.id === this.hover.unitId,
         faded: Boolean(moved || p?.killed),
         frame: this.still ? 0 : idleFrame(u.id, this.time),
+        targeted: targeted.get(hexKey(hex)),
         ...(playing ? {at: steppingAt(playing, u.id)} : {}),
       });
       if (p && moved && !p.killed)
@@ -515,48 +528,6 @@ function tintHex(ctx: CanvasRenderingContext2D, h: Hex, color: string, alpha: nu
   hexPath(ctx, h, 1);
   ctx.fillStyle = color;
   ctx.fill();
-  ctx.restore();
-}
-
-/** An arrow's flight from the archer to where it stops: solid with a head if it hits, dashed if not. */
-function drawArrow(ctx: CanvasRenderingContext2D, from: Hex, to: Hex, hits: boolean): void {
-  const a = center(from);
-  const b = center(to);
-  const len = Math.hypot(b.x - a.x, b.y - a.y);
-  if (len === 0) return;
-  const ux = (b.x - a.x) / len;
-  const uy = (b.y - a.y) / len;
-  // Start clear of the archer's circle; stop short of a target's.
-  const sx = a.x + ux * 20;
-  const sy = a.y + uy * 20;
-  const ex = b.x - ux * (hits ? 18 : 0);
-  const ey = b.y - uy * (hits ? 18 : 0);
-  ctx.save();
-  ctx.strokeStyle = hits ? '#fde047' : 'rgba(253,224,71,0.6)';
-  ctx.fillStyle = ctx.strokeStyle;
-  ctx.lineWidth = hits ? 2.5 : 2;
-  ctx.setLineDash(hits ? [] : [6, 5]);
-  ctx.beginPath();
-  ctx.moveTo(sx, sy);
-  ctx.lineTo(ex, ey);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  if (hits) {
-    ctx.beginPath();
-    ctx.moveTo(ex, ey);
-    ctx.lineTo(ex - ux * 9 - uy * 5, ey - uy * 9 + ux * 5);
-    ctx.lineTo(ex - ux * 9 + uy * 5, ey - uy * 9 - ux * 5);
-    ctx.closePath();
-    ctx.fill();
-  } else {
-    // Where a miss falls: a small cross.
-    ctx.beginPath();
-    ctx.moveTo(ex - 4, ey - 4);
-    ctx.lineTo(ex + 4, ey + 4);
-    ctx.moveTo(ex + 4, ey - 4);
-    ctx.lineTo(ex - 4, ey + 4);
-    ctx.stroke();
-  }
   ctx.restore();
 }
 
@@ -718,6 +689,7 @@ function drawCard(
       }
       ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
       ctx.restore();
+      if (u.charging) greyOut(ctx, cx, cy, deck.cardW, h);
       // The border again, over the portrait.
       roundRect(ctx, cx, cy, deck.cardW, h, 5);
       strokeBorder();
@@ -733,9 +705,45 @@ function drawCard(
       ctx.stroke();
       label(ctx, HEROES[u.hero].letter, mid, cy + h / 2 - 3, '#ffffff', 11, true);
     }
-    // A charging card: its ability triggers when this slot comes up.
-    if (u.charging) label(ctx, '!', cx + deck.cardW - 5, cy + 8, '#d8b4fe', 12, true);
+    // A charging card: greyed (the unit waits on its spell, it takes no turn)
+    // with the spell's mark; the ability triggers when this slot comes up.
+    if (u.charging) drawChargeMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
   }
+  ctx.restore();
+}
+
+/** Drains a card's colour and darkens it: a charging unit's card. */
+function greyOut(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
+  ctx.save();
+  roundRect(ctx, x, y, w, h, 5);
+  ctx.clip();
+  ctx.globalCompositeOperation = 'saturation';
+  ctx.fillStyle = '#808080';
+  ctx.fillRect(x, y, w, h);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = 'rgba(17,24,39,0.45)';
+  ctx.fillRect(x, y, w, h);
+  ctx.restore();
+}
+
+/** A charging card's mark: an hourglass in a purple disc, low in its showing strip. */
+function drawChargeMark(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x, y, 7, 0, Math.PI * 2);
+  ctx.fillStyle = '#581c87';
+  ctx.fill();
+  ctx.strokeStyle = '#d8b4fe';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x - 3, y - 4);
+  ctx.lineTo(x + 3, y - 4);
+  ctx.lineTo(x - 3, y + 4);
+  ctx.lineTo(x + 3, y + 4);
+  ctx.closePath();
+  ctx.fillStyle = '#f3e8ff';
+  ctx.fill();
   ctx.restore();
 }
 
@@ -793,18 +801,24 @@ function drawYield(
  * x, and the top and bottom of the hex with its unit's health bar and
  * status markers. A tooltip goes above `top` or below `bottom` to keep
  * clear of them: the hover tooltip here, and the page's on phones.
+ * `hexTop` and `hexBottom` bound the hex (its sprite) alone, for a tooltip
+ * that would rather cover the health bar than scroll.
  */
 export function hexOverlaySpan(
   fight: FightState,
   h: Hex
-): {x: number; top: number; bottom: number} {
+): {x: number; top: number; bottom: number; hexTop: number; hexBottom: number} {
   const c = center(h);
   const unit = unitAt(fight, h);
   const stack = unit && healthStack(h, statusMarks(fight, unit).length);
+  const hexTop = c.y - 36 * HEX_SCALE;
+  const hexBottom = c.y + 36 * HEX_SCALE;
   return {
     x: c.x,
-    top: stack && stack.top < c.y ? stack.top : c.y - 36 * HEX_SCALE,
-    bottom: stack && stack.bottom > c.y ? stack.bottom + 2 : c.y + 36 * HEX_SCALE,
+    top: stack && stack.top < c.y ? stack.top : hexTop,
+    bottom: stack && stack.bottom > c.y ? stack.bottom + 2 : hexBottom,
+    hexTop,
+    hexBottom,
   };
 }
 
@@ -1545,7 +1559,39 @@ function bankMask(
   return {x: x0, y: y0, width: bw, height: bh};
 }
 
-function drawCharge(ctx: CanvasRenderingContext2D, u: Unit): void {
+/** A planned move's route: a line through the hexes' centres, with a head on the last. */
+function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
+  const points = path.map(center);
+  const a = points[points.length - 2]!;
+  const b = points[points.length - 1]!;
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const ux = (b.x - a.x) / len;
+  const uy = (b.y - a.y) / len;
+  // Stop short of the last centre, so the head sits clear of the ghost's feet.
+  const end = {x: b.x - ux * 12, y: b.y - uy * 12};
+  ctx.save();
+  ctx.strokeStyle = '#fde047';
+  ctx.fillStyle = '#fde047';
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 3;
+  ctx.beginPath();
+  ctx.moveTo(points[0]!.x, points[0]!.y);
+  for (const p of points.slice(1, -1)) ctx.lineTo(p.x, p.y);
+  ctx.lineTo(end.x, end.y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(end.x + ux * 8, end.y + uy * 8);
+  ctx.lineTo(end.x - ux * 4 - uy * 7, end.y - uy * 4 + ux * 7);
+  ctx.lineTo(end.x - ux * 4 + uy * 7, end.y - uy * 4 - ux * 7);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCharge(ctx: CanvasRenderingContext2D, map: MapData, u: Unit): void {
   const {ability, target} = u.charging!;
   const radius = ability === 'volley' ? ABILITY.volley.radius : ABILITY.freeze.radius;
   ctx.save();
@@ -1553,9 +1599,11 @@ function drawCharge(ctx: CanvasRenderingContext2D, u: Unit): void {
   for (let q = -radius; q <= radius; q++) {
     for (let r = -radius; r <= radius; r++) {
       const h = {q: target.q + q, r: target.r + r};
-      if (hexDistance(h, target) > radius) continue;
+      if (hexDistance(h, target) > radius || !onMap(map, h)) continue;
       hexPath(ctx, h, 4);
-      ctx.strokeStyle = SIDE_COLOR[u.side];
+      ctx.fillStyle = `rgba(${TARGET_YELLOW},0.2)`;
+      ctx.fill();
+      ctx.strokeStyle = HIGHLIGHT.target.stroke;
       ctx.lineWidth = 2;
       ctx.stroke();
     }
@@ -2085,6 +2133,8 @@ function drawUnit(
     at?: {x: number; y: number} | undefined;
     /** Opacity, for a unit fading out as it falls. */
     alpha?: number;
+    /** An ability being aimed can target it (or has): a yellow ring inside its border. */
+    targeted?: 'target' | 'chosen' | undefined;
   }
 ): void {
   const c = opts.at ?? center(hex);
@@ -2099,6 +2149,12 @@ function drawUnit(
     ctx.lineWidth = opts.acting || opts.selected ? 3.5 : 3;
     ctx.stroke();
     ctx.setLineDash([]);
+    if (opts.targeted) {
+      hexPath(ctx, hex, 6);
+      ctx.strokeStyle = HIGHLIGHT[opts.targeted].stroke;
+      ctx.lineWidth = opts.targeted === 'chosen' ? 3.5 : 2.5;
+      ctx.stroke();
+    }
   }
   const sprite = HERO_SPRITE[u.hero];
   const img = sprite && assetLoader.requestImage(sprite);

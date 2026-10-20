@@ -60,8 +60,8 @@ export type {
 } from './client/TacticsInputSystem';
 export {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './rules/abilities';
 export type {AbilityDef, ArrowLane} from './rules/abilities';
-export {TILE_INFO, fogInfo, hailInfo} from './rules/info';
-export type {HexInfo} from './rules/info';
+export {KEYWORD_INFO, TILE_INFO, fogInfo, hailInfo} from './rules/info';
+export type {HexInfo, KeywordId} from './rules/info';
 export {ABILITY, HEROES, RULES} from './rules/config';
 export {
   fogAt,
@@ -79,7 +79,7 @@ export {enterHex, unitName} from './rules/resolve';
 export {slotsForward, turnCost} from './rules/track';
 export {afterAction, previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
-export {taunterOf} from './rules/taunt';
+export {allowedTargets, taunterOf} from './rules/taunt';
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
 export {SALT_FLATS, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';

@@ -204,7 +204,10 @@ async function abandonOn(p) {
 try {
   await page.goto(`${WEB_URL}/play/silk-road-tactics`);
   await page.getByRole('button', {name: 'Start a fight'}).click();
-  await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
+  await page
+    .getByTestId('turn-controls')
+    .getByRole('button', {name: /^Move/})
+    .waitFor({timeout: 15_000});
   const devServer = await page
     .waitForFunction(() => window.__tactics, null, {timeout: 3_000})
     .then(() => true)
@@ -258,7 +261,7 @@ try {
     )[0];
   // Without Move, a tap only looks at the hex.
   await tapHex(dest);
-  const moveButton = page.getByRole('button', {name: /^Move/});
+  const moveButton = page.getByTestId('turn-controls').getByRole('button', {name: /^Move/});
   check(
     'a tap without Move plans nothing',
     (await moveButton.getAttribute('aria-pressed')) === 'false'
@@ -442,7 +445,10 @@ try {
     await abandonOn(page);
     await page.reload();
     await page.getByRole('button', {name: 'Start a fight'}).click();
-    await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
+    await page
+      .getByTestId('turn-controls')
+      .getByRole('button', {name: /^Move/})
+      .waitFor({timeout: 15_000});
     check('abandoning starts a fresh run', (await state()).runId !== stalled);
   }
   run = await state();
@@ -469,7 +475,7 @@ try {
   const phone = await browser.newPage({...devices['iPhone 13']});
   await phone.goto(`${WEB_URL}/play/silk-road-tactics`);
   await phone.getByRole('button', {name: 'Start a fight'}).click();
-  const phoneMove = phone.getByRole('button', {name: /^Move/});
+  const phoneMove = phone.getByTestId('turn-controls').getByRole('button', {name: /^Move/});
   await phoneMove.waitFor({timeout: 15_000});
   await phone.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {
     timeout: 15_000,
@@ -547,34 +553,50 @@ try {
     );
   }
   await shot(phone, 'phone-tooltip');
-  // It opens with the most detail that fits; if that isn't the full sheet, a
-  // tap shows it and another goes back.
-  const opened = await tooltip.getAttribute('data-detail');
-  const abilities = () => tooltip.getByText('Abilities', {exact: true}).count();
-  if (opened === 'full') {
+  // Always complete: every ability, the ultimate's keyword, nothing to expand.
+  check(
+    'phone: the tooltip lists the abilities by name, nothing to expand',
+    (await tooltip.locator('[data-ability]').count()) >= 3 &&
+      !(await tooltip.getByText(/^Tap for/).count()) &&
+      !(await tooltip.getByText('Health', {exact: true}).locator('[data-keyword]').count())
+  );
+  // An ability's name explains it on a tap; a keyword in that explanation
+  // adds its rule under it, the ability's staying.
+  {
+    const chip = tooltip.locator('[data-ability]').first();
+    const name = await chip.textContent();
+    await chip.tap();
+    await sleep(150);
+    const about = tooltip.getByTestId('ability-info');
     check(
-      'phone: the full sheet fits, so there’s nothing more to tap for',
-      (await abilities()) === 1 && !(await tooltip.getByText(/^Tap for/).count())
+      'phone: tapping an ability’s name explains it',
+      (await about.count()) === 1 && (await about.textContent()).startsWith(name),
+      await about.textContent().catch(() => null)
     );
-  } else {
-    check(
-      `phone: opened with “${opened}”, and offers more`,
-      !(await abilities()) && (await tooltip.getByText('Tap for more').count()) === 1
-    );
-    await tooltip.tap();
+    await about.locator('[data-keyword]').last().tap();
     await sleep(150);
     check(
-      'phone: tapping the tooltip shows the full sheet',
-      (await abilities()) === 1 && (await tooltip.getAttribute('aria-expanded')) === 'true'
+      'phone: a keyword in it adds its rule, the ability’s staying',
+      (await about.count()) === 1 && (await tooltip.getByTestId('keyword-info').count()) === 1
     );
-    await shot(phone, 'phone-tooltip-full');
-    await tooltip.tap();
+    await shot(phone, 'phone-ability');
+    await chip.tap();
     await sleep(150);
-    check(
-      'phone: a second tap goes back',
-      (await tooltip.getAttribute('data-detail')) === opened && !(await abilities())
-    );
+    check('phone: tapping the name again hides it', !(await about.count()));
   }
+  // A keyword shows its rule on a tap, in the tooltip; another tap hides it.
+  await tooltip.locator('[data-keyword="speed"]').tap();
+  await sleep(150);
+  const rule = tooltip.getByTestId('keyword-info');
+  check(
+    'phone: tapping a keyword shows its rule',
+    (await rule.count()) === 1 && (await rule.textContent()).startsWith('Speed.'),
+    await rule.textContent().catch(() => null)
+  );
+  await shot(phone, 'phone-keyword');
+  await tooltip.locator('[data-keyword="speed"]').tap();
+  await sleep(150);
+  check('phone: tapping it again hides the rule', !(await rule.count()));
   check(
     'phone: no “could do next turn” on an enemy',
     !(await tooltip.textContent()).includes('Could do next turn')
@@ -583,6 +605,24 @@ try {
   await phone.touchscreen.tap(foeAt.x, foeAt.y);
   await sleep(200);
   check('phone: tapping the hex again closes the tooltip', !(await tooltip.count()));
+  // Every unit: the tooltip only scrolls when no side of the hex has room for it all.
+  {
+    const squeezed = [];
+    for (const u of phoneFight.units.filter((x) => x.alive)) {
+      const at = await onPhone(u.hex);
+      await phone.touchscreen.tap(at.x, at.y);
+      await sleep(200);
+      const m = await tooltip.evaluate((el) => ({
+        full: el.scrollHeight,
+        shown: el.clientHeight,
+        room: Number(el.dataset.room),
+      }));
+      if (m.full > m.shown + 1 && m.room >= m.full + 2) squeezed.push({unit: u.id, ...m});
+      await phone.touchscreen.tap(at.x, at.y); // close it
+      await sleep(150);
+    }
+    check('phone: no tooltip squeezed while there’s room for it', !squeezed.length, squeezed);
+  }
   // Plain sand says little, so its tooltip is narrow.
   {
     const quiet = phoneFight.units.map((u) => u.hex && `${u.hex.q},${u.hex.r}`);
@@ -603,10 +643,15 @@ try {
       (await tooltip.textContent()).startsWith('Sand') && t.width < 200,
       [await tooltip.textContent(), t.width]
     );
-    // Tapping away from the board (here, the space between it and the
-    // action bar) closes it too.
+    // Tapping away from the board (here, the space above it: the board
+    // sits down against the action bar) closes it too.
     const box = await phone.locator('canvas').boundingBox();
-    await phone.touchscreen.tap(4, (box.y + box.height + actionBarTop) / 2);
+    check(
+      'phone: the board sits against the action section',
+      box.y > 8 && actionBarTop - (box.y + box.height) <= 12,
+      [box, actionBarTop]
+    );
+    await phone.touchscreen.tap(4, box.y / 2);
     await sleep(200);
     check('phone: tapping away closes the tooltip', !(await tooltip.count()));
   }
@@ -644,7 +689,7 @@ try {
     const box = await phone.locator('canvas').boundingBox();
     await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
     await sleep(250);
-    const planned = phone.getByRole('button', {name: /^Move/});
+    const planned = phone.getByTestId('turn-controls').getByRole('button', {name: /^Move/});
     check(
       'phone: a planned move shows its slots in the Move button',
       /^Move\+\d+$/.test(await planned.textContent()),
@@ -674,8 +719,28 @@ try {
     await sleep(250);
   };
   const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
+  const moveBoxBefore = await phone
+    .getByTestId('turn-controls')
+    .getByRole('button', {name: /^Move/})
+    .boundingBox();
   await phone.getByRole('button', {name: /^Dash/}).click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
+  check(
+    'phone: with no target yet, the button still ends the turn (as with Move)',
+    await phone.getByRole('button', {name: /^End turn/}).isEnabled()
+  );
+  {
+    const after = await phone
+      .getByTestId('turn-controls')
+      .getByRole('button', {name: /^Move/})
+      .boundingBox();
+    check(
+      'phone: picking an ability doesn’t move the buttons',
+      Math.abs(after.y - moveBoxBefore.y) < 1,
+      [moveBoxBefore.y, after.y]
+    );
+    check('phone: the action buttons are big', after.height >= 50, after.height);
+  }
   const aim = await phone.evaluate(() => window.__tactics.targets[0].hex);
   await tapOn(aim);
   await tapOn(aim);
