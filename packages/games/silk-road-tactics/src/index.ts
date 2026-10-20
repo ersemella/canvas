@@ -93,7 +93,7 @@ export {
   unitAt,
 } from './rules/board';
 export type {Reach} from './rules/board';
-export {actingUnit, cloneFight, defaultDeployment, mapOf} from './rules/fight';
+export {actingUnit, cloneFight, mapOf} from './rules/fight';
 export {enterHex, unitName} from './rules/resolve';
 export {slotsForward, turnCost} from './rules/track';
 export {afterAction, previewTurn, unitOptions} from './rules/preview';

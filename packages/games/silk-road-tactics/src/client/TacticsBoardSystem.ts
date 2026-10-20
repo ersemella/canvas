@@ -35,15 +35,7 @@ import sandstormImage from './tiles/sandstorm.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
-export type HighlightKind =
-  | 'zone'
-  | 'move'
-  | 'path'
-  | 'target'
-  | 'chosen'
-  | 'area'
-  | 'lane'
-  | 'inspect';
+export type HighlightKind = 'move' | 'path' | 'target' | 'chosen' | 'area' | 'lane' | 'inspect';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {
@@ -56,8 +48,6 @@ export interface BoardScene {
   healthUnitIds?: string[];
   /** Previewed outcome: where units end up and their health. */
   preview: {unitId: string; to: Hex | null; hpAfter: number; hpBefore: number; killed: boolean}[];
-  /** Units shown at other hexes than the fight's (deployment being arranged). */
-  positions?: Record<string, Hex>;
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
   /** The slot the planned turn's cost aims at; when it's taken, the card yields on to `previewSlot`. */
@@ -104,7 +94,6 @@ interface HighlightStyle {
   dash?: number[];
 }
 const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
-  zone: {fill: 'rgba(96,165,250,0.18)', stroke: 'rgba(96,165,250,0.5)'},
   move: {fill: 'rgba(255,255,255,0.18)', stroke: 'rgba(255,255,255,0.55)'},
   path: {fill: 'rgba(250,204,21,0.25)', stroke: 'rgba(250,204,21,0.8)'},
   /** Hexes an ability can target: the inspect purple, outlined solid, so it never reads as the enemy's red tint. */
@@ -251,7 +240,7 @@ export class TacticsBoardSystem extends BaseSystem {
    * when the turn moved it.
    */
   private startTrackMotion(before: FightState | null, after: FightState | null): void {
-    if (!before || !after || before.mapId !== after.mapId || before.phase === 'deploy') return;
+    if (!before || !after || before.mapId !== after.mapId) return;
     if (this.still) return;
     this.startSlides(before, after);
     this.startAdvance(before, after);
@@ -322,7 +311,7 @@ export class TacticsBoardSystem extends BaseSystem {
     // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
     const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
     for (const u of fight.units) {
-      const hex = scene.positions?.[u.id] ?? u.hex;
+      const hex = u.hex;
       if (!u.alive || !hex) continue;
       const p = previewedTo.get(u.id);
       const moved = Boolean(p?.to && hexKey(p.to) !== hexKey(hex));
@@ -338,7 +327,7 @@ export class TacticsBoardSystem extends BaseSystem {
     const previewed = new Map(scene.preview.map((p) => [p.unitId, p]));
     const acting = fight.awaiting;
     for (const u of fight.units) {
-      const hex = scene.positions?.[u.id] ?? u.hex;
+      const hex = u.hex;
       if (!u.alive || !hex) continue;
       const p = previewed.get(u.id);
       const moved = p && p.to && hexKey(p.to) !== hexKey(hex);
@@ -374,10 +363,10 @@ export class TacticsBoardSystem extends BaseSystem {
     if (scene.inspectedUnitId) looked.add(scene.inspectedUnitId);
     for (const id of scene.healthUnitIds ?? []) looked.add(id);
     if (this.hover.unitId) looked.add(this.hover.unitId);
-    const hovered = this.hover.hex && unitAt(fight, this.hover.hex, scene.positions);
+    const hovered = this.hover.hex && unitAt(fight, this.hover.hex);
     if (hovered) looked.add(hovered.id);
     for (const u of fight.units) {
-      const hex = scene.positions?.[u.id] ?? u.hex;
+      const hex = u.hex;
       if (!u.alive || !hex || !looked.has(u.id)) continue;
       const p = previewed.get(u.id);
       const at = p?.to && !p.killed ? p.to : hex;
@@ -387,22 +376,20 @@ export class TacticsBoardSystem extends BaseSystem {
       drawStatusMarks(ctx, marks, at, stack.marksY);
     }
 
-    if (fight.phase !== 'deploy') {
-      drawTrack(
-        ctx,
-        fight,
-        trackCards(fight, scene.previewSlot ?? null),
-        scene.previewSlot ?? null,
-        scene.aimSlot ?? null,
-        this.advance,
-        this.slides,
-        {
-          selected: scene.selectedUnitId,
-          hovered: this.hover.unitId,
-        }
-      );
-    }
-    if (this.hover.hex) drawHover(ctx, fight, this.hover.hex, scene.positions);
+    drawTrack(
+      ctx,
+      fight,
+      trackCards(fight, scene.previewSlot ?? null),
+      scene.previewSlot ?? null,
+      scene.aimSlot ?? null,
+      this.advance,
+      this.slides,
+      {
+        selected: scene.selectedUnitId,
+        hovered: this.hover.unitId,
+      }
+    );
+    if (this.hover.hex) drawHover(ctx, fight, this.hover.hex);
   }
 }
 
@@ -740,15 +727,10 @@ function drawYield(
 }
 
 /** The hovered hex's tooltip: its tile, hail and unit (the outline is drawn under the units). */
-function drawHover(
-  ctx: CanvasRenderingContext2D,
-  fight: FightState,
-  h: Hex,
-  positions?: Record<string, Hex>
-): void {
+function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): void {
   const map = MAPS[fight.mapId]!;
   const lines: {text: string; color: string; bold?: boolean}[] = [];
-  const unit = unitAt(fight, h, positions);
+  const unit = unitAt(fight, h);
   if (unit) {
     // The side shows in the colour, as on the board: just the hero's name
     // (its health is the bar over it).
@@ -1293,12 +1275,9 @@ function drawStatusMarks(
   });
 }
 
-/** The living unit standing at `h` (or placed there while deploying). */
-function unitAt(fight: FightState, h: Hex, positions?: Record<string, Hex>): Unit | undefined {
-  return fight.units.find((u) => {
-    const at = positions?.[u.id] ?? u.hex;
-    return u.alive && at && hexEquals(at, h);
-  });
+/** The living unit standing at `h`. */
+function unitAt(fight: FightState, h: Hex): Unit | undefined {
+  return fight.units.find((u) => u.alive && u.hex && hexEquals(u.hex, h));
 }
 
 /**

@@ -1,4 +1,4 @@
-import {createFight, deploy, advance, applyTurn, actingUnit} from '@balance-rules/fight';
+import {createFight, advance, applyTurn, actingUnit} from '@balance-rules/fight';
 import {chooseAiTurn} from '@balance-rules/ai';
 import {placeStartingCards} from '@balance-rules/track';
 import {SALT_FLATS} from '@balance-rules/map';
@@ -52,8 +52,8 @@ export function runBalance(options: Options) {
   };
   // Independent random legal placements for both teams, reused in all variants.
   const deployments = Array.from({length: options.samples}, () => ({
-    player: shuffle(SALT_FLATS.deployment.player).slice(0, PARTY.length),
-    enemy: shuffle(SALT_FLATS.deployment.enemy).slice(0, PARTY.length),
+    player: shuffle(SALT_FLATS.startColumns.player).slice(0, PARTY.length),
+    enemy: shuffle(SALT_FLATS.startColumns.enemy).slice(0, PARTY.length),
   }));
   const fights: FightResult[] = [];
   for (const variant of variants) {
@@ -67,17 +67,12 @@ export function runBalance(options: Options) {
           moveActionCost: options.moveCost,
         };
         const positions = deployments[sample]!;
-        state.units
-          .filter((u) => u.side === 'enemy')
-          .forEach((u, i) => {
-            u.hex = positions.enemy[i]!;
-          });
-        deploy(
-          state,
+        for (const side of ['player', 'enemy'] as const)
           state.units
-            .filter((u) => u.side === 'player')
-            .map((u, i) => ({unitId: u.id, hex: positions.player[i]!}))
-        );
+            .filter((u) => u.side === side)
+            .forEach((u, i) => {
+              u.hex = positions[side][i]!;
+            });
         if (priority === 'enemy') {
           // Swap side labels only while allocating the starting track. Geometry,
           // team identities, and AI tie-breaking remain identical across the pair.

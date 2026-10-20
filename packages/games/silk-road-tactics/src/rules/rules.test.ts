@@ -20,17 +20,7 @@ import {
 import {ABILITIES, arrowLanes} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
-import {
-  RuleError,
-  actingUnit,
-  advance,
-  applyTurn,
-  cloneFight,
-  createFight,
-  defaultDeployment,
-  deploy,
-  mapOf,
-} from './fight';
+import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, mapOf} from './fight';
 import {afterAction, previewTurn} from './preview';
 import {SALT_FLATS, onMap} from './map';
 import {abilityDamage, displace, scaled} from './resolve';
@@ -99,6 +89,27 @@ describe('the track', () => {
     expect(freeSlotFrom(s, 9)).toBe(9);
   });
 
+  it('starts each side on its outermost column, scattered by the seed, with no deployment', () => {
+    const map = SALT_FLATS;
+    const starts = new Set<string>();
+    for (let seed = 0; seed < 20; seed++) {
+      const s = createFight(seed);
+      expect(s.phase).toBe('fight');
+      expect(JSON.stringify(createFight(seed))).toBe(JSON.stringify(s));
+      for (const side of ['player', 'enemy'] as const) {
+        const column = new Set(map.startColumns[side].map(hexKey));
+        const hexes = s.units.filter((u) => u.side === side).map((u) => hexKey(u.hex!));
+        expect(hexes.every((h) => column.has(h))).toBe(true);
+        expect(new Set(hexes).size).toBe(hexes.length);
+      }
+      starts.add(s.units.map((u) => hexKey(u.hex!)).join(' '));
+      expect(s.units.every((u) => u.slot !== null)).toBe(true);
+    }
+    expect(starts.size).toBeGreaterThan(10);
+    for (const h of map.startColumns.player) expect([-1, 0]).toContain(hexToOffset(h).col);
+    for (const h of map.startColumns.enemy) expect(hexToOffset(h).col).toBe(7);
+  });
+
   it('orders simultaneous placement: speed, then sides alternating from the player, then party order', () => {
     const s = createFight(0);
     const order = simultaneousOrder(s.units).map((u) => u.id);
@@ -108,7 +119,6 @@ describe('the track', () => {
 
   it('starts every card from the starting cost, without two in one slot (3.4)', () => {
     const s = createFight(1);
-    deploy(s, defaultDeployment(s));
     const slots = s.units.map((u) => u.slot);
     expect(new Set(slots).size).toBe(6);
     expect(unit(s, 'p-mangudai').slot).toBe(
@@ -118,7 +128,6 @@ describe('the track', () => {
 
   it('spaces the starting cards by speed, as far apart as a typical turn would put them', () => {
     const s = createFight(0);
-    deploy(s, defaultDeployment(s));
     const fast = unit(s, 'p-mangudai');
     const slow = unit(s, 'p-bokh');
     expect(slow.slot! - fast.slot!).toBeGreaterThanOrEqual(
@@ -193,9 +202,9 @@ describe('the board', () => {
       });
     };
     for (const h of map.hexes) expect(mirror(h)).toBeDefined();
-    const zone = new Set(map.deployment.enemy.map(hexKey));
-    for (const h of map.deployment.player) expect(zone.has(hexKey(mirror(h)!))).toBe(true);
-    expect(map.deployment.player.some((h) => hexToOffset(h).col === -1)).toBe(true);
+    const zone = new Set(map.startColumns.enemy.map(hexKey));
+    for (const h of map.startColumns.player) expect(zone.has(hexKey(mirror(h)!))).toBe(true);
+    expect(map.startColumns.player.some((h) => hexToOffset(h).col === -1)).toBe(true);
     // Every feature has its mirror image.
     for (const [key, tile] of Object.entries(map.tiles)) {
       const [q, r] = key.split(',').map(Number);
@@ -670,10 +679,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a preview matches the outcome', () => {
-    const run = handleRunAction(createRun(3), {
-      type: 'deploy',
-      placements: defaultDeployment(createRun(3).fight),
-    });
+    const run = createRun(3);
     const acting = actingUnit(run.fight)!;
     const reach = reachableHexes(run.fight, mapOf(run.fight), acting);
     const input: TurnInput = {move: reach[reach.length - 1]!.path, action: {ability: 'hold'}};
@@ -704,7 +710,6 @@ describe('previews, the AI and the run', () => {
   it('is deterministic: the same seed and actions give the same fight', () => {
     const play = () => {
       let run = createRun(7);
-      run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
       for (let i = 0; i < 5 && run.fight.phase === 'fight'; i++) {
         run = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
       }
@@ -721,11 +726,10 @@ describe('previews, the AI and the run', () => {
   });
 
   it('plays a whole fight to an end, AI against AI, within the CPU budget per turn', () => {
-    // Seed 0 with the default deployment ends. Some fights stall once only
+    // Seed 0 ends. Some fights stall once only
     // Storm Callers can act (no damage to finish with): an open question,
     // see phase-1-brief.md section 11.
     let run = createRun(0);
-    run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
     let worst = 0;
     for (let turns = 0; turns < 300 && run.fight.phase === 'fight'; turns++) {
       const me = actingUnit(run.fight)!;
@@ -773,8 +777,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('caps the AI’s search per request, deterministically', () => {
-    let run = createRun(0);
-    run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
+    const run = createRun(0);
     const enemy = run.fight.units.find((u) => u.side === 'enemy')!;
     expect(scoreOptions(run.fight, enemy, 10)).toHaveLength(10);
     const budget = {left: AI.requestSimulations};
@@ -789,8 +792,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('refuses a turn that isn’t legal without changing the run', () => {
-    let run = createRun(1);
-    run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
+    const run = createRun(1);
     const before = JSON.stringify(run);
     expect(() =>
       handleRunAction(run, {
@@ -811,7 +813,6 @@ describe('previews, the AI and the run', () => {
 describe('events for playback', () => {
   it('a run action records what it set off, ending on the board it leaves', () => {
     let run = createRun(0);
-    run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
     run = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
     const events = run.fight.events!;
     expect(events[0]).toMatchObject({kind: 'action', ability: 'hold'});

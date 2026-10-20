@@ -46,7 +46,7 @@ export interface Unit {
   controller: 'human' | 'ai';
   /** Position in its party, for the fixed placement order (3.3). */
   partyIndex: number;
-  /** Null before deployment. */
+  /** Null once dead. */
   hex: Hex | null;
   hp: number;
   maxHp: number;
@@ -113,7 +113,7 @@ export interface BoardSnapshot {
 
 export type RecordedEvent = FightEvent & {after: BoardSnapshot};
 
-export type FightPhase = 'deploy' | 'fight' | 'won' | 'lost';
+export type FightPhase = 'fight' | 'won' | 'lost';
 
 export interface FightState {
   /** Optional headless balance experiment; absent in normal games. */
@@ -164,9 +164,4 @@ export interface TurnInput {
   actFirst?: boolean;
 }
 
-export interface Deployment {
-  unitId: string;
-  hex: Hex;
-}
-
-export type RunAction = {type: 'deploy'; placements: Deployment[]} | ({type: 'turn'} & TurnInput);
+export type RunAction = {type: 'turn'} & TurnInput;

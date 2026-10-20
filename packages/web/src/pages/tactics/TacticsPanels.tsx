@@ -71,23 +71,12 @@ export function ConfirmButton(props: {
 }
 
 /** What's on a hex: its tile's rule, any hail, and the unit standing there (D11). */
-export function HexInspector({
-  fight,
-  hex,
-  positions,
-}: {
-  fight: FightState;
-  hex: Hex;
-  positions?: Record<string, Hex> | undefined;
-}) {
+export function HexInspector({fight, hex}: {fight: FightState; hex: Hex}) {
   const tile = tileAt(mapOf(fight), hex);
   const info = TILE_INFO[tile];
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
   const fog = fogAt(fight, hex);
-  const unit = fight.units.find((u) => {
-    const at = positions?.[u.id] ?? u.hex;
-    return u.alive && at && hexEquals(at, hex);
-  });
+  const unit = fight.units.find((u) => u.alive && u.hex && hexEquals(u.hex, hex));
   // Plain sand under a unit says nothing worth a card.
   const showTile = tile !== 'sand' || hail || fog || !unit;
   return (

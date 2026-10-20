@@ -15,13 +15,11 @@ import {
   ABILITY,
   BOARD_LAYOUT,
   RULES,
-  SALT_FLATS,
   SCENE_SIZE,
   abilitiesOf,
   actingUnit,
   arrowLanes,
   chooseAiTurn,
-  defaultDeployment,
   mapOf,
   previewTurn,
   reachableHexes,
@@ -83,7 +81,6 @@ export function TacticsPage() {
   const [plannedMove, setPlannedMove] = useState<Reach | null>(null);
   const [ability, setAbility] = useState<AbilityId | null>(null);
   const [target, setTarget] = useState<ActionTarget | null>(null);
-  const [deployAt, setDeployAt] = useState<Record<string, Hex>>({});
   /** Picking where to move: taps on reachable hexes plan the move; otherwise taps inspect. */
   const [moving, setMoving] = useState(false);
   /** The hex last tapped to inspect (touch can't hover). */
@@ -115,7 +112,6 @@ export function TacticsPage() {
   const fight: FightState | null = run?.view.fight ?? null;
   const fightRef = useRef(fight);
   fightRef.current = fight;
-  const map = SALT_FLATS;
 
   const resetTurn = useCallback(() => {
     setPlannedMove(null);
@@ -129,11 +125,6 @@ export function TacticsPage() {
       setRun(r);
       resetTurn();
       setError(null);
-      if (r.view.fight.phase === 'deploy') {
-        setDeployAt(
-          Object.fromEntries(defaultDeployment(r.view.fight).map((d) => [d.unitId, d.hex]))
-        );
-      }
     },
     [resetTurn]
   );
@@ -330,19 +321,6 @@ export function TacticsPage() {
         return;
       }
       if (!fight || busy) return;
-      if (fight.phase === 'deploy') {
-        const here = Object.entries(deployAt).find(([, at]) => hexEquals(at, h))?.[0];
-        const sel = selectedId && deployAt[selectedId] ? selectedId : null;
-        if (here && here !== sel) {
-          if (sel) setDeployAt({...deployAt, [sel]: h, [here]: deployAt[sel]!});
-          else setSelectedId(here);
-          return;
-        }
-        const inZone = map.deployment.player.some((z) => hexEquals(z, h)) && !map.tiles[hexKey(h)];
-        if (sel && inZone) setDeployAt({...deployAt, [sel]: h});
-        else setSelectedId(unitAt(fight, h)?.id ?? null);
-        return;
-      }
       if (acting && moving) {
         const reach = reaches.find((r) => hexEquals(r.hex, h));
         if (reach) {
@@ -374,21 +352,7 @@ export function TacticsPage() {
       setPinnedHex(h);
       setSelectedId(unitAt(fight, h)?.id ?? null);
     },
-    [
-      fight,
-      busy,
-      playing,
-      deployAt,
-      selectedId,
-      acting,
-      moving,
-      reaches,
-      ability,
-      target,
-      targets,
-      chooseTarget,
-      map,
-    ]
+    [fight, busy, playing, acting, moving, reaches, ability, target, targets, chooseTarget]
   );
 
   const onHexRef = useRef(onHex);
@@ -398,8 +362,7 @@ export function TacticsPage() {
 
   /** The hex being looked at: under the mouse, else the one last tapped. */
   const inspectHex = hover.hex ?? pinnedHex;
-  const inspectedUnit =
-    fight && inspectHex && fight.phase !== 'deploy' ? unitAt(fight, inspectHex) : undefined;
+  const inspectedUnit = fight && inspectHex ? unitAt(fight, inspectHex) : undefined;
   /** Where the inspected unit could move this turn, if it isn't the acting one. */
   const inspectReach = useMemo(
     () =>
@@ -438,12 +401,6 @@ export function TacticsPage() {
       aimSlot: preview?.aimSlot ?? null,
     };
     if (!fight) return out;
-    if (fight.phase === 'deploy') {
-      for (const h of map.deployment.player)
-        if (!map.tiles[hexKey(h)]) highlights.push({hex: h, kind: 'zone'});
-      out.positions = deployAt;
-      return out;
-    }
     for (const r of inspectReach) highlights.push({hex: r.hex, kind: 'inspect'});
     if (!acting) return out;
     if (ability && isAttack(ability)) {
@@ -519,7 +476,6 @@ export function TacticsPage() {
     phone,
     featuredId,
     acting,
-    deployAt,
     plannedMove,
     moving,
     ability,
@@ -528,7 +484,6 @@ export function TacticsPage() {
     targets,
     target,
     preview,
-    map,
     inspectReach,
     lanes,
     abilityContext,
@@ -565,13 +520,16 @@ export function TacticsPage() {
       run,
       busy: busy || playing,
       hexToCanvas: (h: Hex) => hexToPixel(h, BOARD_LAYOUT),
+      /** The chosen ability's targets and the acting unit's moves, since starts are random. */
+      targets,
+      reaches,
       autoTurn: () => {
         if (!fight || !acting) return false;
         commit(chooseAiTurn(fight, acting));
         return true;
       },
     };
-  }, [run, busy, playing, fight, acting, commit]);
+  }, [run, busy, playing, fight, acting, commit, targets, reaches]);
 
   // ── Layout ─────────────────────────────────────────────────────────────────
 
@@ -611,68 +569,35 @@ export function TacticsPage() {
   const selected =
     fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
 
-  // The action section (deployment or the turn) and the detail section
+  // The action section (the turn) and the detail section
   // (what's tapped or hovered). Phones put details first under the board and
   // pin the actions to the bottom of the screen.
-  const actions =
-    fight.phase === 'deploy' ? (
-      <Paper bg="dark.7" p="sm" radius="md">
-        <Stack gap="xs">
-          <Text fw={600}>Deploy your heroes</Text>
-          <Text fz="sm" c="dimmed">
-            Tap a hero, then a hex in the blue zone, to move it. The enemy's band is already in
-            place.
-          </Text>
-          <Button
-            color="yellow"
-            c="dark.9"
-            fw="bold"
-            loading={busy}
-            onClick={() =>
-              void send(() =>
-                runsApi.deploy(run.runId, {
-                  placements: Object.entries(deployAt).map(([unitId, hex]) => ({unitId, hex})),
-                })
-              )
-            }
-          >
-            Start the fight
-          </Button>
-        </Stack>
-      </Paper>
-    ) : (
-      acting &&
-      !finished && (
-        <TurnControls
-          phone={phone}
-          slotsLater={slotsLater}
-          moveSlots={moveSlots}
-          outOfReach={outOfReach}
-          unit={acting}
-          ability={ability}
-          plannedMove={plannedMove}
-          moving={moving}
-          canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
-          onMove={toggleMove}
-          onAbility={chooseAbility}
-        >
-          <ConfirmButton
-            endTurn={endsWithHold}
-            fight={fight}
-            preview={preview}
-            needsTarget={!input}
-            busy={busy || playing}
-            onConfirm={() => commit()}
-          />
-        </TurnControls>
-      )
-    );
+  const actions = acting && !finished && (
+    <TurnControls
+      phone={phone}
+      slotsLater={slotsLater}
+      moveSlots={moveSlots}
+      outOfReach={outOfReach}
+      unit={acting}
+      ability={ability}
+      plannedMove={plannedMove}
+      moving={moving}
+      canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
+      onMove={toggleMove}
+      onAbility={chooseAbility}
+    >
+      <ConfirmButton
+        endTurn={endsWithHold}
+        fight={fight}
+        preview={preview}
+        needsTarget={!input}
+        busy={busy || playing}
+        onConfirm={() => commit()}
+      />
+    </TurnControls>
+  );
   const details = inspectHex ? (
-    <HexInspector
-      fight={fight}
-      hex={inspectHex}
-      positions={fight.phase === 'deploy' ? deployAt : undefined}
-    />
+    <HexInspector fight={fight} hex={inspectHex} />
   ) : (
     selected && <StatSheet fight={fight} unit={selected} />
   );

@@ -19,11 +19,8 @@ export interface MapData {
   /** Every hex on the board, row by row. */
   hexes: Hex[];
   tiles: Record<string, Tile>;
-  deployment: {player: Hex[]; enemy: Hex[]};
-  /** Enemy placements by party index; the run's seed picks one. */
-  enemyLayouts: Hex[][];
-  /** The player's starting placement, which they can change. */
-  playerLayout: Hex[];
+  /** Where each side may start: the board's outermost column on its edge. */
+  startColumns: {player: Hex[]; enemy: Hex[]};
 }
 
 const ROWS = 9;
@@ -68,13 +65,7 @@ export const SALT_FLATS: MapData = {
   name: 'The Salt Flats Crossing',
   hexes: boardHexes(),
   tiles: Object.fromEntries(special.map(([c, t]) => [hexKey(offsetToHex(c)), t])),
-  deployment: {player: edgeHexes('left', 2), enemy: edgeHexes('right', 2)},
-  enemyLayouts: [
-    [at(6, 3), at(6, 4), at(7, 4)],
-    [at(6, 4), at(7, 2), at(6, 5)],
-    [at(6, 3), at(7, 1), at(7, 6)],
-  ],
-  playerLayout: [at(1, 2), at(0, 3), at(1, 4)],
+  startColumns: {player: edgeHexes('left', 1), enemy: edgeHexes('right', 1)},
 };
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};

@@ -57,8 +57,6 @@ export const runsApi = {
   get: (runId: string) => call<RunResponse>(`/runs/${runId}`),
   start: () =>
     call<RunResponse>('/runs', {method: 'POST', body: JSON.stringify({game: 'silk-road-tactics'})}),
-  deploy: (runId: string, body: unknown) =>
-    call<RunResponse>(`/runs/${runId}/deploy`, {method: 'POST', body: JSON.stringify(body)}),
   turn: (runId: string, body: unknown) =>
     call<RunResponse>(`/runs/${runId}/turn`, {method: 'POST', body: JSON.stringify(body)}),
 };

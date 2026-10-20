@@ -12,7 +12,6 @@ import {runSystemRegistry} from '../games/registry';
  *   POST /runs                {game}       -> start a run; abandons the key's active one
  *   GET  /runs/active                      -> {activeRunId} for this key
  *   GET  /runs/:id                         -> the current view (resume after a reload)
- *   POST /runs/:id/deploy     {placements} -> place the party; starts the clock
  *   POST /runs/:id/turn       {move?, action, actFirst?} -> one turn, then AI turns up to yours
  *   POST /runs/:id/abandon                 -> give up the run
  */
@@ -33,11 +32,11 @@ export async function handleRunsRoute(request: Request, env: Env, url: URL): Pro
   const headers = {'X-Owner': owner, 'Content-Type': 'application/json'};
 
   if (request.method === 'GET' && sub === '') return room.fetch('https://do/view', {headers});
-  if (request.method === 'POST' && (sub === '/deploy' || sub === '/turn')) {
+  if (request.method === 'POST' && sub === '/turn') {
     const body = await readBody(request);
     if (body === undefined)
       return json({error: 'bad_request', message: 'Malformed request body.'}, 400);
-    const action = {...(body as object), type: sub === '/deploy' ? 'deploy' : 'turn'};
+    const action = {...(body as object), type: 'turn'};
     return room.fetch('https://do/action', {method: 'POST', headers, body: JSON.stringify(action)});
   }
   if (request.method === 'POST' && sub === '/abandon')

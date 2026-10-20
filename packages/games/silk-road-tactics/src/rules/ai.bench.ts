@@ -1,7 +1,7 @@
 /** Local calibration only: deployed Worker timers cannot measure synchronous search. */
 import {bench} from 'vitest';
 import {chooseAiTurn} from './ai';
-import {actingUnit, defaultDeployment} from './fight';
+import {actingUnit} from './fight';
 import {createRun, handleRunAction} from './run';
 import type {RunState} from './run';
 import type {RunAction} from './types';
@@ -9,7 +9,6 @@ import type {RunAction} from './types';
 const requests: {run: RunState; action: RunAction}[] = [];
 for (let seed = 0; seed < 3; seed++) {
   let run = createRun(seed);
-  run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
   for (let turn = 0; turn < 150 && run.fight.phase === 'fight'; turn++) {
     // Prepare the human decision outside the measured request.
     const input = chooseAiTurn(run.fight, actingUnit(run.fight)!);
