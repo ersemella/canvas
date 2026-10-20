@@ -45,7 +45,6 @@ import type {
 } from '@canvas/games-silk-road-tactics';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
-import {usePageHeader} from 'components/PageHeader';
 import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
@@ -94,7 +93,6 @@ export function TacticsPage() {
   /** Phone widths (the CSS breakpoint): a pared-down action section pinned below the details. */
   /** Phone widths: layout only (the board edge to edge, details first, actions pinned below). */
   const phone = useIsPhone();
-  usePageHeader('Silk Road Tactics');
   const eventsRef = useRef<EventBus | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
   const actionsRef = useRef<HTMLElement | null>(null);
@@ -550,7 +548,7 @@ export function TacticsPage() {
 
   if (loading) {
     return (
-      <Center h="calc(100vh - 56px)">
+      <Center h="100dvh">
         <Loader size="sm" />
       </Center>
     );

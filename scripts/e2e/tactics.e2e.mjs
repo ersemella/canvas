@@ -230,19 +230,8 @@ try {
   let run = await state();
   const outrider = 'p-mangudai';
 
-  // The top bar: Back and the game's title, on desktop too.
-  const bar = page.locator('header');
-  check(
-    'the top bar has Back and the title, not the site name',
-    (await bar.getByRole('link', {name: 'Back'}).isVisible()) &&
-      (await bar.getByText('Silk Road Tactics').isVisible()) &&
-      !(await bar.getByText('Canvas Games').count()),
-    await bar.textContent()
-  );
-  check(
-    'the page doesn’t repeat the title',
-    (await page.getByText('Silk Road Tactics').count()) === 1
-  );
+  // No top bar: the board gets the whole screen, on desktop too.
+  check('no top bar', (await page.locator('header').count()) === 0);
 
   // One turn with real taps: select Dash, replace it with Move, Confirm. The
   // Outrider (fastest, so first) starts somewhere on the left edge, so the
@@ -484,18 +473,7 @@ try {
     'phone: no turn heading or hints',
     !(await phone.getByText(/^Your turn:|Tap a hex to look/).count())
   );
-  const phoneBar = phone.locator('header');
-  check(
-    'phone: the top bar has Back and the title, not the site name',
-    (await phoneBar.getByRole('link', {name: 'Back'}).isVisible()) &&
-      (await phoneBar.getByText('Silk Road Tactics').isVisible()) &&
-      !(await phoneBar.getByText('Canvas Games').count()),
-    await phoneBar.textContent()
-  );
-  check(
-    'phone: the page doesn’t repeat the title',
-    (await phone.getByText('Silk Road Tactics').count()) === 1
-  );
+  check('phone: no top bar', (await phone.locator('header').count()) === 0);
   const canvasBox = await phone.locator('canvas').boundingBox();
   const viewportWidth = phone.viewportSize().width;
   check(
