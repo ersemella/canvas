@@ -19,7 +19,7 @@ import type {AbilityId, FightState, StatusKind, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
 import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
-import {Playback} from './playback';
+import {Playback, eventSeconds} from './playback';
 import type {PlaybackPayload} from './playback';
 import bokhPortrait from './sprites/bokh-portrait.png';
 import bokhSprite from './sprites/bokh.png';
@@ -1641,8 +1641,11 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
       const radius = PLAYBACK_RADIUS[e.ability] ?? 0;
       const area = e.target ? map.hexes.filter((h) => hexDistance(h, e.target!) <= radius) : [];
       const effect = e.kind === 'action' ? ABILITY_EFFECT[e.ability] : undefined;
+      // Effects move in steps, as pixel art does.
+      const steps = eventSeconds(e, false) * EFFECT_FPS;
+      const stepped = steps > 0 ? Math.floor(k * steps) / steps : k;
       if (e.target && effect) {
-        effect(ctx, {from: u.hex, target: e.target, area, k});
+        effect(ctx, {from: u.hex, target: e.target, area, k: stepped});
       } else if (e.target) {
         ctx.save();
         ctx.globalAlpha = 1 - k * 0.6;
@@ -1651,23 +1654,19 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
         ctx.restore();
       }
       // An arrow flying from the bow to its mark.
-      if (e.ability === 'bow' && e.target && u.hex && k < 0.7) {
+      if (e.ability === 'bow' && e.target && u.hex && stepped < 0.7) {
         const a = center(u.hex);
         const b = center(e.target);
-        const t = k / 0.7;
+        const t = stepped / 0.7;
         const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-        const dx = ((b.x - a.x) / len) * 14;
-        const dy = ((b.y - a.y) / len) * 14;
-        const x = lerp(a.x, b.x, t);
-        const y = lerp(a.y, b.y, t) - 18;
-        ctx.save();
-        ctx.strokeStyle = '#fde68a';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(x - dx, y - dy);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        ctx.restore();
+        drawPixelArrow(
+          ctx,
+          lerp(a.x, b.x, t),
+          lerp(a.y, b.y, t) - 18,
+          (b.x - a.x) / len,
+          (b.y - a.y) / len,
+          7
+        );
       }
       // The name last, over the effect.
       if (u.hex) title(u.hex, name, e.kind === 'charge' ? '#d8b4fe' : '#fde047');
@@ -1696,7 +1695,10 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
   }
 }
 
-/** What an ability's effect drawing gets: who used it, where it lands, the hexes it covers, and how far through (0 to 1). */
+/** Frames a second the playback's effects move in: steps, like the units' idles and the weather. */
+const EFFECT_FPS = 12;
+
+/** What an ability's effect drawing gets: who used it, where it lands, the hexes it covers, and how far through (0 to 1, in steps). */
 interface EffectFrame {
   from: Hex | null;
   target: Hex;
@@ -1704,7 +1706,11 @@ interface EffectFrame {
   k: number;
 }
 
-/** Abilities with a flourish of their own as they land; the rest light up their area. */
+/**
+ * Abilities with a flourish of their own as they land; the rest light up
+ * their area. All drawn as pixel art, like the sprites: art pixels on the
+ * art grid, solid colours, dithered rather than see-through.
+ */
 const ABILITY_EFFECT: Partial<
   Record<AbilityId, (ctx: CanvasRenderingContext2D, f: EffectFrame) => void>
 > = {
@@ -1716,6 +1722,109 @@ const ABILITY_EFFECT: Partial<
 /** Fades an effect out over the last part of its event, from `start` (0 to 1) on. */
 const fadeOut = (k: number, start = 0.8) => (k < start ? 1 : Math.max(0, (1 - k) / (1 - start)));
 
+/** One art pixel (a square of `SPRITE_SCALE` scene pixels) at art-grid cell (ax, ay). */
+function artPixel(ctx: CanvasRenderingContext2D, ax: number, ay: number, color: string): void {
+  ctx.fillStyle = color;
+  ctx.fillRect(ax * SPRITE_SCALE, ay * SPRITE_SCALE, SPRITE_SCALE, SPRITE_SCALE);
+}
+
+/** The art-grid cell holding a scene point. */
+const artCell = (x: number, y: number) =>
+  [Math.round(x / SPRITE_SCALE), Math.round(y / SPRITE_SCALE)] as const;
+
+/** The art-grid cells of a line between two scene points, from the first (Bresenham's). */
+function artLine(x0: number, y0: number, x1: number, y1: number): [number, number][] {
+  let [ax, ay] = artCell(x0, y0);
+  const [bx, by] = artCell(x1, y1);
+  const dx = Math.abs(bx - ax);
+  const dy = -Math.abs(by - ay);
+  const sx = ax < bx ? 1 : -1;
+  const sy = ay < by ? 1 : -1;
+  let err = dx + dy;
+  const cells: [number, number][] = [];
+  for (;;) {
+    cells.push([ax, ay]);
+    if (ax === bx && ay === by) return cells;
+    const e2 = 2 * err;
+    if (e2 >= dy) {
+      err += dy;
+      ax += sx;
+    }
+    if (e2 <= dx) {
+      err += dx;
+      ay += sy;
+    }
+  }
+}
+
+const ditherPatterns = new Map<string, CanvasPattern | null>();
+
+/**
+ * A fill of `color` in art pixels, `level` of every 16 shown (an ordered
+ * dither, on the same grid as the weather's): how pixel art shows light or
+ * a tint without blending.
+ */
+function ditherFill(
+  ctx: CanvasRenderingContext2D,
+  color: string,
+  level: number
+): CanvasPattern | null {
+  const lvl = Math.max(0, Math.min(16, Math.round(level)));
+  const key = `${color}|${lvl}`;
+  if (ditherPatterns.has(key)) return ditherPatterns.get(key)!;
+  let pattern: CanvasPattern | null = null;
+  if (lvl > 0 && typeof document !== 'undefined') {
+    const tile = artCanvas(4 * SPRITE_SCALE, 4 * SPRITE_SCALE);
+    const t = tile.getContext('2d')!;
+    t.fillStyle = color;
+    for (let y = 0; y < 4; y++)
+      for (let x = 0; x < 4; x++)
+        if (dithered(x, y, lvl))
+          t.fillRect(x * SPRITE_SCALE, y * SPRITE_SCALE, SPRITE_SCALE, SPRITE_SCALE);
+    pattern = ctx.createPattern(tile, 'repeat');
+  }
+  ditherPatterns.set(key, pattern);
+  return pattern;
+}
+
+/** A hex filled with a dithered `color` (see `ditherFill`). */
+function ditherHex(ctx: CanvasRenderingContext2D, h: Hex, color: string, level: number): void {
+  const pattern = ditherFill(ctx, color, level);
+  if (!pattern) return;
+  ctx.save();
+  hexPath(ctx, h, 2);
+  ctx.fillStyle = pattern;
+  ctx.fill();
+  ctx.restore();
+}
+
+/**
+ * A pixel-art arrow whose head is at (x, y), pointing along (ux, uy):
+ * `length` art pixels of wooden shaft, outlined dark, a steel head and pale
+ * fletching at the tail.
+ */
+function drawPixelArrow(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  ux: number,
+  uy: number,
+  length: number
+): void {
+  const reach = length * SPRITE_SCALE;
+  const cells = artLine(x - ux * reach, y - uy * reach, x, y);
+  // The outline: either side across the arrow's run.
+  const across = Math.abs(ux) > Math.abs(uy) ? [0, 1] : [1, 0];
+  for (const [cx, cy] of cells) {
+    artPixel(ctx, cx - across[0]!, cy - across[1]!, '#221816');
+    artPixel(ctx, cx + across[0]!, cy + across[1]!, '#221816');
+  }
+  cells.forEach(([cx, cy], i) => {
+    const color = i >= cells.length - 2 ? '#e5e7eb' : i < 2 ? '#f5f5f4' : '#a16207';
+    artPixel(ctx, cx, cy, color);
+  });
+}
+
 /** Arrows per hex of a volley's area. */
 const VOLLEY_ARROWS = 3;
 /** The part of the event each arrow takes to fall, and the most any waits to loose. */
@@ -1725,17 +1834,18 @@ const VOLLEY_STAGGER = 0.4;
 /**
  * Volley: arrows rain down on the area, loosed in a ragged wave from the
  * archer's side and falling steeply, each sticking where it lands with a
- * puff of dust, then the lot fades.
+ * kick of dust, the area flecked orange under them, then the lot thins out
+ * and goes.
  */
 function drawVolley(ctx: CanvasRenderingContext2D, {from, target, area, k}: EffectFrame): void {
   const t = center(target);
   const side = from ? Math.sign(t.x - center(from).x) || 1 : 1;
-  ctx.save();
-  ctx.globalAlpha = 0.55 * fadeOut(k, 0.6);
-  for (const h of area) fillHex(ctx, h, HIGHLIGHT.area);
-  ctx.restore();
-  ctx.save();
-  ctx.lineCap = 'round';
+  const fade = fadeOut(k);
+  for (const h of area) ditherHex(ctx, h, '#fb923c', 3 * fadeOut(k, 0.6));
+  // Falling from high up and back towards the archer, steeply down to the mark.
+  const len = Math.hypot(side * 0.45, 1);
+  const ux = (side * 0.45) / len;
+  const uy = 1 / len;
   for (const h of area) {
     const c = center(h);
     const next = hexRandom(h, 3);
@@ -1750,67 +1860,28 @@ function drawVolley(ctx: CanvasRenderingContext2D, {from, target, area, k}: Effe
       const x = c.x + lx * SPRITE_SCALE;
       const y = c.y + ly * SPRITE_SCALE;
       const start = next() * VOLLEY_STAGGER;
+      // Thinning out at the end: each arrow goes at its own moment.
+      if (next() > fade) continue;
       const f = (k - start) / VOLLEY_FLIGHT;
       if (f < 0) continue;
-      // Falling: from high up and back towards the archer, steeply down to the mark.
-      const dirX = side * 0.45;
-      const dirY = 1;
-      const len = Math.hypot(dirX, dirY);
-      const ux = dirX / len;
-      const uy = dirY / len;
       if (f < 1) {
         const d = (1 - f) * 150;
-        drawArrowShaft(ctx, x - ux * d, y - uy * d, ux, uy, 20, 1);
+        drawPixelArrow(ctx, x - ux * d, y - uy * d, ux, uy, 9);
         continue;
       }
-      // Landed: stuck in the ground, a short way in, with a puff of dust.
-      ctx.globalAlpha = fadeOut(k);
-      drawArrowShaft(ctx, x, y, ux, uy, 13, ctx.globalAlpha);
+      // Landed: stuck in the ground, a short way in, with a kick of dust.
+      drawPixelArrow(ctx, x, y, ux, uy, 5);
       const puff = (k - start - VOLLEY_FLIGHT) / 0.15;
       if (puff < 1) {
-        ctx.globalAlpha = (1 - puff) * 0.6;
-        ctx.fillStyle = '#e7d3a8';
-        ctx.beginPath();
-        ctx.ellipse(x, y + 1, 4 + puff * 8, 2 + puff * 3, 0, 0, Math.PI * 2);
-        ctx.fill();
+        const [ax, ay] = artCell(x, y);
+        const spread = 1 + Math.floor(puff * 4);
+        for (const s of [-1, 1]) {
+          artPixel(ctx, ax + s * spread, ay, '#e7d3a8');
+          artPixel(ctx, ax + s * (spread + 1), ay - 1, '#d4b483');
+        }
       }
-      ctx.globalAlpha = 1;
     }
   }
-  ctx.restore();
-}
-
-/** An arrow whose head is at (x, y), pointing along (ux, uy): `length` pixels of shaft behind it, fletched at the tail. */
-function drawArrowShaft(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  ux: number,
-  uy: number,
-  length: number,
-  alpha: number
-): void {
-  const tx = x - ux * length;
-  const ty = y - uy * length;
-  ctx.globalAlpha = alpha;
-  ctx.strokeStyle = '#221816';
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(tx, ty);
-  ctx.lineTo(x, y);
-  ctx.stroke();
-  ctx.strokeStyle = '#a16207';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  // Fletching: two pale vanes at the tail.
-  ctx.strokeStyle = '#f5f5f4';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (const s of [1, -1]) {
-    ctx.moveTo(tx + ux * 4, ty + uy * 4);
-    ctx.lineTo(tx - ux * 1 + uy * 4 * s, ty - uy * 1 - ux * 4 * s);
-  }
-  ctx.stroke();
 }
 
 /** Frost spreads a ring at a time: when the hexes this many rings out start to freeze, and how long that takes. */
@@ -1818,34 +1889,72 @@ const FREEZE_RING_DELAY = 0.16;
 const FREEZE_GROW = 0.22;
 
 /**
- * Freeze: a cold blast rings out from the target and the area ices over,
- * ring by ring: each hex frosts pale blue and sprouts ice shards, glinting,
- * before it all melts away.
+ * Ice shards as pixel sprites, rows from the top: `#` outline, `w` lit
+ * face, `o` ice, `b` its shaded side. They rise from the ground, a row at a
+ * time.
+ */
+const ICE_SHARDS = [
+  ['..#..', '.#w#.', '.#wo#', '#wob#', '#wob#', '#wob#', '#oob#', '#oob#'],
+  ['.#.', '#w#', '#o#', '#ob#', '#ob#'],
+  ['.#..', '#w#.', '#wo#', '#ob#', '#ob#', '#ob#'],
+] as const;
+const ICE_COLORS: Record<string, string> = {
+  '#': '#0c4a6e',
+  w: '#ffffff',
+  o: '#e0f2fe',
+  b: '#7dd3fc',
+};
+
+/** An ice shard standing on art cell (ax, ay), its bottom `rows` rows showing. */
+function drawIceShard(
+  ctx: CanvasRenderingContext2D,
+  shard: readonly string[],
+  ax: number,
+  ay: number,
+  rows: number
+): void {
+  const height = shard.length;
+  for (let r = Math.max(0, height - rows); r < height; r++) {
+    const row = shard[r]!;
+    for (let col = 0; col < row.length; col++) {
+      const color = ICE_COLORS[row[col]!];
+      if (color) artPixel(ctx, ax + col - (row.length >> 1), ay - (height - 1 - r), color);
+    }
+  }
+}
+
+/**
+ * Freeze: a cold blast rings out from the target in pixels and the area
+ * ices over, ring by ring: each hex frosts (dithered pale blue) and sprouts
+ * ice shards, glinting, then the shards sink and the frost thins away.
  */
 function drawFreeze(ctx: CanvasRenderingContext2D, {target, area, k}: EffectFrame): void {
   const t = center(target);
   const fade = fadeOut(k);
-  ctx.save();
-  // The blast: a ring racing outward from the target.
+  // The blast: a ring of pixels racing outward from the target.
   if (k < 0.5) {
     const r = (k / 0.5) * BOARD_LAYOUT.size * 2.4;
-    ctx.globalAlpha = 1 - k / 0.5;
-    ctx.strokeStyle = '#e0f2fe';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.ellipse(t.x, t.y, r, r * 0.8, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.strokeStyle = '#7dd3fc';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    const seen = new Set<string>();
+    for (let i = 0; i < 96; i++) {
+      const a = (i / 96) * Math.PI * 2;
+      for (const [rr, color] of [
+        [r, '#e0f2fe'],
+        [r - SPRITE_SCALE, '#7dd3fc'],
+      ] as const) {
+        const [ax, ay] = artCell(t.x + Math.cos(a) * rr, t.y + Math.sin(a) * rr * 0.8);
+        const key = `${ax},${ay},${color}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        artPixel(ctx, ax, ay, color);
+      }
+    }
   }
   for (const h of area) {
     const g = (k - hexDistance(h, target) * FREEZE_RING_DELAY) / FREEZE_GROW;
     if (g <= 0) continue;
     const grow = Math.min(1, g);
-    ctx.globalAlpha = fade * grow;
-    fillHex(ctx, h, {fill: 'rgba(186,230,253,0.42)', stroke: 'rgba(224,242,254,0.95)'});
-    // Ice shards rising from the ground, in clusters.
+    ditherHex(ctx, h, '#bae6fd', 4 * grow * fade);
+    // Ice shards rising from the ground, in clusters, sinking again as it ends.
     const c = center(h);
     const next = hexRandom(h, 5);
     for (let i = 0; i < 4; i++) {
@@ -1856,74 +1965,37 @@ function drawFreeze(ctx: CanvasRenderingContext2D, {target, area, k}: EffectFram
         ly = (next() - 0.5) * 26;
         if (insideHex(lx, ly, 7)) break;
       }
-      const height = (8 + next() * 12) * grow;
-      const lean = (next() - 0.5) * 6;
-      drawIceShard(ctx, c.x + lx * SPRITE_SCALE, c.y + ly * SPRITE_SCALE, height, lean);
-      drawIceShard(
-        ctx,
-        c.x + lx * SPRITE_SCALE + 6,
-        c.y + ly * SPRITE_SCALE + 2,
-        height * 0.6,
-        lean + 3
-      );
+      const shard = ICE_SHARDS[Math.floor(next() * ICE_SHARDS.length)]!;
+      const [ax, ay] = artCell(c.x + lx * SPRITE_SCALE, c.y + ly * SPRITE_SCALE);
+      const rows = Math.ceil(shard.length * grow * fade);
+      drawIceShard(ctx, shard, ax, ay, rows);
+      drawIceShard(ctx, ICE_SHARDS[1], ax + 3, ay + 1, Math.ceil(5 * grow * fade));
     }
-    // A glint on each hex as it sets.
+    // A glint on each hex as it sets: a pixel cross, growing then gone.
     const glint = g - 1;
     if (glint > 0 && glint < 1.2) {
-      const s = Math.sin((glint / 1.2) * Math.PI) * 6;
-      const gx = c.x + 10;
-      const gy = c.y - 12;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(gx - s, gy);
-      ctx.lineTo(gx + s, gy);
-      ctx.moveTo(gx, gy - s);
-      ctx.lineTo(gx, gy + s);
-      ctx.stroke();
+      const arm = Math.round(Math.sin((glint / 1.2) * Math.PI) * 2);
+      const [gx, gy] = artCell(c.x + 10, c.y - 12);
+      artPixel(ctx, gx, gy, '#ffffff');
+      for (let d = 1; d <= arm; d++)
+        for (const [ox, oy] of [
+          [d, 0],
+          [-d, 0],
+          [0, d],
+          [0, -d],
+        ] as const)
+          artPixel(ctx, gx + ox, gy + oy, '#ffffff');
     }
   }
-  ctx.restore();
-}
-
-/** An ice shard standing on (x, y): a tall outlined diamond, `lean` pixels off upright at its tip. */
-function drawIceShard(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  height: number,
-  lean: number
-): void {
-  if (height < 1) return;
-  const w = Math.max(2, height * 0.28);
-  ctx.beginPath();
-  ctx.moveTo(x - w, y);
-  ctx.lineTo(x + lean * 0.4 - w * 0.9, y - height * 0.55);
-  ctx.lineTo(x + lean, y - height);
-  ctx.lineTo(x + lean * 0.4 + w * 0.9, y - height * 0.55);
-  ctx.lineTo(x + w, y);
-  ctx.closePath();
-  ctx.fillStyle = '#e0f2fe';
-  ctx.fill();
-  ctx.strokeStyle = '#0c4a6e';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  // Its lit face.
-  ctx.beginPath();
-  ctx.moveTo(x - w * 0.4, y - 1);
-  ctx.lineTo(x + lean * 0.9, y - height + 2);
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
 }
 
 /** Golden motes rising in a sunbeam. */
 const SUN_MOTES = 9;
 
 /**
- * Sunlight: the clouds part over the target and a beam of warm light falls
- * on it, its ground glowing, rays turning slowly round it and motes of
- * light rising, then it fades.
+ * Sunlight: a beam of warm light falls on the target, dithered so the
+ * board shows through it, brighter at its core; the ground under it glows,
+ * sparkles turn round it and motes of light rise, then it thins away.
  */
 function drawSunlight(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): void {
   const c = center(target);
@@ -1931,55 +2003,58 @@ function drawSunlight(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): 
   const glow = Math.min(1, k / 0.2) * fadeOut(k, 0.65);
   const top = c.y - 120;
   const foot = c.y + 16;
-  const spread = 34 + 4 * Math.sin(k * Math.PI * 3);
-  ctx.save();
-  ctx.globalCompositeOperation = 'lighter';
-  // The beam.
-  const beam = ctx.createLinearGradient(0, top, 0, foot);
-  beam.addColorStop(0, 'rgba(253,224,71,0)');
-  beam.addColorStop(0.55, `rgba(253,224,71,${(0.22 * glow).toFixed(3)})`);
-  beam.addColorStop(1, `rgba(254,240,138,${(0.45 * glow).toFixed(3)})`);
-  ctx.fillStyle = beam;
-  ctx.beginPath();
-  ctx.moveTo(c.x - 12, top);
-  ctx.lineTo(c.x + 12, top);
-  ctx.lineTo(c.x + spread, foot);
-  ctx.lineTo(c.x - spread, foot);
-  ctx.closePath();
-  ctx.fill();
-  // The ground it lights.
-  const pool = ctx.createRadialGradient(c.x, c.y + 10, 0, c.x, c.y + 10, 46);
-  pool.addColorStop(0, `rgba(254,240,138,${(0.6 * glow).toFixed(3)})`);
-  pool.addColorStop(1, 'rgba(254,240,138,0)');
-  ctx.fillStyle = pool;
-  ctx.beginPath();
-  ctx.ellipse(c.x, c.y + 10, 46, 30, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // Rays turning round it.
-  ctx.strokeStyle = `rgba(253,224,71,${(0.5 * glow).toFixed(3)})`;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2 + k * 1.2;
-    ctx.moveTo(c.x + Math.cos(a) * 22, c.y + 6 + Math.sin(a) * 15);
-    ctx.lineTo(c.x + Math.cos(a) * 36, c.y + 6 + Math.sin(a) * 24);
+  const beam = (half: number, spread: number, bottom: number, color: string, level: number) => {
+    const pattern = ditherFill(ctx, color, level * glow);
+    if (!pattern) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(c.x - half, top);
+    ctx.lineTo(c.x + half, top);
+    ctx.lineTo(c.x + spread, bottom);
+    ctx.lineTo(c.x - spread, bottom);
+    ctx.closePath();
+    ctx.fillStyle = pattern;
+    ctx.fill();
+    ctx.restore();
+  };
+  // The ground it lights, then the beam and its brighter core.
+  const pool = ditherFill(ctx, '#fef08a', 4 * glow);
+  if (pool) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(c.x, c.y + 10, 42, 26, 0, 0, Math.PI * 2);
+    ctx.fillStyle = pool;
+    ctx.fill();
+    ctx.restore();
   }
-  ctx.stroke();
-  ctx.restore();
+  beam(12, 34, foot, '#fde047', 4);
+  // The core stops above the unit's head, so its sprite stays clear.
+  beam(4, 10, c.y - 40, '#fef9c3', 8);
+  // Sparkles turning round it: pixel crosses.
+  for (let i = 0; i < 4; i++) {
+    if (glow < 0.3) break;
+    const a = (i / 4) * Math.PI * 2 + k * 2.4;
+    const [sx, sy] = artCell(c.x + Math.cos(a) * 30, c.y + 6 + Math.sin(a) * 20);
+    artPixel(ctx, sx, sy, '#ffffff');
+    for (const [ox, oy] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ] as const)
+      artPixel(ctx, sx + ox, sy + oy, '#fde047');
+  }
   // Motes of light rising through the beam.
-  ctx.save();
   const next = hexRandom(target, 7);
   for (let i = 0; i < SUN_MOTES; i++) {
     const x = c.x + (next() - 0.5) * 44;
     const start = next() * 0.5;
+    const shows = next() <= glow;
     const m = (k - start) / 0.5;
-    if (m <= 0 || m >= 1) continue;
-    const y = c.y + 14 - m * 60;
-    ctx.globalAlpha = glow * Math.sin(m * Math.PI);
-    ctx.fillStyle = i % 3 === 0 ? '#ffffff' : '#fde047';
-    ctx.fillRect(Math.round(x) - 2, Math.round(y) - 2, 4, 4);
+    if (m <= 0 || m >= 1 || !shows) continue;
+    const [ax, ay] = artCell(x, c.y + 14 - m * 60);
+    artPixel(ctx, ax, ay, i % 3 === 0 ? '#ffffff' : '#fde047');
   }
-  ctx.restore();
 }
 
 /** Seconds each idle frame shows. */
