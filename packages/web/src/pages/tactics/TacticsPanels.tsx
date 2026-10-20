@@ -99,8 +99,20 @@ export function ResetRunButton(props: {busy: boolean; onReset: () => void}) {
   );
 }
 
-/** What's on a hex: its tile's rule, any hail, and the unit standing there (D11). */
-export function HexInspector({fight, hex}: {fight: FightState; hex: Hex}) {
+/**
+ * What's on a hex: its tile's rule, any hail, and the unit standing there (D11).
+ * `compact` (the phone's tooltip): each rule in short and the unit's sheet
+ * pared down to what changes during a fight.
+ */
+export function HexInspector({
+  fight,
+  hex,
+  compact = false,
+}: {
+  fight: FightState;
+  hex: Hex;
+  compact?: boolean;
+}) {
   const tile = tileAt(mapOf(fight), hex);
   const info = TILE_INFO[tile];
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
@@ -112,29 +124,50 @@ export function HexInspector({fight, hex}: {fight: FightState; hex: Hex}) {
     <Stack gap={8} data-testid="hex-info">
       {showTile && (
         <Paper bg="dark.7" p="sm" radius="md">
-          <Text fw={600}>{info.name}</Text>
+          <Text fw={600} fz={compact ? 'sm' : 'md'}>
+            {info.name}
+          </Text>
           <Text fz="xs" c="dimmed">
-            {info.detail}
+            {compact ? info.short : info.detail}
           </Text>
           {hail && (
             <Text fz="xs" c="cyan.3" mt={4}>
-              <b>Hail.</b> {hailInfo(hail, fight.currentSlot).detail}
+              <b>Hail.</b> {hailInfo(hail, fight.currentSlot)[compact ? 'short' : 'detail']}
             </Text>
           )}
           {fog && (
             <Text fz="xs" c="gray.4" mt={4}>
-              <b>Fog.</b> {fogInfo(fog, fight.currentSlot).detail}
+              <b>Fog.</b> {fogInfo(fog, fight.currentSlot)[compact ? 'short' : 'detail']}
             </Text>
           )}
         </Paper>
       )}
-      {unit && <StatSheet fight={fight} unit={unit} />}
+      {unit && <StatSheet fight={fight} unit={unit} compact={compact} />}
     </Stack>
   );
 }
 
-/** Every unit's stat sheet, enemies' included: its abilities, and for an enemy what it could do (D11). */
-export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
+/** Whether a unit's ultimate is used, ready, or how many turns it has towards it. */
+function ultimateState(unit: Unit): string {
+  if (unit.ultimateUsed) return 'Used';
+  if (unit.turnsTaken >= RULES.ultimateUnlockTurns) return 'Ready';
+  return `${unit.turnsTaken}/${RULES.ultimateUnlockTurns} turns`;
+}
+
+/**
+ * Every unit's stat sheet, enemies' included: its abilities, and for an enemy
+ * what it could do (D11). `compact`: health and the ultimate on one line,
+ * then statuses; no fixed stats or abilities.
+ */
+export function StatSheet({
+  fight,
+  unit,
+  compact = false,
+}: {
+  fight: FightState;
+  unit: Unit;
+  compact?: boolean;
+}) {
   const slot = fight.currentSlot;
   const taunter = taunterOf(fight, unit);
   const statuses = [
@@ -160,37 +193,55 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
   const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold' && !def.ultimate);
   return (
     <Paper bg="dark.7" p="sm" radius="md" data-testid="stat-sheet">
-      <Group justify="space-between" mb={6}>
+      <Group justify="space-between" mb={compact ? 4 : 6}>
         {/* The name, in its side's colour: blue yours, red the enemy's, as on the board. */}
-        <Badge color={sideColor(unit)} variant="light" size="lg" tt="none" data-side={unit.side}>
+        <Badge
+          color={sideColor(unit)}
+          variant="light"
+          size={compact ? 'md' : 'lg'}
+          tt="none"
+          data-side={unit.side}
+        >
           {HEROES[unit.hero].name}
         </Badge>
       </Group>
-      <div className={styles.vitals}>
-        <span>
+      {compact ? (
+        <Text fz="xs">
           Health{' '}
           <b>
             {unit.hp} / {unit.maxHp}
-          </b>
-        </span>
-        <span>
-          Move <b>{movementCap(unit)} spaces</b>
-        </span>
-      </div>
-      <div className={styles.coreStats}>
-        <div>
-          <span>Speed</span>
-          <b>{unit.speed}</b>
-        </div>
-        <div>
-          <span>Power</span>
-          <b>{unit.power}</b>
-        </div>
-        <div>
-          <span>Defence</span>
-          <b>{unit.defence}</b>
-        </div>
-      </div>
+          </b>{' '}
+          · {ult.name} <b>{ultimateState(unit)}</b>
+        </Text>
+      ) : (
+        <>
+          <div className={styles.vitals}>
+            <span>
+              Health{' '}
+              <b>
+                {unit.hp} / {unit.maxHp}
+              </b>
+            </span>
+            <span>
+              Move <b>{movementCap(unit)} spaces</b>
+            </span>
+          </div>
+          <div className={styles.coreStats}>
+            <div>
+              <span>Speed</span>
+              <b>{unit.speed}</b>
+            </div>
+            <div>
+              <span>Power</span>
+              <b>{unit.power}</b>
+            </div>
+            <div>
+              <span>Defence</span>
+              <b>{unit.defence}</b>
+            </div>
+          </div>
+        </>
+      )}
       {statuses.length > 0 && (
         <Text fz="xs" c="orange.3" mt={6}>
           {statuses.join(' · ')}
@@ -201,28 +252,20 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
           Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
         </Text>
       )}
-      <Stack gap={6} mt={8}>
-        <Text fz="xs" fw={600}>
-          Abilities
-        </Text>
-        {abilities.map((def) => (
-          <AbilityLine key={def.id} unit={unit} def={def} />
-        ))}
-        <Text fz="xs" fw={600} mt={2}>
-          Ultimate
-        </Text>
-        <AbilityLine
-          unit={unit}
-          def={ult}
-          charge={
-            unit.ultimateUsed
-              ? 'Used'
-              : unit.turnsTaken >= RULES.ultimateUnlockTurns
-                ? 'Ready'
-                : `${unit.turnsTaken}/${RULES.ultimateUnlockTurns} turns`
-          }
-        />
-      </Stack>
+      {!compact && (
+        <Stack gap={6} mt={8}>
+          <Text fz="xs" fw={600}>
+            Abilities
+          </Text>
+          {abilities.map((def) => (
+            <AbilityLine key={def.id} unit={unit} def={def} />
+          ))}
+          <Text fz="xs" fw={600} mt={2}>
+            Ultimate
+          </Text>
+          <AbilityLine unit={unit} def={ult} charge={ultimateState(unit)} />
+        </Stack>
+      )}
     </Paper>
   );
 }

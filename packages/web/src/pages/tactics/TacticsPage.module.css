@@ -91,13 +91,7 @@
   font-size: 15px;
 }
 
-/* Phones: the detail section, then the action section pinned to the screen's bottom. */
-.details {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
+/* Phones: the action section, pinned to the screen's bottom. */
 .actionBar {
   position: sticky;
   bottom: 0;
@@ -129,4 +123,18 @@
   .board :global(canvas) {
     width: 100%;
   }
+}
+
+/* Phones: the inspected hex's details, over the board beside it (HexTooltip). */
+.tooltip {
+  position: absolute;
+  z-index: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+  border-radius: 10px;
+  background: rgba(17, 24, 39, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+  cursor: pointer;
 }
