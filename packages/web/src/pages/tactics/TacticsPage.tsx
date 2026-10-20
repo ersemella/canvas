@@ -418,6 +418,14 @@ export function TacticsPage() {
     [fight, inspectedUnit, acting]
   );
 
+  /**
+   * On a phone, the unit the details feature (the one on the inspected hex,
+   * else the tapped or acting one) shows its health and statuses on the board.
+   */
+  const featuredId = phone
+    ? ((inspectHex ? inspectedUnit?.id : (selectedId ?? acting?.id)) ?? null)
+    : null;
+
   /** The bow's six lanes from where the archer will stand, hit or not. */
   const lanes = useMemo(
     () =>
@@ -433,7 +441,7 @@ export function TacticsPage() {
       fight,
       highlights,
       selectedUnitId: selectedId ?? acting?.id ?? null,
-      inspectedUnitId: selectedId,
+      inspectedUnitId: phone ? featuredId : selectedId,
       preview: [],
       previewSlot: preview?.slot ?? null,
       aimSlot: preview?.aimSlot ?? null,
@@ -525,6 +533,8 @@ export function TacticsPage() {
   }, [
     fight,
     selectedId,
+    phone,
+    featuredId,
     acting,
     deployAt,
     plannedMove,
