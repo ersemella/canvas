@@ -1,8 +1,7 @@
 /**
- * The enemy AI (brief section 6): every reachable hex, every legal ability
- * and target from it, each scored by simulating it with the same rules as
- * previews; the best score wins, ties to the first in a fixed order
- * (shorter moves first, then hex index). No randomness.
+ * Deterministic selective lookahead: rank actions with the preview heuristic,
+ * then search actual timeline decisions with budgeted alpha-beta minimax.
+ * Preview charges and faithful successors are kept separate.
  */
 import {hexDistance, hexEquals, hexKey} from '@canvas/engine/server';
 import {ABILITY, AI, RULES, movementRules} from './config';
@@ -20,18 +19,20 @@ import {slotsForward, turnCost} from './track';
 import {obeysTaunt, tauntBinds, taunterOf} from './taunt';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
-import {RuleError, applyTurn, cloneFight, mapOf} from './fight';
+import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf, turnInputCost} from './fight';
 import {enterHex, hailDamage, throughDefence} from './resolve';
 import {tileAt} from './map';
 import type {AbilityDef} from './abilities';
 import type {Hex} from '@canvas/engine/server';
-import type {FightState, TurnInput, Unit} from './types';
+import type {FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
   input: TurnInput;
   score: number;
   /** The fight right after the option (a charged ability resolved as if now). */
   after: FightState;
+  /** Faithful successor: charges are still waiting on the timeline. */
+  position: FightState;
 }
 
 /**
@@ -160,12 +161,17 @@ export function scoreOptions(
   state: FightState,
   unit: Unit,
   limit = Infinity,
-  budget?: SearchBudget
+  budget?: SearchBudget,
+  includeThreats = true
 ): ScoredOption[] {
+  if (limit <= 0 || (budget && budget.left <= 0)) return [];
   let simulations = 0;
   const baseline = baselineOf(state);
   const map = mapOf(state);
-  const threats = AI.threatFactor * AI.caution[unit.hero] > 0 ? threatsTo(state, map, unit) : [];
+  const threats =
+    includeThreats && AI.threatFactor * AI.caution[unit.hero] > 0
+      ? threatsTo(state, map, unit)
+      : [];
   const out: ScoredOption[] = [];
   const groundTried = new Set<string>();
   // A binding taunt rules out every option that doesn't affect the taunter.
@@ -198,11 +204,21 @@ export function scoreOptions(
         }
         const input: TurnInput = {action: {ability: def.id, target}};
         if (reach.path.length > 0) input.move = reach.path;
-        if (simulations >= limit) return out;
+        if (simulations >= limit || (budget && budget.left <= 0)) return out;
         simulations++;
         if (budget) budget.left--;
-        const after = simulate(state, unit.id, input, true);
-        if (!after) continue;
+        const position = simulate(state, unit.id, input, true, false);
+        if (!position) continue;
+        const charged = position.units.find((u) => u.id === unit.id)!.charging;
+        // The preview is only for ordering. Never search through a charge
+        // that has already dealt its damage but is still on the timeline.
+        let after = position;
+        if (charged) {
+          if (budget && budget.left <= 0) return out;
+          if (budget) budget.left--;
+          after = cloneFight(position);
+          resolvePreviewCharge(after, unit.id);
+        }
         let score = scoreOutcome(state, after, unit, baseline, threats);
         if (def.id === 'fog') score += fogValue(state, unit, target.hex!);
         if (
@@ -216,7 +232,7 @@ export function scoreOptions(
             slotsForward(turnCost(def.cost, hexes), unit.speed);
           score -= Math.max(0, extra) * AI.perSlotMoved;
         }
-        out.push({input, score, after});
+        out.push({input, score, after, position});
       }
     }
   }
@@ -226,13 +242,15 @@ export function scoreOptions(
 /**
  * The fight after `input` for unit `unitId`, or null if illegal. A charged
  * ability is resolved immediately, assuming its targets don't move (brief
- * section 6), so its effect can be scored and previewed.
+ * section 6), so its effect can be scored and previewed. Pass
+ * `resolveCharge=false` for a faithful successor used by timeline search.
  */
 export function simulate(
   state: FightState,
   unitId: string,
   input: TurnInput,
-  trustTarget = false
+  trustTarget = false,
+  resolveCharge = true
 ): FightState | null {
   const sim = cloneFight(state);
   const su = sim.units.find((u) => u.id === unitId)!;
@@ -242,34 +260,203 @@ export function simulate(
     if (e instanceof RuleError) return null;
     throw e;
   }
-  if (su.charging) {
-    const def = ABILITIES[su.charging.ability];
-    def.resolve({state: sim, map: mapOf(sim), slot: sim.currentSlot}, su, {
-      hex: su.charging.target,
-    });
-  }
+  if (resolveCharge) resolvePreviewCharge(sim, unitId);
   return sim;
 }
 
-/** Simulations left for the AI turns in one request; see `AI.requestSimulations`. */
+function resolvePreviewCharge(state: FightState, unitId: string): void {
+  const unit = state.units.find((u) => u.id === unitId)!;
+  if (!unit.charging) return;
+  ABILITIES[unit.charging.ability].resolve(
+    {state, map: mapOf(state), slot: state.currentSlot},
+    unit,
+    {hex: unit.charging.target}
+  );
+}
+
+/** Work left for all AI turns in one request: actions, charge previews and automatic cards. */
 export interface SearchBudget {
   left: number;
 }
 
-/**
- * The AI's turn: the highest score among a capped search, ties to the
- * first option found. With a request's `budget`, the cap shrinks as
- * earlier AI turns spend it, never below `AI.minSimulations`.
- */
-export function chooseAiTurn(state: FightState, unit: Unit, budget?: SearchBudget): TurnInput {
-  const limit = budget
-    ? Math.max(AI.minSimulations, Math.min(AI.maxSimulations, budget.left))
-    : AI.maxSimulations;
-  let best: ScoredOption | undefined;
-  for (const option of scoreOptions(state, unit, limit, budget)) {
-    if (!best || option.score > best.score) best = option;
+/** Optional diagnostics; no clocks, randomness or persistent caches affect decisions. */
+export interface SearchStats {
+  completedDepth: number;
+  cutoffs: number;
+  work: number;
+  value?: number;
+}
+
+interface SearchNode {
+  state: FightState;
+  actor: Unit | undefined;
+  options?: ScoredOption[];
+  children: Map<ScoredOption, SearchNode>;
+}
+
+const exhausted = Symbol('AI search budget exhausted');
+
+/** A single, symmetric team evaluation, always from the root side's perspective. */
+export function evaluatePosition(state: FightState, side: Side): number {
+  const own = state.units.some((u) => u.alive && u.side === side);
+  const other = state.units.some((u) => u.alive && u.side !== side);
+  if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
+  let score = 0;
+  for (const u of state.units) {
+    if (!u.alive) continue;
+    let value = u.hp + AI.kill - statusPoints(u, state.currentSlot);
+    if (u.hex) {
+      let rangedEnemy = false;
+      for (const e of state.units) {
+        if (!e.alive || !e.hex || !hostile(e, u)) continue;
+        rangedEnemy ||= isRanged(e);
+      }
+      if (fogAt(state, u.hex)) {
+        if (rangedEnemy) value += AI.fogShield / u.maxHp;
+        if (isRanged(u)) value -= AI.fogBlind;
+      }
+    }
+    score += (u.side === side ? 1 : -1) * value;
   }
-  if (best) return best.input;
-  // Nothing scored: Hold, or under a binding taunt the first option that obeys it.
-  return scoreOptions(state, unit, 1)[0]?.input ?? {action: {ability: 'hold'}};
+  return score;
+}
+
+/** Keep a small heuristic shortlist; equal scores retain the enumeration order. */
+function shortlist(options: ScoredOption[]): ScoredOption[] {
+  return options.sort((a, b) => b.score - a.score).slice(0, AI.searchWidth);
+}
+
+/**
+ * Selective minimax: heuristic screening limits breadth, alpha-beta skips
+ * successor expansion, and iterative deepening only commits complete depths.
+ * `prune=false` is an exhaustive reference over the same selective tree.
+ * A depth override supports comparisons at a fixed completed horizon.
+ */
+export function chooseAiTurn(
+  state: FightState,
+  unit: Unit,
+  budget: SearchBudget = {left: AI.requestSimulations},
+  stats?: SearchStats,
+  settings: {prune?: boolean; depth?: number} = {}
+): TurnInput {
+  const initial = Math.max(0, budget.left);
+  const local: SearchBudget = {left: Math.min(AI.maxSimulations, initial)};
+  if (stats) {
+    Object.assign(stats, {completedDepth: 0, cutoffs: 0, work: 0});
+    delete stats.value;
+  }
+  const spend = () => {
+    if (local.left <= 0) throw exhausted;
+    local.left--;
+  };
+  const childOf = (node: SearchNode, option: ScoredOption): SearchNode => {
+    let child = node.children.get(option);
+    if (!child) {
+      // Advance lazily: a cutoff never runs this branch's timeline or
+      // generates its replies. Cached copies are private to this turn.
+      const state = cloneFight(option.position);
+      const actor = advanceToDecision(state, spend);
+      child = {state, actor, children: new Map()};
+      node.children.set(option, child);
+    }
+    return child;
+  };
+  const search = (node: SearchNode, depth: number, alpha: number, beta: number): number => {
+    if (depth === 0 || !node.actor) return evaluatePosition(node.state, unit.side);
+    if (!node.options) {
+      if (local.left <= 0) throw exhausted;
+      const allowance = Math.min(AI.replySimulations, local.left);
+      // Replies use the immediate heuristic: their actual consequences
+      // are searched, so rebuilding a speculative threat map here is wasteful.
+      node.options = shortlist(scoreOptions(node.state, node.actor, allowance, local, false));
+      // A partially screened node must not turn an unfinished depth into
+      // an apparently complete one when the budget ran out mid-screen.
+      if (local.left <= 0 || node.options.length === 0) throw exhausted;
+    }
+    const maximize = node.actor.side === unit.side;
+    let value = maximize ? -Infinity : Infinity;
+    for (const option of node.options) {
+      const cost = actionCost(node.state, node.actor, option);
+      const adjustment = maximize ? -cost : cost;
+      const next =
+        search(childOf(node, option), depth - 1, alpha - adjustment, beta - adjustment) +
+        adjustment;
+      value = maximize ? Math.max(value, next) : Math.min(value, next);
+      if (maximize) alpha = Math.max(alpha, value);
+      else beta = Math.min(beta, value);
+      if (settings.prune !== false && alpha >= beta) {
+        if (stats) stats.cutoffs++;
+        break;
+      }
+    }
+    return value;
+  };
+  let completedInput: TurnInput = {action: {ability: 'hold'}};
+  try {
+    if (local.left <= 0) return {action: {ability: 'hold'}};
+    // Reserve most work for actual replies, rather than spending it all
+    // on the root. Small remaining budgets retain a useful greedy turn.
+    const rootLimit = Math.min(AI.rootSimulations, local.left);
+    const options = shortlist(scoreOptions(state, unit, rootLimit, local));
+    let best = options[0]?.input ?? {action: {ability: 'hold'} as const};
+    completedInput = best;
+    if (!options.length) return best;
+    if (stats) stats.completedDepth = 1;
+    const root: SearchNode = {state, actor: unit, options, children: new Map()};
+    for (let depth = 2; depth <= (settings.depth ?? AI.searchDepth); depth++) {
+      let winner = options[0]!;
+      let value = -Infinity;
+      for (const option of options) {
+        const cost = actionCost(state, unit, option);
+        const next = search(childOf(root, option), depth - 1, value + cost, Infinity) - cost;
+        if (next > value) {
+          value = next;
+          winner = option;
+        }
+      }
+      best = winner.input;
+      completedInput = best;
+      if (stats) {
+        stats.completedDepth = depth;
+        stats.value = value;
+      }
+    }
+    return best;
+  } catch (e) {
+    if (e !== exhausted) throw e;
+    // Updated only after every root candidate has completed the depth.
+    return completedInput;
+  } finally {
+    const used = Math.min(AI.maxSimulations, initial) - local.left;
+    budget.left = initial - used;
+    if (stats) stats.work = used;
+  }
+}
+
+/**
+ * Price time and reward progress toward combat. Progress belongs to the
+ * acting team: subtracting both teams' absolute distances in a static
+ * evaluation would cancel out in a duel and make Holding preferable.
+ */
+function actionCost(before: FightState, unit: Unit, option: ScoredOption): number {
+  const input = option.input;
+  const hexes = input.move?.length ?? 0;
+  const cost =
+    input.action.ability === 'hold' && !(movementRules(before).separateMovement && hexes > 0)
+      ? turnCost(AI.holdScoringCost, hexes)
+      : turnInputCost(before, input);
+  const gap = (state: FightState): number => {
+    const me = state.units.find((u) => u.id === unit.id)!;
+    if (!me.alive || !me.hex) return 0;
+    let nearest = Infinity;
+    for (const e of state.units) {
+      if (e.alive && e.hex && hostile(e, me))
+        nearest = Math.min(nearest, hexDistance(me.hex, e.hex));
+    }
+    return Number.isFinite(nearest) ? nearest : 0;
+  };
+  return (
+    slotsForward(cost, unit.speed) * AI.perSlotMoved -
+    (gap(before) - gap(option.position)) * AI.perHexFromEnemy
+  );
 }

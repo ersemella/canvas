@@ -115,28 +115,43 @@ export function advance(
   state: FightState,
   chooseAi: (state: FightState, unit: Unit) => TurnInput
 ): void {
+  let unit: Unit | undefined;
+  for (let guard = 0; guard < 10_000 && (unit = advanceToDecision(state)); guard++) {
+    if (unit.controller === 'human') return;
+    applyTurn(state, unit, chooseAi(state, unit));
+  }
+}
+
+/**
+ * Advances automatic effects and charges to the next decision, on either
+ * side. Shared by live play and search; resuming a stopped decision does
+ * not apply its start-of-turn effects a second time.
+ * `spend` lets search bound automatic cards as well as simulated actions.
+ */
+export function advanceToDecision(state: FightState, spend?: () => void): Unit | undefined {
+  if (state.phase !== 'fight') return;
+  if (state.awaiting) return actingUnit(state);
   const map = mapOf(state);
   // A safety bound; a fight never takes anywhere near this many cards.
   for (let guard = 0; guard < 10_000 && state.phase === 'fight' && !state.awaiting; guard++) {
     const unit = nextCard(state);
     if (!unit) return;
+    spend?.();
     const ctx: Ctx = {state, map, slot: unit.slot!};
     beginSlot(ctx);
     record(state, {kind: 'turn', unitId: unit.id});
 
     // Start of the turn: hail (brief section 2); quicksand and Crushed ticked in beginSlot.
     applyHail(ctx, unit);
+    if (state.phase !== 'fight') return;
     if (!unit.alive) continue;
 
     if (unit.charging) {
       triggerCharge(ctx, unit);
       continue;
     }
-    if (unit.controller === 'human') {
-      state.awaiting = unit.id;
-      return;
-    }
-    applyTurn(state, unit, chooseAi(state, unit));
+    state.awaiting = unit.id;
+    return unit;
   }
 }
 

@@ -29,7 +29,9 @@ with ordinary walking capped at 4 hexes and Dash at 3.
 The runner explicitly supplies overrides for each comparison variant’s blocking
 and action economy. Map, stats, movement cap and ability ranges come from current
 config. Historical results in RESULTS.md used walking cap 3 and Dash distance 2;
-restore those config values to reproduce the old measurements exactly.
+the stored results also predate the alpha-beta AI update. To reproduce those
+measurements, use revision `094fe0c` and restore walking cap 3 and Dash distance 2.
+Current runs use the current AI and record its search settings.
 Experiments change submitted-path validation, reachable paths, AI options, taunt
 reach, and AI threat estimates.
 
@@ -46,7 +48,7 @@ under separate movement. The blocking variant concerns ordinary walking only.
 Both teams use the current deterministic, capped production AI with the variant's
 legal options and immediate threat model. The AI moves before acting in baseline;
 it does not search act-then-move turns. It is not retrained or retuned for the new
-rules and does not plan multiple turns ahead. Both sides get the same search cap
+rules. It searches actual future timeline decisions using budgeted alpha-beta. Both sides get the same search cap
 per chosen turn; this is not the server's shared per-request budget.
 
 A fight is marked stalled if still active after `--max-turns` chosen actions.

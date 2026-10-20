@@ -3,7 +3,7 @@ import {chooseAiTurn} from '@balance-rules/ai';
 import {placeStartingCards} from '@balance-rules/track';
 import {SALT_FLATS} from '@balance-rules/map';
 import type {HeroId, Side} from '@balance-rules/types';
-import {PARTY, RULES} from '@balance-rules/config';
+import {ABILITY, AI, PARTY, RULES} from '@balance-rules/config';
 
 type Options = {samples: number; seed: number; maxTurns: number; moveCost: number};
 type HeroMetrics = {
@@ -205,11 +205,19 @@ export function runBalance(options: Options) {
       map: SALT_FLATS.id,
       roster: PARTY,
       movementCap: RULES.movementCap,
+      dashDistance: ABILITY.dash.distance,
+      aiSettings: {
+        maxSimulations: AI.maxSimulations,
+        rootSimulations: AI.rootSimulations,
+        replySimulations: AI.replySimulations,
+        searchWidth: AI.searchWidth,
+        searchDepth: AI.searchDepth,
+      },
       movement:
         'move-only = Hold with experiment moveActionCost plus per-hex cost; counts toward ultimate as before',
       blocking: 'ordinary walking only; Dash and Rampage retain their ability rules',
       pairing: 'same random placements, twice with opposite starting speed-tie priority',
-      ai: 'existing deterministic capped AI on both teams; threat model respects variants; movement-first only',
+      ai: 'current deterministic budgeted alpha-beta AI on both teams; threat model respects variants; historical combined options move first',
       stalls: `still fighting after ${options.maxTurns} chosen turns; charged trigger turns not counted`,
       damage:
         'byHero damage/healing measures immediate resolution only, excluding later status/charge ticks',

@@ -138,7 +138,7 @@ export interface FightState {
    * starts the list each action); copies for previews and the AI don't.
    */
   events?: RecordedEvent[];
-  /** The human-controlled unit whose turn the track has stopped on. */
+  /** The stopped decision's unit. Live play returns human decisions; search pauses for either side. */
   awaiting: string | null;
 }
 

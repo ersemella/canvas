@@ -229,18 +229,19 @@ export const AI = {
    */
   holdScoringCost: 60,
   /**
-   * The search cap, counted in simulated options (a few hundredths of a ms
-   * each), nearest moves first, so a request stays within the Free plan's
-   * 10 ms of CPU. A count, not a time limit, so fights stay deterministic.
-   * One AI turn tries at most `maxSimulations`; all the AI turns in one
-   * request share `requestSimulations`, but each gets at least
-   * `minSimulations`. Lowered from 150 and 300 when the lookahead
-   * (threat.ts) made each AI turn cost about 0.3 ms more, so requests stay
-   * as fast as before it.
+   * Deterministic work caps shared across all AI turns in a request.
+   * An action simulation, charged preview, or automatic timeline card
+   * spends one unit. Exhaustion uses a legal Hold, with no extra search.
+   * Counts are calibrated locally; production CPU still needs monitoring.
    */
-  maxSimulations: 130,
-  requestSimulations: 260,
-  minSimulations: 40,
+  maxSimulations: 110,
+  requestSimulations: 220,
+  rootSimulations: 48,
+  replySimulations: 8,
+  searchWidth: 4,
+  /** Includes the root action: try two decisions, then three if work remains. */
+  searchDepth: 3,
+  victory: 1_000_000,
 } as const;
 
 /** The party, in party slot order, for both sides in Phase 1 (brief section 5). */

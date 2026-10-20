@@ -2,7 +2,7 @@
 
 500 random deployments × two starting tie priorities × four rulesets × two movement costs = **8,000 simulated fights**. Seed: `20261020`. Both movement-cost runs repeat the same baseline and blocking fights, so these are **6,000 distinct experimental cases**, not 8,000 independent observations. Each deployment pair is also correlated.
 
-**Adopted after these measurements (2026-10-20):** production defaults now block ordinary walking through units and make movement a separate action at **20 + 10 per hex**. The ordinary walking cap was subsequently restored to **4**, and Dash to **3**. The results below used walking cap **3** and Dash distance **2**, describe the historical comparisons, and have not been rerun for cap 4. The runner supplies explicit overrides to keep them reproducible.
+**Adopted after these measurements (2026-10-20):** production defaults now block ordinary walking through units and make movement a separate action at **20 + 10 per hex**. The ordinary walking cap was subsequently restored to **4**, and Dash to **3**. The results below used walking cap **3** and Dash distance **2**, describe the historical comparisons, and have not been rerun for cap 4. These measurements also predate the alpha-beta AI update. The runner supplies explicit rule overrides; exact reproduction requires the earlier AI revision (see below).
 
 ## Results
 
@@ -150,7 +150,7 @@ node scripts/balance/run.mjs --samples 100 --move-cost 20 --out work/balance-cos
 
 ## Reproduce
 
-These historical results used `RULES.movementCap = 3`. Restore that value and `ABILITY.dash.distance = 2` to reproduce the exact measurements; the current game cap is 4 and Dash distance is 3.
+Use revision `094fe0c` for the pre-alpha-beta AI used in these historical results. These results used `RULES.movementCap = 3`. Restore that value and `ABILITY.dash.distance = 2` to reproduce the exact measurements; the current game cap is 4 and Dash distance is 3.
 
 From the repository root:
 
