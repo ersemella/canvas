@@ -458,8 +458,8 @@ try {
   await shot(page, 'end');
   check('no page errors', pageErrors.length === 0, pageErrors);
 
-  // A phone: board on top, details below, the action section pinned to the
-  // bottom of the screen; no heading or hints; no sideways scroll.
+  // A phone: board on top, details in a tooltip over it, the action section
+  // pinned to the bottom of the screen; no heading or hints; no scrolling.
   const phone = await browser.newPage({...devices['iPhone 13']});
   await phone.goto(`${WEB_URL}/play/silk-road-tactics`);
   await phone.getByRole('button', {name: 'Start a fight'}).click();
@@ -486,38 +486,78 @@ try {
       const r = el.getBoundingClientRect();
       return r.top >= 0 && r.bottom <= window.innerHeight + 1;
     });
-  // Tap an enemy: its details show right under the board, the actions stay on screen.
+  // Tap an enemy: its details show in a tooltip over the board beside it,
+  // short at first, and the actions stay on screen.
   const phoneFight = await phone.evaluate(() => window.__tactics.run.view.fight);
   const foe = phoneFight.units.find((u) => u.side === 'enemy' && u.alive).hex;
-  {
+  const foeAt = await (async () => {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), foe);
     const box = await phone.locator('canvas').boundingBox();
-    await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
-    await sleep(300);
-  }
-  const phoneSheet = phone.getByTestId('stat-sheet');
+    return {x: (x * box.width) / 672, y: (y * box.height) / 696, box};
+  })();
+  await phone.tap('canvas', {position: {x: foeAt.x, y: foeAt.y}});
+  await sleep(300);
+  const tooltip = phone.getByTestId('hex-tooltip');
+  const phoneSheet = tooltip.getByTestId('stat-sheet');
   check(
-    'phone: tapping an enemy shows its details',
+    'phone: tapping an enemy shows its details in a tooltip',
     (await phoneSheet.locator('[data-side="enemy"]').count()) === 1
   );
   check(
-    'phone: no “could do next turn” on an enemy',
-    !(await phoneSheet.textContent()).includes('Could do next turn')
+    'phone: the tooltip starts short (no abilities)',
+    !(await tooltip.getByText('Abilities', {exact: true}).count()),
+    (await tooltip.textContent()).slice(0, 120)
   );
-  check(
-    'phone: the details start on screen',
-    await phoneSheet.evaluate((el) => el.getBoundingClientRect().top < window.innerHeight)
-  );
+  {
+    const t = await tooltip.boundingBox();
+    const b = foeAt.box;
+    const hx = b.x + foeAt.x;
+    const hy = b.y + foeAt.y;
+    check(
+      'phone: the tooltip sits on the board, clear of the tapped hex',
+      t.x >= b.x - 1 &&
+        t.x + t.width <= b.x + b.width + 1 &&
+        t.y >= b.y - 1 &&
+        t.y + t.height <= b.y + b.height + 1 &&
+        !(hx >= t.x && hx <= t.x + t.width && hy >= t.y && hy <= t.y + t.height),
+      [t, b, hx, hy]
+    );
+  }
   check('phone: the action section stays on screen', await inViewport(phoneMove));
-  // Tapping away from the board (here, on the details) goes back to the unit whose turn it is.
-  await phoneSheet.tap();
-  await sleep(200);
-  const backTo = await phoneSheet.textContent();
+  await shot(phone, 'phone-tooltip');
+  // A tap on the tooltip shows the full sheet; another shortens it again.
+  await tooltip.tap();
+  await sleep(150);
   check(
-    'phone: tapping away shows the acting unit again',
-    (await phoneSheet.locator('[data-side="player"]').textContent()) === 'Mangudai Outrider',
-    backTo.slice(0, 60)
+    'phone: tapping the tooltip shows the full sheet',
+    (await tooltip.getByText('Abilities', {exact: true}).count()) === 1 &&
+      (await tooltip.getAttribute('aria-expanded')) === 'true',
+    [
+      await tooltip.getByText('Abilities', {exact: true}).count(),
+      await tooltip.getAttribute('aria-expanded'),
+    ]
   );
+  await shot(phone, 'phone-tooltip-full');
+  check(
+    'phone: no “could do next turn” on an enemy',
+    !(await tooltip.textContent()).includes('Could do next turn')
+  );
+  await tooltip.tap();
+  await sleep(150);
+  check(
+    'phone: a second tap shortens it',
+    !(await tooltip.getByText('Abilities', {exact: true}).count())
+  );
+  // Tapping away from the board (here, just under it) closes the tooltip.
+  await phone.touchscreen.tap(4, foeAt.box.y + foeAt.box.height + 4);
+  await sleep(200);
+  check('phone: tapping away closes the tooltip', !(await tooltip.count()));
+  {
+    const scroll = await phone.evaluate(
+      () => document.documentElement.scrollHeight - window.innerHeight
+    );
+    check('phone: the page doesn’t scroll', scroll <= 1, scroll);
+  }
   // A planned move shows what it adds, in slots, inside the Move button.
   {
     await phoneMove.click();

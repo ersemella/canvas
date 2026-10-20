@@ -49,6 +49,7 @@ import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
+import {HexTooltip} from './HexTooltip';
 import {ConfirmButton, HexInspector, ResetRunButton, StatSheet} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
@@ -97,14 +98,18 @@ export function TacticsPage() {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const actionsRef = useRef<HTMLElement | null>(null);
   const [worldReady, setWorldReady] = useState(0);
+  /** The canvas's size on screen, to place the phone's tooltip over it. */
+  const [boardSize, setBoardSize] = useState<{width: number; height: number} | null>(null);
 
   // A tap anywhere but the board or the action section stops inspecting,
   // and the details go back to the unit whose turn it is. A click, not a
-  // touch, so scrolling the details doesn't count.
+  // touch, so scrolling the details doesn't count. The click's path, not its
+  // target: a tap can replace what it landed on (the tooltip growing).
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (boardRef.current?.contains(t) || actionsRef.current?.contains(t)) return;
+      const path = e.composedPath();
+      const inside = (el: Element | null) => el !== null && path.includes(el);
+      if (inside(boardRef.current) || inside(actionsRef.current)) return;
       setPinnedHex(null);
       setSelectedId(null);
     };
@@ -115,6 +120,18 @@ export function TacticsPage() {
   const fight: FightState | null = run?.view.fight ?? null;
   const fightRef = useRef(fight);
   fightRef.current = fight;
+
+  // Phones: follow the canvas's size on screen (it scales with the width).
+  const hasBoard = fight !== null;
+  useEffect(() => {
+    const canvas = boardRef.current?.querySelector('canvas');
+    if (!phone || !canvas) return;
+    const observer = new ResizeObserver(() =>
+      setBoardSize({width: canvas.offsetWidth, height: canvas.offsetHeight})
+    );
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [phone, hasBoard]);
 
   const resetTurn = useCallback(() => {
     setPlannedMove(null);
@@ -583,8 +600,8 @@ export function TacticsPage() {
     fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
 
   // The action section (the turn) and the detail section
-  // (what's tapped or hovered). Phones put details first under the board and
-  // pin the actions to the bottom of the screen.
+  // (what's tapped or hovered). Phones show the details in a tooltip over
+  // the board and pin the actions to the bottom of the screen.
   const actions = acting && !finished && (
     <TurnControls
       phone={phone}
@@ -609,6 +626,13 @@ export function TacticsPage() {
       />
     </TurnControls>
   );
+  // Phones: the details are a tooltip over the board, beside the tapped hex
+  // (or the unit whose track card was tapped); none while a turn plays back.
+  const tooltipHex =
+    pinnedHex ?? (selectedId ? fight.units.find((u) => u.id === selectedId)?.hex : null) ?? null;
+  const tooltip = phone && tooltipHex && boardSize && !playing && !finished && (
+    <HexTooltip key={hexKey(tooltipHex)} fight={fight} hex={tooltipHex} boardSize={boardSize} />
+  );
   const details = inspectHex ? (
     <HexInspector fight={fight} hex={inspectHex} />
   ) : (
@@ -630,6 +654,7 @@ export function TacticsPage() {
               onReady={onReady}
             />
           </GameErrorBoundary>
+          {tooltip}
           {finished && (
             <Paper className={styles.result!} p="lg" radius="md">
               <Stack align="center" gap="xs">
@@ -656,10 +681,7 @@ export function TacticsPage() {
           )}
           {phone ? (
             <>
-              <section className={styles.details} aria-label="Details">
-                {details}
-                {reset}
-              </section>
+              {reset}
               {actions && (
                 <section className={styles.actionBar} ref={actionsRef}>
                   {actions}

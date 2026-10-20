@@ -99,8 +99,20 @@ export function ResetRunButton(props: {busy: boolean; onReset: () => void}) {
   );
 }
 
-/** What's on a hex: its tile's rule, any hail, and the unit standing there (D11). */
-export function HexInspector({fight, hex}: {fight: FightState; hex: Hex}) {
+/**
+ * What's on a hex: its tile's rule, any hail, and the unit standing there (D11).
+ * `compact` (the phone's tooltip): each rule in short and the unit's sheet
+ * pared down to what changes during a fight.
+ */
+export function HexInspector({
+  fight,
+  hex,
+  compact = false,
+}: {
+  fight: FightState;
+  hex: Hex;
+  compact?: boolean;
+}) {
   const tile = tileAt(mapOf(fight), hex);
   const info = TILE_INFO[tile];
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
@@ -112,29 +124,57 @@ export function HexInspector({fight, hex}: {fight: FightState; hex: Hex}) {
     <Stack gap={8} data-testid="hex-info">
       {showTile && (
         <Paper bg="dark.7" p="sm" radius="md">
-          <Text fw={600}>{info.name}</Text>
+          <Text fw={600} fz={compact ? 'sm' : 'md'}>
+            {info.name}
+          </Text>
           <Text fz="xs" c="dimmed">
-            {info.detail}
+            {compact ? info.short : info.detail}
           </Text>
           {hail && (
             <Text fz="xs" c="cyan.3" mt={4}>
-              <b>Hail.</b> {hailInfo(hail, fight.currentSlot).detail}
+              <b>Hail.</b> {hailInfo(hail, fight.currentSlot)[compact ? 'short' : 'detail']}
             </Text>
           )}
           {fog && (
             <Text fz="xs" c="gray.4" mt={4}>
-              <b>Fog.</b> {fogInfo(fog, fight.currentSlot).detail}
+              <b>Fog.</b> {fogInfo(fog, fight.currentSlot)[compact ? 'short' : 'detail']}
             </Text>
           )}
         </Paper>
       )}
-      {unit && <StatSheet fight={fight} unit={unit} />}
+      {unit && <StatSheet fight={fight} unit={unit} compact={compact} />}
     </Stack>
   );
 }
 
-/** Every unit's stat sheet, enemies' included: its abilities, and for an enemy what it could do (D11). */
-export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
+/** When a unit acts next, from now. */
+function nextTurn(fight: FightState, unit: Unit): string {
+  if (!unit.alive) return 'fallen';
+  if (unit.slot === null) return 'not placed';
+  return unit.slot === fight.currentSlot ? 'now' : `+${unit.slot - fight.currentSlot}`;
+}
+
+/** Whether a unit's ultimate is used, ready, or how many turns it has towards it. */
+function ultimateState(unit: Unit): string {
+  if (unit.ultimateUsed) return 'used';
+  if (unit.turnsTaken >= RULES.ultimateUnlockTurns) return 'ready';
+  return `${unit.turnsTaken}/${RULES.ultimateUnlockTurns} turns`;
+}
+
+/**
+ * Every unit's stat sheet, enemies' included: its abilities, and for an enemy
+ * what it could do (D11). `compact`: health, next turn and the ultimate on
+ * one line, then statuses; no fixed stats or abilities.
+ */
+export function StatSheet({
+  fight,
+  unit,
+  compact = false,
+}: {
+  fight: FightState;
+  unit: Unit;
+  compact?: boolean;
+}) {
   const slot = fight.currentSlot;
   const taunter = taunterOf(fight, unit);
   const statuses = [
@@ -160,42 +200,45 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
     <Paper bg="dark.7" p="sm" radius="md" data-testid="stat-sheet">
       <Group justify="space-between" mb={4}>
         {/* The name, in its side's colour: blue yours, red the enemy's, as on the board. */}
-        <Badge color={sideColor(unit)} variant="light" size="lg" tt="none" data-side={unit.side}>
+        <Badge
+          color={sideColor(unit)}
+          variant="light"
+          size={compact ? 'md' : 'lg'}
+          tt="none"
+          data-side={unit.side}
+        >
           {HEROES[unit.hero].name}
         </Badge>
       </Group>
-      <div className={styles.stats}>
-        <span>Health</span>
-        <b>
-          {unit.hp} / {unit.maxHp}
-        </b>
-        <span>Speed</span>
-        <b>{unit.speed}</b>
-        <span>Defence</span>
-        <b>{unit.defence}</b>
-        <span>Power</span>
-        <b>{unit.power}</b>
-        <span>Next turn</span>
-        <b>
-          {!unit.alive
-            ? 'fallen'
-            : unit.slot === null
-              ? 'not placed'
-              : unit.slot === fight.currentSlot
-                ? 'now'
-                : `+${unit.slot - fight.currentSlot}`}
-        </b>
-        <span>Move</span>
-        <b>{movementCap(unit)} hexes</b>
-        <span>{ABILITIES[ult].name}</span>
-        <b>
-          {unit.ultimateUsed
-            ? 'used'
-            : unit.turnsTaken >= RULES.ultimateUnlockTurns
-              ? 'ready'
-              : `${unit.turnsTaken}/${RULES.ultimateUnlockTurns} turns`}
-        </b>
-      </div>
+      {compact ? (
+        <Text fz="xs">
+          Health{' '}
+          <b>
+            {unit.hp} / {unit.maxHp}
+          </b>{' '}
+          · Next turn <b>{nextTurn(fight, unit)}</b> · {ABILITIES[ult].name}{' '}
+          <b>{ultimateState(unit)}</b>
+        </Text>
+      ) : (
+        <div className={styles.stats}>
+          <span>Health</span>
+          <b>
+            {unit.hp} / {unit.maxHp}
+          </b>
+          <span>Speed</span>
+          <b>{unit.speed}</b>
+          <span>Defence</span>
+          <b>{unit.defence}</b>
+          <span>Power</span>
+          <b>{unit.power}</b>
+          <span>Next turn</span>
+          <b>{nextTurn(fight, unit)}</b>
+          <span>Move</span>
+          <b>{movementCap(unit)} hexes</b>
+          <span>{ABILITIES[ult].name}</span>
+          <b>{ultimateState(unit)}</b>
+        </div>
+      )}
       {statuses.length > 0 && (
         <Text fz="xs" c="orange.3" mt={4}>
           {statuses.join(' · ')}
@@ -206,25 +249,27 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
           Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
         </Text>
       )}
-      <Stack gap={2} mt={6}>
-        <Text fz="xs" fw={600}>
-          Abilities
-        </Text>
-        {abilitiesOf(unit)
-          // Hold isn't offered as an action: End turn is.
-          .filter((def) => def.id !== 'hold')
-          .map((def) => (
-            <Text key={def.id} fz="xs" c="dimmed">
-              {/* In this unit's slots: the action alone, before any move or yielding. */}
-              <b className={styles.abilityName}>{def.name}</b> · +
-              {slotsForward(def.cost, unit.speed)}
-              {def.charged
-                ? ` to charge, +${slotsForward(def.recoveryCost!, unit.speed)} to recover`
-                : ''}
-              : {def.summary(unit)}
-            </Text>
-          ))}
-      </Stack>
+      {!compact && (
+        <Stack gap={2} mt={6}>
+          <Text fz="xs" fw={600}>
+            Abilities
+          </Text>
+          {abilitiesOf(unit)
+            // Hold isn't offered as an action: End turn is.
+            .filter((def) => def.id !== 'hold')
+            .map((def) => (
+              <Text key={def.id} fz="xs" c="dimmed">
+                {/* In this unit's slots: the action alone, before any move or yielding. */}
+                <b className={styles.abilityName}>{def.name}</b> · +
+                {slotsForward(def.cost, unit.speed)}
+                {def.charged
+                  ? ` to charge, +${slotsForward(def.recoveryCost!, unit.speed)} to recover`
+                  : ''}
+                : {def.summary(unit)}
+              </Text>
+            ))}
+        </Stack>
+      )}
     </Paper>
   );
 }

@@ -782,6 +782,26 @@ function drawYield(
   ctx.restore();
 }
 
+/**
+ * What a looked-at hex takes up on the board, in scene pixels: its centre's
+ * x, and the top and bottom of the hex with its unit's health bar and
+ * status markers. A tooltip goes above `top` or below `bottom` to keep
+ * clear of them: the hover tooltip here, and the page's on phones.
+ */
+export function hexOverlaySpan(
+  fight: FightState,
+  h: Hex
+): {x: number; top: number; bottom: number} {
+  const c = center(h);
+  const unit = unitAt(fight, h);
+  const stack = unit && healthStack(h, statusMarks(fight, unit).length);
+  return {
+    x: c.x,
+    top: stack && stack.top < c.y ? stack.top : c.y - 36 * HEX_SCALE,
+    bottom: stack && stack.bottom > c.y ? stack.bottom + 2 : c.y + 36 * HEX_SCALE,
+  };
+}
+
 /** The hovered hex's tooltip: its tile, hail and unit (the outline is drawn under the units). */
 function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): void {
   const map = mapOf(fight);
@@ -816,15 +836,12 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
   const w = Math.max(...lines.map((l) => ctx.measureText(l.text).width)) + 14;
   const lh = 15;
   const boxH = lines.length * lh + 8;
-  const c = center(h);
-  const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, c.x - w / 2));
+  const span = hexOverlaySpan(fight, h);
+  const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, span.x - w / 2));
   // Above the hex (and a unit's health bar and statuses), or below it (and
   // them, when they're below too) when that would cover the track.
-  const stack = unit && healthStack(h, statusMarks(fight, unit).length);
-  const aboveStack = stack && stack.top < c.y ? stack.top : c.y - 36 * HEX_SCALE;
-  const above = aboveStack - 2 - boxH;
-  const belowStack = stack && stack.bottom > c.y ? stack.bottom + 2 : c.y + 36 * HEX_SCALE;
-  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? belowStack : above;
+  const above = span.top - 2 - boxH;
+  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? span.bottom : above;
   roundRect(ctx, bx, by, w, boxH, 5);
   ctx.fillStyle = 'rgba(17,24,39,0.94)';
   ctx.fill();

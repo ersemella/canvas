@@ -67,6 +67,8 @@ export default silkRoadTactics;
 // What the platform's page uses: the board's drawing contract and the
 // rules, run locally for previews (D11).
 export {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem};
+export {hexOverlaySpan} from './client/TacticsBoardSystem';
+export {TRACK_AREA} from './client/layout';
 export type {BoardScene, HighlightKind} from './client/TacticsBoardSystem';
 export type {
   TacticsCardPayload,
