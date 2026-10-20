@@ -40,6 +40,8 @@ export interface BoardScene {
   fight: FightState | null;
   highlights: {hex: Hex; kind: HighlightKind}[];
   selectedUnitId: string | null;
+  /** The unit tapped to look at (touch can't hover): it shows its health bar, as a hovered one does. */
+  inspectedUnitId?: string | null;
   /** Previewed outcome: where units end up and their health. */
   preview: {unitId: string; to: Hex | null; hpAfter: number; hpBefore: number; killed: boolean}[];
   /** Units shown at other hexes than the fight's (deployment being arranged). */
@@ -91,6 +93,9 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   inspect: {fill: 'rgba(192,132,252,0.12)', stroke: 'rgba(192,132,252,0.75)', dash: [5, 3]},
 };
 
+/** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
+const HEALTH_BAR = {w: 48, h: 10, y: 34};
+
 /** The hovered hex's outline. */
 const HOVER: HighlightStyle = {fill: 'rgba(255,255,255,0.08)', stroke: '#ffffff'};
 
@@ -114,8 +119,8 @@ interface TrackAdvance {
 /**
  * Draws everything over the board's tiles (which are hex entities): the
  * track of cards along the top (3.1, as in Mana Khemia), tile markings,
- * highlights, arrow lanes, hail, charging areas, units with health and
- * statuses, the previewed outcome, and a tooltip for the hex under the
+ * highlights, arrow lanes, hail, charging areas, units with statuses
+ * (health only on the unit hovered or tapped), the previewed outcome, and a tooltip for the hex under the
  * mouse. Plain shapes and text (brief section 9). The page drives it with
  * `tactics:board` events; taps come from `TacticsInputSystem`.
  */
@@ -204,7 +209,6 @@ export class TacticsBoardSystem extends BaseSystem {
         acting: u.id === acting,
         selected: u.id === this.scene.selectedUnitId || u.id === this.hover.unitId,
         faded: Boolean(moved || p?.killed),
-        hp: u.hp,
       });
       if (p && moved && !p.killed)
         drawUnit(ctx, u, p.to!, {
@@ -213,12 +217,25 @@ export class TacticsBoardSystem extends BaseSystem {
           selected: false,
           faded: false,
           ghost: true,
-          hp: p.hpAfter,
         });
       if (p && p.hpAfter !== p.hpBefore) {
         const at = center(p.to ?? hex);
         drawDamage(ctx, at.x, at.y - 22, p.hpBefore - p.hpAfter, p.killed);
       }
+    }
+
+    // Health shows only on the unit being looked at: hovered (on the board
+    // or the track) or tapped. Where it ends up when the turn moves it.
+    const looked = new Set<string>();
+    if (this.scene.inspectedUnitId) looked.add(this.scene.inspectedUnitId);
+    if (this.hover.unitId) looked.add(this.hover.unitId);
+    const hovered = this.hover.hex && unitAt(fight, this.hover.hex, this.scene.positions);
+    if (hovered) looked.add(hovered.id);
+    for (const u of fight.units) {
+      const hex = this.scene.positions?.[u.id] ?? u.hex;
+      if (!u.alive || !hex || !looked.has(u.id)) continue;
+      const p = previewed.get(u.id);
+      drawHealthBar(ctx, u, p?.to && !p.killed ? p.to : hex, p?.hpBefore ?? u.hp, p?.hpAfter);
     }
 
     const badgesAt = new Map<string, number>();
@@ -537,17 +554,11 @@ function drawHover(
 ): void {
   const map = MAPS[fight.mapId]!;
   const lines: {text: string; color: string; bold?: boolean}[] = [];
-  const unit = fight.units.find((u) => {
-    const at = positions?.[u.id] ?? u.hex;
-    return u.alive && at && hexEquals(at, h);
-  });
+  const unit = unitAt(fight, h, positions);
   if (unit) {
-    // The side shows in the colour, as on the board: just the hero's name.
-    lines.push({
-      text: `${HEROES[unit.hero].name}  ${unit.hp}/${unit.maxHp}`,
-      color: SIDE_COLOR[unit.side],
-      bold: true,
-    });
+    // The side shows in the colour, as on the board: just the hero's name
+    // (its health is on the bar over it).
+    lines.push({text: HEROES[unit.hero].name, color: SIDE_COLOR[unit.side], bold: true});
   }
   const tile = tileAt(map, h);
   if (tile !== 'sand' || !unit) {
@@ -575,8 +586,8 @@ function drawHover(
   const boxH = lines.length * lh + 8;
   const c = center(h);
   const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, c.x - w / 2));
-  // Above the hex, or below it when that would cover the track.
-  const above = c.y - 36 - boxH;
+  // Above the hex (and a unit's health bar), or below it when that would cover the track.
+  const above = c.y - (unit ? HEALTH_BAR.y + HEALTH_BAR.h + 4 : 36) - boxH;
   const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? c.y + 36 : above;
   roundRect(ctx, bx, by, w, boxH, 5);
   ctx.fillStyle = 'rgba(17,24,39,0.94)';
@@ -697,7 +708,6 @@ function drawUnit(
     selected: boolean;
     faded: boolean;
     ghost?: boolean;
-    hp: number;
   }
 ): void {
   const c = center(hex);
@@ -734,14 +744,6 @@ function drawUnit(
     label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, '#ffffff', 15, true);
   }
 
-  // Health bar.
-  const w = 30;
-  const frac = Math.max(0, opts.hp / u.maxHp);
-  ctx.fillStyle = '#111827';
-  ctx.fillRect(c.x - w / 2, c.y + 17, w, 5);
-  ctx.fillStyle = frac > 0.5 ? '#4ade80' : frac > 0.25 ? '#facc15' : '#f87171';
-  ctx.fillRect(c.x - w / 2, c.y + 17, w * frac, 5);
-
   // Status markers: I(mmobilized), S(lowed), V(ulnerable), C(rushed), T(aunted), F(lanked), ★ ultimate ready.
   if (!opts.ghost) {
     const marks: [string, string][] = [];
@@ -759,6 +761,60 @@ function drawUnit(
       label(ctx, m, c.x - 14 + i * 10, c.y - 17.5, '#111827', 8, true);
     });
   }
+  ctx.restore();
+}
+
+/** The living unit standing at `h` (or placed there while deploying). */
+function unitAt(fight: FightState, h: Hex, positions?: Record<string, Hex>): Unit | undefined {
+  return fight.units.find((u) => {
+    const at = positions?.[u.id] ?? u.hex;
+    return u.alive && at && hexEquals(at, h);
+  });
+}
+
+/**
+ * A looked-at unit's health, floating above its sprite and status markers,
+ * with the numbers on it. A previewed change shows the health it would
+ * lose as a pale stretch past the bar's end (or gain, in green).
+ */
+function drawHealthBar(
+  ctx: CanvasRenderingContext2D,
+  u: Unit,
+  hex: Hex,
+  hp: number,
+  hpAfter?: number
+): void {
+  const c = center(hex);
+  const {w, h} = HEALTH_BAR;
+  const x = c.x - w / 2;
+  const y = c.y - HEALTH_BAR.y - h;
+  const after = hpAfter ?? hp;
+  const frac = (n: number) => Math.min(1, Math.max(0, n / u.maxHp));
+  ctx.save();
+  roundRect(ctx, x - 2, y - 2, w + 4, h + 4, 4);
+  ctx.fillStyle = 'rgba(17,24,39,0.9)';
+  ctx.fill();
+  ctx.strokeStyle = SIDE_COLOR[u.side];
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  const f = frac(after);
+  if (after !== hp) {
+    ctx.fillStyle = after < hp ? 'rgba(248,113,113,0.45)' : 'rgba(134,239,172,0.45)';
+    ctx.fillRect(x + w * Math.min(f, frac(hp)), y, w * Math.abs(f - frac(hp)), h);
+  }
+  ctx.fillStyle = f > 0.5 ? '#4ade80' : f > 0.25 ? '#facc15' : '#f87171';
+  ctx.fillRect(x, y, w * Math.min(f, frac(hp)), h);
+  ctx.restore();
+  ctx.save();
+  ctx.font = 'bold 9px system-ui, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = 'rgba(17,24,39,0.9)';
+  ctx.lineWidth = 2.5;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const text = `${Math.max(0, after)}/${u.maxHp}`;
+  ctx.strokeText(text, c.x, y + h / 2 + 0.5);
+  ctx.fillText(text, c.x, y + h / 2 + 0.5);
   ctx.restore();
 }
 
