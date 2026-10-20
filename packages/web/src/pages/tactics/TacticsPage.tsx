@@ -430,6 +430,7 @@ export function TacticsPage() {
       fight,
       highlights,
       selectedUnitId: selectedId ?? acting?.id ?? null,
+      inspectedUnitId: selectedId,
       preview: [],
       previewSlot: preview?.slot ?? null,
       aimSlot: preview?.aimSlot ?? null,
