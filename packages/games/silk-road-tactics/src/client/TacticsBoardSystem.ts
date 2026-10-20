@@ -62,7 +62,7 @@ const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
 /** The tint over the whole hex a unit stands on: its side's colour. */
 const SIDE_TINT = {player: 'rgba(59,130,246,0.38)', enemy: 'rgba(239,68,68,0.38)'};
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
-/** Board sprites (32×32, facing right); heroes without one are drawn as a lettered disc. */
+/** Board sprites (square, 32×32 or up to 36×36 for a mounted hero; facing right); heroes without one are drawn as a lettered disc. */
 const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
