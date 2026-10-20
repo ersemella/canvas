@@ -54,9 +54,19 @@ export interface BoardScene {
   aimSlot?: number | null;
 }
 
-const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
+/**
+ * The sides' colours, the page's panels' (art-direction.md): lapis yours,
+ * madder the enemy's. Deep for edges on the sand; light for text and
+ * edges on the dark track and labels.
+ */
+const SIDE_COLOR = {player: '#2c5aa0', enemy: '#a3392b'};
+const SIDE_LIGHT = {player: '#a9c6f5', enemy: '#f3a08f'};
 /** The tint over the whole hex a unit stands on: its side's colour. */
-const SIDE_TINT = {player: 'rgba(59,130,246,0.38)', enemy: 'rgba(239,68,68,0.38)'};
+const SIDE_TINT = {player: 'rgba(44,90,160,0.4)', enemy: 'rgba(163,57,43,0.4)'};
+/** A track card's ground: its side's colour, deep; leather when empty. */
+const CARD_FILL = {player: '#1d3a66', enemy: '#5a1c14', empty: '#2b1d12'};
+/** The dark under labels, tooltips, bars and the track: warm ink, as the panels. */
+const INK = '18,12,7';
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
 /**
  * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
@@ -96,8 +106,8 @@ interface HighlightStyle {
  * to what's picked, so it never reads as either side's tint.
  */
 const TARGET_YELLOW = '253,224,71';
-/** An enemy's charging area: its side's red (`SIDE_COLOR.enemy`). */
-const ENEMY_CHARGE_RED = '248,113,113';
+/** An enemy's charging area: its side's madder (`SIDE_COLOR.enemy`), a shade lighter to show on sand. */
+const ENEMY_CHARGE_RED = '190,64,46';
 const yellow = (fill: number, stroke: number): HighlightStyle => ({
   fill: `rgba(${TARGET_YELLOW},${fill})`,
   stroke: `rgba(${TARGET_YELLOW},${stroke})`,
@@ -580,8 +590,11 @@ function drawTrack(
   const deck = trackSlots(fight, previewSlot, start);
   ctx.save();
   roundRect(ctx, x, y, width, height, 8);
-  ctx.fillStyle = 'rgba(17,24,39,0.92)';
+  ctx.fillStyle = `rgba(${INK},0.94)`;
   ctx.fill();
+  ctx.strokeStyle = 'rgba(212,169,78,0.45)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
   ctx.restore();
 
   const bySlot = new Map(cards.map((c) => [c.slot, c]));
@@ -648,18 +661,18 @@ function drawCard(
   roundRect(ctx, cx, cy, deck.cardW, h, 5);
   // The ghost is just an outline where the acting card lands: no portrait,
   // so the acting unit doesn't show twice.
-  ctx.fillStyle = !u || ghost ? '#1f2937' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
+  ctx.fillStyle = !u || ghost ? CARD_FILL.empty : CARD_FILL[u.side];
   ctx.fill();
   ctx.shadowColor = 'transparent';
   const strokeBorder = () => {
     ctx.setLineDash(ghost ? [3, 2] : []);
     ctx.strokeStyle = !u
-      ? 'rgba(255,255,255,0.18)'
+      ? 'rgba(212,169,78,0.22)'
       : ghost || acting
         ? '#fde047'
         : u.id === opts.selected || u.id === opts.hovered
           ? '#ffffff'
-          : SIDE_COLOR[u.side];
+          : SIDE_LIGHT[u.side];
     ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
     // The ghost's thick dashes sit inside its edge, so none show past the card in front.
     if (ghost) roundRect(ctx, cx + 1.25, cy + 1.25, deck.cardW - 2.5, h - 2.5, 4);
@@ -702,7 +715,7 @@ function drawCard(
       ctx.arc(mid, cy + h / 2 - 4, r, 0, Math.PI * 2);
       ctx.fillStyle = HERO_COLOR[u.hero];
       ctx.fill();
-      ctx.strokeStyle = SIDE_COLOR[u.side];
+      ctx.strokeStyle = SIDE_LIGHT[u.side];
       ctx.lineWidth = 1.5;
       ctx.stroke();
       label(ctx, HEROES[u.hero].letter, mid, cy + h / 2 - 3, '#ffffff', 11, true);
@@ -723,7 +736,7 @@ function greyOut(ctx: CanvasRenderingContext2D, x: number, y: number, w: number,
   ctx.fillStyle = '#808080';
   ctx.fillRect(x, y, w, h);
   ctx.globalCompositeOperation = 'source-over';
-  ctx.fillStyle = 'rgba(17,24,39,0.45)';
+  ctx.fillStyle = `rgba(${INK},0.45)`;
   ctx.fillRect(x, y, w, h);
   ctx.restore();
 }
@@ -832,7 +845,7 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
   if (unit) {
     // The side shows in the colour, as on the board: just the hero's name
     // (its health is the bar over it).
-    lines.push({text: HEROES[unit.hero].name, color: SIDE_COLOR[unit.side], bold: true});
+    lines.push({text: HEROES[unit.hero].name, color: SIDE_LIGHT[unit.side], bold: true});
   }
   const tile = tileAt(map, h);
   if (tile !== 'sand' || !unit) {
@@ -865,9 +878,9 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
   const above = span.top - 2 - boxH;
   const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? span.bottom : above;
   roundRect(ctx, bx, by, w, boxH, 5);
-  ctx.fillStyle = 'rgba(17,24,39,0.94)';
+  ctx.fillStyle = `rgba(${INK},0.94)`;
   ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.strokeStyle = 'rgba(212,169,78,0.55)';
   ctx.lineWidth = 1;
   ctx.stroke();
   ctx.restore();
@@ -1678,7 +1691,7 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
     const c = center(h);
     ctx.font = 'bold 12px system-ui, sans-serif';
     const w = ctx.measureText(text).width + 12;
-    ctx.fillStyle = 'rgba(17,24,39,0.85)';
+    ctx.fillStyle = `rgba(${INK},0.85)`;
     ctx.fillRect(c.x - w / 2, titleY(h) - 9, w, 18);
     label(ctx, text, c.x, titleY(h), color, 12, true);
     ctx.restore();
@@ -1689,7 +1702,7 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
         title(
           u.hex,
           `${u.side === 'player' ? 'Your' : 'Enemy'} ${HEROES[u.hero].name}`,
-          SIDE_COLOR[u.side]
+          SIDE_LIGHT[u.side]
         );
       return;
     case 'action':
@@ -1734,7 +1747,7 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
     case 'heal': {
       if (!u.hex) return;
       const c = center(u.hex);
-      if (e.kind === 'damage') tintHex(ctx, u.hex, 'rgba(239,68,68,0.55)', 1 - k);
+      if (e.kind === 'damage') tintHex(ctx, u.hex, 'rgba(190,52,36,0.55)', 1 - k);
       const amount = e.kind === 'damage' ? e.amount : -e.amount;
       drawDamage(ctx, c.x, c.y - 22 - k * 16, amount, e.kind === 'damage' && u.hp === 0);
       return;
@@ -2186,7 +2199,7 @@ function drawUnit(
     ctx.arc(c.x, c.y, 15 * HEX_SCALE, 0, Math.PI * 2);
     ctx.fillStyle = HERO_COLOR[u.hero];
     ctx.fill();
-    ctx.strokeStyle = 'rgba(17,24,39,0.8)';
+    ctx.strokeStyle = `rgba(${INK},0.8)`;
     ctx.lineWidth = 1.5;
     ctx.stroke();
     label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, '#ffffff', 15, true);
@@ -2243,7 +2256,7 @@ function drawStatusMark(
   ctx.arc(x, y, MARK.r, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.fill();
-  ctx.strokeStyle = 'rgba(17,24,39,0.9)';
+  ctx.strokeStyle = `rgba(${INK},0.9)`;
   ctx.lineWidth = 1.5;
   ctx.stroke();
   label(ctx, m, x, y + 0.5, '#111827', 9, true);
@@ -2276,7 +2289,7 @@ function drawHealthBar(
   const frac = (n: number) => Math.min(1, Math.max(0, n / u.maxHp));
   ctx.save();
   roundRect(ctx, x - 2, y - 2, w + 4, h + 4, 4);
-  ctx.fillStyle = 'rgba(17,24,39,0.9)';
+  ctx.fillStyle = `rgba(${INK},0.9)`;
   ctx.fill();
   ctx.strokeStyle = SIDE_COLOR[u.side];
   ctx.lineWidth = 1.5;
@@ -2302,7 +2315,7 @@ function drawDamage(
   ctx.save();
   ctx.font = 'bold 13px monospace';
   const w = ctx.measureText(text).width + 8;
-  ctx.fillStyle = 'rgba(17,24,39,0.85)';
+  ctx.fillStyle = `rgba(${INK},0.85)`;
   ctx.fillRect(x - w / 2, y - 9, w, 17);
   ctx.restore();
   label(ctx, text, x, y, amount >= 0 ? '#fca5a5' : '#86efac', 13, true);

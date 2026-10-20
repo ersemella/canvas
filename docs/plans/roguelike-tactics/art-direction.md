@@ -86,8 +86,11 @@ the abilities as brass-edged tiles (the picked one inlaid in lapis, an
 ultimate in Tyrian purple), Confirm as a saffron seal, a woven band over
 the actions, and names in Cinzel. Numbers (costs, charge, stats) stay in
 the plain face, since Cinzel's figures are small and slow to scan. The
-tokens are `--srt-*` in `TacticsPage.module.css`. The track is drawn on
-the canvas and keeps its own colours.
+tokens are `--srt-*` in `TacticsPage.module.css`. The canvas shares the
+palette (`TacticsBoardSystem.ts`): the sides are lapis (yours) and madder
+(the enemy's), deep for hex edges and tints on the sand and light for
+text and track-card edges; the track and the board's labels sit on the
+same warm ink and brass edge as the panels. Targeting stays yellow.
 
 ## Engine work (built 2026-10-19)
 
