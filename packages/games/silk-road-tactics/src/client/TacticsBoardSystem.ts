@@ -210,10 +210,12 @@ export class TacticsBoardSystem extends BaseSystem {
       if (trackStart(this.advance) >= this.advance.to) this.advance = null;
     }
     const map = MAPS[fight.mapId]!;
-    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h));
-    for (const fog of fight.fog ?? []) drawFog(ctx, fog.hex);
+    // The board's weather moves with time, unless the device asks for reduced motion.
+    const t = this.still ? null : this.time;
+    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), t);
+    for (const fog of fight.fog ?? []) drawFog(ctx, fog.hex, t);
     for (const effect of fight.effects)
-      drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1);
+      drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1, t);
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
     const previewedTo = new Map(this.scene.preview.map((p) => [p.unitId, p]));
@@ -677,16 +679,19 @@ function drawHexImage(
   ctx: CanvasRenderingContext2D,
   h: Hex,
   img: HTMLImageElement,
-  opts: {alpha?: number; flipX?: boolean} = {}
+  opts: {alpha?: number; flipX?: boolean; dx?: number; dy?: number} = {}
 ): void {
   const c = center(h);
   const size = img.width * SPRITE_SCALE;
+  // An offset in whole art pixels, so a moving image stays crisp.
+  const dx = (opts.dx ?? 0) * SPRITE_SCALE;
+  const dy = (opts.dy ?? 0) * SPRITE_SCALE;
   ctx.save();
   hexPath(ctx, h, 0);
   ctx.clip();
   ctx.globalAlpha = opts.alpha ?? 1;
   ctx.imageSmoothingEnabled = false;
-  ctx.translate(Math.round(c.x), Math.round(c.y));
+  ctx.translate(Math.round(c.x) + dx, Math.round(c.y) + dy);
   if (opts.flipX) ctx.scale(-1, 1);
   ctx.drawImage(img, -size / 2, -size / 2, size, size);
   ctx.restore();
@@ -698,10 +703,16 @@ function drawHexImage(
  * colour under it and a code-drawn mark show. Ruins stand on sand and are
  * drawn later, by `drawRuins`.
  */
-function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
+function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, time: number | null): void {
   const ground = assetLoader.requestImage(TILE_TEXTURE[tile]);
   if (ground) {
     drawHexImage(ctx, h, ground, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
+    if (tile === 'conceal' && time !== null) {
+      // Sandstorm: the streaks gust back and forth along their diagonal, over
+      // a still copy that fills any edge the moving one uncovers.
+      const s = sway(time, SANDSTORM_SWAY_SECONDS, 2);
+      if (s !== 0) drawHexImage(ctx, h, ground, {dx: s, dy: Math.trunc(s / 2)});
+    }
     ctx.save();
     hexPath(ctx, h, 0.5);
     ctx.strokeStyle = '#8c7350';
@@ -788,18 +799,79 @@ function drawTileMark(
   ctx.restore();
 }
 
-function drawFog(ctx: CanvasRenderingContext2D, h: Hex): void {
+/** Seconds for fog to drift there and back. */
+const FOG_SWAY_SECONDS = 6;
+/** Seconds for a sandstorm's gust there and back. */
+const SANDSTORM_SWAY_SECONDS = 2.4;
+
+/**
+ * A slow back-and-forth in whole art pixels, from −`amp` to `amp` and back
+ * over `period` seconds (a triangle wave, so it holds no position longer).
+ */
+function sway(time: number, period: number, amp: number): number {
+  const phase = (time / period) % 1;
+  return Math.round((Math.abs(phase - 0.5) * 4 - 1) * amp);
+}
+
+/** Hailstones falling on a hail hex: each drops in turn, then a pause. */
+const HAIL_DROPS = 3;
+const HAIL_FALL_SECONDS = 0.45;
+const HAIL_CYCLE_SECONDS = 1.5;
+
+/**
+ * Small outlined stones falling onto a hail hex and vanishing as they land
+ * (the ground image already shows the fallen ones). Their columns, landing
+ * rows and timing come from the hex, so hexes don't fall in step. Drawn in
+ * art pixels at the sprites' scale, in the hail image's colours.
+ */
+function drawFallingHail(ctx: CanvasRenderingContext2D, h: Hex, time: number): void {
+  const c = center(h);
+  const px = SPRITE_SCALE;
+  let seed = ((h.q * 73856093) ^ (h.r * 19349663)) >>> 0;
+  const next = () => (seed = (seed * 1103515245 + 12345) >>> 0) / 2 ** 32;
+  ctx.save();
+  hexPath(ctx, h, 0);
+  ctx.clip();
+  for (let i = 0; i < HAIL_DROPS; i++) {
+    const col = Math.round((next() - 0.5) * 24);
+    const land = Math.round(next() * 22 - 8);
+    const start = next() * HAIL_CYCLE_SECONDS;
+    const k = ((time + start) % HAIL_CYCLE_SECONDS) / HAIL_FALL_SECONDS;
+    if (k >= 1) continue;
+    const top = -24;
+    const row = Math.round(top + (land - top) * k * k);
+    const x = Math.round(c.x) + col * px;
+    const y = Math.round(c.y) + row * px;
+    ctx.fillStyle = '#221816';
+    ctx.fillRect(x - px, y - px, 4 * px, 4 * px);
+    ctx.fillStyle = '#f1f5f9';
+    ctx.fillRect(x, y, 2 * px, 2 * px);
+    ctx.fillStyle = '#b8c8d0';
+    ctx.fillRect(x + px, y + px, px, px);
+  }
+  ctx.restore();
+}
+
+function drawFog(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): void {
   const img = assetLoader.requestImage(fogImage);
-  // Drawn partly see-through, so the ground still shows under it.
-  if (img) drawHexImage(ctx, h, img, {alpha: 0.7});
+  // Drawn partly see-through, so the ground still shows under it, drifting
+  // slowly side to side (every fogged hex together, so a bank moves as one).
+  const dx = time === null ? 0 : sway(time, FOG_SWAY_SECONDS, 2);
+  if (img) drawHexImage(ctx, h, img, {alpha: 0.7, dx});
   else fillHex(ctx, h, {fill: 'rgba(203,213,225,0.35)', stroke: 'rgba(226,232,240,0.6)'});
 }
 
-function drawHail(ctx: CanvasRenderingContext2D, h: Hex, slotsLeft: number): void {
+function drawHail(
+  ctx: CanvasRenderingContext2D,
+  h: Hex,
+  slotsLeft: number,
+  time: number | null
+): void {
   const at = center(h);
   const img = assetLoader.requestImage(hailImage);
   if (img) {
     drawHexImage(ctx, h, img);
+    if (time !== null) drawFallingHail(ctx, h, time);
     ctx.save();
     ctx.translate(at.x, at.y);
     ctx.scale(HEX_SCALE, HEX_SCALE);
