@@ -14,7 +14,6 @@ import {
   hailInfo,
   isFlanked,
   mapOf,
-  movementCap,
   obscured,
   slotsForward,
   statusSlotsLeft,
@@ -243,39 +242,24 @@ export function StatSheet({
   const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold' && !def.ultimate);
   return (
     <Paper bg="dark.7" p="sm" radius="md" data-testid="stat-sheet">
-      <Group justify="space-between" mb={compact ? 4 : 6}>
+      <Group justify="space-between" gap={6}>
         {/* The name, in its side's colour: blue yours, red the enemy's, as on the board. */}
-        <Badge
-          color={sideColor(unit)}
-          variant="light"
-          size={compact ? 'md' : 'lg'}
-          tt="none"
-          data-side={unit.side}
-        >
+        <Text fw={600} fz={compact ? 'sm' : 'md'} c={`${sideColor(unit)}.3`} data-side={unit.side}>
           {HEROES[unit.hero].name}
-        </Badge>
-      </Group>
-      {compact ? (
-        <Text fz="xs">
+        </Text>
+        <Text fz={compact ? 'xs' : 13}>
           Health{' '}
           <b>
             {unit.hp} / {unit.maxHp}
-          </b>{' '}
-          · {ult.name} <b>{ultimateState(unit)}</b>
+          </b>
+        </Text>
+      </Group>
+      {compact ? (
+        <Text fz="xs">
+          {ult.name} <b>{ultimateState(unit)}</b>
         </Text>
       ) : (
         <>
-          <div className={styles.vitals}>
-            <span>
-              Health{' '}
-              <b>
-                {unit.hp} / {unit.maxHp}
-              </b>
-            </span>
-            <span>
-              Move <b>{movementCap(unit)} spaces</b>
-            </span>
-          </div>
           <div className={styles.coreStats}>
             <div>
               <span>Speed</span>
@@ -329,7 +313,7 @@ function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?:
   const slots = def.charged
     ? `Charge +${slotsForward(def.cost, unit.speed)} · Recovery +${slotsForward(def.recoveryCost!, unit.speed)}`
     : `Action +${slotsForward(def.cost, unit.speed)}`;
-  const cost = def.duration === undefined ? slots : `Lasts ${def.duration} slots · ${slots}`;
+  const cost = def.duration === undefined ? slots : `Duration ${def.duration} · ${slots}`;
   return (
     <div>
       {/* The cost drops under the name when they don't fit side by side. */}
