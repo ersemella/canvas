@@ -135,7 +135,8 @@ export const ABILITY = {
    * walking the same 3 hexes (50), so it was all but unused.
    */
   dash: {cost: 40, distance: 3},
-  volley: {range: 5, radius: 1, damage: 135, chargeCost: 40, recoveryCost: RULES.cost.typical},
+  /** Ultimates buffed (owner, 2026-10-20; damage was 135). */
+  volley: {range: 5, radius: 1, damage: 200, chargeCost: 40, recoveryCost: RULES.cost.typical},
   /**
    * Heal 40, 60 at the Storm Caller's power (owner, 2026-10-19; was 25,
    * 37 healed, under a fifth of a bow hit). Over 1,000 AI-vs-AI fights from
@@ -157,11 +158,16 @@ export const ABILITY = {
    * from a unit in fog; both apply when both stand in it.
    */
   fog: {cost: RULES.cost.typical, range: 4, radius: 1, slots: 20, reduction: 0.5},
+  /**
+   * Ultimates buffed (owner, 2026-10-20): it now deals damage (none
+   * before), for 20 slots (was 15), Vulnerable 50% (was 25%).
+   */
   freeze: {
     range: 4,
     radius: 1,
-    immobilizedSlots: 15,
-    vulnerable: 25,
+    damage: 60,
+    immobilizedSlots: 20,
+    vulnerable: 50,
     chargeCost: 40,
     recoveryCost: RULES.cost.typical,
   },
@@ -173,7 +179,8 @@ export const ABILITY = {
    * Champion (17.5).
    */
   pin: {cost: RULES.cost.typical, slots: 12, vulnerable: 25, damagePerSlot: 6},
-  rampage: {cost: RULES.cost.slow, distance: 3, damage: 100, displace: 1},
+  /** Ultimates buffed (owner, 2026-10-20; was slow, 150, and damage 100). */
+  rampage: {cost: RULES.cost.typical, distance: 3, damage: 160, displace: 1},
 } as const;
 
 /** Enemy AI scoring (brief section 6); tuning placeholders from the brief. */

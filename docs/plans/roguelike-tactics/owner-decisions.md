@@ -99,14 +99,14 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 |---|---|
 | Composite Bow | range 5, **damage 120 (owner, 2026-10-19: 2 hits kill a Mangudai, 4 a Yadachy)** |
 | Dash | **up to 3 hexes (owner, 2026-10-20; restored from 2 with separate movement)**, **cost 40 (owner, 2026-10-20; was quick, 60, more than walking 3 hexes)** |
-| Volley (ultimate) | range 5, radius 1, **damage 135 (owner, 2026-10-19)**, charge 40, recovery 100 |
+| Volley (ultimate) | range 5, radius 1, **damage 200 (owner, 2026-10-20; 135 from 2026-10-19)**, charge 40, recovery 100 |
 | Sunlight | radius 1 (was 2 until it reached enemies, 2026-10-19), **heal 40, 60 at its power (owner, 2026-10-19; was 25)** |
 | Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
 | Fog (replaced Gale, owner, 2026-10-20) | range 4, radius 1, 20 slots; ranged hits into or out of it deal 50% less |
-| Freeze (ultimate) | range 4, radius 1, Immobilized and Vulnerable 25% for 15 slots, charge 40, recovery 100 |
+| Freeze (ultimate) | range 4, radius 1, **damage 60, then Immobilized and Vulnerable 50% for 20 slots (owner, 2026-10-20; was no damage, 25% for 15)**, charge 40, recovery 100 |
 | Throw | damage 80 |
 | Pin | 12 slots, Vulnerable 25%; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 6 a slot through defence (owner; 8 until 2026-10-20)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or knocked away from the Champion; cleansing the Champion doesn't break it or free it (owner, 2026-10-20)** |
-| Rampage (ultimate) | 3 hexes, damage 100, Displace 1, slow (150) |
+| Rampage (ultimate) | 3 hexes, **damage 160, typical (100) (owner, 2026-10-20; was 100, slow, 150)**, Displace 1 |
 
 Damage is scaled by power: `base × (1 + power / 50)`.
 

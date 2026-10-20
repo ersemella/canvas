@@ -162,6 +162,25 @@ describe('the track', () => {
     expect(m.ultimateUsed).toBe(true);
   });
 
+  it('Freeze damages, then Immobilizes and exposes, every unit in its area', () => {
+    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(4, 3), 'e-storm': at(7, 6)});
+    const caster = unit(s, 'p-storm');
+    caster.turnsTaken = RULES.ultimateUnlockTurns;
+    s.currentSlot = 100;
+    s.awaiting = caster.id;
+    applyTurn(s, caster, {action: {ability: 'freeze', target: {hex: at(4, 3)}}});
+    const b = unit(s, 'e-bokh');
+    const hpBefore = b.hp;
+    b.slot = 500;
+    unit(s, 'e-storm').slot = 600;
+    advance(s, () => ({action: {ability: 'hold'}}));
+    expect(b.hp).toBeLessThan(hpBefore);
+    expect(b.statuses.map((x) => x.kind)).toEqual(
+      expect.arrayContaining(['immobilized', 'vulnerable'])
+    );
+    expect(vulnerablePercent(s, b)).toBeGreaterThanOrEqual(ABILITY.freeze.vulnerable);
+  });
+
   it('keeps the ultimate locked until enough turns are taken', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 1)});
     const m = unit(s, 'p-mangudai');
