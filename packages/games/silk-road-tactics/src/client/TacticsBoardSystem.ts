@@ -14,7 +14,7 @@ import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
 import {fogInfo, hailInfo, TILE_INFO} from '../rules/info';
 import {MAPS, tileAt, type Tile} from '../rules/map';
-import type {AbilityId, FightState, Unit} from '../rules/types';
+import type {AbilityId, FightState, StatusKind, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
 import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
@@ -110,6 +110,10 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
 const HEALTH_BAR = {w: 60, h: 10, y: 50};
 /** Status markers in a row above the health bar: their radius, and the gap between centres. */
 const MARK = {r: 6.5, step: 15};
+/** Seconds a gone status's marker takes to rise off its unit and fade. */
+const MARK_EXPIRE_SECONDS = 0.9;
+/** How many pixels it rises meanwhile. */
+const MARK_EXPIRE_RISE = 18;
 /** How far above the hex's centre the markers' row is centred. */
 const MARKS_Y = HEALTH_BAR.y + HEALTH_BAR.h + 5 + MARK.r;
 
@@ -160,6 +164,19 @@ interface CardSlide {
 }
 
 /**
+ * A status that just went (expired or cleansed): its marker rises off the unit and fades,
+ * shown whether or not the unit is looked at, so it's plain it has gone.
+ */
+interface MarkExpiry {
+  unitId: string;
+  mark: [string, string];
+  /** Its place in the unit's row of markers before it went, and how many there were. */
+  index: number;
+  count: number;
+  elapsed: number;
+}
+
+/**
  * The track running on after a turn: the cards from `from` up to `to` (the
  * next turn's) lift away one by one and the deck slides up behind them.
  */
@@ -188,6 +205,10 @@ export class TacticsBoardSystem extends BaseSystem {
   private advance: TrackAdvance | null = null;
   /** Cards sliding to their units' new slots, by unit. */
   private slides = new Map<string, CardSlide>();
+  /** Gone statuses' markers fading away. */
+  private expiries: MarkExpiry[] = [];
+  /** The fight drawn last frame, to see which statuses went since. */
+  private shown: FightState | null = null;
   /** Seconds since the board started, for the units' idle animations. */
   private time = 0;
   /** The player's device asks for reduced motion: units hold still. */
@@ -276,6 +297,24 @@ export class TacticsBoardSystem extends BaseSystem {
     this.advance = {from, to: after.currentSlot, spent, elapsed: 0};
   }
 
+  /** Each status that went (expired or cleansed) from `before` to `after` starts fading off its unit. */
+  private startExpiries(before: FightState | null, after: FightState): void {
+    // Not across fights, nor back in time.
+    if (!before || before.mapId !== after.mapId || after.currentSlot < before.currentSlot) return;
+    for (const u of after.units) {
+      const was = before.units.find((v) => v.id === u.id);
+      if (!u.alive || !was?.alive) continue;
+      const marks = statusMarks(before, was);
+      const now = new Set(statusMarks(after, u).map(([m]) => m));
+      marks.forEach((mark, index) => {
+        // Flanked isn't a status: it comes and goes as units move.
+        const status = STATUS_KINDS.some((k) => STATUS_MARK[k][0] === mark[0]);
+        if (status && !now.has(mark[0]))
+          this.expiries.push({unitId: u.id, mark, index, count: marks.length, elapsed: 0});
+      });
+    }
+  }
+
   onUpdate({ctx, deltaTime}: SystemContext): void {
     let playing: Playback | null = null;
     if (this.play) {
@@ -291,7 +330,13 @@ export class TacticsBoardSystem extends BaseSystem {
     const scene: BoardScene = playing ? playbackScene(playing) : this.scene;
     const {fight} = scene;
     if (!fight) return;
+    if (fight !== this.shown) {
+      this.startExpiries(this.shown, fight);
+      this.shown = fight;
+    }
     this.time += deltaTime;
+    for (const e of this.expiries) e.elapsed += deltaTime;
+    this.expiries = this.expiries.filter((e) => e.elapsed < MARK_EXPIRE_SECONDS);
     if (this.advance) {
       this.advance.elapsed += deltaTime;
       if (trackStart(this.advance) >= this.advance.to) this.advance = null;
@@ -305,8 +350,7 @@ export class TacticsBoardSystem extends BaseSystem {
     const t = this.still ? null : this.time;
     for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), t);
     for (const fog of fight.fog ?? []) drawFog(ctx, fog.hex, t);
-    for (const effect of fight.effects)
-      drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1, t);
+    for (const effect of fight.effects) drawHail(ctx, effect.hex, t);
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
     const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
@@ -374,6 +418,18 @@ export class TacticsBoardSystem extends BaseSystem {
       const stack = healthStack(at, marks.length);
       drawHealthBar(ctx, u, at, stack.barY, p?.hpBefore ?? u.hp, p?.hpAfter);
       drawStatusMarks(ctx, marks, at, stack.marksY);
+    }
+    for (const e of this.expiries) {
+      const u = fight.units.find((v) => v.id === e.unitId);
+      const hex = u?.hex;
+      if (!u?.alive || !hex) continue;
+      const k = e.elapsed / MARK_EXPIRE_SECONDS;
+      const c = center(hex);
+      const x = c.x + (e.index - (e.count - 1) / 2) * MARK.step;
+      // Reduced motion: it fades where it was.
+      const rise = this.still ? 0 : MARK_EXPIRE_RISE * (1 - (1 - k) ** 2);
+      const y = healthStack(hex, e.count).marksY - rise;
+      drawStatusMark(ctx, e.mark, x, y, 1 - k * k);
     }
 
     drawTrack(
@@ -984,22 +1040,12 @@ function drawFog(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): vo
   else fillHex(ctx, h, {fill: 'rgba(203,213,225,0.35)', stroke: 'rgba(226,232,240,0.6)'});
 }
 
-function drawHail(
-  ctx: CanvasRenderingContext2D,
-  h: Hex,
-  slotsLeft: number,
-  time: number | null
-): void {
+function drawHail(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): void {
   const at = center(h);
   const img = assetLoader.requestImage(hailImage);
   if (img) {
     drawHexImage(ctx, h, img);
     if (time !== null) drawFallingHail(ctx, h, time);
-    ctx.save();
-    ctx.translate(at.x, at.y);
-    ctx.scale(HEX_SCALE, HEX_SCALE);
-    label(ctx, `${slotsLeft}`, 18, -20, '#0c4a6e', 10);
-    ctx.restore();
     return;
   }
   fillHex(ctx, h, {fill: 'rgba(186,230,253,0.45)', stroke: '#7dd3fc'});
@@ -1019,7 +1065,6 @@ function drawHail(
     ctx.arc(c.x + dx, c.y + dy, 2.2, 0, Math.PI * 2);
     ctx.fill();
   }
-  label(ctx, `${slotsLeft}`, c.x + 18, c.y - 20, '#0c4a6e', 10);
   ctx.restore();
 }
 
@@ -1240,14 +1285,24 @@ function drawUnit(
   ctx.restore();
 }
 
+/** Each status's marker: its letter and colour, in the order a row shows them. */
+const STATUS_MARK: Record<StatusKind, [string, string]> = {
+  immobilized: ['I', '#38bdf8'],
+  slowed: ['S', '#a78bfa'],
+  vulnerable: ['V', '#fb923c'],
+  crushed: ['C', '#ef4444'],
+  taunted: ['T', '#facc15'],
+};
+const STATUS_KINDS = Object.keys(STATUS_MARK) as StatusKind[];
+
 /** A unit's status markers: I(mmobilized), S(lowed), V(ulnerable), C(rushed), T(aunted), F(lanked). */
 function statusMarks(fight: FightState, u: Unit): [string, string][] {
   const marks: [string, string][] = [];
-  if (statusValue(u, 'immobilized')) marks.push(['I', '#38bdf8']);
-  if (statusValue(u, 'slowed')) marks.push(['S', '#a78bfa']);
-  if (statusValue(u, 'vulnerable')) marks.push(['V', '#fb923c']);
-  if (statusValue(u, 'crushed')) marks.push(['C', '#ef4444']);
-  if (u.statuses.some((s) => s.kind === 'taunted')) marks.push(['T', '#facc15']);
+  for (const kind of STATUS_KINDS) {
+    const on =
+      kind === 'taunted' ? u.statuses.some((s) => s.kind === kind) : statusValue(u, kind) > 0;
+    if (on) marks.push(STATUS_MARK[kind]);
+  }
   if (isFlanked(fight, u)) marks.push(['F', '#f472b6']);
   return marks;
 }
@@ -1260,19 +1315,30 @@ function drawStatusMarks(
   y: number
 ): void {
   const c = center(hex);
-  marks.forEach(([m, color], i) => {
-    const x = c.x + (i - (marks.length - 1) / 2) * MARK.step;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, MARK.r, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(17,24,39,0.9)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    ctx.restore();
-    label(ctx, m, x, y + 0.5, '#111827', 9, true);
+  marks.forEach((mark, i) => {
+    drawStatusMark(ctx, mark, c.x + (i - (marks.length - 1) / 2) * MARK.step, y);
   });
+}
+
+/** One status marker centred at (`x`, `y`). */
+function drawStatusMark(
+  ctx: CanvasRenderingContext2D,
+  [m, color]: [string, string],
+  x: number,
+  y: number,
+  alpha = 1
+): void {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.arc(x, y, MARK.r, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(17,24,39,0.9)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  label(ctx, m, x, y + 0.5, '#111827', 9, true);
+  ctx.restore();
 }
 
 /** The living unit standing at `h`. */

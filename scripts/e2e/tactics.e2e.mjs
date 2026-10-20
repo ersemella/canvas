@@ -546,7 +546,7 @@ try {
     await sleep(250);
   };
   const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
-  await phone.getByRole('button', {name: /^Composite Bow/}).click();
+  await phone.getByRole('button', {name: /^Dash/}).click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
   const aim = await phone.evaluate(() => window.__tactics.targets[0].hex);
   await tapOn(aim);
@@ -561,11 +561,11 @@ try {
     /^Confirm · next turn \+\d+( → \+\d+)?$/.test(phoneConfirm),
     phoneConfirm
   );
-  const bowText = await phone.getByRole('button', {name: /^Composite Bow/}).textContent();
+  const dashButtonText = await phone.getByRole('button', {name: /^Dash/}).textContent();
   check(
     'phone: the ability button shows the same slots as Confirm',
-    bowText.endsWith(phoneConfirm.match(/next turn (\+\d+)/)[1]),
-    [bowText, phoneConfirm]
+    dashButtonText.endsWith(phoneConfirm.match(/next turn (\+\d+)/)[1]),
+    [dashButtonText, phoneConfirm]
   );
   check('phone: there are no numbered steps', !(await phone.getByTestId('turn-steps').count()));
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});

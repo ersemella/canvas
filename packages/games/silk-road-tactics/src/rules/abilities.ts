@@ -233,19 +233,20 @@ const sunlight: AbilityDef = {
   id: 'sunlight',
   name: 'Sunlight',
   summary: (user) =>
-    `Heals ${scaled(ABILITY.sunlight.heal, user.power)} and cleanses every unit within ${ABILITY.sunlight.radius}, itself and enemies included.`,
+    `Heals ${scaled(ABILITY.sunlight.heal, user.power)} and cleanses one unit within ${ABILITY.sunlight.range}, itself or an enemy included.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.sunlight.cost,
   movesSelf: false,
-  targets: () => [{}],
-  resolve(ctx, user) {
-    log(ctx, `${unitName(user)} calls down sunlight.`);
-    for (const u of unitsInArea(ctx.state, user.hex!, ABILITY.sunlight.radius)) {
-      cleanse(u);
-      breakPins(ctx, u, true);
-      heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
-    }
+  targetsUnit: true,
+  targets: (state, map, _user, from) =>
+    hexesWithin(map, from, ABILITY.sunlight.range, (h) => unitAt(state, h) !== undefined),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} calls down sunlight on ${unitName(u)}.`);
+    cleanse(u);
+    breakPins(ctx, u, true);
+    heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
   },
 };
 
@@ -302,18 +303,21 @@ const fog: AbilityDef = {
 const freeze: AbilityDef = {
   id: 'freeze',
   name: 'Freeze',
-  summary: () =>
-    `Ultimate, charged: units within ${ABILITY.freeze.radius} of a hex within ${ABILITY.freeze.range} are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
+  summary: (user) =>
+    `Ultimate, charged: units within ${ABILITY.freeze.radius} of a hex within ${ABILITY.freeze.range} take ${scaled(ABILITY.freeze.damage, user.power)} damage, then are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}% for ${ABILITY.freeze.immobilizedSlots} slots.`,
   ultimate: true,
   charged: true,
   cost: ABILITY.freeze.chargeCost,
   recoveryCost: ABILITY.freeze.recoveryCost,
   movesSelf: false,
+  damaging: true,
   targets: (_state, map, _user, from) => hexesWithin(map, from, ABILITY.freeze.range),
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)}'s Freeze takes hold.`);
     const untilSlot = ctx.slot + ABILITY.freeze.immobilizedSlots;
     for (const u of unitsInArea(ctx.state, target.hex!, ABILITY.freeze.radius)) {
+      hit(ctx, user, u, ABILITY.freeze.damage, true, 'The Freeze');
+      if (!u.alive) continue;
       addStatus(u, {kind: 'immobilized', value: 0, untilSlot});
       addStatus(u, {kind: 'vulnerable', value: ABILITY.freeze.vulnerable, untilSlot});
     }
