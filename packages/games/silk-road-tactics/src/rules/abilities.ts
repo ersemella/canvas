@@ -23,7 +23,17 @@ import {
   unitAt,
   walkable,
 } from './board';
-import {applyHail, enterHex, displace, heal, hit, log, scaled, unitName} from './resolve';
+import {
+  applyHail,
+  breakPins,
+  enterHex,
+  displace,
+  heal,
+  hit,
+  log,
+  scaled,
+  unitName,
+} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -233,6 +243,7 @@ const sunlight: AbilityDef = {
     log(ctx, `${unitName(user)} calls down sunlight.`);
     for (const u of unitsInArea(ctx.state, user.hex!, ABILITY.sunlight.radius)) {
       cleanse(u);
+      breakPins(ctx, u, true);
       heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
     }
   },
@@ -341,7 +352,7 @@ const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
   summary: (user) =>
-    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots (you go free if it's moved away from you); it is Vulnerable ${ABILITY.pin.vulnerable}%, takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage every slot, and is Taunted: while it can reach you, it must attack you or end its turn.`,
+    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots (the pin breaks, freeing both, if it's cleansed or moved away from you); it is Vulnerable ${ABILITY.pin.vulnerable}%, takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage every slot, and is Taunted: while it can reach you, it must attack you or end its turn.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.pin.cost,
@@ -351,9 +362,10 @@ const pin: AbilityDef = {
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     const untilSlot = ctx.slot + ABILITY.pin.slots;
-    // Tagged with the target, so the Champion goes free if they're moved apart.
-    addStatus(user, {kind: 'immobilized', value: 0, untilSlot, source: u.id});
-    addStatus(u, {kind: 'immobilized', value: 0, untilSlot});
+    // Tagged with the pin, so breaking it frees both.
+    const pinTag = {champion: user.id, target: u.id};
+    addStatus(user, {kind: 'immobilized', value: 0, untilSlot, pin: pinTag});
+    addStatus(u, {kind: 'immobilized', value: 0, untilSlot, pin: pinTag});
     addStatus(u, {kind: 'vulnerable', value: ABILITY.pin.vulnerable, untilSlot});
     addStatus(u, {
       kind: 'crushed',

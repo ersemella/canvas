@@ -421,7 +421,7 @@ describe('abilities', () => {
     expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
   });
 
-  it('Pin: displacing the target away frees the Champion, not the target', () => {
+  it('Pin: displacing the target away breaks the pin, freeing both', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
@@ -430,8 +430,20 @@ describe('abilities', () => {
     displace({state: s, map: SALT_FLATS, slot: 0}, target, hexDirectionTo(at(1, 1), at(2, 1))!, 1);
     expect(hexDistance(target.hex!, b.hex!)).toBe(2);
     expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
-    expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+    expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
     expect(target.statuses.some((x) => x.kind === 'taunted')).toBe(true);
+  });
+
+  it('Pin: cleansing the target breaks the pin, freeing the Champion too', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'e-storm': at(3, 1)});
+    const b = unit(s, 'p-bokh');
+    const target = unit(s, 'e-mangudai');
+    applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    // Sunlight reaches the target but not the Champion, two hexes away.
+    expect(hexDistance(unit(s, 'e-storm').hex!, b.hex!)).toBe(2);
+    applyTurn(s, unit(s, 'e-storm'), {action: {ability: 'sunlight', target: {}}});
+    expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
+    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
   });
 
   it('Pin crushes its target every slot while it lasts', () => {

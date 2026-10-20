@@ -177,32 +177,34 @@ export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) =>
 /** Moves a unit onto a hex; `triggers` applies the hex's hazard and hail. */
 export function enterHex(ctx: Ctx, unit: Unit, h: Hex, triggers = true): void {
   unit.hex = h;
-  releasePins(ctx, unit);
+  breakPins(ctx, unit);
   if (!triggers) return;
   applyHazard(ctx, unit);
   applyHail(ctx, unit);
 }
 
 /**
- * A Pin holds the Champion only while its target stays next to it: once
- * either is moved apart (displaced, or walking off after a cleanse), the
- * Champion's own Immobilized from that Pin ends (owner, 2026-10-20). The
- * target keeps its statuses. Throw lands it beside the Champion, so Pin
- * then Throw keeps both held.
+ * A Pin Immobilizes the Champion and its target until the pin breaks: when
+ * the target is cleansed, or when the two are no longer adjacent (either
+ * displaced away, or the target walking off once cleansed). Breaking it
+ * frees both; the target's other statuses stay (owner, 2026-10-20). Throw
+ * lands the target beside the Champion, so Pin then Throw holds both.
  */
-function releasePins(ctx: Ctx, moved: Unit): void {
-  for (const champion of ctx.state.units) {
-    if (!champion.alive || !champion.hex) continue;
-    const before = champion.statuses.length;
-    champion.statuses = champion.statuses.filter((s) => {
-      if (s.kind !== 'immobilized' || !s.source) return true;
-      if (champion !== moved && s.source !== moved.id) return true;
-      const target = ctx.state.units.find((u) => u.id === s.source);
-      return !!target?.hex && hexDistance(target.hex, champion.hex!) <= 1;
+export function breakPins(ctx: Ctx, unit: Unit, cleansed = false): void {
+  const byId = (id: string) => ctx.state.units.find((u) => u.id === id);
+  const broken = new Set<string>();
+  for (const holder of ctx.state.units) {
+    holder.statuses = holder.statuses.filter((s) => {
+      const pin = s.kind === 'immobilized' ? s.pin : undefined;
+      if (!pin || (pin.champion !== unit.id && pin.target !== unit.id)) return true;
+      const a = byId(pin.champion)?.hex;
+      const b = byId(pin.target)?.hex;
+      const holds = !(cleansed && pin.target === unit.id) && !!a && !!b && hexDistance(a, b) <= 1;
+      if (!holds) broken.add(pin.target);
+      return holds;
     });
-    if (champion.statuses.length < before)
-      log(ctx, `${unitName(champion)} loses its hold and can move again.`);
   }
+  for (const id of broken) log(ctx, `The pin on ${unitName(byId(id)!)} is broken.`);
 }
 
 /**
