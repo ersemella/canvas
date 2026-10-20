@@ -346,7 +346,7 @@ export class TacticsBoardSystem extends BaseSystem {
     const map = mapOf(fight);
     // The board's weather moves with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
-    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h));
+    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), t);
     const sandstorm = map.hexes.filter((h) => tileAt(map, h) === 'conceal');
     drawBank(ctx, SANDSTORM_BANK, sandstorm, t);
     for (const effect of fight.effects) drawHail(ctx, effect.hex);
@@ -883,7 +883,7 @@ const TILE_TEXTURE: Record<Tile, string> = {
 function drawHexImage(
   ctx: CanvasRenderingContext2D,
   h: Hex,
-  img: HTMLImageElement,
+  img: HTMLImageElement | HTMLCanvasElement,
   opts: {alpha?: number; flipX?: boolean} = {}
 ): void {
   const c = center(h);
@@ -899,16 +899,58 @@ function drawHexImage(
   ctx.restore();
 }
 
+/** Quicksand's turning: frames in a full turn, and seconds a turn takes. */
+const QUICKSAND_FRAMES = 72;
+const QUICKSAND_TURN_SECONDS = 14;
+
+let quicksandFrames: HTMLCanvasElement[] | null = null;
+
+/**
+ * Quicksand's texture turned a step of a full turn, for the time: frames
+ * built once, each the texture rotated about its centre without smoothing
+ * (so it stays pixel art), over the still texture so the corners stay
+ * filled. Its arms wind clockwise going out, so it turns anticlockwise:
+ * they seem to flow in to the centre. Hexes start a different way round,
+ * so they don't turn in step.
+ */
+function quicksandFrame(
+  ground: HTMLImageElement,
+  h: Hex,
+  time: number
+): HTMLCanvasElement | HTMLImageElement {
+  if (typeof document === 'undefined') return ground;
+  quicksandFrames ??= Array.from({length: QUICKSAND_FRAMES}, (_, i) => {
+    const canvas = artCanvas(ground.width, ground.height);
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(ground, 0, 0);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(ground.width / 2, ground.height / 2, ground.width / 2, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.translate(ground.width / 2, ground.height / 2);
+    ctx.rotate((-i / QUICKSAND_FRAMES) * Math.PI * 2);
+    ctx.drawImage(ground, -ground.width / 2, -ground.height / 2);
+    ctx.restore();
+    return canvas;
+  });
+  const start = hexRandom(h, 9)();
+  const turn = (time / QUICKSAND_TURN_SECONDS + start) % 1;
+  return quicksandFrames[Math.floor(turn * QUICKSAND_FRAMES)]!;
+}
+
 /**
  * A tile's ground: its texture (sand mirrored on alternate hexes, so the
  * board doesn't repeat) and its border. Until the image loads, the flat
  * colour under it and a code-drawn mark show. Ruins stand on sand and are
  * drawn later, by `drawRuins`.
  */
-function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
+function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, time: number | null): void {
   const ground = assetLoader.requestImage(TILE_TEXTURE[tile]);
   if (ground) {
-    drawHexImage(ctx, h, ground, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
+    // Quicksand turns slowly, like a vortex drawing things in.
+    const img = tile === 'hazard' && time !== null ? quicksandFrame(ground, h, time) : ground;
+    drawHexImage(ctx, h, img, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
     ctx.save();
     hexPath(ctx, h, 0.5);
     ctx.strokeStyle = '#8c7350';
@@ -1226,8 +1268,24 @@ const SANDSTORM_BANK: BankStyle = {
   alpha: 0.95,
 };
 
+/** How often a bank's edge moves on as it billows; the layers move a whole art pixel at a time anyway. */
+const BANK_BILLOW_STEPS_PER_SECOND = 8;
+
+/**
+ * A bank as last built: kept and redrawn as it is until something in it
+ * changes (`key`: its hexes, its layers' offsets, its edge's billow step),
+ * which for fog is only a few times a second. `bounds` is the part of the
+ * canvas it covers, in art pixels.
+ */
+interface BuiltBank {
+  canvas: HTMLCanvasElement;
+  key: string;
+  hexes: string;
+  bounds: {x: number; y: number; width: number; height: number};
+}
+
 const bankTiles = new Map<BankStyle, HTMLCanvasElement>();
-let bankLayer: HTMLCanvasElement | null = null;
+const builtBanks = new Map<BankStyle, BuiltBank>();
 let bankMask: HTMLCanvasElement | null = null;
 
 function artCanvas(width: number, height: number): HTMLCanvasElement {
@@ -1241,8 +1299,10 @@ function artCanvas(width: number, height: number): HTMLCanvasElement {
  * Every hex of one kind of weather as one bank: its tile, in layers
  * drifting at their own speeds, kept to a soft-edged area around the hexes
  * (unclipped, so the bank has no hex-shaped cuts or seams). Built in art
- * pixels and scaled up unsmoothed, so its edge is pixel art too. Still
- * when `time` is null (reduced motion).
+ * pixels and scaled up unsmoothed, so its edge is pixel art too. Rebuilt
+ * only when it changes, and only over the hexes' part of the board, so a
+ * bank costs little more than drawing an image. Still when `time` is null
+ * (reduced motion).
  */
 function drawBank(
   ctx: CanvasRenderingContext2D,
@@ -1253,56 +1313,118 @@ function drawBank(
   if (hexes.length === 0 || typeof document === 'undefined') return;
   const width = Math.ceil(SCENE_SIZE.width / SPRITE_SCALE);
   const height = Math.ceil(SCENE_SIZE.height / SPRITE_SCALE);
+  const t = time ?? 0;
+  const {width: tw, height: th} = style.tile;
+  const offsets = style.drift.map(
+    (d) => [Math.round(t * d.x) % tw, Math.round(t * d.y) % th] as const
+  );
+  const billowT = Math.floor(t * BANK_BILLOW_STEPS_PER_SECOND) / BANK_BILLOW_STEPS_PER_SECOND;
+  const hexesKey = hexes.map(hexKey).join(' ');
+  const key = `${hexesKey}|${offsets.join(' ')}|${billowT}`;
+  let built = builtBanks.get(style);
+  if (built?.key !== key) {
+    built = buildBank(style, hexes, hexesKey, offsets, billowT, built, width, height);
+    built.key = key;
+    builtBanks.set(style, built);
+  }
+  const {x, y, width: bw, height: bh} = built.bounds;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.globalAlpha = style.alpha;
+  ctx.drawImage(
+    built.canvas,
+    x,
+    y,
+    bw,
+    bh,
+    x * SPRITE_SCALE,
+    y * SPRITE_SCALE,
+    bw * SPRITE_SCALE,
+    bh * SPRITE_SCALE
+  );
+  ctx.restore();
+}
+
+/** Builds a bank (into `reuse`'s canvas when there is one), over its hexes' part of the board only. */
+function buildBank(
+  style: BankStyle,
+  hexes: Hex[],
+  hexesKey: string,
+  offsets: (readonly [number, number])[],
+  billowT: number,
+  reuse: BuiltBank | undefined,
+  width: number,
+  height: number
+): BuiltBank {
   let tile = bankTiles.get(style);
   if (!tile) {
     tile = artCanvas(style.tile.width, style.tile.height);
     style.paint(tile.getContext('2d')!);
     bankTiles.set(style, tile);
   }
-  bankLayer ??= artCanvas(width, height);
+  const canvas = reuse?.canvas ?? artCanvas(width, height);
   bankMask ??= artCanvas(width, height);
-  const layer = bankLayer.getContext('2d')!;
+  const layer = canvas.getContext('2d')!;
   const mask = bankMask.getContext('2d')!;
-  const t = time ?? 0;
 
-  mask.clearRect(0, 0, width, height);
+  // The part of the board the bank can reach, at its edge's furthest billow.
   const size = BOARD_LAYOUT.size / SPRITE_SCALE;
   const [solid, gone] = style.fade;
-  for (const h of hexes) {
+  const reach = Math.ceil(size * gone * (1 + style.billow.amount)) + 1;
+  const centres = hexes.map((h) => {
     const c = center(h);
-    const x = c.x / SPRITE_SCALE;
-    const y = c.y / SPRITE_SCALE;
-    const phase = (t / style.billow.seconds) * Math.PI * 2 + h.q * 1.7 + h.r;
+    return {h, x: c.x / SPRITE_SCALE, y: c.y / SPRITE_SCALE};
+  });
+  const x0 = Math.max(0, Math.floor(Math.min(...centres.map((c) => c.x)) - reach));
+  const y0 = Math.max(0, Math.floor(Math.min(...centres.map((c) => c.y)) - reach));
+  const x1 = Math.min(width, Math.ceil(Math.max(...centres.map((c) => c.x)) + reach));
+  const y1 = Math.min(height, Math.ceil(Math.max(...centres.map((c) => c.y)) + reach));
+  const bounds = {x: x0, y: y0, width: x1 - x0, height: y1 - y0};
+
+  mask.clearRect(x0, y0, bounds.width, bounds.height);
+  for (const {h, x, y} of centres) {
+    const phase = (billowT / style.billow.seconds) * Math.PI * 2 + h.q * 1.7 + h.r;
     const billow = 1 + style.billow.amount * Math.sin(phase);
     const g = mask.createRadialGradient(x, y, 0, x, y, size * gone * billow);
     g.addColorStop(0, 'rgba(0,0,0,1)');
     g.addColorStop(solid / gone, 'rgba(0,0,0,1)');
     g.addColorStop(1, 'rgba(0,0,0,0)');
     mask.fillStyle = g;
-    mask.fillRect(x - size * 2, y - size * 2, size * 4, size * 4);
+    mask.fillRect(x - reach, y - reach, reach * 2, reach * 2);
   }
 
   layer.globalCompositeOperation = 'source-over';
-  layer.clearRect(0, 0, width, height);
+  // Other hexes than last time: what it drew before may lie outside these bounds.
+  if (reuse && reuse.hexes !== hexesKey) layer.clearRect(0, 0, width, height);
+  else layer.clearRect(x0, y0, bounds.width, bounds.height);
   const pattern = layer.createPattern(tile, 'repeat')!;
   const {width: tw, height: th} = style.tile;
-  for (const drift of style.drift) {
+  style.drift.forEach((drift, i) => {
+    const [ox, oy] = offsets[i]!;
     layer.save();
+    layer.beginPath();
+    layer.rect(x0, y0, bounds.width, bounds.height);
+    layer.clip();
     layer.globalAlpha = drift.alpha;
-    layer.translate(Math.round(t * drift.x) % tw, Math.round(t * drift.y) % th);
+    layer.translate(ox, oy);
     layer.fillStyle = pattern;
-    layer.fillRect(-tw, -th, width + 2 * tw, height + 2 * th);
+    layer.fillRect(x0 - tw, y0 - th, bounds.width + 2 * tw, bounds.height + 2 * th);
     layer.restore();
-  }
+  });
   layer.globalCompositeOperation = 'destination-in';
-  layer.drawImage(bankMask, 0, 0);
+  layer.drawImage(
+    bankMask,
+    x0,
+    y0,
+    bounds.width,
+    bounds.height,
+    x0,
+    y0,
+    bounds.width,
+    bounds.height
+  );
   layer.globalCompositeOperation = 'source-over';
-
-  ctx.save();
-  ctx.imageSmoothingEnabled = false;
-  ctx.globalAlpha = style.alpha;
-  ctx.drawImage(bankLayer, 0, 0, width * SPRITE_SCALE, height * SPRITE_SCALE);
-  ctx.restore();
+  return {canvas, key: '', hexes: hexesKey, bounds};
 }
 
 /** A hail hex's ground: the fallen stones (the falling ones are drawn later, over the units). */
