@@ -361,7 +361,7 @@ const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
   summary: (user) =>
-    `Melee: you and the target are Immobilized; the target is Taunted and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot.`,
+    `Melee: the target is Immobilized and Taunted and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot, until you move away.`,
   duration: ABILITY.pin.slots,
   ultimate: false,
   charged: false,
@@ -372,9 +372,9 @@ const pin: AbilityDef = {
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     const untilSlot = ctx.slot + ABILITY.pin.slots;
-    // Tagged with the pin, so breaking it clears them all.
+    // Tagged with the pin, so breaking it clears them all. The Champion
+    // stays free: moving away from the target breaks the pin (resolve.ts).
     const pin = {champion: user.id, target: u.id};
-    addStatus(user, {kind: 'immobilized', value: 0, untilSlot, pin});
     addStatus(u, {kind: 'immobilized', value: 0, untilSlot, pin});
     addStatus(u, {
       kind: 'crushed',

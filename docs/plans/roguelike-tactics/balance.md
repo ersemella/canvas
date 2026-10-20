@@ -260,6 +260,22 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
    stops costing games but still adds nothing.
 4. **Freeze: redesign, or study individual fights.** No number tried made
    it pay (see above).
+   **Charge time, measured 2026-10-20** (new AI, Pin as applied; 800
+   fights for unfinished, 400 per ablation):
+
+   | Volley / Freeze | Unfinished | Side without Volley wins | Side without Freeze wins |
+   |---|---:|---:|---:|
+   | Both charged (charge 20, recovery 60) | 5.4% | 42.4% | 52.0% |
+   | **Freeze instant (cost 100), Volley charged** | 4.1% | 42.6% | **48.7%** |
+   | Both instant, cost 100 | 3.0% | **23.7%** | 46.3% |
+   | Both instant, cost 80 | 3.0% | 24.2% | 47.1% |
+   | Both instant, Volley base damage 130 | | 34.6% | |
+
+   Charging is what made Freeze miss. Instant, it pays. An instant Volley
+   becomes nearly as decisive as the Bow, even at 130 damage. Proposed:
+   **Freeze instant at cost 100, Volley stays charged**. Both ultimates
+   then sit in the 40–48% band, and Volley, an arcing rain of arrows,
+   keeps the game's one charged, answerable threat (3.7).
 5. **Fog needs a job.** With one ranged attacker, which can pick another
    lane, halving ranged damage rarely matters. Tried after tunings 1 to 3:
    an arrow can't target a unit in or behind fog, so fog blocks a lane
@@ -275,7 +291,8 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
    ground. Tried after tunings 1 to 3: **Pin that doesn't Immobilize the
    Champion itself** (the pin still breaks if the two are parted). A side
    without Pin then wins 44.8% (about 50% before): Pin becomes worth having,
-   at no cost in stalls (3.5%). Recommended next. A zone of control is
+   at no cost in stalls (3.5%). **Applied 2026-10-20:** the Champion
+   stays free, and moving away releases the target. A zone of control is
    untested.
 8. **Stalls still need a guaranteed end** ([owner-decisions.md](owner-decisions.md),
    decision 1). Tuning brought them to 2.5%, not zero.

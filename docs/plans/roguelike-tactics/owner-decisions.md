@@ -124,7 +124,7 @@ unfinished at 400 actions, median 52 actions (58 before).
 | Fog (replaced Gale, owner, 2026-10-20) | range 4, radius 1, 20 slots; its hexes are **Obscured**, like the sandstorm's (owner, 2026-10-20): ranged hits into or out of them deal 50% less |
 | Freeze (ultimate) | range 4, radius 1, **damage 60, then Immobilized and Vulnerable 50% for 20 slots (owner, 2026-10-20; was no damage, 25% for 15)**, **charge 20, recovery 60 (owner, 2026-10-20; were 40 and 100)** |
 | Throw | damage 80 |
-| Pin | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 6 a slot through defence (owner; 8 until 2026-10-20)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or knocked away from the Champion; cleansing the Champion doesn't break it or free it (owner, 2026-10-20)** |
+| Pin | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 6 a slot through defence (owner; 8 until 2026-10-20)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or the two are no longer adjacent (knocked away, or the Champion moving away); cleansing the Champion doesn't break it (owner, 2026-10-20)**; **the Champion isn't Immobilized itself (owner, 2026-10-20; it was)** |
 | Rampage (ultimate) | 3 hexes, **damage 160, typical (100) (owner, 2026-10-20; was 100, slow, 150)**, Displace 1 |
 
 Damage is scaled by power: `base × (1 + power / 50)`.
