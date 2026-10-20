@@ -458,13 +458,9 @@ function drawTrack(
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 2;
     roundRect(ctx, cx, cy, deck.cardW, deck.h, 5);
-    ctx.fillStyle = !u
-      ? '#1f2937'
-      : ghost
-        ? '#3f3a1c'
-        : u.side === 'player'
-          ? '#1e3a8a'
-          : '#7f1d1d';
+    // The ghost is just an outline where the acting card lands: no portrait,
+    // so the acting unit doesn't show twice.
+    ctx.fillStyle = !u || ghost ? '#1f2937' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
     ctx.fill();
     ctx.shadowColor = 'transparent';
     const strokeBorder = () => {
@@ -482,14 +478,13 @@ function drawTrack(
     };
     strokeBorder();
 
-    if (u) {
+    if (u && !ghost) {
       // The unit sits in the strip that shows; the front card shows whole,
       // and a card sliding to the front carries its unit across to the middle.
       const back = Math.min(1, i);
       const mid = cx + deck.cardW / 2 + back * (deck.cardW / 2 - deck.w / 2);
       const portrait = HERO_PORTRAIT[u.hero];
       const img = portrait && assetLoader.requestImage(portrait.src);
-      if (ghost) ctx.globalAlpha = 0.8;
       if (img) {
         // The portrait fills the card, full height; its face sits where the unit
         // would (the strip that shows, on a card behind). Enemies face left.
@@ -522,7 +517,7 @@ function drawTrack(
         label(ctx, HEROES[u.hero].letter, mid, cy + deck.h / 2 - 3, '#ffffff', 11, true);
       }
       // A charging card: its ability triggers when this slot comes up.
-      if (u.charging && !ghost) label(ctx, '!', cx + deck.cardW - 5, cy + 8, '#d8b4fe', 12, true);
+      if (u.charging) label(ctx, '!', cx + deck.cardW - 5, cy + 8, '#d8b4fe', 12, true);
     }
     ctx.restore();
   }
