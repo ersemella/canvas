@@ -24,17 +24,17 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
   obstacle: {
     name: 'Ruins',
     short: 'Blocks movement and arrows',
-    detail: `Impassable. Blocks movement, arrows and line of fire. A unit displaced into ruins takes ${RULES.collisionDamage} damage (ignores defence).`,
+    detail: `Blocks movement and arrows. A unit knocked into it takes ${RULES.collisionDamage} damage.`,
   },
   hazard: {
     name: 'Quicksand',
     short: `${RULES.hazardEnterDamage} damage on entering, ${RULES.hazardDamage} every slot`,
-    detail: `${RULES.hazardEnterDamage} damage to a unit entering it, passing through included, then ${RULES.hazardDamage} every slot it stands here, whoever's turn it is, through Vulnerable and defence.`,
+    detail: `${RULES.hazardEnterDamage} damage on entering, passing through too, then ${RULES.hazardDamage} every slot a unit stays.`,
   },
   conceal: {
     name: 'Sandstorm',
     short: `Obscured: ranged hits in or out deal ${obscured}% less`,
-    detail: `Obscured: ranged hits on a unit here deal ${obscured}% less, and so do ranged hits by a unit here. Doesn't block arrows or line of fire, and the unit stays visible.`,
+    detail: 'A unit here is Obscured.',
   },
 };
 
@@ -43,7 +43,7 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
   return {
     name: 'Hail',
     short: `${hail.damage ?? 0} damage, Slowed ${hail.slowed}`,
-    detail: `For ${left} more slot${left === 1 ? '' : 's'}: a unit here when it lands, entering it or starting its turn here takes ${hail.damage ?? 0} damage (before Vulnerable and defence), then is Slowed ${hail.slowed} for ${hail.statusSlots} slots.`,
+    detail: `${left} more slot${left === 1 ? '' : 's'}. A unit here as it lands, entering, or starting its turn here takes ${hail.damage ?? 0} damage and is Slowed ${hail.slowed} for ${hail.statusSlots} slots.`,
   };
 }
 
@@ -52,7 +52,7 @@ export function fogInfo(fog: FogEffect, currentSlot: number): HexInfo {
   return {
     name: 'Fog',
     short: `Obscured: ranged hits in or out deal ${obscured}% less`,
-    detail: `For ${left} more slot${left === 1 ? '' : 's'}, Obscured: ranged hits on a unit here deal ${obscured}% less (not on top of a sandstorm), and so do ranged hits by a unit here. Doesn't block arrows or line of fire.`,
+    detail: `${left} more slot${left === 1 ? '' : 's'}. A unit here is Obscured.`,
   };
 }
 
@@ -62,12 +62,10 @@ export function fogInfo(fog: FogEffect, currentSlot: number): HexInfo {
  * values like the tiles'.
  */
 export type KeywordId =
-  | 'health'
   | 'speed'
   | 'power'
   | 'defence'
   | 'slots'
-  | 'duration'
   | 'charged'
   | 'ultimate'
   | 'melee'
@@ -81,72 +79,52 @@ export type KeywordId =
   | 'cleanse';
 
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
-  health: {name: 'Health', detail: 'The unit falls when it reaches 0.'},
-  speed: {
-    name: 'Speed',
-    detail:
-      'How soon its turns come: the higher its speed, the fewer slots each action costs it, so it acts more often.',
-  },
+  speed: {name: 'Speed', detail: 'Higher speed: actions cost fewer slots, so turns come sooner.'},
   power: {
     name: 'Power',
-    detail:
-      'Raises its damage and healing: each 50 power adds the ability’s base amount once more. The numbers shown already include it.',
+    detail: 'Scales damage and healing. Already counted in the numbers shown.',
   },
   defence: {
     name: 'Defence',
-    detail: `Cuts damage it takes: by defence ÷ (defence + ${RULES.defenceConstant}), after Vulnerable.`,
+    detail: `Cuts damage taken: ${RULES.defenceConstant} defence halves it.`,
   },
   slots: {
-    name: 'Cost in slots',
-    detail:
-      'How far along the track its card moves: its next turn comes this many slots from now. If that slot is taken, the card goes to the next free one.',
-  },
-  duration: {
-    name: 'Duration',
-    detail: 'How many slots its effect stays on the board or the units.',
+    name: 'Cost',
+    detail: 'Slots until its next turn. A taken slot pushes the card to the next free one.',
   },
   charged: {
     name: 'Charged',
-    detail:
-      'The card first moves by the charge cost, and the ability goes off when it’s reached; then the card moves again by the recovery cost.',
+    detail: 'Goes off when the charge runs out, then the recovery passes before its next turn.',
   },
   ultimate: {
     name: 'Ultimate',
-    detail: `A hero’s strongest ability, once a fight: ready once it has spent ${RULES.ultimateCharge} action cost on its turns (moves included, not a Hold that stays put).`,
+    detail: `Once a fight, after ${RULES.ultimateCharge} action cost spent.`,
   },
-  melee: {name: 'Melee', detail: 'Aimed at a unit on a space next to the user.'},
+  melee: {name: 'Melee', detail: 'Targets a unit next to the user.'},
   immobilized: {
     name: 'Immobilized',
-    detail:
-      'Can’t move, or use an ability that moves it. It still acts, and can still be knocked or thrown elsewhere.',
+    detail: 'Can’t move, or use abilities that move it. Can still act and be knocked away.',
   },
   slowed: {
     name: 'Slowed',
-    detail: `Moves this many spaces fewer on a Move turn (at least 1; normally ${RULES.movementCap}).`,
+    detail: `Moves this many fewer spaces (normally ${RULES.movementCap}, at least 1).`,
   },
   vulnerable: {
     name: 'Vulnerable',
-    detail: `Takes this much more damage, before defence. Being flanked makes a unit Vulnerable ${RULES.flankVulnerable}%; only the larger counts.`,
+    detail: 'Takes this much more damage. Only the largest counts.',
   },
   taunted: {
     name: 'Taunted',
-    detail:
-      'While it can reach the unit that taunted it, it must attack that unit or end its turn. Ends early if the taunter falls.',
+    detail: 'Must attack the taunter, or end its turn, while it can reach it.',
   },
-  crushed: {
-    name: 'Crushed',
-    detail: 'Takes this much damage every slot, through Vulnerable and defence.',
-  },
+  crushed: {name: 'Crushed', detail: 'Takes this much damage every slot.'},
   flanked: {
     name: 'Flanked',
-    detail: `Two enemies stand on opposite sides of it: it’s Vulnerable ${RULES.flankVulnerable}% while they do.`,
+    detail: `Enemies on opposite sides: Vulnerable ${RULES.flankVulnerable}% while they stay.`,
   },
   obscured: {
     name: 'Obscured',
-    detail: `In a sandstorm or fog: ranged hits on it, and ranged hits by it, deal ${obscured}% less (${bothObscured}% less when both are). Melee, hail and quicksand are unaffected.`,
+    detail: `In a sandstorm or fog: its ranged hits, and ranged hits on it, deal ${obscured}% less (${bothObscured}% when both are). Doesn’t block arrows.`,
   },
-  cleanse: {
-    name: 'Cleanse',
-    detail: 'Removes the harmful statuses abilities put on it (not a flank’s Vulnerable).',
-  },
+  cleanse: {name: 'Cleanse', detail: 'Removes harmful statuses from abilities.'},
 };

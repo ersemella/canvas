@@ -29,7 +29,7 @@ import type {
   TurnPreview,
   Unit,
 } from '@canvas/games-silk-road-tactics';
-import {Glossary, KeywordText, Term} from './Keywords';
+import {AbilityName, Glossary, KeywordText, Term} from './Keywords';
 import styles from './TacticsPage.module.css';
 
 const sideColor = (u: Unit) => (u.side === 'player' ? 'blue' : 'red');
@@ -282,7 +282,7 @@ export function StatSheet({
           {HEROES[unit.hero].name}
         </Text>
         <Text fz={dense ? 'xs' : 13}>
-          <Term id="health">Health</Term>{' '}
+          Health{' '}
           <b>
             {unit.hp} / {unit.maxHp}
           </b>
@@ -324,12 +324,28 @@ export function StatSheet({
         </Text>
       )}
       {dense ? (
-        <Stack gap={4} mt={6}>
+        // Names only, to scan; a tap explains one below.
+        <div className={styles.abilityList}>
           {abilities.map((def) => (
-            <DenseAbility key={def.id} unit={unit} def={def} />
+            <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
+              {def.name}
+            </AbilityName>
           ))}
-          <DenseAbility unit={unit} def={ult} charge={ultimateState(unit)} />
-        </Stack>
+          <AbilityName
+            id={ult.id}
+            ultimate
+            body={<AbilityDetail unit={unit} def={ult} charge={ultimateState(unit)} />}
+          >
+            {ult.name}
+            {ultimateState(unit) !== 'Used' && (
+              <span className={styles.abilityChipNote}>
+                {ultimateState(unit) === 'Ready'
+                  ? 'Ready'
+                  : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
+              </span>
+            )}
+          </AbilityName>
+        </div>
       ) : (
         <Stack gap={6} mt={8}>
           <Text fz="xs" fw={600}>
@@ -349,51 +365,38 @@ export function StatSheet({
 }
 
 /** An ability's cost in this unit's slots (the action alone, before any move or yielding). */
-function AbilityCost({unit, def}: {unit: Unit; def: AbilityDef}) {
-  return def.charged ? (
-    <Term id="charged">
-      Charge +{slotsForward(def.cost, unit.speed)} · Recovery +
-      {slotsForward(def.recoveryCost!, unit.speed)}
-    </Term>
-  ) : (
-    <Term id="slots">+{slotsForward(def.cost, unit.speed)}</Term>
-  );
+function costText(unit: Unit, def: AbilityDef): string {
+  return def.charged
+    ? `Charge +${slotsForward(def.cost, unit.speed)} · Recovery +${slotsForward(def.recoveryCost!, unit.speed)}`
+    : `+${slotsForward(def.cost, unit.speed)}`;
 }
 
 /**
- * The phone tooltip's ability: one paragraph, its name, cost and duration
- * leading into what it does. An ultimate's name is its keyword,
- * with how far it is from being ready.
+ * The phone tooltip's explanation of a tapped ability: its cost (a Term,
+ * once) and duration, then what it does, its keywords tappable in turn.
+ * An ultimate says so, with how far it is from being ready.
  */
-function DenseAbility({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
+function AbilityDetail({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
   return (
-    <Text fz="xs" c="dimmed" lh={1.4}>
-      {charge ? (
-        <Term id="ultimate">
-          <b>{def.name}</b>
-        </Term>
-      ) : (
-        <b className={styles.abilityName}>{def.name}</b>
-      )}{' '}
+    <Text fz="xs">
+      <b>{def.name}</b>
       {charge && (
-        <Badge
-          size="xs"
-          variant="light"
-          color={charge === 'Ready' ? 'yellow' : 'gray'}
-          tt="none"
-          mr={4}
-        >
-          {charge}
-        </Badge>
-      )}
-      <AbilityCost unit={unit} def={def} />
-      {def.duration !== undefined && (
         <>
           {' · '}
-          <Term id="duration">Duration {def.duration}</Term>
+          <Term id="ultimate">Ultimate</Term> {charge}
         </>
       )}
-      : <KeywordText text={def.summary(unit)} />
+      {' · '}
+      {def.charged ? (
+        <Term id="charged">{costText(unit, def)}</Term>
+      ) : (
+        <Term id="slots">Cost {costText(unit, def)}</Term>
+      )}
+      {def.duration !== undefined && ` · Duration ${def.duration}`}
+      <br />
+      <span className={styles.abilitySummary}>
+        <KeywordText text={def.summary(unit)} />
+      </span>
     </Text>
   );
 }
@@ -404,6 +407,8 @@ function DenseAbility({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?
  * then what it does. An ultimate also shows how far it is from being ready.
  */
 function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
+  const slots = def.charged ? costText(unit, def) : `Action ${costText(unit, def)}`;
+  const cost = def.duration === undefined ? slots : `Duration ${def.duration} · ${slots}`;
   return (
     <div>
       {/* The cost drops under the name when they don't fit side by side. */}
@@ -424,14 +429,7 @@ function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?:
           )}
         </Group>
         <Text fz={11} c="dimmed" style={{whiteSpace: 'nowrap'}}>
-          {def.duration !== undefined && (
-            <>
-              <Term id="duration">Duration {def.duration}</Term>
-              {' · '}
-            </>
-          )}
-          {def.charged ? '' : 'Action '}
-          <AbilityCost unit={unit} def={def} />
+          {cost}
         </Text>
       </Group>
       <Text fz="xs" c="dimmed">

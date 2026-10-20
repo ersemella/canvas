@@ -121,7 +121,8 @@
     flex: 1 1 0;
     min-height: 0;
     justify-content: center;
-    align-items: flex-start;
+    /* Down against the action section: the spare room goes above the track. */
+    align-items: flex-end;
     /* Edge to edge: out through the page's side padding. */
     margin: 0 calc(-1 * var(--mantine-spacing-md));
   }
@@ -238,4 +239,45 @@
   margin-top: 6px;
   font-size: 12px;
   color: var(--mantine-color-orange-3);
+}
+
+/* The dense sheet's abilities: names to scan, each tappable to explain it. */
+.abilityList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.abilityChip {
+  all: unset;
+  cursor: pointer;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mantine-color-gray-2);
+  background: var(--mantine-color-dark-5);
+}
+.abilityChipUltimate {
+  color: var(--mantine-color-grape-2);
+  background: rgba(190, 75, 219, 0.22);
+}
+.abilityChip[aria-pressed='true'] {
+  outline: 1px solid currentColor;
+}
+.abilityChipNote {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+.abilitySummary {
+  color: var(--mantine-color-gray-4);
+}
+
+/* A keyword from an ability's text, explained under it. */
+.nestedRule {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--mantine-color-dark-3);
 }

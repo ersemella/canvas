@@ -555,11 +555,35 @@ try {
   await shot(phone, 'phone-tooltip');
   // Always complete: every ability, the ultimate's keyword, nothing to expand.
   check(
-    'phone: the tooltip shows everything at once',
-    (await tooltip.locator('[data-keyword="ultimate"]').count()) === 1 &&
-      (await tooltip.locator('[data-keyword="slots"], [data-keyword="charged"]').count()) >= 3 &&
-      !(await tooltip.getByText(/^Tap for/).count())
+    'phone: the tooltip lists the abilities by name, nothing to expand',
+    (await tooltip.locator('[data-ability]').count()) >= 3 &&
+      !(await tooltip.getByText(/^Tap for/).count()) &&
+      !(await tooltip.getByText('Health', {exact: true}).locator('[data-keyword]').count())
   );
+  // An ability's name explains it on a tap; a keyword in that explanation
+  // adds its rule under it, the ability's staying.
+  {
+    const chip = tooltip.locator('[data-ability]').first();
+    const name = await chip.textContent();
+    await chip.tap();
+    await sleep(150);
+    const about = tooltip.getByTestId('ability-info');
+    check(
+      'phone: tapping an ability’s name explains it',
+      (await about.count()) === 1 && (await about.textContent()).startsWith(name),
+      await about.textContent().catch(() => null)
+    );
+    await about.locator('[data-keyword]').last().tap();
+    await sleep(150);
+    check(
+      'phone: a keyword in it adds its rule, the ability’s staying',
+      (await about.count()) === 1 && (await tooltip.getByTestId('keyword-info').count()) === 1
+    );
+    await shot(phone, 'phone-ability');
+    await chip.tap();
+    await sleep(150);
+    check('phone: tapping the name again hides it', !(await about.count()));
+  }
   // A keyword shows its rule on a tap, in the tooltip; another tap hides it.
   await tooltip.locator('[data-keyword="speed"]').tap();
   await sleep(150);
@@ -619,10 +643,15 @@ try {
       (await tooltip.textContent()).startsWith('Sand') && t.width < 200,
       [await tooltip.textContent(), t.width]
     );
-    // Tapping away from the board (here, the space between it and the
-    // action bar) closes it too.
+    // Tapping away from the board (here, the space above it: the board
+    // sits down against the action bar) closes it too.
     const box = await phone.locator('canvas').boundingBox();
-    await phone.touchscreen.tap(4, (box.y + box.height + actionBarTop) / 2);
+    check(
+      'phone: the board sits against the action section',
+      box.y > 8 && actionBarTop - (box.y + box.height) <= 12,
+      [box, actionBarTop]
+    );
+    await phone.touchscreen.tap(4, box.y / 2);
     await sleep(200);
     check('phone: tapping away closes the tooltip', !(await tooltip.count()));
   }
