@@ -74,7 +74,7 @@ const SPRITE_FEET = 22;
 /** Track portraits (32×32, facing right), centred on the card's disc at `face`. */
 const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; face: {x: number; y: number}}>> = {
   bokh: {src: bokhPortrait, face: {x: 17, y: 13}},
-  mangudai: {src: mangudaiPortrait, face: {x: 14, y: 13}},
+  mangudai: {src: mangudaiPortrait, face: {x: 18, y: 16}},
 };
 interface HighlightStyle {
   fill: string;
