@@ -98,6 +98,9 @@ export function TacticsPage() {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const actionsRef = useRef<HTMLElement | null>(null);
   const [worldReady, setWorldReady] = useState(0);
+  /** Phones: the space the board may fill, and the board's width to fill it. */
+  const boardSlotRef = useRef<HTMLDivElement | null>(null);
+  const [fitWidth, setFitWidth] = useState<number | null>(null);
   /** The canvas's size on screen, to place the phone's tooltip over it. */
   const [boardSize, setBoardSize] = useState<{width: number; height: number} | null>(null);
 
@@ -130,6 +133,21 @@ export function TacticsPage() {
       setBoardSize({width: canvas.offsetWidth, height: canvas.offsetHeight})
     );
     observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [phone, hasBoard]);
+
+  // Phones: the board as large as the slot allows, width or height, keeping its shape.
+  useEffect(() => {
+    const slot = boardSlotRef.current;
+    if (!phone || !slot) return;
+    const observer = new ResizeObserver(() =>
+      setFitWidth(
+        Math.floor(
+          Math.min(slot.clientWidth, (slot.clientHeight * SCENE_SIZE.width) / SCENE_SIZE.height)
+        )
+      )
+    );
+    observer.observe(slot);
     return () => observer.disconnect();
   }, [phone, hasBoard]);
 
@@ -660,36 +678,49 @@ export function TacticsPage() {
   const reset = !finished && <ResetRunButton busy={busy || playing} onReset={startRun} />;
 
   return (
-    <Stack align="center" pt={phone ? 0 : 'md'} pb="md" gap="sm" px="md">
+    <Stack
+      className={styles.page!}
+      align="center"
+      pt={phone ? 0 : 'md'}
+      pb={phone ? 0 : 'md'}
+      gap="sm"
+      px="md"
+    >
       <div className={styles.layout}>
-        <div className={styles.board} ref={boardRef}>
-          <GameErrorBoundary>
-            <GameCanvas
-              sceneData={game.sceneData}
-              createSystems={game.createSystems}
-              width={SCENE_SIZE.width}
-              height={SCENE_SIZE.height}
-              onReady={onReady}
-            />
-          </GameErrorBoundary>
-          {tooltip}
-          {finished && (
-            <Paper className={styles.result!} p="lg" radius="md">
-              <Stack align="center" gap="xs">
-                <Text fz="1.8rem" fw="bold" c={fight.phase === 'won' ? 'green.4' : 'red.4'}>
-                  {fight.phase === 'won' ? 'Victory' : 'Defeat'}
-                </Text>
-                <Text c="dimmed" fz="sm">
-                  {fight.phase === 'won'
-                    ? 'The rival band is scattered.'
-                    : 'Your caravan has fallen.'}
-                </Text>
-                <Button color="yellow" c="dark.9" fw="bold" onClick={startRun} loading={busy}>
-                  New fight
-                </Button>
-              </Stack>
-            </Paper>
-          )}
+        <div className={styles.boardSlot} ref={boardSlotRef}>
+          <div
+            className={styles.board}
+            ref={boardRef}
+            style={phone && fitWidth ? {width: fitWidth} : undefined}
+          >
+            <GameErrorBoundary>
+              <GameCanvas
+                sceneData={game.sceneData}
+                createSystems={game.createSystems}
+                width={SCENE_SIZE.width}
+                height={SCENE_SIZE.height}
+                onReady={onReady}
+              />
+            </GameErrorBoundary>
+            {tooltip}
+            {finished && (
+              <Paper className={styles.result!} p="lg" radius="md">
+                <Stack align="center" gap="xs">
+                  <Text fz="1.8rem" fw="bold" c={fight.phase === 'won' ? 'green.4' : 'red.4'}>
+                    {fight.phase === 'won' ? 'Victory' : 'Defeat'}
+                  </Text>
+                  <Text c="dimmed" fz="sm">
+                    {fight.phase === 'won'
+                      ? 'The rival band is scattered.'
+                      : 'Your caravan has fallen.'}
+                  </Text>
+                  <Button color="yellow" c="dark.9" fw="bold" onClick={startRun} loading={busy}>
+                    New fight
+                  </Button>
+                </Stack>
+              </Paper>
+            )}
+          </div>
         </div>
         <div className={styles.panel}>
           {error && (

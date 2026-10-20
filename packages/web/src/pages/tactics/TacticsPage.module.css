@@ -93,29 +93,52 @@
 
 /* Phones: the action section, pinned to the screen's bottom. */
 .actionBar {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
   margin: 0 -16px;
   padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-  background: var(--mantine-color-dark-8);
-  border-top: 2px solid var(--mantine-color-yellow-6);
-  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.5);
 }
 
 /* Phone: board on top, the track and panels below (brief section 9). */
+/* Desktop: the slot is just the board. */
+.boardSlot {
+  display: contents;
+}
+
 @media (max-width: 960px) {
+  /*
+   * The page is the screen's height and never scrolls: the board fills what
+   * the action section leaves, as large as fits (its width is set from the
+   * slot's size), on the canvas's black, which the whole page shares so the
+   * board and the actions read as one surface.
+   */
+  .page {
+    height: 100dvh;
+    overflow: hidden;
+    background: #000;
+  }
   .layout {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
     flex-direction: column;
     align-items: stretch;
+    gap: 0;
+  }
+  .boardSlot {
+    display: flex;
+    flex: 1 1 0;
+    min-height: 0;
+    justify-content: center;
+    align-items: flex-start;
+    /* Edge to edge: out through the page's side padding. */
+    margin: 0 calc(-1 * var(--mantine-spacing-md));
   }
   .panel {
     width: 100%;
+    flex: none;
   }
-  /* The board runs edge to edge: out through the page's side padding, square corners. */
-  /* The tooltip may leave the board (HexTooltip), so nothing is clipped. */
+  /* Square corners; the tooltip may leave the board (HexTooltip), so nothing is clipped. */
   .board {
-    margin: 0 calc(-1 * var(--mantine-spacing-md));
+    flex: none;
     border-radius: 0;
     overflow: visible;
   }
