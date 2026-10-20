@@ -532,6 +532,20 @@ try {
     );
   }
   check('phone: the action section stays on screen', await inViewport(phoneMove));
+  {
+    const colours = await phoneMove.evaluate((el) => {
+      const page = getComputedStyle(el.closest('section').parentElement.closest('[class*="page"]'));
+      return [
+        page.backgroundColor,
+        getComputedStyle(document.querySelector('canvas')).backgroundColor,
+      ];
+    });
+    check(
+      'phone: the actions share the board’s black',
+      colours[0] === 'rgb(0, 0, 0)' && colours[1] === 'rgb(0, 0, 0)',
+      colours
+    );
+  }
   await shot(phone, 'phone-tooltip');
   // It opens with the most detail that fits; if that isn't the full sheet, a
   // tap shows it and another goes back.
@@ -589,8 +603,10 @@ try {
       (await tooltip.textContent()).startsWith('Sand') && t.width < 200,
       [await tooltip.textContent(), t.width]
     );
-    // Tapping away from the board (here, below the action bar) closes it too.
-    await phone.touchscreen.tap(4, phone.viewportSize().height - 4);
+    // Tapping away from the board (here, the space between it and the
+    // action bar) closes it too.
+    const box = await phone.locator('canvas').boundingBox();
+    await phone.touchscreen.tap(4, (box.y + box.height + actionBarTop) / 2);
     await sleep(200);
     check('phone: tapping away closes the tooltip', !(await tooltip.count()));
   }
@@ -694,6 +710,15 @@ try {
       () => document.documentElement.scrollHeight - window.innerHeight
     );
     check('small phone: the page doesn’t scroll', scroll <= 1, scroll);
+    const box = await phone.locator('canvas').boundingBox();
+    const barTop = await phoneMove.evaluate(
+      (el) => el.closest('section').getBoundingClientRect().top
+    );
+    check(
+      'small phone: the board shrinks to fit above the action section, centred',
+      box.y + box.height <= barTop + 1 && Math.abs(box.x * 2 + box.width - 375) <= 2,
+      [box, barTop]
+    );
   }
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-small.png')});
   await abandonOn(phone);
