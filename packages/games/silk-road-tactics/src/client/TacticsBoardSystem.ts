@@ -64,7 +64,11 @@ const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
 /** The tint over the whole hex a unit stands on: its side's colour. */
 const SIDE_TINT = {player: 'rgba(59,130,246,0.38)', enemy: 'rgba(239,68,68,0.38)'};
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
-/** Board sprites (square, 32×32 or up to 36×36 for a mounted hero; facing right); heroes without one are drawn as a lettered disc. */
+/**
+ * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
+ * hero) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
+ * without one are drawn as a lettered disc.
+ */
 const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
@@ -149,10 +153,16 @@ export class TacticsBoardSystem extends BaseSystem {
   private scene: BoardScene = {fight: null, highlights: [], selectedUnitId: null, preview: []};
   private hover: TacticsHoverPayload = {hex: null, unitId: null};
   private advance: TrackAdvance | null = null;
+  /** Seconds since the board started, for the units' idle animations. */
+  private time = 0;
+  /** The player's device asks for reduced motion: units hold still. */
+  private still = false;
   private cleanup: (() => void)[] = [];
 
   onInit({events}: Omit<SystemContext, 'deltaTime'>): void {
     const bus: EventBus = events;
+    this.still =
+      typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.cleanup.push(
       bus.on<BoardScene>('tactics:board', (scene) => {
         this.startAdvance(this.scene.fight, scene.fight);
@@ -188,6 +198,7 @@ export class TacticsBoardSystem extends BaseSystem {
   onUpdate({ctx, deltaTime}: SystemContext): void {
     const {fight} = this.scene;
     if (!fight) return;
+    this.time += deltaTime;
     if (this.advance) {
       this.advance.elapsed += deltaTime;
       if (trackStart(this.advance) >= this.advance.to) this.advance = null;
@@ -227,6 +238,7 @@ export class TacticsBoardSystem extends BaseSystem {
         acting: u.id === acting,
         selected: u.id === this.scene.selectedUnitId || u.id === this.hover.unitId,
         faded: Boolean(moved || p?.killed),
+        frame: this.still ? 0 : idleFrame(u.id, this.time),
       });
       if (p && moved && !p.killed)
         drawUnit(ctx, u, p.to!, {
@@ -234,6 +246,7 @@ export class TacticsBoardSystem extends BaseSystem {
           selected: false,
           faded: false,
           ghost: true,
+          frame: 0,
         });
       if (p && p.hpAfter !== p.hpBefore) {
         const at = center(p.to ?? hex);
@@ -745,6 +758,19 @@ function drawCharge(ctx: CanvasRenderingContext2D, u: Unit): void {
   label(ctx, ABILITIES[ability].name, c.x, c.y + 24 * HEX_SCALE, SIDE_COLOR[u.side], 10);
 }
 
+/** Seconds each idle frame shows. */
+const IDLE_FRAME_SECONDS = 0.6;
+
+/**
+ * A unit's idle frame at a time: frames alternate every `IDLE_FRAME_SECONDS`,
+ * each unit offset by its id so the board doesn't breathe in step.
+ */
+function idleFrame(unitId: string, time: number): number {
+  let offset = 0;
+  for (const ch of unitId) offset = (offset * 31 + ch.charCodeAt(0)) % 997;
+  return Math.floor(time / IDLE_FRAME_SECONDS + offset / 997);
+}
+
 function drawUnit(
   ctx: CanvasRenderingContext2D,
   u: Unit,
@@ -754,6 +780,8 @@ function drawUnit(
     selected: boolean;
     faded: boolean;
     ghost?: boolean;
+    /** The sprite sheet's frame to show (wraps around the sheet's frames). */
+    frame: number;
   }
 ): void {
   const c = center(hex);
@@ -770,13 +798,16 @@ function drawUnit(
   const sprite = HERO_SPRITE[u.hero];
   const img = sprite && assetLoader.requestImage(sprite);
   if (img) {
+    // A sheet of square frames side by side (one frame for a still sprite).
     // Unsmoothed, so the pixels stay crisp; enemies face left.
-    const size = img.width * SPRITE_SCALE;
+    const side = img.height;
+    const frames = Math.max(1, Math.round(img.width / side));
+    const size = side * SPRITE_SCALE;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     ctx.translate(Math.round(c.x), Math.round(c.y + SPRITE_FEET - size));
     if (u.side === 'enemy') ctx.scale(-1, 1);
-    ctx.drawImage(img, -size / 2, 0, size, size);
+    ctx.drawImage(img, (opts.frame % frames) * side, 0, side, side, -size / 2, 0, size, size);
     ctx.restore();
   } else {
     // No sprite yet (or still loading): a disc in the hero's colour with its letter.
