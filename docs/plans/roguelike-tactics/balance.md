@@ -224,16 +224,22 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
 4. **Freeze: redesign, or study individual fights.** No number tried made
    it pay (see above).
 5. **Fog needs a job.** With one ranged attacker, which can pick another
-   lane, halving ranged damage rarely matters. A candidate, untested: an
-   arrow can't fly through fog, so fog blocks a lane outright, a real
-   counter to the bow and a positional tool.
+   lane, halving ranged damage rarely matters. Tried after tunings 1 to 3:
+   an arrow can't target a unit in or behind fog, so fog blocks a lane
+   outright. A side without Fog then wins 52.9% (55.0% without the
+   change): better, but not yet worth having. The AI still values fog by
+   its flat weights, not by the arrows it blocks, so value it by the bow
+   damage it stops (principle 4) before judging the rule.
 6. **Outrider click load.** Two candidates, both untested: the bow hits
    any unit in a range (5 or 6) with line of fire, not only six lanes; or
    a move-and-shoot ability (a "Parthian shot", 120 cost) replaces Dash.
    Either gives fewer, more meaningful turns.
 7. **The Champion as a tank.** It needs a reason to be hit or to hold
-   ground: Pin that doesn't Immobilize the Champion itself, or a zone of
-   control. Untested.
+   ground. Tried after tunings 1 to 3: **Pin that doesn't Immobilize the
+   Champion itself** (the pin still breaks if the two are parted). A side
+   without Pin then wins 44.8% (about 50% before): Pin becomes worth having,
+   at no cost in stalls (3.5%). Recommended next. A zone of control is
+   untested.
 8. **Stalls still need a guaranteed end** ([owner-decisions.md](owner-decisions.md),
    decision 1). Tuning brought them to 2.5%, not zero.
 
