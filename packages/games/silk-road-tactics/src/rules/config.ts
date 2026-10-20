@@ -161,8 +161,13 @@ export const ABILITY = {
    * walking the same 3 hexes (50), so it was all but unused.
    */
   dash: {cost: 40, distance: 3},
-  /** Ultimates buffed (owner, 2026-10-20; damage was 135). */
-  volley: {range: 5, radius: 1, damage: 200, chargeCost: 40, recoveryCost: RULES.cost.typical},
+  /**
+   * Ultimates buffed (owner, 2026-10-20; damage was 135). Charge 20 and
+   * recovery 60 (owner, 2026-10-20; were 40 and 100): at 140 in all its
+   * targets stepped out cheaply and a side without it won 57% of AI-vs-AI
+   * fights; at 80, 48% (docs/plans/roguelike-tactics/balance.md).
+   */
+  volley: {range: 5, radius: 1, damage: 200, chargeCost: 20, recoveryCost: 60},
   /**
    * Heal 40, 60 at the Storm Caller's power (owner, 2026-10-19; was 25,
    * 37 healed, under a fifth of a bow hit). Over 1,000 AI-vs-AI fights from
@@ -175,8 +180,11 @@ export const ABILITY = {
    * AI-vs-AI fights, 3% unfinished either way, Sunlight chosen on 17% of
    * the Storm Caller's turns (9% before); quick at heal 50 took over (33%,
    * six times the healing).
+   * Heal 50, 75 at its power (owner, 2026-10-20; was 35): at 35 a side
+   * without it won 51% of AI-vs-AI fights, at 50 41%, with 2.5%
+   * unfinished once the AI stopped spamming fog (balance.md).
    */
-  sunlight: {cost: RULES.cost.quick, range: 4, heal: 35},
+  sunlight: {cost: RULES.cost.quick, range: 4, heal: 50},
   /**
    * No Vulnerable (owner, 2026-10-20; was 25%), leaving it to Freeze and
    * flanking: damage and Slowed make it area denial. Over 300 AI-vs-AI
@@ -194,7 +202,10 @@ export const ABILITY = {
   fog: {cost: RULES.cost.typical, range: 4, radius: 1, slots: 20},
   /**
    * Ultimates buffed (owner, 2026-10-20): it now deals damage (none
-   * before), for 20 slots (was 15), Vulnerable 50% (was 25%).
+   * before), for 20 slots (was 15), Vulnerable 50% (was 25%). Charge 20 and
+   * recovery 60, as Volley's (owner, 2026-10-20; were 40 and 100). A side
+   * without it still wins 55% of AI-vs-AI fights: it needs a redesign
+   * (balance.md).
    */
   freeze: {
     range: 4,
@@ -202,8 +213,8 @@ export const ABILITY = {
     damage: 60,
     immobilizedSlots: 20,
     vulnerable: 50,
-    chargeCost: 40,
-    recoveryCost: RULES.cost.typical,
+    chargeCost: 20,
+    recoveryCost: 60,
   },
   throw: {cost: RULES.cost.typical, damage: 80},
   /**
@@ -255,8 +266,14 @@ export const AI = {
    * reach (14% before the lookahead, 20% with it at 0).
    */
   caution: {bokh: 0, mangudai: 1, storm: 1} as Record<HeroId, number>,
-  fogShield: 72_000,
-  fogBlind: 300,
+  /**
+   * Fog's values (see above): a third of what they were (owner,
+   * 2026-10-20; were 72,000 and 300). At those, fog took 39% of the Storm
+   * Caller's turns and a side without it won 74% of AI-vs-AI fights; now
+   * about 7% and 54%, with fewer unfinished fights (balance.md).
+   */
+  fogShield: 24_000,
+  fogBlind: 100,
   friendlyDamageFactor: 1.5,
   perSlotMoved: 10,
   /**

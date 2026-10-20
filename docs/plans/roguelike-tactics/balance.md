@@ -2,9 +2,9 @@
 
 A measured review of the Phase 1 prototype's balance and feel (2026-10-20),
 the tuning it suggests, and the principles for re-tuning as gear, heroes
-and keywords arrive. Every recommendation here is **Proposed**: the
-numbers are the owner's to set ([owner-decisions.md](owner-decisions.md),
-decision 2).
+and keywords arrive. Tunings 1 to 3 are **applied** (owner, 2026-10-20);
+the rest is **Proposed**: the numbers are the owner's to set
+([owner-decisions.md](owner-decisions.md), decision 2).
 
 > Part of the roguelike tactics plan. Start at [README.md](README.md).
 > Numbers are in `packages/games/silk-road-tactics/src/rules/config.ts`;
@@ -197,6 +197,13 @@ health for reference):
   Outrider shuffles.
 
 ## Proposed tuning
+
+**Applied 2026-10-20: tunings 1 to 3** (the package below without its Fog
+change). Measured under the production rules afterwards, over 400 fights:
+4.3% unfinished (6.8% before), median 48 actions and 72 slots; a side
+without Sunlight wins 44.4%, without Volley 43.9%, without Fog 55.0%
+(Fog still needs tuning 5). Storm Caller turns: Hail 31%, Sunlight 29%,
+moves 25%, Freeze 9%, Fog 6%.
 
 Ordered by value. The **package** (tunings 1 to 3 together) measured:
 2.5% unfinished (6.8% today); median 59 actions and 86 slots (53 and
