@@ -16,7 +16,9 @@ settled. Built in this repository (D10). The folder name,
 **Next step:** the owner sets the three prototype heroes' stat numbers and
 ability values (replacing the placeholders in `src/rules/config.ts`) and
 decides how a stalled fight ends; everything waiting on the owner is in
-[owner-decisions.md](owner-decisions.md). Then Phase 2
+[owner-decisions.md](owner-decisions.md). A measured balance review
+(2026-10-20) proposes numbers and the principles for re-tuning:
+[balance.md](balance.md). Then Phase 2
 ([phases.md](phases.md)). The
 keywords and their rules are decided ([keywords.md](keywords.md)). The
 combat design's other open questions are at the end of each topic file.
@@ -64,6 +66,7 @@ Always read this file first. Then:
 | Visibility, previews, randomness | [information.md](information.md) |
 | Stats, gear, party, heroes' systems, recruitment, upgrades | [heroes-and-gear.md](heroes-and-gear.md) |
 | Keywords and effects: statuses, track and board effects, damage, healing, stat changes | [keywords.md](keywords.md) |
+| Tuning numbers, or balancing a new hero, ability, keyword or gear: what each ability and stat is worth, measured; the proposed tuning; principles for re-tuning | [balance.md](balance.md) |
 | The twelve heroes | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |

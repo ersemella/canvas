@@ -65,3 +65,36 @@ The same-roster setup measures pacing, congestion, survival, and tie-priority
 sensitivity. A roughly 50% side win rate does not establish hero balance. It
 cannot establish balance for other maps, compositions, gear, or human play.
 Use these results to select playtests, not to claim a rule is universally balanced.
+
+## Ability and stat ablation
+
+`ablate.mjs` measures what each ability and stat is worth under the production
+rules (no `FightState.experiment`), with the production AI on both sides:
+
+```sh
+node scripts/balance/ablate.mjs scripts/balance/experiments/kit.mjs
+node scripts/balance/ablate.mjs scripts/balance/experiments/stats.mjs --only storm-speed+10
+```
+
+An experiments file exports `experiments`, a map from a name to
+`{patch?, mod?}`. `patch(config)` changes the config for both sides for that
+experiment (`ABILITY`, `AI`, `HEROES`, `RULES` and the `ABILITIES` definitions,
+whose `cost` and `recoveryCost` are copied from `ABILITY` at load time, so set
+both); it is undone afterwards. `mod` changes one side only: `ban` removes
+abilities, `stats` adds to a hero's speed, defence, power or hp. With `mod`,
+each seed is played twice, once with each side modified, and `modWinPct` is
+the modified side's share of finished fights: 50% means the change does
+nothing, and a ban above 50% means the ability loses games when used.
+
+Each fight uses `createFight(seed)`, so it has its own random ruins, quicksand
+and starting places. Output per experiment: unfinished share, median actions
+and slots, each hero's turns per unit and share of turns per ability, damage
+and kills by source, healing, ultimate use and survival. Damage is attributed
+from the fight log, so Hail, quicksand and Crushed are counted against the
+enemy whoever they hit.
+
+Limits: a banned ability is removed from the hero's kit only while the
+modified side chooses, so that side's search also assumes the other side
+lacks it. 400 fights give about ±2.5 points of standard error on a win rate.
+The findings and the principles built on them are in
+`docs/plans/roguelike-tactics/balance.md`.

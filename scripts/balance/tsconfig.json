@@ -10,7 +10,7 @@
       "@canvas/engine/server": ["../../packages/engine/src/server.ts"]
     }
   },
-  "include": ["simulate.ts"],
+  "include": ["simulate.ts", "ablate.ts"],
   "references": [
     {
       "path": "../../packages/engine"

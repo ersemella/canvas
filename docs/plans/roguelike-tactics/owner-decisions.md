@@ -87,7 +87,10 @@ charged): keep it uncharged, or make it charged?
 
 ### 2. The prototype heroes' numbers
 
-Replace the placeholders in `config.ts` (brief section 4). Current guesses:
+Replace the placeholders in `config.ts` (brief section 4). A measured
+review with proposed numbers (2026-10-20) is in [balance.md](balance.md):
+first lower the AI's fog weights, raise Sunlight's heal to 50 and make the
+charged ultimates cheaper. Current guesses:
 
 Speed, defence and power share one scale, **Low 10 / Medium 25 / High
 40** (owner, 2026-10-20), so a hero's bands read off its numbers; the
