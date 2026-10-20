@@ -160,6 +160,18 @@ const CARD_LIFT_SECONDS = 0.18;
 /** The most a whole advance takes, however many slots it passes. */
 const ADVANCE_MAX_SECONDS = 1.2;
 
+/** Seconds a card takes to slide back to the slot of its unit's next turn. */
+const CARD_SLIDE_SECONDS = 0.55;
+/** How many pixels the front card grows above and below while its unit acts. */
+const FRONT_CARD_GROW = 5;
+
+/** A card sliding back along the deck after its unit's turn, from the position it left. */
+interface CardSlide {
+  /** How far back in the deck it started (0 in front). */
+  from: number;
+  elapsed: number;
+}
+
 /**
  * The track running on after a turn: the cards from `from` up to `to` (the
  * next turn's) lift away one by one and the deck slides up behind them.
@@ -187,6 +199,8 @@ export class TacticsBoardSystem extends BaseSystem {
   private scene: BoardScene = {fight: null, highlights: [], selectedUnitId: null, preview: []};
   private hover: TacticsHoverPayload = {hex: null, unitId: null};
   private advance: TrackAdvance | null = null;
+  /** Cards sliding to their units' new slots, by unit. */
+  private slides = new Map<string, CardSlide>();
   /** Seconds since the board started, for the units' idle animations. */
   private time = 0;
   /** The player's device asks for reduced motion: units hold still. */
@@ -204,7 +218,7 @@ export class TacticsBoardSystem extends BaseSystem {
     this.cleanup.push(
       bus.on<BoardScene>('tactics:board', (scene) => {
         // During a playback the track follows the events instead.
-        if (!this.play) this.startAdvance(this.scene.fight, scene.fight);
+        if (!this.play) this.startTrackMotion(this.scene.fight, scene.fight);
         this.scene = scene;
       })
     );
@@ -233,18 +247,44 @@ export class TacticsBoardSystem extends BaseSystem {
     this.cleanup = [];
   }
 
-  /** A turn moved the track on: animate the cards it passed, from wherever the deck shows now. */
-  private startAdvance(before: FightState | null, after: FightState | null): void {
+  /**
+   * The fight shown changed: slide the cards whose units' slots moved (a
+   * finished turn's card going back along the deck), and run the track on
+   * when the turn moved it.
+   */
+  private startTrackMotion(before: FightState | null, after: FightState | null): void {
     if (!before || !after || before.mapId !== after.mapId || before.phase === 'deploy') return;
+    if (this.still) return;
+    this.startSlides(before, after);
+    this.startAdvance(before, after);
+  }
+
+  /** Each card whose unit's slot changed slides there from wherever it shows now. */
+  private startSlides(before: FightState, after: FightState): void {
+    const start = this.advance ? trackStart(this.advance) : before.currentSlot;
+    for (const u of after.units) {
+      const was = before.units.find((v) => v.id === u.id);
+      if (!u.alive || u.slot === null || !was?.alive || was.slot === null) continue;
+      if (was.slot === u.slot) continue;
+      const slide = this.slides.get(u.id);
+      const from = slide ? slideIndex(slide, was.slot, start) : Math.max(0, was.slot - start);
+      this.slides.set(u.id, {from, elapsed: 0});
+    }
+  }
+
+  /** A turn moved the track on: animate the cards it passed, from wherever the deck shows now. */
+  private startAdvance(before: FightState, after: FightState): void {
     if (after.currentSlot <= before.currentSlot) return;
-    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)
-      return;
     const prev = this.advance;
     const from = prev ? Math.floor(trackStart(prev)) : before.currentSlot;
     const spent = new Map(prev?.spent);
     for (const u of before.units) {
-      if (u.alive && u.slot !== null && u.slot >= before.currentSlot && u.slot < after.currentSlot)
-        spent.set(u.slot, u);
+      if (!u.alive || u.slot === null || u.slot < before.currentSlot || u.slot >= after.currentSlot)
+        continue;
+      // A card still on the track slides to its new slot instead.
+      const now = after.units.find((v) => v.id === u.id);
+      if (now?.alive && now.slot !== null && now.slot >= after.currentSlot) continue;
+      spent.set(u.slot, u);
     }
     this.advance = {from, to: after.currentSlot, spent, elapsed: 0};
   }
@@ -255,8 +295,7 @@ export class TacticsBoardSystem extends BaseSystem {
       const before = this.play.display;
       if (this.play.step(deltaTime)) {
         playing = this.play;
-        if (playing.display.currentSlot !== before.currentSlot)
-          this.startAdvance(before, playing.display);
+        if (playing.display !== before) this.startTrackMotion(before, playing.display);
       } else {
         this.endPlayback();
       }
@@ -269,6 +308,10 @@ export class TacticsBoardSystem extends BaseSystem {
     if (this.advance) {
       this.advance.elapsed += deltaTime;
       if (trackStart(this.advance) >= this.advance.to) this.advance = null;
+    }
+    for (const [id, slide] of this.slides) {
+      slide.elapsed += deltaTime;
+      if (slide.elapsed >= CARD_SLIDE_SECONDS) this.slides.delete(id);
     }
     const map = MAPS[fight.mapId]!;
     // The board's weather moves with time, unless the device asks for reduced motion.
@@ -362,6 +405,7 @@ export class TacticsBoardSystem extends BaseSystem {
         scene.previewSlot ?? null,
         scene.aimSlot ?? null,
         this.advance,
+        this.slides,
         {
           selected: scene.selectedUnitId,
           hovered: this.hover.unitId,
@@ -384,6 +428,21 @@ function trackStart(a: TrackAdvance): number {
   const k = Math.floor(u);
   const t = u - k;
   return a.from + k + t * t * (3 - 2 * t);
+}
+
+/** How far through a slide, eased: 0 where the card left, 1 at its slot. */
+function slideProgress(s: CardSlide): number {
+  const t = Math.min(1, s.elapsed / CARD_SLIDE_SECONDS);
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * How far back in the deck a sliding card shows: on its way from where it
+ * left to its slot, which itself moves forward while the track runs on.
+ */
+function slideIndex(s: CardSlide, slot: number, start: number): number {
+  const e = slideProgress(s);
+  return s.from * (1 - e) + Math.max(0, slot - start) * e;
 }
 
 function center(h: Hex): {x: number; y: number} {
@@ -505,9 +564,10 @@ function roundRect(
  * and each later one tucked behind the one before, showing a strip with
  * its unit. The planned turn's landing card is dashed; when it had to yield
  * past taken slots, the slot its cost aimed at is marked too, with an arrow
- * on to where it lands. After a turn, the
- * cards it passed lift up off the track one by one, the rest sliding
- * forward, until the next turn's card is in front.
+ * on to where it lands. The acting unit's card stands a little taller in
+ * front. After a turn, its card slides back to its new slot over the
+ * others, and the empty cards it passed lift up off the track one by one,
+ * the rest sliding forward, until the next turn's card is in front.
  */
 function drawTrack(
   ctx: CanvasRenderingContext2D,
@@ -516,6 +576,7 @@ function drawTrack(
   previewSlot: number | null,
   aimSlot: number | null,
   advance: TrackAdvance | null,
+  slides: Map<string, CardSlide>,
   opts: {selected: string | null; hovered: string | null}
 ): void {
   const {x, y, width, height} = TRACK_AREA;
@@ -528,6 +589,7 @@ function drawTrack(
   ctx.restore();
 
   const bySlot = new Map(cards.map((c) => [c.slot, c]));
+  const sliding: {u: Unit; i: number}[] = [];
   // Back to front, so each card covers the left of the one behind it.
   for (let slot = Math.ceil(start + deck.count - 1); slot >= Math.floor(start); slot--) {
     const passed = advance !== null && slot < advance.to;
@@ -535,83 +597,121 @@ function drawTrack(
     const card = passed ? undefined : bySlot.get(slot);
     const u = spent ?? (card ? fight.units.find((v) => v.id === card.unitId)! : null);
     const ghost = Boolean(card?.ghost);
-    const acting = Boolean(card && !ghost && u!.id === fight.awaiting);
+    const slide = u && !ghost && !spent ? slides.get(u.id) : undefined;
+    if (slide) {
+      // Drawn last, over the cards it passes; its slot shows empty until it lands.
+      sliding.push({u: u!, i: slideIndex(slide, slot, start)});
+      drawCard(
+        ctx,
+        deck,
+        null,
+        {i: Math.max(0, slot - start), lift: 0, ghost: false, grow: 0},
+        opts
+      );
+      continue;
+    }
     // How far back in the deck it sits (0 in front), and how far a passed card has lifted.
     const i = Math.max(0, slot - start);
     const lift = passed ? Math.min(1, Math.max(0, start - slot)) : 0;
-    const cx = deck.x0 + i * deck.w;
-    const cy = deck.y - lift * (deck.y + deck.h + 4);
-    ctx.save();
-    ctx.globalAlpha = 1 - lift * 0.6;
-    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetX = 2;
-    roundRect(ctx, cx, cy, deck.cardW, deck.h, 5);
-    // The ghost is just an outline where the acting card lands: no portrait,
-    // so the acting unit doesn't show twice.
-    ctx.fillStyle = !u || ghost ? '#1f2937' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
-    ctx.fill();
-    ctx.shadowColor = 'transparent';
-    const strokeBorder = () => {
-      ctx.setLineDash(ghost ? [3, 2] : []);
-      ctx.strokeStyle = !u
-        ? 'rgba(255,255,255,0.18)'
-        : ghost || acting
-          ? '#fde047'
-          : u.id === opts.selected || u.id === opts.hovered
-            ? '#ffffff'
-            : SIDE_COLOR[u.side];
-      ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
-      ctx.stroke();
-      ctx.setLineDash([]);
-    };
-    strokeBorder();
-
-    if (u && !ghost) {
-      // The unit sits in the strip that shows; the front card shows whole,
-      // and a card sliding to the front carries its unit across to the middle.
-      const back = Math.min(1, i);
-      const mid = cx + deck.cardW / 2 + back * (deck.cardW / 2 - deck.w / 2);
-      const portrait = HERO_PORTRAIT[u.hero];
-      const img = portrait && assetLoader.requestImage(portrait.src);
-      if (img) {
-        // The portrait fills the card, full height; its face sits where the unit
-        // would (the strip that shows, on a card behind). Enemies face left.
-        const scale = Math.max(deck.h, deck.cardW) / img.height;
-        const faceX = (u.side === 'enemy' ? img.width - portrait.faceX : portrait.faceX) * scale;
-        ctx.save();
-        roundRect(ctx, cx, cy, deck.cardW, deck.h, 5);
-        ctx.clip();
-        ctx.imageSmoothingEnabled = false;
-        ctx.translate(Math.round(mid - faceX), Math.round(cy));
-        if (u.side === 'enemy') {
-          ctx.translate(img.width * scale, 0);
-          ctx.scale(-1, 1);
-        }
-        ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
-        ctx.restore();
-        // The border again, over the portrait.
-        roundRect(ctx, cx, cy, deck.cardW, deck.h, 5);
-        strokeBorder();
-      } else {
-        // No portrait yet: a disc in the hero's colour with its letter.
-        const r = Math.min(11, deck.w / 2 - 2);
-        ctx.beginPath();
-        ctx.arc(mid, cy + deck.h / 2 - 4, r, 0, Math.PI * 2);
-        ctx.fillStyle = HERO_COLOR[u.hero];
-        ctx.fill();
-        ctx.strokeStyle = SIDE_COLOR[u.side];
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        label(ctx, HEROES[u.hero].letter, mid, cy + deck.h / 2 - 3, '#ffffff', 11, true);
-      }
-      // A charging card: its ability triggers when this slot comes up.
-      if (u.charging) label(ctx, '!', cx + deck.cardW - 5, cy + 8, '#d8b4fe', 12, true);
-    }
-    ctx.restore();
+    const acting = Boolean(card && !ghost && u!.id === fight.awaiting);
+    // The card of the unit acting grows as it comes to the front.
+    const grow = acting ? Math.max(0, 1 - i) : 0;
+    drawCard(ctx, deck, u, {i, lift, ghost, acting, grow}, opts);
+  }
+  for (const {u, i} of sliding) {
+    const acting = u.id === fight.awaiting;
+    drawCard(ctx, deck, u, {i, lift: 0, ghost: false, acting, grow: Math.max(0, 1 - i)}, opts);
   }
   if (!advance && previewSlot !== null && aimSlot !== null && aimSlot < previewSlot)
     drawYield(ctx, deck, aimSlot, previewSlot);
+}
+
+/**
+ * One deck card, `i` cards back from the front (fractional while the deck
+ * moves): blank when empty, a dashed outline for the planned landing, else
+ * its unit's portrait. `lift` is how far a passed card has lifted off the
+ * track; `grow` how much taller the acting unit's front card stands.
+ */
+function drawCard(
+  ctx: CanvasRenderingContext2D,
+  deck: TrackSlots,
+  u: Unit | null,
+  card: {i: number; lift: number; ghost: boolean; acting?: boolean; grow: number},
+  opts: {selected: string | null; hovered: string | null}
+): void {
+  const {i, lift, ghost, grow} = card;
+  const acting = Boolean(card.acting);
+  const cx = deck.x0 + i * deck.w;
+  const h = deck.h + 2 * FRONT_CARD_GROW * grow;
+  const cy = deck.y - FRONT_CARD_GROW * grow - lift * (deck.y + deck.h + 4);
+  ctx.save();
+  ctx.globalAlpha = 1 - lift * 0.6;
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 2;
+  roundRect(ctx, cx, cy, deck.cardW, h, 5);
+  // The ghost is just an outline where the acting card lands: no portrait,
+  // so the acting unit doesn't show twice.
+  ctx.fillStyle = !u || ghost ? '#1f2937' : u.side === 'player' ? '#1e3a8a' : '#7f1d1d';
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  const strokeBorder = () => {
+    ctx.setLineDash(ghost ? [3, 2] : []);
+    ctx.strokeStyle = !u
+      ? 'rgba(255,255,255,0.18)'
+      : ghost || acting
+        ? '#fde047'
+        : u.id === opts.selected || u.id === opts.hovered
+          ? '#ffffff'
+          : SIDE_COLOR[u.side];
+    ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  };
+  strokeBorder();
+
+  if (u && !ghost) {
+    // The unit sits in the strip that shows; the front card shows whole,
+    // and a card sliding to the front carries its unit across to the middle.
+    const back = Math.min(1, i);
+    const mid = cx + deck.cardW / 2 + back * (deck.cardW / 2 - deck.w / 2);
+    const portrait = HERO_PORTRAIT[u.hero];
+    const img = portrait && assetLoader.requestImage(portrait.src);
+    if (img) {
+      // The portrait fills the card, full height; its face sits where the unit
+      // would (the strip that shows, on a card behind). Enemies face left.
+      const scale = Math.max(h, deck.cardW) / img.height;
+      const faceX = (u.side === 'enemy' ? img.width - portrait.faceX : portrait.faceX) * scale;
+      ctx.save();
+      roundRect(ctx, cx, cy, deck.cardW, h, 5);
+      ctx.clip();
+      ctx.imageSmoothingEnabled = false;
+      ctx.translate(Math.round(mid - faceX), Math.round(cy));
+      if (u.side === 'enemy') {
+        ctx.translate(img.width * scale, 0);
+        ctx.scale(-1, 1);
+      }
+      ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
+      ctx.restore();
+      // The border again, over the portrait.
+      roundRect(ctx, cx, cy, deck.cardW, h, 5);
+      strokeBorder();
+    } else {
+      // No portrait yet: a disc in the hero's colour with its letter.
+      const r = Math.min(11, deck.w / 2 - 2);
+      ctx.beginPath();
+      ctx.arc(mid, cy + h / 2 - 4, r, 0, Math.PI * 2);
+      ctx.fillStyle = HERO_COLOR[u.hero];
+      ctx.fill();
+      ctx.strokeStyle = SIDE_COLOR[u.side];
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      label(ctx, HEROES[u.hero].letter, mid, cy + h / 2 - 3, '#ffffff', 11, true);
+    }
+    // A charging card: its ability triggers when this slot comes up.
+    if (u.charging) label(ctx, '!', cx + deck.cardW - 5, cy + 8, '#d8b4fe', 12, true);
+  }
+  ctx.restore();
 }
 
 /**
