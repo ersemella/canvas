@@ -32,7 +32,15 @@ export function fogAt(state: FightState, h: Hex): FogEffect | undefined {
   return (state.fog ?? []).find((f) => hexEquals(f.hex, h));
 }
 
-/** A unit with a ranged attack, which fog blinds. */
+/**
+ * Obscured (keywords.md, 17.6): a sandstorm tile or fog. Ranged hits on a
+ * unit here, and by a unit here, deal `RULES.obscuredReduction` less.
+ */
+export function obscured(state: FightState, map: MapData, h: Hex): boolean {
+  return tileAt(map, h) === 'conceal' || fogAt(state, h) !== undefined;
+}
+
+/** A unit with a ranged attack, which being Obscured weakens. */
 export function isRanged(unit: Unit): boolean {
   return HEROES[unit.hero].abilities.includes('bow');
 }

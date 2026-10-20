@@ -44,7 +44,7 @@ export interface AbilityDef {
   name: string;
   /**
    * One line for the side panel, with damage and healing scaled by the
-   * user's power (defence, Vulnerable and conceal still apply on the hit).
+   * user's power (defence, Vulnerable and Obscured still apply on the hit).
    * Range and duration are left out: the panel lists them on their own.
    */
   summary(user: Unit): string;
@@ -295,7 +295,7 @@ const fog: AbilityDef = {
   id: 'fog',
   name: 'Fog',
   summary: () =>
-    `Fog a space and those within ${ABILITY.fog.radius} of it: ranged hits into or out of it deal ${Math.round(ABILITY.fog.reduction * 100)}% less.`,
+    `Fog a space and those within ${ABILITY.fog.radius} of it, making them Obscured: ranged hits into or out of it deal ${Math.round(RULES.obscuredReduction * 100)}% less.`,
   range: ABILITY.fog.range,
   duration: ABILITY.fog.slots,
   ultimate: false,

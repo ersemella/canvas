@@ -84,6 +84,7 @@ export {
   fogAt,
   isFlanked,
   movementCap,
+  obscured,
   reachableHexes,
   statusSlotsLeft,
   statusValue,
