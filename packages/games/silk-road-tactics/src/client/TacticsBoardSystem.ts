@@ -105,6 +105,10 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
 
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
 const HEALTH_BAR = {w: 60, h: 10, y: 50};
+/** Status markers in a row above the health bar: their radius, and the gap between centres. */
+const MARK = {r: 6.5, step: 15};
+/** How far above the hex's centre the markers' row is centred. */
+const MARKS_Y = HEALTH_BAR.y + HEALTH_BAR.h + 5 + MARK.r;
 
 /** The hovered hex's outline. */
 const HOVER: HighlightStyle = {fill: 'rgba(255,255,255,0.08)', stroke: '#ffffff'};
@@ -129,9 +133,9 @@ interface TrackAdvance {
 /**
  * Draws everything over the board's tiles (which are hex entities): the
  * track of cards along the top (3.1, as in Mana Khemia), tile markings,
- * highlights, arrow lanes, hail, charging areas, units with statuses
- * (health only on the unit hovered or tapped), the previewed outcome, and a tooltip for the hex under the
- * mouse. Plain shapes and text (brief section 9). The page drives it with
+ * highlights, arrow lanes, hail, charging areas, units (their health and
+ * statuses only when hovered, tapped or in an aimed attack's reach), the
+ * previewed outcome, and a tooltip for the hex under the mouse. Plain shapes and text (brief section 9). The page drives it with
  * `tactics:board` events; taps come from `TacticsInputSystem`.
  */
 export class TacticsBoardSystem extends BaseSystem {
@@ -215,14 +219,12 @@ export class TacticsBoardSystem extends BaseSystem {
       const p = previewed.get(u.id);
       const moved = p && p.to && hexKey(p.to) !== hexKey(hex);
       drawUnit(ctx, u, hex, {
-        fight,
         acting: u.id === acting,
         selected: u.id === this.scene.selectedUnitId || u.id === this.hover.unitId,
         faded: Boolean(moved || p?.killed),
       });
       if (p && moved && !p.killed)
         drawUnit(ctx, u, p.to!, {
-          fight,
           acting: false,
           selected: false,
           faded: false,
@@ -234,8 +236,8 @@ export class TacticsBoardSystem extends BaseSystem {
       }
     }
 
-    // Health shows only on the unit being looked at: hovered (on the board
-    // or the track) or tapped, and on whoever an attack being aimed could hit.
+    // Health and statuses show only on the unit being looked at: hovered (on
+    // the board or the track) or tapped, and on whoever an attack being aimed could hit.
     // Where it ends up when the turn moves it.
     const looked = new Set<string>();
     if (this.scene.inspectedUnitId) looked.add(this.scene.inspectedUnitId);
@@ -247,7 +249,9 @@ export class TacticsBoardSystem extends BaseSystem {
       const hex = this.scene.positions?.[u.id] ?? u.hex;
       if (!u.alive || !hex || !looked.has(u.id)) continue;
       const p = previewed.get(u.id);
-      drawHealthBar(ctx, u, p?.to && !p.killed ? p.to : hex, p?.hpBefore ?? u.hp, p?.hpAfter);
+      const at = p?.to && !p.killed ? p.to : hex;
+      drawHealthBar(ctx, u, at, p?.hpBefore ?? u.hp, p?.hpAfter);
+      drawStatusMarks(ctx, statusMarks(fight, u), at);
     }
 
     const badgesAt = new Map<string, number>();
@@ -613,10 +617,14 @@ function drawHover(
   const boxH = lines.length * lh + 8;
   const c = center(h);
   const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, c.x - w / 2));
-  // Above the hex (and a unit's health bar), or below it when that would cover the track.
-  const clear = 36 * HEX_SCALE;
-  const above = c.y - (unit ? HEALTH_BAR.y + HEALTH_BAR.h + 4 : clear) - boxH;
-  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? c.y + clear : above;
+  // Above the hex (and a unit's health bar and statuses), or below it when that would cover the track.
+  const clear = !unit
+    ? 36 * HEX_SCALE
+    : statusMarks(fight, unit).length > 0
+      ? MARKS_Y + MARK.r + 3
+      : HEALTH_BAR.y + HEALTH_BAR.h + 4;
+  const above = c.y - clear - boxH;
+  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? c.y + 36 * HEX_SCALE : above;
   roundRect(ctx, bx, by, w, boxH, 5);
   ctx.fillStyle = 'rgba(17,24,39,0.94)';
   ctx.fill();
@@ -740,7 +748,6 @@ function drawUnit(
   u: Unit,
   hex: Hex,
   opts: {
-    fight: FightState;
     acting: boolean;
     selected: boolean;
     faded: boolean;
@@ -780,26 +787,38 @@ function drawUnit(
     ctx.stroke();
     label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, '#ffffff', 15, true);
   }
-
-  // Status markers: I(mmobilized), S(lowed), V(ulnerable), C(rushed), T(aunted), F(lanked), ★ ultimate ready.
-  if (!opts.ghost) {
-    const marks: [string, string][] = [];
-    if (statusValue(u, 'immobilized')) marks.push(['I', '#38bdf8']);
-    if (statusValue(u, 'slowed')) marks.push(['S', '#a78bfa']);
-    if (statusValue(u, 'vulnerable')) marks.push(['V', '#fb923c']);
-    if (statusValue(u, 'crushed')) marks.push(['C', '#ef4444']);
-    if (u.statuses.some((s) => s.kind === 'taunted')) marks.push(['T', '#facc15']);
-    if (isFlanked(opts.fight, u)) marks.push(['F', '#f472b6']);
-    marks.forEach(([m, color], i) => {
-      ctx.beginPath();
-      const x = c.x + (-14 + i * 10) * HEX_SCALE;
-      ctx.arc(x, c.y - 18 * HEX_SCALE, 5, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
-      label(ctx, m, x, c.y - 18 * HEX_SCALE + 0.5, '#111827', 8, true);
-    });
-  }
   ctx.restore();
+}
+
+/** A unit's status markers: I(mmobilized), S(lowed), V(ulnerable), C(rushed), T(aunted), F(lanked). */
+function statusMarks(fight: FightState, u: Unit): [string, string][] {
+  const marks: [string, string][] = [];
+  if (statusValue(u, 'immobilized')) marks.push(['I', '#38bdf8']);
+  if (statusValue(u, 'slowed')) marks.push(['S', '#a78bfa']);
+  if (statusValue(u, 'vulnerable')) marks.push(['V', '#fb923c']);
+  if (statusValue(u, 'crushed')) marks.push(['C', '#ef4444']);
+  if (u.statuses.some((s) => s.kind === 'taunted')) marks.push(['T', '#facc15']);
+  if (isFlanked(fight, u)) marks.push(['F', '#f472b6']);
+  return marks;
+}
+
+/** A looked-at unit's status markers, in a centred row above its health bar. */
+function drawStatusMarks(ctx: CanvasRenderingContext2D, marks: [string, string][], hex: Hex): void {
+  const c = center(hex);
+  const y = c.y - MARKS_Y;
+  marks.forEach(([m, color], i) => {
+    const x = c.x + (i - (marks.length - 1) / 2) * MARK.step;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, MARK.r, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(17,24,39,0.9)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+    label(ctx, m, x, y + 0.5, '#111827', 9, true);
+  });
 }
 
 /** The living unit standing at `h` (or placed there while deploying). */
@@ -811,7 +830,7 @@ function unitAt(fight: FightState, h: Hex, positions?: Record<string, Hex>): Uni
 }
 
 /**
- * A looked-at unit's health, floating above its sprite and status markers;
+ * A looked-at unit's health, floating above its sprite, under its status markers;
  * just the bar (the numbers are in the page's details). A previewed change
  * shows the health it would lose as a pale stretch past the bar's end (or
  * gain, in green).
