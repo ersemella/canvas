@@ -24,7 +24,7 @@ for later phases.
 | Track | Push, Pull, Swap, Inevitable |
 | Board | Displace, Unstoppable |
 | Control | Immobilized, Dazed, Slowed, Taunt, Stealth |
-| Damage | Burn, Pierce, Lifesteal, Vulnerable, Barrier, Immortal |
+| Damage | Burn, Pierce, Lifesteal, Vulnerable, Barrier, Immortal, Obscured |
 | Health | Heal, Overhealth, Antiheal, Cursed |
 | Removal | Cleanse, Dispel |
 | Stats | Speed, power and defence up or down |
@@ -162,9 +162,10 @@ shield its allies.
 | **Vulnerable N%** | The unit takes N% more damage for a duration. **Being flanked** makes a unit Vulnerable 25% for as long as the flank holds (6.3). |
 | **Barrier N** | Absorbs the next N damage the unit would take, after every other reduction, until used up or it expires. Not healing, so Antiheal doesn't block it. |
 | **Immortal** | The unit's health can't be reduced: damage to it becomes 0 (no minimum 1), burn included. Displace still moves it; other statuses still apply. Short durations only. |
+| **Obscured** | A unit standing in a sandstorm (conceal tile) or fog. **Ranged** hits on it deal 50% less, and so do ranged hits **by** it; an Obscured attacker hitting an Obscured target deals 75% less. Only once per side: sandstorm and fog on one hex don't stack. Melee, hail and quicksand aren't affected; it doesn't block line of fire and the unit stays visible. A property of the hex, not a status: it lasts while the unit stands there (Decided 2026-10-20). |
 
 **Damage order** (extends the Phase 1 order): base × power;
-ranged on conceal −50%; **Vulnerable** (including from a flank); defence (skipped by **Pierce**);
+ranged on an **Obscured** target −50%, ranged by an Obscured attacker −50%; **Vulnerable** (including from a flank); defence (skipped by **Pierce**);
 minimum 1; **Barrier** absorbs; **Immortal** sets it to 0. Each step
 rounds down. Burn and collision damage skip defence as now, then take
 Vulnerable, Barrier and Immortal. Hazard (quicksand) damage takes
@@ -251,6 +252,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
 | Immobilized | Replaces Frozen: removes movement, including abilities that move the unit; the unit still acts and can still be displaced (2026-10-19) | Frozen: no movement and no action, a lost turn; Immobilized also preventing displacement (until 2026-10-19) | Owner's call; Dazed already covers losing a turn; displacing a held unit gives the Bökh Champion's Pin then Throw its flow, and leaves Unstoppable as the one answer to Displace |
 | Guard | Removed; Barrier covers damage protection | Keeping both | Owner's call: outdated |
 | Charged abilities | Fizzle on a lost trigger turn | Trigger anyway | Owner's call; control answers a visible charge |
+| Obscured (2026-10-20) | One keyword for sandstorm and fog: ranged hits into or out of the hex deal 50% less | Sandstorm weakening only hits on its occupant, fog hits both ways (until 2026-10-20) | Owner's call: two effects that looked alike and differed in one detail were hard to tell apart; one named rule reads on both. Over 300 AI-vs-AI fights, unfinished fights 4% → 2%, same length, the Outrider's damage −9% |
 
 ## Open questions (original numbers continue from 39)
 

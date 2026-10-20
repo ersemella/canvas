@@ -1,13 +1,13 @@
 /**
  * The track (timeline.md, section 3): numbered slots, one card per slot,
- * placement by cost ÷ (speed + C), and yielding on collision.
+ * placement by cost × speedScale ÷ (speed + C), and yielding on collision.
  */
 import {RULES} from './config';
 import type {FightState, Unit} from './types';
 
 /** Slots a card moves for a turn costing `cost` (3.2); always at least 1. */
 export function slotsForward(cost: number, speed: number): number {
-  return Math.max(1, Math.floor(cost / (speed + RULES.C)));
+  return Math.max(1, Math.floor((cost * RULES.speedScale) / (speed + RULES.C)));
 }
 
 /** A turn's total cost: the action plus movement (3.2). */
@@ -59,11 +59,11 @@ export function simultaneousOrder(units: Unit[]): Unit[] {
   return out;
 }
 
-/** Starting slots (3.4): startCost ÷ (speed + C), placed in the fixed order. */
+/** Starting slots (3.4): startCost × speedScale ÷ (speed + C), placed in the fixed order. */
 export function placeStartingCards(state: FightState): void {
   for (const u of state.units) u.slot = null;
   for (const u of simultaneousOrder(state.units.filter((u) => u.alive))) {
-    placeCard(state, u, Math.floor(RULES.startCost / (u.speed + RULES.C)));
+    placeCard(state, u, Math.floor((RULES.startCost * RULES.speedScale) / (u.speed + RULES.C)));
   }
 }
 

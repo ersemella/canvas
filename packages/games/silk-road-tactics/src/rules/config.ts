@@ -10,8 +10,15 @@
 import type {AbilityId, FightState, HeroId} from './types';
 
 export const RULES = {
-  /** Track (3.2, 3.4): slotsForward = floor(cost / (speed + C)). */
-  C: 6,
+  /**
+   * Track (3.2, 3.4): slotsForward = floor(cost × speedScale / (speed + C)).
+   * Speed reads on the same Low 10 / Medium 25 / High 40 scale as power
+   * and defence (owner, 2026-10-20). Each speed is the old one × 5 + 5
+   * and C the old 6 × 5 − 5, so speed + C is 5 times the old sum and
+   * every placement is unchanged.
+   */
+  C: 25,
+  speedScale: 5,
   /**
    * Starting slots (3.4) use a typical action's cost, so the opening order
    * is spaced by speed like any later turn (owner, 2026-10-19; was 50,
@@ -31,21 +38,30 @@ export const RULES = {
   movementCap: 4,
   /** Turns a hero must complete before its ultimate unlocks (10.10). */
   ultimateUnlockTurns: 3,
-  /** Damage reduction = defence / (defence + defenceConstant) (9.1). */
-  defenceConstant: 20,
+  /**
+   * Damage reduction = defence / (defence + defenceConstant) (9.1). 50
+   * since defence moved to the shared stat scale (owner, 2026-10-20; was
+   * 20, with every defence 2.5 times smaller), so every hit is unchanged.
+   */
+  defenceConstant: 50,
   minimumDamage: 1,
   /**
    * Quicksand: every slot a unit stands on it, whoever's turn it is
    * (owner, 2026-10-19; was 40 at the start of each of the unit's own
-   * turns, ~4 a slot for a speed-4 hero's typical turn). Defence applies
+   * turns, ~4 a slot for a Medium-speed hero's typical turn). Defence applies
    * to it, and to entering it (owner, 2026-10-19); then both were doubled
    * to 8 and 80 (owner, 2026-10-20).
    */
   hazardDamage: 8,
   /** Quicksand: on entering it, passing through included, so crossing it still costs. */
   hazardEnterDamage: 80,
-  /** Sandstorm: ranged attacks against its occupant deal this much less. */
-  concealReduction: 0.5,
+  /**
+   * Obscured (a sandstorm or fog hex): ranged hits on a unit standing in
+   * one deal this much less, and so do ranged hits by one; both when both
+   * are, so a quarter. Sandstorm worked as fog does from 2026-10-20 (owner;
+   * it only weakened hits on its occupant before).
+   */
+  obscuredReduction: 0.5,
   /** A flanked unit is Vulnerable this much while flanked (6.3). */
   flankVulnerable: 25,
   /** Displace stopped early: to the displaced unit and to a unit it hits. */
@@ -67,26 +83,34 @@ export interface HeroStats {
   ultimate: AbilityId;
 }
 
-/** Starter armour (fixed in Phase 1): defence it adds, speed it costs. PLACEHOLDER values. */
+/**
+ * Starter armour (fixed in Phase 1): defence it adds, speed it costs.
+ * PLACEHOLDER values (were 3 and 8 defence, 0 and 1 speed, before the
+ * shared stat scale; light armour's 10 also absorbs Low defence going from
+ * 12.5 to 10, so the Outrider's total reduction is unchanged).
+ */
 export const ARMOUR = {
-  light: {defence: 3, speed: 0},
-  medium: {defence: 8, speed: 1},
+  light: {defence: 10, speed: 0},
+  medium: {defence: 20, speed: 5},
 } as const;
 
 /**
  * PLACEHOLDER stats, from the roster's bands, except that the Outrider and
  * the Storm Caller both have 360 health (owner, 2026-10-20; were 300 and
  * 420, and the Outrider died first in nearly every fight): health Low 300 / Medium 420 /
- * High 540 (High about 1.8× Low, 9.1); speed Medium 4, High 7; defence Low
- * 5, Medium 10; power Low 10, Medium 25, High 40.
+ * High 540 (High about 1.8× Low, 9.1). Speed, defence and power share one
+ * scale, Low 10 / Medium 25 / High 40 (owner, 2026-10-20), so a hero's
+ * bands read straight off its numbers; RULES.C, RULES.speedScale and
+ * RULES.defenceConstant compensate, leaving every fight number as it was
+ * (speed was Medium 4, High 7; defence Low 5, Medium 10).
  */
 export const HEROES: Record<HeroId, HeroStats> = {
   bokh: {
     name: 'Bökh Champion',
     letter: 'B',
     health: 540,
-    speed: 4,
-    defence: 10,
+    speed: 25,
+    defence: 25,
     power: 10,
     armour: 'medium',
     abilities: ['throw', 'pin', 'rampage', 'hold'],
@@ -96,8 +120,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     name: 'Mangudai Outrider',
     letter: 'M',
     health: 360,
-    speed: 7,
-    defence: 5,
+    speed: 40,
+    defence: 10,
     power: 40,
     armour: 'light',
     abilities: ['bow', 'dash', 'volley', 'hold'],
@@ -107,8 +131,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     name: 'Yadachy Storm Caller',
     letter: 'S',
     health: 360,
-    speed: 4,
-    defence: 10,
+    speed: 25,
+    defence: 25,
     power: 25,
     armour: 'medium',
     abilities: ['sunlight', 'hail', 'fog', 'freeze', 'hold'],
@@ -156,12 +180,8 @@ export const ABILITY = {
     vulnerable: 25,
     statusSlots: 10,
   },
-  /**
-   * Replaced Gale (owner, 2026-10-20). Ranged hits on a unit in fog deal
-   * `reduction` less (not stacking with sandstorm's), and so do ranged hits
-   * from a unit in fog; both apply when both stand in it.
-   */
-  fog: {cost: RULES.cost.typical, range: 4, radius: 1, slots: 20, reduction: 0.5},
+  /** Replaced Gale (owner, 2026-10-20). Its hexes are Obscured (`RULES.obscuredReduction`). */
+  fog: {cost: RULES.cost.typical, range: 4, radius: 1, slots: 20},
   /**
    * Ultimates buffed (owner, 2026-10-20): it now deals damage (none
    * before), for 20 slots (was 15), Vulnerable 50% (was 25%).
@@ -201,7 +221,8 @@ export const AI = {
   perTauntedSlot: 2,
   /**
    * Not in the brief: fog has no immediate effect to score, so the AI
-   * values each unit it newly covers. Shielding: this divided by the unit's
+   * values each unit it newly Obscures, and every unit standing Obscured
+   * (fog or sandstorm) when it looks ahead. Shielding: this divided by the unit's
    * max health (the frailest matter most), when the other side has a
    * ranged attacker. Blinding: a flat value per ranged attacker covered.
    * For the shielded side or against the blinded one; the other way for

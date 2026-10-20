@@ -37,7 +37,8 @@ The stat set is kept small, so every unit's stat sheet, enemies' included (D11),
 damageReduction = defence / (defence + defenceConstant)
 damageTaken     = roundDown(incomingDamage × (1 − damageReduction))
 ```
-- `defenceConstant` is a single global value, TBD.
+- `defenceConstant` is a single global value, TBD (50 in Phase 1).
+- **One scale for speed, defence and power (owner, 2026-10-20):** a stat's band reads straight off its number, Low 10, Medium 25, High 40, whichever the stat; the formulas' constants (`C`, `speedScale`, `defenceConstant`) are set to fit the scale, not the other way round. Gear then moves the numbers from there (armour, for instance, adds defence and costs speed).
 - Properties: defence equal to the constant gives 50% reduction; reduction approaches but never reaches 100%; each additional point of defence is worth slightly less than the last (diminishing returns), so stacking defence cannot make a unit invulnerable.
 - Rounding follows the global rule (round down). Whether a minimum of 1 damage applies is TBD (Phase 1: yes).
 

@@ -31,7 +31,6 @@ import hailImage from './tiles/hail.png';
 import quicksandImage from './tiles/quicksand.png';
 import ruinsImage from './tiles/ruins.png';
 import sandImage from './tiles/sand.png';
-import sandstormImage from './tiles/sandstorm.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
@@ -348,9 +347,12 @@ export class TacticsBoardSystem extends BaseSystem {
     // The board's weather moves with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
     for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), t);
+    const sandstorm = map.hexes.filter((h) => tileAt(map, h) === 'conceal');
+    drawBank(ctx, SANDSTORM_BANK, sandstorm, t);
     for (const effect of fight.effects) drawHail(ctx, effect.hex);
-    drawFogBank(
+    drawBank(
       ctx,
+      FOG_BANK,
       (fight.fog ?? []).map((f) => f.hex),
       t
     );
@@ -870,7 +872,8 @@ const TILE_TEXTURE: Record<Tile, string> = {
   sand: sandImage,
   obstacle: sandImage,
   hazard: quicksandImage,
-  conceal: sandstormImage,
+  // The sandstorm blows over sand, drawn by `drawBank` across all its hexes.
+  conceal: sandImage,
 };
 
 /**
@@ -880,23 +883,60 @@ const TILE_TEXTURE: Record<Tile, string> = {
 function drawHexImage(
   ctx: CanvasRenderingContext2D,
   h: Hex,
-  img: HTMLImageElement,
-  opts: {alpha?: number; flipX?: boolean; dx?: number; dy?: number} = {}
+  img: HTMLImageElement | HTMLCanvasElement,
+  opts: {alpha?: number; flipX?: boolean} = {}
 ): void {
   const c = center(h);
   const size = img.width * SPRITE_SCALE;
-  // An offset in whole art pixels, so a moving image stays crisp.
-  const dx = (opts.dx ?? 0) * SPRITE_SCALE;
-  const dy = (opts.dy ?? 0) * SPRITE_SCALE;
   ctx.save();
   hexPath(ctx, h, 0);
   ctx.clip();
   ctx.globalAlpha = opts.alpha ?? 1;
   ctx.imageSmoothingEnabled = false;
-  ctx.translate(Math.round(c.x) + dx, Math.round(c.y) + dy);
+  ctx.translate(Math.round(c.x), Math.round(c.y));
   if (opts.flipX) ctx.scale(-1, 1);
   ctx.drawImage(img, -size / 2, -size / 2, size, size);
   ctx.restore();
+}
+
+/** Quicksand's turning: frames in a full turn, and seconds a turn takes. */
+const QUICKSAND_FRAMES = 72;
+const QUICKSAND_TURN_SECONDS = 14;
+
+let quicksandFrames: HTMLCanvasElement[] | null = null;
+
+/**
+ * Quicksand's texture turned a step of a full turn, for the time: frames
+ * built once, each the texture rotated about its centre without smoothing
+ * (so it stays pixel art), over the still texture so the corners stay
+ * filled. Its arms wind clockwise going out, so it turns anticlockwise:
+ * they seem to flow in to the centre. Hexes start a different way round,
+ * so they don't turn in step.
+ */
+function quicksandFrame(
+  ground: HTMLImageElement,
+  h: Hex,
+  time: number
+): HTMLCanvasElement | HTMLImageElement {
+  if (typeof document === 'undefined') return ground;
+  quicksandFrames ??= Array.from({length: QUICKSAND_FRAMES}, (_, i) => {
+    const canvas = artCanvas(ground.width, ground.height);
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(ground, 0, 0);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(ground.width / 2, ground.height / 2, ground.width / 2, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.translate(ground.width / 2, ground.height / 2);
+    ctx.rotate((-i / QUICKSAND_FRAMES) * Math.PI * 2);
+    ctx.drawImage(ground, -ground.width / 2, -ground.height / 2);
+    ctx.restore();
+    return canvas;
+  });
+  const start = hexRandom(h, 9)();
+  const turn = (time / QUICKSAND_TURN_SECONDS + start) % 1;
+  return quicksandFrames[Math.floor(turn * QUICKSAND_FRAMES)]!;
 }
 
 /**
@@ -908,13 +948,9 @@ function drawHexImage(
 function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, time: number | null): void {
   const ground = assetLoader.requestImage(TILE_TEXTURE[tile]);
   if (ground) {
-    drawHexImage(ctx, h, ground, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
-    if (tile === 'conceal' && time !== null) {
-      // Sandstorm: the streaks gust back and forth along their diagonal, over
-      // a still copy that fills any edge the moving one uncovers.
-      const s = sway(time, SANDSTORM_SWAY_SECONDS, 2);
-      if (s !== 0) drawHexImage(ctx, h, ground, {dx: s, dy: Math.trunc(s / 2)});
-    }
+    // Quicksand turns slowly, like a vortex drawing things in.
+    const img = tile === 'hazard' && time !== null ? quicksandFrame(ground, h, time) : ground;
+    drawHexImage(ctx, h, img, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
     ctx.save();
     hexPath(ctx, h, 0.5);
     ctx.strokeStyle = '#8c7350';
@@ -999,18 +1035,6 @@ function drawTileMark(
     }
   }
   ctx.restore();
-}
-
-/** Seconds for a sandstorm's gust there and back. */
-const SANDSTORM_SWAY_SECONDS = 2.4;
-
-/**
- * A slow back-and-forth in whole art pixels, from −`amp` to `amp` and back
- * over `period` seconds (a triangle wave, so it holds no position longer).
- */
-function sway(time: number, period: number, amp: number): number {
-  const phase = (time / period) % 1;
-  return Math.round((Math.abs(phase - 0.5) * 4 - 1) * amp);
 }
 
 /** A seeded random sequence in [0, 1) from a hex, so each hex has its own pattern. */
@@ -1119,25 +1143,150 @@ function drawFallingHail(ctx: CanvasRenderingContext2D, h: Hex, time: number): v
   ctx.restore();
 }
 
-/** Fog's cloud art: a tile this many art pixels square that wraps, so it can drift without seams. */
-const FOG_TILE = 48;
-/** Art pixels a second each layer of fog drifts, the far one against the near one. */
-const FOG_DRIFT = [
-  {x: 2.2, y: 0.4, alpha: 1},
-  {x: -1.4, y: 0.7, alpha: 0.55},
-] as const;
 /**
- * Where a fog hex's mist fades, as fractions of the hex's size from its
- * centre: solid within the first, gone by the second. Neighbours' mists
- * overlap, so a bank reads as one cloud and only its outer edge is soft.
+ * A bank of weather over some hexes (fog, a sandstorm): a tile of art that
+ * wraps, in layers drifting at their own speeds, kept to a soft-edged
+ * area around the hexes.
  */
-const FOG_FADE = [0.72, 1.18] as const;
-/** Seconds for the mist's edge to billow out and back. */
-const FOG_BILLOW_SECONDS = 5;
+interface BankStyle {
+  /** The tile's size in art pixels. */
+  tile: {width: number; height: number};
+  /** Paints the tile, art pixel by art pixel. */
+  paint: (ctx: CanvasRenderingContext2D) => void;
+  /** Art pixels a second each layer drifts, and how strongly it shows. */
+  drift: readonly {x: number; y: number; alpha: number}[];
+  /**
+   * Where a hex's share fades, as fractions of the hex's size from its
+   * centre: solid within the first, gone by the second. Neighbours' shares
+   * overlap, so a bank reads as one and only its outer edge is soft.
+   */
+  fade: readonly [number, number];
+  /** Seconds for the edge to billow out and back, and by how much of its size. */
+  billow: {seconds: number; amount: number};
+  /** How much of the board under it shows through: 1 hides it. */
+  alpha: number;
+}
 
-let fogTile: HTMLCanvasElement | null = null;
-let fogLayer: HTMLCanvasElement | null = null;
-let fogMask: HTMLCanvasElement | null = null;
+/**
+ * Smooth noise in [0, 1) over a tile `width` × `height`, from a grid of
+ * `cellsX` × `cellsY` random values, that wraps at the tile's edges.
+ */
+function tileNoise(
+  next: () => number,
+  width: number,
+  height: number,
+  cellsX: number,
+  cellsY: number
+): (x: number, y: number) => number {
+  const grid = Array.from({length: cellsX * cellsY}, () => next());
+  const v = (x: number, y: number) => grid[(y % cellsY) * cellsX + (x % cellsX)]!;
+  const stepX = width / cellsX;
+  const stepY = height / cellsY;
+  const smooth = (t: number) => t * t * (3 - 2 * t);
+  return (x: number, y: number) => {
+    const gx = Math.floor(x / stepX);
+    const gy = Math.floor(y / stepY);
+    const tx = smooth(x / stepX - gx);
+    const ty = smooth(y / stepY - gy);
+    const top = v(gx, gy) + (v(gx + 1, gy) - v(gx, gy)) * tx;
+    const bottom = v(gx, gy + 1) + (v(gx + 1, gy + 1) - v(gx, gy + 1)) * tx;
+    return top + (bottom - top) * ty;
+  };
+}
+
+/** Fog: clouds in the fog image's greys, from a thin haze up to bright tufts, drifting slowly against each other. */
+const FOG_BANK: BankStyle = {
+  tile: {width: 48, height: 48},
+  paint: (ctx) => {
+    const next = hexRandom({q: 11, r: 5});
+    const coarse = tileNoise(next, 48, 48, 4, 4);
+    const fine = tileNoise(next, 48, 48, 8, 8);
+    for (let y = 0; y < 48; y++) {
+      for (let x = 0; x < 48; x++) {
+        const n = coarse(x, y) * 0.65 + fine(x, y) * 0.35;
+        ctx.fillStyle =
+          n < 0.36
+            ? 'rgba(198,204,210,0.5)'
+            : n < 0.5
+              ? 'rgba(190,196,202,0.78)'
+              : n < 0.62
+                ? 'rgba(212,215,219,0.92)'
+                : '#e6e8ea';
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  },
+  drift: [
+    {x: 2.2, y: 0.4, alpha: 1},
+    {x: -1.4, y: 0.7, alpha: 0.55},
+  ],
+  fade: [0.72, 1.18],
+  billow: {seconds: 5, amount: 0.06},
+  // Partly see-through, so the ground still shows under it.
+  alpha: 0.85,
+};
+
+/** How far a sandstorm's streaks fall for each art pixel across: a quarter, so the tile (4 times wider than tall) still wraps. */
+const SANDSTORM_SLOPE = 0.25;
+
+/**
+ * Sandstorm: long streaks of blown sand in the old sandstorm image's
+ * colours, sloping down to the right with a few dark grains, both layers
+ * racing along the streaks at different speeds.
+ */
+const SANDSTORM_BANK: BankStyle = {
+  tile: {width: 96, height: 24},
+  paint: (ctx) => {
+    const next = hexRandom({q: 3, r: 17});
+    const coarse = tileNoise(next, 96, 24, 3, 4);
+    const fine = tileNoise(next, 96, 24, 6, 8);
+    for (let y = 0; y < 24; y++) {
+      for (let x = 0; x < 96; x++) {
+        // Sheared along the streaks; a whole tile's height over its width, so it wraps.
+        const sy = (y - Math.floor(x * SANDSTORM_SLOPE) + 24) % 24;
+        const n = coarse(x, sy) * 0.6 + fine(x, sy) * 0.4;
+        ctx.fillStyle =
+          next() < 0.025
+            ? 'rgba(128,106,80,0.95)'
+            : n < 0.42
+              ? 'rgba(170,146,116,0.92)'
+              : n < 0.55
+                ? 'rgba(190,167,136,0.95)'
+                : n < 0.66
+                  ? '#dcc39f'
+                  : '#efdcbc';
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  },
+  drift: [
+    {x: 16, y: 16 * SANDSTORM_SLOPE, alpha: 1},
+    {x: 9, y: 9 * SANDSTORM_SLOPE, alpha: 0.5},
+  ],
+  fade: [0.8, 1.14],
+  billow: {seconds: 2.4, amount: 0.04},
+  alpha: 0.95,
+};
+
+/** How often a bank's edge moves on as it billows; the layers move a whole art pixel at a time anyway. */
+const BANK_BILLOW_STEPS_PER_SECOND = 8;
+
+/**
+ * A bank as last built: kept and redrawn as it is until something in it
+ * changes (`key`: its hexes, its layers' offsets, its edge's billow step),
+ * which for fog is only a few times a second. `bounds` is the part of the
+ * canvas it covers, in art pixels.
+ */
+interface BuiltBank {
+  canvas: HTMLCanvasElement;
+  key: string;
+  hexes: string;
+  bounds: {x: number; y: number; width: number; height: number};
+}
+
+const bankTiles = new Map<BankStyle, HTMLCanvasElement>();
+const builtBanks = new Map<BankStyle, BuiltBank>();
+let bankMask: HTMLCanvasElement | null = null;
 
 function artCanvas(width: number, height: number): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
@@ -1147,103 +1296,135 @@ function artCanvas(width: number, height: number): HTMLCanvasElement {
 }
 
 /**
- * The cloud tile: smooth noise that wraps at the tile's edges, in the fog
- * image's greys, from a thin haze up to bright tufts.
- */
-function makeFogTile(): HTMLCanvasElement {
-  const canvas = artCanvas(FOG_TILE, FOG_TILE);
-  const ctx = canvas.getContext('2d')!;
-  const next = hexRandom({q: 11, r: 5});
-  const octave = (cells: number) => {
-    const grid = Array.from({length: cells * cells}, () => next());
-    const v = (x: number, y: number) => grid[(y % cells) * cells + (x % cells)]!;
-    const step = FOG_TILE / cells;
-    const smooth = (t: number) => t * t * (3 - 2 * t);
-    return (x: number, y: number) => {
-      const gx = Math.floor(x / step);
-      const gy = Math.floor(y / step);
-      const tx = smooth(x / step - gx);
-      const ty = smooth(y / step - gy);
-      const top = v(gx, gy) + (v(gx + 1, gy) - v(gx, gy)) * tx;
-      const bottom = v(gx, gy + 1) + (v(gx + 1, gy + 1) - v(gx, gy + 1)) * tx;
-      return top + (bottom - top) * ty;
-    };
-  };
-  const coarse = octave(4);
-  const fine = octave(8);
-  for (let y = 0; y < FOG_TILE; y++) {
-    for (let x = 0; x < FOG_TILE; x++) {
-      const n = coarse(x, y) * 0.65 + fine(x, y) * 0.35;
-      ctx.fillStyle =
-        n < 0.36
-          ? 'rgba(198,204,210,0.5)'
-          : n < 0.5
-            ? 'rgba(190,196,202,0.78)'
-            : n < 0.62
-              ? 'rgba(212,215,219,0.92)'
-              : '#e6e8ea';
-      ctx.fillRect(x, y, 1, 1);
-    }
-  }
-  return canvas;
-}
-
-/**
- * Every fog hex as one bank: the cloud tile, in two layers drifting
- * against each other, kept to a soft-edged mist around the fog hexes
+ * Every hex of one kind of weather as one bank: its tile, in layers
+ * drifting at their own speeds, kept to a soft-edged area around the hexes
  * (unclipped, so the bank has no hex-shaped cuts or seams). Built in art
- * pixels and scaled up unsmoothed, so its edge is pixel art too. Still
- * when `time` is null (reduced motion).
+ * pixels and scaled up unsmoothed, so its edge is pixel art too. Rebuilt
+ * only when it changes, and only over the hexes' part of the board, so a
+ * bank costs little more than drawing an image. Still when `time` is null
+ * (reduced motion).
  */
-function drawFogBank(ctx: CanvasRenderingContext2D, hexes: Hex[], time: number | null): void {
+function drawBank(
+  ctx: CanvasRenderingContext2D,
+  style: BankStyle,
+  hexes: Hex[],
+  time: number | null
+): void {
   if (hexes.length === 0 || typeof document === 'undefined') return;
   const width = Math.ceil(SCENE_SIZE.width / SPRITE_SCALE);
   const height = Math.ceil(SCENE_SIZE.height / SPRITE_SCALE);
-  fogTile ??= makeFogTile();
-  fogLayer ??= artCanvas(width, height);
-  fogMask ??= artCanvas(width, height);
-  const layer = fogLayer.getContext('2d')!;
-  const mask = fogMask.getContext('2d')!;
   const t = time ?? 0;
+  const {width: tw, height: th} = style.tile;
+  const offsets = style.drift.map(
+    (d) => [Math.round(t * d.x) % tw, Math.round(t * d.y) % th] as const
+  );
+  const billowT = Math.floor(t * BANK_BILLOW_STEPS_PER_SECOND) / BANK_BILLOW_STEPS_PER_SECOND;
+  const hexesKey = hexes.map(hexKey).join(' ');
+  const key = `${hexesKey}|${offsets.join(' ')}|${billowT}`;
+  let built = builtBanks.get(style);
+  if (built?.key !== key) {
+    built = buildBank(style, hexes, hexesKey, offsets, billowT, built, width, height);
+    built.key = key;
+    builtBanks.set(style, built);
+  }
+  const {x, y, width: bw, height: bh} = built.bounds;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.globalAlpha = style.alpha;
+  ctx.drawImage(
+    built.canvas,
+    x,
+    y,
+    bw,
+    bh,
+    x * SPRITE_SCALE,
+    y * SPRITE_SCALE,
+    bw * SPRITE_SCALE,
+    bh * SPRITE_SCALE
+  );
+  ctx.restore();
+}
 
-  mask.clearRect(0, 0, width, height);
+/** Builds a bank (into `reuse`'s canvas when there is one), over its hexes' part of the board only. */
+function buildBank(
+  style: BankStyle,
+  hexes: Hex[],
+  hexesKey: string,
+  offsets: (readonly [number, number])[],
+  billowT: number,
+  reuse: BuiltBank | undefined,
+  width: number,
+  height: number
+): BuiltBank {
+  let tile = bankTiles.get(style);
+  if (!tile) {
+    tile = artCanvas(style.tile.width, style.tile.height);
+    style.paint(tile.getContext('2d')!);
+    bankTiles.set(style, tile);
+  }
+  const canvas = reuse?.canvas ?? artCanvas(width, height);
+  bankMask ??= artCanvas(width, height);
+  const layer = canvas.getContext('2d')!;
+  const mask = bankMask.getContext('2d')!;
+
+  // The part of the board the bank can reach, at its edge's furthest billow.
   const size = BOARD_LAYOUT.size / SPRITE_SCALE;
-  for (const h of hexes) {
+  const [solid, gone] = style.fade;
+  const reach = Math.ceil(size * gone * (1 + style.billow.amount)) + 1;
+  const centres = hexes.map((h) => {
     const c = center(h);
-    const x = c.x / SPRITE_SCALE;
-    const y = c.y / SPRITE_SCALE;
-    const billow = 1 + 0.06 * Math.sin((t / FOG_BILLOW_SECONDS) * Math.PI * 2 + h.q * 1.7 + h.r);
-    const g = mask.createRadialGradient(x, y, 0, x, y, size * FOG_FADE[1] * billow);
+    return {h, x: c.x / SPRITE_SCALE, y: c.y / SPRITE_SCALE};
+  });
+  const x0 = Math.max(0, Math.floor(Math.min(...centres.map((c) => c.x)) - reach));
+  const y0 = Math.max(0, Math.floor(Math.min(...centres.map((c) => c.y)) - reach));
+  const x1 = Math.min(width, Math.ceil(Math.max(...centres.map((c) => c.x)) + reach));
+  const y1 = Math.min(height, Math.ceil(Math.max(...centres.map((c) => c.y)) + reach));
+  const bounds = {x: x0, y: y0, width: x1 - x0, height: y1 - y0};
+
+  mask.clearRect(x0, y0, bounds.width, bounds.height);
+  for (const {h, x, y} of centres) {
+    const phase = (billowT / style.billow.seconds) * Math.PI * 2 + h.q * 1.7 + h.r;
+    const billow = 1 + style.billow.amount * Math.sin(phase);
+    const g = mask.createRadialGradient(x, y, 0, x, y, size * gone * billow);
     g.addColorStop(0, 'rgba(0,0,0,1)');
-    g.addColorStop(FOG_FADE[0] / FOG_FADE[1], 'rgba(0,0,0,1)');
+    g.addColorStop(solid / gone, 'rgba(0,0,0,1)');
     g.addColorStop(1, 'rgba(0,0,0,0)');
     mask.fillStyle = g;
-    mask.fillRect(x - size * 2, y - size * 2, size * 4, size * 4);
+    mask.fillRect(x - reach, y - reach, reach * 2, reach * 2);
   }
 
   layer.globalCompositeOperation = 'source-over';
-  layer.clearRect(0, 0, width, height);
-  const pattern = layer.createPattern(fogTile, 'repeat')!;
-  for (const drift of FOG_DRIFT) {
-    const ox = Math.round(t * drift.x) % FOG_TILE;
-    const oy = Math.round(t * drift.y) % FOG_TILE;
+  // Other hexes than last time: what it drew before may lie outside these bounds.
+  if (reuse && reuse.hexes !== hexesKey) layer.clearRect(0, 0, width, height);
+  else layer.clearRect(x0, y0, bounds.width, bounds.height);
+  const pattern = layer.createPattern(tile, 'repeat')!;
+  const {width: tw, height: th} = style.tile;
+  style.drift.forEach((drift, i) => {
+    const [ox, oy] = offsets[i]!;
     layer.save();
+    layer.beginPath();
+    layer.rect(x0, y0, bounds.width, bounds.height);
+    layer.clip();
     layer.globalAlpha = drift.alpha;
     layer.translate(ox, oy);
     layer.fillStyle = pattern;
-    layer.fillRect(-FOG_TILE, -FOG_TILE, width + 2 * FOG_TILE, height + 2 * FOG_TILE);
+    layer.fillRect(x0 - tw, y0 - th, bounds.width + 2 * tw, bounds.height + 2 * th);
     layer.restore();
-  }
+  });
   layer.globalCompositeOperation = 'destination-in';
-  layer.drawImage(fogMask, 0, 0);
+  layer.drawImage(
+    bankMask,
+    x0,
+    y0,
+    bounds.width,
+    bounds.height,
+    x0,
+    y0,
+    bounds.width,
+    bounds.height
+  );
   layer.globalCompositeOperation = 'source-over';
-
-  ctx.save();
-  ctx.imageSmoothingEnabled = false;
-  // Partly see-through, so the ground still shows under it.
-  ctx.globalAlpha = 0.85;
-  ctx.drawImage(fogLayer, 0, 0, width * SPRITE_SCALE, height * SPRITE_SCALE);
-  ctx.restore();
+  return {canvas, key: '', hexes: hexesKey, bounds};
 }
 
 /** A hail hex's ground: the fallen stones (the falling ones are drawn later, over the units). */

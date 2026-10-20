@@ -15,6 +15,7 @@ import {
   isFlanked,
   mapOf,
   movementCap,
+  obscured,
   slotsForward,
   statusSlotsLeft,
   statusValue,
@@ -233,6 +234,9 @@ export function StatSheet({
       ? `Taunted by ${unitName(taunter)}: must attack it or end its turn while it can reach it (${statusSlotsLeft(unit, 'taunted', slot)} slots)`
       : null,
     unit.alive && isFlanked(fight, unit) ? `Flanked: Vulnerable ${RULES.flankVulnerable}%` : null,
+    unit.alive && unit.hex && obscured(fight, mapOf(fight), unit.hex)
+      ? `Obscured: its ranged hits, and ranged hits on it, deal ${Math.round(RULES.obscuredReduction * 100)}% less`
+      : null,
   ].filter(Boolean);
   const ult = ABILITIES[HEROES[unit.hero].ultimate];
   // Hold isn't offered as an action (End turn is), and the ultimate gets its own section.

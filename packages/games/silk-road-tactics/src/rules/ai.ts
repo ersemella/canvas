@@ -6,10 +6,10 @@
 import {hexDistance, hexEquals, hexKey} from '@canvas/engine/server';
 import {ABILITY, AI, RULES, movementRules} from './config';
 import {
-  fogAt,
   hostile,
   isFlanked,
   isRanged,
+  obscured,
   reachableHexes,
   statusSlotsLeft,
   statusValue,
@@ -125,12 +125,13 @@ export function scoreOutcome(
   return score;
 }
 
-/** What fog centred on `center` is worth to `actor`'s side (see `AI.fogShield`). */
+/** What fog centred on `center` is worth to `actor`'s side: units it newly Obscures (see `AI.fogShield`). */
 function fogValue(state: FightState, actor: Unit, center: Hex): number {
+  const map = mapOf(state);
   const living = state.units.filter((u) => u.alive && u.hex);
   let value = 0;
   for (const u of living) {
-    if (hexDistance(u.hex!, center) > ABILITY.fog.radius || fogAt(state, u.hex!)) continue;
+    if (hexDistance(u.hex!, center) > ABILITY.fog.radius || obscured(state, map, u.hex!)) continue;
     const side = hostile(u, actor) ? -1 : 1;
     if (living.some((o) => hostile(o, u) && isRanged(o))) value += (side * AI.fogShield) / u.maxHp;
     if (isRanged(u)) value -= side * AI.fogBlind;
@@ -301,6 +302,7 @@ export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
+  const map = mapOf(state);
   let score = 0;
   for (const u of state.units) {
     if (!u.alive) continue;
@@ -311,7 +313,7 @@ export function evaluatePosition(state: FightState, side: Side): number {
         if (!e.alive || !e.hex || !hostile(e, u)) continue;
         rangedEnemy ||= isRanged(e);
       }
-      if (fogAt(state, u.hex)) {
+      if (obscured(state, map, u.hex)) {
         if (rangedEnemy) value += AI.fogShield / u.maxHp;
         if (isRanged(u)) value -= AI.fogBlind;
       }

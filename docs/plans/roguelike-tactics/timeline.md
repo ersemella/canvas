@@ -20,8 +20,9 @@ This model is in the same family as the turn systems of Final Fantasy X (placeme
 ### 3.2 Placement (Decided)
 After a unit's turn, its card moves forward by:
 ```
-slotsForward = roundDown((actionCost + hexesMoved × moveCostPerHex) / (speed + C))
+slotsForward = roundDown((actionCost + hexesMoved × moveCostPerHex) × speedScale / (speed + C))
 ```
+- `speedScale` (5 in Phase 1) only puts speed on the same Low 10 / Medium 25 / High 40 scale as power and defence ([heroes-and-gear.md](heroes-and-gear.md), 9.1); it changes no placement (owner, 2026-10-20).
 - **Costs are fine-grained, the track is coarse.** Every action has a fixed, public action cost (for example a basic attack costs 100). Dividing by `speed + C` turns it into a whole number of slots.
 - **Speed divides both the action and the movement cost.**
 - `C` is a global constant. It sets how much speed matters: a larger `C` flattens speed's effect. Because speed is in the divisor, each extra point of speed is worth slightly less than the last (diminishing returns). Value TBD; aim for a typical turn landing roughly 8 to 12 slots ahead, so speed changes placement in small steps and a window of about 30 slots shows about three turns.

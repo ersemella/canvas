@@ -44,7 +44,7 @@ export interface AbilityDef {
   name: string;
   /**
    * One line for the side panel, with damage and healing scaled by the
-   * user's power (defence, Vulnerable and conceal still apply on the hit).
+   * user's power (defence, Vulnerable and Obscured still apply on the hit).
    * Range and duration are left out: the panel lists them on their own.
    */
   summary(user: Unit): string;
@@ -151,8 +151,7 @@ export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLan
 const bow: AbilityDef = {
   id: 'bow',
   name: 'Composite Bow',
-  summary: (user) =>
-    `Shoot in a straight line: the first unit in the way takes ${scaled(ABILITY.bow.damage, user.power)} damage.`,
+  summary: (user) => `Shoot straight for ${scaled(ABILITY.bow.damage, user.power)} damage.`,
   range: ABILITY.bow.range,
   ultimate: false,
   charged: false,
@@ -192,7 +191,7 @@ function dashEnd(
 const dash: AbilityDef = {
   id: 'dash',
   name: 'Dash',
-  summary: () => `Move in a straight line, through allies but not enemies or ruins.`,
+  summary: () => `Move in a straight line, passing safely through allies and hazards.`,
   range: ABILITY.dash.distance,
   ultimate: false,
   charged: false,
@@ -264,7 +263,7 @@ const hail: AbilityDef = {
   id: 'hail',
   name: 'Hail',
   summary: (user) =>
-    `Hail on a space: units struck take ${scaled(ABILITY.hail.damage, user.power)} damage and are Slowed ${ABILITY.hail.slowed} and Vulnerable ${ABILITY.hail.vulnerable}% for ${ABILITY.hail.statusSlots} slots.`,
+    `Hail on a space: units in it take ${scaled(ABILITY.hail.damage, user.power)} damage and are Slowed ${ABILITY.hail.slowed} and Vulnerable ${ABILITY.hail.vulnerable}%.`,
   range: ABILITY.hail.range,
   duration: ABILITY.hail.hexSlots,
   ultimate: false,
@@ -294,8 +293,7 @@ const hail: AbilityDef = {
 const fog: AbilityDef = {
   id: 'fog',
   name: 'Fog',
-  summary: () =>
-    `Fog a space and those within ${ABILITY.fog.radius} of it: ranged hits into or out of it deal ${Math.round(ABILITY.fog.reduction * 100)}% less.`,
+  summary: () => `Create fog in a targeted area: units in it are Obscured.`,
   range: ABILITY.fog.range,
   duration: ABILITY.fog.slots,
   ultimate: false,
@@ -373,7 +371,7 @@ const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
   summary: (user) =>
-    `Melee: you and the target are Immobilized; the target is Vulnerable ${ABILITY.pin.vulnerable}%, Taunted, and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot. Ends early if the target is cleansed or moved away.`,
+    `Melee: you and the target are Immobilized; the target is Vulnerable ${ABILITY.pin.vulnerable}%, Taunted, and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot.`,
   duration: ABILITY.pin.slots,
   ultimate: false,
   charged: false,
@@ -404,8 +402,7 @@ const pin: AbilityDef = {
 const rampage: AbilityDef = {
   id: 'rampage',
   name: 'Rampage',
-  summary: (user) =>
-    `Rush in a straight line: every unit in or beside the path takes ${scaled(ABILITY.rampage.damage, user.power)} damage and is knocked aside.`,
+  summary: () => `Rush in a straight line, knocking nearby units aside.`,
   range: ABILITY.rampage.distance,
   ultimate: true,
   charged: false,

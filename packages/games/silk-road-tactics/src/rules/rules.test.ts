@@ -75,11 +75,11 @@ const defended = (u: Unit, d: number): number =>
   Math.floor((d * RULES.defenceConstant) / (u.defence + RULES.defenceConstant));
 
 describe('the track', () => {
-  it('places by cost ÷ (speed + C), rounding down, at least 1 slot (3.2)', () => {
-    // The brief's worked example: speed 4, 2 hexes and a typical attack.
-    expect(slotsForward(turnCost(100, 2), 4)).toBe(12);
-    expect(slotsForward(turnCost(100, 2), 7)).toBe(9);
-    expect(slotsForward(1, 10)).toBe(1);
+  it('places by cost × speedScale ÷ (speed + C), rounding down, at least 1 slot (3.2)', () => {
+    // The brief's worked example: speed 25, 2 hexes and a typical attack.
+    expect(slotsForward(turnCost(100, 2), 25)).toBe(12);
+    expect(slotsForward(turnCost(100, 2), 40)).toBe(9);
+    expect(slotsForward(1, 40)).toBe(1);
   });
 
   it('yields to the next free slot, cascading; placed cards never move (3.3)', () => {
@@ -125,7 +125,7 @@ describe('the track', () => {
     const slots = s.units.map((u) => u.slot);
     expect(new Set(slots).size).toBe(6);
     expect(unit(s, 'p-mangudai').slot).toBe(
-      Math.floor(RULES.startCost / (unit(s, 'p-mangudai').speed + RULES.C))
+      Math.floor((RULES.startCost * RULES.speedScale) / (unit(s, 'p-mangudai').speed + RULES.C))
     );
   });
 
@@ -377,7 +377,7 @@ describe('damage', () => {
     expect(abilityDamage(s, mapOf(s), m, b, base, false)).toBe(1);
   });
 
-  it('halves ranged damage on conceal', () => {
+  it('a sandstorm Obscures: halves ranged hits on its occupant and by it', () => {
     const s = setup({'p-mangudai': at(0, 2), 'e-bokh': at(4, 2)});
     const m = unit(s, 'p-mangudai');
     const b = unit(s, 'e-bokh');
@@ -385,6 +385,9 @@ describe('damage', () => {
     b.hex = at(4, 0);
     const inOpen = abilityDamage(s, mapOf(s), m, b, 60, true);
     expect(onConceal).toBeLessThan(inOpen);
+    expect(abilityDamage(s, mapOf(s), m, b, 60, false)).toBe(inOpen);
+    m.hex = at(4, 2);
+    expect(abilityDamage(s, mapOf(s), m, b, 60, true)).toBe(onConceal);
     expect(abilityDamage(s, mapOf(s), m, b, 60, false)).toBe(inOpen);
   });
 

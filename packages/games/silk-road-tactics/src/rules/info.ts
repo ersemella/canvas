@@ -3,7 +3,7 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {ABILITY, RULES} from './config';
+import {RULES} from './config';
 import type {Tile} from './map';
 import type {FogEffect, HailEffect} from './types';
 
@@ -15,7 +15,7 @@ export interface HexInfo {
   detail: string;
 }
 
-const conceal = Math.round(RULES.concealReduction * 100);
+const obscured = Math.round(RULES.obscuredReduction * 100);
 
 export const TILE_INFO: Record<Tile, HexInfo> = {
   sand: {name: 'Sand', short: 'Open ground', detail: 'Open ground: no effect.'},
@@ -31,8 +31,8 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
   },
   conceal: {
     name: 'Sandstorm',
-    short: `Ranged hits deal ${conceal}% less`,
-    detail: `Ranged attacks against a unit standing here deal ${conceal}% less damage. Doesn't block arrows or line of fire, and the unit stays visible.`,
+    short: `Obscured: ranged hits in or out deal ${obscured}% less`,
+    detail: `Obscured: ranged hits on a unit here deal ${obscured}% less, and so do ranged hits by a unit here. Doesn't block arrows or line of fire, and the unit stays visible.`,
   },
 };
 
@@ -47,10 +47,9 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
 
 export function fogInfo(fog: FogEffect, currentSlot: number): HexInfo {
   const left = fog.untilSlot - currentSlot + 1;
-  const less = Math.round(ABILITY.fog.reduction * 100);
   return {
     name: 'Fog',
-    short: `Ranged hits in or out deal ${less}% less`,
-    detail: `For ${left} more slot${left === 1 ? '' : 's'}: ranged hits on a unit here deal ${less}% less (not on top of a sandstorm's), and so do ranged hits by a unit here. Doesn't block arrows or line of fire.`,
+    short: `Obscured: ranged hits in or out deal ${obscured}% less`,
+    detail: `For ${left} more slot${left === 1 ? '' : 's'}, Obscured: ranged hits on a unit here deal ${obscured}% less (not on top of a sandstorm), and so do ranged hits by a unit here. Doesn't block arrows or line of fire.`,
   };
 }
