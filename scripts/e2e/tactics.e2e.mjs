@@ -378,7 +378,15 @@ try {
     ['won', 'lost'].includes(run.view.fight.phase),
     run.view.fight.phase
   );
-  check('the result is shown', await page.getByText(/^(Victory|Defeat)$/).isVisible());
+  // The result waits for the last turn's playback to show how the fight ended.
+  check(
+    'the result is shown',
+    await page
+      .getByText(/^(Victory|Defeat)$/)
+      .waitFor({timeout: 15_000})
+      .then(() => true)
+      .catch(() => false)
+  );
   await sleep(300);
   await shot(page, 'end');
   check('no page errors', pageErrors.length === 0, pageErrors);

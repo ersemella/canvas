@@ -81,6 +81,8 @@ export function parseAction(raw: unknown): RunAction {
 export function handleRunAction(run: RunState, raw: RunAction): RunState {
   const action = parseAction(raw);
   const fight = cloneFight(run.fight, true);
+  // What this action sets off, for the page to play back.
+  fight.events = [];
   if (action.type === 'deploy') {
     deploy(fight, action.placements);
   } else if (action.type === 'turn') {

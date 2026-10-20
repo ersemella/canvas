@@ -8,7 +8,7 @@ import {ABILITY, RULES, HEROES} from './config';
 import {addStatus, fogAt, onMap, statusValue, unitAt, vulnerablePercent} from './board';
 import {tileAt} from './map';
 import type {MapData} from './map';
-import type {FightState, HailEffect, Unit} from './types';
+import type {BoardSnapshot, FightEvent, FightState, HailEffect, Motion, Unit} from './types';
 
 export interface Ctx {
   state: FightState;
@@ -20,6 +20,32 @@ export interface Ctx {
 export function log(ctx: Ctx, text: string): void {
   ctx.state.log.push({slot: ctx.slot, text});
   if (ctx.state.log.length > 200) ctx.state.log.splice(0, ctx.state.log.length - 200);
+}
+
+/** A fight records at most this many events per action (a safety bound). */
+const MAX_EVENTS = 400;
+
+/** Records an event with the board as it is now, if this fight records (see `FightState.events`). */
+export function record(state: FightState, event: FightEvent): void {
+  const events = state.events;
+  if (!events || events.length >= MAX_EVENTS) return;
+  events.push({...event, after: snapshot(state)});
+}
+
+function snapshot(state: FightState): BoardSnapshot {
+  return {
+    currentSlot: state.currentSlot,
+    units: state.units.map((u) => ({
+      id: u.id,
+      hex: u.hex ? {...u.hex} : null,
+      hp: u.hp,
+      alive: u.alive,
+      slot: u.slot,
+      charging: u.charging ? {...u.charging, target: {...u.charging.target}} : null,
+    })),
+    effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
+    fog: (state.fog ?? []).map((f) => ({...f, hex: {...f.hex}})),
+  };
 }
 
 export function unitName(u: Unit): string {
@@ -93,6 +119,7 @@ export function applyDamage(ctx: Ctx, target: Unit, amount: number, text: string
   if (!target.alive) return;
   target.hp = Math.max(0, target.hp - amount);
   log(ctx, `${text}.`);
+  record(ctx.state, {kind: 'damage', unitId: target.id, amount});
   if (target.hp === 0) kill(ctx, target);
 }
 
@@ -100,15 +127,20 @@ export function heal(ctx: Ctx, target: Unit, amount: number): void {
   if (!target.alive) return;
   const healed = Math.min(amount, target.maxHp - target.hp);
   target.hp += healed;
-  if (healed > 0) log(ctx, `${unitName(target)} heals ${healed}.`);
+  if (healed > 0) {
+    log(ctx, `${unitName(target)} heals ${healed}.`);
+    record(ctx.state, {kind: 'heal', unitId: target.id, amount: healed});
+  }
 }
 
 export function kill(ctx: Ctx, unit: Unit): void {
+  const at = unit.hex;
   unit.alive = false;
   unit.slot = null;
   unit.charging = null;
   unit.hex = null;
   log(ctx, `${unitName(unit)} falls.`);
+  if (at) record(ctx.state, {kind: 'death', unitId: unit.id, hex: at});
   checkEnd(ctx.state);
 }
 
@@ -174,9 +206,20 @@ export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) =>
   }
 }
 
-/** Moves a unit onto a hex; `triggers` applies the hex's hazard and hail. */
-export function enterHex(ctx: Ctx, unit: Unit, h: Hex, triggers = true): void {
+/**
+ * Moves a unit onto a hex; `triggers` applies the hex's hazard and hail.
+ * `how` is how it got there, for the page's playback.
+ */
+export function enterHex(
+  ctx: Ctx,
+  unit: Unit,
+  h: Hex,
+  triggers = true,
+  how: Motion = 'walk'
+): void {
+  const from = unit.hex;
   unit.hex = h;
+  if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
   breakPins(ctx, unit);
   if (!triggers) return;
   applyHazard(ctx, unit);
@@ -236,6 +279,6 @@ export function displace(ctx: Ctx, unit: Unit, direction: number, distance: numb
       }
       return;
     }
-    enterHex(ctx, unit, next);
+    enterHex(ctx, unit, next, true, 'push');
   }
 }

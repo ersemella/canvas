@@ -81,6 +81,8 @@ export function TacticsPage() {
   const [run, setRun] = useState<RunResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  /** The board is playing back what the last turn set off; the page waits for it. */
+  const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -119,6 +121,8 @@ export function TacticsPage() {
   }, []);
 
   const fight: FightState | null = run?.view.fight ?? null;
+  const fightRef = useRef(fight);
+  fightRef.current = fight;
   const map = SALT_FLATS;
 
   const resetTurn = useCallback(() => {
@@ -156,7 +160,14 @@ export function TacticsPage() {
     async (request: () => Promise<RunResponse>) => {
       setBusy(true);
       try {
-        receive(await request());
+        const before = fightRef.current;
+        const r = await request();
+        // Play back what the action set off (the player's turn, then the AI's).
+        if (before && r.view.fight.events?.length && eventsRef.current) {
+          setPlaying(true);
+          eventsRef.current.emit('tactics:playback', {from: before, to: r.view.fight});
+        }
+        receive(r);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Something went wrong.');
       } finally {
@@ -334,6 +345,11 @@ export function TacticsPage() {
 
   const onHex = useCallback(
     (h: Hex) => {
+      // A tap during a playback skips to its end.
+      if (playing) {
+        eventsRef.current?.emit('tactics:playback-skip', {});
+        return;
+      }
       if (!fight || busy) return;
       if (fight.phase === 'deploy') {
         const here = Object.entries(deployAt).find(([, at]) => hexEquals(at, h))?.[0];
@@ -386,6 +402,7 @@ export function TacticsPage() {
     [
       fight,
       busy,
+      playing,
       deployAt,
       selectedId,
       acting,
@@ -572,6 +589,7 @@ export function TacticsPage() {
     events.on<TacticsTapPayload>('tactics:tap', ({hex}) => onHexRef.current(hex));
     events.on<TacticsCardPayload>('tactics:card', ({unitId}) => setSelectedId(unitId));
     events.on<TacticsHoverPayload>('tactics:hover', setHover);
+    events.on('tactics:playback-done', () => setPlaying(false));
     setWorldReady((n) => n + 1);
   }, []);
 
@@ -580,7 +598,7 @@ export function TacticsPage() {
     if (!import.meta.env.DEV) return;
     (window as unknown as {__tactics?: unknown}).__tactics = {
       run,
-      busy,
+      busy: busy || playing,
       hexToCanvas: (h: Hex) => hexToPixel(h, BOARD_LAYOUT),
       autoTurn: () => {
         if (!fight || !acting) return false;
@@ -588,7 +606,7 @@ export function TacticsPage() {
         return true;
       },
     };
-  }, [run, busy, fight, acting, commit]);
+  }, [run, busy, playing, fight, acting, commit]);
 
   // ── Layout ─────────────────────────────────────────────────────────────────
 
@@ -623,7 +641,8 @@ export function TacticsPage() {
     );
   }
 
-  const finished = fight.phase === 'won' || fight.phase === 'lost';
+  // The result waits for the playback to show how the fight ended.
+  const finished = (fight.phase === 'won' || fight.phase === 'lost') && !playing;
   const selected =
     fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
 
@@ -680,7 +699,7 @@ export function TacticsPage() {
             fight={fight}
             preview={preview}
             needsTarget={!input}
-            busy={busy}
+            busy={busy || playing}
             onConfirm={() => commit()}
           />
         </TurnControls>

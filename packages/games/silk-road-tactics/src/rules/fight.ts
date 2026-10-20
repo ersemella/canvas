@@ -8,7 +8,7 @@ import {ARMOUR, HEROES, PARTY} from './config';
 import {expireStatuses, invalidPath, walkable} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
-import {applyHail, checkEnd, enterHex, log, damageEachSlot, unitName} from './resolve';
+import {applyHail, checkEnd, enterHex, log, damageEachSlot, record, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS} from './map';
 import type {MapData} from './map';
@@ -122,6 +122,7 @@ export function advance(
     if (!unit) return;
     const ctx: Ctx = {state, map, slot: unit.slot!};
     beginSlot(ctx);
+    record(state, {kind: 'turn', unitId: unit.id});
 
     // Start of the turn: hail (brief section 2); quicksand and Crushed ticked in beginSlot.
     applyHail(ctx, unit);
@@ -162,6 +163,7 @@ function triggerCharge(ctx: Ctx, unit: Unit): void {
   unit.charging = null;
   if (!hexEquals(hex, target))
     log(ctx, `${unitName(unit)}'s ${def.name} is drawn onto its taunter.`);
+  record(ctx.state, {kind: 'action', unitId: unit.id, ability, target: hex, charged: true});
   def.resolve(ctx, unit, {hex});
   checkEnd(ctx.state);
   if (unit.alive)
@@ -222,7 +224,14 @@ export function applyTurn(
     if (def.charged) {
       unit.charging = {ability: def.id, target: target.hex!};
       log(ctx, `${unitName(unit)} begins charging ${def.name}.`);
+      record(state, {kind: 'charge', unitId: unit.id, ability: def.id, target: target.hex!});
     } else {
+      record(state, {
+        kind: 'action',
+        unitId: unit.id,
+        ability: def.id,
+        ...(target.hex ? {target: target.hex} : {}),
+      });
       def.resolve(ctx, unit, target);
     }
   };
@@ -254,10 +263,12 @@ export function countsTowardUltimate(input: TurnInput): boolean {
   return input.action.ability !== 'hold' || (input.move?.length ?? 0) > 0;
 }
 
-/** A deep copy for previews and the AI; drops the log unless asked. */
+/** A deep copy for previews and the AI; drops the log unless asked, and the events always. */
 export function cloneFight(state: FightState, keepLog = false): FightState {
+  // A copy never records: only the run's own fight does, from a fresh list.
+  const {events: _events, ...rest} = state;
   return {
-    ...state,
+    ...rest,
     units: state.units.map((u) => ({
       ...u,
       hex: u.hex ? {...u.hex} : null,

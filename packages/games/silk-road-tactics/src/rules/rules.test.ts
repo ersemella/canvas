@@ -779,3 +779,61 @@ describe('previews, the AI and the run', () => {
     expect(nextCard(run.fight)).toBeDefined();
   });
 });
+
+describe('events for playback', () => {
+  it('a run action records what it set off, ending on the board it leaves', () => {
+    let run = createRun(0);
+    run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
+    run = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
+    const events = run.fight.events!;
+    expect(events[0]).toMatchObject({kind: 'action', ability: 'hold'});
+    // The track runs on to the next human turn, which is the last thing recorded.
+    expect(events[events.length - 1]).toMatchObject({kind: 'turn', unitId: run.fight.awaiting});
+    const last = events[events.length - 1]!.after;
+    for (const u of run.fight.units) {
+      expect(last.units.find((s) => s.id === u.id)).toMatchObject({
+        hex: u.hex,
+        hp: u.hp,
+        alive: u.alive,
+        slot: u.slot,
+      });
+    }
+    // The next action starts a fresh list.
+    const next = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
+    expect(next.fight.events![0]).toMatchObject({kind: 'action', ability: 'hold'});
+  });
+
+  it('records an ability, then its hit with the damage dealt', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3)});
+    s.events = [];
+    const target = unit(s, 'e-bokh');
+    const before = target.hp;
+    applyTurn(s, unit(s, 'p-mangudai'), {action: {ability: 'bow', target: {hex: at(4, 3)}}});
+    expect(s.events.map((e) => e.kind)).toEqual(['action', 'damage']);
+    expect(s.events[1]).toMatchObject({unitId: 'e-bokh', amount: before - target.hp});
+    expect(s.events[1]!.after.units.find((u) => u.id === 'e-bokh')!.hp).toBe(target.hp);
+  });
+
+  it('records each hex of a move, and a push as a push', () => {
+    const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(6, 6)});
+    s.events = [];
+    applyTurn(s, unit(s, 'p-bokh'), {move: [at(1, 4), at(2, 4)], action: {ability: 'hold'}});
+    expect(s.events.filter((e) => e.kind === 'step')).toMatchObject([
+      {from: at(1, 3), to: at(1, 4), how: 'walk'},
+      {from: at(1, 4), to: at(2, 4), how: 'walk'},
+    ]);
+    s.events = [];
+    displace({state: s, map: SALT_FLATS, slot: 0}, unit(s, 'e-bokh'), 3, 1);
+    expect(s.events[0]).toMatchObject({kind: 'step', unitId: 'e-bokh', how: 'push'});
+  });
+
+  it('copies for previews and the AI record nothing', () => {
+    const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(6, 6)});
+    s.events = [];
+    const copy = cloneFight(s, true);
+    expect(copy.events).toBeUndefined();
+    applyTurn(copy, unit(copy, 'p-bokh'), {move: [at(1, 4)], action: {ability: 'hold'}});
+    expect(copy.events).toBeUndefined();
+    expect(s.events).toEqual([]);
+  });
+});

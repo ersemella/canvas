@@ -14,10 +14,12 @@ import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
 import {fogInfo, hailInfo, TILE_INFO} from '../rules/info';
 import {MAPS, tileAt, type Tile} from '../rules/map';
-import type {FightState, Unit} from '../rules/types';
+import type {AbilityId, FightState, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
 import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
+import {Playback} from './playback';
+import type {PlaybackPayload} from './playback';
 import bokhPortrait from './sprites/bokh-portrait.png';
 import bokhSprite from './sprites/bokh.png';
 import mangudaiSprite from './sprites/mangudai.png';
@@ -189,21 +191,41 @@ export class TacticsBoardSystem extends BaseSystem {
   private time = 0;
   /** The player's device asks for reduced motion: units hold still. */
   private still = false;
+  /** A turn's events playing back; the page's scene waits until it ends. */
+  private play: Playback | null = null;
+  private bus: EventBus | null = null;
   private cleanup: (() => void)[] = [];
 
   onInit({events}: Omit<SystemContext, 'deltaTime'>): void {
     const bus: EventBus = events;
+    this.bus = bus;
     this.still =
       typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.cleanup.push(
       bus.on<BoardScene>('tactics:board', (scene) => {
-        this.startAdvance(this.scene.fight, scene.fight);
+        // During a playback the track follows the events instead.
+        if (!this.play) this.startAdvance(this.scene.fight, scene.fight);
         this.scene = scene;
       })
     );
     this.cleanup.push(
+      bus.on<PlaybackPayload>('tactics:playback', (payload) => {
+        this.play = new Playback(payload);
+        // Reduced motion, or nothing to show: straight to the result.
+        if (this.still || this.play.events.length === 0) this.endPlayback();
+      })
+    );
+    this.cleanup.push(bus.on('tactics:playback-skip', () => this.endPlayback()));
+    this.cleanup.push(
       bus.on<TacticsHoverPayload>('tactics:hover', (hover) => (this.hover = hover))
     );
+  }
+
+  /** Ends a playback (finished or skipped): the page's scene shows again. */
+  private endPlayback(): void {
+    if (!this.play) return;
+    this.play = null;
+    this.bus?.emit('tactics:playback-done', {});
   }
 
   onDestroy(): void {
@@ -228,7 +250,20 @@ export class TacticsBoardSystem extends BaseSystem {
   }
 
   onUpdate({ctx, deltaTime}: SystemContext): void {
-    const {fight} = this.scene;
+    let playing: Playback | null = null;
+    if (this.play) {
+      const before = this.play.display;
+      if (this.play.step(deltaTime)) {
+        playing = this.play;
+        if (playing.display.currentSlot !== before.currentSlot)
+          this.startAdvance(before, playing.display);
+      } else {
+        this.endPlayback();
+      }
+    }
+    // While playing back, the board shows the events' fight, without the page's highlights.
+    const scene: BoardScene = playing ? playbackScene(playing) : this.scene;
+    const {fight} = scene;
     if (!fight) return;
     this.time += deltaTime;
     if (this.advance) {
@@ -244,33 +279,34 @@ export class TacticsBoardSystem extends BaseSystem {
       drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1, t);
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
-    const previewedTo = new Map(this.scene.preview.map((p) => [p.unitId, p]));
+    const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
     for (const u of fight.units) {
-      const hex = this.scene.positions?.[u.id] ?? u.hex;
+      const hex = scene.positions?.[u.id] ?? u.hex;
       if (!u.alive || !hex) continue;
       const p = previewedTo.get(u.id);
       const moved = Boolean(p?.to && hexKey(p.to) !== hexKey(hex));
       tintHex(ctx, hex, SIDE_TINT[u.side], moved || p?.killed ? 0.4 : 1);
       if (p?.to && moved && !p.killed) tintHex(ctx, p.to, SIDE_TINT[u.side], 0.7);
     }
-    for (const h of this.scene.highlights) fillHex(ctx, h.hex, HIGHLIGHT[h.kind]);
+    for (const h of scene.highlights) fillHex(ctx, h.hex, HIGHLIGHT[h.kind]);
     // The hovered hex's outline goes under the units, so it never crosses a sprite.
     if (this.hover.hex) fillHex(ctx, this.hover.hex, HOVER);
-    for (const a of this.scene.arrows ?? []) drawArrow(ctx, a.from, a.to, a.hits);
+    for (const a of scene.arrows ?? []) drawArrow(ctx, a.from, a.to, a.hits);
     for (const u of fight.units) if (u.alive && u.charging) drawCharge(ctx, u);
 
-    const previewed = new Map(this.scene.preview.map((p) => [p.unitId, p]));
+    const previewed = new Map(scene.preview.map((p) => [p.unitId, p]));
     const acting = fight.awaiting;
     for (const u of fight.units) {
-      const hex = this.scene.positions?.[u.id] ?? u.hex;
+      const hex = scene.positions?.[u.id] ?? u.hex;
       if (!u.alive || !hex) continue;
       const p = previewed.get(u.id);
       const moved = p && p.to && hexKey(p.to) !== hexKey(hex);
       drawUnit(ctx, u, hex, {
         acting: u.id === acting,
-        selected: u.id === this.scene.selectedUnitId || u.id === this.hover.unitId,
+        selected: u.id === scene.selectedUnitId || u.id === this.hover.unitId,
         faded: Boolean(moved || p?.killed),
         frame: this.still ? 0 : idleFrame(u.id, this.time),
+        ...(playing ? {at: steppingAt(playing, u.id)} : {}),
       });
       if (p && moved && !p.killed)
         drawUnit(ctx, u, p.to!, {
@@ -286,19 +322,21 @@ export class TacticsBoardSystem extends BaseSystem {
       }
     }
 
+    if (playing) drawPlaybackEvent(ctx, playing);
+
     // Health and statuses show only on the unit whose turn it is, the unit
     // being looked at (hovered on the board or the track, or tapped), and
     // whoever an attack being aimed could hit.
     // Where it ends up when the turn moves it.
     const looked = new Set<string>();
     if (fight.awaiting) looked.add(fight.awaiting);
-    if (this.scene.inspectedUnitId) looked.add(this.scene.inspectedUnitId);
-    for (const id of this.scene.healthUnitIds ?? []) looked.add(id);
+    if (scene.inspectedUnitId) looked.add(scene.inspectedUnitId);
+    for (const id of scene.healthUnitIds ?? []) looked.add(id);
     if (this.hover.unitId) looked.add(this.hover.unitId);
-    const hovered = this.hover.hex && unitAt(fight, this.hover.hex, this.scene.positions);
+    const hovered = this.hover.hex && unitAt(fight, this.hover.hex, scene.positions);
     if (hovered) looked.add(hovered.id);
     for (const u of fight.units) {
-      const hex = this.scene.positions?.[u.id] ?? u.hex;
+      const hex = scene.positions?.[u.id] ?? u.hex;
       if (!u.alive || !hex || !looked.has(u.id)) continue;
       const p = previewed.get(u.id);
       const at = p?.to && !p.killed ? p.to : hex;
@@ -309,7 +347,7 @@ export class TacticsBoardSystem extends BaseSystem {
     }
 
     const badgesAt = new Map<string, number>();
-    for (const step of this.scene.steps ?? []) {
+    for (const step of scene.steps ?? []) {
       const k = hexKey(step.hex);
       const i = badgesAt.get(k) ?? 0;
       badgesAt.set(k, i + 1);
@@ -320,17 +358,17 @@ export class TacticsBoardSystem extends BaseSystem {
       drawTrack(
         ctx,
         fight,
-        trackCards(fight, this.scene.previewSlot ?? null),
-        this.scene.previewSlot ?? null,
-        this.scene.aimSlot ?? null,
+        trackCards(fight, scene.previewSlot ?? null),
+        scene.previewSlot ?? null,
+        scene.aimSlot ?? null,
         this.advance,
         {
-          selected: this.scene.selectedUnitId,
+          selected: scene.selectedUnitId,
           hovered: this.hover.unitId,
         }
       );
     }
-    if (this.hover.hex) drawHover(ctx, fight, this.hover.hex, this.scene.positions);
+    if (this.hover.hex) drawHover(ctx, fight, this.hover.hex, scene.positions);
   }
 }
 
@@ -947,6 +985,132 @@ function drawCharge(ctx: CanvasRenderingContext2D, u: Unit): void {
   label(ctx, ABILITIES[ability].name, c.x, c.y + 24 * HEX_SCALE, SIDE_COLOR[u.side], 10);
 }
 
+/** The page's scene during a playback: the events' fight, health on whoever the event is about. */
+function playbackScene(play: Playback): BoardScene {
+  const e = play.current;
+  return {
+    fight: play.display,
+    highlights: [],
+    selectedUnitId: null,
+    preview: [],
+    healthUnitIds: e && e.kind !== 'death' ? [e.unitId] : [],
+  };
+}
+
+const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+
+/** Where a unit is drawn while a playback moves it (between two hexes), or undefined. */
+function steppingAt(play: Playback, unitId: string): {x: number; y: number} | undefined {
+  const e = play.current;
+  if (e?.kind !== 'step' || e.unitId !== unitId) return undefined;
+  const k = play.progress;
+  // A push snaps away and slows; the rest move evenly.
+  const t = e.how === 'push' ? 1 - (1 - k) * (1 - k) : k;
+  const a = center(e.from);
+  const b = center(e.to);
+  // A thrown unit arcs through the air.
+  const lift = e.how === 'throw' ? Math.sin(Math.PI * k) * 26 : 0;
+  return {x: Math.round(lerp(a.x, b.x, t)), y: Math.round(lerp(a.y, b.y, t) - lift)};
+}
+
+/** Areas the playback lights up when an ability lands (its radius around the target). */
+const PLAYBACK_RADIUS: Partial<Record<AbilityId, number>> = {
+  volley: ABILITY.volley.radius,
+  freeze: ABILITY.freeze.radius,
+  fog: ABILITY.fog.radius,
+};
+
+/**
+ * What the event showing now adds over the board: the name of whoever's
+ * turn it is, an ability's name and the area or line it strikes, a hit's
+ * number rising with a red flash, healing in green, a fallen unit fading.
+ */
+function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void {
+  const e = play.current;
+  if (!e) return;
+  const k = play.progress;
+  const fight = play.display;
+  const map = MAPS[fight.mapId]!;
+  const u = fight.units.find((v) => v.id === e.unitId);
+  if (!u) return;
+  const titleY = (h: Hex) => center(h).y - (HEALTH_BAR.y + HEALTH_BAR.h + 12);
+  const title = (h: Hex, text: string, color: string) => {
+    ctx.save();
+    ctx.globalAlpha = k < 0.75 ? 1 : (1 - k) * 4;
+    const c = center(h);
+    ctx.font = 'bold 12px system-ui, sans-serif';
+    const w = ctx.measureText(text).width + 12;
+    ctx.fillStyle = 'rgba(17,24,39,0.85)';
+    ctx.fillRect(c.x - w / 2, titleY(h) - 9, w, 18);
+    label(ctx, text, c.x, titleY(h), color, 12, true);
+    ctx.restore();
+  };
+  switch (e.kind) {
+    case 'turn':
+      if (u.hex)
+        title(
+          u.hex,
+          `${u.side === 'player' ? 'Your' : 'Enemy'} ${HEROES[u.hero].name}`,
+          SIDE_COLOR[u.side]
+        );
+      return;
+    case 'action':
+    case 'charge': {
+      const def = ABILITIES[e.ability];
+      const name = e.kind === 'charge' ? `Charging ${def.name}` : def.name;
+      if (u.hex) title(u.hex, name, e.kind === 'charge' ? '#d8b4fe' : '#fde047');
+      if (!e.target) return;
+      const radius = PLAYBACK_RADIUS[e.ability] ?? 0;
+      ctx.save();
+      ctx.globalAlpha = 1 - k * 0.6;
+      for (const h of map.hexes)
+        if (hexDistance(h, e.target) <= radius)
+          fillHex(ctx, h, e.kind === 'charge' ? HIGHLIGHT.target : HIGHLIGHT.area);
+      ctx.restore();
+      // An arrow flying from the bow to its mark.
+      if (e.ability === 'bow' && u.hex && k < 0.7) {
+        const a = center(u.hex);
+        const b = center(e.target);
+        const t = k / 0.7;
+        const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        const dx = ((b.x - a.x) / len) * 14;
+        const dy = ((b.y - a.y) / len) * 14;
+        const x = lerp(a.x, b.x, t);
+        const y = lerp(a.y, b.y, t) - 18;
+        ctx.save();
+        ctx.strokeStyle = '#fde68a';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x - dx, y - dy);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.restore();
+      }
+      return;
+    }
+    case 'damage':
+    case 'heal': {
+      if (!u.hex) return;
+      const c = center(u.hex);
+      if (e.kind === 'damage') tintHex(ctx, u.hex, 'rgba(239,68,68,0.55)', 1 - k);
+      const amount = e.kind === 'damage' ? e.amount : -e.amount;
+      drawDamage(ctx, c.x, c.y - 22 - k * 16, amount, e.kind === 'damage' && u.hp === 0);
+      return;
+    }
+    case 'death':
+      drawUnit(ctx, u, e.hex, {
+        acting: false,
+        selected: false,
+        faded: false,
+        frame: 0,
+        alpha: 1 - k,
+      });
+      return;
+    case 'step':
+      return;
+  }
+}
+
 /** Seconds each idle frame shows. */
 const IDLE_FRAME_SECONDS = 0.6;
 
@@ -971,19 +1135,25 @@ function drawUnit(
     ghost?: boolean;
     /** The sprite sheet's frame to show (wraps around the sheet's frames). */
     frame: number;
+    /** Where to draw it instead of its hex, mid-move in a playback; no hex border then. */
+    at?: {x: number; y: number} | undefined;
+    /** Opacity, for a unit fading out as it falls. */
+    alpha?: number;
   }
 ): void {
-  const c = center(hex);
+  const c = opts.at ?? center(hex);
   ctx.save();
-  ctx.globalAlpha = opts.faded ? 0.35 : opts.ghost ? 0.85 : 1;
-  // The hex's border: yellow on the unit whose turn it is, white when
-  // selected, otherwise its side's colour (the hex is tinted to match).
-  hexPath(ctx, hex, 2.5);
-  if (opts.ghost) ctx.setLineDash([5, 4]);
-  ctx.strokeStyle = opts.acting ? '#fde047' : opts.selected ? '#ffffff' : SIDE_COLOR[u.side];
-  ctx.lineWidth = opts.acting || opts.selected ? 3.5 : 3;
-  ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.globalAlpha = (opts.faded ? 0.35 : opts.ghost ? 0.85 : 1) * (opts.alpha ?? 1);
+  if (!opts.at) {
+    // The hex's border: yellow on the unit whose turn it is, white when
+    // selected, otherwise its side's colour (the hex is tinted to match).
+    hexPath(ctx, hex, 2.5);
+    if (opts.ghost) ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = opts.acting ? '#fde047' : opts.selected ? '#ffffff' : SIDE_COLOR[u.side];
+    ctx.lineWidth = opts.acting || opts.selected ? 3.5 : 3;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
   const sprite = HERO_SPRITE[u.hero];
   const img = sprite && assetLoader.requestImage(sprite);
   if (img) {

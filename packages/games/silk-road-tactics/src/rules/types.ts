@@ -87,6 +87,32 @@ export interface LogEntry {
   text: string;
 }
 
+/**
+ * How a unit came to enter a hex: walked, pushed by a hit, thrown, or
+ * rushing several hexes at once (Dash, Rampage).
+ */
+export type Motion = 'walk' | 'push' | 'throw' | 'rush';
+
+/** Something that happened on the board, in the order the rules resolved it. */
+export type FightEvent =
+  | {kind: 'turn'; unitId: string}
+  | {kind: 'step'; unitId: string; from: Hex; to: Hex; how: Motion}
+  | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex; charged?: boolean}
+  | {kind: 'charge'; unitId: string; ability: AbilityId; target: Hex}
+  | {kind: 'damage'; unitId: string; amount: number}
+  | {kind: 'heal'; unitId: string; amount: number}
+  | {kind: 'death'; unitId: string; hex: Hex};
+
+/** What the board looks like right after an event: enough to draw it, not to play on. */
+export interface BoardSnapshot {
+  currentSlot: number;
+  units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'charging'>[];
+  effects: HailEffect[];
+  fog: FogEffect[];
+}
+
+export type RecordedEvent = FightEvent & {after: BoardSnapshot};
+
 export type FightPhase = 'deploy' | 'fight' | 'won' | 'lost';
 
 export interface FightState {
@@ -100,6 +126,12 @@ export interface FightState {
   /** Fog hexes; missing in a fight saved before fog existed. */
   fog: FogEffect[];
   log: LogEntry[];
+  /**
+   * What the last action set off, the player's turn and the AI turns after
+   * it, for the page to play back. Only the server's fight records (the run
+   * starts the list each action); copies for previews and the AI don't.
+   */
+  events?: RecordedEvent[];
   /** The human-controlled unit whose turn the track has stopped on. */
   awaiting: string | null;
 }

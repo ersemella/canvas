@@ -202,7 +202,7 @@ const dash: AbilityDef = {
   },
   resolve(ctx, user, target) {
     // Hexes passed have no effect; the one it ends on does.
-    enterHex(ctx, user, target.hex!);
+    enterHex(ctx, user, target.hex!, true, 'rush');
     log(ctx, `${unitName(user)} dashes.`);
   },
 };
@@ -344,7 +344,7 @@ const throwAbility: AbilityDef = {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
     hit(ctx, user, u, ABILITY.throw.damage, false, 'The throw');
-    if (u.alive) enterHex(ctx, u, target.to!);
+    if (u.alive) enterHex(ctx, u, target.to!, true, 'throw');
   },
 };
 
@@ -423,7 +423,7 @@ const rampage: AbilityDef = {
       if (!unitAt(ctx.state, pos)) lastFree = pos;
     }
     // Ends on the last free hex it passed if the last one is taken.
-    if (user.alive) enterHex(ctx, user, lastFree);
+    if (user.alive) enterHex(ctx, user, lastFree, true, 'rush');
   },
 };
 
