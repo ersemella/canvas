@@ -337,12 +337,16 @@ confirm or change:
   typical turn, so a cheap Hold doesn't look safe) could deal where it
   ends, times the share of its health, times its hero's caution
   (`AI.caution`, 0 for the Bökh Champion, which otherwise Held on 44% of
-  its turns). The search is capped
-  in simulated options (130 per AI turn, 260 per request, at least 40
-  each; owner's call; 150 and 300 before the lookahead), a count rather than a time so fights stay
-  deterministic: over ~3,800 AI-vs-AI requests before the lookahead, median 1.3 ms, 99th
-  percentile 5.7 ms, none above 10 ms; the lower caps keep requests as
-  fast with it.
+  its turns). This heuristic now ranks candidates for a **selective
+  alpha-beta search** (2026-10-20): four candidates per node, actual future
+  timeline decisions, two decisions including the root then three if work
+  remains. A request shares 220 work units, at most 110 per AI turn;
+  exhaustion retains the last complete iteration or uses a legal Hold.
+  Root screening tries up to 48 actions; reply screening up to eight.
+  Charged previews are separate from faithful timeline states. Details,
+  regression coverage and the local performance comparison are in
+  [ai-search.md](ai-search.md). These deterministic work caps are locally
+  calibrated, with production CPU errors still to be monitored.
 - **Balance measurements** (2026-10-20) play each random deployment
   twice, once with each side first on speed ties: the side that moved
   first on a tie used to lose 60–67% of AI-vs-AI fights, which tilted

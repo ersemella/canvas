@@ -18,7 +18,8 @@
   "scripts": {
     "dev": "vite --config dev/vite.config.ts",
     "typecheck": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run",
+    "bench:ai": "vitest bench --run src/rules/ai.bench.ts"
   },
   "peerDependencies": {
     "@canvas/engine": "workspace:^"

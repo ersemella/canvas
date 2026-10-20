@@ -45,9 +45,18 @@ fight can be played. Balance means nothing until the real numbers are in.
 
 ### 3. CPU per request: capped (watch)
 
-The enemy AI runs inside the request. Its search is now capped (owner's
-call, 2026-10-19): one AI turn simulates at most 130 options and all the
-AI turns in one request share 260, each getting at least 40 (`AI` in
+The enemy AI runs inside the request. It now uses selective alpha-beta
+lookahead (2026-10-20): four candidates, two decisions including the root,
+then three if work remains; 110 work units per AI turn, 220 shared per
+request, with Hold when exhausted. Charges and automatic effects use the
+real timeline. See [ai-search.md](ai-search.md) for the algorithm,
+regressions and local whole-request comparison (p99 elapsed 6.24 →
+5.36 ms; p99 process CPU 9.13 → 9.08 ms). This is local calibration, not a
+hard production CPU guarantee; continue watching 1102/`exceededCpu`.
+
+Before this search, the cap was set by the owner's
+call (2026-10-19): one AI turn simulated at most 130 options and all the
+AI turns in one request shared 260, each getting at least 40 (`AI` in
 `config.ts`; 150 and 300 until the lookahead, 2026-10-20). Over about
 3,800 AI-vs-AI requests before the lookahead: median 1.3 ms, 99th
 percentile 5.7 ms, worst 10.0 ms, none over the Free plan's 10 ms

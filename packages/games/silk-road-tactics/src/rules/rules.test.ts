@@ -753,10 +753,10 @@ describe('previews, the AI and the run', () => {
     const first = chooseAiTurn(run.fight, enemy, budget);
     expect(budget.left).toBeLessThan(AI.requestSimulations);
     expect(AI.requestSimulations - budget.left).toBeLessThanOrEqual(AI.maxSimulations);
-    // An exhausted budget still allows the minimum search, and the same budget gives the same choice.
+    // Exhaustion never spends beyond the request budget; Hold is always legal.
     const starved = {left: 0};
-    chooseAiTurn(run.fight, enemy, starved);
-    expect(-starved.left).toBeLessThanOrEqual(AI.minSimulations);
+    expect(chooseAiTurn(run.fight, enemy, starved)).toEqual({action: {ability: 'hold'}});
+    expect(starved.left).toBe(0);
     expect(chooseAiTurn(run.fight, enemy, {left: AI.requestSimulations})).toEqual(first);
   });
 

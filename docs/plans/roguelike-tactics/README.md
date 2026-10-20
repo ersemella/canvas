@@ -58,6 +58,7 @@ Always read this file first. Then:
 | What's broken or waiting on the owner | [owner-decisions.md](owner-decisions.md) |
 | Any design work | [goals.md](goals.md) (design goals, intended feel, types of fun) |
 | Looking up a term | [glossary.md](glossary.md): look up, don't read through |
+| AI lookahead, pruning, work caps and performance | [ai-search.md](ai-search.md) |
 | Turn order, speed, what a turn can do | [timeline.md](timeline.md) |
 | Maps, movement, line of fire, deployment | [map.md](map.md) |
 | Visibility, previews, randomness | [information.md](information.md) |
