@@ -63,6 +63,9 @@ const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
   hail: 0,
 };
 
+/** Abilities that deal damage: aiming one shows every enemy's health. */
+const isAttack = (id: AbilityId) => 'damage' in ABILITY[id] || 'damagePerSlot' in ABILITY[id];
+
 /**
  * Silk Road Tactics: one fight against the AI (Phase 1). The run lives on
  * the server (a RunRoom); this page draws its view, previews turns with the
@@ -431,6 +434,7 @@ export function TacticsPage() {
       highlights,
       selectedUnitId: selectedId ?? acting?.id ?? null,
       inspectedUnitId: selectedId,
+      healthSide: acting && ability && isAttack(ability) ? 'enemy' : null,
       preview: [],
       previewSlot: preview?.slot ?? null,
       aimSlot: preview?.aimSlot ?? null,

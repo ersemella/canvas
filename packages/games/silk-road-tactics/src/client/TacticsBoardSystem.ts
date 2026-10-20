@@ -42,6 +42,8 @@ export interface BoardScene {
   selectedUnitId: string | null;
   /** The unit tapped to look at (touch can't hover): it shows its health bar, as a hovered one does. */
   inspectedUnitId?: string | null;
+  /** Every living unit of this side shows its health bar (aiming an attack). */
+  healthSide?: Unit['side'] | null;
   /** Previewed outcome: where units end up and their health. */
   preview: {unitId: string; to: Hex | null; hpAfter: number; hpBefore: number; killed: boolean}[];
   /** Units shown at other hexes than the fight's (deployment being arranged). */
@@ -225,7 +227,8 @@ export class TacticsBoardSystem extends BaseSystem {
     }
 
     // Health shows only on the unit being looked at: hovered (on the board
-    // or the track) or tapped. Where it ends up when the turn moves it.
+    // or the track) or tapped, and on the side an attack is being aimed at.
+    // Where it ends up when the turn moves it.
     const looked = new Set<string>();
     if (this.scene.inspectedUnitId) looked.add(this.scene.inspectedUnitId);
     if (this.hover.unitId) looked.add(this.hover.unitId);
@@ -233,7 +236,7 @@ export class TacticsBoardSystem extends BaseSystem {
     if (hovered) looked.add(hovered.id);
     for (const u of fight.units) {
       const hex = this.scene.positions?.[u.id] ?? u.hex;
-      if (!u.alive || !hex || !looked.has(u.id)) continue;
+      if (!u.alive || !hex || !(looked.has(u.id) || u.side === this.scene.healthSide)) continue;
       const p = previewed.get(u.id);
       drawHealthBar(ctx, u, p?.to && !p.killed ? p.to : hex, p?.hpBefore ?? u.hp, p?.hpAfter);
     }
@@ -557,7 +560,7 @@ function drawHover(
   const unit = unitAt(fight, h, positions);
   if (unit) {
     // The side shows in the colour, as on the board: just the hero's name
-    // (its health is on the bar over it).
+    // (its health is the bar over it).
     lines.push({text: HEROES[unit.hero].name, color: SIDE_COLOR[unit.side], bold: true});
   }
   const tile = tileAt(map, h);
@@ -773,9 +776,10 @@ function unitAt(fight: FightState, h: Hex, positions?: Record<string, Hex>): Uni
 }
 
 /**
- * A looked-at unit's health, floating above its sprite and status markers,
- * with the numbers on it. A previewed change shows the health it would
- * lose as a pale stretch past the bar's end (or gain, in green).
+ * A looked-at unit's health, floating above its sprite and status markers;
+ * just the bar (the numbers are in the page's details). A previewed change
+ * shows the health it would lose as a pale stretch past the bar's end (or
+ * gain, in green).
  */
 function drawHealthBar(
   ctx: CanvasRenderingContext2D,
@@ -804,17 +808,6 @@ function drawHealthBar(
   }
   ctx.fillStyle = f > 0.5 ? '#4ade80' : f > 0.25 ? '#facc15' : '#f87171';
   ctx.fillRect(x, y, w * Math.min(f, frac(hp)), h);
-  ctx.restore();
-  ctx.save();
-  ctx.font = 'bold 9px system-ui, sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.strokeStyle = 'rgba(17,24,39,0.9)';
-  ctx.lineWidth = 2.5;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  const text = `${Math.max(0, after)}/${u.maxHp}`;
-  ctx.strokeText(text, c.x, y + h / 2 + 0.5);
-  ctx.fillText(text, c.x, y + h / 2 + 0.5);
   ctx.restore();
 }
 
