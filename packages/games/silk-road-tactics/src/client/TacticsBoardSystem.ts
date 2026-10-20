@@ -121,7 +121,7 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
 const HEALTH_BAR = {w: 60, h: 10, y: 50};
 /** Status markers in a row above the health bar: their radius, and the gap between centres. */
 const MARK = {r: 6.5, step: 15};
-/** Seconds an expired status's marker takes to rise off its unit and fade. */
+/** Seconds a gone status's marker takes to rise off its unit and fade. */
 const MARK_EXPIRE_SECONDS = 0.9;
 /** How many pixels it rises meanwhile. */
 const MARK_EXPIRE_RISE = 18;
@@ -175,7 +175,7 @@ interface CardSlide {
 }
 
 /**
- * A status that just expired: its marker rises off the unit and fades,
+ * A status that just went (expired or cleansed): its marker rises off the unit and fades,
  * shown whether or not the unit is looked at, so it's plain it has gone.
  */
 interface MarkExpiry {
@@ -216,9 +216,9 @@ export class TacticsBoardSystem extends BaseSystem {
   private advance: TrackAdvance | null = null;
   /** Cards sliding to their units' new slots, by unit. */
   private slides = new Map<string, CardSlide>();
-  /** Expired statuses' markers fading away. */
+  /** Gone statuses' markers fading away. */
   private expiries: MarkExpiry[] = [];
-  /** The fight drawn last frame, to see which statuses expired since. */
+  /** The fight drawn last frame, to see which statuses went since. */
   private shown: FightState | null = null;
   /** Seconds since the board started, for the units' idle animations. */
   private time = 0;
@@ -308,22 +308,20 @@ export class TacticsBoardSystem extends BaseSystem {
     this.advance = {from, to: after.currentSlot, spent, elapsed: 0};
   }
 
-  /** Each status that ended as the track moved from `before` to `after` starts fading off its unit. */
+  /** Each status that went (expired or cleansed) from `before` to `after` starts fading off its unit. */
   private startExpiries(before: FightState | null, after: FightState): void {
-    if (!before || before.mapId !== after.mapId || after.currentSlot <= before.currentSlot) return;
+    // Not across fights, nor back in time.
+    if (!before || before.mapId !== after.mapId || after.currentSlot < before.currentSlot) return;
     for (const u of after.units) {
       const was = before.units.find((v) => v.id === u.id);
       if (!u.alive || !was?.alive) continue;
       const marks = statusMarks(before, was);
       const now = new Set(statusMarks(after, u).map(([m]) => m));
       marks.forEach((mark, index) => {
-        const kind = STATUS_KINDS.find((k) => STATUS_MARK[k][0] === mark[0]);
-        if (!kind || now.has(mark[0])) return;
-        // Expired, not cleansed: every status of its kind ended before the slot now.
-        const ended = was.statuses
-          .filter((st) => st.kind === kind)
-          .every((st) => st.untilSlot < after.currentSlot);
-        if (ended) this.expiries.push({unitId: u.id, mark, index, count: marks.length, elapsed: 0});
+        // Flanked isn't a status: it comes and goes as units move.
+        const status = STATUS_KINDS.some((k) => STATUS_MARK[k][0] === mark[0]);
+        if (status && !now.has(mark[0]))
+          this.expiries.push({unitId: u.id, mark, index, count: marks.length, elapsed: 0});
       });
     }
   }
@@ -363,8 +361,7 @@ export class TacticsBoardSystem extends BaseSystem {
     const t = this.still ? null : this.time;
     for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), t);
     for (const fog of fight.fog ?? []) drawFog(ctx, fog.hex, t);
-    for (const effect of fight.effects)
-      drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1, t);
+    for (const effect of fight.effects) drawHail(ctx, effect.hex, t);
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
     const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
@@ -1061,22 +1058,12 @@ function drawFog(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): vo
   else fillHex(ctx, h, {fill: 'rgba(203,213,225,0.35)', stroke: 'rgba(226,232,240,0.6)'});
 }
 
-function drawHail(
-  ctx: CanvasRenderingContext2D,
-  h: Hex,
-  slotsLeft: number,
-  time: number | null
-): void {
+function drawHail(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): void {
   const at = center(h);
   const img = assetLoader.requestImage(hailImage);
   if (img) {
     drawHexImage(ctx, h, img);
     if (time !== null) drawFallingHail(ctx, h, time);
-    ctx.save();
-    ctx.translate(at.x, at.y);
-    ctx.scale(HEX_SCALE, HEX_SCALE);
-    label(ctx, `${slotsLeft}`, 18, -20, '#0c4a6e', 10);
-    ctx.restore();
     return;
   }
   fillHex(ctx, h, {fill: 'rgba(186,230,253,0.45)', stroke: '#7dd3fc'});
@@ -1096,7 +1083,6 @@ function drawHail(
     ctx.arc(c.x + dx, c.y + dy, 2.2, 0, Math.PI * 2);
     ctx.fill();
   }
-  label(ctx, `${slotsLeft}`, c.x + 18, c.y - 20, '#0c4a6e', 10);
   ctx.restore();
 }
 
