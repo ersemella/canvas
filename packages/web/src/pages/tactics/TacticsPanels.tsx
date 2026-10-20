@@ -44,16 +44,24 @@ const sideColor = (u: Unit) => (u.side === 'player' ? 'blue' : 'red');
  * The outcome itself is drawn on the board (7.2).
  */
 export function ConfirmButton(props: {
-  /** No action ready (nothing picked, or no hex for it yet): the button ends the turn with Hold. */
+  /** Nothing picked: the button ends the turn with Hold. */
   endTurn: boolean;
   fight: FightState;
   preview: TurnPreview | null;
+  /** What Move or the chosen ability still needs picked on the board, if anything: disabled, saying so. */
+  needsTarget: string | null;
   busy: boolean;
   /** Phones: full height for a thumb. */
   size?: 'sm' | 'lg';
   onConfirm: () => void;
 }) {
   const {fight, preview} = props;
+  if (props.needsTarget)
+    return (
+      <Button color="yellow" fw="bold" size={props.size ?? 'sm'} disabled>
+        {props.needsTarget}
+      </Button>
+    );
   const now = fight.currentSlot;
   const slot = preview?.slot ?? null;
   const aim = preview?.aimSlot ?? slot;

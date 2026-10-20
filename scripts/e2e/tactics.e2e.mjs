@@ -732,6 +732,10 @@ try {
   // A planned move shows what it adds, in slots, inside the Move button.
   {
     await phoneMove.click();
+    check(
+      'phone: with Move on and no hex yet, Confirm stays, disabled, saying what to pick',
+      await phone.getByRole('button', {name: 'Pick where to move'}).isDisabled()
+    );
     const free = await phone.evaluate(
       () => window.__tactics.reaches.find((r) => r.path.length > 0).hex
     );
@@ -776,8 +780,8 @@ try {
   await phone.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
   check(
-    'phone: with no target yet, the button still ends the turn (as with Move)',
-    await phone.getByRole('button', {name: /^End turn/}).isEnabled()
+    'phone: with no target yet, Confirm stays, disabled, saying what to pick',
+    await phone.getByRole('button', {name: 'Pick a target'}).isDisabled()
   );
   {
     const after = await phone

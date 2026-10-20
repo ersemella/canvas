@@ -269,18 +269,29 @@ export function TacticsPage() {
   }, [ability, abilityContext]);
 
   /**
-   * There's no Hold button: with no action ready (nothing picked, or Move or
-   * an ability still waiting on its hex), the button ends the turn with Hold.
+   * What Move or the chosen ability still needs picked on the board: until
+   * then the button is disabled, saying so, rather than ending the turn.
    */
-  const endsWithHold = !action && !plannedMove;
+  const needsTarget =
+    moving && !plannedMove
+      ? 'Pick where to move'
+      : ability && !action
+        ? ability === 'throw' && target?.hex
+          ? 'Pick where to throw'
+          : 'Pick a target'
+        : null;
 
-  const input: TurnInput = useMemo(() => {
+  /** There's no Hold button: with nothing picked, the button ends the turn with Hold. */
+  const endsWithHold = !ability && !moving && !plannedMove;
+
+  const input: TurnInput | null = useMemo(() => {
+    if (needsTarget) return null;
     const out: TurnInput = {action: action ?? {ability: 'hold', target: {}}};
     if (plannedMove && plannedMove.path.length > 0) {
       out.move = plannedMove.path;
     }
     return out;
-  }, [action, ability, plannedMove]);
+  }, [action, needsTarget, plannedMove]);
 
   const preview = useMemo(
     () => (fight && acting && input ? previewTurn(fight, acting.id, input) : null),
@@ -677,6 +688,7 @@ export function TacticsPage() {
       >
         <ConfirmButton
           endTurn={endsWithHold}
+          needsTarget={needsTarget}
           fight={fight}
           preview={preview}
           busy={busy || playing}
