@@ -417,8 +417,6 @@ function drawTrack(
       // and a card sliding to the front carries its unit across to the middle.
       const back = Math.min(1, i);
       const mid = cx + deck.cardW / 2 + back * (deck.cardW / 2 - deck.w / 2);
-      const barX = cx + 5 + back * (deck.cardW - deck.w - 2);
-      const barW = deck.cardW - 10 - back * (deck.cardW - deck.w - 4);
       const r = Math.min(11, deck.w / 2 - 2);
       if (ghost) ctx.globalAlpha = 0.8;
       ctx.beginPath();
@@ -429,13 +427,6 @@ function drawTrack(
       ctx.lineWidth = 1.5;
       ctx.stroke();
       label(ctx, HEROES[u.hero].letter, mid, cy + deck.h / 2 - 3, '#ffffff', 11, true);
-      if (!ghost) {
-        const frac = Math.max(0, u.hp / u.maxHp);
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(barX, cy + deck.h - 10, barW, 3);
-        ctx.fillStyle = frac > 0.5 ? '#4ade80' : frac > 0.25 ? '#facc15' : '#f87171';
-        ctx.fillRect(barX, cy + deck.h - 10, barW * frac, 3);
-      }
       // A charging card: its ability triggers when this slot comes up.
       if (u.charging && !ghost) label(ctx, '!', cx + deck.cardW - 5, cy + 8, '#d8b4fe', 12, true);
     }
@@ -447,8 +438,8 @@ function drawTrack(
 
 /**
  * A card that yields (3.3): the strip of the slot its cost aimed at,
- * outlined dashed, and an arrow along the deck's foot from there to where
- * it lands, over the cards in the way.
+ * outlined dashed, and an arrow below the units from there to where it
+ * lands, over the cards in the way.
  */
 function drawYield(
   ctx: CanvasRenderingContext2D,
@@ -466,7 +457,7 @@ function drawYield(
   roundRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
   ctx.stroke();
   ctx.setLineDash([]);
-  const y = deck.y + deck.h - 4;
+  const y = deck.y + deck.h - 18;
   const x1 = mid(aim);
   const x2 = mid(land) - 4;
   // Dark under yellow, so it reads over any card.
