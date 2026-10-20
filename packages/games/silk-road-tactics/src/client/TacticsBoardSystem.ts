@@ -42,8 +42,8 @@ export interface BoardScene {
   selectedUnitId: string | null;
   /** The unit tapped to look at (touch can't hover): it shows its health bar, as a hovered one does. */
   inspectedUnitId?: string | null;
-  /** Every living unit of this side shows its health bar (aiming an attack). */
-  healthSide?: Unit['side'] | null;
+  /** Units that show their health bar however they're looked at (an attack's targets while aiming). */
+  healthUnitIds?: string[];
   /** Previewed outcome: where units end up and their health. */
   preview: {unitId: string; to: Hex | null; hpAfter: number; hpBefore: number; killed: boolean}[];
   /** Units shown at other hexes than the fight's (deployment being arranged). */
@@ -232,16 +232,17 @@ export class TacticsBoardSystem extends BaseSystem {
     }
 
     // Health shows only on the unit being looked at: hovered (on the board
-    // or the track) or tapped, and on the side an attack is being aimed at.
+    // or the track) or tapped, and on whoever an attack being aimed could hit.
     // Where it ends up when the turn moves it.
     const looked = new Set<string>();
     if (this.scene.inspectedUnitId) looked.add(this.scene.inspectedUnitId);
+    for (const id of this.scene.healthUnitIds ?? []) looked.add(id);
     if (this.hover.unitId) looked.add(this.hover.unitId);
     const hovered = this.hover.hex && unitAt(fight, this.hover.hex, this.scene.positions);
     if (hovered) looked.add(hovered.id);
     for (const u of fight.units) {
       const hex = this.scene.positions?.[u.id] ?? u.hex;
-      if (!u.alive || !hex || !(looked.has(u.id) || u.side === this.scene.healthSide)) continue;
+      if (!u.alive || !hex || !looked.has(u.id)) continue;
       const p = previewed.get(u.id);
       drawHealthBar(ctx, u, p?.to && !p.killed ? p.to : hex, p?.hpBefore ?? u.hp, p?.hpAfter);
     }

@@ -63,7 +63,7 @@ const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
   hail: 0,
 };
 
-/** Abilities that deal damage: aiming one shows every enemy's health. */
+/** Abilities that deal damage: aiming one shows the health of whoever it could hit. */
 const isAttack = (id: AbilityId) => 'damage' in ABILITY[id] || 'damagePerSlot' in ABILITY[id];
 
 /**
@@ -434,7 +434,6 @@ export function TacticsPage() {
       highlights,
       selectedUnitId: selectedId ?? acting?.id ?? null,
       inspectedUnitId: selectedId,
-      healthSide: acting && ability && isAttack(ability) ? 'enemy' : null,
       preview: [],
       previewSlot: preview?.slot ?? null,
       aimSlot: preview?.aimSlot ?? null,
@@ -448,6 +447,19 @@ export function TacticsPage() {
     }
     for (const r of inspectReach) highlights.push({hex: r.hex, kind: 'inspect'});
     if (!acting) return out;
+    if (ability && isAttack(ability)) {
+      // Every enemy, and the allies in the line of fire: those it can target
+      // (the units the bow's lanes reach, a melee ability's neighbours) and
+      // those the aimed attack would hurt.
+      const ids = new Set(fight.units.filter((u) => u.side === 'enemy').map((u) => u.id));
+      if (ABILITIES[ability].targetsUnit && moved)
+        for (const t of targets) {
+          const u = t.hex && unitAt(moved.state, t.hex);
+          if (u) ids.add(u.id);
+        }
+      for (const c of preview?.changes ?? []) if (c.hpAfter < c.hpBefore) ids.add(c.unitId);
+      out.healthUnitIds = [...ids];
+    }
     for (const h of plannedMove?.path ?? []) highlights.push({hex: h, kind: 'path'});
     const onPath = (h: Hex) => plannedMove?.path.some((p) => hexEquals(p, h));
     if (moving) {
