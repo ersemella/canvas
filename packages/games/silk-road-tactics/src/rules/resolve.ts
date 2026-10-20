@@ -59,8 +59,10 @@ export function scaled(base: number, power: number): number {
 
 /**
  * An ability's hit (brief section 2): scaled base, then if ranged −50% if
- * the target is Obscured and −50% if the attacker is, then Vulnerable (max
- * of ability and flank), then defence; minimum 1. Each step rounds down.
+ * the target is Obscured, −50% if the attacker is, and −50% if it flew
+ * through an Obscured hex on the way (`crossed`, an arrow's hexes between
+ * the two; once however many), then Vulnerable (max of ability and flank),
+ * then defence; minimum 1. Each step rounds down.
  */
 export function abilityDamage(
   state: FightState,
@@ -68,12 +70,14 @@ export function abilityDamage(
   attacker: Unit,
   target: Unit,
   base: number,
-  ranged: boolean
+  ranged: boolean,
+  crossed: Hex[] = []
 ): number {
   let d = scaled(base, attacker.power);
   const less = (d: number) => Math.floor(d * (1 - RULES.obscuredReduction));
   if (ranged && target.hex && obscured(state, map, target.hex)) d = less(d);
   if (ranged && attacker.hex && obscured(state, map, attacker.hex)) d = less(d);
+  if (ranged && crossed.some((h) => obscured(state, map, h))) d = less(d);
   return throughDefence(state, target, d);
 }
 
@@ -105,10 +109,11 @@ export function hit(
   target: Unit,
   base: number,
   ranged: boolean,
-  what: string
+  what: string,
+  crossed: Hex[] = []
 ): void {
   if (!target.alive) return;
-  const d = abilityDamage(ctx.state, ctx.map, attacker, target, base, ranged);
+  const d = abilityDamage(ctx.state, ctx.map, attacker, target, base, ranged, crossed);
   applyDamage(ctx, target, d, `${what} hits ${unitName(target)} for ${d}`);
 }
 
@@ -147,7 +152,7 @@ export function checkEnd(state: FightState): void {
   else if (!state.units.some((u) => u.alive && u.side === 'player')) state.phase = 'lost';
 }
 
-/** Hail on a hex hits whoever is there, then applies its statuses (so its own Vulnerable waits for the next hit). */
+/** Hail on a hex hits whoever is there, then Slows it. */
 export function applyHail(ctx: Ctx, unit: Unit): void {
   if (!unit.alive || !unit.hex) return;
   const hail = ctx.state.effects.find((e) => hexEquals(e.hex, unit.hex!));
@@ -157,8 +162,7 @@ export function applyHail(ctx: Ctx, unit: Unit): void {
   if (!unit.alive) return;
   const untilSlot = ctx.slot + hail.statusSlots;
   addStatus(unit, {kind: 'slowed', value: hail.slowed, untilSlot});
-  addStatus(unit, {kind: 'vulnerable', value: hail.vulnerable, untilSlot});
-  log(ctx, `Hail batters ${unitName(unit)}: Slowed ${hail.slowed}, Vulnerable ${hail.vulnerable}%`);
+  log(ctx, `Hail batters ${unitName(unit)}: Slowed ${hail.slowed}`);
 }
 
 /** Quicksand under a unit, on entering (each slot on it is `damageEachSlot`). */

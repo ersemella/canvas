@@ -43,7 +43,7 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
   return {
     name: 'Hail',
     short: `${hail.damage ?? 0} damage, Slowed ${hail.slowed}`,
-    detail: `For ${left} more slot${left === 1 ? '' : 's'}: a unit here when it lands, entering it or starting its turn here takes ${hail.damage ?? 0} damage (before Vulnerable and defence), then is Slowed ${hail.slowed} and Vulnerable ${hail.vulnerable}% for ${hail.statusSlots} slots.`,
+    detail: `For ${left} more slot${left === 1 ? '' : 's'}: a unit here when it lands, entering it or starting its turn here takes ${hail.damage ?? 0} damage (before Vulnerable and defence), then is Slowed ${hail.slowed} for ${hail.statusSlots} slots.`,
   };
 }
 
@@ -66,10 +66,8 @@ export type KeywordId =
   | 'speed'
   | 'power'
   | 'defence'
-  | 'move'
   | 'slots'
-  | 'range'
-  | 'lasts'
+  | 'duration'
   | 'charged'
   | 'ultimate'
   | 'melee'
@@ -98,17 +96,15 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
     name: 'Defence',
     detail: `Cuts damage it takes: by defence ÷ (defence + ${RULES.defenceConstant}), after Vulnerable.`,
   },
-  move: {
-    name: 'Move',
-    detail: `Spaces it can move on a Move turn: ${RULES.movementCap}, less any Slowed, none while Immobilized. Units block the path.`,
-  },
   slots: {
     name: 'Cost in slots',
     detail:
       'How far along the track its card moves: its next turn comes this many slots from now. If that slot is taken, the card goes to the next free one.',
   },
-  range: {name: 'Range', detail: 'How many spaces away it can be aimed.'},
-  lasts: {name: 'Lasts', detail: 'How many slots its effect stays on the board or the units.'},
+  duration: {
+    name: 'Duration',
+    detail: 'How many slots its effect stays on the board or the units.',
+  },
   charged: {
     name: 'Charged',
     detail:
@@ -116,7 +112,7 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   },
   ultimate: {
     name: 'Ultimate',
-    detail: `A hero’s strongest ability: ready after ${RULES.ultimateUnlockTurns} of its turns, once a fight.`,
+    detail: `A hero’s strongest ability, once a fight: ready once it has spent ${RULES.ultimateCharge} action cost on its turns (moves included, not a Hold that stays put).`,
   },
   melee: {name: 'Melee', detail: 'Aimed at a unit on a space next to the user.'},
   immobilized: {

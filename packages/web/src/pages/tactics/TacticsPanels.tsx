@@ -14,7 +14,6 @@ import {
   hailInfo,
   isFlanked,
   mapOf,
-  movementCap,
   obscured,
   slotsForward,
   statusSlotsLeft,
@@ -208,11 +207,11 @@ export function HexInspector({
   );
 }
 
-/** Whether a unit's ultimate is used, ready, or how many turns it has towards it. */
+/** Whether a unit's ultimate is used, ready, or how much action cost it has spent towards it. */
 function ultimateState(unit: Unit): string {
   if (unit.ultimateUsed) return 'Used';
-  if (unit.turnsTaken >= RULES.ultimateUnlockTurns) return 'Ready';
-  return `${unit.turnsTaken}/${RULES.ultimateUnlockTurns} turns`;
+  if (unit.ultimateCharge >= RULES.ultimateCharge) return 'Ready';
+  return `${unit.ultimateCharge}/${RULES.ultimateCharge} charged`;
 }
 
 /** A unit's statuses, each led by its keyword, with what's left of it. */
@@ -252,10 +251,10 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
 }
 
 /**
- * Every unit's stat sheet, enemies' included: its stats, statuses and
- * abilities (D11), keywords tappable for their rules. `dense` (the phone's
- * tooltip): the same, the stats on one line and each ability in one
- * paragraph.
+ * Every unit's stat sheet, enemies' included: its name and health, stats,
+ * statuses and abilities (D11), keywords tappable for their rules. `dense`
+ * (the phone's tooltip): the same, the stats on one line and each ability
+ * in one paragraph.
  */
 export function StatSheet({
   fight,
@@ -270,68 +269,37 @@ export function StatSheet({
   const ult = ABILITIES[HEROES[unit.hero].ultimate];
   // Hold isn't offered as an action (End turn is), and the ultimate gets its own section.
   const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold' && !def.ultimate);
-  const name = (
-    // The name, in its side's colour: blue yours, red the enemy's, as on the board.
-    <Badge
-      color={sideColor(unit)}
-      variant="light"
-      size={dense ? 'md' : 'lg'}
-      tt="none"
-      data-side={unit.side}
-    >
-      {HEROES[unit.hero].name}
-    </Badge>
-  );
-  const health = (
-    <span>
-      <Term id="health">Health</Term>{' '}
-      <b>
-        {unit.hp} / {unit.maxHp}
-      </b>
-    </span>
-  );
+  const stats = [
+    ['speed', 'Speed', unit.speed],
+    ['power', 'Power', unit.power],
+    ['defence', 'Defence', unit.defence],
+  ] as const;
   return (
     <Paper bg="dark.7" p={dense ? 'xs' : 'sm'} radius="md" data-testid="stat-sheet">
+      <Group justify="space-between" gap={6} mb={dense ? 2 : 0}>
+        {/* The name, in its side's colour: blue yours, red the enemy's, as on the board. */}
+        <Text fw={600} fz={dense ? 'sm' : 'md'} c={`${sideColor(unit)}.3`} data-side={unit.side}>
+          {HEROES[unit.hero].name}
+        </Text>
+        <Text fz={dense ? 'xs' : 13}>
+          <Term id="health">Health</Term>{' '}
+          <b>
+            {unit.hp} / {unit.maxHp}
+          </b>
+        </Text>
+      </Group>
       {dense ? (
-        <>
-          <Group justify="space-between" gap={8} wrap="nowrap" mb={4}>
-            {name}
-            <Text fz="xs">{health}</Text>
-          </Group>
-          <div className={styles.statLine}>
-            {(
-              [
-                ['speed', 'Speed', unit.speed],
-                ['power', 'Power', unit.power],
-                ['defence', 'Defence', unit.defence],
-                ['move', 'Move', movementCap(unit)],
-              ] as const
-            ).map(([id, label, value]) => (
-              <span key={id}>
-                <Term id={id}>{label}</Term> <b>{value}</b>
-              </span>
-            ))}
-          </div>
-        </>
+        <div className={styles.statLine}>
+          {stats.map(([id, label, value]) => (
+            <span key={id}>
+              <Term id={id}>{label}</Term> <b>{value}</b>
+            </span>
+          ))}
+        </div>
       ) : (
         <>
-          <Group justify="space-between" mb={6}>
-            {name}
-          </Group>
-          <div className={styles.vitals}>
-            {health}
-            <span>
-              <Term id="move">Move</Term> <b>{movementCap(unit)} spaces</b>
-            </span>
-          </div>
           <div className={styles.coreStats}>
-            {(
-              [
-                ['speed', 'Speed', unit.speed],
-                ['power', 'Power', unit.power],
-                ['defence', 'Defence', unit.defence],
-              ] as const
-            ).map(([id, label, value]) => (
+            {stats.map(([id, label, value]) => (
               <div key={id}>
                 <Term id={id}>{label}</Term>
                 <b>{value}</b>
@@ -392,29 +360,9 @@ function AbilityCost({unit, def}: {unit: Unit; def: AbilityDef}) {
   );
 }
 
-/** Its range and how long it lasts, when it has them. */
-function AbilityReach({def}: {def: AbilityDef}) {
-  return (
-    <>
-      {def.range !== undefined && (
-        <>
-          {' · '}
-          <Term id="range">Range {def.range}</Term>
-        </>
-      )}
-      {def.duration !== undefined && (
-        <>
-          {' · '}
-          <Term id="lasts">Lasts {def.duration}</Term>
-        </>
-      )}
-    </>
-  );
-}
-
 /**
- * The phone tooltip's ability: one paragraph, its name, cost, range and
- * duration leading into what it does. An ultimate's name is its keyword,
+ * The phone tooltip's ability: one paragraph, its name, cost and duration
+ * leading into what it does. An ultimate's name is its keyword,
  * with how far it is from being ready.
  */
 function DenseAbility({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
@@ -439,21 +387,27 @@ function DenseAbility({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?
         </Badge>
       )}
       <AbilityCost unit={unit} def={def} />
-      <AbilityReach def={def} />: <KeywordText text={def.summary(unit)} />
+      {def.duration !== undefined && (
+        <>
+          {' · '}
+          <Term id="duration">Duration {def.duration}</Term>
+        </>
+      )}
+      : <KeywordText text={def.summary(unit)} />
     </Text>
   );
 }
 
 /**
  * One ability on the stat sheet: its name and cost, in this unit's slots
- * (the action alone, before any move or yielding), its range and how long
- * it lasts, then what it does. An
- * ultimate also shows how far it is from being ready.
+ * (the action alone, before any move or yielding) and how long it lasts,
+ * then what it does. An ultimate also shows how far it is from being ready.
  */
 function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
   return (
     <div>
-      <Group justify="space-between" gap={6} wrap="nowrap">
+      {/* The cost drops under the name when they don't fit side by side. */}
+      <Group justify="space-between" gap={6}>
         <Group gap={6} wrap="nowrap">
           <Text fz="xs" fw={600} c="gray.3">
             {def.name}
@@ -470,25 +424,16 @@ function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?:
           )}
         </Group>
         <Text fz={11} c="dimmed" style={{whiteSpace: 'nowrap'}}>
+          {def.duration !== undefined && (
+            <>
+              <Term id="duration">Duration {def.duration}</Term>
+              {' · '}
+            </>
+          )}
           {def.charged ? '' : 'Action '}
           <AbilityCost unit={unit} def={def} />
         </Text>
       </Group>
-      {(def.range !== undefined || def.duration !== undefined) && (
-        <Text fz={11} c="gray.4">
-          {[
-            def.range !== undefined && <Term id="range">Range {def.range}</Term>,
-            def.duration !== undefined && <Term id="lasts">Lasts {def.duration} slots</Term>,
-          ]
-            .filter(Boolean)
-            .map((el, i) => (
-              <span key={i}>
-                {i > 0 && ' · '}
-                {el}
-              </span>
-            ))}
-        </Text>
-      )}
       <Text fz="xs" c="dimmed">
         <KeywordText text={def.summary(unit)} />
       </Text>

@@ -357,7 +357,7 @@ try {
   await tapHex(enemy.hex);
   const sheet = page.getByTestId('stat-sheet');
   check(
-    'tapping an enemy shows its stat sheet, its name a badge in the enemy’s colour',
+    'tapping an enemy shows its stat sheet, its name in the enemy’s colour',
     (await sheet.locator('[data-side="enemy"]').count()) === 1
   );
   check(

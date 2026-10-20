@@ -9,7 +9,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, RULES} from './config';
+import {ABILITY, AI, HEROES, RULES} from './config';
 import {
   isFlanked,
   lineOfFire,
@@ -18,7 +18,7 @@ import {
   unitAt,
   vulnerablePercent,
 } from './board';
-import {ABILITIES, arrowLanes} from './abilities';
+import {ABILITIES, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, mapOf} from './fight';
@@ -157,7 +157,7 @@ describe('the track', () => {
   it('charges, triggers when the card is reached, then recovers (3.7)', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 1), 'e-storm': at(7, 6)});
     const m = unit(s, 'p-mangudai');
-    m.turnsTaken = RULES.ultimateUnlockTurns;
+    m.ultimateCharge = RULES.ultimateCharge;
     s.currentSlot = 100;
     s.awaiting = m.id;
     const target = unitAt(s, at(5, 1))!.hex!;
@@ -177,7 +177,7 @@ describe('the track', () => {
   it('Freeze damages, then Immobilizes and exposes, every unit in its area', () => {
     const s = setup({'p-storm': at(1, 3), 'e-bokh': at(4, 3), 'e-storm': at(7, 6)});
     const caster = unit(s, 'p-storm');
-    caster.turnsTaken = RULES.ultimateUnlockTurns;
+    caster.ultimateCharge = RULES.ultimateCharge;
     s.currentSlot = 100;
     s.awaiting = caster.id;
     applyTurn(s, caster, {action: {ability: 'freeze', target: {hex: at(4, 3)}}});
@@ -309,7 +309,6 @@ describe('the board', () => {
       untilSlot: 999,
       damage: 50,
       slowed: 2,
-      vulnerable: 25,
       statusSlots: 10,
     });
     const after = reachableHexes(s, mapOf(s), b).find((r) => hexKey(r.hex) === hexKey(dest))!;
@@ -413,6 +412,23 @@ describe('damage', () => {
     expect(s.fog).toHaveLength(0);
   });
 
+  it('an arrow flying through an Obscured hex deals less, once however many', () => {
+    // Row 5's sandstorm is at column 3, between ruins at 1 and 5.
+    const s = setup({'p-mangudai': at(2, 5), 'e-bokh': at(4, 5)});
+    const m = unit(s, 'p-mangudai');
+    const b = unit(s, 'e-bokh');
+    const map = mapOf(s);
+    const open = abilityDamage(s, map, m, b, ABILITY.bow.damage, true);
+    const through = abilityDamage(s, map, m, b, ABILITY.bow.damage, true, [at(3, 5)]);
+    expect(through).toBeLessThan(open);
+    expect(abilityDamage(s, map, m, b, ABILITY.bow.damage, true, [at(3, 5), at(3, 5)])).toBe(
+      through
+    );
+    const hp = b.hp;
+    applyTurn(s, m, {action: {ability: 'bow', target: {hex: at(4, 5)}}});
+    expect(b.hp).toBe(hp - through);
+  });
+
   it('deals collision damage to both units when a displace is stopped', () => {
     const s = setup({'p-storm': at(2, 1), 'e-bokh': at(3, 1), 'e-storm': at(4, 1)});
     const before = [unit(s, 'e-bokh').hp, unit(s, 'e-storm').hp];
@@ -450,14 +466,14 @@ describe('damage', () => {
 });
 
 describe('abilities', () => {
-  it('shows every bow lane to its range, stopping at the first unit or an obstacle', () => {
+  it('shows every bow lane to the map’s edge, stopping at the first unit or an obstacle', () => {
     const s = setup({'p-mangudai': at(-1, 3), 'e-bokh': at(8, 6)});
     const from = at(-1, 3);
     const east = (l: ReturnType<typeof arrowLanes>) => l[0]!;
-    // Nothing in the way: the lane still runs its full range.
+    // Nothing in the way: the bow has no range limit, so the lane runs to the edge.
     let lanes = arrowLanes(s, mapOf(s), from);
     expect(lanes).toHaveLength(6);
-    expect(east(lanes)).toEqual({hexes: [at(0, 3), at(1, 3), at(2, 3), at(3, 3), at(4, 3)]});
+    expect(east(lanes)).toEqual({hexes: [0, 1, 2, 3, 4, 5, 6, 7].map((c) => at(c, 3))});
     expect(ABILITIES.bow.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([]);
     // A unit in it: the lane ends there, and that unit is the bow's target.
     unit(s, 'e-bokh').hex = at(2, 3);
@@ -529,7 +545,6 @@ describe('abilities', () => {
       'crushed',
       'immobilized',
       'taunted',
-      'vulnerable',
     ]);
   });
 
@@ -552,12 +567,9 @@ describe('abilities', () => {
     unit(s, 'p-bokh').slot = 200;
     target.slot = ABILITY.pin.slots + 8;
     advance(s, chooseAiTurn);
-    // Slots 1 to 12 crush it, scaled by the Champion's power, through Pin's
-    // Vulnerable each slot and its defence on the total; nothing after.
-    const perSlot = Math.floor(
-      scaled(ABILITY.pin.damagePerSlot, unit(s, 'p-bokh').power) *
-        (1 + ABILITY.pin.vulnerable / 100)
-    );
+    // Slots 1 to 12 crush it, scaled by the Champion's power, through its
+    // defence on the total; nothing after.
+    const perSlot = scaled(ABILITY.pin.damagePerSlot, unit(s, 'p-bokh').power);
     expect(actingUnit(s)!.id).toBe('e-storm');
     expect(target.hp).toBe(target.maxHp - defended(target, ABILITY.pin.slots * perSlot));
   });
@@ -596,7 +608,7 @@ describe('abilities', () => {
     const s = setup({'p-bokh': at(3, 1), 'e-mangudai': at(4, 1), 'p-storm': at(4, 5)});
     s.units.forEach((u) => (u.controller = 'human'));
     const m = unit(s, 'e-mangudai');
-    m.turnsTaken = RULES.ultimateUnlockTurns;
+    m.ultimateCharge = RULES.ultimateCharge;
     m.slot = 1;
     m.charging = {ability: 'volley', target: at(4, 5)};
     m.statuses.push({kind: 'taunted', value: 0, untilSlot: 50, source: 'p-bokh'});
@@ -625,7 +637,7 @@ describe('abilities', () => {
       'e-mangudai': at(8, 6),
     });
     const b = unit(s, 'p-bokh');
-    b.turnsTaken = RULES.ultimateUnlockTurns;
+    b.ultimateCharge = RULES.ultimateCharge;
     const hp = [unit(s, 'e-bokh').hp, unit(s, 'e-storm').hp];
     applyTurn(s, b, {action: {ability: 'rampage', target: {hex: at(2, 0)}}});
     expect(unit(s, 'e-bokh').hp).toBeLessThan(hp[0]!);
@@ -637,7 +649,7 @@ describe('abilities', () => {
   it('Rampage hits allies too', () => {
     const s = setup({'p-bokh': at(1, 0), 'p-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
-    b.turnsTaken = RULES.ultimateUnlockTurns;
+    b.ultimateCharge = RULES.ultimateCharge;
     const hp = unit(s, 'p-storm').hp;
     applyTurn(s, b, {action: {ability: 'rampage', target: {hex: at(2, 0)}}});
     expect(unit(s, 'p-storm').hp).toBeLessThan(hp);
@@ -676,7 +688,7 @@ describe('abilities', () => {
     expect(s.effects).toHaveLength(1);
   });
 
-  it('hail strikes whoever stands on it, before its own Vulnerable', () => {
+  it('hail strikes whoever stands on it, through its defence', () => {
     const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 1), 'e-mangudai': at(8, 6)});
     const bokh = unit(s, 'e-bokh');
     const hp = bokh.hp;
@@ -691,17 +703,26 @@ describe('abilities', () => {
 });
 
 describe('previews, the AI and the run', () => {
-  it('a Hold without a move is cheap and doesn’t count toward the ultimate', () => {
+  it('unlocks the ultimate once its action cost is spent, a Hold without a move not counting', () => {
+    const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(8, 0)});
+    const m = unit(s, 'p-mangudai');
+    m.ultimateCharge = RULES.ultimateCharge - 1;
+    expect(unusableReason(m, ABILITIES.volley)).toMatch(/unlocks after 300/);
+    m.ultimateCharge = RULES.ultimateCharge;
+    expect(unusableReason(m, ABILITIES.volley)).toBeNull();
+  });
+
+  it('a Hold without a move is cheap and doesn’t charge the ultimate', () => {
     const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(8, 0)});
     const m = unit(s, 'p-mangudai');
     m.slot = s.currentSlot = 100;
     applyTurn(s, m, {action: {ability: 'hold'}});
     expect(m.slot).toBe(100 + slotsForward(ABILITY.hold.cost, m.speed));
-    expect(m.turnsTaken).toBe(0);
+    expect(m.ultimateCharge).toBe(0);
     // Moving, then Holding, does count.
     s.currentSlot = m.slot!;
     applyTurn(s, m, {move: [at(1, 3)], action: {ability: 'hold'}});
-    expect(m.turnsTaken).toBe(1);
+    expect(m.ultimateCharge).toBe(RULES.moveActionCost + RULES.moveCostPerHex);
   });
 
   it('rejects walking plus an ability in either order without mutating the fight', () => {
@@ -734,7 +755,7 @@ describe('previews, the AI and the run', () => {
       s.events = [];
       applyTurn(s, actor, input);
       expect(actor.slot).toBe(aim + 1);
-      expect(actor.turnsTaken).toBe(1);
+      expect(actor.ultimateCharge).toBe(20 + 10 * length);
       expect(s.events.some((e) => e.kind === 'action')).toBe(false);
       expect(s.events.filter((e) => e.kind === 'step')).toHaveLength(length);
     }
@@ -799,6 +820,29 @@ describe('previews, the AI and the run', () => {
     expect(view).not.toContain('123456789');
   });
 
+  it('gives a run saved with older stats today’s stats, in its view and its next action', () => {
+    const run = createRun(0);
+    const saved = JSON.parse(JSON.stringify(run));
+    // The Outrider as saved before the shared stat scale, in light armour.
+    const old = saved.fight.units.find((u: Unit) => u.id === 'p-mangudai');
+    Object.assign(old, {speed: 7, defence: 8, power: 40});
+    const m = runView(saved).fight.units.find((u) => u.id === 'p-mangudai')!;
+    expect([m.speed, m.defence, m.power]).toEqual([
+      HEROES.mangudai.speed,
+      HEROES.mangudai.defence,
+      HEROES.mangudai.power,
+    ]);
+    // …and its ultimate's progress, counted in turns then, as cost.
+    old.turnsTaken = 2;
+    delete old.ultimateCharge;
+    expect(runView(saved).fight.units.find((u) => u.id === 'p-mangudai')!.ultimateCharge).toBe(
+      2 * RULES.cost.typical
+    );
+    Object.assign(old, {speed: 7, defence: 8});
+    const next = handleRunAction(saved, {type: 'turn', action: {ability: 'hold'}});
+    expect(next.fight.units.find((u) => u.id === 'p-mangudai')!.speed).toBe(HEROES.mangudai.speed);
+  });
+
   it('plays a whole fight to an end, AI against AI, within the CPU budget per turn', () => {
     // Seed 0 ends. Some fights stall once only
     // Storm Callers can act (no damage to finish with): an open question,
@@ -828,10 +872,10 @@ describe('previews, the AI and the run', () => {
       me.slot = c.currentSlot + 1;
       return threatDamage(threats, c, SALT_FLATS, me, c.currentSlot);
     };
-    // The enemy can shoot five hexes, but cannot walk and shoot this turn.
+    // The enemy can shoot along its row however far, but cannot walk and shoot this turn.
     unit(s, 'e-mangudai').slot = 0;
-    expect(at3(at(2, 0))).toBe(0);
-    expect(at3(at(3, 0))).toBeGreaterThan(0);
+    expect(at3(at(2, 0))).toBeGreaterThan(0);
+    expect(at3(at(2, 1))).toBe(0);
     // …but not with a unit in the lane between, which the arrow would hit instead.
     const blocked = setup({
       'p-mangudai': at(0, 0),
@@ -966,7 +1010,7 @@ describe('headless balance experiments', () => {
     expect(unit(moved, 'p-mangudai').slot).toBe(
       slotsForward(100 + RULES.moveCostPerHex, unit(s, 'p-mangudai').speed)
     );
-    expect(unit(moved, 'p-mangudai').turnsTaken).toBe(1);
+    expect(unit(moved, 'p-mangudai').ultimateCharge).toBe(100 + RULES.moveCostPerHex);
     for (const option of scoreOptions(s, unit(s, 'p-mangudai')))
       expect(!option.input.move?.length || option.input.action.ability === 'hold').toBe(true);
   });

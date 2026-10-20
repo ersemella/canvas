@@ -45,7 +45,7 @@ export interface AbilityDef {
   /**
    * One line for the side panel, with damage and healing scaled by the
    * user's power (defence, Vulnerable and Obscured still apply on the hit).
-   * Range and duration are left out: the panel lists them on their own.
+   * Range is left out, and so is duration: the panel lists it with the cost.
    */
   summary(user: Unit): string;
   ultimate: boolean;
@@ -54,9 +54,7 @@ export interface AbilityDef {
   /** Action cost, or the charge cost for a charged ability. */
   cost: number;
   recoveryCost?: number;
-  /** How far from the user it reaches, in spaces, when that isn't next to it; the stat sheet lists it beside the summary. */
-  range?: number;
-  /** How many slots its effect lasts, if it lingers; listed like the range. */
+  /** How many slots its effect lasts, if it lingers; the stat sheet lists it beside the cost. */
   duration?: number;
   /** Moves the user, so Immobilized forbids it (17.5). */
   movesSelf: boolean;
@@ -126,8 +124,8 @@ export interface ArrowLane {
 }
 
 /**
- * The bow's six lanes from `from`: each runs up to its range and stops at
- * the first unit (which it hits), an obstacle or the map's edge. For the
+ * The bow's six lanes from `from`: each runs until the first unit (which
+ * it hits), an obstacle or the map's edge (the bow has no range limit). For the
  * page to show where an arrow can fly, hit or not.
  */
 export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLane[] {
@@ -152,7 +150,6 @@ const bow: AbilityDef = {
   id: 'bow',
   name: 'Composite Bow',
   summary: (user) => `Shoot straight for ${scaled(ABILITY.bow.damage, user.power)} damage.`,
-  range: ABILITY.bow.range,
   ultimate: false,
   charged: false,
   cost: ABILITY.bow.cost,
@@ -165,7 +162,10 @@ const bow: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
-    hit(ctx, user, u, ABILITY.bow.damage, true, `${unitName(user)}'s arrow`);
+    // The hexes it flies through before the target, which Obscured weakens it crossing.
+    const lane = arrowLanes(ctx.state, ctx.map, user.hex!).find((l) => l.hit === u);
+    const crossed = lane ? lane.hexes.slice(0, -1) : [];
+    hit(ctx, user, u, ABILITY.bow.damage, true, `${unitName(user)}'s arrow`, crossed);
   },
 };
 
@@ -192,7 +192,6 @@ const dash: AbilityDef = {
   id: 'dash',
   name: 'Dash',
   summary: () => `Move in a straight line, passing safely through allies and hazards.`,
-  range: ABILITY.dash.distance,
   ultimate: false,
   charged: false,
   cost: ABILITY.dash.cost,
@@ -218,8 +217,7 @@ const volley: AbilityDef = {
   id: 'volley',
   name: 'Volley',
   summary: (user) =>
-    `Every unit within ${ABILITY.volley.radius} of the target space takes ${scaled(ABILITY.volley.damage, user.power)} damage.`,
-  range: ABILITY.volley.range,
+    `Units in a targeted area take ${scaled(ABILITY.volley.damage, user.power)} damage.`,
   ultimate: true,
   charged: true,
   cost: ABILITY.volley.chargeCost,
@@ -242,7 +240,6 @@ const sunlight: AbilityDef = {
   name: 'Sunlight',
   summary: (user) =>
     `Heal a unit for ${scaled(ABILITY.sunlight.heal, user.power)} and cleanse its statuses.`,
-  range: ABILITY.sunlight.range,
   ultimate: false,
   charged: false,
   cost: ABILITY.sunlight.cost,
@@ -263,8 +260,7 @@ const hail: AbilityDef = {
   id: 'hail',
   name: 'Hail',
   summary: (user) =>
-    `Hail on a space: units in it take ${scaled(ABILITY.hail.damage, user.power)} damage and are Slowed ${ABILITY.hail.slowed} and Vulnerable ${ABILITY.hail.vulnerable}%.`,
-  range: ABILITY.hail.range,
+    `Hail on a space: units in it take ${scaled(ABILITY.hail.damage, user.power)} damage and are Slowed ${ABILITY.hail.slowed}.`,
   duration: ABILITY.hail.hexSlots,
   ultimate: false,
   charged: false,
@@ -281,7 +277,6 @@ const hail: AbilityDef = {
       untilSlot: ctx.slot + ABILITY.hail.hexSlots,
       damage: scaled(ABILITY.hail.damage, user.power),
       slowed: ABILITY.hail.slowed,
-      vulnerable: ABILITY.hail.vulnerable,
       statusSlots: ABILITY.hail.statusSlots,
     });
     log(ctx, `${unitName(user)} calls down hail.`);
@@ -294,7 +289,6 @@ const fog: AbilityDef = {
   id: 'fog',
   name: 'Fog',
   summary: () => `Create fog in a targeted area: units in it are Obscured.`,
-  range: ABILITY.fog.range,
   duration: ABILITY.fog.slots,
   ultimate: false,
   charged: false,
@@ -316,8 +310,7 @@ const freeze: AbilityDef = {
   id: 'freeze',
   name: 'Freeze',
   summary: (user) =>
-    `Units within ${ABILITY.freeze.radius} of the target space take ${scaled(ABILITY.freeze.damage, user.power)} damage and are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
-  range: ABILITY.freeze.range,
+    `Units in a targeted area take ${scaled(ABILITY.freeze.damage, user.power)} damage and are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
   duration: ABILITY.freeze.immobilizedSlots,
   ultimate: true,
   charged: true,
@@ -371,7 +364,7 @@ const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
   summary: (user) =>
-    `Melee: you and the target are Immobilized; the target is Vulnerable ${ABILITY.pin.vulnerable}%, Taunted, and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot.`,
+    `Melee: you and the target are Immobilized; the target is Taunted and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot.`,
   duration: ABILITY.pin.slots,
   ultimate: false,
   charged: false,
@@ -387,7 +380,6 @@ const pin: AbilityDef = {
     const pin = {champion: user.id, target: u.id};
     addStatus(user, {kind: 'immobilized', value: 0, untilSlot, pin});
     addStatus(u, {kind: 'immobilized', value: 0, untilSlot, pin});
-    addStatus(u, {kind: 'vulnerable', value: ABILITY.pin.vulnerable, untilSlot, pin});
     addStatus(u, {
       kind: 'crushed',
       value: scaled(ABILITY.pin.damagePerSlot, user.power),
@@ -403,7 +395,6 @@ const rampage: AbilityDef = {
   id: 'rampage',
   name: 'Rampage',
   summary: () => `Rush in a straight line, knocking nearby units aside.`,
-  range: ABILITY.rampage.distance,
   ultimate: true,
   charged: false,
   cost: ABILITY.rampage.cost,
@@ -476,8 +467,8 @@ export function unusableReason(unit: Unit, ability: AbilityDef): string | null {
     return 'That unit doesn’t have that ability.';
   if (ability.ultimate) {
     if (unit.ultimateUsed) return 'The ultimate has already been used this fight.';
-    if (unit.turnsTaken < RULES.ultimateUnlockTurns) {
-      return `The ultimate unlocks after ${RULES.ultimateUnlockTurns} turns, not counting Holds without a move (${unit.turnsTaken} so far).`;
+    if (unit.ultimateCharge < RULES.ultimateCharge) {
+      return `The ultimate unlocks after ${RULES.ultimateCharge} action cost spent, not counting Holds without a move (${unit.ultimateCharge} so far).`;
     }
   }
   if (ability.movesSelf && isImmobilized(unit))

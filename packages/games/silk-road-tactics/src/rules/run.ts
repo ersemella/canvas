@@ -7,7 +7,15 @@ import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
 import type {SearchBudget} from './ai';
 import {AI} from './config';
-import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight} from './fight';
+import {
+  RuleError,
+  actingUnit,
+  advance,
+  applyTurn,
+  cloneFight,
+  createFight,
+  refreshStats,
+} from './fight';
 import type {AbilityId, ActionTarget, FightState, RunAction} from './types';
 
 export interface RunState {
@@ -74,6 +82,7 @@ export function parseAction(raw: unknown): RunAction {
 export function handleRunAction(run: RunState, raw: RunAction): RunState {
   const action = parseAction(raw);
   const fight = cloneFight(run.fight, true);
+  refreshStats(fight);
   // What this action sets off, for the page to play back.
   fight.events = [];
   if (fight.phase !== 'fight') throw new RuleError('The fight is not in progress.');
@@ -88,6 +97,8 @@ export function handleRunAction(run: RunState, raw: RunAction): RunState {
 }
 
 export function runView(run: RunState): RunView {
+  // A run saved before a stat change shows, and previews with, today's stats.
+  refreshStats(run.fight);
   return {version: run.version, fight: run.fight};
 }
 

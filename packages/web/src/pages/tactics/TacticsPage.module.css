@@ -56,13 +56,6 @@
   opacity: 0.7;
 }
 
-/* Health and movement, side by side. */
-.vitals {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-}
-
 /* Speed, power and defence: boxed apart from the rest. */
 .coreStats {
   display: grid;

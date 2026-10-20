@@ -110,7 +110,9 @@ describe('budgeted tactical search', () => {
   });
 
   it('avoids a lethal reply that the immediate heuristic overlooks', () => {
-    const s = setup({'e-bokh': hex(2, 0), 'p-bokh': hex(3, 0), 'p-mangudai': hex(2, 3)});
+    // The Outrider's bow has no range limit (2026-10-20): it stands where
+    // stepping off its lanes is still possible.
+    const s = setup({'e-bokh': hex(2, 0), 'p-bokh': hex(3, 0), 'p-mangudai': hex(0, 2)});
     const me = unit(s, 'e-bokh');
     me.hp = 70;
     me.slot = 0;
@@ -152,7 +154,7 @@ describe('budgeted tactical search', () => {
     me.statuses = [{kind: 'immobilized', value: 0, untilSlot: 100}];
     unit(s, 'e-bokh').slot = 1;
     unit(s, 'p-bokh').slot = 2;
-    unit(s, 'p-bokh').hp = 140;
+    unit(s, 'p-bokh').hp = 170;
     unit(s, 'p-storm').slot = 3;
     unit(s, 'p-storm').hp = 30;
     s.awaiting = me.id;
@@ -197,7 +199,7 @@ describe('the search timeline', () => {
     const me = unit(s, 'p-mangudai');
     me.slot = 0;
     me.ultimateUsed = false;
-    me.turnsTaken = RULES.ultimateUnlockTurns;
+    me.ultimateCharge = RULES.ultimateCharge;
     s.awaiting = me.id;
     const option = scoreOptions(s, me).find(
       (o) =>
@@ -222,7 +224,7 @@ describe('the search timeline', () => {
     const target = unit(s, 'e-mangudai');
     me.slot = 0;
     me.ultimateUsed = false;
-    me.turnsTaken = RULES.ultimateUnlockTurns;
+    me.ultimateCharge = RULES.ultimateCharge;
     target.slot = 1;
     s.awaiting = me.id;
     const after = simulate(

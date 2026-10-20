@@ -55,13 +55,13 @@ tuning. Section numbers are the combat design's.
 | **Stats** | Numerical attributes of a unit or item: health, speed, defence and power. See section 9.1. |
 | **Health** | A unit's hit points. Fixed per hero; gear and upgrades never raise it (9.1). |
 | **Defence** | A stat that reduces incoming damage by a percentage with diminishing returns (section 9.1). |
-| **Obscured** | Standing in a sandstorm or fog: ranged hits on the unit, and by it, deal 50% less (17.6). |
+| **Obscured** | Standing in a sandstorm or fog: ranged hits on the unit, and by it, deal 50% less, and an arrow flying through such a hex loses half again (17.6). |
 | **Power** | The one offensive stat: scales an ability's base damage and base healing, not keyword effects (9.2). |
 | **Gear slot** | One of four equipment positions on a hero: boots, gloves, armour, helmet. |
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |
 | **Milestone upgrade** | A hero-specific adjustment to one of that hero's abilities (its shape or an added effect), chosen from an offer at set points in a run (10.9). Unlike gear, it carries no transferable modifier. |
-| **Ultimate** | A hero's most powerful ability, unlocked after the hero completes a set number of turns in the fight (shown publicly), then usable once per combat. It may be an action, a charged ability or a track entity (3.7). |
+| **Ultimate** | A hero's most powerful ability, unlocked after the hero spends a set amount of action cost in the fight (shown publicly as a meter), then usable once per combat. It may be an action, a charged ability or a track entity (3.7). |
 | **Keyword** | A named, shared condition or effect (for example burn, displace, on-flank, on-kill) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |
 | **Ghost team / ghost build** | A saved party build from another player, used as an opponent. **Decided 2026-10-15:** ghosts are **rival caravans**, met as a fight; see [ghosts.md](ghosts.md) (D8). |

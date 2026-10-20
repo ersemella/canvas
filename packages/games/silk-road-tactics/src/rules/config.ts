@@ -36,8 +36,19 @@ export const RULES = {
    * Restored to 4 on 2026-10-20 now that movement is a separate action.
    */
   movementCap: 4,
-  /** Turns a hero must complete before its ultimate unlocks (10.10). */
-  ultimateUnlockTurns: 3,
+  /**
+   * Action cost a hero must spend before its ultimate unlocks (10.10):
+   * every turn's cost counts, moves included, but not a Hold without a move
+   * (owner, 2026-10-20; was 3 turns, which a few cheap moves met: over 200
+   * AI-vs-AI fights it unlocked around slot 20 for the Outrider and
+   * Champion, 32 for the Storm Caller, with first damage at 14 and the end
+   * at 83). At 300, all three unlock around slot 38 and are first used at
+   * 37 to 50. Cost spent per slot is fixed for a given speed, so this is
+   * time spent acting. Over 300 fights, 7.7% were unfinished at 400 actions
+   * (3.3% with 3 turns; 6.3% at 250, 5.7% at 200): later ultimates mean less
+   * finishing damage, which a rule for stalled fights would settle.
+   */
+  ultimateCharge: 300,
   /**
    * Damage reduction = defence / (defence + defenceConstant) (9.1). 50
    * since defence moved to the shared stat scale (owner, 2026-10-20; was
@@ -78,21 +89,9 @@ export interface HeroStats {
   speed: number;
   defence: number;
   power: number;
-  armour: 'light' | 'medium';
   abilities: AbilityId[];
   ultimate: AbilityId;
 }
-
-/**
- * Starter armour (fixed in Phase 1): defence it adds, speed it costs.
- * PLACEHOLDER values (were 3 and 8 defence, 0 and 1 speed, before the
- * shared stat scale; light armour's 10 also absorbs Low defence going from
- * 12.5 to 10, so the Outrider's total reduction is unchanged).
- */
-export const ARMOUR = {
-  light: {defence: 10, speed: 0},
-  medium: {defence: 20, speed: 5},
-} as const;
 
 /**
  * PLACEHOLDER stats, from the roster's bands, except that the Outrider and
@@ -101,8 +100,10 @@ export const ARMOUR = {
  * High 540 (High about 1.8× Low, 9.1). Speed, defence and power share one
  * scale, Low 10 / Medium 25 / High 40 (owner, 2026-10-20), so a hero's
  * bands read straight off its numbers; RULES.C, RULES.speedScale and
- * RULES.defenceConstant compensate, leaving every fight number as it was
- * (speed was Medium 4, High 7; defence Low 5, Medium 10).
+ * RULES.defenceConstant compensate (speed was Medium 4, High 7; defence
+ * Low 5, Medium 10). No gear in Phase 1 (owner, 2026-10-20): these base
+ * stats are a unit's stats. The starter armour, light (+10 defence) on the
+ * Outrider and medium (+20 defence, −5 speed) on the others, was removed.
  */
 export const HEROES: Record<HeroId, HeroStats> = {
   bokh: {
@@ -112,7 +113,6 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 25,
     defence: 25,
     power: 10,
-    armour: 'medium',
     abilities: ['throw', 'pin', 'rampage', 'hold'],
     ultimate: 'rampage',
   },
@@ -123,7 +123,6 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 40,
     defence: 10,
     power: 40,
-    armour: 'light',
     abilities: ['bow', 'dash', 'volley', 'hold'],
     ultimate: 'volley',
   },
@@ -134,7 +133,6 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 25,
     defence: 25,
     power: 25,
-    armour: 'medium',
     abilities: ['sunlight', 'hail', 'fog', 'freeze', 'hold'],
     ultimate: 'freeze',
   },
@@ -146,10 +144,14 @@ export const ABILITY = {
    * Cheaper than a quick action (owner, 2026-10-19; was 60), so waiting a few slots
    * to react is a real option. Ordinary movement instead costs
    * RULES.moveActionCost plus RULES.moveCostPerHex for each hex. Holding without moving doesn't count
-   * toward the ultimate (see `countsTowardUltimate`).
+   * toward the ultimate's charge (see `countsTowardUltimate`).
    */
   hold: {cost: 30},
-  bow: {cost: RULES.cost.typical, range: 5, damage: 120},
+  /**
+   * No range limit (owner, 2026-10-20; was 5): the arrow flies until it
+   * hits a unit, ruins or the map's edge.
+   */
+  bow: {cost: RULES.cost.typical, range: Infinity, damage: 120},
   /**
    * Up to `distance` hexes (owner, 2026-10-19; was exactly 3, which on this
    * board often had no free hex to end on: chosen on 5% of the Outrider's
@@ -169,15 +171,23 @@ export const ABILITY = {
    * the caster, which under separate movement took a turn to set up), and
    * heal 50, 75 at its power (owner, 2026-10-20). Over 200 AI-vs-AI fights
    * each, 5.5% were unfinished at 400 actions at 50, 12% at 60.
+   * Quick, heal 35 (owner, 2026-10-20; was typical, heal 50): over 300
+   * AI-vs-AI fights, 3% unfinished either way, Sunlight chosen on 17% of
+   * the Storm Caller's turns (9% before); quick at heal 50 took over (33%,
+   * six times the healing).
    */
-  sunlight: {cost: RULES.cost.typical, range: 4, heal: 50},
+  sunlight: {cost: RULES.cost.quick, range: 4, heal: 35},
+  /**
+   * No Vulnerable (owner, 2026-10-20; was 25%), leaving it to Freeze and
+   * flanking: damage and Slowed make it area denial. Over 300 AI-vs-AI
+   * fights, 6% unfinished (4% with it); without its damage, 19%.
+   */
   hail: {
     cost: RULES.cost.typical,
     range: 4,
     damage: 50,
     hexSlots: 20,
     slowed: 2,
-    vulnerable: 25,
     statusSlots: 10,
   },
   /** Replaced Gale (owner, 2026-10-20). Its hexes are Obscured (`RULES.obscuredReduction`). */
@@ -200,9 +210,11 @@ export const ABILITY = {
    * The target is also Crushed, taking base `damagePerSlot` every slot while
    * pinned, scaled by power, through Vulnerable and defence (owner,
    * 2026-10-19; lowered from 8 to 6, 2026-10-20), and Taunted by the
-   * Champion (17.5).
+   * Champion (17.5). No Vulnerable (owner, 2026-10-20; was 25%): over 300
+   * AI-vs-AI fights, the same 4% unfinished, Pin on 16% of the Champion's
+   * turns (22% with it).
    */
-  pin: {cost: RULES.cost.typical, slots: 12, vulnerable: 25, damagePerSlot: 6},
+  pin: {cost: RULES.cost.typical, slots: 12, damagePerSlot: 6},
   /** Ultimates buffed (owner, 2026-10-20; was slow, 150, and damage 100). */
   rampage: {cost: RULES.cost.typical, distance: 3, damage: 160, displace: 1},
 } as const;

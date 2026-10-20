@@ -840,7 +840,7 @@ function TurnControls(props: {
                   : 'No one next to you to target.'
                 : null);
             const lockedUlt =
-              def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
+              def.ultimate && !unit.ultimateUsed && unit.ultimateCharge < RULES.ultimateCharge;
             return (
               <Button
                 key={def.id}
@@ -854,7 +854,7 @@ function TurnControls(props: {
               >
                 {/* Its own cost in slots; Confirm adds any yielding. */}
                 {label(
-                  `${def.name}${lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}`,
+                  `${def.name}${lockedUlt ? ` ${unit.ultimateCharge}/${RULES.ultimateCharge}` : ''}`,
                   `+${props.slotsLater(def.cost)}`
                 )}
               </Button>
