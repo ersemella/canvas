@@ -323,8 +323,17 @@ try {
     (await dashButton.getAttribute('aria-pressed')) === 'true' &&
       (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
+  // Like an ability's target, the destination can be changed by tapping
+  // another reachable hex, and a second tap on it doesn't commit.
   await moveButton.click();
+  await tapHex(dashTo);
   await tapHex(dest);
+  await tapHex(dest);
+  check(
+    'a second tap on the destination doesn’t commit',
+    (await state()).view.version === before &&
+      (await moveButton.getAttribute('aria-pressed')) === 'true'
+  );
   // A turn has one action, so there is no order to swap.
   check(
     'Swap order is offered only when the other order is legal',

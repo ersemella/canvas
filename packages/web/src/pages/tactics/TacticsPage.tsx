@@ -84,7 +84,10 @@ export function TacticsPage() {
   const [ability, setAbility] = useState<AbilityId | null>(null);
   const [target, setTarget] = useState<ActionTarget | null>(null);
   const [deployAt, setDeployAt] = useState<Record<string, Hex>>({});
-  /** Picking where to move: taps on reachable hexes plan the move; otherwise taps inspect. */
+  /**
+   * Picking where to move, as an ability picks its target: taps on reachable
+   * hexes plan (or change) the move, which stays open until Confirm; other taps inspect.
+   */
   const [moving, setMoving] = useState(false);
   /** The hex last tapped to inspect (touch can't hover). */
   const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
@@ -344,10 +347,10 @@ export function TacticsPage() {
         return;
       }
       if (acting && moving) {
-        const reach = reaches.find((r) => hexEquals(r.hex, h));
+        const reach = reaches.find((r) => r.path.length > 0 && hexEquals(r.hex, h));
         if (reach) {
-          setPlannedMove(reach.path.length > 0 ? reach : null);
-          setMoving(false);
+          // Tapping the chosen hex again does nothing: only Confirm commits.
+          if (!plannedMove || !hexEquals(plannedMove.hex, h)) setPlannedMove(reach);
           return;
         }
       } else if (acting && ability) {
@@ -383,6 +386,7 @@ export function TacticsPage() {
       acting,
       moving,
       reaches,
+      plannedMove,
       ability,
       target,
       targets,
@@ -459,11 +463,16 @@ export function TacticsPage() {
       for (const c of preview?.changes ?? []) if (c.hpAfter < c.hpBefore) ids.add(c.unitId);
       out.healthUnitIds = [...ids];
     }
-    for (const h of plannedMove?.path ?? []) highlights.push({hex: h, kind: 'path'});
-    const onPath = (h: Hex) => plannedMove?.path.some((p) => hexEquals(p, h));
     if (moving) {
+      // Like an ability's targets: every reachable hex stays open to pick,
+      // the planned one chosen and the steps on the way to it marked.
+      const onPath = (h: Hex) => plannedMove?.path.some((p) => hexEquals(p, h));
       for (const r of reaches)
-        if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'move'});
+        if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'target'});
+      if (plannedMove) {
+        for (const h of plannedMove.path.slice(0, -1)) highlights.push({hex: h, kind: 'path'});
+        highlights.push({hex: plannedMove.hex, kind: 'chosen'});
+      }
     } else if (ability) {
       if (lanes.length > 0) {
         out.arrows = [];

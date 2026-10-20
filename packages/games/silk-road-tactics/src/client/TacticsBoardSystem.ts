@@ -35,15 +35,7 @@ import sandstormImage from './tiles/sandstorm.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
-export type HighlightKind =
-  | 'zone'
-  | 'move'
-  | 'path'
-  | 'target'
-  | 'chosen'
-  | 'area'
-  | 'lane'
-  | 'inspect';
+export type HighlightKind = 'zone' | 'path' | 'target' | 'chosen' | 'area' | 'lane' | 'inspect';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {
@@ -105,7 +97,6 @@ interface HighlightStyle {
 }
 const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   zone: {fill: 'rgba(96,165,250,0.18)', stroke: 'rgba(96,165,250,0.5)'},
-  move: {fill: 'rgba(255,255,255,0.18)', stroke: 'rgba(255,255,255,0.55)'},
   path: {fill: 'rgba(250,204,21,0.25)', stroke: 'rgba(250,204,21,0.8)'},
   /** Hexes an ability can target: the inspect purple, outlined solid, so it never reads as the enemy's red tint. */
   target: {fill: 'rgba(192,132,252,0.18)', stroke: 'rgba(192,132,252,0.95)'},
