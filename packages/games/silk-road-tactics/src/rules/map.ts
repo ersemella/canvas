@@ -8,8 +8,8 @@
  * on odd rows (whose column 3 is the centre hex). Every feature is
  * mirrored, the quicksand included.
  *
- * Each fight scatters its own ruins and quicksand (owner, 2026-10-20; see
- * `randomTiles`), still mirrored; the sandstorm stays where it is. The
+ * Each fight scatters its own ruins and quicksand, not mirrored (owner,
+ * 2026-10-20; see `randomTiles`); the sandstorm stays where it is. The
  * fixed layout below is what a fight saved without its own tiles uses.
  */
 import {hexKey, offsetToHex} from '@canvas/engine/server';
@@ -32,8 +32,6 @@ const ROWS = 9;
 const columnsOf = (row: number): number[] =>
   Array.from({length: row & 1 ? 9 : 8}, (_, i) => i - (row & 1));
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
-/** The hex's mirror image across the board's centre line. */
-const mirrorOf = ({col, row}: OffsetCoord): OffsetCoord => ({col: (row & 1 ? 6 : 7) - col, row});
 
 const special: [OffsetCoord, Tile][] = [
   // Ruins: two per half, breaking the long sight lines across the board.
@@ -76,42 +74,39 @@ export const SALT_FLATS: MapData = {
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};
 
-/** Ruin pairs per fight: one in the top rows and one in the bottom, to break sight lines on both. */
+/** Ruins per fight: two in the top rows and two in the bottom, to break sight lines on both. */
 const RUIN_ROWS = [
   [0, 1, 2, 3],
   [5, 6, 7, 8],
 ];
-/** Quicksand pairs per fight. */
-const QUICKSAND_PAIRS = 1;
+const RUINS_PER_ROWS = 2;
+/** Quicksand hexes per fight. */
+const QUICKSAND = 2;
 
 /**
- * A fight's own ruins and quicksand, from `random` in [0, 1): mirrored
- * pairs, as many as the fixed layout has, kept two columns clear of each
- * side's edge (the starting columns and the hexes in front of them), off
- * the sandstorm and off each other. The sandstorm keeps its place.
+ * A fight's own ruins and quicksand, from `random` in [0, 1): as many as
+ * the fixed layout has, anywhere (not mirrored, owner 2026-10-20) but two
+ * columns clear of each side's edge (the starting columns and the hexes in
+ * front of them), off the sandstorm and off each other. The sandstorm
+ * keeps its place.
  */
 export function randomTiles(random: () => number): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
   for (const [c, t] of special) if (t === 'conceal') tiles[hexKey(offsetToHex(c))] = t;
-  // The left half's candidates; a hex on the centre line has no pair.
   const candidates: OffsetCoord[] = [];
   for (let row = 0; row < ROWS; row++)
-    for (const col of columnsOf(row).slice(2)) {
-      if (mirrorOf({col, row}).col <= col) break;
-      candidates.push({col, row});
-    }
+    for (const col of columnsOf(row).slice(2, -2)) candidates.push({col, row});
   const place = (pool: OffsetCoord[], tile: Tile) => {
     const free = pool.filter((c) => !tiles[hexKey(offsetToHex(c))]);
-    const c = free[Math.floor(random() * free.length)]!;
-    tiles[hexKey(offsetToHex(c))] = tile;
-    tiles[hexKey(offsetToHex(mirrorOf(c)))] = tile;
+    tiles[hexKey(offsetToHex(free[Math.floor(random() * free.length)]!))] = tile;
   };
   for (const rows of RUIN_ROWS)
-    place(
-      candidates.filter((c) => rows.includes(c.row)),
-      'obstacle'
-    );
-  for (let i = 0; i < QUICKSAND_PAIRS; i++) place(candidates, 'hazard');
+    for (let i = 0; i < RUINS_PER_ROWS; i++)
+      place(
+        candidates.filter((c) => rows.includes(c.row)),
+        'obstacle'
+      );
+  for (let i = 0; i < QUICKSAND; i++) place(candidates, 'hazard');
   return tiles;
 }
 
