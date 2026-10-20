@@ -13,7 +13,7 @@ import {fogAt, isFlanked, statusValue} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
 import {fogInfo, hailInfo, TILE_INFO} from '../rules/info';
-import {tileAt, type Tile} from '../rules/map';
+import {tileAt, type MapData, type Tile} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {AbilityId, FightState, StatusKind, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
@@ -187,7 +187,7 @@ interface TrackAdvance {
 }
 
 /**
- * Draws everything over the board's tiles (which are hex entities): the
+ * Draws the board: its ground (cached, see `drawGround`), the
  * track of cards along the top (3.1, as in Mana Khemia), tile markings,
  * highlights, arrow lanes, hail, charging areas, units (their health and
  * statuses only on their turn, or when hovered, tapped or in an aimed
@@ -196,7 +196,7 @@ interface TrackAdvance {
  * `tactics:board` events; taps come from `TacticsInputSystem`.
  */
 export class TacticsBoardSystem extends BaseSystem {
-  // After RenderSystem (995) has drawn the tiles.
+  // After RenderSystem (995) has cleared the canvas.
   readonly priority = 996;
   private scene: BoardScene = {fight: null, highlights: [], selectedUnitId: null, preview: []};
   private hover: TacticsHoverPayload = {hex: null, unitId: null};
@@ -346,7 +346,7 @@ export class TacticsBoardSystem extends BaseSystem {
     const map = mapOf(fight);
     // The board's weather moves with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
-    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), t);
+    drawGround(ctx, map, t);
     const sandstorm = map.hexes.filter((h) => tileAt(map, h) === 'conceal');
     drawBank(ctx, SANDSTORM_BANK, sandstorm, t);
     for (const effect of fight.effects) drawHail(ctx, effect.hex);
@@ -867,6 +867,9 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
   });
 }
 
+/** The ground's colour until its textures load. */
+const SAND = '#d4b483';
+
 /** The ground texture of each tile type; ruins stand on sand. */
 const TILE_TEXTURE: Record<Tile, string> = {
   sand: sandImage,
@@ -897,6 +900,52 @@ function drawHexImage(
   if (opts.flipX) ctx.scale(-1, 1);
   ctx.drawImage(img, -size / 2, -size / 2, size, size);
   ctx.restore();
+}
+
+/** Each map's tiles as a string, for the ground's cache key: worked out once per map. */
+const mapKeys = new WeakMap<MapData, string>();
+
+/** The board's ground as last drawn, and what it was drawn from (the map, which textures had loaded, the canvas's scale). */
+let ground: {canvas: HTMLCanvasElement; key: string} | null = null;
+
+/**
+ * Every tile's ground. It never changes during a fight, so it's drawn once
+ * into a canvas of its own, at the canvas's own resolution, and copied in
+ * each frame with one image draw; it's drawn again when the map changes, a
+ * texture finishes loading, or the canvas's scale changes. Only quicksand,
+ * which turns, is drawn each frame, over its still copy.
+ */
+function drawGround(ctx: CanvasRenderingContext2D, map: MapData, time: number | null): void {
+  if (typeof document === 'undefined') {
+    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), time);
+    return;
+  }
+  let mapKey = mapKeys.get(map);
+  if (mapKey === undefined) {
+    mapKey = map.hexes.map((h) => `${hexKey(h)}:${tileAt(map, h)}`).join(' ');
+    mapKeys.set(map, mapKey);
+  }
+  const loaded = [...new Set(Object.values(TILE_TEXTURE))]
+    .map((src) => (assetLoader.requestImage(src) ? 1 : 0))
+    .join('');
+  const scale = ctx.getTransform().a;
+  const key = `${scale}|${loaded}|${mapKey}`;
+  if (ground?.key !== key) {
+    const canvas = ground?.canvas ?? document.createElement('canvas');
+    canvas.width = Math.ceil(SCENE_SIZE.width * scale);
+    canvas.height = Math.ceil(SCENE_SIZE.height * scale);
+    const g = canvas.getContext('2d')!;
+    g.setTransform(scale, 0, 0, scale, 0, 0);
+    g.clearRect(0, 0, SCENE_SIZE.width, SCENE_SIZE.height);
+    for (const h of map.hexes) drawTile(g, h, tileAt(map, h), null);
+    ground = {canvas, key};
+  }
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(ground.canvas, 0, 0, ground.canvas.width / scale, ground.canvas.height / scale);
+  ctx.restore();
+  if (time !== null)
+    for (const h of map.hexes) if (tileAt(map, h) === 'hazard') drawTile(ctx, h, 'hazard', time);
 }
 
 /** Quicksand's turning: frames in a full turn, and seconds a turn takes. */
@@ -941,8 +990,8 @@ function quicksandFrame(
 
 /**
  * A tile's ground: its texture (sand mirrored on alternate hexes, so the
- * board doesn't repeat) and its border. Until the image loads, the flat
- * colour under it and a code-drawn mark show. Ruins stand on sand and are
+ * board doesn't repeat) and its border. Until the image loads, flat sand
+ * and a code-drawn mark show. Ruins stand on sand and are
  * drawn later, by `drawRuins`.
  */
 function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, time: number | null): void {
@@ -957,8 +1006,17 @@ function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, time: numbe
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
-  } else if (tile === 'hazard' || tile === 'conceal') {
-    drawTileMark(ctx, center(h), tile);
+  } else {
+    // Until the textures load: plain sand, with a mark for the tiles that do something.
+    ctx.save();
+    hexPath(ctx, h, 0.5);
+    ctx.fillStyle = SAND;
+    ctx.fill();
+    ctx.strokeStyle = '#8c7350';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+    if (tile === 'hazard' || tile === 'conceal') drawTileMark(ctx, center(h), tile);
   }
 }
 
