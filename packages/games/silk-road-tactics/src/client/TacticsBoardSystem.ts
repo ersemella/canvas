@@ -19,6 +19,7 @@ import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './la
 import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
 import mangudaiSprite from './sprites/mangudai.png';
+import mangudaiPortrait from './sprites/mangudai-portrait.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
@@ -60,6 +61,9 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {mangudai: mangudaiSp
 const SPRITE_SCALE = 2;
 /** How far below the hex's centre a sprite's bottom edge sits. */
 const SPRITE_FEET = 24;
+/** Track portraits (32×32, facing right), centred on the card's disc at `PORTRAIT_FACE`. */
+const HERO_PORTRAIT: Partial<Record<Unit['hero'], string>> = {mangudai: mangudaiPortrait};
+const PORTRAIT_FACE = {x: 14, y: 13};
 interface HighlightStyle {
   fill: string;
   stroke: string;
@@ -437,10 +441,22 @@ function drawTrack(
       ctx.arc(mid, cy + deck.h / 2 - 4, r, 0, Math.PI * 2);
       ctx.fillStyle = HERO_COLOR[u.hero];
       ctx.fill();
+      const portrait = HERO_PORTRAIT[u.hero];
+      const img = portrait && assetLoader.requestImage(portrait);
+      if (img) {
+        // Unscaled, clipped to the disc around the face; enemies face left.
+        ctx.save();
+        ctx.clip();
+        ctx.imageSmoothingEnabled = false;
+        ctx.translate(Math.round(mid), Math.round(cy + deck.h / 2 - 4));
+        if (u.side === 'enemy') ctx.scale(-1, 1);
+        ctx.drawImage(img, -PORTRAIT_FACE.x, -PORTRAIT_FACE.y);
+        ctx.restore();
+      }
       ctx.strokeStyle = SIDE_COLOR[u.side];
       ctx.lineWidth = 1.5;
       ctx.stroke();
-      label(ctx, HEROES[u.hero].letter, mid, cy + deck.h / 2 - 3, '#ffffff', 11, true);
+      if (!img) label(ctx, HEROES[u.hero].letter, mid, cy + deck.h / 2 - 3, '#ffffff', 11, true);
       // A charging card: its ability triggers when this slot comes up.
       if (u.charging && !ghost) label(ctx, '!', cx + deck.cardW - 5, cy + 8, '#d8b4fe', 12, true);
     }
