@@ -665,6 +665,8 @@ function drawCard(
           ? '#ffffff'
           : SIDE_COLOR[u.side];
     ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
+    // The ghost's thick dashes sit inside its edge, so none show past the card in front.
+    if (ghost) roundRect(ctx, cx + 1.25, cy + 1.25, deck.cardW - 2.5, h - 2.5, 4);
     ctx.stroke();
     ctx.setLineDash([]);
   };
