@@ -56,15 +56,39 @@
   opacity: 0.7;
 }
 
-.abilityName {
-  color: var(--mantine-color-gray-3);
+/* Health and movement, side by side. */
+.vitals {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
 }
 
-.stats {
+/* Speed, power and defence: boxed apart from the rest. */
+.coreStats {
   display: grid;
-  grid-template-columns: auto 1fr auto 1fr;
-  gap: 2px 10px;
-  font-size: 13px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.coreStats > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0;
+  border-radius: 6px;
+  background: var(--mantine-color-dark-6);
+}
+
+.coreStats span {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mantine-color-dimmed);
+}
+
+.coreStats b {
+  font-size: 15px;
 }
 
 /* Phones: the action section, pinned to the screen's bottom. */
