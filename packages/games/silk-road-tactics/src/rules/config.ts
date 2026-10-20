@@ -131,8 +131,10 @@ export const ABILITY = {
    * board often had no free hex to end on: chosen on 5% of the Outrider's
    * turns in AI-vs-AI fights, 17% with "up to"). Restored to 3 on
    * 2026-10-20 with separate movement (briefly 2 when walking was capped at 3).
+   * Cost 40 (owner, 2026-10-20; was quick, 60): at 60 it cost more than
+   * walking the same 3 hexes (50), so it was all but unused.
    */
-  dash: {cost: RULES.cost.quick, distance: 3},
+  dash: {cost: 40, distance: 3},
   volley: {range: 5, radius: 1, damage: 135, chargeCost: 40, recoveryCost: RULES.cost.typical},
   /**
    * Heal 40, 60 at the Storm Caller's power (owner, 2026-10-19; was 25,
