@@ -194,7 +194,7 @@ const state = () => page.evaluate(() => window.__tactics?.run);
 const waitIdle = () =>
   page.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {timeout: 15_000});
 
-/** Abandons the page's active run through the API (the page has no button for it), so none is left behind. */
+/** Abandons the page's active run through the API (quicker than the page's two-tap Reset run), so none is left behind. */
 async function abandonOn(p) {
   const key = await p.evaluate(() => localStorage.getItem('canvas:playerKey'));
   const {body} = await api('/runs/active', key);
@@ -404,6 +404,26 @@ try {
   await page.reload();
   await page.waitForFunction(() => window.__tactics?.run);
   check('a reload resumes the run exactly', JSON.stringify((await state()).view) === snapshot);
+
+  // Reset run: the first tap only arms it; the second starts a fresh run.
+  const beforeReset = (await state()).runId;
+  await page.getByRole('button', {name: 'Reset run'}).click();
+  await sleep(300);
+  check('one tap on Reset run changes nothing', (await state()).runId === beforeReset);
+  await page.getByRole('button', {name: 'Tap again to reset'}).click();
+  await page.waitForFunction((id) => window.__tactics.run?.runId !== id, beforeReset, {
+    timeout: 15_000,
+  });
+  await waitIdle();
+  check(
+    'a second tap on Reset run starts a fresh fight',
+    (await state()).view.fight.phase === 'fight'
+  );
+  const resetOld = await api(
+    `/runs/${beforeReset}`,
+    await page.evaluate(() => localStorage.getItem('canvas:playerKey'))
+  );
+  check('the reset run is abandoned', resetOld.body?.status === 'abandoned', resetOld.body);
 
   // Play the rest with the AI choosing for you. With placeholder numbers a
   // fight can stall (Storm Callers out-heal what's left), so after 150 turns
