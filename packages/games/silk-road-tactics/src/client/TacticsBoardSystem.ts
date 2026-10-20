@@ -62,7 +62,7 @@ const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
 /** The tint over the whole hex a unit stands on: its side's colour. */
 const SIDE_TINT = {player: 'rgba(59,130,246,0.38)', enemy: 'rgba(239,68,68,0.38)'};
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
-/** Board sprites (32×32, facing right); heroes without one are drawn as a lettered disc. */
+/** Board sprites (square, 32×32 or up to 36×36 for a mounted hero; facing right); heroes without one are drawn as a lettered disc. */
 const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
@@ -79,7 +79,7 @@ const SPRITE_FEET = 28;
 /** Track portraits (32×32, facing right), centred on the card's disc at `face`. */
 const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; face: {x: number; y: number}}>> = {
   bokh: {src: bokhPortrait, face: {x: 17, y: 13}},
-  mangudai: {src: mangudaiPortrait, face: {x: 14, y: 13}},
+  mangudai: {src: mangudaiPortrait, face: {x: 18, y: 16}},
 };
 interface HighlightStyle {
   fill: string;

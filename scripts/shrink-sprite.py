@@ -53,7 +53,8 @@ px = im.load()
 def background(p):
     # Magenta, and the pink-purple fringe where edges were blended into it.
     r, g, b = p
-    return (r > 170 and b > 170 and g < 130) or (b > 90 and r > 90 and g < 0.6 * min(r, b))
+    return ((r > 170 and b > 170 and g < 130) or (b > 90 and r > 90 and g < 0.6 * min(r, b))
+            or (b > 40 and r > 40 and g < 0.2 * min(r, b)))  # the darkest fringe, against outlines
 
 
 def grey(p):
