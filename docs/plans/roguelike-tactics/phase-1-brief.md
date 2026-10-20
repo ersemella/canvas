@@ -420,7 +420,9 @@ confirm or change:
 - **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
   Inspect mode (for touch), shows its tile's rule, any hail, and the unit
   there: stats, every ability with its cost, where it could move this
-  turn (outlined on the board), and for an enemy what it could do.
+  turn, and for an enemy what it could do. (2026-10-20: its moves are no
+  longer outlined on the board, which was too cluttered; instead a melee
+  ability, while picked, outlines the hexes next to the user.)
 - **The bow shows its six lanes** to full range (owner, 2026-10-19),
   dashed where the arrow would miss and solid to a unit it would hit.
   Range is still the placeholder 5, and the deployment zones are 6 hexes

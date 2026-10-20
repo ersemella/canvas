@@ -4,6 +4,7 @@ import {
   hexDistance,
   hexEquals,
   hexKey,
+  hexNeighbors,
   hexToPixel,
   hexesInRange,
   registerBuiltinComponents,
@@ -23,6 +24,7 @@ import {
   chooseAiTurn,
   defaultDeployment,
   mapOf,
+  onMap,
   previewTurn,
   reachableHexes,
   slotsForward,
@@ -404,15 +406,6 @@ export function TacticsPage() {
   const inspectHex = hover.hex ?? pinnedHex;
   const inspectedUnit =
     fight && inspectHex && fight.phase !== 'deploy' ? unitAt(fight, inspectHex) : undefined;
-  /** Where the inspected unit could move this turn, if it isn't the acting one. */
-  const inspectReach = useMemo(
-    () =>
-      fight && inspectedUnit && inspectedUnit.id !== acting?.id
-        ? reachableHexes(fight, mapOf(fight), inspectedUnit).filter((r) => r.path.length > 0)
-        : [],
-    [fight, inspectedUnit, acting]
-  );
-
   /**
    * On a phone, the unit the details feature (the one on the inspected hex,
    * else the tapped or acting one) shows its health and statuses on the board.
@@ -448,7 +441,6 @@ export function TacticsPage() {
       out.positions = deployAt;
       return out;
     }
-    for (const r of inspectReach) highlights.push({hex: r.hex, kind: 'inspect'});
     if (!acting) return out;
     if (ability && isAttack(ability)) {
       // Every enemy, and the allies in the line of fire: those it can target
@@ -484,6 +476,10 @@ export function TacticsPage() {
             highlights.push({hex: h, kind: 'lane'});
         }
       }
+      // A melee ability's reach: the hexes next to the user, under its targets.
+      if (ABILITIES[ability].melee && abilityContext?.unit.alive)
+        for (const h of hexNeighbors(abilityContext.unit.hex!))
+          if (onMap(mapOf(abilityContext.state), h)) highlights.push({hex: h, kind: 'melee'});
       const shown = new Set<string>();
       const throwing = ability === 'throw' && target?.hex;
       for (const t of targets) {
@@ -538,7 +534,6 @@ export function TacticsPage() {
     target,
     preview,
     map,
-    inspectReach,
     lanes,
     abilityContext,
   ]);
