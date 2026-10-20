@@ -67,10 +67,15 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
 };
-/** 1.5× (48 pixels) keeps a sprite inside its hex (about 55 wide); 2× spilled onto its neighbours. */
-const SPRITE_SCALE = 1.5;
+/**
+ * Board decorations were drawn for hexes of size 32; this scales them to
+ * the board's hexes.
+ */
+const HEX_SCALE = BOARD_LAYOUT.size / 32;
+/** 2× (64 pixels) keeps a sprite inside its hex (about 69 wide); 1.5× until the hexes grew from 55 wide. */
+const SPRITE_SCALE = 2;
 /** How far below the hex's centre a sprite's bottom edge sits. */
-const SPRITE_FEET = 22;
+const SPRITE_FEET = 28;
 /** Track portraits (32×32, facing right), centred on the card's disc at `face`. */
 const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; face: {x: number; y: number}}>> = {
   bokh: {src: bokhPortrait, face: {x: 17, y: 13}},
@@ -96,7 +101,7 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
 };
 
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
-const HEALTH_BAR = {w: 48, h: 10, y: 34};
+const HEALTH_BAR = {w: 60, h: 10, y: 44};
 
 /** The hovered hex's outline. */
 const HOVER: HighlightStyle = {fill: 'rgba(255,255,255,0.08)', stroke: '#ffffff'};
@@ -590,8 +595,9 @@ function drawHover(
   const c = center(h);
   const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, c.x - w / 2));
   // Above the hex (and a unit's health bar), or below it when that would cover the track.
-  const above = c.y - (unit ? HEALTH_BAR.y + HEALTH_BAR.h + 4 : 36) - boxH;
-  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? c.y + 36 : above;
+  const clear = 36 * HEX_SCALE;
+  const above = c.y - (unit ? HEALTH_BAR.y + HEALTH_BAR.h + 4 : clear) - boxH;
+  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? c.y + clear : above;
   roundRect(ctx, bx, by, w, boxH, 5);
   ctx.fillStyle = 'rgba(17,24,39,0.94)';
   ctx.fill();
@@ -612,10 +618,14 @@ function drawHover(
 /** Each tile type has its own shape, not only its own colour (art direction). */
 function drawTileMark(
   ctx: CanvasRenderingContext2D,
-  c: {x: number; y: number},
+  at: {x: number; y: number},
   tile: string
 ): void {
   ctx.save();
+  // Drawn around the origin at the size-32 scale, then scaled to the hex.
+  ctx.translate(at.x, at.y);
+  ctx.scale(HEX_SCALE, HEX_SCALE);
+  const c = {x: 0, y: 0};
   if (tile === 'obstacle') {
     // Ruins: stacked blocks.
     ctx.fillStyle = '#4a3f35';
@@ -665,7 +675,11 @@ function drawFog(ctx: CanvasRenderingContext2D, h: Hex): void {
 
 function drawHail(ctx: CanvasRenderingContext2D, h: Hex, slotsLeft: number): void {
   fillHex(ctx, h, {fill: 'rgba(186,230,253,0.45)', stroke: '#7dd3fc'});
-  const c = center(h);
+  const at = center(h);
+  ctx.save();
+  ctx.translate(at.x, at.y);
+  ctx.scale(HEX_SCALE, HEX_SCALE);
+  const c = {x: 0, y: 0};
   ctx.fillStyle = '#e0f2fe';
   for (const [dx, dy] of [
     [-12, -12],
@@ -679,6 +693,7 @@ function drawHail(ctx: CanvasRenderingContext2D, h: Hex, slotsLeft: number): voi
     ctx.fill();
   }
   label(ctx, `${slotsLeft}`, c.x + 18, c.y - 20, '#0c4a6e', 10);
+  ctx.restore();
 }
 
 function drawCharge(ctx: CanvasRenderingContext2D, u: Unit): void {
@@ -698,7 +713,7 @@ function drawCharge(ctx: CanvasRenderingContext2D, u: Unit): void {
   }
   ctx.restore();
   const c = center(target);
-  label(ctx, ABILITIES[ability].name, c.x, c.y + 24, SIDE_COLOR[u.side], 10);
+  label(ctx, ABILITIES[ability].name, c.x, c.y + 24 * HEX_SCALE, SIDE_COLOR[u.side], 10);
 }
 
 function drawUnit(
@@ -738,7 +753,7 @@ function drawUnit(
   } else {
     // No sprite yet (or still loading): a disc in the hero's colour with its letter.
     ctx.beginPath();
-    ctx.arc(c.x, c.y, 15, 0, Math.PI * 2);
+    ctx.arc(c.x, c.y, 15 * HEX_SCALE, 0, Math.PI * 2);
     ctx.fillStyle = HERO_COLOR[u.hero];
     ctx.fill();
     ctx.strokeStyle = 'rgba(17,24,39,0.8)';
@@ -758,10 +773,11 @@ function drawUnit(
     if (isFlanked(opts.fight, u)) marks.push(['F', '#f472b6']);
     marks.forEach(([m, color], i) => {
       ctx.beginPath();
-      ctx.arc(c.x - 14 + i * 10, c.y - 18, 5, 0, Math.PI * 2);
+      const x = c.x + (-14 + i * 10) * HEX_SCALE;
+      ctx.arc(x, c.y - 18 * HEX_SCALE, 5, 0, Math.PI * 2);
       ctx.fillStyle = color;
       ctx.fill();
-      label(ctx, m, c.x - 14 + i * 10, c.y - 17.5, '#111827', 8, true);
+      label(ctx, m, x, c.y - 18 * HEX_SCALE + 0.5, '#111827', 8, true);
     });
   }
   ctx.restore();
