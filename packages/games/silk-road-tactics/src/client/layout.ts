@@ -48,8 +48,8 @@ export interface TrackSlots {
   h: number;
 }
 
-/** A deck card is this many strips wide. */
-const DECK_CARD_STRIPS = 1.7;
+/** A deck card is this many strips wide: nearly square, for the portrait that fills it. */
+const DECK_CARD_STRIPS = 2.2;
 
 function trackEntries(fight: FightState, previewSlot: number | null) {
   const entries = fight.units
