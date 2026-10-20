@@ -234,11 +234,12 @@ describe('the board', () => {
     }
   });
 
-  it('scatters each fight’s ruins and quicksand by its seed: mirrored, clear of the edges, the board connected', () => {
+  it('scatters each fight’s ruins and quicksand by its seed: unmirrored, clear of the edges, the board connected', () => {
     const count = (tiles: Record<string, string>, t: string) =>
       Object.values(tiles).filter((v) => v === t).length;
     const conceal = Object.keys(SALT_FLATS.tiles).filter((k) => SALT_FLATS.tiles[k] === 'conceal');
     const layouts = new Set<string>();
+    let asymmetric = 0;
     for (let seed = 0; seed < 40; seed++) {
       const s = createFight(seed);
       const map = mapOf(s);
@@ -251,8 +252,7 @@ describe('the board', () => {
       for (const [key, tile] of Object.entries(map.tiles)) {
         const [q, r] = key.split(',').map(Number);
         const {col, row} = hexToOffset({q: q!, r: r!});
-        // Mirrored, and two columns clear of each edge.
-        expect(map.tiles[hexKey(offsetToHex({col: (row & 1 ? 6 : 7) - col, row}))]).toBe(tile);
+        // Two columns clear of each edge.
         if (tile !== 'conceal') expect(col >= (row & 1 ? 1 : 2) && col <= 5).toBe(true);
         if (tile === 'obstacle') ruinRows.push(row);
       }
@@ -270,8 +270,15 @@ describe('the board', () => {
           }
       expect(seen.size).toBe(open.length);
       layouts.add(JSON.stringify(s.tiles));
+      const mirrored = Object.entries(map.tiles).every(([key, tile]) => {
+        const [q, r] = key.split(',').map(Number);
+        const {col, row} = hexToOffset({q: q!, r: r!});
+        return map.tiles[hexKey(offsetToHex({col: (row & 1 ? 6 : 7) - col, row}))] === tile;
+      });
+      if (!mirrored) asymmetric++;
     }
     expect(layouts.size).toBeGreaterThan(20);
+    expect(asymmetric).toBeGreaterThan(30);
   });
 
   it('blocks allies, enemies and obstacles, routing around units', () => {
