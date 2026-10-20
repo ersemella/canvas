@@ -159,9 +159,10 @@ export const ABILITY = {
   /**
    * The target is also Crushed, taking base `damagePerSlot` every slot while
    * pinned, scaled by power, through Vulnerable and defence (owner,
-   * 2026-10-19), and Taunted by the Champion (17.5).
+   * 2026-10-19; lowered from 8 to 6, 2026-10-20), and Taunted by the
+   * Champion (17.5).
    */
-  pin: {cost: RULES.cost.typical, slots: 12, vulnerable: 25, damagePerSlot: 8},
+  pin: {cost: RULES.cost.typical, slots: 12, vulnerable: 25, damagePerSlot: 6},
   rampage: {cost: RULES.cost.slow, distance: 3, damage: 100, displace: 1},
 } as const;
 

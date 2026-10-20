@@ -1,7 +1,8 @@
 /**
  * Taunt (17.5), from the Bökh Champion's Pin: while a unit is taunted, if
  * it can affect the taunter from any hex it can reach this turn, its
- * action must target the taunter or include it in its area. A damaging
+ * action must target the taunter or include it in its area, or be a Hold
+ * (owner, 2026-10-20). A damaging
  * charged ability triggering while taunted is redirected onto the taunter
  * if it is in range. Ends early if the taunter dies.
  */
@@ -62,6 +63,17 @@ export function affectsHex(
     default:
       return false;
   }
+}
+
+/** Whether an action obeys a binding taunt: it affects the taunter, or it's a Hold. */
+export function obeysTaunt(
+  map: MapData,
+  def: AbilityDef,
+  from: Hex,
+  target: ActionTarget,
+  taunter: Unit
+): boolean {
+  return def.id === 'hold' || affectsHex(map, def, from, target, taunter.hex!);
 }
 
 /**

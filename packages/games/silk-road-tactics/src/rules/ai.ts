@@ -17,7 +17,7 @@ import {
 } from './board';
 import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
 import {slotsForward, turnCost} from './track';
-import {affectsHex, tauntBinds, taunterOf} from './taunt';
+import {obeysTaunt, tauntBinds, taunterOf} from './taunt';
 import {RuleError, applyTurn, cloneFight, mapOf} from './fight';
 import {enterHex, hailDamage, throughDefence} from './resolve';
 import {tileAt} from './map';
@@ -170,7 +170,7 @@ export function scoreOptions(
       if (unusableReason(mu, def)) continue;
       const radius = groundRadius(def);
       for (const target of def.targets(moved, map, mu, mu.hex!)) {
-        if (bound && !affectsHex(map, def, mu.hex!, target, taunter.hex!)) continue;
+        if (bound && !obeysTaunt(map, def, mu.hex!, target, taunter)) continue;
         if (radius !== undefined) {
           const key = `${def.id}:${hexKey(target.hex!)}`;
           if (groundTried.has(key)) continue;

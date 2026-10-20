@@ -133,7 +133,7 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
       ? `Crushed: ${statusValue(unit, 'crushed')} damage a slot before defence (${statusSlotsLeft(unit, 'crushed', slot)} slots)`
       : null,
     taunter
-      ? `Taunted by ${unitName(taunter)}: must attack it if it can (${statusSlotsLeft(unit, 'taunted', slot)} slots)`
+      ? `Taunted by ${unitName(taunter)}: must attack it or end its turn while it can reach it (${statusSlotsLeft(unit, 'taunted', slot)} slots)`
       : null,
     unit.alive && isFlanked(fight, unit) ? `Flanked: Vulnerable ${RULES.flankVulnerable}%` : null,
   ].filter(Boolean);

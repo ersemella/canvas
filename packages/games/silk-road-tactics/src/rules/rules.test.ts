@@ -430,31 +430,34 @@ describe('abilities', () => {
     expect(target.hp).toBe(target.maxHp - defended(target, ABILITY.pin.slots * perSlot));
   });
 
-  it('Pin taunts: the target must attack the Champion while it can', () => {
+  it('Pin taunts: the target must attack the Champion or Hold while it can', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'p-storm': at(4, 1)});
     applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
     const m = unit(s, 'e-mangudai');
-    // The Storm Caller is in a bow lane too, but only the Champion may be shot, and Hold is out.
+    // The Storm Caller is in a bow lane too, but only the Champion may be shot (or the turn Held).
     expect(arrowLanes(s, SALT_FLATS, m.hex!).some((l) => l.hit?.id === 'p-storm')).toBe(true);
     const stormHex = unit(s, 'p-storm').hex!;
     expect(tryTurn(s, m.id, {action: {ability: 'bow', target: {hex: stormHex}}})).toThrow(
       RuleError
     );
-    expect(tryTurn(s, m.id, {action: {ability: 'hold'}})).toThrow(RuleError);
+    expect(tryTurn(s, m.id, {action: {ability: 'hold'}})).not.toThrow();
     expect(chooseAiTurn(s, m).action).toEqual({ability: 'bow', target: {hex: at(1, 1)}});
     // The taunt ends with the taunter.
     unit(s, 'p-bokh').alive = false;
     unit(s, 'p-bokh').hex = null;
-    expect(tryTurn(s, m.id, {action: {ability: 'hold'}})).not.toThrow();
+    expect(
+      tryTurn(s, m.id, {action: {ability: 'bow', target: {hex: unit(s, 'p-storm').hex!}}})
+    ).not.toThrow();
   });
 
   it('a taunt that can’t be obeyed leaves the target free', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
-    // Thrown out of the Storm Caller's reach (it's Immobilized): Hold is allowed again.
-    const far = unit(s, 'p-bokh');
-    far.hex = at(7, 5);
-    expect(tryTurn(s, 'e-storm', {action: {ability: 'hold'}})).not.toThrow();
+    const hailElsewhere = {action: {ability: 'hail' as const, target: {hex: at(2, 3)}}};
+    expect(tryTurn(s, 'e-storm', hailElsewhere)).toThrow(RuleError);
+    // Thrown out of the Storm Caller's reach (it's Immobilized): it acts freely.
+    unit(s, 'p-bokh').hex = at(7, 5);
+    expect(tryTurn(s, 'e-storm', hailElsewhere)).not.toThrow();
   });
 
   it('Taunt draws a damaging charge onto the taunter', () => {

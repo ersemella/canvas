@@ -7,7 +7,7 @@ import {hexEquals, hexKey} from '@canvas/engine/server';
 import {ARMOUR, HEROES, PARTY} from './config';
 import {expireStatuses, invalidPath, walkable} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
-import {affectsHex, redirectedCharge, tauntBinds, taunterOf} from './taunt';
+import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
 import {applyHail, checkEnd, enterHex, log, damageEachSlot, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS} from './map';
@@ -215,8 +215,8 @@ export function applyTurn(
     ) {
       throw new RuleError(`${def.name} can’t target that.`);
     }
-    if (bound && taunter.alive && !affectsHex(map, def, unit.hex!, target, taunter.hex!)) {
-      throw new RuleError(`Taunted: this turn must attack ${unitName(taunter)}.`);
+    if (bound && !obeysTaunt(map, def, unit.hex!, target, taunter)) {
+      throw new RuleError(`Taunted: attack ${unitName(taunter)} or end the turn.`);
     }
     if (def.ultimate) unit.ultimateUsed = true;
     if (def.charged) {
