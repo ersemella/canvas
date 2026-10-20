@@ -80,7 +80,7 @@
   background: var(--mantine-color-dark-6);
 }
 
-.coreStats span {
+.coreStats > div > :first-child {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -165,7 +165,84 @@
   cursor: pointer;
 }
 
-/* Phones: the run's menu, at the far end of the ability buttons' last row. */
-.menu {
-  margin-left: auto;
+/* Phones: the turn's choices as big buttons, in a grid (columns set inline). */
+.abilityGrid {
+  display: grid;
+  gap: 8px;
+}
+.abilityGrid > button {
+  height: 56px;
+  padding: 0 6px;
+}
+.abilityGrid > button :global(.mantine-Button-label) {
+  white-space: normal;
+}
+.bigButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+  font-size: 15px;
+  text-align: center;
+}
+.bigButtonCost {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+/* Phones: Confirm, filling the row, then the run's menu. */
+.confirmRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.confirmRow > :first-child {
+  flex: 1;
+}
+
+/* A keyword: tappable for its rule (Keywords.tsx). */
+.term {
+  all: unset;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  text-decoration-color: currentColor;
+}
+.term[aria-pressed='true'] {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+
+/* The tapped keyword's rule, kept in view at the bottom of a scrolling tooltip. */
+.glossary {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--mantine-color-dark-5);
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* The dense sheet's stats, one line. */
+.statLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  font-size: 12px;
+  color: var(--mantine-color-gray-4);
+}
+
+.statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--mantine-color-orange-3);
 }

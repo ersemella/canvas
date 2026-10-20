@@ -77,8 +77,8 @@ export type {
 } from './client/TacticsInputSystem';
 export {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './rules/abilities';
 export type {AbilityDef, ArrowLane} from './rules/abilities';
-export {TILE_INFO, fogInfo, hailInfo} from './rules/info';
-export type {HexInfo} from './rules/info';
+export {KEYWORD_INFO, TILE_INFO, fogInfo, hailInfo} from './rules/info';
+export type {HexInfo, KeywordId} from './rules/info';
 export {ABILITY, HEROES, RULES} from './rules/config';
 export {
   fogAt,

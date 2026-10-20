@@ -16,6 +16,8 @@ export interface HexInfo {
 }
 
 const obscured = Math.round(RULES.obscuredReduction * 100);
+/** An Obscured attacker hitting an Obscured target: both cuts, one after the other. */
+const bothObscured = Math.round((1 - (1 - RULES.obscuredReduction) ** 2) * 100);
 
 export const TILE_INFO: Record<Tile, HexInfo> = {
   sand: {name: 'Sand', short: 'Open ground', detail: 'Open ground: no effect.'},
@@ -53,3 +55,102 @@ export function fogInfo(fog: FogEffect, currentSlot: number): HexInfo {
     detail: `For ${left} more slot${left === 1 ? '' : 's'}, Obscured: ranged hits on a unit here deal ${obscured}% less (not on top of a sandstorm), and so do ranged hits by a unit here. Doesn't block arrows or line of fire.`,
   };
 }
+
+/**
+ * The words the stat sheet marks as keywords, statuses and stats alike:
+ * tapping one shows its rule (keywords.md, section 17). Built from the rule
+ * values like the tiles'.
+ */
+export type KeywordId =
+  | 'health'
+  | 'speed'
+  | 'power'
+  | 'defence'
+  | 'move'
+  | 'slots'
+  | 'range'
+  | 'lasts'
+  | 'charged'
+  | 'ultimate'
+  | 'melee'
+  | 'immobilized'
+  | 'slowed'
+  | 'vulnerable'
+  | 'taunted'
+  | 'crushed'
+  | 'flanked'
+  | 'obscured'
+  | 'cleanse';
+
+export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
+  health: {name: 'Health', detail: 'The unit falls when it reaches 0.'},
+  speed: {
+    name: 'Speed',
+    detail:
+      'How soon its turns come: the higher its speed, the fewer slots each action costs it, so it acts more often.',
+  },
+  power: {
+    name: 'Power',
+    detail:
+      'Raises its damage and healing: each 50 power adds the ability’s base amount once more. The numbers shown already include it.',
+  },
+  defence: {
+    name: 'Defence',
+    detail: `Cuts damage it takes: by defence ÷ (defence + ${RULES.defenceConstant}), after Vulnerable.`,
+  },
+  move: {
+    name: 'Move',
+    detail: `Spaces it can move on a Move turn: ${RULES.movementCap}, less any Slowed, none while Immobilized. Units block the path.`,
+  },
+  slots: {
+    name: 'Cost in slots',
+    detail:
+      'How far along the track its card moves: its next turn comes this many slots from now. If that slot is taken, the card goes to the next free one.',
+  },
+  range: {name: 'Range', detail: 'How many spaces away it can be aimed.'},
+  lasts: {name: 'Lasts', detail: 'How many slots its effect stays on the board or the units.'},
+  charged: {
+    name: 'Charged',
+    detail:
+      'The card first moves by the charge cost, and the ability goes off when it’s reached; then the card moves again by the recovery cost.',
+  },
+  ultimate: {
+    name: 'Ultimate',
+    detail: `A hero’s strongest ability: ready after ${RULES.ultimateUnlockTurns} of its turns, once a fight.`,
+  },
+  melee: {name: 'Melee', detail: 'Aimed at a unit on a space next to the user.'},
+  immobilized: {
+    name: 'Immobilized',
+    detail:
+      'Can’t move, or use an ability that moves it. It still acts, and can still be knocked or thrown elsewhere.',
+  },
+  slowed: {
+    name: 'Slowed',
+    detail: `Moves this many spaces fewer on a Move turn (at least 1; normally ${RULES.movementCap}).`,
+  },
+  vulnerable: {
+    name: 'Vulnerable',
+    detail: `Takes this much more damage, before defence. Being flanked makes a unit Vulnerable ${RULES.flankVulnerable}%; only the larger counts.`,
+  },
+  taunted: {
+    name: 'Taunted',
+    detail:
+      'While it can reach the unit that taunted it, it must attack that unit or end its turn. Ends early if the taunter falls.',
+  },
+  crushed: {
+    name: 'Crushed',
+    detail: 'Takes this much damage every slot, through Vulnerable and defence.',
+  },
+  flanked: {
+    name: 'Flanked',
+    detail: `Two enemies stand on opposite sides of it: it’s Vulnerable ${RULES.flankVulnerable}% while they do.`,
+  },
+  obscured: {
+    name: 'Obscured',
+    detail: `In a sandstorm or fog: ranged hits on it, and ranged hits by it, deal ${obscured}% less (${bothObscured}% less when both are). Melee, hail and quicksand are unaffected.`,
+  },
+  cleanse: {
+    name: 'Cleanse',
+    detail: 'Removes the harmful statuses abilities put on it (not a flank’s Vulnerable).',
+  },
+};

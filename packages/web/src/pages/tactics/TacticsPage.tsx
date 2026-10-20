@@ -50,6 +50,7 @@ import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
 import {HexTooltip} from './HexTooltip';
+import {Glossary} from './Keywords';
 import {ConfirmButton, HexInspector, ResetRunButton, RunMenu, StatSheet} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
@@ -649,7 +650,14 @@ export function TacticsPage() {
         endTurn={endsWithHold}
         fight={fight}
         preview={preview}
-        needsTarget={!input}
+        needsTarget={
+          input
+            ? null
+            : ability === 'throw' && target?.hex
+              ? 'Pick where to throw'
+              : 'Pick a target'
+        }
+        size={phone ? 'lg' : 'sm'}
         busy={busy || playing}
         onConfirm={() => commit()}
       />
@@ -671,7 +679,11 @@ export function TacticsPage() {
   const details = inspectHex ? (
     <HexInspector fight={fight} hex={inspectHex} />
   ) : (
-    selected && <StatSheet fight={fight} unit={selected} />
+    selected && (
+      <Glossary>
+        <StatSheet fight={fight} unit={selected} />
+      </Glossary>
+    )
   );
   // Desktop; phones have the run menu. Once the fight is over, the result's
   // New fight button does the same.
@@ -765,17 +777,43 @@ function TurnControls(props: {
   canMove: boolean;
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
-  /** Phones: the run's menu, at the end of the ability buttons. */
+  /** Phones: the run's menu, beside the Confirm button. */
   menu?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving, phone} = props;
-  const size = phone ? 'compact-sm' : 'xs';
+  const size = phone ? 'lg' : 'xs';
+  // No Hold button: Confirm reads End turn with no action picked.
+  const defs = abilitiesOf(unit).filter((def) => def.id !== 'hold');
+  // Phones: big buttons, two lines each (the name, then the cost), in rows of
+  // two, or three for a hero with more to choose from.
+  const label = (name: string, cost: React.ReactNode) =>
+    phone ? (
+      <span className={styles.bigButton}>
+        <span>{name}</span>
+        <span className={styles.bigButtonCost}>{cost}</span>
+      </span>
+    ) : (
+      <>
+        {name}
+        <span className={styles.abilityCost}>{cost}</span>
+      </>
+    );
   return (
-    <Paper bg={phone ? 'transparent' : 'dark.7'} p={phone ? 0 : 'sm'} radius="md">
+    <Paper
+      bg={phone ? 'transparent' : 'dark.7'}
+      p={phone ? 0 : 'sm'}
+      radius="md"
+      data-testid="turn-controls"
+    >
       <Stack gap={8}>
         {/* One choice per turn: Move or an ability, picked like any other. */}
-        <div className={styles.abilities}>
+        <div
+          className={phone ? styles.abilityGrid : styles.abilities}
+          style={
+            phone ? {gridTemplateColumns: `repeat(${defs.length + 1 > 4 ? 3 : 2}, 1fr)`} : undefined
+          }
+        >
           <Button
             size={size}
             variant={moving || plannedMove ? 'filled' : 'light'}
@@ -791,45 +829,46 @@ function TurnControls(props: {
             }
             onClick={props.onMove}
           >
-            Move
-            {props.moveSlots !== null && (
-              <span className={styles.abilityCost}>+{props.moveSlots}</span>
-            )}
+            {label('Move', props.moveSlots !== null ? `+${props.moveSlots}` : '')}
           </Button>
-          {abilitiesOf(unit)
-            // No Hold button: Confirm reads End turn with no action picked.
-            .filter((def) => def.id !== 'hold')
-            .map((def) => {
-              const reason =
-                unusableReason(unit, def) ??
-                (props.outOfReach.has(def.id) && ability !== def.id
-                  ? def.id === 'bow'
-                    ? 'No one in any of the bow’s lanes.'
-                    : 'No one next to you to target.'
-                  : null);
-              const lockedUlt =
-                def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
-              return (
-                <Button
-                  key={def.id}
-                  size={size}
-                  variant={ability === def.id ? 'filled' : 'light'}
-                  color={def.ultimate ? 'grape' : 'blue'}
-                  disabled={reason !== null}
-                  aria-pressed={ability === def.id}
-                  title={reason ?? def.summary(unit)}
-                  onClick={() => props.onAbility(ability === def.id ? null : def.id)}
-                >
-                  {def.name}
-                  {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
-                  {/* Its own cost in slots; Confirm adds any yielding. */}
-                  <span className={styles.abilityCost}>+{props.slotsLater(def.cost)}</span>
-                </Button>
-              );
-            })}
-          {props.menu && <div className={styles.menu}>{props.menu}</div>}
+          {defs.map((def) => {
+            const reason =
+              unusableReason(unit, def) ??
+              (props.outOfReach.has(def.id) && ability !== def.id
+                ? def.id === 'bow'
+                  ? 'No one in any of the bow’s lanes.'
+                  : 'No one next to you to target.'
+                : null);
+            const lockedUlt =
+              def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
+            return (
+              <Button
+                key={def.id}
+                size={size}
+                variant={ability === def.id ? 'filled' : 'light'}
+                color={def.ultimate ? 'grape' : 'blue'}
+                disabled={reason !== null}
+                aria-pressed={ability === def.id}
+                title={reason ?? def.summary(unit)}
+                onClick={() => props.onAbility(ability === def.id ? null : def.id)}
+              >
+                {/* Its own cost in slots; Confirm adds any yielding. */}
+                {label(
+                  `${def.name}${lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}`,
+                  `+${props.slotsLater(def.cost)}`
+                )}
+              </Button>
+            );
+          })}
         </div>
-        {props.children}
+        {props.menu ? (
+          <div className={styles.confirmRow}>
+            {props.children}
+            {props.menu}
+          </div>
+        ) : (
+          props.children
+        )}
       </Stack>
     </Paper>
   );

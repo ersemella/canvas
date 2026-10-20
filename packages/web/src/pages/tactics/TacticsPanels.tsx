@@ -23,14 +23,23 @@ import {
   tileAt,
   unitName,
 } from '@canvas/games-silk-road-tactics';
-import type {AbilityDef, FightState, TurnPreview, Unit} from '@canvas/games-silk-road-tactics';
+import type {
+  AbilityDef,
+  FightState,
+  KeywordId,
+  TurnPreview,
+  Unit,
+} from '@canvas/games-silk-road-tactics';
+import {Glossary, KeywordText, Term} from './Keywords';
 import styles from './TacticsPage.module.css';
 
 const sideColor = (u: Unit) => (u.side === 'player' ? 'blue' : 'red');
 
 /**
  * The turn's one button: Confirm with the chosen action, or End turn with
- * none (Hold), saying when the next turn comes in slots from now. When the
+ * none (Hold), saying when the next turn comes in slots from now. While the
+ * action still needs a target it stays, disabled, saying what to pick, so
+ * the buttons around it don't move. When the
  * slot the cost aims at is taken, the card yields further on (3.3): it reads
  * "+3 → +5", the cost and then where the card lands, as the track draws it.
  * The outcome itself is drawn on the board (7.2).
@@ -40,12 +49,20 @@ export function ConfirmButton(props: {
   endTurn: boolean;
   fight: FightState;
   preview: TurnPreview | null;
-  needsTarget: boolean;
+  /** What the chosen action still needs picked on the board, if anything. */
+  needsTarget: string | null;
   busy: boolean;
+  /** Phones: full height for a thumb. */
+  size?: 'sm' | 'lg';
   onConfirm: () => void;
 }) {
   const {fight, preview} = props;
-  if (props.needsTarget) return null;
+  if (props.needsTarget)
+    return (
+      <Button color="yellow" fw="bold" size={props.size ?? 'sm'} disabled>
+        {props.needsTarget}
+      </Button>
+    );
   const now = fight.currentSlot;
   const slot = preview?.slot ?? null;
   const aim = preview?.aimSlot ?? slot;
@@ -56,7 +73,7 @@ export function ConfirmButton(props: {
       color="yellow"
       c="dark.9"
       fw="bold"
-      size="sm"
+      size={props.size ?? 'sm'}
       loading={props.busy}
       disabled={!preview}
       onClick={props.onConfirm}
@@ -142,23 +159,19 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
 }
 
 /**
- * How much a stat sheet shows: `full`, everything; `stats`, no abilities;
- * `short` (the phone's tooltip when space is tight), each rule in short and
- * the sheet pared down to what changes during a fight.
+ * What's on a hex: its tile's rule, any hail, and the unit standing there
+ * (D11), its keywords tappable. `dense`: the phone's tooltip, everything in
+ * as little room as it takes.
  */
-export type Detail = 'short' | 'stats' | 'full';
-
-/** What's on a hex: its tile's rule, any hail, and the unit standing there (D11). */
 export function HexInspector({
   fight,
   hex,
-  detail = 'full',
+  dense = false,
 }: {
   fight: FightState;
   hex: Hex;
-  detail?: Detail;
+  dense?: boolean;
 }) {
-  const compact = detail === 'short';
   const tile = tileAt(mapOf(fight), hex);
   const info = TILE_INFO[tile];
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
@@ -167,29 +180,31 @@ export function HexInspector({
   // Plain sand under a unit says nothing worth a card.
   const showTile = tile !== 'sand' || hail || fog || !unit;
   return (
-    <Stack gap={8} data-testid="hex-info">
-      {showTile && (
-        <Paper bg="dark.7" p="sm" radius="md">
-          <Text fw={600} fz={compact ? 'sm' : 'md'}>
-            {info.name}
-          </Text>
-          <Text fz="xs" c="dimmed">
-            {compact ? info.short : info.detail}
-          </Text>
-          {hail && (
-            <Text fz="xs" c="cyan.3" mt={4}>
-              <b>Hail.</b> {hailInfo(hail, fight.currentSlot)[compact ? 'short' : 'detail']}
+    <Glossary>
+      <Stack gap={dense ? 6 : 8} data-testid="hex-info">
+        {showTile && (
+          <Paper bg="dark.7" p={dense ? 'xs' : 'sm'} radius="md">
+            <Text fw={600} fz={dense ? 'sm' : 'md'}>
+              {info.name}
             </Text>
-          )}
-          {fog && (
-            <Text fz="xs" c="gray.4" mt={4}>
-              <b>Fog.</b> {fogInfo(fog, fight.currentSlot)[compact ? 'short' : 'detail']}
+            <Text fz="xs" c="dimmed">
+              <KeywordText text={info.detail} />
             </Text>
-          )}
-        </Paper>
-      )}
-      {unit && <StatSheet fight={fight} unit={unit} detail={detail} />}
-    </Stack>
+            {hail && (
+              <Text fz="xs" c="cyan.3" mt={4}>
+                <b>Hail.</b> <KeywordText text={hailInfo(hail, fight.currentSlot).detail} />
+              </Text>
+            )}
+            {fog && (
+              <Text fz="xs" c="gray.4" mt={4}>
+                <b>Fog.</b> <KeywordText text={fogInfo(fog, fight.currentSlot).detail} />
+              </Text>
+            )}
+          </Paper>
+        )}
+        {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
+      </Stack>
+    </Glossary>
   );
 }
 
@@ -200,109 +215,154 @@ function ultimateState(unit: Unit): string {
   return `${unit.turnsTaken}/${RULES.ultimateUnlockTurns} turns`;
 }
 
+/** A unit's statuses, each led by its keyword, with what's left of it. */
+function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: string; rest: string}[] {
+  const slot = fight.currentSlot;
+  const left = (kind: Parameters<typeof statusSlotsLeft>[1]) =>
+    `${statusSlotsLeft(unit, kind, slot)} slots`;
+  const taunter = taunterOf(fight, unit);
+  const out: {id: KeywordId; label: string; rest: string}[] = [];
+  if (statusValue(unit, 'immobilized'))
+    out.push({id: 'immobilized', label: 'Immobilized', rest: left('immobilized')});
+  if (statusValue(unit, 'slowed'))
+    out.push({id: 'slowed', label: `Slowed ${statusValue(unit, 'slowed')}`, rest: left('slowed')});
+  if (statusValue(unit, 'vulnerable'))
+    out.push({
+      id: 'vulnerable',
+      label: `Vulnerable ${statusValue(unit, 'vulnerable')}%`,
+      rest: left('vulnerable'),
+    });
+  if (statusValue(unit, 'crushed'))
+    out.push({
+      id: 'crushed',
+      label: `Crushed ${statusValue(unit, 'crushed')}`,
+      rest: `a slot, ${left('crushed')}`,
+    });
+  if (taunter)
+    out.push({
+      id: 'taunted',
+      label: 'Taunted',
+      rest: `by ${unitName(taunter)}, ${left('taunted')}`,
+    });
+  if (unit.alive && isFlanked(fight, unit))
+    out.push({id: 'flanked', label: 'Flanked', rest: `Vulnerable ${RULES.flankVulnerable}%`});
+  if (unit.alive && unit.hex && obscured(fight, mapOf(fight), unit.hex))
+    out.push({id: 'obscured', label: 'Obscured', rest: ''});
+  return out;
+}
+
 /**
- * Every unit's stat sheet, enemies' included: its abilities, and for an enemy
- * what it could do (D11). `short`: health and the ultimate on one line,
- * then statuses; `stats`: no abilities.
+ * Every unit's stat sheet, enemies' included: its stats, statuses and
+ * abilities (D11), keywords tappable for their rules. `dense` (the phone's
+ * tooltip): the same, the stats on one line and each ability in one
+ * paragraph.
  */
 export function StatSheet({
   fight,
   unit,
-  detail = 'full',
+  dense = false,
 }: {
   fight: FightState;
   unit: Unit;
-  detail?: Detail;
+  dense?: boolean;
 }) {
-  const compact = detail === 'short';
-  const slot = fight.currentSlot;
-  const taunter = taunterOf(fight, unit);
-  const statuses = [
-    statusValue(unit, 'immobilized')
-      ? `Immobilized (${statusSlotsLeft(unit, 'immobilized', slot)} slots)`
-      : null,
-    statusValue(unit, 'slowed')
-      ? `Slowed ${statusValue(unit, 'slowed')} (${statusSlotsLeft(unit, 'slowed', slot)} slots)`
-      : null,
-    statusValue(unit, 'vulnerable')
-      ? `Vulnerable ${statusValue(unit, 'vulnerable')}% (${statusSlotsLeft(unit, 'vulnerable', slot)} slots)`
-      : null,
-    statusValue(unit, 'crushed')
-      ? `Crushed: ${statusValue(unit, 'crushed')} damage a slot before defence (${statusSlotsLeft(unit, 'crushed', slot)} slots)`
-      : null,
-    taunter
-      ? `Taunted by ${unitName(taunter)}: must attack it or end its turn while it can reach it (${statusSlotsLeft(unit, 'taunted', slot)} slots)`
-      : null,
-    unit.alive && isFlanked(fight, unit) ? `Flanked: Vulnerable ${RULES.flankVulnerable}%` : null,
-    unit.alive && unit.hex && obscured(fight, mapOf(fight), unit.hex)
-      ? `Obscured: its ranged hits, and ranged hits on it, deal ${Math.round(RULES.obscuredReduction * 100)}% less`
-      : null,
-  ].filter(Boolean);
+  const statuses = statusesOf(fight, unit);
   const ult = ABILITIES[HEROES[unit.hero].ultimate];
   // Hold isn't offered as an action (End turn is), and the ultimate gets its own section.
   const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold' && !def.ultimate);
+  const name = (
+    // The name, in its side's colour: blue yours, red the enemy's, as on the board.
+    <Badge
+      color={sideColor(unit)}
+      variant="light"
+      size={dense ? 'md' : 'lg'}
+      tt="none"
+      data-side={unit.side}
+    >
+      {HEROES[unit.hero].name}
+    </Badge>
+  );
+  const health = (
+    <span>
+      <Term id="health">Health</Term>{' '}
+      <b>
+        {unit.hp} / {unit.maxHp}
+      </b>
+    </span>
+  );
   return (
-    <Paper bg="dark.7" p="sm" radius="md" data-testid="stat-sheet">
-      <Group justify="space-between" mb={compact ? 4 : 6}>
-        {/* The name, in its side's colour: blue yours, red the enemy's, as on the board. */}
-        <Badge
-          color={sideColor(unit)}
-          variant="light"
-          size={compact ? 'md' : 'lg'}
-          tt="none"
-          data-side={unit.side}
-        >
-          {HEROES[unit.hero].name}
-        </Badge>
-      </Group>
-      {compact ? (
-        <Text fz="xs">
-          Health{' '}
-          <b>
-            {unit.hp} / {unit.maxHp}
-          </b>{' '}
-          · {ult.name} <b>{ultimateState(unit)}</b>
-        </Text>
+    <Paper bg="dark.7" p={dense ? 'xs' : 'sm'} radius="md" data-testid="stat-sheet">
+      {dense ? (
+        <>
+          <Group justify="space-between" gap={8} wrap="nowrap" mb={4}>
+            {name}
+            <Text fz="xs">{health}</Text>
+          </Group>
+          <div className={styles.statLine}>
+            {(
+              [
+                ['speed', 'Speed', unit.speed],
+                ['power', 'Power', unit.power],
+                ['defence', 'Defence', unit.defence],
+                ['move', 'Move', movementCap(unit)],
+              ] as const
+            ).map(([id, label, value]) => (
+              <span key={id}>
+                <Term id={id}>{label}</Term> <b>{value}</b>
+              </span>
+            ))}
+          </div>
+        </>
       ) : (
         <>
+          <Group justify="space-between" mb={6}>
+            {name}
+          </Group>
           <div className={styles.vitals}>
+            {health}
             <span>
-              Health{' '}
-              <b>
-                {unit.hp} / {unit.maxHp}
-              </b>
-            </span>
-            <span>
-              Move <b>{movementCap(unit)} spaces</b>
+              <Term id="move">Move</Term> <b>{movementCap(unit)} spaces</b>
             </span>
           </div>
           <div className={styles.coreStats}>
-            <div>
-              <span>Speed</span>
-              <b>{unit.speed}</b>
-            </div>
-            <div>
-              <span>Power</span>
-              <b>{unit.power}</b>
-            </div>
-            <div>
-              <span>Defence</span>
-              <b>{unit.defence}</b>
-            </div>
+            {(
+              [
+                ['speed', 'Speed', unit.speed],
+                ['power', 'Power', unit.power],
+                ['defence', 'Defence', unit.defence],
+              ] as const
+            ).map(([id, label, value]) => (
+              <div key={id}>
+                <Term id={id}>{label}</Term>
+                <b>{value}</b>
+              </div>
+            ))}
           </div>
         </>
       )}
       {statuses.length > 0 && (
-        <Text fz="xs" c="orange.3" mt={6}>
-          {statuses.join(' · ')}
-        </Text>
+        <div className={styles.statuses}>
+          {statuses.map((st) => (
+            <span key={st.id}>
+              <Term id={st.id}>{st.label}</Term>
+              {st.rest && ` ${st.rest}`}
+            </span>
+          ))}
+        </div>
       )}
       {unit.charging && (
         <Text fz="xs" c="grape.3" mt={4}>
           Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
         </Text>
       )}
-      {detail === 'full' && (
+      {dense ? (
+        <Stack gap={4} mt={6}>
+          {abilities.map((def) => (
+            <DenseAbility key={def.id} unit={unit} def={def} />
+          ))}
+          <DenseAbility unit={unit} def={ult} charge={ultimateState(unit)} />
+        </Stack>
+      ) : (
         <Stack gap={6} mt={8}>
           <Text fz="xs" fw={600}>
             Abilities
@@ -311,12 +371,76 @@ export function StatSheet({
             <AbilityLine key={def.id} unit={unit} def={def} />
           ))}
           <Text fz="xs" fw={600} mt={2}>
-            Ultimate
+            <Term id="ultimate">Ultimate</Term>
           </Text>
           <AbilityLine unit={unit} def={ult} charge={ultimateState(unit)} />
         </Stack>
       )}
     </Paper>
+  );
+}
+
+/** An ability's cost in this unit's slots (the action alone, before any move or yielding). */
+function AbilityCost({unit, def}: {unit: Unit; def: AbilityDef}) {
+  return def.charged ? (
+    <Term id="charged">
+      Charge +{slotsForward(def.cost, unit.speed)} · Recovery +
+      {slotsForward(def.recoveryCost!, unit.speed)}
+    </Term>
+  ) : (
+    <Term id="slots">+{slotsForward(def.cost, unit.speed)}</Term>
+  );
+}
+
+/** Its range and how long it lasts, when it has them. */
+function AbilityReach({def}: {def: AbilityDef}) {
+  return (
+    <>
+      {def.range !== undefined && (
+        <>
+          {' · '}
+          <Term id="range">Range {def.range}</Term>
+        </>
+      )}
+      {def.duration !== undefined && (
+        <>
+          {' · '}
+          <Term id="lasts">Lasts {def.duration}</Term>
+        </>
+      )}
+    </>
+  );
+}
+
+/**
+ * The phone tooltip's ability: one paragraph, its name, cost, range and
+ * duration leading into what it does. An ultimate's name is its keyword,
+ * with how far it is from being ready.
+ */
+function DenseAbility({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
+  return (
+    <Text fz="xs" c="dimmed" lh={1.4}>
+      {charge ? (
+        <Term id="ultimate">
+          <b>{def.name}</b>
+        </Term>
+      ) : (
+        <b className={styles.abilityName}>{def.name}</b>
+      )}{' '}
+      {charge && (
+        <Badge
+          size="xs"
+          variant="light"
+          color={charge === 'Ready' ? 'yellow' : 'gray'}
+          tt="none"
+          mr={4}
+        >
+          {charge}
+        </Badge>
+      )}
+      <AbilityCost unit={unit} def={def} />
+      <AbilityReach def={def} />: <KeywordText text={def.summary(unit)} />
+    </Text>
   );
 }
 
@@ -327,9 +451,6 @@ export function StatSheet({
  * ultimate also shows how far it is from being ready.
  */
 function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
-  const cost = def.charged
-    ? `Charge +${slotsForward(def.cost, unit.speed)} · Recovery +${slotsForward(def.recoveryCost!, unit.speed)}`
-    : `Action +${slotsForward(def.cost, unit.speed)}`;
   return (
     <div>
       <Group justify="space-between" gap={6} wrap="nowrap">
@@ -349,21 +470,27 @@ function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?:
           )}
         </Group>
         <Text fz={11} c="dimmed" style={{whiteSpace: 'nowrap'}}>
-          {cost}
+          {def.charged ? '' : 'Action '}
+          <AbilityCost unit={unit} def={def} />
         </Text>
       </Group>
       {(def.range !== undefined || def.duration !== undefined) && (
         <Text fz={11} c="gray.4">
           {[
-            def.range !== undefined && `Range ${def.range}`,
-            def.duration !== undefined && `Lasts ${def.duration} slots`,
+            def.range !== undefined && <Term id="range">Range {def.range}</Term>,
+            def.duration !== undefined && <Term id="lasts">Lasts {def.duration} slots</Term>,
           ]
             .filter(Boolean)
-            .join(' · ')}
+            .map((el, i) => (
+              <span key={i}>
+                {i > 0 && ' · '}
+                {el}
+              </span>
+            ))}
         </Text>
       )}
       <Text fz="xs" c="dimmed">
-        {def.summary(unit)}
+        <KeywordText text={def.summary(unit)} />
       </Text>
     </div>
   );
