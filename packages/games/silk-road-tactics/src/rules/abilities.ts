@@ -44,7 +44,7 @@ export interface AbilityDef {
   name: string;
   /**
    * One line for the side panel, with damage and healing scaled by the
-   * user's power (defence, Vulnerable and conceal still apply on the hit).
+   * user's power (defence, Vulnerable and Obscured still apply on the hit).
    * Range and duration are left out: the panel lists them on their own.
    */
   summary(user: Unit): string;
@@ -293,7 +293,7 @@ const hail: AbilityDef = {
 const fog: AbilityDef = {
   id: 'fog',
   name: 'Fog',
-  summary: () => `Create fog in a targeted area.`,
+  summary: () => `Create fog in a targeted area: units in it are Obscured.`,
   range: ABILITY.fog.range,
   duration: ABILITY.fog.slots,
   ultimate: false,

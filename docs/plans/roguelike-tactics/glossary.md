@@ -25,7 +25,7 @@ tuning. Section numbers are the combat design's.
 | **Track** | The row of numbered slots that sets turn order. Every unit and track entity has a card in one slot; the track advances slot by slot and each card acts when reached (3.1). Drawn as a scrollable window of roughly the next 30 slots; tapping a card previews it (7.1). |
 | **Slot** | One position on the track. Durations are measured in slots. Two cards never share a slot. |
 | **Card** | A unit's or track entity's marker on the track. |
-| **Placement** | How far a card moves after a turn: (action cost + movement cost) ÷ (speed + C), rounded down, at least 1 slot (3.2). |
+| **Placement** | How far a card moves after a turn: (action cost + movement cost) × speedScale ÷ (speed + C), rounded down, at least 1 slot (3.2). |
 | **C** | A global constant added to speed in the placement formula; a larger C flattens speed's effect. |
 | **Action cost** | The fixed cost of the action used on a turn, on a fine-grained scale (a basic attack is about 100). Every ability defines its own. |
 | **Movement cost** | The cost added by moving: a fixed amount per hex moved, divided by speed like the action cost. |
@@ -55,6 +55,7 @@ tuning. Section numbers are the combat design's.
 | **Stats** | Numerical attributes of a unit or item: health, speed, defence and power. See section 9.1. |
 | **Health** | A unit's hit points. Fixed per hero; gear and upgrades never raise it (9.1). |
 | **Defence** | A stat that reduces incoming damage by a percentage with diminishing returns (section 9.1). |
+| **Obscured** | Standing in a sandstorm or fog: ranged hits on the unit, and by it, deal 50% less (17.6). |
 | **Power** | The one offensive stat: scales an ability's base damage and base healing, not keyword effects (9.2). |
 | **Gear slot** | One of four equipment positions on a hero: boots, gloves, armour, helmet. |
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |

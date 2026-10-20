@@ -8,14 +8,14 @@
 import {hexesInRange, hexDistance} from '@canvas/engine/server';
 import {ABILITY, HEROES, RULES, movementRules} from './config';
 import {ABILITIES, unusableReason} from './abilities';
-import {fogAt, hostile, movementCap} from './board';
+import {fogAt, hostile, movementCap, obscured} from './board';
 import {scaled, throughDefence} from './resolve';
 import {tileAt} from './map';
 import {slotsForward} from './track';
 import type {MapData} from './map';
 import type {FightState, Unit} from './types';
 
-/** Per hex: the most an enemy's ranged hit (fog and sandstorm halve it) or other hit could deal, before defence. */
+/** Per hex: the most an enemy's ranged hit (Obscured halves it) or other hit could deal, before defence. */
 interface HexThreat {
   ranged: number;
   other: number;
@@ -149,9 +149,8 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       if (melee > 0)
         for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), 'other', melee);
       if (bow > 0) {
-        const d = fogAt(state, {q: fq, r: fr})
-          ? Math.floor(bow * (1 - ABILITY.fog.reduction))
-          : bow;
+        const from = board.get(id(fq, fr)) === 'conceal' || fogAt(state, {q: fq, r: fr});
+        const d = from ? Math.floor(bow * (1 - RULES.obscuredReduction)) : bow;
         for (const [dq, dr] of AXIAL) {
           for (let i = 1; i <= ABILITY.bow.range; i++) {
             const k = id(fq + dq * i, fr + dr * i);
@@ -196,7 +195,7 @@ export function threatDamage(
   if (!me.alive || !me.hex || me.slot === null) return 0;
   const windowEnd = Math.max(me.slot, now + slotsForward(RULES.cost.typical, me.speed));
   const key = id(me.hex.q, me.hex.r);
-  const covered = tileAt(map, me.hex) === 'conceal' || fogAt(after, me.hex) !== undefined;
+  const covered = obscured(after, map, me.hex);
   let total = 0;
   for (const t of threats) {
     const e = after.units.find((u) => u.id === t.enemyId);
@@ -205,7 +204,7 @@ export function threatDamage(
     if (e.hex && hexDistance(e.hex, me.hex) > RULES.movementCap + ABILITY.bow.range + 1) continue;
     const h = t.hexes.get(key);
     if (!h) continue;
-    const ranged = covered ? Math.floor(h.ranged * (1 - RULES.concealReduction)) : h.ranged;
+    const ranged = covered ? Math.floor(h.ranged * (1 - RULES.obscuredReduction)) : h.ranged;
     total += Math.max(ranged, h.other);
   }
   // Defence and Vulnerable once, on the sum (checking a flank is the costly part).
