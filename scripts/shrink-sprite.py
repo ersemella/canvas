@@ -8,6 +8,11 @@ figure on a solid magenta (#FF00FF) background with a flat dark grey
 
   python3 scripts/shrink-sprite.py chatgpt.png out.png [size]   # size defaults to 32
 
+For a portrait, crop to the head first and keep the thin dark lines that
+draw the eyes and brows (a block turns dark from that share of line):
+
+  python3 scripts/shrink-sprite.py chatgpt.png out.png --crop 180,40,1180,1040 --lines 0.3
+
 Each output pixel takes the most common shade in its block of the source.
 ChatGPT's thin outlines and rim light don't vote; a clean 1-pixel outline is
 drawn around the silhouette instead, outside it so thin limbs keep their
@@ -19,8 +24,18 @@ from collections import Counter
 
 from PIL import Image
 
-src, out = sys.argv[1], sys.argv[2]
-N = int(sys.argv[3]) if len(sys.argv) > 3 else 32
+args = sys.argv[1:]
+crop = lines = None
+if '--crop' in args:
+    i = args.index('--crop')
+    crop = tuple(int(v) for v in args.pop(i + 1).split(','))
+    args.pop(i)
+if '--lines' in args:
+    i = args.index('--lines')
+    lines = float(args.pop(i + 1))
+    args.pop(i)
+src, out = args[0], args[1]
+N = int(args[2]) if len(args) > 2 else 32
 FIT = N - 2  # the figure's size; the outline goes in the 1-pixel margin
 COLOURS = 24
 FIG_MIN = 0.3  # a block counts as figure from this share of figure pixels
@@ -29,6 +44,8 @@ OUTLINE = (34, 24, 22, 255)
 SHADOW = (0, 0, 0, 90)
 
 im = Image.open(src).convert('RGB')
+if crop:
+    im = im.crop(crop)
 W, H = im.size
 px = im.load()
 
@@ -75,7 +92,9 @@ for j in range(FIT):
                     shades[shade[x, y]] += 1
         total = sum(kinds.values())
         if kinds['fig'] + kinds['line'] >= FIG_MIN * total:
-            if kinds['line'] > kinds['fig'] * 1.5 or not shades:
+            dark = (kinds['line'] >= lines * total if lines is not None
+                    else kinds['line'] > kinds['fig'] * 1.5)
+            if dark or not shades:
                 sp[i + 1, j + 1] = OUTLINE  # a block that is mostly line stays dark
             else:
                 # The average of the winning shade's source pixels, for a true colour.
