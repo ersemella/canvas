@@ -18,6 +18,7 @@ import type {FightState, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
 import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
+import bokhPortrait from './sprites/bokh-portrait.png';
 import bokhSprite from './sprites/bokh.png';
 import mangudaiSprite from './sprites/mangudai.png';
 import mangudaiPortrait from './sprites/mangudai-portrait.png';
@@ -65,9 +66,11 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
 const SPRITE_SCALE = 2;
 /** How far below the hex's centre a sprite's bottom edge sits. */
 const SPRITE_FEET = 24;
-/** Track portraits (32×32, facing right), centred on the card's disc at `PORTRAIT_FACE`. */
-const HERO_PORTRAIT: Partial<Record<Unit['hero'], string>> = {mangudai: mangudaiPortrait};
-const PORTRAIT_FACE = {x: 14, y: 13};
+/** Track portraits (32×32, facing right), centred on the card's disc at `face`. */
+const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; face: {x: number; y: number}}>> = {
+  bokh: {src: bokhPortrait, face: {x: 17, y: 10}},
+  mangudai: {src: mangudaiPortrait, face: {x: 14, y: 13}},
+};
 interface HighlightStyle {
   fill: string;
   stroke: string;
@@ -446,7 +449,7 @@ function drawTrack(
       ctx.fillStyle = HERO_COLOR[u.hero];
       ctx.fill();
       const portrait = HERO_PORTRAIT[u.hero];
-      const img = portrait && assetLoader.requestImage(portrait);
+      const img = portrait && assetLoader.requestImage(portrait.src);
       if (img) {
         // Unscaled, clipped to the disc around the face; enemies face left.
         ctx.save();
@@ -454,7 +457,7 @@ function drawTrack(
         ctx.imageSmoothingEnabled = false;
         ctx.translate(Math.round(mid), Math.round(cy + deck.h / 2 - 4));
         if (u.side === 'enemy') ctx.scale(-1, 1);
-        ctx.drawImage(img, -PORTRAIT_FACE.x, -PORTRAIT_FACE.y);
+        ctx.drawImage(img, -portrait.face.x, -portrait.face.y);
         ctx.restore();
       }
       ctx.strokeStyle = SIDE_COLOR[u.side];
