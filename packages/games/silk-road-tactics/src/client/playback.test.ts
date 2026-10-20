@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {createRun, handleRunAction} from '../rules/run';
 import {defaultDeployment} from '../rules/fight';
-import {Playback, eventSeconds} from './playback';
+import {Playback, displayFight, eventSeconds} from './playback';
 
 /** A fight just past deployment and one turn after it, as the page sees them. */
 function played() {
@@ -55,5 +55,27 @@ describe('playback', () => {
       to.events!.slice(0, firstTurn).reduce((t, e) => t + eventSeconds(e, false), 0) + 0.01
     );
     expect(play.display.awaiting).toBe(to.events![firstTurn]!.unitId);
+  });
+
+  it('drops a status once the slot shown passes its last one', () => {
+    const {from, to} = played();
+    const e = to.events!.find((ev) => ev.after.currentSlot > from.currentSlot)!;
+    const u = from.units[0]!;
+    const base = {
+      ...from,
+      units: from.units.map((v) =>
+        v.id === u.id
+          ? {
+              ...v,
+              statuses: [
+                {kind: 'slowed' as const, value: 1, untilSlot: e.after.currentSlot - 1},
+                {kind: 'vulnerable' as const, value: 20, untilSlot: e.after.currentSlot},
+              ],
+            }
+          : v
+      ),
+    };
+    const shown = displayFight(base, e, null).units.find((v) => v.id === u.id)!;
+    expect(shown.statuses.map((s) => s.kind)).toEqual(['vulnerable']);
   });
 });

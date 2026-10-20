@@ -45,7 +45,8 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
  * The fight to draw once an event has happened: the fight before the turn,
  * with each unit's position, health, card and charge, the hail, the fog and
  * the slot from the event's snapshot. The unit whose turn it is shows as
- * acting. Statuses stay as they were until the playback ends.
+ * acting. Statuses stay as they were until the playback ends, except
+ * that each goes once the slot passes its last one.
  */
 export function displayFight(base: FightState, e: RecordedEvent, actor: string | null): FightState {
   const after = e.after;
@@ -58,7 +59,9 @@ export function displayFight(base: FightState, e: RecordedEvent, actor: string |
     awaiting: actor,
     units: base.units.map((u) => {
       const s = after.units.find((v) => v.id === u.id);
-      return s ? {...u, ...s} : u;
+      // Statuses that ended before the slot shown go, as the rules expire them.
+      const statuses = u.statuses.filter((st) => st.untilSlot >= after.currentSlot);
+      return {...u, ...s, statuses};
     }),
   };
 }
