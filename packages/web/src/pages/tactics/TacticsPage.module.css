@@ -89,9 +89,11 @@
     width: 100%;
   }
   /* The board runs edge to edge: out through the page's side padding, square corners. */
+  /* The tooltip may leave the board (HexTooltip), so nothing is clipped. */
   .board {
     margin: 0 calc(-1 * var(--mantine-spacing-md));
     border-radius: 0;
+    overflow: visible;
   }
   .board > :first-child {
     display: block;
@@ -101,10 +103,11 @@
   }
 }
 
-/* Phones: the inspected hex's details, over the board beside it (HexTooltip). */
+/* Phones: the inspected hex's details beside it, over the board and past it (HexTooltip). */
 .tooltip {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
+  width: max-content;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 4px;
@@ -113,4 +116,9 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
   cursor: pointer;
+}
+
+/* Phones: the run's menu, at the far end of the ability buttons' last row. */
+.menu {
+  margin-left: auto;
 }

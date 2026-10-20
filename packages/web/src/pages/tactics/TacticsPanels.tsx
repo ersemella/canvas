@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
-import {Badge, Button, Group, Paper, Stack, Text} from '@mantine/core';
+import {Link} from 'react-router-dom';
+import {ActionIcon, Badge, Button, Group, Menu, Paper, Stack, Text} from '@mantine/core';
 import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {
@@ -100,19 +101,63 @@ export function ResetRunButton(props: {busy: boolean; onReset: () => void}) {
 }
 
 /**
- * What's on a hex: its tile's rule, any hail, and the unit standing there (D11).
- * `compact` (the phone's tooltip): each rule in short and the unit's sheet
- * pared down to what changes during a fight.
+ * Phones: the run's menu, behind a ⋯ button in the action bar, so its rare
+ * actions take no room: back to the games (the page has no top bar), and
+ * Reset run, which as on desktop arms on the first tap and resets on the second.
  */
+export function RunMenu(props: {busy: boolean; onReset: () => void}) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) return;
+    const t = setTimeout(() => setArmed(false), 3000);
+    return () => clearTimeout(t);
+  }, [armed]);
+  return (
+    <Menu position="top-end" withArrow onClose={() => setArmed(false)}>
+      <Menu.Target>
+        <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Menu">
+          ⋯
+        </ActionIcon>
+      </Menu.Target>
+      <Menu.Dropdown>
+        <Menu.Item component={Link} to="/">
+          All games
+        </Menu.Item>
+        <Menu.Item
+          {...(armed ? {color: 'red'} : {})}
+          disabled={props.busy}
+          closeMenuOnClick={armed}
+          onClick={() => {
+            if (!armed) return setArmed(true);
+            setArmed(false);
+            props.onReset();
+          }}
+        >
+          {armed ? 'Tap again to reset' : 'Reset run'}
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
+  );
+}
+
+/**
+ * How much a stat sheet shows: `full`, everything; `stats`, no abilities;
+ * `short` (the phone's tooltip when space is tight), each rule in short and
+ * the sheet pared down to what changes during a fight.
+ */
+export type Detail = 'short' | 'stats' | 'full';
+
+/** What's on a hex: its tile's rule, any hail, and the unit standing there (D11). */
 export function HexInspector({
   fight,
   hex,
-  compact = false,
+  detail = 'full',
 }: {
   fight: FightState;
   hex: Hex;
-  compact?: boolean;
+  detail?: Detail;
 }) {
+  const compact = detail === 'short';
   const tile = tileAt(mapOf(fight), hex);
   const info = TILE_INFO[tile];
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
@@ -142,7 +187,7 @@ export function HexInspector({
           )}
         </Paper>
       )}
-      {unit && <StatSheet fight={fight} unit={unit} compact={compact} />}
+      {unit && <StatSheet fight={fight} unit={unit} detail={detail} />}
     </Stack>
   );
 }
@@ -163,18 +208,19 @@ function ultimateState(unit: Unit): string {
 
 /**
  * Every unit's stat sheet, enemies' included: its abilities, and for an enemy
- * what it could do (D11). `compact`: health, next turn and the ultimate on
- * one line, then statuses; no fixed stats or abilities.
+ * what it could do (D11). `short`: health, next turn and the ultimate on
+ * one line, then statuses; `stats`: no abilities.
  */
 export function StatSheet({
   fight,
   unit,
-  compact = false,
+  detail = 'full',
 }: {
   fight: FightState;
   unit: Unit;
-  compact?: boolean;
+  detail?: Detail;
 }) {
+  const compact = detail === 'short';
   const slot = fight.currentSlot;
   const taunter = taunterOf(fight, unit);
   const statuses = [
@@ -249,7 +295,7 @@ export function StatSheet({
           Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
         </Text>
       )}
-      {!compact && (
+      {detail === 'full' && (
         <Stack gap={2} mt={6}>
           <Text fz="xs" fw={600}>
             Abilities

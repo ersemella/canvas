@@ -50,7 +50,7 @@ import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
 import {HexTooltip} from './HexTooltip';
-import {ConfirmButton, HexInspector, ResetRunButton, StatSheet} from './TacticsPanels';
+import {ConfirmButton, HexInspector, ResetRunButton, RunMenu, StatSheet} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 /** Area abilities: their radius, to highlight the area around a chosen hex. */
@@ -368,7 +368,13 @@ export function TacticsPage() {
           return;
         }
       }
-      // Anything else: look at the hex.
+      // Anything else: look at the hex, or stop looking at it if it's the one
+      // being looked at (on a small phone, the board may be all there is to tap).
+      if (pinnedHex && hexEquals(pinnedHex, h)) {
+        setPinnedHex(null);
+        setSelectedId(null);
+        return;
+      }
       setPinnedHex(h);
       setSelectedId(unitAt(fight, h)?.id ?? null);
     },
@@ -384,8 +390,12 @@ export function TacticsPage() {
       target,
       targets,
       chooseTarget,
+      pinnedHex,
     ]
   );
+
+  /** The phone's tooltip stops above the pinned action bar. */
+  const tooltipFloor = useCallback(() => actionsRef.current?.getBoundingClientRect().top, []);
 
   const onHexRef = useRef(onHex);
   onHexRef.current = onHex;
@@ -615,6 +625,7 @@ export function TacticsPage() {
       canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
       onMove={toggleMove}
       onAbility={chooseAbility}
+      menu={phone && <RunMenu busy={busy || playing} onReset={startRun} />}
     >
       <ConfirmButton
         endTurn={endsWithHold}
@@ -631,14 +642,21 @@ export function TacticsPage() {
   const tooltipHex =
     pinnedHex ?? (selectedId ? fight.units.find((u) => u.id === selectedId)?.hex : null) ?? null;
   const tooltip = phone && tooltipHex && boardSize && !playing && !finished && (
-    <HexTooltip key={hexKey(tooltipHex)} fight={fight} hex={tooltipHex} boardSize={boardSize} />
+    <HexTooltip
+      key={hexKey(tooltipHex)}
+      fight={fight}
+      hex={tooltipHex}
+      boardSize={boardSize}
+      floor={tooltipFloor}
+    />
   );
   const details = inspectHex ? (
     <HexInspector fight={fight} hex={inspectHex} />
   ) : (
     selected && <StatSheet fight={fight} unit={selected} />
   );
-  // Once the fight is over, the result's New fight button does the same.
+  // Desktop; phones have the run menu. Once the fight is over, the result's
+  // New fight button does the same.
   const reset = !finished && <ResetRunButton busy={busy || playing} onReset={startRun} />;
 
   return (
@@ -681,7 +699,6 @@ export function TacticsPage() {
           )}
           {phone ? (
             <>
-              {reset}
               {actions && (
                 <section className={styles.actionBar} ref={actionsRef}>
                   {actions}
@@ -717,6 +734,8 @@ function TurnControls(props: {
   canMove: boolean;
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
+  /** Phones: the run's menu, at the end of the ability buttons. */
+  menu?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving, phone} = props;
@@ -777,6 +796,7 @@ function TurnControls(props: {
                 </Button>
               );
             })}
+          {props.menu && <div className={styles.menu}>{props.menu}</div>}
         </div>
         {props.children}
       </Stack>

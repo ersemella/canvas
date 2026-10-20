@@ -486,16 +486,17 @@ try {
       const r = el.getBoundingClientRect();
       return r.top >= 0 && r.bottom <= window.innerHeight + 1;
     });
-  // Tap an enemy: its details show in a tooltip over the board beside it,
-  // short at first, and the actions stay on screen.
+  // Tap an enemy: its details show in a tooltip beside it, with as much
+  // detail as fits on screen, and the actions stay on screen.
   const phoneFight = await phone.evaluate(() => window.__tactics.run.view.fight);
-  const foe = phoneFight.units.find((u) => u.side === 'enemy' && u.alive).hex;
-  const foeAt = await (async () => {
-    const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), foe);
+  const onPhone = async (hex) => {
+    const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
     const box = await phone.locator('canvas').boundingBox();
-    return {x: (x * box.width) / 672, y: (y * box.height) / 696, box};
-  })();
-  await phone.tap('canvas', {position: {x: foeAt.x, y: foeAt.y}});
+    return {x: box.x + (x * box.width) / 672, y: box.y + (y * box.height) / 696};
+  };
+  const foe = phoneFight.units.find((u) => u.side === 'enemy' && u.alive).hex;
+  const foeAt = await onPhone(foe);
+  await phone.touchscreen.tap(foeAt.x, foeAt.y);
   await sleep(300);
   const tooltip = phone.getByTestId('hex-tooltip');
   const phoneSheet = tooltip.getByTestId('stat-sheet');
@@ -503,55 +504,108 @@ try {
     'phone: tapping an enemy shows its details in a tooltip',
     (await phoneSheet.locator('[data-side="enemy"]').count()) === 1
   );
-  check(
-    'phone: the tooltip starts short (no abilities)',
-    !(await tooltip.getByText('Abilities', {exact: true}).count()),
-    (await tooltip.textContent()).slice(0, 120)
+  const actionBarTop = await phoneMove.evaluate(
+    (el) => el.closest('section').getBoundingClientRect().top
   );
   {
     const t = await tooltip.boundingBox();
-    const b = foeAt.box;
-    const hx = b.x + foeAt.x;
-    const hy = b.y + foeAt.y;
+    const vw = phone.viewportSize().width;
     check(
-      'phone: the tooltip sits on the board, clear of the tapped hex',
-      t.x >= b.x - 1 &&
-        t.x + t.width <= b.x + b.width + 1 &&
-        t.y >= b.y - 1 &&
-        t.y + t.height <= b.y + b.height + 1 &&
-        !(hx >= t.x && hx <= t.x + t.width && hy >= t.y && hy <= t.y + t.height),
-      [t, b, hx, hy]
+      'phone: the tooltip is on screen above the action bar, clear of the tapped hex',
+      t.x >= 0 &&
+        t.x + t.width <= vw + 1 &&
+        t.y >= 0 &&
+        t.y + t.height <= actionBarTop + 1 &&
+        !(
+          foeAt.x >= t.x &&
+          foeAt.x <= t.x + t.width &&
+          foeAt.y >= t.y &&
+          foeAt.y <= t.y + t.height
+        ),
+      [t, foeAt, actionBarTop]
     );
   }
   check('phone: the action section stays on screen', await inViewport(phoneMove));
   await shot(phone, 'phone-tooltip');
-  // A tap on the tooltip shows the full sheet; another shortens it again.
-  await tooltip.tap();
-  await sleep(150);
-  check(
-    'phone: tapping the tooltip shows the full sheet',
-    (await tooltip.getByText('Abilities', {exact: true}).count()) === 1 &&
-      (await tooltip.getAttribute('aria-expanded')) === 'true',
-    [
-      await tooltip.getByText('Abilities', {exact: true}).count(),
-      await tooltip.getAttribute('aria-expanded'),
-    ]
-  );
-  await shot(phone, 'phone-tooltip-full');
+  // It opens with the most detail that fits; if that isn't the full sheet, a
+  // tap shows it and another goes back.
+  const opened = await tooltip.getAttribute('data-detail');
+  const abilities = () => tooltip.getByText('Abilities', {exact: true}).count();
+  if (opened === 'full') {
+    check(
+      'phone: the full sheet fits, so there’s nothing more to tap for',
+      (await abilities()) === 1 && !(await tooltip.getByText(/^Tap for/).count())
+    );
+  } else {
+    check(
+      `phone: opened with “${opened}”, and offers more`,
+      !(await abilities()) && (await tooltip.getByText('Tap for more').count()) === 1
+    );
+    await tooltip.tap();
+    await sleep(150);
+    check(
+      'phone: tapping the tooltip shows the full sheet',
+      (await abilities()) === 1 && (await tooltip.getAttribute('aria-expanded')) === 'true'
+    );
+    await shot(phone, 'phone-tooltip-full');
+    await tooltip.tap();
+    await sleep(150);
+    check(
+      'phone: a second tap goes back',
+      (await tooltip.getAttribute('data-detail')) === opened && !(await abilities())
+    );
+  }
   check(
     'phone: no “could do next turn” on an enemy',
     !(await tooltip.textContent()).includes('Could do next turn')
   );
-  await tooltip.tap();
+  // Tapping the same hex again closes the tooltip.
+  await phone.touchscreen.tap(foeAt.x, foeAt.y);
+  await sleep(200);
+  check('phone: tapping the hex again closes the tooltip', !(await tooltip.count()));
+  // Plain sand says little, so its tooltip is narrow.
+  {
+    const quiet = phoneFight.units.map((u) => u.hex && `${u.hex.q},${u.hex.r}`);
+    const busyHexes = new Set([
+      ...quiet,
+      ...Object.keys(phoneFight.tiles ?? {}),
+      ...(phoneFight.fog ?? []).map((f) => `${f.hex.q},${f.hex.r}`),
+      ...phoneFight.effects.map((e) => `${e.hex.q},${e.hex.r}`),
+    ]);
+    const reaches = await phone.evaluate(() => window.__tactics.reaches.map((r) => r.hex));
+    const sand = reaches.find((h) => !busyHexes.has(`${h.q},${h.r}`));
+    const at = await onPhone(sand);
+    await phone.touchscreen.tap(at.x, at.y);
+    await sleep(200);
+    const t = await tooltip.boundingBox();
+    check(
+      'phone: a sand hex’s tooltip is narrow',
+      (await tooltip.textContent()).startsWith('Sand') && t.width < 200,
+      [await tooltip.textContent(), t.width]
+    );
+    // Tapping away from the board (here, below the action bar) closes it too.
+    await phone.touchscreen.tap(4, phone.viewportSize().height - 4);
+    await sleep(200);
+    check('phone: tapping away closes the tooltip', !(await tooltip.count()));
+  }
+  // The run's menu: back to the games, and Reset run, which one tap only arms.
+  check(
+    'phone: no Reset run button on the page',
+    !(await phone.getByRole('button', {name: 'Reset run'}).count())
+  );
+  await phone.getByRole('button', {name: 'Menu'}).tap();
+  const allGames = phone.getByRole('menuitem', {name: 'All games'});
+  await allGames.waitFor({timeout: 5_000});
+  const phoneRunId = await phone.evaluate(() => window.__tactics.run.runId);
+  await phone.getByRole('menuitem', {name: 'Reset run'}).tap();
   await sleep(150);
   check(
-    'phone: a second tap shortens it',
-    !(await tooltip.getByText('Abilities', {exact: true}).count())
+    'phone: Reset run in the menu only arms on the first tap',
+    (await phone.getByRole('menuitem', {name: 'Tap again to reset'}).isVisible()) &&
+      (await phone.evaluate(() => window.__tactics.run.runId)) === phoneRunId
   );
-  // Tapping away from the board (here, just under it) closes the tooltip.
-  await phone.touchscreen.tap(4, foeAt.box.y + foeAt.box.height + 4);
-  await sleep(200);
-  check('phone: tapping away closes the tooltip', !(await tooltip.count()));
+  await phone.keyboard.press('Escape');
+  await sleep(150);
   {
     const scroll = await phone.evaluate(
       () => document.documentElement.scrollHeight - window.innerHeight
@@ -626,6 +680,16 @@ try {
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth
   );
   check('phone: no sideways scroll', overflow <= 1, overflow);
+  // A smaller phone (iPhone SE's screen less Safari's bars): still no scrolling.
+  await phone.setViewportSize({width: 375, height: 553});
+  await sleep(300);
+  {
+    const scroll = await phone.evaluate(
+      () => document.documentElement.scrollHeight - window.innerHeight
+    );
+    check('small phone: the page doesn’t scroll', scroll <= 1, scroll);
+  }
+  await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-small.png')});
   await abandonOn(phone);
 } finally {
   await browser.close();
