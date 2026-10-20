@@ -27,7 +27,6 @@ import mangudaiSprite from './sprites/mangudai.png';
 import mangudaiPortrait from './sprites/mangudai-portrait.png';
 import stormPortrait from './sprites/storm-portrait.png';
 import stormSprite from './sprites/storm.png';
-import hailImage from './tiles/hail.png';
 import quicksandImage from './tiles/quicksand.png';
 import ruinsImage from './tiles/ruins.png';
 import sandImage from './tiles/sand.png';
@@ -349,7 +348,6 @@ export class TacticsBoardSystem extends BaseSystem {
     drawGround(ctx, map, t);
     const sandstorm = map.hexes.filter((h) => tileAt(map, h) === 'conceal');
     drawBank(ctx, SANDSTORM_BANK, sandstorm, t);
-    for (const effect of fight.effects) drawHail(ctx, effect.hex);
     drawBank(
       ctx,
       FOG_BANK,
@@ -401,8 +399,8 @@ export class TacticsBoardSystem extends BaseSystem {
       }
     }
 
-    // Hail falls in front of whoever stands in it.
-    if (t !== null) for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t);
+    // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
+    for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
 
     if (playing) drawPlaybackEvent(ctx, playing);
 
@@ -1109,22 +1107,23 @@ function insideHex(x: number, y: number, margin: number): boolean {
 }
 
 /** Hailstones falling on a hail hex: each drops in turn from above the board, bursting as it lands. */
-const HAIL_DROPS = 5;
-const HAIL_CYCLE_SECONDS = 1.3;
-const HAIL_FALL_SECONDS = 0.36;
+const HAIL_DROPS = 10;
+const HAIL_CYCLE_SECONDS = 1.1;
+const HAIL_FALL_SECONDS = 0.3;
 const HAIL_BURST_SECONDS = 0.24;
 /** How far above its landing spot a stone starts, and how far the wind carries it meanwhile, in art pixels. */
-const HAIL_DROP_HEIGHT = 32;
-const HAIL_DRIFT = 9;
+const HAIL_DROP_HEIGHT = 22;
+const HAIL_DRIFT = 7;
+/** The moment shown with reduced motion: a few stones in the air, none bursting. */
+const HAIL_STILL_SECONDS = 0.3;
 
 /**
  * Hailstones falling onto a hail hex, from well above it and slanting with
  * the wind, a shadow growing under each as it nears the ground; on landing
- * it bursts into shards (the ground image already shows the fallen ones).
+ * it bursts into shards. This is all a hail hex shows: no ground image.
  * Drawn over the units, unclipped, so stones fall in front of whoever
  * stands there. Their spots, sizes and timing come from the hex, so hexes
- * don't fall in step. In art pixels at the sprites' scale, in the hail
- * image's colours.
+ * don't fall in step. In art pixels at the sprites' scale.
  */
 function drawFallingHail(ctx: CanvasRenderingContext2D, h: Hex, time: number): void {
   const c = center(h);
@@ -1483,34 +1482,6 @@ function buildBank(
   );
   layer.globalCompositeOperation = 'source-over';
   return {canvas, key: '', hexes: hexesKey, bounds};
-}
-
-/** A hail hex's ground: the fallen stones (the falling ones are drawn later, over the units). */
-function drawHail(ctx: CanvasRenderingContext2D, h: Hex): void {
-  const at = center(h);
-  const img = assetLoader.requestImage(hailImage);
-  if (img) {
-    drawHexImage(ctx, h, img);
-    return;
-  }
-  fillHex(ctx, h, {fill: 'rgba(186,230,253,0.45)', stroke: '#7dd3fc'});
-  ctx.save();
-  ctx.translate(at.x, at.y);
-  ctx.scale(HEX_SCALE, HEX_SCALE);
-  const c = {x: 0, y: 0};
-  ctx.fillStyle = '#e0f2fe';
-  for (const [dx, dy] of [
-    [-12, -12],
-    [10, -14],
-    [-16, 6],
-    [14, 8],
-    [0, 16],
-  ] as const) {
-    ctx.beginPath();
-    ctx.arc(c.x + dx, c.y + dy, 2.2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
 }
 
 function drawCharge(ctx: CanvasRenderingContext2D, u: Unit): void {
