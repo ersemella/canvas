@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Alert, Button, Center, Group, Loader, Paper, Stack, Text} from '@mantine/core';
+import {Alert, Button, Center, Loader, Paper, Stack, Text} from '@mantine/core';
 import {
   hexDistance,
   hexEquals,
@@ -304,11 +304,21 @@ export function TacticsPage() {
     return out;
   }, [acting, abilityContext]);
 
-  /** The complete move action's delay, before track yielding. */
+  /**
+   * The move action's delay, before track yielding: the planned move's, or
+   * the range over the hexes it can reach, so Move reads like an ability.
+   */
   const moveSlots = useMemo(() => {
-    if (!acting || !plannedMove || plannedMove.path.length === 0) return null;
-    return slotsForward(turnCost(RULES.moveActionCost, plannedMove.path.length), acting.speed);
-  }, [acting, plannedMove]);
+    if (!acting) return null;
+    const slots = (hexes: number) =>
+      slotsForward(turnCost(RULES.moveActionCost, hexes), acting.speed);
+    if (plannedMove && plannedMove.path.length > 0) return `${slots(plannedMove.path.length)}`;
+    const lengths = reaches.map((r) => r.path.length).filter((n) => n > 0);
+    if (lengths.length === 0) return null;
+    const low = slots(Math.min(...lengths));
+    const high = slots(Math.max(...lengths));
+    return low === high ? `${low}` : `${low}–${high}`;
+  }, [acting, plannedMove, reaches]);
 
   // ── Taps on the board ──────────────────────────────────────────────────────
 
@@ -483,13 +493,6 @@ export function TacticsPage() {
         if (target.to) highlights.push({hex: target.to, kind: 'chosen'});
       }
     }
-    // Numbered badges where each step happens, in the order they resolve.
-    const actionHex = target?.hex ?? acting.hex;
-    const stepHexes = [
-      plannedMove && !moving ? plannedMove.hex : null,
-      action && actionHex ? actionHex : null,
-    ];
-    out.steps = stepHexes.filter((h): h is Hex => h !== null).map((hex, i) => ({hex, n: i + 1}));
     if (preview) {
       out.preview = preview.changes.map((c) => ({
         unitId: c.unitId,
@@ -735,12 +738,12 @@ export function TacticsPage() {
 }
 
 function TurnControls(props: {
-  /** Phones: smaller buttons, inline steps, no panel of its own (the pinned action bar is one). */
+  /** Phones: smaller buttons, no panel of its own (the pinned action bar is one). */
   phone: boolean;
   /** What an ability of this cost takes in slots, before yielding. */
   slotsLater: (actionCost: number) => number;
-  /** The complete move action cost, in slots, shown in the Move button. */
-  moveSlots: number | null;
+  /** The move action's cost in slots (a range until a hex is picked), shown in the Move button. */
+  moveSlots: string | null;
   /** Unit-aimed abilities with no one to aim at, disabled (unless already chosen, so they can be put down). */
   outOfReach: Set<AbilityId>;
   unit: Unit;
@@ -753,19 +756,16 @@ function TurnControls(props: {
   children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving, phone} = props;
-  // The steps in the order they resolve, named only.
-  const moveStep = moving || (plannedMove?.path.length ?? 0) > 0 ? 'Move' : null;
-  const actionStep = ability ? ABILITIES[ability].name : null;
-  const steps = [moveStep, actionStep].filter((x): x is string => x !== null);
   const size = phone ? 'compact-sm' : 'xs';
   return (
     <Paper bg={phone ? 'transparent' : 'dark.7'} p={phone ? 0 : 'sm'} radius="md">
       <Stack gap={8}>
+        {/* One choice per turn: Move or an ability, picked like any other. */}
         <div className={styles.abilities}>
           <Button
             size={size}
             variant={moving || plannedMove ? 'filled' : 'light'}
-            color="teal"
+            color="blue"
             disabled={!props.canMove}
             aria-pressed={moving || plannedMove !== null}
             title={
@@ -802,6 +802,7 @@ function TurnControls(props: {
                   variant={ability === def.id ? 'filled' : 'light'}
                   color={def.ultimate ? 'grape' : 'blue'}
                   disabled={reason !== null}
+                  aria-pressed={ability === def.id}
                   title={reason ?? def.summary(unit)}
                   onClick={() => props.onAbility(ability === def.id ? null : def.id)}
                 >
@@ -813,19 +814,6 @@ function TurnControls(props: {
               );
             })}
         </div>
-        {/* The planned steps in order, just above the button that commits them. */}
-        {steps.length > 0 && (
-          <Group gap="xs" justify="space-between" wrap="nowrap">
-            <ol className={`${styles.steps} ${styles.stepsInline}`} data-testid="turn-steps">
-              {steps.map((step, i) => (
-                <li key={step}>
-                  <span className={styles.stepNo}>{i + 1}</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-          </Group>
-        )}
         {props.children}
       </Stack>
     </Paper>

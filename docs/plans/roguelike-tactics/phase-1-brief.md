@@ -141,7 +141,7 @@ reading of the owner's one-line descriptions; the owner can change them
 | Ability | Rule |
 |---|---|
 | **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it stops at the **first unit** on that line or at an obstacle. That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
-| **Dash** | Moves the Outrider **up to 3 hexes in a straight line** along one hex direction (owner, 2026-10-20; restored from 2 with separate movement). Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn’s action, so it cannot be combined with ordinary movement (2026-10-20). Not usable while Immobilized. Quick cost. |
+| **Dash** | Moves the Outrider **up to 3 hexes in a straight line** along one hex direction (owner, 2026-10-20; restored from 2 with separate movement). Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn’s action, so it cannot be combined with ordinary movement (2026-10-20). Not usable while Immobilized. Cost 40 (owner, 2026-10-20; was quick, 60, which cost more than walking the same hexes). |
 | **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage **135** (owner, 2026-10-19), allies included. Charge and recovery costs TBD (3.7). |
 
 **Yadachy Storm Caller**
@@ -352,7 +352,7 @@ confirm or change:
   first on a tie used to lose 60–67% of AI-vs-AI fights, which tilted
   every single-order measurement. Under the adopted rules the AI chooses
   movement or an ability; historical combined-action comparisons move first.
-- **Dash** goes up to 3 hexes (owner, 2026-10-20; restored from 2 with separate movement). **Pin** and **Throw** target
+- **Dash** goes up to 3 hexes (owner, 2026-10-20; restored from 2 with separate movement) and costs 40 (was 60). **Pin** and **Throw** target
   any adjacent unit, allies included (Pin targeted enemies only until the
   2026-10-19 rule, 6.7).
 - **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage

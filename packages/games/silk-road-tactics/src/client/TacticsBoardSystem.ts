@@ -64,8 +64,6 @@ export interface BoardScene {
   aimSlot?: number | null;
   /** Arrow flights to draw (the bow's lanes): `hits` when it ends on a unit. */
   arrows?: {from: Hex; to: Hex; hits: boolean}[];
-  /** The planned turn's steps, numbered in the order they resolve, at the hex each happens. */
-  steps?: {hex: Hex; n: number}[];
 }
 
 const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
@@ -346,14 +344,6 @@ export class TacticsBoardSystem extends BaseSystem {
       drawStatusMarks(ctx, marks, at, stack.marksY);
     }
 
-    const badgesAt = new Map<string, number>();
-    for (const step of scene.steps ?? []) {
-      const k = hexKey(step.hex);
-      const i = badgesAt.get(k) ?? 0;
-      badgesAt.set(k, i + 1);
-      drawStepBadge(ctx, step.hex, step.n, i);
-    }
-
     if (fight.phase !== 'deploy') {
       drawTrack(
         ctx,
@@ -466,22 +456,6 @@ function drawArrow(ctx: CanvasRenderingContext2D, from: Hex, to: Hex, hits: bool
  * A numbered step badge on a hex's left edge, clear of the status markers
  * and damage labels above a unit; a second one on the same hex sits on the right.
  */
-function drawStepBadge(ctx: CanvasRenderingContext2D, h: Hex, n: number, index: number): void {
-  const c = center(h);
-  const x = c.x + (index === 0 ? -21 : 21);
-  const y = c.y;
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(x, y, 7.5, 0, Math.PI * 2);
-  ctx.fillStyle = '#fde047';
-  ctx.fill();
-  ctx.strokeStyle = '#111827';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.restore();
-  label(ctx, `${n}`, x, y + 0.5, '#111827', 10, true);
-}
-
 function roundRect(
   ctx: CanvasRenderingContext2D,
   x: number,
