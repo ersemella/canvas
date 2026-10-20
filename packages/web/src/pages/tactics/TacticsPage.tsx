@@ -45,6 +45,7 @@ import type {
   TurnInput,
   Unit,
 } from '@canvas/games-silk-road-tactics';
+import '@fontsource/cinzel/700.css';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {useIsPhone} from 'components/useIsPhone';
@@ -633,7 +634,7 @@ export function TacticsPage() {
   if (!run || !fight || run.status === 'abandoned') {
     return (
       <Stack align="center" py="xl" gap="lg" px="md">
-        <Paper bg="dark.7" withBorder p="xl" radius="md" maw={520}>
+        <Paper className={styles.plaque!} p="xl" maw={520}>
           <Stack gap="md">
             <Text>
               Three heroes of the steppe — a Bökh Champion, a Mangudai Outrider and a Yadachy Storm
@@ -643,7 +644,7 @@ export function TacticsPage() {
             <Text c="dimmed" fz="sm">
               Prototype: one fight. Hero numbers are placeholders.
             </Text>
-            <Button color="yellow" c="dark.9" fw="bold" onClick={startRun} loading={busy}>
+            <Button className={styles.seal!} fw="bold" onClick={startRun} loading={busy}>
               Start a fight
             </Button>
             {error && <Text c="red.4">{error}</Text>}
@@ -666,7 +667,7 @@ export function TacticsPage() {
   // keeps its height so the board doesn't move.
   const actions = finished ? (
     <div className={styles.confirmRow}>
-      <Button size="lg" color="yellow" c="dark.9" fw="bold" onClick={startRun} loading={busy}>
+      <Button size="lg" className={styles.seal!} fw="bold" onClick={startRun} loading={busy}>
         New fight
       </Button>
       {menu}
@@ -722,7 +723,7 @@ export function TacticsPage() {
   // Desktop: the chosen ability explained, under the details.
   const chosen = acting && ability && (
     <Glossary>
-      <Paper bg="dark.7" p="sm" radius="md" data-testid="chosen-ability">
+      <Paper className={styles.plaque!} p="sm" data-testid="chosen-ability">
         <AbilityDetail unit={acting} def={ABILITIES[ability]} />
       </Paper>
     </Glossary>
@@ -755,9 +756,14 @@ export function TacticsPage() {
             </GameErrorBoundary>
             {tooltip}
             {finished && (
-              <Paper className={styles.result!} p="lg" radius="md">
+              <Paper className={`${styles.result} ${styles.plaque}`} p="lg">
                 <Stack align="center" gap="xs">
-                  <Text fz="1.8rem" fw="bold" c={fight.phase === 'won' ? 'green.4' : 'red.4'}>
+                  <Text
+                    className={styles.display!}
+                    fz="1.8rem"
+                    fw="bold"
+                    c={fight.phase === 'won' ? 'var(--srt-brass)' : 'var(--srt-carmine-text)'}
+                  >
                     {fight.phase === 'won' ? 'Victory' : 'Defeat'}
                   </Text>
                   <Text c="dimmed" fz="sm">
@@ -778,7 +784,7 @@ export function TacticsPage() {
           )}
           {phone ? (
             <section
-              className={styles.actionBar}
+              className={`${styles.actionBar} ${styles.band}`}
               ref={actionsRef}
               style={{minHeight: actionsHeight.current || undefined}}
             >
@@ -786,7 +792,9 @@ export function TacticsPage() {
             </section>
           ) : (
             <>
-              <section ref={actionsRef}>{actions}</section>
+              <section className={styles.band} ref={actionsRef}>
+                {actions}
+              </section>
               {details}
               {chosen}
             </>
@@ -824,9 +832,12 @@ function TurnControls(props: {
   const {unit, ability, plannedMove, moving} = props;
   // No Hold button: Confirm reads End turn with no action picked.
   const defs = abilitiesOf(unit).filter((def) => def.id !== 'hold');
-  const label = (name: string, cost: string) => (
+  const label = (name: string, cost: string, note?: string) => (
     <span className={styles.bigButton}>
-      <span>{name}</span>
+      <span>
+        <span className={styles.tileName}>{name}</span>
+        {note && <span className={styles.tileNote}> {note}</span>}
+      </span>
       <span className={styles.bigButtonCost}>{cost}</span>
     </span>
   );
@@ -839,8 +850,7 @@ function TurnControls(props: {
       >
         <Button
           size="lg"
-          variant={moving || plannedMove ? 'filled' : 'light'}
-          color="blue"
+          className={styles.tile!}
           disabled={!props.canMove}
           aria-pressed={moving || plannedMove !== null}
           title={
@@ -864,8 +874,7 @@ function TurnControls(props: {
             <Button
               key={def.id}
               size="lg"
-              variant={ability === def.id ? 'filled' : 'light'}
-              color={def.ultimate ? 'grape' : 'blue'}
+              className={`${styles.tile} ${def.ultimate ? styles.tileUltimate : ''}`}
               disabled={reason !== null}
               aria-pressed={ability === def.id}
               title={reason ?? def.summary(unit)}
@@ -873,8 +882,9 @@ function TurnControls(props: {
             >
               {/* Its own cost in slots; Confirm adds any yielding. */}
               {label(
-                `${def.name}${lockedUlt ? ` ${unit.ultimateCharge}/${RULES.ultimateCharge}` : ''}`,
-                `+${props.slotsLater(def.cost)}`
+                def.name,
+                `+${props.slotsLater(def.cost)}`,
+                lockedUlt ? `${unit.ultimateCharge}/${RULES.ultimateCharge}` : undefined
               )}
             </Button>
           );

@@ -32,7 +32,9 @@ import type {
 import {AbilityName, Glossary, KeywordText, Term} from './Keywords';
 import styles from './TacticsPage.module.css';
 
-const sideColor = (u: Unit) => (u.side === 'player' ? 'blue' : 'red');
+/** A unit's name, in its side's colour: lapis yours, carmine the enemy's, as on the board. */
+const sideColor = (u: Unit) =>
+  u.side === 'player' ? 'var(--srt-lapis-text)' : 'var(--srt-carmine-text)';
 
 /**
  * The turn's one button: Confirm with the chosen action, or End turn with
@@ -58,7 +60,7 @@ export function ConfirmButton(props: {
   const {fight, preview} = props;
   if (props.needsTarget)
     return (
-      <Button color="yellow" fw="bold" size={props.size ?? 'sm'} disabled>
+      <Button className={styles.seal!} fw="bold" size={props.size ?? 'sm'} disabled>
         {props.needsTarget}
       </Button>
     );
@@ -69,8 +71,7 @@ export function ConfirmButton(props: {
   const next = slot === null ? '' : yields ? `+${aim! - now} → +${slot - now}` : `+${slot - now}`;
   return (
     <Button
-      color="yellow"
-      c="dark.9"
+      className={styles.seal!}
       fw="bold"
       size={props.size ?? 'sm'}
       loading={props.busy}
@@ -103,9 +104,20 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
     return () => clearTimeout(t);
   }, [armed]);
   return (
-    <Menu position="top-end" withArrow onClose={() => setArmed(false)}>
+    <Menu
+      position="top-end"
+      withArrow
+      classNames={{dropdown: styles.menu!}}
+      onClose={() => setArmed(false)}
+    >
       <Menu.Target>
-        <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Menu">
+        <ActionIcon
+          className={styles.menuButton!}
+          variant="subtle"
+          color="yellow"
+          size="lg"
+          aria-label="Menu"
+        >
           ⋯
         </ActionIcon>
       </Menu.Target>
@@ -155,8 +167,8 @@ export function HexInspector({
     <Glossary>
       <Stack gap={dense ? 6 : 8} data-testid="hex-info">
         {showTile && (
-          <Paper bg="dark.7" p={dense ? 'xs' : 'sm'} radius="md">
-            <Text fw={600} fz={dense ? 'sm' : 'md'}>
+          <Paper className={styles.plaque!} p={dense ? 'xs' : 'sm'}>
+            <Text className={styles.display!} fw={700} fz={dense ? 'sm' : 'md'}>
               {info.name}
             </Text>
             <Text fz="xs" c="dimmed">
@@ -247,10 +259,15 @@ export function StatSheet({
     ['defence', 'Defence', unit.defence],
   ] as const;
   return (
-    <Paper bg="dark.7" p={dense ? 'xs' : 'sm'} radius="md" data-testid="stat-sheet">
+    <Paper className={styles.plaque!} p={dense ? 'xs' : 'sm'} data-testid="stat-sheet">
       <Group justify="space-between" gap={6} mb={dense ? 2 : 0}>
-        {/* The name, in its side's colour: blue yours, red the enemy's, as on the board. */}
-        <Text fw={600} fz={dense ? 'sm' : 'md'} c={`${sideColor(unit)}.3`} data-side={unit.side}>
+        <Text
+          className={styles.display!}
+          fw={700}
+          fz={dense ? 'sm' : 'md'}
+          c={sideColor(unit)}
+          data-side={unit.side}
+        >
           {HEROES[unit.hero].name}
         </Text>
         <Text fz={dense ? 'xs' : 13}>
