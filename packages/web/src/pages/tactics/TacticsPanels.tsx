@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
-import {ActionIcon, Badge, Button, Group, Menu, Paper, Stack, Text} from '@mantine/core';
+import {ActionIcon, Button, Group, Menu, Paper, Stack, Text} from '@mantine/core';
 import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {
@@ -82,37 +82,10 @@ export function ConfirmButton(props: {
 }
 
 /**
- * Gives up the fight and starts a new one. Two taps: the first arms it
- * for a few seconds, so a stray tap doesn't throw a fight away.
- */
-export function ResetRunButton(props: {busy: boolean; onReset: () => void}) {
-  const [armed, setArmed] = useState(false);
-  useEffect(() => {
-    if (!armed) return;
-    const t = setTimeout(() => setArmed(false), 3000);
-    return () => clearTimeout(t);
-  }, [armed]);
-  return (
-    <Button
-      size="xs"
-      variant={armed ? 'filled' : 'subtle'}
-      color={armed ? 'red' : 'gray'}
-      disabled={props.busy}
-      onClick={() => {
-        if (!armed) return setArmed(true);
-        setArmed(false);
-        props.onReset();
-      }}
-    >
-      {armed ? 'Tap again to reset' : 'Reset run'}
-    </Button>
-  );
-}
-
-/**
- * Phones: the run's menu, behind a ⋯ button in the action bar, so its rare
- * actions take no room: back to the games (the page has no top bar), and
- * Reset run, which as on desktop arms on the first tap and resets on the second.
+ * The run's menu, behind a ⋯ button beside Confirm, so its rare actions take
+ * no room: back to the games (the page has no top bar), and Reset run, which
+ * arms on the first tap and gives up the fight for a new one on the second,
+ * so a stray tap doesn't throw a fight away.
  */
 export function RunMenu(props: {busy: boolean; onReset: () => void}) {
   const [armed, setArmed] = useState(false);
@@ -244,9 +217,8 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
 
 /**
  * Every unit's stat sheet, enemies' included: its name and health, stats,
- * statuses and abilities (D11), keywords tappable for their rules. `dense`
- * (the phone's tooltip): the same, the stats on one line and each ability
- * in one paragraph.
+ * statuses and its abilities' names (D11), a tap explaining a keyword or an
+ * ability. `dense` (the phone's tooltip): the stats on one line.
  */
 export function StatSheet({
   fight,
@@ -315,43 +287,24 @@ export function StatSheet({
           Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
         </Text>
       )}
-      {dense ? (
-        // Names only, to scan; a tap explains one below.
-        <div className={styles.abilityList}>
-          {abilities.map((def) => (
-            <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
-              {def.name}
-            </AbilityName>
-          ))}
-          <AbilityName
-            id={ult.id}
-            ultimate
-            body={<AbilityDetail unit={unit} def={ult} charge={ultimateState(unit)} />}
-          >
-            {ult.name}
-            {ultimateState(unit) !== 'Used' && (
-              <span className={styles.abilityChipNote}>
-                {ultimateState(unit) === 'Ready'
-                  ? 'Ready'
-                  : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
-              </span>
-            )}
+      {/* Names only, to scan; a tap explains one below. */}
+      <div className={styles.abilityList}>
+        {abilities.map((def) => (
+          <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
+            {def.name}
           </AbilityName>
-        </div>
-      ) : (
-        <Stack gap={6} mt={8}>
-          <Text fz="xs" fw={600}>
-            Abilities
-          </Text>
-          {abilities.map((def) => (
-            <AbilityLine key={def.id} unit={unit} def={def} />
-          ))}
-          <Text fz="xs" fw={600} mt={2}>
-            <Term id="ultimate">Ultimate</Term>
-          </Text>
-          <AbilityLine unit={unit} def={ult} charge={ultimateState(unit)} />
-        </Stack>
-      )}
+        ))}
+        <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
+          {ult.name}
+          {ultimateState(unit) !== 'Used' && (
+            <span className={styles.abilityChipNote}>
+              {ultimateState(unit) === 'Ready'
+                ? 'Ready'
+                : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
+            </span>
+          )}
+        </AbilityName>
+      </div>
     </Paper>
   );
 }
@@ -364,18 +317,19 @@ function costText(unit: Unit, def: AbilityDef): string {
 }
 
 /**
- * The phone tooltip's explanation of a tapped ability: its cost (a Term,
- * once) and duration, then what it does, its keywords tappable in turn.
- * An ultimate says so, with how far it is from being ready.
+ * An ability explained: its cost (a Term, once) and duration, then what it
+ * does, its keywords tappable in turn. An ultimate says so, with how far it
+ * is from being ready. For a name tapped on a stat sheet, and on desktop
+ * for the ability picked for the turn.
  */
-function AbilityDetail({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
+export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
   return (
     <Text fz="xs">
       <b>{def.name}</b>
-      {charge && (
+      {def.ultimate && (
         <>
           {' · '}
-          <Term id="ultimate">Ultimate</Term> {charge}
+          <Term id="ultimate">Ultimate</Term> {ultimateState(unit)}
         </>
       )}
       {' · '}
@@ -390,43 +344,5 @@ function AbilityDetail({unit, def, charge}: {unit: Unit; def: AbilityDef; charge
         <KeywordText text={def.summary(unit)} />
       </span>
     </Text>
-  );
-}
-
-/**
- * One ability on the stat sheet: its name and cost, in this unit's slots
- * (the action alone, before any move or yielding) and how long it lasts,
- * then what it does. An ultimate also shows how far it is from being ready.
- */
-function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
-  const slots = def.charged ? costText(unit, def) : `Action ${costText(unit, def)}`;
-  const cost = def.duration === undefined ? slots : `Duration ${def.duration} · ${slots}`;
-  return (
-    <div>
-      {/* The cost drops under the name when they don't fit side by side. */}
-      <Group justify="space-between" gap={6}>
-        <Group gap={6} wrap="nowrap">
-          <Text fz="xs" fw={600} c="gray.3">
-            {def.name}
-          </Text>
-          {charge && (
-            <Badge
-              size="xs"
-              variant="light"
-              color={charge === 'Ready' ? 'yellow' : 'gray'}
-              tt="none"
-            >
-              {charge}
-            </Badge>
-          )}
-        </Group>
-        <Text fz={11} c="dimmed" style={{whiteSpace: 'nowrap'}}>
-          {cost}
-        </Text>
-      </Group>
-      <Text fz="xs" c="dimmed">
-        <KeywordText text={def.summary(unit)} />
-      </Text>
-    </div>
   );
 }

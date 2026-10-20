@@ -29,12 +29,6 @@
   background: rgba(17, 24, 39, 0.92);
 }
 
-.abilities {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
 .preview {
   border-top: 1px solid var(--mantine-color-dark-4);
   padding-top: 6px;
@@ -48,12 +42,6 @@
 .heal {
   color: var(--mantine-color-green-4);
   font-weight: 600;
-}
-
-.abilityCost {
-  margin-left: 6px;
-  font-size: 10px;
-  opacity: 0.7;
 }
 
 /* Speed, power and defence: boxed apart from the rest. */
@@ -86,11 +74,21 @@
 
 /* Phones: the action section, pinned to the screen's bottom. */
 .actionBar {
+  /* Bottom-aligned: once the fight ends, New fight sits where Confirm was. */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   margin: 0 -16px;
   padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
 }
 
 /* Phone: board on top, the track and panels below (brief section 9). */
+/* The canvas's black everywhere, so the board, the panel and the page read as one surface. */
+.page {
+  min-height: 100dvh;
+  background: #000;
+}
+
 /* Desktop: the slot is just the board. */
 .boardSlot {
   display: contents;
@@ -106,7 +104,6 @@
   .page {
     height: 100dvh;
     overflow: hidden;
-    background: #000;
   }
   .layout {
     flex: 1;

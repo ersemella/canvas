@@ -244,10 +244,10 @@ try {
   check('the Outrider acts first', acting.id === outrider, acting.id);
   const hexDistance = (a, b) =>
     (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q + a.r - b.q - b.r)) / 2;
-  await page.getByRole('button', {name: /^Dash/}).click();
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click();
   await page.waitForFunction(() => window.__tactics.targets.length > 0);
   const dashTargets = await page.evaluate(() => window.__tactics.targets.map((t) => t.hex));
-  await page.getByRole('button', {name: /^Dash/}).click(); // and off again
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click(); // and off again
   const dashTo = dashTargets.sort(
     (a, b) => hexDistance(b, acting.hex) - hexDistance(a, acting.hex)
   )[0];
@@ -267,18 +267,27 @@ try {
     (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
   check('there is no Hold button', !(await page.getByRole('button', {name: /^Hold/}).count()));
-  // Select Dash and its target, then replace it with Move and a hex.
-  await page.getByRole('button', {name: /^Dash/}).click();
+  // Select Dash and its target, then replace it with Move and a hex. Picked,
+  // Dash is explained under the details; nothing is before.
+  const chosen = page.getByTestId('chosen-ability');
+  const chosenBefore = await chosen.count();
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click();
+  check(
+    'picking an ability explains it under the details (and nothing before)',
+    chosenBefore === 0 && (await chosen.textContent()).startsWith('Dash'),
+    await chosen.textContent().catch(() => null)
+  );
   await tapHex(dashTo);
   await tapHex(dashTo); // a second tap on the target doesn't commit
   check('a second tap on the target doesn’t commit', (await state()).view.version === before);
   await moveButton.click();
   await tapHex(dest);
-  const dashButton = page.getByRole('button', {name: /^Dash/});
+  const dashButton = page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/});
   check(
     'Move replaces the ability selection',
     (await dashButton.getAttribute('aria-pressed')) === 'false'
   );
+  check('putting the ability down hides its explanation', !(await chosen.count()));
   check('there are no numbered steps', !(await page.getByTestId('turn-steps').count()));
   check(
     'Move stays highlighted while a move is planned',
@@ -302,7 +311,7 @@ try {
   );
   await moveButton.click();
   await tapHex(dest);
-  await page.getByRole('button', {name: /^Dash/}).click();
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click();
   await tapHex(dashTo);
   check(
     'an ability replaces a planned move',
@@ -353,6 +362,9 @@ try {
   );
 
   // An enemy's stat sheet.
+  // After the turn's playback: a click during one only skips it.
+  await waitIdle();
+  run = await state();
   const enemy = run.view.fight.units.find((u) => u.side === 'enemy' && u.alive);
   await tapHex(enemy.hex);
   const sheet = page.getByTestId('stat-sheet');
@@ -365,11 +377,22 @@ try {
     !(await sheet.textContent()).includes('Could do next turn')
   );
   check('the sheet doesn’t list Hold', !(await sheet.textContent()).includes('Hold'));
+  // Abilities by name; a click explains one, in slots, not costs.
+  await sheet.locator('[data-ability]').first().click();
+  const about = page.getByTestId('ability-info');
   check(
-    'the sheet gives abilities in slots, not costs',
-    /(Action|Charge) \+\d+/.test(await sheet.textContent()) &&
-      !/(Action|Charge|Recovery) \d/.test(await sheet.textContent()),
-    (await sheet.textContent()).slice(0, 200)
+    'a click on an ability’s name explains it, in slots, not costs',
+    /(Cost|Charge) \+\d+/.test(await about.textContent()) &&
+      !/(Cost|Charge|Recovery) \d/.test(await about.textContent()),
+    await about.textContent().catch(() => null)
+  );
+  // A keyword clicked on the enemy's sheet explains itself there, the
+  // enemy's sheet staying (not going back to the unit whose turn it is).
+  await sheet.locator('[data-keyword="speed"]').click();
+  check(
+    'a click on a keyword keeps the enemy’s sheet, explaining it',
+    (await sheet.locator('[data-side="enemy"]').count()) === 1 &&
+      (await page.getByTestId('keyword-info').textContent()).startsWith('Speed.')
   );
   check(
     'the sheet says spaces, not hexes, and has no next turn',
@@ -377,6 +400,13 @@ try {
     (await sheet.textContent()).slice(0, 200)
   );
   await shot(page, 'enemy-sheet');
+
+  check(
+    'the page is the board’s black',
+    (await page.evaluate(
+      () => getComputedStyle(document.querySelector('[class*="page"]')).backgroundColor
+    )) === 'rgb(0, 0, 0)'
+  );
 
   // Hovering a hex shows what it does, without planning a move.
   // Each fight places its own quicksand: find one in the view.
@@ -403,12 +433,13 @@ try {
   await page.waitForFunction(() => window.__tactics?.run);
   check('a reload resumes the run exactly', JSON.stringify((await state()).view) === snapshot);
 
-  // Reset run: the first tap only arms it; the second starts a fresh run.
+  // Reset run, in the menu: the first tap only arms it; the second starts a fresh run.
   const beforeReset = (await state()).runId;
-  await page.getByRole('button', {name: 'Reset run'}).click();
+  await page.getByRole('button', {name: 'Menu'}).click();
+  await page.getByRole('menuitem', {name: 'Reset run'}).click();
   await sleep(300);
   check('one tap on Reset run changes nothing', (await state()).runId === beforeReset);
-  await page.getByRole('button', {name: 'Tap again to reset'}).click();
+  await page.getByRole('menuitem', {name: 'Tap again to reset'}).click();
   await page.waitForFunction((id) => window.__tactics.run?.runId !== id, beforeReset, {
     timeout: 15_000,
   });
@@ -468,6 +499,25 @@ try {
   );
   await sleep(300);
   await shot(page, 'end');
+  check(
+    'New fight takes Confirm’s place',
+    await page.getByRole('button', {name: 'New fight'}).isVisible()
+  );
+  // On a phone the finished fight keeps the action section's height, so the board stays put.
+  await page.setViewportSize({width: 390, height: 664});
+  await sleep(300);
+  {
+    const box = await page.locator('canvas').boundingBox();
+    const bar = await page
+      .getByRole('button', {name: 'New fight'})
+      .evaluate((el) => el.closest('section').getBoundingClientRect());
+    check(
+      'phone, fight over: New fight in the action section, the board against it',
+      Math.abs(bar.top - (box.y + box.height)) <= 12 && bar.height > 150,
+      [box, bar]
+    );
+    await shot(page, 'end-phone');
+  }
   check('no page errors', pageErrors.length === 0, pageErrors);
 
   // A phone: board on top, details in a tooltip over it, the action section
@@ -723,7 +773,7 @@ try {
     .getByTestId('turn-controls')
     .getByRole('button', {name: /^Move/})
     .boundingBox();
-  await phone.getByRole('button', {name: /^Dash/}).click();
+  await phone.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
   check(
     'phone: with no target yet, the button still ends the turn (as with Move)',
@@ -754,7 +804,10 @@ try {
     /^Confirm · \+\d+( → \+\d+)?$/.test(phoneConfirm),
     phoneConfirm
   );
-  const dashButtonText = await phone.getByRole('button', {name: /^Dash/}).textContent();
+  const dashButtonText = await phone
+    .getByTestId('turn-controls')
+    .getByRole('button', {name: /^Dash/})
+    .textContent();
   check(
     'phone: the ability button shows the same slots as Confirm',
     dashButtonText.endsWith(phoneConfirm.match(/· (\+\d+)/)[1]),

@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {Alert, Button, Center, Loader, Paper, Stack, Text} from '@mantine/core';
 import {
   hexDistance,
@@ -53,7 +53,7 @@ import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
 import {HexTooltip} from './HexTooltip';
 import {Glossary} from './Keywords';
-import {ConfirmButton, HexInspector, ResetRunButton, RunMenu, StatSheet} from './TacticsPanels';
+import {AbilityDetail, ConfirmButton, HexInspector, RunMenu, StatSheet} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 /** Area abilities: their radius, to highlight the area around a chosen hex. */
@@ -126,6 +126,10 @@ export function TacticsPage() {
   const eventsRef = useRef<EventBus | null>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
   const actionsRef = useRef<HTMLElement | null>(null);
+  /** The details and actions (the whole side panel on desktop): clicks there keep the inspected hex. */
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  /** Phones: the action section's height during the fight, kept once it ends so the board stays put. */
+  const actionsHeight = useRef(0);
   const [worldReady, setWorldReady] = useState(0);
   /** Phones: the space the board may fill, and the board's width to fill it. */
   const boardSlotRef = useRef<HTMLDivElement | null>(null);
@@ -133,7 +137,8 @@ export function TacticsPage() {
   /** The canvas's size on screen, to place the phone's tooltip over it. */
   const [boardSize, setBoardSize] = useState<{width: number; height: number} | null>(null);
 
-  // A tap anywhere but the board or the action section stops inspecting,
+  // A tap anywhere but the board or the side panel (on phones, the action
+  // section) stops inspecting,
   // and the details go back to the unit whose turn it is. A click, not a
   // touch, so scrolling the details doesn't count. The click's path, not its
   // target: a tap can replace what it landed on (the tooltip growing).
@@ -141,13 +146,20 @@ export function TacticsPage() {
     const onClick = (e: MouseEvent) => {
       const path = e.composedPath();
       const inside = (el: Element | null) => el !== null && path.includes(el);
-      if (inside(boardRef.current) || inside(actionsRef.current)) return;
+      if (inside(boardRef.current) || inside(panelRef.current)) return;
       setPinnedHex(null);
       setSelectedId(null);
     };
     document.addEventListener('click', onClick);
     return () => document.removeEventListener('click', onClick);
   }, []);
+
+  // Phones: note the action section's height while it holds the turn's
+  // choices, to keep once the fight ends.
+  useLayoutEffect(() => {
+    const el = actionsRef.current;
+    if (el?.querySelector('[data-testid="turn-controls"]')) actionsHeight.current = el.offsetHeight;
+  });
 
   const fight: FightState | null = run?.view.fight ?? null;
   const fightRef = useRef(fight);
@@ -638,30 +650,40 @@ export function TacticsPage() {
   // The action section (the turn) and the detail section
   // (what's tapped or hovered). Phones show the details in a tooltip over
   // the board and pin the actions to the bottom of the screen.
-  const actions = acting && !finished && (
-    <TurnControls
-      phone={phone}
-      slotsLater={slotsLater}
-      moveSlots={moveSlots}
-      outOfReach={outOfReach}
-      unit={acting}
-      ability={ability}
-      plannedMove={plannedMove}
-      moving={moving}
-      canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
-      onMove={toggleMove}
-      onAbility={chooseAbility}
-      menu={phone && <RunMenu busy={busy || playing} onReset={startRun} />}
-    >
-      <ConfirmButton
-        endTurn={endsWithHold}
-        fight={fight}
-        preview={preview}
-        size={phone ? 'lg' : 'sm'}
-        busy={busy || playing}
-        onConfirm={() => commit()}
-      />
-    </TurnControls>
+  const menu = <RunMenu busy={busy || playing} onReset={startRun} />;
+  // Once the fight is over, New fight takes Confirm's place, and the section
+  // keeps its height so the board doesn't move.
+  const actions = finished ? (
+    <div className={styles.confirmRow}>
+      <Button size="lg" color="yellow" c="dark.9" fw="bold" onClick={startRun} loading={busy}>
+        New fight
+      </Button>
+      {menu}
+    </div>
+  ) : (
+    acting && (
+      <TurnControls
+        slotsLater={slotsLater}
+        moveSlots={moveSlots}
+        outOfReach={outOfReach}
+        unit={acting}
+        ability={ability}
+        plannedMove={plannedMove}
+        moving={moving}
+        canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
+        onMove={toggleMove}
+        onAbility={chooseAbility}
+        menu={menu}
+      >
+        <ConfirmButton
+          endTurn={endsWithHold}
+          fight={fight}
+          preview={preview}
+          busy={busy || playing}
+          onConfirm={() => commit()}
+        />
+      </TurnControls>
+    )
   );
   // Phones: the details are a tooltip over the board, beside the tapped hex
   // (or the unit whose track card was tapped); none while a turn plays back.
@@ -685,16 +707,21 @@ export function TacticsPage() {
       </Glossary>
     )
   );
-  // Desktop; phones have the run menu. Once the fight is over, the result's
-  // New fight button does the same.
-  const reset = !finished && <ResetRunButton busy={busy || playing} onReset={startRun} />;
+  // Desktop: the chosen ability explained, under the details.
+  const chosen = acting && ability && (
+    <Glossary>
+      <Paper bg="dark.7" p="sm" radius="md" data-testid="chosen-ability">
+        <AbilityDetail unit={acting} def={ABILITIES[ability]} />
+      </Paper>
+    </Glossary>
+  );
 
   return (
     <Stack
       className={styles.page!}
       align="center"
-      pt={phone ? 0 : 'md'}
-      pb={phone ? 0 : 'md'}
+      pt={phone ? 0 : 'sm'}
+      pb={phone ? 0 : 'sm'}
       gap="sm"
       px="md"
     >
@@ -726,33 +753,30 @@ export function TacticsPage() {
                       ? 'The rival band is scattered.'
                       : 'Your caravan has fallen.'}
                   </Text>
-                  <Button color="yellow" c="dark.9" fw="bold" onClick={startRun} loading={busy}>
-                    New fight
-                  </Button>
                 </Stack>
               </Paper>
             )}
           </div>
         </div>
-        <div className={styles.panel}>
+        <div className={styles.panel} ref={panelRef}>
           {error && (
             <Alert color="red" py={6} withCloseButton onClose={() => setError(null)}>
               {error}
             </Alert>
           )}
           {phone ? (
-            <>
-              {actions && (
-                <section className={styles.actionBar} ref={actionsRef}>
-                  {actions}
-                </section>
-              )}
-            </>
+            <section
+              className={styles.actionBar}
+              ref={actionsRef}
+              style={{minHeight: actionsHeight.current || undefined}}
+            >
+              {actions}
+            </section>
           ) : (
             <>
-              {actions}
+              <section ref={actionsRef}>{actions}</section>
               {details}
-              {reset}
+              {chosen}
             </>
           )}
         </div>
@@ -761,9 +785,13 @@ export function TacticsPage() {
   );
 }
 
+/**
+ * The turn's choices, the same on phones and desktop: Move and the
+ * abilities as big buttons (the name, then the cost in slots), in rows of
+ * two, or three for a hero with more to choose from; then Confirm, filling
+ * its row beside the run's menu.
+ */
 function TurnControls(props: {
-  /** Phones: smaller buttons, no panel of its own (the pinned action bar is one). */
-  phone: boolean;
   /** What an ability of this cost takes in slots, before yielding. */
   slotsLater: (actionCost: number) => number;
   /** The move action's cost in slots (a range until a hex is picked), shown in the Move button. */
@@ -777,95 +805,73 @@ function TurnControls(props: {
   canMove: boolean;
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
-  /** Phones: the run's menu, beside the Confirm button. */
-  menu?: React.ReactNode;
+  /** The run's menu, beside the Confirm button. */
+  menu: React.ReactNode;
   children?: React.ReactNode;
 }) {
-  const {unit, ability, plannedMove, moving, phone} = props;
-  const size = phone ? 'lg' : 'xs';
+  const {unit, ability, plannedMove, moving} = props;
   // No Hold button: Confirm reads End turn with no action picked.
   const defs = abilitiesOf(unit).filter((def) => def.id !== 'hold');
-  // Phones: big buttons, two lines each (the name, then the cost), in rows of
-  // two, or three for a hero with more to choose from.
-  const label = (name: string, cost: React.ReactNode) =>
-    phone ? (
-      <span className={styles.bigButton}>
-        <span>{name}</span>
-        <span className={styles.bigButtonCost}>{cost}</span>
-      </span>
-    ) : (
-      <>
-        {name}
-        <span className={styles.abilityCost}>{cost}</span>
-      </>
-    );
+  const label = (name: string, cost: string) => (
+    <span className={styles.bigButton}>
+      <span>{name}</span>
+      <span className={styles.bigButtonCost}>{cost}</span>
+    </span>
+  );
   return (
-    <Paper
-      bg={phone ? 'transparent' : 'dark.7'}
-      p={phone ? 0 : 'sm'}
-      radius="md"
-      data-testid="turn-controls"
-    >
-      <Stack gap={8}>
-        {/* One choice per turn: Move or an ability, picked like any other. */}
-        <div
-          className={phone ? styles.abilityGrid : styles.abilities}
-          style={
-            phone ? {gridTemplateColumns: `repeat(${defs.length + 1 > 4 ? 3 : 2}, 1fr)`} : undefined
+    <Stack gap={8} data-testid="turn-controls">
+      {/* One choice per turn: Move or an ability, picked like any other. */}
+      <div
+        className={styles.abilityGrid}
+        style={{gridTemplateColumns: `repeat(${defs.length + 1 > 4 ? 3 : 2}, 1fr)`}}
+      >
+        <Button
+          size="lg"
+          variant={moving || plannedMove ? 'filled' : 'light'}
+          color="blue"
+          disabled={!props.canMove}
+          aria-pressed={moving || plannedMove !== null}
+          title={
+            plannedMove
+              ? 'Tap to undo the move'
+              : props.canMove
+                ? 'Move instead of using an ability; units block the path'
+                : 'Can’t move now'
           }
+          onClick={props.onMove}
         >
-          <Button
-            size={size}
-            variant={moving || plannedMove ? 'filled' : 'light'}
-            color="blue"
-            disabled={!props.canMove}
-            aria-pressed={moving || plannedMove !== null}
-            title={
-              plannedMove
-                ? 'Tap to undo the move'
-                : props.canMove
-                  ? 'Move instead of using an ability; units block the path'
-                  : 'Can’t move now'
-            }
-            onClick={props.onMove}
-          >
-            {label('Move', props.moveSlots !== null ? `+${props.moveSlots}` : '')}
-          </Button>
-          {defs.map((def) => {
-            const reason =
-              unusableReason(unit, def) ??
-              (ability !== def.id ? (props.outOfReach.get(def.id) ?? null) : null);
-            const lockedUlt =
-              def.ultimate && !unit.ultimateUsed && unit.ultimateCharge < RULES.ultimateCharge;
-            return (
-              <Button
-                key={def.id}
-                size={size}
-                variant={ability === def.id ? 'filled' : 'light'}
-                color={def.ultimate ? 'grape' : 'blue'}
-                disabled={reason !== null}
-                aria-pressed={ability === def.id}
-                title={reason ?? def.summary(unit)}
-                onClick={() => props.onAbility(ability === def.id ? null : def.id)}
-              >
-                {/* Its own cost in slots; Confirm adds any yielding. */}
-                {label(
-                  `${def.name}${lockedUlt ? ` ${unit.ultimateCharge}/${RULES.ultimateCharge}` : ''}`,
-                  `+${props.slotsLater(def.cost)}`
-                )}
-              </Button>
-            );
-          })}
-        </div>
-        {props.menu ? (
-          <div className={styles.confirmRow}>
-            {props.children}
-            {props.menu}
-          </div>
-        ) : (
-          props.children
-        )}
-      </Stack>
-    </Paper>
+          {label('Move', props.moveSlots !== null ? `+${props.moveSlots}` : '')}
+        </Button>
+        {defs.map((def) => {
+          const reason =
+            unusableReason(unit, def) ??
+            (ability !== def.id ? (props.outOfReach.get(def.id) ?? null) : null);
+          const lockedUlt =
+            def.ultimate && !unit.ultimateUsed && unit.ultimateCharge < RULES.ultimateCharge;
+          return (
+            <Button
+              key={def.id}
+              size="lg"
+              variant={ability === def.id ? 'filled' : 'light'}
+              color={def.ultimate ? 'grape' : 'blue'}
+              disabled={reason !== null}
+              aria-pressed={ability === def.id}
+              title={reason ?? def.summary(unit)}
+              onClick={() => props.onAbility(ability === def.id ? null : def.id)}
+            >
+              {/* Its own cost in slots; Confirm adds any yielding. */}
+              {label(
+                `${def.name}${lockedUlt ? ` ${unit.ultimateCharge}/${RULES.ultimateCharge}` : ''}`,
+                `+${props.slotsLater(def.cost)}`
+              )}
+            </Button>
+          );
+        })}
+      </div>
+      <div className={styles.confirmRow}>
+        {props.children}
+        {props.menu}
+      </div>
+    </Stack>
   );
 }
