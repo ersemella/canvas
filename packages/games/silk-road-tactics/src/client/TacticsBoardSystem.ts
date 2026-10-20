@@ -18,6 +18,7 @@ import type {FightState, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
 import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
+import bokhSprite from './sprites/bokh.png';
 import mangudaiSprite from './sprites/mangudai.png';
 import mangudaiPortrait from './sprites/mangudai-portrait.png';
 
@@ -57,7 +58,10 @@ const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
 const SIDE_TINT = {player: 'rgba(59,130,246,0.38)', enemy: 'rgba(239,68,68,0.38)'};
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
 /** Board sprites (32×32, facing right); heroes without one are drawn as a lettered disc. */
-const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {mangudai: mangudaiSprite};
+const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
+  bokh: bokhSprite,
+  mangudai: mangudaiSprite,
+};
 const SPRITE_SCALE = 2;
 /** How far below the hex's centre a sprite's bottom edge sits. */
 const SPRITE_FEET = 24;
