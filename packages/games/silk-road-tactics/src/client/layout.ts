@@ -16,8 +16,8 @@ export const SCENE_SIZE = {width: 600, height: 460} as const;
 export const TRACK_AREA = {x: 6, y: 6, width: 588, height: 86} as const;
 
 /**
- * The board: 7 rows of pointy hexes of size 32, odd rows 10 hexes wide
- * (columns −1 to 8), centred under the track.
+ * The board: 7 rows of pointy hexes of size 32, odd rows 8 hexes wide
+ * (columns 0 to 7), centred under the track.
  */
 export const BOARD_LAYOUT: HexLayout = {orientation: 'pointy', size: 32, origin: {x: 78, y: 132}};
 

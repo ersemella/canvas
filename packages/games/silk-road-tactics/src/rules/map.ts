@@ -1,10 +1,11 @@
 /**
  * The Salt Flats Crossing (brief section 7): 7 rows of pointy-top hexes,
- * odd rows shoved right. Even rows have columns 0 to 8; odd rows also have
- * column −1, so neither side edge has notches (owner, 2026-10-19). That
- * makes the board an exact left-right mirror: column c and 8 − c on even
- * rows, c and 7 − c on odd rows. The quicksand predates that and is the
- * one feature off it by a hex.
+ * odd rows shoved right. Even rows have columns 1 to 7; odd rows also have
+ * column 0, so neither side edge has notches (owner, 2026-10-19). The
+ * board lost a column at each side edge (owner, 2026-10-20; even rows were
+ * 0 to 8, odd rows −1 to 8). It is an exact left-right mirror: column c
+ * and 8 − c on even rows, c and 7 − c on odd rows. The quicksand predates
+ * the mirror and is the one feature off it by a hex.
  */
 import {hexKey, offsetToHex} from '@canvas/engine/server';
 import type {Hex, OffsetCoord} from '@canvas/engine/server';
@@ -25,9 +26,9 @@ export interface MapData {
 }
 
 const ROWS = 7;
-/** The columns of a row: odd rows start half a hex further left. */
+/** The columns of a row: even rows 1 to 7, odd rows 0 to 7 (odd rows sit half a hex further left). */
 const columnsOf = (row: number): number[] =>
-  Array.from({length: row & 1 ? 10 : 9}, (_, i) => i - (row & 1));
+  Array.from({length: row & 1 ? 8 : 7}, (_, i) => i + 1 - (row & 1));
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
 
 const special: [OffsetCoord, Tile][] = [
@@ -67,11 +68,11 @@ export const SALT_FLATS: MapData = {
   tiles: Object.fromEntries(special.map(([c, t]) => [hexKey(offsetToHex(c)), t])),
   deployment: {player: edgeHexes('left', 2), enemy: edgeHexes('right', 2)},
   enemyLayouts: [
-    [at(7, 2), at(7, 3), at(8, 4)],
-    [at(7, 4), at(8, 2), at(7, 3)],
-    [at(7, 3), at(8, 1), at(8, 5)],
+    [at(7, 2), at(7, 3), at(7, 4)],
+    [at(7, 4), at(7, 2), at(6, 3)],
+    [at(7, 3), at(7, 1), at(7, 5)],
   ],
-  playerLayout: [at(1, 2), at(0, 3), at(0, 4)],
+  playerLayout: [at(1, 2), at(0, 3), at(1, 4)],
 };
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};

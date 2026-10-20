@@ -174,12 +174,12 @@ describe('the track', () => {
 });
 
 describe('the board', () => {
-  it('has a hex at column −1 on odd rows, making an exact left-right mirror', () => {
+  it('has a hex at column 0 on odd rows only, making an exact left-right mirror', () => {
     const map = SALT_FLATS;
-    expect(map.hexes).toHaveLength(9 * 4 + 10 * 3);
-    for (const row of [1, 3, 5]) expect(onMap(map, at(-1, row))).toBe(true);
-    for (const row of [0, 2, 4, 6]) expect(onMap(map, at(-1, row))).toBe(false);
-    expect(onMap(map, at(9, 1))).toBe(false);
+    expect(map.hexes).toHaveLength(7 * 4 + 8 * 3);
+    for (const row of [1, 3, 5]) expect(onMap(map, at(0, row))).toBe(true);
+    for (const row of [0, 2, 4, 6]) expect(onMap(map, at(0, row))).toBe(false);
+    for (const row of [0, 1]) expect(onMap(map, at(8, row))).toBe(false);
     // Mirror about the board's centre line (x of column 4, even rows).
     const layout = {orientation: 'pointy' as const, size: 1, origin: {x: 0, y: 0}};
     const mid = hexToPixel(at(4, 0), layout).x;
@@ -193,7 +193,7 @@ describe('the board', () => {
     for (const h of map.hexes) expect(mirror(h)).toBeDefined();
     const zone = new Set(map.deployment.enemy.map(hexKey));
     for (const h of map.deployment.player) expect(zone.has(hexKey(mirror(h)!))).toBe(true);
-    expect(map.deployment.player.some((h) => hexToOffset(h).col === -1)).toBe(true);
+    expect(map.deployment.player.some((h) => hexToOffset(h).col === 0)).toBe(true);
   });
 
   it('passes allies, is blocked by enemies and obstacles, never ends on a unit', () => {
@@ -209,9 +209,9 @@ describe('the board', () => {
   });
 
   it('routes around hail as well as quicksand when an equally short path exists', () => {
-    const s = setup({'p-bokh': at(0, 3), 'e-bokh': at(8, 3)});
+    const s = setup({'p-bokh': at(4, 3), 'e-bokh': at(7, 6)});
     const b = unit(s, 'p-bokh');
-    const dest = at(0, 5); // via (0, 4) or (1, 4)
+    const dest = at(4, 5); // via (4, 4) or (5, 4)
     const before = reachableHexes(s, mapOf(s), b).find((r) => hexKey(r.hex) === hexKey(dest))!;
     expect(before.path).toHaveLength(2);
     const hailed = before.path[0]!;
@@ -568,14 +568,14 @@ describe('previews, the AI and the run', () => {
   });
 
   it('acts then moves: the move starts where the action left the unit', () => {
-    const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(3, 3)});
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3)});
     const m = unit(s, 'p-mangudai');
-    const shot = {ability: 'bow' as const, target: {hex: at(3, 3)}};
+    const shot = {ability: 'bow' as const, target: {hex: at(4, 3)}};
     // Shoot from range, then step back out of reach.
-    const turn: TurnInput = {action: shot, move: [at(-1, 3)], actFirst: true};
+    const turn: TurnInput = {action: shot, move: [at(0, 3)], actFirst: true};
     expect(previewTurn(s, m.id, turn)).not.toBeNull();
     applyTurn(s, m, turn);
-    expect(m.hex).toEqual(at(-1, 3));
+    expect(m.hex).toEqual(at(0, 3));
     expect(unit(s, 'e-bokh').hp).toBeLessThan(unit(s, 'e-bokh').maxHp);
   });
 

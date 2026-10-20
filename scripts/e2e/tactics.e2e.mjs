@@ -58,7 +58,7 @@ const placements = (fight) =>
       hex: [
         {q: 0, r: 2},
         {q: -1, r: 3},
-        {q: -2, r: 4},
+        {q: -1, r: 4},
       ][i],
     }));
 check(
@@ -201,7 +201,7 @@ try {
   let run = await state();
   const outrider = 'p-mangudai';
   await tapHex({q: -1, r: 3}); // select it (axial of col 0, row 3)
-  await tapHex({q: -3, r: 6}); // col 0, row 6
+  await tapHex({q: -2, r: 6}); // col 1, row 6
   await page.getByRole('button', {name: 'Start the fight'}).click();
   await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
   await waitIdle();
@@ -209,7 +209,7 @@ try {
   const placed = run.view.fight.units.find((u) => u.id === outrider).hex;
   check(
     'tapping a hero then a zone hex moves it before the fight',
-    placed.q === -3 && placed.r === 6,
+    placed.q === -2 && placed.r === 6,
     placed
   );
   await sleep(300);
@@ -230,12 +230,12 @@ try {
   );
 
   // One turn with real taps: Dash first, then Move, Confirm. The Outrider
-  // (fastest, so first) is at col 0, row 6 after the deployment above.
+  // (fastest, so first) is at col 1, row 6 after the deployment above.
   const before = run.view.version;
   const acting = run.view.fight.units.find((u) => u.id === run.view.fight.awaiting);
   check('the Outrider acts first', acting.id === outrider, acting.id);
-  const dashTo = {q: -1, r: 6}; // 2 hexes east along row 6 (Dash goes up to 2)
-  const dest = {q: -2, r: 5}; // next to where it started, off the Dash line
+  const dashTo = {q: 0, r: 6}; // 2 hexes east along row 6 (Dash goes up to 2)
+  const dest = {q: -1, r: 5}; // next to where it started, off the Dash line
   // Without Move, a tap only looks at the hex.
   await tapHex(dest);
   const moveButton = page.getByRole('button', {name: /^Move/});

@@ -54,7 +54,7 @@ fight's end ends the run.
 | 39. Ultimate unlock | One value for every hero: usable after **3 completed turns** in the fight (10.10); once per fight. |
 | 8. Move and act order | Move then act, or act then move; not split around the action. Every turn must include an action (5.1). |
 | 28. Movement cap | **3 hexes** per turn (owner, 2026-10-20; was 4). |
-| 9. Map | Offset rectangle, **9 columns × 7 rows**, pointy-top hexes. Fits a 600-pixel-wide board beside the track panel. |
+| 9. Map | Offset rectangle, **7 columns × 7 rows** (owner, 2026-10-20; was 9 × 7), pointy-top hexes, odd rows one hex wider. Fits a 600-pixel-wide board beside the track panel. |
 | 10. Passing through allies | Allowed (can't end on an occupied hex). Enemies block. |
 | 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so pin, hail and a flank don't stack. |
 | 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering (passing through included), then **4 damage** every slot spent on it (both doubled, to **80** and **8**, owner, 2026-10-20, once defence applied), whoever's turn it is (owner, 2026-10-19; was 40 on entering and at the start of each of the unit's own turns). Both go through Vulnerable and **defence** (owner, 2026-10-19; they ignored defence until then). Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
@@ -217,9 +217,11 @@ One hand-made map, **"The Salt Flats Crossing"** (map generation is out of
 scope), mirrored left to right like the PvP-style maps (6.6):
 
 - **Deployment zones:** the two leftmost hexes of each row (player) and
-  the two rightmost (enemy), rows 1 to 7. Odd rows have a tenth hex at
-  column −1, so neither side edge is notched (owner, 2026-10-19). Five columns between them:
-  contact in about one to two turns of movement (6.6).
+  the two rightmost (enemy), rows 1 to 7. Odd rows have an eighth hex at
+  column 0, so neither side edge is notched (owner, 2026-10-19). Three
+  columns between them (five until the board lost a column at each side
+  edge, owner, 2026-10-20): contact in about one turn of movement (6.6).
+  Each zone holds one of the ruins (row 5).
 - **Obstacles (ruins):** 4 hexes, two on each half, mirrored, breaking the
   long sight lines down the middle row.
 - **Hazards (quicksand):** 2 hexes, mirrored, near the centre.
@@ -353,8 +355,9 @@ confirm or change:
   placeholder radius went from 2 to 1 with it, so stepping clear
   of enemies is possible; the AI counts healing or cleansing an enemy
   against an option.
-- **The map's coordinates** are in `src/rules/map.ts`. Odd rows reach
-  column −1 (owner, 2026-10-19), which makes the board an exact
+- **The map's coordinates** are in `src/rules/map.ts`: even rows columns
+  1 to 7, odd rows 0 to 7 (2026-10-20; 0 to 8 and −1 to 8 before). Odd
+  rows reaching one column further (owner, 2026-10-19) makes the board an exact
   left-right mirror; only the quicksand, placed before that, is off it by
   a hex. The enemy's placement is one of three layouts, chosen by the
   run's seed.
