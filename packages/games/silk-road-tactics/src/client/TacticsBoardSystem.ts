@@ -90,6 +90,9 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   inspect: {fill: 'rgba(192,132,252,0.12)', stroke: 'rgba(192,132,252,0.75)', dash: [5, 3]},
 };
 
+/** The hovered hex's outline. */
+const HOVER: HighlightStyle = {fill: 'rgba(255,255,255,0.08)', stroke: '#ffffff'};
+
 /** Seconds one spent card takes to lift off the track. */
 const CARD_LIFT_SECONDS = 0.18;
 /** The most a whole advance takes, however many slots it passes. */
@@ -183,6 +186,8 @@ export class TacticsBoardSystem extends BaseSystem {
       if (p?.to && moved && !p.killed) tintHex(ctx, p.to, SIDE_TINT[u.side], 0.7);
     }
     for (const h of this.scene.highlights) fillHex(ctx, h.hex, HIGHLIGHT[h.kind]);
+    // The hovered hex's outline goes under the units, so it never crosses a sprite.
+    if (this.hover.hex) fillHex(ctx, this.hover.hex, HOVER);
     for (const a of this.scene.arrows ?? []) drawArrow(ctx, a.from, a.to, a.hits);
     for (const u of fight.units) if (u.alive && u.charging) drawCharge(ctx, u);
 
@@ -522,14 +527,13 @@ function drawYield(
   ctx.restore();
 }
 
-/** The hovered hex: outlined, with a tooltip of its tile, hail and unit. */
+/** The hovered hex's tooltip: its tile, hail and unit (the outline is drawn under the units). */
 function drawHover(
   ctx: CanvasRenderingContext2D,
   fight: FightState,
   h: Hex,
   positions?: Record<string, Hex>
 ): void {
-  fillHex(ctx, h, {fill: 'rgba(255,255,255,0.08)', stroke: '#ffffff'});
   const map = MAPS[fight.mapId]!;
   const lines: {text: string; color: string; bold?: boolean}[] = [];
   const unit = fight.units.find((u) => {
