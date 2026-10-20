@@ -142,9 +142,11 @@ export const ABILITY = {
    * 37 healed, under a fifth of a bow hit). Over 1,000 AI-vs-AI fights from
    * random deployments: no stalls (17 at 25), and fights shorter.
    * One unit within `range` (owner, 2026-10-20; was everyone within 1 of
-   * the caster, which under separate movement took a turn to set up).
+   * the caster, which under separate movement took a turn to set up), and
+   * heal 50, 75 at its power (owner, 2026-10-20). Over 200 AI-vs-AI fights
+   * each, 5.5% were unfinished at 400 actions at 50, 12% at 60.
    */
-  sunlight: {cost: RULES.cost.typical, range: 4, heal: 40},
+  sunlight: {cost: RULES.cost.typical, range: 4, heal: 50},
   hail: {
     cost: RULES.cost.typical,
     range: 4,
