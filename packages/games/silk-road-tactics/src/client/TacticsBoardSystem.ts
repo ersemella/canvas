@@ -61,10 +61,23 @@ export interface BoardScene {
  */
 const SIDE_COLOR = {player: '#2c5aa0', enemy: '#a3392b'};
 const SIDE_LIGHT = {player: '#a9c6f5', enemy: '#f3a08f'};
-/** The tint over the whole hex a unit stands on: its side's colour. */
-const SIDE_TINT = {player: 'rgba(44,90,160,0.4)', enemy: 'rgba(163,57,43,0.4)'};
-/** A track card's ground: its side's colour, deep; the panels' teal when empty. */
-const CARD_FILL = {player: '#1d3a66', enemy: '#5a1c14', empty: '#123033'};
+/**
+ * The rug a unit stands on, filling its hex: a field in its side's colour,
+ * opaque enough to stay rich over the sand, and a stitched ivory border.
+ */
+const RUG = {
+  player: {field: 'rgba(40,82,148,0.78)', stitch: 'rgba(236,226,200,0.85)'},
+  enemy: {field: 'rgba(146,50,36,0.78)', stitch: 'rgba(236,226,200,0.85)'},
+};
+/**
+ * A track card's ground, behind the portrait: a glazed tile in its side's
+ * colour, lighter at the top, with a faint lattice; the panels' teal when empty.
+ */
+const CARD_GLAZE = {
+  player: {top: '#3c6db2', bottom: '#142b52', lattice: 'rgba(169,198,245,0.16)'},
+  enemy: {top: '#b0503a', bottom: '#45150e', lattice: 'rgba(243,160,143,0.16)'},
+};
+const CARD_EMPTY = '#123033';
 /** The dark under labels, tooltips, bars and the track: teal-black ink, as the panels. */
 const INK = '7,20,22';
 /** The panels' turquoise, for the edges of the track, its empty cards and the hover tooltip. */
@@ -376,15 +389,15 @@ export class TacticsBoardSystem extends BaseSystem {
       t
     );
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
-    // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
+    // Each unit stands on a rug in its side's colour, under the highlights so moves and targets still show.
     const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
     for (const u of fight.units) {
       const hex = u.hex;
       if (!u.alive || !hex) continue;
       const p = previewedTo.get(u.id);
       const moved = Boolean(p?.to && hexKey(p.to) !== hexKey(hex));
-      tintHex(ctx, hex, SIDE_TINT[u.side], moved || p?.killed ? 0.4 : 1);
-      if (p?.to && moved && !p.killed) tintHex(ctx, p.to, SIDE_TINT[u.side], 0.7);
+      drawRug(ctx, hex, u.side, moved || p?.killed ? 0.4 : 1);
+      if (p?.to && moved && !p.killed) drawRug(ctx, p.to, u.side, 0.7);
     }
     for (const h of scene.highlights) fillHex(ctx, h.hex, HIGHLIGHT[h.kind]);
     // The hovered hex's outline goes under the units, so it never crosses a sprite.
@@ -545,6 +558,53 @@ function tintHex(ctx: CanvasRenderingContext2D, h: Hex, color: string, alpha: nu
   ctx.restore();
 }
 
+/** The rug under a unit (`RUG`): its field, then a stitched border inside the hex's edge. */
+function drawRug(ctx: CanvasRenderingContext2D, h: Hex, side: Unit['side'], alpha: number): void {
+  const rug = RUG[side];
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  hexPath(ctx, h, 1);
+  ctx.fillStyle = rug.field;
+  ctx.fill();
+  hexPath(ctx, h, 7);
+  ctx.setLineDash([3, 3]);
+  ctx.strokeStyle = rug.stitch;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** A glazed card's ground (`CARD_GLAZE`): its gradient, and a diagonal lattice over it. */
+function glazeCard(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  side: Unit['side']
+): void {
+  const glaze = CARD_GLAZE[side];
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, glaze.top);
+  g.addColorStop(1, glaze.bottom);
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.save();
+  ctx.shadowColor = 'transparent';
+  ctx.clip();
+  ctx.strokeStyle = glaze.lattice;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let d = -h; d < w + h; d += 7) {
+    ctx.moveTo(x + d, y);
+    ctx.lineTo(x + d + h, y + h);
+    ctx.moveTo(x + d + h, y);
+    ctx.lineTo(x + d, y + h);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
 /**
  * A numbered step badge on a hex's left edge, clear of the status markers
  * and damage labels above a unit; a second one on the same hex sits on the right.
@@ -663,8 +723,14 @@ function drawCard(
   roundRect(ctx, cx, cy, deck.cardW, h, 5);
   // The ghost is just an outline where the acting card lands: no portrait,
   // so the acting unit doesn't show twice.
-  ctx.fillStyle = !u || ghost ? CARD_FILL.empty : CARD_FILL[u.side];
-  ctx.fill();
+  if (!u || ghost) {
+    ctx.fillStyle = CARD_EMPTY;
+    ctx.fill();
+  } else {
+    glazeCard(ctx, cx, cy, deck.cardW, h, u.side);
+    // The lattice replaced the path: the card's outline again, for its border.
+    roundRect(ctx, cx, cy, deck.cardW, h, 5);
+  }
   ctx.shadowColor = 'transparent';
   const strokeBorder = () => {
     ctx.setLineDash(ghost ? [3, 2] : []);

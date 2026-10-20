@@ -92,8 +92,11 @@ stats) stay in the plain face, since Cinzel's figures are small and slow
 to scan. The tokens are `--srt-*` in `TacticsPage.module.css`.
 
 The canvas shares the palette (`TacticsBoardSystem.ts`). The sides are
-lapis (yours) and madder (the enemy's): deep for hex edges and tints on
-the sand, light for text and track-card edges. The track and the board's
+lapis (yours) and madder (the enemy's): deep for hex edges, light for
+text and track-card edges. Each unit stands on a rug filling its hex, a
+field in its side's colour with a stitched ivory border, rather than a
+thin wash that went muddy on the sand. Track portraits sit on a glazed
+tile in their side's colour (lighter at the top, a faint lattice). The track and the board's
 labels sit on the panels' teal-black ink, with turquoise edges. Targeting
 stays yellow.
 
