@@ -80,17 +80,22 @@ cards use each unit's **portrait**.
 ## Panels (built 2026-10-20)
 
 The page's HTML panels (the action section, stat sheets, tooltips, the
-result) follow the setting without changing layout, labels or states:
-tooled-leather plaques with a fine brass rule and corner studs, Move and
-the abilities as brass-edged tiles (the picked one inlaid in lapis, an
-ultimate in Tyrian purple), Confirm as a saffron seal, a woven band over
-the actions, and names in Cinzel. Numbers (costs, charge, stats) stay in
-the plain face, since Cinzel's figures are small and slow to scan. The
-tokens are `--srt-*` in `TacticsPage.module.css`. The canvas shares the
-palette (`TacticsBoardSystem.ts`): the sides are lapis (yours) and madder
-(the enemy's), deep for hex edges and tints on the sand and light for
-text and track-card edges; the track and the board's labels sit on the
-same warm ink and brass edge as the panels. Targeting stays yellow.
+result) follow the setting without changing layout, labels or states.
+The palette is the road's glaze and dyes, so it doesn't read as all
+brown: panels are glazed turquoise tilework (deep teal, a brass edge, a
+fine turquoise rule inside it, brass studs at the corners), with ivory
+text. Move and the abilities are turquoise-edged tiles; the picked one is
+inlaid in lapis with a brass edge, and an ultimate is Tyrian purple.
+Confirm is a saffron seal. A kilim band in madder, saffron, turquoise and
+lapis sits over the actions. Names are in Cinzel. Numbers (costs, charge,
+stats) stay in the plain face, since Cinzel's figures are small and slow
+to scan. The tokens are `--srt-*` in `TacticsPage.module.css`.
+
+The canvas shares the palette (`TacticsBoardSystem.ts`). The sides are
+lapis (yours) and madder (the enemy's): deep for hex edges and tints on
+the sand, light for text and track-card edges. The track and the board's
+labels sit on the panels' teal-black ink, with turquoise edges. Targeting
+stays yellow.
 
 ## Engine work (built 2026-10-19)
 

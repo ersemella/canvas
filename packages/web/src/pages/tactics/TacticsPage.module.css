@@ -56,9 +56,9 @@
   flex-direction: column;
   align-items: center;
   padding: 4px 0;
-  border: 1px solid rgba(212, 169, 78, 0.28);
+  border: 1px solid rgba(63, 184, 173, 0.3);
   border-radius: 3px;
-  background: rgba(18, 12, 7, 0.65);
+  background: rgba(7, 20, 22, 0.65);
 }
 
 .coreStats > div > :first-child {
@@ -150,8 +150,8 @@
   overscroll-behavior: contain;
   padding: 4px;
   border-radius: 4px;
-  background: rgba(18, 12, 7, 0.96);
-  border: 1px solid var(--srt-brass-dim);
+  background: rgba(7, 20, 22, 0.96);
+  border: 1px solid var(--srt-turquoise-dim);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
   cursor: pointer;
 }
@@ -215,8 +215,8 @@
   gap: 6px;
   margin-top: 6px;
   padding: 6px 8px;
-  border: 1px solid var(--srt-brass-dim);
-  border-left: 3px solid var(--srt-brass);
+  border: 1px solid var(--srt-turquoise-dim);
+  border-left: 3px solid var(--srt-saffron);
   border-radius: 3px;
   background: var(--srt-ink);
   box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.4);
@@ -251,13 +251,13 @@
   all: unset;
   cursor: pointer;
   padding: 3px 9px;
-  border: 1px solid var(--srt-brass-dim);
+  border: 1px solid var(--srt-turquoise-dim);
   border-radius: 3px;
   font-family: var(--srt-display);
   font-size: 13px;
   font-weight: 700;
   color: var(--srt-parchment);
-  background: rgba(18, 12, 7, 0.65);
+  background: rgba(7, 20, 22, 0.65);
 }
 .abilityChipUltimate {
   color: var(--srt-tyrian-text);
@@ -286,20 +286,23 @@
 }
 
 /*
- * The caravan's look (art-direction.md): the panels as tooled leather with
- * brass studs, the buttons as brass-edged tiles, names in an inscription
- * face, a woven band over the actions. Only surfaces, borders and type
+ * The caravan's look (art-direction.md): the panels as glazed turquoise
+ * tilework with brass studs, the buttons as tiles, names in an inscription
+ * face, a kilim band over the actions. Only surfaces, borders and type
  * change: every label, layout and state reads as before.
  */
 .page,
 .menu {
-  --srt-ink: #120c07;
-  --srt-leather: #2b1d12;
-  --srt-leather-hi: #3b2817;
+  --srt-ink: #071416;
+  --srt-ground: #0f2b2d;
+  --srt-ground-hi: #17393b;
+  --srt-turquoise: #3fb8ad;
+  --srt-turquoise-dim: #24706b;
   --srt-brass: #d4a94e;
   --srt-brass-dim: #7d6130;
-  --srt-parchment: #f1e4c6;
-  --srt-parchment-dim: #bba985;
+  --srt-madder: #a3392b;
+  --srt-parchment: #f3ead6;
+  --srt-parchment-dim: #b4c4bd;
   --srt-lapis: #24508f;
   --srt-lapis-hi: #3768b4;
   --srt-lapis-text: #a9c6f5;
@@ -310,7 +313,7 @@
   --srt-tyrian-edge: #a65597;
   --srt-tyrian-text: #ecb6df;
   --srt-display: 'Cinzel', Georgia, serif;
-  /* Mantine's text and dimmed text, warmed to the leather. */
+  /* Mantine's text and dimmed text, in the panels' ivory. */
   --mantine-color-text: var(--srt-parchment);
   --mantine-color-dimmed: var(--srt-parchment-dim);
 }
@@ -321,23 +324,23 @@
   letter-spacing: 0.02em;
 }
 
-/* A panel: leather, a fine inner brass rule and a stud in each corner. */
+/* A panel: glazed teal, a brass edge, a fine turquoise rule inside it and a stud in each corner. */
 .plaque.plaque {
   color: var(--srt-parchment);
   border: 1px solid var(--srt-brass-dim);
   border-radius: 3px;
   box-shadow:
     inset 0 0 0 1px var(--srt-ink),
-    inset 0 0 0 2px rgba(212, 169, 78, 0.22);
+    inset 0 0 0 2px rgba(63, 184, 173, 0.35);
   background:
     linear-gradient(var(--srt-brass), var(--srt-brass)) left 4px top 4px / 3px 3px no-repeat,
     linear-gradient(var(--srt-brass), var(--srt-brass)) right 4px top 4px / 3px 3px no-repeat,
     linear-gradient(var(--srt-brass), var(--srt-brass)) left 4px bottom 4px / 3px 3px no-repeat,
     linear-gradient(var(--srt-brass), var(--srt-brass)) right 4px bottom 4px / 3px 3px no-repeat,
-    linear-gradient(180deg, var(--srt-leather-hi), var(--srt-leather) 45%, #20150c);
+    linear-gradient(180deg, var(--srt-ground-hi), var(--srt-ground) 45%, #0b2224);
 }
 
-/* A woven band, like a carpet's edge, over the action section. */
+/* A woven band, a kilim's edge in the road's dyes, over the action section. */
 .band::before {
   content: '';
   display: block;
@@ -346,25 +349,30 @@
   background:
     linear-gradient(135deg, var(--srt-ink) 25%, transparent 25%) -3px 0 / 6px 6px,
     linear-gradient(225deg, var(--srt-ink) 25%, transparent 25%) -3px 0 / 6px 6px,
-    linear-gradient(90deg, var(--srt-brass-dim), #8e3a2a 50%, var(--srt-brass-dim));
+    repeating-linear-gradient(
+      90deg,
+      var(--srt-madder) 0 18px,
+      var(--srt-saffron) 18px 36px,
+      var(--srt-turquoise-dim) 36px 54px,
+      var(--srt-lapis) 54px 72px
+    );
   border-top: 1px solid var(--srt-brass-dim);
   border-bottom: 1px solid var(--srt-brass-dim);
-  opacity: 0.85;
 }
 
-/* Move and the abilities: brass-edged tiles; the picked one inlaid in lapis. */
+/* Move and the abilities: turquoise-edged tiles; the picked one inlaid in lapis, edged in brass. */
 .tile.tile {
   color: var(--srt-parchment);
-  border: 1px solid var(--srt-brass-dim);
+  border: 1px solid var(--srt-turquoise-dim);
   border-radius: 3px;
-  background: linear-gradient(180deg, var(--srt-leather-hi), #23170d);
+  background: linear-gradient(180deg, var(--srt-ground-hi), #0c2426);
   box-shadow:
-    inset 0 1px 0 rgba(255, 230, 180, 0.12),
+    inset 0 1px 0 rgba(200, 255, 245, 0.1),
     inset 0 -2px 0 rgba(0, 0, 0, 0.45);
 }
 .tile.tile:hover:not(:disabled) {
-  border-color: var(--srt-brass);
-  background: linear-gradient(180deg, #47311c, #2a1c10);
+  border-color: var(--srt-turquoise);
+  background: linear-gradient(180deg, #1e4a4b, #10302f);
 }
 .tile.tile[aria-pressed='true'] {
   color: #fff;
@@ -385,9 +393,9 @@
   box-shadow: 0 0 0 1px var(--srt-tyrian-text);
 }
 .tile.tile:disabled {
-  color: rgba(241, 228, 198, 0.5);
-  border-color: #4a3822;
-  background: #19110a;
+  color: rgba(243, 234, 214, 0.45);
+  border-color: #1d3a3a;
+  background: #0a1a1b;
   box-shadow: none;
 }
 /* The name in the inscription face; numbers (a charge, the cost) stay plain, to scan. */
@@ -417,8 +425,8 @@
 }
 .seal.seal:disabled {
   color: var(--srt-parchment-dim);
-  border: 1px dashed var(--srt-brass-dim);
-  background: rgba(43, 29, 18, 0.6);
+  border: 1px dashed var(--srt-turquoise-dim);
+  background: rgba(15, 43, 45, 0.6);
   box-shadow: none;
 }
 
@@ -428,14 +436,14 @@
 }
 .menu.menu {
   color: var(--srt-parchment);
-  border: 1px solid var(--srt-brass-dim);
+  border: 1px solid var(--srt-turquoise-dim);
   border-radius: 3px;
-  background: var(--srt-leather);
+  background: var(--srt-ground);
 }
 .menu :global(.mantine-Menu-item[data-hovered]) {
-  background: var(--srt-leather-hi);
+  background: var(--srt-ground-hi);
 }
 .menu :global(.mantine-Menu-arrow) {
-  border-color: var(--srt-brass-dim);
-  background: var(--srt-leather);
+  border-color: var(--srt-turquoise-dim);
+  background: var(--srt-ground);
 }

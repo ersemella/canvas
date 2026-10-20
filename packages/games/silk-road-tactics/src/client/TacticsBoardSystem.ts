@@ -63,10 +63,12 @@ const SIDE_COLOR = {player: '#2c5aa0', enemy: '#a3392b'};
 const SIDE_LIGHT = {player: '#a9c6f5', enemy: '#f3a08f'};
 /** The tint over the whole hex a unit stands on: its side's colour. */
 const SIDE_TINT = {player: 'rgba(44,90,160,0.4)', enemy: 'rgba(163,57,43,0.4)'};
-/** A track card's ground: its side's colour, deep; leather when empty. */
-const CARD_FILL = {player: '#1d3a66', enemy: '#5a1c14', empty: '#2b1d12'};
-/** The dark under labels, tooltips, bars and the track: warm ink, as the panels. */
-const INK = '18,12,7';
+/** A track card's ground: its side's colour, deep; the panels' teal when empty. */
+const CARD_FILL = {player: '#1d3a66', enemy: '#5a1c14', empty: '#123033'};
+/** The dark under labels, tooltips, bars and the track: teal-black ink, as the panels. */
+const INK = '7,20,22';
+/** The panels' turquoise, for the edges of the track, its empty cards and the hover tooltip. */
+const TURQUOISE = '63,184,173';
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
 /**
  * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
@@ -592,7 +594,7 @@ function drawTrack(
   roundRect(ctx, x, y, width, height, 8);
   ctx.fillStyle = `rgba(${INK},0.94)`;
   ctx.fill();
-  ctx.strokeStyle = 'rgba(212,169,78,0.45)';
+  ctx.strokeStyle = `rgba(${TURQUOISE},0.5)`;
   ctx.lineWidth = 1;
   ctx.stroke();
   ctx.restore();
@@ -667,7 +669,7 @@ function drawCard(
   const strokeBorder = () => {
     ctx.setLineDash(ghost ? [3, 2] : []);
     ctx.strokeStyle = !u
-      ? 'rgba(212,169,78,0.22)'
+      ? `rgba(${TURQUOISE},0.25)`
       : ghost || acting
         ? '#fde047'
         : u.id === opts.selected || u.id === opts.hovered
@@ -880,7 +882,7 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
   roundRect(ctx, bx, by, w, boxH, 5);
   ctx.fillStyle = `rgba(${INK},0.94)`;
   ctx.fill();
-  ctx.strokeStyle = 'rgba(212,169,78,0.55)';
+  ctx.strokeStyle = `rgba(${TURQUOISE},0.6)`;
   ctx.lineWidth = 1;
   ctx.stroke();
   ctx.restore();
