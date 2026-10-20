@@ -346,7 +346,7 @@ export class TacticsBoardSystem extends BaseSystem {
     const map = mapOf(fight);
     // The board's weather moves with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
-    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h));
+    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), t);
     const sandstorm = map.hexes.filter((h) => tileAt(map, h) === 'conceal');
     drawBank(ctx, SANDSTORM_BANK, sandstorm, t);
     for (const effect of fight.effects) drawHail(ctx, effect.hex);
@@ -883,7 +883,7 @@ const TILE_TEXTURE: Record<Tile, string> = {
 function drawHexImage(
   ctx: CanvasRenderingContext2D,
   h: Hex,
-  img: HTMLImageElement,
+  img: HTMLImageElement | HTMLCanvasElement,
   opts: {alpha?: number; flipX?: boolean} = {}
 ): void {
   const c = center(h);
@@ -899,16 +899,58 @@ function drawHexImage(
   ctx.restore();
 }
 
+/** Quicksand's turning: frames in a full turn, and seconds a turn takes. */
+const QUICKSAND_FRAMES = 72;
+const QUICKSAND_TURN_SECONDS = 14;
+
+let quicksandFrames: HTMLCanvasElement[] | null = null;
+
+/**
+ * Quicksand's texture turned a step of a full turn, for the time: frames
+ * built once, each the texture rotated about its centre without smoothing
+ * (so it stays pixel art), over the still texture so the corners stay
+ * filled. Its arms wind clockwise going out, so it turns anticlockwise:
+ * they seem to flow in to the centre. Hexes start a different way round,
+ * so they don't turn in step.
+ */
+function quicksandFrame(
+  ground: HTMLImageElement,
+  h: Hex,
+  time: number
+): HTMLCanvasElement | HTMLImageElement {
+  if (typeof document === 'undefined') return ground;
+  quicksandFrames ??= Array.from({length: QUICKSAND_FRAMES}, (_, i) => {
+    const canvas = artCanvas(ground.width, ground.height);
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(ground, 0, 0);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(ground.width / 2, ground.height / 2, ground.width / 2, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.translate(ground.width / 2, ground.height / 2);
+    ctx.rotate((-i / QUICKSAND_FRAMES) * Math.PI * 2);
+    ctx.drawImage(ground, -ground.width / 2, -ground.height / 2);
+    ctx.restore();
+    return canvas;
+  });
+  const start = hexRandom(h, 9)();
+  const turn = (time / QUICKSAND_TURN_SECONDS + start) % 1;
+  return quicksandFrames[Math.floor(turn * QUICKSAND_FRAMES)]!;
+}
+
 /**
  * A tile's ground: its texture (sand mirrored on alternate hexes, so the
  * board doesn't repeat) and its border. Until the image loads, the flat
  * colour under it and a code-drawn mark show. Ruins stand on sand and are
  * drawn later, by `drawRuins`.
  */
-function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
+function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, time: number | null): void {
   const ground = assetLoader.requestImage(TILE_TEXTURE[tile]);
   if (ground) {
-    drawHexImage(ctx, h, ground, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
+    // Quicksand turns slowly, like a vortex drawing things in.
+    const img = tile === 'hazard' && time !== null ? quicksandFrame(ground, h, time) : ground;
+    drawHexImage(ctx, h, img, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
     ctx.save();
     hexPath(ctx, h, 0.5);
     ctx.strokeStyle = '#8c7350';
