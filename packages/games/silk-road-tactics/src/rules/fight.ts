@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals} from '@canvas/engine/server';
-import {ARMOUR, HEROES, PARTY, movementRules} from './config';
+import {HEROES, PARTY, movementRules} from './config';
 import {expireStatuses, invalidPath} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
@@ -13,7 +13,7 @@ import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
 import {nextCard, placeCard, placeStartingCards, slotsForward, turnCost} from './track';
-import type {FightState, Side, TurnInput, Unit} from './types';
+import type {FightState, HeroId, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
 export class RuleError extends Error {}
@@ -29,10 +29,30 @@ export function mapOf(state: FightState): MapData {
   return own;
 }
 
+/**
+ * A hero's speed, defence and power, from config.ts. Phase 1 has no gear
+ * and no stat changes, so these are always a unit's stats.
+ */
+function heroStats(hero: HeroId): Pick<Unit, 'speed' | 'defence' | 'power'> {
+  const {speed, defence, power} = HEROES[hero];
+  return {speed, defence, power};
+}
+
+/**
+ * Brings a saved fight's unit stats up to date with config.ts. A fight
+ * keeps the stats its units started with, so one saved before the stats
+ * moved to the shared scale (2026-10-20) still had the old ones (an
+ * Outrider with speed 7, not 40), which the new track constants turned
+ * into wrong placements; and one saved with armour (removed 2026-10-20)
+ * kept its armour's defence and speed.
+ */
+export function refreshStats(state: FightState): void {
+  for (const u of state.units) Object.assign(u, heroStats(u.hero));
+}
+
 function makeUnit(side: Side, partyIndex: number): Unit {
   const hero = PARTY[partyIndex]!;
   const stats = HEROES[hero];
-  const armour = ARMOUR[stats.armour];
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}`,
     hero,
@@ -42,9 +62,7 @@ function makeUnit(side: Side, partyIndex: number): Unit {
     hex: null,
     hp: stats.health,
     maxHp: stats.health,
-    speed: stats.speed - armour.speed,
-    defence: stats.defence + armour.defence,
-    power: stats.power,
+    ...heroStats(hero),
     slot: null,
     statuses: [],
     turnsTaken: 0,

@@ -92,27 +92,35 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 Speed, defence and power share one scale, **Low 10 / Medium 25 / High
 40** (owner, 2026-10-20), so a hero's bands read off its numbers; the
 constants were changed to match (`C` 25 with ×5 in the track formula,
-`defenceConstant` 50), and every fight plays exactly as before (speed was
-4 and 7, defence 5 and 10, armour +3 and +8 defence and −1 speed). The
-stat sheet shows totals with armour.
+`defenceConstant` 50; speed was 4 and 7, defence 5 and 10). **No gear in
+Phase 1** (owner, 2026-10-20): the starter armour (light +10 defence on
+the Outrider, medium +20 defence and −5 speed on the others) is gone, so
+these base values are what the stat sheet shows and what fights use. A
+run saved earlier takes today's stats when it is next loaded.
 
-| Hero | Health | Speed | Defence | Power | Armour |
-|---|---|---|---|---|---|
-| Bökh Champion | 540 | 25 (Medium) | 25 (Medium) | 10 (Low) | medium (+20 defence, −5 speed): sheet shows speed 20, defence 45 |
-| Mangudai Outrider | **360 (owner, 2026-10-20; was 300)** | 40 (High) | 10 (Low) | 40 (High) | light (+10 defence): sheet shows defence 20 |
-| Yadachy Storm Caller | **360 (owner, 2026-10-20; was 420)** | 25 (Medium) | 25 (Medium) | 25 (Medium) | medium: sheet shows speed 20, defence 45 |
+| Hero | Health | Speed | Defence | Power |
+|---|---|---|---|---|
+| Bökh Champion | 540 | 25 (Medium) | 25 (Medium) | 10 (Low) |
+| Mangudai Outrider | **360 (owner, 2026-10-20; was 300)** | 40 (High) | 10 (Low) | 40 (High) |
+| Yadachy Storm Caller | **360 (owner, 2026-10-20; was 420)** | 25 (Medium) | 25 (Medium) | 25 (Medium) |
+
+Without armour, the Champion and Storm Caller take about 25% more
+damage from a hit and act a little more often; the Outrider takes about
+30% more. Over 300 AI-vs-AI fights with every change of 2026-10-20 (no
+armour, the unlimited bow, Pin, Hail and Sunlight below): 3.3%
+unfinished at 400 actions, median 52 actions (58 before).
 
 | Ability | Placeholder values |
 |---|---|
-| Composite Bow | range 5, **damage 120 (owner, 2026-10-19: 2 hits kill a Mangudai, 4 a Yadachy)** |
+| Composite Bow | **no range limit (owner, 2026-10-20; was 5)**: flies to the first unit, ruins or the map's edge; **damage 120 (owner, 2026-10-19)**; halved once more if it flies through an Obscured hex on the way (owner, 2026-10-20) |
 | Dash | **up to 3 hexes (owner, 2026-10-20; restored from 2 with separate movement)**, **cost 40 (owner, 2026-10-20; was quick, 60, more than walking 3 hexes)** |
 | Volley (ultimate) | range 5, radius 1, **damage 200 (owner, 2026-10-20; 135 from 2026-10-19)**, charge 40, recovery 100 |
-| Sunlight | **one unit within 4 (owner, 2026-10-20; was everyone within 1 of the caster, 2 until 2026-10-19)**, **heal 50, 75 at its power (owner, 2026-10-20; 40 from 2026-10-19, 25 before)** |
-| Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
+| Sunlight | **one unit within 4 (owner, 2026-10-20; was everyone within 1 of the caster, 2 until 2026-10-19)**, **heal 35, 52 at its power, quick (60) (owner, 2026-10-20; heal 50 and typical earlier that day, 40 from 2026-10-19, 25 before)** |
+| Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2 for 10 slots; **no Vulnerable (owner, 2026-10-20; was 25%)** |
 | Fog (replaced Gale, owner, 2026-10-20) | range 4, radius 1, 20 slots; its hexes are **Obscured**, like the sandstorm's (owner, 2026-10-20): ranged hits into or out of them deal 50% less |
 | Freeze (ultimate) | range 4, radius 1, **damage 60, then Immobilized and Vulnerable 50% for 20 slots (owner, 2026-10-20; was no damage, 25% for 15)**, charge 40, recovery 100 |
 | Throw | damage 80 |
-| Pin | 12 slots, Vulnerable 25%; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 6 a slot through defence (owner; 8 until 2026-10-20)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or knocked away from the Champion; cleansing the Champion doesn't break it or free it (owner, 2026-10-20)** |
+| Pin | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 6 a slot through defence (owner; 8 until 2026-10-20)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or knocked away from the Champion; cleansing the Champion doesn't break it or free it (owner, 2026-10-20)** |
 | Rampage (ultimate) | 3 hexes, **damage 160, typical (100) (owner, 2026-10-20; was 100, slow, 150)**, Displace 1 |
 
 Damage is scaled by power: `base × (1 + power / 50)`.

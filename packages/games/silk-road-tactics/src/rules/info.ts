@@ -41,7 +41,7 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
   return {
     name: 'Hail',
     short: `${hail.damage ?? 0} damage, Slowed ${hail.slowed}`,
-    detail: `For ${left} more slot${left === 1 ? '' : 's'}: a unit here when it lands, entering it or starting its turn here takes ${hail.damage ?? 0} damage (before Vulnerable and defence), then is Slowed ${hail.slowed} and Vulnerable ${hail.vulnerable}% for ${hail.statusSlots} slots.`,
+    detail: `For ${left} more slot${left === 1 ? '' : 's'}: a unit here when it lands, entering it or starting its turn here takes ${hail.damage ?? 0} damage (before Vulnerable and defence), then is Slowed ${hail.slowed} for ${hail.statusSlots} slots.`,
   };
 }
 
