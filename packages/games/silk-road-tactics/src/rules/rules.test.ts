@@ -19,6 +19,7 @@ import {
 } from './board';
 import {ABILITIES, arrowLanes} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
+import {threatDamage, threatsTo} from './threat';
 import {
   RuleError,
   actingUnit,
@@ -658,6 +659,38 @@ describe('previews, the AI and the run', () => {
     expect(['won', 'lost']).toContain(run.fight.phase);
     // Generous for a test machine; the Worker's limit is 10 ms per request.
     expect(worst).toBeLessThan(200);
+  });
+
+  it('sees what enemies could do before its next turn, and arrows stop at the first unit', () => {
+    const s = setup({'p-mangudai': at(0, 0), 'e-mangudai': at(8, 0), 'e-bokh': at(8, 6)});
+    const m = unit(s, 'p-mangudai');
+    const threats = threatsTo(s, SALT_FLATS, m);
+    const at3 = (h: Hex) => {
+      const c = cloneFight(s);
+      const me = unit(c, 'p-mangudai');
+      me.hex = h;
+      me.slot = c.currentSlot + 1;
+      return threatDamage(threats, c, SALT_FLATS, me, c.currentSlot);
+    };
+    // The enemy archer moves up to 4 and shoots 5 along a hex line: the row is in reach…
+    unit(s, 'e-mangudai').slot = 0;
+    expect(at3(at(2, 0))).toBeGreaterThan(0);
+    // …but not with a unit in the lane between, which the arrow would hit instead.
+    const blocked = setup({
+      'p-mangudai': at(0, 0),
+      'p-bokh': at(1, 0),
+      'e-mangudai': at(6, 0),
+      'e-bokh': at(8, 6),
+    });
+    unit(blocked, 'e-mangudai').charging = null;
+    unit(blocked, 'e-mangudai').statuses.push({kind: 'immobilized', value: 0, untilSlot: 999});
+    const bm = unit(blocked, 'p-mangudai');
+    const bt = threatsTo(blocked, SALT_FLATS, bm);
+    bm.slot = blocked.currentSlot + 1;
+    unit(blocked, 'e-mangudai').slot = 0;
+    expect(threatDamage(bt, blocked, SALT_FLATS, bm, blocked.currentSlot)).toBe(0);
+    // The Champion, a tank, ignores the threat when choosing.
+    expect(AI.caution.bokh).toBe(0);
   });
 
   it('caps the AI’s search per request, deterministically', () => {

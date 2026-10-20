@@ -186,6 +186,21 @@ export const AI = {
    * For the shielded side or against the blinded one; the other way for
    * the opposite side.
    */
+  /**
+   * Not in the brief: the AI's one step of lookahead (threat.ts). Minus
+   * this × the damage the enemies acting within the next typical turn could
+   * deal the unit where it ends × the share of its health that is, and this
+   * share of `kill` if it would die. Without it the AI walked into an
+   * archer's reach, and on speed ties the side that moved first lost 60-67%
+   * of AI-vs-AI fights; with it, 49-51%.
+   */
+  threatFactor: 1,
+  /**
+   * Per hero, how much the threat counts. The Bökh Champion's is 0: a tank's
+   * job is to take hits, and at 1 it Held on 44% of its turns to stay out of
+   * reach (14% before the lookahead, 20% with it at 0).
+   */
+  caution: {bokh: 0, mangudai: 1, storm: 1} as Record<HeroId, number>,
   fogShield: 72_000,
   fogBlind: 300,
   friendlyDamageFactor: 1.5,
@@ -211,10 +226,12 @@ export const AI = {
    * 10 ms of CPU. A count, not a time limit, so fights stay deterministic.
    * One AI turn tries at most `maxSimulations`; all the AI turns in one
    * request share `requestSimulations`, but each gets at least
-   * `minSimulations`.
+   * `minSimulations`. Lowered from 150 and 300 when the lookahead
+   * (threat.ts) made each AI turn cost about 0.3 ms more, so requests stay
+   * as fast as before it.
    */
-  maxSimulations: 150,
-  requestSimulations: 300,
+  maxSimulations: 130,
+  requestSimulations: 260,
   minSimulations: 40,
 } as const;
 

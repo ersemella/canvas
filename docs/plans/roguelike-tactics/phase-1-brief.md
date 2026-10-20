@@ -327,11 +327,23 @@ confirm or change:
   fights stalled (12% and none with it, as before the change);
   ending a move on quicksand counts its damage for every slot until its
   next turn against the option; ground-targeted abilities (hail, Volley, Freeze) are tried once
-  per target hex, from the cheapest hex in range. The search is capped
-  in simulated options (150 per AI turn, 300 per request, at least 40
-  each; owner's call), a count rather than a time so fights stay
-  deterministic: over ~3,800 AI-vs-AI requests, median 1.3 ms, 99th
-  percentile 5.7 ms, none above 10 ms. The AI always moves before
+  per target hex, from the cheapest hex in range. A one-step lookahead
+  (2026-10-20, `src/rules/threat.ts`): each enemy's best hit on every hex
+  from anywhere it can reach, mapped once per AI turn; an option loses
+  the damage the enemies acting within the unit's next turn (at least a
+  typical turn, so a cheap Hold doesn't look safe) could deal where it
+  ends, times the share of its health, times its hero's caution
+  (`AI.caution`, 0 for the Bökh Champion, which otherwise Held on 44% of
+  its turns). The search is capped
+  in simulated options (130 per AI turn, 260 per request, at least 40
+  each; owner's call; 150 and 300 before the lookahead), a count rather than a time so fights stay
+  deterministic: over ~3,800 AI-vs-AI requests before the lookahead, median 1.3 ms, 99th
+  percentile 5.7 ms, none above 10 ms; the lower caps keep requests as
+  fast with it.
+- **Balance measurements** (2026-10-20) play each random deployment
+  twice, once with each side first on speed ties: the side that moved
+  first on a tie used to lose 60–67% of AI-vs-AI fights, which tilted
+  every single-order measurement. The AI always moves before
   acting.
 - **Dash** goes up to 3 hexes (owner, 2026-10-19; exactly 3 until then). **Pin** and **Throw** target
   any adjacent unit, allies included (Pin targeted enemies only until the

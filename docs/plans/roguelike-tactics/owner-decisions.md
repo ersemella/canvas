@@ -46,12 +46,18 @@ fight can be played. Balance means nothing until the real numbers are in.
 ### 3. CPU per request: capped (watch)
 
 The enemy AI runs inside the request. Its search is now capped (owner's
-call, 2026-10-19): one AI turn simulates at most 150 options and all the
-AI turns in one request share 300, each getting at least 40 (`AI` in
-`config.ts`). Over about 3,800 AI-vs-AI requests: median 1.3 ms, 99th
+call, 2026-10-19): one AI turn simulates at most 130 options and all the
+AI turns in one request share 260, each getting at least 40 (`AI` in
+`config.ts`; 150 and 300 until the lookahead, 2026-10-20). Over about
+3,800 AI-vs-AI requests before the lookahead: median 1.3 ms, 99th
 percentile 5.7 ms, worst 10.0 ms, none over the Free plan's 10 ms
 ([architecture.md](architecture.md#long-lived-storage-and-cost)); fight
-results were the same as uncapped. More heroes, bigger maps or more
+results were the same as uncapped. The lookahead (threat.ts, 2026-10-20)
+adds about 0.3 ms per AI turn, which the lower caps offset: on a slower
+test machine, three runs of ~4,500 to 6,700 requests each, before → after,
+median 1.6 → 1.55 ms, 99th percentile 7.5–7.7 → 7.3–7.6 ms, over 10 ms
+0.07–0.16% → 0.10–0.15% (that machine already put the old AI over 10 ms
+now and then). More heroes, bigger maps or more
 abilities will need the cap revisited, or Workers Paid ($5/month). Watch
 for errors `1102` or `exceededCpu` in the dashboard.
 
@@ -110,7 +116,12 @@ confirm or change:
 
 - **The AI's additions:** a pull toward the nearest enemy, and counting
   the quicksand it will take before its next turn. Without the pull, units with
-  nothing in reach hold forever.
+  nothing in reach hold forever. Since 2026-10-20, a one-step **lookahead**:
+  the damage the enemies acting within its next turn could deal it where
+  it ends, weighed by the share of its health and by a per-hero caution
+  (0 for the Bökh Champion, a tank). Without it the AI walked into an
+  archer's reach, and on speed ties the side that moved first lost 60–67%
+  of AI-vs-AI fights; with it, 49–51%.
 - **One move per turn, before or after the action, not split around it**
   (section 2; the page offers both orders since 2026-10-19). Splitting it
   (move, act, move, within the cap) is open: it would allow hit-and-run

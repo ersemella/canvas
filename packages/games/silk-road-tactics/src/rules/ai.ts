@@ -18,6 +18,8 @@ import {
 import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
 import {slotsForward, turnCost} from './track';
 import {obeysTaunt, tauntBinds, taunterOf} from './taunt';
+import {threatDamage, threatsTo} from './threat';
+import type {Threat} from './threat';
 import {RuleError, applyTurn, cloneFight, mapOf} from './fight';
 import {enterHex, hailDamage, throughDefence} from './resolve';
 import {tileAt} from './map';
@@ -70,7 +72,8 @@ export function scoreOutcome(
   before: FightState,
   after: FightState,
   actor: Unit,
-  baseline = baselineOf(before)
+  baseline = baselineOf(before),
+  threats: Threat[] = threatsTo(before, mapOf(before), actor)
 ): number {
   let score = 0;
   for (const b of before.units) {
@@ -102,6 +105,16 @@ export function scoreOutcome(
   const hail =
     me.alive && me.hex ? after.effects.find((e) => hexEquals(e.hex, me.hex!)) : undefined;
   if (hail) score -= hailDamage(after, me, hail) * AI.friendlyDamageFactor;
+  // What enemies could do to it within its next turn (one step of lookahead),
+  // weighed by the share of its health it would lose and by the hero's caution.
+  const caution = AI.threatFactor * AI.caution[me.hero];
+  if (caution > 0 && me.alive) {
+    const threat = threatDamage(threats, after, mapOf(after), me, before.currentSlot);
+    if (threat > 0) {
+      score -= Math.min(threat, me.hp) * Math.min(1, threat / me.hp) * caution;
+      if (threat >= me.hp) score -= AI.kill * caution;
+    }
+  }
   if (me.hex) {
     const gaps = after.units
       .filter((u) => u.alive && u.hex && hostile(u, me))
@@ -152,6 +165,7 @@ export function scoreOptions(
   let simulations = 0;
   const baseline = baselineOf(state);
   const map = mapOf(state);
+  const threats = AI.threatFactor * AI.caution[unit.hero] > 0 ? threatsTo(state, map, unit) : [];
   const out: ScoredOption[] = [];
   const groundTried = new Set<string>();
   // A binding taunt rules out every option that doesn't affect the taunter.
@@ -187,7 +201,7 @@ export function scoreOptions(
         if (budget) budget.left--;
         const after = simulate(state, unit.id, input, true);
         if (!after) continue;
-        let score = scoreOutcome(state, after, unit, baseline);
+        let score = scoreOutcome(state, after, unit, baseline, threats);
         if (def.id === 'fog') score += fogValue(state, unit, target.hex!);
         if (def.id === 'hold') {
           // Price the Hold's time as AI.holdScoringCost (see config.ts).
