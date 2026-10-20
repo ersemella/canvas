@@ -6,6 +6,8 @@ import type {SearchStats} from './ai';
 import {ABILITY, AI, RULES} from './config';
 import {ABILITIES} from './abilities';
 import {advanceToDecision, applyTurn, cloneFight, createFight, mapOf} from './fight';
+import {scaled} from './resolve';
+import {threatsTo} from './threat';
 import type {FightState, TurnInput} from './types';
 
 const hex = (q: number, r: number): Hex => ({q, r});
@@ -216,6 +218,35 @@ describe('the search timeline', () => {
     const stopped = JSON.stringify(position);
     expect(advanceToDecision(position)?.id).toBe(me.id);
     expect(JSON.stringify(position)).toBe(stopped);
+  });
+
+  it('scores a charge as missing the units that act before it lands', () => {
+    const s = setup({'p-mangudai': hex(0, 0), 'e-bokh': hex(3, 0)});
+    const me = unit(s, 'p-mangudai');
+    me.slot = 0;
+    me.ultimateUsed = false;
+    me.ultimateCharge = RULES.ultimateCharge;
+    s.awaiting = me.id;
+    // Its card comes before the Volley's: it can step out.
+    unit(s, 'e-bokh').slot = 1;
+    const option = scoreOptions(s, me).find(
+      (o) =>
+        o.input.action.ability === 'volley' &&
+        o.input.action.target?.hex?.q === 3 &&
+        o.input.action.target.hex.r === 0
+    )!;
+    expect(unit(option.after, 'e-bokh').hp).toBe(unit(s, 'e-bokh').hp);
+    expect(unit(option.after, 'e-bokh').hex).toEqual(hex(3, 0));
+  });
+
+  it('reads an enemy charge with its own damage and area', () => {
+    const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
+    const storm = unit(s, 'e-storm');
+    storm.charging = {ability: 'freeze', target: hex(3, 0)};
+    const threat = threatsTo(s, mapOf(s), unit(s, 'p-bokh')).find((t) => t.enemyId === storm.id)!;
+    const freeze = scaled(ABILITY.freeze.damage, storm.power);
+    expect(threat.hexes.size).toBe(7);
+    expect([...threat.hexes.values()].every((h) => h.ranged === freeze)).toBe(true);
   });
 
   it('lets a target escape before a pending Volley lands', () => {

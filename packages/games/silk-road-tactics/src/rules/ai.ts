@@ -4,10 +4,12 @@
  * Preview charges and faithful successors are kept separate.
  */
 import {hexDistance, hexEquals, hexKey} from '@canvas/engine/server';
-import {ABILITY, AI, RULES, movementRules} from './config';
+import {ABILITY, AI, HEROES, RULES, movementRules} from './config';
 import {
+  fogAt,
   hostile,
   isFlanked,
+  isImmobilized,
   isRanged,
   obscured,
   reachableHexes,
@@ -20,11 +22,11 @@ import {obeysTaunt, tauntBinds, taunterOf} from './taunt';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf, turnInputCost} from './fight';
-import {enterHex, hailDamage, throughDefence} from './resolve';
+import {enterHex, hailDamage, scaled, throughDefence} from './resolve';
 import {tileAt} from './map';
 import type {AbilityDef} from './abilities';
 import type {Hex} from '@canvas/engine/server';
-import type {FightState, Side, TurnInput, Unit} from './types';
+import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
   input: TurnInput;
@@ -35,16 +37,79 @@ export interface ScoredOption {
   position: FightState;
 }
 
+/** A unit's damage per slot: its best basic hit over the slots a typical turn takes. */
+interface Rate {
+  all: number;
+  /** From the bow alone, the hit Obscured halves. */
+  ranged: number;
+}
+
+/** Each side's pressure (the sum of its living units' rates) and its living units. */
+type Pressure = Record<Side, Rate & {alive: number}>;
+
+/** An ability's base damage, a Pin's over its whole duration; none for the rest. */
+function baseDamage(id: AbilityId): number {
+  const a = ABILITY[id] as {damage?: number; damagePerSlot?: number; slots?: number};
+  return a.damage ?? (a.damagePerSlot ?? 0) * (a.slots ?? 0);
+}
+
+function rateOf(u: Unit): Rate {
+  const slots = slotsForward(RULES.cost.typical, u.speed);
+  let best = 0;
+  for (const def of abilitiesOf(u)) if (!def.ultimate) best = Math.max(best, baseDamage(def.id));
+  return {
+    all: scaled(best, u.power) / slots,
+    ranged: isRanged(u) ? scaled(ABILITY.bow.damage, u.power) / slots : 0,
+  };
+}
+
+const pressures = new WeakMap<FightState, Pressure>();
+function pressureOf(state: FightState): Pressure {
+  let p = pressures.get(state);
+  if (!p) {
+    p = {player: {all: 0, ranged: 0, alive: 0}, enemy: {all: 0, ranged: 0, alive: 0}};
+    for (const u of state.units) {
+      if (!u.alive) continue;
+      const r = rateOf(u);
+      p[u.side].all += r.all;
+      p[u.side].ranged += r.ranged;
+      p[u.side].alive++;
+    }
+    pressures.set(state, p);
+  }
+  return p;
+}
+
+/** The share of the other side's pressure that falls on `u`, through its defence. */
+function incoming(p: Pressure, u: Unit, kind: keyof Rate): number {
+  const other = p[u.side === 'player' ? 'enemy' : 'player'];
+  const mine = p[u.side];
+  return (
+    (other[kind] * RULES.defenceConstant) /
+    (u.defence + RULES.defenceConstant) /
+    Math.max(1, mine.alive)
+  );
+}
+
+/** A unit whose basic attack reaches beyond its neighbours (the bow, hail). */
+function attacksFromAfar(u: Unit): boolean {
+  return isRanged(u) || HEROES[u.hero].abilities.includes('hail');
+}
+
 /**
- * Status points for scoring: Slowed per point, Immobilized per slot,
- * Vulnerable per %, Crushed per point of damage it has left to deal (after
- * defence), and Taunted per slot.
+ * What `u`'s statuses cost its side, in damage (AI.statusHorizon): Slowed
+ * per point and Taunted per slot (flat), Vulnerable as the extra damage
+ * the other side's pressure would deal it, Immobilized as the share of its
+ * own pressure it loses, Crushed as the damage it has left to deal.
  */
-function statusPoints(u: Unit, slot: number): number {
+function statusPoints(u: Unit, slot: number, p: Pressure): number {
+  const left = (kind: Parameters<typeof statusSlotsLeft>[1]) =>
+    Math.min(AI.statusHorizon, statusSlotsLeft(u, kind, slot));
+  const share = attacksFromAfar(u) ? AI.immobilizedShare.ranged : AI.immobilizedShare.melee;
   return (
     AI.perSlowed * statusValue(u, 'slowed') +
-    AI.perImmobilizedSlot * statusSlotsLeft(u, 'immobilized', slot) +
-    AI.perVulnerablePercent * statusValue(u, 'vulnerable') +
+    rateOf(u).all * share * left('immobilized') +
+    (statusValue(u, 'vulnerable') / 100) * incoming(p, u, 'all') * left('vulnerable') +
     (AI.perCrushDamage *
       statusValue(u, 'crushed') *
       statusSlotsLeft(u, 'crushed', slot) *
@@ -54,16 +119,33 @@ function statusPoints(u: Unit, slot: number): number {
   );
 }
 
+/**
+ * What standing Obscured is worth to `u`'s side: the ranged hits it halves
+ * on `u` until `u` can move away (its next turn, at least a typical turn
+ * ahead) or the fog lifts. Not the hits it halves by `u`: a ranged unit
+ * steps out before it shoots, so pricing them kept the Outrider shuffling
+ * (over 800 AI-vs-AI fights, 20.5 turns a fight instead of 15, and 6.4%
+ * unfinished instead of 3.4%).
+ */
+function obscuredValue(state: FightState, u: Unit, p: Pressure): number {
+  if (!u.hex || u.slot === null || !obscured(state, mapOf(state), u.hex)) return 0;
+  const until = Math.max(u.slot, state.currentSlot + slotsForward(RULES.cost.typical, u.speed));
+  const fog = fogAt(state, u.hex);
+  const slots = Math.max(0, (fog ? Math.min(until, fog.untilSlot) : until) - state.currentSlot);
+  return incoming(p, u, 'ranged') * RULES.obscuredReduction * slots;
+}
+
 /** What scoring compares against, per living unit: computed once per AI turn, not per option. */
 type Baseline = Map<string, {points: number; flanked: boolean}>;
 
 function baselineOf(state: FightState): Baseline {
+  const p = pressureOf(state);
   return new Map(
     state.units
       .filter((u) => u.alive)
       .map((u) => [
         u.id,
-        {points: statusPoints(u, state.currentSlot), flanked: isFlanked(state, u)},
+        {points: statusPoints(u, state.currentSlot, p), flanked: isFlanked(state, u)},
       ])
   );
 }
@@ -82,7 +164,7 @@ export function scoreOutcome(
     const a = after.units.find((u) => u.id === b.id)!;
     const base = baseline.get(b.id)!;
     const lost = b.hp - a.hp;
-    const statusDelta = statusPoints(a, before.currentSlot) - base.points;
+    const statusDelta = statusPoints(a, before.currentSlot, pressureOf(before)) - base.points;
     if (hostile(b, actor)) {
       // Healing an enemy counts against the turn, as damage counts for it.
       score += lost + statusDelta;
@@ -125,16 +207,15 @@ export function scoreOutcome(
   return score;
 }
 
-/** What fog centred on `center` is worth to `actor`'s side: units it newly Obscures (see `AI.fogShield`). */
-function fogValue(state: FightState, actor: Unit, center: Hex): number {
-  const map = mapOf(state);
-  const living = state.units.filter((u) => u.alive && u.hex);
+/** What a fog cast is worth to `actor`'s side: the change in every unit's `obscuredValue`. */
+function fogValue(before: FightState, after: FightState, actor: Unit): number {
+  const p = pressureOf(before);
   let value = 0;
-  for (const u of living) {
-    if (hexDistance(u.hex!, center) > ABILITY.fog.radius || obscured(state, map, u.hex!)) continue;
-    const side = hostile(u, actor) ? -1 : 1;
-    if (living.some((o) => hostile(o, u) && isRanged(o))) value += (side * AI.fogShield) / u.maxHp;
-    if (isRanged(u)) value -= side * AI.fogBlind;
+  for (const b of before.units) {
+    const a = after.units.find((u) => u.id === b.id)!;
+    if (!b.alive || !a.alive) continue;
+    const delta = obscuredValue(after, a, p) - obscuredValue(before, b, p);
+    value += hostile(b, actor) ? -delta : delta;
   }
   return value;
 }
@@ -221,7 +302,7 @@ export function scoreOptions(
           resolvePreviewCharge(after, unit.id);
         }
         let score = scoreOutcome(state, after, unit, baseline, threats);
-        if (def.id === 'fog') score += fogValue(state, unit, target.hex!);
+        if (def.id === 'fog') score += fogValue(state, after, unit);
         if (
           def.id === 'hold' &&
           !(movementRules(state).separateMovement && reach.path.length > 0)
@@ -265,14 +346,36 @@ export function simulate(
   return sim;
 }
 
+/**
+ * A charge resolved now, for scoring. Units whose cards come before it
+ * lands, and that can move, are assumed to step out of it: off the board
+ * while it resolves (owner, 2026-10-20; scoring them as hit made the AI
+ * charge Volley and Freeze where they mostly missed).
+ */
 function resolvePreviewCharge(state: FightState, unitId: string): void {
   const unit = state.units.find((u) => u.id === unitId)!;
   if (!unit.charging) return;
-  ABILITIES[unit.charging.ability].resolve(
-    {state, map: mapOf(state), slot: state.currentSlot},
-    unit,
-    {hex: unit.charging.target}
+  const escaping = state.units.filter(
+    (u) =>
+      u !== unit &&
+      u.alive &&
+      u.hex &&
+      u.slot !== null &&
+      unit.slot !== null &&
+      u.slot < unit.slot &&
+      !isImmobilized(u)
   );
+  const hexes = escaping.map((u) => u.hex);
+  for (const u of escaping) u.hex = null;
+  try {
+    ABILITIES[unit.charging.ability].resolve(
+      {state, map: mapOf(state), slot: state.currentSlot},
+      unit,
+      {hex: unit.charging.target}
+    );
+  } finally {
+    escaping.forEach((u, i) => (u.hex = hexes[i]!));
+  }
 }
 
 /** Work left for all AI turns in one request: actions, charge previews and automatic cards. */
@@ -302,22 +405,12 @@ export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
-  const map = mapOf(state);
+  const p = pressureOf(state);
   let score = 0;
   for (const u of state.units) {
     if (!u.alive) continue;
-    let value = u.hp + AI.kill - statusPoints(u, state.currentSlot);
-    if (u.hex) {
-      let rangedEnemy = false;
-      for (const e of state.units) {
-        if (!e.alive || !e.hex || !hostile(e, u)) continue;
-        rangedEnemy ||= isRanged(e);
-      }
-      if (obscured(state, map, u.hex)) {
-        if (rangedEnemy) value += AI.fogShield / u.maxHp;
-        if (isRanged(u)) value -= AI.fogBlind;
-      }
-    }
+    const value =
+      u.hp + AI.kill - statusPoints(u, state.currentSlot, p) + obscuredValue(state, u, p);
     score += (u.side === side ? 1 : -1) * value;
   }
   return score;

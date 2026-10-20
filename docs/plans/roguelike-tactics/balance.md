@@ -205,6 +205,43 @@ without Sunlight wins 44.4%, without Volley 43.9%, without Fog 55.0%
 (Fog still needs tuning 5). Storm Caller turns: Hail 31%, Sunlight 29%,
 moves 25%, Freeze 9%, Fog 6%.
 
+**Applied 2026-10-20: AI scoring in damage** (principle 4). The AI's flat
+points for Vulnerable (2 per %, whatever its duration), Immobilized (2 a
+slot) and fog (`fogShield`, `fogBlind`) are replaced by damage: each
+side's pressure is its units' best basic hit over the slots a typical
+turn takes. Vulnerable is worth its share of the other side's pressure
+over the slots it lasts (capped at 20); Immobilized the share of the
+unit's own pressure it loses (0.1 for a ranged or area attacker, 0.4 for
+melee); standing Obscured the ranged hits it halves on the unit until it
+can move. Two Freeze-related fixes: a charge is scored as missing the
+units whose cards come before it lands (they step out), and the threat
+model reads an enemy's charge with its own damage and area (every charge
+was read as a Volley). Measured, same seeds:
+
+| | Before | After |
+|---|---:|---:|
+| Unfinished (800 fights) | 3.4% | 4.9% |
+| Side without Volley wins | 43.9% | **42.8%** |
+| Side without Sunlight wins | 44.4% | 41.8% |
+| Side without Fog wins | 55.0% | **50.1%** (no longer a trap; cast on 0.5% of turns) |
+| Side without Freeze wins | 53.5% | 53.2% (unchanged) |
+| Side without Pin / Dash wins | 48.7% / 50.6% | 50.3% / 48.4% |
+
+Pricing the hits a ranged unit loses standing in fog was tried and
+dropped: the Outrider shuffled out of every fog and sandstorm hex (20.5
+turns a fight instead of 15) and 6.4% of fights went unfinished. Without
+the charge-dodge assumption, unfinished fights fall to 2.8% but Volley is
+worth nothing (50.3%); it is kept, since the stalls are the kind a
+guaranteed end settles (tuning 8). A player request costs a mean 3.6 ms
+locally (3.4 before).
+
+Freeze is not an AI problem: honestly priced, it hits 0.8 enemies a cast
+for 60 damage plus its statuses, and the AI now casts it less (0.57 times
+a fight per Storm Caller, from 0.75) without changing its worth. Its
+redesign (tuning 4) stands: the strongest candidate is a charge that
+**follows a unit** (3.7 allows it), so it can't be stepped out of and is
+answered by pushing or killing the caster instead.
+
 Ordered by value. The **package** (tunings 1 to 3 together) measured:
 2.5% unfinished (6.8% today); median 59 actions and 86 slots (53 and
 84); no ability above 52% except Freeze; the Storm Caller's turns spread
@@ -282,11 +319,18 @@ keywords arrive.
    or a full turn, or make the dodge itself the payoff (area denial,
    forcing a move).
 6. **Speed is universal, power depends on the kit, defence on the
-   target.** Measured: +10 speed is worth 10–15 points of win rate, +10
-   power 4–11, +10 defence 4–8. Price gear speed at about twice other
-   stats per point, and only in steps that cross a slot breakpoint;
-   publish slot tables (cost × speed → slots). Rounding, not the formula,
-   sets speed's value.
+   target.** Measured with the original AI: +10 speed was worth 10–15
+   points of win rate, +10 power 4–11, +10 defence 4–8. With the AI
+   scoring statuses and fog in damage (2026-10-20), much of speed's
+   premium went: +10 speed gives the Storm Caller 55.3% and +10 power
+   61.8%; the Champion 57.4% for speed; the Outrider 62% for speed and
+   57.1% for power. Part of speed's value was the old AI turning cheap
+   actions into many low-value turns. Speed still matters most for the
+   hero whose damage is its job (the Outrider). Price gear speed by the
+   slots it saves for that hero's main action, in steps that cross a slot
+   breakpoint, and publish slot tables (cost × speed → slots). Neither
+   `C` 50 nor carrying the fraction rounding discards to the next turn
+   changed speed's measured worth (both tested).
 7. **Breakpoints are what matter.** Hits to kill and slots per action are
    the only numbers that change outcomes. Size a gear stat line to move
    one of them (Bow vs Champion from 4 hits to 3 needs 180 a hit), and let
@@ -317,7 +361,8 @@ keywords arrive.
 
 ## Open questions
 
-1. Why Freeze costs games in every variant (tuning 4).
+1. Freeze's redesign (tuning 4): the AI isn't the cause; a charge that
+   follows its target is the leading candidate.
 2. Whether the bow's six lanes should stay (tuning 6): the lanes give it
    a clear identity, at the cost of many fiddly turns.
 3. Whether mixed compositions break these readings. Every measurement

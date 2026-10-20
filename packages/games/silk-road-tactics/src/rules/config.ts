@@ -236,21 +236,28 @@ export const AI = {
   flankedTarget: 100,
   breaksAllyFlank: 50,
   perSlowed: 40,
-  perImmobilizedSlot: 2,
-  perVulnerablePercent: 2,
+  /**
+   * Not in the brief: Vulnerable, Immobilized and Obscured are priced in
+   * damage, not flat points (owner, 2026-10-20; were 2 per % of Vulnerable
+   * whatever its duration, 2 per slot Immobilized, and flat fog values),
+   * from each side's pressure: its units' best basic hit over the slots a
+   * typical turn takes (ai.ts). Vulnerable is worth its share of the
+   * pressure on the unit, split across its side's living units, over the
+   * slots it lasts, at most `statusHorizon`. Immobilized is worth this
+   * share of the unit's own pressure over the slots it lasts: a ranged or
+   * area attacker still attacks where it stands, a melee one mostly can't.
+   * Obscured is worth the ranged hits it halves on the unit until the
+   * unit can move away. Flat weights made fog a trap (39% of the
+   * Storm Caller's turns; a side without it won 74% of AI-vs-AI fights)
+   * and valued Freeze's Vulnerable the same for 1 slot as for 20
+   * (docs/plans/roguelike-tactics/balance.md).
+   */
+  statusHorizon: 20,
+  immobilizedShare: {ranged: 0.1, melee: 0.4},
   /** Not in the brief: per point of damage a Crushed status will still deal. */
   perCrushDamage: 1,
   /** Not in the brief: per slot a unit stays Taunted. */
   perTauntedSlot: 2,
-  /**
-   * Not in the brief: fog has no immediate effect to score, so the AI
-   * values each unit it newly Obscures, and every unit standing Obscured
-   * (fog or sandstorm) when it looks ahead. Shielding: this divided by the unit's
-   * max health (the frailest matter most), when the other side has a
-   * ranged attacker. Blinding: a flat value per ranged attacker covered.
-   * For the shielded side or against the blinded one; the other way for
-   * the opposite side.
-   */
   /**
    * Not in the brief: the AI's one step of lookahead (threat.ts). Minus
    * this × the damage the enemies acting within the next typical turn could
@@ -266,14 +273,6 @@ export const AI = {
    * reach (14% before the lookahead, 20% with it at 0).
    */
   caution: {bokh: 0, mangudai: 1, storm: 1} as Record<HeroId, number>,
-  /**
-   * Fog's values (see above): a third of what they were (owner,
-   * 2026-10-20; were 72,000 and 300). At those, fog took 39% of the Storm
-   * Caller's turns and a side without it won 74% of AI-vs-AI fights; now
-   * about 7% and 54%, with fewer unfinished fights (balance.md).
-   */
-  fogShield: 24_000,
-  fogBlind: 100,
   friendlyDamageFactor: 1.5,
   perSlotMoved: 10,
   /**

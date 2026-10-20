@@ -106,11 +106,13 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const hexes = new Map<number, HexThreat>();
     out.push({enemyId: e.id, hexes});
     if (e.charging) {
-      // A damaging charge lands where it was aimed.
-      if (ABILITIES[e.charging.ability].damaging) {
-        const d = scaled(ABILITY.volley.damage, e.power);
-        for (const h of hexesInRange(e.charging.target, ABILITY.volley.radius))
-          mark(hexes, id(h.q, h.r), 'ranged', d);
+      // A damaging charge lands where it was aimed, with its own damage and
+      // area (every charge was read as a Volley until 2026-10-20).
+      const {ability, target} = e.charging;
+      if (ABILITIES[ability].damaging) {
+        const charge = ABILITY[ability] as {damage: number; radius: number};
+        const d = scaled(charge.damage, e.power);
+        for (const h of hexesInRange(target, charge.radius)) mark(hexes, id(h.q, h.r), 'ranged', d);
       }
       continue;
     }
