@@ -1,13 +1,12 @@
 /**
  * Silk Road Tactics end to end: the `/runs` API against the Worker (player
  * keys, ownership, the view never carrying the seed, one active run per
- * key, illegal turns refused), then the page in Chromium: start, deploy,
+ * key, illegal turns refused), then the page in Chromium: start,
  * a turn played with real taps and its preview, an enemy's stat sheet, a
  * reload that resumes exactly, and the fight played to victory or defeat
  * (the remaining turns chosen by the AI through a dev-server hook).
  *
- * Against production (no dev hook) the page part only starts and deploys
- * a fight. Every run the suite starts is abandoned at the end, so smoke
+ * Against production (no dev hook) the page part only starts a fight. Every run the suite starts is abandoned at the end, so smoke
  * tests don't leave active runs behind.
  */
 import {chromium, devices} from 'playwright';
@@ -40,33 +39,39 @@ const started = await api('/runs', alice, {
   method: 'POST',
   body: JSON.stringify({game: 'silk-road-tactics'}),
 });
+/** The leftmost hex of row `r`, in axial coordinates (odd rows reach column −1). */
+const leftEdge = (r) => ({q: (r & 1 ? -1 : 0) - (r - (r & 1)) / 2, r});
+const rightEdge = (r) => ({q: 7 - (r - (r & 1)) / 2, r});
+const sameHex = (a, b) => a.q === b.q && a.r === b.r;
+const startedFight = started.body?.view?.fight;
 check(
-  'starting a run returns its view',
-  started.status === 201 && started.body?.view?.fight?.phase === 'deploy',
+  'starting a run returns a fight already under way',
+  started.status === 201 && startedFight?.phase === 'fight',
   started
+);
+check(
+  'each side starts on its outermost column',
+  startedFight.units.every((u) =>
+    sameHex(u.hex, (u.side === 'player' ? leftEdge : rightEdge)(u.hex.r))
+  ),
+  startedFight.units.map((u) => [u.id, u.hex])
+);
+check(
+  'the response stops on one of your units',
+  /^p-/.test(startedFight.awaiting ?? ''),
+  startedFight.awaiting
 );
 const runId = started.body.runId;
 const raw = JSON.stringify(started.body);
 check('the view never carries the seed', !/seed/i.test(raw));
 
 check('another key can’t see the run', (await api(`/runs/${runId}`, bob)).status === 403);
-const placements = (fight) =>
-  fight.units
-    .filter((u) => u.side === 'player')
-    .map((u, i) => ({
-      unitId: u.id,
-      hex: [
-        {q: 0, r: 2},
-        {q: -1, r: 3},
-        {q: -1, r: 4},
-      ][i],
-    }));
 check(
   'another key can’t act on the run',
   (
-    await api(`/runs/${runId}/deploy`, bob, {
+    await api(`/runs/${runId}/turn`, bob, {
       method: 'POST',
-      body: JSON.stringify({placements: placements(started.body.view.fight)}),
+      body: JSON.stringify({action: {ability: 'hold'}}),
     })
   ).status === 403
 );
@@ -74,33 +79,11 @@ check(
   'the key’s active run is remembered',
   (await api('/runs/active', alice)).body?.activeRunId === runId
 );
-
-const outside = await api(`/runs/${runId}/deploy`, alice, {
-  method: 'POST',
-  body: JSON.stringify({
-    placements: started.body.view.fight.units
-      .filter((u) => u.side === 'player')
-      .map((u, i) => ({unitId: u.id, hex: {q: 4 + i, r: 3}})),
-  }),
-});
-check('deploying outside the zone is refused', outside.status === 400, outside.body);
-
-// The map's default placement (odd-r: (col 1,row 2), (0,3), (0,4)).
-const deployed = await api(`/runs/${runId}/deploy`, alice, {
-  method: 'POST',
-  body: JSON.stringify({placements: placements(started.body.view.fight)}),
-});
 check(
-  'deploying starts the fight',
-  deployed.status === 200 && deployed.body.view.fight.phase === 'fight',
-  deployed.body
+  'there is no deployment step',
+  (await api(`/runs/${runId}/deploy`, alice, {method: 'POST', body: '{}'})).status === 404
 );
-check(
-  'the response stops on one of your units',
-  /^p-/.test(deployed.body.view.fight.awaiting ?? ''),
-  deployed.body.view.fight.awaiting
-);
-const version = deployed.body.view.version;
+const version = started.body.view.version;
 
 const bad = await api(`/runs/${runId}/turn`, alice, {
   method: 'POST',
@@ -117,12 +100,13 @@ check(
 );
 
 // The server enforces the same exclusive-action rule as the page, in either order.
+const actor = startedFight.units.find((u) => u.id === startedFight.awaiting);
 for (const actFirst of [false, true]) {
   const combined = await api(`/runs/${runId}/turn`, alice, {
     method: 'POST',
     body: JSON.stringify({
-      move: [{q: 0, r: 3}],
-      action: {ability: 'dash', target: {hex: {q: 1, r: 3}}},
+      move: [{q: actor.hex.q + 1, r: actor.hex.r}],
+      action: {ability: 'dash', target: {hex: {q: actor.hex.q + 2, r: actor.hex.r}}},
       actFirst,
     }),
   });
@@ -132,25 +116,33 @@ for (const actFirst of [false, true]) {
     combined.body
   );
 }
-const throughAlly = await api(`/runs/${runId}/turn`, alice, {
-  method: 'POST',
-  body: JSON.stringify({
-    move: [
-      {q: 0, r: 2},
-      {q: 0, r: 3},
-    ],
-    action: {ability: 'hold'},
-  }),
-});
-check(
-  'the server refuses walking through an ally',
-  throughAlly.status === 400 && throughAlly.body?.message?.includes('Units block'),
-  throughAlly.body
-);
+// Walk up the column into the nearest ally, when it is within a move's reach (4 hexes).
+const ally = startedFight.units
+  .filter((u) => u.side === 'player' && u !== actor)
+  .sort((a, b) => Math.abs(a.hex.r - actor.hex.r) - Math.abs(b.hex.r - actor.hex.r))[0];
+const gap = ally.hex.r - actor.hex.r;
+if (Math.abs(gap) <= 4) {
+  const throughAlly = await api(`/runs/${runId}/turn`, alice, {
+    method: 'POST',
+    body: JSON.stringify({
+      move: Array.from({length: Math.abs(gap)}, (_, i) =>
+        leftEdge(actor.hex.r + Math.sign(gap) * (i + 1))
+      ),
+      action: {ability: 'hold'},
+    }),
+  });
+  check(
+    'the server refuses walking through an ally',
+    throughAlly.status === 400 && throughAlly.body?.message?.includes('Units block'),
+    throughAlly.body
+  );
+} else {
+  console.log('  (no ally within reach of the first hero; walking-through check skipped)');
+}
 check(
   'refused movement changes neither fight nor version',
   JSON.stringify((await api(`/runs/${runId}`, alice)).body.view) ===
-    JSON.stringify(deployed.body.view)
+    JSON.stringify(started.body.view)
 );
 
 const held = await api(`/runs/${runId}/turn`, alice, {
@@ -212,21 +204,21 @@ async function abandonOn(p) {
 try {
   await page.goto(`${WEB_URL}/play/silk-road-tactics`);
   await page.getByRole('button', {name: 'Start a fight'}).click();
-  await page.getByRole('button', {name: 'Start the fight'}).waitFor({timeout: 15_000});
+  await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
   const devServer = await page
     .waitForFunction(() => window.__tactics, null, {timeout: 3_000})
     .then(() => true)
     .catch(() => false);
   await sleep(300);
-  await shot(page, 'deploy');
+  await shot(page, 'fight');
+  check(
+    'the page goes straight to the fight, with no deployment step',
+    !(await page.getByText('Deploy your heroes').count())
+  );
 
   if (!devServer) {
     // Production: no dev hook, so just start a fight and leave it.
-    await page.getByRole('button', {name: 'Start the fight'}).click();
-    await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
-    await sleep(300);
-    await shot(page, 'fight');
-    check('the page starts and deploys a fight', true);
+    check('the page starts a fight', true);
     check('no page errors', pageErrors.length === 0, pageErrors);
     console.log('  (deep checks skipped: no __tactics hook — not a dev-server build)');
     await abandonOn(page);
@@ -234,23 +226,9 @@ try {
     finish();
   }
 
-  // Move the Outrider (default at col 0, row 3) to another zone hex by tapping.
+  await waitIdle();
   let run = await state();
   const outrider = 'p-mangudai';
-  await tapHex({q: -1, r: 3}); // select it (axial of col 0, row 3)
-  await tapHex({q: -2, r: 6}); // col 1, row 6
-  await page.getByRole('button', {name: 'Start the fight'}).click();
-  await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
-  await waitIdle();
-  run = await state();
-  const placed = run.view.fight.units.find((u) => u.id === outrider).hex;
-  check(
-    'tapping a hero then a zone hex moves it before the fight',
-    placed.q === -2 && placed.r === 6,
-    placed
-  );
-  await sleep(300);
-  await shot(page, 'fight');
 
   // The top bar: Back and the game's title, on desktop too.
   const bar = page.locator('header');
@@ -266,13 +244,29 @@ try {
     (await page.getByText('Silk Road Tactics').count()) === 1
   );
 
-  // One turn with real taps: select Dash, replace it with Move, Confirm. The Outrider
-  // (fastest, so first) is at col 1, row 6 after the deployment above.
+  // One turn with real taps: select Dash, replace it with Move, Confirm. The
+  // Outrider (fastest, so first) starts somewhere on the left edge, so the
+  // hexes come from the page: Dash's farthest target, and a move off its line.
   const before = run.view.version;
   const acting = run.view.fight.units.find((u) => u.id === run.view.fight.awaiting);
   check('the Outrider acts first', acting.id === outrider, acting.id);
-  const dashTo = {q: 1, r: 6}; // 3 hexes east along row 6, the restored Dash limit
-  const dest = {q: -2, r: 5}; // col 0, row 5: next to where it started, off the Dash line
+  const hexDistance = (a, b) =>
+    (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q + a.r - b.q - b.r)) / 2;
+  await page.getByRole('button', {name: /^Dash/}).click();
+  await page.waitForFunction(() => window.__tactics.targets.length > 0);
+  const dashTargets = await page.evaluate(() => window.__tactics.targets.map((t) => t.hex));
+  await page.getByRole('button', {name: /^Dash/}).click(); // and off again
+  const dashTo = dashTargets.sort(
+    (a, b) => hexDistance(b, acting.hex) - hexDistance(a, acting.hex)
+  )[0];
+  // The nearest reachable hex, off Dash's lines if one is.
+  const dest = (await page.evaluate(() => window.__tactics.reaches.map((r) => r.hex)))
+    .filter((h) => hexDistance(h, acting.hex) > 0 && !sameHex(h, dashTo))
+    .sort(
+      (a, b) =>
+        dashTargets.some((t) => sameHex(t, a)) - dashTargets.some((t) => sameHex(t, b)) ||
+        hexDistance(a, acting.hex) - hexDistance(b, acting.hex)
+    )[0];
   // Without Move, a tap only looks at the hex.
   await tapHex(dest);
   const moveButton = page.getByRole('button', {name: /^Move/});
@@ -428,7 +422,6 @@ try {
     await abandonOn(page);
     await page.reload();
     await page.getByRole('button', {name: 'Start a fight'}).click();
-    await page.getByRole('button', {name: 'Start the fight'}).click({timeout: 15_000});
     await page.getByRole('button', {name: /^Move/}).waitFor({timeout: 15_000});
     check('abandoning starts a fresh run', (await state()).runId !== stalled);
   }
@@ -456,7 +449,6 @@ try {
   const phone = await browser.newPage({...devices['iPhone 13']});
   await phone.goto(`${WEB_URL}/play/silk-road-tactics`);
   await phone.getByRole('button', {name: 'Start a fight'}).click();
-  await phone.getByRole('button', {name: 'Start the fight'}).click();
   const phoneMove = phone.getByRole('button', {name: /^Move/});
   await phoneMove.waitFor({timeout: 15_000});
   await phone.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {
@@ -526,7 +518,10 @@ try {
   // A planned move shows what it adds, in slots, inside the Move button.
   {
     await phoneMove.click();
-    const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), {q: 0, r: 3}); // col 1, row 3: free sand
+    const free = await phone.evaluate(
+      () => window.__tactics.reaches.find((r) => r.path.length > 0).hex
+    );
+    const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), free);
     const box = await phone.locator('canvas').boundingBox();
     await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
     await sleep(250);
@@ -560,10 +555,11 @@ try {
     await sleep(250);
   };
   const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
-  const mine = phoneFight.units.find((u) => u.id === 'p-bokh').hex; // in the Outrider's line at the start
-  await phone.getByRole('button', {name: /^Composite Bow/}).click();
-  await tapOn(mine);
-  await tapOn(mine);
+  await phone.getByRole('button', {name: /^Dash/}).click();
+  await phone.waitForFunction(() => window.__tactics.targets.length > 0);
+  const aim = await phone.evaluate(() => window.__tactics.targets[0].hex);
+  await tapOn(aim);
+  await tapOn(aim);
   check(
     'phone: a second tap on the target doesn’t commit',
     (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion
@@ -574,11 +570,11 @@ try {
     /^Confirm · next turn \+\d+( → \+\d+)?$/.test(phoneConfirm),
     phoneConfirm
   );
-  const bowText = await phone.getByRole('button', {name: /^Composite Bow/}).textContent();
+  const dashButtonText = await phone.getByRole('button', {name: /^Dash/}).textContent();
   check(
     'phone: the ability button shows the same slots as Confirm',
-    bowText.endsWith(phoneConfirm.match(/next turn (\+\d+)/)[1]),
-    [bowText, phoneConfirm]
+    dashButtonText.endsWith(phoneConfirm.match(/next turn (\+\d+)/)[1]),
+    [dashButtonText, phoneConfirm]
   );
   check('phone: there are no numbered steps', !(await phone.getByTestId('turn-steps').count()));
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});

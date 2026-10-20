@@ -7,7 +7,7 @@ import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
 import type {SearchBudget} from './ai';
 import {AI} from './config';
-import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, deploy} from './fight';
+import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight} from './fight';
 import type {AbilityId, ActionTarget, FightState, RunAction} from './types';
 
 export interface RunState {
@@ -22,8 +22,12 @@ export interface RunView {
   fight: FightState;
 }
 
+/** A new run, its fight advanced to the player's first turn (the enemy may move first). */
 export function createRun(seed: number): RunState {
-  return {seed, version: 0, fight: createFight(seed)};
+  const fight = createFight(seed);
+  fight.events = [];
+  advance(fight, (state, unit) => chooseAiTurn(state, unit, {left: AI.requestSimulations}));
+  return {seed, version: 0, fight};
 }
 
 const isInt = (n: unknown): n is number => Number.isInteger(n) && Math.abs(n as number) < 1000;
@@ -39,17 +43,6 @@ function parseHex(raw: unknown): Hex {
 export function parseAction(raw: unknown): RunAction {
   const a = raw as Record<string, unknown> | null;
   if (!a || typeof a !== 'object') throw new RuleError('Malformed action.');
-  if (a.type === 'deploy') {
-    if (!Array.isArray(a.placements) || a.placements.length > 10)
-      throw new RuleError('Malformed placements.');
-    return {
-      type: 'deploy',
-      placements: a.placements.map((p: {unitId?: unknown; hex?: unknown}) => {
-        if (typeof p?.unitId !== 'string') throw new RuleError('Malformed placement.');
-        return {unitId: p.unitId, hex: parseHex(p.hex)};
-      }),
-    };
-  }
   if (a.type === 'turn') {
     const action = a.action as
       | {ability?: unknown; target?: {hex?: unknown; to?: unknown}}
@@ -83,15 +76,11 @@ export function handleRunAction(run: RunState, raw: RunAction): RunState {
   const fight = cloneFight(run.fight, true);
   // What this action sets off, for the page to play back.
   fight.events = [];
-  if (action.type === 'deploy') {
-    deploy(fight, action.placements);
-  } else if (action.type === 'turn') {
-    if (fight.phase !== 'fight') throw new RuleError('The fight is not in progress.');
-    const unit = actingUnit(fight);
-    if (!unit) throw new RuleError('It is not your turn.');
-    const {type: _type, ...input} = action;
-    applyTurn(fight, unit, input);
-  }
+  if (fight.phase !== 'fight') throw new RuleError('The fight is not in progress.');
+  const unit = actingUnit(fight);
+  if (!unit) throw new RuleError('It is not your turn.');
+  const {type: _type, ...input} = action;
+  applyTurn(fight, unit, input);
   // The AI turns this action sets off share one search budget (AI.requestSimulations).
   const budget: SearchBudget = {left: AI.requestSimulations};
   advance(fight, (state, unit) => chooseAiTurn(state, unit, budget));

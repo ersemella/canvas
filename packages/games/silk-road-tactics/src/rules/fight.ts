@@ -1,11 +1,11 @@
 /**
- * The fight's flow: creating it, deployment, the track advancing card by
+ * The fight's flow: creating it, the track advancing card by
  * card, start-of-turn effects, charged abilities triggering, and applying
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
-import {hexEquals, hexKey} from '@canvas/engine/server';
+import {hexEquals} from '@canvas/engine/server';
 import {ARMOUR, HEROES, PARTY, movementRules} from './config';
-import {expireStatuses, invalidPath, walkable} from './board';
+import {expireStatuses, invalidPath} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
 import {applyHail, checkEnd, enterHex, log, damageEachSlot, record, unitName} from './resolve';
@@ -13,7 +13,7 @@ import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS} from './map';
 import type {MapData} from './map';
 import {nextCard, placeCard, placeStartingCards, slotsForward, turnCost} from './track';
-import type {Deployment, FightState, Side, TurnInput, Unit} from './types';
+import type {FightState, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
 export class RuleError extends Error {}
@@ -48,15 +48,16 @@ function makeUnit(side: Side, partyIndex: number): Unit {
 }
 
 /**
- * A new fight on the Salt Flats: both parties, the enemy placed from one of
- * the map's layouts (the seed picks it), the player's waiting to deploy.
+ * A new fight on the Salt Flats, already under way: the seed scatters the
+ * player's party along the leftmost column and the enemy's along the
+ * rightmost (owner, 2026-10-20; there is no deployment step).
  */
 export function createFight(seed: number): FightState {
   const map = SALT_FLATS;
   const state: FightState = {
     mapId: map.id,
     mode: 'solo',
-    phase: 'deploy',
+    phase: 'fight',
     currentSlot: 0,
     units: [
       ...PARTY.map((_, i) => makeUnit('player', i)),
@@ -67,39 +68,35 @@ export function createFight(seed: number): FightState {
     log: [],
     awaiting: null,
   };
-  const layout = map.enemyLayouts[seed % map.enemyLayouts.length]!;
-  state.units.filter((u) => u.side === 'enemy').forEach((u, i) => (u.hex = layout[i]!));
+  const random = seededRandom(seed);
+  for (const side of ['player', 'enemy'] as const) {
+    const hexes = shuffled(map.startColumns[side], random);
+    state.units.filter((u) => u.side === side).forEach((u, i) => (u.hex = hexes[i]!));
+  }
+  placeStartingCards(state);
+  log({state, map, slot: 0}, 'The fight begins.');
   return state;
 }
 
-/** The player's default placement, for the deployment screen. */
-export function defaultDeployment(state: FightState): Deployment[] {
-  const map = mapOf(state);
-  return state.units
-    .filter((u) => u.side === 'player')
-    .map((u, i) => ({unitId: u.id, hex: map.playerLayout[i]!}));
+/** A deterministic generator in [0, 1) (mulberry32), so a run's seed fixes its start. */
+function seededRandom(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
-/** Places the player's party in its zone and starts the clock (brief section 8). */
-export function deploy(state: FightState, placements: Deployment[]): void {
-  if (state.phase !== 'deploy') throw new RuleError('The fight has already started.');
-  const map = mapOf(state);
-  const party = state.units.filter((u) => u.side === 'player');
-  const seen = new Set<string>();
-  for (const unit of party) {
-    const p = placements.find((d) => d.unitId === unit.id);
-    if (!p) throw new RuleError(`Place every hero (missing ${HEROES[unit.hero].name}).`);
-    if (!map.deployment.player.some((h) => hexEquals(h, p.hex)) || !walkable(map, p.hex)) {
-      throw new RuleError('Heroes must start in your deployment zone.');
-    }
-    if (seen.has(hexKey(p.hex))) throw new RuleError('Two heroes can’t share a hex.');
-    seen.add(hexKey(p.hex));
+function shuffled<T>(items: T[], random: () => number): T[] {
+  const a = [...items];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
   }
-  if (placements.length !== party.length) throw new RuleError('Place each hero once.');
-  for (const unit of party) unit.hex = placements.find((d) => d.unitId === unit.id)!.hex;
-  state.phase = 'fight';
-  placeStartingCards(state);
-  log({state, map, slot: 0}, 'The fight begins.');
+  return a;
 }
 
 /** The unit whose turn it is, once the track has stopped for a human. */

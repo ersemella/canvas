@@ -21,7 +21,7 @@ refer to the combat design (see the map in the README).
 
 ## 1. Scope
 
-**In Phase 1:** one fight, from deployment to victory or defeat. The
+**In Phase 1:** one fight, from the opening to victory or defeat. The
 track and action economy; a hex map with obstacle, hazard and
 conceal tiles; flanking, line of fire, area abilities with friendly fire,
 two charged abilities (the Mangudai Outrider's arcing Volley and the
@@ -216,8 +216,10 @@ unit: well within the Free plan's 10 ms
 One hand-made map, **"The Salt Flats Crossing"** (map generation is out of
 scope), mirrored left to right like the PvP-style maps (6.6):
 
-- **Deployment zones:** the two leftmost hexes of each row (player) and
-  the two rightmost (enemy), rows 1 to 9. Odd rows have a ninth hex at
+- **Starting columns:** the leftmost hex of each row (player) and the
+  rightmost (enemy), rows 1 to 9; the run's seed scatters each party
+  along its column, with no deployment step (owner, 2026-10-20; the
+  zones were the two outermost hexes of each row, chosen by the player). Odd rows have a ninth hex at
   column −1, so neither side edge is notched (owner, 2026-10-19). Four
   columns between them on even rows, five on odd rows (8 columns × 9
   rows since 2026-10-20, owner): contact in about one to two turns of movement (6.6).
@@ -240,7 +242,6 @@ header (never the URL, D4). The server stores only its SHA-256 hash.
 |---|---|
 | `POST /runs` | Start a run (and its single fight); returns the run ID and the first view. One active run per key (D3): starting another abandons it. |
 | `GET /runs/:id` | The current view (resume after a reload). |
-| `POST /runs/:id/deploy` | Place the party in the deployment zone; starts the clock. |
 | `POST /runs/:id/turn` | One turn of the acting unit: `{move?: hex[], action: {ability, target}}`. The response contains every AI turn up to your next one (D7). |
 
 **The view** (versioned, sent whole each time): the map; every unit's

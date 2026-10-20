@@ -1,12 +1,10 @@
 import {describe, expect, it} from 'vitest';
 import {createRun, handleRunAction} from '../rules/run';
-import {defaultDeployment} from '../rules/fight';
 import {Playback, displayFight, eventSeconds} from './playback';
 
-/** A fight just past deployment and one turn after it, as the page sees them. */
+/** A fight at the player's first turn and one turn after it, as the page sees them. */
 function played() {
   let run = createRun(0);
-  run = handleRunAction(run, {type: 'deploy', placements: defaultDeployment(run.fight)});
   const from = run.fight;
   run = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
   return {from, to: run.fight};

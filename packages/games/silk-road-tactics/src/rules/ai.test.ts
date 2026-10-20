@@ -5,15 +5,7 @@ import {chooseAiTurn, evaluatePosition, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
 import {ABILITY, AI, RULES} from './config';
 import {ABILITIES} from './abilities';
-import {
-  advanceToDecision,
-  applyTurn,
-  cloneFight,
-  createFight,
-  defaultDeployment,
-  deploy,
-  mapOf,
-} from './fight';
+import {advanceToDecision, applyTurn, cloneFight, createFight, mapOf} from './fight';
 import type {FightState, TurnInput} from './types';
 
 const hex = (q: number, r: number): Hex => ({q, r});
@@ -32,7 +24,6 @@ function setup(placements: Record<string, Hex>): FightState {
 }
 function opening(): FightState {
   const s = createFight(0);
-  deploy(s, defaultDeployment(s));
   advanceToDecision(s);
   return s;
 }
