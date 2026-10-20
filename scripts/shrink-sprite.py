@@ -8,6 +8,14 @@ figure on a solid magenta (#FF00FF) background with a flat dark grey
 
   python3 scripts/shrink-sprite.py chatgpt.png out.png [size]   # size defaults to 32
 
+For a ground texture that fills the square (sand, quicksand), `--texture`
+keeps every pixel: no background, outline or shadow. For an overlay whose
+shapes should stay soft (fog), `--no-outline` removes the magenta but adds
+no outline:
+
+  python3 scripts/shrink-sprite.py sand.png sand-out.png 42 --texture
+  python3 scripts/shrink-sprite.py fog.png fog-out.png 42 --no-outline
+
 For a portrait, crop to the head first and keep the thin dark lines that
 draw the eyes and brows (a block turns dark from that share of line):
 
@@ -34,9 +42,13 @@ if '--lines' in args:
     i = args.index('--lines')
     lines = float(args.pop(i + 1))
     args.pop(i)
+texture = '--texture' in args
+outline = not texture and '--no-outline' not in args
+args = [a for a in args if a not in ('--texture', '--no-outline')]
 src, out = args[0], args[1]
 N = int(args[2]) if len(args) > 2 else 32
-FIT = N - 2  # the figure's size; the outline goes in the 1-pixel margin
+M = 1 if outline else 0  # the outline goes in a 1-pixel margin
+FIT = N - 2 * M  # the figure's size
 COLOURS = 24
 FIG_MIN = 0.3  # a block counts as figure from this share of figure pixels
 STEP = 20  # channels round to this, so near-identical shades vote together
@@ -86,7 +98,8 @@ shade = {}
 for y in range(H):
     for x in range(W):
         p = px[x, y]
-        k = 'bg' if background(p) else 'sh' if shadow(p, y) else 'line' if line(p) else 'fig'
+        k = ('fig' if texture else 'bg' if background(p) else 'sh' if shadow(p, y)
+             else 'line' if line(p) else 'fig')
         kind[x, y] = k
         if k == 'fig':
             shade[x, y] = tuple(min(255, round(c / STEP) * STEP) for c in p)
@@ -108,15 +121,15 @@ for j in range(FIT):
             dark = (kinds['line'] >= lines * total if lines is not None
                     else kinds['line'] > kinds['fig'] * 1.5)
             if dark or not shades:
-                sp[i + 1, j + 1] = OUTLINE  # a block that is mostly line stays dark
+                sp[i + M, j + M] = OUTLINE  # a block that is mostly line stays dark
             else:
                 # The average of the winning shade's source pixels, for a true colour.
                 win = shades.most_common(1)[0][0]
                 ps = [px[x, y] for y in range(y0, y1) for x in range(x0, x1)
                       if kind[x, y] == 'fig' and shade[x, y] == win]
-                sp[i + 1, j + 1] = tuple(sum(c) // len(ps) for c in zip(*ps)) + (255,)
+                sp[i + M, j + M] = tuple(sum(c) // len(ps) for c in zip(*ps)) + (255,)
         elif kinds['sh'] >= kinds['bg']:
-            sp[i + 1, j + 1] = SHADOW
+            sp[i + M, j + M] = SHADOW
 
 
 def solid(i, j):
@@ -125,7 +138,7 @@ def solid(i, j):
 
 ring = [(i, j) for j in range(N) for i in range(N) if not solid(i, j)
         and any(solid(i + di, j + dj) for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)))]
-for i, j in ring:
+for i, j in ring if outline else []:
     sp[i, j] = OUTLINE
 
 # A small palette, chosen from the sprite itself; the shadow stays see-through.

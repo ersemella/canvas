@@ -13,7 +13,7 @@ import {fogAt, isFlanked, statusValue} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
 import {fogInfo, hailInfo, TILE_INFO} from '../rules/info';
-import {MAPS, tileAt} from '../rules/map';
+import {MAPS, tileAt, type Tile} from '../rules/map';
 import type {FightState, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
 import type {TrackCard, TrackSlots} from './layout';
@@ -24,6 +24,12 @@ import mangudaiSprite from './sprites/mangudai.png';
 import mangudaiPortrait from './sprites/mangudai-portrait.png';
 import stormPortrait from './sprites/storm-portrait.png';
 import stormSprite from './sprites/storm.png';
+import fogImage from './tiles/fog.png';
+import hailImage from './tiles/hail.png';
+import quicksandImage from './tiles/quicksand.png';
+import ruinsImage from './tiles/ruins.png';
+import sandImage from './tiles/sand.png';
+import sandstormImage from './tiles/sandstorm.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
@@ -204,13 +210,11 @@ export class TacticsBoardSystem extends BaseSystem {
       if (trackStart(this.advance) >= this.advance.to) this.advance = null;
     }
     const map = MAPS[fight.mapId]!;
-    for (const [key, tile] of Object.entries(map.tiles)) {
-      const [q, r] = key.split(',').map(Number);
-      drawTileMark(ctx, center({q: q!, r: r!}), tile);
-    }
+    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h));
     for (const fog of fight.fog ?? []) drawFog(ctx, fog.hex);
     for (const effect of fight.effects)
       drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1);
+    for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
     const previewedTo = new Map(this.scene.preview.map((p) => [p.unitId, p]));
     for (const u of fight.units) {
@@ -657,6 +661,79 @@ function drawHover(
   });
 }
 
+/** The ground texture of each tile type; ruins stand on sand. */
+const TILE_TEXTURE: Record<Tile, string> = {
+  sand: sandImage,
+  obstacle: sandImage,
+  hazard: quicksandImage,
+  conceal: sandstormImage,
+};
+
+/**
+ * A pixel-art image (42×42 for a ground texture or effect) clipped to a hex,
+ * at the sprites' scale, centred on it.
+ */
+function drawHexImage(
+  ctx: CanvasRenderingContext2D,
+  h: Hex,
+  img: HTMLImageElement,
+  opts: {alpha?: number; flipX?: boolean} = {}
+): void {
+  const c = center(h);
+  const size = img.width * SPRITE_SCALE;
+  ctx.save();
+  hexPath(ctx, h, 0);
+  ctx.clip();
+  ctx.globalAlpha = opts.alpha ?? 1;
+  ctx.imageSmoothingEnabled = false;
+  ctx.translate(Math.round(c.x), Math.round(c.y));
+  if (opts.flipX) ctx.scale(-1, 1);
+  ctx.drawImage(img, -size / 2, -size / 2, size, size);
+  ctx.restore();
+}
+
+/**
+ * A tile's ground: its texture (sand mirrored on alternate hexes, so the
+ * board doesn't repeat) and its border. Until the image loads, the flat
+ * colour under it and a code-drawn mark show. Ruins stand on sand and are
+ * drawn later, by `drawRuins`.
+ */
+function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
+  const ground = assetLoader.requestImage(TILE_TEXTURE[tile]);
+  if (ground) {
+    drawHexImage(ctx, h, ground, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
+    ctx.save();
+    hexPath(ctx, h, 0.5);
+    ctx.strokeStyle = '#8c7350';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  } else if (tile === 'hazard' || tile === 'conceal') {
+    drawTileMark(ctx, center(h), tile);
+  }
+}
+
+/** A ruin standing on its hex like a unit: over fog and hail, so it always reads as blocked. */
+function drawRuins(ctx: CanvasRenderingContext2D, h: Hex): void {
+  const ruins = assetLoader.requestImage(ruinsImage);
+  if (ruins) {
+    const c = center(h);
+    const size = ruins.width * SPRITE_SCALE;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(
+      ruins,
+      Math.round(c.x - size / 2),
+      Math.round(c.y + SPRITE_FEET - size),
+      size,
+      size
+    );
+    ctx.restore();
+  } else {
+    drawTileMark(ctx, center(h), 'obstacle');
+  }
+}
+
 /** Each tile type has its own shape, not only its own colour (art direction). */
 function drawTileMark(
   ctx: CanvasRenderingContext2D,
@@ -712,12 +789,25 @@ function drawTileMark(
 }
 
 function drawFog(ctx: CanvasRenderingContext2D, h: Hex): void {
-  fillHex(ctx, h, {fill: 'rgba(203,213,225,0.35)', stroke: 'rgba(226,232,240,0.6)'});
+  const img = assetLoader.requestImage(fogImage);
+  // Drawn partly see-through, so the ground still shows under it.
+  if (img) drawHexImage(ctx, h, img, {alpha: 0.7});
+  else fillHex(ctx, h, {fill: 'rgba(203,213,225,0.35)', stroke: 'rgba(226,232,240,0.6)'});
 }
 
 function drawHail(ctx: CanvasRenderingContext2D, h: Hex, slotsLeft: number): void {
-  fillHex(ctx, h, {fill: 'rgba(186,230,253,0.45)', stroke: '#7dd3fc'});
   const at = center(h);
+  const img = assetLoader.requestImage(hailImage);
+  if (img) {
+    drawHexImage(ctx, h, img);
+    ctx.save();
+    ctx.translate(at.x, at.y);
+    ctx.scale(HEX_SCALE, HEX_SCALE);
+    label(ctx, `${slotsLeft}`, 18, -20, '#0c4a6e', 10);
+    ctx.restore();
+    return;
+  }
+  fillHex(ctx, h, {fill: 'rgba(186,230,253,0.45)', stroke: '#7dd3fc'});
   ctx.save();
   ctx.translate(at.x, at.y);
   ctx.scale(HEX_SCALE, HEX_SCALE);
