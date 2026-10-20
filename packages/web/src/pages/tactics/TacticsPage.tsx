@@ -282,22 +282,14 @@ export function TacticsPage() {
   }, [moving, plannedMove, actFirst, action, target, clearMove]);
 
   /**
-   * Slots from now to the next turn after an action of `actionCost` and the
-   * planned move: the placement formula, then yielding past taken slots (3.3).
+   * Slots an action of `actionCost` and the planned move cost: the placement
+   * formula alone (3.2). Yielding past taken slots (3.3) is left to the
+   * preview, which shows both, so a button's cost never jumps with the track.
    */
   const slotsLater = useCallback(
-    (actionCost: number) => {
-      if (!fight || !acting) return 0;
-      const taken = new Set(
-        fight.units.filter((u) => u.alive && u !== acting && u.slot !== null).map((u) => u.slot)
-      );
-      let slot =
-        fight.currentSlot +
-        slotsForward(turnCost(actionCost, plannedMove?.path.length ?? 0), acting.speed);
-      while (taken.has(slot)) slot++;
-      return slot - fight.currentSlot;
-    },
-    [fight, acting, plannedMove]
+    (actionCost: number) =>
+      acting ? slotsForward(turnCost(actionCost, plannedMove?.path.length ?? 0), acting.speed) : 0,
+    [acting, plannedMove]
   );
 
   /** Abilities aimed at a unit (melee, the bow) with no unit to aim at from where the action is taken: disabled. */
@@ -440,6 +432,7 @@ export function TacticsPage() {
       selectedUnitId: selectedId ?? acting?.id ?? null,
       preview: [],
       previewSlot: preview?.slot ?? null,
+      aimSlot: preview?.aimSlot ?? null,
     };
     if (!fight) return out;
     if (fight.phase === 'deploy') {
@@ -739,7 +732,7 @@ export function TacticsPage() {
 function TurnControls(props: {
   /** Phones: smaller buttons, inline steps, no panel of its own (the pinned action bar is one). */
   phone: boolean;
-  /** How many slots after now the next turn comes for an action of this cost, with the planned move. */
+  /** What an action of this cost, with the planned move, costs in slots, before yielding. */
   slotsLater: (actionCost: number) => number;
   /** What the planned move adds, in slots, shown in the Move button. */
   moveSlots: number | null;
@@ -815,7 +808,7 @@ function TurnControls(props: {
                 >
                   {def.name}
                   {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
-                  {/* How many slots later the next turn comes, with the planned move. */}
+                  {/* Its cost in slots, with the planned move; Confirm adds any yielding. */}
                   <span className={styles.abilityCost}>+{props.slotsLater(def.cost)}</span>
                 </Button>
               );

@@ -25,8 +25,10 @@ const sideColor = (u: Unit) => (u.side === 'player' ? 'blue' : 'red');
 
 /**
  * The turn's one button: Confirm with the chosen action, or End turn with
- * none (Hold), saying when the next turn comes in slots from now. The
- * outcome itself is drawn on the board (7.2).
+ * none (Hold), saying when the next turn comes in slots from now. When the
+ * slot the cost aims at is taken, the card yields further on (3.3): it reads
+ * "+3 → +5", the cost and then where the card lands, as the track draws it.
+ * The outcome itself is drawn on the board (7.2).
  */
 export function ConfirmButton(props: {
   /** No action picked: the button ends the turn with Hold. */
@@ -39,6 +41,11 @@ export function ConfirmButton(props: {
 }) {
   const {fight, preview} = props;
   if (props.needsTarget) return null;
+  const now = fight.currentSlot;
+  const slot = preview?.slot ?? null;
+  const aim = preview?.aimSlot ?? slot;
+  const yields = slot !== null && aim !== null && slot > aim;
+  const next = slot === null ? '' : yields ? `+${aim! - now} → +${slot - now}` : `+${slot - now}`;
   return (
     <Button
       color="yellow"
@@ -48,9 +55,14 @@ export function ConfirmButton(props: {
       loading={props.busy}
       disabled={!preview}
       onClick={props.onConfirm}
+      title={
+        yields
+          ? `The cost reaches slot +${aim! - now}, but cards hold the slots up to +${slot! - now - 1}: yours yields to the first free one.`
+          : undefined
+      }
     >
       {preview
-        ? `${props.endTurn ? 'End turn' : 'Confirm'} · next turn +${(preview.slot ?? fight.currentSlot) - fight.currentSlot}`
+        ? `${props.endTurn ? 'End turn' : 'Confirm'}${next ? ` · next turn ${next}` : ''}`
         : 'Can’t do that'}
     </Button>
   );

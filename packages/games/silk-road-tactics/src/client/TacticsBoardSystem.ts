@@ -8,7 +8,7 @@ import {hailInfo, TILE_INFO} from '../rules/info';
 import {MAPS, tileAt} from '../rules/map';
 import type {FightState, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
-import type {TrackCard} from './layout';
+import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
@@ -34,6 +34,8 @@ export interface BoardScene {
   positions?: Record<string, Hex>;
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
+  /** The slot the planned turn's cost aims at; when it's taken, the card yields on to `previewSlot`. */
+  aimSlot?: number | null;
   /** Arrow flights to draw (the bow's lanes): `hits` when it ends on a unit. */
   arrows?: {from: Hex; to: Hex; hits: boolean}[];
   /** The planned turn's steps, numbered in the order they resolve, at the hex each happens. */
@@ -201,6 +203,7 @@ export class TacticsBoardSystem extends BaseSystem {
         fight,
         trackCards(fight, this.scene.previewSlot ?? null),
         this.scene.previewSlot ?? null,
+        this.scene.aimSlot ?? null,
         this.advance,
         {
           selected: this.scene.selectedUnitId,
@@ -343,7 +346,9 @@ function roundRect(
  * The track as a fanned deck, as in Mana Khemia: a card for every
  * slot from now on, empty ones blank, the current one in front at the left
  * and each later one tucked behind the one before, showing a strip with
- * its unit. The planned turn's landing card is dashed. After a turn, the
+ * its unit. The planned turn's landing card is dashed; when it had to yield
+ * past taken slots, the slot its cost aimed at is marked too, with an arrow
+ * on to where it lands. After a turn, the
  * cards it passed lift up off the track one by one, the rest sliding
  * forward, until the next turn's card is in front.
  */
@@ -352,6 +357,7 @@ function drawTrack(
   fight: FightState,
   cards: TrackCard[],
   previewSlot: number | null,
+  aimSlot: number | null,
   advance: TrackAdvance | null,
   opts: {selected: string | null; hovered: string | null}
 ): void {
@@ -434,6 +440,57 @@ function drawTrack(
     }
     ctx.restore();
   }
+  if (!advance && previewSlot !== null && aimSlot !== null && aimSlot < previewSlot)
+    drawYield(ctx, deck, aimSlot, previewSlot);
+}
+
+/**
+ * A card that yields (3.3): the strip of the slot its cost aimed at,
+ * outlined dashed, and an arrow along the deck's foot from there to where
+ * it lands, over the cards in the way.
+ */
+function drawYield(
+  ctx: CanvasRenderingContext2D,
+  deck: TrackSlots,
+  aim: number,
+  land: number
+): void {
+  // The middle of a slot's showing strip: the right `w` of its card.
+  const mid = (slot: number) => deck.x0 + (slot - deck.start) * deck.w + deck.cardW - deck.w / 2;
+  const left = mid(aim) - deck.w / 2;
+  ctx.save();
+  ctx.setLineDash([3, 2]);
+  ctx.strokeStyle = '#fde047';
+  ctx.lineWidth = 2;
+  roundRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  const y = deck.y + deck.h - 4;
+  const x1 = mid(aim);
+  const x2 = mid(land) - 4;
+  // Dark under yellow, so it reads over any card.
+  for (const [color, width] of [
+    ['rgba(0,0,0,0.75)', 4],
+    ['#fde047', 2],
+  ] as const) {
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(x1, y);
+    ctx.lineTo(x2 - 2, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2 + width / 2 + 2, y);
+    ctx.lineTo(x2 - 5, y - 4 - width / 2);
+    ctx.lineTo(x2 - 5, y + 4 + width / 2);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.beginPath();
+  ctx.arc(x1, y, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 /** The hovered hex: outlined, with a tooltip of its tile, hail and unit. */
