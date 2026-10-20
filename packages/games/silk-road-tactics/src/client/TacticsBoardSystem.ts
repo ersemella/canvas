@@ -72,10 +72,13 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
  * the board's hexes.
  */
 const HEX_SCALE = BOARD_LAYOUT.size / 32;
-/** 2× (64 pixels) keeps a sprite inside its hex (about 69 wide); 1.5× until the hexes grew from 55 wide. */
+/**
+ * 2× (64 pixels, 72 for a 36-pixel mounted sprite) keeps a sprite inside
+ * its hex (about 73 wide); 1.5× until the hexes grew from 55 wide.
+ */
 const SPRITE_SCALE = 2;
 /** How far below the hex's centre a sprite's bottom edge sits. */
-const SPRITE_FEET = 28;
+const SPRITE_FEET = 29;
 /** Track portraits (32×32, facing right), centred on the card's disc at `face`. */
 const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; face: {x: number; y: number}}>> = {
   bokh: {src: bokhPortrait, face: {x: 17, y: 13}},
@@ -101,7 +104,7 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
 };
 
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
-const HEALTH_BAR = {w: 60, h: 10, y: 44};
+const HEALTH_BAR = {w: 60, h: 10, y: 50};
 
 /** The hovered hex's outline. */
 const HOVER: HighlightStyle = {fill: 'rgba(255,255,255,0.08)', stroke: '#ffffff'};
