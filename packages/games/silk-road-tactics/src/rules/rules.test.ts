@@ -174,15 +174,16 @@ describe('the track', () => {
 });
 
 describe('the board', () => {
-  it('has a hex at column 0 on odd rows only, making an exact left-right mirror', () => {
+  it('is 8 × 8 with a hex at column −1 on odd rows only, making an exact left-right mirror', () => {
     const map = SALT_FLATS;
-    expect(map.hexes).toHaveLength(7 * 4 + 8 * 3);
-    for (const row of [1, 3, 5]) expect(onMap(map, at(0, row))).toBe(true);
-    for (const row of [0, 2, 4, 6]) expect(onMap(map, at(0, row))).toBe(false);
+    expect(map.hexes).toHaveLength(8 * 4 + 9 * 4);
+    for (const row of [1, 3, 5, 7]) expect(onMap(map, at(-1, row))).toBe(true);
+    for (const row of [0, 2, 4, 6]) expect(onMap(map, at(-1, row))).toBe(false);
     for (const row of [0, 1]) expect(onMap(map, at(8, row))).toBe(false);
-    // Mirror about the board's centre line (x of column 4, even rows).
+    expect(onMap(map, at(0, 8))).toBe(false);
+    // Mirror about the board's centre line (between columns 3 and 4 on even rows).
     const layout = {orientation: 'pointy' as const, size: 1, origin: {x: 0, y: 0}};
-    const mid = hexToPixel(at(4, 0), layout).x;
+    const mid = (hexToPixel(at(3, 0), layout).x + hexToPixel(at(4, 0), layout).x) / 2;
     const mirror = (h: Hex) => {
       const p = hexToPixel(h, layout);
       return SALT_FLATS.hexes.find((m) => {
@@ -193,7 +194,12 @@ describe('the board', () => {
     for (const h of map.hexes) expect(mirror(h)).toBeDefined();
     const zone = new Set(map.deployment.enemy.map(hexKey));
     for (const h of map.deployment.player) expect(zone.has(hexKey(mirror(h)!))).toBe(true);
-    expect(map.deployment.player.some((h) => hexToOffset(h).col === 0)).toBe(true);
+    expect(map.deployment.player.some((h) => hexToOffset(h).col === -1)).toBe(true);
+    // Every feature has its mirror image.
+    for (const [key, tile] of Object.entries(map.tiles)) {
+      const [q, r] = key.split(',').map(Number);
+      expect(map.tiles[hexKey(mirror({q: q!, r: r!})!)]).toBe(tile);
+    }
   });
 
   it('passes allies, is blocked by enemies and obstacles, never ends on a unit', () => {
@@ -203,7 +209,7 @@ describe('the board', () => {
     const key = (h: Hex) => `${h.q},${h.r}`;
     expect(keys).not.toContain(key(at(1, 3))); // ally's hex
     expect(keys).not.toContain(key(at(1, 2))); // enemy
-    expect(keys).not.toContain(key(at(3, 2))); // ruins
+    expect(keys).not.toContain(key(at(2, 2))); // ruins
     expect(keys).toContain(key(at(2, 3))); // through the ally
     expect(reach.every((r) => r.path.length <= RULES.movementCap)).toBe(true);
   });
@@ -255,10 +261,10 @@ describe('the board', () => {
     expect(lineOfFire(s, map, at(0, 0), at(2, 0)).clear).toBe(true);
     b.hex = at(1, 0);
     expect(lineOfFire(s, map, at(0, 0), at(2, 0))).toMatchObject({clear: false, blocker: b});
-    // Ruins at (3,2) sit on the line from (2,2) to (4,2).
-    expect(lineOfFire(s, map, at(2, 2), at(4, 2)).clear).toBe(false);
+    // Ruins at (2,2) sit on the line from (1,2) to (3,2).
+    expect(lineOfFire(s, map, at(1, 2), at(3, 2)).clear).toBe(false);
     // From o to o + (1,1) the line runs along the border of o + (1,0) and o + (0,1).
-    const o = at(1, 1);
+    const o = at(1, 0);
     const t = {q: o.q + 1, r: o.r + 1};
     b.hex = at(8, 6);
     expect(lineOfFire(s, map, o, t).clear).toBe(true);
@@ -333,14 +339,14 @@ describe('damage', () => {
   });
 
   it('hurts a unit entering quicksand, through its defence', () => {
-    const s = setup({'p-bokh': at(2, 3), 'e-bokh': at(8, 0)});
+    const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(7, 0)});
     const b = unit(s, 'p-bokh');
-    applyTurn(s, b, {move: [at(3, 3)], action: {ability: 'hold'}});
+    applyTurn(s, b, {move: [at(2, 3)], action: {ability: 'hold'}});
     expect(b.hp).toBe(b.maxHp - defended(b, RULES.hazardEnterDamage));
   });
 
   it('hurts a unit on quicksand every slot the track passes, turn or not', () => {
-    const s = setup({'p-bokh': at(3, 3), 'p-storm': at(0, 0), 'e-bokh': at(8, 0)});
+    const s = setup({'p-bokh': at(2, 3), 'p-storm': at(0, 0), 'e-bokh': at(7, 0)});
     s.units.forEach((u) => (u.controller = 'human'));
     const b = unit(s, 'p-bokh');
     b.slot = 200;

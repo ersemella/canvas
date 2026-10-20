@@ -1,11 +1,11 @@
 /**
- * The Salt Flats Crossing (brief section 7): 7 rows of pointy-top hexes,
- * odd rows shoved right. Even rows have columns 1 to 7; odd rows also have
- * column 0, so neither side edge has notches (owner, 2026-10-19). The
- * board lost a column at each side edge (owner, 2026-10-20; even rows were
- * 0 to 8, odd rows −1 to 8). It is an exact left-right mirror: column c
- * and 8 − c on even rows, c and 7 − c on odd rows. The quicksand predates
- * the mirror and is the one feature off it by a hex.
+ * The Salt Flats Crossing (brief section 7): 8 rows of pointy-top hexes,
+ * odd rows shoved right. Even rows have columns 0 to 7; odd rows also have
+ * column −1, so neither side edge is notched (owner, 2026-10-19). 8 × 8
+ * since 2026-10-20 (owner; it was 9 × 7, then briefly 7 × 7). It is an
+ * exact left-right mirror: column c and 7 − c on even rows, c and 6 − c
+ * on odd rows (whose column 3 is the centre hex). Every feature is
+ * mirrored, the quicksand included.
  */
 import {hexKey, offsetToHex} from '@canvas/engine/server';
 import type {Hex, OffsetCoord} from '@canvas/engine/server';
@@ -25,24 +25,25 @@ export interface MapData {
   playerLayout: Hex[];
 }
 
-const ROWS = 7;
-/** The columns of a row: even rows 1 to 7, odd rows 0 to 7 (odd rows sit half a hex further left). */
+const ROWS = 8;
+/** The columns of a row: even rows 0 to 7, odd rows −1 to 7 (odd rows sit half a hex further left). */
 const columnsOf = (row: number): number[] =>
-  Array.from({length: row & 1 ? 8 : 7}, (_, i) => i + 1 - (row & 1));
+  Array.from({length: row & 1 ? 9 : 8}, (_, i) => i - (row & 1));
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
 
 const special: [OffsetCoord, Tile][] = [
-  // Ruins: two per half, breaking the long sight lines down the middle row.
-  [{col: 3, row: 2}, 'obstacle'],
-  [{col: 2, row: 4}, 'obstacle'],
+  // Ruins: two per half, breaking the long sight lines across the board.
+  [{col: 2, row: 2}, 'obstacle'],
   [{col: 5, row: 2}, 'obstacle'],
-  [{col: 6, row: 4}, 'obstacle'],
-  // Quicksand, near the centre.
-  [{col: 3, row: 3}, 'hazard'],
-  [{col: 5, row: 3}, 'hazard'],
+  [{col: 1, row: 5}, 'obstacle'],
+  [{col: 5, row: 5}, 'obstacle'],
+  // Quicksand, either side of the centre hex.
+  [{col: 2, row: 3}, 'hazard'],
+  [{col: 4, row: 3}, 'hazard'],
   // Sandstorm, between the ruins.
+  [{col: 3, row: 2}, 'conceal'],
   [{col: 4, row: 2}, 'conceal'],
-  [{col: 4, row: 4}, 'conceal'],
+  [{col: 3, row: 5}, 'conceal'],
 ];
 
 function boardHexes(): Hex[] {
@@ -68,9 +69,9 @@ export const SALT_FLATS: MapData = {
   tiles: Object.fromEntries(special.map(([c, t]) => [hexKey(offsetToHex(c)), t])),
   deployment: {player: edgeHexes('left', 2), enemy: edgeHexes('right', 2)},
   enemyLayouts: [
-    [at(7, 2), at(7, 3), at(7, 4)],
-    [at(7, 4), at(7, 2), at(6, 3)],
-    [at(7, 3), at(7, 1), at(7, 5)],
+    [at(6, 3), at(6, 4), at(7, 4)],
+    [at(6, 4), at(7, 2), at(6, 5)],
+    [at(6, 3), at(7, 1), at(7, 6)],
   ],
   playerLayout: [at(1, 2), at(0, 3), at(1, 4)],
 };

@@ -10,18 +10,18 @@ import type {MapData} from '../rules/map';
 import type {FightState} from '../rules/types';
 
 /** The scene's size in pixels (game.json's canvas). */
-export const SCENE_SIZE = {width: 600, height: 570} as const;
+export const SCENE_SIZE = {width: 672, height: 633} as const;
 
 /** The track strip: one card per unit, left to right in turn order (3.1). */
-export const TRACK_AREA = {x: 6, y: 6, width: 588, height: 86} as const;
+export const TRACK_AREA = {x: 6, y: 6, width: 660, height: 86} as const;
 
 /**
- * The board: 7 rows of pointy hexes of size 42 (32 until 2026-10-20, when
- * the board lost two columns), odd rows 8 hexes wide (columns 0 to 7):
- * 582 × 462 pixels, centred under the track with 8 pixels above and below.
- * A hex is 73 pixels wide, room for a 36-pixel mounted sprite at 2×.
+ * The board: 8 rows of pointy hexes of size 42 (32 until 2026-10-20), odd
+ * rows 9 hexes wide (columns −1 to 7): 655 × 525 pixels, centred under the
+ * track with 8 pixels above and below. A hex is 73 pixels wide, room for a
+ * 36-pixel mounted sprite at 2×.
  */
-export const BOARD_LAYOUT: HexLayout = {orientation: 'pointy', size: 42, origin: {x: 9, y: 142}};
+export const BOARD_LAYOUT: HexLayout = {orientation: 'pointy', size: 42, origin: {x: 81, y: 142}};
 
 export interface TrackCard {
   unitId: string;
