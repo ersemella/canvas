@@ -53,7 +53,7 @@ fight's end ends the run.
 | 6. Charged abilities | Two in Phase 1, both ultimates: the Mangudai Outrider's Volley (arcing area) and the Storm Caller's Freeze (section 4). |
 | 39. Ultimate unlock | One value for every hero: usable after **3 completed turns** in the fight (10.10); once per fight. |
 | 8. Move and act order | Move then act, or act then move; not split around the action. Every turn must include an action (5.1). |
-| 28. Movement cap | **4 hexes** per turn. |
+| 28. Movement cap | **3 hexes** per turn (owner, 2026-10-20; was 4). |
 | 9. Map | Offset rectangle, **9 columns × 7 rows**, pointy-top hexes. Fits a 600-pixel-wide board beside the track panel. |
 | 10. Passing through allies | Allowed (can't end on an occupied hex). Enemies block. |
 | 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so pin, hail and a flank don't stack. |
@@ -141,7 +141,7 @@ reading of the owner's one-line descriptions; the owner can change them
 | Ability | Rule |
 |---|---|
 | **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it stops at the **first unit** on that line or at an obstacle. That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
-| **Dash** | Moves the Outrider **up to 3 hexes in a straight line** along one hex direction (owner, 2026-10-19; was exactly 3). Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn's action, so normal movement can come before or after it (confirmed 2026-10-18). Not usable while Immobilized. Quick cost. |
+| **Dash** | Moves the Outrider **up to 2 hexes in a straight line** along one hex direction (owner, 2026-10-20, with the movement cap lowered to 3; up to 3 from 2026-10-19, exactly 3 before). Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn's action, so normal movement can come before or after it (confirmed 2026-10-18). Not usable while Immobilized. Quick cost. |
 | **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage **135** (owner, 2026-10-19), allies included. Charge and recovery costs TBD (3.7). |
 
 **Yadachy Storm Caller**
@@ -345,7 +345,7 @@ confirm or change:
   first on a tie used to lose 60–67% of AI-vs-AI fights, which tilted
   every single-order measurement. The AI always moves before
   acting.
-- **Dash** goes up to 3 hexes (owner, 2026-10-19; exactly 3 until then). **Pin** and **Throw** target
+- **Dash** goes up to 2 hexes (owner, 2026-10-20; up to 3 from 2026-10-19, exactly 3 before). **Pin** and **Throw** target
   any adjacent unit, allies included (Pin targeted enemies only until the
   2026-10-19 rule, 6.7).
 - **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage

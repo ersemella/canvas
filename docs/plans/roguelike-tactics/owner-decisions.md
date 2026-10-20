@@ -89,7 +89,7 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Ability | Placeholder values |
 |---|---|
 | Composite Bow | range 5, **damage 120 (owner, 2026-10-19: 2 hits kill a Mangudai, 4 a Yadachy)** |
-| Dash | **up to 3 hexes (owner, 2026-10-19; was exactly 3)**, quick (60) |
+| Dash | **up to 2 hexes (owner, 2026-10-20; up to 3 from 2026-10-19, exactly 3 before)**, quick (60) |
 | Volley (ultimate) | range 5, radius 1, **damage 135 (owner, 2026-10-19)**, charge 40, recovery 100 |
 | Sunlight | radius 1 (was 2 until it reached enemies, 2026-10-19), **heal 40, 60 at its power (owner, 2026-10-19; was 25)** |
 | Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |

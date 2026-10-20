@@ -119,7 +119,7 @@ not the fight.
 |---|---|
 | **Immobilized** | The unit can't move: no movement on its turn, and no ability that moves it (a charge, a leap, a dash, swapping hexes) can be used. It **still acts** with any ability that doesn't move it. It **can still be displaced** by allies and enemies, and stays Immobilized where it lands (owner's call, 2026-10-19). Not a lost turn. |
 | **Dazed** | On its turn, the unit may move but can't act: a forced Hold, plus any movement cost. |
-| **Slowed N** | The unit's movement cap (one global value, 4 in Phase 1) is reduced by N, to at least 1 hex. |
+| **Slowed N** | The unit's movement cap (one global value, 3 in Phase 1 since 2026-10-20; was 4) is reduced by N, to at least 1 hex. |
 | **Taunt** | While taunted, if the unit can attack the taunter from any hex it can reach this turn, it **must**: its action is an ability that targets the taunter or includes it in its area, or a **Hold** (owner, 2026-10-20): it may wait the taunt out. Other abilities and moving out of reach are not allowed. Only when no reachable hex and no ability can hit the taunter is the unit free. A **charging** unit's ability is redirected to the taunter instead (below). Ends early if the taunter dies. |
 | **Stealth** | The unit can't be **targeted** by **hostile** direct or arcing ranged abilities (allies' ranged heals and buffs still reach it). Area abilities centred elsewhere still hit it, melee still targets it, and it still blocks line of fire. Ends when the unit uses a damaging ability. Its identity and position stay visible (D11). Distinct from the conceal tile, which only halves ranged damage. |
 

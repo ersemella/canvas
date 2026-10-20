@@ -234,8 +234,8 @@ try {
   const before = run.view.version;
   const acting = run.view.fight.units.find((u) => u.id === run.view.fight.awaiting);
   check('the Outrider acts first', acting.id === outrider, acting.id);
-  const dashTo = {q: 0, r: 6}; // 3 hexes east along row 6
-  const dest = {q: -2, r: 6}; // one hex east of where it started
+  const dashTo = {q: -1, r: 6}; // 2 hexes east along row 6 (Dash goes up to 2)
+  const dest = {q: -2, r: 5}; // next to where it started, off the Dash line
   // Without Move, a tap only looks at the hex.
   await tapHex(dest);
   const moveButton = page.getByRole('button', {name: /^Move/});
@@ -274,7 +274,7 @@ try {
   );
   await moveButton.click();
   await tapHex(dest);
-  // Moving first would leave the Dash short of its hex: no Swap order.
+  // Moving first would leave the Dash off its line: no Swap order.
   check(
     'Swap order is offered only when the other order is legal',
     !(await page.getByRole('button', {name: /Swap order/}).count())
