@@ -556,12 +556,9 @@ function drawHover(
   const lines: {text: string; color: string; bold?: boolean}[] = [];
   const unit = unitAt(fight, h, positions);
   if (unit) {
-    // The side shows in the colour, as on the board: just the hero's name.
-    lines.push({
-      text: `${HEROES[unit.hero].name}  ${unit.hp}/${unit.maxHp}`,
-      color: SIDE_COLOR[unit.side],
-      bold: true,
-    });
+    // The side shows in the colour, as on the board: just the hero's name
+    // (its health is on the bar over it).
+    lines.push({text: HEROES[unit.hero].name, color: SIDE_COLOR[unit.side], bold: true});
   }
   const tile = tileAt(map, h);
   if (tile !== 'sand' || !unit) {
