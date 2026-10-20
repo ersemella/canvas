@@ -341,7 +341,7 @@ const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
   summary: (user) =>
-    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots; it is Vulnerable ${ABILITY.pin.vulnerable}%, takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage every slot, and is Taunted: while it can reach you, it must attack you or end its turn.`,
+    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots (you go free if it's moved away from you); it is Vulnerable ${ABILITY.pin.vulnerable}%, takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage every slot, and is Taunted: while it can reach you, it must attack you or end its turn.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.pin.cost,
@@ -351,7 +351,8 @@ const pin: AbilityDef = {
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     const untilSlot = ctx.slot + ABILITY.pin.slots;
-    addStatus(user, {kind: 'immobilized', value: 0, untilSlot});
+    // Tagged with the target, so the Champion goes free if they're moved apart.
+    addStatus(user, {kind: 'immobilized', value: 0, untilSlot, source: u.id});
     addStatus(u, {kind: 'immobilized', value: 0, untilSlot});
     addStatus(u, {kind: 'vulnerable', value: ABILITY.pin.vulnerable, untilSlot});
     addStatus(u, {

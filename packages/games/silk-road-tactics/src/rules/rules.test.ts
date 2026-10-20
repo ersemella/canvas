@@ -417,6 +417,21 @@ describe('abilities', () => {
     applyTurn(s, b, {action: {ability: 'throw', target: {hex: at(2, 1), to: at(0, 1)}}});
     expect(unit(s, 'e-storm').hex).toEqual(at(0, 1));
     expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+    // Thrown to another hex beside the Champion: the hold isn't broken.
+    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+  });
+
+  it('Pin: displacing the target away frees the Champion, not the target', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
+    const b = unit(s, 'p-bokh');
+    const target = unit(s, 'e-storm');
+    applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+    displace({state: s, map: SALT_FLATS, slot: 0}, target, hexDirectionTo(at(1, 1), at(2, 1))!, 1);
+    expect(hexDistance(target.hex!, b.hex!)).toBe(2);
+    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
+    expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+    expect(target.statuses.some((x) => x.kind === 'taunted')).toBe(true);
   });
 
   it('Pin crushes its target every slot while it lasts', () => {

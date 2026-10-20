@@ -2,7 +2,7 @@
  * Effects every ability is built from: damage (brief section 2's order),
  * healing, entering a hex, displacement, death and the end of the fight.
  */
-import {hexEquals, hexNeighbor} from '@canvas/engine/server';
+import {hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, RULES, HEROES} from './config';
 import {addStatus, fogAt, onMap, statusValue, unitAt, vulnerablePercent} from './board';
@@ -177,9 +177,32 @@ export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) =>
 /** Moves a unit onto a hex; `triggers` applies the hex's hazard and hail. */
 export function enterHex(ctx: Ctx, unit: Unit, h: Hex, triggers = true): void {
   unit.hex = h;
+  releasePins(ctx, unit);
   if (!triggers) return;
   applyHazard(ctx, unit);
   applyHail(ctx, unit);
+}
+
+/**
+ * A Pin holds the Champion only while its target stays next to it: once
+ * either is moved apart (displaced, or walking off after a cleanse), the
+ * Champion's own Immobilized from that Pin ends (owner, 2026-10-20). The
+ * target keeps its statuses. Throw lands it beside the Champion, so Pin
+ * then Throw keeps both held.
+ */
+function releasePins(ctx: Ctx, moved: Unit): void {
+  for (const champion of ctx.state.units) {
+    if (!champion.alive || !champion.hex) continue;
+    const before = champion.statuses.length;
+    champion.statuses = champion.statuses.filter((s) => {
+      if (s.kind !== 'immobilized' || !s.source) return true;
+      if (champion !== moved && s.source !== moved.id) return true;
+      const target = ctx.state.units.find((u) => u.id === s.source);
+      return !!target?.hex && hexDistance(target.hex, champion.hex!) <= 1;
+    });
+    if (champion.statuses.length < before)
+      log(ctx, `${unitName(champion)} loses its hold and can move again.`);
+  }
 }
 
 /**

@@ -32,7 +32,7 @@ export interface Status {
   /** Slowed: hexes; Vulnerable: percent; Crushed: damage per slot; Immobilized, Taunted: unused (0). */
   value: number;
   untilSlot: number;
-  /** Taunted: the taunter's unit id. */
+  /** Taunted: the taunter's unit id. A Pin's Immobilized on the Champion: the pinned unit's id. */
   source?: string;
 }
 
