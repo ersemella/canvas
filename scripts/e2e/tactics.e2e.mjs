@@ -288,8 +288,12 @@ try {
   check('a second tap on the target doesn’t commit', (await state()).view.version === before);
   await moveButton.click();
   await tapHex(dest);
-  const stepsText = () => page.getByTestId('turn-steps').textContent();
-  check('Move replaces the ability selection', (await stepsText()) === '1Move', await stepsText());
+  const dashButton = page.getByRole('button', {name: /^Dash/});
+  check(
+    'Move replaces the ability selection',
+    (await dashButton.getAttribute('aria-pressed')) === 'false'
+  );
+  check('there are no numbered steps', !(await page.getByTestId('turn-steps').count()));
   check(
     'Move stays highlighted while a move is planned',
     (await moveButton.getAttribute('aria-pressed')) === 'true'
@@ -303,8 +307,12 @@ try {
   await moveButton.click();
   check(
     'tapping Move again undoes the move',
-    (await moveButton.getAttribute('aria-pressed')) === 'false' &&
-      (await page.getByTestId('turn-steps').count()) === 0
+    (await moveButton.getAttribute('aria-pressed')) === 'false'
+  );
+  check(
+    'with no hex picked, the Move button shows its range of slots',
+    /^Move\+\d+(–\d+)?$/.test(await moveButton.textContent()),
+    await moveButton.textContent()
   );
   await moveButton.click();
   await tapHex(dest);
@@ -312,7 +320,8 @@ try {
   await tapHex(dashTo);
   check(
     'an ability replaces a planned move',
-    (await stepsText()) === '1Dash' && (await moveButton.getAttribute('aria-pressed')) === 'false'
+    (await dashButton.getAttribute('aria-pressed')) === 'true' &&
+      (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
   await moveButton.click();
   await tapHex(dest);
@@ -439,7 +448,7 @@ try {
   await phone.goto(`${WEB_URL}/play/silk-road-tactics`);
   await phone.getByRole('button', {name: 'Start a fight'}).click();
   await phone.getByRole('button', {name: 'Start the fight'}).click();
-  const phoneMove = phone.getByRole('button', {name: 'Move', exact: true});
+  const phoneMove = phone.getByRole('button', {name: /^Move/});
   await phoneMove.waitFor({timeout: 15_000});
   await phone.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {
     timeout: 15_000,
@@ -519,7 +528,12 @@ try {
       await planned.textContent()
     );
     await planned.click(); // undo it
-    check('phone: undoing the move clears them', (await planned.textContent()) === 'Move');
+    check(
+      'phone: undoing the move shows the range again',
+      (await planned.getAttribute('aria-pressed')) === 'false' &&
+        /^Move\+\d+(–\d+)?$/.test(await planned.textContent()),
+      await planned.textContent()
+    );
   }
   // No Hold button: with nothing picked, the big button ends the turn.
   check('phone: no Hold button', !(await phone.getByRole('button', {name: /^Hold/}).count()));
@@ -557,20 +571,7 @@ try {
     bowText.endsWith(phoneConfirm.match(/next turn (\+\d+)/)[1]),
     [bowText, phoneConfirm]
   );
-  check(
-    'phone: steps name only the action',
-    (await phone.getByTestId('turn-steps').textContent()) === '1Composite Bow'
-  );
-  {
-    const y = async (l) => (await l.boundingBox()).y;
-    const stepsY = await y(phone.getByTestId('turn-steps'));
-    check(
-      'phone: the steps sit below the buttons and above Confirm',
-      stepsY > (await y(phoneMove)) &&
-        stepsY < (await y(phone.getByRole('button', {name: /^Confirm/}))),
-      stepsY
-    );
-  }
+  check('phone: there are no numbered steps', !(await phone.getByTestId('turn-steps').count()));
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-full.png'), fullPage: true});
   const overflow = await phone.evaluate(
