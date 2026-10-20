@@ -1595,7 +1595,8 @@ function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
 
 /**
  * A charging ability's area, until it triggers: yellow for your own, as all
- * your targeting is; red for an enemy's, so it reads as a threat.
+ * your targeting is; for an enemy's a red outline only, so it reads as a
+ * threat without looking like the tint under an enemy unit.
  */
 function drawCharge(ctx: CanvasRenderingContext2D, map: MapData, u: Unit): void {
   const {ability, target} = u.charging!;
@@ -1608,8 +1609,10 @@ function drawCharge(ctx: CanvasRenderingContext2D, map: MapData, u: Unit): void 
       const h = {q: target.q + q, r: target.r + r};
       if (hexDistance(h, target) > radius || !onMap(map, h)) continue;
       hexPath(ctx, h, 4);
-      ctx.fillStyle = `rgba(${rgb},0.2)`;
-      ctx.fill();
+      if (u.side !== 'enemy') {
+        ctx.fillStyle = `rgba(${rgb},0.2)`;
+        ctx.fill();
+      }
       ctx.strokeStyle = `rgba(${rgb},0.9)`;
       ctx.lineWidth = 2;
       ctx.stroke();
