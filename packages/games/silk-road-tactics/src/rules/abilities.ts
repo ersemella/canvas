@@ -302,18 +302,21 @@ const fog: AbilityDef = {
 const freeze: AbilityDef = {
   id: 'freeze',
   name: 'Freeze',
-  summary: () =>
-    `Ultimate, charged: units within ${ABILITY.freeze.radius} of a hex within ${ABILITY.freeze.range} are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
+  summary: (user) =>
+    `Ultimate, charged: units within ${ABILITY.freeze.radius} of a hex within ${ABILITY.freeze.range} take ${scaled(ABILITY.freeze.damage, user.power)} damage, then are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}% for ${ABILITY.freeze.immobilizedSlots} slots.`,
   ultimate: true,
   charged: true,
   cost: ABILITY.freeze.chargeCost,
   recoveryCost: ABILITY.freeze.recoveryCost,
   movesSelf: false,
+  damaging: true,
   targets: (_state, map, _user, from) => hexesWithin(map, from, ABILITY.freeze.range),
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)}'s Freeze takes hold.`);
     const untilSlot = ctx.slot + ABILITY.freeze.immobilizedSlots;
     for (const u of unitsInArea(ctx.state, target.hex!, ABILITY.freeze.radius)) {
+      hit(ctx, user, u, ABILITY.freeze.damage, true, 'The Freeze');
+      if (!u.alive) continue;
       addStatus(u, {kind: 'immobilized', value: 0, untilSlot});
       addStatus(u, {kind: 'vulnerable', value: ABILITY.freeze.vulnerable, untilSlot});
     }
