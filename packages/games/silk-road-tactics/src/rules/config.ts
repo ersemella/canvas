@@ -30,7 +30,8 @@ export const RULES = {
   /**
    * Quicksand: every slot a unit stands on it, whoever's turn it is
    * (owner, 2026-10-19; was 40 at the start of each of the unit's own
-   * turns, ~4 a slot for a speed-4 hero's typical turn).
+   * turns, ~4 a slot for a speed-4 hero's typical turn). Defence applies
+   * to it, and to entering it (owner, 2026-10-19).
    */
   hazardDamage: 4,
   /** Quicksand: on entering it, passing through included, so crossing it still costs. */
@@ -148,12 +149,11 @@ export const ABILITY = {
   },
   throw: {cost: RULES.cost.typical, damage: 80},
   /**
-   * The target also takes `damagePerSlot` every slot while pinned, like
-   * quicksand: 48, 60 with Pin's own Vulnerable (owner, 2026-10-19). Over
-   * 1,500 AI-vs-AI fights Pin went from 1% of the Champion's turns to 30%,
-   * and none stalled; at 8 a slot, Sunlight's cleanse took over and 40 did.
+   * The target is also Crushed, taking base `damagePerSlot` every slot while
+   * pinned, scaled by power, through Vulnerable and defence (owner,
+   * 2026-10-19), and Taunted by the Champion (17.5).
    */
-  pin: {cost: RULES.cost.typical, slots: 12, vulnerable: 25, damagePerSlot: 4},
+  pin: {cost: RULES.cost.typical, slots: 12, vulnerable: 25, damagePerSlot: 8},
   rampage: {cost: RULES.cost.slow, distance: 3, damage: 100, displace: 1},
 } as const;
 
@@ -167,6 +167,8 @@ export const AI = {
   perVulnerablePercent: 2,
   /** Not in the brief: per point of damage a Crushed status will still deal. */
   perCrushDamage: 1,
+  /** Not in the brief: per slot a unit stays Taunted. */
+  perTauntedSlot: 2,
   friendlyDamageFactor: 1.5,
   perSlotMoved: 10,
   /**

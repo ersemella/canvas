@@ -166,8 +166,11 @@ shield its allies.
 **Damage order** (extends the Phase 1 order): base × power;
 ranged on conceal −50%; **Vulnerable** (including from a flank); defence (skipped by **Pierce**);
 minimum 1; **Barrier** absorbs; **Immortal** sets it to 0. Each step
-rounds down. Burn, hazard and collision damage skip defence as now, then take
-Vulnerable, Barrier and Immortal. This is a stopgap until damage
+rounds down. Burn and collision damage skip defence as now, then take
+Vulnerable, Barrier and Immortal. Hazard (quicksand) damage takes
+Vulnerable and defence like a hit (owner, 2026-10-19; it skipped defence
+until then); per-slot damage takes Vulnerable slot by slot and defence once
+on the total the track passes, so a few points a slot aren't rounded away. This is a stopgap until damage
 buckets are settled (open question 37).
 
 ### 17.7 Health effects (Decided)

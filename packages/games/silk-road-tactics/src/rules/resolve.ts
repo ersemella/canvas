@@ -50,10 +50,14 @@ export function abilityDamage(
   return throughDefence(state, target, d);
 }
 
-/** Vulnerable, then defence, then the minimum: the end of every ability's hit. */
-function throughDefence(state: FightState, target: Unit, damage: number): number {
-  let d = Math.floor(damage * (1 + vulnerablePercent(state, target) / 100));
-  d = Math.floor((d * RULES.defenceConstant) / (target.defence + RULES.defenceConstant));
+/** Vulnerable, then defence, then the minimum: the end of every ability's hit, and of quicksand's. */
+export function throughDefence(state: FightState, target: Unit, damage: number): number {
+  return defended(target, rawDamage(state, target, damage));
+}
+
+/** Defence, then the minimum. */
+function defended(target: Unit, damage: number): number {
+  const d = Math.floor((damage * RULES.defenceConstant) / (target.defence + RULES.defenceConstant));
   return Math.max(RULES.minimumDamage, d);
 }
 
@@ -63,7 +67,7 @@ export function hailDamage(state: FightState, target: Unit, hail: HailEffect): n
   return throughDefence(state, target, hail.damage ?? 0);
 }
 
-/** Hazard, collision and Crushed damage: skip defence, still take Vulnerable. */
+/** Vulnerable alone: collision damage, which skips defence. */
 export function rawDamage(state: FightState, target: Unit, amount: number): number {
   return Math.floor(amount * (1 + vulnerablePercent(state, target) / 100));
 }
@@ -127,7 +131,7 @@ export function applyHail(ctx: Ctx, unit: Unit): void {
 /** Quicksand under a unit, on entering (each slot on it is `damageEachSlot`). */
 export function applyHazard(ctx: Ctx, unit: Unit): void {
   if (!onQuicksand(ctx.map, unit)) return;
-  const d = rawDamage(ctx.state, unit, RULES.hazardEnterDamage);
+  const d = throughDefence(ctx.state, unit, RULES.hazardEnterDamage);
   applyDamage(ctx, unit, d, `Quicksand drags at ${unitName(unit)} for ${d}`);
 }
 
@@ -139,8 +143,9 @@ function onQuicksand(map: MapData, unit: Unit): boolean {
  * The track moves from slot `from` to `ctx.slot`: every unit on quicksand,
  * and every Crushed unit, takes its damage for each slot passed, `from`
  * excluded, whether or not anyone's card was on it. `expire` runs at each
- * slot first, so Vulnerable and Crushed count only while they last. One
- * log line per unit and cause.
+ * slot first, so Vulnerable and Crushed count only while they last.
+ * Vulnerable applies slot by slot, defence once to the total, so a few
+ * points a slot aren't rounded away. One log line per unit and cause.
  */
 export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) => void): void {
   const sinking = new Map<Unit, number>();
@@ -155,9 +160,14 @@ export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) =>
       if (crush > 0) add(crushed, u, rawDamage(ctx.state, u, crush));
     }
   }
-  for (const [u, d] of sinking)
+  for (const [u, raw] of sinking) {
+    const d = defended(u, raw);
     applyDamage(ctx, u, d, `Quicksand drags at ${unitName(u)} for ${d}`);
-  for (const [u, d] of crushed) applyDamage(ctx, u, d, `The pin crushes ${unitName(u)} for ${d}`);
+  }
+  for (const [u, raw] of crushed) {
+    const d = defended(u, raw);
+    applyDamage(ctx, u, d, `The pin crushes ${unitName(u)} for ${d}`);
+  }
 }
 
 /** Moves a unit onto a hex; `triggers` applies the hex's hazard and hail. */

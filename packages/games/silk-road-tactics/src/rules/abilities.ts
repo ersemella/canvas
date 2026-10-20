@@ -45,6 +45,8 @@ export interface AbilityDef {
   recoveryCost?: number;
   /** Moves the user, so Immobilized forbids it (17.5). */
   movesSelf: boolean;
+  /** A damaging charged ability, which Taunt redirects onto the taunter (17.5). */
+  damaging?: boolean;
   /**
    * Aimed at a unit (melee, and the bow), not at a hex: with no unit to aim
    * at, the page disables it. Ground-targeted abilities can be aimed at an
@@ -205,6 +207,7 @@ const volley: AbilityDef = {
   cost: ABILITY.volley.chargeCost,
   recoveryCost: ABILITY.volley.recoveryCost,
   movesSelf: false,
+  damaging: true,
   targets: (_state, map, _user, from) => hexesWithin(map, from, ABILITY.volley.range),
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)}'s Volley lands.`);
@@ -338,8 +341,8 @@ const throwAbility: AbilityDef = {
 const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
-  summary: () =>
-    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots; it is Vulnerable ${ABILITY.pin.vulnerable}% and takes ${ABILITY.pin.damagePerSlot} damage every slot.`,
+  summary: (user) =>
+    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots; it is Vulnerable ${ABILITY.pin.vulnerable}%, takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage every slot, and is Taunted: it must attack you if it can.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.pin.cost,
@@ -352,7 +355,12 @@ const pin: AbilityDef = {
     addStatus(user, {kind: 'immobilized', value: 0, untilSlot});
     addStatus(u, {kind: 'immobilized', value: 0, untilSlot});
     addStatus(u, {kind: 'vulnerable', value: ABILITY.pin.vulnerable, untilSlot});
-    addStatus(u, {kind: 'crushed', value: ABILITY.pin.damagePerSlot, untilSlot});
+    addStatus(u, {
+      kind: 'crushed',
+      value: scaled(ABILITY.pin.damagePerSlot, user.power),
+      untilSlot,
+    });
+    addStatus(u, {kind: 'taunted', value: 0, untilSlot, source: user.id});
     log(ctx, `${unitName(user)} pins ${unitName(u)}.`);
   },
 };

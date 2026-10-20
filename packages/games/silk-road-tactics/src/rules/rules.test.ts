@@ -25,7 +25,7 @@ import {
 } from './fight';
 import {afterAction, previewTurn} from './preview';
 import {SALT_FLATS, onMap} from './map';
-import {abilityDamage} from './resolve';
+import {abilityDamage, scaled} from './resolve';
 import {createRun, handleRunAction, runView} from './run';
 import {
   freeSlotFrom,
@@ -64,6 +64,14 @@ function setup(placements: Record<string, Hex>): FightState {
 }
 
 const unit = (s: FightState, id: string): Unit => s.units.find((u) => u.id === id)!;
+/** Applies a turn to a copy of the fight, so a test can try several. */
+const tryTurn = (s: FightState, id: string, input: TurnInput) => () => {
+  const c = cloneFight(s);
+  applyTurn(c, unit(c, id), input);
+};
+/** Damage after the unit's defence (9.1). */
+const defended = (u: Unit, d: number): number =>
+  Math.floor((d * RULES.defenceConstant) / (u.defence + RULES.defenceConstant));
 
 describe('the track', () => {
   it('places by cost ÷ (speed + C), rounding down, at least 1 slot (3.2)', () => {
@@ -293,11 +301,11 @@ describe('damage', () => {
     expect(unit(s, 'e-storm').hp).toBe(before[1]! - RULES.collisionDamage);
   });
 
-  it('hurts a unit entering quicksand', () => {
+  it('hurts a unit entering quicksand, through its defence', () => {
     const s = setup({'p-bokh': at(2, 3), 'e-bokh': at(8, 0)});
     const b = unit(s, 'p-bokh');
     applyTurn(s, b, {move: [at(3, 3)], action: {ability: 'hold'}});
-    expect(b.hp).toBe(b.maxHp - RULES.hazardEnterDamage);
+    expect(b.hp).toBe(b.maxHp - defended(b, RULES.hazardEnterDamage));
   });
 
   it('hurts a unit on quicksand every slot the track passes, turn or not', () => {
@@ -309,13 +317,13 @@ describe('damage', () => {
     advance(s, chooseAiTurn);
     // Slots 1 to 10 passed: the Storm Caller's turn, not the Bökh's.
     expect(actingUnit(s)!.id).toBe('p-storm');
-    expect(b.hp).toBe(b.maxHp - 10 * RULES.hazardDamage);
+    expect(b.hp).toBe(b.maxHp - defended(b, 10 * RULES.hazardDamage));
     // Another unit's turn on the same slot passes no more.
     s.awaiting = null;
     unit(s, 'p-storm').slot = null;
     unit(s, 'e-bokh').slot = 10;
     advance(s, chooseAiTurn);
-    expect(b.hp).toBe(b.maxHp - 10 * RULES.hazardDamage);
+    expect(b.hp).toBe(b.maxHp - defended(b, 10 * RULES.hazardDamage));
   });
 });
 
@@ -382,10 +390,55 @@ describe('abilities', () => {
     unit(s, 'p-bokh').slot = 200;
     target.slot = ABILITY.pin.slots + 8;
     advance(s, chooseAiTurn);
-    // Slots 1 to 12 crush it, through its own Vulnerable; nothing after.
-    const perSlot = Math.floor(ABILITY.pin.damagePerSlot * (1 + ABILITY.pin.vulnerable / 100));
+    // Slots 1 to 12 crush it, scaled by the Champion's power, through Pin's
+    // Vulnerable each slot and its defence on the total; nothing after.
+    const perSlot = Math.floor(
+      scaled(ABILITY.pin.damagePerSlot, unit(s, 'p-bokh').power) *
+        (1 + ABILITY.pin.vulnerable / 100)
+    );
     expect(actingUnit(s)!.id).toBe('e-storm');
-    expect(target.hp).toBe(target.maxHp - ABILITY.pin.slots * perSlot);
+    expect(target.hp).toBe(target.maxHp - defended(target, ABILITY.pin.slots * perSlot));
+  });
+
+  it('Pin taunts: the target must attack the Champion while it can', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'p-storm': at(4, 1)});
+    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    const m = unit(s, 'e-mangudai');
+    // The Storm Caller is in a bow lane too, but only the Champion may be shot, and Hold is out.
+    expect(arrowLanes(s, SALT_FLATS, m.hex!).some((l) => l.hit?.id === 'p-storm')).toBe(true);
+    const stormHex = unit(s, 'p-storm').hex!;
+    expect(tryTurn(s, m.id, {action: {ability: 'bow', target: {hex: stormHex}}})).toThrow(
+      RuleError
+    );
+    expect(tryTurn(s, m.id, {action: {ability: 'hold'}})).toThrow(RuleError);
+    expect(chooseAiTurn(s, m).action).toEqual({ability: 'bow', target: {hex: at(1, 1)}});
+    // The taunt ends with the taunter.
+    unit(s, 'p-bokh').alive = false;
+    unit(s, 'p-bokh').hex = null;
+    expect(tryTurn(s, m.id, {action: {ability: 'hold'}})).not.toThrow();
+  });
+
+  it('a taunt that can’t be obeyed leaves the target free', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
+    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    // Thrown out of the Storm Caller's reach (it's Immobilized): Hold is allowed again.
+    const far = unit(s, 'p-bokh');
+    far.hex = at(7, 5);
+    expect(tryTurn(s, 'e-storm', {action: {ability: 'hold'}})).not.toThrow();
+  });
+
+  it('Taunt draws a damaging charge onto the taunter', () => {
+    const s = setup({'p-bokh': at(3, 1), 'e-mangudai': at(4, 1), 'p-storm': at(4, 5)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const m = unit(s, 'e-mangudai');
+    m.turnsTaken = RULES.ultimateUnlockTurns;
+    m.slot = 1;
+    m.charging = {ability: 'volley', target: at(4, 5)};
+    m.statuses.push({kind: 'taunted', value: 0, untilSlot: 50, source: 'p-bokh'});
+    const storm = unit(s, 'p-storm');
+    advance(s, chooseAiTurn);
+    expect(storm.hp).toBe(storm.maxHp);
+    expect(unit(s, 'p-bokh').hp).toBeLessThan(unit(s, 'p-bokh').maxHp);
   });
 
   it('Dash rides any distance up to its limit', () => {

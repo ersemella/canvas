@@ -20,7 +20,7 @@ export type AbilityId =
   | 'pin'
   | 'rampage';
 
-export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable' | 'crushed';
+export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable' | 'crushed' | 'taunted';
 
 /**
  * A status from an ability. Active through `untilSlot` inclusive, so one
@@ -29,9 +29,11 @@ export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable' | 'crushed';
  */
 export interface Status {
   kind: StatusKind;
-  /** Slowed: hexes; Vulnerable: percent; Crushed: damage per slot; Immobilized: unused (0). */
+  /** Slowed: hexes; Vulnerable: percent; Crushed: damage per slot; Immobilized, Taunted: unused (0). */
   value: number;
   untilSlot: number;
+  /** Taunted: the taunter's unit id. */
+  source?: string;
 }
 
 export interface Unit {

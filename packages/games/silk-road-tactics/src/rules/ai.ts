@@ -9,8 +9,9 @@ import {ABILITY, AI, RULES} from './config';
 import {hostile, isFlanked, reachableHexes, statusSlotsLeft, statusValue} from './board';
 import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
 import {slotsForward, turnCost} from './track';
+import {affectsHex, tauntBinds, taunterOf} from './taunt';
 import {RuleError, applyTurn, cloneFight, mapOf} from './fight';
-import {enterHex, hailDamage, rawDamage} from './resolve';
+import {enterHex, hailDamage, throughDefence} from './resolve';
 import {tileAt} from './map';
 import type {AbilityDef} from './abilities';
 import type {FightState, TurnInput, Unit} from './types';
@@ -24,14 +25,20 @@ export interface ScoredOption {
 
 /**
  * Status points for scoring: Slowed per point, Immobilized per slot,
- * Vulnerable per %, and Crushed per point of damage it has left to deal.
+ * Vulnerable per %, Crushed per point of damage it has left to deal (after
+ * defence), and Taunted per slot.
  */
 function statusPoints(u: Unit, slot: number): number {
   return (
     AI.perSlowed * statusValue(u, 'slowed') +
     AI.perImmobilizedSlot * statusSlotsLeft(u, 'immobilized', slot) +
     AI.perVulnerablePercent * statusValue(u, 'vulnerable') +
-    AI.perCrushDamage * statusValue(u, 'crushed') * statusSlotsLeft(u, 'crushed', slot)
+    (AI.perCrushDamage *
+      statusValue(u, 'crushed') *
+      statusSlotsLeft(u, 'crushed', slot) *
+      RULES.defenceConstant) /
+      (u.defence + RULES.defenceConstant) +
+    AI.perTauntedSlot * statusSlotsLeft(u, 'taunted', slot)
   );
 }
 
@@ -80,7 +87,7 @@ export function scoreOutcome(
   // Ending on quicksand costs its damage every slot until the next turn, at least.
   if (me.alive && me.hex && me.slot !== null && tileAt(mapOf(after), me.hex) === 'hazard') {
     const slots = me.slot - before.currentSlot;
-    score -= slots * rawDamage(after, me, RULES.hazardDamage) * AI.friendlyDamageFactor;
+    score -= throughDefence(after, me, slots * RULES.hazardDamage) * AI.friendlyDamageFactor;
   }
   // So does ending on hail.
   const hail =
@@ -120,6 +127,9 @@ export function scoreOptions(
   const map = mapOf(state);
   const out: ScoredOption[] = [];
   const groundTried = new Set<string>();
+  // A binding taunt rules out every option that doesn't affect the taunter.
+  const taunter = taunterOf(state, unit);
+  const bound = taunter !== undefined && tauntBinds(state, map, unit, taunter);
   const reaches = reachableHexes(state, map, unit).sort((a, b) => a.path.length - b.path.length);
   for (const reach of reaches) {
     // Where the unit stands after this move, to list targets from there.
@@ -133,6 +143,7 @@ export function scoreOptions(
       if (unusableReason(mu, def)) continue;
       const radius = groundRadius(def);
       for (const target of def.targets(moved, map, mu, mu.hex!)) {
+        if (bound && !affectsHex(map, def, mu.hex!, target, taunter.hex!)) continue;
         if (radius !== undefined) {
           const key = `${def.id}:${hexKey(target.hex!)}`;
           if (groundTried.has(key)) continue;
@@ -211,5 +222,7 @@ export function chooseAiTurn(state: FightState, unit: Unit, budget?: SearchBudge
   for (const option of scoreOptions(state, unit, limit, budget)) {
     if (!best || option.score > best.score) best = option;
   }
-  return best?.input ?? {action: {ability: 'hold'}};
+  if (best) return best.input;
+  // Nothing scored: Hold, or under a binding taunt the first option that obeys it.
+  return scoreOptions(state, unit, 1)[0]?.input ?? {action: {ability: 'hold'}};
 }

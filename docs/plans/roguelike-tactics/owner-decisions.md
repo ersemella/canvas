@@ -91,7 +91,7 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Gale | Displace 1, Slowed 1 for 10 slots, no damage |
 | Freeze (ultimate) | range 4, radius 1, Immobilized and Vulnerable 25% for 15 slots, charge 40, recovery 100 |
 | Throw | damage 80 |
-| Pin | 12 slots, Vulnerable 25%, **4 damage a slot to the target (owner, 2026-10-19)** |
+| Pin | 12 slots, Vulnerable 25%; **the target is Taunted, and Crushed for base 8 a slot through defence (owner, 2026-10-19)** |
 | Rampage (ultimate) | 3 hexes, damage 100, Displace 1, slow (150) |
 
 Damage is scaled by power: `base × (1 + power / 50)`.
@@ -126,8 +126,9 @@ confirm or change:
 
 - **Taunt on allies:** under the 2026-10-19 rule every ability reaches
   allies, so a Taunt that catches an ally forces it to attack the taunter,
-  your own tank. Accept it (the preview shows it), or rule it out
-  explicitly. Needed when the Modao Vanguard arrives.
+  your own tank. Pin taunts (2026-10-19) and can target an ally, so this
+  happens now (the preview shows it): accept it, or rule it out
+  explicitly.
 - **The exemption keyword:** its name, and how often gear and upgrades
   offer it (open question 31). Too common and it becomes a must-pick.
 

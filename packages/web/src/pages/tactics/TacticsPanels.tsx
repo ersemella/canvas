@@ -14,7 +14,9 @@ import {
   slotsForward,
   statusSlotsLeft,
   statusValue,
+  taunterOf,
   tileAt,
+  unitName,
 } from '@canvas/games-silk-road-tactics';
 import type {FightState, TurnPreview, Unit} from '@canvas/games-silk-road-tactics';
 import styles from './TacticsPage.module.css';
@@ -96,6 +98,7 @@ export function HexInspector({
 /** Every unit's stat sheet, enemies' included: its abilities, and for an enemy what it could do (D11). */
 export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
   const slot = fight.currentSlot;
+  const taunter = taunterOf(fight, unit);
   const statuses = [
     statusValue(unit, 'immobilized')
       ? `Immobilized (${statusSlotsLeft(unit, 'immobilized', slot)} slots)`
@@ -107,7 +110,10 @@ export function StatSheet({fight, unit}: {fight: FightState; unit: Unit}) {
       ? `Vulnerable ${statusValue(unit, 'vulnerable')}% (${statusSlotsLeft(unit, 'vulnerable', slot)} slots)`
       : null,
     statusValue(unit, 'crushed')
-      ? `Crushed: ${statusValue(unit, 'crushed')} damage a slot (${statusSlotsLeft(unit, 'crushed', slot)} slots)`
+      ? `Crushed: ${statusValue(unit, 'crushed')} damage a slot before defence (${statusSlotsLeft(unit, 'crushed', slot)} slots)`
+      : null,
+    taunter
+      ? `Taunted by ${unitName(taunter)}: must attack it if it can (${statusSlotsLeft(unit, 'taunted', slot)} slots)`
       : null,
     unit.alive && isFlanked(fight, unit) ? `Flanked: Vulnerable ${RULES.flankVulnerable}%` : null,
   ].filter(Boolean);

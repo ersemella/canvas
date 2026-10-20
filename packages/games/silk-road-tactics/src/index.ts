@@ -97,6 +97,7 @@ export {enterHex, unitName} from './rules/resolve';
 export {slotsForward, turnCost} from './rules/track';
 export {afterAction, previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
+export {taunterOf} from './rules/taunt';
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
 export {SALT_FLATS, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';

@@ -7,6 +7,7 @@ import {hexEquals, hexKey} from '@canvas/engine/server';
 import {ARMOUR, HEROES, PARTY} from './config';
 import {expireStatuses, invalidPath, walkable} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
+import {affectsHex, redirectedCharge, tauntBinds, taunterOf} from './taunt';
 import {applyHail, checkEnd, enterHex, log, damageEachSlot, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS} from './map';
@@ -155,8 +156,11 @@ function beginSlot(ctx: Ctx): void {
 function triggerCharge(ctx: Ctx, unit: Unit): void {
   const {ability, target} = unit.charging!;
   const def = ABILITIES[ability];
+  const hex = redirectedCharge(ctx.state, ctx.map, unit, target);
   unit.charging = null;
-  def.resolve(ctx, unit, {hex: target});
+  if (!hexEquals(hex, target))
+    log(ctx, `${unitName(unit)}'s ${def.name} is drawn onto its taunter.`);
+  def.resolve(ctx, unit, {hex});
   checkEnd(ctx.state);
   if (unit.alive)
     placeCard(ctx.state, unit, ctx.slot + slotsForward(def.recoveryCost!, unit.speed));
@@ -168,8 +172,9 @@ function triggerCharge(ctx: Ctx, unit: Unit): void {
  * the move and the action, then places its card (3.2). Throws RuleError
  * with a player-facing message for an illegal turn. Validation happens as
  * the turn resolves, so apply it to a copy and keep the copy only if it
- * doesn't throw. `trustTarget` skips re-listing the targets, for the AI's
- * own options, which it took from that list.
+ * doesn't throw. `trustTarget` skips re-listing the targets and the taunt
+ * check, for the AI's own options, which it took from that list and
+ * filtered by the taunt.
  */
 export function applyTurn(
   state: FightState,
@@ -184,6 +189,10 @@ export function applyTurn(
   const reason = unusableReason(unit, def);
   if (reason) throw new RuleError(reason);
   const path = input.move ?? [];
+  // Taunt (17.5): decided from where the turn starts, before any move. The
+  // AI's own options already obey it (trustTarget).
+  const taunter = trustTarget ? undefined : taunterOf(state, unit);
+  const bound = taunter !== undefined && tauntBinds(state, map, unit, taunter);
 
   const move = () => {
     if (path.length === 0 || !unit.alive) return;
@@ -203,6 +212,9 @@ export function applyTurn(
       !def.targets(state, map, unit, unit.hex!).some((t) => sameTarget(t, target))
     ) {
       throw new RuleError(`${def.name} can’t target that.`);
+    }
+    if (bound && taunter.alive && !affectsHex(map, def, unit.hex!, target, taunter.hex!)) {
+      throw new RuleError(`Taunted: this turn must attack ${unitName(taunter)}.`);
     }
     if (def.ultimate) unit.ultimateUsed = true;
     if (def.charged) {

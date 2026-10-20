@@ -44,6 +44,8 @@ function statusWords(before: Unit, after: Unit, slot: number): string[] {
     statusSlotsLeft(after, 'crushed', slot) > statusSlotsLeft(before, 'crushed', slot)
   )
     out.push(`Crushed ${crush} a slot`);
+  const taunt = statusSlotsLeft(after, 'taunted', slot);
+  if (taunt > statusSlotsLeft(before, 'taunted', slot)) out.push(`Taunted ${taunt} slots`);
   if (before.statuses.length > 0 && after.statuses.length === 0 && after.alive)
     out.push('Cleansed');
   return out;

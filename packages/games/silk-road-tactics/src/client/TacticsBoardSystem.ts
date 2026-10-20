@@ -628,13 +628,14 @@ function drawUnit(
   ctx.fillStyle = frac > 0.5 ? '#4ade80' : frac > 0.25 ? '#facc15' : '#f87171';
   ctx.fillRect(c.x - w / 2, c.y + 17, w * frac, 5);
 
-  // Status markers: I(mmobilized), S(lowed), V(ulnerable), C(rushed), F(lanked), ★ ultimate ready.
+  // Status markers: I(mmobilized), S(lowed), V(ulnerable), C(rushed), T(aunted), F(lanked), ★ ultimate ready.
   if (!opts.ghost) {
     const marks: [string, string][] = [];
     if (statusValue(u, 'immobilized')) marks.push(['I', '#38bdf8']);
     if (statusValue(u, 'slowed')) marks.push(['S', '#a78bfa']);
     if (statusValue(u, 'vulnerable')) marks.push(['V', '#fb923c']);
     if (statusValue(u, 'crushed')) marks.push(['C', '#ef4444']);
+    if (u.statuses.some((s) => s.kind === 'taunted')) marks.push(['T', '#facc15']);
     if (isFlanked(opts.fight, u)) marks.push(['F', '#f472b6']);
     marks.forEach(([m, color], i) => {
       ctx.beginPath();
