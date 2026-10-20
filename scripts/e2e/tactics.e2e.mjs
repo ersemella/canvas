@@ -283,13 +283,13 @@ try {
   const confirmText = await confirm.textContent();
   check(
     'Confirm says when the next turn comes, in slots from now',
-    /^Confirm · next turn \+\d+$/.test(confirmText),
+    /^Confirm · next turn \+\d+( → \+\d+)?$/.test(confirmText),
     confirmText
   );
   const dashText = await page.getByRole('button', {name: /^Dash/}).textContent();
   check(
     'the ability button shows the same slots as Confirm',
-    dashText.endsWith(confirmText.split(' ').pop()),
+    dashText.endsWith(confirmText.match(/next turn (\+\d+)/)[1]),
     [dashText, confirmText]
   );
   await sleep(200);
@@ -475,7 +475,7 @@ try {
   check('phone: no Hold button', !(await phone.getByRole('button', {name: /^Hold/}).count()));
   check(
     'phone: with nothing picked, the button ends the turn',
-    /^End turn · next turn \+\d+$/.test(
+    /^End turn · next turn \+\d+( → \+\d+)?$/.test(
       await phone.getByRole('button', {name: /^End turn/}).textContent()
     )
   );
@@ -498,13 +498,13 @@ try {
   const phoneConfirm = await phone.getByRole('button', {name: /^Confirm/}).textContent();
   check(
     'phone: Confirm says when the next turn comes, in slots from now',
-    /^Confirm · next turn \+\d+$/.test(phoneConfirm),
+    /^Confirm · next turn \+\d+( → \+\d+)?$/.test(phoneConfirm),
     phoneConfirm
   );
   const bowText = await phone.getByRole('button', {name: /^Composite Bow/}).textContent();
   check(
     'phone: the ability button shows the same slots as Confirm',
-    bowText.endsWith(phoneConfirm.split(' ').pop()),
+    bowText.endsWith(phoneConfirm.match(/next turn (\+\d+)/)[1]),
     [bowText, phoneConfirm]
   );
   check(

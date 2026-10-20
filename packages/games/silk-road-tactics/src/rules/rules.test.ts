@@ -606,6 +606,19 @@ describe('previews, the AI and the run', () => {
     }
   });
 
+  it('a preview shows where the card aims and where it yields to', () => {
+    const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(5, 3), 'e-storm': at(6, 3)});
+    const bokh = unit(s, 'p-bokh');
+    s.awaiting = bokh.id;
+    const input: TurnInput = {action: {ability: 'hold'}};
+    const aim = slotsForward(ABILITIES.hold.cost, bokh.speed);
+    expect(previewTurn(s, bokh.id, input)).toMatchObject({aimSlot: aim, slot: aim});
+    // Cards in the aimed slot and the one after: the card yields past both.
+    unit(s, 'e-bokh').slot = aim;
+    unit(s, 'e-storm').slot = aim + 1;
+    expect(previewTurn(s, bokh.id, input)).toMatchObject({aimSlot: aim, slot: aim + 2});
+  });
+
   it('is deterministic: the same seed and actions give the same fight', () => {
     const play = () => {
       let run = createRun(7);
