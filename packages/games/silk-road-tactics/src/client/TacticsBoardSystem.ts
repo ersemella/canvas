@@ -79,10 +79,10 @@ const HEX_SCALE = BOARD_LAYOUT.size / 32;
 const SPRITE_SCALE = 2;
 /** How far below the hex's centre a sprite's bottom edge sits. */
 const SPRITE_FEET = 29;
-/** Track portraits (32×32, facing right), centred on the card's disc at `face`. */
-const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; face: {x: number; y: number}}>> = {
-  bokh: {src: bokhPortrait, face: {x: 17, y: 13}},
-  mangudai: {src: mangudaiPortrait, face: {x: 18, y: 16}},
+/** Track portraits (32×32, facing right), filling the card; `faceX` is the face's column. */
+const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
+  bokh: {src: bokhPortrait, faceX: 17},
+  mangudai: {src: mangudaiPortrait, faceX: 18},
 };
 interface HighlightStyle {
   fill: string;
@@ -460,45 +460,60 @@ function drawTrack(
           : '#7f1d1d';
     ctx.fill();
     ctx.shadowColor = 'transparent';
-    ctx.setLineDash(ghost ? [3, 2] : []);
-    ctx.strokeStyle = !u
-      ? 'rgba(255,255,255,0.18)'
-      : ghost || acting
-        ? '#fde047'
-        : u.id === opts.selected || u.id === opts.hovered
-          ? '#ffffff'
-          : SIDE_COLOR[u.side];
-    ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
-    ctx.stroke();
-    ctx.setLineDash([]);
+    const strokeBorder = () => {
+      ctx.setLineDash(ghost ? [3, 2] : []);
+      ctx.strokeStyle = !u
+        ? 'rgba(255,255,255,0.18)'
+        : ghost || acting
+          ? '#fde047'
+          : u.id === opts.selected || u.id === opts.hovered
+            ? '#ffffff'
+            : SIDE_COLOR[u.side];
+      ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    };
+    strokeBorder();
 
     if (u) {
       // The unit sits in the strip that shows; the front card shows whole,
       // and a card sliding to the front carries its unit across to the middle.
       const back = Math.min(1, i);
       const mid = cx + deck.cardW / 2 + back * (deck.cardW / 2 - deck.w / 2);
-      const r = Math.min(11, deck.w / 2 - 2);
-      if (ghost) ctx.globalAlpha = 0.8;
-      ctx.beginPath();
-      ctx.arc(mid, cy + deck.h / 2 - 4, r, 0, Math.PI * 2);
-      ctx.fillStyle = HERO_COLOR[u.hero];
-      ctx.fill();
       const portrait = HERO_PORTRAIT[u.hero];
       const img = portrait && assetLoader.requestImage(portrait.src);
+      if (ghost) ctx.globalAlpha = 0.8;
       if (img) {
-        // Unscaled, clipped to the disc around the face; enemies face left.
+        // The portrait fills the card, full height; its face sits where the unit
+        // would (the strip that shows, on a card behind). Enemies face left.
+        const scale = Math.max(deck.h, deck.cardW) / img.height;
+        const faceX = (u.side === 'enemy' ? img.width - portrait.faceX : portrait.faceX) * scale;
         ctx.save();
+        roundRect(ctx, cx, cy, deck.cardW, deck.h, 5);
         ctx.clip();
         ctx.imageSmoothingEnabled = false;
-        ctx.translate(Math.round(mid), Math.round(cy + deck.h / 2 - 4));
-        if (u.side === 'enemy') ctx.scale(-1, 1);
-        ctx.drawImage(img, -portrait.face.x, -portrait.face.y);
+        ctx.translate(Math.round(mid - faceX), Math.round(cy));
+        if (u.side === 'enemy') {
+          ctx.translate(img.width * scale, 0);
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
         ctx.restore();
+        // The border again, over the portrait.
+        roundRect(ctx, cx, cy, deck.cardW, deck.h, 5);
+        strokeBorder();
+      } else {
+        // No portrait yet: a disc in the hero's colour with its letter.
+        const r = Math.min(11, deck.w / 2 - 2);
+        ctx.beginPath();
+        ctx.arc(mid, cy + deck.h / 2 - 4, r, 0, Math.PI * 2);
+        ctx.fillStyle = HERO_COLOR[u.hero];
+        ctx.fill();
+        ctx.strokeStyle = SIDE_COLOR[u.side];
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        label(ctx, HEROES[u.hero].letter, mid, cy + deck.h / 2 - 3, '#ffffff', 11, true);
       }
-      ctx.strokeStyle = SIDE_COLOR[u.side];
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      if (!img) label(ctx, HEROES[u.hero].letter, mid, cy + deck.h / 2 - 3, '#ffffff', 11, true);
       // A charging card: its ability triggers when this slot comes up.
       if (u.charging && !ghost) label(ctx, '!', cx + deck.cardW - 5, cy + 8, '#d8b4fe', 12, true);
     }
