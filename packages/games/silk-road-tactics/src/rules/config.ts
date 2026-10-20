@@ -36,8 +36,19 @@ export const RULES = {
    * Restored to 4 on 2026-10-20 now that movement is a separate action.
    */
   movementCap: 4,
-  /** Turns a hero must complete before its ultimate unlocks (10.10). */
-  ultimateUnlockTurns: 3,
+  /**
+   * Action cost a hero must spend before its ultimate unlocks (10.10):
+   * every turn's cost counts, moves included, but not a Hold without a move
+   * (owner, 2026-10-20; was 3 turns, which a few cheap moves met: over 200
+   * AI-vs-AI fights it unlocked around slot 20 for the Outrider and
+   * Champion, 32 for the Storm Caller, with first damage at 14 and the end
+   * at 83). At 300, all three unlock around slot 38 and are first used at
+   * 37 to 50. Cost spent per slot is fixed for a given speed, so this is
+   * time spent acting. Over 300 fights, 7.7% were unfinished at 400 actions
+   * (3.3% with 3 turns; 6.3% at 250, 5.7% at 200): later ultimates mean less
+   * finishing damage, which a rule for stalled fights would settle.
+   */
+  ultimateCharge: 300,
   /**
    * Damage reduction = defence / (defence + defenceConstant) (9.1). 50
    * since defence moved to the shared stat scale (owner, 2026-10-20; was
@@ -133,7 +144,7 @@ export const ABILITY = {
    * Cheaper than a quick action (owner, 2026-10-19; was 60), so waiting a few slots
    * to react is a real option. Ordinary movement instead costs
    * RULES.moveActionCost plus RULES.moveCostPerHex for each hex. Holding without moving doesn't count
-   * toward the ultimate (see `countsTowardUltimate`).
+   * toward the ultimate's charge (see `countsTowardUltimate`).
    */
   hold: {cost: 30},
   /**

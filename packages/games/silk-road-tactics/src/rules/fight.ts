@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals} from '@canvas/engine/server';
-import {HEROES, PARTY, movementRules} from './config';
+import {HEROES, PARTY, RULES, movementRules} from './config';
 import {expireStatuses, invalidPath} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
@@ -47,7 +47,15 @@ function heroStats(hero: HeroId): Pick<Unit, 'speed' | 'defence' | 'power'> {
  * kept its armour's defence and speed.
  */
 export function refreshStats(state: FightState): void {
-  for (const u of state.units) Object.assign(u, heroStats(u.hero));
+  for (const u of state.units) {
+    Object.assign(u, heroStats(u.hero));
+    // Saved while the ultimate unlocked after 3 turns: a typical turn's cost for each.
+    const old = u as Unit & {turnsTaken?: number};
+    if (old.ultimateCharge === undefined) {
+      old.ultimateCharge = (old.turnsTaken ?? 0) * RULES.cost.typical;
+      delete old.turnsTaken;
+    }
+  }
 }
 
 function makeUnit(side: Side, partyIndex: number): Unit {
@@ -65,7 +73,7 @@ function makeUnit(side: Side, partyIndex: number): Unit {
     ...heroStats(hero),
     slot: null,
     statuses: [],
-    turnsTaken: 0,
+    ultimateCharge: 0,
     ultimateUsed: false,
     charging: null,
     alive: true,
@@ -207,7 +215,7 @@ function triggerCharge(ctx: Ctx, unit: Unit): void {
   checkEnd(ctx.state);
   if (unit.alive)
     placeCard(ctx.state, unit, ctx.slot + slotsForward(def.recoveryCost!, unit.speed));
-  unit.turnsTaken++;
+  unit.ultimateCharge += def.recoveryCost!;
 }
 
 /**
@@ -293,7 +301,7 @@ export function applyTurn(
   state.awaiting = null;
   checkEnd(state);
   if (unit.alive) placeCard(state, unit, state.currentSlot + slotsForward(cost, unit.speed));
-  if (countsTowardUltimate(input)) unit.turnsTaken++;
+  if (countsTowardUltimate(input)) unit.ultimateCharge += cost;
 }
 
 /** The authoritative cost, shared by the server, AI simulations and previews. */
@@ -307,9 +315,8 @@ export function turnInputCost(state: FightState, input: TurnInput): number {
 }
 
 /**
- * A turn counts toward the ultimate (10.10) unless it only Holds: with
- * Hold this cheap, Holding in place would otherwise unlock it in a few
- * slots (owner, 2026-10-19).
+ * A turn's cost charges the ultimate (10.10) unless it only Holds:
+ * otherwise waiting would charge it as fast as acting (owner, 2026-10-19).
  */
 export function countsTowardUltimate(input: TurnInput): boolean {
   return input.action.ability !== 'hold' || (input.move?.length ?? 0) > 0;

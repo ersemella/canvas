@@ -57,8 +57,11 @@ export interface Unit {
   /** The unit's card on the track; null when dead or not yet placed. */
   slot: number | null;
   statuses: Status[];
-  /** Completed turns this fight that count toward the ultimate (10.10): not those that only Hold. */
-  turnsTaken: number;
+  /**
+   * Action cost spent this fight toward the ultimate (10.10), against
+   * RULES.ultimateCharge: every turn's cost but a Hold without a move.
+   */
+  ultimateCharge: number;
   ultimateUsed: boolean;
   /** A charged ability waiting for this unit's card (3.7). */
   charging: {ability: AbilityId; target: Hex} | null;

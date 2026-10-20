@@ -467,8 +467,8 @@ export function unusableReason(unit: Unit, ability: AbilityDef): string | null {
     return 'That unit doesn’t have that ability.';
   if (ability.ultimate) {
     if (unit.ultimateUsed) return 'The ultimate has already been used this fight.';
-    if (unit.turnsTaken < RULES.ultimateUnlockTurns) {
-      return `The ultimate unlocks after ${RULES.ultimateUnlockTurns} turns, not counting Holds without a move (${unit.turnsTaken} so far).`;
+    if (unit.ultimateCharge < RULES.ultimateCharge) {
+      return `The ultimate unlocks after ${RULES.ultimateCharge} action cost spent, not counting Holds without a move (${unit.ultimateCharge} so far).`;
     }
   }
   if (ability.movesSelf && isImmobilized(unit))

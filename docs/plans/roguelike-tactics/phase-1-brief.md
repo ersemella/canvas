@@ -51,7 +51,7 @@ fight's end ends the run.
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). On the shared stat scale, Low 10 / Medium 25 / High 40 (owner, 2026-10-20; was 1 to 10). No gear in Phase 1, so nothing lowers it (4.2's armour trade-off waits for gear). |
 | 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
 | 6. Charged abilities | Two in Phase 1, both ultimates: the Mangudai Outrider's Volley (arcing area) and the Storm Caller's Freeze (section 4). |
-| 39. Ultimate unlock | One value for every hero: usable after **3 completed turns** in the fight (10.10); once per fight. |
+| 39. Ultimate unlock | One value for every hero: usable after spending **300 action cost** in the fight, moves included, Holds without a move not (owner, 2026-10-20; was **3 completed turns**, which cheap moves met within a few slots of first contact) (10.10); once per fight. A run saved earlier converts each counted turn to 100. |
 | 8. Movement action | Ordinary movement is a separate action: **20 + 10 per hex**, up to 4 hexes. No ability and ordinary movement in the same turn (owner, 2026-10-20). |
 | 28. Movement cap | **4 hexes** per movement action (owner, 2026-10-20; restored from 3 with separate movement). |
 | 9. Map | Offset rectangle, **8 columns × 9 rows** (owner, 2026-10-20; was 9 × 7, then briefly 7 × 7 and 8 × 8), pointy-top hexes, odd rows one hex wider. Drawn at hex size 42 on a 672 × 696 canvas beside the track panel. |

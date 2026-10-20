@@ -125,6 +125,12 @@ unfinished at 400 actions, median 52 actions (58 before).
 
 Damage is scaled by power: `base × (1 + power / 50)`.
 
+**Ultimates unlock after 300 action cost spent** (owner, 2026-10-20;
+was 3 turns, which cheap moves met within a few slots of first contact).
+Over 300 AI-vs-AI fights, unfinished fights rose from 3.3% to 7.7% (6.3%
+at 250, 5.7% at 200): ultimates are the biggest finishers, and they now
+arrive later. Decision 1 (how a stalled fight ends) would settle it.
+
 ### 3. Rampage details (brief section 10)
 
 Allies in the path take the damage like anyone (the 2026-10-19 rule,

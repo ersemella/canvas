@@ -192,11 +192,11 @@ export function HexInspector({
   );
 }
 
-/** Whether a unit's ultimate is used, ready, or how many turns it has towards it. */
+/** Whether a unit's ultimate is used, ready, or how much action cost it has spent towards it. */
 function ultimateState(unit: Unit): string {
   if (unit.ultimateUsed) return 'Used';
-  if (unit.turnsTaken >= RULES.ultimateUnlockTurns) return 'Ready';
-  return `${unit.turnsTaken}/${RULES.ultimateUnlockTurns} turns`;
+  if (unit.ultimateCharge >= RULES.ultimateCharge) return 'Ready';
+  return `${unit.ultimateCharge}/${RULES.ultimateCharge} charged`;
 }
 
 /**

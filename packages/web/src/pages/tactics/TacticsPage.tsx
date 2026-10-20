@@ -808,7 +808,7 @@ function TurnControls(props: {
                     : 'No one next to you to target.'
                   : null);
               const lockedUlt =
-                def.ultimate && !unit.ultimateUsed && unit.turnsTaken < RULES.ultimateUnlockTurns;
+                def.ultimate && !unit.ultimateUsed && unit.ultimateCharge < RULES.ultimateCharge;
               return (
                 <Button
                   key={def.id}
@@ -821,7 +821,7 @@ function TurnControls(props: {
                   onClick={() => props.onAbility(ability === def.id ? null : def.id)}
                 >
                   {def.name}
-                  {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
+                  {lockedUlt ? ` ${unit.ultimateCharge}/${RULES.ultimateCharge}` : ''}
                   {/* Its own cost in slots; Confirm adds any yielding. */}
                   <span className={styles.abilityCost}>+{props.slotsLater(def.cost)}</span>
                 </Button>
