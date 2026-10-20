@@ -75,9 +75,10 @@ def shadow(p, y):
 
 def line(p):
     # Dark outlines, and the pale yellow rim light, which at this size only
-    # makes a jagged stripe.
+    # makes a jagged stripe. The rim is a saturated yellow; cream (a white hat,
+    # a robe's trim) is paler, with less gap between red and blue, and stays.
     r, g, b = p
-    return sum(p) < 120 or (r > 220 and g > 200 and b < 170)
+    return sum(p) < 120 or (r > 220 and g > 200 and r - b > 95)
 
 
 kind = {}

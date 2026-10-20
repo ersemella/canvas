@@ -22,6 +22,8 @@ import bokhPortrait from './sprites/bokh-portrait.png';
 import bokhSprite from './sprites/bokh.png';
 import mangudaiSprite from './sprites/mangudai.png';
 import mangudaiPortrait from './sprites/mangudai-portrait.png';
+import stormPortrait from './sprites/storm-portrait.png';
+import stormSprite from './sprites/storm.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
@@ -66,6 +68,7 @@ const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
 const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
+  storm: stormSprite,
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to
@@ -83,6 +86,7 @@ const SPRITE_FEET = 29;
 const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
   bokh: {src: bokhPortrait, faceX: 17},
   mangudai: {src: mangudaiPortrait, faceX: 18},
+  storm: {src: stormPortrait, faceX: 19},
 };
 interface HighlightStyle {
   fill: string;
