@@ -27,7 +27,6 @@ import mangudaiSprite from './sprites/mangudai.png';
 import mangudaiPortrait from './sprites/mangudai-portrait.png';
 import stormPortrait from './sprites/storm-portrait.png';
 import stormSprite from './sprites/storm.png';
-import fogImage from './tiles/fog.png';
 import hailImage from './tiles/hail.png';
 import quicksandImage from './tiles/quicksand.png';
 import ruinsImage from './tiles/ruins.png';
@@ -349,8 +348,12 @@ export class TacticsBoardSystem extends BaseSystem {
     // The board's weather moves with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
     for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), t);
-    for (const fog of fight.fog ?? []) drawFog(ctx, fog.hex, t);
-    for (const effect of fight.effects) drawHail(ctx, effect.hex, t);
+    for (const effect of fight.effects) drawHail(ctx, effect.hex);
+    drawFogBank(
+      ctx,
+      (fight.fog ?? []).map((f) => f.hex),
+      t
+    );
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
     const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
@@ -395,6 +398,9 @@ export class TacticsBoardSystem extends BaseSystem {
         drawDamage(ctx, at.x, at.y - 22, p.hpBefore - p.hpAfter, p.killed);
       }
     }
+
+    // Hail falls in front of whoever stands in it.
+    if (t !== null) for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t);
 
     if (playing) drawPlaybackEvent(ctx, playing);
 
@@ -978,8 +984,6 @@ function drawTileMark(
   ctx.restore();
 }
 
-/** Seconds for fog to drift there and back. */
-const FOG_SWAY_SECONDS = 6;
 /** Seconds for a sandstorm's gust there and back. */
 const SANDSTORM_SWAY_SECONDS = 2.4;
 
@@ -992,60 +996,245 @@ function sway(time: number, period: number, amp: number): number {
   return Math.round((Math.abs(phase - 0.5) * 4 - 1) * amp);
 }
 
-/** Hailstones falling on a hail hex: each drops in turn, then a pause. */
-const HAIL_DROPS = 3;
-const HAIL_FALL_SECONDS = 0.45;
-const HAIL_CYCLE_SECONDS = 1.5;
+/** A seeded random sequence in [0, 1) from a hex, so each hex has its own pattern. */
+function hexRandom(h: Hex, salt = 0): () => number {
+  let seed = ((h.q * 73856093) ^ (h.r * 19349663) ^ (salt * 83492791)) >>> 0;
+  return () => (seed = (seed * 1103515245 + 12345) >>> 0) / 2 ** 32;
+}
+
+/** Whether a point (art pixels from a hex's centre) lies `margin` art pixels inside the hex. */
+function insideHex(x: number, y: number, margin: number): boolean {
+  const s = BOARD_LAYOUT.size / SPRITE_SCALE - margin;
+  const ax = Math.abs(x);
+  return ax <= (Math.sqrt(3) / 2) * s && Math.abs(y) <= s - ax / Math.sqrt(3);
+}
+
+/** Hailstones falling on a hail hex: each drops in turn from above the board, bursting as it lands. */
+const HAIL_DROPS = 5;
+const HAIL_CYCLE_SECONDS = 1.3;
+const HAIL_FALL_SECONDS = 0.36;
+const HAIL_BURST_SECONDS = 0.24;
+/** How far above its landing spot a stone starts, and how far the wind carries it meanwhile, in art pixels. */
+const HAIL_DROP_HEIGHT = 32;
+const HAIL_DRIFT = 9;
 
 /**
- * Small outlined stones falling onto a hail hex and vanishing as they land
- * (the ground image already shows the fallen ones). Their columns, landing
- * rows and timing come from the hex, so hexes don't fall in step. Drawn in
- * art pixels at the sprites' scale, in the hail image's colours.
+ * Hailstones falling onto a hail hex, from well above it and slanting with
+ * the wind, a shadow growing under each as it nears the ground; on landing
+ * it bursts into shards (the ground image already shows the fallen ones).
+ * Drawn over the units, unclipped, so stones fall in front of whoever
+ * stands there. Their spots, sizes and timing come from the hex, so hexes
+ * don't fall in step. In art pixels at the sprites' scale, in the hail
+ * image's colours.
  */
 function drawFallingHail(ctx: CanvasRenderingContext2D, h: Hex, time: number): void {
   const c = center(h);
   const px = SPRITE_SCALE;
-  let seed = ((h.q * 73856093) ^ (h.r * 19349663)) >>> 0;
-  const next = () => (seed = (seed * 1103515245 + 12345) >>> 0) / 2 ** 32;
+  const next = hexRandom(h);
+  const at = (x: number, y: number) =>
+    [Math.round(c.x) + x * px, Math.round(c.y) + y * px] as const;
   ctx.save();
-  hexPath(ctx, h, 0);
-  ctx.clip();
   for (let i = 0; i < HAIL_DROPS; i++) {
-    const col = Math.round((next() - 0.5) * 24);
-    const land = Math.round(next() * 22 - 8);
-    const start = next() * HAIL_CYCLE_SECONDS;
-    const k = ((time + start) % HAIL_CYCLE_SECONDS) / HAIL_FALL_SECONDS;
-    if (k >= 1) continue;
-    const top = -24;
-    const row = Math.round(top + (land - top) * k * k);
-    const x = Math.round(c.x) + col * px;
-    const y = Math.round(c.y) + row * px;
-    ctx.fillStyle = '#221816';
-    ctx.fillRect(x - px, y - px, 4 * px, 4 * px);
-    ctx.fillStyle = '#f1f5f9';
-    ctx.fillRect(x, y, 2 * px, 2 * px);
-    ctx.fillStyle = '#b8c8d0';
-    ctx.fillRect(x + px, y + px, px, px);
+    let lx = 0;
+    let ly = 0;
+    for (let tries = 0; tries < 8; tries++) {
+      lx = Math.round((next() - 0.5) * 30);
+      ly = Math.round((next() - 0.5) * 30);
+      if (insideHex(lx, ly, 5)) break;
+    }
+    const big = next() < 0.4;
+    const local = (time + next() * HAIL_CYCLE_SECONDS) % HAIL_CYCLE_SECONDS;
+    if (local < HAIL_FALL_SECONDS) {
+      const k = local / HAIL_FALL_SECONDS;
+      // Its shadow on the ground, darker and wider as it nears.
+      const [sx, sy] = at(lx, ly + 2);
+      ctx.fillStyle = `rgba(34,24,22,${(0.12 + 0.28 * k).toFixed(2)})`;
+      const sw = (big ? 3 : 2) + Math.round(k * 2);
+      ctx.fillRect(sx - sw * px + px, sy, (2 * sw - 1) * px, px);
+      // A faint streak behind it, then the stone.
+      for (const [lag, alpha] of [
+        [0.16, 0.25],
+        [0.08, 0.5],
+        [0, 1],
+      ] as const) {
+        const e = Math.max(0, k - lag) ** 2;
+        const [x, y] = at(
+          Math.round(lx + HAIL_DRIFT * (1 - e)),
+          Math.round(ly - HAIL_DROP_HEIGHT * (1 - e))
+        );
+        ctx.globalAlpha = alpha;
+        if (lag > 0) {
+          ctx.fillStyle = '#e2edf0';
+          ctx.fillRect(x, y, px, px);
+          continue;
+        }
+        const r = big ? 3 : 2;
+        ctx.fillStyle = '#221816';
+        ctx.fillRect(x - px, y - px, (r + 2) * px, (r + 2) * px);
+        ctx.fillStyle = '#b8d1da';
+        ctx.fillRect(x, y, r * px, r * px);
+        ctx.fillStyle = '#fdfdfd';
+        ctx.fillRect(x, y, (r - 1) * px, (r - 1) * px);
+      }
+      ctx.globalAlpha = 1;
+    } else if (local < HAIL_FALL_SECONDS + HAIL_BURST_SECONDS) {
+      // The burst: a flash where it struck and shards thrown up and out.
+      const b = (local - HAIL_FALL_SECONDS) / HAIL_BURST_SECONDS;
+      ctx.globalAlpha = 1 - b;
+      if (b < 0.35) {
+        const [x, y] = at(lx, ly);
+        ctx.fillStyle = '#fdfdfd';
+        ctx.fillRect(x - px, y, 3 * px, px);
+        ctx.fillRect(x, y - px, px, 3 * px);
+      }
+      for (const angle of [-2.6, -1.9, -1.2, -0.5]) {
+        const d = 2 + 6 * b;
+        const [x, y] = at(
+          Math.round(lx + Math.cos(angle) * d),
+          Math.round(ly + Math.sin(angle) * d * 0.7 + 7 * b * b)
+        );
+        ctx.fillStyle = angle < -1.5 ? '#fdfdfd' : '#c4dbe2';
+        ctx.fillRect(x, y, px, px);
+      }
+      ctx.globalAlpha = 1;
+    }
   }
   ctx.restore();
 }
 
-function drawFog(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): void {
-  const img = assetLoader.requestImage(fogImage);
-  // Drawn partly see-through, so the ground still shows under it, drifting
-  // slowly side to side (every fogged hex together, so a bank moves as one).
-  const dx = time === null ? 0 : sway(time, FOG_SWAY_SECONDS, 2);
-  if (img) drawHexImage(ctx, h, img, {alpha: 0.7, dx});
-  else fillHex(ctx, h, {fill: 'rgba(203,213,225,0.35)', stroke: 'rgba(226,232,240,0.6)'});
+/** Fog's cloud art: a tile this many art pixels square that wraps, so it can drift without seams. */
+const FOG_TILE = 48;
+/** Art pixels a second each layer of fog drifts, the far one against the near one. */
+const FOG_DRIFT = [
+  {x: 2.2, y: 0.4, alpha: 1},
+  {x: -1.4, y: 0.7, alpha: 0.55},
+] as const;
+/**
+ * Where a fog hex's mist fades, as fractions of the hex's size from its
+ * centre: solid within the first, gone by the second. Neighbours' mists
+ * overlap, so a bank reads as one cloud and only its outer edge is soft.
+ */
+const FOG_FADE = [0.72, 1.18] as const;
+/** Seconds for the mist's edge to billow out and back. */
+const FOG_BILLOW_SECONDS = 5;
+
+let fogTile: HTMLCanvasElement | null = null;
+let fogLayer: HTMLCanvasElement | null = null;
+let fogMask: HTMLCanvasElement | null = null;
+
+function artCanvas(width: number, height: number): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  return canvas;
 }
 
-function drawHail(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): void {
+/**
+ * The cloud tile: smooth noise that wraps at the tile's edges, in the fog
+ * image's greys, from a thin haze up to bright tufts.
+ */
+function makeFogTile(): HTMLCanvasElement {
+  const canvas = artCanvas(FOG_TILE, FOG_TILE);
+  const ctx = canvas.getContext('2d')!;
+  const next = hexRandom({q: 11, r: 5});
+  const octave = (cells: number) => {
+    const grid = Array.from({length: cells * cells}, () => next());
+    const v = (x: number, y: number) => grid[(y % cells) * cells + (x % cells)]!;
+    const step = FOG_TILE / cells;
+    const smooth = (t: number) => t * t * (3 - 2 * t);
+    return (x: number, y: number) => {
+      const gx = Math.floor(x / step);
+      const gy = Math.floor(y / step);
+      const tx = smooth(x / step - gx);
+      const ty = smooth(y / step - gy);
+      const top = v(gx, gy) + (v(gx + 1, gy) - v(gx, gy)) * tx;
+      const bottom = v(gx, gy + 1) + (v(gx + 1, gy + 1) - v(gx, gy + 1)) * tx;
+      return top + (bottom - top) * ty;
+    };
+  };
+  const coarse = octave(4);
+  const fine = octave(8);
+  for (let y = 0; y < FOG_TILE; y++) {
+    for (let x = 0; x < FOG_TILE; x++) {
+      const n = coarse(x, y) * 0.65 + fine(x, y) * 0.35;
+      ctx.fillStyle =
+        n < 0.36
+          ? 'rgba(198,204,210,0.5)'
+          : n < 0.5
+            ? 'rgba(190,196,202,0.78)'
+            : n < 0.62
+              ? 'rgba(212,215,219,0.92)'
+              : '#e6e8ea';
+      ctx.fillRect(x, y, 1, 1);
+    }
+  }
+  return canvas;
+}
+
+/**
+ * Every fog hex as one bank: the cloud tile, in two layers drifting
+ * against each other, kept to a soft-edged mist around the fog hexes
+ * (unclipped, so the bank has no hex-shaped cuts or seams). Built in art
+ * pixels and scaled up unsmoothed, so its edge is pixel art too. Still
+ * when `time` is null (reduced motion).
+ */
+function drawFogBank(ctx: CanvasRenderingContext2D, hexes: Hex[], time: number | null): void {
+  if (hexes.length === 0 || typeof document === 'undefined') return;
+  const width = Math.ceil(SCENE_SIZE.width / SPRITE_SCALE);
+  const height = Math.ceil(SCENE_SIZE.height / SPRITE_SCALE);
+  fogTile ??= makeFogTile();
+  fogLayer ??= artCanvas(width, height);
+  fogMask ??= artCanvas(width, height);
+  const layer = fogLayer.getContext('2d')!;
+  const mask = fogMask.getContext('2d')!;
+  const t = time ?? 0;
+
+  mask.clearRect(0, 0, width, height);
+  const size = BOARD_LAYOUT.size / SPRITE_SCALE;
+  for (const h of hexes) {
+    const c = center(h);
+    const x = c.x / SPRITE_SCALE;
+    const y = c.y / SPRITE_SCALE;
+    const billow = 1 + 0.06 * Math.sin((t / FOG_BILLOW_SECONDS) * Math.PI * 2 + h.q * 1.7 + h.r);
+    const g = mask.createRadialGradient(x, y, 0, x, y, size * FOG_FADE[1] * billow);
+    g.addColorStop(0, 'rgba(0,0,0,1)');
+    g.addColorStop(FOG_FADE[0] / FOG_FADE[1], 'rgba(0,0,0,1)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    mask.fillStyle = g;
+    mask.fillRect(x - size * 2, y - size * 2, size * 4, size * 4);
+  }
+
+  layer.globalCompositeOperation = 'source-over';
+  layer.clearRect(0, 0, width, height);
+  const pattern = layer.createPattern(fogTile, 'repeat')!;
+  for (const drift of FOG_DRIFT) {
+    const ox = Math.round(t * drift.x) % FOG_TILE;
+    const oy = Math.round(t * drift.y) % FOG_TILE;
+    layer.save();
+    layer.globalAlpha = drift.alpha;
+    layer.translate(ox, oy);
+    layer.fillStyle = pattern;
+    layer.fillRect(-FOG_TILE, -FOG_TILE, width + 2 * FOG_TILE, height + 2 * FOG_TILE);
+    layer.restore();
+  }
+  layer.globalCompositeOperation = 'destination-in';
+  layer.drawImage(fogMask, 0, 0);
+  layer.globalCompositeOperation = 'source-over';
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  // Partly see-through, so the ground still shows under it.
+  ctx.globalAlpha = 0.85;
+  ctx.drawImage(fogLayer, 0, 0, width * SPRITE_SCALE, height * SPRITE_SCALE);
+  ctx.restore();
+}
+
+/** A hail hex's ground: the fallen stones (the falling ones are drawn later, over the units). */
+function drawHail(ctx: CanvasRenderingContext2D, h: Hex): void {
   const at = center(h);
   const img = assetLoader.requestImage(hailImage);
   if (img) {
     drawHexImage(ctx, h, img);
-    if (time !== null) drawFallingHail(ctx, h, time);
     return;
   }
   fillHex(ctx, h, {fill: 'rgba(186,230,253,0.45)', stroke: '#7dd3fc'});
@@ -1161,17 +1350,20 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
     case 'charge': {
       const def = ABILITIES[e.ability];
       const name = e.kind === 'charge' ? `Charging ${def.name}` : def.name;
-      if (u.hex) title(u.hex, name, e.kind === 'charge' ? '#d8b4fe' : '#fde047');
-      if (!e.target) return;
       const radius = PLAYBACK_RADIUS[e.ability] ?? 0;
-      ctx.save();
-      ctx.globalAlpha = 1 - k * 0.6;
-      for (const h of map.hexes)
-        if (hexDistance(h, e.target) <= radius)
+      const area = e.target ? map.hexes.filter((h) => hexDistance(h, e.target!) <= radius) : [];
+      const effect = e.kind === 'action' ? ABILITY_EFFECT[e.ability] : undefined;
+      if (e.target && effect) {
+        effect(ctx, {from: u.hex, target: e.target, area, k});
+      } else if (e.target) {
+        ctx.save();
+        ctx.globalAlpha = 1 - k * 0.6;
+        for (const h of area)
           fillHex(ctx, h, e.kind === 'charge' ? HIGHLIGHT.target : HIGHLIGHT.area);
-      ctx.restore();
+        ctx.restore();
+      }
       // An arrow flying from the bow to its mark.
-      if (e.ability === 'bow' && u.hex && k < 0.7) {
+      if (e.ability === 'bow' && e.target && u.hex && k < 0.7) {
         const a = center(u.hex);
         const b = center(e.target);
         const t = k / 0.7;
@@ -1189,6 +1381,8 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
         ctx.stroke();
         ctx.restore();
       }
+      // The name last, over the effect.
+      if (u.hex) title(u.hex, name, e.kind === 'charge' ? '#d8b4fe' : '#fde047');
       return;
     }
     case 'damage':
@@ -1212,6 +1406,292 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
     case 'step':
       return;
   }
+}
+
+/** What an ability's effect drawing gets: who used it, where it lands, the hexes it covers, and how far through (0 to 1). */
+interface EffectFrame {
+  from: Hex | null;
+  target: Hex;
+  area: Hex[];
+  k: number;
+}
+
+/** Abilities with a flourish of their own as they land; the rest light up their area. */
+const ABILITY_EFFECT: Partial<
+  Record<AbilityId, (ctx: CanvasRenderingContext2D, f: EffectFrame) => void>
+> = {
+  volley: drawVolley,
+  freeze: drawFreeze,
+  sunlight: drawSunlight,
+};
+
+/** Fades an effect out over the last part of its event, from `start` (0 to 1) on. */
+const fadeOut = (k: number, start = 0.8) => (k < start ? 1 : Math.max(0, (1 - k) / (1 - start)));
+
+/** Arrows per hex of a volley's area. */
+const VOLLEY_ARROWS = 3;
+/** The part of the event each arrow takes to fall, and the most any waits to loose. */
+const VOLLEY_FLIGHT = 0.26;
+const VOLLEY_STAGGER = 0.4;
+
+/**
+ * Volley: arrows rain down on the area, loosed in a ragged wave from the
+ * archer's side and falling steeply, each sticking where it lands with a
+ * puff of dust, then the lot fades.
+ */
+function drawVolley(ctx: CanvasRenderingContext2D, {from, target, area, k}: EffectFrame): void {
+  const t = center(target);
+  const side = from ? Math.sign(t.x - center(from).x) || 1 : 1;
+  ctx.save();
+  ctx.globalAlpha = 0.55 * fadeOut(k, 0.6);
+  for (const h of area) fillHex(ctx, h, HIGHLIGHT.area);
+  ctx.restore();
+  ctx.save();
+  ctx.lineCap = 'round';
+  for (const h of area) {
+    const c = center(h);
+    const next = hexRandom(h, 3);
+    for (let i = 0; i < VOLLEY_ARROWS; i++) {
+      let lx = 0;
+      let ly = 0;
+      for (let tries = 0; tries < 8; tries++) {
+        lx = (next() - 0.5) * 30;
+        ly = (next() - 0.5) * 30;
+        if (insideHex(lx, ly, 6)) break;
+      }
+      const x = c.x + lx * SPRITE_SCALE;
+      const y = c.y + ly * SPRITE_SCALE;
+      const start = next() * VOLLEY_STAGGER;
+      const f = (k - start) / VOLLEY_FLIGHT;
+      if (f < 0) continue;
+      // Falling: from high up and back towards the archer, steeply down to the mark.
+      const dirX = side * 0.45;
+      const dirY = 1;
+      const len = Math.hypot(dirX, dirY);
+      const ux = dirX / len;
+      const uy = dirY / len;
+      if (f < 1) {
+        const d = (1 - f) * 150;
+        drawArrowShaft(ctx, x - ux * d, y - uy * d, ux, uy, 20, 1);
+        continue;
+      }
+      // Landed: stuck in the ground, a short way in, with a puff of dust.
+      ctx.globalAlpha = fadeOut(k);
+      drawArrowShaft(ctx, x, y, ux, uy, 13, ctx.globalAlpha);
+      const puff = (k - start - VOLLEY_FLIGHT) / 0.15;
+      if (puff < 1) {
+        ctx.globalAlpha = (1 - puff) * 0.6;
+        ctx.fillStyle = '#e7d3a8';
+        ctx.beginPath();
+        ctx.ellipse(x, y + 1, 4 + puff * 8, 2 + puff * 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+  ctx.restore();
+}
+
+/** An arrow whose head is at (x, y), pointing along (ux, uy): `length` pixels of shaft behind it, fletched at the tail. */
+function drawArrowShaft(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  ux: number,
+  uy: number,
+  length: number,
+  alpha: number
+): void {
+  const tx = x - ux * length;
+  const ty = y - uy * length;
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = '#221816';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(tx, ty);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+  ctx.strokeStyle = '#a16207';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Fletching: two pale vanes at the tail.
+  ctx.strokeStyle = '#f5f5f4';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (const s of [1, -1]) {
+    ctx.moveTo(tx + ux * 4, ty + uy * 4);
+    ctx.lineTo(tx - ux * 1 + uy * 4 * s, ty - uy * 1 - ux * 4 * s);
+  }
+  ctx.stroke();
+}
+
+/** Frost spreads a ring at a time: when the hexes this many rings out start to freeze, and how long that takes. */
+const FREEZE_RING_DELAY = 0.16;
+const FREEZE_GROW = 0.22;
+
+/**
+ * Freeze: a cold blast rings out from the target and the area ices over,
+ * ring by ring: each hex frosts pale blue and sprouts ice shards, glinting,
+ * before it all melts away.
+ */
+function drawFreeze(ctx: CanvasRenderingContext2D, {target, area, k}: EffectFrame): void {
+  const t = center(target);
+  const fade = fadeOut(k);
+  ctx.save();
+  // The blast: a ring racing outward from the target.
+  if (k < 0.5) {
+    const r = (k / 0.5) * BOARD_LAYOUT.size * 2.4;
+    ctx.globalAlpha = 1 - k / 0.5;
+    ctx.strokeStyle = '#e0f2fe';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.ellipse(t.x, t.y, r, r * 0.8, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = '#7dd3fc';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  for (const h of area) {
+    const g = (k - hexDistance(h, target) * FREEZE_RING_DELAY) / FREEZE_GROW;
+    if (g <= 0) continue;
+    const grow = Math.min(1, g);
+    ctx.globalAlpha = fade * grow;
+    fillHex(ctx, h, {fill: 'rgba(186,230,253,0.42)', stroke: 'rgba(224,242,254,0.95)'});
+    // Ice shards rising from the ground, in clusters.
+    const c = center(h);
+    const next = hexRandom(h, 5);
+    for (let i = 0; i < 4; i++) {
+      let lx = 0;
+      let ly = 0;
+      for (let tries = 0; tries < 8; tries++) {
+        lx = (next() - 0.5) * 28;
+        ly = (next() - 0.5) * 26;
+        if (insideHex(lx, ly, 7)) break;
+      }
+      const height = (8 + next() * 12) * grow;
+      const lean = (next() - 0.5) * 6;
+      drawIceShard(ctx, c.x + lx * SPRITE_SCALE, c.y + ly * SPRITE_SCALE, height, lean);
+      drawIceShard(
+        ctx,
+        c.x + lx * SPRITE_SCALE + 6,
+        c.y + ly * SPRITE_SCALE + 2,
+        height * 0.6,
+        lean + 3
+      );
+    }
+    // A glint on each hex as it sets.
+    const glint = g - 1;
+    if (glint > 0 && glint < 1.2) {
+      const s = Math.sin((glint / 1.2) * Math.PI) * 6;
+      const gx = c.x + 10;
+      const gy = c.y - 12;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(gx - s, gy);
+      ctx.lineTo(gx + s, gy);
+      ctx.moveTo(gx, gy - s);
+      ctx.lineTo(gx, gy + s);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+/** An ice shard standing on (x, y): a tall outlined diamond, `lean` pixels off upright at its tip. */
+function drawIceShard(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  height: number,
+  lean: number
+): void {
+  if (height < 1) return;
+  const w = Math.max(2, height * 0.28);
+  ctx.beginPath();
+  ctx.moveTo(x - w, y);
+  ctx.lineTo(x + lean * 0.4 - w * 0.9, y - height * 0.55);
+  ctx.lineTo(x + lean, y - height);
+  ctx.lineTo(x + lean * 0.4 + w * 0.9, y - height * 0.55);
+  ctx.lineTo(x + w, y);
+  ctx.closePath();
+  ctx.fillStyle = '#e0f2fe';
+  ctx.fill();
+  ctx.strokeStyle = '#0c4a6e';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // Its lit face.
+  ctx.beginPath();
+  ctx.moveTo(x - w * 0.4, y - 1);
+  ctx.lineTo(x + lean * 0.9, y - height + 2);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+/** Golden motes rising in a sunbeam. */
+const SUN_MOTES = 9;
+
+/**
+ * Sunlight: the clouds part over the target and a beam of warm light falls
+ * on it, its ground glowing, rays turning slowly round it and motes of
+ * light rising, then it fades.
+ */
+function drawSunlight(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): void {
+  const c = center(target);
+  // In quickly, hold, out slowly.
+  const glow = Math.min(1, k / 0.2) * fadeOut(k, 0.65);
+  const top = c.y - 120;
+  const foot = c.y + 16;
+  const spread = 34 + 4 * Math.sin(k * Math.PI * 3);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  // The beam.
+  const beam = ctx.createLinearGradient(0, top, 0, foot);
+  beam.addColorStop(0, 'rgba(253,224,71,0)');
+  beam.addColorStop(0.55, `rgba(253,224,71,${(0.22 * glow).toFixed(3)})`);
+  beam.addColorStop(1, `rgba(254,240,138,${(0.45 * glow).toFixed(3)})`);
+  ctx.fillStyle = beam;
+  ctx.beginPath();
+  ctx.moveTo(c.x - 12, top);
+  ctx.lineTo(c.x + 12, top);
+  ctx.lineTo(c.x + spread, foot);
+  ctx.lineTo(c.x - spread, foot);
+  ctx.closePath();
+  ctx.fill();
+  // The ground it lights.
+  const pool = ctx.createRadialGradient(c.x, c.y + 10, 0, c.x, c.y + 10, 46);
+  pool.addColorStop(0, `rgba(254,240,138,${(0.6 * glow).toFixed(3)})`);
+  pool.addColorStop(1, 'rgba(254,240,138,0)');
+  ctx.fillStyle = pool;
+  ctx.beginPath();
+  ctx.ellipse(c.x, c.y + 10, 46, 30, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // Rays turning round it.
+  ctx.strokeStyle = `rgba(253,224,71,${(0.5 * glow).toFixed(3)})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 + k * 1.2;
+    ctx.moveTo(c.x + Math.cos(a) * 22, c.y + 6 + Math.sin(a) * 15);
+    ctx.lineTo(c.x + Math.cos(a) * 36, c.y + 6 + Math.sin(a) * 24);
+  }
+  ctx.stroke();
+  ctx.restore();
+  // Motes of light rising through the beam.
+  ctx.save();
+  const next = hexRandom(target, 7);
+  for (let i = 0; i < SUN_MOTES; i++) {
+    const x = c.x + (next() - 0.5) * 44;
+    const start = next() * 0.5;
+    const m = (k - start) / 0.5;
+    if (m <= 0 || m >= 1) continue;
+    const y = c.y + 14 - m * 60;
+    ctx.globalAlpha = glow * Math.sin(m * Math.PI);
+    ctx.fillStyle = i % 3 === 0 ? '#ffffff' : '#fde047';
+    ctx.fillRect(Math.round(x) - 2, Math.round(y) - 2, 4, 4);
+  }
+  ctx.restore();
 }
 
 /** Seconds each idle frame shows. */
