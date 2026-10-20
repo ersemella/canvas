@@ -1,4 +1,12 @@
-import {BaseSystem, hexCorners, hexDistance, hexEquals, hexKey, hexToPixel} from '@canvas/engine';
+import {
+  assetLoader,
+  BaseSystem,
+  hexCorners,
+  hexDistance,
+  hexEquals,
+  hexKey,
+  hexToPixel,
+} from '@canvas/engine';
 import type {EventBus, Hex, SystemContext} from '@canvas/engine';
 import {HEROES} from '../rules/config';
 import {fogAt, isFlanked, statusValue} from '../rules/board';
@@ -10,6 +18,7 @@ import type {FightState, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
 import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
+import mangudaiSprite from './sprites/mangudai.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
@@ -46,6 +55,11 @@ const SIDE_COLOR = {player: '#60a5fa', enemy: '#f87171'};
 /** The tint over the whole hex a unit stands on: its side's colour. */
 const SIDE_TINT = {player: 'rgba(59,130,246,0.38)', enemy: 'rgba(239,68,68,0.38)'};
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
+/** Board sprites (32×32, facing right); heroes without one are drawn as a lettered disc. */
+const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {mangudai: mangudaiSprite};
+const SPRITE_SCALE = 2;
+/** How far below the hex's centre a sprite's bottom edge sits. */
+const SPRITE_FEET = 24;
 interface HighlightStyle {
   fill: string;
   stroke: string;
@@ -669,14 +683,28 @@ function drawUnit(
   ctx.lineWidth = opts.acting || opts.selected ? 3.5 : 3;
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.arc(c.x, c.y, 15, 0, Math.PI * 2);
-  ctx.fillStyle = HERO_COLOR[u.hero];
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(17,24,39,0.8)';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, '#ffffff', 15, true);
+  const sprite = HERO_SPRITE[u.hero];
+  const img = sprite && assetLoader.requestImage(sprite);
+  if (img) {
+    // Whole-number scale, unsmoothed, so the pixels stay square; enemies face left.
+    const size = img.width * SPRITE_SCALE;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.translate(Math.round(c.x), Math.round(c.y + SPRITE_FEET - size));
+    if (u.side === 'enemy') ctx.scale(-1, 1);
+    ctx.drawImage(img, -size / 2, 0, size, size);
+    ctx.restore();
+  } else {
+    // No sprite yet (or still loading): a disc in the hero's colour with its letter.
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 15, 0, Math.PI * 2);
+    ctx.fillStyle = HERO_COLOR[u.hero];
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(17,24,39,0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, '#ffffff', 15, true);
+  }
 
   // Health bar.
   const w = 30;
