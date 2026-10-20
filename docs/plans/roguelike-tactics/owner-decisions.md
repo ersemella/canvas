@@ -32,7 +32,6 @@ options below is built.
 **Options:**
 - **A fight limit:** the fight ends when the track reaches a set slot;
   decide who wins then (most health left, or a defeat for the player).
-- **Damage for the Storm Caller:** a little base damage on Gale or hail.
 - **A surrender rule:** a side that can't damage the other concedes, or
   the player may claim the win when no enemy can damage them.
 - **Stronger finishers:** Sunlight heals less, or the Champion
@@ -78,8 +77,8 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Hero | Health | Speed | Defence | Power | Armour |
 |---|---|---|---|---|---|
 | Bökh Champion | 540 | 4 | 10 | 10 | medium (+8 defence, −1 speed) |
-| Mangudai Outrider | 300 | 7 | 5 | 40 | light (+3 defence) |
-| Yadachy Storm Caller | 420 | 4 | 10 | 25 | medium |
+| Mangudai Outrider | **360 (owner, 2026-10-20; was 300)** | 7 | 5 | 40 | light (+3 defence) |
+| Yadachy Storm Caller | **360 (owner, 2026-10-20; was 420)** | 4 | 10 | 25 | medium |
 
 | Ability | Placeholder values |
 |---|---|
@@ -88,7 +87,7 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Volley (ultimate) | range 5, radius 1, **damage 135 (owner, 2026-10-19)**, charge 40, recovery 100 |
 | Sunlight | radius 1 (was 2 until it reached enemies, 2026-10-19), **heal 40, 60 at its power (owner, 2026-10-19; was 25)** |
 | Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
-| Gale | Displace 1, Slowed 1 for 10 slots, no damage |
+| Fog (replaced Gale, owner, 2026-10-20) | range 4, radius 1, 20 slots; ranged hits into or out of it deal 50% less |
 | Freeze (ultimate) | range 4, radius 1, Immobilized and Vulnerable 25% for 15 slots, charge 40, recovery 100 |
 | Throw | damage 80 |
 | Pin | 12 slots, Vulnerable 25%; **the target is Taunted, and Crushed for base 8 a slot through defence (owner, 2026-10-19)** |
@@ -109,9 +108,6 @@ passed. Confirm or change.
 Each is in [phase-1-brief.md](phase-1-brief.md#11-as-built-2026-10-19);
 confirm or change:
 
-- **Gale displaces an Immobilized target**, following the 2026-10-19
-  rule; the brief's section 4 still says "slowed but not moved" and
-  should be corrected whichever way you decide.
 - **The AI's additions:** a pull toward the nearest enemy, and counting
   the quicksand it will take before its next turn. Without the pull, units with
   nothing in reach hold forever.

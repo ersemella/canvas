@@ -35,7 +35,6 @@ export function affectsHex(
   const near = (h: Hex | undefined, r: number) => h !== undefined && hexDistance(h, victim) <= r;
   switch (def.id) {
     case 'bow':
-    case 'gale':
     case 'throw':
     case 'pin':
       return near(target.hex, 0);
@@ -45,6 +44,8 @@ export function affectsHex(
       return near(target.hex, ABILITY.volley.radius);
     case 'freeze':
       return near(target.hex, ABILITY.freeze.radius);
+    case 'fog':
+      return near(target.hex, ABILITY.fog.radius);
     case 'sunlight':
       return near(from, ABILITY.sunlight.radius);
     case 'rampage': {

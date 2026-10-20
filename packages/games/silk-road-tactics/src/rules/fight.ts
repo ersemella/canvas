@@ -63,6 +63,7 @@ export function createFight(seed: number): FightState {
       ...PARTY.map((_, i) => makeUnit('enemy', i)),
     ],
     effects: [],
+    fog: [],
     log: [],
     awaiting: null,
   };
@@ -140,7 +141,7 @@ export function advance(
 
 /**
  * The track reaches `ctx.slot`: effects act at the beginning of each slot
- * passed (3.9), here expiry, quicksand and Crushed.
+ * passed (3.9), here expiry (statuses, hail, fog), quicksand and Crushed.
  */
 function beginSlot(ctx: Ctx): void {
   const {state, slot} = ctx;
@@ -151,6 +152,7 @@ function beginSlot(ctx: Ctx): void {
   });
   for (const u of state.units) expireStatuses(u, slot);
   state.effects = state.effects.filter((e) => e.untilSlot >= slot);
+  state.fog = (state.fog ?? []).filter((f) => f.untilSlot >= slot);
 }
 
 function triggerCharge(ctx: Ctx, unit: Unit): void {
@@ -263,6 +265,7 @@ export function cloneFight(state: FightState, keepLog = false): FightState {
       charging: u.charging ? {...u.charging, target: {...u.charging.target}} : null,
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
+    fog: (state.fog ?? []).map((f) => ({...f, hex: {...f.hex}})),
     log: keepLog ? state.log.map((l) => ({...l})) : [],
   };
 }

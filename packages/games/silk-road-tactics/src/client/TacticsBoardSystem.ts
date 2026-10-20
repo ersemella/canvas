@@ -1,10 +1,10 @@
 import {BaseSystem, hexCorners, hexDistance, hexEquals, hexKey, hexToPixel} from '@canvas/engine';
 import type {EventBus, Hex, SystemContext} from '@canvas/engine';
 import {HEROES} from '../rules/config';
-import {isFlanked, statusValue} from '../rules/board';
+import {fogAt, isFlanked, statusValue} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
-import {hailInfo, TILE_INFO} from '../rules/info';
+import {fogInfo, hailInfo, TILE_INFO} from '../rules/info';
 import {MAPS, tileAt} from '../rules/map';
 import type {FightState, Unit} from '../rules/types';
 import {BOARD_LAYOUT, SCENE_SIZE, TRACK_AREA, trackCards, trackSlots} from './layout';
@@ -142,6 +142,7 @@ export class TacticsBoardSystem extends BaseSystem {
       const [q, r] = key.split(',').map(Number);
       drawTileMark(ctx, center({q: q!, r: r!}), tile);
     }
+    for (const fog of fight.fog ?? []) drawFog(ctx, fog.hex);
     for (const effect of fight.effects)
       drawHail(ctx, effect.hex, effect.untilSlot - fight.currentSlot + 1);
     // Each unit's hex is tinted by side, under the highlights so moves and targets still show.
@@ -472,6 +473,11 @@ function drawHover(
     const info = hailInfo(hail, fight.currentSlot);
     lines.push({text: `${info.name}: ${info.short}`, color: '#7dd3fc'});
   }
+  const fog = fogAt(fight, h);
+  if (fog) {
+    const info = fogInfo(fog, fight.currentSlot);
+    lines.push({text: `${info.name}: ${info.short}`, color: '#cbd5e1'});
+  }
   ctx.save();
   ctx.font = 'bold 11px system-ui, sans-serif';
   const w = Math.max(...lines.map((l) => ctx.measureText(l.text).width)) + 14;
@@ -547,6 +553,10 @@ function drawTileMark(
     }
   }
   ctx.restore();
+}
+
+function drawFog(ctx: CanvasRenderingContext2D, h: Hex): void {
+  fillHex(ctx, h, {fill: 'rgba(203,213,225,0.35)', stroke: 'rgba(226,232,240,0.6)'});
 }
 
 function drawHail(ctx: CanvasRenderingContext2D, h: Hex, slotsLeft: number): void {

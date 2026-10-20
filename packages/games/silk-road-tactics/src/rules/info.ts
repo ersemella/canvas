@@ -3,9 +3,9 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {RULES} from './config';
+import {ABILITY, RULES} from './config';
 import type {Tile} from './map';
-import type {HailEffect} from './types';
+import type {FogEffect, HailEffect} from './types';
 
 export interface HexInfo {
   name: string;
@@ -42,5 +42,15 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
     name: 'Hail',
     short: `${hail.damage ?? 0} damage, Slowed ${hail.slowed}`,
     detail: `For ${left} more slot${left === 1 ? '' : 's'}: a unit here when it lands, entering it or starting its turn here takes ${hail.damage ?? 0} damage (before Vulnerable and defence), then is Slowed ${hail.slowed} and Vulnerable ${hail.vulnerable}% for ${hail.statusSlots} slots.`,
+  };
+}
+
+export function fogInfo(fog: FogEffect, currentSlot: number): HexInfo {
+  const left = fog.untilSlot - currentSlot + 1;
+  const less = Math.round(ABILITY.fog.reduction * 100);
+  return {
+    name: 'Fog',
+    short: `Ranged hits in or out deal ${less}% less`,
+    detail: `For ${left} more slot${left === 1 ? '' : 's'}: ranged hits on a unit here deal ${less}% less (not on top of a sandstorm's), and so do ranged hits by a unit here. Doesn't block arrows or line of fire.`,
   };
 }

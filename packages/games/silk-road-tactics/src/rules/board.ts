@@ -11,10 +11,10 @@ import {
   hexToOffset,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {RULES} from './config';
+import {HEROES, RULES} from './config';
 import {onMap, tileAt} from './map';
 import type {MapData} from './map';
-import type {FightState, Status, StatusKind, Unit} from './types';
+import type {FightState, FogEffect, Status, StatusKind, Unit} from './types';
 
 export {onMap};
 
@@ -25,6 +25,16 @@ export function walkable(map: MapData, h: Hex): boolean {
 
 export function unitAt(state: FightState, h: Hex): Unit | undefined {
   return state.units.find((u) => u.alive && u.hex !== null && hexEquals(u.hex, h));
+}
+
+/** The fog on a hex, if any. */
+export function fogAt(state: FightState, h: Hex): FogEffect | undefined {
+  return (state.fog ?? []).find((f) => hexEquals(f.hex, h));
+}
+
+/** A unit with a ranged attack, which fog blinds. */
+export function isRanged(unit: Unit): boolean {
+  return HEROES[unit.hero].abilities.includes('bow');
 }
 
 export function hostile(a: Unit, b: Unit): boolean {

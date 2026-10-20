@@ -4,8 +4,8 @@
  */
 import {hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {RULES, HEROES} from './config';
-import {addStatus, onMap, statusValue, unitAt, vulnerablePercent} from './board';
+import {ABILITY, RULES, HEROES} from './config';
+import {addStatus, fogAt, onMap, statusValue, unitAt, vulnerablePercent} from './board';
 import {tileAt} from './map';
 import type {MapData} from './map';
 import type {FightState, HailEffect, Unit} from './types';
@@ -32,9 +32,9 @@ export function scaled(base: number, power: number): number {
 }
 
 /**
- * An ability's hit (brief section 2): scaled base, then −50% if ranged on
- * conceal, then Vulnerable (max of ability and flank), then defence;
- * minimum 1. Each step rounds down.
+ * An ability's hit (brief section 2): scaled base, then if ranged −50% on
+ * conceal or into fog (once), −50% out of fog, then Vulnerable (max of
+ * ability and flank), then defence; minimum 1. Each step rounds down.
  */
 export function abilityDamage(
   state: FightState,
@@ -45,8 +45,12 @@ export function abilityDamage(
   ranged: boolean
 ): number {
   let d = scaled(base, attacker.power);
-  if (ranged && target.hex && tileAt(map, target.hex) === 'conceal')
-    d = Math.floor(d * (1 - RULES.concealReduction));
+  if (ranged && target.hex) {
+    if (tileAt(map, target.hex) === 'conceal') d = Math.floor(d * (1 - RULES.concealReduction));
+    else if (fogAt(state, target.hex)) d = Math.floor(d * (1 - ABILITY.fog.reduction));
+  }
+  if (ranged && attacker.hex && fogAt(state, attacker.hex))
+    d = Math.floor(d * (1 - ABILITY.fog.reduction));
   return throughDefence(state, target, d);
 }
 

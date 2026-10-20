@@ -1,5 +1,12 @@
 import {describe, expect, it} from 'vitest';
-import {hexDistance, hexKey, hexToOffset, hexToPixel, offsetToHex} from '@canvas/engine/server';
+import {
+  hexDirectionTo,
+  hexDistance,
+  hexKey,
+  hexToOffset,
+  hexToPixel,
+  offsetToHex,
+} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, AI, RULES} from './config';
 import {
@@ -25,7 +32,7 @@ import {
 } from './fight';
 import {afterAction, previewTurn} from './preview';
 import {SALT_FLATS, onMap} from './map';
-import {abilityDamage, scaled} from './resolve';
+import {abilityDamage, displace, scaled} from './resolve';
 import {createRun, handleRunAction, runView} from './run';
 import {
   freeSlotFrom,
@@ -292,10 +299,33 @@ describe('damage', () => {
     expect(abilityDamage(s, mapOf(s), m, b, 60, false)).toBe(inOpen);
   });
 
+  it('fog weakens ranged hits into it and out of it, and fades', () => {
+    const s = setup({'p-storm': at(3, 1), 'p-mangudai': at(1, 1), 'e-mangudai': at(5, 1)});
+    const m = unit(s, 'p-mangudai');
+    const e = unit(s, 'e-mangudai');
+    const open = abilityDamage(s, SALT_FLATS, m, e, 100, true);
+    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'fog', target: {hex: at(5, 1)}}});
+    expect(s.fog).toHaveLength(7);
+    const into = abilityDamage(s, SALT_FLATS, m, e, 100, true);
+    const outOf = abilityDamage(s, SALT_FLATS, e, m, 100, true);
+    expect(into).toBeLessThan(open);
+    expect(outOf).toBe(into);
+    // Melee isn't affected.
+    expect(abilityDamage(s, SALT_FLATS, m, e, 100, false)).toBe(open);
+    // Gone once its slots pass.
+    s.units.forEach((u) => (u.controller = 'human'));
+    e.slot = ABILITY.fog.slots + 5;
+    m.slot = 500;
+    unit(s, 'p-storm').slot = 500;
+    advance(s, chooseAiTurn);
+    expect(s.fog).toHaveLength(0);
+  });
+
   it('deals collision damage to both units when a displace is stopped', () => {
     const s = setup({'p-storm': at(2, 1), 'e-bokh': at(3, 1), 'e-storm': at(4, 1)});
     const before = [unit(s, 'e-bokh').hp, unit(s, 'e-storm').hp];
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'gale', target: {hex: at(3, 1)}}});
+    const b = unit(s, 'e-bokh');
+    displace({state: s, map: SALT_FLATS, slot: 0}, b, hexDirectionTo(at(2, 1), at(3, 1))!, 1);
     expect(unit(s, 'e-bokh').hex).toEqual(at(3, 1));
     expect(unit(s, 'e-bokh').hp).toBe(before[0]! - RULES.collisionDamage);
     expect(unit(s, 'e-storm').hp).toBe(before[1]! - RULES.collisionDamage);

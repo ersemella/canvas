@@ -67,6 +67,16 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   Removed so the Bökh Champion can Pin a target and then Throw it, and
   so Rampage isn't stopped by held units; Unstoppable remains the
   immunity to Displace ([keywords.md](keywords.md), 17.4, 17.5).
+- **Gale** (the Yadachy Storm Caller, until 2026-10-20): melee, Displace 1
+  away and Slowed 1 for 10 slots, no damage, meant as an escape when
+  surrounded. Replaced by fog (owner): in play it rarely helped, and the AI
+  chose it on 2% of the Storm Caller's turns. A burst pushing every
+  adjacent unit away was tried and not taken, as the AI can't value
+  escapes ([phase-1-brief.md](phase-1-brief.md), section 4).
+- **Hold allowed while taunted** (tested 2026-10-20, as a way to weaken
+  Pin): over 1,500 AI-vs-AI fights, taunted units held on 3.6% of their
+  taunted turns and Pin's use and the results didn't change, so Taunt
+  still forbids Hold while it binds ([keywords.md](keywords.md), 17.5).
 - **Guard N%** (Phase 1 draft, until 2026-10-16): N% less damage for
   10 slots, Batyr's Hold the Line. Removed as outdated; Barrier covers
   damage protection ([keywords.md](keywords.md)).

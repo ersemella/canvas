@@ -57,7 +57,7 @@ fight's end ends the run.
 | 9. Map | Offset rectangle, **9 columns × 7 rows**, pointy-top hexes. Fits a 600-pixel-wide board beside the track panel. |
 | 10. Passing through allies | Allowed (can't end on an occupied hex). Enemies block. |
 | 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so pin, hail and a flank don't stack. |
-| 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering (passing through included), then **4 damage** every slot spent on it, whoever's turn it is (owner, 2026-10-19; was 40 on entering and at the start of each of the unit's own turns). Both go through Vulnerable and **defence** (owner, 2026-10-19; they ignored defence until then). Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
+| 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering (passing through included), then **4 damage** every slot spent on it (both doubled, to **80** and **8**, owner, 2026-10-20, once defence applied), whoever's turn it is (owner, 2026-10-19; was 40 on entering and at the start of each of the unit's own turns). Both go through Vulnerable and **defence** (owner, 2026-10-19; they ignored defence until then). Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
 | 23. Defence | `defenceConstant` = **20**; minimum **1** damage from any hit. |
 | 29. Line of fire along a hex border | **Blocked if either** hex on the border is occupied. |
 | 30. Arcing attacks | Priced as a charged ability, with a charge cost and a recovery cost (3.7). |
@@ -150,7 +150,7 @@ reading of the owner's one-line descriptions; the owner can change them
 |---|---|
 | **Sunlight** (Clear the Storm until 2026-10-19, owner) | Every **unit** within radius TBD of the caster, the caster and **enemies included** (6.7, 2026-10-19), is **healed** (base heal TBD, scaled by power) and **cleansed**. Cleansing an enemy removes the party's own control from it, so the Storm Caller steps clear of enemies first. Typical cost. |
 | **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it takes **base damage 50** (owner, 2026-10-19; scaled by the caster's power when cast, then Vulnerable and defence as any hit), then is **Slowed TBD** and **Vulnerable TBD%** for TBD slots. Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justified; it now deals damage, so whether it stays uncharged is open). Typical cost. |
-| **Gale** | Melee: **Displace 1** away and **Slowed TBD** for TBD slots. An Immobilized target is slowed but not moved. Typical cost. |
+| **Fog** (replaced Gale, owner, 2026-10-20) | Targets a hex within range **4** (no line of fire needed); it and every hex within **1** of it become **fog for 20 slots**, a temporary board effect. A **ranged** hit on a unit in fog deals **50% less** (not on top of a sandstorm's), and so does a ranged hit **by** a unit in fog; an archer in fog shooting into fog deals 75% less. Melee, hail and quicksand aren't affected; fog doesn't block line of fire. Hits any side. New fog replaces old fog on the same hex. Typical cost. |
 | **Freeze** (ultimate) | A **charged** area with a **casting time** (owner's call, 2026-10-18): targets any hex within maximum range TBD, no line of fire needed. When the charge triggers, every unit in the area (radius TBD), allies included, is **Immobilized** and **Vulnerable TBD%** for TBD slots. Charge and recovery costs TBD (3.7); like any charge, it shows on the track and can be answered by stepping out, pushing, killing or dazing the caster. |
 
 **Bökh Champion**
@@ -166,8 +166,8 @@ rules): an Immobilized unit can still be displaced (owner's call,
 2026-10-19), so the Champion's flow is **Pin, then Throw**: the target
 lands where the Champion chooses, still Immobilized and Vulnerable, and
 can't walk back. Frozen units can likewise be thrown, blown back or
-rampaged through. A pinning Champion can't Rampage. Throw and
-Gale onto quicksand (a held unit then stays in it), and Freeze triggering before Volley lands (frozen
+rampaged through. A pinning Champion can't Rampage. Throw onto
+quicksand (a held unit then stays in it), and Freeze triggering before Volley lands (frozen
 units can't step out of the area), are the obvious combinations; the
 two charges' timing on the track is what makes the second one work. Hail's and Pin's Vulnerable don't stack with each other or
 a flank (max, section 2).
@@ -307,7 +307,8 @@ confirm or change:
 
 - **Placeholder numbers.** Every hero stat and ability value marked TBD
   in section 4 has a placeholder in `src/rules/config.ts`, marked as such,
-  from the roster's bands (health 300/420/540, speed 4 and 7, power
+  from the roster's bands (health 300/420/540, with the Outrider and the
+  Storm Caller both at 360 since 2026-10-20 (owner), speed 4 and 7, power
   10/25/40) so a fight can be played. Tuned once against AI-vs-AI fights
   that stalled: damage up (Bökh Champions pinned each other forever,
   since the AI's status weights outscored their small damage) and Clear
@@ -332,10 +333,7 @@ confirm or change:
   deterministic: over ~3,800 AI-vs-AI requests, median 1.3 ms, 99th
   percentile 5.7 ms, none above 10 ms. The AI always moves before
   acting.
-- **Gale on an Immobilized target displaces it,** following the
-  2026-10-19 rule (Immobilized units can be displaced) over section 4's
-  older line ("slowed but not moved").
-- **Dash** goes up to 3 hexes (owner, 2026-10-19; exactly 3 until then). **Pin**, **Throw** and **Gale** target
+- **Dash** goes up to 3 hexes (owner, 2026-10-19; exactly 3 until then). **Pin** and **Throw** target
   any adjacent unit, allies included (Pin targeted enemies only until the
   2026-10-19 rule, 6.7).
 - **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage
@@ -395,7 +393,7 @@ confirm or change:
   edge; under it the **detail section** (what's tapped) comes first, and
   the **action section** is pinned to the bottom of the screen, set off
   by a yellow rule.
-- **Abilities aimed at a unit** (Throw, Pin, Gale and the Composite Bow;
+- **Abilities aimed at a unit** (Throw, Pin and the Composite Bow;
   owner, 2026-10-19) are disabled when there's no unit to aim at from the
   hex the action would be taken from (after the planned move, or where the
   unit stands when acting first): no one adjacent, or no one in any of the

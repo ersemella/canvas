@@ -267,25 +267,24 @@ const hail: AbilityDef = {
   },
 };
 
-const gale: AbilityDef = {
-  id: 'gale',
-  name: 'Gale',
-  summary: () => `Melee: Displace ${ABILITY.gale.displace} away and Slowed ${ABILITY.gale.slowed}.`,
+const fog: AbilityDef = {
+  id: 'fog',
+  name: 'Fog',
+  summary: () =>
+    `A hex within ${ABILITY.fog.range} and those within ${ABILITY.fog.radius} of it fog over for ${ABILITY.fog.slots} slots: ranged hits into the fog or out of it deal ${Math.round(ABILITY.fog.reduction * 100)}% less, both sides.`,
   ultimate: false,
   charged: false,
-  cost: ABILITY.gale.cost,
+  cost: ABILITY.fog.cost,
   movesSelf: false,
-  targetsUnit: true,
-  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  targets: (_state, map, _user, from) =>
+    hexesWithin(map, from, ABILITY.fog.range, (h) => tileAt(map, h) !== 'obstacle'),
   resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    log(ctx, `${unitName(user)}'s gale strikes ${unitName(u)}.`);
-    addStatus(u, {
-      kind: 'slowed',
-      value: ABILITY.gale.slowed,
-      untilSlot: ctx.slot + ABILITY.gale.slowedSlots,
-    });
-    displace(ctx, u, direction(user.hex!, u.hex!), ABILITY.gale.displace);
+    const area = hexesInRange(target.hex!, ABILITY.fog.radius).filter((h) => onMap(ctx.map, h));
+    const untilSlot = ctx.slot + ABILITY.fog.slots;
+    // New fog replaces old fog on the same hex.
+    ctx.state.fog = (ctx.state.fog ?? []).filter((f) => !area.some((h) => hexEquals(h, f.hex)));
+    for (const hex of area) ctx.state.fog.push({hex, untilSlot});
+    log(ctx, `${unitName(user)} calls up fog.`);
   },
 };
 
@@ -425,7 +424,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   volley,
   sunlight,
   hail,
-  gale,
+  fog,
   freeze,
   throw: throwAbility,
   pin,

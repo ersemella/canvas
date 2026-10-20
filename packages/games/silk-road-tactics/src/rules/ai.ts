@@ -6,7 +6,15 @@
  */
 import {hexDistance, hexEquals, hexKey} from '@canvas/engine/server';
 import {ABILITY, AI, RULES} from './config';
-import {hostile, isFlanked, reachableHexes, statusSlotsLeft, statusValue} from './board';
+import {
+  fogAt,
+  hostile,
+  isFlanked,
+  isRanged,
+  reachableHexes,
+  statusSlotsLeft,
+  statusValue,
+} from './board';
 import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
 import {slotsForward, turnCost} from './track';
 import {affectsHex, tauntBinds, taunterOf} from './taunt';
@@ -14,6 +22,7 @@ import {RuleError, applyTurn, cloneFight, mapOf} from './fight';
 import {enterHex, hailDamage, throughDefence} from './resolve';
 import {tileAt} from './map';
 import type {AbilityDef} from './abilities';
+import type {Hex} from '@canvas/engine/server';
 import type {FightState, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
@@ -102,12 +111,30 @@ export function scoreOutcome(
   return score;
 }
 
+/** What fog centred on `center` is worth to `actor`'s side (see `AI.fogShield`). */
+function fogValue(state: FightState, actor: Unit, center: Hex): number {
+  const living = state.units.filter((u) => u.alive && u.hex);
+  let value = 0;
+  for (const u of living) {
+    if (hexDistance(u.hex!, center) > ABILITY.fog.radius || fogAt(state, u.hex!)) continue;
+    const side = hostile(u, actor) ? -1 : 1;
+    if (living.some((o) => hostile(o, u) && isRanged(o))) value += (side * AI.fogShield) / u.maxHp;
+    if (isRanged(u)) value -= side * AI.fogBlind;
+  }
+  return value;
+}
+
 /**
  * The area of a ground-targeted ability (hail, Volley, Freeze), whose
  * effect doesn't depend on where the user stands; undefined for others.
  */
 function groundRadius(def: AbilityDef): number | undefined {
-  return {hail: 0, volley: ABILITY.volley.radius, freeze: ABILITY.freeze.radius}[def.id as string];
+  return {
+    hail: 0,
+    volley: ABILITY.volley.radius,
+    freeze: ABILITY.freeze.radius,
+    fog: ABILITY.fog.radius,
+  }[def.id as string];
 }
 
 /**
@@ -161,6 +188,7 @@ export function scoreOptions(
         const after = simulate(state, unit.id, input, true);
         if (!after) continue;
         let score = scoreOutcome(state, after, unit, baseline);
+        if (def.id === 'fog') score += fogValue(state, unit, target.hex!);
         if (def.id === 'hold') {
           // Price the Hold's time as AI.holdScoringCost (see config.ts).
           const hexes = reach.path.length;

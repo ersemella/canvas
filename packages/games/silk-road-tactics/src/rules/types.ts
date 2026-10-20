@@ -14,7 +14,7 @@ export type AbilityId =
   | 'volley'
   | 'sunlight'
   | 'hail'
-  | 'gale'
+  | 'fog'
   | 'freeze'
   | 'throw'
   | 'pin'
@@ -74,6 +74,12 @@ export interface HailEffect {
   statusSlots: number;
 }
 
+/** A fog hex: the Storm Caller's fog. Ranged hits into it and out of it are weaker. */
+export interface FogEffect {
+  hex: Hex;
+  untilSlot: number;
+}
+
 export interface LogEntry {
   slot: number;
   text: string;
@@ -89,6 +95,8 @@ export interface FightState {
   currentSlot: number;
   units: Unit[];
   effects: HailEffect[];
+  /** Fog hexes; missing in a fight saved before fog existed. */
+  fog: FogEffect[];
   log: LogEntry[];
   /** The human-controlled unit whose turn the track has stopped on. */
   awaiting: string | null;

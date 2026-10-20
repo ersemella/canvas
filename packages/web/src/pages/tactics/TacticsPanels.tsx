@@ -7,6 +7,8 @@ import {
   RULES,
   TILE_INFO,
   abilitiesOf,
+  fogAt,
+  fogInfo,
   hailInfo,
   isFlanked,
   mapOf,
@@ -69,12 +71,13 @@ export function HexInspector({
   const tile = tileAt(mapOf(fight), hex);
   const info = TILE_INFO[tile];
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
+  const fog = fogAt(fight, hex);
   const unit = fight.units.find((u) => {
     const at = positions?.[u.id] ?? u.hex;
     return u.alive && at && hexEquals(at, hex);
   });
   // Plain sand under a unit says nothing worth a card.
-  const showTile = tile !== 'sand' || hail || !unit;
+  const showTile = tile !== 'sand' || hail || fog || !unit;
   return (
     <Stack gap={8} data-testid="hex-info">
       {showTile && (
@@ -86,6 +89,11 @@ export function HexInspector({
           {hail && (
             <Text fz="xs" c="cyan.3" mt={4}>
               <b>Hail.</b> {hailInfo(hail, fight.currentSlot).detail}
+            </Text>
+          )}
+          {fog && (
+            <Text fz="xs" c="gray.4" mt={4}>
+              <b>Fog.</b> {fogInfo(fog, fight.currentSlot).detail}
             </Text>
           )}
         </Paper>
