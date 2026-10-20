@@ -63,9 +63,10 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
 };
-const SPRITE_SCALE = 2;
+/** 1.5× (48 pixels) keeps a sprite inside its hex (about 55 wide); 2× spilled onto its neighbours. */
+const SPRITE_SCALE = 1.5;
 /** How far below the hex's centre a sprite's bottom edge sits. */
-const SPRITE_FEET = 24;
+const SPRITE_FEET = 22;
 /** Track portraits (32×32, facing right), centred on the card's disc at `face`. */
 const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; face: {x: number; y: number}}>> = {
   bokh: {src: bokhPortrait, face: {x: 17, y: 13}},
@@ -713,7 +714,7 @@ function drawUnit(
   const sprite = HERO_SPRITE[u.hero];
   const img = sprite && assetLoader.requestImage(sprite);
   if (img) {
-    // Whole-number scale, unsmoothed, so the pixels stay square; enemies face left.
+    // Unsmoothed, so the pixels stay crisp; enemies face left.
     const size = img.width * SPRITE_SCALE;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
