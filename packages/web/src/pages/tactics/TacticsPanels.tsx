@@ -1,3 +1,4 @@
+import {useEffect, useState} from 'react';
 import {Badge, Button, Group, Paper, Stack, Text} from '@mantine/core';
 import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
@@ -66,6 +67,34 @@ export function ConfirmButton(props: {
       {preview
         ? `${props.endTurn ? 'End turn' : 'Confirm'}${next ? ` · next turn ${next}` : ''}`
         : 'Can’t do that'}
+    </Button>
+  );
+}
+
+/**
+ * Gives up the fight and starts a new one. Two taps: the first arms it
+ * for a few seconds, so a stray tap doesn't throw a fight away.
+ */
+export function ResetRunButton(props: {busy: boolean; onReset: () => void}) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) return;
+    const t = setTimeout(() => setArmed(false), 3000);
+    return () => clearTimeout(t);
+  }, [armed]);
+  return (
+    <Button
+      size="xs"
+      variant={armed ? 'filled' : 'subtle'}
+      color={armed ? 'red' : 'gray'}
+      disabled={props.busy}
+      onClick={() => {
+        if (!armed) return setArmed(true);
+        setArmed(false);
+        props.onReset();
+      }}
+    >
+      {armed ? 'Tap again to reset' : 'Reset run'}
     </Button>
   );
 }

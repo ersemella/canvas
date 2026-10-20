@@ -50,7 +50,7 @@ import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
-import {ConfirmButton, HexInspector, StatSheet} from './TacticsPanels';
+import {ConfirmButton, HexInspector, ResetRunButton, StatSheet} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 /** Area abilities: their radius, to highlight the area around a chosen hex. */
@@ -616,6 +616,8 @@ export function TacticsPage() {
   ) : (
     selected && <StatSheet fight={fight} unit={selected} />
   );
+  // Once the fight is over, the result's New fight button does the same.
+  const reset = !finished && <ResetRunButton busy={busy || playing} onReset={startRun} />;
 
   return (
     <Stack align="center" pt={phone ? 0 : 'md'} pb="md" gap="sm" px="md">
@@ -658,6 +660,7 @@ export function TacticsPage() {
             <>
               <section className={styles.details} aria-label="Details">
                 {details}
+                {reset}
               </section>
               {actions && (
                 <section className={styles.actionBar} ref={actionsRef}>
@@ -669,6 +672,7 @@ export function TacticsPage() {
             <>
               {actions}
               {details}
+              {reset}
             </>
           )}
         </div>
