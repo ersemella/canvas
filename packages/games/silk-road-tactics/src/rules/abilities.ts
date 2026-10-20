@@ -66,8 +66,13 @@ export interface AbilityDef {
    * empty hex on purpose (hail to deny it, a charge where enemies will be).
    */
   targetsUnit?: boolean;
-  /** Aimed at a neighbouring unit: the page outlines the hexes next to the user while it's picked. */
-  melee?: boolean;
+  /**
+   * For an ability aimed at a unit: every hex it reaches from `from`,
+   * someone there or not (the bow's lanes, a melee ability's neighbours,
+   * Sunlight's range). The page shows them under its targets, so its range
+   * shows even with no one in it.
+   */
+  reach?(state: FightState, map: MapData, from: Hex): Hex[];
   /** Legal targets with the user standing on `from`. */
   targets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[];
   /** Resolves the ability now (a charged one triggers here). */
@@ -160,6 +165,7 @@ const bow: AbilityDef = {
       .filter((lane) => lane.hit)
       .map((lane) => ({hex: lane.hit!.hex!}));
   },
+  reach: (state, map, from) => arrowLanes(state, map, from).flatMap((lane) => lane.hexes),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     // The hexes it flies through before the target, which Obscured weakens it crossing.
@@ -247,6 +253,7 @@ const sunlight: AbilityDef = {
   targetsUnit: true,
   targets: (state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.sunlight.range, (h) => unitAt(state, h) !== undefined),
+  reach: (_state, map, from) => hexesWithin(map, from, ABILITY.sunlight.range).map((t) => t.hex!),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} calls down sunlight on ${unitName(u)}.`);
@@ -343,7 +350,7 @@ const throwAbility: AbilityDef = {
   cost: ABILITY.throw.cost,
   movesSelf: false,
   targetsUnit: true,
-  melee: true,
+  reach: (_state, map, from) => hexNeighbors(from).filter((h) => onMap(map, h)),
   targets(state, map, user, from) {
     const landing = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
     const out: ActionTarget[] = [];
@@ -371,7 +378,7 @@ const pin: AbilityDef = {
   cost: ABILITY.pin.cost,
   movesSelf: false,
   targetsUnit: true,
-  melee: true,
+  reach: (_state, map, from) => hexNeighbors(from).filter((h) => onMap(map, h)),
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;

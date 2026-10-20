@@ -4,7 +4,6 @@ import {
   hexDistance,
   hexEquals,
   hexKey,
-  hexNeighbors,
   hexToPixel,
   hexesInRange,
   registerBuiltinComponents,
@@ -19,7 +18,6 @@ import {
   SCENE_SIZE,
   abilitiesOf,
   actingUnit,
-  arrowLanes,
   chooseAiTurn,
   mapOf,
   onMap,
@@ -432,14 +430,12 @@ export function TacticsPage() {
     ? ((inspectHex ? inspectedUnit?.id : (selectedId ?? acting?.id)) ?? null)
     : null;
 
-  /** The bow's six lanes from where the archer will stand, hit or not. */
-  const lanes = useMemo(
-    () =>
-      ability === 'bow' && abilityContext?.unit.alive
-        ? arrowLanes(abilityContext.state, mapOf(abilityContext.state), abilityContext.unit.hex!)
-        : [],
-    [ability, abilityContext]
-  );
+  /** A unit-aimed ability's range, anyone there or not (the bow's lanes, melee, Sunlight's range). */
+  const reach = useMemo(() => {
+    const def = ability && ABILITIES[ability];
+    if (!def?.reach || !abilityContext?.unit.alive) return [];
+    return def.reach(abilityContext.state, mapOf(abilityContext.state), abilityContext.unit.hex!);
+  }, [ability, abilityContext]);
 
   const scene: BoardScene = useMemo(() => {
     const highlights: {hex: Hex; kind: HighlightKind}[] = [];
@@ -478,22 +474,17 @@ export function TacticsPage() {
         highlights.push({hex: plannedMove.hex, kind: 'chosen'});
       }
     } else if (ability) {
-      if (lanes.length > 0) {
-        out.arrows = [];
-        for (const lane of lanes) {
-          const last = lane.hexes[lane.hexes.length - 1];
-          if (!last) continue;
-          out.arrows.push({from: abilityContext!.unit.hex!, to: last, hits: Boolean(lane.hit)});
-          for (const h of lane.hit ? lane.hexes.slice(0, -1) : lane.hexes)
-            highlights.push({hex: h, kind: 'lane'});
-        }
-      }
-      // A melee ability's reach: the hexes next to the user, under its targets.
-      if (ABILITIES[ability].melee && abilityContext?.unit.alive)
-        for (const h of hexNeighbors(abilityContext.unit.hex!))
-          if (onMap(mapOf(abilityContext.state), h)) highlights.push({hex: h, kind: 'melee'});
+      // Every hex it can aim at; a unit-aimed ability's whole range under them.
       const shown = new Set<string>();
       const throwing = ability === 'throw' && target?.hex;
+      const targetKeys = new Set(
+        targets.flatMap((t) =>
+          throwing ? (t.to ? [hexKey(t.to)] : []) : t.hex ? [hexKey(t.hex)] : []
+        )
+      );
+      if (!throwing)
+        for (const h of reach)
+          if (!targetKeys.has(hexKey(h))) highlights.push({hex: h, kind: 'reach'});
       for (const t of targets) {
         const h = throwing ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
         if (!h || shown.has(hexKey(h))) continue;
@@ -503,8 +494,10 @@ export function TacticsPage() {
       if (target?.hex) {
         const radius = AREA_RADIUS[ability];
         if (radius) {
+          const map = mapOf(fight);
           for (const h of hexesInRange(target.hex, radius))
-            if (hexDistance(h, target.hex) <= radius) highlights.push({hex: h, kind: 'area'});
+            if (hexDistance(h, target.hex) <= radius && onMap(map, h))
+              highlights.push({hex: h, kind: 'area'});
         }
         highlights.push({hex: target.hex, kind: 'chosen'});
         if (target.to) highlights.push({hex: target.to, kind: 'chosen'});
@@ -544,7 +537,7 @@ export function TacticsPage() {
     targets,
     target,
     preview,
-    lanes,
+    reach,
     abilityContext,
   ]);
 
