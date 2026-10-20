@@ -9,3 +9,6 @@ coverage/
 *.swp
 .wrangler/
 e2e-results/
+
+# Local simulation output and scratch files
+/work/

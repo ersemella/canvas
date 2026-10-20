@@ -47,15 +47,15 @@ fight's end ends the run.
 
 | Open question | Default for Phase 1 |
 |---|---|
-| 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement **10 per hex**; starting cost **100**, a typical action (owner, 2026-10-19; was 50, which bunched all six cards into slots 3 to 8); `C` = **6**. With speed 4, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
+| 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement action **20 + 10 per hex**; starting cost **100**, a typical action (owner, 2026-10-19; was 50, which bunched all six cards into slots 3 to 8); `C` = **6**. With speed 4, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). Speed stat 1 to 10. Armour lowers speed (4.2): see gear, below. |
 | 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
 | 6. Charged abilities | Two in Phase 1, both ultimates: the Mangudai Outrider's Volley (arcing area) and the Storm Caller's Freeze (section 4). |
 | 39. Ultimate unlock | One value for every hero: usable after **3 completed turns** in the fight (10.10); once per fight. |
-| 8. Move and act order | Move then act, or act then move; not split around the action. Every turn must include an action (5.1). |
-| 28. Movement cap | **3 hexes** per turn (owner, 2026-10-20; was 4). |
+| 8. Movement action | Ordinary movement is a separate action: **20 + 10 per hex**, up to 4 hexes. No ability and ordinary movement in the same turn (owner, 2026-10-20). |
+| 28. Movement cap | **4 hexes** per movement action (owner, 2026-10-20; restored from 3 with separate movement). |
 | 9. Map | Offset rectangle, **8 columns × 9 rows** (owner, 2026-10-20; was 9 × 7, then briefly 7 × 7 and 8 × 8), pointy-top hexes, odd rows one hex wider. Drawn at hex size 42 on a 672 × 696 canvas beside the track panel. |
-| 10. Passing through allies | Allowed (can't end on an occupied hex). Enemies block. |
+| 10. Passing through units | Allies and enemies block ordinary walking. Movement abilities keep their own traversal rules (owner, 2026-10-20). |
 | 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so pin, hail and a flank don't stack. |
 | 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering (passing through included), then **4 damage** every slot spent on it (both doubled, to **80** and **8**, owner, 2026-10-20, once defence applied), whoever's turn it is (owner, 2026-10-19; was 40 on entering and at the start of each of the unit's own turns). Both go through Vulnerable and **defence** (owner, 2026-10-19; they ignored defence until then). Conceal (sandstorm): ranged attacks against its occupant deal **50% less**; the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
 | 23. Defence | `defenceConstant` = **20**; minimum **1** damage from any hit. |
@@ -141,7 +141,7 @@ reading of the owner's one-line descriptions; the owner can change them
 | Ability | Rule |
 |---|---|
 | **Composite Bow** | Fires an arrow along one of the six hex directions, up to range TBD; it stops at the **first unit** on that line or at an obstacle. That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
-| **Dash** | Moves the Outrider **up to 2 hexes in a straight line** along one hex direction (owner, 2026-10-20, with the movement cap lowered to 3; up to 3 from 2026-10-19, exactly 3 before). Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn's action, so normal movement can come before or after it (confirmed 2026-10-18). Not usable while Immobilized. Quick cost. |
+| **Dash** | Moves the Outrider **up to 3 hexes in a straight line** along one hex direction (owner, 2026-10-20; restored from 2 with separate movement). Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn’s action, so it cannot be combined with ordinary movement (2026-10-20). Not usable while Immobilized. Quick cost. |
 | **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage **135** (owner, 2026-10-19), allies included. Charge and recovery costs TBD (3.7). |
 
 **Yadachy Storm Caller**
@@ -346,9 +346,9 @@ confirm or change:
 - **Balance measurements** (2026-10-20) play each random deployment
   twice, once with each side first on speed ties: the side that moved
   first on a tie used to lose 60–67% of AI-vs-AI fights, which tilted
-  every single-order measurement. The AI always moves before
-  acting.
-- **Dash** goes up to 2 hexes (owner, 2026-10-20; up to 3 from 2026-10-19, exactly 3 before). **Pin** and **Throw** target
+  every single-order measurement. Under the adopted rules the AI chooses
+  movement or an ability; historical combined-action comparisons move first.
+- **Dash** goes up to 3 hexes (owner, 2026-10-20; restored from 2 with separate movement). **Pin** and **Throw** target
   any adjacent unit, allies included (Pin targeted enemies only until the
   2026-10-19 rule, 6.7).
 - **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage
@@ -364,26 +364,18 @@ confirm or change:
   run's seed.
 - **Line of fire** (rule 29) is implemented and tested, but no Phase 1
   ability needs it: the bow fires along hex lines.
-- **The page** (owner, 2026-10-19): tapping or hovering a hex only shows
-  what's there; a **Move** button plans the move. Pressing Move before
-  choosing an action (or before its target) moves first; pressing it after
-  acts first, then moves from where the action left the unit (the server's
-  `actFirst`). Move stays highlighted while a move is planned, alongside
-  the action; tapping it again undoes the move. The turn panel numbers the
-  steps in the order they resolve, the board marks each step's hex with
-  the same number, and **Swap order** flips them when the turn is legal
-  either way. Order matters (owner kept it, 2026-10-19): it decides where
-  the action is taken from, and the action can open, block or end the
-  move (a kill, a displacement, Pin, Dash, a cleansed Slowed). One move
-  per turn, not split around the action (section 2).
-  The Confirm button shows the turn's total cost and the slot the card
-  lands on.
+- **The page** (owner, 2026-10-20): tapping or hovering inspects a hex.
+  **Move** then a reachable hex selects one movement action. Selecting an
+  ability replaces the move; selecting Move replaces the ability and its
+  target. Selecting Move again undoes the move. There is no Swap order:
+  each turn contains movement or an ability. The Move button shows its
+  whole timeline delay at **20 + 10 per walked hex**; ability buttons show
+  their own delays. Confirm shows the aimed and yielded next-turn slots.
 - **The turn's controls** (owner, 2026-10-19, phones first, then desktop):
   the action section has no heading, hints, slot pill or summaries: the
-  buttons, then the numbered steps (named only: "1 Composite Bow, 2
-  Move") with Swap order, then one button to commit. There is no Hold button: with no
-  action picked the button reads **End turn** and sends Hold (after the
-  move, if any). Tapping a chosen target again doesn't commit; only the
+  buttons, then the selected action (named only), then one button to commit. There is no Hold button: with no
+  action or move picked the button reads **End turn** and sends Hold.
+  A planned move instead uses **Confirm**. Tapping a chosen target again doesn't commit; only the
   button does. The board shows the preview's outcome. Tapping anywhere but
   the board or the action section stops inspecting: the details go back
   to the unit whose turn it is. An enemy's details leave out what it could
@@ -432,3 +424,12 @@ confirm or change:
 - **Deployed** to `main` with the owner's approval (2026-10-19): the
   `v2` migration in `wrangler.toml` adds `RunRoom` and `PlayerLedger`.
 
+
+### Movement rule adopted, 2026-10-20
+
+The owner adopted unit blocking for ordinary walking and separate movement
+at base 20 plus 10 per hex. The ordinary walking cap is restored to 4 with separate movement. A move-only turn still counts
+toward ultimate unlock; idle Hold does not. Dash and Rampage retain their
+ability-specific movement but cannot combine with ordinary walking.
+The headless runner retains explicit historical overrides for reproducing
+comparisons; absent an override, the game uses the adopted rules.

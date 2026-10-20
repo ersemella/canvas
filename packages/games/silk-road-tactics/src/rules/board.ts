@@ -11,7 +11,7 @@ import {
   hexToOffset,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {HEROES, RULES} from './config';
+import {HEROES, RULES, movementRules} from './config';
 import {onMap, tileAt} from './map';
 import type {MapData} from './map';
 import type {FightState, FogEffect, Status, StatusKind, Unit} from './types';
@@ -126,7 +126,7 @@ function harmful(state: FightState, map: MapData, h: Hex): boolean {
 /**
  * Every hex the unit can end its move on, with the shortest path to it
  * (fewest quicksand or hail hexes among equally short ones), the start
- * included with an empty path. Allies can be passed, enemies and obstacles can't;
+ * included with an empty path. Units and obstacles block ordinary walking;
  * a move can't end on another unit (brief section 2).
  */
 export function reachableHexes(state: FightState, map: MapData, unit: Unit): Reach[] {
@@ -142,7 +142,8 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
       for (const h of hexNeighbors(from)) {
         if (!walkable(map, h)) continue;
         const other = unitAt(state, h);
-        if (other && other !== unit && hostile(other, unit)) continue;
+        if (other && other !== unit && (movementRules(state).blockAllUnits || hostile(other, unit)))
+          continue;
         const key = hexKey(h);
         const hazards = fromBest.hazards + (harmful(state, map, h) ? 1 : 0);
         const seen = best.get(key);
@@ -184,7 +185,10 @@ export function invalidPath(
       return 'Each step must be to an adjacent hex.';
     if (!walkable(map, h)) return 'That path crosses an obstacle or leaves the map.';
     const other = unitAt(state, h);
-    if (other && other !== unit && hostile(other, unit)) return 'Enemies block movement.';
+    if (other && other !== unit && (movementRules(state).blockAllUnits || hostile(other, unit)))
+      return movementRules(state).blockAllUnits
+        ? 'Units block that path.'
+        : 'Enemies block movement.';
     from = h;
   }
   const end = unitAt(state, from);

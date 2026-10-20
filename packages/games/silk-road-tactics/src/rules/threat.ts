@@ -2,12 +2,11 @@
  * The AI's one-step lookahead: what each enemy could do to a unit standing
  * on a hex before that unit's next card. Built once per AI turn from where
  * the enemies stand, so scoring an option is a lookup. An estimate, not a
- * search: each enemy's best single hit on that hex from anywhere it can
- * reach, with the units now on the board blocking arrows (the acting unit
+ * search: each enemy's best single hit on that hex from its current hex (historical experiments may allow moving first), with the units now on the board blocking arrows (the acting unit
  * aside, since it is the one moving).
  */
 import {hexesInRange, hexDistance} from '@canvas/engine/server';
-import {ABILITY, HEROES, RULES} from './config';
+import {ABILITY, HEROES, RULES, movementRules} from './config';
 import {ABILITIES, unusableReason} from './abilities';
 import {fogAt, hostile, movementCap} from './board';
 import {scaled, throughDefence} from './resolve';
@@ -66,7 +65,7 @@ function reachOf(
     if (!u.alive || !u.hex || u === e || u === actor) continue;
     const k = id(u.hex.q, u.hex.r);
     taken.add(k);
-    if (hostile(u, e)) blocked.add(k);
+    if (movementRules(state).blockAllUnits || hostile(u, e)) blocked.add(k);
   }
   const start: [number, number] = [e.hex!.q, e.hex!.r];
   const seen = new Set([id(...start)]);
@@ -125,7 +124,9 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const hail = usable('hail') ? scaled(ABILITY.hail.damage, e.power) : 0;
     const bow = usable('bow') ? scaled(ABILITY.bow.damage, e.power) : 0;
     const rampage = usable('rampage') ? scaled(ABILITY.rampage.damage, e.power) : 0;
-    const reach = reachOf(state, board, e, actor);
+    const reach: [number, number][] = movementRules(state).separateMovement
+      ? [[e.hex.q, e.hex.r]]
+      : reachOf(state, board, e, actor);
     if (hail > 0) {
       // Every hex within hail's range of a reachable hex: grow the reach set ring by ring.
       const seen = new Set(reach.map(([q, r]) => id(q, r)));

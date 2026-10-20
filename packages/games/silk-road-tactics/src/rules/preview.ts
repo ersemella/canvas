@@ -8,8 +8,8 @@ import type {Hex} from '@canvas/engine/server';
 import {statusValue, statusSlotsLeft} from './board';
 import {ABILITIES} from './abilities';
 import {scoreOptions, simulate} from './ai';
-import {RuleError, applyTurn, cloneFight} from './fight';
-import {slotsForward, turnCost} from './track';
+import {RuleError, applyTurn, cloneFight, turnInputCost} from './fight';
+import {slotsForward} from './track';
 import type {AbilityId, FightState, TurnAction, TurnInput, Unit} from './types';
 
 export interface UnitChange {
@@ -66,7 +66,7 @@ export function previewTurn(
   const after = simulate(state, unitId, input);
   if (!after) return null;
   const unit = after.units.find((u) => u.id === unitId)!;
-  const cost = turnCost(ABILITIES[input.action.ability].cost, input.move?.length ?? 0);
+  const cost = turnInputCost(state, input);
   return {
     changes: diff(state, after),
     slot: unit.slot,
@@ -125,7 +125,7 @@ export interface EnemyOption {
 
 /**
  * What a unit could do if it acted now, per ability: every unit it could
- * affect from any hex it can reach (D11). Never which option it will
+ * affect from its current hex (D11); ordinary movement is a separate action. Never which option it will
  * choose: no scores, listed in ability order.
  */
 export function unitOptions(state: FightState, unit: Unit): EnemyOption[] {

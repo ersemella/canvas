@@ -5,7 +5,7 @@
  * (shorter moves first, then hex index). No randomness.
  */
 import {hexDistance, hexEquals, hexKey} from '@canvas/engine/server';
-import {ABILITY, AI, RULES} from './config';
+import {ABILITY, AI, RULES, movementRules} from './config';
 import {
   fogAt,
   hostile,
@@ -182,6 +182,8 @@ export function scoreOptions(
 
     for (const def of abilitiesOf(unit)) {
       if (unusableReason(mu, def)) continue;
+      if (movementRules(state).separateMovement && reach.path.length > 0 && def.id !== 'hold')
+        continue;
       const radius = groundRadius(def);
       for (const target of def.targets(moved, map, mu, mu.hex!)) {
         if (bound && !obeysTaunt(map, def, mu.hex!, target, taunter)) continue;
@@ -203,7 +205,10 @@ export function scoreOptions(
         if (!after) continue;
         let score = scoreOutcome(state, after, unit, baseline, threats);
         if (def.id === 'fog') score += fogValue(state, unit, target.hex!);
-        if (def.id === 'hold') {
+        if (
+          def.id === 'hold' &&
+          !(movementRules(state).separateMovement && reach.path.length > 0)
+        ) {
           // Price the Hold's time as AI.holdScoringCost (see config.ts).
           const hexes = reach.path.length;
           const extra =

@@ -17,8 +17,8 @@ tuning. Section numbers are the combat design's.
 - A single map shape should be chosen and used consistently (options: large hexagon, offset rectangle). Shape TBD.
 
 ### 6.2 Movement (Decided)
-- Movement is measured **per hex.** Each hex moved adds `moveCostPerHex` to the turn's cost, divided by speed like the action cost (3.2). Movement per turn is capped (5.1).
-- Units cannot move through hexes occupied by enemies or blocking obstacles. Whether allies can be passed through is TBD.
+- Movement is measured **per hex.** Ordinary walking is a separate action costing **20 + 10 per hex**, divided by speed plus C (3.2). Movement per turn is capped (5.1).
+- Ordinary walking cannot pass allies, enemies or blocking obstacles. Dash and Rampage retain their ability-specific traversal rules.
 
 ### 6.3 Flanking (Decided)
 - A target is **flanked** when two units hostile to it occupy hexes directly opposite each other across the target (for example, the hexes to its north-east and south-west).
@@ -45,7 +45,7 @@ Maps can contain three types of special tile:
 - Hexes give uniform distances in all directions and clean flanking rules.
 - Known tradeoffs: straight-line and cone-shaped area effects only align cleanly in 6 directions and need careful design; room-like layouts look less natural than on square grids.
 - Per-hex movement cost interacts with displacement: a displaced unit loses both tempo and repositioning opportunities. Tune these together.
-- Movement is capped per turn (5.1), and every hex adds to the turn's cost, so moving and acting in one turn always costs more than acting alone.
+- Ordinary movement is capped at 4 hexes per action (5.1) and cannot share a turn with an ability.
 
 ### 6.6 Deployment (Decided)
 - Each side has a **deployment zone**: a set of starting hexes. Before the fight, players place their units anywhere within their zone, with full visibility of the map and enemy positions. Placement is the first decision of the fight.

@@ -91,13 +91,13 @@ Speed divides fine-grained costs, so small changes in speed change placement in 
 ### 5.1 Rules (Decided)
 On its turn, a unit:
 - **must use one action** (an ability, an attack, or a basic action), which ends its turn, and
-- **may move once,** up to a maximum number of hexes, each hex adding movement cost. The cap is a single global value, the same for every unit (value TBD).
+- **may choose ordinary movement as that action instead of an ability:** base **20 + 10 per hex**, up to **4 hexes**, with allies and enemies blocking the path (owner, 2026-10-20).
 
 Every hero has **Hold**, a quick action with no effect, so a unit can always end its turn (cost in [phase-1-brief.md](phase-1-brief.md), section 4).
 
 There are no turns without an action, so every turn has a real cost. The exception is a charged ability's trigger turn (3.7), where the ability resolves and the unit does nothing else.
 
-Order within a turn (move before acting, act before moving, or splitting movement around the action) is TBD.
+Ordinary movement and an ability cannot share a turn. Movement abilities keep their own rules; they also cannot combine with ordinary walking (2026-10-20).
 
 ### 5.2 No Cooldowns (Decided)
 - Abilities have no cooldowns. An ability can be used on any turn; ultimates once per combat, after their unlock (3.7).
@@ -106,8 +106,8 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 
 ### 5.3 Rationale
 - Fixed costs make every action's timing consequences readable and context-free.
-- Including movement in the cost means moving and acting in the same turn always costs more than acting alone.
-- Movement is capped because costs are paid after the turn: without a cap, a unit could cross the map and strike before every unit due in between acts.
+- Movement has its own action cost so an approach has a readable delay, without also resolving an ability on that turn.
+- Movement is capped to keep one turn’s repositioning bounded; its delay is paid after the move.
 - Requiring an action removes near-free turns (stepping or waiting repeatedly to act more often than others).
 
 ## Decision log
@@ -136,5 +136,5 @@ Order within a turn (move before acting, act before moving, or splitting movemen
 5. Push limit value (3.6).
 6. Which abilities are charged, their charge and recovery costs, and what each targets (3.7).
 7. Scheduling of units and track entities that enter mid-combat (3.8).
-8. Order of move and action within a turn.
+8. Move and ability are now exclusive; tune the separate movement cost through playtests.
 28. The maximum number of hexes moved per turn.

@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals, hexKey} from '@canvas/engine/server';
-import {ARMOUR, HEROES, PARTY} from './config';
+import {ARMOUR, HEROES, PARTY, movementRules} from './config';
 import {expireStatuses, invalidPath, walkable} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
@@ -173,7 +173,7 @@ function triggerCharge(ctx: Ctx, unit: Unit): void {
 
 /**
  * Applies one turn for `unit` (the acting unit): validates and resolves
- * the move and the action, then places its card (3.2). Throws RuleError
+ * the move or the ability, then places its card (3.2). Throws RuleError
  * with a player-facing message for an illegal turn. Validation happens as
  * the turn resolves, so apply it to a copy and keep the copy only if it
  * doesn't throw. `trustTarget` skips re-listing the targets and the taunt
@@ -193,6 +193,10 @@ export function applyTurn(
   const reason = unusableReason(unit, def);
   if (reason) throw new RuleError(reason);
   const path = input.move ?? [];
+  if (movementRules(state).separateMovement && path.length > 0 && def.id !== 'hold')
+    throw new RuleError('Movement and an ability require separate turns.');
+  // Move + Hold encodes a move-only action without changing the turn protocol.
+  const cost = turnInputCost(state, input);
   // Taunt (17.5): decided from where the turn starts, before any move. The
   // AI's own options already obey it (trustTarget).
   const taunter = trustTarget ? undefined : taunterOf(state, unit);
@@ -210,6 +214,10 @@ export function applyTurn(
   };
   const act = () => {
     if (!unit.alive) return;
+    if (movementRules(state).separateMovement && path.length > 0) {
+      log(ctx, `${unitName(unit)} moves.`);
+      return;
+    }
     const target = input.action.target ?? {};
     if (
       !trustTarget &&
@@ -245,13 +253,18 @@ export function applyTurn(
   }
   state.awaiting = null;
   checkEnd(state);
-  if (unit.alive)
-    placeCard(
-      state,
-      unit,
-      state.currentSlot + slotsForward(turnCost(def.cost, path.length), unit.speed)
-    );
+  if (unit.alive) placeCard(state, unit, state.currentSlot + slotsForward(cost, unit.speed));
   if (countsTowardUltimate(input)) unit.turnsTaken++;
+}
+
+/** The authoritative cost, shared by the server, AI simulations and previews. */
+export function turnInputCost(state: FightState, input: TurnInput): number {
+  const hexes = input.move?.length ?? 0;
+  const base =
+    movementRules(state).separateMovement && hexes > 0
+      ? movementRules(state).moveActionCost
+      : ABILITIES[input.action.ability].cost;
+  return turnCost(base, hexes);
 }
 
 /**

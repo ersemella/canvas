@@ -116,6 +116,12 @@ export type RecordedEvent = FightEvent & {after: BoardSnapshot};
 export type FightPhase = 'deploy' | 'fight' | 'won' | 'lost';
 
 export interface FightState {
+  /** Optional headless balance experiment; absent in normal games. */
+  experiment?: {
+    blockAllUnits: boolean;
+    separateMovement: boolean;
+    moveActionCost: number;
+  };
   mapId: string;
   mode: 'solo';
   phase: FightPhase;
@@ -148,9 +154,9 @@ export interface TurnAction {
 }
 
 /**
- * One turn of the acting unit: an optional move (the path of hexes entered,
- * not including the start) and a required action, moving first unless
- * `actFirst` (brief section 2: not split around the action).
+ * One turn: either an ability without walking, or a nonempty walking path
+ * encoded with action Hold. Move-only turns cost 20 + 10 per hex, not Hold's
+ * cost. `actFirst` remains for historical headless experiment comparisons.
  */
 export interface TurnInput {
   move?: Hex[];

@@ -8,7 +8,7 @@
  */
 import {hexDistance, hexDirectionTo, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY} from './config';
+import {ABILITY, movementRules} from './config';
 import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
 import type {AbilityDef} from './abilities';
 import {reachableHexes, walkable} from './board';
@@ -83,7 +83,10 @@ export function obeysTaunt(
 export function tauntBinds(state: FightState, map: MapData, unit: Unit, taunter: Unit): boolean {
   const start = unit.hex!;
   try {
-    for (const reach of reachableHexes(state, map, unit)) {
+    const reaches = movementRules(state).separateMovement
+      ? [{hex: start, path: []}]
+      : reachableHexes(state, map, unit);
+    for (const reach of reaches) {
       // List targets as if standing there (only the hex matters for listing).
       unit.hex = reach.hex;
       for (const def of abilitiesOf(unit)) {

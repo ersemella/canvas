@@ -116,6 +116,43 @@ check(
   (await api(`/runs/${runId}`, alice)).body.view.version === version
 );
 
+// The server enforces the same exclusive-action rule as the page, in either order.
+for (const actFirst of [false, true]) {
+  const combined = await api(`/runs/${runId}/turn`, alice, {
+    method: 'POST',
+    body: JSON.stringify({
+      move: [{q: 0, r: 3}],
+      action: {ability: 'dash', target: {hex: {q: 1, r: 3}}},
+      actFirst,
+    }),
+  });
+  check(
+    `walking plus ability is refused (actFirst=${actFirst})`,
+    combined.status === 400 && combined.body?.message?.includes('separate turns'),
+    combined.body
+  );
+}
+const throughAlly = await api(`/runs/${runId}/turn`, alice, {
+  method: 'POST',
+  body: JSON.stringify({
+    move: [
+      {q: 0, r: 2},
+      {q: 0, r: 3},
+    ],
+    action: {ability: 'hold'},
+  }),
+});
+check(
+  'the server refuses walking through an ally',
+  throughAlly.status === 400 && throughAlly.body?.message?.includes('Units block'),
+  throughAlly.body
+);
+check(
+  'refused movement changes neither fight nor version',
+  JSON.stringify((await api(`/runs/${runId}`, alice)).body.view) ===
+    JSON.stringify(deployed.body.view)
+);
+
 const held = await api(`/runs/${runId}/turn`, alice, {
   method: 'POST',
   body: JSON.stringify({action: {ability: 'hold'}}),
@@ -229,12 +266,12 @@ try {
     (await page.getByText('Silk Road Tactics').count()) === 1
   );
 
-  // One turn with real taps: Dash first, then Move, Confirm. The Outrider
+  // One turn with real taps: select Dash, replace it with Move, Confirm. The Outrider
   // (fastest, so first) is at col 1, row 6 after the deployment above.
   const before = run.view.version;
   const acting = run.view.fight.units.find((u) => u.id === run.view.fight.awaiting);
   check('the Outrider acts first', acting.id === outrider, acting.id);
-  const dashTo = {q: 0, r: 6}; // 2 hexes east along row 6 (Dash goes up to 2)
+  const dashTo = {q: 1, r: 6}; // 3 hexes east along row 6, the restored Dash limit
   const dest = {q: -2, r: 5}; // col 0, row 5: next to where it started, off the Dash line
   // Without Move, a tap only looks at the hex.
   await tapHex(dest);
@@ -244,7 +281,7 @@ try {
     (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
   check('there is no Hold button', !(await page.getByRole('button', {name: /^Hold/}).count()));
-  // Act first, then move: Dash and its hex, then Move and a hex.
+  // Select Dash and its target, then replace it with Move and a hex.
   await page.getByRole('button', {name: /^Dash/}).click();
   await tapHex(dashTo);
   await tapHex(dashTo); // a second tap on the target doesn't commit
@@ -252,11 +289,7 @@ try {
   await moveButton.click();
   await tapHex(dest);
   const stepsText = () => page.getByTestId('turn-steps').textContent();
-  check(
-    'Move after the action plans act-then-move',
-    (await stepsText()) === '1Dash2Move',
-    await stepsText()
-  );
+  check('Move replaces the ability selection', (await stepsText()) === '1Move', await stepsText());
   check(
     'Move stays highlighted while a move is planned',
     (await moveButton.getAttribute('aria-pressed')) === 'true'
@@ -266,15 +299,24 @@ try {
     /^Move\+\d+$/.test(await moveButton.textContent()),
     await moveButton.textContent()
   );
-  // Tapping it again undoes the move and keeps the action; plan it again.
+  // Tapping it again undoes the move; plan it again.
   await moveButton.click();
   check(
     'tapping Move again undoes the move',
-    (await moveButton.getAttribute('aria-pressed')) === 'false' && (await stepsText()) === '1Dash'
+    (await moveButton.getAttribute('aria-pressed')) === 'false' &&
+      (await page.getByTestId('turn-steps').count()) === 0
   );
   await moveButton.click();
   await tapHex(dest);
-  // Moving first would leave the Dash off its line: no Swap order.
+  await page.getByRole('button', {name: /^Dash/}).click();
+  await tapHex(dashTo);
+  check(
+    'an ability replaces a planned move',
+    (await stepsText()) === '1Dash' && (await moveButton.getAttribute('aria-pressed')) === 'false'
+  );
+  await moveButton.click();
+  await tapHex(dest);
+  // A turn has one action, so there is no order to swap.
   check(
     'Swap order is offered only when the other order is legal',
     !(await page.getByRole('button', {name: /Swap order/}).count())
@@ -286,9 +328,9 @@ try {
     /^Confirm · next turn \+\d+( → \+\d+)?$/.test(confirmText),
     confirmText
   );
-  const dashText = await page.getByRole('button', {name: /^Dash/}).textContent();
+  const dashText = await moveButton.textContent();
   check(
-    'the ability button shows the same slots as Confirm',
+    'the Move button shows the same slots as Confirm',
     dashText.endsWith(confirmText.match(/next turn (\+\d+)/)[1]),
     [dashText, confirmText]
   );

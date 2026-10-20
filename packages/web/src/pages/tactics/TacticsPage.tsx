@@ -19,12 +19,9 @@ import {
   SCENE_SIZE,
   abilitiesOf,
   actingUnit,
-  afterAction,
   arrowLanes,
   chooseAiTurn,
-  cloneFight,
   defaultDeployment,
-  enterHex,
   mapOf,
   previewTurn,
   reachableHexes,
@@ -71,11 +68,8 @@ const isAttack = (id: AbilityId) => 'damage' in ABILITY[id] || 'damagePerSlot' i
  * the server (a RunRoom); this page draws its view, previews turns with the
  * same rules locally (D11), and sends each turn as one request. Tapping or
  * hovering a hex shows what's there; Move, then a hex, plans the move;
- * an ability, then a target, previews the action; tap the target again
- * (or Confirm) to commit. Move after the action is picked to act first,
- * then move (brief section 2: one move, before or after, not split); the
- * turn panel numbers the steps, the board marks where each happens, and
- * Swap order flips them when the other order is legal too.
+ * an ability, then a target, previews that ability instead. Move and abilities
+ * are separate actions; only Confirm commits the selected action.
  */
 export function TacticsPage() {
   const [run, setRun] = useState<RunResponse | null>(null);
@@ -92,8 +86,6 @@ export function TacticsPage() {
   const [deployAt, setDeployAt] = useState<Record<string, Hex>>({});
   /** Picking where to move: taps on reachable hexes plan the move; otherwise taps inspect. */
   const [moving, setMoving] = useState(false);
-  /** The planned move comes after the action. */
-  const [actFirst, setActFirst] = useState(false);
   /** The hex last tapped to inspect (touch can't hover). */
   const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
   const [hover, setHover] = useState<TacticsHoverPayload>({hex: null, unitId: null});
@@ -130,7 +122,6 @@ export function TacticsPage() {
     setAbility(null);
     setTarget(null);
     setMoving(false);
-    setActFirst(false);
   }, []);
 
   const receive = useCallback(
@@ -190,52 +181,42 @@ export function TacticsPage() {
     return {ability, target};
   }, [ability, target]);
 
-  /** Acting first: the fight after the action, where the move starts from. */
-  const acted = useMemo(
-    () => (fight && acting && actFirst && action ? afterAction(fight, acting.id, action) : null),
-    [fight, acting, actFirst, action]
+  const reaches = useMemo(
+    () => (fight && acting ? reachableHexes(fight, mapOf(fight), acting) : []),
+    [fight, acting]
   );
 
-  const reaches = useMemo(() => {
-    if (!fight || !acting) return [];
-    if (actFirst)
-      return acted?.unit.alive ? reachableHexes(acted.state, mapOf(acted.state), acted.unit) : [];
-    return reachableHexes(fight, mapOf(fight), acting);
-  }, [fight, acting, actFirst, acted]);
-
-  /** Where the action is taken from: after the planned move, unless acting first. */
-  const moved = useMemo(() => {
-    if (!fight || !acting) return null;
-    const state = cloneFight(fight);
-    const unit = state.units.find((u) => u.id === acting.id)!;
-    if (!actFirst) {
-      for (const h of plannedMove?.path ?? [])
-        enterHex({state, map: mapOf(state), slot: state.currentSlot}, unit, h);
-    }
-    return {state, unit};
-  }, [fight, acting, plannedMove, actFirst]);
+  // Ability targets always come from the unit's current position.
+  const abilityContext = useMemo(
+    () => (fight && acting ? {state: fight, unit: acting} : null),
+    [fight, acting]
+  );
 
   const targets = useMemo(() => {
-    if (!ability || !moved || !moved.unit.alive) return [];
-    return ABILITIES[ability].targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!);
-  }, [ability, moved]);
+    if (!ability || !abilityContext || !abilityContext.unit.alive) return [];
+    return ABILITIES[ability].targets(
+      abilityContext.state,
+      mapOf(abilityContext.state),
+      abilityContext.unit,
+      abilityContext.unit.hex!
+    );
+  }, [ability, abilityContext]);
 
   /**
    * There's no Hold button: with no action picked, the button ends the turn
-   * with Hold (after the move, if one is planned).
+   * with Hold (or selects a separate move action if a path is planned).
    */
-  const endsWithHold = !ability;
+  const endsWithHold = !ability && !plannedMove;
 
   const input: TurnInput | null = useMemo(() => {
-    const chosen = action ?? (endsWithHold ? {ability: 'hold' as const, target: {}} : null);
+    const chosen = action ?? (!ability ? {ability: 'hold' as const, target: {}} : null);
     if (!chosen) return null;
     const out: TurnInput = {action: chosen};
     if (plannedMove && plannedMove.path.length > 0) {
       out.move = plannedMove.path;
-      if (actFirst) out.actFirst = true;
     }
     return out;
-  }, [action, endsWithHold, plannedMove, actFirst]);
+  }, [action, ability, plannedMove]);
 
   const preview = useMemo(
     () => (fight && acting && input ? previewTurn(fight, acting.id, input) : null),
@@ -252,94 +233,82 @@ export function TacticsPage() {
 
   const clearMove = useCallback(() => {
     setPlannedMove(null);
-    setActFirst(false);
     setMoving(false);
   }, []);
 
-  /** A new action, or none: a move planned after the old one no longer follows from it. */
+  /** Selecting an ability replaces any planned move. */
   const chooseAbility = useCallback(
     (id: AbilityId | null) => {
-      if (actFirst) clearMove();
+      clearMove();
       setAbility(id);
       setMoving(false);
       if (!id) return setTarget(null);
       // Abilities with no target (Hold, Sunlight) preview at once.
-      const own = moved
-        ? ABILITIES[id].targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!)
+      const own = abilityContext
+        ? ABILITIES[id].targets(
+            abilityContext.state,
+            mapOf(abilityContext.state),
+            abilityContext.unit,
+            abilityContext.unit.hex!
+          )
         : [];
       setTarget(own.length === 1 && own[0]!.hex === undefined ? {} : null);
     },
-    [moved, actFirst, clearMove]
+    [abilityContext, clearMove]
   );
 
   const chooseTarget = useCallback(
     (t: ActionTarget) => {
-      if (actFirst) clearMove();
+      clearMove();
       setTarget(t);
     },
-    [actFirst, clearMove]
+    [clearMove]
   );
 
   /**
-   * The Move toggle. On: pick a hex, before the action, or after it once one
-   * is chosen with its target. Off again: undo the planned move.
+   * Move replaces the selected ability. Toggling it off undoes the move.
    */
   const toggleMove = useCallback(() => {
-    if (plannedMove) {
-      // A target picked from the moved-to hex no longer holds; a targetless action (Hold) does.
-      if (!actFirst && target?.hex) setTarget(null);
-      return clearMove();
-    }
-    if (moving) return setMoving(false);
-    setActFirst(action !== null);
+    if (plannedMove || moving) return clearMove();
+    setAbility(null);
+    setTarget(null);
     setMoving(true);
-  }, [moving, plannedMove, actFirst, action, target, clearMove]);
+  }, [moving, plannedMove, clearMove]);
 
   /**
-   * Slots an action of `actionCost` and the planned move cost: the placement
+   * Slots an ability of `actionCost`: the placement
    * formula alone (3.2). Yielding past taken slots (3.3) is left to the
    * preview, which shows both, so a button's cost never jumps with the track.
    */
   const slotsLater = useCallback(
-    (actionCost: number) =>
-      acting ? slotsForward(turnCost(actionCost, plannedMove?.path.length ?? 0), acting.speed) : 0,
-    [acting, plannedMove]
+    (actionCost: number) => (acting ? slotsForward(actionCost, acting.speed) : 0),
+    [acting]
   );
 
   /** Abilities aimed at a unit (melee, the bow) with no unit to aim at from where the action is taken: disabled. */
   const outOfReach = useMemo(() => {
     const out = new Set<AbilityId>();
-    if (!acting || !moved?.unit.alive) return out;
+    if (!acting || !abilityContext?.unit.alive) return out;
     for (const def of abilitiesOf(acting)) {
       if (
         def.targetsUnit &&
-        def.targets(moved.state, mapOf(moved.state), moved.unit, moved.unit.hex!).length === 0
+        def.targets(
+          abilityContext.state,
+          mapOf(abilityContext.state),
+          abilityContext.unit,
+          abilityContext.unit.hex!
+        ).length === 0
       )
         out.add(def.id);
     }
     return out;
-  }, [acting, moved]);
+  }, [acting, abilityContext]);
 
-  /**
-   * The slots the planned move adds to the turn, with the chosen action (or
-   * Hold, which ends a turn with no action): its own cost in slots.
-   */
+  /** The complete move action's delay, before track yielding. */
   const moveSlots = useMemo(() => {
     if (!acting || !plannedMove || plannedMove.path.length === 0) return null;
-    const cost = ABILITIES[ability ?? 'hold'].cost;
-    return (
-      slotsForward(turnCost(cost, plannedMove.path.length), acting.speed) -
-      slotsForward(cost, acting.speed)
-    );
-  }, [acting, plannedMove, ability]);
-
-  /** The same turn in the other order, if it's legal: Swap order offers it. */
-  const canSwap = useMemo(() => {
-    if (!fight || !acting || !input?.move || endsWithHold) return false;
-    const other: TurnInput = {action: input.action, move: input.move};
-    if (!input.actFirst) other.actFirst = true;
-    return previewTurn(fight, acting.id, other) !== null;
-  }, [fight, acting, input, endsWithHold]);
+    return slotsForward(turnCost(RULES.moveActionCost, plannedMove.path.length), acting.speed);
+  }, [acting, plannedMove]);
 
   // ── Taps on the board ──────────────────────────────────────────────────────
 
@@ -368,10 +337,6 @@ export function TacticsPage() {
         const reach = reaches.find((r) => hexEquals(r.hex, h));
         if (reach) {
           setPlannedMove(reach.path.length > 0 ? reach : null);
-          if (reach.path.length === 0) setActFirst(false);
-          // Moving first changes where the action is taken from.
-          else if (!actFirst)
-            setTarget(ability && targets.length === 1 && targets[0]!.hex === undefined ? {} : null);
           setMoving(false);
           return;
         }
@@ -408,7 +373,6 @@ export function TacticsPage() {
       acting,
       moving,
       reaches,
-      actFirst,
       ability,
       target,
       targets,
@@ -446,10 +410,10 @@ export function TacticsPage() {
   /** The bow's six lanes from where the archer will stand, hit or not. */
   const lanes = useMemo(
     () =>
-      ability === 'bow' && moved?.unit.alive
-        ? arrowLanes(moved.state, mapOf(moved.state), moved.unit.hex!)
+      ability === 'bow' && abilityContext?.unit.alive
+        ? arrowLanes(abilityContext.state, mapOf(abilityContext.state), abilityContext.unit.hex!)
         : [],
-    [ability, moved]
+    [ability, abilityContext]
   );
 
   const scene: BoardScene = useMemo(() => {
@@ -477,9 +441,9 @@ export function TacticsPage() {
       // (the units the bow's lanes reach, a melee ability's neighbours) and
       // those the aimed attack would hurt.
       const ids = new Set(fight.units.filter((u) => u.side === 'enemy').map((u) => u.id));
-      if (ABILITIES[ability].targetsUnit && moved)
+      if (ABILITIES[ability].targetsUnit && abilityContext)
         for (const t of targets) {
-          const u = t.hex && unitAt(moved.state, t.hex);
+          const u = t.hex && unitAt(abilityContext.state, t.hex);
           if (u) ids.add(u.id);
         }
       for (const c of preview?.changes ?? []) if (c.hpAfter < c.hpBefore) ids.add(c.unitId);
@@ -496,7 +460,7 @@ export function TacticsPage() {
         for (const lane of lanes) {
           const last = lane.hexes[lane.hexes.length - 1];
           if (!last) continue;
-          out.arrows.push({from: moved!.unit.hex!, to: last, hits: Boolean(lane.hit)});
+          out.arrows.push({from: abilityContext!.unit.hex!, to: last, hits: Boolean(lane.hit)});
           for (const h of lane.hit ? lane.hexes.slice(0, -1) : lane.hexes)
             highlights.push({hex: h, kind: 'lane'});
         }
@@ -520,12 +484,11 @@ export function TacticsPage() {
       }
     }
     // Numbered badges where each step happens, in the order they resolve.
-    const actionHex = target?.hex ?? (actFirst || !plannedMove ? acting.hex : plannedMove.hex);
+    const actionHex = target?.hex ?? acting.hex;
     const stepHexes = [
       plannedMove && !moving ? plannedMove.hex : null,
       action && actionHex ? actionHex : null,
     ];
-    if (actFirst) stepHexes.reverse();
     out.steps = stepHexes.filter((h): h is Hex => h !== null).map((hex, i) => ({hex, n: i + 1}));
     if (preview) {
       out.preview = preview.changes.map((c) => ({
@@ -535,7 +498,7 @@ export function TacticsPage() {
         hpBefore: c.hpBefore,
         killed: c.killed,
       }));
-    } else if (plannedMove && !actFirst) {
+    } else if (plannedMove) {
       out.preview = [
         {
           unitId: acting.id,
@@ -555,7 +518,6 @@ export function TacticsPage() {
     acting,
     deployAt,
     plannedMove,
-    actFirst,
     moving,
     ability,
     action,
@@ -566,7 +528,7 @@ export function TacticsPage() {
     map,
     inspectReach,
     lanes,
-    moved,
+    abilityContext,
   ]);
 
   useEffect(() => {
@@ -686,9 +648,6 @@ export function TacticsPage() {
           unit={acting}
           ability={ability}
           plannedMove={plannedMove}
-          actFirst={actFirst}
-          canSwap={canSwap}
-          onSwap={() => setActFirst(!actFirst)}
           moving={moving}
           canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
           onMove={toggleMove}
@@ -778,19 +737,15 @@ export function TacticsPage() {
 function TurnControls(props: {
   /** Phones: smaller buttons, inline steps, no panel of its own (the pinned action bar is one). */
   phone: boolean;
-  /** What an action of this cost, with the planned move, costs in slots, before yielding. */
+  /** What an ability of this cost takes in slots, before yielding. */
   slotsLater: (actionCost: number) => number;
-  /** What the planned move adds, in slots, shown in the Move button. */
+  /** The complete move action cost, in slots, shown in the Move button. */
   moveSlots: number | null;
   /** Unit-aimed abilities with no one to aim at, disabled (unless already chosen, so they can be put down). */
   outOfReach: Set<AbilityId>;
   unit: Unit;
   ability: AbilityId | null;
   plannedMove: Reach | null;
-  actFirst: boolean;
-  /** Both steps are planned and the turn is also legal the other way round. */
-  canSwap: boolean;
-  onSwap: () => void;
   moving: boolean;
   canMove: boolean;
   onMove: () => void;
@@ -801,9 +756,7 @@ function TurnControls(props: {
   // The steps in the order they resolve, named only.
   const moveStep = moving || (plannedMove?.path.length ?? 0) > 0 ? 'Move' : null;
   const actionStep = ability ? ABILITIES[ability].name : null;
-  const steps = (props.actFirst ? [actionStep, moveStep] : [moveStep, actionStep]).filter(
-    (x): x is string => x !== null
-  );
+  const steps = [moveStep, actionStep].filter((x): x is string => x !== null);
   const size = phone ? 'compact-sm' : 'xs';
   return (
     <Paper bg={phone ? 'transparent' : 'dark.7'} p={phone ? 0 : 'sm'} radius="md">
@@ -819,7 +772,7 @@ function TurnControls(props: {
               plannedMove
                 ? 'Tap to undo the move'
                 : props.canMove
-                  ? 'Move up to your movement cap, before or after the action'
+                  ? 'Move instead of using an ability; units block the path'
                   : 'Can’t move now'
             }
             onClick={props.onMove}
@@ -854,7 +807,7 @@ function TurnControls(props: {
                 >
                   {def.name}
                   {lockedUlt ? ` ${unit.turnsTaken}/${RULES.ultimateUnlockTurns}` : ''}
-                  {/* Its cost in slots, with the planned move; Confirm adds any yielding. */}
+                  {/* Its own cost in slots; Confirm adds any yielding. */}
                   <span className={styles.abilityCost}>+{props.slotsLater(def.cost)}</span>
                 </Button>
               );
@@ -871,17 +824,6 @@ function TurnControls(props: {
                 </li>
               ))}
             </ol>
-            {props.canSwap && (
-              <Button
-                size="compact-xs"
-                variant="light"
-                color="gray"
-                onClick={props.onSwap}
-                title="Do the other step first"
-              >
-                ⇅ Swap order
-              </Button>
-            )}
           </Group>
         )}
         {props.children}

@@ -7,7 +7,7 @@
  * are guesses from the roster's relative bands, only so a fight can be
  * played.
  */
-import type {AbilityId, HeroId} from './types';
+import type {AbilityId, FightState, HeroId} from './types';
 
 export const RULES = {
   /** Track (3.2, 3.4): slotsForward = floor(cost / (speed + C)). */
@@ -18,15 +18,17 @@ export const RULES = {
    * which bunched every card into slots 3 to 8).
    */
   startCost: 100,
+  /** Ordinary walking is a separate action; all units block its path. */
+  blockAllUnits: true,
+  separateMovement: true,
+  moveActionCost: 20,
   moveCostPerHex: 10,
   cost: {typical: 100, quick: 60, slow: 150},
   /**
-   * Hexes per turn (5.1); Slowed lowers it, to at least 1. 3 since
-   * 2026-10-20 (owner; was 4), with Dash shortened to match: over 1,500
-   * paired AI-vs-AI fights balance was about even, and the AI's median
-   * request took half the CPU.
+   * Ordinary walking cap (5.1); Slowed lowers it, to at least 1.
+   * Restored to 4 on 2026-10-20 now that movement is a separate action.
    */
-  movementCap: 3,
+  movementCap: 4,
   /** Turns a hero must complete before its ultimate unlocks (10.10). */
   ultimateUnlockTurns: 3,
   /** Damage reduction = defence / (defence + defenceConstant) (9.1). */
@@ -117,9 +119,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
 /** Ability values. Costs follow the brief; everything else is PLACEHOLDER. */
 export const ABILITY = {
   /**
-   * Cheaper than a quick action (owner, 2026-10-19; was 60), so a turn
-   * that only moves isn't priced like an attack, and waiting a few slots
-   * to react is a real option. Holding without moving doesn't count
+   * Cheaper than a quick action (owner, 2026-10-19; was 60), so waiting a few slots
+   * to react is a real option. Ordinary movement instead costs
+   * RULES.moveActionCost plus RULES.moveCostPerHex for each hex. Holding without moving doesn't count
    * toward the ultimate (see `countsTowardUltimate`).
    */
   hold: {cost: 30},
@@ -127,10 +129,10 @@ export const ABILITY = {
   /**
    * Up to `distance` hexes (owner, 2026-10-19; was exactly 3, which on this
    * board often had no free hex to end on: chosen on 5% of the Outrider's
-   * turns in AI-vs-AI fights, 17% with "up to"). 2 since 2026-10-20 (owner;
-   * was 3), with the movement cap lowered to 3.
+   * turns in AI-vs-AI fights, 17% with "up to"). Restored to 3 on
+   * 2026-10-20 with separate movement (briefly 2 when walking was capped at 3).
    */
-  dash: {cost: RULES.cost.quick, distance: 2},
+  dash: {cost: RULES.cost.quick, distance: 3},
   volley: {range: 5, radius: 1, damage: 135, chargeCost: 40, recoveryCost: RULES.cost.typical},
   /**
    * Heal 40, 60 at the Storm Caller's power (owner, 2026-10-19; was 25,
@@ -243,3 +245,8 @@ export const AI = {
 
 /** The party, in party slot order, for both sides in Phase 1 (brief section 5). */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
+
+/** Experimental overrides are used only by the headless balance runner. */
+export function movementRules(state: FightState) {
+  return state.experiment ?? RULES;
+}

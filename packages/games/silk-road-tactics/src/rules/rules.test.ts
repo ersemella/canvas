@@ -203,7 +203,7 @@ describe('the board', () => {
     }
   });
 
-  it('passes allies, is blocked by enemies and obstacles, never ends on a unit', () => {
+  it('blocks allies, enemies and obstacles, routing around units', () => {
     const s = setup({'p-bokh': at(0, 3), 'p-storm': at(1, 3), 'e-bokh': at(1, 2)});
     const reach = reachableHexes(s, mapOf(s), unit(s, 'p-bokh'));
     const keys = reach.map((r) => `${r.hex.q},${r.hex.r}`);
@@ -211,7 +211,10 @@ describe('the board', () => {
     expect(keys).not.toContain(key(at(1, 3))); // ally's hex
     expect(keys).not.toContain(key(at(1, 2))); // enemy
     expect(keys).not.toContain(key(at(2, 2))); // ruins
-    expect(keys).toContain(key(at(2, 3))); // through the ally
+    for (const r of reach) expect(r.path.map(key)).not.toContain(key(at(1, 3)));
+    expect(
+      simulate(s, 'p-bokh', {move: [at(1, 3), at(2, 3)], action: {ability: 'hold'}})
+    ).toBeNull();
     expect(reach.every((r) => r.path.length <= RULES.movementCap)).toBe(true);
   });
 
@@ -618,16 +621,40 @@ describe('previews, the AI and the run', () => {
     expect(m.turnsTaken).toBe(1);
   });
 
-  it('acts then moves: the move starts where the action left the unit', () => {
+  it('rejects walking plus an ability in either order without mutating the fight', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3)});
-    const m = unit(s, 'p-mangudai');
     const shot = {ability: 'bow' as const, target: {hex: at(4, 3)}};
-    // Shoot from range, then step back out of reach.
-    const turn: TurnInput = {action: shot, move: [at(0, 3)], actFirst: true};
-    expect(previewTurn(s, m.id, turn)).not.toBeNull();
-    applyTurn(s, m, turn);
-    expect(m.hex).toEqual(at(0, 3));
-    expect(unit(s, 'e-bokh').hp).toBeLessThan(unit(s, 'e-bokh').maxHp);
+    const before = JSON.stringify(s);
+    for (const actFirst of [false, true]) {
+      const input: TurnInput = {action: shot, move: [at(0, 3)], actFirst};
+      expect(previewTurn(s, 'p-mangudai', input)).toBeNull();
+      expect(() => applyTurn(s, unit(s, 'p-mangudai'), input)).toThrow(/separate turns/);
+      expect(JSON.stringify(s)).toBe(before);
+    }
+  });
+
+  it('prices walking at 30, 40, 50 and 60, with matching previews and yielding', () => {
+    for (const length of [1, 2, 3, 4]) {
+      const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(7, 0)});
+      const actor = unit(s, 'p-mangudai');
+      const input: TurnInput = {
+        move: Array.from({length}, (_, i) => at(i + 1, 0)),
+        action: {ability: 'hold'},
+      };
+      const aim = slotsForward(20 + 10 * length, actor.speed);
+      unit(s, 'e-bokh').slot = aim;
+      expect(previewTurn(s, actor.id, input)).toMatchObject({
+        aimSlot: aim,
+        slot: aim + 1,
+        charged: false,
+      });
+      s.events = [];
+      applyTurn(s, actor, input);
+      expect(actor.slot).toBe(aim + 1);
+      expect(actor.turnsTaken).toBe(1);
+      expect(s.events.some((e) => e.kind === 'action')).toBe(false);
+      expect(s.events.filter((e) => e.kind === 'step')).toHaveLength(length);
+    }
   });
 
   it('a Pin first leaves nothing to move: the unit is Immobilized', () => {
@@ -723,14 +750,15 @@ describe('previews, the AI and the run', () => {
       me.slot = c.currentSlot + 1;
       return threatDamage(threats, c, SALT_FLATS, me, c.currentSlot);
     };
-    // The enemy archer moves up to 4 and shoots 5 along a hex line: the row is in reach…
+    // The enemy can shoot five hexes, but cannot walk and shoot this turn.
     unit(s, 'e-mangudai').slot = 0;
-    expect(at3(at(2, 0))).toBeGreaterThan(0);
+    expect(at3(at(2, 0))).toBe(0);
+    expect(at3(at(3, 0))).toBeGreaterThan(0);
     // …but not with a unit in the lane between, which the arrow would hit instead.
     const blocked = setup({
       'p-mangudai': at(0, 0),
       'p-bokh': at(1, 0),
-      'e-mangudai': at(6, 0),
+      'e-mangudai': at(5, 0),
       'e-bokh': at(8, 6),
     });
     unit(blocked, 'e-mangudai').charging = null;
@@ -835,5 +863,49 @@ describe('events for playback', () => {
     applyTurn(copy, unit(copy, 'p-bokh'), {move: [at(1, 4)], action: {ability: 'hold'}});
     expect(copy.events).toBeUndefined();
     expect(s.events).toEqual([]);
+  });
+});
+
+describe('headless balance experiments', () => {
+  it('blocks walking through allies in both reachability and submitted paths', () => {
+    const s = setup({'p-mangudai': at(0, 0), 'p-bokh': at(1, 0), 'e-bokh': at(7, 0)});
+    const actor = unit(s, 'p-mangudai');
+    s.experiment = {blockAllUnits: false, separateMovement: false, moveActionCost: 20};
+    const path = [at(1, 0), at(2, 0)];
+    expect(simulate(s, actor.id, {move: path, action: {ability: 'hold'}})).not.toBeNull();
+    s.experiment = {blockAllUnits: true, separateMovement: false, moveActionCost: 60};
+    expect(simulate(s, actor.id, {move: path, action: {ability: 'hold'}})).toBeNull();
+    for (const reach of reachableHexes(s, SALT_FLATS, actor))
+      expect(reach.path.some((h) => hexKey(h) === hexKey(at(1, 0)))).toBe(false);
+  });
+
+  it('rejects move plus ability in either order, prices movement, and leaves defaults intact', () => {
+    const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(4, 0)});
+    s.experiment = {blockAllUnits: false, separateMovement: false, moveActionCost: 20};
+    const input: TurnInput = {move: [at(1, 0)], action: {ability: 'bow', target: {hex: at(4, 0)}}};
+    expect(simulate(s, 'p-mangudai', input)).not.toBeNull();
+    s.experiment = {blockAllUnits: false, separateMovement: true, moveActionCost: 100};
+    expect(simulate(s, 'p-mangudai', input)).toBeNull();
+    expect(simulate(s, 'p-mangudai', {...input, actFirst: true})).toBeNull();
+    const moved = simulate(s, 'p-mangudai', {move: [at(1, 0)], action: {ability: 'hold'}})!;
+    expect(unit(moved, 'p-mangudai').slot).toBe(
+      slotsForward(100 + RULES.moveCostPerHex, unit(s, 'p-mangudai').speed)
+    );
+    expect(unit(moved, 'p-mangudai').turnsTaken).toBe(1);
+    for (const option of scoreOptions(s, unit(s, 'p-mangudai')))
+      expect(!option.input.move?.length || option.input.action.ability === 'hold').toBe(true);
+  });
+
+  it('does not project a move-and-melee threat under separate movement', () => {
+    const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(3, 0)});
+    const actor = unit(s, 'p-mangudai');
+    const threatened = (state: FightState) =>
+      threatsTo(state, SALT_FLATS, actor)[0]!.hexes.has(
+        (actor.hex!.q + 64) * 128 + actor.hex!.r + 64
+      );
+    s.experiment = {blockAllUnits: false, separateMovement: false, moveActionCost: 20};
+    expect(threatened(s)).toBe(true);
+    s.experiment = {blockAllUnits: false, separateMovement: true, moveActionCost: 60};
+    expect(threatened(s)).toBe(false);
   });
 });

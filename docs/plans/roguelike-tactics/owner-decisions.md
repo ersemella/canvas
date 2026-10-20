@@ -89,7 +89,7 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Ability | Placeholder values |
 |---|---|
 | Composite Bow | range 5, **damage 120 (owner, 2026-10-19: 2 hits kill a Mangudai, 4 a Yadachy)** |
-| Dash | **up to 2 hexes (owner, 2026-10-20; up to 3 from 2026-10-19, exactly 3 before)**, quick (60) |
+| Dash | **up to 3 hexes (owner, 2026-10-20; restored from 2 with separate movement)**, quick (60) |
 | Volley (ultimate) | range 5, radius 1, **damage 135 (owner, 2026-10-19)**, charge 40, recovery 100 |
 | Sunlight | radius 1 (was 2 until it reached enemies, 2026-10-19), **heal 40, 60 at its power (owner, 2026-10-19; was 25)** |
 | Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2, Vulnerable 25% for 10 slots |
@@ -122,10 +122,10 @@ confirm or change:
   (0 for the Bökh Champion, a tank). Without it the AI walked into an
   archer's reach, and on speed ties the side that moved first lost 60–67%
   of AI-vs-AI fights; with it, 49–51%.
-- **One move per turn, before or after the action, not split around it**
-  (section 2; the page offers both orders since 2026-10-19). Splitting it
-  (move, act, move, within the cap) is open: it would allow hit-and-run
-  with every ranged hero.
+- **Movement is a separate action, 20 + 10 per hex, capped at 4**
+  (owner, 2026-10-20). Allies and enemies block ordinary walking. An
+  ability cannot share the turn with walking; the page replaces one
+  selection with the other. Dash and Rampage retain their traversal rules.
 - **The enemy's starting layout** is one of three, picked by the run's
   seed.
 
