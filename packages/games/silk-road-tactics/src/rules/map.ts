@@ -1,8 +1,9 @@
 /**
- * The Salt Flats Crossing (brief section 7): 8 rows of pointy-top hexes,
+ * The Salt Flats Crossing (brief section 7): 9 rows of pointy-top hexes,
  * odd rows shoved right. Even rows have columns 0 to 7; odd rows also have
- * column −1, so neither side edge is notched (owner, 2026-10-19). 8 × 8
- * since 2026-10-20 (owner; it was 9 × 7, then briefly 7 × 7). It is an
+ * column −1, so neither side edge is notched (owner, 2026-10-19). 8 columns
+ * × 9 rows since 2026-10-20 (owner; it was 9 × 7, then briefly 7 × 7 and
+ * 8 × 8, the last row added at the bottom). It is an
  * exact left-right mirror: column c and 7 − c on even rows, c and 6 − c
  * on odd rows (whose column 3 is the centre hex). Every feature is
  * mirrored, the quicksand included.
@@ -25,7 +26,7 @@ export interface MapData {
   playerLayout: Hex[];
 }
 
-const ROWS = 8;
+const ROWS = 9;
 /** The columns of a row: even rows 0 to 7, odd rows −1 to 7 (odd rows sit half a hex further left). */
 const columnsOf = (row: number): number[] =>
   Array.from({length: row & 1 ? 9 : 8}, (_, i) => i - (row & 1));

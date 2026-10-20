@@ -174,13 +174,14 @@ describe('the track', () => {
 });
 
 describe('the board', () => {
-  it('is 8 × 8 with a hex at column −1 on odd rows only, making an exact left-right mirror', () => {
+  it('is 8 × 9 with a hex at column −1 on odd rows only, making an exact left-right mirror', () => {
     const map = SALT_FLATS;
-    expect(map.hexes).toHaveLength(8 * 4 + 9 * 4);
+    expect(map.hexes).toHaveLength(8 * 5 + 9 * 4);
     for (const row of [1, 3, 5, 7]) expect(onMap(map, at(-1, row))).toBe(true);
-    for (const row of [0, 2, 4, 6]) expect(onMap(map, at(-1, row))).toBe(false);
+    for (const row of [0, 2, 4, 6, 8]) expect(onMap(map, at(-1, row))).toBe(false);
     for (const row of [0, 1]) expect(onMap(map, at(8, row))).toBe(false);
-    expect(onMap(map, at(0, 8))).toBe(false);
+    expect(onMap(map, at(0, 8))).toBe(true);
+    expect(onMap(map, at(0, 9))).toBe(false);
     // Mirror about the board's centre line (between columns 3 and 4 on even rows).
     const layout = {orientation: 'pointy' as const, size: 1, origin: {x: 0, y: 0}};
     const mid = (hexToPixel(at(3, 0), layout).x + hexToPixel(at(4, 0), layout).x) / 2;

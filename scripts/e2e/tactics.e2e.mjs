@@ -154,11 +154,11 @@ page.on('pageerror', (e) => {
   console.log('  [page error]', e.message);
 });
 
-/** Clicks a hex on the board canvas, scaled from the 672×633 scene to the canvas on screen. */
+/** Clicks a hex on the board canvas, scaled from the 672×696 scene to the canvas on screen. */
 async function tapHex(hex) {
   const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
   const box = await page.locator('canvas').boundingBox();
-  await page.mouse.click(box.x + (x * box.width) / 672, box.y + (y * box.height) / 633);
+  await page.mouse.click(box.x + (x * box.width) / 672, box.y + (y * box.height) / 696);
   await sleep(150);
 }
 const state = () => page.evaluate(() => window.__tactics?.run);
@@ -332,7 +332,7 @@ try {
   {
     const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), quicksand);
     const box = await page.locator('canvas').boundingBox();
-    await page.mouse.move(box.x + (x * box.width) / 672, box.y + (y * box.height) / 633);
+    await page.mouse.move(box.x + (x * box.width) / 672, box.y + (y * box.height) / 696);
     await sleep(150);
   }
   const info = page.getByTestId('hex-info');
@@ -429,7 +429,7 @@ try {
   {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), foe);
     const box = await phone.locator('canvas').boundingBox();
-    await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 633}});
+    await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
     await sleep(300);
   }
   const phoneSheet = phone.getByTestId('stat-sheet');
@@ -460,7 +460,7 @@ try {
     await phoneMove.click();
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), {q: 0, r: 3}); // col 1, row 3: free sand
     const box = await phone.locator('canvas').boundingBox();
-    await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 633}});
+    await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
     await sleep(250);
     const planned = phone.getByRole('button', {name: /^Move/});
     check(
@@ -483,7 +483,7 @@ try {
   const tapOn = async (hex) => {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
     const box = await phone.locator('canvas').boundingBox();
-    await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 633}});
+    await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
     await sleep(250);
   };
   const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
