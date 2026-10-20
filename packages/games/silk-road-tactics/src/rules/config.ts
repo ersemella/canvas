@@ -223,7 +223,11 @@ export const ABILITY = {
    * 2026-10-19; lowered from 8 to 6, 2026-10-20), and Taunted by the
    * Champion (17.5). No Vulnerable (owner, 2026-10-20; was 25%): over 300
    * AI-vs-AI fights, the same 4% unfinished, Pin on 16% of the Champion's
-   * turns (22% with it).
+   * turns (22% with it). The Champion isn't Immobilized itself (owner,
+   * 2026-10-20; it was): the pin holds while the two stay adjacent, so the
+   * Champion moving away releases the target, as a wrestler would. Over
+   * 400 AI-vs-AI fights a side without Pin then won 44.8% (about 50%
+   * with the Champion held too).
    */
   pin: {cost: RULES.cost.typical, slots: 12, damagePerSlot: 6},
   /** Ultimates buffed (owner, 2026-10-20; was slow, 150, and damage 100). */

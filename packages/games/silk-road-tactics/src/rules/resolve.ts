@@ -229,10 +229,11 @@ export function enterHex(
 
 /**
  * A Pin lasts until it breaks: when its target is cleansed, or when the
- * Champion and target are no longer adjacent (either displaced away).
+ * Champion and target are no longer adjacent (either displaced away, or
+ * the Champion moving away: it isn't held itself, owner, 2026-10-20).
  * Breaking it clears every status the Pin gave either unit (owner,
  * 2026-10-20). Cleansing the Champion doesn't break it. Throw lands the
- * target beside the Champion, so Pin then Throw holds both.
+ * target beside the Champion, so Pin then Throw keeps the pin.
  */
 export function breakPins(ctx: Ctx, unit: Unit, cleansed = false): void {
   const byId = (id: string) => ctx.state.units.find((u) => u.id === id);

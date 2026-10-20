@@ -518,30 +518,42 @@ describe('abilities', () => {
     applyTurn(s, b, {action: {ability: 'throw', target: {hex: at(2, 1), to: at(0, 1)}}});
     expect(unit(s, 'e-storm').hex).toEqual(at(0, 1));
     expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
-    // Thrown to another hex beside the Champion: the hold isn't broken.
-    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+    // Thrown to another hex beside the Champion: the hold isn't broken,
+    // and the Champion itself was never held.
+    expect(b.statuses).toEqual([]);
   });
 
-  it('Pin: displacing the target away breaks the pin, freeing both', () => {
+  it('Pin: the Champion is free, and walking away releases the target', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
     applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
-    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+    expect(b.statuses).toEqual([]);
+    const away = reachableHexes(s, mapOf(s), b).find(
+      (r) => r.path.length === 1 && hexDistance(r.path[0]!, target.hex!) === 2
+    )!;
+    applyTurn(s, b, {move: away.path, action: {ability: 'hold'}});
+    expect(target.statuses).toEqual([]);
+  });
+
+  it('Pin: displacing the target away breaks the pin, freeing it', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
+    const b = unit(s, 'p-bokh');
+    const target = unit(s, 'e-storm');
+    applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
     displace({state: s, map: SALT_FLATS, slot: 0}, target, hexDirectionTo(at(1, 1), at(2, 1))!, 1);
     expect(hexDistance(target.hex!, b.hex!)).toBe(2);
-    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
     // Breaking it clears everything the Pin gave the target.
     expect(target.statuses).toEqual([]);
   });
 
-  it('Pin: cleansing the Champion keeps the pin, and both held', () => {
+  it('Pin: cleansing the Champion keeps the pin', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'p-storm': at(0, 1)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-mangudai');
     applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
     applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(1, 1)}}});
-    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
     expect(target.statuses.map((x) => x.kind).sort()).toEqual([
       'crushed',
       'immobilized',
@@ -549,14 +561,14 @@ describe('abilities', () => {
     ]);
   });
 
-  it('Pin: cleansing the target breaks the pin, freeing the Champion too', () => {
+  it('Pin: cleansing the target breaks the pin', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'e-storm': at(3, 1)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-mangudai');
     applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
     applyTurn(s, unit(s, 'e-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
-    expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
-    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
+    expect(target.statuses).toEqual([]);
+    expect(b.statuses).toEqual([]);
   });
 
   it('Pin crushes its target every slot while it lasts', () => {
@@ -764,13 +776,9 @@ describe('previews, the AI and the run', () => {
     }
   });
 
-  it('a Pin first leaves nothing to move: the unit is Immobilized', () => {
+  it('a Pin and a move in one turn are refused', () => {
     const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(2, 3)});
     const pin = {ability: 'pin' as const, target: {hex: at(2, 3)}};
-    const after = afterAction(s, 'p-bokh', pin)!;
-    expect(
-      reachableHexes(after.state, mapOf(after.state), after.unit).filter((r) => r.path.length > 0)
-    ).toEqual([]);
     expect(() =>
       applyTurn(s, unit(s, 'p-bokh'), {action: pin, move: [at(0, 3)], actFirst: true})
     ).toThrow(RuleError);
