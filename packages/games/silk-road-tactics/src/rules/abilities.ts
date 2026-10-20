@@ -45,6 +45,7 @@ export interface AbilityDef {
   /**
    * One line for the side panel, with damage and healing scaled by the
    * user's power (defence, Vulnerable and conceal still apply on the hit).
+   * Range and duration are left out: the panel lists them on their own.
    */
   summary(user: Unit): string;
   ultimate: boolean;
@@ -53,6 +54,10 @@ export interface AbilityDef {
   /** Action cost, or the charge cost for a charged ability. */
   cost: number;
   recoveryCost?: number;
+  /** How far from the user it reaches, in spaces, when that isn't next to it; the stat sheet lists it beside the summary. */
+  range?: number;
+  /** How many slots its effect lasts, if it lingers; listed like the range. */
+  duration?: number;
   /** Moves the user, so Immobilized forbids it (17.5). */
   movesSelf: boolean;
   /** A damaging charged ability, which Taunt redirects onto the taunter (17.5). */
@@ -147,7 +152,8 @@ const bow: AbilityDef = {
   id: 'bow',
   name: 'Composite Bow',
   summary: (user) =>
-    `Shoot in a straight line up to ${ABILITY.bow.range} spaces: the first unit in the way, ally or enemy, takes ${scaled(ABILITY.bow.damage, user.power)} damage.`,
+    `Shoot in a straight line: the first unit in the way takes ${scaled(ABILITY.bow.damage, user.power)} damage.`,
+  range: ABILITY.bow.range,
   ultimate: false,
   charged: false,
   cost: ABILITY.bow.cost,
@@ -186,8 +192,8 @@ function dashEnd(
 const dash: AbilityDef = {
   id: 'dash',
   name: 'Dash',
-  summary: () =>
-    `Move up to ${ABILITY.dash.distance} spaces in a straight line, through allies but not enemies or ruins.`,
+  summary: () => `Move in a straight line, through allies but not enemies or ruins.`,
+  range: ABILITY.dash.distance,
   ultimate: false,
   charged: false,
   cost: ABILITY.dash.cost,
@@ -213,7 +219,8 @@ const volley: AbilityDef = {
   id: 'volley',
   name: 'Volley',
   summary: (user) =>
-    `Target a space within ${ABILITY.volley.range}: every unit within ${ABILITY.volley.radius} of it, allies too, takes ${scaled(ABILITY.volley.damage, user.power)} damage.`,
+    `Every unit within ${ABILITY.volley.radius} of the target space takes ${scaled(ABILITY.volley.damage, user.power)} damage.`,
+  range: ABILITY.volley.range,
   ultimate: true,
   charged: true,
   cost: ABILITY.volley.chargeCost,
@@ -235,7 +242,8 @@ const sunlight: AbilityDef = {
   id: 'sunlight',
   name: 'Sunlight',
   summary: (user) =>
-    `Heal any unit within ${ABILITY.sunlight.range}, self or enemy included, for ${scaled(ABILITY.sunlight.heal, user.power)} and cleanse its statuses.`,
+    `Heal a unit for ${scaled(ABILITY.sunlight.heal, user.power)} and cleanse its statuses.`,
+  range: ABILITY.sunlight.range,
   ultimate: false,
   charged: false,
   cost: ABILITY.sunlight.cost,
@@ -256,7 +264,9 @@ const hail: AbilityDef = {
   id: 'hail',
   name: 'Hail',
   summary: (user) =>
-    `Hail on a space within ${ABILITY.hail.range} for ${ABILITY.hail.hexSlots} slots: units struck take ${scaled(ABILITY.hail.damage, user.power)} damage and are Slowed ${ABILITY.hail.slowed} and Vulnerable ${ABILITY.hail.vulnerable}%.`,
+    `Hail on a space: units struck take ${scaled(ABILITY.hail.damage, user.power)} damage and are Slowed ${ABILITY.hail.slowed} and Vulnerable ${ABILITY.hail.vulnerable}% for ${ABILITY.hail.statusSlots} slots.`,
+  range: ABILITY.hail.range,
+  duration: ABILITY.hail.hexSlots,
   ultimate: false,
   charged: false,
   cost: ABILITY.hail.cost,
@@ -285,7 +295,9 @@ const fog: AbilityDef = {
   id: 'fog',
   name: 'Fog',
   summary: () =>
-    `Fog a space within ${ABILITY.fog.range}, and those within ${ABILITY.fog.radius} of it, for ${ABILITY.fog.slots} slots: ranged hits into or out of it deal ${Math.round(ABILITY.fog.reduction * 100)}% less, for both sides.`,
+    `Fog a space and those within ${ABILITY.fog.radius} of it: ranged hits into or out of it deal ${Math.round(ABILITY.fog.reduction * 100)}% less.`,
+  range: ABILITY.fog.range,
+  duration: ABILITY.fog.slots,
   ultimate: false,
   charged: false,
   cost: ABILITY.fog.cost,
@@ -306,7 +318,9 @@ const freeze: AbilityDef = {
   id: 'freeze',
   name: 'Freeze',
   summary: (user) =>
-    `Target a space within ${ABILITY.freeze.range}: units within ${ABILITY.freeze.radius} of it take ${scaled(ABILITY.freeze.damage, user.power)} damage and are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}% for ${ABILITY.freeze.immobilizedSlots} slots.`,
+    `Units within ${ABILITY.freeze.radius} of the target space take ${scaled(ABILITY.freeze.damage, user.power)} damage and are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
+  range: ABILITY.freeze.range,
+  duration: ABILITY.freeze.immobilizedSlots,
   ultimate: true,
   charged: true,
   cost: ABILITY.freeze.chargeCost,
@@ -359,7 +373,8 @@ const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
   summary: (user) =>
-    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots; the target is Vulnerable ${ABILITY.pin.vulnerable}%, Taunted, and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot. Ends early if the target is cleansed or moved away.`,
+    `Melee: you and the target are Immobilized; the target is Vulnerable ${ABILITY.pin.vulnerable}%, Taunted, and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot. Ends early if the target is cleansed or moved away.`,
+  duration: ABILITY.pin.slots,
   ultimate: false,
   charged: false,
   cost: ABILITY.pin.cost,
@@ -390,7 +405,8 @@ const rampage: AbilityDef = {
   id: 'rampage',
   name: 'Rampage',
   summary: (user) =>
-    `Rush ${ABILITY.rampage.distance} spaces in a straight line: every unit in or beside the path takes ${scaled(ABILITY.rampage.damage, user.power)} damage and is knocked aside.`,
+    `Rush in a straight line: every unit in or beside the path takes ${scaled(ABILITY.rampage.damage, user.power)} damage and is knocked aside.`,
+  range: ABILITY.rampage.distance,
   ultimate: true,
   charged: false,
   cost: ABILITY.rampage.cost,

@@ -65,7 +65,7 @@ export function ConfirmButton(props: {
       }
     >
       {preview
-        ? `${props.endTurn ? 'End turn' : 'Confirm'}${next ? ` · next turn ${next}` : ''}`
+        ? `${props.endTurn ? 'End turn' : 'Confirm'}${next ? ` · ${next}` : ''}`
         : 'Can’t do that'}
     </Button>
   );
@@ -272,7 +272,8 @@ export function StatSheet({
 
 /**
  * One ability on the stat sheet: its name and cost, in this unit's slots
- * (the action alone, before any move or yielding), then what it does. An
+ * (the action alone, before any move or yielding), its range and how long
+ * it lasts, then what it does. An
  * ultimate also shows how far it is from being ready.
  */
 function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?: string}) {
@@ -301,6 +302,16 @@ function AbilityLine({unit, def, charge}: {unit: Unit; def: AbilityDef; charge?:
           {cost}
         </Text>
       </Group>
+      {(def.range !== undefined || def.duration !== undefined) && (
+        <Text fz={11} c="gray.4">
+          {[
+            def.range !== undefined && `Range ${def.range}`,
+            def.duration !== undefined && `Lasts ${def.duration} slots`,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </Text>
+      )}
       <Text fz="xs" c="dimmed">
         {def.summary(unit)}
       </Text>
