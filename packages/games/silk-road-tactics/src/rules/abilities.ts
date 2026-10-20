@@ -402,8 +402,7 @@ const pin: AbilityDef = {
 const rampage: AbilityDef = {
   id: 'rampage',
   name: 'Rampage',
-  summary: (user) =>
-    `Rush in a straight line, knocking nearby units aside for ${scaled(ABILITY.rampage.damage, user.power)} damage.`,
+  summary: () => `Rush in a straight line, knocking nearby units aside.`,
   range: ABILITY.rampage.distance,
   ultimate: true,
   charged: false,
