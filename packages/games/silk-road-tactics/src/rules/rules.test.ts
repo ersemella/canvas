@@ -461,9 +461,7 @@ describe('abilities', () => {
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-mangudai');
     applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
-    // Sunlight reaches the Champion but not the target, two hexes away.
-    expect(hexDistance(unit(s, 'p-storm').hex!, target.hex!)).toBe(2);
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {}}});
+    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(1, 1)}}});
     expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
     expect(target.statuses.map((x) => x.kind).sort()).toEqual([
       'crushed',
@@ -478,9 +476,7 @@ describe('abilities', () => {
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-mangudai');
     applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
-    // Sunlight reaches the target but not the Champion, two hexes away.
-    expect(hexDistance(unit(s, 'e-storm').hex!, b.hex!)).toBe(2);
-    applyTurn(s, unit(s, 'e-storm'), {action: {ability: 'sunlight', target: {}}});
+    applyTurn(s, unit(s, 'e-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
     expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
     expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(false);
   });
@@ -585,24 +581,30 @@ describe('abilities', () => {
     expect(unit(s, 'p-storm').hp).toBeLessThan(hp);
   });
 
-  it('Sunlight heals and cleanses every unit within its radius, enemies included', () => {
+  it('Sunlight heals and cleanses the one unit it targets, enemies included', () => {
     const s = setup({
       'p-storm': at(1, 3),
       'p-bokh': at(1, 2),
       'e-bokh': at(2, 3),
       'e-mangudai': at(8, 6),
     });
-    expect(hexDistance(at(1, 3), at(1, 2))).toBeLessThanOrEqual(ABILITY.sunlight.radius);
-    expect(hexDistance(at(1, 3), at(2, 3))).toBeLessThanOrEqual(ABILITY.sunlight.radius);
-    unit(s, 'p-bokh').hp = 100;
-    unit(s, 'p-bokh').statuses.push({kind: 'slowed', value: 2, untilSlot: 999});
-    unit(s, 'e-bokh').hp = 100;
-    unit(s, 'e-bokh').statuses.push({kind: 'vulnerable', value: 25, untilSlot: 999});
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight'}});
-    expect(unit(s, 'p-bokh').hp).toBeGreaterThan(100);
-    expect(unit(s, 'p-bokh').statuses).toHaveLength(0);
+    const storm = unit(s, 'p-storm');
+    for (const id of ['p-bokh', 'e-bokh']) {
+      unit(s, id).hp = 100;
+      unit(s, id).statuses.push({kind: 'slowed', value: 2, untilSlot: 999});
+    }
+    // Any unit within range, itself and enemies included; never an empty hex.
+    const targets = ABILITIES.sunlight.targets(s, SALT_FLATS, storm, storm.hex!);
+    expect(targets.map((t) => hexKey(t.hex!)).sort()).toEqual(
+      [at(1, 3), at(1, 2), at(2, 3)].map(hexKey).sort()
+    );
+    expect(hexDistance(at(1, 3), at(8, 6))).toBeGreaterThan(ABILITY.sunlight.range);
+    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBeGreaterThan(100);
     expect(unit(s, 'e-bokh').statuses).toHaveLength(0);
+    // Its neighbour is left alone.
+    expect(unit(s, 'p-bokh').hp).toBe(100);
+    expect(unit(s, 'p-bokh').statuses).toHaveLength(1);
   });
 
   it('hail slows and exposes whoever stands on it', () => {

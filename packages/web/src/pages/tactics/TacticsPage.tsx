@@ -243,7 +243,7 @@ export function TacticsPage() {
       setAbility(id);
       setMoving(false);
       if (!id) return setTarget(null);
-      // Abilities with no target (Hold, Sunlight) preview at once.
+      // Abilities with no target (Hold) preview at once.
       const own = abilityContext
         ? ABILITIES[id].targets(
             abilityContext.state,

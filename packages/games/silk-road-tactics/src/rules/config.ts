@@ -141,8 +141,10 @@ export const ABILITY = {
    * Heal 40, 60 at the Storm Caller's power (owner, 2026-10-19; was 25,
    * 37 healed, under a fifth of a bow hit). Over 1,000 AI-vs-AI fights from
    * random deployments: no stalls (17 at 25), and fights shorter.
+   * One unit within `range` (owner, 2026-10-20; was everyone within 1 of
+   * the caster, which under separate movement took a turn to set up).
    */
-  sunlight: {cost: RULES.cost.typical, radius: 1, heal: 40},
+  sunlight: {cost: RULES.cost.typical, range: 4, heal: 40},
   hail: {
     cost: RULES.cost.typical,
     range: 4,
