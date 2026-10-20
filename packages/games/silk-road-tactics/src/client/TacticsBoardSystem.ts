@@ -96,6 +96,8 @@ interface HighlightStyle {
  * to what's picked, so it never reads as either side's tint.
  */
 const TARGET_YELLOW = '253,224,71';
+/** An enemy's charging area: its side's red (`SIDE_COLOR.enemy`). */
+const ENEMY_CHARGE_RED = '248,113,113';
 const yellow = (fill: number, stroke: number): HighlightStyle => ({
   fill: `rgba(${TARGET_YELLOW},${fill})`,
   stroke: `rgba(${TARGET_YELLOW},${stroke})`,
@@ -1591,9 +1593,15 @@ function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
   ctx.restore();
 }
 
+/**
+ * A charging ability's area, until it triggers: yellow for your own, as all
+ * your targeting is; for an enemy's a red outline only, so it reads as a
+ * threat without looking like the tint under an enemy unit.
+ */
 function drawCharge(ctx: CanvasRenderingContext2D, map: MapData, u: Unit): void {
   const {ability, target} = u.charging!;
   const radius = ability === 'volley' ? ABILITY.volley.radius : ABILITY.freeze.radius;
+  const rgb = u.side === 'enemy' ? ENEMY_CHARGE_RED : TARGET_YELLOW;
   ctx.save();
   ctx.setLineDash([5, 4]);
   for (let q = -radius; q <= radius; q++) {
@@ -1601,16 +1609,18 @@ function drawCharge(ctx: CanvasRenderingContext2D, map: MapData, u: Unit): void 
       const h = {q: target.q + q, r: target.r + r};
       if (hexDistance(h, target) > radius || !onMap(map, h)) continue;
       hexPath(ctx, h, 4);
-      ctx.fillStyle = `rgba(${TARGET_YELLOW},0.2)`;
-      ctx.fill();
-      ctx.strokeStyle = HIGHLIGHT.target.stroke;
+      if (u.side !== 'enemy') {
+        ctx.fillStyle = `rgba(${rgb},0.2)`;
+        ctx.fill();
+      }
+      ctx.strokeStyle = `rgba(${rgb},0.9)`;
       ctx.lineWidth = 2;
       ctx.stroke();
     }
   }
   ctx.restore();
   const c = center(target);
-  label(ctx, ABILITIES[ability].name, c.x, c.y + 24 * HEX_SCALE, SIDE_COLOR[u.side], 10);
+  label(ctx, ABILITIES[ability].name, c.x, c.y + 24 * HEX_SCALE, `rgb(${rgb})`, 10);
 }
 
 /** The page's scene during a playback: the events' fight, health on whoever the event is about. */
