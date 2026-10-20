@@ -29,7 +29,11 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
       if (e.how === 'throw') return 0.32;
       return Math.max(0.18, 0.08 * hexDistance(e.from, e.to));
     case 'action':
-      return e.ability === 'hold' ? 0 : 0.5;
+      if (e.ability === 'hold') return 0;
+      // The arrow rain, the frost and the sunbeam take longer to read.
+      if (e.ability === 'volley' || e.ability === 'freeze') return 1;
+      if (e.ability === 'sunlight') return 0.85;
+      return 0.5;
     case 'charge':
       return 0.6;
     case 'damage':
