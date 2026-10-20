@@ -352,7 +352,7 @@ const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
   summary: (user) =>
-    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots (the pin breaks, freeing both, if it's cleansed or moved away from you); it is Vulnerable ${ABILITY.pin.vulnerable}%, takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage every slot, and is Taunted: while it can reach you, it must attack you or end its turn.`,
+    `Melee: you and the target are Immobilized for ${ABILITY.pin.slots} slots (the pin breaks, ending all of this, if it's cleansed or moved away from you); it is Vulnerable ${ABILITY.pin.vulnerable}%, takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage every slot, and is Taunted: while it can reach you, it must attack you or end its turn.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.pin.cost,
@@ -362,17 +362,18 @@ const pin: AbilityDef = {
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     const untilSlot = ctx.slot + ABILITY.pin.slots;
-    // Tagged with the pin, so breaking it frees both.
-    const pinTag = {champion: user.id, target: u.id};
-    addStatus(user, {kind: 'immobilized', value: 0, untilSlot, pin: pinTag});
-    addStatus(u, {kind: 'immobilized', value: 0, untilSlot, pin: pinTag});
-    addStatus(u, {kind: 'vulnerable', value: ABILITY.pin.vulnerable, untilSlot});
+    // Tagged with the pin, so breaking it clears them all.
+    const pin = {champion: user.id, target: u.id};
+    addStatus(user, {kind: 'immobilized', value: 0, untilSlot, pin});
+    addStatus(u, {kind: 'immobilized', value: 0, untilSlot, pin});
+    addStatus(u, {kind: 'vulnerable', value: ABILITY.pin.vulnerable, untilSlot, pin});
     addStatus(u, {
       kind: 'crushed',
       value: scaled(ABILITY.pin.damagePerSlot, user.power),
       untilSlot,
+      pin,
     });
-    addStatus(u, {kind: 'taunted', value: 0, untilSlot, source: user.id});
+    addStatus(u, {kind: 'taunted', value: 0, untilSlot, source: user.id, pin});
     log(ctx, `${unitName(user)} pins ${unitName(u)}.`);
   },
 };

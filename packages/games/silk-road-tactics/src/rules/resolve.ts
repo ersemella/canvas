@@ -184,27 +184,30 @@ export function enterHex(ctx: Ctx, unit: Unit, h: Hex, triggers = true): void {
 }
 
 /**
- * A Pin Immobilizes the Champion and its target until the pin breaks: when
- * the target is cleansed, or when the two are no longer adjacent (either
- * displaced away, or the target walking off once cleansed). Breaking it
- * frees both; the target's other statuses stay (owner, 2026-10-20). Throw
- * lands the target beside the Champion, so Pin then Throw holds both.
+ * A Pin lasts until it breaks: when its target is cleansed, or when the
+ * Champion and target are no longer adjacent (either displaced away).
+ * Breaking it clears every status the Pin gave either unit (owner,
+ * 2026-10-20). Cleansing the Champion doesn't break it. Throw lands the
+ * target beside the Champion, so Pin then Throw holds both.
  */
 export function breakPins(ctx: Ctx, unit: Unit, cleansed = false): void {
   const byId = (id: string) => ctx.state.units.find((u) => u.id === id);
-  const broken = new Set<string>();
   for (const holder of ctx.state.units) {
-    holder.statuses = holder.statuses.filter((s) => {
-      const pin = s.kind === 'immobilized' ? s.pin : undefined;
-      if (!pin || (pin.champion !== unit.id && pin.target !== unit.id)) return true;
+    for (const {pin} of holder.statuses) {
+      if (!pin || (pin.champion !== unit.id && pin.target !== unit.id)) continue;
       const a = byId(pin.champion)?.hex;
       const b = byId(pin.target)?.hex;
       const holds = !(cleansed && pin.target === unit.id) && !!a && !!b && hexDistance(a, b) <= 1;
-      if (!holds) broken.add(pin.target);
-      return holds;
-    });
+      if (holds) continue;
+      for (const u of ctx.state.units)
+        u.statuses = u.statuses.filter(
+          (s) => s.pin?.champion !== pin.champion || s.pin.target !== pin.target
+        );
+      log(ctx, `The pin on ${unitName(byId(pin.target)!)} is broken.`);
+      // The statuses changed under this loop; look again for any other pin.
+      return breakPins(ctx, unit, cleansed);
+    }
   }
-  for (const id of broken) log(ctx, `The pin on ${unitName(byId(id)!)} is broken.`);
 }
 
 /**

@@ -75,9 +75,13 @@ export function expireStatuses(unit: Unit, slot: number): void {
   unit.statuses = unit.statuses.filter((s) => s.untilSlot >= slot);
 }
 
-/** Cleanse: every harmful status from an ability (not a flank's Vulnerable). */
+/**
+ * Cleanse: every harmful status from an ability (not a flank's Vulnerable),
+ * except a pinning Champion's own hold: cleansing it doesn't break the pin
+ * (owner, 2026-10-20).
+ */
 export function cleanse(unit: Unit): void {
-  unit.statuses = [];
+  unit.statuses = unit.statuses.filter((s) => s.pin?.champion === unit.id);
 }
 
 /**

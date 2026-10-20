@@ -96,7 +96,7 @@ Replace the placeholders in `config.ts` (brief section 4). Current guesses:
 | Fog (replaced Gale, owner, 2026-10-20) | range 4, radius 1, 20 slots; ranged hits into or out of it deal 50% less |
 | Freeze (ultimate) | range 4, radius 1, Immobilized and Vulnerable 25% for 15 slots, charge 40, recovery 100 |
 | Throw | damage 80 |
-| Pin | 12 slots, Vulnerable 25%; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 6 a slot through defence (owner; 8 until 2026-10-20)**; **the pin breaks, freeing both from Immobilized, if the target is cleansed or knocked away from the Champion (owner, 2026-10-20)** |
+| Pin | 12 slots, Vulnerable 25%; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 6 a slot through defence (owner; 8 until 2026-10-20)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or knocked away from the Champion; cleansing the Champion doesn't break it or free it (owner, 2026-10-20)** |
 | Rampage (ultimate) | 3 hexes, damage 100, Displace 1, slow (150) |
 
 Damage is scaled by power: `base × (1 + power / 50)`.

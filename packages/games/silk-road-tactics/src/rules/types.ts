@@ -34,7 +34,7 @@ export interface Status {
   untilSlot: number;
   /** Taunted: the taunter's unit id. */
   source?: string;
-  /** Immobilized from a Pin, on both units: who pinned whom, so breaking the pin frees both. */
+  /** From a Pin, on both units: who pinned whom, so breaking the pin clears them all. */
   pin?: {champion: string; target: string};
 }
 
