@@ -134,7 +134,8 @@ interface TrackAdvance {
  * Draws everything over the board's tiles (which are hex entities): the
  * track of cards along the top (3.1, as in Mana Khemia), tile markings,
  * highlights, arrow lanes, hail, charging areas, units (their health and
- * statuses only when hovered, tapped or in an aimed attack's reach), the
+ * statuses only on their turn, or when hovered, tapped or in an aimed
+ * attack's reach), the
  * previewed outcome, and a tooltip for the hex under the mouse. Plain shapes and text (brief section 9). The page drives it with
  * `tactics:board` events; taps come from `TacticsInputSystem`.
  */
@@ -236,10 +237,12 @@ export class TacticsBoardSystem extends BaseSystem {
       }
     }
 
-    // Health and statuses show only on the unit being looked at: hovered (on
-    // the board or the track) or tapped, and on whoever an attack being aimed could hit.
+    // Health and statuses show only on the unit whose turn it is, the unit
+    // being looked at (hovered on the board or the track, or tapped), and
+    // whoever an attack being aimed could hit.
     // Where it ends up when the turn moves it.
     const looked = new Set<string>();
+    if (fight.awaiting) looked.add(fight.awaiting);
     if (this.scene.inspectedUnitId) looked.add(this.scene.inspectedUnitId);
     for (const id of this.scene.healthUnitIds ?? []) looked.add(id);
     if (this.hover.unitId) looked.add(this.hover.unitId);
