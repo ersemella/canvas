@@ -49,12 +49,20 @@ check(
   started.status === 201 && startedFight?.phase === 'fight',
   started
 );
+// An enemy that wins a starting speed tie (shuffled) may already have had
+// its turn; every other unit (the awaited one included) is still where it started.
+const actedFirst = new Set(
+  (startedFight.events ?? [])
+    .filter((e) => e.kind === 'turn' && e.unitId !== startedFight.awaiting)
+    .map((e) => e.unitId)
+);
 check(
   'each side starts on its outermost column',
-  startedFight.units.every((u) =>
-    sameHex(u.hex, (u.side === 'player' ? leftEdge : rightEdge)(u.hex.r))
-  ),
-  startedFight.units.map((u) => [u.id, u.hex])
+  startedFight.units
+    .filter((u) => !actedFirst.has(u.id))
+    .every((u) => sameHex(u.hex, (u.side === 'player' ? leftEdge : rightEdge)(u.hex.r))) &&
+    startedFight.units.every((u) => u.side === 'enemy' || !actedFirst.has(u.id)),
+  startedFight.units.map((u) => [u.id, u.hex, actedFirst.has(u.id)])
 );
 check(
   'the response stops on one of your units',
@@ -392,6 +400,22 @@ try {
   await page.waitForFunction((v) => window.__tactics.run.view.version > v, before, {
     timeout: 15_000,
   });
+  // While the turn plays back (the empty slots and the enemies' turns), the
+  // next unit's choices show but can't be picked (the ⋯ menu stays).
+  const turnButtonsEnabled = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('[data-testid="turn-controls"] button')]
+        .filter((b) => b.getAttribute('aria-label') !== 'Menu')
+        .map((b) => !b.disabled)
+    );
+  const playingBack = await page.evaluate(() => window.__tactics.busy);
+  const during = await turnButtonsEnabled();
+  if (playingBack)
+    check(
+      'during a playback every turn button is disabled',
+      during.length > 0 && during.every((on) => !on),
+      during
+    );
   run = await state();
   const movedUnit = run.view.fight.units.find((u) => u.id === acting.id);
   check(
@@ -403,6 +427,12 @@ try {
   // An enemy's stat sheet.
   // After the turn's playback: a click during one only skips it.
   await waitIdle();
+  const after = await turnButtonsEnabled();
+  check(
+    'after the playback, the turn buttons work again',
+    after.some((on) => on),
+    after
+  );
   run = await state();
   const enemy = run.view.fight.units.find((u) => u.side === 'enemy' && u.alive);
   await tapHex(enemy.hex);

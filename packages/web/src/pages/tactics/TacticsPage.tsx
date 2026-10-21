@@ -713,6 +713,7 @@ export function TacticsPage() {
         plannedMove={plannedMove}
         moving={moving}
         canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
+        waiting={busy || playing}
         onMove={toggleMove}
         onAbility={chooseAbility}
         menu={menu}
@@ -850,6 +851,12 @@ function TurnControls(props: {
   plannedMove: Reach | null;
   moving: boolean;
   canMove: boolean;
+  /**
+   * A turn is being sent or played back (the empty slots and the enemies'
+   * turns before this unit's): every choice is disabled until it's this
+   * unit's turn on the board too.
+   */
+  waiting: boolean;
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
   /** The run's menu, beside the Confirm button. */
@@ -880,14 +887,16 @@ function TurnControls(props: {
         <Button
           size="lg"
           className={styles.tile!}
-          disabled={!props.canMove}
+          disabled={!props.canMove || props.waiting}
           aria-pressed={moving || plannedMove !== null}
           title={
-            plannedMove
-              ? 'Tap to undo the move'
-              : props.canMove
-                ? 'Move instead of using an ability; units block the path'
-                : 'Can’t move now'
+            props.waiting
+              ? 'Not this unit’s turn yet'
+              : plannedMove
+                ? 'Tap to undo the move'
+                : props.canMove
+                  ? 'Move instead of using an ability; units block the path'
+                  : 'Can’t move now'
           }
           onClick={props.onMove}
         >
@@ -904,9 +913,9 @@ function TurnControls(props: {
               key={def.id}
               size="lg"
               className={`${styles.tile} ${def.ultimate ? styles.tileUltimate : ''}`}
-              disabled={reason !== null}
+              disabled={reason !== null || props.waiting}
               aria-pressed={ability === def.id}
-              title={reason ?? def.summary(unit)}
+              title={props.waiting ? 'Not this unit’s turn yet' : (reason ?? def.summary(unit))}
               onClick={() => props.onAbility(ability === def.id ? null : def.id)}
             >
               {/* Its own cost in slots; Confirm adds any yielding. */}
