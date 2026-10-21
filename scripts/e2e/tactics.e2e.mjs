@@ -428,6 +428,14 @@ try {
     (await skip.textContent()) === 'Tap again to skip' && (await state()).view.version === before,
     await skip.textContent()
   );
+  // A tap anywhere else disarms it (here, on the board).
+  await tapHex(acting.hex);
+  check(
+    'a tap elsewhere disarms Skip turn',
+    /^Skip turn/.test(await skip.textContent()) && (await state()).view.version === before,
+    await skip.textContent()
+  );
+  await skip.click();
   await sleep(3300);
   check(
     'an armed Skip turn disarms after a while',

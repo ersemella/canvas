@@ -257,6 +257,12 @@ export class TacticsBoardSystem extends BaseSystem {
   private walkOut: {key: string; start: number; walks: Map<string, Walk>} | null = null;
   private bus: EventBus | null = null;
   private cleanup: (() => void)[] = [];
+  /** Bumped by whatever changes the board from outside a frame: the page's scene, the hover, a font loading. */
+  private version = 0;
+  /** What this frame would show (`frameKey`), worked out in `holdsFrame`. */
+  private key: string | null = null;
+  /** What the last frame drawn showed; null if it was mid-motion, so the next must draw. */
+  private drawnKey: string | null = null;
 
   onInit({events}: Omit<SystemContext, 'deltaTime'>): void {
     const bus: EventBus = events;
@@ -268,6 +274,7 @@ export class TacticsBoardSystem extends BaseSystem {
         // During a playback the track follows the events instead.
         if (!this.play) this.startTrackMotion(this.scene.fight, scene.fight);
         this.scene = scene;
+        this.version++;
       })
     );
     this.cleanup.push(
@@ -279,8 +286,54 @@ export class TacticsBoardSystem extends BaseSystem {
     );
     this.cleanup.push(bus.on('tactics:playback-skip', () => this.endPlayback()));
     this.cleanup.push(
-      bus.on<TacticsHoverPayload>('tactics:hover', (hover) => (this.hover = hover))
+      bus.on<TacticsHoverPayload>('tactics:hover', (hover) => {
+        this.hover = hover;
+        this.version++;
+      })
     );
+    // Labels drawn before the pixel font loaded were drawn in a fallback.
+    if (typeof document !== 'undefined' && document.fonts) {
+      const fontsLoaded = () => this.version++;
+      document.fonts.addEventListener('loadingdone', fontsLoaded);
+      this.cleanup.push(() => document.fonts.removeEventListener('loadingdone', fontsLoaded));
+    }
+  }
+
+  /**
+   * True when this frame would draw what the last one did, so the canvas is
+   * left as it is: the board is pixel art, which steps a few times a second
+   * (idle frames, quicksand, weather, hail, the turn arrow's bob), so most
+   * frames have nothing new unless something is moving.
+   */
+  holdsFrame({deltaTime, canvas}: SystemContext): boolean {
+    this.key = this.frameKey(this.time + deltaTime, canvas);
+    return this.key !== null && this.key === this.drawnKey;
+  }
+
+  /**
+   * Everything a still frame depends on at `time`: what the page and the
+   * hover last sent, which images have loaded, the canvas's size, and the
+   * step each stepped animation is on. Null while something moves smoothly
+   * (a playback, the track running on, cards sliding, statuses fading), when
+   * every frame differs.
+   */
+  private frameKey(time: number, canvas: HTMLCanvasElement): string | null {
+    const {fight} = this.scene;
+    if (!fight || this.play || this.advance || this.slides.size > 0 || this.expiries.length > 0)
+      return null;
+    const parts: number[] = [this.version, assetLoader.settled, canvas.width, canvas.height];
+    if (!this.still) {
+      for (const u of fight.units) if (u.alive && u.hex) parts.push(idleFrame(u.id, time));
+      const map = mapOf(fight);
+      if (map.hexes.some((h) => tileAt(map, h) === 'hazard'))
+        parts.push(Math.floor(time / QUICKSAND_FRAME_SECONDS));
+      if (map.hexes.some((h) => tileAt(map, h) === 'conceal'))
+        parts.push(Math.floor(time * SANDSTORM_BANK.fps));
+      if (fight.fog?.length) parts.push(Math.floor(time * FOG_BANK.fps));
+      if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
+      parts.push(turnArrowBob(time));
+    }
+    return parts.join(' ');
   }
 
   /**
@@ -380,7 +433,11 @@ export class TacticsBoardSystem extends BaseSystem {
     }
   }
 
-  onUpdate({ctx, deltaTime}: SystemContext): void {
+  onUpdate({ctx, deltaTime, world}: SystemContext): void {
+    if (world.frameHeld) {
+      this.time += deltaTime;
+      return;
+    }
     let playing: Playback | null = null;
     if (this.play) {
       const before = this.play.display;
@@ -420,6 +477,14 @@ export class TacticsBoardSystem extends BaseSystem {
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
+    // A frame mid-motion: the next draws again whatever the key says.
+    const moving =
+      playing !== null ||
+      this.advance !== null ||
+      this.slides.size > 0 ||
+      this.expiries.length > 0 ||
+      [...(walking?.values() ?? [])].some((w) => w !== 'gone');
+    this.drawnKey = moving ? null : this.key;
     // Each unit stands on a rug in its side's colour, under the highlights so moves and targets still show.
     const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
     for (const u of fight.units) {
@@ -2577,6 +2642,13 @@ function drawUnit(
 const TURN_ARROW_ROWS = [3, 3, 9, 7, 5, 3, 1];
 const TURN_ARROW = {px: 3, gap: 3, bob: 5, bobSeconds: 0.9};
 
+/** How far the turn arrow has bobbed up at a time, in whole pixels. */
+function turnArrowBob(time: number): number {
+  return Math.round(
+    (TURN_ARROW.bob * (1 + Math.sin((time * 2 * Math.PI) / TURN_ARROW.bobSeconds))) / 2
+  );
+}
+
 /**
  * The arrow over the unit you're controlling: gold, which no side or
  * targeting colour uses, so it shows on the sand and over either side's
@@ -2591,12 +2663,7 @@ function drawTurnArrow(
 ): void {
   const {px, gap} = TURN_ARROW;
   const h = TURN_ARROW_ROWS.length * px;
-  const bob =
-    time === null
-      ? 0
-      : Math.round(
-          (TURN_ARROW.bob * (1 + Math.sin((time * 2 * Math.PI) / TURN_ARROW.bobSeconds))) / 2
-        );
+  const bob = time === null ? 0 : turnArrowBob(time);
   const top = Math.round(healthStack(hex, marks).top - gap - h - bob);
   const x = Math.round(center(hex).x);
   ctx.save();

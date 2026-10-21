@@ -17,6 +17,15 @@ export abstract class BaseSystem {
   onInit(_context: Omit<SystemContext, 'deltaTime'>): void {}
   onUpdate(_context: SystemContext): void {}
   onDestroy(_context: Omit<SystemContext, 'deltaTime'>): void {}
+
+  /**
+   * Optional, for a game whose drawing systems all implement it: true when
+   * this frame would draw exactly what the canvas already shows. Asked of
+   * every system that implements it before any system updates; when all say
+   * true, `World.frameHeld` is set and `RenderSystem` leaves the canvas as
+   * it is, so a still board isn't repainted every frame.
+   */
+  holdsFrame?(context: SystemContext): boolean;
 }
 
 export abstract class ReactiveSystem extends BaseSystem {

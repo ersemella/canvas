@@ -52,6 +52,15 @@ export class TacticsInputSystem extends BaseSystem {
   onUpdate({events}: SystemContext): void {
     const fight = this.scene?.fight;
     if (!fight) return;
+    const tap = mouseService.justUp && !mouseService.upConsumed;
+    // Nothing to pick: no mouse over the board, no tap.
+    if (!this.mouseOver && !tap) {
+      if (this.hover.hex || this.hover.unitId) {
+        this.hover = {hex: null, unitId: null};
+        events.emit<TacticsHoverPayload>('tactics:hover', this.hover);
+      }
+      return;
+    }
     const map = mapOf(fight);
     const cards = trackCards(fight, this.scene!.previewSlot ?? null);
     const p = mouseService.position;
@@ -64,7 +73,7 @@ export class TacticsInputSystem extends BaseSystem {
       events.emit<TacticsHoverPayload>('tactics:hover', hover);
     }
 
-    if (!mouseService.justUp || mouseService.upConsumed) return;
+    if (!tap) return;
     const card = cardAt(cards, p);
     if (card) {
       events.emit<TacticsCardPayload>('tactics:card', {unitId: card.unitId});

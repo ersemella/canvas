@@ -24,6 +24,13 @@ export class World {
   readonly pixelArt: boolean;
 
   private systems: BaseSystem[] = [];
+  /** The systems that say whether a frame can be held (`BaseSystem.holdsFrame`). */
+  private frameHolders: BaseSystem[] = [];
+  /**
+   * This frame draws nothing new: every system implementing `holdsFrame`
+   * said so. Drawing systems leave the canvas as it is (`RenderSystem` doesn't clear it).
+   */
+  frameHeld = false;
   private currentScene: Scene | null = null;
   private rafId: number | null = null;
   private lastTime = 0;
@@ -52,6 +59,7 @@ export class World {
   registerSystem(system: BaseSystem): void {
     this.systems.push(system);
     this.systems.sort((a, b) => a.priority - b.priority);
+    this.frameHolders = this.systems.filter((s) => s.holdsFrame);
   }
 
   loadScene(scene: Scene): void {
@@ -102,6 +110,8 @@ export class World {
         canvas: this.canvas,
         ctx: this.ctx,
       };
+      this.frameHeld =
+        this.frameHolders.length > 0 && this.frameHolders.every((s) => s.holdsFrame!(context));
       for (const system of this.systems) {
         system.onUpdate(context);
       }

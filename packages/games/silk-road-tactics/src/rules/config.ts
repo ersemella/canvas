@@ -147,15 +147,15 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * moves one hex a turn at a typical action's cost, so it advances very
-   * slowly. Very high health and no defence (owner). Health 1,500 and
-   * speed Low are PLACEHOLDERS.
+   * slowly. Very high health (owner) and defence High (owner, 2026-10-21;
+   * was 0). Health 1,500 and speed Low are PLACEHOLDERS.
    */
   camel: {
     name: 'Caravan Camel',
     letter: 'C',
     health: 1500,
     speed: 10,
-    defence: 0,
+    defence: 40,
     power: 0,
     abilities: ['hold'],
     moveCap: 1,

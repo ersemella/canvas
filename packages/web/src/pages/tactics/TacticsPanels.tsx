@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {ActionIcon, Button, Group, Menu, Paper, Stack, Text} from '@mantine/core';
 import {hexEquals} from '@canvas/engine';
@@ -76,7 +76,8 @@ const SKIP_ARMED_MS = 3000;
  * own button (Move or the ability, once its hex or target is picked).
  * Like Reset run, the first tap only arms it ("Tap again to skip"), so a
  * stray tap doesn't throw a turn away (owner, 2026-10-21); it disarms after
- * `SKIP_ARMED_MS`, or when the turn changes (the page keys it by turn).
+ * `SKIP_ARMED_MS`, on a tap anywhere else (which still does what it does),
+ * or when the turn changes (the page keys it by turn).
  */
 export function SkipButton(props: {
   fight: FightState;
@@ -88,14 +89,24 @@ export function SkipButton(props: {
   onSkip: () => void;
 }) {
   const [armed, setArmed] = useState(false);
+  const ref = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!armed) return;
     const t = setTimeout(() => setArmed(false), SKIP_ARMED_MS);
-    return () => clearTimeout(t);
+    // A press anywhere but the button (the board, another button) disarms it.
+    const onPress = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setArmed(false);
+    };
+    document.addEventListener('pointerdown', onPress, true);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener('pointerdown', onPress, true);
+    };
   }, [armed]);
   const next = nextTurn(props.fight, props.preview);
   return (
     <Button
+      ref={ref}
       className={`${styles.skip} ${armed ? styles.skipArmed : ''}`}
       data-testid="skip-turn"
       fw="bold"
