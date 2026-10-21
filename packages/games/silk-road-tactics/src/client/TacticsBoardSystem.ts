@@ -21,6 +21,7 @@ import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
 import {Playback, eventSeconds} from './playback';
 import type {PlaybackPayload} from './playback';
+import {PALETTE, PIXEL_FONT, paletteAlpha} from './palette';
 import bokhPortrait from './sprites/bokh-portrait.png';
 import bokhSprite from './sprites/bokh.png';
 import mangudaiSprite from './sprites/mangudai.png';
@@ -55,33 +56,35 @@ export interface BoardScene {
 }
 
 /**
- * The sides' colours, the page's panels' (art-direction.md): lapis yours,
- * madder the enemy's. Deep for edges on the sand; light for text and
- * edges on the dark track and labels.
+ * The sides' colours, from the palette (art-direction.md): lapis yours,
+ * madder the enemy's. The plain shade for edges on the sand; light for
+ * text and edges on the dark track and labels.
  */
-const SIDE_COLOR = {player: '#2c5aa0', enemy: '#a3392b'};
-const SIDE_LIGHT = {player: '#a9c6f5', enemy: '#f3a08f'};
+const SIDE_COLOR = {player: PALETTE.lapis, enemy: PALETTE.madder};
+const SIDE_LIGHT = {player: PALETTE.lapisLight, enemy: PALETTE.madderLight};
 /**
  * The rug a unit stands on, filling its hex: a field in its side's colour,
  * opaque enough to stay rich over the sand, and a stitched ivory border.
  */
 const RUG = {
-  player: {field: 'rgba(40,82,148,0.78)', stitch: 'rgba(236,226,200,0.85)'},
-  enemy: {field: 'rgba(146,50,36,0.78)', stitch: 'rgba(236,226,200,0.85)'},
+  player: {field: paletteAlpha('lapis', 0.8), stitch: PALETTE.ivory},
+  enemy: {field: paletteAlpha('madder', 0.8), stitch: PALETTE.ivory},
 };
 /**
- * A track card's ground, behind the portrait: a glazed tile in its side's
- * colour, lighter at the top, with a faint lattice; the panels' teal when empty.
+ * A track card's ground, behind the portrait: two flat bands of its side's
+ * colour, the light one on top, like a pixel sky; dusk when empty.
  */
-const CARD_GLAZE = {
-  player: {top: '#3c6db2', bottom: '#142b52', lattice: 'rgba(169,198,245,0.16)'},
-  enemy: {top: '#b0503a', bottom: '#45150e', lattice: 'rgba(243,160,143,0.16)'},
+const CARD_BANDS = {
+  player: {top: PALETTE.lapis, bottom: PALETTE.lapisDark},
+  enemy: {top: PALETTE.madder, bottom: PALETTE.madderDark},
 };
-const CARD_EMPTY = '#123033';
-/** The dark under labels, tooltips, bars and the track: teal-black ink, as the panels. */
-const INK = '7,20,22';
-/** The panels' turquoise, for the edges of the track, its empty cards and the hover tooltip. */
-const TURQUOISE = '63,184,173';
+/** A hard, pixel drop shadow: the outline colour, no blur. */
+function pixelShadow(ctx: CanvasRenderingContext2D, offset = 2): void {
+  ctx.shadowColor = PALETTE.ink;
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = offset;
+  ctx.shadowOffsetY = offset;
+}
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
 /**
  * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
@@ -120,9 +123,10 @@ interface HighlightStyle {
  * Targeting is all one yellow (the bow's lanes'), stronger the closer it is
  * to what's picked, so it never reads as either side's tint.
  */
-const TARGET_YELLOW = '253,224,71';
-/** An enemy's charging area: its side's madder (`SIDE_COLOR.enemy`), a shade lighter to show on sand. */
-const ENEMY_CHARGE_RED = '190,64,46';
+/** `PALETTE.goldLight`, as channels for the highlights' opacities. */
+const TARGET_YELLOW = '255,223,94';
+/** An enemy's charging area: its side's madder (`SIDE_COLOR.enemy`). */
+const ENEMY_CHARGE_RED = '176,64,46';
 const yellow = (fill: number, stroke: number): HighlightStyle => ({
   fill: `rgba(${TARGET_YELLOW},${fill})`,
   stroke: `rgba(${TARGET_YELLOW},${stroke})`,
@@ -175,7 +179,7 @@ function healthStack(
 }
 
 /** The hovered hex's outline. */
-const HOVER: HighlightStyle = {fill: 'rgba(255,255,255,0.08)', stroke: '#ffffff'};
+const HOVER: HighlightStyle = {fill: paletteAlpha('ivory', 0.1), stroke: PALETTE.ivory};
 
 /** Seconds one spent card takes to lift off the track. */
 const CARD_LIFT_SECONDS = 0.18;
@@ -574,8 +578,8 @@ function drawRug(ctx: CanvasRenderingContext2D, h: Hex, side: Unit['side'], alph
   ctx.restore();
 }
 
-/** A glazed card's ground (`CARD_GLAZE`): its gradient, and a diagonal lattice over it. */
-function glazeCard(
+/** A card's ground (`CARD_BANDS`): filled dark (casting its shadow), then the light band on top. */
+function bandCard(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -583,25 +587,14 @@ function glazeCard(
   h: number,
   side: Unit['side']
 ): void {
-  const glaze = CARD_GLAZE[side];
-  const g = ctx.createLinearGradient(0, y, 0, y + h);
-  g.addColorStop(0, glaze.top);
-  g.addColorStop(1, glaze.bottom);
-  ctx.fillStyle = g;
+  const bands = CARD_BANDS[side];
+  ctx.fillStyle = bands.bottom;
   ctx.fill();
   ctx.save();
   ctx.shadowColor = 'transparent';
   ctx.clip();
-  ctx.strokeStyle = glaze.lattice;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let d = -h; d < w + h; d += 7) {
-    ctx.moveTo(x + d, y);
-    ctx.lineTo(x + d + h, y + h);
-    ctx.moveTo(x + d + h, y);
-    ctx.lineTo(x + d, y + h);
-  }
-  ctx.stroke();
+  ctx.fillStyle = bands.top;
+  ctx.fillRect(x, y, w, Math.round(h * 0.6));
   ctx.restore();
 }
 
@@ -609,7 +602,7 @@ function glazeCard(
  * A numbered step badge on a hex's left edge, clear of the status markers
  * and damage labels above a unit; a second one on the same hex sits on the right.
  */
-function roundRect(
+function pixelRect(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -617,12 +610,21 @@ function roundRect(
   h: number,
   r: number
 ): void {
+  // Pixel art's rounded corner: one square step cut out, not an arc.
+  const c = Math.min(r, 3);
   ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
+  ctx.moveTo(x + c, y);
+  ctx.lineTo(x + w - c, y);
+  ctx.lineTo(x + w - c, y + c);
+  ctx.lineTo(x + w, y + c);
+  ctx.lineTo(x + w, y + h - c);
+  ctx.lineTo(x + w - c, y + h - c);
+  ctx.lineTo(x + w - c, y + h);
+  ctx.lineTo(x + c, y + h);
+  ctx.lineTo(x + c, y + h - c);
+  ctx.lineTo(x, y + h - c);
+  ctx.lineTo(x, y + c);
+  ctx.lineTo(x + c, y + c);
   ctx.closePath();
 }
 
@@ -651,11 +653,11 @@ function drawTrack(
   const start = advance ? trackStart(advance) : fight.currentSlot;
   const deck = trackSlots(fight, previewSlot, start);
   ctx.save();
-  roundRect(ctx, x, y, width, height, 8);
-  ctx.fillStyle = `rgba(${INK},0.94)`;
+  pixelRect(ctx, x, y, width, height, 3);
+  ctx.fillStyle = PALETTE.dusk0;
   ctx.fill();
-  ctx.strokeStyle = `rgba(${TURQUOISE},0.5)`;
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = PALETTE.ink;
+  ctx.lineWidth = 2;
   ctx.stroke();
   ctx.restore();
 
@@ -717,33 +719,29 @@ function drawCard(
   const cy = deck.y - FRONT_CARD_GROW * grow - lift * (deck.y + deck.h + 4);
   ctx.save();
   ctx.globalAlpha = 1 - lift * 0.6;
-  ctx.shadowColor = 'rgba(0,0,0,0.6)';
-  ctx.shadowBlur = 4;
-  ctx.shadowOffsetX = 2;
-  roundRect(ctx, cx, cy, deck.cardW, h, 5);
+  pixelShadow(ctx);
+  pixelRect(ctx, cx, cy, deck.cardW, h, 3);
   // The ghost is just an outline where the acting card lands: no portrait,
   // so the acting unit doesn't show twice.
   if (!u || ghost) {
-    ctx.fillStyle = CARD_EMPTY;
+    ctx.fillStyle = PALETTE.dusk1;
     ctx.fill();
   } else {
-    glazeCard(ctx, cx, cy, deck.cardW, h, u.side);
-    // The lattice replaced the path: the card's outline again, for its border.
-    roundRect(ctx, cx, cy, deck.cardW, h, 5);
+    bandCard(ctx, cx, cy, deck.cardW, h, u.side);
   }
   ctx.shadowColor = 'transparent';
   const strokeBorder = () => {
     ctx.setLineDash(ghost ? [3, 2] : []);
     ctx.strokeStyle = !u
-      ? `rgba(${TURQUOISE},0.25)`
+      ? PALETTE.dusk2
       : ghost || acting
-        ? '#fde047'
+        ? PALETTE.goldLight
         : u.id === opts.selected || u.id === opts.hovered
-          ? '#ffffff'
+          ? PALETTE.ivory
           : SIDE_LIGHT[u.side];
     ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
     // The ghost's thick dashes sit inside its edge, so none show past the card in front.
-    if (ghost) roundRect(ctx, cx + 1.25, cy + 1.25, deck.cardW - 2.5, h - 2.5, 4);
+    if (ghost) pixelRect(ctx, cx + 1.25, cy + 1.25, deck.cardW - 2.5, h - 2.5, 4);
     ctx.stroke();
     ctx.setLineDash([]);
   };
@@ -762,7 +760,7 @@ function drawCard(
       const scale = Math.max(h, deck.cardW) / img.height;
       const faceX = (u.side === 'enemy' ? img.width - portrait.faceX : portrait.faceX) * scale;
       ctx.save();
-      roundRect(ctx, cx, cy, deck.cardW, h, 5);
+      pixelRect(ctx, cx, cy, deck.cardW, h, 3);
       ctx.clip();
       ctx.imageSmoothingEnabled = false;
       ctx.translate(Math.round(mid - faceX), Math.round(cy));
@@ -774,7 +772,7 @@ function drawCard(
       ctx.restore();
       if (u.charging) greyOut(ctx, cx, cy, deck.cardW, h);
       // The border again, over the portrait.
-      roundRect(ctx, cx, cy, deck.cardW, h, 5);
+      pixelRect(ctx, cx, cy, deck.cardW, h, 3);
       strokeBorder();
     } else {
       // No portrait yet: a disc in the hero's colour with its letter.
@@ -786,7 +784,7 @@ function drawCard(
       ctx.strokeStyle = SIDE_LIGHT[u.side];
       ctx.lineWidth = 1.5;
       ctx.stroke();
-      label(ctx, HEROES[u.hero].letter, mid, cy + h / 2 - 3, '#ffffff', 11, true);
+      label(ctx, HEROES[u.hero].letter, mid, cy + h / 2 - 3, PALETTE.ivory, 11, true);
     }
     // A charging card: greyed (the unit waits on its spell, it takes no turn)
     // with the spell's mark; the ability triggers when this slot comes up.
@@ -798,13 +796,13 @@ function drawCard(
 /** Drains a card's colour and darkens it: a charging unit's card. */
 function greyOut(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
   ctx.save();
-  roundRect(ctx, x, y, w, h, 5);
+  pixelRect(ctx, x, y, w, h, 5);
   ctx.clip();
   ctx.globalCompositeOperation = 'saturation';
   ctx.fillStyle = '#808080';
   ctx.fillRect(x, y, w, h);
   ctx.globalCompositeOperation = 'source-over';
-  ctx.fillStyle = `rgba(${INK},0.45)`;
+  ctx.fillStyle = paletteAlpha('dusk0', 0.45);
   ctx.fillRect(x, y, w, h);
   ctx.restore();
 }
@@ -814,9 +812,9 @@ function drawChargeMark(ctx: CanvasRenderingContext2D, x: number, y: number): vo
   ctx.save();
   ctx.beginPath();
   ctx.arc(x, y, 7, 0, Math.PI * 2);
-  ctx.fillStyle = '#581c87';
+  ctx.fillStyle = PALETTE.plumDark;
   ctx.fill();
-  ctx.strokeStyle = '#d8b4fe';
+  ctx.strokeStyle = PALETTE.plumLight;
   ctx.lineWidth = 1.5;
   ctx.stroke();
   ctx.beginPath();
@@ -825,7 +823,7 @@ function drawChargeMark(ctx: CanvasRenderingContext2D, x: number, y: number): vo
   ctx.lineTo(x - 3, y + 4);
   ctx.lineTo(x + 3, y + 4);
   ctx.closePath();
-  ctx.fillStyle = '#f3e8ff';
+  ctx.fillStyle = PALETTE.ivory;
   ctx.fill();
   ctx.restore();
 }
@@ -846,9 +844,9 @@ function drawYield(
   const left = mid(aim) - deck.w / 2;
   ctx.save();
   ctx.setLineDash([3, 2]);
-  ctx.strokeStyle = '#fde047';
+  ctx.strokeStyle = PALETTE.goldLight;
   ctx.lineWidth = 2;
-  roundRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
+  pixelRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
   ctx.stroke();
   ctx.setLineDash([]);
   const y = deck.y + deck.h - 18;
@@ -856,8 +854,8 @@ function drawYield(
   const x2 = mid(land) - 4;
   // Dark under yellow, so it reads over any card.
   for (const [color, width] of [
-    ['rgba(0,0,0,0.75)', 4],
-    ['#fde047', 2],
+    [PALETTE.ink, 4],
+    [PALETTE.goldLight, 2],
   ] as const) {
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
@@ -908,34 +906,33 @@ export function hexOverlaySpan(
 /** The hovered hex's tooltip: its tile, hail and unit (the outline is drawn under the units). */
 function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): void {
   const map = mapOf(fight);
-  const lines: {text: string; color: string; bold?: boolean}[] = [];
+  const lines: {text: string; color: string}[] = [];
   const unit = unitAt(fight, h);
   if (unit) {
     // The side shows in the colour, as on the board: just the hero's name
     // (its health is the bar over it).
-    lines.push({text: HEROES[unit.hero].name, color: SIDE_LIGHT[unit.side], bold: true});
+    lines.push({text: HEROES[unit.hero].name, color: SIDE_LIGHT[unit.side]});
   }
   const tile = tileAt(map, h);
   if (tile !== 'sand' || !unit) {
     const info = TILE_INFO[tile];
     lines.push({
       text: tile === 'sand' ? info.name : `${info.name}: ${info.short}`,
-      color: '#f3f4f6',
-      bold: !unit,
+      color: PALETTE.ivory,
     });
   }
   const hail = fight.effects.find((e) => hexEquals(e.hex, h));
   if (hail) {
     const info = hailInfo(hail, fight.currentSlot);
-    lines.push({text: `${info.name}: ${info.short}`, color: '#7dd3fc'});
+    lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.skyLight});
   }
   const fog = fogAt(fight, h);
   if (fog) {
     const info = fogInfo(fog, fight.currentSlot);
-    lines.push({text: `${info.name}: ${info.short}`, color: '#cbd5e1'});
+    lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.dusk4});
   }
   ctx.save();
-  ctx.font = 'bold 11px system-ui, sans-serif';
+  ctx.font = `11px ${PIXEL_FONT}`;
   const w = Math.max(...lines.map((l) => ctx.measureText(l.text).width)) + 14;
   const lh = 15;
   const boxH = lines.length * lh + 8;
@@ -945,16 +942,16 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
   // them, when they're below too) when that would cover the track.
   const above = span.top - 2 - boxH;
   const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? span.bottom : above;
-  roundRect(ctx, bx, by, w, boxH, 5);
-  ctx.fillStyle = `rgba(${INK},0.94)`;
+  pixelRect(ctx, bx, by, w, boxH, 5);
+  ctx.fillStyle = PALETTE.dusk0;
   ctx.fill();
-  ctx.strokeStyle = `rgba(${TURQUOISE},0.6)`;
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = PALETTE.ink;
+  ctx.lineWidth = 2;
   ctx.stroke();
   ctx.restore();
   lines.forEach((l, i) => {
     ctx.save();
-    ctx.font = `${l.bold ? 'bold ' : ''}11px system-ui, sans-serif`;
+    ctx.font = `11px ${PIXEL_FONT}`;
     ctx.fillStyle = l.color;
     ctx.textBaseline = 'middle';
     ctx.fillText(l.text, bx + 7, by + 4 + lh / 2 + i * lh);
@@ -1653,13 +1650,12 @@ function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
   // Stop short of the last centre, so the head sits clear of the ghost's feet.
   const end = {x: b.x - ux * 12, y: b.y - uy * 12};
   ctx.save();
-  ctx.strokeStyle = '#fde047';
-  ctx.fillStyle = '#fde047';
+  ctx.strokeStyle = PALETTE.goldLight;
+  ctx.fillStyle = PALETTE.goldLight;
   ctx.lineWidth = 3;
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  ctx.shadowColor = 'rgba(0,0,0,0.6)';
-  ctx.shadowBlur = 3;
+  ctx.lineJoin = 'miter';
+  ctx.lineCap = 'square';
+  pixelShadow(ctx, 1);
   ctx.beginPath();
   ctx.moveTo(points[0]!.x, points[0]!.y);
   for (const p of points.slice(1, -1)) ctx.lineTo(p.x, p.y);
@@ -1757,9 +1753,9 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
     ctx.save();
     ctx.globalAlpha = k < 0.75 ? 1 : (1 - k) * 4;
     const c = center(h);
-    ctx.font = 'bold 12px system-ui, sans-serif';
+    ctx.font = `12px ${PIXEL_FONT}`;
     const w = ctx.measureText(text).width + 12;
-    ctx.fillStyle = `rgba(${INK},0.85)`;
+    ctx.fillStyle = PALETTE.dusk0;
     ctx.fillRect(c.x - w / 2, titleY(h) - 9, w, 18);
     label(ctx, text, c.x, titleY(h), color, 12, true);
     ctx.restore();
@@ -1808,14 +1804,14 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
         );
       }
       // The name last, over the effect.
-      if (u.hex) title(u.hex, name, e.kind === 'charge' ? '#d8b4fe' : '#fde047');
+      if (u.hex) title(u.hex, name, e.kind === 'charge' ? PALETTE.plumLight : PALETTE.goldLight);
       return;
     }
     case 'damage':
     case 'heal': {
       if (!u.hex) return;
       const c = center(u.hex);
-      if (e.kind === 'damage') tintHex(ctx, u.hex, 'rgba(190,52,36,0.55)', 1 - k);
+      if (e.kind === 'damage') tintHex(ctx, u.hex, paletteAlpha('madder', 0.55), 1 - k);
       const amount = e.kind === 'damage' ? e.amount : -e.amount;
       drawDamage(ctx, c.x, c.y - 22 - k * 16, amount, e.kind === 'damage' && u.hp === 0);
       return;
@@ -2236,7 +2232,11 @@ function drawUnit(
     // selected, otherwise its side's colour (the hex is tinted to match).
     hexPath(ctx, hex, 2.5);
     if (opts.ghost) ctx.setLineDash([5, 4]);
-    ctx.strokeStyle = opts.acting ? '#fde047' : opts.selected ? '#ffffff' : SIDE_COLOR[u.side];
+    ctx.strokeStyle = opts.acting
+      ? PALETTE.goldLight
+      : opts.selected
+        ? PALETTE.ivory
+        : SIDE_COLOR[u.side];
     ctx.lineWidth = opts.acting || opts.selected ? 3.5 : 3;
     ctx.stroke();
     ctx.setLineDash([]);
@@ -2267,21 +2267,21 @@ function drawUnit(
     ctx.arc(c.x, c.y, 15 * HEX_SCALE, 0, Math.PI * 2);
     ctx.fillStyle = HERO_COLOR[u.hero];
     ctx.fill();
-    ctx.strokeStyle = `rgba(${INK},0.8)`;
+    ctx.strokeStyle = PALETTE.ink;
     ctx.lineWidth = 1.5;
     ctx.stroke();
-    label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, '#ffffff', 15, true);
+    label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, PALETTE.ivory, 15, true);
   }
   ctx.restore();
 }
 
 /** Each status's marker: its letter and colour, in the order a row shows them. */
 const STATUS_MARK: Record<StatusKind, [string, string]> = {
-  immobilized: ['I', '#38bdf8'],
-  slowed: ['S', '#a78bfa'],
-  vulnerable: ['V', '#fb923c'],
-  crushed: ['C', '#ef4444'],
-  taunted: ['T', '#facc15'],
+  immobilized: ['I', PALETTE.sky],
+  slowed: ['S', PALETTE.plumLight],
+  vulnerable: ['V', PALETTE.gold],
+  crushed: ['C', PALETTE.madder],
+  taunted: ['T', PALETTE.goldLight],
 };
 const STATUS_KINDS = Object.keys(STATUS_MARK) as StatusKind[];
 
@@ -2293,7 +2293,7 @@ function statusMarks(fight: FightState, u: Unit): [string, string][] {
       kind === 'taunted' ? u.statuses.some((s) => s.kind === kind) : statusValue(u, kind) > 0;
     if (on) marks.push(STATUS_MARK[kind]);
   }
-  if (isFlanked(fight, u)) marks.push(['F', '#f472b6']);
+  if (isFlanked(fight, u)) marks.push(['F', PALETTE.madderLight]);
   return marks;
 }
 
@@ -2324,10 +2324,10 @@ function drawStatusMark(
   ctx.arc(x, y, MARK.r, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.fill();
-  ctx.strokeStyle = `rgba(${INK},0.9)`;
+  ctx.strokeStyle = PALETTE.ink;
   ctx.lineWidth = 1.5;
   ctx.stroke();
-  label(ctx, m, x, y + 0.5, '#111827', 9, true);
+  label(ctx, m, x, y + 0.5, PALETTE.ink, 9, true);
   ctx.restore();
 }
 
@@ -2356,18 +2356,18 @@ function drawHealthBar(
   const after = hpAfter ?? hp;
   const frac = (n: number) => Math.min(1, Math.max(0, n / u.maxHp));
   ctx.save();
-  roundRect(ctx, x - 2, y - 2, w + 4, h + 4, 4);
-  ctx.fillStyle = `rgba(${INK},0.9)`;
+  pixelRect(ctx, x - 2, y - 2, w + 4, h + 4, 4);
+  ctx.fillStyle = PALETTE.dusk0;
   ctx.fill();
   ctx.strokeStyle = SIDE_COLOR[u.side];
   ctx.lineWidth = 1.5;
   ctx.stroke();
   const f = frac(after);
   if (after !== hp) {
-    ctx.fillStyle = after < hp ? 'rgba(248,113,113,0.45)' : 'rgba(134,239,172,0.45)';
+    ctx.fillStyle = after < hp ? paletteAlpha('madderLight', 0.5) : paletteAlpha('jade', 0.5);
     ctx.fillRect(x + w * Math.min(f, frac(hp)), y, w * Math.abs(f - frac(hp)), h);
   }
-  ctx.fillStyle = f > 0.5 ? '#4ade80' : f > 0.25 ? '#facc15' : '#f87171';
+  ctx.fillStyle = f > 0.5 ? PALETTE.jade : f > 0.25 ? PALETTE.gold : PALETTE.madder;
   ctx.fillRect(x, y, w * Math.min(f, frac(hp)), h);
   ctx.restore();
 }
@@ -2381,12 +2381,12 @@ function drawDamage(
 ): void {
   const text = killed ? `-${amount} ✕` : amount > 0 ? `-${amount}` : `+${-amount}`;
   ctx.save();
-  ctx.font = 'bold 13px monospace';
+  ctx.font = `13px ${PIXEL_FONT}`;
   const w = ctx.measureText(text).width + 8;
-  ctx.fillStyle = `rgba(${INK},0.85)`;
+  ctx.fillStyle = PALETTE.dusk0;
   ctx.fillRect(x - w / 2, y - 9, w, 17);
   ctx.restore();
-  label(ctx, text, x, y, amount >= 0 ? '#fca5a5' : '#86efac', 13, true);
+  label(ctx, text, x, y, amount >= 0 ? PALETTE.madderLight : PALETTE.jade, 13, true);
 }
 
 function label(
@@ -2399,10 +2399,17 @@ function label(
   bold = false
 ): void {
   ctx.save();
-  ctx.font = `${bold ? 'bold ' : ''}${size}px system-ui, sans-serif`;
-  ctx.fillStyle = color;
+  // The pixel font has one weight: `bold` sets the text off with an ink outline instead.
+  ctx.font = `${size}px ${PIXEL_FONT}`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  if (bold) {
+    ctx.strokeStyle = PALETTE.ink;
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'miter';
+    ctx.strokeText(text, x, y);
+  }
+  ctx.fillStyle = color;
   ctx.fillText(text, x, y);
   ctx.restore();
 }

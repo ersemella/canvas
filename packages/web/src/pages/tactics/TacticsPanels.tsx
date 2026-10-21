@@ -6,6 +6,7 @@ import type {Hex} from '@canvas/engine';
 import {
   ABILITIES,
   HEROES,
+  PALETTE,
   RULES,
   TILE_INFO,
   abilitiesOf,
@@ -34,7 +35,12 @@ import styles from './TacticsPage.module.css';
 
 /** A unit's name, in its side's colour: lapis yours, carmine the enemy's, as on the board. */
 const sideColor = (u: Unit) =>
-  u.side === 'player' ? 'var(--srt-lapis-text)' : 'var(--srt-carmine-text)';
+  u.side === 'player' ? 'var(--c-lapisLight)' : 'var(--c-madderLight)';
+
+/** The game's palette as CSS variables (`--c-ink`, `--c-dusk1`, …), for the page and its portaled menu. */
+export const PALETTE_VARS = Object.fromEntries(
+  Object.entries(PALETTE).map(([name, color]) => [`--c-${name}`, color])
+) as React.CSSProperties;
 
 /**
  * The turn's one button: Confirm with the chosen action, or End turn with
@@ -108,6 +114,7 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
       position="top-end"
       withArrow
       classNames={{dropdown: styles.menu!}}
+      styles={{dropdown: PALETTE_VARS}}
       onClose={() => setArmed(false)}
     >
       <Menu.Target>
@@ -175,12 +182,12 @@ export function HexInspector({
               <KeywordText text={info.detail} />
             </Text>
             {hail && (
-              <Text fz="xs" c="cyan.3" mt={4}>
+              <Text fz="xs" c="var(--c-skyLight)" mt={4}>
                 <b>Hail.</b> <KeywordText text={hailInfo(hail, fight.currentSlot).detail} />
               </Text>
             )}
             {fog && (
-              <Text fz="xs" c="gray.4" mt={4}>
+              <Text fz="xs" c="var(--c-dusk4)" mt={4}>
                 <b>Fog.</b> <KeywordText text={fogInfo(fog, fight.currentSlot).detail} />
               </Text>
             )}
@@ -308,7 +315,7 @@ export function StatSheet({
         </div>
       )}
       {unit.charging && (
-        <Text fz="xs" c="grape.3" mt={4}>
+        <Text fz="xs" c="var(--c-plumLight)" mt={4}>
           Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
         </Text>
       )}

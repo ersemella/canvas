@@ -1,0 +1,58 @@
+/**
+ * The game's one palette (art-direction.md): every colour the board's
+ * overlay, the track and the page's panels use comes from here, so the
+ * pixel art, the canvas and the HTML read as one game. The terrain and
+ * effect art keep their own hand-picked shades.
+ *
+ * Ramps, darkest first: dusk (the night panels and the track), sand (the
+ * board), gold (yours to act: the acting unit, targeting, Confirm), lapis
+ * (your side), madder (the enemy's), jade (health, healing), plum
+ * (ultimates, charging), sky (ice and hail).
+ */
+export const PALETTE = {
+  /** The sprites' outline: every UI frame's edge. */
+  ink: '#221816',
+  dusk0: '#1c1622',
+  dusk1: '#2b2333',
+  dusk2: '#3e3349',
+  dusk3: '#5b4c68',
+  /** Dimmed text on the dusk panels. */
+  dusk4: '#a99bb5',
+  sandDark: '#8c7350',
+  sand: '#d4b483',
+  sandLight: '#efdcbc',
+  /** Text on the dusk panels. */
+  ivory: '#f6ecd4',
+  goldDark: '#a8641e',
+  gold: '#e8a93a',
+  /** Strong enough to read over the sand: targeting, the acting unit. */
+  goldLight: '#ffdf5e',
+  lapisDark: '#1f3a6e',
+  lapis: '#3563b0',
+  lapisLight: '#9cbcf0',
+  madderDark: '#6b2116',
+  madder: '#b0402e',
+  madderLight: '#f2a48e',
+  jadeDark: '#2e6b47',
+  jade: '#5bb26f',
+  plumDark: '#5a2c63',
+  plum: '#8d4a92',
+  plumLight: '#e3aee4',
+  sky: '#6fb6d8',
+  skyLight: '#cfe8f2',
+} as const;
+
+export type PaletteColor = keyof typeof PALETTE;
+
+/** A palette colour at some opacity, for canvas fills. */
+export function paletteAlpha(color: PaletteColor, alpha: number): string {
+  const hex = PALETTE[color];
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${alpha})`;
+}
+
+/**
+ * The pixel font every label uses, on the canvas as on the page: Tiny5,
+ * whose 5, B and C stay distinct at small sizes. It has one weight.
+ */
+export const PIXEL_FONT = "'Tiny5', system-ui, sans-serif";

@@ -73,17 +73,17 @@ export function Glossary({children}: {children: React.ReactNode}) {
 
 /** How a keyword reads: harmful statuses warm, the hex's own effect grey, the rest neutral. */
 const TONE: Partial<Record<KeywordId, string>> = {
-  immobilized: 'var(--mantine-color-orange-4)',
-  slowed: 'var(--mantine-color-orange-4)',
-  vulnerable: 'var(--mantine-color-orange-4)',
-  taunted: 'var(--mantine-color-orange-4)',
-  crushed: 'var(--mantine-color-orange-4)',
-  flanked: 'var(--mantine-color-orange-4)',
-  obscured: 'var(--mantine-color-gray-4)',
-  cleanse: 'var(--mantine-color-green-4)',
-  melee: 'var(--mantine-color-red-3)',
-  ultimate: 'var(--mantine-color-grape-4)',
-  charged: 'var(--mantine-color-grape-3)',
+  immobilized: 'var(--c-gold)',
+  slowed: 'var(--c-gold)',
+  vulnerable: 'var(--c-gold)',
+  taunted: 'var(--c-gold)',
+  crushed: 'var(--c-gold)',
+  flanked: 'var(--c-gold)',
+  obscured: 'var(--c-dusk4)',
+  cleanse: 'var(--c-jade)',
+  melee: 'var(--c-madderLight)',
+  ultimate: 'var(--c-plumLight)',
+  charged: 'var(--c-plumLight)',
 };
 
 /**

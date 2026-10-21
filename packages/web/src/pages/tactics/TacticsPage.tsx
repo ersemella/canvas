@@ -45,7 +45,7 @@ import type {
   TurnInput,
   Unit,
 } from '@canvas/games-silk-road-tactics';
-import '@fontsource/cinzel/700.css';
+import '@fontsource/tiny5/400.css';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {useIsPhone} from 'components/useIsPhone';
@@ -54,7 +54,14 @@ import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
 import {HexTooltip} from './HexTooltip';
 import {Glossary} from './Keywords';
-import {AbilityDetail, ConfirmButton, HexInspector, RunMenu, StatSheet} from './TacticsPanels';
+import {
+  AbilityDetail,
+  ConfirmButton,
+  HexInspector,
+  PALETTE_VARS,
+  RunMenu,
+  StatSheet,
+} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 /** Area abilities: their radius, to highlight the area around a chosen hex. */
@@ -633,7 +640,7 @@ export function TacticsPage() {
 
   if (!run || !fight || run.status === 'abandoned') {
     return (
-      <Stack align="center" py="xl" gap="lg" px="md">
+      <Stack className={styles.page!} style={PALETTE_VARS} align="center" py="xl" gap="lg" px="md">
         <Paper className={styles.plaque!} p="xl" maw={520}>
           <Stack gap="md">
             <Text>
@@ -647,7 +654,7 @@ export function TacticsPage() {
             <Button className={styles.seal!} fw="bold" onClick={startRun} loading={busy}>
               Start a fight
             </Button>
-            {error && <Text c="red.4">{error}</Text>}
+            {error && <Text c="var(--c-madderLight)">{error}</Text>}
           </Stack>
         </Paper>
       </Stack>
@@ -732,6 +739,7 @@ export function TacticsPage() {
   return (
     <Stack
       className={styles.page!}
+      style={PALETTE_VARS}
       align="center"
       pt={phone ? 0 : 'sm'}
       pb={phone ? 0 : 'sm'}
@@ -762,7 +770,7 @@ export function TacticsPage() {
                     className={styles.display!}
                     fz="1.8rem"
                     fw="bold"
-                    c={fight.phase === 'won' ? 'var(--srt-brass)' : 'var(--srt-carmine-text)'}
+                    c={fight.phase === 'won' ? 'var(--c-goldLight)' : 'var(--c-madderLight)'}
                   >
                     {fight.phase === 'won' ? 'Victory' : 'Defeat'}
                   </Text>

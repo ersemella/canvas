@@ -9,7 +9,6 @@
   position: relative;
   flex-shrink: 1;
   min-width: 0;
-  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -29,17 +28,17 @@
 }
 
 .preview {
-  border-top: 1px solid var(--srt-brass-dim);
+  border-top: var(--px) solid var(--c-dusk3);
   padding-top: 6px;
 }
 
 .damage {
-  color: var(--mantine-color-red-4);
+  color: var(--c-madderLight);
   font-weight: 600;
 }
 
 .heal {
-  color: var(--mantine-color-green-4);
+  color: var(--c-jade);
   font-weight: 600;
 }
 
@@ -56,16 +55,16 @@
   flex-direction: column;
   align-items: center;
   padding: 4px 0;
-  border: 1px solid rgba(63, 184, 173, 0.3);
-  border-radius: 3px;
-  background: rgba(7, 20, 22, 0.65);
+  /* Sunken: the shade on the top and left. */
+  background: var(--c-dusk0);
+  box-shadow: inset var(--px) var(--px) 0 var(--c-ink);
 }
 
 .coreStats > div > :first-child {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--srt-parchment-dim);
+  color: var(--c-dusk4);
 }
 
 .coreStats b {
@@ -149,10 +148,9 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 4px;
-  border-radius: 4px;
-  background: rgba(7, 20, 22, 0.96);
-  border: 1px solid var(--srt-turquoise-dim);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+  background: var(--c-dusk0);
+  border: var(--px) solid var(--c-ink);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.6);
   cursor: pointer;
 }
 
@@ -173,12 +171,12 @@
   flex-direction: column;
   align-items: center;
   line-height: 1.15;
-  font-size: 15px;
+  font-size: 16px;
   text-align: center;
 }
 .bigButtonCost {
   margin-top: 3px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   opacity: 0.75;
 }
@@ -202,8 +200,7 @@
   text-decoration-color: currentColor;
 }
 .term[aria-pressed='true'] {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 3px;
+  background: var(--c-dusk3);
 }
 
 /* The tapped keyword's rule, kept in view at the bottom of a scrolling tooltip. */
@@ -214,12 +211,12 @@
   align-items: flex-start;
   gap: 6px;
   margin-top: 6px;
-  padding: 6px 8px;
-  border: 1px solid var(--srt-turquoise-dim);
-  border-left: 3px solid var(--srt-saffron);
-  border-radius: 3px;
-  background: var(--srt-ink);
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.4);
+  padding: 6px 8px 6px 12px;
+  border: var(--px) solid var(--c-ink);
+  /* A gold stripe down the left, inside the edge. */
+  background: var(--c-dusk0);
+  box-shadow: inset calc(2 * var(--px)) 0 0 var(--c-gold);
+  clip-path: var(--notch);
 }
 
 /* The dense sheet's stats, one line. */
@@ -228,7 +225,7 @@
   flex-wrap: wrap;
   gap: 2px 12px;
   font-size: 12px;
-  color: var(--srt-parchment-dim);
+  color: var(--c-dusk4);
 }
 
 .statuses {
@@ -237,7 +234,7 @@
   gap: 2px 10px;
   margin-top: 6px;
   font-size: 12px;
-  color: var(--mantine-color-orange-3);
+  color: var(--c-gold);
 }
 
 /* The dense sheet's abilities: names to scan, each tappable to explain it. */
@@ -251,137 +248,139 @@
   all: unset;
   cursor: pointer;
   padding: 3px 9px;
-  border: 1px solid var(--srt-turquoise-dim);
-  border-radius: 3px;
-  font-family: var(--srt-display);
   font-size: 13px;
   font-weight: 700;
-  color: var(--srt-parchment);
-  background: rgba(7, 20, 22, 0.65);
+  color: var(--c-ivory);
+  border: var(--px) solid var(--c-ink);
+  background: var(--c-dusk2);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-dusk3),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk1);
+  clip-path: var(--notch);
 }
 .abilityChipUltimate {
-  color: var(--srt-tyrian-text);
-  border-color: var(--srt-tyrian-edge);
-  background: rgba(110, 42, 99, 0.35);
+  color: var(--c-plumLight);
+  background: var(--c-plumDark);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-plum),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk1);
 }
 .abilityChip[aria-pressed='true'] {
-  outline: 1px solid currentColor;
+  border-color: var(--c-goldLight);
 }
 .abilityChipNote {
   margin-left: 6px;
-  font-family: var(--mantine-font-family);
   font-size: 11px;
   font-weight: 500;
   opacity: 0.75;
 }
 .abilitySummary {
-  color: var(--srt-parchment-dim);
+  color: var(--c-dusk4);
 }
 
 /* A keyword from an ability's text, explained under it. */
 .nestedRule {
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px solid var(--srt-brass-dim);
+  border-top: var(--px) solid var(--c-dusk3);
 }
 
 /*
- * The caravan's look (art-direction.md): the panels as glazed turquoise
- * tilework with brass studs, the buttons as tiles, names in an inscription
- * face. Only surfaces, borders and type change: every label, layout and
- * state reads as before.
+ * The pixel look (art-direction.md): the page is drawn as the board is.
+ * Every colour is the game's palette (`PALETTE`, set on the page as
+ * `--c-*`), the type is a pixel font, and every box and button is built
+ * from whole pixels: a one-pixel outline in the sprites' ink, square-step
+ * corners, a hard bevel (light top and left, shade bottom and right) and
+ * flat fills. `--px` is one art pixel on screen, about the board's.
  */
 .page,
 .menu {
-  --srt-ink: #071416;
-  --srt-ground: #0f2b2d;
-  --srt-ground-hi: #17393b;
-  --srt-turquoise: #3fb8ad;
-  --srt-turquoise-dim: #24706b;
-  --srt-brass: #d4a94e;
-  --srt-brass-dim: #7d6130;
-  --srt-parchment: #f3ead6;
-  --srt-parchment-dim: #b4c4bd;
-  --srt-lapis: #24508f;
-  --srt-lapis-hi: #3768b4;
-  --srt-lapis-text: #a9c6f5;
-  --srt-carmine-text: #f3a08f;
-  --srt-saffron: #e39a1f;
-  --srt-saffron-hi: #f7c75a;
-  --srt-tyrian: #6e2a63;
-  --srt-tyrian-edge: #a65597;
-  --srt-tyrian-text: #ecb6df;
-  --srt-display: 'Cinzel', Georgia, serif;
-  /* Mantine's text and dimmed text, in the panels' ivory. */
-  --mantine-color-text: var(--srt-parchment);
-  --mantine-color-dimmed: var(--srt-parchment-dim);
+  --px: 2px;
+  --notch: polygon(
+    var(--px) 0,
+    calc(100% - var(--px)) 0,
+    calc(100% - var(--px)) var(--px),
+    100% var(--px),
+    100% calc(100% - var(--px)),
+    calc(100% - var(--px)) calc(100% - var(--px)),
+    calc(100% - var(--px)) 100%,
+    var(--px) 100%,
+    var(--px) calc(100% - var(--px)),
+    0 calc(100% - var(--px)),
+    0 var(--px),
+    var(--px) var(--px)
+  );
+  --mantine-font-family: 'Tiny5', system-ui, sans-serif;
+  /* The pixel font runs small for its size: Mantine's text sizes, a step up. */
+  --mantine-font-size-xs: 13px;
+  --mantine-font-size-sm: 15px;
+  --mantine-font-size-md: 17px;
+  --mantine-color-text: var(--c-ivory);
+  --mantine-color-dimmed: var(--c-dusk4);
+  font-family: var(--mantine-font-family);
+  /* The pixel font has one weight: a made-up bold would smear its pixels. */
+  font-synthesis: none;
+  color: var(--c-ivory);
+}
+.page button {
+  font-family: inherit;
 }
 
-/* Names and headings: an inscription face. */
+/* Names and headings. */
 .display {
-  font-family: var(--srt-display);
   letter-spacing: 0.02em;
 }
 
-/* A panel: glazed teal, a brass edge, a fine turquoise rule inside it and a stud in each corner. */
+/* A panel: dusk, the ink outline, a bevel. */
 .plaque.plaque {
-  color: var(--srt-parchment);
-  border: 1px solid var(--srt-brass-dim);
-  border-radius: 3px;
+  color: var(--c-ivory);
+  border: var(--px) solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-dusk1);
   box-shadow:
-    inset 0 0 0 1px var(--srt-ink),
-    inset 0 0 0 2px rgba(63, 184, 173, 0.35);
-  background:
-    linear-gradient(var(--srt-brass), var(--srt-brass)) left 4px top 4px / 3px 3px no-repeat,
-    linear-gradient(var(--srt-brass), var(--srt-brass)) right 4px top 4px / 3px 3px no-repeat,
-    linear-gradient(var(--srt-brass), var(--srt-brass)) left 4px bottom 4px / 3px 3px no-repeat,
-    linear-gradient(var(--srt-brass), var(--srt-brass)) right 4px bottom 4px / 3px 3px no-repeat,
-    linear-gradient(180deg, var(--srt-ground-hi), var(--srt-ground) 45%, #0b2224);
+    inset var(--px) var(--px) 0 var(--c-dusk2),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
+  clip-path: var(--notch);
 }
 
-/* Move and the abilities: turquoise-edged tiles; the picked one inlaid in lapis, edged in brass. */
+/* Move and the abilities: raised dusk tiles; the picked one lapis, outlined in gold. */
 .tile.tile {
-  color: var(--srt-parchment);
-  border: 1px solid var(--srt-turquoise-dim);
-  border-radius: 3px;
-  background: linear-gradient(180deg, var(--srt-ground-hi), #0c2426);
+  color: var(--c-ivory);
+  border: var(--px) solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-dusk2);
   box-shadow:
-    inset 0 1px 0 rgba(200, 255, 245, 0.1),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.45);
+    inset var(--px) var(--px) 0 var(--c-dusk3),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk1);
+  clip-path: var(--notch);
 }
 .tile.tile:hover:not(:disabled) {
-  border-color: var(--srt-turquoise);
-  background: linear-gradient(180deg, #1e4a4b, #10302f);
+  background: var(--c-dusk3);
 }
 .tile.tile[aria-pressed='true'] {
-  color: #fff;
-  border-color: var(--srt-brass);
-  background: linear-gradient(180deg, var(--srt-lapis-hi), var(--srt-lapis));
+  border-color: var(--c-goldLight);
+  background: var(--c-lapis);
   box-shadow:
-    0 0 0 1px var(--srt-brass),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    inset var(--px) var(--px) 0 var(--c-lapisLight),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
 }
 .tile.tileUltimate {
-  color: var(--srt-tyrian-text);
-  border-color: var(--srt-tyrian-edge);
+  color: var(--c-plumLight);
 }
 .tile.tileUltimate[aria-pressed='true'] {
-  color: #fff;
-  border-color: var(--srt-tyrian-text);
-  background: linear-gradient(180deg, #8c3a7e, var(--srt-tyrian));
-  box-shadow: 0 0 0 1px var(--srt-tyrian-text);
+  color: var(--c-ivory);
+  background: var(--c-plum);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-plumLight),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-plumDark);
 }
 .tile.tile:disabled {
-  color: rgba(243, 234, 214, 0.45);
-  border-color: #1d3a3a;
-  background: #0a1a1b;
+  color: var(--c-dusk4);
+  background: var(--c-dusk1);
   box-shadow: none;
 }
-/* The name in the inscription face; numbers (a charge, the cost) stay plain, to scan. */
 .tileName {
-  font-family: var(--srt-display);
   font-weight: 700;
-  letter-spacing: 0.02em;
 }
 .tileNote {
   white-space: pre;
@@ -389,40 +388,45 @@
   font-weight: 500;
 }
 
-/* Confirm: a saffron seal; while it waits for a target, an outline asking for one. Its slots stay in the plain face. */
+/* Confirm: the same tile in gold; while it waits for a target, a flat dusk tile asking for one. */
 .seal.seal {
-  color: var(--srt-ink);
-  border: 1px solid var(--srt-saffron-hi);
-  border-radius: 3px;
-  background: linear-gradient(180deg, var(--srt-saffron-hi), var(--srt-saffron));
+  color: var(--c-ink);
+  border: var(--px) solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-gold);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -2px 0 rgba(120, 60, 0, 0.45);
+    inset var(--px) var(--px) 0 var(--c-goldLight),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-goldDark);
+  clip-path: var(--notch);
 }
 .seal.seal:hover:not(:disabled) {
-  background: linear-gradient(180deg, #fbd57a, #eba630);
+  background: var(--c-goldLight);
 }
 .seal.seal:disabled {
-  color: var(--srt-parchment-dim);
-  border: 1px dashed var(--srt-turquoise-dim);
-  background: rgba(15, 43, 45, 0.6);
+  color: var(--c-goldLight);
+  background: var(--c-dusk1);
   box-shadow: none;
 }
 
 /* The run's ⋯ and its menu. */
 .menuButton.menuButton {
-  color: var(--srt-brass);
+  color: var(--c-goldLight);
+  border-radius: 0;
 }
 .menu.menu {
-  color: var(--srt-parchment);
-  border: 1px solid var(--srt-turquoise-dim);
-  border-radius: 3px;
-  background: var(--srt-ground);
+  color: var(--c-ivory);
+  border: var(--px) solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-dusk1);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.6);
+}
+.menu :global(.mantine-Menu-item) {
+  border-radius: 0;
 }
 .menu :global(.mantine-Menu-item[data-hovered]) {
-  background: var(--srt-ground-hi);
+  background: var(--c-dusk2);
 }
 .menu :global(.mantine-Menu-arrow) {
-  border-color: var(--srt-turquoise-dim);
-  background: var(--srt-ground);
+  border-color: var(--c-ink);
+  background: var(--c-dusk1);
 }

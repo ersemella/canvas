@@ -77,27 +77,35 @@ Into the Breach shows enemy targets in advance; this game hides intent
 (D11), so the track ([timeline.md](timeline.md)) carries that load. Its
 cards use each unit's **portrait**.
 
-## Panels (built 2026-10-20)
+## The UI's pixel look (built 2026-10-21)
 
-The page's HTML panels (the action section, stat sheets, tooltips, the
-result) follow the setting without changing layout, labels or states.
-The palette is the road's glaze and dyes, so it doesn't read as all
-brown: panels are glazed turquoise tilework (deep teal, a brass edge, a
-fine turquoise rule inside it, brass studs at the corners), with ivory
-text. Move and the abilities are turquoise-edged tiles; the picked one is
-inlaid in lapis with a brass edge, and an ultimate is Tyrian purple.
-Confirm is a saffron seal. Names are in Cinzel. Numbers (costs, charge,
-stats) stay in the plain face, since Cinzel's figures are small and slow
-to scan. The tokens are `--srt-*` in `TacticsPage.module.css`.
+The page's HTML (the action section, stat sheets, tooltips, the result,
+the menu) and the canvas's overlay are drawn as the pixel art is, so the
+game reads as one thing. Layout, labels and states are unchanged.
 
-The canvas shares the palette (`TacticsBoardSystem.ts`). The sides are
-lapis (yours) and madder (the enemy's): deep for hex edges, light for
-text and track-card edges. Each unit stands on a rug filling its hex, a
-field in its side's colour with a stitched ivory border, rather than a
-thin wash that went muddy on the sand. Track portraits sit on a glazed
-tile in their side's colour (lighter at the top, a faint lattice). The track and the board's
-labels sit on the panels' teal-black ink, with turquoise edges. Targeting
-stays yellow.
+- **One palette** (`src/client/palette.ts`, `PALETTE`), 27 colours in
+  ramps: dusk (the night panels and the track), sand (the board), gold
+  (yours to act: the acting unit, targeting, Confirm), lapis (your side),
+  madder (the enemy's), jade (health, healing), plum (ultimates,
+  charging), sky (ice, hail), plus ink, the sprites' outline, and ivory
+  for text. The board's overlay, the track and the page all take their
+  colours from it; the page gets it as `--c-*` CSS variables. Only the
+  terrain and effect art keep their own shades.
+- **A pixel font**, Tiny5, on the page and the canvas. Its 5, B and C
+  stay distinct at small sizes (Pixelify Sans's 5 reads as S, so it was
+  dropped). It has one weight: synthesized bold is off on the page, and
+  on the canvas "bold" labels get an ink outline instead.
+- **Boxes and buttons built from whole pixels** (`--px`, one art pixel,
+  2px): an ink outline, square-step corners, a hard bevel (light top and
+  left, shade bottom and right) and flat fills; no gradients, rounded
+  corners or soft shadows. Move and the abilities are raised dusk tiles;
+  the picked one is lapis, outlined in gold; an ultimate is plum. Confirm
+  is the same tile in gold. Sunken boxes (the stats) have the shade on
+  top. The track's cards and the canvas tooltips use the same cut corners
+  and hard drop shadows.
+- **The sides:** each unit stands on a rug filling its hex (its side's
+  colour, a stitched ivory border); track portraits sit on two flat bands
+  of their side's colour.
 
 ## Engine work (built 2026-10-19)
 
@@ -140,6 +148,7 @@ needs cleanup by hand.
 
 - Internal resolution and scale (300×200 at 2× proposed), and how phones
   handle non-integer fits.
-- The palette itself, and the three team rim colours.
+- The palette is set for the UI (above); whether sprites keep to it, and
+  the rival caravan's colour, are open.
 - Who makes the art: owner, commission or AI-assisted.
 - Pixel font, or full-resolution text above the scene.
