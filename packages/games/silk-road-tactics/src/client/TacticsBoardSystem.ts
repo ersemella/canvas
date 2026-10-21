@@ -779,8 +779,7 @@ function drawCard(
   const acting = Boolean(card.acting);
   const cx = deck.x0 + i * deck.w;
   const h = deck.h + 2 * FRONT_CARD_GROW * grow;
-  // A passed card drops away off the canvas's bottom edge, away from the board.
-  const cy = deck.y - FRONT_CARD_GROW * grow + lift * (SCENE_SIZE.height - deck.y + 4);
+  const cy = deck.y - FRONT_CARD_GROW * grow - lift * (deck.y + deck.h + 4);
   ctx.save();
   ctx.globalAlpha = 1 - lift * 0.6;
   pixelShadow(ctx);
@@ -1036,9 +1035,9 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
   const span = hexOverlaySpan(fight, h);
   const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, span.x - w / 2));
   // Above the hex (and a unit's health bar and statuses), or below it when
-  // that would leave the canvas.
+  // that would cover the track.
   const above = span.top - 2 - boxH;
-  const by = above < 2 ? span.bottom : above;
+  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? span.bottom : above;
   pixelRect(ctx, bx, by, w, boxH, 5);
   ctx.fillStyle = PALETTE.dusk0;
   ctx.fill();

@@ -1,7 +1,7 @@
 /**
- * Where things sit on the canvas: the board, with room above its top row
- * for a unit's health bar, statuses and turn arrow, and the track strip
- * below it, by the turn's controls. Shared by the drawing system and the
+ * Where things sit on the canvas: the track strip along the top, then room
+ * for what's drawn over the board's top row (a unit's health bar, statuses
+ * and turn arrow), then the board. Shared by the drawing system and the
  * input system, so a tap lands on what was drawn.
  */
 import {hexKey, pixelToHex} from '@canvas/engine';
@@ -13,21 +13,18 @@ import type {FightState} from '../rules/types';
 /** The scene's size in pixels (game.json's canvas). */
 export const SCENE_SIZE = {width: 672, height: 760} as const;
 
-/**
- * The board: 9 rows of pointy hexes of size 42 (32 until 2026-10-20), odd
- * rows 9 hexes wide (columns −1 to 7): 655 × 588 pixels, from y 72 to 660.
- * The 72 pixels above it hold what's drawn over a top-row unit (its health
- * bar, statuses and turn arrow), so nothing there has to move below it. A
- * hex is 73 pixels wide, room for a 36-pixel mounted sprite at 2×.
- */
-export const BOARD_LAYOUT: HexLayout = {orientation: 'pointy', size: 42, origin: {x: 81, y: 114}};
+/** The track strip: one card per unit, left to right in turn order (3.1). */
+export const TRACK_AREA = {x: 6, y: 6, width: 660, height: 86} as const;
 
 /**
- * The track strip: one card per unit, left to right in turn order (3.1),
- * under the board (on top until 2026-10-21), next to the turn's controls
- * whose slot counts it shows.
+ * The board: 9 rows of pointy hexes of size 42 (32 until 2026-10-20), odd
+ * rows 9 hexes wide (columns −1 to 7): 655 × 588 pixels, from y 164 to 752.
+ * The 72 pixels between it and the track hold what's drawn over a top-row
+ * unit (its health bar, statuses and turn arrow), so the track never
+ * covers it and nothing has to move below the unit. A hex is 73 pixels
+ * wide, room for a 36-pixel mounted sprite at 2×.
  */
-export const TRACK_AREA = {x: 6, y: 668, width: 660, height: 86} as const;
+export const BOARD_LAYOUT: HexLayout = {orientation: 'pointy', size: 42, origin: {x: 81, y: 206}};
 
 export interface TrackCard {
   unitId: string;
@@ -116,7 +113,7 @@ export function cardAt(cards: TrackCard[], p: {x: number; y: number}): TrackCard
 
 /** The map hex under a point, or null off the board. */
 export function hexAt(map: MapData, p: {x: number; y: number}): Hex | null {
-  if (p.y >= TRACK_AREA.y) return null;
+  if (p.y < TRACK_AREA.y + TRACK_AREA.height) return null;
   const h = pixelToHex(p, BOARD_LAYOUT);
   return onMap(map, h) ? h : null;
 }

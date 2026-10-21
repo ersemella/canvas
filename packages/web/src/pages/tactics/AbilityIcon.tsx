@@ -1,9 +1,10 @@
 import type {AbilityKind} from '@canvas/games-silk-road-tactics';
 
 /**
- * Each kind of ability's icon, drawn as the pixel art is: 7×7 art pixels,
- * `#` filled. A sword for attacks, a cross for heals, a boot for movement,
- * a padlock for control (statuses, hail, fog).
+ * Each kind of ability's icon, drawn as the pixel art is: up to 9×9 art
+ * pixels, `#` filled, centred in a 9×9 box. A sword for attacks, a cross
+ * for heals, an arrow for movement, a chain's two links for control
+ * (statuses, hail, fog). A boot and a padlock (2026-10-21) didn't read.
  */
 const ICON: Record<AbilityKind, string[]> = {
   attack: [
@@ -25,22 +26,24 @@ const ICON: Record<AbilityKind, string[]> = {
     '..###..',
   ],
   move: [
-    '.###...', //
-    '.###...',
-    '.###...',
-    '.####..',
-    '.#####.',
+    '...#...', //
+    '...##..',
+    '######.',
     '#######',
-    '#######',
+    '######.',
+    '...##..',
+    '...#...',
   ],
   control: [
-    '..###..', //
-    '.#...#.',
-    '.#...#.',
-    '#######',
-    '###.###',
-    '###.###',
-    '#######',
+    '..###....', //
+    '.#...#...',
+    '.#...#...',
+    '.#.#####.',
+    '..###.#.#',
+    '...#..#.#',
+    '...#...#.',
+    '...#...#.',
+    '....###..',
   ],
 };
 
@@ -65,11 +68,13 @@ export const KIND_NAME: Record<AbilityKind, string> = {
  */
 export function AbilityIcon({kind, px = 2}: {kind: AbilityKind; px?: number}) {
   const rows = ICON[kind];
+  // A smaller icon sits in the middle of the box, at the same pixel size.
+  const at = (9 - rows.length) / 2;
   return (
     <svg
-      width={7 * px}
-      height={7 * px}
-      viewBox="0 0 7 7"
+      width={9 * px}
+      height={9 * px}
+      viewBox={`${-at} ${-at} 9 9`}
       shapeRendering="crispEdges"
       aria-hidden
       style={{

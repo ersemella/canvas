@@ -430,12 +430,12 @@ confirm or change:
   statuses (still with reduced motion). The arrow shows only on your
   units, and not while a turn plays back; the acting card on the track is
   outlined gold too.
-- **The track under the board** (2026-10-21; it ran along the top): next
-  to the turn's controls, whose slot counts it shows, and out of the way
-  of the top row. The board keeps room above that row, so every unit's
-  health bar, statuses and turn arrow sit above it (the top row's used to
-  drop below the unit, over the row beneath, and the turn arrow there was
-  drawn over the unit itself). Spent cards drop off the bottom.
+- **Room over the top row** (2026-10-21): the board sits a little lower
+  under the track, so every unit's health bar, statuses and turn arrow sit
+  above it (the top row's used to drop below the unit, over the row
+  beneath, and the turn arrow there was drawn over the unit itself). The
+  track went under the board for a while the same day, and came back up
+  (owner).
 - **Why a target can or can't be picked** (2026-10-21): an ability aimed
   within a range (Sunlight, Hail, Fog, Volley, Freeze) outlines its reach
   with a dashed line; the bow draws its six lanes, an arrow along each to
@@ -446,8 +446,9 @@ confirm or change:
 - **Ability kinds** (2026-10-21): each ability's button, its name on a
   stat sheet and its explanation carry an icon for its kind, a pixel
   sword for an attack (Composite Bow, Volley, Throw, Rampage), a cross
-  for a heal (Sunlight), a boot for movement (Move, Dash) and a padlock
-  for control (Hail, Fog, Freeze, Pin); the explanation names the kind.
+  for a heal (Sunlight), an arrow for movement (Move, Dash) and a chain's
+  two links for control (Hail, Fog, Freeze, Pin); the explanation names
+  the kind. (A boot and a padlock, first, were confusing: owner.)
   Each kind's icon takes its colour from what it does: damage's light
   madder, health's jade, ivory, the harmful statuses' gold.
 - **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
