@@ -48,55 +48,53 @@ export const PALETTE_VARS = Object.fromEntries(
 ) as React.CSSProperties;
 
 /**
- * The turn's one button: Confirm with the chosen action, or End turn with
- * none (Hold), saying when the next turn comes in slots from now. While the
- * action still needs a target it stays, disabled, saying what to pick, so
- * the buttons around it don't move. When the
- * slot the cost aims at is taken, the card yields further on (3.3): it reads
- * "+3 → +5", the cost and then where the card lands, as the track draws it.
- * The outcome itself is drawn on the board (7.2).
+ * When the unit's next turn comes after a previewed turn, in slots from
+ * now: "+3", or, when the slot the cost aims at is taken and the card
+ * yields further on (3.3), "+3 → +5", the cost and then where the card
+ * lands, as the track draws it. Null with no preview.
  */
-export function ConfirmButton(props: {
-  /** Nothing picked: the button ends the turn with Hold. */
-  endTurn: boolean;
+export function nextTurn(
+  fight: FightState,
+  preview: TurnPreview | null
+): {text: string; title?: string} | null {
+  if (!preview) return null;
+  const now = fight.currentSlot;
+  const slot = preview.slot;
+  const aim = preview.aimSlot ?? slot;
+  if (slot === null) return {text: ''};
+  if (aim === null || slot <= aim) return {text: `+${slot - now}`};
+  return {
+    text: `+${aim - now} → +${slot - now}`,
+    title: `The cost reaches slot +${aim - now}, but cards hold the slots up to +${slot - now - 1}: yours yields to the first free one.`,
+  };
+}
+
+/**
+ * Skip turn: ends the turn with Hold, whatever is picked, saying when the
+ * next turn comes. A quiet tile: the turn's action is confirmed from its
+ * own button (Move or the ability, once its hex or target is picked).
+ */
+export function SkipButton(props: {
   fight: FightState;
+  /** The turn as a Hold. */
   preview: TurnPreview | null;
-  /** What Move or the chosen ability still needs picked on the board, if anything: disabled, saying so. */
-  needsTarget: string | null;
   busy: boolean;
   /** Phones: full height for a thumb. */
   size?: 'sm' | 'lg';
-  onConfirm: () => void;
+  onSkip: () => void;
 }) {
-  const {fight, preview} = props;
-  if (props.needsTarget)
-    return (
-      <Button className={styles.seal!} fw="bold" size={props.size ?? 'sm'} disabled>
-        {props.needsTarget}
-      </Button>
-    );
-  const now = fight.currentSlot;
-  const slot = preview?.slot ?? null;
-  const aim = preview?.aimSlot ?? slot;
-  const yields = slot !== null && aim !== null && slot > aim;
-  const next = slot === null ? '' : yields ? `+${aim! - now} → +${slot - now}` : `+${slot - now}`;
+  const next = nextTurn(props.fight, props.preview);
   return (
     <Button
-      className={styles.seal!}
+      className={styles.skip!}
       fw="bold"
       size={props.size ?? 'sm'}
       loading={props.busy}
-      disabled={!preview}
-      onClick={props.onConfirm}
-      title={
-        yields
-          ? `The cost reaches slot +${aim! - now}, but cards hold the slots up to +${slot! - now - 1}: yours yields to the first free one.`
-          : undefined
-      }
+      disabled={!props.preview}
+      onClick={props.onSkip}
+      title={next?.title ?? 'End the turn without moving or using an ability'}
     >
-      {preview
-        ? `${props.endTurn ? 'End turn' : 'Confirm'}${next ? ` · ${next}` : ''}`
-        : 'Can’t do that'}
+      {`Skip turn${next?.text ? ` · ${next.text}` : ''}`}
     </Button>
   );
 }

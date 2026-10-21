@@ -398,6 +398,43 @@
   align-items: center;
 }
 
+/* The picked choice, ready: its Confirm, in Confirm's bright lapis (an ultimate's too). */
+.tile.tileConfirm.tileConfirm {
+  color: var(--c-ivory);
+  border-color: var(--c-ink);
+  background: var(--c-lapis);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-lapisLight),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
+}
+.tile.tileConfirm.tileConfirm:hover:not(:disabled) {
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-lapisPale),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
+}
+
+/* Skip turn: a quiet dusk tile, beside the run's menu. */
+.skip.skip {
+  color: var(--c-ivory);
+  border: var(--px) solid var(--c-ink);
+  border-radius: 0;
+  background: var(--c-dusk2);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-dusk3),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
+  clip-path: var(--notch);
+}
+.skip.skip:hover:not(:disabled) {
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-dusk4),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
+}
+.skip.skip:disabled {
+  color: var(--c-dusk4);
+  background: var(--c-dusk1);
+  box-shadow: none;
+}
+
 /* Confirm: the same tile in your units' lapis (their hexes and cards); while it waits for a target, a flat dusk tile asking for one. */
 .seal.seal {
   color: var(--c-ivory);

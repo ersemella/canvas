@@ -259,10 +259,10 @@ try {
   const outrider = 'p-mangudai';
 
   // The camel always acts first: walk it a hex with real taps (Move, a hex,
-  // Confirm); its Move shows its own cost, 14 slots.
+  // Move again, now its Confirm); its Move shows its own cost, 14 slots.
   check('the camel acts first', run.view.fight.awaiting === 'p-camel', run.view.fight.awaiting);
   {
-    const camelMove = page.getByTestId('turn-controls').getByRole('button', {name: /^Move/});
+    const camelMove = page.locator('[data-choice="move"]');
     check('the camel’s Move shows its 14 slots', (await camelMove.textContent()).endsWith('+14'));
     await camelMove.click();
     const step = (await page.evaluate(() => window.__tactics.reaches.map((r) => r.hex))).find(
@@ -270,7 +270,7 @@ try {
     );
     await tapHex(step);
     const v = run.view.version;
-    await page.getByRole('button', {name: /^Confirm/}).click();
+    await camelMove.click();
     await page.waitForFunction((v) => window.__tactics.run.view.version > v, v, {
       timeout: 15_000,
     });
@@ -285,7 +285,7 @@ try {
   // No top bar: the board gets the whole screen, on desktop too.
   check('no top bar', (await page.locator('header').count()) === 0);
 
-  // One turn with real taps: select Leap, replace it with Move, Confirm. The
+  // One turn with real taps: select Leap, replace it with Move, confirm. The
   // Outrider (fastest, so first) starts somewhere on the left edge, so the
   // hexes come from the page: Leap's farthest target, and a move off its line.
   const before = run.view.version;
@@ -310,7 +310,7 @@ try {
     )[0];
   // Without Move, a tap only looks at the hex.
   await tapHex(dest);
-  const moveButton = page.getByTestId('turn-controls').getByRole('button', {name: /^Move/});
+  const moveButton = page.locator('[data-choice="move"]');
   check(
     'a tap without Move plans nothing',
     (await moveButton.getAttribute('aria-pressed')) === 'false'
@@ -326,12 +326,37 @@ try {
     chosenBefore === 0 && (await chosen.textContent()).startsWith('Leap'),
     await chosen.textContent().catch(() => null)
   );
+  const leapButton = page.locator('[data-choice="leap"]');
+  check(
+    'a picked ability without a target asks for one',
+    /^LeapPick a target$/.test(await leapButton.textContent()),
+    await leapButton.textContent()
+  );
+  // Aimed, its button confirms it; a second tap on the target un-picks it.
   await tapHex(leapTo);
-  await tapHex(leapTo); // a second tap on the target doesn't commit
-  check('a second tap on the target doesn’t commit', (await state()).view.version === before);
+  check(
+    'once its target is picked, the ability’s button confirms it',
+    /^Confirm\+\d+( → \+\d+)?$/.test(await leapButton.textContent()),
+    await leapButton.textContent()
+  );
+  await tapHex(leapTo);
+  check(
+    'a second tap on the target un-picks it, without committing',
+    (await state()).view.version === before &&
+      /^LeapPick a target$/.test(await leapButton.textContent()) &&
+      (await leapButton.getAttribute('aria-pressed')) === 'true',
+    await leapButton.textContent()
+  );
+  // Before a target, tapping the ability again puts it down.
+  await leapButton.click();
+  check(
+    'tapping an ability with no target again puts it down',
+    (await leapButton.getAttribute('aria-pressed')) === 'false'
+  );
+  await leapButton.click();
+  await tapHex(leapTo);
   await moveButton.click();
   await tapHex(dest);
-  const leapButton = page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/});
   check(
     'Move replaces the ability selection',
     (await leapButton.getAttribute('aria-pressed')) === 'false'
@@ -343,14 +368,21 @@ try {
     (await moveButton.getAttribute('aria-pressed')) === 'true'
   );
   check(
-    'the Move button shows what the move adds',
-    /^Move\+\d+$/.test(await moveButton.textContent()),
+    'once its hex is picked, Move’s button confirms it, saying when the next turn comes',
+    /^Confirm\+\d+( → \+\d+)?$/.test(await moveButton.textContent()),
     await moveButton.textContent()
   );
-  // Tapping it again undoes the move; plan it again.
+  // A second tap on the hex un-picks it; then tapping Move puts it down.
+  await tapHex(dest);
+  check(
+    'a second tap on the destination un-picks it, without committing',
+    (await state()).view.version === before &&
+      /^MovePick where to move$/.test(await moveButton.textContent()),
+    await moveButton.textContent()
+  );
   await moveButton.click();
   check(
-    'tapping Move again undoes the move',
+    'tapping Move with no hex again puts it down',
     (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
   check(
@@ -360,7 +392,7 @@ try {
   );
   await moveButton.click();
   await tapHex(dest);
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click();
+  await leapButton.click();
   await tapHex(leapTo);
   check(
     'an ability replaces a planned move',
@@ -368,37 +400,34 @@ try {
       (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
   // Like an ability's target, the destination can be changed by tapping
-  // another reachable hex, and a second tap on it doesn't commit.
+  // another reachable hex.
   await moveButton.click();
   await tapHex(leapTo);
   await tapHex(dest);
-  await tapHex(dest);
   check(
-    'a second tap on the destination doesn’t commit',
+    'tapping another reachable hex changes the destination',
     (await state()).view.version === before &&
-      (await moveButton.getAttribute('aria-pressed')) === 'true'
+      (await moveButton.getAttribute('aria-pressed')) === 'true' &&
+      /^Confirm/.test(await moveButton.textContent())
   );
   // A turn has one action, so there is no order to swap.
   check(
     'Swap order is offered only when the other order is legal',
     !(await page.getByRole('button', {name: /Swap order/}).count())
   );
-  const confirm = page.getByRole('button', {name: /^Confirm/});
-  const confirmText = await confirm.textContent();
+  const skip = page.getByRole('button', {name: /^Skip turn/});
   check(
-    'Confirm says when the next turn comes, in slots from now',
-    /^Confirm · \+\d+( → \+\d+)?$/.test(confirmText),
-    confirmText
+    'Skip turn says when the next turn comes, in slots from now',
+    /^Skip turn · \+\d+( → \+\d+)?$/.test(await skip.textContent()),
+    await skip.textContent()
   );
-  const leapText = await moveButton.textContent();
   check(
-    'the Move button shows the same slots as Confirm',
-    leapText.endsWith(confirmText.match(/· (\+\d+)/)[1]),
-    [leapText, confirmText]
+    'only the picked button confirms: there’s no other Confirm',
+    (await page.getByRole('button', {name: /^Confirm/}).count()) === 1
   );
   await sleep(200);
   await shot(page, 'preview');
-  await confirm.click();
+  await moveButton.click();
   await page.waitForFunction((v) => window.__tactics.run.view.version > v, before, {
     timeout: 15_000,
   });
@@ -571,7 +600,7 @@ try {
   await sleep(300);
   await shot(page, 'end');
   check(
-    'New fight takes Confirm’s place',
+    'New fight takes the turn’s buttons’ place',
     await page.getByRole('button', {name: 'New fight'}).isVisible()
   );
   // On a phone the finished fight keeps the action section's height, so the board stays put.
@@ -596,7 +625,7 @@ try {
   const phone = await browser.newPage({...devices['iPhone 13']});
   await phone.goto(`${WEB_URL}/play/silk-road-tactics`);
   await phone.getByRole('button', {name: 'Start a fight'}).click();
-  const phoneMove = phone.getByTestId('turn-controls').getByRole('button', {name: /^Move/});
+  const phoneMove = phone.locator('[data-choice="move"]');
   await phoneMove.waitFor({timeout: 15_000});
   await phone.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {
     timeout: 15_000,
@@ -810,22 +839,51 @@ try {
     await phone.touchscreen.tap(moveAt.x, moveAt.y);
     await sleep(200);
     check('phone: tapping a turn button closes the tooltip', !(await tooltip.count()));
-    // And a hex to move to.
+    // And a hex to move to (one the tooltip doesn't cover, nor sit just
+    // beside: a touch there snaps to the tooltip, which closes it instead).
     await phone.touchscreen.tap(foeAt.x, foeAt.y);
     await sleep(200);
-    const step = (await phone.evaluate(() => window.__tactics.reaches)).find(
-      (r) => r.path.length > 0
-    );
-    const stepAt = await onPhone(step.hex);
-    await phone.touchscreen.tap(stepAt.x, stepAt.y);
-    await sleep(200);
-    check('phone: tapping a hex to move to closes the tooltip', !(await tooltip.count()));
-    await phone.touchscreen.tap(moveAt.x, moveAt.y); // put the move down again
-    await sleep(200);
-    check(
-      'phone: the move is put down again',
-      (await phoneMove.getAttribute('aria-pressed')) === 'false'
-    );
+    const tipNow = await tooltip.boundingBox();
+    const clear = (p, m = 24) =>
+      !tipNow ||
+      p.x < tipNow.x - m ||
+      p.x > tipNow.x + tipNow.width + m ||
+      p.y < tipNow.y - m ||
+      p.y > tipNow.y + tipNow.height + m;
+    let stepAt = null;
+    for (const r of await phone.evaluate(() => window.__tactics.reaches)) {
+      if (r.path.length === 0) continue;
+      const p = await onPhone(r.hex);
+      if (clear(p)) {
+        stepAt = p;
+        break;
+      }
+    }
+    if (stepAt) {
+      const version = await phone.evaluate(() => window.__tactics.run.view.version);
+      await phone.touchscreen.tap(stepAt.x, stepAt.y);
+      await sleep(200);
+      check(
+        'phone: tapping a hex to move to closes the tooltip (and plans the move)',
+        !(await tooltip.count()) && /^Confirm/.test(await phoneMove.textContent()),
+        await phoneMove.textContent()
+      );
+      // Put the move down again: un-pick the hex (Move's button now
+      // confirms it), then Move.
+      await phone.touchscreen.tap(stepAt.x, stepAt.y);
+      await sleep(200);
+      await phone.touchscreen.tap(moveAt.x, moveAt.y);
+      await sleep(200);
+      check(
+        'phone: the move is put down again, nothing committed',
+        (await phoneMove.getAttribute('aria-pressed')) === 'false' &&
+          (await phone.evaluate(() => window.__tactics.run.view.version)) === version
+      );
+    } else {
+      console.log('  (move-tap check skipped: the tooltip covers every reachable hex)');
+      await phone.touchscreen.tap(moveAt.x, moveAt.y); // Move down again
+      await sleep(200);
+    }
     // A track card shows its unit, not the hex looked at before (which could
     // have emptied since, leaving an empty box).
     await phone.touchscreen.tap(foeAt.x, foeAt.y);
@@ -891,45 +949,47 @@ try {
     );
     check('phone: the page doesn’t scroll', scroll <= 1, scroll);
   }
-  // A planned move shows what it adds, in slots, inside the Move button.
+  // Move on and no hex yet: its button asks for one; once picked, it
+  // confirms, saying when the next turn comes.
   {
     await phoneMove.click();
     check(
-      'phone: with Move on and no hex yet, Confirm stays, disabled, saying what to pick',
-      await phone.getByRole('button', {name: 'Pick where to move'}).isDisabled()
+      'phone: with Move on and no hex yet, its button asks for one',
+      /^MovePick where to move$/.test(await phoneMove.textContent()),
+      await phoneMove.textContent()
     );
     const free = await phone.evaluate(
       () => window.__tactics.reaches.find((r) => r.path.length > 0).hex
     );
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), free);
     const box = await phone.locator('canvas').boundingBox();
-    await phone.tap('canvas', {
-      position: {x: (x * box.width) / 672, y: (y * box.height) / SCENE_H},
-    });
+    const at = {x: (x * box.width) / 672, y: (y * box.height) / SCENE_H};
+    await phone.tap('canvas', {position: at});
     await sleep(250);
-    const planned = phone.getByTestId('turn-controls').getByRole('button', {name: /^Move/});
     check(
-      'phone: a planned move shows its slots in the Move button',
-      /^Move\+\d+$/.test(await planned.textContent()),
-      await planned.textContent()
+      'phone: a planned move turns the Move button into its Confirm, with its slots',
+      /^Confirm\+\d+( → \+\d+)?$/.test(await phoneMove.textContent()),
+      await phoneMove.textContent()
     );
-    await planned.click(); // undo it
+    await phone.tap('canvas', {position: at}); // un-pick the hex
+    await sleep(250);
+    await phoneMove.click(); // and put Move down
     check(
-      'phone: undoing the move shows the range again',
-      (await planned.getAttribute('aria-pressed')) === 'false' &&
-        /^Move\+\d+(–\d+)?$/.test(await planned.textContent()),
-      await planned.textContent()
+      'phone: putting the move down shows the range again',
+      (await phoneMove.getAttribute('aria-pressed')) === 'false' &&
+        /^Move\+\d+(–\d+)?$/.test(await phoneMove.textContent()),
+      await phoneMove.textContent()
     );
   }
-  // No Hold button: with nothing picked, the big button ends the turn.
+  // No Hold button: Skip turn, at the bottom, ends the turn with Hold.
   check('phone: no Hold button', !(await phone.getByRole('button', {name: /^Hold/}).count()));
   check(
-    'phone: with nothing picked, the button ends the turn',
-    /^End turn · \+\d+( → \+\d+)?$/.test(
-      await phone.getByRole('button', {name: /^End turn/}).textContent()
+    'phone: Skip turn says when the next turn comes',
+    /^Skip turn · \+\d+( → \+\d+)?$/.test(
+      await phone.getByRole('button', {name: /^Skip turn/}).textContent()
     )
   );
-  // Tapping a target twice doesn't commit: only the button does.
+  // Tapping a target twice un-picks it: only the button commits.
   const tapOn = async (hex) => {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
     const box = await phone.locator('canvas').boundingBox();
@@ -953,10 +1013,7 @@ try {
       {timeout: 15_000}
     );
   }
-  await phone
-    .getByTestId('turn-controls')
-    .getByRole('button', {name: /^Leap/})
-    .waitFor({timeout: 15_000});
+  await phone.locator('[data-choice="leap"]').waitFor({timeout: 15_000});
   if (camelUp) {
     const heroBoard = await phone.locator('canvas').boundingBox();
     check(
@@ -967,21 +1024,18 @@ try {
     );
   }
   const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
-  const moveBoxBefore = await phone
-    .getByTestId('turn-controls')
-    .getByRole('button', {name: /^Move/})
-    .boundingBox();
-  await phone.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click();
+  const moveBoxBefore = await phoneMove.boundingBox();
+  const phoneLeap = phone.locator('[data-choice="leap"]');
+  const leapCost = await phoneLeap.textContent();
+  await phoneLeap.click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
   check(
-    'phone: with no target yet, Confirm stays, disabled, saying what to pick',
-    await phone.getByRole('button', {name: 'Pick a target'}).isDisabled()
+    'phone: with no target yet, the ability’s button asks for one',
+    /^LeapPick a target$/.test(await phoneLeap.textContent()),
+    await phoneLeap.textContent()
   );
   {
-    const after = await phone
-      .getByTestId('turn-controls')
-      .getByRole('button', {name: /^Move/})
-      .boundingBox();
+    const after = await phoneMove.boundingBox();
     check(
       'phone: picking an ability doesn’t move the buttons',
       Math.abs(after.y - moveBoxBefore.y) < 1,
@@ -991,26 +1045,24 @@ try {
   }
   const aim = await phone.evaluate(() => window.__tactics.targets[0].hex);
   await tapOn(aim);
-  await tapOn(aim);
+  const phoneConfirm = await phoneLeap.textContent();
   check(
-    'phone: a second tap on the target doesn’t commit',
-    (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion
-  );
-  const phoneConfirm = await phone.getByRole('button', {name: /^Confirm/}).textContent();
-  check(
-    'phone: Confirm says when the next turn comes, in slots from now',
-    /^Confirm · \+\d+( → \+\d+)?$/.test(phoneConfirm),
+    'phone: aimed, the ability’s button confirms it, saying when the next turn comes',
+    /^Confirm\+\d+( → \+\d+)?$/.test(phoneConfirm),
     phoneConfirm
   );
-  const leapButtonText = await phone
-    .getByTestId('turn-controls')
-    .getByRole('button', {name: /^Leap/})
-    .textContent();
   check(
-    'phone: the ability button shows the same slots as Confirm',
-    leapButtonText.endsWith(phoneConfirm.match(/· (\+\d+)/)[1]),
-    [leapButtonText, phoneConfirm]
+    'phone: the ability button showed the same slots as its Confirm',
+    leapCost.endsWith(phoneConfirm.match(/^Confirm(\+\d+)/)[1]),
+    [leapCost, phoneConfirm]
   );
+  await tapOn(aim);
+  check(
+    'phone: a second tap on the target un-picks it, without committing',
+    (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion &&
+      /^LeapPick a target$/.test(await phoneLeap.textContent())
+  );
+  await tapOn(aim);
   check('phone: there are no numbered steps', !(await phone.getByTestId('turn-steps').count()));
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-full.png'), fullPage: true});
