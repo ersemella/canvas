@@ -273,9 +273,14 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
 
    Charging is what made Freeze miss. Instant, it pays. An instant Volley
    becomes nearly as decisive as the Bow, even at 130 damage. Proposed:
-   **Freeze instant at cost 100, Volley stays charged**. Both ultimates
+   **Freeze instant at cost 100, Volley stays charged** (Freeze applied
+   2026-10-20). Both ultimates
    then sit in the 40–48% band, and Volley, an arcing rain of arrows,
    keeps the game's one charged, answerable threat (3.7).
+   Volley's charge is 1 slot at the Outrider's speed, so little can answer
+   it. A longer charge at the same total (charge 40, recovery 40) was
+   tried: a side without Volley then wins 48.0% (42.6% at charge 20) and
+   5.6% of fights go unfinished (4.1%). Volley stays at charge 20.
 5. **Fog needs a job.** With one ranged attacker, which can pick another
    lane, halving ranged damage rarely matters. Tried after tunings 1 to 3:
    an arrow can't target a unit in or behind fog, so fog blocks a lane

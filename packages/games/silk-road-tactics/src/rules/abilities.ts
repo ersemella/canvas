@@ -311,11 +311,9 @@ const freeze: AbilityDef = {
     `Units in a targeted area take ${scaled(ABILITY.freeze.damage, user.power)} damage and are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
   duration: ABILITY.freeze.immobilizedSlots,
   ultimate: true,
-  charged: true,
-  cost: ABILITY.freeze.chargeCost,
-  recoveryCost: ABILITY.freeze.recoveryCost,
+  charged: false,
+  cost: ABILITY.freeze.cost,
   movesSelf: false,
-  damaging: true,
   targets: (_state, map, _user, from) => hexesWithin(map, from, ABILITY.freeze.range),
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)}'s Freeze takes hold.`);
