@@ -198,9 +198,12 @@
 .confirmRow > .portrait {
   flex: none;
 }
-/* As tall as Skip turn beside it (Mantine's lg button); the art scales as the board's does. */
+/* The art scales as the board's does; Skip turn and the menu centre beside it. */
 .portrait {
   --portrait: 50px;
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
   display: grid;
   place-items: center;
   width: var(--portrait);
@@ -210,6 +213,14 @@
   background: linear-gradient(var(--c-lapis) 50%, var(--c-lapisDark) 50%);
   color: var(--c-ivory);
   font-weight: bold;
+}
+/* Its details showing: the acting unit's gold, as its hex and track card have. */
+.portrait[aria-pressed='true'] {
+  border-color: var(--c-gold);
+}
+.portrait:focus-visible {
+  outline: var(--px) solid var(--c-goldLight);
+  outline-offset: var(--px);
 }
 .portrait img {
   width: 100%;

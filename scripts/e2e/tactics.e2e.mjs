@@ -770,6 +770,23 @@ try {
       [await portrait.getAttribute('title').catch(() => null), name]
     );
     await shot(phone, 'phone-turn');
+    // A tap on it looks at the unit, as its track card does; another closes it.
+    await portrait.tap();
+    await sleep(300);
+    const own = phone.getByTestId('hex-tooltip').getByTestId('stat-sheet');
+    check(
+      'phone: tapping the portrait shows the acting unit’s details',
+      (await own.locator('[data-side="player"]').count()) === 1 &&
+        (await portrait.getAttribute('aria-pressed')) === 'true'
+    );
+    await shot(phone, 'phone-portrait');
+    await portrait.tap();
+    await sleep(300);
+    check(
+      'phone: tapping it again closes them',
+      !(await phone.getByTestId('hex-tooltip').count()) &&
+        (await portrait.getAttribute('aria-pressed')) === 'false'
+    );
   }
   const canvasBox = await phone.locator('canvas').boundingBox();
   const viewportWidth = phone.viewportSize().width;

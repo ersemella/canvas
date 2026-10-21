@@ -798,6 +798,17 @@ export function TacticsPage() {
   // (what's tapped or hovered). Phones show the details in a tooltip over
   // the board and pin the actions to the bottom of the screen.
   const menu = <RunMenu busy={busy || playing} onReset={startRun} />;
+  // Phones: the turn portrait opens the acting unit's details, as its track
+  // card does; a second tap closes them.
+  const lookingAtActing = Boolean(
+    phone &&
+    acting?.hex &&
+    (pinnedHex ? hexEquals(pinnedHex, acting.hex) : selectedId === acting.id)
+  );
+  const lookAtActing = () => {
+    setPinnedHex(null);
+    setSelectedId(lookingAtActing ? null : (acting?.id ?? null));
+  };
   // Once the fight is over, New fight takes Confirm's place, and the section
   // keeps its height so the board doesn't move.
   const actions = finished ? (
@@ -826,7 +837,8 @@ export function TacticsPage() {
         onAbility={chooseAbility}
         onConfirm={() => commit()}
         menu={menu}
-        portrait={phone}
+        onPortrait={phone ? lookAtActing : undefined}
+        portraitOpen={lookingAtActing}
       >
         <SkipButton
           // A new turn (or unit) starts it disarmed.
@@ -834,7 +846,6 @@ export function TacticsPage() {
           fight={fight}
           preview={skipPreview}
           busy={busy || playing}
-          size={phone ? 'lg' : undefined}
           onSkip={() => commit(SKIP)}
         />
       </TurnControls>
@@ -1014,9 +1025,11 @@ function TurnControls(props: {
   menu: React.ReactNode;
   /**
    * Phones: the unit's portrait before Skip turn, to say whose turn it is
-   * (the board's arrow over it read as "tap here").
+   * (the board's arrow over it read as "tap here"); a tap on it looks at the unit.
    */
-  portrait?: boolean;
+  onPortrait?: (() => void) | undefined;
+  /** The unit's details are showing (its portrait reads as pressed). */
+  portraitOpen?: boolean;
   children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving, confirm} = props;
@@ -1129,7 +1142,9 @@ function TurnControls(props: {
         })}
       </div>
       <div className={styles.confirmRow}>
-        {props.portrait && <UnitPortrait unit={unit} />}
+        {props.onPortrait && (
+          <UnitPortrait unit={unit} open={Boolean(props.portraitOpen)} onTap={props.onPortrait} />
+        )}
         {props.children}
         {props.menu}
       </div>
@@ -1137,13 +1152,28 @@ function TurnControls(props: {
   );
 }
 
-/** A unit's portrait, framed like its track card; its hero's letter if it has none. */
-function UnitPortrait({unit}: {unit: Unit}) {
-  const src = HERO_PORTRAIT[unit.hero]?.src;
-  const name = HEROES[unit.hero].name;
+/**
+ * A unit's portrait, framed like its track card (its hero's letter if it has
+ * none): a tap looks at the unit, as its card does.
+ */
+function UnitPortrait(props: {unit: Unit; open: boolean; onTap: () => void}) {
+  const src = HERO_PORTRAIT[props.unit.hero]?.src;
+  const name = HEROES[props.unit.hero].name;
   return (
-    <span className={styles.portrait} title={name} data-testid="turn-portrait">
-      {src ? <img src={src} alt={name} /> : HEROES[unit.hero].letter}
-    </span>
+    <button
+      type="button"
+      className={styles.portrait}
+      title={name}
+      aria-label={`Look at ${name}`}
+      aria-pressed={props.open}
+      data-testid="turn-portrait"
+      onClick={(e) => {
+        // Not a tap away, which would close the details it opens.
+        e.stopPropagation();
+        props.onTap();
+      }}
+    >
+      {src ? <img src={src} alt="" /> : HEROES[props.unit.hero].letter}
+    </button>
   );
 }
