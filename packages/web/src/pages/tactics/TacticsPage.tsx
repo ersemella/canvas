@@ -782,6 +782,8 @@ export function TacticsPage() {
         menu={menu}
       >
         <SkipButton
+          // A new turn (or unit) starts it disarmed.
+          key={`${acting.id}@${fight.currentSlot}`}
           fight={fight}
           preview={skipPreview}
           busy={busy || playing}

@@ -415,10 +415,23 @@ try {
     'Swap order is offered only when the other order is legal',
     !(await page.getByRole('button', {name: /Swap order/}).count())
   );
-  const skip = page.getByRole('button', {name: /^Skip turn/});
+  const skip = page.getByTestId('skip-turn');
   check(
     'Skip turn says when the next turn comes, in slots from now',
     /^Skip turn · \+\d+( → \+\d+)?$/.test(await skip.textContent()),
+    await skip.textContent()
+  );
+  // Its first tap only arms it, and it disarms on its own.
+  await skip.click();
+  check(
+    'a first tap on Skip turn only arms it',
+    (await skip.textContent()) === 'Tap again to skip' && (await state()).view.version === before,
+    await skip.textContent()
+  );
+  await sleep(3300);
+  check(
+    'an armed Skip turn disarms after a while',
+    /^Skip turn/.test(await skip.textContent()),
     await skip.textContent()
   );
   check(
@@ -553,6 +566,34 @@ try {
     await page.evaluate(() => localStorage.getItem('canvas:playerKey'))
   );
   check('the reset run is abandoned', resetOld.body?.status === 'abandoned', resetOld.body);
+
+  // Skip turn, tapped twice, ends the turn with Hold.
+  {
+    await waitIdle();
+    const r = await state();
+    if (r.view.fight.phase === 'fight') {
+      const unit = r.view.fight.awaiting;
+      const skipButton = page.getByTestId('skip-turn');
+      await skipButton.click();
+      check(
+        'its first tap arms it',
+        (await skipButton.textContent()) === 'Tap again to skip',
+        await skipButton.textContent()
+      );
+      await skipButton.click();
+      await page.waitForFunction((v) => window.__tactics.run.view.version > v, r.view.version, {
+        timeout: 15_000,
+      });
+      const after = await state();
+      check(
+        'a second tap on Skip turn ends the turn',
+        after.view.fight.phase !== 'fight' ||
+          after.view.fight.awaiting !== unit ||
+          after.view.fight.currentSlot > r.view.fight.currentSlot,
+        [unit, after.view.fight.awaiting]
+      );
+    }
+  }
 
   // Play the rest with the AI choosing for you. With placeholder numbers a
   // fight can stall (Storm Callers out-heal what's left), so after 150 turns

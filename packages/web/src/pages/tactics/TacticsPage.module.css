@@ -429,6 +429,11 @@
     inset var(--px) var(--px) 0 var(--c-dusk4),
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
 }
+/* Armed: one more tap skips the turn, in the warnings' gold. */
+.skip.skipArmed.skipArmed {
+  color: var(--c-goldLight);
+  border-color: var(--c-gold);
+}
 .skip.skip:disabled {
   color: var(--c-dusk4);
   background: var(--c-dusk1);

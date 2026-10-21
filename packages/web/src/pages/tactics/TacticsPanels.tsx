@@ -69,10 +69,16 @@ export function nextTurn(
   };
 }
 
+/** How long an armed Skip turn waits for its second tap. */
+const SKIP_ARMED_MS = 3000;
+
 /**
  * Skip turn: ends the turn with Hold, whatever is picked, saying when the
  * next turn comes. A quiet tile: the turn's action is confirmed from its
  * own button (Move or the ability, once its hex or target is picked).
+ * Like Reset run, the first tap only arms it ("Tap again to skip"), so a
+ * stray tap doesn't throw a turn away (owner, 2026-10-21); it disarms after
+ * `SKIP_ARMED_MS`, or when the turn changes (the page keys it by turn).
  */
 export function SkipButton(props: {
   fight: FightState;
@@ -83,18 +89,33 @@ export function SkipButton(props: {
   size?: 'sm' | 'lg';
   onSkip: () => void;
 }) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) return;
+    const t = setTimeout(() => setArmed(false), SKIP_ARMED_MS);
+    return () => clearTimeout(t);
+  }, [armed]);
   const next = nextTurn(props.fight, props.preview);
   return (
     <Button
-      className={styles.skip!}
+      className={`${styles.skip} ${armed ? styles.skipArmed : ''}`}
+      data-testid="skip-turn"
       fw="bold"
       size={props.size ?? 'sm'}
       loading={props.busy}
       disabled={!props.preview}
-      onClick={props.onSkip}
-      title={next?.title ?? 'End the turn without moving or using an ability'}
+      onClick={() => {
+        if (!armed) return setArmed(true);
+        setArmed(false);
+        props.onSkip();
+      }}
+      title={
+        armed
+          ? 'Tap again to end the turn without moving or using an ability'
+          : (next?.title ?? 'End the turn without moving or using an ability')
+      }
     >
-      {`Skip turn${next?.text ? ` · ${next.text}` : ''}`}
+      {armed ? 'Tap again to skip' : `Skip turn${next?.text ? ` · ${next.text}` : ''}`}
     </Button>
   );
 }
