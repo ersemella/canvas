@@ -657,3 +657,99 @@
   border-color: var(--c-ink);
   background: var(--c-dusk1);
 }
+
+/* The start menu: the rules in brief, then the heroes to take. */
+.startRules {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.heroPicks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+/* A hero: a flat dusk tile when left behind, raised lapis when taken. */
+.heroPick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  text-align: left;
+  color: var(--c-ivory);
+  font-size: 14px;
+  cursor: pointer;
+  border: var(--px) solid var(--c-ink);
+  background: var(--c-dusk0);
+  opacity: 0.75;
+  clip-path: var(--notch);
+}
+.heroPick:hover {
+  opacity: 1;
+}
+.heroPick:focus-visible {
+  outline: var(--px) solid var(--c-goldLight);
+  outline-offset: calc(-2 * var(--px));
+}
+.heroPicked {
+  opacity: 1;
+  background: var(--c-lapisDark);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-lapis),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-ink);
+}
+.heroPickHead {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+/* Twice its 32px art, on the track card's ground. */
+.heroPickPortrait {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: var(--px) solid var(--c-ink);
+  background: linear-gradient(var(--c-lapis) 50%, var(--c-lapisDark) 50%);
+  font-size: 28px;
+  font-weight: bold;
+}
+.heroPickPortrait img {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.heroPickRole {
+  color: var(--c-gold);
+  font-size: 13px;
+}
+.heroPickMark {
+  font-size: 12px;
+  color: var(--c-lapisLight);
+}
+.heroPick:not(.heroPicked) .heroPickMark {
+  color: var(--c-sandDark);
+}
+.heroPickBlurb {
+  font-size: 13px;
+}
+.heroPickStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 8px;
+  font-size: 13px;
+}
+.heroPickAbilities {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 13px;
+}
+.heroPickAbilities > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

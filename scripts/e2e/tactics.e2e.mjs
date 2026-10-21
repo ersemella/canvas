@@ -199,6 +199,34 @@ check(
   (await api('/runs/active', alice)).body?.activeRunId === null
 );
 
+// The start menu's party: the chosen heroes and the camel; a bad one is refused.
+const duo = await api('/runs', alice, {
+  method: 'POST',
+  body: JSON.stringify({game: 'silk-road-tactics', party: ['mangudai', 'storm']}),
+});
+check(
+  'a run starts with the chosen party and the camel',
+  duo.status === 201 &&
+    JSON.stringify(
+      duo.body.view.fight.units.filter((u) => u.side === 'player').map((u) => u.hero)
+    ) === JSON.stringify(['mangudai', 'storm', 'camel']),
+  duo.body
+);
+const badParty = await api('/runs', alice, {
+  method: 'POST',
+  body: JSON.stringify({game: 'silk-road-tactics', party: ['bokh', 'bokh']}),
+});
+check(
+  'a party with a hero twice is refused',
+  badParty.status === 400 && /heroes/.test(badParty.body?.message),
+  badParty
+);
+check(
+  'a refused start leaves the active run alone',
+  (await api('/runs/active', alice)).body?.activeRunId === duo.body.runId
+);
+await api(`/runs/${duo.body.runId}/abandon`, alice, {method: 'POST'});
+
 // ── The page ─────────────────────────────────────────────────────────────────
 const browser = await chromium.launch();
 const page = await browser.newPage({viewport: {width: 1300, height: 900}});
@@ -228,7 +256,32 @@ async function abandonOn(p) {
 
 try {
   await page.goto(`${WEB_URL}/play/silk-road-tactics`);
-  await page.getByRole('button', {name: 'Start a fight'}).click();
+  // The start menu: the game in brief, the three heroes (all taken at first), Start.
+  const picks = page.getByTestId('hero-picks').getByRole('button');
+  await picks.first().waitFor({timeout: 15_000});
+  check('the start menu offers the three heroes', (await picks.count()) === 3);
+  check(
+    'every hero starts in the party',
+    (await picks.evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-pressed')))).every(
+      (p) => p === 'true'
+    )
+  );
+  await shot(page, 'start-menu');
+  const startButton = page.getByRole('button', {name: 'Start a fight'});
+  for (let i = 0; i < 3; i++) await picks.nth(i).click();
+  check('with no hero taken, Start is disabled', await startButton.isDisabled());
+  for (let i = 0; i < 3; i++) await picks.nth(i).click();
+  // A phone: the heroes stack, with no sideways scroll; one is left behind.
+  await page.setViewportSize({width: 390, height: 844});
+  await picks.nth(1).click();
+  check(
+    'phone: the start menu doesn’t scroll sideways',
+    await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
+  );
+  await shot(page, 'start-menu-phone');
+  await picks.nth(1).click();
+  await page.setViewportSize({width: 1300, height: 900});
+  await startButton.click();
   await page
     .getByTestId('turn-controls')
     .getByRole('button', {name: /^Move/})

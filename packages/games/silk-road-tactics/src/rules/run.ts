@@ -6,7 +6,7 @@ import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
 import type {SearchBudget} from './ai';
-import {AI} from './config';
+import {AI, PARTY} from './config';
 import {
   RuleError,
   actingUnit,
@@ -16,7 +16,7 @@ import {
   createFight,
   refreshStats,
 } from './fight';
-import type {AbilityId, ActionTarget, FightState, RunAction} from './types';
+import type {AbilityId, ActionTarget, FightState, HeroId, RunAction} from './types';
 
 export interface RunState {
   seed: number;
@@ -30,12 +30,31 @@ export interface RunView {
   fight: FightState;
 }
 
-/** A new run, its fight advanced to the player's first turn (the enemy may move first). */
-export function createRun(seed: number): RunState {
-  const fight = createFight(seed);
+/**
+ * A new run with the party chosen on the start menu (`{party}`; all three
+ * heroes if none is given), its fight advanced to the player's first turn
+ * (the enemy may move first).
+ */
+export function createRun(seed: number, setup?: unknown): RunState {
+  const fight = createFight(seed, parseParty(setup));
   fight.events = [];
   advance(fight, (state, unit) => chooseAiTurn(state, unit, {left: AI.requestSimulations}));
   return {seed, version: 0, fight};
+}
+
+/** Checks a start menu's party from the network: one to all of the heroes, each at most once. */
+export function parseParty(setup: unknown): HeroId[] {
+  const party = (setup as {party?: unknown} | null | undefined)?.party;
+  if (party === undefined) return PARTY;
+  if (
+    !Array.isArray(party) ||
+    party.length === 0 ||
+    party.length > PARTY.length ||
+    party.some((h, i) => !PARTY.includes(h as HeroId) || party.indexOf(h) !== i)
+  ) {
+    throw new RuleError('Choose one to three different heroes.');
+  }
+  return party as HeroId[];
 }
 
 const isInt = (n: unknown): n is number => Number.isInteger(n) && Math.abs(n as number) < 1000;

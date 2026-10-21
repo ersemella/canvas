@@ -47,6 +47,7 @@ import type {
   ActionTarget,
   BoardScene,
   FightState,
+  HeroId,
   HighlightKind,
   Reach,
   TacticsCardPayload,
@@ -61,6 +62,7 @@ import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
+import {StartMenu} from './StartMenu';
 import type {RunResponse} from './runsApi';
 import {AbilityIcon, abilityIcon} from './AbilityIcon';
 import {HexTooltip} from './HexTooltip';
@@ -130,6 +132,8 @@ export function TacticsPage() {
   /** The board is playing back what the last turn set off; the page waits for it. */
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The start menu, over a finished fight (New fight) until a new one starts.
+  const [startMenu, setStartMenu] = useState(false);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [plannedMove, setPlannedMove] = useState<Reach | null>(null);
@@ -229,6 +233,7 @@ export function TacticsPage() {
   const receive = useCallback(
     (r: RunResponse) => {
       setRun(r);
+      setStartMenu(false);
       resetTurn();
       setError(null);
     },
@@ -265,7 +270,15 @@ export function TacticsPage() {
     [receive]
   );
 
-  const startRun = useCallback(() => void send(() => runsApi.start()), [send]);
+  const startRun = useCallback((party: HeroId[]) => void send(() => runsApi.start(party)), [send]);
+  // Reset run starts over with the same party.
+  const restartRun = useCallback(() => {
+    const party = (fightRef.current?.units ?? [])
+      .filter((u) => u.side === 'player' && u.hero !== 'camel')
+      .sort((a, b) => a.partyIndex - b.partyIndex)
+      .map((u) => u.hero);
+    startRun(party);
+  }, [startRun]);
 
   // ── The acting unit's options ──────────────────────────────────────────────
 
@@ -903,26 +916,14 @@ export function TacticsPage() {
     );
   }
 
-  if (!run || !fight || run.status === 'abandoned') {
+  if (!run || !fight || run.status === 'abandoned' || startMenu) {
     return (
-      <Stack className={styles.page!} style={PALETTE_VARS} align="center" py="xl" gap="lg" px="md">
-        <Paper className={styles.plaque!} p="xl" maw={520}>
-          <Stack gap="md">
-            <Text>
-              Three heroes of the steppe — a Bökh Champion, a Mangudai Outrider and a Yadachy Storm
-              Caller — meet a rival band on the Salt Flats Crossing. Every unit's stats are shown;
-              only what the enemy will choose is hidden.
-            </Text>
-            <Text c="dimmed" fz="sm">
-              Prototype: one fight. Hero numbers are placeholders.
-            </Text>
-            <Button className={styles.seal!} fw="bold" onClick={startRun} loading={busy}>
-              Start a fight
-            </Button>
-            {error && <Text c="var(--c-madderLight)">{error}</Text>}
-          </Stack>
-        </Paper>
-      </Stack>
+      <StartMenu
+        busy={busy}
+        error={error}
+        onStart={startRun}
+        {...(startMenu && run && fight ? {onBack: () => setStartMenu(false)} : {})}
+      />
     );
   }
 
@@ -934,7 +935,7 @@ export function TacticsPage() {
   // The action section (the turn) and the detail section
   // (what's tapped or hovered). Phones show the details in a tooltip over
   // the board and pin the actions to the bottom of the screen.
-  const menu = <RunMenu busy={busy || playing} onReset={startRun} />;
+  const menu = <RunMenu busy={busy || playing} onReset={restartRun} />;
   // Phones: the turn portrait opens the acting unit's details, as its track
   // card does; a second tap closes them. (Desktop shows the portrait of the
   // unit in focus in the details instead.)
@@ -949,7 +950,7 @@ export function TacticsPage() {
   // keeps its height so the board doesn't move.
   const actions = finished ? (
     <div className={styles.confirmRow}>
-      <Button size="lg" className={styles.seal!} fw="bold" onClick={startRun} loading={busy}>
+      <Button size="lg" className={styles.seal!} fw="bold" onClick={() => setStartMenu(true)}>
         New fight
       </Button>
       {menu}

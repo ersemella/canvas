@@ -98,8 +98,12 @@ export interface RoomPolicy {
 export interface RunSystem<TState = unknown, TAction = unknown, TView = unknown> {
   kind: 'run';
   systemName: string;
-  /** A new run from a server-chosen seed, which must never reach the player. */
-  createRun(seed: number): TState;
+  /**
+   * A new run from a server-chosen seed, which must never reach the player,
+   * and the player's choices from the start request (`setup`, unchecked).
+   * Throws with a player-facing message for a setup it can't use.
+   */
+  createRun(seed: number, setup?: unknown): TState;
   /**
    * Applies one player action and everything that follows it up to the
    * player's next decision (AI turns included). Returns the new state

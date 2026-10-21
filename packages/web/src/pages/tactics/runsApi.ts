@@ -1,5 +1,5 @@
 import {API_URL} from 'config/api';
-import type {RunView} from '@canvas/games-silk-road-tactics';
+import type {HeroId, RunView} from '@canvas/games-silk-road-tactics';
 
 const KEY_STORAGE = 'canvas:playerKey';
 
@@ -55,8 +55,11 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
 export const runsApi = {
   active: () => call<{activeRunId: string | null}>('/runs/active'),
   get: (runId: string) => call<RunResponse>(`/runs/${runId}`),
-  start: () =>
-    call<RunResponse>('/runs', {method: 'POST', body: JSON.stringify({game: 'silk-road-tactics'})}),
+  start: (party: HeroId[]) =>
+    call<RunResponse>('/runs', {
+      method: 'POST',
+      body: JSON.stringify({game: 'silk-road-tactics', party}),
+    }),
   turn: (runId: string, body: unknown) =>
     call<RunResponse>(`/runs/${runId}/turn`, {method: 'POST', body: JSON.stringify(body)}),
 };

@@ -9,7 +9,7 @@ import {runSystemRegistry} from '../games/registry';
  * run's whole view. Every route needs `Authorization: Bearer <player key>`.
  *
  * Routes:
- *   POST /runs                {game}       -> start a run; abandons the key's active one
+ *   POST /runs                {game, party?} -> start a run; abandons the key's active one
  *   GET  /runs/active                      -> {activeRunId} for this key
  *   GET  /runs/:id                         -> the current view (resume after a reload)
  *   POST /runs/:id/turn       {move?, action, actFirst?} -> one turn, then AI turns up to yours
@@ -56,7 +56,7 @@ async function startRun(request: Request, env: Env, owner: string): Promise<Resp
       );
     }
   }
-  const body = ((await readBody(request)) ?? {}) as {game?: unknown};
+  const body = ((await readBody(request)) ?? {}) as {game?: unknown; party?: unknown};
   const game = typeof body.game === 'string' ? body.game : '';
   if (!runSystemRegistry.has(game))
     return json({error: 'unknown_game', message: 'Unknown game.'}, 400);
@@ -66,7 +66,8 @@ async function startRun(request: Request, env: Env, owner: string): Promise<Resp
     const seed = crypto.getRandomValues(new Uint32Array(1))[0]!;
     const init = await runRoom(env, runId).fetch('https://do/init', {
       method: 'POST',
-      body: JSON.stringify({runId, game, ownerHash: owner, seed}),
+      // The game checks the start menu's choices; the Worker only passes them on.
+      body: JSON.stringify({runId, game, ownerHash: owner, seed, setup: {party: body.party}}),
     });
     if (init.status === 409) continue; // id collision: try another
     if (!init.ok) return init;

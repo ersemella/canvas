@@ -52,15 +52,25 @@ export class RunRoom implements DurableObject {
       game: string;
       ownerHash: string;
       seed: number;
+      setup?: unknown;
     };
     const system = runSystemRegistry.get(body.game);
     if (!system) return json({error: 'unknown_game', message: 'Unknown game.'}, 400);
+    let state: unknown;
+    try {
+      state = system.createRun(body.seed, body.setup);
+    } catch (err) {
+      return json(
+        {error: 'bad_setup', message: err instanceof Error ? err.message : 'Bad setup.'},
+        400
+      );
+    }
     const now = Date.now();
     const record: RunRecord = {
       runId: body.runId,
       game: body.game,
       ownerHash: body.ownerHash,
-      state: system.createRun(body.seed),
+      state,
       status: 'active',
       createdAt: now,
       updatedAt: now,

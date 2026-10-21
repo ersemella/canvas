@@ -4,6 +4,9 @@ Status: **Phase 1 built (2026-10-19), with placeholder hero numbers.**
 One fight against the AI plays end to end: the rules in
 `packages/games/silk-road-tactics/src/rules/`, `RunRoom` and
 `PlayerLedger` in `@canvas/server`, the page at `/play/silk-road-tactics`.
+The page opens on a start menu (2026-10-21): the game in brief, which of
+the three heroes to take (one to three; the camel always comes; the enemy
+always brings all three), and Start; `POST /runs` takes the `party`.
 What the builder decided and where it departs from the brief is in
 [phase-1-brief.md](phase-1-brief.md#11-as-built-2026-10-19). The engine
 has hex geometry, a hex grid system, sprites and scaled pixel-art

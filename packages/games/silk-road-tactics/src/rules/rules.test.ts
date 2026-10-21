@@ -999,6 +999,36 @@ describe('previews, the AI and the run', () => {
     ).toThrow(RuleError);
   });
 
+  it('the start menu’s party comes to the fight, with the camel; the enemy brings all three', () => {
+    const run = createRun(5, {party: ['storm', 'bokh']});
+    const player = run.fight.units.filter((u) => u.side === 'player');
+    expect(player.map((u) => [u.hero, u.partyIndex])).toEqual([
+      ['storm', 0],
+      ['bokh', 1],
+      ['camel', 2],
+    ]);
+    expect(player.every((u) => u.hex)).toBe(true);
+    expect(run.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual([
+      'bokh',
+      'mangudai',
+      'storm',
+    ]);
+    // No party given: everyone comes.
+    expect(createRun(5).fight.units.filter((u) => u.side === 'player')).toHaveLength(4);
+  });
+
+  it('a party must be one to three different heroes', () => {
+    for (const party of [
+      [],
+      ['bokh', 'bokh'],
+      ['camel'],
+      ['nobody'],
+      'bokh',
+      ['bokh', 'mangudai', 'storm', 'bokh'],
+    ])
+      expect(() => createRun(5, {party})).toThrow(RuleError);
+  });
+
   it('a preview matches the outcome', () => {
     const run = createRun(3);
     const acting = actingUnit(run.fight)!;

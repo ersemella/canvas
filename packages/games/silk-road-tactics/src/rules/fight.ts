@@ -59,7 +59,7 @@ export function refreshStats(state: FightState): void {
   }
 }
 
-function makeUnit(side: Side, partyIndex: number, hero = PARTY[partyIndex]!): Unit {
+function makeUnit(side: Side, partyIndex: number, hero: HeroId): Unit {
   const stats = HEROES[hero];
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}`,
@@ -85,9 +85,10 @@ function makeUnit(side: Side, partyIndex: number, hero = PARTY[partyIndex]!): Un
  * ruins and quicksand, the player's party along the leftmost column and
  * the enemy's along the rightmost (owner, 2026-10-20; there is no
  * deployment step), and shuffles starting speed ties. The player's camel
- * starts in the middle of its column (camel.md, 18.1).
+ * starts in the middle of its column (camel.md, 18.1). The player brings
+ * the heroes chosen on the start menu; the enemy always brings all three.
  */
-export function createFight(seed: number): FightState {
+export function createFight(seed: number, party: HeroId[] = PARTY): FightState {
   const map = SALT_FLATS;
   const state: FightState = {
     mapId: map.id,
@@ -95,9 +96,9 @@ export function createFight(seed: number): FightState {
     phase: 'fight',
     currentSlot: 0,
     units: [
-      ...PARTY.map((_, i) => makeUnit('player', i)),
-      makeUnit('player', PARTY.length, CAMEL),
-      ...PARTY.map((_, i) => makeUnit('enemy', i)),
+      ...party.map((hero, i) => makeUnit('player', i, hero)),
+      makeUnit('player', party.length, CAMEL),
+      ...PARTY.map((hero, i) => makeUnit('enemy', i, hero)),
     ],
     effects: [],
     log: [],
