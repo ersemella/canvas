@@ -3,7 +3,7 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {RULES} from './config';
+import {HEROES, RULES} from './config';
 import type {Tile} from './map';
 import type {HailEffect} from './types';
 
@@ -37,8 +37,8 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
 /** The four exits (camel.md, 18.2): not a tile but the camel's goal, said beside its tile. */
 export const EXIT_INFO: HexInfo = {
   name: 'Road out',
-  short: 'Your camel reaching it wins',
-  detail: 'The road out: your camel reaching any of these four spaces wins the fight.',
+  short: `${HEROES.camel.name} reaching it wins`,
+  detail: `The road out: ${HEROES.camel.name} reaching any of these four spaces wins the fight.`,
 };
 
 /** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2). */

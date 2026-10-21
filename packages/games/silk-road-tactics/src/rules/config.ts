@@ -147,8 +147,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * was 0). Health 1,500 and speed Low are PLACEHOLDERS.
    */
   camel: {
-    name: 'Caravan Camel',
-    letter: 'C',
+    // Temee (owner, 2026-10-21): a name, so no "Your" before it (unitName).
+    name: 'Temee',
+    letter: 'T',
     health: 1500,
     speed: 10,
     defence: 40,

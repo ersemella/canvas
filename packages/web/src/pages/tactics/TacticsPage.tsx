@@ -107,10 +107,10 @@ function outcomeText(fight: FightState): string {
   const camel = camelOf(fight);
   if (fight.phase === 'won')
     return camel?.alive && camel.hex && atExit(fight, camel.hex)
-      ? 'Your camel takes the road out.'
+      ? `${HEROES.camel.name} takes the road out.`
       : 'The rival band is scattered.';
   return camel && !camel.alive
-    ? 'Your camel has fallen, and its load with it.'
+    ? `${HEROES.camel.name} has fallen, and the load with it.`
     : 'Your caravan has fallen.';
 }
 

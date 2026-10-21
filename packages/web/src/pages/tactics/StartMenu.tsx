@@ -8,21 +8,28 @@ import styles from './TacticsPage.module.css';
 
 const PARTY_STORAGE = 'canvas:tactics:party';
 
-/** Each hero's role and one line on how it plays (roster.md, 15.8). */
-const ROLE: Partial<Record<HeroId, {role: string; blurb: string}>> = {
-  bokh: {
-    role: 'Tank',
-    blurb: 'A champion wrestler: grabs, pins and throws enemies to hold the front.',
-  },
-  mangudai: {
-    role: 'Damage',
-    blurb: 'A mounted archer, fast and fragile: line of fire matters most.',
-  },
-  storm: {
-    role: 'Support',
-    blurb: 'A weather-worker: hail slows and hurts, sunlight heals and cleanses.',
-  },
+/** Each hero in a line or two of story (roster.md, 15.8): who they are, not their numbers. */
+const LORE: Partial<Record<HeroId, string>> = {
+  bokh: 'Champion of the naadam wrestling grounds, broad as a felt tent. Seizes foes bare-handed and throws them where they can do no harm.',
+  mangudai:
+    'A rider of the vanguard, gone before the dust settles. Looses arrows down any open line, but cannot weather a long fight.',
+  storm:
+    'Born with a caul, keeper of the rain stone. Calls hail down on rivals, and parts the clouds to mend whoever stands beneath the sun.',
 };
+
+/** The stats on the menu, each a meter of three pips: Low, Medium, High (roster.md's bands). */
+const METERS: {label: string; band: (h: (typeof HEROES)[HeroId]) => number}[] = [
+  {label: 'Health', band: (h) => (h.health <= 300 ? 1 : h.health <= 420 ? 2 : 3)},
+  {label: 'Speed', band: (h) => statBand(h.speed)},
+  {label: 'Power', band: (h) => statBand(h.power)},
+  {label: 'Defence', band: (h) => statBand(h.defence)},
+];
+const BAND_NAME = ['', 'Low', 'Medium', 'High'];
+
+/** Speed, power and defence share one scale: Low 10, Medium 25, High 40 (config.ts). */
+function statBand(value: number): number {
+  return value <= 10 ? 1 : value <= 25 ? 2 : 3;
+}
 
 /** The party chosen last time, if it's still a valid one; else everyone. */
 function savedParty(): HeroId[] {
@@ -69,20 +76,18 @@ export function StartMenu(props: {
               Silk Road Tactics
             </Text>
             <Text>
-              Lead a caravan along a fantasy Silk Road. On the Salt Flats Crossing your heroes and
-              your camel meet a rival band on a small hex map.
+              The road west is long, and not every caravan reaches the far bazaars. Escort{' '}
+              {HEROES.camel.name}, your caravan’s camel, and the load on its back across the Salt
+              Flats, where a rival band lies in wait.
             </Text>
             <ul className={styles.startRules}>
+              <li>Every deed takes time: the quick strike comes often, the mighty one seldom.</li>
               <li>
-                Turn order is a track: an action’s cost, divided by the unit’s speed, sets how far
-                its card moves on. Cheap turns come round sooner.
+                Nothing hides on the open flats but your rivals’ intent. Read them, and act first.
               </li>
               <li>
-                Every unit’s stats are shown, the enemy’s too; only what it will choose is hidden.
-              </li>
-              <li>
-                Win by bringing your camel to the road out, or by scattering the rival band. If the
-                camel falls, or all your heroes do, the fight is lost.
+                Bring {HEROES.camel.name} to the road out, or scatter the rivals. If{' '}
+                {HEROES.camel.name} falls, or your heroes do, the journey ends here.
               </li>
             </ul>
           </Stack>
@@ -104,14 +109,8 @@ export function StartMenu(props: {
                 />
               ))}
             </div>
-            <Text c="dimmed" fz="sm">
-              The caravan’s camel always comes: it can’t attack, and the enemy will hunt it.
-            </Text>
           </Stack>
 
-          <Text c="dimmed" fz="sm">
-            Prototype: one fight. Hero numbers are placeholders.
-          </Text>
           <Stack gap="xs">
             <Button
               size="lg"
@@ -141,10 +140,10 @@ export function StartMenu(props: {
   );
 }
 
-/** One hero on the start menu: portrait, role, stats and abilities; tap to take or leave it. */
+/** One hero on the start menu: portrait, story, stat meters and abilities; tap to take or leave it. */
 function HeroPick(props: {hero: HeroId; picked: boolean; onToggle: () => void}) {
   const stats = HEROES[props.hero];
-  const role = ROLE[props.hero];
+  const lore = LORE[props.hero];
   const portrait = HERO_PORTRAIT[props.hero]?.src;
   return (
     <button
@@ -159,18 +158,26 @@ function HeroPick(props: {hero: HeroId; picked: boolean; onToggle: () => void}) 
         </div>
         <div>
           <div className={styles.display}>{stats.name}</div>
-          {role && <div className={styles.heroPickRole}>{role.role}</div>}
           <div className={styles.heroPickMark}>
             {props.picked ? '✓ In the party' : 'Left behind'}
           </div>
         </div>
       </div>
-      {role && <div className={styles.heroPickBlurb}>{role.blurb}</div>}
+      {lore && <div className={styles.heroPickBlurb}>{lore}</div>}
       <div className={styles.heroPickStats}>
-        <span>Health {stats.health}</span>
-        <span>Speed {stats.speed}</span>
-        <span>Power {stats.power}</span>
-        <span>Defence {stats.defence}</span>
+        {METERS.map(({label, band}) => {
+          const filled = band(stats);
+          return (
+            <div key={label} role="img" aria-label={`${label}: ${BAND_NAME[filled]}`}>
+              <span>{label}</span>
+              <span className={styles.meter}>
+                {[1, 2, 3].map((pip) => (
+                  <i key={pip} className={pip <= filled ? styles.meterOn : undefined} />
+                ))}
+              </span>
+            </div>
+          );
+        })}
       </div>
       <div className={styles.heroPickAbilities}>
         {stats.abilities

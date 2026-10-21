@@ -49,6 +49,7 @@ function snapshot(state: FightState): BoardSnapshot {
 }
 
 export function unitName(u: Unit): string {
+  if (u.hero === 'camel' && u.side === 'player') return HEROES.camel.name;
   return `${u.side === 'player' ? 'Your' : 'Enemy'} ${HEROES[u.hero].name}`;
 }
 
