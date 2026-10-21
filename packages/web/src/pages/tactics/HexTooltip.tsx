@@ -14,7 +14,7 @@ interface Placement {
   left: number;
   top: number;
   maxHeight: number;
-  /** The most room it could have had (clear of the hex alone), for the e2e suite. */
+  /** The most room it could have had (the roomier side), for the e2e suite. */
   room: number;
 }
 
@@ -23,9 +23,9 @@ interface Placement {
  * the hex and its unit's health bar and statuses, its keywords tappable for
  * their rules. It may leave the board: up over the track to the top of the
  * screen, and down to `floor` (the pinned action bar). It goes above the
- * hex if it fits there, else below; failing both, it may cover the unit's
- * health bar and statuses (not the hex); failing that too, it takes the
- * roomier side and scrolls. It's placed again whenever its size changes
+ * hex if it fits there, else below; failing both, it takes the roomier side
+ * and scrolls (its open rule kept in view): it never covers the hex or the
+ * unit's health bar and statuses. It's placed again whenever its size changes
  * (a keyword's rule shown, a turn played). A tap on it closes it, unless
  * it lands on something tappable inside (a keyword, an ability's name, ×).
  *
@@ -58,32 +58,29 @@ export function HexTooltip(props: {
     const areaBottom = (floor() ?? window.innerHeight) - b.top - GAP;
     // Its whole height, borders included, however much shows now.
     const h = el.scrollHeight + el.offsetHeight - el.clientHeight;
-    // Clear of the hex, its health bar and statuses if it fits so, else
-    // of the hex alone (it repeats the health); above first, then below.
+    // Clear of the hex, its health bar and statuses: above first, then below.
     const sides = [
       {above: true, edge: span.top * s - GAP},
       {above: false, edge: span.bottom * s + GAP},
-      {above: true, edge: span.hexTop * s - GAP},
-      {above: false, edge: span.hexBottom * s + GAP},
     ].map((side) => ({
       ...side,
       room: side.above ? side.edge - areaTop : areaBottom - side.edge,
     }));
     // Nowhere it fits: the roomier side, scrolling.
     const side =
-      sides.find((x) => h <= x.room) ?? sides.slice(2).reduce((a, x) => (x.room > a.room ? x : a));
+      sides.find((x) => h <= x.room) ?? sides.reduce((a, x) => (x.room > a.room ? x : a));
     const w = el.offsetWidth;
     const left = Math.round(Math.min(width - w - GAP, Math.max(GAP, span.x * s - w / 2)));
     const next = {
       left,
       top: Math.round(side.above ? side.edge - Math.min(h, side.room) : side.edge),
       maxHeight: Math.floor(side.room),
-      room: Math.floor(Math.max(sides[2]!.room, sides[3]!.room)),
+      room: Math.floor(Math.max(sides[0]!.room, sides[1]!.room)),
     };
     setPlace((p) =>
       p && p.left === next.left && p.top === next.top && p.maxHeight === next.maxHeight ? p : next
     );
-  }, [span.x, span.top, span.bottom, span.hexTop, span.hexBottom, s, width, floor]);
+  }, [span.x, span.top, span.bottom, s, width, floor]);
 
   useLayoutEffect(measure, [measure, props.fight]);
   useLayoutEffect(() => {

@@ -668,9 +668,11 @@ try {
     await sleep(200);
     check('phone: tapping the tooltip closes it', !(await tooltip.count()));
   }
-  // Every unit: the tooltip only scrolls when no side of the hex has room for it all.
+  // Every unit: the tooltip never covers the hex or the unit's health bar and
+  // statuses, and only scrolls when neither side of them has room for it all.
   {
     const squeezed = [];
+    const covering = [];
     for (const u of phoneFight.units.filter((x) => x.alive)) {
       const at = await onPhone(u.hex);
       await phone.touchscreen.tap(at.x, at.y);
@@ -681,10 +683,18 @@ try {
         room: Number(el.dataset.room),
       }));
       if (m.full > m.shown + 1 && m.room >= m.full + 2) squeezed.push({unit: u.id, ...m});
+      const span = await phone.evaluate((h) => window.__tactics.overlaySpan(h), u.hex);
+      const canvas = await phone.locator('canvas').boundingBox();
+      const t = await tooltip.boundingBox();
+      const top = canvas.y + (span.top * canvas.height) / 696;
+      const bottom = canvas.y + (span.bottom * canvas.height) / 696;
+      if (t.y < bottom - 1 && t.y + t.height > top + 1)
+        covering.push({unit: u.id, tooltip: [t.y, t.y + t.height], unitSpan: [top, bottom]});
       await phone.touchscreen.tap(at.x, at.y); // close it
       await sleep(150);
     }
     check('phone: no tooltip squeezed while there’s room for it', !squeezed.length, squeezed);
+    check('phone: no tooltip covers a unit’s health bar or statuses', !covering.length, covering);
   }
   // Plain sand has nothing to explain: tapping it shows no tooltip.
   {

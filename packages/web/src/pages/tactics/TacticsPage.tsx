@@ -21,6 +21,7 @@ import {
   actingUnit,
   allowedTargets,
   chooseAiTurn,
+  hexOverlaySpan,
   mapOf,
   onMap,
   plainSand,
@@ -621,6 +622,8 @@ export function TacticsPage() {
       run,
       busy: busy || playing,
       hexToCanvas: (h: Hex) => hexToPixel(h, BOARD_LAYOUT),
+      /** What a looked-at hex takes up (its unit's health bar and statuses included), in scene pixels. */
+      overlaySpan: (h: Hex) => (fight ? hexOverlaySpan(fight, h) : null),
       /** The chosen ability's targets and the acting unit's moves, since starts are random. */
       targets,
       reaches,

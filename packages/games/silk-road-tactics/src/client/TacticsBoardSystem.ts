@@ -882,13 +882,11 @@ function drawYield(
  * x, and the top and bottom of the hex with its unit's health bar and
  * status markers. A tooltip goes above `top` or below `bottom` to keep
  * clear of them: the hover tooltip here, and the page's on phones.
- * `hexTop` and `hexBottom` bound the hex (its sprite) alone, for a tooltip
- * that would rather cover the health bar than scroll.
  */
 export function hexOverlaySpan(
   fight: FightState,
   h: Hex
-): {x: number; top: number; bottom: number; hexTop: number; hexBottom: number} {
+): {x: number; top: number; bottom: number} {
   const c = center(h);
   const unit = unitAt(fight, h);
   const stack = unit && healthStack(h, statusMarks(fight, unit).length);
@@ -898,8 +896,6 @@ export function hexOverlaySpan(
     x: c.x,
     top: stack && stack.top < c.y ? stack.top : hexTop,
     bottom: stack && stack.bottom > c.y ? stack.bottom + 2 : hexBottom,
-    hexTop,
-    hexBottom,
   };
 }
 
