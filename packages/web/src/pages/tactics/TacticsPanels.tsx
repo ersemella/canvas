@@ -173,6 +173,8 @@ export function HexInspector({
   return (
     <Glossary>
       <Stack gap={dense ? 6 : 8} data-testid="hex-info">
+        {/* The unit first: it's what was tapped; the ground under it after. */}
+        {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
         {showTile && (
           <Paper className={styles.plaque!} p={dense ? 'xs' : 'sm'}>
             <Text className={styles.display!} fw={700} fz={dense ? 'sm' : 'md'}>
@@ -193,7 +195,6 @@ export function HexInspector({
             )}
           </Paper>
         )}
-        {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
       </Stack>
     </Glossary>
   );
@@ -321,7 +322,8 @@ export function StatSheet({
       )}
       {/* Names only, to scan; a tap explains one below. */}
       <div className={styles.abilityList}>
-        <span className={styles.abilityListLabel}>Abilities</span>
+        {/* The phone's tooltip leaves the label out, to stay narrow. */}
+        {!dense && <span className={styles.abilityListLabel}>Abilities</span>}
         {abilities.map((def) => (
           <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
             {def.name}

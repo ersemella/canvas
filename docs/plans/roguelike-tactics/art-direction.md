@@ -105,14 +105,17 @@ game reads as one thing. Layout, labels and states are unchanged.
 - **Boxes and buttons built from whole pixels** (`--px`, one art pixel,
   2px): an ink outline, square-step corners, a hard bevel (light top and
   left, shade bottom and right) and flat fills; no gradients, rounded
-  corners or soft shadows. Move and the abilities are raised dusk tiles;
-  the picked one is outlined and lettered in light lapis; an ultimate is
-  plum. Confirm is the same tile in your units' lapis (the blue of their
-  hexes and cards). The stat sheet's abilities are not tiles but text with
-  a dotted underline, as keywords are, so nothing but the action section
-  looks like a choice of move. Sunken boxes (the stats) have the shade on
-  top. The track's cards and the canvas tooltips use the same cut corners
-  and hard drop shadows.
+  corners or soft shadows. Move and the abilities, the acting unit's, are
+  raised tiles in your side's deep lapis; the picked one is outlined and
+  lettered in light lapis; an ultimate is plum; what can't be used now is
+  a flat dusk tile. Confirm, a step brighter, is solid lapis (the blue of
+  your units' hexes and cards). The stat sheet's abilities are not tiles
+  but text with a dotted underline, as keywords are, so nothing but the
+  action section looks like a choice of move (the phone's tooltip leaves
+  out their "Abilities" label, to stay narrow). A tooltip shows the unit
+  first, then the ground under it. Sunken boxes (the stats) have the shade
+  on top. The track's cards and the canvas tooltips use the same cut
+  corners and hard drop shadows.
 - **The sides:** each unit stands on a rug filling its hex (its side's
   colour, a stitched ivory border); track portraits sit on two flat bands
   of their side's colour.

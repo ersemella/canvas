@@ -342,30 +342,38 @@
 }
 
 /*
- * Move and the abilities: raised dusk tiles; the picked one outlined and
- * lettered in light lapis (Confirm alone is solid lapis).
+ * Move and the abilities: the acting unit's, so raised tiles in your side's
+ * deep lapis; the picked one outlined and lettered in light lapis; Confirm,
+ * a step brighter, is solid lapis. The ultimate is plum; what can't be used
+ * now is a flat dusk tile.
  */
 .tile.tile {
   color: var(--c-ivory);
   border: var(--px) solid var(--c-ink);
   border-radius: 0;
-  background: var(--c-dusk2);
+  background: var(--c-lapisDark);
   box-shadow:
-    inset var(--px) var(--px) 0 var(--c-dusk3),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk1);
+    inset var(--px) var(--px) 0 var(--c-lapis),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-ink);
   clip-path: var(--notch);
 }
 .tile.tile:hover:not(:disabled) {
-  background: var(--c-dusk3);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-lapisLight),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-ink);
 }
 .tile.tile[aria-pressed='true'] {
   color: var(--c-lapisLight);
   border-color: var(--c-lapisLight);
-  background: var(--c-dusk2);
+  background: var(--c-lapisDark);
   box-shadow: inset 0 0 0 var(--px) var(--c-lapisLight);
 }
 .tile.tileUltimate {
   color: var(--c-plumLight);
+  background: var(--c-plumDark);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-plum),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-ink);
 }
 .tile.tileUltimate[aria-pressed='true'] {
   color: var(--c-ivory);
