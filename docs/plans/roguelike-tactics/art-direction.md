@@ -84,11 +84,13 @@ the menu) and the canvas's overlay are drawn as the pixel art is, so the
 game reads as one thing. Layout, labels and states are unchanged.
 
 - **One palette** (`src/client/palette.ts`, `PALETTE`), 27 colours in
-  ramps: dusk (the night panels and the track), sand (the board),
-  turquoise (yours to act: the acting unit, targeting, Confirm; opposite
-  the sand, so it reads on the board), gold (warnings: harmful statuses),
-  lapis (your side),
-  madder (the enemy's), jade (health, healing), plum (ultimates,
+  ramps: dusk (the night panels and the track), sand (the board), lapis
+  (everything yours: deep for your units' rugs and cards, light for your
+  actions, i.e. targeting, the path, the acting unit, Confirm, and your
+  names; blue is the sand's opposite, so it reads on the board, and the
+  light shade still shows over your own deep hexes), madder (everything
+  the enemy's: its units, charge areas, names), gold (warnings: harmful
+  statuses), jade (health, healing), plum (ultimates,
   charging), sky (ice, hail), plus ink, the sprites' outline, and ivory
   for text. The board's overlay, the track and the page all take their
   colours from it; the page gets it as `--c-*` CSS variables. Only the
@@ -104,8 +106,8 @@ game reads as one thing. Layout, labels and states are unchanged.
   2px): an ink outline, square-step corners, a hard bevel (light top and
   left, shade bottom and right) and flat fills; no gradients, rounded
   corners or soft shadows. Move and the abilities are raised dusk tiles;
-  the picked one is lapis, outlined in turquoise; an ultimate is plum. Confirm
-  is the same tile in turquoise. Sunken boxes (the stats) have the shade on
+  the picked one is lapis, outlined in light lapis; an ultimate is plum. Confirm
+  is the same tile in light lapis. Sunken boxes (the stats) have the shade on
   top. The track's cards and the canvas tooltips use the same cut corners
   and hard drop shadows.
 - **The sides:** each unit stands on a rug filling its hex (its side's

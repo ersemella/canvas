@@ -5,9 +5,9 @@
  * effect art keep their own hand-picked shades.
  *
  * Ramps, darkest first: dusk (the night panels and the track), sand (the
- * board), gold (warnings: harmful statuses), turquoise (yours to act: the
- * acting unit, targeting, Confirm), lapis
- * (your side), madder (the enemy's), jade (health, healing), plum
+ * board), gold (warnings: harmful statuses), lapis (your side: deep for
+ * your units, light for your actions: the acting unit, targeting, Confirm),
+ * madder (the enemy's side: its units, charges and names), jade (health, healing), plum
  * (ultimates, charging), sky (ice and hail).
  */
 export const PALETTE = {
@@ -27,13 +27,15 @@ export const PALETTE = {
   goldDark: '#a8641e',
   gold: '#e8a93a',
   goldLight: '#ffdf5e',
-  /** Yours to act (the acting unit, targeting, Confirm): the opposite of the sand, so it reads on the board. */
-  turquoiseDark: '#1f7a72',
-  turquoise: '#38bfae',
-  turquoiseLight: '#7ff0e0',
   lapisDark: '#1f3a6e',
   lapis: '#3563b0',
-  lapisLight: '#9cbcf0',
+  /**
+   * Your actions (targeting, the path, the acting unit, Confirm) and your
+   * names: light and bright, so it reads on the sand (blue is its
+   * opposite) and over your own deep lapis hexes.
+   */
+  lapisLight: '#8ec5ff',
+  lapisPale: '#d4ebff',
   madderDark: '#6b2116',
   madder: '#b0402e',
   madderLight: '#f2a48e',

@@ -120,11 +120,11 @@ interface HighlightStyle {
   dash?: number[];
 }
 /**
- * Targeting is all one turquoise (the bow's lanes'), stronger the closer it is
+ * Targeting is all one light blue (your side's light lapis) (the bow's lanes'), stronger the closer it is
  * to what's picked, so it never reads as either side's tint.
  */
-/** `PALETTE.turquoiseLight`, as channels for the highlights' opacities. */
-const TARGET_RGB = '127,240,224';
+/** `PALETTE.lapisLight`, as channels for the highlights' opacities. */
+const TARGET_RGB = '142,197,255';
 /** An enemy's charging area: its side's madder (`SIDE_COLOR.enemy`). */
 const ENEMY_CHARGE_RED = '176,64,46';
 const targeting = (fill: number, stroke: number): HighlightStyle => ({
@@ -735,7 +735,7 @@ function drawCard(
     ctx.strokeStyle = !u
       ? PALETTE.dusk2
       : ghost || acting
-        ? PALETTE.turquoiseLight
+        ? PALETTE.lapisLight
         : u.id === opts.selected || u.id === opts.hovered
           ? PALETTE.ivory
           : SIDE_LIGHT[u.side];
@@ -844,7 +844,7 @@ function drawYield(
   const left = mid(aim) - deck.w / 2;
   ctx.save();
   ctx.setLineDash([3, 2]);
-  ctx.strokeStyle = PALETTE.turquoiseLight;
+  ctx.strokeStyle = PALETTE.lapisLight;
   ctx.lineWidth = 2;
   pixelRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
   ctx.stroke();
@@ -852,10 +852,10 @@ function drawYield(
   const y = deck.y + deck.h - 18;
   const x1 = mid(aim);
   const x2 = mid(land) - 4;
-  // Dark under turquoise, so it reads over any card.
+  // Dark under the blue, so it reads over any card.
   for (const [color, width] of [
     [PALETTE.ink, 4],
-    [PALETTE.turquoiseLight, 2],
+    [PALETTE.lapisLight, 2],
   ] as const) {
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
@@ -1650,8 +1650,8 @@ function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
   // Stop short of the last centre, so the head sits clear of the ghost's feet.
   const end = {x: b.x - ux * 12, y: b.y - uy * 12};
   ctx.save();
-  ctx.strokeStyle = PALETTE.turquoiseLight;
-  ctx.fillStyle = PALETTE.turquoiseLight;
+  ctx.strokeStyle = PALETTE.lapisLight;
+  ctx.fillStyle = PALETTE.lapisLight;
   ctx.lineWidth = 3;
   ctx.lineJoin = 'miter';
   ctx.lineCap = 'square';
@@ -1671,7 +1671,7 @@ function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
 }
 
 /**
- * A charging ability's area, until it triggers: turquoise for your own, as all
+ * A charging ability's area, until it triggers: light blue for your own, as all
  * your targeting is; for an enemy's a red outline only, so it reads as a
  * threat without looking like the tint under an enemy unit.
  */
@@ -1804,8 +1804,7 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
         );
       }
       // The name last, over the effect.
-      if (u.hex)
-        title(u.hex, name, e.kind === 'charge' ? PALETTE.plumLight : PALETTE.turquoiseLight);
+      if (u.hex) title(u.hex, name, e.kind === 'charge' ? PALETTE.plumLight : PALETTE.lapisLight);
       return;
     }
     case 'damage':
@@ -2221,7 +2220,7 @@ function drawUnit(
     at?: {x: number; y: number} | undefined;
     /** Opacity, for a unit fading out as it falls. */
     alpha?: number;
-    /** An ability being aimed can target it (or has): a turquoise ring inside its border. */
+    /** An ability being aimed can target it (or has): a light blue ring inside its border. */
     targeted?: 'target' | 'chosen' | undefined;
   }
 ): void {
@@ -2229,12 +2228,12 @@ function drawUnit(
   ctx.save();
   ctx.globalAlpha = (opts.faded ? 0.35 : opts.ghost ? 0.85 : 1) * (opts.alpha ?? 1);
   if (!opts.at) {
-    // The hex's border: turquoise on the unit whose turn it is, white when
+    // The hex's border: light blue on the unit whose turn it is, white when
     // selected, otherwise its side's colour (the hex is tinted to match).
     hexPath(ctx, hex, 2.5);
     if (opts.ghost) ctx.setLineDash([5, 4]);
     ctx.strokeStyle = opts.acting
-      ? PALETTE.turquoiseLight
+      ? PALETTE.lapisLight
       : opts.selected
         ? PALETTE.ivory
         : SIDE_COLOR[u.side];
