@@ -142,11 +142,15 @@ export interface ArrowLane {
  * The bow's six lanes from `from`: each runs until the first unit (which
  * it hits), an obstacle, an Obscured hex (which it can't target in or
  * through, so it stops short of it) or the map's edge (the bow has no range
- * limit). For the page to show where an arrow can fly, hit or not.
+ * limit). From an Obscured hex every lane is empty: the bow can't shoot out
+ * of a sandstorm (owner, 2026-10-21). For the page to show where an arrow
+ * can fly, hit or not.
  */
 export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLane[] {
+  const blind = obscured(state, map, from);
   return DIRECTIONS.map((dir) => {
     const lane: ArrowLane = {hexes: []};
+    if (blind) return lane;
     let h = from;
     for (let i = 0; i < ABILITY.bow.range; i++) {
       h = hexNeighbor(h, dir);

@@ -123,10 +123,11 @@ function statusPoints(u: Unit, slot: number, p: Pressure): number {
 /**
  * What standing Obscured is worth to `u`'s side: the ranged hits it stops
  * on `u` until `u` can move away (its next turn, at least a typical turn
- * ahead). Only those aimed at `u`: shooting out of a sandstorm is allowed,
- * so it costs `u` nothing. (When Obscured halved hits by its occupant too,
- * pricing those kept the Outrider shuffling: over 800 AI-vs-AI fights,
- * 20.5 turns a fight instead of 15, and 6.4% unfinished instead of 3.4%.)
+ * ahead). Not the bow shots it costs `u` (an Outrider can't shoot out of
+ * a sandstorm): `u` can step out before it shoots, and when Obscured
+ * halved hits by its occupant, pricing those kept the Outrider shuffling
+ * (over 800 AI-vs-AI fights, 20.5 turns a fight instead of 15, and 6.4%
+ * unfinished instead of 3.4%).
  */
 function obscuredValue(state: FightState, u: Unit, p: Pressure): number {
   if (!u.hex || u.slot === null || !obscured(state, mapOf(state), u.hex)) return 0;

@@ -26,6 +26,7 @@ import {
   chooseAiTurn,
   hexOverlaySpan,
   mapOf,
+  obscured,
   offeredTargets,
   onMap,
   plainSand,
@@ -422,7 +423,9 @@ export function TacticsPage() {
           def.targets(state, map, unit, unit.hex!).length > 0 &&
           allowedTargets(state, map, unit, def).length === 0
           ? `Taunted: this can’t reach ${HEROES[taunter.hero].name}.`
-          : (NO_TARGET[def.id] ?? 'Nothing to target from here.')
+          : def.id === 'bow' && unit.hex && obscured(state, map, unit.hex)
+            ? 'Can’t shoot out of a sandstorm.'
+            : (NO_TARGET[def.id] ?? 'Nothing to target from here.')
       );
     }
     return out;

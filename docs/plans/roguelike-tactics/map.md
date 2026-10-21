@@ -34,7 +34,7 @@ Maps can contain three types of special tile:
 |---|---|
 | **Obstacle** | Cannot be moved through or occupied. |
 | **Hazard** | Deals damage and/or applies status effects to a unit that enters or occupies it. Exact trigger (on entry, at turn start, or both) TBD. |
-| **Conceal** | Smoke or weather (the sandstorm in Phase 1) that makes the unit occupying it **Obscured** ([keywords.md](keywords.md), 17.6): ranged abilities can't target it or through it (owner, 2026-10-21; they dealt 50% less into and out of it from 2026-10-20). |
+| **Conceal** | Smoke or weather (the sandstorm in Phase 1) that makes the unit occupying it **Obscured** ([keywords.md](keywords.md), 17.6): ranged abilities can't target it or through it, and a bow can't shoot out of it (owner, 2026-10-21; they dealt 50% less into and out of it from 2026-10-20). |
 
 - No other modifier types for now, to keep the board readable.
 - **Not included:** elevation (height differences affecting combat), facing (the direction a unit points affecting combat).

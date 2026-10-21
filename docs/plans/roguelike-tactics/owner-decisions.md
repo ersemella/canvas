@@ -108,7 +108,7 @@ unfinished at 400 actions, median 52 actions (58 before).
 
 | Ability | Placeholder values |
 |---|---|
-| Composite Bow | **no range limit (owner, 2026-10-20; was 5)**: flies to the first unit, ruins or the map's edge; **damage 120 (owner, 2026-10-19)**; **can't target a unit in, or past, a sandstorm (Obscured): its lane stops short of it (owner, 2026-10-21; it was halved before)** |
+| Composite Bow | **no range limit (owner, 2026-10-20; was 5)**: flies to the first unit, ruins or the map's edge; **damage 120 (owner, 2026-10-19)**; **can't target a unit in, or past, a sandstorm (Obscured): its lane stops short of it; and can't shoot out of one (owner, 2026-10-21; it was halved before)** |
 | Leap (Dash until 2026-10-21) | **exactly 2 hexes in a straight line, over ruins, a unit or a hazard, landing on a free walkable hex; cost 20 (owner, 2026-10-21; Dash went up to 3 hexes, stopped by ruins and enemies, at 40)** |
 | Volley (ultimate) | range 5, radius 1, **damage 200 (owner, 2026-10-20; 135 from 2026-10-19)**, **charge 20, recovery 60 (owner, 2026-10-20; were 40 and 100)** |
 | Sunlight | **one unit within 4 (owner, 2026-10-20; was everyone within 1 of the caster, 2 until 2026-10-19)**, **heal 50, 75 at its power, quick (60) (owner, 2026-10-20; 35 earlier that day, typical heal 50 before that, 40 from 2026-10-19, 25 before)**; **clears hail and fog from the target's hex (owner, 2026-10-21)**; **can't target a unit in, or past, a sandstorm (Obscured) (owner, 2026-10-21)** |

@@ -52,7 +52,8 @@ export function obscured(_state: FightState, map: MapData, h: Hex): boolean {
  * Whether a ranged ability aimed from `from` at `to` is stopped by Obscured:
  * `to` is Obscured, or the line between hex centres passes an Obscured hex
  * (on a border, either side, as for line of fire). The user's own hex
- * doesn't count: a unit in a sandstorm can still aim out of it.
+ * doesn't count here: Sunlight can still be aimed out of a sandstorm. The
+ * bow can't shoot out of one (`arrowLanes`, owner 2026-10-21).
  */
 export function obscuredBetween(state: FightState, map: MapData, from: Hex, to: Hex): boolean {
   if (obscured(state, map, to)) return true;

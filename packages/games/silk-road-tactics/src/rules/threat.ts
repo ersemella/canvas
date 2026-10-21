@@ -163,9 +163,9 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
             mark(hexes, id(fq + sq + dq, fr + sr + dr), 'other', pinStep);
         }
       }
-      if (bow > 0) {
+      // The bow can't shoot out of a sandstorm, nor into or through one (Obscured).
+      if (bow > 0 && board.get(id(fq, fr)) !== 'conceal') {
         for (const [dq, dr] of AXIAL) {
-          // An arrow can't be aimed into or through a sandstorm (Obscured).
           for (let i = 1; i <= ABILITY.bow.range; i++) {
             const q = fq + dq * i;
             const r = fr + dr * i;

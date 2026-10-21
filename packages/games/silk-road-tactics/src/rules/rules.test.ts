@@ -473,15 +473,28 @@ describe('damage', () => {
     expect(lanes.some((l) => l.hexes.some((h) => hexEquals(h, at(3, 5))))).toBe(false);
   });
 
-  it('a unit in a sandstorm can still shoot out of it, at full damage', () => {
+  it('the bow can’t shoot out of a sandstorm, only from outside one', () => {
     const s = setup({'p-mangudai': at(3, 5), 'e-bokh': at(4, 5)});
     const m = unit(s, 'p-mangudai');
     const b = unit(s, 'e-bokh');
-    const targets = ABILITIES.bow.targets(s, mapOf(s), m, m.hex!);
+    expect(ABILITIES.bow.targets(s, mapOf(s), m, m.hex!)).toEqual([]);
+    expect(arrowLanes(s, mapOf(s), m.hex!).every((l) => l.hexes.length === 0)).toBe(true);
+    expect(() => applyTurn(s, m, {action: {ability: 'bow', target: {hex: at(4, 5)}}})).toThrow(
+      RuleError
+    );
+    // Swapped, the archer outside the storm hits the unit next to it.
+    m.hex = at(4, 5);
+    b.hex = at(4, 4);
+    const lane = arrowLanes(s, mapOf(s), m.hex).find((l) => l.hit === b);
+    expect(lane).toBeDefined();
+    expect(ABILITIES.bow.targets(s, mapOf(s), m, m.hex)).toContainEqual({hex: at(4, 4)});
+  });
+
+  it('Sunlight can still be aimed out of a sandstorm', () => {
+    const s = setup({'p-storm': at(3, 5), 'p-mangudai': at(4, 5)});
+    const storm = unit(s, 'p-storm');
+    const targets = ABILITIES.sunlight.targets(s, mapOf(s), storm, storm.hex!);
     expect(targets.some((t) => hexEquals(t.hex!, at(4, 5)))).toBe(true);
-    const hp = b.hp;
-    applyTurn(s, m, {action: {ability: 'bow', target: {hex: at(4, 5)}}});
-    expect(b.hp).toBe(hp - abilityDamage(s, m, b, ABILITY.bow.damage));
   });
 
   it('Sunlight can’t target a unit in or past a sandstorm', () => {
