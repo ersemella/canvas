@@ -24,6 +24,8 @@ import type {PlaybackPayload} from './playback';
 import {PALETTE, paletteAlpha, pixelFont} from './palette';
 import bokhPortrait from './sprites/bokh-portrait.png';
 import bokhSprite from './sprites/bokh.png';
+import camelPortrait from './sprites/camel-portrait.png';
+import camelSprite from './sprites/camel.png';
 import mangudaiSprite from './sprites/mangudai.png';
 import mangudaiPortrait from './sprites/mangudai-portrait.png';
 import stormPortrait from './sprites/storm-portrait.png';
@@ -88,13 +90,14 @@ function pixelShadow(ctx: CanvasRenderingContext2D, offset = 2): void {
 const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5', camel: '#a8742f'};
 /**
  * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
- * hero) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
+ * hero or the camel) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
 const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
   storm: stormSprite,
+  camel: camelSprite,
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to
@@ -113,6 +116,7 @@ const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>>
   bokh: {src: bokhPortrait, faceX: 17},
   mangudai: {src: mangudaiPortrait, faceX: 18},
   storm: {src: stormPortrait, faceX: 19},
+  camel: {src: camelPortrait, faceX: 19},
 };
 interface HighlightStyle {
   fill: string;

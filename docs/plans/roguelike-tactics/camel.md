@@ -14,8 +14,7 @@ tuning. Section numbers are the combat design's.
 
 **Status:** decided (owner, 2026-10-21) as the answer to how a stalled
 fight ends ([owner-decisions.md](owner-decisions.md), issue 1); **built in
-the fight (2026-10-21)**, drawn as a lettered disc until its sprite and
-portrait exist. Carrying its health between fights waits for Phase 2's run.
+the fight (2026-10-21)**, with its sprite and portrait. Carrying its health between fights waits for Phase 2's run.
 
 ## 18. The Caravan's Camel
 
@@ -124,7 +123,12 @@ portrait exist. Carrying its health between fights waits for Phase 2's run.
   chevrons, and hovering or tapping one says what it is; the camel's stat
   sheet gives its rule in place of abilities; Move shows its 14 slots; the
   result says whether the camel took the road out or fell.
-- **Still to do:** the camel's sprite and portrait; carrying its health
+- **Art:** a 36×36 sprite with a 2-frame idle (`sprites/camel.png`, split
+  at row 24, above the legs) and a 32×32 portrait
+  (`sprites/camel-portrait.png`), both from ChatGPT images through
+  `scripts/shrink-sprite.py` (the portrait without `--lines`, which muddied
+  the face).
+- **Still to do:** carrying its health
   between fights (Phase 2); the balance runner's camel only waits at its
   start unless the AI moves it.
 
