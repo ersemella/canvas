@@ -42,6 +42,8 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
       return 0.4;
     case 'death':
       return 0.5;
+    case 'skip':
+      return 0.7;
   }
 }
 
@@ -117,7 +119,8 @@ export class Playback {
     this.index = index;
     const e = this.events[index];
     if (!e) return;
-    if (e.kind === 'turn' || e.kind === 'action' || e.kind === 'charge') this.actor = e.unitId;
+    if (e.kind === 'turn' || e.kind === 'action' || e.kind === 'charge' || e.kind === 'skip')
+      this.actor = e.unitId;
     this.display = displayFight(this.base, e, this.actor);
   }
 }

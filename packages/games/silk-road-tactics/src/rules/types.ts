@@ -65,6 +65,11 @@ export interface Unit {
   ultimateUsed: boolean;
   /** A charged ability waiting for this unit's card (3.7). */
   charging: {ability: AbilityId; target: Hex} | null;
+  /**
+   * Its last turn was skipped (it could only Hold): its card shows it until
+   * it next acts.
+   */
+  skipped?: boolean;
   alive: boolean;
 }
 
@@ -104,12 +109,14 @@ export type FightEvent =
   | {kind: 'charge'; unitId: string; ability: AbilityId; target: Hex}
   | {kind: 'damage'; unitId: string; amount: number}
   | {kind: 'heal'; unitId: string; amount: number}
-  | {kind: 'death'; unitId: string; hex: Hex};
+  | {kind: 'death'; unitId: string; hex: Hex}
+  /** Its turn came up with nothing to do but Hold, so the track went on without it. */
+  | {kind: 'skip'; unitId: string};
 
 /** What the board looks like right after an event: enough to draw it, not to play on. */
 export interface BoardSnapshot {
   currentSlot: number;
-  units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'charging'>[];
+  units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'charging' | 'skipped'>[];
   effects: HailEffect[];
   fog: FogEffect[];
 }

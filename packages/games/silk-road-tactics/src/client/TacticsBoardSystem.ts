@@ -796,6 +796,8 @@ function drawCard(
     // A charging card: greyed (the unit waits on its spell, it takes no turn)
     // with the spell's mark; the ability triggers when this slot comes up.
     if (u.charging) drawChargeMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
+    // A card whose last turn was skipped (it could only Hold): marked till it next acts.
+    else if (u.skipped) drawSkipMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
   }
   ctx.restore();
 }
@@ -832,6 +834,29 @@ function drawChargeMark(ctx: CanvasRenderingContext2D, x: number, y: number): vo
   ctx.closePath();
   ctx.fillStyle = PALETTE.ivory;
   ctx.fill();
+  ctx.restore();
+}
+
+/** A skipped turn's mark: a skip sign (two chevrons and a bar) in a dark disc. */
+function drawSkipMark(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x, y, 7, 0, Math.PI * 2);
+  ctx.fillStyle = PALETTE.dusk1;
+  ctx.fill();
+  ctx.strokeStyle = PALETTE.dusk4;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.fillStyle = PALETTE.ivory;
+  for (const dx of [-4, -0.5]) {
+    ctx.beginPath();
+    ctx.moveTo(x + dx, y - 3.5);
+    ctx.lineTo(x + dx + 3.5, y);
+    ctx.lineTo(x + dx, y + 3.5);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.fillRect(x + 3, y - 3.5, 1.5, 7);
   ctx.restore();
 }
 
@@ -1828,6 +1853,9 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
         frame: 0,
         alpha: 1 - k,
       });
+      return;
+    case 'skip':
+      if (u.hex) title(u.hex, 'Turn skipped: can only hold', PALETTE.dusk4);
       return;
     case 'step':
       return;

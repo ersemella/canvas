@@ -22,7 +22,17 @@ import {ABILITIES, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {allowedTargets} from './taunt';
-import {RuleError, actingUnit, advance, applyTurn, cloneFight, createFight, mapOf} from './fight';
+import {onlyHold} from './choices';
+import {
+  RuleError,
+  actingUnit,
+  advance,
+  advanceToDecision,
+  applyTurn,
+  cloneFight,
+  createFight,
+  mapOf,
+} from './fight';
 import {afterAction, previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
 import {abilityDamage, displace, scaled} from './resolve';
@@ -76,6 +86,42 @@ const defended = (u: Unit, d: number): number =>
   Math.floor((d * RULES.defenceConstant) / (u.defence + RULES.defenceConstant));
 
 describe('the track', () => {
+  it('skips a turn with only Hold to choose, and marks it till the unit next acts', () => {
+    // Immobilized with no one next to it: Throw and Pin have no target, Rampage moves it.
+    const s = setup({'p-bokh': at(1, 1), 'e-bokh': at(6, 4), 'p-storm': at(1, 5)});
+    const b = unit(s, 'p-bokh');
+    b.statuses.push({kind: 'immobilized', value: 0, untilSlot: 1000});
+    s.events = [];
+    expect(onlyHold(s, mapOf(s), b)).toBe(true);
+    const next = advanceToDecision(s)!;
+    expect(next.id).not.toBe('p-bokh');
+    expect(s.events.some((e) => e.kind === 'skip' && e.unitId === 'p-bokh')).toBe(true);
+    expect(b.skipped).toBe(true);
+    // Each skip Holds: skipped again and again until the next unit's card comes first.
+    const skips = s.events.filter((e) => e.kind === 'skip').length;
+    expect(b.slot).toBe(100 + skips * slotsForward(ABILITY.hold.cost, b.speed));
+    expect(b.slot).toBeGreaterThan(next.slot!);
+    // Free again by its next turn: it acts, and the mark goes.
+    b.statuses = [];
+    for (let u = next; u.id !== 'p-bokh'; u = advanceToDecision(s)!)
+      applyTurn(s, u, {action: {ability: 'hold'}});
+    expect(b.skipped).toBeUndefined();
+  });
+
+  it('skips a unit whose only targets are allies', () => {
+    // Allies aren't offered as targets, so an Immobilized archer with only an ally in its lanes holds.
+    const s = setup({'p-mangudai': at(1, 1), 'p-storm': at(3, 1), 'e-bokh': at(6, 6)});
+    const m = unit(s, 'p-mangudai');
+    m.statuses.push({kind: 'immobilized', value: 0, untilSlot: 120});
+    expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.id === 'p-storm')).toBe(true);
+    expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.side === 'enemy')).toBe(false);
+    expect(onlyHold(s, mapOf(s), m)).toBe(true);
+    // An enemy in an open lane gives it a shot.
+    const open = arrowLanes(s, mapOf(s), m.hex!).find((l) => !l.hit && l.hexes.length > 0)!;
+    unit(s, 'e-bokh').hex = open.hexes[0]!;
+    expect(onlyHold(s, mapOf(s), m)).toBe(false);
+  });
+
   it('places by cost × speedScale ÷ (speed + C), rounding down, at least 1 slot (3.2)', () => {
     // The brief's worked example: speed 25, 2 hexes and a typical attack.
     expect(slotsForward(turnCost(100, 2), 25)).toBe(12);
