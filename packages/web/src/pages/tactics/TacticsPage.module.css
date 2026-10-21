@@ -288,8 +288,8 @@
 /*
  * The caravan's look (art-direction.md): the panels as glazed turquoise
  * tilework with brass studs, the buttons as tiles, names in an inscription
- * face, a kilim band over the actions. Only surfaces, borders and type
- * change: every label, layout and state reads as before.
+ * face. Only surfaces, borders and type change: every label, layout and
+ * state reads as before.
  */
 .page,
 .menu {
@@ -300,7 +300,6 @@
   --srt-turquoise-dim: #24706b;
   --srt-brass: #d4a94e;
   --srt-brass-dim: #7d6130;
-  --srt-madder: #a3392b;
   --srt-parchment: #f3ead6;
   --srt-parchment-dim: #b4c4bd;
   --srt-lapis: #24508f;
@@ -338,26 +337,6 @@
     linear-gradient(var(--srt-brass), var(--srt-brass)) left 4px bottom 4px / 3px 3px no-repeat,
     linear-gradient(var(--srt-brass), var(--srt-brass)) right 4px bottom 4px / 3px 3px no-repeat,
     linear-gradient(180deg, var(--srt-ground-hi), var(--srt-ground) 45%, #0b2224);
-}
-
-/* A woven band, a kilim's edge in the road's dyes, over the action section. */
-.band::before {
-  content: '';
-  display: block;
-  height: 6px;
-  margin-bottom: 10px;
-  background:
-    linear-gradient(135deg, var(--srt-ink) 25%, transparent 25%) -3px 0 / 6px 6px,
-    linear-gradient(225deg, var(--srt-ink) 25%, transparent 25%) -3px 0 / 6px 6px,
-    repeating-linear-gradient(
-      90deg,
-      var(--srt-madder) 0 18px,
-      var(--srt-saffron) 18px 36px,
-      var(--srt-turquoise-dim) 36px 54px,
-      var(--srt-lapis) 54px 72px
-    );
-  border-top: 1px solid var(--srt-brass-dim);
-  border-bottom: 1px solid var(--srt-brass-dim);
 }
 
 /* Move and the abilities: turquoise-edged tiles; the picked one inlaid in lapis, edged in brass. */

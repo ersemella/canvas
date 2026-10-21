@@ -784,7 +784,7 @@ export function TacticsPage() {
           )}
           {phone ? (
             <section
-              className={`${styles.actionBar} ${styles.band}`}
+              className={styles.actionBar}
               ref={actionsRef}
               style={{minHeight: actionsHeight.current || undefined}}
             >
@@ -792,9 +792,7 @@ export function TacticsPage() {
             </section>
           ) : (
             <>
-              <section className={styles.band} ref={actionsRef}>
-                {actions}
-              </section>
+              <section ref={actionsRef}>{actions}</section>
               {details}
               {chosen}
             </>

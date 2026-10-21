@@ -86,8 +86,7 @@ brown: panels are glazed turquoise tilework (deep teal, a brass edge, a
 fine turquoise rule inside it, brass studs at the corners), with ivory
 text. Move and the abilities are turquoise-edged tiles; the picked one is
 inlaid in lapis with a brass edge, and an ultimate is Tyrian purple.
-Confirm is a saffron seal. A kilim band in madder, saffron, turquoise and
-lapis sits over the actions. Names are in Cinzel. Numbers (costs, charge,
+Confirm is a saffron seal. Names are in Cinzel. Numbers (costs, charge,
 stats) stay in the plain face, since Cinzel's figures are small and slow
 to scan. The tokens are `--srt-*` in `TacticsPage.module.css`.
 
@@ -104,10 +103,10 @@ stays yellow.
 
 - **Sprites.** A `sprite` render type: a sprite-sheet image, frame size,
   a frame or a looping animation (`frames`, `fps`), a pivot (`{x: 0.5,
-  y: 1}` stands a unit on its hex), `flipX`; loaded on first use through
+y: 1}` stands a unit on its hex), `flipX`; loaded on first use through
   `assetLoader`. Positions round to whole pixels.
 - **Scaled rendering.** The manifest's `canvas: {width: 300, height: 200,
-  scale: 2, pixelArt: true}` draws the scene at 300×200 and scales the
+scale: 2, pixelArt: true}` draws the scene at 300×200 and scales the
   context 2× onto a 600×400 canvas, with smoothing off and CSS
   `image-rendering: pixelated`. Positions, sizes and pointer coordinates
   stay in scene pixels. The game doesn't use it yet: Phase 1 is
