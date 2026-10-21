@@ -573,11 +573,11 @@ try {
     const t = await tooltip.boundingBox();
     const vw = phone.viewportSize().width;
     check(
-      'phone: the tooltip is on screen above the action bar, clear of the tapped hex',
+      'phone: the tooltip is on screen (over the action bar only if it needs the room), clear of the tapped hex',
       t.x >= 0 &&
         t.x + t.width <= vw + 1 &&
         t.y >= 0 &&
-        t.y + t.height <= actionBarTop + 1 &&
+        t.y + t.height <= phone.viewportSize().height + 1 &&
         !(
           foeAt.x >= t.x &&
           foeAt.x <= t.x + t.width &&
@@ -669,7 +669,8 @@ try {
     check('phone: tapping the tooltip closes it', !(await tooltip.count()));
   }
   // Every unit: the tooltip never covers the hex or the unit's health bar and
-  // statuses, and only scrolls when neither side of them has room for it all.
+  // statuses, and only scrolls when neither side of them has room for it all
+  // (below, down over the action bar to the screen's bottom).
   {
     const squeezed = [];
     const covering = [];
