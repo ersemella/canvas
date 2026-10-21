@@ -1,8 +1,7 @@
 import {useState} from 'react';
 import {Button, Paper, Stack, Text} from '@mantine/core';
-import {ABILITIES, HEROES, HERO_PORTRAIT, PARTY} from '@canvas/games-silk-road-tactics';
-import type {AbilityId, HeroId} from '@canvas/games-silk-road-tactics';
-import {AbilityIcon} from './AbilityIcon';
+import {HEROES, HERO_PORTRAIT, PARTY} from '@canvas/games-silk-road-tactics';
+import type {HeroId} from '@canvas/games-silk-road-tactics';
 import {PALETTE_VARS} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
@@ -10,11 +9,11 @@ const PARTY_STORAGE = 'canvas:tactics:party';
 
 /** Each hero in a line or two of story (roster.md, 15.8): who they are, not their numbers. */
 const LORE: Partial<Record<HeroId, string>> = {
-  bokh: 'Champion of the naadam wrestling grounds, broad as a felt tent. Seizes foes bare-handed and throws them where they can do no harm.',
+  bokh: 'A Mongol wrestler famed at the naadam games. The Champion fights bare handed, seizing enemies, pinning them down, and hurling them aside.',
   mangudai:
-    'A rider of the vanguard, gone before the dust settles. Looses arrows down any open line, but cannot weather a long fight.',
+    'A Mongol horse archer from the vanguard of the Mongol army. The Outrider strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
   storm:
-    'Born with a caul, keeper of the rain stone. Calls hail down on rivals, and parts the clouds to mend whoever stands beneath the sun.',
+    'A Turkic weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail, sunlight, and freezing cold, though storms never choose sides.',
 };
 
 /** The stats on the menu, each a meter of three pips: Low, Medium, High (roster.md's bands). */
@@ -76,20 +75,10 @@ export function StartMenu(props: {
               Silk Road Tactics
             </Text>
             <Text>
-              The road west is long, and not every caravan reaches the far bazaars. Escort{' '}
-              {HEROES.camel.name}, your caravan’s camel, and the load on its back across the Salt
-              Flats, where a rival band lies in wait.
+              Lead a caravan from the Mongolian steppe to Byzantium, guarding your cargo against
+              rival caravans and the spirits and monsters of every land you cross. Along the way,
+              rest at caravanserais, trade in bazaars, and hire travellers to join your band.
             </Text>
-            <ul className={styles.startRules}>
-              <li>Every deed takes time: the quick strike comes often, the mighty one seldom.</li>
-              <li>
-                Nothing hides on the open flats but your rivals’ intent. Read them, and act first.
-              </li>
-              <li>
-                Bring {HEROES.camel.name} to the road out, or scatter the rivals. If{' '}
-                {HEROES.camel.name} falls, or your heroes do, the journey ends here.
-              </li>
-            </ul>
           </Stack>
 
           <Stack gap="xs">
@@ -140,7 +129,7 @@ export function StartMenu(props: {
   );
 }
 
-/** One hero on the start menu: portrait, story, stat meters and abilities; tap to take or leave it. */
+/** One hero on the start menu: portrait, story and stat meters; tap to take or leave it. */
 function HeroPick(props: {hero: HeroId; picked: boolean; onToggle: () => void}) {
   const stats = HEROES[props.hero];
   const lore = LORE[props.hero];
@@ -178,17 +167,6 @@ function HeroPick(props: {hero: HeroId; picked: boolean; onToggle: () => void}) 
             </div>
           );
         })}
-      </div>
-      <div className={styles.heroPickAbilities}>
-        {stats.abilities
-          .filter((id): id is Exclude<AbilityId, 'hold'> => id !== 'hold')
-          .map((id) => (
-            <span key={id}>
-              <AbilityIcon id={id} />
-              {ABILITIES[id].name}
-              {id === stats.ultimate ? ' (ultimate)' : ''}
-            </span>
-          ))}
       </div>
     </button>
   );

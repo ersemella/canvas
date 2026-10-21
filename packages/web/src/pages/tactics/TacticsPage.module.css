@@ -707,14 +707,7 @@
   background: var(--c-dusk1);
 }
 
-/* The start menu: the rules in brief, then the heroes to take. */
-.startRules {
-  margin: 0;
-  padding-left: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+/* The start menu: what the game is, then the heroes to take. */
 .heroPicks {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -807,15 +800,4 @@
 .meter > i.meterOn {
   background: var(--c-gold);
   box-shadow: inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-goldDark);
-}
-.heroPickAbilities {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  font-size: 13px;
-}
-.heroPickAbilities > span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
