@@ -132,7 +132,8 @@ export function TacticsPage() {
   /** The board is playing back what the last turn set off; the page waits for it. */
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // The start menu, over a finished fight (New fight) until a new one starts.
+  // The start menu, over the fight (New fight, Reset run) until a new one
+  // starts; the run in progress is abandoned only then.
   const [startMenu, setStartMenu] = useState(false);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -250,13 +251,14 @@ export function TacticsPage() {
   }, [receive]);
 
   const send = useCallback(
-    async (request: () => Promise<RunResponse>) => {
+    async (request: () => Promise<RunResponse>, playback = true) => {
       setBusy(true);
       try {
         const before = fightRef.current;
         const r = await request();
         // Play back what the action set off (the player's turn, then the AI's).
-        if (before && r.view.fight.events?.length && eventsRef.current) {
+        // A new run isn't played back: it starts from the start menu, with no board.
+        if (playback && before && r.view.fight.events?.length && eventsRef.current) {
           setPlaying(true);
           eventsRef.current.emit('tactics:playback', {from: before, to: r.view.fight});
         }
@@ -270,15 +272,10 @@ export function TacticsPage() {
     [receive]
   );
 
-  const startRun = useCallback((party: HeroId[]) => void send(() => runsApi.start(party)), [send]);
-  // Reset run starts over with the same party.
-  const restartRun = useCallback(() => {
-    const party = (fightRef.current?.units ?? [])
-      .filter((u) => u.side === 'player' && u.hero !== 'camel')
-      .sort((a, b) => a.partyIndex - b.partyIndex)
-      .map((u) => u.hero);
-    startRun(party);
-  }, [startRun]);
+  const startRun = useCallback(
+    (party: HeroId[]) => void send(() => runsApi.start(party), false),
+    [send]
+  );
 
   // ── The acting unit's options ──────────────────────────────────────────────
 
@@ -935,7 +932,7 @@ export function TacticsPage() {
   // The action section (the turn) and the detail section
   // (what's tapped or hovered). Phones show the details in a tooltip over
   // the board and pin the actions to the bottom of the screen.
-  const menu = <RunMenu busy={busy || playing} onReset={restartRun} />;
+  const menu = <RunMenu busy={busy || playing} onReset={() => setStartMenu(true)} />;
   // Phones: the turn portrait opens the acting unit's details, as its track
   // card does; a second tap closes them. (Desktop shows the portrait of the
   // unit in focus in the details instead.)
