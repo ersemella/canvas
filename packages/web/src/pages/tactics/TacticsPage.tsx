@@ -23,6 +23,7 @@ import {
   chooseAiTurn,
   hexOverlaySpan,
   mapOf,
+  offeredTargets,
   onMap,
   plainSand,
   previewTurn,
@@ -34,7 +35,6 @@ import {
   unusableReason,
 } from '@canvas/games-silk-road-tactics';
 import type {
-  AbilityDef,
   AbilityId,
   ActionTarget,
   BoardScene,
@@ -83,21 +83,6 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   dash: 'Nowhere to dash to.',
   rampage: 'No way clear to rampage.',
 };
-
-/**
- * What the player may pick for an ability: its allowed targets (see
- * `allowedTargets`), and for one aimed at a unit only enemies, or for
- * Sunlight only allies. The rules allow friendly fire; the page doesn't
- * offer it (an area can still catch allies).
- */
-function playerTargets(state: FightState, unit: Unit, def: AbilityDef): ActionTarget[] {
-  const targets = allowedTargets(state, mapOf(state), unit, def);
-  if (!def.targetsUnit) return targets;
-  return targets.filter((t) => {
-    const u = t.hex && unitAt(state, t.hex);
-    return u && (def.id === 'sunlight') === (u.side === unit.side);
-  });
-}
 
 /** Abilities that deal damage: aiming one shows the health of whoever it could hit. */
 const isAttack = (id: AbilityId) => 'damage' in ABILITY[id] || 'damagePerSlot' in ABILITY[id];
@@ -277,7 +262,12 @@ export function TacticsPage() {
   /** What the chosen ability may target (under a binding taunt, only what affects the taunter). */
   const targets = useMemo(() => {
     if (!ability || !abilityContext || !abilityContext.unit.alive) return [];
-    return playerTargets(abilityContext.state, abilityContext.unit, ABILITIES[ability]);
+    return offeredTargets(
+      abilityContext.state,
+      mapOf(abilityContext.state),
+      abilityContext.unit,
+      ABILITIES[ability]
+    );
   }, [ability, abilityContext]);
 
   /**
@@ -382,7 +372,7 @@ export function TacticsPage() {
     const {state, unit} = abilityContext;
     const map = mapOf(state);
     for (const def of abilitiesOf(acting)) {
-      if (def.id === 'hold' || playerTargets(state, unit, def).length > 0) continue;
+      if (def.id === 'hold' || offeredTargets(state, map, unit, def).length > 0) continue;
       const taunter = taunterOf(state, unit);
       out.set(
         def.id,

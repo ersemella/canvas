@@ -8,6 +8,7 @@ import {HEROES, PARTY, RULES, movementRules} from './config';
 import {expireStatuses, invalidPath} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
+import {onlyHold} from './choices';
 import {applyHail, checkEnd, enterHex, log, damageEachSlot, record, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
@@ -182,6 +183,12 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
       triggerCharge(ctx, unit);
       continue;
     }
+    // Nothing to do but Hold: the track goes on without asking.
+    if (onlyHold(state, map, unit)) {
+      skipTurn(ctx, unit);
+      continue;
+    }
+    delete unit.skipped;
     state.awaiting = unit.id;
     return unit;
   }
@@ -203,11 +210,20 @@ function beginSlot(ctx: Ctx): void {
   state.fog = (state.fog ?? []).filter((f) => f.untilSlot >= slot);
 }
 
+/** A turn with only Hold to choose: Held for the unit, its card marked as skipped. */
+function skipTurn(ctx: Ctx, unit: Unit): void {
+  unit.skipped = true;
+  log(ctx, `${unitName(unit)} can only hold: turn skipped.`);
+  record(ctx.state, {kind: 'skip', unitId: unit.id});
+  placeCard(ctx.state, unit, ctx.slot + slotsForward(ABILITIES.hold.cost, unit.speed));
+}
+
 function triggerCharge(ctx: Ctx, unit: Unit): void {
   const {ability, target} = unit.charging!;
   const def = ABILITIES[ability];
   const hex = redirectedCharge(ctx.state, ctx.map, unit, target);
   unit.charging = null;
+  delete unit.skipped;
   if (!hexEquals(hex, target))
     log(ctx, `${unitName(unit)}'s ${def.name} is drawn onto its taunter.`);
   record(ctx.state, {kind: 'action', unitId: unit.id, ability, target: hex, charged: true});

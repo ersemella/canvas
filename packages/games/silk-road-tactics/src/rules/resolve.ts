@@ -42,6 +42,7 @@ function snapshot(state: FightState): BoardSnapshot {
       alive: u.alive,
       slot: u.slot,
       charging: u.charging ? {...u.charging, target: {...u.charging.target}} : null,
+      skipped: u.skipped ?? false,
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
     fog: (state.fog ?? []).map((f) => ({...f, hex: {...f.hex}})),
