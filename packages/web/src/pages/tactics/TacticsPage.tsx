@@ -738,7 +738,9 @@ export function TacticsPage() {
           })),
         };
       // Only what it may target; once Throw's target is picked, where it can
-      // land; once Pin's is, the hexes it may step to first as well.
+      // land; once Pin's is, the hexes it may step to first as well. Those
+      // second picks are dashed, as is a unit Pin reaches only after a step,
+      // so they never read as more targets.
       const shown = new Set<string>();
       const throwing = ability === 'throw' && target?.hex;
       const stepping = ability === 'pin' && target?.hex;
@@ -748,9 +750,33 @@ export function TacticsPage() {
         for (const h of [at, step]) {
           if (!h || shown.has(hexKey(h))) continue;
           shown.add(hexKey(h));
-          highlights.push({hex: h, kind: 'target'});
+          const kind =
+            throwing || h === step
+              ? 'landing'
+              : ability === 'pin' && !pinFromHere(h)
+                ? 'reach'
+                : 'target';
+          highlights.push({hex: h, kind});
         }
       }
+      // Where the second pick goes: the one hovered, else the one picked.
+      // Before Pin's target is, a hovered unit it reaches by a single step.
+      const hovered = hover.hex;
+      const hoveredSecond =
+        hovered && target?.hex
+          ? targets.find((t) => t.to && hexEquals(t.hex!, target.hex!) && hexEquals(t.to, hovered))
+              ?.to
+          : undefined;
+      let second = hoveredSecond ?? target?.to;
+      if (!second && !target && ability === 'pin' && hovered && !pinFromHere(hovered)) {
+        const steps = pinSteps(hovered);
+        if (steps.length === 1) second = steps[0]!.to;
+      }
+      // Throw: an arc from the unit thrown, around the Champion, to where it
+      // lands. Pin: the Champion's step, drawn as a move's.
+      if (ability === 'throw' && target?.hex && second && from)
+        out.arc = {from: target.hex, around: from, to: second};
+      if (ability === 'pin' && second && from) out.step = [from, second];
       if (target?.hex) {
         const radius = AREA_RADIUS[ability];
         if (radius) {
@@ -800,6 +826,9 @@ export function TacticsPage() {
     target,
     preview,
     abilityContext,
+    hover.hex,
+    pinFromHere,
+    pinSteps,
   ]);
 
   useEffect(() => {

@@ -443,6 +443,13 @@ confirm or change:
   arrow stops (an ally, a ruin, the edge), so the enemies it can't hit are
   explained. Targetable units' rings sit over ink, so they show on your
   own lapis rugs.
+- **Throw's and Pin's second pick** (2026-10-21): the hexes picked after
+  the target, where Throw lands its target and where Pin steps first,
+  are dashed, so they don't read as more targets; a unit Pin reaches only
+  by stepping has a dashed ring. A dashed arc swings around the Champion
+  from the unit thrown to where it lands, and Pin's step is drawn as a
+  move's arrow over the units; on desktop, hovering a landing, a step or
+  a unit one step away previews it.
 - **Ability kinds** (2026-10-21): each ability's button, its name on a
   stat sheet and its explanation carry an icon for its kind, a pixel
   sword for an attack (Bow, Volley, Throw, Rampage), a cross

@@ -38,7 +38,7 @@ import sandImage from './tiles/sand.png';
 
 export {BOARD_LAYOUT, SCENE_SIZE};
 
-export type HighlightKind = 'path' | 'target' | 'chosen' | 'area';
+export type HighlightKind = 'path' | 'target' | 'reach' | 'landing' | 'chosen' | 'area';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {
@@ -60,6 +60,13 @@ export interface BoardScene {
    * target, a faint dashed line along the rest to where the arrow stops.
    */
   lanes?: {from: Hex; lanes: {hexes: Hex[]; target: boolean}[]};
+  /** A throw being aimed: an arc from the unit thrown, around the thrower, to where it lands. */
+  arc?: {from: Hex; around: Hex; to: Hex};
+  /**
+   * A step the aimed ability takes first (Pin's): a move's arrow, drawn over
+   * the units, since the stepping unit's ghost would hide it under them.
+   */
+  step?: [Hex, Hex];
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
   /** The slot the planned turn's cost aims at; when it's taken, the card yields on to `previewSlot`. */
@@ -155,6 +162,10 @@ const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   path: targeting(0.25, 0.8),
   /** Hexes an ability can target, or a move can end on: outlined solid, so it shows over a unit's tint. */
   target: targeting(0.14, 0.9),
+  /** A unit an ability reaches only after a step (Pin): dashed, as the step's hexes are. */
+  reach: {...targeting(0.08, 0.9), dash: [6, 4]},
+  /** An ability's second pick, once its target is (Throw's landing, Pin's step): dashed, so it never reads as a target. */
+  landing: {...targeting(0.08, 1), dash: [6, 4]},
   /** The whole area an aimed ability strikes, around its target. */
   area: targeting(0.42, 1),
   chosen: targeting(0.6, 1),
@@ -509,9 +520,12 @@ export class TacticsBoardSystem extends BaseSystem {
     const previewed = new Map(scene.preview.map((p) => [p.unitId, p]));
     const acting = fight.awaiting;
     // A unit's border covers its hex's outline, so a targeted unit rings itself.
-    const targeted = new Map<string, 'target' | 'chosen'>();
+    const targeted = new Map<string, 'target' | 'reach' | 'chosen'>();
     for (const h of scene.highlights)
-      if (h.kind === 'chosen' || (h.kind === 'target' && !targeted.has(hexKey(h.hex))))
+      if (
+        h.kind === 'chosen' ||
+        ((h.kind === 'target' || h.kind === 'reach') && !targeted.has(hexKey(h.hex)))
+      )
         targeted.set(hexKey(h.hex), h.kind);
     for (const u of fight.units) {
       const hex = u.hex;
@@ -555,6 +569,8 @@ export class TacticsBoardSystem extends BaseSystem {
 
     if (scene.range) drawRangeOutline(ctx, scene.range);
     if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);
+    if (scene.arc) drawThrowArc(ctx, scene.arc.from, scene.arc.around, scene.arc.to);
+    if (scene.step) drawPath(ctx, scene.step);
 
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
@@ -1835,6 +1851,53 @@ function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
 }
 
 /**
+ * A throw being aimed: a dashed arc swinging around the thrower (`around`)
+ * from the unit thrown to where it lands, the way it goes in the playback,
+ * with a head there. It starts and stops clear of the sprites' middles.
+ */
+function drawThrowArc(ctx: CanvasRenderingContext2D, from: Hex, around: Hex, to: Hex): void {
+  const c = center(around);
+  const a = center(from);
+  const b = center(to);
+  const radius = Math.hypot(a.x - c.x, a.y - c.y);
+  const start = Math.atan2(a.y - c.y, a.x - c.x);
+  // The shorter way round.
+  let turn = Math.atan2(b.y - c.y, b.x - c.x) - start;
+  if (turn > Math.PI) turn -= 2 * Math.PI;
+  if (turn < -Math.PI) turn += 2 * Math.PI;
+  const at = (t: number) => ({
+    x: c.x + radius * Math.cos(start + turn * t),
+    y: c.y + radius * Math.sin(start + turn * t),
+  });
+  // Clear of each end's sprite: about a third of a hex along the arc.
+  const margin = Math.min(0.35, 22 / (radius * Math.abs(turn) || 1));
+  const points = Array.from({length: 17}, (_, i) => at(margin + (i / 16) * (1 - 2 * margin)));
+  const end = points[points.length - 1]!;
+  const prev = points[points.length - 2]!;
+  const len = Math.hypot(end.x - prev.x, end.y - prev.y) || 1;
+  const ux = (end.x - prev.x) / len;
+  const uy = (end.y - prev.y) / len;
+  ctx.save();
+  ctx.strokeStyle = PALETTE.lapisLight;
+  ctx.fillStyle = PALETTE.lapisLight;
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'square';
+  pixelShadow(ctx, 1);
+  ctx.beginPath();
+  ctx.moveTo(points[0]!.x, points[0]!.y);
+  for (const p of points.slice(1)) ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(end.x + ux * 9, end.y + uy * 9);
+  ctx.lineTo(end.x - ux * 4 - uy * 7, end.y - uy * 4 + ux * 7);
+  ctx.lineTo(end.x - ux * 4 + uy * 7, end.y - uy * 4 - ux * 7);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+/**
  * The edge of an ability's range: a dashed light lapis line, over ink so
  * it reads on the sand and the rugs, along every side of `hexes` that
  * borders a hex outside them.
@@ -2580,8 +2643,11 @@ function drawUnit(
     at?: {x: number; y: number} | undefined;
     /** Opacity, for a unit fading out as it falls. */
     alpha?: number;
-    /** An ability being aimed can target it (or has): a light blue ring inside its border. */
-    targeted?: 'target' | 'chosen' | undefined;
+    /**
+     * An ability being aimed can target it (or has): a light blue ring
+     * inside its border, dashed when it's reached only after a step.
+     */
+    targeted?: 'target' | 'reach' | 'chosen' | undefined;
   }
 ): void {
   const c = opts.at ?? center(hex);
@@ -2610,7 +2676,9 @@ function drawUnit(
       ctx.stroke();
       ctx.strokeStyle = PALETTE.lapisLight;
       ctx.lineWidth = width;
+      if (opts.targeted === 'reach') ctx.setLineDash([6, 4]);
       ctx.stroke();
+      ctx.setLineDash([]);
     }
   }
   const sprite = HERO_SPRITE[u.hero];
