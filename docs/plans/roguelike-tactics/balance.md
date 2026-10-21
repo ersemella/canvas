@@ -310,6 +310,27 @@ ability's band; it mostly replaces walking (9.6 turns a fight against
 As shipped, with Sunlight clearing hail and fog too, a side without Leap
 wins 44.8%, and Leap is a third of the Outrider's turns.
 
+**Measured 2026-10-21, not applied: a step before the Bow or Pin.** Each
+was added as an extra option beside the ability (step one hex, then
+fire, or step next to a unit, then pin it), so a side without the option
+shows what the step is worth. 400 fights each:
+
+| Option | Cost | Side without it wins | Note |
+|---|---:|---:|---|
+| Step, then fire | 100 | **29.0%** | 39% of the Outrider's turns; fights 54 → 44 actions |
+| Step, then fire | 120 | 34.8% | |
+| Step, then fire | **150 (slow)** | **43.0%** | 20% of its turns; 7.1 Outrider turns a fight (10.0 today) |
+| Step, then fire | 180 | 50.0% | |
+| Step, then pin | 100 | 47.0% | Champion survival 34.5% → 29.1% |
+| Step, then pin | 120 | 52.8% | |
+
+Fog, three identities with the current AI (which prices fog only as
+halving ranged hits, so it may undervalue the others): fog blocks arrows
+51.0%, fog hides its units from shots beyond the next hex 51.3% (50.0%
+at cost 60). Without Fog in the kit at all, fights are unchanged (53
+actions; 54 with it) and the Storm Caller's turns go to Hail and
+Sunlight.
+
 5. **Fog needs a job.** With one ranged attacker, which can pick another
    lane, halving ranged damage rarely matters. Tried after tunings 1 to 3:
    an arrow can't target a unit in or behind fog, so fog blocks a lane
