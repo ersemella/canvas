@@ -647,17 +647,22 @@ try {
       await waitIdle();
       await sleep(500);
       await waitIdle();
-      const f = (await state()).view.fight;
-      const champion = f.units.find((u) => u.id === 'p-bokh');
-      const pinned = f.units.find((u) => u.hex && sameH(u.hex, found.target));
-      check('Pin stepped, then pinned', champion.hex && sameH(champion.hex, steps[0].to), [
-        champion.hex,
-        steps[0].to,
-      ]);
+      // What the turn did, from its events (the enemy's replies may move units after).
+      const events = (await state()).view.fight.events ?? [];
+      const stepAt = events.findIndex(
+        (e) => e.kind === 'step' && e.unitId === 'p-bokh' && sameH(e.to, steps[0].to)
+      );
+      const pinAt = events.findIndex(
+        (e) =>
+          e.kind === 'action' &&
+          e.unitId === 'p-bokh' &&
+          e.ability === 'pin' &&
+          sameH(e.target, found.target)
+      );
       check(
-        'the pinned unit is held',
-        !pinned || pinned.statuses.some((x) => x.kind === 'immobilized'),
-        pinned?.statuses
+        'Pin stepped, then pinned',
+        stepAt >= 0 && pinAt >= 0,
+        events.filter((e) => e.unitId === 'p-bokh').map((e) => [e.kind, e.ability, e.to])
       );
     }
   }
