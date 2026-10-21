@@ -2045,7 +2045,7 @@ function steppingAt(play: Playback, unitId: string): {x: number; y: number} | un
   const a = center(e.from);
   const b = center(e.to);
   // A thrown unit arcs through the air.
-  const lift = e.how === 'throw' ? Math.sin(Math.PI * k) * 26 : 0;
+  const lift = e.how === 'throw' || e.how === 'leap' ? Math.sin(Math.PI * k) * 26 : 0;
   return {x: Math.round(lerp(a.x, b.x, t)), y: Math.round(lerp(a.y, b.y, t) - lift)};
 }
 

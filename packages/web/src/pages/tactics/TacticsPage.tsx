@@ -85,7 +85,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   sunlight: 'No ally in range to heal.',
   throw: 'No enemy next to you, or nowhere free to throw them.',
   pin: 'No enemy next to you to pin.',
-  dash: 'Nowhere to dash to.',
+  leap: 'Nowhere to land.',
   rampage: 'No way clear to rampage.',
 };
 

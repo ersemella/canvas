@@ -290,6 +290,26 @@ has an answer. A radius-1 clear around the target was stronger (41.3%)
 but mixed effects across spaces; an area heal made fights 16–32% longer
 and made Hail worthless (50.3% without it).
 
+**Applied 2026-10-21: Leap replaces Dash** (owner): exactly 2 hexes in
+a straight line, over whatever is in the hex between, cost 20. Dash went
+up to 3 in a line, stopped by ruins and enemies, at 40, and read as a
+cheaper walk. Measured with the camel in play, 400 fights each:
+
+| Version | Side without it wins | Share of the Outrider's turns | Slots (Outrider) |
+|---|---:|---:|---:|
+| Dash (up to 3, cost 40) | 45.1% | 16.5% | 3 |
+| **Leap, cost 20** | **40.3%** | 33% | 1 |
+| Leap, cost 30 | 48.8% | 24% | 2 |
+| Leap, cost 40 | 50.8% | 9% | 3 |
+| Leap over up to 2 spaces, cost 40 | 46.3% | 18% | 3 |
+
+A short hop only pays when it's cheap: at the Outrider's speed, 20 and
+25 cost 1 slot, 30 costs 2. Its share of turns is above a situational
+ability's band; it mostly replaces walking (9.6 turns a fight against
+8.9), so watch it rather than tune it now.
+As shipped, with Sunlight clearing hail and fog too, a side without Leap
+wins 44.8%, and Leap is a third of the Outrider's turns.
+
 5. **Fog needs a job.** With one ranged attacker, which can pick another
    lane, halving ranged damage rarely matters. Tried after tunings 1 to 3:
    an arrow can't target a unit in or behind fog, so fog blocks a lane

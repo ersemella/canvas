@@ -109,7 +109,7 @@ unfinished at 400 actions, median 52 actions (58 before).
 | Ability | Placeholder values |
 |---|---|
 | Composite Bow | **no range limit (owner, 2026-10-20; was 5)**: flies to the first unit, ruins or the map's edge; **damage 120 (owner, 2026-10-19)**; halved once more if it flies through an Obscured hex on the way (owner, 2026-10-20) |
-| Dash | **up to 3 hexes (owner, 2026-10-20; restored from 2 with separate movement)**, **cost 40 (owner, 2026-10-20; was quick, 60, more than walking 3 hexes)** |
+| Leap (Dash until 2026-10-21) | **exactly 2 hexes in a straight line, over ruins, a unit or a hazard, landing on a free walkable hex; cost 20 (owner, 2026-10-21; Dash went up to 3 hexes, stopped by ruins and enemies, at 40)** |
 | Volley (ultimate) | range 5, radius 1, **damage 200 (owner, 2026-10-20; 135 from 2026-10-19)**, **charge 20, recovery 60 (owner, 2026-10-20; were 40 and 100)** |
 | Sunlight | **one unit within 4 (owner, 2026-10-20; was everyone within 1 of the caster, 2 until 2026-10-19)**, **heal 50, 75 at its power, quick (60) (owner, 2026-10-20; 35 earlier that day, typical heal 50 before that, 40 from 2026-10-19, 25 before)**; **clears hail and fog from the target's hex (owner, 2026-10-21)** |
 | Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2 for 10 slots; **no Vulnerable (owner, 2026-10-20; was 25%)** |
@@ -152,7 +152,7 @@ confirm or change:
 - **Movement is a separate action, 20 + 10 per hex, capped at 4**
   (owner, 2026-10-20). Allies and enemies block ordinary walking. An
   ability cannot share the turn with walking; the page replaces one
-  selection with the other. Dash and Rampage retain their traversal rules.
+  selection with the other. Leap and Rampage retain their traversal rules.
 - **The enemy's starting layout** is one of three, picked by the run's
   seed.
 

@@ -290,11 +290,11 @@ describe('the search timeline', () => {
     )!;
     const runner = advanceToDecision(after)!;
     expect(runner.id).toBe(target.id);
-    const escape = ABILITIES.dash
+    const escape = ABILITIES.leap
       .targets(after, mapOf(after), runner, runner.hex!)
       .find((t) => t.hex && hexDistance(t.hex, target.hex!) > ABILITY.volley.radius)!;
     const hp = runner.hp;
-    applyTurn(after, runner, {action: {ability: 'dash', target: escape}});
+    applyTurn(after, runner, {action: {ability: 'leap', target: escape}});
     advanceToDecision(after);
     expect(unit(after, me.id).charging).toBeNull();
     expect(runner.hp).toBe(hp);

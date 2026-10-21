@@ -130,7 +130,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 40,
     defence: 10,
     power: 40,
-    abilities: ['bow', 'dash', 'volley', 'hold'],
+    abilities: ['bow', 'leap', 'volley', 'hold'],
     ultimate: 'volley',
   },
   storm: {
@@ -179,14 +179,15 @@ export const ABILITY = {
    */
   bow: {cost: RULES.cost.typical, range: Infinity, damage: 120},
   /**
-   * Up to `distance` hexes (owner, 2026-10-19; was exactly 3, which on this
-   * board often had no free hex to end on: chosen on 5% of the Outrider's
-   * turns in AI-vs-AI fights, 17% with "up to"). Restored to 3 on
-   * 2026-10-20 with separate movement (briefly 2 when walking was capped at 3).
-   * Cost 40 (owner, 2026-10-20; was quick, 60): at 60 it cost more than
-   * walking the same 3 hexes (50), so it was all but unused.
+   * Leap replaced Dash (owner, 2026-10-21): exactly 2 hexes in a straight
+   * line, over whatever is in the hex between (ruins, a unit of either
+   * side, quicksand, hail), landing on a free walkable hex. Dash moved up
+   * to 3 in a line, stopped by ruins and enemies, at cost 40, too close to
+   * walking. Cost 20, a slot for the Outrider: over 400 AI-vs-AI fights a
+   * side without it won 40.3% (Dash: 45.1%); at 30 (2 slots) 48.8%, at 40
+   * 50.8% (balance.md).
    */
-  dash: {cost: 40, distance: 3},
+  leap: {cost: 20},
   /**
    * Ultimates buffed (owner, 2026-10-20; damage was 135). Charge 20 and
    * recovery 60 (owner, 2026-10-20; were 40 and 100): at 140 in all its

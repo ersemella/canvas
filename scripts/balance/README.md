@@ -25,7 +25,7 @@ and priorities are used in all four variants:
 
 The rules are stored on an optional `FightState.experiment`. Normal games have no
 experiment and now use blocking and separate movement at base 20 plus 10 per hex,
-with ordinary walking capped at 4 hexes and Dash at 3.
+with ordinary walking capped at 4 hexes; Leap (Dash until 2026-10-21) jumps 2.
 The runner explicitly supplies overrides for each comparison variant’s blocking
 and action economy. Map, stats, movement cap and ability ranges come from current
 config. Historical results in RESULTS.md used walking cap 3 and Dash distance 2;
@@ -41,7 +41,7 @@ Move-only turns use the existing `{move, action: {ability: 'hold'}}` representat
 They cost `--move-cost + movedHexes * RULES.moveCostPerHex`, divided by speed plus
 C as usual. The adopted base cost is 20; pass `--move-cost 20` to measure it.
 Other costs, such as 60 (quick) and 100 (typical), are experimental alternatives. Pure Hold keeps its existing cost. Moving still counts
-toward ultimate unlock, as it does today. Dash and Rampage remain abilities and
+toward ultimate unlock, as it does today. Dash (now Leap) and Rampage remain abilities and
 retain their existing traversal rules, but cannot be combined with normal walking
 under separate movement. The blocking variant concerns ordinary walking only.
 

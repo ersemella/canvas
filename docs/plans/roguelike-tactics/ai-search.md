@@ -42,7 +42,7 @@ as already-dealt damage.
 ## Separate movement integration
 
 Ordinary walking now blocks on either side’s units and is a separate action
-costing 20 plus 10 per hex, capped at four hexes. Dash goes up to three.
+costing 20 plus 10 per hex, capped at four hexes. Leap jumps exactly two, over one hex.
 Candidate generation and threat estimates respect these rules. The search’s
 per-action time calculation uses the same authoritative movement cost as the
 server and previews; the Hold scoring adjustment applies only to idle Hold,

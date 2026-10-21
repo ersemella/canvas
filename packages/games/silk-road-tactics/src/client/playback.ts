@@ -27,6 +27,7 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
       if (e.how === 'walk') return WALK_SECONDS;
       if (e.how === 'push') return 0.14;
       if (e.how === 'throw') return 0.32;
+      if (e.how === 'leap') return 0.3;
       return Math.max(0.18, 0.08 * hexDistance(e.from, e.to));
     case 'action':
       if (e.ability === 'hold') return 0;

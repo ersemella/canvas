@@ -98,7 +98,7 @@ The keyword vocabulary comes before heroes (10.8); the full list is in
 |---|---|
 | **Displace N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the displaced unit takes **20 damage**, and a unit it hits also takes 20 (ignoring defence). Entering a hazard triggers it. Doesn't move the displaced unit's card. |
 | **Displace to a hex** | The Bökh Champion's Throw: the target is set down on a chosen free hex the ability names. No collision, since the hex is free; a hazard there triggers. |
-| **Immobilized** | No movement, and no ability that moves the unit (Dash, Rampage). It still acts, and can still be displaced, staying Immobilized where it lands (17.5). |
+| **Immobilized** | No movement, and no ability that moves the unit (Leap, Rampage). It still acts, and can still be displaced, staying Immobilized where it lands (17.5). |
 | **Slowed N** | Movement cap lowered by N, to at least 1 hex (17.5). Combines by max. |
 | **Vulnerable N%** | Takes N% more damage from every source (17.6). Combines by max, flanks included (section 2). |
 | **Heal N** | Restores N health, up to max health; scaled by power when the ability states it (17.7). |
@@ -143,7 +143,7 @@ reading of the owner's one-line descriptions; the owner can change them
 | Ability | Rule |
 |---|---|
 | **Composite Bow** | Fires an arrow along one of the six hex directions, with **no range limit** (owner, 2026-10-20; range 5 before); it stops at the **first unit** on that line, an obstacle or the map's edge. Flying through an **Obscured** hex on the way halves it once more (owner, 2026-10-20), on top of the archer's or target's own. That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
-| **Dash** | Moves the Outrider **up to 3 hexes in a straight line** along one hex direction (owner, 2026-10-20; restored from 2 with separate movement). Hexes passed have no effect on it (quicksand doesn't trigger); the hex it ends on applies as usual. It can't pass obstacles or enemies, passes allies, must end on a free hex, and is the turn’s action, so it cannot be combined with ordinary movement (2026-10-20). Not usable while Immobilized. Cost 40 (owner, 2026-10-20; was quick, 60, which cost more than walking the same hexes). |
+| **Leap** (Dash until 2026-10-21, owner) | The Outrider jumps **exactly 2 hexes in a straight line**, over whatever is in the hex between: ruins, a unit of either side, quicksand or hail, none of which affect it. It must land on a free, walkable hex, which applies as usual. It is the turn’s action, so it cannot be combined with ordinary movement. Not usable while Immobilized. Cost 20 (owner, 2026-10-21). Dash moved up to 3 hexes in a line, stopped by ruins and enemies, at cost 40: too close to walking to have its own identity ([balance.md](balance.md)). |
 | **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage **200** (owner, 2026-10-20; 135 before), allies included. Charge and recovery costs TBD (3.7). |
 
 **Yadachy Storm Caller**
@@ -358,7 +358,7 @@ confirm or change:
   first on a tie used to lose 60–67% of AI-vs-AI fights, which tilted
   every single-order measurement. Under the adopted rules the AI chooses
   movement or an ability; historical combined-action comparisons move first.
-- **Dash** goes up to 3 hexes (owner, 2026-10-20; restored from 2 with separate movement) and costs 40 (was 60). **Pin** and **Throw** target
+- **Leap** (Dash until 2026-10-21) jumps exactly 2 hexes, over one, at cost 20; Dash went up to 3 hexes at 40 (60 before 2026-10-20). **Pin** and **Throw** target
   any adjacent unit, allies included (Pin targeted enemies only until the
   2026-10-19 rule, 6.7).
 - **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage
@@ -446,7 +446,7 @@ confirm or change:
 - **Ability kinds** (2026-10-21): each ability's button, its name on a
   stat sheet and its explanation carry an icon for its kind, a pixel
   sword for an attack (Composite Bow, Volley, Throw, Rampage), a cross
-  for a heal (Sunlight), an arrow for movement (Move, Dash) and a chain's
+  for a heal (Sunlight), an arrow for movement (Move, Leap) and a chain's
   two links for control (Hail, Fog, Freeze, Pin); the explanation names
   the kind. (A boot and a padlock, first, were confusing: owner.)
   Each kind's icon takes its colour from what it does: damage's light
@@ -469,7 +469,7 @@ confirm or change:
 
 The owner adopted unit blocking for ordinary walking and separate movement
 at base 20 plus 10 per hex. The ordinary walking cap is restored to 4 with separate movement. A move-only turn still counts
-toward ultimate unlock; idle Hold does not. Dash and Rampage retain their
+toward ultimate unlock; idle Hold does not. Leap and Rampage retain their
 ability-specific movement but cannot combine with ordinary walking.
 The headless runner retains explicit historical overrides for reproducing
 comparisons; absent an override, the game uses the adopted rules.

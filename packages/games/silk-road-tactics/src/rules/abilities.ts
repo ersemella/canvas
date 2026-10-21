@@ -183,48 +183,35 @@ const bow: AbilityDef = {
   },
 };
 
-function dashEnd(
-  state: FightState,
-  map: MapData,
-  user: Unit,
-  from: Hex,
-  dir: number,
-  distance: number
-): Hex | undefined {
-  let h = from;
-  for (let i = 0; i < distance; i++) {
-    h = hexNeighbor(h, dir);
-    if (!walkable(map, h)) return undefined;
-    const u = unitAt(state, h);
-    if (u && u !== user && hostile(u, user)) return undefined;
-  }
-  const end = unitAt(state, h);
-  return end && end !== user ? undefined : h;
+/** Where a Leap along `dir` lands: two hexes on, over anything, if that hex is on the map, walkable and free. */
+function leapLanding(state: FightState, map: MapData, from: Hex, dir: number): Hex | undefined {
+  const over = hexNeighbor(from, dir);
+  const land = hexNeighbor(over, dir);
+  if (!onMap(map, over) || !walkable(map, land) || unitAt(state, land)) return undefined;
+  return land;
 }
 
-const dash: AbilityDef = {
-  id: 'dash',
-  name: 'Dash',
+const leap: AbilityDef = {
+  id: 'leap',
+  name: 'Leap',
   kind: 'move',
-  summary: () => `Move in a straight line, passing safely through allies and hazards.`,
+  summary: () => `Jump over one space in a straight line: ruins, a unit or a hazard.`,
   ultimate: false,
   charged: false,
-  cost: ABILITY.dash.cost,
+  cost: ABILITY.leap.cost,
   movesSelf: true,
-  targets(state, map, user, from) {
+  targets(state, map, _user, from) {
     const out: ActionTarget[] = [];
-    for (let n = 1; n <= ABILITY.dash.distance; n++) {
-      for (const d of DIRECTIONS) {
-        const hex = dashEnd(state, map, user, from, d, n);
-        if (hex) out.push({hex});
-      }
+    for (const d of DIRECTIONS) {
+      const hex = leapLanding(state, map, from, d);
+      if (hex) out.push({hex});
     }
     return out;
   },
   resolve(ctx, user, target) {
-    // Hexes passed have no effect; the one it ends on does.
-    enterHex(ctx, user, target.hex!, true, 'rush');
-    log(ctx, `${unitName(user)} dashes.`);
+    // The hex leapt over has no effect; the one it lands on does.
+    enterHex(ctx, user, target.hex!, true, 'leap');
+    log(ctx, `${unitName(user)} leaps.`);
   },
 };
 
@@ -474,7 +461,7 @@ function unitOrder(u: Unit): number {
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   bow,
-  dash,
+  leap,
   volley,
   sunlight,
   hail,

@@ -132,7 +132,7 @@ for (const actFirst of [false, true]) {
     method: 'POST',
     body: JSON.stringify({
       move: [{q: actor.hex.q + 1, r: actor.hex.r}],
-      action: {ability: 'dash', target: {hex: {q: actor.hex.q + 2, r: actor.hex.r}}},
+      action: {ability: 'leap', target: {hex: {q: actor.hex.q + 2, r: actor.hex.r}}},
       actFirst,
     }),
   });
@@ -285,27 +285,27 @@ try {
   // No top bar: the board gets the whole screen, on desktop too.
   check('no top bar', (await page.locator('header').count()) === 0);
 
-  // One turn with real taps: select Dash, replace it with Move, Confirm. The
+  // One turn with real taps: select Leap, replace it with Move, Confirm. The
   // Outrider (fastest, so first) starts somewhere on the left edge, so the
-  // hexes come from the page: Dash's farthest target, and a move off its line.
+  // hexes come from the page: Leap's farthest target, and a move off its line.
   const before = run.view.version;
   const acting = run.view.fight.units.find((u) => u.id === run.view.fight.awaiting);
   check('the Outrider acts first', acting.id === outrider, acting.id);
   const hexDistance = (a, b) =>
     (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q + a.r - b.q - b.r)) / 2;
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click();
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click();
   await page.waitForFunction(() => window.__tactics.targets.length > 0);
-  const dashTargets = await page.evaluate(() => window.__tactics.targets.map((t) => t.hex));
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click(); // and off again
-  const dashTo = dashTargets.sort(
+  const leapTargets = await page.evaluate(() => window.__tactics.targets.map((t) => t.hex));
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click(); // and off again
+  const leapTo = leapTargets.sort(
     (a, b) => hexDistance(b, acting.hex) - hexDistance(a, acting.hex)
   )[0];
-  // The nearest reachable hex, off Dash's lines if one is.
+  // The nearest reachable hex, off Leap's lines if one is.
   const dest = (await page.evaluate(() => window.__tactics.reaches.map((r) => r.hex)))
-    .filter((h) => hexDistance(h, acting.hex) > 0 && !sameHex(h, dashTo))
+    .filter((h) => hexDistance(h, acting.hex) > 0 && !sameHex(h, leapTo))
     .sort(
       (a, b) =>
-        dashTargets.some((t) => sameHex(t, a)) - dashTargets.some((t) => sameHex(t, b)) ||
+        leapTargets.some((t) => sameHex(t, a)) - leapTargets.some((t) => sameHex(t, b)) ||
         hexDistance(a, acting.hex) - hexDistance(b, acting.hex)
     )[0];
   // Without Move, a tap only looks at the hex.
@@ -316,25 +316,25 @@ try {
     (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
   check('there is no Hold button', !(await page.getByRole('button', {name: /^Hold/}).count()));
-  // Select Dash and its target, then replace it with Move and a hex. Picked,
-  // Dash is explained under the details; nothing is before.
+  // Select Leap and its target, then replace it with Move and a hex. Picked,
+  // Leap is explained under the details; nothing is before.
   const chosen = page.getByTestId('chosen-ability');
   const chosenBefore = await chosen.count();
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click();
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click();
   check(
     'picking an ability explains it under the details (and nothing before)',
-    chosenBefore === 0 && (await chosen.textContent()).startsWith('Dash'),
+    chosenBefore === 0 && (await chosen.textContent()).startsWith('Leap'),
     await chosen.textContent().catch(() => null)
   );
-  await tapHex(dashTo);
-  await tapHex(dashTo); // a second tap on the target doesn't commit
+  await tapHex(leapTo);
+  await tapHex(leapTo); // a second tap on the target doesn't commit
   check('a second tap on the target doesn’t commit', (await state()).view.version === before);
   await moveButton.click();
   await tapHex(dest);
-  const dashButton = page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/});
+  const leapButton = page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/});
   check(
     'Move replaces the ability selection',
-    (await dashButton.getAttribute('aria-pressed')) === 'false'
+    (await leapButton.getAttribute('aria-pressed')) === 'false'
   );
   check('putting the ability down hides its explanation', !(await chosen.count()));
   check('there are no numbered steps', !(await page.getByTestId('turn-steps').count()));
@@ -360,17 +360,17 @@ try {
   );
   await moveButton.click();
   await tapHex(dest);
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click();
-  await tapHex(dashTo);
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click();
+  await tapHex(leapTo);
   check(
     'an ability replaces a planned move',
-    (await dashButton.getAttribute('aria-pressed')) === 'true' &&
+    (await leapButton.getAttribute('aria-pressed')) === 'true' &&
       (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
   // Like an ability's target, the destination can be changed by tapping
   // another reachable hex, and a second tap on it doesn't commit.
   await moveButton.click();
-  await tapHex(dashTo);
+  await tapHex(leapTo);
   await tapHex(dest);
   await tapHex(dest);
   check(
@@ -390,11 +390,11 @@ try {
     /^Confirm · \+\d+( → \+\d+)?$/.test(confirmText),
     confirmText
   );
-  const dashText = await moveButton.textContent();
+  const leapText = await moveButton.textContent();
   check(
     'the Move button shows the same slots as Confirm',
-    dashText.endsWith(confirmText.match(/· (\+\d+)/)[1]),
-    [dashText, confirmText]
+    leapText.endsWith(confirmText.match(/· (\+\d+)/)[1]),
+    [leapText, confirmText]
   );
   await sleep(200);
   await shot(page, 'preview');
@@ -874,7 +874,7 @@ try {
     });
     await sleep(250);
   };
-  // The camel acts first: the AI plays it, so a hero with Dash is up. Its
+  // The camel acts first: the AI plays it, so a hero with Leap is up. Its
   // turn (Move alone) keeps the heroes' room, so the board doesn't move.
   const camelBoard = await phone.locator('canvas').boundingBox();
   await shot(phone, 'phone-camel');
@@ -891,7 +891,7 @@ try {
   }
   await phone
     .getByTestId('turn-controls')
-    .getByRole('button', {name: /^Dash/})
+    .getByRole('button', {name: /^Leap/})
     .waitFor({timeout: 15_000});
   if (camelUp) {
     const heroBoard = await phone.locator('canvas').boundingBox();
@@ -907,7 +907,7 @@ try {
     .getByTestId('turn-controls')
     .getByRole('button', {name: /^Move/})
     .boundingBox();
-  await phone.getByTestId('turn-controls').getByRole('button', {name: /^Dash/}).click();
+  await phone.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
   check(
     'phone: with no target yet, Confirm stays, disabled, saying what to pick',
@@ -938,14 +938,14 @@ try {
     /^Confirm · \+\d+( → \+\d+)?$/.test(phoneConfirm),
     phoneConfirm
   );
-  const dashButtonText = await phone
+  const leapButtonText = await phone
     .getByTestId('turn-controls')
-    .getByRole('button', {name: /^Dash/})
+    .getByRole('button', {name: /^Leap/})
     .textContent();
   check(
     'phone: the ability button shows the same slots as Confirm',
-    dashButtonText.endsWith(phoneConfirm.match(/· (\+\d+)/)[1]),
-    [dashButtonText, phoneConfirm]
+    leapButtonText.endsWith(phoneConfirm.match(/· (\+\d+)/)[1]),
+    [leapButtonText, phoneConfirm]
   );
   check('phone: there are no numbered steps', !(await phone.getByTestId('turn-steps').count()));
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});

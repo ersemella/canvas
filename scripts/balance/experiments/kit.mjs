@@ -7,7 +7,7 @@ const fogFix = ({AI}) => {
 };
 const abilities = [
   'bow',
-  'dash',
+  'leap',
   'volley',
   'throw',
   'pin',

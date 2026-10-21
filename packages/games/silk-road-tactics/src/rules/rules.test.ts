@@ -731,15 +731,23 @@ describe('abilities', () => {
     expect(unit(s, 'p-bokh').hp).toBeLessThan(unit(s, 'p-bokh').maxHp);
   });
 
-  it('Dash rides any distance up to its limit', () => {
-    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(8, 0)});
+  it('Leap lands exactly two hexes on, over ruins, a unit or quicksand', () => {
+    // Ruins at (2, 2); quicksand at (2, 3), with an enemy standing in it.
+    const s = setup({'p-mangudai': at(1, 2), 'e-bokh': at(8, 0)});
     const m = unit(s, 'p-mangudai');
-    const ends = ABILITIES.dash
-      .targets(s, SALT_FLATS, m, m.hex!)
-      .map((t) => hexDistance(t.hex!, m.hex!));
-    expect(new Set(ends)).toEqual(
-      new Set(Array.from({length: ABILITY.dash.distance}, (_, i) => i + 1))
-    );
+    const ends = ABILITIES.leap.targets(s, SALT_FLATS, m, m.hex!).map((t) => t.hex!);
+    expect(ends.every((h) => hexDistance(h, m.hex!) === 2)).toBe(true);
+    expect(ends).toContainEqual(at(3, 2));
+    // Never onto a unit.
+    unit(s, 'e-bokh').hex = at(3, 2);
+    expect(ABILITIES.leap.targets(s, SALT_FLATS, m, m.hex!)).not.toContainEqual({hex: at(3, 2)});
+
+    const t = setup({'p-mangudai': at(1, 3), 'e-bokh': at(2, 3)});
+    const leaper = unit(t, 'p-mangudai');
+    const hp = leaper.hp;
+    applyTurn(t, leaper, {action: {ability: 'leap', target: {hex: at(3, 3)}}});
+    expect(leaper.hex).toEqual(at(3, 3));
+    expect(leaper.hp).toBe(hp);
   });
 
   it('Rampage hits each unit once and knocks it aside', () => {

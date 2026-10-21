@@ -206,7 +206,6 @@ export function runBalance(options: Options) {
       map: SALT_FLATS.id,
       roster: PARTY,
       movementCap: RULES.movementCap,
-      dashDistance: ABILITY.dash.distance,
       aiSettings: {
         maxSimulations: AI.maxSimulations,
         rootSimulations: AI.rootSimulations,
@@ -216,7 +215,7 @@ export function runBalance(options: Options) {
       },
       movement:
         'move-only = Hold with experiment moveActionCost plus per-hex cost; counts toward ultimate as before',
-      blocking: 'ordinary walking only; Dash and Rampage retain their ability rules',
+      blocking: 'ordinary walking only; Leap and Rampage retain their ability rules',
       pairing: 'same random placements, twice with opposite starting speed-tie priority',
       ai: 'current deterministic budgeted alpha-beta AI on both teams; threat model respects variants; historical combined options move first',
       stalls: `still fighting after ${options.maxTurns} chosen turns; charged trigger turns not counted`,
