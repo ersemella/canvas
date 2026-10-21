@@ -4,6 +4,8 @@ import {
   hexDistance,
   hexEquals,
   hexKey,
+  hexNeighbors,
+  hexRing,
   hexToPixel,
   hexesInRange,
   registerBuiltinComponents,
@@ -700,11 +702,16 @@ export function TacticsPage() {
     }
     if (moveMode && !moving && !plannedMove) {
       // Desktop, nothing picked: only the hex under the mouse, if it can be
-      // reached, and the way there, so the board stays clear.
+      // reached, and the way there, so the board stays clear; the bounds of
+      // where the unit can move, outlined as an ability's range is.
       if (hoverReach && acting.hex) {
         for (const h of hoverReach.path.slice(0, -1)) highlights.push({hex: h, kind: 'path'});
         highlights.push({hex: hoverReach.hex, kind: 'target'});
         out.path = [acting.hex, ...hoverReach.path];
+        out.range = filledIn(
+          acting.hex,
+          reaches.map((r) => r.hex)
+        );
       }
     } else if (moveMode) {
       // Like an ability's targets: every reachable hex stays open to pick,
@@ -1138,6 +1145,32 @@ function choiceColumns(unit: Unit): number {
 /** The rows a unit's choices take. */
 function choiceRows(unit: Unit): number {
   return Math.ceil((choiceAbilities(unit).length + 1) / choiceColumns(unit));
+}
+
+/**
+ * `hexes` (all near `from`) with the holes in them filled: allies, ruins and
+ * the like a move can't end on but stand inside its reach, so only the
+ * outer bounds get outlined.
+ */
+function filledIn(from: Hex, hexes: Hex[]): Hex[] {
+  const inside = new Set(hexes.map(hexKey));
+  const radius = Math.max(0, ...hexes.map((h) => hexDistance(h, from))) + 1;
+  // Whatever the ring just outside them reaches without crossing them is outside.
+  const outside = new Set<string>();
+  let frontier = hexRing(from, radius);
+  for (const h of frontier) outside.add(hexKey(h));
+  while (frontier.length > 0) {
+    const next: Hex[] = [];
+    for (const h of frontier)
+      for (const n of hexNeighbors(h)) {
+        const key = hexKey(n);
+        if (hexDistance(n, from) > radius || inside.has(key) || outside.has(key)) continue;
+        outside.add(key);
+        next.push(n);
+      }
+    frontier = next;
+  }
+  return hexesInRange(from, radius).filter((h) => !outside.has(hexKey(h)));
 }
 
 /**
