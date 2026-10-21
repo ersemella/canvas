@@ -868,7 +868,12 @@ try {
     await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
     await sleep(250);
   };
-  // The camel acts first: the AI plays it, so a hero with Dash is up.
+  // The camel acts first: the AI plays it, so a hero with Dash is up. Its
+  // turn (Move alone) keeps the heroes' room, so the board doesn't move.
+  const camelBoard = await phone.locator('canvas').boundingBox();
+  await shot(phone, 'phone-camel');
+  const camelUp =
+    (await phone.evaluate(() => window.__tactics.run.view.fight.awaiting)) === 'p-camel';
   while ((await phone.evaluate(() => window.__tactics.run.view.fight.awaiting)) === 'p-camel') {
     const v = await phone.evaluate(() => window.__tactics.run.view.version);
     await phone.evaluate(() => window.__tactics.autoTurn());
@@ -882,6 +887,15 @@ try {
     .getByTestId('turn-controls')
     .getByRole('button', {name: /^Dash/})
     .waitFor({timeout: 15_000});
+  if (camelUp) {
+    const heroBoard = await phone.locator('canvas').boundingBox();
+    check(
+      'phone: the board stays put from the camel’s turn to a hero’s',
+      Math.abs(heroBoard.y - camelBoard.y) < 1 &&
+        Math.abs(heroBoard.height - camelBoard.height) < 1,
+      [camelBoard, heroBoard]
+    );
+  }
   const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
   const moveBoxBefore = await phone
     .getByTestId('turn-controls')

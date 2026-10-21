@@ -166,8 +166,8 @@ export function TacticsPage() {
   }, []);
 
   // Phones: note the action section's tallest height while it holds the
-  // turn's choices, to keep on the camel's shorter turns (Move alone) and
-  // once the fight ends, so the board doesn't move.
+  // turn's choices, to keep once the fight ends, so the board doesn't move.
+  // (The camel's shorter turns keep it through `rows`.)
   useLayoutEffect(() => {
     const el = actionsRef.current;
     if (el?.querySelector('[data-testid="turn-controls"]'))
@@ -714,6 +714,7 @@ export function TacticsPage() {
         moving={moving}
         canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
         waiting={busy || playing}
+        rows={Math.max(...fight.units.filter((u) => u.side === 'player').map(choiceRows))}
         onMove={toggleMove}
         onAbility={chooseAbility}
         menu={menu}
@@ -833,6 +834,21 @@ export function TacticsPage() {
   );
 }
 
+/** The abilities a unit's turn offers as buttons: no Hold, since Confirm reads End turn with no action picked. */
+function choiceAbilities(unit: Unit) {
+  return abilitiesOf(unit).filter((def) => def.id !== 'hold');
+}
+
+/** Move and the abilities in rows of two, or three for a hero with more to choose from. */
+function choiceColumns(unit: Unit): number {
+  return choiceAbilities(unit).length + 1 > 4 ? 3 : 2;
+}
+
+/** The rows a unit's choices take. */
+function choiceRows(unit: Unit): number {
+  return Math.ceil((choiceAbilities(unit).length + 1) / choiceColumns(unit));
+}
+
 /**
  * The turn's choices, the same on phones and desktop: Move and the
  * abilities as big buttons (the name, then the cost in slots), in rows of
@@ -857,6 +873,11 @@ function TurnControls(props: {
    * unit's turn on the board too.
    */
   waiting: boolean;
+  /**
+   * Rows of choices to make room for: the party's most, so the camel's turn
+   * (Move alone, and it acts first) doesn't shrink the section and move the board.
+   */
+  rows: number;
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
   /** The run's menu, beside the Confirm button. */
@@ -864,8 +885,7 @@ function TurnControls(props: {
   children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving} = props;
-  // No Hold button: Confirm reads End turn with no action picked.
-  const defs = abilitiesOf(unit).filter((def) => def.id !== 'hold');
+  const defs = choiceAbilities(unit);
   // A locked ultimate's charge goes on the cost's line, so a narrow tile
   // (three to a row) keeps its name on one line.
   const label = (name: string, cost: string, note?: string) => (
@@ -882,7 +902,10 @@ function TurnControls(props: {
       {/* One choice per turn: Move or an ability, picked like any other. */}
       <div
         className={styles.abilityGrid}
-        style={{gridTemplateColumns: `repeat(${defs.length + 1 > 4 ? 3 : 2}, 1fr)`}}
+        style={{
+          gridTemplateColumns: `repeat(${choiceColumns(unit)}, 1fr)`,
+          minHeight: `calc(${props.rows} * var(--tile-height) + ${props.rows - 1} * var(--tile-gap))`,
+        }}
       >
         <Button
           size="lg"
