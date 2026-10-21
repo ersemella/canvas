@@ -659,19 +659,32 @@ try {
   await page.waitForFunction(() => window.__tactics?.run);
   check('a reload resumes the run exactly', JSON.stringify((await state()).view) === snapshot);
 
-  // Reset run, in the menu: the first tap only arms it; the second starts a fresh run.
+  // Reset run, in the menu: the first tap only arms it; the second opens the
+  // start menu, which can go back to the fight; Start there starts a fresh run.
   const beforeReset = (await state()).runId;
   await page.getByRole('button', {name: 'Menu'}).click();
   await page.getByRole('menuitem', {name: 'Reset run'}).click();
   await sleep(300);
   check('one tap on Reset run changes nothing', (await state()).runId === beforeReset);
   await page.getByRole('menuitem', {name: 'Tap again to reset'}).click();
+  await page.getByTestId('hero-picks').waitFor({timeout: 5_000});
+  check(
+    'a second tap on Reset run opens the start menu, the run untouched',
+    (await state()).runId === beforeReset
+  );
+  await page.getByRole('button', {name: 'Back to the fight'}).click();
+  await page.getByTestId('turn-controls').waitFor({timeout: 5_000});
+  check('the start menu goes back to the fight', (await state()).runId === beforeReset);
+  await page.getByRole('button', {name: 'Menu'}).click();
+  await page.getByRole('menuitem', {name: 'Reset run'}).click();
+  await page.getByRole('menuitem', {name: 'Tap again to reset'}).click();
+  await page.getByRole('button', {name: 'Start a fight'}).click();
   await page.waitForFunction((id) => window.__tactics.run?.runId !== id, beforeReset, {
     timeout: 15_000,
   });
   await waitIdle();
   check(
-    'a second tap on Reset run starts a fresh fight',
+    'Start a fight, after Reset run, starts a fresh fight',
     (await state()).view.fight.phase === 'fight'
   );
   const resetOld = await api(
@@ -843,6 +856,21 @@ try {
       [box, bar]
     );
     await shot(page, 'end-phone');
+  }
+  // New fight opens the start menu; Start there starts a fresh fight, ready for a turn.
+  {
+    const ended = (await state()).runId;
+    await page.getByRole('button', {name: 'New fight'}).click();
+    await page.getByRole('button', {name: 'Start a fight'}).click();
+    await page.waitForFunction((id) => window.__tactics.run?.runId !== id, ended, {
+      timeout: 15_000,
+    });
+    await waitIdle();
+    check(
+      'New fight, then Start a fight, starts a fresh fight',
+      (await state()).view.fight.phase === 'fight'
+    );
+    await abandonOn(page);
   }
   check('no page errors', pageErrors.length === 0, pageErrors);
 
