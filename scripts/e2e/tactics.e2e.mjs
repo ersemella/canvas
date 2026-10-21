@@ -25,6 +25,8 @@ const api = async (path, playerKey, init = {}) => {
   });
   return {status: res.status, body: await res.json().catch(() => null)};
 };
+/** The board canvas's scene height (game.json); its width is 672. */
+const SCENE_H = 760;
 const shot = (page, name) => page.screenshot({path: join(OUT_DIR, `tactics-${name}.png`)});
 
 // ── The API ──────────────────────────────────────────────────────────────────
@@ -206,11 +208,11 @@ page.on('pageerror', (e) => {
   console.log('  [page error]', e.message);
 });
 
-/** Clicks a hex on the board canvas, scaled from the 672×696 scene to the canvas on screen. */
+/** Clicks a hex on the board canvas, scaled from the 672×760 scene to the canvas on screen. */
 async function tapHex(hex) {
   const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
   const box = await page.locator('canvas').boundingBox();
-  await page.mouse.click(box.x + (x * box.width) / 672, box.y + (y * box.height) / 696);
+  await page.mouse.click(box.x + (x * box.width) / 672, box.y + (y * box.height) / SCENE_H);
   await sleep(150);
 }
 const state = () => page.evaluate(() => window.__tactics?.run);
@@ -488,7 +490,7 @@ try {
   {
     const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), quicksand);
     const box = await page.locator('canvas').boundingBox();
-    await page.mouse.move(box.x + (x * box.width) / 672, box.y + (y * box.height) / 696);
+    await page.mouse.move(box.x + (x * box.width) / 672, box.y + (y * box.height) / SCENE_H);
     await sleep(150);
   }
   const info = page.getByTestId('hex-info');
@@ -623,7 +625,7 @@ try {
   const onPhone = async (hex) => {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
     const box = await phone.locator('canvas').boundingBox();
-    return {x: box.x + (x * box.width) / 672, y: box.y + (y * box.height) / 696};
+    return {x: box.x + (x * box.width) / 672, y: box.y + (y * box.height) / SCENE_H};
   };
   const foe = phoneFight.units.find((u) => u.side === 'enemy' && u.alive).hex;
   const foeAt = await onPhone(foe);
@@ -756,8 +758,8 @@ try {
       const span = await phone.evaluate((h) => window.__tactics.overlaySpan(h), u.hex);
       const canvas = await phone.locator('canvas').boundingBox();
       const t = await tooltip.boundingBox();
-      const top = canvas.y + (span.top * canvas.height) / 696;
-      const bottom = canvas.y + (span.bottom * canvas.height) / 696;
+      const top = canvas.y + (span.top * canvas.height) / SCENE_H;
+      const bottom = canvas.y + (span.bottom * canvas.height) / SCENE_H;
       if (t.y < bottom - 1 && t.y + t.height > top + 1)
         covering.push({unit: u.id, tooltip: [t.y, t.y + t.height], unitSpan: [top, bottom]});
       await phone.touchscreen.tap(at.x, at.y); // close it
@@ -837,7 +839,9 @@ try {
     );
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), free);
     const box = await phone.locator('canvas').boundingBox();
-    await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
+    await phone.tap('canvas', {
+      position: {x: (x * box.width) / 672, y: (y * box.height) / SCENE_H},
+    });
     await sleep(250);
     const planned = phone.getByTestId('turn-controls').getByRole('button', {name: /^Move/});
     check(
@@ -865,7 +869,9 @@ try {
   const tapOn = async (hex) => {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
     const box = await phone.locator('canvas').boundingBox();
-    await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
+    await phone.tap('canvas', {
+      position: {x: (x * box.width) / 672, y: (y * box.height) / SCENE_H},
+    });
     await sleep(250);
   };
   // The camel acts first: the AI plays it, so a hero with Dash is up. Its

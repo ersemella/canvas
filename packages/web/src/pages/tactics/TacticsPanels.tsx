@@ -34,6 +34,7 @@ import type {
   TurnPreview,
   Unit,
 } from '@canvas/games-silk-road-tactics';
+import {AbilityIcon, KIND_NAME} from './AbilityIcon';
 import {AbilityName, Glossary, KeywordText, Term} from './Keywords';
 import styles from './TacticsPage.module.css';
 
@@ -352,10 +353,12 @@ export function StatSheet({
             {!dense && <span className={styles.abilityListLabel}>Abilities</span>}
             {abilities.map((def) => (
               <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
+                {def.kind && <AbilityIcon kind={def.kind} />}
                 {def.name}
               </AbilityName>
             ))}
             <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
+              {ult.kind && <AbilityIcon kind={ult.kind} />}
               {ult.name}
               {ultimateState(unit) !== 'Used' && (
                 <span className={styles.abilityLinkNote}>
@@ -388,7 +391,13 @@ function costText(unit: Unit, def: AbilityDef): string {
 export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
   return (
     <Text fz="xs">
-      <b>{def.name}</b>
+      {def.kind && (
+        <>
+          <AbilityIcon kind={def.kind} />
+          <b>{def.name}</b> · {KIND_NAME[def.kind]}
+        </>
+      )}
+      {!def.kind && <b>{def.name}</b>}
       {def.ultimate && (
         <>
           {' · '}

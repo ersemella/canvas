@@ -7,6 +7,7 @@ import {
   hexKey,
   hexNeighbors,
   hexToPixel,
+  pixelToHex,
 } from '@canvas/engine';
 import type {EventBus, Hex, SystemContext} from '@canvas/engine';
 import {HEROES} from '../rules/config';
@@ -52,6 +53,13 @@ export interface BoardScene {
   preview: {unitId: string; to: Hex | null; hpAfter: number; hpBefore: number; killed: boolean}[];
   /** A planned move's route, from where the unit stands to where it ends: a line along it. */
   path?: Hex[];
+  /** The hexes the picked ability reaches from its user: outlined, so its range shows. */
+  range?: Hex[];
+  /**
+   * The bow's lanes from its user: an arrow along each to a unit it may
+   * target, a faint dashed line along the rest to where the arrow stops.
+   */
+  lanes?: {from: Hex; lanes: {hexes: Hex[]; target: boolean}[]};
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
   /** The slot the planned turn's cost aims at; when it's taken, the card yields on to `previewSlot`. */
@@ -159,9 +167,8 @@ const MARKS_Y = HEALTH_BAR.y + HEALTH_BAR.h + 5 + MARK.r;
 
 /**
  * Where a looked-at unit's health bar and status markers go: above it,
- * markers on top, or, when the track would cover that (the top row),
- * below its feet with the markers under the bar. `top` and `bottom` bound
- * the lot, so the tooltip can keep clear of it.
+ * markers on top (the board leaves room for them over the top row).
+ * `top` and `bottom` bound the lot, so the tooltip can keep clear of it.
  */
 function healthStack(
   hex: Hex,
@@ -171,16 +178,7 @@ function healthStack(
   const barY = c.y - HEALTH_BAR.y - HEALTH_BAR.h;
   const marksY = c.y - MARKS_Y;
   const top = (marks > 0 ? marksY - MARK.r : barY) - 2;
-  if (top >= TRACK_AREA.y + TRACK_AREA.height + 2)
-    return {barY, marksY, top, bottom: c.y - HEALTH_BAR.y + 2};
-  const below = c.y + SPRITE_FEET + 6;
-  const belowMarks = below + HEALTH_BAR.h + 5 + MARK.r;
-  return {
-    barY: below,
-    marksY: belowMarks,
-    top: below - 2,
-    bottom: (marks > 0 ? belowMarks + MARK.r : below + HEALTH_BAR.h) + 2,
-  };
+  return {barY, marksY, top, bottom: c.y - HEALTH_BAR.y + 2};
 }
 
 /** The hovered hex's outline. */
@@ -491,6 +489,9 @@ export class TacticsBoardSystem extends BaseSystem {
       }
     }
 
+    if (scene.range) drawRangeOutline(ctx, scene.range);
+    if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);
+
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
 
@@ -778,7 +779,8 @@ function drawCard(
   const acting = Boolean(card.acting);
   const cx = deck.x0 + i * deck.w;
   const h = deck.h + 2 * FRONT_CARD_GROW * grow;
-  const cy = deck.y - FRONT_CARD_GROW * grow - lift * (deck.y + deck.h + 4);
+  // A passed card drops away off the canvas's bottom edge, away from the board.
+  const cy = deck.y - FRONT_CARD_GROW * grow + lift * (SCENE_SIZE.height - deck.y + 4);
   ctx.save();
   ctx.globalAlpha = 1 - lift * 0.6;
   pixelShadow(ctx);
@@ -796,11 +798,13 @@ function drawCard(
     ctx.setLineDash(ghost ? [3, 2] : []);
     ctx.strokeStyle = !u
       ? PALETTE.dusk2
-      : ghost || acting
-        ? PALETTE.lapisLight
-        : u.id === opts.selected || u.id === opts.hovered
-          ? PALETTE.ivory
-          : SIDE_LIGHT[u.side];
+      : acting
+        ? PALETTE.goldLight
+        : ghost
+          ? PALETTE.lapisLight
+          : u.id === opts.selected || u.id === opts.hovered
+            ? PALETTE.ivory
+            : SIDE_LIGHT[u.side];
     ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
     // The ghost's thick dashes sit inside its edge, so none show past the card in front.
     if (ghost) pixelRect(ctx, cx + 1.25, cy + 1.25, deck.cardW - 2.5, h - 2.5, 4);
@@ -988,8 +992,8 @@ export function hexOverlaySpan(
   const hexBottom = c.y + 36 * HEX_SCALE;
   return {
     x: c.x,
-    top: stack && stack.top < c.y ? stack.top : hexTop,
-    bottom: stack && stack.bottom > c.y ? stack.bottom + 2 : hexBottom,
+    top: stack ? stack.top : hexTop,
+    bottom: hexBottom,
   };
 }
 
@@ -1031,10 +1035,10 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
   const boxH = lines.length * lh + 8;
   const span = hexOverlaySpan(fight, h);
   const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, span.x - w / 2));
-  // Above the hex (and a unit's health bar and statuses), or below it (and
-  // them, when they're below too) when that would cover the track.
+  // Above the hex (and a unit's health bar and statuses), or below it when
+  // that would leave the canvas.
   const above = span.top - 2 - boxH;
-  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? span.bottom : above;
+  const by = above < 2 ? span.bottom : above;
   pixelRect(ctx, bx, by, w, boxH, 5);
   ctx.fillStyle = PALETTE.dusk0;
   ctx.fill();
@@ -1795,6 +1799,100 @@ function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
 }
 
 /**
+ * The edge of an ability's range: a dashed light lapis line, over ink so
+ * it reads on the sand and the rugs, along every side of `hexes` that
+ * borders a hex outside them.
+ */
+function drawRangeOutline(ctx: CanvasRenderingContext2D, hexes: Hex[]): void {
+  const inside = new Set(hexes.map(hexKey));
+  const corners = hexCorners('pointy', BOARD_LAYOUT.size);
+  const edges: [{x: number; y: number}, {x: number; y: number}][] = [];
+  for (const h of hexes) {
+    const c = center(h);
+    corners.forEach((p, i) => {
+      const q = corners[(i + 1) % corners.length]!;
+      // The hex across this side has its centre twice as far as the side's middle.
+      const across = pixelToHex({x: c.x + p.x + q.x, y: c.y + p.y + q.y}, BOARD_LAYOUT);
+      if (!inside.has(hexKey(across)))
+        edges.push([
+          {x: c.x + p.x, y: c.y + p.y},
+          {x: c.x + q.x, y: c.y + q.y},
+        ]);
+    });
+  }
+  ctx.save();
+  ctx.lineCap = 'round';
+  for (const [color, width, dash] of [
+    [PALETTE.ink, 5, []],
+    [PALETTE.lapisLight, 2.5, [7, 5]],
+  ] as const) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash([...dash]);
+    ctx.beginPath();
+    for (const [a, b] of edges) {
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/**
+ * The bow's lanes from `from`: to a unit it may target, a light lapis
+ * arrow pointing at it; along any other lane (blocked by an ally, a ruin
+ * or the edge), a faint dashed line to where the arrow would stop, so it's
+ * plain why that enemy can't be shot.
+ */
+function drawLanes(
+  ctx: CanvasRenderingContext2D,
+  from: Hex,
+  lanes: {hexes: Hex[]; target: boolean}[]
+): void {
+  const a = center(from);
+  for (const lane of lanes) {
+    const last = lane.hexes[lane.hexes.length - 1];
+    if (!last) continue;
+    const b = center(last);
+    const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    const ux = (b.x - a.x) / len;
+    const uy = (b.y - a.y) / len;
+    const start = {x: a.x + ux * 26, y: a.y + uy * 26};
+    ctx.save();
+    ctx.lineCap = 'square';
+    if (lane.target) {
+      // The head stops at the target's hex, pointing at it.
+      const end = {x: b.x - ux * 34, y: b.y - uy * 34};
+      ctx.strokeStyle = PALETTE.lapisLight;
+      ctx.fillStyle = PALETTE.lapisLight;
+      ctx.lineWidth = 3;
+      pixelShadow(ctx, 1);
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x - ux * 4, end.y - uy * 4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(end.x + ux * 8, end.y + uy * 8);
+      ctx.lineTo(end.x - ux * 6 - uy * 8, end.y - uy * 6 + ux * 8);
+      ctx.lineTo(end.x - ux * 6 + uy * 8, end.y - uy * 6 - ux * 8);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      ctx.globalAlpha = 0.6;
+      ctx.strokeStyle = PALETTE.lapisLight;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+/**
  * A charging ability's area, until it triggers: light blue for your own, as all
  * your targeting is; for an enemy's a red outline only, so it reads as a
  * threat without looking like the tint under an enemy unit.
@@ -2469,9 +2567,14 @@ function drawUnit(
     ctx.stroke();
     ctx.setLineDash([]);
     if (opts.targeted) {
-      hexPath(ctx, hex, 6);
-      ctx.strokeStyle = HIGHLIGHT[opts.targeted].stroke;
-      ctx.lineWidth = opts.targeted === 'chosen' ? 3.5 : 2.5;
+      // Over ink, so it shows on your own lapis rug as on the enemy's.
+      const width = opts.targeted === 'chosen' ? 4 : 3;
+      hexPath(ctx, hex, 6.5);
+      ctx.strokeStyle = PALETTE.ink;
+      ctx.lineWidth = width + 2.5;
+      ctx.stroke();
+      ctx.strokeStyle = PALETTE.lapisLight;
+      ctx.lineWidth = width;
       ctx.stroke();
     }
   }
@@ -2514,8 +2617,7 @@ const TURN_ARROW = {px: 3, gap: 3, bob: 5, bobSeconds: 0.9};
  * The arrow over the unit you're controlling: gold, which no side or
  * targeting colour uses, so it shows on the sand and over either side's
  * rugs. It points down at the unit from above its health bar and statuses,
- * or, where the track would cover that (the top row), up from below them.
- * It bobs, unless the device asks for reduced motion (`time` null).
+ * and bobs, unless the device asks for reduced motion (`time` null).
  */
 function drawTurnArrow(
   ctx: CanvasRenderingContext2D,
@@ -2531,23 +2633,16 @@ function drawTurnArrow(
       : Math.round(
           (TURN_ARROW.bob * (1 + Math.sin((time * 2 * Math.PI) / TURN_ARROW.bobSeconds))) / 2
         );
-  const c = center(hex);
-  const stack = healthStack(hex, marks);
-  const trackBottom = TRACK_AREA.y + TRACK_AREA.height;
-  const down = stack.top - gap - h - TURN_ARROW.bob - px >= trackBottom;
-  // Below: under the stack when it's below the unit too, else under its feet.
-  const below = stack.top > c.y ? stack.bottom : c.y + SPRITE_FEET;
-  const top = Math.round(down ? stack.top - gap - h - bob : below + gap + bob);
-  const rows = down ? TURN_ARROW_ROWS : [...TURN_ARROW_ROWS].reverse();
-  const x = Math.round(c.x);
+  const top = Math.round(healthStack(hex, marks).top - gap - h - bob);
+  const x = Math.round(center(hex).x);
   ctx.save();
   // An ink outline one art pixel round every row, then the gold on top,
   // a lighter left half for the light from the top left.
   ctx.fillStyle = PALETTE.ink;
-  rows.forEach((w, i) =>
+  TURN_ARROW_ROWS.forEach((w, i) =>
     ctx.fillRect(x - ((w + 2) * px) / 2, top + (i - 1) * px, (w + 2) * px, 3 * px)
   );
-  rows.forEach((w, i) => {
+  TURN_ARROW_ROWS.forEach((w, i) => {
     const left = x - (w * px) / 2;
     const half = Math.ceil(w / 2) * px;
     ctx.fillStyle = PALETTE.goldLight;

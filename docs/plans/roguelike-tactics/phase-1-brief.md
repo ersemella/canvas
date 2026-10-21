@@ -426,10 +426,30 @@ confirm or change:
 - **The unit you're controlling** (2026-10-21): it wasn't always obvious
   which unit was taking the turn, since its border had become light lapis
   over your own deep lapis rug. The border is gold again, a step thicker,
-  and a gold pixel arrow bobs over the unit (above its health bar and
-  statuses, or up from below them on the top row, where the track would
-  cover it; still with reduced motion). The arrow shows only on your
-  units, and not while a turn plays back.
+  and a gold pixel arrow bobs over the unit, above its health bar and
+  statuses (still with reduced motion). The arrow shows only on your
+  units, and not while a turn plays back; the acting card on the track is
+  outlined gold too.
+- **The track under the board** (2026-10-21; it ran along the top): next
+  to the turn's controls, whose slot counts it shows, and out of the way
+  of the top row. The board keeps room above that row, so every unit's
+  health bar, statuses and turn arrow sit above it (the top row's used to
+  drop below the unit, over the row beneath, and the turn arrow there was
+  drawn over the unit itself). Spent cards drop off the bottom.
+- **Why a target can or can't be picked** (2026-10-21): an ability aimed
+  within a range (Sunlight, Hail, Fog, Volley, Freeze) outlines its reach
+  with a dashed line; the bow draws its six lanes, an arrow along each to
+  an enemy it can hit and a faint dashed line along the rest to where the
+  arrow stops (an ally, a ruin, the edge), so the enemies it can't hit are
+  explained. Targetable units' rings sit over ink, so they show on your
+  own lapis rugs.
+- **Ability kinds** (2026-10-21): each ability's button, its name on a
+  stat sheet and its explanation carry an icon for its kind, a pixel
+  sword for an attack (Composite Bow, Volley, Throw, Rampage), a cross
+  for a heal (Sunlight), a boot for movement (Move, Dash) and a padlock
+  for control (Hail, Fog, Freeze, Pin); the explanation names the kind.
+  Each kind's icon takes its colour from what it does: damage's light
+  madder, health's jade, ivory, the harmful statuses' gold.
 - **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
   Inspect mode (for touch), shows its tile's rule, any hail, and the unit
   there: stats, every ability with its cost, where it could move this

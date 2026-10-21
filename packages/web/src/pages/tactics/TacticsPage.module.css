@@ -393,6 +393,9 @@
 }
 .tileName {
   font-weight: 700;
+  /* The ability's kind icon, then its name. */
+  display: inline-flex;
+  align-items: center;
 }
 
 /* Confirm: the same tile in your units' lapis (their hexes and cards); while it waits for a target, a flat dusk tile asking for one. */

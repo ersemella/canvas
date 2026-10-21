@@ -39,9 +39,24 @@ import {tileAt} from './map';
 import type {MapData} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
+/**
+ * What an ability is broadly for, shown as an icon by its name: hurting
+ * enemies, healing, moving its user, or controlling the board (statuses,
+ * hail, fog).
+ */
+export type AbilityKind = 'attack' | 'heal' | 'move' | 'control';
+
 export interface AbilityDef {
   id: AbilityId;
   name: string;
+  /** None for Hold. */
+  kind?: AbilityKind;
+  /**
+   * How far from its user it reaches, for an ability aimed within a range
+   * (not the bow, whose lanes run to the first unit, nor melee); the page
+   * outlines it.
+   */
+  range?: number;
   /**
    * One line for the side panel, with damage and healing scaled by the
    * user's power (defence, Vulnerable and Obscured still apply on the hit).
@@ -147,6 +162,7 @@ export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLan
 const bow: AbilityDef = {
   id: 'bow',
   name: 'Composite Bow',
+  kind: 'attack',
   summary: (user) => `Shoot straight for ${scaled(ABILITY.bow.damage, user.power)} damage.`,
   ultimate: false,
   charged: false,
@@ -189,6 +205,7 @@ function dashEnd(
 const dash: AbilityDef = {
   id: 'dash',
   name: 'Dash',
+  kind: 'move',
   summary: () => `Move in a straight line, passing safely through allies and hazards.`,
   ultimate: false,
   charged: false,
@@ -214,6 +231,8 @@ const dash: AbilityDef = {
 const volley: AbilityDef = {
   id: 'volley',
   name: 'Volley',
+  kind: 'attack',
+  range: ABILITY.volley.range,
   summary: (user) =>
     `Units in a targeted area take ${scaled(ABILITY.volley.damage, user.power)} damage.`,
   ultimate: true,
@@ -236,6 +255,8 @@ const volley: AbilityDef = {
 const sunlight: AbilityDef = {
   id: 'sunlight',
   name: 'Sunlight',
+  kind: 'heal',
+  range: ABILITY.sunlight.range,
   summary: (user) =>
     `Heal a unit for ${scaled(ABILITY.sunlight.heal, user.power)} and cleanse its statuses.`,
   ultimate: false,
@@ -257,6 +278,8 @@ const sunlight: AbilityDef = {
 const hail: AbilityDef = {
   id: 'hail',
   name: 'Hail',
+  kind: 'control',
+  range: ABILITY.hail.range,
   summary: (user) =>
     `Hail on a space: units in it take ${scaled(ABILITY.hail.damage, user.power)} damage and are Slowed ${ABILITY.hail.slowed}.`,
   duration: ABILITY.hail.hexSlots,
@@ -286,6 +309,8 @@ const hail: AbilityDef = {
 const fog: AbilityDef = {
   id: 'fog',
   name: 'Fog',
+  kind: 'control',
+  range: ABILITY.fog.range,
   summary: () => `Create fog in a targeted area: units in it are Obscured.`,
   duration: ABILITY.fog.slots,
   ultimate: false,
@@ -307,6 +332,8 @@ const fog: AbilityDef = {
 const freeze: AbilityDef = {
   id: 'freeze',
   name: 'Freeze',
+  kind: 'control',
+  range: ABILITY.freeze.range,
   summary: (user) =>
     `Units in a targeted area take ${scaled(ABILITY.freeze.damage, user.power)} damage and are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
   duration: ABILITY.freeze.immobilizedSlots,
@@ -332,6 +359,7 @@ const freeze: AbilityDef = {
 const throwAbility: AbilityDef = {
   id: 'throw',
   name: 'Throw',
+  kind: 'attack',
   summary: (user) =>
     `Melee: ${scaled(ABILITY.throw.damage, user.power)} damage, then throw the target to another free space next to you.`,
   ultimate: false,
@@ -358,6 +386,7 @@ const throwAbility: AbilityDef = {
 const pin: AbilityDef = {
   id: 'pin',
   name: 'Pin',
+  kind: 'control',
   summary: (user) =>
     `Melee: the target is Immobilized and Taunted and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot, until you move away.`,
   duration: ABILITY.pin.slots,
@@ -388,6 +417,7 @@ const pin: AbilityDef = {
 const rampage: AbilityDef = {
   id: 'rampage',
   name: 'Rampage',
+  kind: 'attack',
   summary: () => `Rush in a straight line, knocking nearby units aside.`,
   ultimate: true,
   charged: false,

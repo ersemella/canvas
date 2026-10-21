@@ -19,6 +19,7 @@ import {
   SCENE_SIZE,
   abilitiesOf,
   actingUnit,
+  arrowLanes,
   allowedTargets,
   atExit,
   camelOf,
@@ -38,6 +39,7 @@ import {
 } from '@canvas/games-silk-road-tactics';
 import type {
   AbilityId,
+  AbilityKind,
   ActionTarget,
   BoardScene,
   FightState,
@@ -56,6 +58,7 @@ import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
+import {AbilityIcon} from './AbilityIcon';
 import {HexTooltip} from './HexTooltip';
 import {Glossary} from './Keywords';
 import {
@@ -549,6 +552,24 @@ export function TacticsPage() {
         if (acting.hex) out.path = [acting.hex, ...plannedMove.path];
       }
     } else if (ability) {
+      // How far it reaches, outlined; the bow's lanes, an arrow along each to
+      // an enemy it can hit, so it's plain why the others can't be.
+      const def = ABILITIES[ability];
+      const from = acting.hex;
+      if (from && def.range) {
+        const map = mapOf(fight);
+        out.range = hexesInRange(from, def.range).filter(
+          (h) => hexDistance(h, from) <= def.range! && onMap(map, h)
+        );
+      }
+      if (from && ability === 'bow')
+        out.lanes = {
+          from,
+          lanes: arrowLanes(fight, mapOf(fight), from).map((l) => ({
+            hexes: l.hexes,
+            target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
+          })),
+        };
       // Only what it may target; once Throw's target is picked, where it can land.
       const shown = new Set<string>();
       const throwing = ability === 'throw' && target?.hex;
@@ -892,9 +913,12 @@ function TurnControls(props: {
   const defs = choiceAbilities(unit);
   // A locked ultimate's charge goes on the cost's line, so a narrow tile
   // (three to a row) keeps its name on one line.
-  const label = (name: string, cost: string, note?: string) => (
+  const label = (name: string, cost: string, kind: AbilityKind | undefined, note?: string) => (
     <span className={styles.bigButton}>
-      <span className={styles.tileName}>{name}</span>
+      <span className={styles.tileName}>
+        {kind && <AbilityIcon kind={kind} />}
+        {name}
+      </span>
       <span className={styles.bigButtonCost}>
         {note && `${note} · `}
         {cost}
@@ -927,7 +951,7 @@ function TurnControls(props: {
           }
           onClick={props.onMove}
         >
-          {label('Move', props.moveSlots !== null ? `+${props.moveSlots}` : '')}
+          {label('Move', props.moveSlots !== null ? `+${props.moveSlots}` : '', 'move')}
         </Button>
         {defs.map((def) => {
           const reason =
@@ -949,6 +973,7 @@ function TurnControls(props: {
               {label(
                 def.name,
                 `+${props.slotsLater(def.cost)}`,
+                def.kind,
                 lockedUlt ? `${unit.ultimateCharge}/${RULES.ultimateCharge}` : undefined
               )}
             </Button>
