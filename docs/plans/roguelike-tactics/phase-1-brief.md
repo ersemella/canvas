@@ -377,7 +377,8 @@ confirm or change:
 - **The page** (owner, 2026-10-20): tapping or hovering inspects a hex.
   **Move** then a reachable hex selects one movement action. Selecting an
   ability replaces the move; selecting Move replaces the ability and its
-  target. Selecting Move again undoes the move. There is no Swap order:
+  target. Selecting Move again undoes the move (since 2026-10-21, once a
+  hex is picked, Move's button confirms it instead). There is no Swap order:
   each turn contains movement or an ability. The Move button shows its
   whole timeline delay at **20 + 10 per walked hex**; ability buttons show
   their own delays. Confirm shows the aimed and yielded next-turn slots.
@@ -386,7 +387,9 @@ confirm or change:
   buttons, then the selected action (named only), then one button to commit. There is no Hold button: with no
   action or move picked the button reads **End turn** and sends Hold.
   A planned move instead uses **Confirm**. Tapping a chosen target again doesn't commit; only the
-  button does. The board shows the preview's outcome. Tapping anywhere but
+  button does. (Superseded 2026-10-21: the picked button confirms, the
+  bottom one is Skip turn, and a second tap un-picks; see "The picked
+  button confirms" below.) The board shows the preview's outcome. Tapping anywhere but
   the board or the action section stops inspecting: the details go back
   to the unit whose turn it is. An enemy's details leave out what it could
   do next turn. A unit's name in the details is a badge in its side's
@@ -458,6 +461,19 @@ confirm or change:
   unit moved away or fell) the tooltip showed nothing: an empty black box.
   A hex left empty by a turn now stops being looked at, and the tooltip
   never shows for plain sand.
+- **The picked button confirms; Skip turn** (owner, 2026-10-21): players
+  tapped the ability again after aiming rather than the Confirm button
+  below. So once Move's hex or an ability's target is picked, that button
+  becomes its Confirm (bright lapis, "Confirm" and when the next turn
+  comes, "+3 → +8" when the card yields); before then it asks for the hex
+  or target, and tapping it puts it down. Tapping the chosen hex or target
+  again un-picks it (it used to do nothing): a tap on the board never
+  commits, since the board is where players look around. The button
+  under the choices is an explicit Skip turn (Hold, whatever is picked),
+  a quiet dusk tile saying when the next turn comes. Its first tap only arms it
+  ("Tap again to skip", in gold), as Reset run's does, so a stray tap
+  doesn't throw a turn away (owner, 2026-10-21); it disarms after 3
+  seconds or when the turn changes.
 - **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
   Inspect mode (for touch), shows its tile's rule, any hail, and the unit
   there: stats, every ability with its cost, where it could move this

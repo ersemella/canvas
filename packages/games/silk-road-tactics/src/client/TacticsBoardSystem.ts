@@ -10,7 +10,7 @@ import {
   pixelToHex,
 } from '@canvas/engine';
 import type {EventBus, Hex, SystemContext} from '@canvas/engine';
-import {HEROES} from '../rules/config';
+import {HEROES, RULES} from '../rules/config';
 import {isFlanked, onMap, statusValue, walkable} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
@@ -857,6 +857,8 @@ function drawCard(
     if (u.charging) drawChargeMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
     // A card whose last turn was skipped (it could only Hold): marked till it next acts.
     else if (u.skipped) drawSkipMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
+    // A unit whose ultimate is ready: a star high in its showing strip, clear of the marks below.
+    if (ultimateReady(u)) drawUltimateMark(ctx, cx + deck.cardW - deck.w / 2, cy + 9);
   }
   ctx.restore();
 }
@@ -890,6 +892,40 @@ function drawChargeMark(ctx: CanvasRenderingContext2D, x: number, y: number): vo
   ctx.lineTo(x + 3, y - 4);
   ctx.lineTo(x - 3, y + 4);
   ctx.lineTo(x + 3, y + 4);
+  ctx.closePath();
+  ctx.fillStyle = PALETTE.ivory;
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Whether a unit has an ultimate, charged and not yet used this fight. */
+function ultimateReady(u: Unit): boolean {
+  return (
+    HEROES[u.hero].ultimate !== undefined &&
+    !u.ultimateUsed &&
+    u.ultimateCharge >= RULES.ultimateCharge
+  );
+}
+
+/** A ready ultimate's mark: a four-pointed ivory star in a plum disc, high in its showing strip. */
+function drawUltimateMark(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x, y, 7, 0, Math.PI * 2);
+  ctx.fillStyle = PALETTE.plum;
+  ctx.fill();
+  ctx.strokeStyle = PALETTE.plumLight;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.beginPath();
+  for (let k = 0; k < 8; k++) {
+    const r = k % 2 === 0 ? 5 : 1.6;
+    const a = (k * Math.PI) / 4 - Math.PI / 2;
+    const px = x + r * Math.cos(a);
+    const py = y + r * Math.sin(a);
+    if (k === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
   ctx.closePath();
   ctx.fillStyle = PALETTE.ivory;
   ctx.fill();
@@ -1002,6 +1038,7 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
     // The side shows in the colour, as on the board: just the hero's name
     // (its health is the bar over it).
     lines.push({text: HEROES[unit.hero].name, color: SIDE_LIGHT[unit.side]});
+    if (ultimateReady(unit)) lines.push({text: 'Ultimate ready', color: PALETTE.plumLight});
   }
   const tile = tileAt(map, h);
   if (tile !== 'sand') {

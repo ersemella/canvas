@@ -64,10 +64,11 @@ import {HexTooltip} from './HexTooltip';
 import {Glossary} from './Keywords';
 import {
   AbilityDetail,
-  ConfirmButton,
   HexInspector,
   PALETTE_VARS,
   RunMenu,
+  SkipButton,
+  nextTurn,
   StatSheet,
 } from './TacticsPanels';
 import styles from './TacticsPage.module.css';
@@ -78,6 +79,9 @@ const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
   freeze: ABILITY.freeze.radius,
   hail: 0,
 };
+
+/** Skip turn's turn: Hold, without moving. */
+const SKIP: TurnInput = {action: {ability: 'hold', target: {}}};
 
 /** Why an ability has nothing to target, when that disables it. */
 const NO_TARGET: Partial<Record<AbilityId, string>> = {
@@ -112,7 +116,8 @@ function outcomeText(fight: FightState): string {
  * same rules locally (D11), and sends each turn as one request. Tapping or
  * hovering a hex shows what's there; Move, then a hex, plans the move;
  * an ability, then a target, previews that ability instead. Move and abilities
- * are separate actions; only Confirm commits the selected action.
+ * are separate actions; once its hex or target is picked, the picked button
+ * confirms it. Skip turn ends the turn with Hold.
  */
 export function TacticsPage() {
   const [run, setRun] = useState<RunResponse | null>(null);
@@ -305,10 +310,7 @@ export function TacticsPage() {
     return {ability, target};
   }, [ability, target, pinFromHere]);
 
-  /**
-   * What Move or the chosen ability still needs picked on the board: until
-   * then the button is disabled, saying so, rather than ending the turn.
-   */
+  /** What Move or the chosen ability still needs picked on the board: its button says so. */
   const needsTarget =
     moving && !plannedMove
       ? 'Pick where to move'
@@ -320,11 +322,9 @@ export function TacticsPage() {
             : 'Pick a target'
         : null;
 
-  /** There's no Hold button: with nothing picked, the button ends the turn with Hold. */
-  const endsWithHold = !ability && !moving && !plannedMove;
-
+  /** The picked turn, once its hex or target is: the picked button confirms it. */
   const input: TurnInput | null = useMemo(() => {
-    if (needsTarget) return null;
+    if (needsTarget || (!action && !plannedMove)) return null;
     const out: TurnInput = {action: action ?? {ability: 'hold', target: {}}};
     if (plannedMove && plannedMove.path.length > 0) {
       out.move = plannedMove.path;
@@ -335,6 +335,11 @@ export function TacticsPage() {
   const preview = useMemo(
     () => (fight && acting && input ? previewTurn(fight, acting.id, input) : null),
     [fight, acting, input]
+  );
+  /** Skip turn: a Hold, whatever is picked. */
+  const skipPreview = useMemo(
+    () => (fight && acting ? previewTurn(fight, acting.id, SKIP) : null),
+    [fight, acting]
   );
 
   const commit = useCallback(
@@ -463,8 +468,8 @@ export function TacticsPage() {
       if (acting && moving) {
         const reach = reaches.find((r) => r.path.length > 0 && hexEquals(r.hex, h));
         if (reach) {
-          // Tapping the chosen hex again does nothing: only Confirm commits.
-          if (!plannedMove || !hexEquals(plannedMove.hex, h)) setPlannedMove(reach);
+          // Tapping the chosen hex again un-picks it (Move's button confirms).
+          setPlannedMove(plannedMove && hexEquals(plannedMove.hex, h) ? null : reach);
           planned();
           return;
         }
@@ -475,8 +480,9 @@ export function TacticsPage() {
             (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
           );
           if (second) {
-            // Tapping the chosen hex again does nothing: only Confirm commits.
+            // Tapping the chosen hex again un-picks it (the button confirms).
             if (!target.to || !hexEquals(target.to, h)) chooseTarget(second);
+            else setTarget({hex: target.hex});
             planned();
             return;
           }
@@ -495,17 +501,14 @@ export function TacticsPage() {
         }
         const match = targets.find((t) => t.hex && hexEquals(t.hex, h));
         if (match) {
-          // Tapping the chosen target again does nothing: only Confirm commits.
-          const same =
-            target?.hex && hexEquals(target.hex, h) && (ability !== 'throw' || target.to);
-          if (!same) {
-            if (ability === 'throw') chooseTarget({hex: h});
-            else if (ability === 'pin') {
-              // From here if it can; otherwise its only step, or a step still to pick.
-              const steps = pinSteps(h);
-              chooseTarget(!pinFromHere(h) && steps.length === 1 ? steps[0]! : {hex: h});
-            } else chooseTarget(match);
-          }
+          // Tapping the chosen target again un-picks it (the button confirms).
+          if (target?.hex && hexEquals(target.hex, h)) setTarget(null);
+          else if (ability === 'throw') chooseTarget({hex: h});
+          else if (ability === 'pin') {
+            // From here if it can; otherwise its only step, or a step still to pick.
+            const steps = pinSteps(h);
+            chooseTarget(!pinFromHere(h) && steps.length === 1 ? steps[0]! : {hex: h});
+          } else chooseTarget(match);
           planned();
           return;
         }
@@ -812,17 +815,20 @@ export function TacticsPage() {
         canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
         waiting={busy || playing}
         rows={Math.max(...fight.units.filter((u) => u.side === 'player').map(choiceRows))}
+        needsTarget={needsTarget}
+        confirm={input ? (nextTurn(fight, preview) ?? {text: '', blocked: true}) : null}
         onMove={toggleMove}
         onAbility={chooseAbility}
+        onConfirm={() => commit()}
         menu={menu}
       >
-        <ConfirmButton
-          endTurn={endsWithHold}
-          needsTarget={needsTarget}
+        <SkipButton
+          // A new turn (or unit) starts it disarmed.
+          key={`${acting.id}@${fight.currentSlot}`}
           fight={fight}
-          preview={preview}
+          preview={skipPreview}
           busy={busy || playing}
-          onConfirm={() => commit()}
+          onSkip={() => commit(SKIP)}
         />
       </TurnControls>
     )
@@ -959,8 +965,10 @@ function choiceRows(unit: Unit): number {
 /**
  * The turn's choices, the same on phones and desktop: Move and the
  * abilities as big buttons (the name, then the cost in slots), in rows of
- * two, or three for a hero with more to choose from; then Confirm, filling
- * its row beside the run's menu.
+ * two, or three for a hero with more to choose from; then Skip turn,
+ * filling its row beside the run's menu. The picked one asks for its hex
+ * or target, then, once it's picked, becomes its Confirm: players tap the
+ * button they picked again to go (owner, 2026-10-21).
  */
 function TurnControls(props: {
   /** What an ability of this cost takes in slots, before yielding. */
@@ -985,14 +993,38 @@ function TurnControls(props: {
    * (Move alone, and it acts first) doesn't shrink the section and move the board.
    */
   rows: number;
+  /** What the picked choice still needs picked on the board, if anything: its button says so. */
+  needsTarget: string | null;
+  /**
+   * The picked choice is ready: its button confirms it, saying when the
+   * next turn comes (`blocked` when the rules refuse it).
+   */
+  confirm: {text: string; title?: string; blocked?: boolean} | null;
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
-  /** The run's menu, beside the Confirm button. */
+  onConfirm: () => void;
+  /** The run's menu, beside Skip turn. */
   menu: React.ReactNode;
   children?: React.ReactNode;
 }) {
-  const {unit, ability, plannedMove, moving} = props;
+  const {unit, ability, plannedMove, moving, confirm} = props;
   const defs = choiceAbilities(unit);
+  // The picked button: Confirm once it's ready, else what it still needs.
+  const confirmLabel = confirm && (
+    <span className={styles.bigButton}>
+      <span className={styles.tileName}>{confirm.blocked ? 'Can’t do that' : 'Confirm'}</span>
+      <span className={styles.bigButtonCost}>{confirm.text}</span>
+    </span>
+  );
+  const asking = (name: string, kind: AbilityKind | undefined) => (
+    <span className={styles.bigButton}>
+      <span className={styles.tileName}>
+        {kind && <AbilityIcon kind={kind} />}
+        {name}
+      </span>
+      <span className={styles.bigButtonCost}>{props.needsTarget}</span>
+    </span>
+  );
   // A locked ultimate's charge goes on the cost's line, so a narrow tile
   // (three to a row) keeps its name on one line.
   const label = (name: string, cost: string, kind: AbilityKind | undefined, note?: string) => (
@@ -1019,21 +1051,28 @@ function TurnControls(props: {
       >
         <Button
           size="lg"
-          className={styles.tile!}
-          disabled={!props.canMove || props.waiting}
+          className={`${styles.tile} ${plannedMove && confirm ? styles.tileConfirm : ''}`}
+          disabled={!props.canMove || props.waiting || Boolean(plannedMove && confirm?.blocked)}
+          data-choice="move"
           aria-pressed={moving || plannedMove !== null}
           title={
             props.waiting
               ? 'Not this unit’s turn yet'
               : plannedMove
-                ? 'Tap to undo the move'
-                : props.canMove
-                  ? 'Move instead of using an ability; units block the path'
-                  : 'Can’t move now'
+                ? (confirm?.title ?? 'Move there; tap the hex again to pick another')
+                : moving
+                  ? 'Pick where to move, or tap to put Move down'
+                  : props.canMove
+                    ? 'Move instead of using an ability; units block the path'
+                    : 'Can’t move now'
           }
-          onClick={props.onMove}
+          onClick={plannedMove && confirm ? props.onConfirm : props.onMove}
         >
-          {label('Move', props.moveSlots !== null ? `+${props.moveSlots}` : '', 'move')}
+          {plannedMove && confirmLabel
+            ? confirmLabel
+            : moving && !plannedMove
+              ? asking('Move', 'move')
+              : label('Move', props.moveSlots !== null ? `+${props.moveSlots}` : '', 'move')}
         </Button>
         {defs.map((def) => {
           const reason =
@@ -1041,23 +1080,38 @@ function TurnControls(props: {
             (ability !== def.id ? (props.outOfReach.get(def.id) ?? null) : null);
           const lockedUlt =
             def.ultimate && !unit.ultimateUsed && unit.ultimateCharge < RULES.ultimateCharge;
+          const picked = ability === def.id;
+          const ready = picked && confirm !== null;
           return (
             <Button
               key={def.id}
               size="lg"
-              className={`${styles.tile} ${def.ultimate ? styles.tileUltimate : ''}`}
-              disabled={reason !== null || props.waiting}
-              aria-pressed={ability === def.id}
-              title={props.waiting ? 'Not this unit’s turn yet' : (reason ?? def.summary(unit))}
-              onClick={() => props.onAbility(ability === def.id ? null : def.id)}
+              className={`${styles.tile} ${def.ultimate ? styles.tileUltimate : ''} ${ready ? styles.tileConfirm : ''}`}
+              disabled={reason !== null || props.waiting || Boolean(ready && confirm?.blocked)}
+              data-choice={def.id}
+              aria-pressed={picked}
+              title={
+                props.waiting
+                  ? 'Not this unit’s turn yet'
+                  : ready
+                    ? (confirm?.title ?? `${def.name} there; tap the target again to pick another`)
+                    : picked
+                      ? `Pick a target, or tap to put ${def.name} down`
+                      : (reason ?? def.summary(unit))
+              }
+              onClick={ready ? props.onConfirm : () => props.onAbility(picked ? null : def.id)}
             >
-              {/* Its own cost in slots; Confirm adds any yielding. */}
-              {label(
-                def.name,
-                `+${props.slotsLater(def.cost)}`,
-                def.kind,
-                lockedUlt ? `${unit.ultimateCharge}/${RULES.ultimateCharge}` : undefined
-              )}
+              {/* Its own cost in slots; once picked and aimed, Confirm, with any yielding. */}
+              {ready && confirmLabel
+                ? confirmLabel
+                : picked
+                  ? asking(def.name, def.kind)
+                  : label(
+                      def.name,
+                      `+${props.slotsLater(def.cost)}`,
+                      def.kind,
+                      lockedUlt ? `${unit.ultimateCharge}/${RULES.ultimateCharge}` : undefined
+                    )}
             </Button>
           );
         })}
