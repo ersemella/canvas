@@ -802,6 +802,70 @@ try {
     await phone.touchscreen.tap(4, box.y / 2);
     await sleep(200);
     check('phone: tapping away closes the tooltip', !(await tooltip.count()));
+    // Any tap outside the tooltip closes it, a turn button's too.
+    await phone.touchscreen.tap(foeAt.x, foeAt.y);
+    await sleep(200);
+    const moveBox = await phoneMove.boundingBox();
+    const moveAt = {x: moveBox.x + moveBox.width / 2, y: moveBox.y + moveBox.height / 2};
+    await phone.touchscreen.tap(moveAt.x, moveAt.y);
+    await sleep(200);
+    check('phone: tapping a turn button closes the tooltip', !(await tooltip.count()));
+    // And a hex to move to.
+    await phone.touchscreen.tap(foeAt.x, foeAt.y);
+    await sleep(200);
+    const step = (await phone.evaluate(() => window.__tactics.reaches)).find(
+      (r) => r.path.length > 0
+    );
+    const stepAt = await onPhone(step.hex);
+    await phone.touchscreen.tap(stepAt.x, stepAt.y);
+    await sleep(200);
+    check('phone: tapping a hex to move to closes the tooltip', !(await tooltip.count()));
+    await phone.touchscreen.tap(moveAt.x, moveAt.y); // put the move down again
+    await sleep(200);
+    check(
+      'phone: the move is put down again',
+      (await phoneMove.getAttribute('aria-pressed')) === 'false'
+    );
+    // A track card shows its unit, not the hex looked at before (which could
+    // have emptied since, leaving an empty box).
+    await phone.touchscreen.tap(foeAt.x, foeAt.y);
+    await sleep(200);
+    // The tooltip may reach up over the track: a card it covers isn't
+    // tappable, nor one just beside it (a touch snaps to the tooltip).
+    const canvasBox = await phone.locator('canvas').boundingBox();
+    const tipBox = await tooltip.boundingBox();
+    let picked = null;
+    for (const u of phoneFight.units.filter((v) => v.side === 'player' && v.alive)) {
+      const c = await phone.evaluate((id) => window.__tactics.cardCenter(id), u.id);
+      if (!c) continue;
+      const at = {
+        x: canvasBox.x + (c.x * canvasBox.width) / 672,
+        y: canvasBox.y + (c.y * canvasBox.height) / SCENE_H,
+      };
+      const m = 24;
+      const covered =
+        at.x >= tipBox.x - m &&
+        at.x <= tipBox.x + tipBox.width + m &&
+        at.y >= tipBox.y - m &&
+        at.y <= tipBox.y + tipBox.height + m;
+      if (!covered) {
+        picked = {unit: u.id, at};
+        break;
+      }
+    }
+    if (picked) {
+      await phone.touchscreen.tap(picked.at.x, picked.at.y);
+      await sleep(300);
+      check(
+        'phone: tapping a track card shows its unit, in place of the hex tapped before',
+        (await phoneSheet.locator('[data-side="player"]').count()) === 1,
+        {picked, tooltip: await tooltip.innerText().catch(() => null)}
+      );
+    } else {
+      console.log('  (track card check skipped: the tooltip covers every ally card)');
+    }
+    await phone.touchscreen.tap(4, canvasBox.y / 2);
+    await sleep(200);
   }
   // The run's menu: back to the games, and Reset run, which one tap only arms.
   check(

@@ -51,7 +51,7 @@ export default silkRoadTactics;
 // rules, run locally for previews (D11).
 export {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem};
 export {hexOverlaySpan} from './client/TacticsBoardSystem';
-export {TRACK_AREA} from './client/layout';
+export {TRACK_AREA, trackCards} from './client/layout';
 export {PALETTE, PIXEL_FONT} from './client/palette';
 export type {PaletteColor} from './client/palette';
 export type {BoardScene, HighlightKind} from './client/TacticsBoardSystem';

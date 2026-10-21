@@ -451,6 +451,13 @@ confirm or change:
   the kind. (A boot and a padlock, first, were confusing: owner.)
   Each kind's icon takes its colour from what it does: damage's light
   madder, health's jade, ivory, the harmful statuses' gold.
+- **The phone's tooltip** (owner, 2026-10-21): any tap outside it closes
+  it, a turn button's or a hex to move to or target included; a tap on
+  another hex or a track card opens that one's instead. A track card's tap
+  used to leave a hex tapped before pinned, and once that hex emptied (its
+  unit moved away or fell) the tooltip showed nothing: an empty black box.
+  A hex left empty by a turn now stops being looked at, and the tooltip
+  never shows for plain sand.
 - **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
   Inspect mode (for touch), shows its tile's rule, any hail, and the unit
   there: stats, every ability with its cost, where it could move this

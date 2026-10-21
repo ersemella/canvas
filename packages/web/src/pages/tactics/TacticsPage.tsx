@@ -32,6 +32,7 @@ import {
   previewTurn,
   reachableHexes,
   slotsForward,
+  trackCards,
   turnCost,
   taunterOf,
   unitAt,
@@ -151,22 +152,23 @@ export function TacticsPage() {
   /** The canvas's size on screen, to place the phone's tooltip over it. */
   const [boardSize, setBoardSize] = useState<{width: number; height: number} | null>(null);
 
-  // A tap anywhere but the board or the side panel (on phones, the action
-  // section) stops inspecting,
-  // and the details go back to the unit whose turn it is. A click, not a
-  // touch, so scrolling the details doesn't count. The click's path, not its
-  // target: a tap can replace what it landed on (the tooltip growing).
+  // A tap anywhere but the board or (on desktop) the side panel stops
+  // inspecting, and the details go back to the unit whose turn it is. On a
+  // phone that closes the tooltip: a tap on the action section does too
+  // (the board decides for itself, and the tooltip closes itself). A click,
+  // not a touch, so scrolling the details doesn't count. The click's path,
+  // not its target: a tap can replace what it landed on (the tooltip growing).
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const path = e.composedPath();
       const inside = (el: Element | null) => el !== null && path.includes(el);
-      if (inside(boardRef.current) || inside(panelRef.current)) return;
+      if (inside(boardRef.current) || (!phone && inside(panelRef.current))) return;
       setPinnedHex(null);
       setSelectedId(null);
     };
     document.addEventListener('click', onClick);
     return () => document.removeEventListener('click', onClick);
-  }, []);
+  }, [phone]);
 
   // Phones: note the action section's tallest height while it holds the
   // turn's choices, to keep once the fight ends, so the board doesn't move.
@@ -435,11 +437,19 @@ export function TacticsPage() {
         return;
       }
       if (!fight || busy) return;
+      // A tap that plans the turn (a hex to move to, a target) closes a
+      // phone's tooltip, as any tap outside it does.
+      const planned = () => {
+        if (!phone) return;
+        setPinnedHex(null);
+        setSelectedId(null);
+      };
       if (acting && moving) {
         const reach = reaches.find((r) => r.path.length > 0 && hexEquals(r.hex, h));
         if (reach) {
           // Tapping the chosen hex again does nothing: only Confirm commits.
           if (!plannedMove || !hexEquals(plannedMove.hex, h)) setPlannedMove(reach);
+          planned();
           return;
         }
       } else if (acting && ability) {
@@ -450,6 +460,7 @@ export function TacticsPage() {
           if (landing) {
             // Tapping the chosen landing again does nothing: only Confirm commits.
             if (!target.to || !hexEquals(target.to, h)) chooseTarget(landing);
+            planned();
             return;
           }
         }
@@ -459,6 +470,7 @@ export function TacticsPage() {
           const same =
             target?.hex && hexEquals(target.hex, h) && (ability !== 'throw' || target.to);
           if (!same) chooseTarget(ability === 'throw' ? {hex: h} : match);
+          planned();
           return;
         }
       }
@@ -477,6 +489,7 @@ export function TacticsPage() {
       fight,
       busy,
       playing,
+      phone,
       acting,
       moving,
       reaches,
@@ -488,6 +501,15 @@ export function TacticsPage() {
       pinnedHex,
     ]
   );
+
+  // A hex looked at that a turn left with nothing on it (its unit moved
+  // away, fell or was pushed off) stops being looked at.
+  useEffect(() => {
+    if (fight && pinnedHex && plainSand(fight, mapOf(fight), pinnedHex)) {
+      setPinnedHex(null);
+      setSelectedId(null);
+    }
+  }, [fight, pinnedHex]);
 
   /** The phone's tooltip stops above the pinned action bar. */
   const tooltipFloor = useCallback(() => actionsRef.current?.getBoundingClientRect().top, []);
@@ -646,7 +668,12 @@ export function TacticsPage() {
   const onReady = useCallback((events: EventBus) => {
     eventsRef.current = events;
     events.on<TacticsTapPayload>('tactics:tap', ({hex}) => onHexRef.current(hex));
-    events.on<TacticsCardPayload>('tactics:card', ({unitId}) => setSelectedId(unitId));
+    // A track card's unit, in place of any hex looked at before (which
+    // would otherwise win, and may since have emptied).
+    events.on<TacticsCardPayload>('tactics:card', ({unitId}) => {
+      setPinnedHex(null);
+      setSelectedId(unitId);
+    });
     events.on<TacticsHoverPayload>('tactics:hover', setHover);
     events.on('tactics:playback-done', () => setPlaying(false));
     setWorldReady((n) => n + 1);
@@ -659,6 +686,12 @@ export function TacticsPage() {
       run,
       busy: busy || playing,
       hexToCanvas: (h: Hex) => hexToPixel(h, BOARD_LAYOUT),
+      /** The middle of the strip of a unit's track card that shows, in scene pixels. */
+      cardCenter: (unitId: string) => {
+        const c =
+          fight && trackCards(fight, preview?.slot ?? null).find((t) => t.unitId === unitId);
+        return c ? {x: c.x + c.w / 2, y: c.y + c.h / 2} : null;
+      },
       /** What a looked-at hex takes up (its unit's health bar and statuses included), in scene pixels. */
       overlaySpan: (h: Hex) => (fight ? hexOverlaySpan(fight, h) : null),
       /** The chosen ability's targets and the acting unit's moves, since starts are random. */
@@ -670,7 +703,7 @@ export function TacticsPage() {
         return true;
       },
     };
-  }, [run, busy, playing, fight, acting, commit, targets, reaches]);
+  }, [run, busy, playing, fight, acting, commit, targets, reaches, preview]);
 
   // ── Layout ─────────────────────────────────────────────────────────────────
 
@@ -755,19 +788,25 @@ export function TacticsPage() {
   // (or the unit whose track card was tapped); none while a turn plays back.
   const tooltipHex =
     pinnedHex ?? (selectedId ? fight.units.find((u) => u.id === selectedId)?.hex : null) ?? null;
-  const tooltip = phone && tooltipHex && boardSize && !playing && !finished && (
-    <HexTooltip
-      key={hexKey(tooltipHex)}
-      fight={fight}
-      hex={tooltipHex}
-      boardSize={boardSize}
-      floor={tooltipFloor}
-      onDismiss={() => {
-        setPinnedHex(null);
-        setSelectedId(null);
-      }}
-    />
-  );
+  // Never for a hex with nothing on it: an empty box.
+  const tooltip = phone &&
+    tooltipHex &&
+    !plainSand(fight, mapOf(fight), tooltipHex) &&
+    boardSize &&
+    !playing &&
+    !finished && (
+      <HexTooltip
+        key={hexKey(tooltipHex)}
+        fight={fight}
+        hex={tooltipHex}
+        boardSize={boardSize}
+        floor={tooltipFloor}
+        onDismiss={() => {
+          setPinnedHex(null);
+          setSelectedId(null);
+        }}
+      />
+    );
   const details = inspectHex ? (
     <HexInspector fight={fight} hex={inspectHex} />
   ) : (
