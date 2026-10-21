@@ -423,6 +423,13 @@ confirm or change:
   hex border of that colour, instead of a coloured ring round its circle;
   the border is yellow on the unit whose turn it is and white on the one
   selected. The tint sits under move and target highlights.
+- **The unit you're controlling** (2026-10-21): it wasn't always obvious
+  which unit was taking the turn, since its border had become light lapis
+  over your own deep lapis rug. The border is gold again, a step thicker,
+  and a gold pixel arrow bobs over the unit (above its health bar and
+  statuses, or up from below them on the top row, where the track would
+  cover it; still with reduced motion). The arrow shows only on your
+  units, and not while a turn plays back.
 - **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
   Inspect mode (for touch), shows its tile's rule, any hail, and the unit
   there: stats, every ability with its cost, where it could move this

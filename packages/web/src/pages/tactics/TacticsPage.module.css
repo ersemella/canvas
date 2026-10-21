@@ -156,11 +156,15 @@
 
 /* Phones: the turn's choices as big buttons, in a grid (columns set inline). */
 .abilityGrid {
+  --tile-height: 56px;
+  --tile-gap: 8px;
   display: grid;
-  gap: 8px;
+  gap: var(--tile-gap);
+  /* Room kept for rows a unit doesn't fill (see `rows`) goes above its buttons. */
+  align-content: end;
 }
 .abilityGrid > button {
-  height: 56px;
+  height: var(--tile-height);
   padding: 0 6px;
 }
 .abilityGrid > button :global(.mantine-Button-label) {
