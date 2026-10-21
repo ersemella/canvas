@@ -130,7 +130,7 @@ export function AbilityName(props: {
   return (
     <button
       type="button"
-      className={`${styles.abilityChip} ${props.ultimate ? styles.abilityChipUltimate : ''}`}
+      className={`${styles.abilityLink} ${props.ultimate ? styles.abilityLinkUltimate : ''}`}
       data-ability={props.id}
       aria-pressed={pressed}
       onClick={() => glossary.showAbility(props.id)}

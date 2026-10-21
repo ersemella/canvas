@@ -237,41 +237,38 @@
   color: var(--c-gold);
 }
 
-/* The dense sheet's abilities: names to scan, each tappable to explain it. */
+/*
+ * The sheet's abilities: names to scan, each tappable to explain it. Read
+ * as text, as the keywords do (a dotted underline), not as tiles: only the
+ * action section's tiles choose what to do.
+ */
 .abilityList {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  align-items: baseline;
+  gap: 2px 12px;
   margin-top: 8px;
+  font-size: 16px;
 }
-.abilityChip {
+.abilityListLabel {
+  color: var(--c-dusk4);
+}
+.abilityLink {
   all: unset;
   cursor: pointer;
-  padding: 3px 9px;
-  font-size: 16px;
-  font-weight: 700;
   color: var(--c-ivory);
-  border: var(--px) solid var(--c-ink);
-  background: var(--c-dusk2);
-  box-shadow:
-    inset var(--px) var(--px) 0 var(--c-dusk3),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk1);
-  clip-path: var(--notch);
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
 }
-.abilityChipUltimate {
+.abilityLinkUltimate {
   color: var(--c-plumLight);
-  background: var(--c-plumDark);
-  box-shadow:
-    inset var(--px) var(--px) 0 var(--c-plum),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk1);
 }
-.abilityChip[aria-pressed='true'] {
-  border-color: var(--c-lapisLight);
+.abilityLink[aria-pressed='true'] {
+  background: var(--c-dusk3);
 }
-.abilityChipNote {
-  margin-left: 6px;
+.abilityLinkNote {
+  margin-left: 4px;
   font-size: 13px;
-  font-weight: 500;
   opacity: 0.75;
 }
 .abilitySummary {
@@ -344,7 +341,10 @@
   clip-path: var(--notch);
 }
 
-/* Move and the abilities: raised dusk tiles; the picked one lapis, outlined in light lapis. */
+/*
+ * Move and the abilities: raised dusk tiles; the picked one outlined and
+ * lettered in light lapis (Confirm alone is solid lapis).
+ */
 .tile.tile {
   color: var(--c-ivory);
   border: var(--px) solid var(--c-ink);
@@ -359,11 +359,10 @@
   background: var(--c-dusk3);
 }
 .tile.tile[aria-pressed='true'] {
+  color: var(--c-lapisLight);
   border-color: var(--c-lapisLight);
-  background: var(--c-lapis);
-  box-shadow:
-    inset var(--px) var(--px) 0 var(--c-lapisLight),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
+  background: var(--c-dusk2);
+  box-shadow: inset 0 0 0 var(--px) var(--c-lapisLight);
 }
 .tile.tileUltimate {
   color: var(--c-plumLight);
@@ -389,19 +388,21 @@
   font-weight: 500;
 }
 
-/* Confirm: the same tile in light lapis, your side's action colour; while it waits for a target, a flat dusk tile asking for one. */
+/* Confirm: the same tile in your units' lapis (their hexes and cards); while it waits for a target, a flat dusk tile asking for one. */
 .seal.seal {
-  color: var(--c-ink);
+  color: var(--c-ivory);
   border: var(--px) solid var(--c-ink);
   border-radius: 0;
-  background: var(--c-lapisLight);
+  background: var(--c-lapis);
   box-shadow:
-    inset var(--px) var(--px) 0 var(--c-lapisPale),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapis);
+    inset var(--px) var(--px) 0 var(--c-lapisLight),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
   clip-path: var(--notch);
 }
 .seal.seal:hover:not(:disabled) {
-  background: var(--c-lapisPale);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-lapisPale),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
 }
 .seal.seal:disabled {
   color: var(--c-lapisLight);

@@ -321,6 +321,7 @@ export function StatSheet({
       )}
       {/* Names only, to scan; a tap explains one below. */}
       <div className={styles.abilityList}>
+        <span className={styles.abilityListLabel}>Abilities</span>
         {abilities.map((def) => (
           <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
             {def.name}
@@ -329,7 +330,7 @@ export function StatSheet({
         <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
           {ult.name}
           {ultimateState(unit) !== 'Used' && (
-            <span className={styles.abilityChipNote}>
+            <span className={styles.abilityLinkNote}>
               {ultimateState(unit) === 'Ready'
                 ? 'Ready'
                 : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
