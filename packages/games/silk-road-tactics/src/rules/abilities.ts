@@ -457,6 +457,26 @@ const rampage: AbilityDef = {
   },
 };
 
+// ─── Wolf ────────────────────────────────────────────────────────────────────
+
+const bite: AbilityDef = {
+  id: 'bite',
+  name: 'Bite',
+  kind: 'attack',
+  summary: (user) => `Melee: ${scaled(ABILITY.bite.damage, user.power)} damage.`,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.bite.cost,
+  movesSelf: false,
+  targetsUnit: true,
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} bites ${unitName(u)}.`);
+    hit(ctx, user, u, ABILITY.bite.damage, 'The bite');
+  },
+};
+
 function unitOrder(u: Unit): number {
   return (u.side === 'player' ? 0 : 10) + u.partyIndex;
 }
@@ -472,6 +492,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   throw: throwAbility,
   pin,
   rampage,
+  bite,
 };
 
 export function abilitiesOf(unit: Unit): AbilityDef[] {

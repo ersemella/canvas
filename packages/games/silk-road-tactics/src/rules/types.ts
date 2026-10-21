@@ -7,8 +7,11 @@ import type {Hex} from '@canvas/engine/server';
 import type {Tile} from './map';
 
 export type Side = 'player' | 'enemy';
-/** The three prototype heroes, and the caravan's camel (camel.md), a unit that isn't a hero. */
-export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel';
+/**
+ * The three prototype heroes, the caravan's camel (camel.md), a unit that
+ * isn't a hero, and the wolf, an enemy NPC.
+ */
+export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
 export type AbilityId =
   | 'hold'
   | 'bow'
@@ -19,7 +22,8 @@ export type AbilityId =
   | 'freeze'
   | 'throw'
   | 'pin'
-  | 'rampage';
+  | 'rampage'
+  | 'bite';
 
 export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable' | 'crushed' | 'taunted';
 

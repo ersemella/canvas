@@ -318,6 +318,8 @@ export function StatSheet({
   const ult = ultimate && ABILITIES[ultimate];
   // Hold isn't offered as an action (End turn is), and the ultimate gets its own section.
   const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold' && !def.ultimate);
+  // The camel has none; the wolf has abilities but no ultimate.
+  const acts = abilities.length > 0 || Boolean(ult);
   const stats = [
     ['speed', 'Speed', unit.speed],
     ['power', 'Power', unit.power],
@@ -404,13 +406,13 @@ export function StatSheet({
           </Text>
         )}
         {/* The camel has no abilities: its rule instead. */}
-        {!ult && (
+        {!acts && (
           <Text fz="xs" c="dimmed" mt={4}>
             {CAMEL_RULE}
           </Text>
         )}
         {/* Names only, to scan; a tap explains one below, or beside them on desktop. */}
-        {ult && (
+        {acts && (
           <div className={styles.abilityRow}>
             <div className={styles.abilityList} data-dense={dense || undefined}>
               {/* The phone's tooltip leaves the label out, to stay narrow. */}
@@ -425,23 +427,25 @@ export function StatSheet({
                   {def.name}
                 </AbilityName>
               ))}
-              <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
-                {abilityIcon(ult)}
-                {ult.name}
-                {ultimateState(unit) !== 'Used' && (
-                  <span className={styles.abilityLinkNote}>
-                    {ultimateState(unit) === 'Ready'
-                      ? 'Ready'
-                      : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
-                  </span>
-                )}
-              </AbilityName>
+              {ult && (
+                <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
+                  {abilityIcon(ult)}
+                  {ult.name}
+                  {ultimateState(unit) !== 'Used' && (
+                    <span className={styles.abilityLinkNote}>
+                      {ultimateState(unit) === 'Ready'
+                        ? 'Ready'
+                        : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
+                    </span>
+                  )}
+                </AbilityName>
+              )}
             </div>
             {!dense && <GlossaryBox className={styles.glossaryBeside!} />}
           </div>
         )}
         {/* The camel has no abilities' column to sit beside. */}
-        {!dense && !ult && <GlossaryBox />}
+        {!dense && !acts && <GlossaryBox />}
       </Glossary>
     </Paper>
   );

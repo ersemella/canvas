@@ -1005,9 +1005,11 @@ try {
   }
   await shot(phone, 'phone-tooltip');
   // Always complete: every ability, the ultimate's keyword, nothing to expand.
+  // TEMPORARY: at least 1 while the enemy is wolves (ENEMY_PARTY, config.ts),
+  // which have only Bite; back to 3 when the heroes return.
   check(
     'phone: the tooltip lists the abilities by name, nothing to expand',
-    (await tooltip.locator('[data-ability]').count()) >= 3 &&
+    (await tooltip.locator('[data-ability]').count()) >= 1 &&
       !(await tooltip.getByText(/^Tap for/).count()) &&
       !(await tooltip.getByText('Health', {exact: true}).locator('[data-keyword]').count())
   );

@@ -10,7 +10,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, HEROES, RULES} from './config';
+import {ABILITY, AI, ENEMY_PARTY, HEROES, RULES} from './config';
 import {
   isFlanked,
   lineOfFire,
@@ -999,7 +999,25 @@ describe('previews, the AI and the run', () => {
     ).toThrow(RuleError);
   });
 
-  it('the start menu’s party comes to the fight, with the camel; the enemy brings all three', () => {
+  it('Bite hits one adjacent unit; several wolves get their own ids', () => {
+    const s = createFight(0, ['bokh'], ['wolf', 'wolf']);
+    expect(s.units.filter((u) => u.side === 'enemy').map((u) => u.id)).toEqual([
+      'e-wolf',
+      'e-wolf-2',
+    ]);
+    for (const u of s.units) if (u.hero === 'camel') u.alive = false;
+    const b = unit(s, 'p-bokh');
+    const w = unit(s, 'e-wolf');
+    b.hex = at(1, 3);
+    w.hex = at(2, 3);
+    unit(s, 'e-wolf-2').hex = at(8, 0);
+    expect(HEROES.wolf.ultimate).toBeUndefined();
+    expect(ABILITIES.bite.targets(s, mapOf(s), w, w.hex)).toEqual([{hex: at(1, 3)}]);
+    ABILITIES.bite.resolve({state: s, map: mapOf(s), slot: 0}, w, {hex: at(1, 3)});
+    expect(b.hp).toBe(b.maxHp - defended(b, scaled(ABILITY.bite.damage, w.power)));
+  });
+
+  it('the start menu’s party comes to the fight, with the camel; the enemy brings its party', () => {
     const run = createRun(5, {party: ['storm', 'bokh']});
     const player = run.fight.units.filter((u) => u.side === 'player');
     expect(player.map((u) => [u.hero, u.partyIndex])).toEqual([
@@ -1008,11 +1026,9 @@ describe('previews, the AI and the run', () => {
       ['camel', 2],
     ]);
     expect(player.every((u) => u.hex)).toBe(true);
-    expect(run.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual([
-      'bokh',
-      'mangudai',
-      'storm',
-    ]);
+    expect(run.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
+      ENEMY_PARTY
+    );
     // No party given: everyone comes.
     expect(createRun(5).fight.units.filter((u) => u.side === 'player')).toHaveLength(4);
   });

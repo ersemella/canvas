@@ -121,6 +121,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       kit.includes(a) && !unusableReason(e, ABILITIES[a]);
     const melee = Math.max(
       usable('throw') ? scaled(ABILITY.throw.damage, e.power) : 0,
+      usable('bite') ? scaled(ABILITY.bite.damage, e.power) : 0,
       usable('pin') ? scaled(ABILITY.pin.damagePerSlot, e.power) * ABILITY.pin.slots : 0
     );
     // Pin reaches a hex further, after its optional step (2026-10-21).
