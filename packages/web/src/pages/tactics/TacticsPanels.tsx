@@ -335,7 +335,7 @@ export function StatSheet({
     </Text>
   );
   const health = (
-    <Text fz={dense ? 'xs' : 'sm'}>
+    <Text fz="xs">
       Health{' '}
       <b>
         {unit.hp} / {unit.maxHp}
@@ -361,13 +361,18 @@ export function StatSheet({
             </div>
           </>
         ) : (
-          // Desktop: the unit's portrait, its name, health and stats beside it.
-          <div className={styles.sheetHead}>
-            <SheetPortrait unit={unit} />
-            <div>
-              {name}
-              {health}
+          // Desktop: the unit's name, then its portrait with health and stats beside it.
+          <>
+            {name}
+            <div className={styles.sheetHead}>
+              <SheetPortrait unit={unit} />
               <div className={styles.coreStats}>
+                <div>
+                  <span>Health</span>
+                  <b>
+                    {unit.hp} / {unit.maxHp}
+                  </b>
+                </div>
                 {stats.map(([id, label, value]) => (
                   <div key={id}>
                     <Term id={id}>{label}</Term>
@@ -376,7 +381,7 @@ export function StatSheet({
                 ))}
               </div>
             </div>
-          </div>
+          </>
         )}
         {statuses.length > 0 && (
           <div className={styles.statuses}>
