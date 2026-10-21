@@ -261,19 +261,32 @@ try {
   let run = await state();
   const outrider = 'p-mangudai';
 
-  // The camel always acts first: walk it a hex with real taps (Move, a hex,
-  // Move again, now its Confirm); its Move shows its own cost, 14 slots.
+  // The camel always acts first: walk it a hex with a real click (on
+  // desktop no Move first) and Enter; its Move shows its own cost, 14 slots.
   check('the camel acts first', run.view.fight.awaiting === 'p-camel', run.view.fight.awaiting);
   {
     const camelMove = page.locator('[data-choice="move"]');
     check('the camel’s Move shows its 14 slots', (await camelMove.textContent()).endsWith('+14'));
-    await camelMove.click();
     const step = (await page.evaluate(() => window.__tactics.reaches.map((r) => r.hex))).find(
       (h) => !sameHex(h, run.view.fight.units.find((u) => u.id === 'p-camel').hex)
     );
     await tapHex(step);
+    check(
+      'desktop: a click on a reachable hex plans the move, with no Move first',
+      /^Confirm/.test(await camelMove.textContent()),
+      await camelMove.textContent()
+    );
+    check(
+      'desktop: the planned turn’s Confirm shows on the board too',
+      /^Confirm \+\d+/.test(await page.getByTestId('board-confirm').textContent())
+    );
+    check(
+      'desktop: the choices show their keys',
+      (await camelMove.getAttribute('data-key')) === '1' &&
+        (await page.getByTestId('skip-turn').getAttribute('data-key')) === 'S'
+    );
     const v = run.view.version;
-    await camelMove.click();
+    await page.keyboard.press('Enter');
     await page.waitForFunction((v) => window.__tactics.run.view.version > v, v, {
       timeout: 15_000,
     });
@@ -311,12 +324,19 @@ try {
         leapTargets.some((t) => sameHex(t, a)) - leapTargets.some((t) => sameHex(t, b)) ||
         hexDistance(a, acting.hex) - hexDistance(b, acting.hex)
     )[0];
-  // Without Move, a tap only looks at the hex.
+  // On desktop a click plans a move without Move; Esc puts it down.
   await tapHex(dest);
   const moveButton = page.locator('[data-choice="move"]');
   check(
-    'a tap without Move plans nothing',
-    (await moveButton.getAttribute('aria-pressed')) === 'false'
+    'desktop: a click on a reachable hex plans a move',
+    (await moveButton.getAttribute('aria-pressed')) === 'true' &&
+      (await state()).view.version === before
+  );
+  await page.keyboard.press('Escape');
+  check(
+    'desktop: Esc puts the move down',
+    (await moveButton.getAttribute('aria-pressed')) === 'false' &&
+      !(await page.getByTestId('board-confirm').count())
   );
   check('there is no Hold button', !(await page.getByRole('button', {name: /^Hold/}).count()));
   // Select Leap and its target, then replace it with Move and a hex. Picked,
@@ -335,25 +355,42 @@ try {
     /^LeapPick a target$/.test(await leapButton.textContent()),
     await leapButton.textContent()
   );
-  // Aimed, its button confirms it; a second tap on the target un-picks it.
+  // Aimed, its button confirms it; a right-click un-picks the target.
   await tapHex(leapTo);
   check(
     'once its target is picked, the ability’s button confirms it',
     /^Confirm\+\d+( → \+\d+)?$/.test(await leapButton.textContent()),
     await leapButton.textContent()
   );
-  await tapHex(leapTo);
+  {
+    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), leapTo);
+    const box = await page.locator('canvas').boundingBox();
+    await page.mouse.click(box.x + (x * box.width) / 672, box.y + (y * box.height) / SCENE_H, {
+      button: 'right',
+    });
+    await sleep(150);
+  }
   check(
-    'a second tap on the target un-picks it, without committing',
+    'desktop: a right-click un-picks the target, without committing',
     (await state()).view.version === before &&
       /^LeapPick a target$/.test(await leapButton.textContent()) &&
       (await leapButton.getAttribute('aria-pressed')) === 'true',
     await leapButton.textContent()
   );
-  // Before a target, tapping the ability again puts it down.
+  // Before a target, tapping the ability again puts it down; so does its key.
   await leapButton.click();
   check(
     'tapping an ability with no target again puts it down',
+    (await leapButton.getAttribute('aria-pressed')) === 'false'
+  );
+  await page.keyboard.press(await leapButton.getAttribute('data-key'));
+  check(
+    'desktop: an ability’s key picks it',
+    (await leapButton.getAttribute('aria-pressed')) === 'true'
+  );
+  await page.keyboard.press('Escape');
+  check(
+    'desktop: Esc puts an ability with no target down',
     (await leapButton.getAttribute('aria-pressed')) === 'false'
   );
   await leapButton.click();
@@ -375,10 +412,10 @@ try {
     /^Confirm\+\d+( → \+\d+)?$/.test(await moveButton.textContent()),
     await moveButton.textContent()
   );
-  // A second tap on the hex un-picks it; then tapping Move puts it down.
-  await tapHex(dest);
+  // Esc un-picks the hex; then tapping Move puts it down.
+  await page.keyboard.press('Escape');
   check(
-    'a second tap on the destination un-picks it, without committing',
+    'desktop: Esc un-picks the destination, without committing',
     (await state()).view.version === before &&
       /^MovePick where to move$/.test(await moveButton.textContent()),
     await moveButton.textContent()
@@ -446,12 +483,21 @@ try {
     await skip.textContent()
   );
   check(
-    'only the picked button confirms: there’s no other Confirm',
-    (await page.getByRole('button', {name: /^Confirm/}).count()) === 1
+    'only the picked button confirms, and the board’s Confirm',
+    (await page
+      .getByTestId('turn-controls')
+      .getByRole('button', {name: /^Confirm/})
+      .count()) === 1 && (await page.getByRole('button', {name: /^Confirm/}).count()) === 2
   );
+  check(
+    'desktop: S arms Skip turn',
+    (await page.keyboard.press('s'), await skip.textContent()) === 'Tap again to skip'
+  );
+  await tapHex(acting.hex); // disarm it again
   await sleep(200);
   await shot(page, 'preview');
-  await moveButton.click();
+  // A second click on the destination commits the move.
+  await tapHex(dest);
   await page.waitForFunction((v) => window.__tactics.run.view.version > v, before, {
     timeout: 15_000,
   });

@@ -110,6 +110,52 @@
   .board {
     width: min(calc(100vw - 32px - 342px), calc((100dvh - 24px) * 672 / 760));
   }
+  /*
+   * The panel as tall as the board: the turn's buttons level with the
+   * track, the details under them, and the picked ability's explanation and
+   * the keys at the foot, by the board's bottom row.
+   */
+  .layout {
+    align-items: stretch;
+  }
+  .panel {
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/* Desktop: the foot of the panel. */
+.panelFoot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.keysHint.keysHint {
+  font-size: 15px;
+  color: var(--c-dusk4);
+}
+
+/* Desktop: a choice's key, small in its top left corner (not part of its name). */
+.page button[data-key] {
+  position: relative;
+}
+.page button[data-key]::after {
+  content: attr(data-key);
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+/* Desktop: Confirm on the board, under the hex picked last. */
+.boardConfirm.boardConfirm {
+  position: absolute;
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 0 12px;
 }
 
 @media (max-width: 960px) {

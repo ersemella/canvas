@@ -481,6 +481,21 @@ confirm or change:
   doesn't throw a turn away (owner, 2026-10-21); it disarms after 3
   seconds, on a tap anywhere else (owner, the same day; the tap still
   does what it does), or when the turn changes.
+- **Desktop controls** (owner, 2026-10-21): picking an ability, clicking
+  the board, then going back to the panel to confirm was cumbersome. As in
+  XCOM, Into the Breach and Divinity: Original Sin 2, the turn stays on the
+  board: with no ability picked, a click on a reachable hex plans a move
+  (no Move first; hovering one shows its path and its slots in Move's
+  button); a second click on the hex picked last (destination, target,
+  Throw's landing or Pin's step) commits the turn, since hovering already
+  does the looking on desktop; a Confirm under that hex does too. Esc or a
+  right-click steps back one pick at a time. Keys: 1–9 press the turn's
+  buttons in order (Move first, each showing its number), Enter or Space
+  confirms, S presses Skip turn (twice, as with taps). Phones keep the
+  board for looking and aiming only, as above. The side panel is as tall
+  as the board, which fills the screen: the buttons level with the track,
+  the details under them, and the picked ability's explanation and a
+  one-line key hint at its foot.
 - **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
   Inspect mode (for touch), shows its tile's rule, any hail, and the unit
   there: stats, every ability with its cost, where it could move this

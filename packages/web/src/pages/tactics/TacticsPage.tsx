@@ -117,7 +117,9 @@ function outcomeText(fight: FightState): string {
  * hovering a hex shows what's there; Move, then a hex, plans the move;
  * an ability, then a target, previews that ability instead. Move and abilities
  * are separate actions; once its hex or target is picked, the picked button
- * confirms it. Skip turn ends the turn with Hold.
+ * confirms it. Skip turn ends the turn with Hold. On desktop a click on a
+ * reachable hex plans a move without Move, a second click on the hex picked
+ * last commits, and keys and a right-click do the rest (phase-1-brief.md).
  */
 export function TacticsPage() {
   const [run, setRun] = useState<RunResponse | null>(null);
@@ -153,7 +155,7 @@ export function TacticsPage() {
   /** Phones: the space the board may fill, and the board's width to fill it. */
   const boardSlotRef = useRef<HTMLDivElement | null>(null);
   const [fitWidth, setFitWidth] = useState<number | null>(null);
-  /** The canvas's size on screen, to place the phone's tooltip over it. */
+  /** The canvas's size on screen, to place the phone's tooltip and desktop's Confirm over it. */
   const [boardSize, setBoardSize] = useState<{width: number; height: number} | null>(null);
 
   // A tap anywhere but the board or (on desktop) the side panel stops
@@ -187,11 +189,12 @@ export function TacticsPage() {
   const fightRef = useRef(fight);
   fightRef.current = fight;
 
-  // Phones: follow the canvas's size on screen (it scales with the width).
+  // Follow the canvas's size on screen, to place the phone's tooltip and
+  // desktop's Confirm over it.
   const hasBoard = fight !== null;
   useEffect(() => {
     const canvas = boardRef.current?.querySelector('canvas');
-    if (!phone || !canvas) return;
+    if (!canvas) return;
     const observer = new ResizeObserver(() =>
       setBoardSize({width: canvas.offsetWidth, height: canvas.offsetHeight})
     );
@@ -271,6 +274,18 @@ export function TacticsPage() {
     [fight, acting]
   );
 
+  /**
+   * Desktop: with no ability picked, a click on a reachable hex plans a move
+   * without Move first, as in XCOM (hovering already looks at hexes there).
+   * Phones keep Move: a tap on the board looks at the hex.
+   */
+  const moveMode = moving || (!phone && !ability && reaches.some((r) => r.path.length > 0));
+  /** Desktop: the reachable hex under the mouse, before one is picked: its path and cost show. */
+  const hoverReach =
+    !phone && moveMode && !plannedMove && hover.hex
+      ? reaches.find((r) => r.path.length > 0 && hexEquals(r.hex, hover.hex!))
+      : undefined;
+
   // Ability targets always come from the unit's current position.
   const abilityContext = useMemo(
     () => (fight && acting ? {state: fight, unit: acting} : null),
@@ -344,10 +359,10 @@ export function TacticsPage() {
 
   const commit = useCallback(
     (turn: TurnInput | null = input) => {
-      if (!run || !turn) return;
+      if (!run || !turn || busy || playing) return;
       void send(() => runsApi.turn(run.runId, turn));
     },
-    [run, input, send]
+    [run, input, send, busy, playing]
   );
 
   const clearMove = useCallback(() => {
@@ -442,13 +457,14 @@ export function TacticsPage() {
         HEROES[acting.hero].moveCost ?? turnCost(RULES.moveActionCost, hexes),
         acting.speed
       );
-    if (plannedMove && plannedMove.path.length > 0) return `${slots(plannedMove.path.length)}`;
+    const shown = plannedMove ?? hoverReach;
+    if (shown && shown.path.length > 0) return `${slots(shown.path.length)}`;
     const lengths = reaches.map((r) => r.path.length).filter((n) => n > 0);
     if (lengths.length === 0) return null;
     const low = slots(Math.min(...lengths));
     const high = slots(Math.max(...lengths));
     return low === high ? `${low}` : `${low}–${high}`;
-  }, [acting, plannedMove, reaches]);
+  }, [acting, plannedMove, hoverReach, reaches]);
 
   // ── Taps on the board ──────────────────────────────────────────────────────
 
@@ -467,7 +483,15 @@ export function TacticsPage() {
         setPinnedHex(null);
         setSelectedId(null);
       };
-      if (acting && moving) {
+      // Desktop: a second click on the hex just picked (the destination, the
+      // target, or Throw's landing or Pin's step) commits the turn. Phones
+      // un-pick it instead: there the board is only for looking and aiming.
+      const lastPicked = plannedMove?.hex ?? target?.to ?? target?.hex ?? null;
+      if (!phone && input && preview && lastPicked && hexEquals(lastPicked, h)) {
+        commit();
+        return;
+      }
+      if (acting && moveMode) {
         const reach = reaches.find((r) => r.path.length > 0 && hexEquals(r.hex, h));
         if (reach) {
           // Tapping the chosen hex again un-picks it (Move's button confirms).
@@ -532,7 +556,7 @@ export function TacticsPage() {
       playing,
       phone,
       acting,
-      moving,
+      moveMode,
       reaches,
       plannedMove,
       ability,
@@ -542,8 +566,75 @@ export function TacticsPage() {
       pinFromHere,
       pinSteps,
       pinnedHex,
+      input,
+      preview,
+      commit,
     ]
   );
+
+  /**
+   * Desktop: Esc or a right-click steps back once: the step or landing
+   * picked last, then the target or destination, then the ability or Move,
+   * then whatever is being looked at.
+   */
+  const stepBack = useCallback(() => {
+    if (target?.to) setTarget({hex: target.hex!});
+    else if (target?.hex) setTarget(null);
+    else if (ability) chooseAbility(null);
+    else if (plannedMove) setPlannedMove(null);
+    else if (moving) setMoving(false);
+    else {
+      setPinnedHex(null);
+      setSelectedId(null);
+    }
+  }, [target, ability, plannedMove, moving, chooseAbility]);
+
+  // Desktop keys: 1–9 press the turn's buttons in order (Move first), Enter
+  // or Space confirms what's picked, Esc steps back (Skip turn has S).
+  useEffect(() => {
+    if (phone) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      if (el?.closest('input, textarea, [contenteditable="true"]')) return;
+      if (e.key === 'Escape') return stepBack();
+      if (e.key === 'Enter' || e.key === ' ') {
+        // A focused button or menu item answers these keys itself.
+        if (el?.closest('button, a, [role="menuitem"]')) return;
+        e.preventDefault();
+        if (input && preview) commit();
+        return;
+      }
+      const n = Number(e.key);
+      if (Number.isInteger(n) && n >= 1) {
+        const buttons = actionsRef.current?.querySelectorAll<HTMLButtonElement>('[data-choice]');
+        buttons?.[n - 1]?.click();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [phone, stepBack, input, preview, commit]);
+
+  // Desktop: the right button steps back, and never reaches the board as a click.
+  useEffect(() => {
+    const board = boardRef.current;
+    if (phone || !board) return;
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) e.stopPropagation();
+    };
+    const onMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      stepBack();
+    };
+    board.addEventListener('pointerdown', onDown, true);
+    board.addEventListener('pointerup', onDown, true);
+    board.addEventListener('contextmenu', onMenu);
+    return () => {
+      board.removeEventListener('pointerdown', onDown, true);
+      board.removeEventListener('pointerup', onDown, true);
+      board.removeEventListener('contextmenu', onMenu);
+    };
+  }, [phone, stepBack, hasBoard]);
 
   // A hex looked at that a turn left with nothing on it (its unit moved
   // away, fell or was pushed off) stops being looked at.
@@ -607,12 +698,21 @@ export function TacticsPage() {
         if (heals ? c.hpAfter > c.hpBefore : c.hpAfter < c.hpBefore) ids.add(c.unitId);
       out.healthUnitIds = [...ids];
     }
-    if (moving) {
+    if (moveMode && !moving && !plannedMove) {
+      // Desktop, nothing picked: only the hex under the mouse, if it can be
+      // reached, and the way there, so the board stays clear.
+      if (hoverReach && acting.hex) {
+        for (const h of hoverReach.path.slice(0, -1)) highlights.push({hex: h, kind: 'path'});
+        highlights.push({hex: hoverReach.hex, kind: 'target'});
+        out.path = [acting.hex, ...hoverReach.path];
+      }
+    } else if (moveMode) {
       // Like an ability's targets: every reachable hex stays open to pick,
       // the planned one chosen and the steps on the way to it marked.
       const onPath = (h: Hex) => plannedMove?.path.some((p) => hexEquals(p, h));
-      for (const r of reaches)
-        if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'target'});
+      if (moving)
+        for (const r of reaches)
+          if (r.path.length > 0 && !onPath(r.hex)) highlights.push({hex: r.hex, kind: 'target'});
       if (plannedMove) {
         for (const h of plannedMove.path.slice(0, -1)) highlights.push({hex: h, kind: 'path'});
         highlights.push({hex: plannedMove.hex, kind: 'chosen'});
@@ -691,6 +791,8 @@ export function TacticsPage() {
     acting,
     plannedMove,
     moving,
+    moveMode,
+    hoverReach,
     ability,
     action,
     reaches,
@@ -833,7 +935,13 @@ export function TacticsPage() {
         moving={moving}
         canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
         waiting={busy || playing}
-        rows={Math.max(...fight.units.filter((u) => u.side === 'player').map(choiceRows))}
+        // Phones keep room for the party's most rows, so the board stays put.
+        rows={
+          phone
+            ? Math.max(...fight.units.filter((u) => u.side === 'player').map(choiceRows))
+            : choiceRows(acting)
+        }
+        keys={!phone}
         needsTarget={needsTarget}
         confirm={input ? (nextTurn(fight, preview) ?? {text: '', blocked: true}) : null}
         onMove={toggleMove}
@@ -850,6 +958,7 @@ export function TacticsPage() {
           preview={skipPreview}
           busy={busy || playing}
           onSkip={() => commit(SKIP)}
+          hotkey={phone ? undefined : 's'}
         />
       </TurnControls>
     )
@@ -882,7 +991,18 @@ export function TacticsPage() {
   ) : (
     selected && <StatSheet fight={fight} unit={selected} />
   );
-  // Desktop: the chosen ability explained, under the details.
+  // Desktop: the picked turn's Confirm beside the hex picked last, so the
+  // turn is confirmed where the eyes are (a second click on the hex does too).
+  const lastPicked = plannedMove?.hex ?? target?.to ?? target?.hex ?? null;
+  const boardConfirm = !phone && input && lastPicked && boardSize && !busy && !playing && (
+    <BoardConfirm
+      hex={lastPicked}
+      boardSize={boardSize}
+      text={nextTurn(fight, preview)?.text ?? null}
+      onConfirm={() => commit()}
+    />
+  );
+  // Desktop: the chosen ability explained, at the foot of the panel.
   const chosen = acting && ability && (
     <Paper className={styles.plaque!} p="sm" data-testid="chosen-ability">
       <Glossary>
@@ -918,6 +1038,7 @@ export function TacticsPage() {
               />
             </GameErrorBoundary>
             {tooltip}
+            {boardConfirm}
             {finished && (
               <Paper className={`${styles.result} ${styles.plaque}`} p="lg">
                 <Stack align="center" gap="xs">
@@ -955,7 +1076,14 @@ export function TacticsPage() {
             <>
               <section ref={actionsRef}>{actions}</section>
               {details}
-              {chosen}
+              <div className={styles.panelFoot}>
+                {chosen}
+                {!finished && (
+                  <Text className={styles.keysHint!} data-testid="keys-hint">
+                    Click a hex to move or aim, and again to go. Esc or right-click steps back.
+                  </Text>
+                )}
+              </div>
             </>
           )}
         </div>
@@ -1033,6 +1161,8 @@ function TurnControls(props: {
   onPortrait?: (() => void) | undefined;
   /** The unit's details are showing (its portrait reads as pressed). */
   portraitOpen?: boolean;
+  /** Desktop: each choice shows its number key. */
+  keys?: boolean;
   children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving, confirm} = props;
@@ -1085,6 +1215,7 @@ function TurnControls(props: {
           className={`${styles.tile} ${plannedMove && confirm ? styles.tileConfirm : ''}`}
           disabled={!props.canMove || props.waiting || Boolean(plannedMove && confirm?.blocked)}
           data-choice="move"
+          data-key={props.keys ? 1 : undefined}
           aria-pressed={moving || plannedMove !== null}
           title={
             props.waiting
@@ -1109,7 +1240,7 @@ function TurnControls(props: {
                   <AbilityIcon id="move" />
                 )}
         </Button>
-        {defs.map((def) => {
+        {defs.map((def, i) => {
           const reason =
             unusableReason(unit, def) ??
             (ability !== def.id ? (props.outOfReach.get(def.id) ?? null) : null);
@@ -1124,6 +1255,7 @@ function TurnControls(props: {
               className={`${styles.tile} ${def.ultimate ? styles.tileUltimate : ''} ${ready ? styles.tileConfirm : ''}`}
               disabled={reason !== null || props.waiting || Boolean(ready && confirm?.blocked)}
               data-choice={def.id}
+              data-key={props.keys ? i + 2 : undefined}
               aria-pressed={picked}
               title={
                 props.waiting
@@ -1185,5 +1317,48 @@ function UnitPortrait(props: {unit: Unit; open: boolean; onTap: () => void}) {
     >
       {src ? <img src={src} alt="" /> : HEROES[props.unit.hero].letter}
     </button>
+  );
+}
+
+/** The chip's height, and its gap from the hex, in screen pixels. */
+const CHIP_HEIGHT = 34;
+const CHIP_GAP = 4;
+
+/**
+ * Desktop: Confirm on the board, under the hex picked last (over it on the
+ * bottom row), saying when the next turn comes; "Can't do that" when the
+ * rules refuse the turn.
+ */
+function BoardConfirm(props: {
+  hex: Hex;
+  boardSize: {width: number; height: number};
+  text: string | null;
+  onConfirm: () => void;
+}) {
+  const k = props.boardSize.width / SCENE_SIZE.width;
+  const p = hexToPixel(props.hex, BOARD_LAYOUT);
+  const below = (p.y + BOARD_LAYOUT.size) * k + CHIP_GAP;
+  const top =
+    below + CHIP_HEIGHT <= props.boardSize.height
+      ? below
+      : (p.y - BOARD_LAYOUT.size) * k - CHIP_GAP - CHIP_HEIGHT;
+  const left = Math.min(Math.max(p.x * k, 64), props.boardSize.width - 64);
+  return (
+    <Button
+      className={`${styles.seal} ${styles.boardConfirm}`}
+      data-testid="board-confirm"
+      fw="bold"
+      size="xs"
+      style={{left, top, height: CHIP_HEIGHT}}
+      disabled={props.text === null}
+      title="Or click the hex again, or press Enter"
+      onClick={(e) => {
+        // Not a click away from the board.
+        e.stopPropagation();
+        props.onConfirm();
+      }}
+    >
+      {props.text === null ? 'Can’t do that' : `Confirm ${props.text}`.trim()}
+    </Button>
   );
 }

@@ -87,9 +87,30 @@ export function SkipButton(props: {
   /** Phones: full height for a thumb. */
   size?: 'sm' | 'lg';
   onSkip: () => void;
+  /** Desktop: a key that presses it (twice to skip, as with taps), shown on it. */
+  hotkey?: string | undefined;
 }) {
   const [armed, setArmed] = useState(false);
   const ref = useRef<HTMLButtonElement>(null);
+  const press = () => {
+    if (!armed) return setArmed(true);
+    setArmed(false);
+    props.onSkip();
+  };
+  const pressRef = useRef(press);
+  pressRef.current = press;
+  const {hotkey} = props;
+  const usable = Boolean(props.preview) && !props.busy;
+  useEffect(() => {
+    if (!hotkey || !usable) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== hotkey) return;
+      if ((e.target as HTMLElement | null)?.closest('input, textarea')) return;
+      pressRef.current();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [hotkey, usable]);
   useEffect(() => {
     if (!armed) return;
     const t = setTimeout(() => setArmed(false), SKIP_ARMED_MS);
@@ -113,14 +134,11 @@ export function SkipButton(props: {
       size={props.size ?? 'sm'}
       loading={props.busy}
       disabled={!props.preview}
-      onClick={() => {
-        if (!armed) return setArmed(true);
-        setArmed(false);
-        props.onSkip();
-      }}
+      data-key={hotkey?.toUpperCase()}
+      onClick={press}
       title={
         armed
-          ? 'Tap again to end the turn without moving or using an ability'
+          ? `Tap again${hotkey ? ` (or press ${hotkey.toUpperCase()})` : ''} to end the turn without moving or using an ability`
           : (next?.title ?? 'End the turn without moving or using an ability')
       }
     >
