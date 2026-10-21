@@ -238,6 +238,9 @@ try {
     .then(() => true)
     .catch(() => false);
   await sleep(300);
+  // Desktop: the board as tall as the 900px screen allows (less the page's 24px).
+  const desktopBoard = await page.locator('canvas').boundingBox();
+  check('desktop: the board fills the screen’s height', desktopBoard.height >= 870, desktopBoard);
   await shot(page, 'fight');
   check(
     'the page goes straight to the fight, with no deployment step',
@@ -453,11 +456,14 @@ try {
     timeout: 15_000,
   });
   // While the turn plays back (the empty slots and the enemies' turns), the
-  // next unit's choices show but can't be picked (the ⋯ menu stays).
+  // next unit's choices show but can't be picked (the ⋯ menu and the
+  // portrait, which only looks at the unit, stay).
   const turnButtonsEnabled = () =>
     page.evaluate(() =>
       [...document.querySelectorAll('[data-testid="turn-controls"] button')]
-        .filter((b) => b.getAttribute('aria-label') !== 'Menu')
+        .filter(
+          (b) => b.getAttribute('aria-label') !== 'Menu' && b.dataset.testid !== 'turn-portrait'
+        )
         .map((b) => !b.disabled)
     );
   const playingBack = await page.evaluate(() => window.__tactics.busy);

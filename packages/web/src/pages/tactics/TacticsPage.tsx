@@ -797,16 +797,20 @@ export function TacticsPage() {
   // (what's tapped or hovered). Phones show the details in a tooltip over
   // the board and pin the actions to the bottom of the screen.
   const menu = <RunMenu busy={busy || playing} onReset={startRun} />;
-  // Phones: the turn portrait opens the acting unit's details, as its track
-  // card does; a second tap closes them.
+  // The turn portrait opens the acting unit's details, as its track card
+  // does; on a phone a second tap closes them. On desktop the panel shows
+  // them unless another hex or unit is being looked at: a click goes back.
   const lookingAtActing = Boolean(
-    phone &&
     acting?.hex &&
-    (pinnedHex ? hexEquals(pinnedHex, acting.hex) : selectedId === acting.id)
+    (phone
+      ? pinnedHex
+        ? hexEquals(pinnedHex, acting.hex)
+        : selectedId === acting.id
+      : !inspectHex && selected?.id === acting.id)
   );
   const lookAtActing = () => {
     setPinnedHex(null);
-    setSelectedId(lookingAtActing ? null : (acting?.id ?? null));
+    setSelectedId(phone && !lookingAtActing ? (acting?.id ?? null) : null);
   };
   // Once the fight is over, New fight takes Confirm's place, and the section
   // keeps its height so the board doesn't move.
@@ -836,7 +840,7 @@ export function TacticsPage() {
         onAbility={chooseAbility}
         onConfirm={() => commit()}
         menu={menu}
-        onPortrait={phone ? lookAtActing : undefined}
+        onPortrait={lookAtActing}
         portraitOpen={lookingAtActing}
       >
         <SkipButton
@@ -1023,8 +1027,8 @@ function TurnControls(props: {
   /** The run's menu, beside Skip turn. */
   menu: React.ReactNode;
   /**
-   * Phones: the unit's portrait before Skip turn, to say whose turn it is
-   * (the board's arrow over it read as "tap here"); a tap on it looks at the unit.
+   * The unit's portrait before Skip turn, to say whose turn it is (on a
+   * phone, the board's arrow over it read as "tap here"); a tap on it looks at the unit.
    */
   onPortrait?: (() => void) | undefined;
   /** The unit's details are showing (its portrait reads as pressed). */
@@ -1068,10 +1072,13 @@ function TurnControls(props: {
       {/* One choice per turn: Move or an ability, picked like any other. */}
       <div
         className={styles.abilityGrid}
-        style={{
-          gridTemplateColumns: `repeat(${choiceColumns(unit)}, 1fr)`,
-          minHeight: `calc(${props.rows} * var(--tile-height) + ${props.rows - 1} * var(--tile-gap))`,
-        }}
+        style={
+          {
+            '--rows': props.rows,
+            gridTemplateColumns: `repeat(${choiceColumns(unit)}, 1fr)`,
+            minHeight: `calc(${props.rows} * var(--tile-height) + ${props.rows - 1} * var(--tile-gap))`,
+          } as React.CSSProperties
+        }
       >
         <Button
           size="lg"
