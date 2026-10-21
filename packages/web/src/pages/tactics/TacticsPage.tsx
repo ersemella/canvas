@@ -729,19 +729,15 @@ export function TacticsPage() {
   const details = inspectHex ? (
     <HexInspector fight={fight} hex={inspectHex} />
   ) : (
-    selected && (
-      <Glossary>
-        <StatSheet fight={fight} unit={selected} />
-      </Glossary>
-    )
+    selected && <StatSheet fight={fight} unit={selected} />
   );
   // Desktop: the chosen ability explained, under the details.
   const chosen = acting && ability && (
-    <Glossary>
-      <Paper className={styles.plaque!} p="sm" data-testid="chosen-ability">
+    <Paper className={styles.plaque!} p="sm" data-testid="chosen-ability">
+      <Glossary>
         <AbilityDetail unit={acting} def={ABILITIES[ability]} />
-      </Paper>
-    </Glossary>
+      </Glossary>
+    </Paper>
   );
 
   return (

@@ -38,12 +38,17 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
   },
 };
 
+/** How long an effect on a hex lasts: said last, after what it does. */
+function slotsLeft(left: number): string {
+  return `${left} slot${left === 1 ? '' : 's'} left.`;
+}
+
 export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
   const left = hail.untilSlot - currentSlot + 1;
   return {
     name: 'Hail',
     short: `${hail.damage ?? 0} damage, Slowed ${hail.slowed}`,
-    detail: `${left} more slot${left === 1 ? '' : 's'}. A unit here as it lands, entering, or starting its turn here takes ${hail.damage ?? 0} damage and is Slowed ${hail.slowed} for ${hail.statusSlots} slots.`,
+    detail: `${hail.damage ?? 0} damage and Slowed ${hail.slowed} for ${hail.statusSlots} slots to a unit here when it lands, enters or starts a turn. ${slotsLeft(left)}`,
   };
 }
 
@@ -52,7 +57,7 @@ export function fogInfo(fog: FogEffect, currentSlot: number): HexInfo {
   return {
     name: 'Fog',
     short: `Obscured: ranged hits in or out deal ${obscured}% less`,
-    detail: `${left} more slot${left === 1 ? '' : 's'}. A unit here is Obscured.`,
+    detail: `A unit here is Obscured. ${slotsLeft(left)}`,
   };
 }
 

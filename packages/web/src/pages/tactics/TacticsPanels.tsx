@@ -26,6 +26,7 @@ import {
 import type {
   AbilityDef,
   FightState,
+  HexInfo,
   KeywordId,
   TurnPreview,
   Unit,
@@ -150,9 +151,11 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
 }
 
 /**
- * What's on a hex: its tile's rule, any hail, and the unit standing there
- * (D11), its keywords tappable. `dense`: the phone's tooltip, everything in
- * as little room as it takes.
+ * What's on a hex (D11), a card each: the unit standing there first (it's
+ * what was tapped), then the ground under it: its tile unless that's sand
+ * (which says nothing), and any hail or fog, each on its own card. Every
+ * card explains its own keywords inside itself. `dense`: the phone's
+ * tooltip, everything in as little room as it takes.
  */
 export function HexInspector({
   fight,
@@ -164,39 +167,46 @@ export function HexInspector({
   dense?: boolean;
 }) {
   const tile = tileAt(mapOf(fight), hex);
-  const info = TILE_INFO[tile];
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
   const fog = fogAt(fight, hex);
   const unit = fight.units.find((u) => u.alive && u.hex && hexEquals(u.hex, hex));
-  // Sand says nothing worth a card (plain sand isn't looked at at all).
-  const showTile = tile !== 'sand' || hail || fog;
   return (
-    <Glossary>
-      <Stack gap={dense ? 6 : 8} data-testid="hex-info">
-        {/* The unit first: it's what was tapped; the ground under it after. */}
-        {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
-        {showTile && (
-          <Paper className={styles.plaque!} p={dense ? 'xs' : 'sm'}>
-            <Text className={styles.display!} fw={700} fz={dense ? 'sm' : 'md'}>
-              {info.name}
-            </Text>
-            <Text fz="xs" c="dimmed">
-              <KeywordText text={info.detail} />
-            </Text>
-            {hail && (
-              <Text fz="xs" c="var(--c-skyLight)" mt={4}>
-                <b>Hail.</b> <KeywordText text={hailInfo(hail, fight.currentSlot).detail} />
-              </Text>
-            )}
-            {fog && (
-              <Text fz="xs" c="var(--c-dusk4)" mt={4}>
-                <b>Fog.</b> <KeywordText text={fogInfo(fog, fight.currentSlot).detail} />
-              </Text>
-            )}
-          </Paper>
-        )}
-      </Stack>
-    </Glossary>
+    <Stack gap={dense ? 6 : 8} data-testid="hex-info">
+      {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
+      {tile !== 'sand' && <GroundCard info={TILE_INFO[tile]} dense={dense} />}
+      {hail && (
+        <GroundCard
+          info={hailInfo(hail, fight.currentSlot)}
+          color="var(--c-skyLight)"
+          dense={dense}
+        />
+      )}
+      {fog && <GroundCard info={fogInfo(fog, fight.currentSlot)} dense={dense} />}
+    </Stack>
+  );
+}
+
+/** One thing on the ground (a tile, hail, fog): its name, then its rule, keywords explained inside the card. */
+function GroundCard({
+  info,
+  color = 'var(--c-ivory)',
+  dense,
+}: {
+  info: HexInfo;
+  color?: string;
+  dense: boolean;
+}) {
+  return (
+    <Paper className={styles.plaque!} p={dense ? 'xs' : 'sm'}>
+      <Glossary>
+        <Text className={styles.display!} fw={700} fz={dense ? 'sm' : 'md'} c={color}>
+          {info.name}
+        </Text>
+        <Text fz="xs" c="dimmed">
+          <KeywordText text={info.detail} />
+        </Text>
+      </Glossary>
+    </Paper>
   );
 }
 
@@ -268,78 +278,81 @@ export function StatSheet({
   ] as const;
   return (
     <Paper className={styles.plaque!} p={dense ? 'xs' : 'sm'} data-testid="stat-sheet">
-      <Group justify="space-between" gap={6} mb={dense ? 2 : 0}>
-        <Text
-          className={styles.display!}
-          fw={700}
-          fz={dense ? 'sm' : 'md'}
-          c={sideColor(unit)}
-          data-side={unit.side}
-        >
-          {HEROES[unit.hero].name}
-        </Text>
-        <Text fz={dense ? 'xs' : 'sm'}>
-          Health{' '}
-          <b>
-            {unit.hp} / {unit.maxHp}
-          </b>
-        </Text>
-      </Group>
-      {dense ? (
-        <div className={styles.statLine}>
-          {stats.map(([id, label, value]) => (
-            <span key={id}>
-              <Term id={id}>{label}</Term> <b>{value}</b>
-            </span>
-          ))}
-        </div>
-      ) : (
-        <>
-          <div className={styles.coreStats}>
+      {/* A keyword or ability tapped here is explained here, inside the unit's card. */}
+      <Glossary>
+        <Group justify="space-between" gap={6} mb={dense ? 2 : 0}>
+          <Text
+            className={styles.display!}
+            fw={700}
+            fz={dense ? 'sm' : 'md'}
+            c={sideColor(unit)}
+            data-side={unit.side}
+          >
+            {HEROES[unit.hero].name}
+          </Text>
+          <Text fz={dense ? 'xs' : 'sm'}>
+            Health{' '}
+            <b>
+              {unit.hp} / {unit.maxHp}
+            </b>
+          </Text>
+        </Group>
+        {dense ? (
+          <div className={styles.statLine}>
             {stats.map(([id, label, value]) => (
-              <div key={id}>
-                <Term id={id}>{label}</Term>
-                <b>{value}</b>
-              </div>
+              <span key={id}>
+                <Term id={id}>{label}</Term> <b>{value}</b>
+              </span>
             ))}
           </div>
-        </>
-      )}
-      {statuses.length > 0 && (
-        <div className={styles.statuses}>
-          {statuses.map((st) => (
-            <span key={st.id}>
-              <Term id={st.id}>{st.label}</Term>
-              {st.rest && ` ${st.rest}`}
-            </span>
+        ) : (
+          <>
+            <div className={styles.coreStats}>
+              {stats.map(([id, label, value]) => (
+                <div key={id}>
+                  <Term id={id}>{label}</Term>
+                  <b>{value}</b>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+        {statuses.length > 0 && (
+          <div className={styles.statuses}>
+            {statuses.map((st) => (
+              <span key={st.id}>
+                <Term id={st.id}>{st.label}</Term>
+                {st.rest && ` ${st.rest}`}
+              </span>
+            ))}
+          </div>
+        )}
+        {unit.charging && (
+          <Text fz="xs" c="var(--c-plumLight)" mt={4}>
+            Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
+          </Text>
+        )}
+        {/* Names only, to scan; a tap explains one below. */}
+        <div className={styles.abilityList}>
+          {/* The phone's tooltip leaves the label out, to stay narrow. */}
+          {!dense && <span className={styles.abilityListLabel}>Abilities</span>}
+          {abilities.map((def) => (
+            <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
+              {def.name}
+            </AbilityName>
           ))}
-        </div>
-      )}
-      {unit.charging && (
-        <Text fz="xs" c="var(--c-plumLight)" mt={4}>
-          Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
-        </Text>
-      )}
-      {/* Names only, to scan; a tap explains one below. */}
-      <div className={styles.abilityList}>
-        {/* The phone's tooltip leaves the label out, to stay narrow. */}
-        {!dense && <span className={styles.abilityListLabel}>Abilities</span>}
-        {abilities.map((def) => (
-          <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
-            {def.name}
+          <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
+            {ult.name}
+            {ultimateState(unit) !== 'Used' && (
+              <span className={styles.abilityLinkNote}>
+                {ultimateState(unit) === 'Ready'
+                  ? 'Ready'
+                  : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
+              </span>
+            )}
           </AbilityName>
-        ))}
-        <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
-          {ult.name}
-          {ultimateState(unit) !== 'Used' && (
-            <span className={styles.abilityLinkNote}>
-              {ultimateState(unit) === 'Ready'
-                ? 'Ready'
-                : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
-            </span>
-          )}
-        </AbilityName>
-      </div>
+        </div>
+      </Glossary>
     </Paper>
   );
 }

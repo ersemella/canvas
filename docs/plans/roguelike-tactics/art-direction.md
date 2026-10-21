@@ -112,10 +112,12 @@ game reads as one thing. Layout, labels and states are unchanged.
   your units' hexes and cards). The stat sheet's abilities are not tiles
   but text with a dotted underline, as keywords are, so nothing but the
   action section looks like a choice of move (the phone's tooltip leaves
-  out their "Abilities" label, to stay narrow). A tooltip shows the unit
-  first, then the ground under it. Sunken boxes (the stats) have the shade
-  on top. The track's cards and the canvas tooltips use the same cut
-  corners and hard drop shadows.
+  out their "Abilities" label, to stay narrow). A tooltip shows a card
+  each for the unit (first), the tile (unless plain sand, which says
+  nothing) and any hail or fog; a keyword or ability tapped in a card is
+  explained inside that card. Sunken boxes (the stats) have the shade on
+  top. The track's cards and the canvas tooltips use the same cut corners
+  and hard drop shadows.
 - **The sides:** each unit stands on a rug filling its hex (its side's
   colour, a stitched ivory border); track portraits sit on two flat bands
   of their side's colour.

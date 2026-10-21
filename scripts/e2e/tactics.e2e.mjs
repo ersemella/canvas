@@ -623,6 +623,10 @@ try {
       (await about.count()) === 1 && (await about.textContent()).startsWith(name),
       await about.textContent().catch(() => null)
     );
+    check(
+      'phone: the ability is explained inside the unit’s card',
+      (await phoneSheet.getByTestId('ability-info').count()) === 1
+    );
     await about.locator('[data-keyword]').last().tap();
     await sleep(150);
     check(
