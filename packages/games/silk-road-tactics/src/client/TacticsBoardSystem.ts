@@ -255,8 +255,8 @@ export class TacticsBoardSystem extends BaseSystem {
   private still = false;
   /** A turn's events playing back; the page's scene waits until it ends. */
   private play: Playback | null = null;
-  /** A won fight's camel walking out, once the result shows (see `walkOutRoute`). */
-  private walkOut: {key: string; start: number; route: Point[]} | null = null;
+  /** A won fight's party walking out, once the result shows (see `walkOutPlan`). */
+  private walkOut: {key: string; start: number; walks: Map<string, Walk>} | null = null;
   private bus: EventBus | null = null;
   private cleanup: (() => void)[] = [];
 
@@ -286,37 +286,28 @@ export class TacticsBoardSystem extends BaseSystem {
   }
 
   /**
-   * Where a won fight's camel is on its walk out: along its route at
-   * `WALK_OUT_HEX_SECONDS` a hex from when the result first showed, fading
-   * on the last stretch, past the board's edge; then gone. With reduced
-   * motion it stands on the exit. Null when no camel walks out: the fight
-   * isn't won, or it has no living camel.
+   * Where each of a won fight's party is on its walk out (see
+   * `walkOutPlan`), timed from when the result first showed; a unit gone
+   * past the board's edge is 'gone'. Null when no one walks: the fight isn't
+   * won, it has no living camel, or the device asks for reduced motion
+   * (everyone stays put).
    */
-  private walkingCamel(fight: FightState): {at: Point; alpha: number} | 'gone' | null {
+  private walkingParty(fight: FightState): Map<string, {at: Point; alpha: number} | 'gone'> | null {
     const camel = fight.phase === 'won' ? fight.units.find((u) => u.hero === 'camel') : undefined;
-    if (!camel?.alive || !camel.hex) {
+    if (this.still || !camel?.alive || !camel.hex) {
       this.walkOut = null;
       return null;
     }
     const key = `${fight.mapId} ${fight.currentSlot} ${hexKey(camel.hex)}`;
     if (this.walkOut?.key !== key) {
-      const route = walkOutRoute(fight, camel.hex);
-      this.walkOut = route && {key, start: this.time, route};
+      const walks = walkOutPlan(fight);
+      this.walkOut = walks && {key, start: this.time, walks};
     }
     if (!this.walkOut) return null;
-    const {route, start} = this.walkOut;
-    const last = route.length - 1;
-    if (this.still) return {at: route[last - 1]!, alpha: 1};
-    const k = (this.time - start) / WALK_OUT_HEX_SECONDS;
-    if (k >= last) return 'gone';
-    const i = Math.floor(k);
-    const f = k - i;
-    const a = route[i]!;
-    const b = route[i + 1]!;
-    return {
-      at: {x: Math.round(lerp(a.x, b.x, f)), y: Math.round(lerp(a.y, b.y, f))},
-      alpha: i === last - 1 ? 1 - f : 1,
-    };
+    const out = new Map<string, {at: Point; alpha: number} | 'gone'>();
+    for (const [id, walk] of this.walkOut.walks)
+      out.set(id, walkPosition(walk, this.time - this.walkOut.start));
+    return out;
   }
 
   /** Ends a playback (finished or skipped): the page's scene shows again. */
@@ -435,13 +426,13 @@ export class TacticsBoardSystem extends BaseSystem {
       t
     );
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
-    // A won fight: the camel walks out, off its hex (no rug), once the playback ends.
-    const walking = playing ? null : this.walkingCamel(fight);
+    // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
+    const walking = playing ? null : this.walkingParty(fight);
     // Each unit stands on a rug in its side's colour, under the highlights so moves and targets still show.
     const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
     for (const u of fight.units) {
       const hex = u.hex;
-      if (!u.alive || !hex || (walking && u.hero === 'camel')) continue;
+      if (!u.alive || !hex || walking?.has(u.id)) continue;
       const p = previewedTo.get(u.id);
       const moved = Boolean(p?.to && hexKey(p.to) !== hexKey(hex));
       drawRug(ctx, hex, u.side, moved || p?.killed ? 0.4 : 1);
@@ -463,15 +454,16 @@ export class TacticsBoardSystem extends BaseSystem {
     for (const u of fight.units) {
       const hex = u.hex;
       if (!u.alive || !hex) continue;
-      if (walking && u.hero === 'camel') {
-        if (walking !== 'gone')
+      const walk = walking?.get(u.id);
+      if (walk) {
+        if (walk !== 'gone')
           drawUnit(ctx, u, hex, {
             acting: false,
             selected: false,
             faded: false,
-            frame: this.still ? 0 : Math.floor(this.time / WALK_OUT_STEP_SECONDS),
-            at: walking.at,
-            alpha: walking.alpha,
+            frame: Math.floor(this.time / WALK_OUT_STEP_SECONDS),
+            at: walk.at,
+            alpha: walk.alpha,
           });
         continue;
       }
@@ -1834,34 +1826,76 @@ const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
 
 type Point = {x: number; y: number};
 
-/** Seconds a won fight's camel takes for each hex of its walk out. */
+/** Seconds a unit takes for each hex of a won fight's walk out. */
 const WALK_OUT_HEX_SECONDS = 0.9;
 /** Seconds each of its frames shows as it walks: a quicker bob than its idle. */
 const WALK_OUT_STEP_SECONDS = 0.3;
 
+/** One unit's walk out: hex centres to the exit and one past the edge, after `delay` seconds. */
+interface Walk {
+  route: Point[];
+  delay: number;
+}
+
 /**
- * A won fight's camel's walk out (camel.md): the hex centres along the
- * shortest walkable path from `from` to the nearest exit, around other units
- * where there is a way (through them where there isn't), then one hex
- * further, off the board's edge. Null if no exit can be reached.
+ * A won fight's walk out (camel.md): the camel heads for its nearest exit,
+ * and every living hero for the same one, each along its shortest walkable
+ * path (around any enemies still standing where there is a way), then one
+ * hex further, off the board's edge. Nearest first, they reach the exit one
+ * hex's time apart, so no two stand on it at once. A unit that can't reach
+ * it stays put. Null if the camel can't reach an exit.
  */
-function walkOutRoute(fight: FightState, from: Hex): Point[] | null {
+function walkOutPlan(fight: FightState): Map<string, Walk> | null {
   const map = mapOf(fight);
-  const isExit = (h: Hex) => map.exits.some((e) => hexEquals(e, h));
-  const search = (aroundUnits: boolean): Hex[] | null => {
+  const party = fight.units.filter((u) => u.alive && u.hex && u.side === 'player');
+  const camel = party.find((u) => u.hero === 'camel');
+  if (!camel) return null;
+  const toExit = walkPath(fight, camel.hex!, (h) => map.exits.some((e) => hexEquals(e, h)));
+  if (!toExit) return null;
+  const exit = toExit[toExit.length - 1]!;
+  const paths = party
+    .map((u) => ({
+      u,
+      path: u === camel ? toExit : walkPath(fight, u.hex!, (h) => hexEquals(h, exit)),
+    }))
+    .filter((p): p is {u: Unit; path: Hex[]} => p.path !== null)
+    .sort((a, b) => a.path.length - b.path.length);
+  const walks = new Map<string, Walk>();
+  // When each reaches the exit, in hexes' time from the start.
+  let arrival = -Infinity;
+  for (const {u, path} of paths) {
+    const steps = path.length - 1;
+    arrival = Math.max(steps, arrival + 1);
+    const route = path.map(center);
+    const end = route[route.length - 1]!;
+    // The exits stick out on the right: walk on one hex width past them.
+    route.push({x: end.x + Math.sqrt(3) * BOARD_LAYOUT.size, y: end.y});
+    walks.set(u.id, {route, delay: (arrival - steps) * WALK_OUT_HEX_SECONDS});
+  }
+  return walks;
+}
+
+/**
+ * The shortest walkable path from `from` to a hex that is `goal`, start
+ * included: around enemies still standing where there is a way, through
+ * them where there isn't (the party is walking too, so it doesn't block).
+ */
+function walkPath(fight: FightState, from: Hex, goal: (h: Hex) => boolean): Hex[] | null {
+  const map = mapOf(fight);
+  const search = (aroundEnemies: boolean): Hex[] | null => {
     const came = new Map<string, Hex | null>([[hexKey(from), null]]);
     let frontier = [from];
     while (frontier.length > 0) {
       const next: Hex[] = [];
       for (const h of frontier) {
-        if (isExit(h)) {
+        if (goal(h)) {
           const path: Hex[] = [];
           for (let at: Hex | null = h; at; at = came.get(hexKey(at))!) path.unshift(at);
           return path;
         }
         for (const n of hexNeighbors(h)) {
           if (came.has(hexKey(n)) || !walkable(map, n)) continue;
-          if (aroundUnits && unitAt(fight, n)) continue;
+          if (aroundEnemies && unitAt(fight, n)?.side === 'enemy') continue;
           came.set(hexKey(n), h);
           next.push(n);
         }
@@ -1870,13 +1904,24 @@ function walkOutRoute(fight: FightState, from: Hex): Point[] | null {
     }
     return null;
   };
-  const path = search(true) ?? search(false);
-  if (!path) return null;
-  const route = path.map(center);
-  const end = route[route.length - 1]!;
-  // The exits stick out on the right: walk on one hex width past them.
-  route.push({x: end.x + Math.sqrt(3) * BOARD_LAYOUT.size, y: end.y});
-  return route;
+  return search(true) ?? search(false);
+}
+
+/** Where a walk has got to `t` seconds in: waiting at its start, on its way, fading past the edge, or gone. */
+function walkPosition(walk: Walk, t: number): {at: Point; alpha: number} | 'gone' {
+  const {route} = walk;
+  const last = route.length - 1;
+  const k = (t - walk.delay) / WALK_OUT_HEX_SECONDS;
+  if (k < 0) return {at: route[0]!, alpha: 1};
+  if (k >= last) return 'gone';
+  const i = Math.floor(k);
+  const f = k - i;
+  const a = route[i]!;
+  const b = route[i + 1]!;
+  return {
+    at: {x: Math.round(lerp(a.x, b.x, f)), y: Math.round(lerp(a.y, b.y, f))},
+    alpha: i === last - 1 ? 1 - f : 1,
+  };
 }
 
 /** Where a unit is drawn while a playback moves it (between two hexes), or undefined. */

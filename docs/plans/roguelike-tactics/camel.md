@@ -127,9 +127,11 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   chevrons, and hovering or tapping one says what it is; the camel's stat
   sheet gives its rule in place of abilities; Move shows its 14 slots; the
   result says whether the camel took the road out or fell. Once a won
-  fight's result shows, the camel walks out: hex by hex to the nearest exit
-  (around other units where it can), then on past the edge, fading away
-  (owner, 2026-10-21); with reduced motion it stands on the exit.
+  fight's result shows, the party walks out (owner, 2026-10-21): the camel
+  heads for its nearest exit and every living hero for the same one, hex by
+  hex (around enemies still standing where it can), then on past the edge,
+  fading away. Nearest first, they reach the exit one hex's time apart, so
+  none overlap on it. With reduced motion everyone stays put.
 - **Art:** a 36×36 sprite with a 2-frame idle (`sprites/camel.png`, split
   at row 24, above the legs) and a 32×32 portrait
   (`sprites/camel-portrait.png`), both from ChatGPT images through
