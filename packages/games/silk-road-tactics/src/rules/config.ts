@@ -160,6 +160,19 @@ export const HEROES: Record<HeroId, HeroStats> = {
     // Despite its speed, it acts first in every fight (owner, 2026-10-21).
     actsFirst: true,
   },
+  /**
+   * An enemy NPC (owner, 2026-10-21): power Medium, speed Medium, health
+   * Low, defence Low; one attack, Bite, and no ultimate.
+   */
+  wolf: {
+    name: 'Wolf',
+    letter: 'W',
+    health: 300,
+    speed: 25,
+    defence: 10,
+    power: 25,
+    abilities: ['bite', 'hold'],
+  },
 };
 
 /** Ability values. Costs follow the brief; everything else is PLACEHOLDER. */
@@ -259,6 +272,8 @@ export const ABILITY = {
   pin: {cost: RULES.cost.typical, slots: 12, damagePerSlot: 6},
   /** Ultimates buffed (owner, 2026-10-20; was slow, 150, and damage 100). */
   rampage: {cost: RULES.cost.typical, distance: 3, damage: 160, displace: 1},
+  /** The wolf's one attack (owner, 2026-10-21). Damage PLACEHOLDER: 150 at its power. */
+  bite: {cost: RULES.cost.typical, damage: 100},
 } as const;
 
 /** Enemy AI scoring (brief section 6); tuning placeholders from the brief. */
@@ -303,7 +318,7 @@ export const AI = {
    * job is to take hits, and at 1 it Held on 44% of its turns to stay out of
    * reach (14% before the lookahead, 20% with it at 0).
    */
-  caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0} as Record<HeroId, number>,
+  caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0, wolf: 1} as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   perSlotMoved: 10,
   /**
@@ -347,6 +362,14 @@ export const AI = {
 
 /** The party, in party slot order, for both sides in Phase 1 (brief section 5). */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
+/**
+ * The enemy's party. TEMPORARY, for testing the wolf (owner, 2026-10-21):
+ * three wolves in place of the heroes in a run's fight (run.ts); restore
+ * to PARTY when done, and the phone tooltip's ability count in
+ * scripts/e2e/tactics.e2e.mjs back to 3. Tests and the balance runner
+ * still fight the heroes.
+ */
+export const ENEMY_PARTY: HeroId[] = ['wolf', 'wolf', 'wolf'];
 /** The player's camel, after the party in slot order; the enemy has none (camel.md). */
 export const CAMEL: HeroId = 'camel';
 

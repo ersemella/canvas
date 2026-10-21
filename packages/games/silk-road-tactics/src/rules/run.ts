@@ -6,7 +6,7 @@ import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
 import type {SearchBudget} from './ai';
-import {AI, PARTY} from './config';
+import {AI, ENEMY_PARTY, PARTY} from './config';
 import {
   RuleError,
   actingUnit,
@@ -36,7 +36,7 @@ export interface RunView {
  * (the enemy may move first).
  */
 export function createRun(seed: number, setup?: unknown): RunState {
-  const fight = createFight(seed, parseParty(setup));
+  const fight = createFight(seed, parseParty(setup), ENEMY_PARTY);
   fight.events = [];
   advance(fight, (state, unit) => chooseAiTurn(state, unit, {left: AI.requestSimulations}));
   return {seed, version: 0, fight};

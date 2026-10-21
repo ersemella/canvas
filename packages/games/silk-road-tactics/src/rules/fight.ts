@@ -59,10 +59,11 @@ export function refreshStats(state: FightState): void {
   }
 }
 
-function makeUnit(side: Side, partyIndex: number, hero: HeroId): Unit {
+/** `copy` numbers a second or later unit of the same hero on a side (e-wolf, e-wolf-2). */
+function makeUnit(side: Side, partyIndex: number, hero: HeroId, copy = 0): Unit {
   const stats = HEROES[hero];
   return {
-    id: `${side === 'player' ? 'p' : 'e'}-${hero}`,
+    id: `${side === 'player' ? 'p' : 'e'}-${hero}${copy ? `-${copy + 1}` : ''}`,
     hero,
     side,
     controller: side === 'player' ? 'human' : 'ai',
@@ -86,9 +87,14 @@ function makeUnit(side: Side, partyIndex: number, hero: HeroId): Unit {
  * the enemy's along the rightmost (owner, 2026-10-20; there is no
  * deployment step), and shuffles starting speed ties. The player's camel
  * starts in the middle of its column (camel.md, 18.1). The player brings
- * the heroes chosen on the start menu; the enemy always brings all three.
+ * the heroes chosen on the start menu; the enemy brings `enemies`, all three
+ * heroes unless the run says otherwise (ENEMY_PARTY).
  */
-export function createFight(seed: number, party: HeroId[] = PARTY): FightState {
+export function createFight(
+  seed: number,
+  party: HeroId[] = PARTY,
+  enemies: HeroId[] = PARTY
+): FightState {
   const map = SALT_FLATS;
   const state: FightState = {
     mapId: map.id,
@@ -98,7 +104,9 @@ export function createFight(seed: number, party: HeroId[] = PARTY): FightState {
     units: [
       ...party.map((hero, i) => makeUnit('player', i, hero)),
       makeUnit('player', party.length, CAMEL),
-      ...PARTY.map((hero, i) => makeUnit('enemy', i, hero)),
+      ...enemies.map((hero, i) =>
+        makeUnit('enemy', i, hero, enemies.slice(0, i).filter((h) => h === hero).length)
+      ),
     ],
     effects: [],
     log: [],

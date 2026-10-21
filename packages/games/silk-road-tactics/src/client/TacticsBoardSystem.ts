@@ -108,7 +108,13 @@ function pixelShadow(ctx: CanvasRenderingContext2D, offset = 2): void {
   ctx.shadowOffsetX = offset;
   ctx.shadowOffsetY = offset;
 }
-const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5', camel: '#a8742f'};
+const HERO_COLOR = {
+  bokh: '#b45309',
+  mangudai: '#15803d',
+  storm: '#4f46e5',
+  camel: '#a8742f',
+  wolf: '#6b7280',
+};
 /**
  * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
  * hero or the camel) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes

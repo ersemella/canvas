@@ -38,6 +38,7 @@ export function affectsHex(
     case 'bow':
     case 'throw':
     case 'pin':
+    case 'bite':
       return near(target.hex, 0);
     case 'hail':
     case 'sunlight':
