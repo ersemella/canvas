@@ -473,7 +473,8 @@ confirm or change:
   a quiet dusk tile saying when the next turn comes. Its first tap only arms it
   ("Tap again to skip", in gold), as Reset run's does, so a stray tap
   doesn't throw a turn away (owner, 2026-10-21); it disarms after 3
-  seconds or when the turn changes.
+  seconds, on a tap anywhere else (owner, the same day; the tap still
+  does what it does), or when the turn changes.
 - **Inspecting** (owner, 2026-10-19): hovering a hex, or tapping it in
   Inspect mode (for touch), shows its tile's rule, any hail, and the unit
   there: stats, every ability with its cost, where it could move this
