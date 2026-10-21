@@ -242,11 +242,12 @@ describe('the search timeline', () => {
   it('reads an enemy charge with its own damage and area', () => {
     const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
     const storm = unit(s, 'e-storm');
-    storm.charging = {ability: 'freeze', target: hex(3, 0)};
+    // A Storm Caller charging a Volley: its power, the Volley's damage and area.
+    storm.charging = {ability: 'volley', target: hex(3, 0)};
     const threat = threatsTo(s, mapOf(s), unit(s, 'p-bokh')).find((t) => t.enemyId === storm.id)!;
-    const freeze = scaled(ABILITY.freeze.damage, storm.power);
+    const volley = scaled(ABILITY.volley.damage, storm.power);
     expect(threat.hexes.size).toBe(7);
-    expect([...threat.hexes.values()].every((h) => h.ranged === freeze)).toBe(true);
+    expect([...threat.hexes.values()].every((h) => h.ranged === volley)).toBe(true);
   });
 
   it('lets a target escape before a pending Volley lands', () => {

@@ -203,18 +203,18 @@ export const ABILITY = {
   /**
    * Ultimates buffed (owner, 2026-10-20): it now deals damage (none
    * before), for 20 slots (was 15), Vulnerable 50% (was 25%). Charge 20 and
-   * recovery 60, as Volley's (owner, 2026-10-20; were 40 and 100). A side
-   * without it still wins 55% of AI-vs-AI fights: it needs a redesign
-   * (balance.md).
+   * recovery 60, as Volley's (owner, 2026-10-20; were 40 and 100).
+   * Instant, typical cost (owner, 2026-10-20; was charged): its targets
+   * stepped out of the charge, and a side without it won 52% of AI-vs-AI
+   * fights; instant, 48.7% (balance.md).
    */
   freeze: {
+    cost: RULES.cost.typical,
     range: 4,
     radius: 1,
     damage: 60,
     immobilizedSlots: 20,
     vulnerable: 50,
-    chargeCost: 20,
-    recoveryCost: 60,
   },
   throw: {cost: RULES.cost.typical, damage: 80},
   /**

@@ -50,7 +50,7 @@ fight's end ends the run.
 | 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement action **20 + 10 per hex**; starting cost **100**, a typical action (owner, 2026-10-19; was 50, which bunched all six cards into slots 3 to 8); `C` = **25** and `speedScale` = **5**: slots = cost × 5 ÷ (speed + 25) (owner, 2026-10-20, putting speed on the shared stat scale; was cost ÷ (speed + 6) with speeds 5 times smaller, the same placements). With speed 25, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). On the shared stat scale, Low 10 / Medium 25 / High 40 (owner, 2026-10-20; was 1 to 10). No gear in Phase 1, so nothing lowers it (4.2's armour trade-off waits for gear). |
 | 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
-| 6. Charged abilities | Two in Phase 1, both ultimates: the Mangudai Outrider's Volley (arcing area) and the Storm Caller's Freeze (section 4). |
+| 6. Charged abilities | One in Phase 1, an ultimate: the Mangudai Outrider's Volley (arcing area). The Storm Caller's Freeze was charged too until 2026-10-20 (owner: now instant, section 4). |
 | 39. Ultimate unlock | One value for every hero: usable after spending **300 action cost** in the fight, moves included, Holds without a move not (owner, 2026-10-20; was **3 completed turns**, which cheap moves met within a few slots of first contact) (10.10); once per fight. A run saved earlier converts each counted turn to 100. |
 | 8. Movement action | Ordinary movement is a separate action: **20 + 10 per hex**, up to 4 hexes. No ability and ordinary movement in the same turn (owner, 2026-10-20). |
 | 28. Movement cap | **4 hexes** per movement action (owner, 2026-10-20; restored from 3 with separate movement). |
@@ -153,7 +153,7 @@ reading of the owner's one-line descriptions; the owner can change them
 | **Sunlight** (Clear the Storm until 2026-10-19, owner) | **One unit** within range 4, the caster or an **enemy** included (6.7, 2026-10-19), is **healed** (base heal 35, scaled by power: owner, 2026-10-20; 50 earlier that day) and **cleansed** (owner, 2026-10-20; it was every unit within a radius of the caster, which under separate movement took a turn of positioning first). Cleansing an enemy removes the party's own control from it. Quick cost, 60 (owner, 2026-10-20; typical before). |
 | **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it takes **base damage 50** (owner, 2026-10-19; scaled by the caster's power when cast, then Vulnerable and defence as any hit), then is **Slowed** for TBD slots (no Vulnerable since 2026-10-20, owner; Freeze and flanking keep it). Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justified; it now deals damage, so whether it stays uncharged is open). Typical cost. |
 | **Fog** (replaced Gale, owner, 2026-10-20) | Targets a hex within range **4** (no line of fire needed); it and every hex within **1** of it become **fog for 20 slots**, a temporary board effect. Units in fog are **Obscured** (17.6), as in a sandstorm: a **ranged** hit on one deals **50% less** (not on top of a sandstorm's), and so does a ranged hit **by** one; an archer in fog shooting into fog deals 75% less. Melee, hail and quicksand aren't affected; fog doesn't block line of fire. Hits any side. New fog replaces old fog on the same hex. Typical cost. |
-| **Freeze** (ultimate) | A **charged** area with a **casting time** (owner's call, 2026-10-18): targets any hex within maximum range TBD, no line of fire needed. When the charge triggers, every unit in the area (radius TBD), allies included, takes base damage **60** and is then **Immobilized** and **Vulnerable 50%** for 20 slots (owner, 2026-10-20: ultimates buffed; no damage, 25% for 15 before). Charge and recovery costs TBD (3.7); like any charge, it shows on the track and can be answered by stepping out, pushing, killing or dazing the caster. |
+| **Freeze** (ultimate) | An area, **instant** at typical cost (owner, 2026-10-20; it was charged, with a casting time, from 2026-10-18, and its targets stepped out of it: [balance.md](balance.md)): targets any hex within maximum range TBD, no line of fire needed. Every unit in the area (radius TBD), allies included, takes base damage **60** and is then **Immobilized** and **Vulnerable 50%** for 20 slots (owner, 2026-10-20: ultimates buffed; no damage, 25% for 15 before). |
 
 **Bökh Champion**
 
@@ -169,9 +169,8 @@ rules): an Immobilized unit can still be displaced (owner's call,
 lands where the Champion chooses, still Immobilized, and
 can't walk back; it lands beside the Champion, so the pin holds. Frozen units can likewise be thrown, blown back or
 rampaged through. A pinning Champion can Rampage, which releases the target as it moves away. Throw onto
-quicksand (a held unit then stays in it), and Freeze triggering before Volley lands (frozen
-units can't step out of the area), are the obvious combinations; the
-two charges' timing on the track is what makes the second one work. Freeze's Vulnerable doesn't stack with a
+quicksand (a held unit then stays in it), and Freeze on the area a Volley is charging at (frozen
+units can't step out of it), are the obvious combinations. Freeze's Vulnerable doesn't stack with a
 flank's (max, section 2).
 
 **No gear in Phase 1** (owner, 2026-10-20): heroes fight with their base
