@@ -70,6 +70,7 @@ export {
   isFlanked,
   movementCap,
   obscured,
+  plainSand,
   reachableHexes,
   statusSlotsLeft,
   statusValue,

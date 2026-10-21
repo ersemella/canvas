@@ -682,7 +682,7 @@ try {
     }
     check('phone: no tooltip squeezed while there’s room for it', !squeezed.length, squeezed);
   }
-  // Plain sand says little, so its tooltip is narrow.
+  // Plain sand has nothing to explain: tapping it shows no tooltip.
   {
     const quiet = phoneFight.units.map((u) => u.hex && `${u.hex.q},${u.hex.r}`);
     const busyHexes = new Set([
@@ -696,12 +696,15 @@ try {
     const at = await onPhone(sand);
     await phone.touchscreen.tap(at.x, at.y);
     await sleep(200);
-    const t = await tooltip.boundingBox();
-    check(
-      'phone: a sand hex’s tooltip is narrow',
-      (await tooltip.textContent()).startsWith('Sand') && t.width < 200,
-      [await tooltip.textContent(), t.width]
-    );
+    check('phone: tapping plain sand shows no tooltip', !(await tooltip.count()));
+    // And with a tooltip open, tapping plain sand closes it.
+    await phone.touchscreen.tap(foeAt.x, foeAt.y);
+    await sleep(200);
+    await phone.touchscreen.tap(at.x, at.y);
+    await sleep(200);
+    check('phone: tapping plain sand closes the tooltip', !(await tooltip.count()));
+    await phone.touchscreen.tap(foeAt.x, foeAt.y);
+    await sleep(200);
     // Tapping away from the board (here, the space above it: the board
     // sits down against the action bar) closes it too.
     const box = await phone.locator('canvas').boundingBox();

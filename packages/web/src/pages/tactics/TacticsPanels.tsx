@@ -168,8 +168,8 @@ export function HexInspector({
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
   const fog = fogAt(fight, hex);
   const unit = fight.units.find((u) => u.alive && u.hex && hexEquals(u.hex, hex));
-  // Plain sand under a unit says nothing worth a card.
-  const showTile = tile !== 'sand' || hail || fog || !unit;
+  // Sand says nothing worth a card (plain sand isn't looked at at all).
+  const showTile = tile !== 'sand' || hail || fog;
   return (
     <Glossary>
       <Stack gap={dense ? 6 : 8} data-testid="hex-info">

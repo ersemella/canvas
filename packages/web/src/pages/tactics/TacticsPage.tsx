@@ -23,6 +23,7 @@ import {
   chooseAiTurn,
   mapOf,
   onMap,
+  plainSand,
   previewTurn,
   reachableHexes,
   slotsForward,
@@ -447,7 +448,8 @@ export function TacticsPage() {
       }
       // Anything else: look at the hex, or stop looking at it if it's the one
       // being looked at (on a small phone, the board may be all there is to tap).
-      if (pinnedHex && hexEquals(pinnedHex, h)) {
+      // Plain sand has nothing to show: tapping it is tapping away.
+      if ((pinnedHex && hexEquals(pinnedHex, h)) || plainSand(fight, mapOf(fight), h)) {
         setPinnedHex(null);
         setSelectedId(null);
         return;
@@ -479,8 +481,10 @@ export function TacticsPage() {
 
   // ── What the board draws ───────────────────────────────────────────────────
 
-  /** The hex being looked at: under the mouse, else the one last tapped. */
-  const inspectHex = hover.hex ?? pinnedHex;
+  /** The hex being looked at: under the mouse (unless it's plain sand), else the one last tapped. */
+  const hoverHex =
+    fight && hover.hex && !plainSand(fight, mapOf(fight), hover.hex) ? hover.hex : null;
+  const inspectHex = hoverHex ?? pinnedHex;
   const inspectedUnit = fight && inspectHex ? unitAt(fight, inspectHex) : undefined;
   /**
    * On a phone, the unit the details feature (the one on the inspected hex,

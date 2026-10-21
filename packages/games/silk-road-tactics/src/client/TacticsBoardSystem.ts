@@ -903,7 +903,10 @@ export function hexOverlaySpan(
   };
 }
 
-/** The hovered hex's tooltip: its tile, hail and unit (the outline is drawn under the units). */
+/**
+ * The hovered hex's tooltip: its tile, hail and unit (the outline is drawn
+ * under the units). Sand goes unnamed, so plain sand shows none.
+ */
 function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): void {
   const map = mapOf(fight);
   const lines: {text: string; color: string}[] = [];
@@ -914,12 +917,9 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
     lines.push({text: HEROES[unit.hero].name, color: SIDE_LIGHT[unit.side]});
   }
   const tile = tileAt(map, h);
-  if (tile !== 'sand' || !unit) {
+  if (tile !== 'sand') {
     const info = TILE_INFO[tile];
-    lines.push({
-      text: tile === 'sand' ? info.name : `${info.name}: ${info.short}`,
-      color: PALETTE.ivory,
-    });
+    lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.ivory});
   }
   const hail = fight.effects.find((e) => hexEquals(e.hex, h));
   if (hail) {
@@ -931,6 +931,7 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
     const info = fogInfo(fog, fight.currentSlot);
     lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.dusk4});
   }
+  if (!lines.length) return;
   ctx.save();
   ctx.font = pixelFont(11);
   const w = Math.max(...lines.map((l) => ctx.measureText(l.text).width)) + 14;

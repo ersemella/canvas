@@ -33,6 +33,19 @@ export function fogAt(state: FightState, h: Hex): FogEffect | undefined {
 }
 
 /**
+ * Plain sand: open ground with nothing on it (no unit, hail or fog). It has
+ * nothing to explain, so looking at it shows no tooltip or details.
+ */
+export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
+  return (
+    tileAt(map, h) === 'sand' &&
+    !unitAt(state, h) &&
+    !fogAt(state, h) &&
+    !state.effects.some((e) => hexEquals(e.hex, h))
+  );
+}
+
+/**
  * Obscured (keywords.md, 17.6): a sandstorm tile or fog. Ranged hits on a
  * unit here, and by a unit here, deal `RULES.obscuredReduction` less.
  */
