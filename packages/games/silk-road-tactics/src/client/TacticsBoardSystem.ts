@@ -5,11 +5,12 @@ import {
   hexDistance,
   hexEquals,
   hexKey,
+  hexNeighbors,
   hexToPixel,
 } from '@canvas/engine';
 import type {EventBus, Hex, SystemContext} from '@canvas/engine';
 import {HEROES} from '../rules/config';
-import {fogAt, isFlanked, onMap, statusValue} from '../rules/board';
+import {fogAt, isFlanked, onMap, statusValue, walkable} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
 import {EXIT_INFO, fogInfo, hailInfo, TILE_INFO} from '../rules/info';
@@ -254,6 +255,8 @@ export class TacticsBoardSystem extends BaseSystem {
   private still = false;
   /** A turn's events playing back; the page's scene waits until it ends. */
   private play: Playback | null = null;
+  /** A won fight's camel walking out, once the result shows (see `walkOutRoute`). */
+  private walkOut: {key: string; start: number; route: Point[]} | null = null;
   private bus: EventBus | null = null;
   private cleanup: (() => void)[] = [];
 
@@ -280,6 +283,40 @@ export class TacticsBoardSystem extends BaseSystem {
     this.cleanup.push(
       bus.on<TacticsHoverPayload>('tactics:hover', (hover) => (this.hover = hover))
     );
+  }
+
+  /**
+   * Where a won fight's camel is on its walk out: along its route at
+   * `WALK_OUT_HEX_SECONDS` a hex from when the result first showed, fading
+   * on the last stretch, past the board's edge; then gone. With reduced
+   * motion it stands on the exit. Null when no camel walks out: the fight
+   * isn't won, or it has no living camel.
+   */
+  private walkingCamel(fight: FightState): {at: Point; alpha: number} | 'gone' | null {
+    const camel = fight.phase === 'won' ? fight.units.find((u) => u.hero === 'camel') : undefined;
+    if (!camel?.alive || !camel.hex) {
+      this.walkOut = null;
+      return null;
+    }
+    const key = `${fight.mapId} ${fight.currentSlot} ${hexKey(camel.hex)}`;
+    if (this.walkOut?.key !== key) {
+      const route = walkOutRoute(fight, camel.hex);
+      this.walkOut = route && {key, start: this.time, route};
+    }
+    if (!this.walkOut) return null;
+    const {route, start} = this.walkOut;
+    const last = route.length - 1;
+    if (this.still) return {at: route[last - 1]!, alpha: 1};
+    const k = (this.time - start) / WALK_OUT_HEX_SECONDS;
+    if (k >= last) return 'gone';
+    const i = Math.floor(k);
+    const f = k - i;
+    const a = route[i]!;
+    const b = route[i + 1]!;
+    return {
+      at: {x: Math.round(lerp(a.x, b.x, f)), y: Math.round(lerp(a.y, b.y, f))},
+      alpha: i === last - 1 ? 1 - f : 1,
+    };
   }
 
   /** Ends a playback (finished or skipped): the page's scene shows again. */
@@ -398,11 +435,13 @@ export class TacticsBoardSystem extends BaseSystem {
       t
     );
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
+    // A won fight: the camel walks out, off its hex (no rug), once the playback ends.
+    const walking = playing ? null : this.walkingCamel(fight);
     // Each unit stands on a rug in its side's colour, under the highlights so moves and targets still show.
     const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
     for (const u of fight.units) {
       const hex = u.hex;
-      if (!u.alive || !hex) continue;
+      if (!u.alive || !hex || (walking && u.hero === 'camel')) continue;
       const p = previewedTo.get(u.id);
       const moved = Boolean(p?.to && hexKey(p.to) !== hexKey(hex));
       drawRug(ctx, hex, u.side, moved || p?.killed ? 0.4 : 1);
@@ -424,6 +463,18 @@ export class TacticsBoardSystem extends BaseSystem {
     for (const u of fight.units) {
       const hex = u.hex;
       if (!u.alive || !hex) continue;
+      if (walking && u.hero === 'camel') {
+        if (walking !== 'gone')
+          drawUnit(ctx, u, hex, {
+            acting: false,
+            selected: false,
+            faded: false,
+            frame: this.still ? 0 : Math.floor(this.time / WALK_OUT_STEP_SECONDS),
+            at: walking.at,
+            alpha: walking.alpha,
+          });
+        continue;
+      }
       const p = previewed.get(u.id);
       const moved = p && p.to && hexKey(p.to) !== hexKey(hex);
       drawUnit(ctx, u, hex, {
@@ -1780,6 +1831,53 @@ function playbackScene(play: Playback): BoardScene {
 }
 
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+
+type Point = {x: number; y: number};
+
+/** Seconds a won fight's camel takes for each hex of its walk out. */
+const WALK_OUT_HEX_SECONDS = 0.9;
+/** Seconds each of its frames shows as it walks: a quicker bob than its idle. */
+const WALK_OUT_STEP_SECONDS = 0.3;
+
+/**
+ * A won fight's camel's walk out (camel.md): the hex centres along the
+ * shortest walkable path from `from` to the nearest exit, around other units
+ * where there is a way (through them where there isn't), then one hex
+ * further, off the board's edge. Null if no exit can be reached.
+ */
+function walkOutRoute(fight: FightState, from: Hex): Point[] | null {
+  const map = mapOf(fight);
+  const isExit = (h: Hex) => map.exits.some((e) => hexEquals(e, h));
+  const search = (aroundUnits: boolean): Hex[] | null => {
+    const came = new Map<string, Hex | null>([[hexKey(from), null]]);
+    let frontier = [from];
+    while (frontier.length > 0) {
+      const next: Hex[] = [];
+      for (const h of frontier) {
+        if (isExit(h)) {
+          const path: Hex[] = [];
+          for (let at: Hex | null = h; at; at = came.get(hexKey(at))!) path.unshift(at);
+          return path;
+        }
+        for (const n of hexNeighbors(h)) {
+          if (came.has(hexKey(n)) || !walkable(map, n)) continue;
+          if (aroundUnits && unitAt(fight, n)) continue;
+          came.set(hexKey(n), h);
+          next.push(n);
+        }
+      }
+      frontier = next;
+    }
+    return null;
+  };
+  const path = search(true) ?? search(false);
+  if (!path) return null;
+  const route = path.map(center);
+  const end = route[route.length - 1]!;
+  // The exits stick out on the right: walk on one hex width past them.
+  route.push({x: end.x + Math.sqrt(3) * BOARD_LAYOUT.size, y: end.y});
+  return route;
+}
 
 /** Where a unit is drawn while a playback moves it (between two hexes), or undefined. */
 function steppingAt(play: Playback, unitId: string): {x: number; y: number} | undefined {
