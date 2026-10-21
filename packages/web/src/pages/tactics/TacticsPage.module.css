@@ -266,7 +266,7 @@
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk1);
 }
 .abilityChip[aria-pressed='true'] {
-  border-color: var(--c-goldLight);
+  border-color: var(--c-turquoiseLight);
 }
 .abilityChipNote {
   margin-left: 6px;
@@ -344,7 +344,7 @@
   clip-path: var(--notch);
 }
 
-/* Move and the abilities: raised dusk tiles; the picked one lapis, outlined in gold. */
+/* Move and the abilities: raised dusk tiles; the picked one lapis, outlined in turquoise. */
 .tile.tile {
   color: var(--c-ivory);
   border: var(--px) solid var(--c-ink);
@@ -359,7 +359,7 @@
   background: var(--c-dusk3);
 }
 .tile.tile[aria-pressed='true'] {
-  border-color: var(--c-goldLight);
+  border-color: var(--c-turquoiseLight);
   background: var(--c-lapis);
   box-shadow:
     inset var(--px) var(--px) 0 var(--c-lapisLight),
@@ -389,29 +389,29 @@
   font-weight: 500;
 }
 
-/* Confirm: the same tile in gold; while it waits for a target, a flat dusk tile asking for one. */
+/* Confirm: the same tile in turquoise; while it waits for a target, a flat dusk tile asking for one. */
 .seal.seal {
   color: var(--c-ink);
   border: var(--px) solid var(--c-ink);
   border-radius: 0;
-  background: var(--c-gold);
+  background: var(--c-turquoise);
   box-shadow:
-    inset var(--px) var(--px) 0 var(--c-goldLight),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-goldDark);
+    inset var(--px) var(--px) 0 var(--c-turquoiseLight),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-turquoiseDark);
   clip-path: var(--notch);
 }
 .seal.seal:hover:not(:disabled) {
-  background: var(--c-goldLight);
+  background: var(--c-turquoiseLight);
 }
 .seal.seal:disabled {
-  color: var(--c-goldLight);
+  color: var(--c-turquoiseLight);
   background: var(--c-dusk1);
   box-shadow: none;
 }
 
 /* The run's ⋯ and its menu. */
 .menuButton.menuButton {
-  color: var(--c-goldLight);
+  color: var(--c-turquoiseLight);
   border-radius: 0;
 }
 .menu.menu {

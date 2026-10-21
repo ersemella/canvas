@@ -120,25 +120,25 @@ interface HighlightStyle {
   dash?: number[];
 }
 /**
- * Targeting is all one yellow (the bow's lanes'), stronger the closer it is
+ * Targeting is all one turquoise (the bow's lanes'), stronger the closer it is
  * to what's picked, so it never reads as either side's tint.
  */
-/** `PALETTE.goldLight`, as channels for the highlights' opacities. */
-const TARGET_YELLOW = '255,223,94';
+/** `PALETTE.turquoiseLight`, as channels for the highlights' opacities. */
+const TARGET_RGB = '127,240,224';
 /** An enemy's charging area: its side's madder (`SIDE_COLOR.enemy`). */
 const ENEMY_CHARGE_RED = '176,64,46';
-const yellow = (fill: number, stroke: number): HighlightStyle => ({
-  fill: `rgba(${TARGET_YELLOW},${fill})`,
-  stroke: `rgba(${TARGET_YELLOW},${stroke})`,
+const targeting = (fill: number, stroke: number): HighlightStyle => ({
+  fill: `rgba(${TARGET_RGB},${fill})`,
+  stroke: `rgba(${TARGET_RGB},${stroke})`,
 });
 const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   /** The steps of a planned move. */
-  path: yellow(0.25, 0.8),
+  path: targeting(0.25, 0.8),
   /** Hexes an ability can target, or a move can end on: outlined solid, so it shows over a unit's tint. */
-  target: yellow(0.14, 0.9),
+  target: targeting(0.14, 0.9),
   /** The whole area an aimed ability strikes, around its target. */
-  area: yellow(0.42, 1),
-  chosen: yellow(0.6, 1),
+  area: targeting(0.42, 1),
+  chosen: targeting(0.6, 1),
 };
 
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
@@ -735,7 +735,7 @@ function drawCard(
     ctx.strokeStyle = !u
       ? PALETTE.dusk2
       : ghost || acting
-        ? PALETTE.goldLight
+        ? PALETTE.turquoiseLight
         : u.id === opts.selected || u.id === opts.hovered
           ? PALETTE.ivory
           : SIDE_LIGHT[u.side];
@@ -844,7 +844,7 @@ function drawYield(
   const left = mid(aim) - deck.w / 2;
   ctx.save();
   ctx.setLineDash([3, 2]);
-  ctx.strokeStyle = PALETTE.goldLight;
+  ctx.strokeStyle = PALETTE.turquoiseLight;
   ctx.lineWidth = 2;
   pixelRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
   ctx.stroke();
@@ -852,10 +852,10 @@ function drawYield(
   const y = deck.y + deck.h - 18;
   const x1 = mid(aim);
   const x2 = mid(land) - 4;
-  // Dark under yellow, so it reads over any card.
+  // Dark under turquoise, so it reads over any card.
   for (const [color, width] of [
     [PALETTE.ink, 4],
-    [PALETTE.goldLight, 2],
+    [PALETTE.turquoiseLight, 2],
   ] as const) {
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
@@ -1650,8 +1650,8 @@ function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
   // Stop short of the last centre, so the head sits clear of the ghost's feet.
   const end = {x: b.x - ux * 12, y: b.y - uy * 12};
   ctx.save();
-  ctx.strokeStyle = PALETTE.goldLight;
-  ctx.fillStyle = PALETTE.goldLight;
+  ctx.strokeStyle = PALETTE.turquoiseLight;
+  ctx.fillStyle = PALETTE.turquoiseLight;
   ctx.lineWidth = 3;
   ctx.lineJoin = 'miter';
   ctx.lineCap = 'square';
@@ -1671,14 +1671,14 @@ function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
 }
 
 /**
- * A charging ability's area, until it triggers: yellow for your own, as all
+ * A charging ability's area, until it triggers: turquoise for your own, as all
  * your targeting is; for an enemy's a red outline only, so it reads as a
  * threat without looking like the tint under an enemy unit.
  */
 function drawCharge(ctx: CanvasRenderingContext2D, map: MapData, u: Unit): void {
   const {ability, target} = u.charging!;
   const radius = ability === 'volley' ? ABILITY.volley.radius : ABILITY.freeze.radius;
-  const rgb = u.side === 'enemy' ? ENEMY_CHARGE_RED : TARGET_YELLOW;
+  const rgb = u.side === 'enemy' ? ENEMY_CHARGE_RED : TARGET_RGB;
   ctx.save();
   ctx.setLineDash([5, 4]);
   for (let q = -radius; q <= radius; q++) {
@@ -1804,7 +1804,8 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
         );
       }
       // The name last, over the effect.
-      if (u.hex) title(u.hex, name, e.kind === 'charge' ? PALETTE.plumLight : PALETTE.goldLight);
+      if (u.hex)
+        title(u.hex, name, e.kind === 'charge' ? PALETTE.plumLight : PALETTE.turquoiseLight);
       return;
     }
     case 'damage':
@@ -2220,7 +2221,7 @@ function drawUnit(
     at?: {x: number; y: number} | undefined;
     /** Opacity, for a unit fading out as it falls. */
     alpha?: number;
-    /** An ability being aimed can target it (or has): a yellow ring inside its border. */
+    /** An ability being aimed can target it (or has): a turquoise ring inside its border. */
     targeted?: 'target' | 'chosen' | undefined;
   }
 ): void {
@@ -2228,12 +2229,12 @@ function drawUnit(
   ctx.save();
   ctx.globalAlpha = (opts.faded ? 0.35 : opts.ghost ? 0.85 : 1) * (opts.alpha ?? 1);
   if (!opts.at) {
-    // The hex's border: yellow on the unit whose turn it is, white when
+    // The hex's border: turquoise on the unit whose turn it is, white when
     // selected, otherwise its side's colour (the hex is tinted to match).
     hexPath(ctx, hex, 2.5);
     if (opts.ghost) ctx.setLineDash([5, 4]);
     ctx.strokeStyle = opts.acting
-      ? PALETTE.goldLight
+      ? PALETTE.turquoiseLight
       : opts.selected
         ? PALETTE.ivory
         : SIDE_COLOR[u.side];
