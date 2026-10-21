@@ -122,6 +122,10 @@
     min-height: 0;
     overflow-y: auto;
   }
+  /* The turn portrait at four times its 32px art, inside its border. */
+  .page .portrait {
+    --portrait: calc(128px + 2 * var(--px));
+  }
 }
 
 /* Desktop: the foot of the panel. */
