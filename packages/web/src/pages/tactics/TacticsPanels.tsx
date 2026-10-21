@@ -170,13 +170,7 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
       onClose={() => setArmed(false)}
     >
       <Menu.Target>
-        <ActionIcon
-          className={styles.menuButton!}
-          variant="subtle"
-          color="yellow"
-          size="lg"
-          aria-label="Menu"
-        >
+        <ActionIcon className={styles.menuButton!} variant="default" size="lg" aria-label="Menu">
           ⋯
         </ActionIcon>
       </Menu.Target>

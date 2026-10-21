@@ -586,7 +586,7 @@
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
 }
 
-/* Skip turn: a quiet dusk tile, beside the run's menu. */
+/* Skip turn: a quiet dusk tile, beside the run's menu (on phones, the portrait's 50px tall). */
 .skip.skip {
   color: var(--c-ivory);
   border: var(--px) solid var(--c-ink);
@@ -635,10 +635,35 @@
   box-shadow: none;
 }
 
-/* The run's ⋯ and its menu. */
+/*
+ * The run's ⋯: a square tile like Skip turn, as tall as the buttons beside it
+ * (Skip turn's 36px on desktop; on phones the row's 50px, the portrait's).
+ */
 .menuButton.menuButton {
-  color: var(--c-lapisLight);
+  flex: none;
+  width: 36px;
+  height: 36px;
+  min-width: 0;
+  min-height: 0;
+  color: var(--c-ivory);
+  font-size: 22px;
+  border: var(--px) solid var(--c-ink);
   border-radius: 0;
+  background: var(--c-dusk2);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-dusk3),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
+  clip-path: var(--notch);
+}
+.menuButton.menuButton:hover {
+  background: var(--c-dusk2);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-dusk4),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
+}
+.actionBar .menuButton.menuButton {
+  width: 50px;
+  height: 50px;
 }
 .menu.menu {
   color: var(--c-ivory);
