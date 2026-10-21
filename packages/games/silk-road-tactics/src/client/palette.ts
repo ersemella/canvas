@@ -52,7 +52,13 @@ export function paletteAlpha(color: PaletteColor, alpha: number): string {
 }
 
 /**
- * The pixel font every label uses, on the canvas as on the page: Tiny5,
- * whose 5, B and C stay distinct at small sizes. It has one weight.
+ * The pixel font every label uses, on the canvas as on the page: Jersey 20,
+ * drawn on a fine enough pixel grid to keep detail (accents, distinct 5, B
+ * and C) and solid enough to sit beside the sprites. It has one weight.
  */
-export const PIXEL_FONT = "'Tiny5', system-ui, sans-serif";
+export const PIXEL_FONT = "'Jersey 20', system-ui, sans-serif";
+
+/** The canvas's text at `size`, scaled up a quarter: the pixel font is narrow and small for its size. */
+export function pixelFont(size: number): string {
+  return `${Math.round(size * 1.25)}px ${PIXEL_FONT}`;
+}

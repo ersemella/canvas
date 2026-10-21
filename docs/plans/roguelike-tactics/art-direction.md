@@ -91,10 +91,13 @@ game reads as one thing. Layout, labels and states are unchanged.
   for text. The board's overlay, the track and the page all take their
   colours from it; the page gets it as `--c-*` CSS variables. Only the
   terrain and effect art keep their own shades.
-- **A pixel font**, Tiny5, on the page and the canvas. Its 5, B and C
-  stay distinct at small sizes (Pixelify Sans's 5 reads as S, so it was
-  dropped). It has one weight: synthesized bold is off on the page, and
-  on the canvas "bold" labels get an ink outline instead.
+- **A pixel font**, Jersey 20, on the page and the canvas: drawn on a
+  fine enough pixel grid to keep detail (accents, descenders, a distinct
+  5, B and C) and solid enough to sit beside the sprites. Tiny5 was too
+  coarse and Pixelify Sans's 5 read as S. It is narrow and small for its
+  size, so the page's text sizes are a step up and the canvas scales its
+  sizes by 1.25 (`pixelFont`). It has one weight: synthesized bold is off
+  on the page, and on the canvas "bold" labels get an ink outline instead.
 - **Boxes and buttons built from whole pixels** (`--px`, one art pixel,
   2px): an ink outline, square-step corners, a hard bevel (light top and
   left, shade bottom and right) and flat fills; no gradients, rounded

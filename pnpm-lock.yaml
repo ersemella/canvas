@@ -174,7 +174,7 @@ importers:
       '@canvas/games-sudoku':
         specifier: workspace:*
         version: link:../games/sudoku
-      '@fontsource/tiny5':
+      '@fontsource/jersey-20':
         specifier: 5.3.0
         version: 5.3.0
       '@mantine/core':
@@ -677,8 +677,8 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@fontsource/tiny5@5.3.0':
-    resolution: {integrity: sha512-29H01ByMRs6uiLeOoBnZLedf0dR3pF5A53cIBzhp1/Y6Bu5D0t5selTb4TWs3ENoc/OK71rOed5xAdvBywe4aQ==}
+  '@fontsource/jersey-20@5.3.0':
+    resolution: {integrity: sha512-x2fZogWG1C471cRTay9Fb1GsWGsXToRRNaYWXpUNkM6JOVMFE1dpPX3qWGmq0EF5omIg0OHL80V4+pl3NBqCdQ==}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -2533,7 +2533,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@fontsource/tiny5@5.3.0': {}
+  '@fontsource/jersey-20@5.3.0': {}
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:

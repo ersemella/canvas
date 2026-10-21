@@ -45,7 +45,7 @@ import type {
   TurnInput,
   Unit,
 } from '@canvas/games-silk-road-tactics';
-import '@fontsource/tiny5/400.css';
+import '@fontsource/jersey-20/400.css';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {useIsPhone} from 'components/useIsPhone';

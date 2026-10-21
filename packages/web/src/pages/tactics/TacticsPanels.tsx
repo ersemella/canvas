@@ -277,7 +277,7 @@ export function StatSheet({
         >
           {HEROES[unit.hero].name}
         </Text>
-        <Text fz={dense ? 'xs' : 13}>
+        <Text fz={dense ? 'xs' : 'sm'}>
           Health{' '}
           <b>
             {unit.hp} / {unit.maxHp}

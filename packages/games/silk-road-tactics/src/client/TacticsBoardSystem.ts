@@ -21,7 +21,7 @@ import type {TrackCard, TrackSlots} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
 import {Playback, eventSeconds} from './playback';
 import type {PlaybackPayload} from './playback';
-import {PALETTE, PIXEL_FONT, paletteAlpha} from './palette';
+import {PALETTE, paletteAlpha, pixelFont} from './palette';
 import bokhPortrait from './sprites/bokh-portrait.png';
 import bokhSprite from './sprites/bokh.png';
 import mangudaiSprite from './sprites/mangudai.png';
@@ -932,9 +932,9 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
     lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.dusk4});
   }
   ctx.save();
-  ctx.font = `11px ${PIXEL_FONT}`;
+  ctx.font = pixelFont(11);
   const w = Math.max(...lines.map((l) => ctx.measureText(l.text).width)) + 14;
-  const lh = 15;
+  const lh = 17;
   const boxH = lines.length * lh + 8;
   const span = hexOverlaySpan(fight, h);
   const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, span.x - w / 2));
@@ -951,7 +951,7 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
   ctx.restore();
   lines.forEach((l, i) => {
     ctx.save();
-    ctx.font = `11px ${PIXEL_FONT}`;
+    ctx.font = pixelFont(11);
     ctx.fillStyle = l.color;
     ctx.textBaseline = 'middle';
     ctx.fillText(l.text, bx + 7, by + 4 + lh / 2 + i * lh);
@@ -1753,7 +1753,7 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
     ctx.save();
     ctx.globalAlpha = k < 0.75 ? 1 : (1 - k) * 4;
     const c = center(h);
-    ctx.font = `12px ${PIXEL_FONT}`;
+    ctx.font = pixelFont(12);
     const w = ctx.measureText(text).width + 12;
     ctx.fillStyle = PALETTE.dusk0;
     ctx.fillRect(c.x - w / 2, titleY(h) - 9, w, 18);
@@ -2381,7 +2381,7 @@ function drawDamage(
 ): void {
   const text = killed ? `-${amount} ✕` : amount > 0 ? `-${amount}` : `+${-amount}`;
   ctx.save();
-  ctx.font = `13px ${PIXEL_FONT}`;
+  ctx.font = pixelFont(13);
   const w = ctx.measureText(text).width + 8;
   ctx.fillStyle = PALETTE.dusk0;
   ctx.fillRect(x - w / 2, y - 9, w, 17);
@@ -2400,7 +2400,7 @@ function label(
 ): void {
   ctx.save();
   // The pixel font has one weight: `bold` sets the text off with an ink outline instead.
-  ctx.font = `${size}px ${PIXEL_FONT}`;
+  ctx.font = pixelFont(size);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   if (bold) {
