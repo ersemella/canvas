@@ -682,6 +682,12 @@ try {
     'a second tap on Reset run opens the start menu, the run untouched',
     (await state()).runId === beforeReset
   );
+  await page.reload();
+  await page.getByTestId('hero-picks').waitFor({timeout: 5_000});
+  check(
+    'a reload on the start menu stays on it',
+    !(await page.getByTestId('turn-controls').count())
+  );
   await page.getByRole('button', {name: 'Back to the fight'}).click();
   await page.getByTestId('turn-controls').waitFor({timeout: 5_000});
   check('the start menu goes back to the fight', (await state()).runId === beforeReset);
