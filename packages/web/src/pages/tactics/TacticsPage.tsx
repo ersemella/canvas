@@ -834,6 +834,7 @@ export function TacticsPage() {
           fight={fight}
           preview={skipPreview}
           busy={busy || playing}
+          size={phone ? 'lg' : undefined}
           onSkip={() => commit(SKIP)}
         />
       </TurnControls>

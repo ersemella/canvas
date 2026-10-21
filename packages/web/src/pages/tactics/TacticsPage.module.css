@@ -198,11 +198,13 @@
 .confirmRow > .portrait {
   flex: none;
 }
+/* As tall as Skip turn beside it (Mantine's lg button); the art scales as the board's does. */
 .portrait {
+  --portrait: 50px;
   display: grid;
   place-items: center;
-  width: calc(32px + 2 * var(--px));
-  height: calc(32px + 2 * var(--px));
+  width: var(--portrait);
+  height: var(--portrait);
   border: var(--px) solid var(--c-ink);
   /* The track card's ground: two flat bands of lapis. */
   background: linear-gradient(var(--c-lapis) 50%, var(--c-lapisDark) 50%);
@@ -210,8 +212,8 @@
   font-weight: bold;
 }
 .portrait img {
-  width: 32px;
-  height: 32px;
+  width: 100%;
+  height: 100%;
   image-rendering: pixelated;
 }
 .confirmRow > .portrait + * {
