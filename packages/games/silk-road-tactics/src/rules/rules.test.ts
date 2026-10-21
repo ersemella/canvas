@@ -648,6 +648,27 @@ describe('abilities', () => {
     expect(b.statuses).toEqual([]);
   });
 
+  it('Sunlight clears hail and fog from its target’s hex only', () => {
+    const s = setup({'p-storm': at(1, 1), 'p-bokh': at(2, 1), 'e-bokh': at(8, 6)});
+    const until = 999;
+    const effect = (h: Hex) => ({
+      kind: 'hail' as const,
+      hex: h,
+      untilSlot: until,
+      damage: 50,
+      slowed: 2,
+      statusSlots: 10,
+    });
+    s.effects = [effect(at(2, 1)), effect(at(3, 1))];
+    s.fog = [
+      {hex: at(2, 1), untilSlot: until},
+      {hex: at(3, 1), untilSlot: until},
+    ];
+    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
+    expect(s.effects.map((e) => e.hex)).toEqual([at(3, 1)]);
+    expect(s.fog.map((f) => f.hex)).toEqual([at(3, 1)]);
+  });
+
   it('Pin crushes its target every slot while it lasts', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
     s.units.forEach((u) => (u.controller = 'human'));

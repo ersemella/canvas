@@ -258,7 +258,7 @@ const sunlight: AbilityDef = {
   kind: 'heal',
   range: ABILITY.sunlight.range,
   summary: (user) =>
-    `Heal a unit for ${scaled(ABILITY.sunlight.heal, user.power)} and cleanse its statuses.`,
+    `Heal a unit for ${scaled(ABILITY.sunlight.heal, user.power)}, cleanse its statuses, and clear hail and fog from its space.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.sunlight.cost,
@@ -272,6 +272,10 @@ const sunlight: AbilityDef = {
     cleanse(u);
     breakPins(ctx, u, true);
     heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
+    // Clears the storm from the unit's own hex only (owner, 2026-10-21).
+    const h = target.hex!;
+    ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, h));
+    ctx.state.fog = (ctx.state.fog ?? []).filter((f) => !hexEquals(f.hex, h));
   },
 };
 

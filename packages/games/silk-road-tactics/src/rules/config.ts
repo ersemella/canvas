@@ -209,6 +209,8 @@ export const ABILITY = {
    * Heal 50, 75 at its power (owner, 2026-10-20; was 35): at 35 a side
    * without it won 51% of AI-vs-AI fights, at 50 41%, with 2.5%
    * unfinished once the AI stopped spamming fog (balance.md).
+   * It also clears hail and fog from the target's own hex (owner,
+   * 2026-10-21; abilities.ts): an answer to hail, as Clear the Storm was.
    */
   sunlight: {cost: RULES.cost.quick, range: 4, heal: 50},
   /**

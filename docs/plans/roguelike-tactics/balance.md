@@ -281,6 +281,15 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
    it. A longer charge at the same total (charge 40, recovery 40) was
    tried: a side without Volley then wins 48.0% (42.6% at charge 20) and
    5.6% of fights go unfinished (4.1%). Volley stays at charge 20.
+**Applied 2026-10-21: Sunlight clears hail and fog from its target's
+hex** (that hex only, so the effect reads as one space). Measured with the
+camel in play, 400 fights each: a side without Sunlight wins 42.4%
+(48.2% before), without Hail 43.9% (37.6%), without Fog 48.8% (51.5%);
+fights unchanged in length (51 actions). Hail keeps its place but now
+has an answer. A radius-1 clear around the target was stronger (41.3%)
+but mixed effects across spaces; an area heal made fights 16–32% longer
+and made Hail worthless (50.3% without it).
+
 5. **Fog needs a job.** With one ranged attacker, which can pick another
    lane, halving ranged damage rarely matters. Tried after tunings 1 to 3:
    an arrow can't target a unit in or behind fog, so fog blocks a lane
