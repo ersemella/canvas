@@ -139,7 +139,7 @@ reading of the owner's one-line descriptions; the owner can change them
 
 | Ability | Rule |
 |---|---|
-| **Composite Bow** | Fires an arrow along one of the six hex directions, with **no range limit** (owner, 2026-10-20; range 5 before); it stops at the **first unit** on that line, an obstacle or the map's edge. It **can't target a unit in, or past, an Obscured hex** (sandstorm, 17.6): the lane stops short of it (owner, 2026-10-21; from 2026-10-20 that halved it instead). An archer standing in a sandstorm **can't shoot out** of it (owner, 2026-10-21). That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
+| **Bow** | Fires an arrow along one of the six hex directions, with **no range limit** (owner, 2026-10-20; range 5 before); it stops at the **first unit** on that line, an obstacle or the map's edge. It **can't target a unit in, or past, an Obscured hex** (sandstorm, 17.6): the lane stops short of it (owner, 2026-10-21; from 2026-10-20 that halved it instead). An archer standing in a sandstorm **can't shoot out** of it (owner, 2026-10-21). That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
 | **Leap** (Dash until 2026-10-21, owner) | The Outrider jumps **exactly 2 hexes in a straight line**, over whatever is in the hex between: ruins, a unit of either side, quicksand or hail, none of which affect it. It must land on a free, walkable hex, which applies as usual. It is the turn’s action, so it cannot be combined with ordinary movement. Not usable while Immobilized. Cost 20 (owner, 2026-10-21). Dash moved up to 3 hexes in a line, stopped by ruins and enemies, at cost 40: too close to walking to have its own identity ([balance.md](balance.md)). |
 | **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage **200** (owner, 2026-10-20; 135 before), allies included. Charge and recovery costs TBD (3.7). |
 
@@ -403,7 +403,7 @@ confirm or change:
   many slots later the next turn would come (yielding included), a
   planned move shows what it adds in the Move button ("Move +2", with the
   chosen action or Hold), and the button reads "Confirm · next turn +8".
-  A unit's details list each ability in its slots too ("Composite Bow ·
+  A unit's details list each ability in its slots too ("Bow ·
   +7"): the action alone, before any move or yielding.
 - **The top bar** shows Back and the page's title instead of the site
   name, for every game (owner, 2026-10-19).
@@ -411,7 +411,7 @@ confirm or change:
   edge; under it the **detail section** (what's tapped) comes first, and
   the **action section** is pinned to the bottom of the screen, set off
   by a yellow rule.
-- **Abilities aimed at a unit** (Throw, Pin and the Composite Bow;
+- **Abilities aimed at a unit** (Throw, Pin and the Bow;
   owner, 2026-10-19) are disabled when there's no unit to aim at from the
   hex the action would be taken from (after the planned move, or where the
   unit stands when acting first): no one adjacent, or no one in any of the
@@ -445,7 +445,7 @@ confirm or change:
   own lapis rugs.
 - **Ability kinds** (2026-10-21): each ability's button, its name on a
   stat sheet and its explanation carry an icon for its kind, a pixel
-  sword for an attack (Composite Bow, Volley, Throw, Rampage), a cross
+  sword for an attack (Bow, Volley, Throw, Rampage), a cross
   for a heal (Sunlight), an arrow for movement (Move, Leap) and a chain's
   two links for control (Hail, Freeze, Pin); the explanation names
   the kind. (A boot and a padlock, first, were confusing: owner.)
@@ -453,7 +453,7 @@ confirm or change:
   madder, health's jade, ivory, the harmful statuses' gold.
   **Each ability its own icon** (owner, 2026-10-21): the kind icons gave
   way to one per ability, 12×12 art pixels in up to three shades, still
-  coloured by kind unless the ability says otherwise: Composite Bow a
+  coloured by kind unless the ability says otherwise: Bow a
   drawn bow, Leap a jump's arc, Volley three falling arrows, Sunlight a
   yellow sun, Hail a white cloud dropping sky-blue hail, Freeze a sky-blue
   snowflake, Throw an arrow over and down, Pin an arrow pressing onto a

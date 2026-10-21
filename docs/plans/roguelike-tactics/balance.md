@@ -14,7 +14,7 @@ the rest is **Proposed**: the numbers are the owner's to set
 ## Summary
 
 - **Most of the kit adds nothing, and two abilities cost games.** Three abilities do the work:
-  the Composite Bow, Hail and Throw. Removing one of them from a side drops
+  the Bow, Hail and Throw. Removing one of them from a side drops
   its win rate to 8–35%. Removing anything else leaves it at 44–58%, so
   those abilities add little. Fog, Volley and Freeze score above 50%: the
   side that **loses** them wins more. Fights are mostly a race to deal
@@ -108,7 +108,7 @@ in tuning 1 below. "Package" is tunings 1 to 3.
 
 | Ability | Current | Fog fix | Package | Reading |
 |---|---:|---:|---:|---|
-| Composite Bow | 19.7% | 7.9% | | The core of the game |
+| Bow | 19.7% | 7.9% | | The core of the game |
 | Hail | 28.1% | 25.8% | | Core; the Storm Caller's real job is damage |
 | Throw | 30.6% | 35.1% | | Core; the Champion's only real damage |
 | Rampage | 45.2% | 44.1% | 45.4% | Pulls its weight |

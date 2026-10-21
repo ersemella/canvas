@@ -167,7 +167,7 @@ export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLan
 
 const bow: AbilityDef = {
   id: 'bow',
-  name: 'Composite Bow',
+  name: 'Bow',
   kind: 'attack',
   summary: (user) => `Shoot straight for ${scaled(ABILITY.bow.damage, user.power)} damage.`,
   ultimate: false,
