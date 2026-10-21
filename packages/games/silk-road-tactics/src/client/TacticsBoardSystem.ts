@@ -14,7 +14,6 @@ import {HEROES, RULES} from '../rules/config';
 import {isFlanked, onMap, statusValue, walkable} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
-import {EXIT_INFO, hailInfo, TILE_INFO} from '../rules/info';
 import {tileAt, type MapData, type Tile} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {AbilityId, FightState, StatusKind, Unit} from '../rules/types';
@@ -248,8 +247,9 @@ interface TrackAdvance {
  * track of cards along the top (3.1, as in Mana Khemia), tile markings,
  * highlights, arrow lanes, hail, charging areas, units (their health and
  * statuses only on their turn, or when hovered, tapped or in an aimed
- * attack's reach), the
- * previewed outcome, and a tooltip for the hex under the mouse. Plain shapes and text (brief section 9). The page drives it with
+ * attack's reach), and the
+ * previewed outcome. Hovering a hex outlines it and shows its unit's health
+ * and statuses; the side panel tells the rest. Plain shapes and text (brief section 9). The page drives it with
  * `tactics:board` events; taps come from `TacticsInputSystem`.
  */
 export class TacticsBoardSystem extends BaseSystem {
@@ -639,7 +639,6 @@ export class TacticsBoardSystem extends BaseSystem {
         hovered: this.hover.unitId,
       }
     );
-    if (this.hover.hex) drawHover(ctx, fight, this.hover.hex);
   }
 }
 
@@ -1095,7 +1094,7 @@ function drawYield(
  * What a looked-at hex takes up on the board, in scene pixels: its centre's
  * x, and the top and bottom of the hex with its unit's health bar and
  * status markers. A tooltip goes above `top` or below `bottom` to keep
- * clear of them: the hover tooltip here, and the page's on phones.
+ * clear of them: the page's on phones.
  */
 export function hexOverlaySpan(
   fight: FightState,
@@ -1111,61 +1110,6 @@ export function hexOverlaySpan(
     top: stack ? stack.top : hexTop,
     bottom: hexBottom,
   };
-}
-
-/**
- * The hovered hex's tooltip: its tile, hail and unit (the outline is drawn
- * under the units). Sand goes unnamed, so plain sand shows none.
- */
-function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): void {
-  const map = mapOf(fight);
-  const lines: {text: string; color: string}[] = [];
-  const unit = unitAt(fight, h);
-  if (unit) {
-    // The side shows in the colour, as on the board: just the hero's name
-    // (its health is the bar over it).
-    lines.push({text: HEROES[unit.hero].name, color: SIDE_LIGHT[unit.side]});
-    if (ultimateReady(unit)) lines.push({text: 'Ultimate ready', color: PALETTE.plumLight});
-  }
-  const tile = tileAt(map, h);
-  if (tile !== 'sand') {
-    const info = TILE_INFO[tile];
-    lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.ivory});
-  }
-  if (map.exits.some((e) => hexEquals(e, h)))
-    lines.push({text: `${EXIT_INFO.name}: ${EXIT_INFO.short}`, color: PALETTE.lapisLight});
-  const hail = fight.effects.find((e) => hexEquals(e.hex, h));
-  if (hail) {
-    const info = hailInfo(hail, fight.currentSlot);
-    lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.skyLight});
-  }
-  if (!lines.length) return;
-  ctx.save();
-  ctx.font = pixelFont(11);
-  const w = Math.max(...lines.map((l) => ctx.measureText(l.text).width)) + 14;
-  const lh = 17;
-  const boxH = lines.length * lh + 8;
-  const span = hexOverlaySpan(fight, h);
-  const bx = Math.min(SCENE_SIZE.width - w - 4, Math.max(4, span.x - w / 2));
-  // Above the hex (and a unit's health bar and statuses), or below it when
-  // that would cover the track.
-  const above = span.top - 2 - boxH;
-  const by = above < TRACK_AREA.y + TRACK_AREA.height + 2 ? span.bottom : above;
-  pixelRect(ctx, bx, by, w, boxH, 5);
-  ctx.fillStyle = PALETTE.dusk0;
-  ctx.fill();
-  ctx.strokeStyle = PALETTE.ink;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.restore();
-  lines.forEach((l, i) => {
-    ctx.save();
-    ctx.font = pixelFont(11);
-    ctx.fillStyle = l.color;
-    ctx.textBaseline = 'middle';
-    ctx.fillText(l.text, bx + 7, by + 4 + lh / 2 + i * lh);
-    ctx.restore();
-  });
 }
 
 /** The ground's colour until its textures load. */
