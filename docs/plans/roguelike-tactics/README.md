@@ -14,9 +14,12 @@ settled. Built in this repository (D10). The folder name,
 `roguelike-tactics`, predates the title.
 
 **Next step:** the owner sets the three prototype heroes' stat numbers and
-ability values (replacing the placeholders in `src/rules/config.ts`) and
-decides how a stalled fight ends; everything waiting on the owner is in
-[owner-decisions.md](owner-decisions.md). A measured balance review
+ability values (replacing the placeholders in `src/rules/config.ts`);
+everything waiting on the owner is in
+[owner-decisions.md](owner-decisions.md). How a stalled fight ends is
+decided (owner, 2026-10-21) and waiting to be built: the caravan's
+**camel**, a unit that can't attack, which wins the fight by reaching
+the exit and loses the run by dying ([camel.md](camel.md)). A measured balance review
 (2026-10-20) proposes numbers and the principles for re-tuning:
 [balance.md](balance.md). Then Phase 2
 ([phases.md](phases.md)). The
@@ -33,7 +36,8 @@ are collected in [history.md](history.md).
 A turn-based **tactical roguelike**: "Into the Breach with a Final Fantasy
 Tactics timeline and a Darkest Dungeon roster", on a **fantasy Silk Road**
 where rival caravans race along the road. A party of up to four heroes,
-recruited during the run from a roster of twelve, travels a **route map**
+recruited during the run from a roster of twelve, and the caravan's
+camel, which the enemy tries to kill ([camel.md](camel.md)), travel a **route map**
 of the road (fights, caravanserais, bazaars, recruitment) and fights on
 compact hex maps. Turn order is a track of slots: each action's cost,
 divided by the unit's speed, sets how far its card moves; information is complete and randomness minimal;
@@ -69,6 +73,7 @@ Always read this file first. Then:
 | Tuning numbers, or balancing a new hero, ability, keyword or gear: what each ability and stat is worth, measured; the proposed tuning; principles for re-tuning | [balance.md](balance.md) |
 | The twelve heroes | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
+| The caravan's camel; how a fight is won and lost; ending stalled fights | [camel.md](camel.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |
 | Rival caravans, the pool, rewards, the ledger | [ghosts.md](ghosts.md) |
@@ -100,6 +105,7 @@ The combat design's rules cite each other by section number ("section
 | 15.8 Hero roster | [roster.md](roster.md) |
 | 16 References | [references.md](references.md) |
 | 17 Keywords and effects | [keywords.md](keywords.md) |
+| 18 The caravan's camel | [camel.md](camel.md) |
 
 ## Decisions
 

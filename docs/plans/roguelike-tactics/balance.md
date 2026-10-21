@@ -299,8 +299,9 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
    at no cost in stalls (3.5%). **Applied 2026-10-20:** the Champion
    stays free, and moving away releases the target. A zone of control is
    untested.
-8. **Stalls still need a guaranteed end** ([owner-decisions.md](owner-decisions.md),
-   decision 1). Tuning brought them to 2.5%, not zero.
+8. **Stalls still need a guaranteed end.** Tuning brought them to 2.5%,
+   not zero. Decided (owner, 2026-10-21): the caravan's camel, whose walk
+   to the exit ends a fight ([camel.md](camel.md)); not built.
 
 ## Principles for re-tuning
 
@@ -357,8 +358,9 @@ keywords arrive.
    the only numbers that change outcomes. Size a gear stat line to move
    one of them (Bow vs Champion from 4 hits to 3 needs 180 a hit), and let
    previews show it ([heroes-and-gear.md](heroes-and-gear.md), 9.7).
-8. **End stalls by rule, not by weak healing.** With a guaranteed end, heals
-   can be priced for value. Reference: healing per cost at 0.6–0.9 of a
+8. **End stalls by rule, not by weak healing.** With a guaranteed end (the
+   camel's walk to the exit, [camel.md](camel.md)), heals can be priced
+   for value. Reference: healing per cost at 0.6–0.9 of a
    damage hero's after-defence damage per cost (Sunlight at 75 per 60
    against the Bow's 144–180 per 100 measured healthy).
 9. **Keywords don't scale with power, so re-check them at late-run stats.**

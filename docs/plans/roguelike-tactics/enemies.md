@@ -50,7 +50,7 @@ Difficulty rises over a run mainly by making enemies better built, not by inflat
   - Harder deployment layouts (split, surrounded, far from cover).
   - Harsher maps: more hazards, less conceal, sight lines that favor enemy ranged units.
   - Track pressure: reinforcements arriving sooner, scheduled cataclysms, more enemy push abilities.
-  - Objectives beyond defeating all enemies: survive a number of slots, protect a unit, defeat a target before reinforcements arrive.
+  - Objectives beyond defeating all enemies: survive a number of slots, protect a unit, defeat a target before reinforcements arrive. Every fight already has one: the enemy is trying to kill the caravan's camel, and the camel reaching the exit wins ([camel.md](camel.md), decided 2026-10-21).
 - **Elite affixes:** later regular enemies may carry one rule-bending trait drawn from the boss toolkit (section 11.3), such as a tempo-tax aura or being vulnerable only when flanked. This scales complexity rather than numbers.
 - **Optional risk:** players can choose harder fights for better rewards (similar to Monster Train's Trials), letting strong builds push themselves and weaker builds play safe.
 

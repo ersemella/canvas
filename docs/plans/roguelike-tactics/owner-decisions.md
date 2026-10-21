@@ -11,31 +11,24 @@ belongs to, as the README says, and remove it here.
 
 ## Issues
 
-### 1. Some fights could never end (eased; watch)
+### 1. Some fights could never end (decided; not built)
 
-A fight ends only when one side is eliminated. While the Yadachy Storm
-Caller had no damaging ability, about 1 in 20 AI-vs-AI fights from random
-deployments went on forever: one side called hail, the other healed it
-off. Hail now deals base damage 50 (owner, 2026-10-19), 39 a hit on a
-Yadachy, and none of 1,000 such fights stalled (58 before). Sunlight's
-heal (the ability was Clear the Storm until 2026-10-19) then went from
-37 to 60 (owner, 2026-10-19), because it felt weak: over 1,000 fights
-from random deployments, none stalled (17 at 37), and fights got
-shorter; at 90 healed, 3% stalled again. Nothing guarantees an end yet;
-one of the options below would.
+A fight ends only when one side is eliminated, and nothing guarantees
+that: a heal can undo damage forever. Tuning brought stalls to a few
+percent of AI-vs-AI fights, not zero ([balance.md](balance.md)), and
+nothing on the page ends one: the **Abandon run** button was removed
+(owner, 2026-10-19), and only `POST /runs/:id/abandon` does (a defeat,
+D3).
 
-**Today:** nothing on the page ends it: the **Abandon run** button was
-removed (owner, 2026-10-19). Only `POST /runs/:id/abandon` does (a
-defeat, D3), so a stalled fight leaves the player stuck until one of the
-options below is built.
-
-**Options:**
-- **A fight limit:** the fight ends when the track reaches a set slot;
-  decide who wins then (most health left, or a defeat for the player).
-- **A surrender rule:** a side that can't damage the other concedes, or
-  the player may claim the win when no enemy can damage them.
-- **Stronger finishers:** Sunlight heals less, or the Champion
-  and Outrider deal more (numbers, section 2 below).
+**Decided (owner, 2026-10-21): the caravan's camel**
+([camel.md](camel.md)). Every fight has a camel, a unit on the board and
+the track that the player moves one hex a turn but that can't attack.
+Reaching one of four exit hexes on the enemy's edge wins the fight, as
+defeating every enemy still does; the camel's death is game over. The
+player can always end a fight by walking it out. A fight limit, a
+surrender rule and weaker heals were the other options
+([history.md](history.md)). Until it's built, a stalled fight still
+leaves the player stuck.
 
 ### 2. Hero numbers are placeholders (decision: section 2)
 
@@ -78,12 +71,11 @@ it only needs doing.
 
 ## Decisions needed
 
-### 1. How a stalled fight ends
+### 1. Hail: charged or not
 
-See issue 1. Hail's damage ended the stalls seen in testing; a guaranteed
-end (a fight limit, a lower heal) is still yours to decide. Hail now
-deals damage but isn't charged, against rule 30 (arcing attacks are
-charged): keep it uncharged, or make it charged?
+Hail deals damage but isn't charged, against rule 30 (arcing attacks are
+charged): keep it uncharged, or make it charged? (How a stalled fight
+ends, the decision once numbered here, is decided: issue 1.)
 
 ### 2. The prototype heroes' numbers
 
@@ -133,7 +125,8 @@ Damage is scaled by power: `base × (1 + power / 50)`.
 was 3 turns, which cheap moves met within a few slots of first contact).
 Over 300 AI-vs-AI fights, unfinished fights rose from 3.3% to 7.7% (6.3%
 at 250, 5.7% at 200): ultimates are the biggest finishers, and they now
-arrive later. Decision 1 (how a stalled fight ends) would settle it.
+arrive later. The camel (issue 1) settles it once built: the player can
+always end a fight by walking it out.
 
 ### 3. Rampage details (brief section 10)
 

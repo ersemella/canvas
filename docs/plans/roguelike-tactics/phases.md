@@ -49,10 +49,16 @@ Monster Train): stretches of road (15.3), grouped into the six regions in
 their fixed order (15.3a), whose nodes are fights,
 caravanserais (rest and recovery, 10.11), bazaars (gear and consumables,
 9), recruitment (10.6) and optional risk (11.4). Permanent hero death and
-party wipes, partial recovery, gear rewards, seeded recruitment offers,
+party wipes, the camel's health carried between fights, gear rewards, seeded recruitment offers,
 milestone upgrades, ultimates, run end. Gear offers follow the gear rules in 9.7 (drafted, build-aware previews, nodes showing their keyword family); steering offers across runs (10.12) can come later. More heroes and enemy bands;
 difficulty scaling (11.4). Leave room on the map for rival caravan nodes
 (Phase 4).
+
+Before Phase 2, or as its first step: the caravan's camel in a fight
+(the unit, its move, the exit hexes, win and loss, the AI valuing it;
+[camel.md](camel.md), 18.6). In Phase 2, its health carried through the
+run, heroes starting each fight fresh (10.11), and the camel's recovery
+at caravanserais.
 
 Acceptance: e2e plays a route through several nodes, recruits a hero,
 loses one permanently and continues; a party wipe ends the run; a reload

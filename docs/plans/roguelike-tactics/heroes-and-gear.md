@@ -128,7 +128,7 @@ The ×10 scale stays: the defence formula, the power formula (9.2) and keyword v
 ## 10. Party and Heroes
 
 ### 10.1 Party Size (Decided)
-- Each side fields **up to 4 units.**
+- Each side fields **up to 4 heroes.** The player's side also has the caravan's **camel**, a unit that isn't a hero and doesn't take one of the four places ([camel.md](camel.md), 18.1).
 - Composition and per-character gear are the primary build levers.
 - Rationale: large enough for role synergy and meaningful composition, small enough that turns stay fast and each character remains distinct.
 - Enemy count in PvE encounters may differ. TBD.
@@ -207,10 +207,10 @@ The ×10 scale stays: the defence formula, the power formula (9.2) and keyword v
 - **Gear can modify ultimates** like any other ability.
 
 ### 10.11 Recovery Between Fights (Decided)
-- **Partial recovery:** heroes recover a portion of their health after each fight.
-- **Full recovery** comes from occasional rest opportunities or from consumables (9.6).
-- Rationale: damage from each fight carries forward (attrition), giving every fight and every optional risk weight, without a single bad fight ending the run on its own. Combined with permanent death, this makes resource management a core part of the run.
-- Recovery amount and rest frequency are TBD.
+- **The party starts each fight fresh** (owner, 2026-10-21): heroes begin every fight at full health, with no statuses. Until then, heroes recovered part of their health after each fight, and the rest at rests or from consumables ([history.md](history.md)).
+- **The camel carries the damage forward:** its health carries over from fight to fight, and only its statuses are cleared ([camel.md](camel.md), 18.4). *(Proposed:* it recovers at rests and from consumables (9.6).)
+- Rationale: attrition still gives every fight and every optional risk weight, through one bar, the camel's, that the whole party protects, as Into the Breach's power grid does. Heroes still die permanently (10.3), so a fight's losses still carry forward.
+- Camel recovery amounts and rest frequency are TBD.
 
 ### 10.12 Steering Offers Across Runs (Proposed)
 A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks from fights won (10.6), that lets players influence what a run offers. It answers 10.7's problem: bad offers drive restarts.
@@ -230,7 +230,7 @@ A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks f
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Rarity | Reliably stronger, possibly narrowly | Rarity loosely related to power | Dependable shortcut for comparing gear at a glance |
-| Party size | Up to 4 | Solo, larger squads | Balances composition depth and turn speed |
+| Party size | Up to 4 heroes, plus the caravan's camel (2026-10-21) | Solo, larger squads | Balances composition depth and turn speed |
 | Heroes | Pool of ~12 heroes with unique abilities and base stats; gear modifies stats and common conditions/effects | Generic classes; fully custom characters | Separates composition and gear into clear build layers; fixed identities aid readability |
 | Hero death | Permanent for the run | Revive between fights with a penalty | Raises stakes; forces adaptation |
 | Stats (2026-10-18) | Health, speed, defence, power; gear modifies speed, defence and power; health is fixed per hero | Larger stat sets; movement stat; accuracy and evasion; a separate influence stat | Small enough to read on every unit's stat sheet; movement was not distinct from speed |
@@ -241,7 +241,7 @@ A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks f
 | Consumables | Limited; used only between fights; stat buffs or statuses for the next combat, or health recovery; shared party inventory | Usable in combat as actions with their own cost; no consumables; unlimited consumables | Keeps combat about abilities and the track; makes preparation between fights a decision; no hoarding |
 | Hero progression | Milestone upgrades from a randomized, hero-specific pool; no stat growth; recruits join without upgrades and earn them by reaching milestones | Experience levels with stat growth | Build variety without stat inflation |
 | Ultimates | Unlocked after the hero spends a set amount of action cost in the fight (turns taken until 2026-10-20), shown publicly; then once per combat; an action, a charged ability or a track entity, defined per ultimate | Usable from the start of the fight; charge meter filled by keyword actions; cooldown-based ultimates; no ultimates | Fights build toward ultimates; a visible unlock gives the other side a threat to play around; once per combat makes each use a decision |
-| Recovery | Partial after each fight; full from rests or consumables | Full heal after each fight; no healing between fights | Meaningful attrition without single-fight run losses |
+| Recovery (2026-10-21, owner) | Heroes start each fight fresh; the camel's damage carries over, its statuses cleared | Heroes recover partially after each fight, fully at rests or from consumables (until 2026-10-21); no healing between fights | Attrition through the camel's health, which the whole party protects |
 | Recruits | Join at base level with basic gear; offers unaffected by deaths | Join at the party's upgrade level; special replacement mechanics after a death | A death is meant to start a death spiral with a low chance of recovery, giving permanent death its weight |
 | Party formation | Recruit heroes during the run from limited, random offers | Full team chosen at start; random subset of heroes offered at start | Adds a draft layer and run-to-run variety; a random starting subset encourages restarting until the desired team appears |
 | Duplicates | Allowed across opposing sides (PvP, ghost teams) | Unique heroes across both sides | Avoids blocking picks based on the opponent |

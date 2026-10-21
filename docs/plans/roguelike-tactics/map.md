@@ -53,6 +53,7 @@ Maps can contain three types of special tile:
 - **Rival caravan fights** use the PvP-style maps above (symmetric or mirrored, opposite deployment zones): a fair mirror match against another player's build ([ghosts.md](ghosts.md) D2).
 - **PvE:** zones are commonly on opposite ends, but vary by map. Examples: split starts, being surrounded, defending a central point, or starting already engaged. Enemy positions are set by the map.
 - **Engagement distance:** the gap between zones should allow contact within about 1 to 2 turns of typical movement. The approach should be a meaningful track decision (rushing in costs time on the track), not dead time.
+- **The camel and the exits (Decided 2026-10-21, owner):** the player's camel deploys with the party, and four **exit hexes** on the enemy's edge win the fight when the camel reaches one ([camel.md](camel.md), 18.1, 18.2).
 - Watch: ranged units may get free hits during the approach, and rushing in costs time on the track (6.5). Armour costs speed (4.2), which makes every turn, moving included, place the unit further back. Short gaps and obstacles that block early sight lines mitigate free hits.
 
 ### 6.7 Line of Fire and Friendly Fire (Decided)
@@ -94,7 +95,7 @@ Friendly fire is used as a positioning cost that limits ranged characters, not a
 - **Clutter:** with up to 8 or more units on a compact map, lines may be blocked so often that ranged heroes feel stuck. Map size, obstacle layout and engagement distance (6.6) must be tuned with this in mind.
 - **Permanent death:** area damage to allies is costly when heroes are lost for the run. Expect players to avoid friendly-fire abilities unless allies can be exempted; tune availability of exemption accordingly, so it doesn't become a must-pick.
 - **Area support:** a heal or buff that reaches enemies is weak in a melee, which pushes support designs toward single targets and small radii; keep the supports distinct.
-- **Stalls:** healing that reaches enemies makes fights longer (see the stalled-fight issue in [owner-decisions.md](owner-decisions.md)).
+- **Stalls:** healing that reaches enemies makes fights longer; the caravan's camel, whose walk to the exit ends a fight, is the decided answer ([camel.md](camel.md)).
 - **AI:** enemy AI must respect line of fire and avoid friendly fire, or deliberately accept it where that is the stronger play.
 
 ## Decision log (from section 13)

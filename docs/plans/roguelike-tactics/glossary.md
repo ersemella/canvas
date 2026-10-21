@@ -19,7 +19,9 @@ tuning. Section numbers are the combat design's.
 | **Bridge gear** | Gear that converts or links keywords (for example, displace effects also apply burn), letting unexpected pairings work (9.7). Proposed. |
 | **Build** | A player's choices outside of combat: which characters are in the party (composition) and which gear each character has equipped. |
 | **Composition** | The specific set of characters in the party. |
-| **Party** | The group of characters a player controls in combat. Maximum of 4. |
+| **Party** | The group of characters a player controls in combat. Maximum of 4 heroes; the camel isn't one of them. |
+| **Camel** | The caravan's camel: a unit the player moves one hex a turn that can't attack. It reaching an exit hex wins the fight; its death is game over; its damage carries over between fights (18). |
+| **Exit hex** | One of four hexes on the enemy's edge; the camel reaching one wins the fight (18.2). |
 | **Unit** | Any combatant on the map, whether player-controlled or enemy. |
 | **Turn** | A single unit's opportunity to act. Turns are individual, not per side. |
 | **Track** | The row of numbered slots that sets turn order. Every unit and track entity has a card in one slot; the track advances slot by slot and each card acts when reached (3.1). Drawn as a scrollable window of roughly the next 30 slots; tapping a card previews it (7.1). |

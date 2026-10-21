@@ -50,7 +50,8 @@ the game strategic and permadeath fair.
   deployment zones (6.6, 12): a fair mirror match against another player's
   build, and the maps a future arena would need. Objectives open (for
   example a race to a point, fitting the setting's race along the road,
-  15.2).
+  15.2); every fight has the player's camel ([camel.md](camel.md)), and
+  whether the rival caravan brings its own is open.
 - **Rewards for beating it:** part of its gear drops, so the fight is
   worth more than an ordinary one, but no more than an ordinary fight's
   best reward (as NetHack's bones levels and Nioh's revenants do).

@@ -59,6 +59,20 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 
 ## Combat
 
+- **Other ways to end stalled fights** (until 2026-10-21): a fight
+  limit (the fight ends at a set slot, decided by health left or as a
+  defeat), a surrender rule (a side that can't damage the other
+  concedes), and stronger finishers or weaker heals. Replaced by the
+  caravan's camel, whose walk to the exit lets the player end any fight
+  ([camel.md](camel.md)). Also considered then: a camel the enemy plunders
+  one load at a time, with cargo that can't be won back, dropped for a
+  camel the enemy kills, since the exit already guarantees an end.
+- **Partial recovery for heroes between fights** (until 2026-10-21):
+  heroes recovered part of their health after each fight, and fully at
+  rests or from consumables. Replaced by the party starting each fight
+  fresh, with the camel's health carrying the attrition
+  ([heroes-and-gear.md](heroes-and-gear.md), 10.11).
+
 - **Frozen** (until 2026-10-18): no movement and no action, a lost turn.
   Replaced by Immobilized, which removes only movement; Dazed covers a
   lost turn ([keywords.md](keywords.md), 17.5).
