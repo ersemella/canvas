@@ -13,7 +13,7 @@ import {applyHail, checkEnd, enterHex, log, damageEachSlot, record, unitName} fr
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
-import {nextCard, placeCard, placeStartingCards, slotsForward, turnCost} from './track';
+import {nextCard, placeCard, placeStartingCards, shuffled, slotsForward, turnCost} from './track';
 import type {FightState, HeroId, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
@@ -84,8 +84,8 @@ function makeUnit(side: Side, partyIndex: number, hero = PARTY[partyIndex]!): Un
  * A new fight on the Salt Flats, already under way: the seed scatters the
  * ruins and quicksand, the player's party along the leftmost column and
  * the enemy's along the rightmost (owner, 2026-10-20; there is no
- * deployment step). The player's camel starts in the middle of its
- * column (camel.md, 18.1).
+ * deployment step), and shuffles starting speed ties. The player's camel
+ * starts in the middle of its column (camel.md, 18.1).
  */
 export function createFight(seed: number): FightState {
   const map = SALT_FLATS;
@@ -115,7 +115,7 @@ export function createFight(seed: number): FightState {
       .filter((u) => u.side === side && u !== camel)
       .forEach((u, i) => (u.hex = hexes[i]!));
   }
-  placeStartingCards(state);
+  placeStartingCards(state, random);
   log({state, map: mapOf(state), slot: 0}, 'The fight begins.');
   return state;
 }
@@ -130,15 +130,6 @@ function seededRandom(seed: number): () => number {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-}
-
-function shuffled<T>(items: T[], random: () => number): T[] {
-  const a = [...items];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [a[i], a[j]] = [a[j]!, a[i]!];
-  }
-  return a;
 }
 
 /** The unit whose turn it is, once the track has stopped for a human. */

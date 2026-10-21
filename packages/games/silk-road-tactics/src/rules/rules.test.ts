@@ -179,11 +179,29 @@ describe('the track', () => {
     ]);
   });
 
+  it('starts equal speeds in an order drawn from the seed, the faster still first', () => {
+    const startOrder = (seed: number) =>
+      createFight(seed)
+        .units.slice()
+        .sort((a, b) => a.slot! - b.slot!)
+        .map((u) => u.id);
+    const orders = new Set<string>();
+    for (let seed = 0; seed < 20; seed++) {
+      const order = startOrder(seed);
+      expect(order).toEqual(startOrder(seed));
+      // Outriders are fastest, so they still come first, in either order.
+      expect(new Set(order.slice(0, 2))).toEqual(new Set(['p-mangudai', 'e-mangudai']));
+      orders.add(order.join());
+    }
+    expect(orders.size).toBeGreaterThan(1);
+  });
+
   it('starts every card from the starting cost, without two in one slot (3.4)', () => {
     const s = createFight(1);
     const slots = s.units.map((u) => u.slot);
     expect(new Set(slots).size).toBe(7);
-    expect(unit(s, 'p-mangudai').slot).toBe(
+    // The Outriders tie as fastest: whichever is placed first gets the formula's slot.
+    expect(Math.min(unit(s, 'p-mangudai').slot!, unit(s, 'e-mangudai').slot!)).toBe(
       Math.floor((RULES.startCost * RULES.speedScale) / (unit(s, 'p-mangudai').speed + RULES.C))
     );
   });

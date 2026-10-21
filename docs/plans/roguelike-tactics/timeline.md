@@ -32,7 +32,7 @@ slotsForward = roundDown((actionCost + hexesMoved × moveCostPerHex) × speedSca
 ### 3.3 Collisions (Decided)
 **Two cards never share a slot.** A card placed on an occupied slot **yields**: it moves to the next free slot, and further if that one is taken (a cascade). Cards already on the track never move because of another card's placement.
 
-Cards placed at the same moment (combat start, or one effect moving several cards) are placed in a fixed order: higher speed first, then alternating sides starting with the player's side, then party slot order. Exact fixed order TBD.
+Cards placed at the same moment (combat start, or one effect moving several cards) are placed higher speed first. Cards of equal speed are placed in a random order, drawn from the fight's seed so a fight replays the same (owner, 2026-10-21; was alternating sides starting with the player's side, then party slot order).
 
 ### 3.4 Starting Positions (Decided)
 Each card's first slot uses the same formula as placement (3.2), with a standard starting cost:
