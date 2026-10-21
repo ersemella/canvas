@@ -71,26 +71,30 @@
   font-size: 19px;
 }
 
-/* Desktop: a unit's portrait (four times its 32px art), its name, health and stats beside it. */
+/*
+ * Desktop: under the unit's name, its portrait (four times its 32px art) with
+ * health and stats beside it, their rows spanning the portrait's height.
+ */
 .sheetHead {
   display: flex;
   gap: 10px;
-  align-items: flex-start;
-}
-.sheetHead > :last-child {
-  flex: 1;
-  min-width: 0;
+  align-items: stretch;
+  margin-top: 4px;
 }
 /* Beside the portrait the stats stack, a row each: the name, then the value. */
 .sheetHead .coreStats {
+  flex: 1;
+  min-width: 0;
   grid-template-columns: 1fr;
+  grid-auto-rows: 1fr;
   gap: 4px;
+  margin-top: 0;
 }
 .sheetHead .coreStats > div {
   flex-direction: row;
   justify-content: space-between;
-  align-items: baseline;
-  padding: 2px 8px;
+  align-items: center;
+  padding: 0 8px;
 }
 .sheetHead .coreStats b {
   font-size: 16px;
