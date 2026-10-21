@@ -407,7 +407,7 @@ export function StatSheet({
         )}
         {/* Names only, to scan; a tap explains one below. */}
         {ult && (
-          <div className={styles.abilityList}>
+          <div className={styles.abilityList} data-dense={dense || undefined}>
             {/* The phone's tooltip leaves the label out, to stay narrow. */}
             {!dense && <span className={styles.abilityListLabel}>Abilities</span>}
             {abilities.map((def) => (

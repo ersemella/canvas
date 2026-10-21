@@ -403,25 +403,39 @@
 /*
  * The sheet's abilities: names to scan, each tappable to explain it. Read
  * as text, as the keywords do (a dotted underline), not as tiles: only the
- * action section's tiles choose what to do.
+ * action section's tiles choose what to do. One a line in the panel, as a
+ * row wrapping would break mid-list; the phone's tooltip keeps them on
+ * shared lines, to stay short, with icons the size of the text.
  */
 .abilityList {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   margin-top: 8px;
   font-size: 16px;
+}
+.abilityList[data-dense] {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px 12px;
 }
 .abilityListLabel {
   color: var(--c-dusk4);
 }
 .abilityLink {
   all: unset;
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
   color: var(--c-ivory);
   text-decoration: underline dotted;
   text-underline-offset: 3px;
+}
+/* 16px: whole device pixels per art pixel at a phone's 3× density. */
+.abilityList[data-dense] .abilityLink svg {
+  width: 16px;
+  height: 16px;
 }
 .abilityLinkUltimate {
   color: var(--c-plumLight);
