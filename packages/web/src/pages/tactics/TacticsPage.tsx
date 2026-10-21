@@ -114,6 +114,17 @@ function outcomeText(fight: FightState): string {
     : 'Your caravan has fallen.';
 }
 
+/** Remembers, for this tab, that the start menu is open over the fight. */
+const START_MENU_STORAGE = 'canvas:tactics:startMenu';
+
+function savedStartMenu(): boolean {
+  try {
+    return sessionStorage.getItem(START_MENU_STORAGE) === '1';
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Silk Road Tactics: one fight against the AI (Phase 1). The run lives on
  * the server (a RunRoom); this page draws its view, previews turns with the
@@ -133,8 +144,17 @@ export function TacticsPage() {
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // The start menu, over the fight (New fight, Reset run) until a new one
-  // starts; the run in progress is abandoned only then.
-  const [startMenu, setStartMenu] = useState(false);
+  // starts; the run in progress is abandoned only then. A refresh keeps it open.
+  const [startMenu, setStartMenuState] = useState(savedStartMenu);
+  const setStartMenu = useCallback((open: boolean) => {
+    setStartMenuState(open);
+    try {
+      if (open) sessionStorage.setItem(START_MENU_STORAGE, '1');
+      else sessionStorage.removeItem(START_MENU_STORAGE);
+    } catch {
+      // storage blocked: a refresh shows the fight
+    }
+  }, []);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [plannedMove, setPlannedMove] = useState<Reach | null>(null);
@@ -238,17 +258,17 @@ export function TacticsPage() {
       resetTurn();
       setError(null);
     },
-    [resetTurn]
+    [resetTurn, setStartMenu]
   );
 
   // Resume the key's active run, if any.
   useEffect(() => {
     runsApi
       .active()
-      .then(({activeRunId}) => (activeRunId ? runsApi.get(activeRunId).then(receive) : undefined))
+      .then(({activeRunId}) => (activeRunId ? runsApi.get(activeRunId).then(setRun) : undefined))
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [receive]);
+  }, []);
 
   const send = useCallback(
     async (request: () => Promise<RunResponse>, playback = true) => {
