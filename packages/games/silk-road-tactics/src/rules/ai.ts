@@ -22,8 +22,8 @@ import {obeysTaunt, tauntBinds, taunterOf} from './taunt';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf, turnInputCost} from './fight';
-import {enterHex, hailDamage, scaled, throughDefence} from './resolve';
-import {tileAt} from './map';
+import {camelOf, enterHex, hailDamage, scaled, throughDefence} from './resolve';
+import {MAPS, tileAt} from './map';
 import type {AbilityDef} from './abilities';
 import type {Hex} from '@canvas/engine/server';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
@@ -152,6 +152,24 @@ function baselineOf(state: FightState): Baseline {
   );
 }
 
+/** Hexes from the camel to its nearest exit; 0 without a living camel. */
+function camelDistance(state: FightState): number {
+  const camel = camelOf(state);
+  if (!camel?.alive || !camel.hex) return 0;
+  let nearest = Infinity;
+  for (const e of MAPS[state.mapId]!.exits) nearest = Math.min(nearest, hexDistance(camel.hex, e));
+  return nearest;
+}
+
+/**
+ * What the camel's walk is worth to `side` (camel.md): AI.perCamelHex for
+ * each hex it is from an exit, for the enemy; against the player.
+ */
+function camelProgress(state: FightState, side: Side): number {
+  if (!camelOf(state)) return 0;
+  return (side === 'enemy' ? 1 : -1) * camelDistance(state) * AI.perCamelHex;
+}
+
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
 export function scoreOutcome(
   before: FightState,
@@ -169,7 +187,7 @@ export function scoreOutcome(
     const statusDelta = statusPoints(a, before.currentSlot, pressureOf(before)) - base.points;
     if (hostile(b, actor)) {
       // Healing an enemy counts against the turn, as damage counts for it.
-      score += lost + statusDelta;
+      score += lost * (b.hero === 'camel' ? AI.camelHealthWeight : 1) + statusDelta;
       if (!a.alive) score += AI.kill;
       if (lost > 0 && base.flanked) score += AI.flankedTarget;
     } else {
@@ -179,6 +197,11 @@ export function scoreOutcome(
       if (base.flanked && a.alive && !isFlanked(after, a)) score += AI.breaksAllyFlank;
     }
   }
+  // The camel's walk, whoever moved it; the fight's end outweighs everything
+  // (a dead camel is no longer anywhere, so its walk alone would miss it).
+  if (after.phase !== 'fight')
+    score += ((after.phase === 'won') === (actor.side === 'player') ? 1 : -1) * AI.victory;
+  else score += camelProgress(after, actor.side) - camelProgress(before, actor.side);
   const me = after.units.find((u) => u.id === actor.id)!;
   if (me.slot !== null) score -= (me.slot - before.currentSlot) * AI.perSlotMoved;
   // Ending on quicksand costs its damage every slot until the next turn, at least.
@@ -200,7 +223,8 @@ export function scoreOutcome(
       if (threat >= me.hp) score -= AI.kill * caution;
     }
   }
-  if (me.hex) {
+  // The camel walks to the exit, not toward the enemy (its progress above).
+  if (me.hex && me.hero !== 'camel') {
     const gaps = after.units
       .filter((u) => u.alive && u.hex && hostile(u, me))
       .map((u) => hexDistance(u.hex!, me.hex!));
@@ -410,6 +434,9 @@ const exhausted = Symbol('AI search budget exhausted');
  * or one aimed at it, when the charge lands after its last decision.
  */
 export function evaluatePosition(state: FightState, side: Side): number {
+  // Over: an exit reached or the camel dead decides it, whoever is standing.
+  if (state.phase !== 'fight')
+    return (state.phase === 'won') === (side === 'player') ? AI.victory : -AI.victory;
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
@@ -428,11 +455,14 @@ export function evaluatePosition(state: FightState, side: Side): number {
 
 function unitsValue(state: FightState, side: Side): number {
   const p = pressureOf(state);
-  let score = 0;
+  let score = camelProgress(state, side);
   for (const u of state.units) {
     if (!u.alive) continue;
+    // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
     const value =
-      u.hp + AI.kill - statusPoints(u, state.currentSlot, p) + obscuredValue(state, u, p);
+      u.hero === 'camel'
+        ? u.hp * AI.camelHealthWeight
+        : u.hp + AI.kill - statusPoints(u, state.currentSlot, p) + obscuredValue(state, u, p);
     score += (u.side === side ? 1 : -1) * value;
   }
   return score;
@@ -568,10 +598,10 @@ function actionCost(before: FightState, unit: Unit, option: ScoredOption): numbe
   const cost =
     input.action.ability === 'hold' && !(movementRules(before).separateMovement && hexes > 0)
       ? turnCost(AI.holdScoringCost, hexes)
-      : turnInputCost(before, input);
+      : turnInputCost(before, input, unit);
   const gap = (state: FightState): number => {
     const me = state.units.find((u) => u.id === unit.id)!;
-    if (!me.alive || !me.hex) return 0;
+    if (!me.alive || !me.hex || me.hero === 'camel') return 0;
     let nearest = Infinity;
     for (const e of state.units) {
       if (e.alive && e.hex && hostile(e, me))

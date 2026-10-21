@@ -17,7 +17,7 @@ settled. Built in this repository (D10). The folder name,
 ability values (replacing the placeholders in `src/rules/config.ts`);
 everything waiting on the owner is in
 [owner-decisions.md](owner-decisions.md). How a stalled fight ends is
-decided (owner, 2026-10-21) and waiting to be built: the caravan's
+decided (owner, 2026-10-21) and built in the fight: the caravan's
 **camel**, a unit that can't attack, which wins the fight by reaching
 the exit and loses the run by dying ([camel.md](camel.md)). A measured balance review
 (2026-10-20) proposes numbers and the principles for re-tuning:

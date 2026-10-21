@@ -12,7 +12,7 @@ import {HEROES} from '../rules/config';
 import {fogAt, isFlanked, onMap, statusValue} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
-import {fogInfo, hailInfo, TILE_INFO} from '../rules/info';
+import {EXIT_INFO, fogInfo, hailInfo, TILE_INFO} from '../rules/info';
 import {tileAt, type MapData, type Tile} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {AbilityId, FightState, StatusKind, Unit} from '../rules/types';
@@ -85,7 +85,7 @@ function pixelShadow(ctx: CanvasRenderingContext2D, offset = 2): void {
   ctx.shadowOffsetX = offset;
   ctx.shadowOffsetY = offset;
 }
-const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5'};
+const HERO_COLOR = {bokh: '#b45309', mangudai: '#15803d', storm: '#4f46e5', camel: '#a8742f'};
 /**
  * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
  * hero) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
@@ -384,6 +384,7 @@ export class TacticsBoardSystem extends BaseSystem {
     // The board's weather moves with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
     drawGround(ctx, map, t);
+    for (const h of map.exits) drawExit(ctx, h);
     const sandstorm = map.hexes.filter((h) => tileAt(map, h) === 'conceal');
     drawBank(ctx, SANDSTORM_BANK, sandstorm, t);
     drawBank(
@@ -949,6 +950,8 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
     const info = TILE_INFO[tile];
     lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.ivory});
   }
+  if (map.exits.some((e) => hexEquals(e, h)))
+    lines.push({text: `${EXIT_INFO.name}: ${EXIT_INFO.short}`, color: PALETTE.lapisLight});
   const hail = fight.effects.find((e) => hexEquals(e.hex, h));
   if (hail) {
     const info = hailInfo(hail, fight.currentSlot);
@@ -1116,6 +1119,37 @@ function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, time: numbe
     ctx.restore();
     if (tile === 'hazard' || tile === 'conceal') drawTileMark(ctx, center(h), tile);
   }
+}
+
+/**
+ * An exit, the road out (camel.md, 18.2): a worn ivory border and two
+ * chevrons pointing off the board, outlined in ink like the sprites.
+ */
+function drawExit(ctx: CanvasRenderingContext2D, h: Hex): void {
+  ctx.save();
+  hexPath(ctx, h, 3);
+  ctx.setLineDash([4, 3]);
+  ctx.strokeStyle = PALETTE.ivory;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+  const c = center(h);
+  ctx.translate(Math.round(c.x), Math.round(c.y));
+  ctx.scale(HEX_SCALE, HEX_SCALE);
+  ctx.lineJoin = 'miter';
+  for (const dx of [-6, 3]) {
+    ctx.beginPath();
+    ctx.moveTo(dx - 3, -7);
+    ctx.lineTo(dx + 4, 0);
+    ctx.lineTo(dx - 3, 7);
+    ctx.strokeStyle = PALETTE.ink;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.strokeStyle = PALETTE.ivory;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /** A ruin standing on its hex like a unit: over fog and hail, so it always reads as blocked. */

@@ -20,6 +20,8 @@ import {
   abilitiesOf,
   actingUnit,
   allowedTargets,
+  atExit,
+  camelOf,
   chooseAiTurn,
   hexOverlaySpan,
   mapOf,
@@ -89,6 +91,18 @@ const isAttack = (id: AbilityId) => 'damage' in ABILITY[id] || 'damagePerSlot' i
 /** Abilities that heal (Sunlight): aiming one shows your units' health and statuses. */
 const isHeal = (id: AbilityId) => 'heal' in ABILITY[id];
 
+/** Under the result: how the fight ended (camel.md, 18.2). */
+function outcomeText(fight: FightState): string {
+  const camel = camelOf(fight);
+  if (fight.phase === 'won')
+    return camel?.alive && camel.hex && atExit(fight, camel.hex)
+      ? 'Your camel takes the road out.'
+      : 'The rival band is scattered.';
+  return camel && !camel.alive
+    ? 'Your camel has fallen, and its load with it.'
+    : 'Your caravan has fallen.';
+}
+
 /**
  * Silk Road Tactics: one fight against the AI (Phase 1). The run lives on
  * the server (a RunRoom); this page draws its view, previews turns with the
@@ -151,11 +165,13 @@ export function TacticsPage() {
     return () => document.removeEventListener('click', onClick);
   }, []);
 
-  // Phones: note the action section's height while it holds the turn's
-  // choices, to keep once the fight ends.
+  // Phones: note the action section's tallest height while it holds the
+  // turn's choices, to keep on the camel's shorter turns (Move alone) and
+  // once the fight ends, so the board doesn't move.
   useLayoutEffect(() => {
     const el = actionsRef.current;
-    if (el?.querySelector('[data-testid="turn-controls"]')) actionsHeight.current = el.offsetHeight;
+    if (el?.querySelector('[data-testid="turn-controls"]'))
+      actionsHeight.current = Math.max(actionsHeight.current, el.offsetHeight);
   });
 
   const fight: FightState | null = run?.view.fight ?? null;
@@ -392,8 +408,12 @@ export function TacticsPage() {
    */
   const moveSlots = useMemo(() => {
     if (!acting) return null;
+    // The camel's move has a cost of its own (camel.md, 18.1).
     const slots = (hexes: number) =>
-      slotsForward(turnCost(RULES.moveActionCost, hexes), acting.speed);
+      slotsForward(
+        HEROES[acting.hero].moveCost ?? turnCost(RULES.moveActionCost, hexes),
+        acting.speed
+      );
     if (plannedMove && plannedMove.path.length > 0) return `${slots(plannedMove.path.length)}`;
     const lengths = reaches.map((r) => r.path.length).filter((n) => n > 0);
     if (lengths.length === 0) return null;
@@ -778,9 +798,7 @@ export function TacticsPage() {
                     {fight.phase === 'won' ? 'Victory' : 'Defeat'}
                   </Text>
                   <Text c="dimmed" fz="sm">
-                    {fight.phase === 'won'
-                      ? 'The rival band is scattered.'
-                      : 'Your caravan has fallen.'}
+                    {outcomeText(fight)}
                   </Text>
                 </Stack>
               </Paper>

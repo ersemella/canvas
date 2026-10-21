@@ -18,6 +18,8 @@ function setup(placements: Record<string, Hex>): FightState {
   // The fixed layout, which these tests place units around.
   delete s.tiles;
   s.phase = 'fight';
+  // An unlisted camel isn't there at all: dead, it would lose the fight.
+  s.units = s.units.filter((u) => u.hero !== 'camel' || u.id in placements);
   for (const u of s.units) {
     u.alive = u.id in placements;
     u.hex = placements[u.id] ?? null;

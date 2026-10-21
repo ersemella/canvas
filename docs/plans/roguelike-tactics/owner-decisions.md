@@ -11,7 +11,7 @@ belongs to, as the README says, and remove it here.
 
 ## Issues
 
-### 1. Some fights could never end (decided; not built)
+### 1. Some fights could never end (decided; built 2026-10-21)
 
 A fight ends only when one side is eliminated, and nothing guarantees
 that: a heal can undo damage forever. Tuning brought stalls to a few
@@ -27,8 +27,8 @@ Reaching one of four exit hexes on the enemy's edge wins the fight, as
 defeating every enemy still does; the camel's death is game over. The
 player can always end a fight by walking it out. A fight limit, a
 surrender rule and weaker heals were the other options
-([history.md](history.md)). Until it's built, a stalled fight still
-leaves the player stuck.
+([history.md](history.md)). Built in the fight on 2026-10-21: over 200
+AI-vs-AI fights none went unfinished ([camel.md](camel.md), 18.6).
 
 ### 2. Hero numbers are placeholders (decision: section 2)
 

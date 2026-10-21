@@ -66,7 +66,7 @@ export function previewTurn(
   const after = simulate(state, unitId, input);
   if (!after) return null;
   const unit = after.units.find((u) => u.id === unitId)!;
-  const cost = turnInputCost(state, input);
+  const cost = turnInputCost(state, input, unit);
   return {
     changes: diff(state, after),
     slot: unit.slot,

@@ -3,7 +3,8 @@ import {chooseAiTurn} from '@balance-rules/ai';
 import {placeStartingCards} from '@balance-rules/track';
 import {SALT_FLATS} from '@balance-rules/map';
 import type {HeroId, Side} from '@balance-rules/types';
-import {ABILITY, AI, PARTY, RULES} from '@balance-rules/config';
+import {ABILITY, AI, CAMEL, PARTY, RULES} from '@balance-rules/config';
+import {hexEquals} from '@canvas/engine/server';
 
 type Options = {samples: number; seed: number; maxTurns: number; moveCost: number};
 type HeroMetrics = {
@@ -52,7 +53,10 @@ export function runBalance(options: Options) {
   };
   // Independent random legal placements for both teams, reused in all variants.
   const deployments = Array.from({length: options.samples}, () => ({
-    player: shuffle(SALT_FLATS.startColumns.player).slice(0, PARTY.length),
+    // The camel keeps its own starting hex (camel.md).
+    player: shuffle(
+      SALT_FLATS.startColumns.player.filter((h) => !hexEquals(h, SALT_FLATS.camelStart))
+    ).slice(0, PARTY.length),
     enemy: shuffle(SALT_FLATS.startColumns.enemy).slice(0, PARTY.length),
   }));
   const fights: FightResult[] = [];
@@ -70,7 +74,7 @@ export function runBalance(options: Options) {
         const positions = deployments[sample]!;
         for (const side of ['player', 'enemy'] as const)
           state.units
-            .filter((u) => u.side === side)
+            .filter((u) => u.side === side && u.hero !== CAMEL)
             .forEach((u, i) => {
               u.hex = positions[side][i]!;
             });
@@ -93,7 +97,10 @@ export function runBalance(options: Options) {
           hexes = 0,
           firstDamageSlot: number | null = null;
         const byHero = Object.fromEntries(
-          PARTY.map((h) => [h, {turns: 0, moves: 0, holds: 0, abilities: 0, damage: 0, healing: 0}])
+          [...PARTY, CAMEL].map((h) => [
+            h,
+            {turns: 0, moves: 0, holds: 0, abilities: 0, damage: 0, healing: 0},
+          ])
         );
         const heroMetrics = byHero as Record<HeroId, HeroMetrics>;
         const abilities: Record<string, number> = {};

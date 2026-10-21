@@ -18,7 +18,7 @@ import {
   unitAt,
   vulnerablePercent,
 } from './board';
-import {ABILITIES, arrowLanes, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {allowedTargets} from './taunt';
@@ -35,7 +35,7 @@ import {
 } from './fight';
 import {afterAction, previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
-import {abilityDamage, displace, scaled} from './resolve';
+import {abilityDamage, checkEnd, displace, kill, scaled} from './resolve';
 import {createRun, handleRunAction, runView} from './run';
 import {
   freeSlotFrom,
@@ -51,13 +51,16 @@ const at = (col: number, row: number): Hex => offsetToHex({col, row});
 
 /**
  * A fight in progress with units where a test wants them: every unit not
- * listed is removed (dead), and cards start far apart.
+ * listed is removed (dead), and cards start far apart. The camel, unless
+ * listed, isn't there at all, as in a fight saved before it existed: dead,
+ * it would lose the fight.
  */
 function setup(placements: Record<string, Hex>): FightState {
   const state = createFight(0);
   // The fixed layout, which these tests place units around.
   delete state.tiles;
   state.phase = 'fight';
+  state.units = state.units.filter((u) => u.hero !== 'camel' || u.id in placements);
   let slot = 100;
   for (const u of state.units) {
     const h = placements[u.id];
@@ -163,14 +166,23 @@ describe('the track', () => {
   it('orders simultaneous placement: speed, then sides alternating from the player, then party order', () => {
     const s = createFight(0);
     const order = simultaneousOrder(s.units).map((u) => u.id);
-    // Outriders are fastest; the others tie, so they alternate sides.
-    expect(order).toEqual(['p-mangudai', 'e-mangudai', 'p-bokh', 'e-bokh', 'p-storm', 'e-storm']);
+    // Outriders are fastest; the heroes after them tie, so they alternate
+    // sides; the camel, slowest, is last.
+    expect(order).toEqual([
+      'p-mangudai',
+      'e-mangudai',
+      'p-bokh',
+      'e-bokh',
+      'p-storm',
+      'e-storm',
+      'p-camel',
+    ]);
   });
 
   it('starts every card from the starting cost, without two in one slot (3.4)', () => {
     const s = createFight(1);
     const slots = s.units.map((u) => u.slot);
-    expect(new Set(slots).size).toBe(6);
+    expect(new Set(slots).size).toBe(7);
     expect(unit(s, 'p-mangudai').slot).toBe(
       Math.floor((RULES.startCost * RULES.speedScale) / (unit(s, 'p-mangudai').speed + RULES.C))
     );
@@ -760,6 +772,88 @@ describe('abilities', () => {
     applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'hail', target: {hex: at(3, 1)}}});
     expect(expected).toBeGreaterThan(1);
     expect(unit(s, 'e-bokh').hp).toBe(hp - expected);
+  });
+});
+
+describe('the caravan’s camel', () => {
+  it('joins the player’s side in the middle of its column, with very high health and no defence', () => {
+    for (const seed of [1, 2, 3]) {
+      const s = createFight(seed);
+      const camel = unit(s, 'p-camel');
+      expect(camel.side).toBe('player');
+      expect(camel.hex).toEqual(SALT_FLATS.camelStart);
+      expect(hexToOffset(camel.hex!)).toEqual({col: 0, row: 4});
+      expect(camel.hp).toBe(HEROES.camel.health);
+      expect(camel.defence).toBe(0);
+      expect(s.units.filter((u) => u.hex && hexKey(u.hex) === hexKey(camel.hex!))).toHaveLength(1);
+      expect(s.units.filter((u) => u.side === 'enemy' && u.hero === 'camel')).toHaveLength(0);
+    }
+  });
+
+  it('wins by reaching one of the four hexes sticking out on the right edge', () => {
+    const layout = {orientation: 'pointy' as const, size: 1, origin: {x: 0, y: 0}};
+    const x = (h: Hex) => hexToPixel(h, layout).x;
+    const right = Math.max(...SALT_FLATS.hexes.map(x));
+    const outermost = SALT_FLATS.hexes.filter((h) => Math.abs(x(h) - right) < 1e-9);
+    expect(outermost.map(hexKey).sort()).toEqual(SALT_FLATS.exits.map(hexKey).sort());
+    expect(SALT_FLATS.exits.map((h) => hexToOffset(h).row)).toEqual([1, 3, 5, 7]);
+  });
+
+  it('moves one hex a turn at a typical action’s cost, and can’t attack', () => {
+    const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    const camel = unit(s, 'p-camel');
+    camel.slot = 50;
+    expect(advanceToDecision(s)).toBe(camel);
+    expect(abilitiesOf(camel).map((d) => d.id)).toEqual(['hold']);
+    expect(Math.max(...reachableHexes(s, mapOf(s), camel).map((r) => r.path.length))).toBe(1);
+    expect(tryTurn(s, 'p-camel', {move: [at(3, 4), at(4, 4)], action: {ability: 'hold'}})).toThrow(
+      RuleError
+    );
+    applyTurn(s, camel, {move: [at(3, 4)], action: {ability: 'hold'}});
+    expect(camel.hex).toEqual(at(3, 4));
+    expect(camel.slot).toBe(50 + slotsForward(RULES.cost.typical, HEROES.camel.speed));
+    expect(s.phase).toBe('fight');
+  });
+
+  it('wins the fight on reaching an exit, with enemies still standing', () => {
+    const s = setup({'p-camel': at(6, 3), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    const camel = unit(s, 'p-camel');
+    camel.slot = 50;
+    advanceToDecision(s);
+    applyTurn(s, camel, {move: [at(7, 3)], action: {ability: 'hold'}});
+    expect(s.phase).toBe('won');
+  });
+
+  it('is game over when it dies, even if the last enemy falls with it', () => {
+    const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    kill({state: s, map: mapOf(s), slot: 0}, unit(s, 'p-camel'));
+    expect(s.phase).toBe('lost');
+    const both = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    unit(both, 'p-camel').alive = false;
+    unit(both, 'e-bokh').alive = false;
+    checkEnd(both);
+    expect(both.phase).toBe('lost');
+  });
+
+  it('can’t win alone: the party falling is still a defeat', () => {
+    const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    kill({state: s, map: mapOf(s), slot: 0}, unit(s, 'p-bokh'));
+    expect(s.phase).toBe('lost');
+  });
+
+  it('is a target the enemy AI finishes, and a walk the player’s AI completes', () => {
+    const s = setup({'p-camel': at(3, 4), 'p-bokh': at(0, 0), 'e-bokh': at(4, 4)});
+    unit(s, 'p-camel').hp = 1;
+    const champion = unit(s, 'e-bokh');
+    champion.slot = 50;
+    advanceToDecision(s);
+    expect(simulate(s, champion.id, chooseAiTurn(s, champion))!.phase).toBe('lost');
+
+    const walk = setup({'p-camel': at(6, 3), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    const camel = unit(walk, 'p-camel');
+    camel.slot = 50;
+    advanceToDecision(walk);
+    expect(chooseAiTurn(walk, camel).move).toEqual([at(7, 3)]);
   });
 });
 

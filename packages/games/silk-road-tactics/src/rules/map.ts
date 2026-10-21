@@ -25,6 +25,10 @@ export interface MapData {
   tiles: Record<string, Tile>;
   /** Where each side may start: the board's outermost column on its edge. */
   startColumns: {player: Hex[]; enemy: Hex[]};
+  /** The player's camel's starting hex, one of the player's starting column (camel.md, 18.1). */
+  camelStart: Hex;
+  /** The camel reaching one of these wins the fight (camel.md, 18.2). */
+  exits: Hex[];
 }
 
 const ROWS = 9;
@@ -70,6 +74,11 @@ export const SALT_FLATS: MapData = {
   hexes: boardHexes(),
   tiles: Object.fromEntries(special.map(([c, t]) => [hexKey(offsetToHex(c)), t])),
   startColumns: {player: edgeHexes('left', 1), enemy: edgeHexes('right', 1)},
+  // The middle row's first hex.
+  camelStart: at(0, 4),
+  // The four hexes sticking out on the right edge: the last of each row
+  // shoved half a hex right (owner, 2026-10-21).
+  exits: [1, 3, 5, 7].map((row) => at(7, row)),
 };
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};

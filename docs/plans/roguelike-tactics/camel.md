@@ -13,7 +13,9 @@ Rules are marked **Decided** or **Proposed**; numbers marked TBD are
 tuning. Section numbers are the combat design's.
 
 **Status:** decided (owner, 2026-10-21) as the answer to how a stalled
-fight ends ([owner-decisions.md](owner-decisions.md), issue 1); not built.
+fight ends ([owner-decisions.md](owner-decisions.md), issue 1); **built in
+the fight (2026-10-21)**, drawn as a lettered disc until its sprite and
+portrait exist. Carrying its health between fights waits for Phase 2's run.
 
 ## 18. The Caravan's Camel
 
@@ -25,8 +27,9 @@ fight ends ([owner-decisions.md](owner-decisions.md), issue 1); not built.
   action cost** (100), so it advances very slowly. *(Proposed:* or it
   Holds, like any unit; walking rules apply as to heroes: it can't pass
   units or obstacles, and hazards it enters trigger, 6.2.)
-- **Very high health and no defence** (owner). Health TBD; size it so the
-  enemy has to commit several turns to it, not one burst.
+- **Very high health and no defence** (owner). Built with **1,500**
+  (placeholder; the Bökh Champion has 540), so the enemy has to commit
+  several turns to it, not one burst.
 - *(Proposed:* speed **Low (10)**. A move then places its card 100 × 5 ÷
   35 = 14 slots ahead, so crossing the 8-column map takes about 8 moves
   and 115 slots, about 11 turns of a Medium hero; Phase 1 fights last a
@@ -94,18 +97,36 @@ fight ends ([owner-decisions.md](owner-decisions.md), issue 1); not built.
   is about, as in the games above. Other objectives (11.4) can still vary
   fights.
 
-### 18.6 To Build
-- The camel unit, its move, the exit hexes, the win and loss checks, and
-  carrying its health in the run.
-- **The enemy AI** must value the camel: its death as a victory (which
-  dominates, like any victory, [ai-search.md](ai-search.md)), its health
-  and its distance to the exit. The AI-vs-AI balance measurements need a
-  player side that walks the camel.
-- **CPU:** a seventh unit on the board adds search work; re-measure the
-  work caps against the Free plan's 10 ms
-  ([owner-decisions.md](owner-decisions.md), issue 3).
-- The page: the camel's sprite and card, the exit hexes drawn, and the
-  previews showing hits on the camel.
+### 18.6 As Built (2026-10-21)
+- **Rules:** the camel is a unit of the player's side (`camel` in
+  `HEROES`, `src/rules/config.ts`: health 1,500, speed 10, defence 0,
+  power 0, only Hold among abilities, a move of 1 hex costing 100). It
+  starts at column 0 of row 4 (0-based), the middle of the player's
+  column; the heroes are scattered over the rest. The exits are
+  `SALT_FLATS.exits`. `checkEnd` (`resolve.ts`) checks, in order: the camel
+  dead (a loss), no enemy left (a win), the camel on an exit (a win), no
+  hero left (a loss). A fight saved before the camel has none, and plays as
+  before.
+- **The AI** (`ai.ts`): a finished fight dominates both the shortlist score
+  and the search's evaluation; the camel's health counts a point a point
+  (`AI.camelHealthWeight`, 1), with no kill value; each hex between the
+  camel and its nearest exit is worth `AI.perCamelHex` (60) to the enemy and
+  against the player. The camel isn't pulled toward the enemy as heroes
+  are.
+- **Measured** over 200 AI-vs-AI fights from real starts (the player's side
+  also played by the AI): **none unfinished** (3% to 8% before), median 50
+  actions; the player's side wiped the enemy in 61%, was wiped in 25%, lost
+  its camel in 13% and walked it out in 1%. The player's side now wins
+  more often: the enemy spends turns on the camel. A human walking the
+  camel on purpose is untested. The AI's CPU per request is unchanged
+  within noise (mean 3.2 ms against 3.1 ms locally).
+- **The page:** the exits are drawn with a dashed ivory border and two
+  chevrons, and hovering or tapping one says what it is; the camel's stat
+  sheet gives its rule in place of abilities; Move shows its 14 slots; the
+  result says whether the camel took the road out or fell.
+- **Still to do:** the camel's sprite and portrait; carrying its health
+  between fights (Phase 2); the balance runner's camel only waits at its
+  start unless the AI moves it.
 
 ## Decision log
 

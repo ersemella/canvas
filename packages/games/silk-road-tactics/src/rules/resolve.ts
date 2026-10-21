@@ -4,9 +4,9 @@
  */
 import {hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {RULES, HEROES} from './config';
+import {CAMEL, RULES, HEROES} from './config';
 import {addStatus, obscured, onMap, statusValue, unitAt, vulnerablePercent} from './board';
-import {tileAt} from './map';
+import {MAPS, tileAt} from './map';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, HailEffect, Motion, Unit} from './types';
 
@@ -149,8 +149,26 @@ export function kill(ctx: Ctx, unit: Unit): void {
 
 export function checkEnd(state: FightState): void {
   if (state.phase !== 'fight') return;
-  if (!state.units.some((u) => u.alive && u.side === 'enemy')) state.phase = 'won';
-  else if (!state.units.some((u) => u.alive && u.side === 'player')) state.phase = 'lost';
+  const camel = camelOf(state);
+  // The camel's death counts first: one action that also beats the last
+  // enemy, or carries the camel onto an exit as it dies, is a loss.
+  if (camel && !camel.alive) state.phase = 'lost';
+  else if (!state.units.some((u) => u.alive && u.side === 'enemy')) state.phase = 'won';
+  else if (camel?.hex && atExit(state, camel.hex)) {
+    state.phase = 'won';
+    state.log.push({slot: state.currentSlot, text: `${unitName(camel)} reaches the road out.`});
+  } else if (!state.units.some((u) => u.alive && u.side === 'player' && u !== camel))
+    state.phase = 'lost';
+}
+
+/** The player's camel; none in a fight saved before it existed (camel.md). */
+export function camelOf(state: FightState): Unit | undefined {
+  return state.units.find((u) => u.hero === CAMEL);
+}
+
+/** Whether `h` is one of the fight's exits, which the camel wins by reaching. */
+export function atExit(state: FightState, h: Hex): boolean {
+  return MAPS[state.mapId]!.exits.some((e) => hexEquals(e, h));
 }
 
 /** Hail on a hex hits whoever is there, then Slows it. */

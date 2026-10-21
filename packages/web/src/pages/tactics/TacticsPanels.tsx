@@ -5,11 +5,14 @@ import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {
   ABILITIES,
+  CAMEL_RULE,
+  EXIT_INFO,
   HEROES,
   PALETTE,
   RULES,
   TILE_INFO,
   abilitiesOf,
+  atExit,
   fogAt,
   fogInfo,
   hailInfo,
@@ -174,6 +177,9 @@ export function HexInspector({
     <Stack gap={dense ? 6 : 8} data-testid="hex-info">
       {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
       {tile !== 'sand' && <GroundCard info={TILE_INFO[tile]} dense={dense} />}
+      {atExit(fight, hex) && (
+        <GroundCard info={EXIT_INFO} color="var(--c-lapisLight)" dense={dense} />
+      )}
       {hail && (
         <GroundCard
           info={hailInfo(hail, fight.currentSlot)}
@@ -268,7 +274,8 @@ export function StatSheet({
   dense?: boolean;
 }) {
   const statuses = statusesOf(fight, unit);
-  const ult = ABILITIES[HEROES[unit.hero].ultimate];
+  const ultimate = HEROES[unit.hero].ultimate;
+  const ult = ultimate && ABILITIES[ultimate];
   // Hold isn't offered as an action (End turn is), and the ultimate gets its own section.
   const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold' && !def.ultimate);
   const stats = [
@@ -332,26 +339,34 @@ export function StatSheet({
             Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
           </Text>
         )}
+        {/* The camel has no abilities: its rule instead. */}
+        {!ult && (
+          <Text fz="xs" c="dimmed" mt={4}>
+            {CAMEL_RULE}
+          </Text>
+        )}
         {/* Names only, to scan; a tap explains one below. */}
-        <div className={styles.abilityList}>
-          {/* The phone's tooltip leaves the label out, to stay narrow. */}
-          {!dense && <span className={styles.abilityListLabel}>Abilities</span>}
-          {abilities.map((def) => (
-            <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
-              {def.name}
+        {ult && (
+          <div className={styles.abilityList}>
+            {/* The phone's tooltip leaves the label out, to stay narrow. */}
+            {!dense && <span className={styles.abilityListLabel}>Abilities</span>}
+            {abilities.map((def) => (
+              <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
+                {def.name}
+              </AbilityName>
+            ))}
+            <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
+              {ult.name}
+              {ultimateState(unit) !== 'Used' && (
+                <span className={styles.abilityLinkNote}>
+                  {ultimateState(unit) === 'Ready'
+                    ? 'Ready'
+                    : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
+                </span>
+              )}
             </AbilityName>
-          ))}
-          <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
-            {ult.name}
-            {ultimateState(unit) !== 'Used' && (
-              <span className={styles.abilityLinkNote}>
-                {ultimateState(unit) === 'Ready'
-                  ? 'Ready'
-                  : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
-              </span>
-            )}
-          </AbilityName>
-        </div>
+          </div>
+        )}
       </Glossary>
     </Paper>
   );

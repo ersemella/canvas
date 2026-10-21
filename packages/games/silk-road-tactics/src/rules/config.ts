@@ -90,7 +90,12 @@ export interface HeroStats {
   defence: number;
   power: number;
   abilities: AbilityId[];
-  ultimate: AbilityId;
+  /** The camel has none. */
+  ultimate?: AbilityId;
+  /** Hexes a move may cover, before Slowed; RULES.movementCap if unset. */
+  moveCap?: number;
+  /** A move's whole cost, in place of RULES.moveActionCost plus RULES.moveCostPerHex a hex. */
+  moveCost?: number;
 }
 
 /**
@@ -135,6 +140,23 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 25,
     abilities: ['sunlight', 'hail', 'fog', 'freeze', 'hold'],
     ultimate: 'freeze',
+  },
+  /**
+   * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
+   * moves one hex a turn at a typical action's cost, so it advances very
+   * slowly. Very high health and no defence (owner). Health 1,500 and
+   * speed Low are PLACEHOLDERS.
+   */
+  camel: {
+    name: 'Caravan Camel',
+    letter: 'C',
+    health: 1500,
+    speed: 10,
+    defence: 0,
+    power: 0,
+    abilities: ['hold'],
+    moveCap: 1,
+    moveCost: RULES.cost.typical,
   },
 };
 
@@ -276,7 +298,7 @@ export const AI = {
    * job is to take hits, and at 1 it Held on 44% of its turns to stay out of
    * reach (14% before the lookahead, 20% with it at 0).
    */
-  caution: {bokh: 0, mangudai: 1, storm: 1} as Record<HeroId, number>,
+  caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0} as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   perSlotMoved: 10,
   /**
@@ -295,6 +317,14 @@ export const AI = {
    */
   holdScoringCost: 60,
   /**
+   * Not in the brief: the caravan's camel (camel.md). Its health is worth
+   * this much a point (a hero's is worth 1, plus `kill`; the camel's death
+   * is a victory, so it has no kill value), and each hex it stands from an
+   * exit is worth `perCamelHex` to the enemy. PLACEHOLDERS.
+   */
+  camelHealthWeight: 1,
+  perCamelHex: 60,
+  /**
    * Deterministic work caps shared across all AI turns in a request.
    * An action simulation, charged preview, or automatic timeline card
    * spends one unit. Exhaustion uses a legal Hold, with no extra search.
@@ -312,6 +342,8 @@ export const AI = {
 
 /** The party, in party slot order, for both sides in Phase 1 (brief section 5). */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
+/** The player's camel, after the party in slot order; the enemy has none (camel.md). */
+export const CAMEL: HeroId = 'camel';
 
 /** Experimental overrides are used only by the headless balance runner. */
 export function movementRules(state: FightState) {

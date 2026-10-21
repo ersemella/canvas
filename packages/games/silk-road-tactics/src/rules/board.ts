@@ -32,12 +32,13 @@ export function fogAt(state: FightState, h: Hex): FogEffect | undefined {
 }
 
 /**
- * Plain sand: open ground with nothing on it (no unit, hail or fog). It has
+ * Plain sand: open ground with nothing on it (no unit, hail, fog or exit). It has
  * nothing to explain, so looking at it shows no tooltip or details.
  */
 export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
   return (
     tileAt(map, h) === 'sand' &&
+    !map.exits.some((e) => hexEquals(e, h)) &&
     !unitAt(state, h) &&
     !fogAt(state, h) &&
     !state.effects.some((e) => hexEquals(e.hex, h))
@@ -127,7 +128,8 @@ export function vulnerablePercent(state: FightState, unit: Unit): number {
 
 export function movementCap(unit: Unit): number {
   if (isImmobilized(unit)) return 0;
-  return Math.max(1, RULES.movementCap - statusValue(unit, 'slowed'));
+  const cap = HEROES[unit.hero].moveCap ?? RULES.movementCap;
+  return Math.max(1, cap - statusValue(unit, 'slowed'));
 }
 
 // ─── Movement ────────────────────────────────────────────────────────────────

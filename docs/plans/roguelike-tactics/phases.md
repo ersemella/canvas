@@ -54,9 +54,8 @@ milestone upgrades, ultimates, run end. Gear offers follow the gear rules in 9.7
 difficulty scaling (11.4). Leave room on the map for rival caravan nodes
 (Phase 4).
 
-Before Phase 2, or as its first step: the caravan's camel in a fight
-(the unit, its move, the exit hexes, win and loss, the AI valuing it;
-[camel.md](camel.md), 18.6). In Phase 2, its health carried through the
+The caravan's camel in a fight is built (2026-10-21; [camel.md](camel.md),
+18.6). In Phase 2, its health carried through the
 run, heroes starting each fight fresh (10.11), and the camel's recovery
 at caravanserais.
 

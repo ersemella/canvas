@@ -301,7 +301,8 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
    untested.
 8. **Stalls still need a guaranteed end.** Tuning brought them to 2.5%,
    not zero. Decided (owner, 2026-10-21): the caravan's camel, whose walk
-   to the exit ends a fight ([camel.md](camel.md)); not built.
+   to the exit ends a fight ([camel.md](camel.md)); built 2026-10-21, and
+   over 200 AI-vs-AI fights none went unfinished.
 
 ## Principles for re-tuning
 

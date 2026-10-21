@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals} from '@canvas/engine/server';
-import {HEROES, PARTY, RULES, movementRules} from './config';
+import {CAMEL, HEROES, PARTY, RULES, movementRules} from './config';
 import {expireStatuses, invalidPath} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
@@ -59,8 +59,7 @@ export function refreshStats(state: FightState): void {
   }
 }
 
-function makeUnit(side: Side, partyIndex: number): Unit {
-  const hero = PARTY[partyIndex]!;
+function makeUnit(side: Side, partyIndex: number, hero = PARTY[partyIndex]!): Unit {
   const stats = HEROES[hero];
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}`,
@@ -85,7 +84,8 @@ function makeUnit(side: Side, partyIndex: number): Unit {
  * A new fight on the Salt Flats, already under way: the seed scatters the
  * ruins and quicksand, the player's party along the leftmost column and
  * the enemy's along the rightmost (owner, 2026-10-20; there is no
- * deployment step).
+ * deployment step). The player's camel starts in the middle of its
+ * column (camel.md, 18.1).
  */
 export function createFight(seed: number): FightState {
   const map = SALT_FLATS;
@@ -96,6 +96,7 @@ export function createFight(seed: number): FightState {
     currentSlot: 0,
     units: [
       ...PARTY.map((_, i) => makeUnit('player', i)),
+      makeUnit('player', PARTY.length, CAMEL),
       ...PARTY.map((_, i) => makeUnit('enemy', i)),
     ],
     effects: [],
@@ -105,9 +106,14 @@ export function createFight(seed: number): FightState {
   };
   const random = seededRandom(seed);
   state.tiles = randomTiles(random);
+  const camel = state.units.find((u) => u.hero === CAMEL)!;
+  camel.hex = map.camelStart;
   for (const side of ['player', 'enemy'] as const) {
-    const hexes = shuffled(map.startColumns[side], random);
-    state.units.filter((u) => u.side === side).forEach((u, i) => (u.hex = hexes[i]!));
+    const free = map.startColumns[side].filter((h) => !hexEquals(h, map.camelStart));
+    const hexes = shuffled(free, random);
+    state.units
+      .filter((u) => u.side === side && u !== camel)
+      .forEach((u, i) => (u.hex = hexes[i]!));
   }
   placeStartingCards(state);
   log({state, map: mapOf(state), slot: 0}, 'The fight begins.');
@@ -259,7 +265,7 @@ export function applyTurn(
   if (movementRules(state).separateMovement && path.length > 0 && def.id !== 'hold')
     throw new RuleError('Movement and an ability require separate turns.');
   // Move + Hold encodes a move-only action without changing the turn protocol.
-  const cost = turnInputCost(state, input);
+  const cost = turnInputCost(state, input, unit);
   // Taunt (17.5): decided from where the turn starts, before any move. The
   // AI's own options already obey it (trustTarget).
   const taunter = trustTarget ? undefined : taunterOf(state, unit);
@@ -320,9 +326,14 @@ export function applyTurn(
   if (countsTowardUltimate(input)) unit.ultimateCharge += cost;
 }
 
-/** The authoritative cost, shared by the server, AI simulations and previews. */
-export function turnInputCost(state: FightState, input: TurnInput): number {
+/**
+ * The authoritative cost, shared by the server, AI simulations and previews.
+ * A unit with its own move cost (the camel) pays that for a move instead.
+ */
+export function turnInputCost(state: FightState, input: TurnInput, unit?: Unit): number {
   const hexes = input.move?.length ?? 0;
+  const moveCost = unit && HEROES[unit.hero].moveCost;
+  if (moveCost !== undefined && movementRules(state).separateMovement && hexes > 0) return moveCost;
   const base =
     movementRules(state).separateMovement && hexes > 0
       ? movementRules(state).moveActionCost
