@@ -392,7 +392,9 @@ confirm or change:
   do next turn. A unit's name in the details is a badge in its side's
   colour (blue yours, red the enemy's), with no "yours"/"enemy" label; the
   board's hover tooltip names the hero without "Your"/"Enemy", its colour
-  giving the side.
+  giving the side. (Superseded 2026-10-21: on desktop, hovering a hex
+  shows only its unit's health and statuses, with no tooltip; the side
+  panel's details tell the rest.)
 - **Timing is shown in slots from now**, never costs or absolute slot
   numbers (owner, 2026-10-19). The track, on the canvas above the board,
   is a fanned deck as in Mana Khemia (rather than section 9's window of
