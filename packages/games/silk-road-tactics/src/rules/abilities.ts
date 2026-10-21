@@ -19,7 +19,6 @@ import {
   hostile,
   isImmobilized,
   obscured,
-  obscuredBetween,
   onMap,
   sortByHex,
   unitAt,
@@ -249,28 +248,27 @@ const sunlight: AbilityDef = {
   kind: 'heal',
   range: ABILITY.sunlight.range,
   summary: (user) =>
-    `Heal a unit for ${scaled(ABILITY.sunlight.heal, user.power)}, cleanse its statuses, and clear hail from its space.`,
+    `Light a space: a unit in it is healed for ${scaled(ABILITY.sunlight.heal, user.power)} and cleansed, and hail there is cleared.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.sunlight.cost,
   movesSelf: false,
-  targetsUnit: true,
-  // Ranged: not a unit in, or past, a sandstorm (Obscured, owner 2026-10-21).
-  targets: (state, map, _user, from) =>
-    hexesWithin(
-      map,
-      from,
-      ABILITY.sunlight.range,
-      (h) => unitAt(state, h) !== undefined && !obscuredBetween(state, map, from, h)
-    ),
+  // A space, not a unit (owner, 2026-10-21): an empty one can be cleared of
+  // hail, and a sandstorm doesn't stop it.
+  targets: (_state, map, _user, from) =>
+    hexesWithin(map, from, ABILITY.sunlight.range, (h) => tileAt(map, h) !== 'obstacle'),
   resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    log(ctx, `${unitName(user)} calls down sunlight on ${unitName(u)}.`);
-    cleanse(u);
-    breakPins(ctx, u, true);
-    heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
-    // Clears the storm from the unit's own hex only (owner, 2026-10-21).
     const h = target.hex!;
+    const u = unitAt(ctx.state, h);
+    if (u) {
+      log(ctx, `${unitName(user)} calls down sunlight on ${unitName(u)}.`);
+      cleanse(u);
+      breakPins(ctx, u, true);
+      heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
+    } else {
+      log(ctx, `${unitName(user)} calls down sunlight.`);
+    }
+    // Clears the storm from that hex only (owner, 2026-10-21).
     ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, h));
   },
 };

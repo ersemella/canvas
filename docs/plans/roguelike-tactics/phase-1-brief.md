@@ -147,7 +147,7 @@ reading of the owner's one-line descriptions; the owner can change them
 
 | Ability | Rule |
 |---|---|
-| **Sunlight** (Clear the Storm until 2026-10-19, owner) | **One unit** within range 4, the caster or an **enemy** included (6.7, 2026-10-19), is **healed** (base heal 50, scaled by power: owner, 2026-10-20; 35 and 50 earlier that day) and **cleansed**, and **hail and fog are cleared from its hex** (that hex only, owner, 2026-10-21); like any ranged ability, it **can't target a unit in, or past, a sandstorm** (Obscured, owner, 2026-10-21) (cleansed: owner, 2026-10-20; it was every unit within a radius of the caster, which under separate movement took a turn of positioning first). Cleansing an enemy removes the party's own control from it. Quick cost, 60 (owner, 2026-10-20; typical before). |
+| **Sunlight** (Clear the Storm until 2026-10-19, owner) | Targets **one space** within range 4, empty or not (owner, 2026-10-21; a unit before). A unit on it, the caster or an **enemy** included (6.7, 2026-10-19), is **healed** (base heal 50, scaled by power: owner, 2026-10-20; 35 and 50 earlier that day) and **cleansed**, and **hail and fog are cleared from its hex** (that hex only, owner, 2026-10-21); aimed at a space, it **isn't stopped by a sandstorm** (owner, 2026-10-21; earlier that day it couldn't target a unit in, or past, one) (cleansed: owner, 2026-10-20; it was every unit within a radius of the caster, which under separate movement took a turn of positioning first). Cleansing an enemy removes the party's own control from it. Quick cost, 60 (owner, 2026-10-20; typical before). |
 | **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it takes **base damage 50** (owner, 2026-10-19; scaled by the caster's power when cast, then Vulnerable and defence as any hit), then is **Slowed** for TBD slots (no Vulnerable since 2026-10-20, owner; Freeze and flanking keep it). Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justified; it now deals damage, so whether it stays uncharged is open). Typical cost. |
 | ~~Fog~~ | **Removed (owner, 2026-10-21).** It replaced Gale on 2026-10-20: its hexes were Obscured for 20 slots. No version measured worth its turn, and fog that blocked sight made fights 15–35% longer ([balance.md](balance.md)). The Storm Caller's kit is Sunlight, Hail and Freeze. |
 | **Freeze** (ultimate) | An area, **instant** at typical cost (owner, 2026-10-20; it was charged, with a casting time, from 2026-10-18, and its targets stepped out of it: [balance.md](balance.md)): targets any hex within maximum range TBD, no line of fire needed. Every unit in the area (radius TBD), allies included, takes base damage **60** and is then **Immobilized** and **Vulnerable 50%** for 20 slots (owner, 2026-10-20: ultimates buffed; no damage, 25% for 15 before). |
@@ -361,8 +361,8 @@ confirm or change:
 - **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage
   damage allies, and Sunlight can heal and cleanse an enemy. Sunlight's
   placeholder radius went from 2 to 1 with it, so stepping clear
-  of enemies was possible; since 2026-10-20 it targets one unit within 4
-  instead. The AI counts healing or cleansing an enemy against an option.
+  of enemies was possible; since 2026-10-20 it targets one unit within
+  4 instead, and since 2026-10-21 one space. The AI counts healing or cleansing an enemy against an option.
 - **The map's coordinates** are in `src/rules/map.ts`: 9 rows, even rows
   columns 0 to 7, odd rows −1 to 7 (2026-10-20; 7 rows of 0 to 8 and −1
   to 8, then briefly 1 to 7 and 0 to 7, before). Odd rows reaching one

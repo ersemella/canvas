@@ -12,8 +12,8 @@ import type {ActionTarget, FightState, Unit} from './types';
 
 /**
  * The targets offered for `def` from where `unit` stands: its allowed
- * targets (see `allowedTargets`), and for one aimed at a unit only enemies,
- * or for Sunlight only allies. The rules allow friendly fire; a player
+ * targets (see `allowedTargets`), and for one aimed at a unit only enemies.
+ * The rules allow friendly fire; a player
  * isn't offered it (an area can still catch allies).
  */
 export function offeredTargets(
@@ -26,7 +26,7 @@ export function offeredTargets(
   if (!def.targetsUnit) return targets;
   return targets.filter((t) => {
     const u = t.hex && unitAt(state, t.hex);
-    return u && (def.id === 'sunlight') === (u.side === unit.side);
+    return u && u.side !== unit.side;
   });
 }
 

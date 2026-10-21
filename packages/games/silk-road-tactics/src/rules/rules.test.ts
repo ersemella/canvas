@@ -4,7 +4,6 @@ import {
   hexDistance,
   hexEquals,
   hexKey,
-  hexLineSides,
   hexNeighbors,
   hexToOffset,
   hexToPixel,
@@ -497,29 +496,16 @@ describe('damage', () => {
     expect(targets.some((t) => hexEquals(t.hex!, at(4, 5)))).toBe(true);
   });
 
-  it('Sunlight can’t target a unit in or past a sandstorm', () => {
-    const s = setup({'p-storm': at(3, 4), 'e-bokh': at(3, 5), 'p-mangudai': at(4, 4)});
+  it('Sunlight heals a unit in, or past, a sandstorm', () => {
+    const s = setup({'p-storm': at(3, 4), 'e-bokh': at(3, 5), 'e-mangudai': at(8, 6)});
     const storm = unit(s, 'p-storm');
+    const target = unit(s, 'e-bokh');
+    target.hp = 100;
     const map = mapOf(s);
-    const aimed = (h: Hex) =>
-      ABILITIES.sunlight.targets(s, map, storm, storm.hex!).some((t) => hexEquals(t.hex!, h));
-    expect(aimed(at(3, 5))).toBe(false);
-    expect(aimed(at(4, 4))).toBe(true);
-    // A unit beyond the sandstorm, on a line that crosses it.
-    const past = map.hexes.find(
-      (h) =>
-        hexDistance(storm.hex!, h) <= ABILITY.sunlight.range &&
-        tileAt(map, h) === 'sand' &&
-        hexLineSides(storm.hex!, h)
-          .slice(1, -1)
-          .some((step) => step.some((x) => hexEquals(x, at(3, 5))))
-    )!;
-    expect(past).toBeDefined();
-    unit(s, 'e-bokh').hex = past;
-    expect(aimed(past)).toBe(false);
-    expect(() => applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: past}}})).toThrow(
-      RuleError
-    );
+    expect(tileAt(map, at(3, 5))).toBe('conceal');
+    expect(ABILITIES.sunlight.targets(s, map, storm, storm.hex!)).toContainEqual({hex: at(3, 5)});
+    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(3, 5)}}});
+    expect(target.hp).toBeGreaterThan(100);
   });
 
   it('deals collision damage to both units when a displace is stopped', () => {
@@ -677,6 +663,15 @@ describe('abilities', () => {
     expect(b.statuses).toEqual([]);
   });
 
+  it('Sunlight can clear hail from an empty hex', () => {
+    const s = setup({'p-storm': at(1, 1), 'e-bokh': at(8, 6)});
+    s.effects = [
+      {kind: 'hail', hex: at(3, 1), untilSlot: 999, damage: 50, slowed: 2, statusSlots: 10},
+    ];
+    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(3, 1)}}});
+    expect(s.effects).toEqual([]);
+  });
+
   it('Sunlight clears hail from its target’s hex only', () => {
     const s = setup({'p-storm': at(1, 1), 'p-bokh': at(2, 1), 'e-bokh': at(8, 6)});
     const until = 999;
@@ -812,11 +807,11 @@ describe('abilities', () => {
       unit(s, id).hp = 100;
       unit(s, id).statuses.push({kind: 'slowed', value: 2, untilSlot: 999});
     }
-    // Any unit within range, itself and enemies included; never an empty hex.
+    // Any space within range: units of either side, and empty ones.
     const targets = ABILITIES.sunlight.targets(s, SALT_FLATS, storm, storm.hex!);
-    expect(targets.map((t) => hexKey(t.hex!)).sort()).toEqual(
-      [at(1, 3), at(1, 2), at(2, 3)].map(hexKey).sort()
-    );
+    for (const h of [at(1, 3), at(1, 2), at(2, 3), at(3, 3)])
+      expect(targets.some((t) => hexEquals(t.hex!, h))).toBe(true);
+    expect(targets.some((t) => hexEquals(t.hex!, at(8, 6)))).toBe(false);
     expect(hexDistance(at(1, 3), at(8, 6))).toBeGreaterThan(ABILITY.sunlight.range);
     applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBeGreaterThan(100);

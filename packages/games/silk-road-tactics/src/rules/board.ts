@@ -41,25 +41,12 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
 
 /**
  * Obscured (keywords.md, 17.6): a sandstorm tile (the Storm Caller's fog
- * was too, until 2026-10-21). A ranged ability can't target a unit standing
- * here, or through here (owner, 2026-10-21; it halved ranged hits before).
+ * was too, until 2026-10-21). The bow can't target a unit standing here,
+ * or through here, or shoot out of here (owner, 2026-10-21; it halved
+ * ranged hits before). Sunlight, aimed at a space, ignores it.
  */
 export function obscured(_state: FightState, map: MapData, h: Hex): boolean {
   return tileAt(map, h) === 'conceal';
-}
-
-/**
- * Whether a ranged ability aimed from `from` at `to` is stopped by Obscured:
- * `to` is Obscured, or the line between hex centres passes an Obscured hex
- * (on a border, either side, as for line of fire). The user's own hex
- * doesn't count here: Sunlight can still be aimed out of a sandstorm. The
- * bow can't shoot out of one (`arrowLanes`, owner 2026-10-21).
- */
-export function obscuredBetween(state: FightState, map: MapData, from: Hex, to: Hex): boolean {
-  if (obscured(state, map, to)) return true;
-  return hexLineSides(from, to)
-    .slice(1, -1)
-    .some((step) => step.some((h) => obscured(state, map, h)));
 }
 
 /** A unit with a ranged attack (the bow), which Obscured stops. */
