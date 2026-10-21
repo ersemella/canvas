@@ -832,7 +832,7 @@ describe('the caravan’s camel', () => {
     }
   });
 
-  it('joins the player’s side in the middle of its column, with very high health and no defence', () => {
+  it('joins the player’s side in the middle of its column, with very high health and High defence', () => {
     for (const seed of [1, 2, 3]) {
       const s = createFight(seed);
       const camel = unit(s, 'p-camel');
@@ -840,7 +840,7 @@ describe('the caravan’s camel', () => {
       expect(camel.hex).toEqual(SALT_FLATS.camelStart);
       expect(hexToOffset(camel.hex!)).toEqual({col: 0, row: 4});
       expect(camel.hp).toBe(HEROES.camel.health);
-      expect(camel.defence).toBe(0);
+      expect(camel.defence).toBe(40);
       expect(s.units.filter((u) => u.hex && hexKey(u.hex) === hexKey(camel.hex!))).toHaveLength(1);
       expect(s.units.filter((u) => u.side === 'enemy' && u.hero === 'camel')).toHaveLength(0);
     }

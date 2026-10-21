@@ -26,7 +26,8 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   action cost** (100), so it advances very slowly. *(Proposed:* or it
   Holds, like any unit; walking rules apply as to heroes: it can't pass
   units or obstacles, and hazards it enters trigger, 6.2.)
-- **Very high health and no defence** (owner). Built with **1,500**
+- **Very high health and High defence** (owner; defence High, 40, since
+  2026-10-21, was none). Built with **1,500**
   (placeholder; the Bökh Champion has 540), so the enemy has to commit
   several turns to it, not one burst.
 - **It acts first in every fight, despite its speed** (owner, 2026-10-21):
@@ -102,7 +103,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 
 ### 18.6 As Built (2026-10-21)
 - **Rules:** the camel is a unit of the player's side (`camel` in
-  `HEROES`, `src/rules/config.ts`: health 1,500, speed 10, defence 0,
+  `HEROES`, `src/rules/config.ts`: health 1,500, speed 10, defence 40,
   power 0, only Hold among abilities, a move of 1 hex costing 100). It
   starts at column 0 of row 4 (0-based), the middle of the player's
   column; the heroes are scattered over the rest. The exits are
