@@ -74,16 +74,14 @@ export function runBalance(options: Options) {
             .forEach((u, i) => {
               u.hex = positions[side][i]!;
             });
+        // The fixed tie order (no shuffle), so `priority` decides starting speed ties.
         if (priority === 'enemy') {
           // Swap side labels only while allocating the starting track. Geometry,
           // team identities, and AI tie-breaking remain identical across the pair.
-          for (const u of state.units) {
-            u.side = u.side === 'player' ? 'enemy' : 'player';
-            u.slot = null;
-          }
+          for (const u of state.units) u.side = u.side === 'player' ? 'enemy' : 'player';
           placeStartingCards(state);
           for (const u of state.units) u.side = u.side === 'player' ? 'enemy' : 'player';
-        }
+        } else placeStartingCards(state);
         // Stop at every unit to measure and bound the fight; both sides use the same AI.
         for (const u of state.units) u.controller = 'human';
         let turns = 0,

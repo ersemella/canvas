@@ -49,7 +49,7 @@ fight's end ends the run.
 |---|---|
 | 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement action **20 + 10 per hex**; starting cost **100**, a typical action (owner, 2026-10-19; was 50, which bunched all six cards into slots 3 to 8); `C` = **25** and `speedScale` = **5**: slots = cost × 5 ÷ (speed + 25) (owner, 2026-10-20, putting speed on the shared stat scale; was cost ÷ (speed + 6) with speeds 5 times smaller, the same placements). With speed 25, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). On the shared stat scale, Low 10 / Medium 25 / High 40 (owner, 2026-10-20; was 1 to 10). No gear in Phase 1, so nothing lowers it (4.2's armour trade-off waits for gear). |
-| 4. Simultaneous placement | Higher speed first, then alternate sides starting with the **player's** side, then party slot order (3.3). |
+| 4. Simultaneous placement | Higher speed first; equal speeds in a **random** order from the fight's seed (owner, 2026-10-21; was alternating sides starting with the **player's**, then party slot order) (3.3). |
 | 6. Charged abilities | One in Phase 1, an ultimate: the Mangudai Outrider's Volley (arcing area). The Storm Caller's Freeze was charged too until 2026-10-20 (owner: now instant, section 4). |
 | 39. Ultimate unlock | One value for every hero: usable after spending **300 action cost** in the fight, moves included, Holds without a move not (owner, 2026-10-20; was **3 completed turns**, which cheap moves met within a few slots of first contact) (10.10); once per fight. A run saved earlier converts each counted turn to 100. |
 | 8. Movement action | Ordinary movement is a separate action: **20 + 10 per hex**, up to 4 hexes. No ability and ordinary movement in the same turn (owner, 2026-10-20). |
@@ -302,7 +302,7 @@ The rest don't block Phase 1; all are config values:
 - Cost values and `C` (open question 1): the defaults aim for a typical
   turn about 10 slots ahead.
 - The default size of the visible track window (roughly 30 slots).
-- The fixed order for simultaneous placement (open question 4).
+- The tie order for simultaneous placement (open question 4).
 - Move and act order (open question 8).
 
 ## 11. As built (2026-10-19)
