@@ -250,6 +250,24 @@ describe('the search timeline', () => {
     expect([...threat.hexes.values()].every((h) => h.ranged === volley)).toBe(true);
   });
 
+  it('values a charge still pending at the search horizon, unless its target steps out first', () => {
+    const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
+    const storm = unit(s, 'e-storm');
+    const target = unit(s, 'p-bokh');
+    storm.slot = 5;
+    const idle = evaluatePosition(s, 'enemy');
+    storm.charging = {ability: 'volley', target: hex(3, 0)};
+    // The target's next card comes after the Volley lands: it is caught.
+    target.slot = 10;
+    const before = JSON.stringify(s);
+    expect(evaluatePosition(s, 'enemy')).toBeGreaterThan(idle);
+    expect(evaluatePosition(s, 'player')).toBeLessThan(-idle);
+    expect(JSON.stringify(s)).toBe(before);
+    // Its card comes first and it can move, so it is assumed to escape.
+    target.slot = 1;
+    expect(evaluatePosition(s, 'enemy')).toBe(idle);
+  });
+
   it('lets a target escape before a pending Volley lands', () => {
     const s = setup({'p-mangudai': hex(0, 0), 'e-mangudai': hex(3, 0)});
     const me = unit(s, 'p-mangudai');

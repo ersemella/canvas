@@ -14,8 +14,12 @@ deepening. It remains deterministic: no randomness or clock-based cutoff.
 - Try a horizon of two decisions, including the root action. If work
   remains, try three. Only a fully completed iteration replaces the choice;
   interruption returns the previous iteration, or the greedy root choice.
+  Each completed iteration re-sorts the root options by their values, so
+  the next one searches the previous best first (2026-10-21).
 - Use one evaluation from the root team's perspective: living health,
   casualties, statuses and fog. Victory or defeat dominates other scores.
+  A charge still on the timeline at the horizon is valued as if it landed,
+  with the preview's escape rule, but never as a victory (2026-10-21).
   Time costs and progress toward combat are signed for the acting team.
   Progress is evaluated per action; subtracting both teams' absolute
   distances would cancel out in a duel and encourage Holding.
@@ -97,6 +101,29 @@ production guarantee. Separately, 40 self-play fights with the new AI all
 finished within 150 player requests (1,606 requests; median 1.41 ms,
 p99 5.95 ms). This is a regression sample, not a win-rate claim or a
 comprehensive search over deployments.
+
+## Tuning, 2026-10-21
+
+A CPU profile of `bench:ai` put most of the time in candidate generation:
+`reachableHexes` (about 19%), `statusPoints` (13%, mostly for units with
+no status) and string-keyed tile and unit lookups. Number-keyed tiles,
+one occupancy map per `reachableHexes` call and an early return for
+status-free units left every decision unchanged (12 full self-play fights
+compared turn by turn). Over three alternating `bench:ai` runs, mean
+request time fell from 2.83 to 1.66 ms and p99 from about 10.4 to 6.0 ms.
+
+Measured on 3,050 AI turns from 60 self-play fights, depth three completes
+on only 7.9% of turns: the work cap is nearly always spent (106 of 110 on
+average), so the AI mostly plays at a horizon of two. Re-sorting the root
+raises that to 8.4%. Head-to-head over 1,000 fights against the previous
+AI (each seed played from both sides), the re-sort and the pending-charge
+evaluation are even (480–480; 40 stalled fights against 38). Choosing the
+best root option finished by an interrupted iteration (sound once the
+previous best is searched first) applied on 24% of turns, but was rejected:
+no gain in wins (479–476) and more stalled fights (45) and longer ones.
+A deeper search therefore needs a larger work cap, which the faster
+candidate generation now leaves room for; that is the owner's call
+(owner-decisions.md, section 3).
 
 For repeatable local throughput checks of the current implementation, run
 `pnpm --filter @canvas/games-silk-road-tactics bench:ai`. The benchmark

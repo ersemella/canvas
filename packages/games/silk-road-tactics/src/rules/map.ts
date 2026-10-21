@@ -110,14 +110,29 @@ export function randomTiles(random: () => number): Record<string, Tile> {
   return tiles;
 }
 
-const hexSets = new WeakMap<Hex[], Set<string>>();
+/** A hex as one number, for cheap lookups in the AI's hot loops (unique while |r| < 32768). */
+export const hexNumber = (h: Hex): number => h.q * 65536 + h.r;
+
+const hexSets = new WeakMap<Hex[], Set<number>>();
 
 export function onMap(map: MapData, h: Hex): boolean {
   let set = hexSets.get(map.hexes);
-  if (!set) hexSets.set(map.hexes, (set = new Set(map.hexes.map(hexKey))));
-  return set.has(hexKey(h));
+  if (!set) hexSets.set(map.hexes, (set = new Set(map.hexes.map(hexNumber))));
+  return set.has(hexNumber(h));
 }
 
+/** Each tile layout by hex number, built once; a layout never changes after it is made. */
+const tileNumbers = new WeakMap<Record<string, Tile>, Map<number, Tile>>();
+
 export function tileAt(map: MapData, h: Hex): Tile {
-  return map.tiles[hexKey(h)] ?? 'sand';
+  let tiles = tileNumbers.get(map.tiles);
+  if (!tiles) {
+    tiles = new Map();
+    for (const [key, tile] of Object.entries(map.tiles)) {
+      const [q, r] = key.split(',').map(Number);
+      tiles.set(hexNumber({q: q!, r: r!}), tile);
+    }
+    tileNumbers.set(map.tiles, tiles);
+  }
+  return tiles.get(hexNumber(h)) ?? 'sand';
 }

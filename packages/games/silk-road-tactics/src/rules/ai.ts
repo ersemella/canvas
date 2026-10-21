@@ -103,6 +103,8 @@ function attacksFromAfar(u: Unit): boolean {
  * own pressure it loses, Crushed as the damage it has left to deal.
  */
 function statusPoints(u: Unit, slot: number, p: Pressure): number {
+  // Every term below is zero without a status, and most units have none.
+  if (u.statuses.length === 0) return 0;
   const left = (kind: Parameters<typeof statusSlotsLeft>[1]) =>
     Math.min(AI.statusHorizon, statusSlotsLeft(u, kind, slot));
   const share = attacksFromAfar(u) ? AI.immobilizedShare.ranged : AI.immobilizedShare.melee;
@@ -400,11 +402,31 @@ interface SearchNode {
 
 const exhausted = Symbol('AI search budget exhausted');
 
-/** A single, symmetric team evaluation, always from the root side's perspective. */
+/**
+ * A single, symmetric team evaluation, always from the root side's perspective.
+ * A charge still on the timeline at the horizon counts as if it landed now,
+ * with the preview's assumption that targets acting first step out of it;
+ * left out, the search could never see a Volley or Freeze it had started,
+ * or one aimed at it, when the charge lands after its last decision.
+ */
 export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
+  const charging = state.units
+    .filter((u) => u.alive && u.charging && u.slot !== null)
+    .sort((a, b) => a.slot! - b.slot!);
+  if (charging.length === 0) return unitsValue(state, side);
+  const landed = cloneFight(state);
+  for (const c of charging) {
+    // An earlier charge in this preview may have killed this one's caster.
+    if (landed.units.find((u) => u.id === c.id)!.alive) resolvePreviewCharge(landed, c.id);
+  }
+  // Valued unit by unit, never as a victory: the landing is still a forecast.
+  return unitsValue(landed, side);
+}
+
+function unitsValue(state: FightState, side: Side): number {
   const p = pressureOf(state);
   let score = 0;
   for (const u of state.units) {
@@ -501,14 +523,21 @@ export function chooseAiTurn(
     for (let depth = 2; depth <= (settings.depth ?? AI.searchDepth); depth++) {
       let winner = options[0]!;
       let value = -Infinity;
+      const values = new Map<ScoredOption, number>();
       for (const option of options) {
         const cost = actionCost(state, unit, option);
         const next = search(childOf(root, option), depth - 1, value + cost, Infinity) - cost;
+        values.set(option, next);
         if (next > value) {
           value = next;
           winner = option;
         }
       }
+      // The next, deeper iteration tries this one's best first (stable on
+      // ties), so alpha-beta has a strong bound early and cuts off more.
+      // A pruned option's value is only an upper bound, which still sorts it
+      // below the winner it lost to.
+      options.sort((a, b) => values.get(b)! - values.get(a)!);
       best = winner.input;
       completedInput = best;
       if (stats) {

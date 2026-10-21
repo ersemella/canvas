@@ -4,7 +4,6 @@
  */
 import {
   hexEquals,
-  hexKey,
   hexLineSides,
   hexNeighbors,
   hexOppositePairs,
@@ -12,7 +11,7 @@ import {
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES, movementRules} from './config';
-import {onMap, tileAt} from './map';
+import {hexNumber, onMap, tileAt} from './map';
 import type {MapData} from './map';
 import type {FightState, FogEffect, Status, StatusKind, Unit} from './types';
 
@@ -153,19 +152,23 @@ function harmful(state: FightState, map: MapData, h: Hex): boolean {
 export function reachableHexes(state: FightState, map: MapData, unit: Unit): Reach[] {
   if (!unit.hex) return [];
   const cap = movementCap(unit);
-  const best = new Map<string, {path: Hex[]; hazards: number}>();
-  best.set(hexKey(unit.hex), {path: [], hazards: 0});
+  const blockAll = movementRules(state).blockAllUnits;
+  // unitAt for every hex at once: the first living unit standing there.
+  const occupant = new Map<number, Unit>();
+  for (const u of state.units)
+    if (u.alive && u.hex && !occupant.has(hexNumber(u.hex))) occupant.set(hexNumber(u.hex), u);
+  const best = new Map<number, {path: Hex[]; hazards: number}>();
+  best.set(hexNumber(unit.hex), {path: [], hazards: 0});
   let frontier: Hex[] = [unit.hex];
   for (let step = 0; step < cap; step++) {
-    const next = new Map<string, Hex>();
+    const next = new Map<number, Hex>();
     for (const from of frontier) {
-      const fromBest = best.get(hexKey(from))!;
+      const fromBest = best.get(hexNumber(from))!;
       for (const h of hexNeighbors(from)) {
         if (!walkable(map, h)) continue;
-        const other = unitAt(state, h);
-        if (other && other !== unit && (movementRules(state).blockAllUnits || hostile(other, unit)))
-          continue;
-        const key = hexKey(h);
+        const key = hexNumber(h);
+        const other = occupant.get(key);
+        if (other && other !== unit && (blockAll || hostile(other, unit))) continue;
         const hazards = fromBest.hazards + (harmful(state, map, h) ? 1 : 0);
         const seen = best.get(key);
         // Only improve within the same step count (BFS layers).
@@ -179,7 +182,7 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
   const out: Reach[] = [];
   for (const {path} of best.values()) {
     const hex = path.length > 0 ? path[path.length - 1]! : unit.hex;
-    const other = unitAt(state, hex);
+    const other = occupant.get(hexNumber(hex));
     if (other && other !== unit) continue;
     out.push({hex, path});
   }
