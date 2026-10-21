@@ -15,6 +15,7 @@ import {
   ABILITY,
   BOARD_LAYOUT,
   HEROES,
+  HERO_PORTRAIT,
   RULES,
   SCENE_SIZE,
   abilitiesOf,
@@ -582,6 +583,8 @@ export function TacticsPage() {
       highlights,
       selectedUnitId: selectedId ?? acting?.id ?? null,
       inspectedUnitId: phone ? featuredId : selectedId,
+      // Phones show whose turn it is in the action bar instead (see `TurnControls`).
+      turnArrow: !phone,
       preview: [],
       previewSlot: preview?.slot ?? null,
       aimSlot: preview?.aimSlot ?? null,
@@ -823,6 +826,7 @@ export function TacticsPage() {
         onAbility={chooseAbility}
         onConfirm={() => commit()}
         menu={menu}
+        portrait={phone}
       >
         <SkipButton
           // A new turn (or unit) starts it disarmed.
@@ -1007,6 +1011,11 @@ function TurnControls(props: {
   onConfirm: () => void;
   /** The run's menu, beside Skip turn. */
   menu: React.ReactNode;
+  /**
+   * Phones: the unit's portrait before Skip turn, to say whose turn it is
+   * (the board's arrow over it read as "tap here").
+   */
+  portrait?: boolean;
   children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving, confirm} = props;
@@ -1119,9 +1128,21 @@ function TurnControls(props: {
         })}
       </div>
       <div className={styles.confirmRow}>
+        {props.portrait && <UnitPortrait unit={unit} />}
         {props.children}
         {props.menu}
       </div>
     </Stack>
+  );
+}
+
+/** A unit's portrait, framed like its track card; its hero's letter if it has none. */
+function UnitPortrait({unit}: {unit: Unit}) {
+  const src = HERO_PORTRAIT[unit.hero]?.src;
+  const name = HEROES[unit.hero].name;
+  return (
+    <span className={styles.portrait} title={name} data-testid="turn-portrait">
+      {src ? <img src={src} alt={name} /> : HEROES[unit.hero].letter}
+    </span>
   );
 }

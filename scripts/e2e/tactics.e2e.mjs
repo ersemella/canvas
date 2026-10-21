@@ -757,6 +757,20 @@ try {
     !(await phone.getByText(/^Your turn:|Tap a hex to look/).count())
   );
   check('phone: no top bar', (await phone.locator('header').count()) === 0);
+  // Whose turn it is: the unit's portrait before Skip turn (no arrow on the board).
+  {
+    const portrait = phone.getByTestId('turn-portrait');
+    const name = await phone.evaluate(() => {
+      const f = window.__tactics.run.view.fight;
+      return f.units.find((u) => u.id === f.awaiting)?.name ?? null;
+    });
+    check(
+      'phone: the action bar shows whose turn it is',
+      (await portrait.count()) === 1 && (await portrait.getAttribute('title')) !== null,
+      [await portrait.getAttribute('title').catch(() => null), name]
+    );
+    await shot(phone, 'phone-turn');
+  }
   const canvasBox = await phone.locator('canvas').boundingBox();
   const viewportWidth = phone.viewportSize().width;
   check(

@@ -194,6 +194,29 @@
 .confirmRow > :first-child {
   flex: 1;
 }
+/* Phones: whose turn it is, before Skip turn (which still takes the rest). */
+.confirmRow > .portrait {
+  flex: none;
+}
+.portrait {
+  display: grid;
+  place-items: center;
+  width: calc(32px + 2 * var(--px));
+  height: calc(32px + 2 * var(--px));
+  border: var(--px) solid var(--c-ink);
+  /* The track card's ground: two flat bands of lapis. */
+  background: linear-gradient(var(--c-lapis) 50%, var(--c-lapisDark) 50%);
+  color: var(--c-ivory);
+  font-weight: bold;
+}
+.portrait img {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+}
+.confirmRow > .portrait + * {
+  flex: 1;
+}
 
 /* A keyword: tappable for its rule (Keywords.tsx). */
 .term {

@@ -64,6 +64,12 @@ export interface BoardScene {
   previewSlot?: number | null;
   /** The slot the planned turn's cost aims at; when it's taken, the card yields on to `previewSlot`. */
   aimSlot?: number | null;
+  /**
+   * The arrow over the unit you're controlling (on unless false). Phones
+   * leave it off: there it reads as "tap here", and the action bar shows the
+   * unit's portrait instead.
+   */
+  turnArrow?: boolean;
 }
 
 /**
@@ -121,7 +127,7 @@ const SPRITE_SCALE = 2;
 /** How far below the hex's centre a sprite's bottom edge sits. */
 const SPRITE_FEET = 29;
 /** Track portraits (32×32, facing right), filling the card; `faceX` is the face's column. */
-const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
+export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
   bokh: {src: bokhPortrait, faceX: 17},
   mangudai: {src: mangudaiPortrait, faceX: 18},
   storm: {src: stormPortrait, faceX: 19},
@@ -330,7 +336,7 @@ export class TacticsBoardSystem extends BaseSystem {
       if (map.hexes.some((h) => tileAt(map, h) === 'conceal'))
         parts.push(Math.floor(time * SANDSTORM_BANK.fps));
       if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
-      parts.push(turnArrowBob(time));
+      if (this.scene.turnArrow !== false) parts.push(turnArrowBob(time));
     }
     return parts.join(' ');
   }
@@ -580,6 +586,7 @@ export class TacticsBoardSystem extends BaseSystem {
     // Not while a turn plays back, when whoever the events move is acting.
     const yours = fight.units.find((u) => u.id === fight.awaiting);
     if (
+      this.scene.turnArrow !== false &&
       !playing &&
       fight.phase === 'fight' &&
       yours?.alive &&
