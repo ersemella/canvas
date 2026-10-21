@@ -329,7 +329,6 @@ export class TacticsBoardSystem extends BaseSystem {
         parts.push(Math.floor(time / QUICKSAND_FRAME_SECONDS));
       if (map.hexes.some((h) => tileAt(map, h) === 'conceal'))
         parts.push(Math.floor(time * SANDSTORM_BANK.fps));
-      if (fight.fog?.length) parts.push(Math.floor(time * FOG_BANK.fps));
       if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
       parts.push(turnArrowBob(time));
     }
