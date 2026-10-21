@@ -57,7 +57,7 @@ tuning. Section numbers are the combat design's.
 | **Stats** | Numerical attributes of a unit or item: health, speed, defence and power. See section 9.1. |
 | **Health** | A unit's hit points. Fixed per hero; gear and upgrades never raise it (9.1). |
 | **Defence** | A stat that reduces incoming damage by a percentage with diminishing returns (section 9.1). |
-| **Obscured** | Standing in a sandstorm: ranged hits on the unit, and by it, deal 50% less, and an arrow flying through such a hex loses half again (17.6). |
+| **Obscured** | Standing in a sandstorm: ranged abilities can't target the unit, or anything through its hex (17.6). |
 | **Power** | The one offensive stat: scales an ability's base damage and base healing, not keyword effects (9.2). |
 | **Gear slot** | One of four equipment positions on a hero: boots, gloves, armour, helmet. |
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |

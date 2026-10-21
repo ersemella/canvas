@@ -162,10 +162,10 @@ shield its allies.
 | **Vulnerable N%** | The unit takes N% more damage for a duration. **Being flanked** makes a unit Vulnerable 25% for as long as the flank holds (6.3). |
 | **Barrier N** | Absorbs the next N damage the unit would take, after every other reduction, until used up or it expires. Not healing, so Antiheal doesn't block it. |
 | **Immortal** | The unit's health can't be reduced: damage to it becomes 0 (no minimum 1), burn included. Displace still moves it; other statuses still apply. Short durations only. |
-| **Obscured** | A unit standing in a sandstorm (conceal tile; the Storm Caller's fog too until it was removed, 2026-10-21). **Ranged** hits on it deal 50% less, and so do ranged hits **by** it; an Obscured attacker hitting an Obscured target deals 75% less. An **arrow** (a direct ranged hit) that flies **through** an Obscured hex between them is halved once more, however many it crosses (2026-10-20); arcing hits fly over. Melee, hail and quicksand aren't affected; it doesn't block line of fire and the unit stays visible. A property of the hex, not a status: it lasts while the unit stands there (Decided 2026-10-20). |
+| **Obscured** | A unit standing in a sandstorm (conceal tile; the Storm Caller's fog too until it was removed, 2026-10-21). A **ranged** ability can't **target** it, or anything **through** it: the target's hex, and every hex the line to it crosses (on a border, either side, as for line of fire), must not be Obscured. The user's own hex doesn't count, so a unit in a sandstorm can still aim out of it, at full effect. In Phase 1 that is the Composite Bow and Sunlight (an arrow's lane stops short of a sandstorm); Volley and Freeze land on an area and Hail on a hex, so they aren't stopped. Melee and quicksand aren't affected, and the unit stays visible. A property of the hex, not a status: it lasts while the unit stands there (Decided 2026-10-21, owner; until then it halved ranged hits into and out of the hex and arrows through it).
 
 **Damage order** (extends the Phase 1 order): base × power;
-ranged on an **Obscured** target −50%, ranged by an Obscured attacker −50%, an arrow through an Obscured hex −50%; **Vulnerable** (including from a flank); defence (skipped by **Pierce**);
+**Vulnerable** (including from a flank); defence (skipped by **Pierce**);
 minimum 1; **Barrier** absorbs; **Immortal** sets it to 0. Each step
 rounds down. Burn and collision damage skip defence as now, then take
 Vulnerable, Barrier and Immortal. Hazard (quicksand) damage takes
@@ -253,6 +253,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
 | Guard | Removed; Barrier covers damage protection | Keeping both | Owner's call: outdated |
 | Charged abilities | Fizzle on a lost trigger turn | Trigger anyway | Owner's call; control answers a visible charge |
 | Obscured (2026-10-20) | One keyword for sandstorm and fog: ranged hits into or out of the hex deal 50% less | Sandstorm weakening only hits on its occupant, fog hits both ways (until 2026-10-20) | Owner's call: two effects that looked alike and differed in one detail were hard to tell apart; one named rule reads on both. Over 300 AI-vs-AI fights, unfinished fights 4% → 2%, same length, the Outrider's damage −9% |
+| Obscured (2026-10-21) | Ranged abilities can't target in or through it | Ranged hits into, out of and through it deal 50% less (2026-10-20) | Owner's call. Measured before ([balance.md](balance.md)): fights the same length, the Bow a little less dominant (its damage −7%), Sunlight unchanged |
 
 ## Open questions (original numbers continue from 39)
 

@@ -39,7 +39,7 @@ export interface ScoredOption {
 /** A unit's damage per slot: its best basic hit over the slots a typical turn takes. */
 interface Rate {
   all: number;
-  /** From the bow alone, the hit Obscured halves. */
+  /** From the bow alone, the hit Obscured stops. */
   ranged: number;
 }
 
@@ -121,18 +121,18 @@ function statusPoints(u: Unit, slot: number, p: Pressure): number {
 }
 
 /**
- * What standing Obscured is worth to `u`'s side: the ranged hits it halves
+ * What standing Obscured is worth to `u`'s side: the ranged hits it stops
  * on `u` until `u` can move away (its next turn, at least a typical turn
- * ahead). Not the hits it halves by `u`: a ranged unit
- * steps out before it shoots, so pricing them kept the Outrider shuffling
- * (over 800 AI-vs-AI fights, 20.5 turns a fight instead of 15, and 6.4%
- * unfinished instead of 3.4%).
+ * ahead). Only those aimed at `u`: shooting out of a sandstorm is allowed,
+ * so it costs `u` nothing. (When Obscured halved hits by its occupant too,
+ * pricing those kept the Outrider shuffling: over 800 AI-vs-AI fights,
+ * 20.5 turns a fight instead of 15, and 6.4% unfinished instead of 3.4%.)
  */
 function obscuredValue(state: FightState, u: Unit, p: Pressure): number {
   if (!u.hex || u.slot === null || !obscured(state, mapOf(state), u.hex)) return 0;
   const until = Math.max(u.slot, state.currentSlot + slotsForward(RULES.cost.typical, u.speed));
   const slots = Math.max(0, until - state.currentSlot);
-  return incoming(p, u, 'ranged') * RULES.obscuredReduction * slots;
+  return incoming(p, u, 'ranged') * slots;
 }
 
 /** What scoring compares against, per living unit: computed once per AI turn, not per option. */

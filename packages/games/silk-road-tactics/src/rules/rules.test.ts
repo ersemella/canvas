@@ -2,7 +2,9 @@ import {describe, expect, it} from 'vitest';
 import {
   hexDirectionTo,
   hexDistance,
+  hexEquals,
   hexKey,
+  hexLineSides,
   hexNeighbors,
   hexToOffset,
   hexToPixel,
@@ -444,45 +446,67 @@ describe('damage', () => {
     const expected = Math.floor(
       (scaled * RULES.defenceConstant) / (b.defence + RULES.defenceConstant)
     );
-    expect(abilityDamage(s, mapOf(s), m, b, base, false)).toBe(expected);
+    expect(abilityDamage(s, m, b, base)).toBe(expected);
     b.statuses.push({kind: 'vulnerable', value: 25, untilSlot: 999});
     const vuln = Math.floor(scaled * 1.25);
-    expect(abilityDamage(s, mapOf(s), m, b, base, false)).toBe(
+    expect(abilityDamage(s, m, b, base)).toBe(
       Math.floor((vuln * RULES.defenceConstant) / (b.defence + RULES.defenceConstant))
     );
     b.defence = 1_000_000;
-    expect(abilityDamage(s, mapOf(s), m, b, base, false)).toBe(1);
+    expect(abilityDamage(s, m, b, base)).toBe(1);
   });
 
-  it('a sandstorm Obscures: halves ranged hits on its occupant and by it', () => {
-    const s = setup({'p-mangudai': at(0, 2), 'e-bokh': at(4, 2)});
+  // Row 5: ruins at columns 1 and 5, a sandstorm at 3 between them.
+  it('the bow can’t target a unit in a sandstorm (Obscured)', () => {
+    const s = setup({'p-mangudai': at(2, 5), 'e-bokh': at(3, 5)});
     const m = unit(s, 'p-mangudai');
-    const b = unit(s, 'e-bokh');
-    const onConceal = abilityDamage(s, mapOf(s), m, b, 60, true);
-    b.hex = at(4, 0);
-    const inOpen = abilityDamage(s, mapOf(s), m, b, 60, true);
-    expect(onConceal).toBeLessThan(inOpen);
-    expect(abilityDamage(s, mapOf(s), m, b, 60, false)).toBe(inOpen);
-    m.hex = at(4, 2);
-    expect(abilityDamage(s, mapOf(s), m, b, 60, true)).toBe(onConceal);
-    expect(abilityDamage(s, mapOf(s), m, b, 60, false)).toBe(inOpen);
+    const targets = ABILITIES.bow.targets(s, mapOf(s), m, m.hex!);
+    expect(targets.some((t) => hexEquals(t.hex!, at(3, 5)))).toBe(false);
   });
 
-  it('an arrow flying through an Obscured hex deals less, once however many', () => {
-    // Row 5's sandstorm is at column 3, between ruins at 1 and 5.
+  it('the bow can’t target through a sandstorm: its lane stops short of it', () => {
     const s = setup({'p-mangudai': at(2, 5), 'e-bokh': at(4, 5)});
     const m = unit(s, 'p-mangudai');
+    const targets = ABILITIES.bow.targets(s, mapOf(s), m, m.hex!);
+    expect(targets.some((t) => hexEquals(t.hex!, at(4, 5)))).toBe(false);
+    const lanes = arrowLanes(s, mapOf(s), m.hex!);
+    expect(lanes.some((l) => l.hexes.some((h) => hexEquals(h, at(3, 5))))).toBe(false);
+  });
+
+  it('a unit in a sandstorm can still shoot out of it, at full damage', () => {
+    const s = setup({'p-mangudai': at(3, 5), 'e-bokh': at(4, 5)});
+    const m = unit(s, 'p-mangudai');
     const b = unit(s, 'e-bokh');
-    const map = mapOf(s);
-    const open = abilityDamage(s, map, m, b, ABILITY.bow.damage, true);
-    const through = abilityDamage(s, map, m, b, ABILITY.bow.damage, true, [at(3, 5)]);
-    expect(through).toBeLessThan(open);
-    expect(abilityDamage(s, map, m, b, ABILITY.bow.damage, true, [at(3, 5), at(3, 5)])).toBe(
-      through
-    );
+    const targets = ABILITIES.bow.targets(s, mapOf(s), m, m.hex!);
+    expect(targets.some((t) => hexEquals(t.hex!, at(4, 5)))).toBe(true);
     const hp = b.hp;
     applyTurn(s, m, {action: {ability: 'bow', target: {hex: at(4, 5)}}});
-    expect(b.hp).toBe(hp - through);
+    expect(b.hp).toBe(hp - abilityDamage(s, m, b, ABILITY.bow.damage));
+  });
+
+  it('Sunlight can’t target a unit in or past a sandstorm', () => {
+    const s = setup({'p-storm': at(3, 4), 'e-bokh': at(3, 5), 'p-mangudai': at(4, 4)});
+    const storm = unit(s, 'p-storm');
+    const map = mapOf(s);
+    const aimed = (h: Hex) =>
+      ABILITIES.sunlight.targets(s, map, storm, storm.hex!).some((t) => hexEquals(t.hex!, h));
+    expect(aimed(at(3, 5))).toBe(false);
+    expect(aimed(at(4, 4))).toBe(true);
+    // A unit beyond the sandstorm, on a line that crosses it.
+    const past = map.hexes.find(
+      (h) =>
+        hexDistance(storm.hex!, h) <= ABILITY.sunlight.range &&
+        tileAt(map, h) === 'sand' &&
+        hexLineSides(storm.hex!, h)
+          .slice(1, -1)
+          .some((step) => step.some((x) => hexEquals(x, at(3, 5))))
+    )!;
+    expect(past).toBeDefined();
+    unit(s, 'e-bokh').hex = past;
+    expect(aimed(past)).toBe(false);
+    expect(() => applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: past}}})).toThrow(
+      RuleError
+    );
   });
 
   it('deals collision damage to both units when a displace is stopped', () => {

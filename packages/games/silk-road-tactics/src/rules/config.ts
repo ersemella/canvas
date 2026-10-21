@@ -66,14 +66,6 @@ export const RULES = {
   hazardDamage: 8,
   /** Quicksand: on entering it, passing through included, so crossing it still costs. */
   hazardEnterDamage: 80,
-  /**
-   * Obscured (a sandstorm hex): ranged hits on a unit standing in one deal
-   * this much less, and so do ranged hits by one; both when both are, so a
-   * quarter (owner, 2026-10-20; it only weakened hits on its occupant
-   * before). The Storm Caller's Fog made hexes Obscured too, until it was
-   * removed (owner, 2026-10-21; balance.md).
-   */
-  obscuredReduction: 0.5,
   /** A flanked unit is Vulnerable this much while flanked (6.3). */
   flankVulnerable: 25,
   /** Displace stopped early: to the displaced unit and to a unit it hits. */
@@ -280,7 +272,7 @@ export const AI = {
    * slots it lasts, at most `statusHorizon`. Immobilized is worth this
    * share of the unit's own pressure over the slots it lasts: a ranged or
    * area attacker still attacks where it stands, a melee one mostly can't.
-   * Obscured is worth the ranged hits it halves on the unit until the
+   * Obscured is worth the ranged hits it stops on the unit until the
    * unit can move away. Flat weights made fog a trap (39% of the
    * Storm Caller's turns; a side without it won 74% of AI-vs-AI fights)
    * and valued Freeze's Vulnerable the same for 1 slot as for 20

@@ -354,7 +354,7 @@ to a free hex next to its target, at the same cost. Measured with both
 in, 400 fights each: a side without Pin wins 50.0%, without Sunlight
 40.8%, without the Bow 7.5%; 53 actions a fight.
 
-**Measured, not applied: sandstorm that blocks sight** (Fog gone): a unit
+**Measured, then applied 2026-10-21 (owner): sandstorm that blocks sight** (Fog gone): a unit
 in it can't be targeted by the Bow or Sunlight, and arrows can't fly
 through it. Fights the same length (54 actions, 53 without), the Bow a
 little less dominant (a side without it wins 14.1%, 7.5% without the

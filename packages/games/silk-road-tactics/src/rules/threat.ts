@@ -8,14 +8,14 @@
 import {hexesInRange, hexDistance} from '@canvas/engine/server';
 import {ABILITY, HEROES, RULES, movementRules} from './config';
 import {ABILITIES, unusableReason} from './abilities';
-import {hostile, isImmobilized, movementCap, obscured} from './board';
+import {hostile, isImmobilized, movementCap} from './board';
 import {scaled, throughDefence} from './resolve';
 import {tileAt} from './map';
 import {slotsForward} from './track';
 import type {MapData} from './map';
 import type {FightState, Unit} from './types';
 
-/** Per hex: the most an enemy's ranged hit (Obscured halves it) or other hit could deal, before defence. */
+/** Per hex: the most an enemy's ranged hit or other hit could deal, before defence. */
 interface HexThreat {
   ranged: number;
   other: number;
@@ -164,21 +164,16 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         }
       }
       if (bow > 0) {
-        const from = board.get(id(fq, fr)) === 'conceal';
-        const d = from ? Math.floor(bow * (1 - RULES.obscuredReduction)) : bow;
         for (const [dq, dr] of AXIAL) {
-          // Halved once beyond the first Obscured hex it flies through.
-          let through = d;
+          // An arrow can't be aimed into or through a sandstorm (Obscured).
           for (let i = 1; i <= ABILITY.bow.range; i++) {
             const q = fq + dq * i;
             const r = fr + dr * i;
             const k = id(q, r);
             const tile = board.get(k);
-            if (tile === undefined || tile === 'obstacle') break;
-            mark(hexes, k, 'ranged', through);
+            if (tile === undefined || tile === 'obstacle' || tile === 'conceal') break;
+            mark(hexes, k, 'ranged', bow);
             if (occupied.has(k) && k !== id(e.hex.q, e.hex.r)) break;
-            if (through === d && tile === 'conceal')
-              through = Math.floor(d * (1 - RULES.obscuredReduction));
           }
         }
       }
@@ -216,7 +211,6 @@ export function threatDamage(
   if (!me.alive || !me.hex || me.slot === null) return 0;
   const windowEnd = Math.max(me.slot, now + slotsForward(RULES.cost.typical, me.speed));
   const key = id(me.hex.q, me.hex.r);
-  const covered = obscured(after, map, me.hex);
   let total = 0;
   for (const t of threats) {
     const e = after.units.find((u) => u.id === t.enemyId);
@@ -225,8 +219,7 @@ export function threatDamage(
     if (e.hex && hexDistance(e.hex, me.hex) > RULES.movementCap + ABILITY.bow.range + 1) continue;
     const h = t.hexes.get(key);
     if (!h) continue;
-    const ranged = covered ? Math.floor(h.ranged * (1 - RULES.obscuredReduction)) : h.ranged;
-    total += Math.max(ranged, h.other);
+    total += Math.max(h.ranged, h.other);
   }
   // Defence and Vulnerable once, on the sum (checking a flank is the costly part).
   return total > 0 ? throughDefence(after, me, total) : 0;

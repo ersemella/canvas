@@ -5,7 +5,7 @@
 import {hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {CAMEL, RULES, HEROES} from './config';
-import {addStatus, obscured, onMap, statusValue, unitAt, vulnerablePercent} from './board';
+import {addStatus, onMap, statusValue, unitAt, vulnerablePercent} from './board';
 import {MAPS, tileAt} from './map';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, HailEffect, Motion, Unit} from './types';
@@ -58,27 +58,18 @@ export function scaled(base: number, power: number): number {
 }
 
 /**
- * An ability's hit (brief section 2): scaled base, then if ranged −50% if
- * the target is Obscured, −50% if the attacker is, and −50% if it flew
- * through an Obscured hex on the way (`crossed`, an arrow's hexes between
- * the two; once however many), then Vulnerable (max of ability and flank),
- * then defence; minimum 1. Each step rounds down.
+ * An ability's hit (brief section 2): scaled base, then Vulnerable (max of
+ * ability and flank), then defence; minimum 1. Each step rounds down.
+ * Obscured no longer weakens ranged hits: it stops them being aimed
+ * (owner, 2026-10-21; board.ts).
  */
 export function abilityDamage(
   state: FightState,
-  map: MapData,
   attacker: Unit,
   target: Unit,
-  base: number,
-  ranged: boolean,
-  crossed: Hex[] = []
+  base: number
 ): number {
-  let d = scaled(base, attacker.power);
-  const less = (d: number) => Math.floor(d * (1 - RULES.obscuredReduction));
-  if (ranged && target.hex && obscured(state, map, target.hex)) d = less(d);
-  if (ranged && attacker.hex && obscured(state, map, attacker.hex)) d = less(d);
-  if (ranged && crossed.some((h) => obscured(state, map, h))) d = less(d);
-  return throughDefence(state, target, d);
+  return throughDefence(state, target, scaled(base, attacker.power));
 }
 
 /** Vulnerable, then defence, then the minimum: the end of every ability's hit, and of quicksand's. */
@@ -103,17 +94,9 @@ export function rawDamage(state: FightState, target: Unit, amount: number): numb
   return Math.floor(amount * (1 + vulnerablePercent(state, target) / 100));
 }
 
-export function hit(
-  ctx: Ctx,
-  attacker: Unit,
-  target: Unit,
-  base: number,
-  ranged: boolean,
-  what: string,
-  crossed: Hex[] = []
-): void {
+export function hit(ctx: Ctx, attacker: Unit, target: Unit, base: number, what: string): void {
   if (!target.alive) return;
-  const d = abilityDamage(ctx.state, ctx.map, attacker, target, base, ranged, crossed);
+  const d = abilityDamage(ctx.state, attacker, target, base);
   applyDamage(ctx, target, d, `${what} hits ${unitName(target)} for ${d}`);
 }
 

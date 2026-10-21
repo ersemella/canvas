@@ -15,10 +15,6 @@ export interface HexInfo {
   detail: string;
 }
 
-const obscured = Math.round(RULES.obscuredReduction * 100);
-/** An Obscured attacker hitting an Obscured target: both cuts, one after the other. */
-const bothObscured = Math.round((1 - (1 - RULES.obscuredReduction) ** 2) * 100);
-
 export const TILE_INFO: Record<Tile, HexInfo> = {
   sand: {name: 'Sand', short: 'Open ground', detail: 'Open ground: no effect.'},
   obstacle: {
@@ -33,7 +29,7 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
   },
   conceal: {
     name: 'Sandstorm',
-    short: `Obscured: ranged hits in or out deal ${obscured}% less`,
+    short: 'Obscured: ranged abilities can’t target in or through it',
     detail: 'A unit here is Obscured.',
   },
 };
@@ -130,7 +126,8 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   },
   obscured: {
     name: 'Obscured',
-    detail: `In a sandstorm: its ranged hits, and ranged hits on it, deal ${obscured}% less (${bothObscured}% when both are). Doesn’t block arrows.`,
+    detail:
+      'In a sandstorm: ranged abilities can’t target it, or anyone past it. It can still use its own.',
   },
   cleanse: {name: 'Cleanse', detail: 'Removes harmful statuses from abilities.'},
 };

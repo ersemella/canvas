@@ -41,14 +41,27 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
 
 /**
  * Obscured (keywords.md, 17.6): a sandstorm tile (the Storm Caller's fog
- * was too, until 2026-10-21). Ranged hits on a unit here, and by a unit
- * here, deal `RULES.obscuredReduction` less.
+ * was too, until 2026-10-21). A ranged ability can't target a unit standing
+ * here, or through here (owner, 2026-10-21; it halved ranged hits before).
  */
 export function obscured(_state: FightState, map: MapData, h: Hex): boolean {
   return tileAt(map, h) === 'conceal';
 }
 
-/** A unit with a ranged attack, which being Obscured weakens. */
+/**
+ * Whether a ranged ability aimed from `from` at `to` is stopped by Obscured:
+ * `to` is Obscured, or the line between hex centres passes an Obscured hex
+ * (on a border, either side, as for line of fire). The user's own hex
+ * doesn't count: a unit in a sandstorm can still aim out of it.
+ */
+export function obscuredBetween(state: FightState, map: MapData, from: Hex, to: Hex): boolean {
+  if (obscured(state, map, to)) return true;
+  return hexLineSides(from, to)
+    .slice(1, -1)
+    .some((step) => step.some((h) => obscured(state, map, h)));
+}
+
+/** A unit with a ranged attack (the bow), which Obscured stops. */
 export function isRanged(unit: Unit): boolean {
   return HEROES[unit.hero].abilities.includes('bow');
 }

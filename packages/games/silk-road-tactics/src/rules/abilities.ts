@@ -18,6 +18,8 @@ import {
   cleanse,
   hostile,
   isImmobilized,
+  obscured,
+  obscuredBetween,
   onMap,
   sortByHex,
   unitAt,
@@ -59,7 +61,7 @@ export interface AbilityDef {
   range?: number;
   /**
    * One line for the side panel, with damage and healing scaled by the
-   * user's power (defence, Vulnerable and Obscured still apply on the hit).
+   * user's power (defence and Vulnerable still apply on the hit).
    * Range is left out, and so is duration: the panel lists it with the cost.
    */
   summary(user: Unit): string;
@@ -138,8 +140,9 @@ export interface ArrowLane {
 
 /**
  * The bow's six lanes from `from`: each runs until the first unit (which
- * it hits), an obstacle or the map's edge (the bow has no range limit). For the
- * page to show where an arrow can fly, hit or not.
+ * it hits), an obstacle, an Obscured hex (which it can't target in or
+ * through, so it stops short of it) or the map's edge (the bow has no range
+ * limit). For the page to show where an arrow can fly, hit or not.
  */
 export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLane[] {
   return DIRECTIONS.map((dir) => {
@@ -147,7 +150,7 @@ export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLan
     let h = from;
     for (let i = 0; i < ABILITY.bow.range; i++) {
       h = hexNeighbor(h, dir);
-      if (!onMap(map, h) || tileAt(map, h) === 'obstacle') break;
+      if (!onMap(map, h) || tileAt(map, h) === 'obstacle' || obscured(state, map, h)) break;
       lane.hexes.push(h);
       const u = unitAt(state, h);
       if (u) {
@@ -176,10 +179,7 @@ const bow: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
-    // The hexes it flies through before the target, which Obscured weakens it crossing.
-    const lane = arrowLanes(ctx.state, ctx.map, user.hex!).find((l) => l.hit === u);
-    const crossed = lane ? lane.hexes.slice(0, -1) : [];
-    hit(ctx, user, u, ABILITY.bow.damage, true, `${unitName(user)}'s arrow`, crossed);
+    hit(ctx, user, u, ABILITY.bow.damage, `${unitName(user)}'s arrow`);
   },
 };
 
@@ -232,7 +232,7 @@ const volley: AbilityDef = {
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)}'s Volley lands.`);
     for (const u of unitsInArea(ctx.state, target.hex!, ABILITY.volley.radius)) {
-      hit(ctx, user, u, ABILITY.volley.damage, true, 'The Volley');
+      hit(ctx, user, u, ABILITY.volley.damage, 'The Volley');
     }
   },
 };
@@ -251,8 +251,14 @@ const sunlight: AbilityDef = {
   cost: ABILITY.sunlight.cost,
   movesSelf: false,
   targetsUnit: true,
+  // Ranged: not a unit in, or past, a sandstorm (Obscured, owner 2026-10-21).
   targets: (state, map, _user, from) =>
-    hexesWithin(map, from, ABILITY.sunlight.range, (h) => unitAt(state, h) !== undefined),
+    hexesWithin(
+      map,
+      from,
+      ABILITY.sunlight.range,
+      (h) => unitAt(state, h) !== undefined && !obscuredBetween(state, map, from, h)
+    ),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} calls down sunlight on ${unitName(u)}.`);
@@ -313,7 +319,7 @@ const freeze: AbilityDef = {
     log(ctx, `${unitName(user)}'s Freeze takes hold.`);
     const untilSlot = ctx.slot + ABILITY.freeze.immobilizedSlots;
     for (const u of unitsInArea(ctx.state, target.hex!, ABILITY.freeze.radius)) {
-      hit(ctx, user, u, ABILITY.freeze.damage, true, 'The Freeze');
+      hit(ctx, user, u, ABILITY.freeze.damage, 'The Freeze');
       if (!u.alive) continue;
       addStatus(u, {kind: 'immobilized', value: 0, untilSlot});
       addStatus(u, {kind: 'vulnerable', value: ABILITY.freeze.vulnerable, untilSlot});
@@ -345,7 +351,7 @@ const throwAbility: AbilityDef = {
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
-    hit(ctx, user, u, ABILITY.throw.damage, false, 'The throw');
+    hit(ctx, user, u, ABILITY.throw.damage, 'The throw');
     if (u.alive) enterHex(ctx, u, target.to!, true, 'throw');
   },
 };
@@ -436,7 +442,7 @@ const rampage: AbilityDef = {
       );
       for (const u of victims) {
         hitAlready.add(u.id);
-        hit(ctx, user, u, ABILITY.rampage.damage, false, 'The Rampage');
+        hit(ctx, user, u, ABILITY.rampage.damage, 'The Rampage');
         if (!u.alive) continue;
         // In the path: knocked ahead; beside it: away from the Champion's hex.
         const away = hexEquals(u.hex!, pos) ? dir : direction(pos, u.hex!);
