@@ -89,7 +89,7 @@ game reads as one thing. Layout, labels and states are unchanged.
   actions, i.e. targeting, the path, Confirm, and your names; blue is the sand's opposite, so it reads on the board, and the
   light shade still shows over your own deep hexes), madder (everything
   the enemy's: its units, charge areas, names), gold (warnings: harmful
-  statuses and control abilities' icon; the acting unit's border, card
+  statuses and control abilities' icons; the acting unit's border, card
   and turn arrow), jade (health, healing), plum (ultimates,
   charging), sky (ice, hail), plus ink, the sprites' outline, and ivory
   for text. The board's overlay, the track and the page all take their

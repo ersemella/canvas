@@ -451,6 +451,15 @@ confirm or change:
   the kind. (A boot and a padlock, first, were confusing: owner.)
   Each kind's icon takes its colour from what it does: damage's light
   madder, health's jade, ivory, the harmful statuses' gold.
+  **Each ability its own icon** (owner, 2026-10-21): the kind icons gave
+  way to one per ability, 12×12 art pixels in up to three shades, still
+  coloured by kind unless the ability says otherwise: Composite Bow a
+  drawn bow, Leap a jump's arc, Volley three falling arrows, Sunlight a
+  yellow sun, Hail a white cloud dropping sky-blue hail, Freeze a sky-blue
+  snowflake, Throw an arrow over and down, Pin an arrow pressing onto a
+  bar, Rampage a double chevron, and Move a plain arrow. Figures (a
+  thrown body, a pinned one, a runner) were too busy at this size; simple
+  shapes read. Every new ability needs one (`AbilityIcon.tsx`).
 - **The phone's tooltip** (owner, 2026-10-21): any tap outside it closes
   it, a turn button's or a hex to move to or target included; a tap on
   another hex or a track card opens that one's instead. A track card's tap
