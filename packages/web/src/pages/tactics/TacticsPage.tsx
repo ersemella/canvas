@@ -101,6 +101,8 @@ function playerTargets(state: FightState, unit: Unit, def: AbilityDef): ActionTa
 
 /** Abilities that deal damage: aiming one shows the health of whoever it could hit. */
 const isAttack = (id: AbilityId) => 'damage' in ABILITY[id] || 'damagePerSlot' in ABILITY[id];
+/** Abilities that heal (Sunlight): aiming one shows your units' health and statuses. */
+const isHeal = (id: AbilityId) => 'heal' in ABILITY[id];
 
 /**
  * Silk Road Tactics: one fight against the AI (Phase 1). The run lives on
@@ -508,17 +510,21 @@ export function TacticsPage() {
     };
     if (!fight) return out;
     if (!acting) return out;
-    if (ability && isAttack(ability)) {
-      // Every enemy, and the allies in the line of fire: those it can target
-      // (the units the bow's lanes reach, a melee ability's neighbours) and
-      // those the aimed attack would hurt.
-      const ids = new Set(fight.units.filter((u) => u.side === 'enemy').map((u) => u.id));
+    if (ability && (isAttack(ability) || isHeal(ability))) {
+      // An attack: every enemy, and the allies in the line of fire. A heal,
+      // the other way round: every ally. Either way, those it can target
+      // (the units the bow's lanes reach, a melee ability's neighbours, the
+      // units in a heal's range) and those the aimed ability would hurt or heal.
+      const heals = isHeal(ability);
+      const side = heals ? 'player' : 'enemy';
+      const ids = new Set(fight.units.filter((u) => u.side === side).map((u) => u.id));
       if (ABILITIES[ability].targetsUnit && abilityContext)
         for (const t of targets) {
           const u = t.hex && unitAt(abilityContext.state, t.hex);
           if (u) ids.add(u.id);
         }
-      for (const c of preview?.changes ?? []) if (c.hpAfter < c.hpBefore) ids.add(c.unitId);
+      for (const c of preview?.changes ?? [])
+        if (heals ? c.hpAfter > c.hpBefore : c.hpAfter < c.hpBefore) ids.add(c.unitId);
       out.healthUnitIds = [...ids];
     }
     if (moving) {
@@ -845,13 +851,15 @@ function TurnControls(props: {
   const {unit, ability, plannedMove, moving} = props;
   // No Hold button: Confirm reads End turn with no action picked.
   const defs = abilitiesOf(unit).filter((def) => def.id !== 'hold');
+  // A locked ultimate's charge goes on the cost's line, so a narrow tile
+  // (three to a row) keeps its name on one line.
   const label = (name: string, cost: string, note?: string) => (
     <span className={styles.bigButton}>
-      <span>
-        <span className={styles.tileName}>{name}</span>
-        {note && <span className={styles.tileNote}> {note}</span>}
+      <span className={styles.tileName}>{name}</span>
+      <span className={styles.bigButtonCost}>
+        {note && `${note} · `}
+        {cost}
       </span>
-      <span className={styles.bigButtonCost}>{cost}</span>
     </span>
   );
   return (

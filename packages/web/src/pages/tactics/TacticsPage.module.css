@@ -390,11 +390,6 @@
 .tileName {
   font-weight: 700;
 }
-.tileNote {
-  white-space: pre;
-  font-size: 16px;
-  font-weight: 500;
-}
 
 /* Confirm: the same tile in your units' lapis (their hexes and cards); while it waits for a target, a flat dusk tile asking for one. */
 .seal.seal {
