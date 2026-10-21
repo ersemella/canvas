@@ -96,6 +96,8 @@ export interface HeroStats {
   moveCap?: number;
   /** A move's whole cost, in place of RULES.moveActionCost plus RULES.moveCostPerHex a hex. */
   moveCost?: number;
+  /** Its card starts the fight first, whatever its speed (the camel). */
+  actsFirst?: boolean;
 }
 
 /**
@@ -157,6 +159,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['hold'],
     moveCap: 1,
     moveCost: RULES.cost.typical,
+    // Despite its speed, it acts first in every fight (owner, 2026-10-21).
+    actsFirst: true,
   },
 };
 

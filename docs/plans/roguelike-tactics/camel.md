@@ -29,6 +29,10 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 - **Very high health and no defence** (owner). Built with **1,500**
   (placeholder; the Bökh Champion has 540), so the enemy has to commit
   several turns to it, not one burst.
+- **It acts first in every fight, despite its speed** (owner, 2026-10-21):
+  its card starts at slot 0, ahead of every other card's starting slot
+  (3.4). After that its speed places it like any card, so a Hold (30)
+  can give it a second turn before the fastest hero's first.
 - *(Proposed:* speed **Low (10)**. A move then places its card 100 × 5 ÷
   35 = 14 slots ahead, so crossing the 8-column map takes about 8 moves
   and 115 slots, about 11 turns of a Medium hero; Phase 1 fights last a

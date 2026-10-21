@@ -28,9 +28,11 @@ function setup(placements: Record<string, Hex>): FightState {
   }
   return s;
 }
+/** A fight's first hero decision, after the camel's opening turns (it always acts first). */
 function opening(): FightState {
   const s = createFight(0);
-  advanceToDecision(s);
+  for (let u = advanceToDecision(s)!; u.hero === 'camel'; u = advanceToDecision(s)!)
+    applyTurn(s, u, chooseAiTurn(s, u));
   return s;
 }
 

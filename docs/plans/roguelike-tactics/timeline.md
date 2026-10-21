@@ -39,7 +39,7 @@ Each card's first slot uses the same formula as placement (3.2), with a standard
 ```
 startSlot = roundDown(startCost / (speed + C))
 ```
-Higher speed starts earlier. Collisions resolve as in 3.3.
+Higher speed starts earlier. Collisions resolve as in 3.3. The exception is the caravan's camel, which always starts first, at slot 0, whatever its speed (owner, 2026-10-21; [camel.md](camel.md), 18.1).
 
 ### 3.5 Push, Pull and Track Manipulation (Decided)
 Terminology: **Push** moves a card later on the track and **Pull** earlier; **Displace** physically moves a unit across hexes (keywords in [keywords.md](keywords.md)). Push and Pull never mean the board.

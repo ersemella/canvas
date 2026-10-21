@@ -189,8 +189,9 @@ describe('the track', () => {
     for (let seed = 0; seed < 20; seed++) {
       const order = startOrder(seed);
       expect(order).toEqual(startOrder(seed));
-      // Outriders are fastest, so they still come first, in either order.
-      expect(new Set(order.slice(0, 2))).toEqual(new Set(['p-mangudai', 'e-mangudai']));
+      // The camel always acts first; then the Outriders, fastest, in either order.
+      expect(order[0]).toBe('p-camel');
+      expect(new Set(order.slice(1, 3))).toEqual(new Set(['p-mangudai', 'e-mangudai']));
       orders.add(order.join());
     }
     expect(orders.size).toBeGreaterThan(1);
@@ -794,6 +795,14 @@ describe('abilities', () => {
 });
 
 describe('the caravan’s camel', () => {
+  it('acts first in every fight, despite its speed', () => {
+    for (let seed = 0; seed < 10; seed++) {
+      const s = createFight(seed);
+      expect(unit(s, 'p-camel').slot).toBe(0);
+      expect(advanceToDecision(s)!.id).toBe('p-camel');
+    }
+  });
+
   it('joins the player’s side in the middle of its column, with very high health and no defence', () => {
     for (const seed of [1, 2, 3]) {
       const s = createFight(seed);

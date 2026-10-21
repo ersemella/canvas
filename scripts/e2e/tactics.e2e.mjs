@@ -99,8 +99,24 @@ check(
   (await api(`/runs/${runId}`, alice)).body.view.version === version
 );
 
+// The camel always acts first (camel.md): it walks one hex, and the turn
+// stops on a hero, whose turn the checks below use.
+check('the camel acts first', startedFight.awaiting === 'p-camel', startedFight.awaiting);
+const camelHex = startedFight.units.find((u) => u.id === 'p-camel').hex;
+const walked = await api(`/runs/${runId}/turn`, alice, {
+  method: 'POST',
+  body: JSON.stringify({move: [{q: camelHex.q + 1, r: camelHex.r}], action: {ability: 'hold'}}),
+});
+const heroView = walked.body?.view;
+const heroFight = heroView?.fight;
+check(
+  'the camel walks one hex, and the turn stops on a hero',
+  walked.status === 200 && /^p-/.test(heroFight?.awaiting) && heroFight.awaiting !== 'p-camel',
+  walked.body?.message ?? heroFight?.awaiting
+);
+
 // The server enforces the same exclusive-action rule as the page, in either order.
-const actor = startedFight.units.find((u) => u.id === startedFight.awaiting);
+const actor = heroFight.units.find((u) => u.id === heroFight.awaiting);
 for (const actFirst of [false, true]) {
   const combined = await api(`/runs/${runId}/turn`, alice, {
     method: 'POST',
@@ -117,8 +133,8 @@ for (const actFirst of [false, true]) {
   );
 }
 // Walk up the column into the nearest ally, when it is within a move's reach (4 hexes).
-const ally = startedFight.units
-  .filter((u) => u.side === 'player' && u !== actor)
+const ally = heroFight.units
+  .filter((u) => u.side === 'player' && u !== actor && u.hero !== 'camel')
   .sort((a, b) => Math.abs(a.hex.r - actor.hex.r) - Math.abs(b.hex.r - actor.hex.r))[0];
 const gap = ally.hex.r - actor.hex.r;
 if (Math.abs(gap) <= 4) {
@@ -141,8 +157,7 @@ if (Math.abs(gap) <= 4) {
 }
 check(
   'refused movement changes neither fight nor version',
-  JSON.stringify((await api(`/runs/${runId}`, alice)).body.view) ===
-    JSON.stringify(started.body.view)
+  JSON.stringify((await api(`/runs/${runId}`, alice)).body.view) === JSON.stringify(heroView)
 );
 
 const held = await api(`/runs/${runId}/turn`, alice, {
@@ -151,7 +166,7 @@ const held = await api(`/runs/${runId}/turn`, alice, {
 });
 check(
   'a turn returns the next view, AI turns included',
-  held.status === 200 && held.body.view.version === version + 1,
+  held.status === 200 && held.body.view.version === heroView.version + 1,
   held.body?.message
 );
 
@@ -232,6 +247,30 @@ try {
   await waitIdle();
   let run = await state();
   const outrider = 'p-mangudai';
+
+  // The camel always acts first: walk it a hex with real taps (Move, a hex,
+  // Confirm); its Move shows its own cost, 14 slots.
+  check('the camel acts first', run.view.fight.awaiting === 'p-camel', run.view.fight.awaiting);
+  {
+    const camelMove = page.getByTestId('turn-controls').getByRole('button', {name: /^Move/});
+    check('the camel’s Move shows its 14 slots', (await camelMove.textContent()).endsWith('+14'));
+    await camelMove.click();
+    const step = (await page.evaluate(() => window.__tactics.reaches.map((r) => r.hex))).find(
+      (h) => !sameHex(h, run.view.fight.units.find((u) => u.id === 'p-camel').hex)
+    );
+    await tapHex(step);
+    const v = run.view.version;
+    await page.getByRole('button', {name: /^Confirm/}).click();
+    await page.waitForFunction((v) => window.__tactics.run.view.version > v, v, {
+      timeout: 15_000,
+    });
+    await waitIdle();
+    run = await state();
+    check(
+      'the camel walked one hex',
+      sameHex(run.view.fight.units.find((u) => u.id === 'p-camel').hex, step)
+    );
+  }
 
   // No top bar: the board gets the whole screen, on desktop too.
   check('no top bar', (await page.locator('header').count()) === 0);
@@ -799,6 +838,20 @@ try {
     await phone.tap('canvas', {position: {x: (x * box.width) / 672, y: (y * box.height) / 696}});
     await sleep(250);
   };
+  // The camel acts first: the AI plays it, so a hero with Dash is up.
+  while ((await phone.evaluate(() => window.__tactics.run.view.fight.awaiting)) === 'p-camel') {
+    const v = await phone.evaluate(() => window.__tactics.run.view.version);
+    await phone.evaluate(() => window.__tactics.autoTurn());
+    await phone.waitForFunction(
+      (v) => window.__tactics.run.view.version > v && !window.__tactics.busy,
+      v,
+      {timeout: 15_000}
+    );
+  }
+  await phone
+    .getByTestId('turn-controls')
+    .getByRole('button', {name: /^Dash/})
+    .waitFor({timeout: 15_000});
   const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
   const moveBoxBefore = await phone
     .getByTestId('turn-controls')

@@ -2,7 +2,7 @@
  * The track (timeline.md, section 3): numbered slots, one card per slot,
  * placement by cost × speedScale ÷ (speed + C), and yielding on collision.
  */
-import {RULES} from './config';
+import {HEROES, RULES} from './config';
 import type {FightState, Unit} from './types';
 
 /** Slots a card moves for a turn costing `cost` (3.2); always at least 1. */
@@ -64,10 +64,19 @@ export function simultaneousOrder(units: Unit[], random?: () => number): Unit[] 
   return out;
 }
 
-/** Starting slots (3.4): startCost × speedScale ÷ (speed + C), placed in `simultaneousOrder`. */
+/**
+ * Starting slots (3.4): startCost × speedScale ÷ (speed + C), placed in
+ * `simultaneousOrder`; a unit that acts first (the camel) takes slot 0
+ * before any of them, whatever its speed.
+ */
 export function placeStartingCards(state: FightState, random?: () => number): void {
   for (const u of state.units) u.slot = null;
-  for (const u of simultaneousOrder(state.units.filter((u) => u.alive), random)) {
+  const alive = state.units.filter((u) => u.alive);
+  for (const u of alive) if (HEROES[u.hero].actsFirst) placeCard(state, u, 0);
+  for (const u of simultaneousOrder(
+    alive.filter((u) => !HEROES[u.hero].actsFirst),
+    random
+  )) {
     placeCard(state, u, Math.floor((RULES.startCost * RULES.speedScale) / (u.speed + RULES.C)));
   }
 }
