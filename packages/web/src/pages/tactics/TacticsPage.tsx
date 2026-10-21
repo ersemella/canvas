@@ -990,6 +990,7 @@ export function TacticsPage() {
           preview={skipPreview}
           busy={busy || playing}
           onSkip={() => commit(SKIP)}
+          size={phone ? 'lg' : 'sm'}
           hotkey={phone ? undefined : 's'}
         />
       </TurnControls>
