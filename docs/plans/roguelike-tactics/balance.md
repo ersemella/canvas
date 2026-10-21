@@ -331,6 +331,23 @@ at cost 60). Without Fog in the kit at all, fights are unchanged (53
 actions; 54 with it) and the Storm Caller's turns go to Hail and
 Sunlight.
 
+**Measured 2026-10-21, not applied: Obscured that blocks sight.** A unit
+on the hex can't be targeted by the Bow or Sunlight, and arrows can't fly
+through it; the AI's scoring and threat model were changed to match.
+400 fights each:
+
+| Rule | Side without Fog wins | Fog's share of the Storm Caller's turns | Actions per fight |
+|---|---:|---:|---:|
+| Today (fog halves ranged hits) | 51.3% | 1.7% | 54 |
+| Fog blocks sight | **55.5%** | 12.9% | 62 |
+| Fog blocks sight, cost 60 | **57.3%** | 28.1% | 73 |
+| Fog and sandstorm block sight | 48.6% | 11.8% | 61 |
+
+Fog gets cast, but it loses its side games and makes fights 15–35%
+longer: it blocks its own side's arrows and heals as well as the
+enemy's, which the AI's fog value doesn't count. With sandstorm blocking
+too it's about even, still with longer fights.
+
 5. **Fog needs a job.** With one ranged attacker, which can pick another
    lane, halving ranged damage rarely matters. Tried after tunings 1 to 3:
    an arrow can't target a unit in or behind fog, so fog blocks a lane
