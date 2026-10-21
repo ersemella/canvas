@@ -27,6 +27,14 @@ export class AssetLoader {
     return load;
   }
 
+  /**
+   * How many images have finished loading or failed: it grows each time
+   * one settles, so a renderer that holds still frames knows to draw again.
+   */
+  get settled(): number {
+    return this.cache.size + this.failed.size;
+  }
+
   getImage(src: string): HTMLImageElement | undefined {
     return this.cache.get(src);
   }

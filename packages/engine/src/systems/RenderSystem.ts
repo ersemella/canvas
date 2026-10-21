@@ -13,6 +13,8 @@ export class RenderSystem extends BaseSystem {
 
   onUpdate({scene, world, ctx, deltaTime}: SystemContext): void {
     this.time += deltaTime;
+    // Nothing new to draw: what the canvas shows stays.
+    if (world.frameHeld) return;
     // Draw in scene pixels; the world's scale maps them onto the canvas.
     ctx.setTransform(world.scale, 0, 0, world.scale, 0, 0);
     ctx.imageSmoothingEnabled = !world.pixelArt;
