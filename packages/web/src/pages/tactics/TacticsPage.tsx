@@ -839,9 +839,13 @@ function choiceAbilities(unit: Unit) {
   return abilitiesOf(unit).filter((def) => def.id !== 'hold');
 }
 
-/** Move and the abilities in rows of two, or three for a hero with more to choose from. */
+/**
+ * Move and the abilities in rows of two, or three for a hero with more to
+ * choose from; Move alone (the camel) fills the row.
+ */
 function choiceColumns(unit: Unit): number {
-  return choiceAbilities(unit).length + 1 > 4 ? 3 : 2;
+  const choices = choiceAbilities(unit).length + 1;
+  return choices === 1 ? 1 : choices > 4 ? 3 : 2;
 }
 
 /** The rows a unit's choices take. */
