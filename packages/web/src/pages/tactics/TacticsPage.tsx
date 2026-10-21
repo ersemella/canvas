@@ -928,20 +928,15 @@ export function TacticsPage() {
   // (what's tapped or hovered). Phones show the details in a tooltip over
   // the board and pin the actions to the bottom of the screen.
   const menu = <RunMenu busy={busy || playing} onReset={startRun} />;
-  // The turn portrait opens the acting unit's details, as its track card
-  // does; on a phone a second tap closes them. On desktop the panel shows
-  // them unless another hex or unit is being looked at: a click goes back.
+  // Phones: the turn portrait opens the acting unit's details, as its track
+  // card does; a second tap closes them. (Desktop shows the portrait of the
+  // unit in focus in the details instead.)
   const lookingAtActing = Boolean(
-    acting?.hex &&
-    (phone
-      ? pinnedHex
-        ? hexEquals(pinnedHex, acting.hex)
-        : selectedId === acting.id
-      : !inspectHex && selected?.id === acting.id)
+    acting?.hex && (pinnedHex ? hexEquals(pinnedHex, acting.hex) : selectedId === acting.id)
   );
   const lookAtActing = () => {
     setPinnedHex(null);
-    setSelectedId(phone && !lookingAtActing ? (acting?.id ?? null) : null);
+    setSelectedId(!lookingAtActing ? (acting?.id ?? null) : null);
   };
   // Once the fight is over, New fight takes Confirm's place, and the section
   // keeps its height so the board doesn't move.
@@ -977,7 +972,8 @@ export function TacticsPage() {
         onAbility={chooseAbility}
         onConfirm={() => commit()}
         menu={menu}
-        onPortrait={lookAtActing}
+        // Desktop: the details show the unit's portrait instead.
+        onPortrait={phone ? lookAtActing : undefined}
         portraitOpen={lookingAtActing}
       >
         <SkipButton

@@ -8,6 +8,7 @@ import {
   CAMEL_RULE,
   EXIT_INFO,
   HEROES,
+  HERO_PORTRAIT,
   PALETTE,
   RULES,
   TILE_INFO,
@@ -328,46 +329,60 @@ export function StatSheet({
     ['power', 'Power', unit.power],
     ['defence', 'Defence', unit.defence],
   ] as const;
+  const name = (
+    <Text
+      className={styles.display!}
+      fw={700}
+      fz={dense ? 'sm' : 'md'}
+      c={sideColor(unit)}
+      data-side={unit.side}
+    >
+      {HEROES[unit.hero].name}
+    </Text>
+  );
+  const health = (
+    <Text fz={dense ? 'xs' : 'sm'}>
+      Health{' '}
+      <b>
+        {unit.hp} / {unit.maxHp}
+      </b>
+    </Text>
+  );
   return (
     <Paper className={styles.plaque!} p={dense ? 'xs' : 'sm'} data-testid="stat-sheet">
       {/* A keyword or ability tapped here is explained here, inside the unit's card. */}
       <Glossary>
-        <Group justify="space-between" gap={6} mb={dense ? 2 : 0}>
-          <Text
-            className={styles.display!}
-            fw={700}
-            fz={dense ? 'sm' : 'md'}
-            c={sideColor(unit)}
-            data-side={unit.side}
-          >
-            {HEROES[unit.hero].name}
-          </Text>
-          <Text fz={dense ? 'xs' : 'sm'}>
-            Health{' '}
-            <b>
-              {unit.hp} / {unit.maxHp}
-            </b>
-          </Text>
-        </Group>
         {dense ? (
-          <div className={styles.statLine}>
-            {stats.map(([id, label, value]) => (
-              <span key={id}>
-                <Term id={id}>{label}</Term> <b>{value}</b>
-              </span>
-            ))}
-          </div>
-        ) : (
           <>
-            <div className={styles.coreStats}>
+            <Group justify="space-between" gap={6} mb={2}>
+              {name}
+              {health}
+            </Group>
+            <div className={styles.statLine}>
               {stats.map(([id, label, value]) => (
-                <div key={id}>
-                  <Term id={id}>{label}</Term>
-                  <b>{value}</b>
-                </div>
+                <span key={id}>
+                  <Term id={id}>{label}</Term> <b>{value}</b>
+                </span>
               ))}
             </div>
           </>
+        ) : (
+          // Desktop: the unit's portrait, its name, health and stats beside it.
+          <div className={styles.sheetHead}>
+            <SheetPortrait unit={unit} />
+            <div>
+              {name}
+              {health}
+              <div className={styles.coreStats}>
+                {stats.map(([id, label, value]) => (
+                  <div key={id}>
+                    <Term id={id}>{label}</Term>
+                    <b>{value}</b>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
         {statuses.length > 0 && (
           <div className={styles.statuses}>
@@ -416,6 +431,22 @@ export function StatSheet({
         )}
       </Glossary>
     </Paper>
+  );
+}
+
+/**
+ * A unit's portrait, on its track card's ground (its side's two bands) and
+ * facing as its card does: enemies to the left. Its hero's letter if it has none.
+ */
+function SheetPortrait({unit}: {unit: Unit}) {
+  const src = HERO_PORTRAIT[unit.hero]?.src;
+  return (
+    <div
+      className={`${styles.sheetPortrait} ${unit.side === 'enemy' ? styles.sheetPortraitEnemy : ''}`}
+      data-testid="sheet-portrait"
+    >
+      {src ? <img src={src} alt="" /> : HEROES[unit.hero].letter}
+    </div>
   );
 }
 

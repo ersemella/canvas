@@ -71,6 +71,56 @@
   font-size: 19px;
 }
 
+/* Desktop: a unit's portrait (four times its 32px art), its name, health and stats beside it. */
+.sheetHead {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.sheetHead > :last-child {
+  flex: 1;
+  min-width: 0;
+}
+/* Beside the portrait the stats stack, a row each: the name, then the value. */
+.sheetHead .coreStats {
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+.sheetHead .coreStats > div {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 2px 8px;
+}
+.sheetHead .coreStats b {
+  font-size: 16px;
+}
+.sheetPortrait {
+  flex: none;
+  box-sizing: content-box;
+  display: grid;
+  place-items: center;
+  width: 128px;
+  height: 128px;
+  border: var(--px) solid var(--c-ink);
+  /* The track card's ground: two flat bands of its side's colour. */
+  background: linear-gradient(var(--c-lapis) 50%, var(--c-lapisDark) 50%);
+  color: var(--c-ivory);
+  font-size: 48px;
+  font-weight: bold;
+}
+.sheetPortraitEnemy {
+  background: linear-gradient(var(--c-madder) 50%, var(--c-madderDark) 50%);
+}
+.sheetPortrait img {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.sheetPortraitEnemy img {
+  transform: scaleX(-1);
+}
+
 /* Phones: the action section, pinned to the screen's bottom. */
 .actionBar {
   /* Bottom-aligned: once the fight ends, New fight sits where Confirm was. */
@@ -121,10 +171,6 @@
   .panel {
     min-height: 0;
     overflow-y: auto;
-  }
-  /* The turn portrait at four times its 32px art, inside its border. */
-  .page .portrait {
-    --portrait: calc(128px + 2 * var(--px));
   }
 }
 
