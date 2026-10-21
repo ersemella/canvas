@@ -746,6 +746,13 @@ function drawCard(
     ctx.setLineDash([]);
   };
   strokeBorder();
+  if (!u && !ghost) {
+    // An empty card's lit right edge, one art pixel wide, over the card
+    // behind (each card covers the left of the next): the seams in a run of
+    // empty cards, quietly (they matter little).
+    ctx.fillStyle = PALETTE.dusk3;
+    ctx.fillRect(Math.round(cx + deck.cardW - 3), Math.round(cy + 3), 2, Math.round(h - 6));
+  }
 
   if (u && !ghost) {
     // The unit sits in the strip that shows; the front card shows whole,
