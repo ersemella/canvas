@@ -31,6 +31,8 @@ import mangudaiSprite from './sprites/mangudai.png';
 import mangudaiPortrait from './sprites/mangudai-portrait.png';
 import stormPortrait from './sprites/storm-portrait.png';
 import stormSprite from './sprites/storm.png';
+import wolfPortrait from './sprites/wolf-portrait.png';
+import wolfSprite from './sprites/wolf.png';
 import quicksandImage from './tiles/quicksand.png';
 import ruinsImage from './tiles/ruins.png';
 import sandImage from './tiles/sand.png';
@@ -117,7 +119,7 @@ const HERO_COLOR = {
 };
 /**
  * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
- * hero or the camel) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
+ * hero, the camel or the wolf) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
 const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
@@ -125,6 +127,7 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   mangudai: mangudaiSprite,
   storm: stormSprite,
   camel: camelSprite,
+  wolf: wolfSprite,
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to
@@ -144,6 +147,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   mangudai: {src: mangudaiPortrait, faceX: 18},
   storm: {src: stormPortrait, faceX: 19},
   camel: {src: camelPortrait, faceX: 19},
+  wolf: {src: wolfPortrait, faceX: 22},
 };
 interface HighlightStyle {
   fill: string;
