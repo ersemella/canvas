@@ -312,8 +312,8 @@ confirm or change:
 
 - **Placeholder numbers.** Every hero stat and ability value marked TBD
   in section 4 has a placeholder in `src/rules/config.ts`, marked as such,
-  from the roster's bands (health 300/420/540, with the Outrider and the
-  Storm Caller both at 360 since 2026-10-20 (owner); speed, defence and
+  from the roster's bands (health 300/420/540; the Outrider and the
+  Storm Caller were both 360 from 2026-10-20 to 2026-10-21 (owner); speed, defence and
   power on one scale, Low 10 / Medium 25 / High 40, since 2026-10-20
   (owner; speed was 4 and 7, defence 5 and 10)) so a fight can be played. Tuned once against AI-vs-AI fights
   that stalled: damage up (Bökh Champions pinned each other forever,

@@ -94,12 +94,16 @@ export interface HeroStats {
 }
 
 /**
- * PLACEHOLDER stats, from the roster's bands, except that the Outrider and
- * the Storm Caller both have 360 health (owner, 2026-10-20; were 300 and
- * 420, and the Outrider died first in nearly every fight): health Low 300 / Medium 420 /
- * High 540 (High about 1.8× Low, 9.1). Speed, defence and power share one
- * scale, Low 10 / Medium 25 / High 40 (owner, 2026-10-20), so a hero's
- * bands read straight off its numbers; RULES.C, RULES.speedScale and
+ * PLACEHOLDER stats, from the roster's bands: health Low 300 / Medium 420 /
+ * High 540 (High about 1.8× Low, 9.1). The Outrider and the Storm Caller
+ * are back on their tiers, 300 and 420 (owner, 2026-10-21; both were 360
+ * from 2026-10-20, when the Outrider died first in nearly every fight).
+ * Over 400 AI-vs-AI fights, a side with 300/420 against 360/360 won 47.5%;
+ * with both on it the Outrider survived 21.9% of fights (26.8%) and the
+ * Storm Caller 49.4% (44.3%). Bow kills are unchanged (2 and 3 hits);
+ * Volley now kills the Outrider in one hit (300 after defence).
+ * Speed, defence and power share one scale, Low 10 / Medium 25 / High 40
+ * (owner, 2026-10-20), so a hero's bands read straight off its numbers; RULES.C, RULES.speedScale and
  * RULES.defenceConstant compensate (speed was Medium 4, High 7; defence
  * Low 5, Medium 10). No gear in Phase 1 (owner, 2026-10-20): these base
  * stats are a unit's stats. The starter armour, light (+10 defence) on the
@@ -119,7 +123,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
   mangudai: {
     name: 'Mangudai Outrider',
     letter: 'M',
-    health: 360,
+    health: 300,
     speed: 40,
     defence: 10,
     power: 40,
@@ -129,7 +133,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
   storm: {
     name: 'Yadachy Storm Caller',
     letter: 'S',
-    health: 360,
+    health: 420,
     speed: 25,
     defence: 25,
     power: 25,

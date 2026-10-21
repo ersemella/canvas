@@ -97,8 +97,8 @@ run saved earlier takes today's stats when it is next loaded.
 | Hero | Health | Speed | Defence | Power |
 |---|---|---|---|---|
 | Bökh Champion | 540 | 25 (Medium) | 25 (Medium) | 10 (Low) |
-| Mangudai Outrider | **360 (owner, 2026-10-20; was 300)** | 40 (High) | 10 (Low) | 40 (High) |
-| Yadachy Storm Caller | **360 (owner, 2026-10-20; was 420)** | 25 (Medium) | 25 (Medium) | 25 (Medium) |
+| Mangudai Outrider | **300 (owner, 2026-10-21; 360 from 2026-10-20)** | 40 (High) | 10 (Low) | 40 (High) |
+| Yadachy Storm Caller | **420 (owner, 2026-10-21; 360 from 2026-10-20)** | 25 (Medium) | 25 (Medium) | 25 (Medium) |
 
 Without armour, the Champion and Storm Caller take about 25% more
 damage from a hit and act a little more often; the Outrider takes about

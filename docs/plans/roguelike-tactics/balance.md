@@ -154,14 +154,16 @@ a look at individual fights, or a redesign.
 ### Costs, damage, stats and constants
 
 Hits to kill with each hero's main attack (current numbers, no
-Vulnerable):
+Vulnerable; the Outrider and Storm Caller at 300 and 420 health since
+2026-10-21, 360 before, when Throw took 5 and 6, Hail 6 and 8, and
+Volley 2 on the Outrider):
 
-| Attack (raw after power) | vs Champion (540, def 25) | vs Outrider (360, def 10) | vs Storm Caller (360, def 25) |
+| Attack (raw after power) | vs Champion (540, def 25) | vs Outrider (300, def 10) | vs Storm Caller (420, def 25) |
 |---|---:|---:|---:|
 | Bow (216) | 4 (144 each) | 2 (180) | 3 (144) |
-| Throw (96) | 9 (64) | 5 (80) | 6 (64) |
-| Hail hit (75) | 11 (50) | 6 (62) | 8 (50) |
-| Volley (360) | 3 (240) | 2 (300) | 2 (240) |
+| Throw (96) | 9 (64) | 4 (80) | 7 (64) |
+| Hail hit (75) | 11 (50) | 5 (62) | 9 (50) |
+| Volley (360) | 3 (240) | **1 (300)** | 2 (240) |
 
 Damage per slot of a typical action: Outrider 216 / 7 slots = 30.9;
 Champion 96 / 10 = 9.6; Storm Caller 75 / 10 = 7.5 plus the lingering
