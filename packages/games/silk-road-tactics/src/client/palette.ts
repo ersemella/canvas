@@ -7,8 +7,8 @@
  * Ramps, darkest first: dusk (the night panels and the track), sand (the
  * board), gold (warnings: harmful statuses), lapis (your side: deep for
  * your units, light for your actions: the acting unit, targeting, Confirm),
- * madder (the enemy's side: its units, charges and names), jade (health, healing), plum
- * (ultimates, charging), sky (ice and hail).
+ * madder (the enemy's side: its units, charges and names), jade (health,
+ * healing), plum (ultimates, charging), sky (ice and hail).
  */
 export const PALETTE = {
   /** The sprites' outline: every UI frame's edge. */
