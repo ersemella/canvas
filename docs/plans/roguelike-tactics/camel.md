@@ -39,9 +39,11 @@ fight ends ([owner-decisions.md](owner-decisions.md), issue 1); not built.
 ### 18.2 Winning and Losing (Decided)
 - **The player wins** when the camel reaches an **exit hex**, or when
   every enemy is defeated.
-- **Exit hexes:** four hexes on the right edge, the enemy's side (owner).
-  The enemy has three units, so it can't stand on all of them. *(Proposed:*
-  the middle four of the rightmost column, rows 3 to 6 counting from 1.)
+- **Exit hexes:** the **four hexes sticking out on the right edge**, the
+  enemy's side (owner): the last hex of each row shoved half a hex right,
+  rows 2, 4, 6 and 8 counting from 1 (column 7 of odd rows 1, 3, 5 and 7 in
+  `src/rules/map.ts`). The enemy has three units, so it can't stand on all
+  of them.
 - **The player loses** when the camel dies: it is **game over**, as a party
   wipe is.
 - *(Proposed:* if one action both kills the camel and defeats the last
@@ -65,8 +67,8 @@ fight ends ([owner-decisions.md](owner-decisions.md), issue 1); not built.
 ### 18.4 Between Fights (Decided)
 - **The camel's damage carries over** from fight to fight (owner): its
   health is the run's life bar, as the power grid is in Into the Breach.
-- **Its statuses are cleared** after each fight, and **the party starts
-  each fight fresh** (owner; [heroes-and-gear.md](heroes-and-gear.md),
+- **Its statuses are cleared** after each fight, and **the heroes start
+  each fight at full health** (owner; [heroes-and-gear.md](heroes-and-gear.md),
   10.11).
 - *(Proposed:* the camel recovers health only at rests (caravanserais) and
   from consumables (9.6), so route choices weigh the camel's health.)
@@ -114,8 +116,7 @@ fight ends ([owner-decisions.md](owner-decisions.md), issue 1); not built.
 ## Open questions
 
 - The camel's health, and its speed (Low proposed).
-- Which four hexes are the exits (the middle four of the right edge
-  proposed), and how exits are placed on maps other than Phase 1's.
+- How exits are placed on maps other than Phase 1's.
 - How the camel recovers between fights, and how much (18.4).
 - Whether a rival caravan brings its own camel, so both sides have one to
   protect and one to kill, and an exit each ([ghosts.md](ghosts.md); it

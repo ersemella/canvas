@@ -53,7 +53,7 @@ Maps can contain three types of special tile:
 - **Rival caravan fights** use the PvP-style maps above (symmetric or mirrored, opposite deployment zones): a fair mirror match against another player's build ([ghosts.md](ghosts.md) D2).
 - **PvE:** zones are commonly on opposite ends, but vary by map. Examples: split starts, being surrounded, defending a central point, or starting already engaged. Enemy positions are set by the map.
 - **Engagement distance:** the gap between zones should allow contact within about 1 to 2 turns of typical movement. The approach should be a meaningful track decision (rushing in costs time on the track), not dead time.
-- **The camel and the exits (Decided 2026-10-21, owner):** the player's camel deploys with the party, and four **exit hexes** on the enemy's edge win the fight when the camel reaches one ([camel.md](camel.md), 18.1, 18.2).
+- **The camel and the exits (Decided 2026-10-21, owner):** the player's camel deploys with the party, and the four hexes sticking out on the enemy's edge are **exit hexes**, which win the fight when the camel reaches one ([camel.md](camel.md), 18.1, 18.2).
 - Watch: ranged units may get free hits during the approach, and rushing in costs time on the track (6.5). Armour costs speed (4.2), which makes every turn, moving included, place the unit further back. Short gaps and obstacles that block early sight lines mitigate free hits.
 
 ### 6.7 Line of Fire and Friendly Fire (Decided)
