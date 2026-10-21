@@ -348,6 +348,18 @@ longer: it blocks its own side's arrows and heals as well as the
 enemy's, which the AI's fog value doesn't count. With sandstorm blocking
 too it's about even, still with longer fights.
 
+**Applied 2026-10-21 (owner): Fog removed; Pin may step first.** The
+Storm Caller's kit is Sunlight, Hail and Freeze. Pin may step one hex,
+to a free hex next to its target, at the same cost. Measured with both
+in, 400 fights each: a side without Pin wins 50.0%, without Sunlight
+40.8%, without the Bow 7.5%; 53 actions a fight.
+
+**Measured, not applied: sandstorm that blocks sight** (Fog gone): a unit
+in it can't be targeted by the Bow or Sunlight, and arrows can't fly
+through it. Fights the same length (54 actions, 53 without), the Bow a
+little less dominant (a side without it wins 14.1%, 7.5% without the
+rule; its damage −7%), Sunlight unchanged (40.3%).
+
 5. **Fog needs a job.** With one ranged attacker, which can pick another
    lane, halving ranged damage rarely matters. Tried after tunings 1 to 3:
    an arrow can't target a unit in or behind fog, so fog blocks a lane

@@ -42,7 +42,7 @@ import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 /**
  * What an ability is broadly for, shown as an icon by its name: hurting
  * enemies, healing, moving its user, or controlling the board (statuses,
- * hail, fog).
+ * hail).
  */
 export type AbilityKind = 'attack' | 'heal' | 'move' | 'control';
 
@@ -245,7 +245,7 @@ const sunlight: AbilityDef = {
   kind: 'heal',
   range: ABILITY.sunlight.range,
   summary: (user) =>
-    `Heal a unit for ${scaled(ABILITY.sunlight.heal, user.power)}, cleanse its statuses, and clear hail and fog from its space.`,
+    `Heal a unit for ${scaled(ABILITY.sunlight.heal, user.power)}, cleanse its statuses, and clear hail from its space.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.sunlight.cost,
@@ -262,7 +262,6 @@ const sunlight: AbilityDef = {
     // Clears the storm from the unit's own hex only (owner, 2026-10-21).
     const h = target.hex!;
     ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, h));
-    ctx.state.fog = (ctx.state.fog ?? []).filter((f) => !hexEquals(f.hex, h));
   },
 };
 
@@ -294,29 +293,6 @@ const hail: AbilityDef = {
     log(ctx, `${unitName(user)} calls down hail.`);
     const u = unitAt(ctx.state, h);
     if (u) applyHail(ctx, u);
-  },
-};
-
-const fog: AbilityDef = {
-  id: 'fog',
-  name: 'Fog',
-  kind: 'control',
-  range: ABILITY.fog.range,
-  summary: () => `Create fog in a targeted area: units in it are Obscured.`,
-  duration: ABILITY.fog.slots,
-  ultimate: false,
-  charged: false,
-  cost: ABILITY.fog.cost,
-  movesSelf: false,
-  targets: (_state, map, _user, from) =>
-    hexesWithin(map, from, ABILITY.fog.range, (h) => tileAt(map, h) !== 'obstacle'),
-  resolve(ctx, user, target) {
-    const area = hexesInRange(target.hex!, ABILITY.fog.radius).filter((h) => onMap(ctx.map, h));
-    const untilSlot = ctx.slot + ABILITY.fog.slots;
-    // New fog replaces old fog on the same hex.
-    ctx.state.fog = (ctx.state.fog ?? []).filter((f) => !area.some((h) => hexEquals(h, f.hex)));
-    for (const hex of area) ctx.state.fog.push({hex, untilSlot});
-    log(ctx, `${unitName(user)} calls up fog.`);
   },
 };
 
@@ -379,15 +355,34 @@ const pin: AbilityDef = {
   name: 'Pin',
   kind: 'control',
   summary: (user) =>
-    `Melee: the target is Immobilized and Taunted and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot, until you move away.`,
+    `Melee, after an optional step: the target is Immobilized and Taunted and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot, until you move away.`,
   duration: ABILITY.pin.slots,
   ultimate: false,
   charged: false,
   cost: ABILITY.pin.cost,
   movesSelf: false,
   targetsUnit: true,
-  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  /**
+   * A unit next to the Champion, or (owner, 2026-10-21) one a single step
+   * would bring it next to: `to` is that step, to a free walkable hex. Not
+   * stepping while Immobilized.
+   */
+  targets(state, map, user, from) {
+    const out = adjacentUnits(state, from, (u) => u !== user);
+    if (isImmobilized(user)) return out;
+    for (const to of hexNeighbors(from)) {
+      if (!walkable(map, to) || unitAt(state, to)) continue;
+      for (const t of adjacentUnits(state, to, (u) => u !== user)) {
+        if (hexDistance(t.hex!, from) > 1) out.push({hex: t.hex!, to});
+      }
+    }
+    return out;
+  },
   resolve(ctx, user, target) {
+    if (target.to) {
+      enterHex(ctx, user, target.to, true, 'walk');
+      if (!user.alive) return;
+    }
     const u = unitAt(ctx.state, target.hex!)!;
     const untilSlot = ctx.slot + ABILITY.pin.slots;
     // Tagged with the pin, so breaking it clears them all. The Champion
@@ -465,7 +460,6 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   volley,
   sunlight,
   hail,
-  fog,
   freeze,
   throw: throwAbility,
   pin,

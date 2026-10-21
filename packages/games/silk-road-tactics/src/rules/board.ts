@@ -13,7 +13,7 @@ import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES, movementRules} from './config';
 import {hexNumber, onMap, tileAt} from './map';
 import type {MapData} from './map';
-import type {FightState, FogEffect, Status, StatusKind, Unit} from './types';
+import type {FightState, Status, StatusKind, Unit} from './types';
 
 export {onMap};
 
@@ -26,13 +26,8 @@ export function unitAt(state: FightState, h: Hex): Unit | undefined {
   return state.units.find((u) => u.alive && u.hex !== null && hexEquals(u.hex, h));
 }
 
-/** The fog on a hex, if any. */
-export function fogAt(state: FightState, h: Hex): FogEffect | undefined {
-  return (state.fog ?? []).find((f) => hexEquals(f.hex, h));
-}
-
 /**
- * Plain sand: open ground with nothing on it (no unit, hail, fog or exit). It has
+ * Plain sand: open ground with nothing on it (no unit, hail or exit). It has
  * nothing to explain, so looking at it shows no tooltip or details.
  */
 export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
@@ -40,17 +35,17 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
     tileAt(map, h) === 'sand' &&
     !map.exits.some((e) => hexEquals(e, h)) &&
     !unitAt(state, h) &&
-    !fogAt(state, h) &&
     !state.effects.some((e) => hexEquals(e.hex, h))
   );
 }
 
 /**
- * Obscured (keywords.md, 17.6): a sandstorm tile or fog. Ranged hits on a
- * unit here, and by a unit here, deal `RULES.obscuredReduction` less.
+ * Obscured (keywords.md, 17.6): a sandstorm tile (the Storm Caller's fog
+ * was too, until 2026-10-21). Ranged hits on a unit here, and by a unit
+ * here, deal `RULES.obscuredReduction` less.
  */
-export function obscured(state: FightState, map: MapData, h: Hex): boolean {
-  return tileAt(map, h) === 'conceal' || fogAt(state, h) !== undefined;
+export function obscured(_state: FightState, map: MapData, h: Hex): boolean {
+  return tileAt(map, h) === 'conceal';
 }
 
 /** A unit with a ranged attack, which being Obscured weakens. */

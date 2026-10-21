@@ -11,10 +11,10 @@ import {
 } from '@canvas/engine';
 import type {EventBus, Hex, SystemContext} from '@canvas/engine';
 import {HEROES} from '../rules/config';
-import {fogAt, isFlanked, onMap, statusValue, walkable} from '../rules/board';
+import {isFlanked, onMap, statusValue, walkable} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
 import {ABILITY} from '../rules/config';
-import {EXIT_INFO, fogInfo, hailInfo, TILE_INFO} from '../rules/info';
+import {EXIT_INFO, hailInfo, TILE_INFO} from '../rules/info';
 import {tileAt, type MapData, type Tile} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {AbilityId, FightState, StatusKind, Unit} from '../rules/types';
@@ -417,12 +417,6 @@ export class TacticsBoardSystem extends BaseSystem {
     for (const h of map.exits) drawExit(ctx, h);
     const sandstorm = map.hexes.filter((h) => tileAt(map, h) === 'conceal');
     drawBank(ctx, SANDSTORM_BANK, sandstorm, t);
-    drawBank(
-      ctx,
-      FOG_BANK,
-      (fight.fog ?? []).map((f) => f.hex),
-      t
-    );
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
@@ -1021,11 +1015,6 @@ function drawHover(ctx: CanvasRenderingContext2D, fight: FightState, h: Hex): vo
     const info = hailInfo(hail, fight.currentSlot);
     lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.skyLight});
   }
-  const fog = fogAt(fight, h);
-  if (fog) {
-    const info = fogInfo(fog, fight.currentSlot);
-    lines.push({text: `${info.name}: ${info.short}`, color: PALETTE.dusk4});
-  }
   if (!lines.length) return;
   ctx.save();
   ctx.font = pixelFont(11);
@@ -1216,7 +1205,7 @@ function drawExit(ctx: CanvasRenderingContext2D, h: Hex): void {
   ctx.restore();
 }
 
-/** A ruin standing on its hex like a unit: over fog and hail, so it always reads as blocked. */
+/** A ruin standing on its hex like a unit: over sandstorm and hail, so it always reads as blocked. */
 function drawRuins(ctx: CanvasRenderingContext2D, h: Hex): void {
   const ruins = assetLoader.requestImage(ruinsImage);
   if (ruins) {
@@ -1403,7 +1392,7 @@ function drawFallingHail(ctx: CanvasRenderingContext2D, h: Hex, time: number): v
 }
 
 /**
- * A bank of weather over some hexes (fog, a sandstorm), drawn as pixel art
+ * A bank of weather over some hexes (a sandstorm), drawn as pixel art
  * like the sprites: every pixel a solid colour or empty, see-through parts
  * and the soft outer edge dithered rather than blended. Its layers are
  * tiles of art that wrap, each drifting at its own speed, the later ones
@@ -1463,66 +1452,6 @@ function tileNoise(
     return top + (bottom - top) * ty;
   };
 }
-
-/**
- * Paints a cloud tile: wrapping noise, `bands` from thin to thick, each a
- * colour and how much of it shows (a dither level, 0 to 16); thinner than
- * the first band is empty.
- */
-function paintClouds(
-  ctx: CanvasRenderingContext2D,
-  seed: Hex,
-  size: number,
-  bands: readonly (readonly [number, string, number])[]
-): void {
-  const next = hexRandom(seed);
-  const coarse = tileNoise(next, size, size, 4, 4);
-  const fine = tileNoise(next, size, size, 8, 8);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const n = coarse(x, y) * 0.65 + fine(x, y) * 0.35;
-      let band: (typeof bands)[number] | undefined;
-      for (const b of bands) if (n >= b[0]) band = b;
-      if (!band || !dithered(x, y, band[2])) continue;
-      ctx.fillStyle = band[1];
-      ctx.fillRect(x, y, 1, 1);
-    }
-  }
-}
-
-/**
- * Fog: banks of cloud in the fog image's greys, thin at their edges
- * (dithered, so the ground shows through) and bright where thick, over a
- * sparser haze drifting the other way.
- */
-const FOG_BANK: BankStyle = {
-  layers: [
-    {
-      tile: {width: 48, height: 48},
-      paint: (ctx) =>
-        paintClouds(ctx, {q: 11, r: 5}, 48, [
-          [0.36, '#c6ccd2', 8],
-          [0.46, '#d4d7db', 16],
-          [0.54, '#dcdfe2', 16],
-          [0.62, '#e6e8ea', 16],
-        ]),
-      x: 2.2,
-      y: 0.4,
-    },
-    {
-      tile: {width: 48, height: 48},
-      paint: (ctx) =>
-        paintClouds(ctx, {q: 2, r: 9}, 48, [
-          [0.36, '#b4bac2', 8],
-          [0.56, '#c6ccd2', 16],
-        ]),
-      x: -1.4,
-      y: 0.7,
-    },
-  ],
-  fade: [0.76, 1.1],
-  fps: 4,
-};
 
 /** How far a sandstorm's streaks fall for each art pixel across: a quarter, so the tile (4 times wider than tall) still wraps. */
 const SANDSTORM_SLOPE = 0.25;
@@ -2053,7 +1982,6 @@ function steppingAt(play: Playback, unitId: string): {x: number; y: number} | un
 const PLAYBACK_RADIUS: Partial<Record<AbilityId, number>> = {
   volley: ABILITY.volley.radius,
   freeze: ABILITY.freeze.radius,
-  fog: ABILITY.fog.radius,
 };
 
 /**

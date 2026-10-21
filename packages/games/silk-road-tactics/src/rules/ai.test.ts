@@ -117,8 +117,8 @@ describe('budgeted tactical search', () => {
 
   it('avoids a lethal reply that the immediate heuristic overlooks', () => {
     // The Outrider's bow has no range limit (2026-10-20): it stands where
-    // stepping off its lanes is still possible.
-    const s = setup({'e-bokh': hex(2, 0), 'p-bokh': hex(3, 0), 'p-mangudai': hex(0, 2)});
+    // stepping off its lanes is still possible, beyond a Pin's step (2026-10-21).
+    const s = setup({'e-bokh': hex(2, 0), 'p-bokh': hex(3, 0), 'p-mangudai': hex(-1, 3)});
     const me = unit(s, 'e-bokh');
     me.hp = 70;
     me.slot = 0;

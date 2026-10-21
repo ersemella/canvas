@@ -75,7 +75,7 @@ uses damage buckets is open, [heroes-and-gear.md](heroes-and-gear.md)):
 - `damage = roundDown(base × (1 + power / 50))`, then 50% less if a
   ranged attack on an Obscured target, 50% less if by an Obscured
   attacker, and 50% less if an arrow flew through an Obscured hex
-  (sandstorm or fog, 17.6), then Vulnerable (a flank's or an
+  (sandstorm, 17.6), then Vulnerable (a flank's or an
   ability's, by max), then the defence formula (9.1); minimum 1. Each step
   rounds down.
 - Hazard and collision damage skip the defence formula but still take
@@ -152,7 +152,7 @@ reading of the owner's one-line descriptions; the owner can change them
 |---|---|
 | **Sunlight** (Clear the Storm until 2026-10-19, owner) | **One unit** within range 4, the caster or an **enemy** included (6.7, 2026-10-19), is **healed** (base heal 50, scaled by power: owner, 2026-10-20; 35 and 50 earlier that day) and **cleansed**, and **hail and fog are cleared from its hex** (that hex only, owner, 2026-10-21) (cleansed: owner, 2026-10-20; it was every unit within a radius of the caster, which under separate movement took a turn of positioning first). Cleansing an enemy removes the party's own control from it. Quick cost, 60 (owner, 2026-10-20; typical before). |
 | **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it takes **base damage 50** (owner, 2026-10-19; scaled by the caster's power when cast, then Vulnerable and defence as any hit), then is **Slowed** for TBD slots (no Vulnerable since 2026-10-20, owner; Freeze and flanking keep it). Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justified; it now deals damage, so whether it stays uncharged is open). Typical cost. |
-| **Fog** (replaced Gale, owner, 2026-10-20) | Targets a hex within range **4** (no line of fire needed); it and every hex within **1** of it become **fog for 20 slots**, a temporary board effect. Units in fog are **Obscured** (17.6), as in a sandstorm: a **ranged** hit on one deals **50% less** (not on top of a sandstorm's), and so does a ranged hit **by** one; an archer in fog shooting into fog deals 75% less. Melee, hail and quicksand aren't affected; fog doesn't block line of fire. Hits any side. New fog replaces old fog on the same hex. Typical cost. |
+| ~~Fog~~ | **Removed (owner, 2026-10-21).** It replaced Gale on 2026-10-20: its hexes were Obscured for 20 slots. No version measured worth its turn, and fog that blocked sight made fights 15–35% longer ([balance.md](balance.md)). The Storm Caller's kit is Sunlight, Hail and Freeze. |
 | **Freeze** (ultimate) | An area, **instant** at typical cost (owner, 2026-10-20; it was charged, with a casting time, from 2026-10-18, and its targets stepped out of it: [balance.md](balance.md)): targets any hex within maximum range TBD, no line of fire needed. Every unit in the area (radius TBD), allies included, takes base damage **60** and is then **Immobilized** and **Vulnerable 50%** for 20 slots (owner, 2026-10-20: ultimates buffed; no damage, 25% for 15 before). |
 
 **Bökh Champion**
@@ -160,7 +160,7 @@ reading of the owner's one-line descriptions; the owner can change them
 | Ability | Rule |
 |---|---|
 | **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
-| **Pin** | Melee: the target is **Immobilized** for TBD slots (the Champion was too until 2026-10-20; owner: it stays free, and moving away releases the target, as a wrestler would), and the target is **Crushed** and **Taunted** by the Champion for the same (owner, 2026-10-19; it was also Vulnerable until 2026-10-20). Crushed: base **6** damage every slot (8 until 2026-10-20), scaled by the Champion's power, through Vulnerable and defence like quicksand. Taunted (17.5): while it can affect the Champion from any hex it can reach, its action must target the Champion or include it in its area, or be a Hold (owner, 2026-10-20), and a damaging charge is drawn onto the Champion if in range; it ends if the Champion dies. Sunlight's cleanse of the target removes them all (breaking the pin). Both still act. The pin **breaks** if the target is cleansed or the two are no longer adjacent (either displaced away, or the Champion moving away), clearing **every status the Pin gave either unit** (owner, 2026-10-20). Cleansing the Champion doesn't break it. Typical cost. |
+| **Pin** | Melee, after an optional **one-hex step** to a free hex next to the target, at the same cost (owner, 2026-10-21; not while Immobilized): the target is **Immobilized** for TBD slots (the Champion was too until 2026-10-20; owner: it stays free, and moving away releases the target, as a wrestler would), and the target is **Crushed** and **Taunted** by the Champion for the same (owner, 2026-10-19; it was also Vulnerable until 2026-10-20). Crushed: base **6** damage every slot (8 until 2026-10-20), scaled by the Champion's power, through Vulnerable and defence like quicksand. Taunted (17.5): while it can affect the Champion from any hex it can reach, its action must target the Champion or include it in its area, or be a Hold (owner, 2026-10-20), and a damaging charge is drawn onto the Champion if in range; it ends if the Champion dies. Sunlight's cleanse of the target removes them all (breaking the pin). Both still act. The pin **breaks** if the target is cleansed or the two are no longer adjacent (either displaced away, or the Champion moving away), clearing **every status the Pin gave either unit** (owner, 2026-10-20). Cleansing the Champion doesn't break it. Typical cost. |
 | **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction and **completes the line**: only an **obstacle** or an **Unstoppable** unit in its path stops it early (owner's call, 2026-10-18), and the map edge ends it. Step by step, every unit in the path or adjacent to a hex the Champion enters is hit **once**: it takes base damage TBD and is **Displaced 1** away from the Champion's hex at that moment (several at once: farthest first, 17.4); collisions deal their usual damage. Allies take the damage too (6.7, 2026-10-19). *(Proposed:* a unit in the path that couldn't be displaced (a collision), or was displaced ahead, is passed through; if the last hex is occupied, the Champion ends on the last free hex it passed.) Not usable while Immobilized. Base damage 160, typical cost (owner, 2026-10-20: ultimates buffed; 100 and slow before). |
 
 **Interactions to know** (they follow from the keyword rules, not new
@@ -437,7 +437,7 @@ confirm or change:
   track went under the board for a while the same day, and came back up
   (owner).
 - **Why a target can or can't be picked** (2026-10-21): an ability aimed
-  within a range (Sunlight, Hail, Fog, Volley, Freeze) outlines its reach
+  within a range (Sunlight, Hail, Volley, Freeze) outlines its reach
   with a dashed line; the bow draws its six lanes, an arrow along each to
   an enemy it can hit and a faint dashed line along the rest to where the
   arrow stops (an ally, a ruin, the edge), so the enemies it can't hit are
@@ -447,7 +447,7 @@ confirm or change:
   stat sheet and its explanation carry an icon for its kind, a pixel
   sword for an attack (Composite Bow, Volley, Throw, Rampage), a cross
   for a heal (Sunlight), an arrow for movement (Move, Leap) and a chain's
-  two links for control (Hail, Fog, Freeze, Pin); the explanation names
+  two links for control (Hail, Freeze, Pin); the explanation names
   the kind. (A boot and a padlock, first, were confusing: owner.)
   Each kind's icon takes its colour from what it does: damage's light
   madder, health's jade, ivory, the harmful statuses' gold.

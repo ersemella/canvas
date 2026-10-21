@@ -8,7 +8,7 @@
 import {hexesInRange, hexDistance} from '@canvas/engine/server';
 import {ABILITY, HEROES, RULES, movementRules} from './config';
 import {ABILITIES, unusableReason} from './abilities';
-import {fogAt, hostile, movementCap, obscured} from './board';
+import {hostile, isImmobilized, movementCap, obscured} from './board';
 import {scaled, throughDefence} from './resolve';
 import {tileAt} from './map';
 import {slotsForward} from './track';
@@ -123,6 +123,11 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       usable('throw') ? scaled(ABILITY.throw.damage, e.power) : 0,
       usable('pin') ? scaled(ABILITY.pin.damagePerSlot, e.power) * ABILITY.pin.slots : 0
     );
+    // Pin reaches a hex further, after its optional step (2026-10-21).
+    const pinStep =
+      usable('pin') && !isImmobilized(e)
+        ? scaled(ABILITY.pin.damagePerSlot, e.power) * ABILITY.pin.slots
+        : 0;
     const hail = usable('hail') ? scaled(ABILITY.hail.damage, e.power) : 0;
     const bow = usable('bow') ? scaled(ABILITY.bow.damage, e.power) : 0;
     const rampage = usable('rampage') ? scaled(ABILITY.rampage.damage, e.power) : 0;
@@ -150,8 +155,16 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     for (const [fq, fr] of reach) {
       if (melee > 0)
         for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), 'other', melee);
+      if (pinStep > 0) {
+        for (const [sq, sr] of AXIAL) {
+          const tile = board.get(id(fq + sq, fr + sr));
+          if (tile === undefined || tile === 'obstacle') continue;
+          for (const [dq, dr] of AXIAL)
+            mark(hexes, id(fq + sq + dq, fr + sr + dr), 'other', pinStep);
+        }
+      }
       if (bow > 0) {
-        const from = board.get(id(fq, fr)) === 'conceal' || fogAt(state, {q: fq, r: fr});
+        const from = board.get(id(fq, fr)) === 'conceal';
         const d = from ? Math.floor(bow * (1 - RULES.obscuredReduction)) : bow;
         for (const [dq, dr] of AXIAL) {
           // Halved once beyond the first Obscured hex it flies through.
@@ -164,7 +177,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
             if (tile === undefined || tile === 'obstacle') break;
             mark(hexes, k, 'ranged', through);
             if (occupied.has(k) && k !== id(e.hex.q, e.hex.r)) break;
-            if (through === d && (tile === 'conceal' || fogAt(state, {q, r})))
+            if (through === d && tile === 'conceal')
               through = Math.floor(d * (1 - RULES.obscuredReduction));
           }
         }

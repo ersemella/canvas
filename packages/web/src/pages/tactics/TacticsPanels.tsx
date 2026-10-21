@@ -13,8 +13,6 @@ import {
   TILE_INFO,
   abilitiesOf,
   atExit,
-  fogAt,
-  fogInfo,
   hailInfo,
   isFlanked,
   mapOf,
@@ -157,7 +155,7 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
 /**
  * What's on a hex (D11), a card each: the unit standing there first (it's
  * what was tapped), then the ground under it: its tile unless that's sand
- * (which says nothing), and any hail or fog, each on its own card. Every
+ * (which says nothing), and any hail, each on its own card. Every
  * card explains its own keywords inside itself. `dense`: the phone's
  * tooltip, everything in as little room as it takes.
  */
@@ -172,7 +170,6 @@ export function HexInspector({
 }) {
   const tile = tileAt(mapOf(fight), hex);
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
-  const fog = fogAt(fight, hex);
   const unit = fight.units.find((u) => u.alive && u.hex && hexEquals(u.hex, hex));
   return (
     <Stack gap={dense ? 6 : 8} data-testid="hex-info">
@@ -188,12 +185,11 @@ export function HexInspector({
           dense={dense}
         />
       )}
-      {fog && <GroundCard info={fogInfo(fog, fight.currentSlot)} dense={dense} />}
     </Stack>
   );
 }
 
-/** One thing on the ground (a tile, hail, fog): its name, then its rule, keywords explained inside the card. */
+/** One thing on the ground (a tile, hail): its name, then its rule, keywords explained inside the card. */
 function GroundCard({
   info,
   color = 'var(--c-ivory)',

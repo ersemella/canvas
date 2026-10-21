@@ -46,8 +46,6 @@ export function affectsHex(
       return near(target.hex, ABILITY.volley.radius);
     case 'freeze':
       return near(target.hex, ABILITY.freeze.radius);
-    case 'fog':
-      return near(target.hex, ABILITY.fog.radius);
     case 'rampage': {
       // In or beside a hex of the charge's path.
       const dir = hexDirectionTo(from, target.hex!)!;

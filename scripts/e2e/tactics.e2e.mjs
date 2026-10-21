@@ -525,6 +525,65 @@ try {
   );
   check('the reset run is abandoned', resetOld.body?.status === 'abandoned', resetOld.body);
 
+  // Pin may step one hex first (2026-10-21): play on until the Champion can
+  // pin a unit only after a step, then pick it and its step with real taps.
+  {
+    const sameH = (a, b) => a.q === b.q && a.r === b.r;
+    let found = null;
+    for (let i = 0; i < 80 && !found; i++) {
+      await waitIdle();
+      const r = await state();
+      if (r.view.fight.phase !== 'fight') break;
+      const pinButton = page.getByTestId('turn-controls').getByRole('button', {name: /^Pin/});
+      if (r.view.fight.awaiting === 'p-bokh' && !(await pinButton.isDisabled())) {
+        await pinButton.click();
+        const ts = await page.evaluate(() => window.__tactics.targets);
+        const stepOnly = ts.find((t) => t.to && !ts.some((u) => !u.to && sameH(u.hex, t.hex)));
+        if (stepOnly) found = {targets: ts, target: stepOnly.hex};
+        else await pinButton.click();
+      }
+      if (found) break;
+      const v = r.view.version;
+      await page.evaluate(() => window.__tactics.autoTurn());
+      await page.waitForFunction((x) => window.__tactics.run.view.version > x, v, {
+        timeout: 15_000,
+      });
+    }
+    if (!found) console.log('  (no step-only Pin came up; step checks skipped)');
+    else {
+      const steps = found.targets.filter((t) => t.to && sameH(t.hex, found.target));
+      await tapHex(found.target);
+      if (steps.length > 1) {
+        const ask = page.getByRole('button', {name: /^Pick where to step/});
+        check('Pin asks where to step first', await ask.isDisabled());
+        await tapHex(steps[0].to);
+      }
+      const confirm = page.getByRole('button', {name: /^Confirm/});
+      check('Pin with its step is ready to confirm', !(await confirm.isDisabled()));
+      const v = (await state()).view.version;
+      await confirm.click();
+      await page.waitForFunction((x) => window.__tactics.run.view.version > x, v, {
+        timeout: 15_000,
+      });
+      // The reply lands before its playback starts: wait until it stays idle.
+      await waitIdle();
+      await sleep(500);
+      await waitIdle();
+      const f = (await state()).view.fight;
+      const champion = f.units.find((u) => u.id === 'p-bokh');
+      const pinned = f.units.find((u) => u.hex && sameH(u.hex, found.target));
+      check('Pin stepped, then pinned', champion.hex && sameH(champion.hex, steps[0].to), [
+        champion.hex,
+        steps[0].to,
+      ]);
+      check(
+        'the pinned unit is held',
+        !pinned || pinned.statuses.some((x) => x.kind === 'immobilized'),
+        pinned?.statuses
+      );
+    }
+  }
+
   // Play the rest with the AI choosing for you. With placeholder numbers a
   // fight can stall (Storm Callers out-heal what's left), so after 150 turns
   // abandon it and play a fresh one, at most three times.
@@ -774,7 +833,6 @@ try {
     const busyHexes = new Set([
       ...quiet,
       ...Object.keys(phoneFight.tiles ?? {}),
-      ...(phoneFight.fog ?? []).map((f) => `${f.hex.q},${f.hex.r}`),
       ...phoneFight.effects.map((e) => `${e.hex.q},${e.hex.r}`),
     ]);
     const reaches = await phone.evaluate(() => window.__tactics.reaches.map((r) => r.hex));

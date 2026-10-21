@@ -5,7 +5,7 @@
  */
 import {RULES} from './config';
 import type {Tile} from './map';
-import type {FogEffect, HailEffect} from './types';
+import type {HailEffect} from './types';
 
 export interface HexInfo {
   name: string;
@@ -59,15 +59,6 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
     name: 'Hail',
     short: `${hail.damage ?? 0} damage, Slowed ${hail.slowed}`,
     detail: `${hail.damage ?? 0} damage and Slowed ${hail.slowed} for ${hail.statusSlots} slots to a unit here when it lands, enters or starts a turn. ${slotsLeft(left)}`,
-  };
-}
-
-export function fogInfo(fog: FogEffect, currentSlot: number): HexInfo {
-  const left = fog.untilSlot - currentSlot + 1;
-  return {
-    name: 'Fog',
-    short: `Obscured: ranged hits in or out deal ${obscured}% less`,
-    detail: `A unit here is Obscured. ${slotsLeft(left)}`,
   };
 }
 
@@ -139,7 +130,7 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   },
   obscured: {
     name: 'Obscured',
-    detail: `In a sandstorm or fog: its ranged hits, and ranged hits on it, deal ${obscured}% less (${bothObscured}% when both are). Doesn’t block arrows.`,
+    detail: `In a sandstorm: its ranged hits, and ranged hits on it, deal ${obscured}% less (${bothObscured}% when both are). Doesn’t block arrows.`,
   },
   cleanse: {name: 'Cleanse', detail: 'Removes harmful statuses from abilities.'},
 };

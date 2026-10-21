@@ -76,7 +76,6 @@ import styles from './TacticsPage.module.css';
 const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
   volley: ABILITY.volley.radius,
   freeze: ABILITY.freeze.radius,
-  fog: ABILITY.fog.radius,
   hail: 0,
 };
 
@@ -85,7 +84,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   bow: 'No enemy in any of the bow’s lanes.',
   sunlight: 'No ally in range to heal.',
   throw: 'No enemy next to you, or nowhere free to throw them.',
-  pin: 'No enemy next to you to pin.',
+  pin: 'No enemy next to you, or a step away, to pin.',
   leap: 'Nowhere to land.',
   rampage: 'No way clear to rampage.',
 };
@@ -262,13 +261,6 @@ export function TacticsPage() {
 
   const acting = fight ? actingUnit(fight) : undefined;
 
-  /** The action with its target chosen, ready to preview. */
-  const action = useMemo(() => {
-    if (!ability || !target) return null;
-    if (ability === 'throw' && !target.to) return null;
-    return {ability, target};
-  }, [ability, target]);
-
   const reaches = useMemo(
     () => (fight && acting ? reachableHexes(fight, mapOf(fight), acting) : []),
     [fight, acting]
@@ -292,6 +284,28 @@ export function TacticsPage() {
   }, [ability, abilityContext]);
 
   /**
+   * Pin's options on a unit: pinning it from where the Champion stands, and
+   * the hexes it may step to first (2026-10-21).
+   */
+  const pinFromHere = useCallback(
+    (h: Hex) => targets.some((t) => !t.to && t.hex && hexEquals(t.hex, h)),
+    [targets]
+  );
+  const pinSteps = useCallback(
+    (h: Hex) => targets.filter((t) => t.to && t.hex && hexEquals(t.hex, h)),
+    [targets]
+  );
+
+  /** The action with its target chosen, ready to preview. */
+  const action = useMemo(() => {
+    if (!ability || !target) return null;
+    if (ability === 'throw' && !target.to) return null;
+    // A unit a Pin can't reach from here needs its step picked.
+    if (ability === 'pin' && !target.to && !pinFromHere(target.hex!)) return null;
+    return {ability, target};
+  }, [ability, target, pinFromHere]);
+
+  /**
    * What Move or the chosen ability still needs picked on the board: until
    * then the button is disabled, saying so, rather than ending the turn.
    */
@@ -301,7 +315,9 @@ export function TacticsPage() {
       : ability && !action
         ? ability === 'throw' && target?.hex
           ? 'Pick where to throw'
-          : 'Pick a target'
+          : ability === 'pin' && target?.hex
+            ? 'Pick where to step'
+            : 'Pick a target'
         : null;
 
   /** There's no Hold button: with nothing picked, the button ends the turn with Hold. */
@@ -453,13 +469,26 @@ export function TacticsPage() {
           return;
         }
       } else if (acting && ability) {
-        if (ability === 'throw' && target?.hex) {
-          const landing = targets.find(
-            (t) => hexEquals(t.hex!, target.hex!) && hexEquals(t.to!, h)
+        if ((ability === 'throw' || ability === 'pin') && target?.hex) {
+          // Throw's landing, or the hex a Pin steps to first.
+          const second = targets.find(
+            (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
           );
-          if (landing) {
-            // Tapping the chosen landing again does nothing: only Confirm commits.
-            if (!target.to || !hexEquals(target.to, h)) chooseTarget(landing);
+          if (second) {
+            // Tapping the chosen hex again does nothing: only Confirm commits.
+            if (!target.to || !hexEquals(target.to, h)) chooseTarget(second);
+            planned();
+            return;
+          }
+          // Tapping the Champion drops the step, if it can pin from where it stands.
+          if (
+            ability === 'pin' &&
+            target.to &&
+            acting.hex &&
+            hexEquals(acting.hex, h) &&
+            pinFromHere(target.hex)
+          ) {
+            chooseTarget({hex: target.hex});
             planned();
             return;
           }
@@ -469,7 +498,14 @@ export function TacticsPage() {
           // Tapping the chosen target again does nothing: only Confirm commits.
           const same =
             target?.hex && hexEquals(target.hex, h) && (ability !== 'throw' || target.to);
-          if (!same) chooseTarget(ability === 'throw' ? {hex: h} : match);
+          if (!same) {
+            if (ability === 'throw') chooseTarget({hex: h});
+            else if (ability === 'pin') {
+              // From here if it can; otherwise its only step, or a step still to pick.
+              const steps = pinSteps(h);
+              chooseTarget(!pinFromHere(h) && steps.length === 1 ? steps[0]! : {hex: h});
+            } else chooseTarget(match);
+          }
           planned();
           return;
         }
@@ -498,6 +534,8 @@ export function TacticsPage() {
       target,
       targets,
       chooseTarget,
+      pinFromHere,
+      pinSteps,
       pinnedHex,
     ]
   );
@@ -592,14 +630,19 @@ export function TacticsPage() {
             target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
           })),
         };
-      // Only what it may target; once Throw's target is picked, where it can land.
+      // Only what it may target; once Throw's target is picked, where it can
+      // land; once Pin's is, the hexes it may step to first as well.
       const shown = new Set<string>();
       const throwing = ability === 'throw' && target?.hex;
+      const stepping = ability === 'pin' && target?.hex;
       for (const t of targets) {
-        const h = throwing ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
-        if (!h || shown.has(hexKey(h))) continue;
-        shown.add(hexKey(h));
-        highlights.push({hex: h, kind: 'target'});
+        const at = throwing ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
+        const step = stepping && t.to && hexEquals(t.hex!, target!.hex!) ? t.to : undefined;
+        for (const h of [at, step]) {
+          if (!h || shown.has(hexKey(h))) continue;
+          shown.add(hexKey(h));
+          highlights.push({hex: h, kind: 'target'});
+        }
       }
       if (target?.hex) {
         const radius = AREA_RADIUS[ability];

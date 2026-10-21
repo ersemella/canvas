@@ -6,7 +6,6 @@
 import {hexDistance, hexEquals, hexKey} from '@canvas/engine/server';
 import {ABILITY, AI, HEROES, RULES, movementRules} from './config';
 import {
-  fogAt,
   hostile,
   isFlanked,
   isImmobilized,
@@ -124,7 +123,7 @@ function statusPoints(u: Unit, slot: number, p: Pressure): number {
 /**
  * What standing Obscured is worth to `u`'s side: the ranged hits it halves
  * on `u` until `u` can move away (its next turn, at least a typical turn
- * ahead) or the fog lifts. Not the hits it halves by `u`: a ranged unit
+ * ahead). Not the hits it halves by `u`: a ranged unit
  * steps out before it shoots, so pricing them kept the Outrider shuffling
  * (over 800 AI-vs-AI fights, 20.5 turns a fight instead of 15, and 6.4%
  * unfinished instead of 3.4%).
@@ -132,8 +131,7 @@ function statusPoints(u: Unit, slot: number, p: Pressure): number {
 function obscuredValue(state: FightState, u: Unit, p: Pressure): number {
   if (!u.hex || u.slot === null || !obscured(state, mapOf(state), u.hex)) return 0;
   const until = Math.max(u.slot, state.currentSlot + slotsForward(RULES.cost.typical, u.speed));
-  const fog = fogAt(state, u.hex);
-  const slots = Math.max(0, (fog ? Math.min(until, fog.untilSlot) : until) - state.currentSlot);
+  const slots = Math.max(0, until - state.currentSlot);
   return incoming(p, u, 'ranged') * RULES.obscuredReduction * slots;
 }
 
@@ -233,19 +231,6 @@ export function scoreOutcome(
   return score;
 }
 
-/** What a fog cast is worth to `actor`'s side: the change in every unit's `obscuredValue`. */
-function fogValue(before: FightState, after: FightState, actor: Unit): number {
-  const p = pressureOf(before);
-  let value = 0;
-  for (const b of before.units) {
-    const a = after.units.find((u) => u.id === b.id)!;
-    if (!b.alive || !a.alive) continue;
-    const delta = obscuredValue(after, a, p) - obscuredValue(before, b, p);
-    value += hostile(b, actor) ? -delta : delta;
-  }
-  return value;
-}
-
 /**
  * The area of a ground-targeted ability (hail, Volley, Freeze), whose
  * effect doesn't depend on where the user stands; undefined for others.
@@ -255,7 +240,6 @@ function groundRadius(def: AbilityDef): number | undefined {
     hail: 0,
     volley: ABILITY.volley.radius,
     freeze: ABILITY.freeze.radius,
-    fog: ABILITY.fog.radius,
   }[def.id as string];
 }
 
@@ -328,7 +312,6 @@ export function scoreOptions(
           resolvePreviewCharge(after, unit.id);
         }
         let score = scoreOutcome(state, after, unit, baseline, threats);
-        if (def.id === 'fog') score += fogValue(state, after, unit);
         if (
           def.id === 'hold' &&
           !(movementRules(state).separateMovement && reach.path.length > 0)

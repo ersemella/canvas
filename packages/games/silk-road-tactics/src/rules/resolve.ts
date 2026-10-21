@@ -45,7 +45,6 @@ function snapshot(state: FightState): BoardSnapshot {
       skipped: u.skipped ?? false,
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
-    fog: (state.fog ?? []).map((f) => ({...f, hex: {...f.hex}})),
   };
 }
 

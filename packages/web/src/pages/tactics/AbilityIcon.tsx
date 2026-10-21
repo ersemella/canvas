@@ -4,7 +4,7 @@ import type {AbilityKind} from '@canvas/games-silk-road-tactics';
  * Each kind of ability's icon, drawn as the pixel art is: up to 9×9 art
  * pixels, `#` filled, centred in a 9×9 box. A sword for attacks, a cross
  * for heals, an arrow for movement, a chain's two links for control
- * (statuses, hail, fog). A boot and a padlock (2026-10-21) didn't read.
+ * (statuses, hail). A boot and a padlock (2026-10-21) didn't read.
  */
 const ICON: Record<AbilityKind, string[]> = {
   attack: [

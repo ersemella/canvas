@@ -468,28 +468,6 @@ describe('damage', () => {
     expect(abilityDamage(s, mapOf(s), m, b, 60, false)).toBe(inOpen);
   });
 
-  it('fog weakens ranged hits into it and out of it, and fades', () => {
-    const s = setup({'p-storm': at(3, 1), 'p-mangudai': at(1, 1), 'e-mangudai': at(5, 1)});
-    const m = unit(s, 'p-mangudai');
-    const e = unit(s, 'e-mangudai');
-    const open = abilityDamage(s, SALT_FLATS, m, e, 100, true);
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'fog', target: {hex: at(5, 1)}}});
-    expect(s.fog).toHaveLength(7);
-    const into = abilityDamage(s, SALT_FLATS, m, e, 100, true);
-    const outOf = abilityDamage(s, SALT_FLATS, e, m, 100, true);
-    expect(into).toBeLessThan(open);
-    expect(outOf).toBe(into);
-    // Melee isn't affected.
-    expect(abilityDamage(s, SALT_FLATS, m, e, 100, false)).toBe(open);
-    // Gone once its slots pass.
-    s.units.forEach((u) => (u.controller = 'human'));
-    e.slot = ABILITY.fog.slots + 5;
-    m.slot = 500;
-    unit(s, 'p-storm').slot = 500;
-    advance(s, chooseAiTurn);
-    expect(s.fog).toHaveLength(0);
-  });
-
   it('an arrow flying through an Obscured hex deals less, once however many', () => {
     // Row 5's sandstorm is at column 3, between ruins at 1 and 5.
     const s = setup({'p-mangudai': at(2, 5), 'e-bokh': at(4, 5)});
@@ -613,6 +591,20 @@ describe('abilities', () => {
     expect(target.statuses).toEqual([]);
   });
 
+  it('Pin can step one hex first, to a free hex next to its target', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(3, 1), 'e-bokh': at(8, 6)});
+    const b = unit(s, 'p-bokh');
+    const step = {hex: at(3, 1), to: at(2, 1)};
+    expect(ABILITIES.pin.targets(s, SALT_FLATS, b, b.hex!)).toContainEqual(step);
+    // Not while Immobilized.
+    b.statuses = [{kind: 'immobilized', value: 0, untilSlot: 999}];
+    expect(ABILITIES.pin.targets(s, SALT_FLATS, b, b.hex!)).not.toContainEqual(step);
+    b.statuses = [];
+    applyTurn(s, b, {action: {ability: 'pin', target: step}});
+    expect(b.hex).toEqual(at(2, 1));
+    expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+  });
+
   it('Pin: displacing the target away breaks the pin, freeing it', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
@@ -648,7 +640,7 @@ describe('abilities', () => {
     expect(b.statuses).toEqual([]);
   });
 
-  it('Sunlight clears hail and fog from its target’s hex only', () => {
+  it('Sunlight clears hail from its target’s hex only', () => {
     const s = setup({'p-storm': at(1, 1), 'p-bokh': at(2, 1), 'e-bokh': at(8, 6)});
     const until = 999;
     const effect = (h: Hex) => ({
@@ -660,13 +652,8 @@ describe('abilities', () => {
       statusSlots: 10,
     });
     s.effects = [effect(at(2, 1)), effect(at(3, 1))];
-    s.fog = [
-      {hex: at(2, 1), untilSlot: until},
-      {hex: at(3, 1), untilSlot: until},
-    ];
     applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
     expect(s.effects.map((e) => e.hex)).toEqual([at(3, 1)]);
-    expect(s.fog.map((f) => f.hex)).toEqual([at(3, 1)]);
   });
 
   it('Pin crushes its target every slot while it lasts', () => {

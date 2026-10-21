@@ -67,10 +67,11 @@ export const RULES = {
   /** Quicksand: on entering it, passing through included, so crossing it still costs. */
   hazardEnterDamage: 80,
   /**
-   * Obscured (a sandstorm or fog hex): ranged hits on a unit standing in
-   * one deal this much less, and so do ranged hits by one; both when both
-   * are, so a quarter. Sandstorm worked as fog does from 2026-10-20 (owner;
-   * it only weakened hits on its occupant before).
+   * Obscured (a sandstorm hex): ranged hits on a unit standing in one deal
+   * this much less, and so do ranged hits by one; both when both are, so a
+   * quarter (owner, 2026-10-20; it only weakened hits on its occupant
+   * before). The Storm Caller's Fog made hexes Obscured too, until it was
+   * removed (owner, 2026-10-21; balance.md).
    */
   obscuredReduction: 0.5,
   /** A flanked unit is Vulnerable this much while flanked (6.3). */
@@ -140,7 +141,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 25,
     defence: 25,
     power: 25,
-    abilities: ['sunlight', 'hail', 'fog', 'freeze', 'hold'],
+    abilities: ['sunlight', 'hail', 'freeze', 'hold'],
     ultimate: 'freeze',
   },
   /**
@@ -210,7 +211,7 @@ export const ABILITY = {
    * Heal 50, 75 at its power (owner, 2026-10-20; was 35): at 35 a side
    * without it won 51% of AI-vs-AI fights, at 50 41%, with 2.5%
    * unfinished once the AI stopped spamming fog (balance.md).
-   * It also clears hail and fog from the target's own hex (owner,
+   * It also clears hail from the target's own hex (owner,
    * 2026-10-21; abilities.ts): an answer to hail, as Clear the Storm was.
    */
   sunlight: {cost: RULES.cost.quick, range: 4, heal: 50},
@@ -227,8 +228,6 @@ export const ABILITY = {
     slowed: 2,
     statusSlots: 10,
   },
-  /** Replaced Gale (owner, 2026-10-20). Its hexes are Obscured (`RULES.obscuredReduction`). */
-  fog: {cost: RULES.cost.typical, range: 4, radius: 1, slots: 20},
   /**
    * Ultimates buffed (owner, 2026-10-20): it now deals damage (none
    * before), for 20 slots (was 15), Vulnerable 50% (was 25%). Charge 20 and
@@ -256,7 +255,9 @@ export const ABILITY = {
    * 2026-10-20; it was): the pin holds while the two stay adjacent, so the
    * Champion moving away releases the target, as a wrestler would. Over
    * 400 AI-vs-AI fights a side without Pin then won 44.8% (about 50%
-   * with the Champion held too).
+   * with the Champion held too). It may step one hex first, to a free hex
+   * next to the target, at the same cost (owner, 2026-10-21): a side
+   * without the step won 47.0% (52.8% at cost 120).
    */
   pin: {cost: RULES.cost.typical, slots: 12, damagePerSlot: 6},
   /** Ultimates buffed (owner, 2026-10-20; was slow, 150, and damage 100). */
