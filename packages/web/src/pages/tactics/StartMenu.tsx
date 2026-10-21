@@ -67,8 +67,15 @@ export function StartMenu(props: {
   };
 
   return (
-    <Stack className={styles.page!} style={PALETTE_VARS} align="center" py="xl" gap="lg" px="md">
-      <Paper className={styles.plaque!} p="xl" maw={760} w="100%">
+    <Stack
+      className={`${styles.page} ${styles.startPage}`}
+      style={PALETTE_VARS}
+      align="center"
+      py={{base: 'sm', sm: 'xl'}}
+      gap="lg"
+      px={{base: 'xs', sm: 'md'}}
+    >
+      <Paper className={styles.plaque!} p={{base: 'md', sm: 'xl'}} maw={760} w="100%">
         <Stack gap="lg">
           <Stack gap="xs">
             <Text component="h1" className={styles.display!} fz={28} fw="bold" m={0}>

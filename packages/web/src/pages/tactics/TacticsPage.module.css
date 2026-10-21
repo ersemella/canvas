@@ -223,6 +223,11 @@
     height: 100dvh;
     overflow: hidden;
   }
+  /* The start menu is a form, not the board: it grows and scrolls. */
+  .page.startPage {
+    height: auto;
+    overflow: visible;
+  }
   .layout {
     flex: 1;
     min-height: 0;
