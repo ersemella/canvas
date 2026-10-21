@@ -716,6 +716,10 @@ export function TacticsPage() {
       hex={tooltipHex}
       boardSize={boardSize}
       floor={tooltipFloor}
+      onDismiss={() => {
+        setPinnedHex(null);
+        setSelectedId(null);
+      }}
     />
   );
   const details = inspectHex ? (

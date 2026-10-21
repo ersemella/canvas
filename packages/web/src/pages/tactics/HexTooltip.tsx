@@ -26,7 +26,8 @@ interface Placement {
  * hex if it fits there, else below; failing both, it may cover the unit's
  * health bar and statuses (not the hex); failing that too, it takes the
  * roomier side and scrolls. It's placed again whenever its size changes
- * (a keyword's rule shown, a turn played).
+ * (a keyword's rule shown, a turn played). A tap on it closes it, unless
+ * it lands on something tappable inside (a keyword, an ability's name, ×).
  *
  * `boardSize` is the canvas's size on screen; the tooltip sits in the
  * board's box, whose top left is the canvas's.
@@ -37,6 +38,8 @@ export function HexTooltip(props: {
   boardSize: {width: number; height: number};
   /** Where the tooltip must stop above, in viewport pixels; the screen's bottom without one. */
   floor: () => number | undefined;
+  /** A tap on the tooltip, anywhere but a keyword, an ability's name or a button: close it. */
+  onDismiss: () => void;
 }) {
   const [place, setPlace] = useState<Placement | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -99,6 +102,10 @@ export function HexTooltip(props: {
       className={styles.tooltip}
       data-testid="hex-tooltip"
       data-room={place?.room}
+      onClick={(e) => {
+        // Keywords and ability names explain themselves on a tap; the rest closes it.
+        if (!(e.target as Element).closest('button')) props.onDismiss();
+      }}
       style={{
         maxWidth: Math.min(MAX_WIDTH, width - 2 * GAP),
         // Measured where it can't be seen, then placed.

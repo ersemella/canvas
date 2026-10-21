@@ -655,6 +655,15 @@ try {
   await phone.touchscreen.tap(foeAt.x, foeAt.y);
   await sleep(200);
   check('phone: tapping the hex again closes the tooltip', !(await tooltip.count()));
+  // So does tapping the tooltip itself, anywhere but a keyword or an ability's name.
+  await phone.touchscreen.tap(foeAt.x, foeAt.y);
+  await sleep(200);
+  {
+    const name = await tooltip.getByTestId('stat-sheet').locator('[data-side]').boundingBox();
+    await phone.touchscreen.tap(name.x + name.width / 2, name.y + name.height / 2);
+    await sleep(200);
+    check('phone: tapping the tooltip closes it', !(await tooltip.count()));
+  }
   // Every unit: the tooltip only scrolls when no side of the hex has room for it all.
   {
     const squeezed = [];
