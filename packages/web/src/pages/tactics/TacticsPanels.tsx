@@ -34,7 +34,7 @@ import type {
   Unit,
 } from '@canvas/games-silk-road-tactics';
 import {abilityIcon, KIND_NAME} from './AbilityIcon';
-import {AbilityName, Glossary, KeywordText, Term} from './Keywords';
+import {AbilityName, Glossary, GlossaryBox, KeywordText, Term} from './Keywords';
 import styles from './TacticsPage.module.css';
 
 /** A unit's name, in its side's colour: lapis yours, carmine the enemy's, as on the board. */
@@ -344,8 +344,13 @@ export function StatSheet({
   );
   return (
     <Paper className={styles.plaque!} p={dense ? 'xs' : 'sm'} data-testid="stat-sheet">
-      {/* A keyword or ability tapped here is explained here, inside the unit's card. */}
-      <Glossary>
+      {/*
+       * A keyword or ability tapped here is explained here, inside the unit's
+       * card: on desktop beside the abilities' names (the room their column
+       * leaves), so the sheet grows no taller than the board; below them in
+       * the phone's tooltip.
+       */}
+      <Glossary slotted={!dense}>
         {dense ? (
           <>
             <Group justify="space-between" gap={6} mb={2}>
@@ -399,30 +404,39 @@ export function StatSheet({
             {CAMEL_RULE}
           </Text>
         )}
-        {/* Names only, to scan; a tap explains one below. */}
+        {/* Names only, to scan; a tap explains one below, or beside them on desktop. */}
         {ult && (
-          <div className={styles.abilityList} data-dense={dense || undefined}>
-            {/* The phone's tooltip leaves the label out, to stay narrow. */}
-            {!dense && <span className={styles.abilityListLabel}>Abilities</span>}
-            {abilities.map((def) => (
-              <AbilityName key={def.id} id={def.id} body={<AbilityDetail unit={unit} def={def} />}>
-                {abilityIcon(def)}
-                {def.name}
+          <div className={styles.abilityRow}>
+            <div className={styles.abilityList} data-dense={dense || undefined}>
+              {/* The phone's tooltip leaves the label out, to stay narrow. */}
+              {!dense && <span className={styles.abilityListLabel}>Abilities</span>}
+              {abilities.map((def) => (
+                <AbilityName
+                  key={def.id}
+                  id={def.id}
+                  body={<AbilityDetail unit={unit} def={def} />}
+                >
+                  {abilityIcon(def)}
+                  {def.name}
+                </AbilityName>
+              ))}
+              <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
+                {abilityIcon(ult)}
+                {ult.name}
+                {ultimateState(unit) !== 'Used' && (
+                  <span className={styles.abilityLinkNote}>
+                    {ultimateState(unit) === 'Ready'
+                      ? 'Ready'
+                      : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
+                  </span>
+                )}
               </AbilityName>
-            ))}
-            <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
-              {abilityIcon(ult)}
-              {ult.name}
-              {ultimateState(unit) !== 'Used' && (
-                <span className={styles.abilityLinkNote}>
-                  {ultimateState(unit) === 'Ready'
-                    ? 'Ready'
-                    : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
-                </span>
-              )}
-            </AbilityName>
+            </div>
+            {!dense && <GlossaryBox className={styles.glossaryBeside!} />}
           </div>
         )}
+        {/* The camel has no abilities' column to sit beside. */}
+        {!dense && !ult && <GlossaryBox />}
       </Glossary>
     </Paper>
   );
