@@ -86,11 +86,10 @@ game reads as one thing. Layout, labels and states are unchanged.
 - **One palette** (`src/client/palette.ts`, `PALETTE`), 27 colours in
   ramps: dusk (the night panels and the track), sand (the board), lapis
   (everything yours: deep for your units' rugs and cards, light for your
-  actions, i.e. targeting, the path, the acting unit, Confirm, and your
-  names; blue is the sand's opposite, so it reads on the board, and the
+  actions, i.e. targeting, the path, Confirm, and your names; blue is the sand's opposite, so it reads on the board, and the
   light shade still shows over your own deep hexes), madder (everything
   the enemy's: its units, charge areas, names), gold (warnings: harmful
-  statuses), jade (health, healing), plum (ultimates,
+  statuses; the acting unit's border and turn arrow), jade (health, healing), plum (ultimates,
   charging), sky (ice, hail), plus ink, the sprites' outline, and ivory
   for text. The board's overlay, the track and the page all take their
   colours from it; the page gets it as `--c-*` CSS variables. Only the

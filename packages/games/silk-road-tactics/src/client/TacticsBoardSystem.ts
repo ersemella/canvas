@@ -525,6 +525,20 @@ export class TacticsBoardSystem extends BaseSystem {
       drawHealthBar(ctx, u, at, stack.barY, p?.hpBefore ?? u.hp, p?.hpAfter);
       drawStatusMarks(ctx, marks, at, stack.marksY);
     }
+    // The unit you're controlling: an arrow over it, so it never needs finding.
+    // Not while a turn plays back, when whoever the events move is acting.
+    const yours = fight.units.find((u) => u.id === fight.awaiting);
+    if (
+      !playing &&
+      fight.phase === 'fight' &&
+      yours?.alive &&
+      yours.hex &&
+      yours.side === 'player'
+    ) {
+      const p = previewed.get(yours.id);
+      const at = p?.to && !p.killed ? p.to : yours.hex;
+      drawTurnArrow(ctx, at, statusMarks(fight, yours).length, t);
+    }
     for (const e of this.expiries) {
       const u = fight.units.find((v) => v.id === e.unitId);
       const hex = u?.hex;
@@ -2396,16 +2410,17 @@ function drawUnit(
   ctx.save();
   ctx.globalAlpha = (opts.faded ? 0.35 : opts.ghost ? 0.85 : 1) * (opts.alpha ?? 1);
   if (!opts.at) {
-    // The hex's border: light blue on the unit whose turn it is, white when
-    // selected, otherwise its side's colour (the hex is tinted to match).
+    // The hex's border: gold on the unit whose turn it is, as its turn
+    // arrow is, white when selected, otherwise its side's colour (the hex is
+    // tinted to match).
     hexPath(ctx, hex, 2.5);
     if (opts.ghost) ctx.setLineDash([5, 4]);
     ctx.strokeStyle = opts.acting
-      ? PALETTE.lapisLight
+      ? PALETTE.goldLight
       : opts.selected
         ? PALETTE.ivory
         : SIDE_COLOR[u.side];
-    ctx.lineWidth = opts.acting || opts.selected ? 3.5 : 3;
+    ctx.lineWidth = opts.acting ? 4 : opts.selected ? 3.5 : 3;
     ctx.stroke();
     ctx.setLineDash([]);
     if (opts.targeted) {
@@ -2440,6 +2455,61 @@ function drawUnit(
     ctx.stroke();
     label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, PALETTE.ivory, 15, true);
   }
+  ctx.restore();
+}
+
+/**
+ * The turn arrow's rows, top to bottom, in art pixels of `TURN_ARROW.px`
+ * screen pixels: a stubby stem over a point.
+ */
+const TURN_ARROW_ROWS = [3, 3, 9, 7, 5, 3, 1];
+const TURN_ARROW = {px: 3, gap: 3, bob: 5, bobSeconds: 0.9};
+
+/**
+ * The arrow over the unit you're controlling: gold, which no side or
+ * targeting colour uses, so it shows on the sand and over either side's
+ * rugs. It points down at the unit from above its health bar and statuses,
+ * or, where the track would cover that (the top row), up from below them.
+ * It bobs, unless the device asks for reduced motion (`time` null).
+ */
+function drawTurnArrow(
+  ctx: CanvasRenderingContext2D,
+  hex: Hex,
+  marks: number,
+  time: number | null
+): void {
+  const {px, gap} = TURN_ARROW;
+  const h = TURN_ARROW_ROWS.length * px;
+  const bob =
+    time === null
+      ? 0
+      : Math.round(
+          (TURN_ARROW.bob * (1 + Math.sin((time * 2 * Math.PI) / TURN_ARROW.bobSeconds))) / 2
+        );
+  const c = center(hex);
+  const stack = healthStack(hex, marks);
+  const trackBottom = TRACK_AREA.y + TRACK_AREA.height;
+  const down = stack.top - gap - h - TURN_ARROW.bob - px >= trackBottom;
+  // Below: under the stack when it's below the unit too, else under its feet.
+  const below = stack.top > c.y ? stack.bottom : c.y + SPRITE_FEET;
+  const top = Math.round(down ? stack.top - gap - h - bob : below + gap + bob);
+  const rows = down ? TURN_ARROW_ROWS : [...TURN_ARROW_ROWS].reverse();
+  const x = Math.round(c.x);
+  ctx.save();
+  // An ink outline one art pixel round every row, then the gold on top,
+  // a lighter left half for the light from the top left.
+  ctx.fillStyle = PALETTE.ink;
+  rows.forEach((w, i) =>
+    ctx.fillRect(x - ((w + 2) * px) / 2, top + (i - 1) * px, (w + 2) * px, 3 * px)
+  );
+  rows.forEach((w, i) => {
+    const left = x - (w * px) / 2;
+    const half = Math.ceil(w / 2) * px;
+    ctx.fillStyle = PALETTE.goldLight;
+    ctx.fillRect(left, top + i * px, half, px);
+    ctx.fillStyle = PALETTE.gold;
+    ctx.fillRect(left + half, top + i * px, w * px - half, px);
+  });
   ctx.restore();
 }
 
