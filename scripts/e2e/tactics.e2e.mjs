@@ -620,6 +620,16 @@ try {
     (await sheet.locator('[data-side="enemy"]').count()) === 1 &&
       (await page.getByTestId('keyword-info').textContent()).startsWith('Speed.')
   );
+  {
+    // Desktop: explained beside the abilities' names, not under them.
+    const list = await sheet.locator('[data-ability]').last().boundingBox();
+    const info = await sheet.getByTestId('keyword-info').boundingBox();
+    check(
+      'desktop: the explanation sits beside the abilities, not under them',
+      info.x > list.x + list.width && info.y < list.y + list.height,
+      {list, info}
+    );
+  }
   check(
     'the sheet says spaces, not hexes, and has no next turn',
     !/\bhex|Next turn/i.test(await sheet.textContent()),

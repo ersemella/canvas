@@ -15,6 +15,8 @@ const GlossaryContext = createContext<{
   showAbility: (id: string) => void;
   /** Each ability's explanation, as its name last rendered it: the box shows the current one. */
   bodies: Map<string, React.ReactNode>;
+  /** The box explaining what's shown, if anything is. */
+  box: (className?: string) => React.ReactNode;
 } | null>(null);
 
 /** Inside the box: a keyword tapped there explains itself under the ability, not instead of it. */
@@ -23,11 +25,18 @@ const InBoxContext = createContext(false);
 /**
  * Holds what was last tapped in its children, a keyword or an ability's
  * name, and explains it in a box below them (kept in view at the bottom of
- * a scrolling tooltip). An ability's text has keywords of its own: tapping
- * one adds its rule under the ability's. Tapping the same thing again, or
- * the box's ×, hides it.
+ * a scrolling tooltip), or, with `slotted`, wherever a GlossaryBox in them
+ * puts it. An ability's text has keywords of its own: tapping one adds its
+ * rule under the ability's. Tapping the same thing again, or the box's ×,
+ * hides it.
  */
-export function Glossary({children}: {children: React.ReactNode}) {
+export function Glossary({
+  slotted = false,
+  children,
+}: {
+  slotted?: boolean;
+  children: React.ReactNode;
+}) {
   const [shown, setShown] = useState<Shown | null>(null);
   const bodies = useRef(new Map<string, React.ReactNode>()).current;
   const showKeyword = (id: KeywordId) =>
@@ -43,32 +52,39 @@ export function Glossary({children}: {children: React.ReactNode}) {
       <b>{KEYWORD_INFO[id].name}.</b> {KEYWORD_INFO[id].detail}
     </Text>
   );
-  return (
-    <GlossaryContext.Provider value={{shown, showKeyword, showAbility, bodies}}>
-      {children}
-      {shown && (
-        <div className={styles.glossary}>
-          <div style={{flex: 1}}>
-            {shown.kind === 'keyword' ? (
-              rule(shown.id)
-            ) : (
-              <>
-                <GlossaryContext.Provider
-                  value={{shown, showKeyword: showNested, showAbility, bodies}}
-                >
-                  <InBoxContext.Provider value>
-                    <div data-testid="ability-info">{bodies.get(shown.id)}</div>
-                  </InBoxContext.Provider>
-                </GlossaryContext.Provider>
-                {shown.keyword && <div className={styles.nestedRule}>{rule(shown.keyword)}</div>}
-              </>
-            )}
-          </div>
-          <CloseButton size="sm" aria-label="Hide" onClick={() => setShown(null)} />
+  const box = (className?: string) =>
+    shown && (
+      <div className={`${styles.glossary} ${className ?? ''}`}>
+        <div style={{flex: 1, minWidth: 0}}>
+          {shown.kind === 'keyword' ? (
+            rule(shown.id)
+          ) : (
+            <>
+              <GlossaryContext.Provider
+                value={{shown, showKeyword: showNested, showAbility, bodies, box}}
+              >
+                <InBoxContext.Provider value>
+                  <div data-testid="ability-info">{bodies.get(shown.id)}</div>
+                </InBoxContext.Provider>
+              </GlossaryContext.Provider>
+              {shown.keyword && <div className={styles.nestedRule}>{rule(shown.keyword)}</div>}
+            </>
+          )}
         </div>
-      )}
+        <CloseButton size="sm" aria-label="Hide" onClick={() => setShown(null)} />
+      </div>
+    );
+  return (
+    <GlossaryContext.Provider value={{shown, showKeyword, showAbility, bodies, box}}>
+      {children}
+      {!slotted && box()}
     </GlossaryContext.Provider>
   );
+}
+
+/** Where a `slotted` Glossary explains what was tapped in it (`className` placing the box). */
+export function GlossaryBox({className}: {className?: string}) {
+  return <>{useContext(GlossaryContext)?.box(className)}</>;
 }
 
 /** How a keyword reads: harmful statuses warm, the hex's own effect grey, the rest neutral. */

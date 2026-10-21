@@ -452,6 +452,26 @@
   color: var(--c-dusk4);
 }
 
+/*
+ * Desktop: the sheet's abilities with what was tapped explained beside them,
+ * in the room their column leaves, not under them, so the sheet stays no
+ * taller than the board. The box starts level with the column.
+ */
+.abilityRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.abilityRow .abilityList {
+  flex: none;
+}
+.glossary.glossaryBeside {
+  position: static;
+  flex: 1;
+  min-width: 0;
+  margin-top: 8px;
+}
+
 /* A keyword from an ability's text, explained under it. */
 .nestedRule {
   margin-top: 6px;
