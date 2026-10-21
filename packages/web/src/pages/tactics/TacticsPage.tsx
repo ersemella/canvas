@@ -42,7 +42,6 @@ import {
 } from '@canvas/games-silk-road-tactics';
 import type {
   AbilityId,
-  AbilityKind,
   ActionTarget,
   BoardScene,
   FightState,
@@ -61,7 +60,7 @@ import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
-import {AbilityIcon} from './AbilityIcon';
+import {AbilityIcon, abilityIcon} from './AbilityIcon';
 import {HexTooltip} from './HexTooltip';
 import {Glossary} from './Keywords';
 import {
@@ -1028,10 +1027,10 @@ function TurnControls(props: {
       <span className={styles.bigButtonCost}>{confirm.text}</span>
     </span>
   );
-  const asking = (name: string, kind: AbilityKind | undefined) => (
+  const asking = (name: string, icon: React.ReactNode) => (
     <span className={styles.bigButton}>
       <span className={styles.tileName}>
-        {kind && <AbilityIcon kind={kind} />}
+        {icon}
         {name}
       </span>
       <span className={styles.bigButtonCost}>{props.needsTarget}</span>
@@ -1039,10 +1038,10 @@ function TurnControls(props: {
   );
   // A locked ultimate's charge goes on the cost's line, so a narrow tile
   // (three to a row) keeps its name on one line.
-  const label = (name: string, cost: string, kind: AbilityKind | undefined, note?: string) => (
+  const label = (name: string, cost: string, icon: React.ReactNode, note?: string) => (
     <span className={styles.bigButton}>
       <span className={styles.tileName}>
-        {kind && <AbilityIcon kind={kind} />}
+        {icon}
         {name}
       </span>
       <span className={styles.bigButtonCost}>
@@ -1083,8 +1082,12 @@ function TurnControls(props: {
           {plannedMove && confirmLabel
             ? confirmLabel
             : moving && !plannedMove
-              ? asking('Move', 'move')
-              : label('Move', props.moveSlots !== null ? `+${props.moveSlots}` : '', 'move')}
+              ? asking('Move', <AbilityIcon id="move" />)
+              : label(
+                  'Move',
+                  props.moveSlots !== null ? `+${props.moveSlots}` : '',
+                  <AbilityIcon id="move" />
+                )}
         </Button>
         {defs.map((def) => {
           const reason =
@@ -1117,11 +1120,11 @@ function TurnControls(props: {
               {ready && confirmLabel
                 ? confirmLabel
                 : picked
-                  ? asking(def.name, def.kind)
+                  ? asking(def.name, abilityIcon(def))
                   : label(
                       def.name,
                       `+${props.slotsLater(def.cost)}`,
-                      def.kind,
+                      abilityIcon(def),
                       lockedUlt ? `${unit.ultimateCharge}/${RULES.ultimateCharge}` : undefined
                     )}
             </Button>

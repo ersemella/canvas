@@ -1,58 +1,212 @@
-import type {AbilityKind} from '@canvas/games-silk-road-tactics';
+import type {AbilityDef, AbilityId, AbilityKind} from '@canvas/games-silk-road-tactics';
+
+/** What has an icon: every ability but Hold, and Move. */
+export type IconId = Exclude<AbilityId, 'hold'> | 'move';
+
+interface Icon {
+  /** 12×12 art pixels: `#` its colour, `=` its shade, `+` its accent. */
+  rows: string[];
+  /** Its colour, shade and accent; its kind's unless it says otherwise. */
+  kind?: AbilityKind;
+  colors?: [string, string, string];
+}
 
 /**
- * Each kind of ability's icon, drawn as the pixel art is: up to 9×9 art
- * pixels, `#` filled, centred in a 9×9 box. A sword for attacks, a cross
- * for heals, an arrow for movement, a chain's two links for control
- * (statuses, hail). A boot and a padlock (2026-10-21) didn't read.
+ * Each ability's own icon, drawn as the pixel art is (owner, 2026-10-21;
+ * one icon per kind until then). Simple shapes read at 12×12: Throw, Pin
+ * and Rampage as figures didn't.
  */
-const ICON: Record<AbilityKind, string[]> = {
-  attack: [
-    '...#...', //
-    '..###..',
-    '..###..',
-    '..###..',
-    '#######',
-    '...#...',
-    '..###..',
-  ],
-  heal: [
-    '..###..', //
-    '..###..',
-    '#######',
-    '#######',
-    '#######',
-    '..###..',
-    '..###..',
-  ],
-  move: [
-    '...#...', //
-    '...##..',
-    '######.',
-    '#######',
-    '######.',
-    '...##..',
-    '...#...',
-  ],
-  control: [
-    '..###....', //
-    '.#...#...',
-    '.#...#...',
-    '.#.#####.',
-    '..###.#.#',
-    '...#..#.#',
-    '...#...#.',
-    '...#...#.',
-    '....###..',
-  ],
+const ICON: Record<IconId, Icon> = {
+  move: {
+    kind: 'move',
+    rows: [
+      '............', //
+      '......#.....',
+      '......##....',
+      '......###...',
+      '......####..',
+      '###########.',
+      '###########.',
+      '......####..',
+      '......###...',
+      '......##....',
+      '......#.....',
+      '............',
+    ],
+  },
+  // A bow drawn, its string the accent.
+  bow: {
+    kind: 'attack',
+    rows: [
+      '..##........', //
+      '..+.#.......',
+      '..+..#......',
+      '..+...#.....',
+      '=.+...#..#..',
+      '###########.',
+      '=.+...#..#..',
+      '..+...#.....',
+      '..+..#......',
+      '..+.#.......',
+      '..##........',
+      '............',
+    ],
+  },
+  // A jump's arc, landing.
+  leap: {
+    kind: 'move',
+    rows: [
+      '............', //
+      '...####.....',
+      '.##....##...',
+      '.#.......#..',
+      '#........#..',
+      '#......#####',
+      '#.......###.',
+      '#........#..',
+      '#...........',
+      '............',
+      '============',
+      '............',
+    ],
+  },
+  // Three arrows falling.
+  volley: {
+    kind: 'attack',
+    rows: [
+      '.=#=........', //
+      '.......=#=..',
+      '..#.......#.',
+      '..#..=#=..#.',
+      '..#...#...#.',
+      '..#...#...#.',
+      '..#...#...#.',
+      '.###..#...#.',
+      '..#...#..###',
+      '......#...#.',
+      '.....###....',
+      '......#.....',
+    ],
+  },
+  // A sun, yellow rather than health's jade.
+  sunlight: {
+    colors: ['var(--c-goldLight)', 'var(--c-gold)', 'var(--c-ivory)'],
+    rows: [
+      '.....##.....', //
+      '.#...##...#.',
+      '..#......#..',
+      '....####....',
+      '...######...',
+      '##.######.##',
+      '##.######.##',
+      '...######...',
+      '....####....',
+      '..#......#..',
+      '.#...##...#.',
+      '.....##.....',
+    ],
+  },
+  // A white cloud dropping hail's sky blue.
+  hail: {
+    colors: ['var(--c-ivory)', 'var(--c-dusk4)', 'var(--c-sky)'],
+    rows: [
+      '.....###....', //
+      '...#######..',
+      '.##########.',
+      '############',
+      '.=========..',
+      '............',
+      '.++..++..++.',
+      '.++..++..++.',
+      '............',
+      '...++..++...',
+      '...++..++...',
+      '............',
+    ],
+  },
+  // A snowflake, in ice's sky blue.
+  freeze: {
+    colors: ['var(--c-sky)', 'var(--c-lapisDark)', 'var(--c-skyLight)'],
+    rows: [
+      '.....##.....', //
+      '.#..####..#.',
+      '..#..##..#..',
+      '...#.##.#...',
+      '....####....',
+      '#####++#####',
+      '#####++#####',
+      '....####....',
+      '...#.##.#...',
+      '..#..##..#..',
+      '.#..####..#.',
+      '.....##.....',
+    ],
+  },
+  // Over and down.
+  throw: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '............',
+      '..######....',
+      '.########...',
+      '##......##..',
+      '##......##..',
+      '##......##..',
+      '##....######',
+      '##.....####.',
+      '##......##..',
+      '............',
+      '............',
+    ],
+  },
+  // Pressed down.
+  pin: {
+    kind: 'control',
+    rows: [
+      '............', //
+      '....####....',
+      '....####....',
+      '....####....',
+      '..########..',
+      '...######...',
+      '....####....',
+      '.....##.....',
+      '............',
+      '############',
+      '############',
+      '............',
+    ],
+  },
+  // Rushing on.
+  rampage: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '##....##....',
+      '.##....##...',
+      '..##....##..',
+      '...##....##.',
+      '....##....##',
+      '....##....##',
+      '...##....##.',
+      '..##....##..',
+      '.##....##...',
+      '##....##....',
+      '............',
+    ],
+  },
 };
 
-/** Its colour, from the palette: damage's, health's, ivory, and the harmful statuses' gold. */
-const COLOR: Record<AbilityKind, string> = {
-  attack: 'var(--c-madderLight)',
-  heal: 'var(--c-jade)',
-  move: 'var(--c-ivory)',
-  control: 'var(--c-gold)',
+/**
+ * Each kind's colour, shade and accent, from the palette: damage's light
+ * madder, health's jade, ivory, and the harmful statuses' gold.
+ */
+const KIND_COLORS: Record<AbilityKind, [string, string, string]> = {
+  attack: ['var(--c-madderLight)', 'var(--c-madder)', 'var(--c-ivory)'],
+  heal: ['var(--c-jade)', 'var(--c-jadeDark)', 'var(--c-goldLight)'],
+  move: ['var(--c-ivory)', 'var(--c-dusk4)', 'var(--c-lapisLight)'],
+  control: ['var(--c-gold)', 'var(--c-goldDark)', 'var(--c-skyLight)'],
 };
 
 export const KIND_NAME: Record<AbilityKind, string> = {
@@ -63,34 +217,40 @@ export const KIND_NAME: Record<AbilityKind, string> = {
 };
 
 /**
- * An ability kind's icon, `px` screen pixels to an art pixel; decorative,
+ * An ability's icon, `px` screen pixels to an art pixel; decorative,
  * before the name, spaced by a margin so the text still starts with it.
  */
-export function AbilityIcon({kind, px = 2}: {kind: AbilityKind; px?: number}) {
-  const rows = ICON[kind];
-  // A smaller icon sits in the middle of the box, at the same pixel size.
-  const at = (9 - rows.length) / 2;
+export function AbilityIcon({id, px = 2}: {id: IconId; px?: number}) {
+  const {rows, kind, colors} = ICON[id];
+  const fill = colors ?? KIND_COLORS[kind!];
   return (
     <svg
-      width={9 * px}
-      height={9 * px}
-      viewBox={`${-at} ${-at} 9 9`}
+      width={12 * px}
+      height={12 * px}
+      viewBox="0 0 12 12"
       shapeRendering="crispEdges"
       aria-hidden
       style={{
         flex: 'none',
         display: 'inline-block',
-        verticalAlign: '-0.1em',
+        verticalAlign: '-0.2em',
         marginRight: '0.35em',
       }}
-      fill={COLOR[kind]}
-      data-kind={kind}
+      data-icon={id}
     >
       {rows.flatMap((row, y) =>
-        [...row].map((c, x) =>
-          c === '#' ? <rect key={`${x},${y}`} x={x} y={y} width={1} height={1} /> : null
-        )
+        [...row].map((c, x) => {
+          const i = '#=+'.indexOf(c);
+          return i < 0 ? null : (
+            <rect key={`${x},${y}`} x={x} y={y} width={1} height={1} fill={fill[i]} />
+          );
+        })
       )}
     </svg>
   );
+}
+
+/** An ability's icon, or nothing for Hold. */
+export function abilityIcon(def: AbilityDef) {
+  return def.id === 'hold' ? null : <AbilityIcon id={def.id} />;
 }
