@@ -200,6 +200,53 @@ health for reference):
   nearly free. That suits the separate-movement rule, but it's why the
   Outrider shuffles.
 
+### Enemy caravans: solo strength and pair synergy (2026-10-22)
+
+The player's full party (three heroes and the camel) against each stage-1
+caravan (one hero, two wolves) and each stage-2 caravan (two heroes, a
+wolf), production rules and AI on both sides, 400 fights each (seeds 1000
+onward, each its own map). Same-hero pairs never happen in a run (the
+stage picks distinct heroes); they are here as a reference, so a mixed pair
+can be compared with its two doubles. "Heroes lost" is the player heroes
+dead at the end, per finished fight. Experiments file:
+`scripts/balance/experiments/caravans.mjs`.
+
+| Enemy caravan | Player wins | Heroes lost | Player's losses: party / camel | Unfinished |
+|---|---:|---:|---|---:|
+| Champion + 2 wolves | 99.7% | 0.28 | 0 / 1 | 0.8% |
+| Outrider + 2 wolves | 99.7% | 0.34 | 1 / 0 | 0.3% |
+| Storm Caller + 2 wolves | 98.3% | 0.47 | 7 / 0 | 0% |
+| Champion + Outrider + wolf | 93.8% | 0.78 | 17 / 7 | 2.8% |
+| Champion + Storm Caller + wolf | 84.5% | 1.02 | 60 / 2 | 0% |
+| Outrider + Storm Caller + wolf | 82.8% | 1.11 | 63 / 4 | 2.8% |
+| *Champion ×2 + wolf* | 98.2% | 0.64 | 7 / 0 | 0.8% |
+| *Outrider ×2 + wolf* | 96.1% | 0.68 | 12 / 3 | 2.8% |
+| *Storm Caller ×2 + wolf* | 73.1% | 1.41 | 106 / 1 | 0.5% |
+| All three, no wolves (stage 3) | 62.5% | 1.70 | 128 / 18 | 2.8% |
+
+- **Stage 1 is nearly unlosable** whichever hero comes (98–100%), so win
+  rate can't rank the heroes there; attrition can. The Storm Caller costs
+  the player most (0.47 heroes, against 0.28 and 0.34), and it is the only
+  stage-1 enemy that wins a few fights.
+- **The Storm Caller is the strongest enemy hero by a wide margin.** Every
+  caravan with it is 10–25 points harder than one without, and two of them
+  beat any mixed pair. Hail looks like the cause: the player's Outrider
+  (300 health) survives 54–58% of fights against a mixed pair with a Storm
+  Caller and 35% against two, against 67–96% in caravans without one.
+- **Synergy is small.** Against the average of its two doubles, the
+  Champion and Outrider together lose the player 3.4 points more fights
+  (6.2% against 2.9%) and 0.12 more heroes: the one pair clearly worth more
+  than its parts (perhaps the Champion's body screening the Outrider; not
+  checked).
+  Pairs with the Storm Caller are about additive (losses +1.1 and +1.8
+  points, heroes lost +0.0 and +0.07, inside noise).
+- **Stage 2's difficulty depends on the draw**: 94% if the Storm Caller
+  isn't picked, 83–85% if it is (two runs in three).
+- **The camel favours the player in the mirror.** Three heroes each, the
+  player wins 62.5%; 22 of 243 wins are the camel reaching the exit.
+- One standard error is about ±1.2 points on win rates near 95% and ±2
+  near 80%.
+
 ## Proposed tuning
 
 **Applied 2026-10-20: tunings 1 to 3** (the package below without its Fog
