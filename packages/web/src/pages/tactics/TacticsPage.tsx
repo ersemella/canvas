@@ -1123,9 +1123,7 @@ export function TacticsPage() {
                     {outcomeText(fight)}
                   </Text>
                   <Text c="dimmed" fz="xs" data-testid="stage">
-                    {nextAhead
-                      ? `Stage ${stage + 1} won. A bigger band waits down the road.`
-                      : `Stage ${stage + 1}`}
+                    {`Stage ${stage + 1}`}
                   </Text>
                 </Stack>
               </Paper>
