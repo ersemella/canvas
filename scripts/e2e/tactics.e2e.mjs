@@ -285,7 +285,7 @@ try {
     )
   );
   await shot(page, 'start-menu');
-  const startButton = page.getByRole('button', {name: 'Start a fight'});
+  const startButton = page.getByRole('button', {name: 'Start', exact: true});
   for (let i = 0; i < 3; i++) await picks.nth(i).click();
   check('with no hero taken, Start is disabled', await startButton.isDisabled());
   for (let i = 0; i < 3; i++) await picks.nth(i).click();
@@ -742,13 +742,13 @@ try {
     'the start menu links back to the Canvas home page',
     (await page.getByRole('link', {name: 'Back to Canvas'}).getAttribute('href')) === '/'
   );
-  await page.getByRole('button', {name: 'Start a fight'}).click();
+  await page.getByRole('button', {name: 'Start', exact: true}).click();
   await page.waitForFunction((id) => window.__tactics.run?.runId !== id, beforeReset, {
     timeout: 15_000,
   });
   await waitIdle();
   check(
-    'Start a fight, after Reset run, starts a fresh fight',
+    'Start, after Reset run, starts a fresh fight',
     (await state()).view.fight.phase === 'fight'
   );
   const resetOld = await api(
@@ -878,7 +878,7 @@ try {
     const stalled = (await state()).runId;
     await abandonOn(page);
     await page.reload();
-    await page.getByRole('button', {name: 'Start a fight'}).click();
+    await page.getByRole('button', {name: 'Start', exact: true}).click();
     await page
       .getByTestId('turn-controls')
       .getByRole('button', {name: /^Move/})
@@ -905,13 +905,13 @@ try {
   // A won stage before the run's last offers the next; anything else, a new run.
   const nextAhead = run.view.fight.phase === 'won' && run.view.stage < run.view.stages - 1;
   check(
-    `${nextAhead ? 'Next stage' : 'New fight'} takes the turn’s buttons’ place`,
-    await page.getByRole('button', {name: nextAhead ? 'Next stage' : 'New fight'}).isVisible()
+    `${nextAhead ? 'Next stage' : 'New run'} takes the turn’s buttons’ place`,
+    await page.getByRole('button', {name: nextAhead ? 'Next stage' : 'New run'}).isVisible()
   );
   // On a phone the finished fight keeps the action section's height, so the board stays put.
   await page.setViewportSize({width: 390, height: 664});
   await sleep(300);
-  const endButton = nextAhead ? 'Next stage' : 'New fight';
+  const endButton = nextAhead ? 'Next stage' : 'New run';
   {
     const box = await page.locator('canvas').boundingBox();
     const bar = await page
@@ -948,17 +948,17 @@ try {
     );
     await abandonOn(page);
   }
-  // New fight opens the start menu; Start there starts a fresh fight, ready for a turn.
+  // New run opens the start menu; Start there starts a fresh fight, ready for a turn.
   if (!nextAhead) {
     const ended = (await state()).runId;
-    await page.getByRole('button', {name: 'New fight'}).click();
-    await page.getByRole('button', {name: 'Start a fight'}).click();
+    await page.getByRole('button', {name: 'New run'}).click();
+    await page.getByRole('button', {name: 'Start', exact: true}).click();
     await page.waitForFunction((id) => window.__tactics.run?.runId !== id, ended, {
       timeout: 15_000,
     });
     await waitIdle();
     check(
-      'New fight, then Start a fight, starts a fresh fight',
+      'New run, then Start, starts a fresh fight',
       (await state()).view.fight.phase === 'fight'
     );
     await abandonOn(page);
@@ -969,7 +969,7 @@ try {
   // pinned to the bottom of the screen; no heading or hints; no scrolling.
   const phone = await browser.newPage({...devices['iPhone 13']});
   await phone.goto(`${WEB_URL}/play/silk-road-run`);
-  await phone.getByRole('button', {name: 'Start a fight'}).click();
+  await phone.getByRole('button', {name: 'Start', exact: true}).click();
   const phoneMove = phone.locator('[data-choice="move"]');
   await phoneMove.waitFor({timeout: 15_000});
   await phone.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {
@@ -1497,7 +1497,7 @@ try {
     await phone.getByRole('button', {name: 'Menu'}).tap();
     await phone.getByRole('menuitem', {name: 'Reset run'}).tap();
     await phone.getByRole('menuitem', {name: 'Tap again to reset'}).tap();
-    await phone.getByRole('button', {name: 'Start a fight'}).tap();
+    await phone.getByRole('button', {name: 'Start', exact: true}).tap();
     await phone.waitForFunction((id) => window.__tactics?.run?.runId !== id, resetId, {
       timeout: 15_000,
     });

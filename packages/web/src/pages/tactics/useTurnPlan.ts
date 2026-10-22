@@ -7,13 +7,14 @@ import {
   RULES,
   abilitiesOf,
   actingUnit,
-  allowedTargets,
+  arrowLanes,
   mapOf,
   obscured,
   offeredTargets,
   previewTurn,
   reachableHexes,
   slotsForward,
+  tauntBinds,
   taunterOf,
   turnCost,
 } from '@canvas/games-silk-road-run';
@@ -284,24 +285,37 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
 
   /**
    * Abilities with nothing they may target from where the unit stands, and
-   * why: disabled. Under a binding taunt that's anything that can't affect the taunter.
+   * why: disabled. Under a binding taunt that's anything that can't affect
+   * the taunter, and a short note says so on the button itself, as it does
+   * for a bow in a sandstorm, since the reason is otherwise only a hover's title.
    */
   const outOfReach = useMemo(() => {
-    const out = new Map<AbilityId, string>();
+    const out = new Map<AbilityId, {why: string; note?: string}>();
     if (!fight || !acting?.alive) return out;
     const map = mapOf(fight);
+    const taunter = taunterOf(fight, acting);
+    const binds = taunter !== undefined && tauntBinds(fight, map, acting, taunter);
     for (const def of abilitiesOf(acting)) {
       if (def.id === 'hold' || offeredTargets(fight, map, acting, def).length > 0) continue;
-      const taunter = taunterOf(fight, acting);
       out.set(
         def.id,
-        taunter &&
-          def.targets(fight, map, acting, acting.hex!).length > 0 &&
-          allowedTargets(fight, map, acting, def).length === 0
-          ? `Taunted: this can’t reach ${HEROES[taunter.hero].name}.`
+        binds && def.targets(fight, map, acting, acting.hex!).length > 0
+          ? {
+              why: `Taunted by ${HEROES[taunter.hero].name}: attack it, or end the turn.`,
+              note: 'Taunted',
+            }
           : def.id === 'bow' && acting.hex && obscured(fight, map, acting.hex)
-            ? 'Can’t shoot out of a sandstorm.'
-            : (NO_TARGET[def.id] ?? 'Nothing to target from here.')
+            ? {why: 'Can’t shoot out of a sandstorm.', note: 'Sandstorm'}
+            : def.id === 'bow' &&
+                acting.hex &&
+                arrowLanes(fight, map, acting.hex).some(
+                  (l) => l.hidden && l.hidden.side !== acting.side
+                )
+              ? {
+                  why: 'The enemies in the bow’s lanes are in a sandstorm: arrows can’t reach them.',
+                  note: 'Sandstorm',
+                }
+              : {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'}
       );
     }
     return out;

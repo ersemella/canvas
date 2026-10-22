@@ -117,7 +117,7 @@ export function StartMenu(props: {
               loading={props.busy}
               disabled={party.length === 0}
             >
-              Start a fight
+              Start
             </Button>
             {party.length === 0 && (
               <Text c="dimmed" fz="sm" ta="center">

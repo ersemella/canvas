@@ -4,6 +4,7 @@ import {CAMEL} from '../rules/config';
 import {unitAt} from '../rules/board';
 import {tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
+import {taunterOf} from '../rules/taunt';
 import type {FightState} from '../rules/types';
 import {trackCards} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
@@ -30,6 +31,7 @@ import {
   drawLanes,
   drawPath,
   drawRangeOutline,
+  drawTauntChain,
   drawThrowArc,
 } from './board/overlays';
 import {
@@ -394,6 +396,14 @@ export class TacticsBoardSystem extends BaseSystem {
         drawDamage(ctx, at.x, at.y - 22, p.hpBefore - p.hpAfter, p.killed);
       }
     }
+
+    // Each taunt, chained to its taunter, so it's plain who must be attacked
+    // (not while a turn plays back, when units are on their way).
+    if (!walking && !playing)
+      for (const u of fight.units) {
+        const taunter = u.alive && u.hex ? taunterOf(fight, u) : undefined;
+        if (taunter) drawTauntChain(ctx, u.hex!, taunter.hex!);
+      }
 
     if (scene.range) drawRangeOutline(ctx, scene.range);
     if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);

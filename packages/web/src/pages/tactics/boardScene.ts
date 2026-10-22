@@ -125,6 +125,8 @@ export function buildScene(input: SceneInput): BoardScene {
         lanes: arrowLanes(fight, mapOf(fight), from).map((l) => ({
           hexes: l.hexes,
           target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
+          // An enemy the sandstorm hides: the lane shows where it stops it.
+          ...(l.storm && l.hidden && l.hidden.side !== acting.side ? {storm: l.storm} : {}),
         })),
       };
     // Only what it may target; once Throw's target is picked, where it can

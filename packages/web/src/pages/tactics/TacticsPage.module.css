@@ -127,7 +127,7 @@
 
 /* Phones: the action section, pinned to the screen's bottom. */
 .actionBar {
-  /* Bottom-aligned: once the fight ends, New fight sits where Confirm was. */
+  /* Bottom-aligned: once the fight ends, New run sits where Confirm was. */
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
