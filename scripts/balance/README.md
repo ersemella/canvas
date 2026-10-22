@@ -80,8 +80,10 @@ An experiments file exports `experiments`, a map from a name to
 `{patch?, mod?}`. `patch(config)` changes the config for both sides for that
 experiment (`ABILITY`, `AI`, `HEROES`, `RULES` and the `ABILITIES` definitions,
 whose `cost` and `recoveryCost` are copied from `ABILITY` at load time, so set
-both); it is undone afterwards. `mod` changes one side only: `ban` removes
-abilities, `stats` adds to a hero's speed, defence, power or hp. With `mod`,
+both; an ability's `charged` can be switched too); it is undone afterwards.
+`party` sets both sides' heroes (default the three prototype heroes). `mod`
+changes one side only: `ban` removes abilities, `stats` adds to a hero's
+speed, defence, power or hp, `party` replaces its heroes. With `mod`,
 each seed is played twice, once with each side modified, and `modWinPct` is
 the modified side's share of finished fights: 50% means the change does
 nothing, and a ban above 50% means the ability loses games when used.

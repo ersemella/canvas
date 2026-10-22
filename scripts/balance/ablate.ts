@@ -65,6 +65,7 @@ function snapshot(config: Config) {
     id,
     d.cost,
     d.recoveryCost,
+    d.charged,
   ]);
   return () => {
     const restore = (target: any, from: any) => {
@@ -75,9 +76,10 @@ function snapshot(config: Config) {
     };
     for (const key of ['ABILITY', 'AI', 'HEROES', 'RULES'] as const)
       restore(config[key], saved[key]);
-    for (const [id, cost, recovery] of defs) {
+    for (const [id, cost, recovery, charged] of defs) {
       config.ABILITIES[id].cost = cost;
       config.ABILITIES[id].recoveryCost = recovery;
+      config.ABILITIES[id].charged = charged;
     }
   };
 }
