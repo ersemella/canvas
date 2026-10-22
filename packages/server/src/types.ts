@@ -3,8 +3,15 @@
  * from the engine so the server and every game share one definition.
  */
 
-import type {RoomPlayer, RoomPolicy, RunSystem, ServerSystem} from '@canvas/engine/server';
-export type {RoomPlayer, RoomPolicy, RunSystem, ServerSystem};
+import type {
+  RoomPlayer,
+  RoomPolicy,
+  RunResponse,
+  RunStatus,
+  RunSystem,
+  ServerSystem,
+} from '@canvas/engine/server';
+export type {RoomPlayer, RoomPolicy, RunResponse, RunStatus, RunSystem, ServerSystem};
 
 /** Persisted in DO storage under the `meta` key. */
 export interface RoomRecord {
@@ -76,17 +83,10 @@ export interface RunRecord {
   ownerHash: string;
   /** The game's run state (seed included): never sent as is. */
   state: unknown;
-  status: 'active' | 'won' | 'lost' | 'abandoned';
+  /** `expired`: saved by an older version of the game's rules, and ended for it (`RunSystem.outdated`). */
+  status: RunStatus | 'expired';
   createdAt: number;
   updatedAt: number;
-}
-
-/** Every `/runs` response: the run's whole public view. */
-export interface RunResponse {
-  runId: string;
-  game: string;
-  status: RunRecord['status'];
-  view: unknown;
 }
 
 /** A player key's ledger, stored by its `PlayerLedger` under the `ledger` key. */

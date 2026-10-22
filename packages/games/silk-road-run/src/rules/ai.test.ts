@@ -7,6 +7,7 @@ import {ABILITY, AI, RULES} from './config';
 import {ABILITIES} from './abilities';
 import {advanceToDecision, applyTurn, cloneFight, createFight, mapOf} from './fight';
 import {scaled} from './resolve';
+import {SALT_FLATS} from './map';
 import {threatsTo} from './threat';
 import type {FightState, TurnInput} from './types';
 
@@ -16,7 +17,7 @@ const stats = (): SearchStats => ({completedDepth: 0, cutoffs: 0, work: 0});
 function setup(placements: Record<string, Hex>): FightState {
   const s = createFight(0);
   // The fixed layout, which these tests place units around.
-  delete s.tiles;
+  s.tiles = {...SALT_FLATS.tiles};
   s.phase = 'fight';
   // An unlisted camel isn't there at all: dead, it would lose the fight.
   s.units = s.units.filter((u) => u.hero !== 'camel' || u.id in placements);

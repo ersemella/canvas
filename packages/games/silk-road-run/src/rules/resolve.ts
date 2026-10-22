@@ -91,8 +91,7 @@ function defended(target: Unit, damage: number): number {
 
 /** What a hail hex deals its occupant: the scaled damage it was cast with, through Vulnerable and defence. */
 export function hailDamage(state: FightState, target: Unit, hail: HailEffect): number {
-  // Hail saved in a fight from before hail dealt damage has no `damage`.
-  return throughDefence(state, target, hail.damage ?? 0);
+  return throughDefence(state, target, hail.damage);
 }
 
 /** Vulnerable alone: collision damage, which skips defence. */
@@ -149,7 +148,7 @@ export function checkEnd(state: FightState): void {
     state.phase = 'lost';
 }
 
-/** The player's camel; none in a fight saved before it existed (camel.md). */
+/** The player's camel (camel.md). */
 export function camelOf(state: FightState): Unit | undefined {
   return state.units.find((u) => u.hero === CAMEL);
 }

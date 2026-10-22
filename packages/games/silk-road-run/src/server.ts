@@ -3,7 +3,7 @@
  * (`@canvas/server`): a run is its stages' fights, one after another.
  */
 import type {RunSystem} from '@canvas/engine/server';
-import {createRun, handleRunAction, runStatus, runView} from './rules/run';
+import {createRun, handleRunAction, runOutdated, runStatus, runView} from './rules/run';
 import type {RunState, RunView} from './rules/run';
 import type {RunAction} from './rules/types';
 
@@ -14,6 +14,7 @@ export const silkRoadRunRunSystem: RunSystem<RunState, RunAction, RunView> = {
   handleAction: handleRunAction,
   getView: runView,
   status: runStatus,
+  outdated: runOutdated,
 };
 
 export default silkRoadRunRunSystem;

@@ -22,12 +22,22 @@ import {
 import {shuffled} from './track';
 import type {AbilityId, ActionTarget, FightState, HeroId, RunAction} from './types';
 
+/**
+ * The format of what a run saves. Bump it with any change to `RunState` or
+ * `FightState` that a run saved before can't play on (a field added,
+ * removed or reinterpreted): older runs are then ended rather than
+ * patched (`runOutdated`), so the rules never handle an old shape.
+ */
+export const RUN_FORMAT = 1;
+
 export interface RunState {
+  /** `RUN_FORMAT` when the run was created; missing in runs from before it existed. */
+  format: number;
   seed: number;
   /** Bumped on every action; the view carries it (brief section 8). */
   version: number;
-  /** Which of STAGES the run is at; missing in a run saved before stages (the first). */
-  stage?: number;
+  /** Which of STAGES the run is at. */
+  stage: number;
   fight: FightState;
 }
 
@@ -45,7 +55,13 @@ export interface RunView {
  * (the enemy may move first).
  */
 export function createRun(seed: number, setup?: unknown): RunState {
-  return {seed, version: 0, stage: 0, fight: stageFight(seed, 0, parseParty(setup))};
+  return {
+    format: RUN_FORMAT,
+    seed,
+    version: 0,
+    stage: 0,
+    fight: stageFight(seed, 0, parseParty(setup)),
+  };
 }
 
 /**
@@ -137,12 +153,12 @@ export function parseAction(raw: unknown): RunAction {
 
 export function handleRunAction(run: RunState, raw: unknown): RunState {
   const action = parseAction(raw);
-  const stage = run.stage ?? 0;
+  const {stage} = run;
   if (action.type === 'next') {
     if (run.fight.phase !== 'won' || stage >= lastStage)
       throw new RuleError('There is no next stage to go on to.');
     const fight = stageFight(run.seed, stage + 1, survivors(run.fight));
-    return {seed: run.seed, version: run.version + 1, stage: stage + 1, fight};
+    return {...run, version: run.version + 1, stage: stage + 1, fight};
   }
   const fight = cloneFight(run.fight, true);
   refreshStats(fight);
@@ -156,17 +172,22 @@ export function handleRunAction(run: RunState, raw: unknown): RunState {
   // The AI turns this action sets off share one search budget (AI.requestSimulations).
   const budget: SearchBudget = {left: AI.requestSimulations};
   advance(fight, (state, unit) => chooseAiTurn(state, unit, budget));
-  return {seed: run.seed, version: run.version + 1, stage, fight};
+  return {...run, version: run.version + 1, fight};
 }
 
 export function runView(run: RunState): RunView {
-  // A run saved before a stat change shows, and previews with, today's stats.
+  // A run started before the stats were re-tuned shows, and previews with, today's.
   refreshStats(run.fight);
-  return {version: run.version, stage: run.stage ?? 0, stages: STAGES.length, fight: run.fight};
+  return {version: run.version, stage: run.stage, stages: STAGES.length, fight: run.fight};
 }
 
 /** Won once the last stage is won; a stage before it, won, waits for `next`. */
 export function runStatus(run: RunState): 'active' | 'won' | 'lost' {
   if (run.fight.phase === 'lost') return 'lost';
-  return run.fight.phase === 'won' && (run.stage ?? 0) >= lastStage ? 'won' : 'active';
+  return run.fight.phase === 'won' && run.stage >= lastStage ? 'won' : 'active';
+}
+
+/** Saved in another format than this version's (`RUN_FORMAT`): the platform ends it. */
+export function runOutdated(run: RunState): boolean {
+  return run.format !== RUN_FORMAT;
 }

@@ -53,8 +53,8 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
   const left = hail.untilSlot - currentSlot + 1;
   return {
     name: 'Hail',
-    short: `${hail.damage ?? 0} damage, Slowed ${hail.slowed}`,
-    detail: `${hail.damage ?? 0} damage and Slowed ${hail.slowed} for ${hail.statusSlots} slots to a unit here when it lands, enters or starts a turn. ${slotsLeft(left)}`,
+    short: `${hail.damage} damage, Slowed ${hail.slowed}`,
+    detail: `${hail.damage} damage and Slowed ${hail.slowed} for ${hail.statusSlots} slots to a unit here when it lands, enters or starts a turn. ${slotsLeft(left)}`,
   };
 }
 

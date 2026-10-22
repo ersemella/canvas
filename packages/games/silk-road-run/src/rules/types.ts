@@ -130,11 +130,8 @@ export interface FightState {
     moveActionCost: number;
   };
   mapId: string;
-  /**
-   * This fight's tiles by hex key (ruins and quicksand are random per
-   * fight); missing in a fight saved before they were, which uses the map's.
-   */
-  tiles?: Record<string, Tile>;
+  /** This fight's tiles by hex key (ruins and quicksand are random per fight). */
+  tiles: Record<string, Tile>;
   mode: 'solo';
   phase: FightPhase;
   /** The slot the track has reached. */

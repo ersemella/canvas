@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals} from '@canvas/engine/server';
-import {CAMEL, HEROES, PARTY, RULES, movementRules} from './config';
+import {CAMEL, HEROES, PARTY, movementRules} from './config';
 import {expireStatuses, invalidPath} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
@@ -21,10 +21,9 @@ export class RuleError extends Error {}
 
 const fightMaps = new WeakMap<Record<string, Tile>, MapData>();
 
-/** The fight's map, with the fight's own ruins and quicksand when it has them. */
+/** The fight's map, with the fight's own ruins and quicksand. */
 export function mapOf(state: FightState): MapData {
   const map = MAPS[state.mapId]!;
-  if (!state.tiles) return map;
   let own = fightMaps.get(state.tiles);
   if (!own) fightMaps.set(state.tiles, (own = {...map, tiles: state.tiles}));
   return own;
@@ -41,22 +40,13 @@ function heroStats(hero: HeroId): Pick<Unit, 'speed' | 'defence' | 'power'> {
 
 /**
  * Brings a saved fight's unit stats up to date with config.ts. A fight
- * keeps the stats its units started with, so one saved before the stats
- * moved to the shared scale (2026-10-20) still had the old ones (an
- * Outrider with speed 7, not 40), which the new track constants turned
- * into wrong placements; and one saved with armour (removed 2026-10-20)
- * kept its armour's defence and speed.
+ * keeps the stats its units started with, so without this a run in
+ * progress would play on with the numbers it started with after they're
+ * re-tuned. A change to what a run saves ends older runs instead
+ * (`RUN_FORMAT` in run.ts).
  */
 export function refreshStats(state: FightState): void {
-  for (const u of state.units) {
-    Object.assign(u, heroStats(u.hero));
-    // Saved while the ultimate unlocked after 3 turns: a typical turn's cost for each.
-    const old = u as Unit & {turnsTaken?: number};
-    if (old.ultimateCharge === undefined) {
-      old.ultimateCharge = (old.turnsTaken ?? 0) * RULES.cost.typical;
-      delete old.turnsTaken;
-    }
-  }
+  for (const u of state.units) Object.assign(u, heroStats(u.hero));
 }
 
 /** `copy` numbers a second or later unit of the same hero on a side (e-wolf, e-wolf-2). */
@@ -96,8 +86,10 @@ export function createFight(
   enemies: HeroId[] = PARTY
 ): FightState {
   const map = SALT_FLATS;
+  const random = seededRandom(seed);
   const state: FightState = {
     mapId: map.id,
+    tiles: randomTiles(random),
     mode: 'solo',
     phase: 'fight',
     currentSlot: 0,
@@ -112,8 +104,6 @@ export function createFight(
     log: [],
     awaiting: null,
   };
-  const random = seededRandom(seed);
-  state.tiles = randomTiles(random);
   const camel = state.units.find((u) => u.hero === CAMEL)!;
   camel.hex = map.camelStart;
   for (const side of ['player', 'enemy'] as const) {

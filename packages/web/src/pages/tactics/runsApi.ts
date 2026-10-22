@@ -1,14 +1,11 @@
 import {API_URL} from 'config/api';
+import type {RunResponse as AnyRunResponse} from '@canvas/engine/server';
 import type {HeroId, RunView, TurnInput} from '@canvas/games-silk-road-run';
 
 const KEY_STORAGE = 'canvas:playerKey';
 
-export interface RunResponse {
-  runId: string;
-  game: string;
-  status: 'active' | 'won' | 'lost' | 'abandoned';
-  view: RunView;
-}
+/** What every `/runs` route answers for Silk Road Run (the Worker's own type, with its view). */
+export type RunResponse = AnyRunResponse<RunView>;
 
 /**
  * The anonymous player key (D4): a random secret made once and kept in

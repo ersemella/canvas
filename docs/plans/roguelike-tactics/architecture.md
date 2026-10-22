@@ -50,6 +50,15 @@ is nothing to forge or replay.
 - A finished run's room can delete its storage after a few days (its
   result is in the ledger). Idle runs cost only storage: a room with no
   request in flight isn't billed for duration.
+- **A run saved in an older format is ended, not migrated** (owner,
+  2026-10-22). The run's state carries `RUN_FORMAT` (`src/rules/run.ts`),
+  bumped with any change to what a run saves that an older run can't play
+  on. The room asks the rules (`RunSystem.outdated`) before anything else:
+  an outdated run is refused with `410 expired`, and if it was still
+  active it's marked `expired` and leaves the ledger's active slot, so the
+  page starts a new one. The rules never handle an old shape. Re-tuned
+  stats aren't a format change: a run in progress takes today's
+  (`refreshStats`).
 
 ### D4. No accounts; an anonymous player key
 

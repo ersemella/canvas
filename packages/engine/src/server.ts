@@ -114,4 +114,24 @@ export interface RunSystem<TState = unknown, TAction = unknown, TView = unknown>
   /** Everything the player may see, sent whole on every response: never the seed. */
   getView(state: TState): TView;
   status(state: TState): 'active' | 'won' | 'lost';
+  /**
+   * True for a run saved by an older version of the rules, which this one
+   * can't play on. The room ends it (`expired`) before calling anything
+   * else, so the rules only ever see states in their current format.
+   */
+  outdated?(state: TState): boolean;
+}
+
+/** A run's status, as every `/runs` response carries it. */
+export type RunStatus = 'active' | 'won' | 'lost' | 'abandoned';
+
+/**
+ * Every `/runs` response: the run's whole public view (`RunSystem.getView`),
+ * shared by the platform's Worker and its pages.
+ */
+export interface RunResponse<TView = unknown> {
+  runId: string;
+  game: string;
+  status: RunStatus;
+  view: TView;
 }

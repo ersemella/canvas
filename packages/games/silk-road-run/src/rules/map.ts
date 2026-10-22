@@ -10,7 +10,7 @@
  *
  * Each fight scatters its own ruins and quicksand, not mirrored (owner,
  * 2026-10-20; see `randomTiles`); the sandstorm stays where it is. The
- * fixed layout below is what a fight saved without its own tiles uses.
+ * fixed layout below is the map's own, which tests place units around.
  */
 import {hexKey, offsetToHex} from '@canvas/engine/server';
 import type {Hex, OffsetCoord} from '@canvas/engine/server';

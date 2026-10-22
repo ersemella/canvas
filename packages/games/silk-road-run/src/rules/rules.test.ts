@@ -37,7 +37,15 @@ import {
 import {previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
 import {abilityDamage, checkEnd, displace, kill, scaled} from './resolve';
-import {createRun, handleRunAction, runStatus, runView, stageEnemies} from './run';
+import {
+  RUN_FORMAT,
+  createRun,
+  handleRunAction,
+  runOutdated,
+  runStatus,
+  runView,
+  stageEnemies,
+} from './run';
 import {
   freeSlotFrom,
   nextCard,
@@ -53,13 +61,12 @@ const at = (col: number, row: number): Hex => offsetToHex({col, row});
 /**
  * A fight in progress with units where a test wants them: every unit not
  * listed is removed (dead), and cards start far apart. The camel, unless
- * listed, isn't there at all, as in a fight saved before it existed: dead,
- * it would lose the fight.
+ * listed, isn't there at all: dead, it would lose the fight.
  */
 function setup(placements: Record<string, Hex>): FightState {
   const state = createFight(0);
   // The fixed layout, which these tests place units around.
-  delete state.tiles;
+  state.tiles = {...SALT_FLATS.tiles};
   state.phase = 'fight';
   state.units = state.units.filter((u) => u.hero !== 'camel' || u.id in placements);
   let slot = 100;
@@ -1148,10 +1155,22 @@ describe('previews, the AI and the run', () => {
     expect(view).not.toContain('123456789');
   });
 
-  it('gives a run saved with older stats today’s stats, in its view and its next action', () => {
+  it('saves the current format, carries it through every action, and calls any other outdated', () => {
+    const run = createRun(0);
+    expect(run.format).toBe(RUN_FORMAT);
+    expect(runOutdated(run)).toBe(false);
+    const next = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
+    expect(next.format).toBe(RUN_FORMAT);
+    expect(runOutdated(next)).toBe(false);
+    // Saved before formats existed, or in an older one.
+    const {format: _format, ...unversioned} = run;
+    expect(runOutdated(unversioned as typeof run)).toBe(true);
+    expect(runOutdated({...run, format: RUN_FORMAT - 1})).toBe(true);
+  });
+
+  it('gives a run started before the stats were re-tuned today’s, in its view and its next action', () => {
     const run = createRun(0);
     const saved = JSON.parse(JSON.stringify(run));
-    // The Outrider as saved before the shared stat scale, in light armour.
     const old = saved.fight.units.find((u: Unit) => u.id === 'p-mangudai');
     Object.assign(old, {speed: 7, defence: 8, power: 40});
     const m = runView(saved).fight.units.find((u) => u.id === 'p-mangudai')!;
@@ -1160,12 +1179,6 @@ describe('previews, the AI and the run', () => {
       HEROES.mangudai.defence,
       HEROES.mangudai.power,
     ]);
-    // …and its ultimate's progress, counted in turns then, as cost.
-    old.turnsTaken = 2;
-    delete old.ultimateCharge;
-    expect(runView(saved).fight.units.find((u) => u.id === 'p-mangudai')!.ultimateCharge).toBe(
-      2 * RULES.cost.typical
-    );
     Object.assign(old, {speed: 7, defence: 8});
     const next = handleRunAction(saved, {type: 'turn', action: {ability: 'hold'}});
     expect(next.fight.units.find((u) => u.id === 'p-mangudai')!.speed).toBe(HEROES.mangudai.speed);

@@ -1,9 +1,21 @@
-import type {Env, RunRecord, RunResponse, RunSystem} from '../types';
+import type {Env, RunRecord, RunResponse, RunStatus, RunSystem} from '../types';
 import {runSystemRegistry} from '../games/registry';
 import {json} from '../json';
 
 /** How long a finished run is kept before its storage is deleted (D3). */
 const KEEP_FINISHED_MS = 3 * 24 * 60 * 60 * 1000;
+
+/** A run that can still be shown: everything but one saved by an older version of its rules. */
+type ShownRecord = RunRecord & {status: RunStatus};
+
+function shown(record: RunRecord): record is ShownRecord {
+  return record.status !== 'expired';
+}
+
+const EXPIRED = {
+  error: 'expired',
+  message: 'That run was saved by an older version of the game, so it has ended. Start a new one.',
+};
 
 /**
  * One Durable Object per run, `idFromName('run:' + runId)`, for its whole
@@ -33,6 +45,18 @@ export class RunRoom implements DurableObject {
     }
     const system = runSystemRegistry.get(record.game);
     if (!system) return json({error: 'unknown_game', message: 'This game no longer runs.'}, 410);
+
+    // Saved by an older version of the rules: never shown or played on, and
+    // ended if it was still going, so the rules only see their own format.
+    if (!shown(record) || system.outdated?.(record.state)) {
+      if (record.status === 'active') {
+        record.status = 'expired';
+        record.updatedAt = Date.now();
+        await this.state.storage.put('run', record);
+        await this.finish(record);
+      }
+      return json(EXPIRED, 410);
+    }
 
     if (request.method === 'GET' && url.pathname === '/view') return json(respond(record, system));
     if (request.method === 'POST' && url.pathname === '/action')
@@ -67,7 +91,7 @@ export class RunRoom implements DurableObject {
       );
     }
     const now = Date.now();
-    const record: RunRecord = {
+    const record: ShownRecord = {
       runId: body.runId,
       game: body.game,
       ownerHash: body.ownerHash,
@@ -80,7 +104,11 @@ export class RunRoom implements DurableObject {
     return json(respond(record, system));
   }
 
-  private async action(request: Request, record: RunRecord, system: RunSystem): Promise<Response> {
+  private async action(
+    request: Request,
+    record: ShownRecord,
+    system: RunSystem
+  ): Promise<Response> {
     if (record.status !== 'active')
       return json({error: 'finished', message: 'This run is over.'}, 409);
     const action = await request.json().catch(() => null);
@@ -102,7 +130,7 @@ export class RunRoom implements DurableObject {
   }
 
   /** Starting a new run abandons the active one, which counts as a death (D3). */
-  private async abandon(record: RunRecord, system: RunSystem): Promise<Response> {
+  private async abandon(record: ShownRecord, system: RunSystem): Promise<Response> {
     if (record.status === 'active') {
       record.status = 'abandoned';
       record.updatedAt = Date.now();
@@ -123,7 +151,7 @@ export class RunRoom implements DurableObject {
   }
 }
 
-function respond(record: RunRecord, system: RunSystem): RunResponse {
+function respond(record: ShownRecord, system: RunSystem): RunResponse {
   return {
     runId: record.runId,
     game: record.game,
