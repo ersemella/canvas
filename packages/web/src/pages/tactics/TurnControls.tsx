@@ -48,7 +48,7 @@ export function TurnControls(props: {
   moveSlots: string | null;
   /**
    * Abilities with nothing to target, and why: disabled (unless already
-   * chosen, so they can be put down). A `note` (Taunted, Sandstorm) shows
+   * chosen, so they can be put down). A `note` (Taunted, Obscured) shows
    * on the button in place of its cost.
    */
   outOfReach: Map<AbilityId, {why: string; note?: string}>;

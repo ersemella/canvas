@@ -305,7 +305,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
               note: 'Taunted',
             }
           : def.id === 'bow' && acting.hex && obscured(fight, map, acting.hex)
-            ? {why: 'Can’t shoot out of a sandstorm.', note: 'Sandstorm'}
+            ? {why: 'Can’t shoot out of a sandstorm.', note: 'Obscured'}
             : def.id === 'bow' &&
                 acting.hex &&
                 arrowLanes(fight, map, acting.hex).some(
@@ -313,7 +313,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
                 )
               ? {
                   why: 'The enemies in the bow’s lanes are in a sandstorm: arrows can’t reach them.',
-                  note: 'Sandstorm',
+                  note: 'Obscured',
                 }
               : {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'}
       );
