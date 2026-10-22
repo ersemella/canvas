@@ -7,7 +7,8 @@
 import {SystemRegistry} from '@canvas/engine';
 import type {EntityData, GameDefinition, GameManifest} from '@canvas/engine';
 import manifest from '../game.json';
-import {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem} from './client/TacticsBoardSystem';
+import {TacticsBoardSystem} from './client/TacticsBoardSystem';
+import {BOARD_LAYOUT, SCENE_SIZE} from './client/layout';
 import {TacticsInputSystem} from './client/TacticsInputSystem';
 
 /**
@@ -50,11 +51,11 @@ export default silkRoadRun;
 // What the platform's page uses: the board's drawing contract and the
 // rules, run locally for previews (D11).
 export {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem};
-export {HERO_PORTRAIT, hexOverlaySpan} from './client/TacticsBoardSystem';
+export {HERO_PORTRAIT, hexOverlaySpan} from './client/board/units';
 export {TRACK_AREA, trackCards} from './client/layout';
 export {PALETTE, PIXEL_FONT} from './client/palette';
 export type {PaletteColor} from './client/palette';
-export type {BoardScene, HighlightKind} from './client/TacticsBoardSystem';
+export type {BoardScene, HighlightKind} from './client/board/scene';
 export type {
   TacticsCardPayload,
   TacticsHoverPayload,

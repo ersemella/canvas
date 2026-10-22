@@ -2,7 +2,7 @@ import {BaseSystem, mouseService} from '@canvas/engine';
 import type {Hex, SystemContext} from '@canvas/engine';
 import {mapOf} from '../rules/fight';
 import {cardAt, hexAt, sameHex, trackCards} from './layout';
-import type {BoardScene} from './TacticsBoardSystem';
+import type {BoardScene} from './board/scene';
 
 export interface TacticsTapPayload {
   hex: Hex;
