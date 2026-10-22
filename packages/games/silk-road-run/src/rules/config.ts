@@ -244,13 +244,14 @@ export const ABILITY = {
    * recovery 60, as Volley's (owner, 2026-10-20; were 40 and 100).
    * Instant, typical cost (owner, 2026-10-20; was charged): its targets
    * stepped out of the charge, and a side without it won 52% of AI-vs-AI
-   * fights; instant, 48.7% (balance.md).
+   * fights; instant, 48.7% (balance.md). Damage 120 (owner, 2026-10-22; was
+   * 60, when a side without it won 48%; 43% at 120).
    */
   freeze: {
     cost: RULES.cost.typical,
     range: 4,
     radius: 1,
-    damage: 60,
+    damage: 120,
     immobilizedSlots: 20,
     vulnerable: 50,
   },
