@@ -35,6 +35,28 @@ hail Pushes in an area, Sunlight no longer cleanses, the Champion is
 Inevitable, Grapple Pins, and Throw needs a grapple
 ([roster.md](roster.md)).
 
+**Pared back for balancing (owner, 2026-10-22).** The game is cut to
+its basic elements while it is balanced; the code for everything cut is
+kept (its tests run with the old kits, `src/rules/testKits.ts`), only
+its references are removed:
+
+- The Modao Vanguard is out of the roster (`ROSTER` in `config.ts`).
+- No ultimates (Volley, Freeze, Lunge), and no Leap, Sunlight or Throw.
+  The kits: the Outrider Bow; the Storm Caller Hail; the Bökh Champion
+  Grapple and Shove, with Inevitable.
+- No sandstorm or quicksand: a fight scatters ruins only.
+- Temee, the camel, isn't player controlled: it starts in the top-left
+  corner and walks itself, one space every 14 slots, along a fixed
+  shortest road around the ruins (drawn as a dotted line) to the only
+  exit, in the bottom-right corner. A unit on its next space, or
+  Immobilized, holds it up.
+- Hail: a radius-1 area, its centre within 3; it Pushes 5 when it lands
+  and no longer lingers.
+- Grapple reaches 2 spaces and pins: the target is only Immobilized, for
+  as long as the two stay within 2 of each other. Shove (melee, on the
+  pinned unit) Displaces it 1 away, so it stays pinned. Shove's cost
+  (typical) and distance are placeholders.
+
 **Next step:** the owner sets the three prototype heroes' stat numbers and
 ability values (replacing the placeholders in `src/rules/config.ts`);
 everything waiting on the owner is in

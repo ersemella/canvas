@@ -291,28 +291,17 @@ const hail: AbilityDef = {
   range: ABILITY.hail.range,
   radius: ABILITY.hail.radius,
   summary: () =>
-    `Hail on an area: every unit in it is Pushed ${ABILITY.hail.castPush}, and a unit that starts its turn in it is Pushed ${ABILITY.hail.turnPush}. Allies too.`,
-  duration: ABILITY.hail.hexSlots,
+    `Hail on an area: every unit in it is Pushed ${ABILITY.hail.castPush}. Allies too.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.hail.cost,
   movesSelf: false,
   targets: (_state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.hail.range, (h) => tileAt(map, h) !== 'obstacle'),
+  // It no longer lingers on the ground (owner, 2026-10-22): the Push on landing is all it does.
   resolve(ctx, user, target) {
-    const area = hexesWithin(ctx.map, target.hex!, ABILITY.hail.radius, (h) =>
-      walkable(ctx.map, h)
-    ).map((t) => t.hex!);
-    ctx.state.effects = ctx.state.effects.filter((e) => !area.some((h) => hexEquals(e.hex, h)));
-    for (const hex of area)
-      ctx.state.effects.push({
-        kind: 'hail',
-        hex,
-        untilSlot: ctx.slot + ABILITY.hail.hexSlots,
-        push: ABILITY.hail.turnPush,
-      });
     log(ctx, `${unitName(user)} calls down hail.`);
-    // The caster's own card is placed after this, so it pays when its next turn starts.
+    // The caster's own card is placed after this turn's, so it isn't Pushed.
     const struck = unitsInArea(ctx.state, target.hex!, ABILITY.hail.radius)
       .filter((u) => u !== user)
       .sort((a, b) => unitOrder(a) - unitOrder(b));
@@ -354,16 +343,17 @@ function grappling(user: Unit, u: Unit): boolean {
 }
 
 /**
- * Throw (owner, 2026-10-22, playtest): only the unit the Champion is
- * grappling, to another free space next to the Champion (the grapple
- * holds), or one space straight back (two away: the grapple ends).
+ * Throw (owner, 2026-10-22, playtest; parked the same day): only the unit
+ * the Champion is grappling, to another free space next to the Champion,
+ * or one space straight back. Either stays within Grapple's range, so the
+ * grapple holds (it ended two away while Grapple held only adjacent units).
  */
 const throwAbility: AbilityDef = {
   id: 'throw',
   name: 'Throw',
   kind: 'attack',
   summary: (user) =>
-    `Melee, on the unit you grapple: ${scaled(ABILITY.throw.damage, user.power)} damage, then throw it to another free space next to you, keeping hold, or one space straight back, letting go.`,
+    `Melee, on the unit you grapple: ${scaled(ABILITY.throw.damage, user.power)} damage, then throw it to another free space next to you, or one space straight back.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.throw.cost,
@@ -392,16 +382,22 @@ const grapple: AbilityDef = {
   id: 'grapple',
   name: 'Grapple',
   kind: 'control',
+  range: ABILITY.grapple.range,
   summary: () =>
-    `Melee: the target is Immobilized, Vulnerable ${ABILITY.grapple.vulnerable}% and Pinned while you stay next to it. One at a time: a new grapple lets the last go.`,
+    `Pin a unit within ${ABILITY.grapple.range} spaces: it is Immobilized while you stay within ${ABILITY.grapple.range} of it. One at a time: a new grapple lets the last go.`,
   duration: ABILITY.grapple.slots,
   ultimate: false,
   charged: false,
   cost: ABILITY.grapple.cost,
   movesSelf: false,
   targetsUnit: true,
-  // Melee only (owner, 2026-10-22; it could step one hex first from 2026-10-21).
-  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  // Within 2 (owner, 2026-10-22; melee only before that day, and from
+  // 2026-10-21 it could step one hex first). No line of fire: it's a reach.
+  targets: (state, map, user, from) =>
+    hexesWithin(map, from, ABILITY.grapple.range, (h) => {
+      const u = unitAt(state, h);
+      return u !== undefined && u !== user;
+    }),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     pinUnit(ctx, user, u);
@@ -410,10 +406,11 @@ const grapple: AbilityDef = {
 };
 
 /**
- * Grapple's statuses on `u`, tagged with the grapple so breaking it clears
- * them all. One target at a time: any earlier grapple by `user` ends.
- * The Champion stays free: moving away from the target breaks the grapple
- * (resolve.ts).
+ * Grapple's pin on `u`: Immobilized, and nothing else (owner, 2026-10-22;
+ * Vulnerable and Pinned before), tagged with the grapple so breaking it
+ * clears it. One target at a time: any earlier grapple by `user` ends.
+ * The Champion stays free: moving out of range of the target breaks the
+ * grapple (resolve.ts).
  */
 function pinUnit(ctx: Ctx, user: Unit, u: Unit): void {
   for (const other of ctx.state.units) {
@@ -424,9 +421,32 @@ function pinUnit(ctx: Ctx, user: Unit, u: Unit): void {
   const untilSlot = ctx.slot + ABILITY.grapple.slots;
   const grapple = {champion: user.id, target: u.id};
   addStatus(u, {kind: 'immobilized', value: 0, untilSlot, grapple});
-  addStatus(u, {kind: 'vulnerable', value: ABILITY.grapple.vulnerable, untilSlot, grapple});
-  addStatus(u, {kind: 'pinned', value: 0, untilSlot, grapple});
 }
+
+/**
+ * Shove (owner, 2026-10-22): melee, only on the unit the Champion is
+ * pinning: it is Displaced away, staying pinned while it stays in
+ * Grapple's range.
+ */
+const shove: AbilityDef = {
+  id: 'shove',
+  name: 'Shove',
+  kind: 'control',
+  summary: () =>
+    `Melee, on the unit you pin: Displace it ${ABILITY.shove.displace} away. It stays pinned.`,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.shove.cost,
+  movesSelf: false,
+  targetsUnit: true,
+  targets: (state, _map, user, from) =>
+    adjacentUnits(state, from, (u) => u !== user && grappling(user, u)),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} shoves ${unitName(u)}.`);
+    displace(ctx, u, direction(user.hex!, u.hex!), ABILITY.shove.displace);
+  },
+};
 
 /**
  * The free walkable hexes a Lunge may land on, beside `target`: at most
@@ -740,6 +760,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   freeze,
   throw: throwAbility,
   grapple,
+  shove,
   lunge,
   challenge,
   reap,

@@ -178,6 +178,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // A palm pushing out: shoving a pinned target away.
+  shove: {
+    kind: 'control',
+    rows: [
+      '............', //
+      '...#.#.#....',
+      '...#.#.#.#..',
+      '...#.#.#.#..',
+      '...#######..',
+      '.#.#######..',
+      '.##.######..',
+      '..########.+',
+      '...######.++',
+      '....####.+++',
+      '....####..++',
+      '...........+',
+    ],
+  },
   // Charging into a target, trailing speed.
   lunge: {
     kind: 'attack',

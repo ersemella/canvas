@@ -38,11 +38,11 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
 export const EXIT_INFO: HexInfo = {
   name: 'Road out',
   short: `${HEROES.camel.name} reaching it wins`,
-  detail: `The road out: ${HEROES.camel.name} reaching any of these four spaces wins the fight.`,
+  detail: `The road out: ${HEROES.camel.name} reaching it wins the fight.`,
 };
 
 /** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2). */
-export const CAMEL_RULE = `Can’t attack. Moves 1 space a turn, at a typical action’s cost (${RULES.cost.typical}). Reaching the road out wins the fight; if it falls, the fight is lost.`;
+export const CAMEL_RULE = `Can’t attack, and walks itself: 1 space every ${HEROES.camel.routeSlots} slots, along the dotted road to the exit. A unit in its way holds it up. Reaching the road out wins the fight; if it falls, the fight is lost.`;
 
 /** How long an effect on a hex lasts: said last, after what it does. */
 function slotsLeft(left: number): string {

@@ -38,6 +38,7 @@ export function affectsHex(
     case 'bow':
     case 'throw':
     case 'grapple':
+    case 'shove':
     case 'lunge':
     case 'bite':
     case 'challenge':

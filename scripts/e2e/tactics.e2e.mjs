@@ -51,8 +51,9 @@ check(
   started.status === 201 && startedFight?.phase === 'fight',
   started
 );
-// An enemy that wins a starting speed tie (shuffled) may already have had
-// its turn; every other unit (the awaited one included) is still where it started.
+// The camel walks itself, first; an enemy that wins a starting speed tie
+// (shuffled) may already have had its turn; every other unit (the awaited
+// one included) is still where it started.
 const actedFirst = new Set(
   (startedFight.events ?? [])
     .filter((e) => e.kind === 'turn' && e.unitId !== startedFight.awaiting)
@@ -63,7 +64,9 @@ check(
   startedFight.units
     .filter((u) => !actedFirst.has(u.id))
     .every((u) => sameHex(u.hex, (u.side === 'player' ? leftEdge : rightEdge)(u.hex.r))) &&
-    startedFight.units.every((u) => u.side === 'enemy' || !actedFirst.has(u.id)),
+    startedFight.units.every(
+      (u) => u.side === 'enemy' || u.hero === 'camel' || !actedFirst.has(u.id)
+    ),
   startedFight.units.map((u) => [u.id, u.hex, actedFirst.has(u.id)])
 );
 check(
@@ -97,7 +100,7 @@ const version = started.body.view.version;
 
 const bad = await api(`/runs/${runId}/turn`, alice, {
   method: 'POST',
-  body: JSON.stringify({action: {ability: 'lunge', target: {hex: {q: 50, r: 50}}}}),
+  body: JSON.stringify({action: {ability: 'bow', target: {hex: {q: 50, r: 50}}}}),
 });
 check(
   'an illegal turn is refused with a reason',
@@ -109,29 +112,34 @@ check(
   (await api(`/runs/${runId}`, alice)).body.view.version === version
 );
 
-// The camel always acts first (camel.md): it walks one hex, and the turn
-// stops on a hero, whose turn the checks below use.
-check('the camel acts first', startedFight.awaiting === 'p-camel', startedFight.awaiting);
-const camelHex = startedFight.units.find((u) => u.id === 'p-camel').hex;
-const walked = await api(`/runs/${runId}/turn`, alice, {
-  method: 'POST',
-  body: JSON.stringify({move: [{q: camelHex.q + 1, r: camelHex.r}], action: {ability: 'hold'}}),
-});
-const heroView = walked.body?.view;
-const heroFight = heroView?.fight;
+// The camel always acts first (camel.md), walking itself a hex along its
+// road from the top-left corner: the turn stops on a hero, whose turn the
+// checks below use.
+const camelStep = (startedFight.events ?? []).find((e) => e.kind === 'step');
 check(
-  'the camel walks one hex, and the turn stops on a hero',
-  walked.status === 200 && /^p-/.test(heroFight?.awaiting) && heroFight.awaiting !== 'p-camel',
-  walked.body?.message ?? heroFight?.awaiting
+  'the camel acts first, walking itself a hex from the top-left corner',
+  startedFight.events?.[0]?.kind === 'turn' &&
+    startedFight.events[0].unitId === 'p-camel' &&
+    camelStep?.unitId === 'p-camel' &&
+    sameHex(camelStep.from, {q: 0, r: 0}),
+  startedFight.events?.slice(0, 2)
 );
+check(
+  'the turn stops on a hero, never the camel',
+  /^p-/.test(startedFight.awaiting) && startedFight.awaiting !== 'p-camel',
+  startedFight.awaiting
+);
+const heroView = started.body.view;
+const heroFight = startedFight;
 
 // The server enforces the same exclusive-action rule as the page.
 const actor = heroFight.units.find((u) => u.id === heroFight.awaiting);
+const firstAbility = {bokh: 'grapple', mangudai: 'bow', storm: 'hail'}[actor.hero];
 const combined = await api(`/runs/${runId}/turn`, alice, {
   method: 'POST',
   body: JSON.stringify({
     move: [{q: actor.hex.q + 1, r: actor.hex.r}],
-    action: {ability: 'leap', target: {hex: {q: actor.hex.q + 2, r: actor.hex.r}}},
+    action: {ability: firstAbility, target: {hex: {q: actor.hex.q + 2, r: actor.hex.r}}},
   }),
 });
 check(
@@ -274,20 +282,16 @@ async function abandonOn(p) {
 
 try {
   await page.goto(`${WEB_URL}/play/silk-road-run`);
-  // The start menu: the game in brief, the four heroes (the first three
-  // taken at first, a party being at most three), Start.
+  // The start menu: the game in brief, the three heroes (all taken at
+  // first; the Modao Vanguard is left out for now), Start.
   const picks = page.getByTestId('hero-picks').getByRole('button');
   await picks.first().waitFor({timeout: 15_000});
-  check('the start menu offers the four heroes', (await picks.count()) === 4);
+  check('the start menu offers the three heroes', (await picks.count()) === 3);
   check(
-    'the first three heroes start in the party, the fourth left behind',
+    'the three heroes start in the party',
     JSON.stringify(
       await picks.evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-pressed')))
-    ) === JSON.stringify(['true', 'true', 'true', 'false'])
-  );
-  check(
-    'with three taken, the party is full: the fourth can’t be taken',
-    await picks.nth(3).isDisabled()
+    ) === JSON.stringify(['true', 'true', 'true'])
   );
   await shot(page, 'start-menu');
   const startButton = page.getByRole('button', {name: 'Start', exact: true});
@@ -335,22 +339,26 @@ try {
 
   await waitIdle();
   let run = await state();
-  const outrider = 'p-mangudai';
+  const stormCaller = 'p-storm';
 
-  // The camel always acts first: walk it a hex with a real click (on
-  // desktop no Move first) and Enter; its Move shows its own cost, 14 slots.
-  check('the camel acts first', run.view.fight.awaiting === 'p-camel', run.view.fight.awaiting);
+  // The camel walks itself, so the page stops on a hero: walk it a hex with
+  // a real click (on desktop no Move first) and Enter.
+  check(
+    'the camel walks itself: the page stops on a hero',
+    /^p-/.test(run.view.fight.awaiting) && run.view.fight.awaiting !== 'p-camel',
+    run.view.fight.awaiting
+  );
   {
-    const camelMove = page.locator('[data-choice="move"]');
-    check('the camel’s Move shows its 14 slots', (await camelMove.textContent()).endsWith('+14'));
+    const heroMove = page.locator('[data-choice="move"]');
+    const walker = run.view.fight.awaiting;
     const step = (await page.evaluate(() => window.__tactics.reaches.map((r) => r.hex))).find(
-      (h) => !sameHex(h, run.view.fight.units.find((u) => u.id === 'p-camel').hex)
+      (h) => !sameHex(h, run.view.fight.units.find((u) => u.id === walker).hex)
     );
     await tapHex(step);
     check(
       'desktop: a click on a reachable hex plans the move, with no Move first',
-      /^Confirm/.test(await camelMove.textContent()),
-      await camelMove.textContent()
+      /^Confirm/.test(await heroMove.textContent()),
+      await heroMove.textContent()
     );
     check(
       'desktop: the planned turn’s Confirm shows on the board too',
@@ -358,7 +366,7 @@ try {
     );
     check(
       'desktop: the choices show their keys',
-      (await camelMove.getAttribute('data-key')) === '1' &&
+      (await heroMove.getAttribute('data-key')) === '1' &&
         (await page.getByTestId('skip-turn').getAttribute('data-key')) === 'S'
     );
     // Pressed, the board's Confirm stays where it is, so a click anywhere on
@@ -391,36 +399,44 @@ try {
     });
     await waitIdle();
     run = await state();
-    check(
-      'the camel walked one hex',
-      sameHex(run.view.fight.units.find((u) => u.id === 'p-camel').hex, step)
-    );
+    const walked = run.view.fight.units.find((u) => u.id === walker);
+    check('the hero walked one hex', !walked.alive || sameHex(walked.hex, step));
   }
 
   // No top bar: the board gets the whole screen, on desktop too.
   check('no top bar', (await page.locator('header').count()) === 0);
 
-  // One turn with real taps: select Leap, replace it with Move, confirm. The
-  // Outrider (fastest, so first) starts somewhere on the left edge, so the
-  // hexes come from the page: Leap's farthest target, and a move off its line.
+  // One turn with real taps: select Hail, replace it with Move, confirm.
+  // Hail is aimed at a space, a unit there or not, so it's the Storm
+  // Caller's turn: let the AI play until it comes. It starts somewhere on
+  // the left edge, so the hexes come from the page: Hail's farthest target,
+  // and a move off its reach if one is.
+  for (let i = 0; i < 20 && run.view.fight.awaiting !== stormCaller; i++) {
+    await page.evaluate(() => window.__tactics.autoTurn());
+    await page.waitForFunction((x) => window.__tactics.run.view.version > x, run.view.version, {
+      timeout: 15_000,
+    });
+    await waitIdle();
+    run = await state();
+  }
   const before = run.view.version;
   const acting = run.view.fight.units.find((u) => u.id === run.view.fight.awaiting);
-  check('the Outrider acts first', acting.id === outrider, acting.id);
+  check('the Storm Caller’s turn comes', acting.id === stormCaller, acting.id);
   const hexDistance = (a, b) =>
     (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q + a.r - b.q - b.r)) / 2;
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click();
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Hail/}).click();
   await page.waitForFunction(() => window.__tactics.targets.length > 0);
-  const leapTargets = await page.evaluate(() => window.__tactics.targets.map((t) => t.hex));
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click(); // and off again
-  const leapTo = leapTargets.sort(
+  const hailTargets = await page.evaluate(() => window.__tactics.targets.map((t) => t.hex));
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Hail/}).click(); // and off again
+  const hailTo = hailTargets.sort(
     (a, b) => hexDistance(b, acting.hex) - hexDistance(a, acting.hex)
   )[0];
-  // The nearest reachable hex, off Leap's lines if one is.
+  // The nearest reachable hex, off Hail's reach if one is.
   const dest = (await page.evaluate(() => window.__tactics.reaches.map((r) => r.hex)))
-    .filter((h) => hexDistance(h, acting.hex) > 0 && !sameHex(h, leapTo))
+    .filter((h) => hexDistance(h, acting.hex) > 0 && !sameHex(h, hailTo))
     .sort(
       (a, b) =>
-        leapTargets.some((t) => sameHex(t, a)) - leapTargets.some((t) => sameHex(t, b)) ||
+        hailTargets.some((t) => sameHex(t, a)) - hailTargets.some((t) => sameHex(t, b)) ||
         hexDistance(a, acting.hex) - hexDistance(b, acting.hex)
     )[0];
   // On desktop a click plans a move without Move; Esc puts it down.
@@ -438,31 +454,31 @@ try {
       !(await page.getByTestId('board-confirm').count())
   );
   check('there is no Hold button', !(await page.getByRole('button', {name: /^Hold/}).count()));
-  // Select Leap and its target, then replace it with Move and a hex. Picked,
-  // Leap is explained under the details; nothing is before.
+  // Select Hail and its target, then replace it with Move and a hex. Picked,
+  // Hail is explained under the details; nothing is before.
   const chosen = page.getByTestId('chosen-ability');
   const chosenBefore = await chosen.count();
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Leap/}).click();
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Hail/}).click();
   check(
     'picking an ability explains it under the details (and nothing before)',
-    chosenBefore === 0 && (await chosen.textContent()).startsWith('Leap'),
+    chosenBefore === 0 && (await chosen.textContent()).startsWith('Hail'),
     await chosen.textContent().catch(() => null)
   );
-  const leapButton = page.locator('[data-choice="leap"]');
+  const hailButton = page.locator('[data-choice="hail"]');
   check(
     'a picked ability without a target asks for one',
-    /^LeapPick a target$/.test(await leapButton.textContent()),
-    await leapButton.textContent()
+    /^HailPick a target$/.test(await hailButton.textContent()),
+    await hailButton.textContent()
   );
   // Aimed, its button confirms it; a right-click un-picks the target.
-  await tapHex(leapTo);
+  await tapHex(hailTo);
   check(
     'once its target is picked, the ability’s button confirms it',
-    /^Confirm\+\d+( → \+\d+)?$/.test(await leapButton.textContent()),
-    await leapButton.textContent()
+    /^Confirm\+\d+( → \+\d+)?$/.test(await hailButton.textContent()),
+    await hailButton.textContent()
   );
   {
-    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), leapTo);
+    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hailTo);
     const box = await page.locator('canvas').boundingBox();
     await page.mouse.click(box.x + (x * box.width) / 672, box.y + (y * box.height) / SCENE_H, {
       button: 'right',
@@ -472,33 +488,33 @@ try {
   check(
     'desktop: a right-click un-picks the target, without committing',
     (await state()).view.version === before &&
-      /^LeapPick a target$/.test(await leapButton.textContent()) &&
-      (await leapButton.getAttribute('aria-pressed')) === 'true',
-    await leapButton.textContent()
+      /^HailPick a target$/.test(await hailButton.textContent()) &&
+      (await hailButton.getAttribute('aria-pressed')) === 'true',
+    await hailButton.textContent()
   );
   // Before a target, tapping the ability again puts it down; so does its key.
-  await leapButton.click();
+  await hailButton.click();
   check(
     'tapping an ability with no target again puts it down',
-    (await leapButton.getAttribute('aria-pressed')) === 'false'
+    (await hailButton.getAttribute('aria-pressed')) === 'false'
   );
-  await page.keyboard.press(await leapButton.getAttribute('data-key'));
+  await page.keyboard.press(await hailButton.getAttribute('data-key'));
   check(
     'desktop: an ability’s key picks it',
-    (await leapButton.getAttribute('aria-pressed')) === 'true'
+    (await hailButton.getAttribute('aria-pressed')) === 'true'
   );
   await page.keyboard.press('Escape');
   check(
     'desktop: Esc puts an ability with no target down',
-    (await leapButton.getAttribute('aria-pressed')) === 'false'
+    (await hailButton.getAttribute('aria-pressed')) === 'false'
   );
-  await leapButton.click();
-  await tapHex(leapTo);
+  await hailButton.click();
+  await tapHex(hailTo);
   await moveButton.click();
   await tapHex(dest);
   check(
     'Move replaces the ability selection',
-    (await leapButton.getAttribute('aria-pressed')) === 'false'
+    (await hailButton.getAttribute('aria-pressed')) === 'false'
   );
   check('putting the ability down hides its explanation', !(await chosen.count()));
   check('there are no numbered steps', !(await page.getByTestId('turn-steps').count()));
@@ -531,17 +547,17 @@ try {
   );
   await moveButton.click();
   await tapHex(dest);
-  await leapButton.click();
-  await tapHex(leapTo);
+  await hailButton.click();
+  await tapHex(hailTo);
   check(
     'an ability replaces a planned move',
-    (await leapButton.getAttribute('aria-pressed')) === 'true' &&
+    (await hailButton.getAttribute('aria-pressed')) === 'true' &&
       (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
   // Like an ability's target, the destination can be changed by tapping
   // another reachable hex.
   await moveButton.click();
-  await tapHex(leapTo);
+  await tapHex(hailTo);
   await tapHex(dest);
   check(
     'tapping another reachable hex changes the destination',
@@ -695,21 +711,21 @@ try {
   );
 
   // Hovering a hex shows what it does, without planning a move.
-  // Each fight places its own quicksand: find one in the view.
+  // Each fight places its own ruins (and, pared back, nothing else): find one in the view.
   const [qq, qr] = Object.entries((await state()).view.fight.tiles)
-    .find(([, t]) => t === 'hazard')[0]
+    .find(([, t]) => t === 'obstacle')[0]
     .split(',')
     .map(Number);
-  const quicksand = {q: qq, r: qr};
+  const ruins = {q: qq, r: qr};
   const versionBeforeHover = (await state()).view.version;
   {
-    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), quicksand);
+    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), ruins);
     const box = await page.locator('canvas').boundingBox();
     await page.mouse.move(box.x + (x * box.width) / 672, box.y + (y * box.height) / SCENE_H);
     await sleep(150);
   }
   const info = page.getByTestId('hex-info');
-  check('hovering quicksand shows its rule', (await info.textContent()).includes('Quicksand'));
+  check('hovering ruins shows their rule', (await info.textContent()).includes('Ruins'));
   check('hovering changes nothing', (await state()).view.version === versionBeforeHover);
   await shot(page, 'hover');
 
@@ -790,81 +806,8 @@ try {
     }
   }
 
-  // Lunge bounds to a free hex beside its target (2026-10-22; Pin's step
-  // until then): play on until the Champion can lunge at a unit only after a
-  // bound, then pick it and its landing with real taps.
-  {
-    const sameH = (a, b) => a.q === b.q && a.r === b.r;
-    let found = null;
-    for (let i = 0; i < 80 && !found; i++) {
-      await waitIdle();
-      const r = await state();
-      if (r.view.fight.phase !== 'fight') break;
-      const lungeButton = page.locator('[data-choice="lunge"]');
-      if (r.view.fight.awaiting === 'p-bokh' && !(await lungeButton.isDisabled())) {
-        await lungeButton.click();
-        const ts = await page.evaluate(() => window.__tactics.targets);
-        const stepOnly = ts.find((t) => t.to && !ts.some((u) => !u.to && sameH(u.hex, t.hex)));
-        if (stepOnly) found = {targets: ts, target: stepOnly.hex};
-        else await lungeButton.click();
-      }
-      if (found) break;
-      const v = r.view.version;
-      await page.evaluate(() => window.__tactics.autoTurn());
-      await page.waitForFunction((x) => window.__tactics.run.view.version > x, v, {
-        timeout: 15_000,
-      });
-    }
-    if (!found) console.log('  (no bound-only Lunge came up; landing checks skipped)');
-    else {
-      const steps = found.targets.filter((t) => t.to && sameH(t.hex, found.target));
-      await tapHex(found.target);
-      // The picked button asks for what's missing, then confirms.
-      const confirm = page.locator('[data-choice="lunge"]');
-      if (steps.length > 1) {
-        check(
-          'Lunge asks where to land first',
-          (await confirm.textContent()).includes('Pick where to land'),
-          await confirm.textContent()
-        );
-        await tapHex(steps[0].to);
-      }
-      check(
-        'Lunge with its landing is ready to confirm',
-        /^Confirm/.test(await confirm.textContent()),
-        await confirm.textContent()
-      );
-      const v = (await state()).view.version;
-      await confirm.click();
-      await page.waitForFunction((x) => window.__tactics.run.view.version > x, v, {
-        timeout: 15_000,
-      });
-      // The reply lands before its playback starts: wait until it stays idle.
-      await waitIdle();
-      await sleep(500);
-      await waitIdle();
-      // What the turn did, from its events (the enemy's replies may move units after).
-      const events = (await state()).view.fight.events ?? [];
-      const stepAt = events.findIndex(
-        (e) => e.kind === 'step' && e.unitId === 'p-bokh' && sameH(e.to, steps[0].to)
-      );
-      const pinAt = events.findIndex(
-        (e) =>
-          e.kind === 'action' &&
-          e.unitId === 'p-bokh' &&
-          e.ability === 'lunge' &&
-          sameH(e.target, found.target)
-      );
-      check(
-        'Lunge bounded, then struck',
-        stepAt >= 0 && pinAt >= 0,
-        events.filter((e) => e.unitId === 'p-bokh').map((e) => [e.kind, e.ability, e.to])
-      );
-    }
-  }
-
   // Play the rest with the AI choosing for you. With placeholder numbers a
-  // fight can stall (Storm Callers out-heal what's left), so after 150 turns
+  // fight can stall, so after 150 turns
   // abandon it and play a fresh one, at most three times.
   const playOut = async () => {
     for (let i = 0; i < 150; i++) {
@@ -1402,13 +1345,13 @@ try {
     });
     await sleep(250);
   };
-  // The camel acts first: the AI plays it, so a hero with Leap is up. Its
-  // turn (Move alone) keeps the heroes' room, so the board doesn't move.
-  const camelBoard = await phone.locator('canvas').boundingBox();
-  await shot(phone, 'phone-camel');
-  const camelUp =
-    (await phone.evaluate(() => window.__tactics.run.view.fight.awaiting)) === 'p-camel';
-  while ((await phone.evaluate(() => window.__tactics.run.view.fight.awaiting)) === 'p-camel') {
+  // The camel walks itself; the AI plays on until the Storm Caller, with
+  // Hail (aimed at a space), is up.
+  for (
+    let i = 0;
+    i < 20 && (await phone.evaluate(() => window.__tactics.run.view.fight.awaiting)) !== 'p-storm';
+    i++
+  ) {
     const v = await phone.evaluate(() => window.__tactics.run.view.version);
     await phone.evaluate(() => window.__tactics.autoTurn());
     await phone.waitForFunction(
@@ -1417,26 +1360,17 @@ try {
       {timeout: 15_000}
     );
   }
-  await phone.locator('[data-choice="leap"]').waitFor({timeout: 15_000});
-  if (camelUp) {
-    const heroBoard = await phone.locator('canvas').boundingBox();
-    check(
-      'phone: the board stays put from the camel’s turn to a hero’s',
-      Math.abs(heroBoard.y - camelBoard.y) < 1 &&
-        Math.abs(heroBoard.height - camelBoard.height) < 1,
-      [camelBoard, heroBoard]
-    );
-  }
+  await phone.locator('[data-choice="hail"]').waitFor({timeout: 15_000});
   const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
   const moveBoxBefore = await phoneMove.boundingBox();
-  const phoneLeap = phone.locator('[data-choice="leap"]');
-  const leapCost = await phoneLeap.textContent();
-  await phoneLeap.click();
+  const phoneHail = phone.locator('[data-choice="hail"]');
+  const hailCost = await phoneHail.textContent();
+  await phoneHail.click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
   check(
     'phone: with no target yet, the ability’s button asks for one',
-    /^LeapPick a target$/.test(await phoneLeap.textContent()),
-    await phoneLeap.textContent()
+    /^HailPick a target$/.test(await phoneHail.textContent()),
+    await phoneHail.textContent()
   );
   {
     const after = await phoneMove.boundingBox();
@@ -1449,7 +1383,7 @@ try {
   }
   const aim = await phone.evaluate(() => window.__tactics.targets[0].hex);
   await tapOn(aim);
-  const phoneConfirm = await phoneLeap.textContent();
+  const phoneConfirm = await phoneHail.textContent();
   check(
     'phone: aimed, the ability’s button confirms it, saying when the next turn comes',
     /^Confirm\+\d+( → \+\d+)?$/.test(phoneConfirm),
@@ -1457,14 +1391,14 @@ try {
   );
   check(
     'phone: the ability button showed the same slots as its Confirm',
-    leapCost.endsWith(phoneConfirm.match(/^Confirm(\+\d+)/)[1]),
-    [leapCost, phoneConfirm]
+    hailCost.endsWith(phoneConfirm.match(/^Confirm(\+\d+)/)[1]),
+    [hailCost, phoneConfirm]
   );
   await tapOn(aim);
   check(
     'phone: a second tap on the target un-picks it, without committing',
     (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion &&
-      /^LeapPick a target$/.test(await phoneLeap.textContent())
+      /^HailPick a target$/.test(await phoneHail.textContent())
   );
   await tapOn(aim);
   check('phone: there are no numbered steps', !(await phone.getByTestId('turn-steps').count()));

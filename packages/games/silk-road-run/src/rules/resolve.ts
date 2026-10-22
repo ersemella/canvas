@@ -4,7 +4,7 @@
  */
 import {hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {CAMEL, RULES, HEROES} from './config';
+import {ABILITY, CAMEL, RULES, HEROES} from './config';
 import {barrierOf, onMap, statusValue, unitAt, vulnerablePercent} from './board';
 import {MAPS, tileAt} from './map';
 import type {MapData} from './map';
@@ -309,10 +309,10 @@ export function enterHex(
 
 /**
  * A Grapple lasts until it breaks: when the Champion and target are no
- * longer adjacent (either displaced away, or the Champion moving away: it
- * isn't held itself, owner, 2026-10-20). Breaking it clears every status
- * the Grapple gave either unit (owner, 2026-10-20). Throw beside the
- * Champion keeps the grapple; Throw one space back ends it.
+ * longer within Grapple's range of each other (owner, 2026-10-22; was
+ * adjacent), either displaced away, or the Champion moving away: it isn't
+ * held itself (owner, 2026-10-20). Breaking it clears every status the
+ * Grapple gave either unit (owner, 2026-10-20).
  */
 export function breakPins(ctx: Ctx, unit: Unit): void {
   const byId = (id: string) => ctx.state.units.find((u) => u.id === id);
@@ -321,7 +321,7 @@ export function breakPins(ctx: Ctx, unit: Unit): void {
       if (!grapple || (grapple.champion !== unit.id && grapple.target !== unit.id)) continue;
       const a = byId(grapple.champion)?.hex;
       const b = byId(grapple.target)?.hex;
-      const holds = !!a && !!b && hexDistance(a, b) <= 1;
+      const holds = !!a && !!b && hexDistance(a, b) <= ABILITY.grapple.range;
       if (holds) continue;
       for (const u of ctx.state.units)
         u.statuses = u.statuses.filter(

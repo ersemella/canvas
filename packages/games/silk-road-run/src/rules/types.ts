@@ -26,6 +26,7 @@ export type AbilityId =
   | 'challenge'
   | 'reap'
   | 'advance'
+  | 'shove'
   | 'bite';
 
 /** An always-on trait rather than an action: the Modao Vanguard's Hold the Line, the Bökh Champion's Inevitable. */

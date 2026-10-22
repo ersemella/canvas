@@ -18,6 +18,14 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 
 ## 18. The Caravan's Camel
 
+> **Pared back (owner, 2026-10-22):** while the game is balanced, the
+> camel isn't player controlled. It starts in the **top-left corner** and
+> walks itself **one space every 14 slots** along a **fixed shortest road**
+> around the ruins (shown as a dotted line) to the **only exit, the
+> bottom-right corner**; a unit standing on its next space, or Immobilized,
+> holds it up for that turn. The rules below describe the design it
+> returns to.
+
 ### 18.1 The Camel (Decided)
 - Every fight has the party's **camel**, carrying the caravan's goods. It
   is a **unit** with its own hex on the board and its own **card on the

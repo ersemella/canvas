@@ -5,7 +5,7 @@
  */
 import {hexEquals} from '@canvas/engine/server';
 import {CAMEL, HEROES, PARTY, movementRules} from './config';
-import {expireStatuses, invalidPath} from './board';
+import {expireStatuses, invalidPath, isImmobilized, roadToExit, unitAt} from './board';
 import {
   ABILITIES,
   holdTheLine,
@@ -73,7 +73,8 @@ function makeUnit(side: Side, partyIndex: number, hero: HeroId, copy = 0): Unit 
     id: `${side === 'player' ? 'p' : 'e'}-${hero}${copy ? `-${copy + 1}` : ''}`,
     hero,
     side,
-    controller: side === 'player' ? 'human' : 'ai',
+    // The camel walks itself (owner, 2026-10-22).
+    controller: side === 'player' && stats.routeSlots === undefined ? 'human' : 'ai',
     partyIndex,
     hex: null,
     hp: stats.health,
@@ -93,7 +94,7 @@ function makeUnit(side: Side, partyIndex: number, hero: HeroId, copy = 0): Unit 
  * ruins and quicksand, the player's party along the leftmost column and
  * the enemy's along the rightmost (owner, 2026-10-20; there is no
  * deployment step), and shuffles starting speed ties. The player's camel
- * starts in the middle of its column (camel.md, 18.1). The player brings
+ * starts in the top-left corner (camel.md, 18.1; owner, 2026-10-22). The player brings
  * the heroes chosen on the start menu; the enemy brings `enemies`, all three
  * heroes unless the run's stage says otherwise (STAGES).
  */
@@ -195,6 +196,11 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
       triggerCharge(ctx, unit);
       continue;
     }
+    // The camel isn't a decision: it walks its road.
+    if (HEROES[unit.hero].routeSlots !== undefined) {
+      walkRoad(ctx, unit);
+      continue;
+    }
     // Nothing to do but Hold: the track goes on without asking.
     if (onlyHold(state, map, unit)) {
       skipTurn(ctx, unit);
@@ -229,6 +235,28 @@ function skipTurn(ctx: Ctx, unit: Unit): void {
   record(ctx.state, {kind: 'skip', unitId: unit.id});
   placeCard(ctx.state, unit, ctx.slot + slotsForward(ABILITIES.hold.cost, unit.speed));
   hailPush(ctx, unit, hail);
+}
+
+/**
+ * The camel's turn (owner, 2026-10-22): one step along its fixed road to
+ * the exit, then its card goes `routeSlots` on. Immobilized, or with a
+ * unit standing on its next space, it waits, its turn skipped.
+ */
+function walkRoad(ctx: Ctx, unit: Unit): void {
+  const hail = hailPushOwed(ctx.state, unit);
+  const next = unit.hex ? roadToExit(ctx.map, unit.hex)[0] : undefined;
+  if (next && !isImmobilized(unit) && !unitAt(ctx.state, next)) {
+    delete unit.skipped;
+    enterHex(ctx, unit, next);
+    log(ctx, `${unitName(unit)} walks on.`);
+  } else {
+    unit.skipped = true;
+    log(ctx, `${unitName(unit)} can’t go on: turn skipped.`);
+    record(ctx.state, {kind: 'skip', unitId: unit.id});
+  }
+  checkEnd(ctx.state);
+  if (unit.alive) placeCard(ctx.state, unit, ctx.slot + HEROES[unit.hero].routeSlots!);
+  if (ctx.state.phase === 'fight') hailPush(ctx, unit, hail);
 }
 
 function triggerCharge(ctx: Ctx, unit: Unit): void {

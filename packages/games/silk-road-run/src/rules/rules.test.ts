@@ -18,6 +18,7 @@ import {
   lineOfFire,
   movementCap,
   reachableHexes,
+  roadToExit,
   unitAt,
   vulnerablePercent,
 } from './board';
@@ -60,6 +61,7 @@ import {
   turnCost,
 } from './track';
 import type {FightState, HeroId, TurnInput, Unit} from './types';
+import {withFullKits} from './testKits';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
 /** `n` hexes on from `h` along direction `d`. */
@@ -248,54 +250,63 @@ describe('the track', () => {
     expect(b.statuses).toHaveLength(0);
   });
 
-  it('charges, triggers when the card is reached, then recovers (3.7)', () => {
-    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 1), 'e-storm': at(7, 6)});
-    const m = unit(s, 'p-mangudai');
-    m.ultimateCharge = RULES.ultimateCharge;
-    s.currentSlot = 100;
-    s.awaiting = m.id;
-    const target = unitAt(s, at(5, 1))!.hex!;
-    applyTurn(s, m, {action: {ability: 'volley', target: {hex: target}}});
-    expect(m.charging).not.toBeNull();
-    expect(m.slot).toBe(100 + slotsForward(ABILITY.volley.chargeCost, m.speed));
-    const hpBefore = unit(s, 'e-bokh').hp;
-    // Bökh's card is at 150, after the charge triggers.
-    unit(s, 'e-bokh').slot = 500;
-    unit(s, 'e-storm').slot = 600;
-    advance(s, () => ({action: {ability: 'hold'}}));
-    expect(unit(s, 'e-bokh').hp).toBeLessThan(hpBefore);
-    expect(m.charging).toBeNull();
-    expect(m.ultimateUsed).toBe(true);
-  });
+  it(
+    'charges, triggers when the card is reached, then recovers (3.7)',
+    withFullKits(() => {
+      const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 1), 'e-storm': at(7, 6)});
+      const m = unit(s, 'p-mangudai');
+      m.ultimateCharge = RULES.ultimateCharge;
+      s.currentSlot = 100;
+      s.awaiting = m.id;
+      const target = unitAt(s, at(5, 1))!.hex!;
+      applyTurn(s, m, {action: {ability: 'volley', target: {hex: target}}});
+      expect(m.charging).not.toBeNull();
+      expect(m.slot).toBe(100 + slotsForward(ABILITY.volley.chargeCost, m.speed));
+      const hpBefore = unit(s, 'e-bokh').hp;
+      // Bökh's card is at 150, after the charge triggers.
+      unit(s, 'e-bokh').slot = 500;
+      unit(s, 'e-storm').slot = 600;
+      advance(s, () => ({action: {ability: 'hold'}}));
+      expect(unit(s, 'e-bokh').hp).toBeLessThan(hpBefore);
+      expect(m.charging).toBeNull();
+      expect(m.ultimateUsed).toBe(true);
+    })
+  );
 
-  it('Freeze damages, then Immobilizes and exposes, every unit in its area', () => {
-    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(4, 3), 'e-storm': at(7, 6)});
-    const caster = unit(s, 'p-storm');
-    caster.ultimateCharge = RULES.ultimateCharge;
-    s.currentSlot = 100;
-    s.awaiting = caster.id;
-    applyTurn(s, caster, {action: {ability: 'freeze', target: {hex: at(4, 3)}}});
-    const b = unit(s, 'e-bokh');
-    const hpBefore = b.hp;
-    b.slot = 500;
-    unit(s, 'e-storm').slot = 600;
-    advance(s, () => ({action: {ability: 'hold'}}));
-    expect(b.hp).toBeLessThan(hpBefore);
-    expect(b.statuses.map((x) => x.kind)).toEqual(
-      expect.arrayContaining(['immobilized', 'vulnerable'])
-    );
-    expect(vulnerablePercent(s, b)).toBeGreaterThanOrEqual(ABILITY.freeze.vulnerable);
-  });
+  it(
+    'Freeze damages, then Immobilizes and exposes, every unit in its area',
+    withFullKits(() => {
+      const s = setup({'p-storm': at(1, 3), 'e-bokh': at(4, 3), 'e-storm': at(7, 6)});
+      const caster = unit(s, 'p-storm');
+      caster.ultimateCharge = RULES.ultimateCharge;
+      s.currentSlot = 100;
+      s.awaiting = caster.id;
+      applyTurn(s, caster, {action: {ability: 'freeze', target: {hex: at(4, 3)}}});
+      const b = unit(s, 'e-bokh');
+      const hpBefore = b.hp;
+      b.slot = 500;
+      unit(s, 'e-storm').slot = 600;
+      advance(s, () => ({action: {ability: 'hold'}}));
+      expect(b.hp).toBeLessThan(hpBefore);
+      expect(b.statuses.map((x) => x.kind)).toEqual(
+        expect.arrayContaining(['immobilized', 'vulnerable'])
+      );
+      expect(vulnerablePercent(s, b)).toBeGreaterThanOrEqual(ABILITY.freeze.vulnerable);
+    })
+  );
 
-  it('keeps the ultimate locked until enough turns are taken', () => {
-    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 1)});
-    const m = unit(s, 'p-mangudai');
-    expect(() =>
-      applyTurn(cloneFight(s), unit(cloneFight(s), m.id), {
-        action: {ability: 'volley', target: {hex: at(5, 1)}},
-      })
-    ).toThrow(RuleError);
-  });
+  it(
+    'keeps the ultimate locked until enough turns are taken',
+    withFullKits(() => {
+      const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 1)});
+      const m = unit(s, 'p-mangudai');
+      expect(() =>
+        applyTurn(cloneFight(s), unit(cloneFight(s), m.id), {
+          action: {ability: 'volley', target: {hex: at(5, 1)}},
+        })
+      ).toThrow(RuleError);
+    })
+  );
 });
 
 describe('the board', () => {
@@ -371,10 +382,9 @@ describe('the board', () => {
     }
   });
 
-  it('scatters each fight’s ruins and quicksand by its seed: unmirrored, clear of the edges, the board connected', () => {
+  it('scatters each fight’s ruins by its seed, with no quicksand or sandstorm: unmirrored, clear of the edges, the board connected', () => {
     const count = (tiles: Record<string, string>, t: string) =>
       Object.values(tiles).filter((v) => v === t).length;
-    const conceal = Object.keys(SALT_FLATS.tiles).filter((k) => SALT_FLATS.tiles[k] === 'conceal');
     const layouts = new Set<string>();
     let asymmetric = 0;
     for (let seed = 0; seed < 40; seed++) {
@@ -383,14 +393,15 @@ describe('the board', () => {
       expect(map.tiles).toBe(s.tiles);
       expect(JSON.stringify(createFight(seed).tiles)).toBe(JSON.stringify(s.tiles));
       expect(count(map.tiles, 'obstacle')).toBe(4);
-      expect(count(map.tiles, 'hazard')).toBe(2);
-      for (const k of conceal) expect(map.tiles[k]).toBe('conceal');
+      // Pared back for balancing (owner, 2026-10-22).
+      expect(count(map.tiles, 'hazard')).toBe(0);
+      expect(count(map.tiles, 'conceal')).toBe(0);
       const ruinRows = [];
       for (const [key, tile] of Object.entries(map.tiles)) {
         const [q, r] = key.split(',').map(Number);
         const {col, row} = hexToOffset({q: q!, r: r!});
         // Two columns clear of each edge.
-        if (tile !== 'conceal') expect(col >= (row & 1 ? 1 : 2) && col <= 5).toBe(true);
+        expect(col >= (row & 1 ? 1 : 2) && col <= 5).toBe(true);
         if (tile === 'obstacle') ruinRows.push(row);
       }
       expect(ruinRows.filter((r) => r <= 3)).toHaveLength(2);
@@ -563,17 +574,20 @@ describe('damage', () => {
     expect(stopped.hexes).toEqual([at(2, 5)]);
   });
 
-  it('Sunlight heals a unit in, or past, a sandstorm', () => {
-    const s = setup({'p-storm': at(3, 4), 'e-bokh': at(3, 5), 'e-mangudai': at(8, 6)});
-    const storm = unit(s, 'p-storm');
-    const target = unit(s, 'e-bokh');
-    target.hp = 100;
-    const map = mapOf(s);
-    expect(tileAt(map, at(3, 5))).toBe('conceal');
-    expect(ABILITIES.sunlight.targets(s, map, storm, storm.hex!)).toContainEqual({hex: at(3, 5)});
-    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(3, 5)}}});
-    expect(target.hp).toBeGreaterThan(100);
-  });
+  it(
+    'Sunlight heals a unit in, or past, a sandstorm',
+    withFullKits(() => {
+      const s = setup({'p-storm': at(3, 4), 'e-bokh': at(3, 5), 'e-mangudai': at(8, 6)});
+      const storm = unit(s, 'p-storm');
+      const target = unit(s, 'e-bokh');
+      target.hp = 100;
+      const map = mapOf(s);
+      expect(tileAt(map, at(3, 5))).toBe('conceal');
+      expect(ABILITIES.sunlight.targets(s, map, storm, storm.hex!)).toContainEqual({hex: at(3, 5)});
+      applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(3, 5)}}});
+      expect(target.hp).toBeGreaterThan(100);
+    })
+  );
 
   it('deals collision damage to both units when a displace is stopped', () => {
     const s = setup({'p-storm': at(2, 1), 'e-bokh': at(3, 1), 'e-storm': at(4, 1)});
@@ -655,63 +669,93 @@ describe('abilities', () => {
     expect(unit(s, 'p-bokh').hp).toBeLessThan(hp);
   });
 
-  it('Grapple then Throw: the target lands where chosen, still Immobilized', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
-    const b = unit(s, 'p-bokh');
-    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
-    applyTurn(s, b, {action: {ability: 'throw', target: {hex: at(2, 1), to: at(0, 1)}}});
-    expect(unit(s, 'e-storm').hex).toEqual(at(0, 1));
-    expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
-    // Thrown to another hex beside the Champion: the hold isn't broken,
-    // and the Champion itself was never held.
-    expect(b.statuses).toEqual([]);
-  });
+  it(
+    'Grapple then Throw: the target lands where chosen, still Immobilized',
+    withFullKits(() => {
+      const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
+      const b = unit(s, 'p-bokh');
+      applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+      expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+      applyTurn(s, b, {action: {ability: 'throw', target: {hex: at(2, 1), to: at(0, 1)}}});
+      expect(unit(s, 'e-storm').hex).toEqual(at(0, 1));
+      expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+      // Thrown to another hex beside the Champion: the hold isn't broken,
+      // and the Champion itself was never held.
+      expect(b.statuses).toEqual([]);
+    })
+  );
 
-  it('Grapple: the Champion is free, and walking away releases the target', () => {
+  it('Grapple: the Champion is free, and walking out of its range releases the target', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     expect(b.statuses).toEqual([]);
-    const away = reachableHexes(s, mapOf(s), b).find(
-      (r) => r.path.length === 1 && hexDistance(r.path[0]!, target.hex!) === 2
+    const reach = reachableHexes(s, mapOf(s), b);
+    const near = reach.find(
+      (r) => r.path.length === 1 && hexDistance(r.hex, target.hex!) === ABILITY.grapple.range
     )!;
+    const kept = cloneFight(s);
+    applyTurn(kept, unit(kept, b.id), {move: near.path, action: {ability: 'hold'}});
+    expect(unit(kept, target.id).statuses.map((x) => x.kind)).toEqual(['immobilized']);
+    const away = reach.find((r) => hexDistance(r.hex, target.hex!) > ABILITY.grapple.range)!;
     applyTurn(s, b, {move: away.path, action: {ability: 'hold'}});
     expect(target.statuses).toEqual([]);
   });
 
-  it('Grapple is melee only', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(3, 1), 'e-bokh': at(8, 6)});
+  it('Grapple reaches a unit up to two spaces away', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(4, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    unit(s, 'e-storm').hex = at(3, 1);
+    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(3, 1)}]);
     unit(s, 'e-storm').hex = at(2, 1);
     expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
   });
 
-  it('Grapple: displacing the target away breaks the grapple, freeing it', () => {
+  it('Grapple: displacing the target out of its range breaks the grapple, freeing it', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
-    displace({state: s, map: SALT_FLATS, slot: 0}, target, hexDirectionTo(at(1, 1), at(2, 1))!, 1);
+    const east = hexDirectionTo(at(1, 1), at(2, 1))!;
+    displace({state: s, map: SALT_FLATS, slot: 0}, target, east, 1);
     expect(hexDistance(target.hex!, b.hex!)).toBe(2);
+    expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+    displace({state: s, map: SALT_FLATS, slot: 0}, target, east, 1);
+    expect(hexDistance(target.hex!, b.hex!)).toBe(3);
     // Breaking it clears everything the Grapple gave the target.
     expect(target.statuses).toEqual([]);
   });
 
-  it('Grapple: Sunlight no longer frees its target', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'e-storm': at(3, 1)});
-    const target = unit(s, 'e-mangudai');
-    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    applyTurn(s, unit(s, 'e-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
-    expect(target.statuses.map((x) => x.kind).sort()).toEqual([
-      'immobilized',
-      'pinned',
-      'vulnerable',
-    ]);
+  it('Shove Displaces the unit the Champion pins 1 away, and it stays pinned', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(1, 3)});
+    const b = unit(s, 'p-bokh');
+    const target = unit(s, 'e-storm');
+    // Only the unit it pins, and only next to it.
+    expect(ABILITIES.shove.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(1, 3)}}});
+    expect(hexDistance(at(1, 1), at(1, 3))).toBe(2);
+    expect(ABILITIES.shove.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+    expect(ABILITIES.shove.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
+    applyTurn(s, b, {action: {ability: 'shove', target: {hex: at(2, 1)}}});
+    expect(target.hex).toEqual(at(3, 1));
+    expect(target.hp).toBe(target.maxHp);
+    expect(target.statuses.map((x) => x.kind)).toEqual(['immobilized']);
   });
+
+  it(
+    'Grapple: Sunlight no longer frees its target',
+    withFullKits(() => {
+      const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'e-storm': at(3, 1)});
+      const target = unit(s, 'e-mangudai');
+      applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+      applyTurn(s, unit(s, 'e-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
+      expect(target.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+    })
+  );
 
   it('Grapple holds one target at a time: a new grapple lets the last go', () => {
     const s = setup({
@@ -725,48 +769,64 @@ describe('abilities', () => {
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: first.hex!}}});
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: second.hex!}}});
     expect(first.statuses).toEqual([]);
-    expect(second.statuses.some((x) => x.kind === 'pinned')).toBe(true);
+    expect(second.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
   });
 
-  it('Sunlight can clear hail from an empty hex', () => {
-    const s = setup({'p-storm': at(1, 1), 'e-bokh': at(8, 6)});
-    s.effects = [{kind: 'hail', hex: at(3, 1), untilSlot: 999, push: ABILITY.hail.turnPush}];
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(3, 1)}}});
-    expect(s.effects).toEqual([]);
-  });
+  it(
+    'Sunlight can clear hail from an empty hex',
+    withFullKits(() => {
+      const s = setup({'p-storm': at(1, 1), 'e-bokh': at(8, 6)});
+      s.effects = [{kind: 'hail', hex: at(3, 1), untilSlot: 999, push: 2}];
+      applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(3, 1)}}});
+      expect(s.effects).toEqual([]);
+    })
+  );
 
-  it('Sunlight clears hail from its target’s hex only', () => {
-    const s = setup({'p-storm': at(1, 1), 'p-bokh': at(2, 1), 'e-bokh': at(8, 6)});
-    const until = 999;
-    const effect = (h: Hex) => ({
-      kind: 'hail' as const,
-      hex: h,
-      untilSlot: until,
-      push: ABILITY.hail.turnPush,
-    });
-    s.effects = [effect(at(2, 1)), effect(at(3, 1))];
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
-    expect(s.effects.map((e) => e.hex)).toEqual([at(3, 1)]);
-  });
+  it(
+    'Sunlight clears hail from its target’s hex only',
+    withFullKits(() => {
+      const s = setup({'p-storm': at(1, 1), 'p-bokh': at(2, 1), 'e-bokh': at(8, 6)});
+      const until = 999;
+      const effect = (h: Hex) => ({
+        kind: 'hail' as const,
+        hex: h,
+        untilSlot: until,
+        push: 2,
+      });
+      s.effects = [effect(at(2, 1)), effect(at(3, 1))];
+      applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
+      expect(s.effects.map((e) => e.hex)).toEqual([at(3, 1)]);
+    })
+  );
 
-  it('Grapple: Immobilized, Vulnerable and Pinned for its duration, with no damage', () => {
+  it('Grapple: only Immobilized for its duration, with no damage', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
     const target = unit(s, 'e-storm');
     applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     expect(target.hp).toBe(target.maxHp);
-    expect(vulnerablePercent(s, target)).toBe(ABILITY.grapple.vulnerable);
+    expect(target.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+    expect(vulnerablePercent(s, target)).toBe(0);
     expect(target.statuses.every((x) => x.untilSlot === ABILITY.grapple.slots)).toBe(true);
     expect(taunterOf(s, target)).toBeUndefined();
   });
 
-  it('Pinned: a grappled unit’s abilities reach only its own space and the ones next to it', () => {
+  it('Grapple leaves a pinned unit’s reach alone: it only Immobilizes', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'p-mangudai': at(5, 1)});
+    const storm = unit(s, 'e-storm');
+    const all = allowedTargets(s, SALT_FLATS, storm, ABILITIES.hail);
+    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+    expect(allowedTargets(s, SALT_FLATS, storm, ABILITIES.hail)).toEqual(all);
+    expect(movementCap(storm)).toBe(0);
+  });
+
+  it('Pinned (parked): a unit’s abilities reach only its own space and the ones next to it', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'p-mangudai': at(5, 1)});
     const storm = unit(s, 'e-storm');
     const far = ABILITIES.hail
       .targets(s, SALT_FLATS, storm, storm.hex!)
       .filter((t) => hexDistance(t.hex!, storm.hex!) > 1);
     expect(far.length).toBeGreaterThan(0);
-    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+    storm.statuses.push({kind: 'pinned', value: 0, untilSlot: 999});
     const hail = allowedTargets(s, SALT_FLATS, storm, ABILITIES.hail);
     expect(hail.length).toBeGreaterThan(0);
     expect(hail.every((t) => hexDistance(t.hex!, storm.hex!) <= 1)).toBe(true);
@@ -778,137 +838,155 @@ describe('abilities', () => {
       expect(hexDistance(choice.action.target.hex, storm.hex!)).toBeLessThanOrEqual(1);
   });
 
-  it('Throw only the unit the Champion grapples: beside it keeps hold, one space back lets go', () => {
-    const s = setup({
-      'p-bokh': at(3, 3),
-      'e-storm': hexNeighbors(at(3, 3))[0]!,
-      'e-mangudai': at(8, 6),
-    });
-    const b = unit(s, 'p-bokh');
-    const target = unit(s, 'e-storm');
-    expect(ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
-    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
-    const throws = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!);
-    const back = hexNeighbor(target.hex!, hexDirectionTo(b.hex!, target.hex!)!);
-    expect(throws).toContainEqual({hex: target.hex!, to: back});
-    for (const t of throws) expect([1, 2]).toContain(hexDistance(t.to!, b.hex!));
-    applyTurn(s, b, {action: {ability: 'throw', target: {hex: target.hex!, to: back}}});
-    expect(target.hex).toEqual(back);
-    expect(target.statuses).toEqual([]);
-    // Vulnerable from the grapple counts on the throw itself.
-    const raw = Math.floor(
-      scaled(ABILITY.throw.damage, b.power) * (1 + ABILITY.grapple.vulnerable / 100)
-    );
-    expect(target.hp).toBe(target.maxHp - defended(target, raw));
-  });
+  it(
+    'Throw only the unit the Champion grapples, beside it or one space back, keeping hold',
+    withFullKits(() => {
+      const s = setup({
+        'p-bokh': at(3, 3),
+        'e-storm': hexNeighbors(at(3, 3))[0]!,
+        'e-mangudai': at(8, 6),
+      });
+      const b = unit(s, 'p-bokh');
+      const target = unit(s, 'e-storm');
+      expect(ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+      applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
+      const throws = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!);
+      const back = hexNeighbor(target.hex!, hexDirectionTo(b.hex!, target.hex!)!);
+      expect(throws).toContainEqual({hex: target.hex!, to: back});
+      for (const t of throws) expect([1, 2]).toContain(hexDistance(t.to!, b.hex!));
+      applyTurn(s, b, {action: {ability: 'throw', target: {hex: target.hex!, to: back}}});
+      expect(target.hex).toEqual(back);
+      // Two away is within Grapple's range (owner, 2026-10-22): it holds.
+      expect(target.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+      expect(target.hp).toBe(
+        target.maxHp - defended(target, scaled(ABILITY.throw.damage, b.power))
+      );
+    })
+  );
 
-  it('Taunt draws a damaging charge onto the taunter', () => {
-    const s = setup({'p-bokh': at(3, 1), 'e-mangudai': at(4, 1), 'p-storm': at(4, 5)});
-    s.units.forEach((u) => (u.controller = 'human'));
-    const m = unit(s, 'e-mangudai');
-    m.ultimateCharge = RULES.ultimateCharge;
-    m.slot = 1;
-    m.charging = {ability: 'volley', target: at(4, 5)};
-    m.statuses.push({kind: 'taunted', value: 0, untilSlot: 50, source: 'p-bokh'});
-    const storm = unit(s, 'p-storm');
-    advance(s, chooseAiTurn);
-    expect(storm.hp).toBe(storm.maxHp);
-    expect(unit(s, 'p-bokh').hp).toBeLessThan(unit(s, 'p-bokh').maxHp);
-  });
+  it(
+    'Taunt draws a damaging charge onto the taunter',
+    withFullKits(() => {
+      const s = setup({'p-bokh': at(3, 1), 'e-mangudai': at(4, 1), 'p-storm': at(4, 5)});
+      s.units.forEach((u) => (u.controller = 'human'));
+      const m = unit(s, 'e-mangudai');
+      m.ultimateCharge = RULES.ultimateCharge;
+      m.slot = 1;
+      m.charging = {ability: 'volley', target: at(4, 5)};
+      m.statuses.push({kind: 'taunted', value: 0, untilSlot: 50, source: 'p-bokh'});
+      const storm = unit(s, 'p-storm');
+      advance(s, chooseAiTurn);
+      expect(storm.hp).toBe(storm.maxHp);
+      expect(unit(s, 'p-bokh').hp).toBeLessThan(unit(s, 'p-bokh').maxHp);
+    })
+  );
 
-  it('Leap lands exactly two hexes on, over ruins, a unit or quicksand', () => {
-    // Ruins at (2, 2); quicksand at (2, 3), with an enemy standing in it.
-    const s = setup({'p-mangudai': at(1, 2), 'e-bokh': at(8, 0)});
-    const m = unit(s, 'p-mangudai');
-    const ends = ABILITIES.leap.targets(s, SALT_FLATS, m, m.hex!).map((t) => t.hex!);
-    expect(ends.every((h) => hexDistance(h, m.hex!) === 2)).toBe(true);
-    expect(ends).toContainEqual(at(3, 2));
-    // Never onto a unit.
-    unit(s, 'e-bokh').hex = at(3, 2);
-    expect(ABILITIES.leap.targets(s, SALT_FLATS, m, m.hex!)).not.toContainEqual({hex: at(3, 2)});
+  it(
+    'Leap lands exactly two hexes on, over ruins, a unit or quicksand',
+    withFullKits(() => {
+      // Ruins at (2, 2); quicksand at (2, 3), with an enemy standing in it.
+      const s = setup({'p-mangudai': at(1, 2), 'e-bokh': at(8, 0)});
+      const m = unit(s, 'p-mangudai');
+      const ends = ABILITIES.leap.targets(s, SALT_FLATS, m, m.hex!).map((t) => t.hex!);
+      expect(ends.every((h) => hexDistance(h, m.hex!) === 2)).toBe(true);
+      expect(ends).toContainEqual(at(3, 2));
+      // Never onto a unit.
+      unit(s, 'e-bokh').hex = at(3, 2);
+      expect(ABILITIES.leap.targets(s, SALT_FLATS, m, m.hex!)).not.toContainEqual({hex: at(3, 2)});
 
-    const t = setup({'p-mangudai': at(1, 3), 'e-bokh': at(2, 3)});
-    const leaper = unit(t, 'p-mangudai');
-    const hp = leaper.hp;
-    applyTurn(t, leaper, {action: {ability: 'leap', target: {hex: at(3, 3)}}});
-    expect(leaper.hex).toEqual(at(3, 3));
-    expect(leaper.hp).toBe(hp);
-  });
+      const t = setup({'p-mangudai': at(1, 3), 'e-bokh': at(2, 3)});
+      const leaper = unit(t, 'p-mangudai');
+      const hp = leaper.hp;
+      applyTurn(t, leaper, {action: {ability: 'leap', target: {hex: at(3, 3)}}});
+      expect(leaper.hex).toEqual(at(3, 3));
+      expect(leaper.hp).toBe(hp);
+    })
+  );
 
-  it('Lunge bounds up to two hexes to a unit, strikes it, and grapples it', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(4, 1), 'e-bokh': at(8, 6)});
-    const b = unit(s, 'p-bokh');
-    const target = unit(s, 'e-storm');
-    b.ultimateCharge = RULES.ultimateCharge;
-    const targets = ABILITIES.lunge.targets(s, SALT_FLATS, b, b.hex!);
-    const land = {hex: at(4, 1), to: at(3, 1)};
-    expect(targets).toContainEqual(land);
-    // Every landing is free, beside its target, and at most two hexes away.
-    for (const t of targets) {
-      expect(hexDistance(t.hex!, b.hex!)).toBeLessThanOrEqual(ABILITY.lunge.reach);
-      if (!t.to) continue;
-      expect(hexDistance(t.to, t.hex!)).toBe(1);
-      expect(hexDistance(t.to, b.hex!)).toBeLessThanOrEqual(ABILITY.lunge.reach - 1);
-      expect(unitAt(s, t.to)).toBeUndefined();
-    }
-    // Out of reach.
-    expect(targets.some((t) => hexEquals(t.hex!, unit(s, 'e-bokh').hex!))).toBe(false);
-    applyTurn(s, b, {action: {ability: 'lunge', target: land}});
-    expect(b.hex).toEqual(at(3, 1));
-    expect(target.hp).toBe(target.maxHp - defended(target, scaled(ABILITY.lunge.damage, b.power)));
-    // Grappled as by Grapple.
-    expect(target.statuses.map((x) => x.kind).sort()).toEqual([
-      'immobilized',
-      'pinned',
-      'vulnerable',
-    ]);
-    expect(b.ultimateUsed).toBe(true);
-  });
+  it(
+    'Lunge bounds up to two hexes to a unit, strikes it, and grapples it',
+    withFullKits(() => {
+      const s = setup({'p-bokh': at(1, 1), 'e-storm': at(4, 1), 'e-bokh': at(8, 6)});
+      const b = unit(s, 'p-bokh');
+      const target = unit(s, 'e-storm');
+      b.ultimateCharge = RULES.ultimateCharge;
+      const targets = ABILITIES.lunge.targets(s, SALT_FLATS, b, b.hex!);
+      const land = {hex: at(4, 1), to: at(3, 1)};
+      expect(targets).toContainEqual(land);
+      // Every landing is free, beside its target, and at most two hexes away.
+      for (const t of targets) {
+        expect(hexDistance(t.hex!, b.hex!)).toBeLessThanOrEqual(ABILITY.lunge.reach);
+        if (!t.to) continue;
+        expect(hexDistance(t.to, t.hex!)).toBe(1);
+        expect(hexDistance(t.to, b.hex!)).toBeLessThanOrEqual(ABILITY.lunge.reach - 1);
+        expect(unitAt(s, t.to)).toBeUndefined();
+      }
+      // Out of reach.
+      expect(targets.some((t) => hexEquals(t.hex!, unit(s, 'e-bokh').hex!))).toBe(false);
+      applyTurn(s, b, {action: {ability: 'lunge', target: land}});
+      expect(b.hex).toEqual(at(3, 1));
+      expect(target.hp).toBe(
+        target.maxHp - defended(target, scaled(ABILITY.lunge.damage, b.power))
+      );
+      // Grappled as by Grapple.
+      expect(target.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+      expect(b.ultimateUsed).toBe(true);
+    })
+  );
 
-  it('Lunge: next to its target it strikes where it stands; Immobilized, only that', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(4, 1)});
-    const b = unit(s, 'p-bokh');
-    b.ultimateCharge = RULES.ultimateCharge;
-    expect(ABILITIES.lunge.targets(s, SALT_FLATS, b, b.hex!)).toContainEqual({hex: at(2, 1)});
-    b.statuses = [{kind: 'immobilized', value: 0, untilSlot: 999}];
-    expect(ABILITIES.lunge.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
-    b.statuses = [];
-    applyTurn(s, b, {action: {ability: 'lunge', target: {hex: at(2, 1)}}});
-    expect(b.hex).toEqual(at(1, 1));
-    expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
-  });
+  it(
+    'Lunge: next to its target it strikes where it stands; Immobilized, only that',
+    withFullKits(() => {
+      const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(4, 1)});
+      const b = unit(s, 'p-bokh');
+      b.ultimateCharge = RULES.ultimateCharge;
+      expect(ABILITIES.lunge.targets(s, SALT_FLATS, b, b.hex!)).toContainEqual({hex: at(2, 1)});
+      b.statuses = [{kind: 'immobilized', value: 0, untilSlot: 999}];
+      expect(ABILITIES.lunge.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
+      b.statuses = [];
+      applyTurn(s, b, {action: {ability: 'lunge', target: {hex: at(2, 1)}}});
+      expect(b.hex).toEqual(at(1, 1));
+      expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+    })
+  );
 
-  it('Lunge is locked until the ultimate charges', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
-    expect(tryTurn(s, 'p-bokh', {action: {ability: 'lunge', target: {hex: at(2, 1)}}})).toThrow(
-      RuleError
-    );
-  });
+  it(
+    'Lunge is locked until the ultimate charges',
+    withFullKits(() => {
+      const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
+      expect(tryTurn(s, 'p-bokh', {action: {ability: 'lunge', target: {hex: at(2, 1)}}})).toThrow(
+        RuleError
+      );
+    })
+  );
 
-  it('Sunlight heals the one unit it targets, enemies included, and cleanses nothing', () => {
-    const s = setup({
-      'p-storm': at(1, 3),
-      'p-bokh': at(1, 2),
-      'e-bokh': at(2, 3),
-      'e-mangudai': at(8, 6),
-    });
-    const storm = unit(s, 'p-storm');
-    for (const id of ['p-bokh', 'e-bokh']) {
-      unit(s, id).hp = 100;
-      unit(s, id).statuses.push({kind: 'slowed', value: 2, untilSlot: 999});
-    }
-    // Any space within range: units of either side, and empty ones.
-    const targets = ABILITIES.sunlight.targets(s, SALT_FLATS, storm, storm.hex!);
-    for (const h of [at(1, 3), at(1, 2), at(2, 3), at(3, 3)])
-      expect(targets.some((t) => hexEquals(t.hex!, h))).toBe(true);
-    expect(targets.some((t) => hexEquals(t.hex!, at(8, 6)))).toBe(false);
-    expect(hexDistance(at(1, 3), at(8, 6))).toBeGreaterThan(ABILITY.sunlight.range);
-    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
-    expect(unit(s, 'e-bokh').hp).toBe(100 + scaled(ABILITY.sunlight.heal, storm.power));
-    expect(unit(s, 'e-bokh').statuses).toHaveLength(1);
-    // Its neighbour is left alone.
-    expect(unit(s, 'p-bokh').hp).toBe(100);
-  });
+  it(
+    'Sunlight heals the one unit it targets, enemies included, and cleanses nothing',
+    withFullKits(() => {
+      const s = setup({
+        'p-storm': at(1, 3),
+        'p-bokh': at(1, 2),
+        'e-bokh': at(2, 3),
+        'e-mangudai': at(8, 6),
+      });
+      const storm = unit(s, 'p-storm');
+      for (const id of ['p-bokh', 'e-bokh']) {
+        unit(s, id).hp = 100;
+        unit(s, id).statuses.push({kind: 'slowed', value: 2, untilSlot: 999});
+      }
+      // Any space within range: units of either side, and empty ones.
+      const targets = ABILITIES.sunlight.targets(s, SALT_FLATS, storm, storm.hex!);
+      for (const h of [at(1, 3), at(1, 2), at(2, 3), at(3, 3)])
+        expect(targets.some((t) => hexEquals(t.hex!, h))).toBe(true);
+      expect(targets.some((t) => hexEquals(t.hex!, at(8, 6)))).toBe(false);
+      expect(hexDistance(at(1, 3), at(8, 6))).toBeGreaterThan(ABILITY.sunlight.range);
+      applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
+      expect(unit(s, 'e-bokh').hp).toBe(100 + scaled(ABILITY.sunlight.heal, storm.power));
+      expect(unit(s, 'e-bokh').statuses).toHaveLength(1);
+      // Its neighbour is left alone.
+      expect(unit(s, 'p-bokh').hp).toBe(100);
+    })
+  );
 
   it('hail covers an area and Pushes every card in it, allies too, but not the Inevitable Champion', () => {
     const centre = at(4, 3);
@@ -923,7 +1001,8 @@ describe('abilities', () => {
     });
     const before = new Map(s.units.map((u) => [u.id, u.slot]));
     applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'hail', target: {hex: centre}}});
-    expect(s.effects).toHaveLength(1 + near.length);
+    // It no longer lingers (owner, 2026-10-22).
+    expect(s.effects).toEqual([]);
     for (const id of ['e-mangudai', 'p-mangudai'])
       expect(unit(s, id).slot).toBe(before.get(id)! + ABILITY.hail.castPush);
     expect(unit(s, 'e-bokh').slot).toBe(before.get('e-bokh'));
@@ -932,10 +1011,19 @@ describe('abilities', () => {
     expect(s.units.every((u) => !u.alive || u.hp === u.maxHp)).toBe(true);
   });
 
-  it('a unit that starts its turn on hail is Pushed once the turn has placed its card', () => {
+  it('hail is aimed up to three spaces away', () => {
+    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(8, 6)});
+    const storm = unit(s, 'p-storm');
+    const targets = ABILITIES.hail.targets(s, SALT_FLATS, storm, storm.hex!);
+    expect(targets.some((t) => hexDistance(t.hex!, storm.hex!) === 3)).toBe(true);
+    expect(targets.every((t) => hexDistance(t.hex!, storm.hex!) <= 3)).toBe(true);
+    expect(ABILITY.hail).toMatchObject({range: 3, radius: 1, castPush: 5});
+  });
+
+  it('lingering hail (parked): a unit that starts its turn on it is Pushed once the turn has placed its card', () => {
     const s = setup({'p-mangudai': at(1, 3), 'p-bokh': at(1, 1), 'e-storm': at(8, 6)});
     for (const h of [at(1, 3), at(1, 1)])
-      s.effects.push({kind: 'hail', hex: h, untilSlot: 999, push: ABILITY.hail.turnPush});
+      s.effects.push({kind: 'hail', hex: h, untilSlot: 999, push: 2});
     const b = unit(s, 'p-bokh');
     const m = unit(s, 'p-mangudai');
     // The Champion is Inevitable: its card isn't pushed.
@@ -944,28 +1032,34 @@ describe('abilities', () => {
     expect(b.slot).toBe(s.currentSlot + slotsForward(ABILITY.hold.cost, b.speed));
     s.currentSlot = m.slot!;
     applyTurn(s, m, {action: {ability: 'hold'}});
-    expect(m.slot).toBe(
-      s.currentSlot + slotsForward(ABILITY.hold.cost, m.speed) + ABILITY.hail.turnPush
-    );
+    expect(m.slot).toBe(s.currentSlot + slotsForward(ABILITY.hold.cost, m.speed) + 2);
   });
 });
 
 describe('the caravan’s camel', () => {
-  it('acts first in every fight, despite its speed', () => {
+  it('acts first in every fight, despite its speed, walking a space before anyone else', () => {
     for (let seed = 0; seed < 10; seed++) {
       const s = createFight(seed);
-      expect(unit(s, 'p-camel').slot).toBe(0);
-      expect(advanceToDecision(s)!.id).toBe('p-camel');
+      const camel = unit(s, 'p-camel');
+      expect(camel.slot).toBe(0);
+      s.events = [];
+      const first = advanceToDecision(s)!;
+      // It walks itself: the track never stops for it.
+      expect(first.hero).not.toBe('camel');
+      expect(s.events[0]).toMatchObject({kind: 'turn', unitId: 'p-camel'});
+      expect(s.events[1]).toMatchObject({kind: 'step', unitId: 'p-camel'});
+      expect(camel.hex).toEqual(roadToExit(mapOf(s), SALT_FLATS.camelStart)[0]);
     }
   });
 
-  it('joins the player’s side in the middle of its column, with very high health and High defence', () => {
+  it('joins the player’s side in the top-left corner, with very high health and High defence', () => {
     for (const seed of [1, 2, 3]) {
       const s = createFight(seed);
       const camel = unit(s, 'p-camel');
       expect(camel.side).toBe('player');
+      expect(camel.controller).toBe('ai');
       expect(camel.hex).toEqual(SALT_FLATS.camelStart);
-      expect(hexToOffset(camel.hex!)).toEqual({col: 0, row: 4});
+      expect(hexToOffset(camel.hex!)).toEqual({col: 0, row: 0});
       expect(camel.hp).toBe(HEROES.camel.health);
       expect(camel.defence).toBe(40);
       expect(s.units.filter((u) => u.hex && hexKey(u.hex) === hexKey(camel.hex!))).toHaveLength(1);
@@ -973,37 +1067,75 @@ describe('the caravan’s camel', () => {
     }
   });
 
-  it('wins by reaching one of the four hexes sticking out on the right edge', () => {
-    const layout = {orientation: 'pointy' as const, size: 1, origin: {x: 0, y: 0}};
-    const x = (h: Hex) => hexToPixel(h, layout).x;
-    const right = Math.max(...SALT_FLATS.hexes.map(x));
-    const outermost = SALT_FLATS.hexes.filter((h) => Math.abs(x(h) - right) < 1e-9);
-    expect(outermost.map(hexKey).sort()).toEqual(SALT_FLATS.exits.map(hexKey).sort());
-    expect(SALT_FLATS.exits.map((h) => hexToOffset(h).row)).toEqual([1, 3, 5, 7]);
+  it('wins by reaching the one exit, in the bottom-right corner', () => {
+    expect(SALT_FLATS.exits.map((h) => hexToOffset(h))).toEqual([{col: 7, row: 8}]);
   });
 
-  it('moves one hex a turn at a typical action’s cost, and can’t attack', () => {
+  it('follows a fixed shortest road around the ruins to the exit', () => {
+    for (let seed = 0; seed < 20; seed++) {
+      const map = mapOf(createFight(seed));
+      const road = roadToExit(map, SALT_FLATS.camelStart);
+      // Every step to a neighbour, never onto ruins, ending on the exit.
+      let from = SALT_FLATS.camelStart;
+      for (const h of road) {
+        expect(hexDistance(from, h)).toBe(1);
+        expect(tileAt(map, h)).not.toBe('obstacle');
+        from = h;
+      }
+      expect(road[road.length - 1]).toEqual(SALT_FLATS.exits[0]);
+      // Shortest: no walk around the ruins is shorter.
+      const dist = new Map([[hexKey(SALT_FLATS.camelStart), 0]]);
+      const queue = [SALT_FLATS.camelStart];
+      for (let h; (h = queue.shift()); )
+        for (const n of hexNeighbors(h))
+          if (onMap(map, n) && tileAt(map, n) !== 'obstacle' && !dist.has(hexKey(n))) {
+            dist.set(hexKey(n), dist.get(hexKey(h))! + 1);
+            queue.push(n);
+          }
+      expect(road).toHaveLength(dist.get(hexKey(SALT_FLATS.exits[0]!))!);
+      // Fixed: the road from a hex on it is the rest of it.
+      expect(roadToExit(map, road[2]!)).toEqual(road.slice(3));
+    }
+  });
+
+  it('walks one space along its road every 14 slots, and can’t attack', () => {
     const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     const camel = unit(s, 'p-camel');
-    camel.slot = 50;
-    expect(advanceToDecision(s)).toBe(camel);
+    const road = roadToExit(mapOf(s), at(2, 4));
+    camel.slot = 90;
     expect(abilitiesOf(camel).map((d) => d.id)).toEqual(['hold']);
-    expect(Math.max(...reachableHexes(s, mapOf(s), camel).map((r) => r.path.length))).toBe(1);
-    expect(tryTurn(s, 'p-camel', {move: [at(3, 4), at(4, 4)], action: {ability: 'hold'}})).toThrow(
-      RuleError
-    );
-    applyTurn(s, camel, {move: [at(3, 4)], action: {ability: 'hold'}});
-    expect(camel.hex).toEqual(at(3, 4));
-    expect(camel.slot).toBe(50 + slotsForward(RULES.cost.typical, HEROES.camel.speed));
+    // Bökh's card is at 100: the camel's turn comes first, with no decision.
+    expect(advanceToDecision(s)!.id).toBe('p-bokh');
+    expect(camel.hex).toEqual(road[0]);
+    expect(camel.slot).toBe(90 + 14);
+    expect(HEROES.camel.routeSlots).toBe(14);
     expect(s.phase).toBe('fight');
   });
 
-  it('wins the fight on reaching an exit, with enemies still standing', () => {
-    const s = setup({'p-camel': at(6, 3), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+  it('waits, its turn skipped, while a unit stands on its next space or it is Immobilized', () => {
+    const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     const camel = unit(s, 'p-camel');
-    camel.slot = 50;
+    const next = roadToExit(mapOf(s), at(2, 4))[0]!;
+    unit(s, 'e-bokh').hex = next;
+    camel.slot = 90;
     advanceToDecision(s);
-    applyTurn(s, camel, {move: [at(7, 3)], action: {ability: 'hold'}});
+    expect(camel.hex).toEqual(at(2, 4));
+    expect(camel.skipped).toBe(true);
+    expect(camel.slot).toBe(104);
+
+    const held = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    const pinned = unit(held, 'p-camel');
+    pinned.statuses.push({kind: 'immobilized', value: 0, untilSlot: 999});
+    pinned.slot = 90;
+    advanceToDecision(held);
+    expect(pinned.hex).toEqual(at(2, 4));
+  });
+
+  it('wins the fight on reaching the exit, with enemies still standing', () => {
+    const s = setup({'p-camel': at(6, 8), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    unit(s, 'p-camel').slot = 50;
+    expect(advanceToDecision(s)).toBeUndefined();
+    expect(unit(s, 'p-camel').hex).toEqual(at(7, 8));
     expect(s.phase).toBe('won');
   });
 
@@ -1024,42 +1156,31 @@ describe('the caravan’s camel', () => {
     expect(s.phase).toBe('lost');
   });
 
-  it('is a target the enemy AI finishes, and a walk the player’s AI completes', () => {
-    const s = setup({'p-camel': at(3, 4), 'p-bokh': at(0, 0), 'e-bokh': at(4, 4)});
-    const champion = unit(s, 'e-bokh');
-    // The Champion can only throw a unit it grapples.
-    applyTurn(s, champion, {action: {ability: 'grapple', target: {hex: at(3, 4)}}});
-    unit(s, 'p-camel').hp = 1;
-    // Its next card within the grapple's slots.
-    champion.slot = ABILITY.grapple.slots - 2;
-    advanceToDecision(s);
-    expect(simulate(s, champion.id, chooseAiTurn(s, champion))!.phase).toBe('lost');
-
-    // A win now beats the same win a turn later (Leap, then the shot).
+  it('is a target the enemy AI finishes', () => {
     const shot = setup({'p-camel': at(3, 4), 'p-bokh': at(0, 0), 'e-mangudai': at(4, 4)});
     unit(shot, 'p-camel').hp = 1;
+    unit(shot, 'p-camel').slot = 500;
     const archer = unit(shot, 'e-mangudai');
     archer.slot = 50;
     advanceToDecision(shot);
-    expect(chooseAiTurn(shot, archer).action.ability).toBe('bow');
-
-    const walk = setup({'p-camel': at(6, 3), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
-    const camel = unit(walk, 'p-camel');
-    camel.slot = 50;
-    advanceToDecision(walk);
-    expect(chooseAiTurn(walk, camel).move).toEqual([at(7, 3)]);
+    const input = chooseAiTurn(shot, archer);
+    expect(input.action.ability).toBe('bow');
+    expect(simulate(shot, archer.id, input)!.phase).toBe('lost');
   });
 });
 
 describe('previews, the AI and the run', () => {
-  it('unlocks the ultimate once its action cost is spent, a Hold without a move not counting', () => {
-    const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(8, 0)});
-    const m = unit(s, 'p-mangudai');
-    m.ultimateCharge = RULES.ultimateCharge - 1;
-    expect(unusableReason(m, ABILITIES.volley)).toMatch(/unlocks after 300/);
-    m.ultimateCharge = RULES.ultimateCharge;
-    expect(unusableReason(m, ABILITIES.volley)).toBeNull();
-  });
+  it(
+    'unlocks the ultimate once its action cost is spent, a Hold without a move not counting',
+    withFullKits(() => {
+      const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(8, 0)});
+      const m = unit(s, 'p-mangudai');
+      m.ultimateCharge = RULES.ultimateCharge - 1;
+      expect(unusableReason(m, ABILITIES.volley)).toMatch(/unlocks after 300/);
+      m.ultimateCharge = RULES.ultimateCharge;
+      expect(unusableReason(m, ABILITIES.volley)).toBeNull();
+    })
+  );
 
   it('a Hold without a move is cheap and doesn’t charge the ultimate', () => {
     const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(8, 0)});
@@ -1197,8 +1318,15 @@ describe('previews, the AI and the run', () => {
     expect(next.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
       stageEnemies(5, 1)
     );
-    // A new stage: everyone at full health, on the board.
-    expect(next.fight.units.every((u) => u.hp === u.maxHp && u.hex)).toBe(true);
+    // A new stage: everyone at full health, on the board, but for what the
+    // enemy did before the player's first turn (the camel walks itself).
+    for (const u of next.fight.units) {
+      const taken = next.fight
+        .events!.filter((e) => e.kind === 'damage' && e.unitId === u.id)
+        .reduce((sum, e) => sum + (e as {amount: number}).amount, 0);
+      expect(u.hp + taken).toBe(u.maxHp);
+      expect(u.alive ? u.hex : 'dead').not.toBeNull();
+    }
     // The last stage won is the run won; there is no next.
     const last = {...next, stage: STAGES.length - 1, fight: cloneFight(next.fight)};
     last.fight.phase = 'won';
@@ -1209,13 +1337,10 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a party must be one to three different heroes of the roster', () => {
-    const vanguard = createRun(5, {party: ['modao', 'storm']});
-    expect(vanguard.fight.units.filter((u) => u.side === 'player').map((u) => u.hero)).toEqual([
-      'modao',
-      'storm',
-      'camel',
-    ]);
+    // The Modao Vanguard is left out of the roster for now (owner, 2026-10-22).
+    expect(ROSTER).toEqual(PARTY);
     for (const party of [
+      ['modao', 'storm'],
       ['bokh', 'mangudai', 'storm', 'modao'],
       [],
       ['bokh', 'bokh'],
@@ -1475,7 +1600,7 @@ describe('headless balance experiments', () => {
   });
 
   it('does not project a move-and-melee threat under separate movement', () => {
-    const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(3, 0)});
+    const s = setup({'p-mangudai': at(0, 0), 'e-wolf': at(3, 0)}, ['mangudai', 'wolf']);
     const actor = unit(s, 'p-mangudai');
     const threatened = (state: FightState) =>
       threatsTo(state, SALT_FLATS, actor)[0]!.hexes.has(
@@ -1738,15 +1863,18 @@ describe('the Modao Vanguard', () => {
     expect(m.hp).toBe(m.maxHp);
   });
 
-  it('Hold the Line strikes a Leap away, where it lands', () => {
-    const s = setup({'p-modao': centre, 'e-mangudai': around[0]!}, VANGUARD);
-    const m = unit(s, 'e-mangudai');
-    const land = offsetStep(centre, 0, 3);
-    s.awaiting = m.id;
-    applyTurn(s, m, {action: {ability: 'leap', target: {hex: land}}});
-    expect(m.hex).toEqual(land);
-    expect(m.hp).toBeLessThan(m.maxHp);
-  });
+  it(
+    'Hold the Line strikes a Leap away, where it lands',
+    withFullKits(() => {
+      const s = setup({'p-modao': centre, 'e-mangudai': around[0]!}, VANGUARD);
+      const m = unit(s, 'e-mangudai');
+      const land = offsetStep(centre, 0, 3);
+      s.awaiting = m.id;
+      applyTurn(s, m, {action: {ability: 'leap', target: {hex: land}}});
+      expect(m.hex).toEqual(land);
+      expect(m.hp).toBeLessThan(m.maxHp);
+    })
+  );
 
   it('the AI can play the Vanguard: it picks a legal turn', () => {
     const s = setup({'e-modao': centre, 'p-bokh': around[0]!, 'p-mangudai': at(7, 1)}, VANGUARD);

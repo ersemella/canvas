@@ -11,6 +11,7 @@ import {scaled} from './resolve';
 import {SALT_FLATS} from './map';
 import {threatsTo} from './threat';
 import type {FightState, HeroId, TurnInput} from './types';
+import {withFullKits} from './testKits';
 
 const hex = (q: number, r: number): Hex => ({q, r});
 const unit = (s: FightState, id: string) => s.units.find((u) => u.id === id)!;
@@ -117,38 +118,41 @@ describe('budgeted tactical search', () => {
     expect(() => applyTurn(copy, unit(copy, me.id), chooseAiTurn(s, me, {left: 0}))).not.toThrow();
   });
 
-  it('avoids a lethal reply that the immediate heuristic overlooks', () => {
-    // The Outrider's bow has no range limit (2026-10-20): it stands where
-    // stepping off its lanes is still possible.
-    const s = setup({'e-bokh': hex(2, 0), 'p-bokh': hex(3, 0), 'p-mangudai': hex(-1, 3)});
-    const me = unit(s, 'e-bokh');
-    me.hp = 70;
-    me.slot = 0;
-    unit(s, 'p-mangudai').slot = 1;
-    unit(s, 'p-bokh').slot = 2;
-    s.awaiting = me.id;
-    const greedy = scoreOptions(s, me, AI.rootSimulations).sort((a, b) => b.score - a.score)[0]!;
-    expect(greedy.input.action).toMatchObject({ability: 'grapple', target: {hex: hex(3, 0)}});
-    const detail = stats();
-    const selected = chooseAiTurn(s, me, {left: AI.requestSimulations}, detail, {depth: 2});
-    expect(detail.completedDepth).toBe(2);
-    // Walking and Grapple can no longer share a turn. Check survival rather
-    // than requiring the old move-and-Grapple escape sequence.
-    expect(selected).not.toEqual(greedy.input);
-    const canBeKilled = (input: TurnInput): boolean => {
-      const after = simulate(s, me.id, input, false, false)!;
-      const reply = advanceToDecision(after)!;
-      expect(reply.id).toBe('p-mangudai');
-      // Check every legal reply, beyond the search's selective shortlist.
-      return scoreOptions(after, reply).some((option) => {
-        const position = cloneFight(option.position);
-        advanceToDecision(position);
-        return !unit(position, me.id).alive;
-      });
-    };
-    expect(canBeKilled(greedy.input)).toBe(true);
-    expect(canBeKilled(selected)).toBe(false);
-  });
+  it(
+    'avoids a lethal reply that the immediate heuristic overlooks',
+    withFullKits(() => {
+      // The Outrider's bow has no range limit (2026-10-20): it stands where
+      // stepping off its lanes is still possible.
+      const s = setup({'e-bokh': hex(2, 0), 'p-bokh': hex(3, 0), 'p-mangudai': hex(-1, 3)});
+      const me = unit(s, 'e-bokh');
+      me.hp = 70;
+      me.slot = 0;
+      unit(s, 'p-mangudai').slot = 1;
+      unit(s, 'p-bokh').slot = 2;
+      s.awaiting = me.id;
+      const greedy = scoreOptions(s, me, AI.rootSimulations).sort((a, b) => b.score - a.score)[0]!;
+      expect(greedy.input.action).toMatchObject({ability: 'grapple', target: {hex: hex(3, 0)}});
+      const detail = stats();
+      const selected = chooseAiTurn(s, me, {left: AI.requestSimulations}, detail, {depth: 2});
+      expect(detail.completedDepth).toBe(2);
+      // Walking and Grapple can no longer share a turn. Check survival rather
+      // than requiring the old move-and-Grapple escape sequence.
+      expect(selected).not.toEqual(greedy.input);
+      const canBeKilled = (input: TurnInput): boolean => {
+        const after = simulate(s, me.id, input, false, false)!;
+        const reply = advanceToDecision(after)!;
+        expect(reply.id).toBe('p-mangudai');
+        // Check every legal reply, beyond the search's selective shortlist.
+        return scoreOptions(after, reply).some((option) => {
+          const position = cloneFight(option.position);
+          advanceToDecision(position);
+          return !unit(position, me.id).alive;
+        });
+      };
+      expect(canBeKilled(greedy.input)).toBe(true);
+      expect(canBeKilled(selected)).toBe(false);
+    })
+  );
 
   it('plans a finishing attack with a consecutive ally instead of alternating teams', () => {
     // A wolf finishes: a Champion would rather Grapple the survivor, Crushed 10
@@ -202,48 +206,54 @@ describe('budgeted tactical search', () => {
 });
 
 describe('the search timeline', () => {
-  it('separates preview damage from a charge and triggers the real charge only once', () => {
-    const s = setup({'p-mangudai': hex(0, 0), 'e-bokh': hex(3, 0)});
-    const me = unit(s, 'p-mangudai');
-    me.slot = 0;
-    me.ultimateUsed = false;
-    me.ultimateCharge = RULES.ultimateCharge;
-    s.awaiting = me.id;
-    const option = scoreOptions(s, me).find(
-      (o) =>
-        o.input.action.ability === 'volley' &&
-        o.input.action.target?.hex?.q === 3 &&
-        o.input.action.target.hex.r === 0
-    )!;
-    expect(unit(option.position, 'e-bokh').hp).toBe(unit(s, 'e-bokh').hp);
-    expect(unit(option.after, 'e-bokh').hp).toBeLessThan(unit(s, 'e-bokh').hp);
-    const position = cloneFight(option.position);
-    expect(advanceToDecision(position)?.id).toBe(me.id);
-    expect(unit(position, me.id).charging).toBeNull();
-    expect(unit(position, 'e-bokh').hp).toBe(unit(option.after, 'e-bokh').hp);
-    const stopped = JSON.stringify(position);
-    expect(advanceToDecision(position)?.id).toBe(me.id);
-    expect(JSON.stringify(position)).toBe(stopped);
-  });
+  it(
+    'separates preview damage from a charge and triggers the real charge only once',
+    withFullKits(() => {
+      const s = setup({'p-mangudai': hex(0, 0), 'e-bokh': hex(3, 0)});
+      const me = unit(s, 'p-mangudai');
+      me.slot = 0;
+      me.ultimateUsed = false;
+      me.ultimateCharge = RULES.ultimateCharge;
+      s.awaiting = me.id;
+      const option = scoreOptions(s, me).find(
+        (o) =>
+          o.input.action.ability === 'volley' &&
+          o.input.action.target?.hex?.q === 3 &&
+          o.input.action.target.hex.r === 0
+      )!;
+      expect(unit(option.position, 'e-bokh').hp).toBe(unit(s, 'e-bokh').hp);
+      expect(unit(option.after, 'e-bokh').hp).toBeLessThan(unit(s, 'e-bokh').hp);
+      const position = cloneFight(option.position);
+      expect(advanceToDecision(position)?.id).toBe(me.id);
+      expect(unit(position, me.id).charging).toBeNull();
+      expect(unit(position, 'e-bokh').hp).toBe(unit(option.after, 'e-bokh').hp);
+      const stopped = JSON.stringify(position);
+      expect(advanceToDecision(position)?.id).toBe(me.id);
+      expect(JSON.stringify(position)).toBe(stopped);
+    })
+  );
 
-  it('scores a charge as missing the units that act before it lands', () => {
-    const s = setup({'p-mangudai': hex(0, 0), 'e-bokh': hex(3, 0)});
-    const me = unit(s, 'p-mangudai');
-    me.slot = 0;
-    me.ultimateUsed = false;
-    me.ultimateCharge = RULES.ultimateCharge;
-    s.awaiting = me.id;
-    // Its card comes before the Volley's: it can step out.
-    unit(s, 'e-bokh').slot = 1;
-    const option = scoreOptions(s, me).find(
-      (o) =>
-        o.input.action.ability === 'volley' &&
-        o.input.action.target?.hex?.q === 3 &&
-        o.input.action.target.hex.r === 0
-    )!;
-    expect(unit(option.after, 'e-bokh').hp).toBe(unit(s, 'e-bokh').hp);
-    expect(unit(option.after, 'e-bokh').hex).toEqual(hex(3, 0));
-  });
+  it(
+    'scores a charge as missing the units that act before it lands',
+    withFullKits(() => {
+      const s = setup({'p-mangudai': hex(0, 0), 'e-bokh': hex(3, 0)});
+      const me = unit(s, 'p-mangudai');
+      me.slot = 0;
+      me.ultimateUsed = false;
+      me.ultimateCharge = RULES.ultimateCharge;
+      s.awaiting = me.id;
+      // Its card comes before the Volley's: it can step out.
+      unit(s, 'e-bokh').slot = 1;
+      const option = scoreOptions(s, me).find(
+        (o) =>
+          o.input.action.ability === 'volley' &&
+          o.input.action.target?.hex?.q === 3 &&
+          o.input.action.target.hex.r === 0
+      )!;
+      expect(unit(option.after, 'e-bokh').hp).toBe(unit(s, 'e-bokh').hp);
+      expect(unit(option.after, 'e-bokh').hex).toEqual(hex(3, 0));
+    })
+  );
 
   it('reads an enemy charge with its own damage and area', () => {
     const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
@@ -274,33 +284,36 @@ describe('the search timeline', () => {
     expect(evaluatePosition(s, 'enemy')).toBe(idle);
   });
 
-  it('lets a target escape before a pending Volley lands', () => {
-    const s = setup({'p-mangudai': hex(0, 0), 'e-mangudai': hex(3, 0)});
-    const me = unit(s, 'p-mangudai');
-    const target = unit(s, 'e-mangudai');
-    me.slot = 0;
-    me.ultimateUsed = false;
-    me.ultimateCharge = RULES.ultimateCharge;
-    target.slot = 1;
-    s.awaiting = me.id;
-    const after = simulate(
-      s,
-      me.id,
-      {action: {ability: 'volley', target: {hex: target.hex!}}},
-      false,
-      false
-    )!;
-    const runner = advanceToDecision(after)!;
-    expect(runner.id).toBe(target.id);
-    const escape = ABILITIES.leap
-      .targets(after, mapOf(after), runner, runner.hex!)
-      .find((t) => t.hex && hexDistance(t.hex, target.hex!) > ABILITY.volley.radius)!;
-    const hp = runner.hp;
-    applyTurn(after, runner, {action: {ability: 'leap', target: escape}});
-    advanceToDecision(after);
-    expect(unit(after, me.id).charging).toBeNull();
-    expect(runner.hp).toBe(hp);
-  });
+  it(
+    'lets a target escape before a pending Volley lands',
+    withFullKits(() => {
+      const s = setup({'p-mangudai': hex(0, 0), 'e-mangudai': hex(3, 0)});
+      const me = unit(s, 'p-mangudai');
+      const target = unit(s, 'e-mangudai');
+      me.slot = 0;
+      me.ultimateUsed = false;
+      me.ultimateCharge = RULES.ultimateCharge;
+      target.slot = 1;
+      s.awaiting = me.id;
+      const after = simulate(
+        s,
+        me.id,
+        {action: {ability: 'volley', target: {hex: target.hex!}}},
+        false,
+        false
+      )!;
+      const runner = advanceToDecision(after)!;
+      expect(runner.id).toBe(target.id);
+      const escape = ABILITIES.leap
+        .targets(after, mapOf(after), runner, runner.hex!)
+        .find((t) => t.hex && hexDistance(t.hex, target.hex!) > ABILITY.volley.radius)!;
+      const hp = runner.hp;
+      applyTurn(after, runner, {action: {ability: 'leap', target: escape}});
+      advanceToDecision(after);
+      expect(unit(after, me.id).charging).toBeNull();
+      expect(runner.hp).toBe(hp);
+    })
+  );
 
   it('ticks damage and expires statuses before stopping for an AI decision, only once', () => {
     const s = setup({'e-mangudai': hex(0, 0), 'p-bokh': hex(3, 0)});
@@ -320,24 +333,27 @@ describe('the search timeline', () => {
     expect(JSON.stringify(s)).toBe(stopped);
   });
 
-  it('never aims Sunlight at a hex with no unit and no hail', () => {
-    const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
-    s.effects.push({
-      kind: 'hail',
-      hex: hex(1, 1),
-      untilSlot: 999,
-      push: 2,
-    });
-    const me = unit(s, 'e-storm');
-    me.slot = 0;
-    const aimed = scoreOptions(s, me)
-      .filter((o) => o.input.action.ability === 'sunlight' && !o.input.move)
-      .map((o) => o.input.action.target!.hex!);
-    expect(aimed).toContainEqual(hex(0, 0));
-    expect(aimed).toContainEqual(hex(1, 1));
-    expect(aimed).toContainEqual(hex(3, 0));
-    expect(aimed).toHaveLength(3);
-  });
+  it(
+    'never aims Sunlight at a hex with no unit and no hail',
+    withFullKits(() => {
+      const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
+      s.effects.push({
+        kind: 'hail',
+        hex: hex(1, 1),
+        untilSlot: 999,
+        push: 2,
+      });
+      const me = unit(s, 'e-storm');
+      me.slot = 0;
+      const aimed = scoreOptions(s, me)
+        .filter((o) => o.input.action.ability === 'sunlight' && !o.input.move)
+        .map((o) => o.input.action.target!.hex!);
+      expect(aimed).toContainEqual(hex(0, 0));
+      expect(aimed).toContainEqual(hex(1, 1));
+      expect(aimed).toContainEqual(hex(3, 0));
+      expect(aimed).toHaveLength(3);
+    })
+  );
 
   it('leaves every AI unit in a request some of its budget', () => {
     // A stage-one band is a hero and two wolves: three turns in a row.

@@ -1,7 +1,7 @@
 import {assetLoader, BaseSystem, hexKey} from '@canvas/engine';
 import type {EventBus, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
-import {unitAt} from '../rules/board';
+import {roadToExit, unitAt} from '../rules/board';
 import {tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import {taunterOf} from '../rules/taunt';
@@ -31,6 +31,7 @@ import {
   drawLanes,
   drawPath,
   drawRangeOutline,
+  drawRoad,
   drawTauntChain,
   drawThrowArc,
 } from './board/overlays';
@@ -322,6 +323,10 @@ export class TacticsBoardSystem extends BaseSystem {
     const sandstorm = map.hexes.filter((h) => tileAt(map, h) === 'conceal');
     drawBank(ctx, SANDSTORM_BANK, sandstorm, t);
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
+    // The camel's road to the exit, from where it stands, under the units.
+    const camel = fight.units.find((u) => u.hero === CAMEL && u.alive && u.hex);
+    if (camel && fight.phase === 'fight')
+      drawRoad(ctx, [camel.hex!, ...roadToExit(map, camel.hex!)]);
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
     // A frame mid-motion: the next draws again whatever the key says.

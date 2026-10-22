@@ -13,6 +13,7 @@ import {
   isRanged,
   obscured,
   reachableHexes,
+  roadDistance,
   statusSlotsLeft,
   statusValue,
   unitAt,
@@ -183,10 +184,15 @@ function baselineOf(state: FightState): Baseline {
   );
 }
 
-/** Hexes from the camel to its nearest exit; 0 without a living camel. */
+/**
+ * Hexes from the camel to the exit along its road, so the enemy values
+ * shoving it off; 0 without a living camel.
+ */
 function camelDistance(state: FightState): number {
   const camel = camelOf(state);
   if (!camel?.alive || !camel.hex) return 0;
+  const road = roadDistance(mapOf(state), camel.hex);
+  if (Number.isFinite(road)) return road;
   let nearest = Infinity;
   for (const e of MAPS[state.mapId]!.exits) nearest = Math.min(nearest, hexDistance(camel.hex, e));
   return nearest;
@@ -636,7 +642,13 @@ export function requestChooser(budget: SearchBudget): (state: FightState, unit: 
     for (const u of state.units)
       if (u.alive && u.controller === 'human' && u.slot !== null) human = Math.min(human, u.slot);
     const due = state.units.filter(
-      (u) => u !== unit && u.alive && u.controller === 'ai' && u.slot !== null && u.slot <= human
+      (u) =>
+        u !== unit &&
+        u.alive &&
+        u.controller === 'ai' &&
+        HEROES[u.hero].routeSlots === undefined &&
+        u.slot !== null &&
+        u.slot <= human
     ).length;
     const share: SearchBudget = {left: Math.floor(budget.left / (due + 1))};
     const given = share.left;

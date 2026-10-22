@@ -9,8 +9,10 @@
  * mirrored, the quicksand included.
  *
  * Each fight scatters its own ruins and quicksand, not mirrored (owner,
- * 2026-10-20; see `randomTiles`); the sandstorm stays where it is. The
- * fixed layout below is the map's own, which tests place units around.
+ * 2026-10-20; see `randomTiles`); the sandstorm stays where it is. While
+ * the game is pared back for balancing (owner, 2026-10-22) a fight has
+ * ruins only. The fixed layout below is the map's own, which tests place
+ * units around.
  */
 import {hexKey, offsetToHex} from '@canvas/engine/server';
 import type {Hex, OffsetCoord} from '@canvas/engine/server';
@@ -74,11 +76,11 @@ export const SALT_FLATS: MapData = {
   hexes: boardHexes(),
   tiles: Object.fromEntries(special.map(([c, t]) => [hexKey(offsetToHex(c)), t])),
   startColumns: {player: edgeHexes('left', 1), enemy: edgeHexes('right', 1)},
-  // The middle row's first hex.
-  camelStart: at(0, 4),
-  // The four hexes sticking out on the right edge: the last of each row
-  // shoved half a hex right (owner, 2026-10-21).
-  exits: [1, 3, 5, 7].map((row) => at(7, row)),
+  // The top-left corner (owner, 2026-10-22; was the middle row's first hex).
+  camelStart: at(0, 0),
+  // The bottom-right corner, the only exit (owner, 2026-10-22; was the four
+  // hexes sticking out on the right edge).
+  exits: [at(7, ROWS - 1)],
 };
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};
@@ -89,8 +91,13 @@ const RUIN_ROWS = [
   [5, 6, 7, 8],
 ];
 const RUINS_PER_ROWS = 2;
-/** Quicksand hexes per fight. */
-const QUICKSAND = 2;
+/**
+ * Quicksand hexes per fight: none while the game is pared back for
+ * balancing (owner, 2026-10-22; was 2).
+ */
+const QUICKSAND = 0;
+/** Whether a fight keeps the fixed sandstorm: not while the game is pared back (owner, 2026-10-22). */
+const SANDSTORM = false;
 
 /**
  * A fight's own ruins and quicksand, from `random` in [0, 1): as many as
@@ -101,7 +108,8 @@ const QUICKSAND = 2;
  */
 export function randomTiles(random: () => number): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
-  for (const [c, t] of special) if (t === 'conceal') tiles[hexKey(offsetToHex(c))] = t;
+  if (SANDSTORM)
+    for (const [c, t] of special) if (t === 'conceal') tiles[hexKey(offsetToHex(c))] = t;
   const candidates: OffsetCoord[] = [];
   for (let row = 0; row < ROWS; row++)
     for (const col of columnsOf(row).slice(2, -2)) candidates.push({col, row});

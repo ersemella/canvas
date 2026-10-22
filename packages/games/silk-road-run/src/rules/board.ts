@@ -12,7 +12,7 @@ import {
 import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES, movementRules} from './config';
 import {hexNumber, onMap, tileAt} from './map';
-import type {MapData} from './map';
+import type {MapData, Tile} from './map';
 import type {FightState, Status, StatusKind, Unit} from './types';
 
 export {onMap};
@@ -244,6 +244,56 @@ export function invalidPath(
   const end = unitAt(state, from);
   if (end && end !== unit) return 'A move can’t end on another unit.';
   return null;
+}
+
+// ─── The camel's road ───────────────────────────────────────────────────────
+
+/** Each fight's hexes from the exit, by hex number: built once per tile layout. */
+const roads = new WeakMap<Record<string, Tile>, Map<number, number>>();
+
+/**
+ * Hexes from every walkable hex to the nearest exit, walking around ruins.
+ * Units are left out: the road is fixed for the fight (owner, 2026-10-22).
+ */
+function exitDistances(map: MapData): Map<number, number> {
+  let dist = roads.get(map.tiles);
+  if (dist) return dist;
+  dist = new Map(map.exits.map((e) => [hexNumber(e), 0]));
+  let frontier = [...map.exits];
+  for (let d = 1; frontier.length > 0; d++) {
+    const next: Hex[] = [];
+    for (const from of frontier)
+      for (const h of hexNeighbors(from)) {
+        if (!walkable(map, h) || dist.has(hexNumber(h))) continue;
+        dist.set(hexNumber(h), d);
+        next.push(h);
+      }
+    frontier = next;
+  }
+  roads.set(map.tiles, dist);
+  return dist;
+}
+
+/** Hexes along the camel's road from `from` to the exit; Infinity if ruins cut it off. */
+export function roadDistance(map: MapData, from: Hex): number {
+  return exitDistances(map).get(hexNumber(from)) ?? Infinity;
+}
+
+/**
+ * The camel's road from `from` (left out) to the exit: a shortest walk
+ * around ruins, each step to the first neighbour one hex nearer, so the
+ * road from any hex on it is the rest of it. Empty at the exit, or with no
+ * way there. The board draws it as a dotted line.
+ */
+export function roadToExit(map: MapData, from: Hex): Hex[] {
+  const dist = exitDistances(map);
+  const out: Hex[] = [];
+  let at = from;
+  for (let d = dist.get(hexNumber(at)); d !== undefined && d > 0; d--) {
+    at = hexNeighbors(at).find((h) => dist.get(hexNumber(h)) === d - 1)!;
+    out.push(at);
+  }
+  return out;
 }
 
 // ─── Line of fire ────────────────────────────────────────────────────────────

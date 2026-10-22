@@ -98,6 +98,12 @@ export interface HeroStats {
   actsFirst?: boolean;
   /** An always-on trait (roster.md, Passives): the Vanguard's Hold the Line, the Champion's Inevitable. */
   passive?: PassiveId;
+  /**
+   * Not player controlled: on each of its turns it steps along the fixed
+   * shortest road to the exit (`routeStep` in board.ts), then its card goes
+   * this many slots on (the camel).
+   */
+  routeSlots?: number;
 }
 
 /**
@@ -124,8 +130,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 25,
     defence: 25,
     power: 10,
-    abilities: ['grapple', 'throw', 'lunge', 'hold'],
-    ultimate: 'lunge',
+    // Pared back to its basics for balancing (owner, 2026-10-22): Throw and
+    // the ultimate, Lunge, are out of the kit; Shove moves a pinned target.
+    abilities: ['grapple', 'shove', 'hold'],
     // The counter to hail's Push (owner, 2026-10-22, playtest).
     passive: 'inevitable',
   },
@@ -136,8 +143,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 40,
     defence: 10,
     power: 40,
-    abilities: ['bow', 'leap', 'volley', 'hold'],
-    ultimate: 'volley',
+    // Pared back for balancing (owner, 2026-10-22): Leap and the ultimate, Volley, are out.
+    abilities: ['bow', 'hold'],
   },
   storm: {
     name: 'Yadachy Storm Caller',
@@ -146,8 +153,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 25,
     defence: 25,
     power: 25,
-    abilities: ['sunlight', 'hail', 'freeze', 'hold'],
-    ultimate: 'freeze',
+    // Pared back for balancing (owner, 2026-10-22): Sunlight and the ultimate, Freeze, are out.
+    abilities: ['hail', 'hold'],
   },
   /**
    * The Modao Vanguard (roster.md, 15.8; owner, 2026-10-22): health Medium,
@@ -167,10 +174,12 @@ export const HEROES: Record<HeroId, HeroStats> = {
     passive: 'holdTheLine',
   },
   /**
-   * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
-   * moves one hex a turn at a typical action's cost, so it advances very
-   * slowly. Very high health (owner) and defence High (owner, 2026-10-21;
-   * was 0). Health 1,500 and speed Low are PLACEHOLDERS.
+   * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack.
+   * Very high health (owner) and defence High (owner, 2026-10-21; was 0).
+   * Health 1,500 and speed Low are PLACEHOLDERS. Not player controlled
+   * (owner, 2026-10-22): it walks itself along the fixed shortest road from
+   * the top-left corner to the exit in the bottom-right, one space every
+   * 14 slots. A unit standing on its next space holds it up.
    */
   camel: {
     // Temee (owner, 2026-10-21): a name, so no "Your" before it (unitName).
@@ -183,6 +192,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['hold'],
     moveCap: 1,
     moveCost: RULES.cost.typical,
+    routeSlots: 14,
     // Despite its speed, it acts first in every fight (owner, 2026-10-21).
     actsFirst: true,
   },
@@ -256,18 +266,16 @@ export const ABILITY = {
   /**
    * Track control in an area (owner, 2026-10-22, playtest; was one hex,
    * range 4, 20 slots, damage 40 and Slowed 2): no damage; every unit in
-   * it when it lands is Pushed `castPush`, and a unit that starts its turn
-   * in it is Pushed `turnPush` once that turn has placed its card, so
-   * faster units, starting more turns, pay more. Allies too. Range 6 so
-   * it reaches an Outrider that shoots from afar. Values are a first guess.
+   * it when it lands is Pushed `castPush`, allies too. Pared back for
+   * balancing (owner, 2026-10-22): centre within 3 (was 6), Push 5, and it
+   * no longer lingers (it stayed 30 slots, Pushing 2 a unit that started
+   * its turn in it, after a Push 3 on landing).
    */
   hail: {
     cost: RULES.cost.typical,
-    range: 6,
+    range: 3,
     radius: 1,
-    hexSlots: 30,
-    castPush: 3,
-    turnPush: 2,
+    castPush: 5,
   },
   /**
    * Ultimates buffed (owner, 2026-10-20): it now deals damage (none
@@ -294,14 +302,20 @@ export const ABILITY = {
    */
   throw: {cost: RULES.cost.typical, damage: 120},
   /**
-   * Melee: the target is Immobilized, Vulnerable `vulnerable`% and Pinned
-   * (its abilities reach only hexes next to it) for `slots`, while the two
-   * stay adjacent; one target at a time, a new grapple releasing the last
-   * (owner, 2026-10-22, playtest; was Immobilized, Taunted and Crushed 10
-   * a slot). Pinned shuts down a caster that can't Leap away. The Champion
-   * isn't held itself: moving away releases the target, as a wrestler would.
+   * A unit within `range` is pinned: Immobilized, and nothing else, for
+   * `slots`, while the two stay within `range` of each other; one target
+   * at a time, a new grapple releasing the last (owner, 2026-10-22, pared
+   * back for balancing; was melee, Immobilized, Vulnerable 25% and Pinned,
+   * its abilities reaching only hexes next to it). The Champion isn't held
+   * itself: moving out of range releases the target, as a wrestler would.
    */
-  grapple: {cost: RULES.cost.typical, slots: 12, vulnerable: 25},
+  grapple: {cost: RULES.cost.typical, range: 2, slots: 12},
+  /**
+   * Melee, only on the unit the Champion is pinning (owner, 2026-10-22):
+   * Displace it `displace` away. One space leaves it within Grapple's
+   * range, so it stays pinned. Cost and distance PLACEHOLDERS.
+   */
+  shove: {cost: RULES.cost.typical, displace: 1},
   /**
    * The Bökh Champion's ultimate (owner, 2026-10-22; replaced Rampage,
    * typical cost, 3 hexes, damage 160, Displace 1): a unit within `reach`,
@@ -449,9 +463,11 @@ export const AI = {
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /**
  * Every hero the start menu offers and the enemy draws from, in party slot
- * order: the prototype heroes, then the Modao Vanguard (2026-10-22).
+ * order: the prototype heroes. The Modao Vanguard (2026-10-22) is left out
+ * for now (owner, 2026-10-22), while the game is pared back for balancing;
+ * its kit is still in the rules.
  */
-export const ROSTER: HeroId[] = [...PARTY, 'modao'];
+export const ROSTER: HeroId[] = [...PARTY];
 /**
  * A run's stages, in order (owner, 2026-10-21): how many of the heroes
  * (ROSTER), picked at random from the run's seed, and how many wolves the
