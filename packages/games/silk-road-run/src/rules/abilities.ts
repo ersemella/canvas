@@ -363,31 +363,28 @@ function grappling(user: Unit, u: Unit): boolean {
 }
 
 /**
- * Throw (owner, 2026-10-22, playtest; parked the same day): only the unit
- * the Champion is grappling, to another free space next to the Champion,
- * or one space straight back. Either stays within Grapple's range, so the
- * grapple holds (it ended two away while Grapple held only adjacent units).
+ * Throw (owner, 2026-10-22): only the unit the Champion pins, to another
+ * free space next to the Champion, so the grapple holds.
  */
 const throwAbility: AbilityDef = {
   id: 'throw',
   name: 'Throw',
   kind: 'attack',
   summary: (user) =>
-    `Melee, on the unit you grapple: ${scaled(ABILITY.throw.damage, user.power)} damage, then throw it to another free space next to you, or one space straight back.`,
+    `Melee, on the unit you pin: ${scaled(ABILITY.throw.damage, user.power)} damage, then throw it to another free space next to you, keeping hold.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.throw.cost,
   movesSelf: false,
   targetsUnit: true,
   targets(state, map, user, from) {
-    const free = (h: Hex) => walkable(map, h) && !unitAt(state, h);
-    const beside = hexNeighbors(from).filter(free);
+    const beside = sortByHex(
+      hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h)),
+      (h) => h
+    );
     const out: ActionTarget[] = [];
-    for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u))) {
-      const back = hexNeighbor(t.hex!, direction(from, t.hex!));
-      const landings = free(back) ? [...beside, back] : beside;
-      for (const to of sortByHex(landings, (h) => h)) out.push({hex: t.hex!, to});
-    }
+    for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u)))
+      for (const to of beside) out.push({hex: t.hex!, to});
     return out;
   },
   resolve(ctx, user, target) {

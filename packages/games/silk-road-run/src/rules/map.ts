@@ -85,12 +85,15 @@ export const SALT_FLATS: MapData = {
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};
 
-/** Ruins per fight: two in the top rows and two in the bottom, to break sight lines on both. */
+/**
+ * Ruins per fight: three in the top rows and three in the bottom, to break
+ * sight lines on both (owner, 2026-10-22; two each before).
+ */
 const RUIN_ROWS = [
   [0, 1, 2, 3],
   [5, 6, 7, 8],
 ];
-const RUINS_PER_ROWS = 2;
+const RUINS_PER_ROWS = 3;
 /**
  * Quicksand hexes per fight: none while the game is pared back for
  * balancing (owner, 2026-10-22; was 2).

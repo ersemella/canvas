@@ -41,10 +41,12 @@ kept (its tests run with the old kits, `src/rules/testKits.ts`), only
 its references are removed:
 
 - The Modao Vanguard is out of the roster (`ROSTER` in `config.ts`).
-- No ultimates (Volley, Freeze, Lunge), and no Leap, Sunlight or Throw.
+- No ultimates (Volley, Freeze, Lunge), and no Leap or Sunlight.
   The kits: the Outrider Bow; the Storm Caller Hail; the Bökh Champion
-  Grapple and Shove, with Inevitable.
-- No sandstorm or quicksand: a fight scatters ruins only.
+  Grapple and Throw, with Inevitable.
+- No sandstorm or quicksand: a fight scatters ruins only, six of them
+  (three in each half; four before, owner 2026-10-22).
+- A move covers at most 3 spaces (was 4).
 - Temee, the camel, isn't player controlled: it starts in the top-left
   corner and walks itself, one space every 14 slots, along a shortest
   walk around the ruins to the only exit, in the bottom-right corner,
@@ -56,9 +58,10 @@ its references are removed:
 - Grapple reaches 2 spaces: next to the target the Champion grapples
   where it stands, otherwise it steps in beside it first. Base 60 damage
   (placeholder), then the target is pinned: only Immobilized, until the
-  two are no longer adjacent. Shove (melee, on the pinned unit) Displaces
-  it 1 away, which breaks the grapple. Shove's cost (typical) and
-  distance are placeholders.
+  two are no longer adjacent. Throw (on the pinned unit only, base 120
+  damage) lands it on a free space next to the Champion, so the pin
+  holds. It replaced Shove (Displace 1 away, ending the pin), which is
+  parked.
 
 **Next step:** the owner sets the three prototype heroes' stat numbers and
 ability values (replacing the placeholders in `src/rules/config.ts`);

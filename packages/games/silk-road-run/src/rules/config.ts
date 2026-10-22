@@ -131,9 +131,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 25,
     defence: 25,
     power: 10,
-    // Pared back to its basics for balancing (owner, 2026-10-22): Throw and
-    // the ultimate, Lunge, are out of the kit; Shove moves a pinned target.
-    abilities: ['grapple', 'shove', 'hold'],
+    // Pared back to its basics for balancing (owner, 2026-10-22): the
+    // ultimate, Lunge, is out of the kit. Throw is back in place of Shove
+    // (owner, 2026-10-22), landing only beside the Champion.
+    abilities: ['grapple', 'throw', 'hold'],
     // The counter to hail's Push (owner, 2026-10-22, playtest).
     passive: 'inevitable',
   },
@@ -305,6 +306,11 @@ export const ABILITY = {
    * one space straight back, ending it. Damage 120 (was 80, on anyone
    * adjacent): it is the Champion's only damage outside Lunge.
    */
+  /**
+   * Only the unit the Champion pins, to a free space next to the Champion,
+   * so the grapple holds (owner, 2026-10-22; one space straight back,
+   * ending it, was allowed too). Damage 120.
+   */
   throw: {cost: RULES.cost.typical, damage: 120},
   /**
    * A unit within `range`: the Champion steps in next to it first if it
@@ -319,8 +325,8 @@ export const ABILITY = {
   grapple: {cost: RULES.cost.typical, range: 2, slots: 12, damage: 60},
   /**
    * Melee, only on the unit the Champion is pinning (owner, 2026-10-22):
-   * Displace it `displace` away, which breaks the grapple. Cost and
-   * distance PLACEHOLDERS.
+   * Displace it `displace` away, which breaks the grapple. Out of the kit,
+   * replaced by Throw (owner, 2026-10-22).
    */
   shove: {cost: RULES.cost.typical, displace: 1},
   /**
