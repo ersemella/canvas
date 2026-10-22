@@ -14,6 +14,7 @@ import {
   reachableHexes,
   statusSlotsLeft,
   statusValue,
+  unitAt,
 } from './board';
 import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
 import {slotsForward, turnCost} from './track';
@@ -281,6 +282,14 @@ export function scoreOptions(
             continue;
           groundTried.add(key);
         }
+        // Sunlight on a hex with no unit and no hail does nothing: a Hold
+        // that looks busy (on half the Storm Caller's Sunlights before).
+        if (
+          def.id === 'sunlight' &&
+          !unitAt(moved, target.hex!) &&
+          !moved.effects.some((e) => hexEquals(e.hex, target.hex!))
+        )
+          continue;
         const input: TurnInput = {action: {ability: def.id, target}};
         if (reach.path.length > 0) input.move = reach.path;
         if (simulations >= limit || (budget && budget.left <= 0)) return out;
@@ -555,6 +564,29 @@ export function chooseAiTurn(
     budget.left = initial - used;
     if (stats) stats.work = used;
   }
+}
+
+/**
+ * Chooses the AI turns one request sets off, sharing `budget` among them:
+ * each gets an equal share of what is left among the AI units due before
+ * the next human turn, at most AI.maxSimulations. Taking the full cap in
+ * turn order left the third unit of a stage-one band (a hero, two wolves)
+ * nothing, so it Held where it stood, on 1 in 20 of the wolves' turns.
+ */
+export function requestChooser(budget: SearchBudget): (state: FightState, unit: Unit) => TurnInput {
+  return (state, unit) => {
+    let human = Infinity;
+    for (const u of state.units)
+      if (u.alive && u.controller === 'human' && u.slot !== null) human = Math.min(human, u.slot);
+    const due = state.units.filter(
+      (u) => u !== unit && u.alive && u.controller === 'ai' && u.slot !== null && u.slot <= human
+    ).length;
+    const share: SearchBudget = {left: Math.floor(budget.left / (due + 1))};
+    const given = share.left;
+    const input = chooseAiTurn(state, unit, share);
+    budget.left -= given - share.left;
+    return input;
+  };
 }
 
 /**
