@@ -363,7 +363,7 @@ export const AI = {
 /** The party, in party slot order, for both sides in Phase 1 (brief section 5). */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /**
- * A run's fights, in order (owner, 2026-10-21): how many of the heroes
+ * A run's stages, in order (owner, 2026-10-21): how many of the heroes
  * (PARTY), picked at random from the run's seed, and how many wolves the
  * enemy brings to each. The last is won to win the run.
  */

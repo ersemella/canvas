@@ -397,8 +397,8 @@ export function TacticsPage() {
     [run, input, send, busy, playing]
   );
 
-  /** On to the run's next fight, once this one is won: a new board, nothing to play back. */
-  const nextFight = useCallback(() => {
+  /** On to the run's next stage, once this one is won: a new board, nothing to play back. */
+  const nextStage = useCallback(() => {
     if (!run || busy) return;
     setPinnedHex(null);
     setSelectedId(null);
@@ -955,7 +955,7 @@ export function TacticsPage() {
   // The result waits for the playback to show how the fight ended.
   const finished = (fight.phase === 'won' || fight.phase === 'lost') && !playing;
   const {stage, stages} = run.view;
-  /** A fight short of the run's last, won: the next one waits. */
+  /** A stage short of the run's last, won: the next one waits. */
   const nextAhead = fight.phase === 'won' && stage < stages - 1;
   const selected =
     fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
@@ -974,14 +974,14 @@ export function TacticsPage() {
     setPinnedHex(null);
     setSelectedId(!lookingAtActing ? (acting?.id ?? null) : null);
   };
-  // Once the fight is over, Next fight (a fight before the run's last won)
+  // Once the fight is over, Next stage (a stage before the run's last won)
   // or New fight takes Confirm's place, and the section keeps its height so
   // the board doesn't move.
   const actions = finished ? (
     <div className={styles.confirmRow}>
       {nextAhead ? (
-        <Button size="lg" className={styles.seal!} fw="bold" loading={busy} onClick={nextFight}>
-          Next fight
+        <Button size="lg" className={styles.seal!} fw="bold" loading={busy} onClick={nextStage}>
+          Next stage
         </Button>
       ) : (
         <Button size="lg" className={styles.seal!} fw="bold" onClick={() => setStartMenu(true)}>
@@ -1124,8 +1124,8 @@ export function TacticsPage() {
                   </Text>
                   <Text c="dimmed" fz="xs" data-testid="stage">
                     {nextAhead
-                      ? `Fight ${stage + 1} of ${stages} won. A bigger band waits down the road.`
-                      : `Fight ${stage + 1} of ${stages}`}
+                      ? `Stage ${stage + 1} of ${stages} won. A bigger band waits down the road.`
+                      : `Stage ${stage + 1} of ${stages}`}
                   </Text>
                 </Stack>
               </Paper>

@@ -1,7 +1,7 @@
 /**
- * A run: its fights (stages, STAGES in config.ts) one after another, each
+ * A run: its stages (STAGES in config.ts) one after another, each a fight
  * against a bigger enemy band. Heroes who fall are gone for the run; the
- * survivors and the camel go on to the next fight. The run keeps the seed;
+ * survivors and the camel go on to the next stage. The run keeps the seed;
  * the view is the fight, which never contains it.
  */
 import type {Hex} from '@canvas/engine/server';
@@ -26,14 +26,14 @@ export interface RunState {
   seed: number;
   /** Bumped on every action; the view carries it (brief section 8). */
   version: number;
-  /** Which of STAGES the fight is; missing in a run saved before stages (the first). */
+  /** Which of STAGES the run is at; missing in a run saved before stages (the first). */
   stage?: number;
   fight: FightState;
 }
 
 export interface RunView {
   version: number;
-  /** Which fight of the run this is, from 0, of `stages`. */
+  /** Which stage of the run this is, from 0, of `stages`. */
   stage: number;
   stages: number;
   fight: FightState;
@@ -141,7 +141,7 @@ export function handleRunAction(run: RunState, raw: RunAction): RunState {
   const stage = run.stage ?? 0;
   if (action.type === 'next') {
     if (run.fight.phase !== 'won' || stage >= lastStage)
-      throw new RuleError('There is no next fight to go on to.');
+      throw new RuleError('There is no next stage to go on to.');
     const fight = stageFight(run.seed, stage + 1, survivors(run.fight));
     return {seed: run.seed, version: run.version + 1, stage: stage + 1, fight};
   }
@@ -166,7 +166,7 @@ export function runView(run: RunState): RunView {
   return {version: run.version, stage: run.stage ?? 0, stages: STAGES.length, fight: run.fight};
 }
 
-/** Won once the last stage's fight is won; a fight before it, won, waits for `next`. */
+/** Won once the last stage is won; a stage before it, won, waits for `next`. */
 export function runStatus(run: RunState): 'active' | 'won' | 'lost' {
   if (run.fight.phase === 'lost') return 'lost';
   return run.fight.phase === 'won' && (run.stage ?? 0) >= lastStage ? 'won' : 'active';
