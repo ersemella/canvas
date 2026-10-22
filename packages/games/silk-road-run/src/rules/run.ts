@@ -7,7 +7,7 @@
 import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn, requestChooser} from './ai';
-import {AI, CAMEL, PARTY, STAGES} from './config';
+import {AI, CAMEL, PARTY, ROSTER, STAGES} from './config';
 import {
   RuleError,
   actingUnit,
@@ -69,7 +69,7 @@ export function createRun(seed: number, setup?: unknown): RunState {
  */
 export function stageEnemies(seed: number, stage: number): HeroId[] {
   const {heroes, wolves} = STAGES[stage]!;
-  const picked = shuffled(PARTY, seededRandom(stageSeed(seed, stage) ^ 0x5bd1e995));
+  const picked = shuffled(ROSTER, seededRandom(stageSeed(seed, stage) ^ 0x5bd1e995));
   return [...picked.slice(0, heroes), ...Array<HeroId>(wolves).fill('wolf')];
 }
 
@@ -94,7 +94,10 @@ function survivors(fight: FightState): HeroId[] {
 
 const lastStage = STAGES.length - 1;
 
-/** Checks a start menu's party from the network: one to all of the heroes, each at most once. */
+/**
+ * Checks a start menu's party from the network: one to three of the
+ * roster's heroes, each at most once; none given, the default party.
+ */
 export function parseParty(setup: unknown): HeroId[] {
   const party = (setup as {party?: unknown} | null | undefined)?.party;
   if (party === undefined) return PARTY;
@@ -102,7 +105,7 @@ export function parseParty(setup: unknown): HeroId[] {
     !Array.isArray(party) ||
     party.length === 0 ||
     party.length > PARTY.length ||
-    party.some((h, i) => !PARTY.includes(h as HeroId) || party.indexOf(h) !== i)
+    party.some((h, i) => !ROSTER.includes(h as HeroId) || party.indexOf(h) !== i)
   ) {
     throw new RuleError('Choose one to three different heroes.');
   }

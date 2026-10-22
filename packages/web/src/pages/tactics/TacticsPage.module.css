@@ -728,7 +728,8 @@
 /* The start menu: what the game is, then the heroes to take. */
 .heroPicks {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  /* The four heroes in a row on a desktop, two by two on a phone. */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px;
 }
 /* A hero: a flat dusk tile when left behind, raised lapis when taken. */
@@ -746,8 +747,13 @@
   opacity: 0.75;
   clip-path: var(--notch);
 }
-.heroPick:hover {
+.heroPick:hover:not(:disabled) {
   opacity: 1;
+}
+/* The party is full: a hero left behind can't be taken until one is left out. */
+.heroPick:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 .heroPick:focus-visible {
   outline: var(--px) solid var(--c-goldLight);

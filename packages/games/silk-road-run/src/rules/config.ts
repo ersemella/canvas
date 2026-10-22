@@ -148,8 +148,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * The Modao Vanguard (roster.md, 15.8; owner, 2026-10-22): health Medium,
    * speed Low, defence High, power Medium. A tank that taunts, guards
-   * itself with Barrier and pushes enemies back on the track. Not in PARTY
-   * yet: it is being balanced (scripts/balance/experiments/modao.mjs).
+   * itself with Barrier and pushes enemies back on the track. Tuned by
+   * scripts/balance/experiments/modao*.mjs (balance.md).
    */
   modao: {
     name: 'Modao Vanguard',
@@ -398,11 +398,19 @@ export const AI = {
   victory: 1_000_000,
 } as const;
 
-/** The party, in party slot order, for both sides in Phase 1 (brief section 5). */
+/**
+ * The default party, in party slot order (brief section 5): the three
+ * prototype heroes. A party has at most this many heroes.
+ */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /**
+ * Every hero the start menu offers and the enemy draws from, in party slot
+ * order: the prototype heroes, then the Modao Vanguard (2026-10-22).
+ */
+export const ROSTER: HeroId[] = [...PARTY, 'modao'];
+/**
  * A run's stages, in order (owner, 2026-10-21): how many of the heroes
- * (PARTY), picked at random from the run's seed, and how many wolves the
+ * (ROSTER), picked at random from the run's seed, and how many wolves the
  * enemy brings to each. The last is won to win the run.
  */
 export const STAGES: {heroes: number; wolves: number}[] = [

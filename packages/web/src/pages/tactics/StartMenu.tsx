@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {Link} from 'react-router-dom';
 import {Button, Paper, Stack, Text} from '@mantine/core';
-import {HEROES, HERO_PORTRAIT, PARTY} from '@canvas/games-silk-road-run';
+import {HEROES, HERO_PORTRAIT, PARTY, ROSTER} from '@canvas/games-silk-road-run';
 import type {HeroId} from '@canvas/games-silk-road-run';
 import {PALETTE_VARS} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
@@ -15,6 +15,8 @@ const LORE: Partial<Record<HeroId, string>> = {
     'A Mongol horse archer from the vanguard of the Mongol army. The Outrider strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
   storm:
     'A Turkic weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail, sunlight, and freezing cold, though storms never choose sides.',
+  modao:
+    'An armoured spearhead of the Tang army, wielding the modao, a long two-handed blade. The Vanguard calls out its foes, holds them at the front and drives them back like a wall.',
 };
 
 /** The stats on the menu, each a meter of three pips: Low, Medium, High (roster.md's bands). */
@@ -31,16 +33,19 @@ function statBand(value: number): number {
   return value <= 10 ? 1 : value <= 25 ? 2 : 3;
 }
 
-/** The party chosen last time, if it's still a valid one; else everyone. */
+/** A party's most heroes: the default party's size. */
+const MAX_PARTY = PARTY.length;
+
+/** The party chosen last time, if it's still a valid one; else the default party. */
 function savedParty(): HeroId[] {
   try {
     const saved = JSON.parse(localStorage.getItem(PARTY_STORAGE) ?? 'null') as unknown;
     if (Array.isArray(saved)) {
-      const party = PARTY.filter((h) => saved.includes(h));
-      if (party.length) return party;
+      const party = ROSTER.filter((h) => saved.includes(h));
+      if (party.length && party.length <= MAX_PARTY) return party;
     }
   } catch {
-    // storage blocked or garbled: everyone comes
+    // storage blocked or garbled: the default party comes
   }
   return PARTY;
 }
@@ -57,7 +62,11 @@ export function StartMenu(props: {
 }) {
   const [party, setParty] = useState<HeroId[]>(savedParty);
   const toggle = (hero: HeroId) =>
-    setParty((p) => PARTY.filter((h) => (h === hero ? !p.includes(h) : p.includes(h))));
+    setParty((p) =>
+      !p.includes(hero) && p.length >= MAX_PARTY
+        ? p
+        : ROSTER.filter((h) => (h === hero ? !p.includes(h) : p.includes(h)))
+    );
   const start = () => {
     try {
       localStorage.setItem(PARTY_STORAGE, JSON.stringify(party));
@@ -93,15 +102,16 @@ export function StartMenu(props: {
             <Text className={styles.display!} fw="bold">
               Choose your party{' '}
               <Text span c="dimmed" fz="sm" fw="normal">
-                {party.length} of {PARTY.length}
+                {party.length} of {MAX_PARTY}
               </Text>
             </Text>
             <div className={styles.heroPicks} data-testid="hero-picks">
-              {PARTY.map((hero) => (
+              {ROSTER.map((hero) => (
                 <HeroPick
                   key={hero}
                   hero={hero}
                   picked={party.includes(hero)}
+                  full={party.length >= MAX_PARTY}
                   onToggle={() => toggle(hero)}
                 />
               ))}
@@ -136,7 +146,7 @@ export function StartMenu(props: {
 }
 
 /** One hero on the start menu: portrait, story and stat meters; tap to take or leave it. */
-function HeroPick(props: {hero: HeroId; picked: boolean; onToggle: () => void}) {
+function HeroPick(props: {hero: HeroId; picked: boolean; full: boolean; onToggle: () => void}) {
   const stats = HEROES[props.hero];
   const lore = LORE[props.hero];
   const portrait = HERO_PORTRAIT[props.hero]?.src;
@@ -145,6 +155,7 @@ function HeroPick(props: {hero: HeroId; picked: boolean; onToggle: () => void}) 
       type="button"
       className={`${styles.heroPick} ${props.picked ? styles.heroPicked : ''}`}
       aria-pressed={props.picked}
+      disabled={!props.picked && props.full}
       onClick={props.onToggle}
     >
       <div className={styles.heroPickHead}>
@@ -154,7 +165,7 @@ function HeroPick(props: {hero: HeroId; picked: boolean; onToggle: () => void}) 
         <div>
           <div className={styles.display}>{stats.name}</div>
           <div className={styles.heroPickMark}>
-            {props.picked ? '✓ In the party' : 'Left behind'}
+            {props.picked ? '✓ In the party' : props.full ? 'Party full' : 'Left behind'}
           </div>
         </div>
       </div>

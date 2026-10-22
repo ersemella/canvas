@@ -10,7 +10,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, HEROES, PARTY, RULES, STAGES} from './config';
+import {ABILITY, AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
 import {
   canMove,
   isFlanked,
@@ -1119,15 +1119,15 @@ describe('previews, the AI and the run', () => {
         const picked = enemies.filter((h) => h !== 'wolf');
         expect(picked).toHaveLength(heroes);
         expect(new Set(picked).size).toBe(heroes);
-        expect(picked.every((h) => PARTY.includes(h))).toBe(true);
+        expect(picked.every((h) => ROSTER.includes(h))).toBe(true);
         expect(enemies.filter((h) => h === 'wolf')).toHaveLength(wolves);
         // The same seed, the same enemy.
         expect(stageEnemies(seed, stage)).toEqual(enemies);
       });
       firsts.add(stageEnemies(seed, 0)[0]!);
     }
-    // Random: every hero leads the first stage for some seed.
-    expect(firsts.size).toBe(PARTY.length);
+    // Random: every hero of the roster leads the first stage for some seed.
+    expect(firsts.size).toBe(ROSTER.length);
   });
 
   it('winning a stage before the last goes on to the next, with the survivors', () => {
@@ -1164,8 +1164,15 @@ describe('previews, the AI and the run', () => {
     expect(runStatus({...run, fight: {...run.fight, phase: 'lost'}})).toBe('lost');
   });
 
-  it('a party must be one to three different heroes', () => {
+  it('a party must be one to three different heroes of the roster', () => {
+    const vanguard = createRun(5, {party: ['modao', 'storm']});
+    expect(vanguard.fight.units.filter((u) => u.side === 'player').map((u) => u.hero)).toEqual([
+      'modao',
+      'storm',
+      'camel',
+    ]);
     for (const party of [
+      ['bokh', 'mangudai', 'storm', 'modao'],
       [],
       ['bokh', 'bokh'],
       ['camel'],

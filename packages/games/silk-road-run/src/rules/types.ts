@@ -8,8 +8,7 @@ import type {Tile} from './map';
 
 export type Side = 'player' | 'enemy';
 /**
- * The three prototype heroes, the Modao Vanguard (being balanced, not yet in
- * the party), the caravan's camel (camel.md), a unit that isn't a hero, and
+ * The three prototype heroes, the Modao Vanguard, the caravan's camel (camel.md), a unit that isn't a hero, and
  * the wolf, an enemy NPC.
  */
 export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'modao' | 'camel' | 'wolf';
