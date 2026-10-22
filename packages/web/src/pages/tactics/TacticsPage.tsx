@@ -367,12 +367,7 @@ export function TacticsPage() {
 
   if (!run || !fight || run.status === 'abandoned' || startMenu) {
     return (
-      <StartMenu
-        busy={busy}
-        error={error}
-        onStart={startRun}
-        {...(startMenu && run && fight ? {onBack: () => setStartMenu(false)} : {})}
-      />
+      <StartMenu busy={busy} error={error} onStart={startRun} />
     );
   }
 

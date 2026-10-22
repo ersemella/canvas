@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {Link} from 'react-router-dom';
 import {Button, Paper, Stack, Text} from '@mantine/core';
 import {HEROES, HERO_PORTRAIT, PARTY} from '@canvas/games-silk-road-run';
 import type {HeroId} from '@canvas/games-silk-road-run';
@@ -46,13 +47,13 @@ function savedParty(): HeroId[] {
 
 /**
  * The start menu: what the game is, which heroes to take (the camel always
- * comes), and Start. `onBack` returns to a finished fight's result.
+ * comes), and Start, which always starts a new run (a new seed), and a way
+ * back to the Canvas home page.
  */
 export function StartMenu(props: {
   busy: boolean;
   error: string | null;
   onStart: (party: HeroId[]) => void;
-  onBack?: () => void;
 }) {
   const [party, setParty] = useState<HeroId[]>(savedParty);
   const toggle = (hero: HeroId) =>
@@ -123,11 +124,9 @@ export function StartMenu(props: {
                 Choose at least one hero.
               </Text>
             )}
-            {props.onBack && (
-              <Button variant="subtle" color="yellow" onClick={props.onBack}>
-                Back to the fight
-              </Button>
-            )}
+            <Button component={Link} to="/" variant="subtle" color="yellow">
+              Back to Canvas
+            </Button>
             {props.error && <Text c="var(--c-madderLight)">{props.error}</Text>}
           </Stack>
         </Stack>

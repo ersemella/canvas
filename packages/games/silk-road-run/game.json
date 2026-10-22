@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Silk Road Run",
-    "description": "A turn-based tactical roguelike on a fantasy Silk Road: three heroes against a rival band on a hex map. Prototype: one fight."
+    "description": "A turn-based tactical roguelike on a fantasy Silk Road: three heroes against a rival band on a hex map."
   },
   "canvas": {
     "width": 672,
