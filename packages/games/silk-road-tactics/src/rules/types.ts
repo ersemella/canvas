@@ -174,4 +174,5 @@ export interface TurnInput {
   actFirst?: boolean;
 }
 
-export type RunAction = {type: 'turn'} & TurnInput;
+/** A turn in the fight, or, once a fight short of the last is won, going on to the next. */
+export type RunAction = ({type: 'turn'} & TurnInput) | {type: 'next'};

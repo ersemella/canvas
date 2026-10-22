@@ -5,8 +5,13 @@ One fight against the AI plays end to end: the rules in
 `packages/games/silk-road-tactics/src/rules/`, `RunRoom` and
 `PlayerLedger` in `@canvas/server`, the page at `/play/silk-road-tactics`.
 The page opens on a start menu (2026-10-21): the game in brief, which of
-the three heroes to take (one to three; the camel always comes; the enemy
-always brings all three), and Start; `POST /runs` takes the `party`.
+the three heroes to take (one to three; the camel always comes), and Start;
+`POST /runs` takes the `party`. A run is three fights (owner, 2026-10-21;
+`STAGES` in `src/rules/config.ts`): the enemy brings one random hero and
+two wolves, then two random heroes and a wolf, then all three heroes.
+Winning a fight offers Next fight (`POST /runs/:id/next`); the surviving
+heroes and the camel go on at full health, the fallen are gone for the
+run; winning the third wins the run.
 What the builder decided and where it departs from the brief is in
 [phase-1-brief.md](phase-1-brief.md#11-as-built-2026-10-19). The engine
 has hex geometry, a hex grid system, sprites and scaled pixel-art

@@ -397,6 +397,14 @@ export function TacticsPage() {
     [run, input, send, busy, playing]
   );
 
+  /** On to the run's next fight, once this one is won: a new board, nothing to play back. */
+  const nextFight = useCallback(() => {
+    if (!run || busy) return;
+    setPinnedHex(null);
+    setSelectedId(null);
+    void send(() => runsApi.next(run.runId), false);
+  }, [run, send, busy]);
+
   const clearMove = useCallback(() => {
     setPlannedMove(null);
     setMoving(false);
@@ -946,6 +954,9 @@ export function TacticsPage() {
 
   // The result waits for the playback to show how the fight ended.
   const finished = (fight.phase === 'won' || fight.phase === 'lost') && !playing;
+  const {stage, stages} = run.view;
+  /** A fight short of the run's last, won: the next one waits. */
+  const nextAhead = fight.phase === 'won' && stage < stages - 1;
   const selected =
     fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
 
@@ -963,13 +974,20 @@ export function TacticsPage() {
     setPinnedHex(null);
     setSelectedId(!lookingAtActing ? (acting?.id ?? null) : null);
   };
-  // Once the fight is over, New fight takes Confirm's place, and the section
-  // keeps its height so the board doesn't move.
+  // Once the fight is over, Next fight (a fight before the run's last won)
+  // or New fight takes Confirm's place, and the section keeps its height so
+  // the board doesn't move.
   const actions = finished ? (
     <div className={styles.confirmRow}>
-      <Button size="lg" className={styles.seal!} fw="bold" onClick={() => setStartMenu(true)}>
-        New fight
-      </Button>
+      {nextAhead ? (
+        <Button size="lg" className={styles.seal!} fw="bold" loading={busy} onClick={nextFight}>
+          Next fight
+        </Button>
+      ) : (
+        <Button size="lg" className={styles.seal!} fw="bold" onClick={() => setStartMenu(true)}>
+          New fight
+        </Button>
+      )}
       {menu}
     </div>
   ) : (
@@ -1103,6 +1121,11 @@ export function TacticsPage() {
                   </Text>
                   <Text c="dimmed" fz="sm">
                     {outcomeText(fight)}
+                  </Text>
+                  <Text c="dimmed" fz="xs" data-testid="stage">
+                    {nextAhead
+                      ? `Fight ${stage + 1} of ${stages} won. A bigger band waits down the road.`
+                      : `Fight ${stage + 1} of ${stages}`}
                   </Text>
                 </Stack>
               </Paper>
