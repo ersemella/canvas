@@ -1,11 +1,12 @@
 import {describe, expect, it} from 'vitest';
 import {hexDistance} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {chooseAiTurn, evaluatePosition, scoreOptions, simulate} from './ai';
+import {chooseAiTurn, evaluatePosition, requestChooser, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
 import {ABILITY, AI, RULES} from './config';
 import {ABILITIES} from './abilities';
-import {advanceToDecision, applyTurn, cloneFight, createFight, mapOf} from './fight';
+import {advance, advanceToDecision, applyTurn, cloneFight, createFight, mapOf} from './fight';
+import {createRun} from './run';
 import {scaled} from './resolve';
 import {SALT_FLATS} from './map';
 import {threatsTo} from './threat';
@@ -317,5 +318,48 @@ describe('the search timeline', () => {
     const stopped = JSON.stringify(s);
     expect(advanceToDecision(s)?.id).toBe(me.id);
     expect(JSON.stringify(s)).toBe(stopped);
+  });
+
+  it('never aims Sunlight at a hex with no unit and no hail', () => {
+    const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
+    s.effects.push({
+      kind: 'hail',
+      hex: hex(1, 1),
+      untilSlot: 999,
+      damage: 50,
+      slowed: 1,
+      statusSlots: 10,
+    });
+    const me = unit(s, 'e-storm');
+    me.slot = 0;
+    const aimed = scoreOptions(s, me)
+      .filter((o) => o.input.action.ability === 'sunlight' && !o.input.move)
+      .map((o) => o.input.action.target!.hex!);
+    expect(aimed).toContainEqual(hex(0, 0));
+    expect(aimed).toContainEqual(hex(1, 1));
+    expect(aimed).toContainEqual(hex(3, 0));
+    expect(aimed).toHaveLength(3);
+  });
+
+  it('leaves every AI unit in a request some of its budget', () => {
+    // A stage-one band is a hero and two wolves: three turns in a row.
+    for (let seed = 0; seed < 4; seed++) {
+      const run = createRun(seed);
+      const s = run.fight;
+      for (let request = 0; request < 10 && s.phase === 'fight'; request++) {
+        const me = unit(s, s.awaiting!);
+        applyTurn(s, me, chooseAiTurn(s, me));
+        const budget = {left: AI.requestSimulations};
+        const choose = requestChooser(budget);
+        const given: number[] = [];
+        advance(s, (state, u) => {
+          given.push(budget.left);
+          return choose(state, u);
+        });
+        expect(budget.left).toBeGreaterThanOrEqual(0);
+        // Only a unit acting a second time may find the budget spent.
+        expect(given.slice(0, 3).every((left) => left > 0)).toBe(true);
+      }
+    }
   });
 });
