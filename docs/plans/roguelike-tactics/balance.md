@@ -247,6 +247,30 @@ dead at the end, per finished fight. Experiments file:
 - One standard error is about ±1.2 points on win rates near 95% and ±2
   near 80%.
 
+**Hail nerfed to 40 (2026-10-22; was 50, 60 at the Storm Caller's
+power).** The same caravans, player win % and heroes lost per fight:
+
+| Enemy caravan | Hail 50 | **Hail 40** | Hail 35 |
+|---|---|---|---|
+| Champion + 2 wolves | 99.7%, 0.28 | 99.5%, 0.32 | 100%, 0.31 |
+| Outrider + 2 wolves | 99.7%, 0.34 | 98.0%, 0.43 | 99.0%, 0.50 |
+| Storm Caller + 2 wolves | 98.3%, 0.47 | 98.5%, 0.38 | 99.5%, 0.35 |
+| Champion + Outrider + wolf | 93.8%, 0.78 | 93.0%, 0.84 | 92.7%, 0.90 |
+| Champion + Storm Caller + wolf | 84.5%, 1.02 | 91.1%, 0.85 | 92.4%, 0.76 |
+| Outrider + Storm Caller + wolf | 82.8%, 1.11 | 87.0%, 1.00 | 83.9%, 1.06 |
+| *Champion ×2 + wolf* | 98.2%, 0.64 | 97.5%, 0.68 | 97.0%, 0.72 |
+| *Outrider ×2 + wolf* | 96.1%, 0.68 | 94.8%, 0.81 | 95.1%, 0.88 |
+| *Storm Caller ×2 + wolf* | 73.1%, 1.41 | 83.0%, 1.10 | 91.2%, 0.84 |
+| All three (unfinished) | 62.5%, 1.70 (2.8%) | 64.5%, 1.65 (4.3%) | 60.0%, 1.68 (10%) |
+
+At 40 the stage-2 spread narrows from 83–94% to 87–93%, and the Storm
+Caller stops being the hardest solo enemy (0.38 heroes lost, between the
+Champion's and the Outrider's). Two Storm Callers are still the hardest
+double (83%), but no longer by 23 points. At 35 the Storm Caller is the
+weakest enemy hero, and a tenth of mirror fights go unfinished: Hail is
+also the side's damage, so cutting it lengthens fights. Unfinished fights
+rise a little at 40 (0.5 to 2 points per caravan).
+
 ## Proposed tuning
 
 **Applied 2026-10-20: tunings 1 to 3** (the package below without its Fog

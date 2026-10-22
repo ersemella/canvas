@@ -250,11 +250,14 @@ export const ABILITY = {
    * No Vulnerable (owner, 2026-10-20; was 25%), leaving it to Freeze and
    * flanking: damage and Slowed make it area denial. Over 300 AI-vs-AI
    * fights, 6% unfinished (4% with it); without its damage, 19%.
+   * Damage 40 (2026-10-22; was 50): the Storm Caller made every enemy
+   * caravan it was in 10-25 points harder; at 40 its pairs sit with the
+   * others (balance.md, enemy caravans).
    */
   hail: {
     cost: RULES.cost.typical,
     range: 4,
-    damage: 50,
+    damage: 40,
     hexSlots: 20,
     slowed: 2,
     statusSlots: 10,
