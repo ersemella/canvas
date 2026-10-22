@@ -24,8 +24,8 @@ import {
 import {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
-import {allowedTargets} from './taunt';
-import {offeredTargets, onlyHold} from './choices';
+import {allowedTargets, taunterOf} from './taunt';
+import {onlyHold} from './choices';
 import {
   RuleError,
   actingUnit,
@@ -444,9 +444,7 @@ describe('the board', () => {
       kind: 'hail',
       hex: hailed,
       untilSlot: 999,
-      damage: 50,
-      slowed: 2,
-      statusSlots: 10,
+      push: 2,
     });
     const after = reachableHexes(s, mapOf(s), b).find((r) => hexKey(r.hex) === hexKey(dest))!;
     expect(after.path).toHaveLength(2);
@@ -703,34 +701,36 @@ describe('abilities', () => {
     expect(target.statuses).toEqual([]);
   });
 
-  it('Grapple: cleansing the Champion keeps the grapple', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'p-storm': at(0, 1)});
-    const b = unit(s, 'p-bokh');
+  it('Grapple: Sunlight no longer frees its target', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'e-storm': at(3, 1)});
     const target = unit(s, 'e-mangudai');
-    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(1, 1)}}});
+    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+    applyTurn(s, unit(s, 'e-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
     expect(target.statuses.map((x) => x.kind).sort()).toEqual([
-      'crushed',
       'immobilized',
-      'taunted',
+      'pinned',
+      'vulnerable',
     ]);
   });
 
-  it('Grapple: cleansing the target breaks the grapple', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'e-storm': at(3, 1)});
+  it('Grapple holds one target at a time: a new grapple lets the last go', () => {
+    const s = setup({
+      'p-bokh': at(3, 3),
+      'e-mangudai': hexNeighbors(at(3, 3))[0]!,
+      'e-storm': hexNeighbors(at(3, 3))[3]!,
+    });
     const b = unit(s, 'p-bokh');
-    const target = unit(s, 'e-mangudai');
-    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    applyTurn(s, unit(s, 'e-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
-    expect(target.statuses).toEqual([]);
-    expect(b.statuses).toEqual([]);
+    const first = unit(s, 'e-mangudai');
+    const second = unit(s, 'e-storm');
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: first.hex!}}});
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: second.hex!}}});
+    expect(first.statuses).toEqual([]);
+    expect(second.statuses.some((x) => x.kind === 'pinned')).toBe(true);
   });
 
   it('Sunlight can clear hail from an empty hex', () => {
     const s = setup({'p-storm': at(1, 1), 'e-bokh': at(8, 6)});
-    s.effects = [
-      {kind: 'hail', hex: at(3, 1), untilSlot: 999, damage: 50, slowed: 2, statusSlots: 10},
-    ];
+    s.effects = [{kind: 'hail', hex: at(3, 1), untilSlot: 999, push: ABILITY.hail.turnPush}];
     applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(3, 1)}}});
     expect(s.effects).toEqual([]);
   });
@@ -742,71 +742,64 @@ describe('abilities', () => {
       kind: 'hail' as const,
       hex: h,
       untilSlot: until,
-      damage: 50,
-      slowed: 2,
-      statusSlots: 10,
+      push: ABILITY.hail.turnPush,
     });
     s.effects = [effect(at(2, 1)), effect(at(3, 1))];
     applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
     expect(s.effects.map((e) => e.hex)).toEqual([at(3, 1)]);
   });
 
-  it('Grapple crushes its target every slot while it lasts', () => {
+  it('Grapple: Immobilized, Vulnerable and Pinned for its duration, with no damage', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
-    s.units.forEach((u) => (u.controller = 'human'));
     const target = unit(s, 'e-storm');
     applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    // The Champion's card is next; push it past the grapple so the target's turn comes first.
-    unit(s, 'p-bokh').slot = 200;
-    target.slot = ABILITY.grapple.slots + 8;
-    advance(s, chooseAiTurn);
-    // Slots 1 to 12 crush it, scaled by the Champion's power, through its
-    // defence on the total; nothing after.
-    const perSlot = scaled(ABILITY.grapple.damagePerSlot, unit(s, 'p-bokh').power);
-    expect(actingUnit(s)!.id).toBe('e-storm');
-    expect(target.hp).toBe(target.maxHp - defended(target, ABILITY.grapple.slots * perSlot));
+    expect(target.hp).toBe(target.maxHp);
+    expect(vulnerablePercent(s, target)).toBe(ABILITY.grapple.vulnerable);
+    expect(target.statuses.every((x) => x.untilSlot === ABILITY.grapple.slots)).toBe(true);
+    expect(taunterOf(s, target)).toBeUndefined();
   });
 
-  it('Grapple taunts: the target must attack the Champion or Hold while it can', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'p-storm': at(4, 1)});
+  it('Pinned: a grappled unit’s abilities reach only its own space and the ones next to it', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'p-mangudai': at(5, 1)});
+    const storm = unit(s, 'e-storm');
+    const far = ABILITIES.hail
+      .targets(s, SALT_FLATS, storm, storm.hex!)
+      .filter((t) => hexDistance(t.hex!, storm.hex!) > 1);
+    expect(far.length).toBeGreaterThan(0);
     applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    const m = unit(s, 'e-mangudai');
-    // The Storm Caller is in a bow lane too, but only the Champion may be shot (or the turn Held).
-    expect(arrowLanes(s, SALT_FLATS, m.hex!).some((l) => l.hit?.id === 'p-storm')).toBe(true);
-    const stormHex = unit(s, 'p-storm').hex!;
-    expect(tryTurn(s, m.id, {action: {ability: 'bow', target: {hex: stormHex}}})).toThrow(
-      RuleError
+    const hail = allowedTargets(s, SALT_FLATS, storm, ABILITIES.hail);
+    expect(hail.length).toBeGreaterThan(0);
+    expect(hail.every((t) => hexDistance(t.hex!, storm.hex!) <= 1)).toBe(true);
+    expect(tryTurn(s, storm.id, {action: {ability: 'hail', target: far[0]!}})).toThrow(RuleError);
+    expect(tryTurn(s, storm.id, {action: {ability: 'hail', target: hail[0]!}})).not.toThrow();
+    // Nor does the AI aim past its reach.
+    const choice = chooseAiTurn(s, storm);
+    if (choice.action.target?.hex)
+      expect(hexDistance(choice.action.target.hex, storm.hex!)).toBeLessThanOrEqual(1);
+  });
+
+  it('Throw only the unit the Champion grapples: beside it keeps hold, one space back lets go', () => {
+    const s = setup({
+      'p-bokh': at(3, 3),
+      'e-storm': hexNeighbors(at(3, 3))[0]!,
+      'e-mangudai': at(8, 6),
+    });
+    const b = unit(s, 'p-bokh');
+    const target = unit(s, 'e-storm');
+    expect(ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
+    const throws = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!);
+    const back = hexNeighbor(target.hex!, hexDirectionTo(b.hex!, target.hex!)!);
+    expect(throws).toContainEqual({hex: target.hex!, to: back});
+    for (const t of throws) expect([1, 2]).toContain(hexDistance(t.to!, b.hex!));
+    applyTurn(s, b, {action: {ability: 'throw', target: {hex: target.hex!, to: back}}});
+    expect(target.hex).toEqual(back);
+    expect(target.statuses).toEqual([]);
+    // Vulnerable from the grapple counts on the throw itself.
+    const raw = Math.floor(
+      scaled(ABILITY.throw.damage, b.power) * (1 + ABILITY.grapple.vulnerable / 100)
     );
-    expect(tryTurn(s, m.id, {action: {ability: 'hold'}})).not.toThrow();
-    expect(chooseAiTurn(s, m).action).toEqual({ability: 'bow', target: {hex: at(1, 1)}});
-    // The page offers the same: only the Champion.
-    expect(allowedTargets(s, SALT_FLATS, m, ABILITIES.bow)).toEqual([{hex: at(1, 1)}]);
-    // The taunt ends with the taunter.
-    unit(s, 'p-bokh').alive = false;
-    unit(s, 'p-bokh').hex = null;
-    expect(
-      tryTurn(s, m.id, {action: {ability: 'bow', target: {hex: unit(s, 'p-storm').hex!}}})
-    ).not.toThrow();
-  });
-
-  it('a taunt that can’t be obeyed leaves the target free', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
-    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    const hailElsewhere = {action: {ability: 'hail' as const, target: {hex: at(2, 3)}}};
-    expect(tryTurn(s, 'e-storm', hailElsewhere)).toThrow(RuleError);
-    // Thrown out of the Storm Caller's reach (it's Immobilized): it acts freely.
-    unit(s, 'p-bokh').hex = at(7, 5);
-    expect(tryTurn(s, 'e-storm', hailElsewhere)).not.toThrow();
-  });
-
-  it('a taunted Storm Caller is offered Hail on the taunter, not Sunlight', () => {
-    const s = setup({'e-bokh': at(1, 1), 'p-storm': at(2, 1), 'p-mangudai': at(4, 1)});
-    applyTurn(s, unit(s, 'e-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    const storm = unit(s, 'p-storm');
-    // The rules allow Sunlight on the Champion; the page doesn't offer healing an enemy.
-    expect(allowedTargets(s, SALT_FLATS, storm, ABILITIES.sunlight)).toEqual([{hex: at(1, 1)}]);
-    expect(offeredTargets(s, SALT_FLATS, storm, ABILITIES.sunlight)).toEqual([]);
-    expect(offeredTargets(s, SALT_FLATS, storm, ABILITIES.hail)).toEqual([{hex: at(1, 1)}]);
+    expect(target.hp).toBe(target.maxHp - defended(target, raw));
   });
 
   it('Taunt draws a damaging charge onto the taunter', () => {
@@ -863,11 +856,11 @@ describe('abilities', () => {
     applyTurn(s, b, {action: {ability: 'lunge', target: land}});
     expect(b.hex).toEqual(at(3, 1));
     expect(target.hp).toBe(target.maxHp - defended(target, scaled(ABILITY.lunge.damage, b.power)));
-    // Grappled as by Grapple, with no Vulnerable.
+    // Grappled as by Grapple.
     expect(target.statuses.map((x) => x.kind).sort()).toEqual([
-      'crushed',
       'immobilized',
-      'taunted',
+      'pinned',
+      'vulnerable',
     ]);
     expect(b.ultimateUsed).toBe(true);
   });
@@ -892,7 +885,7 @@ describe('abilities', () => {
     );
   });
 
-  it('Sunlight heals and cleanses the one unit it targets, enemies included', () => {
+  it('Sunlight heals the one unit it targets, enemies included, and cleanses nothing', () => {
     const s = setup({
       'p-storm': at(1, 3),
       'p-bokh': at(1, 2),
@@ -911,31 +904,49 @@ describe('abilities', () => {
     expect(targets.some((t) => hexEquals(t.hex!, at(8, 6)))).toBe(false);
     expect(hexDistance(at(1, 3), at(8, 6))).toBeGreaterThan(ABILITY.sunlight.range);
     applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
-    expect(unit(s, 'e-bokh').hp).toBeGreaterThan(100);
-    expect(unit(s, 'e-bokh').statuses).toHaveLength(0);
+    expect(unit(s, 'e-bokh').hp).toBe(100 + scaled(ABILITY.sunlight.heal, storm.power));
+    expect(unit(s, 'e-bokh').statuses).toHaveLength(1);
     // Its neighbour is left alone.
     expect(unit(s, 'p-bokh').hp).toBe(100);
-    expect(unit(s, 'p-bokh').statuses).toHaveLength(1);
   });
 
-  it('hail slows and exposes whoever stands on it', () => {
-    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 1), 'e-mangudai': at(8, 6)});
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'hail', target: {hex: at(3, 1)}}});
-    expect(movementCap(unit(s, 'e-bokh'))).toBe(RULES.movementCap - ABILITY.hail.slowed);
-    expect(s.effects).toHaveLength(1);
+  it('hail covers an area and Pushes every card in it, allies too, but not the Inevitable Champion', () => {
+    const centre = at(4, 3);
+    const map = mapOf(setup({}));
+    const near = hexNeighbors(centre).filter((h) => onMap(map, h) && tileAt(map, h) !== 'obstacle');
+    const s = setup({
+      'p-storm': at(1, 3),
+      'e-mangudai': centre,
+      'p-mangudai': near[0]!,
+      'e-bokh': near[1]!,
+      'e-storm': at(8, 6),
+    });
+    const before = new Map(s.units.map((u) => [u.id, u.slot]));
+    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'hail', target: {hex: centre}}});
+    expect(s.effects).toHaveLength(1 + near.length);
+    for (const id of ['e-mangudai', 'p-mangudai'])
+      expect(unit(s, id).slot).toBe(before.get(id)! + ABILITY.hail.castPush);
+    expect(unit(s, 'e-bokh').slot).toBe(before.get('e-bokh'));
+    expect(unit(s, 'e-storm').slot).toBe(before.get('e-storm'));
+    // No damage.
+    expect(s.units.every((u) => !u.alive || u.hp === u.maxHp)).toBe(true);
   });
 
-  it('hail strikes whoever stands on it, through its defence', () => {
-    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 1), 'e-mangudai': at(8, 6)});
-    const bokh = unit(s, 'e-bokh');
-    const hp = bokh.hp;
-    const scaledHail = Math.floor(ABILITY.hail.damage * (1 + unit(s, 'p-storm').power / 50));
-    const expected = Math.floor(
-      (scaledHail * RULES.defenceConstant) / (bokh.defence + RULES.defenceConstant)
+  it('a unit that starts its turn on hail is Pushed once the turn has placed its card', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'p-bokh': at(1, 1), 'e-storm': at(8, 6)});
+    for (const h of [at(1, 3), at(1, 1)])
+      s.effects.push({kind: 'hail', hex: h, untilSlot: 999, push: ABILITY.hail.turnPush});
+    const b = unit(s, 'p-bokh');
+    const m = unit(s, 'p-mangudai');
+    // The Champion is Inevitable: its card isn't pushed.
+    s.currentSlot = b.slot!;
+    applyTurn(s, b, {action: {ability: 'hold'}});
+    expect(b.slot).toBe(s.currentSlot + slotsForward(ABILITY.hold.cost, b.speed));
+    s.currentSlot = m.slot!;
+    applyTurn(s, m, {action: {ability: 'hold'}});
+    expect(m.slot).toBe(
+      s.currentSlot + slotsForward(ABILITY.hold.cost, m.speed) + ABILITY.hail.turnPush
     );
-    applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'hail', target: {hex: at(3, 1)}}});
-    expect(expected).toBeGreaterThan(1);
-    expect(unit(s, 'e-bokh').hp).toBe(hp - expected);
   });
 });
 
@@ -1015,11 +1026,22 @@ describe('the caravan’s camel', () => {
 
   it('is a target the enemy AI finishes, and a walk the player’s AI completes', () => {
     const s = setup({'p-camel': at(3, 4), 'p-bokh': at(0, 0), 'e-bokh': at(4, 4)});
-    unit(s, 'p-camel').hp = 1;
     const champion = unit(s, 'e-bokh');
-    champion.slot = 50;
+    // The Champion can only throw a unit it grapples.
+    applyTurn(s, champion, {action: {ability: 'grapple', target: {hex: at(3, 4)}}});
+    unit(s, 'p-camel').hp = 1;
+    // Its next card within the grapple's slots.
+    champion.slot = ABILITY.grapple.slots - 2;
     advanceToDecision(s);
     expect(simulate(s, champion.id, chooseAiTurn(s, champion))!.phase).toBe('lost');
+
+    // A win now beats the same win a turn later (Leap, then the shot).
+    const shot = setup({'p-camel': at(3, 4), 'p-bokh': at(0, 0), 'e-mangudai': at(4, 4)});
+    unit(shot, 'p-camel').hp = 1;
+    const archer = unit(shot, 'e-mangudai');
+    archer.slot = 50;
+    advanceToDecision(shot);
+    expect(chooseAiTurn(shot, archer).action.ability).toBe('bow');
 
     const walk = setup({'p-camel': at(6, 3), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     const camel = unit(walk, 'p-camel');
@@ -1583,7 +1605,8 @@ describe('the Modao Vanguard', () => {
       const u = unit(s, id);
       const b = before.find((x) => x.id === id)!;
       expect(u.hp).toBe(b.hp - defended(u, scaled(ABILITY.reap.damage, v.power)));
-      expect(u.slot).toBe(b.slot! + ABILITY.reap.push);
+      // The Champion is Inevitable: its card stays.
+      expect(u.slot).toBe(b.slot! + (id === 'e-bokh' ? 0 : ABILITY.reap.push));
     }
     // Behind the Vanguard: untouched.
     const behind = unit(s, 'e-modao');
@@ -1651,7 +1674,9 @@ describe('the Modao Vanguard', () => {
       const u = unit(s, id);
       expect(u.hp).toBeLessThan(u.maxHp);
       expect(hexDistance(u.hex!, centre)).toBe(2);
-      expect(u.slot).toBe(before.find((x) => x.id === id)!.slot! + ABILITY.advance.push);
+      // The Champion is Inevitable: its card stays.
+      const pushed = id === 'e-bokh' ? 0 : ABILITY.advance.push;
+      expect(u.slot).toBe(before.find((x) => x.id === id)!.slot! + pushed);
     }
     expect(v.slot).toBe(slotsForward(ABILITY.advance.cost, v.speed));
   });
@@ -1695,9 +1720,9 @@ describe('the Modao Vanguard', () => {
     applyTurn(s, b, {move: [away], action: {ability: 'hold', target: {}}});
     expect(b.hex).toEqual(away);
     expect(b.hp).toBe(b.maxHp - defended(b, scaled(ABILITY.reap.damage, v.power)));
-    // Pushed after its card is placed by the move's cost.
+    // Its card is placed by the move's cost; the Champion is Inevitable, so the Push doesn't move it.
     const moveCost = RULES.moveActionCost + RULES.moveCostPerHex;
-    expect(b.slot).toBe(slotsForward(moveCost, b.speed) + ABILITY.reap.push);
+    expect(b.slot).toBe(slotsForward(moveCost, b.speed));
   });
 
   it('Hold the Line spares a move that stays next to the Vanguard, and allies', () => {

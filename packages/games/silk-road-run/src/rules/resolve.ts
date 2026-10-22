@@ -5,7 +5,7 @@
 import {hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {CAMEL, RULES, HEROES} from './config';
-import {addStatus, barrierOf, onMap, statusValue, unitAt, vulnerablePercent} from './board';
+import {barrierOf, onMap, statusValue, unitAt, vulnerablePercent} from './board';
 import {MAPS, tileAt} from './map';
 import type {MapData} from './map';
 import {pushCard} from './track';
@@ -90,11 +90,6 @@ function defended(target: Unit, damage: number): number {
   return Math.max(RULES.minimumDamage, d);
 }
 
-/** What a hail hex deals its occupant: the scaled damage it was cast with, through Vulnerable and defence. */
-export function hailDamage(state: FightState, target: Unit, hail: HailEffect): number {
-  return throughDefence(state, target, hail.damage);
-}
-
 /** Vulnerable alone: collision damage, which skips defence. */
 export function rawDamage(state: FightState, target: Unit, amount: number): number {
   return Math.floor(amount * (1 + vulnerablePercent(state, target) / 100));
@@ -144,9 +139,13 @@ function logBarrier(ctx: Ctx, target: Unit, raw: number): void {
   record(ctx.state, {kind: 'damage', unitId: target.id, amount: 0});
 }
 
-/** Push N on the track (17.3), within the push limit (3.6). */
+/** Push N on the track (17.3), within the push limit (3.6). An Inevitable card doesn't move. */
 export function push(ctx: Ctx, unit: Unit, n: number): void {
   if (!unit.alive || unit.slot === null) return;
+  if (inevitable(unit)) {
+    log(ctx, `${unitName(unit)} is Inevitable: its card doesn't move.`);
+    return;
+  }
   const moved = pushCard(ctx.state, unit, n);
   log(
     ctx,
@@ -209,22 +208,31 @@ export function atExit(state: FightState, h: Hex): boolean {
   return MAPS[state.mapId]!.exits.some((e) => hexEquals(e, h));
 }
 
-/** Hail on a hex hits whoever is there, then Slows it. */
-export function applyHail(ctx: Ctx, unit: Unit): void {
-  if (!unit.alive || !unit.hex) return;
-  const hail = ctx.state.effects.find((e) => hexEquals(e.hex, unit.hex!));
-  if (!hail) return;
-  strike(
-    ctx,
-    unit,
-    rawDamage(ctx.state, unit, hail.damage),
-    true,
-    (d) => `Hail strikes ${unitName(unit)} for ${d}`
-  );
-  if (!unit.alive) return;
-  const untilSlot = ctx.slot + hail.statusSlots;
-  addStatus(unit, {kind: 'slowed', value: hail.slowed, untilSlot});
-  log(ctx, `Hail batters ${unitName(unit)}: Slowed ${hail.slowed}.`);
+/** Inevitable (17.3): the card can't be moved by Push or Pull, from either side. The Bökh Champion's passive. */
+export function inevitable(unit: Unit): boolean {
+  return HEROES[unit.hero].passive === 'inevitable';
+}
+
+/** The hail on `h`, if any. */
+export function hailAt(state: FightState, h: Hex): HailEffect | undefined {
+  return state.effects.find((e) => hexEquals(e.hex, h));
+}
+
+/**
+ * The Push `unit` owes for starting its turn on hail, applied once the
+ * turn has placed its card (owner, 2026-10-22, playtest); 0 off hail or
+ * when Inevitable.
+ */
+export function hailPushOwed(state: FightState, unit: Unit): number {
+  if (!unit.alive || !unit.hex || inevitable(unit)) return 0;
+  return hailAt(state, unit.hex)?.push ?? 0;
+}
+
+/** Applies a turn's owed Push from hail, said as hail's. */
+export function hailPush(ctx: Ctx, unit: Unit, n: number): void {
+  if (n <= 0 || !unit.alive) return;
+  log(ctx, `Hail batters ${unitName(unit)}.`);
+  push(ctx, unit, n);
 }
 
 /** Quicksand under a unit, on entering (each slot on it is `damageEachSlot`). */
@@ -280,7 +288,8 @@ export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) =>
 }
 
 /**
- * Moves a unit onto a hex; `triggers` applies the hex's hazard and hail.
+ * Moves a unit onto a hex; `triggers` applies the hex's hazard (hail acts
+ * when it lands and at the start of a turn, not on entering).
  * `how` is how it got there, for the page's playback.
  */
 export function enterHex(
@@ -296,26 +305,23 @@ export function enterHex(
   breakPins(ctx, unit);
   if (!triggers) return;
   applyHazard(ctx, unit);
-  applyHail(ctx, unit);
 }
 
 /**
- * A Grapple lasts until it breaks: when its target is cleansed, or when the
- * Champion and target are no longer adjacent (either displaced away, or
- * the Champion moving away: it isn't held itself, owner, 2026-10-20).
- * Breaking it clears every status the Grapple gave either unit (owner,
- * 2026-10-20). Cleansing the Champion doesn't break it. Throw lands the
- * target beside the Champion, so Grapple then Throw keeps the grapple.
+ * A Grapple lasts until it breaks: when the Champion and target are no
+ * longer adjacent (either displaced away, or the Champion moving away: it
+ * isn't held itself, owner, 2026-10-20). Breaking it clears every status
+ * the Grapple gave either unit (owner, 2026-10-20). Throw beside the
+ * Champion keeps the grapple; Throw one space back ends it.
  */
-export function breakPins(ctx: Ctx, unit: Unit, cleansed = false): void {
+export function breakPins(ctx: Ctx, unit: Unit): void {
   const byId = (id: string) => ctx.state.units.find((u) => u.id === id);
   for (const holder of ctx.state.units) {
     for (const {grapple} of holder.statuses) {
       if (!grapple || (grapple.champion !== unit.id && grapple.target !== unit.id)) continue;
       const a = byId(grapple.champion)?.hex;
       const b = byId(grapple.target)?.hex;
-      const holds =
-        !(cleansed && grapple.target === unit.id) && !!a && !!b && hexDistance(a, b) <= 1;
+      const holds = !!a && !!b && hexDistance(a, b) <= 1;
       if (holds) continue;
       for (const u of ctx.state.units)
         u.statuses = u.statuses.filter(
@@ -323,7 +329,7 @@ export function breakPins(ctx: Ctx, unit: Unit, cleansed = false): void {
         );
       log(ctx, `The grapple on ${unitName(byId(grapple.target)!)} is broken.`);
       // The statuses changed under this loop; look again for any other grapple.
-      return breakPins(ctx, unit, cleansed);
+      return breakPins(ctx, unit);
     }
   }
 }

@@ -17,13 +17,13 @@ import {
   statusValue,
   unitAt,
 } from './board';
-import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, legalTargets, unusableReason} from './abilities';
 import {slotsForward, turnCost} from './track';
 import {obeysTaunt, tauntBinds, taunterOf} from './taunt';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf, turnInputCost} from './fight';
-import {camelOf, enterHex, hailDamage, scaled, throughDefence} from './resolve';
+import {camelOf, enterHex, hailPushOwed, scaled, throughDefence} from './resolve';
 import {MAPS, tileAt} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
@@ -49,10 +49,9 @@ interface Rate {
  */
 type Pressure = Record<Side, Rate & {hit: number; alive: number}>;
 
-/** An ability's base damage, a Grapple's over its whole duration; none for the rest. */
+/** An ability's base damage; none for the rest. */
 function baseDamage(id: AbilityId): number {
-  const a = ABILITY[id] as {damage?: number; damagePerSlot?: number; slots?: number};
-  return a.damage ?? (a.damagePerSlot ?? 0) * (a.slots ?? 0);
+  return (ABILITY[id] as {damage?: number}).damage ?? 0;
 }
 
 function bestHit(u: Unit): number {
@@ -127,17 +126,21 @@ function attacksFromAfar(u: Unit): boolean {
  * What `u`'s statuses cost its side, in damage (AI.statusHorizon): Slowed
  * per point and Taunted per slot (flat), Vulnerable as the extra damage
  * the other side's pressure would deal it, Immobilized as the share of its
- * own pressure it loses, Crushed as the damage it has left to deal.
+ * own pressure it loses, Pinned likewise, Crushed as the damage it has
+ * left to deal.
  */
 function statusPoints(u: Unit, slot: number, p: Pressure): number {
   // Every term below is zero without a status, and most units have none.
   if (u.statuses.length === 0) return 0;
   const left = (kind: Parameters<typeof statusSlotsLeft>[1]) =>
     Math.min(AI.statusHorizon, statusSlotsLeft(u, kind, slot));
-  const share = attacksFromAfar(u) ? AI.immobilizedShare.ranged : AI.immobilizedShare.melee;
+  const far = attacksFromAfar(u);
+  const share = far ? AI.immobilizedShare.ranged : AI.immobilizedShare.melee;
+  const pinned = far ? AI.pinnedShare.ranged : AI.pinnedShare.melee;
   return (
     AI.perSlowed * statusValue(u, 'slowed') +
     rateOf(u).all * share * left('immobilized') +
+    rateOf(u).all * pinned * left('pinned') +
     (statusValue(u, 'vulnerable') / 100) * incoming(p, u, 'all') * left('vulnerable') +
     (AI.perCrushDamage *
       statusValue(u, 'crushed') *
@@ -209,6 +212,11 @@ function pushValue(before: Unit, after: Unit): number {
   return (after.slot - before.slot) * rateOf(before).all * AI.pushShare;
 }
 
+/** The Push a unit will owe for starting its next turn on hail, priced as `pushValue` prices a Push. */
+function hailTax(state: FightState, u: Unit): number {
+  return hailPushOwed(state, u) * rateOf(u).all * AI.pushShare;
+}
+
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
 export function scoreOutcome(
   before: FightState,
@@ -224,7 +232,11 @@ export function scoreOutcome(
     const base = baseline.get(b.id)!;
     const lost = b.hp - a.hp;
     const statusDelta = statusPoints(a, before.currentSlot, pressureOf(before)) - base.points;
+    // Standing on hail when its next turn starts. The actor pays for this
+    // turn's start whatever it does (in its slot), so only where it ends counts.
+    const taxDelta = hailTax(after, a) - (b.id === actor.id ? 0 : hailTax(before, b));
     if (hostile(b, actor)) {
+      score += taxDelta;
       // Healing an enemy counts against the turn, as damage counts for it.
       score += lost * (b.hero === CAMEL ? AI.camelHealthWeight : 1) + statusDelta;
       score += pushValue(b, a);
@@ -234,6 +246,7 @@ export function scoreOutcome(
       // Healing counts as damage; friendly fire only when clearly worth it.
       score += lost > 0 ? -lost * AI.friendlyDamageFactor : -lost;
       score -= statusDelta;
+      score -= taxDelta * AI.friendlyDamageFactor;
       if (b.id !== actor.id) score -= pushValue(b, a) * AI.friendlyDamageFactor;
       if (base.flanked && a.alive && !isFlanked(after, a)) score += AI.breaksAllyFlank;
     }
@@ -250,10 +263,6 @@ export function scoreOutcome(
     const slots = me.slot - before.currentSlot;
     score -= throughDefence(after, me, slots * RULES.hazardDamage) * AI.friendlyDamageFactor;
   }
-  // So does ending on hail.
-  const hail =
-    me.alive && me.hex ? after.effects.find((e) => hexEquals(e.hex, me.hex!)) : undefined;
-  if (hail) score -= hailDamage(after, me, hail) * AI.friendlyDamageFactor;
   // What enemies could do to it within its next turn (one step of lookahead),
   // weighed by the share of its health it would lose and by the hero's caution.
   const caution = AI.threatFactor * AI.caution[me.hero];
@@ -314,7 +323,7 @@ export function scoreOptions(
       if (movementRules(state).separateMovement && reach.path.length > 0 && def.id !== 'hold')
         continue;
       const radius = def.radius;
-      for (const target of def.targets(moved, map, mu, mu.hex!)) {
+      for (const target of legalTargets(moved, map, mu, def, mu.hex!)) {
         if (bound && !obeysTaunt(map, def, mu.hex!, target, taunter)) continue;
         if (radius !== undefined) {
           const key = `${def.id}:${hexKey(target.hex!)}`;
@@ -531,6 +540,11 @@ export function chooseAiTurn(
     return child;
   };
   const search = (node: SearchNode, depth: number, alpha: number, beta: number): number => {
+    // A fight already over: sooner is worth more, a win taken now above one
+    // a turn later (whose delay the opponent's ply would otherwise pay for,
+    // its action cost counting for the root side), a loss now below a later one.
+    if (node.state.phase !== 'fight')
+      return evaluatePosition(node.state, unit.side) * (1 + depth / 100);
     if (depth === 0 || !node.actor) return evaluatePosition(node.state, unit.side);
     if (!node.options) {
       if (local.left <= 0) throw exhausted;

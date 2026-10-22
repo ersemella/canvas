@@ -28,8 +28,8 @@ export type AbilityId =
   | 'advance'
   | 'bite';
 
-/** An always-on trait rather than an action: the Modao Vanguard's Hold the Line. */
-export type PassiveId = 'holdTheLine';
+/** An always-on trait rather than an action: the Modao Vanguard's Hold the Line, the Bökh Champion's Inevitable. */
+export type PassiveId = 'holdTheLine' | 'inevitable';
 
 export type StatusKind =
   | 'immobilized'
@@ -37,7 +37,8 @@ export type StatusKind =
   | 'vulnerable'
   | 'crushed'
   | 'taunted'
-  | 'barrier';
+  | 'barrier'
+  | 'pinned';
 
 /**
  * A status from an ability. Active through `untilSlot` inclusive, so one
@@ -48,7 +49,7 @@ export interface Status {
   kind: StatusKind;
   /**
    * Slowed: hexes; Vulnerable: percent; Crushed: damage per slot; Barrier:
-   * what it has left to absorb; Immobilized, Taunted: unused (0).
+   * what it has left to absorb; Immobilized, Taunted, Pinned: unused (0).
    */
   value: number;
   untilSlot: number;
@@ -97,15 +98,13 @@ export interface Unit {
   alive: boolean;
 }
 
-/** A temporary board effect: the Storm Caller's hail. */
+/** A temporary board effect: one hex of the Storm Caller's hail. */
 export interface HailEffect {
   kind: 'hail';
   hex: Hex;
   untilSlot: number;
-  /** Damage per hit, already scaled by the caster's power; defence still applies. */
-  damage: number;
-  slowed: number;
-  statusSlots: number;
+  /** Push for a unit that starts its turn here, applied once its turn has placed its card. */
+  push: number;
 }
 
 export interface LogEntry {

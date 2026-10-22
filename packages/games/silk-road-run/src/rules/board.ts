@@ -64,7 +64,8 @@ export function hostile(a: Unit, b: Unit): boolean {
 export function statusValue(unit: Unit, kind: StatusKind): number {
   let best = 0;
   for (const s of unit.statuses)
-    if (s.kind === kind) best = Math.max(best, kind === 'immobilized' ? 1 : s.value);
+    if (s.kind === kind)
+      best = Math.max(best, kind === 'immobilized' || kind === 'pinned' ? 1 : s.value);
   return best;
 }
 
@@ -77,6 +78,11 @@ export function statusSlotsLeft(unit: Unit, kind: StatusKind, slot: number): num
 
 export function isImmobilized(unit: Unit): boolean {
   return unit.statuses.some((s) => s.kind === 'immobilized');
+}
+
+/** Pinned (a Grapple's hold): its abilities reach only hexes next to it. */
+export function isPinned(unit: Unit): boolean {
+  return unit.statuses.some((s) => s.kind === 'pinned');
 }
 
 export function addStatus(unit: Unit, status: Status): void {

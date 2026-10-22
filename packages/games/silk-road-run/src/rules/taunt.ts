@@ -1,5 +1,5 @@
 /**
- * Taunt (17.5), from the Bökh Champion's Grapple and Lunge: while a unit is taunted, if
+ * Taunt (17.5), from the Modao Vanguard's Challenge: while a unit is taunted, if
  * it can affect the taunter from any hex it can reach this turn, its
  * action must target the taunter or include it in its area, or be a Hold
  * (owner, 2026-10-20). A damaging
@@ -9,7 +9,7 @@
 import {hexDirectionTo, hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, movementRules} from './config';
-import {ABILITIES, abilitiesOf, reapCone, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, legalTargets, reapCone, unusableReason} from './abilities';
 import type {AbilityDef} from './abilities';
 import {reachableHexes} from './board';
 import type {MapData} from './map';
@@ -48,6 +48,7 @@ export function affectsHex(
       // Around where its charge ends.
       return hexDistance(target.hex!, victim) === 1;
     case 'hail':
+      return near(target.hex, ABILITY.hail.radius);
     case 'sunlight':
       return near(target.hex, 0);
     case 'volley':
@@ -85,7 +86,7 @@ export function tauntBinds(state: FightState, map: MapData, unit: Unit, taunter:
       unit.hex = reach.hex;
       for (const def of abilitiesOf(unit)) {
         if (unusableReason(unit, def)) continue;
-        for (const t of def.targets(state, map, unit, reach.hex)) {
+        for (const t of legalTargets(state, map, unit, def, reach.hex)) {
           if (affectsHex(map, def, reach.hex, t, taunter.hex!)) return true;
         }
       }
@@ -107,7 +108,7 @@ export function allowedTargets(
   unit: Unit,
   def: AbilityDef
 ): ActionTarget[] {
-  const targets = def.targets(state, map, unit, unit.hex!);
+  const targets = legalTargets(state, map, unit, def, unit.hex!);
   const taunter = taunterOf(state, unit);
   if (!taunter || !tauntBinds(state, map, unit, taunter)) return targets;
   return targets.filter((t) => obeysTaunt(map, def, unit.hex!, t, taunter));

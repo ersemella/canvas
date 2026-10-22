@@ -121,39 +121,15 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       kit.includes(a) && !unusableReason(e, ABILITIES[a]);
     const melee = Math.max(
       usable('throw') ? scaled(ABILITY.throw.damage, e.power) : 0,
-      usable('bite') ? scaled(ABILITY.bite.damage, e.power) : 0,
-      usable('grapple') ? scaled(ABILITY.grapple.damagePerSlot, e.power) * ABILITY.grapple.slots : 0
+      usable('bite') ? scaled(ABILITY.bite.damage, e.power) : 0
     );
     // Lunge bounds up to `reach - 1` hexes, onto ground that isn't ruins, then strikes and grapples.
-    const lunge =
-      usable('lunge') && !isImmobilized(e)
-        ? scaled(ABILITY.lunge.damage, e.power) +
-          scaled(ABILITY.grapple.damagePerSlot, e.power) * ABILITY.grapple.slots
-        : 0;
-    const hail = usable('hail') ? scaled(ABILITY.hail.damage, e.power) : 0;
+    const lunge = usable('lunge') && !isImmobilized(e) ? scaled(ABILITY.lunge.damage, e.power) : 0;
     const bow = usable('bow') ? scaled(ABILITY.bow.damage, e.power) : 0;
     const reap = usable('reap') ? scaled(ABILITY.reap.damage, e.power) : 0;
     const reach: [number, number][] = movementRules(state).separateMovement
       ? [[e.hex.q, e.hex.r]]
       : reachOf(state, board, e, actor);
-    if (hail > 0) {
-      // Every hex within hail's range of a reachable hex: grow the reach set ring by ring.
-      const seen = new Set(reach.map(([q, r]) => id(q, r)));
-      let frontier = reach;
-      for (let ring = 0; ring < ABILITY.hail.range; ring++) {
-        const next: [number, number][] = [];
-        for (const [q, r] of frontier) {
-          for (const [dq, dr] of AXIAL) {
-            const k = id(q + dq, r + dr);
-            if (seen.has(k) || !board.has(k)) continue;
-            seen.add(k);
-            next.push([q + dq, r + dr]);
-          }
-        }
-        frontier = next;
-      }
-      for (const k of seen) if (board.get(k) !== 'obstacle') mark(hexes, k, 'other', hail);
-    }
     for (const [fq, fr] of reach) {
       if (melee > 0)
         for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), 'other', melee);

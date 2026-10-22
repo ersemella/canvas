@@ -29,6 +29,12 @@ a cone; Advance a charge; Barrier 40)
 [balance.md](balance.md#the-modao-vanguard-2026-10-22)); the enemy draws
 its stage heroes from all four.
 
+The Storm Caller and the Bökh Champion have new kits for playtesting
+(2026-10-22), aimed at a counter loop among the three prototype heroes:
+hail Pushes in an area, Sunlight no longer cleanses, the Champion is
+Inevitable, Grapple Pins, and Throw needs a grapple
+([roster.md](roster.md)).
+
 **Next step:** the owner sets the three prototype heroes' stat numbers and
 ability values (replacing the placeholders in `src/rules/config.ts`);
 everything waiting on the owner is in

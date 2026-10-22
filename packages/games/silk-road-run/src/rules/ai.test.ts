@@ -326,9 +326,7 @@ describe('the search timeline', () => {
       kind: 'hail',
       hex: hex(1, 1),
       untilSlot: 999,
-      damage: 50,
-      slowed: 1,
-      statusSlots: 10,
+      push: 2,
     });
     const me = unit(s, 'e-storm');
     me.slot = 0;

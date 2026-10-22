@@ -8,6 +8,7 @@ import {
   abilitiesOf,
   actingUnit,
   arrowLanes,
+  isPinned,
   mapOf,
   obscured,
   offeredTargets,
@@ -32,7 +33,7 @@ export const SKIP: TurnInput = {action: {ability: 'hold', target: {}}};
 /** Why an ability has nothing to target, when that disables it. */
 const NO_TARGET: Partial<Record<AbilityId, string>> = {
   bow: 'No enemy in any of the bow’s lanes.',
-  throw: 'No enemy next to you, or nowhere free to throw them.',
+  throw: 'You aren’t grappling an enemy, or there’s nowhere free to throw it.',
   grapple: 'No one next to you to grapple.',
   leap: 'Nowhere to land.',
   lunge: 'No one in reach to lunge at.',
@@ -306,18 +307,20 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
               why: `Taunted by ${HEROES[taunter.hero].name}: attack it, or end the turn.`,
               note: 'Taunted',
             }
-          : def.id === 'bow' && acting.hex && obscured(fight, map, acting.hex)
-            ? {why: 'Obscured: can’t shoot a bow.', note: 'Obscured'}
-            : def.id === 'bow' &&
-                acting.hex &&
-                arrowLanes(fight, map, acting.hex).some(
-                  (l) => l.hidden && l.hidden.side !== acting.side
-                )
-              ? {
-                  why: 'The enemies in the bow’s lanes are Obscured: arrows can’t reach them.',
-                  note: 'Obscured',
-                }
-              : {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'}
+          : isPinned(acting) && def.targets(fight, map, acting, acting.hex!).length > 0
+            ? {why: 'Pinned: abilities reach only the spaces next to you.', note: 'Pinned'}
+            : def.id === 'bow' && acting.hex && obscured(fight, map, acting.hex)
+              ? {why: 'Obscured: can’t shoot a bow.', note: 'Obscured'}
+              : def.id === 'bow' &&
+                  acting.hex &&
+                  arrowLanes(fight, map, acting.hex).some(
+                    (l) => l.hidden && l.hidden.side !== acting.side
+                  )
+                ? {
+                    why: 'The enemies in the bow’s lanes are Obscured: arrows can’t reach them.',
+                    note: 'Obscured',
+                  }
+                : {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'}
       );
     }
     return out;

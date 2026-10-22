@@ -16,27 +16,16 @@ import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES, RULES} from './config';
 import {
   addStatus,
-  cleanse,
   setBarrier,
   isImmobilized,
+  isPinned,
   obscured,
   onMap,
   sortByHex,
   unitAt,
   walkable,
 } from './board';
-import {
-  applyHail,
-  breakPins,
-  displace,
-  enterHex,
-  heal,
-  hit,
-  log,
-  push,
-  scaled,
-  unitName,
-} from './resolve';
+import {displace, enterHex, heal, hit, log, push, scaled, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -272,7 +261,7 @@ const sunlight: AbilityDef = {
   kind: 'heal',
   range: ABILITY.sunlight.range,
   summary: (user) =>
-    `Light a space: a unit in it is healed for ${scaled(ABILITY.sunlight.heal, user.power)} and cleansed, and hail there is cleared.`,
+    `Light a space: a unit in it is healed for ${scaled(ABILITY.sunlight.heal, user.power)}, and hail there is cleared.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.sunlight.cost,
@@ -286,8 +275,6 @@ const sunlight: AbilityDef = {
     const u = unitAt(ctx.state, h);
     if (u) {
       log(ctx, `${unitName(user)} calls down sunlight on ${unitName(u)}.`);
-      cleanse(u);
-      breakPins(ctx, u, true);
       heal(ctx, u, scaled(ABILITY.sunlight.heal, user.power));
     } else {
       log(ctx, `${unitName(user)} calls down sunlight.`);
@@ -302,9 +289,9 @@ const hail: AbilityDef = {
   name: 'Hail',
   kind: 'control',
   range: ABILITY.hail.range,
-  radius: 0,
-  summary: (user) =>
-    `Hail on a space: units in it take ${scaled(ABILITY.hail.damage, user.power)} damage and are Slowed ${ABILITY.hail.slowed}.`,
+  radius: ABILITY.hail.radius,
+  summary: () =>
+    `Hail on an area: every unit in it is Pushed ${ABILITY.hail.castPush}, and a unit that starts its turn in it is Pushed ${ABILITY.hail.turnPush}. Allies too.`,
   duration: ABILITY.hail.hexSlots,
   ultimate: false,
   charged: false,
@@ -313,19 +300,23 @@ const hail: AbilityDef = {
   targets: (_state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.hail.range, (h) => tileAt(map, h) !== 'obstacle'),
   resolve(ctx, user, target) {
-    const h = target.hex!;
-    ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, h));
-    ctx.state.effects.push({
-      kind: 'hail',
-      hex: h,
-      untilSlot: ctx.slot + ABILITY.hail.hexSlots,
-      damage: scaled(ABILITY.hail.damage, user.power),
-      slowed: ABILITY.hail.slowed,
-      statusSlots: ABILITY.hail.statusSlots,
-    });
+    const area = hexesWithin(ctx.map, target.hex!, ABILITY.hail.radius, (h) =>
+      walkable(ctx.map, h)
+    ).map((t) => t.hex!);
+    ctx.state.effects = ctx.state.effects.filter((e) => !area.some((h) => hexEquals(e.hex, h)));
+    for (const hex of area)
+      ctx.state.effects.push({
+        kind: 'hail',
+        hex,
+        untilSlot: ctx.slot + ABILITY.hail.hexSlots,
+        push: ABILITY.hail.turnPush,
+      });
     log(ctx, `${unitName(user)} calls down hail.`);
-    const u = unitAt(ctx.state, h);
-    if (u) applyHail(ctx, u);
+    // The caster's own card is placed after this, so it pays when its next turn starts.
+    const struck = unitsInArea(ctx.state, target.hex!, ABILITY.hail.radius)
+      .filter((u) => u !== user)
+      .sort((a, b) => unitOrder(a) - unitOrder(b));
+    for (const u of struck) push(ctx, u, ABILITY.hail.castPush);
   },
 };
 
@@ -357,22 +348,35 @@ const freeze: AbilityDef = {
 
 // ─── Bökh Champion ───────────────────────────────────────────────────────────
 
+/** Whether `user` is grappling `u`. */
+function grappling(user: Unit, u: Unit): boolean {
+  return u.statuses.some((s) => s.grapple?.champion === user.id && s.grapple.target === u.id);
+}
+
+/**
+ * Throw (owner, 2026-10-22, playtest): only the unit the Champion is
+ * grappling, to another free space next to the Champion (the grapple
+ * holds), or one space straight back (two away: the grapple ends).
+ */
 const throwAbility: AbilityDef = {
   id: 'throw',
   name: 'Throw',
   kind: 'attack',
   summary: (user) =>
-    `Melee: ${scaled(ABILITY.throw.damage, user.power)} damage, then throw the target to another free space next to you.`,
+    `Melee, on the unit you grapple: ${scaled(ABILITY.throw.damage, user.power)} damage, then throw it to another free space next to you, keeping hold, or one space straight back, letting go.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.throw.cost,
   movesSelf: false,
   targetsUnit: true,
   targets(state, map, user, from) {
-    const landing = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
+    const free = (h: Hex) => walkable(map, h) && !unitAt(state, h);
+    const beside = hexNeighbors(from).filter(free);
     const out: ActionTarget[] = [];
-    for (const t of adjacentUnits(state, from, (u) => u !== user)) {
-      for (const to of sortByHex(landing, (h) => h)) out.push({hex: t.hex!, to});
+    for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u))) {
+      const back = hexNeighbor(t.hex!, direction(from, t.hex!));
+      const landings = free(back) ? [...beside, back] : beside;
+      for (const to of sortByHex(landings, (h) => h)) out.push({hex: t.hex!, to});
     }
     return out;
   },
@@ -388,8 +392,8 @@ const grapple: AbilityDef = {
   id: 'grapple',
   name: 'Grapple',
   kind: 'control',
-  summary: (user) =>
-    `Melee: the target is Immobilized and Taunted and takes ${scaled(ABILITY.grapple.damagePerSlot, user.power)} damage a slot, until you move away.`,
+  summary: () =>
+    `Melee: the target is Immobilized, Vulnerable ${ABILITY.grapple.vulnerable}% and Pinned while you stay next to it. One at a time: a new grapple lets the last go.`,
   duration: ABILITY.grapple.slots,
   ultimate: false,
   charged: false,
@@ -406,21 +410,22 @@ const grapple: AbilityDef = {
 };
 
 /**
- * Grapple's statuses on `u`, tagged with the grapple so breaking it clears them all.
+ * Grapple's statuses on `u`, tagged with the grapple so breaking it clears
+ * them all. One target at a time: any earlier grapple by `user` ends.
  * The Champion stays free: moving away from the target breaks the grapple
  * (resolve.ts).
  */
 function pinUnit(ctx: Ctx, user: Unit, u: Unit): void {
+  for (const other of ctx.state.units) {
+    if (!grappling(user, other)) continue;
+    other.statuses = other.statuses.filter((s) => s.grapple?.champion !== user.id);
+    if (other !== u) log(ctx, `${unitName(user)} lets go of ${unitName(other)}.`);
+  }
   const untilSlot = ctx.slot + ABILITY.grapple.slots;
   const grapple = {champion: user.id, target: u.id};
   addStatus(u, {kind: 'immobilized', value: 0, untilSlot, grapple});
-  addStatus(u, {
-    kind: 'crushed',
-    value: scaled(ABILITY.grapple.damagePerSlot, user.power),
-    untilSlot,
-    grapple,
-  });
-  addStatus(u, {kind: 'taunted', value: 0, untilSlot, source: user.id, grapple});
+  addStatus(u, {kind: 'vulnerable', value: ABILITY.grapple.vulnerable, untilSlot, grapple});
+  addStatus(u, {kind: 'pinned', value: 0, untilSlot, grapple});
 }
 
 /**
@@ -662,6 +667,11 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     summary: (user) =>
       `An enemy that starts its turn next to you and moves away is struck as it goes: ${scaled(ABILITY.reap.damage, user.power)} damage and Pushed ${ABILITY.reap.push}.`,
   },
+  inevitable: {
+    id: 'inevitable',
+    name: 'Inevitable',
+    summary: () => 'Your card can’t be Pushed, by enemies or allies, hail included.',
+  },
 };
 
 /** The hostile Vanguards with Hold the Line next to `unit`, as its turn starts. */
@@ -739,6 +749,23 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
 
 export function abilitiesOf(unit: Unit): AbilityDef[] {
   return HEROES[unit.hero].abilities.map((id) => ABILITIES[id]);
+}
+
+/**
+ * `def`'s targets for `unit` standing on `from`, as the rules allow them:
+ * Pinned keeps only those on or next to `from` (owner, 2026-10-22,
+ * playtest). Every caller that lists a turn's legal targets uses this.
+ */
+export function legalTargets(
+  state: FightState,
+  map: MapData,
+  unit: Unit,
+  def: AbilityDef,
+  from: Hex
+): ActionTarget[] {
+  const all = def.targets(state, map, unit, from);
+  if (!isPinned(unit)) return all;
+  return all.filter((t) => !t.hex || hexDistance(t.hex, from) <= 1);
 }
 
 /** Why the unit can't use the ability at all right now, or null if it can. */

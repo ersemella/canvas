@@ -79,7 +79,7 @@ vocabulary. Guard (Phase 1 draft) is removed; Barrier replaces it.
 | **Push N** | Moves the target's card N slots later; yields if that slot is taken; within the push limit (3.5, 3.6). |
 | **Pull N** | Moves the target's card N slots earlier, never earlier than the next slot (3.5). Yields **forward** (later) if that slot is taken. Within a **pull limit**: a card can be moved earlier by at most a set number of slots in total between two of its own turns; further pulls are reduced to fit and the preview shows it. Value TBD (default to match the push limit: 10). |
 | **Swap** | Two cards exchange slots. The card moved later spends the distance from its push budget, the card moved earlier from its pull budget; if either budget can't cover the whole distance, the swap can't target that pair (a swap can't be reduced to fit). Which two cards (caster and target, or any two in range) is per ability. |
-| **Inevitable** | The card can't be moved by Push, Pull or Swap, **from allies and enemies alike**. It still yields when placed after its own turn (3.3). A status with a duration, or a passive on bosses and elites (11.3). |
+| **Inevitable** | The card can't be moved by Push, Pull or Swap, **from allies and enemies alike**. It still yields when placed after its own turn (3.3). A status with a duration, or a passive on bosses and elites (11.3), and the Bökh Champion's passive (2026-10-22, playtest). |
 
 **Why a pull limit:** without one, pulling an ally right after its turn
 gives it an extra turn, and a commander-style support could chain extra
@@ -120,6 +120,7 @@ not the fight.
 | **Immobilized** | The unit can't move: no movement on its turn, and no ability that moves it (a charge, a leap, a dash, swapping hexes) can be used. It **still acts** with any ability that doesn't move it. It **can still be displaced** by allies and enemies, and stays Immobilized where it lands (owner's call, 2026-10-19). Not a lost turn. |
 | **Dazed** | On its turn, the unit may move but can't act: a forced Hold, plus any movement cost. |
 | **Slowed N** | The unit's movement cap (one global value, 3 in Phase 1 since 2026-10-20; was 4) is reduced by N, to at least 1 hex. |
+| **Pinned** | A Grapple's hold (owner, 2026-10-22, playtest): the unit's abilities can only target its own hex or the hexes next to it. Ends with the grapple. |
 | **Taunt** | While taunted, if the unit can attack the taunter from any hex it can reach this turn, it **must**: its action is an ability that targets the taunter or includes it in its area, or a **Hold** (owner, 2026-10-20): it may wait the taunt out. Other abilities and moving out of reach are not allowed. Only when no reachable hex and no ability can hit the taunter is the unit free. A **charging** unit's ability is redirected to the taunter instead (below). Ends early if the taunter dies. |
 | **Stealth** | The unit can't be **targeted** by **hostile** direct or arcing ranged abilities (allies' ranged heals and buffs still reach it). Area abilities centred elsewhere still hit it, melee still targets it, and it still blocks line of fire. Ends when the unit uses a damaging ability. Its identity and position stay visible (D11). Distinct from the conceal tile, which only halves ranged damage. |
 

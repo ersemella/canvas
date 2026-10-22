@@ -281,6 +281,7 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
       label: `Vulnerable ${statusValue(unit, 'vulnerable')}%`,
       rest: left('vulnerable'),
     });
+  if (statusValue(unit, 'pinned')) out.push({id: 'pinned', label: 'Pinned', rest: left('pinned')});
   if (statusValue(unit, 'crushed'))
     out.push({
       id: 'crushed',

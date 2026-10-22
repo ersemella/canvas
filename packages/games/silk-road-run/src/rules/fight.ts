@@ -6,13 +6,21 @@
 import {hexEquals} from '@canvas/engine/server';
 import {CAMEL, HEROES, PARTY, movementRules} from './config';
 import {expireStatuses, invalidPath} from './board';
-import {ABILITIES, holdTheLine, linesHeld, sameTarget, unusableReason} from './abilities';
+import {
+  ABILITIES,
+  holdTheLine,
+  legalTargets,
+  linesHeld,
+  sameTarget,
+  unusableReason,
+} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
 import {onlyHold} from './choices';
 import {
-  applyHail,
   checkEnd,
   enterHex,
+  hailPush,
+  hailPushOwed,
   log,
   damageEachSlot,
   push,
@@ -179,9 +187,7 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     const ctx: Ctx = {state, map, slot: unit.slot!};
     beginSlot(ctx);
     record(state, {kind: 'turn', unitId: unit.id});
-
-    // Start of the turn: hail (brief section 2); quicksand and Crushed ticked in beginSlot.
-    applyHail(ctx, unit);
+    // Quicksand and Crushed ticked in beginSlot.
     if (state.phase !== 'fight') return;
     if (!unit.alive) continue;
 
@@ -217,15 +223,18 @@ function beginSlot(ctx: Ctx): void {
 
 /** A turn with only Hold to choose: Held for the unit, its card marked as skipped. */
 function skipTurn(ctx: Ctx, unit: Unit): void {
+  const hail = hailPushOwed(ctx.state, unit);
   unit.skipped = true;
   log(ctx, `${unitName(unit)} can only hold: turn skipped.`);
   record(ctx.state, {kind: 'skip', unitId: unit.id});
   placeCard(ctx.state, unit, ctx.slot + slotsForward(ABILITIES.hold.cost, unit.speed));
+  hailPush(ctx, unit, hail);
 }
 
 function triggerCharge(ctx: Ctx, unit: Unit): void {
   const {ability, target} = unit.charging!;
   const def = ABILITIES[ability];
+  const hail = hailPushOwed(ctx.state, unit);
   const hex = redirectedCharge(ctx.state, ctx.map, unit, target);
   unit.charging = null;
   delete unit.skipped;
@@ -236,6 +245,7 @@ function triggerCharge(ctx: Ctx, unit: Unit): void {
   checkEnd(ctx.state);
   if (unit.alive)
     placeCard(ctx.state, unit, ctx.slot + slotsForward(def.recoveryCost!, unit.speed));
+  if (ctx.state.phase === 'fight') hailPush(ctx, unit, hail);
   unit.ultimateCharge += def.recoveryCost!;
 }
 
@@ -273,12 +283,14 @@ export function applyTurn(
   // the Push their blows owe its card once the turn has placed it.
   const held = linesHeld(state, unit);
   let pushOwed = 0;
+  // Hail: starting the turn on it Pushes the card once the turn has placed it.
+  const hailOwed = hailPushOwed(state, unit);
 
   const move = () => {
     if (path.length === 0 || !unit.alive) return;
     const bad = invalidPath(state, map, unit, path);
     if (bad) throw new RuleError(bad);
-    // Quicksand and hail trigger on entering each hex, allies' hexes passed included.
+    // Quicksand triggers on entering each hex, allies' hexes passed included.
     for (const h of path) {
       pushOwed += holdTheLine(ctx, unit, h, held);
       if (!unit.alive) return;
@@ -295,7 +307,7 @@ export function applyTurn(
     const target = input.action.target ?? {};
     if (
       !trustTarget &&
-      !def.targets(state, map, unit, unit.hex!).some((t) => sameTarget(t, target))
+      !legalTargets(state, map, unit, def, unit.hex!).some((t) => sameTarget(t, target))
     ) {
       throw new RuleError(`${def.name} can’t target that.`);
     }
@@ -326,6 +338,7 @@ export function applyTurn(
   checkEnd(state);
   if (unit.alive) placeCard(state, unit, state.currentSlot + slotsForward(cost, unit.speed));
   if (pushOwed > 0 && state.phase === 'fight') push(ctx, unit, pushOwed);
+  if (state.phase === 'fight') hailPush(ctx, unit, hailOwed);
   if (countsTowardUltimate(input)) unit.ultimateCharge += cost;
 }
 

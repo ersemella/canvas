@@ -96,7 +96,7 @@ export interface HeroStats {
   moveCost?: number;
   /** Its card starts the fight first, whatever its speed (the camel). */
   actsFirst?: boolean;
-  /** An always-on trait (roster.md, Passives): the Vanguard's Hold the Line. */
+  /** An always-on trait (roster.md, Passives): the Vanguard's Hold the Line, the Champion's Inevitable. */
   passive?: PassiveId;
 }
 
@@ -124,8 +124,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 25,
     defence: 25,
     power: 10,
-    abilities: ['throw', 'grapple', 'lunge', 'hold'],
+    abilities: ['grapple', 'throw', 'lunge', 'hold'],
     ultimate: 'lunge',
+    // The counter to hail's Push (owner, 2026-10-22, playtest).
+    passive: 'inevitable',
   },
   mangudai: {
     name: 'Mangudai Outrider',
@@ -247,23 +249,25 @@ export const ABILITY = {
    * unfinished once the AI stopped spamming fog (balance.md).
    * It also clears hail from the target's own hex (owner,
    * 2026-10-21; abilities.ts): an answer to hail, as Clear the Storm was.
+   * No cleanse (owner, 2026-10-22, playtest): nothing frees a unit the
+   * Bökh Champion grapples.
    */
   sunlight: {cost: RULES.cost.quick, range: 4, heal: 50},
   /**
-   * No Vulnerable (owner, 2026-10-20; was 25%), leaving it to Freeze and
-   * flanking: damage and Slowed make it area denial. Over 300 AI-vs-AI
-   * fights, 6% unfinished (4% with it); without its damage, 19%.
-   * Damage 40 (2026-10-22; was 50): the Storm Caller made every enemy
-   * caravan it was in 10-25 points harder; at 40 its pairs sit with the
-   * others (balance.md, enemy caravans).
+   * Track control in an area (owner, 2026-10-22, playtest; was one hex,
+   * range 4, 20 slots, damage 40 and Slowed 2): no damage; every unit in
+   * it when it lands is Pushed `castPush`, and a unit that starts its turn
+   * in it is Pushed `turnPush` once that turn has placed its card, so
+   * faster units, starting more turns, pay more. Allies too. Range 6 so
+   * it reaches an Outrider that shoots from afar. Values are a first guess.
    */
   hail: {
     cost: RULES.cost.typical,
-    range: 4,
-    damage: 40,
-    hexSlots: 20,
-    slowed: 2,
-    statusSlots: 10,
+    range: 6,
+    radius: 1,
+    hexSlots: 30,
+    castPush: 3,
+    turnPush: 2,
   },
   /**
    * Ultimates buffed (owner, 2026-10-20): it now deals damage (none
@@ -282,20 +286,22 @@ export const ABILITY = {
     immobilizedSlots: 20,
     vulnerable: 50,
   },
-  throw: {cost: RULES.cost.typical, damage: 80},
   /**
-   * The target is also Crushed, taking base `damagePerSlot` every slot while
-   * grappled, scaled by power, through Vulnerable and defence, and Taunted by
-   * the Champion (17.5). No Vulnerable (owner, 2026-10-20; was 25%). The
-   * Champion isn't Immobilized itself (owner, 2026-10-20; it was): the grapple
-   * holds while the two stay adjacent, so the Champion moving away releases
-   * the target, as a wrestler would.
-   * Melee only, Crushed 10 (owner, 2026-10-22; it could step one hex first
-   * from 2026-10-21, and Crushed was 6 from 2026-10-20, 8 before). Over 400
-   * AI-vs-AI fights a side without Grapple won 50.0% with the step, 50.4%
-   * without it, 49.4% at quick cost and 46.7% at Crushed 10 (balance.md).
+   * Only the unit the Champion is grappling (owner, 2026-10-22, playtest):
+   * to another free space next to the Champion, keeping the grapple, or
+   * one space straight back, ending it. Damage 120 (was 80, on anyone
+   * adjacent): it is the Champion's only damage outside Lunge.
    */
-  grapple: {cost: RULES.cost.typical, slots: 12, damagePerSlot: 10},
+  throw: {cost: RULES.cost.typical, damage: 120},
+  /**
+   * Melee: the target is Immobilized, Vulnerable `vulnerable`% and Pinned
+   * (its abilities reach only hexes next to it) for `slots`, while the two
+   * stay adjacent; one target at a time, a new grapple releasing the last
+   * (owner, 2026-10-22, playtest; was Immobilized, Taunted and Crushed 10
+   * a slot). Pinned shuts down a caster that can't Leap away. The Champion
+   * isn't held itself: moving away releases the target, as a wrestler would.
+   */
+  grapple: {cost: RULES.cost.typical, slots: 12, vulnerable: 25},
   /**
    * The Bökh Champion's ultimate (owner, 2026-10-22; replaced Rampage,
    * typical cost, 3 hexes, damage 160, Displace 1): a unit within `reach`,
@@ -364,6 +370,12 @@ export const AI = {
    */
   statusHorizon: 20,
   immobilizedShare: {ranged: 0.1, melee: 0.4},
+  /**
+   * Not in the brief: Pinned is worth this share of the unit's own
+   * pressure over the slots it lasts; a melee unit loses nothing to it.
+   * PLACEHOLDER (2026-10-22).
+   */
+  pinnedShare: {ranged: 0.6, melee: 0},
   /** Not in the brief: per point of damage a Crushed status will still deal. */
   perCrushDamage: 1,
   /** Not in the brief: per slot a unit stays Taunted. */

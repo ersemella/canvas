@@ -44,6 +44,8 @@ function statusWords(before: Unit, after: Unit, slot: number): string[] {
   if (vuln > statusValue(before, 'vulnerable')) out.push(`Vulnerable ${vuln}%`);
   const imm = statusSlotsLeft(after, 'immobilized', slot);
   if (imm > statusSlotsLeft(before, 'immobilized', slot)) out.push(`Immobilized ${imm} slots`);
+  const pin = statusSlotsLeft(after, 'pinned', slot);
+  if (pin > statusSlotsLeft(before, 'pinned', slot)) out.push(`Pinned ${pin} slots`);
   const crush = statusValue(after, 'crushed');
   if (
     crush > 0 &&
@@ -63,8 +65,12 @@ function statusWords(before: Unit, after: Unit, slot: number): string[] {
   else if (barrier < had) out.push(barrier > 0 ? `Barrier ${barrier} left` : 'Barrier broken');
   const pushed = (after.pushed ?? 0) - (before.pushed ?? 0);
   if (after.alive && pushed > 0) out.push(`Pushed ${pushed}`);
-  if (before.statuses.length > 0 && after.statuses.length === 0 && after.alive)
-    out.push('Cleansed');
+  if (
+    before.statuses.some((s) => s.grapple) &&
+    !after.statuses.some((s) => s.grapple) &&
+    after.alive
+  )
+    out.push('Released');
   return out;
 }
 

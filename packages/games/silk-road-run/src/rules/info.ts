@@ -3,7 +3,7 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {HEROES, RULES} from './config';
+import {ABILITY, HEROES, RULES} from './config';
 import type {Tile} from './map';
 import type {HailEffect} from './types';
 
@@ -53,8 +53,8 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
   const left = hail.untilSlot - currentSlot + 1;
   return {
     name: 'Hail',
-    short: `${hail.damage} damage, Slowed ${hail.slowed}`,
-    detail: `${hail.damage} damage and Slowed ${hail.slowed} for ${hail.statusSlots} slots to a unit here when it lands, enters or starts a turn. ${slotsLeft(left)}`,
+    short: `Pushed ${hail.push} on starting a turn here`,
+    detail: `A unit here when it lands is Pushed ${ABILITY.hail.castPush}; one that starts its turn here is Pushed ${hail.push} once that turn is done. ${slotsLeft(left)}`,
   };
 }
 
@@ -80,7 +80,8 @@ export type KeywordId =
   | 'obscured'
   | 'cleanse'
   | 'barrier'
-  | 'push';
+  | 'push'
+  | 'pinned';
 
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   speed: {name: 'Speed', detail: 'Higher speed: actions cost fewer slots, so turns come sooner.'},
@@ -139,5 +140,9 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   push: {
     name: 'Push',
     detail: `Moves the unit's card this many slots later. At most ${RULES.pushLimit} between two of its turns.`,
+  },
+  pinned: {
+    name: 'Pinned',
+    detail: 'Held fast: its abilities can only target its own space or the spaces next to it.',
   },
 };

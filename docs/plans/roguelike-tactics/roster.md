@@ -84,6 +84,26 @@ big hit, and Pierce, Burn and collisions against its health. A mounted
 passive (Slowed on mounted heroes) was considered and dropped: Push is
 the answer to fast heroes. Measured in [balance.md](balance.md).
 
+**The Storm Caller and the Bökh Champion: a counter loop (owner, 2026-10-22; built for playtesting)**
+
+Aimed at a rock-paper-scissors loop among the three prototype heroes,
+ultimates aside: the Storm Caller beats the Outrider (hail's Push taxes
+fast units most), the Outrider beats the Champion (it kites a melee
+hero with no reach), the Champion beats the Storm Caller (Inevitable
+walks through hail, and Pinned silences a caster that can't Leap away).
+Values are first guesses, not measured.
+
+| Hero | Ability | Cost | Effect |
+|---|---|---|---|
+| Storm Caller | Hail | Typical (100) | An area of radius 1 within 6, for 30 slots, no damage: every unit in it when it lands is Pushed 3 (allies too); a unit that starts its turn in it is Pushed 2 once that turn has placed its card. Was one hex within 4, base 40 damage and Slowed 2 |
+| Storm Caller | Sunlight | Quick (60) | One space within 4: heals a unit there (base 50) and clears hail there. No longer cleanses |
+| Bökh Champion | Inevitable | Passive | Its card can't be Pushed, by either side, hail included |
+| Bökh Champion | Grapple | Typical (100) | Melee: Immobilized, Vulnerable 25% and Pinned for 12 slots, while the two stay adjacent; one target at a time, a new grapple letting the last go. Was Immobilized, Taunted and Crushed 10 a slot |
+| Bökh Champion | Throw | Typical (100) | Only on the unit it grapples: base 120 damage, then to another free space next to the Champion (the grapple holds) or one space straight back (it ends). Was base 80 on anyone adjacent |
+
+Lunge, the Champion's ultimate, now grapples as the new Grapple does.
+The AI prices hail's turn-start Push and Pinned (`AI.pinnedShare`).
+
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
 - A mount is reflected only in the hero's **base stats**: a horse raises speed; the Persian Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).

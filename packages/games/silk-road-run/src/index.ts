@@ -76,6 +76,7 @@ export type {HexInfo, KeywordId} from './rules/info';
 export {ABILITY, HEROES, PARTY, ROSTER, RULES} from './rules/config';
 export {
   isFlanked,
+  isPinned,
   movementCap,
   obscured,
   plainSand,
