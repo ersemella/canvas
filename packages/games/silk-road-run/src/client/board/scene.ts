@@ -23,9 +23,10 @@ export interface BoardScene {
   range?: Hex[];
   /**
    * The bow's lanes from its user: an arrow along each to a unit it may
-   * target, a faint dashed line along the rest to where the arrow stops.
+   * target, a faint dashed line along the rest to where the arrow stops;
+   * `storm`, the sandstorm hex that stops a lane short of an enemy, marked.
    */
-  lanes?: {from: Hex; lanes: {hexes: Hex[]; target: boolean}[]};
+  lanes?: {from: Hex; lanes: BowLane[]};
   /** A throw being aimed: an arc from the unit thrown, around the thrower, to where it lands. */
   arc?: {from: Hex; around: Hex; to: Hex};
   /**
@@ -43,4 +44,11 @@ export interface BoardScene {
    * unit's portrait instead.
    */
   turnArrow?: boolean;
+}
+
+/** One of the bow's lanes, as the board draws it (see `BoardScene.lanes`). */
+export interface BowLane {
+  hexes: Hex[];
+  target: boolean;
+  storm?: Hex;
 }

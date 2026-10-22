@@ -1,9 +1,10 @@
 import {assetLoader, BaseSystem, hexKey} from '@canvas/engine';
-import type {EventBus, SystemContext} from '@canvas/engine';
+import type {EventBus, Hex, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
 import {unitAt} from '../rules/board';
 import {tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
+import {taunterOf} from '../rules/taunt';
 import type {FightState} from '../rules/types';
 import {trackCards} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
@@ -17,6 +18,7 @@ import {
   HAIL_STILL_SECONDS,
   QUICKSAND_FRAME_SECONDS,
   SANDSTORM_BANK,
+  SANDSTORM_STREAKS,
   drawBank,
   drawExit,
   drawFallingHail,
@@ -30,6 +32,7 @@ import {
   drawLanes,
   drawPath,
   drawRangeOutline,
+  drawTauntChain,
   drawThrowArc,
 } from './board/overlays';
 import {
@@ -337,9 +340,25 @@ export class TacticsBoardSystem extends BaseSystem {
       if (!u.alive || !hex || walking?.has(u.id)) continue;
       const p = previewed.get(u.id);
       const moved = Boolean(p?.to && hexKey(p.to) !== hexKey(hex));
-      drawRug(ctx, hex, u.side, moved || p?.killed ? 0.4 : 1);
-      if (p?.to && moved && !p.killed) drawRug(ctx, p.to, u.side, 0.7);
+      // A rug in the sandstorm lets the storm show through, so who stands in it shows.
+      const storm = (h: Hex) => (tileAt(map, h) === 'conceal' ? 0.55 : 1);
+      drawRug(ctx, hex, u.side, (moved || p?.killed ? 0.4 : 1) * storm(hex));
+      if (p?.to && moved && !p.killed) drawRug(ctx, p.to, u.side, 0.7 * storm(p.to));
     }
+    // And its streaks blow on over those rugs.
+    const rugged = new Set<string>();
+    for (const u of fight.units) {
+      if (!u.alive || !u.hex || walking?.has(u.id)) continue;
+      rugged.add(hexKey(u.hex));
+      const to = previewed.get(u.id)?.to;
+      if (to) rugged.add(hexKey(to));
+    }
+    drawBank(
+      ctx,
+      SANDSTORM_STREAKS,
+      sandstorm.filter((h) => rugged.has(hexKey(h))),
+      t
+    );
     for (const h of scene.highlights) fillHex(ctx, h.hex, HIGHLIGHT[h.kind]);
     // The hovered hex's outline goes under the units, so it never crosses a sprite.
     if (this.hover.hex) fillHex(ctx, this.hover.hex, HOVER);
@@ -394,6 +413,14 @@ export class TacticsBoardSystem extends BaseSystem {
         drawDamage(ctx, at.x, at.y - 22, p.hpBefore - p.hpAfter, p.killed);
       }
     }
+
+    // Each taunt, chained to its taunter, so it's plain who must be attacked
+    // (not while a turn plays back, when units are on their way).
+    if (!walking && !playing)
+      for (const u of fight.units) {
+        const taunter = u.alive && u.hex ? taunterOf(fight, u) : undefined;
+        if (taunter) drawTauntChain(ctx, u.hex!, taunter.hex!);
+      }
 
     if (scene.range) drawRangeOutline(ctx, scene.range);
     if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);

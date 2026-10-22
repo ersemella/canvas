@@ -12,9 +12,10 @@ import type {ActionTarget, FightState, Unit} from './types';
 
 /**
  * The targets offered for `def` from where `unit` stands: its allowed
- * targets (see `allowedTargets`), and for one aimed at a unit only enemies.
- * The rules allow friendly fire; a player
- * isn't offered it (an area can still catch allies).
+ * targets (see `allowedTargets`), for one aimed at a unit only enemies, and
+ * for a heal no hex an enemy stands on. The rules allow friendly fire and
+ * healing an enemy; a player isn't offered either (an area can still catch
+ * allies). So a taunted Storm Caller isn't offered Sunlight on the taunter.
  */
 export function offeredTargets(
   state: FightState,
@@ -23,6 +24,11 @@ export function offeredTargets(
   def: AbilityDef
 ): ActionTarget[] {
   const targets = allowedTargets(state, map, unit, def);
+  if (def.kind === 'heal')
+    return targets.filter((t) => {
+      const u = t.hex && unitAt(state, t.hex);
+      return !u || u.side === unit.side;
+    });
   if (!def.targetsUnit) return targets;
   return targets.filter((t) => {
     const u = t.hex && unitAt(state, t.hex);

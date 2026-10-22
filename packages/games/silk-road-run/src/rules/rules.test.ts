@@ -23,7 +23,7 @@ import {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {allowedTargets} from './taunt';
-import {onlyHold} from './choices';
+import {offeredTargets, onlyHold} from './choices';
 import {
   RuleError,
   actingUnit,
@@ -503,6 +503,17 @@ describe('damage', () => {
     expect(targets.some((t) => hexEquals(t.hex!, at(4, 5)))).toBe(true);
   });
 
+  it('a bow lane a sandstorm stops says which enemy it hides', () => {
+    const s = setup({'p-mangudai': at(1, 5), 'e-bokh': at(3, 5)});
+    const map = mapOf(s);
+    expect(tileAt(map, at(3, 5))).toBe('conceal');
+    const lanes = arrowLanes(s, map, at(1, 5));
+    expect(lanes.some((l) => l.hit?.id === 'e-bokh')).toBe(false);
+    const stopped = lanes.find((l) => l.hidden?.id === 'e-bokh')!;
+    expect(stopped.storm).toEqual(at(3, 5));
+    expect(stopped.hexes).toEqual([at(2, 5)]);
+  });
+
   it('Sunlight heals a unit in, or past, a sandstorm', () => {
     const s = setup({'p-storm': at(3, 4), 'e-bokh': at(3, 5), 'e-mangudai': at(8, 6)});
     const storm = unit(s, 'p-storm');
@@ -741,6 +752,16 @@ describe('abilities', () => {
     // Thrown out of the Storm Caller's reach (it's Immobilized): it acts freely.
     unit(s, 'p-bokh').hex = at(7, 5);
     expect(tryTurn(s, 'e-storm', hailElsewhere)).not.toThrow();
+  });
+
+  it('a taunted Storm Caller is offered Hail on the taunter, not Sunlight', () => {
+    const s = setup({'e-bokh': at(1, 1), 'p-storm': at(2, 1), 'p-mangudai': at(4, 1)});
+    applyTurn(s, unit(s, 'e-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    const storm = unit(s, 'p-storm');
+    // The rules allow Sunlight on the Champion; the page doesn't offer healing an enemy.
+    expect(allowedTargets(s, SALT_FLATS, storm, ABILITIES.sunlight)).toEqual([{hex: at(1, 1)}]);
+    expect(offeredTargets(s, SALT_FLATS, storm, ABILITIES.sunlight)).toEqual([]);
+    expect(offeredTargets(s, SALT_FLATS, storm, ABILITIES.hail)).toEqual([{hex: at(1, 1)}]);
   });
 
   it('Taunt draws a damaging charge onto the taunter', () => {
