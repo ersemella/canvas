@@ -1122,9 +1122,6 @@ export function TacticsPage() {
                   <Text c="dimmed" fz="sm">
                     {outcomeText(fight)}
                   </Text>
-                  <Text c="dimmed" fz="xs" data-testid="stage">
-                    {`Stage ${stage + 1}`}
-                  </Text>
                 </Stack>
               </Paper>
             )}
