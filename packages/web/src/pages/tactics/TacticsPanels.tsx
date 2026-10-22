@@ -24,7 +24,7 @@ import {
   taunterOf,
   tileAt,
   unitName,
-} from '@canvas/games-silk-road-tactics';
+} from '@canvas/games-silk-road-run';
 import type {
   AbilityDef,
   FightState,
@@ -32,7 +32,7 @@ import type {
   KeywordId,
   TurnPreview,
   Unit,
-} from '@canvas/games-silk-road-tactics';
+} from '@canvas/games-silk-road-run';
 import {abilityIcon, KIND_NAME} from './AbilityIcon';
 import {AbilityName, Glossary, GlossaryBox, KeywordText, Term} from './Keywords';
 import styles from './TacticsPage.module.css';

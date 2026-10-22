@@ -1,11 +1,11 @@
 {
-  "extends": "../../packages/games/silk-road-tactics/tsconfig.json",
+  "extends": "../../packages/games/silk-road-run/tsconfig.json",
   "compilerOptions": {
     "rootDir": "../..",
     "composite": false,
     "noEmit": true,
     "paths": {
-      "@balance-rules/*": ["../../packages/games/silk-road-tactics/src/rules/*"],
+      "@balance-rules/*": ["../../packages/games/silk-road-run/src/rules/*"],
       "@canvas/engine": ["../../packages/engine/src/index.ts"],
       "@canvas/engine/server": ["../../packages/engine/src/server.ts"]
     }

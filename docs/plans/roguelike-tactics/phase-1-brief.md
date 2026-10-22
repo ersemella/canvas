@@ -15,7 +15,7 @@ page and the API.
 areas, durations, costs) are still to be set, and a few ability details
 are open (section 10). Everything else is usable as written. All
 numbers are **tuning placeholders**: put them in one config module
-(`packages/games/silk-road-tactics/src/rules/config.ts`) so play-testing
+(`packages/games/silk-road-run/src/rules/config.ts`) so play-testing
 can change them without touching rules code. Section numbers ("3.4")
 refer to the combat design (see the map in the README).
 
@@ -261,13 +261,13 @@ turn, so a bad preview can't cause an illegal move.
 
 ## 9. The page
 
-- **Route:** `/play/silk-road-tactics`, its own page in `@canvas/web`
+- **Route:** `/play/silk-road-run`, its own page in `@canvas/web`
   like poker's (`packages/web/src/app/router.tsx`, before the generic
   `/play/:gameId`, which only runs browser-only games). Listed on the home
   page through `platform.games.json` like every game.
-- **Title: Silk Road Tactics**, on the home page, the page heading and the
-  package name (`@canvas/games-silk-road-tactics`, game ID
-  `silk-road-tactics`).
+- **Title: Silk Road Run**, on the home page, the page heading and the
+  package name (`@canvas/games-silk-road-run`, game ID
+  `silk-road-run`).
 - **Layout:** the hex board drawn with the engine on the canvas (hex
   geometry and picking are new: the engine's grids are square); the
   **track**, the selected unit's **stat sheet**, and the **preview**
@@ -304,7 +304,7 @@ The rest don't block Phase 1; all are config values:
 
 ## 11. As built (2026-10-19)
 
-Phase 1 is built: `packages/games/silk-road-tactics` (rules in
+Phase 1 is built: `packages/games/silk-road-run` (rules in
 `src/rules/`, `./server` exporting the `RunSystem`), `RunRoom`,
 `PlayerLedger` and `/runs` in `@canvas/server`, and the page in
 `@canvas/web` (`pages/tactics/`). The builder's choices, for the owner to

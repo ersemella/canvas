@@ -6,7 +6,7 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import {mkdirSync, writeFileSync} from 'node:fs';
 import {resolve, dirname} from 'node:path';
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const require = createRequire(resolve(repo, 'packages/games/silk-road-tactics/package.json'));
+const require = createRequire(resolve(repo, 'packages/games/silk-road-run/package.json'));
 const {createServer} = await import(
   pathToFileURL(resolve(dirname(require.resolve('vite/package.json')), 'dist/node/index.js')).href
 );
@@ -38,7 +38,7 @@ const server = await createServer({
   resolve: {
     alias: {
       '@canvas/engine/server': resolve(repo, 'packages/engine/src/server.ts'),
-      '@balance-rules': resolve(repo, 'packages/games/silk-road-tactics/src/rules'),
+      '@balance-rules': resolve(repo, 'packages/games/silk-road-run/src/rules'),
     },
   },
 });

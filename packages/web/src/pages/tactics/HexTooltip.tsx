@@ -1,7 +1,7 @@
 import {useCallback, useLayoutEffect, useRef, useState} from 'react';
 import type {Hex} from '@canvas/engine';
-import {SCENE_SIZE, hexOverlaySpan} from '@canvas/games-silk-road-tactics';
-import type {FightState} from '@canvas/games-silk-road-tactics';
+import {SCENE_SIZE, hexOverlaySpan} from '@canvas/games-silk-road-run';
+import type {FightState} from '@canvas/games-silk-road-run';
 import {HexInspector} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 

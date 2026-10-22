@@ -2,7 +2,7 @@
 
 Canvas is a browser game arcade: a small ECS engine renders games to a 2D
 canvas. Poker is played over a live, server-authoritative connection;
-Silk Road Tactics, a single-player tactical roguelike, runs its fights on
+Silk Road Run, a single-player tactical roguelike, runs its fights on
 the server over plain HTTP. Everything else is a static, declarative
 manifest.
 
@@ -27,7 +27,7 @@ Four of six games (`snake`, `blackjack`, `solitaire`, `sudoku`) are pure
 client-side manifests: a `game.json` describing a scene and a list of
 engine systems, bundled into the web build and rendered entirely in the browser.
 `poker` runs against the server, using a `GameRoom` Durable Object as the
-authoritative game state and WebSocket hub. `silk-road-tactics` keeps each
+authoritative game state and WebSocket hub. `silk-road-run` keeps each
 run in a `RunRoom` Durable Object, played over plain HTTP with an anonymous
 player key; its page previews turns locally with the same rules.
 
@@ -39,7 +39,7 @@ player key; its page previews turns locally with the same rules.
 | `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Builds in the games listed in `src/platform.games.ts` (generated), instantiates a `World` per game, and is the only package with a UI framework. |
 | `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` and `RunRoom` Durable Objects. Games' server rules are registered in `src/games/registry.ts` (generated): `ServerSystem`s for rooms, `RunSystem`s for runs. |
 | `games/poker` | Poker client systems + server-authoritative Texas Hold'em logic | `.` exports the game definition, whose `register()` adds the table's client systems in `src/client/` (`PokerSystem` sends actions and turns server state into a view, `PokerRendererSystem` draws it); `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom` — the only implementation of the rules, with the deck, hand evaluator, and public-state redaction. |
-| `games/silk-road-tactics` | Tactical roguelike: rules, server entry, board renderer | `src/rules/` is DOM-free and shared: `./server` exports a `RunSystem` for `RunRoom`, and the page (`@canvas/web`'s `pages/tactics/`) imports the same rules for previews. Plan: `docs/plans/roguelike-tactics/`. Hero numbers in `src/rules/config.ts` are placeholders. |
+| `games/silk-road-run` | Tactical roguelike: rules, server entry, board renderer | `src/rules/` is DOM-free and shared: `./server` exports a `RunSystem` for `RunRoom`, and the page (`@canvas/web`'s `pages/tactics/`) imports the same rules for previews. Plan: `docs/plans/roguelike-tactics/`. Hero numbers in `src/rules/config.ts` are placeholders. |
 | `games/{snake,blackjack,solitaire,sudoku}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. Blackjack registers `BlackjackSystem`, Sudoku its puzzle generator, Solitaire the Klondike deal; Snake is manifest-only. |
 | `configs` | Shared tsconfig / eslint base | — |
 
@@ -123,7 +123,7 @@ class is retired and unreachable, but still bound in `wrangler.toml` until a
 `deleted_classes` migration removes it.
 
 ### Single-player runs: one RunRoom per run, plain HTTP
-Silk Road Tactics' runs live on the server even though nobody else is in
+Silk Road Run' runs live on the server even though nobody else is in
 the fight (rival caravans and rewards will affect other players, so a
 client-run game could forge a party). `POST /runs` makes a `RunRoom`
 (`idFromName('run:' + runId)`); every route needs `Authorization: Bearer

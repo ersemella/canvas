@@ -12,7 +12,7 @@
   "dependencies": {
     "@canvas/engine": "workspace:*",
     "@canvas/games-poker": "workspace:*",
-    "@canvas/games-silk-road-tactics": "workspace:*"
+    "@canvas/games-silk-road-run": "workspace:*"
   },
   "devDependencies": {
     "@canvas/configs": "workspace:*",

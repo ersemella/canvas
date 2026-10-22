@@ -48,7 +48,7 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
   {
     // Its own page: the run lives on the server (a RunRoom), not in the browser.
     // No top bar: the board gets the whole screen.
-    path: '/play/silk-road-tactics',
+    path: '/play/silk-road-run',
     element: (
       <Layout bare>
         <TacticsPage />

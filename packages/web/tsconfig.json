@@ -14,7 +14,7 @@
       "@canvas/games-sudoku": ["../../games/sudoku/src/index.ts"],
       "@canvas/games-blackjack": ["../../games/blackjack/src/index.ts"],
       "@canvas/games-poker": ["../../games/poker/src/index.ts"],
-      "@canvas/games-silk-road-tactics": ["../../games/silk-road-tactics/src/index.ts"]
+      "@canvas/games-silk-road-run": ["../../games/silk-road-run/src/index.ts"]
     }
   },
   "include": ["src"],
@@ -38,7 +38,7 @@
       "path": "../games/poker"
     },
     {
-      "path": "../games/silk-road-tactics"
+      "path": "../games/silk-road-run"
     }
   ]
 }

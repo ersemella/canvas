@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {Button, Paper, Stack, Text} from '@mantine/core';
-import {HEROES, HERO_PORTRAIT, PARTY} from '@canvas/games-silk-road-tactics';
-import type {HeroId} from '@canvas/games-silk-road-tactics';
+import {HEROES, HERO_PORTRAIT, PARTY} from '@canvas/games-silk-road-run';
+import type {HeroId} from '@canvas/games-silk-road-run';
 import {PALETTE_VARS} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
@@ -79,7 +79,7 @@ export function StartMenu(props: {
         <Stack gap="lg">
           <Stack gap="xs">
             <Text component="h1" className={styles.display!} fz={28} fw="bold" m={0}>
-              Silk Road Tactics
+              Silk Road Run
             </Text>
             <Text>
               Lead a caravan from the Mongolian steppe to Byzantium, guarding your cargo against

@@ -33,7 +33,7 @@ AI-vs-AI fights none went unfinished ([camel.md](camel.md), 18.6).
 ### 2. Hero numbers are placeholders (decision: section 2)
 
 Every stat and ability value marked TBD in the brief's section 4 has a
-guess in `packages/games/silk-road-tactics/src/rules/config.ts`, so the
+guess in `packages/games/silk-road-run/src/rules/config.ts`, so the
 fight can be played. Balance means nothing until the real numbers are in.
 
 ### 3. CPU per request: capped (watch)

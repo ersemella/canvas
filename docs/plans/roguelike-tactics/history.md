@@ -350,7 +350,7 @@ Learned:
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical
   name for an elephant's driver; owner's call.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game
-  is **Silk Road Tactics** (`packages/games/silk-road-tactics`). Other
+  is **Silk Road Run** (`packages/games/silk-road-run`). Other
   titles considered: Silk Road Caravans, Caravans of the Silk Road, Silk
   Road: Rival Caravans, The Silk Road Charter, Silk Road: The Closing
   Road, Last Caravan on the Silk Road, Silk Road Gambit.

@@ -19,7 +19,7 @@ Built from [phase-1-brief.md](phase-1-brief.md), which gives defaults for
 every open rule Phase 1 touches, the prototype heroes, the AI, the map,
 the API and the page.
 
-New `packages/games/silk-road-tactics` (rules, server; client): a single
+New `packages/games/silk-road-run` (rules, server; client): a single
 fight per the combat design: the track and action economy
 ([timeline.md](timeline.md)); a compact hex map with obstacles, hazards,
 conceal, deployment, flanking and line of fire ([map.md](map.md));

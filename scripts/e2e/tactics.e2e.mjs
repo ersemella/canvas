@@ -1,5 +1,5 @@
 /**
- * Silk Road Tactics end to end: the `/runs` API against the Worker (player
+ * Silk Road Run end to end: the `/runs` API against the Worker (player
  * keys, ownership, the view never carrying the seed, one active run per
  * key, illegal turns refused), then the page in Chromium: start,
  * a turn played with real taps and its preview, an enemy's stat sheet, a
@@ -35,11 +35,11 @@ const bob = key();
 
 check(
   'a run needs a player key',
-  (await api('/runs', null, {method: 'POST', body: '{"game":"silk-road-tactics"}'})).status === 401
+  (await api('/runs', null, {method: 'POST', body: '{"game":"silk-road-run"}'})).status === 401
 );
 const started = await api('/runs', alice, {
   method: 'POST',
-  body: JSON.stringify({game: 'silk-road-tactics'}),
+  body: JSON.stringify({game: 'silk-road-run'}),
 });
 /** The leftmost hex of row `r`, in axial coordinates (odd rows reach column −1). */
 const leftEdge = (r) => ({q: (r & 1 ? -1 : 0) - (r - (r & 1)) / 2, r});
@@ -182,7 +182,7 @@ check(
 
 const second = await api('/runs', alice, {
   method: 'POST',
-  body: JSON.stringify({game: 'silk-road-tactics'}),
+  body: JSON.stringify({game: 'silk-road-run'}),
 });
 check(
   'starting another run abandons the first',
@@ -202,7 +202,7 @@ check(
 // The start menu's party: the chosen heroes and the camel; a bad one is refused.
 const duo = await api('/runs', alice, {
   method: 'POST',
-  body: JSON.stringify({game: 'silk-road-tactics', party: ['mangudai', 'storm']}),
+  body: JSON.stringify({game: 'silk-road-run', party: ['mangudai', 'storm']}),
 });
 check(
   'a run starts with the chosen party and the camel',
@@ -214,7 +214,7 @@ check(
 );
 const badParty = await api('/runs', alice, {
   method: 'POST',
-  body: JSON.stringify({game: 'silk-road-tactics', party: ['bokh', 'bokh']}),
+  body: JSON.stringify({game: 'silk-road-run', party: ['bokh', 'bokh']}),
 });
 check(
   'a party with a hero twice is refused',
@@ -255,7 +255,7 @@ async function abandonOn(p) {
 }
 
 try {
-  await page.goto(`${WEB_URL}/play/silk-road-tactics`);
+  await page.goto(`${WEB_URL}/play/silk-road-run`);
   // The start menu: the game in brief, the three heroes (all taken at first), Start.
   const picks = page.getByTestId('hero-picks').getByRole('button');
   await picks.first().waitFor({timeout: 15_000});
@@ -926,7 +926,7 @@ try {
   // A phone: board on top, details in a tooltip over it, the action section
   // pinned to the bottom of the screen; no heading or hints; no scrolling.
   const phone = await browser.newPage({...devices['iPhone 13']});
-  await phone.goto(`${WEB_URL}/play/silk-road-tactics`);
+  await phone.goto(`${WEB_URL}/play/silk-road-run`);
   await phone.getByRole('button', {name: 'Start a fight'}).click();
   const phoneMove = phone.locator('[data-choice="move"]');
   await phoneMove.waitFor({timeout: 15_000});

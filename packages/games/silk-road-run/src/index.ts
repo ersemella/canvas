@@ -1,4 +1,4 @@
-// Silk Road Tactics, the tactical roguelike planned in
+// Silk Road Run, the tactical roguelike planned in
 // docs/plans/roguelike-tactics/. The client entry (this file) is the game
 // definition the web shell builds in, plus the rules its page uses for
 // previews. The server-authoritative rules run in the platform's RunRoom
@@ -33,8 +33,8 @@ function boardEntities(): EntityData[] {
   ];
 }
 
-export const silkRoadTactics: GameDefinition = {
-  id: 'silk-road-tactics',
+export const silkRoadRun: GameDefinition = {
+  id: 'silk-road-run',
   manifest: {
     ...(manifest as GameManifest),
     scene: {...(manifest as GameManifest).scene, entities: boardEntities()},
@@ -45,7 +45,7 @@ export const silkRoadTactics: GameDefinition = {
   },
 };
 
-export default silkRoadTactics;
+export default silkRoadRun;
 
 // What the platform's page uses: the board's drawing contract and the
 // rules, run locally for previews (D11).

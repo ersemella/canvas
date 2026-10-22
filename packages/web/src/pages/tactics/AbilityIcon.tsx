@@ -1,4 +1,4 @@
-import type {AbilityDef, AbilityId, AbilityKind} from '@canvas/games-silk-road-tactics';
+import type {AbilityDef, AbilityId, AbilityKind} from '@canvas/games-silk-road-run';
 
 /** What has an icon: every ability but Hold, and Move. */
 export type IconId = Exclude<AbilityId, 'hold'> | 'move';

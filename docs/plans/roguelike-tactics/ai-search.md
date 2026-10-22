@@ -126,7 +126,7 @@ candidate generation now leaves room for; that is the owner's call
 (owner-decisions.md, section 3).
 
 For repeatable local throughput checks of the current implementation, run
-`pnpm --filter @canvas/games-silk-road-tactics bench:ai`. The benchmark
+`pnpm --filter @canvas/games-silk-road-run bench:ai`. The benchmark
 prepares all three default enemy layouts and human choices before timing
 individual whole requests. Its corpus follows the current AI's self-play,
 so use a fixed saved corpus when comparing different implementations.

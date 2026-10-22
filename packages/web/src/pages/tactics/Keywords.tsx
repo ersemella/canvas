@@ -1,7 +1,7 @@
 import {createContext, useContext, useRef, useState} from 'react';
 import {CloseButton, Text} from '@mantine/core';
-import {KEYWORD_INFO} from '@canvas/games-silk-road-tactics';
-import type {KeywordId} from '@canvas/games-silk-road-tactics';
+import {KEYWORD_INFO} from '@canvas/games-silk-road-run';
+import type {KeywordId} from '@canvas/games-silk-road-run';
 import styles from './TacticsPage.module.css';
 
 /** What the box explains: a keyword, or an ability (with a keyword from its text under it). */

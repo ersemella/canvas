@@ -41,7 +41,7 @@ import {
   taunterOf,
   unitAt,
   unusableReason,
-} from '@canvas/games-silk-road-tactics';
+} from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
   ActionTarget,
@@ -55,7 +55,7 @@ import type {
   TacticsTapPayload,
   TurnInput,
   Unit,
-} from '@canvas/games-silk-road-tactics';
+} from '@canvas/games-silk-road-run';
 import '@fontsource/jersey-20/400.css';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
@@ -126,7 +126,7 @@ function savedStartMenu(): boolean {
 }
 
 /**
- * Silk Road Tactics: one fight against the AI (Phase 1). The run lives on
+ * Silk Road Run: one fight against the AI (Phase 1). The run lives on
  * the server (a RunRoom); this page draws its view, previews turns with the
  * same rules locally (D11), and sends each turn as one request. Tapping or
  * hovering a hex shows what's there; Move, then a hex, plans the move;
@@ -885,7 +885,7 @@ export function TacticsPage() {
   const game = useMemo(() => {
     registerBuiltinSystems();
     registerBuiltinComponents();
-    const definition = findGame('silk-road-tactics')!;
+    const definition = findGame('silk-road-run')!;
     const module = createModuleFor(definition);
     module.register();
     return {sceneData: module.getSceneData(), createSystems: () => module.getSystems()};

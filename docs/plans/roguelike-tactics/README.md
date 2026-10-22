@@ -1,9 +1,9 @@
-# Plan: Silk Road Tactics
+# Plan: Silk Road Run
 
 Status: **Phase 1 built (2026-10-19), with placeholder hero numbers.**
 One fight against the AI plays end to end: the rules in
-`packages/games/silk-road-tactics/src/rules/`, `RunRoom` and
-`PlayerLedger` in `@canvas/server`, the page at `/play/silk-road-tactics`.
+`packages/games/silk-road-run/src/rules/`, `RunRoom` and
+`PlayerLedger` in `@canvas/server`, the page at `/play/silk-road-run`.
 The page opens on a start menu (2026-10-21): the game in brief, which of
 the three heroes to take (one to three; the camel always comes), and Start;
 `POST /runs` takes the `party`. A run is three fights (owner, 2026-10-21;

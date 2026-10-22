@@ -7,7 +7,7 @@ the rest is **Proposed**: the numbers are the owner's to set
 ([owner-decisions.md](owner-decisions.md), decision 2).
 
 > Part of the roguelike tactics plan. Start at [README.md](README.md).
-> Numbers are in `packages/games/silk-road-tactics/src/rules/config.ts`;
+> Numbers are in `packages/games/silk-road-run/src/rules/config.ts`;
 > the stat and keyword rules are in [heroes-and-gear.md](heroes-and-gear.md)
 > and [keywords.md](keywords.md); the track is [timeline.md](timeline.md).
 

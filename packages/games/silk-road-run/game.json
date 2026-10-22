@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Silk Road Tactics",
+    "title": "Silk Road Run",
     "description": "A turn-based tactical roguelike on a fantasy Silk Road: three heroes against a rival band on a hex map. Prototype: one fight."
   },
   "canvas": {
@@ -9,7 +9,7 @@
   },
   "systems": ["MouseSystem", "HexGridSystem", "TacticsInputSystem", "TacticsBoardSystem"],
   "scene": {
-    "name": "silk-road-tactics-main",
+    "name": "silk-road-run-main",
     "entities": []
   },
   "$comment": "The board's entities are built from the map in src/index.ts."

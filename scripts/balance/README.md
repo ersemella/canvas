@@ -1,4 +1,4 @@
-# Silk Road Tactics balance simulation
+# Silk Road Run balance simulation
 
 Run from the repository root, using the existing installed dependencies:
 

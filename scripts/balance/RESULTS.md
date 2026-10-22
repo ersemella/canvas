@@ -1,4 +1,4 @@
-# Silk Road Tactics: movement balance experiment
+# Silk Road Run: movement balance experiment
 
 500 random deployments × two starting tie priorities × four rulesets × two movement costs = **8,000 simulated fights**. Seed: `20261020`. Both movement-cost runs repeat the same baseline and blocking fights, so these are **6,000 distinct experimental cases**, not 8,000 independent observations. Each deployment pair is also correlated.
 

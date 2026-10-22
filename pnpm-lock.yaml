@@ -72,7 +72,7 @@ importers:
         specifier: ^3.2.7
         version: 3.2.7(@types/node@22.19.15)
 
-  packages/games/silk-road-tactics:
+  packages/games/silk-road-run:
     devDependencies:
       '@canvas/engine':
         specifier: workspace:*
@@ -131,9 +131,9 @@ importers:
       '@canvas/games-poker':
         specifier: workspace:*
         version: link:../games/poker
-      '@canvas/games-silk-road-tactics':
+      '@canvas/games-silk-road-run':
         specifier: workspace:*
-        version: link:../games/silk-road-tactics
+        version: link:../games/silk-road-run
     devDependencies:
       '@canvas/configs':
         specifier: workspace:*
@@ -162,9 +162,9 @@ importers:
       '@canvas/games-poker':
         specifier: workspace:*
         version: link:../games/poker
-      '@canvas/games-silk-road-tactics':
+      '@canvas/games-silk-road-run':
         specifier: workspace:*
-        version: link:../games/silk-road-tactics
+        version: link:../games/silk-road-run
       '@canvas/games-snake':
         specifier: workspace:*
         version: link:../games/snake

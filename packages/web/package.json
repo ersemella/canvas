@@ -13,7 +13,7 @@
     "@canvas/engine": "workspace:*",
     "@canvas/games-blackjack": "workspace:*",
     "@canvas/games-poker": "workspace:*",
-    "@canvas/games-silk-road-tactics": "workspace:*",
+    "@canvas/games-silk-road-run": "workspace:*",
     "@canvas/games-snake": "workspace:*",
     "@canvas/games-solitaire": "workspace:*",
     "@canvas/games-sudoku": "workspace:*",

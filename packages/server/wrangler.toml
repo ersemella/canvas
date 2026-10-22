@@ -10,7 +10,7 @@ class_name = "GameRoom"
 name = "MANIFEST_REGISTRY"
 class_name = "ManifestRegistry"
 
-# Single-player runs (Silk Road Tactics): one RunRoom per run, one
+# Single-player runs (Silk Road Run): one RunRoom per run, one
 # PlayerLedger per player key. See src/routes/runs.ts.
 [[durable_objects.bindings]]
 name = "RUN_ROOM"
