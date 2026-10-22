@@ -12,6 +12,7 @@ import {
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, AI, HEROES, PARTY, RULES, STAGES} from './config';
 import {
+  canMove,
   isFlanked,
   lineOfFire,
   movementCap,
@@ -291,6 +292,49 @@ describe('the track', () => {
 });
 
 describe('the board', () => {
+  it('says a unit can move exactly when its reachable hexes include a move', () => {
+    const anyMove = (s: FightState, u: Unit) =>
+      reachableHexes(s, mapOf(s), u).some((r) => r.path.length > 0);
+    let checked = 0;
+    let boxedIn = 0;
+    for (let seed = 0; seed < 6; seed++) {
+      let run = createRun(seed);
+      for (let turn = 0; turn < 120 && run.fight.phase === 'fight'; turn++) {
+        for (const u of run.fight.units) {
+          if (!u.alive) continue;
+          expect(canMove(run.fight, mapOf(run.fight), u), `seed ${seed}, ${u.id}`).toBe(
+            anyMove(run.fight, u)
+          );
+          checked++;
+          if (!anyMove(run.fight, u)) boxedIn++;
+        }
+        const input = chooseAiTurn(run.fight, actingUnit(run.fight)!);
+        run = handleRunAction(run, {type: 'turn', ...input});
+      }
+    }
+    // Both answers came up, so neither side of the comparison went unchecked.
+    expect(checked).toBeGreaterThan(1000);
+    expect(boxedIn).toBeGreaterThan(0);
+  });
+
+  it('can move through an ally to a free hex when only enemies block (balance experiment)', () => {
+    // Each of the corner's three walkable neighbours holds an ally; past
+    // the Outrider, the hex beyond is free.
+    const s = setup({
+      'p-bokh': at(0, 0),
+      'p-mangudai': at(1, 0),
+      'p-storm': at(0, 1),
+      'p-camel': at(-1, 1),
+    });
+    const champion = unitAt(s, at(0, 0))!;
+    expect(canMove(s, SALT_FLATS, champion)).toBe(false);
+    s.experiment = {blockAllUnits: false, separateMovement: true, moveActionCost: 20};
+    expect(canMove(s, SALT_FLATS, champion)).toBe(true);
+    expect(canMove(s, SALT_FLATS, champion)).toBe(
+      reachableHexes(s, SALT_FLATS, champion).some((r) => r.path.length > 0)
+    );
+  });
+
   it('is 8 × 9 with a hex at column −1 on odd rows only, making an exact left-right mirror', () => {
     const map = SALT_FLATS;
     expect(map.hexes).toHaveLength(8 * 5 + 9 * 4);

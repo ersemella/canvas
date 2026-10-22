@@ -5,7 +5,7 @@
  */
 import {abilitiesOf, unusableReason} from './abilities';
 import type {AbilityDef} from './abilities';
-import {reachableHexes, unitAt} from './board';
+import {canMove, unitAt} from './board';
 import type {MapData} from './map';
 import {allowedTargets} from './taunt';
 import type {ActionTarget, FightState, Unit} from './types';
@@ -35,7 +35,7 @@ export function offeredTargets(
  * in) and no usable ability is offered a target.
  */
 export function onlyHold(state: FightState, map: MapData, unit: Unit): boolean {
-  if (reachableHexes(state, map, unit).some((r) => r.path.length > 0)) return false;
+  if (canMove(state, map, unit)) return false;
   return abilitiesOf(unit).every(
     (def) =>
       def.id === 'hold' ||

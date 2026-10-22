@@ -183,6 +183,19 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
   return sortByHex(out, (r) => r.hex);
 }
 
+/**
+ * Whether the unit can move at all this turn: `reachableHexes` has a hex
+ * other than its own, without listing them. When units block walking (they
+ * always do but in balance experiments), that's a walkable neighbour with
+ * no one on it: a one-hex move, and without one no path can start.
+ */
+export function canMove(state: FightState, map: MapData, unit: Unit): boolean {
+  if (!unit.hex || movementCap(unit) === 0) return false;
+  if (!movementRules(state).blockAllUnits)
+    return reachableHexes(state, map, unit).some((r) => r.path.length > 0);
+  return hexNeighbors(unit.hex).some((h) => walkable(map, h) && !unitAt(state, h));
+}
+
 /** Checks a submitted path; returns a player-facing reason if it's illegal. */
 export function invalidPath(
   state: FightState,
