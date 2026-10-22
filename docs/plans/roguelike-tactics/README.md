@@ -22,7 +22,9 @@ settled. Built in this repository (D10). The folder name,
 `roguelike-tactics`, predates the title.
 
 The fourth hero, the **Modao Vanguard** (2026-10-22), is built for
-playtesting with track Push and a new Barrier rule
+playtesting with track Push and a new Barrier rule, and revised after
+the owner's first playtest (Hold the Line, the first built passive; Reap
+a cone; Advance a charge; Barrier 40)
 ([roster.md](roster.md), [keywords.md](keywords.md), measurements in
 [balance.md](balance.md#the-modao-vanguard-2026-10-22)); the enemy draws
 its stage heroes from all four.

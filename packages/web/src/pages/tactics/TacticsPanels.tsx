@@ -5,6 +5,7 @@ import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {
   ABILITIES,
+  PASSIVES,
   CAMEL_RULE,
   EXIT_INFO,
   HEROES,
@@ -322,6 +323,8 @@ export function StatSheet({
   const statuses = statusesOf(fight, unit);
   const ultimate = HEROES[unit.hero].ultimate;
   const ult = ultimate && ABILITIES[ultimate];
+  const passiveId = HEROES[unit.hero].passive;
+  const passive = passiveId && PASSIVES[passiveId];
   // Hold isn't offered as an action (End turn is), and the ultimate gets its own section.
   const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold' && !def.ultimate);
   // The camel has none; the wolf has abilities but no ultimate.
@@ -444,6 +447,22 @@ export function StatSheet({
                         : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
                     </span>
                   )}
+                </AbilityName>
+              )}
+              {passive && (
+                <AbilityName
+                  id={passive.id}
+                  body={
+                    <Text fz="xs">
+                      <b>{passive.name}</b> · Passive
+                      <br />
+                      <span className={styles.abilitySummary}>
+                        <KeywordText text={passive.summary(unit)} />
+                      </span>
+                    </Text>
+                  }
+                >
+                  {passive.name}
                 </AbilityName>
               )}
             </div>

@@ -40,7 +40,7 @@ import {
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
-import type {AbilityId, ActionTarget, FightState, Unit} from './types';
+import type {AbilityId, ActionTarget, FightState, PassiveId, Unit} from './types';
 
 /**
  * What an ability is broadly for, shown as an icon by its name: hurting
@@ -542,16 +542,16 @@ const challenge: AbilityDef = {
   },
 };
 
-/** Reap's line from `from` along `dir`: up to its reach, stopping before ruins or the map's edge. */
-export function reapLine(map: MapData, from: Hex, dir: number): Hex[] {
-  const out: Hex[] = [];
-  let h = from;
-  for (let i = 0; i < ABILITY.reap.reach; i++) {
-    h = hexNeighbor(h, dir);
-    if (!walkable(map, h)) break;
-    out.push(h);
-  }
-  return out;
+/**
+ * Reap's cone from `from` toward `dir`: the hex next to it, then the three
+ * hexes behind that one, each on the map and not ruins. Ruins (or the map's
+ * edge) on the hex next to it stop the whole cone.
+ */
+export function reapCone(map: MapData, from: Hex, dir: number): Hex[] {
+  const front = hexNeighbor(from, dir);
+  if (!walkable(map, front)) return [];
+  const back = [(dir + 5) % 6, dir, (dir + 1) % 6].map((d) => hexNeighbor(front, d));
+  return [front, ...back.filter((h) => walkable(map, h))];
 }
 
 const reap: AbilityDef = {
@@ -559,28 +559,28 @@ const reap: AbilityDef = {
   name: 'Reap',
   kind: 'attack',
   summary: (user) =>
-    `Thrust ${ABILITY.reap.reach} spaces in a line, through every unit on it: ${scaled(ABILITY.reap.damage, user.power)} damage and Push ${ABILITY.reap.push} to each.`,
+    `Sweep a cone: the space next to you and the three behind it. Every unit in it takes ${scaled(ABILITY.reap.damage, user.power)} damage and is Pushed ${ABILITY.reap.push}.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.reap.cost,
   movesSelf: false,
-  targetsUnit: true,
-  // Any unit on one of its six lines; aimed at either of two in a line, it hits both.
+  // Aimed at the space next to it, which picks one of six cones; offered
+  // only where the cone holds a unit (cones overlap, so a unit two spaces
+  // away can be in two).
   targets(state, map, user, from) {
-    const out: ActionTarget[] = [];
-    for (const d of DIRECTIONS) {
-      for (const h of reapLine(map, from, d)) {
+    return DIRECTIONS.filter((d) =>
+      reapCone(map, from, d).some((h) => {
         const u = unitAt(state, h);
-        if (u && u !== user) out.push({hex: h});
-      }
-    }
-    return out;
+        return u !== undefined && u !== user;
+      })
+    ).map((d) => ({hex: hexNeighbor(from, d)}));
   },
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)} reaps.`);
-    const victims = reapLine(ctx.map, user.hex!, direction(user.hex!, target.hex!))
+    const victims = reapCone(ctx.map, user.hex!, direction(user.hex!, target.hex!))
       .map((h) => unitAt(ctx.state, h))
-      .filter((u): u is Unit => u !== undefined);
+      .filter((u): u is Unit => u !== undefined)
+      .sort((a, b) => unitOrder(a) - unitOrder(b));
     for (const u of victims) {
       hit(ctx, user, u, ABILITY.reap.damage, 'The reap');
       push(ctx, u, ABILITY.reap.push);
@@ -588,22 +588,53 @@ const reap: AbilityDef = {
   },
 };
 
+/**
+ * Where an Advance may end its charge: where the Vanguard stands, or up to
+ * `steps` hexes on along one of six straight lines, each a free walkable
+ * hex (units and ruins stop it). Immobilized, only where it stands.
+ */
+export function advanceLandings(state: FightState, map: MapData, user: Unit, from: Hex): Hex[] {
+  const out = [from];
+  if (isImmobilized(user)) return out;
+  for (const d of DIRECTIONS) {
+    let h = from;
+    for (let i = 0; i < ABILITY.advance.steps; i++) {
+      h = hexNeighbor(h, d);
+      if (!walkable(map, h) || unitAt(state, h)) break;
+      out.push(h);
+    }
+  }
+  return out;
+}
+
 const advance: AbilityDef = {
   id: 'advance',
   name: 'Advance',
   kind: 'attack',
-  // Centred on the Vanguard: the area is the six spaces around it.
+  range: ABILITY.advance.steps,
+  // Centred on where the charge ends: the six spaces around it.
   radius: ABILITY.advance.radius,
   summary: (user) =>
-    `Every unit next to you takes ${scaled(ABILITY.advance.damage, user.power)} damage, is knocked back ${ABILITY.advance.displace} and Pushed ${ABILITY.advance.push}.`,
+    `Charge up to ${ABILITY.advance.steps} spaces in a straight line, then every unit next to you takes ${scaled(ABILITY.advance.damage, user.power)} damage, is knocked back ${ABILITY.advance.displace} and Pushed ${ABILITY.advance.push}.`,
   ultimate: true,
   charged: false,
   cost: ABILITY.advance.cost,
+  // The charge is optional, so Immobilized only keeps it in place.
   movesSelf: false,
-  targets: (_state, _map, _user, from) => [{hex: from}],
-  resolve(ctx, user) {
-    const centre = user.hex;
-    if (!centre) return;
+  targets: (state, map, user, from) =>
+    advanceLandings(state, map, user, from).map((hex) => ({hex})),
+  resolve(ctx, user, target) {
+    const start = user.hex;
+    if (!start) return;
+    if (!hexEquals(start, target.hex!)) {
+      const dir = direction(start, target.hex!);
+      for (let h = start; !hexEquals(h, target.hex!) && user.alive; ) {
+        h = hexNeighbor(h, dir);
+        enterHex(ctx, user, h);
+      }
+      if (!user.alive) return;
+    }
+    const centre = user.hex!;
     log(ctx, `${unitName(user)} advances like a wall.`);
     const victims = ctx.state.units
       .filter((u) => u.alive && u.hex && hexDistance(u.hex, centre) === 1)
@@ -616,6 +647,58 @@ const advance: AbilityDef = {
     }
   },
 };
+
+/** An always-on trait, shown on the stat sheet beside the abilities. */
+export interface PassiveDef {
+  id: PassiveId;
+  name: string;
+  summary(user: Unit): string;
+}
+
+export const PASSIVES: Record<PassiveId, PassiveDef> = {
+  holdTheLine: {
+    id: 'holdTheLine',
+    name: 'Hold the Line',
+    summary: (user) =>
+      `An enemy that starts its turn next to you and moves away is struck as it goes: ${scaled(ABILITY.reap.damage, user.power)} damage and Pushed ${ABILITY.reap.push}.`,
+  },
+};
+
+/** The hostile Vanguards with Hold the Line next to `unit`, as its turn starts. */
+export function linesHeld(state: FightState, unit: Unit): Unit[] {
+  if (!unit.hex) return [];
+  return state.units
+    .filter(
+      (v) =>
+        v.alive &&
+        v.hex &&
+        v.side !== unit.side &&
+        HEROES[v.hero].passive === 'holdTheLine' &&
+        hexDistance(v.hex, unit.hex!) === 1
+    )
+    .sort((a, b) => unitOrder(a) - unitOrder(b));
+}
+
+/**
+ * Hold the Line (owner, 2026-10-22, playtest): `unit`, about to stand on
+ * `next` by its own move this turn, is struck by each Vanguard in `held`
+ * that it was next to when its turn started and leaves the reach of. The
+ * damage lands now, before it gets away; the Push is returned, to apply
+ * once its turn has placed its card. Each Vanguard strikes once a turn
+ * (`held` loses it).
+ */
+export function holdTheLine(ctx: Ctx, unit: Unit, next: Hex, held: Unit[]): number {
+  let pushes = 0;
+  for (const v of [...held]) {
+    if (!unit.alive) break;
+    if (!v.alive || !v.hex || hexDistance(v.hex, next) <= 1) continue;
+    held.splice(held.indexOf(v), 1);
+    log(ctx, `${unitName(v)} holds the line.`);
+    hit(ctx, v, unit, ABILITY.reap.damage, 'The parting blow');
+    pushes += ABILITY.reap.push;
+  }
+  return pushes;
+}
 
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 

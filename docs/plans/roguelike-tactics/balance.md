@@ -543,6 +543,33 @@ against the prototype party (the Champion in its place). Experiments:
   10, Challenge quick with Barrier 80 for 6 slots, Reap a line of 2 at
   base 70 and Push 2, Advance instant.
 
+**After the first playtest (owner, 2026-10-22).** Hold the Line (passive),
+Reap a cone of 4 with Push 3, Advance a charge of up to 3 then strike,
+Barrier 40. Same team and method, 400 fights an experiment, against the
+kit built for playtesting above (a worktree of the commit before);
+`scripts/balance/experiments/modao-playtest.mjs`, results in
+`work/modao-playtest-*.json` (not committed). Hold the Line acts on the
+other side's turns, so a one-sided ban can't ablate it.
+
+| | Playtest kit | Revised kit |
+|---|---|---|
+| Vanguard team against the prototype party | 40.7% | 46.9% |
+| Side without Reap / Challenge / Advance wins | 42% / 37.8% / 46.3% | 36% / 35.6% / 45.1% |
+| Mirror unfinished | 5.5% | 3% |
+| Mirror median actions | 87 | 62 |
+| Vanguard's turns: move, Challenge, Reap, Advance | 58%, 34%, 4%, 4% | 56%, 31%, 8%, 5% |
+| Damage a fight: Reap, Advance, Hold the Line | 104, 190, — | 184, 207, 33 |
+| Barrier absorbed a fight | 455 | 333 |
+
+- **Reap now pulls its weight:** used twice as often, nearly twice the
+  damage, and a side without it falls from 42% to 36%.
+- **Advance is still the weakest part** (a side without it wins 45%):
+  the charge helps, but it is still used once in about two fights.
+- **Hold the Line is small in the AI's hands** (33 damage a fight): the
+  AI prices the blow, so it mostly stays put rather than walk away. Its
+  worth is in that deterrence, which playtesting has to judge.
+- **The Vanguard still walks on over half its turns** at speed 10.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

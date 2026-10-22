@@ -191,13 +191,18 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           }
         }
       }
-      // Reap's line, through units, stopped by ruins.
+      // Reap's cones: the hex next to it and the three behind, stopped by ruins in front.
       if (reap > 0) {
-        for (const [dq, dr] of AXIAL) {
-          for (let i = 1; i <= ABILITY.reap.reach; i++) {
-            const tile = board.get(id(fq + dq * i, fr + dr * i));
-            if (tile === undefined || tile === 'obstacle') break;
-            mark(hexes, id(fq + dq * i, fr + dr * i), 'other', reap);
+        for (let d = 0; d < 6; d++) {
+          const [dq, dr] = AXIAL[d]!;
+          const front = board.get(id(fq + dq, fr + dr));
+          if (front === undefined || front === 'obstacle') continue;
+          mark(hexes, id(fq + dq, fr + dr), 'other', reap);
+          for (const b of [(d + 5) % 6, d, (d + 1) % 6]) {
+            const [bq, br] = AXIAL[b]!;
+            const k = id(fq + dq + bq, fr + dr + br);
+            const tile = board.get(k);
+            if (tile !== undefined && tile !== 'obstacle') mark(hexes, k, 'other', reap);
           }
         }
       }

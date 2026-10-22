@@ -20,7 +20,7 @@ import {
   arrowLanes,
   mapOf,
   onMap,
-  reapLine,
+  reapCone,
   unitAt,
 } from '@canvas/games-silk-road-run';
 import type {
@@ -194,13 +194,16 @@ export function buildScene(input: SceneInput): BoardScene {
           if (hexDistance(h, target.hex) <= radius && onMap(map, h))
             highlights.push({hex: h, kind: 'area'});
       }
-      // Reap: the whole line it thrusts along, through every unit on it.
+      // Reap: the whole cone it sweeps, through every unit in it.
       if (ability === 'reap' && from) {
         const dir = hexDirectionTo(from, target.hex);
         if (dir !== null)
-          for (const h of reapLine(mapOf(fight), from, dir))
+          for (const h of reapCone(mapOf(fight), from, dir))
             if (!hexEquals(h, target.hex)) highlights.push({hex: h, kind: 'area'});
       }
+      // Advance: the charge's way there, drawn as a move's.
+      if (ability === 'advance' && from && !hexEquals(from, target.hex))
+        out.step = [from, target.hex];
       highlights.push({hex: target.hex, kind: 'chosen'});
       if (target.to) highlights.push({hex: target.to, kind: 'chosen'});
     }

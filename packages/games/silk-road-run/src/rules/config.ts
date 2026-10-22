@@ -7,7 +7,7 @@
  * are guesses from the roster's relative bands, only so a fight can be
  * played.
  */
-import type {AbilityId, FightState, HeroId} from './types';
+import type {AbilityId, FightState, HeroId, PassiveId} from './types';
 
 export const RULES = {
   /**
@@ -96,6 +96,8 @@ export interface HeroStats {
   moveCost?: number;
   /** Its card starts the fight first, whatever its speed (the camel). */
   actsFirst?: boolean;
+  /** An always-on trait (roster.md, Passives): the Vanguard's Hold the Line. */
+  passive?: PassiveId;
 }
 
 /**
@@ -160,6 +162,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 25,
     abilities: ['reap', 'challenge', 'advance', 'hold'],
     ultimate: 'advance',
+    passive: 'holdTheLine',
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -311,22 +314,28 @@ export const ABILITY = {
    * turn; the Barrier lasts 6 slots, short of it (was 16: refreshed every
    * turn, it was cast on 57% of the Vanguard's turns and absorbed about 600
    * damage a fight, and 7% of AI-vs-AI mirror fights went unfinished).
+   * Barrier 40 (owner, 2026-10-22, playtest; was 80): it takes a hit whole
+   * whatever its size, so its value only sets how many small hits it eats.
    */
-  challenge: {cost: RULES.cost.quick, range: 3, tauntSlots: 14, barrier: 80, barrierSlots: 6},
+  challenge: {cost: RULES.cost.quick, range: 3, tauntSlots: 14, barrier: 40, barrierSlots: 6},
   /**
-   * A thrust along a line of `reach` hexes from the Vanguard, through every
-   * unit on it, stopped by ruins: damage, then Push (owner, 2026-10-22; it
-   * was a sweep over three hexes next to the Vanguard, used on 2–13% of its
-   * turns while it spent 40–78% walking).
+   * A cone in one of six directions: the hex next to the Vanguard and the
+   * three behind it, through every unit in it, ruins stopping it: damage,
+   * then Push (owner, 2026-10-22, playtest: Push 3, was 2; the straight line
+   * of 2 it replaced was hard to land, and a sweep over the three hexes
+   * next to it before that was used on 2–13% of its turns while it spent
+   * 40–78% walking).
    */
-  reap: {cost: RULES.cost.typical, reach: 2, damage: 70, push: 2},
+  reap: {cost: RULES.cost.typical, damage: 70, push: 3},
   /**
-   * Every adjacent unit takes damage, is displaced 1 away and pushed.
-   * Instant (owner, 2026-10-22; was charged, charge 20, recovery 60: its
-   * targets stepped out of it, and a side without it won 50% of AI-vs-AI
-   * mirror fights; instant, 45%).
+   * A charge of up to `steps` hexes in a straight line over free ground (or
+   * none), then every adjacent unit takes damage, is displaced 1 away and
+   * pushed (owner, 2026-10-22, playtest: with no step it rarely had anyone
+   * next to it). Instant (owner, 2026-10-22; was charged, charge 20,
+   * recovery 60: its targets stepped out of it, and a side without it won
+   * 50% of AI-vs-AI mirror fights; instant, 45%).
    */
-  advance: {cost: RULES.cost.typical, radius: 1, damage: 160, displace: 1, push: 4},
+  advance: {cost: RULES.cost.typical, steps: 3, radius: 1, damage: 160, displace: 1, push: 4},
   /** The wolf's one attack (owner, 2026-10-21). Damage PLACEHOLDER: 150 at its power. */
   bite: {cost: RULES.cost.typical, damage: 100},
 } as const;

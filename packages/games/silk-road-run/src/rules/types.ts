@@ -28,6 +28,9 @@ export type AbilityId =
   | 'advance'
   | 'bite';
 
+/** An always-on trait rather than an action: the Modao Vanguard's Hold the Line. */
+export type PassiveId = 'holdTheLine';
+
 export type StatusKind =
   | 'immobilized'
   | 'slowed'

@@ -9,7 +9,7 @@
 import {hexDirectionTo, hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, movementRules} from './config';
-import {ABILITIES, abilitiesOf, reapLine, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, reapCone, unusableReason} from './abilities';
 import type {AbilityDef} from './abilities';
 import {reachableHexes} from './board';
 import type {MapData} from './map';
@@ -43,9 +43,10 @@ export function affectsHex(
     case 'challenge':
       return near(target.hex, 0);
     case 'reap':
-      return reapLine(map, from, hexDirectionTo(from, target.hex!)!).some((h) => near(h, 0));
+      return reapCone(map, from, hexDirectionTo(from, target.hex!)!).some((h) => near(h, 0));
     case 'advance':
-      return hexDistance(from, victim) === 1;
+      // Around where its charge ends.
+      return hexDistance(target.hex!, victim) === 1;
     case 'hail':
     case 'sunlight':
       return near(target.hex, 0);
