@@ -147,12 +147,12 @@ check(
   combined.status === 400 && combined.body?.message?.includes('separate turns'),
   combined.body
 );
-// Walk up the column into the nearest ally, when it is within a move's reach (4 hexes).
+// Walk up the column into the nearest ally, when it is within a move's reach (3 hexes).
 const ally = heroFight.units
   .filter((u) => u.side === 'player' && u !== actor && u.hero !== 'camel')
   .sort((a, b) => Math.abs(a.hex.r - actor.hex.r) - Math.abs(b.hex.r - actor.hex.r))[0];
 const gap = ally.hex.r - actor.hex.r;
-if (Math.abs(gap) <= 4) {
+if (Math.abs(gap) <= 3) {
   const throughAlly = await api(`/runs/${runId}/turn`, alice, {
     method: 'POST',
     body: JSON.stringify({

@@ -33,9 +33,10 @@ export const RULES = {
   cost: {typical: 100, quick: 60, slow: 150},
   /**
    * Ordinary walking cap (5.1); Slowed lowers it, to at least 1.
-   * Restored to 4 on 2026-10-20 now that movement is a separate action.
+   * Restored to 4 on 2026-10-20 now that movement is a separate action;
+   * 3 since 2026-10-22 (owner).
    */
-  movementCap: 4,
+  movementCap: 3,
   /**
    * Action cost a hero must spend before its ultimate unlocks (10.10):
    * every turn's cost counts, moves included, but not a Hold without a move

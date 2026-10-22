@@ -1252,8 +1252,9 @@ describe('previews, the AI and the run', () => {
     expect(JSON.stringify(s)).toBe(before);
   });
 
-  it('prices walking at 30, 40, 50 and 60, with matching previews and yielding', () => {
-    for (const length of [1, 2, 3, 4]) {
+  it('prices walking at 30, 40 and 50, with matching previews and yielding', () => {
+    expect(RULES.movementCap).toBe(3);
+    for (const length of [1, 2, 3]) {
       const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(7, 0)});
       const actor = unit(s, 'p-mangudai');
       const input: TurnInput = {
@@ -1274,6 +1275,19 @@ describe('previews, the AI and the run', () => {
       expect(s.events.some((e) => e.kind === 'action')).toBe(false);
       expect(s.events.filter((e) => e.kind === 'step')).toHaveLength(length);
     }
+  });
+
+  it('refuses a move longer than 3 spaces', () => {
+    const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(7, 0)});
+    expect(
+      tryTurn(s, 'p-mangudai', {
+        move: [1, 2, 3, 4].map((c) => at(c, 0)),
+        action: {ability: 'hold'},
+      })
+    ).toThrow(/longer than the unit can go/);
+    expect(
+      Math.max(...reachableHexes(s, mapOf(s), unit(s, 'p-mangudai')).map((r) => r.path.length))
+    ).toBe(3);
   });
 
   it('a Grapple and a move in one turn are refused', () => {
