@@ -122,16 +122,16 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const melee = Math.max(
       usable('throw') ? scaled(ABILITY.throw.damage, e.power) : 0,
       usable('bite') ? scaled(ABILITY.bite.damage, e.power) : 0,
-      usable('pin') ? scaled(ABILITY.pin.damagePerSlot, e.power) * ABILITY.pin.slots : 0
+      usable('grapple') ? scaled(ABILITY.grapple.damagePerSlot, e.power) * ABILITY.grapple.slots : 0
     );
-    // Pin reaches a hex further, after its optional step (2026-10-21).
-    const pinStep =
-      usable('pin') && !isImmobilized(e)
-        ? scaled(ABILITY.pin.damagePerSlot, e.power) * ABILITY.pin.slots
+    // Lunge bounds up to `reach - 1` hexes, onto ground that isn't ruins, then strikes and grapples.
+    const lunge =
+      usable('lunge') && !isImmobilized(e)
+        ? scaled(ABILITY.lunge.damage, e.power) +
+          scaled(ABILITY.grapple.damagePerSlot, e.power) * ABILITY.grapple.slots
         : 0;
     const hail = usable('hail') ? scaled(ABILITY.hail.damage, e.power) : 0;
     const bow = usable('bow') ? scaled(ABILITY.bow.damage, e.power) : 0;
-    const rampage = usable('rampage') ? scaled(ABILITY.rampage.damage, e.power) : 0;
     const reap = usable('reap') ? scaled(ABILITY.reap.damage, e.power) : 0;
     const reach: [number, number][] = movementRules(state).separateMovement
       ? [[e.hex.q, e.hex.r]]
@@ -157,13 +157,25 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     for (const [fq, fr] of reach) {
       if (melee > 0)
         for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), 'other', melee);
-      if (pinStep > 0) {
-        for (const [sq, sr] of AXIAL) {
-          const tile = board.get(id(fq + sq, fr + sr));
-          if (tile === undefined || tile === 'obstacle') continue;
-          for (const [dq, dr] of AXIAL)
-            mark(hexes, id(fq + sq + dq, fr + sr + dr), 'other', pinStep);
+      if (lunge > 0) {
+        // Every hex beside a hex the bound can reach, ring by ring.
+        const seen = new Set([id(fq, fr)]);
+        let frontier: [number, number][] = [[fq, fr]];
+        for (let step = 1; step < ABILITY.lunge.reach; step++) {
+          const next: [number, number][] = [];
+          for (const [q, r] of frontier)
+            for (const [dq, dr] of AXIAL) {
+              const k = id(q + dq, r + dr);
+              const tile = board.get(k);
+              if (seen.has(k) || tile === undefined || tile === 'obstacle') continue;
+              seen.add(k);
+              next.push([q + dq, r + dr]);
+              for (const [nq, nr] of AXIAL)
+                mark(hexes, id(q + dq + nq, r + dr + nr), 'other', lunge);
+            }
+          frontier = next;
         }
+        for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), 'other', lunge);
       }
       // The bow can't shoot out of a sandstorm, nor into or through one (Obscured).
       if (bow > 0 && board.get(id(fq, fr)) !== 'conceal') {
@@ -186,18 +198,6 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
             const tile = board.get(id(fq + dq * i, fr + dr * i));
             if (tile === undefined || tile === 'obstacle') break;
             mark(hexes, id(fq + dq * i, fr + dr * i), 'other', reap);
-          }
-        }
-      }
-      if (rampage > 0) {
-        for (const [dq, dr] of AXIAL) {
-          for (let i = 1; i <= ABILITY.rampage.distance; i++) {
-            const q = fq + dq * i;
-            const r = fr + dr * i;
-            const tile = board.get(id(q, r));
-            if (tile === undefined || tile === 'obstacle') break;
-            mark(hexes, id(q, r), 'other', rampage);
-            for (const [nq, nr] of AXIAL) mark(hexes, id(q + nq, r + nr), 'other', rampage);
           }
         }
       }

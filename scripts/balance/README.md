@@ -81,7 +81,7 @@ An experiments file exports `experiments`, a map from a name to
 experiment (`ABILITY`, `AI`, `HEROES`, `RULES` and the `ABILITIES` definitions,
 whose `cost` and `recoveryCost` are copied from `ABILITY` at load time, so set
 both; an ability's `charged` can be switched too); it is undone afterwards.
-`party` sets both sides' heroes (default the three prototype heroes). `mod`
+`mod`
 changes one side only: `ban` removes abilities, `stats` adds to a hero's
 speed, defence, power or hp, `party` replaces its heroes. With `mod`,
 each seed is played twice, once with each side modified, and `modWinPct` is
@@ -89,7 +89,12 @@ the modified side's share of finished fights: 50% means the change does
 nothing, and a ban above 50% means the ability loses games when used.
 
 Each fight uses `createFight(seed)`, so it has its own random ruins, quicksand
-and starting places. Output per experiment: unfinished share, median actions
+and starting places. An experiment may also set `party` (the player's heroes;
+the camel is added) and `enemies` (the enemy's units, wolves included), both
+defaulting to the three heroes, the enemy to `party` when only that is set; `experiments/caravans.mjs` uses them to field
+each stage's enemy caravans. Without `mod`, `playerWinPct` is the player
+side's share of finished fights, with `outcomes` (enemies beaten, camel out,
+camel killed, party killed), `heroesLeftPerWin` and `playerSurvivalPct`. Output per experiment: unfinished share, median actions
 and slots, each hero's turns per unit and share of turns per ability, damage
 and kills by source, healing, ultimate use and survival. Damage is attributed
 from the fight log, so Hail, quicksand and Crushed are counted against the

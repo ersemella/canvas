@@ -95,7 +95,7 @@ The keyword vocabulary comes before heroes (10.8); the full list is in
 |---|---|
 | **Displace N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the displaced unit takes **20 damage**, and a unit it hits also takes 20 (ignoring defence). Entering a hazard triggers it. Doesn't move the displaced unit's card. |
 | **Displace to a hex** | The Bökh Champion's Throw: the target is set down on a chosen free hex the ability names. No collision, since the hex is free; a hazard there triggers. |
-| **Immobilized** | No movement, and no ability that moves the unit (Leap, Rampage). It still acts, and can still be displaced, staying Immobilized where it lands (17.5). |
+| **Immobilized** | No movement, and no ability that moves the unit (Leap; Lunge then strikes only a unit next to it). It still acts, and can still be displaced, staying Immobilized where it lands (17.5). |
 | **Slowed N** | Movement cap lowered by N, to at least 1 hex (17.5). Combines by max. |
 | **Vulnerable N%** | Takes N% more damage from every source (17.6). Combines by max, flanks included (section 2). |
 | **Heal N** | Restores N health, up to max health; scaled by power when the ability states it (17.7). |
@@ -150,22 +150,22 @@ reading of the owner's one-line descriptions; the owner can change them
 | **Sunlight** (Clear the Storm until 2026-10-19, owner) | Targets **one space** within range 4, empty or not (owner, 2026-10-21; a unit before). A unit on it, the caster or an **enemy** included (6.7, 2026-10-19), is **healed** (base heal 50, scaled by power: owner, 2026-10-20; 35 and 50 earlier that day) and **cleansed**, and **hail and fog are cleared from its hex** (that hex only, owner, 2026-10-21); aimed at a space, it **isn't stopped by a sandstorm** (owner, 2026-10-21; earlier that day it couldn't target a unit in, or past, one) (cleansed: owner, 2026-10-20; it was every unit within a radius of the caster, which under separate movement took a turn of positioning first). Cleansing an enemy removes the party's own control from it. Quick cost, 60 (owner, 2026-10-20; typical before). |
 | **Hail** | Targets a hex within range TBD; it becomes a **hail hex for TBD slots**, a temporary board effect. A unit on it when it lands, entering it, or starting its turn on it takes **base damage 50** (owner, 2026-10-19; scaled by the caster's power when cast, then Vulnerable and defence as any hit), then is **Slowed** for TBD slots (no Vulnerable since 2026-10-20, owner; Freeze and flanking keep it). Hits any side. Any hex within its **maximum range** can be targeted, with **no line of fire** needed; not charged (owner's call, 2026-10-18; a departure from rule 30, that arcing attacks are charged, which hail's lack of damage justified; it now deals damage, so whether it stays uncharged is open). Typical cost. |
 | ~~Fog~~ | **Removed (owner, 2026-10-21).** It replaced Gale on 2026-10-20: its hexes were Obscured for 20 slots. No version measured worth its turn, and fog that blocked sight made fights 15–35% longer ([balance.md](balance.md)). The Storm Caller's kit is Sunlight, Hail and Freeze. |
-| **Freeze** (ultimate) | An area, **instant** at typical cost (owner, 2026-10-20; it was charged, with a casting time, from 2026-10-18, and its targets stepped out of it: [balance.md](balance.md)): targets any hex within maximum range TBD, no line of fire needed. Every unit in the area (radius TBD), allies included, takes base damage **60** and is then **Immobilized** and **Vulnerable 50%** for 20 slots (owner, 2026-10-20: ultimates buffed; no damage, 25% for 15 before). |
+| **Freeze** (ultimate) | An area, **instant** at typical cost (owner, 2026-10-20; it was charged, with a casting time, from 2026-10-18, and its targets stepped out of it: [balance.md](balance.md)): targets any hex within maximum range TBD, no line of fire needed. Every unit in the area (radius TBD), allies included, takes base damage **120** (owner, 2026-10-22; 60 from 2026-10-20) and is then **Immobilized** and **Vulnerable 50%** for 20 slots (owner, 2026-10-20: ultimates buffed; no damage, 25% for 15 before). |
 
 **Bökh Champion**
 
 | Ability | Rule |
 |---|---|
 | **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
-| **Pin** | Melee, after an optional **one-hex step** to a free hex next to the target, at the same cost (owner, 2026-10-21; not while Immobilized): the target is **Immobilized** for TBD slots (the Champion was too until 2026-10-20; owner: it stays free, and moving away releases the target, as a wrestler would), and the target is **Crushed** and **Taunted** by the Champion for the same (owner, 2026-10-19; it was also Vulnerable until 2026-10-20). Crushed: base **6** damage every slot (8 until 2026-10-20), scaled by the Champion's power, through Vulnerable and defence like quicksand. Taunted (17.5): while it can affect the Champion from any hex it can reach, its action must target the Champion or include it in its area, or be a Hold (owner, 2026-10-20), and a damaging charge is drawn onto the Champion if in range; it ends if the Champion dies. Sunlight's cleanse of the target removes them all (breaking the pin). Both still act. The pin **breaks** if the target is cleansed or the two are no longer adjacent (either displaced away, or the Champion moving away), clearing **every status the Pin gave either unit** (owner, 2026-10-20). Cleansing the Champion doesn't break it. Typical cost. |
-| **Rampage** (ultimate) | Charges **3 hexes in a straight line** along one hex direction and **completes the line**: only an **obstacle** or an **Unstoppable** unit in its path stops it early (owner's call, 2026-10-18), and the map edge ends it. Step by step, every unit in the path or adjacent to a hex the Champion enters is hit **once**: it takes base damage TBD and is **Displaced 1** away from the Champion's hex at that moment (several at once: farthest first, 17.4); collisions deal their usual damage. Allies take the damage too (6.7, 2026-10-19). *(Proposed:* a unit in the path that couldn't be displaced (a collision), or was displaced ahead, is passed through; if the last hex is occupied, the Champion ends on the last free hex it passed.) Not usable while Immobilized. Base damage 160, typical cost (owner, 2026-10-20: ultimates buffed; 100 and slow before). |
+| **Grapple** (Pin until 2026-10-22, owner) | **Melee** (owner, 2026-10-22; from 2026-10-21 it could step one hex first, to a free hex next to the target): the target is **Immobilized** for TBD slots (the Champion was too until 2026-10-20; owner: it stays free, and moving away releases the target, as a wrestler would), and the target is **Crushed** and **Taunted** by the Champion for the same (owner, 2026-10-19; it was also Vulnerable until 2026-10-20). Crushed: base **10** damage every slot (owner, 2026-10-22; 6 from 2026-10-20, 8 before), scaled by the Champion's power, through Vulnerable and defence like quicksand. Taunted (17.5): while it can affect the Champion from any hex it can reach, its action must target the Champion or include it in its area, or be a Hold (owner, 2026-10-20), and a damaging charge is drawn onto the Champion if in range; it ends if the Champion dies. Sunlight's cleanse of the target removes them all (breaking the grapple). Both still act. The grapple **breaks** if the target is cleansed or the two are no longer adjacent (either displaced away, or the Champion moving away), clearing **every status the Grapple gave either unit** (owner, 2026-10-20). Cleansing the Champion doesn't break it. Typical cost. |
+| **Lunge** (ultimate) | Replaced **Rampage** (owner, 2026-10-22; a 3-hex charge in a straight line, base 160 to each unit in or beside its path and Displace 1). A unit within **3**: next to the Champion, struck where it stands; otherwise the Champion first **bounds** up to 2 hexes, along free walkable hexes, to a free hex beside it (the player picks it), entering only that hex. The target takes base **100**, then is **grappled** as by Grapple (Immobilized, Crushed and Taunted while the two stay adjacent; no Vulnerable). Immobilized, only a unit next to it. Allies too (6.7; owner confirmed, 2026-10-22). The bound is blocked by units and ruins as walking is (owner confirmed, 2026-10-22). Typical cost. |
 
 **Interactions to know** (they follow from the keyword rules, not new
 rules): an Immobilized unit can still be displaced (owner's call,
-2026-10-19), so the Champion's flow is **Pin, then Throw**: the target
+2026-10-19), so the Champion's flow is **Grapple, then Throw**: the target
 lands where the Champion chooses, still Immobilized, and
-can't walk back; it lands beside the Champion, so the pin holds. Frozen units can likewise be thrown, blown back or
-rampaged through. A pinning Champion can Rampage, which releases the target as it moves away. Throw onto
+can't walk back; it lands beside the Champion, so the grapple holds. Frozen units can likewise be thrown, blown back or
+lunged at. A grappling Champion can Lunge at another unit, which releases the first if it bounds away; Lunge then Throw keeps the new grapple. Throw onto
 quicksand (a held unit then stays in it), and Freeze on the area a Volley is charging at (frozen
 units can't step out of it), are the obvious combinations. Freeze's Vulnerable doesn't stack with a
 flank's (max, section 2).
@@ -291,10 +291,6 @@ turn, so a bad preview can't cause an illegal move.
 **Blocks Phase 1:** the prototype heroes' stat numbers and the ability
 values marked TBD (section 4), for the owner to set.
 
-**Ability details to confirm** (section 4 uses the proposed reading
-until the owner says otherwise): Rampage's handling of units it passes
-through and of an occupied last hex.
-
 The rest don't block Phase 1; all are config values:
 - Cost values and `C` (open question 1): the defaults aim for a typical
   turn about 10 slots ahead.
@@ -355,10 +351,10 @@ confirm or change:
   first on a tie used to lose 60–67% of AI-vs-AI fights, which tilted
   every single-order measurement. Under the adopted rules the AI chooses
   movement or an ability; historical combined-action comparisons move first.
-- **Leap** (Dash until 2026-10-21) jumps exactly 2 hexes, over one, at cost 20; Dash went up to 3 hexes at 40 (60 before 2026-10-20). **Pin** and **Throw** target
-  any adjacent unit, allies included (Pin targeted enemies only until the
+- **Leap** (Dash until 2026-10-21) jumps exactly 2 hexes, over one, at cost 20; Dash went up to 3 hexes at 40 (60 before 2026-10-20). **Grapple** and **Throw** target
+  any adjacent unit, allies included (Grapple, then Pin, targeted enemies only until the
   2026-10-19 rule, 6.7).
-- **Abilities don't know sides** (6.7, 2026-10-19): the bow and Rampage
+- **Abilities don't know sides** (6.7, 2026-10-19): the bow and Lunge
   damage allies, and Sunlight can heal and cleanse an enemy. Sunlight's
   placeholder radius went from 2 to 1 with it, so stepping clear
   of enemies was possible; since 2026-10-20 it targets one unit within
@@ -413,7 +409,7 @@ confirm or change:
   edge; under it the **detail section** (what's tapped) comes first, and
   the **action section** is pinned to the bottom of the screen, set off
   by a yellow rule.
-- **Abilities aimed at a unit** (Throw, Pin and the Bow;
+- **Abilities aimed at a unit** (Throw, Grapple and the Bow;
   owner, 2026-10-19) are disabled when there's no unit to aim at from the
   hex the action would be taken from (after the planned move, or where the
   unit stands when acting first): no one adjacent, or no one in any of the
@@ -445,18 +441,19 @@ confirm or change:
   arrow stops (an ally, a ruin, the edge), so the enemies it can't hit are
   explained. Targetable units' rings sit over ink, so they show on your
   own lapis rugs.
-- **Throw's and Pin's second pick** (2026-10-21): the hexes picked after
-  the target, where Throw lands its target and where Pin steps first,
-  are dashed, so they don't read as more targets; a unit Pin reaches only
-  by stepping has a dashed ring. A dashed arc swings around the Champion
-  from the unit thrown to where it lands, and Pin's step is drawn as a
-  move's arrow over the units; on desktop, hovering a landing, a step or
-  a unit one step away previews it.
+- **Throw's and Lunge's second pick** (2026-10-21; Pin's until
+  2026-10-22): the hexes picked after the target, where Throw lands its
+  target and where Lunge bounds to first, are dashed, so they don't read
+  as more targets; a unit Lunge reaches only by bounding has a dashed
+  ring. A dashed arc swings around the Champion from the unit thrown to
+  where it lands, and Lunge's bound is drawn as a move's arrow over the
+  units; on desktop, hovering a landing or a unit with one landing
+  previews it.
 - **Ability kinds** (2026-10-21): each ability's button, its name on a
   stat sheet and its explanation carry an icon for its kind, a pixel
-  sword for an attack (Bow, Volley, Throw, Rampage), a cross
+  sword for an attack (Bow, Volley, Throw, Rampage, now Lunge), a cross
   for a heal (Sunlight), an arrow for movement (Move, Leap) and a chain's
-  two links for control (Hail, Freeze, Pin); the explanation names
+  two links for control (Hail, Freeze, Pin, now Grapple); the explanation names
   the kind. (A boot and a padlock, first, were confusing: owner.)
   Each kind's icon takes its colour from what it does: damage's light
   madder, health's jade, ivory, the harmful statuses' gold.
@@ -465,8 +462,11 @@ confirm or change:
   coloured by kind unless the ability says otherwise: Bow a
   drawn bow, Leap a jump's arc, Volley three falling arrows, Sunlight a
   yellow sun, Hail a white cloud dropping sky-blue hail, Freeze a sky-blue
-  snowflake, Throw an arrow over and down, Pin an arrow pressing onto a
-  bar, Rampage a double chevron, and Move a plain arrow. Figures (a
+  snowflake, Throw an arrow over and down, Grapple two links locked together
+  (Pin an arrow pressing onto a bar until 2026-10-22), Rampage a double
+  chevron (Lunge, since 2026-10-22, a double chevron charging into a bar
+  trailing speed lines: a thick diagonal stroke springing forward was
+  unclear, owner, 2026-10-22), and Move a plain arrow. Figures (a
   thrown body, a pinned one, a runner) were too busy at this size; simple
   shapes read. Every new ability needs one (`AbilityIcon.tsx`).
 - **The phone's tooltip** (owner, 2026-10-21): any tap outside it closes
@@ -496,7 +496,7 @@ confirm or change:
   board: with no ability picked, a click on a reachable hex plans a move
   (no Move first; hovering one shows its path and its slots in Move's
   button); a second click on the hex picked last (destination, target,
-  Throw's landing or Pin's step) commits the turn, since hovering already
+  Throw's landing or Lunge's landing) commits the turn, since hovering already
   does the looking on desktop; a Confirm under that hex does too. Esc or a
   right-click steps back one pick at a time. Keys: 1–9 press the turn's
   buttons in order (Move first, each showing its number), Enter or Space
@@ -523,7 +523,7 @@ confirm or change:
 
 The owner adopted unit blocking for ordinary walking and separate movement
 at base 20 plus 10 per hex. The ordinary walking cap is restored to 4 with separate movement. A move-only turn still counts
-toward ultimate unlock; idle Hold does not. Leap and Rampage retain their
+toward ultimate unlock; idle Hold does not. Leap and Lunge retain their
 ability-specific movement but cannot combine with ordinary walking.
 The headless runner retains explicit historical overrides for reproducing
 comparisons; absent an override, the game uses the adopted rules.

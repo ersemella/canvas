@@ -6,7 +6,7 @@
 import {createFight, advance, applyTurn, actingUnit} from '@balance-rules/fight';
 import {placeStartingCards} from '@balance-rules/track';
 import {chooseAiTurn} from '@balance-rules/ai';
-import {ABILITY, AI, HEROES, PARTY, RULES} from '@balance-rules/config';
+import {ABILITY, AI, CAMEL, HEROES, RULES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import type {AbilityId, FightState, HeroId, Side} from '@balance-rules/types';
 
@@ -26,8 +26,16 @@ export type Mod = {
   /** The modified side's party, in place of the experiment's. */
   party?: HeroId[];
 };
-/** `party`: both sides' heroes (default PARTY, the three prototype heroes). */
-export type Experiment = {patch?: (config: Config) => void; mod?: Mod; party?: HeroId[]};
+export type Experiment = {
+  patch?: (config: Config) => void;
+  mod?: Mod;
+  /**
+   * The player's heroes (the camel is added) and the enemy's units: PARTY
+   * by default, the enemy's `party` when only that is given.
+   */
+  party?: HeroId[];
+  enemies?: HeroId[];
+};
 type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 
 /** Damage sources, recognised by the fight log's wording. */
@@ -36,18 +44,18 @@ const SOURCES: [RegExp, string][] = [
   [/^The Volley hits/, 'volley'],
   [/^The Freeze hits/, 'freeze'],
   [/^The throw hits/, 'throw'],
-  [/^The Rampage hits/, 'rampage'],
+  [/^The Lunge hits/, 'lunge'],
   [/^The reap hits/, 'reap'],
   [/^The advance hits/, 'advance'],
   [/^Hail strikes/, 'hail'],
   [/^Quicksand drags/, 'quicksand'],
-  [/^The pin crushes/, 'pin'],
+  [/^The grapple crushes/, 'grapple'],
   [/slams into|from the collision|is slammed into/, 'collision'],
 ];
 /** Sources whose caster the log doesn't name: counted as damage to the enemy. */
-const UNOWNED = new Set(['quicksand', 'hail', 'pin']);
+const UNOWNED = new Set(['quicksand', 'hail', 'grapple']);
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s (?:Volley lands|Freeze takes hold|arrow hits)| rampages| calls down (?:hail|sunlight)| throws| pins| reaps| advances like a wall| challenges)/;
+  /^(Your|Enemy) .+?(?:'s (?:Volley lands|Freeze takes hold|arrow hits)| lunges at| calls down (?:hail|sunlight)| throws| grapples| reaps| advances like a wall| challenges)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -95,7 +103,7 @@ export function ablate(options: Options) {
   }
 }
 
-function run({fights, seed, maxTurns, mod, party = PARTY}: Options) {
+function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
   const kits = Object.fromEntries(Object.entries(HEROES).map(([h, s]) => [h, [...s.abilities]]));
   // Abilities are listed per hero, not per unit, so the modified side's kit is
   // swapped in for its own decisions only. Its search then also assumes the
@@ -119,6 +127,12 @@ function run({fights, seed, maxTurns, mod, party = PARTY}: Options) {
   const lengths: number[] = [];
   const slots: number[] = [];
   let stalls = 0;
+  /** How finished fights ended, from the player's side. */
+  const outcomes = {enemiesBeaten: 0, camelOut: 0, camelKilled: 0, partyKilled: 0};
+  /** Player heroes standing at the end of the fights the player won. */
+  let heroesLeftAfterWins = 0;
+  const playerUnits: Record<string, number> = {};
+  const playerSurvivors: Record<string, number> = {};
   let modWins = 0;
   let modLosses = 0;
   let moveTurns = 0;
@@ -126,7 +140,8 @@ function run({fights, seed, maxTurns, mod, party = PARTY}: Options) {
 
   for (let f = 0; f < fights; f++) {
     const modSide: Side | null = mod ? (f & 1 ? 'enemy' : 'player') : null;
-    const sideParty = (side: Side) => (side === modSide && mod?.party ? mod.party : party);
+    const sideParty = (side: Side) =>
+      side === modSide && mod?.party ? mod.party : side === 'player' ? party : (enemies ?? party);
     const state = createFight(seed + (mod ? f >> 1 : f), sideParty('player'), sideParty('enemy'));
     for (const u of state.units) u.controller = 'human';
     if (mod?.stats) {
@@ -192,11 +207,24 @@ function run({fights, seed, maxTurns, mod, party = PARTY}: Options) {
     for (const u of state.units) {
       add(units, u.hero);
       if (u.alive) add(survivors, u.hero);
+      if (u.side !== 'player') continue;
+      add(playerUnits, u.hero);
+      if (u.alive) add(playerSurvivors, u.hero);
     }
     if (state.phase === 'fight') {
       stalls++;
       continue;
     }
+    const camel = state.units.find((u) => u.hero === CAMEL);
+    const heroesLeft = state.units.filter(
+      (u) => u.side === 'player' && u !== camel && u.alive
+    ).length;
+    if (state.phase === 'won') {
+      heroesLeftAfterWins += heroesLeft;
+      if (state.units.some((u) => u.side === 'enemy' && u.alive)) outcomes.camelOut++;
+      else outcomes.enemiesBeaten++;
+    } else if (camel && !camel.alive) outcomes.camelKilled++;
+    else outcomes.partyKilled++;
     lengths.push(turns);
     slots.push(state.currentSlot);
     if (modSide) (state.phase === 'won') === (modSide === 'player') ? modWins++ : modLosses++;
@@ -210,6 +238,19 @@ function run({fights, seed, maxTurns, mod, party = PARTY}: Options) {
     fights,
     modWinPct: mod ? round((100 * modWins) / (modWins + modLosses || 1)) : undefined,
     stallPct: round((100 * stalls) / fights),
+    /** The player side's share of finished fights. */
+    playerWinPct: round(
+      (100 * (outcomes.enemiesBeaten + outcomes.camelOut)) / (lengths.length || 1)
+    ),
+    outcomes,
+    heroesLeftPerWin: round(
+      heroesLeftAfterWins / (outcomes.enemiesBeaten + outcomes.camelOut || 1),
+      2
+    ),
+    /** Survival of the player side's units, by hero. */
+    playerSurvivalPct: Object.fromEntries(
+      Object.entries(playerUnits).map(([h, n]) => [h, round((100 * (playerSurvivors[h] ?? 0)) / n)])
+    ),
     medianTurns: median(lengths),
     medianSlots: median(slots),
     hexesPerMove: round(movedHexes / (moveTurns || 1), 2),

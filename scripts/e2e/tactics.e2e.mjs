@@ -97,7 +97,7 @@ const version = started.body.view.version;
 
 const bad = await api(`/runs/${runId}/turn`, alice, {
   method: 'POST',
-  body: JSON.stringify({action: {ability: 'rampage', target: {hex: {q: 50, r: 50}}}}),
+  body: JSON.stringify({action: {ability: 'lunge', target: {hex: {q: 50, r: 50}}}}),
 });
 check(
   'an illegal turn is refused with a reason',
@@ -790,8 +790,9 @@ try {
     }
   }
 
-  // Pin may step one hex first (2026-10-21): play on until the Champion can
-  // pin a unit only after a step, then pick it and its step with real taps.
+  // Lunge bounds to a free hex beside its target (2026-10-22; Pin's step
+  // until then): play on until the Champion can lunge at a unit only after a
+  // bound, then pick it and its landing with real taps.
   {
     const sameH = (a, b) => a.q === b.q && a.r === b.r;
     let found = null;
@@ -799,13 +800,13 @@ try {
       await waitIdle();
       const r = await state();
       if (r.view.fight.phase !== 'fight') break;
-      const pinButton = page.locator('[data-choice="pin"]');
-      if (r.view.fight.awaiting === 'p-bokh' && !(await pinButton.isDisabled())) {
-        await pinButton.click();
+      const lungeButton = page.locator('[data-choice="lunge"]');
+      if (r.view.fight.awaiting === 'p-bokh' && !(await lungeButton.isDisabled())) {
+        await lungeButton.click();
         const ts = await page.evaluate(() => window.__tactics.targets);
         const stepOnly = ts.find((t) => t.to && !ts.some((u) => !u.to && sameH(u.hex, t.hex)));
         if (stepOnly) found = {targets: ts, target: stepOnly.hex};
-        else await pinButton.click();
+        else await lungeButton.click();
       }
       if (found) break;
       const v = r.view.version;
@@ -814,22 +815,22 @@ try {
         timeout: 15_000,
       });
     }
-    if (!found) console.log('  (no step-only Pin came up; step checks skipped)');
+    if (!found) console.log('  (no bound-only Lunge came up; landing checks skipped)');
     else {
       const steps = found.targets.filter((t) => t.to && sameH(t.hex, found.target));
       await tapHex(found.target);
       // The picked button asks for what's missing, then confirms.
-      const confirm = page.locator('[data-choice="pin"]');
+      const confirm = page.locator('[data-choice="lunge"]');
       if (steps.length > 1) {
         check(
-          'Pin asks where to step first',
-          (await confirm.textContent()).includes('Pick where to step'),
+          'Lunge asks where to land first',
+          (await confirm.textContent()).includes('Pick where to land'),
           await confirm.textContent()
         );
         await tapHex(steps[0].to);
       }
       check(
-        'Pin with its step is ready to confirm',
+        'Lunge with its landing is ready to confirm',
         /^Confirm/.test(await confirm.textContent()),
         await confirm.textContent()
       );
@@ -851,11 +852,11 @@ try {
         (e) =>
           e.kind === 'action' &&
           e.unitId === 'p-bokh' &&
-          e.ability === 'pin' &&
+          e.ability === 'lunge' &&
           sameH(e.target, found.target)
       );
       check(
-        'Pin stepped, then pinned',
+        'Lunge bounded, then struck',
         stepAt >= 0 && pinAt >= 0,
         events.filter((e) => e.unitId === 'p-bokh').map((e) => [e.kind, e.ability, e.to])
       );
@@ -1191,37 +1192,33 @@ try {
   }
   // Plain sand has nothing to explain: tapping it shows no tooltip.
   {
-    const quiet = phoneFight.units.map((u) => u.hex && `${u.hex.q},${u.hex.r}`);
-    const busyHexes = new Set([
-      ...quiet,
-      ...Object.keys(phoneFight.tiles ?? {}),
-      ...phoneFight.effects.map((e) => `${e.hex.q},${e.hex.r}`),
-    ]);
-    const reaches = await phone.evaluate(() => window.__tactics.reaches.map((r) => r.hex));
-    const sand = reaches.find((h) => !busyHexes.has(`${h.q},${h.r}`));
-    const at = await onPhone(sand);
+    /**
+     * Where on the screen a hex of plain sand shows with nothing over it.
+     * The whole board's sand, as the page sees it now: a tap on sand under
+     * the tooltip would land on the tooltip, and one there on an ability's
+     * name or a keyword keeps it open (a big tooltip can cover most of a
+     * phone's board, so there's no falling back to a covered hex).
+     */
+    const bareSand = async () => {
+      for (const h of await phone.evaluate(() => window.__tactics.sandHexes())) {
+        const p = await onPhone(h);
+        const bare = await phone.evaluate(
+          ({x, y}) => document.elementFromPoint(x, y)?.tagName === 'CANVAS',
+          p
+        );
+        if (bare) return p;
+      }
+      throw new Error('no plain sand left uncovered to tap');
+    };
+    const at = await bareSand();
     await phone.touchscreen.tap(at.x, at.y);
     await sleep(200);
     check('phone: tapping plain sand shows no tooltip', !(await tooltip.count()));
-    // And with a tooltip open, tapping plain sand closes it: sand the
-    // tooltip doesn't cover (a tap on it could land on an ability's name).
+    // And with a tooltip open, tapping plain sand closes it.
     await phone.touchscreen.tap(foeAt.x, foeAt.y);
     await sleep(200);
-    const tip = await tooltip.boundingBox();
-    let open = at;
-    for (const h of reaches.filter((h) => !busyHexes.has(`${h.q},${h.r}`))) {
-      const p = await onPhone(h);
-      const under =
-        tip &&
-        p.x >= tip.x &&
-        p.x <= tip.x + tip.width &&
-        p.y >= tip.y &&
-        p.y <= tip.y + tip.height;
-      if (!under) {
-        open = p;
-        break;
-      }
-    }
+    check('phone: the tooltip is open again to close', (await tooltip.count()) === 1);
+    const open = await bareSand();
     await phone.touchscreen.tap(open.x, open.y);
     await sleep(200);
     check('phone: tapping plain sand closes the tooltip', !(await tooltip.count()));

@@ -798,7 +798,9 @@
 .heroPickBlurb {
   font-size: 13px;
 }
+/* Pinned to the tile's foot, so the meters line up across heroes whatever their blurb's length. */
 .heroPickStats {
+  margin-top: auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px 12px;

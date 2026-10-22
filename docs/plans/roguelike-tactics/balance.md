@@ -10,6 +10,8 @@ the rest is **Proposed**: the numbers are the owner's to set
 > Numbers are in `packages/games/silk-road-run/src/rules/config.ts`;
 > the stat and keyword rules are in [heroes-and-gear.md](heroes-and-gear.md)
 > and [keywords.md](keywords.md); the track is [timeline.md](timeline.md).
+> The Bökh Champion's Pin was renamed Grapple (owner, 2026-10-22); the
+> measurements below keep the name they were taken under.
 
 ## Summary
 
@@ -198,6 +200,53 @@ health for reference):
   nearly free. That suits the separate-movement rule, but it's why the
   Outrider shuffles.
 
+### Enemy caravans: solo strength and pair synergy (2026-10-22)
+
+The player's full party (three heroes and the camel) against each stage-1
+caravan (one hero, two wolves) and each stage-2 caravan (two heroes, a
+wolf), production rules and AI on both sides, 400 fights each (seeds 1000
+onward, each its own map). Same-hero pairs never happen in a run (the
+stage picks distinct heroes); they are here as a reference, so a mixed pair
+can be compared with its two doubles. "Heroes lost" is the player heroes
+dead at the end, per finished fight. Experiments file:
+`scripts/balance/experiments/caravans.mjs`.
+
+| Enemy caravan | Player wins | Heroes lost | Player's losses: party / camel | Unfinished |
+|---|---:|---:|---|---:|
+| Champion + 2 wolves | 99.7% | 0.28 | 0 / 1 | 0.8% |
+| Outrider + 2 wolves | 99.7% | 0.34 | 1 / 0 | 0.3% |
+| Storm Caller + 2 wolves | 98.3% | 0.47 | 7 / 0 | 0% |
+| Champion + Outrider + wolf | 93.8% | 0.78 | 17 / 7 | 2.8% |
+| Champion + Storm Caller + wolf | 84.5% | 1.02 | 60 / 2 | 0% |
+| Outrider + Storm Caller + wolf | 82.8% | 1.11 | 63 / 4 | 2.8% |
+| *Champion ×2 + wolf* | 98.2% | 0.64 | 7 / 0 | 0.8% |
+| *Outrider ×2 + wolf* | 96.1% | 0.68 | 12 / 3 | 2.8% |
+| *Storm Caller ×2 + wolf* | 73.1% | 1.41 | 106 / 1 | 0.5% |
+| All three, no wolves (stage 3) | 62.5% | 1.70 | 128 / 18 | 2.8% |
+
+- **Stage 1 is nearly unlosable** whichever hero comes (98–100%), so win
+  rate can't rank the heroes there; attrition can. The Storm Caller costs
+  the player most (0.47 heroes, against 0.28 and 0.34), and it is the only
+  stage-1 enemy that wins a few fights.
+- **The Storm Caller is the strongest enemy hero by a wide margin.** Every
+  caravan with it is 10–25 points harder than one without, and two of them
+  beat any mixed pair. Hail looks like the cause: the player's Outrider
+  (300 health) survives 54–58% of fights against a mixed pair with a Storm
+  Caller and 35% against two, against 67–96% in caravans without one.
+- **Synergy is small.** Against the average of its two doubles, the
+  Champion and Outrider together lose the player 3.4 points more fights
+  (6.2% against 2.9%) and 0.12 more heroes: the one pair clearly worth more
+  than its parts (perhaps the Champion's body screening the Outrider; not
+  checked).
+  Pairs with the Storm Caller are about additive (losses +1.1 and +1.8
+  points, heroes lost +0.0 and +0.07, inside noise).
+- **Stage 2's difficulty depends on the draw**: 94% if the Storm Caller
+  isn't picked, 83–85% if it is (two runs in three).
+- **The camel favours the player in the mirror.** Three heroes each, the
+  player wins 62.5%; 22 of 243 wins are the camel reaching the exit.
+- One standard error is about ±1.2 points on win rates near 95% and ±2
+  near 80%.
+
 ## Proposed tuning
 
 **Applied 2026-10-20: tunings 1 to 3** (the package below without its Fog
@@ -261,7 +310,8 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
    from costing games to slightly positive. Fog at cost 60 and radius 2
    stops costing games but still adds nothing.
 4. **Freeze: redesign, or study individual fights.** No number tried made
-   it pay (see above).
+   it pay (see above). Settled 2026-10-22 by damage 120 (instant, as below):
+   a side without it wins 43%.
    **Charge time, measured 2026-10-20** (new AI, Pin as applied; 800
    fights for unfinished, 400 per ablation):
 
@@ -355,6 +405,58 @@ Storm Caller's kit is Sunlight, Hail and Freeze. Pin may step one hex,
 to a free hex next to its target, at the same cost. Measured with both
 in, 400 fights each: a side without Pin wins 50.0%, without Sunlight
 40.8%, without the Bow 7.5%; 53 actions a fight.
+
+**Applied 2026-10-22 (owner): Pin melee only, Crushed 10; Lunge replaces
+Rampage.** The Bökh Champion's ultimate is now Lunge: a unit within 3,
+after a bound of up to 2 hexes to a free hex beside it, takes base 100
+and is pinned as by Pin, with no Vulnerable. Measured first with a
+prototype, 400 fights a row (win rate of the side without the ability):
+
+| Variant | Without the ultimate | Without Pin |
+|---|---:|---:|
+| Rampage; Pin with its step (2026-10-21) | 44.8% | 50.0% |
+| Rampage; Pin melee only | 47.3% | 50.4% |
+| Lunge reach 2, no damage, Vulnerable 50% | 47.2% | 48.7% |
+| Lunge reach 3, no damage, Vulnerable 50% | 46.4% | |
+| Lunge reach 2, damage 100, Vulnerable 50% | 44.9% | |
+| Lunge reach 2, damage 160, Vulnerable 50% | 42.6% | |
+| Lunge reach 2, Vulnerable 50%; Pin at quick cost (60) | | 49.4% |
+| Lunge reach 2, Vulnerable 50%; Pin Crushed 10 | | 46.7% |
+| **As built:** Lunge reach 3, damage 100, no Vulnerable; Pin Crushed 10 | **46.3%** | **44.9%** |
+
+Pin's step made no measurable difference, and a cheaper Pin was used more
+without winning more; its crush damage is what moved it. As built, Pin
+is worth about as much as Throw (a side without Throw wins 44.5%) and is
+31% of the Champion's turns (Throw 18%, Lunge 8.8%); Lunge is a little
+under Rampage, within noise. 3.5% of fights unfinished, 54 actions a
+fight; the Champion survives 29% of fights.
+
+**Applied 2026-10-22 (owner): Freeze base damage 60 → 120.** Measured
+under the production rules first, 400 fights a row (win rate of the side
+without Freeze; two seed ranges where shown):
+
+| Variant | Without Freeze |
+|---|---:|
+| Damage 60 (as it was) | 48.4% / 47.7% |
+| No friendly fire | 46.8% |
+| No Immobilize | 51.3% |
+| No friendly fire, no Immobilize | 49.2% |
+| No friendly fire, radius 2 | 43.4% |
+| No friendly fire, quick (60) | 43.2% |
+| No friendly fire, damage 120 | 38.8% |
+| Damage 100 | 46.2% / 46.0% |
+| **Damage 120 (as built)** | **42.8% / 43.8%** |
+| Push 10 instead of Immobilize and Vulnerable, damage 60 | 41.2% / 44.6% |
+| The same, enemies only | 39.9% / 41.0% |
+| The same, enemies only, no damage | 48.8% |
+
+At 60 Freeze no longer cost games but added about 2 points; none of its
+statuses was worth much on its own (the Bow and the area abilities don't
+need to move, and Vulnerable covers about two enemy turns). At 120, with
+friendly fire kept, it sits in the ultimate band; 3–4% of fights
+unfinished, 58 actions. Pushing the targets' cards (principle 11) measured
+as well but wasn't chosen. Freeze is still cast only about 0.4 times a
+fight per Storm Caller (4% of its turns): under the ultimate's usage band.
 
 **Measured, then applied 2026-10-21 (owner): sandstorm that blocks sight** (Fog gone): a unit
 in it can't be targeted by the Bow or Sunlight, and arrows can't fly
@@ -499,8 +601,8 @@ keywords arrive.
 
 ## Open questions
 
-1. Freeze's redesign (tuning 4): the AI isn't the cause; a charge that
-   follows its target is the leading candidate.
+1. Freeze is used in fewer than half of fights (0.4 casts a fight per
+   Storm Caller, 2026-10-22): its worth is fixed (damage 120), its use isn't.
 2. Whether the bow's six lanes should stay (tuning 6): the lanes give it
    a clear identity, at the cost of many fiddly turns.
 3. Whether mixed compositions break these readings. Every measurement

@@ -18,7 +18,7 @@ tuning. Section numbers are the combat design's.
 
 ### 6.2 Movement (Decided)
 - Movement is measured **per hex.** Ordinary walking is a separate action costing **20 + 10 per hex**, divided by speed plus C (3.2). Movement per turn is capped (5.1).
-- Ordinary walking cannot pass allies, enemies or blocking obstacles. Leap and Rampage retain their ability-specific traversal rules.
+- Ordinary walking cannot pass allies, enemies or blocking obstacles. Leap and Lunge retain their ability-specific traversal rules.
 
 ### 6.3 Flanking (Decided)
 - A target is **flanked** when two units hostile to it occupy hexes directly opposite each other across the target (for example, the hexes to its north-east and south-west).

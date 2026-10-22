@@ -21,8 +21,8 @@ export type AbilityId =
   | 'hail'
   | 'freeze'
   | 'throw'
-  | 'pin'
-  | 'rampage'
+  | 'grapple'
+  | 'lunge'
   | 'challenge'
   | 'reap'
   | 'advance'
@@ -51,8 +51,8 @@ export interface Status {
   untilSlot: number;
   /** Taunted: the taunter's unit id. */
   source?: string;
-  /** From a Pin, on both units: who pinned whom, so breaking the pin clears them all. */
-  pin?: {champion: string; target: string};
+  /** From a Grapple, on both units: who grappled whom, so breaking the grapple clears them all. */
+  grapple?: {champion: string; target: string};
 }
 
 export interface Unit {
@@ -112,9 +112,9 @@ export interface LogEntry {
 
 /**
  * How a unit came to enter a hex: walked, pushed by a hit, thrown, or
- * rushing several hexes at once (Rampage), or leaping over one (Leap).
+ * leaping (Leap over one hex, Lunge's bound).
  */
-export type Motion = 'walk' | 'push' | 'throw' | 'rush' | 'leap';
+export type Motion = 'walk' | 'push' | 'throw' | 'leap';
 
 /** Something that happened on the board, in the order the rules resolved it. */
 export type FightEvent =

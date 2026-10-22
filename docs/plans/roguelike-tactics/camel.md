@@ -61,12 +61,12 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 - The enemy is **trying to kill it.** Every ability reaches it like any
   other unit: damage, statuses, **displacement** and **Immobilized**
   included (owner). Pushing it back or holding it in place is a legitimate
-  tactic; no ability lasts forever, and a Bökh Champion pinning it turn
+  tactic; no ability lasts forever, and a Bökh Champion grappling it turn
   after turn means the player has to deal with the Champion (owner).
 - A Taunted camel can only Hold, since it has no action that targets the
   taunter (17.5).
 - **Friendly fire applies** (owner, 6.7): the party's own Bow, Hail,
-  Freeze and Rampage can hit it, and Sunlight can heal it. As a unit, it
+  Freeze and Lunge can hit it, and Sunlight can heal it. As a unit, it
   blocks lines of fire for both sides, so it can shield an archer, and it
   takes the arrow when it does.
 - *(Proposed:* it flanks and can be flanked like any unit (6.3).)

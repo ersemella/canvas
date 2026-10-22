@@ -114,10 +114,10 @@ unfinished at 400 actions, median 52 actions (58 before).
 | Sunlight | **one space within 4, empty or not (owner, 2026-10-21; one unit within 4 from 2026-10-20; was everyone within 1 of the caster, 2 until 2026-10-19)**, **heal 50, 75 at its power, quick (60) (owner, 2026-10-20; 35 earlier that day, typical heal 50 before that, 40 from 2026-10-19, 25 before)**; **clears hail and fog from the target's hex (owner, 2026-10-21)**; **a sandstorm doesn't stop it (owner, 2026-10-21; earlier that day it couldn't target a unit in, or past, one)** |
 | Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2 for 10 slots; **no Vulnerable (owner, 2026-10-20; was 25%)** |
 | Fog | **removed (owner, 2026-10-21)**: no version measured worth its turn ([balance.md](balance.md)) |
-| Freeze (ultimate) | range 4, radius 1, **damage 60, then Immobilized and Vulnerable 50% for 20 slots (owner, 2026-10-20; was no damage, 25% for 15)**, **instant, typical cost (owner, 2026-10-20; was charged: charge 20 and recovery 60 that day, 40 and 100 before)** |
+| Freeze (ultimate) | range 4, radius 1, **damage 120 (owner, 2026-10-22; 60 from 2026-10-20), then Immobilized and Vulnerable 50% for 20 slots (owner, 2026-10-20; was no damage, 25% for 15)**, **instant, typical cost (owner, 2026-10-20; was charged: charge 20 and recovery 60 that day, 40 and 100 before)** |
 | Throw | damage 80 |
-| Pin | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 6 a slot through defence (owner; 8 until 2026-10-20)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or the two are no longer adjacent (knocked away, or the Champion moving away); cleansing the Champion doesn't break it (owner, 2026-10-20)**; **the Champion isn't Immobilized itself (owner, 2026-10-20; it was)**; **it may step one hex first, to a free hex next to the target, same cost (owner, 2026-10-21)** |
-| Rampage (ultimate) | 3 hexes, **damage 160, typical (100) (owner, 2026-10-20; was 100, slow, 150)**, Displace 1 |
+| Grapple (Pin until 2026-10-22) | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 10 a slot through defence (owner, 2026-10-22; 6 from 2026-10-20, 8 before)**; **the grapple breaks, clearing every status it gave either unit, if the target is cleansed or the two are no longer adjacent (knocked away, or the Champion moving away); cleansing the Champion doesn't break it (owner, 2026-10-20)**; **the Champion isn't Immobilized itself (owner, 2026-10-20; it was)**; **melee only (owner, 2026-10-22; it could step one hex first from 2026-10-21)** |
+| Lunge (ultimate) | **Replaced Rampage (owner, 2026-10-22)**: a unit within 3, after a bound of up to 2 hexes to a free hex beside it, takes base 100 and is grappled as by Grapple; no Vulnerable; typical (100) |
 
 Damage is scaled by power: `base × (1 + power / 50)`.
 
@@ -128,15 +128,7 @@ at 250, 5.7% at 200): ultimates are the biggest finishers, and they now
 arrive later. The camel (issue 1) settles it once built: the player can
 always end a fight by walking it out.
 
-### 3. Rampage details (brief section 10)
-
-Allies in the path take the damage like anyone (the 2026-10-19 rule,
-[map.md](map.md), 6.7), which makes Rampage mainly an opening move once
-the front lines meet. Built as proposed: a unit that couldn't be displaced, or was pushed ahead, is passed through;
-if the last hex is taken, the Champion stops on the last free hex it
-passed. Confirm or change.
-
-### 4. The builder's choices in Phase 1
+### 3. The builder's choices in Phase 1
 
 Each is in [phase-1-brief.md](phase-1-brief.md#11-as-built-2026-10-19);
 confirm or change:
@@ -152,15 +144,15 @@ confirm or change:
 - **Movement is a separate action, 20 + 10 per hex, capped at 4**
   (owner, 2026-10-20). Allies and enemies block ordinary walking. An
   ability cannot share the turn with walking; the page replaces one
-  selection with the other. Leap and Rampage retain their traversal rules.
+  selection with the other. Leap and Lunge retain their traversal rules.
 - **The enemy's starting layout** is one of three, picked by the run's
   seed.
 
-### 5. Before Phase 2 (not blocking now)
+### 4. Before Phase 2 (not blocking now)
 
 - **Taunt on allies:** under the 2026-10-19 rule every ability reaches
   allies, so a Taunt that catches an ally forces it to attack the taunter,
-  your own tank. Pin taunts (2026-10-19) and can target an ally, so this
+  your own tank. Grapple taunts (2026-10-19) and can target an ally, so this
   happens now (the preview shows it): accept it, or rule it out
   explicitly.
 - **The exemption keyword:** its name, and how often gear and upgrades
@@ -172,14 +164,14 @@ confirm or change:
 - **Push and pull limits** (open question 5), needed when the Jinn Binder
   arrives.
 
-### 6. Art (not blocking)
+### 5. Art (not blocking)
 
 From [art-direction.md](art-direction.md#open-questions): the internal
 resolution and scale (300×200 at 2× proposed), the palette and team rim
 colours, pixel font or full-resolution text, and who makes the art. The
 engine already supports sprites and scaled pixel-art rendering.
 
-### 7. Platform clean-up (permanent, so yours)
+### 6. Platform clean-up (permanent, so yours)
 
 The retired `ManifestRegistry` Durable Object is still deployed. Removing
 it is a `deleted_classes` migration, which is permanent and blocks rolling

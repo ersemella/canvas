@@ -1,17 +1,17 @@
 /**
- * Taunt (17.5), from the Bökh Champion's Pin: while a unit is taunted, if
+ * Taunt (17.5), from the Bökh Champion's Grapple and Lunge: while a unit is taunted, if
  * it can affect the taunter from any hex it can reach this turn, its
  * action must target the taunter or include it in its area, or be a Hold
  * (owner, 2026-10-20). A damaging
  * charged ability triggering while taunted is redirected onto the taunter
  * if it is in range. Ends early if the taunter dies.
  */
-import {hexDistance, hexDirectionTo, hexEquals, hexNeighbor} from '@canvas/engine/server';
+import {hexDirectionTo, hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, movementRules} from './config';
 import {ABILITIES, abilitiesOf, reapLine, unusableReason} from './abilities';
 import type {AbilityDef} from './abilities';
-import {reachableHexes, walkable} from './board';
+import {reachableHexes} from './board';
 import type {MapData} from './map';
 import type {ActionTarget, FightState, Unit} from './types';
 
@@ -37,7 +37,8 @@ export function affectsHex(
   switch (def.id) {
     case 'bow':
     case 'throw':
-    case 'pin':
+    case 'grapple':
+    case 'lunge':
     case 'bite':
     case 'challenge':
       return near(target.hex, 0);
@@ -52,17 +53,6 @@ export function affectsHex(
       return near(target.hex, ABILITY.volley.radius);
     case 'freeze':
       return near(target.hex, ABILITY.freeze.radius);
-    case 'rampage': {
-      // In or beside a hex of the charge's path.
-      const dir = hexDirectionTo(from, target.hex!)!;
-      let h = from;
-      for (let i = 0; i < ABILITY.rampage.distance; i++) {
-        h = hexNeighbor(h, dir);
-        if (!walkable(map, h)) break;
-        if (near(h, 1)) return true;
-      }
-      return false;
-    }
     default:
       return false;
   }

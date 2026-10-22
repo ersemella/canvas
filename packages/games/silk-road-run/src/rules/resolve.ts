@@ -275,7 +275,7 @@ export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) =>
   }
   for (const [u, raw] of crushed) {
     const d = defended(u, raw);
-    applyDamage(ctx, u, d, `The pin crushes ${unitName(u)} for ${d}`);
+    applyDamage(ctx, u, d, `The grapple crushes ${unitName(u)} for ${d}`);
   }
 }
 
@@ -300,28 +300,29 @@ export function enterHex(
 }
 
 /**
- * A Pin lasts until it breaks: when its target is cleansed, or when the
+ * A Grapple lasts until it breaks: when its target is cleansed, or when the
  * Champion and target are no longer adjacent (either displaced away, or
  * the Champion moving away: it isn't held itself, owner, 2026-10-20).
- * Breaking it clears every status the Pin gave either unit (owner,
+ * Breaking it clears every status the Grapple gave either unit (owner,
  * 2026-10-20). Cleansing the Champion doesn't break it. Throw lands the
- * target beside the Champion, so Pin then Throw keeps the pin.
+ * target beside the Champion, so Grapple then Throw keeps the grapple.
  */
 export function breakPins(ctx: Ctx, unit: Unit, cleansed = false): void {
   const byId = (id: string) => ctx.state.units.find((u) => u.id === id);
   for (const holder of ctx.state.units) {
-    for (const {pin} of holder.statuses) {
-      if (!pin || (pin.champion !== unit.id && pin.target !== unit.id)) continue;
-      const a = byId(pin.champion)?.hex;
-      const b = byId(pin.target)?.hex;
-      const holds = !(cleansed && pin.target === unit.id) && !!a && !!b && hexDistance(a, b) <= 1;
+    for (const {grapple} of holder.statuses) {
+      if (!grapple || (grapple.champion !== unit.id && grapple.target !== unit.id)) continue;
+      const a = byId(grapple.champion)?.hex;
+      const b = byId(grapple.target)?.hex;
+      const holds =
+        !(cleansed && grapple.target === unit.id) && !!a && !!b && hexDistance(a, b) <= 1;
       if (holds) continue;
       for (const u of ctx.state.units)
         u.statuses = u.statuses.filter(
-          (s) => s.pin?.champion !== pin.champion || s.pin.target !== pin.target
+          (s) => s.grapple?.champion !== grapple.champion || s.grapple.target !== grapple.target
         );
-      log(ctx, `The pin on ${unitName(byId(pin.target)!)} is broken.`);
-      // The statuses changed under this loop; look again for any other pin.
+      log(ctx, `The grapple on ${unitName(byId(grapple.target)!)} is broken.`);
+      // The statuses changed under this loop; look again for any other grapple.
       return breakPins(ctx, unit, cleansed);
     }
   }

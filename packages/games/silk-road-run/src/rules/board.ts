@@ -90,11 +90,13 @@ export function expireStatuses(unit: Unit, slot: number): void {
 
 /**
  * Cleanse: every harmful status from an ability (not a flank's Vulnerable),
- * except a pinning Champion's own hold: cleansing it doesn't break the pin
+ * except a grappling Champion's own hold: cleansing it doesn't break the grapple
  * (owner, 2026-10-20). Barrier is beneficial, so it stays (17.8).
  */
 export function cleanse(unit: Unit): void {
-  unit.statuses = unit.statuses.filter((s) => s.pin?.champion === unit.id || s.kind === 'barrier');
+  unit.statuses = unit.statuses.filter(
+    (s) => s.grapple?.champion === unit.id || s.kind === 'barrier'
+  );
 }
 
 /** The unit's Barrier, if it has one: there is at most one, a new one replacing it. */

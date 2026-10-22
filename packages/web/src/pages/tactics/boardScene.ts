@@ -60,14 +60,14 @@ export interface SceneInput {
   plannedMove: Reach | null;
   hoverReach: Reach | undefined;
   reaches: Reach[];
-  pinFromHere: (h: Hex) => boolean;
-  pinSteps: (h: Hex) => ActionTarget[];
+  lungeFromHere: (h: Hex) => boolean;
+  lungeSteps: (h: Hex) => ActionTarget[];
 }
 
 export function buildScene(input: SceneInput): BoardScene {
   const {fight, acting, phone, selectedId, featuredId, hoverHex, preview} = input;
   const {ability, target, targets, moving, moveMode, plannedMove, hoverReach, reaches} = input;
-  const {pinFromHere, pinSteps} = input;
+  const {lungeFromHere, lungeSteps} = input;
   const highlights: {hex: Hex; kind: HighlightKind}[] = [];
   const out: BoardScene = {
     fight,
@@ -146,12 +146,12 @@ export function buildScene(input: SceneInput): BoardScene {
         })),
       };
     // Only what it may target; once Throw's target is picked, where it can
-    // land; once Pin's is, the hexes it may step to first as well. Those
-    // second picks are dashed, as is a unit Pin reaches only after a step,
+    // land; once Lunge's is, the hexes it may bound to first as well. Those
+    // second picks are dashed, as is a unit Lunge reaches only after a bound,
     // so they never read as more targets.
     const shown = new Set<string>();
     const throwing = ability === 'throw' && target?.hex;
-    const stepping = ability === 'pin' && target?.hex;
+    const stepping = ability === 'lunge' && target?.hex;
     for (const t of targets) {
       const at = throwing ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
       const step = stepping && t.to && hexEquals(t.hex!, target!.hex!) ? t.to : undefined;
@@ -161,14 +161,14 @@ export function buildScene(input: SceneInput): BoardScene {
         const kind =
           throwing || h === step
             ? 'landing'
-            : ability === 'pin' && !pinFromHere(h)
+            : ability === 'lunge' && !lungeFromHere(h)
               ? 'reach'
               : 'target';
         highlights.push({hex: h, kind});
       }
     }
     // Where the second pick goes: the one hovered, else the one picked.
-    // Before Pin's target is, a hovered unit it reaches by a single step.
+    // Before Lunge's target is, a hovered unit it reaches by a single landing.
     const hovered = hoverHex;
     const hoveredSecond =
       hovered && target?.hex
@@ -176,15 +176,15 @@ export function buildScene(input: SceneInput): BoardScene {
             ?.to
         : undefined;
     let second = hoveredSecond ?? target?.to;
-    if (!second && !target && ability === 'pin' && hovered && !pinFromHere(hovered)) {
-      const steps = pinSteps(hovered);
+    if (!second && !target && ability === 'lunge' && hovered && !lungeFromHere(hovered)) {
+      const steps = lungeSteps(hovered);
       if (steps.length === 1) second = steps[0]!.to;
     }
     // Throw: an arc from the unit thrown, around the Champion, to where it
-    // lands. Pin: the Champion's step, drawn as a move's.
+    // lands. Lunge: the Champion's bound, drawn as a move's.
     if (ability === 'throw' && target?.hex && second && from)
       out.arc = {from: target.hex, around: from, to: second};
-    if (ability === 'pin' && second && from) out.step = [from, second];
+    if (ability === 'lunge' && second && from) out.step = [from, second];
     if (target?.hex) {
       // An area ability: highlight the area around the chosen hex.
       const radius = ABILITIES[ability].radius;

@@ -254,7 +254,7 @@ export function TacticsPage() {
     ? ((inspectHex ? inspectedUnit?.id : (selectedId ?? acting?.id)) ?? null)
     : null;
 
-  const {target, moveMode, hoverReach, pinFromHere, pinSteps} = plan;
+  const {target, moveMode, hoverReach, lungeFromHere, lungeSteps} = plan;
   const scene: BoardScene = useMemo(
     () =>
       buildScene({
@@ -273,8 +273,8 @@ export function TacticsPage() {
         plannedMove,
         hoverReach,
         reaches,
-        pinFromHere,
-        pinSteps,
+        lungeFromHere,
+        lungeSteps,
       }),
     [
       fight,
@@ -292,8 +292,8 @@ export function TacticsPage() {
       plannedMove,
       hoverReach,
       reaches,
-      pinFromHere,
-      pinSteps,
+      lungeFromHere,
+      lungeSteps,
     ]
   );
 
@@ -344,6 +344,9 @@ export function TacticsPage() {
       },
       /** What a looked-at hex takes up (its unit's health bar and statuses included), in scene pixels. */
       overlaySpan: (h: Hex) => (fight ? hexOverlaySpan(fight, h) : null),
+      /** Every hex of plain sand now (nothing on it to explain: no unit, tile, hail or exit). */
+      sandHexes: () =>
+        fight ? mapOf(fight).hexes.filter((h) => plainSand(fight, mapOf(fight), h)) : [],
       /** The chosen ability's targets and the acting unit's moves, since starts are random. */
       targets,
       reaches,
@@ -366,9 +369,7 @@ export function TacticsPage() {
   }
 
   if (!run || !fight || run.status === 'abandoned' || startMenu) {
-    return (
-      <StartMenu busy={busy} error={error} onStart={startRun} />
-    );
+    return <StartMenu busy={busy} error={error} onStart={startRun} />;
   }
 
   // The result waits for the playback to show how the fight ended.
