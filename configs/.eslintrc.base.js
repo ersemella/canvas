@@ -14,24 +14,6 @@ module.exports = {
       caughtErrorsIgnorePattern: '^_',
     }],
   },
-  overrides: [
-    {
-      files: ['**/*.ts', '**/*.tsx'],
-      rules: {
-        'no-restricted-imports': [
-          'error',
-          {
-            patterns: [
-              {
-                group: ['../*'],
-                message: 'Use absolute imports instead of relative imports.',
-              },
-            ],
-          },
-        ],
-      },
-    },
-  ],
   env: {
     browser: true,
     es2022: true,

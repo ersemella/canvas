@@ -493,6 +493,8 @@ export interface CanvasConfig {
  * a game registered with `SystemRegistry.register` in its `register()`.
  * Checked against the registry when the game's systems are created.
  */
+// `string & {}` keeps editor autocomplete for the builtin names.
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type SystemName = BuiltinSystemName | (string & {});
 
 // ─── Scene ───────────────────────────────────────────────────────────────────
