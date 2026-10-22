@@ -38,6 +38,8 @@ import {
 import {previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
 import {abilityDamage, checkEnd, displace, kill, scaled} from './resolve';
+import {reapHexes} from './abilities';
+import {barrierOf, cleanse, setBarrier} from './board';
 import {
   RUN_FORMAT,
   createRun,
@@ -51,6 +53,7 @@ import {
   freeSlotFrom,
   nextCard,
   placeCard,
+  pushCard,
   simultaneousOrder,
   slotsForward,
   turnCost,
@@ -64,8 +67,8 @@ const at = (col: number, row: number): Hex => offsetToHex({col, row});
  * listed is removed (dead), and cards start far apart. The camel, unless
  * listed, isn't there at all: dead, it would lose the fight.
  */
-function setup(placements: Record<string, Hex>): FightState {
-  const state = createFight(0);
+function setup(placements: Record<string, Hex>, party: HeroId[] = PARTY): FightState {
+  const state = createFight(0, party, party);
   // The fixed layout, which these tests place units around.
   state.tiles = {...SALT_FLATS.tiles};
   state.phase = 'fight';
@@ -1431,5 +1434,186 @@ describe('headless balance experiments', () => {
     expect(threatened(s)).toBe(true);
     s.experiment = {blockAllUnits: false, separateMovement: true, moveActionCost: 60};
     expect(threatened(s)).toBe(false);
+  });
+});
+
+describe('the Modao Vanguard', () => {
+  const VANGUARD: HeroId[] = ['modao', 'mangudai', 'bokh'];
+  const centre = at(3, 3);
+  const around = hexNeighbors(centre);
+
+  it('Barrier takes a hit whole, ignoring defence, and the rest of it is lost', () => {
+    const s = setup({'p-modao': centre, 'e-mangudai': at(7, 3)}, VANGUARD);
+    const v = unit(s, 'p-modao');
+    const m = unit(s, 'e-mangudai');
+    s.awaiting = m.id;
+    setBarrier(v, 80, 1000);
+    const lane = ABILITIES.bow.targets(s, mapOf(s), m, m.hex!);
+    expect(lane.some((t) => hexEquals(t.hex!, centre))).toBe(true);
+    applyTurn(s, m, {action: {ability: 'bow', target: {hex: centre}}});
+    expect(v.hp).toBe(v.maxHp);
+    expect(barrierOf(v)).toBeUndefined();
+    // No barrier left: the next arrow goes through defence to health.
+    s.awaiting = m.id;
+    applyTurn(s, m, {action: {ability: 'bow', target: {hex: centre}}});
+    expect(v.hp).toBe(v.maxHp - defended(v, scaled(ABILITY.bow.damage, m.power)));
+  });
+
+  it('Barrier takes damage raised by Vulnerable, at full value, until spent', () => {
+    const s = setup({'p-modao': centre, 'e-mangudai': at(7, 3)}, VANGUARD);
+    const v = unit(s, 'p-modao');
+    const m = unit(s, 'e-mangudai');
+    s.awaiting = m.id;
+    setBarrier(v, 400, 1000);
+    v.statuses.push({kind: 'vulnerable', value: 50, untilSlot: 1000});
+    applyTurn(s, m, {action: {ability: 'bow', target: {hex: centre}}});
+    const raw = Math.floor(scaled(ABILITY.bow.damage, m.power) * 1.5);
+    expect(barrierOf(v)!.value).toBe(400 - raw);
+    expect(v.hp).toBe(v.maxHp);
+  });
+
+  it('Barrier takes collision damage, and a new one replaces the old', () => {
+    const s = setup({'p-modao': centre, 'e-bokh': around[0]!}, VANGUARD);
+    const v = unit(s, 'p-modao');
+    setBarrier(v, 30, 1000);
+    setBarrier(v, 50, 1000);
+    expect(v.statuses.filter((x) => x.kind === 'barrier')).toHaveLength(1);
+    const ctx = {state: s, map: mapOf(s), slot: 0};
+    // Knocked into the Champion: the barrier takes the collision.
+    displace(ctx, v, hexDirectionTo(centre, around[0]!)!, 1);
+    expect(v.hp).toBe(v.maxHp);
+    expect(barrierOf(v)!.value).toBe(50 - RULES.collisionDamage);
+  });
+
+  it('Cleanse keeps a Barrier: it is beneficial', () => {
+    const s = setup({'p-modao': centre}, VANGUARD);
+    const v = unit(s, 'p-modao');
+    setBarrier(v, 80, 1000);
+    v.statuses.push({kind: 'slowed', value: 2, untilSlot: 1000});
+    cleanse(v);
+    expect(v.statuses.map((x) => x.kind)).toEqual(['barrier']);
+  });
+
+  it('Challenge taunts one unit within range and gives the Vanguard a fresh Barrier', () => {
+    const far = setup({'p-modao': centre, 'e-bokh': at(7, 3)}, VANGUARD);
+    expect(ABILITIES.challenge.targets(far, mapOf(far), unit(far, 'p-modao'), centre)).toHaveLength(
+      0
+    );
+    const s = setup({'p-modao': centre, 'e-bokh': at(6, 3)}, VANGUARD);
+    const v = unit(s, 'p-modao');
+    const b = unit(s, 'e-bokh');
+    expect(hexDistance(centre, b.hex!)).toBe(ABILITY.challenge.range);
+    setBarrier(v, 5, 1000);
+    s.awaiting = v.id;
+    applyTurn(s, v, {action: {ability: 'challenge', target: {hex: b.hex!}}});
+    const taunt = b.statuses.find((x) => x.kind === 'taunted')!;
+    expect(taunt.source).toBe(v.id);
+    expect(taunt.untilSlot).toBe(ABILITY.challenge.tauntSlots);
+    expect(barrierOf(v)).toMatchObject({
+      value: ABILITY.challenge.barrier,
+      untilSlot: ABILITY.challenge.barrierSlots,
+    });
+    expect(v.slot).toBe(slotsForward(ABILITY.challenge.cost, v.speed));
+  });
+
+  it('a Challenged unit must attack the Vanguard or Hold while it can', () => {
+    const s = setup({'p-modao': centre, 'e-bokh': around[0]!, 'p-mangudai': around[3]!}, VANGUARD);
+    const v = unit(s, 'p-modao');
+    const b = unit(s, 'e-bokh');
+    b.statuses.push({kind: 'taunted', value: 0, untilSlot: 1000, source: v.id});
+    for (const t of allowedTargets(s, mapOf(s), b, ABILITIES.throw))
+      expect(hexEquals(t.hex!, centre)).toBe(true);
+  });
+
+  it('Reap sweeps the target and the two spaces beside it, then pushes each card', () => {
+    const target = around[0]!;
+    const sides = reapHexes(centre, target).slice(1);
+    expect(sides).toHaveLength(2);
+    for (const h of sides) {
+      expect(hexDistance(h, centre)).toBe(1);
+      expect(hexDistance(h, target)).toBe(1);
+    }
+    const s = setup(
+      {'p-modao': centre, 'e-bokh': target, 'e-mangudai': sides[0]!, 'e-modao': around[3]!},
+      VANGUARD
+    );
+    const v = unit(s, 'p-modao');
+    const before = s.units.map((u) => ({id: u.id, hp: u.hp, slot: u.slot}));
+    s.awaiting = v.id;
+    applyTurn(s, v, {action: {ability: 'reap', target: {hex: target}}});
+    for (const id of ['e-bokh', 'e-mangudai']) {
+      const u = unit(s, id);
+      const b = before.find((x) => x.id === id)!;
+      expect(u.hp).toBe(b.hp - defended(u, scaled(ABILITY.reap.damage, v.power)));
+      expect(u.slot).toBe(b.slot! + ABILITY.reap.push);
+    }
+    // Behind the Vanguard: untouched.
+    const behind = unit(s, 'e-modao');
+    expect(behind.hp).toBe(behind.maxHp);
+    expect(behind.slot).toBe(before.find((x) => x.id === 'e-modao')!.slot);
+  });
+
+  it('Push yields to the next free slot, and stops at the push limit until the unit acts', () => {
+    const s = setup({'p-modao': centre, 'e-bokh': at(6, 3), 'e-mangudai': at(6, 5)}, VANGUARD);
+    const b = unit(s, 'e-bokh');
+    const m = unit(s, 'e-mangudai');
+    b.slot = 20;
+    m.slot = 22;
+    expect(pushCard(s, b, 2)).toBe(3);
+    expect(b.slot).toBe(23);
+    // 3 of the 10 spent: the next pushes are cut down to fit.
+    expect(pushCard(s, b, 5)).toBe(5);
+    expect(pushCard(s, b, 5)).toBe(RULES.pushLimit - 8);
+    expect(pushCard(s, b, 5)).toBe(0);
+    expect(b.slot).toBe(20 + RULES.pushLimit);
+    // Its own turn starts the limit again.
+    for (const u of s.units) if (u !== b) u.slot = u.alive ? 500 + u.partyIndex : null;
+    s.currentSlot = 0;
+    expect(advanceToDecision(s)!.id).toBe(b.id);
+    expect(b.pushed).toBeUndefined();
+  });
+
+  it('Push yielding past the limit lands on the latest free slot within it', () => {
+    const s = setup({'p-modao': centre, 'e-bokh': at(6, 3), 'e-mangudai': at(6, 5)}, VANGUARD);
+    const b = unit(s, 'e-bokh');
+    b.slot = 20;
+    b.pushed = 8;
+    // Slot 22, the limit, is taken; 21 is free.
+    unit(s, 'e-mangudai').slot = 22;
+    expect(pushCard(s, b, 2)).toBe(1);
+    expect(b.slot).toBe(21);
+  });
+
+  it('Advance charges, then hits, knocks back and pushes every unit next to the Vanguard', () => {
+    const s = setup(
+      {'p-modao': centre, 'e-bokh': around[0]!, 'e-mangudai': around[3]!, 'p-mangudai': around[1]!},
+      VANGUARD
+    );
+    const v = unit(s, 'p-modao');
+    v.ultimateCharge = RULES.ultimateCharge;
+    s.awaiting = v.id;
+    applyTurn(s, v, {action: {ability: 'advance', target: {hex: centre}}});
+    expect(v.charging).toEqual({ability: 'advance', target: centre});
+    const slots = Object.fromEntries(s.units.map((u) => [u.id, u.slot]));
+    // Everyone else waits; the charge lands when the Vanguard's card is reached.
+    s.units.filter((u) => u !== v && u.alive).forEach((u, i) => (u.slot = 900 + 10 * i));
+    const ctxBefore = s.units.map((u) => ({id: u.id, slot: u.slot}));
+    advanceToDecision(s);
+    expect(v.charging).toBeNull();
+    for (const id of ['e-bokh', 'e-mangudai', 'p-mangudai']) {
+      const u = unit(s, id);
+      expect(u.hp).toBeLessThan(u.maxHp);
+      expect(hexDistance(u.hex!, centre)).toBe(2);
+      expect(u.slot).toBe(ctxBefore.find((x) => x.id === id)!.slot! + ABILITY.advance.push);
+    }
+    expect(slots[v.id]).toBe(slotsForward(ABILITY.advance.chargeCost, v.speed));
+  });
+
+  it('the AI can play the Vanguard: it picks a legal turn', () => {
+    const s = setup({'e-modao': centre, 'p-bokh': around[0]!, 'p-mangudai': at(7, 1)}, VANGUARD);
+    const v = unit(s, 'e-modao');
+    s.awaiting = v.id;
+    const input = chooseAiTurn(s, v);
+    expect(simulate(s, v.id, input)).not.toBeNull();
   });
 });

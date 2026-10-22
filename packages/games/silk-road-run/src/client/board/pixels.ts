@@ -26,6 +26,7 @@ export const HERO_COLOR = {
   bokh: '#b45309',
   mangudai: '#15803d',
   storm: '#4f46e5',
+  modao: '#9f1239',
   camel: '#a8742f',
   wolf: '#6b7280',
 };

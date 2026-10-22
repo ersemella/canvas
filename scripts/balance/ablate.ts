@@ -6,7 +6,7 @@
 import {createFight, advance, applyTurn, actingUnit} from '@balance-rules/fight';
 import {placeStartingCards} from '@balance-rules/track';
 import {chooseAiTurn} from '@balance-rules/ai';
-import {ABILITY, AI, HEROES, RULES} from '@balance-rules/config';
+import {ABILITY, AI, HEROES, PARTY, RULES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import type {AbilityId, FightState, HeroId, Side} from '@balance-rules/types';
 
@@ -23,8 +23,11 @@ export type Mod = {
   ban?: AbilityId[];
   /** Added to the modified side's units, by hero: speed, defence, power, hp (hp also raises max). */
   stats?: Partial<Record<HeroId, Partial<Record<'speed' | 'defence' | 'power' | 'hp', number>>>>;
+  /** The modified side's party, in place of the experiment's. */
+  party?: HeroId[];
 };
-export type Experiment = {patch?: (config: Config) => void; mod?: Mod};
+/** `party`: both sides' heroes (default PARTY, the three prototype heroes). */
+export type Experiment = {patch?: (config: Config) => void; mod?: Mod; party?: HeroId[]};
 type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 
 /** Damage sources, recognised by the fight log's wording. */
@@ -34,6 +37,8 @@ const SOURCES: [RegExp, string][] = [
   [/^The Freeze hits/, 'freeze'],
   [/^The throw hits/, 'throw'],
   [/^The Rampage hits/, 'rampage'],
+  [/^The reap hits/, 'reap'],
+  [/^The advance hits/, 'advance'],
   [/^Hail strikes/, 'hail'],
   [/^Quicksand drags/, 'quicksand'],
   [/^The pin crushes/, 'pin'],
@@ -42,7 +47,7 @@ const SOURCES: [RegExp, string][] = [
 /** Sources whose caster the log doesn't name: counted as damage to the enemy. */
 const UNOWNED = new Set(['quicksand', 'hail', 'pin']);
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s (?:Volley lands|Freeze takes hold|arrow hits)| rampages| calls down (?:hail|sunlight)| throws| pins)/;
+  /^(Your|Enemy) .+?(?:'s (?:Volley lands|Freeze takes hold|arrow hits)| rampages| calls down (?:hail|sunlight)| throws| pins| reaps| advances like a wall| challenges)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -88,7 +93,7 @@ export function ablate(options: Options) {
   }
 }
 
-function run({fights, seed, maxTurns, mod}: Options) {
+function run({fights, seed, maxTurns, mod, party = PARTY}: Options) {
   const kits = Object.fromEntries(Object.entries(HEROES).map(([h, s]) => [h, [...s.abilities]]));
   // Abilities are listed per hero, not per unit, so the modified side's kit is
   // swapped in for its own decisions only. Its search then also assumes the
@@ -104,6 +109,8 @@ function run({fights, seed, maxTurns, mod}: Options) {
   const damage: Record<string, {enemy: number; ally: number}> = {};
   const kills: Record<string, number> = {};
   const healing = {ally: 0, enemy: 0};
+  /** Damage barriers took, by the barrier's side's point of view. */
+  const absorbed: Record<string, number> = {};
   const ultimateSlots: Record<string, number[]> = {};
   const units: Record<string, number> = {};
   const survivors: Record<string, number> = {};
@@ -116,8 +123,9 @@ function run({fights, seed, maxTurns, mod}: Options) {
   let movedHexes = 0;
 
   for (let f = 0; f < fights; f++) {
-    const state = createFight(seed + (mod ? f >> 1 : f));
     const modSide: Side | null = mod ? (f & 1 ? 'enemy' : 'player') : null;
+    const sideParty = (side: Side) => (side === modSide && mod?.party ? mod.party : party);
+    const state = createFight(seed + (mod ? f >> 1 : f), sideParty('player'), sideParty('enemy'));
     for (const u of state.units) u.controller = 'human';
     if (mod?.stats) {
       for (const u of state.units.filter((u) => u.side === modSide)) {
@@ -142,6 +150,8 @@ function run({fights, seed, maxTurns, mod}: Options) {
           (damage[source] ??= {enemy: 0, ally: 0})[friendly ? 'ally' : 'enemy'] += n;
           lastSource = source;
         }
+        const shield = /^(?:Your|Enemy) (.+?)'s barrier takes (\d+)/.exec(text);
+        if (shield) add(absorbed, shield[1]!, Number(shield[2]));
         const healed = /^(Your|Enemy) .* heals (\d+)\.$/.exec(text);
         if (healed) {
           const side: Side = healed[1] === 'Your' ? 'player' : 'enemy';
@@ -221,6 +231,8 @@ function run({fights, seed, maxTurns, mod}: Options) {
       ])
     ),
     healingPerFight: {ally: perFight(healing.ally), enemy: perFight(healing.enemy)},
+    /** Damage barriers took per fight, by the hero whose barrier it was. */
+    barrierPerFight: Object.fromEntries(Object.entries(absorbed).map(([k, n]) => [k, perFight(n)])),
     killsPerFight: Object.fromEntries(
       Object.entries(kills).map(([k, n]) => [k, round(n / fights, 2)])
     ),

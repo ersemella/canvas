@@ -6,6 +6,7 @@
 import {hexDistance, hexEquals, hexKey} from '@canvas/engine/server';
 import {ABILITY, AI, CAMEL, HEROES, RULES, movementRules} from './config';
 import {
+  barrierOf,
   hostile,
   isFlanked,
   isImmobilized,
@@ -42,8 +43,11 @@ interface Rate {
   ranged: number;
 }
 
-/** Each side's pressure (the sum of its living units' rates) and its living units. */
-type Pressure = Record<Side, Rate & {alive: number}>;
+/**
+ * Each side's pressure (the sum of its living units' rates), the sum of
+ * their best basic hits (before defence), and its living units.
+ */
+type Pressure = Record<Side, Rate & {hit: number; alive: number}>;
 
 /** An ability's base damage, a Pin's over its whole duration; none for the rest. */
 function baseDamage(id: AbilityId): number {
@@ -51,12 +55,16 @@ function baseDamage(id: AbilityId): number {
   return a.damage ?? (a.damagePerSlot ?? 0) * (a.slots ?? 0);
 }
 
-function rateOf(u: Unit): Rate {
-  const slots = slotsForward(RULES.cost.typical, u.speed);
+function bestHit(u: Unit): number {
   let best = 0;
   for (const def of abilitiesOf(u)) if (!def.ultimate) best = Math.max(best, baseDamage(def.id));
+  return scaled(best, u.power);
+}
+
+function rateOf(u: Unit): Rate {
+  const slots = slotsForward(RULES.cost.typical, u.speed);
   return {
-    all: scaled(best, u.power) / slots,
+    all: bestHit(u) / slots,
     ranged: isRanged(u) ? scaled(ABILITY.bow.damage, u.power) / slots : 0,
   };
 }
@@ -65,17 +73,38 @@ const pressures = new WeakMap<FightState, Pressure>();
 function pressureOf(state: FightState): Pressure {
   let p = pressures.get(state);
   if (!p) {
-    p = {player: {all: 0, ranged: 0, alive: 0}, enemy: {all: 0, ranged: 0, alive: 0}};
+    p = {
+      player: {all: 0, ranged: 0, hit: 0, alive: 0},
+      enemy: {all: 0, ranged: 0, hit: 0, alive: 0},
+    };
     for (const u of state.units) {
       if (!u.alive) continue;
       const r = rateOf(u);
       p[u.side].all += r.all;
       p[u.side].ranged += r.ranged;
+      p[u.side].hit += bestHit(u);
       p[u.side].alive++;
     }
     pressures.set(state, p);
   }
   return p;
+}
+
+/**
+ * What `u`'s Barrier saves it: the health of the hits it will take whole,
+ * the other side's average best hit through `u`'s defence for each hit its
+ * pool can take (the last one's excess is lost, owner, 2026-10-22), for the
+ * share of AI.statusHorizon it lasts.
+ */
+function barrierValue(p: Pressure, u: Unit, slot: number): number {
+  const barrier = barrierOf(u);
+  if (!barrier) return 0;
+  const other = p[u.side === 'player' ? 'enemy' : 'player'];
+  if (other.alive === 0) return 0;
+  const hit = Math.max(1, other.hit / other.alive);
+  const hits = Math.ceil(barrier.value / hit);
+  const lasts = Math.min(1, statusSlotsLeft(u, 'barrier', slot) / AI.statusHorizon);
+  return ((hits * hit * RULES.defenceConstant) / (u.defence + RULES.defenceConstant)) * lasts;
 }
 
 /** The share of the other side's pressure that falls on `u`, through its defence. */
@@ -115,7 +144,8 @@ function statusPoints(u: Unit, slot: number, p: Pressure): number {
       statusSlotsLeft(u, 'crushed', slot) *
       RULES.defenceConstant) /
       (u.defence + RULES.defenceConstant) +
-    AI.perTauntedSlot * statusSlotsLeft(u, 'taunted', slot)
+    AI.perTauntedSlot * statusSlotsLeft(u, 'taunted', slot) -
+    barrierValue(p, u, slot)
   );
 }
 
@@ -168,6 +198,17 @@ function camelProgress(state: FightState, side: Side): number {
   return (side === 'enemy' ? 1 : -1) * camelDistance(state) * AI.perCamelHex;
 }
 
+/**
+ * A unit's card pushed later by a turn: the damage it doesn't deal while
+ * it waits, its rate × the slots (balance.md, principle 11). Only Push
+ * moves another unit's card.
+ */
+function pushValue(before: Unit, after: Unit): number {
+  if (!after.alive || before.slot === null || after.slot === null || after.slot <= before.slot)
+    return 0;
+  return (after.slot - before.slot) * rateOf(before).all * AI.pushShare;
+}
+
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
 export function scoreOutcome(
   before: FightState,
@@ -186,12 +227,14 @@ export function scoreOutcome(
     if (hostile(b, actor)) {
       // Healing an enemy counts against the turn, as damage counts for it.
       score += lost * (b.hero === CAMEL ? AI.camelHealthWeight : 1) + statusDelta;
+      score += pushValue(b, a);
       if (!a.alive) score += AI.kill;
       if (lost > 0 && base.flanked) score += AI.flankedTarget;
     } else {
       // Healing counts as damage; friendly fire only when clearly worth it.
       score += lost > 0 ? -lost * AI.friendlyDamageFactor : -lost;
       score -= statusDelta;
+      if (b.id !== actor.id) score -= pushValue(b, a) * AI.friendlyDamageFactor;
       if (base.flanked && a.alive && !isFlanked(after, a)) score += AI.breaksAllyFlank;
     }
   }

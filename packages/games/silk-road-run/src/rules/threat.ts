@@ -8,7 +8,7 @@
 import {hexesInRange, hexDistance} from '@canvas/engine/server';
 import {ABILITY, HEROES, RULES, movementRules} from './config';
 import {ABILITIES, unusableReason} from './abilities';
-import {hostile, isImmobilized, movementCap} from './board';
+import {barrierOf, hostile, isImmobilized, movementCap} from './board';
 import {scaled, throughDefence} from './resolve';
 import {tileAt} from './map';
 import {slotsForward} from './track';
@@ -122,6 +122,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const melee = Math.max(
       usable('throw') ? scaled(ABILITY.throw.damage, e.power) : 0,
       usable('bite') ? scaled(ABILITY.bite.damage, e.power) : 0,
+      usable('reap') ? scaled(ABILITY.reap.damage, e.power) : 0,
       usable('pin') ? scaled(ABILITY.pin.damagePerSlot, e.power) * ABILITY.pin.slots : 0
     );
     // Pin reaches a hex further, after its optional step (2026-10-21).
@@ -200,7 +201,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
  * whose cards come before the end of the window: its own next card, but at
  * least a typical turn ahead, so a cheap Hold doesn't look safer than
  * acting where it stands. Each enemy's best hit, summed, through `me`'s
- * defence and Vulnerable.
+ * defence and Vulnerable; a Barrier takes the largest of them whole.
  */
 export function threatDamage(
   threats: Threat[],
@@ -213,6 +214,7 @@ export function threatDamage(
   const windowEnd = Math.max(me.slot, now + slotsForward(RULES.cost.typical, me.speed));
   const key = id(me.hex.q, me.hex.r);
   let total = 0;
+  let largest = 0;
   for (const t of threats) {
     const e = after.units.find((u) => u.id === t.enemyId);
     if (!e?.alive || e.slot === null || e.slot >= windowEnd) continue;
@@ -220,8 +222,11 @@ export function threatDamage(
     if (e.hex && hexDistance(e.hex, me.hex) > RULES.movementCap + ABILITY.bow.range + 1) continue;
     const h = t.hexes.get(key);
     if (!h) continue;
-    total += Math.max(h.ranged, h.other);
+    const d = Math.max(h.ranged, h.other);
+    total += d;
+    largest = Math.max(largest, d);
   }
+  if (barrierOf(me)) total -= largest;
   // Defence and Vulnerable once, on the sum (checking a flank is the costly part).
   return total > 0 ? throughDefence(after, me, total) : 0;
 }

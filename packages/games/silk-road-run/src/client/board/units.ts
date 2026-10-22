@@ -274,10 +274,11 @@ export const STATUS_MARK: Record<StatusKind, [string, string]> = {
   vulnerable: ['V', PALETTE.gold],
   crushed: ['C', PALETTE.madder],
   taunted: ['T', PALETTE.goldLight],
+  barrier: ['B', PALETTE.ivory],
 };
 export const STATUS_KINDS = Object.keys(STATUS_MARK) as StatusKind[];
 
-/** A unit's status markers: I(mmobilized), S(lowed), V(ulnerable), C(rushed), T(aunted), F(lanked). */
+/** A unit's status markers: I(mmobilized), S(lowed), V(ulnerable), C(rushed), T(aunted), B(arrier), F(lanked). */
 export function statusMarks(fight: FightState, u: Unit): [string, string][] {
   const marks: [string, string][] = [];
   for (const kind of STATUS_KINDS) {

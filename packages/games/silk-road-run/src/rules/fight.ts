@@ -165,6 +165,8 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     const unit = nextCard(state);
     if (!unit) return;
     spend?.();
+    // Its own turn: the push limit starts again (3.6).
+    delete unit.pushed;
     const ctx: Ctx = {state, map, slot: unit.slot!};
     beginSlot(ctx);
     record(state, {kind: 'turn', unitId: unit.id});

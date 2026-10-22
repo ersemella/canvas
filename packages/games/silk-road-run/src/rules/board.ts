@@ -91,10 +91,21 @@ export function expireStatuses(unit: Unit, slot: number): void {
 /**
  * Cleanse: every harmful status from an ability (not a flank's Vulnerable),
  * except a pinning Champion's own hold: cleansing it doesn't break the pin
- * (owner, 2026-10-20).
+ * (owner, 2026-10-20). Barrier is beneficial, so it stays (17.8).
  */
 export function cleanse(unit: Unit): void {
-  unit.statuses = unit.statuses.filter((s) => s.pin?.champion === unit.id);
+  unit.statuses = unit.statuses.filter((s) => s.pin?.champion === unit.id || s.kind === 'barrier');
+}
+
+/** The unit's Barrier, if it has one: there is at most one, a new one replacing it. */
+export function barrierOf(unit: Unit): Status | undefined {
+  return unit.statuses.find((s) => s.kind === 'barrier');
+}
+
+/** Gives the unit a fresh Barrier, replacing any it has (owner, 2026-10-22: barriers don't stack). */
+export function setBarrier(unit: Unit, value: number, untilSlot: number): void {
+  unit.statuses = unit.statuses.filter((s) => s.kind !== 'barrier');
+  addStatus(unit, {kind: 'barrier', value, untilSlot});
 }
 
 /**

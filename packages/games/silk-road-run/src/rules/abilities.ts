@@ -1,5 +1,6 @@
 /**
- * The three prototype heroes' abilities (brief section 4). Each lists its
+ * The three prototype heroes' abilities (brief section 4), and the Modao
+ * Vanguard's. Each lists its
  * legal targets from a hex (for validation, previews and the AI) and
  * resolves on the fight state. Values come from config.ts.
  */
@@ -16,6 +17,7 @@ import {ABILITY, HEROES, RULES} from './config';
 import {
   addStatus,
   cleanse,
+  setBarrier,
   isImmobilized,
   obscured,
   onMap,
@@ -31,6 +33,7 @@ import {
   heal,
   hit,
   log,
+  push,
   scaled,
   unitName,
 } from './resolve';
@@ -484,6 +487,103 @@ const rampage: AbilityDef = {
   },
 };
 
+// ─── Modao Vanguard ──────────────────────────────────────────────────────────
+
+const challenge: AbilityDef = {
+  id: 'challenge',
+  name: 'Challenge',
+  kind: 'control',
+  range: ABILITY.challenge.range,
+  summary: () =>
+    `Taunt one unit in range; gain Barrier ${ABILITY.challenge.barrier} for ${ABILITY.challenge.barrierSlots} slots, replacing any.`,
+  duration: ABILITY.challenge.tauntSlots,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.challenge.cost,
+  movesSelf: false,
+  targetsUnit: true,
+  // A call to fight, not a shot: no line of fire, and a sandstorm doesn't stop it.
+  targets: (state, map, user, from) =>
+    hexesWithin(map, from, ABILITY.challenge.range, (h) => {
+      const u = unitAt(state, h);
+      return u !== undefined && u !== user;
+    }),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    // A fresh taunt replaces this Vanguard's earlier one on the target.
+    u.statuses = u.statuses.filter((s) => s.kind !== 'taunted' || s.source !== user.id);
+    addStatus(u, {
+      kind: 'taunted',
+      value: 0,
+      untilSlot: ctx.slot + ABILITY.challenge.tauntSlots,
+      source: user.id,
+    });
+    setBarrier(user, ABILITY.challenge.barrier, ctx.slot + ABILITY.challenge.barrierSlots);
+    log(ctx, `${unitName(user)} challenges ${unitName(u)}.`);
+  },
+};
+
+/** Reap's sweep from `from` at `target`: the target's hex, then the two beside it that are next to `from`. */
+export function reapHexes(from: Hex, target: Hex): Hex[] {
+  return [target, ...hexNeighbors(target).filter((h) => hexDistance(h, from) === 1)];
+}
+
+const reap: AbilityDef = {
+  id: 'reap',
+  name: 'Reap',
+  kind: 'attack',
+  summary: (user) =>
+    `Melee sweep over three spaces: ${scaled(ABILITY.reap.damage, user.power)} damage and Push ${ABILITY.reap.push} to each unit.`,
+  ultimate: false,
+  charged: false,
+  cost: ABILITY.reap.cost,
+  movesSelf: false,
+  targetsUnit: true,
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  resolve(ctx, user, target) {
+    log(ctx, `${unitName(user)} reaps.`);
+    const victims = reapHexes(user.hex!, target.hex!)
+      .map((h) => unitAt(ctx.state, h))
+      .filter((u): u is Unit => u !== undefined);
+    for (const u of victims) {
+      hit(ctx, user, u, ABILITY.reap.damage, 'The reap');
+      push(ctx, u, ABILITY.reap.push);
+    }
+  },
+};
+
+const advance: AbilityDef = {
+  id: 'advance',
+  name: 'Advance',
+  kind: 'attack',
+  // Centred on the Vanguard: the area is the six spaces around it.
+  radius: ABILITY.advance.radius,
+  summary: (user) =>
+    `Charged: every unit next to you takes ${scaled(ABILITY.advance.damage, user.power)} damage, is knocked back ${ABILITY.advance.displace} and Pushed ${ABILITY.advance.push}.`,
+  ultimate: true,
+  charged: true,
+  cost: ABILITY.advance.chargeCost,
+  recoveryCost: ABILITY.advance.recoveryCost,
+  movesSelf: false,
+  damaging: true,
+  targets: (_state, _map, _user, from) => [{hex: from}],
+  resolve(ctx, user) {
+    // Where the Vanguard stands when it lands, even if it was knocked away while charging.
+    const centre = user.hex;
+    if (!centre) return;
+    log(ctx, `${unitName(user)} advances like a wall.`);
+    const victims = ctx.state.units
+      .filter((u) => u.alive && u.hex && hexDistance(u.hex, centre) === 1)
+      .sort((a, b) => unitOrder(a) - unitOrder(b));
+    for (const u of victims) {
+      hit(ctx, user, u, ABILITY.advance.damage, 'The advance');
+      if (!u.alive) continue;
+      displace(ctx, u, direction(centre, u.hex!), ABILITY.advance.displace);
+      push(ctx, u, ABILITY.advance.push);
+    }
+  },
+};
+
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 
 const bite: AbilityDef = {
@@ -519,6 +619,9 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   throw: throwAbility,
   pin,
   rampage,
+  challenge,
+  reap,
+  advance,
   bite,
 };
 

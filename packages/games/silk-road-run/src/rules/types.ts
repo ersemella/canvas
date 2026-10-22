@@ -8,10 +8,11 @@ import type {Tile} from './map';
 
 export type Side = 'player' | 'enemy';
 /**
- * The three prototype heroes, the caravan's camel (camel.md), a unit that
- * isn't a hero, and the wolf, an enemy NPC.
+ * The three prototype heroes, the Modao Vanguard (being balanced, not yet in
+ * the party), the caravan's camel (camel.md), a unit that isn't a hero, and
+ * the wolf, an enemy NPC.
  */
-export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
+export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'modao' | 'camel' | 'wolf';
 export type AbilityId =
   | 'hold'
   | 'bow'
@@ -23,9 +24,18 @@ export type AbilityId =
   | 'throw'
   | 'pin'
   | 'rampage'
+  | 'challenge'
+  | 'reap'
+  | 'advance'
   | 'bite';
 
-export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable' | 'crushed' | 'taunted';
+export type StatusKind =
+  | 'immobilized'
+  | 'slowed'
+  | 'vulnerable'
+  | 'crushed'
+  | 'taunted'
+  | 'barrier';
 
 /**
  * A status from an ability. Active through `untilSlot` inclusive, so one
@@ -34,7 +44,10 @@ export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable' | 'crushed' | '
  */
 export interface Status {
   kind: StatusKind;
-  /** Slowed: hexes; Vulnerable: percent; Crushed: damage per slot; Immobilized, Taunted: unused (0). */
+  /**
+   * Slowed: hexes; Vulnerable: percent; Crushed: damage per slot; Barrier:
+   * what it has left to absorb; Immobilized, Taunted: unused (0).
+   */
   value: number;
   untilSlot: number;
   /** Taunted: the taunter's unit id. */
@@ -67,6 +80,11 @@ export interface Unit {
    */
   ultimateCharge: number;
   ultimateUsed: boolean;
+  /**
+   * Slots its card has been pushed since its last turn, against
+   * RULES.pushLimit (3.6); reset when its card is reached.
+   */
+  pushed?: number;
   /** A charged ability waiting for this unit's card (3.7). */
   charging: {ability: AbilityId; target: Hex} | null;
   /**

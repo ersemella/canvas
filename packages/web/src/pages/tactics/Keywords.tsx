@@ -97,6 +97,8 @@ const TONE: Partial<Record<KeywordId, string>> = {
   flanked: 'var(--c-gold)',
   obscured: 'var(--c-dusk4)',
   cleanse: 'var(--c-jade)',
+  barrier: 'var(--c-jade)',
+  push: 'var(--c-gold)',
   melee: 'var(--c-madderLight)',
   ultimate: 'var(--c-plumLight)',
   charged: 'var(--c-plumLight)',
@@ -167,6 +169,8 @@ const WORDS: [RegExp, KeywordId][] = [
   [/Flanked/, 'flanked'],
   [/Obscured/, 'obscured'],
   [/[Cc]leanse[sd]?/, 'cleanse'],
+  [/Barrier(?: \d+)?/, 'barrier'],
+  [/Push(?:ed)?(?: \d+)?/, 'push'],
 ];
 const ANY = new RegExp(WORDS.map(([re]) => `(${re.source})`).join('|'), 'g');
 

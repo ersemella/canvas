@@ -203,6 +203,14 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   ([map.md](map.md), 6.7): fewer exceptions to learn, supports must
   position too, and ally exemption becomes a build lever.
 
+- **Barrier after defence, excess to health** (until 2026-10-22): Barrier
+  absorbed the next N damage after every other reduction, defence
+  included, and what it couldn't absorb carried on to health; separate
+  Barriers would each have run their own duration. Replaced (owner's
+  call, with the Modao Vanguard's Challenge) by a pool that takes damage
+  before defence, absorbs the hit that spends it whole, and is replaced
+  by a new one ([keywords.md](keywords.md), 17.6).
+
 ## Roster
 
 - **Fox-Spirit Sorcerer as a trickster caster** (2026-10-16): illusions

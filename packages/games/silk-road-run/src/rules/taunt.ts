@@ -9,7 +9,7 @@
 import {hexDistance, hexDirectionTo, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, movementRules} from './config';
-import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, reapHexes, unusableReason} from './abilities';
 import type {AbilityDef} from './abilities';
 import {reachableHexes, walkable} from './board';
 import type {MapData} from './map';
@@ -39,7 +39,12 @@ export function affectsHex(
     case 'throw':
     case 'pin':
     case 'bite':
+    case 'challenge':
       return near(target.hex, 0);
+    case 'reap':
+      return reapHexes(from, target.hex!).some((h) => near(h, 0));
+    case 'advance':
+      return hexDistance(from, victim) === 1;
     case 'hail':
     case 'sunlight':
       return near(target.hex, 0);

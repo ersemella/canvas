@@ -78,7 +78,9 @@ export type KeywordId =
   | 'crushed'
   | 'flanked'
   | 'obscured'
-  | 'cleanse';
+  | 'cleanse'
+  | 'barrier'
+  | 'push';
 
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   speed: {name: 'Speed', detail: 'Higher speed: actions cost fewer slots, so turns come sooner.'},
@@ -129,4 +131,13 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
     detail: 'Targeted ranged attacks can’t target it, or anyone past it, and it can’t make one.',
   },
   cleanse: {name: 'Cleanse', detail: 'Removes harmful statuses from abilities.'},
+  barrier: {
+    name: 'Barrier',
+    detail:
+      'Takes damage before health, ignoring defence. When it breaks, the rest of that hit is lost. A new one replaces it.',
+  },
+  push: {
+    name: 'Push',
+    detail: `Moves the unit's card this many slots later. At most ${RULES.pushLimit} between two of its turns.`,
+  },
 };

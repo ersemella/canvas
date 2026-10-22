@@ -25,6 +25,32 @@ export function freeSlotFrom(state: FightState, slot: number, ignore?: Unit): nu
   return s;
 }
 
+/**
+ * Push (17.3, 3.6): moves the unit's card `n` slots later, yielding forward
+ * if that slot is taken, within the push limit, yielding included. A push
+ * beyond what is left of the limit is reduced to fit, landing on the latest
+ * free slot within it. Returns the slots moved, 0 once the limit is spent.
+ */
+export function pushCard(state: FightState, unit: Unit, n: number): number {
+  if (!unit.alive || unit.slot === null || n <= 0) return 0;
+  const budget = RULES.pushLimit - (unit.pushed ?? 0);
+  if (budget <= 0) return 0;
+  const from = unit.slot;
+  let to = freeSlotFrom(state, from + Math.min(n, budget), unit);
+  if (to - from > budget) {
+    to = from;
+    for (let s = from + budget; s > from; s--) {
+      if (freeSlotFrom(state, s, unit) === s) {
+        to = s;
+        break;
+      }
+    }
+  }
+  unit.slot = to;
+  unit.pushed = (unit.pushed ?? 0) + to - from;
+  return to - from;
+}
+
 /** Places a unit's card at `slot`, yielding forward; cards already placed never move. */
 export function placeCard(state: FightState, unit: Unit, slot: number): number {
   unit.slot = freeSlotFrom(state, slot, unit);

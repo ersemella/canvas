@@ -36,6 +36,8 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   pin: 'No enemy next to you, or a step away, to pin.',
   leap: 'Nowhere to land.',
   rampage: 'No way clear to rampage.',
+  reap: 'No enemy next to you.',
+  challenge: 'No enemy in range.',
 };
 
 /** What the player has picked for the acting unit's turn so far. */

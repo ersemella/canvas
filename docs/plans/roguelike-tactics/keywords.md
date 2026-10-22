@@ -160,14 +160,16 @@ shield its allies.
 | **Pierce** | The attack's damage skips the defence step. Barrier and Vulnerable still apply. |
 | **Lifesteal N%** | The attacker heals N% of the damage it dealt (to health and barrier, after every reduction), rounded down. It is healing: Antiheal blocks it. |
 | **Vulnerable N%** | The unit takes N% more damage for a duration. **Being flanked** makes a unit Vulnerable 25% for as long as the flank holds (6.3). |
-| **Barrier N** | Absorbs the next N damage the unit would take, after every other reduction, until used up or it expires. Not healing, so Antiheal doesn't block it. |
+| **Barrier N** | A pool of N taken before health, until spent or it expires (owner, 2026-10-22). Damage reaches it after Vulnerable but **skips defence**. The hit that spends it is absorbed **whole**: what the pool couldn't take is lost and never reaches health (a Barrier 1 stops a 200-damage hit). Every damage source hits it, collisions, quicksand and Crushed included; damage dealt every slot takes it slot by slot. **One at a time:** a new Barrier replaces the old one, whatever is left of it. Beneficial, so Cleanse keeps it. Not healing, so Antiheal doesn't block it. |
 | **Immortal** | The unit's health can't be reduced: damage to it becomes 0 (no minimum 1), burn included. Displace still moves it; other statuses still apply. Short durations only. |
 | **Obscured** | A unit standing in a sandstorm (conceal tile; the Storm Caller's fog too until it was removed, 2026-10-21). A **ranged** ability can't **target** it, or anything **through** it: the target's hex, and every hex the line to it crosses (on a border, either side, as for line of fire), must not be Obscured. The user's own hex doesn't count, except for the **Bow, which can't shoot out of a sandstorm** at all (owner, 2026-10-21). In Phase 1 the only ranged ability is the Bow (an arrow's lane stops short of a sandstorm); Volley and Freeze land on an area, and Hail and Sunlight on a hex, so they aren't stopped (Sunlight was until it became space-targeted, owner, 2026-10-21). Melee and quicksand aren't affected, and the unit stays visible. A property of the hex, not a status: it lasts while the unit stands there (Decided 2026-10-21, owner; until then it halved ranged hits into and out of the hex and arrows through it).
 
 **Damage order** (extends the Phase 1 order): base × power;
-**Vulnerable** (including from a flank); defence (skipped by **Pierce**);
-minimum 1; **Barrier** absorbs; **Immortal** sets it to 0. Each step
-rounds down. Burn and collision damage skip defence as now, then take
+**Vulnerable** (including from a flank); then, if the unit has a
+**Barrier**, the Barrier takes it all and nothing reaches health (owner,
+2026-10-22); otherwise defence (skipped by **Pierce**), minimum 1, and
+**Immortal** sets it to 0. Each step rounds down. (Until 2026-10-22,
+Barrier absorbed after defence, and the excess carried on to health.) Burn and collision damage skip defence as now, then take
 Vulnerable, Barrier and Immortal. Hazard (quicksand) damage takes
 Vulnerable and defence like a hit (owner, 2026-10-19; it skipped defence
 until then); per-slot damage takes Vulnerable slot by slot and defence once
@@ -245,6 +247,7 @@ Barrier; Cursed lowers the max that overhealth sits above.
 | Taunt | The unit must attack the taunter if any reachable hex allows it, or Hold; a charged ability is redirected to the taunter | Can't be dodged, not even by Hold (until 2026-10-20); dodged by Hold or any non-damaging ability | Owner's call, 2026-10-20: Holding to wait it out tones down the Bökh Champion's Pin, its only source (Pin 56% of the Champion's AI turns → 47%, with Pin's damage lowered); redirecting a charge gives Taunt a use no other effect has |
 | Burn | Combines as its source states, like every status; additive Burns each deal their damage | Always stacks; a new Burn replaces a weaker one | Owner's call; follows the source-defined rule |
 | Barrier and overhealth | Both kept | Merged into Barrier | Owner's call; different counters |
+| Barrier (2026-10-22) | Takes damage after Vulnerable, before defence; the hit that spends it is absorbed whole, its excess lost; one Barrier at a time, a new one replacing it | Absorbing after defence with the excess carried to health (until 2026-10-22); separate Barriers each breaking on their own | Owner's call, with the Modao Vanguard's Challenge. A Barrier is then worth whole hits, and its counter is a cheap hit (or damage every slot) that strips it before the big one |
 | Removal | Cleanse removes harmful statuses; Dispel, a separate effect, removes beneficial ones; neither touches passives | One effect removing both; no removal | Owner's call; each is a clear counter with an obvious target |
 | Same status twice | The source states how it combines: additive, multiplicative, replace or max; each application runs its own duration except under replace | One global rule (strongest replaces weaker; then strongest applies at a time); Burn as the only stacking status | Owner's call: how an effect combines is part of its design, and a lever for gear and upgrades |
 | Lost turns and budgets | A lost turn resets the push and pull limits like any turn | Budgets carry over a lost turn | Owner's call; the longest legal lockout is about two turns |

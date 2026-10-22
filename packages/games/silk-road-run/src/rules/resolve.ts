@@ -5,9 +5,10 @@
 import {hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {CAMEL, RULES, HEROES} from './config';
-import {addStatus, onMap, statusValue, unitAt, vulnerablePercent} from './board';
+import {addStatus, barrierOf, onMap, statusValue, unitAt, vulnerablePercent} from './board';
 import {MAPS, tileAt} from './map';
 import type {MapData} from './map';
+import {pushCard} from './track';
 import type {BoardSnapshot, FightEvent, FightState, HailEffect, Motion, Unit} from './types';
 
 export interface Ctx {
@@ -101,8 +102,58 @@ export function rawDamage(state: FightState, target: Unit, amount: number): numb
 
 export function hit(ctx: Ctx, attacker: Unit, target: Unit, base: number, what: string): void {
   if (!target.alive) return;
-  const d = abilityDamage(ctx.state, attacker, target, base);
-  applyDamage(ctx, target, d, `${what} hits ${unitName(target)} for ${d}`);
+  const raw = rawDamage(ctx.state, target, scaled(base, attacker.power));
+  strike(ctx, target, raw, true, (d) => `${what} hits ${unitName(target)} for ${d}`);
+}
+
+/**
+ * Damage reaching a unit, `raw` after Vulnerable. A Barrier takes it first,
+ * at its full value, skipping defence, and whatever it couldn't absorb is
+ * lost: none of it reaches health (owner, 2026-10-22). Without one,
+ * defence (when `defence`) and the minimum, then health; `text` says so.
+ */
+export function strike(
+  ctx: Ctx,
+  target: Unit,
+  raw: number,
+  defence: boolean,
+  text: (d: number) => string
+): void {
+  if (!target.alive) return;
+  if (absorb(ctx, target, raw)) return;
+  const d = defence ? defended(target, raw) : raw;
+  applyDamage(ctx, target, d, text(d));
+}
+
+/** If the unit has a Barrier, it takes `raw`, breaking once spent; true if it did. */
+function absorb(ctx: Ctx, target: Unit, raw: number, quiet = false): boolean {
+  const barrier = barrierOf(target);
+  if (!barrier) return false;
+  barrier.value -= raw;
+  if (barrier.value <= 0) target.statuses = target.statuses.filter((s) => s !== barrier);
+  if (!quiet) logBarrier(ctx, target, raw);
+  return true;
+}
+
+function logBarrier(ctx: Ctx, target: Unit, raw: number): void {
+  const left = barrierOf(target)?.value ?? 0;
+  log(
+    ctx,
+    `${unitName(target)}'s barrier takes ${raw}${left > 0 ? `, ${left} left` : ' and breaks'}.`
+  );
+  record(ctx.state, {kind: 'damage', unitId: target.id, amount: 0});
+}
+
+/** Push N on the track (17.3), within the push limit (3.6). */
+export function push(ctx: Ctx, unit: Unit, n: number): void {
+  if (!unit.alive || unit.slot === null) return;
+  const moved = pushCard(ctx.state, unit, n);
+  log(
+    ctx,
+    moved > 0
+      ? `${unitName(unit)} is pushed back ${moved} slot${moved === 1 ? '' : 's'}.`
+      : `${unitName(unit)} can't be pushed further this turn.`
+  );
 }
 
 export function applyDamage(ctx: Ctx, target: Unit, amount: number, text: string): void {
@@ -163,8 +214,13 @@ export function applyHail(ctx: Ctx, unit: Unit): void {
   if (!unit.alive || !unit.hex) return;
   const hail = ctx.state.effects.find((e) => hexEquals(e.hex, unit.hex!));
   if (!hail) return;
-  const d = hailDamage(ctx.state, unit, hail);
-  applyDamage(ctx, unit, d, `Hail strikes ${unitName(unit)} for ${d}`);
+  strike(
+    ctx,
+    unit,
+    rawDamage(ctx.state, unit, hail.damage),
+    true,
+    (d) => `Hail strikes ${unitName(unit)} for ${d}`
+  );
   if (!unit.alive) return;
   const untilSlot = ctx.slot + hail.statusSlots;
   addStatus(unit, {kind: 'slowed', value: hail.slowed, untilSlot});
@@ -174,8 +230,13 @@ export function applyHail(ctx: Ctx, unit: Unit): void {
 /** Quicksand under a unit, on entering (each slot on it is `damageEachSlot`). */
 export function applyHazard(ctx: Ctx, unit: Unit): void {
   if (!onQuicksand(ctx.map, unit)) return;
-  const d = throughDefence(ctx.state, unit, RULES.hazardEnterDamage);
-  applyDamage(ctx, unit, d, `Quicksand drags at ${unitName(unit)} for ${d}`);
+  strike(
+    ctx,
+    unit,
+    rawDamage(ctx.state, unit, RULES.hazardEnterDamage),
+    true,
+    (d) => `Quicksand drags at ${unitName(unit)} for ${d}`
+  );
 }
 
 function onQuicksand(map: MapData, unit: Unit): boolean {
@@ -188,21 +249,26 @@ function onQuicksand(map: MapData, unit: Unit): boolean {
  * excluded, whether or not anyone's card was on it. `expire` runs at each
  * slot first, so Vulnerable and Crushed count only while they last.
  * Vulnerable applies slot by slot, defence once to the total, so a few
- * points a slot aren't rounded away. One log line per unit and cause.
+ * points a slot aren't rounded away. A Barrier takes each slot's damage
+ * as it comes, at full value, until it breaks. One log line per unit and cause.
  */
 export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) => void): void {
   const sinking = new Map<Unit, number>();
   const crushed = new Map<Unit, number>();
+  const absorbed = new Map<Unit, number>();
   const add = (m: Map<Unit, number>, u: Unit, d: number) => m.set(u, (m.get(u) ?? 0) + d);
+  const tick = (m: Map<Unit, number>, u: Unit, d: number) =>
+    absorb(ctx, u, d, true) ? add(absorbed, u, d) : add(m, u, d);
   for (let s = from + 1; s <= ctx.slot; s++) {
     expire(s);
     for (const u of ctx.state.units) {
       if (!u.alive) continue;
-      if (onQuicksand(ctx.map, u)) add(sinking, u, rawDamage(ctx.state, u, RULES.hazardDamage));
+      if (onQuicksand(ctx.map, u)) tick(sinking, u, rawDamage(ctx.state, u, RULES.hazardDamage));
       const crush = statusValue(u, 'crushed');
-      if (crush > 0) add(crushed, u, rawDamage(ctx.state, u, crush));
+      if (crush > 0) tick(crushed, u, rawDamage(ctx.state, u, crush));
     }
   }
+  for (const [u, raw] of absorbed) logBarrier(ctx, u, raw);
   for (const [u, raw] of sinking) {
     const d = defended(u, raw);
     applyDamage(ctx, u, d, `Quicksand drags at ${unitName(u)} for ${d}`);
@@ -272,18 +338,20 @@ export function displace(ctx: Ctx, unit: Unit, direction: number, distance: numb
     const next = hexNeighbor(unit.hex, direction);
     const other = unitAt(ctx.state, next);
     if (!onMap(ctx.map, next) || tileAt(ctx.map, next) === 'obstacle' || other) {
-      const d = rawDamage(ctx.state, unit, RULES.collisionDamage);
+      const raw = rawDamage(ctx.state, unit, RULES.collisionDamage);
       if (other) {
-        const d2 = rawDamage(ctx.state, other, RULES.collisionDamage);
-        applyDamage(ctx, unit, d, `${unitName(unit)} slams into ${unitName(other)} for ${d}`);
-        applyDamage(ctx, other, d2, `${unitName(other)} takes ${d2} from the collision`);
-      } else {
-        applyDamage(
+        const raw2 = rawDamage(ctx.state, other, RULES.collisionDamage);
+        strike(
           ctx,
           unit,
-          d,
-          `${unitName(unit)} is slammed into ${onMap(ctx.map, next) ? 'ruins' : 'the edge'} for ${d}`
+          raw,
+          false,
+          (d) => `${unitName(unit)} slams into ${unitName(other)} for ${d}`
         );
+        strike(ctx, other, raw2, false, (d) => `${unitName(other)} takes ${d} from the collision`);
+      } else {
+        const what = onMap(ctx.map, next) ? 'ruins' : 'the edge';
+        strike(ctx, unit, raw, false, (d) => `${unitName(unit)} is slammed into ${what} for ${d}`);
       }
       return;
     }

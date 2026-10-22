@@ -70,6 +70,11 @@ export const RULES = {
   flankVulnerable: 25,
   /** Displace stopped early: to the displaced unit and to a unit it hits. */
   collisionDamage: 20,
+  /**
+   * Push limit (3.6): the most a card can be pushed later, yielding
+   * included, between two of its own turns. PLACEHOLDER: the docs' default.
+   */
+  pushLimit: 10,
   /** Size of the track window the page shows (open question 1). */
   trackWindow: 30,
 } as const;
@@ -139,6 +144,22 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 25,
     abilities: ['sunlight', 'hail', 'freeze', 'hold'],
     ultimate: 'freeze',
+  },
+  /**
+   * The Modao Vanguard (roster.md, 15.8; owner, 2026-10-22): health Medium,
+   * speed Low, defence High, power Medium. A tank that taunts, guards
+   * itself with Barrier and pushes enemies back on the track. Not in PARTY
+   * yet: it is being balanced (scripts/balance/experiments/modao.mjs).
+   */
+  modao: {
+    name: 'Modao Vanguard',
+    letter: 'V',
+    health: 420,
+    speed: 10,
+    defence: 40,
+    power: 25,
+    abilities: ['reap', 'challenge', 'advance', 'hold'],
+    ultimate: 'advance',
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -272,6 +293,17 @@ export const ABILITY = {
   pin: {cost: RULES.cost.typical, slots: 12, damagePerSlot: 6},
   /** Ultimates buffed (owner, 2026-10-20; was slow, 150, and damage 100). */
   rampage: {cost: RULES.cost.typical, distance: 3, damage: 160, displace: 1},
+  /**
+   * The Modao Vanguard's kit (owner, 2026-10-22); every number is a
+   * PLACEHOLDER. Challenge: Taunt one unit within `range`, and a fresh
+   * Barrier on the Vanguard, replacing any it has. Quick, so at Low speed
+   * (8 slots) the taunt outlasts the Vanguard's next turn.
+   */
+  challenge: {cost: RULES.cost.quick, range: 3, tauntSlots: 14, barrier: 80, barrierSlots: 16},
+  /** A melee sweep over the target's hex and the two beside it next to the Vanguard: damage, then Push. */
+  reap: {cost: RULES.cost.typical, damage: 70, push: 2},
+  /** Charged: every adjacent unit takes damage, is displaced 1 away and pushed. */
+  advance: {chargeCost: 20, recoveryCost: 60, radius: 1, damage: 160, displace: 1, push: 4},
   /** The wolf's one attack (owner, 2026-10-21). Damage PLACEHOLDER: 150 at its power. */
   bite: {cost: RULES.cost.typical, damage: 100},
 } as const;
@@ -305,6 +337,12 @@ export const AI = {
   /** Not in the brief: per slot a unit stays Taunted. */
   perTauntedSlot: 2,
   /**
+   * Not in the brief: a pushed card is worth the damage its unit doesn't
+   * deal meanwhile, its rate × the slots pushed, times this (balance.md,
+   * principle 11).
+   */
+  pushShare: 1,
+  /**
    * Not in the brief: the AI's one step of lookahead (threat.ts). Minus
    * this × the damage the enemies acting within the next typical turn could
    * deal the unit where it ends × the share of its health that is, and this
@@ -318,7 +356,7 @@ export const AI = {
    * job is to take hits, and at 1 it Held on 44% of its turns to stay out of
    * reach (14% before the lookahead, 20% with it at 0).
    */
-  caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0, wolf: 1} as Record<HeroId, number>,
+  caution: {bokh: 0, mangudai: 1, storm: 1, modao: 0, camel: 0, wolf: 1} as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   perSlotMoved: 10,
   /**

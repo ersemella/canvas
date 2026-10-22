@@ -292,6 +292,12 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
       label: 'Taunted',
       rest: `by ${unitName(taunter)}, ${left('taunted')}`,
     });
+  if (statusValue(unit, 'barrier'))
+    out.push({
+      id: 'barrier',
+      label: `Barrier ${statusValue(unit, 'barrier')}`,
+      rest: left('barrier'),
+    });
   if (unit.alive && isFlanked(fight, unit))
     out.push({id: 'flanked', label: 'Flanked', rest: `Vulnerable ${RULES.flankVulnerable}%`});
   if (unit.alive && unit.hex && obscured(fight, mapOf(fight), unit.hex))
