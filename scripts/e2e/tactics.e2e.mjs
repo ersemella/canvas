@@ -854,22 +854,22 @@ try {
   );
   await sleep(300);
   await shot(page, 'end');
-  // A won fight before the run's last offers the next; anything else, a new run.
+  // A won stage before the run's last offers the next; anything else, a new run.
   const nextAhead = run.view.fight.phase === 'won' && run.view.stage < run.view.stages - 1;
   check(
-    'the result says which of the run’s fights this was',
+    'the result says which of the run’s stages this was',
     (await page.getByTestId('stage').textContent()).includes(
-      `Fight ${run.view.stage + 1} of ${run.view.stages}`
+      `Stage ${run.view.stage + 1} of ${run.view.stages}`
     )
   );
   check(
-    `${nextAhead ? 'Next' : 'New'} fight takes the turn’s buttons’ place`,
-    await page.getByRole('button', {name: nextAhead ? 'Next fight' : 'New fight'}).isVisible()
+    `${nextAhead ? 'Next stage' : 'New fight'} takes the turn’s buttons’ place`,
+    await page.getByRole('button', {name: nextAhead ? 'Next stage' : 'New fight'}).isVisible()
   );
   // On a phone the finished fight keeps the action section's height, so the board stays put.
   await page.setViewportSize({width: 390, height: 664});
   await sleep(300);
-  const endButton = nextAhead ? 'Next fight' : 'New fight';
+  const endButton = nextAhead ? 'Next stage' : 'New fight';
   {
     const box = await page.locator('canvas').boundingBox();
     const bar = await page
@@ -882,13 +882,13 @@ try {
     );
     await shot(page, 'end-phone');
   }
-  // Next fight starts the run's next fight, against a bigger band, with the survivors.
+  // Next stage starts the run's next stage, against a bigger band, with the survivors.
   if (nextAhead) {
     const before = (await state()).view;
     const survivors = before.fight.units
       .filter((u) => u.side === 'player' && u.alive)
       .map((u) => u.hero);
-    await page.getByRole('button', {name: 'Next fight'}).click();
+    await page.getByRole('button', {name: 'Next stage'}).click();
     await page.waitForFunction((x) => window.__tactics.run.view.stage > x, before.stage, {
       timeout: 15_000,
     });
@@ -896,7 +896,7 @@ try {
     const after = (await state()).view;
     const enemies = after.fight.units.filter((u) => u.side === 'enemy');
     check(
-      'Next fight: the next stage, under way, with the survivors against more heroes',
+      'Next stage: the next stage, under way, with the survivors against more heroes',
       after.fight.phase === 'fight' &&
         after.stage === before.stage + 1 &&
         JSON.stringify(after.fight.units.filter((u) => u.side === 'player').map((u) => u.hero)) ===
