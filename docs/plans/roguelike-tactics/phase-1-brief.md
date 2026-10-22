@@ -158,7 +158,7 @@ reading of the owner's one-line descriptions; the owner can change them
 |---|---|
 | **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
 | **Pin** | **Melee** (owner, 2026-10-22; from 2026-10-21 it could step one hex first, to a free hex next to the target): the target is **Immobilized** for TBD slots (the Champion was too until 2026-10-20; owner: it stays free, and moving away releases the target, as a wrestler would), and the target is **Crushed** and **Taunted** by the Champion for the same (owner, 2026-10-19; it was also Vulnerable until 2026-10-20). Crushed: base **10** damage every slot (owner, 2026-10-22; 6 from 2026-10-20, 8 before), scaled by the Champion's power, through Vulnerable and defence like quicksand. Taunted (17.5): while it can affect the Champion from any hex it can reach, its action must target the Champion or include it in its area, or be a Hold (owner, 2026-10-20), and a damaging charge is drawn onto the Champion if in range; it ends if the Champion dies. Sunlight's cleanse of the target removes them all (breaking the pin). Both still act. The pin **breaks** if the target is cleansed or the two are no longer adjacent (either displaced away, or the Champion moving away), clearing **every status the Pin gave either unit** (owner, 2026-10-20). Cleansing the Champion doesn't break it. Typical cost. |
-| **Lunge** (ultimate) | Replaced **Rampage** (owner, 2026-10-22; a 3-hex charge in a straight line, base 160 to each unit in or beside its path and Displace 1). A unit within **3**: next to the Champion, struck where it stands; otherwise the Champion first **bounds** up to 2 hexes, along free walkable hexes, to a free hex beside it (the player picks it), entering only that hex. The target takes base **100**, then is **pinned** as by Pin (Immobilized, Crushed and Taunted while the two stay adjacent; no Vulnerable). Immobilized, only a unit next to it. Allies too (6.7). Typical cost. |
+| **Lunge** (ultimate) | Replaced **Rampage** (owner, 2026-10-22; a 3-hex charge in a straight line, base 160 to each unit in or beside its path and Displace 1). A unit within **3**: next to the Champion, struck where it stands; otherwise the Champion first **bounds** up to 2 hexes, along free walkable hexes, to a free hex beside it (the player picks it), entering only that hex. The target takes base **100**, then is **pinned** as by Pin (Immobilized, Crushed and Taunted while the two stay adjacent; no Vulnerable). Immobilized, only a unit next to it. Allies too (6.7; owner confirmed, 2026-10-22). The bound is blocked by units and ruins as walking is (owner confirmed, 2026-10-22). Typical cost. |
 
 **Interactions to know** (they follow from the keyword rules, not new
 rules): an Immobilized unit can still be displaced (owner's call,
@@ -290,10 +290,6 @@ turn, so a bad preview can't cause an illegal move.
 
 **Blocks Phase 1:** the prototype heroes' stat numbers and the ability
 values marked TBD (section 4), for the owner to set.
-
-**Ability details to confirm** (section 4 uses the proposed reading
-until the owner says otherwise): Lunge's bound (along free hexes,
-entering only the landing).
 
 The rest don't block Phase 1; all are config values:
 - Cost values and `C` (open question 1): the defaults aim for a typical

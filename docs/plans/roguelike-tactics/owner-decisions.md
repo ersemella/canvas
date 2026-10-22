@@ -128,14 +128,7 @@ at 250, 5.7% at 200): ultimates are the biggest finishers, and they now
 arrive later. The camel (issue 1) settles it once built: the player can
 always end a fight by walking it out.
 
-### 3. Lunge details (brief section 10)
-
-Built (2026-10-22) as: the bound follows free walkable hexes, as walking
-does (units and ruins block it), and enters only the hex it lands on, so
-quicksand on the way doesn't drag; Immobilized, it strikes only a unit
-next to the Champion; it can target an ally, as Pin can. Confirm or change.
-
-### 4. The builder's choices in Phase 1
+### 3. The builder's choices in Phase 1
 
 Each is in [phase-1-brief.md](phase-1-brief.md#11-as-built-2026-10-19);
 confirm or change:
@@ -155,7 +148,7 @@ confirm or change:
 - **The enemy's starting layout** is one of three, picked by the run's
   seed.
 
-### 5. Before Phase 2 (not blocking now)
+### 4. Before Phase 2 (not blocking now)
 
 - **Taunt on allies:** under the 2026-10-19 rule every ability reaches
   allies, so a Taunt that catches an ally forces it to attack the taunter,
@@ -171,14 +164,14 @@ confirm or change:
 - **Push and pull limits** (open question 5), needed when the Jinn Binder
   arrives.
 
-### 6. Art (not blocking)
+### 5. Art (not blocking)
 
 From [art-direction.md](art-direction.md#open-questions): the internal
 resolution and scale (300×200 at 2× proposed), the palette and team rim
 colours, pixel font or full-resolution text, and who makes the art. The
 engine already supports sprites and scaled pixel-art rendering.
 
-### 7. Platform clean-up (permanent, so yours)
+### 6. Platform clean-up (permanent, so yours)
 
 The retired `ManifestRegistry` Durable Object is still deployed. Removing
 it is a `deleted_classes` migration, which is permanent and blocks rolling
