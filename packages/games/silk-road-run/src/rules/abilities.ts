@@ -71,6 +71,11 @@ export interface AbilityDef {
   duration?: number;
   /** Moves the user, so Immobilized forbids it (17.5). */
   movesSelf: boolean;
+  /**
+   * Its user may step in next to a unit first (Lunge's bound, Grapple's
+   * step): a target with `to` is the hex it steps to, picked second.
+   */
+  stepsIn?: boolean;
   /** A damaging charged ability, which Taunt redirects onto the taunter (17.5). */
   damaging?: boolean;
   /**
@@ -290,22 +295,37 @@ const hail: AbilityDef = {
   kind: 'control',
   range: ABILITY.hail.range,
   radius: ABILITY.hail.radius,
-  summary: () =>
-    `Hail on an area: every unit in it is Pushed ${ABILITY.hail.castPush}. Allies too.`,
+  summary: (user) =>
+    `Hail on an area: every unit in it takes ${scaled(ABILITY.hail.damage, user.power)} damage and is Pushed ${ABILITY.hail.castPush}, allies too. It stays: a unit that starts its turn in it takes ${scaled(ABILITY.hail.turnDamage, user.power)} damage.`,
+  duration: ABILITY.hail.hexSlots,
   ultimate: false,
   charged: false,
   cost: ABILITY.hail.cost,
   movesSelf: false,
   targets: (_state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.hail.range, (h) => tileAt(map, h) !== 'obstacle'),
-  // It no longer lingers on the ground (owner, 2026-10-22): the Push on landing is all it does.
   resolve(ctx, user, target) {
+    const area = hexesWithin(ctx.map, target.hex!, ABILITY.hail.radius, (h) =>
+      walkable(ctx.map, h)
+    ).map((t) => t.hex!);
+    ctx.state.effects = ctx.state.effects.filter((e) => !area.some((h) => hexEquals(e.hex, h)));
+    for (const hex of area)
+      ctx.state.effects.push({
+        kind: 'hail',
+        hex,
+        untilSlot: ctx.slot + ABILITY.hail.hexSlots,
+        push: 0,
+        damage: scaled(ABILITY.hail.turnDamage, user.power),
+      });
     log(ctx, `${unitName(user)} calls down hail.`);
     // The caster's own card is placed after this turn's, so it isn't Pushed.
     const struck = unitsInArea(ctx.state, target.hex!, ABILITY.hail.radius)
       .filter((u) => u !== user)
       .sort((a, b) => unitOrder(a) - unitOrder(b));
-    for (const u of struck) push(ctx, u, ABILITY.hail.castPush);
+    for (const u of struck) {
+      hit(ctx, user, u, ABILITY.hail.damage, 'The hail');
+      push(ctx, u, ABILITY.hail.castPush);
+    }
   },
 };
 
@@ -381,29 +401,58 @@ const throwAbility: AbilityDef = {
 const grapple: AbilityDef = {
   id: 'grapple',
   name: 'Grapple',
-  kind: 'control',
+  kind: 'attack',
   range: ABILITY.grapple.range,
-  summary: () =>
-    `Pin a unit within ${ABILITY.grapple.range} spaces: it is Immobilized while you stay within ${ABILITY.grapple.range} of it. One at a time: a new grapple lets the last go.`,
+  summary: (user) =>
+    `Step in next to a unit within ${ABILITY.grapple.range} spaces: ${scaled(ABILITY.grapple.damage, user.power)} damage, and it is pinned, Immobilized while you stay next to it. One at a time: a new grapple lets the last go.`,
   duration: ABILITY.grapple.slots,
   ultimate: false,
   charged: false,
   cost: ABILITY.grapple.cost,
   movesSelf: false,
+  stepsIn: true,
   targetsUnit: true,
-  // Within 2 (owner, 2026-10-22; melee only before that day, and from
-  // 2026-10-21 it could step one hex first). No line of fire: it's a reach.
-  targets: (state, map, user, from) =>
-    hexesWithin(map, from, ABILITY.grapple.range, (h) => {
-      const u = unitAt(state, h);
-      return u !== undefined && u !== user;
-    }),
+  // A unit next to it, or within `range` after a step in (owner,
+  // 2026-10-22), as Lunge bounds; Immobilized, only one next to it.
+  targets: (state, map, user, from) => stepInTargets(state, map, user, from, ABILITY.grapple.range),
   resolve(ctx, user, target) {
+    if (target.to) {
+      enterHex(ctx, user, target.to);
+      if (!user.alive) return;
+    }
     const u = unitAt(ctx.state, target.hex!)!;
-    pinUnit(ctx, user, u);
     log(ctx, `${unitName(user)} grapples ${unitName(u)}.`);
+    hit(ctx, user, u, ABILITY.grapple.damage, 'The grapple');
+    if (u.alive) pinUnit(ctx, user, u);
   },
 };
+
+/**
+ * Targets for an ability that may step in first (Grapple, Lunge): every
+ * unit next to `from`, then every unit within `reach`, once for each free
+ * hex beside it the user can step to (`to`). Immobilized, only the first.
+ */
+function stepInTargets(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  from: Hex,
+  reach: number
+): ActionTarget[] {
+  const out = adjacentUnits(state, from, (u) => u !== user);
+  if (isImmobilized(user)) return out;
+  const far = state.units.filter(
+    (u) =>
+      u.alive &&
+      u.hex &&
+      u !== user &&
+      hexDistance(u.hex, from) > 1 &&
+      hexDistance(u.hex, from) <= reach
+  );
+  for (const u of sortByHex(far, (x) => x.hex!))
+    for (const to of lungeLandings(state, map, from, u.hex!, reach)) out.push({hex: u.hex!, to});
+  return out;
+}
 
 /**
  * Grapple's pin on `u`: Immobilized, and nothing else (owner, 2026-10-22;
@@ -425,15 +474,14 @@ function pinUnit(ctx: Ctx, user: Unit, u: Unit): void {
 
 /**
  * Shove (owner, 2026-10-22): melee, only on the unit the Champion is
- * pinning: it is Displaced away, staying pinned while it stays in
- * Grapple's range.
+ * pinning: it is Displaced away, which ends the grapple.
  */
 const shove: AbilityDef = {
   id: 'shove',
   name: 'Shove',
   kind: 'control',
   summary: () =>
-    `Melee, on the unit you pin: Displace it ${ABILITY.shove.displace} away. It stays pinned.`,
+    `Melee, on the unit you pin: Displace it ${ABILITY.shove.displace} away, letting it go.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.shove.cost,
@@ -449,15 +497,21 @@ const shove: AbilityDef = {
 };
 
 /**
- * The free walkable hexes a Lunge may land on, beside `target`: at most
- * `ABILITY.lunge.reach - 1` steps from `from`, each step onto a free
+ * The free walkable hexes a Lunge (or Grapple's step) may land on, beside
+ * `target`: at most `reach - 1` steps from `from`, each step onto a free
  * walkable hex, as walking is blocked.
  */
-function lungeLandings(state: FightState, map: MapData, from: Hex, target: Hex): Hex[] {
+function lungeLandings(
+  state: FightState,
+  map: MapData,
+  from: Hex,
+  target: Hex,
+  reach: number = ABILITY.lunge.reach
+): Hex[] {
   const seen = new Set<string>([`${from.q},${from.r}`]);
   const out: Hex[] = [];
   let frontier = [from];
-  for (let step = 1; step < ABILITY.lunge.reach; step++) {
+  for (let step = 1; step < reach; step++) {
     const next: Hex[] = [];
     for (const f of frontier)
       for (const h of hexNeighbors(f)) {
@@ -491,23 +545,10 @@ const lunge: AbilityDef = {
   charged: false,
   cost: ABILITY.lunge.cost,
   movesSelf: false,
+  stepsIn: true,
   targetsUnit: true,
   /** Immobilized, only a unit next to it. */
-  targets(state, map, user, from) {
-    const out = adjacentUnits(state, from, (u) => u !== user);
-    if (isImmobilized(user)) return out;
-    const far = state.units.filter(
-      (u) =>
-        u.alive &&
-        u.hex &&
-        u !== user &&
-        hexDistance(u.hex, from) > 1 &&
-        hexDistance(u.hex, from) <= ABILITY.lunge.reach
-    );
-    for (const u of sortByHex(far, (x) => x.hex!))
-      for (const to of lungeLandings(state, map, from, u.hex!)) out.push({hex: u.hex!, to});
-    return out;
-  },
+  targets: (state, map, user, from) => stepInTargets(state, map, user, from, ABILITY.lunge.reach),
   resolve(ctx, user, target) {
     if (target.to) {
       enterHex(ctx, user, target.to, true, 'leap');

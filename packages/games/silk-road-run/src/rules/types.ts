@@ -106,6 +106,8 @@ export interface HailEffect {
   untilSlot: number;
   /** Push for a unit that starts its turn here, applied once its turn has placed its card. */
   push: number;
+  /** Damage, before defence, to a unit that starts its turn here (the caster's power counted). */
+  damage?: number;
 }
 
 export interface LogEntry {

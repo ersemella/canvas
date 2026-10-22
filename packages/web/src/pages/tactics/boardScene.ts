@@ -151,7 +151,7 @@ export function buildScene(input: SceneInput): BoardScene {
     // so they never read as more targets.
     const shown = new Set<string>();
     const throwing = ability === 'throw' && target?.hex;
-    const stepping = ability === 'lunge' && target?.hex;
+    const stepping = ABILITIES[ability].stepsIn && target?.hex;
     for (const t of targets) {
       const at = throwing ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
       const step = stepping && t.to && hexEquals(t.hex!, target!.hex!) ? t.to : undefined;
@@ -161,7 +161,7 @@ export function buildScene(input: SceneInput): BoardScene {
         const kind =
           throwing || h === step
             ? 'landing'
-            : ability === 'lunge' && !lungeFromHere(h)
+            : ABILITIES[ability].stepsIn && !lungeFromHere(h)
               ? 'reach'
               : 'target';
         highlights.push({hex: h, kind});
@@ -176,7 +176,7 @@ export function buildScene(input: SceneInput): BoardScene {
             ?.to
         : undefined;
     let second = hoveredSecond ?? target?.to;
-    if (!second && !target && ability === 'lunge' && hovered && !lungeFromHere(hovered)) {
+    if (!second && !target && ABILITIES[ability].stepsIn && hovered && !lungeFromHere(hovered)) {
       const steps = lungeSteps(hovered);
       if (steps.length === 1) second = steps[0]!.to;
     }
@@ -184,7 +184,7 @@ export function buildScene(input: SceneInput): BoardScene {
     // lands. Lunge: the Champion's bound, drawn as a move's.
     if (ability === 'throw' && target?.hex && second && from)
       out.arc = {from: target.hex, around: from, to: second};
-    if (ability === 'lunge' && second && from) out.step = [from, second];
+    if (ABILITIES[ability].stepsIn && second && from) out.step = [from, second];
     if (target?.hex) {
       // An area ability: highlight the area around the chosen hex.
       const radius = ABILITIES[ability].radius;

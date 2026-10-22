@@ -24,7 +24,7 @@ import {obeysTaunt, tauntBinds, taunterOf} from './taunt';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf, turnInputCost} from './fight';
-import {camelOf, enterHex, hailPushOwed, scaled, throughDefence} from './resolve';
+import {camelOf, enterHex, hailAt, hailPushOwed, scaled, throughDefence} from './resolve';
 import {MAPS, tileAt} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
@@ -218,9 +218,16 @@ function pushValue(before: Unit, after: Unit): number {
   return (after.slot - before.slot) * rateOf(before).all * AI.pushShare;
 }
 
-/** The Push a unit will owe for starting its next turn on hail, priced as `pushValue` prices a Push. */
+/**
+ * What starting its next turn on hail will cost a unit: its Push, priced as
+ * `pushValue` prices a Push, and its damage through the unit's defence.
+ */
 function hailTax(state: FightState, u: Unit): number {
-  return hailPushOwed(state, u) * rateOf(u).all * AI.pushShare;
+  const damage = (u.alive && u.hex && hailAt(state, u.hex)?.damage) || 0;
+  return (
+    hailPushOwed(state, u) * rateOf(u).all * AI.pushShare +
+    (damage > 0 ? throughDefence(state, u, damage) : 0)
+  );
 }
 
 /** Scores the fight after a turn by `actor`, from its side's point of view. */

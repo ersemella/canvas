@@ -125,8 +125,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   const action = useMemo(() => {
     if (!ability || !target) return null;
     if (ability === 'throw' && !target.to) return null;
-    // A unit a Lunge can't reach from here needs its landing picked.
-    if (ability === 'lunge' && !target.to && !lungeFromHere(target.hex!)) return null;
+    // A unit a Lunge or Grapple can't reach from here needs its step picked.
+    if (ABILITIES[ability].stepsIn && !target.to && !lungeFromHere(target.hex!)) return null;
     return {ability, target};
   }, [ability, target, lungeFromHere]);
 
@@ -139,7 +139,9 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
           ? 'Pick where to throw'
           : ability === 'lunge' && target?.hex
             ? 'Pick where to land'
-            : 'Pick a target'
+            : ability === 'grapple' && target?.hex
+              ? 'Pick where to step'
+              : 'Pick a target'
         : null;
 
   /** The picked turn, once its hex or target is: the picked button confirms it. */
@@ -213,7 +215,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (!ability) return false;
-      if ((ability === 'throw' || ability === 'lunge') && target?.hex) {
+      if ((ability === 'throw' || ABILITIES[ability].stepsIn) && target?.hex) {
         // Throw's landing, or the hex a Lunge bounds to first.
         const second = targets.find(
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
@@ -226,7 +228,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         }
         // Tapping the Champion drops the bound, if it can strike from where it stands.
         if (
-          ability === 'lunge' &&
+          ABILITIES[ability].stepsIn &&
           target.to &&
           acting.hex &&
           hexEquals(acting.hex, h) &&
@@ -241,7 +243,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       // Tapping the chosen target again un-picks it (the button confirms).
       if (target?.hex && hexEquals(target.hex, h)) pick({target: null});
       else if (ability === 'throw') chooseTarget({hex: h});
-      else if (ability === 'lunge') {
+      else if (ABILITIES[ability].stepsIn) {
         // From here if it can; otherwise its only landing, or a landing still to pick.
         const steps = lungeSteps(h);
         chooseTarget(!lungeFromHere(h) && steps.length === 1 ? steps[0]! : {hex: h});

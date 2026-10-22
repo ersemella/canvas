@@ -1,7 +1,7 @@
 /**
  * What the turn being planned draws over the board: highlighted hexes,
- * a move's path, an ability's range, the bow's lanes, Throw's arc,
- * charging areas, and the camel's road.
+ * a move's path, an ability's range, the bow's lanes, Throw's arc, and
+ * charging areas.
  */
 import {hexCorners, hexDistance, hexKey, pixelToHex} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
@@ -43,30 +43,6 @@ export const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
 
 /** The hovered hex's outline. */
 export const HOVER: HighlightStyle = {fill: paletteAlpha('ivory', 0.1), stroke: PALETTE.ivory};
-
-/**
- * The camel's road to the exit (owner, 2026-10-22): a dotted ivory line
- * over ink through the hexes' centres, from where it stands.
- */
-export function drawRoad(ctx: CanvasRenderingContext2D, road: Hex[]): void {
-  if (road.length < 2) return;
-  const points = road.map(center);
-  ctx.save();
-  ctx.lineCap = 'round';
-  ctx.setLineDash([0.1, 9]);
-  for (const [color, width] of [
-    [PALETTE.ink, 6],
-    [PALETTE.ivory, 3],
-  ] as const) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.beginPath();
-    ctx.moveTo(points[0]!.x, points[0]!.y);
-    for (const p of points.slice(1)) ctx.lineTo(p.x, p.y);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
 
 /** A planned move's route: a line through the hexes' centres, with a head on the last. */
 export function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {

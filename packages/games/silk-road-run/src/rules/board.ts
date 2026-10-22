@@ -283,7 +283,7 @@ export function roadDistance(map: MapData, from: Hex): number {
  * The camel's road from `from` (left out) to the exit: a shortest walk
  * around ruins, each step to the first neighbour one hex nearer, so the
  * road from any hex on it is the rest of it. Empty at the exit, or with no
- * way there. The board draws it as a dotted line.
+ * way there.
  */
 export function roadToExit(map: MapData, from: Hex): Hex[] {
   const dist = exitDistances(map);
@@ -294,6 +294,45 @@ export function roadToExit(map: MapData, from: Hex): Hex[] {
     out.push(at);
   }
   return out;
+}
+
+/**
+ * The camel's next step from where it stands (owner, 2026-10-22): one hex
+ * along a shortest walk to the exit around ruins and the other units, so
+ * it keeps to its road when nothing is in the way and walks around what
+ * is. A unit standing on the exit itself only blocks the last step. When
+ * units shut every way around, a step along its road if that hex is free.
+ * Undefined at the exit, or with nowhere to step.
+ */
+export function stepToExit(state: FightState, map: MapData, unit: Unit): Hex | undefined {
+  if (!unit.hex) return undefined;
+  const blocked = new Set<number>();
+  for (const u of state.units) if (u !== unit && u.alive && u.hex) blocked.add(hexNumber(u.hex));
+  const free = (h: Hex) => !blocked.has(hexNumber(h));
+  const dist = new Map<number, number>();
+  let frontier = [...map.exits];
+  for (const e of frontier) dist.set(hexNumber(e), 0);
+  const start = hexNumber(unit.hex);
+  for (let d = 1; frontier.length > 0 && !dist.has(start); d++) {
+    const next: Hex[] = [];
+    for (const from of frontier)
+      for (const h of hexNeighbors(from)) {
+        const k = hexNumber(h);
+        if (!walkable(map, h) || dist.has(k) || (blocked.has(k) && k !== start)) continue;
+        dist.set(k, d);
+        next.push(h);
+      }
+    frontier = next;
+  }
+  const d = dist.get(start);
+  if (d === 0) return undefined;
+  const around =
+    d === undefined
+      ? undefined
+      : hexNeighbors(unit.hex).find((h) => dist.get(hexNumber(h)) === d - 1 && free(h));
+  if (around) return around;
+  const road = roadToExit(map, unit.hex)[0];
+  return road && free(road) ? road : undefined;
 }
 
 // ─── Line of fire ────────────────────────────────────────────────────────────

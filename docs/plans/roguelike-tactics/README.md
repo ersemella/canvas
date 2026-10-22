@@ -46,16 +46,19 @@ its references are removed:
   Grapple and Shove, with Inevitable.
 - No sandstorm or quicksand: a fight scatters ruins only.
 - Temee, the camel, isn't player controlled: it starts in the top-left
-  corner and walks itself, one space every 14 slots, along a fixed
-  shortest road around the ruins (drawn as a dotted line) to the only
-  exit, in the bottom-right corner. A unit on its next space, or
-  Immobilized, holds it up.
-- Hail: a radius-1 area, its centre within 3; it Pushes 5 when it lands
-  and no longer lingers.
-- Grapple reaches 2 spaces and pins: the target is only Immobilized, for
-  as long as the two stay within 2 of each other. Shove (melee, on the
-  pinned unit) Displaces it 1 away, so it stays pinned. Shove's cost
-  (typical) and distance are placeholders.
+  corner and walks itself, one space every 14 slots, along a shortest
+  walk around the ruins to the only exit, in the bottom-right corner,
+  going around units in its way (owner, 2026-10-22; a dotted line showing
+  its road was dropped). It waits only when Immobilized or boxed in.
+- Hail: a radius-1 area, its centre within 3; landing, it deals base 40
+  damage and Pushes 5; it stays 20 slots, and a unit that starts its
+  turn in it takes base 20 (damage and duration are placeholders).
+- Grapple reaches 2 spaces: next to the target the Champion grapples
+  where it stands, otherwise it steps in beside it first. Base 60 damage
+  (placeholder), then the target is pinned: only Immobilized, until the
+  two are no longer adjacent. Shove (melee, on the pinned unit) Displaces
+  it 1 away, which breaks the grapple. Shove's cost (typical) and
+  distance are placeholders.
 
 **Next step:** the owner sets the three prototype heroes' stat numbers and
 ability values (replacing the placeholders in `src/rules/config.ts`);

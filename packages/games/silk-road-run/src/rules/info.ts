@@ -42,7 +42,7 @@ export const EXIT_INFO: HexInfo = {
 };
 
 /** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2). */
-export const CAMEL_RULE = `Can’t attack, and walks itself: 1 space every ${HEROES.camel.routeSlots} slots, along the dotted road to the exit. A unit in its way holds it up. Reaching the road out wins the fight; if it falls, the fight is lost.`;
+export const CAMEL_RULE = `Can’t attack, and walks itself: 1 space every ${HEROES.camel.routeSlots} slots toward the exit, around anything in its way. Reaching the road out wins the fight; if it falls, the fight is lost.`;
 
 /** How long an effect on a hex lasts: said last, after what it does. */
 function slotsLeft(left: number): string {
@@ -53,8 +53,12 @@ export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
   const left = hail.untilSlot - currentSlot + 1;
   return {
     name: 'Hail',
-    short: `Pushed ${hail.push} on starting a turn here`,
-    detail: `A unit here when it lands is Pushed ${ABILITY.hail.castPush}; one that starts its turn here is Pushed ${hail.push} once that turn is done. ${slotsLeft(left)}`,
+    short: hail.damage
+      ? `${hail.damage} damage on starting a turn here`
+      : `Pushed ${hail.push} on starting a turn here`,
+    detail: hail.damage
+      ? `A unit that starts its turn here takes ${hail.damage} damage. ${slotsLeft(left)}`
+      : `A unit here when it lands is Pushed ${ABILITY.hail.castPush}; one that starts its turn here is Pushed ${hail.push} once that turn is done. ${slotsLeft(left)}`,
   };
 }
 

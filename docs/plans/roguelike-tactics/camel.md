@@ -20,10 +20,9 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 
 > **Pared back (owner, 2026-10-22):** while the game is balanced, the
 > camel isn't player controlled. It starts in the **top-left corner** and
-> walks itself **one space every 14 slots** along a **fixed shortest road**
-> around the ruins (shown as a dotted line) to the **only exit, the
-> bottom-right corner**; a unit standing on its next space, or Immobilized,
-> holds it up for that turn. The rules below describe the design it
+> walks itself **one space every 14 slots** along a **shortest walk**
+> around the ruins to the **only exit, the bottom-right corner**, going
+> around units in its way; it waits only when Immobilized or boxed in. The rules below describe the design it
 > returns to.
 
 ### 18.1 The Camel (Decided)

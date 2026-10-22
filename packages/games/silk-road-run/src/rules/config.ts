@@ -99,9 +99,9 @@ export interface HeroStats {
   /** An always-on trait (roster.md, Passives): the Vanguard's Hold the Line, the Champion's Inevitable. */
   passive?: PassiveId;
   /**
-   * Not player controlled: on each of its turns it steps along the fixed
-   * shortest road to the exit (`routeStep` in board.ts), then its card goes
-   * this many slots on (the camel).
+   * Not player controlled: on each of its turns it steps along the
+   * shortest walk to the exit, around ruins and units (`stepToExit` in
+   * board.ts), then its card goes this many slots on (the camel).
    */
   routeSlots?: number;
 }
@@ -179,7 +179,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * Health 1,500 and speed Low are PLACEHOLDERS. Not player controlled
    * (owner, 2026-10-22): it walks itself along the fixed shortest road from
    * the top-left corner to the exit in the bottom-right, one space every
-   * 14 slots. A unit standing on its next space holds it up.
+   * 14 slots, walking around units in its way (owner, 2026-10-22).
    */
   camel: {
     // Temee (owner, 2026-10-21): a name, so no "Your" before it (unitName).
@@ -265,17 +265,21 @@ export const ABILITY = {
   sunlight: {cost: RULES.cost.quick, range: 4, heal: 50},
   /**
    * Track control in an area (owner, 2026-10-22, playtest; was one hex,
-   * range 4, 20 slots, damage 40 and Slowed 2): no damage; every unit in
-   * it when it lands is Pushed `castPush`, allies too. Pared back for
-   * balancing (owner, 2026-10-22): centre within 3 (was 6), Push 5, and it
-   * no longer lingers (it stayed 30 slots, Pushing 2 a unit that started
-   * its turn in it, after a Push 3 on landing).
+   * range 4, 20 slots, damage 40 and Slowed 2): every unit in it when it
+   * lands takes `damage` and is Pushed `castPush`, allies too. Pared back
+   * for balancing (owner, 2026-10-22): centre within 3 (was 6), Push 5.
+   * It stays on the ground `hexSlots` (owner, 2026-10-22), and a unit that
+   * starts its turn in it takes `turnDamage` (it Pushed 2 before). Damage
+   * values and duration are PLACEHOLDERS.
    */
   hail: {
     cost: RULES.cost.typical,
     range: 3,
     radius: 1,
     castPush: 5,
+    damage: 40,
+    hexSlots: 20,
+    turnDamage: 20,
   },
   /**
    * Ultimates buffed (owner, 2026-10-20): it now deals damage (none
@@ -302,18 +306,20 @@ export const ABILITY = {
    */
   throw: {cost: RULES.cost.typical, damage: 120},
   /**
-   * A unit within `range` is pinned: Immobilized, and nothing else, for
-   * `slots`, while the two stay within `range` of each other; one target
-   * at a time, a new grapple releasing the last (owner, 2026-10-22, pared
-   * back for balancing; was melee, Immobilized, Vulnerable 25% and Pinned,
-   * its abilities reaching only hexes next to it). The Champion isn't held
-   * itself: moving out of range releases the target, as a wrestler would.
+   * A unit within `range`: the Champion steps in next to it first if it
+   * isn't already, then it takes `damage` and is pinned: Immobilized, and
+   * nothing else, for `slots`, while the two stay adjacent; one target at
+   * a time, a new grapple releasing the last (owner, 2026-10-22, pared back
+   * for balancing; was melee, no damage, Immobilized, Vulnerable 25% and
+   * Pinned, its abilities reaching only hexes next to it). The Champion
+   * isn't held itself: moving away releases the target, as a wrestler
+   * would. Damage PLACEHOLDER.
    */
-  grapple: {cost: RULES.cost.typical, range: 2, slots: 12},
+  grapple: {cost: RULES.cost.typical, range: 2, slots: 12, damage: 60},
   /**
    * Melee, only on the unit the Champion is pinning (owner, 2026-10-22):
-   * Displace it `displace` away. One space leaves it within Grapple's
-   * range, so it stays pinned. Cost and distance PLACEHOLDERS.
+   * Displace it `displace` away, which breaks the grapple. Cost and
+   * distance PLACEHOLDERS.
    */
   shove: {cost: RULES.cost.typical, displace: 1},
   /**

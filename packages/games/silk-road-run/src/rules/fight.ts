@@ -5,7 +5,7 @@
  */
 import {hexEquals} from '@canvas/engine/server';
 import {CAMEL, HEROES, PARTY, movementRules} from './config';
-import {expireStatuses, invalidPath, isImmobilized, roadToExit, unitAt} from './board';
+import {expireStatuses, invalidPath, isImmobilized, stepToExit} from './board';
 import {
   ABILITIES,
   holdTheLine,
@@ -21,6 +21,7 @@ import {
   enterHex,
   hailPush,
   hailPushOwed,
+  hailStrikes,
   log,
   damageEachSlot,
   push,
@@ -191,6 +192,9 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     // Quicksand and Crushed ticked in beginSlot.
     if (state.phase !== 'fight') return;
     if (!unit.alive) continue;
+    hailStrikes(ctx, unit);
+    if (state.phase !== 'fight') return;
+    if (!unit.alive) continue;
 
     if (unit.charging) {
       triggerCharge(ctx, unit);
@@ -238,14 +242,14 @@ function skipTurn(ctx: Ctx, unit: Unit): void {
 }
 
 /**
- * The camel's turn (owner, 2026-10-22): one step along its fixed road to
- * the exit, then its card goes `routeSlots` on. Immobilized, or with a
- * unit standing on its next space, it waits, its turn skipped.
+ * The camel's turn (owner, 2026-10-22): one step toward the exit, around
+ * ruins and units (`stepToExit`), then its card goes `routeSlots` on.
+ * Immobilized, or with units shutting every way, it waits, its turn skipped.
  */
 function walkRoad(ctx: Ctx, unit: Unit): void {
   const hail = hailPushOwed(ctx.state, unit);
-  const next = unit.hex ? roadToExit(ctx.map, unit.hex)[0] : undefined;
-  if (next && !isImmobilized(unit) && !unitAt(ctx.state, next)) {
+  const next = isImmobilized(unit) ? undefined : stepToExit(ctx.state, ctx.map, unit);
+  if (next) {
     delete unit.skipped;
     enterHex(ctx, unit, next);
     log(ctx, `${unitName(unit)} walks on.`);
