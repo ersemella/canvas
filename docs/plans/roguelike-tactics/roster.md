@@ -35,7 +35,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | 9 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
 | 10 | Mahout Bulwark | South India | The mahout, driver of the war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Displace (passive) | War elephant | Ankus (elephant goad) and spear |
 | 11 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
-| 12 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger (Proposed): taunts enemies onto itself and cuts down those who close in with wide sweeps | None | Modao (long two-handed blade) |
+| 12 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger (built 2026-10-22, playtesting): taunts an enemy and guards itself with a Barrier (Challenge), thrusts 2 hexes in a line, pushing what it hits back on the track (Reap), and drives back everyone around it (Advance, ultimate) | None | Modao (long two-handed blade) |
 
 **Stat profiles (relative, untuned)**
 
@@ -54,7 +54,24 @@ Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gea
 | Kalari Duelist | Medium | High | Low | High |
 | Mahout Bulwark | Very high | Very low | Very high | Medium |
 | Varangian Guard | High | Low | Medium | High |
-| Modao Vanguard | High | Low | High | Medium |
+| Modao Vanguard | Medium | Low | High | Medium |
+
+**The Modao Vanguard's kit (owner, 2026-10-22; built for playtesting)**
+
+| Ability | Cost | Effect |
+|---|---|---|
+| Challenge | Quick (60) | Taunts one unit within 3 for 14 slots; the Vanguard gains Barrier 80 for 6 slots, replacing any it has |
+| Reap | Typical (100) | A thrust along a straight line of 2 hexes, through every unit on it, stopped by ruins: base 70 damage and Push 2 to each |
+| Advance (ultimate) | Typical (100), instant | Every adjacent unit takes base 160 damage, is displaced 1 away and pushed 4 |
+
+Health Medium (420; High until 2026-10-22: its Barrier, not its health,
+keeps it alive, and +120 health measured no effect), speed Low (10, kept
+slow by the owner), defence High, power Medium. It is the first hero
+with a track effect (Push, principle 11 in [balance.md](balance.md)). Its
+weakness is cheap or every-slot damage, which strips its Barrier before a
+big hit, and Pierce, Burn and collisions against its health. A mounted
+passive (Slowed on mounted heroes) was considered and dropped: Push is
+the answer to fast heroes. Measured in [balance.md](balance.md).
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).

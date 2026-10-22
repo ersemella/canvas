@@ -294,16 +294,29 @@ export const ABILITY = {
   /** Ultimates buffed (owner, 2026-10-20; was slow, 150, and damage 100). */
   rampage: {cost: RULES.cost.typical, distance: 3, damage: 160, displace: 1},
   /**
-   * The Modao Vanguard's kit (owner, 2026-10-22); every number is a
-   * PLACEHOLDER. Challenge: Taunt one unit within `range`, and a fresh
-   * Barrier on the Vanguard, replacing any it has. Quick, so at Low speed
-   * (8 slots) the taunt outlasts the Vanguard's next turn.
+   * The Modao Vanguard's kit (owner, 2026-10-22, for playtesting; the
+   * measurements are in balance.md). Challenge: Taunt one unit within
+   * `range`, and a fresh Barrier on the Vanguard, replacing any it has.
+   * Quick, so at Low speed (8 slots) the taunt outlasts the Vanguard's next
+   * turn; the Barrier lasts 6 slots, short of it (was 16: refreshed every
+   * turn, it was cast on 57% of the Vanguard's turns and absorbed about 600
+   * damage a fight, and 7% of AI-vs-AI mirror fights went unfinished).
    */
-  challenge: {cost: RULES.cost.quick, range: 3, tauntSlots: 14, barrier: 80, barrierSlots: 16},
-  /** A melee sweep over the target's hex and the two beside it next to the Vanguard: damage, then Push. */
-  reap: {cost: RULES.cost.typical, damage: 70, push: 2},
-  /** Charged: every adjacent unit takes damage, is displaced 1 away and pushed. */
-  advance: {chargeCost: 20, recoveryCost: 60, radius: 1, damage: 160, displace: 1, push: 4},
+  challenge: {cost: RULES.cost.quick, range: 3, tauntSlots: 14, barrier: 80, barrierSlots: 6},
+  /**
+   * A thrust along a line of `reach` hexes from the Vanguard, through every
+   * unit on it, stopped by ruins: damage, then Push (owner, 2026-10-22; it
+   * was a sweep over three hexes next to the Vanguard, used on 2–13% of its
+   * turns while it spent 40–78% walking).
+   */
+  reap: {cost: RULES.cost.typical, reach: 2, damage: 70, push: 2},
+  /**
+   * Every adjacent unit takes damage, is displaced 1 away and pushed.
+   * Instant (owner, 2026-10-22; was charged, charge 20, recovery 60: its
+   * targets stepped out of it, and a side without it won 50% of AI-vs-AI
+   * mirror fights; instant, 45%).
+   */
+  advance: {cost: RULES.cost.typical, radius: 1, damage: 160, displace: 1, push: 4},
   /** The wolf's one attack (owner, 2026-10-21). Damage PLACEHOLDER: 150 at its power. */
   bite: {cost: RULES.cost.typical, damage: 100},
 } as const;

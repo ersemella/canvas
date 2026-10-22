@@ -523,9 +523,16 @@ const challenge: AbilityDef = {
   },
 };
 
-/** Reap's sweep from `from` at `target`: the target's hex, then the two beside it that are next to `from`. */
-export function reapHexes(from: Hex, target: Hex): Hex[] {
-  return [target, ...hexNeighbors(target).filter((h) => hexDistance(h, from) === 1)];
+/** Reap's line from `from` along `dir`: up to its reach, stopping before ruins or the map's edge. */
+export function reapLine(map: MapData, from: Hex, dir: number): Hex[] {
+  const out: Hex[] = [];
+  let h = from;
+  for (let i = 0; i < ABILITY.reap.reach; i++) {
+    h = hexNeighbor(h, dir);
+    if (!walkable(map, h)) break;
+    out.push(h);
+  }
+  return out;
 }
 
 const reap: AbilityDef = {
@@ -533,16 +540,26 @@ const reap: AbilityDef = {
   name: 'Reap',
   kind: 'attack',
   summary: (user) =>
-    `Melee sweep over three spaces: ${scaled(ABILITY.reap.damage, user.power)} damage and Push ${ABILITY.reap.push} to each unit.`,
+    `Thrust ${ABILITY.reap.reach} spaces in a line, through every unit on it: ${scaled(ABILITY.reap.damage, user.power)} damage and Push ${ABILITY.reap.push} to each.`,
   ultimate: false,
   charged: false,
   cost: ABILITY.reap.cost,
   movesSelf: false,
   targetsUnit: true,
-  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  // Any unit on one of its six lines; aimed at either of two in a line, it hits both.
+  targets(state, map, user, from) {
+    const out: ActionTarget[] = [];
+    for (const d of DIRECTIONS) {
+      for (const h of reapLine(map, from, d)) {
+        const u = unitAt(state, h);
+        if (u && u !== user) out.push({hex: h});
+      }
+    }
+    return out;
+  },
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)} reaps.`);
-    const victims = reapHexes(user.hex!, target.hex!)
+    const victims = reapLine(ctx.map, user.hex!, direction(user.hex!, target.hex!))
       .map((h) => unitAt(ctx.state, h))
       .filter((u): u is Unit => u !== undefined);
     for (const u of victims) {
@@ -559,16 +576,13 @@ const advance: AbilityDef = {
   // Centred on the Vanguard: the area is the six spaces around it.
   radius: ABILITY.advance.radius,
   summary: (user) =>
-    `Charged: every unit next to you takes ${scaled(ABILITY.advance.damage, user.power)} damage, is knocked back ${ABILITY.advance.displace} and Pushed ${ABILITY.advance.push}.`,
+    `Every unit next to you takes ${scaled(ABILITY.advance.damage, user.power)} damage, is knocked back ${ABILITY.advance.displace} and Pushed ${ABILITY.advance.push}.`,
   ultimate: true,
-  charged: true,
-  cost: ABILITY.advance.chargeCost,
-  recoveryCost: ABILITY.advance.recoveryCost,
+  charged: false,
+  cost: ABILITY.advance.cost,
   movesSelf: false,
-  damaging: true,
   targets: (_state, _map, _user, from) => [{hex: from}],
   resolve(ctx, user) {
-    // Where the Vanguard stands when it lands, even if it was knocked away while charging.
     const centre = user.hex;
     if (!centre) return;
     log(ctx, `${unitName(user)} advances like a wall.`);

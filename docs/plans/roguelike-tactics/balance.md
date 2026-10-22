@@ -385,6 +385,38 @@ rule; its damage −7%), Sunlight unchanged (40.3%).
    to the exit ends a fight ([camel.md](camel.md)); built 2026-10-21, and
    over 200 AI-vs-AI fights none went unfinished.
 
+## The Modao Vanguard (2026-10-22)
+
+The fourth hero, measured before it joined the roster. Ablation as above
+(`scripts/balance/ablate.mjs`), 400 fights an experiment, about ±2.5
+points. "Vanguard team": the Vanguard, the Outrider and the Storm Caller,
+against the prototype party (the Champion in its place). Experiments:
+`scripts/balance/experiments/modao.mjs`, `modao-tuning.mjs`,
+`modao-tuning-2.mjs`; results in `work/modao-v*.json` (not committed).
+
+| Round | Change | Vanguard team wins | Side without… wins | Mirror unfinished | Vanguard's turns |
+|---|---|---|---|---|---|
+| 1 | First kit: Challenge quick, Barrier 80 for 16 slots; Reap a 3-hex sweep, base 70, Push 2; Advance charged | 44.2% | Challenge 32.2%, Reap 44%, Advance 50.1% | 7% | Challenge 57%, move 38%, Reap 2% |
+| 1 | High health (+120) | | 51.9% (no effect) | | |
+| 2 | Challenge typical cost, Barrier 10 slots; Reap base 85, Push 3; Advance instant | 36.2% | Challenge 46.4%, Reap 21%, Advance 45.2% | 2.5% | move 78%, Reap 13%, Challenge 3% |
+| 3 | Round 2 with Challenge quick, Barrier 6 slots | 40.8% | Challenge 38.9% | 2.5% | move 50%, Challenge 40%, Reap 6% |
+| 3 | Challenge cost 80, Barrier 10 slots | 37.9% | Challenge 42.7% | 1.5% | move 68%, Challenge 19%, Reap 9% |
+| 3 | Round 3's first, speed 15 | 46.2% | Challenge 40.9% | 3% | move 48%, Challenge 42%, Reap 6% |
+| 4 | Reap base 100 (cancelled after two runs) | 45.1% | | 3.5% | |
+
+- **A Barrier refreshed every turn stalls fights.** At 16 slots, longer
+  than the Vanguard's turn, it absorbed about 600 damage per Vanguard per
+  fight, more than its 420 health. At 6 slots it absorbs about 200.
+- **Health doesn't matter while the Barrier does:** Medium health stays.
+- **A charged ultimate needs a way to hold its targets:** Taunt didn't
+  keep enemies in Advance's area. Instant, it pulls its weight.
+- **A slow melee hero walks.** At speed 10 the Vanguard spent 40–78% of its
+  turns moving; speed 15 lifted its team by 5 points. The owner keeps it
+  slow (2026-10-22), so Reap became a 2-hex line (reach instead of width)
+  to attack from further. **Built for playtesting, not measured:** speed
+  10, Challenge quick with Barrier 80 for 6 slots, Reap a line of 2 at
+  base 70 and Push 2, Advance instant.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

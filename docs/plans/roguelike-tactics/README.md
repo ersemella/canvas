@@ -5,7 +5,7 @@ One fight against the AI plays end to end: the rules in
 `packages/games/silk-road-run/src/rules/`, `RunRoom` and
 `PlayerLedger` in `@canvas/server`, the page at `/play/silk-road-run`.
 The page opens on a start menu (2026-10-21): the game in brief, which of
-the three heroes to take (one to three; the camel always comes), and Start;
+the heroes to take (one to three of four; the camel always comes), and Start;
 `POST /runs` takes the `party`. A run is three stages, each a fight (owner, 2026-10-21;
 `STAGES` in `src/rules/config.ts`): the enemy brings one random hero and
 two wolves, then two random heroes and a wolf, then all three heroes.
@@ -20,6 +20,12 @@ rendering ([architecture.md](architecture.md),
 the multiplayer design (ghosts as **rival caravans**, built last) is
 settled. Built in this repository (D10). The folder name,
 `roguelike-tactics`, predates the title.
+
+The fourth hero, the **Modao Vanguard** (2026-10-22), is built for
+playtesting with track Push and a new Barrier rule
+([roster.md](roster.md), [keywords.md](keywords.md), measurements in
+[balance.md](balance.md#the-modao-vanguard-2026-10-22)); the enemy draws
+its stage heroes from all four.
 
 **Next step:** the owner sets the three prototype heroes' stat numbers and
 ability values (replacing the placeholders in `src/rules/config.ts`);

@@ -122,7 +122,6 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const melee = Math.max(
       usable('throw') ? scaled(ABILITY.throw.damage, e.power) : 0,
       usable('bite') ? scaled(ABILITY.bite.damage, e.power) : 0,
-      usable('reap') ? scaled(ABILITY.reap.damage, e.power) : 0,
       usable('pin') ? scaled(ABILITY.pin.damagePerSlot, e.power) * ABILITY.pin.slots : 0
     );
     // Pin reaches a hex further, after its optional step (2026-10-21).
@@ -133,6 +132,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const hail = usable('hail') ? scaled(ABILITY.hail.damage, e.power) : 0;
     const bow = usable('bow') ? scaled(ABILITY.bow.damage, e.power) : 0;
     const rampage = usable('rampage') ? scaled(ABILITY.rampage.damage, e.power) : 0;
+    const reap = usable('reap') ? scaled(ABILITY.reap.damage, e.power) : 0;
     const reach: [number, number][] = movementRules(state).separateMovement
       ? [[e.hex.q, e.hex.r]]
       : reachOf(state, board, e, actor);
@@ -176,6 +176,16 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
             if (tile === undefined || tile === 'obstacle' || tile === 'conceal') break;
             mark(hexes, k, 'ranged', bow);
             if (occupied.has(k) && k !== id(e.hex.q, e.hex.r)) break;
+          }
+        }
+      }
+      // Reap's line, through units, stopped by ruins.
+      if (reap > 0) {
+        for (const [dq, dr] of AXIAL) {
+          for (let i = 1; i <= ABILITY.reap.reach; i++) {
+            const tile = board.get(id(fq + dq * i, fr + dr * i));
+            if (tile === undefined || tile === 'obstacle') break;
+            mark(hexes, id(fq + dq * i, fr + dr * i), 'other', reap);
           }
         }
       }

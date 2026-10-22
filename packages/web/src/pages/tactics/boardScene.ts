@@ -4,9 +4,25 @@
  * whose health shows, and the previewed outcome. Pure, so the page only
  * decides when to send it.
  */
-import {hexDistance, hexEquals, hexKey, hexNeighbors, hexRing, hexesInRange} from '@canvas/engine';
+import {
+  hexDirectionTo,
+  hexDistance,
+  hexEquals,
+  hexKey,
+  hexNeighbors,
+  hexRing,
+  hexesInRange,
+} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {ABILITIES, ABILITY, arrowLanes, mapOf, onMap, unitAt} from '@canvas/games-silk-road-run';
+import {
+  ABILITIES,
+  ABILITY,
+  arrowLanes,
+  mapOf,
+  onMap,
+  reapLine,
+  unitAt,
+} from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
   ActionTarget,
@@ -177,6 +193,13 @@ export function buildScene(input: SceneInput): BoardScene {
         for (const h of hexesInRange(target.hex, radius))
           if (hexDistance(h, target.hex) <= radius && onMap(map, h))
             highlights.push({hex: h, kind: 'area'});
+      }
+      // Reap: the whole line it thrusts along, through every unit on it.
+      if (ability === 'reap' && from) {
+        const dir = hexDirectionTo(from, target.hex);
+        if (dir !== null)
+          for (const h of reapLine(mapOf(fight), from, dir))
+            if (!hexEquals(h, target.hex)) highlights.push({hex: h, kind: 'area'});
       }
       highlights.push({hex: target.hex, kind: 'chosen'});
       if (target.to) highlights.push({hex: target.to, kind: 'chosen'});

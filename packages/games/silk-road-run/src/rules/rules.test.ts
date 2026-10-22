@@ -38,7 +38,7 @@ import {
 import {previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
 import {abilityDamage, checkEnd, displace, kill, scaled} from './resolve';
-import {reapHexes} from './abilities';
+import {reapLine} from './abilities';
 import {barrierOf, cleanse, setBarrier} from './board';
 import {
   RUN_FORMAT,
@@ -1532,22 +1532,21 @@ describe('the Modao Vanguard', () => {
       expect(hexEquals(t.hex!, centre)).toBe(true);
   });
 
-  it('Reap sweeps the target and the two spaces beside it, then pushes each card', () => {
-    const target = around[0]!;
-    const sides = reapHexes(centre, target).slice(1);
-    expect(sides).toHaveLength(2);
-    for (const h of sides) {
-      expect(hexDistance(h, centre)).toBe(1);
-      expect(hexDistance(h, target)).toBe(1);
-    }
+  it('Reap thrusts two spaces in a line, through every unit on it, then pushes each card', () => {
+    const probe = setup({}, VANGUARD);
+    // A direction from the centre with two clear spaces.
+    const dir = [0, 1, 2, 3, 4, 5].find((d) => reapLine(mapOf(probe), centre, d).length === 2)!;
+    const [near, far] = reapLine(mapOf(probe), centre, dir);
+    expect(hexDistance(far!, centre)).toBe(ABILITY.reap.reach);
     const s = setup(
-      {'p-modao': centre, 'e-bokh': target, 'e-mangudai': sides[0]!, 'e-modao': around[3]!},
+      {'p-modao': centre, 'e-bokh': near!, 'e-mangudai': far!, 'e-modao': around[(dir + 3) % 6]!},
       VANGUARD
     );
     const v = unit(s, 'p-modao');
     const before = s.units.map((u) => ({id: u.id, hp: u.hp, slot: u.slot}));
     s.awaiting = v.id;
-    applyTurn(s, v, {action: {ability: 'reap', target: {hex: target}}});
+    // Aimed at the far one, two spaces away: the near one is hit too.
+    applyTurn(s, v, {action: {ability: 'reap', target: {hex: far!}}});
     for (const id of ['e-bokh', 'e-mangudai']) {
       const u = unit(s, id);
       const b = before.find((x) => x.id === id)!;
@@ -1558,6 +1557,19 @@ describe('the Modao Vanguard', () => {
     const behind = unit(s, 'e-modao');
     expect(behind.hp).toBe(behind.maxHp);
     expect(behind.slot).toBe(before.find((x) => x.id === 'e-modao')!.slot);
+  });
+
+  it('Reap reaches a unit two spaces away past an empty one, not past ruins', () => {
+    const probe = setup({}, VANGUARD);
+    const dir = [0, 1, 2, 3, 4, 5].find((d) => reapLine(mapOf(probe), centre, d).length === 2)!;
+    const [near, far] = reapLine(mapOf(probe), centre, dir);
+    const s = setup({'p-modao': centre, 'e-bokh': far!}, VANGUARD);
+    const v = unit(s, 'p-modao');
+    const reaches = () =>
+      ABILITIES.reap.targets(s, mapOf(s), v, centre).some((t) => hexEquals(t.hex!, far!));
+    expect(reaches()).toBe(true);
+    s.tiles = {...s.tiles, [hexKey(near!)]: 'obstacle'};
+    expect(reaches()).toBe(false);
   });
 
   it('Push yields to the next free slot, and stops at the push limit until the unit acts', () => {
@@ -1591,29 +1603,26 @@ describe('the Modao Vanguard', () => {
     expect(b.slot).toBe(21);
   });
 
-  it('Advance charges, then hits, knocks back and pushes every unit next to the Vanguard', () => {
+  it('Advance hits, knocks back and pushes every unit next to the Vanguard, at once', () => {
     const s = setup(
       {'p-modao': centre, 'e-bokh': around[0]!, 'e-mangudai': around[3]!, 'p-mangudai': around[1]!},
       VANGUARD
     );
     const v = unit(s, 'p-modao');
     v.ultimateCharge = RULES.ultimateCharge;
+    s.units.filter((u) => u !== v && u.alive).forEach((u, i) => (u.slot = 900 + 10 * i));
+    const before = s.units.map((u) => ({id: u.id, slot: u.slot}));
     s.awaiting = v.id;
     applyTurn(s, v, {action: {ability: 'advance', target: {hex: centre}}});
-    expect(v.charging).toEqual({ability: 'advance', target: centre});
-    const slots = Object.fromEntries(s.units.map((u) => [u.id, u.slot]));
-    // Everyone else waits; the charge lands when the Vanguard's card is reached.
-    s.units.filter((u) => u !== v && u.alive).forEach((u, i) => (u.slot = 900 + 10 * i));
-    const ctxBefore = s.units.map((u) => ({id: u.id, slot: u.slot}));
-    advanceToDecision(s);
     expect(v.charging).toBeNull();
+    expect(v.ultimateUsed).toBe(true);
     for (const id of ['e-bokh', 'e-mangudai', 'p-mangudai']) {
       const u = unit(s, id);
       expect(u.hp).toBeLessThan(u.maxHp);
       expect(hexDistance(u.hex!, centre)).toBe(2);
-      expect(u.slot).toBe(ctxBefore.find((x) => x.id === id)!.slot! + ABILITY.advance.push);
+      expect(u.slot).toBe(before.find((x) => x.id === id)!.slot! + ABILITY.advance.push);
     }
-    expect(slots[v.id]).toBe(slotsForward(ABILITY.advance.chargeCost, v.speed));
+    expect(v.slot).toBe(slotsForward(ABILITY.advance.cost, v.speed));
   });
 
   it('the AI can play the Vanguard: it picks a legal turn', () => {
