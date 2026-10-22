@@ -1124,8 +1124,8 @@ export function TacticsPage() {
                   </Text>
                   <Text c="dimmed" fz="xs" data-testid="stage">
                     {nextAhead
-                      ? `Stage ${stage + 1} of ${stages} won. A bigger band waits down the road.`
-                      : `Stage ${stage + 1} of ${stages}`}
+                      ? `Stage ${stage + 1} won. A bigger band waits down the road.`
+                      : `Stage ${stage + 1}`}
                   </Text>
                 </Stack>
               </Paper>
