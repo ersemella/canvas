@@ -79,7 +79,7 @@ export type {Reach} from './rules/board';
 export {actingUnit, cloneFight, mapOf} from './rules/fight';
 export {atExit, camelOf, enterHex, unitName} from './rules/resolve';
 export {slotsForward, turnCost} from './rules/track';
-export {afterAction, previewTurn, unitOptions} from './rules/preview';
+export {previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
 export {allowedTargets, taunterOf} from './rules/taunt';
 export {offeredTargets, onlyHold} from './rules/choices';

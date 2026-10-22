@@ -311,13 +311,8 @@ export function applyTurn(
     }
   };
 
-  if (input.actFirst) {
-    act();
-    move();
-  } else {
-    move();
-    act();
-  }
+  move();
+  act();
   state.awaiting = null;
   checkEnd(state);
   if (unit.alive) placeCard(state, unit, state.currentSlot + slotsForward(cost, unit.speed));

@@ -34,7 +34,7 @@ import {
   createFight,
   mapOf,
 } from './fight';
-import {afterAction, previewTurn} from './preview';
+import {previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
 import {abilityDamage, checkEnd, displace, kill, scaled} from './resolve';
 import {createRun, handleRunAction, runStatus, runView, stageEnemies} from './run';
@@ -955,16 +955,14 @@ describe('previews, the AI and the run', () => {
     expect(m.ultimateCharge).toBe(RULES.moveActionCost + RULES.moveCostPerHex);
   });
 
-  it('rejects walking plus an ability in either order without mutating the fight', () => {
+  it('rejects walking plus an ability without mutating the fight', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3)});
     const shot = {ability: 'bow' as const, target: {hex: at(4, 3)}};
     const before = JSON.stringify(s);
-    for (const actFirst of [false, true]) {
-      const input: TurnInput = {action: shot, move: [at(0, 3)], actFirst};
-      expect(previewTurn(s, 'p-mangudai', input)).toBeNull();
-      expect(() => applyTurn(s, unit(s, 'p-mangudai'), input)).toThrow(/separate turns/);
-      expect(JSON.stringify(s)).toBe(before);
-    }
+    const input: TurnInput = {action: shot, move: [at(0, 3)]};
+    expect(previewTurn(s, 'p-mangudai', input)).toBeNull();
+    expect(() => applyTurn(s, unit(s, 'p-mangudai'), input)).toThrow(/separate turns/);
+    expect(JSON.stringify(s)).toBe(before);
   });
 
   it('prices walking at 30, 40, 50 and 60, with matching previews and yielding', () => {
@@ -994,9 +992,9 @@ describe('previews, the AI and the run', () => {
   it('a Pin and a move in one turn are refused', () => {
     const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(2, 3)});
     const pin = {ability: 'pin' as const, target: {hex: at(2, 3)}};
-    expect(() =>
-      applyTurn(s, unit(s, 'p-bokh'), {action: pin, move: [at(0, 3)], actFirst: true})
-    ).toThrow(RuleError);
+    expect(() => applyTurn(s, unit(s, 'p-bokh'), {action: pin, move: [at(0, 3)]})).toThrow(
+      RuleError
+    );
   });
 
   it('Bite hits one adjacent unit; several wolves get their own ids', () => {
@@ -1328,14 +1326,13 @@ describe('headless balance experiments', () => {
       expect(reach.path.some((h) => hexKey(h) === hexKey(at(1, 0)))).toBe(false);
   });
 
-  it('rejects move plus ability in either order, prices movement, and leaves defaults intact', () => {
+  it('rejects move plus ability, prices movement, and leaves defaults intact', () => {
     const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(4, 0)});
     s.experiment = {blockAllUnits: false, separateMovement: false, moveActionCost: 20};
     const input: TurnInput = {move: [at(1, 0)], action: {ability: 'bow', target: {hex: at(4, 0)}}};
     expect(simulate(s, 'p-mangudai', input)).not.toBeNull();
     s.experiment = {blockAllUnits: false, separateMovement: true, moveActionCost: 100};
     expect(simulate(s, 'p-mangudai', input)).toBeNull();
-    expect(simulate(s, 'p-mangudai', {...input, actFirst: true})).toBeNull();
     const moved = simulate(s, 'p-mangudai', {move: [at(1, 0)], action: {ability: 'hold'}})!;
     expect(unit(moved, 'p-mangudai').slot).toBe(
       slotsForward(100 + RULES.moveCostPerHex, unit(s, 'p-mangudai').speed)

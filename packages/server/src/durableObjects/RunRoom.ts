@@ -1,5 +1,6 @@
 import type {Env, RunRecord, RunResponse, RunSystem} from '../types';
 import {runSystemRegistry} from '../games/registry';
+import {json} from '../json';
 
 /** How long a finished run is kept before its storage is deleted (D3). */
 const KEEP_FINISHED_MS = 3 * 24 * 60 * 60 * 1000;
@@ -129,11 +130,4 @@ function respond(record: RunRecord, system: RunSystem): RunResponse {
     status: record.status,
     view: system.getView(record.state),
   };
-}
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {'Content-Type': 'application/json'},
-  });
 }

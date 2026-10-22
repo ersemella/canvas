@@ -1,6 +1,6 @@
 /**
- * Silk Road Run' server rules, DOM-free, for the platform's `RunRoom`
- * (`@canvas/server`): a Phase 1 run is a single fight.
+ * Silk Road Run's server rules, DOM-free, for the platform's `RunRoom`
+ * (`@canvas/server`): a run is its stages' fights, one after another.
  */
 import type {RunSystem} from '@canvas/engine/server';
 import {createRun, handleRunAction, runStatus, runView} from './rules/run';

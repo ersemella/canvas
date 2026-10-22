@@ -8,9 +8,9 @@ import type {Hex} from '@canvas/engine/server';
 import {statusValue, statusSlotsLeft} from './board';
 import {ABILITIES} from './abilities';
 import {scoreOptions, simulate} from './ai';
-import {RuleError, applyTurn, cloneFight, turnInputCost} from './fight';
+import {turnInputCost} from './fight';
 import {slotsForward} from './track';
-import type {AbilityId, FightState, TurnAction, TurnInput, Unit} from './types';
+import type {AbilityId, FightState, TurnInput, Unit} from './types';
 
 export interface UnitChange {
   unitId: string;
@@ -73,27 +73,6 @@ export function previewTurn(
     aimSlot: unit.alive ? state.currentSlot + slotsForward(cost, unit.speed) : null,
     charged: ABILITIES[input.action.ability].charged,
   };
-}
-
-/**
- * The fight just after `unitId` takes `action`, before any move: where an
- * act-then-move turn moves from (an ability may have moved or Immobilized
- * the unit). Null if the action is illegal.
- */
-export function afterAction(
-  state: FightState,
-  unitId: string,
-  action: TurnAction
-): {state: FightState; unit: Unit} | null {
-  const sim = cloneFight(state);
-  const unit = sim.units.find((u) => u.id === unitId)!;
-  try {
-    applyTurn(sim, unit, {action, actFirst: true});
-  } catch (e) {
-    if (e instanceof RuleError) return null;
-    throw e;
-  }
-  return {state: sim, unit};
 }
 
 export function diff(before: FightState, after: FightState): UnitChange[] {

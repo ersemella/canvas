@@ -1,4 +1,5 @@
 import type {Env, LedgerRecord} from '../types';
+import {json} from '../json';
 
 /**
  * One Durable Object per player key, `idFromName(keyHash)`
@@ -41,11 +42,4 @@ export class PlayerLedger implements DurableObject {
     }
     return json({error: 'not_found'}, 404);
   }
-}
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {'Content-Type': 'application/json'},
-  });
 }

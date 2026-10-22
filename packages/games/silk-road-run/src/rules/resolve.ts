@@ -18,8 +18,13 @@ export interface Ctx {
 }
 
 export function log(ctx: Ctx, text: string): void {
-  ctx.state.log.push({slot: ctx.slot, text});
-  if (ctx.state.log.length > 200) ctx.state.log.splice(0, ctx.state.log.length - 200);
+  logAt(ctx.state, ctx.slot, text);
+}
+
+/** Adds a log line, keeping the last 200. */
+function logAt(state: FightState, slot: number, text: string): void {
+  state.log.push({slot, text});
+  if (state.log.length > 200) state.log.splice(0, state.log.length - 200);
 }
 
 /** A fight records at most this many events per action (a safety bound). */
@@ -49,7 +54,7 @@ function snapshot(state: FightState): BoardSnapshot {
 }
 
 export function unitName(u: Unit): string {
-  if (u.hero === 'camel' && u.side === 'player') return HEROES.camel.name;
+  if (u.hero === CAMEL && u.side === 'player') return HEROES.camel.name;
   return `${u.side === 'player' ? 'Your' : 'Enemy'} ${HEROES[u.hero].name}`;
 }
 
@@ -139,7 +144,7 @@ export function checkEnd(state: FightState): void {
   else if (!state.units.some((u) => u.alive && u.side === 'enemy')) state.phase = 'won';
   else if (camel?.hex && atExit(state, camel.hex)) {
     state.phase = 'won';
-    state.log.push({slot: state.currentSlot, text: `${unitName(camel)} reaches the road out.`});
+    logAt(state, state.currentSlot, `${unitName(camel)} reaches the road out.`);
   } else if (!state.units.some((u) => u.alive && u.side === 'player' && u !== camel))
     state.phase = 'lost';
 }
@@ -164,7 +169,7 @@ export function applyHail(ctx: Ctx, unit: Unit): void {
   if (!unit.alive) return;
   const untilSlot = ctx.slot + hail.statusSlots;
   addStatus(unit, {kind: 'slowed', value: hail.slowed, untilSlot});
-  log(ctx, `Hail batters ${unitName(unit)}: Slowed ${hail.slowed}`);
+  log(ctx, `Hail batters ${unitName(unit)}: Slowed ${hail.slowed}.`);
 }
 
 /** Quicksand under a unit, on entering (each slot on it is `damageEachSlot`). */

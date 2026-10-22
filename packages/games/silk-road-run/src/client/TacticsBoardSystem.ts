@@ -10,10 +10,9 @@ import {
   pixelToHex,
 } from '@canvas/engine';
 import type {EventBus, Hex, SystemContext} from '@canvas/engine';
-import {HEROES, RULES} from '../rules/config';
-import {isFlanked, onMap, statusValue, walkable} from '../rules/board';
+import {CAMEL, HEROES, RULES} from '../rules/config';
+import {isFlanked, onMap, statusValue, unitAt, walkable} from '../rules/board';
 import {ABILITIES} from '../rules/abilities';
-import {ABILITY} from '../rules/config';
 import {tileAt, type MapData, type Tile} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {AbilityId, FightState, StatusKind, Unit} from '../rules/types';
@@ -370,7 +369,7 @@ export class TacticsBoardSystem extends BaseSystem {
    * (everyone stays put).
    */
   private walkingParty(fight: FightState): Map<string, {at: Point; alpha: number} | 'gone'> | null {
-    const camel = fight.phase === 'won' ? fight.units.find((u) => u.hero === 'camel') : undefined;
+    const camel = fight.phase === 'won' ? fight.units.find((u) => u.hero === CAMEL) : undefined;
     if (this.still || !camel?.alive || !camel.hex) {
       this.walkOut = null;
       return null;
@@ -512,11 +511,11 @@ export class TacticsBoardSystem extends BaseSystem {
       [...(walking?.values() ?? [])].some((w) => w !== 'gone');
     this.drawnKey = moving ? null : this.key;
     // Each unit stands on a rug in its side's colour, under the highlights so moves and targets still show.
-    const previewedTo = new Map(scene.preview.map((p) => [p.unitId, p]));
+    const previewed = new Map(scene.preview.map((p) => [p.unitId, p]));
     for (const u of fight.units) {
       const hex = u.hex;
       if (!u.alive || !hex || walking?.has(u.id)) continue;
-      const p = previewedTo.get(u.id);
+      const p = previewed.get(u.id);
       const moved = Boolean(p?.to && hexKey(p.to) !== hexKey(hex));
       drawRug(ctx, hex, u.side, moved || p?.killed ? 0.4 : 1);
       if (p?.to && moved && !p.killed) drawRug(ctx, p.to, u.side, 0.7);
@@ -527,7 +526,6 @@ export class TacticsBoardSystem extends BaseSystem {
     if (scene.path && scene.path.length > 1) drawPath(ctx, scene.path);
     for (const u of fight.units) if (u.alive && u.charging) drawCharge(ctx, map, u);
 
-    const previewed = new Map(scene.preview.map((p) => [p.unitId, p]));
     const acting = fight.awaiting;
     // A unit's border covers its hex's outline, so a targeted unit rings itself.
     const targeted = new Map<string, 'target' | 'reach' | 'chosen'>();
@@ -589,8 +587,7 @@ export class TacticsBoardSystem extends BaseSystem {
 
     // Health and statuses show only on the unit whose turn it is, the unit
     // being looked at (hovered on the board or the track, or tapped), and
-    // whoever an attack being aimed could hit.
-    // Where it ends up when the turn moves it.
+    // whoever an attack being aimed could hit, where the turn would move it.
     const looked = new Set<string>();
     if (fight.awaiting) looked.add(fight.awaiting);
     if (scene.inspectedUnitId) looked.add(scene.inspectedUnitId);
@@ -1952,7 +1949,7 @@ function drawLanes(
  */
 function drawCharge(ctx: CanvasRenderingContext2D, map: MapData, u: Unit): void {
   const {ability, target} = u.charging!;
-  const radius = ability === 'volley' ? ABILITY.volley.radius : ABILITY.freeze.radius;
+  const radius = ABILITIES[ability].radius ?? 0;
   const rgb = u.side === 'enemy' ? ENEMY_CHARGE_RED : TARGET_RGB;
   ctx.save();
   ctx.setLineDash([5, 4]);
@@ -2013,7 +2010,7 @@ interface Walk {
 function walkOutPlan(fight: FightState): Map<string, Walk> | null {
   const map = mapOf(fight);
   const party = fight.units.filter((u) => u.alive && u.hex && u.side === 'player');
-  const camel = party.find((u) => u.hero === 'camel');
+  const camel = party.find((u) => u.hero === CAMEL);
   if (!camel) return null;
   const toExit = walkPath(fight, camel.hex!, (h) => map.exits.some((e) => hexEquals(e, h)));
   if (!toExit) return null;
@@ -2103,12 +2100,6 @@ function steppingAt(play: Playback, unitId: string): {x: number; y: number} | un
   return {x: Math.round(lerp(a.x, b.x, t)), y: Math.round(lerp(a.y, b.y, t) - lift)};
 }
 
-/** Areas the playback lights up when an ability lands (its radius around the target). */
-const PLAYBACK_RADIUS: Partial<Record<AbilityId, number>> = {
-  volley: ABILITY.volley.radius,
-  freeze: ABILITY.freeze.radius,
-};
-
 /**
  * What the event showing now adds over the board: the name of whoever's
  * turn it is, an ability's name and the area or line it strikes, a hit's
@@ -2147,7 +2138,8 @@ function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void 
     case 'charge': {
       const def = ABILITIES[e.ability];
       const name = e.kind === 'charge' ? `Charging ${def.name}` : def.name;
-      const radius = PLAYBACK_RADIUS[e.ability] ?? 0;
+      // The area the playback lights up when it lands; the target hex alone for the rest.
+      const radius = def.radius ?? 0;
       const area = e.target ? map.hexes.filter((h) => hexDistance(h, e.target!) <= radius) : [];
       const effect = e.kind === 'action' ? ABILITY_EFFECT[e.ability] : undefined;
       // Effects move in steps, as pixel art does.
@@ -2766,11 +2758,6 @@ function drawStatusMark(
   ctx.stroke();
   label(ctx, m, x, y + 0.5, PALETTE.ink, 9, true);
   ctx.restore();
-}
-
-/** The living unit standing at `h`. */
-function unitAt(fight: FightState, h: Hex): Unit | undefined {
-  return fight.units.find((u) => u.alive && u.hex && hexEquals(u.hex, h));
 }
 
 /**

@@ -166,12 +166,11 @@ export interface TurnAction {
 /**
  * One turn: either an ability without walking, or a nonempty walking path
  * encoded with action Hold. Move-only turns cost 20 + 10 per hex, not Hold's
- * cost. `actFirst` remains for historical headless experiment comparisons.
+ * cost.
  */
 export interface TurnInput {
   move?: Hex[];
   action: TurnAction;
-  actFirst?: boolean;
 }
 
 /** A turn in the fight, or, once a stage short of the last is won, going on to the next stage. */
