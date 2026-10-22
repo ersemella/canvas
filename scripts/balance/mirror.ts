@@ -4,15 +4,46 @@
 // ground, starting places and turn order. Over a pair the setup is exactly
 // fair, so the player side's win rate measures only a bias of the AI or the
 // rules towards one side; it should be 50%. It doesn't measure how well the
-// AI plays: two copies of a bad AI are just as even.
+// AI plays: two copies of a bad AI are just as even. For that, give the two
+// teams different AIs (`variants`): each AI keeps its team across the pair,
+// so `aWinPct` is team a's AI's share of wins on fair setups.
 import {createFight, advance, applyTurn, actingUnit} from '@balance-rules/fight';
 import {chooseAiTurn} from '@balance-rules/ai';
-import {CAMEL} from '@balance-rules/config';
+import {AI, CAMEL} from '@balance-rules/config';
 import {hexKey, hexToOffset, offsetToHex} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import type {FightState, HeroId, Side} from '@balance-rules/types';
+import type {FightState, HeroId, Side, TurnInput, Unit} from '@balance-rules/types';
 
-type Options = {pairs: number; seed: number; maxTurns: number; party: HeroId[]};
+/** How an AI searches: its horizon in decisions and its work cap per turn (production: 3 and 110). */
+type Variant = {depth: number; work: number};
+export const VARIANTS: Record<string, Variant> = {
+  production: {depth: AI.searchDepth, work: AI.maxSimulations},
+  /** No lookahead: the heuristic's best root action. */
+  greedy: {depth: 1, work: AI.maxSimulations},
+  /** A horizon of four and four times the work. */
+  deep: {depth: 4, work: 4 * AI.maxSimulations},
+};
+type Options = {
+  pairs: number;
+  seed: number;
+  maxTurns: number;
+  party: HeroId[];
+  /** Team a's and team b's AIs; team a is the player side in each pair's first fight. */
+  variants?: [string, string];
+};
+
+function chooser(variant: Variant) {
+  const ai = AI as {maxSimulations: number};
+  return (state: FightState, unit: Unit): TurnInput => {
+    const saved = ai.maxSimulations;
+    ai.maxSimulations = variant.work;
+    try {
+      return chooseAiTurn(state, unit, {left: variant.work}, undefined, {depth: variant.depth});
+    } finally {
+      ai.maxSimulations = saved;
+    }
+  };
+}
 
 /** The board's left-right mirror (map.ts): column c and 7 − c on even rows, c and 6 − c on odd. */
 function mirrorHex(h: Hex): Hex {
@@ -51,12 +82,16 @@ function mirrored(state: FightState): FightState {
 }
 
 /** Plays a fight out; the winning side, or null if still going after `maxTurns` actions. */
-function play(state: FightState, maxTurns: number): {winner: Side | null; turns: number} {
+function play(
+  state: FightState,
+  maxTurns: number,
+  choose: Record<Side, ReturnType<typeof chooser>>
+): {winner: Side | null; turns: number} {
   advance(state, chooseAiTurn);
   let turns = 0;
   while (state.phase === 'fight' && turns < maxTurns) {
     const u = actingUnit(state)!;
-    applyTurn(state, u, chooseAiTurn(state, u));
+    applyTurn(state, u, choose[u.side](state, u));
     advance(state, chooseAiTurn);
     turns++;
   }
@@ -72,8 +107,13 @@ function firstMover(state: FightState): Side {
   return best.side;
 }
 
-export function runMirror({pairs, seed, maxTurns, party}: Options) {
+export function runMirror({pairs, seed, maxTurns, party, variants}: Options) {
+  const [a, b] = (variants ?? ['production', 'production']).map((name) => {
+    if (!VARIANTS[name]) throw new Error(`Unknown AI ${name}; one of ${Object.keys(VARIANTS)}`);
+    return chooser(VARIANTS[name]);
+  });
   let playerWins = 0;
+  let aWins = 0;
   let decided = 0;
   let stalls = 0;
   let firstMoverWins = 0;
@@ -82,15 +122,17 @@ export function runMirror({pairs, seed, maxTurns, party}: Options) {
   let sameTeam = 0;
   const lengths: number[] = [];
   for (let p = 0; p < pairs; p++) {
-    const a = dealt(seed + p, party);
-    const b = mirrored(a);
-    const results = [a, b].map((state) => {
+    const dealtFight = dealt(seed + p, party);
+    const fights = [dealtFight, mirrored(dealtFight)];
+    const results = fights.map((state, i) => {
       const first = firstMover(state);
-      const result = play(state, maxTurns);
+      // Team a is the player side in the first fight and the enemy in the mirrored one.
+      const result = play(state, maxTurns, i ? {player: b!, enemy: a!} : {player: a!, enemy: b!});
       if (result.winner === null) stalls++;
       else {
         decided++;
         if (result.winner === 'player') playerWins++;
+        if ((result.winner === 'player') === (i === 0)) aWins++;
         if (result.winner === first) firstMoverWins++;
         lengths.push(result.turns);
       }
@@ -104,13 +146,16 @@ export function runMirror({pairs, seed, maxTurns, party}: Options) {
     }
   }
   const pct = (n: number, of: number) => +((100 * n) / (of || 1)).toFixed(1);
-  // A 95% Wilson interval on the player side's share of decided fights.
-  const z = 1.96;
-  const phat = playerWins / (decided || 1);
-  const centre = (phat + (z * z) / (2 * decided)) / (1 + (z * z) / decided);
-  const half =
-    (z * Math.sqrt((phat * (1 - phat)) / decided + (z * z) / (4 * decided * decided))) /
-    (1 + (z * z) / decided);
+  // A 95% Wilson interval on a share of decided fights.
+  const interval = (wins: number) => {
+    const z = 1.96;
+    const phat = wins / (decided || 1);
+    const centre = (phat + (z * z) / (2 * decided)) / (1 + (z * z) / decided);
+    const half =
+      (z * Math.sqrt((phat * (1 - phat)) / decided + (z * z) / (4 * decided * decided))) /
+      (1 + (z * z) / decided);
+    return [pct(centre - half, 1), pct(centre + half, 1)];
+  };
   const sorted = [...lengths].sort((x, y) => x - y);
   return {
     party,
@@ -118,7 +163,10 @@ export function runMirror({pairs, seed, maxTurns, party}: Options) {
     decided,
     stallPct: pct(stalls, 2 * pairs),
     playerWinPct: pct(playerWins, decided),
-    playerWinPct95: [pct(centre - half, 1), pct(centre + half, 1)],
+    playerWinPct95: interval(playerWins),
+    variants: variants ?? ['production', 'production'],
+    aWinPct: pct(aWins, decided),
+    aWinPct95: interval(aWins),
     firstMoverWinPct: pct(firstMoverWins, decided),
     sameTeamWonBothPct: pct(sameTeam, bothDecided),
     medianTurns: sorted[sorted.length >> 1] ?? null,

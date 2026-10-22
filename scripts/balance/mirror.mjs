@@ -16,13 +16,15 @@ if (args.includes('--help')) {
   --pairs N       Seeds, each played as dealt and mirrored with sides swapped (default 200)
   --seed N        First fight seed (default 1000)
   --max-turns N   Chosen-action cutoff per fight (default 400)
-  --party A,B,C   Each side's heroes (default bokh,mangudai,storm)`);
+  --party A,B,C   Each side's heroes (default bokh,mangudai,storm)
+  --ai A,B        Team a's and team b's AIs: production, greedy or deep (default production,production)`);
   process.exit(0);
 }
 const pairs = Number(value('--pairs', '200'));
 const seed = Number(value('--seed', '1000'));
 const maxTurns = Number(value('--max-turns', '400'));
 const party = value('--party', 'bokh,mangudai,storm').split(',');
+const variants = value('--ai', 'production,production').split(',');
 const server = await createServer({
   configFile: false,
   root: repo,
@@ -39,7 +41,7 @@ const server = await createServer({
 try {
   const {runMirror} = await server.ssrLoadModule('/scripts/balance/mirror.ts');
   const start = performance.now();
-  console.log(runMirror({pairs, seed, maxTurns, party}));
+  console.log(runMirror({pairs, seed, maxTurns, party, variants}));
   console.log(`(${((performance.now() - start) / 1000).toFixed(0)}s)`);
 } finally {
   await server.close();
