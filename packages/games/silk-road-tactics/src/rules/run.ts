@@ -1,12 +1,14 @@
 /**
- * A Phase 1 run: a single fight (brief section 1). The run keeps the seed;
+ * A run: its fights (stages, STAGES in config.ts) one after another, each
+ * against a bigger enemy band. Heroes who fall are gone for the run; the
+ * survivors and the camel go on to the next fight. The run keeps the seed;
  * the view is the fight, which never contains it.
  */
 import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
 import type {SearchBudget} from './ai';
-import {AI, ENEMY_PARTY, PARTY} from './config';
+import {AI, CAMEL, PARTY, STAGES} from './config';
 import {
   RuleError,
   actingUnit,
@@ -15,18 +17,25 @@ import {
   cloneFight,
   createFight,
   refreshStats,
+  seededRandom,
 } from './fight';
+import {shuffled} from './track';
 import type {AbilityId, ActionTarget, FightState, HeroId, RunAction} from './types';
 
 export interface RunState {
   seed: number;
   /** Bumped on every action; the view carries it (brief section 8). */
   version: number;
+  /** Which of STAGES the fight is; missing in a run saved before stages (the first). */
+  stage?: number;
   fight: FightState;
 }
 
 export interface RunView {
   version: number;
+  /** Which fight of the run this is, from 0, of `stages`. */
+  stage: number;
+  stages: number;
   fight: FightState;
 }
 
@@ -36,11 +45,39 @@ export interface RunView {
  * (the enemy may move first).
  */
 export function createRun(seed: number, setup?: unknown): RunState {
-  const fight = createFight(seed, parseParty(setup), ENEMY_PARTY);
+  return {seed, version: 0, stage: 0, fight: stageFight(seed, 0, parseParty(setup))};
+}
+
+/**
+ * The enemy for a stage: its number of heroes, picked at random from the
+ * run's seed, then its wolves.
+ */
+export function stageEnemies(seed: number, stage: number): HeroId[] {
+  const {heroes, wolves} = STAGES[stage]!;
+  const picked = shuffled(PARTY, seededRandom(stageSeed(seed, stage) ^ 0x5bd1e995));
+  return [...picked.slice(0, heroes), ...Array<HeroId>(wolves).fill('wolf')];
+}
+
+/** Each stage's map and start from its own seed; the first stage's is the run's. */
+const stageSeed = (seed: number, stage: number) => (seed + stage * 0x9e3779b9) >>> 0;
+
+/** A stage's fight, advanced to the player's first turn (the enemy may move first). */
+function stageFight(seed: number, stage: number, party: HeroId[]): FightState {
+  const fight = createFight(stageSeed(seed, stage), party, stageEnemies(seed, stage));
   fight.events = [];
   advance(fight, (state, unit) => chooseAiTurn(state, unit, {left: AI.requestSimulations}));
-  return {seed, version: 0, fight};
+  return fight;
 }
+
+/** The heroes still standing at the end of a fight, in party order. */
+function survivors(fight: FightState): HeroId[] {
+  return fight.units
+    .filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive)
+    .sort((a, b) => a.partyIndex - b.partyIndex)
+    .map((u) => u.hero);
+}
+
+const lastStage = STAGES.length - 1;
 
 /** Checks a start menu's party from the network: one to all of the heroes, each at most once. */
 export function parseParty(setup: unknown): HeroId[] {
@@ -70,6 +107,7 @@ function parseHex(raw: unknown): Hex {
 export function parseAction(raw: unknown): RunAction {
   const a = raw as Record<string, unknown> | null;
   if (!a || typeof a !== 'object') throw new RuleError('Malformed action.');
+  if (a.type === 'next') return {type: 'next'};
   if (a.type === 'turn') {
     const action = a.action as
       | {ability?: unknown; target?: {hex?: unknown; to?: unknown}}
@@ -100,6 +138,13 @@ export function parseAction(raw: unknown): RunAction {
 
 export function handleRunAction(run: RunState, raw: RunAction): RunState {
   const action = parseAction(raw);
+  const stage = run.stage ?? 0;
+  if (action.type === 'next') {
+    if (run.fight.phase !== 'won' || stage >= lastStage)
+      throw new RuleError('There is no next fight to go on to.');
+    const fight = stageFight(run.seed, stage + 1, survivors(run.fight));
+    return {seed: run.seed, version: run.version + 1, stage: stage + 1, fight};
+  }
   const fight = cloneFight(run.fight, true);
   refreshStats(fight);
   // What this action sets off, for the page to play back.
@@ -112,15 +157,17 @@ export function handleRunAction(run: RunState, raw: RunAction): RunState {
   // The AI turns this action sets off share one search budget (AI.requestSimulations).
   const budget: SearchBudget = {left: AI.requestSimulations};
   advance(fight, (state, unit) => chooseAiTurn(state, unit, budget));
-  return {seed: run.seed, version: run.version + 1, fight};
+  return {seed: run.seed, version: run.version + 1, stage, fight};
 }
 
 export function runView(run: RunState): RunView {
   // A run saved before a stat change shows, and previews with, today's stats.
   refreshStats(run.fight);
-  return {version: run.version, fight: run.fight};
+  return {version: run.version, stage: run.stage ?? 0, stages: STAGES.length, fight: run.fight};
 }
 
+/** Won once the last stage's fight is won; a fight before it, won, waits for `next`. */
 export function runStatus(run: RunState): 'active' | 'won' | 'lost' {
-  return run.fight.phase === 'won' ? 'won' : run.fight.phase === 'lost' ? 'lost' : 'active';
+  if (run.fight.phase === 'lost') return 'lost';
+  return run.fight.phase === 'won' && (run.stage ?? 0) >= lastStage ? 'won' : 'active';
 }

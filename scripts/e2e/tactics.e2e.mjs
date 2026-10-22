@@ -854,27 +854,60 @@ try {
   );
   await sleep(300);
   await shot(page, 'end');
+  // A won fight before the run's last offers the next; anything else, a new run.
+  const nextAhead = run.view.fight.phase === 'won' && run.view.stage < run.view.stages - 1;
   check(
-    'New fight takes the turn’s buttons’ place',
-    await page.getByRole('button', {name: 'New fight'}).isVisible()
+    'the result says which of the run’s fights this was',
+    (await page.getByTestId('stage').textContent()).includes(
+      `Fight ${run.view.stage + 1} of ${run.view.stages}`
+    )
+  );
+  check(
+    `${nextAhead ? 'Next' : 'New'} fight takes the turn’s buttons’ place`,
+    await page.getByRole('button', {name: nextAhead ? 'Next fight' : 'New fight'}).isVisible()
   );
   // On a phone the finished fight keeps the action section's height, so the board stays put.
   await page.setViewportSize({width: 390, height: 664});
   await sleep(300);
+  const endButton = nextAhead ? 'Next fight' : 'New fight';
   {
     const box = await page.locator('canvas').boundingBox();
     const bar = await page
-      .getByRole('button', {name: 'New fight'})
+      .getByRole('button', {name: endButton})
       .evaluate((el) => el.closest('section').getBoundingClientRect());
     check(
-      'phone, fight over: New fight in the action section, the board against it',
+      `phone, fight over: ${endButton} in the action section, the board against it`,
       Math.abs(bar.top - (box.y + box.height)) <= 12 && bar.height > 150,
       [box, bar]
     );
     await shot(page, 'end-phone');
   }
+  // Next fight starts the run's next fight, against a bigger band, with the survivors.
+  if (nextAhead) {
+    const before = (await state()).view;
+    const survivors = before.fight.units
+      .filter((u) => u.side === 'player' && u.alive)
+      .map((u) => u.hero);
+    await page.getByRole('button', {name: 'Next fight'}).click();
+    await page.waitForFunction((x) => window.__tactics.run.view.stage > x, before.stage, {
+      timeout: 15_000,
+    });
+    await waitIdle();
+    const after = (await state()).view;
+    const enemies = after.fight.units.filter((u) => u.side === 'enemy');
+    check(
+      'Next fight: the next stage, under way, with the survivors against more heroes',
+      after.fight.phase === 'fight' &&
+        after.stage === before.stage + 1 &&
+        JSON.stringify(after.fight.units.filter((u) => u.side === 'player').map((u) => u.hero)) ===
+          JSON.stringify(survivors) &&
+        enemies.filter((u) => u.hero !== 'wolf').length === after.stage + 1,
+      after.fight.units.map((u) => u.id)
+    );
+    await abandonOn(page);
+  }
   // New fight opens the start menu; Start there starts a fresh fight, ready for a turn.
-  {
+  if (!nextAhead) {
     const ended = (await state()).runId;
     await page.getByRole('button', {name: 'New fight'}).click();
     await page.getByRole('button', {name: 'Start a fight'}).click();
@@ -1005,8 +1038,7 @@ try {
   }
   await shot(phone, 'phone-tooltip');
   // Always complete: every ability, the ultimate's keyword, nothing to expand.
-  // TEMPORARY: at least 1 while the enemy is wolves (ENEMY_PARTY, config.ts),
-  // which have only Bite; back to 3 when the heroes return.
+  // At least 1: the unit shown may be a wolf, which has only Bite.
   check(
     'phone: the tooltip lists the abilities by name, nothing to expand',
     (await tooltip.locator('[data-ability]').count()) >= 1 &&

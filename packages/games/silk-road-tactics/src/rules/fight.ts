@@ -88,7 +88,7 @@ function makeUnit(side: Side, partyIndex: number, hero: HeroId, copy = 0): Unit 
  * deployment step), and shuffles starting speed ties. The player's camel
  * starts in the middle of its column (camel.md, 18.1). The player brings
  * the heroes chosen on the start menu; the enemy brings `enemies`, all three
- * heroes unless the run says otherwise (ENEMY_PARTY).
+ * heroes unless the run's stage says otherwise (STAGES).
  */
 export function createFight(
   seed: number,
@@ -129,7 +129,7 @@ export function createFight(
 }
 
 /** A deterministic generator in [0, 1) (mulberry32), so a run's seed fixes its start. */
-function seededRandom(seed: number): () => number {
+export function seededRandom(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;

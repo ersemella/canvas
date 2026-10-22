@@ -10,7 +10,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, ENEMY_PARTY, HEROES, RULES} from './config';
+import {ABILITY, AI, HEROES, PARTY, RULES, STAGES} from './config';
 import {
   isFlanked,
   lineOfFire,
@@ -37,7 +37,7 @@ import {
 import {afterAction, previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
 import {abilityDamage, checkEnd, displace, kill, scaled} from './resolve';
-import {createRun, handleRunAction, runView} from './run';
+import {createRun, handleRunAction, runStatus, runView, stageEnemies} from './run';
 import {
   freeSlotFrom,
   nextCard,
@@ -46,7 +46,7 @@ import {
   slotsForward,
   turnCost,
 } from './track';
-import type {FightState, TurnInput, Unit} from './types';
+import type {FightState, HeroId, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
 
@@ -1027,10 +1027,68 @@ describe('previews, the AI and the run', () => {
     ]);
     expect(player.every((u) => u.hex)).toBe(true);
     expect(run.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
-      ENEMY_PARTY
+      stageEnemies(5, 0)
     );
     // No party given: everyone comes.
     expect(createRun(5).fight.units.filter((u) => u.side === 'player')).toHaveLength(4);
+  });
+
+  it('the stages: one random hero and two wolves, two and one, then all three', () => {
+    expect(STAGES).toEqual([
+      {heroes: 1, wolves: 2},
+      {heroes: 2, wolves: 1},
+      {heroes: 3, wolves: 0},
+    ]);
+    const firsts = new Set<HeroId>();
+    for (let seed = 0; seed < 30; seed++) {
+      STAGES.forEach(({heroes, wolves}, stage) => {
+        const enemies = stageEnemies(seed, stage);
+        const picked = enemies.filter((h) => h !== 'wolf');
+        expect(picked).toHaveLength(heroes);
+        expect(new Set(picked).size).toBe(heroes);
+        expect(picked.every((h) => PARTY.includes(h))).toBe(true);
+        expect(enemies.filter((h) => h === 'wolf')).toHaveLength(wolves);
+        // The same seed, the same enemy.
+        expect(stageEnemies(seed, stage)).toEqual(enemies);
+      });
+      firsts.add(stageEnemies(seed, 0)[0]!);
+    }
+    // Random: every hero leads the first fight for some seed.
+    expect(firsts.size).toBe(PARTY.length);
+  });
+
+  it('winning a fight before the last goes on to the next, with the survivors', () => {
+    const run = createRun(5);
+    expect(runView(run)).toMatchObject({stage: 0, stages: STAGES.length});
+    expect(() => handleRunAction(run, {type: 'next'})).toThrow(RuleError);
+    // Win the first fight with the Outrider fallen.
+    const won = {...run, fight: cloneFight(run.fight)};
+    won.fight.phase = 'won';
+    const m = won.fight.units.find((u) => u.id === 'p-mangudai')!;
+    m.alive = false;
+    m.hex = null;
+    expect(runStatus(won)).toBe('active');
+    const next = handleRunAction(won, {type: 'next'});
+    expect(next.stage).toBe(1);
+    expect(next.version).toBe(run.version + 1);
+    expect(next.fight.phase).toBe('fight');
+    expect(next.fight.units.filter((u) => u.side === 'player').map((u) => u.hero)).toEqual([
+      'bokh',
+      'storm',
+      'camel',
+    ]);
+    expect(next.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
+      stageEnemies(5, 1)
+    );
+    // A new fight: everyone at full health, on the board.
+    expect(next.fight.units.every((u) => u.hp === u.maxHp && u.hex)).toBe(true);
+    // The last fight won is the run won; there is no next.
+    const last = {...next, stage: STAGES.length - 1, fight: cloneFight(next.fight)};
+    last.fight.phase = 'won';
+    expect(runStatus(last)).toBe('won');
+    expect(() => handleRunAction(last, {type: 'next'})).toThrow(RuleError);
+    // A lost fight loses the run, whatever its stage.
+    expect(runStatus({...run, fight: {...run.fight, phase: 'lost'}})).toBe('lost');
   });
 
   it('a party must be one to three different heroes', () => {

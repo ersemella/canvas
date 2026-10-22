@@ -62,4 +62,5 @@ export const runsApi = {
     }),
   turn: (runId: string, body: unknown) =>
     call<RunResponse>(`/runs/${runId}/turn`, {method: 'POST', body: JSON.stringify(body)}),
+  next: (runId: string) => call<RunResponse>(`/runs/${runId}/next`, {method: 'POST'}),
 };

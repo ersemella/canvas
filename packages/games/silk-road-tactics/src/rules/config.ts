@@ -363,13 +363,15 @@ export const AI = {
 /** The party, in party slot order, for both sides in Phase 1 (brief section 5). */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /**
- * The enemy's party. TEMPORARY, for testing the wolf (owner, 2026-10-21):
- * three wolves in place of the heroes in a run's fight (run.ts); restore
- * to PARTY when done, and the phone tooltip's ability count in
- * scripts/e2e/tactics.e2e.mjs back to 3. Tests and the balance runner
- * still fight the heroes.
+ * A run's fights, in order (owner, 2026-10-21): how many of the heroes
+ * (PARTY), picked at random from the run's seed, and how many wolves the
+ * enemy brings to each. The last is won to win the run.
  */
-export const ENEMY_PARTY: HeroId[] = ['wolf', 'wolf', 'wolf'];
+export const STAGES: {heroes: number; wolves: number}[] = [
+  {heroes: 1, wolves: 2},
+  {heroes: 2, wolves: 1},
+  {heroes: 3, wolves: 0},
+];
 /** The player's camel, after the party in slot order; the enemy has none (camel.md). */
 export const CAMEL: HeroId = 'camel';
 
