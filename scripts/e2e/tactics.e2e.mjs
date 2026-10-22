@@ -1148,10 +1148,26 @@ try {
     await phone.touchscreen.tap(at.x, at.y);
     await sleep(200);
     check('phone: tapping plain sand shows no tooltip', !(await tooltip.count()));
-    // And with a tooltip open, tapping plain sand closes it.
+    // And with a tooltip open, tapping plain sand closes it: sand the
+    // tooltip doesn't cover (a tap on it could land on an ability's name).
     await phone.touchscreen.tap(foeAt.x, foeAt.y);
     await sleep(200);
-    await phone.touchscreen.tap(at.x, at.y);
+    const tip = await tooltip.boundingBox();
+    let open = at;
+    for (const h of reaches.filter((h) => !busyHexes.has(`${h.q},${h.r}`))) {
+      const p = await onPhone(h);
+      const under =
+        tip &&
+        p.x >= tip.x &&
+        p.x <= tip.x + tip.width &&
+        p.y >= tip.y &&
+        p.y <= tip.y + tip.height;
+      if (!under) {
+        open = p;
+        break;
+      }
+    }
+    await phone.touchscreen.tap(open.x, open.y);
     await sleep(200);
     check('phone: tapping plain sand closes the tooltip', !(await tooltip.count()));
     await phone.touchscreen.tap(foeAt.x, foeAt.y);
