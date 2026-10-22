@@ -58,10 +58,6 @@ export function hostile(a: Unit, b: Unit): boolean {
   return a.side !== b.side;
 }
 
-export function livingUnits(state: FightState): Unit[] {
-  return state.units.filter((u) => u.alive);
-}
-
 // ─── Statuses ────────────────────────────────────────────────────────────────
 
 /** Strongest active value of a status (combine by max); 0 if none. */

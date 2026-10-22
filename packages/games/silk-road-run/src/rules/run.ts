@@ -130,13 +130,12 @@ export function parseAction(raw: unknown): RunAction {
       if (!Array.isArray(a.move) || a.move.length > 10) throw new RuleError('Malformed move.');
       out.move = a.move.map(parseHex);
     }
-    if (a.actFirst === true) out.actFirst = true;
     return out;
   }
   throw new RuleError('Unknown action.');
 }
 
-export function handleRunAction(run: RunState, raw: RunAction): RunState {
+export function handleRunAction(run: RunState, raw: unknown): RunState {
   const action = parseAction(raw);
   const stage = run.stage ?? 0;
   if (action.type === 'next') {

@@ -125,23 +125,20 @@ check(
   walked.body?.message ?? heroFight?.awaiting
 );
 
-// The server enforces the same exclusive-action rule as the page, in either order.
+// The server enforces the same exclusive-action rule as the page.
 const actor = heroFight.units.find((u) => u.id === heroFight.awaiting);
-for (const actFirst of [false, true]) {
-  const combined = await api(`/runs/${runId}/turn`, alice, {
-    method: 'POST',
-    body: JSON.stringify({
-      move: [{q: actor.hex.q + 1, r: actor.hex.r}],
-      action: {ability: 'leap', target: {hex: {q: actor.hex.q + 2, r: actor.hex.r}}},
-      actFirst,
-    }),
-  });
-  check(
-    `walking plus ability is refused (actFirst=${actFirst})`,
-    combined.status === 400 && combined.body?.message?.includes('separate turns'),
-    combined.body
-  );
-}
+const combined = await api(`/runs/${runId}/turn`, alice, {
+  method: 'POST',
+  body: JSON.stringify({
+    move: [{q: actor.hex.q + 1, r: actor.hex.r}],
+    action: {ability: 'leap', target: {hex: {q: actor.hex.q + 2, r: actor.hex.r}}},
+  }),
+});
+check(
+  'walking plus ability is refused',
+  combined.status === 400 && combined.body?.message?.includes('separate turns'),
+  combined.body
+);
 // Walk up the column into the nearest ally, when it is within a move's reach (4 hexes).
 const ally = heroFight.units
   .filter((u) => u.side === 'player' && u !== actor && u.hero !== 'camel')

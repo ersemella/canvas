@@ -78,13 +78,6 @@ import {
 } from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
-/** Area abilities: their radius, to highlight the area around a chosen hex. */
-const AREA_RADIUS: Partial<Record<AbilityId, number>> = {
-  volley: ABILITY.volley.radius,
-  freeze: ABILITY.freeze.radius,
-  hail: 0,
-};
-
 /** Skip turn's turn: Hold, without moving. */
 const SKIP: TurnInput = {action: {ability: 'hold', target: {}}};
 
@@ -168,7 +161,6 @@ export function TacticsPage() {
   /** The hex last tapped to inspect (touch can't hover). */
   const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
   const [hover, setHover] = useState<TacticsHoverPayload>({hex: null, unitId: null});
-  /** Phone widths (the CSS breakpoint): a pared-down action section pinned below the details. */
   /** Phone widths: layout only (the board edge to edge, details first, actions pinned below). */
   const phone = useIsPhone();
   const eventsRef = useRef<EventBus | null>(null);
@@ -823,7 +815,8 @@ export function TacticsPage() {
         out.arc = {from: target.hex, around: from, to: second};
       if (ability === 'pin' && second && from) out.step = [from, second];
       if (target?.hex) {
-        const radius = AREA_RADIUS[ability];
+        // An area ability: highlight the area around the chosen hex.
+        const radius = ABILITIES[ability].radius;
         if (radius) {
           const map = mapOf(fight);
           for (const h of hexesInRange(target.hex, radius))

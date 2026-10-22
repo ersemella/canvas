@@ -1,6 +1,7 @@
 import type {Env, RunResponse} from '../types';
 import {playerKeyHash} from '../playerKey';
 import {runSystemRegistry} from '../games/registry';
+import {json} from '../json';
 
 /**
  * `/runs/*` routes: single-player runs, one `RunRoom` Durable Object each,
@@ -12,7 +13,7 @@ import {runSystemRegistry} from '../games/registry';
  *   POST /runs                {game, party?} -> start a run; abandons the key's active one
  *   GET  /runs/active                      -> {activeRunId} for this key
  *   GET  /runs/:id                         -> the current view (resume after a reload)
- *   POST /runs/:id/turn       {move?, action, actFirst?} -> one turn, then AI turns up to yours
+ *   POST /runs/:id/turn       {move?, action}  -> one turn, then AI turns up to yours
  *   POST /runs/:id/next                    -> on to the run's next stage, once this one is won
  *   POST /runs/:id/abandon                 -> give up the run
  */
@@ -116,16 +117,16 @@ async function readBody(request: Request): Promise<unknown> {
   }
 }
 
-/** 16 random characters from a 62-symbol alphabet (about 95 bits). */
+/** 16 random characters from a 62-symbol alphabet (about 95 bits), each equally likely. */
 function randomId(): string {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  return [...bytes].map((b) => alphabet[b % alphabet.length]).join('');
-}
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {'Content-Type': 'application/json'},
-  });
+  // Bytes from 248 up are dropped: 248 is the largest multiple of 62 below 256.
+  const limit = 256 - (256 % alphabet.length);
+  let id = '';
+  while (id.length < 16) {
+    for (const b of crypto.getRandomValues(new Uint8Array(16))) {
+      if (b < limit && id.length < 16) id += alphabet[b % alphabet.length];
+    }
+  }
+  return id;
 }

@@ -16,7 +16,6 @@ import {ABILITY, HEROES, RULES} from './config';
 import {
   addStatus,
   cleanse,
-  hostile,
   isImmobilized,
   obscured,
   onMap,
@@ -58,6 +57,12 @@ export interface AbilityDef {
    * outlines it.
    */
   range?: number;
+  /**
+   * A ground-targeted area (hail, Volley, Freeze): the hexes within this
+   * of the target hex (0: the hex alone). Its effect doesn't depend on
+   * where the user stands. None for the rest.
+   */
+  radius?: number;
   /**
    * One line for the side panel, with damage and healing scaled by the
    * user's power (defence and Vulnerable still apply on the hit).
@@ -223,6 +228,7 @@ const volley: AbilityDef = {
   name: 'Volley',
   kind: 'attack',
   range: ABILITY.volley.range,
+  radius: ABILITY.volley.radius,
   summary: (user) =>
     `Units in a targeted area take ${scaled(ABILITY.volley.damage, user.power)} damage.`,
   ultimate: true,
@@ -278,6 +284,7 @@ const hail: AbilityDef = {
   name: 'Hail',
   kind: 'control',
   range: ABILITY.hail.range,
+  radius: 0,
   summary: (user) =>
     `Hail on a space: units in it take ${scaled(ABILITY.hail.damage, user.power)} damage and are Slowed ${ABILITY.hail.slowed}.`,
   duration: ABILITY.hail.hexSlots,
@@ -309,6 +316,7 @@ const freeze: AbilityDef = {
   name: 'Freeze',
   kind: 'control',
   range: ABILITY.freeze.range,
+  radius: ABILITY.freeze.radius,
   summary: (user) =>
     `Units in a targeted area take ${scaled(ABILITY.freeze.damage, user.power)} damage and are Immobilized and Vulnerable ${ABILITY.freeze.vulnerable}%.`,
   duration: ABILITY.freeze.immobilizedSlots,
