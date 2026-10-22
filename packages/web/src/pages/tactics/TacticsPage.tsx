@@ -394,7 +394,7 @@ export function TacticsPage() {
     setSelectedId(!lookingAtActing ? (acting?.id ?? null) : null);
   };
   // Once the fight is over, Next stage (a stage before the run's last won)
-  // or New fight takes Confirm's place, and the section keeps its height so
+  // or New run takes Confirm's place, and the section keeps its height so
   // the board doesn't move.
   const {needsTarget, skipPreview, slotsLater, moveSlots, outOfReach, toggleMove, chooseAbility} =
     plan;
@@ -406,7 +406,7 @@ export function TacticsPage() {
         </Button>
       ) : (
         <Button size="lg" className={styles.seal!} fw="bold" onClick={() => setStartMenu(true)}>
-          New fight
+          New run
         </Button>
       )}
       {menu}
