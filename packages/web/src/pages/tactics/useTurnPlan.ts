@@ -7,6 +7,7 @@ import {
   RULES,
   abilitiesOf,
   actingUnit,
+  arrowLanes,
   mapOf,
   obscured,
   offeredTargets,
@@ -305,7 +306,16 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
             }
           : def.id === 'bow' && acting.hex && obscured(fight, map, acting.hex)
             ? {why: 'Can’t shoot out of a sandstorm.', note: 'Sandstorm'}
-            : {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'}
+            : def.id === 'bow' &&
+                acting.hex &&
+                arrowLanes(fight, map, acting.hex).some(
+                  (l) => l.hidden && l.hidden.side !== acting.side
+                )
+              ? {
+                  why: 'The enemies in the bow’s lanes are in a sandstorm: arrows can’t reach them.',
+                  note: 'Sandstorm',
+                }
+              : {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'}
       );
     }
     return out;

@@ -1,5 +1,5 @@
 import {assetLoader, BaseSystem, hexKey} from '@canvas/engine';
-import type {EventBus, Hex, SystemContext} from '@canvas/engine';
+import type {EventBus, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
 import {unitAt} from '../rules/board';
 import {tileAt} from '../rules/map';
@@ -18,7 +18,6 @@ import {
   HAIL_STILL_SECONDS,
   QUICKSAND_FRAME_SECONDS,
   SANDSTORM_BANK,
-  SANDSTORM_STREAKS,
   drawBank,
   drawExit,
   drawFallingHail,
@@ -340,25 +339,9 @@ export class TacticsBoardSystem extends BaseSystem {
       if (!u.alive || !hex || walking?.has(u.id)) continue;
       const p = previewed.get(u.id);
       const moved = Boolean(p?.to && hexKey(p.to) !== hexKey(hex));
-      // A rug in the sandstorm lets the storm show through, so who stands in it shows.
-      const storm = (h: Hex) => (tileAt(map, h) === 'conceal' ? 0.55 : 1);
-      drawRug(ctx, hex, u.side, (moved || p?.killed ? 0.4 : 1) * storm(hex));
-      if (p?.to && moved && !p.killed) drawRug(ctx, p.to, u.side, 0.7 * storm(p.to));
+      drawRug(ctx, hex, u.side, moved || p?.killed ? 0.4 : 1);
+      if (p?.to && moved && !p.killed) drawRug(ctx, p.to, u.side, 0.7);
     }
-    // And its streaks blow on over those rugs.
-    const rugged = new Set<string>();
-    for (const u of fight.units) {
-      if (!u.alive || !u.hex || walking?.has(u.id)) continue;
-      rugged.add(hexKey(u.hex));
-      const to = previewed.get(u.id)?.to;
-      if (to) rugged.add(hexKey(to));
-    }
-    drawBank(
-      ctx,
-      SANDSTORM_STREAKS,
-      sandstorm.filter((h) => rugged.has(hexKey(h))),
-      t
-    );
     for (const h of scene.highlights) fillHex(ctx, h.hex, HIGHLIGHT[h.kind]);
     // The hovered hex's outline goes under the units, so it never crosses a sprite.
     if (this.hover.hex) fillHex(ctx, this.hover.hex, HOVER);
