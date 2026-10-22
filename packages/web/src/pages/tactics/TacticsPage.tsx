@@ -344,6 +344,9 @@ export function TacticsPage() {
       },
       /** What a looked-at hex takes up (its unit's health bar and statuses included), in scene pixels. */
       overlaySpan: (h: Hex) => (fight ? hexOverlaySpan(fight, h) : null),
+      /** Every hex of plain sand now (nothing on it to explain: no unit, tile, hail or exit). */
+      sandHexes: () =>
+        fight ? mapOf(fight).hexes.filter((h) => plainSand(fight, mapOf(fight), h)) : [],
       /** The chosen ability's targets and the acting unit's moves, since starts are random. */
       targets,
       reaches,

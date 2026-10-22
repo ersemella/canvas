@@ -1186,37 +1186,33 @@ try {
   }
   // Plain sand has nothing to explain: tapping it shows no tooltip.
   {
-    const quiet = phoneFight.units.map((u) => u.hex && `${u.hex.q},${u.hex.r}`);
-    const busyHexes = new Set([
-      ...quiet,
-      ...Object.keys(phoneFight.tiles ?? {}),
-      ...phoneFight.effects.map((e) => `${e.hex.q},${e.hex.r}`),
-    ]);
-    const reaches = await phone.evaluate(() => window.__tactics.reaches.map((r) => r.hex));
-    const sand = reaches.find((h) => !busyHexes.has(`${h.q},${h.r}`));
-    const at = await onPhone(sand);
+    /**
+     * Where on the screen a hex of plain sand shows with nothing over it.
+     * The whole board's sand, as the page sees it now: a tap on sand under
+     * the tooltip would land on the tooltip, and one there on an ability's
+     * name or a keyword keeps it open (a big tooltip can cover most of a
+     * phone's board, so there's no falling back to a covered hex).
+     */
+    const bareSand = async () => {
+      for (const h of await phone.evaluate(() => window.__tactics.sandHexes())) {
+        const p = await onPhone(h);
+        const bare = await phone.evaluate(
+          ({x, y}) => document.elementFromPoint(x, y)?.tagName === 'CANVAS',
+          p
+        );
+        if (bare) return p;
+      }
+      throw new Error('no plain sand left uncovered to tap');
+    };
+    const at = await bareSand();
     await phone.touchscreen.tap(at.x, at.y);
     await sleep(200);
     check('phone: tapping plain sand shows no tooltip', !(await tooltip.count()));
-    // And with a tooltip open, tapping plain sand closes it: sand the
-    // tooltip doesn't cover (a tap on it could land on an ability's name).
+    // And with a tooltip open, tapping plain sand closes it.
     await phone.touchscreen.tap(foeAt.x, foeAt.y);
     await sleep(200);
-    const tip = await tooltip.boundingBox();
-    let open = at;
-    for (const h of reaches.filter((h) => !busyHexes.has(`${h.q},${h.r}`))) {
-      const p = await onPhone(h);
-      const under =
-        tip &&
-        p.x >= tip.x &&
-        p.x <= tip.x + tip.width &&
-        p.y >= tip.y &&
-        p.y <= tip.y + tip.height;
-      if (!under) {
-        open = p;
-        break;
-      }
-    }
+    check('phone: the tooltip is open again to close', (await tooltip.count()) === 1);
+    const open = await bareSand();
     await phone.touchscreen.tap(open.x, open.y);
     await sleep(200);
     check('phone: tapping plain sand closes the tooltip', !(await tooltip.count()));
