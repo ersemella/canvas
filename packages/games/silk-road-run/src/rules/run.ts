@@ -6,8 +6,7 @@
  */
 import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
-import {chooseAiTurn} from './ai';
-import type {SearchBudget} from './ai';
+import {chooseAiTurn, requestChooser} from './ai';
 import {AI, CAMEL, PARTY, STAGES} from './config';
 import {
   RuleError,
@@ -154,8 +153,7 @@ export function handleRunAction(run: RunState, raw: unknown): RunState {
   const {type: _type, ...input} = action;
   applyTurn(fight, unit, input);
   // The AI turns this action sets off share one search budget (AI.requestSimulations).
-  const budget: SearchBudget = {left: AI.requestSimulations};
-  advance(fight, (state, unit) => chooseAiTurn(state, unit, budget));
+  advance(fight, requestChooser({left: AI.requestSimulations}));
   return {seed: run.seed, version: run.version + 1, stage, fight};
 }
 
