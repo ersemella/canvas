@@ -128,12 +128,12 @@ describe('budgeted tactical search', () => {
     unit(s, 'p-bokh').slot = 2;
     s.awaiting = me.id;
     const greedy = scoreOptions(s, me, AI.rootSimulations).sort((a, b) => b.score - a.score)[0]!;
-    expect(greedy.input.action).toMatchObject({ability: 'pin', target: {hex: hex(3, 0)}});
+    expect(greedy.input.action).toMatchObject({ability: 'grapple', target: {hex: hex(3, 0)}});
     const detail = stats();
     const selected = chooseAiTurn(s, me, {left: AI.requestSimulations}, detail, {depth: 2});
     expect(detail.completedDepth).toBe(2);
-    // Walking and Pin can no longer share a turn. Check survival rather
-    // than requiring the old move-and-Pin escape sequence.
+    // Walking and Grapple can no longer share a turn. Check survival rather
+    // than requiring the old move-and-Grapple escape sequence.
     expect(selected).not.toEqual(greedy.input);
     const canBeKilled = (input: TurnInput): boolean => {
       const after = simulate(s, me.id, input, false, false)!;
@@ -151,7 +151,7 @@ describe('budgeted tactical search', () => {
   });
 
   it('plans a finishing attack with a consecutive ally instead of alternating teams', () => {
-    // A wolf finishes: a Champion would rather Pin the survivor, Crushed 10
+    // A wolf finishes: a Champion would rather Grapple the survivor, Crushed 10
     // a slot since 2026-10-22, than throw.
     const s = setup(
       {'e-mangudai': hex(0, 0), 'e-wolf': hex(2, 1), 'p-bokh': hex(3, 0), 'p-storm': hex(0, 1)},

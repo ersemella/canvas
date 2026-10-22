@@ -21,7 +21,7 @@ export type AbilityId =
   | 'hail'
   | 'freeze'
   | 'throw'
-  | 'pin'
+  | 'grapple'
   | 'lunge'
   | 'bite';
 
@@ -39,8 +39,8 @@ export interface Status {
   untilSlot: number;
   /** Taunted: the taunter's unit id. */
   source?: string;
-  /** From a Pin, on both units: who pinned whom, so breaking the pin clears them all. */
-  pin?: {champion: string; target: string};
+  /** From a Grapple, on both units: who grappled whom, so breaking the grapple clears them all. */
+  grapple?: {champion: string; target: string};
 }
 
 export interface Unit {

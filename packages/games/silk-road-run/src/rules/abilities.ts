@@ -370,16 +370,16 @@ const throwAbility: AbilityDef = {
   },
 };
 
-const pin: AbilityDef = {
-  id: 'pin',
-  name: 'Pin',
+const grapple: AbilityDef = {
+  id: 'grapple',
+  name: 'Grapple',
   kind: 'control',
   summary: (user) =>
-    `Melee: the target is Immobilized and Taunted and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot, until you move away.`,
-  duration: ABILITY.pin.slots,
+    `Melee: the target is Immobilized and Taunted and takes ${scaled(ABILITY.grapple.damagePerSlot, user.power)} damage a slot, until you move away.`,
+  duration: ABILITY.grapple.slots,
   ultimate: false,
   charged: false,
-  cost: ABILITY.pin.cost,
+  cost: ABILITY.grapple.cost,
   movesSelf: false,
   targetsUnit: true,
   // Melee only (owner, 2026-10-22; it could step one hex first from 2026-10-21).
@@ -387,26 +387,26 @@ const pin: AbilityDef = {
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     pinUnit(ctx, user, u);
-    log(ctx, `${unitName(user)} pins ${unitName(u)}.`);
+    log(ctx, `${unitName(user)} grapples ${unitName(u)}.`);
   },
 };
 
 /**
- * Pin's statuses on `u`, tagged with the pin so breaking it clears them all.
- * The Champion stays free: moving away from the target breaks the pin
+ * Grapple's statuses on `u`, tagged with the grapple so breaking it clears them all.
+ * The Champion stays free: moving away from the target breaks the grapple
  * (resolve.ts).
  */
 function pinUnit(ctx: Ctx, user: Unit, u: Unit): void {
-  const untilSlot = ctx.slot + ABILITY.pin.slots;
-  const pin = {champion: user.id, target: u.id};
-  addStatus(u, {kind: 'immobilized', value: 0, untilSlot, pin});
+  const untilSlot = ctx.slot + ABILITY.grapple.slots;
+  const grapple = {champion: user.id, target: u.id};
+  addStatus(u, {kind: 'immobilized', value: 0, untilSlot, grapple});
   addStatus(u, {
     kind: 'crushed',
-    value: scaled(ABILITY.pin.damagePerSlot, user.power),
+    value: scaled(ABILITY.grapple.damagePerSlot, user.power),
     untilSlot,
-    pin,
+    grapple,
   });
-  addStatus(u, {kind: 'taunted', value: 0, untilSlot, source: user.id, pin});
+  addStatus(u, {kind: 'taunted', value: 0, untilSlot, source: user.id, grapple});
 }
 
 /**
@@ -435,7 +435,7 @@ function lungeLandings(state: FightState, map: MapData, from: Hex, target: Hex):
 
 /**
  * The Bökh Champion's ultimate (owner, 2026-10-22; replaced Rampage): a
- * unit within `reach`, struck, then pinned as by Pin. Next to the Champion
+ * unit within `reach`, struck, then grappled as by Grapple. Next to the Champion
  * it strikes where it stands; otherwise it bounds to a free hex beside the
  * target (`to`), up to two steps away along free hexes, entering only that
  * hex.
@@ -445,9 +445,9 @@ const lunge: AbilityDef = {
   name: 'Lunge',
   kind: 'attack',
   summary: (user) =>
-    `Bound up to ${ABILITY.lunge.reach - 1} spaces to a unit: ${scaled(ABILITY.lunge.damage, user.power)} damage, then it is pinned, as by Pin.`,
+    `Bound up to ${ABILITY.lunge.reach - 1} spaces to a unit: ${scaled(ABILITY.lunge.damage, user.power)} damage, then it is grappled, as by Grapple.`,
   range: ABILITY.lunge.reach,
-  duration: ABILITY.pin.slots,
+  duration: ABILITY.grapple.slots,
   ultimate: true,
   charged: false,
   cost: ABILITY.lunge.cost,
@@ -479,7 +479,7 @@ const lunge: AbilityDef = {
     hit(ctx, user, u, ABILITY.lunge.damage, 'The Lunge');
     if (!u.alive) return;
     pinUnit(ctx, user, u);
-    log(ctx, `${unitName(user)} pins ${unitName(u)}.`);
+    log(ctx, `${unitName(user)} grapples ${unitName(u)}.`);
   },
 };
 
@@ -512,7 +512,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hail,
   freeze,
   throw: throwAbility,
-  pin,
+  grapple,
   lunge,
   bite,
 };

@@ -45,7 +45,7 @@ interface Rate {
 /** Each side's pressure (the sum of its living units' rates) and its living units. */
 type Pressure = Record<Side, Rate & {alive: number}>;
 
-/** An ability's base damage, a Pin's over its whole duration; none for the rest. */
+/** An ability's base damage, a Grapple's over its whole duration; none for the rest. */
 function baseDamage(id: AbilityId): number {
   const a = ABILITY[id] as {damage?: number; damagePerSlot?: number; slots?: number};
   return a.damage ?? (a.damagePerSlot ?? 0) * (a.slots ?? 0);

@@ -116,8 +116,8 @@ unfinished at 400 actions, median 52 actions (58 before).
 | Fog | **removed (owner, 2026-10-21)**: no version measured worth its turn ([balance.md](balance.md)) |
 | Freeze (ultimate) | range 4, radius 1, **damage 60, then Immobilized and Vulnerable 50% for 20 slots (owner, 2026-10-20; was no damage, 25% for 15)**, **instant, typical cost (owner, 2026-10-20; was charged: charge 20 and recovery 60 that day, 40 and 100 before)** |
 | Throw | damage 80 |
-| Pin | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 10 a slot through defence (owner, 2026-10-22; 6 from 2026-10-20, 8 before)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or the two are no longer adjacent (knocked away, or the Champion moving away); cleansing the Champion doesn't break it (owner, 2026-10-20)**; **the Champion isn't Immobilized itself (owner, 2026-10-20; it was)**; **melee only (owner, 2026-10-22; it could step one hex first from 2026-10-21)** |
-| Lunge (ultimate) | **Replaced Rampage (owner, 2026-10-22)**: a unit within 3, after a bound of up to 2 hexes to a free hex beside it, takes base 100 and is pinned as by Pin; no Vulnerable; typical (100) |
+| Grapple (Pin until 2026-10-22) | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 10 a slot through defence (owner, 2026-10-22; 6 from 2026-10-20, 8 before)**; **the grapple breaks, clearing every status it gave either unit, if the target is cleansed or the two are no longer adjacent (knocked away, or the Champion moving away); cleansing the Champion doesn't break it (owner, 2026-10-20)**; **the Champion isn't Immobilized itself (owner, 2026-10-20; it was)**; **melee only (owner, 2026-10-22; it could step one hex first from 2026-10-21)** |
+| Lunge (ultimate) | **Replaced Rampage (owner, 2026-10-22)**: a unit within 3, after a bound of up to 2 hexes to a free hex beside it, takes base 100 and is grappled as by Grapple; no Vulnerable; typical (100) |
 
 Damage is scaled by power: `base × (1 + power / 50)`.
 
@@ -152,7 +152,7 @@ confirm or change:
 
 - **Taunt on allies:** under the 2026-10-19 rule every ability reaches
   allies, so a Taunt that catches an ally forces it to attack the taunter,
-  your own tank. Pin taunts (2026-10-19) and can target an ally, so this
+  your own tank. Grapple taunts (2026-10-19) and can target an ally, so this
   happens now (the preview shows it): accept it, or rule it out
   explicitly.
 - **The exemption keyword:** its name, and how often gear and upgrades

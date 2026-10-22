@@ -122,13 +122,13 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const melee = Math.max(
       usable('throw') ? scaled(ABILITY.throw.damage, e.power) : 0,
       usable('bite') ? scaled(ABILITY.bite.damage, e.power) : 0,
-      usable('pin') ? scaled(ABILITY.pin.damagePerSlot, e.power) * ABILITY.pin.slots : 0
+      usable('grapple') ? scaled(ABILITY.grapple.damagePerSlot, e.power) * ABILITY.grapple.slots : 0
     );
-    // Lunge bounds up to `reach - 1` hexes, onto ground that isn't ruins, then strikes and pins.
+    // Lunge bounds up to `reach - 1` hexes, onto ground that isn't ruins, then strikes and grapples.
     const lunge =
       usable('lunge') && !isImmobilized(e)
         ? scaled(ABILITY.lunge.damage, e.power) +
-          scaled(ABILITY.pin.damagePerSlot, e.power) * ABILITY.pin.slots
+          scaled(ABILITY.grapple.damagePerSlot, e.power) * ABILITY.grapple.slots
         : 0;
     const hail = usable('hail') ? scaled(ABILITY.hail.damage, e.power) : 0;
     const bow = usable('bow') ? scaled(ABILITY.bow.damage, e.power) : 0;

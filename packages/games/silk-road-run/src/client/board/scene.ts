@@ -30,7 +30,7 @@ export interface BoardScene {
   /** A throw being aimed: an arc from the unit thrown, around the thrower, to where it lands. */
   arc?: {from: Hex; around: Hex; to: Hex};
   /**
-   * A step the aimed ability takes first (Pin's): a move's arrow, drawn over
+   * A step the aimed ability takes first (Lunge's bound): a move's arrow, drawn over
    * the units, since the stepping unit's ghost would hide it under them.
    */
   step?: [Hex, Hex];

@@ -33,7 +33,7 @@ export const SKIP: TurnInput = {action: {ability: 'hold', target: {}}};
 const NO_TARGET: Partial<Record<AbilityId, string>> = {
   bow: 'No enemy in any of the bow’s lanes.',
   throw: 'No enemy next to you, or nowhere free to throw them.',
-  pin: 'No one next to you to pin.',
+  grapple: 'No one next to you to grapple.',
   leap: 'Nowhere to land.',
   lunge: 'No one in reach to lunge at.',
 };

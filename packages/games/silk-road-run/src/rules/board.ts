@@ -90,11 +90,11 @@ export function expireStatuses(unit: Unit, slot: number): void {
 
 /**
  * Cleanse: every harmful status from an ability (not a flank's Vulnerable),
- * except a pinning Champion's own hold: cleansing it doesn't break the pin
+ * except a grappling Champion's own hold: cleansing it doesn't break the grapple
  * (owner, 2026-10-20).
  */
 export function cleanse(unit: Unit): void {
-  unit.statuses = unit.statuses.filter((s) => s.pin?.champion === unit.id);
+  unit.statuses = unit.statuses.filter((s) => s.grapple?.champion === unit.id);
 }
 
 /**

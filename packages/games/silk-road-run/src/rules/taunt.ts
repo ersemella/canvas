@@ -1,5 +1,5 @@
 /**
- * Taunt (17.5), from the Bökh Champion's Pin and Lunge: while a unit is taunted, if
+ * Taunt (17.5), from the Bökh Champion's Grapple and Lunge: while a unit is taunted, if
  * it can affect the taunter from any hex it can reach this turn, its
  * action must target the taunter or include it in its area, or be a Hold
  * (owner, 2026-10-20). A damaging
@@ -37,7 +37,7 @@ export function affectsHex(
   switch (def.id) {
     case 'bow':
     case 'throw':
-    case 'pin':
+    case 'grapple':
     case 'lunge':
     case 'bite':
       return near(target.hex, 0);

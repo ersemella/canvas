@@ -99,7 +99,7 @@ const defended = (u: Unit, d: number): number =>
 
 describe('the track', () => {
   it('skips a turn with only Hold to choose, and marks it till the unit next acts', () => {
-    // Immobilized with no one next to it: Throw and Pin have no target, Lunge is locked.
+    // Immobilized with no one next to it: Throw and Grapple have no target, Lunge is locked.
     const s = setup({'p-bokh': at(1, 1), 'e-bokh': at(6, 4), 'p-storm': at(1, 5)});
     const b = unit(s, 'p-bokh');
     b.statuses.push({kind: 'immobilized', value: 0, untilSlot: 1000});
@@ -650,10 +650,10 @@ describe('abilities', () => {
     expect(unit(s, 'p-bokh').hp).toBeLessThan(hp);
   });
 
-  it('Pin then Throw: the target lands where chosen, still Immobilized', () => {
+  it('Grapple then Throw: the target lands where chosen, still Immobilized', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
-    applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     expect(unit(s, 'e-storm').statuses.some((x) => x.kind === 'immobilized')).toBe(true);
     applyTurn(s, b, {action: {ability: 'throw', target: {hex: at(2, 1), to: at(0, 1)}}});
     expect(unit(s, 'e-storm').hex).toEqual(at(0, 1));
@@ -663,11 +663,11 @@ describe('abilities', () => {
     expect(b.statuses).toEqual([]);
   });
 
-  it('Pin: the Champion is free, and walking away releases the target', () => {
+  it('Grapple: the Champion is free, and walking away releases the target', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
-    applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     expect(b.statuses).toEqual([]);
     const away = reachableHexes(s, mapOf(s), b).find(
       (r) => r.path.length === 1 && hexDistance(r.path[0]!, target.hex!) === 2
@@ -676,31 +676,31 @@ describe('abilities', () => {
     expect(target.statuses).toEqual([]);
   });
 
-  it('Pin is melee only', () => {
+  it('Grapple is melee only', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(3, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
-    expect(ABILITIES.pin.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
     unit(s, 'e-storm').hex = at(2, 1);
-    expect(ABILITIES.pin.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
+    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
   });
 
-  it('Pin: displacing the target away breaks the pin, freeing it', () => {
+  it('Grapple: displacing the target away breaks the grapple, freeing it', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
-    applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     expect(target.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
     displace({state: s, map: SALT_FLATS, slot: 0}, target, hexDirectionTo(at(1, 1), at(2, 1))!, 1);
     expect(hexDistance(target.hex!, b.hex!)).toBe(2);
-    // Breaking it clears everything the Pin gave the target.
+    // Breaking it clears everything the Grapple gave the target.
     expect(target.statuses).toEqual([]);
   });
 
-  it('Pin: cleansing the Champion keeps the pin', () => {
+  it('Grapple: cleansing the Champion keeps the grapple', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'p-storm': at(0, 1)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-mangudai');
-    applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     applyTurn(s, unit(s, 'p-storm'), {action: {ability: 'sunlight', target: {hex: at(1, 1)}}});
     expect(target.statuses.map((x) => x.kind).sort()).toEqual([
       'crushed',
@@ -709,11 +709,11 @@ describe('abilities', () => {
     ]);
   });
 
-  it('Pin: cleansing the target breaks the pin', () => {
+  it('Grapple: cleansing the target breaks the grapple', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'e-storm': at(3, 1)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-mangudai');
-    applyTurn(s, b, {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     applyTurn(s, unit(s, 'e-storm'), {action: {ability: 'sunlight', target: {hex: at(2, 1)}}});
     expect(target.statuses).toEqual([]);
     expect(b.statuses).toEqual([]);
@@ -744,25 +744,25 @@ describe('abilities', () => {
     expect(s.effects.map((e) => e.hex)).toEqual([at(3, 1)]);
   });
 
-  it('Pin crushes its target every slot while it lasts', () => {
+  it('Grapple crushes its target every slot while it lasts', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
     s.units.forEach((u) => (u.controller = 'human'));
     const target = unit(s, 'e-storm');
-    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
-    // The Champion's card is next; push it past the pin so the target's turn comes first.
+    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+    // The Champion's card is next; push it past the grapple so the target's turn comes first.
     unit(s, 'p-bokh').slot = 200;
-    target.slot = ABILITY.pin.slots + 8;
+    target.slot = ABILITY.grapple.slots + 8;
     advance(s, chooseAiTurn);
     // Slots 1 to 12 crush it, scaled by the Champion's power, through its
     // defence on the total; nothing after.
-    const perSlot = scaled(ABILITY.pin.damagePerSlot, unit(s, 'p-bokh').power);
+    const perSlot = scaled(ABILITY.grapple.damagePerSlot, unit(s, 'p-bokh').power);
     expect(actingUnit(s)!.id).toBe('e-storm');
-    expect(target.hp).toBe(target.maxHp - defended(target, ABILITY.pin.slots * perSlot));
+    expect(target.hp).toBe(target.maxHp - defended(target, ABILITY.grapple.slots * perSlot));
   });
 
-  it('Pin taunts: the target must attack the Champion or Hold while it can', () => {
+  it('Grapple taunts: the target must attack the Champion or Hold while it can', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-mangudai': at(2, 1), 'p-storm': at(4, 1)});
-    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     const m = unit(s, 'e-mangudai');
     // The Storm Caller is in a bow lane too, but only the Champion may be shot (or the turn Held).
     expect(arrowLanes(s, SALT_FLATS, m.hex!).some((l) => l.hit?.id === 'p-storm')).toBe(true);
@@ -784,7 +784,7 @@ describe('abilities', () => {
 
   it('a taunt that can’t be obeyed leaves the target free', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
-    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     const hailElsewhere = {action: {ability: 'hail' as const, target: {hex: at(2, 3)}}};
     expect(tryTurn(s, 'e-storm', hailElsewhere)).toThrow(RuleError);
     // Thrown out of the Storm Caller's reach (it's Immobilized): it acts freely.
@@ -794,7 +794,7 @@ describe('abilities', () => {
 
   it('a taunted Storm Caller is offered Hail on the taunter, not Sunlight', () => {
     const s = setup({'e-bokh': at(1, 1), 'p-storm': at(2, 1), 'p-mangudai': at(4, 1)});
-    applyTurn(s, unit(s, 'e-bokh'), {action: {ability: 'pin', target: {hex: at(2, 1)}}});
+    applyTurn(s, unit(s, 'e-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     const storm = unit(s, 'p-storm');
     // The rules allow Sunlight on the Champion; the page doesn't offer healing an enemy.
     expect(allowedTargets(s, SALT_FLATS, storm, ABILITIES.sunlight)).toEqual([{hex: at(1, 1)}]);
@@ -835,7 +835,7 @@ describe('abilities', () => {
     expect(leaper.hp).toBe(hp);
   });
 
-  it('Lunge bounds up to two hexes to a unit, strikes it, and pins it', () => {
+  it('Lunge bounds up to two hexes to a unit, strikes it, and grapples it', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(4, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
@@ -856,7 +856,7 @@ describe('abilities', () => {
     applyTurn(s, b, {action: {ability: 'lunge', target: land}});
     expect(b.hex).toEqual(at(3, 1));
     expect(target.hp).toBe(target.maxHp - defended(target, scaled(ABILITY.lunge.damage, b.power)));
-    // Pinned as by Pin, with no Vulnerable.
+    // Grappled as by Grapple, with no Vulnerable.
     expect(target.statuses.map((x) => x.kind).sort()).toEqual([
       'crushed',
       'immobilized',
@@ -1079,10 +1079,10 @@ describe('previews, the AI and the run', () => {
     }
   });
 
-  it('a Pin and a move in one turn are refused', () => {
+  it('a Grapple and a move in one turn are refused', () => {
     const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(2, 3)});
-    const pin = {ability: 'pin' as const, target: {hex: at(2, 3)}};
-    expect(() => applyTurn(s, unit(s, 'p-bokh'), {action: pin, move: [at(0, 3)]})).toThrow(
+    const grapple = {ability: 'grapple' as const, target: {hex: at(2, 3)}};
+    expect(() => applyTurn(s, unit(s, 'p-bokh'), {action: grapple, move: [at(0, 3)]})).toThrow(
       RuleError
     );
   });
