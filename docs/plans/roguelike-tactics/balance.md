@@ -261,7 +261,8 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
    from costing games to slightly positive. Fog at cost 60 and radius 2
    stops costing games but still adds nothing.
 4. **Freeze: redesign, or study individual fights.** No number tried made
-   it pay (see above).
+   it pay (see above). Settled 2026-10-22 by damage 120 (instant, as below):
+   a side without it wins 43%.
    **Charge time, measured 2026-10-20** (new AI, Pin as applied; 800
    fights for unfinished, 400 per ablation):
 
@@ -381,6 +382,33 @@ is worth about as much as Throw (a side without Throw wins 44.5%) and is
 under Rampage, within noise. 3.5% of fights unfinished, 54 actions a
 fight; the Champion survives 29% of fights.
 
+**Applied 2026-10-22 (owner): Freeze base damage 60 → 120.** Measured
+under the production rules first, 400 fights a row (win rate of the side
+without Freeze; two seed ranges where shown):
+
+| Variant | Without Freeze |
+|---|---:|
+| Damage 60 (as it was) | 48.4% / 47.7% |
+| No friendly fire | 46.8% |
+| No Immobilize | 51.3% |
+| No friendly fire, no Immobilize | 49.2% |
+| No friendly fire, radius 2 | 43.4% |
+| No friendly fire, quick (60) | 43.2% |
+| No friendly fire, damage 120 | 38.8% |
+| Damage 100 | 46.2% / 46.0% |
+| **Damage 120 (as built)** | **42.8% / 43.8%** |
+| Push 10 instead of Immobilize and Vulnerable, damage 60 | 41.2% / 44.6% |
+| The same, enemies only | 39.9% / 41.0% |
+| The same, enemies only, no damage | 48.8% |
+
+At 60 Freeze no longer cost games but added about 2 points; none of its
+statuses was worth much on its own (the Bow and the area abilities don't
+need to move, and Vulnerable covers about two enemy turns). At 120, with
+friendly fire kept, it sits in the ultimate band; 3–4% of fights
+unfinished, 58 actions. Pushing the targets' cards (principle 11) measured
+as well but wasn't chosen. Freeze is still cast only about 0.4 times a
+fight per Storm Caller (4% of its turns): under the ultimate's usage band.
+
 **Measured, then applied 2026-10-21 (owner): sandstorm that blocks sight** (Fog gone): a unit
 in it can't be targeted by the Bow or Sunlight, and arrows can't fly
 through it. Fights the same length (54 actions, 53 without), the Bow a
@@ -492,8 +520,8 @@ keywords arrive.
 
 ## Open questions
 
-1. Freeze's redesign (tuning 4): the AI isn't the cause; a charge that
-   follows its target is the leading candidate.
+1. Freeze is used in fewer than half of fights (0.4 casts a fight per
+   Storm Caller, 2026-10-22): its worth is fixed (damage 120), its use isn't.
 2. Whether the bow's six lanes should stay (tuning 6): the lanes give it
    a clear identity, at the cost of many fiddly turns.
 3. Whether mixed compositions break these readings. Every measurement
