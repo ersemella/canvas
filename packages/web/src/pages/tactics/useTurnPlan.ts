@@ -33,9 +33,9 @@ export const SKIP: TurnInput = {action: {ability: 'hold', target: {}}};
 const NO_TARGET: Partial<Record<AbilityId, string>> = {
   bow: 'No enemy in any of the bow’s lanes.',
   throw: 'No enemy next to you, or nowhere free to throw them.',
-  pin: 'No enemy next to you, or a step away, to pin.',
+  pin: 'No one next to you to pin.',
   leap: 'Nowhere to land.',
-  rampage: 'No way clear to rampage.',
+  lunge: 'No one in reach to lunge at.',
 };
 
 /** What the player has picked for the acting unit's turn so far. */
@@ -105,14 +105,14 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   }, [ability, fight, acting]);
 
   /**
-   * Pin's options on a unit: pinning it from where the Champion stands, and
-   * the hexes it may step to first (2026-10-21).
+   * Lunge's options on a unit: striking it from where the Champion stands,
+   * and the hexes it may bound to first (2026-10-22; Pin's step until then).
    */
-  const pinFromHere = useCallback(
+  const lungeFromHere = useCallback(
     (h: Hex) => targets.some((t) => !t.to && t.hex && hexEquals(t.hex, h)),
     [targets]
   );
-  const pinSteps = useCallback(
+  const lungeSteps = useCallback(
     (h: Hex) => targets.filter((t) => t.to && t.hex && hexEquals(t.hex, h)),
     [targets]
   );
@@ -121,10 +121,10 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   const action = useMemo(() => {
     if (!ability || !target) return null;
     if (ability === 'throw' && !target.to) return null;
-    // A unit a Pin can't reach from here needs its step picked.
-    if (ability === 'pin' && !target.to && !pinFromHere(target.hex!)) return null;
+    // A unit a Lunge can't reach from here needs its landing picked.
+    if (ability === 'lunge' && !target.to && !lungeFromHere(target.hex!)) return null;
     return {ability, target};
-  }, [ability, target, pinFromHere]);
+  }, [ability, target, lungeFromHere]);
 
   /** What Move or the chosen ability still needs picked on the board: its button says so. */
   const needsTarget =
@@ -133,8 +133,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       : ability && !action
         ? ability === 'throw' && target?.hex
           ? 'Pick where to throw'
-          : ability === 'pin' && target?.hex
-            ? 'Pick where to step'
+          : ability === 'lunge' && target?.hex
+            ? 'Pick where to land'
             : 'Pick a target'
         : null;
 
@@ -158,7 +158,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     [fight, acting]
   );
 
-  /** The hex picked last: the destination, the target, or Throw's landing or Pin's step. */
+  /** The hex picked last: the destination, the target, or Throw's landing or Lunge's landing. */
   const lastPicked = plannedMove?.hex ?? target?.to ?? target?.hex ?? null;
 
   const clearMove = useCallback(() => pick({plannedMove: null, moving: false}), [pick]);
@@ -195,7 +195,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
 
   /**
    * A tap on `h` that plans the turn: a hex to move to, a target, Throw's
-   * landing or Pin's step (or un-picks one tapped again). False when the
+   * landing or Lunge's landing (or un-picks one tapped again). False when the
    * tap plans nothing, and the page looks at the hex instead.
    */
   const planTap = useCallback(
@@ -209,8 +209,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (!ability) return false;
-      if ((ability === 'throw' || ability === 'pin') && target?.hex) {
-        // Throw's landing, or the hex a Pin steps to first.
+      if ((ability === 'throw' || ability === 'lunge') && target?.hex) {
+        // Throw's landing, or the hex a Lunge bounds to first.
         const second = targets.find(
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
         );
@@ -220,13 +220,13 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
           else pick({target: {hex: target.hex}});
           return true;
         }
-        // Tapping the Champion drops the step, if it can pin from where it stands.
+        // Tapping the Champion drops the bound, if it can strike from where it stands.
         if (
-          ability === 'pin' &&
+          ability === 'lunge' &&
           target.to &&
           acting.hex &&
           hexEquals(acting.hex, h) &&
-          pinFromHere(target.hex)
+          lungeFromHere(target.hex)
         ) {
           chooseTarget({hex: target.hex});
           return true;
@@ -237,10 +237,10 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       // Tapping the chosen target again un-picks it (the button confirms).
       if (target?.hex && hexEquals(target.hex, h)) pick({target: null});
       else if (ability === 'throw') chooseTarget({hex: h});
-      else if (ability === 'pin') {
-        // From here if it can; otherwise its only step, or a step still to pick.
-        const steps = pinSteps(h);
-        chooseTarget(!pinFromHere(h) && steps.length === 1 ? steps[0]! : {hex: h});
+      else if (ability === 'lunge') {
+        // From here if it can; otherwise its only landing, or a landing still to pick.
+        const steps = lungeSteps(h);
+        chooseTarget(!lungeFromHere(h) && steps.length === 1 ? steps[0]! : {hex: h});
       } else chooseTarget(match);
       return true;
     },
@@ -253,8 +253,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       target,
       targets,
       chooseTarget,
-      pinFromHere,
-      pinSteps,
+      lungeFromHere,
+      lungeSteps,
       pick,
     ]
   );
@@ -352,8 +352,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     moveMode,
     hoverReach,
     targets,
-    pinFromHere,
-    pinSteps,
+    lungeFromHere,
+    lungeSteps,
     needsTarget,
     input,
     preview,

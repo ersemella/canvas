@@ -66,7 +66,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 - A Taunted camel can only Hold, since it has no action that targets the
   taunter (17.5).
 - **Friendly fire applies** (owner, 6.7): the party's own Bow, Hail,
-  Freeze and Rampage can hit it, and Sunlight can heal it. As a unit, it
+  Freeze and Lunge can hit it, and Sunlight can heal it. As a unit, it
   blocks lines of fire for both sides, so it can shield an archer, and it
   takes the arrow when it does.
 - *(Proposed:* it flanks and can be flanked like any unit (6.3).)

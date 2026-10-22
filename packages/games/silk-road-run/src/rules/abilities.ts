@@ -4,7 +4,6 @@
  * resolves on the fight state. Values come from config.ts.
  */
 import {
-  hexDirectionTo,
   hexDistance,
   hexEquals,
   hexNeighbor,
@@ -23,17 +22,7 @@ import {
   unitAt,
   walkable,
 } from './board';
-import {
-  applyHail,
-  breakPins,
-  enterHex,
-  displace,
-  heal,
-  hit,
-  log,
-  scaled,
-  unitName,
-} from './resolve';
+import {applyHail, breakPins, enterHex, heal, hit, log, scaled, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -116,10 +105,6 @@ function hexesWithin(
 
 function unitsInArea(state: FightState, center: Hex, radius: number): Unit[] {
   return state.units.filter((u) => u.alive && u.hex && hexDistance(u.hex, center) <= radius);
-}
-
-function direction(from: Hex, to: Hex): number {
-  return hexDirectionTo(from, to)!;
 }
 
 const hold: AbilityDef = {
@@ -390,97 +375,111 @@ const pin: AbilityDef = {
   name: 'Pin',
   kind: 'control',
   summary: (user) =>
-    `Melee, after an optional step: the target is Immobilized and Taunted and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot, until you move away.`,
+    `Melee: the target is Immobilized and Taunted and takes ${scaled(ABILITY.pin.damagePerSlot, user.power)} damage a slot, until you move away.`,
   duration: ABILITY.pin.slots,
   ultimate: false,
   charged: false,
   cost: ABILITY.pin.cost,
   movesSelf: false,
   targetsUnit: true,
-  /**
-   * A unit next to the Champion, or (owner, 2026-10-21) one a single step
-   * would bring it next to: `to` is that step, to a free walkable hex. Not
-   * stepping while Immobilized.
-   */
-  targets(state, map, user, from) {
-    const out = adjacentUnits(state, from, (u) => u !== user);
-    if (isImmobilized(user)) return out;
-    for (const to of hexNeighbors(from)) {
-      if (!walkable(map, to) || unitAt(state, to)) continue;
-      for (const t of adjacentUnits(state, to, (u) => u !== user)) {
-        if (hexDistance(t.hex!, from) > 1) out.push({hex: t.hex!, to});
-      }
-    }
-    return out;
-  },
+  // Melee only (owner, 2026-10-22; it could step one hex first from 2026-10-21).
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
-    if (target.to) {
-      enterHex(ctx, user, target.to, true, 'walk');
-      if (!user.alive) return;
-    }
     const u = unitAt(ctx.state, target.hex!)!;
-    const untilSlot = ctx.slot + ABILITY.pin.slots;
-    // Tagged with the pin, so breaking it clears them all. The Champion
-    // stays free: moving away from the target breaks the pin (resolve.ts).
-    const pin = {champion: user.id, target: u.id};
-    addStatus(u, {kind: 'immobilized', value: 0, untilSlot, pin});
-    addStatus(u, {
-      kind: 'crushed',
-      value: scaled(ABILITY.pin.damagePerSlot, user.power),
-      untilSlot,
-      pin,
-    });
-    addStatus(u, {kind: 'taunted', value: 0, untilSlot, source: user.id, pin});
+    pinUnit(ctx, user, u);
     log(ctx, `${unitName(user)} pins ${unitName(u)}.`);
   },
 };
 
-const rampage: AbilityDef = {
-  id: 'rampage',
-  name: 'Rampage',
+/**
+ * Pin's statuses on `u`, tagged with the pin so breaking it clears them all.
+ * The Champion stays free: moving away from the target breaks the pin
+ * (resolve.ts).
+ */
+function pinUnit(ctx: Ctx, user: Unit, u: Unit): void {
+  const untilSlot = ctx.slot + ABILITY.pin.slots;
+  const pin = {champion: user.id, target: u.id};
+  addStatus(u, {kind: 'immobilized', value: 0, untilSlot, pin});
+  addStatus(u, {
+    kind: 'crushed',
+    value: scaled(ABILITY.pin.damagePerSlot, user.power),
+    untilSlot,
+    pin,
+  });
+  addStatus(u, {kind: 'taunted', value: 0, untilSlot, source: user.id, pin});
+}
+
+/**
+ * The free walkable hexes a Lunge may land on, beside `target`: at most
+ * `ABILITY.lunge.reach - 1` steps from `from`, each step onto a free
+ * walkable hex, as walking is blocked.
+ */
+function lungeLandings(state: FightState, map: MapData, from: Hex, target: Hex): Hex[] {
+  const seen = new Set<string>([`${from.q},${from.r}`]);
+  const out: Hex[] = [];
+  let frontier = [from];
+  for (let step = 1; step < ABILITY.lunge.reach; step++) {
+    const next: Hex[] = [];
+    for (const f of frontier)
+      for (const h of hexNeighbors(f)) {
+        const k = `${h.q},${h.r}`;
+        if (seen.has(k) || !walkable(map, h) || unitAt(state, h)) continue;
+        seen.add(k);
+        next.push(h);
+        if (hexDistance(h, target) === 1) out.push(h);
+      }
+    frontier = next;
+  }
+  return sortByHex(out, (h) => h);
+}
+
+/**
+ * The Bökh Champion's ultimate (owner, 2026-10-22; replaced Rampage): a
+ * unit within `reach`, struck, then pinned as by Pin. Next to the Champion
+ * it strikes where it stands; otherwise it bounds to a free hex beside the
+ * target (`to`), up to two steps away along free hexes, entering only that
+ * hex.
+ */
+const lunge: AbilityDef = {
+  id: 'lunge',
+  name: 'Lunge',
   kind: 'attack',
-  summary: () => `Rush in a straight line, knocking nearby units aside.`,
+  summary: (user) =>
+    `Bound up to ${ABILITY.lunge.reach - 1} spaces to a unit: ${scaled(ABILITY.lunge.damage, user.power)} damage, then it is pinned, as by Pin.`,
+  range: ABILITY.lunge.reach,
+  duration: ABILITY.pin.slots,
   ultimate: true,
   charged: false,
-  cost: ABILITY.rampage.cost,
-  movesSelf: true,
-  targets(_state, map, _user, from) {
-    // The target is the first hex in the chosen direction.
-    return DIRECTIONS.map((d) => hexNeighbor(from, d))
-      .filter((h) => walkable(map, h))
-      .map((hex) => ({hex}));
+  cost: ABILITY.lunge.cost,
+  movesSelf: false,
+  targetsUnit: true,
+  /** Immobilized, only a unit next to it. */
+  targets(state, map, user, from) {
+    const out = adjacentUnits(state, from, (u) => u !== user);
+    if (isImmobilized(user)) return out;
+    const far = state.units.filter(
+      (u) =>
+        u.alive &&
+        u.hex &&
+        u !== user &&
+        hexDistance(u.hex, from) > 1 &&
+        hexDistance(u.hex, from) <= ABILITY.lunge.reach
+    );
+    for (const u of sortByHex(far, (x) => x.hex!))
+      for (const to of lungeLandings(state, map, from, u.hex!)) out.push({hex: u.hex!, to});
+    return out;
   },
   resolve(ctx, user, target) {
-    const dir = direction(user.hex!, target.hex!);
-    log(ctx, `${unitName(user)} rampages.`);
-    const hitAlready = new Set<string>([user.id]);
-    let pos = user.hex!;
-    let lastFree = pos;
-    for (let i = 0; i < ABILITY.rampage.distance; i++) {
-      const next = hexNeighbor(pos, dir);
-      // Only an obstacle (or an Unstoppable unit, none in Phase 1) stops it; the edge ends it.
-      if (!walkable(ctx.map, next)) break;
-      pos = next;
-      // Everyone in the hex entered or beside it, hit once: farthest first,
-      // so those beside it (distance 1) before the one in the path (0).
-      const victims = ctx.state.units.filter(
-        (u) => u.alive && u.hex && !hitAlready.has(u.id) && hexDistance(u.hex, pos) <= 1
-      );
-      victims.sort(
-        (a, b) => hexDistance(b.hex!, pos) - hexDistance(a.hex!, pos) || unitOrder(a) - unitOrder(b)
-      );
-      for (const u of victims) {
-        hitAlready.add(u.id);
-        hit(ctx, user, u, ABILITY.rampage.damage, 'The Rampage');
-        if (!u.alive) continue;
-        // In the path: knocked ahead; beside it: away from the Champion's hex.
-        const away = hexEquals(u.hex!, pos) ? dir : direction(pos, u.hex!);
-        displace(ctx, u, away, ABILITY.rampage.displace);
-      }
-      if (!unitAt(ctx.state, pos)) lastFree = pos;
+    if (target.to) {
+      enterHex(ctx, user, target.to, true, 'leap');
+      if (!user.alive) return;
     }
-    // Ends on the last free hex it passed if the last one is taken.
-    if (user.alive) enterHex(ctx, user, lastFree, true, 'rush');
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} lunges at ${unitName(u)}.`);
+    hit(ctx, user, u, ABILITY.lunge.damage, 'The Lunge');
+    if (!u.alive) return;
+    pinUnit(ctx, user, u);
+    log(ctx, `${unitName(user)} pins ${unitName(u)}.`);
   },
 };
 
@@ -504,10 +503,6 @@ const bite: AbilityDef = {
   },
 };
 
-function unitOrder(u: Unit): number {
-  return (u.side === 'player' ? 0 : 10) + u.partyIndex;
-}
-
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   bow,
@@ -518,7 +513,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   freeze,
   throw: throwAbility,
   pin,
-  rampage,
+  lunge,
   bite,
 };
 

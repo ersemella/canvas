@@ -10,13 +10,13 @@ import {createRun} from './run';
 import {scaled} from './resolve';
 import {SALT_FLATS} from './map';
 import {threatsTo} from './threat';
-import type {FightState, TurnInput} from './types';
+import type {FightState, HeroId, TurnInput} from './types';
 
 const hex = (q: number, r: number): Hex => ({q, r});
 const unit = (s: FightState, id: string) => s.units.find((u) => u.id === id)!;
 const stats = (): SearchStats => ({completedDepth: 0, cutoffs: 0, work: 0});
-function setup(placements: Record<string, Hex>): FightState {
-  const s = createFight(0);
+function setup(placements: Record<string, Hex>, enemies?: HeroId[]): FightState {
+  const s = createFight(0, undefined, enemies);
   // The fixed layout, which these tests place units around.
   s.tiles = {...SALT_FLATS.tiles};
   s.phase = 'fight';
@@ -119,7 +119,7 @@ describe('budgeted tactical search', () => {
 
   it('avoids a lethal reply that the immediate heuristic overlooks', () => {
     // The Outrider's bow has no range limit (2026-10-20): it stands where
-    // stepping off its lanes is still possible, beyond a Pin's step (2026-10-21).
+    // stepping off its lanes is still possible.
     const s = setup({'e-bokh': hex(2, 0), 'p-bokh': hex(3, 0), 'p-mangudai': hex(-1, 3)});
     const me = unit(s, 'e-bokh');
     me.hp = 70;
@@ -151,16 +151,16 @@ describe('budgeted tactical search', () => {
   });
 
   it('plans a finishing attack with a consecutive ally instead of alternating teams', () => {
-    const s = setup({
-      'e-mangudai': hex(0, 0),
-      'e-bokh': hex(2, 1),
-      'p-bokh': hex(3, 0),
-      'p-storm': hex(0, 1),
-    });
+    // A wolf finishes: a Champion would rather Pin the survivor, Crushed 10
+    // a slot since 2026-10-22, than throw.
+    const s = setup(
+      {'e-mangudai': hex(0, 0), 'e-wolf': hex(2, 1), 'p-bokh': hex(3, 0), 'p-storm': hex(0, 1)},
+      ['mangudai', 'wolf']
+    );
     const me = unit(s, 'e-mangudai');
     me.slot = 0;
     me.statuses = [{kind: 'immobilized', value: 0, untilSlot: 100}];
-    unit(s, 'e-bokh').slot = 1;
+    unit(s, 'e-wolf').slot = 1;
     unit(s, 'p-bokh').slot = 2;
     unit(s, 'p-bokh').hp = 170;
     unit(s, 'p-storm').slot = 3;
@@ -179,7 +179,7 @@ describe('budgeted tactical search', () => {
     ).toEqual(input);
     applyTurn(s, me, input);
     const ally = advanceToDecision(s)!;
-    expect(ally.id).toBe('e-bokh');
+    expect(ally.id).toBe('e-wolf');
     const finish = scoreOptions(s, ally).find((o) => !unit(o.position, 'p-bokh').alive);
     expect(finish).toBeDefined();
     expect(evaluatePosition(s, 'enemy')).toBe(-evaluatePosition(s, 'player'));

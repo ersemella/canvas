@@ -116,8 +116,8 @@ unfinished at 400 actions, median 52 actions (58 before).
 | Fog | **removed (owner, 2026-10-21)**: no version measured worth its turn ([balance.md](balance.md)) |
 | Freeze (ultimate) | range 4, radius 1, **damage 60, then Immobilized and Vulnerable 50% for 20 slots (owner, 2026-10-20; was no damage, 25% for 15)**, **instant, typical cost (owner, 2026-10-20; was charged: charge 20 and recovery 60 that day, 40 and 100 before)** |
 | Throw | damage 80 |
-| Pin | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 6 a slot through defence (owner; 8 until 2026-10-20)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or the two are no longer adjacent (knocked away, or the Champion moving away); cleansing the Champion doesn't break it (owner, 2026-10-20)**; **the Champion isn't Immobilized itself (owner, 2026-10-20; it was)**; **it may step one hex first, to a free hex next to the target, same cost (owner, 2026-10-21)** |
-| Rampage (ultimate) | 3 hexes, **damage 160, typical (100) (owner, 2026-10-20; was 100, slow, 150)**, Displace 1 |
+| Pin | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 10 a slot through defence (owner, 2026-10-22; 6 from 2026-10-20, 8 before)**; **the pin breaks, clearing every status it gave either unit, if the target is cleansed or the two are no longer adjacent (knocked away, or the Champion moving away); cleansing the Champion doesn't break it (owner, 2026-10-20)**; **the Champion isn't Immobilized itself (owner, 2026-10-20; it was)**; **melee only (owner, 2026-10-22; it could step one hex first from 2026-10-21)** |
+| Lunge (ultimate) | **Replaced Rampage (owner, 2026-10-22)**: a unit within 3, after a bound of up to 2 hexes to a free hex beside it, takes base 100 and is pinned as by Pin; no Vulnerable; typical (100) |
 
 Damage is scaled by power: `base × (1 + power / 50)`.
 
@@ -128,13 +128,12 @@ at 250, 5.7% at 200): ultimates are the biggest finishers, and they now
 arrive later. The camel (issue 1) settles it once built: the player can
 always end a fight by walking it out.
 
-### 3. Rampage details (brief section 10)
+### 3. Lunge details (brief section 10)
 
-Allies in the path take the damage like anyone (the 2026-10-19 rule,
-[map.md](map.md), 6.7), which makes Rampage mainly an opening move once
-the front lines meet. Built as proposed: a unit that couldn't be displaced, or was pushed ahead, is passed through;
-if the last hex is taken, the Champion stops on the last free hex it
-passed. Confirm or change.
+Built (2026-10-22) as: the bound follows free walkable hexes, as walking
+does (units and ruins block it), and enters only the hex it lands on, so
+quicksand on the way doesn't drag; Immobilized, it strikes only a unit
+next to the Champion; it can target an ally, as Pin can. Confirm or change.
 
 ### 4. The builder's choices in Phase 1
 
@@ -152,7 +151,7 @@ confirm or change:
 - **Movement is a separate action, 20 + 10 per hex, capped at 4**
   (owner, 2026-10-20). Allies and enemies block ordinary walking. An
   ability cannot share the turn with walking; the page replaces one
-  selection with the other. Leap and Rampage retain their traversal rules.
+  selection with the other. Leap and Lunge retain their traversal rules.
 - **The enemy's starting layout** is one of three, picked by the run's
   seed.
 

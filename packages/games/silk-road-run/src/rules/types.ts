@@ -22,7 +22,7 @@ export type AbilityId =
   | 'freeze'
   | 'throw'
   | 'pin'
-  | 'rampage'
+  | 'lunge'
   | 'bite';
 
 export type StatusKind = 'immobilized' | 'slowed' | 'vulnerable' | 'crushed' | 'taunted';
@@ -95,9 +95,9 @@ export interface LogEntry {
 
 /**
  * How a unit came to enter a hex: walked, pushed by a hit, thrown, or
- * rushing several hexes at once (Rampage), or leaping over one (Leap).
+ * leaping (Leap over one hex, Lunge's bound).
  */
-export type Motion = 'walk' | 'push' | 'throw' | 'rush' | 'leap';
+export type Motion = 'walk' | 'push' | 'throw' | 'leap';
 
 /** Something that happened on the board, in the order the rules resolved it. */
 export type FightEvent =

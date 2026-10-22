@@ -356,6 +356,31 @@ to a free hex next to its target, at the same cost. Measured with both
 in, 400 fights each: a side without Pin wins 50.0%, without Sunlight
 40.8%, without the Bow 7.5%; 53 actions a fight.
 
+**Applied 2026-10-22 (owner): Pin melee only, Crushed 10; Lunge replaces
+Rampage.** The Bökh Champion's ultimate is now Lunge: a unit within 3,
+after a bound of up to 2 hexes to a free hex beside it, takes base 100
+and is pinned as by Pin, with no Vulnerable. Measured first with a
+prototype, 400 fights a row (win rate of the side without the ability):
+
+| Variant | Without the ultimate | Without Pin |
+|---|---:|---:|
+| Rampage; Pin with its step (2026-10-21) | 44.8% | 50.0% |
+| Rampage; Pin melee only | 47.3% | 50.4% |
+| Lunge reach 2, no damage, Vulnerable 50% | 47.2% | 48.7% |
+| Lunge reach 3, no damage, Vulnerable 50% | 46.4% | |
+| Lunge reach 2, damage 100, Vulnerable 50% | 44.9% | |
+| Lunge reach 2, damage 160, Vulnerable 50% | 42.6% | |
+| Lunge reach 2, Vulnerable 50%; Pin at quick cost (60) | | 49.4% |
+| Lunge reach 2, Vulnerable 50%; Pin Crushed 10 | | 46.7% |
+| **As built:** Lunge reach 3, damage 100, no Vulnerable; Pin Crushed 10 | **46.3%** | **44.9%** |
+
+Pin's step made no measurable difference, and a cheaper Pin was used more
+without winning more; its crush damage is what moved it. As built, Pin
+is worth about as much as Throw (a side without Throw wins 44.5%) and is
+31% of the Champion's turns (Throw 18%, Lunge 8.8%); Lunge is a little
+under Rampage, within noise. 3.5% of fights unfinished, 54 actions a
+fight; the Champion survives 29% of fights.
+
 **Measured, then applied 2026-10-21 (owner): sandstorm that blocks sight** (Fog gone): a unit
 in it can't be targeted by the Bow or Sunlight, and arrows can't fly
 through it. Fights the same length (54 actions, 53 without), the Bow a

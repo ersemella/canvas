@@ -33,7 +33,7 @@ const SOURCES: [RegExp, string][] = [
   [/^The Volley hits/, 'volley'],
   [/^The Freeze hits/, 'freeze'],
   [/^The throw hits/, 'throw'],
-  [/^The Rampage hits/, 'rampage'],
+  [/^The Lunge hits/, 'lunge'],
   [/^Hail strikes/, 'hail'],
   [/^Quicksand drags/, 'quicksand'],
   [/^The pin crushes/, 'pin'],
@@ -42,7 +42,7 @@ const SOURCES: [RegExp, string][] = [
 /** Sources whose caster the log doesn't name: counted as damage to the enemy. */
 const UNOWNED = new Set(['quicksand', 'hail', 'pin']);
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s (?:Volley lands|Freeze takes hold|arrow hits)| rampages| calls down (?:hail|sunlight)| throws| pins)/;
+  /^(Your|Enemy) .+?(?:'s (?:Volley lands|Freeze takes hold|arrow hits)| lunges at| calls down (?:hail|sunlight)| throws| pins)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>

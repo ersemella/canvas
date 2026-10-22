@@ -14,7 +14,7 @@ interface Icon {
 /**
  * Each ability's own icon, drawn as the pixel art is (owner, 2026-10-21;
  * one icon per kind until then). Simple shapes read at 12×12: Throw, Pin
- * and Rampage as figures didn't.
+ * and Lunge as figures didn't.
  */
 const ICON: Record<IconId, Icon> = {
   move: {
@@ -178,21 +178,21 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
-  // Rushing on.
-  rampage: {
+  // Springing forward.
+  lunge: {
     kind: 'attack',
     rows: [
       '............', //
-      '##....##....',
-      '.##....##...',
-      '..##....##..',
-      '...##....##.',
-      '....##....##',
-      '....##....##',
-      '...##....##.',
-      '..##....##..',
-      '.##....##...',
-      '##....##....',
+      '........##..',
+      '.......####.',
+      '......######',
+      '.....######.',
+      '....######..',
+      '...######...',
+      '..######....',
+      '.######.....',
+      '######......',
+      '.####.......',
       '............',
     ],
   },

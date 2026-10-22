@@ -254,7 +254,7 @@ export function TacticsPage() {
     ? ((inspectHex ? inspectedUnit?.id : (selectedId ?? acting?.id)) ?? null)
     : null;
 
-  const {target, moveMode, hoverReach, pinFromHere, pinSteps} = plan;
+  const {target, moveMode, hoverReach, lungeFromHere, lungeSteps} = plan;
   const scene: BoardScene = useMemo(
     () =>
       buildScene({
@@ -273,8 +273,8 @@ export function TacticsPage() {
         plannedMove,
         hoverReach,
         reaches,
-        pinFromHere,
-        pinSteps,
+        lungeFromHere,
+        lungeSteps,
       }),
     [
       fight,
@@ -292,8 +292,8 @@ export function TacticsPage() {
       plannedMove,
       hoverReach,
       reaches,
-      pinFromHere,
-      pinSteps,
+      lungeFromHere,
+      lungeSteps,
     ]
   );
 
@@ -369,9 +369,7 @@ export function TacticsPage() {
   }
 
   if (!run || !fight || run.status === 'abandoned' || startMenu) {
-    return (
-      <StartMenu busy={busy} error={error} onStart={startRun} />
-    );
+    return <StartMenu busy={busy} error={error} onStart={startRun} />;
   }
 
   // The result waits for the playback to show how the fight ended.

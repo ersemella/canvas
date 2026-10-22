@@ -202,6 +202,17 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   Replaced by one rule, abilities don't know sides
   ([map.md](map.md), 6.7): fewer exceptions to learn, supports must
   position too, and ally exemption becomes a build lever.
+- **Rampage** (the Bökh Champion's ultimate until 2026-10-22): a charge
+  3 hexes in a straight line, hitting every unit in or beside its path
+  once for base 160 and Displacing it 1, allies included. Replaced by
+  **Lunge** (owner): a bound of up to two hexes to a unit, which it
+  strikes and pins. A side without Rampage won 44.8% of AI-vs-AI fights
+  ([balance.md](balance.md)).
+- **Pin's step** (2026-10-21 to 2026-10-22): Pin could step one hex
+  first, to a free hex next to its target, at the same cost. Pin went
+  back to melee only (owner) and the reach moved to the ultimate, Lunge;
+  the step had made no measurable difference (a side without Pin won
+  50.0% with it, 50.4% without).
 
 ## Roster
 
