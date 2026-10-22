@@ -217,8 +217,11 @@ export function TacticsPage() {
   fightRef.current = fight;
 
   // Follow the canvas's size on screen, to place the phone's tooltip and
-  // desktop's Confirm over it.
-  const hasBoard = fight !== null;
+  // desktop's Confirm over it. The board is mounted afresh each time it
+  // replaces the start menu (Reset run keeps the old fight), so the observers
+  // follow whether it's showing, not whether there's a fight.
+  const hasBoard =
+    !loading && run !== null && fight !== null && run.status !== 'abandoned' && !startMenu;
   useEffect(() => {
     const canvas = boardRef.current?.querySelector('canvas');
     if (!canvas) return;

@@ -1443,6 +1443,25 @@ try {
     );
   }
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-small.png')});
+  // Reset run, then a new fight: the board, mounted afresh, still fits the screen.
+  {
+    const resetId = await phone.evaluate(() => window.__tactics.run.runId);
+    await phone.getByRole('button', {name: 'Menu'}).tap();
+    await phone.getByRole('menuitem', {name: 'Reset run'}).tap();
+    await phone.getByRole('menuitem', {name: 'Tap again to reset'}).tap();
+    await phone.getByRole('button', {name: 'Start a fight'}).tap();
+    await phone.waitForFunction((id) => window.__tactics?.run?.runId !== id, resetId, {
+      timeout: 15_000,
+    });
+    await phoneMove.waitFor({timeout: 15_000});
+    await sleep(300);
+    const box = await phone.locator('canvas').boundingBox();
+    check(
+      'phone: after Reset run, the new fight’s board still fits the screen',
+      box.x >= -1 && box.width <= 376 && box.y >= -1,
+      box
+    );
+  }
   await abandonOn(phone);
 } finally {
   await browser.close();
