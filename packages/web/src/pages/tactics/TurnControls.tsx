@@ -46,8 +46,12 @@ export function TurnControls(props: {
   slotsLater: (actionCost: number) => number;
   /** The move action's cost in slots (a range until a hex is picked), shown in the Move button. */
   moveSlots: string | null;
-  /** Abilities with nothing to target, and why: disabled (unless already chosen, so they can be put down). */
-  outOfReach: Map<AbilityId, string>;
+  /**
+   * Abilities with nothing to target, and why: disabled (unless already
+   * chosen, so they can be put down). A `note` (Taunted, Sandstorm) shows
+   * on the button in place of its cost.
+   */
+  outOfReach: Map<AbilityId, {why: string; note?: string}>;
   unit: Unit;
   ability: AbilityId | null;
   plannedMove: Reach | null;
@@ -163,9 +167,8 @@ export function TurnControls(props: {
                 )}
         </Button>
         {defs.map((def, i) => {
-          const reason =
-            unusableReason(unit, def) ??
-            (ability !== def.id ? (props.outOfReach.get(def.id) ?? null) : null);
+          const blocked = ability !== def.id ? props.outOfReach.get(def.id) : undefined;
+          const reason = unusableReason(unit, def) ?? blocked?.why ?? null;
           const lockedUlt =
             def.ultimate && !unit.ultimateUsed && unit.ultimateCharge < RULES.ultimateCharge;
           const picked = ability === def.id;
@@ -195,12 +198,14 @@ export function TurnControls(props: {
                 ? confirmLabel
                 : picked
                   ? asking(def.name, abilityIcon(def))
-                  : label(
-                      def.name,
-                      `+${props.slotsLater(def.cost)}`,
-                      abilityIcon(def),
-                      lockedUlt ? `${unit.ultimateCharge}/${RULES.ultimateCharge}` : undefined
-                    )}
+                  : blocked?.note && !unusableReason(unit, def)
+                    ? label(def.name, blocked.note, abilityIcon(def))
+                    : label(
+                        def.name,
+                        `+${props.slotsLater(def.cost)}`,
+                        abilityIcon(def),
+                        lockedUlt ? `${unit.ultimateCharge}/${RULES.ultimateCharge}` : undefined
+                      )}
             </Button>
           );
         })}

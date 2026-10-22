@@ -140,6 +140,10 @@ const hold: AbilityDef = {
 export interface ArrowLane {
   hexes: Hex[];
   hit?: Unit;
+  /** The Obscured hex the lane stopped short of, if a sandstorm stopped it. */
+  storm?: Hex;
+  /** The unit the arrow would have hit in or past that sandstorm, which it can't. */
+  hidden?: Unit;
 }
 
 /**
@@ -158,7 +162,13 @@ export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLan
     let h = from;
     for (let i = 0; i < ABILITY.bow.range; i++) {
       h = hexNeighbor(h, dir);
-      if (!onMap(map, h) || tileAt(map, h) === 'obstacle' || obscured(state, map, h)) break;
+      if (!onMap(map, h) || tileAt(map, h) === 'obstacle') break;
+      if (obscured(state, map, h)) {
+        lane.storm = h;
+        const hidden = unitInLane(state, map, h, dir);
+        if (hidden) lane.hidden = hidden;
+        break;
+      }
       lane.hexes.push(h);
       const u = unitAt(state, h);
       if (u) {
@@ -168,6 +178,15 @@ export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLan
     }
     return lane;
   });
+}
+
+/** The first unit from `h` on along `dir`, before an obstacle or the map's edge. */
+function unitInLane(state: FightState, map: MapData, h: Hex, dir: number): Unit | undefined {
+  for (; onMap(map, h) && tileAt(map, h) !== 'obstacle'; h = hexNeighbor(h, dir)) {
+    const u = unitAt(state, h);
+    if (u) return u;
+  }
+  return undefined;
 }
 
 const bow: AbilityDef = {

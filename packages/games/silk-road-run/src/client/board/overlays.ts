@@ -21,7 +21,7 @@ import {
   pixelShadow,
 } from './pixels';
 import type {HighlightStyle} from './pixels';
-import type {HighlightKind} from './scene';
+import type {BowLane, HighlightKind} from './scene';
 
 const targeting = (fill: number, stroke: number): HighlightStyle => ({
   fill: `rgba(${TARGET_RGB},${fill})`,
@@ -167,18 +167,16 @@ export function drawRangeOutline(ctx: CanvasRenderingContext2D, hexes: Hex[]): v
  * The bow's lanes from `from`: to a unit it may target, a light lapis
  * arrow pointing at it; along any other lane (blocked by an ally, a ruin
  * or the edge), a faint dashed line to where the arrow would stop, so it's
- * plain why that enemy can't be shot.
+ * plain why that enemy can't be shot. A lane a sandstorm stops short of an
+ * enemy (`storm`) runs to the storm's edge and ends in a cross there.
  */
-export function drawLanes(
-  ctx: CanvasRenderingContext2D,
-  from: Hex,
-  lanes: {hexes: Hex[]; target: boolean}[]
-): void {
+export function drawLanes(ctx: CanvasRenderingContext2D, from: Hex, lanes: BowLane[]): void {
   const a = center(from);
   for (const lane of lanes) {
     const last = lane.hexes[lane.hexes.length - 1];
-    if (!last) continue;
-    const b = center(last);
+    const far = lane.storm ?? last;
+    if (!far) continue;
+    const b = center(far);
     const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
     const ux = (b.x - a.x) / len;
     const uy = (b.y - a.y) / len;
@@ -203,17 +201,78 @@ export function drawLanes(
       ctx.closePath();
       ctx.fill();
     } else {
+      // To the sandstorm's edge (the side between hexes is the inradius away), else the last hex's centre.
+      const edge = BOARD_LAYOUT.size * (Math.sqrt(3) / 2);
+      const end = lane.storm ? {x: b.x - ux * edge, y: b.y - uy * edge} : b;
+      ctx.save();
       ctx.globalAlpha = 0.6;
       ctx.strokeStyle = PALETTE.lapisLight;
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 5]);
       ctx.beginPath();
       ctx.moveTo(start.x, start.y);
-      ctx.lineTo(b.x, b.y);
+      ctx.lineTo(end.x, end.y);
       ctx.stroke();
+      ctx.restore();
+      if (lane.storm) drawCross(ctx, end.x, end.y);
     }
     ctx.restore();
   }
+}
+
+/** Where an arrow can't go on: a light lapis cross over ink, centred at (`x`, `y`). */
+function drawCross(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  const r = 6;
+  ctx.save();
+  ctx.lineCap = 'square';
+  for (const [color, width] of [
+    [PALETTE.ink, 6],
+    [PALETTE.lapisLight, 2.5],
+  ] as const) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(x - r, y - r);
+    ctx.lineTo(x + r, y + r);
+    ctx.moveTo(x + r, y - r);
+    ctx.lineTo(x - r, y + r);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/**
+ * A taunt: a gold chain from the taunted unit to its taunter, over ink so
+ * it shows on the sand and the rugs, so it's plain on the board who must
+ * be attacked. It runs between the units' middles, over their sprites.
+ */
+export function drawTauntChain(ctx: CanvasRenderingContext2D, from: Hex, to: Hex): void {
+  const a = center(from);
+  const b = center(to);
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const ux = (b.x - a.x) / len;
+  const uy = (b.y - a.y) / len;
+  const inset = Math.min(18 * HEX_SCALE, len / 4);
+  const p = {x: a.x + ux * inset, y: a.y + uy * inset};
+  const q = {x: b.x - ux * inset, y: b.y - uy * inset};
+  const links = Math.max(3, Math.round((len - 2 * inset) / 10));
+  const along = Math.atan2(uy, ux);
+  ctx.save();
+  for (let i = 0; i < links; i++) {
+    const k = (i + 0.5) / links;
+    const x = p.x + (q.x - p.x) * k;
+    const y = p.y + (q.y - p.y) * k;
+    // Each link an oval along the chain, every other one seen edge-on.
+    ctx.beginPath();
+    ctx.ellipse(x, y, 7, i % 2 === 0 ? 4.5 : 1.5, along, 0, Math.PI * 2);
+    ctx.strokeStyle = PALETTE.ink;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.strokeStyle = i % 2 === 0 ? PALETTE.goldLight : PALETTE.gold;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /**

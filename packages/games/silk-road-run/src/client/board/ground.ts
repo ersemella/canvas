@@ -489,6 +489,17 @@ export const SANDSTORM_BANK: BankStyle = {
 };
 
 /**
+ * The sandstorm's streaks alone, kept within their hexes: blown over the
+ * rugs of the units standing in it, so a unit in a sandstorm still reads as
+ * in one (its rug would hide the bank under it).
+ */
+export const SANDSTORM_STREAKS: BankStyle = {
+  layers: [SANDSTORM_BANK.layers[0]!],
+  fade: [0.7, 0.9],
+  fps: SANDSTORM_BANK.fps,
+};
+
+/**
  * A bank as last built: kept and redrawn as it is until it moves on a step
  * or its hexes change (`key`). `bounds` is the part of the canvas it
  * covers, in art pixels; `mask` the dithered area around its hexes, made
