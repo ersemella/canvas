@@ -36,7 +36,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   grapple: 'No one next to you to grapple.',
   leap: 'Nowhere to land.',
   lunge: 'No one in reach to lunge at.',
-  reap: 'No enemy within two spaces in a straight line.',
+  reap: 'No one in any of the six cones around you.',
   challenge: 'No enemy in range.',
 };
 

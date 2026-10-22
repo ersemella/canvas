@@ -4,6 +4,7 @@ import {
   hexDistance,
   hexEquals,
   hexKey,
+  hexNeighbor,
   hexNeighbors,
   hexToOffset,
   hexToPixel,
@@ -38,7 +39,7 @@ import {
 import {previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
 import {abilityDamage, checkEnd, displace, kill, scaled} from './resolve';
-import {reapLine} from './abilities';
+import {advanceLandings, reapCone} from './abilities';
 import {barrierOf, cleanse, setBarrier} from './board';
 import {
   RUN_FORMAT,
@@ -61,6 +62,9 @@ import {
 import type {FightState, HeroId, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
+/** `n` hexes on from `h` along direction `d`. */
+const offsetStep = (h: Hex, d: number, n: number): Hex =>
+  n === 0 ? h : offsetStep(hexNeighbor(h, d), d, n - 1);
 
 /**
  * A fight in progress with units where a test wants them: every unit not
@@ -1550,21 +1554,31 @@ describe('the Modao Vanguard', () => {
       expect(hexEquals(t.hex!, centre)).toBe(true);
   });
 
-  it('Reap thrusts two spaces in a line, through every unit on it, then pushes each card', () => {
+  it('Reap sweeps a cone: the space next to the Vanguard and the three behind it, pushing each card', () => {
     const probe = setup({}, VANGUARD);
-    // A direction from the centre with two clear spaces.
-    const dir = [0, 1, 2, 3, 4, 5].find((d) => reapLine(mapOf(probe), centre, d).length === 2)!;
-    const [near, far] = reapLine(mapOf(probe), centre, dir);
-    expect(hexDistance(far!, centre)).toBe(ABILITY.reap.reach);
+    // A direction from the centre with its whole cone clear.
+    const dir = [0, 1, 2, 3, 4, 5].find((d) => reapCone(mapOf(probe), centre, d).length === 4)!;
+    const cone = reapCone(mapOf(probe), centre, dir);
+    const [front, ...back] = cone;
+    expect(hexDistance(front!, centre)).toBe(1);
+    for (const h of back) {
+      expect(hexDistance(h, centre)).toBe(2);
+      expect(hexDistance(h, front!)).toBe(1);
+    }
     const s = setup(
-      {'p-modao': centre, 'e-bokh': near!, 'e-mangudai': far!, 'e-modao': around[(dir + 3) % 6]!},
+      {
+        'p-modao': centre,
+        'e-bokh': back[0]!,
+        'e-mangudai': back[2]!,
+        'e-modao': around[(dir + 3) % 6]!,
+      },
       VANGUARD
     );
     const v = unit(s, 'p-modao');
     const before = s.units.map((u) => ({id: u.id, hp: u.hp, slot: u.slot}));
     s.awaiting = v.id;
-    // Aimed at the far one, two spaces away: the near one is hit too.
-    applyTurn(s, v, {action: {ability: 'reap', target: {hex: far!}}});
+    // Aimed at the empty space in front: both units behind it are hit.
+    applyTurn(s, v, {action: {ability: 'reap', target: {hex: front!}}});
     for (const id of ['e-bokh', 'e-mangudai']) {
       const u = unit(s, id);
       const b = before.find((x) => x.id === id)!;
@@ -1577,17 +1591,16 @@ describe('the Modao Vanguard', () => {
     expect(behind.slot).toBe(before.find((x) => x.id === 'e-modao')!.slot);
   });
 
-  it('Reap reaches a unit two spaces away past an empty one, not past ruins', () => {
+  it('Reap is offered only toward a cone with a unit in it, and ruins in front stop the cone', () => {
     const probe = setup({}, VANGUARD);
-    const dir = [0, 1, 2, 3, 4, 5].find((d) => reapLine(mapOf(probe), centre, d).length === 2)!;
-    const [near, far] = reapLine(mapOf(probe), centre, dir);
+    const dir = [0, 1, 2, 3, 4, 5].find((d) => reapCone(mapOf(probe), centre, d).length === 4)!;
+    const [front, , far] = reapCone(mapOf(probe), centre, dir);
     const s = setup({'p-modao': centre, 'e-bokh': far!}, VANGUARD);
     const v = unit(s, 'p-modao');
-    const reaches = () =>
-      ABILITIES.reap.targets(s, mapOf(s), v, centre).some((t) => hexEquals(t.hex!, far!));
-    expect(reaches()).toBe(true);
-    s.tiles = {...s.tiles, [hexKey(near!)]: 'obstacle'};
-    expect(reaches()).toBe(false);
+    const aims = () => ABILITIES.reap.targets(s, mapOf(s), v, centre);
+    expect(aims().map((t) => t.hex)).toEqual([front]);
+    s.tiles = {...s.tiles, [hexKey(front!)]: 'obstacle'};
+    expect(aims()).toHaveLength(0);
   });
 
   it('Push yields to the next free slot, and stops at the push limit until the unit acts', () => {
@@ -1641,6 +1654,73 @@ describe('the Modao Vanguard', () => {
       expect(u.slot).toBe(before.find((x) => x.id === id)!.slot! + ABILITY.advance.push);
     }
     expect(v.slot).toBe(slotsForward(ABILITY.advance.cost, v.speed));
+  });
+
+  it('Advance charges up to three spaces in a line over free ground, then strikes around where it stops', () => {
+    const probe = setup({}, VANGUARD);
+    const map = mapOf(probe);
+    // A direction with three walkable spaces, one beyond for a target and one
+    // more for it to be knocked back onto.
+    const dir = [0, 1, 2, 3, 4, 5].find((d) =>
+      [1, 2, 3, 4, 5]
+        .map((n) => offsetStep(centre, d, n))
+        .every((h) => onMap(map, h) && tileAt(map, h) !== 'obstacle')
+    )!;
+    const end = offsetStep(centre, dir, 3);
+    const target = offsetStep(centre, dir, 4);
+    const s = setup({'p-modao': centre, 'e-bokh': target}, VANGUARD);
+    const v = unit(s, 'p-modao');
+    v.ultimateCharge = RULES.ultimateCharge;
+    const landings = advanceLandings(s, mapOf(s), v, centre);
+    expect(landings.some((h) => hexEquals(h, end))).toBe(true);
+    // Not past a unit: the Champion's own hex is no landing.
+    expect(landings.some((h) => hexEquals(h, target))).toBe(false);
+    s.awaiting = v.id;
+    applyTurn(s, v, {action: {ability: 'advance', target: {hex: end}}});
+    expect(v.hex).toEqual(end);
+    const b = unit(s, 'e-bokh');
+    expect(b.hp).toBeLessThan(b.maxHp);
+    expect(hexDistance(b.hex!, end)).toBe(2);
+    // Immobilized, it strikes only where it stands.
+    v.statuses.push({kind: 'immobilized', value: 0, untilSlot: 1000});
+    expect(advanceLandings(s, mapOf(s), v, end)).toEqual([end]);
+  });
+
+  it('Hold the Line strikes an enemy that starts next to the Vanguard and walks away', () => {
+    const away = offsetStep(centre, 0, 2);
+    const s = setup({'p-modao': centre, 'e-bokh': around[0]!}, VANGUARD);
+    const v = unit(s, 'p-modao');
+    const b = unit(s, 'e-bokh');
+    s.awaiting = b.id;
+    applyTurn(s, b, {move: [away], action: {ability: 'hold', target: {}}});
+    expect(b.hex).toEqual(away);
+    expect(b.hp).toBe(b.maxHp - defended(b, scaled(ABILITY.reap.damage, v.power)));
+    // Pushed after its card is placed by the move's cost.
+    const moveCost = RULES.moveActionCost + RULES.moveCostPerHex;
+    expect(b.slot).toBe(slotsForward(moveCost, b.speed) + ABILITY.reap.push);
+  });
+
+  it('Hold the Line spares a move that stays next to the Vanguard, and allies', () => {
+    const s = setup({'p-modao': centre, 'e-bokh': around[0]!, 'p-mangudai': around[3]!}, VANGUARD);
+    const b = unit(s, 'e-bokh');
+    s.awaiting = b.id;
+    // To another space next to the Vanguard.
+    applyTurn(s, b, {move: [around[1]!], action: {ability: 'hold', target: {}}});
+    expect(b.hp).toBe(b.maxHp);
+    const m = unit(s, 'p-mangudai');
+    s.awaiting = m.id;
+    applyTurn(s, m, {move: [offsetStep(centre, 3, 2)], action: {ability: 'hold', target: {}}});
+    expect(m.hp).toBe(m.maxHp);
+  });
+
+  it('Hold the Line strikes a Leap away, where it lands', () => {
+    const s = setup({'p-modao': centre, 'e-mangudai': around[0]!}, VANGUARD);
+    const m = unit(s, 'e-mangudai');
+    const land = offsetStep(centre, 0, 3);
+    s.awaiting = m.id;
+    applyTurn(s, m, {action: {ability: 'leap', target: {hex: land}}});
+    expect(m.hex).toEqual(land);
+    expect(m.hp).toBeLessThan(m.maxHp);
   });
 
   it('the AI can play the Vanguard: it picks a legal turn', () => {

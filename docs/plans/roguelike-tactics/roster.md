@@ -35,7 +35,7 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | 9 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
 | 10 | Mahout Bulwark | South India | The mahout, driver of the war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Displace (passive) | War elephant | Ankus (elephant goad) and spear |
 | 11 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
-| 12 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger (built 2026-10-22, playtesting): taunts an enemy and guards itself with a Barrier (Challenge), thrusts 2 hexes in a line, pushing what it hits back on the track (Reap), and drives back everyone around it (Advance, ultimate) | None | Modao (long two-handed blade) |
+| 12 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger (built 2026-10-22, playtesting): punishes enemies who walk away from it (Hold the Line, passive), taunts an enemy and guards itself with a Barrier (Challenge), sweeps a cone in front of it, pushing what it hits back on the track (Reap), and charges in to drive back everyone around it (Advance, ultimate) | None | Modao (long two-handed blade) |
 
 **Stat profiles (relative, untuned)**
 
@@ -60,9 +60,20 @@ Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gea
 
 | Ability | Cost | Effect |
 |---|---|---|
-| Challenge | Quick (60) | Taunts one unit within 3 for 14 slots; the Vanguard gains Barrier 80 for 6 slots, replacing any it has |
-| Reap | Typical (100) | A thrust along a straight line of 2 hexes, through every unit on it, stopped by ruins: base 70 damage and Push 2 to each |
-| Advance (ultimate) | Typical (100), instant | Every adjacent unit takes base 160 damage, is displaced 1 away and pushed 4 |
+| Hold the Line | Passive | An enemy that starts its turn next to the Vanguard and moves away (walking, or by its own ability: Leap, Lunge's bound) is struck as it leaves: base 70 damage, as Reap's, and Push 3 once its turn has placed its card. Each Vanguard strikes a unit once a turn |
+| Challenge | Quick (60) | Taunts one unit within 3 for 14 slots; the Vanguard gains Barrier 40 for 6 slots, replacing any it has |
+| Reap | Typical (100) | A cone in one of six directions: the hex next to the Vanguard and the three hexes behind it, through every unit in it; ruins in front stop the cone, ruins behind leave that hex out. Base 70 damage and Push 3 to each |
+| Advance (ultimate) | Typical (100), instant | A charge of up to 3 hexes in a straight line over free ground (or none), then every adjacent unit takes base 160 damage, is displaced 1 away and pushed 4 |
+
+**First playtest (owner, 2026-10-22):** the kit only felt useful against
+an enemy Vanguard; wolves and the Outrider ignored it; Reap's straight
+line of 2 was hard to land, so its Push rarely mattered; Advance had no
+good moment (it needed enemies already next to a slow hero they ignore);
+its Barrier was too high. Hold the Line makes walking away from it cost
+(chosen over an area Challenge or a longer single taunt), Reap became a
+cone with Push 3 (was a line of 2, Push 2), Advance a charge then strike
+(was a strike where it stood), Barrier 40 (was 80). Measured in
+[balance.md](balance.md#the-modao-vanguard-2026-10-22).
 
 Health Medium (420; High until 2026-10-22: its Barrier, not its health,
 keeps it alive, and +120 health measured no effect), speed Low (10, kept
@@ -125,7 +136,7 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 
 33. Hero roster. **Culture balance** (since 2026-10-17): the Yadachy Storm Caller is Turkic, a seventh hero culture sharing the Steppe region with the Mongol (the region was widened from Mongolia, 2026-10-18), so the Steppe has three heroes; Byzantium has one (the Strategos was removed; the Abbasid slot went to the Sahira Enchantress). Options: accept it, or add a second Byzantine hero (ideas: a Byzantine automaton engineer, mechanikos; an akrites-style scout; Digenis Akritas, replacing the Varangian Guard as a local damage hero). The Tang China tank slot is filled by the Modao Vanguard (2026-10-17); a Shaolin warrior monk was the earlier candidate (Sun Wukong goes to bosses instead, 15.6). Tabled 2026-10-16: a Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
-**Passives:** the Mahout Bulwark's Displace resistance is the first
-**passive**, an always-on trait rather than an action. The
-combat design has no passive abilities yet; how passives are shown
-(design language, 7.1) and whether other heroes get one is open.
+**Passives:** an always-on trait rather than an action. The Modao
+Vanguard's Hold the Line (2026-10-22) is the first built; the stat sheet
+lists it after the abilities, tappable like them. The Mahout Bulwark's
+Displace resistance is the next. Whether other heroes get one is open.

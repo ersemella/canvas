@@ -6,10 +6,19 @@
 import {hexEquals} from '@canvas/engine/server';
 import {CAMEL, HEROES, PARTY, movementRules} from './config';
 import {expireStatuses, invalidPath} from './board';
-import {ABILITIES, sameTarget, unusableReason} from './abilities';
+import {ABILITIES, holdTheLine, linesHeld, sameTarget, unusableReason} from './abilities';
 import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
 import {onlyHold} from './choices';
-import {applyHail, checkEnd, enterHex, log, damageEachSlot, record, unitName} from './resolve';
+import {
+  applyHail,
+  checkEnd,
+  enterHex,
+  log,
+  damageEachSlot,
+  push,
+  record,
+  unitName,
+} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
@@ -260,6 +269,10 @@ export function applyTurn(
   // AI's own options already obey it (trustTarget).
   const taunter = trustTarget ? undefined : taunterOf(state, unit);
   const bound = taunter !== undefined && tauntBinds(state, map, unit, taunter);
+  // Hold the Line: the hostile Vanguards next to it as the turn starts, and
+  // the Push their blows owe its card once the turn has placed it.
+  const held = linesHeld(state, unit);
+  let pushOwed = 0;
 
   const move = () => {
     if (path.length === 0 || !unit.alive) return;
@@ -267,6 +280,8 @@ export function applyTurn(
     if (bad) throw new RuleError(bad);
     // Quicksand and hail trigger on entering each hex, allies' hexes passed included.
     for (const h of path) {
+      pushOwed += holdTheLine(ctx, unit, h, held);
+      if (!unit.alive) return;
       enterHex(ctx, unit, h);
       if (!unit.alive) return;
     }
@@ -305,9 +320,12 @@ export function applyTurn(
 
   move();
   act();
+  // An ability that moved it (Leap, Lunge's bound, Advance's charge): struck where it lands.
+  if (unit.alive && unit.hex) pushOwed += holdTheLine(ctx, unit, unit.hex, held);
   state.awaiting = null;
   checkEnd(state);
   if (unit.alive) placeCard(state, unit, state.currentSlot + slotsForward(cost, unit.speed));
+  if (pushOwed > 0 && state.phase === 'fight') push(ctx, unit, pushOwed);
   if (countsTowardUltimate(input)) unit.ultimateCharge += cost;
 }
 
