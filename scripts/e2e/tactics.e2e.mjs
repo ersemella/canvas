@@ -667,7 +667,8 @@ try {
   check('a reload resumes the run exactly', JSON.stringify((await state()).view) === snapshot);
 
   // Reset run, in the menu: the first tap only arms it; the second opens the
-  // start menu, which can go back to the fight; Start there starts a fresh run.
+  // start menu, which can't go back to the fight but can go back to the Canvas
+  // home page; Start there starts a fresh run.
   const beforeReset = (await state()).runId;
   await page.getByRole('button', {name: 'Menu'}).click();
   await page.getByRole('menuitem', {name: 'Reset run'}).click();
@@ -685,12 +686,14 @@ try {
     'a reload on the start menu stays on it',
     !(await page.getByTestId('turn-controls').count())
   );
-  await page.getByRole('button', {name: 'Back to the fight'}).click();
-  await page.getByTestId('turn-controls').waitFor({timeout: 5_000});
-  check('the start menu goes back to the fight', (await state()).runId === beforeReset);
-  await page.getByRole('button', {name: 'Menu'}).click();
-  await page.getByRole('menuitem', {name: 'Reset run'}).click();
-  await page.getByRole('menuitem', {name: 'Tap again to reset'}).click();
+  check(
+    'the start menu has no way back to the fight',
+    !(await page.getByRole('button', {name: 'Back to the fight'}).count())
+  );
+  check(
+    'the start menu links back to the Canvas home page',
+    (await page.getByRole('link', {name: 'Back to Canvas'}).getAttribute('href')) === '/'
+  );
   await page.getByRole('button', {name: 'Start a fight'}).click();
   await page.waitForFunction((id) => window.__tactics.run?.runId !== id, beforeReset, {
     timeout: 15_000,

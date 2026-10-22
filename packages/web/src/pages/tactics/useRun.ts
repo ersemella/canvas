@@ -30,8 +30,9 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   /** The board is playing back what the last turn set off; the page waits for it. */
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // The start menu, over the fight (New fight, Reset run) until a new one
-  // starts; the run in progress is abandoned only then. A refresh keeps it open.
+  // The start menu, over the fight (New fight, Reset run) until a new run
+  // starts; there's no going back to the old one, which is abandoned then. A
+  // refresh keeps it open.
   const [startMenu, setStartMenuState] = useState(savedStartMenu);
   const setStartMenu = useCallback((open: boolean) => {
     setStartMenuState(open);
