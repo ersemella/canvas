@@ -287,7 +287,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
    * Abilities with nothing they may target from where the unit stands, and
    * why: disabled. Under a binding taunt that's anything that can't affect
    * the taunter, and a short note says so on the button itself, as it does
-   * for a bow in a sandstorm, since the reason is otherwise only a hover's title.
+   * for an Obscured bow, since the reason is otherwise only a hover's title.
    */
   const outOfReach = useMemo(() => {
     const out = new Map<AbilityId, {why: string; note?: string}>();
@@ -305,14 +305,14 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
               note: 'Taunted',
             }
           : def.id === 'bow' && acting.hex && obscured(fight, map, acting.hex)
-            ? {why: 'Can’t shoot out of a sandstorm.', note: 'Obscured'}
+            ? {why: 'Obscured: can’t shoot a bow.', note: 'Obscured'}
             : def.id === 'bow' &&
                 acting.hex &&
                 arrowLanes(fight, map, acting.hex).some(
                   (l) => l.hidden && l.hidden.side !== acting.side
                 )
               ? {
-                  why: 'The enemies in the bow’s lanes are in a sandstorm: arrows can’t reach them.',
+                  why: 'The enemies in the bow’s lanes are Obscured: arrows can’t reach them.',
                   note: 'Obscured',
                 }
               : {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'}
