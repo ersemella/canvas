@@ -856,12 +856,14 @@ try {
   await shot(page, 'end');
   // A won stage before the run's last offers the next; anything else, a new run.
   const nextAhead = run.view.fight.phase === 'won' && run.view.stage < run.view.stages - 1;
-  check(
-    'the result says which of the run’s stages this was',
-    (await page.getByTestId('stage').textContent()).includes(
-      `Stage ${run.view.stage + 1} of ${run.view.stages}`
-    )
-  );
+  {
+    const said = await page.getByTestId('stage').textContent();
+    check(
+      'the result says which stage this was, not how many there are',
+      said.startsWith(`Stage ${run.view.stage + 1}`) && !said.includes(' of '),
+      said
+    );
+  }
   check(
     `${nextAhead ? 'Next stage' : 'New fight'} takes the turn’s buttons’ place`,
     await page.getByRole('button', {name: nextAhead ? 'Next stage' : 'New fight'}).isVisible()
