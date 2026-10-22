@@ -802,7 +802,8 @@
 .heroPickStats {
   margin-top: auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* Two meters a row where the card has room, else one: four cards in a row are narrow. */
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
   gap: 4px 12px;
   font-size: 13px;
 }
