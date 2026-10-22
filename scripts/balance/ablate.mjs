@@ -52,7 +52,7 @@ try {
     results[name] = ablate({fights, seed, maxTurns, ...experiment});
     const r = results[name];
     console.log(
-      `${name}: ${r.modWinPct !== undefined ? `modified side wins ${r.modWinPct}%, ` : ''}` +
+      `${name}: ${r.modWinPct !== undefined ? `modified side wins ${r.modWinPct}%, ` : `player wins ${r.playerWinPct}%, `}` +
         `${r.stallPct}% unfinished, median ${r.medianTurns} actions ` +
         `(${((performance.now() - start) / 1000).toFixed(0)}s)`
     );
