@@ -105,3 +105,24 @@ modified side chooses, so that side's search also assumes the other side
 lacks it. 400 fights give about ±2.5 points of standard error on a win rate.
 The findings and the principles built on them are in
 `docs/plans/roguelike-tactics/balance.md`.
+
+## Mirror matches
+
+`mirror.mjs` checks the AI and rules for side bias: the same heroes on both
+sides, no camel, the production AI on both.
+
+```sh
+node scripts/balance/mirror.mjs --pairs 1000 --party bokh,mangudai,storm
+```
+
+Each seed is played twice, as dealt and with the board mirrored left to right
+and the sides swapped (cards keep their slots, so speed ties go to the same
+team). Each pair is exactly fair, so `playerWinPct` should be 50%; anything
+else is a bias towards a side. It doesn't measure how well the AI plays: two
+copies of a weak AI are just as even. `sameTeamWonBothPct` is the share of
+pairs one team won from both sides, i.e. decided by the setup.
+
+First run (2026-10-22, seeds 1000–1999, 2,000 fights): player side 49.8%
+(95% 47.5–52.2) of 1,730 finished; first mover 51.7%; same team won both
+70%; 13.5% unfinished at 400 actions (without the camel nothing ends a
+stall); median 45 actions.
