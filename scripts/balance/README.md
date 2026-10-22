@@ -126,3 +126,24 @@ First run (2026-10-22, seeds 1000–1999, 2,000 fights): player side 49.8%
 (95% 47.5–52.2) of 1,730 finished; first mover 51.7%; same team won both
 70%; 13.5% unfinished at 400 actions (without the camel nothing ends a
 stall); median 45 actions.
+
+### AI variants
+
+`--ai A,B` gives each team its own AI (`production`, `greedy`: no lookahead,
+the heuristic's best root action; `deep`: horizon 4 and four times the work
+cap). Each AI keeps its team across a mirrored pair, so `aWinPct` is team a's
+AI's share of wins on fair setups; a better AI should win more than 50%.
+
+First runs (2026-10-22, seeds 1000–1499, 1,000 fights each, bokh, mangudai,
+storm):
+
+| Team a vs team b | Team a wins, finished fights (95%) | Unfinished |
+| --- | ---: | ---: |
+| production vs greedy | 60.1% (56.9–63.3) of 893 | 10.7% |
+| production vs deep | 40.6% (37.3–43.9) of 863 | 13.7% |
+
+Lookahead pays at both steps: production beats greedy and deep beats
+production by about the same margin, so deeper search on this evaluation
+keeps finding better moves rather than chasing its errors. The deep variant
+costs about four times the CPU of production, past the Worker's budget
+(ai-search.md).
