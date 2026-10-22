@@ -10,6 +10,8 @@ the rest is **Proposed**: the numbers are the owner's to set
 > Numbers are in `packages/games/silk-road-run/src/rules/config.ts`;
 > the stat and keyword rules are in [heroes-and-gear.md](heroes-and-gear.md)
 > and [keywords.md](keywords.md); the track is [timeline.md](timeline.md).
+> The Bökh Champion's Pin was renamed Grapple (owner, 2026-10-22); the
+> measurements below keep the name they were taken under.
 
 ## Summary
 

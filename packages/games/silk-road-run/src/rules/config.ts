@@ -117,7 +117,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 25,
     defence: 25,
     power: 10,
-    abilities: ['throw', 'pin', 'lunge', 'hold'],
+    abilities: ['throw', 'grapple', 'lunge', 'hold'],
     ultimate: 'lunge',
   },
   mangudai: {
@@ -257,25 +257,25 @@ export const ABILITY = {
   throw: {cost: RULES.cost.typical, damage: 80},
   /**
    * The target is also Crushed, taking base `damagePerSlot` every slot while
-   * pinned, scaled by power, through Vulnerable and defence, and Taunted by
+   * grappled, scaled by power, through Vulnerable and defence, and Taunted by
    * the Champion (17.5). No Vulnerable (owner, 2026-10-20; was 25%). The
-   * Champion isn't Immobilized itself (owner, 2026-10-20; it was): the pin
+   * Champion isn't Immobilized itself (owner, 2026-10-20; it was): the grapple
    * holds while the two stay adjacent, so the Champion moving away releases
    * the target, as a wrestler would.
    * Melee only, Crushed 10 (owner, 2026-10-22; it could step one hex first
    * from 2026-10-21, and Crushed was 6 from 2026-10-20, 8 before). Over 400
-   * AI-vs-AI fights a side without Pin won 50.0% with the step, 50.4%
+   * AI-vs-AI fights a side without Grapple won 50.0% with the step, 50.4%
    * without it, 49.4% at quick cost and 46.7% at Crushed 10 (balance.md).
    */
-  pin: {cost: RULES.cost.typical, slots: 12, damagePerSlot: 10},
+  grapple: {cost: RULES.cost.typical, slots: 12, damagePerSlot: 10},
   /**
    * The Bökh Champion's ultimate (owner, 2026-10-22; replaced Rampage,
    * typical cost, 3 hexes, damage 160, Displace 1): a unit within `reach`,
-   * after a bound of up to `reach - 1` hexes, takes `damage` and is pinned
-   * as by Pin. Over 400 AI-vs-AI fights a side without Rampage won 44.8%;
+   * after a bound of up to `reach - 1` hexes, takes `damage` and is grappled
+   * as by Grapple. Over 400 AI-vs-AI fights a side without Rampage won 44.8%;
    * without a Lunge of reach 3, no damage and Vulnerable 50%, 46.4%; of
-   * reach 2 with damage 100, 44.9%. As built, with Pin melee only at
-   * Crushed 10: 46.3% without Lunge, 44.9% without Pin (balance.md).
+   * reach 2 with damage 100, 44.9%. As built, with Grapple melee only at
+   * Crushed 10: 46.3% without Lunge, 44.9% without Grapple (balance.md).
    */
   lunge: {cost: RULES.cost.typical, reach: 3, damage: 100},
   /** The wolf's one attack (owner, 2026-10-21). Damage PLACEHOLDER: 150 at its power. */
