@@ -212,11 +212,16 @@
   opacity: 0.6;
 }
 
-/* Desktop: Confirm on the board, under the hex picked last. */
+/*
+ * Desktop: Confirm on the board, under the hex picked last. Centred with
+ * `translate`, not `transform`, which a pressed Mantine button sets to its
+ * nudge: that dropped the centring mid-click, so a press on the left half
+ * let go over the board and never clicked.
+ */
 .boardConfirm.boardConfirm {
   position: absolute;
   z-index: 2;
-  transform: translateX(-50%);
+  translate: -50% 0;
   padding: 0 12px;
 }
 

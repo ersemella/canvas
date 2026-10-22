@@ -234,11 +234,32 @@ page.on('pageerror', (e) => {
 });
 
 /** Clicks a hex on the board canvas, scaled from the 672×760 scene to the canvas on screen. */
-async function tapHex(hex) {
+/** Where a hex's centre is on the screen. */
+async function hexPoint(hex) {
   const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
   const box = await page.locator('canvas').boundingBox();
-  await page.mouse.click(box.x + (x * box.width) / 672, box.y + (y * box.height) / SCENE_H);
+  return {x: box.x + (x * box.width) / 672, y: box.y + (y * box.height) / SCENE_H};
+}
+async function tapHex(hex) {
+  const {x, y} = await hexPoint(hex);
+  await page.mouse.click(x, y);
   await sleep(150);
+}
+/**
+ * Taps the first of `hexes` that nothing covers, for a tap meant only to
+ * look: the board's Confirm sits under the hex picked last, so on a covered
+ * hex the tap would press it and commit the turn.
+ */
+async function tapUncovered(...hexes) {
+  for (const hex of hexes) {
+    const point = await hexPoint(hex);
+    const bare = await page.evaluate(
+      ({x, y}) => document.elementFromPoint(x, y)?.tagName === 'CANVAS',
+      point
+    );
+    if (bare) return tapHex(hex);
+  }
+  throw new Error(`every hex to tap is covered: ${JSON.stringify(hexes)}`);
 }
 const state = () => page.evaluate(() => window.__tactics?.run);
 const waitIdle = () =>
@@ -334,6 +355,29 @@ try {
       'desktop: the choices show their keys',
       (await camelMove.getAttribute('data-key')) === '1' &&
         (await page.getByTestId('skip-turn').getAttribute('data-key')) === 'S'
+    );
+    // Pressed, the board's Confirm stays where it is, so a click anywhere on
+    // it lands (pressing once dropped its centring, and a press on its left
+    // half let go over the board). Let go off it: Enter confirms below.
+    const confirmBox = await page.getByTestId('board-confirm').boundingBox();
+    const press = {x: confirmBox.x + 8, y: confirmBox.y + confirmBox.height / 2};
+    await page.mouse.move(press.x, press.y);
+    await page.mouse.down();
+    const pressedBox = await page.getByTestId('board-confirm').boundingBox();
+    const underPress = await page.evaluate(
+      ({x, y}) => document.elementFromPoint(x, y)?.closest('[data-testid]')?.dataset.testid,
+      press
+    );
+    await page.mouse.move(press.x, confirmBox.y + confirmBox.height + 200);
+    await page.mouse.up();
+    // Pressing focused it; Enter below is the page's, not the button's.
+    await page.evaluate(() => document.activeElement?.blur());
+    check(
+      'desktop: the board’s Confirm stays under the pointer while pressed, at its left edge too',
+      underPress === 'board-confirm' &&
+        Math.abs(pressedBox.x - confirmBox.x) < 2 &&
+        (await state()).view.version === run.view.version,
+      {underPress, confirmBox, pressedBox}
     );
     const v = run.view.version;
     await page.keyboard.press('Enter');
@@ -518,8 +562,12 @@ try {
     (await skip.textContent()) === 'Tap again to skip' && (await state()).view.version === before,
     await skip.textContent()
   );
-  // A tap anywhere else disarms it (here, on the board).
-  await tapHex(acting.hex);
+  // A tap anywhere else disarms it (here, on the board: the unit, or an
+  // enemy if the board's Confirm covers the unit).
+  const enemyHexes = (await state()).view.fight.units
+    .filter((u) => u.side === 'enemy' && u.alive)
+    .map((u) => u.hex);
+  await tapUncovered(acting.hex, ...enemyHexes);
   check(
     'a tap elsewhere disarms Skip turn',
     /^Skip turn/.test(await skip.textContent()) && (await state()).view.version === before,
@@ -543,7 +591,7 @@ try {
     'desktop: S arms Skip turn',
     (await page.keyboard.press('s'), await skip.textContent()) === 'Tap again to skip'
   );
-  await tapHex(acting.hex); // disarm it again
+  await tapUncovered(acting.hex, ...enemyHexes); // disarm it again
   await sleep(200);
   await shot(page, 'preview');
   // A second click on the destination commits the move.
