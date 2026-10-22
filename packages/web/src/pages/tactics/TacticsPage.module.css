@@ -140,6 +140,8 @@
 .page {
   min-height: 100dvh;
   background: #000;
+  /* No double-tap zoom (a quick second tap on Start or a turn button zoomed the phone in). */
+  touch-action: manipulation;
 }
 
 /* Desktop: the slot is just the board. */
@@ -153,6 +155,12 @@
 }
 .board :global(canvas) {
   width: 100%;
+  /*
+   * The board only takes taps, so the browser keeps pinch zoom on it: a page
+   * zoomed in some other way can be pinched back out, where the canvas's
+   * usual `none` left the board filling the screen with no way out.
+   */
+  touch-action: manipulation;
 }
 
 /*

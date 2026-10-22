@@ -933,6 +933,16 @@ try {
     !(await phone.getByText(/^Your turn:|Tap a hex to look/).count())
   );
   check('phone: no top bar', (await phone.locator('header').count()) === 0);
+  // No double-tap zoom, and the board left pinchable, so a zoomed-in page can be pinched back out.
+  check(
+    'phone: double-tap zoom off, pinch zoom kept on the board',
+    await phone.evaluate(
+      () =>
+        getComputedStyle(document.querySelector('canvas')).touchAction === 'manipulation' &&
+        getComputedStyle(document.querySelector('[data-choice="move"]')).touchAction ===
+          'manipulation'
+    )
+  );
   // Whose turn it is: the unit's portrait before Skip turn (no arrow on the board).
   {
     const portrait = phone.getByTestId('turn-portrait');
