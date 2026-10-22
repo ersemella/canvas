@@ -126,7 +126,7 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   },
   obscured: {
     name: 'Obscured',
-    detail: 'A bow can’t target it, or anyone past it, and it can’t shoot a bow.',
+    detail: 'Targeted ranged attacks can’t target it, or anyone past it, and it can’t make one.',
   },
   cleanse: {name: 'Cleanse', detail: 'Removes harmful statuses from abilities.'},
 };
