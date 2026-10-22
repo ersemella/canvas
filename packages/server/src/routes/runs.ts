@@ -13,7 +13,7 @@ import {runSystemRegistry} from '../games/registry';
  *   GET  /runs/active                      -> {activeRunId} for this key
  *   GET  /runs/:id                         -> the current view (resume after a reload)
  *   POST /runs/:id/turn       {move?, action, actFirst?} -> one turn, then AI turns up to yours
- *   POST /runs/:id/next                    -> on to the run's next fight, once this one is won
+ *   POST /runs/:id/next                    -> on to the run's next stage, once this one is won
  *   POST /runs/:id/abandon                 -> give up the run
  */
 export async function handleRunsRoute(request: Request, env: Env, url: URL): Promise<Response> {

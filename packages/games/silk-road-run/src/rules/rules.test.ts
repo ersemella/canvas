@@ -1053,15 +1053,15 @@ describe('previews, the AI and the run', () => {
       });
       firsts.add(stageEnemies(seed, 0)[0]!);
     }
-    // Random: every hero leads the first fight for some seed.
+    // Random: every hero leads the first stage for some seed.
     expect(firsts.size).toBe(PARTY.length);
   });
 
-  it('winning a fight before the last goes on to the next, with the survivors', () => {
+  it('winning a stage before the last goes on to the next, with the survivors', () => {
     const run = createRun(5);
     expect(runView(run)).toMatchObject({stage: 0, stages: STAGES.length});
     expect(() => handleRunAction(run, {type: 'next'})).toThrow(RuleError);
-    // Win the first fight with the Outrider fallen.
+    // Win the first stage with the Outrider fallen.
     const won = {...run, fight: cloneFight(run.fight)};
     won.fight.phase = 'won';
     const m = won.fight.units.find((u) => u.id === 'p-mangudai')!;
@@ -1080,14 +1080,14 @@ describe('previews, the AI and the run', () => {
     expect(next.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
       stageEnemies(5, 1)
     );
-    // A new fight: everyone at full health, on the board.
+    // A new stage: everyone at full health, on the board.
     expect(next.fight.units.every((u) => u.hp === u.maxHp && u.hex)).toBe(true);
-    // The last fight won is the run won; there is no next.
+    // The last stage won is the run won; there is no next.
     const last = {...next, stage: STAGES.length - 1, fight: cloneFight(next.fight)};
     last.fight.phase = 'won';
     expect(runStatus(last)).toBe('won');
     expect(() => handleRunAction(last, {type: 'next'})).toThrow(RuleError);
-    // A lost fight loses the run, whatever its stage.
+    // A lost stage loses the run, whatever its number.
     expect(runStatus({...run, fight: {...run.fight, phase: 'lost'}})).toBe('lost');
   });
 

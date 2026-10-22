@@ -174,5 +174,5 @@ export interface TurnInput {
   actFirst?: boolean;
 }
 
-/** A turn in the fight, or, once a fight short of the last is won, going on to the next. */
+/** A turn in the fight, or, once a stage short of the last is won, going on to the next stage. */
 export type RunAction = ({type: 'turn'} & TurnInput) | {type: 'next'};
