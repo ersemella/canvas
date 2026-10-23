@@ -97,23 +97,12 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
    * Grapple's options on a unit: striking it from where the Champion
    * stands, and the hexes it may step in to first (2026-10-22).
    */
-  const fromHere = useCallback(
-    (h: Hex) => targets.some((t) => !t.to && t.hex && hexEquals(t.hex, h)),
-    [targets]
-  );
-  const stepOptions = useCallback(
-    (h: Hex) => targets.filter((t) => t.to && t.hex && hexEquals(t.hex, h)),
-    [targets]
-  );
-
   /** The action with its target chosen, ready to preview. */
   const action = useMemo(() => {
     if (!ability || !target) return null;
     if (ability === 'throw' && !target.to) return null;
-    // A unit Grapple can't reach from here needs its step picked.
-    if (ABILITIES[ability].stepsIn && !target.to && !fromHere(target.hex!)) return null;
     return {ability, target};
-  }, [ability, target, fromHere]);
+  }, [ability, target]);
 
   /** What Move or the chosen ability still needs picked on the board: its button says so. */
   const needsTarget =
@@ -122,9 +111,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       : ability && !action
         ? ability === 'throw' && target?.hex
           ? 'Pick where to throw'
-          : ability === 'grapple' && target?.hex
-            ? 'Pick where to step'
-            : 'Pick a target'
+          : 'Pick a target'
         : null;
 
   /** The picked turn, once its hex or target is: the picked button confirms it. */
@@ -147,7 +134,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     [fight, acting]
   );
 
-  /** The hex picked last: the destination, the target, or Throw's landing or Grapple's step. */
+  /** The hex picked last: the destination, the target, or Throw's landing. */
   const lastPicked = plannedMove?.hex ?? target?.to ?? target?.hex ?? null;
 
   const clearMove = useCallback(() => pick({plannedMove: null, moving: false}), [pick]);
@@ -183,8 +170,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   }, [moving, plannedMove, clearMove, pick]);
 
   /**
-   * A tap on `h` that plans the turn: a hex to move to, a target, Throw's
-   * landing or Grapple's step (or un-picks one tapped again). False when the
+   * A tap on `h` that plans the turn: a hex to move to, a target or Throw's
+   * landing (or un-picks one tapped again). False when the
    * tap plans nothing, and the page looks at the hex instead.
    */
   const planTap = useCallback(
@@ -198,8 +185,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (!ability) return false;
-      if ((ability === 'throw' || ABILITIES[ability].stepsIn) && target?.hex) {
-        // Throw's landing, or the hex Grapple steps in to first.
+      if (ability === 'throw' && target?.hex) {
+        // Throw's landing.
         const second = targets.find(
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
         );
@@ -209,43 +196,16 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
           else pick({target: {hex: target.hex}});
           return true;
         }
-        // Tapping the Champion drops the step, if it can strike from where it stands.
-        if (
-          ABILITIES[ability].stepsIn &&
-          target.to &&
-          acting.hex &&
-          hexEquals(acting.hex, h) &&
-          fromHere(target.hex)
-        ) {
-          chooseTarget({hex: target.hex});
-          return true;
-        }
       }
       const match = targets.find((t) => t.hex && hexEquals(t.hex, h));
       if (!match) return false;
       // Tapping the chosen target again un-picks it (the button confirms).
       if (target?.hex && hexEquals(target.hex, h)) pick({target: null});
       else if (ability === 'throw') chooseTarget({hex: h});
-      else if (ABILITIES[ability].stepsIn) {
-        // From here if it can; otherwise its only landing, or a landing still to pick.
-        const steps = stepOptions(h);
-        chooseTarget(!fromHere(h) && steps.length === 1 ? steps[0]! : {hex: h});
-      } else chooseTarget(match);
+      else chooseTarget(match);
       return true;
     },
-    [
-      acting,
-      moveMode,
-      reaches,
-      plannedMove,
-      ability,
-      target,
-      targets,
-      chooseTarget,
-      fromHere,
-      stepOptions,
-      pick,
-    ]
+    [acting, moveMode, reaches, plannedMove, ability, target, targets, chooseTarget, pick]
   );
 
   /**
@@ -294,8 +254,6 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     moveMode,
     hoverReach,
     targets,
-    fromHere,
-    stepOptions,
     needsTarget,
     input,
     preview,

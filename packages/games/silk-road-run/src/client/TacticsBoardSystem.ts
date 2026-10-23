@@ -325,12 +325,9 @@ export class TacticsBoardSystem extends BaseSystem {
 
     const acting = fight.awaiting;
     // A unit's border covers its hex's outline, so a targeted unit rings itself.
-    const targeted = new Map<string, 'target' | 'reach' | 'chosen'>();
+    const targeted = new Map<string, 'target' | 'chosen'>();
     for (const h of scene.highlights)
-      if (
-        h.kind === 'chosen' ||
-        ((h.kind === 'target' || h.kind === 'reach') && !targeted.has(hexKey(h.hex)))
-      )
+      if (h.kind === 'chosen' || (h.kind === 'target' && !targeted.has(hexKey(h.hex))))
         targeted.set(hexKey(h.hex), h.kind);
     for (const u of fight.units) {
       const hex = u.hex;

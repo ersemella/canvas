@@ -4,16 +4,10 @@
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
-import {
-  hexDistance,
-  hexEquals,
-  hexNeighbor,
-  hexNeighbors,
-  hexesInRange,
-} from '@canvas/engine/server';
+import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES} from './config';
-import {isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
+import {onMap, sortByHex, unitAt, walkable} from './board';
 import {endGrapples, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
@@ -45,11 +39,6 @@ export interface AbilityDef {
   radius?: number;
   /** One line for the side panel, with its damage (the user's power). Range is left out. */
   summary(user: Unit): string;
-  /**
-   * Its user may step in next to a unit first (Grapple's step): a target
-   * with `to` is the hex it steps to, picked second.
-   */
-  stepsIn?: boolean;
   /**
    * Aimed at a unit (melee, and the bow), not at a hex: with no unit to aim
    * at, the page disables it. Ground-targeted abilities can be aimed at an
@@ -209,17 +198,12 @@ const grapple: AbilityDef = {
   id: 'grapple',
   name: 'Grapple',
   kind: 'attack',
-  range: ABILITY.grapple.range,
   summary: (user) =>
-    `Step in next to a unit within ${ABILITY.grapple.range} spaces: it takes ${damageText(user)} and is Stunned until you take damage, are Stunned or are no longer next to it. One at a time.`,
-  stepsIn: true,
+    `Melee: it takes ${damageText(user)} and is Stunned until you take damage, are Stunned or are no longer next to it. One at a time.`,
   targetsUnit: true,
-  targets: (state, map, user, from) => stepInTargets(state, map, user, from, ABILITY.grapple.range),
+  // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before).
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
-    if (target.to) {
-      enterHex(ctx, user, target.to);
-      if (!user.alive) return;
-    }
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} grapples ${unitName(u)}.`);
     hit(ctx, user, u, 'The grapple');
@@ -230,63 +214,6 @@ const grapple: AbilityDef = {
       stun(ctx, u, {kind: 'stunned', grapple: {champion: user.id, target: u.id}});
   },
 };
-
-/**
- * Targets for Grapple: every unit next to `from`, then every unit within
- * `reach`, once for each free space beside it the user can get to in
- * `reach - 1` steps (`to`). Immobilized, only the first.
- */
-function stepInTargets(
-  state: FightState,
-  map: MapData,
-  user: Unit,
-  from: Hex,
-  reach: number
-): ActionTarget[] {
-  const out = adjacentUnits(state, from, (u) => u !== user);
-  if (isImmobilized(user)) return out;
-  const far = state.units.filter(
-    (u) =>
-      u.alive &&
-      u.hex &&
-      u !== user &&
-      hexDistance(u.hex, from) > 1 &&
-      hexDistance(u.hex, from) <= reach
-  );
-  for (const u of sortByHex(far, (x) => x.hex!))
-    for (const to of stepLandings(state, map, from, u.hex!, reach)) out.push({hex: u.hex!, to});
-  return out;
-}
-
-/**
- * The free walkable spaces a step in may end on, beside `target`: at most
- * `reach - 1` steps from `from`, each onto a free walkable space, as
- * walking is blocked.
- */
-function stepLandings(
-  state: FightState,
-  map: MapData,
-  from: Hex,
-  target: Hex,
-  reach: number
-): Hex[] {
-  const seen = new Set<string>([`${from.q},${from.r}`]);
-  const out: Hex[] = [];
-  let frontier = [from];
-  for (let step = 1; step < reach; step++) {
-    const next: Hex[] = [];
-    for (const f of frontier)
-      for (const h of hexNeighbors(f)) {
-        const k = `${h.q},${h.r}`;
-        if (seen.has(k) || !walkable(map, h) || unitAt(state, h)) continue;
-        seen.add(k);
-        next.push(h);
-        if (hexDistance(h, target) === 1) out.push(h);
-      }
-    frontier = next;
-  }
-  return sortByHex(out, (h) => h);
-}
 
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 

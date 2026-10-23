@@ -63,7 +63,7 @@ also has Hold.
 
 | Hero | Speed | Defence | Power | Health | Ability | Effect |
 |---|---|---|---|---|---|---|
-| Bökh Champion | 2 | 3 | 1 | 8 | Grapple | A unit within 2 spaces: the Champion steps in to a free space next to it first if it isn't already next to it (not while Immobilized). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved). One target at a time: a new grapple lets the last go. |
+| Bökh Champion | 2 | 3 | 1 | 8 | Grapple | **Melee**: a unit next to the Champion (owner, 2026-10-23; until then it reached 2 spaces, stepping in first). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved). One target at a time: a new grapple lets the last go. |
 | | | | | | Throw | Only the unit it grapples: **Moves** it to a free space next to the Champion, then it takes 1 damage. The grapple holds (owner, 2026-10-23). |
 | Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |
 | Yadachy Storm Caller | 2 | 2 | 0 | 6 | Hail | One space within 3 (not ruins). It stays until the Storm Caller's next turn begins (or it falls). A unit in the space when it lands, or that enters it (walking, which stops there, or Moved), is **Immobilized** until the hail disappears. Its damage is the Storm Caller's power, 0. |

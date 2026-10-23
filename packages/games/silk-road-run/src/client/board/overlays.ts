@@ -20,9 +20,7 @@ export const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   path: targeting(0.25, 0.8),
   /** Hexes an ability can target, or a move can end on: outlined solid, so it shows over a unit's tint. */
   target: targeting(0.14, 0.9),
-  /** A unit an ability reaches only after a step (Lunge's bound): dashed, as the step's hexes are. */
-  reach: {...targeting(0.08, 0.9), dash: [6, 4]},
-  /** An ability's second pick, once its target is (Throw's landing, Lunge's bound): dashed, so it never reads as a target. */
+  /** An ability's second pick, once its target is (Throw's landing): dashed, so it never reads as a target. */
   landing: {...targeting(0.08, 1), dash: [6, 4]},
   /** The whole area an aimed ability strikes, around its target. */
   area: targeting(0.42, 1),

@@ -39,7 +39,8 @@ the kits.**
   Immobilized, Stunned and Move are built.
 - **The kits** ([roster.md](roster.md)): the Bow, unchanged in shape; Hail,
   one space within 3 until the Storm Caller's next turn, Immobilizing
-  whoever is in it or enters it; Grapple (reach 2, stepping in), Stunning
+  whoever is in it or enters it; Grapple (melee; reach 2, stepping in, until
+  the owner's call of 2026-10-23), Stunning
   its target until the Champion takes damage, is Stunned or is no longer
   next to it; Throw, Moving the grappled unit to a space next to the
   Champion, so the grapple holds.

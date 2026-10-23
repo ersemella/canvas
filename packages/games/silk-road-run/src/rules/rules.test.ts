@@ -579,31 +579,17 @@ describe('abilities', () => {
     expect(target.statuses).toEqual([]);
   });
 
-  it('Grapple reaches a unit up to two spaces away, stepping in next to it first', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(4, 1), 'e-bokh': at(8, 6)});
+  it('Grapple is melee: only a unit next to the Champion, with no step in', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(3, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
+    // Two spaces away is out of reach.
     expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
-    target.hex = at(3, 1);
-    const targets = ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!);
-    // Only with a step: to a free hex next to both.
-    expect(targets.length).toBeGreaterThan(0);
-    for (const t of targets) {
-      expect(t.hex).toEqual(at(3, 1));
-      expect(hexDistance(t.to!, b.hex!)).toBe(1);
-      expect(hexDistance(t.to!, at(3, 1))).toBe(1);
-    }
-    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(3, 1), to: at(2, 1)}}});
-    expect(b.hex).toEqual(at(2, 1));
-    expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
-    // Next to it, it grapples where it stands; Immobilized, only that.
-    target.statuses = [];
     target.hex = at(2, 1);
-    b.hex = at(1, 1);
-    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toContainEqual({hex: at(2, 1)});
-    b.statuses = [{kind: 'immobilized'}];
-    target.hex = at(3, 1);
-    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+    expect(b.hex).toEqual(at(1, 1));
+    expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
   it('Grapple holds one target at a time: a new grapple lets the last go', () => {

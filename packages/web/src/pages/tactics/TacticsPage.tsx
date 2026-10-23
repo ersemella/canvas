@@ -255,7 +255,7 @@ export function TacticsPage() {
     ? ((inspectHex ? inspectedUnit?.id : (selectedId ?? acting?.id)) ?? null)
     : null;
 
-  const {target, moveMode, hoverReach, fromHere, stepOptions} = plan;
+  const {target, moveMode, hoverReach} = plan;
   const scene: BoardScene = useMemo(
     () =>
       buildScene({
@@ -274,8 +274,6 @@ export function TacticsPage() {
         plannedMove,
         hoverReach,
         reaches,
-        fromHere,
-        stepOptions,
       }),
     [
       fight,
@@ -293,8 +291,6 @@ export function TacticsPage() {
       plannedMove,
       hoverReach,
       reaches,
-      fromHere,
-      stepOptions,
     ]
   );
 

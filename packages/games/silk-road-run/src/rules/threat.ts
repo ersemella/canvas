@@ -7,7 +7,7 @@
  * board blocking arrows (the acting unit aside, since it is the one moving).
  */
 import {ABILITY, HEROES} from './config';
-import {hostile, isImmobilized, isStunned} from './board';
+import {hostile, isStunned} from './board';
 import {tileAt} from './map';
 import type {MapData} from './map';
 import type {AbilityId, FightState, Unit} from './types';
@@ -57,14 +57,8 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     out.push({enemyId: e.id, hexes});
     const has = (a: AbilityId) => HEROES[e.hero].abilities.includes(a);
     const {q: fq, r: fr} = e.hex;
-    if (has('bite')) for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), e.power);
-    // Grapple steps in first: every hex within its range, or next to it when Immobilized.
-    if (has('grapple')) {
-      const reach = isImmobilized(e) ? 1 : ABILITY.grapple.range;
-      for (let dq = -reach; dq <= reach; dq++)
-        for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
-          if (dq || dr) mark(hexes, id(fq + dq, fr + dr), e.power);
-    }
+    if (has('bite') || has('grapple'))
+      for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), e.power);
     if (has('bow')) {
       for (const [dq, dr] of AXIAL) {
         for (let i = 1; i <= ABILITY.bow.range; i++) {

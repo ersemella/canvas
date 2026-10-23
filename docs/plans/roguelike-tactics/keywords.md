@@ -83,7 +83,7 @@ between its own turns.
 | **Push N** | Displaces the unit N spaces directly away from the source (along the hex direction from the source to the unit; for an area, away from its centre). |
 | **Pull N** | Displaces the unit N spaces directly toward the source. Ending next to the source is not a collision. |
 | **Move** | Displaces the unit to a space the ability states (Throw: a free space next to the Champion). |
-| **Immobilized** | The unit can't move to a different space by itself: no walking on its turn, and no ability that moves it (Grapple's step in). It **still acts** with any ability that doesn't move it, and it **can still be Pushed, Pulled or Moved** by others. |
+| **Immobilized** | The unit can't move to a different space by itself: no walking on its turn, and no ability that moves it (none does since Grapple became melee, 2026-10-23). It **still acts** with any ability that doesn't move it, and it **can still be Pushed, Pulled or Moved** by others. |
 | **Unstoppable** | The unit can't be Pushed, Pulled or Immobilized, by allies or enemies. (Whether it can be Moved is open question 54.) |
 
 - **Displacement is instant:** it resolves completely when the ability

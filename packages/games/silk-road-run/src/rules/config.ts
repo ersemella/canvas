@@ -133,12 +133,6 @@ export const ABILITY = {
    * until it disappears.
    */
   hail: {range: 3},
-  /**
-   * A unit within `range`: the Champion steps in next to it first if it
-   * isn't already (owner, 2026-10-22). The target is Stunned until the
-   * grapple ends (owner, 2026-10-23).
-   */
-  grapple: {range: 2},
 } as const;
 
 /** Enemy AI scoring (brief section 6), on the 2026-10-23 health scale (a hit is 1 or 2). */

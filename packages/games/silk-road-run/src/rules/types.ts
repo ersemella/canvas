@@ -71,7 +71,7 @@ export interface LogEntry {
   text: string;
 }
 
-/** How a unit came to enter a hex: walked (a Grapple's step in included) or thrown. */
+/** How a unit came to enter a hex: walked or thrown. */
 export type Motion = 'walk' | 'throw';
 
 /** Something that happened on the board, in the order the rules resolved it. */

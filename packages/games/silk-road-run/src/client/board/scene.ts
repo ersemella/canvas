@@ -4,7 +4,7 @@
 import type {Hex} from '@canvas/engine';
 import type {FightState} from '../../rules/types';
 
-export type HighlightKind = 'path' | 'target' | 'reach' | 'landing' | 'chosen' | 'area';
+export type HighlightKind = 'path' | 'target' | 'landing' | 'chosen' | 'area';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {
@@ -27,8 +27,7 @@ export interface BoardScene {
    */
   lanes?: {from: Hex; lanes: BowLane[]};
   /**
-   * A one-space move the aimed ability makes (Grapple's step in, the unit
-   * Throw moves): a move's arrow, drawn over the units, since the moving
+   * The one-space move Throw makes its unit: a move's arrow, drawn over the units, since the moving
    * unit's ghost would hide it under them.
    */
   step?: [Hex, Hex];

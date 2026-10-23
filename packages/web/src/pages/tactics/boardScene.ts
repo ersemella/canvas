@@ -42,14 +42,11 @@ export interface SceneInput {
   plannedMove: Reach | null;
   hoverReach: Reach | undefined;
   reaches: Reach[];
-  fromHere: (h: Hex) => boolean;
-  stepOptions: (h: Hex) => ActionTarget[];
 }
 
 export function buildScene(input: SceneInput): BoardScene {
   const {fight, acting, phone, selectedId, featuredId, hoverHex, preview} = input;
   const {ability, target, targets, moving, moveMode, plannedMove, hoverReach, reaches} = input;
-  const {fromHere, stepOptions} = input;
   const highlights: {hex: Hex; kind: HighlightKind}[] = [];
   const out: BoardScene = {
     fight,
@@ -122,44 +119,25 @@ export function buildScene(input: SceneInput): BoardScene {
         })),
       };
     // Only what it may target; once Throw's target is picked, where it can
-    // land; once Grapple's is, the hexes it may step in to first as well.
-    // Those second picks are dashed, as is a unit Grapple reaches only after
-    // a step, so they never read as more targets.
+    // land, dashed so it never reads as more targets.
     const shown = new Set<string>();
     const throwing = ability === 'throw' && target?.hex;
-    const stepping = ABILITIES[ability].stepsIn && target?.hex;
     for (const t of targets) {
-      const at = throwing ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
-      const step = stepping && t.to && hexEquals(t.hex!, target!.hex!) ? t.to : undefined;
-      for (const h of [at, step]) {
-        if (!h || shown.has(hexKey(h))) continue;
-        shown.add(hexKey(h));
-        const kind =
-          throwing || h === step
-            ? 'landing'
-            : ABILITIES[ability].stepsIn && !fromHere(h)
-              ? 'reach'
-              : 'target';
-        highlights.push({hex: h, kind});
-      }
+      const h = throwing ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
+      if (!h || shown.has(hexKey(h))) continue;
+      shown.add(hexKey(h));
+      highlights.push({hex: h, kind: throwing ? 'landing' : 'target'});
     }
-    // Where the second pick goes: the one hovered, else the one picked.
-    // Before Grapple's target is, a hovered unit it reaches by a single step.
+    // Where the thrown unit lands: the landing hovered, else the one picked,
+    // drawn as a move's.
     const hovered = hoverHex;
-    const hoveredSecond =
+    const hoveredLanding =
       hovered && target?.hex
         ? targets.find((t) => t.to && hexEquals(t.hex!, target.hex!) && hexEquals(t.to, hovered))
             ?.to
         : undefined;
-    let second = hoveredSecond ?? target?.to;
-    if (!second && !target && ABILITIES[ability].stepsIn && hovered && !fromHere(hovered)) {
-      const steps = stepOptions(hovered);
-      if (steps.length === 1) second = steps[0]!.to;
-    }
-    // Throw: the unit thrown to where it lands; Grapple: the Champion's step
-    // in. Each drawn as a move's.
-    if (ability === 'throw' && target?.hex && second) out.step = [target.hex, second];
-    if (ABILITIES[ability].stepsIn && second && from) out.step = [from, second];
+    const landing = hoveredLanding ?? target?.to;
+    if (throwing && landing) out.step = [target.hex!, landing];
     if (target?.hex) {
       // An area ability: highlight the area around the chosen hex (none since Hail covers one space).
       const radius = ABILITIES[ability].radius;

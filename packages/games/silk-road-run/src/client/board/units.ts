@@ -154,9 +154,9 @@ export function drawUnit(
     alpha?: number;
     /**
      * An ability being aimed can target it (or has): a light blue ring
-     * inside its border, dashed when it's reached only after a step.
+     * inside its border.
      */
-    targeted?: 'target' | 'reach' | 'chosen' | undefined;
+    targeted?: 'target' | 'chosen' | undefined;
   }
 ): void {
   const c = opts.at ?? center(hex);
@@ -185,9 +185,7 @@ export function drawUnit(
       ctx.stroke();
       ctx.strokeStyle = PALETTE.lapisLight;
       ctx.lineWidth = width;
-      if (opts.targeted === 'reach') ctx.setLineDash([6, 4]);
       ctx.stroke();
-      ctx.setLineDash([]);
     }
   }
   const sprite = HERO_SPRITE[u.hero];

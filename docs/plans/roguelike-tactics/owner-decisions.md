@@ -91,6 +91,8 @@ picked the reading below. Confirm or change each:
 - **Immobilized still lets others displace the unit** (the 2026-10-19
   rule kept), and **Stunned has no lockout guard** (keywords.md, open
   questions 54 and 56).
+- **Grapple is melee** (owner, 2026-10-23; it reached 2 spaces,
+  stepping in next to the target first).
 - **Throw Moves the target to a free space next to the Champion**, and
   the grapple holds (owner, 2026-10-23; the builder's first reading was a
   space next to the target, which could end the grapple); the damage
