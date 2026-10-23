@@ -1034,6 +1034,49 @@ fights: the player's side won 65%, Temee killed in 54 of 400. Stage
 caravans, player wins: one hero and two wolves 92.8–99.5%; two heroes and
 a wolf 72.7–99% but 42.5% against two Outriders; all three 61.3%.
 
+#### Volley delayed, at range 3 (2026-10-23)
+
+Owner's question: a wider Volley, range 3, whose arrows land on the marked
+space at the start of the Outrider's next turn, on whoever stands there
+then; nothing else changed (still aimed at a space with a unit on it).
+Built as an experiment switch, off in play: `ABILITY.volley.delayed`. The
+AI values a volley in the air at its hit, `AI.volleyDodgeShare` (0.25, a
+PLACEHOLDER) of it if the unit there can walk before it lands, and its
+threat map counts a delayed Volley's reach at that share.
+`experiments/volley-delayed.mjs`, 400 fights each, seeds from 1000, against
+the adopted kits on the same seeds:
+
+| | Adopted (range 2, instant) | Range 3, delayed |
+|---|---:|---:|
+| Side without Volley wins | 23.5% | 26.2% |
+| Side without the Bow wins | 38.3% | 34.8% |
+| Side without Hail / Grapple / Throw wins | 18.8% / 16.8% / 49.5% | 17.8% / 20.8% / 49.5% |
+| The Outrider's turns: Volley / Bow / walking / Hold | 17 / 38 / 33 / 13% | **44** / 25 / 30 / 1% |
+| Volley damage per fight (both sides) | 5.3 | 10.5 |
+| Volley kills per fight | 0.56 | 1.74 |
+| Volleys that hit a unit | 100% | about 60% |
+| Temee killed (of 400 control fights) | 54 | 34 |
+| Player wins vs Outrider + 2 wolves | 92.8% | 99.5% |
+| vs Bökh + Outrider + wolf | 72.7% | 84.7% |
+| vs Outrider + Storm + wolf | 87.8% | 97.5% |
+| vs Outrider + Outrider + wolf | **42.5%** | **81.5%** |
+| vs all three | 61.3% | 67.8% |
+
+Unfinished 0–1%.
+
+- **The stage spike goes**: two enemy Outriders become an ordinary stage-2
+  enemy, and Temee dies less often. A volley on a unit that can still walk
+  mostly makes it step aside.
+- **Volley's worth doesn't fall**: a side without it still wins only
+  26.2%, a core ability's worth for a second attack, and the AI takes it
+  on 44% of the Outrider's turns (over the 35% that makes a non-core
+  ability suspect), with twice the damage and three times the kills. At
+  range 3 it nearly always has a target, so it becomes the Outrider's main
+  attack and the Bow its fallback.
+- The result leans on how well the AI dodges (about 40% of volleys miss);
+  a player who reliably steps out would weaken it further. Delayed at
+  range 2 is the next to try.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

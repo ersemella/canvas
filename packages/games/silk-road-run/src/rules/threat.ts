@@ -6,7 +6,7 @@
  * (walking and attacking are separate turns), with the units now on the
  * board blocking arrows (the acting unit aside, since it is the one moving).
  */
-import {ABILITY, HEROES} from './config';
+import {ABILITY, AI, HEROES} from './config';
 import {hostile, isStunned} from './board';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -59,12 +59,14 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), e.power);
-    // Volley falls on any space within its range, over anything between.
+    // Volley falls on any space within its range, over anything between;
+    // a delayed one only marks it, so it is worth the share left after a dodge.
     if (has('volley')) {
       const reach = ABILITY.volley.range;
+      const d = ABILITY.volley.delayed ? e.power * AI.volleyDodgeShare : e.power;
       for (let dq = -reach; dq <= reach; dq++)
         for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
-          if (board.has(id(fq + dq, fr + dr))) mark(hexes, id(fq + dq, fr + dr), e.power);
+          if (board.has(id(fq + dq, fr + dr))) mark(hexes, id(fq + dq, fr + dr), d);
     }
     if (has('bow')) {
       for (const [dq, dr] of AXIAL) {

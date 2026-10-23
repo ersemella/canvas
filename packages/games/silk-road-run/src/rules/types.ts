@@ -105,6 +105,11 @@ export interface FightState {
   currentSlot: number;
   units: Unit[];
   effects: HailEffect[];
+  /**
+   * Delayed volleys in the air (`ABILITY.volley.delayed`): each lands on
+   * its space at the start of its Outrider's next turn.
+   */
+  volleys?: {hex: Hex; source: string}[];
   log: LogEntry[];
   /**
    * What the last action set off, the player's turn and the AI turns after

@@ -48,7 +48,7 @@ const SOURCES: [RegExp, string][] = [
   [/^The bite hits/, 'bite'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| looses a volley| throws| swaps places| grapples| bites)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| looses a volley|'s volley lands| throws| swaps places| grapples| bites)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>

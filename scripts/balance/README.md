@@ -12,7 +12,8 @@ revision they were run at. So do the files for the new abilities of 2026-10-23
 (`new-abilities*.mjs`, `ow-ai.mjs`, `fog*.mjs`, `volley-tuning.mjs`,
 `outrider-no-adjacent.mjs`): Overwatch, Sunlight, Fog and the variant
 switches they patch were removed once the kits were chosen; `volley.mjs`
-still runs (Fog dropped from it). `pared.mjs`, `stats.mjs` and `caravans.mjs` run on
+still runs (Fog dropped from it), as does `volley-delayed.mjs`, which turns on
+the `ABILITY.volley.delayed` switch. `pared.mjs`, `stats.mjs` and `caravans.mjs` run on
 the current rules.
 
 ## Ability and stat ablation

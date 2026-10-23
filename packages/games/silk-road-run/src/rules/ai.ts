@@ -12,6 +12,7 @@ import {
   movementCap,
   reachableHexes,
   roadDistance,
+  unitAt,
 } from './board';
 import {abilitiesOf, unusableReason} from './abilities';
 import {allowedTargets} from './choices';
@@ -79,6 +80,32 @@ function camelProgress(state: FightState, side: Side): number {
   return (side === 'enemy' ? 1 : -1) * camelDistance(state) * AI.perCamelHex;
 }
 
+/**
+ * What the delayed volleys in the air are worth to `side`: each the hit
+ * it will deal whoever stands on its space now, only `AI.volleyDodgeShare`
+ * of it if that unit can walk out before it lands.
+ */
+function volleyPoints(state: FightState, side: Side): number {
+  let score = 0;
+  for (const v of state.volleys ?? []) {
+    const source = state.units.find((u) => u.id === v.source);
+    const target = unitAt(state, v.hex);
+    if (!source?.alive || source.slot === null || !target) continue;
+    const hit = Math.min(source.power, target.hp);
+    const dodges =
+      target.slot !== null &&
+      target.slot < source.slot &&
+      !isStunned(target) &&
+      !isImmobilized(target);
+    const value = dodges
+      ? hit * AI.volleyDodgeShare
+      : hit * (target.hero === CAMEL ? AI.camelHealthWeight : 1) +
+        (hit >= target.hp && target.hero !== CAMEL ? AI.kill : 0);
+    score += (target.side === side ? -1 : 1) * value;
+  }
+  return score;
+}
+
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
 export function scoreOutcome(
   before: FightState,
@@ -104,7 +131,10 @@ export function scoreOutcome(
   // (a dead camel is no longer anywhere, so its walk alone would miss it).
   if (after.phase !== 'fight')
     score += ((after.phase === 'won') === (actor.side === 'player') ? 1 : -1) * AI.victory;
-  else score += camelProgress(after, actor.side) - camelProgress(before, actor.side);
+  else {
+    score += camelProgress(after, actor.side) - camelProgress(before, actor.side);
+    score += volleyPoints(after, actor.side) - volleyPoints(before, actor.side);
+  }
   const me = after.units.find((u) => u.id === actor.id)!;
   // What enemies could do to it before its next turn (one step of lookahead),
   // weighed by the share of its health it would lose and by the hero's caution.
@@ -219,7 +249,7 @@ export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
-  let score = camelProgress(state, side);
+  let score = camelProgress(state, side) + volleyPoints(state, side);
   for (const u of state.units) {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
