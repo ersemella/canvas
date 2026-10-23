@@ -594,10 +594,13 @@ the side without it wins):
 | Grapple | 22.6% | |
 | Throw | 36.6% | |
 
-Per fight (control): Hail 1,094 damage and 2.1 kills, Bow 746 (and 184
-to its own side) and 1.0, Grapple 306 and 0.5, Throw 269 and 0.5. Hail's
-damage is counted against the enemy whoever it hits, so its friendly
-fire is hidden. Each hero spends 52–58% of its turns moving; the Storm
+Per fight (control): Hail 1,094 damage and 2.1 kills, Bow 930 and 1.0,
+Grapple 306 and 0.5, Throw 269 and 0.5. Hail's damage is counted against
+the enemy whoever it hits, so its friendly fire is hidden. (The first
+run showed 184 of the Bow's damage as friendly fire: enemy arrows hitting
+Temee, whose log name has no "Your", were miscounted. Fixed in
+`ablate.ts` 2026-10-23; over 60 fights the AI shot 401 arrows, none at
+its own side, 92 of the enemy's at Temee.) Each hero spends 52–58% of its turns moving; the Storm
 Caller casts Hail on 48% of its turns, the Champion grapples on 28% and
 throws on 13%. Survival: Storm Caller 47%, Champion 29%, Outrider 20%.
 

@@ -164,7 +164,13 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
           if (!pattern.test(text)) continue;
           const n = Number((/for (\d+)\.?$/.exec(text) ?? /takes (\d+) from/.exec(text))?.[1] ?? 0);
           const named = [...text.matchAll(/(Your|Enemy) [^']+?(?= for| takes|$|\.)/g)];
-          const target: Side = named.at(-1)?.[1] === 'Your' ? 'player' : 'enemy';
+          // Temee, the player's camel, is named without "Your" (unitName).
+          const target: Side =
+            named.length === 0 && text.includes(HEROES.camel.name)
+              ? 'player'
+              : named.at(-1)?.[1] === 'Your'
+                ? 'player'
+                : 'enemy';
           const friendly = !UNOWNED.has(source) && actor === target;
           (damage[source] ??= {enemy: 0, ally: 0})[friendly ? 'ally' : 'enemy'] += n;
           lastSource = source;
