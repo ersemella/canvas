@@ -705,16 +705,23 @@
 
 /* The start menu: what the game is, then the heroes to take. */
 .heroPicks {
-  display: grid;
-  /* The four heroes in a row on a desktop, two by two on a phone. */
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px;
-}
-/* A hero: a flat dusk tile when left behind, raised lapis when taken. */
-.heroPick {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+/*
+ * A hero, a row: a flat dusk tile when left behind, raised lapis when taken.
+ * The portrait sits left of the name and story, the meters stacked at the
+ * right; on a phone the story and meters go full width under the name.
+ */
+.heroPick {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  grid-template-areas:
+    'portrait head stats'
+    'portrait blurb stats';
+  align-items: start;
+  gap: 4px 12px;
   padding: 10px;
   text-align: left;
   color: var(--c-ivory);
@@ -745,13 +752,15 @@
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-ink);
 }
 .heroPickHead {
+  grid-area: head;
   display: flex;
-  gap: 10px;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
 }
 /* Twice its 32px art, on the track card's ground. */
 .heroPickPortrait {
-  flex: none;
+  grid-area: portrait;
   display: grid;
   place-items: center;
   width: 64px;
@@ -774,15 +783,15 @@
   color: var(--c-sandDark);
 }
 .heroPickBlurb {
+  grid-area: blurb;
   font-size: 13px;
 }
-/* Pinned to the tile's foot, so the meters line up across heroes whatever their blurb's length. */
 .heroPickStats {
-  margin-top: auto;
-  display: grid;
-  /* Two meters a row where the card has room, else one: four cards in a row are narrow. */
-  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
-  gap: 4px 12px;
+  grid-area: stats;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 112px;
   font-size: 13px;
 }
 .heroPickStats > div {
@@ -790,6 +799,31 @@
   justify-content: space-between;
   align-items: center;
   gap: 6px;
+}
+/* A phone: the portrait beside the name only, the meters in a line under the story. */
+@media (max-width: 560px) {
+  .heroPick {
+    grid-template-columns: 64px 1fr;
+    grid-template-areas:
+      'portrait head'
+      'blurb blurb'
+      'stats stats';
+    align-items: center;
+    gap: 8px 10px;
+  }
+  .heroPickHead {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .heroPickStats {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    min-width: 0;
+  }
+  .heroPickStats > div {
+    justify-content: flex-start;
+  }
 }
 /* A stat's band: three pips, gold up to it, sunken dusk after. */
 .meter {

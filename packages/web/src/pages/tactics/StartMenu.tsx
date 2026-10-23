@@ -86,9 +86,9 @@ export function StartMenu(props: {
               Silk Road Run
             </Text>
             <Text>
-              Lead a caravan from the Mongolian steppe to Byzantium, guarding your cargo against
-              rival caravans and the spirits and monsters of every land you cross. Along the way,
-              rest at caravanserais, trade in bazaars, and hire travellers to join your band.
+              Lead a caravan from the Mongolian steppe to Byzantium. Temee, your camel, carries the
+              cargo and walks the road on its own: guard it against rival caravans and the spirits
+              and monsters of every land you cross.
             </Text>
           </Stack>
 
@@ -139,7 +139,7 @@ export function StartMenu(props: {
   );
 }
 
-/** One hero on the start menu: portrait, story and stat meters; tap to take or leave it. */
+/** One hero on the start menu, a row: portrait, story and stat meters; tap to take or leave it. */
 function HeroPick(props: {hero: HeroId; picked: boolean; full: boolean; onToggle: () => void}) {
   const stats = HEROES[props.hero];
   const lore = LORE[props.hero];
@@ -152,16 +152,14 @@ function HeroPick(props: {hero: HeroId; picked: boolean; full: boolean; onToggle
       disabled={!props.picked && props.full}
       onClick={props.onToggle}
     >
+      <div className={styles.heroPickPortrait}>
+        {portrait ? <img src={portrait} alt="" /> : stats.letter}
+      </div>
       <div className={styles.heroPickHead}>
-        <div className={styles.heroPickPortrait}>
-          {portrait ? <img src={portrait} alt="" /> : stats.letter}
-        </div>
-        <div>
-          <div className={styles.display}>{stats.name}</div>
-          <div className={styles.heroPickMark}>
-            {props.picked ? '✓ In the party' : props.full ? 'Party full' : 'Left behind'}
-          </div>
-        </div>
+        <span className={styles.display}>{stats.name}</span>
+        <span className={styles.heroPickMark}>
+          {props.picked ? '✓ In the party' : props.full ? 'Party full' : 'Left behind'}
+        </span>
       </div>
       {lore && <div className={styles.heroPickBlurb}>{lore}</div>}
       <div className={styles.heroPickStats}>
