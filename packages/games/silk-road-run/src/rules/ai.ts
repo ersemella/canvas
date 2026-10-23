@@ -199,7 +199,7 @@ export function scoreOutcome(
 
 /** What a turn's charge costs its user: the share of a turn it waits, in damage. */
 function chargeCost(actor: Unit, input: TurnInput): number {
-  return (chargeOf(input.action.ability) / cardCost(actor)) * turnValue(actor);
+  return (chargeOf(actor, input.action.ability) / cardCost(actor)) * turnValue(actor);
 }
 
 /**

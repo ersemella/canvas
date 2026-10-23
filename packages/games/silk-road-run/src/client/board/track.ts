@@ -159,27 +159,48 @@ export function drawTrack(
     const acting = Boolean(card && !ghost && u!.id === fight.awaiting);
     // The card of the unit acting grows as it comes to the front.
     const grow = acting ? Math.max(0, 1 - i) : 0;
-    drawCard(ctx, deck, u, {i, lift, ghost, acting, grow}, opts);
+    const charging = Boolean(u && !ghost && !spent && isCharging(fight, u));
+    drawCard(ctx, deck, u, {i, lift, ghost, acting, grow, charging}, opts);
   }
   for (const {u, i} of sliding) {
     const acting = u.id === fight.awaiting;
-    drawCard(ctx, deck, u, {i, lift: 0, ghost: false, acting, grow: Math.max(0, 1 - i)}, opts);
+    const charging = isCharging(fight, u);
+    drawCard(
+      ctx,
+      deck,
+      u,
+      {i, lift: 0, ghost: false, acting, grow: Math.max(0, 1 - i), charging},
+      opts
+    );
   }
   if (!advance && previewSlot !== null && aimSlot !== null && aimSlot < previewSlot)
     drawYield(ctx, deck, aimSlot, previewSlot);
+}
+
+/** Whether `u`'s card is out charging (a volley of its in the air): drawn greyed. */
+function isCharging(fight: FightState, u: Unit): boolean {
+  return Boolean(fight.volleys?.some((v) => v.source === u.id));
 }
 
 /**
  * One deck card, `i` cards back from the front (fractional while the deck
  * moves): blank when empty, a dashed outline for the planned landing, else
  * its unit's portrait. `lift` is how far a passed card has lifted off the
- * track; `grow` how much taller the acting unit's front card stands.
+ * track; `grow` how much taller the acting unit's front card stands;
+ * `charging` greys it, for a charge that lands when it comes back.
  */
 function drawCard(
   ctx: CanvasRenderingContext2D,
   deck: TrackSlots,
   u: Unit | null,
-  card: {i: number; lift: number; ghost: boolean; acting?: boolean; grow: number},
+  card: {
+    i: number;
+    lift: number;
+    ghost: boolean;
+    acting?: boolean;
+    grow: number;
+    charging?: boolean;
+  },
   opts: {selected: string | null; hovered: string | null}
 ): void {
   const {i, lift, ghost, grow} = card;
@@ -264,9 +285,27 @@ function drawCard(
       ctx.stroke();
       label(ctx, HEROES[u.hero].letter, mid, cy + h / 2 - 3, PALETTE.ivory, 11, true);
     }
+    if (card.charging) greyCard(ctx, cx, cy, deck.cardW, h);
     // A card whose last turn was skipped (Stunned, or it could only Hold): marked till it next acts.
-    if (u.skipped) drawSkipMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
+    if (u.skipped && !card.charging) drawSkipMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
   }
+  ctx.restore();
+}
+
+/**
+ * A charging card, greyed: its colour drained (portrait and border too)
+ * and dimmed toward the dusk, so it reads as no turn of its own.
+ */
+function greyCard(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
+  ctx.save();
+  pixelRect(ctx, x, y, w, h, 3);
+  ctx.globalCompositeOperation = 'saturation';
+  ctx.fillStyle = '#808080';
+  ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 0.45;
+  ctx.fillStyle = PALETTE.dusk1;
+  ctx.fill();
   ctx.restore();
 }
 

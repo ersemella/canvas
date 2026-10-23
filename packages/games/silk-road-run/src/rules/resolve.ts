@@ -111,7 +111,7 @@ export function kill(ctx: Ctx, unit: Unit): void {
   log(ctx, `${unitName(unit)} falls.`);
   if (at) record(ctx.state, {kind: 'death', unitId: unit.id, hex: at});
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
-  // Its hail lasted until its next turn, which won't come; so did its volleys.
+  // Its hail lasted until its next turn, which won't come; its volleys until its card came back.
   clearHail(ctx.state, unit);
   if (ctx.state.volleys) ctx.state.volleys = ctx.state.volleys.filter((v) => v.source !== unit.id);
   checkEnd(ctx.state);
@@ -153,7 +153,7 @@ export function clearHail(state: FightState, caster: Unit): void {
 }
 
 /**
- * `user`'s volleys land, its next turn having come: whoever stands
+ * `user`'s volleys land, its charging card having come back: whoever stands
  * on each space takes its power.
  */
 export function landVolleys(ctx: Ctx, user: Unit): void {

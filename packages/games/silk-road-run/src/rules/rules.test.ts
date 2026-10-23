@@ -28,6 +28,7 @@ import {
   actingUnit,
   advanceToDecision,
   applyTurn,
+  charging,
   cloneFight,
   createFight,
   mapOf,
@@ -46,7 +47,15 @@ import {
   runView,
   stageEnemies,
 } from './run';
-import {actionCost, aimSlot, freeSlotFrom, nextCard, placeCard, simultaneousOrder} from './track';
+import {
+  actionCost,
+  aimSlot,
+  chargeOf,
+  freeSlotFrom,
+  nextCard,
+  placeCard,
+  simultaneousOrder,
+} from './track';
 import type {FightState, HeroId, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
@@ -124,7 +133,7 @@ describe('the track', () => {
     expect(onlyHold(s, mapOf(s), w)).toBe(false);
   });
 
-  it('Volley marks a unit within 3 that no bow lane reaches, over a unit in the way, and lands at the Outrider’s next turn', () => {
+  it('Volley marks a unit within 3 that no bow lane reaches, over a unit in the way, and lands as its charging card comes back', () => {
     const s = setup({
       'p-mangudai': at(1, 3),
       'p-storm': at(2, 3),
@@ -141,18 +150,38 @@ describe('the track', () => {
     expect(spots.some((t) => hexKey(t.hex!) === hexKey(bokh.hex!))).toBe(true);
     expect(spots.some((t) => hexKey(t.hex!) === hexKey(unit(s, 'e-storm').hex!))).toBe(false);
     const input: TurnInput = {action: {ability: 'volley', target: {hex: bokh.hex!}}};
-    // Charged: the card goes its action cost and 2 more slots on, and the preview says so.
-    const landing = actionCost(m) + ABILITY.volley.charge;
-    expect(ABILITY.volley.charge).toBe(2);
-    expect(previewTurn(s, m.id, input)!.aimSlot).toBe(landing);
+    // Charged: the card goes half its action cost on (4 of 8), and the preview says so.
+    const now = s.currentSlot;
+    expect(actionCost(m)).toBe(8);
+    expect(chargeOf(m, 'volley')).toBe(4);
+    expect(previewTurn(s, m.id, input)!.aimSlot).toBe(now + 4);
     applyTurn(s, m, input);
-    expect(m.slot).toBe(landing);
+    expect(m.slot).toBe(now + 4);
+    expect(charging(s, m)).toBe(true);
     expect(bokh.hp).toBe(bokh.maxHp);
     expect(s.volleys).toEqual([{hex: at(3, 3), source: 'p-mangudai'}]);
+    // Everyone else holds, so the next decision of the Outrider's is its turn after the landing.
     s.units.forEach((u) => (u.controller = 'human'));
-    expect(advanceToDecision(s)!.id).toBe('p-mangudai');
+    for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
+      applyTurn(s, d, {action: {ability: 'hold'}});
     expect(bokh.hp).toBe(bokh.maxHp - m.power);
     expect(s.volleys).toEqual([]);
+    expect(charging(s, m)).toBe(false);
+    // The landing was no turn: the card went its action cost on from there.
+    expect(s.currentSlot).toBe(now + 4 + actionCost(m));
+  });
+
+  it('a charging card is pushed into its slot, whatever the speed of the card there', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(3, 3), 'e-storm': at(8, 6)});
+    const m = unit(s, 'p-mangudai');
+    const storm = unit(s, 'e-storm');
+    s.units.forEach((u) => (u.slot = u === m ? 0 : null));
+    s.currentSlot = 0;
+    storm.speed = m.speed + 5;
+    storm.slot = 4;
+    applyTurn(s, m, {action: {ability: 'volley', target: {hex: at(3, 3)}}});
+    expect(m.slot).toBe(4);
+    expect(storm.slot).toBe(5);
   });
 
   it('a volley hits whoever stands on its space when it lands, so a unit can step out', () => {
@@ -162,7 +191,8 @@ describe('the track', () => {
     applyTurn(s, m, {action: {ability: 'volley', target: {hex: bokh.hex!}}});
     enterHex({state: s, map: mapOf(s), slot: s.currentSlot}, bokh, at(4, 3));
     s.units.forEach((u) => (u.controller = 'human'));
-    expect(advanceToDecision(s)!.id).toBe('p-mangudai');
+    for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
+      applyTurn(s, d, {action: {ability: 'hold'}});
     expect(bokh.hp).toBe(bokh.maxHp);
     expect(s.volleys).toEqual([]);
   });

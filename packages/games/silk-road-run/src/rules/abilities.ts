@@ -11,6 +11,7 @@ import {isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
 import {endGrapples, enhance, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
+import {chargeOf} from './track';
 import type {MapData} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
@@ -136,9 +137,9 @@ const bow: AbilityDef = {
 /**
  * Volley (owner, 2026-10-23): arrows loosed high onto one space within
  * `ABILITY.volley.range` (3) with a unit on it, adjacent included, as hail
- * falls, so no line of fire is needed. Charged: they land at the start of
- * the Outrider's next turn, which comes `ABILITY.volley.charge` slots
- * later than usual (`chargeOf`), and the unit there then, ally or enemy,
+ * falls, so no line of fire is needed. Charged: the Outrider's card is
+ * pushed half its action cost on (`chargeOf`); when it comes back
+ * they land, in place of a turn, and the unit there then, ally or enemy,
  * takes the Outrider's power (`landVolleys`).
  */
 const volley: AbilityDef = {
@@ -148,7 +149,7 @@ const volley: AbilityDef = {
   range: ABILITY.volley.range,
   radius: 0,
   summary: (user) =>
-    `Arrows from above on a unit within ${ABILITY.volley.range}, over anything in the way. They land at the start of your next turn, ${ABILITY.volley.charge} slots later than usual: whoever stands there then takes ${damageText(user)}.`,
+    `Arrows from above on a unit within ${ABILITY.volley.range}, over anything in the way. Charge ${chargeOf(user, 'volley')} (half your action cost): your card goes ${chargeOf(user, 'volley')} slots on, and when it comes back they land instead of your turn: whoever stands there then takes ${damageText(user)}. Then your card goes on to your next turn.`,
   targetsUnit: true,
   targets: (state, map, user, from) =>
     hexesWithin(map, from, ABILITY.volley.range, (h) => {

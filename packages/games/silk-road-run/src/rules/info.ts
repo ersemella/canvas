@@ -50,8 +50,8 @@ export function volleyInfo(volley: VolleyInAir, state: FightState): HexInfo {
   const damage = archer ? `${archer.power} damage` : 'its damage';
   return {
     name: 'Volley',
-    short: 'Arrows land here next turn',
-    detail: `Arrows in the air: they land here at the start of ${who} next turn, and whoever stands here then takes ${damage}.`,
+    short: 'Arrows land here when its card comes back',
+    detail: `Arrows in the air: they land here when ${who} greyed, charging card comes back, and whoever stands here then takes ${damage}.`,
   };
 }
 
