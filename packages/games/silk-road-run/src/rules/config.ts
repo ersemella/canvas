@@ -90,14 +90,14 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * corner to the exit in the bottom-right, around units in its way (owner,
    * 2026-10-22). It acts last in the starting order, at slot 12 (owner,
    * 2026-10-23). Defence 9 (health 20, ten bow hits) is a PLACEHOLDER for
-   * the owner's "very high health"; speed 1 (an action cost of 10) is a
-   * PLACEHOLDER too.
+   * the owner's "very high health". Speed 0, so an action cost of 12
+   * (owner, 2026-10-23).
    */
   camel: {
     // Temee (owner, 2026-10-21): a name, so no "Your" before it (unitName).
     name: 'Temee',
     letter: 'T',
-    speed: 1,
+    speed: 0,
     defence: 9,
     power: 0,
     abilities: ['hold'],

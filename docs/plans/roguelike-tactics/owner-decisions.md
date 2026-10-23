@@ -78,9 +78,8 @@ The owner's notes were rough; where they left a choice, the builder
 picked the reading below. Confirm or change each:
 
 - **Placement** (owner, 2026-10-23, replacing Temee's rounds): every
-  action costs 12 − 2 × speed slots. The builder applies it to Temee too
-  (speed 1, a placeholder: 10 slots a turn, whether it stepped or waited);
-  confirm, or give Temee its own cost.
+  action costs 12 − 2 × speed slots, Temee's included: speed 0, so 12
+  slots a turn, whether it stepped or waited (owner, 2026-10-23).
 - **Starting order** (owner, 2026-10-23): from slot 0, fastest first, ties
   the player's first, equal speeds side by side, a free slot between
   speeds; Temee last at slot 12. The builder puts Temee just after the

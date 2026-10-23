@@ -25,7 +25,6 @@ import {onlyHold} from './choices';
 import {
   RuleError,
   actingUnit,
-  advance,
   advanceToDecision,
   applyTurn,
   cloneFight,
@@ -152,15 +151,18 @@ describe('the track', () => {
   });
 
   it('gives the faster more turns: Outriders before Bökh, Bökh before Temee', () => {
-    const s = createFight(3);
+    // A sparse track, so yielding doesn't blur the costs.
+    const s = setup({
+      'p-camel': at(0, 0),
+      'p-mangudai': at(1, 3),
+      'p-bokh': at(1, 5),
+      'e-bokh': at(6, 4),
+    });
+    // Held in place, so it never reaches the exit and ends the fight.
+    unit(s, 'p-camel').statuses.push({kind: 'immobilized'});
     s.events = [];
-    advance(s, chooseAiTurn);
-    // Act out a stretch of the fight, everyone holding.
-    for (let i = 0; i < 60 && s.phase === 'fight'; i++) {
-      const u = actingUnit(s)!;
+    for (let u = advanceToDecision(s); u && s.currentSlot < 600; u = advanceToDecision(s))
       applyTurn(s, u, {action: {ability: 'hold'}});
-      advance(s, (_s, _u) => ({action: {ability: 'hold'}}));
-    }
     const turns = (id: string) =>
       s.events!.filter((e) => e.kind === 'turn' && e.unitId === id).length;
     expect(turns('p-mangudai')).toBeGreaterThan(turns('p-bokh'));
@@ -774,7 +776,7 @@ describe('the caravan’s camel', () => {
     expect(advanceToDecision(s)!.id).toBe('p-bokh');
     expect(camel.hex).toEqual(road[0]);
     expect(camel.slot).toBe(90 + actionCost(camel));
-    expect(actionCost(camel)).toBe(10);
+    expect(actionCost(camel)).toBe(12);
     expect(s.phase).toBe('fight');
   });
 
@@ -790,7 +792,7 @@ describe('the caravan’s camel', () => {
     expect(camel.hex).not.toEqual(road[0]);
     expect(hexDistance(camel.hex!, at(2, 4))).toBe(1);
     expect(camel.skipped).toBeUndefined();
-    expect(camel.slot).toBe(100);
+    expect(camel.slot).toBe(102);
 
     const held = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     const pinned = unit(held, 'p-camel');
@@ -804,9 +806,9 @@ describe('the caravan’s camel', () => {
     for (const u of held.units) if (u !== pinned && u.alive) u.slot = 500 + u.partyIndex;
     advanceToDecision(held);
     expect(pinned.hex).toEqual(at(2, 4));
-    // Waiting, its card still goes its action cost on each turn: 101 (having
-    // yielded to Bökh's card at 100), 111, … 501.
-    expect(pinned.slot).toBe(501);
+    // Waiting, its card still goes its action cost on each turn: 102, 114,
+    // … 510.
+    expect(pinned.slot).toBe(510);
 
     // In the corner, its three neighbours taken: nowhere to go.
     const boxed = setup({

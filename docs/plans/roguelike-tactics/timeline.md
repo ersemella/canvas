@@ -15,7 +15,7 @@ tuning. Section numbers are the combat design's.
 ### 3.1 Summary (Decided)
 Combat runs on a **track** of numbered **slots**. Every unit, and every track entity (3.7), has a card in one slot. The track advances slot by slot; when it reaches a card, that unit or entity takes its turn. After acting, a unit's card is placed further along the track.
 
-**Every action costs `12 − 2 × speed` slots (owner, 2026-10-23, the second rework of the day).** After any turn a unit's card goes that many slots on, Temee's included: speed 3 costs 6, speed 2 costs 8, speed 1 costs 10. What a unit does on its turn (an ability, a move, a Hold) doesn't change the cost, so a faster unit simply acts more often. Temee's card is placed like any other; its walk toward the exit is still the fight's clock ([camel.md](camel.md)).
+**Every action costs `12 − 2 × speed` slots (owner, 2026-10-23, the second rework of the day).** After any turn a unit's card goes that many slots on, Temee's included: speed 3 costs 6, speed 2 costs 8, speed 1 costs 10, and Temee, speed 0, always 12. What a unit does on its turn (an ability, a move, a Hold) doesn't change the cost, so a faster unit simply acts more often. Temee's card is placed like any other; its walk toward the exit is still the fight's clock ([camel.md](camel.md)).
 
 This model keeps the visible card track of Mana Khemia and Final Fantasy X. Earlier on 2026-10-23 the track was paced by Temee, with every unit acting once in each of its rounds; before that, every action had its own cost ([history.md](history.md)).
 
@@ -25,7 +25,7 @@ After a unit's turn, its card goes to:
 slot = current slot + actionBase − speedSlots × speed      (actionBase = 12, speedSlots = 2)
 ```
 - The same for every turn: an ability, a move, a Hold, or a skipped turn (Stunned, or nothing to do but Hold).
-- **Temee's card** follows the same rule, whether it stepped or waited: speed 1, so 10 slots.
+- **Temee's card** follows the same rule, whether it stepped or waited: speed 0 (owner, 2026-10-23), so always 12 slots.
 - Speed runs 1 to 3 for the heroes (9.1), so costs run 6 to 10; a cost is never less than 1 slot. Cards that land on a taken slot yield (3.3).
 
 ### 3.3 Collisions (Decided)
@@ -66,7 +66,7 @@ Reinforcements (Decided): their arrival is shown on the track in advance, with a
 
 ## 4. Speed
 
-Speed sets a unit's action cost (3.2), its starting slot (3.4), and the order of cards placed at the same moment (3.3). A faster unit acts more often: speed 3 acts every 6 slots, speed 2 every 8, speed 1 every 10.
+Speed sets a unit's action cost (3.2), its starting slot (3.4), and the order of cards placed at the same moment (3.3). A faster unit acts more often: speed 3 acts every 6 slots, speed 2 every 8, speed 1 every 10, Temee (speed 0) every 12.
 
 ### 4.1 Granularity (Decided 2026-10-23)
 Speed is a small whole number (1 to 3 for the prototype heroes, 9.1); each point takes 2 slots off the action cost. Equal speeds are told apart only by yielding (3.3).
@@ -118,7 +118,7 @@ Every hero has **Hold**, an action with no effect, so a unit can always end its 
 
 ## Open questions (original numbers)
 
-1. The base action cost (`actionBase`, 12) and slots per point of speed (`speedSlots`, 2); Temee's speed (1, a placeholder). Default size of the visible track window (roughly 30 slots).
+1. The base action cost (`actionBase`, 12) and slots per point of speed (`speedSlots`, 2) Default size of the visible track window (roughly 30 slots).
 2. Speed versus defence mechanism: gear weight lowering speed, or competing stats on gear (4.2).
 5. Delay and haste limit values (3.6).
 7. Scheduling of units and track entities that enter mid-combat (3.8).
