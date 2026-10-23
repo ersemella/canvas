@@ -177,21 +177,21 @@ function grappling(user: Unit, u: Unit): boolean {
 
 /**
  * Throw (owner, 2026-10-23): only the unit the Champion grapples, Moved to
- * a free space next to it, then struck. The grapple holds only if it lands
- * next to the Champion.
+ * any free space next to the Champion, then struck. It lands beside the
+ * Champion, so the grapple holds.
  */
 const throwAbility: AbilityDef = {
   id: 'throw',
   name: 'Throw',
   kind: 'attack',
   summary: (user) =>
-    `Melee, on the unit you grapple: Move it to a free space next to it, then it takes ${damageText(user)}. Landing away from you breaks the grapple.`,
+    `Melee, on the unit you grapple: Move it to a free space next to you, then it takes ${damageText(user)}. The grapple holds.`,
   targetsUnit: true,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
     for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u)))
       for (const to of sortByHex(
-        hexNeighbors(t.hex!).filter((h) => walkable(map, h) && !unitAt(state, h)),
+        hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h)),
         (h) => h
       ))
         out.push({hex: t.hex!, to});

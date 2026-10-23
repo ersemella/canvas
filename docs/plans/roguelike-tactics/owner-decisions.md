@@ -80,7 +80,8 @@ picked the reading below. Confirm or change each:
 - **Placement:** "2 × speed ticks in front of Temee" is read as 2 × speed
   slots **before Temee's next turn**: a unit acting before Temee in a round
   is placed in the next round, so every unit acts once a round (confirmed
-  by the owner, 2026-10-23). Starting cards use the same rule.
+  by the owner, 2026-10-23). Starting cards use the same rule, spaced
+  out by one slot, ties the player's first (owner, 2026-10-23).
 - **Temee's card goes 20 slots a turn whether it stepped or waited**
   (Immobilized, Stunned or boxed in).
 - **Hail Immobilizes a unit standing in its space when it lands**, as well
@@ -90,9 +91,10 @@ picked the reading below. Confirm or change each:
 - **Immobilized still lets others displace the unit** (the 2026-10-19
   rule kept), and **Stunned has no lockout guard** (keywords.md, open
   questions 54 and 56).
-- **Throw Moves the target to a free space next to the target** ("an
-  adjacent space"), not next to the Champion, so it can end the grapple;
-  the damage comes after the Move.
+- **Throw Moves the target to a free space next to the Champion**, and
+  the grapple holds (owner, 2026-10-23; the builder's first reading was a
+  space next to the target, which could end the grapple); the damage
+  comes after the Move.
 - **"Bökh takes damage" means any damage to its health.** Power-0 hail
   doesn't count.
 - **The Bökh Champion lost Inevitable**, which the notes left out and

@@ -43,11 +43,11 @@ export function placeCard(state: FightState, unit: Unit, slot: number): number {
 
 /**
  * The order for cards placed at the same moment (3.3, brief section 2):
- * higher speed first. Equal speeds are shuffled by `random` (owner,
- * 2026-10-21); without it they follow the fixed order, alternating sides
- * starting with the player's, then party slot order.
+ * higher speed first; equal speeds the player's side first, then the
+ * enemy's, each in party slot order (owner, 2026-10-23; were shuffled by
+ * the seed).
  */
-export function simultaneousOrder(units: Unit[], random?: () => number): Unit[] {
+export function simultaneousOrder(units: Unit[]): Unit[] {
   const bySpeed = new Map<number, Unit[]>();
   for (const u of units) {
     if (!bySpeed.has(u.speed)) bySpeed.set(u.speed, []);
@@ -56,19 +56,8 @@ export function simultaneousOrder(units: Unit[], random?: () => number): Unit[] 
   const out: Unit[] = [];
   for (const speed of [...bySpeed.keys()].sort((a, b) => b - a)) {
     const group = bySpeed.get(speed)!;
-    if (random) {
-      out.push(...shuffled(group, random));
-      continue;
-    }
-    const player = group
-      .filter((u) => u.side === 'player')
-      .sort((a, b) => a.partyIndex - b.partyIndex);
-    const enemy = group
-      .filter((u) => u.side === 'enemy')
-      .sort((a, b) => a.partyIndex - b.partyIndex);
-    for (let i = 0; i < Math.max(player.length, enemy.length); i++) {
-      if (player[i]) out.push(player[i]!);
-      if (enemy[i]) out.push(enemy[i]!);
+    for (const side of ['player', 'enemy'] as const) {
+      out.push(...group.filter((u) => u.side === side).sort((a, b) => a.partyIndex - b.partyIndex));
     }
   }
   return out;
@@ -77,17 +66,22 @@ export function simultaneousOrder(units: Unit[], random?: () => number): Unit[] 
 /**
  * Starting slots (3.4): the camel, which acts first, takes slot 0; every
  * other card is placed as after a turn at slot 0 (`aimSlot`), so at
- * RULES.roundSlots − RULES.speedSlots × speed, in `simultaneousOrder`.
+ * RULES.roundSlots − RULES.speedSlots × speed, in `simultaneousOrder`,
+ * yielding until it has a free slot on either side: the starting cards are
+ * spaced out by one slot (owner, 2026-10-23). They leave Temee's next turn
+ * free, so its card never yields and the rounds keep their pace; cards
+ * spaced past it take their first turn after its step.
  */
-export function placeStartingCards(state: FightState, random?: () => number): void {
+export function placeStartingCards(state: FightState): void {
   for (const u of state.units) u.slot = null;
   const alive = state.units.filter((u) => u.alive);
   for (const u of alive) if (HEROES[u.hero].actsFirst) placeCard(state, u, 0);
-  for (const u of simultaneousOrder(
-    alive.filter((u) => !HEROES[u.hero].actsFirst),
-    random
-  )) {
-    placeCard(state, u, aimSlot(state, u, 0));
+  const temeeNext = (pacer(state)?.slot ?? 0) + RULES.roundSlots;
+  const taken = (slot: number) => slot === temeeNext || freeSlotFrom(state, slot) !== slot;
+  for (const u of simultaneousOrder(alive.filter((u) => !HEROES[u.hero].actsFirst))) {
+    let slot = aimSlot(state, u, 0);
+    while (taken(slot - 1) || taken(slot) || taken(slot + 1)) slot++;
+    placeCard(state, u, slot);
   }
 }
 

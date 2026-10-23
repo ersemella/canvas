@@ -41,7 +41,8 @@ the kits.**
   one space within 3 until the Storm Caller's next turn, Immobilizing
   whoever is in it or enters it; Grapple (reach 2, stepping in), Stunning
   its target until the Champion takes damage, is Stunned or is no longer
-  next to it; Throw, Moving the grappled unit to a space next to it.
+  next to it; Throw, Moving the grappled unit to a space next to the
+  Champion, so the grapple holds.
 - **Deleted with their code:** the Modao Vanguard's kit, ultimates and
   charged abilities, Leap, Sunlight, Shove, quicksand and the sandstorm,
   and every keyword not in the new list ([history.md](history.md)).

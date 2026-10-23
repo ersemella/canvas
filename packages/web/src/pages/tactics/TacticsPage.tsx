@@ -94,6 +94,7 @@ export function TacticsPage() {
     sendTurn,
     nextStage: goToNextStage,
     playbackDone,
+    boardReady,
   } = useRun(eventsRef);
 
   /** The unit tapped, or whose track card was. */
@@ -324,9 +325,10 @@ export function TacticsPage() {
       });
       events.on<TacticsHoverPayload>('tactics:hover', setHover);
       events.on('tactics:playback-done', playbackDone);
+      boardReady();
       setWorldReady((n) => n + 1);
     },
-    [playbackDone]
+    [playbackDone, boardReady]
   );
 
   // Dev-server hooks for the e2e suite (scripts/e2e/tactics.e2e.mjs).

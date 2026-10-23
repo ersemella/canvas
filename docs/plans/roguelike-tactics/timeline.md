@@ -33,10 +33,10 @@ slot = Temee's next turn − speedSlots × speed      (speedSlots = 2)
 ### 3.3 Collisions (Decided)
 **Two cards never share a slot.** A card placed on an occupied slot **yields**: it moves to the next free slot, and further if that one is taken (a cascade). Cards already on the track never move because of another card's placement. A card that yields past Temee's acts after Temee in that round; it is then placed by the next of Temee's turns, like any other.
 
-Cards placed at the same moment (combat start, or one effect moving several cards) are placed higher speed first. Cards of equal speed are placed in a random order, drawn from the fight's seed so a fight replays the same (owner, 2026-10-21; was alternating sides starting with the player's side, then party slot order).
+Cards placed at the same moment (combat start, or one effect moving several cards) are placed higher speed first. Cards of equal speed are placed the player's side first, then the enemy's, each in party slot order (owner, 2026-10-23; was a random order drawn from the fight's seed from 2026-10-21, and alternating sides before that).
 
 ### 3.4 Starting Positions (Decided)
-Temee starts first, at slot 0, whatever its speed (owner, 2026-10-21; [camel.md](camel.md), 18.1). Every other card is placed as after a turn at slot 0: `20 − 2 × speed`, in the simultaneous order (3.3). The first round is then the same as every later one.
+Temee starts first, at slot 0, whatever its speed (owner, 2026-10-21; [camel.md](camel.md), 18.1). Every other card is placed as after a turn at slot 0: `20 − 2 × speed`, in the simultaneous order (3.3), yielding until it has a free slot on either side, so the starting cards are spaced out by one slot (owner, 2026-10-23). They leave slot 20, Temee's second turn, free, so its card never yields; a card spaced past it takes its first turn after Temee's step. The first round is otherwise the same as every later one.
 
 ### 3.5 Delay, Haste and Track Manipulation (Decided)
 Terminology (owner, 2026-10-23): **Delay** moves a card later on the track and **Haste** earlier; **Push**, **Pull** and **Move** move a unit across the board (keywords in [keywords.md](keywords.md)). Delay and Haste never mean the board.

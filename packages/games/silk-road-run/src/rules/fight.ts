@@ -75,7 +75,7 @@ function makeUnit(side: Side, partyIndex: number, hero: HeroId, copy = 0): Unit 
  * A new fight on the Salt Flats, already under way: the seed scatters the
  * ruins, the player's party along the leftmost column and
  * the enemy's along the rightmost (owner, 2026-10-20; there is no
- * deployment step), and shuffles starting speed ties. The player's camel
+ * deployment step). The player's camel
  * starts in the top-left corner (camel.md, 18.1; owner, 2026-10-22). The player brings
  * the heroes chosen on the start menu; the enemy brings `enemies`, all three
  * heroes unless the run's stage says otherwise (STAGES).
@@ -113,7 +113,7 @@ export function createFight(
       .filter((u) => u.side === side && u !== camel)
       .forEach((u, i) => (u.hex = hexes[i]!));
   }
-  placeStartingCards(state, random);
+  placeStartingCards(state);
   log({state, map: mapOf(state), slot: 0}, 'The fight begins.');
   return state;
 }

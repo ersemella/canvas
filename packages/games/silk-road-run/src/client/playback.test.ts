@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {createRun, handleRunAction} from '../rules/run';
-import {Playback, displayFight, eventSeconds} from './playback';
+import {SALT_FLATS} from '../rules/map';
+import {Playback, displayFight, eventSeconds, openingPlayback} from './playback';
 
 /** A fight at the player's first turn and one turn after it, as the page sees them. */
 function played() {
@@ -67,5 +68,18 @@ describe('playback', () => {
     };
     const shown = displayFight(base, e, null).units.find((v) => v.id === u.id)!;
     expect(shown.statuses.map((s) => s.kind)).toEqual(['stunned']);
+  });
+
+  it('plays a new fight’s opening from the cards as first placed, Temee on its corner', () => {
+    const to = createRun(0).fight;
+    const {from} = openingPlayback(to)!;
+    const camel = (f: typeof to) => f.units.find((u) => u.hero === 'camel')!;
+    expect(camel(from).hex).toEqual(SALT_FLATS.camelStart);
+    expect(camel(to).hex).not.toEqual(SALT_FLATS.camelStart);
+    expect(from.currentSlot).toBe(0);
+    expect(camel(from).slot).toBe(0);
+    expect(from.units.every((u) => u.statuses.length === 0)).toBe(true);
+    const steps = to.events!.filter((e) => e.kind === 'step' && e.unitId === camel(to).id);
+    expect(steps[0]).toMatchObject({from: SALT_FLATS.camelStart, to: camel(to).hex});
   });
 });

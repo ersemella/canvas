@@ -1,7 +1,8 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import type {MutableRefObject} from 'react';
 import type {EventBus} from '@canvas/engine';
-import type {HeroId, TurnInput} from '@canvas/games-silk-road-run';
+import {openingPlayback} from '@canvas/games-silk-road-run';
+import type {HeroId, PlaybackPayload, TurnInput} from '@canvas/games-silk-road-run';
 import {runsApi} from './runsApi';
 import type {RunResponse} from './runsApi';
 
@@ -21,7 +22,9 @@ function savedStartMenu(): boolean {
  * request per action (`/runs`), each answered with the whole view. What an
  * action sets off is played back on the board (`tactics:playback` on
  * `events`), and the page waits for it (`playing`) until the board says
- * it's done (`playbackDone`). Also whether the start menu is open over it.
+ * it's done (`playbackDone`); a new run or stage plays back its opening,
+ * the camel's first step and any enemy turns before the player's, once the
+ * board is up (`boardReady`). Also whether the start menu is open over it.
  */
 export function useRun(events: MutableRefObject<EventBus | null>) {
   const [run, setRun] = useState<RunResponse | null>(null);
@@ -47,6 +50,12 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   const fight = run?.view.fight ?? null;
   const fightRef = useRef(fight);
   fightRef.current = fight;
+  /**
+   * A new run's opening, played on its board once that mounts
+   * (`boardReady`), and kept until it has played: a board mounted twice (as
+   * in development) plays it on the second.
+   */
+  const opening = useRef<PlaybackPayload | null>(null);
 
   // Resume the key's active run, if any.
   useEffect(() => {
@@ -58,16 +67,26 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   }, []);
 
   const send = useCallback(
-    async (request: () => Promise<RunResponse>, playback = true) => {
+    async (request: () => Promise<RunResponse>, playback: 'turn' | 'stage' | 'run') => {
       setBusy(true);
       try {
         const before = fightRef.current;
         const r = await request();
-        // Play back what the action set off (the player's turn, then the AI's).
-        // A new run isn't played back: it starts from the start menu, with no board.
-        if (playback && before && r.view.fight.events?.length && events.current) {
+        // Play back what the action set off (the player's turn, then the AI's),
+        // or a new fight's opening. A new run's board mounts only once the
+        // start menu closes, so its opening waits for it (`boardReady`).
+        const payload =
+          playback === 'turn'
+            ? before && r.view.fight.events?.length
+              ? {from: before, to: r.view.fight}
+              : null
+            : openingPlayback(r.view.fight);
+        if (payload && playback === 'run') {
           setPlaying(true);
-          events.current.emit('tactics:playback', {from: before, to: r.view.fight});
+          opening.current = payload;
+        } else if (payload && events.current) {
+          setPlaying(true);
+          events.current.emit('tactics:playback', payload);
         }
         setRun(r);
         setStartMenu(false);
@@ -82,7 +101,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   );
 
   const startRun = useCallback(
-    (party: HeroId[]) => void send(() => runsApi.start(party), false),
+    (party: HeroId[]) => void send(() => runsApi.start(party), 'run'),
     [send]
   );
 
@@ -90,18 +109,26 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   const sendTurn = useCallback(
     (turn: TurnInput) => {
       if (!run || busy || playing) return;
-      void send(() => runsApi.turn(run.runId, turn));
+      void send(() => runsApi.turn(run.runId, turn), 'turn');
     },
     [run, send, busy, playing]
   );
 
-  /** On to the run's next stage, once this one is won: a new board, nothing to play back. */
+  /** On to the run's next stage, once this one is won: a new board, its opening played back. */
   const nextStage = useCallback(() => {
     if (!run || busy) return;
-    void send(() => runsApi.next(run.runId), false);
+    void send(() => runsApi.next(run.runId), 'stage');
   }, [run, send, busy]);
 
-  const playbackDone = useCallback(() => setPlaying(false), []);
+  const playbackDone = useCallback(() => {
+    opening.current = null;
+    setPlaying(false);
+  }, []);
+
+  /** The board has mounted: a new run's opening plays back on it. */
+  const boardReady = useCallback(() => {
+    if (opening.current) events.current?.emit('tactics:playback', opening.current);
+  }, [events]);
 
   return {
     run,
@@ -117,5 +144,6 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     sendTurn,
     nextStage,
     playbackDone,
+    boardReady,
   };
 }

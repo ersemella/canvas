@@ -53,6 +53,8 @@ export default silkRoadRun;
 export {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem};
 export {HERO_PORTRAIT, hexOverlaySpan} from './client/board/units';
 export {TRACK_AREA, trackCards} from './client/layout';
+export {openingPlayback} from './client/playback';
+export type {PlaybackPayload} from './client/playback';
 export {PALETTE, PIXEL_FONT} from './client/palette';
 export type {PaletteColor} from './client/palette';
 export type {BoardScene, HighlightKind} from './client/board/scene';

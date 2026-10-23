@@ -163,8 +163,11 @@ describe('the track', () => {
       if (id === 'p-camel') rounds.push([]);
       else rounds[rounds.length - 1]!.push(id);
     }
-    // Between two of Temee's turns, every other unit acts exactly once.
-    for (const round of rounds.slice(1, -1)) {
+    // Between two of Temee's turns, every other unit acts exactly once,
+    // once the starting cards spaced past Temee's second turn have had
+    // their first.
+    expect(rounds[1]!.length + rounds[2]!.length).toBe(2 * (s.units.length - 1));
+    for (const round of rounds.slice(3, -1)) {
       expect(new Set(round).size).toBe(round.length);
       expect(round.length).toBe(s.units.filter((u) => u.alive).length - 1);
       // The Outriders (speed 3) act before everyone else.
@@ -213,50 +216,50 @@ describe('the track', () => {
     for (const h of map.startColumns.enemy) expect(hexToOffset(h).col).toBe(7);
   });
 
-  it('orders simultaneous placement: speed, then sides alternating from the player, then party order', () => {
+  it('orders simultaneous placement: speed, then the player’s side first, then party order', () => {
     const s = createFight(0);
     const order = simultaneousOrder(s.units).map((u) => u.id);
-    // Outriders are fastest; the heroes after them tie, so they alternate
-    // sides; the camel, slowest, is last.
+    // Outriders are fastest; the heroes after them tie, the player's
+    // first; the camel, slowest, is last.
     expect(order).toEqual([
       'p-mangudai',
       'e-mangudai',
       'p-bokh',
-      'e-bokh',
       'p-storm',
+      'e-bokh',
       'e-storm',
       'p-camel',
     ]);
   });
 
-  it('starts equal speeds in an order drawn from the seed, the faster still first', () => {
-    const startOrder = (seed: number) =>
-      createFight(seed)
+  it('starts every fight in the same order, the faster first, ties the player’s first', () => {
+    for (let seed = 0; seed < 20; seed++) {
+      const order = createFight(seed)
         .units.slice()
         .sort((a, b) => a.slot! - b.slot!)
         .map((u) => u.id);
-    const orders = new Set<string>();
-    for (let seed = 0; seed < 20; seed++) {
-      const order = startOrder(seed);
-      expect(order).toEqual(startOrder(seed));
-      // The camel always acts first; then the Outriders, fastest, in either order.
-      expect(order[0]).toBe('p-camel');
-      expect(new Set(order.slice(1, 3))).toEqual(new Set(['p-mangudai', 'e-mangudai']));
-      orders.add(order.join());
+      expect(order).toEqual([
+        'p-camel',
+        'p-mangudai',
+        'e-mangudai',
+        'p-bokh',
+        'p-storm',
+        'e-bokh',
+        'e-storm',
+      ]);
     }
-    expect(orders.size).toBeGreaterThan(1);
   });
 
-  it('starts Temee at slot 0 and the rest 2 × speed before its next turn, without two in one slot (3.4)', () => {
+  it('starts Temee at slot 0 and the rest 2 × speed before its next turn, spaced out by one slot (3.4)', () => {
     const s = createFight(1);
-    const slots = s.units.map((u) => u.slot);
-    expect(new Set(slots).size).toBe(7);
     expect(unit(s, 'p-camel').slot).toBe(0);
-    // The Outriders tie as fastest: whichever is placed first gets the rule's slot, the other yields.
-    expect(Math.min(unit(s, 'p-mangudai').slot!, unit(s, 'e-mangudai').slot!)).toBe(
+    // The player's Outrider, fastest, gets the rule's slot; every card
+    // after it yields to leave a free slot before it.
+    expect(unit(s, 'p-mangudai').slot).toBe(
       RULES.roundSlots - RULES.speedSlots * HEROES.mangudai.speed
     );
-    for (const u of s.units) if (u.hero !== 'camel') expect(u.slot!).toBeLessThan(RULES.roundSlots);
+    const slots = s.units.map((u) => u.slot!).sort((a, b) => a - b);
+    for (let i = 1; i < slots.length; i++) expect(slots[i]! - slots[i - 1]!).toBeGreaterThan(1);
   });
 });
 
@@ -618,7 +621,7 @@ describe('abilities', () => {
     expect(second.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Throw: only the grappled unit, Moved to a free space next to it, then struck', () => {
+  it('Throw: only the grappled unit, Moved to a free space next to the Champion, then struck; the grapple holds', () => {
     const s = setup({
       'p-bokh': at(3, 3),
       'e-storm': hexNeighbors(at(3, 3))[0]!,
@@ -630,24 +633,18 @@ describe('abilities', () => {
     expect(ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
     const throws = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!);
-    expect(throws.length).toBeGreaterThan(0);
+    // Every free space around the Champion, not around the target.
+    expect(throws.length).toBe(5);
     for (const t of throws) {
       expect(t.hex).toEqual(target.hex);
-      expect(hexDistance(t.to!, target.hex!)).toBe(1);
+      expect(hexDistance(t.to!, b.hex!)).toBe(1);
       expect(unitAt(s, t.to!)).toBeUndefined();
     }
-    // Landing beside the Champion keeps hold.
-    const beside = throws.find((t) => hexDistance(t.to!, b.hex!) === 1)!;
-    const kept = cloneFight(s);
-    applyTurn(kept, unit(kept, b.id), {action: {ability: 'throw', target: beside}});
-    expect(unit(kept, target.id).hex).toEqual(beside.to);
-    expect(unit(kept, target.id).hp).toBe(target.hp - b.power);
-    expect(unit(kept, target.id).statuses.map((x) => x.kind)).toEqual(['stunned']);
-    // Landing away from it breaks the grapple.
-    const away = throws.find((t) => hexDistance(t.to!, b.hex!) === 2)!;
-    applyTurn(s, b, {action: {ability: 'throw', target: away}});
-    expect(target.hex).toEqual(away.to);
-    expect(target.statuses).toEqual([]);
+    const far = throws.find((t) => hexDistance(t.to!, target.hex!) === 2)!;
+    applyTurn(s, b, {action: {ability: 'throw', target: far}});
+    expect(target.hex).toEqual(far.to);
+    expect(target.hp).toBe(target.maxHp - 2 * b.power);
+    expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
   it('hail covers one space within three: a unit there is Immobilized until the caster’s next turn', () => {

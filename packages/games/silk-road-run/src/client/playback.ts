@@ -55,6 +55,21 @@ export function displayFight(base: FightState, e: RecordedEvent, actor: string |
   };
 }
 
+/**
+ * A new fight's opening, for a board that has nothing to play back from:
+ * the cards as first placed (the first event, the camel's turn, records the
+ * board before its first step off the top-left corner), then everything up
+ * to the player's first turn. Null if there's nothing recorded.
+ */
+export function openingPlayback(to: FightState): PlaybackPayload | null {
+  const first = to.events?.[0];
+  if (!first) return null;
+  const shown = displayFight(to, first, null);
+  // Nothing has happened yet: no statuses, no log.
+  const from = {...shown, units: shown.units.map((u) => ({...u, statuses: []})), log: []};
+  return {from, to};
+}
+
 export class Playback {
   readonly events: RecordedEvent[];
   /** The event showing now. */
