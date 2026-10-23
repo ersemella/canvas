@@ -1229,8 +1229,8 @@ place of Volley, which was removed with its code ([history.md](history.md)).
 Skirmish and Hold. A drawn arrow in the air is `FightState.shots`, its
 lane drawn on the board up to the first unit in it (`shotLane`); the AI's
 threat map leaves out a Skirmish step for an Immobilized Outrider. The
-page aims it in two taps, the unit and then the space to step to, as
-Throw's landing. Measured as shipped, 400 fights each: side without
+page aims it in two taps, the space to step to and then a unit in line
+from there (owner, 2026-10-23; the unit first until then). Measured as shipped, 400 fights each: side without
 Skirmish 43%, the Bow 33.5%, both 14.3%, Hail 22.8%, Sunlight 49.8%,
 Grapple 18%, Throw 47.5%; the Outrider walks 38%, Bows 34%, Skirmishes
 18%, Holds 10%; Temee killed in 30 of 400. Player wins: Outrider + 2
