@@ -21,8 +21,10 @@ export function allowedTargets(
 
 /**
  * The targets offered for `def` from where `unit` stands: its allowed
- * targets, and for one aimed at a unit only enemies. The rules allow
- * friendly fire; a player isn't offered it (hail can still catch allies).
+ * targets, for one aimed at a unit only enemies, and for a support ability
+ * (Sunlight) only its own side and spaces without a unit. The rules allow
+ * friendly fire and helping enemies; a player isn't offered either (hail
+ * can still catch allies).
  */
 export function offeredTargets(
   state: FightState,
@@ -31,6 +33,11 @@ export function offeredTargets(
   def: AbilityDef
 ): ActionTarget[] {
   const targets = allowedTargets(state, map, unit, def);
+  if (def.kind === 'support')
+    return targets.filter((t) => {
+      const u = t.hex && unitAt(state, t.hex);
+      return !u || u.side === unit.side;
+    });
   if (!def.targetsUnit) return targets;
   return targets.filter((t) => {
     const u = t.hex && unitAt(state, t.hex);

@@ -186,10 +186,12 @@ const hail: AbilityDef = {
 };
 
 /**
- * Sunlight (owner, 2026-10-23): a unit within `ABILITY.sunlight.range`
- * that hits (not Temee) and isn't already Enhanced (renewing an Enhance on
+ * Sunlight (owner, 2026-10-23): a space within `ABILITY.sunlight.range`.
+ * Hail there melts (`melts`), freeing whoever it held; a unit there that
+ * hits (not Temee) and isn't already Enhanced (renewing an Enhance on
  * itself, the Storm Caller never spent it) is Enhanced until the end of
- * its next turn. Off as adopted: `self`, `melts` (config.ts).
+ * its next turn. The Storm Caller may target itself (`self`). Aimed at a
+ * space, since hail alone is a target.
  */
 const sunlight: AbilityDef = {
   id: 'sunlight',
@@ -197,8 +199,7 @@ const sunlight: AbilityDef = {
   kind: 'support',
   range: ABILITY.sunlight.range,
   summary: () =>
-    `Enhance ${ABILITY.sunlight.enhance} a unit that isn’t Enhanced already: its abilities deal ${ABILITY.sunlight.enhance} more until the end of its next turn.`,
-  targetsUnit: true,
+    `Sunlight on a space: hail there melts, and a unit there not Enhanced already, you included, is Enhanced ${ABILITY.sunlight.enhance}: its abilities deal ${ABILITY.sunlight.enhance} more until the end of its next turn.`,
   targets(state, map, user, from) {
     const {range, self, melts} = ABILITY.sunlight;
     return hexesWithin(map, from, range, (h) => {

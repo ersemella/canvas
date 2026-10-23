@@ -68,7 +68,7 @@ also has Hold.
 | Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |
 | | | | | | Volley | Arrows from above aimed at one space within **3** with a unit on it, adjacent included, falling as hail does, so no line of fire is needed. **Charged**: the Outrider's card goes 2 slots further on than its action cost, and the arrows land at the start of that next turn: whoever stands there then takes 2 (the Outrider's power). The space shows marked while they are in the air; they are lost if the Outrider falls first. Owner, 2026-10-23: charge 2 at range 3 ([balance.md](balance.md#volley-charged-at-range-3-2026-10-23)), replacing an instant Volley at range 2. |
 | Yadachy Storm Caller | 2 | 2 | 1 | 6 | Hail | One space within 3 (not ruins). It stays until the Storm Caller's next turn begins (or it falls). A unit in the space when it lands, or that enters it (walking, which stops there, or Moved), is **Immobilized** until the hail disappears. Its damage is the Storm Caller's power, 1 (owner, 2026-10-23; 0 before). |
-| | | | | | Sunlight | A unit within 3 that hits (not Temee), ally or enemy, not already Enhanced, nor the Storm Caller itself: **Enhanced 2** until the end of its next turn. No damage. Owner, 2026-10-23, added as measured: a trap for today's AI ([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). |
+| | | | | | Sunlight | One space within 3 (not ruins). Hail there melts, freeing whoever it held. A unit there that hits (not Temee), ally or enemy, the Storm Caller itself included, not already Enhanced, is **Enhanced 2** until the end of its next turn. No damage. A player is offered only its own side and spaces of hail. Owner, 2026-10-23: added as measured (a trap for today's AI), then with self-targeting and melting ([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). |
 
 The Bökh Champion's Inevitable (2026-10-22) went with this rework: the
 owner's notes leave it out, and nothing Delays any more. The kits they
@@ -84,8 +84,9 @@ cleanse) and Fog were built, measured and removed with their code
 
 **Added 2026-10-23 (owner):** Sunlight as Enhance 2 for the Storm Caller,
 as measured, though the AI misuses it
-([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). Variants left
-off: targeting itself, adding to the squeeze, melting hail.
+([balance.md](balance.md#sunlight-as-enhance-2026-10-23)); then (owner, the
+same day) targeting itself and melting hail. Adding to the squeeze stays
+off.
 
 **First measurements (2026-10-23, [balance.md](balance.md#the-2026-10-23-rework)):**
 Grapple decides fights (a side without it wins 6% of AI-vs-AI fights),

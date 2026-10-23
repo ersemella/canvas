@@ -154,9 +154,9 @@ export const ABILITY = {
    * Temee), not already Enhanced, is Enhanced `enhance` until the end of
    * its next turn. `self`: the Storm Caller may target itself. `melts`:
    * hail on the target's space melts, and a space of hail alone is a
-   * target. Both off, as adopted; measured in balance.md.
+   * target. Both on since the owner's call the same day (balance.md).
    */
-  sunlight: {range: 3, enhance: 2, self: false as boolean, melts: false as boolean},
+  sunlight: {range: 3, enhance: 2, self: true as boolean, melts: true as boolean},
   volley: {range: 3, charge: 2},
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes

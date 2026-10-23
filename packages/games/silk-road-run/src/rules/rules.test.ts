@@ -1,6 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {
   hexDistance,
+  hexEquals,
   hexKey,
   hexNeighbors,
   hexToOffset,
@@ -21,7 +22,7 @@ import {
 import {ABILITIES, abilitiesOf, arrowLanes} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
-import {onlyHold} from './choices';
+import {offeredTargets, onlyHold} from './choices';
 import {
   RuleError,
   actingUnit,
@@ -578,7 +579,7 @@ describe('stats and damage', () => {
     expect(squeezed(true)).toBe(2);
   });
 
-  it('Sunlight Enhances a unit within 3 that hits, not itself, Temee or one already Enhanced', () => {
+  it('Sunlight Enhances a unit within 3 that hits, itself included, not Temee or one already Enhanced', () => {
     const s = setup({
       'p-storm': at(1, 3),
       'p-mangudai': at(2, 3),
@@ -589,13 +590,48 @@ describe('stats and damage', () => {
     });
     const storm = unit(s, 'p-storm');
     const targets = () =>
-      ABILITIES.sunlight.targets(s, mapOf(s), storm, storm.hex!).map((t) => hexKey(t.hex!));
-    expect(targets().sort()).toEqual([hexKey(at(2, 3)), hexKey(at(3, 3))].sort());
+      ABILITIES.sunlight
+        .targets(s, mapOf(s), storm, storm.hex!)
+        .map((t) => hexKey(t.hex!))
+        .sort();
+    expect(targets()).toEqual([at(1, 3), at(2, 3), at(3, 3)].map(hexKey).sort());
+    // The player is offered its own side only.
+    expect(
+      offeredTargets(s, mapOf(s), storm, ABILITIES.sunlight)
+        .map((t) => hexKey(t.hex!))
+        .sort()
+    ).toEqual([at(1, 3), at(2, 3)].map(hexKey).sort());
     s.awaiting = storm.id;
     applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
     expect(unit(s, 'p-mangudai').enhance).toBe(ABILITY.sunlight.enhance);
     expect(ABILITY.sunlight.enhance).toBe(2);
-    expect(targets()).toEqual([hexKey(at(3, 3))]);
+    expect(targets()).toEqual([at(1, 3), at(3, 3)].map(hexKey).sort());
+  });
+
+  it('Sunlight melts hail on its space, freeing whoever it held; hail alone is a target', () => {
+    const s = setup({
+      'p-storm': at(1, 3),
+      'p-mangudai': at(2, 3),
+      'e-storm': at(5, 3),
+      'e-mangudai': at(7, 6),
+    });
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'p-mangudai');
+    s.effects = [
+      {kind: 'hail', hex: at(2, 3), source: 'e-storm'},
+      {kind: 'hail', hex: at(1, 4), source: 'p-other'},
+    ];
+    m.statuses = [{kind: 'immobilized', hail: 'e-storm'}];
+    expect(
+      ABILITIES.sunlight
+        .targets(s, mapOf(s), storm, storm.hex!)
+        .some((t) => hexEquals(t.hex!, at(1, 4)))
+    ).toBe(true);
+    s.awaiting = storm.id;
+    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
+    expect(s.effects.map((e) => hexKey(e.hex))).toEqual([hexKey(at(1, 4))]);
+    expect(m.statuses).toEqual([]);
+    expect(m.enhance).toBe(2);
   });
 
   it('power 0 deals no damage, and says nothing of it', () => {
