@@ -20,15 +20,15 @@ tuning. Section numbers are the combat design's.
 | **Build** | A player's choices outside of combat: which characters are in the party (composition) and which gear each character has equipped. |
 | **Composition** | The specific set of characters in the party. |
 | **Party** | The group of characters a player controls in combat. Maximum of 4 heroes; the camel isn't one of them. |
-| **Camel** | The caravan's camel, Temee: a unit that can't attack and walks one space a turn toward the exit (by itself while the game is pared back). It reaching an exit wins the fight; its death is game over; its damage carries over between fights (18). It starts last, at slot 12 (3.4). |
+| **Camel** | The caravan's camel, Temee: a unit that can't attack and walks one space a turn toward the exit (by itself while the game is pared back). It reaching an exit wins the fight; its death is game over; its damage carries over between fights (18). It starts last, at slot 24 (3.4). |
 | **Exit hex** | The hex the camel reaching wins the fight: the bottom-right corner while the game is pared back (18.2). |
 | **Unit** | Any combatant on the map, whether player-controlled or enemy. |
 | **Turn** | A single unit's opportunity to act. Turns are individual, not per side. |
 | **Track** | The row of numbered slots that sets turn order. Every unit and track entity has a card in one slot; the track advances slot by slot and each card acts when reached (3.1). After each turn a card goes its unit's action cost on. Drawn as a window of roughly the next 30 slots; tapping a card previews it (7.1). |
 | **Slot** | One position on the track. Durations are measured in slots. Two cards never share a slot. |
 | **Card** | A unit's or track entity's marker on the track. |
-| **Placement** | Where a card goes after a turn: 12 − 2 × speed slots on (the action cost), whatever the turn did (3.2). |
-| **Speed** | A unit stat that sets its action cost (12 − 2 × speed slots), its starting slot, and the order of cards placed at the same moment. See section 4. |
+| **Placement** | Where a card goes after a turn: 24 − 4 × speed slots on (the action cost), whatever the turn did (3.2). |
+| **Speed** | A unit stat that sets its action cost (24 − 4 × speed slots), its starting slot, and the order of cards placed at the same moment. See section 4. |
 | **Collision** | A card placed on an occupied slot. The arriving card yields to the next free slot (3.3). |
 | **Push / Pull / Move** | Displacement: putting a unit on a different space, away from the source (Push), toward it (Pull) or to a stated space (Move) (17.4). Always the board; see Delay and Haste for the track. Until 2026-10-23 called Displace. |
 | **Delay** | Moves a card later on the track (3.5), within the delay limit (3.6). Never board movement. Until 2026-10-23 called Push. |

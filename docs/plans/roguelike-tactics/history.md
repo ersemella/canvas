@@ -74,7 +74,8 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
     turn and every other card 2 × speed slots before its next turn, so each
     unit acted once in each of Temee's rounds; Temee started first, at slot
     0, and the rest at 20 − 2 × speed, spaced out by one slot. Replaced
-    (owner, 2026-10-23) by an action cost of 12 − 2 × speed for every unit,
+    (owner, 2026-10-23) by an action cost of 12 − 2 × speed for every unit
+    (doubled the same day to 24 − 4 × speed, Temee then starting at 24),
     Temee's included, and a starting order from slot 0, fastest first, with
     Temee last at slot 12 ([timeline.md](timeline.md), 3.2 and 3.4).
   - **Charged abilities and ultimates:** charge and recovery costs on the

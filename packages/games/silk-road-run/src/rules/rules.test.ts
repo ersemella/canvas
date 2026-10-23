@@ -122,7 +122,7 @@ describe('the track', () => {
     expect(onlyHold(s, mapOf(s), m)).toBe(false);
   });
 
-  it('places a card 12 − 2 × speed slots on, whatever the turn did (3.2)', () => {
+  it('places a card 24 − 4 × speed slots on, whatever the turn did (3.2)', () => {
     const s = setup({
       'p-camel': at(0, 0),
       'p-mangudai': at(1, 3),
@@ -133,11 +133,11 @@ describe('the track', () => {
     const m = unit(s, 'p-mangudai');
     const b = unit(s, 'p-bokh');
     s.currentSlot = 25;
-    // Speed 3 costs 6 slots, speed 2 costs 8, wherever Temee's card is.
-    expect(aimSlot(s, m)).toBe(31);
-    expect(aimSlot(s, b)).toBe(33);
+    // Speed 3 costs 12 slots, speed 2 costs 16, wherever Temee's card is.
+    expect(aimSlot(s, m)).toBe(37);
+    expect(aimSlot(s, b)).toBe(41);
     s.currentSlot = 35;
-    expect(aimSlot(s, m)).toBe(41);
+    expect(aimSlot(s, m)).toBe(47);
     // A move and an ability place it alike.
     s.currentSlot = 25;
     m.slot = 25;
@@ -146,8 +146,8 @@ describe('the track', () => {
     applyTurn(moved, unit(moved, m.id), {move: [at(2, 3)], action: {ability: 'hold'}});
     const held = cloneFight(s);
     applyTurn(held, unit(held, m.id), {action: {ability: 'hold'}});
-    expect(unit(moved, m.id).slot).toBe(31);
-    expect(unit(held, m.id).slot).toBe(31);
+    expect(unit(moved, m.id).slot).toBe(37);
+    expect(unit(held, m.id).slot).toBe(37);
   });
 
   it('gives the faster more turns: Outriders before Bökh, Bökh before Temee', () => {
@@ -243,7 +243,7 @@ describe('the track', () => {
     }
   });
 
-  it('starts the fastest from slot 0, a free slot between speeds, and Temee last at slot 12 (3.4)', () => {
+  it('starts the fastest from slot 0, a free slot between speeds, and Temee last at slot 24 (3.4)', () => {
     const s = createFight(1);
     const slots = Object.fromEntries(s.units.map((u) => [u.id, u.slot]));
     expect(slots).toEqual({
@@ -253,7 +253,7 @@ describe('the track', () => {
       'p-storm': 4,
       'e-bokh': 5,
       'e-storm': 6,
-      'p-camel': 12,
+      'p-camel': 24,
     });
   });
 });
@@ -710,7 +710,7 @@ describe('abilities', () => {
 });
 
 describe('the caravan’s camel', () => {
-  it('acts last in the starting order, at slot 12, despite its speed', () => {
+  it('acts last in the starting order, at slot 24, despite its speed', () => {
     for (let seed = 0; seed < 10; seed++) {
       const s = createFight(seed);
       const camel = unit(s, 'p-camel');
@@ -776,7 +776,7 @@ describe('the caravan’s camel', () => {
     expect(advanceToDecision(s)!.id).toBe('p-bokh');
     expect(camel.hex).toEqual(road[0]);
     expect(camel.slot).toBe(90 + actionCost(camel));
-    expect(actionCost(camel)).toBe(12);
+    expect(actionCost(camel)).toBe(24);
     expect(s.phase).toBe('fight');
   });
 
@@ -792,7 +792,7 @@ describe('the caravan’s camel', () => {
     expect(camel.hex).not.toEqual(road[0]);
     expect(hexDistance(camel.hex!, at(2, 4))).toBe(1);
     expect(camel.skipped).toBeUndefined();
-    expect(camel.slot).toBe(102);
+    expect(camel.slot).toBe(114);
 
     const held = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     const pinned = unit(held, 'p-camel');
@@ -806,9 +806,9 @@ describe('the caravan’s camel', () => {
     for (const u of held.units) if (u !== pinned && u.alive) u.slot = 500 + u.partyIndex;
     advanceToDecision(held);
     expect(pinned.hex).toEqual(at(2, 4));
-    // Waiting, its card still goes its action cost on each turn: 102, 114,
-    // … 510.
-    expect(pinned.slot).toBe(510);
+    // Waiting, its card still goes its action cost on each turn: 114, 138,
+    // … 522.
+    expect(pinned.slot).toBe(522);
 
     // In the corner, its three neighbours taken: nowhere to go.
     const boxed = setup({

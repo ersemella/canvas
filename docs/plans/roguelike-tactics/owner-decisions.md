@@ -78,12 +78,12 @@ The owner's notes were rough; where they left a choice, the builder
 picked the reading below. Confirm or change each:
 
 - **Placement** (owner, 2026-10-23, replacing Temee's rounds): every
-  action costs 12 − 2 × speed slots, Temee's included: speed 0, so 12
+  action costs 24 − 4 × speed slots, Temee's included: speed 0, so 24
   slots a turn, whether it stepped or waited (owner, 2026-10-23).
 - **Starting order** (owner, 2026-10-23): from slot 0, fastest first, ties
   the player's first, equal speeds side by side, a free slot between
-  speeds; Temee last at slot 12. The builder puts Temee just after the
-  other cards should they ever reach slot 12 (no fight has enough units).
+  speeds; Temee last at slot 24. The builder puts Temee just after the
+  other cards should they ever reach slot 24 (no fight has enough units).
 - **Hail Immobilizes a unit standing in its space when it lands**, as well
   as one that enters it, and **any unit**, allies and the Storm Caller
   included. A walk that enters it ends there. It disappears when the

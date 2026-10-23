@@ -77,7 +77,7 @@ describe('playback', () => {
     expect(camel(from).hex).toEqual(SALT_FLATS.camelStart);
     expect(from.currentSlot).toBe(0);
     // Temee acts last in the starting order (3.4), so it hasn't moved yet.
-    expect(camel(from).slot).toBe(12);
+    expect(camel(from).slot).toBe(24);
     expect(from.units.every((u) => u.statuses.length === 0)).toBe(true);
     expect(from.units.map((u) => u.slot)).toEqual(to.units.map((u) => u.slot));
   });
