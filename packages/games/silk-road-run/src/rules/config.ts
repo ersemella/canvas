@@ -142,8 +142,9 @@ export const ABILITY = {
   /**
    * Arrows from above (owner, 2026-10-23): aimed at one space within 3 with
    * a unit on it, adjacent included, no line of fire needed, as hail falls.
-   * Charge 4 (owner, 2026-10-23): the Outrider's card is pushed `charge`
-   * slots on, greyed while it charges; when it comes back the arrows land
+   * Charged (owner, 2026-10-23): the Outrider's card is pushed `charge`
+   * of its action cost on, rounded (half: 4 slots for the Outrider's 8),
+   * greyed while it charges; when it comes back the arrows land
    * on whoever stands there then, for the Outrider's power, with no turn
    * for the Outrider, and its card goes its action cost on to its next
    * turn.
@@ -156,7 +157,7 @@ export const ABILITY = {
    * target. Both on since the owner's call the same day (balance.md).
    */
   sunlight: {range: 3, enhance: 2, self: true as boolean, melts: true as boolean},
-  volley: {range: 3, charge: 4},
+  volley: {range: 3, charge: 0.5},
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.

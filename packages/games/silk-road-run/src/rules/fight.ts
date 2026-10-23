@@ -305,7 +305,12 @@ export function applyTurn(
   endTurnEffects(unit);
   // A charged ability's card is pushed out to its charge, the cards there moving on.
   if (unit.alive)
-    placeCard(state, unit, aimSlot(state, unit, state.currentSlot, def.id), chargeOf(def.id) > 0);
+    placeCard(
+      state,
+      unit,
+      aimSlot(state, unit, state.currentSlot, def.id),
+      chargeOf(unit, def.id) > 0
+    );
 }
 
 /** A deep copy for previews and the AI; drops the log unless asked, and the events always. */
