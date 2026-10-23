@@ -56,6 +56,7 @@ export type KeywordId =
   | 'melee'
   | 'immobilized'
   | 'stunned'
+  | 'enhanced'
   | 'move';
 
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
@@ -73,6 +74,10 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   stunned: {
     name: 'Stunned',
     detail: 'Can’t take any action, moving included: its turns are skipped.',
+  },
+  enhanced: {
+    name: 'Enhanced',
+    detail: 'Its abilities deal that much more damage, until the end of its next turn.',
   },
   move: {name: 'Move', detail: 'Put on another space by someone else, not walking.'},
 };

@@ -9,8 +9,6 @@ import {chooseAiTurn} from '@balance-rules/ai';
 import {ABILITY, AI, CAMEL, HEROES, RULES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import type {AbilityId, FightState, HeroId, Side} from '@balance-rules/types';
-// Registers the experimental Sunlight (in no kit unless an experiment adds it).
-import './sunlight';
 
 /** Mutable views of the config, for experiments to patch. */
 export type Config = {
@@ -183,7 +181,7 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
         input.action.target?.to?.r === u.hex?.r;
       add((uses[u.hero] ??= {}), moving ? 'move' : swap ? 'swap' : input.action.ability);
       add(uses[u.hero]!, 'turns');
-      if (input.action.ability === ('sunlight' as AbilityId)) {
+      if (input.action.ability === 'sunlight') {
         const at = input.action.target!.hex!;
         const t = state.units.find((v) => v.alive && v.hex?.q === at.q && v.hex.r === at.r);
         add(

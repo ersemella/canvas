@@ -86,7 +86,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
     // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
     // couldn't break a grapple.
     power: 1,
-    abilities: ['hail', 'hold'],
+    // Sunlight added (owner, 2026-10-23), as measured: a trap for the AI
+    // at Enhance 2 (balance.md).
+    abilities: ['hail', 'sunlight', 'hold'],
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -144,6 +146,14 @@ export const ABILITY = {
    * (owner, 2026-10-23; balance.md): at 3 it was the strongest ability in
    * the game.
    */
+  /**
+   * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
+   * Temee), not already Enhanced, is Enhanced `enhance` until the end of
+   * its next turn. `self`: the Storm Caller may target itself. `melts`:
+   * hail on the target's space melts, and a space of hail alone is a
+   * target. Both off, as adopted; measured in balance.md.
+   */
+  sunlight: {range: 3, enhance: 2, self: false as boolean, melts: false as boolean},
   volley: {
     range: 2,
     /**
@@ -165,7 +175,7 @@ export const ABILITY = {
    */
   grapple: {
     squeeze: 1,
-    /** Whether a Champion's Enhance adds to its squeeze (open; balance experiments). */
+    /** Whether a Champion's Enhance adds to its squeeze (off, as adopted; balance.md). */
     enhancedSqueeze: false,
   },
 } as const;

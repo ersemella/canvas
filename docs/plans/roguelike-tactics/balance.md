@@ -1132,10 +1132,9 @@ next turn. The owner asked for three variants: the Storm Caller may target
 itself (**self**: its next Hail deals 2), a Champion's Enhance adds to its
 squeeze (**squeeze**), and Sunlight melts hail on its space, freeing whoever
 it held, with a space of hail alone a target too (**melts**). Built for
-measuring only: the Enhance rule is in the rules (`enhance` in resolve.ts,
-ending at its unit's turn end in fight.ts), but Sunlight itself is in
-`scripts/balance/sunlight.ts`, in no kit unless an experiment adds it, so
-the game and page are unchanged. `experiments/sunlight.mjs`, 400 fights
+measuring first, in no kit: the Enhance rule in the rules (`enhance` in
+resolve.ts, ending at its unit's turn end in fight.ts), Sunlight in the
+balance scripts. `experiments/sunlight.mjs`, 400 fights
 each, seeds from 1000, measured with the action cost at 12 − 2 × speed
 (before 60 ÷ (speed + 5), the same day).
 
@@ -1204,9 +1203,10 @@ on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
   player's own Sunlight that costs it. The AI counts the full +2 whenever
   an enemy is in reach, about twice what it delivers (principle 4).
 
-**Merged with Enhance 2** (owner, 2026-10-23): `ABILITY.sunlight.enhance`
-defaults to 2 in `scripts/balance/sunlight.ts`. It is still in no hero's
-kit.
+**Adopted at Enhance 2** (owner, 2026-10-23), as measured: Sunlight is in
+the Storm Caller's kit (`ABILITY.sunlight` in config.ts), with self,
+squeeze and melts off. The measurements above were taken before; the AI's
+valuation is unchanged, so it still misuses it.
 
 ## Principles for re-tuning
 

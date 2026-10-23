@@ -39,6 +39,7 @@ function statusWords(before: Unit, after: Unit): string[] {
   if (isStunned(after) && !isStunned(before)) out.push('Stunned');
   else if (isImmobilized(after) && !isImmobilized(before)) out.push('Immobilized');
   if (after.alive && !isStunned(after) && isStunned(before)) out.push('Released');
+  if (after.enhance && !before.enhance) out.push(`Enhanced ${after.enhance}`);
   return out;
 }
 

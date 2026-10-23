@@ -8,7 +8,7 @@ import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES} from './config';
 import {isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
-import {endGrapples, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
+import {endGrapples, enhance, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -16,9 +16,9 @@ import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
 /**
  * What an ability is broadly for, shown as an icon by its name: hurting
- * enemies, or controlling the board (statuses, hail).
+ * enemies, controlling the board (statuses, hail), or helping (Enhance).
  */
-export type AbilityKind = 'attack' | 'control';
+export type AbilityKind = 'attack' | 'control' | 'support';
 
 export interface AbilityDef {
   id: AbilityId;
@@ -188,6 +188,46 @@ const hail: AbilityDef = {
   },
 };
 
+/**
+ * Sunlight (owner, 2026-10-23): a unit within `ABILITY.sunlight.range`
+ * that hits (not Temee) and isn't already Enhanced (renewing an Enhance on
+ * itself, the Storm Caller never spent it) is Enhanced until the end of
+ * its next turn. Off as adopted: `self`, `melts` (config.ts).
+ */
+const sunlight: AbilityDef = {
+  id: 'sunlight',
+  name: 'Sunlight',
+  kind: 'support',
+  range: ABILITY.sunlight.range,
+  summary: () =>
+    `Enhance ${ABILITY.sunlight.enhance} a unit that isn’t Enhanced already: its abilities deal ${ABILITY.sunlight.enhance} more until the end of its next turn.`,
+  targetsUnit: true,
+  targets(state, map, user, from) {
+    const {range, self, melts} = ABILITY.sunlight;
+    return hexesWithin(map, from, range, (h) => {
+      if (tileAt(map, h) === 'obstacle') return false;
+      if (melts && state.effects.some((e) => hexEquals(e.hex, h))) return true;
+      const u = unitAt(state, h);
+      return u !== undefined && u.power > 0 && !u.enhance && (u !== user || self);
+    });
+  },
+  resolve(ctx, user, target) {
+    const hex = target.hex!;
+    log(ctx, `${unitName(user)} calls down sunlight.`);
+    if (ABILITY.sunlight.melts) {
+      const hail = ctx.state.effects.find((e) => hexEquals(e.hex, hex));
+      if (hail) {
+        ctx.state.effects = ctx.state.effects.filter((e) => e !== hail);
+        for (const u of ctx.state.units)
+          u.statuses = u.statuses.filter((s) => s.hail !== hail.source);
+        log(ctx, 'The sunlight melts the hail.');
+      }
+    }
+    const u = unitAt(ctx.state, hex);
+    if (u) enhance(ctx, u, ABILITY.sunlight.enhance);
+  },
+};
+
 // ─── Bökh Champion ───────────────────────────────────────────────────────────
 
 /** Whether `user` is grappling `u`. */
@@ -277,6 +317,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   bow,
   volley,
   hail,
+  sunlight,
   grapple,
   throw: throwAbility,
   bite,

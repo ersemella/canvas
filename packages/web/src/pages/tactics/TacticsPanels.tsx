@@ -255,6 +255,12 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
         : `by hail, until ${unitName(holder)}’s next turn`;
     out.push({id: s.kind, label: s.kind === 'stunned' ? 'Stunned' : 'Immobilized', rest});
   }
+  if (unit.enhance)
+    out.push({
+      id: 'enhanced',
+      label: `Enhanced ${unit.enhance}`,
+      rest: unit.enhanceStarted ? 'until the end of this turn' : 'until the end of its next turn',
+    });
   return out;
 }
 
@@ -417,7 +423,13 @@ export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
       {def.kind && (
         <>
           {abilityIcon(def)}
-          <b>{def.name}</b> · {KIND_NAME[def.kind]} · <Term id="power">Damage {unit.power}</Term>
+          <b>{def.name}</b> · {KIND_NAME[def.kind]}
+          {def.kind !== 'support' && (
+            <>
+              {' · '}
+              <Term id="power">Damage {unit.power}</Term>
+            </>
+          )}
         </>
       )}
       {!def.kind && <b>{def.name}</b>}
