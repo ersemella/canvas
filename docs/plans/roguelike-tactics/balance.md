@@ -1136,7 +1136,8 @@ measuring only: the Enhance rule is in the rules (`enhance` in resolve.ts,
 ending at its unit's turn end in fight.ts), but Sunlight itself is in
 `scripts/balance/sunlight.ts`, in no kit unless an experiment adds it, so
 the game and page are unchanged. `experiments/sunlight.mjs`, 400 fights
-each, seeds from 1000.
+each, seeds from 1000, measured with the action cost at 12 − 2 × speed
+(before 60 ÷ (speed + 5), the same day).
 
 **The AI's valuation** (`enhanceGain` in ai.ts): an Enhance is worth one
 hit's extra damage while its unit has an enemy within reach, and stops
