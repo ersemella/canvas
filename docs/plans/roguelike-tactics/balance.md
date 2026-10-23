@@ -983,6 +983,34 @@ without): Hail 39.1%, Fog 51.4%, Grapple 29.3% (10.3% before), Throw
 - **Not on adjacent units** changes nothing: the Outrider stands off
   anyway.
 
+**Neither the Bow nor Volley on an adjacent unit** (owner's question,
+2026-10-23; `experiments/outrider-no-adjacent.mjs`): `ABILITY.bow.minRange`
+and `volley.minRange` 2; an adjacent unit still stops the Bow's arrow.
+
+| | Volley range 3 | Volley range 2 | Range 2, adjacent allowed (above) |
+|---|---:|---:|---:|
+| Side without Volley wins | **13.4%** | 20.2% | 24.4% |
+| Side without the Bow wins | 41.3% | 43.4% | 36.6% |
+| Side without Grapple wins | 23.7% | 17.4% | |
+| The Outrider's turns: Hold | **37.9%** | **42.4%** | 10.7% |
+| Volley / Bow / walking | 34% / 9% / 19% | 22% / 11% / 25% | 17% / 39% / 33% |
+| Temee killed (of 400) | 130 | 44 | 48 |
+| Player wins vs Outrider + 2 wolves | 88.5% | 99% | 93.5% |
+| vs Bökh + Outrider + wolf | 73.7% | 84.5% | 73.7% |
+| vs Outrider + Outrider + wolf | 30.1% | 81% | 43% |
+| vs all three | 54.4% | 62% | 62.6% |
+| Unfinished | 0% | 2.5% | 0% |
+
+- **At range 3 it is still too strong**: Volley still decides fights
+  (13.4%), Temee still dies far more often (130 of 400), and two enemy
+  Outriders still win 70% of stage 2.
+- **At range 2 the numbers balance, the Outrider doesn't**: Volley only
+  reaches the ring two spaces out, so with an enemy beside it or none at
+  two the Outrider Holds on 42% of its turns, and the Bow, hardly used
+  (11%), is worth little (43.4%). Stage 2 gets easier than before any new
+  ability. Range 2 with adjacent targets allowed keeps the Outrider busy
+  (Holds 10.7%) at similar worth.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

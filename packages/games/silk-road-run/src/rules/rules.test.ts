@@ -8,7 +8,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
+import {ABILITY, AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
 import {
   canMove,
   invalidPath,
@@ -127,6 +127,25 @@ describe('the track', () => {
       (h) => !unitAt(s, h) && onMap(SALT_FLATS, h)
     )!;
     expect(onlyHold(s, mapOf(s), w)).toBe(false);
+  });
+
+  it('with a minimum range of 2, the Bow can’t hit an adjacent unit, which still stops the arrow', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(2, 3), 'e-storm': at(4, 3)});
+    const m = unit(s, 'p-mangudai');
+    const lane = arrowLanes(s, mapOf(s), m.hex!).find((l) => l.hit?.id === 'e-bokh')!;
+    expect(lane.hexes).toHaveLength(1);
+    const before = ABILITY.bow.minRange;
+    (ABILITY.bow as {minRange: number}).minRange = 2;
+    try {
+      const targets = ABILITIES.bow.targets(s, mapOf(s), m, m.hex!);
+      expect(targets.some((t) => hexKey(t.hex!) === hexKey(at(2, 3)))).toBe(false);
+      expect(targets.some((t) => hexKey(t.hex!) === hexKey(at(4, 3)))).toBe(false);
+    } finally {
+      (ABILITY.bow as {minRange: number}).minRange = before;
+    }
+    expect(
+      ABILITIES.bow.targets(s, mapOf(s), m, m.hex!).some((t) => hexKey(t.hex!) === hexKey(at(2, 3)))
+    ).toBe(true);
   });
 
   it('Volley reaches an enemy within 3 that no bow lane does, over a unit in the way', () => {

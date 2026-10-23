@@ -78,7 +78,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           const k = id(fq + dq * i, fr + dr * i);
           const tile = board.get(k);
           if (tile === undefined || tile === 'obstacle') break;
-          mark(hexes, k, power);
+          if (i >= ABILITY.bow.minRange) mark(hexes, k, power);
           if (occupied.has(k)) break;
         }
       }

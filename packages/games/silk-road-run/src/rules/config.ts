@@ -127,9 +127,11 @@ export const HEROES: Record<HeroId, HeroStats> = {
 export const ABILITY = {
   /**
    * Six straight lanes with no range limit (owner, 2026-10-20): the arrow
-   * flies until it hits a unit, ruins or the map's edge.
+   * flies until it hits a unit, ruins or the map's edge. `minRange` 2
+   * keeps it off an adjacent unit, which still stops the arrow (a variant
+   * measured against it).
    */
-  bow: {range: Infinity},
+  bow: {range: Infinity, minRange: 1},
   /**
    * One space, its centre within 3 (owner, 2026-10-23; was a radius-1 area
    * with damage and a track Push). It stays until its caster's next turn;

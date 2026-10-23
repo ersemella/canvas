@@ -122,7 +122,7 @@ const bow: AbilityDef = {
   targetsUnit: true,
   targets(state, map, _user, from) {
     return arrowLanes(state, map, from)
-      .filter((lane) => lane.hit)
+      .filter((lane) => lane.hit && hexDistance(lane.hit.hex!, from) >= ABILITY.bow.minRange)
       .map((lane) => ({hex: lane.hit!.hex!}));
   },
   resolve(ctx, user, target) {
