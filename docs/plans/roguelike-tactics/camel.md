@@ -128,7 +128,9 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   before.
 - **The AI** (`ai.ts`): a finished fight dominates both the shortlist score
   and the search's evaluation; the camel's health counts a point a point
-  (`AI.camelHealthWeight`, 1), with no kill value; each hex between the
+  (`AI.camelHealthWeight`, 1; 2 since 2026-10-23, and the enemy closes in
+  on the camel rather than the nearest hero, [ai-search.md](ai-search.md)),
+  with no kill value; each hex between the
   camel and its nearest exit is worth `AI.perCamelHex` (60 on the old
   scale, 0.75 since 2026-10-23) to the enemy and against the player. The camel isn't pulled toward the enemy as heroes
   are.

@@ -167,18 +167,23 @@ export const AI = {
   caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0, wolf: 1} as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   /**
-   * Minus this per space between the unit and the nearest enemy after its
-   * turn, so an AI with nothing in reach closes in instead of holding
+   * Minus this per space between the unit and what it closes in on after
+   * its turn (for the enemy, Temee while it lives; otherwise the nearest
+   * enemy), so an AI with nothing in reach closes in instead of holding
    * forever; small next to any hit.
    */
   perHexFromEnemy: 0.2,
   /**
-   * The caravan's camel (camel.md): its health is worth this much a point
-   * (a hero's is worth 1, plus `kill`; the camel's death is a victory, so
-   * it has no kill value), and each space it stands from the exit is
-   * worth `perCamelHex` to the enemy. PLACEHOLDERS.
+   * The caravan's camel (camel.md): its health is worth this much a point,
+   * and each space it stands from the exit is worth `perCamelHex` to the
+   * enemy. A hero's or wolf's point is worth 1, plus `kill` when it falls:
+   * at most 2 a point spread over its health (a wolf's or the Outrider's 4).
+   * Temee's death is the enemy's victory, so it has no kill value; at 2 a
+   * point, a hit on it is never worth less than the same hit's share of
+   * any other unit, and only a finishing blow outranks it. PLACEHOLDERS;
+   * 2 since 2026-10-23 (was 1).
    */
-  camelHealthWeight: 1,
+  camelHealthWeight: 2,
   perCamelHex: 0.75,
   /**
    * Deterministic work caps shared across all AI turns in a request.

@@ -1,4 +1,5 @@
 import {describe, expect, it} from 'vitest';
+import {hexDistance} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {chooseAiTurn, evaluatePosition, requestChooser, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
@@ -151,6 +152,38 @@ describe('budgeted tactical search', () => {
 });
 
 describe('the search timeline', () => {
+  it('follows the track, not alternation: an ally due next maximizes too', () => {
+    // Two wolves due back to back, then the last hero, which they can kill
+    // between them: a reply assumed to be the opponent's would not bite.
+    const s = setup({'e-wolf': hex(2, 0), 'e-wolf-2': hex(4, 0), 'p-mangudai': hex(3, 0)}, [
+      'wolf',
+      'wolf',
+    ]);
+    const me = unit(s, 'e-wolf');
+    me.slot = 0;
+    unit(s, 'e-wolf-2').slot = 1;
+    unit(s, 'p-mangudai').slot = 2;
+    unit(s, 'p-mangudai').hp = 2;
+    s.awaiting = me.id;
+    const detail = stats();
+    const input = chooseAiTurn(s, me, {left: AI.requestSimulations}, detail, {depth: 2});
+    expect(input.action.ability).toBe('bite');
+    expect(detail.completedDepth).toBe(2);
+    expect(detail.value).toBeGreaterThanOrEqual(AI.victory);
+  });
+
+  it('closes in on Temee, its quarry, rather than the nearest hero', () => {
+    const s = setup({'e-wolf': hex(5, 0), 'p-bokh': hex(7, 0), 'p-camel': hex(0, 0)}, ['wolf']);
+    const me = unit(s, 'e-wolf');
+    me.slot = 0;
+    unit(s, 'p-bokh').slot = 1;
+    unit(s, 'p-camel').slot = 2;
+    s.awaiting = me.id;
+    const input = chooseAiTurn(s, me);
+    const end = input.move!.at(-1)!;
+    expect(hexDistance(end, hex(0, 0))).toBeLessThan(5);
+  });
+
   it('lifts its own hail before stopping for an AI decision, only once', () => {
     const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
     const me = unit(s, 'e-storm');

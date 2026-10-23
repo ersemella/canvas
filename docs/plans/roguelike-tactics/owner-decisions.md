@@ -113,7 +113,9 @@ picked the reading below. Confirm or change each:
 - **Placeholders:** the wolf at speed 2, defence 1 (health 4), power 1;
   Temee at defence 9 (health 20; "very high health"). The AI's weights
   were rescaled to the new health scale (`AI` in `config.ts`: a kill
-  worth 4, a space from the enemy 0.2, a space of the camel's road 0.75).
+  worth 4, a space from the enemy 0.2, a space of the camel's road 0.75;
+  Temee's health 2 a point, and the enemy closes in on Temee, since
+  2026-10-23, [ai-search.md](ai-search.md)).
 - **Deleted:** every parked ability and the Modao Vanguard's kit, with
   their code (owner, 2026-10-23); the Modao Vanguard stays in the roster
   as a hero to rebuild.

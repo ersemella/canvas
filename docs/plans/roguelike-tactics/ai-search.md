@@ -25,6 +25,20 @@ deepening. It remains deterministic: no randomness or clock-based cutoff.
   distances would cancel out in a duel and encourage Holding.
 - Maximize for the root side and minimize for the opposing side, regardless
   of controller. The timeline can give several consecutive turns to allies.
+  Each decision node is whoever's card comes next on the track
+  (`advanceToDecision`), never an assumed alternation; Temee's walk and
+  skipped turns happen in between as on the live track. A test pins this
+  down (two wolves due back to back finish the last hero).
+- **Temee is the enemy's quarry (2026-10-23).** An enemy unit closes in on
+  Temee while it lives, not on the nearest hero (`quarryGap`, used by both
+  the screening score and the per-action progress term), and Temee's
+  health counts 2 a point (`AI.camelHealthWeight`, was 1): at least what
+  any other unit's point is worth with its kill value spread over its
+  health, so only a finishing blow outranks a hit on Temee; its death is
+  the enemy's victory. Over 700 AI-vs-AI fights (stage shapes in turn),
+  Temee's share of the enemy's damage rose from 25% to 36% and its deaths
+  from 18 to 27, but the enemy's wins fell from 15% to 9%: chasing Temee
+  past the party costs it more units (party wipes 87 to 36).
 - Alpha-beta avoids expanding branches that cannot improve the result.
   Successor timelines and subsequent reply sets are generated only when
   visited. A small candidate pool is still simulated up front at each

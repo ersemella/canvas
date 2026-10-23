@@ -108,13 +108,7 @@ export function scoreOutcome(
       if (threat >= me.hp) score -= AI.kill * caution;
     }
   }
-  // The camel walks to the exit, not toward the enemy (its progress above).
-  if (me.hex && me.hero !== CAMEL) {
-    const gaps = after.units
-      .filter((u) => u.alive && u.hex && hostile(u, me))
-      .map((u) => hexDistance(u.hex!, me.hex!));
-    if (gaps.length > 0) score -= Math.min(...gaps) * AI.perHexFromEnemy;
-  }
+  score -= quarryGap(after, me) * AI.perHexFromEnemy;
   return score;
 }
 
@@ -389,15 +383,23 @@ export function requestChooser(budget: SearchBudget): (state: FightState, unit: 
  * preferable.
  */
 function actionCost(before: FightState, unit: Unit, option: ScoredOption): number {
-  const gap = (state: FightState): number => {
-    const me = state.units.find((u) => u.id === unit.id)!;
-    if (!me.alive || !me.hex || me.hero === CAMEL) return 0;
-    let nearest = Infinity;
-    for (const e of state.units) {
-      if (e.alive && e.hex && hostile(e, me))
-        nearest = Math.min(nearest, hexDistance(me.hex, e.hex));
-    }
-    return Number.isFinite(nearest) ? nearest : 0;
-  };
+  const gap = (state: FightState) => quarryGap(state, state.units.find((u) => u.id === unit.id)!);
   return -(gap(before) - gap(option.after)) * AI.perHexFromEnemy;
+}
+
+/**
+ * Spaces from `me` to what it closes in on: for the enemy, Temee while it
+ * lives, since its death wins the fight (camel.md, 18.3); otherwise the
+ * nearest hostile unit. 0 for the camel, which walks to the exit (its
+ * progress is weighed apart), or with nothing to close in on.
+ */
+function quarryGap(state: FightState, me: Unit): number {
+  if (!me.alive || !me.hex || me.hero === CAMEL) return 0;
+  const camel = me.side === 'enemy' ? camelOf(state) : undefined;
+  if (camel?.alive && camel.hex) return hexDistance(me.hex, camel.hex);
+  let nearest = Infinity;
+  for (const e of state.units) {
+    if (e.alive && e.hex && hostile(e, me)) nearest = Math.min(nearest, hexDistance(me.hex, e.hex));
+  }
+  return Number.isFinite(nearest) ? nearest : 0;
 }
