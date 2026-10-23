@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals} from '@canvas/engine/server';
-import {CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
+import {CAMEL, HEROES, PARTY, healthOf} from './config';
 import {invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
@@ -203,8 +203,8 @@ function skipTurn(ctx: Ctx, unit: Unit, text: string): void {
 
 /**
  * The camel's turn (owner, 2026-10-22): one step toward the exit, around
- * ruins and units (`stepToExit`), then its card goes RULES.roundSlots on
- * (owner, 2026-10-23), whether or not it stepped. Immobilized or Stunned,
+ * ruins and units (`stepToExit`), then its card goes its action cost on
+ * (3.2), whether or not it stepped. Immobilized or Stunned,
  * or with units shutting every way, it waits, its turn skipped.
  */
 function walkRoad(ctx: Ctx, unit: Unit): void {
@@ -219,7 +219,7 @@ function walkRoad(ctx: Ctx, unit: Unit): void {
     record(ctx.state, {kind: 'skip', unitId: unit.id});
   }
   checkEnd(ctx.state);
-  if (unit.alive) placeCard(ctx.state, unit, ctx.slot + RULES.roundSlots);
+  if (unit.alive) placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
 }
 
 /**

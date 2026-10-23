@@ -16,7 +16,6 @@ import {
   movementCap,
   reachableHexes,
   roadToExit,
-  stepToExit,
   unitAt,
 } from './board';
 import {ABILITIES, abilitiesOf, arrowLanes} from './abilities';
@@ -46,7 +45,7 @@ import {
   runView,
   stageEnemies,
 } from './run';
-import {aimSlot, freeSlotFrom, nextCard, placeCard, simultaneousOrder} from './track';
+import {actionCost, aimSlot, freeSlotFrom, nextCard, placeCard, simultaneousOrder} from './track';
 import type {FightState, HeroId, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
@@ -94,14 +93,14 @@ describe('the track', () => {
     b.statuses.push({kind: 'immobilized'});
     s.events = [];
     expect(onlyHold(s, mapOf(s), b)).toBe(true);
+    const from = b.slot!;
     const next = advanceToDecision(s)!;
     expect(next.id).not.toBe('p-bokh');
     expect(s.events.some((e) => e.kind === 'skip' && e.unitId === 'p-bokh')).toBe(true);
     expect(b.skipped).toBe(true);
-    // A skipped turn places the card as any turn does: 2 × speed before a
-    // round's end (without a camel, rounds end on multiples of 20), skipped
-    // again until the next unit's card comes first.
-    expect((b.slot! + RULES.speedSlots * b.speed) % RULES.roundSlots).toBe(0);
+    // A skipped turn places the card as any turn does: its action cost on,
+    // skipped again until the next unit's card comes first.
+    expect((b.slot! - from) % actionCost(b)).toBe(0);
     expect(b.slot).toBeGreaterThan(next.slot!);
     // Free again by its next turn: it acts, and the mark goes.
     b.statuses = [];
@@ -124,25 +123,22 @@ describe('the track', () => {
     expect(onlyHold(s, mapOf(s), m)).toBe(false);
   });
 
-  it('places a card 2 × speed slots before Temee’s next turn, whatever the turn did (3.2)', () => {
+  it('places a card 12 − 2 × speed slots on, whatever the turn did (3.2)', () => {
     const s = setup({
       'p-camel': at(0, 0),
       'p-mangudai': at(1, 3),
       'p-bokh': at(1, 5),
       'e-bokh': at(6, 4),
     });
-    const camel = unit(s, 'p-camel');
-    camel.slot = 40;
+    unit(s, 'p-camel').slot = 40;
     const m = unit(s, 'p-mangudai');
     const b = unit(s, 'p-bokh');
     s.currentSlot = 25;
-    // Before Temee's card: this round's slot.
-    expect(aimSlot(s, m)).toBe(40 - 2 * m.speed);
-    expect(aimSlot(s, b)).toBe(40 - 2 * b.speed);
-    // Too late for this round: the next one's, Temee's card going 20 on.
+    // Speed 3 costs 6 slots, speed 2 costs 8, wherever Temee's card is.
+    expect(aimSlot(s, m)).toBe(31);
+    expect(aimSlot(s, b)).toBe(33);
     s.currentSlot = 35;
-    expect(aimSlot(s, m)).toBe(60 - 2 * m.speed);
-    expect(aimSlot(s, b)).toBe(40 - 2 * b.speed);
+    expect(aimSlot(s, m)).toBe(41);
     // A move and an ability place it alike.
     s.currentSlot = 25;
     m.slot = 25;
@@ -151,47 +147,33 @@ describe('the track', () => {
     applyTurn(moved, unit(moved, m.id), {move: [at(2, 3)], action: {ability: 'hold'}});
     const held = cloneFight(s);
     applyTurn(held, unit(held, m.id), {action: {ability: 'hold'}});
-    expect(unit(moved, m.id).slot).toBe(34);
-    expect(unit(held, m.id).slot).toBe(34);
+    expect(unit(moved, m.id).slot).toBe(31);
+    expect(unit(held, m.id).slot).toBe(31);
   });
 
-  it('gives every unit one turn in each of Temee’s rounds, the faster first', () => {
+  it('gives the faster more turns: Outriders before Bökh, Bökh before Temee', () => {
     const s = createFight(3);
     s.events = [];
     advance(s, chooseAiTurn);
-    // Act out a few rounds, everyone holding.
-    const turns: string[] = [];
-    for (let i = 0; i < 40 && s.phase === 'fight'; i++) {
+    // Act out a stretch of the fight, everyone holding.
+    for (let i = 0; i < 60 && s.phase === 'fight'; i++) {
       const u = actingUnit(s)!;
       applyTurn(s, u, {action: {ability: 'hold'}});
       advance(s, (_s, _u) => ({action: {ability: 'hold'}}));
     }
-    for (const e of s.events) if (e.kind === 'turn') turns.push(e.unitId);
-    const rounds: string[][] = [[]];
-    for (const id of turns) {
-      if (id === 'p-camel') rounds.push([]);
-      else rounds[rounds.length - 1]!.push(id);
-    }
-    // Between two of Temee's turns, every other unit acts exactly once,
-    // once the starting cards spaced past Temee's second turn have had
-    // their first.
-    expect(rounds[1]!.length + rounds[2]!.length).toBe(2 * (s.units.length - 1));
-    for (const round of rounds.slice(3, -1)) {
-      expect(new Set(round).size).toBe(round.length);
-      expect(round.length).toBe(s.units.filter((u) => u.alive).length - 1);
-      // The Outriders (speed 3) act before everyone else.
-      expect(new Set(round.slice(0, 2))).toEqual(new Set(['p-mangudai', 'e-mangudai']));
-    }
-    expect(rounds.length).toBeGreaterThan(3);
+    const turns = (id: string) =>
+      s.events!.filter((e) => e.kind === 'turn' && e.unitId === id).length;
+    expect(turns('p-mangudai')).toBeGreaterThan(turns('p-bokh'));
+    expect(turns('p-bokh')).toBeGreaterThan(turns('p-camel'));
   });
 
-  it('moves Temee’s card 20 slots on after each of its turns', () => {
+  it('moves Temee’s card its action cost on after each of its turns', () => {
     const s = setup({'p-camel': at(0, 0), 'e-bokh': at(6, 6)});
     const camel = unit(s, 'p-camel');
     camel.slot = 0;
     unit(s, 'e-bokh').slot = 500;
     advanceToDecision(s);
-    expect(camel.slot).toBe(RULES.roundSlots);
+    expect(camel.slot).toBe(RULES.actionBase - RULES.speedSlots * HEROES.camel.speed);
   });
 
   it('yields to the next free slot, cascading; placed cards never move (3.3)', () => {
@@ -248,27 +230,29 @@ describe('the track', () => {
         .sort((a, b) => a.slot! - b.slot!)
         .map((u) => u.id);
       expect(order).toEqual([
-        'p-camel',
         'p-mangudai',
         'e-mangudai',
         'p-bokh',
         'p-storm',
         'e-bokh',
         'e-storm',
+        'p-camel',
       ]);
     }
   });
 
-  it('starts Temee at slot 0 and the rest 2 × speed before its next turn, spaced out by one slot (3.4)', () => {
+  it('starts the fastest from slot 0, a free slot between speeds, and Temee last at slot 12 (3.4)', () => {
     const s = createFight(1);
-    expect(unit(s, 'p-camel').slot).toBe(0);
-    // The player's Outrider, fastest, gets the rule's slot; every card
-    // after it yields to leave a free slot before it.
-    expect(unit(s, 'p-mangudai').slot).toBe(
-      RULES.roundSlots - RULES.speedSlots * HEROES.mangudai.speed
-    );
-    const slots = s.units.map((u) => u.slot!).sort((a, b) => a - b);
-    for (let i = 1; i < slots.length; i++) expect(slots[i]! - slots[i - 1]!).toBeGreaterThan(1);
+    const slots = Object.fromEntries(s.units.map((u) => [u.id, u.slot]));
+    expect(slots).toEqual({
+      'p-mangudai': 0,
+      'e-mangudai': 1,
+      'p-bokh': 3,
+      'p-storm': 4,
+      'e-bokh': 5,
+      'e-storm': 6,
+      'p-camel': 12,
+    });
   });
 });
 
@@ -724,21 +708,12 @@ describe('abilities', () => {
 });
 
 describe('the caravan’s camel', () => {
-  it('acts first in every fight, despite its speed, walking a space before anyone else', () => {
+  it('acts last in the starting order, at slot 12, despite its speed', () => {
     for (let seed = 0; seed < 10; seed++) {
       const s = createFight(seed);
       const camel = unit(s, 'p-camel');
-      expect(camel.slot).toBe(0);
-      s.events = [];
-      // Along its road, or around a unit in the way (stepToExit).
-      const step = stepToExit(s, mapOf(s), camel);
-      expect(step).toBeDefined();
-      const first = advanceToDecision(s)!;
-      // It walks itself: the track never stops for it.
-      expect(first.hero).not.toBe('camel');
-      expect(s.events[0]).toMatchObject({kind: 'turn', unitId: 'p-camel'});
-      expect(s.events[1]).toMatchObject({kind: 'step', unitId: 'p-camel'});
-      expect(camel.hex).toEqual(step);
+      expect(camel.slot).toBe(RULES.camelStartSlot);
+      expect(s.units.every((u) => u === camel || u.slot! < camel.slot!)).toBe(true);
     }
   });
 
@@ -788,17 +763,18 @@ describe('the caravan’s camel', () => {
     }
   });
 
-  it('walks one space along its road a turn, its card going 20 slots on, and can’t attack', () => {
+  it('walks one space along its road a turn, its card going its action cost on, and can’t attack', () => {
     const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     const camel = unit(s, 'p-camel');
     const road = roadToExit(mapOf(s), at(2, 4));
     camel.slot = 90;
+    unit(s, 'p-bokh').slot = 95;
     expect(abilitiesOf(camel).map((d) => d.id)).toEqual(['hold']);
-    // Bökh's card is at 100: the camel's turn comes first, with no decision.
+    // Bökh's card is at 95: the camel's turn comes first, with no decision.
     expect(advanceToDecision(s)!.id).toBe('p-bokh');
     expect(camel.hex).toEqual(road[0]);
-    expect(camel.slot).toBe(90 + 20);
-    expect(RULES.roundSlots).toBe(20);
+    expect(camel.slot).toBe(90 + actionCost(camel));
+    expect(actionCost(camel)).toBe(10);
     expect(s.phase).toBe('fight');
   });
 
@@ -808,12 +784,13 @@ describe('the caravan’s camel', () => {
     const road = roadToExit(mapOf(s), at(2, 4));
     unit(s, 'e-bokh').hex = road[0]!;
     camel.slot = 90;
+    unit(s, 'p-bokh').slot = 95;
     advanceToDecision(s);
     expect(camel.hex).not.toEqual(at(2, 4));
     expect(camel.hex).not.toEqual(road[0]);
     expect(hexDistance(camel.hex!, at(2, 4))).toBe(1);
     expect(camel.skipped).toBeUndefined();
-    expect(camel.slot).toBe(110);
+    expect(camel.slot).toBe(100);
 
     const held = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     const pinned = unit(held, 'p-camel');
@@ -827,8 +804,9 @@ describe('the caravan’s camel', () => {
     for (const u of held.units) if (u !== pinned && u.alive) u.slot = 500 + u.partyIndex;
     advanceToDecision(held);
     expect(pinned.hex).toEqual(at(2, 4));
-    // Waiting, its card still goes a round on each turn: 110, 130, … 510.
-    expect(pinned.slot).toBe(510);
+    // Waiting, its card still goes its action cost on each turn: 101 (having
+    // yielded to Bökh's card at 100), 111, … 501.
+    expect(pinned.slot).toBe(501);
 
     // In the corner, its three neighbours taken: nowhere to go.
     const boxed = setup({
@@ -905,7 +883,7 @@ describe('previews, the AI and the run', () => {
         move: Array.from({length}, (_, i) => at(i + 1, 0)),
         action: {ability: 'hold'},
       };
-      const aim = RULES.roundSlots - RULES.speedSlots * actor.speed;
+      const aim = s.currentSlot + RULES.actionBase - RULES.speedSlots * actor.speed;
       unit(s, 'e-bokh').slot = aim;
       expect(previewTurn(s, actor.id, input)).toMatchObject({aimSlot: aim, slot: aim + 1});
       s.events = [];
@@ -1071,7 +1049,7 @@ describe('previews, the AI and the run', () => {
     const bokh = unit(s, 'p-bokh');
     s.awaiting = bokh.id;
     const input: TurnInput = {action: {ability: 'hold'}};
-    const aim = RULES.roundSlots - RULES.speedSlots * bokh.speed;
+    const aim = s.currentSlot + RULES.actionBase - RULES.speedSlots * bokh.speed;
     expect(previewTurn(s, bokh.id, input)).toMatchObject({aimSlot: aim, slot: aim});
     // Cards in the aimed slot and the one after: the card yields past both.
     unit(s, 'e-bokh').slot = aim;

@@ -15,32 +15,32 @@ tuning. Section numbers are the combat design's.
 ### 3.1 Summary (Decided)
 Combat runs on a **track** of numbered **slots**. Every unit, and every track entity (3.7), has a card in one slot. The track advances slot by slot; when it reaches a card, that unit or entity takes its turn. After acting, a unit's card is placed further along the track.
 
-**The track is paced by the camel, Temee (owner, 2026-10-23).** Temee's card goes a fixed **20 slots** on after each of its turns, and every other unit's card is placed by its speed **before Temee's next turn**, so each unit acts **once in each of Temee's rounds**, the faster earlier in it. What a unit does on its turn (an ability, a move, a Hold) no longer changes where its card goes. The fight is a series of rounds, each closed by Temee's step toward the exit ([camel.md](camel.md)).
+**Every action costs `12 − 2 × speed` slots (owner, 2026-10-23, the second rework of the day).** After any turn a unit's card goes that many slots on, Temee's included: speed 3 costs 6, speed 2 costs 8, speed 1 costs 10. What a unit does on its turn (an ability, a move, a Hold) doesn't change the cost, so a faster unit simply acts more often. Temee's card is placed like any other; its walk toward the exit is still the fight's clock ([camel.md](camel.md)).
 
-This model keeps the visible card track of Mana Khemia and Final Fantasy X, with rounds like those of a classic initiative order. Until 2026-10-23 every action had a cost that set how far its card moved ([history.md](history.md)).
+This model keeps the visible card track of Mana Khemia and Final Fantasy X. Earlier on 2026-10-23 the track was paced by Temee, with every unit acting once in each of its rounds; before that, every action had its own cost ([history.md](history.md)).
 
 ### 3.2 Placement (Decided 2026-10-23)
 After a unit's turn, its card goes to:
 ```
-slot = Temee's next turn − speedSlots × speed      (speedSlots = 2)
+slot = current slot + actionBase − speedSlots × speed      (actionBase = 12, speedSlots = 2)
 ```
-- **Temee's next turn** is its card's slot, counting the card as going `roundSlots` (20) on each turn: the first of Temee's turns that leaves the unit's slot still ahead of the current slot. A unit that acts before Temee in a round is placed in the next round; one whose card was Delayed past Temee's lands in the round after Temee's.
-- **Temee's own card** goes `roundSlots` on after each of its turns, whether it stepped or waited.
-- A skipped turn (Stunned, or nothing to do but Hold) places the card the same way.
-- Speed runs 1 to 3 for the heroes (9.1), so cards land 2 to 6 slots before Temee's; ties and near-ties yield (3.3).
-- Without a living camel the fight is already lost (camel.md); a test's fight without one starts its rounds at slot 0.
+- The same for every turn: an ability, a move, a Hold, or a skipped turn (Stunned, or nothing to do but Hold).
+- **Temee's card** follows the same rule, whether it stepped or waited: speed 1, so 10 slots.
+- Speed runs 1 to 3 for the heroes (9.1), so costs run 6 to 10; a cost is never less than 1 slot. Cards that land on a taken slot yield (3.3).
 
 ### 3.3 Collisions (Decided)
-**Two cards never share a slot.** A card placed on an occupied slot **yields**: it moves to the next free slot, and further if that one is taken (a cascade). Cards already on the track never move because of another card's placement. A card that yields past Temee's acts after Temee in that round; it is then placed by the next of Temee's turns, like any other.
+**Two cards never share a slot.** A card placed on an occupied slot **yields**: it moves to the next free slot, and further if that one is taken (a cascade). Cards already on the track never move because of another card's placement.
 
 Cards placed at the same moment (combat start, or one effect moving several cards) are placed higher speed first. Cards of equal speed are placed the player's side first, then the enemy's, each in party slot order (owner, 2026-10-23; was a random order drawn from the fight's seed from 2026-10-21, and alternating sides before that).
 
-### 3.4 Starting Positions (Decided)
-Temee starts first, at slot 0, whatever its speed (owner, 2026-10-21; [camel.md](camel.md), 18.1). Every other card is placed as after a turn at slot 0: `20 − 2 × speed`, in the simultaneous order (3.3), yielding until it has a free slot on either side, so the starting cards are spaced out by one slot (owner, 2026-10-23). They leave slot 20, Temee's second turn, free, so its card never yields; a card spaced past it takes its first turn after Temee's step. The first round is otherwise the same as every later one.
+### 3.4 Starting Positions (Decided 2026-10-23)
+Every card but Temee's is placed from **slot 0** in the simultaneous order (3.3): the highest speed first, ties the player's side first. Cards of the same speed sit side by side; **one free slot** separates one speed from the next. **Temee acts last**, at **slot 12**, whatever its speed (owner, 2026-10-23; it started first, at slot 0, from 2026-10-21); should the other cards ever reach slot 12, its card goes just after them.
+
+For example, two Outriders (speed 3) and four speed-2 units start at slots 0 and 1, then 3, 4, 5 and 6, and Temee at 12.
 
 ### 3.5 Delay, Haste and Track Manipulation (Decided)
 Terminology (owner, 2026-10-23): **Delay** moves a card later on the track and **Haste** earlier; **Push**, **Pull** and **Move** move a unit across the board (keywords in [keywords.md](keywords.md)). Delay and Haste never mean the board.
-- Abilities may **Delay** a card by a stated number of slots: an enemy's, an ally's, or a track entity's (3.7). Delaying a card past Temee's costs its unit its place in that round, not its turn.
+- Abilities may **Delay** a card by a stated number of slots: an enemy's, an ally's, or a track entity's (3.7).
 - Abilities may **Haste** a card, never earlier than the next slot, within a haste limit ([keywords.md](keywords.md), 17.3).
 - A Delayed or Hastened card that lands on an occupied slot yields (3.3).
 - **Inevitable** cards can't be Delayed or Hastened.
@@ -66,18 +66,18 @@ Reinforcements (Decided): their arrival is shown on the track in advance, with a
 
 ## 4. Speed
 
-Speed sets where a unit's card goes in each round (3.2), its starting slot (3.4), and the order of cards placed at the same moment (3.3). Since 2026-10-23 it no longer sets how often a unit acts: every unit acts once a round. A faster unit acts earlier in each round, so it gets to act before slower units on both sides, and its turn comes sooner after a round begins.
+Speed sets a unit's action cost (3.2), its starting slot (3.4), and the order of cards placed at the same moment (3.3). A faster unit acts more often: speed 3 acts every 6 slots, speed 2 every 8, speed 1 every 10.
 
 ### 4.1 Granularity (Decided 2026-10-23)
-Speed is a small whole number (1 to 3 for the prototype heroes, 9.1); each point is 2 slots earlier in the round. Equal speeds are told apart only by yielding (3.3).
+Speed is a small whole number (1 to 3 for the prototype heroes, 9.1); each point takes 2 slots off the action cost. Equal speeds are told apart only by yielding (3.3).
 
 ### 4.2 Speed Versus Defence (Decided in principle, details TBD)
 - Speed is weighed against defence: gear that provides more defence reduces speed, or speed and defence compete for the same gear budget. Taking speed means giving up protection, and the reverse.
 - Mechanism TBD. Options include gear weight (mainly from the armour slot) that lowers speed, or speed and defence as competing stats on the same gear.
 
 ### 4.3 Rationale
-- A round paced by Temee makes the track readable at a glance: everyone acts once before Temee steps, so the camel's walk is the fight's clock.
-- Speed still matters every round: acting first lets a unit strike, or step out of reach, before slower units answer.
+- One cost per unit makes the track readable at a glance: a unit's next turn is always the same distance away.
+- Speed is worth taking: a speed-3 unit gets five turns for every three of a speed-1 unit.
 
 ## 5. Action Economy
 
@@ -101,9 +101,10 @@ Every hero has **Hold**, an action with no effect, so a unit can always end its 
 
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
-| Turn order (2026-10-23) | A track of slots paced by Temee: its card goes 20 on each turn, every other card 2 × speed before its next turn, so each unit acts once a round | Placement = cost ÷ (speed + C) (until 2026-10-23); individual initiative, side-based phases, simultaneous commit, semi-real-time | Owner's call: a round per camel step is easy to read, and ties the fight's clock to the camel's walk |
+| Turn order (2026-10-23) | A track of slots; after any turn a card goes 12 − 2 × speed slots on, Temee's included | Temee pacing the track, everyone acting once in each of its rounds (earlier on 2026-10-23); placement = cost ÷ (speed + C) (until 2026-10-23); individual initiative, side-based phases, simultaneous commit, semi-real-time | Owner's call |
+| Starting order (2026-10-23) | From slot 0, fastest first, ties the player's first; equal speeds side by side, a free slot between speeds; Temee last, at slot 12 | Temee first at slot 0, the rest 20 − 2 × speed spaced by one slot (earlier on 2026-10-23) | Owner's call |
 | Collisions | The arriving card yields to the next free slot; cascades | Speed-first tie-break bumping the incumbent; units sharing a slot | Cards on the track never move because of another placement, so plans stay stable and bump-locking is impossible |
-| Speed (2026-10-23) | Sets the card's place in each round (2 slots a point before Temee's turn), the starting slot and simultaneous-placement order | Dividing action and movement cost (until 2026-10-23) | Owner's call, with the track |
+| Speed (2026-10-23) | Sets the action cost (12 − 2 × speed), the starting slot and simultaneous-placement order | A place in each of Temee's rounds (earlier on 2026-10-23); dividing action and movement cost (until 2026-10-23) | Owner's call, with the track |
 | Speed vs defence | Speed weighed against defence (details TBD) | No tradeoff | Gives speed an opportunity cost so it is a build choice, not a default |
 | Charged abilities (removed 2026-10-23) | None: with no action costs there is no charge or recovery cost | Charge cost then trigger then recovery cost, on the character's own card (until 2026-10-23) | Owner's call: removed with the parked kits |
 | Track entities | Some abilities place independent cards (for example summons); activation costs an action | Only units on the track | Summons and similar effects act on their own timeline and can be manipulated like units |
@@ -117,7 +118,7 @@ Every hero has **Hold**, an action with no effect, so a unit can always end its 
 
 ## Open questions (original numbers)
 
-1. The round's length (`roundSlots`, 20) and slots per point of speed (`speedSlots`, 2). Default size of the visible track window (roughly 30 slots).
+1. The base action cost (`actionBase`, 12) and slots per point of speed (`speedSlots`, 2); Temee's speed (1, a placeholder). Default size of the visible track window (roughly 30 slots).
 2. Speed versus defence mechanism: gear weight lowering speed, or competing stats on gear (4.2).
 5. Delay and haste limit values (3.6).
 7. Scheduling of units and track entities that enter mid-combat (3.8).

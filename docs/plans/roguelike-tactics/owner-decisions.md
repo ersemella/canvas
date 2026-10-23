@@ -77,13 +77,14 @@ it only needs doing.
 The owner's notes were rough; where they left a choice, the builder
 picked the reading below. Confirm or change each:
 
-- **Placement:** "2 × speed ticks in front of Temee" is read as 2 × speed
-  slots **before Temee's next turn**: a unit acting before Temee in a round
-  is placed in the next round, so every unit acts once a round (confirmed
-  by the owner, 2026-10-23). Starting cards use the same rule, spaced
-  out by one slot, ties the player's first (owner, 2026-10-23).
-- **Temee's card goes 20 slots a turn whether it stepped or waited**
-  (Immobilized, Stunned or boxed in).
+- **Placement** (owner, 2026-10-23, replacing Temee's rounds): every
+  action costs 12 − 2 × speed slots. The builder applies it to Temee too
+  (speed 1, a placeholder: 10 slots a turn, whether it stepped or waited);
+  confirm, or give Temee its own cost.
+- **Starting order** (owner, 2026-10-23): from slot 0, fastest first, ties
+  the player's first, equal speeds side by side, a free slot between
+  speeds; Temee last at slot 12. The builder puts Temee just after the
+  other cards should they ever reach slot 12 (no fight has enough units).
 - **Hail Immobilizes a unit standing in its space when it lands**, as well
   as one that enters it, and **any unit**, allies and the Storm Caller
   included. A walk that enters it ends there. It disappears when the

@@ -70,6 +70,13 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
     one turn a round whatever the unit does
     ([timeline.md](timeline.md), 3.2). The camel's card had gone 14 slots a
     turn.
+  - **Temee pacing the track** (the same day): Temee's card went 20 slots a
+    turn and every other card 2 × speed slots before its next turn, so each
+    unit acted once in each of Temee's rounds; Temee started first, at slot
+    0, and the rest at 20 − 2 × speed, spaced out by one slot. Replaced
+    (owner, 2026-10-23) by an action cost of 12 − 2 × speed for every unit,
+    Temee's included, and a starting order from slot 0, fastest first, with
+    Temee last at slot 12 ([timeline.md](timeline.md), 3.2 and 3.4).
   - **Charged abilities and ultimates:** charge and recovery costs on the
     character's own card; one ultimate per hero, unlocked after 300 action
     cost spent, once a fight. Both rested on action costs.

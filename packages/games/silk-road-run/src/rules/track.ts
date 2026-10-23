@@ -1,28 +1,20 @@
 /**
- * The track (timeline.md, section 3): numbered slots, one card per slot,
- * paced by the camel, Temee: its card goes RULES.roundSlots on each turn,
- * and every other card goes RULES.speedSlots × speed before its next turn
- * (owner, 2026-10-23), yielding on collision.
+ * The track (timeline.md, section 3): numbered slots, one card per slot.
+ * After each turn a card goes its unit's action cost on,
+ * RULES.actionBase − RULES.speedSlots × speed (owner, 2026-10-23),
+ * yielding on collision.
  */
 import {HEROES, RULES} from './config';
 import type {FightState, Unit} from './types';
 
-/** The unit that paces the track: the living camel, if its card is placed. */
-export function pacer(state: FightState): Unit | undefined {
-  return state.units.find((u) => u.alive && u.slot !== null && HEROES[u.hero].walksRoad);
+/** How many slots a unit's card goes on after each of its turns (3.2), at least 1. */
+export function actionCost(unit: Unit): number {
+  return Math.max(1, RULES.actionBase - RULES.speedSlots * unit.speed);
 }
 
-/**
- * Where a turn ending at slot `now` aims `unit`'s card, before yielding
- * (3.2): RULES.speedSlots × speed before the first of Temee's turns that
- * leaves it still ahead of `now`, counting its card as going
- * RULES.roundSlots on each turn. Without a camel (a test's fight), rounds
- * start at slot 0.
- */
+/** Where a turn ending at slot `now` aims `unit`'s card, before yielding (3.2). */
 export function aimSlot(state: FightState, unit: Unit, now = state.currentSlot): number {
-  let slot = (pacer(state)?.slot ?? 0) - RULES.speedSlots * unit.speed;
-  while (slot <= now) slot += RULES.roundSlots;
-  return slot;
+  return now + actionCost(unit);
 }
 
 /** The first free slot at or after `slot` (3.3: the arriving card yields). */
@@ -64,24 +56,23 @@ export function simultaneousOrder(units: Unit[]): Unit[] {
 }
 
 /**
- * Starting slots (3.4): the camel, which acts first, takes slot 0; every
- * other card is placed as after a turn at slot 0 (`aimSlot`), so at
- * RULES.roundSlots − RULES.speedSlots × speed, in `simultaneousOrder`,
- * yielding until it has a free slot on either side: the starting cards are
- * spaced out by one slot (owner, 2026-10-23). They leave Temee's next turn
- * free, so its card never yields and the rounds keep their pace; cards
- * spaced past it take their first turn after its step.
+ * Starting slots (3.4; owner, 2026-10-23): every card but the camel's in
+ * `simultaneousOrder` from slot 0, the fastest first, cards of equal speed
+ * side by side and a free slot between one speed and the next; the camel
+ * last, at RULES.camelStartSlot (after the others, should they reach it).
  */
 export function placeStartingCards(state: FightState): void {
   for (const u of state.units) u.slot = null;
   const alive = state.units.filter((u) => u.alive);
-  for (const u of alive) if (HEROES[u.hero].actsFirst) placeCard(state, u, 0);
-  const temeeNext = (pacer(state)?.slot ?? 0) + RULES.roundSlots;
-  const taken = (slot: number) => slot === temeeNext || freeSlotFrom(state, slot) !== slot;
-  for (const u of simultaneousOrder(alive.filter((u) => !HEROES[u.hero].actsFirst))) {
-    let slot = aimSlot(state, u, 0);
-    while (taken(slot - 1) || taken(slot) || taken(slot + 1)) slot++;
-    placeCard(state, u, slot);
+  let slot = 0;
+  let speed: number | undefined;
+  for (const u of simultaneousOrder(alive.filter((u) => !HEROES[u.hero].actsLast))) {
+    if (speed !== undefined && u.speed !== speed) slot++;
+    u.slot = slot++;
+    speed = u.speed;
+  }
+  for (const u of alive) {
+    if (HEROES[u.hero].actsLast) placeCard(state, u, Math.max(RULES.camelStartSlot, slot));
   }
 }
 

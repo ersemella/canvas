@@ -25,7 +25,7 @@ function setup(placements: Record<string, Hex>, enemies?: HeroId[]): FightState 
   }
   return s;
 }
-/** A fight's first hero decision, after the camel's opening turns (it always acts first). */
+/** A fight's first hero decision, past any camel turns before it. */
 function opening(): FightState {
   const s = createFight(0);
   for (let u = advanceToDecision(s)!; u.hero === 'camel'; u = advanceToDecision(s)!)

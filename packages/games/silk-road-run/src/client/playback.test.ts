@@ -75,11 +75,10 @@ describe('playback', () => {
     const {from} = openingPlayback(to)!;
     const camel = (f: typeof to) => f.units.find((u) => u.hero === 'camel')!;
     expect(camel(from).hex).toEqual(SALT_FLATS.camelStart);
-    expect(camel(to).hex).not.toEqual(SALT_FLATS.camelStart);
     expect(from.currentSlot).toBe(0);
-    expect(camel(from).slot).toBe(0);
+    // Temee acts last in the starting order (3.4), so it hasn't moved yet.
+    expect(camel(from).slot).toBe(12);
     expect(from.units.every((u) => u.statuses.length === 0)).toBe(true);
-    const steps = to.events!.filter((e) => e.kind === 'step' && e.unitId === camel(to).id);
-    expect(steps[0]).toMatchObject({from: SALT_FLATS.camelStart, to: camel(to).hex});
+    expect(from.units.map((u) => u.slot)).toEqual(to.units.map((u) => u.slot));
   });
 });

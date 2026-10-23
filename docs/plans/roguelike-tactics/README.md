@@ -29,10 +29,11 @@ the kits.**
   ([heroes-and-gear.md](heroes-and-gear.md), 9.1–9.2). Bökh Champion speed
   2, defence 3, power 1; Mangudai Outrider 3, 1, 2; Yadachy Storm Caller
   2, 2, 0.
-- **The track** is paced by Temee, the camel: its card goes 20 slots a
-  turn, and every other unit's card goes 2 × speed slots before its next
-  turn, so everyone acts once a round, the faster earlier
-  ([timeline.md](timeline.md), 3.2). Action costs are gone.
+- **The track:** after any turn a unit's card goes 12 − 2 × speed slots
+  on, Temee's included, so the faster act more often. A fight starts from
+  slot 0, fastest first, equal speeds side by side and a free slot between
+  speeds, and Temee last at slot 12 ([timeline.md](timeline.md), 3.2 and
+  3.4). Per-action costs are gone.
 - **The keywords** are a new, shorter list: Delay, Haste, Inevitable,
   Push, Pull, Move, Immobilized, Unstoppable, Stunned, Burn, Shield,
   Pierce, Enhance, Degrade, Armour, Immortal ([keywords.md](keywords.md));
@@ -79,8 +80,8 @@ where rival caravans race along the road. A party of up to four heroes,
 recruited during the run from a roster of twelve, and the caravan's
 camel, which the enemy tries to kill ([camel.md](camel.md)), travel a **route map**
 of the road (fights, caravanserais, bazaars, recruitment) and fights on
-compact hex maps. Turn order is a track of slots paced by the caravan's
-camel: everyone acts once in each of its rounds, the faster earlier;
+compact hex maps. Turn order is a track of slots: after each turn a
+unit's card goes a cost set by its speed, so the faster act more often;
 information is complete and randomness minimal;
 every unit's stats are shown, enemies' included; only opponents' intent is hidden.
 Heroes who die are gone for the run; a party wipe ends it.

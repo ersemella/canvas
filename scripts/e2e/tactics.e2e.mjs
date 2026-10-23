@@ -112,17 +112,16 @@ check(
   (await api(`/runs/${runId}`, alice)).body.view.version === version
 );
 
-// The camel always acts first (camel.md), walking itself a hex along its
-// road from the top-left corner: the turn stops on a hero, whose turn the
+// The camel acts last in the starting order (timeline.md, 3.4), at slot
+// 12, after every other card; the turn stops on a hero, whose turn the
 // checks below use.
-const camelStep = (startedFight.events ?? []).find((e) => e.kind === 'step');
+const openingUnits = startedFight.events?.[0]?.after?.units ?? [];
+const openingCamel = openingUnits.find((u) => u.id === 'p-camel');
 check(
-  'the camel acts first, walking itself a hex from the top-left corner',
-  startedFight.events?.[0]?.kind === 'turn' &&
-    startedFight.events[0].unitId === 'p-camel' &&
-    camelStep?.unitId === 'p-camel' &&
-    sameHex(camelStep.from, {q: 0, r: 0}),
-  startedFight.events?.slice(0, 2)
+  'the camel starts last, at slot 12, after every other card',
+  openingCamel?.slot === 12 &&
+    openingUnits.every((u) => u.id === 'p-camel' || u.slot < openingCamel.slot),
+  openingUnits.map((u) => [u.id, u.slot])
 );
 check(
   'the turn stops on a hero, never the camel',

@@ -24,10 +24,10 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 > ruins to the **only exit, the bottom-right corner**, going around units
 > in its way; it waits only when Immobilized, Stunned or boxed in.
 >
-> **It paces the track (owner, 2026-10-23):** its card goes **20 slots**
-> on after each of its turns, whether it stepped or waited, and every
-> other unit's card goes 2 × speed slots before its next turn, so each
-> unit acts once in each of its rounds ([timeline.md](timeline.md), 3.2).
+> **On the track (owner, 2026-10-23):** it starts **last, at slot 12**,
+> and its card goes its action cost on after each of its turns, like any
+> unit's: 12 − 2 × speed, so 10 at speed 1, whether it stepped or waited
+> ([timeline.md](timeline.md), 3.2 and 3.4).
 > Its stats follow the 2026-10-23 scale: defence 9, so health 20
 > (placeholder for "very high"; ten bow hits).
 >
@@ -45,13 +45,12 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   2026-10-21, was none). Built with defence 9, so health 20 since
   2026-10-23 (placeholder; the Bökh Champion has 8; was 1,500 against
   540), so the enemy has to commit several turns to it, not one burst.
-- **It acts first in every fight, despite its speed** (owner, 2026-10-21):
-  its card starts at slot 0, ahead of every other card's starting slot
-  (3.4).
-- Its speed places nothing since 2026-10-23: its card goes 20 slots a
-  turn, and everyone else acts once in between. Its road from the
-  top-left corner to the exit is about 12 steps, so a fight lasts at most
-  about 12 rounds unless the enemy holds it back.
+- **It acts last in the starting order, despite its speed** (owner,
+  2026-10-23; it acted first, at slot 0, from 2026-10-21): its card starts
+  at slot 12, after every other card's starting slot (3.4).
+- Its card goes 10 slots a turn (speed 1, a placeholder: 3.2). Its road
+  from the top-left corner to the exit is about 12 steps, so a fight
+  lasts at most about 130 slots unless the enemy holds it back.
 - **It isn't a hero:** it doesn't take one of the party's four places
   (10.1), and has no gear, upgrades or ultimate. *(Proposed.)*
 - *(Proposed:* it starts in the player's starting column, in the middle
@@ -119,7 +118,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 - **Rules:** the camel is a unit of the player's side (`camel` in
   `HEROES`, `src/rules/config.ts`; health 1,500, speed 10, defence 40 and
   a move of 1 hex costing 100 until 2026-10-23; now defence 9, health 20,
-  power 0, its card going `RULES.roundSlots` (20) a turn; only Hold among
+  power 0, speed 1, its card going 10 slots a turn (3.2); only Hold among
   abilities). It
   starts at column 0 of row 4 (0-based), the middle of the player's
   column; the heroes are scattered over the rest. The exits are
@@ -167,7 +166,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 
 ## Open questions
 
-- The camel's health (defence 9, health 20, a placeholder since 2026-10-23), and the round's length (20 slots).
+- The camel's health (defence 9, health 20, a placeholder since 2026-10-23), and its speed (1, an action cost of 10 slots).
 - How exits are placed on maps other than Phase 1's.
 - How the camel recovers between fights, and how much (18.4).
 - Whether a rival caravan brings its own camel, so both sides have one to

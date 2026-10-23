@@ -19,7 +19,7 @@ The stat set is kept small, so every unit's stat sheet, enemies' included (D11),
 
 | Stat | Role | Modified by gear? |
 |---|---|---|
-| **Speed** | Sets where the unit's card goes in each of Temee's rounds: 2 slots a point earlier ([timeline.md](timeline.md), 3.2). | Yes, and weighed against defence (4.2). |
+| **Speed** | Sets the action cost: 12 − 2 × speed slots ([timeline.md](timeline.md), 3.2). | Yes, and weighed against defence (4.2). |
 | **Defence** | Sets health: **health = (1 + defence) × 2**. Reduces no damage itself. | TBD (see below). |
 | **Power** | The damage each of the unit's abilities deals, exactly (9.2). | Yes. |
 | **Health** | Hit points, from defence. | Through defence only (TBD). |
@@ -250,7 +250,7 @@ A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks f
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
 37. **Damage buckets** (9.7 proposes publishing the rule, in the style of Path of Exile's "increased" and "more"): whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and barrier), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).
 38. Whether consumables can be used before a PvP duel, and which ones ([pvp.md](pvp.md)).
-39. How an ultimate unlocks now that actions have no cost (10.10): after a number of Temee's rounds, of the hero's own turns, or something else; and whether ultimates come back at all.
+39. How an ultimate unlocks now that actions have no cost (10.10): after a number of Temee's turns, of the hero's own turns, or something else; and whether ultimates come back at all.
 49. Whether each gear slot modifies one verb (9.3), and the mapping; the proposed gear rules in 9.7 (stat line count and steps, the cap on gear's share of stats, bridge gear prerequisites, what top-rarity items are).
 50. Steering offers across runs (10.12): which tools, how large the rarity bonus is, whether a difficulty dial offsets it, and how rerolls stay compatible with seeded and daily runs.
 58. Whether gear may raise defence, and so health (9.1), or health stays fixed per hero.

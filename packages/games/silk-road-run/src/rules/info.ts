@@ -32,7 +32,7 @@ export const EXIT_INFO: HexInfo = {
 };
 
 /** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2; timeline.md, 3.2). */
-export const CAMEL_RULE = `Can’t attack, and walks itself: 1 space a turn toward the exit, around anything in its way, its card then going ${RULES.roundSlots} slots on. Every other unit acts once before each of its turns. Reaching the road out wins the fight; if it falls, the fight is lost.`;
+export const CAMEL_RULE = `Can’t attack, and walks itself: 1 space a turn toward the exit, around anything in its way, its card then going its action cost on, like any unit’s. Reaching the road out wins the fight; if it falls, the fight is lost.`;
 
 export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   const caster = state.units.find((u) => u.id === hail.source);
@@ -61,7 +61,7 @@ export type KeywordId =
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   speed: {
     name: 'Speed',
-    detail: `Everyone acts once in each of ${HEROES.camel.name}’s rounds: after each turn, the card goes ${RULES.speedSlots} slots per point of speed ahead of ${HEROES.camel.name}’s card, so the faster act earlier.`,
+    detail: `Sets the action cost: after each turn, the card goes ${RULES.actionBase} − ${RULES.speedSlots} × speed slots on, so the faster act more often. The fight starts with the fastest cards first, ${HEROES.camel.name}’s last.`,
   },
   power: {name: 'Power', detail: 'The damage each of its abilities deals.'},
   defence: {name: 'Defence', detail: 'Sets health: (1 + defence) × 2.'},

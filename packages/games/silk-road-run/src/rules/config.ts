@@ -12,14 +12,14 @@ import type {AbilityId, HeroId} from './types';
 
 export const RULES = {
   /**
-   * The track is paced by the camel, Temee (timeline.md, 3.2; owner,
-   * 2026-10-23): its card goes this many slots on after each of its turns.
-   * Every other unit's card goes `speedSlots` × speed slots before Temee's
-   * next turn, so each acts once in each of Temee's rounds, the faster
-   * earlier in it.
+   * Action cost (timeline.md, 3.2; owner, 2026-10-23): after each turn, a
+   * unit's card goes `actionBase` − `speedSlots` × speed slots on, Temee's
+   * included, whatever the turn did.
    */
-  roundSlots: 20,
+  actionBase: 12,
   speedSlots: 2,
+  /** Temee's starting slot (3.4), after every other unit's starting card. */
+  camelStartSlot: 12,
   /** Ordinary walking cap (5.1): 3 since 2026-10-22 (owner). */
   movementCap: 3,
   /** Size of the track window the page shows (open question 1). */
@@ -35,7 +35,7 @@ export interface HeroStats {
   name: string;
   /** One letter for the board's circles. */
   letter: string;
-  /** Sets the card's place in each round (3.2). */
+  /** Sets the card's action cost (3.2) and starting slot (3.4). */
   speed: number;
   /** Sets health (`healthOf`). */
   defence: number;
@@ -44,12 +44,11 @@ export interface HeroStats {
   abilities: AbilityId[];
   /** Spaces a move may cover; RULES.movementCap if unset. */
   moveCap?: number;
-  /** Its card starts the fight first, whatever its speed (the camel). */
-  actsFirst?: boolean;
+  /** Its card starts the fight last, at RULES.camelStartSlot, whatever its speed (the camel). */
+  actsLast?: boolean;
   /**
-   * Not player controlled, and the track's pacer: on each of its turns it
-   * steps along the shortest walk to the exit, around ruins and units
-   * (`stepToExit` in board.ts), then its card goes RULES.roundSlots on
+   * Not player controlled: on each of its turns it steps along the shortest
+   * walk to the exit, around ruins and units (`stepToExit` in board.ts)
    * (the camel).
    */
   walksRoad?: boolean;
@@ -89,9 +88,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
-   * 2026-10-22). It acts first in every fight (owner, 2026-10-21) and paces
-   * the track (owner, 2026-10-23). Defence 9 (health 20, ten bow hits) is a
-   * PLACEHOLDER for the owner's "very high health"; its speed places nothing.
+   * 2026-10-22). It acts last in the starting order, at slot 12 (owner,
+   * 2026-10-23). Defence 9 (health 20, ten bow hits) is a PLACEHOLDER for
+   * the owner's "very high health"; speed 1 (an action cost of 10) is a
+   * PLACEHOLDER too.
    */
   camel: {
     // Temee (owner, 2026-10-21): a name, so no "Your" before it (unitName).
@@ -103,7 +103,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['hold'],
     moveCap: 1,
     walksRoad: true,
-    actsFirst: true,
+    actsLast: true,
   },
   /**
    * An enemy NPC (owner, 2026-10-21): one attack, Bite. Speed 2, defence 1
