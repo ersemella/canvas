@@ -4,7 +4,15 @@
  * whose health shows, and the previewed outcome. Pure, so the page only
  * decides when to send it.
  */
-import {hexDistance, hexEquals, hexKey, hexNeighbors, hexRing, hexesInRange} from '@canvas/engine';
+import {
+  hexDistance,
+  hexEquals,
+  hexKey,
+  hexNeighbor,
+  hexNeighbors,
+  hexRing,
+  hexesInRange,
+} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {ABILITIES, arrowLanes, mapOf, onMap, unitAt} from '@canvas/games-silk-road-run';
 import type {
@@ -17,6 +25,20 @@ import type {
   TurnPreview,
   Unit,
 } from '@canvas/games-silk-road-run';
+
+/** The hexes along a straight hex line from `from` to `to`, `to` included, or null if they aren't on one. */
+function laneTo(fight: FightState, from: Hex, to: Hex): Hex[] | null {
+  const map = mapOf(fight);
+  for (let dir = 0; dir < 6; dir++) {
+    const hexes: Hex[] = [];
+    let h = from;
+    while (onMap(map, (h = hexNeighbor(h, dir)))) {
+      hexes.push(h);
+      if (hexEquals(h, to)) return hexes;
+    }
+  }
+  return null;
+}
 
 /** Abilities that deal damage: aiming one shows the health of whoever it could hit. */
 const isAttack = (id: AbilityId) => ABILITIES[id].kind === 'attack';
@@ -119,18 +141,18 @@ export function buildScene(input: SceneInput): BoardScene {
           target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
         })),
       };
-    // Only what it may target; once Throw's target is picked, where it can
-    // land, dashed so it never reads as more targets.
+    // Only what it may target; once Throw's or Skirmish's target is picked,
+    // where it can land or step from, dashed so it never reads as more targets.
     const shown = new Set<string>();
-    const throwing = ability === 'throw' && target?.hex;
+    const second = (ability === 'throw' || def.steps) && target?.hex;
     for (const t of targets) {
-      const h = throwing ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
+      const h = second ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
       if (!h || shown.has(hexKey(h))) continue;
       shown.add(hexKey(h));
-      highlights.push({hex: h, kind: throwing ? 'landing' : 'target'});
+      highlights.push({hex: h, kind: second ? 'landing' : 'target'});
     }
-    // Where the thrown unit lands: the landing hovered, else the one picked,
-    // drawn as a move's.
+    // Where the thrown unit lands, or Skirmish steps to: the space hovered,
+    // else the one picked, drawn as a move's.
     const hovered = hoverHex;
     const hoveredLanding =
       hovered && target?.hex
@@ -138,7 +160,12 @@ export function buildScene(input: SceneInput): BoardScene {
             ?.to
         : undefined;
     const landing = hoveredLanding ?? target?.to;
-    if (throwing && landing) out.step = [target.hex!, landing];
+    if (second && landing && def.steps && from) {
+      out.step = [from, landing];
+      // The arrow's line from there to its target.
+      const line = laneTo(fight, landing, target.hex!);
+      if (line) out.lanes = {from: landing, lanes: [{hexes: line, target: true}]};
+    } else if (second && landing) out.step = [target.hex!, landing];
     if (target?.hex) {
       // An area ability: highlight the area around the chosen hex (none since Hail covers one space).
       const radius = ABILITIES[ability].radius;

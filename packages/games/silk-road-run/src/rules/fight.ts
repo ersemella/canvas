@@ -13,7 +13,7 @@ import {
   clearHail,
   endTurnEffects,
   enterHex,
-  landVolleys,
+  landShots,
   log,
   record,
   squeezeGrapples,
@@ -209,19 +209,19 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
   }
 }
 
-/** Whether `unit`'s card is out charging: a volley of its is in the air. */
+/** Whether `unit`'s card is out charging: a shot of its is in the air. */
 export function charging(state: FightState, unit: Unit): boolean {
-  return Boolean(state.volleys?.some((v) => v.source === unit.id));
+  return Boolean(state.shots?.some((v) => v.source === unit.id));
 }
 
 /**
- * A charging card come back (owner, 2026-10-23): its volleys land, and
+ * A charging card come back (owner, 2026-10-23): its shots fly, and
  * that is all, no turn and nothing that comes with one (hail lifting, a
  * squeeze, an Enhance running out, Stunned); then the card goes its action
  * cost on (3.2), to the unit's next turn.
  */
 function landCharge(ctx: Ctx, unit: Unit): void {
-  landVolleys(ctx, unit);
+  landShots(ctx, unit);
   checkEnd(ctx.state);
   if (unit.alive) placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
 }
@@ -292,6 +292,11 @@ export function applyTurn(
     const target = input.action.target ?? {};
     if (!trustTarget && !allowedTargets(state, map, unit, def).some((t) => sameTarget(t, target)))
       throw new RuleError(`${def.name} can’t target that.`);
+    // A step before the ability (Skirmish), a walk of one space.
+    if (def.steps) {
+      enterHex(ctx, unit, target.to!);
+      log(ctx, `${unitName(unit)} steps.`);
+    }
     record(state, {
       kind: 'action',
       unitId: unit.id,
@@ -325,7 +330,7 @@ export function cloneFight(state: FightState, keepLog = false): FightState {
       statuses: u.statuses.map((s) => ({...s})),
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
-    ...(state.volleys ? {volleys: state.volleys.map((v) => ({...v, hex: {...v.hex}}))} : {}),
+    ...(state.shots ? {shots: state.shots.map((v) => ({...v}))} : {}),
     log: keepLog ? state.log.map((l) => ({...l})) : [],
   };
 }

@@ -289,6 +289,15 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 
 ## Roster
 
+- **Volley** (the Outrider, owner, 2026-10-23; removed with its code the
+  same day for Skirmish, [balance.md](balance.md#skirmish-in-place-of-volley-2026-10-23)):
+  arrows from above on one space within 3 with a unit on it, no line of
+  fire needed; charged half the Outrider's action cost, landing on whoever
+  stood there then. Instant at range 3 it was the strongest ability in the
+  game; at range 2 a strong second attack; charged at range 3, a second
+  ability's worth (44%). Replaced by Skirmish, a step and the Bow's shot,
+  charged the same (owner).
+
 - **Overwatch, Sunlight and Fog** (owner's proposals, 2026-10-23; built,
   measured and removed with their code the same day,
   [balance.md](balance.md#new-abilities-2026-10-23)). *Overwatch* (the
@@ -296,7 +305,7 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   to enter it shot; worth nothing in every variant (shooting each unit
   that enters, the shot stopping a walk) and with the AI valuing its
   lanes: on an 8 × 8 board with 3-space walks one lane is almost never in
-  the way. Replaced by Volley. *Sunlight* (the Storm Caller): one space
+  the way. Replaced by Volley, which was replaced in turn by Skirmish. *Sunlight* (the Storm Caller): one space
   within 3, heal 1 and cleanse every status (ending a grapple), melting
   hail; worth nothing at heal 1, worth having at heal 2 but it lengthened
   fights and made the last stage harder (42.8% player wins). *Fog* (the

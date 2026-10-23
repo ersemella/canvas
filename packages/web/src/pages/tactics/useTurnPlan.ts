@@ -25,11 +25,20 @@ export const SKIP: TurnInput = {action: {ability: 'hold', target: {}}};
 /** Why an ability has nothing to target, when that disables it. */
 const NO_TARGET: Partial<Record<AbilityId, string>> = {
   bow: 'No enemy in any of the bow’s lanes.',
-  volley: 'No enemy within reach.',
+  skirmish: 'No free space to step to with an enemy in line from it.',
   sunlight: 'No ally within reach to Enhance, nor hail to melt.',
   throw: 'You aren’t grappling an enemy, or there’s nowhere free to throw it.',
   grapple: 'No one within reach to grapple whom you aren’t grappling already.',
   bite: 'No enemy next to you.',
+};
+
+/**
+ * Abilities picked in two taps: the unit aimed at, then a space (`to`):
+ * where Throw lands it, or where Skirmish steps first. Their prompt for it.
+ */
+const SECOND_PICK: Partial<Record<AbilityId, string>> = {
+  throw: 'Pick where to throw',
+  skirmish: 'Pick where to step',
 };
 
 /** What the player has picked for the acting unit's turn so far. */
@@ -95,14 +104,10 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     return offeredTargets(fight, mapOf(fight), acting, ABILITIES[ability]);
   }, [ability, fight, acting]);
 
-  /**
-   * Grapple's options on a unit: striking it from where the Champion
-   * stands, and the hexes it may step in to first (2026-10-22).
-   */
   /** The action with its target chosen, ready to preview. */
   const action = useMemo(() => {
     if (!ability || !target) return null;
-    if (ability === 'throw' && !target.to) return null;
+    if (SECOND_PICK[ability] && !target.to) return null;
     return {ability, target};
   }, [ability, target]);
 
@@ -111,8 +116,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     moving && !plannedMove
       ? 'Pick where to move'
       : ability && !action
-        ? ability === 'throw' && target?.hex
-          ? 'Pick where to throw'
+        ? SECOND_PICK[ability] && target?.hex
+          ? SECOND_PICK[ability]
           : 'Pick a target'
         : null;
 
@@ -136,7 +141,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     [fight, acting]
   );
 
-  /** The hex picked last: the destination, the target, or Throw's landing. */
+  /** The hex picked last: the destination, the target, or Throw's landing or Skirmish's step. */
   const lastPicked = plannedMove?.hex ?? target?.to ?? target?.hex ?? null;
 
   const clearMove = useCallback(() => pick({plannedMove: null, moving: false}), [pick]);
@@ -172,8 +177,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   }, [moving, plannedMove, clearMove, pick]);
 
   /**
-   * A tap on `h` that plans the turn: a hex to move to, a target or Throw's
-   * landing (or un-picks one tapped again). False when the
+   * A tap on `h` that plans the turn: a hex to move to, a target, or Throw's
+   * landing or Skirmish's step (or un-picks one tapped again). False when the
    * tap plans nothing, and the page looks at the hex instead.
    */
   const planTap = useCallback(
@@ -187,8 +192,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (!ability) return false;
-      if (ability === 'throw' && target?.hex) {
-        // Throw's landing.
+      if (SECOND_PICK[ability] && target?.hex) {
+        // Throw's landing, or Skirmish's step.
         const second = targets.find(
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
         );
@@ -203,7 +208,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       if (!match) return false;
       // Tapping the chosen target again un-picks it (the button confirms).
       if (target?.hex && hexEquals(target.hex, h)) pick({target: null});
-      else if (ability === 'throw') chooseTarget({hex: h});
+      else if (SECOND_PICK[ability]) chooseTarget({hex: h});
       else chooseTarget(match);
       return true;
     },

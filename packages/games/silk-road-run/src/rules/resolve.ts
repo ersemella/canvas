@@ -5,7 +5,7 @@
 import {hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES} from './config';
-import {addStatus, hailOn, unitAt} from './board';
+import {addStatus, hailOn, shotLane, unitAt} from './board';
 import {MAPS} from './map';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, Motion, Status, Unit} from './types';
@@ -49,9 +49,7 @@ function snapshot(state: FightState): BoardSnapshot {
       skipped: u.skipped ?? false,
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
-    ...(state.volleys?.length
-      ? {volleys: state.volleys.map((v) => ({...v, hex: {...v.hex}}))}
-      : {}),
+    ...(state.shots?.length ? {shots: state.shots.map((v) => ({...v}))} : {}),
   };
 }
 
@@ -111,9 +109,9 @@ export function kill(ctx: Ctx, unit: Unit): void {
   log(ctx, `${unitName(unit)} falls.`);
   if (at) record(ctx.state, {kind: 'death', unitId: unit.id, hex: at});
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
-  // Its hail lasted until its next turn, which won't come; its volleys until its card came back.
+  // Its hail lasted until its next turn, which won't come; its shots until its card came back.
   clearHail(ctx.state, unit);
-  if (ctx.state.volleys) ctx.state.volleys = ctx.state.volleys.filter((v) => v.source !== unit.id);
+  if (ctx.state.shots) ctx.state.shots = ctx.state.shots.filter((v) => v.source !== unit.id);
   checkEnd(ctx.state);
 }
 
@@ -153,18 +151,21 @@ export function clearHail(state: FightState, caster: Unit): void {
 }
 
 /**
- * `user`'s volleys land, its charging card having come back: whoever stands
- * on each space takes its power.
+ * `user`'s shots fly, its charging card having come back: each down its
+ * lane from where the Outrider stands now, the first unit in it taking its
+ * power (`shotLane`).
  */
-export function landVolleys(ctx: Ctx, user: Unit): void {
-  const mine = ctx.state.volleys?.filter((v) => v.source === user.id);
+export function landShots(ctx: Ctx, user: Unit): void {
+  const mine = ctx.state.shots?.filter((v) => v.source === user.id);
   if (!mine?.length) return;
-  ctx.state.volleys = ctx.state.volleys!.filter((v) => v.source !== user.id);
+  ctx.state.shots = ctx.state.shots!.filter((v) => v.source !== user.id);
   for (const v of mine) {
-    log(ctx, `${unitName(user)}'s volley lands.`);
-    record(ctx.state, {kind: 'land', unitId: user.id, ability: 'volley', target: v.hex});
-    const u = unitAt(ctx.state, v.hex);
-    if (u) hit(ctx, user, u, `${unitName(user)}'s volley`);
+    log(ctx, `${unitName(user)} looses the drawn arrow.`);
+    const lane = shotLane(ctx.state, ctx.map, v);
+    const end = lane[lane.length - 1] ?? user.hex!;
+    record(ctx.state, {kind: 'land', unitId: user.id, ability: 'skirmish', target: end});
+    const u = unitAt(ctx.state, end);
+    if (u && u !== user) hit(ctx, user, u, `${unitName(user)}'s skirmish arrow`);
   }
 }
 

@@ -27,7 +27,7 @@ const bans = {
   'no-hail': ['hail'],
   'no-grapple': ['grapple'],
   'no-bow': ['bow'],
-  'no-volley': ['volley'],
+  'no-skirmish': ['skirmish'],
 };
 const caravans = {
   'vs-mangudai+2wolves': ['mangudai', 'wolf', 'wolf'],

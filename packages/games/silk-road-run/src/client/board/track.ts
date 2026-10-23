@@ -177,9 +177,9 @@ export function drawTrack(
     drawYield(ctx, deck, aimSlot, previewSlot);
 }
 
-/** Whether `u`'s card is out charging (a volley of its in the air): drawn greyed. */
+/** Whether `u`'s card is out charging (a drawn arrow of its in the air): drawn greyed. */
 function isCharging(fight: FightState, u: Unit): boolean {
-  return Boolean(fight.volleys?.some((v) => v.source === u.id));
+  return Boolean(fight.shots?.some((v) => v.source === u.id));
 }
 
 /**

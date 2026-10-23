@@ -1,7 +1,7 @@
 import {assetLoader, BaseSystem, hexKey} from '@canvas/engine';
 import type {EventBus, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
-import {unitAt} from '../rules/board';
+import {shotLane, unitAt} from '../rules/board';
 import {tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {FightState} from '../rules/types';
@@ -41,7 +41,7 @@ import type {Point} from './board/pixels';
 import {WALK_OUT_STEP_SECONDS, walkOutPlan, walkPosition} from './board/walkOut';
 import type {Walk} from './board/walkOut';
 import {drawPlaybackEvent, playbackScene, steppingAt} from './board/playbackDraw';
-import {drawVolleyMark} from './board/effects';
+import {drawShotMark} from './board/effects';
 
 /** Seconds a gone status's marker takes to rise off its unit and fade. */
 const MARK_EXPIRE_SECONDS = 0.9;
@@ -382,8 +382,8 @@ export class TacticsBoardSystem extends BaseSystem {
 
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
-    // Arrows in the air over their mark, in front of whoever stands there.
-    for (const v of fight.volleys ?? []) drawVolleyMark(ctx, v.hex);
+    // Drawn arrows' lanes, in front of whoever stands in them.
+    for (const v of fight.shots ?? []) drawShotMark(ctx, shotLane(fight, map, v));
 
     if (playing) drawPlaybackEvent(ctx, playing);
 

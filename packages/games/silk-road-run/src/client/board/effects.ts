@@ -1,6 +1,6 @@
 /**
- * Abilities' effects as a turn plays back (the bow's arrow, Volley's arrows,
- * Sunlight's beam), and a volley's mark while it is in the air.
+ * Abilities' effects as a turn plays back (Sunlight's beam; the arrows are
+ * drawn by the playback), and a drawn arrow's lane while it is in the air.
  */
 import type {Hex} from '@canvas/engine';
 import type {AbilityId} from '../../rules/types';
@@ -11,10 +11,8 @@ import {
   artPixel,
   center,
   ditherFill,
-  ditherHex,
   hexPath,
   hexRandom,
-  insideHex,
 } from './pixels';
 
 /** Frames a second the playback's effects move in: steps, like the units' idles and the weather. */
@@ -36,7 +34,6 @@ interface EffectFrame {
 export const ABILITY_EFFECT: Partial<
   Record<AbilityId, (ctx: CanvasRenderingContext2D, f: EffectFrame) => void>
 > = {
-  volley: drawVolley,
   sunlight: drawSunlight,
 };
 
@@ -68,65 +65,6 @@ export function drawPixelArrow(
     const color = i >= cells.length - 2 ? '#e5e7eb' : i < 2 ? '#f5f5f4' : '#a16207';
     artPixel(ctx, cx, cy, color);
   });
-}
-
-/** Arrows per hex of a volley's area. */
-const VOLLEY_ARROWS = 3;
-/** The part of the event each arrow takes to fall, and the most any waits to loose. */
-const VOLLEY_FLIGHT = 0.26;
-const VOLLEY_STAGGER = 0.4;
-
-/**
- * Volley: arrows rain down on the area, loosed in a ragged wave from the
- * archer's side and falling steeply, each sticking where it lands with a
- * kick of dust, the area flecked orange under them, then the lot thins out
- * and goes.
- */
-function drawVolley(ctx: CanvasRenderingContext2D, {from, target, area, k}: EffectFrame): void {
-  const t = center(target);
-  const side = from ? Math.sign(t.x - center(from).x) || 1 : 1;
-  const fade = fadeOut(k);
-  for (const h of area) ditherHex(ctx, h, '#fb923c', 3 * fadeOut(k, 0.6));
-  // Falling from high up and back towards the archer, steeply down to the mark.
-  const len = Math.hypot(side * 0.45, 1);
-  const ux = (side * 0.45) / len;
-  const uy = 1 / len;
-  for (const h of area) {
-    const c = center(h);
-    const next = hexRandom(h, 3);
-    for (let i = 0; i < VOLLEY_ARROWS; i++) {
-      let lx = 0;
-      let ly = 0;
-      for (let tries = 0; tries < 8; tries++) {
-        lx = (next() - 0.5) * 30;
-        ly = (next() - 0.5) * 30;
-        if (insideHex(lx, ly, 6)) break;
-      }
-      const x = c.x + lx * SPRITE_SCALE;
-      const y = c.y + ly * SPRITE_SCALE;
-      const start = next() * VOLLEY_STAGGER;
-      // Thinning out at the end: each arrow goes at its own moment.
-      if (next() > fade) continue;
-      const f = (k - start) / VOLLEY_FLIGHT;
-      if (f < 0) continue;
-      if (f < 1) {
-        const d = (1 - f) * 150;
-        drawPixelArrow(ctx, x - ux * d, y - uy * d, ux, uy, 9);
-        continue;
-      }
-      // Landed: stuck in the ground, a short way in, with a kick of dust.
-      drawPixelArrow(ctx, x, y, ux, uy, 5);
-      const puff = (k - start - VOLLEY_FLIGHT) / 0.15;
-      if (puff < 1) {
-        const [ax, ay] = artCell(x, y);
-        const spread = 1 + Math.floor(puff * 4);
-        for (const s of [-1, 1]) {
-          artPixel(ctx, ax + s * spread, ay, '#e7d3a8');
-          artPixel(ctx, ax + s * (spread + 1), ay - 1, '#d4b483');
-        }
-      }
-    }
-  }
 }
 
 /** Golden motes rising in a sunbeam. */
@@ -198,23 +136,26 @@ function drawSunlight(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): 
 }
 
 /**
- * A volley in the air: a bold dashed orange edge round its space and three
- * arrows hanging point-down along its top, where they will fall. Drawn over
- * the units, like hail, but only at the edge, so whoever stands there
- * still shows.
+ * A drawn arrow's lane while it is in the air: a bold dashed orange edge
+ * round each of its spaces, and on the last, where it would hit now, three
+ * arrows hanging point-down. Drawn over the units, like hail, but only at
+ * the edge, so whoever stands there still shows.
  */
-export function drawVolleyMark(ctx: CanvasRenderingContext2D, h: Hex): void {
-  ctx.save();
-  hexPath(ctx, h, 3);
-  ctx.lineWidth = 5;
-  ctx.strokeStyle = '#221816';
-  ctx.stroke();
-  ctx.setLineDash([7, 5]);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = '#fb923c';
-  ctx.stroke();
-  ctx.restore();
-  const c = center(h);
-  for (const dx of [-14, 0, 14])
-    drawPixelArrow(ctx, c.x + dx, c.y - 22 + Math.abs(dx) / 2, 0, 1, 6);
+export function drawShotMark(ctx: CanvasRenderingContext2D, lane: Hex[]): void {
+  lane.forEach((h, i) => {
+    ctx.save();
+    hexPath(ctx, h, 3);
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#221816';
+    ctx.stroke();
+    ctx.setLineDash([7, 5]);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#fb923c';
+    ctx.stroke();
+    ctx.restore();
+    if (i < lane.length - 1) return;
+    const c = center(h);
+    for (const dx of [-14, 0, 14])
+      drawPixelArrow(ctx, c.x + dx, c.y - 22 + Math.abs(dx) / 2, 0, 1, 6);
+  });
 }

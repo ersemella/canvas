@@ -7,7 +7,7 @@
 import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES} from './config';
-import {isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
+import {firstInLane, isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
 import {endGrapples, enhance, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
@@ -48,6 +48,12 @@ export interface AbilityDef {
   targetsUnit?: boolean;
   /** Legal targets with the user standing on `from`. */
   targets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[];
+  /**
+   * Its target's `to` is a space its user steps to first, as a walk, before
+   * the ability resolves from there (Skirmish); otherwise `to` is where the
+   * target lands (Throw).
+   */
+  steps?: boolean;
   /** Resolves the ability now. */
   resolve(ctx: Ctx, user: Unit, target: ActionTarget): void;
 }
@@ -135,30 +141,44 @@ const bow: AbilityDef = {
 };
 
 /**
- * Volley (owner, 2026-10-23): arrows loosed high onto one space within
- * `ABILITY.volley.range` (3) with a unit on it, adjacent included, as hail
- * falls, so no line of fire is needed. Charged: the Outrider's card is
- * pushed half its action cost on (`chargeOf`); when it comes back
- * they land, in place of a turn, and the unit there then, ally or enemy,
- * takes the Outrider's power (`landVolleys`).
+ * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
+ * space next to the Outrider (not while Immobilized), then the Bow's shot
+ * from there, its old space no longer in the way. The step is taken by
+ * `applyTurn` before the action, as a walk (`steps`). Charged
+ * (`ABILITY.skirmish.charge`), the arrow flies when the charging card comes
+ * back, down the same lane (`landShots`), so the unit aimed at can step
+ * out of it, or another step into it.
  */
-const volley: AbilityDef = {
-  id: 'volley',
-  name: 'Volley',
+const skirmish: AbilityDef = {
+  id: 'skirmish',
+  name: 'Skirmish',
   kind: 'attack',
-  range: ABILITY.volley.range,
-  radius: 0,
+  steps: true,
   summary: (user) =>
-    `Arrows from above on a unit within ${ABILITY.volley.range}, over anything in the way. Charge ${chargeOf(user, 'volley')} (half your action cost): your card goes ${chargeOf(user, 'volley')} slots on, and when it comes back they land instead of your turn: whoever stands there then takes ${damageText(user)}. Then your card goes on to your next turn.`,
+    ABILITY.skirmish.charge > 0
+      ? `Step one space, then draw on a line: charge ${chargeOf(user, 'skirmish')} (half your action cost). When your card comes back the arrow flies down that line instead of your turn: the first unit in it then takes ${damageText(user)}. Then your card goes on to your next turn.`
+      : `Step one space, then shoot straight: the first unit in line takes ${damageText(user)}.`,
   targetsUnit: true,
-  targets: (state, map, user, from) =>
-    hexesWithin(map, from, ABILITY.volley.range, (h) => {
-      const u = unitAt(state, h);
-      return u !== undefined && u !== user;
-    }),
+  targets(state, map, user, from) {
+    if (isImmobilized(user)) return [];
+    const out: ActionTarget[] = [];
+    const steps = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
+    for (const to of sortByHex(steps, (h) => h))
+      for (const dir of DIRECTIONS) {
+        const u = firstInLane(state, map, to, dir, user);
+        if (u) out.push({hex: u.hex!, to});
+      }
+    return out;
+  },
   resolve(ctx, user, target) {
-    log(ctx, `${unitName(user)} looses a volley.`);
-    (ctx.state.volleys ??= []).push({hex: {...target.hex!}, source: user.id});
+    const u = unitAt(ctx.state, target.hex!)!;
+    if (ABILITY.skirmish.charge <= 0) {
+      hit(ctx, user, u, `${unitName(user)}'s skirmish arrow`);
+      return;
+    }
+    const dir = DIRECTIONS.find((d) => firstInLane(ctx.state, ctx.map, user.hex!, d, user) === u)!;
+    log(ctx, `${unitName(user)} draws on ${unitName(u)}.`);
+    (ctx.state.shots ??= []).push({source: user.id, dir});
   },
 };
 
@@ -314,7 +334,7 @@ const bite: AbilityDef = {
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   bow,
-  volley,
+  skirmish,
   hail,
   sunlight,
   grapple,

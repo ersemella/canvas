@@ -16,7 +16,7 @@ const kits = {
     HEROES.storm.abilities = ['hail', 'hold'];
   },
 };
-const bans = ['sunlight', 'hail', 'grapple', 'throw', 'bow', 'volley'];
+const bans = ['sunlight', 'hail', 'grapple', 'throw', 'bow', 'skirmish'];
 export const experiments = {};
 for (const [kit, patch] of Object.entries(kits)) {
   experiments[`${kit}:control`] = {patch, mod: {}};

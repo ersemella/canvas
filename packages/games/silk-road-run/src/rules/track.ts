@@ -16,14 +16,14 @@ export function actionCost(unit: Unit): number {
 
 /**
  * A charged ability's charge (owner, 2026-10-23): its user's card goes
- * this many slots on instead of its action cost (Volley's: half of it,
+ * this many slots on instead of its action cost (Skirmish's: half of it,
  * rounded), greyed while it charges,
  * and the ability lands when the card comes back, in place of a turn
- * (`landCharge` in fight.ts). Volley's; 0 for the rest.
+ * (`landCharge` in fight.ts). Skirmish's; 0 for the rest.
  */
 export function chargeOf(unit: Unit, ability: AbilityId): number {
-  if (ability !== 'volley') return 0;
-  return Math.max(1, Math.round(actionCost(unit) * ABILITY.volley.charge));
+  if (ability !== 'skirmish' || ABILITY.skirmish.charge <= 0) return 0;
+  return Math.max(1, Math.round(actionCost(unit) * ABILITY.skirmish.charge));
 }
 
 /**

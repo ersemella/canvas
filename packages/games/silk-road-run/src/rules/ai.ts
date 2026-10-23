@@ -12,6 +12,7 @@ import {
   movementCap,
   reachableHexes,
   roadDistance,
+  shotLane,
   unitAt,
 } from './board';
 import {abilitiesOf, unusableReason} from './abilities';
@@ -77,9 +78,9 @@ function enhanceGain(state: FightState, u: Unit): number {
 
 /**
  * The enemies standing where `u` could hit them from where it is, roughly:
- * next to it for melee, within hail's range for the Storm Caller, within
- * Volley's or on one of the bow's lines (ignoring what blocks it) for the
- * Outrider.
+ * next to it for melee, within hail's range for the Storm Caller, on one of
+ * the bow's lines, or of Skirmish's from a space next to it (ignoring what
+ * blocks them), for the Outrider.
  */
 function strikable(state: FightState, u: Unit): Unit[] {
   if (!u.hex) return [];
@@ -89,10 +90,11 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const d = hexDistance(u.hex!, e.hex);
     if (d <= 1) return true;
     if (has('hail') && d <= ABILITY.hail.range) return true;
-    if (has('volley') && d <= ABILITY.volley.range) return true;
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
-    return has('bow') && (dq === 0 || dr === 0 || dq === -dr);
+    if (has('bow') && (dq === 0 || dr === 0 || dq === -dr)) return true;
+    // Skirmish: a line from a space next to it (one step off a line).
+    return has('skirmish') && Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) <= 1;
   });
 }
 
@@ -128,16 +130,18 @@ function camelProgress(state: FightState, side: Side): number {
 }
 
 /**
- * What the volleys in the air are worth to `side`: each the hit
- * it will deal whoever stands on its space now, only `AI.volleyDodgeShare`
- * of it if that unit can walk out before it lands.
+ * What the shots in the air are worth to `side`: each the hit it will
+ * deal the first unit in its lane now, only `AI.dodgeShare` of it if that
+ * unit can walk out before it lands.
  */
-function volleyPoints(state: FightState, side: Side): number {
+function shotPoints(state: FightState, side: Side): number {
   let score = 0;
-  for (const v of state.volleys ?? []) {
+  for (const v of state.shots ?? []) {
     const source = state.units.find((u) => u.id === v.source);
-    const target = unitAt(state, v.hex);
-    if (!source?.alive || source.slot === null || !target) continue;
+    if (!source?.alive || source.slot === null) continue;
+    const lane = shotLane(state, mapOf(state), v);
+    const target = lane.length ? unitAt(state, lane[lane.length - 1]!) : undefined;
+    if (!target) continue;
     const hit = Math.min(source.power, target.hp);
     const dodges =
       target.slot !== null &&
@@ -145,7 +149,7 @@ function volleyPoints(state: FightState, side: Side): number {
       !isStunned(target) &&
       !isImmobilized(target);
     const value = dodges
-      ? hit * AI.volleyDodgeShare
+      ? hit * AI.dodgeShare
       : hit * (target.hero === CAMEL ? AI.camelHealthWeight : 1) +
         (hit >= target.hp && target.hero !== CAMEL ? AI.kill : 0);
     score += (target.side === side ? -1 : 1) * value;
@@ -180,7 +184,7 @@ export function scoreOutcome(
     score += ((after.phase === 'won') === (actor.side === 'player') ? 1 : -1) * AI.victory;
   else {
     score += camelProgress(after, actor.side) - camelProgress(before, actor.side);
-    score += volleyPoints(after, actor.side) - volleyPoints(before, actor.side);
+    score += shotPoints(after, actor.side) - shotPoints(before, actor.side);
   }
   const me = after.units.find((u) => u.id === actor.id)!;
   // What enemies could do to it before its next turn (one step of lookahead),
@@ -294,7 +298,7 @@ interface SearchNode {
   options?: ScoredOption[];
   children: Map<ScoredOption, SearchNode>;
   /**
-   * The fight ended while the track ran on to the next decision (a volley
+   * The fight ended while the track ran on to the next decision (a shot
    * landing, a squeeze), not with the option itself: a turn later.
    */
   endedLater?: boolean;
@@ -310,7 +314,7 @@ export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
-  let score = camelProgress(state, side) + volleyPoints(state, side);
+  let score = camelProgress(state, side) + shotPoints(state, side);
   for (const u of state.units) {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
