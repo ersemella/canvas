@@ -29,8 +29,8 @@ the kits.**
   ([heroes-and-gear.md](heroes-and-gear.md), 9.1–9.2). Bökh Champion speed
   2, defence 3, power 1; Mangudai Outrider 3, 1, 2; Yadachy Storm Caller
   2, 2, 0.
-- **The track:** after any turn a unit's card goes 12 − 2 × speed slots
-  on, Temee's included, so the faster act more often. A fight starts from
+- **The track:** after any turn a unit's card goes 60 ÷ (speed + 5) slots
+  on, rounded, Temee's included, so the faster act more often. A fight starts from
   slot 0, fastest first, equal speeds side by side and a free slot between
   speeds, and Temee last at slot 12 ([timeline.md](timeline.md), 3.2 and
   3.4). Per-action costs are gone.

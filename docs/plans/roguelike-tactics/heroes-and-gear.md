@@ -19,7 +19,7 @@ The stat set is kept small, so every unit's stat sheet, enemies' included (D11),
 
 | Stat | Role | Modified by gear? |
 |---|---|---|
-| **Speed** | Sets the action cost: 12 − 2 × speed slots ([timeline.md](timeline.md), 3.2). | Yes, and weighed against defence (4.2). |
+| **Speed** | Sets the action cost: 60 ÷ (speed + 5) slots, rounded ([timeline.md](timeline.md), 3.2). | Yes, and weighed against defence (4.2). |
 | **Defence** | Sets health: **health = (1 + defence) × 2**. Reduces no damage itself. | TBD (see below). |
 | **Power** | The damage each of the unit's abilities deals, exactly (9.2). | Yes. |
 | **Health** | Hit points, from defence. | Through defence only (TBD). |

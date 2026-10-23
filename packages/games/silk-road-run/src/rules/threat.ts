@@ -8,6 +8,7 @@
  */
 import {ABILITY, AI, HEROES} from './config';
 import {hostile, isStunned} from './board';
+import {damageOf} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
 import type {AbilityId, FightState, Unit} from './types';
@@ -52,18 +53,19 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     if (u.alive && u.hex && u !== actor) occupied.add(id(u.hex.q, u.hex.r));
   const out: Threat[] = [];
   for (const e of state.units) {
-    if (!e.alive || !e.hex || e.slot === null || !hostile(e, actor) || e.power <= 0) continue;
+    const power = damageOf(e);
+    if (!e.alive || !e.hex || e.slot === null || !hostile(e, actor) || power <= 0) continue;
     const hexes = new Map<number, number>();
     out.push({enemyId: e.id, hexes});
     const has = (a: AbilityId) => HEROES[e.hero].abilities.includes(a);
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple'))
-      for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), e.power);
+      for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
     // Volley falls on any space within its range, over anything between,
     // but only marks it this turn: worth the share left after a dodge.
     if (has('volley')) {
       const reach = ABILITY.volley.range;
-      const d = e.power * AI.volleyDodgeShare;
+      const d = power * AI.volleyDodgeShare;
       for (let dq = -reach; dq <= reach; dq++)
         for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
           if (board.has(id(fq + dq, fr + dr))) mark(hexes, id(fq + dq, fr + dr), d);
@@ -74,7 +76,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           const k = id(fq + dq * i, fr + dr * i);
           const tile = board.get(k);
           if (tile === undefined || tile === 'obstacle') break;
-          mark(hexes, k, e.power);
+          mark(hexes, k, power);
           if (occupied.has(k)) break;
         }
       }

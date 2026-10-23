@@ -14,7 +14,9 @@ revision they were run at. So do the files for the new abilities of 2026-10-23
 switches they patch were removed once the kits were chosen; `volley.mjs`
 still runs (Fog dropped from it), as do `volley-charge.mjs` and
 `volley-delayed.mjs` (charge 0). `pared.mjs`, `stats.mjs` and `caravans.mjs`
-run on the current rules.
+run on the current rules. `sunlight.mjs` (2026-10-23) measures Sunlight as Enhance,
+an ability defined in `sunlight.ts` for experiments only: `ablate.ts`
+registers it, and the experiment adds it to the Storm Caller's kit.
 
 ## Ability and stat ablation
 

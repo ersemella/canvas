@@ -65,13 +65,29 @@ export function unitName(u: Unit): string {
  * 2026-10-23). Power 0 deals none, and says nothing.
  */
 export function hit(ctx: Ctx, attacker: Unit, target: Unit, what: string): void {
-  if (!target.alive || attacker.power <= 0) return;
-  applyDamage(
-    ctx,
-    target,
-    attacker.power,
-    `${what} hits ${unitName(target)} for ${attacker.power}`
-  );
+  const amount = damageOf(attacker);
+  if (!target.alive || amount <= 0) return;
+  if (attacker.enhance) log(ctx, `Enhance adds ${amount - attacker.power}.`);
+  applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`);
+}
+
+/** An ability's damage (17.6, step 1): power plus Enhance, at least 0. */
+export function damageOf(attacker: Unit): number {
+  return Math.max(0, attacker.power + (attacker.enhance ?? 0));
+}
+
+/** Enhances `u` by `amount` until the end of its next turn, replacing any Enhance it had. */
+export function enhance(ctx: Ctx, u: Unit, amount: number): void {
+  u.enhance = amount;
+  delete u.enhanceStarted;
+  log(ctx, `${unitName(u)} is Enhanced ${amount}.`);
+}
+
+/** At the end of a unit's turn: an Enhance whose turn this was ends. */
+export function endTurnEffects(unit: Unit): void {
+  if (!unit.enhanceStarted) return;
+  delete unit.enhance;
+  delete unit.enhanceStarted;
 }
 
 /**
@@ -194,7 +210,8 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
   for (const u of ctx.state.units) {
     if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
-    const amount = ABILITY.grapple.squeeze;
+    const amount =
+      ABILITY.grapple.squeeze + (ABILITY.grapple.enhancedSqueeze ? (champion.enhance ?? 0) : 0);
     applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`);
   }
 }

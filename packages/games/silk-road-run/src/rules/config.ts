@@ -13,11 +13,13 @@ import type {AbilityId, HeroId} from './types';
 export const RULES = {
   /**
    * Action cost (timeline.md, 3.2; owner, 2026-10-23): after each turn, a
-   * unit's card goes `actionBase` − `speedSlots` × speed slots on, Temee's
-   * included, whatever the turn did.
+   * unit's card goes `actionBase` × `speedPivot` ÷ (speed + `speedPivot`)
+   * slots on, rounded, Temee's included, whatever the turn did. Each point
+   * of speed adds 1 ÷ `speedPivot` of Temee's turn rate: speed 10 acts 3×
+   * as often as Temee.
    */
   actionBase: 12,
-  speedSlots: 2,
+  speedPivot: 5,
   /** Temee's starting slot (3.4), after every other unit's starting card. */
   camelStartSlot: 12,
   /** Ordinary walking cap (5.1): 3 since 2026-10-22 (owner). */
@@ -141,7 +143,7 @@ export const ABILITY = {
    * Charged (owner, 2026-10-23; balance.md): the Outrider's card goes
    * `charge` slots on after a volley on top of its action cost, and the
    * arrows land at the start of that next turn on whoever stands there
-   * then, for the Outrider's power. Charge 2 makes the wait 8 slots, a
+   * then, for the Outrider's power. Charge 2 makes the wait longer than a
    * speed-2 unit's action cost, so every unit that can walk gets a turn to
    * step out.
    */
@@ -150,7 +152,11 @@ export const ABILITY = {
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
    */
-  grapple: {squeeze: 1},
+  grapple: {
+    squeeze: 1,
+    /** Whether a Champion's Enhance adds to its squeeze (open; balance experiments). */
+    enhancedSqueeze: false,
+  },
 } as const;
 
 /** Enemy AI scoring (brief section 6), on the 2026-10-23 health scale (a hit is 1 or 2). */
@@ -164,6 +170,12 @@ export const AI = {
    */
   immobilizedShare: {ranged: 0.1, melee: 0.4},
   stunnedShare: 1,
+  /**
+   * Enhance is worth this share of one hit's extra damage to a unit with
+   * power, which gets one turn to use it; the search sees the kills it
+   * makes.
+   */
+  enhancedShare: 1,
   /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends

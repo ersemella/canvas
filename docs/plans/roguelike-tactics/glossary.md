@@ -27,8 +27,8 @@ tuning. Section numbers are the combat design's.
 | **Track** | The row of numbered slots that sets turn order. Every unit and track entity has a card in one slot; the track advances slot by slot and each card acts when reached (3.1). After each turn a card goes its unit's action cost on. Drawn as a window of roughly the next 30 slots; tapping a card previews it (7.1). |
 | **Slot** | One position on the track. Durations are measured in slots. Two cards never share a slot. |
 | **Card** | A unit's or track entity's marker on the track. |
-| **Placement** | Where a card goes after a turn: 12 − 2 × speed slots on (the action cost), whatever the turn did (3.2). |
-| **Speed** | A unit stat that sets its action cost (12 − 2 × speed slots), its starting slot, and the order of cards placed at the same moment. See section 4. |
+| **Placement** | Where a card goes after a turn: 60 ÷ (speed + 5) slots on, rounded (the action cost), whatever the turn did (3.2). |
+| **Speed** | A unit stat that sets its action cost (60 ÷ (speed + 5) slots), its starting slot, and the order of cards placed at the same moment. See section 4. |
 | **Collision** | A card placed on an occupied slot. The faster card keeps the slot and the other moves on to the next; on equal speeds the arriving card yields (3.3). |
 | **Push / Pull / Move** | Displacement: putting a unit on a different space, away from the source (Push), toward it (Pull) or to a stated space (Move) (17.4). Always the board; see Delay and Haste for the track. Until 2026-10-23 called Displace. |
 | **Delay** | Moves a card later on the track (3.5), within the delay limit (3.6). Never board movement. Until 2026-10-23 called Push. |

@@ -26,7 +26,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 >
 > **On the track (owner, 2026-10-23):** it starts **last, at slot 12**,
 > and its card goes its action cost on after each of its turns, like any
-> unit's: 12 − 2 × speed, and its speed is 0, so always 12, whether it stepped or waited
+> unit's: 60 ÷ (speed + 5), and its speed is 0, so always 12, whether it stepped or waited
 > ([timeline.md](timeline.md), 3.2 and 3.4).
 > Its stats follow the 2026-10-23 scale: defence 9, so health 20
 > (placeholder for "very high"; ten bow hits).

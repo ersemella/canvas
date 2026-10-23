@@ -48,6 +48,14 @@ export interface Unit {
   slot: number | null;
   statuses: Status[];
   /**
+   * Enhance (keywords.md, 17.6): its abilities deal this much more until
+   * the end of its next turn. Absent when it has none; nothing in the
+   * heroes' kits gives it yet (balance experiments only).
+   */
+  enhance?: number;
+  /** Its turn has begun since it was Enhanced, so the Enhance ends with that turn. */
+  enhanceStarted?: boolean;
+  /**
    * Its last turn was skipped (it could only Hold): its card shows it until
    * it next acts.
    */

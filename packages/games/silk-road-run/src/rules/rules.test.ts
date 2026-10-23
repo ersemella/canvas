@@ -8,7 +8,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
+import {ABILITY, AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
 import {
   canMove,
   invalidPath,
@@ -34,7 +34,8 @@ import {
 } from './fight';
 import {previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
-import {checkEnd, enterHex, hit, kill} from './resolve';
+import {checkEnd, enhance, enterHex, hit, kill} from './resolve';
+import type {Ctx} from './resolve';
 import {
   RUN_FORMAT,
   createRun,
@@ -139,10 +140,12 @@ describe('the track', () => {
     expect(spots.some((t) => hexKey(t.hex!) === hexKey(bokh.hex!))).toBe(true);
     expect(spots.some((t) => hexKey(t.hex!) === hexKey(unit(s, 'e-storm').hex!))).toBe(false);
     const input: TurnInput = {action: {ability: 'volley', target: {hex: bokh.hex!}}};
-    // Charged: the card goes 6 + 2 slots on, and the preview says so.
-    expect(previewTurn(s, m.id, input)!.aimSlot).toBe(8);
+    // Charged: the card goes its action cost and 2 more slots on, and the preview says so.
+    const landing = actionCost(m) + ABILITY.volley.charge;
+    expect(ABILITY.volley.charge).toBe(2);
+    expect(previewTurn(s, m.id, input)!.aimSlot).toBe(landing);
     applyTurn(s, m, input);
-    expect(m.slot).toBe(8);
+    expect(m.slot).toBe(landing);
     expect(bokh.hp).toBe(bokh.maxHp);
     expect(s.volleys).toEqual([{hex: at(3, 3), source: 'p-mangudai'}]);
     s.units.forEach((u) => (u.controller = 'human'));
@@ -171,7 +174,7 @@ describe('the track', () => {
     expect(s.volleys).toEqual([]);
   });
 
-  it('places a card 12 − 2 × speed slots on, whatever the turn did (3.2)', () => {
+  it('places a card 60 ÷ (speed + 5) slots on, rounded, whatever the turn did (3.2)', () => {
     const s = setup({
       'p-camel': at(0, 0),
       'p-mangudai': at(1, 3),
@@ -182,11 +185,11 @@ describe('the track', () => {
     const m = unit(s, 'p-mangudai');
     const b = unit(s, 'p-bokh');
     s.currentSlot = 25;
-    // Speed 3 costs 6 slots, speed 2 costs 8, wherever Temee's card is.
-    expect(aimSlot(s, m)).toBe(31);
-    expect(aimSlot(s, b)).toBe(33);
+    // Speed 3 costs 8 slots, speed 2 costs 9, wherever Temee's card is.
+    expect(aimSlot(s, m)).toBe(33);
+    expect(aimSlot(s, b)).toBe(34);
     s.currentSlot = 35;
-    expect(aimSlot(s, m)).toBe(41);
+    expect(aimSlot(s, m)).toBe(43);
     // A move and an ability place it alike.
     s.currentSlot = 25;
     m.slot = 25;
@@ -195,8 +198,8 @@ describe('the track', () => {
     applyTurn(moved, unit(moved, m.id), {move: [at(2, 3)], action: {ability: 'hold'}});
     const held = cloneFight(s);
     applyTurn(held, unit(held, m.id), {action: {ability: 'hold'}});
-    expect(unit(moved, m.id).slot).toBe(31);
-    expect(unit(held, m.id).slot).toBe(31);
+    expect(unit(moved, m.id).slot).toBe(33);
+    expect(unit(held, m.id).slot).toBe(33);
   });
 
   it('gives the faster more turns: Outriders before Bökh, Bökh before Temee', () => {
@@ -224,7 +227,7 @@ describe('the track', () => {
     camel.slot = 0;
     unit(s, 'e-bokh').slot = 500;
     advanceToDecision(s);
-    expect(camel.slot).toBe(RULES.actionBase - RULES.speedSlots * HEROES.camel.speed);
+    expect(camel.slot).toBe(RULES.actionBase);
   });
 
   it('yields an equal or slower card to the next free slot, cascading (3.3)', () => {
@@ -520,6 +523,59 @@ describe('stats and damage', () => {
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 1);
     expect(storm.power).toBe(1);
+  });
+
+  it('Enhance adds to a hit until the end of the unit’s next turn, then ends', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const m = unit(s, 'p-mangudai');
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
+    enhance(ctx, m, 1);
+    m.slot = 1;
+    expect(advanceToDecision(s)!.id).toBe('p-mangudai');
+    applyTurn(s, m, {action: {ability: 'bow', target: {hex: at(4, 3)}}});
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 3);
+    expect(m.enhance).toBeUndefined();
+  });
+
+  it('Enhance given on the unit’s own turn lasts through its next one', () => {
+    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const storm = unit(s, 'p-storm');
+    storm.slot = 1;
+    expect(advanceToDecision(s)!.id).toBe('p-storm');
+    enhance({state: s, map: mapOf(s), slot: s.currentSlot}, storm, 1);
+    applyTurn(s, storm, {action: {ability: 'hold'}});
+    expect(storm.enhance).toBe(1);
+    storm.slot = s.currentSlot + 1;
+    expect(advanceToDecision(s)!.id).toBe('p-storm');
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+    expect(storm.enhance).toBeUndefined();
+  });
+
+  it('a Champion’s Enhance adds to its squeeze only when the rule says so', () => {
+    const squeezed = (enhancedSqueeze: boolean) => {
+      const grapple = ABILITY.grapple as {enhancedSqueeze: boolean};
+      const saved = grapple.enhancedSqueeze;
+      grapple.enhancedSqueeze = enhancedSqueeze;
+      try {
+        const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(8, 6)});
+        s.units.forEach((u) => (u.controller = 'human'));
+        const b = unit(s, 'p-bokh');
+        const target = unit(s, 'e-storm');
+        applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
+        enhance({state: s, map: mapOf(s), slot: s.currentSlot}, b, 1);
+        const hp = target.hp;
+        b.slot = 1;
+        advanceToDecision(s);
+        return hp - target.hp;
+      } finally {
+        grapple.enhancedSqueeze = saved;
+      }
+    };
+    expect(squeezed(false)).toBe(1);
+    expect(squeezed(true)).toBe(2);
   });
 
   it('power 0 deals no damage, and says nothing of it', () => {
@@ -987,7 +1043,7 @@ describe('previews, the AI and the run', () => {
         move: Array.from({length}, (_, i) => at(i + 1, 0)),
         action: {ability: 'hold'},
       };
-      const aim = s.currentSlot + RULES.actionBase - RULES.speedSlots * actor.speed;
+      const aim = s.currentSlot + actionCost(actor);
       unit(s, 'e-bokh').slot = aim;
       // The Outrider (3) is faster than Bökh (2): it takes the slot, and the preview says Bökh moves on.
       expect(previewTurn(s, actor.id, input)).toMatchObject({
@@ -1159,7 +1215,7 @@ describe('previews, the AI and the run', () => {
     const bokh = unit(s, 'p-bokh');
     s.awaiting = bokh.id;
     const input: TurnInput = {action: {ability: 'hold'}};
-    const aim = s.currentSlot + RULES.actionBase - RULES.speedSlots * bokh.speed;
+    const aim = s.currentSlot + actionCost(bokh);
     expect(previewTurn(s, bokh.id, input)).toMatchObject({aimSlot: aim, slot: aim});
     // Cards in the aimed slot and the one after: the card yields past both.
     unit(s, 'e-bokh').slot = aim;

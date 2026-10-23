@@ -66,7 +66,7 @@ also has Hold.
 | Bökh Champion | 2 | 3 | 1 | 8 | Grapple | **Melee**: a unit next to the Champion (owner, 2026-10-23; until then it reached 2 spaces, stepping in first). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved; the Champion may walk while it grapples, and the grapple holds if the walk ends next to the target). At the start of each of the Champion's turns while it lasts, the target takes 1 more. One target at a time: a new grapple lets the last go, and it can't target the unit it already grapples. A chain on the board joins the two while it lasts (owner, 2026-10-23). |
 | | | | | | Throw | Only the unit it grapples: **Moves** it to a free space next to the Champion, or swaps places with it (the Champion's own space as the landing; not while the Champion is Immobilized), then it takes 1 damage. The grapple holds (owner, 2026-10-23; the swap added the same day). |
 | Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |
-| | | | | | Volley | Arrows from above aimed at one space within **3** with a unit on it, adjacent included, falling as hail does, so no line of fire is needed. **Charged**: the Outrider's card goes 2 slots further on than its action cost (8 in all), and the arrows land at the start of that next turn: whoever stands there then takes 2 (the Outrider's power). The space shows marked while they are in the air; they are lost if the Outrider falls first. Owner, 2026-10-23: charge 2 at range 3 ([balance.md](balance.md#volley-charged-at-range-3-2026-10-23)), replacing an instant Volley at range 2. |
+| | | | | | Volley | Arrows from above aimed at one space within **3** with a unit on it, adjacent included, falling as hail does, so no line of fire is needed. **Charged**: the Outrider's card goes 2 slots further on than its action cost, and the arrows land at the start of that next turn: whoever stands there then takes 2 (the Outrider's power). The space shows marked while they are in the air; they are lost if the Outrider falls first. Owner, 2026-10-23: charge 2 at range 3 ([balance.md](balance.md#volley-charged-at-range-3-2026-10-23)), replacing an instant Volley at range 2. |
 | Yadachy Storm Caller | 2 | 2 | 1 | 6 | Hail | One space within 3 (not ruins). It stays until the Storm Caller's next turn begins (or it falls). A unit in the space when it lands, or that enters it (walking, which stops there, or Moved), is **Immobilized** until the hail disappears. Its damage is the Storm Caller's power, 1 (owner, 2026-10-23; 0 before). |
 
 The Bökh Champion's Inevitable (2026-10-22) went with this rework: the
@@ -109,7 +109,7 @@ and the Modao Vanguard stays in the roster above as a hero to build again.
 - **Two summoners of great spirits:** the Jinn Binder's jinn pushes and disrupts; the Simurgh strikes and burns. Keep their visual language distinct (a smoky spirit from a brass vessel versus a vast bird from the sky).
 - **The Simurgh as religious-adjacent material:** it has roots in Zoroastrian texts, a living religion. Keep to the *Shahnameh*'s epic framing (15.5).
 - **Jinn as religious-adjacent material:** jinn also appear in the Qur'an. Keep to the *Arabian Nights* folklore framing (15.5). In "The Fisherman and the Jinni", the jinni was sealed in his jar by Solomon, a prophet in Islam; use the motif of a jinn sealed in a vessel without the religious figure.
-- **Speed:** two heroes have high speed (Mangudai Outrider, Kalari Duelist). The Varangian Guard pays for its damage with low speed, the Modao Vanguard for its armour. Speed sets how often a hero acts: every 12 − 2 × speed slots ([timeline.md](timeline.md), 3.2).
+- **Speed:** two heroes have high speed (Mangudai Outrider, Kalari Duelist). The Varangian Guard pays for its damage with low speed, the Modao Vanguard for its armour. Speed sets how often a hero acts: every 60 ÷ (speed + 5) slots ([timeline.md](timeline.md), 3.2).
 - **Only four damage heroes:** gear and upgrades can shift tanks and supports toward damage; guaranteed role coverage in recruitment offers would also help (10.7).
 - **The Waidan Alchemist's ultimate (Proposed): the hand cannon.** A single shot, direct ranged at long range, needing line of fire, for large damage with **Pierce**. Based on the Heilongjiang hand cannon (about 1288, Yuan dynasty), the oldest surviving metal gun, and on the alchemists' discovery of gunpowder; an era stretch like the Mongols'. It gives the healer one decisive shot without making it a damage hero; the ultimate rules (10.10) would keep it to once per fight (ultimates are out of the game since 2026-10-23).
 - **Area damage:** the Simurgh Summoner is the area-damage hero; its areas follow the friendly-fire rules like any other.
@@ -155,4 +155,8 @@ get one is open.
 **The Storm Caller's second ability** (owner, 2026-10-23): open. Hail is
 its only ability; Overwatch's, Sunlight's and Fog's measurements
 ([balance.md](balance.md#new-abilities-2026-10-23)) are what a candidate is
-measured against.
+measured against. Sunlight as Enhance 1 for a turn (with self-targeting, the
+squeeze and melting hail as variants) was measured and is worth nothing;
+at Enhance 2 it is a trap with today's AI
+([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). Merged for
+experiments at Enhance 2 (owner, 2026-10-23), in no kit yet.

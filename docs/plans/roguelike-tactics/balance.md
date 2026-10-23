@@ -1133,6 +1133,114 @@ and the Outrider caravans, 400 fights each), the same as charge 2 above:
 side without Volley 49.5%, without the Bow 21.5%, Hail 13.5%, Grapple
 10.8%, Throw 49.3%; player wins 98.3%, 81.8%, 95%, 79% and 60.8%.
 
+**Remeasured on the new track** (action cost 60 ÷ (speed + 5), rounded,
+merged the same day: the Outrider's is 8, a speed-2 unit's 9, so a volley
+lands 10 slots after it is cast and every unit that walks still gets a
+turn first). 400 fights each, seeds from 1000:
+
+| Side without | Wins |
+|---|---:|
+| Bow | 28.5% |
+| **Volley** | **44%** |
+| Hail | 15.8% |
+| Grapple | 13.8% |
+| Throw | 47.3% |
+| Bow and Volley | 19.3% |
+
+The Outrider's turns: walking 37%, Bow 34%, Volley 26%, Hold 3%; 3.8
+volleys cast a fight, 2.5 hitting, 1 kill. Temee killed in 30 of 400.
+Stage caravans, player wins: Outrider + 2 wolves 100%, Bökh + Outrider +
+wolf 89.8%, Outrider + Storm + wolf 99%, two Outriders + wolf 97%, all
+three 73.8%. On this track Volley is in the 40–48% band for a second
+ability, on the edge of its usage band (8–25%). The stages are easier
+across the board; how much of that is the track and how much is Volley
+wasn't separated.
+
+### Sunlight as Enhance (2026-10-23)
+
+A proposal for the Storm Caller's second ability (open question in
+[roster.md](roster.md)): **Sunlight**, Enhance 1 on a unit within 3 that
+hits (not Temee, not a unit already Enhanced) until the end of that unit's
+next turn. The owner asked for three variants: the Storm Caller may target
+itself (**self**: its next Hail deals 2), a Champion's Enhance adds to its
+squeeze (**squeeze**), and Sunlight melts hail on its space, freeing whoever
+it held, with a space of hail alone a target too (**melts**). Built for
+measuring only: the Enhance rule is in the rules (`enhance` in resolve.ts,
+ending at its unit's turn end in fight.ts), but Sunlight itself is in
+`scripts/balance/sunlight.ts`, in no kit unless an experiment adds it, so
+the game and page are unchanged. `experiments/sunlight.mjs`, 400 fights
+each, seeds from 1000, measured with the action cost at 12 − 2 × speed
+(before 60 ÷ (speed + 5), the same day).
+
+**The AI's valuation** (`enhanceGain` in ai.ts): an Enhance is worth one
+hit's extra damage while its unit has an enemy within reach, and stops
+counting once its unit's turn begins (it is being spent). Two first tries
+made it a trap, which says more about the scoring than the ability
+(principle 4):
+- Counted whenever the unit had it, spending it on a hit scored as losing
+  it, so the bonus cancelled out: the side without Sunlight won 57%, and
+  70% with self, the Storm Caller recasting on itself (972 casts in 400
+  fights) for 0.9 extra damage a fight. Recasting on a unit already
+  Enhanced is now refused.
+- Counted with no enemy in reach, it Enhanced Champions about to walk.
+
+**Each ability removed from one side** (modified side's wins; "today" is
+the adopted kit, Hail alone):
+
+| Side without | Today | Sunlight | + self | + squeeze | + melts | All three | Enhance 2 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Sunlight | | 50.3% | 49.5% | 50% | 49.8% | 50% | **57%** |
+| Hail | 18.8% | 22.5% | 24% | 24.3% | 23% | 24.5% | 31.3% |
+| Grapple | 16.8% | 20.3% | 20% | 19.8% | 18.5% | 19% | 20% |
+| Bow | 38.3% | 41.8% | 39.8% | 42% | 41.8% | 40.8% | 42% |
+| Volley | 23.5% | 23.8% | 23.8% | 23.8% | 24.8% | 24.3% | 20% |
+
+| Control fights | Today | Sunlight | + self | + squeeze | + melts | All three | Enhance 2 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Storm Caller: Hail / Sunlight | 72% / | 67% / 7% | 67% / 8% | 66% / 8% | 65% / 10% | 64% / 11% | 45% / 26% |
+| Enhance's damage a fight | | 0.8 | 0.8 | 0.8 | 0.9 | 0.9 | 4.1 |
+| Temee killed (of 400) | 54 | 64 | 62 | 64 | 56 | 54 | **104** |
+
+Targets, base Sunlight: the Outrider 66%, the Champion 34%. Self was taken
+on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
+0.5 hails a fight. No fight went unfinished; medians 39–43 actions.
+
+**Stage caravans**, player wins:
+
+| Enemy | Today | Sunlight | + self | + squeeze | + melts | All three | Enhance 2 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Outrider + 2 wolves | 92.8% | 93.5% | 93% | 93.5% | 93.5% | 93% | 88.5% |
+| Outrider + Outrider + wolf | 42.5% | 43% | 44.5% | 43% | 43% | 44.5% | 37.8% |
+| Bökh + Outrider + wolf | 72.7% | 73.9% | 73.4% | 74.2% | 73.9% | 73.7% | 66.2% |
+| Outrider + Storm + wolf | 87.8% | 87.3% | 87.3% | 87.3% | 87.5% | 87.5% | 78% |
+| All three | 61.3% | 62% | 61% | 62.3% | 60.3% | 60% | 56% |
+
+- **Enhance 1 for one turn is worth nothing in every variant** (49.5–50.3%,
+  within the ±2.5 points of noise), on 7–11% of the Storm Caller's turns.
+  A Hail (1 damage and a hold) almost always beats +1 on an ally's next
+  hit; it pays only when the +1 makes a kill.
+- **It still takes a little from Hail** (the side without Hail wins
+  22.5–24.5%, 18.8% today): the turns it takes are Hail's.
+- **None of the three variants changes that.** Self is rarely worth a
+  turn (a turn now for +1 next turn); the squeeze adds a point at most to
+  a grapple already deciding fights; melting is rare (0.5 a fight) and
+  only keeps Temee alive a little more (56 killed of 400, 64 without it).
+- **It doesn't counter the Outrider**: stages with enemy Outriders move
+  within noise (two Outriders 43–44.5%, 42.5% today).
+- **Enhance 2 is a trap** (57%): it takes a quarter of the Storm Caller's
+  turns (3.75 casts a fight) and Hail's from it (Hail on 45% of turns, its
+  damage 6.5 a fight from 10.1), yet adds only 4.1 damage a fight, about
+  1.1 of each cast's 2: the Enhanced ally often has no hit on its next
+  turn. Without Hail holding them, enemies reach Temee: it dies in 104 of
+  400 control fights (54 today), and in 46 of 400 against the Outrider and
+  two wolves (29 today), a caravan with no Storm Caller, so it is the
+  player's own Sunlight that costs it. The AI counts the full +2 whenever
+  an enemy is in reach, about twice what it delivers (principle 4).
+
+**Merged with Enhance 2** (owner, 2026-10-23): `ABILITY.sunlight.enhance`
+defaults to 2 in `scripts/balance/sunlight.ts`. It is still in no hero's
+kit.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
