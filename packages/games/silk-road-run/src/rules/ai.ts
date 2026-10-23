@@ -3,7 +3,7 @@
  * then search actual timeline decisions with budgeted alpha-beta minimax.
  */
 import {hexDistance, hexKey} from '@canvas/engine/server';
-import {AI, CAMEL, HEROES} from './config';
+import {ABILITY, AI, CAMEL, HEROES} from './config';
 import {
   hostile,
   isImmobilized,
@@ -20,7 +20,7 @@ import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {camelOf} from './resolve';
 import {MAPS} from './map';
-import type {FightState, Side, TurnInput, Unit} from './types';
+import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
   input: TurnInput;
@@ -46,9 +46,44 @@ function attacksFromAfar(u: Unit): boolean {
 /**
  * What `u`'s statuses cost its side, in damage: Stunned a turn lost,
  * Immobilized the share of a turn it loses (all of the camel's, which only
- * walks).
+ * walks), less what an Enhance gains it.
  */
-function statusPoints(u: Unit): number {
+function statusPoints(state: FightState, u: Unit): number {
+  return statusCost(u) - enhanceGain(state, u);
+}
+
+/**
+ * An Enhance is worth one hit's extra damage, if `u` has an enemy within
+ * reach to hit (`canStrike`). Once its turn has begun it is being spent, so
+ * it no longer counts: spending it on a hit must not score as losing it.
+ */
+function enhanceGain(state: FightState, u: Unit): number {
+  if (!u.enhance || u.enhanceStarted || u.power <= 0 || !canStrike(state, u)) return 0;
+  return u.enhance * AI.enhancedShare;
+}
+
+/**
+ * Whether an enemy stands where `u` could hit it from where it is, roughly:
+ * next to it for melee, within hail's range for the Storm Caller, within
+ * Volley's or on one of the bow's lines (ignoring what blocks it) for the
+ * Outrider.
+ */
+function canStrike(state: FightState, u: Unit): boolean {
+  if (!u.hex) return false;
+  const has = (a: AbilityId) => HEROES[u.hero].abilities.includes(a);
+  return state.units.some((e) => {
+    if (!e.alive || !e.hex || !hostile(e, u)) return false;
+    const d = hexDistance(u.hex!, e.hex);
+    if (d <= 1) return true;
+    if (has('hail') && d <= ABILITY.hail.range) return true;
+    if (has('volley') && d <= ABILITY.volley.range) return true;
+    const dq = e.hex.q - u.hex!.q;
+    const dr = e.hex.r - u.hex!.r;
+    return has('bow') && (dq === 0 || dr === 0 || dq === -dr);
+  });
+}
+
+function statusCost(u: Unit): number {
   if (isStunned(u)) return turnValue(u) * AI.stunnedShare;
   if (!isImmobilized(u)) return 0;
   if (u.hero === CAMEL) return turnValue(u);
@@ -91,7 +126,7 @@ export function scoreOutcome(
     if (!b.alive) continue;
     const a = after.units.find((u) => u.id === b.id)!;
     const lost = b.hp - a.hp;
-    const statusDelta = statusPoints(a) - statusPoints(b);
+    const statusDelta = statusPoints(after, a) - statusPoints(before, b);
     if (hostile(b, actor)) {
       score += lost * (b.hero === CAMEL ? AI.camelHealthWeight : 1) + statusDelta;
       if (!a.alive) score += AI.kill;
@@ -223,7 +258,8 @@ export function evaluatePosition(state: FightState, side: Side): number {
   for (const u of state.units) {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
-    const value = u.hero === CAMEL ? u.hp * AI.camelHealthWeight : u.hp + AI.kill - statusPoints(u);
+    const value =
+      u.hero === CAMEL ? u.hp * AI.camelHealthWeight : u.hp + AI.kill - statusPoints(state, u);
     score += (u.side === side ? 1 : -1) * value;
   }
   return score;

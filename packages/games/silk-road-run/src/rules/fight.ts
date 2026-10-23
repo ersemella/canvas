@@ -8,7 +8,16 @@ import {CAMEL, HEROES, PARTY, healthOf} from './config';
 import {invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
-import {checkEnd, clearHail, enterHex, log, record, squeezeGrapples, unitName} from './resolve';
+import {
+  checkEnd,
+  clearHail,
+  endTurnEffects,
+  enterHex,
+  log,
+  record,
+  squeezeGrapples,
+  unitName,
+} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
@@ -170,6 +179,8 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     record(state, {kind: 'turn', unitId: unit.id});
     // Its hail lasts until its next turn: this one (owner, 2026-10-23).
     clearHail(state, unit);
+    // An Enhance lasts until the end of this turn.
+    if (unit.enhance) unit.enhanceStarted = true;
     squeezeGrapples(ctx, unit);
     // The squeeze can end the fight.
     if (state.phase !== 'fight') return;
@@ -198,6 +209,7 @@ function skipTurn(ctx: Ctx, unit: Unit, text: string): void {
   unit.skipped = true;
   log(ctx, text);
   record(ctx.state, {kind: 'skip', unitId: unit.id});
+  endTurnEffects(unit);
   placeCard(ctx.state, unit, aimSlot(ctx.state, unit));
 }
 
@@ -219,6 +231,7 @@ function walkRoad(ctx: Ctx, unit: Unit): void {
     record(ctx.state, {kind: 'skip', unitId: unit.id});
   }
   checkEnd(ctx.state);
+  endTurnEffects(unit);
   if (unit.alive) placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
 }
 
@@ -267,6 +280,7 @@ export function applyTurn(
   }
   state.awaiting = null;
   checkEnd(state);
+  endTurnEffects(unit);
   if (unit.alive) placeCard(state, unit, aimSlot(state, unit));
 }
 

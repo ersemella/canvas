@@ -155,4 +155,6 @@ get one is open.
 **The Storm Caller's second ability** (owner, 2026-10-23): open. Hail is
 its only ability; Overwatch's, Sunlight's and Fog's measurements
 ([balance.md](balance.md#new-abilities-2026-10-23)) are what a candidate is
-measured against.
+measured against. Sunlight as Enhance 1 for a turn (with self-targeting, the
+squeeze and melting hail as variants) was measured and is worth nothing
+([balance.md](balance.md#sunlight-as-enhance-2026-10-23)).

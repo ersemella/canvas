@@ -8,7 +8,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
+import {ABILITY, AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
 import {
   canMove,
   invalidPath,
@@ -34,7 +34,8 @@ import {
 } from './fight';
 import {previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
-import {checkEnd, enterHex, hit, kill} from './resolve';
+import {checkEnd, enhance, enterHex, hit, kill} from './resolve';
+import type {Ctx} from './resolve';
 import {
   RUN_FORMAT,
   createRun,
@@ -492,6 +493,59 @@ describe('stats and damage', () => {
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 1);
     expect(storm.power).toBe(1);
+  });
+
+  it('Enhance adds to a hit until the end of the unit’s next turn, then ends', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const m = unit(s, 'p-mangudai');
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
+    enhance(ctx, m, 1);
+    m.slot = 1;
+    expect(advanceToDecision(s)!.id).toBe('p-mangudai');
+    applyTurn(s, m, {action: {ability: 'bow', target: {hex: at(4, 3)}}});
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 3);
+    expect(m.enhance).toBeUndefined();
+  });
+
+  it('Enhance given on the unit’s own turn lasts through its next one', () => {
+    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const storm = unit(s, 'p-storm');
+    storm.slot = 1;
+    expect(advanceToDecision(s)!.id).toBe('p-storm');
+    enhance({state: s, map: mapOf(s), slot: s.currentSlot}, storm, 1);
+    applyTurn(s, storm, {action: {ability: 'hold'}});
+    expect(storm.enhance).toBe(1);
+    storm.slot = s.currentSlot + 1;
+    expect(advanceToDecision(s)!.id).toBe('p-storm');
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+    expect(storm.enhance).toBeUndefined();
+  });
+
+  it('a Champion’s Enhance adds to its squeeze only when the rule says so', () => {
+    const squeezed = (enhancedSqueeze: boolean) => {
+      const grapple = ABILITY.grapple as {enhancedSqueeze: boolean};
+      const saved = grapple.enhancedSqueeze;
+      grapple.enhancedSqueeze = enhancedSqueeze;
+      try {
+        const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(8, 6)});
+        s.units.forEach((u) => (u.controller = 'human'));
+        const b = unit(s, 'p-bokh');
+        const target = unit(s, 'e-storm');
+        applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
+        enhance({state: s, map: mapOf(s), slot: s.currentSlot}, b, 1);
+        const hp = target.hp;
+        b.slot = 1;
+        advanceToDecision(s);
+        return hp - target.hp;
+      } finally {
+        grapple.enhancedSqueeze = saved;
+      }
+    };
+    expect(squeezed(false)).toBe(1);
+    expect(squeezed(true)).toBe(2);
   });
 
   it('power 0 deals no damage, and says nothing of it', () => {

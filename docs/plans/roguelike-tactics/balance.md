@@ -1034,6 +1034,81 @@ fights: the player's side won 65%, Temee killed in 54 of 400. Stage
 caravans, player wins: one hero and two wolves 92.8–99.5%; two heroes and
 a wolf 72.7–99% but 42.5% against two Outriders; all three 61.3%.
 
+### Sunlight as Enhance (2026-10-23)
+
+A proposal for the Storm Caller's second ability (open question in
+[roster.md](roster.md)): **Sunlight**, Enhance 1 on a unit within 3 that
+hits (not Temee, not a unit already Enhanced) until the end of that unit's
+next turn. The owner asked for three variants: the Storm Caller may target
+itself (**self**: its next Hail deals 2), a Champion's Enhance adds to its
+squeeze (**squeeze**), and Sunlight melts hail on its space, freeing whoever
+it held, with a space of hail alone a target too (**melts**). Built for
+measuring only: the Enhance rule is in the rules (`enhance` in resolve.ts,
+ending at its unit's turn end in fight.ts), but Sunlight itself is in
+`scripts/balance/sunlight.ts`, in no kit unless an experiment adds it, so
+the game and page are unchanged. `experiments/sunlight.mjs`, 400 fights
+each, seeds from 1000.
+
+**The AI's valuation** (`enhanceGain` in ai.ts): an Enhance is worth one
+hit's extra damage while its unit has an enemy within reach, and stops
+counting once its unit's turn begins (it is being spent). Two first tries
+made it a trap, which says more about the scoring than the ability
+(principle 4):
+- Counted whenever the unit had it, spending it on a hit scored as losing
+  it, so the bonus cancelled out: the side without Sunlight won 57%, and
+  70% with self, the Storm Caller recasting on itself (972 casts in 400
+  fights) for 0.9 extra damage a fight. Recasting on a unit already
+  Enhanced is now refused.
+- Counted with no enemy in reach, it Enhanced Champions about to walk.
+
+**Each ability removed from one side** (modified side's wins; "today" is
+the adopted kit, Hail alone):
+
+| Side without | Today | Sunlight | + self | + squeeze | + melts | All three | Enhance 2 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Sunlight | | 50.3% | 49.5% | 50% | 49.8% | 50% | **57%** |
+| Hail | 18.8% | 22.5% | 24% | 24.3% | 23% | 24.5% | 31.3% |
+| Grapple | 16.8% | 20.3% | 20% | 19.8% | 18.5% | 19% | 20% |
+| Bow | 38.3% | 41.8% | 39.8% | 42% | 41.8% | 40.8% | 42% |
+| Volley | 23.5% | 23.8% | 23.8% | 23.8% | 24.8% | 24.3% | 20% |
+
+| Control fights | Today | Sunlight | + self | + squeeze | + melts | All three | Enhance 2 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Storm Caller: Hail / Sunlight | 72% / | 67% / 7% | 67% / 8% | 66% / 8% | 65% / 10% | 64% / 11% | 45% / 26% |
+| Enhance's damage a fight | | 0.8 | 0.8 | 0.8 | 0.9 | 0.9 | 4.1 |
+| Temee killed (of 400) | 54 | 64 | 62 | 64 | 56 | 54 | **104** |
+
+Targets, base Sunlight: the Outrider 66%, the Champion 34%. Self was taken
+on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
+0.5 hails a fight. No fight went unfinished; medians 39–43 actions.
+
+**Stage caravans**, player wins:
+
+| Enemy | Today | Sunlight | + self | + squeeze | + melts | All three | Enhance 2 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Outrider + 2 wolves | 92.8% | 93.5% | 93% | 93.5% | 93.5% | 93% | 88.5% |
+| Outrider + Outrider + wolf | 42.5% | 43% | 44.5% | 43% | 43% | 44.5% | 37.8% |
+| Bökh + Outrider + wolf | 72.7% | 73.9% | 73.4% | 74.2% | 73.9% | 73.7% | 66.2% |
+| Outrider + Storm + wolf | 87.8% | 87.3% | 87.3% | 87.3% | 87.5% | 87.5% | 78% |
+| All three | 61.3% | 62% | 61% | 62.3% | 60.3% | 60% | 56% |
+
+- **Enhance 1 for one turn is worth nothing in every variant** (49.5–50.3%,
+  within the ±2.5 points of noise), on 7–11% of the Storm Caller's turns.
+  A Hail (1 damage and a hold) almost always beats +1 on an ally's next
+  hit; it pays only when the +1 makes a kill.
+- **It still takes a little from Hail** (the side without Hail wins
+  22.5–24.5%, 18.8% today): the turns it takes are Hail's.
+- **None of the three variants changes that.** Self is rarely worth a
+  turn (a turn now for +1 next turn); the squeeze adds a point at most to
+  a grapple already deciding fights; melting is rare (0.5 a fight) and
+  only keeps Temee alive a little more (56 killed of 400, 64 without it).
+- **It doesn't counter the Outrider**: stages with enemy Outriders move
+  within noise (two Outriders 43–44.5%, 42.5% today).
+- **Enhance 2 is a trap** (57%): it takes a quarter of the Storm Caller's
+  turns and half of Hail's worth (31.3%), and an enemy Storm Caller's
+  Enhanced arrows kill Temee twice as often (104 of 400), so every stage
+  gets harder.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

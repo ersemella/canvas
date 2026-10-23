@@ -147,7 +147,11 @@ export const ABILITY = {
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
    */
-  grapple: {squeeze: 1},
+  grapple: {
+    squeeze: 1,
+    /** Whether a Champion's Enhance adds to its squeeze (open; balance experiments). */
+    enhancedSqueeze: false,
+  },
 } as const;
 
 /** Enemy AI scoring (brief section 6), on the 2026-10-23 health scale (a hit is 1 or 2). */
@@ -161,6 +165,12 @@ export const AI = {
    */
   immobilizedShare: {ranged: 0.1, melee: 0.4},
   stunnedShare: 1,
+  /**
+   * Enhance is worth this share of one hit's extra damage to a unit with
+   * power, which gets one turn to use it; the search sees the kills it
+   * makes.
+   */
+  enhancedShare: 1,
   /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends

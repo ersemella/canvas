@@ -9,6 +9,8 @@ import {chooseAiTurn} from '@balance-rules/ai';
 import {ABILITY, AI, CAMEL, HEROES, RULES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import type {AbilityId, FightState, HeroId, Side} from '@balance-rules/types';
+// Registers the experimental Sunlight (in no kit unless an experiment adds it).
+import './sunlight';
 
 /** Mutable views of the config, for experiments to patch. */
 export type Config = {
@@ -48,7 +50,7 @@ const SOURCES: [RegExp, string][] = [
   [/^The bite hits/, 'bite'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| looses a volley| throws| swaps places| grapples| bites)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley| throws| swaps places| grapples| bites)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -115,6 +117,10 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
   let modLosses = 0;
   let moveTurns = 0;
   let movedHexes = 0;
+  /** Sunlight's targets (self, ally hero, camel, enemy, or hail alone) and what it added. */
+  const sunlight: Record<string, number> = {};
+  let enhanceDamage = 0;
+  let melts = 0;
 
   for (let f = 0; f < fights; f++) {
     const modSide: Side | null = mod ? (f & 1 ? 'enemy' : 'player') : null;
@@ -156,6 +162,9 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
           lastSource = source;
         }
         if (/ falls\.$/.test(text) && lastSource) add(kills, lastSource);
+        const added = /^Enhance adds (\d+)\.$/.exec(text);
+        if (added) enhanceDamage += Number(added[1]);
+        if (text === 'The sunlight melts the hail.') melts++;
       }
       s.log = [];
     };
@@ -174,6 +183,22 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
         input.action.target?.to?.r === u.hex?.r;
       add((uses[u.hero] ??= {}), moving ? 'move' : swap ? 'swap' : input.action.ability);
       add(uses[u.hero]!, 'turns');
+      if (input.action.ability === ('sunlight' as AbilityId)) {
+        const at = input.action.target!.hex!;
+        const t = state.units.find((v) => v.alive && v.hex?.q === at.q && v.hex.r === at.r);
+        add(
+          sunlight,
+          !t
+            ? 'hailOnly'
+            : t === u
+              ? 'self'
+              : t.side !== u.side
+                ? 'enemy'
+                : t.hero === CAMEL
+                  ? 'camel'
+                  : `ally:${t.hero}`
+        );
+      }
       if (moving) {
         moveTurns++;
         movedHexes += input.move!.length;
@@ -259,6 +284,9 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
     killsPerFight: Object.fromEntries(
       Object.entries(kills).map(([k, n]) => [k, round(n / fights, 2)])
     ),
+    sunlightTargets: sunlight,
+    enhanceDamagePerFight: perFight(enhanceDamage),
+    meltsPerFight: round(melts / fights, 2),
     survivalPct: Object.fromEntries(
       Object.entries(units).map(([h, n]) => [h, round((100 * (survivors[h] ?? 0)) / n)])
     ),
