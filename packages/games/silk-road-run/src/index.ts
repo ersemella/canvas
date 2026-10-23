@@ -28,7 +28,7 @@ function boardEntities(): EntityData[] {
         Transform: transform(BOARD_LAYOUT.origin.x, BOARD_LAYOUT.origin.y),
         // The board's grid. Its rectangle is nominal: taps are picked against
         // the map's own hexes by TacticsInputSystem (odd rows reach column −1).
-        HexGrid: {orientation: 'pointy', size: BOARD_LAYOUT.size, columns: 9, rows: 7},
+        HexGrid: {orientation: 'pointy', size: BOARD_LAYOUT.size, columns: 8, rows: 8},
       },
     },
   ];

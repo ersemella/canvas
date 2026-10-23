@@ -1,11 +1,11 @@
 /**
- * The Salt Flats Crossing (brief section 7): 9 rows of pointy-top hexes,
- * odd rows shoved right. Even rows have columns 0 to 7; odd rows also have
- * column −1, so neither side edge is notched (owner, 2026-10-19). 8 columns
- * × 9 rows since 2026-10-20 (owner; it was 9 × 7, then briefly 7 × 7 and
- * 8 × 8, the last row added at the bottom). It is an
- * exact left-right mirror: column c and 7 − c on even rows, c and 6 − c
- * on odd rows (whose column 3 is the centre hex).
+ * The Salt Flats Crossing (brief section 7): 8 rows of pointy-top hexes,
+ * odd rows shoved right. Even rows have columns 0 to 6; odd rows also have
+ * column −1, so neither side edge is notched (owner, 2026-10-19). 8 × 8
+ * (odd rows 8 hexes wide) since 2026-10-23 (owner; it was 9 × 7, then
+ * briefly 7 × 7 and 8 × 8, then 9 × 9 from 2026-10-20). It is an exact
+ * left-right mirror: column c and 6 − c on even rows (whose column 3 is
+ * the centre hex), c and 5 − c on odd rows.
  *
  * Each fight scatters its own ruins, not mirrored (owner, 2026-10-20; see
  * `randomTiles`). The fixed layout below is the map's own, which tests
@@ -31,18 +31,18 @@ export interface MapData {
   exits: Hex[];
 }
 
-const ROWS = 9;
-/** The columns of a row: even rows 0 to 7, odd rows −1 to 7 (odd rows sit half a hex further left). */
+const ROWS = 8;
+/** The columns of a row: even rows 0 to 6, odd rows −1 to 6 (odd rows sit half a hex further left). */
 const columnsOf = (row: number): number[] =>
-  Array.from({length: row & 1 ? 9 : 8}, (_, i) => i - (row & 1));
+  Array.from({length: row & 1 ? 8 : 7}, (_, i) => i - (row & 1));
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
 
 const special: [OffsetCoord, Tile][] = [
   // Ruins: two per half, breaking the long sight lines across the board.
   [{col: 2, row: 2}, 'obstacle'],
-  [{col: 5, row: 2}, 'obstacle'],
+  [{col: 4, row: 2}, 'obstacle'],
   [{col: 1, row: 5}, 'obstacle'],
-  [{col: 5, row: 5}, 'obstacle'],
+  [{col: 4, row: 5}, 'obstacle'],
 ];
 
 function boardHexes(): Hex[] {
@@ -71,7 +71,7 @@ export const SALT_FLATS: MapData = {
   camelStart: at(0, 0),
   // The bottom-right corner, the only exit (owner, 2026-10-22; was the four
   // hexes sticking out on the right edge).
-  exits: [at(7, ROWS - 1)],
+  exits: [at(columnsOf(ROWS - 1).at(-1)!, ROWS - 1)],
 };
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};
@@ -82,7 +82,7 @@ export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};
  */
 const RUIN_ROWS = [
   [0, 1, 2, 3],
-  [5, 6, 7, 8],
+  [4, 5, 6, 7],
 ];
 const RUINS_PER_ROWS = 3;
 

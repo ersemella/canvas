@@ -9,7 +9,15 @@ import {
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
-import {canMove, lineOfFire, movementCap, reachableHexes, roadToExit, unitAt} from './board';
+import {
+  canMove,
+  lineOfFire,
+  movementCap,
+  reachableHexes,
+  roadToExit,
+  stepToExit,
+  unitAt,
+} from './board';
 import {ABILITIES, abilitiesOf, arrowLanes} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
@@ -213,7 +221,7 @@ describe('the track', () => {
     }
     expect(starts.size).toBeGreaterThan(10);
     for (const h of map.startColumns.player) expect([-1, 0]).toContain(hexToOffset(h).col);
-    for (const h of map.startColumns.enemy) expect(hexToOffset(h).col).toBe(7);
+    for (const h of map.startColumns.enemy) expect(hexToOffset(h).col).toBe(6);
   });
 
   it('orders simultaneous placement: speed, then the player’s side first, then party order', () => {
@@ -289,17 +297,18 @@ describe('the board', () => {
     expect(boxedIn).toBeGreaterThan(0);
   });
 
-  it('is 8 × 9 with a hex at column −1 on odd rows only, making an exact left-right mirror', () => {
+  it('is 8 × 8 with a hex at column −1 on odd rows only, making an exact left-right mirror', () => {
     const map = SALT_FLATS;
-    expect(map.hexes).toHaveLength(8 * 5 + 9 * 4);
+    expect(map.hexes).toHaveLength(7 * 4 + 8 * 4);
     for (const row of [1, 3, 5, 7]) expect(onMap(map, at(-1, row))).toBe(true);
-    for (const row of [0, 2, 4, 6, 8]) expect(onMap(map, at(-1, row))).toBe(false);
-    for (const row of [0, 1]) expect(onMap(map, at(8, row))).toBe(false);
-    expect(onMap(map, at(0, 8))).toBe(true);
-    expect(onMap(map, at(0, 9))).toBe(false);
-    // Mirror about the board's centre line (between columns 3 and 4 on even rows).
+    for (const row of [0, 2, 4, 6]) expect(onMap(map, at(-1, row))).toBe(false);
+    for (const row of [0, 1]) expect(onMap(map, at(6, row))).toBe(true);
+    for (const row of [0, 1]) expect(onMap(map, at(7, row))).toBe(false);
+    expect(onMap(map, at(0, 7))).toBe(true);
+    expect(onMap(map, at(0, 8))).toBe(false);
+    // Mirror about the board's centre line (through column 3 on even rows).
     const layout = {orientation: 'pointy' as const, size: 1, origin: {x: 0, y: 0}};
-    const mid = (hexToPixel(at(3, 0), layout).x + hexToPixel(at(4, 0), layout).x) / 2;
+    const mid = hexToPixel(at(3, 0), layout).x;
     const mirror = (h: Hex) => {
       const p = hexToPixel(h, layout);
       return SALT_FLATS.hexes.find((m) => {
@@ -335,11 +344,11 @@ describe('the board', () => {
         const [q, r] = key.split(',').map(Number);
         const {col, row} = hexToOffset({q: q!, r: r!});
         // Two columns clear of each edge.
-        expect(col >= (row & 1 ? 1 : 2) && col <= 5).toBe(true);
+        expect(col >= (row & 1 ? 1 : 2) && col <= 4).toBe(true);
         if (tile === 'obstacle') ruinRows.push(row);
       }
       expect(ruinRows.filter((r) => r <= 3)).toHaveLength(3);
-      expect(ruinRows.filter((r) => r >= 5)).toHaveLength(3);
+      expect(ruinRows.filter((r) => r >= 4)).toHaveLength(3);
       // Every open hex can be walked to from every other.
       const open = map.hexes.filter((h) => tileAt(map, h) !== 'obstacle');
       const seen = new Set([hexKey(open[0]!)]);
@@ -379,19 +388,19 @@ describe('the board', () => {
   });
 
   it('ends a move where it enters hail, which Immobilizes', () => {
-    const s = setup({'p-bokh': at(4, 3), 'e-storm': at(7, 6)});
+    const s = setup({'p-bokh': at(3, 3), 'e-storm': at(6, 6)});
     const b = unit(s, 'p-bokh');
-    const dest = at(4, 5); // via (4, 4) or (5, 4)
+    const dest = at(3, 5); // via (3, 4) or (4, 4)
     const before = reachableHexes(s, mapOf(s), b).find((r) => hexKey(r.hex) === hexKey(dest))!;
     expect(before.path).toHaveLength(2);
     // Hail on both ways there: it can be reached, but not passed.
-    for (const h of [at(4, 4), at(5, 4)]) s.effects.push({kind: 'hail', hex: h, source: 'e-storm'});
+    for (const h of [at(3, 4), at(4, 4)]) s.effects.push({kind: 'hail', hex: h, source: 'e-storm'});
     const reach = reachableHexes(s, mapOf(s), b);
     expect(reach.some((r) => hexKey(r.hex) === hexKey(dest))).toBe(false);
-    expect(reach.some((r) => hexKey(r.hex) === hexKey(at(4, 4)))).toBe(true);
-    expect(simulate(s, 'p-bokh', {move: [at(4, 4), dest], action: {ability: 'hold'}})).toBeNull();
+    expect(reach.some((r) => hexKey(r.hex) === hexKey(at(3, 4)))).toBe(true);
+    expect(simulate(s, 'p-bokh', {move: [at(3, 4), dest], action: {ability: 'hold'}})).toBeNull();
     s.awaiting = b.id;
-    applyTurn(s, b, {move: [at(4, 4)], action: {ability: 'hold'}});
+    applyTurn(s, b, {move: [at(3, 4)], action: {ability: 'hold'}});
     expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm'}]);
     expect(movementCap(b)).toBe(0);
   });
@@ -480,7 +489,7 @@ describe('abilities', () => {
     // Nothing in the way: the bow has no range limit, so the lane runs to the edge.
     let lanes = arrowLanes(s, mapOf(s), from);
     expect(lanes).toHaveLength(6);
-    expect(east(lanes)).toEqual({hexes: [0, 1, 2, 3, 4, 5, 6, 7].map((c) => at(c, 3))});
+    expect(east(lanes)).toEqual({hexes: [0, 1, 2, 3, 4, 5, 6].map((c) => at(c, 3))});
     expect(ABILITIES.bow.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([]);
     // A unit in it: the lane ends there, and that unit is the bow's target.
     unit(s, 'e-bokh').hex = at(2, 3);
@@ -609,8 +618,8 @@ describe('abilities', () => {
 
   it('Throw: only the grappled unit, Moved to a free space next to the Champion, then struck; the grapple holds', () => {
     const s = setup({
-      'p-bokh': at(3, 3),
-      'e-storm': hexNeighbors(at(3, 3))[0]!,
+      'p-bokh': at(3, 4),
+      'e-storm': hexNeighbors(at(3, 4))[0]!,
       'e-mangudai': at(8, 6),
     });
     const b = unit(s, 'p-bokh');
@@ -672,12 +681,15 @@ describe('the caravan’s camel', () => {
       const camel = unit(s, 'p-camel');
       expect(camel.slot).toBe(0);
       s.events = [];
+      // Along its road, or around a unit in the way (stepToExit).
+      const step = stepToExit(s, mapOf(s), camel);
+      expect(step).toBeDefined();
       const first = advanceToDecision(s)!;
       // It walks itself: the track never stops for it.
       expect(first.hero).not.toBe('camel');
       expect(s.events[0]).toMatchObject({kind: 'turn', unitId: 'p-camel'});
       expect(s.events[1]).toMatchObject({kind: 'step', unitId: 'p-camel'});
-      expect(camel.hex).toEqual(roadToExit(mapOf(s), SALT_FLATS.camelStart)[0]);
+      expect(camel.hex).toEqual(step);
     }
   });
 
@@ -697,7 +709,7 @@ describe('the caravan’s camel', () => {
   });
 
   it('wins by reaching the one exit, in the bottom-right corner', () => {
-    expect(SALT_FLATS.exits.map((h) => hexToOffset(h))).toEqual([{col: 7, row: 8}]);
+    expect(SALT_FLATS.exits.map((h) => hexToOffset(h))).toEqual([{col: 6, row: 7}]);
   });
 
   it('follows a fixed shortest road around the ruins to the exit', () => {
@@ -787,10 +799,10 @@ describe('the caravan’s camel', () => {
   });
 
   it('wins the fight on reaching the exit, with enemies still standing', () => {
-    const s = setup({'p-camel': at(6, 8), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    const s = setup({'p-camel': at(5, 7), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     unit(s, 'p-camel').slot = 50;
     expect(advanceToDecision(s)).toBeUndefined();
-    expect(unit(s, 'p-camel').hex).toEqual(at(7, 8));
+    expect(unit(s, 'p-camel').hex).toEqual(at(6, 7));
     expect(s.phase).toBe('won');
   });
 
@@ -1083,7 +1095,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('sees what enemies could do before its next turn, and arrows stop at the first unit', () => {
-    const s = setup({'p-mangudai': at(0, 0), 'e-mangudai': at(8, 0), 'e-bokh': at(8, 6)});
+    const s = setup({'p-mangudai': at(0, 0), 'e-mangudai': at(6, 0), 'e-bokh': at(6, 6)});
     const m = unit(s, 'p-mangudai');
     const threats = threatsTo(s, SALT_FLATS, m);
     const at3 = (h: Hex) => {

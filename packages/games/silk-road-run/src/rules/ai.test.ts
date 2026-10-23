@@ -199,4 +199,15 @@ describe('the search timeline', () => {
       }
     }
   });
+
+  it('still picks a greedy turn, not a Hold, once a request’s budget is spent', () => {
+    const s = opening();
+    const me = unit(s, s.awaiting!);
+    const budget = {left: 0};
+    const input = requestChooser(budget)(s, me);
+    const best = scoreOptions(s, me, AI.turnFloorSimulations).sort((a, b) => b.score - a.score)[0]!;
+    expect(input).toEqual(best.input);
+    expect(input).not.toEqual({action: {ability: 'hold'}});
+    expect(budget.left).toBe(0);
+  });
 });

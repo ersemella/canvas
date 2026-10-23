@@ -353,7 +353,8 @@ export function chooseAiTurn(
 /**
  * Chooses the AI turns one request sets off, sharing `budget` among them:
  * each gets an equal share of what is left among the AI units due before
- * the next human turn, at most AI.maxSimulations. Taking the full cap in
+ * the next human turn, at most AI.maxSimulations and, once it is spent, a
+ * greedy AI.turnFloorSimulations rather than a Hold. Taking the full cap in
  * turn order left the third unit of a stage-one band (a hero, two wolves)
  * nothing, so it Held where it stood, on 1 in 20 of the wolves' turns.
  */
@@ -371,10 +372,12 @@ export function requestChooser(budget: SearchBudget): (state: FightState, unit: 
         u.slot !== null &&
         u.slot <= human
     ).length;
-    const share: SearchBudget = {left: Math.floor(budget.left / (due + 1))};
+    const share: SearchBudget = {
+      left: Math.max(AI.turnFloorSimulations, Math.floor(budget.left / (due + 1))),
+    };
     const given = share.left;
     const input = chooseAiTurn(state, unit, share);
-    budget.left -= given - share.left;
+    budget.left = Math.max(0, budget.left - (given - share.left));
     return input;
   };
 }

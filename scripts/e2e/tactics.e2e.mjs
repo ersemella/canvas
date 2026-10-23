@@ -26,7 +26,7 @@ const api = async (path, playerKey, init = {}) => {
   return {status: res.status, body: await res.json().catch(() => null)};
 };
 /** The board canvas's scene height (game.json); its width is 672. */
-const SCENE_H = 760;
+const SCENE_H = 697;
 const shot = (page, name) => page.screenshot({path: join(OUT_DIR, `tactics-${name}.png`)});
 
 // ── The API ──────────────────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ const started = await api('/runs', alice, {
 });
 /** The leftmost hex of row `r`, in axial coordinates (odd rows reach column −1). */
 const leftEdge = (r) => ({q: (r & 1 ? -1 : 0) - (r - (r & 1)) / 2, r});
-const rightEdge = (r) => ({q: 7 - (r - (r & 1)) / 2, r});
+const rightEdge = (r) => ({q: 6 - (r - (r & 1)) / 2, r});
 const sameHex = (a, b) => a.q === b.q && a.r === b.r;
 const startedFight = started.body?.view?.fight;
 check(
@@ -241,7 +241,7 @@ page.on('pageerror', (e) => {
   console.log('  [page error]', e.message);
 });
 
-/** Clicks a hex on the board canvas, scaled from the 672×760 scene to the canvas on screen. */
+/** Clicks a hex on the board canvas, scaled from the 672×697 scene to the canvas on screen. */
 /** Where a hex's centre is on the screen. */
 async function hexPoint(hex) {
   const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hex);

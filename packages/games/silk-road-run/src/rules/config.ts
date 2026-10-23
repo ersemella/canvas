@@ -180,6 +180,13 @@ export const AI = {
    */
   maxSimulations: 110,
   requestSimulations: 220,
+  /**
+   * What each AI turn in a request still gets once the request's budget is
+   * spent: enough for a greedy pick, no lookahead. With only Holds, a
+   * Champion grappling the last hero beside a wolf on the exit stalled the
+   * fight for good (2026-10-23, on the 8 × 8 board).
+   */
+  turnFloorSimulations: 48,
   rootSimulations: 48,
   replySimulations: 8,
   searchWidth: 4,
