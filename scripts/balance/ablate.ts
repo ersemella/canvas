@@ -41,12 +41,14 @@ type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 /** Damage sources, recognised by the fight log's wording. */
 const SOURCES: [RegExp, string][] = [
   [/'s arrow hits/, 'bow'],
+  [/'s volley hits/, 'volley'],
   [/^The throw hits/, 'throw'],
   [/^The grapple hits/, 'grapple'],
   [/^The hail hits/, 'hail'],
   [/^The bite hits/, 'bite'],
 ];
-const ACTOR = /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| throws| grapples| bites)/;
+const ACTOR =
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| looses a volley| throws| swaps places| grapples| bites)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -166,7 +168,11 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
       useKits(u.side, modSide);
       const input = chooseAiTurn(state, u);
       const moving = (input.move?.length ?? 0) > 0;
-      add((uses[u.hero] ??= {}), moving ? 'move' : input.action.ability);
+      const swap =
+        input.action.ability === 'throw' &&
+        input.action.target?.to?.q === u.hex?.q &&
+        input.action.target?.to?.r === u.hex?.r;
+      add((uses[u.hero] ??= {}), moving ? 'move' : swap ? 'swap' : input.action.ability);
       add(uses[u.hero]!, 'turns');
       if (moving) {
         moveTurns++;

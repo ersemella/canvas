@@ -283,6 +283,24 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 
 ## Roster
 
+- **Overwatch, Sunlight and Fog** (owner's proposals, 2026-10-23; built,
+  measured and removed with their code the same day,
+  [balance.md](balance.md#new-abilities-2026-10-23)). *Overwatch* (the
+  Outrider): one of the bow's lanes until its next turn, the first unit
+  to enter it shot; worth nothing in every variant (shooting each unit
+  that enters, the shot stopping a walk) and with the AI valuing its
+  lanes: on an 8 × 8 board with 3-space walks one lane is almost never in
+  the way. Replaced by Volley. *Sunlight* (the Storm Caller): one space
+  within 3, heal 1 and cleanse every status (ending a grapple), melting
+  hail; worth nothing at heal 1, worth having at heal 2 but it lengthened
+  fights and made the last stage harder (42.8% player wins). *Fog* (the
+  Storm Caller): one space within 3 until its next turn, Degrade 1 on a
+  unit standing in it; worth nothing on one space, a little over a space
+  and its neighbours (the first proposal, judged too strong on paper),
+  a trap at Degrade 2. Also weighed: *Leap* for the Outrider (it mostly
+  repeats a 3-space walk). The Storm Caller has Hail alone until its
+  second ability is chosen.
+
 - **Fox-Spirit Sorcerer as a trickster caster** (2026-10-16): illusions
   and decoys, using conceal tiles. Labelled damage but played as support:
   decoys and cover protect the party, and none of it kills. Replaced by

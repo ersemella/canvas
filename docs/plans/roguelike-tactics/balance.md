@@ -823,6 +823,217 @@ were as hard as stage 3.
 side): the Storm Caller's power +1 won 79% (the change adopted), the
 Champion's speed +1 71.7%; the rest 49.5–61.5%.
 
+### New abilities (2026-10-23)
+
+The owner's proposals, built on a branch (not merged): **Overwatch** for
+the Outrider, **Sunlight** for the Storm Caller (heal 1, cleanse, melts
+hail), and a **swap** as one of Throw's landings ([roster.md](roster.md)).
+`experiments/new-abilities.mjs` and `new-abilities-tuning.mjs`, 400 fights
+each, seeds from 1000, the production AI on both sides. The AI was changed
+with them in one way: healing an ally is worth what the same damage to an
+enemy is (it had counted at the friendly-fire penalty, 1.5, and Sunlight
+took 47% of the Storm Caller's turns in a first run).
+
+**Each ability removed from one side** (50% means it adds nothing):
+
+| Side without | Before (today's kits) | With the new abilities |
+|---|---:|---:|
+| Bow | 13% | 13.1% |
+| Overwatch | | **50.3%** |
+| Hail | 16.3% | 35.6% |
+| Sunlight | | **50.3%** |
+| Grapple | 10.3% | 8.3% |
+| Throw (with the swap) | 47.5% | 45.6% |
+| Overwatch and Sunlight | | 49.2% |
+
+Unfinished 0–0.8%. Control fights: median 49 actions (42 before), 91
+slots (78); the player's side (the AI, with Temee) won 43.2% of finished
+fights (59% before), Temee killed in 84 of 400 (48).
+
+Share of turns: the Outrider shoots 46%, walks 30%, Overwatches 24% (it
+no longer Holds: 15.5% before); the Storm Caller Hails 51%, Sunlights 33%,
+walks 17%; the Champion swaps on 2.6% and Throws on 8.3%. Per fight:
+Overwatch fires 0.2 shots (0.3 damage, 0.1 of it on allies); Sunlight
+heals 6.6.
+
+- **Overwatch adds nothing** with this AI. It takes it on turns it would
+  otherwise Hold, and with no valuation of which lane matters its lane is
+  as good as arbitrary; walks route around it, and it fires 0.2 times a
+  fight. Variants, each worth nothing: shooting every unit that enters
+  (side without it 50.5%), the shot stopping a walk (50.5%), both (50.8%).
+  Its worth needs the AI to value a lane by the walks it cuts (Temee's
+  road, the enemy's way in) before tuning means anything (principle 4).
+- **Sunlight at heal 1 adds nothing**, and it makes Hail matter less
+  (35.6% without Hail, 16.3% before): the Storm Caller now Hails less.
+  Longer fights give the enemy time to reach Temee.
+- **Sunlight at heal 2** (`sun-heal2`): a side without it wins **41.7%**,
+  in the 40–48% band for a non-core ability. But it takes 47% of the
+  Storm Caller's turns (over the 35% that makes a non-core ability
+  suspect), 1.5–1.8% of fights go unfinished, the median fight is 55
+  actions, and 19.4 health is healed a fight.
+- **The swap is dead** (2.6% of the Champion's turns, under 5%), as
+  expected: a second adjacent unit to grapple, or Throw's 1 damage
+  somewhere else, is nearly always better. It costs no button.
+
+**Stage caravans** (`experiments/caravans.mjs`), player wins:
+
+| Enemy | Before | With the new abilities |
+|---|---:|---:|
+| Bökh Champion + 2 wolves | 98% | 98.5% |
+| Mangudai Outrider + 2 wolves | 96.8% | 96.3% |
+| Yadachy Storm Caller + 2 wolves | 99.8% | 100% |
+| Bökh + Bökh + wolf | 78.3% | 75.9% |
+| Bökh + Mangudai + wolf | 66.5% | 68.4% |
+| Bökh + Storm + wolf | 94% | 94.7% |
+| Mangudai + Mangudai + wolf | 64.8% | 59.5% |
+| Mangudai + Storm + wolf | 90.8% | 89.4% |
+| Storm + Storm + wolf | 99% | 97.2% |
+| all three | 58.3% | **42.8%** |
+
+The last stage is harder (42.8% from 58.3%): an enemy Storm Caller's
+Sunlight keeps its side standing longer. The first two stages barely
+move.
+
+#### The AI valuing Overwatch's lanes, and Fog in place of Sunlight
+
+**The AI now values an overwatched lane** (`overwatchThreat` in
+`ai.ts`) by its one shot, at the most it is worth on a hostile unit acting
+before the Outrider's next turn that must cross it: Temee's next step into
+it is a sure hit (its health weight, 2 a point); a melee unit whose every
+way to a hex beside its quarry goes through the lane takes the shot or
+forgoes its hit, so the lesser of the two; ranged units lose nothing.
+Overwatch is still worth nothing (`experiments/ow-ai.mjs`): a side without
+it wins 49% (shooting every unit that enters: 49%; the shot stopping a
+walk: 50%). A sample of 30 fights shows why: of 552 Outrider decisions,
+the lanes were worth different amounts on 27 (5%), and the bow had a
+target on 435 (79%). On an 8 × 8 board with 3-space walks, one lane is
+almost never the only way to a target or the exit.
+
+**Fog** (owner, 2026-10-23), in place of Sunlight: one space within 3,
+until the Storm Caller's next turn; a unit standing in it is
+**Degraded** 1 (its abilities, the grapple's squeeze and an overwatch shot
+included, deal 1 less, at least 0). The AI values a unit in fog at the
+damage it Degrades from its next hit, if that comes before the fog lifts,
+and its threat map Degrades a fogged enemy's hit. `experiments/fog.mjs`
+and `fog-tuning.mjs`, 400 fights each:
+
+| Side without | Fog, 1 space, Degrade 1 | Fog, radius 1 (owner's first proposal) | Fog, 1 space, Degrade 2 |
+|---|---:|---:|---:|
+| Bow | 14.5% | | |
+| Overwatch | 48.1% | | |
+| Hail | 29.1% | 35.4% | 40.6% |
+| **Fog** | **49.9%** | **46.3%** | **55.5%** |
+| Grapple | 10.6% | | |
+| Throw | 44.4% | | |
+
+| | Fog, 1 space | Radius 1 | Degrade 2 |
+|---|---:|---:|---:|
+| Fog's share of the Storm Caller's turns | 28% | 35% | 35% |
+| Damage fog took off hits, per fight | 2.8 | 8.9 | 2.9 |
+| Unfinished | 1.5% | 0.5% | 0% |
+| Median slots | 78 | 86 | 91 |
+
+- **One space at Degrade 1 adds nothing**: most hits come from units that
+  can step out or shoot from elsewhere, and it takes Hail's turns.
+- **Radius 1 is worth a little** (46.3%, just inside the 40–48% band):
+  it takes three times the damage off, but it slows fights.
+- **Degrade 2 is a trap** (55.5%): the AI casts it on a third of the Storm
+  Caller's turns and loses more for it.
+- With Fog in place of Sunlight, the stages are back where they were
+  (`caravans.mjs`): all three heroes 56.7% (58.3% before any new ability,
+  42.8% with Sunlight); the rest within 3–7 points.
+
+#### Volley in place of Overwatch
+
+**Volley** (owner, 2026-10-23): the Outrider's arrows loosed high onto one
+space within 3, falling as hail does, so no line of fire is needed; the
+unit there takes the Outrider's power (2), as the Bow's arrow does. Fog
+stays in the Storm Caller's kit; the swap stays (owner). The threat map
+counts every space within its reach. `experiments/volley.mjs` and
+`volley-tuning.mjs`, 400 fights each.
+
+| | As proposed (range 3) | Range 2 | 1 less damage | Range 2–3 (not adjacent) |
+|---|---:|---:|---:|---:|
+| Side without Volley wins | **14.5%** | 24.4% | 28% | 15% |
+| Side without the Bow wins | 42.5% | 36.6% | 33% | 22.8% |
+| Volley's share of the Outrider's turns | 29% | 17% | 47% | 29% |
+| Temee killed (of 400 control fights) | **168** | 48 | 24 | 170 |
+| Player wins vs Outrider + 2 wolves | 77.5% | 93.5% | 100% | 78.3% |
+| vs Bökh + Outrider + wolf | 52.5% | 73.7% | 89% | 52.3% |
+| vs Outrider + Outrider + wolf | **13%** | 43% | 84.8% | 13.3% |
+| vs all three | 42.5% | 62.6% | 69.9% | 42% |
+
+Before any new ability: Temee killed in 48 of 400; the stage caravans
+96.8%, 66.5%, 64.8% and 58.3%. As proposed, the rest of the kit (side
+without): Hail 39.1%, Fog 51.4%, Grapple 29.3% (10.3% before), Throw
+48.6%; the Bow and Volley both gone, 6.3%.
+
+- **As proposed, Volley is the strongest ability in the game**: the Bow's
+  damage with none of its limits (line of fire, the first unit in the
+  lane). It makes the Bow the lesser attack, takes Grapple's place as what
+  decides fights, and hunts Temee over anything in the way: Temee dies in
+  42% of fights. An enemy with two Outriders wins 87% of stage 2.
+- **Range 2 fits**: Volley a strong second attack (24.4%), the Bow still
+  worth having (36.6%), Volley on 17% of turns, Temee killed as often as
+  before; stage 2 with two Outriders is the hard one (43%), the last
+  stage a little easier (62.6%).
+- **1 less damage** is a weak attack the AI uses on nearly half of the
+  Outrider's turns (over the 35% that makes a non-core ability suspect),
+  and every stage gets easier.
+- **Not on adjacent units** changes nothing: the Outrider stands off
+  anyway.
+
+**Neither the Bow nor Volley on an adjacent unit** (owner's question,
+2026-10-23; `experiments/outrider-no-adjacent.mjs`): `ABILITY.bow.minRange`
+and `volley.minRange` 2; an adjacent unit still stops the Bow's arrow.
+
+| | Volley range 3 | Volley range 2 | Range 2, adjacent allowed (above) |
+|---|---:|---:|---:|
+| Side without Volley wins | **13.4%** | 20.2% | 24.4% |
+| Side without the Bow wins | 41.3% | 43.4% | 36.6% |
+| Side without Grapple wins | 23.7% | 17.4% | |
+| The Outrider's turns: Hold | **37.9%** | **42.4%** | 10.7% |
+| Volley / Bow / walking | 34% / 9% / 19% | 22% / 11% / 25% | 17% / 39% / 33% |
+| Temee killed (of 400) | 130 | 44 | 48 |
+| Player wins vs Outrider + 2 wolves | 88.5% | 99% | 93.5% |
+| vs Bökh + Outrider + wolf | 73.7% | 84.5% | 73.7% |
+| vs Outrider + Outrider + wolf | 30.1% | 81% | 43% |
+| vs all three | 54.4% | 62% | 62.6% |
+| Unfinished | 0% | 2.5% | 0% |
+
+- **At range 3 it is still too strong**: Volley still decides fights
+  (13.4%), Temee still dies far more often (130 of 400), and two enemy
+  Outriders still win 70% of stage 2.
+- **At range 2 the numbers balance, the Outrider doesn't**: Volley only
+  reaches the ring two spaces out, so with an enemy beside it or none at
+  two the Outrider Holds on 42% of its turns, and the Bow, hardly used
+  (11%), is worth little (43.4%). Stage 2 gets easier than before any new
+  ability. Range 2 with adjacent targets allowed keeps the Outrider busy
+  (Holds 10.7%) at similar worth.
+
+#### The kits adopted (owner, 2026-10-23)
+
+Volley at range 2 (adjacent included), the swap kept, the Storm Caller with
+Hail alone; Overwatch, Sunlight and Fog removed with their code
+([history.md](history.md)). `experiments/volley.mjs` and `caravans.mjs`,
+400 fights each:
+
+| Side without | Wins |
+|---|---:|
+| Bow | 38.3% |
+| Volley | 23.5% |
+| Hail | 18.8% |
+| Grapple | 16.8% |
+| Throw (with the swap) | 49.5% |
+| Bow and Volley | 7.5% |
+
+No fight unfinished; median 40 actions, 74 slots. Share of turns: the
+Outrider shoots 38%, volleys 17%, walks 33%, Holds 13%; the Storm Caller
+Hails 72%; the Champion Grapples 36%, Throws 10%, swaps 2%. Control
+fights: the player's side won 65%, Temee killed in 54 of 400. Stage
+caravans, player wins: one hero and two wolves 92.8–99.5%; two heroes and
+a wolf 72.7–99% but 42.5% against two Outriders; all three 61.3%.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

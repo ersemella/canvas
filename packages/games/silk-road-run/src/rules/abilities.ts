@@ -7,7 +7,7 @@
 import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES} from './config';
-import {onMap, sortByHex, unitAt, walkable} from './board';
+import {isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
 import {endGrapples, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
@@ -133,6 +133,33 @@ const bow: AbilityDef = {
   },
 };
 
+/**
+ * Volley (owner, 2026-10-23): arrows loosed high, falling on one space
+ * within `ABILITY.volley.range` (2), adjacent included, as hail does, so no
+ * line of fire is needed: the unit there, ally or enemy, takes the
+ * Outrider's power.
+ */
+const volley: AbilityDef = {
+  id: 'volley',
+  name: 'Volley',
+  kind: 'attack',
+  range: ABILITY.volley.range,
+  radius: 0,
+  summary: (user) =>
+    `Arrows from above on a unit within ${ABILITY.volley.range}, over anything in the way: it takes ${damageText(user)}.`,
+  targetsUnit: true,
+  targets: (state, map, user, from) =>
+    hexesWithin(map, from, ABILITY.volley.range, (h) => {
+      const u = unitAt(state, h);
+      return u !== undefined && u !== user;
+    }),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} looses a volley.`);
+    hit(ctx, user, u, `${unitName(user)}'s volley`);
+  },
+};
+
 // ─── Yadachy Storm Caller ────────────────────────────────────────────────────
 
 const hail: AbilityDef = {
@@ -166,30 +193,39 @@ export function grappling(user: Unit, u: Unit): boolean {
 
 /**
  * Throw (owner, 2026-10-23): only the unit the Champion grapples, Moved to
- * any free space next to the Champion, then struck. It lands beside the
- * Champion, so the grapple holds.
+ * any free space next to the Champion, or swapping places with it (the
+ * Champion's own hex as the landing; owner, 2026-10-23), then struck. Either
+ * way the two stay next to each other, so the grapple holds. An Immobilized
+ * Champion can't swap: it would move itself.
  */
 const throwAbility: AbilityDef = {
   id: 'throw',
   name: 'Throw',
   kind: 'attack',
   summary: (user) =>
-    `Melee, on the unit you grapple: Move it to a free space next to you, then it takes ${damageText(user)}. The grapple holds.`,
+    `Melee, on the unit you grapple: Move it to a free space next to you, or swap places with it, then it takes ${damageText(user)}. The grapple holds.`,
   targetsUnit: true,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
-    for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u)))
-      for (const to of sortByHex(
-        hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h)),
-        (h) => h
-      ))
-        out.push({hex: t.hex!, to});
+    for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u))) {
+      const landings = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
+      if (!isImmobilized(user)) landings.push(from);
+      for (const to of sortByHex(landings, (h) => h)) out.push({hex: t.hex!, to});
+    }
     return out;
   },
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
-    log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
-    enterHex(ctx, u, target.to!, 'throw');
+    if (hexEquals(target.to!, user.hex!)) {
+      const at = u.hex!;
+      log(ctx, `${unitName(user)} swaps places with ${unitName(u)}.`);
+      // Each enters the other's space; side by side still, the grapple holds.
+      enterHex(ctx, u, user.hex!, 'swap', true);
+      enterHex(ctx, user, at, 'swap', true);
+    } else {
+      log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
+      enterHex(ctx, u, target.to!, 'throw');
+    }
     hit(ctx, user, u, 'The throw');
   },
 };
@@ -235,6 +271,7 @@ const bite: AbilityDef = {
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   bow,
+  volley,
   hail,
   grapple,
   throw: throwAbility,

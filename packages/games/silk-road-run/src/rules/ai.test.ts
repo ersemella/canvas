@@ -3,7 +3,7 @@ import {hexDistance, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {chooseAiTurn, evaluatePosition, requestChooser, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
-import {AI} from './config';
+import {AI, HEROES} from './config';
 import {advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
 import {createRun} from './run';
 import {SALT_FLATS} from './map';
@@ -68,10 +68,18 @@ describe('budgeted tactical search', () => {
     s.awaiting = me.id;
     const pruned = stats();
     const exhaustive = stats();
-    const selected = chooseAiTurn(s, me, {left: AI.requestSimulations}, pruned);
-    expect(chooseAiTurn(s, me, {left: AI.requestSimulations}, exhaustive, {prune: false})).toEqual(
-      selected
-    );
+    // The bow alone: a second attack would make the tree too big to search exhaustively.
+    const kit = HEROES.mangudai.abilities;
+    HEROES.mangudai.abilities = ['bow', 'hold'];
+    let selected: TurnInput;
+    try {
+      selected = chooseAiTurn(s, me, {left: AI.requestSimulations}, pruned);
+      expect(
+        chooseAiTurn(s, me, {left: AI.requestSimulations}, exhaustive, {prune: false})
+      ).toEqual(selected);
+    } finally {
+      HEROES.mangudai.abilities = kit;
+    }
     expect(pruned.completedDepth).toBe(3);
     expect(exhaustive.completedDepth).toBe(3);
     expect(pruned.value).toBe(exhaustive.value);

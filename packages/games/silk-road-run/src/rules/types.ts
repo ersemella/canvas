@@ -12,7 +12,7 @@ export type Side = 'player' | 'enemy';
  * isn't a hero, and the wolf, an enemy NPC.
  */
 export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
-export type AbilityId = 'hold' | 'bow' | 'hail' | 'grapple' | 'throw' | 'bite';
+export type AbilityId = 'hold' | 'bow' | 'volley' | 'hail' | 'grapple' | 'throw' | 'bite';
 
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';
@@ -71,8 +71,8 @@ export interface LogEntry {
   text: string;
 }
 
-/** How a unit came to enter a hex: walked or thrown. */
-export type Motion = 'walk' | 'throw';
+/** How a unit came to enter a hex: walked, thrown, or swapped places by a Throw. */
+export type Motion = 'walk' | 'throw' | 'swap';
 
 /** Something that happened on the board, in the order the rules resolved it. */
 export type FightEvent =
@@ -116,7 +116,10 @@ export interface FightState {
   awaiting: string | null;
 }
 
-/** What a turn's action targets. `to` is Throw's landing hex. */
+/**
+ * What a turn's action targets. `to` is Throw's landing hex: the
+ * Champion's own hex swaps the two.
+ */
 export interface ActionTarget {
   hex?: Hex;
   to?: Hex;

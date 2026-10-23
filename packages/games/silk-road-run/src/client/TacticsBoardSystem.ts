@@ -325,11 +325,13 @@ export class TacticsBoardSystem extends BaseSystem {
     if (scene.path && scene.path.length > 1) drawPath(ctx, scene.path);
 
     const acting = fight.awaiting;
-    // A unit's border covers its hex's outline, so a targeted unit rings itself.
+    // A unit's border covers its hex's outline, so a targeted unit rings
+    // itself; so does the Champion, as Throw's swap landing.
     const targeted = new Map<string, 'target' | 'chosen'>();
     for (const h of scene.highlights)
-      if (h.kind === 'chosen' || (h.kind === 'target' && !targeted.has(hexKey(h.hex))))
-        targeted.set(hexKey(h.hex), h.kind);
+      if (h.kind === 'chosen') targeted.set(hexKey(h.hex), 'chosen');
+      else if ((h.kind === 'target' || h.kind === 'landing') && !targeted.has(hexKey(h.hex)))
+        targeted.set(hexKey(h.hex), 'target');
     for (const u of fight.units) {
       const hex = u.hex;
       if (!u.alive || !hex) continue;

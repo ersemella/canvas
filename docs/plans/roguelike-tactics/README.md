@@ -45,7 +45,10 @@ the kits.**
   its target until the Champion takes damage, is Stunned or ends a turn
   no longer next to it, 1 more damage at each of the Champion's turns
   meanwhile, never on the unit it already grapples; Throw, Moving the grappled unit to a space next to the
-  Champion, so the grapple holds.
+  Champion, or swapping places with it, so the grapple holds; Volley
+  (2026-10-23), arrows from above on a unit within 2, no line of fire
+  needed. The Storm Caller has Hail alone for now: Overwatch, Sunlight and
+  Fog were measured and removed ([history.md](history.md)).
 - **Deleted with their code:** the Modao Vanguard's kit, ultimates and
   charged abilities, Leap, Sunlight, Shove, quicksand and the sandstorm,
   and every keyword not in the new list ([history.md](history.md)).

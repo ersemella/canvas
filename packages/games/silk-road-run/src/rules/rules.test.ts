@@ -109,17 +109,38 @@ describe('the track', () => {
   });
 
   it('skips a unit whose only targets are allies', () => {
-    // Allies aren't offered as targets, so an Immobilized archer with only an ally in its lanes holds.
-    const s = setup({'p-mangudai': at(1, 1), 'p-storm': at(3, 1), 'e-bokh': at(6, 6)});
+    // Allies aren't offered as targets, so an Immobilized wolf with only an ally beside it holds.
+    const s = setup({'p-wolf': at(1, 1), 'p-bokh': at(2, 1), 'e-bokh': at(6, 6)}, ['wolf', 'bokh']);
+    const w = unit(s, 'p-wolf');
+    w.statuses.push({kind: 'immobilized'});
+    expect(ABILITIES.bite.targets(s, mapOf(s), w, w.hex!).length).toBe(1);
+    expect(onlyHold(s, mapOf(s), w)).toBe(true);
+    // An enemy beside it gives it a bite.
+    unit(s, 'e-bokh').hex = hexNeighbors(w.hex!).find(
+      (h) => !unitAt(s, h) && onMap(SALT_FLATS, h)
+    )!;
+    expect(onlyHold(s, mapOf(s), w)).toBe(false);
+  });
+
+  it('Volley reaches an enemy within 2 that no bow lane does, over a unit in the way', () => {
+    const s = setup({
+      'p-mangudai': at(1, 3),
+      'p-storm': at(2, 3),
+      'e-bokh': at(3, 3),
+      'e-storm': at(8, 6),
+    });
     const m = unit(s, 'p-mangudai');
+    const bokh = unit(s, 'e-bokh');
     m.statuses.push({kind: 'immobilized'});
-    expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.id === 'p-storm')).toBe(true);
+    expect(HEROES.mangudai.abilities).toEqual(['bow', 'volley', 'hold']);
+    // The ally stands between: the bow's lane stops at it.
     expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.side === 'enemy')).toBe(false);
-    expect(onlyHold(s, mapOf(s), m)).toBe(true);
-    // An enemy in an open lane gives it a shot.
-    const open = arrowLanes(s, mapOf(s), m.hex!).find((l) => !l.hit && l.hexes.length > 0)!;
-    unit(s, 'e-bokh').hex = open.hexes[0]!;
     expect(onlyHold(s, mapOf(s), m)).toBe(false);
+    const spots = ABILITIES.volley.targets(s, mapOf(s), m, m.hex!);
+    expect(spots.every((t) => hexDistance(t.hex!, m.hex!) <= 2 && unitAt(s, t.hex!))).toBe(true);
+    expect(spots.some((t) => hexKey(t.hex!) === hexKey(unit(s, 'e-storm').hex!))).toBe(false);
+    applyTurn(s, m, {action: {ability: 'volley', target: {hex: bokh.hex!}}});
+    expect(bokh.hp).toBe(bokh.maxHp - m.power);
   });
 
   it('places a card 12 − 2 × speed slots on, whatever the turn did (3.2)', () => {
@@ -692,10 +713,12 @@ describe('abilities', () => {
     expect(ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
     const throws = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!);
-    // Every free space around the Champion, not around the target.
-    expect(throws.length).toBe(5);
+    // Every free space around the Champion, not around the target, and the
+    // Champion's own (a swap).
+    expect(throws.length).toBe(6);
     for (const t of throws) {
       expect(t.hex).toEqual(target.hex);
+      if (hexDistance(t.to!, b.hex!) === 0) continue;
       expect(hexDistance(t.to!, b.hex!)).toBe(1);
       expect(unitAt(s, t.to!)).toBeUndefined();
     }
@@ -704,6 +727,28 @@ describe('abilities', () => {
     expect(target.hex).toEqual(far.to);
     expect(target.hp).toBe(target.maxHp - 2 * b.power);
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
+  });
+
+  it('Throw can swap: the two trade spaces, it is struck, and the grapple holds', () => {
+    const s = setup({
+      'p-bokh': at(3, 4),
+      'e-storm': hexNeighbors(at(3, 4))[0]!,
+      'e-mangudai': at(8, 6),
+    });
+    const b = unit(s, 'p-bokh');
+    const target = unit(s, 'e-storm');
+    const [bAt, tAt] = [b.hex!, target.hex!];
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: tAt}}});
+    applyTurn(s, b, {action: {ability: 'throw', target: {hex: tAt, to: bAt}}});
+    expect(b.hex).toEqual(tAt);
+    expect(target.hex).toEqual(bAt);
+    expect(target.hp).toBe(target.maxHp - 2 * b.power);
+    expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
+    // An Immobilized Champion can't swap: it would move itself.
+    b.statuses.push({kind: 'immobilized'});
+    const landings = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!).map((t) => t.to!);
+    expect(landings.some((h) => hexDistance(h, b.hex!) === 0)).toBe(false);
+    expect(landings.length).toBeGreaterThan(0);
   });
 
   it('hail covers one space within three: a unit there is Immobilized until the caster’s next turn', () => {

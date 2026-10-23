@@ -74,7 +74,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    abilities: ['bow', 'hold'],
+    abilities: ['bow', 'volley', 'hold'],
   },
   storm: {
     name: 'Yadachy Storm Caller',
@@ -135,6 +135,14 @@ export const ABILITY = {
    * until it disappears.
    */
   hail: {range: 3},
+  /**
+   * Arrows from above (owner, 2026-10-23): one space within 2 with a unit
+   * on it, adjacent included, no line of fire needed, as hail falls; the
+   * unit there takes the Outrider's power. Range 2, not the proposed 3
+   * (owner, 2026-10-23; balance.md): at 3 it was the strongest ability in
+   * the game.
+   */
+  volley: {range: 2},
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
