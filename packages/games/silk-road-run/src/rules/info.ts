@@ -61,7 +61,7 @@ export type KeywordId =
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   speed: {
     name: 'Speed',
-    detail: `Sets the action cost: after each turn, the card goes ${RULES.actionBase} − ${RULES.speedSlots} × speed slots on, so the faster act more often. The fight starts with the fastest cards first, ${HEROES.camel.name}’s last.`,
+    detail: `Sets the action cost: after each turn, the card goes ${RULES.actionBase * RULES.speedPivot} ÷ (speed + ${RULES.speedPivot}) slots on, rounded, so the faster act more often. The fight starts with the fastest cards first, ${HEROES.camel.name}’s last.`,
   },
   power: {name: 'Power', detail: 'The damage each of its abilities deals.'},
   defence: {name: 'Defence', detail: 'Sets health: (1 + defence) × 2.'},
