@@ -4,7 +4,7 @@
     "description": "A turn-based tactical roguelike on a fantasy Silk Road: three heroes against a rival band on a hex map."
   },
   "canvas": {
-    "width": 672,
+    "width": 594,
     "height": 697
   },
   "systems": ["MouseSystem", "HexGridSystem", "TacticsInputSystem", "TacticsBoardSystem"],

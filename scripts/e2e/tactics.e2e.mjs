@@ -25,7 +25,8 @@ const api = async (path, playerKey, init = {}) => {
   });
   return {status: res.status, body: await res.json().catch(() => null)};
 };
-/** The board canvas's scene height (game.json); its width is 672. */
+/** The board canvas's scene size (game.json). */
+const SCENE_W = 594;
 const SCENE_H = 697;
 const shot = (page, name) => page.screenshot({path: join(OUT_DIR, `tactics-${name}.png`)});
 
@@ -240,12 +241,12 @@ page.on('pageerror', (e) => {
   console.log('  [page error]', e.message);
 });
 
-/** Clicks a hex on the board canvas, scaled from the 672×697 scene to the canvas on screen. */
+/** Clicks a hex on the board canvas, scaled from the 594×697 scene to the canvas on screen. */
 /** Where a hex's centre is on the screen. */
 async function hexPoint(hex) {
   const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
   const box = await page.locator('canvas').boundingBox();
-  return {x: box.x + (x * box.width) / 672, y: box.y + (y * box.height) / SCENE_H};
+  return {x: box.x + (x * box.width) / SCENE_W, y: box.y + (y * box.height) / SCENE_H};
 }
 async function tapHex(hex) {
   const {x, y} = await hexPoint(hex);
@@ -479,7 +480,7 @@ try {
   {
     const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hailTo);
     const box = await page.locator('canvas').boundingBox();
-    await page.mouse.click(box.x + (x * box.width) / 672, box.y + (y * box.height) / SCENE_H, {
+    await page.mouse.click(box.x + (x * box.width) / SCENE_W, box.y + (y * box.height) / SCENE_H, {
       button: 'right',
     });
     await sleep(150);
@@ -719,7 +720,7 @@ try {
   {
     const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), ruins);
     const box = await page.locator('canvas').boundingBox();
-    await page.mouse.move(box.x + (x * box.width) / 672, box.y + (y * box.height) / SCENE_H);
+    await page.mouse.move(box.x + (x * box.width) / SCENE_W, box.y + (y * box.height) / SCENE_H);
     await sleep(150);
   }
   const info = page.getByTestId('hex-info');
@@ -987,7 +988,7 @@ try {
   const onPhone = async (hex) => {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
     const box = await phone.locator('canvas').boundingBox();
-    return {x: box.x + (x * box.width) / 672, y: box.y + (y * box.height) / SCENE_H};
+    return {x: box.x + (x * box.width) / SCENE_W, y: box.y + (y * box.height) / SCENE_H};
   };
   const foe = phoneFight.units.find((u) => u.side === 'enemy' && u.alive).hex;
   const foeAt = await onPhone(foe);
@@ -1242,7 +1243,7 @@ try {
       const c = await phone.evaluate((id) => window.__tactics.cardCenter(id), u.id);
       if (!c) continue;
       const at = {
-        x: canvasBox.x + (c.x * canvasBox.width) / 672,
+        x: canvasBox.x + (c.x * canvasBox.width) / SCENE_W,
         y: canvasBox.y + (c.y * canvasBox.height) / SCENE_H,
       };
       const m = 24;
@@ -1308,7 +1309,7 @@ try {
     );
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), free);
     const box = await phone.locator('canvas').boundingBox();
-    const at = {x: (x * box.width) / 672, y: (y * box.height) / SCENE_H};
+    const at = {x: (x * box.width) / SCENE_W, y: (y * box.height) / SCENE_H};
     await phone.tap('canvas', {position: at});
     await sleep(250);
     check(
@@ -1339,7 +1340,7 @@ try {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
     const box = await phone.locator('canvas').boundingBox();
     await phone.tap('canvas', {
-      position: {x: (x * box.width) / 672, y: (y * box.height) / SCENE_H},
+      position: {x: (x * box.width) / SCENE_W, y: (y * box.height) / SCENE_H},
     });
     await sleep(250);
   };

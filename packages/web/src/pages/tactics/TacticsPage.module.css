@@ -166,11 +166,11 @@
 /*
  * Desktop: the board as large as the screen allows, beside the side panel
  * (330px, a 12px gap and the page's 16px sides), the page's height less its
- * 12px top and bottom, keeping the scene's 672 × 697 shape.
+ * 12px top and bottom, keeping the scene's 594 × 697 shape.
  */
 @media (min-width: 961px) {
   .board {
-    width: min(calc(100vw - 32px - 342px), calc((100dvh - 24px) * 672 / 697));
+    width: min(calc(100vw - 32px - 342px), calc((100dvh - 24px) * 594 / 697));
   }
   /*
    * The panel as tall as the board: the turn's buttons level with the
@@ -278,7 +278,7 @@
   .page .abilityGrid {
     --tile-height: clamp(
       56px,
-      (100dvh - 100vw * 697 / 672 - 90px - env(safe-area-inset-bottom) - (var(--rows) - 1) * 8px) /
+      (100dvh - 100vw * 697 / 594 - 90px - env(safe-area-inset-bottom) - (var(--rows) - 1) * 8px) /
         var(--rows),
       80px
     );
