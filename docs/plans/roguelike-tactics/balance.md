@@ -1204,9 +1204,10 @@ on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
   an enemy is in reach, about twice what it delivers (principle 4).
 
 **Adopted at Enhance 2** (owner, 2026-10-23), as measured: Sunlight is in
-the Storm Caller's kit (`ABILITY.sunlight` in config.ts), with self,
-squeeze and melts off. The measurements above were taken before; the AI's
-valuation is unchanged, so it still misuses it.
+the Storm Caller's kit (`ABILITY.sunlight` in config.ts), then with self
+and melts on (owner, the same day; squeeze off). That combination, at
+Enhance 2, wasn't measured; the AI's valuation is unchanged, so it still
+misuses it.
 
 ## Principles for re-tuning
 
