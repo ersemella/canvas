@@ -47,8 +47,8 @@ the kits.**
   meanwhile, never on the unit it already grapples; Throw, Moving the grappled unit to a space next to the
   Champion, or swapping places with it, so the grapple holds; Volley
   (2026-10-23), arrows from above on a unit within 3, no line of fire
-  needed, Charge 4 (owner, 2026-10-23): the Outrider's card is pushed 4
-  slots on, greyed; when it comes back they land on whoever stands there
+  needed, charged (owner, 2026-10-23): the Outrider's card is pushed half
+  its action cost on (4 slots), greyed; when it comes back they land on whoever stands there
   then, with no turn for the Outrider, and the card goes its action cost on. The Storm Caller has Hail alone for now: Overwatch, Sunlight and
   Fog were measured and removed ([history.md](history.md)).
 - **Deleted with their code:** the Modao Vanguard's kit, ultimates and

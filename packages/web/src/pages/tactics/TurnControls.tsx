@@ -187,7 +187,7 @@ export function TurnControls(props: {
                 ? confirmLabel
                 : picked
                   ? asking(def.name, abilityIcon(def))
-                  : label(def.name, abilityIcon(def), chargeOf(def.id))}
+                  : label(def.name, abilityIcon(def), chargeOf(unit, def.id))}
             </Button>
           );
         })}

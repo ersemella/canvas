@@ -47,7 +47,15 @@ import {
   runView,
   stageEnemies,
 } from './run';
-import {actionCost, aimSlot, freeSlotFrom, nextCard, placeCard, simultaneousOrder} from './track';
+import {
+  actionCost,
+  aimSlot,
+  chargeOf,
+  freeSlotFrom,
+  nextCard,
+  placeCard,
+  simultaneousOrder,
+} from './track';
 import type {FightState, HeroId, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
@@ -142,9 +150,10 @@ describe('the track', () => {
     expect(spots.some((t) => hexKey(t.hex!) === hexKey(bokh.hex!))).toBe(true);
     expect(spots.some((t) => hexKey(t.hex!) === hexKey(unit(s, 'e-storm').hex!))).toBe(false);
     const input: TurnInput = {action: {ability: 'volley', target: {hex: bokh.hex!}}};
-    // Charge 4: the card goes 4 slots on, not its action cost, and the preview says so.
+    // Charged: the card goes half its action cost on (4 of 8), and the preview says so.
     const now = s.currentSlot;
-    expect(ABILITY.volley.charge).toBe(4);
+    expect(actionCost(m)).toBe(8);
+    expect(chargeOf(m, 'volley')).toBe(4);
     expect(previewTurn(s, m.id, input)!.aimSlot).toBe(now + 4);
     applyTurn(s, m, input);
     expect(m.slot).toBe(now + 4);

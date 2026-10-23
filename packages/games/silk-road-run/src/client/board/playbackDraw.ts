@@ -79,7 +79,7 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
     case 'land': {
       const def = ABILITIES[e.ability];
       // A charged ability is only aimed now: its flourish plays as it lands.
-      const charged = e.kind === 'action' && chargeOf(e.ability) > 0;
+      const charged = e.kind === 'action' && chargeOf(u, e.ability) > 0;
       const name = e.kind === 'land' ? `${def.name} lands` : def.name;
       // The area the playback lights up when it lands; the target hex alone for the rest.
       const radius = def.radius ?? 0;

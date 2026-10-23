@@ -16,12 +16,14 @@ export function actionCost(unit: Unit): number {
 
 /**
  * A charged ability's charge (owner, 2026-10-23): its user's card goes
- * this many slots on instead of its action cost, greyed while it charges,
+ * this many slots on instead of its action cost (Volley's: half of it,
+ * rounded), greyed while it charges,
  * and the ability lands when the card comes back, in place of a turn
  * (`landCharge` in fight.ts). Volley's; 0 for the rest.
  */
-export function chargeOf(ability: AbilityId): number {
-  return ability === 'volley' ? ABILITY.volley.charge : 0;
+export function chargeOf(unit: Unit, ability: AbilityId): number {
+  if (ability !== 'volley') return 0;
+  return Math.max(1, Math.round(actionCost(unit) * ABILITY.volley.charge));
 }
 
 /**
@@ -34,7 +36,7 @@ export function aimSlot(
   now = state.currentSlot,
   ability?: AbilityId
 ): number {
-  const charge = ability ? chargeOf(ability) : 0;
+  const charge = ability ? chargeOf(unit, ability) : 0;
   return now + (charge > 0 ? charge : actionCost(unit));
 }
 
