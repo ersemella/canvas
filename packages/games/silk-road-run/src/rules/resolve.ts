@@ -1,20 +1,19 @@
 /**
- * Effects every ability is built from: damage (brief section 2's order),
- * healing, entering a hex, displacement, death and the end of the fight.
+ * Effects every ability is built from: damage, entering a space, hail and
+ * grapples ending, death and the end of the fight.
  */
-import {hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
+import {hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {CAMEL, RULES, HEROES} from './config';
-import {barrierOf, onMap, statusValue, unitAt, vulnerablePercent} from './board';
-import {MAPS, tileAt} from './map';
+import {CAMEL, HEROES} from './config';
+import {addStatus, hailOn} from './board';
+import {MAPS} from './map';
 import type {MapData} from './map';
-import {pushCard} from './track';
-import type {BoardSnapshot, FightEvent, FightState, HailEffect, Motion, Unit} from './types';
+import type {BoardSnapshot, FightEvent, FightState, Motion, Status, Unit} from './types';
 
 export interface Ctx {
   state: FightState;
   map: MapData;
-  /** The slot the turn happens on (durations count from it). */
+  /** The slot the turn happens on. */
   slot: number;
 }
 
@@ -47,7 +46,6 @@ function snapshot(state: FightState): BoardSnapshot {
       hp: u.hp,
       alive: u.alive,
       slot: u.slot,
-      charging: u.charging ? {...u.charging, target: {...u.charging.target}} : null,
       skipped: u.skipped ?? false,
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
@@ -59,128 +57,43 @@ export function unitName(u: Unit): string {
   return `${u.side === 'player' ? 'Your' : 'Enemy'} ${HEROES[u.hero].name}`;
 }
 
-/** base × (1 + power / 50), rounded down: power scales base damage and healing. */
-export function scaled(base: number, power: number): number {
-  return Math.floor(base * (1 + power / 50));
-}
-
 /**
- * An ability's hit (brief section 2): scaled base, then Vulnerable (max of
- * ability and flank), then defence; minimum 1. Each step rounds down.
- * Obscured no longer weakens ranged hits: it stops them being aimed
- * (owner, 2026-10-21; board.ts).
+ * An ability's hit: exactly the attacker's power in damage (owner,
+ * 2026-10-23). Power 0 deals none, and says nothing.
  */
-export function abilityDamage(
-  state: FightState,
-  attacker: Unit,
-  target: Unit,
-  base: number
-): number {
-  return throughDefence(state, target, scaled(base, attacker.power));
-}
-
-/** Vulnerable, then defence, then the minimum: the end of every ability's hit, and of quicksand's. */
-export function throughDefence(state: FightState, target: Unit, damage: number): number {
-  return defended(target, rawDamage(state, target, damage));
-}
-
-/** Defence, then the minimum. */
-function defended(target: Unit, damage: number): number {
-  const d = Math.floor((damage * RULES.defenceConstant) / (target.defence + RULES.defenceConstant));
-  return Math.max(RULES.minimumDamage, d);
-}
-
-/** Vulnerable alone: collision damage, which skips defence. */
-export function rawDamage(state: FightState, target: Unit, amount: number): number {
-  return Math.floor(amount * (1 + vulnerablePercent(state, target) / 100));
-}
-
-export function hit(ctx: Ctx, attacker: Unit, target: Unit, base: number, what: string): void {
-  if (!target.alive) return;
-  const raw = rawDamage(ctx.state, target, scaled(base, attacker.power));
-  strike(ctx, target, raw, true, (d) => `${what} hits ${unitName(target)} for ${d}`);
-}
-
-/**
- * Damage reaching a unit, `raw` after Vulnerable. A Barrier takes it first,
- * at its full value, skipping defence, and whatever it couldn't absorb is
- * lost: none of it reaches health (owner, 2026-10-22). Without one,
- * defence (when `defence`) and the minimum, then health; `text` says so.
- */
-export function strike(
-  ctx: Ctx,
-  target: Unit,
-  raw: number,
-  defence: boolean,
-  text: (d: number) => string
-): void {
-  if (!target.alive) return;
-  if (absorb(ctx, target, raw)) return;
-  const d = defence ? defended(target, raw) : raw;
-  applyDamage(ctx, target, d, text(d));
-}
-
-/** If the unit has a Barrier, it takes `raw`, breaking once spent; true if it did. */
-function absorb(ctx: Ctx, target: Unit, raw: number, quiet = false): boolean {
-  const barrier = barrierOf(target);
-  if (!barrier) return false;
-  barrier.value -= raw;
-  if (barrier.value <= 0) target.statuses = target.statuses.filter((s) => s !== barrier);
-  if (!quiet) logBarrier(ctx, target, raw);
-  return true;
-}
-
-function logBarrier(ctx: Ctx, target: Unit, raw: number): void {
-  const left = barrierOf(target)?.value ?? 0;
-  log(
+export function hit(ctx: Ctx, attacker: Unit, target: Unit, what: string): void {
+  if (!target.alive || attacker.power <= 0) return;
+  applyDamage(
     ctx,
-    `${unitName(target)}'s barrier takes ${raw}${left > 0 ? `, ${left} left` : ' and breaks'}.`
-  );
-  record(ctx.state, {kind: 'damage', unitId: target.id, amount: 0});
-}
-
-/** Push N on the track (17.3), within the push limit (3.6). An Inevitable card doesn't move. */
-export function push(ctx: Ctx, unit: Unit, n: number): void {
-  if (!unit.alive || unit.slot === null) return;
-  if (inevitable(unit)) {
-    log(ctx, `${unitName(unit)} is Inevitable: its card doesn't move.`);
-    return;
-  }
-  const moved = pushCard(ctx.state, unit, n);
-  log(
-    ctx,
-    moved > 0
-      ? `${unitName(unit)} is pushed back ${moved} slot${moved === 1 ? '' : 's'}.`
-      : `${unitName(unit)} can't be pushed further this turn.`
+    target,
+    attacker.power,
+    `${what} hits ${unitName(target)} for ${attacker.power}`
   );
 }
 
+/**
+ * Health lost. A Bökh Champion that takes damage lets go of the unit it
+ * grapples (owner, 2026-10-23).
+ */
 export function applyDamage(ctx: Ctx, target: Unit, amount: number, text: string): void {
-  if (!target.alive) return;
+  if (!target.alive || amount <= 0) return;
   target.hp = Math.max(0, target.hp - amount);
   log(ctx, `${text}.`);
   record(ctx.state, {kind: 'damage', unitId: target.id, amount});
   if (target.hp === 0) kill(ctx, target);
-}
-
-export function heal(ctx: Ctx, target: Unit, amount: number): void {
-  if (!target.alive) return;
-  const healed = Math.min(amount, target.maxHp - target.hp);
-  target.hp += healed;
-  if (healed > 0) {
-    log(ctx, `${unitName(target)} heals ${healed}.`);
-    record(ctx.state, {kind: 'heal', unitId: target.id, amount: healed});
-  }
+  else endGrapples(ctx, (g) => g.champion === target.id);
 }
 
 export function kill(ctx: Ctx, unit: Unit): void {
   const at = unit.hex;
   unit.alive = false;
   unit.slot = null;
-  unit.charging = null;
   unit.hex = null;
   log(ctx, `${unitName(unit)} falls.`);
   if (at) record(ctx.state, {kind: 'death', unitId: unit.id, hex: at});
+  endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
+  // Its hail lasted until its next turn, which won't come.
+  clearHail(ctx.state, unit);
   checkEnd(ctx.state);
 }
 
@@ -208,175 +121,73 @@ export function atExit(state: FightState, h: Hex): boolean {
   return MAPS[state.mapId]!.exits.some((e) => hexEquals(e, h));
 }
 
-/** Inevitable (17.3): the card can't be moved by Push or Pull, from either side. The Bökh Champion's passive. */
-export function inevitable(unit: Unit): boolean {
-  return HEROES[unit.hero].passive === 'inevitable';
-}
-
-/** The hail on `h`, if any. */
-export function hailAt(state: FightState, h: Hex): HailEffect | undefined {
-  return state.effects.find((e) => hexEquals(e.hex, h));
-}
+// ─── Hail ────────────────────────────────────────────────────────────────────
 
 /**
- * The Push `unit` owes for starting its turn on hail, applied once the
- * turn has placed its card (owner, 2026-10-22, playtest); 0 off hail or
- * when Inevitable.
+ * `caster`'s hail disappears (its next turn has come, or it fell), and with
+ * it the Immobilized it gave.
  */
-export function hailPushOwed(state: FightState, unit: Unit): number {
-  if (!unit.alive || !unit.hex || inevitable(unit)) return 0;
-  return hailAt(state, unit.hex)?.push ?? 0;
+export function clearHail(state: FightState, caster: Unit): void {
+  state.effects = state.effects.filter((e) => e.source !== caster.id);
+  for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);
 }
+
+/** A unit in hail is Immobilized until that hail disappears (owner, 2026-10-23). */
+export function hailHolds(ctx: Ctx, unit: Unit): void {
+  if (!unit.alive || !unit.hex || !hailOn(ctx.state, unit.hex)) return;
+  const hail = ctx.state.effects.find((e) => hexEquals(e.hex, unit.hex!))!;
+  if (unit.statuses.some((s) => s.hail === hail.source)) return;
+  addStatus(unit, {kind: 'immobilized', hail: hail.source});
+  log(ctx, `Hail holds ${unitName(unit)} fast.`);
+}
+
+// ─── Grapples ────────────────────────────────────────────────────────────────
+
+type Grapple = NonNullable<Status['grapple']>;
 
 /**
- * Hail on the hex where `unit` starts its turn strikes it (owner,
- * 2026-10-22): its damage, through defence, as the turn begins.
+ * Ends every grapple `ends` picks: the Stunned it gave goes. `quiet` for a
+ * death, which says enough.
  */
-export function hailStrikes(ctx: Ctx, unit: Unit): void {
-  const damage = (unit.alive && unit.hex && hailAt(ctx.state, unit.hex)?.damage) || 0;
-  if (damage <= 0) return;
-  strike(
-    ctx,
-    unit,
-    rawDamage(ctx.state, unit, damage),
-    true,
-    (d) => `Hail batters ${unitName(unit)} for ${d}`
-  );
-}
-
-/** Applies a turn's owed Push from hail, said as hail's. */
-export function hailPush(ctx: Ctx, unit: Unit, n: number): void {
-  if (n <= 0 || !unit.alive) return;
-  log(ctx, `Hail batters ${unitName(unit)}.`);
-  push(ctx, unit, n);
-}
-
-/** Quicksand under a unit, on entering (each slot on it is `damageEachSlot`). */
-export function applyHazard(ctx: Ctx, unit: Unit): void {
-  if (!onQuicksand(ctx.map, unit)) return;
-  strike(
-    ctx,
-    unit,
-    rawDamage(ctx.state, unit, RULES.hazardEnterDamage),
-    true,
-    (d) => `Quicksand drags at ${unitName(unit)} for ${d}`
-  );
-}
-
-function onQuicksand(map: MapData, unit: Unit): boolean {
-  return unit.alive && !!unit.hex && tileAt(map, unit.hex) === 'hazard';
-}
-
-/**
- * The track moves from slot `from` to `ctx.slot`: every unit on quicksand,
- * and every Crushed unit, takes its damage for each slot passed, `from`
- * excluded, whether or not anyone's card was on it. `expire` runs at each
- * slot first, so Vulnerable and Crushed count only while they last.
- * Vulnerable applies slot by slot, defence once to the total, so a few
- * points a slot aren't rounded away. A Barrier takes each slot's damage
- * as it comes, at full value, until it breaks. One log line per unit and cause.
- */
-export function damageEachSlot(ctx: Ctx, from: number, expire: (slot: number) => void): void {
-  const sinking = new Map<Unit, number>();
-  const crushed = new Map<Unit, number>();
-  const absorbed = new Map<Unit, number>();
-  const add = (m: Map<Unit, number>, u: Unit, d: number) => m.set(u, (m.get(u) ?? 0) + d);
-  const tick = (m: Map<Unit, number>, u: Unit, d: number) =>
-    absorb(ctx, u, d, true) ? add(absorbed, u, d) : add(m, u, d);
-  for (let s = from + 1; s <= ctx.slot; s++) {
-    expire(s);
-    for (const u of ctx.state.units) {
-      if (!u.alive) continue;
-      if (onQuicksand(ctx.map, u)) tick(sinking, u, rawDamage(ctx.state, u, RULES.hazardDamage));
-      const crush = statusValue(u, 'crushed');
-      if (crush > 0) tick(crushed, u, rawDamage(ctx.state, u, crush));
-    }
-  }
-  for (const [u, raw] of absorbed) logBarrier(ctx, u, raw);
-  for (const [u, raw] of sinking) {
-    const d = defended(u, raw);
-    applyDamage(ctx, u, d, `Quicksand drags at ${unitName(u)} for ${d}`);
-  }
-  for (const [u, raw] of crushed) {
-    const d = defended(u, raw);
-    applyDamage(ctx, u, d, `The grapple crushes ${unitName(u)} for ${d}`);
+export function endGrapples(ctx: Ctx, ends: (g: Grapple) => boolean, quiet = false): void {
+  for (const u of ctx.state.units) {
+    const kept = u.statuses.filter((s) => !s.grapple || !ends(s.grapple));
+    if (kept.length === u.statuses.length) continue;
+    u.statuses = kept;
+    if (!quiet && u.alive) log(ctx, `The grapple on ${unitName(u)} is broken.`);
   }
 }
 
 /**
- * Moves a unit onto a hex; `triggers` applies the hex's hazard (hail acts
- * when it lands and at the start of a turn, not on entering).
- * `how` is how it got there, for the page's playback.
+ * Stuns `u`. A Stunned Bökh Champion lets go of the unit it grapples
+ * (owner, 2026-10-23).
  */
-export function enterHex(
-  ctx: Ctx,
-  unit: Unit,
-  h: Hex,
-  triggers = true,
-  how: Motion = 'walk'
-): void {
+export function stun(ctx: Ctx, u: Unit, status: Status): void {
+  addStatus(u, status);
+  endGrapples(ctx, (g) => g.champion === u.id);
+}
+
+/**
+ * A grapple lasts while the two stay next to each other (owner,
+ * 2026-10-22): moving either away, by walking or being moved, ends it.
+ */
+function apart(state: FightState, g: Grapple): boolean {
+  const a = state.units.find((u) => u.id === g.champion)?.hex;
+  const b = state.units.find((u) => u.id === g.target)?.hex;
+  return !a || !b || hexDistance(a, b) > 1;
+}
+
+// ─── Moving ──────────────────────────────────────────────────────────────────
+
+/**
+ * Moves a unit onto a space: by walking, or moved there by another unit
+ * (`how`, for the page's playback). Grapples it leaves the reach of end;
+ * hail there holds it.
+ */
+export function enterHex(ctx: Ctx, unit: Unit, h: Hex, how: Motion = 'walk'): void {
   const from = unit.hex;
   unit.hex = h;
   if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
-  breakPins(ctx, unit);
-  if (!triggers) return;
-  applyHazard(ctx, unit);
-}
-
-/**
- * A Grapple lasts until it breaks: when the Champion and target are no
- * longer adjacent, either displaced away, or the Champion moving away: it
- * isn't held itself (owner, 2026-10-20). Breaking it clears every status
- * the Grapple gave either unit (owner, 2026-10-20).
- */
-export function breakPins(ctx: Ctx, unit: Unit): void {
-  const byId = (id: string) => ctx.state.units.find((u) => u.id === id);
-  for (const holder of ctx.state.units) {
-    for (const {grapple} of holder.statuses) {
-      if (!grapple || (grapple.champion !== unit.id && grapple.target !== unit.id)) continue;
-      const a = byId(grapple.champion)?.hex;
-      const b = byId(grapple.target)?.hex;
-      const holds = !!a && !!b && hexDistance(a, b) <= 1;
-      if (holds) continue;
-      for (const u of ctx.state.units)
-        u.statuses = u.statuses.filter(
-          (s) => s.grapple?.champion !== grapple.champion || s.grapple.target !== grapple.target
-        );
-      log(ctx, `The grapple on ${unitName(byId(grapple.target)!)} is broken.`);
-      // The statuses changed under this loop; look again for any other grapple.
-      return breakPins(ctx, unit);
-    }
-  }
-}
-
-/**
- * Displace N along a hex direction (17.4): stops early at an obstacle,
- * another unit or the map edge, dealing collision damage to the displaced
- * unit and to a unit it hits (ignoring defence). Entering quicksand
- * triggers it. Doesn't move the card.
- */
-export function displace(ctx: Ctx, unit: Unit, direction: number, distance: number): void {
-  for (let i = 0; i < distance && unit.alive && unit.hex; i++) {
-    const next = hexNeighbor(unit.hex, direction);
-    const other = unitAt(ctx.state, next);
-    if (!onMap(ctx.map, next) || tileAt(ctx.map, next) === 'obstacle' || other) {
-      const raw = rawDamage(ctx.state, unit, RULES.collisionDamage);
-      if (other) {
-        const raw2 = rawDamage(ctx.state, other, RULES.collisionDamage);
-        strike(
-          ctx,
-          unit,
-          raw,
-          false,
-          (d) => `${unitName(unit)} slams into ${unitName(other)} for ${d}`
-        );
-        strike(ctx, other, raw2, false, (d) => `${unitName(other)} takes ${d} from the collision`);
-      } else {
-        const what = onMap(ctx.map, next) ? 'ruins' : 'the edge';
-        strike(ctx, unit, raw, false, (d) => `${unitName(unit)} is slammed into ${what} for ${d}`);
-      }
-      return;
-    }
-    enterHex(ctx, unit, next, true, 'push');
-  }
+  endGrapples(ctx, (g) => (g.champion === unit.id || g.target === unit.id) && apart(ctx.state, g));
+  hailHolds(ctx, unit);
 }

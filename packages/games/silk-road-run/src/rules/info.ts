@@ -3,9 +3,9 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {ABILITY, HEROES, RULES} from './config';
+import {HEROES, RULES} from './config';
 import type {Tile} from './map';
-import type {HailEffect} from './types';
+import type {FightState, HailEffect} from './types';
 
 export interface HexInfo {
   name: string;
@@ -20,45 +20,27 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
   obstacle: {
     name: 'Ruins',
     short: 'Blocks movement and arrows',
-    detail: `Blocks movement and arrows. A unit knocked into it takes ${RULES.collisionDamage} damage.`,
-  },
-  hazard: {
-    name: 'Quicksand',
-    short: `${RULES.hazardEnterDamage} damage on entering, ${RULES.hazardDamage} every slot`,
-    detail: `${RULES.hazardEnterDamage} damage on entering, passing through too, then ${RULES.hazardDamage} every slot a unit stays.`,
-  },
-  conceal: {
-    name: 'Sandstorm',
-    short: 'Obscured: ranged abilities can’t target in or through it',
-    detail: 'A unit here is Obscured.',
+    detail: 'Blocks movement and arrows.',
   },
 };
 
-/** The four exits (camel.md, 18.2): not a tile but the camel's goal, said beside its tile. */
+/** The exit (camel.md, 18.2): not a tile but the camel's goal, said beside its tile. */
 export const EXIT_INFO: HexInfo = {
   name: 'Road out',
   short: `${HEROES.camel.name} reaching it wins`,
   detail: `The road out: ${HEROES.camel.name} reaching it wins the fight.`,
 };
 
-/** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2). */
-export const CAMEL_RULE = `Can’t attack, and walks itself: 1 space every ${HEROES.camel.routeSlots} slots toward the exit, around anything in its way. Reaching the road out wins the fight; if it falls, the fight is lost.`;
+/** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2; timeline.md, 3.2). */
+export const CAMEL_RULE = `Can’t attack, and walks itself: 1 space a turn toward the exit, around anything in its way, its card then going ${RULES.roundSlots} slots on. Every other unit acts once before each of its turns. Reaching the road out wins the fight; if it falls, the fight is lost.`;
 
-/** How long an effect on a hex lasts: said last, after what it does. */
-function slotsLeft(left: number): string {
-  return `${left} slot${left === 1 ? '' : 's'} left.`;
-}
-
-export function hailInfo(hail: HailEffect, currentSlot: number): HexInfo {
-  const left = hail.untilSlot - currentSlot + 1;
+export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
+  const caster = state.units.find((u) => u.id === hail.source);
+  const until = caster ? `${HEROES[caster.hero].name}’s next turn` : 'its caster’s next turn';
   return {
     name: 'Hail',
-    short: hail.damage
-      ? `${hail.damage} damage on starting a turn here`
-      : `Pushed ${hail.push} on starting a turn here`,
-    detail: hail.damage
-      ? `A unit that starts its turn here takes ${hail.damage} damage. ${slotsLeft(left)}`
-      : `A unit here when it lands is Pushed ${ABILITY.hail.castPush}; one that starts its turn here is Pushed ${hail.push} once that turn is done. ${slotsLeft(left)}`,
+    short: 'Immobilizes a unit that enters it',
+    detail: `A unit here, or that enters it, is Immobilized until the hail is gone: at ${until}.`,
   };
 }
 
@@ -71,82 +53,26 @@ export type KeywordId =
   | 'speed'
   | 'power'
   | 'defence'
-  | 'slots'
-  | 'charged'
-  | 'ultimate'
   | 'melee'
   | 'immobilized'
-  | 'slowed'
-  | 'vulnerable'
-  | 'taunted'
-  | 'crushed'
-  | 'flanked'
-  | 'obscured'
-  | 'cleanse'
-  | 'barrier'
-  | 'push'
-  | 'pinned';
+  | 'stunned'
+  | 'move';
 
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
-  speed: {name: 'Speed', detail: 'Higher speed: actions cost fewer slots, so turns come sooner.'},
-  power: {
-    name: 'Power',
-    detail: 'Scales damage and healing. Already counted in the numbers shown.',
+  speed: {
+    name: 'Speed',
+    detail: `Each turn ends with the card ${RULES.speedSlots} slots per point of speed before ${HEROES.camel.name}’s next turn: everyone acts once a round, the faster earlier.`,
   },
-  defence: {
-    name: 'Defence',
-    detail: `Cuts damage taken: ${RULES.defenceConstant} defence halves it.`,
-  },
-  slots: {
-    name: 'Cost',
-    detail: 'Slots until its next turn. A taken slot pushes the card to the next free one.',
-  },
-  charged: {
-    name: 'Charged',
-    detail: 'Goes off when the charge runs out, then the recovery passes before its next turn.',
-  },
-  ultimate: {
-    name: 'Ultimate',
-    detail: `Once a fight, after ${RULES.ultimateCharge} action cost spent.`,
-  },
+  power: {name: 'Power', detail: 'The damage each of its abilities deals.'},
+  defence: {name: 'Defence', detail: 'Sets health: (1 + defence) × 2.'},
   melee: {name: 'Melee', detail: 'Targets a unit next to the user.'},
   immobilized: {
     name: 'Immobilized',
-    detail: 'Can’t move, or use abilities that move it. Can still act and be knocked away.',
+    detail: 'Can’t move to a different space by itself. Can still act, and be moved by others.',
   },
-  slowed: {
-    name: 'Slowed',
-    detail: `Moves this many fewer spaces (normally ${RULES.movementCap}, at least 1).`,
+  stunned: {
+    name: 'Stunned',
+    detail: 'Can’t take any action, moving included: its turns are skipped.',
   },
-  vulnerable: {
-    name: 'Vulnerable',
-    detail: 'Takes this much more damage. Only the largest counts.',
-  },
-  taunted: {
-    name: 'Taunted',
-    detail: 'Must attack the taunter, or end its turn, while it can reach it.',
-  },
-  crushed: {name: 'Crushed', detail: 'Takes this much damage every slot.'},
-  flanked: {
-    name: 'Flanked',
-    detail: `Enemies on opposite sides: Vulnerable ${RULES.flankVulnerable}% while they stay.`,
-  },
-  obscured: {
-    name: 'Obscured',
-    detail: 'Targeted ranged attacks can’t target it, or anyone past it, and it can’t make one.',
-  },
-  cleanse: {name: 'Cleanse', detail: 'Removes harmful statuses from abilities.'},
-  barrier: {
-    name: 'Barrier',
-    detail:
-      'Takes damage before health, ignoring defence. When it breaks, the rest of that hit is lost. A new one replaces it.',
-  },
-  push: {
-    name: 'Push',
-    detail: `Moves the unit's card this many slots later. At most ${RULES.pushLimit} between two of its turns.`,
-  },
-  pinned: {
-    name: 'Pinned',
-    detail: 'Held fast: its abilities can only target its own space or the spaces next to it.',
-  },
+  move: {name: 'Move', detail: 'Put on another space by someone else, not walking.'},
 };

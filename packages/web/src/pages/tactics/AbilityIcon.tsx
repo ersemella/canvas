@@ -3,11 +3,14 @@ import type {AbilityDef, AbilityId, AbilityKind} from '@canvas/games-silk-road-r
 /** What has an icon: every ability but Hold, and Move. */
 export type IconId = Exclude<AbilityId, 'hold'> | 'move';
 
+/** An ability's kind, or walking's, for the icons' colours. */
+type IconKind = AbilityKind | 'move';
+
 interface Icon {
   /** 12×12 art pixels: `#` its colour, `=` its shade, `+` its accent. */
   rows: string[];
   /** Its colour, shade and accent; its kind's unless it says otherwise. */
-  kind?: AbilityKind;
+  kind?: IconKind;
   colors?: [string, string, string];
 }
 
@@ -52,60 +55,6 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
-  // A jump's arc, landing.
-  leap: {
-    kind: 'move',
-    rows: [
-      '............', //
-      '...####.....',
-      '.##....##...',
-      '.#.......#..',
-      '#........#..',
-      '#......#####',
-      '#.......###.',
-      '#........#..',
-      '#...........',
-      '............',
-      '============',
-      '............',
-    ],
-  },
-  // Three arrows falling.
-  volley: {
-    kind: 'attack',
-    rows: [
-      '.=#=........', //
-      '.......=#=..',
-      '..#.......#.',
-      '..#..=#=..#.',
-      '..#...#...#.',
-      '..#...#...#.',
-      '..#...#...#.',
-      '.###..#...#.',
-      '..#...#..###',
-      '......#...#.',
-      '.....###....',
-      '......#.....',
-    ],
-  },
-  // A sun, yellow rather than health's jade.
-  sunlight: {
-    colors: ['var(--c-goldLight)', 'var(--c-gold)', 'var(--c-ivory)'],
-    rows: [
-      '.....##.....', //
-      '.#...##...#.',
-      '..#......#..',
-      '....####....',
-      '...######...',
-      '##.######.##',
-      '##.######.##',
-      '...######...',
-      '....####....',
-      '..#......#..',
-      '.#...##...#.',
-      '.....##.....',
-    ],
-  },
   // A white cloud dropping hail's sky blue.
   hail: {
     colors: ['var(--c-ivory)', 'var(--c-dusk4)', 'var(--c-sky)'],
@@ -122,24 +71,6 @@ const ICON: Record<IconId, Icon> = {
       '...++..++...',
       '...++..++...',
       '............',
-    ],
-  },
-  // A snowflake, in ice's sky blue.
-  freeze: {
-    colors: ['var(--c-sky)', 'var(--c-lapisDark)', 'var(--c-skyLight)'],
-    rows: [
-      '.....##.....', //
-      '.#..####..#.',
-      '..#..##..#..',
-      '...#.##.#...',
-      '....####....',
-      '#####++#####',
-      '#####++#####',
-      '....####....',
-      '...#.##.#...',
-      '..#..##..#..',
-      '.#..####..#.',
-      '.....##.....',
     ],
   },
   // Over and down.
@@ -178,96 +109,6 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
-  // A palm pushing out: shoving a pinned target away.
-  shove: {
-    kind: 'control',
-    rows: [
-      '............', //
-      '...#.#.#....',
-      '...#.#.#.#..',
-      '...#.#.#.#..',
-      '...#######..',
-      '.#.#######..',
-      '.##.######..',
-      '..########.+',
-      '...######.++',
-      '....####.+++',
-      '....####..++',
-      '...........+',
-    ],
-  },
-  // Charging into a target, trailing speed.
-  lunge: {
-    kind: 'attack',
-    rows: [
-      '............', //
-      '=....#.....+',
-      '==...##....+',
-      '.==...##...+',
-      '..==...##..+',
-      '...==...##.+',
-      '...==...##.+',
-      '..==...##..+',
-      '.==...##...+',
-      '==...##....+',
-      '=....#.....+',
-      '............',
-    ],
-  },
-  // A banner raised: the call to fight.
-  challenge: {
-    kind: 'control',
-    rows: [
-      '............', //
-      '.##.........',
-      '.#######....',
-      '.########...',
-      '.#######....',
-      '.######.....',
-      '.##.........',
-      '.##.........',
-      '.##.........',
-      '.##.........',
-      '.##.........',
-      '............',
-    ],
-  },
-  // The long blade's sweep.
-  reap: {
-    kind: 'attack',
-    rows: [
-      '............', //
-      '.......###..',
-      '.........##.',
-      '..........##',
-      '..........##',
-      '..........##',
-      '.........##.',
-      '.......###..',
-      '......#.....',
-      '.....#......',
-      '....#.......',
-      '............',
-    ],
-  },
-  // A wall of blades.
-  advance: {
-    kind: 'attack',
-    rows: [
-      '............', //
-      '.#..#..#..#.',
-      '.#..#..#..#.',
-      '.#..#..#..#.',
-      '############',
-      '############',
-      '#..#..#..#.#',
-      '############',
-      '############',
-      '.#..#..#..#.',
-      '.#..#..#..#.',
-      '............',
-    ],
-  },
   // Jaws closing.
   bite: {
     kind: 'attack',
@@ -290,19 +131,16 @@ const ICON: Record<IconId, Icon> = {
 
 /**
  * Each kind's colour, shade and accent, from the palette: damage's light
- * madder, health's jade, ivory, and the harmful statuses' gold.
+ * madder, walking's ivory, and the harmful statuses' gold.
  */
-const KIND_COLORS: Record<AbilityKind, [string, string, string]> = {
+const KIND_COLORS: Record<IconKind, [string, string, string]> = {
   attack: ['var(--c-madderLight)', 'var(--c-madder)', 'var(--c-ivory)'],
-  heal: ['var(--c-jade)', 'var(--c-jadeDark)', 'var(--c-goldLight)'],
   move: ['var(--c-ivory)', 'var(--c-dusk4)', 'var(--c-lapisLight)'],
   control: ['var(--c-gold)', 'var(--c-goldDark)', 'var(--c-skyLight)'],
 };
 
 export const KIND_NAME: Record<AbilityKind, string> = {
   attack: 'Attack',
-  heal: 'Heal',
-  move: 'Movement',
   control: 'Control',
 };
 

@@ -4,25 +4,16 @@ import {ActionIcon, Button, Group, Menu, Paper, Stack, Text} from '@mantine/core
 import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {
-  ABILITIES,
-  PASSIVES,
   CAMEL_RULE,
   EXIT_INFO,
   HEROES,
   HERO_PORTRAIT,
   PALETTE,
-  RULES,
   TILE_INFO,
   abilitiesOf,
   atExit,
   hailInfo,
-  isFlanked,
   mapOf,
-  obscured,
-  slotsForward,
-  statusSlotsLeft,
-  statusValue,
-  taunterOf,
   tileAt,
   unitName,
 } from '@canvas/games-silk-road-run';
@@ -49,9 +40,9 @@ export const PALETTE_VARS = Object.fromEntries(
 
 /**
  * When the unit's next turn comes after a previewed turn, in slots from
- * now: "+3", or, when the slot the cost aims at is taken and the card
- * yields further on (3.3), "+3 → +5", the cost and then where the card
- * lands, as the track draws it. Null with no preview.
+ * now: "+3", or, when the slot the turn aims at (3.2) is taken and the
+ * card yields further on (3.3), "+3 → +5", the aim and then where the
+ * card lands, as the track draws it. Null with no preview.
  */
 export function nextTurn(
   fight: FightState,
@@ -65,7 +56,7 @@ export function nextTurn(
   if (aim === null || slot <= aim) return {text: `+${slot - now}`};
   return {
     text: `+${aim - now} → +${slot - now}`,
-    title: `The cost reaches slot +${aim - now}, but cards hold the slots up to +${slot - now - 1}: yours yields to the first free one.`,
+    title: `Your speed aims at slot +${aim - now}, but cards hold the slots up to +${slot - now - 1}: yours yields to the first free one.`,
   };
 }
 
@@ -222,13 +213,7 @@ export function HexInspector({
       {atExit(fight, hex) && (
         <GroundCard info={EXIT_INFO} color="var(--c-lapisLight)" dense={dense} />
       )}
-      {hail && (
-        <GroundCard
-          info={hailInfo(hail, fight.currentSlot)}
-          color="var(--c-skyLight)"
-          dense={dense}
-        />
-      )}
+      {hail && <GroundCard info={hailInfo(hail, fight)} color="var(--c-skyLight)" dense={dense} />}
     </Stack>
   );
 }
@@ -257,53 +242,19 @@ function GroundCard({
   );
 }
 
-/** Whether a unit's ultimate is used, ready, or how much action cost it has spent towards it. */
-function ultimateState(unit: Unit): string {
-  if (unit.ultimateUsed) return 'Used';
-  if (unit.ultimateCharge >= RULES.ultimateCharge) return 'Ready';
-  return `${unit.ultimateCharge}/${RULES.ultimateCharge} charged`;
-}
-
-/** A unit's statuses, each led by its keyword, with what's left of it. */
+/** A unit's statuses, each led by its keyword, with what holds it. */
 function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: string; rest: string}[] {
-  const slot = fight.currentSlot;
-  const left = (kind: Parameters<typeof statusSlotsLeft>[1]) =>
-    `${statusSlotsLeft(unit, kind, slot)} slots`;
-  const taunter = taunterOf(fight, unit);
+  const byId = (id: string) => fight.units.find((u) => u.id === id);
   const out: {id: KeywordId; label: string; rest: string}[] = [];
-  if (statusValue(unit, 'immobilized'))
-    out.push({id: 'immobilized', label: 'Immobilized', rest: left('immobilized')});
-  if (statusValue(unit, 'slowed'))
-    out.push({id: 'slowed', label: `Slowed ${statusValue(unit, 'slowed')}`, rest: left('slowed')});
-  if (statusValue(unit, 'vulnerable'))
-    out.push({
-      id: 'vulnerable',
-      label: `Vulnerable ${statusValue(unit, 'vulnerable')}%`,
-      rest: left('vulnerable'),
-    });
-  if (statusValue(unit, 'pinned')) out.push({id: 'pinned', label: 'Pinned', rest: left('pinned')});
-  if (statusValue(unit, 'crushed'))
-    out.push({
-      id: 'crushed',
-      label: `Crushed ${statusValue(unit, 'crushed')}`,
-      rest: `a slot, ${left('crushed')}`,
-    });
-  if (taunter)
-    out.push({
-      id: 'taunted',
-      label: 'Taunted',
-      rest: `by ${unitName(taunter)}, ${left('taunted')}`,
-    });
-  if (statusValue(unit, 'barrier'))
-    out.push({
-      id: 'barrier',
-      label: `Barrier ${statusValue(unit, 'barrier')}`,
-      rest: left('barrier'),
-    });
-  if (unit.alive && isFlanked(fight, unit))
-    out.push({id: 'flanked', label: 'Flanked', rest: `Vulnerable ${RULES.flankVulnerable}%`});
-  if (unit.alive && unit.hex && obscured(fight, mapOf(fight), unit.hex))
-    out.push({id: 'obscured', label: 'Obscured', rest: ''});
+  for (const s of unit.statuses) {
+    const holder = s.grapple ? byId(s.grapple.champion) : s.hail ? byId(s.hail) : undefined;
+    const rest = !holder
+      ? ''
+      : s.grapple
+        ? `by ${unitName(holder)}’s grapple`
+        : `by hail, until ${unitName(holder)}’s next turn`;
+    out.push({id: s.kind, label: s.kind === 'stunned' ? 'Stunned' : 'Immobilized', rest});
+  }
   return out;
 }
 
@@ -322,14 +273,10 @@ export function StatSheet({
   dense?: boolean;
 }) {
   const statuses = statusesOf(fight, unit);
-  const ultimate = HEROES[unit.hero].ultimate;
-  const ult = ultimate && ABILITIES[ultimate];
-  const passiveId = HEROES[unit.hero].passive;
-  const passive = passiveId && PASSIVES[passiveId];
-  // Hold isn't offered as an action (End turn is), and the ultimate gets its own section.
-  const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold' && !def.ultimate);
-  // The camel has none; the wolf has abilities but no ultimate.
-  const acts = abilities.length > 0 || Boolean(ult);
+  // Hold isn't offered as an action (End turn is).
+  const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold');
+  // The camel has none.
+  const acts = abilities.length > 0;
   const stats = [
     ['speed', 'Speed', unit.speed],
     ['power', 'Power', unit.power],
@@ -402,18 +349,13 @@ export function StatSheet({
         )}
         {statuses.length > 0 && (
           <div className={styles.statuses}>
-            {statuses.map((st) => (
-              <span key={st.id}>
+            {statuses.map((st, i) => (
+              <span key={i}>
                 <Term id={st.id}>{st.label}</Term>
                 {st.rest && ` ${st.rest}`}
               </span>
             ))}
           </div>
-        )}
-        {unit.charging && (
-          <Text fz="xs" c="var(--c-plumLight)" mt={4}>
-            Charging {ABILITIES[unit.charging.ability].name}: triggers at slot {unit.slot}.
-          </Text>
         )}
         {/* The camel has no abilities: its rule instead. */}
         {!acts && (
@@ -437,35 +379,6 @@ export function StatSheet({
                   {def.name}
                 </AbilityName>
               ))}
-              {ult && (
-                <AbilityName id={ult.id} ultimate body={<AbilityDetail unit={unit} def={ult} />}>
-                  {abilityIcon(ult)}
-                  {ult.name}
-                  {ultimateState(unit) !== 'Used' && (
-                    <span className={styles.abilityLinkNote}>
-                      {ultimateState(unit) === 'Ready'
-                        ? 'Ready'
-                        : `${unit.ultimateCharge}/${RULES.ultimateCharge}`}
-                    </span>
-                  )}
-                </AbilityName>
-              )}
-              {passive && (
-                <AbilityName
-                  id={passive.id}
-                  body={
-                    <Text fz="xs">
-                      <b>{passive.name}</b> · Passive
-                      <br />
-                      <span className={styles.abilitySummary}>
-                        <KeywordText text={passive.summary(unit)} />
-                      </span>
-                    </Text>
-                  }
-                >
-                  {passive.name}
-                </AbilityName>
-              )}
             </div>
             {!dense && <GlossaryBox className={styles.glossaryBeside!} />}
           </div>
@@ -493,18 +406,10 @@ function SheetPortrait({unit}: {unit: Unit}) {
   );
 }
 
-/** An ability's cost in this unit's slots (the action alone, before any move or yielding). */
-function costText(unit: Unit, def: AbilityDef): string {
-  return def.charged
-    ? `Charge +${slotsForward(def.cost, unit.speed)} · Recovery +${slotsForward(def.recoveryCost!, unit.speed)}`
-    : `+${slotsForward(def.cost, unit.speed)}`;
-}
-
 /**
- * An ability explained: its cost (a Term, once) and duration, then what it
- * does, its keywords tappable in turn. An ultimate says so, with how far it
- * is from being ready. For a name tapped on a stat sheet, and on desktop
- * for the ability picked for the turn.
+ * An ability explained: what it is for, then what it does, its keywords
+ * tappable in turn. For a name tapped on a stat sheet, and on desktop for
+ * the ability picked for the turn.
  */
 export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
   return (
@@ -516,19 +421,6 @@ export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
         </>
       )}
       {!def.kind && <b>{def.name}</b>}
-      {def.ultimate && (
-        <>
-          {' · '}
-          <Term id="ultimate">Ultimate</Term> {ultimateState(unit)}
-        </>
-      )}
-      {' · '}
-      {def.charged ? (
-        <Term id="charged">{costText(unit, def)}</Term>
-      ) : (
-        <Term id="slots">Cost {costText(unit, def)}</Term>
-      )}
-      {def.duration !== undefined && ` · Duration ${def.duration}`}
       <br />
       <span className={styles.abilitySummary}>
         <KeywordText text={def.summary(unit)} />

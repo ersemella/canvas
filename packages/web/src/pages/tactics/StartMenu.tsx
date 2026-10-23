@@ -14,24 +14,18 @@ const LORE: Partial<Record<HeroId, string>> = {
   mangudai:
     'A Mongol horse archer from the vanguard of the Mongol army. The Outrider strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
   storm:
-    'A Turkic weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail, sunlight, and freezing cold, though storms never choose sides.',
-  modao:
-    'An armoured spearhead of the Tang army, wielding the modao, a long two-handed blade. The Vanguard calls out its foes, holds them at the front and drives them back like a wall.',
+    'A Turkic weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail that holds whoever it catches fast, though storms never choose sides.',
 };
 
-/** The stats on the menu, each a meter of three pips: Low, Medium, High (roster.md's bands). */
-const METERS: {label: string; band: (h: (typeof HEROES)[HeroId]) => number}[] = [
-  {label: 'Health', band: (h) => (h.health <= 300 ? 1 : h.health <= 420 ? 2 : 3)},
-  {label: 'Speed', band: (h) => statBand(h.speed)},
-  {label: 'Power', band: (h) => statBand(h.power)},
-  {label: 'Defence', band: (h) => statBand(h.defence)},
+/**
+ * The stats on the menu, each a meter of three pips, one a point (the
+ * heroes' stats run 0 to 3, owner 2026-10-23). Health follows from defence.
+ */
+const METERS: {label: string; value: (h: (typeof HEROES)[HeroId]) => number}[] = [
+  {label: 'Speed', value: (h) => h.speed},
+  {label: 'Power', value: (h) => h.power},
+  {label: 'Defence', value: (h) => h.defence},
 ];
-const BAND_NAME = ['', 'Low', 'Medium', 'High'];
-
-/** Speed, power and defence share one scale: Low 10, Medium 25, High 40 (config.ts). */
-function statBand(value: number): number {
-  return value <= 10 ? 1 : value <= 25 ? 2 : 3;
-}
 
 /** A party's most heroes: the default party's size. */
 const MAX_PARTY = PARTY.length;
@@ -171,10 +165,10 @@ function HeroPick(props: {hero: HeroId; picked: boolean; full: boolean; onToggle
       </div>
       {lore && <div className={styles.heroPickBlurb}>{lore}</div>}
       <div className={styles.heroPickStats}>
-        {METERS.map(({label, band}) => {
-          const filled = band(stats);
+        {METERS.map(({label, value}) => {
+          const filled = value(stats);
           return (
-            <div key={label} role="img" aria-label={`${label}: ${BAND_NAME[filled]}`}>
+            <div key={label} role="img" aria-label={`${label}: ${filled}`}>
               <span>{label}</span>
               <span className={styles.meter}>
                 {[1, 2, 3].map((pip) => (

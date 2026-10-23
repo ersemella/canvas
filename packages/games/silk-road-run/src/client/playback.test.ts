@@ -55,25 +55,17 @@ describe('playback', () => {
     expect(play.display.awaiting).toBe(to.events![firstTurn]!.unitId);
   });
 
-  it('drops a status once the slot shown passes its last one', () => {
+  it('keeps statuses as they were until the playback ends', () => {
     const {from, to} = played();
     const e = to.events!.find((ev) => ev.after.currentSlot > from.currentSlot)!;
     const u = from.units[0]!;
     const base = {
       ...from,
       units: from.units.map((v) =>
-        v.id === u.id
-          ? {
-              ...v,
-              statuses: [
-                {kind: 'slowed' as const, value: 1, untilSlot: e.after.currentSlot - 1},
-                {kind: 'vulnerable' as const, value: 20, untilSlot: e.after.currentSlot},
-              ],
-            }
-          : v
+        v.id === u.id ? {...v, statuses: [{kind: 'stunned' as const}]} : v
       ),
     };
     const shown = displayFight(base, e, null).units.find((v) => v.id === u.id)!;
-    expect(shown.statuses.map((s) => s.kind)).toEqual(['vulnerable']);
+    expect(shown.statuses.map((s) => s.kind)).toEqual(['stunned']);
   });
 });

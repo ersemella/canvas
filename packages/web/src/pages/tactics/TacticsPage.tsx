@@ -254,7 +254,7 @@ export function TacticsPage() {
     ? ((inspectHex ? inspectedUnit?.id : (selectedId ?? acting?.id)) ?? null)
     : null;
 
-  const {target, moveMode, hoverReach, lungeFromHere, lungeSteps} = plan;
+  const {target, moveMode, hoverReach, fromHere, stepOptions} = plan;
   const scene: BoardScene = useMemo(
     () =>
       buildScene({
@@ -273,8 +273,8 @@ export function TacticsPage() {
         plannedMove,
         hoverReach,
         reaches,
-        lungeFromHere,
-        lungeSteps,
+        fromHere,
+        stepOptions,
       }),
     [
       fight,
@@ -292,8 +292,8 @@ export function TacticsPage() {
       plannedMove,
       hoverReach,
       reaches,
-      lungeFromHere,
-      lungeSteps,
+      fromHere,
+      stepOptions,
     ]
   );
 
@@ -397,8 +397,7 @@ export function TacticsPage() {
   // Once the fight is over, Next stage (a stage before the run's last won)
   // or New run takes Confirm's place, and the section keeps its height so
   // the board doesn't move.
-  const {needsTarget, skipPreview, slotsLater, moveSlots, outOfReach, toggleMove, chooseAbility} =
-    plan;
+  const {needsTarget, skipPreview, slotsLater, outOfReach, toggleMove, chooseAbility} = plan;
   const actions = finished ? (
     <div className={styles.confirmRow}>
       {nextAhead ? (
@@ -416,7 +415,6 @@ export function TacticsPage() {
     acting && (
       <TurnControls
         slotsLater={slotsLater}
-        moveSlots={moveSlots}
         outOfReach={outOfReach}
         unit={acting}
         ability={ability}

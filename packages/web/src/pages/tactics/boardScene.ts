@@ -4,25 +4,9 @@
  * whose health shows, and the previewed outcome. Pure, so the page only
  * decides when to send it.
  */
-import {
-  hexDirectionTo,
-  hexDistance,
-  hexEquals,
-  hexKey,
-  hexNeighbors,
-  hexRing,
-  hexesInRange,
-} from '@canvas/engine';
+import {hexDistance, hexEquals, hexKey, hexNeighbors, hexRing, hexesInRange} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {
-  ABILITIES,
-  ABILITY,
-  arrowLanes,
-  mapOf,
-  onMap,
-  reapCone,
-  unitAt,
-} from '@canvas/games-silk-road-run';
+import {ABILITIES, arrowLanes, mapOf, onMap, unitAt} from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
   ActionTarget,
@@ -35,9 +19,7 @@ import type {
 } from '@canvas/games-silk-road-run';
 
 /** Abilities that deal damage: aiming one shows the health of whoever it could hit. */
-const isAttack = (id: AbilityId) => 'damage' in ABILITY[id] || 'damagePerSlot' in ABILITY[id];
-/** Abilities that heal (Sunlight): aiming one shows your units' health and statuses. */
-const isHeal = (id: AbilityId) => 'heal' in ABILITY[id];
+const isAttack = (id: AbilityId) => ABILITIES[id].kind === 'attack';
 
 export interface SceneInput {
   fight: FightState | null;
@@ -60,14 +42,14 @@ export interface SceneInput {
   plannedMove: Reach | null;
   hoverReach: Reach | undefined;
   reaches: Reach[];
-  lungeFromHere: (h: Hex) => boolean;
-  lungeSteps: (h: Hex) => ActionTarget[];
+  fromHere: (h: Hex) => boolean;
+  stepOptions: (h: Hex) => ActionTarget[];
 }
 
 export function buildScene(input: SceneInput): BoardScene {
   const {fight, acting, phone, selectedId, featuredId, hoverHex, preview} = input;
   const {ability, target, targets, moving, moveMode, plannedMove, hoverReach, reaches} = input;
-  const {lungeFromHere, lungeSteps} = input;
+  const {fromHere, stepOptions} = input;
   const highlights: {hex: Hex; kind: HighlightKind}[] = [];
   const out: BoardScene = {
     fight,
@@ -82,21 +64,17 @@ export function buildScene(input: SceneInput): BoardScene {
   };
   if (!fight) return out;
   if (!acting) return out;
-  if (ability && (isAttack(ability) || isHeal(ability))) {
-    // An attack: every enemy, and the allies in the line of fire. A heal,
-    // the other way round: every ally. Either way, those it can target
-    // (the units the bow's lanes reach, a melee ability's neighbours, the
-    // units in a heal's range) and those the aimed ability would hurt or heal.
-    const heals = isHeal(ability);
-    const side = heals ? 'player' : 'enemy';
-    const ids = new Set(fight.units.filter((u) => u.side === side).map((u) => u.id));
+  if (ability && isAttack(ability)) {
+    // An attack: every enemy, and the allies in the line of fire: those it
+    // can target (the units the bow's lanes reach, a melee ability's
+    // neighbours) and those the aimed ability would hurt.
+    const ids = new Set(fight.units.filter((u) => u.side === 'enemy').map((u) => u.id));
     if (ABILITIES[ability].targetsUnit)
       for (const t of targets) {
         const u = t.hex && unitAt(fight, t.hex);
         if (u) ids.add(u.id);
       }
-    for (const c of preview?.changes ?? [])
-      if (heals ? c.hpAfter > c.hpBefore : c.hpAfter < c.hpBefore) ids.add(c.unitId);
+    for (const c of preview?.changes ?? []) if (c.hpAfter < c.hpBefore) ids.add(c.unitId);
     out.healthUnitIds = [...ids];
   }
   if (moveMode && !moving && !plannedMove) {
@@ -141,14 +119,12 @@ export function buildScene(input: SceneInput): BoardScene {
         lanes: arrowLanes(fight, mapOf(fight), from).map((l) => ({
           hexes: l.hexes,
           target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
-          // An enemy the sandstorm hides: the lane shows where it stops it.
-          ...(l.storm && l.hidden && l.hidden.side !== acting.side ? {storm: l.storm} : {}),
         })),
       };
     // Only what it may target; once Throw's target is picked, where it can
-    // land; once Lunge's is, the hexes it may bound to first as well. Those
-    // second picks are dashed, as is a unit Lunge reaches only after a bound,
-    // so they never read as more targets.
+    // land; once Grapple's is, the hexes it may step in to first as well.
+    // Those second picks are dashed, as is a unit Grapple reaches only after
+    // a step, so they never read as more targets.
     const shown = new Set<string>();
     const throwing = ability === 'throw' && target?.hex;
     const stepping = ABILITIES[ability].stepsIn && target?.hex;
@@ -161,14 +137,14 @@ export function buildScene(input: SceneInput): BoardScene {
         const kind =
           throwing || h === step
             ? 'landing'
-            : ABILITIES[ability].stepsIn && !lungeFromHere(h)
+            : ABILITIES[ability].stepsIn && !fromHere(h)
               ? 'reach'
               : 'target';
         highlights.push({hex: h, kind});
       }
     }
     // Where the second pick goes: the one hovered, else the one picked.
-    // Before Lunge's target is, a hovered unit it reaches by a single landing.
+    // Before Grapple's target is, a hovered unit it reaches by a single step.
     const hovered = hoverHex;
     const hoveredSecond =
       hovered && target?.hex
@@ -176,17 +152,16 @@ export function buildScene(input: SceneInput): BoardScene {
             ?.to
         : undefined;
     let second = hoveredSecond ?? target?.to;
-    if (!second && !target && ABILITIES[ability].stepsIn && hovered && !lungeFromHere(hovered)) {
-      const steps = lungeSteps(hovered);
+    if (!second && !target && ABILITIES[ability].stepsIn && hovered && !fromHere(hovered)) {
+      const steps = stepOptions(hovered);
       if (steps.length === 1) second = steps[0]!.to;
     }
-    // Throw: an arc from the unit thrown, around the Champion, to where it
-    // lands. Lunge: the Champion's bound, drawn as a move's.
-    if (ability === 'throw' && target?.hex && second && from)
-      out.arc = {from: target.hex, around: from, to: second};
+    // Throw: the unit thrown to where it lands; Grapple: the Champion's step
+    // in. Each drawn as a move's.
+    if (ability === 'throw' && target?.hex && second) out.step = [target.hex, second];
     if (ABILITIES[ability].stepsIn && second && from) out.step = [from, second];
     if (target?.hex) {
-      // An area ability: highlight the area around the chosen hex.
+      // An area ability: highlight the area around the chosen hex (none since Hail covers one space).
       const radius = ABILITIES[ability].radius;
       if (radius) {
         const map = mapOf(fight);
@@ -194,16 +169,6 @@ export function buildScene(input: SceneInput): BoardScene {
           if (hexDistance(h, target.hex) <= radius && onMap(map, h))
             highlights.push({hex: h, kind: 'area'});
       }
-      // Reap: the whole cone it sweeps, through every unit in it.
-      if (ability === 'reap' && from) {
-        const dir = hexDirectionTo(from, target.hex);
-        if (dir !== null)
-          for (const h of reapCone(mapOf(fight), from, dir))
-            if (!hexEquals(h, target.hex)) highlights.push({hex: h, kind: 'area'});
-      }
-      // Advance: the charge's way there, drawn as a move's.
-      if (ability === 'advance' && from && !hexEquals(from, target.hex))
-        out.step = [from, target.hex];
       highlights.push({hex: target.hex, kind: 'chosen'});
       if (target.to) highlights.push({hex: target.to, kind: 'chosen'});
     }

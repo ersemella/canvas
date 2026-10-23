@@ -3,21 +3,13 @@ import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {
   ABILITIES,
-  HEROES,
-  RULES,
   abilitiesOf,
   actingUnit,
-  arrowLanes,
-  isPinned,
+  aimSlot,
   mapOf,
-  obscured,
   offeredTargets,
   previewTurn,
   reachableHexes,
-  slotsForward,
-  tauntBinds,
-  taunterOf,
-  turnCost,
 } from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
@@ -35,11 +27,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   bow: 'No enemy in any of the bow’s lanes.',
   throw: 'You aren’t grappling an enemy, or there’s nowhere free to throw it.',
   grapple: 'No one within reach to grapple.',
-  shove: 'You aren’t pinning an enemy next to you.',
-  leap: 'Nowhere to land.',
-  lunge: 'No one in reach to lunge at.',
-  reap: 'No one in any of the six cones around you.',
-  challenge: 'No enemy in range.',
+  bite: 'No enemy next to you.',
 };
 
 /** What the player has picked for the acting unit's turn so far. */
@@ -99,24 +87,21 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       ? reaches.find((r) => r.path.length > 0 && hexEquals(r.hex, hoverHex))
       : undefined;
 
-  /**
-   * What the chosen ability may target, always from the unit's current
-   * position (under a binding taunt, only what affects the taunter).
-   */
+  /** What the chosen ability may target, always from the unit's current position. */
   const targets = useMemo(() => {
     if (!ability || !fight || !acting?.alive) return [];
     return offeredTargets(fight, mapOf(fight), acting, ABILITIES[ability]);
   }, [ability, fight, acting]);
 
   /**
-   * Lunge's options on a unit: striking it from where the Champion stands,
-   * and the hexes it may bound to first (2026-10-22; Pin's step until then).
+   * Grapple's options on a unit: striking it from where the Champion
+   * stands, and the hexes it may step in to first (2026-10-22).
    */
-  const lungeFromHere = useCallback(
+  const fromHere = useCallback(
     (h: Hex) => targets.some((t) => !t.to && t.hex && hexEquals(t.hex, h)),
     [targets]
   );
-  const lungeSteps = useCallback(
+  const stepOptions = useCallback(
     (h: Hex) => targets.filter((t) => t.to && t.hex && hexEquals(t.hex, h)),
     [targets]
   );
@@ -125,10 +110,10 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   const action = useMemo(() => {
     if (!ability || !target) return null;
     if (ability === 'throw' && !target.to) return null;
-    // A unit a Lunge or Grapple can't reach from here needs its step picked.
-    if (ABILITIES[ability].stepsIn && !target.to && !lungeFromHere(target.hex!)) return null;
+    // A unit Grapple can't reach from here needs its step picked.
+    if (ABILITIES[ability].stepsIn && !target.to && !fromHere(target.hex!)) return null;
     return {ability, target};
-  }, [ability, target, lungeFromHere]);
+  }, [ability, target, fromHere]);
 
   /** What Move or the chosen ability still needs picked on the board: its button says so. */
   const needsTarget =
@@ -137,11 +122,9 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       : ability && !action
         ? ability === 'throw' && target?.hex
           ? 'Pick where to throw'
-          : ability === 'lunge' && target?.hex
-            ? 'Pick where to land'
-            : ability === 'grapple' && target?.hex
-              ? 'Pick where to step'
-              : 'Pick a target'
+          : ability === 'grapple' && target?.hex
+            ? 'Pick where to step'
+            : 'Pick a target'
         : null;
 
   /** The picked turn, once its hex or target is: the picked button confirms it. */
@@ -164,7 +147,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     [fight, acting]
   );
 
-  /** The hex picked last: the destination, the target, or Throw's landing or Lunge's landing. */
+  /** The hex picked last: the destination, the target, or Throw's landing or Grapple's step. */
   const lastPicked = plannedMove?.hex ?? target?.to ?? target?.hex ?? null;
 
   const clearMove = useCallback(() => pick({plannedMove: null, moving: false}), [pick]);
@@ -201,7 +184,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
 
   /**
    * A tap on `h` that plans the turn: a hex to move to, a target, Throw's
-   * landing or Lunge's landing (or un-picks one tapped again). False when the
+   * landing or Grapple's step (or un-picks one tapped again). False when the
    * tap plans nothing, and the page looks at the hex instead.
    */
   const planTap = useCallback(
@@ -216,7 +199,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       }
       if (!ability) return false;
       if ((ability === 'throw' || ABILITIES[ability].stepsIn) && target?.hex) {
-        // Throw's landing, or the hex a Lunge bounds to first.
+        // Throw's landing, or the hex Grapple steps in to first.
         const second = targets.find(
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
         );
@@ -226,13 +209,13 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
           else pick({target: {hex: target.hex}});
           return true;
         }
-        // Tapping the Champion drops the bound, if it can strike from where it stands.
+        // Tapping the Champion drops the step, if it can strike from where it stands.
         if (
           ABILITIES[ability].stepsIn &&
           target.to &&
           acting.hex &&
           hexEquals(acting.hex, h) &&
-          lungeFromHere(target.hex)
+          fromHere(target.hex)
         ) {
           chooseTarget({hex: target.hex});
           return true;
@@ -245,8 +228,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       else if (ability === 'throw') chooseTarget({hex: h});
       else if (ABILITIES[ability].stepsIn) {
         // From here if it can; otherwise its only landing, or a landing still to pick.
-        const steps = lungeSteps(h);
-        chooseTarget(!lungeFromHere(h) && steps.length === 1 ? steps[0]! : {hex: h});
+        const steps = stepOptions(h);
+        chooseTarget(!fromHere(h) && steps.length === 1 ? steps[0]! : {hex: h});
       } else chooseTarget(match);
       return true;
     },
@@ -259,8 +242,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       target,
       targets,
       chooseTarget,
-      lungeFromHere,
-      lungeSteps,
+      fromHere,
+      stepOptions,
       pick,
     ]
   );
@@ -280,75 +263,26 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   }, [target, ability, plannedMove, moving, chooseAbility, pick]);
 
   /**
-   * Slots an ability of `actionCost`: the placement
-   * formula alone (3.2). Yielding past taken slots (3.3) is left to the
-   * preview, which shows both, so a button's cost never jumps with the track.
+   * Slots until the unit's next turn after this one, whatever it does: its
+   * speed places it before Temee's next turn (3.2). Yielding past taken
+   * slots (3.3) is left to the preview, which shows both.
    */
-  const slotsLater = useCallback(
-    (actionCost: number) => (acting ? slotsForward(actionCost, acting.speed) : 0),
-    [acting]
+  const slotsLater = useMemo(
+    () => (fight && acting ? aimSlot(fight, acting) - fight.currentSlot : null),
+    [fight, acting]
   );
 
-  /**
-   * Abilities with nothing they may target from where the unit stands, and
-   * why: disabled. Under a binding taunt that's anything that can't affect
-   * the taunter, and a short note says so on the button itself, as it does
-   * for an Obscured bow, since the reason is otherwise only a hover's title.
-   */
+  /** Abilities with nothing they may target from where the unit stands, and why: disabled. */
   const outOfReach = useMemo(() => {
-    const out = new Map<AbilityId, {why: string; note?: string}>();
+    const out = new Map<AbilityId, {why: string}>();
     if (!fight || !acting?.alive) return out;
     const map = mapOf(fight);
-    const taunter = taunterOf(fight, acting);
-    const binds = taunter !== undefined && tauntBinds(fight, map, acting, taunter);
     for (const def of abilitiesOf(acting)) {
       if (def.id === 'hold' || offeredTargets(fight, map, acting, def).length > 0) continue;
-      out.set(
-        def.id,
-        binds && def.targets(fight, map, acting, acting.hex!).length > 0
-          ? {
-              why: `Taunted by ${HEROES[taunter.hero].name}: attack it, or end the turn.`,
-              note: 'Taunted',
-            }
-          : isPinned(acting) && def.targets(fight, map, acting, acting.hex!).length > 0
-            ? {why: 'Pinned: abilities reach only the spaces next to you.', note: 'Pinned'}
-            : def.id === 'bow' && acting.hex && obscured(fight, map, acting.hex)
-              ? {why: 'Obscured: can’t shoot a bow.', note: 'Obscured'}
-              : def.id === 'bow' &&
-                  acting.hex &&
-                  arrowLanes(fight, map, acting.hex).some(
-                    (l) => l.hidden && l.hidden.side !== acting.side
-                  )
-                ? {
-                    why: 'The enemies in the bow’s lanes are Obscured: arrows can’t reach them.',
-                    note: 'Obscured',
-                  }
-                : {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'}
-      );
+      out.set(def.id, {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'});
     }
     return out;
   }, [fight, acting]);
-
-  /**
-   * The move action's delay, before track yielding: the planned move's, or
-   * the range over the hexes it can reach, so Move reads like an ability.
-   */
-  const moveSlots = useMemo(() => {
-    if (!acting) return null;
-    // The camel's move has a cost of its own (camel.md, 18.1).
-    const slots = (hexes: number) =>
-      slotsForward(
-        HEROES[acting.hero].moveCost ?? turnCost(RULES.moveActionCost, hexes),
-        acting.speed
-      );
-    const shown = plannedMove ?? hoverReach;
-    if (shown && shown.path.length > 0) return `${slots(shown.path.length)}`;
-    const lengths = reaches.map((r) => r.path.length).filter((n) => n > 0);
-    if (lengths.length === 0) return null;
-    const low = slots(Math.min(...lengths));
-    const high = slots(Math.max(...lengths));
-    return low === high ? `${low}` : `${low}–${high}`;
-  }, [acting, plannedMove, hoverReach, reaches]);
 
   return {
     acting,
@@ -360,8 +294,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     moveMode,
     hoverReach,
     targets,
-    lungeFromHere,
-    lungeSteps,
+    fromHere,
+    stepOptions,
     needsTarget,
     input,
     preview,
@@ -373,6 +307,5 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     stepBack,
     slotsLater,
     outOfReach,
-    moveSlots,
   };
 }

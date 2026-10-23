@@ -1,15 +1,16 @@
 /**
  * A turn's events playing back on the board: whose turn it is, the
- * ability and where it strikes, hits and healing, falls.
+ * ability and where it strikes, hits, falls.
  */
 import {hexDistance} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {HEROES} from '../../rules/config';
 import {ABILITIES} from '../../rules/abilities';
+import {isStunned} from '../../rules/board';
 import {mapOf} from '../../rules/fight';
 import {Playback, eventSeconds} from '../playback';
 import {PALETTE, paletteAlpha, pixelFont} from '../palette';
-import {ABILITY_EFFECT, EFFECT_FPS, drawPixelArrow} from './effects';
+import {EFFECT_FPS, drawPixelArrow} from './effects';
 import type {BoardScene} from './scene';
 import {HEALTH_BAR, drawDamage, drawUnit} from './units';
 import {HIGHLIGHT} from './overlays';
@@ -32,19 +33,17 @@ export function steppingAt(play: Playback, unitId: string): {x: number; y: numbe
   const e = play.current;
   if (e?.kind !== 'step' || e.unitId !== unitId) return undefined;
   const k = play.progress;
-  // A push snaps away and slows; the rest move evenly.
-  const t = e.how === 'push' ? 1 - (1 - k) * (1 - k) : k;
   const a = center(e.from);
   const b = center(e.to);
   // A thrown unit arcs through the air.
-  const lift = e.how === 'throw' || e.how === 'leap' ? Math.sin(Math.PI * k) * 26 : 0;
-  return {x: Math.round(lerp(a.x, b.x, t)), y: Math.round(lerp(a.y, b.y, t) - lift)};
+  const lift = e.how === 'throw' ? Math.sin(Math.PI * k) * 26 : 0;
+  return {x: Math.round(lerp(a.x, b.x, k)), y: Math.round(lerp(a.y, b.y, k) - lift)};
 }
 
 /**
  * What the event showing now adds over the board: the name of whoever's
  * turn it is, an ability's name and the area or line it strikes, a hit's
- * number rising with a red flash, healing in green, a fallen unit fading.
+ * number rising with a red flash, a fallen unit fading.
  */
 export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback): void {
   const e = play.current;
@@ -75,24 +74,19 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
           SIDE_LIGHT[u.side]
         );
       return;
-    case 'action':
-    case 'charge': {
+    case 'action': {
       const def = ABILITIES[e.ability];
-      const name = e.kind === 'charge' ? `Charging ${def.name}` : def.name;
+      const name = def.name;
       // The area the playback lights up when it lands; the target hex alone for the rest.
       const radius = def.radius ?? 0;
       const area = e.target ? map.hexes.filter((h) => hexDistance(h, e.target!) <= radius) : [];
-      const effect = e.kind === 'action' ? ABILITY_EFFECT[e.ability] : undefined;
       // Effects move in steps, as pixel art does.
       const steps = eventSeconds(e, false) * EFFECT_FPS;
       const stepped = steps > 0 ? Math.floor(k * steps) / steps : k;
-      if (e.target && effect) {
-        effect(ctx, {from: u.hex, target: e.target, area, k: stepped});
-      } else if (e.target) {
+      if (e.target) {
         ctx.save();
         ctx.globalAlpha = 1 - k * 0.6;
-        for (const h of area)
-          fillHex(ctx, h, e.kind === 'charge' ? HIGHLIGHT.target : HIGHLIGHT.area);
+        for (const h of area) fillHex(ctx, h, HIGHLIGHT.area);
         ctx.restore();
       }
       // An arrow flying from the bow to its mark.
@@ -111,16 +105,14 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
         );
       }
       // The name last, over the effect.
-      if (u.hex) title(u.hex, name, e.kind === 'charge' ? PALETTE.plumLight : PALETTE.lapisLight);
+      if (u.hex) title(u.hex, name, PALETTE.lapisLight);
       return;
     }
-    case 'damage':
-    case 'heal': {
+    case 'damage': {
       if (!u.hex) return;
       const c = center(u.hex);
-      if (e.kind === 'damage') tintHex(ctx, u.hex, paletteAlpha('madder', 0.55), 1 - k);
-      const amount = e.kind === 'damage' ? e.amount : -e.amount;
-      drawDamage(ctx, c.x, c.y - 22 - k * 16, amount, e.kind === 'damage' && u.hp === 0);
+      tintHex(ctx, u.hex, paletteAlpha('madder', 0.55), 1 - k);
+      drawDamage(ctx, c.x, c.y - 22 - k * 16, e.amount, u.hp === 0);
       return;
     }
     case 'death':
@@ -133,7 +125,12 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
       });
       return;
     case 'skip':
-      if (u.hex) title(u.hex, 'Turn skipped: can only hold', PALETTE.dusk4);
+      if (u.hex)
+        title(
+          u.hex,
+          isStunned(u) ? 'Stunned: turn skipped' : 'Turn skipped: can only hold',
+          PALETTE.dusk4
+        );
       return;
     case 'step':
       return;

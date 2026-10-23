@@ -3,11 +3,11 @@
  * (charging, ultimate ready, skipped), yielding, and the deck running on.
  */
 import {assetLoader} from '@canvas/engine';
-import {HEROES, RULES} from '../../rules/config';
+import {HEROES} from '../../rules/config';
 import type {FightState, Unit} from '../../rules/types';
 import {TRACK_AREA, trackSlots} from '../layout';
 import type {TrackCard, TrackSlots} from '../layout';
-import {PALETTE, paletteAlpha} from '../palette';
+import {PALETTE} from '../palette';
 import {HERO_COLOR, SIDE_LIGHT, label, pixelRect, pixelShadow} from './pixels';
 import {HERO_PORTRAIT} from './units';
 
@@ -248,7 +248,6 @@ function drawCard(
       }
       ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
       ctx.restore();
-      if (u.charging) greyOut(ctx, cx, cy, deck.cardW, h);
       // The border again, over the portrait.
       pixelRect(ctx, cx, cy, deck.cardW, h, 3);
       strokeBorder();
@@ -264,83 +263,9 @@ function drawCard(
       ctx.stroke();
       label(ctx, HEROES[u.hero].letter, mid, cy + h / 2 - 3, PALETTE.ivory, 11, true);
     }
-    // A charging card: greyed (the unit waits on its spell, it takes no turn)
-    // with the spell's mark; the ability triggers when this slot comes up.
-    if (u.charging) drawChargeMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
-    // A card whose last turn was skipped (it could only Hold): marked till it next acts.
-    else if (u.skipped) drawSkipMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
-    // A unit whose ultimate is ready: a star high in its showing strip, clear of the marks below.
-    if (ultimateReady(u)) drawUltimateMark(ctx, cx + deck.cardW - deck.w / 2, cy + 9);
+    // A card whose last turn was skipped (Stunned, or it could only Hold): marked till it next acts.
+    if (u.skipped) drawSkipMark(ctx, cx + deck.cardW - deck.w / 2, cy + h - 9);
   }
-  ctx.restore();
-}
-
-/** Drains a card's colour and darkens it: a charging unit's card. */
-function greyOut(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number): void {
-  ctx.save();
-  pixelRect(ctx, x, y, w, h, 5);
-  ctx.clip();
-  ctx.globalCompositeOperation = 'saturation';
-  ctx.fillStyle = '#808080';
-  ctx.fillRect(x, y, w, h);
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.fillStyle = paletteAlpha('dusk0', 0.45);
-  ctx.fillRect(x, y, w, h);
-  ctx.restore();
-}
-
-/** A charging card's mark: an hourglass in a purple disc, low in its showing strip. */
-function drawChargeMark(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(x, y, 7, 0, Math.PI * 2);
-  ctx.fillStyle = PALETTE.plumDark;
-  ctx.fill();
-  ctx.strokeStyle = PALETTE.plumLight;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x - 3, y - 4);
-  ctx.lineTo(x + 3, y - 4);
-  ctx.lineTo(x - 3, y + 4);
-  ctx.lineTo(x + 3, y + 4);
-  ctx.closePath();
-  ctx.fillStyle = PALETTE.ivory;
-  ctx.fill();
-  ctx.restore();
-}
-
-/** Whether a unit has an ultimate, charged and not yet used this fight. */
-function ultimateReady(u: Unit): boolean {
-  return (
-    HEROES[u.hero].ultimate !== undefined &&
-    !u.ultimateUsed &&
-    u.ultimateCharge >= RULES.ultimateCharge
-  );
-}
-
-/** A ready ultimate's mark: a four-pointed ivory star in a plum disc, high in its showing strip. */
-function drawUltimateMark(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(x, y, 7, 0, Math.PI * 2);
-  ctx.fillStyle = PALETTE.plum;
-  ctx.fill();
-  ctx.strokeStyle = PALETTE.plumLight;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.beginPath();
-  for (let k = 0; k < 8; k++) {
-    const r = k % 2 === 0 ? 5 : 1.6;
-    const a = (k * Math.PI) / 4 - Math.PI / 2;
-    const px = x + r * Math.cos(a);
-    const py = y + r * Math.sin(a);
-    if (k === 0) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  }
-  ctx.closePath();
-  ctx.fillStyle = PALETTE.ivory;
-  ctx.fill();
   ctx.restore();
 }
 

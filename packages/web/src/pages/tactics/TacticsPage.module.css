@@ -459,16 +459,8 @@
   width: 16px;
   height: 16px;
 }
-.abilityLinkUltimate {
-  color: var(--c-plumLight);
-}
 .abilityLink[aria-pressed='true'] {
   background: var(--c-dusk3);
-}
-.abilityLinkNote {
-  margin-left: 4px;
-  font-size: 13px;
-  opacity: 0.75;
 }
 .abilitySummary {
   color: var(--c-dusk4);
@@ -586,20 +578,6 @@
   border-color: var(--c-lapisLight);
   background: var(--c-lapisDark);
   box-shadow: inset 0 0 0 var(--px) var(--c-lapisLight);
-}
-.tile.tileUltimate {
-  color: var(--c-plumLight);
-  background: var(--c-plumDark);
-  box-shadow:
-    inset var(--px) var(--px) 0 var(--c-plum),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-ink);
-}
-.tile.tileUltimate[aria-pressed='true'] {
-  color: var(--c-ivory);
-  background: var(--c-plum);
-  box-shadow:
-    inset var(--px) var(--px) 0 var(--c-plumLight),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-plumDark);
 }
 .tile.tile:disabled {
   color: var(--c-dusk4);

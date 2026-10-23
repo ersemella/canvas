@@ -5,11 +5,9 @@
  */
 import {hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {statusValue, statusSlotsLeft} from './board';
-import {ABILITIES} from './abilities';
+import {isImmobilized, isStunned} from './board';
 import {scoreOptions, simulate} from './ai';
-import {turnInputCost} from './fight';
-import {slotsForward} from './track';
+import {aimSlot} from './track';
 import type {AbilityId, FightState, TurnInput, Unit} from './types';
 
 export interface UnitChange {
@@ -19,7 +17,7 @@ export interface UnitChange {
   killed: boolean;
   from: Hex | null;
   to: Hex | null;
-  /** Status changes in words, e.g. "Slowed 2". */
+  /** Status changes in words, e.g. "Stunned". */
   statuses: string[];
 }
 
@@ -28,49 +26,17 @@ export interface TurnPreview {
   /** The acting card's slot after the turn, yielding included. */
   slot: number | null;
   /**
-   * The slot the turn's cost aims the card at, before yielding (3.2, 3.3):
-   * when it's taken, the card lands further on, at `slot`.
+   * The slot the turn aims the card at, before yielding (3.2, 3.3): when
+   * it's taken, the card lands further on, at `slot`.
    */
   aimSlot: number | null;
-  /** A charged ability: it triggers later, and the changes assume no one moves. */
-  charged: boolean;
 }
 
-function statusWords(before: Unit, after: Unit, slot: number): string[] {
+function statusWords(before: Unit, after: Unit): string[] {
   const out: string[] = [];
-  const slowed = statusValue(after, 'slowed');
-  if (slowed > statusValue(before, 'slowed')) out.push(`Slowed ${slowed}`);
-  const vuln = statusValue(after, 'vulnerable');
-  if (vuln > statusValue(before, 'vulnerable')) out.push(`Vulnerable ${vuln}%`);
-  const imm = statusSlotsLeft(after, 'immobilized', slot);
-  if (imm > statusSlotsLeft(before, 'immobilized', slot)) out.push(`Immobilized ${imm} slots`);
-  const pin = statusSlotsLeft(after, 'pinned', slot);
-  if (pin > statusSlotsLeft(before, 'pinned', slot)) out.push(`Pinned ${pin} slots`);
-  const crush = statusValue(after, 'crushed');
-  if (
-    crush > 0 &&
-    statusSlotsLeft(after, 'crushed', slot) > statusSlotsLeft(before, 'crushed', slot)
-  )
-    out.push(`Crushed ${crush} a slot`);
-  const taunt = statusSlotsLeft(after, 'taunted', slot);
-  if (taunt > statusSlotsLeft(before, 'taunted', slot)) out.push(`Taunted ${taunt} slots`);
-  const barrier = statusValue(after, 'barrier');
-  const had = statusValue(before, 'barrier');
-  if (
-    barrier > had ||
-    (barrier > 0 &&
-      statusSlotsLeft(after, 'barrier', slot) > statusSlotsLeft(before, 'barrier', slot))
-  )
-    out.push(`Barrier ${barrier}`);
-  else if (barrier < had) out.push(barrier > 0 ? `Barrier ${barrier} left` : 'Barrier broken');
-  const pushed = (after.pushed ?? 0) - (before.pushed ?? 0);
-  if (after.alive && pushed > 0) out.push(`Pushed ${pushed}`);
-  if (
-    before.statuses.some((s) => s.grapple) &&
-    !after.statuses.some((s) => s.grapple) &&
-    after.alive
-  )
-    out.push('Released');
+  if (isStunned(after) && !isStunned(before)) out.push('Stunned');
+  else if (isImmobilized(after) && !isImmobilized(before)) out.push('Immobilized');
+  if (after.alive && !isStunned(after) && isStunned(before)) out.push('Released');
   return out;
 }
 
@@ -83,12 +49,10 @@ export function previewTurn(
   const after = simulate(state, unitId, input);
   if (!after) return null;
   const unit = after.units.find((u) => u.id === unitId)!;
-  const cost = turnInputCost(state, input, unit);
   return {
     changes: diff(state, after),
     slot: unit.slot,
-    aimSlot: unit.alive ? state.currentSlot + slotsForward(cost, unit.speed) : null,
-    charged: ABILITIES[input.action.ability].charged,
+    aimSlot: unit.alive ? aimSlot(after, unit) : null,
   };
 }
 
@@ -98,7 +62,7 @@ export function diff(before: FightState, after: FightState): UnitChange[] {
     if (!b.alive) continue;
     const a = after.units.find((u) => u.id === b.id)!;
     const moved = a.hex && b.hex ? !hexEquals(a.hex, b.hex) : a.hex !== b.hex;
-    const statuses = statusWords(b, a, before.currentSlot);
+    const statuses = statusWords(b, a);
     if (a.hp === b.hp && !moved && statuses.length === 0 && a.alive) continue;
     out.push({
       unitId: b.id,

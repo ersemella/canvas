@@ -4,7 +4,6 @@ import {CAMEL} from '../rules/config';
 import {unitAt} from '../rules/board';
 import {tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
-import {taunterOf} from '../rules/taunt';
 import type {FightState} from '../rules/types';
 import {trackCards} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
@@ -16,28 +15,14 @@ import type {CardSlide, TrackAdvance} from './board/track';
 import {
   HAIL_FPS,
   HAIL_STILL_SECONDS,
-  QUICKSAND_FRAME_SECONDS,
-  SANDSTORM_BANK,
-  drawBank,
   drawExit,
   drawFallingHail,
   drawGround,
   drawRuins,
 } from './board/ground';
-import {
-  HIGHLIGHT,
-  HOVER,
-  drawCharge,
-  drawLanes,
-  drawPath,
-  drawRangeOutline,
-  drawTauntChain,
-  drawThrowArc,
-} from './board/overlays';
+import {HIGHLIGHT, HOVER, drawLanes, drawPath, drawRangeOutline} from './board/overlays';
 import {
   MARK,
-  STATUS_KINDS,
-  STATUS_MARK,
   drawDamage,
   drawHealthBar,
   drawRug,
@@ -172,11 +157,6 @@ export class TacticsBoardSystem extends BaseSystem {
     const parts: number[] = [this.version, assetLoader.settled, canvas.width, canvas.height];
     if (!this.still) {
       for (const u of fight.units) if (u.alive && u.hex) parts.push(idleFrame(u.id, time));
-      const map = mapOf(fight);
-      if (map.hexes.some((h) => tileAt(map, h) === 'hazard'))
-        parts.push(Math.floor(time / QUICKSAND_FRAME_SECONDS));
-      if (map.hexes.some((h) => tileAt(map, h) === 'conceal'))
-        parts.push(Math.floor(time * SANDSTORM_BANK.fps));
       if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
       if (this.scene.turnArrow !== false) parts.push(turnArrowBob(time));
     }
@@ -269,12 +249,10 @@ export class TacticsBoardSystem extends BaseSystem {
     for (const u of after.units) {
       const was = before.units.find((v) => v.id === u.id);
       if (!u.alive || !was?.alive) continue;
-      const marks = statusMarks(before, was);
-      const now = new Set(statusMarks(after, u).map(([m]) => m));
+      const marks = statusMarks(was);
+      const now = new Set(statusMarks(u).map(([m]) => m));
       marks.forEach((mark, index) => {
-        // Flanked isn't a status: it comes and goes as units move.
-        const status = STATUS_KINDS.some((k) => STATUS_MARK[k][0] === mark[0]);
-        if (status && !now.has(mark[0]))
+        if (!now.has(mark[0]))
           this.expiries.push({unitId: u.id, mark, index, count: marks.length, elapsed: 0});
       });
     }
@@ -315,12 +293,10 @@ export class TacticsBoardSystem extends BaseSystem {
       if (slide.elapsed >= CARD_SLIDE_SECONDS) this.slides.delete(id);
     }
     const map = mapOf(fight);
-    // The board's weather moves with time, unless the device asks for reduced motion.
+    // Hail and the turn arrow move with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
-    drawGround(ctx, map, t);
+    drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h);
-    const sandstorm = map.hexes.filter((h) => tileAt(map, h) === 'conceal');
-    drawBank(ctx, SANDSTORM_BANK, sandstorm, t);
     for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
@@ -346,7 +322,6 @@ export class TacticsBoardSystem extends BaseSystem {
     // The hovered hex's outline goes under the units, so it never crosses a sprite.
     if (this.hover.hex) fillHex(ctx, this.hover.hex, HOVER);
     if (scene.path && scene.path.length > 1) drawPath(ctx, scene.path);
-    for (const u of fight.units) if (u.alive && u.charging) drawCharge(ctx, map, u);
 
     const acting = fight.awaiting;
     // A unit's border covers its hex's outline, so a targeted unit rings itself.
@@ -397,17 +372,8 @@ export class TacticsBoardSystem extends BaseSystem {
       }
     }
 
-    // Each taunt, chained to its taunter, so it's plain who must be attacked
-    // (not while a turn plays back, when units are on their way).
-    if (!walking && !playing)
-      for (const u of fight.units) {
-        const taunter = u.alive && u.hex ? taunterOf(fight, u) : undefined;
-        if (taunter) drawTauntChain(ctx, u.hex!, taunter.hex!);
-      }
-
     if (scene.range) drawRangeOutline(ctx, scene.range);
     if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);
-    if (scene.arc) drawThrowArc(ctx, scene.arc.from, scene.arc.around, scene.arc.to);
     if (scene.step) drawPath(ctx, scene.step);
 
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
@@ -430,7 +396,7 @@ export class TacticsBoardSystem extends BaseSystem {
       if (!u.alive || !hex || !looked.has(u.id)) continue;
       const p = previewed.get(u.id);
       const at = p?.to && !p.killed ? p.to : hex;
-      const marks = statusMarks(fight, u);
+      const marks = statusMarks(u);
       const stack = healthStack(at, marks.length);
       drawHealthBar(ctx, u, at, stack.barY, p?.hpBefore ?? u.hp, p?.hpAfter);
       drawStatusMarks(ctx, marks, at, stack.marksY);
@@ -448,7 +414,7 @@ export class TacticsBoardSystem extends BaseSystem {
     ) {
       const p = previewed.get(yours.id);
       const at = p?.to && !p.killed ? p.to : yours.hex;
-      drawTurnArrow(ctx, at, statusMarks(fight, yours).length, t);
+      drawTurnArrow(ctx, at, statusMarks(yours).length, t);
     }
     for (const e of this.expiries) {
       const u = fight.units.find((v) => v.id === e.unitId);

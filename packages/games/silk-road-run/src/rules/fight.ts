@@ -1,37 +1,18 @@
 /**
  * The fight's flow: creating it, the track advancing card by
- * card, start-of-turn effects, charged abilities triggering, and applying
+ * card, start-of-turn effects (hail lifting, Stunned turns skipped) and applying
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals} from '@canvas/engine/server';
-import {CAMEL, HEROES, PARTY, movementRules} from './config';
-import {expireStatuses, invalidPath, isImmobilized, stepToExit} from './board';
-import {
-  ABILITIES,
-  holdTheLine,
-  legalTargets,
-  linesHeld,
-  sameTarget,
-  unusableReason,
-} from './abilities';
-import {obeysTaunt, redirectedCharge, tauntBinds, taunterOf} from './taunt';
-import {onlyHold} from './choices';
-import {
-  checkEnd,
-  enterHex,
-  hailPush,
-  hailPushOwed,
-  hailStrikes,
-  log,
-  damageEachSlot,
-  push,
-  record,
-  unitName,
-} from './resolve';
+import {CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
+import {invalidPath, isImmobilized, isStunned, stepToExit} from './board';
+import {ABILITIES, sameTarget, unusableReason} from './abilities';
+import {allowedTargets, onlyHold} from './choices';
+import {checkEnd, clearHail, enterHex, log, record, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
-import {nextCard, placeCard, placeStartingCards, shuffled, slotsForward, turnCost} from './track';
+import {aimSlot, nextCard, placeCard, placeStartingCards, shuffled} from './track';
 import type {FightState, HeroId, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
@@ -39,7 +20,7 @@ export class RuleError extends Error {}
 
 const fightMaps = new WeakMap<Record<string, Tile>, MapData>();
 
-/** The fight's map, with the fight's own ruins and quicksand. */
+/** The fight's map, with the fight's own ruins. */
 export function mapOf(state: FightState): MapData {
   const map = MAPS[state.mapId]!;
   let own = fightMaps.get(state.tiles);
@@ -48,12 +29,13 @@ export function mapOf(state: FightState): MapData {
 }
 
 /**
- * A hero's speed, defence and power, from config.ts. Phase 1 has no gear
- * and no stat changes, so these are always a unit's stats.
+ * A hero's speed, defence and power, from config.ts, and the health its
+ * defence gives. Phase 1 has no gear and no stat changes, so these are
+ * always a unit's stats.
  */
-function heroStats(hero: HeroId): Pick<Unit, 'speed' | 'defence' | 'power'> {
+function heroStats(hero: HeroId): Pick<Unit, 'speed' | 'defence' | 'power' | 'maxHp'> {
   const {speed, defence, power} = HEROES[hero];
-  return {speed, defence, power};
+  return {speed, defence, power, maxHp: healthOf(defence)};
 }
 
 /**
@@ -64,35 +46,34 @@ function heroStats(hero: HeroId): Pick<Unit, 'speed' | 'defence' | 'power'> {
  * (`RUN_FORMAT` in run.ts).
  */
 export function refreshStats(state: FightState): void {
-  for (const u of state.units) Object.assign(u, heroStats(u.hero));
+  for (const u of state.units) {
+    Object.assign(u, heroStats(u.hero));
+    u.hp = Math.min(u.hp, u.maxHp);
+  }
 }
 
 /** `copy` numbers a second or later unit of the same hero on a side (e-wolf, e-wolf-2). */
 function makeUnit(side: Side, partyIndex: number, hero: HeroId, copy = 0): Unit {
-  const stats = HEROES[hero];
+  const stats = heroStats(hero);
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}${copy ? `-${copy + 1}` : ''}`,
     hero,
     side,
     // The camel walks itself (owner, 2026-10-22).
-    controller: side === 'player' && stats.routeSlots === undefined ? 'human' : 'ai',
+    controller: side === 'player' && !HEROES[hero].walksRoad ? 'human' : 'ai',
     partyIndex,
     hex: null,
-    hp: stats.health,
-    maxHp: stats.health,
-    ...heroStats(hero),
+    hp: stats.maxHp,
+    ...stats,
     slot: null,
     statuses: [],
-    ultimateCharge: 0,
-    ultimateUsed: false,
-    charging: null,
     alive: true,
   };
 }
 
 /**
  * A new fight on the Salt Flats, already under way: the seed scatters the
- * ruins and quicksand, the player's party along the leftmost column and
+ * ruins, the player's party along the leftmost column and
  * the enemy's along the rightmost (owner, 2026-10-20; there is no
  * deployment step), and shuffles starting speed ties. The player's camel
  * starts in the top-left corner (camel.md, 18.1; owner, 2026-10-22). The player brings
@@ -170,7 +151,7 @@ export function advance(
 }
 
 /**
- * Advances automatic effects and charges to the next decision, on either
+ * Advances automatic effects and turns to the next decision, on either
  * side. Shared by live play and search; resuming a stopped decision does
  * not apply its start-of-turn effects a second time.
  * `spend` lets search bound automatic cards as well as simulated actions.
@@ -184,30 +165,23 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     const unit = nextCard(state);
     if (!unit) return;
     spend?.();
-    // Its own turn: the push limit starts again (3.6).
-    delete unit.pushed;
     const ctx: Ctx = {state, map, slot: unit.slot!};
-    beginSlot(ctx);
+    state.currentSlot = unit.slot!;
     record(state, {kind: 'turn', unitId: unit.id});
-    // Quicksand and Crushed ticked in beginSlot.
-    if (state.phase !== 'fight') return;
-    if (!unit.alive) continue;
-    hailStrikes(ctx, unit);
-    if (state.phase !== 'fight') return;
-    if (!unit.alive) continue;
-
-    if (unit.charging) {
-      triggerCharge(ctx, unit);
+    // Its hail lasts until its next turn: this one (owner, 2026-10-23).
+    clearHail(state, unit);
+    // The camel isn't a decision: it walks its road.
+    if (HEROES[unit.hero].walksRoad) {
+      walkRoad(ctx, unit);
       continue;
     }
-    // The camel isn't a decision: it walks its road.
-    if (HEROES[unit.hero].routeSlots !== undefined) {
-      walkRoad(ctx, unit);
+    if (isStunned(unit)) {
+      skipTurn(ctx, unit, `${unitName(unit)} is Stunned: turn skipped.`);
       continue;
     }
     // Nothing to do but Hold: the track goes on without asking.
     if (onlyHold(state, map, unit)) {
-      skipTurn(ctx, unit);
+      skipTurn(ctx, unit, `${unitName(unit)} can only hold: turn skipped.`);
       continue;
     }
     delete unit.skipped;
@@ -216,38 +190,21 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
   }
 }
 
-/**
- * The track reaches `ctx.slot`: effects act at the beginning of each slot
- * passed (3.9), here expiry (statuses, hail), quicksand and Crushed.
- */
-function beginSlot(ctx: Ctx): void {
-  const {state, slot} = ctx;
-  const from = state.currentSlot;
-  state.currentSlot = slot;
-  damageEachSlot(ctx, from, (s) => {
-    for (const u of state.units) expireStatuses(u, s);
-  });
-  for (const u of state.units) expireStatuses(u, slot);
-  state.effects = state.effects.filter((e) => e.untilSlot >= slot);
-}
-
-/** A turn with only Hold to choose: Held for the unit, its card marked as skipped. */
-function skipTurn(ctx: Ctx, unit: Unit): void {
-  const hail = hailPushOwed(ctx.state, unit);
+/** A turn it can't take, or with only Hold to choose: its card marked as skipped, placed as after any turn. */
+function skipTurn(ctx: Ctx, unit: Unit, text: string): void {
   unit.skipped = true;
-  log(ctx, `${unitName(unit)} can only hold: turn skipped.`);
+  log(ctx, text);
   record(ctx.state, {kind: 'skip', unitId: unit.id});
-  placeCard(ctx.state, unit, ctx.slot + slotsForward(ABILITIES.hold.cost, unit.speed));
-  hailPush(ctx, unit, hail);
+  placeCard(ctx.state, unit, aimSlot(ctx.state, unit));
 }
 
 /**
  * The camel's turn (owner, 2026-10-22): one step toward the exit, around
- * ruins and units (`stepToExit`), then its card goes `routeSlots` on.
- * Immobilized, or with units shutting every way, it waits, its turn skipped.
+ * ruins and units (`stepToExit`), then its card goes RULES.roundSlots on
+ * (owner, 2026-10-23), whether or not it stepped. Immobilized or Stunned,
+ * or with units shutting every way, it waits, its turn skipped.
  */
 function walkRoad(ctx: Ctx, unit: Unit): void {
-  const hail = hailPushOwed(ctx.state, unit);
   const next = isImmobilized(unit) ? undefined : stepToExit(ctx.state, ctx.map, unit);
   if (next) {
     delete unit.skipped;
@@ -259,26 +216,7 @@ function walkRoad(ctx: Ctx, unit: Unit): void {
     record(ctx.state, {kind: 'skip', unitId: unit.id});
   }
   checkEnd(ctx.state);
-  if (unit.alive) placeCard(ctx.state, unit, ctx.slot + HEROES[unit.hero].routeSlots!);
-  if (ctx.state.phase === 'fight') hailPush(ctx, unit, hail);
-}
-
-function triggerCharge(ctx: Ctx, unit: Unit): void {
-  const {ability, target} = unit.charging!;
-  const def = ABILITIES[ability];
-  const hail = hailPushOwed(ctx.state, unit);
-  const hex = redirectedCharge(ctx.state, ctx.map, unit, target);
-  unit.charging = null;
-  delete unit.skipped;
-  if (!hexEquals(hex, target))
-    log(ctx, `${unitName(unit)}'s ${def.name} is drawn onto its taunter.`);
-  record(ctx.state, {kind: 'action', unitId: unit.id, ability, target: hex, charged: true});
-  def.resolve(ctx, unit, {hex});
-  checkEnd(ctx.state);
-  if (unit.alive)
-    placeCard(ctx.state, unit, ctx.slot + slotsForward(def.recoveryCost!, unit.speed));
-  if (ctx.state.phase === 'fight') hailPush(ctx, unit, hail);
-  unit.ultimateCharge += def.recoveryCost!;
+  if (unit.alive) placeCard(ctx.state, unit, ctx.slot + RULES.roundSlots);
 }
 
 /**
@@ -286,9 +224,8 @@ function triggerCharge(ctx: Ctx, unit: Unit): void {
  * the move or the ability, then places its card (3.2). Throws RuleError
  * with a player-facing message for an illegal turn. Validation happens as
  * the turn resolves, so apply it to a copy and keep the copy only if it
- * doesn't throw. `trustTarget` skips re-listing the targets and the taunt
- * check, for the AI's own options, which it took from that list and
- * filtered by the taunt.
+ * doesn't throw. `trustTarget` skips re-listing the targets, for the AI's
+ * own options, which it took from that list.
  */
 export function applyTurn(
   state: FightState,
@@ -303,98 +240,30 @@ export function applyTurn(
   const reason = unusableReason(unit, def);
   if (reason) throw new RuleError(reason);
   const path = input.move ?? [];
-  if (movementRules(state).separateMovement && path.length > 0 && def.id !== 'hold')
+  // Move + Hold encodes a move-only turn without changing the turn protocol.
+  if (path.length > 0 && def.id !== 'hold')
     throw new RuleError('Movement and an ability require separate turns.');
-  // Move + Hold encodes a move-only action without changing the turn protocol.
-  const cost = turnInputCost(state, input, unit);
-  // Taunt (17.5): decided from where the turn starts, before any move. The
-  // AI's own options already obey it (trustTarget).
-  const taunter = trustTarget ? undefined : taunterOf(state, unit);
-  const bound = taunter !== undefined && tauntBinds(state, map, unit, taunter);
-  // Hold the Line: the hostile Vanguards next to it as the turn starts, and
-  // the Push their blows owe its card once the turn has placed it.
-  const held = linesHeld(state, unit);
-  let pushOwed = 0;
-  // Hail: starting the turn on it Pushes the card once the turn has placed it.
-  const hailOwed = hailPushOwed(state, unit);
 
-  const move = () => {
-    if (path.length === 0 || !unit.alive) return;
+  if (path.length > 0) {
     const bad = invalidPath(state, map, unit, path);
     if (bad) throw new RuleError(bad);
-    // Quicksand triggers on entering each hex, allies' hexes passed included.
-    for (const h of path) {
-      pushOwed += holdTheLine(ctx, unit, h, held);
-      if (!unit.alive) return;
-      enterHex(ctx, unit, h);
-      if (!unit.alive) return;
-    }
-  };
-  const act = () => {
-    if (!unit.alive) return;
-    if (movementRules(state).separateMovement && path.length > 0) {
-      log(ctx, `${unitName(unit)} moves.`);
-      return;
-    }
+    for (const h of path) enterHex(ctx, unit, h);
+    log(ctx, `${unitName(unit)} moves.`);
+  } else {
     const target = input.action.target ?? {};
-    if (
-      !trustTarget &&
-      !legalTargets(state, map, unit, def, unit.hex!).some((t) => sameTarget(t, target))
-    ) {
+    if (!trustTarget && !allowedTargets(state, map, unit, def).some((t) => sameTarget(t, target)))
       throw new RuleError(`${def.name} can’t target that.`);
-    }
-    if (bound && !obeysTaunt(map, def, unit.hex!, target, taunter)) {
-      throw new RuleError(`Taunted: attack ${unitName(taunter)} or end the turn.`);
-    }
-    if (def.ultimate) unit.ultimateUsed = true;
-    if (def.charged) {
-      unit.charging = {ability: def.id, target: target.hex!};
-      log(ctx, `${unitName(unit)} begins charging ${def.name}.`);
-      record(state, {kind: 'charge', unitId: unit.id, ability: def.id, target: target.hex!});
-    } else {
-      record(state, {
-        kind: 'action',
-        unitId: unit.id,
-        ability: def.id,
-        ...(target.hex ? {target: target.hex} : {}),
-      });
-      def.resolve(ctx, unit, target);
-    }
-  };
-
-  move();
-  act();
-  // An ability that moved it (Leap, Lunge's bound, Advance's charge): struck where it lands.
-  if (unit.alive && unit.hex) pushOwed += holdTheLine(ctx, unit, unit.hex, held);
+    record(state, {
+      kind: 'action',
+      unitId: unit.id,
+      ability: def.id,
+      ...(target.hex ? {target: target.hex} : {}),
+    });
+    def.resolve(ctx, unit, target);
+  }
   state.awaiting = null;
   checkEnd(state);
-  if (unit.alive) placeCard(state, unit, state.currentSlot + slotsForward(cost, unit.speed));
-  if (pushOwed > 0 && state.phase === 'fight') push(ctx, unit, pushOwed);
-  if (state.phase === 'fight') hailPush(ctx, unit, hailOwed);
-  if (countsTowardUltimate(input)) unit.ultimateCharge += cost;
-}
-
-/**
- * The authoritative cost, shared by the server, AI simulations and previews.
- * A unit with its own move cost (the camel) pays that for a move instead.
- */
-export function turnInputCost(state: FightState, input: TurnInput, unit?: Unit): number {
-  const hexes = input.move?.length ?? 0;
-  const moveCost = unit && HEROES[unit.hero].moveCost;
-  if (moveCost !== undefined && movementRules(state).separateMovement && hexes > 0) return moveCost;
-  const base =
-    movementRules(state).separateMovement && hexes > 0
-      ? movementRules(state).moveActionCost
-      : ABILITIES[input.action.ability].cost;
-  return turnCost(base, hexes);
-}
-
-/**
- * A turn's cost charges the ultimate (10.10) unless it only Holds:
- * otherwise waiting would charge it as fast as acting (owner, 2026-10-19).
- */
-export function countsTowardUltimate(input: TurnInput): boolean {
-  return input.action.ability !== 'hold' || (input.move?.length ?? 0) > 0;
+  if (unit.alive) placeCard(state, unit, aimSlot(state, unit));
 }
 
 /** A deep copy for previews and the AI; drops the log unless asked, and the events always. */
@@ -407,7 +276,6 @@ export function cloneFight(state: FightState, keepLog = false): FightState {
       ...u,
       hex: u.hex ? {...u.hex} : null,
       statuses: u.statuses.map((s) => ({...s})),
-      charging: u.charging ? {...u.charging, target: {...u.charging.target}} : null,
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
     log: keepLog ? state.log.map((l) => ({...l})) : [],

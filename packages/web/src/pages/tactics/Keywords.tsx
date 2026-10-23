@@ -87,22 +87,12 @@ export function GlossaryBox({className}: {className?: string}) {
   return <>{useContext(GlossaryContext)?.box(className)}</>;
 }
 
-/** How a keyword reads: harmful statuses warm, the hex's own effect grey, the rest neutral. */
+/** How a keyword reads: harmful statuses and effects warm, the rest neutral. */
 const TONE: Partial<Record<KeywordId, string>> = {
   immobilized: 'var(--c-gold)',
-  slowed: 'var(--c-gold)',
-  vulnerable: 'var(--c-gold)',
-  taunted: 'var(--c-gold)',
-  crushed: 'var(--c-gold)',
-  flanked: 'var(--c-gold)',
-  obscured: 'var(--c-dusk4)',
-  cleanse: 'var(--c-jade)',
-  barrier: 'var(--c-jade)',
-  push: 'var(--c-gold)',
-  pinned: 'var(--c-gold)',
+  stunned: 'var(--c-gold)',
+  move: 'var(--c-gold)',
   melee: 'var(--c-madderLight)',
-  ultimate: 'var(--c-plumLight)',
-  charged: 'var(--c-plumLight)',
 };
 
 /**
@@ -134,14 +124,9 @@ export function Term(props: {id: KeywordId; children: React.ReactNode}) {
 
 /**
  * An ability's name, tappable inside a Glossary to explain it there
- * (`body`); its label is what the list shows (name, cost, charge).
+ * (`body`); its label is what the list shows (its icon and name).
  */
-export function AbilityName(props: {
-  id: string;
-  body: React.ReactNode;
-  ultimate?: boolean;
-  children: React.ReactNode;
-}) {
+export function AbilityName(props: {id: string; body: React.ReactNode; children: React.ReactNode}) {
   const glossary = useContext(GlossaryContext);
   if (!glossary) return <>{props.children}</>;
   glossary.bodies.set(props.id, props.body);
@@ -149,7 +134,7 @@ export function AbilityName(props: {
   return (
     <button
       type="button"
-      className={`${styles.abilityLink} ${props.ultimate ? styles.abilityLinkUltimate : ''}`}
+      className={styles.abilityLink}
       data-ability={props.id}
       aria-pressed={pressed}
       onClick={() => glossary.showAbility(props.id)}
@@ -159,20 +144,12 @@ export function AbilityName(props: {
   );
 }
 
-/** The keywords as written in the rules' text, with any number that belongs to them (Slowed 2, Vulnerable 10%). */
+/** The keywords as written in the rules' text. */
 const WORDS: [RegExp, KeywordId][] = [
   [/Melee/, 'melee'],
   [/Immobilized/, 'immobilized'],
-  [/Slowed(?: \d+)?/, 'slowed'],
-  [/Vulnerable(?: \d+%)?/, 'vulnerable'],
-  [/Taunted/, 'taunted'],
-  [/Crushed/, 'crushed'],
-  [/Flanked/, 'flanked'],
-  [/Obscured/, 'obscured'],
-  [/[Cc]leanse[sd]?/, 'cleanse'],
-  [/Barrier(?: \d+)?/, 'barrier'],
-  [/Push(?:ed)?(?: \d+)?/, 'push'],
-  [/Pinned/, 'pinned'],
+  [/Stunned/, 'stunned'],
+  [/\bMove(?:d)?\b/, 'move'],
 ];
 const ANY = new RegExp(WORDS.map(([re]) => `(${re.source})`).join('|'), 'g');
 

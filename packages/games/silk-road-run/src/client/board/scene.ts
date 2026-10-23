@@ -23,20 +23,18 @@ export interface BoardScene {
   range?: Hex[];
   /**
    * The bow's lanes from its user: an arrow along each to a unit it may
-   * target, a faint dashed line along the rest to where the arrow stops;
-   * `storm`, the sandstorm hex that stops a lane short of an enemy, marked.
+   * target, a faint dashed line along the rest to where the arrow stops.
    */
   lanes?: {from: Hex; lanes: BowLane[]};
-  /** A throw being aimed: an arc from the unit thrown, around the thrower, to where it lands. */
-  arc?: {from: Hex; around: Hex; to: Hex};
   /**
-   * A step the aimed ability takes first (Lunge's bound): a move's arrow, drawn over
-   * the units, since the stepping unit's ghost would hide it under them.
+   * A one-space move the aimed ability makes (Grapple's step in, the unit
+   * Throw moves): a move's arrow, drawn over the units, since the moving
+   * unit's ghost would hide it under them.
    */
   step?: [Hex, Hex];
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
-  /** The slot the planned turn's cost aims at; when it's taken, the card yields on to `previewSlot`. */
+  /** The slot the planned turn aims at (3.2); when it's taken, the card yields on to `previewSlot`. */
   aimSlot?: number | null;
   /**
    * The arrow over the unit you're controlling (on unless false). Phones
@@ -50,5 +48,4 @@ export interface BoardScene {
 export interface BowLane {
   hexes: Hex[];
   target: boolean;
-  storm?: Hex;
 }

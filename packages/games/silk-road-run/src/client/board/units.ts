@@ -5,7 +5,7 @@
 import {assetLoader} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {HEROES} from '../../rules/config';
-import {isFlanked, statusValue, unitAt} from '../../rules/board';
+import {unitAt} from '../../rules/board';
 import type {FightState, StatusKind, Unit} from '../../rules/types';
 import {PALETTE, paletteAlpha, pixelFont} from '../palette';
 import {
@@ -25,8 +25,6 @@ import camelPortrait from '../sprites/camel-portrait.png';
 import camelSprite from '../sprites/camel.png';
 import mangudaiSprite from '../sprites/mangudai.png';
 import mangudaiPortrait from '../sprites/mangudai-portrait.png';
-import modaoPortrait from '../sprites/modao-portrait.png';
-import modaoSprite from '../sprites/modao.png';
 import stormPortrait from '../sprites/storm-portrait.png';
 import stormSprite from '../sprites/storm.png';
 import wolfPortrait from '../sprites/wolf-portrait.png';
@@ -49,7 +47,6 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
   storm: stormSprite,
-  modao: modaoSprite,
   camel: camelSprite,
   wolf: wolfSprite,
 };
@@ -58,7 +55,6 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   bokh: {src: bokhPortrait, faceX: 17},
   mangudai: {src: mangudaiPortrait, faceX: 18},
   storm: {src: stormPortrait, faceX: 19},
-  modao: {src: modaoPortrait, faceX: 18},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
 };
@@ -118,7 +114,7 @@ export function hexOverlaySpan(
 ): {x: number; top: number; bottom: number} {
   const c = center(h);
   const unit = unitAt(fight, h);
-  const stack = unit && healthStack(h, statusMarks(fight, unit).length);
+  const stack = unit && healthStack(h, statusMarks(unit).length);
   const hexTop = c.y - 36 * HEX_SCALE;
   const hexBottom = c.y + 36 * HEX_SCALE;
   return {
@@ -274,25 +270,15 @@ export function drawTurnArrow(
 /** Each status's marker: its letter and colour, in the order a row shows them. */
 export const STATUS_MARK: Record<StatusKind, [string, string]> = {
   immobilized: ['I', PALETTE.sky],
-  slowed: ['S', PALETTE.plumLight],
-  vulnerable: ['V', PALETTE.gold],
-  crushed: ['C', PALETTE.madder],
-  taunted: ['T', PALETTE.goldLight],
-  barrier: ['B', PALETTE.ivory],
-  pinned: ['P', PALETTE.madderLight],
+  stunned: ['S', PALETTE.goldLight],
 };
 export const STATUS_KINDS = Object.keys(STATUS_MARK) as StatusKind[];
 
-/** A unit's status markers: I(mmobilized), S(lowed), V(ulnerable), C(rushed), T(aunted), B(arrier), P(inned), F(lanked). */
-export function statusMarks(fight: FightState, u: Unit): [string, string][] {
-  const marks: [string, string][] = [];
-  for (const kind of STATUS_KINDS) {
-    const on =
-      kind === 'taunted' ? u.statuses.some((s) => s.kind === kind) : statusValue(u, kind) > 0;
-    if (on) marks.push(STATUS_MARK[kind]);
-  }
-  if (isFlanked(fight, u)) marks.push(['F', PALETTE.madderLight]);
-  return marks;
+/** A unit's status markers: I(mmobilized), S(tunned). */
+export function statusMarks(u: Unit): [string, string][] {
+  return STATUS_KINDS.filter((kind) => u.statuses.some((s) => s.kind === kind)).map(
+    (kind) => STATUS_MARK[kind]
+  );
 }
 
 /** A looked-at unit's status markers, in a centred row at `y` (see `healthStack`). */

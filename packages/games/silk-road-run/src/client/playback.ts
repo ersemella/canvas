@@ -24,23 +24,12 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
       // The last event is the player's own turn coming up: nothing to watch.
       return last ? 0 : 0.4;
     case 'step':
-      if (e.how === 'walk') return WALK_SECONDS;
-      if (e.how === 'push') return 0.14;
       if (e.how === 'throw') return 0.32;
-      if (e.how === 'leap') return 0.3;
-      return Math.max(0.18, 0.08 * hexDistance(e.from, e.to));
+      return Math.max(WALK_SECONDS, 0.08 * hexDistance(e.from, e.to));
     case 'action':
-      if (e.ability === 'hold') return 0;
-      // The arrow rain, the frost and the sunbeam take longer to read.
-      if (e.ability === 'volley' || e.ability === 'freeze') return 1;
-      if (e.ability === 'sunlight') return 0.85;
-      return 0.5;
-    case 'charge':
-      return 0.6;
+      return e.ability === 'hold' ? 0 : 0.5;
     case 'damage':
       return 0.45;
-    case 'heal':
-      return 0.4;
     case 'death':
       return 0.5;
     case 'skip':
@@ -50,10 +39,9 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
 
 /**
  * The fight to draw once an event has happened: the fight before the turn,
- * with each unit's position, health, card and charge, the hail and
- * the slot from the event's snapshot. The unit whose turn it is shows as
- * acting. Statuses stay as they were until the playback ends, except
- * that each goes once the slot passes its last one.
+ * with each unit's position, health and card, the hail and the slot from
+ * the event's snapshot. The unit whose turn it is shows as acting.
+ * Statuses stay as they were until the playback ends.
  */
 export function displayFight(base: FightState, e: RecordedEvent, actor: string | null): FightState {
   const after = e.after;
@@ -63,12 +51,7 @@ export function displayFight(base: FightState, e: RecordedEvent, actor: string |
     currentSlot: after.currentSlot,
     effects: after.effects,
     awaiting: actor,
-    units: base.units.map((u) => {
-      const s = after.units.find((v) => v.id === u.id);
-      // Statuses that ended before the slot shown go, as the rules expire them.
-      const statuses = u.statuses.filter((st) => st.untilSlot >= after.currentSlot);
-      return {...u, ...s, statuses};
-    }),
+    units: base.units.map((u) => ({...u, ...after.units.find((v) => v.id === u.id)})),
   };
 }
 
@@ -119,8 +102,7 @@ export class Playback {
     this.index = index;
     const e = this.events[index];
     if (!e) return;
-    if (e.kind === 'turn' || e.kind === 'action' || e.kind === 'charge' || e.kind === 'skip')
-      this.actor = e.unitId;
+    if (e.kind === 'turn' || e.kind === 'action' || e.kind === 'skip') this.actor = e.unitId;
     this.display = displayFight(this.base, e, this.actor);
   }
 }

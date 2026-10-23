@@ -5,19 +5,17 @@
  * × 9 rows since 2026-10-20 (owner; it was 9 × 7, then briefly 7 × 7 and
  * 8 × 8, the last row added at the bottom). It is an
  * exact left-right mirror: column c and 7 − c on even rows, c and 6 − c
- * on odd rows (whose column 3 is the centre hex). Every feature is
- * mirrored, the quicksand included.
+ * on odd rows (whose column 3 is the centre hex).
  *
- * Each fight scatters its own ruins and quicksand, not mirrored (owner,
- * 2026-10-20; see `randomTiles`); the sandstorm stays where it is. While
- * the game is pared back for balancing (owner, 2026-10-22) a fight has
- * ruins only. The fixed layout below is the map's own, which tests place
- * units around.
+ * Each fight scatters its own ruins, not mirrored (owner, 2026-10-20; see
+ * `randomTiles`). The fixed layout below is the map's own, which tests
+ * place units around. Quicksand and the sandstorm were removed with their
+ * keywords (owner, 2026-10-23).
  */
 import {hexKey, offsetToHex} from '@canvas/engine/server';
 import type {Hex, OffsetCoord} from '@canvas/engine/server';
 
-export type Tile = 'sand' | 'obstacle' | 'hazard' | 'conceal';
+export type Tile = 'sand' | 'obstacle';
 
 export interface MapData {
   id: string;
@@ -45,13 +43,6 @@ const special: [OffsetCoord, Tile][] = [
   [{col: 5, row: 2}, 'obstacle'],
   [{col: 1, row: 5}, 'obstacle'],
   [{col: 5, row: 5}, 'obstacle'],
-  // Quicksand, either side of the centre hex.
-  [{col: 2, row: 3}, 'hazard'],
-  [{col: 4, row: 3}, 'hazard'],
-  // Sandstorm, between the ruins.
-  [{col: 3, row: 2}, 'conceal'],
-  [{col: 4, row: 2}, 'conceal'],
-  [{col: 3, row: 5}, 'conceal'],
 ];
 
 function boardHexes(): Hex[] {
@@ -94,39 +85,22 @@ const RUIN_ROWS = [
   [5, 6, 7, 8],
 ];
 const RUINS_PER_ROWS = 3;
-/**
- * Quicksand hexes per fight: none while the game is pared back for
- * balancing (owner, 2026-10-22; was 2).
- */
-const QUICKSAND = 0;
-/** Whether a fight keeps the fixed sandstorm: not while the game is pared back (owner, 2026-10-22). */
-const SANDSTORM = false;
 
 /**
- * A fight's own ruins and quicksand, from `random` in [0, 1): as many as
- * the fixed layout has, anywhere (not mirrored, owner 2026-10-20) but two
- * columns clear of each side's edge (the starting columns and the hexes in
- * front of them), off the sandstorm and off each other. The sandstorm
- * keeps its place.
+ * A fight's own ruins, from `random` in [0, 1): anywhere (not mirrored,
+ * owner 2026-10-20) but two columns clear of each side's edge (the
+ * starting columns and the hexes in front of them), off each other.
  */
 export function randomTiles(random: () => number): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
-  if (SANDSTORM)
-    for (const [c, t] of special) if (t === 'conceal') tiles[hexKey(offsetToHex(c))] = t;
   const candidates: OffsetCoord[] = [];
   for (let row = 0; row < ROWS; row++)
     for (const col of columnsOf(row).slice(2, -2)) candidates.push({col, row});
-  const place = (pool: OffsetCoord[], tile: Tile) => {
-    const free = pool.filter((c) => !tiles[hexKey(offsetToHex(c))]);
-    tiles[hexKey(offsetToHex(free[Math.floor(random() * free.length)]!))] = tile;
-  };
   for (const rows of RUIN_ROWS)
-    for (let i = 0; i < RUINS_PER_ROWS; i++)
-      place(
-        candidates.filter((c) => rows.includes(c.row)),
-        'obstacle'
-      );
-  for (let i = 0; i < QUICKSAND; i++) place(candidates, 'hazard');
+    for (let i = 0; i < RUINS_PER_ROWS; i++) {
+      const free = candidates.filter((c) => rows.includes(c.row) && !tiles[hexKey(offsetToHex(c))]);
+      tiles[hexKey(offsetToHex(free[Math.floor(random() * free.length)]!))] = 'obstacle';
+    }
   return tiles;
 }
 

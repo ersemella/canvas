@@ -5,7 +5,6 @@ import {
   BOARD_LAYOUT,
   HEROES,
   HERO_PORTRAIT,
-  RULES,
   SCENE_SIZE,
   abilitiesOf,
   unusableReason,
@@ -35,23 +34,20 @@ export function choiceRows(unit: Unit): number {
 
 /**
  * The turn's choices, the same on phones and desktop: Move and the
- * abilities as big buttons (the name, then the cost in slots), in rows of
+ * abilities as big buttons (the name, then when the next turn comes), in rows of
  * two, or three for a hero with more to choose from; then Skip turn,
  * filling its row beside the run's menu. The picked one asks for its hex
  * or target, then, once it's picked, becomes its Confirm: players tap the
  * button they picked again to go (owner, 2026-10-21).
  */
 export function TurnControls(props: {
-  /** What an ability of this cost takes in slots, before yielding. */
-  slotsLater: (actionCost: number) => number;
-  /** The move action's cost in slots (a range until a hex is picked), shown in the Move button. */
-  moveSlots: string | null;
+  /** Slots until the unit's next turn, whatever it does, before yielding (3.2). */
+  slotsLater: number | null;
   /**
    * Abilities with nothing to target, and why: disabled (unless already
-   * chosen, so they can be put down). A `note` (Taunted, Obscured) shows
-   * on the button in place of its cost.
+   * chosen, so they can be put down).
    */
-  outOfReach: Map<AbilityId, {why: string; note?: string}>;
+  outOfReach: Map<AbilityId, {why: string}>;
   unit: Unit;
   ability: AbilityId | null;
   plannedMove: Reach | null;
@@ -109,18 +105,14 @@ export function TurnControls(props: {
       <span className={styles.bigButtonCost}>{props.needsTarget}</span>
     </span>
   );
-  // A locked ultimate's charge goes on the cost's line, so a narrow tile
-  // (three to a row) keeps its name on one line.
-  const label = (name: string, cost: string, icon: React.ReactNode, note?: string) => (
+  const next = props.slotsLater !== null ? `+${props.slotsLater}` : '';
+  const label = (name: string, icon: React.ReactNode) => (
     <span className={styles.bigButton}>
       <span className={styles.tileName}>
         {icon}
         {name}
       </span>
-      <span className={styles.bigButtonCost}>
-        {note && `${note} · `}
-        {cost}
-      </span>
+      <span className={styles.bigButtonCost}>{next}</span>
     </span>
   );
   return (
@@ -160,24 +152,18 @@ export function TurnControls(props: {
             ? confirmLabel
             : moving && !plannedMove
               ? asking('Move', <AbilityIcon id="move" />)
-              : label(
-                  'Move',
-                  props.moveSlots !== null ? `+${props.moveSlots}` : '',
-                  <AbilityIcon id="move" />
-                )}
+              : label('Move', <AbilityIcon id="move" />)}
         </Button>
         {defs.map((def, i) => {
           const blocked = ability !== def.id ? props.outOfReach.get(def.id) : undefined;
           const reason = unusableReason(unit, def) ?? blocked?.why ?? null;
-          const lockedUlt =
-            def.ultimate && !unit.ultimateUsed && unit.ultimateCharge < RULES.ultimateCharge;
           const picked = ability === def.id;
           const ready = picked && confirm !== null;
           return (
             <Button
               key={def.id}
               size="lg"
-              className={`${styles.tile} ${def.ultimate ? styles.tileUltimate : ''} ${ready ? styles.tileConfirm : ''}`}
+              className={`${styles.tile} ${ready ? styles.tileConfirm : ''}`}
               disabled={reason !== null || props.waiting || Boolean(ready && confirm?.blocked)}
               data-choice={def.id}
               data-key={props.keys ? i + 2 : undefined}
@@ -193,19 +179,12 @@ export function TurnControls(props: {
               }
               onClick={ready ? props.onConfirm : () => props.onAbility(picked ? null : def.id)}
             >
-              {/* Its own cost in slots; once picked and aimed, Confirm, with any yielding. */}
+              {/* When the next turn comes; once picked and aimed, Confirm, with any yielding. */}
               {ready && confirmLabel
                 ? confirmLabel
                 : picked
                   ? asking(def.name, abilityIcon(def))
-                  : blocked?.note && !unusableReason(unit, def)
-                    ? label(def.name, blocked.note, abilityIcon(def))
-                    : label(
-                        def.name,
-                        `+${props.slotsLater(def.cost)}`,
-                        abilityIcon(def),
-                        lockedUlt ? `${unit.ultimateCharge}/${RULES.ultimateCharge}` : undefined
-                      )}
+                  : label(def.name, abilityIcon(def))}
             </Button>
           );
         })}

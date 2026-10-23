@@ -61,38 +61,26 @@ export type {
   TacticsHoverPayload,
   TacticsTapPayload,
 } from './client/TacticsInputSystem';
-export {
-  ABILITIES,
-  PASSIVES,
-  abilitiesOf,
-  advanceLandings,
-  arrowLanes,
-  reapCone,
-  unusableReason,
-} from './rules/abilities';
-export type {AbilityDef, AbilityKind, ArrowLane, PassiveDef} from './rules/abilities';
+export {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './rules/abilities';
+export type {AbilityDef, AbilityKind, ArrowLane} from './rules/abilities';
 export {CAMEL_RULE, EXIT_INFO, KEYWORD_INFO, TILE_INFO, hailInfo} from './rules/info';
 export type {HexInfo, KeywordId} from './rules/info';
-export {ABILITY, HEROES, PARTY, ROSTER, RULES} from './rules/config';
+export {ABILITY, HEROES, PARTY, ROSTER, RULES, healthOf} from './rules/config';
 export {
-  isFlanked,
-  isPinned,
+  isImmobilized,
+  isStunned,
   movementCap,
-  obscured,
   plainSand,
   reachableHexes,
-  statusSlotsLeft,
-  statusValue,
   unitAt,
 } from './rules/board';
 export type {Reach} from './rules/board';
 export {actingUnit, cloneFight, mapOf} from './rules/fight';
 export {atExit, camelOf, enterHex, unitName} from './rules/resolve';
-export {slotsForward, turnCost} from './rules/track';
+export {aimSlot} from './rules/track';
 export {previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
-export {allowedTargets, tauntBinds, taunterOf} from './rules/taunt';
-export {offeredTargets, onlyHold} from './rules/choices';
+export {allowedTargets, offeredTargets, onlyHold} from './rules/choices';
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
 export {SALT_FLATS, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';

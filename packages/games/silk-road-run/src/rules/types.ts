@@ -8,55 +8,24 @@ import type {Tile} from './map';
 
 export type Side = 'player' | 'enemy';
 /**
- * The three prototype heroes, the Modao Vanguard, the caravan's camel (camel.md), a unit that isn't a hero, and
- * the wolf, an enemy NPC.
+ * The three prototype heroes, the caravan's camel (camel.md), a unit that
+ * isn't a hero, and the wolf, an enemy NPC.
  */
-export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'modao' | 'camel' | 'wolf';
-export type AbilityId =
-  | 'hold'
-  | 'bow'
-  | 'leap'
-  | 'volley'
-  | 'sunlight'
-  | 'hail'
-  | 'freeze'
-  | 'throw'
-  | 'grapple'
-  | 'lunge'
-  | 'challenge'
-  | 'reap'
-  | 'advance'
-  | 'shove'
-  | 'bite';
+export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
+export type AbilityId = 'hold' | 'bow' | 'hail' | 'grapple' | 'throw' | 'bite';
 
-/** An always-on trait rather than an action: the Modao Vanguard's Hold the Line, the Bökh Champion's Inevitable. */
-export type PassiveId = 'holdTheLine' | 'inevitable';
-
-export type StatusKind =
-  | 'immobilized'
-  | 'slowed'
-  | 'vulnerable'
-  | 'crushed'
-  | 'taunted'
-  | 'barrier'
-  | 'pinned';
+/** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
+export type StatusKind = 'immobilized' | 'stunned';
 
 /**
- * A status from an ability. Active through `untilSlot` inclusive, so one
- * that ends on the unit's own slot still covers that turn (3.9). Every
- * Phase 1 status combines by max (brief section 2).
+ * A status from an ability. None has a duration in slots: each lasts as
+ * long as what gave it (owner, 2026-10-23), named here, and ends with it.
  */
 export interface Status {
   kind: StatusKind;
-  /**
-   * Slowed: hexes; Vulnerable: percent; Crushed: damage per slot; Barrier:
-   * what it has left to absorb; Immobilized, Taunted, Pinned: unused (0).
-   */
-  value: number;
-  untilSlot: number;
-  /** Taunted: the taunter's unit id. */
-  source?: string;
-  /** From a Grapple, on both units: who grappled whom, so breaking the grapple clears them all. */
+  /** From a Storm Caller's hail (its unit id): ends when that hail disappears, at the caster's next turn. */
+  hail?: string;
+  /** From a Grapple: ends when the grapple does (`breakGrapples` in resolve.ts). */
   grapple?: {champion: string; target: string};
 }
 
@@ -79,19 +48,6 @@ export interface Unit {
   slot: number | null;
   statuses: Status[];
   /**
-   * Action cost spent this fight toward the ultimate (10.10), against
-   * RULES.ultimateCharge: every turn's cost but a Hold without a move.
-   */
-  ultimateCharge: number;
-  ultimateUsed: boolean;
-  /**
-   * Slots its card has been pushed since its last turn, against
-   * RULES.pushLimit (3.6); reset when its card is reached.
-   */
-  pushed?: number;
-  /** A charged ability waiting for this unit's card (3.7). */
-  charging: {ability: AbilityId; target: Hex} | null;
-  /**
    * Its last turn was skipped (it could only Hold): its card shows it until
    * it next acts.
    */
@@ -99,15 +55,15 @@ export interface Unit {
   alive: boolean;
 }
 
-/** A temporary board effect: one hex of the Storm Caller's hail. */
+/**
+ * A temporary board effect: the space a Storm Caller's hail covers. It
+ * disappears when its caster's next turn starts, or when the caster falls.
+ */
 export interface HailEffect {
   kind: 'hail';
   hex: Hex;
-  untilSlot: number;
-  /** Push for a unit that starts its turn here, applied once its turn has placed its card. */
-  push: number;
-  /** Damage, before defence, to a unit that starts its turn here (the caster's power counted). */
-  damage?: number;
+  /** The caster's unit id. */
+  source: string;
 }
 
 export interface LogEntry {
@@ -115,20 +71,15 @@ export interface LogEntry {
   text: string;
 }
 
-/**
- * How a unit came to enter a hex: walked, pushed by a hit, thrown, or
- * leaping (Leap over one hex, Lunge's bound).
- */
-export type Motion = 'walk' | 'push' | 'throw' | 'leap';
+/** How a unit came to enter a hex: walked (a Grapple's step in included) or thrown. */
+export type Motion = 'walk' | 'throw';
 
 /** Something that happened on the board, in the order the rules resolved it. */
 export type FightEvent =
   | {kind: 'turn'; unitId: string}
   | {kind: 'step'; unitId: string; from: Hex; to: Hex; how: Motion}
-  | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex; charged?: boolean}
-  | {kind: 'charge'; unitId: string; ability: AbilityId; target: Hex}
+  | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex}
   | {kind: 'damage'; unitId: string; amount: number}
-  | {kind: 'heal'; unitId: string; amount: number}
   | {kind: 'death'; unitId: string; hex: Hex}
   /** Its turn came up with nothing to do but Hold, so the track went on without it. */
   | {kind: 'skip'; unitId: string};
@@ -136,7 +87,7 @@ export type FightEvent =
 /** What the board looks like right after an event: enough to draw it, not to play on. */
 export interface BoardSnapshot {
   currentSlot: number;
-  units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'charging' | 'skipped'>[];
+  units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped'>[];
   effects: HailEffect[];
 }
 
@@ -145,14 +96,8 @@ export type RecordedEvent = FightEvent & {after: BoardSnapshot};
 export type FightPhase = 'fight' | 'won' | 'lost';
 
 export interface FightState {
-  /** Optional headless balance experiment; absent in normal games. */
-  experiment?: {
-    blockAllUnits: boolean;
-    separateMovement: boolean;
-    moveActionCost: number;
-  };
   mapId: string;
-  /** This fight's tiles by hex key (ruins and quicksand are random per fight). */
+  /** This fight's tiles by hex key (its ruins are random per fight). */
   tiles: Record<string, Tile>;
   mode: 'solo';
   phase: FightPhase;
@@ -184,8 +129,7 @@ export interface TurnAction {
 
 /**
  * One turn: either an ability without walking, or a nonempty walking path
- * encoded with action Hold. Move-only turns cost 20 + 10 per hex, not Hold's
- * cost.
+ * encoded with action Hold. Either way the card is placed the same (3.2).
  */
 export interface TurnInput {
   move?: Hex[];
