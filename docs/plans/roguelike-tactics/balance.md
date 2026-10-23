@@ -570,6 +570,76 @@ other side's turns, so a one-sided ban can't ablate it.
   worth is in that deterrence, which playtesting has to judge.
 - **The Vanguard still walks on over half its turns** at speed 10.
 
+## The pared-back rules (2026-10-23)
+
+Measured on the rules pared back for balancing (README, owner
+2026-10-22): kits Bow; Hail (base 40 and Push 5 landing, 20 slots, base
+20 to a unit starting its turn in it); Grapple (reach 2 with a step in,
+base 60, pinned while adjacent) and Throw (beside the Champion), with
+Inevitable; moves of at most 3; six ruins, no quicksand or sandstorm;
+Temee walking itself to the one exit. Production AI on both sides,
+`scripts/balance/ablate.mjs` and `mirror.mjs`, seeds from 1000; results in
+`work/pared-*.json` (not committed). No fight went unfinished at 400
+actions where a camel was present.
+
+**What each ability is worth** (`experiments/pared.mjs`, 800 fights each,
+the three heroes and a camel on each side; the share of finished fights
+the side without it wins):
+
+| Removed | Side without it wins | Note |
+|---|---:|---|
+| (nothing) | 50% | median 55 actions |
+| Bow | 3.4% | |
+| Hail | 1.9% | the most damage and kills of any ability |
+| Grapple | 22.6% | |
+| Throw | 36.6% | |
+
+Per fight (control): Hail 1,094 damage and 2.1 kills, Bow 746 (and 184
+to its own side) and 1.0, Grapple 306 and 0.5, Throw 269 and 0.5. Hail's
+damage is counted against the enemy whoever it hits, so its friendly
+fire is hidden. Each hero spends 52–58% of its turns moving; the Storm
+Caller casts Hail on 48% of its turns, the Champion grapples on 28% and
+throws on 13%. Survival: Storm Caller 47%, Champion 29%, Outrider 20%.
+
+**Stage enemies against the full party** (`experiments/caravans.mjs`, 400
+fights each; lower is a stronger enemy):
+
+| Enemy | Player wins | Median actions |
+|---|---:|---:|
+| Champion and two wolves | 100% | 40 |
+| Outrider and two wolves | 99.8% | 40 |
+| Storm Caller and two wolves | 98.3% | 44 |
+| Champion, Outrider, wolf | 97.3% | 44 |
+| Outrider, Storm Caller, wolf | 87.3% | 47 |
+| Champion, Storm Caller, wolf | 86.5% | 54 |
+| Two Storm Callers, wolf | 71.3% | 59 |
+| All three heroes | 63.8% | 55 |
+
+Fights end almost always by combat: in the all-three stage the player won
+231 by beating the enemy and 24 by Temee reaching the exit, lost 140 by
+the party falling and only 5 by Temee dying (98.8% of camels survive).
+Fights last a median of 102 slots, short of the ~180 Temee needs.
+
+**Stats** (`experiments/stats.mjs`, 400 fights each; the side with the
+extra wins):
+
+| +10 / +60 health | Speed | Defence | Power | Health |
+|---|---:|---:|---:|---:|
+| Bökh Champion | 60.8% | 58.0% | 56.8% | 56.0% |
+| Mangudai Outrider | 49.3% | 61.5% | 58.3% | 61.0% |
+| Yadachy Storm Caller | 66.3% | 65.5% | 60.0% | 57.0% |
+
+**Mirror matches** (no camel, 500 pairs): player side 50.7% (47.3–54.0),
+first mover 51.4%: no side bias. 16.5% unfinished at 400 actions, with
+nothing to end a stall.
+
+**Reading.** Hail carries the game: with no damage of their own outside
+it, the side losing it almost never wins, and two Storm Callers are the
+strongest pair. Throw adds least. The Outrider gains nothing from +10
+speed (its track steps don't change at that step) but dies first. Temee
+is rarely attacked and rarely decides a fight, so the race to the exit
+does little at these lengths.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
