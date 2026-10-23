@@ -7,6 +7,10 @@ sprite's size, which the board plays as an animation.
   python3 scripts/idle-sheet.py sprite.png sheet.png --split 18
 
 `--split` is the first row that stays put (the waist, or a rider's saddle).
+On a beast whose head hangs as low as its legs' tops (the wolf), or to make
+the legs bend, put it in the legs instead, where they run straight down
+(the knees): the body and head sink as one and the legs shorten a row. A
+split through the head flattens the face.
 Run it on a single frame: a sheet's first frame is the original sprite, so
 `--from-sheet` takes that frame back out of an existing sheet first. Needs
 Pillow.
