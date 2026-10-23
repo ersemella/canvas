@@ -673,6 +673,33 @@ Temee reaching the exit wins over a quarter of stage-3 fights instead of
 6%, at the cost of a few fights going unfinished. Landing damage 30 is
 untried.
 
+### How much Push decides (2026-10-23)
+
+Hail is the only source of Push in the pared-back kits. With Hail's
+landing damage at 20, the full party played each stage's enemy
+(`stageEnemies`) on 150 seeds a stage, 450 fights per variant, production
+AI on both sides: as built, with Push off for both sides, and with it off
+for one side only (that side's Hail still lands and lingers, but its
+cards don't move; each side's search plays by its own rule). A one-off
+script, not committed.
+
+| Player wins | Stage 1 | Stage 2 | Stage 3 | All |
+|---|---:|---:|---:|---:|
+| As built | 100% | 96.7% | 77.0% | 91.3% |
+| No Push for anyone | 95.3% | 90.7% | 74.7% | 86.9% |
+| Player without Push | 94.7% | 82.0% | 43.0% | 73.3% |
+| Enemy without Push | 100% | 98.7% | 95.3% | 98.0% |
+
+- Push happens in every fight: 9.4 cards pushed a fight, 49 slots in
+  all (about 5 each), more as stages grow (6.6, 9.6, 12.0 cards).
+- Turning it off for everyone changes the result of 16% of fights (73 of
+  450; 7, 17 and 49 by stage). That counts fights that only diverge by
+  chance, so it is an upper bound on Push deciding them.
+- Its value is clearest one-sided: in stage 3, a party without Push
+  against an enemy with it wins 43% instead of 77% (34 points), and an
+  enemy without it loses 95% instead of 77% (18 points). In stages 1 and
+  2 it is worth 5–15 points to the player.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
