@@ -7,6 +7,7 @@ import {
   HERO_PORTRAIT,
   SCENE_SIZE,
   abilitiesOf,
+  chargeOf,
   unusableReason,
 } from '@canvas/games-silk-road-run';
 import type {AbilityId, Reach, Unit} from '@canvas/games-silk-road-run';
@@ -105,14 +106,15 @@ export function TurnControls(props: {
       <span className={styles.bigButtonCost}>{props.needsTarget}</span>
     </span>
   );
-  const next = props.slotsLater !== null ? `+${props.slotsLater}` : '';
-  const label = (name: string, icon: React.ReactNode) => (
+  // A charged ability (Volley) puts the next turn off by its charge.
+  const next = (charge = 0) => (props.slotsLater !== null ? `+${props.slotsLater + charge}` : '');
+  const label = (name: string, icon: React.ReactNode, charge = 0) => (
     <span className={styles.bigButton}>
       <span className={styles.tileName}>
         {icon}
         {name}
       </span>
-      <span className={styles.bigButtonCost}>{next}</span>
+      <span className={styles.bigButtonCost}>{next(charge)}</span>
     </span>
   );
   return (
@@ -184,7 +186,7 @@ export function TurnControls(props: {
                 ? confirmLabel
                 : picked
                   ? asking(def.name, abilityIcon(def))
-                  : label(def.name, abilityIcon(def))}
+                  : label(def.name, abilityIcon(def), chargeOf(def.id))}
             </Button>
           );
         })}

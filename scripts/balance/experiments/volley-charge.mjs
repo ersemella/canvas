@@ -1,5 +1,5 @@
-// A charged Volley at range 3 (2026-10-23; charges 1, 2, 4 and 6): delayed (`volley-delayed.mjs`),
-// and the Outrider's card goes `ABILITY.volley.charge` more slots on after
+// A charged Volley at range 3 (2026-10-23; charges 1, 2, 4 and 6; 2 adopted):
+// the Outrider's card goes `ABILITY.volley.charge` more slots on after
 // a volley, so its arrows land later, at its next turn, and it waits for
 // them. Each charge with each ability removed from one side, and the stage
 // caravans that bring an Outrider (player wins).
@@ -17,7 +17,6 @@ export const experiments = Object.fromEntries(
     const patch = (c) => {
       c.ABILITY.volley.range = 3;
       c.ABILITIES.volley.range = 3;
-      c.ABILITY.volley.delayed = true;
       c.ABILITY.volley.charge = charge;
     };
     return [

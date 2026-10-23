@@ -140,11 +140,14 @@ export const ABILITY = {
    */
   hail: {range: 3},
   /**
-   * Arrows from above (owner, 2026-10-23): one space within 2 with a unit
-   * on it, adjacent included, no line of fire needed, as hail falls; the
-   * unit there takes the Outrider's power. Range 2, not the proposed 3
-   * (owner, 2026-10-23; balance.md): at 3 it was the strongest ability in
-   * the game.
+   * Arrows from above (owner, 2026-10-23): aimed at one space within 3 with
+   * a unit on it, adjacent included, no line of fire needed, as hail falls.
+   * Charged (owner, 2026-10-23; balance.md): the Outrider's card goes
+   * `charge` slots on after a volley on top of its action cost, and the
+   * arrows land at the start of that next turn on whoever stands there
+   * then, for the Outrider's power. Charge 2 makes the wait longer than a
+   * speed-2 unit's action cost, so every unit that can walk gets a turn to
+   * step out.
    */
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
@@ -154,21 +157,7 @@ export const ABILITY = {
    * target. Both on since the owner's call the same day (balance.md).
    */
   sunlight: {range: 3, enhance: 2, self: true as boolean, melts: true as boolean},
-  volley: {
-    range: 2,
-    /**
-     * An experiment (2026-10-23), off in play: the arrows land on the space
-     * at the start of the Outrider's next turn, on whoever stands there
-     * then, so the target can step out.
-     */
-    delayed: false as boolean,
-    /**
-     * With `delayed`: slots the Outrider's card goes on after a volley on
-     * top of its action cost, so the arrows land (at its next turn) later
-     * and it waits for them.
-     */
-    charge: 0 as number,
-  },
+  volley: {range: 3, charge: 2},
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
@@ -211,9 +200,8 @@ export const AI = {
   caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0, wolf: 1} as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   /**
-   * A delayed volley (`ABILITY.volley.delayed`) on a unit that acts before
-   * it lands and can walk is worth this share of the hit: it can step out.
-   * PLACEHOLDER.
+   * A volley in the air on a unit that acts before it lands and can walk
+   * is worth this share of the hit: it can step out. PLACEHOLDER.
    */
   volleyDodgeShare: 0.25,
   /**

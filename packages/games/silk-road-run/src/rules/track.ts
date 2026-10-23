@@ -5,8 +5,8 @@
  * (owner, 2026-10-23),
  * the faster card keeping a slot two cards collide on.
  */
-import {HEROES, RULES} from './config';
-import type {FightState, Unit} from './types';
+import {ABILITY, HEROES, RULES} from './config';
+import type {AbilityId, FightState, Unit} from './types';
 
 /** How many slots a unit's card goes on after each of its turns (3.2), at least 1. */
 export function actionCost(unit: Unit): number {
@@ -14,9 +14,22 @@ export function actionCost(unit: Unit): number {
   return Math.max(1, Math.round((actionBase * speedPivot) / (unit.speed + speedPivot)));
 }
 
-/** Where a turn ending at slot `now` aims `unit`'s card, before yielding (3.2). */
-export function aimSlot(state: FightState, unit: Unit, now = state.currentSlot): number {
-  return now + actionCost(unit);
+/** Slots an ability's charge adds to its user's card on top of its action cost: Volley's. */
+export function chargeOf(ability: AbilityId): number {
+  return ability === 'volley' ? ABILITY.volley.charge : 0;
+}
+
+/**
+ * Where a turn ending at slot `now` aims `unit`'s card, before yielding
+ * (3.2): its action cost on, and the charge of the `ability` it used.
+ */
+export function aimSlot(
+  state: FightState,
+  unit: Unit,
+  now = state.currentSlot,
+  ability?: AbilityId
+): number {
+  return now + actionCost(unit) + (ability ? chargeOf(ability) : 0);
 }
 
 /** The first free slot at or after `slot`. */

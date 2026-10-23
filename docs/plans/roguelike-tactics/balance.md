@@ -1123,6 +1123,48 @@ No fight unfinished (0–0.3%).
 - No charge tuning gives Volley a second ability's worth (40–48%): with a
   charge it needs a bigger payoff for a unit that is caught.
 
+**Adopted (owner, 2026-10-23): charge 2 at range 3.** The switch went with
+it: Volley is always charged (`ABILITY.volley` `{range: 3, charge: 2}`).
+The AI search now counts a fight that ends while the track runs on to the
+next decision (a volley landing, a squeeze) as a turn later than one its
+option ends, so a Bow shot that kills now wins over a sure volley that
+kills at the next turn. Measured as shipped (`volley.mjs`-style ablation
+and the Outrider caravans, 400 fights each), the same as charge 2 above:
+side without Volley 49.5%, without the Bow 21.5%, Hail 13.5%, Grapple
+10.8%, Throw 49.3%; player wins 98.3%, 81.8%, 95%, 79% and 60.8%.
+
+**Remeasured on the new track** (action cost 60 ÷ (speed + 5), rounded,
+merged the same day: the Outrider's is 8, a speed-2 unit's 9, so a volley
+lands 10 slots after it is cast and every unit that walks still gets a
+turn first). 400 fights each, seeds from 1000:
+
+| Side without | Wins |
+|---|---:|
+| Bow | 28.5% |
+| **Volley** | **44%** |
+| Hail | 15.8% |
+| Grapple | 13.8% |
+| Throw | 47.3% |
+| Bow and Volley | 19.3% |
+
+The Outrider's turns: walking 37%, Bow 34%, Volley 26%, Hold 3%; 3.8
+volleys cast a fight, 2.5 hitting, 1 kill. Temee killed in 30 of 400.
+Stage caravans, player wins: Outrider + 2 wolves 100%, Bökh + Outrider +
+wolf 89.8%, Outrider + Storm + wolf 99%, two Outriders + wolf 97%, all
+three 73.8%. On this track Volley is in the 40–48% band for a second
+ability, on the edge of its usage band (8–25%). The stages are easier
+across the board; how much of that is the track and how much is Volley
+wasn't separated.
+
+**With Sunlight in the Storm Caller's kit** (Enhance 2, merged the same
+day), same runs: side without Volley 47.8%, the Bow 25.8%, Hail 33.1%,
+Sunlight **55.3%**, Grapple 11%, Throw 45%, the Bow and Volley 14.3%.
+Volley stays (just) in its band, on 21% of the Outrider's turns (3.5
+casts a fight, 2.5 hitting). Sunlight costs games, as measured before
+it was merged. Temee killed in 56 of 400. Player wins: Outrider + 2
+wolves 99.3%, Bökh + Outrider + wolf 86.3%, Outrider + Storm + wolf
+91.8%, two Outriders + wolf 88.5%, all three 69.3%.
+
 ### Sunlight as Enhance (2026-10-23)
 
 A proposal for the Storm Caller's second ability (open question in

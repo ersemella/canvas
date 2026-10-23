@@ -41,6 +41,7 @@ import type {Point} from './board/pixels';
 import {WALK_OUT_STEP_SECONDS, walkOutPlan, walkPosition} from './board/walkOut';
 import type {Walk} from './board/walkOut';
 import {drawPlaybackEvent, playbackScene, steppingAt} from './board/playbackDraw';
+import {drawVolleyMark} from './board/effects';
 
 /** Seconds a gone status's marker takes to rise off its unit and fade. */
 const MARK_EXPIRE_SECONDS = 0.9;
@@ -381,6 +382,8 @@ export class TacticsBoardSystem extends BaseSystem {
 
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
+    // Arrows in the air over their mark, in front of whoever stands there.
+    for (const v of fight.volleys ?? []) drawVolleyMark(ctx, v.hex);
 
     if (playing) drawPlaybackEvent(ctx, playing);
 

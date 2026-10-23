@@ -124,7 +124,7 @@ describe('the track', () => {
     expect(onlyHold(s, mapOf(s), w)).toBe(false);
   });
 
-  it('Volley reaches an enemy within 2 that no bow lane does, over a unit in the way', () => {
+  it('Volley marks a unit within 3 that no bow lane reaches, over a unit in the way, and lands at the Outrider’s next turn', () => {
     const s = setup({
       'p-mangudai': at(1, 3),
       'p-storm': at(2, 3),
@@ -133,16 +133,46 @@ describe('the track', () => {
     });
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
-    m.statuses.push({kind: 'immobilized'});
     expect(HEROES.mangudai.abilities).toEqual(['bow', 'volley', 'hold']);
     // The ally stands between: the bow's lane stops at it.
     expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.side === 'enemy')).toBe(false);
-    expect(onlyHold(s, mapOf(s), m)).toBe(false);
     const spots = ABILITIES.volley.targets(s, mapOf(s), m, m.hex!);
-    expect(spots.every((t) => hexDistance(t.hex!, m.hex!) <= 2 && unitAt(s, t.hex!))).toBe(true);
+    expect(spots.every((t) => hexDistance(t.hex!, m.hex!) <= 3 && unitAt(s, t.hex!))).toBe(true);
+    expect(spots.some((t) => hexKey(t.hex!) === hexKey(bokh.hex!))).toBe(true);
     expect(spots.some((t) => hexKey(t.hex!) === hexKey(unit(s, 'e-storm').hex!))).toBe(false);
-    applyTurn(s, m, {action: {ability: 'volley', target: {hex: bokh.hex!}}});
+    const input: TurnInput = {action: {ability: 'volley', target: {hex: bokh.hex!}}};
+    // Charged: the card goes its action cost and 2 more slots on, and the preview says so.
+    const landing = actionCost(m) + ABILITY.volley.charge;
+    expect(ABILITY.volley.charge).toBe(2);
+    expect(previewTurn(s, m.id, input)!.aimSlot).toBe(landing);
+    applyTurn(s, m, input);
+    expect(m.slot).toBe(landing);
+    expect(bokh.hp).toBe(bokh.maxHp);
+    expect(s.volleys).toEqual([{hex: at(3, 3), source: 'p-mangudai'}]);
+    s.units.forEach((u) => (u.controller = 'human'));
+    expect(advanceToDecision(s)!.id).toBe('p-mangudai');
     expect(bokh.hp).toBe(bokh.maxHp - m.power);
+    expect(s.volleys).toEqual([]);
+  });
+
+  it('a volley hits whoever stands on its space when it lands, so a unit can step out', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(3, 3), 'e-storm': at(8, 6)});
+    const m = unit(s, 'p-mangudai');
+    const bokh = unit(s, 'e-bokh');
+    applyTurn(s, m, {action: {ability: 'volley', target: {hex: bokh.hex!}}});
+    enterHex({state: s, map: mapOf(s), slot: s.currentSlot}, bokh, at(4, 3));
+    s.units.forEach((u) => (u.controller = 'human'));
+    expect(advanceToDecision(s)!.id).toBe('p-mangudai');
+    expect(bokh.hp).toBe(bokh.maxHp);
+    expect(s.volleys).toEqual([]);
+  });
+
+  it('a volley is lost when its Outrider falls first', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(3, 3), 'e-storm': at(8, 6)});
+    const m = unit(s, 'p-mangudai');
+    applyTurn(s, m, {action: {ability: 'volley', target: {hex: at(3, 3)}}});
+    kill({state: s, map: mapOf(s), slot: 0}, m);
+    expect(s.volleys).toEqual([]);
   });
 
   it('places a card 60 ÷ (speed + 5) slots on, rounded, whatever the turn did (3.2)', () => {

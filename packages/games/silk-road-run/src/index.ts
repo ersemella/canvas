@@ -65,7 +65,7 @@ export type {
 } from './client/TacticsInputSystem';
 export {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './rules/abilities';
 export type {AbilityDef, AbilityKind, ArrowLane} from './rules/abilities';
-export {CAMEL_RULE, EXIT_INFO, KEYWORD_INFO, TILE_INFO, hailInfo} from './rules/info';
+export {CAMEL_RULE, EXIT_INFO, KEYWORD_INFO, TILE_INFO, hailInfo, volleyInfo} from './rules/info';
 export type {HexInfo, KeywordId} from './rules/info';
 export {ABILITY, HEROES, PARTY, ROSTER, RULES, healthOf} from './rules/config';
 export {
@@ -79,7 +79,7 @@ export {
 export type {Reach} from './rules/board';
 export {actingUnit, cloneFight, mapOf} from './rules/fight';
 export {atExit, camelOf, enterHex, unitName} from './rules/resolve';
-export {aimSlot} from './rules/track';
+export {aimSlot, chargeOf} from './rules/track';
 export {previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
 export {allowedTargets, offeredTargets, onlyHold} from './rules/choices';

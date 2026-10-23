@@ -55,7 +55,7 @@ export function previewTurn(
   return {
     changes: diff(state, after),
     slot: unit.slot,
-    aimSlot: unit.alive ? aimSlot(after, unit) : null,
+    aimSlot: unit.alive ? aimSlot(after, unit, after.currentSlot, input.action.ability) : null,
     bumped: bumpedCards(state, after, unitId),
   };
 }

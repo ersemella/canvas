@@ -21,7 +21,7 @@ export function unitAt(state: FightState, h: Hex): Unit | undefined {
 }
 
 /**
- * Plain sand: open ground with nothing on it (no unit, hail or exit). It has
+ * Plain sand: open ground with nothing on it (no unit, hail, volley or exit). It has
  * nothing to explain, so looking at it shows no tooltip or details.
  */
 export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
@@ -29,7 +29,8 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
     tileAt(map, h) === 'sand' &&
     !map.exits.some((e) => hexEquals(e, h)) &&
     !unitAt(state, h) &&
-    !state.effects.some((e) => hexEquals(e.hex, h))
+    !state.effects.some((e) => hexEquals(e.hex, h)) &&
+    !state.volleys?.some((v) => hexEquals(v.hex, h))
   );
 }
 

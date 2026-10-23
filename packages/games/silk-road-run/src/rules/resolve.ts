@@ -49,6 +49,9 @@ function snapshot(state: FightState): BoardSnapshot {
       skipped: u.skipped ?? false,
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
+    ...(state.volleys?.length
+      ? {volleys: state.volleys.map((v) => ({...v, hex: {...v.hex}}))}
+      : {}),
   };
 }
 
@@ -150,7 +153,7 @@ export function clearHail(state: FightState, caster: Unit): void {
 }
 
 /**
- * `user`'s delayed volleys land, its next turn having come: whoever stands
+ * `user`'s volleys land, its next turn having come: whoever stands
  * on each space takes its power.
  */
 export function landVolleys(ctx: Ctx, user: Unit): void {
@@ -159,6 +162,7 @@ export function landVolleys(ctx: Ctx, user: Unit): void {
   ctx.state.volleys = ctx.state.volleys!.filter((v) => v.source !== user.id);
   for (const v of mine) {
     log(ctx, `${unitName(user)}'s volley lands.`);
+    record(ctx.state, {kind: 'land', unitId: user.id, ability: 'volley', target: v.hex});
     const u = unitAt(ctx.state, v.hex);
     if (u) hit(ctx, user, u, `${unitName(user)}'s volley`);
   }

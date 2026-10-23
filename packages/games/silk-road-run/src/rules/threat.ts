@@ -61,11 +61,11 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
-    // Volley falls on any space within its range, over anything between;
-    // a delayed one only marks it, so it is worth the share left after a dodge.
+    // Volley falls on any space within its range, over anything between,
+    // but only marks it this turn: worth the share left after a dodge.
     if (has('volley')) {
       const reach = ABILITY.volley.range;
-      const d = ABILITY.volley.delayed ? power * AI.volleyDodgeShare : power;
+      const d = power * AI.volleyDodgeShare;
       for (let dq = -reach; dq <= reach; dq++)
         for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
           if (board.has(id(fq + dq, fr + dr))) mark(hexes, id(fq + dq, fr + dr), d);
