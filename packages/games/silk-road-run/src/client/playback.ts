@@ -27,7 +27,9 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
       if (e.how === 'throw') return 0.32;
       return Math.max(WALK_SECONDS, 0.08 * hexDistance(e.from, e.to));
     case 'action':
-      return e.ability === 'hold' ? 0 : 0.5;
+      if (e.ability === 'hold') return 0;
+      // The arrow rain takes longer to read.
+      return e.ability === 'volley' ? 1 : 0.5;
     case 'damage':
       return 0.45;
     case 'death':

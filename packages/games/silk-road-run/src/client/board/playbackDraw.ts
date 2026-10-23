@@ -10,7 +10,7 @@ import {isStunned} from '../../rules/board';
 import {mapOf} from '../../rules/fight';
 import {Playback, eventSeconds} from '../playback';
 import {PALETTE, paletteAlpha, pixelFont} from '../palette';
-import {EFFECT_FPS, drawPixelArrow} from './effects';
+import {ABILITY_EFFECT, EFFECT_FPS, drawPixelArrow} from './effects';
 import type {BoardScene} from './scene';
 import {HEALTH_BAR, drawDamage, drawUnit} from './units';
 import {HIGHLIGHT} from './overlays';
@@ -80,10 +80,13 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
       // The area the playback lights up when it lands; the target hex alone for the rest.
       const radius = def.radius ?? 0;
       const area = e.target ? map.hexes.filter((h) => hexDistance(h, e.target!) <= radius) : [];
+      const effect = ABILITY_EFFECT[e.ability];
       // Effects move in steps, as pixel art does.
       const steps = eventSeconds(e, false) * EFFECT_FPS;
       const stepped = steps > 0 ? Math.floor(k * steps) / steps : k;
-      if (e.target) {
+      if (e.target && effect) {
+        effect(ctx, {from: u.hex, target: e.target, area, k: stepped});
+      } else if (e.target) {
         ctx.save();
         ctx.globalAlpha = 1 - k * 0.6;
         for (const h of area) fillHex(ctx, h, HIGHLIGHT.area);
