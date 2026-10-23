@@ -42,13 +42,14 @@ type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 const SOURCES: [RegExp, string][] = [
   [/'s arrow hits/, 'bow'],
   [/'s overwatch shot hits/, 'overwatch'],
+  [/'s volley hits/, 'volley'],
   [/^The throw hits/, 'throw'],
   [/^The grapple hits/, 'grapple'],
   [/^The hail hits/, 'hail'],
   [/^The bite hits/, 'bite'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| calls down fog| throws| swaps places| grapples| bites)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| looses a volley| calls down sunlight| calls down fog| throws| swaps places| grapples| bites)/;
 /** Healing, by the fight log's wording: amount healed per fight. */
 const HEAL = /^The sunlight heals .+ for (\d+)\.$/;
 

@@ -61,12 +61,12 @@ export function unitName(u: Unit): string {
 
 /**
  * An ability's hit: exactly the attacker's power in damage (owner,
- * 2026-10-23), less its Degrade (fog), at least 0. Power 0 deals none, and
- * says nothing.
+ * 2026-10-23), less its Degrade (fog) and any `less` the ability states,
+ * at least 0. Power 0 deals none, and says nothing.
  */
-export function hit(ctx: Ctx, attacker: Unit, target: Unit, what: string): void {
+export function hit(ctx: Ctx, attacker: Unit, target: Unit, what: string, less = 0): void {
   if (!target.alive || attacker.power <= 0) return;
-  const amount = degraded(ctx, attacker, attacker.power, what);
+  const amount = degraded(ctx, attacker, Math.max(0, attacker.power - less), what);
   if (amount > 0)
     applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`);
 }

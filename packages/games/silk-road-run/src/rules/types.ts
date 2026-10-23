@@ -16,6 +16,7 @@ export type AbilityId =
   | 'hold'
   | 'bow'
   | 'overwatch'
+  | 'volley'
   | 'hail'
   | 'sunlight'
   | 'fog'

@@ -943,6 +943,46 @@ and `fog-tuning.mjs`, 400 fights each:
   (`caravans.mjs`): all three heroes 56.7% (58.3% before any new ability,
   42.8% with Sunlight); the rest within 3–7 points.
 
+#### Volley in place of Overwatch
+
+**Volley** (owner, 2026-10-23): the Outrider's arrows loosed high onto one
+space within 3, falling as hail does, so no line of fire is needed; the
+unit there takes the Outrider's power (2), as the Bow's arrow does. Fog
+stays in the Storm Caller's kit; the swap stays (owner). The threat map
+counts every space within its reach. `experiments/volley.mjs` and
+`volley-tuning.mjs`, 400 fights each.
+
+| | As proposed (range 3) | Range 2 | 1 less damage | Range 2–3 (not adjacent) |
+|---|---:|---:|---:|---:|
+| Side without Volley wins | **14.5%** | 24.4% | 28% | 15% |
+| Side without the Bow wins | 42.5% | 36.6% | 33% | 22.8% |
+| Volley's share of the Outrider's turns | 29% | 17% | 47% | 29% |
+| Temee killed (of 400 control fights) | **168** | 48 | 24 | 170 |
+| Player wins vs Outrider + 2 wolves | 77.5% | 93.5% | 100% | 78.3% |
+| vs Bökh + Outrider + wolf | 52.5% | 73.7% | 89% | 52.3% |
+| vs Outrider + Outrider + wolf | **13%** | 43% | 84.8% | 13.3% |
+| vs all three | 42.5% | 62.6% | 69.9% | 42% |
+
+Before any new ability: Temee killed in 48 of 400; the stage caravans
+96.8%, 66.5%, 64.8% and 58.3%. As proposed, the rest of the kit (side
+without): Hail 39.1%, Fog 51.4%, Grapple 29.3% (10.3% before), Throw
+48.6%; the Bow and Volley both gone, 6.3%.
+
+- **As proposed, Volley is the strongest ability in the game**: the Bow's
+  damage with none of its limits (line of fire, the first unit in the
+  lane). It makes the Bow the lesser attack, takes Grapple's place as what
+  decides fights, and hunts Temee over anything in the way: Temee dies in
+  42% of fights. An enemy with two Outriders wins 87% of stage 2.
+- **Range 2 fits**: Volley a strong second attack (24.4%), the Bow still
+  worth having (36.6%), Volley on 17% of turns, Temee killed as often as
+  before; stage 2 with two Outriders is the hard one (43%), the last
+  stage a little easier (62.6%).
+- **1 less damage** is a weak attack the AI uses on nearly half of the
+  Outrider's turns (over the 35% that makes a non-core ability suspect),
+  and every stage gets easier.
+- **Not on adjacent units** changes nothing: the Outrider stands off
+  anyway.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

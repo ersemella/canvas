@@ -70,9 +70,9 @@ describe('budgeted tactical search', () => {
     s.awaiting = me.id;
     const pruned = stats();
     const exhaustive = stats();
-    // The bow alone: Overwatch's six lanes would make the tree too big to search exhaustively.
+    // The bow alone: a second attack would make the tree too big to search exhaustively.
     const kit = HEROES.mangudai.abilities;
-    HEROES.mangudai.abilities = kit.filter((a) => a !== 'overwatch');
+    HEROES.mangudai.abilities = ['bow', 'hold'];
     let selected: TurnInput;
     try {
       selected = chooseAiTurn(s, me, {left: AI.requestSimulations}, pruned);
@@ -271,41 +271,47 @@ describe('the search timeline', () => {
 
 describe('valuing overwatch', () => {
   it('an Outrider with no shot watches the lane Temee is about to step into', () => {
-    let tried = 0;
-    for (const start of SALT_FLATS.hexes) {
-      const s = setup({'p-camel': start, 'p-bokh': hex(-3, 7), 'e-mangudai': hex(0, 0)});
-      const camel = unit(s, 'p-camel');
-      const m = unit(s, 'e-mangudai');
-      const step = stepToExit(s, mapOf(s), camel);
-      if (!step || tileAt(SALT_FLATS, start) !== 'sand') continue;
-      // An Outrider spot with no unit in any lane, one of them through Temee's next step.
-      const spot = SALT_FLATS.hexes.find((h) => {
-        if (tileAt(SALT_FLATS, h) !== 'sand' || hexDistance(h, start) < 2) return false;
-        if (hexDistance(h, hex(-3, 7)) === 0) return false;
-        m.hex = h;
-        const lanes = arrowLanes(s, mapOf(s), h);
-        return (
-          lanes.every((l) => !l.hit) &&
-          lanes.some((l) => l.hexes.some((x) => hexKey(x) === hexKey(step)))
-        );
-      });
-      if (!spot) continue;
-      tried++;
-      m.hex = spot;
-      // Temee walks before the Outrider's next turn, 6 slots on.
-      s.currentSlot = 40;
-      m.slot = 40;
-      camel.slot = 42;
-      unit(s, 'p-bokh').slot = 200;
-      s.awaiting = m.id;
-      const input = chooseAiTurn(s, m);
-      expect(input.action.ability).toBe('overwatch');
-      const lane = arrowLanes(s, mapOf(s), spot).find(
-        (l) => l.hexes[0] && hexKey(l.hexes[0]) === hexKey(input.action.target!.hex!)
-      )!;
-      expect(lane.hexes.some((x) => hexKey(x) === hexKey(step))).toBe(true);
-      if (tried >= 3) break;
+    const kit = HEROES.mangudai.abilities;
+    HEROES.mangudai.abilities = ['bow', 'overwatch', 'hold'];
+    try {
+      let tried = 0;
+      for (const start of SALT_FLATS.hexes) {
+        const s = setup({'p-camel': start, 'p-bokh': hex(-3, 7), 'e-mangudai': hex(0, 0)});
+        const camel = unit(s, 'p-camel');
+        const m = unit(s, 'e-mangudai');
+        const step = stepToExit(s, mapOf(s), camel);
+        if (!step || tileAt(SALT_FLATS, start) !== 'sand') continue;
+        // An Outrider spot with no unit in any lane, one of them through Temee's next step.
+        const spot = SALT_FLATS.hexes.find((h) => {
+          if (tileAt(SALT_FLATS, h) !== 'sand' || hexDistance(h, start) < 2) return false;
+          if (hexDistance(h, hex(-3, 7)) === 0) return false;
+          m.hex = h;
+          const lanes = arrowLanes(s, mapOf(s), h);
+          return (
+            lanes.every((l) => !l.hit) &&
+            lanes.some((l) => l.hexes.some((x) => hexKey(x) === hexKey(step)))
+          );
+        });
+        if (!spot) continue;
+        tried++;
+        m.hex = spot;
+        // Temee walks before the Outrider's next turn, 6 slots on.
+        s.currentSlot = 40;
+        m.slot = 40;
+        camel.slot = 42;
+        unit(s, 'p-bokh').slot = 200;
+        s.awaiting = m.id;
+        const input = chooseAiTurn(s, m);
+        expect(input.action.ability).toBe('overwatch');
+        const lane = arrowLanes(s, mapOf(s), spot).find(
+          (l) => l.hexes[0] && hexKey(l.hexes[0]) === hexKey(input.action.target!.hex!)
+        )!;
+        expect(lane.hexes.some((x) => hexKey(x) === hexKey(step))).toBe(true);
+        if (tried >= 3) break;
+      }
+      expect(tried).toBeGreaterThan(0);
+    } finally {
+      HEROES.mangudai.abilities = kit;
     }
-    expect(tried).toBeGreaterThan(0);
   });
 });

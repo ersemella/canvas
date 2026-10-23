@@ -4,7 +4,13 @@
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
-import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
+import {
+  hexDistance,
+  hexEquals,
+  hexNeighbor,
+  hexNeighbors,
+  hexesInRange,
+} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES} from './config';
 import {arrowLane, isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
@@ -150,6 +156,32 @@ const overwatch: AbilityDef = {
     clearOverwatch(ctx.state, user);
     (ctx.state.overwatch ??= []).push({source: user.id, dir});
     log(ctx, `${unitName(user)} watches a lane.`);
+  },
+};
+
+/**
+ * Volley (owner, 2026-10-23): arrows loosed high, falling on one space
+ * within `ABILITY.volley.range` as hail does, so no line of fire is needed:
+ * the unit there, ally or enemy, takes the Outrider's power.
+ */
+const volley: AbilityDef = {
+  id: 'volley',
+  name: 'Volley',
+  kind: 'attack',
+  range: ABILITY.volley.range,
+  radius: 0,
+  summary: (user) =>
+    `Arrows from above on a unit within ${ABILITY.volley.range}, over anything in the way: it takes ${damageText(user)}.`,
+  targetsUnit: true,
+  targets: (state, map, user, from) =>
+    hexesWithin(map, from, ABILITY.volley.range, (h) => {
+      const u = unitAt(state, h);
+      return u !== undefined && u !== user && hexDistance(h, from) >= ABILITY.volley.minRange;
+    }),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} looses a volley.`);
+    hit(ctx, user, u, `${unitName(user)}'s volley`, ABILITY.volley.less);
   },
 };
 
@@ -339,6 +371,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   bow,
   overwatch,
+  volley,
   hail,
   sunlight,
   fog,

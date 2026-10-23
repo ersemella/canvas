@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import {afterEach, describe, expect, it} from 'vitest';
 import {
   hexDistance,
   hexKey,
@@ -48,6 +48,13 @@ import {actionCost, aimSlot, freeSlotFrom, nextCard, placeCard, simultaneousOrde
 import type {FightState, HeroId, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
+
+// Abilities measured out of the kits (Overwatch, Sunlight) are put back by
+// the tests that need them; every test ends with the kits as configured.
+const KITS = Object.fromEntries(Object.entries(HEROES).map(([h, s]) => [h, s.abilities]));
+afterEach(() => {
+  for (const [h, kit] of Object.entries(KITS)) HEROES[h as HeroId].abilities = kit;
+});
 
 /**
  * A fight in progress with units where a test wants them: every unit not
@@ -122,12 +129,25 @@ describe('the track', () => {
     expect(onlyHold(s, mapOf(s), w)).toBe(false);
   });
 
-  it('never skips an Outrider for lack of targets: Overwatch watches any open lane', () => {
-    const s = setup({'p-mangudai': at(1, 1), 'p-storm': at(3, 1), 'e-bokh': at(6, 6)});
+  it('Volley reaches an enemy within 3 that no bow lane does, over a unit in the way', () => {
+    const s = setup({
+      'p-mangudai': at(1, 3),
+      'p-storm': at(2, 3),
+      'e-bokh': at(3, 3),
+      'e-storm': at(8, 6),
+    });
     const m = unit(s, 'p-mangudai');
+    const bokh = unit(s, 'e-bokh');
     m.statuses.push({kind: 'immobilized'});
+    expect(HEROES.mangudai.abilities).toEqual(['bow', 'volley', 'hold']);
+    // The ally stands between: the bow's lane stops at it.
     expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.side === 'enemy')).toBe(false);
     expect(onlyHold(s, mapOf(s), m)).toBe(false);
+    const spots = ABILITIES.volley.targets(s, mapOf(s), m, m.hex!);
+    expect(spots.every((t) => hexDistance(t.hex!, m.hex!) <= 3 && unitAt(s, t.hex!))).toBe(true);
+    expect(spots.some((t) => hexKey(t.hex!) === hexKey(unit(s, 'e-storm').hex!))).toBe(false);
+    applyTurn(s, m, {action: {ability: 'volley', target: {hex: bokh.hex!}}});
+    expect(bokh.hp).toBe(bokh.maxHp - m.power);
   });
 
   it('places a card 12 − 2 × speed slots on, whatever the turn did (3.2)', () => {
@@ -739,6 +759,7 @@ describe('abilities', () => {
   });
 
   it('Overwatch: the first unit to enter the lane, even passing through, is shot, once', () => {
+    HEROES.mangudai.abilities = ['bow', 'overwatch', 'hold'];
     const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(6, 6), 'e-storm': at(7, 6)});
     const m = unit(s, 'p-mangudai');
     const lanes = arrowLanes(s, mapOf(s), m.hex!);
@@ -769,6 +790,7 @@ describe('abilities', () => {
   });
 
   it('Overwatch shoots allies too, can fell a unit partway through a walk, and ends if the Outrider is Stunned', () => {
+    HEROES.mangudai.abilities = ['bow', 'overwatch', 'hold'];
     const s = setup({'p-mangudai': at(0, 3), 'p-storm': at(6, 6), 'e-bokh': at(7, 6)});
     const m = unit(s, 'p-mangudai');
     const lane = arrowLanes(s, mapOf(s), m.hex!).find((l) => l.hexes.length >= 4)!;
@@ -802,6 +824,7 @@ describe('abilities', () => {
   });
 
   it('Overwatch ends at the Outrider’s next turn, and a walk keeps out of a watched lane where it can', () => {
+    HEROES.mangudai.abilities = ['bow', 'overwatch', 'hold'];
     const s = setup({'e-mangudai': at(0, 3), 'p-bokh': at(6, 6), 'e-storm': at(7, 6)});
     const m = unit(s, 'e-mangudai');
     const lane = arrowLanes(s, mapOf(s), m.hex!).find((l) => l.hexes.length >= 4)!;
@@ -843,32 +866,26 @@ describe('abilities', () => {
     const storm = unit(s, 'p-storm');
     const ally = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
-    // Sunlight is out of the kit while Fog is measured in its place: put it back for this test.
-    const kit = HEROES.storm.abilities;
     HEROES.storm.abilities = ['hail', 'sunlight', 'hold'];
-    try {
-      // Only spaces with a unit or hail on them.
-      const spots = ABILITIES.sunlight.targets(s, mapOf(s), storm, storm.hex!);
-      expect(spots.every((t) => unitAt(s, t.hex!))).toBe(true);
-      applyTurn(s, bokh, {action: {ability: 'grapple', target: {hex: ally.hex!}}});
-      expect(ally.hp).toBe(ally.maxHp - bokh.power);
-      applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
-      expect(ally.hp).toBe(ally.maxHp);
-      expect(ally.statuses).toEqual([]);
-      // Already at full health: no more.
-      applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
-      expect(ally.hp).toBe(ally.maxHp);
-      // Hail on a space, melted, frees the unit it held.
-      const foe = unit(s, 'e-storm');
-      foe.hex = at(2, 4);
-      applyTurn(s, foe, {action: {ability: 'hail', target: {hex: ally.hex!}}});
-      expect(ally.statuses.map((x) => x.kind)).toEqual(['immobilized']);
-      applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
-      expect(s.effects).toEqual([]);
-      expect(ally.statuses).toEqual([]);
-    } finally {
-      HEROES.storm.abilities = kit;
-    }
+    // Only spaces with a unit or hail on them.
+    const spots = ABILITIES.sunlight.targets(s, mapOf(s), storm, storm.hex!);
+    expect(spots.every((t) => unitAt(s, t.hex!))).toBe(true);
+    applyTurn(s, bokh, {action: {ability: 'grapple', target: {hex: ally.hex!}}});
+    expect(ally.hp).toBe(ally.maxHp - bokh.power);
+    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
+    expect(ally.hp).toBe(ally.maxHp);
+    expect(ally.statuses).toEqual([]);
+    // Already at full health: no more.
+    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
+    expect(ally.hp).toBe(ally.maxHp);
+    // Hail on a space, melted, frees the unit it held.
+    const foe = unit(s, 'e-storm');
+    foe.hex = at(2, 4);
+    applyTurn(s, foe, {action: {ability: 'hail', target: {hex: ally.hex!}}});
+    expect(ally.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
+    expect(s.effects).toEqual([]);
+    expect(ally.statuses).toEqual([]);
   });
 
   it('Fog: a unit standing in it deals 1 less, to at least 0, until the caster’s next turn', () => {

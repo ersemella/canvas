@@ -74,9 +74,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    // Overwatch (owner, 2026-10-23) before Hold: on a turn with nothing in
-    // its lanes, the AI keeps a lane watched rather than Hold.
-    abilities: ['bow', 'overwatch', 'hold'],
+    // Volley in place of Overwatch (owner, 2026-10-23), to measure it.
+    abilities: ['bow', 'volley', 'hold'],
   },
   storm: {
     name: 'Yadachy Storm Caller',
@@ -144,6 +143,13 @@ export const ABILITY = {
    * status; hail there melts.
    */
   sunlight: {range: 3, heal: 1},
+  /**
+   * Arrows from above (owner, 2026-10-23): one space within 3, no line of
+   * fire needed, as hail falls; the unit there takes the Outrider's power.
+   * `minRange` 2 keeps it off adjacent units; `less` takes that much off its
+   * damage (variants measured against it).
+   */
+  volley: {range: 3, minRange: 1, less: 0},
   /**
    * One space within 3, until the Storm Caller's next turn (owner,
    * 2026-10-23): a unit standing in it is Degraded by this much (its

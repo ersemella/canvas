@@ -61,6 +61,17 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
+    // Volley falls on any space within its range, over anything between.
+    if (has('volley')) {
+      const reach = ABILITY.volley.range;
+      for (let dq = -reach; dq <= reach; dq++)
+        for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
+          if (
+            board.has(id(fq + dq, fr + dr)) &&
+            Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) >= ABILITY.volley.minRange
+          )
+            mark(hexes, id(fq + dq, fr + dr), Math.max(0, power - ABILITY.volley.less));
+    }
     if (has('bow')) {
       for (const [dq, dr] of AXIAL) {
         for (let i = 1; i <= ABILITY.bow.range; i++) {
