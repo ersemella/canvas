@@ -464,9 +464,19 @@ describe('stats and damage', () => {
     expect(m.power).toBe(2);
   });
 
+  it('hail hits for the Storm Caller’s power', () => {
+    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
+    const storm = unit(s, 'p-storm');
+    s.awaiting = storm.id;
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 1);
+    expect(storm.power).toBe(1);
+  });
+
   it('power 0 deals no damage, and says nothing of it', () => {
     const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
     const storm = unit(s, 'p-storm');
+    storm.power = 0;
     s.awaiting = storm.id;
     s.events = [];
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});

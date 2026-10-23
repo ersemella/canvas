@@ -81,7 +81,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
     letter: 'S',
     speed: 2,
     defence: 2,
-    power: 0,
+    // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
+    // couldn't break a grapple.
+    power: 1,
     abilities: ['hail', 'hold'],
   },
   /**

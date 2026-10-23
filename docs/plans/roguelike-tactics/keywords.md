@@ -132,8 +132,9 @@ a guard is needed is open question 56.
 3. The target's **Shield** takes it first; what it can't absorb goes on.
 4. **Health** takes the rest, unless the target is **Immortal**.
 
-There is no minimum damage: 0 is 0, and an ability with power 0 (the
-Storm Caller's Hail) deals none. Burn enters at step 2 (Armour applies
+There is no minimum damage: 0 is 0, and an ability used at power 0
+deals none (the Storm Caller's Hail did until 2026-10-23, when its
+power became 1). Burn enters at step 2 (Armour applies
 unless the Burn Pierces; TBD, open question 57).
 
 ### 17.7 Rationale

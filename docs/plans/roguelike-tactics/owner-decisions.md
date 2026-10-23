@@ -106,8 +106,8 @@ picked the reading below. Confirm or change each:
   the grapple holds (owner, 2026-10-23; the builder's first reading was a
   space next to the target, which could end the grapple); the damage
   comes after the Move.
-- **"Bökh takes damage" means any damage to its health.** Power-0 hail
-  doesn't count.
+- **"Bökh takes damage" means any damage to its health.** Hail does
+  count since the Storm Caller's power became 1 (owner, 2026-10-23).
 - **The Bökh Champion lost Inevitable**, which the notes left out and
   nothing would use (nothing Delays any more).
 - **Placeholders:** the wolf at speed 2, defence 1 (health 4), power 1;
@@ -132,6 +132,9 @@ Over 200 AI-vs-AI fights each ([balance.md](balance.md#the-2026-10-23-rework)):
   and a space. Options: Throw keeps hold wherever it lands, deals more,
   or does something a Stun can't.
 - **Hail is worth its turn** (a side without it wins 34%), at power 0.
+  **Decided (owner, 2026-10-23): the Storm Caller's power is 1**, so
+  Hail deals 1 and can break a grapple
+  ([balance.md](balance.md#hail-deals-1-2026-10-23)).
 - **Stages:** a full party beats one enemy hero and two wolves 87–99% of
   the time, two heroes and a wolf 39–97% (two Champions are the hardest,
   39%), and all three 73%.

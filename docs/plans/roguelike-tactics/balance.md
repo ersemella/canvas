@@ -764,6 +764,65 @@ against each stage's enemy):
 Every enemy with a Champion is the hard one; the wolves (placeholders) are
 weak.
 
+### Hail deals 1 (2026-10-23)
+
+Rerun on the rules as of the same day's last track change (action cost
+12 − 2 × speed, Temee starting last, collisions to the faster card), 200
+fights each, seeds from 1000. At power 0 Hail dealt nothing, so the
+Storm Caller couldn't break a grapple or finish a kill. **Owner,
+2026-10-23: the Storm Caller's power is 1.**
+
+Each variant patched both sides; the columns are the win rate of a side
+without the ability. "Immobilize" makes Grapple's hold Immobilize its
+target instead of Stunning it. The squeeze-free runs without Hail and
+without Throw crashed in the harness (a fight with no acting unit).
+
+| Variant | No Bow | No Hail | No Grapple | No Throw | Unfinished | Median actions |
+|---|---:|---:|---:|---:|---:|---:|
+| Power 0 (before) | 15.9% | 42.2% | 5.5% | 48% | 3% | 52 |
+| No squeeze | 12.8% | | 6.5% | | 2% | 56 |
+| Immobilize | 0.5% | 28.4% | 43.9% | 50.5% | 3% | 64 |
+| **Power 1 (adopted)** | 15.5% | 13.7% | 9.5% | 50% | 0% | 41 |
+| Immobilize and power 1 | 8% | 10% | 27.5% | 50.5% | 0% | 45 |
+
+- **The Stun, not the squeeze, makes Grapple decide fights**: without
+  the squeeze it is worth the same. Taking the Stun away alone hands the
+  game to the Bow and gets Temee killed in half the fights.
+- **Power 1 evens the three heroes**: a side without any one hero's
+  ability wins 9.5–15.5%, where without Hail it won 42.2% and without
+  Grapple 5.5%.
+  Hail takes the most kills (1.8 a fight, the Bow 1.47, Grapple 0.35).
+  Grapple stays the most valuable; limiting the Stun (to the target's
+  next turn, then Immobilized) is the next step if play bears that out.
+- **Throw still adds nothing** in every variant.
+- In the power-1 control fights the player's side (also the AI) won 58%
+  of finished fights; Temee survived 92% and was killed in 16 of 200.
+  Survival: the Champion 30.5%, the Outrider 37.5%, the Storm Caller
+  42.5%.
+
+**Stage caravans** (`experiments/caravans.mjs`), player wins:
+
+| Enemy | Power 0 | Power 1 |
+|---|---:|---:|
+| Bökh Champion + 2 wolves | 84.5% | 97.5% |
+| Mangudai Outrider + 2 wolves | 92.5% | 96.5% |
+| Yadachy Storm Caller + 2 wolves | 100% | 100% |
+| Bökh + Bökh + wolf | 38.5% | 79% |
+| Bökh + Mangudai + wolf | 38.5% | 64% |
+| Bökh + Storm + wolf | 78.5% | 92% |
+| Mangudai + Mangudai + wolf | 39.5% | 60.5% |
+| Mangudai + Storm + wolf | 88.3% | 87.5% |
+| Storm + Storm + wolf | 100% | 99% |
+| all three | 39.8% | 54.5% |
+
+The stages now climb: one hero and two wolves 96–100%, two heroes and a
+wolf 60–99%, all three 54.5%. Under power 0, three stage-2 caravans
+were as hard as stage 3.
+
+**Stats at power 0** (`experiments/stats.mjs`, +1 to one hero of one
+side): the Storm Caller's power +1 won 79% (the change adopted), the
+Champion's speed +1 71.7%; the rest 49.5–61.5%.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
