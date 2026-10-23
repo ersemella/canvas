@@ -33,13 +33,16 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
 };
 
 /**
- * Abilities picked in two taps: the unit aimed at, then a space (`to`):
- * where Throw lands it, or where Skirmish steps first. Their prompt for it.
+ * Abilities picked in two taps, the unit aimed at and a space (`to`), and
+ * the prompt for the space: Throw's target, then where it lands; for an
+ * ability that steps first (Skirmish, `steps`), the space, then the target
+ * in line from there.
  */
 const SECOND_PICK: Partial<Record<AbilityId, string>> = {
   throw: 'Pick where to throw',
   skirmish: 'Pick where to step',
 };
+const stepsFirst = (id: AbilityId | null) => Boolean(id && ABILITIES[id].steps);
 
 /** What the player has picked for the acting unit's turn so far. */
 interface Picks {
@@ -107,7 +110,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   /** The action with its target chosen, ready to preview. */
   const action = useMemo(() => {
     if (!ability || !target) return null;
-    if (SECOND_PICK[ability] && !target.to) return null;
+    if (SECOND_PICK[ability] && (!target.to || !target.hex)) return null;
     return {ability, target};
   }, [ability, target]);
 
@@ -116,9 +119,13 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     moving && !plannedMove
       ? 'Pick where to move'
       : ability && !action
-        ? SECOND_PICK[ability] && target?.hex
-          ? SECOND_PICK[ability]
-          : 'Pick a target'
+        ? stepsFirst(ability)
+          ? target?.to
+            ? 'Pick a target'
+            : SECOND_PICK[ability]!
+          : SECOND_PICK[ability] && target?.hex
+            ? SECOND_PICK[ability]
+            : 'Pick a target'
         : null;
 
   /** The picked turn, once its hex or target is: the picked button confirms it. */
@@ -141,8 +148,11 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     [fight, acting]
   );
 
-  /** The hex picked last: the destination, the target, or Throw's landing or Skirmish's step. */
-  const lastPicked = plannedMove?.hex ?? target?.to ?? target?.hex ?? null;
+  /** The hex picked last: the destination, the target, Throw's landing, or Skirmish's step before its target. */
+  const lastPicked =
+    plannedMove?.hex ??
+    (stepsFirst(ability) ? (target?.hex ?? target?.to) : (target?.to ?? target?.hex)) ??
+    null;
 
   const clearMove = useCallback(() => pick({plannedMove: null, moving: false}), [pick]);
 
@@ -192,8 +202,31 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (!ability) return false;
+      if (stepsFirst(ability)) {
+        // Skirmish: the space to step to, then a target in line from there.
+        const step = targets.find((t) => t.to && hexEquals(t.to, h));
+        if (target?.to) {
+          const shot = targets.find(
+            (t) => hexEquals(t.to!, target.to!) && t.hex && hexEquals(t.hex, h)
+          );
+          if (shot) {
+            // Tapping the chosen target again un-picks it (the button confirms).
+            if (target.hex && hexEquals(target.hex, h)) pick({target: {to: target.to}});
+            else chooseTarget(shot);
+            return true;
+          }
+          // The chosen space again un-picks it; another space replaces it.
+          if (hexEquals(target.to, h)) {
+            pick({target: null});
+            return true;
+          }
+        }
+        if (!step) return false;
+        chooseTarget({to: step.to!});
+        return true;
+      }
       if (SECOND_PICK[ability] && target?.hex) {
-        // Throw's landing, or Skirmish's step.
+        // Throw's landing.
         const second = targets.find(
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
         );
@@ -220,8 +253,9 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
    * destination, then the ability or Move. False when nothing is picked.
    */
   const stepBack = useCallback((): boolean => {
-    if (target?.to) pick({target: {hex: target.hex!}});
-    else if (target?.hex) pick({target: null});
+    if (stepsFirst(ability) && target?.hex) pick({target: {to: target.to!}});
+    else if (target?.to && !stepsFirst(ability)) pick({target: {hex: target.hex!}});
+    else if (target?.hex || target?.to) pick({target: null});
     else if (ability) chooseAbility(null);
     else if (plannedMove) pick({plannedMove: null});
     else if (moving) pick({moving: false});

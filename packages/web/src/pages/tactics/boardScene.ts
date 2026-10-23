@@ -141,31 +141,53 @@ export function buildScene(input: SceneInput): BoardScene {
           target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
         })),
       };
-    // Only what it may target; once Throw's or Skirmish's target is picked,
-    // where it can land or step from, dashed so it never reads as more targets.
+    // Only what it may target; once Throw's target is picked, where it can
+    // land, dashed so it never reads as more targets. Skirmish first offers
+    // the spaces to step to, dashed, then the targets in line from the one
+    // picked (or hovered), with the step drawn as a move's and an arrow's
+    // line to each.
     const shown = new Set<string>();
-    const second = (ability === 'throw' || def.steps) && target?.hex;
-    for (const t of targets) {
-      const h = second ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex;
-      if (!h || shown.has(hexKey(h))) continue;
+    const show = (h: Hex | undefined, kind: HighlightKind) => {
+      if (!h || shown.has(hexKey(h))) return;
       shown.add(hexKey(h));
-      highlights.push({hex: h, kind: second ? 'landing' : 'target'});
-    }
-    // Where the thrown unit lands, or Skirmish steps to: the space hovered,
-    // else the one picked, drawn as a move's.
+      highlights.push({hex: h, kind});
+    };
     const hovered = hoverHex;
-    const hoveredLanding =
-      hovered && target?.hex
-        ? targets.find((t) => t.to && hexEquals(t.hex!, target.hex!) && hexEquals(t.to, hovered))
-            ?.to
-        : undefined;
-    const landing = hoveredLanding ?? target?.to;
-    if (second && landing && def.steps && from) {
-      out.step = [from, landing];
-      // The arrow's line from there to its target.
-      const line = laneTo(fight, landing, target.hex!);
-      if (line) out.lanes = {from: landing, lanes: [{hexes: line, target: true}]};
-    } else if (second && landing) out.step = [target.hex!, landing];
+    if (def.steps) {
+      const hoveredStep =
+        !target?.to && hovered && targets.some((t) => t.to && hexEquals(t.to, hovered))
+          ? hovered
+          : undefined;
+      const step = target?.to ?? hoveredStep;
+      if (!target?.to) for (const t of targets) show(t.to, 'landing');
+      if (step && from) {
+        out.step = [from, step];
+        const lines: {hexes: Hex[]; target: boolean}[] = [];
+        for (const t of targets) {
+          if (!hexEquals(t.to!, step)) continue;
+          if (target?.to) show(t.hex, 'target');
+          const line = laneTo(fight, step, t.hex!);
+          if (line) lines.push({hexes: line, target: true});
+        }
+        out.lanes = {from: step, lanes: lines};
+      }
+    } else {
+      const second = ability === 'throw' && target?.hex;
+      for (const t of targets)
+        show(
+          second ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex,
+          second ? 'landing' : 'target'
+        );
+      // Where the thrown unit lands: the landing hovered, else the one picked,
+      // drawn as a move's.
+      const hoveredLanding =
+        hovered && target?.hex
+          ? targets.find((t) => t.to && hexEquals(t.hex!, target.hex!) && hexEquals(t.to, hovered))
+              ?.to
+          : undefined;
+      const landing = hoveredLanding ?? target?.to;
+      if (second && landing) out.step = [target.hex!, landing];
+    }
     if (target?.hex) {
       // An area ability: highlight the area around the chosen hex (none since Hail covers one space).
       const radius = ABILITIES[ability].radius;
@@ -176,8 +198,8 @@ export function buildScene(input: SceneInput): BoardScene {
             highlights.push({hex: h, kind: 'area'});
       }
       highlights.push({hex: target.hex, kind: 'chosen'});
-      if (target.to) highlights.push({hex: target.to, kind: 'chosen'});
     }
+    if (target?.to) highlights.push({hex: target.to, kind: 'chosen'});
   }
   if (preview) {
     out.preview = preview.changes.map((c) => ({
