@@ -52,8 +52,8 @@ its references are removed:
   walk around the ruins to the only exit, in the bottom-right corner,
   going around units in its way (owner, 2026-10-22; a dotted line showing
   its road was dropped). It waits only when Immobilized or boxed in.
-- Hail: a radius-1 area, its centre within 3; landing, it deals base 40
-  damage and Pushes 5; it stays 20 slots, and a unit that starts its
+- Hail: a radius-1 area, its centre within 3; landing, it deals base 20
+  damage (40 until 2026-10-23, balance.md) and Pushes 5; it stays 20 slots, and a unit that starts its
   turn in it takes base 20 (damage and duration are placeholders).
 - Grapple reaches 2 spaces: next to the target the Champion grapples
   where it stands, otherwise it steps in beside it first. Base 60 damage

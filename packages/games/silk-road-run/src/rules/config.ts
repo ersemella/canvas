@@ -271,15 +271,17 @@ export const ABILITY = {
    * lands takes `damage` and is Pushed `castPush`, allies too. Pared back
    * for balancing (owner, 2026-10-22): centre within 3 (was 6), Push 5.
    * It stays on the ground `hexSlots` (owner, 2026-10-22), and a unit that
-   * starts its turn in it takes `turnDamage` (it Pushed 2 before). Damage
-   * values and duration are PLACEHOLDERS.
+   * starts its turn in it takes `turnDamage` (it Pushed 2 before). Landing
+   * damage 20 (owner, 2026-10-23; was 40): at 40 two Storm Callers and a
+   * wolf beat the full party 29% of the time, at 20 1% (balance.md,
+   * "Scaling Hail down"). Lingering damage and duration are PLACEHOLDERS.
    */
   hail: {
     cost: RULES.cost.typical,
     range: 3,
     radius: 1,
     castPush: 5,
-    damage: 40,
+    damage: 20,
     hexSlots: 20,
     turnDamage: 20,
   },
