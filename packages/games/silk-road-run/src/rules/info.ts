@@ -61,7 +61,7 @@ export type KeywordId =
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   speed: {
     name: 'Speed',
-    detail: `Each turn ends with the card ${RULES.speedSlots} slots per point of speed before ${HEROES.camel.name}’s next turn: everyone acts once a round, the faster earlier.`,
+    detail: `Everyone acts once in each of ${HEROES.camel.name}’s rounds: after each turn, the card goes ${RULES.speedSlots} slots per point of speed ahead of ${HEROES.camel.name}’s card, so the faster act earlier.`,
   },
   power: {name: 'Power', detail: 'The damage each of its abilities deals.'},
   defence: {name: 'Defence', detail: 'Sets health: (1 + defence) × 2.'},

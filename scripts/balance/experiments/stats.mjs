@@ -1,7 +1,7 @@
-// +10 of each stat (and +60 health, for reference) on one hero of one side:
-// the exchange rates between stats.
+// +1 of each stat (and +2 health, for reference: what +1 defence gives) on
+// one hero of one side: the exchange rates between stats (2026-10-23 scale).
 const heroes = ['bokh', 'mangudai', 'storm'];
-const extras = {speed: 10, defence: 10, power: 10, hp: 60};
+const extras = {speed: 1, defence: 1, power: 1, hp: 2};
 export const experiments = Object.fromEntries(
   heroes.flatMap((hero) =>
     Object.entries(extras).map(([stat, n]) => [

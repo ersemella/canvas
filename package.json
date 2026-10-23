@@ -12,8 +12,7 @@
     "lint": "eslint packages --ext .ts,.tsx",
     "format": "prettier --write packages scripts",
     "test": "pnpm -r --if-present test",
-    "e2e": "node scripts/e2e/run.mjs",
-    "balance:tactics": "node scripts/balance/run.mjs"
+    "e2e": "node scripts/e2e/run.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

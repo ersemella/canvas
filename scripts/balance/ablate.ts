@@ -41,23 +41,12 @@ type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 /** Damage sources, recognised by the fight log's wording. */
 const SOURCES: [RegExp, string][] = [
   [/'s arrow hits/, 'bow'],
-  [/^The Volley hits/, 'volley'],
-  [/^The Freeze hits/, 'freeze'],
   [/^The throw hits/, 'throw'],
-  [/^The Lunge hits/, 'lunge'],
-  [/^The reap hits/, 'reap'],
-  [/^The advance hits/, 'advance'],
-  [/^The parting blow hits/, 'holdTheLine'],
-  [/^Hail strikes|^The hail hits|^Hail batters/, 'hail'],
   [/^The grapple hits/, 'grapple'],
-  [/^Quicksand drags/, 'quicksand'],
-  [/^The grapple crushes/, 'grapple'],
-  [/slams into|from the collision|is slammed into/, 'collision'],
+  [/^The hail hits/, 'hail'],
+  [/^The bite hits/, 'bite'],
 ];
-/** Sources whose caster the log doesn't name: counted as damage to the enemy. */
-const UNOWNED = new Set(['quicksand', 'hail', 'grapple']);
-const ACTOR =
-  /^(Your|Enemy) .+?(?:'s (?:Volley lands|Freeze takes hold|arrow hits)| lunges at| calls down (?:hail|sunlight)| throws| grapples| reaps| advances like a wall| challenges| holds the line)/;
+const ACTOR = /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| throws| grapples| bites)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -71,12 +60,6 @@ function snapshot(config: Config) {
     HEROES: config.HEROES,
     RULES: config.RULES,
   });
-  const defs = Object.entries(config.ABILITIES).map(([id, d]: [string, any]) => [
-    id,
-    d.cost,
-    d.recoveryCost,
-    d.charged,
-  ]);
   return () => {
     const restore = (target: any, from: any) => {
       for (const [k, v] of Object.entries(from)) {
@@ -86,11 +69,6 @@ function snapshot(config: Config) {
     };
     for (const key of ['ABILITY', 'AI', 'HEROES', 'RULES'] as const)
       restore(config[key], saved[key]);
-    for (const [id, cost, recovery, charged] of defs) {
-      config.ABILITIES[id].cost = cost;
-      config.ABILITIES[id].recoveryCost = recovery;
-      config.ABILITIES[id].charged = charged;
-    }
   };
 }
 
@@ -120,10 +98,6 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
   const uses: Record<string, Record<string, number>> = {};
   const damage: Record<string, {enemy: number; ally: number}> = {};
   const kills: Record<string, number> = {};
-  const healing = {ally: 0, enemy: 0};
-  /** Damage barriers took, by the barrier's side's point of view. */
-  const absorbed: Record<string, number> = {};
-  const ultimateSlots: Record<string, number[]> = {};
   const units: Record<string, number> = {};
   const survivors: Record<string, number> = {};
   const lengths: number[] = [];
@@ -149,7 +123,11 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
     if (mod?.stats) {
       for (const u of state.units.filter((u) => u.side === modSide)) {
         const extra = mod.stats[u.hero] ?? {};
-        for (const [stat, n] of Object.entries(extra)) u[stat as 'hp'] += n!;
+        // Defence sets health ((1 + defence) × 2), so adding it adds health too.
+        for (const [stat, n] of Object.entries(extra)) {
+          u[stat as 'hp'] += n!;
+          if (stat === 'defence') u.hp += 2 * n!;
+        }
         u.maxHp = u.hp;
       }
       placeStartingCards(state);
@@ -171,16 +149,9 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
               : named.at(-1)?.[1] === 'Your'
                 ? 'player'
                 : 'enemy';
-          const friendly = !UNOWNED.has(source) && actor === target;
+          const friendly = actor === target;
           (damage[source] ??= {enemy: 0, ally: 0})[friendly ? 'ally' : 'enemy'] += n;
           lastSource = source;
-        }
-        const shield = /^(?:Your|Enemy) (.+?)'s barrier takes (\d+)/.exec(text);
-        if (shield) add(absorbed, shield[1]!, Number(shield[2]));
-        const healed = /^(Your|Enemy) .* heals (\d+)\.$/.exec(text);
-        if (healed) {
-          const side: Side = healed[1] === 'Your' ? 'player' : 'enemy';
-          healing[side === actor ? 'ally' : 'enemy'] += Number(healed[2]);
         }
         if (/ falls\.$/.test(text) && lastSource) add(kills, lastSource);
       }
@@ -201,8 +172,6 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
         moveTurns++;
         movedHexes += input.move!.length;
       }
-      if (ABILITIES[input.action.ability].ultimate)
-        (ultimateSlots[u.hero] ??= []).push(state.currentSlot);
       actor = u.side;
       applyTurn(state, u, input);
       useKits(null, modSide);
@@ -281,17 +250,8 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
         {enemy: perFight(v.enemy), ally: perFight(v.ally)},
       ])
     ),
-    healingPerFight: {ally: perFight(healing.ally), enemy: perFight(healing.enemy)},
-    /** Damage barriers took per fight, by the hero whose barrier it was. */
-    barrierPerFight: Object.fromEntries(Object.entries(absorbed).map(([k, n]) => [k, perFight(n)])),
     killsPerFight: Object.fromEntries(
       Object.entries(kills).map(([k, n]) => [k, round(n / fights, 2)])
-    ),
-    ultimatesPerUnit: Object.fromEntries(
-      Object.entries(ultimateSlots).map(([h, a]) => [h, perUnit(a.length)])
-    ),
-    medianUltimateSlot: Object.fromEntries(
-      Object.entries(ultimateSlots).map(([h, a]) => [h, median(a)])
     ),
     survivalPct: Object.fromEntries(
       Object.entries(units).map(([h, n]) => [h, round((100 * (survivors[h] ?? 0)) / n)])

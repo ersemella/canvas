@@ -283,7 +283,7 @@ async function abandonOn(p) {
 try {
   await page.goto(`${WEB_URL}/play/silk-road-run`);
   // The start menu: the game in brief, the three heroes (all taken at
-  // first; the Modao Vanguard is left out for now), Start.
+  // first), Start.
   const picks = page.getByTestId('hero-picks').getByRole('button');
   await picks.first().waitFor({timeout: 15_000});
   check('the start menu offers the three heroes', (await picks.count()) === 3);
@@ -669,13 +669,12 @@ try {
     !(await sheet.textContent()).includes('Could do next turn')
   );
   check('the sheet doesn’t list Hold', !(await sheet.textContent()).includes('Hold'));
-  // Abilities by name; a click explains one, in slots, not costs.
+  // Abilities by name; a click explains one, with its damage (the user's power).
   await sheet.locator('[data-ability]').first().click();
   const about = page.getByTestId('ability-info');
   check(
-    'a click on an ability’s name explains it, in slots, not costs',
-    /(Cost|Charge) \+\d+/.test(await about.textContent()) &&
-      !/(Cost|Charge|Recovery) \d/.test(await about.textContent()),
+    'a click on an ability’s name explains it, with its damage and no cost',
+    /Damage \d+/.test(await about.textContent()) && !/Cost/.test(await about.textContent()),
     await about.textContent().catch(() => null)
   );
   // A keyword clicked on the enemy's sheet explains itself there, the
@@ -1038,7 +1037,7 @@ try {
     );
   }
   await shot(phone, 'phone-tooltip');
-  // Always complete: every ability, the ultimate's keyword, nothing to expand.
+  // Always complete: every ability, nothing to expand.
   // At least 1: the unit shown may be a wolf, which has only Bite.
   check(
     'phone: the tooltip lists the abilities by name, nothing to expand',

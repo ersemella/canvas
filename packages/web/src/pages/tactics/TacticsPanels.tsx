@@ -407,9 +407,9 @@ function SheetPortrait({unit}: {unit: Unit}) {
 }
 
 /**
- * An ability explained: what it is for, then what it does, its keywords
- * tappable in turn. For a name tapped on a stat sheet, and on desktop for
- * the ability picked for the turn.
+ * An ability explained: what it is for and its damage (a Term: the user's
+ * power), then what it does, its keywords tappable in turn. For a name
+ * tapped on a stat sheet, and on desktop for the ability picked for the turn.
  */
 export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
   return (
@@ -417,7 +417,8 @@ export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
       {def.kind && (
         <>
           {abilityIcon(def)}
-          <b>{def.name}</b> · {KIND_NAME[def.kind]}
+          <b>{def.name}</b> · {KIND_NAME[def.kind]} ·{' '}
+          <Term id="power">Damage {unit.power}</Term>
         </>
       )}
       {!def.kind && <b>{def.name}</b>}
