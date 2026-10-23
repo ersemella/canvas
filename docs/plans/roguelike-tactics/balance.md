@@ -643,6 +643,36 @@ speed (its track steps don't change at that step) but dies first. Temee
 is rarely attacked and rarely decides a fight, so the race to the exit
 does little at these lengths.
 
+### Scaling Hail down (2026-10-23)
+
+`experiments/hail-tuning.mjs`, 400 fights each, the full party against
+two Storm Callers and a wolf (Hail's best enemy) and against all three
+heroes (stage 3). The player's win rate rises as Hail weakens; for
+reference, two Outriders and a wolf lose 95.8% of the time, two
+Champions and a wolf 100%.
+
+| Hail (base values) | vs two Storm Callers | vs all three | Temee out, of 400 (all three) | Unfinished (all three) |
+|---|---:|---:|---:|---:|
+| Current: land 40, linger 20, 20 slots, Push 5, range 3 | 71.3% | 63.8% | 24 | 0% |
+| Linger 10 | 88.0% | 62.8% | 44 | 0% |
+| Linger 0 | 82.8% | 66.3% | 41 | 0% |
+| 10 slots | 75.8% | 63.5% | 20 | 0% |
+| Push 3 | 72.5% | 66.3% | 30 | 0% |
+| Range 2 | 78.3% | 63.7% | 40 | 0.3% |
+| **Land 20** | **98.8%** | **76.4%** | **112** | 2.5% |
+| Land 20, 10 slots | 99.5% | 77.1% | 102 | 3.0% |
+| Land 20, linger 10 | 99.8% | 81.4% | 118 | 3.3% |
+| Land 0 | 100% | 85.3% | 159 | 1.3% |
+
+The damage on landing is what makes Hail strong: halving it does more
+than removing everything else that was tried. Lingering, duration,
+Push and range each move the two-Storm-Caller enemy by under 17 points
+and stage 3 by under 3. With landing damage 20, two Storm Callers are
+about as strong as two of either other hero, stage 3 gets easier, and
+Temee reaching the exit wins over a quarter of stage-3 fights instead of
+6%, at the cost of a few fights going unfinished. Landing damage 30 is
+untried.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
