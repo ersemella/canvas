@@ -124,7 +124,8 @@ export class Playback {
     this.index = index;
     const e = this.events[index];
     if (!e) return;
-    if (e.kind === 'turn' || e.kind === 'action' || e.kind === 'skip') this.actor = e.unitId;
+    if (e.kind === 'turn' || e.kind === 'action' || e.kind === 'land' || e.kind === 'skip')
+      this.actor = e.unitId;
     this.display = displayFight(this.base, e, this.actor);
   }
 }

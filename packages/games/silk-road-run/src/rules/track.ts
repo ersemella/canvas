@@ -14,14 +14,19 @@ export function actionCost(unit: Unit): number {
   return Math.max(1, Math.round((actionBase * speedPivot) / (unit.speed + speedPivot)));
 }
 
-/** Slots an ability's charge adds to its user's card on top of its action cost: Volley's. */
+/**
+ * A charged ability's charge (owner, 2026-10-23): its user's card goes
+ * this many slots on instead of its action cost, greyed while it charges,
+ * and the ability lands when the card comes back, in place of a turn
+ * (`landCharge` in fight.ts). Volley's; 0 for the rest.
+ */
 export function chargeOf(ability: AbilityId): number {
   return ability === 'volley' ? ABILITY.volley.charge : 0;
 }
 
 /**
  * Where a turn ending at slot `now` aims `unit`'s card, before yielding
- * (3.2): its action cost on, and the charge of the `ability` it used.
+ * (3.2): its action cost on, or the charge of a charged `ability`.
  */
 export function aimSlot(
   state: FightState,
@@ -29,7 +34,8 @@ export function aimSlot(
   now = state.currentSlot,
   ability?: AbilityId
 ): number {
-  return now + actionCost(unit) + (ability ? chargeOf(ability) : 0);
+  const charge = ability ? chargeOf(ability) : 0;
+  return now + (charge > 0 ? charge : actionCost(unit));
 }
 
 /** The first free slot at or after `slot`. */
@@ -46,16 +52,18 @@ export function freeSlotFrom(state: FightState, slot: number, ignore?: Unit): nu
  * Places a unit's card at `slot`, resolving collisions by speed (3.3;
  * owner, 2026-10-23): a faster arriving card takes the slot and the card
  * there moves on to the next, colliding again by the same rule; an equal
- * or slower one yields to the next slot itself. Returns the unit's slot.
+ * or slower one yields to the next slot itself. A `push`ed card takes
+ * its slot whatever its speed (a charge's), the card there moving on as
+ * above. Returns the unit's slot.
  */
-export function placeCard(state: FightState, unit: Unit, slot: number): number {
+export function placeCard(state: FightState, unit: Unit, slot: number, push = false): number {
   unit.slot = null;
   let moving = unit;
   let s = slot;
   for (;;) {
     const there = state.units.find((u) => u.alive && u !== moving && u.slot === s);
     if (!there) break;
-    if (moving.speed > there.speed) {
+    if (moving.speed > there.speed || (push && moving === unit)) {
       moving.slot = s;
       moving = there;
     }

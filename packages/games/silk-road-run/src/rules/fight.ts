@@ -22,7 +22,7 @@ import {
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
-import {aimSlot, nextCard, placeCard, placeStartingCards, shuffled} from './track';
+import {aimSlot, chargeOf, nextCard, placeCard, placeStartingCards, shuffled} from './track';
 import type {FightState, HeroId, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
@@ -177,10 +177,11 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     spend?.();
     const ctx: Ctx = {state, map, slot: unit.slot!};
     state.currentSlot = unit.slot!;
+    if (charging(state, unit)) {
+      landCharge(ctx, unit);
+      continue;
+    }
     record(state, {kind: 'turn', unitId: unit.id});
-    landVolleys(ctx, unit);
-    // The volley can end the fight.
-    if (state.phase !== 'fight') return;
     // Its hail lasts until its next turn: this one (owner, 2026-10-23).
     clearHail(state, unit);
     // An Enhance lasts until the end of this turn.
@@ -206,6 +207,23 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     state.awaiting = unit.id;
     return unit;
   }
+}
+
+/** Whether `unit`'s card is out charging: a volley of its is in the air. */
+export function charging(state: FightState, unit: Unit): boolean {
+  return Boolean(state.volleys?.some((v) => v.source === unit.id));
+}
+
+/**
+ * A charging card come back (owner, 2026-10-23): its volleys land, and
+ * that is all, no turn and nothing that comes with one (hail lifting, a
+ * squeeze, an Enhance running out, Stunned); then the card goes its action
+ * cost on (3.2), to the unit's next turn.
+ */
+function landCharge(ctx: Ctx, unit: Unit): void {
+  landVolleys(ctx, unit);
+  checkEnd(ctx.state);
+  if (unit.alive) placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
 }
 
 /** A turn it can't take, or with only Hold to choose: its card marked as skipped, placed as after any turn. */
@@ -285,7 +303,9 @@ export function applyTurn(
   state.awaiting = null;
   checkEnd(state);
   endTurnEffects(unit);
-  if (unit.alive) placeCard(state, unit, aimSlot(state, unit, state.currentSlot, def.id));
+  // A charged ability's card is pushed out to its charge, the cards there moving on.
+  if (unit.alive)
+    placeCard(state, unit, aimSlot(state, unit, state.currentSlot, def.id), chargeOf(def.id) > 0);
 }
 
 /** A deep copy for previews and the AI; drops the log unless asked, and the events always. */

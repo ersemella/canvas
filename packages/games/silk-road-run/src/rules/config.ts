@@ -142,12 +142,11 @@ export const ABILITY = {
   /**
    * Arrows from above (owner, 2026-10-23): aimed at one space within 3 with
    * a unit on it, adjacent included, no line of fire needed, as hail falls.
-   * Charged (owner, 2026-10-23; balance.md): the Outrider's card goes
-   * `charge` slots on after a volley on top of its action cost, and the
-   * arrows land at the start of that next turn on whoever stands there
-   * then, for the Outrider's power. Charge 2 makes the wait longer than a
-   * speed-2 unit's action cost, so every unit that can walk gets a turn to
-   * step out.
+   * Charge 4 (owner, 2026-10-23): the Outrider's card is pushed `charge`
+   * slots on, greyed while it charges; when it comes back the arrows land
+   * on whoever stands there then, for the Outrider's power, with no turn
+   * for the Outrider, and its card goes its action cost on to its next
+   * turn.
    */
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
@@ -157,7 +156,7 @@ export const ABILITY = {
    * target. Both on since the owner's call the same day (balance.md).
    */
   sunlight: {range: 3, enhance: 2, self: true as boolean, melts: true as boolean},
-  volley: {range: 3, charge: 2},
+  volley: {range: 3, charge: 4},
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
