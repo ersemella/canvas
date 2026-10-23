@@ -181,11 +181,12 @@ export const AI = {
   immobilizedShare: {ranged: 0.1, melee: 0.4},
   stunnedShare: 1,
   /**
-   * Enhance is worth this share of one hit's extra damage to a unit with
-   * power, which gets one turn to use it; the search sees the kills it
-   * makes.
+   * The share of an Enhance's worth the AI counts (`enhanceGain` in
+   * ai.ts): its extra damage, and a kill it makes, happen only if its unit
+   * gets to hit on its next turn. ½ (2026-10-23; balance.md): at 1
+   * Sunlight was a trap, at ½ the Storm Caller Hails most.
    */
-  enhancedShare: 1,
+  enhancedShare: 0.5 as number,
   /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends

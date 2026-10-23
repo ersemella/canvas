@@ -161,6 +161,9 @@ get one is open.
 **The Storm Caller's second ability** (owner, 2026-10-23): Sunlight,
 Enhance 2 for a turn, added as measured. Enhance 1 (with self-targeting, the
 squeeze and melting hail as variants) was worth nothing; at Enhance 2 it is
-a trap with today's AI, which counts its +2 at about twice what it delivers
-([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). Open: the AI's
-valuation, then whether Enhance 2 stays.
+a trap with that day's AI, which counted its +2 at about twice what it
+delivered ([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). With
+the AI's valuation fixed and the kit as it plays (self, melts, squeeze), it
+is no longer a trap but still adds nothing, takes Hail's turns, and makes
+enemy Storm Callers stronger ([balance.md](balance.md#sunlight-as-it-plays-and-the-ais-valuation-2026-10-23)).
+Open: whether it stays.

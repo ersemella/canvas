@@ -55,25 +55,36 @@ function statusPoints(state: FightState, u: Unit): number {
 }
 
 /**
- * An Enhance is worth one hit's extra damage, if `u` has an enemy within
- * reach to hit (`canStrike`). Once its turn has begun it is being spent, so
- * it no longer counts: spending it on a hit must not score as losing it.
+ * What an Enhance is worth (balance.md): its extra damage on `u`'s next
+ * hit, if an enemy is within reach (`strikable`), plus a kill's worth if
+ * that hit would kill only with it, and for a Champion grappling a unit
+ * the squeeze's extra too (`ABILITY.grapple.enhancedSqueeze`), all times
+ * `AI.enhancedShare`, the share of Enhances that get used. Once its turn
+ * has begun it is being spent, so it no longer counts: spending it on a
+ * hit must not score as losing it.
  */
 function enhanceGain(state: FightState, u: Unit): number {
-  if (!u.enhance || u.enhanceStarted || u.power <= 0 || !canStrike(state, u)) return 0;
-  return u.enhance * AI.enhancedShare;
+  if (!u.enhance || u.enhanceStarted || u.power <= 0) return 0;
+  const targets = strikable(state, u);
+  if (targets.length === 0) return 0;
+  const squeezes =
+    ABILITY.grapple.enhancedSqueeze &&
+    state.units.some((t) => t.alive && t.statuses.some((x) => x.grapple?.champion === u.id));
+  const reach = u.power + u.enhance;
+  const kill = targets.some((t) => t.hero !== CAMEL && t.hp > u.power && t.hp <= reach);
+  return AI.enhancedShare * (u.enhance * (squeezes ? 2 : 1) + (kill ? AI.kill : 0));
 }
 
 /**
- * Whether an enemy stands where `u` could hit it from where it is, roughly:
+ * The enemies standing where `u` could hit them from where it is, roughly:
  * next to it for melee, within hail's range for the Storm Caller, within
  * Volley's or on one of the bow's lines (ignoring what blocks it) for the
  * Outrider.
  */
-function canStrike(state: FightState, u: Unit): boolean {
-  if (!u.hex) return false;
+function strikable(state: FightState, u: Unit): Unit[] {
+  if (!u.hex) return [];
   const has = (a: AbilityId) => HEROES[u.hero].abilities.includes(a);
-  return state.units.some((e) => {
+  return state.units.filter((e) => {
     if (!e.alive || !e.hex || !hostile(e, u)) return false;
     const d = hexDistance(u.hex!, e.hex);
     if (d <= 1) return true;

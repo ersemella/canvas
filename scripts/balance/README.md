@@ -15,7 +15,9 @@ switches they patch were removed once the kits were chosen; `volley.mjs`
 still runs (Fog dropped from it), as do `volley-charge.mjs` and
 `volley-delayed.mjs` (charge 0). `pared.mjs`, `stats.mjs` and `caravans.mjs`
 run on the current rules. `sunlight.mjs` (2026-10-23) measures Sunlight's variants,
-and the kit before it (Hail alone) as `today`.
+and the kit before it (Hail alone) as `today`; `sunlight-ai.mjs` the AI's
+share of an Enhance's worth, and `sunlight-full.mjs` the kit as it plays
+against Hail alone.
 
 ## Ability and stat ablation
 

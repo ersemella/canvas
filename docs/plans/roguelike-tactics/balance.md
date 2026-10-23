@@ -1251,6 +1251,79 @@ melts and squeeze on (owner, the same day). That combination, at Enhance 2,
 wasn't measured; the AI's valuation is unchanged, so it still
 misuses it.
 
+### Sunlight as it plays, and the AI's valuation (2026-10-23)
+
+Sunlight as adopted (owner): Enhance 2, the Storm Caller may target
+itself, hail melts, and an Enhanced Champion's squeeze deals its Enhance
+more; on the day's later rules (action cost 60 ÷ (speed + 5), Volley
+charged at range 3).
+
+**The valuation** (`enhanceGain` in ai.ts), rebuilt: an Enhance is worth
+its extra damage on the unit's next hit if an enemy is in reach, twice
+that for a Champion that grapples (its squeeze), plus a kill's worth if
+that hit kills only with it, all times `AI.enhancedShare`.
+`experiments/sunlight-ai.mjs`, 400 fights each:
+
+| Share counted | 1 | ¾ | ½ | ¼ |
+|---|---:|---:|---:|---:|
+| Side without Sunlight wins | 53% | 49.8% | **49.3%** | 50.3% |
+| Storm Caller: Hail / Sunlight | 25% / 47% | 29% / 42% | 40% / 33% | 46% / 25% |
+| Self-casts, of all casts | 37% | 37% | 27% | 22% |
+| Temee killed (of 400) | 48 | 46 | **40** | 52 |
+
+**Adopted: ½** (`AI.enhancedShare`). At 1 Sunlight is still a slight trap
+and crowds Hail out; at ½ it is no longer one, the Storm Caller Hails
+most, and Temee dies least. No share makes Sunlight worth anything.
+
+**The full measurement** (`experiments/sunlight-full.mjs`, 400 fights
+each): the kit as it plays against the Storm Caller with Hail alone, on the
+same rules.
+
+| Side without | Sunlight kit | Hail alone |
+|---|---:|---:|
+| Sunlight | 49.3% | |
+| Hail | 22.5% | 15.8% |
+| Grapple | 14.3% | 13.8% |
+| Throw | 48.3% | 47.3% |
+| Bow | 24.8% | 28.5% |
+| Volley | **51.8%** | 44% |
+
+| Control fights | Sunlight kit | Hail alone |
+|---|---:|---:|
+| Storm Caller: Hail / Sunlight / walk | 40% / 33% / 27% | 72% / / 27% |
+| Sunlight's targets: self / Champion / Outrider | 27% / 35% / 38% | |
+| Enhance's damage a fight; hails melted | 4.8; 0.84 | |
+| Temee killed (of 400) | 40 | 30 |
+
+**Stage caravans**, player wins:
+
+| Enemy | Sunlight kit | Hail alone |
+|---|---:|---:|
+| Bökh + 2 wolves | 94% | 96.8% |
+| Outrider + 2 wolves | 99.8% | 100% |
+| Storm Caller + 2 wolves | 99.8% | 100% |
+| Bökh + Bökh + wolf | 70.8% | 72.3% |
+| Bökh + Outrider + wolf | 87% | 89.8% |
+| Bökh + Storm + wolf | 89.8% | 91.8% |
+| Outrider + Outrider + wolf | 92.3% | 97% |
+| Outrider + Storm + wolf | 93.3% | 99% |
+| Storm + Storm + wolf | **84.8%** | 97.8% |
+| All three | 67.5% | 73.8% |
+
+No fight unfinished; medians 31–46 actions.
+
+- **Sunlight still adds nothing** (49.3%) and takes Hail's turns: the side
+  without Hail wins 22.5% (15.8% with Hail alone).
+- **It makes Volley worth nothing** (51.8%, 44% with Hail alone): an
+  Enhanced Outrider's Bow (4 damage, a kill on any 4-health unit) is
+  worth more than a charged Volley. The Bow is worth more (24.8%).
+- **The enemy gains more from it than the player**: every stage with an
+  enemy Storm Caller is harder, most with two (84.8% from 97.8%; they
+  Enhance each other, a Hail then dealing 3), and the last stage falls to
+  67.5% from 73.8%. With no enemy Storm Caller the stages move 1–5 points.
+- **It doesn't counter the Outrider**: two enemy Outriders win more often
+  (92.3% player wins, 97% with Hail alone).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
