@@ -19,7 +19,8 @@ import type {AbilityId} from '@balance-rules/types';
  * no unit can be targeted to melt it. Whether Enhance adds to Grapple's
  * squeeze is `ABILITY.grapple.enhancedSqueeze`.
  */
-const defaults = {range: 3, enhance: 1, self: false, melts: false};
+// Enhance 2 (owner, 2026-10-23; 1 when first measured).
+const defaults = {range: 3, enhance: 2, self: false, melts: false};
 const config = ABILITY as unknown as {sunlight: typeof defaults};
 config.sunlight = {...defaults};
 

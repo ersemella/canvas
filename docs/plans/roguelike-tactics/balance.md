@@ -1034,6 +1034,89 @@ fights: the player's side won 65%, Temee killed in 54 of 400. Stage
 caravans, player wins: one hero and two wolves 92.8–99.5%; two heroes and
 a wolf 72.7–99% but 42.5% against two Outriders; all three 61.3%.
 
+#### Volley delayed, at range 3 (2026-10-23)
+
+Owner's question: a wider Volley, range 3, whose arrows land on the marked
+space at the start of the Outrider's next turn, on whoever stands there
+then; nothing else changed (still aimed at a space with a unit on it).
+Built as an experiment switch, off in play: `ABILITY.volley.delayed`. The
+AI values a volley in the air at its hit, `AI.volleyDodgeShare` (0.25, a
+PLACEHOLDER) of it if the unit there can walk before it lands, and its
+threat map counts a delayed Volley's reach at that share.
+`experiments/volley-delayed.mjs`, 400 fights each, seeds from 1000, against
+the adopted kits on the same seeds:
+
+| | Adopted (range 2, instant) | Range 3, delayed |
+|---|---:|---:|
+| Side without Volley wins | 23.5% | 26.2% |
+| Side without the Bow wins | 38.3% | 34.8% |
+| Side without Hail / Grapple / Throw wins | 18.8% / 16.8% / 49.5% | 17.8% / 20.8% / 49.5% |
+| The Outrider's turns: Volley / Bow / walking / Hold | 17 / 38 / 33 / 13% | **44** / 25 / 30 / 1% |
+| Volley damage per fight (both sides) | 5.3 | 10.5 |
+| Volley kills per fight | 0.56 | 1.74 |
+| Volleys that hit a unit | 100% | about 60% |
+| Temee killed (of 400 control fights) | 54 | 34 |
+| Player wins vs Outrider + 2 wolves | 92.8% | 99.5% |
+| vs Bökh + Outrider + wolf | 72.7% | 84.7% |
+| vs Outrider + Storm + wolf | 87.8% | 97.5% |
+| vs Outrider + Outrider + wolf | **42.5%** | **81.5%** |
+| vs all three | 61.3% | 67.8% |
+
+Unfinished 0–1%.
+
+- **The stage spike goes**: two enemy Outriders become an ordinary stage-2
+  enemy, and Temee dies less often. A volley on a unit that can still walk
+  mostly makes it step aside.
+- **Volley's worth doesn't fall**: a side without it still wins only
+  26.2%, a core ability's worth for a second attack, and the AI takes it
+  on 44% of the Outrider's turns (over the 35% that makes a non-core
+  ability suspect), with twice the damage and three times the kills. At
+  range 3 it nearly always has a target, so it becomes the Outrider's main
+  attack and the Bow its fallback.
+- The result leans on how well the AI dodges (about 40% of volleys miss);
+  a player who reliably steps out would weaken it further. Delayed at
+  range 2 is the next to try.
+
+#### Volley charged, at range 3 (2026-10-23)
+
+Owner's follow-up: the delay above costs the Outrider nothing, its arrows
+landing at the start of a turn it takes anyway. Made a charge: after a
+delayed volley the Outrider's card goes `ABILITY.volley.charge` more slots
+on than its action cost (6), and the arrows land at the start of that later
+turn, so the target has 6 + charge slots to step out. The AI prices a
+charge at its share of a turn (charge ÷ action cost × the Outrider's hit).
+`experiments/volley-charge.mjs`, 400 fights each, seeds from 1000:
+
+| | Adopted | Delayed, no charge | Charge 2 | Charge 4 | Charge 6 |
+|---|---:|---:|---:|---:|---:|
+| Side without Volley wins | 23.5% | 26.2% | 49.5% | 50.5% | 51% |
+| Side without the Bow wins | 38.3% | 34.8% | 21.5% | 18.5% | 15.5% |
+| Side without Hail / Grapple wins | 18.8 / 16.8% | 17.8 / 20.8% | 13.5 / 10.8% | 16 / 11% | 19 / 8.8% |
+| The Outrider's turns on Volley | 17% | 44% | 17% | 12% | 6% |
+| Volleys cast / hitting a unit, per fight | 2.7 / 2.7 | 8.6 / 5.3 | 2.5 / 1.9 | 1.7 / 1.4 | 0.9 / 0.6 |
+| Temee killed (of 400) | 54 | 34 | 36 | 46 | 46 |
+| Player wins vs Outrider + 2 wolves | 92.8% | 99.5% | 98.3% | 97.3% | 94.8% |
+| vs Bökh + Outrider + wolf | 72.7% | 84.7% | 81.8% | 81.8% | 73.5% |
+| vs Outrider + Storm + wolf | 87.8% | 97.5% | 95% | 92.3% | 87.3% |
+| vs Outrider + Outrider + wolf | 42.5% | 81.5% | 79% | 74% | 64.8% |
+| vs all three | 61.3% | 67.8% | 60.8% | 61% | 57.8% |
+
+No fight unfinished (0–0.3%).
+
+- **Any charge makes Volley worth nothing** (49.5–51%). It is a
+  breakpoint (principle 7): from charge 2 the window is 8 slots, the action
+  cost of every speed-2 unit, so every hero and wolf gets a turn to step
+  out before the arrows land. What Volley still hits is a unit that can't
+  walk (Immobilized, Stunned) or that stays; it lands about 75% of the
+  time but is cast rarely.
+- The Bow becomes the Outrider's attack again (side without it 15.5–21.5%,
+  core worth), and Grapple and Hail matter more.
+- The stages: two enemy Outriders stay easier than with the adopted
+  Volley (65–79% against 42.5%), the hardest stage-2 enemy at charge 6;
+  the last stage is as before.
+- A charge of 1 (a window of 7, under a speed-2 unit's turn) is the one
+  value left between paying too much and nothing.
+
 ### Sunlight as Enhance (2026-10-23)
 
 A proposal for the Storm Caller's second ability (open question in
@@ -1105,9 +1188,18 @@ on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
 - **It doesn't counter the Outrider**: stages with enemy Outriders move
   within noise (two Outriders 43–44.5%, 42.5% today).
 - **Enhance 2 is a trap** (57%): it takes a quarter of the Storm Caller's
-  turns and half of Hail's worth (31.3%), and an enemy Storm Caller's
-  Enhanced arrows kill Temee twice as often (104 of 400), so every stage
-  gets harder.
+  turns (3.75 casts a fight) and Hail's from it (Hail on 45% of turns, its
+  damage 6.5 a fight from 10.1), yet adds only 4.1 damage a fight, about
+  1.1 of each cast's 2: the Enhanced ally often has no hit on its next
+  turn. Without Hail holding them, enemies reach Temee: it dies in 104 of
+  400 control fights (54 today), and in 46 of 400 against the Outrider and
+  two wolves (29 today), a caravan with no Storm Caller, so it is the
+  player's own Sunlight that costs it. The AI counts the full +2 whenever
+  an enemy is in reach, about twice what it delivers (principle 4).
+
+**Merged with Enhance 2** (owner, 2026-10-23): `ABILITY.sunlight.enhance`
+defaults to 2 in `scripts/balance/sunlight.ts`. It is still in no hero's
+kit.
 
 ## Principles for re-tuning
 

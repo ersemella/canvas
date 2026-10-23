@@ -5,7 +5,7 @@
 import {hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES} from './config';
-import {addStatus, hailOn} from './board';
+import {addStatus, hailOn, unitAt} from './board';
 import {MAPS} from './map';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, Motion, Status, Unit} from './types';
@@ -108,8 +108,9 @@ export function kill(ctx: Ctx, unit: Unit): void {
   log(ctx, `${unitName(unit)} falls.`);
   if (at) record(ctx.state, {kind: 'death', unitId: unit.id, hex: at});
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
-  // Its hail lasted until its next turn, which won't come.
+  // Its hail lasted until its next turn, which won't come; so did its volleys.
   clearHail(ctx.state, unit);
+  if (ctx.state.volleys) ctx.state.volleys = ctx.state.volleys.filter((v) => v.source !== unit.id);
   checkEnd(ctx.state);
 }
 
@@ -146,6 +147,21 @@ export function atExit(state: FightState, h: Hex): boolean {
 export function clearHail(state: FightState, caster: Unit): void {
   state.effects = state.effects.filter((e) => e.source !== caster.id);
   for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);
+}
+
+/**
+ * `user`'s delayed volleys land, its next turn having come: whoever stands
+ * on each space takes its power.
+ */
+export function landVolleys(ctx: Ctx, user: Unit): void {
+  const mine = ctx.state.volleys?.filter((v) => v.source === user.id);
+  if (!mine?.length) return;
+  ctx.state.volleys = ctx.state.volleys!.filter((v) => v.source !== user.id);
+  for (const v of mine) {
+    log(ctx, `${unitName(user)}'s volley lands.`);
+    const u = unitAt(ctx.state, v.hex);
+    if (u) hit(ctx, user, u, `${unitName(user)}'s volley`);
+  }
 }
 
 /** A unit in hail is Immobilized until that hail disappears (owner, 2026-10-23). */

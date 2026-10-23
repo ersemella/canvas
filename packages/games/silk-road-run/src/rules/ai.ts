@@ -12,12 +12,14 @@ import {
   movementCap,
   reachableHexes,
   roadDistance,
+  unitAt,
 } from './board';
 import {abilitiesOf, unusableReason} from './abilities';
 import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
-import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
+import {RuleError, advanceToDecision, applyTurn, chargeOf, cloneFight, mapOf} from './fight';
+import {actionCost as cardCost} from './track';
 import {camelOf} from './resolve';
 import {MAPS} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
@@ -114,6 +116,32 @@ function camelProgress(state: FightState, side: Side): number {
   return (side === 'enemy' ? 1 : -1) * camelDistance(state) * AI.perCamelHex;
 }
 
+/**
+ * What the delayed volleys in the air are worth to `side`: each the hit
+ * it will deal whoever stands on its space now, only `AI.volleyDodgeShare`
+ * of it if that unit can walk out before it lands.
+ */
+function volleyPoints(state: FightState, side: Side): number {
+  let score = 0;
+  for (const v of state.volleys ?? []) {
+    const source = state.units.find((u) => u.id === v.source);
+    const target = unitAt(state, v.hex);
+    if (!source?.alive || source.slot === null || !target) continue;
+    const hit = Math.min(source.power, target.hp);
+    const dodges =
+      target.slot !== null &&
+      target.slot < source.slot &&
+      !isStunned(target) &&
+      !isImmobilized(target);
+    const value = dodges
+      ? hit * AI.volleyDodgeShare
+      : hit * (target.hero === CAMEL ? AI.camelHealthWeight : 1) +
+        (hit >= target.hp && target.hero !== CAMEL ? AI.kill : 0);
+    score += (target.side === side ? -1 : 1) * value;
+  }
+  return score;
+}
+
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
 export function scoreOutcome(
   before: FightState,
@@ -139,7 +167,10 @@ export function scoreOutcome(
   // (a dead camel is no longer anywhere, so its walk alone would miss it).
   if (after.phase !== 'fight')
     score += ((after.phase === 'won') === (actor.side === 'player') ? 1 : -1) * AI.victory;
-  else score += camelProgress(after, actor.side) - camelProgress(before, actor.side);
+  else {
+    score += camelProgress(after, actor.side) - camelProgress(before, actor.side);
+    score += volleyPoints(after, actor.side) - volleyPoints(before, actor.side);
+  }
   const me = after.units.find((u) => u.id === actor.id)!;
   // What enemies could do to it before its next turn (one step of lookahead),
   // weighed by the share of its health it would lose and by the hero's caution.
@@ -153,6 +184,11 @@ export function scoreOutcome(
   }
   score -= quarryGap(after, me, huntsTemee(before, actor)) * AI.perHexFromEnemy;
   return score;
+}
+
+/** What a turn's charge costs its user: the share of a turn it waits, in damage. */
+function chargeCost(actor: Unit, input: TurnInput): number {
+  return (chargeOf(input.action.ability) / cardCost(actor)) * turnValue(actor);
 }
 
 /**
@@ -201,7 +237,11 @@ export function scoreOptions(
     if (budget) budget.left--;
     const after = simulate(state, unit.id, input, true);
     if (!after) continue;
-    out.push({input, score: scoreOutcome(state, after, unit, threats), after});
+    out.push({
+      input,
+      score: scoreOutcome(state, after, unit, threats) - chargeCost(unit, input),
+      after,
+    });
   }
   return out;
 }
@@ -254,7 +294,7 @@ export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
-  let score = camelProgress(state, side);
+  let score = camelProgress(state, side) + volleyPoints(state, side);
   for (const u of state.units) {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
@@ -421,16 +461,16 @@ export function requestChooser(budget: SearchBudget): (state: FightState, unit: 
 }
 
 /**
- * Reward progress toward combat, as a cost (negative for progress). It
- * belongs to the acting team: subtracting both teams' absolute distances in
- * a static evaluation would cancel out in a duel and make Holding
- * preferable.
+ * Reward progress toward combat, as a cost (negative for progress), plus
+ * the turn's charge (`chargeCost`). Progress belongs to the acting team:
+ * subtracting both teams' absolute distances in a static evaluation would
+ * cancel out in a duel and make Holding preferable.
  */
 function actionCost(before: FightState, unit: Unit, option: ScoredOption): number {
   const hunting = huntsTemee(before, before.units.find((u) => u.id === unit.id)!);
   const gap = (state: FightState) =>
     quarryGap(state, state.units.find((u) => u.id === unit.id)!, hunting);
-  return -(gap(before) - gap(option.after)) * AI.perHexFromEnemy;
+  return -(gap(before) - gap(option.after)) * AI.perHexFromEnemy + chargeCost(unit, option.input);
 }
 
 /**

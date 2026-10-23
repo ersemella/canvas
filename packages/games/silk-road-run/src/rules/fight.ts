@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals} from '@canvas/engine/server';
-import {CAMEL, HEROES, PARTY, healthOf} from './config';
+import {ABILITY, CAMEL, HEROES, PARTY, healthOf} from './config';
 import {invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
@@ -13,6 +13,7 @@ import {
   clearHail,
   endTurnEffects,
   enterHex,
+  landVolleys,
   log,
   record,
   squeezeGrapples,
@@ -22,7 +23,7 @@ import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
 import {aimSlot, nextCard, placeCard, placeStartingCards, shuffled} from './track';
-import type {FightState, HeroId, Side, TurnInput, Unit} from './types';
+import type {AbilityId, FightState, HeroId, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
 export class RuleError extends Error {}
@@ -177,6 +178,9 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     const ctx: Ctx = {state, map, slot: unit.slot!};
     state.currentSlot = unit.slot!;
     record(state, {kind: 'turn', unitId: unit.id});
+    landVolleys(ctx, unit);
+    // The volley can end the fight.
+    if (state.phase !== 'fight') return;
     // Its hail lasts until its next turn: this one (owner, 2026-10-23).
     clearHail(state, unit);
     // An Enhance lasts until the end of this turn.
@@ -281,7 +285,12 @@ export function applyTurn(
   state.awaiting = null;
   checkEnd(state);
   endTurnEffects(unit);
-  if (unit.alive) placeCard(state, unit, aimSlot(state, unit));
+  if (unit.alive) placeCard(state, unit, aimSlot(state, unit) + chargeOf(def.id));
+}
+
+/** Slots a delayed volley's charge adds to its user's card (`ABILITY.volley.charge`). */
+export function chargeOf(ability: AbilityId): number {
+  return ability === 'volley' && ABILITY.volley.delayed ? ABILITY.volley.charge : 0;
 }
 
 /** A deep copy for previews and the AI; drops the log unless asked, and the events always. */
@@ -296,6 +305,7 @@ export function cloneFight(state: FightState, keepLog = false): FightState {
       statuses: u.statuses.map((s) => ({...s})),
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
+    ...(state.volleys ? {volleys: state.volleys.map((v) => ({...v, hex: {...v.hex}}))} : {}),
     log: keepLog ? state.log.map((l) => ({...l})) : [],
   };
 }

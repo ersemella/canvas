@@ -12,7 +12,7 @@ const variants = {
   squeeze: {squeeze: true},
   melts: {melts: true},
   all: {self: true, squeeze: true, melts: true},
-  // Not asked for: whether a bigger Enhance rescues it.
+  // The default since 2026-10-23 (owner); the variants above measure Enhance 1.
   enhance2: {enhance: 2},
 };
 const patchFor =

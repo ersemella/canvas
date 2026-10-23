@@ -142,7 +142,21 @@ export const ABILITY = {
    * (owner, 2026-10-23; balance.md): at 3 it was the strongest ability in
    * the game.
    */
-  volley: {range: 2},
+  volley: {
+    range: 2,
+    /**
+     * An experiment (2026-10-23), off in play: the arrows land on the space
+     * at the start of the Outrider's next turn, on whoever stands there
+     * then, so the target can step out.
+     */
+    delayed: false as boolean,
+    /**
+     * With `delayed`: slots the Outrider's card goes on after a volley on
+     * top of its action cost, so the arrows land (at its next turn) later
+     * and it waits for them.
+     */
+    charge: 0 as number,
+  },
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
@@ -184,6 +198,12 @@ export const AI = {
    */
   caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0, wolf: 1} as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
+  /**
+   * A delayed volley (`ABILITY.volley.delayed`) on a unit that acts before
+   * it lands and can walk is worth this share of the hit: it can step out.
+   * PLACEHOLDER.
+   */
+  volleyDodgeShare: 0.25,
   /**
    * Minus this per space between the unit and what it closes in on after
    * its turn (for the enemy, Temee once no hero is in its reach; otherwise

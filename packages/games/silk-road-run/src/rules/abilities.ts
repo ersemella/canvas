@@ -154,8 +154,12 @@ const volley: AbilityDef = {
       return u !== undefined && u !== user;
     }),
   resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} looses a volley.`);
+    if (ABILITY.volley.delayed) {
+      (ctx.state.volleys ??= []).push({hex: {...target.hex!}, source: user.id});
+      return;
+    }
+    const u = unitAt(ctx.state, target.hex!)!;
     hit(ctx, user, u, `${unitName(user)}'s volley`);
   },
 };
