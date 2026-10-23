@@ -106,7 +106,7 @@ export function TurnControls(props: {
       <span className={styles.bigButtonCost}>{props.needsTarget}</span>
     </span>
   );
-  // A charged ability (Volley) sends the card its charge on instead, to land.
+  // A charged ability (Skirmish) sends the card its charge on instead, to land.
   const next = (charge = 0) =>
     charge > 0 ? `+${charge}` : props.slotsLater !== null ? `+${props.slotsLater}` : '';
   const label = (name: string, icon: React.ReactNode, charge = 0) => (

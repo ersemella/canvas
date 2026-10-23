@@ -18,6 +18,8 @@ import {
   reachableHexes,
   roadToExit,
   unitAt,
+  firstInLane,
+  shotLane,
 } from './board';
 import {ABILITIES, abilitiesOf, arrowLanes} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
@@ -133,76 +135,115 @@ describe('the track', () => {
     expect(onlyHold(s, mapOf(s), w)).toBe(false);
   });
 
-  it('Volley marks a unit within 3 that no bow lane reaches, over a unit in the way, and lands as its charging card comes back', () => {
+  /** A Skirmish on `target`: the first of its steps that has it in line. */
+  const skirmishOn = (s: FightState, m: Unit, target: Unit): TurnInput => {
+    const t = ABILITIES.skirmish
+      .targets(s, mapOf(s), m, m.hex!)
+      .find((o) => hexKey(o.hex!) === hexKey(target.hex!))!;
+    return {action: {ability: 'skirmish', target: t}};
+  };
+
+  it('Skirmish steps one space, then draws on a unit in line from there, and the arrow flies as its charging card comes back', () => {
     const s = setup({
       'p-mangudai': at(1, 3),
       'p-storm': at(2, 3),
-      'e-bokh': at(3, 3),
+      'e-bokh': at(5, 4),
       'e-storm': at(8, 6),
     });
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
-    expect(HEROES.mangudai.abilities).toEqual(['bow', 'volley', 'hold']);
+    expect(HEROES.mangudai.abilities).toEqual(['bow', 'skirmish', 'hold']);
     // The ally stands between: the bow's lane stops at it.
     expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.side === 'enemy')).toBe(false);
-    const spots = ABILITIES.volley.targets(s, mapOf(s), m, m.hex!);
-    expect(spots.every((t) => hexDistance(t.hex!, m.hex!) <= 3 && unitAt(s, t.hex!))).toBe(true);
-    expect(spots.some((t) => hexKey(t.hex!) === hexKey(bokh.hex!))).toBe(true);
-    expect(spots.some((t) => hexKey(t.hex!) === hexKey(unit(s, 'e-storm').hex!))).toBe(false);
-    const input: TurnInput = {action: {ability: 'volley', target: {hex: bokh.hex!}}};
+    const options = ABILITIES.skirmish.targets(s, mapOf(s), m, m.hex!);
+    // Every option steps to a free space next to it, with its target first in a lane from there.
+    for (const o of options) {
+      expect(hexDistance(o.to!, m.hex!)).toBe(1);
+      expect(unitAt(s, o.to!)).toBeUndefined();
+      expect(
+        [0, 1, 2, 3, 4, 5].some((d) => {
+          const u = firstInLane(s, mapOf(s), o.to!, d, m);
+          return u !== undefined && hexKey(u.hex!) === hexKey(o.hex!);
+        })
+      ).toBe(true);
+    }
+    const input = skirmishOn(s, m, bokh);
+    expect(input.action.target).toBeDefined();
+    const step = input.action.target!.to!;
     // Charged: the card goes half its action cost on (4 of 8), and the preview says so.
     const now = s.currentSlot;
     expect(actionCost(m)).toBe(8);
-    expect(chargeOf(m, 'volley')).toBe(4);
+    expect(chargeOf(m, 'skirmish')).toBe(4);
     expect(previewTurn(s, m.id, input)!.aimSlot).toBe(now + 4);
     applyTurn(s, m, input);
+    expect(m.hex).toEqual(step);
     expect(m.slot).toBe(now + 4);
     expect(charging(s, m)).toBe(true);
     expect(bokh.hp).toBe(bokh.maxHp);
-    expect(s.volleys).toEqual([{hex: at(3, 3), source: 'p-mangudai'}]);
-    // Everyone else holds, so the next decision of the Outrider's is its turn after the landing.
+    expect(s.shots).toHaveLength(1);
+    expect(shotLane(s, mapOf(s), s.shots![0]!).at(-1)).toEqual(bokh.hex);
+    // Everyone else holds, so the next decision of the Outrider's is its turn after the shot.
     s.units.forEach((u) => (u.controller = 'human'));
     for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
       applyTurn(s, d, {action: {ability: 'hold'}});
     expect(bokh.hp).toBe(bokh.maxHp - m.power);
-    expect(s.volleys).toEqual([]);
+    expect(s.shots).toEqual([]);
     expect(charging(s, m)).toBe(false);
-    // The landing was no turn: the card went its action cost on from there.
+    // The shot was no turn: the card went its action cost on from there.
     expect(s.currentSlot).toBe(now + 4 + actionCost(m));
   });
 
+  it('Skirmish needs a free space to step to, and none while Immobilized', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
+    const m = unit(s, 'p-mangudai');
+    expect(ABILITIES.skirmish.targets(s, mapOf(s), m, m.hex!).length).toBeGreaterThan(0);
+    m.statuses.push({kind: 'immobilized'});
+    expect(ABILITIES.skirmish.targets(s, mapOf(s), m, m.hex!)).toEqual([]);
+  });
+
   it('a charging card is pushed into its slot, whatever the speed of the card there', () => {
-    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(3, 3), 'e-storm': at(8, 6)});
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
     const storm = unit(s, 'e-storm');
     s.units.forEach((u) => (u.slot = u === m ? 0 : null));
     s.currentSlot = 0;
     storm.speed = m.speed + 5;
     storm.slot = 4;
-    applyTurn(s, m, {action: {ability: 'volley', target: {hex: at(3, 3)}}});
+    applyTurn(s, m, skirmishOn(s, m, unit(s, 'e-bokh')));
     expect(m.slot).toBe(4);
     expect(storm.slot).toBe(5);
   });
 
-  it('a volley hits whoever stands on its space when it lands, so a unit can step out', () => {
-    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(3, 3), 'e-storm': at(8, 6)});
+  it('a drawn arrow hits the first unit in its lane when it flies: its target can step out, and another step in', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
-    applyTurn(s, m, {action: {ability: 'volley', target: {hex: bokh.hex!}}});
-    enterHex({state: s, map: mapOf(s), slot: s.currentSlot}, bokh, at(4, 3));
+    const storm = unit(s, 'e-storm');
+    applyTurn(s, m, skirmishOn(s, m, bokh));
+    const lane = shotLane(s, mapOf(s), s.shots![0]!);
+    expect(lane.at(-1)).toEqual(bokh.hex);
+    expect(lane.length).toBeGreaterThan(1);
+    // The Champion steps out of the line; the Storm Caller steps into it, nearer.
+    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    const away = hexNeighbors(bokh.hex!).find(
+      (h) => onMap(SALT_FLATS, h) && !unitAt(s, h) && !lane.some((l) => hexKey(l) === hexKey(h))
+    )!;
+    enterHex(ctx, bokh, away);
+    enterHex(ctx, storm, lane[0]!);
     s.units.forEach((u) => (u.controller = 'human'));
     for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
       applyTurn(s, d, {action: {ability: 'hold'}});
     expect(bokh.hp).toBe(bokh.maxHp);
-    expect(s.volleys).toEqual([]);
+    expect(storm.hp).toBe(storm.maxHp - m.power);
+    expect(s.shots).toEqual([]);
   });
 
-  it('a volley is lost when its Outrider falls first', () => {
-    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(3, 3), 'e-storm': at(8, 6)});
+  it('a drawn arrow is lost when its Outrider falls first', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
-    applyTurn(s, m, {action: {ability: 'volley', target: {hex: at(3, 3)}}});
+    applyTurn(s, m, skirmishOn(s, m, unit(s, 'e-bokh')));
     kill({state: s, map: mapOf(s), slot: 0}, m);
-    expect(s.volleys).toEqual([]);
+    expect(s.shots).toEqual([]);
   });
 
   it('places a card 60 ÷ (speed + 5) slots on, rounded, whatever the turn did (3.2)', () => {
@@ -1386,10 +1427,13 @@ describe('previews, the AI and the run', () => {
       me.slot = c.currentSlot + 1;
       return threatDamage(threats, c, me);
     };
-    // The enemy can shoot along its row however far, but cannot walk and shoot this turn.
-    unit(s, 'e-mangudai').slot = 0;
-    expect(at3(at(2, 0))).toBeGreaterThan(0);
-    expect(at3(at(2, 1))).toBe(0);
+    // The enemy can shoot along its row however far; a row away only by
+    // Skirmish's step, whose drawn arrow can be dodged; further, not this turn.
+    const e = unit(s, 'e-mangudai');
+    e.slot = 0;
+    expect(at3(at(2, 0))).toBe(e.power);
+    expect(at3(at(2, 1))).toBe(e.power * AI.dodgeShare);
+    expect(at3(at(2, 3))).toBe(0);
     // …but not with a unit in the lane between, which the arrow would hit instead.
     const blocked = setup({
       'p-mangudai': at(0, 0),

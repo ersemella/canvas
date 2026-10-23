@@ -15,7 +15,6 @@ export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
 export type AbilityId =
   | 'hold'
   | 'bow'
-  | 'volley'
   | 'skirmish'
   | 'hail'
   | 'sunlight'
@@ -83,16 +82,14 @@ export interface HailEffect {
   source: string;
 }
 
-/** A volley in the air: the space it lands on, and its Outrider's unit id. */
-export interface VolleyInAir {
-  hex: Hex;
+/**
+ * A charged Skirmish shot in the air: its Outrider's unit id, and the hex
+ * direction the arrow flies from the Outrider when the charging card comes
+ * back, hitting the first unit in that lane then (`shotLane` in board.ts).
+ */
+export interface ShotInAir {
   source: string;
-  /**
-   * A charged Skirmish shot (experiment): the hex direction its arrow flies
-   * from the Outrider when it lands, hitting the first unit in that lane
-   * then, rather than whoever stands on `hex`.
-   */
-  dir?: number;
+  dir: number;
 }
 
 export interface LogEntry {
@@ -108,7 +105,7 @@ export type FightEvent =
   | {kind: 'turn'; unitId: string}
   | {kind: 'step'; unitId: string; from: Hex; to: Hex; how: Motion}
   | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex}
-  /** A charged ability landing as its user's charging card comes back: a volley's arrows. */
+  /** A charged ability landing as its user's charging card comes back: a Skirmish shot, at what it hits (or the lane's end). */
   | {kind: 'land'; unitId: string; ability: AbilityId; target: Hex}
   | {kind: 'damage'; unitId: string; amount: number}
   | {kind: 'death'; unitId: string; hex: Hex}
@@ -120,7 +117,7 @@ export interface BoardSnapshot {
   currentSlot: number;
   units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped'>[];
   effects: HailEffect[];
-  volleys?: VolleyInAir[];
+  shots?: ShotInAir[];
 }
 
 export type RecordedEvent = FightEvent & {after: BoardSnapshot};
@@ -138,10 +135,10 @@ export interface FightState {
   units: Unit[];
   effects: HailEffect[];
   /**
-   * Volleys in the air: each lands on its space when its Outrider's
-   * charging card comes back.
+   * Skirmish shots in the air: each flies down its lane when its
+   * Outrider's charging card comes back.
    */
-  volleys?: VolleyInAir[];
+  shots?: ShotInAir[];
   log: LogEntry[];
   /**
    * What the last action set off, the player's turn and the AI turns after

@@ -11,9 +11,10 @@ damage, the parked kits); they reproduce their measurements only at the
 revision they were run at. So do the files for the new abilities of 2026-10-23
 (`new-abilities*.mjs`, `ow-ai.mjs`, `fog*.mjs`, `volley-tuning.mjs`,
 `outrider-no-adjacent.mjs`): Overwatch, Sunlight, Fog and the variant
-switches they patch were removed once the kits were chosen; `volley.mjs`
-still runs (Fog dropped from it), as do `volley-charge.mjs` and
-`volley-delayed.mjs` (charge 0). `pared.mjs`, `stats.mjs` and `caravans.mjs`
+switches they patch were removed once the kits were chosen. So were
+Volley and its files' subject (`volley.mjs`, `volley-charge.mjs`,
+`volley-delayed.mjs`), replaced by Skirmish (2026-10-23); `skirmish.mjs`
+measures Skirmish at charges 0, ½ and 1. `pared.mjs`, `stats.mjs` and `caravans.mjs`
 run on the current rules. `sunlight.mjs` (2026-10-23) measures Sunlight's variants,
 and the kit before it (Hail alone) as `today`.
 

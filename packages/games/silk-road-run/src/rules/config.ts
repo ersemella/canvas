@@ -76,7 +76,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    abilities: ['bow', 'volley', 'hold'],
+    // Skirmish in place of Volley (owner, 2026-10-23; balance.md).
+    abilities: ['bow', 'skirmish', 'hold'],
   },
   storm: {
     name: 'Yadachy Storm Caller',
@@ -140,16 +141,6 @@ export const ABILITY = {
    */
   hail: {range: 3},
   /**
-   * Arrows from above (owner, 2026-10-23): aimed at one space within 3 with
-   * a unit on it, adjacent included, no line of fire needed, as hail falls.
-   * Charged (owner, 2026-10-23): the Outrider's card is pushed `charge`
-   * of its action cost on, rounded (half: 4 slots for the Outrider's 8),
-   * greyed while it charges; when it comes back the arrows land
-   * on whoever stands there then, for the Outrider's power, with no turn
-   * for the Outrider, and its card goes its action cost on to its next
-   * turn.
-   */
-  /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Enhanced, is Enhanced `enhance` until the end of
    * its next turn. `self`: the Storm Caller may target itself. `melts`:
@@ -157,15 +148,18 @@ export const ABILITY = {
    * target. Both on since the owner's call the same day (balance.md).
    */
   sunlight: {range: 3, enhance: 2, self: true as boolean, melts: true as boolean},
-  volley: {range: 3, charge: 0.5},
   /**
-   * Skirmish (experiment, in no kit): one step to a free space next to the
-   * Outrider, then the Bow's shot from there. `charge` as Volley's, a share
-   * of the action cost: 0 shoots at once; above 0 the arrow flies when the
-   * charging card comes back, down the lane it was aimed along, hitting
-   * the first unit there then.
+   * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
+   * space next to the Outrider, then the Bow's shot from there, charged:
+   * the Outrider's card is pushed `charge` of its action cost on, rounded
+   * (half: 4 slots for the Outrider's 8), greyed while it charges; when it
+   * comes back the arrow flies down the lane it was aimed along and the
+   * first unit in it then takes the Outrider's power, with no turn for the
+   * Outrider, and its card goes its action cost on to its next turn. At 0
+   * it shoots at once (measured: a better Bow rather than a second
+   * ability; balance.md).
    */
-  skirmish: {charge: 0 as number},
+  skirmish: {charge: 0.5 as number},
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
@@ -208,10 +202,10 @@ export const AI = {
   caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0, wolf: 1} as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   /**
-   * A volley in the air on a unit that acts before it lands and can walk
-   * is worth this share of the hit: it can step out. PLACEHOLDER.
+   * A charged shot in the air on a unit that acts before it lands and can
+   * walk is worth this share of the hit: it can step out. PLACEHOLDER.
    */
-  volleyDodgeShare: 0.25,
+  dodgeShare: 0.25,
   /**
    * Minus this per space between the unit and what it closes in on after
    * its turn (for the enemy, Temee once no hero is in its reach; otherwise

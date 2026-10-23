@@ -2,12 +2,18 @@
  * Board rules on the hex map: who stands where, movement, line of fire and
  * statuses (map.md, section 6; keywords.md, 17.5).
  */
-import {hexEquals, hexLineSides, hexNeighbor, hexNeighbors, hexToOffset} from '@canvas/engine/server';
+import {
+  hexEquals,
+  hexLineSides,
+  hexNeighbor,
+  hexNeighbors,
+  hexToOffset,
+} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES} from './config';
 import {hexNumber, onMap, tileAt} from './map';
 import type {MapData, Tile} from './map';
-import type {FightState, Status, Unit} from './types';
+import type {FightState, ShotInAir, Status, Unit} from './types';
 
 export {onMap};
 
@@ -21,7 +27,7 @@ export function unitAt(state: FightState, h: Hex): Unit | undefined {
 }
 
 /**
- * Plain sand: open ground with nothing on it (no unit, hail, volley or exit). It has
+ * Plain sand: open ground with nothing on it (no unit, hail, shot in the air or exit). It has
  * nothing to explain, so looking at it shows no tooltip or details.
  */
 export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
@@ -30,7 +36,7 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
     !map.exits.some((e) => hexEquals(e, h)) &&
     !unitAt(state, h) &&
     !state.effects.some((e) => hexEquals(e.hex, h)) &&
-    !state.volleys?.some((v) => hexEquals(v.hex, h))
+    !state.shots?.some((s) => shotLane(state, map, s).some((l) => hexEquals(l, h)))
   );
 }
 
@@ -284,6 +290,25 @@ export function firstInLane(
     if (!onMap(map, h) || tileAt(map, h) === 'obstacle') return undefined;
     const u = unitAt(state, h);
     if (u && u !== ignore) return u;
+  }
+}
+
+/**
+ * A shot in the air's lane, as it would fly now: from its Outrider's space
+ * along its direction, up to and including the first unit in it, or to
+ * ruins or the map's edge. Empty once its Outrider is gone.
+ */
+export function shotLane(state: FightState, map: MapData, shot: ShotInAir): Hex[] {
+  const archer = state.units.find((u) => u.id === shot.source);
+  if (!archer?.alive || !archer.hex) return [];
+  const lane: Hex[] = [];
+  let h = archer.hex;
+  for (;;) {
+    h = hexNeighbor(h, shot.dir);
+    if (!onMap(map, h) || tileAt(map, h) === 'obstacle') return lane;
+    lane.push(h);
+    const u = unitAt(state, h);
+    if (u && u !== archer) return lane;
   }
 }
 

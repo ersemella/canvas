@@ -7,7 +7,7 @@
  * board blocking arrows (the acting unit aside, since it is the one moving).
  */
 import {ABILITY, AI, HEROES} from './config';
-import {hostile, isStunned} from './board';
+import {hostile, isImmobilized, isStunned} from './board';
 import {damageOf} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -61,15 +61,6 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
-    // Volley falls on any space within its range, over anything between,
-    // but only marks it this turn: worth the share left after a dodge.
-    if (has('volley')) {
-      const reach = ABILITY.volley.range;
-      const d = power * AI.volleyDodgeShare;
-      for (let dq = -reach; dq <= reach; dq++)
-        for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
-          if (board.has(id(fq + dq, fr + dr))) mark(hexes, id(fq + dq, fr + dr), d);
-    }
     const lanes = (oq: number, or: number, d: number) => {
       for (const [dq, dr] of AXIAL) {
         for (let i = 1; i <= ABILITY.bow.range; i++) {
@@ -82,10 +73,10 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       }
     };
     if (has('bow')) lanes(fq, fr, power);
-    // Skirmish: the bow's lanes from each free space next to it, at the
-    // dodge share once charged.
-    if (has('skirmish')) {
-      const d = ABILITY.skirmish.charge > 0 ? power * AI.volleyDodgeShare : power;
+    // Skirmish: the bow's lanes from each free space next to it, unless it
+    // can't step, at the dodge share once charged.
+    if (has('skirmish') && !isImmobilized(e)) {
+      const d = ABILITY.skirmish.charge > 0 ? power * AI.dodgeShare : power;
       for (const [sq, sr] of AXIAL) {
         const k = id(fq + sq, fr + sr);
         const tile = board.get(k);

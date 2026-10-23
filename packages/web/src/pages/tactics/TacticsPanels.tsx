@@ -16,7 +16,8 @@ import {
   mapOf,
   tileAt,
   unitName,
-  volleyInfo,
+  shotInfo,
+  shotLane,
 } from '@canvas/games-silk-road-run';
 import type {
   AbilityDef,
@@ -206,7 +207,9 @@ export function HexInspector({
 }) {
   const tile = tileAt(mapOf(fight), hex);
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
-  const volleys = (fight.volleys ?? []).filter((v) => hexEquals(v.hex, hex));
+  const shots = (fight.shots ?? []).filter((v) =>
+    shotLane(fight, mapOf(fight), v).some((h) => hexEquals(h, hex))
+  );
   const unit = fight.units.find((u) => u.alive && u.hex && hexEquals(u.hex, hex));
   return (
     <Stack gap={dense ? 6 : 8} data-testid="hex-info">
@@ -216,10 +219,10 @@ export function HexInspector({
         <GroundCard info={EXIT_INFO} color="var(--c-lapisLight)" dense={dense} />
       )}
       {hail && <GroundCard info={hailInfo(hail, fight)} color="var(--c-skyLight)" dense={dense} />}
-      {volleys.map((v) => (
+      {shots.map((v) => (
         <GroundCard
           key={v.source}
-          info={volleyInfo(v, fight)}
+          info={shotInfo(v, fight)}
           color="var(--c-madderLight)"
           dense={dense}
         />
@@ -228,7 +231,7 @@ export function HexInspector({
   );
 }
 
-/** One thing on the ground (a tile, hail, a volley): its name, then its rule, keywords explained inside the card. */
+/** One thing on the ground (a tile, hail, a drawn arrow's lane): its name, then its rule, keywords explained inside the card. */
 function GroundCard({
   info,
   color = 'var(--c-ivory)',

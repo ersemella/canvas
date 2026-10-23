@@ -5,7 +5,7 @@
  */
 import {HEROES, RULES} from './config';
 import type {Tile} from './map';
-import type {FightState, HailEffect, VolleyInAir} from './types';
+import type {FightState, HailEffect, ShotInAir} from './types';
 
 export interface HexInfo {
   name: string;
@@ -44,14 +44,14 @@ export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   };
 }
 
-export function volleyInfo(volley: VolleyInAir, state: FightState): HexInfo {
-  const archer = state.units.find((u) => u.id === volley.source);
+export function shotInfo(shot: ShotInAir, state: FightState): HexInfo {
+  const archer = state.units.find((u) => u.id === shot.source);
   const who = archer ? `the ${HEROES[archer.hero].name}’s` : 'its archer’s';
   const damage = archer ? `${archer.power} damage` : 'its damage';
   return {
-    name: 'Volley',
-    short: 'Arrows land here when its card comes back',
-    detail: `Arrows in the air: they land here when ${who} greyed, charging card comes back, and whoever stands here then takes ${damage}.`,
+    name: 'Drawn arrow',
+    short: 'Flies down this line when its card comes back',
+    detail: `A drawn arrow: it flies down this line when ${who} greyed, charging card comes back, and the first unit in the line then takes ${damage}.`,
   };
 }
 

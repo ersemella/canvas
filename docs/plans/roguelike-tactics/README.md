@@ -45,11 +45,12 @@ the kits.**
   its target until the Champion takes damage, is Stunned or ends a turn
   no longer next to it, 1 more damage at each of the Champion's turns
   meanwhile, never on the unit it already grapples; Throw, Moving the grappled unit to a space next to the
-  Champion, or swapping places with it, so the grapple holds; Volley
-  (2026-10-23), arrows from above on a unit within 3, no line of fire
-  needed, charged (owner, 2026-10-23): the Outrider's card is pushed half
-  its action cost on (4 slots), greyed; when it comes back they land on whoever stands there
-  then, with no turn for the Outrider, and the card goes its action cost on. The Storm Caller has Hail alone for now: Overwatch, Sunlight and
+  Champion, or swapping places with it, so the grapple holds; Skirmish
+  (owner, 2026-10-23, in place of Volley), a step of one space and then
+  the Bow's shot from there, charged: the Outrider's card is pushed half
+  its action cost on (4 slots), greyed; when it comes back the arrow flies
+  down the lane it was aimed along, hitting the first unit in it then,
+  with no turn for the Outrider, and the card goes its action cost on. The Storm Caller has Hail alone for now: Overwatch, Sunlight and
   Fog were measured and removed ([history.md](history.md)).
 - **Deleted with their code:** the Modao Vanguard's kit, ultimates and
   charged abilities, Leap, Sunlight, Shove, quicksand and the sandstorm,

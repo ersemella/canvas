@@ -96,8 +96,9 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
         for (const h of area) fillHex(ctx, h, HIGHLIGHT.area);
         ctx.restore();
       }
-      // An arrow flying from the bow to its mark.
-      if (e.ability === 'bow' && e.target && u.hex && stepped < 0.7) {
+      // An arrow flying from the bow to its mark, or a drawn one down its lane.
+      const shot = e.ability === 'bow' || (e.ability === 'skirmish' && !charged);
+      if (shot && e.target && u.hex && stepped < 0.7) {
         const a = center(u.hex);
         const b = center(e.target);
         const t = stepped / 0.7;

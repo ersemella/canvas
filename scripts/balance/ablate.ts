@@ -42,14 +42,14 @@ type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 const SOURCES: [RegExp, string][] = [
   [/'s arrow hits/, 'bow'],
   [/'s volley hits/, 'volley'],
-  [/'s skirmish shot hits/, 'skirmish'],
+  [/'s skirmish arrow hits/, 'skirmish'],
   [/^The throw hits/, 'throw'],
   [/^The grapple hits/, 'grapple'],
   [/^The hail hits/, 'hail'],
   [/^The bite hits/, 'bite'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish shot hits| steps and draws| throws| swaps places| grapples| bites)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
