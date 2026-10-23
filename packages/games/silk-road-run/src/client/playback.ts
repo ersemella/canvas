@@ -27,9 +27,10 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
       if (e.how === 'throw') return 0.32;
       return Math.max(WALK_SECONDS, 0.08 * hexDistance(e.from, e.to));
     case 'action':
-      if (e.ability === 'hold') return 0;
+      return e.ability === 'hold' ? 0 : 0.5;
+    case 'land':
       // The arrow rain takes longer to read.
-      return e.ability === 'volley' ? 1 : 0.5;
+      return 1;
     case 'damage':
       return 0.45;
     case 'death':
@@ -41,7 +42,8 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
 
 /**
  * The fight to draw once an event has happened: the fight before the turn,
- * with each unit's position, health and card, the hail and the slot from
+ * with each unit's position, health and card, the hail, the volleys in the
+ * air and the slot from
  * the event's snapshot. The unit whose turn it is shows as acting.
  * Statuses stay as they were until the playback ends.
  */
@@ -52,6 +54,7 @@ export function displayFight(base: FightState, e: RecordedEvent, actor: string |
     phase: 'fight',
     currentSlot: after.currentSlot,
     effects: after.effects,
+    volleys: after.volleys ?? [],
     awaiting: actor,
     units: base.units.map((u) => ({...u, ...after.units.find((v) => v.id === u.id)})),
   };

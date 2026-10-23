@@ -134,10 +134,12 @@ const bow: AbilityDef = {
 };
 
 /**
- * Volley (owner, 2026-10-23): arrows loosed high, falling on one space
- * within `ABILITY.volley.range` (2), adjacent included, as hail does, so no
- * line of fire is needed: the unit there, ally or enemy, takes the
- * Outrider's power.
+ * Volley (owner, 2026-10-23): arrows loosed high onto one space within
+ * `ABILITY.volley.range` (3) with a unit on it, adjacent included, as hail
+ * falls, so no line of fire is needed. Charged: they land at the start of
+ * the Outrider's next turn, which comes `ABILITY.volley.charge` slots
+ * later than usual (`chargeOf`), and the unit there then, ally or enemy,
+ * takes the Outrider's power (`landVolleys`).
  */
 const volley: AbilityDef = {
   id: 'volley',
@@ -146,7 +148,7 @@ const volley: AbilityDef = {
   range: ABILITY.volley.range,
   radius: 0,
   summary: (user) =>
-    `Arrows from above on a unit within ${ABILITY.volley.range}, over anything in the way: it takes ${damageText(user)}.`,
+    `Arrows from above on a unit within ${ABILITY.volley.range}, over anything in the way. They land at the start of your next turn, ${ABILITY.volley.charge} slots later than usual: whoever stands there then takes ${damageText(user)}.`,
   targetsUnit: true,
   targets: (state, map, user, from) =>
     hexesWithin(map, from, ABILITY.volley.range, (h) => {
@@ -155,12 +157,7 @@ const volley: AbilityDef = {
     }),
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)} looses a volley.`);
-    if (ABILITY.volley.delayed) {
-      (ctx.state.volleys ??= []).push({hex: {...target.hex!}, source: user.id});
-      return;
-    }
-    const u = unitAt(ctx.state, target.hex!)!;
-    hit(ctx, user, u, `${unitName(user)}'s volley`);
+    (ctx.state.volleys ??= []).push({hex: {...target.hex!}, source: user.id});
   },
 };
 

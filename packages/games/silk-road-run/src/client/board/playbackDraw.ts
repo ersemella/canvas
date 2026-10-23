@@ -8,6 +8,7 @@ import {HEROES} from '../../rules/config';
 import {ABILITIES} from '../../rules/abilities';
 import {isStunned} from '../../rules/board';
 import {mapOf} from '../../rules/fight';
+import {chargeOf} from '../../rules/track';
 import {Playback, eventSeconds} from '../playback';
 import {PALETTE, paletteAlpha, pixelFont} from '../palette';
 import {ABILITY_EFFECT, EFFECT_FPS, drawPixelArrow} from './effects';
@@ -74,13 +75,16 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
           SIDE_LIGHT[u.side]
         );
       return;
-    case 'action': {
+    case 'action':
+    case 'land': {
       const def = ABILITIES[e.ability];
-      const name = def.name;
+      // A charged ability is only aimed now: its flourish plays as it lands.
+      const charged = e.kind === 'action' && chargeOf(e.ability) > 0;
+      const name = e.kind === 'land' ? `${def.name} lands` : def.name;
       // The area the playback lights up when it lands; the target hex alone for the rest.
       const radius = def.radius ?? 0;
       const area = e.target ? map.hexes.filter((h) => hexDistance(h, e.target!) <= radius) : [];
-      const effect = ABILITY_EFFECT[e.ability];
+      const effect = charged ? undefined : ABILITY_EFFECT[e.ability];
       // Effects move in steps, as pixel art does.
       const steps = eventSeconds(e, false) * EFFECT_FPS;
       const stepped = steps > 0 ? Math.floor(k * steps) / steps : k;

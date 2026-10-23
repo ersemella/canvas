@@ -1,4 +1,4 @@
-/** Abilities' effects as a turn plays back: the bow's arrow, Volley's arrows. */
+/** Abilities' effects as a turn plays back (the bow's arrow, Volley's arrows), and a volley's mark while it is in the air. */
 import type {Hex} from '@canvas/engine';
 import type {AbilityId} from '../../rules/types';
 import {
@@ -8,6 +8,7 @@ import {
   artPixel,
   center,
   ditherHex,
+  hexPath,
   hexRandom,
   insideHex,
 } from './pixels';
@@ -121,4 +122,26 @@ function drawVolley(ctx: CanvasRenderingContext2D, {from, target, area, k}: Effe
       }
     }
   }
+}
+
+/**
+ * A volley in the air: a bold dashed orange edge round its space and three
+ * arrows hanging point-down along its top, where they will fall. Drawn over
+ * the units, like hail, but only at the edge, so whoever stands there
+ * still shows.
+ */
+export function drawVolleyMark(ctx: CanvasRenderingContext2D, h: Hex): void {
+  ctx.save();
+  hexPath(ctx, h, 3);
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = '#221816';
+  ctx.stroke();
+  ctx.setLineDash([7, 5]);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#fb923c';
+  ctx.stroke();
+  ctx.restore();
+  const c = center(h);
+  for (const dx of [-14, 0, 14])
+    drawPixelArrow(ctx, c.x + dx, c.y - 22 + Math.abs(dx) / 2, 0, 1, 6);
 }

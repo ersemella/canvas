@@ -12,9 +12,9 @@ revision they were run at. So do the files for the new abilities of 2026-10-23
 (`new-abilities*.mjs`, `ow-ai.mjs`, `fog*.mjs`, `volley-tuning.mjs`,
 `outrider-no-adjacent.mjs`): Overwatch, Sunlight, Fog and the variant
 switches they patch were removed once the kits were chosen; `volley.mjs`
-still runs (Fog dropped from it), as do `volley-delayed.mjs` and `volley-charge.mjs`,
-which turn on the `ABILITY.volley.delayed` switch (and `charge`). `pared.mjs`, `stats.mjs` and `caravans.mjs` run on
-the current rules.
+still runs (Fog dropped from it), as do `volley-charge.mjs` and
+`volley-delayed.mjs` (charge 0). `pared.mjs`, `stats.mjs` and `caravans.mjs`
+run on the current rules.
 
 ## Ability and stat ablation
 
@@ -83,10 +83,10 @@ AI's share of wins on fair setups; a better AI should win more than 50%.
 First runs (2026-10-22, seeds 1000–1499, 1,000 fights each, bokh, mangudai,
 storm):
 
-| Team a vs team b | Team a wins, finished fights (95%) | Unfinished |
-| --- | ---: | ---: |
-| production vs greedy | 60.1% (56.9–63.3) of 893 | 10.7% |
-| production vs deep | 40.6% (37.3–43.9) of 863 | 13.7% |
+| Team a vs team b     | Team a wins, finished fights (95%) | Unfinished |
+| -------------------- | ---------------------------------: | ---------: |
+| production vs greedy |           60.1% (56.9–63.3) of 893 |      10.7% |
+| production vs deep   |           40.6% (37.3–43.9) of 863 |      13.7% |
 
 Lookahead pays at both steps: production beats greedy and deep beats
 production by about the same margin, so deeper search on this evaluation

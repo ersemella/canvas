@@ -18,8 +18,8 @@ import {abilitiesOf, unusableReason} from './abilities';
 import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
-import {RuleError, advanceToDecision, applyTurn, chargeOf, cloneFight, mapOf} from './fight';
-import {actionCost as cardCost} from './track';
+import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
+import {actionCost as cardCost, chargeOf} from './track';
 import {camelOf} from './resolve';
 import {MAPS} from './map';
 import type {FightState, Side, TurnInput, Unit} from './types';
@@ -82,7 +82,7 @@ function camelProgress(state: FightState, side: Side): number {
 }
 
 /**
- * What the delayed volleys in the air are worth to `side`: each the hit
+ * What the volleys in the air are worth to `side`: each the hit
  * it will deal whoever stands on its space now, only `AI.volleyDodgeShare`
  * of it if that unit can walk out before it lands.
  */
@@ -247,6 +247,11 @@ interface SearchNode {
   actor: Unit | undefined;
   options?: ScoredOption[];
   children: Map<ScoredOption, SearchNode>;
+  /**
+   * The fight ended while the track ran on to the next decision (a volley
+   * landing, a squeeze), not with the option itself: a turn later.
+   */
+  endedLater?: boolean;
 }
 
 const exhausted = Symbol('AI search budget exhausted');
@@ -305,6 +310,7 @@ export function chooseAiTurn(
       const state = cloneFight(option.after);
       const actor = advanceToDecision(state, spend);
       child = {state, actor, children: new Map()};
+      if (option.after.phase === 'fight' && state.phase !== 'fight') child.endedLater = true;
       node.children.set(option, child);
     }
     return child;
@@ -313,7 +319,9 @@ export function chooseAiTurn(
     // A fight already over: sooner is worth more, a win taken now above one
     // a turn later, a loss now below a later one.
     if (node.state.phase !== 'fight')
-      return evaluatePosition(node.state, unit.side) * (1 + depth / 100);
+      return (
+        evaluatePosition(node.state, unit.side) * (1 + (depth - (node.endedLater ? 1 : 0)) / 100)
+      );
     if (depth === 0 || !node.actor) return evaluatePosition(node.state, unit.side);
     if (!node.options) {
       if (local.left <= 0) throw exhausted;

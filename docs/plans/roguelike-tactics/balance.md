@@ -1123,6 +1123,16 @@ No fight unfinished (0–0.3%).
 - No charge tuning gives Volley a second ability's worth (40–48%): with a
   charge it needs a bigger payoff for a unit that is caught.
 
+**Adopted (owner, 2026-10-23): charge 2 at range 3.** The switch went with
+it: Volley is always charged (`ABILITY.volley` `{range: 3, charge: 2}`).
+The AI search now counts a fight that ends while the track runs on to the
+next decision (a volley landing, a squeeze) as a turn later than one its
+option ends, so a Bow shot that kills now wins over a sure volley that
+kills at the next turn. Measured as shipped (`volley.mjs`-style ablation
+and the Outrider caravans, 400 fights each), the same as charge 2 above:
+side without Volley 49.5%, without the Bow 21.5%, Hail 13.5%, Grapple
+10.8%, Throw 49.3%; player wins 98.3%, 81.8%, 95%, 79% and 60.8%.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

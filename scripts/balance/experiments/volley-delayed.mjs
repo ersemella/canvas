@@ -1,12 +1,12 @@
 // A delayed Volley at range 3 (2026-10-23): the arrows land on the marked
 // space at the start of the Outrider's next turn, on whoever stands there
-// then (`ABILITY.volley.delayed`). Nothing else changed. Each ability
-// removed from one side, and the stage caravans that bring an Outrider
-// (player wins).
+// then, with no charge (`ABILITY.volley.charge` 0). Nothing else changed.
+// Each ability removed from one side, and the stage caravans that bring an
+// Outrider (player wins).
 const patch = (c) => {
   c.ABILITY.volley.range = 3;
   c.ABILITIES.volley.range = 3;
-  c.ABILITY.volley.delayed = true;
+  c.ABILITY.volley.charge = 0;
 };
 const abilities = ['bow', 'volley', 'hail', 'grapple', 'throw'];
 const caravans = {

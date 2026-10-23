@@ -66,6 +66,12 @@ export interface HailEffect {
   source: string;
 }
 
+/** A volley in the air: the space it lands on, and its Outrider's unit id. */
+export interface VolleyInAir {
+  hex: Hex;
+  source: string;
+}
+
 export interface LogEntry {
   slot: number;
   text: string;
@@ -79,6 +85,8 @@ export type FightEvent =
   | {kind: 'turn'; unitId: string}
   | {kind: 'step'; unitId: string; from: Hex; to: Hex; how: Motion}
   | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex}
+  /** A charged ability landing at its user's turn: a volley's arrows. */
+  | {kind: 'land'; unitId: string; ability: AbilityId; target: Hex}
   | {kind: 'damage'; unitId: string; amount: number}
   | {kind: 'death'; unitId: string; hex: Hex}
   /** Its turn came up with nothing to do but Hold, so the track went on without it. */
@@ -89,6 +97,7 @@ export interface BoardSnapshot {
   currentSlot: number;
   units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped'>[];
   effects: HailEffect[];
+  volleys?: VolleyInAir[];
 }
 
 export type RecordedEvent = FightEvent & {after: BoardSnapshot};
@@ -106,10 +115,10 @@ export interface FightState {
   units: Unit[];
   effects: HailEffect[];
   /**
-   * Delayed volleys in the air (`ABILITY.volley.delayed`): each lands on
-   * its space at the start of its Outrider's next turn.
+   * Volleys in the air: each lands on its space at the start of its
+   * Outrider's next turn.
    */
-  volleys?: {hex: Hex; source: string}[];
+  volleys?: VolleyInAir[];
   log: LogEntry[];
   /**
    * What the last action set off, the player's turn and the AI turns after
