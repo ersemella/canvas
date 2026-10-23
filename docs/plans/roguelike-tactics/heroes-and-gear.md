@@ -12,50 +12,42 @@ tuning. Section numbers are the combat design's.
 
 ## 9. Stats, Gear and Consumables
 
-### 9.1 Stats (Decided)
+### 9.1 Stats (Decided; redefined by the owner 2026-10-23)
 The stat set is kept small, so every unit's stat sheet, enemies' included (D11), reads at a glance.
 
-**Scale (Decided):** health and damage use a ×10 scale (hits of tens to a hundred or so, health in the hundreds), so percentage bonuses from stats and gear survive rounding. Action costs (about 100 for a typical action) and track slots are separate scales (3.2).
+**Scale (Decided 2026-10-23):** stats are small whole numbers, 0 to 3 for the prototype heroes, and so are damage and health: a hit deals 1 or 2, a hero has 4 to 8 health. Every number on the board can be counted. (Until 2026-10-23 stats read Low 10 / Medium 25 / High 40, with hits of tens to a hundred or so and health in the hundreds; [history.md](history.md).)
 
 | Stat | Role | Modified by gear? |
 |---|---|---|
-| **Health** | Hit points. Fixed per hero: each hero has its own value. | **No** (Decided 2026-10-18). |
-| **Speed** | Divides action and movement cost, so it sets how often a unit acts; also its starting slot (section 4). | Yes, and weighed against defence (4.2). |
-| **Defence** | Reduces incoming damage by a percentage (formula below). | Yes. |
-| **Power** | Scales an ability's base damage and base healing (9.2). | Yes. |
+| **Speed** | Sets where the unit's card goes in each of Temee's rounds: 2 slots a point earlier ([timeline.md](timeline.md), 3.2). | Yes, and weighed against defence (4.2). |
+| **Defence** | Sets health: **health = (1 + defence) × 2**. Reduces no damage itself. | TBD (see below). |
+| **Power** | The damage each of the unit's abilities deals, exactly (9.2). | Yes. |
+| **Health** | Hit points, from defence. | Through defence only (TBD). |
 
-- **Health is fixed per hero (Decided 2026-10-18):** it varies between heroes but is not a core stat to build: gear, milestone upgrades and stat changes (17.9) never raise max health. Health is part of who a hero is, like the signature weapon. Healing, overhealth and Barrier restore or protect health; they don't raise the maximum.
-  - **Three tiers (Decided 2026-10-18):** every hero's health is **Low, Medium or High** (numbers set during tuning). The one exception is the Mahout Bulwark, whose war elephant gives it **Very high** health ([roster.md](roster.md)). Few distinct values keep kill thresholds easy to learn, while the gap between tiers stays: with health fixed, a High hero always has about 1.8× a Low hero's health, at every point in a run (defence multiplies both alike), so the gap matters as much at the end of a run as at the start. Uniform health was considered and rejected: tanks would depend on armour alone, and a tank in light armour would be as fragile as an archer.
-  - **Why it holds now:** health was once made to grow with gear because damage outgrew fixed health late in a run ([history.md](history.md)). Damage now grows far less: power scales only an ability's base damage (9.2), keyword effects don't scale with any stat, gear carries keywords first (9.7), and difficulty comes from better-built enemies (11.4). Defence still grows with gear and, as a percentage reduction (formula below), holds its value as incoming damage grows.
-  - **Watch:** if late fights still collapse into whoever strikes first, limit power from gear before reconsidering health.
-  - A recruit joins at base level (10.6), so it starts behind the party's equipped heroes in speed, defence and power, not in health; that is intended.
-- **No movement stat.** It was not distinct enough from speed. How far a unit moves is governed by per-hex movement cost (6.2), which boots can modify. Whether there is a hard maximum on hexes per turn is TBD.
+- **Damage reduction is Armour**, a keyword ([keywords.md](keywords.md), 17.6): a flat amount taken off each hit, which Pierce ignores. No prototype hero has any.
+- **The prototype heroes (owner, 2026-10-23):**
+
+  | Hero | Speed | Defence | Power | Health |
+  |---|---|---|---|---|
+  | Bökh Champion | 2 | 3 | 1 | 8 |
+  | Mangudai Outrider | 3 | 1 | 2 | 4 |
+  | Yadachy Storm Caller | 2 | 2 | 0 | 6 |
+
+  The wolf (2, 1, 1: health 4) and Temee (defence 9: health 20) are the builder's placeholders on the same scale ([owner-decisions.md](owner-decisions.md)).
+- **Health and gear:** health was fixed per hero (2026-10-18), never raised by gear. With health now following defence, gear that adds defence would raise it; whether defence gear exists, or health stays fixed by keeping defence off gear, is open question 58.
+- **No movement stat.** Every unit walks up to 3 spaces (5.1).
 - **No accuracy, evasion or critical hits**, since every attack hits (section 8).
 
-**Defence formula (Decided)**
-```
-damageReduction = defence / (defence + defenceConstant)
-damageTaken     = roundDown(incomingDamage × (1 − damageReduction))
-```
-- `defenceConstant` is a single global value, TBD (50 in Phase 1).
-- **One scale for speed, defence and power (owner, 2026-10-20):** a stat's band reads straight off its number, Low 10, Medium 25, High 40, whichever the stat; the formulas' constants (`C`, `speedScale`, `defenceConstant`) are set to fit the scale, not the other way round. Gear then moves the numbers from there (armour, for instance, adds defence and costs speed). Phase 1 has no gear at all (owner, 2026-10-20), so its heroes fight on these base values.
-- Properties: defence equal to the constant gives 50% reduction; reduction approaches but never reaches 100%; each additional point of defence is worth slightly less than the last (diminishing returns), so stacking defence cannot make a unit invulnerable.
-- Rounding follows the global rule (round down). Whether a minimum of 1 damage applies is TBD (Phase 1: yes).
+### 9.2 Power (Decided; redefined 2026-10-23)
+There is **one offensive stat, power**, and it is **exactly the damage each of the unit's abilities deals** (owner, 2026-10-23): the Outrider's Bow and the Champion's Grapple and Throw deal their user's power, and the Storm Caller's Hail, at power 0, deals none. Abilities have no base damage of their own; an ability's worth beyond its damage is its shape and its keywords.
 
-### 9.2 Power (Decided 2026-10-18)
-There is **one offensive stat, power.** Influence, a second stat for effect strength, was folded into it ([history.md](history.md)).
-
-- **Power scales an ability's base damage and base healing:** the damage of a hit and the healing of a heal that the ability itself states.
-  `value = roundDown(base × (1 + power / 50))`.
-- **Power scales nothing else.** Keyword effects keep the value their source states: Burn, collision damage, Barrier, overhealth, Cursed and other extra damage or protection, Push and Pull slots, Displace distances, stat changes and every duration. Keyword modifiers from gear and milestone upgrades are separate from power, and change these values directly ("Burn +10", "Push +2", "lasts 5 slots longer").
-- **Roles come from base values, not stats.** A healer's heal has a high base and its attack a low one, so power makes it heal well and hit weakly. Power is a hero's overall strength; the kit decides where it goes.
+- **Power scales nothing else.** Keyword effects keep the value their source states ([keywords.md](keywords.md), 17.2): Burn, Shield, Delay and Haste slots, displacement distances and every duration. Enhance and Degrade change the damage an ability deals directly.
+- **Roles come from kits and stats together.** A control hero can have power 0 and still matter through its keywords (Hail's Immobilized).
 
 Rationale:
-- **Gear relevance:** a second offensive stat made every item for it useless on heroes built around the other, the reason a physical versus magical split was rejected.
-- **Build identity comes from keywords** now that gear carries keyword modifiers (9.7), so a separate effect stat added little.
-- **Nothing counts twice:** one stat scales one kind of number. Influence scaled magnitude for some effects and duration for others; with gear adding both its stat and its effects, the same stat could amplify an item's own effect, and influence-scaled damage (Burn) skipped defence while power-scaled damage didn't.
-- **Readability:** one fewer number on every unit's stat sheet (D11).
-- **Track control stays a build choice:** Push and Pull slots, the track's most sensitive numbers, change only through deliberate gear and upgrade choices, not as a side effect of stat growth.
+- **Readability:** the damage of every attack is a number on the stat sheet.
+- **Gear relevance:** one offensive stat keeps every item that raises it useful on every hero.
+- **Nothing counts twice:** one stat sets one kind of number.
 
 ### 9.3 Gear Slots (Decided)
 Each hero has four gear slots:
@@ -105,7 +97,7 @@ Lessons from Path of Exile and Hades, and the reasons for them, are in [referenc
 - **A run is too short for a grind to pay off:** at most 16 items per party, perhaps 10 to 20 gear decisions per run, and power resets every run. A grind's reward is volume, which this game doesn't have; Path of Exile's small bonuses matter only because hundreds of them add up.
 - **They push inflation:** health once had to scale with gear to keep up with damage (since reversed, 9.1).
 
-The ×10 scale stays: the defence formula, the power formula (9.2) and keyword values such as Burn need it whatever gear does. Gear is Expression in the types of fun (1.2), not Submission.
+Stats are small whole numbers since 2026-10-23 (9.1), so a single point from gear is large: a stat line on gear is a real choice, not a small bonus. Gear is Expression in the types of fun (1.2), not Submission.
 
 **Proposed rules**
 - **Stat lines are few and chunky:** at most one stat line per item, in coarse steps (for example +10% or +20%), sized around **breakpoints**. A stat line is worth having when it changes what dies or who acts first (a hit that now kills, a card that now lands a slot earlier); full information makes those breakpoints strategic.
@@ -197,7 +189,9 @@ The ×10 scale stays: the defence formula, the power formula (9.2) and keyword v
 - Permanent death also loses a hero's upgrades, raising the stakes further.
 - Number of milestones per run and number of choices per offer are TBD (working assumption: 2 or 3 milestones, choice of 2).
 
-### 10.10 Ultimates (Decided)
+### 10.10 Ultimates (Decided; out of the game since 2026-10-23)
+**The owner's rework of 2026-10-23 removed action costs, and with them the unlock rule below; ultimates are out of the game and their code removed** ([history.md](history.md)). The concept stays for later: how an ultimate unlocks without action costs (rounds taken, for instance) is open question 39. The rule as it stood:
+
 - Each hero has an **ultimate**: their most powerful ability.
 - **Unlocked by action cost spent (owner, 2026-10-20; was turns taken).** An ultimate becomes usable once its hero has spent a set amount of **action cost** in the current fight (300 in Phase 1, about three typical actions). Every turn adds its cost, movement included, except a Hold without a move and a turn lost to Dazed ([keywords.md](keywords.md), 17.5). The meter starts at zero each fight.
 - **Once per combat.** Once unlocked, each ultimate can be used once per fight. There is no cooldown, and the meter doesn't refill.
@@ -233,10 +227,9 @@ A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks f
 | Party size | Up to 4 heroes, plus the caravan's camel (2026-10-21) | Solo, larger squads | Balances composition depth and turn speed |
 | Heroes | Pool of ~12 heroes with unique abilities and base stats; gear modifies stats and common conditions/effects | Generic classes; fully custom characters | Separates composition and gear into clear build layers; fixed identities aid readability |
 | Hero death | Permanent for the run | Revive between fights with a penalty | Raises stakes; forces adaptation |
-| Stats (2026-10-18) | Health, speed, defence, power; gear modifies speed, defence and power; health is fixed per hero | Larger stat sets; movement stat; accuracy and evasion; a separate influence stat | Small enough to read on every unit's stat sheet; movement was not distinct from speed |
-| Health scaling (2026-10-18) | Fixed per hero, in three tiers (Low, Medium, High) plus the war elephant's Very high; not modified by gear, upgrades or stat changes | Uniform health for every hero; modified by gear, like defence (the previous decision); upgradeable constitution stat | Health is part of a hero's identity; with power scaling only base damage and keyword effects unscaled, damage no longer outgrows it; tiers keep thresholds learnable while the gap between them stays constant through a run |
-| Defence formula | Percentage reduction: defence / (defence + constant) | Flat reduction | Diminishing returns; never reaches full immunity; works across all damage sizes |
-| Power (2026-10-18) | One offensive stat: power scales an ability's base damage and base healing; keyword effects and durations are unscaled | Power plus influence (effect strength, the previous decision); physical/magical split | Keeps every offensive item relevant to every hero; build identity comes from keywords; nothing scales twice |
+| Stats (2026-10-23) | Speed, defence, power as small whole numbers (0 to 3 for the prototype heroes); health = (1 + defence) × 2 | Low 10 / Medium 25 / High 40 with health in three fixed tiers (2026-10-18 to 2026-10-23); larger stat sets; movement stat; accuracy and evasion; a separate influence stat | Owner's call: every number countable at a glance |
+| Defence (2026-10-23) | Sets health only; damage reduction is the Armour keyword, flat | A percentage reduction, defence / (defence + constant) (until 2026-10-23) | Owner's call: with hits of 1 or 2, a percentage rounds away |
+| Power (2026-10-23) | Exactly the damage each of the unit's abilities deals | Power scaling an ability's base damage and healing, ×(1 + power / 50) (2026-10-18 to 2026-10-23); power plus influence; physical/magical split | Owner's call: an attack's damage reads straight off the stat sheet |
 | Gear slots | Boots, gloves, armour, helmet | Including a weapon slot | Weapons are unique per hero and tied to abilities and visual language |
 | Consumables | Limited; used only between fights; stat buffs or statuses for the next combat, or health recovery; shared party inventory | Usable in combat as actions with their own cost; no consumables; unlimited consumables | Keeps combat about abilities and the track; makes preparation between fights a decision; no hoarding |
 | Hero progression | Milestone upgrades from a randomized, hero-specific pool; no stat growth; recruits join without upgrades and earn them by reaching milestones | Experience levels with stat growth | Build variety without stat inflation |
@@ -251,12 +244,13 @@ A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks f
 
 14. Number of rarity tiers and their visual treatment.
 20. Recruitment and hero questions listed in sections 10.7 and 10.8.
-23. Value of `defenceConstant`, and whether a minimum of 1 damage applies (section 9.1).
+23. ~~Value of `defenceConstant`, and whether a minimum of 1 damage applies (section 9.1).~~ Retired 2026-10-23: defence sets health, damage is power minus Armour, and there is no minimum ([keywords.md](keywords.md), 17.6).
 24. Which gear slots carry keyword modifiers. Gear carries them (9.7, decided 2026-10-17); whether every slot does, and which modifiers suit which slot, is still open (see question 49).
 25. Whether a rival caravan copy carries the consumable buffs active when it was copied ([ghosts.md](ghosts.md)).
 26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
 37. **Damage buckets** (9.7 proposes publishing the rule, in the style of Path of Exile's "increased" and "more"): whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and barrier), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).
 38. Whether consumables can be used before a PvP duel, and which ones ([pvp.md](pvp.md)).
-39. The action cost that unlocks an ultimate (10.10; 300 in Phase 1): one value for every hero, or set per ultimate.
+39. How an ultimate unlocks now that actions have no cost (10.10): after a number of Temee's rounds, of the hero's own turns, or something else; and whether ultimates come back at all.
 49. Whether each gear slot modifies one verb (9.3), and the mapping; the proposed gear rules in 9.7 (stat line count and steps, the cap on gear's share of stats, bridge gear prerequisites, what top-rarity items are).
 50. Steering offers across runs (10.12): which tools, how large the rarity bonus is, whether a difficulty dial offsets it, and how rerolls stay compatible with seeded and daily runs.
+58. Whether gear may raise defence, and so health (9.1), or health stays fixed per hero.

@@ -20,10 +20,18 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 
 > **Pared back (owner, 2026-10-22):** while the game is balanced, the
 > camel isn't player controlled. It starts in the **top-left corner** and
-> walks itself **one space every 14 slots** along a **shortest walk**
-> around the ruins to the **only exit, the bottom-right corner**, going
-> around units in its way; it waits only when Immobilized or boxed in. The rules below describe the design it
-> returns to.
+> walks itself **one space a turn** along a **shortest walk** around the
+> ruins to the **only exit, the bottom-right corner**, going around units
+> in its way; it waits only when Immobilized, Stunned or boxed in.
+>
+> **It paces the track (owner, 2026-10-23):** its card goes **20 slots**
+> on after each of its turns, whether it stepped or waited, and every
+> other unit's card goes 2 × speed slots before its next turn, so each
+> unit acts once in each of its rounds ([timeline.md](timeline.md), 3.2).
+> Its stats follow the 2026-10-23 scale: defence 9, so health 20
+> (placeholder for "very high"; ten bow hits).
+>
+> The rules below describe the design it returns to.
 
 ### 18.1 The Camel (Decided)
 - Every fight has the party's **camel**, carrying the caravan's goods. It
@@ -33,18 +41,17 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   action cost** (100), so it advances very slowly. *(Proposed:* or it
   Holds, like any unit; walking rules apply as to heroes: it can't pass
   units or obstacles, and hazards it enters trigger, 6.2.)
-- **Very high health and High defence** (owner; defence High, 40, since
-  2026-10-21, was none). Built with **1,500**
-  (placeholder; the Bökh Champion has 540), so the enemy has to commit
-  several turns to it, not one burst.
+- **Very high health and High defence** (owner; defence High since
+  2026-10-21, was none). Built with defence 9, so health 20 since
+  2026-10-23 (placeholder; the Bökh Champion has 8; was 1,500 against
+  540), so the enemy has to commit several turns to it, not one burst.
 - **It acts first in every fight, despite its speed** (owner, 2026-10-21):
   its card starts at slot 0, ahead of every other card's starting slot
-  (3.4). After that its speed places it like any card, so a Hold (30)
-  can give it a second turn before the fastest hero's first.
-- *(Proposed:* speed **Low (10)**. A move then places its card 100 × 5 ÷
-  35 = 14 slots ahead, so crossing the 8-column map takes about 8 moves
-  and 115 slots, about 11 turns of a Medium hero; Phase 1 fights last a
-  median of about 9 actions per unit.)
+  (3.4).
+- Its speed places nothing since 2026-10-23: its card goes 20 slots a
+  turn, and everyone else acts once in between. Its road from the
+  top-left corner to the exit is about 12 steps, so a fight lasts at most
+  about 12 rounds unless the enemy holds it back.
 - **It isn't a hero:** it doesn't take one of the party's four places
   (10.1), and has no gear, upgrades or ultimate. *(Proposed.)*
 - *(Proposed:* it starts in the player's starting column, in the middle
@@ -70,10 +77,10 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   included (owner). Pushing it back or holding it in place is a legitimate
   tactic; no ability lasts forever, and a Bökh Champion grappling it turn
   after turn means the player has to deal with the Champion (owner).
-- A Taunted camel can only Hold, since it has no action that targets the
-  taunter (17.5).
-- **Friendly fire applies** (owner, 6.7): the party's own Bow, Hail,
-  Freeze and Lunge can hit it, and Sunlight can heal it. As a unit, it
+- A Stunned camel (an enemy Bökh Champion's Grapple) or an Immobilized
+  one (hail) waits; its card still goes a round on.
+- **Friendly fire applies** (owner, 6.7): the party's own Bow and Hail
+  can hit it. As a unit, it
   blocks lines of fire for both sides, so it can shield an archer, and it
   takes the arrow when it does.
 - *(Proposed:* it flanks and can be flanked like any unit (6.3).)
@@ -91,9 +98,9 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 - **It ends stalled fights.** Before the camel, a fight ended only when
   one side was eliminated, and a heal could undo damage forever. Now the
   player can always end a fight by walking the camel out, and an enemy
-  that hangs back loses. The enemy can delay the camel (displacing,
-  immobilizing, taunting it), but each delay costs its own turns and runs
-  out, and the player can answer the unit doing it.
+  that hangs back loses. The enemy can hold the camel back (displacing,
+  Immobilizing or grappling it), but each costs its own turns, and the
+  player can answer the unit doing it.
 - **It fits the setting:** rival caravans racing along the road (15.1),
   and the caravan is now on the map.
 - **A second win condition** gives fights a direction, as objectives do in
@@ -110,8 +117,10 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 
 ### 18.6 As Built (2026-10-21)
 - **Rules:** the camel is a unit of the player's side (`camel` in
-  `HEROES`, `src/rules/config.ts`: health 1,500, speed 10, defence 40,
-  power 0, only Hold among abilities, a move of 1 hex costing 100). It
+  `HEROES`, `src/rules/config.ts`; health 1,500, speed 10, defence 40 and
+  a move of 1 hex costing 100 until 2026-10-23; now defence 9, health 20,
+  power 0, its card going `RULES.roundSlots` (20) a turn; only Hold among
+  abilities). It
   starts at column 0 of row 4 (0-based), the middle of the player's
   column; the heroes are scattered over the rest. The exits are
   `SALT_FLATS.exits`. `checkEnd` (`resolve.ts`) checks, in order: the camel
@@ -121,8 +130,8 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 - **The AI** (`ai.ts`): a finished fight dominates both the shortlist score
   and the search's evaluation; the camel's health counts a point a point
   (`AI.camelHealthWeight`, 1), with no kill value; each hex between the
-  camel and its nearest exit is worth `AI.perCamelHex` (60) to the enemy and
-  against the player. The camel isn't pulled toward the enemy as heroes
+  camel and its nearest exit is worth `AI.perCamelHex` (60 on the old
+  scale, 0.75 since 2026-10-23) to the enemy and against the player. The camel isn't pulled toward the enemy as heroes
   are.
 - **Measured** over 200 AI-vs-AI fights from real starts (the player's side
   also played by the AI): **none unfinished** (3% to 8% before), median 50
@@ -133,7 +142,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   within noise (mean 3.2 ms against 3.1 ms locally).
 - **The page:** the exits are drawn with a dashed ivory border and two
   chevrons, and hovering or tapping one says what it is; the camel's stat
-  sheet gives its rule in place of abilities; Move shows its 14 slots; the
+  sheet gives its rule in place of abilities; the
   result says whether the camel took the road out or fell. Once a won
   fight's result shows, the party walks out (owner, 2026-10-21): the camel
   heads for its nearest exit and every living hero for the same one, hex by
@@ -158,7 +167,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 
 ## Open questions
 
-- The camel's health, and its speed (Low proposed).
+- The camel's health (defence 9, health 20, a placeholder since 2026-10-23), and the round's length (20 slots).
 - How exits are placed on maps other than Phase 1's.
 - How the camel recovers between fights, and how much (18.4).
 - Whether a rival caravan brings its own camel, so both sides have one to

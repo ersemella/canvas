@@ -17,10 +17,10 @@ deepening. It remains deterministic: no randomness or clock-based cutoff.
   Each completed iteration re-sorts the root options by their values, so
   the next one searches the previous best first (2026-10-21).
 - Use one evaluation from the root team's perspective: living health,
-  casualties, statuses and fog. Victory or defeat dominates other scores.
-  A charge still on the timeline at the horizon is valued as if it landed,
-  with the preview's escape rule, but never as a victory (2026-10-21).
-  Time costs and progress toward combat are signed for the acting team.
+  casualties, statuses (Stunned and Immobilized, in turns lost) and the
+  camel's road. Victory or defeat dominates other scores. Progress toward
+  combat is signed for the acting team (since 2026-10-23 every turn places
+  the card the same, so time has no cost to weigh).
   Progress is evaluated per action; subtracting both teams' absolute
   distances would cancel out in a duel and encourage Holding.
 - Maximize for the root side and minimize for the opposing side, regardless
@@ -33,11 +33,10 @@ deepening. It remains deterministic: no randomness or clock-based cutoff.
   that selected tree.
 
 `advanceToDecision()` in `fight.ts` is shared with live play. It advances
-slot damage, status expiry, hail and charges before pausing for either
-side's next decision. Resuming a paused decision does not tick effects
-again. Search uses faithful successors; the instant resolution of a charge
-used by previews exists on a separate copy and never enters the search
-as already-dealt damage.
+the camel's walk, skipped turns and the lifting of hail before pausing for
+either side's next decision. Resuming a paused decision does not apply
+them again. (Charged abilities, and the separate preview copies they
+needed, went with action costs on 2026-10-23.)
 
 ## Separate movement integration
 
@@ -53,10 +52,10 @@ sequence, which is no longer legal in one turn.
 ## Work caps
 
 `AI` in `config.ts` sets 110 work units per AI turn and 220 across all AI
-turns triggered by one player request. Each simulated action, charged
-preview and automatic card advanced during search spends one unit. The
-old minimum search after exhaustion is gone: a depleted budget uses Hold,
-which is legal even under a binding Taunt. Actual live turns still resolve
+turns triggered by one player request. Each simulated action and
+automatic card advanced during search spends one unit. The old minimum
+search after exhaustion is gone: a depleted budget uses Hold, which is
+always legal. Actual live turns still resolve
 normally. Candidate generation, evaluation and threat-map setup have
 bounded overhead outside this counter.
 
@@ -72,8 +71,9 @@ Tests in `ai.test.ts` cover matching pruned and unpruned minimax results
 at equal horizons (including three decisions), actual pruning savings,
 retaining the last complete iteration, shared-budget exhaustion, legal
 fallbacks, source-state immutability, lethal retaliation, consecutive-ally
-finishing attacks, terminal outcomes, delayed charges and target escape,
-and start-of-turn damage/expiry applied once. Existing rules and preview
+finishing attacks (until 2026-10-23), terminal outcomes, delayed charges
+and target escape (until 2026-10-23), hail lifting at its caster's turn
+applied once, and hail aimed only where a unit stands. Existing rules and preview
 tests also continue to pass. Repository package-boundary and generated-game
 checks, workspace typechecks, all unit tests, and the full local browser/API
 end-to-end suite passed.

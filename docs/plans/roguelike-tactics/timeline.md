@@ -13,129 +13,112 @@ tuning. Section numbers are the combat design's.
 ## 3. Turn Order: the Track
 
 ### 3.1 Summary (Decided)
-Combat runs on a **track** of numbered **slots**. Every unit, and every track entity (3.7), has a card in one slot. The track advances slot by slot; when it reaches a card, that unit or entity takes its turn. After acting, a unit's card is placed further along the track by an amount set by what it did and its speed. Cheaper actions and higher speed bring it back sooner.
+Combat runs on a **track** of numbered **slots**. Every unit, and every track entity (3.7), has a card in one slot. The track advances slot by slot; when it reaches a card, that unit or entity takes its turn. After acting, a unit's card is placed further along the track.
 
-This model is in the same family as the turn systems of Final Fantasy X (placement from action and speed), Final Fantasy Tactics (charge time) and Mana Khemia (a visible card track), which are the main references.
+**The track is paced by the camel, Temee (owner, 2026-10-23).** Temee's card goes a fixed **20 slots** on after each of its turns, and every other unit's card is placed by its speed **before Temee's next turn**, so each unit acts **once in each of Temee's rounds**, the faster earlier in it. What a unit does on its turn (an ability, a move, a Hold) no longer changes where its card goes. The fight is a series of rounds, each closed by Temee's step toward the exit ([camel.md](camel.md)).
 
-### 3.2 Placement (Decided)
-After a unit's turn, its card moves forward by:
+This model keeps the visible card track of Mana Khemia and Final Fantasy X, with rounds like those of a classic initiative order. Until 2026-10-23 every action had a cost that set how far its card moved ([history.md](history.md)).
+
+### 3.2 Placement (Decided 2026-10-23)
+After a unit's turn, its card goes to:
 ```
-slotsForward = roundDown((actionCost + hexesMoved × moveCostPerHex) × speedScale / (speed + C))
+slot = Temee's next turn − speedSlots × speed      (speedSlots = 2)
 ```
-- `speedScale` (5 in Phase 1) only puts speed on the same Low 10 / Medium 25 / High 40 scale as power and defence ([heroes-and-gear.md](heroes-and-gear.md), 9.1); it changes no placement (owner, 2026-10-20).
-- **Costs are fine-grained, the track is coarse.** Every action has a fixed, public action cost (for example a basic attack costs 100). Dividing by `speed + C` turns it into a whole number of slots.
-- **Speed divides both the action and the movement cost.**
-- `C` is a global constant. It sets how much speed matters: a larger `C` flattens speed's effect. Because speed is in the divisor, each extra point of speed is worth slightly less than the last (diminishing returns). Value TBD; aim for a typical turn landing roughly 8 to 12 slots ahead, so speed changes placement in small steps and a window of about 30 slots shows about three turns.
-- A card always moves at least 1 slot. Costs and `C` are tuned so ordinary turns never come close to that floor.
-- Rounding discards the remainder.
+- **Temee's next turn** is its card's slot, counting the card as going `roundSlots` (20) on each turn: the first of Temee's turns that leaves the unit's slot still ahead of the current slot. A unit that acts before Temee in a round is placed in the next round; one whose card was Delayed past Temee's lands in the round after Temee's.
+- **Temee's own card** goes `roundSlots` on after each of its turns, whether it stepped or waited.
+- A skipped turn (Stunned, or nothing to do but Hold) places the card the same way.
+- Speed runs 1 to 3 for the heroes (9.1), so cards land 2 to 6 slots before Temee's; ties and near-ties yield (3.3).
+- Without a living camel the fight is already lost (camel.md); a test's fight without one starts its rounds at slot 0.
 
 ### 3.3 Collisions (Decided)
-**Two cards never share a slot.** A card placed on an occupied slot **yields**: it moves to the next free slot, and further if that one is taken (a cascade). Cards already on the track never move because of another card's placement.
+**Two cards never share a slot.** A card placed on an occupied slot **yields**: it moves to the next free slot, and further if that one is taken (a cascade). Cards already on the track never move because of another card's placement. A card that yields past Temee's acts after Temee in that round; it is then placed by the next of Temee's turns, like any other.
 
 Cards placed at the same moment (combat start, or one effect moving several cards) are placed higher speed first. Cards of equal speed are placed in a random order, drawn from the fight's seed so a fight replays the same (owner, 2026-10-21; was alternating sides starting with the player's side, then party slot order).
 
 ### 3.4 Starting Positions (Decided)
-Each card's first slot uses the same formula as placement (3.2), with a standard starting cost:
-```
-startSlot = roundDown(startCost / (speed + C))
-```
-Higher speed starts earlier. Collisions resolve as in 3.3. The exception is the caravan's camel, which always starts first, at slot 0, whatever its speed (owner, 2026-10-21; [camel.md](camel.md), 18.1).
+Temee starts first, at slot 0, whatever its speed (owner, 2026-10-21; [camel.md](camel.md), 18.1). Every other card is placed as after a turn at slot 0: `20 − 2 × speed`, in the simultaneous order (3.3). The first round is then the same as every later one.
 
-### 3.5 Push, Pull and Track Manipulation (Decided)
-Terminology: **Push** moves a card later on the track and **Pull** earlier; **Displace** physically moves a unit across hexes (keywords in [keywords.md](keywords.md)). Push and Pull never mean the board.
-- Abilities may **push** a card later by a stated number of slots: an enemy's, an ally's, or a track entity's (3.7).
-- Abilities may **pull** a card earlier, but never earlier than the next slot, within a pull limit ([keywords.md](keywords.md), 17.3).
-- A pushed or pulled card that lands on an occupied slot yields (3.3).
+### 3.5 Delay, Haste and Track Manipulation (Decided)
+Terminology (owner, 2026-10-23): **Delay** moves a card later on the track and **Haste** earlier; **Push**, **Pull** and **Move** move a unit across the board (keywords in [keywords.md](keywords.md)). Delay and Haste never mean the board.
+- Abilities may **Delay** a card by a stated number of slots: an enemy's, an ally's, or a track entity's (3.7). Delaying a card past Temee's costs its unit its place in that round, not its turn.
+- Abilities may **Haste** a card, never earlier than the next slot, within a haste limit ([keywords.md](keywords.md), 17.3).
+- A Delayed or Hastened card that lands on an occupied slot yields (3.3).
+- **Inevitable** cards can't be Delayed or Hastened.
+- No current ability Delays or Hastens (2026-10-23); none is built.
 
-### 3.6 Push Limit (Decided, value TBD)
-Repeated pushes could keep a unit from ever acting. Mana Khemia was criticized for exactly this, and in PvP it becomes a lockout loop. A card can be moved later by at most a set number of slots in total between two of its own turns, counting Push and any yielding that follows it. A turn lost to Dazed counts as a turn and resets the limit ([keywords.md](keywords.md), 17.5). Further pushes are reduced to fit, and the preview shows the reduced amount. Value TBD.
+### 3.6 Delay Limit (Decided, value TBD)
+Repeated Delays could keep a unit from ever acting. Mana Khemia was criticized for exactly this, and in PvP it becomes a lockout loop. A card can be moved later by at most a set number of slots in total between two of its own turns, counting Delay and any yielding that follows it. A skipped turn counts as a turn and resets the limit ([keywords.md](keywords.md), 17.5). Further Delays are reduced to fit, and the preview shows the reduced amount. Value TBD (10 on the old track).
 
-### 3.7 Charged Abilities and Track Entities (Decided)
-**Charged abilities.** Some abilities have a **charge cost** and a **recovery cost**.
-1. Using one places the character's card forward by the charge cost (3.2), typically small.
-2. When that card's turn comes, the ability **triggers immediately**: the character takes no other action and no movement that turn.
-3. The card is then placed forward by the recovery cost, typically a standard action cost.
+### 3.7 Track Entities (Proposed)
+Some abilities may place a separate card on the track that acts independently of the character, for example a summoned zombie. The entity takes its own turns from its own card, placed by its own speed like any unit's (3.2). Track entities occupy slots and follow the collision (3.3) and Delay and Haste (3.5) rules like any card. None is built.
 
-The character's own card is the pending effect, so it is visible and answerable: pushing the character's card delays the effect, and defeating the character prevents it. What the ability targets (a fixed hex or area, or a unit it follows) is defined per ability.
-
-**Track entities.** Some abilities place a separate card on the track that acts independently of the character, for example a summoned zombie. The character pays an action cost to activate it, as for any action. The entity then takes its own turns from its own card, with its own placement rules defined by the ability. Track entities occupy slots and follow the collision (3.3) and push and pull (3.5) rules like any card.
-
-**Ultimates** are each hero's most powerful ability, usable **once per combat**, and only after the hero has completed a set number of turns in the fight, shown publicly (10.10). An ultimate may be an ordinary action, a charged ability or a track entity; that is defined per ultimate. Not every ultimate goes on the track, and not every track entity is an ultimate.
+Charged abilities and ultimates were removed on 2026-10-23 with action costs ([history.md](history.md)).
 
 ### 3.8 New Units (Proposed)
-Units that enter mid-combat (summons, reinforcements) are placed with the starting formula (3.4) counted from the current slot, and yield like any card (3.3). TBD.
+Units that enter mid-combat (summons, reinforcements) are placed by the placement rule (3.2) from the current slot, and yield like any card (3.3). TBD.
 
 Reinforcements (Decided): their arrival is shown on the track in advance, with a known arrival slot and spawn location (section 7.4).
 
 ### 3.9 Durations and Effects Over Time (Decided)
-- Durations (buffs, debuffs, damage over time) are measured in slots. They **do not occupy slots** and are not cards.
-- An effect **takes effect at the beginning of a slot**, before any card on that slot acts. Each effect defines which slots it acts on: every slot of its duration, or every N slots (for example a burn that hits every 3 slots for 12).
-- A duration that ends on the slot of the affected unit's turn **expires after that unit acts**, so it still covers that turn.
+- An effect lasts as its source states: a number of slots, until something happens (hail until its caster's next turn), or always. Effects **do not occupy slots** and are not cards.
+- An effect that acts over time acts at a stated moment: Burn at the start of each of the unit's turns ([keywords.md](keywords.md), 17.6).
+- A duration in slots that ends on the slot of the affected unit's turn **expires after that unit acts**, so it still covers that turn.
 
 ## 4. Speed
 
-Speed sets how far a unit's card moves after each turn (3.2) and its starting slot (3.4), and decides the order of cards placed at the same moment (3.3).
+Speed sets where a unit's card goes in each round (3.2), its starting slot (3.4), and the order of cards placed at the same moment (3.3). Since 2026-10-23 it no longer sets how often a unit acts: every unit acts once a round. A faster unit acts earlier in each round, so it gets to act before slower units on both sides, and its turn comes sooner after a round begins.
 
-### 4.1 Granularity (Decided)
-Speed divides fine-grained costs, so small changes in speed change placement in small steps, and gear can raise or lower speed by single points with a visible effect. Diminishing returns are built in.
+### 4.1 Granularity (Decided 2026-10-23)
+Speed is a small whole number (1 to 3 for the prototype heroes, 9.1); each point is 2 slots earlier in the round. Equal speeds are told apart only by yielding (3.3).
 
 ### 4.2 Speed Versus Defence (Decided in principle, details TBD)
 - Speed is weighed against defence: gear that provides more defence reduces speed, or speed and defence compete for the same gear budget. Taking speed means giving up protection, and the reverse.
-- Mechanism TBD. Options include gear weight (mainly from the armour slot) that lowers speed, similar to Tactics Ogre where equipment weight increases recovery time, or speed and defence as competing stats on the same gear.
+- Mechanism TBD. Options include gear weight (mainly from the armour slot) that lowers speed, or speed and defence as competing stats on the same gear.
 
 ### 4.3 Rationale
-- Speed affects every turn a unit takes, so it is valuable to every build. The divisor's diminishing returns, the constant `C` and the tradeoff with defence (4.2) keep it from dominating.
-- Durations in slots favour fast units slightly: a buff covers more of a fast unit's turns. Accepted; revisit if speed proves too strong.
+- A round paced by Temee makes the track readable at a glance: everyone acts once before Temee steps, so the camel's walk is the fight's clock.
+- Speed still matters every round: acting first lets a unit strike, or step out of reach, before slower units answer.
 
 ## 5. Action Economy
 
 ### 5.1 Rules (Decided)
 On its turn, a unit:
-- **must use one action** (an ability, an attack, or a basic action), which ends its turn, and
-- **may choose ordinary movement as that action instead of an ability:** base **20 + 10 per hex**, up to **4 hexes**, with allies and enemies blocking the path (owner, 2026-10-20).
+- **must use one action** (an ability or Hold), which ends its turn, or
+- **may walk instead of using an ability:** up to **3 spaces** (owner, 2026-10-22), with allies and enemies blocking the path, and hail stopping it where it enters.
 
-Every hero has **Hold**, a quick action with no effect, so a unit can always end its turn (cost in [phase-1-brief.md](phase-1-brief.md), section 4).
-
-There are no turns without an action, so every turn has a real cost. The exception is a charged ability's trigger turn (3.7), where the ability resolves and the unit does nothing else.
-
-Ordinary movement and an ability cannot share a turn. Movement abilities keep their own rules; they also cannot combine with ordinary walking (2026-10-20).
+Every hero has **Hold**, an action with no effect, so a unit can always end its turn. Walking and an ability cannot share a turn (2026-10-20). Whatever the unit does, its card is placed the same way (3.2).
 
 ### 5.2 No Cooldowns (Decided)
-- Abilities have no cooldowns. An ability can be used on any turn; ultimates once per combat, after their unlock (3.7).
-- Action cost is therefore the main thing that prices an ability's power. Strong abilities must cost more (or be charged abilities). Low-cost abilities must be roughly comparable in power to each other, or the strongest cheap ability will be used every turn.
-- **Paying after acting.** A cost is paid after the action resolves, so it prices power only when the unit's next turn matters: a killing blow, the last turns of a fight, or a unit about to die pays little real cost. Handled case by case, per ability: where it matters, the ability is charged (paid before it resolves, 3.7) or priced for it.
+- Abilities have no cooldowns. An ability can be used on any turn.
+- With every turn placed the same since 2026-10-23, nothing prices one ability above another on the track: a strong ability must be balanced by its effect, its reach or what it needs (Throw needs a grapple).
 
 ### 5.3 Rationale
-- Fixed costs make every action's timing consequences readable and context-free.
-- Movement has its own action cost so an approach has a readable delay, without also resolving an ability on that turn.
-- Movement is capped to keep one turn’s repositioning bounded; its delay is paid after the move.
-- Requiring an action removes near-free turns (stepping or waiting repeatedly to act more often than others).
+- One placement for every action makes every turn's timing obvious: the only timing choice is what to do with the turn, not how much to spend.
+- Movement is capped to keep one turn's repositioning bounded.
+- Requiring an action keeps one decision per turn.
 
 ## Decision log
 
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
-| Turn order | A track of slots; placement = cost ÷ (speed + C), rounded down | Individual initiative, side-based phases, simultaneous commit, semi-real-time; a clock of whole-number ticks with speed only breaking ties | Costs stay fine-grained while the track stays coarse and countable; speed works in small steps with diminishing returns |
+| Turn order (2026-10-23) | A track of slots paced by Temee: its card goes 20 on each turn, every other card 2 × speed before its next turn, so each unit acts once a round | Placement = cost ÷ (speed + C) (until 2026-10-23); individual initiative, side-based phases, simultaneous commit, semi-real-time | Owner's call: a round per camel step is easy to read, and ties the fight's clock to the camel's walk |
 | Collisions | The arriving card yields to the next free slot; cascades | Speed-first tie-break bumping the incumbent; units sharing a slot | Cards on the track never move because of another placement, so plans stay stable and bump-locking is impossible |
-| Speed | Divides action and movement cost; sets starting slot and simultaneous-placement order | Speed only for order and ties; percentage reduction of action cost | Granular and tunable, with built-in diminishing returns |
+| Speed (2026-10-23) | Sets the card's place in each round (2 slots a point before Temee's turn), the starting slot and simultaneous-placement order | Dividing action and movement cost (until 2026-10-23) | Owner's call, with the track |
 | Speed vs defence | Speed weighed against defence (details TBD) | No tradeoff | Gives speed an opportunity cost so it is a build choice, not a default |
-| Charged abilities | Charge cost then trigger then recovery cost, on the character's own card | Delayed actions as separate track entries; immediate resolution | The pending effect is visible and answerable without separate entries or interrupt rules |
+| Charged abilities (removed 2026-10-23) | None: with no action costs there is no charge or recovery cost | Charge cost then trigger then recovery cost, on the character's own card (until 2026-10-23) | Owner's call: removed with the parked kits |
 | Track entities | Some abilities place independent cards (for example summons); activation costs an action | Only units on the track | Summons and similar effects act on their own timeline and can be manipulated like units |
-| Ultimates | Unlocked after a set number of the hero's turns, shown publicly; once per combat; may be an action, a charged ability or a track entity | Usable from the start; charge meter filled by keyword actions | Fights build toward ultimates; a visible unlock is a threat the other side can answer, for example by pushing the hero's card |
-| Movement | One move per turn, capped by a single global value; cost per hex divided by speed | Unlimited movement with exponential cost per hex; uncapped linear cost; a cap based on speed; a per-hero cap modified by gear | A cap prevents act-now-pay-later strikes across the map; one global value keeps speed from also setting reach, for now |
-| Turns | An action is required to end a turn; every hero has Hold, a quick action with no effect | Move-only and wait turns with a minimum cost; each hero's cheapest real ability as the fallback | No near-free turns to chain |
-| Push limit | Cap on total push between a card's own turns | Diminishing returns on repeated pushes; a guaranteed turn after a set delay | Simple, previewable, and prevents lockout |
-| Pulls | No earlier than the next slot | Moving a card to any earlier slot | Cannot skip the track; as Final Fantasy Tactics' Quick |
-| Effects over time | Do not occupy slots; act at the beginning of a slot, on slots each effect defines; expire after the affected unit acts | Effects as track entries; effects on the affected unit's turns only | Keeps the track for cards; each effect stays exact and previewable |
-| Cooldowns | None | Cooldowns in turns or slots | Simplicity; action cost prices power instead |
+| Ultimates (removed 2026-10-23) | None | Unlocked after action cost spent, once per combat (until 2026-10-23) | Owner's call: removed with action costs and the parked kits |
+| Movement | One move per turn, capped by a single global value (3) | Unlimited movement with exponential cost per hex; a cost per hex (until 2026-10-23); a cap based on speed; a per-hero cap modified by gear | A cap prevents strikes across the map; one global value keeps speed from also setting reach, for now |
+| Turns | An action is required to end a turn; every hero has Hold, an action with no effect | Move-only and wait turns with a minimum cost; each hero's cheapest real ability as the fallback | One decision per turn |
+| Delay limit | Cap on total Delay between a card's own turns (Push limit until 2026-10-23) | Diminishing returns on repeated Delays; a guaranteed turn after a set delay | Simple, previewable, and prevents lockout |
+| Haste | No earlier than the next slot (Pull until 2026-10-23) | Moving a card to any earlier slot | Cannot skip the track; as Final Fantasy Tactics' Quick |
+| Effects over time | Do not occupy slots; each lasts and acts as its source states (Burn at the start of the unit's turns) | Effects as track entries; acting at the beginning of slots (until 2026-10-23) | Keeps the track for cards; each effect stays exact and previewable |
+| Cooldowns | None | Cooldowns in turns or slots | Simplicity |
 
 ## Open questions (original numbers)
 
-1. Cost values: typical, quick and slow action costs, `moveCostPerHex`, the starting cost, and `C` (aim: a typical turn 8 to 12 slots ahead). Default size of the visible track window (roughly 30 slots).
+1. The round's length (`roundSlots`, 20) and slots per point of speed (`speedSlots`, 2). Default size of the visible track window (roughly 30 slots).
 2. Speed versus defence mechanism: gear weight lowering speed, or competing stats on gear (4.2).
-4. Fixed order for cards placed at the same moment (3.3).
-5. Push limit value (3.6).
-6. Which abilities are charged, their charge and recovery costs, and what each targets (3.7).
+5. Delay and haste limit values (3.6).
 7. Scheduling of units and track entities that enter mid-combat (3.8).
-8. Move and ability are now exclusive; tune the separate movement cost through playtests.
-28. The maximum number of hexes moved per turn.
+28. The maximum number of spaces moved per turn.

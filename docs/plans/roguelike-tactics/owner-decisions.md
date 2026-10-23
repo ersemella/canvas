@@ -30,19 +30,20 @@ surrender rule and weaker heals were the other options
 ([history.md](history.md)). Built in the fight on 2026-10-21: over 200
 AI-vs-AI fights none went unfinished ([camel.md](camel.md), 18.6).
 
-### 2. Hero numbers are placeholders (decision: section 2)
+### 2. Hero numbers (set by the owner, 2026-10-23)
 
-Every stat and ability value marked TBD in the brief's section 4 has a
-guess in `packages/games/silk-road-run/src/rules/config.ts`, so the
-fight can be played. Balance means nothing until the real numbers are in.
+The three prototype heroes' stats and kits are the owner's (2026-10-23;
+[roster.md](roster.md), [heroes-and-gear.md](heroes-and-gear.md), 9.1).
+The wolf's and the camel's numbers are still the builder's placeholders
+(decision 1 below).
 
 ### 3. CPU per request: capped (watch)
 
 The enemy AI runs inside the request. It now uses selective alpha-beta
 lookahead (2026-10-20): four candidates, two decisions including the root,
 then three if work remains; 110 work units per AI turn, 220 shared per
-request, with Hold when exhausted. Charges and automatic effects use the
-real timeline. See [ai-search.md](ai-search.md) for the algorithm,
+request, with Hold when exhausted. Automatic turns (the camel's, skipped
+ones) use the real timeline. See [ai-search.md](ai-search.md) for the algorithm,
 regressions and local whole-request comparison (p99 elapsed 6.24 →
 5.36 ms; p99 process CPU 9.13 → 9.08 ms). This is local calibration, not a
 hard production CPU guarantee; continue watching 1102/`exceededCpu`.
@@ -71,80 +72,73 @@ it only needs doing.
 
 ## Decisions needed
 
-### 1. Hail: charged or not
+### 1. The rework of 2026-10-23: what the builder chose
 
-Hail deals damage but isn't charged, against rule 30 (arcing attacks are
-charged): keep it uncharged, or make it charged? (How a stalled fight
-ends, the decision once numbered here, is decided: issue 1.)
+The owner's notes were rough; where they left a choice, the builder
+picked the reading below. Confirm or change each:
 
-### 2. The prototype heroes' numbers
+- **Placement:** "2 × speed ticks in front of Temee" is read as 2 × speed
+  slots **before Temee's next turn**: a unit acting before Temee in a round
+  is placed in the next round, so every unit acts once a round (confirmed
+  by the owner, 2026-10-23). Starting cards use the same rule.
+- **Temee's card goes 20 slots a turn whether it stepped or waited**
+  (Immobilized, Stunned or boxed in).
+- **Hail Immobilizes a unit standing in its space when it lands**, as well
+  as one that enters it, and **any unit**, allies and the Storm Caller
+  included. A walk that enters it ends there. It disappears when the
+  Storm Caller's next turn starts, or when the Storm Caller falls.
+- **Immobilized still lets others displace the unit** (the 2026-10-19
+  rule kept), and **Stunned has no lockout guard** (keywords.md, open
+  questions 54 and 56).
+- **Throw Moves the target to a free space next to the target** ("an
+  adjacent space"), not next to the Champion, so it can end the grapple;
+  the damage comes after the Move.
+- **"Bökh takes damage" means any damage to its health.** Power-0 hail
+  doesn't count.
+- **The Bökh Champion lost Inevitable**, which the notes left out and
+  nothing would use (nothing Delays any more).
+- **Placeholders:** the wolf at speed 2, defence 1 (health 4), power 1;
+  Temee at defence 9 (health 20; "very high health"). The AI's weights
+  were rescaled to the new health scale (`AI` in `config.ts`: a kill
+  worth 4, a space from the enemy 0.2, a space of the camel's road 0.75).
+- **Deleted:** every parked ability and the Modao Vanguard's kit, with
+  their code (owner, 2026-10-23); the Modao Vanguard stays in the roster
+  as a hero to rebuild.
 
-Replace the placeholders in `config.ts` (brief section 4). A measured
-review (2026-10-20) is in [balance.md](balance.md); its first three
-tunings are applied (owner, 2026-10-20): the AI's fog weights at a third,
-Sunlight heal 50, Volley charge 20 and recovery 60, Freeze instant. Current
-guesses:
+### 2. What the first measurements show (2026-10-23)
 
-Speed, defence and power share one scale, **Low 10 / Medium 25 / High
-40** (owner, 2026-10-20), so a hero's bands read off its numbers; the
-constants were changed to match (`C` 25 with ×5 in the track formula,
-`defenceConstant` 50; speed was 4 and 7, defence 5 and 10). **No gear in
-Phase 1** (owner, 2026-10-20): the starter armour (light +10 defence on
-the Outrider, medium +20 defence and −5 speed on the others) is gone, so
-these base values are what the stat sheet shows and what fights use. A
-run saved earlier takes today's stats when it is next loaded.
+Over 200 AI-vs-AI fights each ([balance.md](balance.md#the-2026-10-23-rework)):
 
-| Hero | Health | Speed | Defence | Power |
-|---|---|---|---|---|
-| Bökh Champion | 540 | 25 (Medium) | 25 (Medium) | 10 (Low) |
-| Mangudai Outrider | **300 (owner, 2026-10-21; 360 from 2026-10-20)** | 40 (High) | 10 (Low) | 40 (High) |
-| Yadachy Storm Caller | **420 (owner, 2026-10-21; 360 from 2026-10-20)** | 25 (Medium) | 25 (Medium) | 25 (Medium) |
-
-Without armour, the Champion and Storm Caller take about 25% more
-damage from a hit and act a little more often; the Outrider takes about
-30% more. Over 300 AI-vs-AI fights with every change of 2026-10-20 (no
-armour, the unlimited bow, Pin, Hail and Sunlight below): 3.3%
-unfinished at 400 actions, median 52 actions (58 before).
-
-| Ability | Placeholder values |
-|---|---|
-| Bow (renamed from Composite Bow, owner, 2026-10-21) | **no range limit (owner, 2026-10-20; was 5)**: flies to the first unit, ruins or the map's edge; **damage 120 (owner, 2026-10-19)**; **can't target a unit in, or past, a sandstorm (Obscured): its lane stops short of it; and can't shoot out of one (owner, 2026-10-21; it was halved before)** |
-| Leap (Dash until 2026-10-21) | **exactly 2 hexes in a straight line, over ruins, a unit or a hazard, landing on a free walkable hex; cost 20 (owner, 2026-10-21; Dash went up to 3 hexes, stopped by ruins and enemies, at 40)** |
-| Volley (ultimate) | range 5, radius 1, **damage 200 (owner, 2026-10-20; 135 from 2026-10-19)**, **charge 20, recovery 60 (owner, 2026-10-20; were 40 and 100)** |
-| Sunlight | **one space within 4, empty or not (owner, 2026-10-21; one unit within 4 from 2026-10-20; was everyone within 1 of the caster, 2 until 2026-10-19)**, **heal 50, 75 at its power, quick (60) (owner, 2026-10-20; 35 earlier that day, typical heal 50 before that, 40 from 2026-10-19, 25 before)**; **clears hail and fog from the target's hex (owner, 2026-10-21)**; **a sandstorm doesn't stop it (owner, 2026-10-21; earlier that day it couldn't target a unit in, or past, one)** |
-| Hail | range 4, **damage 50 (owner, 2026-10-19)**, lasts 20 slots, Slowed 2 for 10 slots; **no Vulnerable (owner, 2026-10-20; was 25%)** |
-| Fog | **removed (owner, 2026-10-21)**: no version measured worth its turn ([balance.md](balance.md)) |
-| Freeze (ultimate) | range 4, radius 1, **damage 120 (owner, 2026-10-22; 60 from 2026-10-20), then Immobilized and Vulnerable 50% for 20 slots (owner, 2026-10-20; was no damage, 25% for 15)**, **instant, typical cost (owner, 2026-10-20; was charged: charge 20 and recovery 60 that day, 40 and 100 before)** |
-| Throw | damage 80 |
-| Grapple (Pin until 2026-10-22) | 12 slots, **no Vulnerable (owner, 2026-10-20; was 25%)**; **the target is Taunted (Hold allowed, 2026-10-20), and Crushed for base 10 a slot through defence (owner, 2026-10-22; 6 from 2026-10-20, 8 before)**; **the grapple breaks, clearing every status it gave either unit, if the target is cleansed or the two are no longer adjacent (knocked away, or the Champion moving away); cleansing the Champion doesn't break it (owner, 2026-10-20)**; **the Champion isn't Immobilized itself (owner, 2026-10-20; it was)**; **melee only (owner, 2026-10-22; it could step one hex first from 2026-10-21)** |
-| Lunge (ultimate) | **Replaced Rampage (owner, 2026-10-22)**: a unit within 3, after a bound of up to 2 hexes to a free hex beside it, takes base 100 and is grappled as by Grapple; no Vulnerable; typical (100) |
-
-Damage is scaled by power: `base × (1 + power / 50)`.
-
-**Ultimates unlock after 300 action cost spent** (owner, 2026-10-20;
-was 3 turns, which cheap moves met within a few slots of first contact).
-Over 300 AI-vs-AI fights, unfinished fights rose from 3.3% to 7.7% (6.3%
-at 250, 5.7% at 200): ultimates are the biggest finishers, and they now
-arrive later. The camel (issue 1) settles it once built: the player can
-always end a fight by walking it out.
+- **Grapple decides fights.** A side without it wins 6%: the Stunned
+  target loses every turn while the grapple lasts, and Grapple is used on
+  69% of the Champion's turns. Options: a lockout guard on Stunned
+  (keywords.md, open question 56), a duration, or letting the target's
+  allies break it more easily.
+- **Throw is almost never used** (3% of the Champion's turns; a side
+  without it wins exactly as often): it trades a held Stun for 1 damage
+  and a space. Options: Throw keeps hold wherever it lands, deals more,
+  or does something a Stun can't.
+- **Hail is worth its turn** (a side without it wins 34%), at power 0.
+- **Stages:** a full party beats one enemy hero and two wolves 87–99% of
+  the time, two heroes and a wolf 39–97% (two Champions are the hardest,
+  39%), and all three 73%.
 
 ### 3. The builder's choices in Phase 1
 
 Each is in [phase-1-brief.md](phase-1-brief.md#11-as-built-2026-10-19);
 confirm or change:
 
-- **The AI's additions:** a pull toward the nearest enemy, and counting
-  the quicksand it will take before its next turn. Without the pull, units with
+- **The AI's additions:** a pull toward the nearest enemy. Without the pull, units with
   nothing in reach hold forever. Since 2026-10-20, a one-step **lookahead**:
   the damage the enemies acting within its next turn could deal it where
   it ends, weighed by the share of its health and by a per-hero caution
   (0 for the Bökh Champion, a tank). Without it the AI walked into an
   archer's reach, and on speed ties the side that moved first lost 60–67%
   of AI-vs-AI fights; with it, 49–51%.
-- **Movement is a separate action, 20 + 10 per hex, capped at 4**
-  (owner, 2026-10-20). Allies and enemies block ordinary walking. An
-  ability cannot share the turn with walking; the page replaces one
-  selection with the other. Leap and Lunge retain their traversal rules.
+- **Movement is a separate action, capped at 3** (owner, 2026-10-20 and
+  2026-10-22). Allies and enemies block ordinary walking. An ability
+  cannot share the turn with walking; the page replaces one selection
+  with the other.
 - **The enemy's starting layout** is one of three, picked by the run's
   seed.
 

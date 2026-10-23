@@ -12,6 +12,13 @@ the rest is **Proposed**: the numbers are the owner's to set
 > and [keywords.md](keywords.md); the track is [timeline.md](timeline.md).
 > The Bökh Champion's Pin was renamed Grapple (owner, 2026-10-22); the
 > measurements below keep the name they were taken under.
+>
+> **Everything before [the 2026-10-23 rework](#the-2026-10-23-rework) was
+> measured on the old rules:** action costs and cost-based placement, the
+> Low 10 / Medium 25 / High 40 stat scale, power-scaled base damage and
+> percentage defence, and keywords since renamed or removed (track Push
+> is now Delay; [keywords.md](keywords.md)). Its findings about those
+> mechanics no longer apply; its method and principles still do.
 
 ## Summary
 
@@ -699,6 +706,63 @@ script, not committed.
   against an enemy with it wins 43% instead of 77% (34 points), and an
   enemy without it loses 95% instead of 77% (18 points). In stages 1 and
   2 it is worth 5–15 points to the player.
+
+## The 2026-10-23 rework
+
+The owner's rework ([keywords.md](keywords.md), [timeline.md](timeline.md),
+[roster.md](roster.md)): small whole-number stats, health (1 + defence) × 2,
+damage exactly the user's power, Temee pacing the track (one turn a round
+for everyone), Hail Immobilizing one space, Grapple Stunning, Throw
+Moving. Measured with `scripts/balance/ablate.mjs`, the production AI on
+both sides (its weights rescaled to the new health), 200 fights each,
+seeds from 1000.
+
+**Each ability removed from one side** (`experiments/pared.mjs`; 50% means
+it adds nothing):
+
+| Experiment | Modified side wins | Unfinished | Median actions |
+|---|---:|---:|---:|
+| control | 50% | 4% | 52 |
+| no Bow | 22.3% | 1.5% | 49 |
+| no Hail | 34% | 0% | 53 |
+| no Grapple | 6.2% | 2.5% | 50 |
+| no Throw | 50% | 4% | 52 |
+
+In the control fights (the player's side also played by the AI): the
+player's side won 66.7% of finished fights (enemies beaten 58, Temee out
+70, Temee killed 32, party killed 32 of 192 finished); a median 254 slots,
+about 12 of Temee's rounds. Share of each hero's turns: the Champion
+Grapples on 69%, walks on 27% and Throws on 3%; the Outrider shoots on 41%,
+walks on 36% and Holds on 23% (nothing in its lanes); the Storm Caller
+hails on 81%. Per fight, the Bow dealt 15.6 damage and Grapple 10.9;
+kills were Grapple 1.44, Bow 1.35, Throw 0.01.
+
+- **Grapple is the strongest ability in the game.** Its Stun takes away
+  every turn of the grappled unit until the Champion is damaged, Stunned
+  or moved apart, and the AI rarely breaks it: a side without it wins 6%.
+- **Throw is a trap:** it gives up a held Stun (when it lands away) for 1
+  damage. The AI almost never takes it, and removing it changes nothing.
+- **Hail matters without damage**: Immobilizing a melee unit, or the
+  camel, for a round is worth 16 points of win rate.
+
+**Stage caravans** (`experiments/caravans.mjs`: the full party and Temee
+against each stage's enemy):
+
+| Enemy | Player wins |
+|---|---:|
+| Bökh Champion + 2 wolves | 87% |
+| Mangudai Outrider + 2 wolves | 95.5% |
+| Yadachy Storm Caller + 2 wolves | 98.5% |
+| Bökh + Bökh + wolf | 39% |
+| Bökh + Mangudai + wolf | 80% |
+| Bökh + Storm + wolf | 84.3% |
+| Mangudai + Mangudai + wolf | 93.5% |
+| Mangudai + Storm + wolf | 97% |
+| Storm + Storm + wolf | 99.5% |
+| all three | 72.5% |
+
+Every enemy with a Champion is the hard one; the wolves (placeholders) are
+weak.
 
 ## Principles for re-tuning
 

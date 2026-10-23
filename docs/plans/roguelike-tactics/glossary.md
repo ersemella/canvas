@@ -16,37 +16,31 @@ tuning. Section numbers are the combat design's.
 |---|---|
 | **Roguelike** | A game structured as a series of independent attempts ("runs"). Each run has randomized content, and progress within a run is lost when it ends. |
 | **Run** | One full attempt through the game, from start to victory or defeat. |
-| **Bridge gear** | Gear that converts or links keywords (for example, displace effects also apply burn), letting unexpected pairings work (9.7). Proposed. |
+| **Bridge gear** | Gear that converts or links keywords (for example, Push effects also apply Burn), letting unexpected pairings work (9.7). Proposed. |
 | **Build** | A player's choices outside of combat: which characters are in the party (composition) and which gear each character has equipped. |
 | **Composition** | The specific set of characters in the party. |
 | **Party** | The group of characters a player controls in combat. Maximum of 4 heroes; the camel isn't one of them. |
-| **Camel** | The caravan's camel: a unit the player moves one hex a turn that can't attack. It reaching an exit hex wins the fight; its death is game over; its damage carries over between fights (18). |
-| **Exit hex** | One of the four hexes sticking out on the enemy's edge; the camel reaching one wins the fight (18.2). |
+| **Camel** | The caravan's camel, Temee: a unit that can't attack and walks one space a turn toward the exit (by itself while the game is pared back). It reaching an exit wins the fight; its death is game over; its damage carries over between fights (18). It paces the track: its card goes 20 slots a turn (3.2). |
+| **Exit hex** | The hex the camel reaching wins the fight: the bottom-right corner while the game is pared back (18.2). |
 | **Unit** | Any combatant on the map, whether player-controlled or enemy. |
 | **Turn** | A single unit's opportunity to act. Turns are individual, not per side. |
-| **Track** | The row of numbered slots that sets turn order. Every unit and track entity has a card in one slot; the track advances slot by slot and each card acts when reached (3.1). Drawn as a scrollable window of roughly the next 30 slots; tapping a card previews it (7.1). |
+| **Track** | The row of numbered slots that sets turn order. Every unit and track entity has a card in one slot; the track advances slot by slot and each card acts when reached (3.1). Paced by Temee: everyone acts once in each of its rounds. Drawn as a window of roughly the next 30 slots; tapping a card previews it (7.1). |
 | **Slot** | One position on the track. Durations are measured in slots. Two cards never share a slot. |
 | **Card** | A unit's or track entity's marker on the track. |
-| **Placement** | How far a card moves after a turn: (action cost + movement cost) × speedScale ÷ (speed + C), rounded down, at least 1 slot (3.2). |
-| **C** | A global constant added to speed in the placement formula; a larger C flattens speed's effect. |
-| **Action cost** | The fixed cost of the action used on a turn, on a fine-grained scale (a basic attack is about 100). Every ability defines its own. |
-| **Movement cost** | The cost added by moving: a fixed amount per hex moved, divided by speed like the action cost. |
-| **Standard turn** | A reference turn with a typical action and typical movement. Used to anchor tuning; not a separate rule. |
-| **Quick / slow action** | An action whose cost is lower / higher than a typical action. |
-| **Speed** | A unit stat that divides action and movement cost (placement), sets the starting slot, and orders cards placed at the same moment. See section 4. |
+| **Round** | The slots from one of Temee's turns to the next (20): every other unit acts once in it, the faster earlier (3.1). |
+| **Placement** | Where a card goes after a turn: 2 × speed slots before Temee's next turn, whatever the turn did (3.2). |
+| **Speed** | A unit stat that sets where its card goes in each round (2 slots a point before Temee's turn), its starting slot, and the order of cards placed at the same moment. See section 4. |
 | **Collision** | A card placed on an occupied slot. The arriving card yields to the next free slot (3.3). |
-| **Displace** | Physically moves a unit to another hex, away from or toward the attacker by a number of hexes (17.4). The only board movement effect; see Push and Pull for the track. |
-| **Push** | An effect that moves a card later on the track (3.5), within the push limit (3.6). Never board movement; see Displace. |
-| **Pull** | An effect that moves a card earlier on the track, never earlier than the next slot, within the pull limit (3.5, 17.3). Never board movement; see Displace. |
-| **Status** | A keyword effect on a unit for a duration in slots, such as Burn, Immobilized or Barrier; public, shown on its card (17.2). |
-| **Charged ability** | An ability with a charge cost and a recovery cost: the character's card first moves by the charge cost; when reached, the ability triggers and the card moves by the recovery cost (3.7). |
+| **Push / Pull / Move** | Displacement: putting a unit on a different space, away from the source (Push), toward it (Pull) or to a stated space (Move) (17.4). Always the board; see Delay and Haste for the track. Until 2026-10-23 called Displace. |
+| **Delay** | Moves a card later on the track (3.5), within the delay limit (3.6). Never board movement. Until 2026-10-23 called Push. |
+| **Haste** | Moves a card earlier on the track, never earlier than the next slot, within the haste limit (3.5, 17.3). Never board movement. Until 2026-10-23 called Pull. |
+| **Status** | A keyword effect on a unit for as long as its source states, such as Burn, Immobilized or Stunned; public, shown on its stat sheet and the board (17.2). |
 | **Track entity** | A card that acts independently of the character who created it, for example a summoned zombie (3.7). |
-| **Action** | The single ability or attack a unit uses on its turn. Required: an action ends the turn (5.1). |
-| **Move** | Relocating a unit across hexes on its turn. Optional. |
+| **Action** | The single ability a unit uses on its turn, or a walk instead. Required: an action ends the turn (5.1). |
+| **Walk** | A unit moving itself across spaces on its turn, instead of an ability: up to 3 spaces (5.1). |
 | **Ability** | Any action a unit can perform, including basic attacks. Abilities are granted by characters and gear. |
 | **Hex / hex grid** | The map is divided into hexagonal tiles ("hexes"). Each hex has 6 neighbors. |
 | **Adjacent** | Two hexes that share an edge. |
-| **Flanking** | Two hostile units on opposite sides of a unit. A flanked unit is Vulnerable while the flank holds (6.3). |
 | **Line of fire** | The straight path between a direct ranged attacker and its target. Must be clear of units for the attack to reach the target. Defined in section 6.7. |
 | **Area ability** | An ability that affects every unit in a set of hexes rather than a single target. |
 | **Arcing attack** | A ranged attack that travels over units and ignores line of fire, at a higher cost. |
@@ -54,17 +48,15 @@ tuning. Section numbers are the combat design's.
 | **Map modifier** | Any feature of the map beyond plain, walkable hexes, such as obstacles or hazards. |
 | **Diegetic** | Information communicated through the game world itself (character appearance, gear visuals, animations) rather than through menus or text overlays. |
 | **Design language** | A consistent set of visual conventions (shapes, colors, silhouettes, effects) that let players recognize what something does without reading a description. |
-| **Stats** | Numerical attributes of a unit or item: health, speed, defence and power. See section 9.1. |
-| **Health** | A unit's hit points. Fixed per hero; gear and upgrades never raise it (9.1). |
-| **Defence** | A stat that reduces incoming damage by a percentage with diminishing returns (section 9.1). |
-| **Obscured** | Standing in a sandstorm: ranged abilities can't target the unit, or anything through its hex, and the unit can't shoot a bow out (17.6). |
-| **Power** | The one offensive stat: scales an ability's base damage and base healing, not keyword effects (9.2). |
+| **Stats** | Numerical attributes of a unit or item: speed, defence and power, small whole numbers, and health from defence. See section 9.1. |
+| **Health** | A unit's hit points: (1 + defence) × 2 (9.1). |
+| **Defence** | A stat that sets health (9.1). Damage reduction is the Armour keyword (17.6). |
+| **Power** | The one offensive stat: exactly the damage each of the unit's abilities deals (9.2). |
 | **Gear slot** | One of four equipment positions on a hero: boots, gloves, armour, helmet. |
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |
 | **Milestone upgrade** | A hero-specific adjustment to one of that hero's abilities (its shape or an added effect), chosen from an offer at set points in a run (10.9). Unlike gear, it carries no transferable modifier. |
-| **Ultimate** | A hero's most powerful ability, unlocked after the hero spends a set amount of action cost in the fight (shown publicly as a meter), then usable once per combat. It may be an action, a charged ability or a track entity (3.7). |
-| **Keyword** | A named, shared condition or effect (for example burn, displace, on-flank, on-kill) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
+| **Keyword** | A named, shared condition or effect (for example Burn, Push, Stunned) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |
 | **Ghost team / ghost build** | A saved party build from another player, used as an opponent. **Decided 2026-10-15:** ghosts are **rival caravans**, met as a fight; see [ghosts.md](ghosts.md) (D8). |
 | **Deployment zone** | The set of hexes where a side places its units before a fight (6.6). |

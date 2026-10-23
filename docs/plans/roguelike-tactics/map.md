@@ -17,10 +17,12 @@ tuning. Section numbers are the combat design's.
 - A single map shape should be chosen and used consistently (options: large hexagon, offset rectangle). Shape TBD.
 
 ### 6.2 Movement (Decided)
-- Movement is measured **per hex.** Ordinary walking is a separate action costing **20 + 10 per hex**, divided by speed plus C (3.2). Movement per turn is capped (5.1).
-- Ordinary walking cannot pass allies, enemies or blocking obstacles. Leap and Lunge retain their ability-specific traversal rules.
+- Movement is measured **per hex.** Ordinary walking is a turn's action, up to 3 spaces (5.1); since 2026-10-23 it places the card like any action (3.2).
+- Ordinary walking cannot pass allies, enemies or blocking obstacles, and a walk that enters hail ends there (it Immobilizes; [keywords.md](keywords.md), 17.4).
 
-### 6.3 Flanking (Decided)
+### 6.3 Flanking (out of the game since 2026-10-23)
+**Removed with Vulnerable** (owner's keyword rework, 2026-10-23): with hits of 1 or 2, a percentage bonus rounds away. The rule as it stood, for when an On-flank keyword returns:
+
 - A target is **flanked** when two units hostile to it occupy hexes directly opposite each other across the target (for example, the hexes to its north-east and south-west).
 - **A flanked unit is Vulnerable** ([keywords.md](keywords.md), 17.6): it takes **25%** more damage (Phase 1 value; tuning) from every source for as long as it stays flanked. The status appears when the flank forms and disappears when it breaks (a flanker moves, is displaced or dies); it has no duration, and Cleanse doesn't remove it.
 - Flanking combines as **max** with Vulnerable from other sources ([keywords.md](keywords.md), 17.2): the stronger applies.
@@ -33,8 +35,8 @@ Maps can contain three types of special tile:
 | Tile | Effect |
 |---|---|
 | **Obstacle** | Cannot be moved through or occupied. |
-| **Hazard** | Deals damage and/or applies status effects to a unit that enters or occupies it. Exact trigger (on entry, at turn start, or both) TBD. |
-| **Conceal** | Smoke or weather (the sandstorm in Phase 1) that makes the unit occupying it **Obscured** ([keywords.md](keywords.md), 17.6): ranged abilities can't target it or through it, and a bow can't shoot out of it (owner, 2026-10-21; they dealt 50% less into and out of it from 2026-10-20). |
+| **Hazard** | Deals damage and/or applies status effects to a unit that enters or occupies it. Exact trigger (on entry, at turn start, or both) TBD. Phase 1's quicksand was removed on 2026-10-23 (it was out of fights since 2026-10-22). |
+| **Conceal** | Smoke or weather that hides or protects its occupant; rule TBD. Phase 1's sandstorm, which made its occupant Obscured, was removed with that keyword on 2026-10-23 ([history.md](history.md)). |
 
 - No other modifier types for now, to keep the board readable.
 - **Not included:** elevation (height differences affecting combat), facing (the direction a unit points affecting combat).
@@ -44,8 +46,7 @@ Maps can contain three types of special tile:
 ### 6.5 Rationale
 - Hexes give uniform distances in all directions and clean flanking rules.
 - Known tradeoffs: straight-line and cone-shaped area effects only align cleanly in 6 directions and need careful design; room-like layouts look less natural than on square grids.
-- Per-hex movement cost interacts with displacement: a displaced unit loses both tempo and repositioning opportunities. Tune these together.
-- Ordinary movement is capped at 4 hexes per action (5.1) and cannot share a turn with an ability.
+- Ordinary movement is capped at 3 spaces per action (5.1) and cannot share a turn with an ability.
 
 ### 6.6 Deployment (Decided)
 - Each side has a **deployment zone**: a set of starting hexes. Before the fight, players place their units anywhere within their zone, with full visibility of the map and enemy positions. Placement is the first decision of the fight.

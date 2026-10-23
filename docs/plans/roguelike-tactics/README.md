@@ -1,11 +1,11 @@
 # Plan: Silk Road Run
 
-Status: **Phase 1 built (2026-10-19), with placeholder hero numbers.**
+Status: **Phase 1 built (2026-10-19); stats, keywords, track and kits reworked by the owner (2026-10-23).**
 One fight against the AI plays end to end: the rules in
 `packages/games/silk-road-run/src/rules/`, `RunRoom` and
 `PlayerLedger` in `@canvas/server`, the page at `/play/silk-road-run`.
 The page opens on a start menu (2026-10-21): the game in brief, which of
-the heroes to take (one to three of four; the camel always comes), and Start;
+the heroes to take (one to three of the three; the camel always comes), and Start;
 `POST /runs` takes the `party`. A run is three stages, each a fight (owner, 2026-10-21;
 `STAGES` in `src/rules/config.ts`): the enemy brings one random hero and
 two wolves, then two random heroes and a wolf, then all three heroes.
@@ -21,57 +21,44 @@ the multiplayer design (ghosts as **rival caravans**, built last) is
 settled. Built in this repository (D10). The folder name,
 `roguelike-tactics`, predates the title.
 
-The fourth hero, the **Modao Vanguard** (2026-10-22), is built for
-playtesting with track Push and a new Barrier rule, and revised after
-the owner's first playtest (Hold the Line, the first built passive; Reap
-a cone; Advance a charge; Barrier 40)
-([roster.md](roster.md), [keywords.md](keywords.md), measurements in
-[balance.md](balance.md#the-modao-vanguard-2026-10-22)); the enemy draws
-its stage heroes from all four.
+**Reworked by the owner (2026-10-23): stats, keywords, the track and
+the kits.**
 
-The Storm Caller and the Bökh Champion have new kits for playtesting
-(2026-10-22), aimed at a counter loop among the three prototype heroes:
-hail Pushes in an area, Sunlight no longer cleanses, the Champion is
-Inevitable, Grapple Pins, and Throw needs a grapple
-([roster.md](roster.md)).
+- **Stats** are small whole numbers: health is (1 + defence) × 2, and
+  every ability deals exactly its user's power
+  ([heroes-and-gear.md](heroes-and-gear.md), 9.1–9.2). Bökh Champion speed
+  2, defence 3, power 1; Mangudai Outrider 3, 1, 2; Yadachy Storm Caller
+  2, 2, 0.
+- **The track** is paced by Temee, the camel: its card goes 20 slots a
+  turn, and every other unit's card goes 2 × speed slots before its next
+  turn, so everyone acts once a round, the faster earlier
+  ([timeline.md](timeline.md), 3.2). Action costs are gone.
+- **The keywords** are a new, shorter list: Delay, Haste, Inevitable,
+  Push, Pull, Move, Immobilized, Unstoppable, Stunned, Burn, Shield,
+  Pierce, Enhance, Degrade, Armour, Immortal ([keywords.md](keywords.md));
+  Immobilized, Stunned and Move are built.
+- **The kits** ([roster.md](roster.md)): the Bow, unchanged in shape; Hail,
+  one space within 3 until the Storm Caller's next turn, Immobilizing
+  whoever is in it or enters it; Grapple (reach 2, stepping in), Stunning
+  its target until the Champion takes damage, is Stunned or is no longer
+  next to it; Throw, Moving the grappled unit to a space next to it.
+- **Deleted with their code:** the Modao Vanguard's kit, ultimates and
+  charged abilities, Leap, Sunlight, Shove, quicksand and the sandstorm,
+  and every keyword not in the new list ([history.md](history.md)).
+- Still pared back from 2026-10-22: the Modao Vanguard out of the
+  roster; six ruins a fight; a move of at most 3 spaces; Temee not player
+  controlled, walking itself one space a turn from the top-left corner
+  to the only exit, in the bottom-right corner, around units in its way.
 
-**Pared back for balancing (owner, 2026-10-22).** The game is cut to
-its basic elements while it is balanced; the code for everything cut is
-kept (its tests run with the old kits, `src/rules/testKits.ts`), only
-its references are removed:
-
-- The Modao Vanguard is out of the roster (`ROSTER` in `config.ts`).
-- No ultimates (Volley, Freeze, Lunge), and no Leap or Sunlight.
-  The kits: the Outrider Bow; the Storm Caller Hail; the Bökh Champion
-  Grapple and Throw, with Inevitable.
-- No sandstorm or quicksand: a fight scatters ruins only, six of them
-  (three in each half; four before, owner 2026-10-22).
-- A move covers at most 3 spaces (was 4).
-- Temee, the camel, isn't player controlled: it starts in the top-left
-  corner and walks itself, one space every 14 slots, along a shortest
-  walk around the ruins to the only exit, in the bottom-right corner,
-  going around units in its way (owner, 2026-10-22; a dotted line showing
-  its road was dropped). It waits only when Immobilized or boxed in.
-- Hail: a radius-1 area, its centre within 3; landing, it deals base 20
-  damage (40 until 2026-10-23, balance.md) and Pushes 5; it stays 20 slots, and a unit that starts its
-  turn in it takes base 20 (damage and duration are placeholders).
-- Grapple reaches 2 spaces: next to the target the Champion grapples
-  where it stands, otherwise it steps in beside it first. Base 60 damage
-  (placeholder), then the target is pinned: only Immobilized, until the
-  two are no longer adjacent. Throw (on the pinned unit only, base 120
-  damage) lands it on a free space next to the Champion, so the pin
-  holds. It replaced Shove (Displace 1 away, ending the pin), which is
-  parked.
-
-**Next step:** the owner sets the three prototype heroes' stat numbers and
-ability values (replacing the placeholders in `src/rules/config.ts`);
-everything waiting on the owner is in
-[owner-decisions.md](owner-decisions.md). How a stalled fight ends is
+**Next step:** the owner reviews the builder's readings of the rework and
+the first measurements (Grapple decides fights, Throw goes unused) in
+[owner-decisions.md](owner-decisions.md), with everything else waiting on
+the owner. How a stalled fight ends is
 decided (owner, 2026-10-21) and built in the fight: the caravan's
 **camel**, a unit that can't attack, which wins the fight by reaching
-the exit and loses the run by dying ([camel.md](camel.md)). A measured balance review
-(2026-10-20) proposes numbers and the principles for re-tuning:
-[balance.md](balance.md). Then Phase 2
+the exit and loses the run by dying ([camel.md](camel.md)). Balance
+measurements, the rework's first ones included, and the principles for
+re-tuning are in [balance.md](balance.md). Then Phase 2
 ([phases.md](phases.md)). The
 keywords and their rules are decided ([keywords.md](keywords.md)). The
 combat design's other open questions are at the end of each topic file.
@@ -89,8 +76,9 @@ where rival caravans race along the road. A party of up to four heroes,
 recruited during the run from a roster of twelve, and the caravan's
 camel, which the enemy tries to kill ([camel.md](camel.md)), travel a **route map**
 of the road (fights, caravanserais, bazaars, recruitment) and fights on
-compact hex maps. Turn order is a track of slots: each action's cost,
-divided by the unit's speed, sets how far its card moves; information is complete and randomness minimal;
+compact hex maps. Turn order is a track of slots paced by the caravan's
+camel: everyone acts once in each of its rounds, the faster earlier;
+information is complete and randomness minimal;
 every unit's stats are shown, enemies' included; only opponents' intent is hidden.
 Heroes who die are gone for the run; a party wipe ends it.
 
@@ -118,8 +106,8 @@ Always read this file first. Then:
 | Turn order, speed, what a turn can do | [timeline.md](timeline.md) |
 | Maps, movement, line of fire, deployment | [map.md](map.md) |
 | Visibility, previews, randomness | [information.md](information.md) |
-| Stats, gear, party, heroes' systems, recruitment, upgrades | [heroes-and-gear.md](heroes-and-gear.md) |
-| Keywords and effects: statuses, track and board effects, damage, healing, stat changes | [keywords.md](keywords.md) |
+| Stats (health, speed, defence, power), gear, party, heroes' systems, recruitment, upgrades | [heroes-and-gear.md](heroes-and-gear.md) |
+| Keywords and effects: track and board effects, control, damage modifiers | [keywords.md](keywords.md) |
 | Tuning numbers, or balancing a new hero, ability, keyword or gear: what each ability and stat is worth, measured; the proposed tuning; principles for re-tuning | [balance.md](balance.md) |
 | The twelve heroes | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |

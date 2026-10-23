@@ -59,6 +59,51 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 
 ## Combat
 
+- **The rework of 2026-10-23 (owner).** Replaced at once, with what each
+  became:
+  - **Action costs and cost-based placement:** a card moved
+    `floor(cost × speedScale ÷ (speed + C))` slots after a turn (C 25,
+    speedScale 5; a typical action 100, quick 60, Hold 30, walking 20 + 10
+    a hex; starting cost 100), so cheap turns came round sooner and speed
+    divided every cost. Replaced by Temee pacing the track: its card goes
+    20 slots a turn and every other card 2 × speed before its next turn,
+    one turn a round whatever the unit does
+    ([timeline.md](timeline.md), 3.2). The camel's card had gone 14 slots a
+    turn.
+  - **Charged abilities and ultimates:** charge and recovery costs on the
+    character's own card; one ultimate per hero, unlocked after 300 action
+    cost spent, once a fight. Both rested on action costs.
+  - **The stat scale:** speed, defence and power read Low 10 / Medium 25
+    / High 40; health came in tiers (Low 300, Medium 420, High 540; the
+    camel 1,500); power scaled an ability's base damage by
+    `1 + power / 50`; defence cut damage by `defence / (defence + 50)`,
+    minimum 1. Replaced by small whole numbers, health (1 + defence) × 2,
+    damage exactly the user's power, and Armour as a flat keyword
+    ([heroes-and-gear.md](heroes-and-gear.md), 9.1).
+  - **The keyword list of 2026-10-16:** Push, Pull and Swap (track),
+    Displace (board), Dazed (no action, movement allowed, with a one-turn
+    lockout guard), Slowed, Taunt, Pinned, Stealth, Vulnerable (and
+    flanking's Vulnerable 25%), Barrier, Lifesteal, Obscured, Crushed,
+    Heal, Overhealth, Antiheal, Cursed, Cleanse and Dispel, and stat ups
+    and downs. Replaced by the list in [keywords.md](keywords.md) (17.1):
+    track Push and Pull renamed Delay and Haste, Displace split into Push,
+    Pull and Move, Barrier renamed Shield (now passing what it can't
+    absorb on to health), Dazed replaced by Stunned, Vulnerable by
+    Enhance and Degrade, defence's reduction by Armour.
+  - **The kits:** Hail as a radius-1 area within 3 that dealt base 20 and
+    Pushed 5 on landing and base 20 to a unit starting its turn in it, for
+    20 slots; Grapple (reach 2 with a step in) dealing base 60 and
+    Immobilizing for 12 slots while adjacent; Throw (base 120) landing the
+    grappled unit beside the Champion; the Champion's Inevitable passive;
+    the Bow and Bite with base 120 and 100. Replaced by the kits in
+    [roster.md](roster.md).
+  - **Parked content, deleted with its code:** the Modao Vanguard (Hold
+    the Line, Challenge, Reap, Advance), Leap, Volley, Sunlight, Freeze,
+    Lunge, Shove, quicksand and the sandstorm (hexes of the map), the
+    headless movement experiments (`FightState.experiment`) and their
+    runner. All rested on action costs or the old numbers. Their rules and
+    tests are in git history before this change.
+
 - **Other ways to end stalled fights** (until 2026-10-21): a fight
   limit (the fight ends at a set slot, decided by health left or as a
   defeat), a surrender rule (a side that can't damage the other

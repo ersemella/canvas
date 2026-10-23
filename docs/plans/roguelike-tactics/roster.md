@@ -29,17 +29,17 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | 3 | Simurgh Summoner | Persia and Sogdiana | The Simurgh of the *Shahnameh*, the great bird that comes when one of its feathers is burned | Folklore | Summoner / sorcerer | Damage | Area caster: burns Simurgh feathers to call down sweeping strikes and fire (Burn) | None | Simurgh feathers and a brazier |
 | 4 | Mangudai Outrider | Mongol | The mangudai, units of the Mongol army (sources disagree on what they were: light cavalry, vanguards or "suicide troops"); Mongol warriors fought as mounted archers | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
 | 5 | Bökh Champion | Mongol | Champion wrestlers (bökh), the highlight of the naadam games and of feasts in the epics | Historical | Brawler / grappler | Tank | Grappler: grabs, pins and throws enemies to hold the front line | None | Bare hands (wrestling vest) |
-| 6 | Yadachy Storm Caller | Turkic | The yadachy of Turkic folk belief (in Turkish, Azeri, Kazakh, Kyrgyz and Bashkir traditions): weather-workers born with the power, marked by a caul, to lead storms and hail away from their land, send them onto rivals' fields, and fight storm-bringing demons and rival yadachy with their souls while they sleep; tied to the rain stone (*yada tashy*). The Mongols shared the stone (*jada*): in the *Secret History of the Mongols* (143) a storm raised with it turns back on its casters | Folklore | Druid / storm caller | Support | Storm controller: hail slows and damages enemies (Slowed) (Gale, which drove enemies across the board, was replaced by fog on 2026-10-20, and fog was removed on 2026-10-21); clearing the storm heals and cleanses one unit within reach, which may be an enemy; a freezing ultimate (Phase 1 kit, [phase-1-brief.md](phase-1-brief.md)) | None | Rain stone and water |
+| 6 | Yadachy Storm Caller | Turkic | The yadachy of Turkic folk belief (in Turkish, Azeri, Kazakh, Kyrgyz and Bashkir traditions): weather-workers born with the power, marked by a caul, to lead storms and hail away from their land, send them onto rivals' fields, and fight storm-bringing demons and rival yadachy with their souls while they sleep; tied to the rain stone (*yada tashy*). The Mongols shared the stone (*jada*): in the *Secret History of the Mongols* (143) a storm raised with it turns back on its casters | Folklore | Druid / storm caller | Support | Storm controller: hail that Immobilizes whoever it catches until the Storm Caller's next turn (2026-10-23; earlier kits with Slowed, fog, a track Push, healing Sunlight and a freezing ultimate are in [history.md](history.md)) | None | Rain stone and water |
 | 7 | Jinn Binder | Abbasid Arabia | Jinn sealed in vessels and bound to serve, from the *Arabian Nights* tradition (for example "The Fisherman and the Jinni") | Folklore | Wizard | Support | Controller: a bound jinn pushes back and disrupts enemy turns | None | Sealed brass vessel |
-| 8 | Sahira Enchantress | Abbasid Arabia | The enchantresses (Arabic *sāḥira*, sorceress) of the *Arabian Nights*: Queen Lab, who turned the men of her city into beasts, and the king's daughter in "The Second Kalandar's Tale", who fought an ifrit in a battle of transformations | Folklore | Witch / enchanter | Support | Curser (Proposed): transformations weaken enemies (stats down, Slowed) | None | Spells and enchanted water (proposed, unverified) |
+| 8 | Sahira Enchantress | Abbasid Arabia | The enchantresses (Arabic *sāḥira*, sorceress) of the *Arabian Nights*: Queen Lab, who turned the men of her city into beasts, and the king's daughter in "The Second Kalandar's Tale", who fought an ifrit in a battle of transformations | Folklore | Witch / enchanter | Support | Curser (Proposed): transformations weaken enemies (Degrade, stats down) | None | Spells and enchanted water (proposed, unverified) |
 | 9 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
-| 10 | Mahout Bulwark | South India | The mahout, driver of the war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: resists Displace (passive) | War elephant | Ankus (elephant goad) and spear |
+| 10 | Mahout Bulwark | South India | The mahout, driver of the war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: Unstoppable (passive) | War elephant | Ankus (elephant goad) and spear |
 | 11 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
-| 12 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger (built 2026-10-22, playtesting): punishes enemies who walk away from it (Hold the Line, passive), taunts an enemy and guards itself with a Barrier (Challenge), sweeps a cone in front of it, pushing what it hits back on the track (Reap), and charges in to drive back everyone around it (Advance, ultimate) | None | Modao (long two-handed blade) |
+| 12 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger: draws enemies onto itself and punishes those who close in. Its first kit (built 2026-10-22, removed 2026-10-23 with action costs; [history.md](history.md)) punished enemies walking away from it, taunted, guarded itself with a Barrier and pushed what it hit back on the track | None | Modao (long two-handed blade) |
 
 **Stat profiles (relative, untuned)**
 
-Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gear.md), 9.2). Power scales only base damage and base healing, so the control supports whose effects no longer scale with any stat (Jinn Binder, Sahira Enchantress) keep low power; the Waidan Alchemist, a healer, rises from low to medium because power now scales its heals. Health is fixed per hero, in three tiers (Low, Medium, High) plus the war elephant's Very high (9.1).
+These bands predate the stats' rework (owner, 2026-10-23; [heroes-and-gear.md](heroes-and-gear.md), 9.1): stats are now small whole numbers, health is (1 + defence) × 2 and power is exactly an ability's damage. The three prototype heroes' numbers are set (below); the others' bands are a guide for when they are built. Power is the damage of every ability, so the control supports (Jinn Binder, Sahira Enchantress) keep low power.
 
 | Name | Health | Speed | Defence | Power |
 |---|---|---|---|---|
@@ -56,62 +56,44 @@ Influence was folded into power (2026-10-18; [heroes-and-gear.md](heroes-and-gea
 | Varangian Guard | High | Low | Medium | High |
 | Modao Vanguard | Medium | Low | High | Medium |
 
-**The Modao Vanguard's kit (owner, 2026-10-22; built for playtesting)**
+**The prototype heroes' kits (owner, 2026-10-23; built)**
 
-| Ability | Cost | Effect |
-|---|---|---|
-| Hold the Line | Passive | An enemy that starts its turn next to the Vanguard and moves away (walking, or by its own ability: Leap, Lunge's bound) is struck as it leaves: base 70 damage, as Reap's, and Push 3 once its turn has placed its card. Each Vanguard strikes a unit once a turn |
-| Challenge | Quick (60) | Taunts one unit within 3 for 14 slots; the Vanguard gains Barrier 40 for 6 slots, replacing any it has |
-| Reap | Typical (100) | A cone in one of six directions: the hex next to the Vanguard and the three hexes behind it, through every unit in it; ruins in front stop the cone, ruins behind leave that hex out. Base 70 damage and Push 3 to each |
-| Advance (ultimate) | Typical (100), instant | A charge of up to 3 hexes in a straight line over free ground (or none), then every adjacent unit takes base 160 damage, is displaced 1 away and pushed 4 |
+Every ability deals exactly its user's power in damage (9.2). Each hero
+also has Hold.
 
-**First playtest (owner, 2026-10-22):** the kit only felt useful against
-an enemy Vanguard; wolves and the Outrider ignored it; Reap's straight
-line of 2 was hard to land, so its Push rarely mattered; Advance had no
-good moment (it needed enemies already next to a slow hero they ignore);
-its Barrier was too high. Hold the Line makes walking away from it cost
-(chosen over an area Challenge or a longer single taunt), Reap became a
-cone with Push 3 (was a line of 2, Push 2), Advance a charge then strike
-(was a strike where it stood), Barrier 40 (was 80). Measured in
-[balance.md](balance.md#the-modao-vanguard-2026-10-22).
+| Hero | Speed | Defence | Power | Health | Ability | Effect |
+|---|---|---|---|---|---|---|
+| Bökh Champion | 2 | 3 | 1 | 8 | Grapple | A unit within 2 spaces: the Champion steps in to a free space next to it first if it isn't already next to it (not while Immobilized). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved). One target at a time: a new grapple lets the last go. |
+| | | | | | Throw | Only the unit it grapples: **Moves** it to a free space next to it, then it takes 1 damage. Landing next to the Champion keeps hold; landing away from it ends the grapple. |
+| Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |
+| Yadachy Storm Caller | 2 | 2 | 0 | 6 | Hail | One space within 3 (not ruins). It stays until the Storm Caller's next turn begins (or it falls). A unit in the space when it lands, or that enters it (walking, which stops there, or Moved), is **Immobilized** until the hail disappears. Its damage is the Storm Caller's power, 0. |
 
-Health Medium (420; High until 2026-10-22: its Barrier, not its health,
-keeps it alive, and +120 health measured no effect), speed Low (10, kept
-slow by the owner), defence High, power Medium. It is the first hero
-with a track effect (Push, principle 11 in [balance.md](balance.md)). Its
-weakness is cheap or every-slot damage, which strips its Barrier before a
-big hit, and Pierce, Burn and collisions against its health. A mounted
-passive (Slowed on mounted heroes) was considered and dropped: Push is
-the answer to fast heroes. Measured in [balance.md](balance.md).
+The Bökh Champion's Inevitable (2026-10-22) went with this rework: the
+owner's notes leave it out, and nothing Delays any more. The kits they
+replace (Hail as an area with damage and a track Push; Grapple Immobilizing
+for 12 slots with base 60 damage; Throw landing beside the Champion for
+base 120) are in [history.md](history.md).
 
-**The Storm Caller and the Bökh Champion: a counter loop (owner, 2026-10-22; built for playtesting)**
+**First measurements (2026-10-23, [balance.md](balance.md#the-2026-10-23-rework)):**
+Grapple decides fights (a side without it wins 6% of AI-vs-AI fights),
+Throw is almost never used (3% of the Champion's turns; a side without it
+wins 50%), and Hail is worth having (34% without it).
 
-Aimed at a rock-paper-scissors loop among the three prototype heroes,
-ultimates aside: the Storm Caller beats the Outrider (hail's Push taxes
-fast units most), the Outrider beats the Champion (it kites a melee
-hero with no reach), the Champion beats the Storm Caller (Inevitable
-walks through hail, and Pinned silences a caster that can't Leap away).
-Values are first guesses, not measured.
-
-| Hero | Ability | Cost | Effect |
-|---|---|---|---|
-| Storm Caller | Hail | Typical (100) | An area of radius 1 within 6, for 30 slots, no damage: every unit in it when it lands is Pushed 3 (allies too); a unit that starts its turn in it is Pushed 2 once that turn has placed its card. Was one hex within 4, base 40 damage and Slowed 2 |
-| Storm Caller | Sunlight | Quick (60) | One space within 4: heals a unit there (base 50) and clears hail there. No longer cleanses |
-| Bökh Champion | Inevitable | Passive | Its card can't be Pushed, by either side, hail included |
-| Bökh Champion | Grapple | Typical (100) | Melee: Immobilized, Vulnerable 25% and Pinned for 12 slots, while the two stay adjacent; one target at a time, a new grapple letting the last go. Was Immobilized, Taunted and Crushed 10 a slot |
-| Bökh Champion | Throw | Typical (100) | Only on the unit it grapples: base 120 damage, then to another free space next to the Champion (the grapple holds) or one space straight back (it ends). Was base 80 on anyone adjacent |
-
-Lunge, the Champion's ultimate, now grapples as the new Grapple does.
-The AI prices hail's turn-start Push and Pinned (`AI.pinnedShare`).
+**Removed from the game (2026-10-23):** the Modao Vanguard's kit (Hold the
+Line, Challenge, Reap, Advance; built 2026-10-22 for playtesting and then
+parked) and the parked abilities (Leap, Volley, Sunlight, Freeze, Lunge,
+Shove), with their code. They were built on action costs and the old
+numbers; their designs are in git history and [history.md](history.md),
+and the Modao Vanguard stays in the roster above as a hero to build again.
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
-- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Persian Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed. A mount's speed divides the hero's costs like any speed (section 4).
+- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Persian Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed.
 
 **Notes**
-- **Distinct tanks:** the Persian Cataphract charges in, the Bökh Champion holds the front line by grappling (on foot, unlike the mounted Mangudai Outrider), and the Mahout Bulwark cannot be moved (it resists Displace as a passive, but not Push). The Modao Vanguard draws attacks onto itself (Taunt, including redirecting charged abilities, 17.5) and punishes enemies who close in.
-- **Support needs:** healing (Waidan Alchemist), control on the track (Jinn Binder, pushing enemies back), curses (Sahira Enchantress) and control in space (Yadachy Storm Caller, storms that slow, expose and fog). Buffs and turn-order acceleration are uncovered.
-- **The Yadachy Storm Caller:** a storm controller, not a damage caster: its storms slow and move enemies, while the Simurgh Summoner's strikes hurt and burn. The *Secret History*'s storm that turns back on its casters suggests a risk mechanic (a storm that can hit its own side). The yadachy tradition is folk belief rather than an organised religion, but it sits near steppe shamanism, which is still practised; keep it to weather-working and away from shamanic ritual (15.5).
+- **Distinct tanks:** the Persian Cataphract charges in, the Bökh Champion holds the front line by grappling (on foot, unlike the mounted Mangudai Outrider), and the Mahout Bulwark cannot be moved (Unstoppable as a passive: no Push, Pull or Immobilized, but it can still be Delayed). The Modao Vanguard draws attacks onto itself and punishes enemies who close in (its Taunt went with the 2026-10-23 keywords; its kit is to be redesigned).
+- **Support needs:** healing (Waidan Alchemist; healing has no keyword since 2026-10-23), control on the track (Jinn Binder, Delaying enemies), curses (Sahira Enchantress: Degrade) and control in space (Yadachy Storm Caller, hail that Immobilizes). Buffs (Enhance, Shield) and Haste are uncovered.
+- **The Yadachy Storm Caller:** a storm controller, not a damage caster (power 0): its hail holds enemies fast, while the Simurgh Summoner's strikes hurt and burn. The *Secret History*'s storm that turns back on its casters suggests a risk mechanic (a storm that can hit its own side). The yadachy tradition is folk belief rather than an organised religion, but it sits near steppe shamanism, which is still practised; keep it to weather-working and away from shamanic ritual (15.5).
 - **Two Arabian Nights magic users:** the Jinn Binder acts through a bound spirit that moves enemies on the track; the Sahira Enchantress casts directly, transforming enemies to weaken them. Keep their visual language distinct (a smoky spirit from a brass vessel versus spells that change a unit's shape).
 - **The Sahira Enchantress (Proposed):** a fictional role drawn from the *Nights*' enchantresses, who are mostly villains there; the hero keeps their transformation magic and turns it on the party's enemies. Its signature props need research.
 - **Damage covers four niches:** area caster (Simurgh Summoner), ranged (Mangudai Outrider), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
@@ -119,9 +101,9 @@ The AI prices hail's turn-start Push and Pinned (`AI.pinnedShare`).
 - **Two summoners of great spirits:** the Jinn Binder's jinn pushes and disrupts; the Simurgh strikes and burns. Keep their visual language distinct (a smoky spirit from a brass vessel versus a vast bird from the sky).
 - **The Simurgh as religious-adjacent material:** it has roots in Zoroastrian texts, a living religion. Keep to the *Shahnameh*'s epic framing (15.5).
 - **Jinn as religious-adjacent material:** jinn also appear in the Qur'an. Keep to the *Arabian Nights* folklore framing (15.5). In "The Fisherman and the Jinni", the jinni was sealed in his jar by Solomon, a prophet in Islam; use the motif of a jinn sealed in a vessel without the religious figure.
-- **Speed:** two heroes have high speed (Mangudai Outrider, Kalari Duelist). The Varangian Guard pays for its damage with low speed, the Modao Vanguard for its armour. Speed divides every cost, so it sets how often a hero acts (4.1, with diminishing returns); keep high speed rare.
+- **Speed:** two heroes have high speed (Mangudai Outrider, Kalari Duelist). The Varangian Guard pays for its damage with low speed, the Modao Vanguard for its armour. Since 2026-10-23 speed sets how early in each round a hero acts, not how often ([timeline.md](timeline.md), 3.2).
 - **Only four damage heroes:** gear and upgrades can shift tanks and supports toward damage; guaranteed role coverage in recruitment offers would also help (10.7).
-- **The Waidan Alchemist's ultimate (Proposed): the hand cannon.** A single shot, direct ranged at long range, needing line of fire, for large damage with **Pierce**. Based on the Heilongjiang hand cannon (about 1288, Yuan dynasty), the oldest surviving metal gun, and on the alchemists' discovery of gunpowder; an era stretch like the Mongols'. It gives the healer one decisive shot without making it a damage hero; the ultimate rules (10.10) keep it to once per fight, unlocked by turns.
+- **The Waidan Alchemist's ultimate (Proposed): the hand cannon.** A single shot, direct ranged at long range, needing line of fire, for large damage with **Pierce**. Based on the Heilongjiang hand cannon (about 1288, Yuan dynasty), the oldest surviving metal gun, and on the alchemists' discovery of gunpowder; an era stretch like the Mongols'. It gives the healer one decisive shot without making it a damage hero; the ultimate rules (10.10) would keep it to once per fight (ultimates are out of the game since 2026-10-23).
 - **Area damage:** the Simurgh Summoner is the area-damage hero; its areas follow the friendly-fire rules like any other.
 - **Every ability reaches both sides** ([map.md](map.md), 6.7, 2026-10-19): heals, cleanses and buffs reach enemies too, so area supports must position away from the melee, and new support kits should lean on single targets or small radii.
 - **Boss conflict:** the multi-hex boss example (11.3) should use a creature other than a war elephant, so it reads differently from the Mahout Bulwark.
@@ -157,6 +139,7 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 33. Hero roster. **Culture balance** (since 2026-10-17): the Yadachy Storm Caller is Turkic, a seventh hero culture sharing the Steppe region with the Mongol (the region was widened from Mongolia, 2026-10-18), so the Steppe has three heroes; Byzantium has one (the Strategos was removed; the Abbasid slot went to the Sahira Enchantress). Options: accept it, or add a second Byzantine hero (ideas: a Byzantine automaton engineer, mechanikos; an akrites-style scout; Digenis Akritas, replacing the Varangian Guard as a local damage hero). The Tang China tank slot is filled by the Modao Vanguard (2026-10-17); a Shaolin warrior monk was the earlier candidate (Sun Wukong goes to bosses instead, 15.6). Tabled 2026-10-16: a Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
 **Passives:** an always-on trait rather than an action. The Modao
-Vanguard's Hold the Line (2026-10-22) is the first built; the stat sheet
-lists it after the abilities, tappable like them. The Mahout Bulwark's
-Displace resistance is the next. Whether other heroes get one is open.
+Vanguard's Hold the Line and the Bökh Champion's Inevitable (2026-10-22)
+were built and removed again on 2026-10-23; no hero has one now. The
+Mahout Bulwark's Unstoppable is the next candidate. Whether other heroes
+get one is open.

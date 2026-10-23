@@ -20,13 +20,13 @@ tuning. Section numbers are the combat design's.
 | All enemy units and their positions | Yes | Fully visible from the start of the fight (subject to the open question on conceal tiles, section 6.4). |
 | Reinforcements | Yes | Shown on the track in advance, with a known arrival slot and spawn location. |
 | Abilities of all units (allies and enemies) | Yes | Diegetic design language: visual cues on characters and gear indicate their abilities. Must be consistent across the whole game. |
-| Action costs | Yes | Fixed and public for every ability. |
-| Turn order | Yes | The track: a scrollable window of roughly the next 30 slots, with every unit's and track entity's card in its slot (never two in one), so players can count placement directly (3.2, 3.3). A charging card shows what it will trigger. Statuses show as a small marker on a unit's card; their exact slots appear in the tap preview. **Tapping a card previews it**: a unit's turn (who acts and when; with the unit's stats and ability options, enemies included), a charged ability (target and outcome) or a reinforcement (arrival and spawn hex), limited to what the player can know: enemy intent stays hidden. Default window size open (open question 1). |
+| Turn order rule | Yes | Every card's next place is public: 2 × speed slots before Temee's next turn (3.2), the same whatever the unit does. |
+| Turn order | Yes | The track: a scrollable window of roughly the next 30 slots, with every unit's and track entity's card in its slot (never two in one), so players can count placement directly (3.2, 3.3). Statuses show as a small marker on a unit's card; their exact slots appear in the tap preview. **Tapping a card previews it**: a unit's turn (who acts and when; with the unit's stats and ability options, enemies included) or a reinforcement (arrival and spawn hex), limited to what the player can know: enemy intent stays hidden. Default window size open (open question 1). |
 | Stats (health, speed, defence, power) | Yes, every unit | Every unit has a stat sheet, enemies included (D11). |
 | Action outcomes | Yes, before committing | Previews show full numbers (section 7.2). |
 | Gear and recruits you're offered | Yes | Exact stats shown before you choose. **Players have full information;** only opponents' intent is hidden (D11). |
 | Enemy options | Yes | Each enemy's ability options can be previewed with their effects (7.2). |
-| Enemy intent (what an enemy plans to do next) | No | Not shown, except charged abilities already started (their card shows what they will trigger). |
+| Enemy intent (what an enemy plans to do next) | No | Not shown. |
 
 ### 7.2 Previews (Decided)
 Before committing, the player sees:
@@ -37,7 +37,7 @@ Before committing, the player sees:
 - For area abilities, every affected unit and the damage or effect each receives, allies included.
 - While choosing a destination hex, the movement cost and resulting slot for that destination.
 
-**Enemy options (Decided).** Selecting an enemy previews each ability it could use on its next turn, with the same detail as your own previews: the targets it could reach (after moving, within its movement cap), the damage and effects each would receive, displacement, pushes and pulls, and its resulting slot. The preview shows options, never which one the enemy will choose.
+**Enemy options (Decided).** Selecting an enemy previews each ability it could use on its next turn, with the same detail as your own previews: the targets it could reach (after moving, within its movement cap), the damage and effects each would receive, displacement, Delay and Haste, and its resulting slot. The preview shows options, never which one the enemy will choose.
 
 ### 7.3 Rationale
 - Enemy intent is not shown: this is a strategy game, and reading what an opponent might do, from options that are fully visible, is part of play. It also keeps PvE compatible with PvP, where a human's plan can't be revealed.
