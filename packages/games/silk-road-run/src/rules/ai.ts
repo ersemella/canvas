@@ -96,8 +96,11 @@ export function scoreOutcome(
       score += lost * (b.hero === CAMEL ? AI.camelHealthWeight : 1) + statusDelta;
       if (!a.alive) score += AI.kill;
     } else {
-      // Friendly fire only when clearly worth it.
-      score -= lost * AI.friendlyDamageFactor + statusDelta;
+      // Friendly fire only when clearly worth it; healing (Sunlight) is
+      // worth what the same damage to an enemy is, not that penalty.
+      const weight =
+        lost > 0 ? AI.friendlyDamageFactor : b.hero === CAMEL ? AI.camelHealthWeight : 1;
+      score -= lost * weight + statusDelta;
     }
   }
   // The camel's walk, whoever moved it; the fight's end outweighs everything

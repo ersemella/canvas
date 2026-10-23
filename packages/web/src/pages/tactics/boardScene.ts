@@ -119,6 +119,14 @@ export function buildScene(input: SceneInput): BoardScene {
           target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
         })),
       };
+    // Overwatch: every lane it could watch, and the one picked lit along its length.
+    if (from && ability === 'overwatch') {
+      const lanes = arrowLanes(fight, mapOf(fight), from);
+      out.lanes = {from, lanes: lanes.map((l) => ({hexes: l.hexes, target: false}))};
+      const watched =
+        target?.hex && lanes.find((l) => l.hexes[0] && hexEquals(l.hexes[0], target.hex!));
+      for (const h of watched?.hexes.slice(1) ?? []) highlights.push({hex: h, kind: 'area'});
+    }
     // Only what it may target; once Throw's target is picked, where it can
     // land, dashed so it never reads as more targets.
     const shown = new Set<string>();

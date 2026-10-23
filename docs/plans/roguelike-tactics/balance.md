@@ -823,6 +823,77 @@ were as hard as stage 3.
 side): the Storm Caller's power +1 won 79% (the change adopted), the
 Champion's speed +1 71.7%; the rest 49.5–61.5%.
 
+### New abilities (2026-10-23)
+
+The owner's proposals, built on a branch (not merged): **Overwatch** for
+the Outrider, **Sunlight** for the Storm Caller (heal 1, cleanse, melts
+hail), and a **swap** as one of Throw's landings ([roster.md](roster.md)).
+`experiments/new-abilities.mjs` and `new-abilities-tuning.mjs`, 400 fights
+each, seeds from 1000, the production AI on both sides. The AI was changed
+with them in one way: healing an ally is worth what the same damage to an
+enemy is (it had counted at the friendly-fire penalty, 1.5, and Sunlight
+took 47% of the Storm Caller's turns in a first run).
+
+**Each ability removed from one side** (50% means it adds nothing):
+
+| Side without | Before (today's kits) | With the new abilities |
+|---|---:|---:|
+| Bow | 13% | 13.1% |
+| Overwatch | | **50.3%** |
+| Hail | 16.3% | 35.6% |
+| Sunlight | | **50.3%** |
+| Grapple | 10.3% | 8.3% |
+| Throw (with the swap) | 47.5% | 45.6% |
+| Overwatch and Sunlight | | 49.2% |
+
+Unfinished 0–0.8%. Control fights: median 49 actions (42 before), 91
+slots (78); the player's side (the AI, with Temee) won 43.2% of finished
+fights (59% before), Temee killed in 84 of 400 (48).
+
+Share of turns: the Outrider shoots 46%, walks 30%, Overwatches 24% (it
+no longer Holds: 15.5% before); the Storm Caller Hails 51%, Sunlights 33%,
+walks 17%; the Champion swaps on 2.6% and Throws on 8.3%. Per fight:
+Overwatch fires 0.2 shots (0.3 damage, 0.1 of it on allies); Sunlight
+heals 6.6.
+
+- **Overwatch adds nothing** with this AI. It takes it on turns it would
+  otherwise Hold, and with no valuation of which lane matters its lane is
+  as good as arbitrary; walks route around it, and it fires 0.2 times a
+  fight. Variants, each worth nothing: shooting every unit that enters
+  (side without it 50.5%), the shot stopping a walk (50.5%), both (50.8%).
+  Its worth needs the AI to value a lane by the walks it cuts (Temee's
+  road, the enemy's way in) before tuning means anything (principle 4).
+- **Sunlight at heal 1 adds nothing**, and it makes Hail matter less
+  (35.6% without Hail, 16.3% before): the Storm Caller now Hails less.
+  Longer fights give the enemy time to reach Temee.
+- **Sunlight at heal 2** (`sun-heal2`): a side without it wins **41.7%**,
+  in the 40–48% band for a non-core ability. But it takes 47% of the
+  Storm Caller's turns (over the 35% that makes a non-core ability
+  suspect), 1.5–1.8% of fights go unfinished, the median fight is 55
+  actions, and 19.4 health is healed a fight.
+- **The swap is dead** (2.6% of the Champion's turns, under 5%), as
+  expected: a second adjacent unit to grapple, or Throw's 1 damage
+  somewhere else, is nearly always better. It costs no button.
+
+**Stage caravans** (`experiments/caravans.mjs`), player wins:
+
+| Enemy | Before | With the new abilities |
+|---|---:|---:|
+| Bökh Champion + 2 wolves | 98% | 98.5% |
+| Mangudai Outrider + 2 wolves | 96.8% | 96.3% |
+| Yadachy Storm Caller + 2 wolves | 99.8% | 100% |
+| Bökh + Bökh + wolf | 78.3% | 75.9% |
+| Bökh + Mangudai + wolf | 66.5% | 68.4% |
+| Bökh + Storm + wolf | 94% | 94.7% |
+| Mangudai + Mangudai + wolf | 64.8% | 59.5% |
+| Mangudai + Storm + wolf | 90.8% | 89.4% |
+| Storm + Storm + wolf | 99% | 97.2% |
+| all three | 58.3% | **42.8%** |
+
+The last stage is harder (42.8% from 58.3%): an enemy Storm Caller's
+Sunlight keeps its side standing longer. The first two stages barely
+move.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

@@ -12,7 +12,15 @@ export type Side = 'player' | 'enemy';
  * isn't a hero, and the wolf, an enemy NPC.
  */
 export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
-export type AbilityId = 'hold' | 'bow' | 'hail' | 'grapple' | 'throw' | 'bite';
+export type AbilityId =
+  | 'hold'
+  | 'bow'
+  | 'overwatch'
+  | 'hail'
+  | 'sunlight'
+  | 'grapple'
+  | 'throw'
+  | 'bite';
 
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';
@@ -66,13 +74,27 @@ export interface HailEffect {
   source: string;
 }
 
+/**
+ * An Outrider's overwatch (roster.md; owner, 2026-10-23): one of its bow's
+ * lanes, held until its next turn. The first unit to enter the lane is shot,
+ * and the overwatch ends.
+ */
+export interface Overwatch {
+  /** The Outrider's unit id. */
+  source: string;
+  /** The lane's hex direction from the Outrider (0–5). */
+  dir: number;
+  /** Units it has shot, when it shoots each one entering (`ABILITY.overwatch.everyUnit`). */
+  shot?: string[];
+}
+
 export interface LogEntry {
   slot: number;
   text: string;
 }
 
-/** How a unit came to enter a hex: walked or thrown. */
-export type Motion = 'walk' | 'throw';
+/** How a unit came to enter a hex: walked, thrown, or swapped places by a Throw. */
+export type Motion = 'walk' | 'throw' | 'swap';
 
 /** Something that happened on the board, in the order the rules resolved it. */
 export type FightEvent =
@@ -80,6 +102,7 @@ export type FightEvent =
   | {kind: 'step'; unitId: string; from: Hex; to: Hex; how: Motion}
   | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex}
   | {kind: 'damage'; unitId: string; amount: number}
+  | {kind: 'heal'; unitId: string; amount: number}
   | {kind: 'death'; unitId: string; hex: Hex}
   /** Its turn came up with nothing to do but Hold, so the track went on without it. */
   | {kind: 'skip'; unitId: string};
@@ -89,6 +112,7 @@ export interface BoardSnapshot {
   currentSlot: number;
   units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped'>[];
   effects: HailEffect[];
+  overwatch: Overwatch[];
 }
 
 export type RecordedEvent = FightEvent & {after: BoardSnapshot};
@@ -105,6 +129,8 @@ export interface FightState {
   currentSlot: number;
   units: Unit[];
   effects: HailEffect[];
+  /** Overwatched lanes; absent in fights saved before Overwatch. */
+  overwatch?: Overwatch[];
   log: LogEntry[];
   /**
    * What the last action set off, the player's turn and the AI turns after
@@ -116,7 +142,10 @@ export interface FightState {
   awaiting: string | null;
 }
 
-/** What a turn's action targets. `to` is Throw's landing hex. */
+/**
+ * What a turn's action targets. `to` is Throw's landing hex: the
+ * Champion's own hex swaps the two. Overwatch targets its lane's first hex.
+ */
 export interface ActionTarget {
   hex?: Hex;
   to?: Hex;

@@ -3,8 +3,12 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
+import {hexEquals} from '@canvas/engine/server';
+import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES} from './config';
-import type {Tile} from './map';
+import {arrowLane} from './board';
+import {MAPS} from './map';
+import type {MapData, Tile} from './map';
 import type {FightState, HailEffect} from './types';
 
 export interface HexInfo {
@@ -42,6 +46,23 @@ export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
     short: 'Immobilizes a unit that enters it',
     detail: `A unit here, or that enters it, is Immobilized until the hail is gone: at ${until}.`,
   };
+}
+
+/** The overwatch watching `hex`, in words, or null if none does. */
+export function overwatchInfo(state: FightState, hex: Hex): HexInfo | null {
+  const map: MapData = {...MAPS[state.mapId]!, tiles: state.tiles};
+  for (const o of state.overwatch ?? []) {
+    const src = state.units.find((u) => u.id === o.source);
+    if (!src?.alive || !src.hex) continue;
+    if (!arrowLane(state, map, src.hex, o.dir).hexes.some((h) => hexEquals(h, hex))) continue;
+    const who = `${src.side === 'player' ? 'Your' : 'Enemy'} ${HEROES[src.hero].name}`;
+    return {
+      name: 'Overwatch',
+      short: `${who} shoots the first to enter`,
+      detail: `${who} watches this lane until its next turn: the first unit to enter it, even passing through, ally or enemy, takes ${src.power} damage.`,
+    };
+  }
+  return null;
 }
 
 /**

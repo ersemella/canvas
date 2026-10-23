@@ -64,15 +64,26 @@ also has Hold.
 | Hero | Speed | Defence | Power | Health | Ability | Effect |
 |---|---|---|---|---|---|---|
 | Bökh Champion | 2 | 3 | 1 | 8 | Grapple | **Melee**: a unit next to the Champion (owner, 2026-10-23; until then it reached 2 spaces, stepping in first). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved; the Champion may walk while it grapples, and the grapple holds if the walk ends next to the target). At the start of each of the Champion's turns while it lasts, the target takes 1 more. One target at a time: a new grapple lets the last go, and it can't target the unit it already grapples. A chain on the board joins the two while it lasts (owner, 2026-10-23). |
-| | | | | | Throw | Only the unit it grapples: **Moves** it to a free space next to the Champion, then it takes 1 damage. The grapple holds (owner, 2026-10-23). |
+| | | | | | Throw | Only the unit it grapples: **Moves** it to a free space next to the Champion, or swaps places with it (the Champion's own space as the landing; not while the Champion is Immobilized), then it takes 1 damage. The grapple holds (owner, 2026-10-23; the swap **Proposed**, see below). |
 | Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |
+| | | | | | Overwatch (**Proposed**) | One of the bow's lanes, until the Outrider's next turn: the first unit to enter it (walking, even passing through, or Moved; ally or enemy) takes 2, and the overwatch ends. Ends if the Outrider is Stunned. The shot doesn't stop a walk; walks keep out of a watched lane where a way around fits in the move. |
 | Yadachy Storm Caller | 2 | 2 | 1 | 6 | Hail | One space within 3 (not ruins). It stays until the Storm Caller's next turn begins (or it falls). A unit in the space when it lands, or that enters it (walking, which stops there, or Moved), is **Immobilized** until the hail disappears. Its damage is the Storm Caller's power, 1 (owner, 2026-10-23; 0 before). |
+| | | | | | Sunlight (**Proposed**) | One space within 3 with a unit or hail on it, at once (it takes the turn): hail there melts, freeing whoever it held; a unit there heals 1 (never past full) and is cleansed of every status, which ends a grapple on it. No damage. |
 
 The Bökh Champion's Inevitable (2026-10-22) went with this rework: the
 owner's notes leave it out, and nothing Delays any more. The kits they
 replace (Hail as an area with damage and a track Push; Grapple Immobilizing
 for 12 slots with base 60 damage; Throw landing beside the Champion for
 base 120) are in [history.md](history.md).
+
+**Proposed (owner's ideas, 2026-10-23; built on a branch, not merged):**
+Overwatch for the Outrider and Sunlight for the Storm Caller, in the table
+above, and the swap as one of Throw's landings (rather than an ability of
+its own, so the Champion keeps one button for it). Chosen over Leap (it
+mostly repeats a 3-space walk) and Fog (Degrade 1 over 7 spaces is no
+damage at all there, from every unit but the Outrider). Measured in
+[balance.md](balance.md#new-abilities-2026-10-23): as built, neither
+Overwatch nor Sunlight wins games; Sunlight healing 2 does.
 
 **First measurements (2026-10-23, [balance.md](balance.md#the-2026-10-23-rework)):**
 Grapple decides fights (a side without it wins 6% of AI-vs-AI fights),

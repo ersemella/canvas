@@ -7,8 +7,19 @@
 import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES} from './config';
-import {onMap, sortByHex, unitAt, walkable} from './board';
-import {endGrapples, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
+import {arrowLane, isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
+import type {ArrowLane} from './board';
+import {
+  clearOverwatch,
+  endGrapples,
+  enterHex,
+  hailHolds,
+  hit,
+  log,
+  record,
+  stun,
+  unitName,
+} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -16,9 +27,9 @@ import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
 /**
  * What an ability is broadly for, shown as an icon by its name: hurting
- * enemies, or controlling the board (statuses, hail).
+ * enemies, controlling the board (statuses, hail), or helping (healing).
  */
-export type AbilityKind = 'attack' | 'control';
+export type AbilityKind = 'attack' | 'control' | 'support';
 
 export interface AbilityDef {
   id: AbilityId;
@@ -87,33 +98,14 @@ const hold: AbilityDef = {
 
 // ─── Mangudai Outrider ───────────────────────────────────────────────────────
 
-/** An arrow's flight along one hex direction: the hexes it crosses, and the unit it stops at. */
-export interface ArrowLane {
-  hexes: Hex[];
-  hit?: Unit;
-}
+export type {ArrowLane};
 
 /**
- * The bow's six lanes from `from`: each runs until the first unit (which
- * it hits), ruins or the map's edge (the bow has no range limit). For the
- * page to show where an arrow can fly, hit or not.
+ * The bow's six lanes from `from` (`arrowLane` in board.ts). For the page
+ * to show where an arrow can fly, hit or not.
  */
 export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLane[] {
-  return DIRECTIONS.map((dir) => {
-    const lane: ArrowLane = {hexes: []};
-    let h = from;
-    for (let i = 0; i < ABILITY.bow.range; i++) {
-      h = hexNeighbor(h, dir);
-      if (!onMap(map, h) || tileAt(map, h) === 'obstacle') break;
-      lane.hexes.push(h);
-      const u = unitAt(state, h);
-      if (u) {
-        lane.hit = u;
-        break;
-      }
-    }
-    return lane;
-  });
+  return DIRECTIONS.map((dir) => arrowLane(state, map, from, dir));
 }
 
 const bow: AbilityDef = {
@@ -130,6 +122,34 @@ const bow: AbilityDef = {
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     hit(ctx, user, u, `${unitName(user)}'s arrow`);
+  },
+};
+
+/**
+ * Overwatch (owner, 2026-10-23): one of the bow's lanes, aimed by its first
+ * hex, held until the Outrider's next turn. The first unit to enter the
+ * lane, walking (even passing through) or Moved, ally or enemy, is shot
+ * for the Outrider's power, and the overwatch ends; it ends too if the
+ * Outrider is Stunned (`overwatchFires`, `stun` in resolve.ts).
+ */
+const overwatch: AbilityDef = {
+  id: 'overwatch',
+  name: 'Overwatch',
+  kind: 'attack',
+  summary: (user) =>
+    `Watch one lane until your next turn: the first unit to enter it, even passing through, takes ${damageText(user)}. Ends if you are Stunned.`,
+  targets: (state, map, _user, from) =>
+    sortByHex(
+      DIRECTIONS.map((dir) => arrowLane(state, map, from, dir).hexes[0]).filter(
+        (h): h is Hex => h !== undefined
+      ),
+      (h) => h
+    ).map((hex) => ({hex})),
+  resolve(ctx, user, target) {
+    const dir = DIRECTIONS.find((d) => hexEquals(hexNeighbor(user.hex!, d), target.hex!))!;
+    clearOverwatch(ctx.state, user);
+    (ctx.state.overwatch ??= []).push({source: user.id, dir});
+    log(ctx, `${unitName(user)} watches a lane.`);
   },
 };
 
@@ -157,6 +177,56 @@ const hail: AbilityDef = {
   },
 };
 
+/**
+ * Sunlight (owner, 2026-10-23): one space within 3, at once. Hail there
+ * melts (and with it the Immobilized it gave); a unit there is healed
+ * `ABILITY.sunlight.heal`, never past its health, and cleansed of every
+ * status, a grapple's Stun included, which ends the grapple.
+ */
+const sunlight: AbilityDef = {
+  id: 'sunlight',
+  name: 'Sunlight',
+  kind: 'support',
+  range: ABILITY.sunlight.range,
+  radius: 0,
+  summary: () =>
+    `Sunlight on a space: a unit there heals ${ABILITY.sunlight.heal} and is cleansed of every status (a grapple on it ends), and hail there melts.`,
+  // Only where it would do something: a unit or hail.
+  targets: (state, map, _user, from) =>
+    hexesWithin(
+      map,
+      from,
+      ABILITY.sunlight.range,
+      (h) =>
+        tileAt(map, h) !== 'obstacle' &&
+        (unitAt(state, h) !== undefined || state.effects.some((e) => hexEquals(e.hex, h)))
+    ),
+  resolve(ctx, user, target) {
+    const hex = target.hex!;
+    log(ctx, `${unitName(user)} calls down sunlight.`);
+    const hail = ctx.state.effects.find((e) => hexEquals(e.hex, hex));
+    if (hail) {
+      ctx.state.effects = ctx.state.effects.filter((e) => e !== hail);
+      for (const u of ctx.state.units)
+        u.statuses = u.statuses.filter((s) => s.hail !== hail.source);
+      log(ctx, 'The sunlight melts the hail.');
+    }
+    const u = unitAt(ctx.state, hex);
+    if (!u) return;
+    const healed = Math.min(ABILITY.sunlight.heal, u.maxHp - u.hp);
+    if (healed > 0) {
+      u.hp += healed;
+      log(ctx, `The sunlight heals ${unitName(u)} for ${healed}.`);
+      record(ctx.state, {kind: 'heal', unitId: u.id, amount: healed});
+    }
+    if (u.statuses.length > 0) {
+      const grappled = u.statuses.some((s) => s.grapple);
+      u.statuses = [];
+      log(ctx, `The sunlight cleanses ${unitName(u)}${grappled ? ', breaking the grapple' : ''}.`);
+    }
+  },
+};
+
 // ─── Bökh Champion ───────────────────────────────────────────────────────────
 
 /** Whether `user` is grappling `u`. */
@@ -166,30 +236,39 @@ export function grappling(user: Unit, u: Unit): boolean {
 
 /**
  * Throw (owner, 2026-10-23): only the unit the Champion grapples, Moved to
- * any free space next to the Champion, then struck. It lands beside the
- * Champion, so the grapple holds.
+ * any free space next to the Champion, or swapping places with it (the
+ * Champion's own hex as the landing; owner, 2026-10-23), then struck. Either
+ * way the two stay next to each other, so the grapple holds. An Immobilized
+ * Champion can't swap: it would move itself.
  */
 const throwAbility: AbilityDef = {
   id: 'throw',
   name: 'Throw',
   kind: 'attack',
   summary: (user) =>
-    `Melee, on the unit you grapple: Move it to a free space next to you, then it takes ${damageText(user)}. The grapple holds.`,
+    `Melee, on the unit you grapple: Move it to a free space next to you, or swap places with it, then it takes ${damageText(user)}. The grapple holds.`,
   targetsUnit: true,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
-    for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u)))
-      for (const to of sortByHex(
-        hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h)),
-        (h) => h
-      ))
-        out.push({hex: t.hex!, to});
+    for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u))) {
+      const landings = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
+      if (!isImmobilized(user)) landings.push(from);
+      for (const to of sortByHex(landings, (h) => h)) out.push({hex: t.hex!, to});
+    }
     return out;
   },
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
-    log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
-    enterHex(ctx, u, target.to!, 'throw');
+    if (hexEquals(target.to!, user.hex!)) {
+      const at = u.hex!;
+      log(ctx, `${unitName(user)} swaps places with ${unitName(u)}.`);
+      // Each enters the other's space; side by side still, the grapple holds.
+      enterHex(ctx, u, user.hex!, 'swap', true);
+      enterHex(ctx, user, at, 'swap', true);
+    } else {
+      log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
+      enterHex(ctx, u, target.to!, 'throw');
+    }
     hit(ctx, user, u, 'The throw');
   },
 };
@@ -235,7 +314,9 @@ const bite: AbilityDef = {
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   bow,
+  overwatch,
   hail,
+  sunlight,
   grapple,
   throw: throwAbility,
   bite,

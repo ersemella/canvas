@@ -41,12 +41,16 @@ type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 /** Damage sources, recognised by the fight log's wording. */
 const SOURCES: [RegExp, string][] = [
   [/'s arrow hits/, 'bow'],
+  [/'s overwatch shot hits/, 'overwatch'],
   [/^The throw hits/, 'throw'],
   [/^The grapple hits/, 'grapple'],
   [/^The hail hits/, 'hail'],
   [/^The bite hits/, 'bite'],
 ];
-const ACTOR = /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| throws| grapples| bites)/;
+const ACTOR =
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| throws| swaps places| grapples| bites)/;
+/** Healing, by the fight log's wording: amount healed per fight. */
+const HEAL = /^The sunlight heals .+ for (\d+)\.$/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -98,6 +102,10 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
   const uses: Record<string, Record<string, number>> = {};
   const damage: Record<string, {enemy: number; ally: number}> = {};
   const kills: Record<string, number> = {};
+  /** Health restored to the healer's own side, and to the other side. */
+  const healed = {ally: 0, enemy: 0};
+  /** Overwatch: lanes set, and shots they fired. */
+  let overwatchShots = 0;
   const units: Record<string, number> = {};
   const survivors: Record<string, number> = {};
   const lengths: number[] = [];
@@ -154,6 +162,12 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
           lastSource = source;
         }
         if (/ falls\.$/.test(text) && lastSource) add(kills, lastSource);
+        const heal = HEAL.exec(text);
+        if (heal) {
+          const target: Side = /heals (Your|Temee)/.test(text) ? 'player' : 'enemy';
+          healed[actor === target ? 'ally' : 'enemy'] += Number(heal[1]);
+        }
+        if (/'s overwatch shot hits/.test(text)) overwatchShots++;
       }
       s.log = [];
     };
@@ -166,7 +180,11 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
       useKits(u.side, modSide);
       const input = chooseAiTurn(state, u);
       const moving = (input.move?.length ?? 0) > 0;
-      add((uses[u.hero] ??= {}), moving ? 'move' : input.action.ability);
+      const swap =
+        input.action.ability === 'throw' &&
+        input.action.target?.to?.q === u.hex?.q &&
+        input.action.target?.to?.r === u.hex?.r;
+      add((uses[u.hero] ??= {}), moving ? 'move' : swap ? 'swap' : input.action.ability);
       add(uses[u.hero]!, 'turns');
       if (moving) {
         moveTurns++;
@@ -250,6 +268,8 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
         {enemy: perFight(v.enemy), ally: perFight(v.ally)},
       ])
     ),
+    healedPerFight: {ally: perFight(healed.ally), enemy: perFight(healed.enemy)},
+    overwatchShotsPerFight: perFight(overwatchShots),
     killsPerFight: Object.fromEntries(
       Object.entries(kills).map(([k, n]) => [k, round(n / fights, 2)])
     ),

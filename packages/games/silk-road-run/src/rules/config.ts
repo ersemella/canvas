@@ -74,7 +74,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    abilities: ['bow', 'hold'],
+    // Overwatch (owner, 2026-10-23) before Hold: on a turn with nothing in
+    // its lanes, the AI keeps a lane watched rather than Hold.
+    abilities: ['bow', 'overwatch', 'hold'],
   },
   storm: {
     name: 'Yadachy Storm Caller',
@@ -84,7 +86,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
     // couldn't break a grapple.
     power: 1,
-    abilities: ['hail', 'hold'],
+    abilities: ['hail', 'sunlight', 'hold'],
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -135,6 +137,20 @@ export const ABILITY = {
    * until it disappears.
    */
   hail: {range: 3},
+  /**
+   * One space within 3, resolving at once (owner, 2026-10-23): a unit there
+   * is healed this much, never past its health, and cleansed of every
+   * status; hail there melts.
+   */
+  sunlight: {range: 3, heal: 1},
+  /**
+   * The bow's lane, held until the Outrider's next turn (owner,
+   * 2026-10-23). `everyUnit`: false, the first unit to enter it is shot and
+   * the overwatch ends; true, each unit entering it is shot, once each,
+   * until the Outrider's next turn. `stopsWalk`: the shot ends a walk where
+   * it lands, as hail does.
+   */
+  overwatch: {everyUnit: false, stopsWalk: false},
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.

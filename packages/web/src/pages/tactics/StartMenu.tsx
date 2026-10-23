@@ -14,7 +14,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   mangudai:
     'A Mongol horse archer from the vanguard of the Mongol army. The Outrider strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
   storm:
-    'A Turkic weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail that holds whoever it catches fast, though storms never choose sides.',
+    'A Turkic weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail that holds whoever it catches fast, or sunlight that mends, though storms never choose sides.',
 };
 
 /**

@@ -29,6 +29,7 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
     case 'action':
       return e.ability === 'hold' ? 0 : 0.5;
     case 'damage':
+    case 'heal':
       return 0.45;
     case 'death':
       return 0.5;
@@ -50,6 +51,7 @@ export function displayFight(base: FightState, e: RecordedEvent, actor: string |
     phase: 'fight',
     currentSlot: after.currentSlot,
     effects: after.effects,
+    overwatch: after.overwatch,
     awaiting: actor,
     units: base.units.map((u) => ({...u, ...after.units.find((v) => v.id === u.id)})),
   };

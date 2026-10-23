@@ -2,9 +2,15 @@
  * Board rules on the hex map: who stands where, movement, line of fire and
  * statuses (map.md, section 6; keywords.md, 17.5).
  */
-import {hexEquals, hexLineSides, hexNeighbors, hexToOffset} from '@canvas/engine/server';
+import {
+  hexEquals,
+  hexLineSides,
+  hexNeighbor,
+  hexNeighbors,
+  hexToOffset,
+} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {HEROES, RULES} from './config';
+import {ABILITY, HEROES, RULES} from './config';
 import {hexNumber, onMap, tileAt} from './map';
 import type {MapData, Tile} from './map';
 import type {FightState, Status, Unit} from './types';
@@ -21,7 +27,7 @@ export function unitAt(state: FightState, h: Hex): Unit | undefined {
 }
 
 /**
- * Plain sand: open ground with nothing on it (no unit, hail or exit). It has
+ * Plain sand: open ground with nothing on it (no unit, hail, overwatch or exit). It has
  * nothing to explain, so looking at it shows no tooltip or details.
  */
 export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
@@ -29,7 +35,8 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
     tileAt(map, h) === 'sand' &&
     !map.exits.some((e) => hexEquals(e, h)) &&
     !unitAt(state, h) &&
-    !state.effects.some((e) => hexEquals(e.hex, h))
+    !state.effects.some((e) => hexEquals(e.hex, h)) &&
+    !overwatchedHexes(state, map).has(hexNumber(h))
   );
 }
 
@@ -91,22 +98,29 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
     if (u.alive && u.hex && !occupant.has(hexNumber(u.hex))) occupant.set(hexNumber(u.hex), u);
   const best = new Map<number, Hex[]>();
   best.set(hexNumber(unit.hex), []);
-  let frontier: Hex[] = [unit.hex];
-  for (let step = 0; step < cap; step++) {
-    const next: Hex[] = [];
-    for (const from of frontier) {
-      const fromPath = best.get(hexNumber(from))!;
-      for (const h of hexNeighbors(from)) {
-        if (!walkable(map, h)) continue;
-        const key = hexNumber(h);
-        const other = occupant.get(key);
-        if ((other && other !== unit) || best.has(key)) continue;
-        best.set(key, [...fromPath, h]);
-        // Hail stops the walk where it enters.
-        if (!hailOn(state, h)) next.push(h);
+  // A walk keeps out of overwatched lanes where it can: first every hex
+  // reachable around them, then the rest, through them.
+  const watched = overwatchedHexes(state, map, unit);
+  for (const avoid of watched.size > 0 ? [true, false] : [false]) {
+    const seen = new Map<number, Hex[]>([[hexNumber(unit.hex), []]]);
+    let frontier: Hex[] = [unit.hex];
+    for (let step = 0; step < cap; step++) {
+      const next: Hex[] = [];
+      for (const from of frontier) {
+        const fromPath = seen.get(hexNumber(from))!;
+        for (const h of hexNeighbors(from)) {
+          if (!walkable(map, h)) continue;
+          const key = hexNumber(h);
+          const other = occupant.get(key);
+          if ((other && other !== unit) || seen.has(key) || (avoid && watched.has(key))) continue;
+          seen.set(key, [...fromPath, h]);
+          if (!best.has(key)) best.set(key, [...fromPath, h]);
+          // Hail stops the walk where it enters, and so may an overwatch shot.
+          if (!hailOn(state, h) && !(ABILITY.overwatch.stopsWalk && watched.has(key))) next.push(h);
+        }
       }
+      frontier = next;
     }
-    frontier = next;
   }
   const out = [...best.values()].map((path) => ({hex: path[path.length - 1] ?? unit.hex!, path}));
   return sortByHex(out, (r) => r.hex);
@@ -238,6 +252,56 @@ export function stepToExit(state: FightState, map: MapData, unit: Unit): Hex | u
   if (around) return around;
   const road = roadToExit(map, unit.hex)[0];
   return road && free(road) ? road : undefined;
+}
+
+// ─── Lanes ───────────────────────────────────────────────────────────────────
+
+/** An arrow's flight along one hex direction: the hexes it crosses, and the unit it stops at. */
+export interface ArrowLane {
+  hexes: Hex[];
+  hit?: Unit;
+}
+
+/**
+ * The bow's lane from `from` in direction `dir`: it runs until the first
+ * unit (which it hits), ruins or the map's edge (the bow has no range
+ * limit). `ignore`, a unit stepping into the lane, doesn't stop it.
+ */
+export function arrowLane(
+  state: FightState,
+  map: MapData,
+  from: Hex,
+  dir: number,
+  ignore?: Unit
+): ArrowLane {
+  const lane: ArrowLane = {hexes: []};
+  let h = from;
+  for (let i = 0; i < ABILITY.bow.range; i++) {
+    h = hexNeighbor(h, dir);
+    if (!onMap(map, h) || tileAt(map, h) === 'obstacle') break;
+    lane.hexes.push(h);
+    const u = unitAt(state, h);
+    if (u && u !== ignore) {
+      lane.hit = u;
+      break;
+    }
+  }
+  return lane;
+}
+
+/**
+ * The hexes overwatched by Outriders other than `unit` (Overwatch,
+ * abilities.ts), as `unit` stepping in would find them: a walk avoids them
+ * where it can (`reachableHexes`). By hex number.
+ */
+export function overwatchedHexes(state: FightState, map: MapData, unit?: Unit): Set<number> {
+  const out = new Set<number>();
+  for (const o of state.overwatch ?? []) {
+    const src = state.units.find((u) => u.id === o.source);
+    if (!src?.alive || !src.hex || src === unit) continue;
+    for (const h of arrowLane(state, map, src.hex, o.dir, unit).hexes) out.add(hexNumber(h));
+  }
+  return out;
 }
 
 // ─── Line of fire ────────────────────────────────────────────────────────────

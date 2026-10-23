@@ -55,6 +55,42 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // A sighted eye: the lane it watches.
+  overwatch: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '............',
+      '...######...',
+      '.##......##.',
+      '#....++....#',
+      '#...++++...#',
+      '#...++++...#',
+      '#....++....#',
+      '.##......##.',
+      '...######...',
+      '............',
+      '............',
+    ],
+  },
+  // The sun, rays out.
+  sunlight: {
+    kind: 'support',
+    rows: [
+      '.....+......', //
+      '.+...+...+..',
+      '..+.....+...',
+      '....###.....',
+      '...#####....',
+      '++.#####.++.',
+      '...#####....',
+      '....###.....',
+      '..+.....+...',
+      '.+...+...+..',
+      '.....+......',
+      '............',
+    ],
+  },
   // A white cloud dropping hail's sky blue.
   hail: {
     colors: ['var(--c-ivory)', 'var(--c-dusk4)', 'var(--c-sky)'],
@@ -131,17 +167,20 @@ const ICON: Record<IconId, Icon> = {
 
 /**
  * Each kind's colour, shade and accent, from the palette: damage's light
- * madder, walking's ivory, and the harmful statuses' gold.
+ * madder, walking's ivory, the harmful statuses' gold, and healing's
+ * jade under a bright sun.
  */
 const KIND_COLORS: Record<IconKind, [string, string, string]> = {
   attack: ['var(--c-madderLight)', 'var(--c-madder)', 'var(--c-ivory)'],
   move: ['var(--c-ivory)', 'var(--c-dusk4)', 'var(--c-lapisLight)'],
   control: ['var(--c-gold)', 'var(--c-goldDark)', 'var(--c-skyLight)'],
+  support: ['var(--c-goldLight)', 'var(--c-gold)', 'var(--c-jade)'],
 };
 
 export const KIND_NAME: Record<AbilityKind, string> = {
   attack: 'Attack',
   control: 'Control',
+  support: 'Support',
 };
 
 /**
