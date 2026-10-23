@@ -144,6 +144,17 @@ export const ABILITY = {
    */
   volley: {range: 2},
   /**
+   * Proposed for the Storm Caller (2026-10-23), measured one at a time as
+   * its second ability. Gale: a unit within `range` takes its power and is
+   * Pushed `push` spaces directly away. Thunderclap: a unit within `range`
+   * takes its power and its card is Delayed `delay` slots, once between its
+   * turns. Rain-stone Ward: a unit within `range` has Shield `shield` until
+   * the Storm Caller's next turn.
+   */
+  gale: {range: 2, push: 1},
+  thunderclap: {range: 3, delay: 3},
+  ward: {range: 3, shield: 2},
+  /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
    */

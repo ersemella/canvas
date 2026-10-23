@@ -77,6 +77,17 @@ export function hit(ctx: Ctx, attacker: Unit, target: Unit, what: string): void 
  */
 export function applyDamage(ctx: Ctx, target: Unit, amount: number, text: string): void {
   if (!target.alive || amount <= 0) return;
+  // A Shield takes it first; what it can't absorb carries on (17.6). A hit
+  // it absorbs whole doesn't reach health: a warded Champion keeps its hold.
+  if (target.shield) {
+    const absorbed = Math.min(target.shield.amount, amount);
+    target.shield.amount -= absorbed;
+    if (target.shield.amount === 0) delete target.shield;
+    amount -= absorbed;
+    log(ctx, `The ward absorbs ${absorbed} for ${unitName(target)}.`);
+    if (amount === 0) return;
+    text = text.replace(/for \d+$/, `for ${amount}`);
+  }
   target.hp = Math.max(0, target.hp - amount);
   log(ctx, `${text}.`);
   record(ctx.state, {kind: 'damage', unitId: target.id, amount});
@@ -94,6 +105,7 @@ export function kill(ctx: Ctx, unit: Unit): void {
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
   // Its hail lasted until its next turn, which won't come.
   clearHail(ctx.state, unit);
+  clearWard(ctx.state, unit);
   checkEnd(ctx.state);
 }
 
@@ -130,6 +142,11 @@ export function atExit(state: FightState, h: Hex): boolean {
 export function clearHail(state: FightState, caster: Unit): void {
   state.effects = state.effects.filter((e) => e.source !== caster.id);
   for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);
+}
+
+/** `caster`'s wards lift: its next turn has come, or it fell. */
+export function clearWard(state: FightState, caster: Unit): void {
+  for (const u of state.units) if (u.shield?.source === caster.id) delete u.shield;
 }
 
 /** A unit in hail is Immobilized until that hail disappears (owner, 2026-10-23). */

@@ -42,13 +42,15 @@ type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 const SOURCES: [RegExp, string][] = [
   [/'s arrow hits/, 'bow'],
   [/'s volley hits/, 'volley'],
+  [/^The gale hits/, 'gale'],
+  [/^The thunderclap hits/, 'thunderclap'],
   [/^The throw hits/, 'throw'],
   [/^The grapple hits/, 'grapple'],
   [/^The hail hits/, 'hail'],
   [/^The bite hits/, 'bite'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| looses a volley| throws| swaps places| grapples| bites)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| looses a volley| calls up a gale| calls down thunder| wards| throws| swaps places| grapples| bites)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -100,6 +102,9 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
   const uses: Record<string, Record<string, number>> = {};
   const damage: Record<string, {enemy: number; ally: number}> = {};
   const kills: Record<string, number> = {};
+  /** Slots of Delay dealt, and damage a ward's Shield absorbed. */
+  let delayedSlots = 0;
+  let absorbed = 0;
   const units: Record<string, number> = {};
   const survivors: Record<string, number> = {};
   const lengths: number[] = [];
@@ -156,6 +161,8 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
           lastSource = source;
         }
         if (/ falls\.$/.test(text) && lastSource) add(kills, lastSource);
+        delayedSlots += Number(/ is Delayed (\d+) slots\.$/.exec(text)?.[1] ?? 0);
+        absorbed += Number(/^The ward absorbs (\d+) /.exec(text)?.[1] ?? 0);
       }
       s.log = [];
     };
@@ -256,6 +263,8 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
         {enemy: perFight(v.enemy), ally: perFight(v.ally)},
       ])
     ),
+    delayedSlotsPerFight: perFight(delayedSlots),
+    wardAbsorbedPerFight: perFight(absorbed),
     killsPerFight: Object.fromEntries(
       Object.entries(kills).map(([k, n]) => [k, round(n / fights, 2)])
     ),

@@ -4,14 +4,22 @@
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
-import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
+import {
+  hexDistance,
+  hexEquals,
+  hexNeighbor,
+  hexNeighbors,
+  hexRound,
+  hexesInRange,
+} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, HEROES} from './config';
+import {ABILITY, CAMEL, HEROES} from './config';
 import {isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
 import {endGrapples, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
+import {placeCard} from './track';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
 /**
@@ -184,6 +192,115 @@ const hail: AbilityDef = {
   },
 };
 
+/** Units other than `user` within `range` of `from`, as targets. */
+function unitsWithin(state: FightState, map: MapData, user: Unit, from: Hex, range: number) {
+  return hexesWithin(map, from, range, (h) => {
+    const u = unitAt(state, h);
+    return u !== undefined && u !== user;
+  });
+}
+
+/**
+ * The space a Push moves `unit` to, one step directly away from `source`
+ * (keywords.md, 17.4: along the line from the source through the unit;
+ * off a hex line, the hex that line runs into, ties broken one way), or
+ * undefined if ruins, a unit or the map's edge stop it.
+ */
+export function pushedTo(
+  state: FightState,
+  map: MapData,
+  source: Hex,
+  unit: Unit
+): Hex | undefined {
+  const at = unit.hex!;
+  const d = hexDistance(source, at);
+  const to = hexRound(at.q + (at.q - source.q) / d + 1e-6, at.r + (at.r - source.r) / d + 1e-6);
+  if (hexDistance(to, at) !== 1 || hexDistance(to, source) !== d + 1) return undefined;
+  return walkable(map, to) && !unitAt(state, to) ? to : undefined;
+}
+
+/**
+ * Gale (proposed, 2026-10-23): a unit within 2 takes the Storm Caller's
+ * power, then is Pushed 1 directly away. Stopped by ruins, a unit or the
+ * edge, it stays (no collision damage, open question 55). Temee is too
+ * heavy to Push. A Push into hail is held there; one that parts a
+ * grapple's two ends it.
+ */
+const gale: AbilityDef = {
+  id: 'gale',
+  name: 'Gale',
+  kind: 'attack',
+  range: ABILITY.gale.range,
+  radius: 0,
+  summary: (user) =>
+    `A unit within ${ABILITY.gale.range} takes ${damageText(user)} and is Pushed ${ABILITY.gale.push} away from you.`,
+  targetsUnit: true,
+  targets: (state, map, user, from) => unitsWithin(state, map, user, from, ABILITY.gale.range),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} calls up a gale.`);
+    hit(ctx, user, u, 'The gale');
+    if (!u.alive || u.hero === CAMEL) return;
+    for (let i = 0; i < ABILITY.gale.push; i++) {
+      const to = pushedTo(ctx.state, ctx.map, user.hex!, u);
+      if (!to) break;
+      enterHex(ctx, u, to, 'push');
+    }
+  },
+};
+
+/**
+ * Thunderclap (proposed, 2026-10-23): a unit within 3 takes the Storm
+ * Caller's power, and its card is Delayed 3 slots (keywords.md, 17.3;
+ * colliding as any placement does). A card can be Delayed once between
+ * its own turns (the delay limit, 3.6, at its simplest).
+ */
+const thunderclap: AbilityDef = {
+  id: 'thunderclap',
+  name: 'Thunderclap',
+  kind: 'attack',
+  range: ABILITY.thunderclap.range,
+  radius: 0,
+  summary: (user) =>
+    `A unit within ${ABILITY.thunderclap.range} takes ${damageText(user)} and its next turn comes ${ABILITY.thunderclap.delay} slots later (once between its turns).`,
+  targetsUnit: true,
+  targets: (state, map, user, from) =>
+    unitsWithin(state, map, user, from, ABILITY.thunderclap.range),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} calls down thunder.`);
+    hit(ctx, user, u, 'The thunderclap');
+    if (!u.alive || u.slot === null || u.delayed) return;
+    u.delayed = true;
+    const from = u.slot;
+    placeCard(ctx.state, u, from + ABILITY.thunderclap.delay);
+    log(ctx, `${unitName(u)} is Delayed ${u.slot! - from} slots.`);
+  },
+};
+
+/**
+ * Rain-stone Ward (proposed, 2026-10-23): a unit within 3, the Storm
+ * Caller included, has Shield 2 until the Storm Caller's next turn
+ * (keywords.md, 17.6). One ward at a time: a new one lifts the last.
+ */
+const ward: AbilityDef = {
+  id: 'ward',
+  name: 'Rain-stone Ward',
+  kind: 'control',
+  range: ABILITY.ward.range,
+  radius: 0,
+  summary: () =>
+    `A unit within ${ABILITY.ward.range}, you included, has Shield ${ABILITY.ward.shield} until your next turn: damage takes it first.`,
+  targets: (state, map, _user, from) =>
+    hexesWithin(map, from, ABILITY.ward.range, (h) => unitAt(state, h) !== undefined),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    for (const other of ctx.state.units) if (other.shield?.source === user.id) delete other.shield;
+    u.shield = {amount: ABILITY.ward.shield, source: user.id};
+    log(ctx, `${unitName(user)} wards ${unitName(u)}.`);
+  },
+};
+
 // ─── Bökh Champion ───────────────────────────────────────────────────────────
 
 /** Whether `user` is grappling `u`. */
@@ -273,6 +390,9 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   bow,
   volley,
   hail,
+  gale,
+  thunderclap,
+  ward,
   grapple,
   throw: throwAbility,
   bite,

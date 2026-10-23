@@ -20,6 +20,7 @@ import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {camelOf} from './resolve';
 import {MAPS} from './map';
+import {actionCost as cardCost} from './track';
 import type {FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
@@ -57,6 +58,26 @@ function statusPoints(u: Unit): number {
 }
 
 /**
+ * What a ward's Shield on `u` is worth, in damage: what it would absorb of
+ * the hits enemies could land on `u` before its next turn (threat.ts), at
+ * most its amount (principle 4: valued by what it prevents).
+ */
+function wardPoints(state: FightState, u: Unit): number {
+  if (!u.shield || !u.alive) return 0;
+  return Math.min(u.shield.amount, threatDamage(threatsTo(state, mapOf(state), u), state, u));
+}
+
+/**
+ * What a Delay to `b`'s card cost its side, in damage (Thunderclap): the
+ * share of one of its turns the slots it moved on are. Not counted for the
+ * acting unit, whose own card every turn places.
+ */
+function delayPoints(b: Unit, a: Unit, actor: Unit): number {
+  if (b.id === actor.id || b.slot === null || a.slot === null || a.slot <= b.slot) return 0;
+  return ((a.slot - b.slot) / cardCost(b)) * turnValue(b);
+}
+
+/**
  * Spaces from the camel to the exit along its road, so the enemy values
  * holding it back; 0 without a living camel.
  */
@@ -91,13 +112,18 @@ export function scoreOutcome(
     if (!b.alive) continue;
     const a = after.units.find((u) => u.id === b.id)!;
     const lost = b.hp - a.hp;
-    const statusDelta = statusPoints(a) - statusPoints(b);
+    // Statuses, a Delayed card and a ward, in damage, against `b`'s side.
+    const setback =
+      statusPoints(a) -
+      statusPoints(b) +
+      delayPoints(b, a, actor) -
+      (wardPoints(after, a) - wardPoints(before, b));
     if (hostile(b, actor)) {
-      score += lost * (b.hero === CAMEL ? AI.camelHealthWeight : 1) + statusDelta;
+      score += lost * (b.hero === CAMEL ? AI.camelHealthWeight : 1) + setback;
       if (!a.alive) score += AI.kill;
     } else {
       // Friendly fire only when clearly worth it.
-      score -= lost * AI.friendlyDamageFactor + statusDelta;
+      score -= lost * AI.friendlyDamageFactor + setback;
     }
   }
   // The camel's walk, whoever moved it; the fight's end outweighs everything
@@ -223,7 +249,10 @@ export function evaluatePosition(state: FightState, side: Side): number {
   for (const u of state.units) {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
-    const value = u.hero === CAMEL ? u.hp * AI.camelHealthWeight : u.hp + AI.kill - statusPoints(u);
+    const value =
+      u.hero === CAMEL
+        ? u.hp * AI.camelHealthWeight
+        : u.hp + AI.kill - statusPoints(u) + wardPoints(state, u);
     score += (u.side === side ? 1 : -1) * value;
   }
   return score;

@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import {afterEach, describe, expect, it} from 'vitest';
 import {
   hexDistance,
   hexKey,
@@ -18,7 +18,7 @@ import {
   roadToExit,
   unitAt,
 } from './board';
-import {ABILITIES, abilitiesOf, arrowLanes} from './abilities';
+import {ABILITIES, abilitiesOf, arrowLanes, pushedTo} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {onlyHold} from './choices';
@@ -48,6 +48,13 @@ import {actionCost, aimSlot, freeSlotFrom, nextCard, placeCard, simultaneousOrde
 import type {FightState, HeroId, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
+
+// The Storm Caller's proposed abilities are measured out of its kit: the
+// tests that need one put it in; every test ends with the kits as configured.
+const KITS = Object.fromEntries(Object.entries(HEROES).map(([h, s]) => [h, s.abilities]));
+afterEach(() => {
+  for (const [h, kit] of Object.entries(KITS)) HEROES[h as HeroId].abilities = kit;
+});
 
 /**
  * A fight in progress with units where a test wants them: every unit not
@@ -749,6 +756,105 @@ describe('abilities', () => {
     const landings = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!).map((t) => t.to!);
     expect(landings.some((h) => hexDistance(h, b.hex!) === 0)).toBe(false);
     expect(landings.length).toBeGreaterThan(0);
+  });
+
+  it('Gale: 1 damage, then a Push 1 directly away; a blocked Push stays; Temee is too heavy', () => {
+    HEROES.storm.abilities = ['hail', 'gale', 'hold'];
+    const s = setup({
+      'p-storm': at(1, 3),
+      'e-mangudai': at(3, 3),
+      'e-bokh': at(8, 6),
+      'p-camel': at(0, 7),
+    });
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'e-mangudai');
+    const targets = ABILITIES.gale.targets(s, mapOf(s), storm, storm.hex!);
+    expect(targets.every((t) => hexDistance(t.hex!, storm.hex!) <= 2 && unitAt(s, t.hex!))).toBe(
+      true
+    );
+    applyTurn(s, storm, {action: {ability: 'gale', target: {hex: m.hex!}}});
+    expect(m.hp).toBe(m.maxHp - storm.power);
+    expect(m.hex).toEqual(at(4, 3));
+    // Blocked by a unit behind it: it stays.
+    unit(s, 'e-bokh').hex = at(5, 3);
+    storm.hex = at(2, 3);
+    applyTurn(s, storm, {action: {ability: 'gale', target: {hex: m.hex!}}});
+    expect(m.hex).toEqual(at(4, 3));
+    expect(m.hp).toBe(m.maxHp - 2 * storm.power);
+    // Temee takes the hit but isn't moved.
+    const camel = unit(s, 'p-camel');
+    camel.hex = at(3, 3);
+    applyTurn(s, storm, {action: {ability: 'gale', target: {hex: camel.hex}}});
+    expect(camel.hex).toEqual(at(3, 3));
+    expect(camel.hp).toBe(camel.maxHp - storm.power);
+  });
+
+  it('Gale Pushes into hail, where it is held, and parts a grapple', () => {
+    HEROES.storm.abilities = ['hail', 'gale', 'hold'];
+    const s = setup({
+      'p-storm': at(1, 3),
+      'e-bokh': at(2, 3),
+      'p-mangudai': at(2, 4),
+      'e-storm': at(8, 6),
+    });
+    const storm = unit(s, 'p-storm');
+    const bokh = unit(s, 'e-bokh');
+    const m = unit(s, 'p-mangudai');
+    applyTurn(s, bokh, {action: {ability: 'grapple', target: {hex: m.hex!}}});
+    expect(m.statuses.map((x) => x.kind)).toEqual(['stunned']);
+    const to = pushedTo(s, mapOf(s), storm.hex!, bokh)!;
+    expect(hexDistance(to, storm.hex!)).toBe(2);
+    s.effects.push({kind: 'hail', hex: to, source: 'e-storm'});
+    applyTurn(s, storm, {action: {ability: 'gale', target: {hex: bokh.hex!}}});
+    expect(bokh.hex).toEqual(to);
+    expect(bokh.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+    // Damaged, the Champion let go anyway; apart, it couldn't hold either.
+    expect(m.statuses).toEqual([]);
+  });
+
+  it('Thunderclap: 1 damage and the card Delayed 3 slots, once between its turns', () => {
+    HEROES.storm.abilities = ['hail', 'thunderclap', 'hold'];
+    const s = setup({'p-storm': at(1, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'e-mangudai');
+    const before = m.slot!;
+    applyTurn(s, storm, {action: {ability: 'thunderclap', target: {hex: m.hex!}}});
+    expect(m.hp).toBe(m.maxHp - storm.power);
+    expect(m.slot).toBe(before + 3);
+    applyTurn(s, storm, {action: {ability: 'thunderclap', target: {hex: m.hex!}}});
+    expect(m.slot).toBe(before + 3);
+    expect(m.hp).toBe(m.maxHp - 2 * storm.power);
+  });
+
+  it('Rain-stone Ward: Shield 2 that damage takes first, a warded Champion keeps its hold, lifting at the caster’s next turn', () => {
+    HEROES.storm.abilities = ['hail', 'ward', 'hold'];
+    const s = setup({
+      'p-storm': at(1, 3),
+      'p-bokh': at(3, 3),
+      'e-mangudai': at(4, 3),
+      'e-storm': at(8, 6),
+    });
+    const storm = unit(s, 'p-storm');
+    const bokh = unit(s, 'p-bokh');
+    const m = unit(s, 'e-mangudai');
+    applyTurn(s, bokh, {action: {ability: 'grapple', target: {hex: m.hex!}}});
+    applyTurn(s, storm, {action: {ability: 'ward', target: {hex: bokh.hex!}}});
+    expect(bokh.shield).toEqual({amount: 2, source: 'p-storm'});
+    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    hit(ctx, unit(s, 'e-storm'), bokh, 'The hail');
+    expect(bokh.hp).toBe(bokh.maxHp);
+    expect(bokh.shield!.amount).toBe(1);
+    expect(m.statuses.map((x) => x.kind)).toEqual(['stunned']);
+    // 2 more: 1 absorbed, 1 to health, and the hold breaks.
+    m.statuses = [];
+    hit(ctx, m, bokh, 'The arrow');
+    expect(bokh.shield).toBeUndefined();
+    expect(bokh.hp).toBe(bokh.maxHp - 1);
+    applyTurn(s, storm, {action: {ability: 'ward', target: {hex: storm.hex!}}});
+    s.units.forEach((u) => (u.controller = 'human'));
+    for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
+    expect(advanceToDecision(s)!.id).toBe('p-storm');
+    expect(storm.shield).toBeUndefined();
   });
 
   it('hail covers one space within three: a unit there is Immobilized until the caster’s next turn', () => {

@@ -12,7 +12,17 @@ export type Side = 'player' | 'enemy';
  * isn't a hero, and the wolf, an enemy NPC.
  */
 export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
-export type AbilityId = 'hold' | 'bow' | 'volley' | 'hail' | 'grapple' | 'throw' | 'bite';
+export type AbilityId =
+  | 'hold'
+  | 'bow'
+  | 'volley'
+  | 'hail'
+  | 'gale'
+  | 'thunderclap'
+  | 'ward'
+  | 'grapple'
+  | 'throw'
+  | 'bite';
 
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';
@@ -52,6 +62,13 @@ export interface Unit {
    * it next acts.
    */
   skipped?: boolean;
+  /**
+   * Shield (keywords.md, 17.6) from a Storm Caller's Rain-stone Ward: a
+   * pool damage takes first, until the caster's next turn.
+   */
+  shield?: {amount: number; source: string};
+  /** Its card was Delayed since its last turn: it can't be again until then (Thunderclap). */
+  delayed?: boolean;
   alive: boolean;
 }
 
@@ -72,7 +89,7 @@ export interface LogEntry {
 }
 
 /** How a unit came to enter a hex: walked, thrown, or swapped places by a Throw. */
-export type Motion = 'walk' | 'throw' | 'swap';
+export type Motion = 'walk' | 'throw' | 'swap' | 'push';
 
 /** Something that happened on the board, in the order the rules resolved it. */
 export type FightEvent =
