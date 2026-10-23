@@ -115,13 +115,6 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
       drawDamage(ctx, c.x, c.y - 22 - k * 16, e.amount, u.hp === 0);
       return;
     }
-    case 'heal': {
-      if (!u.hex) return;
-      const c = center(u.hex);
-      tintHex(ctx, u.hex, paletteAlpha('jade', 0.5), 1 - k);
-      drawDamage(ctx, c.x, c.y - 22 - k * 16, -e.amount, false);
-      return;
-    }
     case 'death':
       drawUnit(ctx, u, e.hex, {
         acting: false,

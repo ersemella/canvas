@@ -20,15 +20,7 @@ import {
   drawGround,
   drawRuins,
 } from './board/ground';
-import {
-  HIGHLIGHT,
-  HOVER,
-  drawLanes,
-  drawFog,
-  drawOverwatch,
-  drawPath,
-  drawRangeOutline,
-} from './board/overlays';
+import {HIGHLIGHT, HOVER, drawLanes, drawPath, drawRangeOutline} from './board/overlays';
 import {
   MARK,
   drawDamage,
@@ -383,7 +375,6 @@ export class TacticsBoardSystem extends BaseSystem {
     // Not on a party walking out, off their hexes.
     drawGrappleChains(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));
 
-    drawOverwatch(ctx, fight);
     if (scene.range) drawRangeOutline(ctx, scene.range);
     if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);
     if (scene.step) drawPath(ctx, scene.step);
@@ -391,8 +382,6 @@ export class TacticsBoardSystem extends BaseSystem {
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
 
-    // Fog drifts over whoever stands in it.
-    drawFog(ctx, fight);
     if (playing) drawPlaybackEvent(ctx, playing);
 
     // Health and statuses show only on the unit whose turn it is, the unit

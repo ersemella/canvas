@@ -12,10 +12,8 @@ import {
   TILE_INFO,
   abilitiesOf,
   atExit,
-  fogInfo,
   hailInfo,
   mapOf,
-  overwatchInfo,
   tileAt,
   unitName,
 } from '@canvas/games-silk-road-run';
@@ -192,7 +190,7 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
 /**
  * What's on a hex (D11), a card each: the unit standing there first (it's
  * what was tapped), then the ground under it: its tile unless that's sand
- * (which says nothing), any hail, fog and overwatch, each on its own card. Every
+ * (which says nothing), and any hail, each on its own card. Every
  * card explains its own keywords inside itself. `dense`: the phone's
  * tooltip, everything in as little room as it takes.
  */
@@ -208,8 +206,6 @@ export function HexInspector({
   const tile = tileAt(mapOf(fight), hex);
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
   const unit = fight.units.find((u) => u.alive && u.hex && hexEquals(u.hex, hex));
-  const watched = overwatchInfo(fight, hex);
-  const fogged = fogInfo(fight, hex);
   return (
     <Stack gap={dense ? 6 : 8} data-testid="hex-info">
       {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
@@ -218,8 +214,6 @@ export function HexInspector({
         <GroundCard info={EXIT_INFO} color="var(--c-lapisLight)" dense={dense} />
       )}
       {hail && <GroundCard info={hailInfo(hail, fight)} color="var(--c-skyLight)" dense={dense} />}
-      {fogged && <GroundCard info={fogged} color="var(--c-ivory)" dense={dense} />}
-      {watched && <GroundCard info={watched} color="var(--c-gold)" dense={dense} />}
     </Stack>
   );
 }
@@ -423,13 +417,7 @@ export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
       {def.kind && (
         <>
           {abilityIcon(def)}
-          <b>{def.name}</b> · {KIND_NAME[def.kind]}
-          {def.kind !== 'support' && (
-            <>
-              {' · '}
-              <Term id="power">Damage {unit.power}</Term>
-            </>
-          )}
+          <b>{def.name}</b> · {KIND_NAME[def.kind]} · <Term id="power">Damage {unit.power}</Term>
         </>
       )}
       {!def.kind && <b>{def.name}</b>}

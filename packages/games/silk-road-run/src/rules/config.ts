@@ -74,7 +74,6 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    // Volley in place of Overwatch (owner, 2026-10-23), to measure it.
     abilities: ['bow', 'volley', 'hold'],
   },
   storm: {
@@ -85,8 +84,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
     // couldn't break a grapple.
     power: 1,
-    // Fog in place of Sunlight (owner, 2026-10-23), to measure it.
-    abilities: ['hail', 'fog', 'hold'],
+    abilities: ['hail', 'hold'],
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -127,11 +125,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
 export const ABILITY = {
   /**
    * Six straight lanes with no range limit (owner, 2026-10-20): the arrow
-   * flies until it hits a unit, ruins or the map's edge. `minRange` 2
-   * keeps it off an adjacent unit, which still stops the arrow (a variant
-   * measured against it).
+   * flies until it hits a unit, ruins or the map's edge.
    */
-  bow: {range: Infinity, minRange: 1},
+  bow: {range: Infinity},
   /**
    * One space, its centre within 3 (owner, 2026-10-23; was a radius-1 area
    * with damage and a track Push). It stays until its caster's next turn;
@@ -140,33 +136,13 @@ export const ABILITY = {
    */
   hail: {range: 3},
   /**
-   * One space within 3, resolving at once (owner, 2026-10-23): a unit there
-   * is healed this much, never past its health, and cleansed of every
-   * status; hail there melts.
+   * Arrows from above (owner, 2026-10-23): one space within 2 with a unit
+   * on it, adjacent included, no line of fire needed, as hail falls; the
+   * unit there takes the Outrider's power. Range 2, not the proposed 3
+   * (owner, 2026-10-23; balance.md): at 3 it was the strongest ability in
+   * the game.
    */
-  sunlight: {range: 3, heal: 1},
-  /**
-   * Arrows from above (owner, 2026-10-23): one space within 3, no line of
-   * fire needed, as hail falls; the unit there takes the Outrider's power.
-   * `minRange` 2 keeps it off adjacent units; `less` takes that much off its
-   * damage (variants measured against it).
-   */
-  volley: {range: 3, minRange: 1, less: 0},
-  /**
-   * One space within 3, until the Storm Caller's next turn (owner,
-   * 2026-10-23): a unit standing in it is Degraded by this much (its
-   * abilities deal that much less, at least 0). `radius` 1 is the owner's
-   * first proposal (the space and its neighbours), measured against it.
-   */
-  fog: {range: 3, radius: 0, degrade: 1},
-  /**
-   * The bow's lane, held until the Outrider's next turn (owner,
-   * 2026-10-23). `everyUnit`: false, the first unit to enter it is shot and
-   * the overwatch ends; true, each unit entering it is shot, once each,
-   * until the Outrider's next turn. `stopsWalk`: the shot ends a walk where
-   * it lands, as hail does.
-   */
-  overwatch: {everyUnit: false, stopsWalk: false},
+  volley: {range: 2},
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.

@@ -5,7 +5,7 @@
 import {hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES} from './config';
-import {addStatus, arrowLane, degradeOf, hailOn} from './board';
+import {addStatus, hailOn} from './board';
 import {MAPS} from './map';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, Motion, Status, Unit} from './types';
@@ -49,8 +49,6 @@ function snapshot(state: FightState): BoardSnapshot {
       skipped: u.skipped ?? false,
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
-    overwatch: (state.overwatch ?? []).map((o) => ({...o})),
-    fog: (state.fog ?? []).map((f) => ({...f, hex: {...f.hex}})),
   };
 }
 
@@ -61,21 +59,16 @@ export function unitName(u: Unit): string {
 
 /**
  * An ability's hit: exactly the attacker's power in damage (owner,
- * 2026-10-23), less its Degrade (fog) and any `less` the ability states,
- * at least 0. Power 0 deals none, and says nothing.
+ * 2026-10-23). Power 0 deals none, and says nothing.
  */
-export function hit(ctx: Ctx, attacker: Unit, target: Unit, what: string, less = 0): void {
+export function hit(ctx: Ctx, attacker: Unit, target: Unit, what: string): void {
   if (!target.alive || attacker.power <= 0) return;
-  const amount = degraded(ctx, attacker, Math.max(0, attacker.power - less), what);
-  if (amount > 0)
-    applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`);
-}
-
-/** `amount` less the source's Degrade, at least 0, saying what the fog took. */
-function degraded(ctx: Ctx, source: Unit, amount: number, what: string): number {
-  const taken = Math.min(amount, degradeOf(ctx.state, source));
-  if (taken > 0) log(ctx, `The fog dulls ${what} by ${taken}.`);
-  return amount - taken;
+  applyDamage(
+    ctx,
+    target,
+    attacker.power,
+    `${what} hits ${unitName(target)} for ${attacker.power}`
+  );
 }
 
 /**
@@ -99,10 +92,8 @@ export function kill(ctx: Ctx, unit: Unit): void {
   log(ctx, `${unitName(unit)} falls.`);
   if (at) record(ctx.state, {kind: 'death', unitId: unit.id, hex: at});
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
-  // Its hail, fog and overwatch lasted until its next turn, which won't come.
+  // Its hail lasted until its next turn, which won't come.
   clearHail(ctx.state, unit);
-  clearFog(ctx.state, unit);
-  clearOverwatch(ctx.state, unit);
   checkEnd(ctx.state);
 }
 
@@ -141,12 +132,6 @@ export function clearHail(state: FightState, caster: Unit): void {
   for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);
 }
 
-/** `caster`'s fog disappears: its next turn has come, or it fell. */
-export function clearFog(state: FightState, caster: Unit): void {
-  if (state.fog?.some((f) => f.source === caster.id))
-    state.fog = state.fog.filter((f) => f.source !== caster.id);
-}
-
 /** A unit in hail is Immobilized until that hail disappears (owner, 2026-10-23). */
 export function hailHolds(ctx: Ctx, unit: Unit): void {
   if (!unit.alive || !unit.hex || !hailOn(ctx.state, unit.hex)) return;
@@ -154,33 +139,6 @@ export function hailHolds(ctx: Ctx, unit: Unit): void {
   if (unit.statuses.some((s) => s.hail === hail.source)) return;
   addStatus(unit, {kind: 'immobilized', hail: hail.source});
   log(ctx, `Hail holds ${unitName(unit)} fast.`);
-}
-
-// ─── Overwatch ───────────────────────────────────────────────────────────────
-
-/** `outrider`'s overwatch ends: its next turn has come, it is Stunned, or it fell. */
-export function clearOverwatch(state: FightState, outrider: Unit): void {
-  if (state.overwatch?.some((o) => o.source === outrider.id))
-    state.overwatch = state.overwatch.filter((o) => o.source !== outrider.id);
-}
-
-/**
- * `unit` has entered its hex, walking or Moved: the first overwatched lane
- * it is now in shoots it, whoever's it is (friendly fire), and that
- * overwatch ends. The shot doesn't stop a walk.
- */
-function overwatchFires(ctx: Ctx, unit: Unit): boolean {
-  for (const o of ctx.state.overwatch ?? []) {
-    const src = ctx.state.units.find((u) => u.id === o.source);
-    if (!src?.alive || !src.hex || src === unit || o.shot?.includes(unit.id)) continue;
-    const lane = arrowLane(ctx.state, ctx.map, src.hex, o.dir, unit);
-    if (!lane.hexes.some((h) => hexEquals(h, unit.hex!))) continue;
-    if (ABILITY.overwatch.everyUnit) (o.shot ??= []).push(unit.id);
-    else clearOverwatch(ctx.state, src);
-    hit(ctx, src, unit, `${unitName(src)}'s overwatch shot`);
-    return true;
-  }
-  return false;
 }
 
 // ─── Grapples ────────────────────────────────────────────────────────────────
@@ -202,12 +160,11 @@ export function endGrapples(ctx: Ctx, ends: (g: Grapple) => boolean, quiet = fal
 
 /**
  * Stuns `u`. A Stunned Bökh Champion lets go of the unit it grapples
- * (owner, 2026-10-23), and a Stunned Outrider's overwatch ends.
+ * (owner, 2026-10-23).
  */
 export function stun(ctx: Ctx, u: Unit, status: Status): void {
   addStatus(u, status);
   endGrapples(ctx, (g) => g.champion === u.id);
-  clearOverwatch(ctx.state, u);
 }
 
 /**
@@ -217,8 +174,7 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
   for (const u of ctx.state.units) {
     if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
-    // The squeeze is the Champion's ability's: fog Degrades it too.
-    const amount = degraded(ctx, champion, ABILITY.grapple.squeeze, 'the squeeze');
+    const amount = ABILITY.grapple.squeeze;
     applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`);
   }
 }
@@ -249,8 +205,7 @@ function apart(state: FightState, g: Grapple): boolean {
  * Moves a unit onto a space: by walking, or moved there by another unit
  * (`how`, for the page's playback). Grapples it leaves the reach of end,
  * unless it's a step partway along a walk (`midWalk`), which checks them
- * where it ends (`endGrapplesApart`); hail there holds it, and an
- * overwatched lane there shoots it: true if one did.
+ * where it ends (`endGrapplesApart`); hail there holds it.
  */
 export function enterHex(
   ctx: Ctx,
@@ -258,12 +213,10 @@ export function enterHex(
   h: Hex,
   how: Motion = 'walk',
   midWalk = false
-): boolean {
-  if (!unit.alive) return false;
+): void {
   const from = unit.hex;
   unit.hex = h;
   if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
   if (!midWalk) endGrapplesApart(ctx, unit);
   hailHolds(ctx, unit);
-  return overwatchFires(ctx, unit);
 }

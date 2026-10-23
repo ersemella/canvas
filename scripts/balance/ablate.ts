@@ -41,7 +41,6 @@ type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 /** Damage sources, recognised by the fight log's wording. */
 const SOURCES: [RegExp, string][] = [
   [/'s arrow hits/, 'bow'],
-  [/'s overwatch shot hits/, 'overwatch'],
   [/'s volley hits/, 'volley'],
   [/^The throw hits/, 'throw'],
   [/^The grapple hits/, 'grapple'],
@@ -49,9 +48,7 @@ const SOURCES: [RegExp, string][] = [
   [/^The bite hits/, 'bite'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| looses a volley| calls down sunlight| calls down fog| throws| swaps places| grapples| bites)/;
-/** Healing, by the fight log's wording: amount healed per fight. */
-const HEAL = /^The sunlight heals .+ for (\d+)\.$/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| looses a volley| throws| swaps places| grapples| bites)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -103,12 +100,6 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
   const uses: Record<string, Record<string, number>> = {};
   const damage: Record<string, {enemy: number; ally: number}> = {};
   const kills: Record<string, number> = {};
-  /** Health restored to the healer's own side, and to the other side. */
-  const healed = {ally: 0, enemy: 0};
-  /** Overwatch: lanes set, and shots they fired. */
-  let overwatchShots = 0;
-  /** Damage fog took off hits, by whose hit it was. */
-  const fogged = {ally: 0, enemy: 0};
   const units: Record<string, number> = {};
   const survivors: Record<string, number> = {};
   const lengths: number[] = [];
@@ -165,19 +156,6 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
           lastSource = source;
         }
         if (/ falls\.$/.test(text) && lastSource) add(kills, lastSource);
-        const heal = HEAL.exec(text);
-        if (heal) {
-          const target: Side = /heals (Your|Temee)/.test(text) ? 'player' : 'enemy';
-          healed[actor === target ? 'ally' : 'enemy'] += Number(heal[1]);
-        }
-        if (/'s overwatch shot hits/.test(text)) overwatchShots++;
-        const dulled = /^The fog dulls (.+) by (\d+)\.$/.exec(text);
-        if (dulled) {
-          // A hit named for its user ("Your X's arrow"), else the acting side's.
-          const by = /^(Your|Enemy) /.exec(dulled[1]!);
-          const side: Side = by ? (by[1] === 'Your' ? 'player' : 'enemy') : actor!;
-          fogged[side === 'player' ? 'ally' : 'enemy'] += Number(dulled[2]);
-        }
       }
       s.log = [];
     };
@@ -278,10 +256,6 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
         {enemy: perFight(v.enemy), ally: perFight(v.ally)},
       ])
     ),
-    healedPerFight: {ally: perFight(healed.ally), enemy: perFight(healed.enemy)},
-    overwatchShotsPerFight: perFight(overwatchShots),
-    /** Damage fog took off the player side's hits (ally) and the enemy's. */
-    foggedPerFight: {player: perFight(fogged.ally), enemy: perFight(fogged.enemy)},
     killsPerFight: Object.fromEntries(
       Object.entries(kills).map(([k, n]) => [k, round(n / fights, 2)])
     ),

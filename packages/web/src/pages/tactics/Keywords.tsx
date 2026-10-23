@@ -149,7 +149,6 @@ const WORDS: [RegExp, KeywordId][] = [
   [/Melee/, 'melee'],
   [/Immobilized/, 'immobilized'],
   [/Stunned/, 'stunned'],
-  [/Degraded/, 'degraded'],
   [/\bMove(?:d)?\b/, 'move'],
 ];
 const ANY = new RegExp(WORDS.map(([re]) => `(${re.source})`).join('|'), 'g');

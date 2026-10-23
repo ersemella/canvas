@@ -7,7 +7,7 @@
  * board blocking arrows (the acting unit aside, since it is the one moving).
  */
 import {ABILITY, HEROES} from './config';
-import {degradeOf, hostile, isStunned} from './board';
+import {hostile, isStunned} from './board';
 import {tileAt} from './map';
 import type {MapData} from './map';
 import type {AbilityId, FightState, Unit} from './types';
@@ -55,22 +55,16 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     if (!e.alive || !e.hex || e.slot === null || !hostile(e, actor) || e.power <= 0) continue;
     const hexes = new Map<number, number>();
     out.push({enemyId: e.id, hexes});
-    // Fog where it stands Degrades its hit.
-    const power = Math.max(0, e.power - degradeOf(state, e));
     const has = (a: AbilityId) => HEROES[e.hero].abilities.includes(a);
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple'))
-      for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
+      for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), e.power);
     // Volley falls on any space within its range, over anything between.
     if (has('volley')) {
       const reach = ABILITY.volley.range;
       for (let dq = -reach; dq <= reach; dq++)
         for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
-          if (
-            board.has(id(fq + dq, fr + dr)) &&
-            Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) >= ABILITY.volley.minRange
-          )
-            mark(hexes, id(fq + dq, fr + dr), Math.max(0, power - ABILITY.volley.less));
+          if (board.has(id(fq + dq, fr + dr))) mark(hexes, id(fq + dq, fr + dr), e.power);
     }
     if (has('bow')) {
       for (const [dq, dr] of AXIAL) {
@@ -78,7 +72,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           const k = id(fq + dq * i, fr + dr * i);
           const tile = board.get(k);
           if (tile === undefined || tile === 'obstacle') break;
-          if (i >= ABILITY.bow.minRange) mark(hexes, k, power);
+          mark(hexes, k, e.power);
           if (occupied.has(k)) break;
         }
       }

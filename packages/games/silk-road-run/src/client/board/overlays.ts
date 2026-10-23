@@ -1,18 +1,13 @@
 /**
  * What the turn being planned draws over the board: highlighted hexes,
- * a move's path, an ability's range, the bow's lanes, Throw's arc,
- * overwatched lanes and charging areas.
+ * a move's path, an ability's range, the bow's lanes, Throw's arc, and
+ * charging areas.
  */
-import {hexCorners, hexKey, hexesInRange, pixelToHex} from '@canvas/engine';
+import {hexCorners, hexKey, pixelToHex} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {ABILITY} from '../../rules/config';
-import {arrowLane} from '../../rules/board';
-import {mapOf} from '../../rules/fight';
-import {onMap} from '../../rules/map';
 import {BOARD_LAYOUT} from '../layout';
 import {PALETTE, paletteAlpha} from '../palette';
-import type {FightState} from '../../rules/types';
-import {SIDE_LIGHT, TARGET_RGB, center, pixelShadow, tintHex} from './pixels';
+import {TARGET_RGB, center, pixelShadow} from './pixels';
 import type {HighlightStyle} from './pixels';
 import type {BowLane, HighlightKind} from './scene';
 
@@ -105,63 +100,6 @@ export function drawRangeOutline(ctx: CanvasRenderingContext2D, hexes: Hex[]): v
     ctx.stroke();
   }
   ctx.restore();
-}
-
-/**
- * Fogged spaces: a pale bank of mist over the hex and whoever stands in
- * it, banded as the icon is, so the unit still shows through.
- */
-export function drawFog(ctx: CanvasRenderingContext2D, fight: FightState): void {
-  const map = mapOf(fight);
-  const fogged = (fight.fog ?? []).flatMap((f) =>
-    hexesInRange(f.hex, ABILITY.fog.radius).filter((h) => onMap(map, h))
-  );
-  for (const h of fogged) {
-    tintHex(ctx, h, PALETTE.ivory, 0.32);
-    const c = center(h);
-    ctx.save();
-    ctx.globalAlpha = 0.55;
-    ctx.fillStyle = PALETTE.ivory;
-    for (const [dx, dy, w] of [
-      [-16, -14, 30],
-      [-22, -2, 40],
-      [-12, 10, 34],
-      [-18, 22, 26],
-    ])
-      ctx.fillRect(c.x + dx!, c.y + dy!, w!, 3);
-    ctx.restore();
-  }
-}
-
-/**
- * The lanes Outriders overwatch (Overwatch): each hex tinted in its side's
- * light colour, a dashed line down the middle, so it's plain where a step
- * draws the shot.
- */
-export function drawOverwatch(ctx: CanvasRenderingContext2D, fight: FightState): void {
-  const map = mapOf(fight);
-  for (const o of fight.overwatch ?? []) {
-    const src = fight.units.find((u) => u.id === o.source);
-    if (!src?.alive || !src.hex) continue;
-    const lane = arrowLane(fight, map, src.hex, o.dir);
-    const last = lane.hexes[lane.hexes.length - 1];
-    if (!last) continue;
-    const color = SIDE_LIGHT[src.side];
-    for (const h of lane.hexes) tintHex(ctx, h, color, 0.3);
-    ctx.save();
-    ctx.globalAlpha = 0.85;
-    const a = center(src.hex);
-    const b = center(last);
-    const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 6]);
-    ctx.beginPath();
-    ctx.moveTo(a.x + ((b.x - a.x) / len) * 26, a.y + ((b.y - a.y) / len) * 26);
-    ctx.lineTo(b.x, b.y);
-    ctx.stroke();
-    ctx.restore();
-  }
 }
 
 /**

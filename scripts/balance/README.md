@@ -8,7 +8,11 @@ Its results are in `RESULTS.md`; to rerun it, use a revision before that.
 Experiment files written before 2026-10-23 (`kit.mjs`, `hail-tuning.mjs`,
 `modao*.mjs`) patch values the rules no longer have (action costs, ability
 damage, the parked kits); they reproduce their measurements only at the
-revision they were run at. `pared.mjs`, `stats.mjs` and `caravans.mjs` run on
+revision they were run at. So do the files for the new abilities of 2026-10-23
+(`new-abilities*.mjs`, `ow-ai.mjs`, `fog*.mjs`, `volley-tuning.mjs`,
+`outrider-no-adjacent.mjs`): Overwatch, Sunlight, Fog and the variant
+switches they patch were removed once the kits were chosen; `volley.mjs`
+still runs (Fog dropped from it). `pared.mjs`, `stats.mjs` and `caravans.mjs` run on
 the current rules.
 
 ## Ability and stat ablation

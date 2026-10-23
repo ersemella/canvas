@@ -4,28 +4,11 @@
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
-import {
-  hexDistance,
-  hexEquals,
-  hexNeighbor,
-  hexNeighbors,
-  hexesInRange,
-} from '@canvas/engine/server';
+import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES} from './config';
-import {arrowLane, isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
-import type {ArrowLane} from './board';
-import {
-  clearOverwatch,
-  endGrapples,
-  enterHex,
-  hailHolds,
-  hit,
-  log,
-  record,
-  stun,
-  unitName,
-} from './resolve';
+import {isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
+import {endGrapples, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -33,9 +16,9 @@ import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
 /**
  * What an ability is broadly for, shown as an icon by its name: hurting
- * enemies, controlling the board (statuses, hail), or helping (healing).
+ * enemies, or controlling the board (statuses, hail).
  */
-export type AbilityKind = 'attack' | 'control' | 'support';
+export type AbilityKind = 'attack' | 'control';
 
 export interface AbilityDef {
   id: AbilityId;
@@ -104,14 +87,33 @@ const hold: AbilityDef = {
 
 // ─── Mangudai Outrider ───────────────────────────────────────────────────────
 
-export type {ArrowLane};
+/** An arrow's flight along one hex direction: the hexes it crosses, and the unit it stops at. */
+export interface ArrowLane {
+  hexes: Hex[];
+  hit?: Unit;
+}
 
 /**
- * The bow's six lanes from `from` (`arrowLane` in board.ts). For the page
- * to show where an arrow can fly, hit or not.
+ * The bow's six lanes from `from`: each runs until the first unit (which
+ * it hits), ruins or the map's edge (the bow has no range limit). For the
+ * page to show where an arrow can fly, hit or not.
  */
 export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLane[] {
-  return DIRECTIONS.map((dir) => arrowLane(state, map, from, dir));
+  return DIRECTIONS.map((dir) => {
+    const lane: ArrowLane = {hexes: []};
+    let h = from;
+    for (let i = 0; i < ABILITY.bow.range; i++) {
+      h = hexNeighbor(h, dir);
+      if (!onMap(map, h) || tileAt(map, h) === 'obstacle') break;
+      lane.hexes.push(h);
+      const u = unitAt(state, h);
+      if (u) {
+        lane.hit = u;
+        break;
+      }
+    }
+    return lane;
+  });
 }
 
 const bow: AbilityDef = {
@@ -122,7 +124,7 @@ const bow: AbilityDef = {
   targetsUnit: true,
   targets(state, map, _user, from) {
     return arrowLanes(state, map, from)
-      .filter((lane) => lane.hit && hexDistance(lane.hit.hex!, from) >= ABILITY.bow.minRange)
+      .filter((lane) => lane.hit)
       .map((lane) => ({hex: lane.hit!.hex!}));
   },
   resolve(ctx, user, target) {
@@ -132,37 +134,10 @@ const bow: AbilityDef = {
 };
 
 /**
- * Overwatch (owner, 2026-10-23): one of the bow's lanes, aimed by its first
- * hex, held until the Outrider's next turn. The first unit to enter the
- * lane, walking (even passing through) or Moved, ally or enemy, is shot
- * for the Outrider's power, and the overwatch ends; it ends too if the
- * Outrider is Stunned (`overwatchFires`, `stun` in resolve.ts).
- */
-const overwatch: AbilityDef = {
-  id: 'overwatch',
-  name: 'Overwatch',
-  kind: 'attack',
-  summary: (user) =>
-    `Watch one lane until your next turn: the first unit to enter it, even passing through, takes ${damageText(user)}. Ends if you are Stunned.`,
-  targets: (state, map, _user, from) =>
-    sortByHex(
-      DIRECTIONS.map((dir) => arrowLane(state, map, from, dir).hexes[0]).filter(
-        (h): h is Hex => h !== undefined
-      ),
-      (h) => h
-    ).map((hex) => ({hex})),
-  resolve(ctx, user, target) {
-    const dir = DIRECTIONS.find((d) => hexEquals(hexNeighbor(user.hex!, d), target.hex!))!;
-    clearOverwatch(ctx.state, user);
-    (ctx.state.overwatch ??= []).push({source: user.id, dir});
-    log(ctx, `${unitName(user)} watches a lane.`);
-  },
-};
-
-/**
  * Volley (owner, 2026-10-23): arrows loosed high, falling on one space
- * within `ABILITY.volley.range` as hail does, so no line of fire is needed:
- * the unit there, ally or enemy, takes the Outrider's power.
+ * within `ABILITY.volley.range` (2), adjacent included, as hail does, so no
+ * line of fire is needed: the unit there, ally or enemy, takes the
+ * Outrider's power.
  */
 const volley: AbilityDef = {
   id: 'volley',
@@ -176,12 +151,12 @@ const volley: AbilityDef = {
   targets: (state, map, user, from) =>
     hexesWithin(map, from, ABILITY.volley.range, (h) => {
       const u = unitAt(state, h);
-      return u !== undefined && u !== user && hexDistance(h, from) >= ABILITY.volley.minRange;
+      return u !== undefined && u !== user;
     }),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} looses a volley.`);
-    hit(ctx, user, u, `${unitName(user)}'s volley`, ABILITY.volley.less);
+    hit(ctx, user, u, `${unitName(user)}'s volley`);
   },
 };
 
@@ -206,80 +181,6 @@ const hail: AbilityDef = {
     if (!u) return;
     hit(ctx, user, u, 'The hail');
     hailHolds(ctx, u);
-  },
-};
-
-/**
- * Sunlight (owner, 2026-10-23): one space within 3, at once. Hail there
- * melts (and with it the Immobilized it gave); a unit there is healed
- * `ABILITY.sunlight.heal`, never past its health, and cleansed of every
- * status, a grapple's Stun included, which ends the grapple.
- */
-const sunlight: AbilityDef = {
-  id: 'sunlight',
-  name: 'Sunlight',
-  kind: 'support',
-  range: ABILITY.sunlight.range,
-  radius: 0,
-  summary: () =>
-    `Sunlight on a space: a unit there heals ${ABILITY.sunlight.heal} and is cleansed of every status (a grapple on it ends), and hail there melts.`,
-  // Only where it would do something: a unit or hail.
-  targets: (state, map, _user, from) =>
-    hexesWithin(
-      map,
-      from,
-      ABILITY.sunlight.range,
-      (h) =>
-        tileAt(map, h) !== 'obstacle' &&
-        (unitAt(state, h) !== undefined || state.effects.some((e) => hexEquals(e.hex, h)))
-    ),
-  resolve(ctx, user, target) {
-    const hex = target.hex!;
-    log(ctx, `${unitName(user)} calls down sunlight.`);
-    const hail = ctx.state.effects.find((e) => hexEquals(e.hex, hex));
-    if (hail) {
-      ctx.state.effects = ctx.state.effects.filter((e) => e !== hail);
-      for (const u of ctx.state.units)
-        u.statuses = u.statuses.filter((s) => s.hail !== hail.source);
-      log(ctx, 'The sunlight melts the hail.');
-    }
-    const u = unitAt(ctx.state, hex);
-    if (!u) return;
-    const healed = Math.min(ABILITY.sunlight.heal, u.maxHp - u.hp);
-    if (healed > 0) {
-      u.hp += healed;
-      log(ctx, `The sunlight heals ${unitName(u)} for ${healed}.`);
-      record(ctx.state, {kind: 'heal', unitId: u.id, amount: healed});
-    }
-    if (u.statuses.length > 0) {
-      const grappled = u.statuses.some((s) => s.grapple);
-      u.statuses = [];
-      log(ctx, `The sunlight cleanses ${unitName(u)}${grappled ? ', breaking the grapple' : ''}.`);
-    }
-  },
-};
-
-/**
- * Fog (owner, 2026-10-23): one space within 3, until the Storm Caller's
- * next turn. A unit standing in it, ally or enemy, is Degraded: its
- * abilities deal `ABILITY.fog.degrade` less (`hit` in resolve.ts). It
- * Degrades whoever stands there when they act, not whoever is struck there.
- */
-const fog: AbilityDef = {
-  id: 'fog',
-  name: 'Fog',
-  kind: 'control',
-  range: ABILITY.fog.range,
-  radius: ABILITY.fog.radius,
-  summary: () =>
-    `Fog on a space until your next turn: a unit standing in it is Degraded, its abilities dealing ${ABILITY.fog.degrade} less.`,
-  targets: (_state, map, _user, from) =>
-    hexesWithin(map, from, ABILITY.fog.range, (h) => tileAt(map, h) !== 'obstacle'),
-  resolve(ctx, user, target) {
-    const hex = target.hex!;
-    ctx.state.fog = (ctx.state.fog ?? []).filter((f) => !hexEquals(f.hex, hex));
-    ctx.state.fog.push({hex, source: user.id});
-    log(ctx, `${unitName(user)} calls down fog.`);
   },
 };
 
@@ -370,11 +271,8 @@ const bite: AbilityDef = {
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   bow,
-  overwatch,
   volley,
   hail,
-  sunlight,
-  fog,
   grapple,
   throw: throwAbility,
   bite,

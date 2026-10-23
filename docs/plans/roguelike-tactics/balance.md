@@ -1011,6 +1011,29 @@ and `volley.minRange` 2; an adjacent unit still stops the Bow's arrow.
   ability. Range 2 with adjacent targets allowed keeps the Outrider busy
   (Holds 10.7%) at similar worth.
 
+#### The kits adopted (owner, 2026-10-23)
+
+Volley at range 2 (adjacent included), the swap kept, the Storm Caller with
+Hail alone; Overwatch, Sunlight and Fog removed with their code
+([history.md](history.md)). `experiments/volley.mjs` and `caravans.mjs`,
+400 fights each:
+
+| Side without | Wins |
+|---|---:|
+| Bow | 38.3% |
+| Volley | 23.5% |
+| Hail | 18.8% |
+| Grapple | 16.8% |
+| Throw (with the swap) | 49.5% |
+| Bow and Volley | 7.5% |
+
+No fight unfinished; median 40 actions, 74 slots. Share of turns: the
+Outrider shoots 38%, volleys 17%, walks 33%, Holds 13%; the Storm Caller
+Hails 72%; the Champion Grapples 36%, Throws 10%, swaps 2%. Control
+fights: the player's side won 65%, Temee killed in 54 of 400. Stage
+caravans, player wins: one hero and two wolves 92.8–99.5%; two heroes and
+a wolf 72.7–99% but 42.5% against two Outriders; all three 61.3%.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

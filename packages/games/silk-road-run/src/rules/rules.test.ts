@@ -1,4 +1,4 @@
-import {afterEach, describe, expect, it} from 'vitest';
+import {describe, expect, it} from 'vitest';
 import {
   hexDistance,
   hexKey,
@@ -8,7 +8,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
+import {AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
 import {
   canMove,
   invalidPath,
@@ -34,7 +34,7 @@ import {
 } from './fight';
 import {previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
-import {checkEnd, enterHex, hit, kill, stun} from './resolve';
+import {checkEnd, enterHex, hit, kill} from './resolve';
 import {
   RUN_FORMAT,
   createRun,
@@ -48,13 +48,6 @@ import {actionCost, aimSlot, freeSlotFrom, nextCard, placeCard, simultaneousOrde
 import type {FightState, HeroId, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
-
-// Abilities measured out of the kits (Overwatch, Sunlight) are put back by
-// the tests that need them; every test ends with the kits as configured.
-const KITS = Object.fromEntries(Object.entries(HEROES).map(([h, s]) => [h, s.abilities]));
-afterEach(() => {
-  for (const [h, kit] of Object.entries(KITS)) HEROES[h as HeroId].abilities = kit;
-});
 
 /**
  * A fight in progress with units where a test wants them: every unit not
@@ -129,26 +122,7 @@ describe('the track', () => {
     expect(onlyHold(s, mapOf(s), w)).toBe(false);
   });
 
-  it('with a minimum range of 2, the Bow can’t hit an adjacent unit, which still stops the arrow', () => {
-    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(2, 3), 'e-storm': at(4, 3)});
-    const m = unit(s, 'p-mangudai');
-    const lane = arrowLanes(s, mapOf(s), m.hex!).find((l) => l.hit?.id === 'e-bokh')!;
-    expect(lane.hexes).toHaveLength(1);
-    const before = ABILITY.bow.minRange;
-    (ABILITY.bow as {minRange: number}).minRange = 2;
-    try {
-      const targets = ABILITIES.bow.targets(s, mapOf(s), m, m.hex!);
-      expect(targets.some((t) => hexKey(t.hex!) === hexKey(at(2, 3)))).toBe(false);
-      expect(targets.some((t) => hexKey(t.hex!) === hexKey(at(4, 3)))).toBe(false);
-    } finally {
-      (ABILITY.bow as {minRange: number}).minRange = before;
-    }
-    expect(
-      ABILITIES.bow.targets(s, mapOf(s), m, m.hex!).some((t) => hexKey(t.hex!) === hexKey(at(2, 3)))
-    ).toBe(true);
-  });
-
-  it('Volley reaches an enemy within 3 that no bow lane does, over a unit in the way', () => {
+  it('Volley reaches an enemy within 2 that no bow lane does, over a unit in the way', () => {
     const s = setup({
       'p-mangudai': at(1, 3),
       'p-storm': at(2, 3),
@@ -163,7 +137,7 @@ describe('the track', () => {
     expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.side === 'enemy')).toBe(false);
     expect(onlyHold(s, mapOf(s), m)).toBe(false);
     const spots = ABILITIES.volley.targets(s, mapOf(s), m, m.hex!);
-    expect(spots.every((t) => hexDistance(t.hex!, m.hex!) <= 3 && unitAt(s, t.hex!))).toBe(true);
+    expect(spots.every((t) => hexDistance(t.hex!, m.hex!) <= 2 && unitAt(s, t.hex!))).toBe(true);
     expect(spots.some((t) => hexKey(t.hex!) === hexKey(unit(s, 'e-storm').hex!))).toBe(false);
     applyTurn(s, m, {action: {ability: 'volley', target: {hex: bokh.hex!}}});
     expect(bokh.hp).toBe(bokh.maxHp - m.power);
@@ -775,168 +749,6 @@ describe('abilities', () => {
     const landings = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!).map((t) => t.to!);
     expect(landings.some((h) => hexDistance(h, b.hex!) === 0)).toBe(false);
     expect(landings.length).toBeGreaterThan(0);
-  });
-
-  it('Overwatch: the first unit to enter the lane, even passing through, is shot, once', () => {
-    HEROES.mangudai.abilities = ['bow', 'overwatch', 'hold'];
-    const s = setup({'p-mangudai': at(0, 3), 'e-bokh': at(6, 6), 'e-storm': at(7, 6)});
-    const m = unit(s, 'p-mangudai');
-    const lanes = arrowLanes(s, mapOf(s), m.hex!);
-    const lane = lanes.find((l) => l.hexes.length >= 4)!;
-    const watched = ABILITIES.overwatch.targets(s, mapOf(s), m, m.hex!);
-    expect(watched.some((t) => hexKey(t.hex!) === hexKey(lane.hexes[0]!))).toBe(true);
-    applyTurn(s, m, {action: {ability: 'overwatch', target: {hex: lane.hexes[0]!}}});
-    expect(s.overwatch).toHaveLength(1);
-    // A walk across the lane: in from one side, out the other.
-    const onLane = (h: Hex) => lane.hexes.some((l) => hexKey(l) === hexKey(h));
-    const crossing = lane.hexes[2]!;
-    const sides = hexNeighbors(crossing).filter(
-      (h) => !onLane(h) && hexDistance(h, m.hex!) > 0 && tileAt(SALT_FLATS, h) === 'sand'
-    );
-    const [from, to] = [sides[0]!, sides.find((h) => hexDistance(h, sides[0]!) === 2)!];
-    const bokh = unit(s, 'e-bokh');
-    bokh.hex = from;
-    s.awaiting = bokh.id;
-    applyTurn(s, bokh, {move: [crossing, to], action: {ability: 'hold'}});
-    expect(bokh.hex).toEqual(to);
-    expect(bokh.hp).toBe(bokh.maxHp - m.power);
-    expect(s.overwatch).toEqual([]);
-    // Spent: the next unit crosses unharmed.
-    const storm = unit(s, 'e-storm');
-    storm.hex = from;
-    applyTurn(s, storm, {move: [crossing], action: {ability: 'hold'}});
-    expect(storm.hp).toBe(storm.maxHp);
-  });
-
-  it('Overwatch shoots allies too, can fell a unit partway through a walk, and ends if the Outrider is Stunned', () => {
-    HEROES.mangudai.abilities = ['bow', 'overwatch', 'hold'];
-    const s = setup({'p-mangudai': at(0, 3), 'p-storm': at(6, 6), 'e-bokh': at(7, 6)});
-    const m = unit(s, 'p-mangudai');
-    const lane = arrowLanes(s, mapOf(s), m.hex!).find((l) => l.hexes.length >= 4)!;
-    const watch = {action: {ability: 'overwatch' as const, target: {hex: lane.hexes[0]!}}};
-    applyTurn(s, m, watch);
-    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
-    const ally = unit(s, 'p-storm');
-    enterHex(ctx, ally, lane.hexes[3]!, 'throw');
-    expect(ally.hp).toBe(ally.maxHp - m.power);
-    // At 1 health, a walk through the lane ends where it is shot.
-    applyTurn(s, m, watch);
-    const bokh = unit(s, 'e-bokh');
-    bokh.hp = 1;
-    const crossing = lane.hexes[1]!;
-    const start = hexNeighbors(crossing).find(
-      (h) =>
-        !lane.hexes.some((l) => hexKey(l) === hexKey(h)) &&
-        tileAt(SALT_FLATS, h) === 'sand' &&
-        !unitAt(s, h) &&
-        hexDistance(h, m.hex!) > 0
-    )!;
-    bokh.hex = start;
-    const beyond = hexNeighbors(crossing).find((h) => hexDistance(h, start) === 2)!;
-    applyTurn(s, bokh, {move: [crossing, beyond], action: {ability: 'hold'}});
-    expect(bokh.alive).toBe(false);
-    expect(bokh.hex).toBeNull();
-    // Stunned, the Outrider stops watching.
-    applyTurn(s, m, watch);
-    stun(ctx, m, {kind: 'stunned'});
-    expect(s.overwatch).toEqual([]);
-  });
-
-  it('Overwatch ends at the Outrider’s next turn, and a walk keeps out of a watched lane where it can', () => {
-    HEROES.mangudai.abilities = ['bow', 'overwatch', 'hold'];
-    const s = setup({'e-mangudai': at(0, 3), 'p-bokh': at(6, 6), 'e-storm': at(7, 6)});
-    const m = unit(s, 'e-mangudai');
-    const lane = arrowLanes(s, mapOf(s), m.hex!).find((l) => l.hexes.length >= 4)!;
-    applyTurn(s, m, {action: {ability: 'overwatch', target: {hex: lane.hexes[0]!}}});
-    const onLane = (h: Hex) => lane.hexes.some((l) => hexKey(l) === hexKey(h));
-    const b = unit(s, 'p-bokh');
-    // From some space, the plain shortest walk somewhere cuts through the
-    // lane where one around it fits in the move: that walk goes around.
-    // From every space, every hex stays reachable, the lane's too.
-    let rerouted = 0;
-    for (const start of SALT_FLATS.hexes) {
-      if (onLane(start) || tileAt(SALT_FLATS, start) !== 'sand' || unitAt(s, start)) continue;
-      b.hex = start;
-      const watched = reachableHexes(s, mapOf(s), b);
-      const unwatched = reachableHexes({...s, overwatch: []}, mapOf(s), b);
-      expect(watched.map((r) => hexKey(r.hex)).sort()).toEqual(
-        unwatched.map((r) => hexKey(r.hex)).sort()
-      );
-      rerouted += watched.filter((r) => {
-        const plain = unwatched.find((x) => hexKey(x.hex) === hexKey(r.hex))!;
-        return !onLane(r.hex) && plain.path.some(onLane) && !r.path.some(onLane);
-      }).length;
-    }
-    expect(rerouted).toBeGreaterThan(0);
-    b.hex = at(6, 6);
-    s.units.forEach((u) => (u.controller = 'human'));
-    for (const u of s.units) if (u !== m && u.alive) u.slot = m.slot! + 10;
-    expect(advanceToDecision(s)!.id).toBe('e-mangudai');
-    expect(s.overwatch).toEqual([]);
-  });
-
-  it('Sunlight: heals 1, never past full health, cleanses a grapple’s Stun and melts hail', () => {
-    const s = setup({
-      'p-storm': at(1, 3),
-      'p-mangudai': at(3, 3),
-      'e-bokh': at(4, 3),
-      'e-storm': at(8, 6),
-    });
-    const storm = unit(s, 'p-storm');
-    const ally = unit(s, 'p-mangudai');
-    const bokh = unit(s, 'e-bokh');
-    HEROES.storm.abilities = ['hail', 'sunlight', 'hold'];
-    // Only spaces with a unit or hail on them.
-    const spots = ABILITIES.sunlight.targets(s, mapOf(s), storm, storm.hex!);
-    expect(spots.every((t) => unitAt(s, t.hex!))).toBe(true);
-    applyTurn(s, bokh, {action: {ability: 'grapple', target: {hex: ally.hex!}}});
-    expect(ally.hp).toBe(ally.maxHp - bokh.power);
-    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
-    expect(ally.hp).toBe(ally.maxHp);
-    expect(ally.statuses).toEqual([]);
-    // Already at full health: no more.
-    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
-    expect(ally.hp).toBe(ally.maxHp);
-    // Hail on a space, melted, frees the unit it held.
-    const foe = unit(s, 'e-storm');
-    foe.hex = at(2, 4);
-    applyTurn(s, foe, {action: {ability: 'hail', target: {hex: ally.hex!}}});
-    expect(ally.statuses.map((x) => x.kind)).toEqual(['immobilized']);
-    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
-    expect(s.effects).toEqual([]);
-    expect(ally.statuses).toEqual([]);
-  });
-
-  it('Fog: a unit standing in it deals 1 less, to at least 0, until the caster’s next turn', () => {
-    const s = setup({
-      'p-storm': at(1, 3),
-      'p-mangudai': at(3, 3),
-      'e-bokh': at(4, 3),
-      'e-storm': at(8, 6),
-    });
-    const storm = unit(s, 'p-storm');
-    const archer = unit(s, 'p-mangudai');
-    const bokh = unit(s, 'e-bokh');
-    expect(HEROES.storm.abilities).toEqual(['hail', 'fog', 'hold']);
-    const spots = ABILITIES.fog.targets(s, mapOf(s), storm, storm.hex!);
-    expect(spots.every((t) => hexDistance(t.hex!, storm.hex!) <= 3)).toBe(true);
-    expect(spots.some((t) => !unitAt(s, t.hex!))).toBe(true);
-    // Fog on the Champion: its grapple deals 0 but still Stuns.
-    applyTurn(s, storm, {action: {ability: 'fog', target: {hex: bokh.hex!}}});
-    expect(s.fog).toEqual([{hex: bokh.hex, source: 'p-storm'}]);
-    applyTurn(s, bokh, {action: {ability: 'grapple', target: {hex: archer.hex!}}});
-    expect(archer.hp).toBe(archer.maxHp);
-    expect(archer.statuses.map((x) => x.kind)).toEqual(['stunned']);
-    // Fog on the archer instead: its power-2 arrow deals 1. Being struck in fog changes nothing.
-    archer.statuses = [];
-    applyTurn(s, storm, {action: {ability: 'fog', target: {hex: archer.hex!}}});
-    applyTurn(s, archer, {action: {ability: 'bow', target: {hex: bokh.hex!}}});
-    expect(bokh.hp).toBe(bokh.maxHp - (archer.power - 1));
-    // It lifts at the caster's next turn.
-    s.units.forEach((u) => (u.controller = 'human'));
-    for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
-    expect(advanceToDecision(s)!.id).toBe('p-storm');
-    expect(s.fog).toEqual([]);
   });
 
   it('hail covers one space within three: a unit there is Immobilized until the caster’s next turn', () => {
