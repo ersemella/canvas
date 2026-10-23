@@ -6,7 +6,7 @@ import {assetLoader} from '@canvas/engine';
 import {HEROES} from '../../rules/config';
 import type {FightState, Unit} from '../../rules/types';
 import {TRACK_AREA, trackSlots} from '../layout';
-import type {TrackCard, TrackSlots} from '../layout';
+import type {TrackBumps, TrackCard, TrackSlots} from '../layout';
 import {PALETTE} from '../palette';
 import {HERO_COLOR, SIDE_LIGHT, label, pixelRect, pixelShadow} from './pixels';
 import {HERO_PORTRAIT} from './units';
@@ -114,13 +114,14 @@ export function drawTrack(
   cards: TrackCard[],
   previewSlot: number | null,
   aimSlot: number | null,
+  bumps: TrackBumps,
   advance: TrackAdvance | null,
   slides: Map<string, CardSlide>,
   opts: {selected: string | null; hovered: string | null}
 ): void {
   const {x, y, width, height} = TRACK_AREA;
   const start = advance ? trackStart(advance) : fight.currentSlot;
-  const deck = trackSlots(fight, previewSlot, start);
+  const deck = trackSlots(fight, previewSlot, start, bumps);
   ctx.save();
   pixelRect(ctx, x, y, width, height, 3);
   ctx.fillStyle = PALETTE.dusk0;

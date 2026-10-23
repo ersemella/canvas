@@ -114,13 +114,13 @@ check(
 );
 
 // The camel acts last in the starting order (timeline.md, 3.4), at slot
-// 24, after every other card; the turn stops on a hero, whose turn the
+// 12, after every other card; the turn stops on a hero, whose turn the
 // checks below use.
 const openingUnits = startedFight.events?.[0]?.after?.units ?? [];
 const openingCamel = openingUnits.find((u) => u.id === 'p-camel');
 check(
-  'the camel starts last, at slot 24, after every other card',
-  openingCamel?.slot === 24 &&
+  'the camel starts last, at slot 12, after every other card',
+  openingCamel?.slot === 12 &&
     openingUnits.every((u) => u.id === 'p-camel' || u.slot < openingCamel.slot),
   openingUnits.map((u) => [u.id, u.slot])
 );

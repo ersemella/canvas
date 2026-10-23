@@ -2,7 +2,7 @@
  * The track (timeline.md, section 3): numbered slots, one card per slot.
  * After each turn a card goes its unit's action cost on,
  * RULES.actionBase − RULES.speedSlots × speed (owner, 2026-10-23),
- * yielding on collision.
+ * the faster card keeping a slot two cards collide on.
  */
 import {HEROES, RULES} from './config';
 import type {FightState, Unit} from './types';
@@ -17,7 +17,7 @@ export function aimSlot(state: FightState, unit: Unit, now = state.currentSlot):
   return now + actionCost(unit);
 }
 
-/** The first free slot at or after `slot` (3.3: the arriving card yields). */
+/** The first free slot at or after `slot`. */
 export function freeSlotFrom(state: FightState, slot: number, ignore?: Unit): number {
   const taken = new Set(
     state.units.filter((u) => u.alive && u !== ignore && u.slot !== null).map((u) => u.slot)
@@ -27,10 +27,27 @@ export function freeSlotFrom(state: FightState, slot: number, ignore?: Unit): nu
   return s;
 }
 
-/** Places a unit's card at `slot`, yielding forward; cards already placed never move. */
+/**
+ * Places a unit's card at `slot`, resolving collisions by speed (3.3;
+ * owner, 2026-10-23): a faster arriving card takes the slot and the card
+ * there moves on to the next, colliding again by the same rule; an equal
+ * or slower one yields to the next slot itself. Returns the unit's slot.
+ */
 export function placeCard(state: FightState, unit: Unit, slot: number): number {
-  unit.slot = freeSlotFrom(state, slot, unit);
-  return unit.slot;
+  unit.slot = null;
+  let moving = unit;
+  let s = slot;
+  for (;;) {
+    const there = state.units.find((u) => u.alive && u !== moving && u.slot === s);
+    if (!there) break;
+    if (moving.speed > there.speed) {
+      moving.slot = s;
+      moving = there;
+    }
+    s++;
+  }
+  moving.slot = s;
+  return unit.slot!;
 }
 
 /**

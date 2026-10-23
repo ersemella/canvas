@@ -16,10 +16,10 @@ export const RULES = {
    * unit's card goes `actionBase` − `speedSlots` × speed slots on, Temee's
    * included, whatever the turn did.
    */
-  actionBase: 24,
-  speedSlots: 4,
+  actionBase: 12,
+  speedSlots: 2,
   /** Temee's starting slot (3.4), after every other unit's starting card. */
-  camelStartSlot: 24,
+  camelStartSlot: 12,
   /** Ordinary walking cap (5.1): 3 since 2026-10-22 (owner). */
   movementCap: 3,
   /** Size of the track window the page shows (open question 1). */
@@ -88,9 +88,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
-   * 2026-10-22). It acts last in the starting order, at slot 24 (owner,
+   * 2026-10-22). It acts last in the starting order, at slot 12 (owner,
    * 2026-10-23). Defence 9 (health 20, ten bow hits) is a PLACEHOLDER for
-   * the owner's "very high health". Speed 0, so an action cost of 24
+   * the owner's "very high health". Speed 0, so an action cost of 12
    * (owner, 2026-10-23).
    */
   camel: {

@@ -337,7 +337,10 @@ export function TacticsPage() {
       /** The middle of the strip of a unit's track card that shows, in scene pixels. */
       cardCenter: (unitId: string) => {
         const c =
-          fight && trackCards(fight, preview?.slot ?? null).find((t) => t.unitId === unitId);
+          fight &&
+          trackCards(fight, preview?.slot ?? null, preview?.bumped).find(
+            (t) => t.unitId === unitId
+          );
         return c ? {x: c.x + c.w / 2, y: c.y + c.h / 2} : null;
       },
       /** What a looked-at hex takes up (its unit's health bar and statuses included), in scene pixels. */

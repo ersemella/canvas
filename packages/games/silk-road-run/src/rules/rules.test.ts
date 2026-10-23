@@ -122,7 +122,7 @@ describe('the track', () => {
     expect(onlyHold(s, mapOf(s), m)).toBe(false);
   });
 
-  it('places a card 24 − 4 × speed slots on, whatever the turn did (3.2)', () => {
+  it('places a card 12 − 2 × speed slots on, whatever the turn did (3.2)', () => {
     const s = setup({
       'p-camel': at(0, 0),
       'p-mangudai': at(1, 3),
@@ -133,11 +133,11 @@ describe('the track', () => {
     const m = unit(s, 'p-mangudai');
     const b = unit(s, 'p-bokh');
     s.currentSlot = 25;
-    // Speed 3 costs 12 slots, speed 2 costs 16, wherever Temee's card is.
-    expect(aimSlot(s, m)).toBe(37);
-    expect(aimSlot(s, b)).toBe(41);
+    // Speed 3 costs 6 slots, speed 2 costs 8, wherever Temee's card is.
+    expect(aimSlot(s, m)).toBe(31);
+    expect(aimSlot(s, b)).toBe(33);
     s.currentSlot = 35;
-    expect(aimSlot(s, m)).toBe(47);
+    expect(aimSlot(s, m)).toBe(41);
     // A move and an ability place it alike.
     s.currentSlot = 25;
     m.slot = 25;
@@ -146,8 +146,8 @@ describe('the track', () => {
     applyTurn(moved, unit(moved, m.id), {move: [at(2, 3)], action: {ability: 'hold'}});
     const held = cloneFight(s);
     applyTurn(held, unit(held, m.id), {action: {ability: 'hold'}});
-    expect(unit(moved, m.id).slot).toBe(37);
-    expect(unit(held, m.id).slot).toBe(37);
+    expect(unit(moved, m.id).slot).toBe(31);
+    expect(unit(held, m.id).slot).toBe(31);
   });
 
   it('gives the faster more turns: Outriders before Bökh, Bökh before Temee', () => {
@@ -178,7 +178,7 @@ describe('the track', () => {
     expect(camel.slot).toBe(RULES.actionBase - RULES.speedSlots * HEROES.camel.speed);
   });
 
-  it('yields to the next free slot, cascading; placed cards never move (3.3)', () => {
+  it('yields an equal or slower card to the next free slot, cascading (3.3)', () => {
     const s = setup({'p-bokh': at(0, 0), 'p-storm': at(0, 1), 'e-bokh': at(8, 0)});
     unit(s, 'p-storm').slot = 10;
     unit(s, 'e-bokh').slot = 11;
@@ -186,6 +186,25 @@ describe('the track', () => {
     expect(unit(s, 'p-storm').slot).toBe(10);
     expect(unit(s, 'e-bokh').slot).toBe(11);
     expect(freeSlotFrom(s, 9)).toBe(9);
+  });
+
+  it('gives a faster card the slot, moving the slower one on by the same rule (3.3)', () => {
+    const s = setup({
+      'p-mangudai': at(0, 0),
+      'p-storm': at(0, 1),
+      'p-camel': at(0, 2),
+      'e-bokh': at(8, 0),
+    });
+    // Storm Caller (2) at 10, Temee (0) at 11, Bökh (2) at 12.
+    unit(s, 'p-storm').slot = 10;
+    unit(s, 'p-camel').slot = 11;
+    unit(s, 'e-bokh').slot = 12;
+    // The Outrider (3) takes 10; the Storm Caller, moved on, takes Temee's
+    // 11; Temee, slower than Bökh, yields past 12 to 13.
+    expect(placeCard(s, unit(s, 'p-mangudai'), 10)).toBe(10);
+    expect(unit(s, 'p-storm').slot).toBe(11);
+    expect(unit(s, 'p-camel').slot).toBe(13);
+    expect(unit(s, 'e-bokh').slot).toBe(12);
   });
 
   it('starts each side on its outermost column, scattered by the seed, with no deployment', () => {
@@ -243,7 +262,7 @@ describe('the track', () => {
     }
   });
 
-  it('starts the fastest from slot 0, a free slot between speeds, and Temee last at slot 24 (3.4)', () => {
+  it('starts the fastest from slot 0, a free slot between speeds, and Temee last at slot 12 (3.4)', () => {
     const s = createFight(1);
     const slots = Object.fromEntries(s.units.map((u) => [u.id, u.slot]));
     expect(slots).toEqual({
@@ -253,7 +272,7 @@ describe('the track', () => {
       'p-storm': 4,
       'e-bokh': 5,
       'e-storm': 6,
-      'p-camel': 24,
+      'p-camel': 12,
     });
   });
 });
@@ -710,7 +729,7 @@ describe('abilities', () => {
 });
 
 describe('the caravan’s camel', () => {
-  it('acts last in the starting order, at slot 24, despite its speed', () => {
+  it('acts last in the starting order, at slot 12, despite its speed', () => {
     for (let seed = 0; seed < 10; seed++) {
       const s = createFight(seed);
       const camel = unit(s, 'p-camel');
@@ -776,7 +795,7 @@ describe('the caravan’s camel', () => {
     expect(advanceToDecision(s)!.id).toBe('p-bokh');
     expect(camel.hex).toEqual(road[0]);
     expect(camel.slot).toBe(90 + actionCost(camel));
-    expect(actionCost(camel)).toBe(24);
+    expect(actionCost(camel)).toBe(12);
     expect(s.phase).toBe('fight');
   });
 
@@ -792,7 +811,7 @@ describe('the caravan’s camel', () => {
     expect(camel.hex).not.toEqual(road[0]);
     expect(hexDistance(camel.hex!, at(2, 4))).toBe(1);
     expect(camel.skipped).toBeUndefined();
-    expect(camel.slot).toBe(114);
+    expect(camel.slot).toBe(102);
 
     const held = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     const pinned = unit(held, 'p-camel');
@@ -806,9 +825,9 @@ describe('the caravan’s camel', () => {
     for (const u of held.units) if (u !== pinned && u.alive) u.slot = 500 + u.partyIndex;
     advanceToDecision(held);
     expect(pinned.hex).toEqual(at(2, 4));
-    // Waiting, its card still goes its action cost on each turn: 114, 138,
-    // … 522.
-    expect(pinned.slot).toBe(522);
+    // Waiting, its card still goes its action cost on each turn: 102, 114,
+    // … 510.
+    expect(pinned.slot).toBe(510);
 
     // In the corner, its three neighbours taken: nowhere to go.
     const boxed = setup({
@@ -876,7 +895,7 @@ describe('previews, the AI and the run', () => {
     expect(JSON.stringify(s)).toBe(before);
   });
 
-  it('a move places the card as any turn does, with matching previews and yielding', () => {
+  it('a move places the card as any turn does, with matching previews, taking a slower card’s slot', () => {
     expect(RULES.movementCap).toBe(3);
     for (const length of [1, 2, 3]) {
       const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(7, 0)});
@@ -887,10 +906,16 @@ describe('previews, the AI and the run', () => {
       };
       const aim = s.currentSlot + RULES.actionBase - RULES.speedSlots * actor.speed;
       unit(s, 'e-bokh').slot = aim;
-      expect(previewTurn(s, actor.id, input)).toMatchObject({aimSlot: aim, slot: aim + 1});
+      // The Outrider (3) is faster than Bökh (2): it takes the slot, and the preview says Bökh moves on.
+      expect(previewTurn(s, actor.id, input)).toMatchObject({
+        aimSlot: aim,
+        slot: aim,
+        bumped: {'e-bokh': aim + 1},
+      });
       s.events = [];
       applyTurn(s, actor, input);
-      expect(actor.slot).toBe(aim + 1);
+      expect(actor.slot).toBe(aim);
+      expect(unit(s, 'e-bokh').slot).toBe(aim + 1);
       expect(s.events.some((e) => e.kind === 'action')).toBe(false);
       expect(s.events.filter((e) => e.kind === 'step')).toHaveLength(length);
     }

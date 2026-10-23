@@ -417,8 +417,7 @@ export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
       {def.kind && (
         <>
           {abilityIcon(def)}
-          <b>{def.name}</b> · {KIND_NAME[def.kind]} ·{' '}
-          <Term id="power">Damage {unit.power}</Term>
+          <b>{def.name}</b> · {KIND_NAME[def.kind]} · <Term id="power">Damage {unit.power}</Term>
         </>
       )}
       {!def.kind && <b>{def.name}</b>}

@@ -67,9 +67,9 @@ puts it on another space.
 
 | Keyword | Rule |
 |---|---|
-| **Delay N** | Moves the unit's card N slots later on the track. A taken slot makes it yield to the next free one, cascading (3.3). Within the delay limit (3.6). |
-| **Haste N** | Moves the unit's card N slots earlier, never earlier than the next slot. A taken slot makes it yield to the next free one after it (3.3). Within a haste limit, like the delay limit (value TBD). |
-| **Inevitable** | The unit's card can't be Delayed or Hastened, by allies or enemies. It still yields when placed after its own turn (3.3). |
+| **Delay N** | Moves the unit's card N slots later on the track. A taken slot is resolved by speed, cascading (3.3). Within the delay limit (3.6). |
+| **Haste N** | Moves the unit's card N slots earlier, never earlier than the next slot. A taken slot is resolved by speed (3.3). Within a haste limit, like the delay limit (value TBD). |
+| **Inevitable** | The unit's card can't be Delayed or Hastened, by allies or enemies. It still collides as usual when placed after its own turn (3.3). |
 
 **Why limits:** without one, repeated Delays could keep a unit from ever
 acting (a lockout loop in PvP), and Hastening an ally right after its turn

@@ -433,9 +433,10 @@ export class TacticsBoardSystem extends BaseSystem {
     drawTrack(
       ctx,
       fight,
-      trackCards(fight, scene.previewSlot ?? null),
+      trackCards(fight, scene.previewSlot ?? null, scene.previewBumps),
       scene.previewSlot ?? null,
       scene.aimSlot ?? null,
+      scene.previewBumps ?? {},
       this.advance,
       this.slides,
       {

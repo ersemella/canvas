@@ -62,7 +62,7 @@ export class TacticsInputSystem extends BaseSystem {
       return;
     }
     const map = mapOf(fight);
-    const cards = trackCards(fight, this.scene!.previewSlot ?? null);
+    const cards = trackCards(fight, this.scene!.previewSlot ?? null, this.scene!.previewBumps);
     const p = mouseService.position;
 
     const hover: TacticsHoverPayload = this.mouseOver

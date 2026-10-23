@@ -24,9 +24,9 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 > ruins to the **only exit, the bottom-right corner**, going around units
 > in its way; it waits only when Immobilized, Stunned or boxed in.
 >
-> **On the track (owner, 2026-10-23):** it starts **last, at slot 24**,
+> **On the track (owner, 2026-10-23):** it starts **last, at slot 12**,
 > and its card goes its action cost on after each of its turns, like any
-> unit's: 24 − 4 × speed, and its speed is 0, so always 24, whether it stepped or waited
+> unit's: 12 − 2 × speed, and its speed is 0, so always 12, whether it stepped or waited
 > ([timeline.md](timeline.md), 3.2 and 3.4).
 > Its stats follow the 2026-10-23 scale: defence 9, so health 20
 > (placeholder for "very high"; ten bow hits).
@@ -47,10 +47,10 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   540), so the enemy has to commit several turns to it, not one burst.
 - **It acts last in the starting order, despite its speed** (owner,
   2026-10-23; it acted first, at slot 0, from 2026-10-21): its card starts
-  at slot 24, after every other card's starting slot (3.4).
-- Its card goes 24 slots a turn (speed 0, owner, 2026-10-23: 3.2). Its road
+  at slot 12, after every other card's starting slot (3.4).
+- Its card goes 12 slots a turn (speed 0, owner, 2026-10-23: 3.2). Its road
   from the top-left corner to the exit is about 12 steps, so a fight
-  lasts at most about 290 slots unless the enemy holds it back.
+  lasts at most about 150 slots unless the enemy holds it back.
 - **It isn't a hero:** it doesn't take one of the party's four places
   (10.1), and has no gear, upgrades or ultimate. *(Proposed.)*
 - *(Proposed:* it starts in the player's starting column, in the middle
@@ -118,7 +118,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 - **Rules:** the camel is a unit of the player's side (`camel` in
   `HEROES`, `src/rules/config.ts`; health 1,500, speed 10, defence 40 and
   a move of 1 hex costing 100 until 2026-10-23; now defence 9, health 20,
-  power 0, speed 0, its card going 24 slots a turn (3.2); only Hold among
+  power 0, speed 0, its card going 12 slots a turn (3.2); only Hold among
   abilities). It
   starts at column 0 of row 4 (0-based), the middle of the player's
   column; the heroes are scattered over the rest. The exits are

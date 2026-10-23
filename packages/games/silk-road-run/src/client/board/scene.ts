@@ -35,6 +35,8 @@ export interface BoardScene {
   previewSlot?: number | null;
   /** The slot the planned turn aims at (3.2); when it's taken, the card yields on to `previewSlot`. */
   aimSlot?: number | null;
+  /** Cards the planned turn's landing moves on, by unit id (`TurnPreview.bumped`). */
+  previewBumps?: Record<string, number>;
   /**
    * The arrow over the unit you're controlling (on unless false). Phones
    * leave it off: there it reads as "tap here", and the action bar shows the

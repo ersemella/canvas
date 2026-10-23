@@ -30,6 +30,8 @@ export interface TurnPreview {
    * it's taken, the card lands further on, at `slot`.
    */
   aimSlot: number | null;
+  /** Other cards the acting card's landing moves on (3.3: a faster card takes a slower one's slot), by unit id. */
+  bumped: Record<string, number>;
 }
 
 function statusWords(before: Unit, after: Unit): string[] {
@@ -53,7 +55,18 @@ export function previewTurn(
     changes: diff(state, after),
     slot: unit.slot,
     aimSlot: unit.alive ? aimSlot(after, unit) : null,
+    bumped: bumpedCards(state, after, unitId),
   };
+}
+
+function bumpedCards(before: FightState, after: FightState, actor: string): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const a of after.units) {
+    const b = before.units.find((u) => u.id === a.id)!;
+    if (a.id !== actor && a.alive && b.alive && a.slot !== b.slot && a.slot !== null)
+      out[a.id] = a.slot;
+  }
+  return out;
 }
 
 export function diff(before: FightState, after: FightState): UnitChange[] {

@@ -58,6 +58,7 @@ export function buildScene(input: SceneInput): BoardScene {
     preview: [],
     previewSlot: preview?.slot ?? null,
     aimSlot: preview?.aimSlot ?? null,
+    previewBumps: preview?.bumped ?? {},
   };
   if (!fight) return out;
   if (!acting) return out;

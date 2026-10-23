@@ -58,10 +58,15 @@ export interface TrackSlots {
 /** A deck card is this many strips wide: nearly square, for the portrait that fills it. */
 const DECK_CARD_STRIPS = 2.2;
 
-function trackEntries(fight: FightState, previewSlot: number | null) {
+/** Slots the planned turn moves other cards to, by unit id (3.3). */
+export type TrackBumps = Record<string, number>;
+
+function trackEntries(fight: FightState, previewSlot: number | null, bumps: TrackBumps = {}) {
+  const shown = (u: {id: string; slot: number | null}) =>
+    previewSlot !== null ? (bumps[u.id] ?? u.slot!) : u.slot!;
   const entries = fight.units
     .filter((u) => u.alive && u.slot !== null)
-    .map((u) => ({unitId: u.id, slot: u.slot!, ghost: false}));
+    .map((u) => ({unitId: u.id, slot: shown(u), ghost: false}));
   if (fight.awaiting && previewSlot !== null)
     entries.push({unitId: fight.awaiting, slot: previewSlot, ghost: true});
   return entries.sort((a, b) => a.slot - b.slot || Number(a.ghost) - Number(b.ghost));
@@ -76,9 +81,10 @@ function trackEntries(fight: FightState, previewSlot: number | null) {
 export function trackSlots(
   fight: FightState,
   previewSlot: number | null,
-  start = fight.currentSlot
+  start = fight.currentSlot,
+  bumps: TrackBumps = {}
 ): TrackSlots {
-  const entries = trackEntries(fight, previewSlot);
+  const entries = trackEntries(fight, previewSlot, bumps);
   const last = entries.length > 0 ? entries[entries.length - 1]!.slot : start;
   const count = Math.max(MIN_SLOT_CELLS, last - start + 1);
   const x0 = TRACK_AREA.x + 6;
@@ -98,9 +104,13 @@ export function trackSlots(
  * Each unit's card on the track, in slot order, with the previewed landing
  * card if any; its rectangle is the strip of it that shows, for taps.
  */
-export function trackCards(fight: FightState, previewSlot: number | null): TrackCard[] {
-  const {start, x0, w, cardW, y, h} = trackSlots(fight, previewSlot);
-  return trackEntries(fight, previewSlot).map((e) => ({
+export function trackCards(
+  fight: FightState,
+  previewSlot: number | null,
+  bumps: TrackBumps = {}
+): TrackCard[] {
+  const {start, x0, w, cardW, y, h} = trackSlots(fight, previewSlot, fight.currentSlot, bumps);
+  return trackEntries(fight, previewSlot, bumps).map((e) => ({
     ...e,
     x: x0 + (e.slot - start) * w + cardW - w,
     y,
