@@ -29,16 +29,27 @@ deepening. It remains deterministic: no randomness or clock-based cutoff.
   (`advanceToDecision`), never an assumed alternation; Temee's walk and
   skipped turns happen in between as on the live track. A test pins this
   down (two wolves due back to back finish the last hero).
-- **Temee is the enemy's quarry (2026-10-23).** An enemy unit closes in on
-  Temee while it lives, not on the nearest hero (`quarryGap`, used by both
-  the screening score and the per-action progress term), and Temee's
-  health counts 2 a point (`AI.camelHealthWeight`, was 1): at least what
-  any other unit's point is worth with its kill value spread over its
-  health, so only a finishing blow outranks a hit on Temee; its death is
-  the enemy's victory. Over 700 AI-vs-AI fights (stage shapes in turn),
-  Temee's share of the enemy's damage rose from 25% to 36% and its deaths
-  from 18 to 27, but the enemy's wins fell from 15% to 9%: chasing Temee
-  past the party costs it more units (party wipes 87 to 36).
+- **Temee is the enemy's quarry (2026-10-23).** Temee's health counts 2 a
+  point (`AI.camelHealthWeight`, was 1): at least what any other unit's
+  point is worth with its kill value spread over its health, so only a
+  finishing blow outranks a hit on Temee; its death is the enemy's
+  victory. An enemy unit with no hero within a walk and a hit (its move cap
+  plus one) closes in on Temee rather than the nearest hero (`huntsTemee`
+  and `quarryGap`, used by both the screening score and the per-action
+  progress term). Whether it hunts is decided where its turn starts, so a
+  move that brings a hero into reach isn't scored as a leap of progress.
+  Over 2,100 AI-vs-AI fights (stage shapes in turn, seeds 9000 on):
+
+  | Enemy rule | Enemy wins | Temee killed | Temee's share of enemy damage |
+  |---|---:|---:|---:|
+  | Nearest unit, weight 1 (before) | 16.0% | 111 | 26.5% |
+  | Nearest unit, weight 2 | 13.8% | 95 | 29.3% |
+  | Always Temee, weight 2 | 9.7% | 90 | 36.5% |
+  | **Temee once no hero is in reach, weight 2 (built)** | **13.9%** | **104** | **30.1%** |
+
+  Always hunting Temee had the enemy cut down walking past the party.
+  The party here is the AI too, guarding Temee harder at weight 2, which
+  accounts for most of the drop from 16%.
 - Alpha-beta avoids expanding branches that cannot improve the result.
   Successor timelines and subsequent reply sets are generated only when
   visited. A small candidate pool is still simulated up front at each

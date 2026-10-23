@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {hexDistance} from '@canvas/engine/server';
+import {hexDistance, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {chooseAiTurn, evaluatePosition, requestChooser, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
@@ -172,16 +172,30 @@ describe('the search timeline', () => {
     expect(detail.value).toBeGreaterThanOrEqual(AI.victory);
   });
 
-  it('closes in on Temee, its quarry, rather than the nearest hero', () => {
-    const s = setup({'e-wolf': hex(5, 0), 'p-bokh': hex(7, 0), 'p-camel': hex(0, 0)}, ['wolf']);
-    const me = unit(s, 'e-wolf');
-    me.slot = 0;
-    unit(s, 'p-bokh').slot = 1;
-    unit(s, 'p-camel').slot = 2;
-    s.awaiting = me.id;
-    const input = chooseAiTurn(s, me);
-    const end = input.move!.at(-1)!;
-    expect(hexDistance(end, hex(0, 0))).toBeLessThan(5);
+  it('closes in on Temee once no hero is within a walk and a hit', () => {
+    const wolf = hex(6, 0);
+    const temee = hex(0, 0);
+    const cases = SALT_FLATS.hexes.filter((h) => !SALT_FLATS.tiles[hexKey(h)]);
+    // Nearer than Temee either way: in reach (a move of 3 and a bite), or not.
+    const near = cases.find((h) => hexDistance(h, wolf) === 2 && hexDistance(h, temee) > 6)!;
+    const far = cases.find((h) => hexDistance(h, wolf) === 5 && hexDistance(h, temee) > 6)!;
+    const closesOn = (hero: Hex) => {
+      const s = setup({'e-wolf': wolf, 'p-bokh': hero, 'p-camel': temee}, ['wolf']);
+      const me = unit(s, 'e-wolf');
+      me.slot = 0;
+      unit(s, 'p-bokh').slot = 1;
+      unit(s, 'p-camel').slot = 2;
+      s.awaiting = me.id;
+      const end = chooseAiTurn(s, me).move?.at(-1) ?? wolf;
+      return hexDistance(end, temee) < 6
+        ? 'temee'
+        : hexDistance(end, hero) < hexDistance(wolf, hero)
+          ? 'hero'
+          : 'neither';
+    };
+    expect(closesOn(far)).toBe('temee');
+    // In reach, the hero is the one to fight (here the wolf waits for it).
+    expect(closesOn(near)).not.toBe('temee');
   });
 
   it('lifts its own hail before stopping for an AI decision, only once', () => {

@@ -168,8 +168,8 @@ export const AI = {
   friendlyDamageFactor: 1.5,
   /**
    * Minus this per space between the unit and what it closes in on after
-   * its turn (for the enemy, Temee while it lives; otherwise the nearest
-   * enemy), so an AI with nothing in reach closes in instead of holding
+   * its turn (for the enemy, Temee once no hero is in its reach; otherwise
+   * the nearest enemy), so an AI with nothing in reach closes in instead of holding
    * forever; small next to any hit.
    */
   perHexFromEnemy: 0.2,
