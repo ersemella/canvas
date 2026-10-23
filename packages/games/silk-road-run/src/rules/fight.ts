@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals} from '@canvas/engine/server';
-import {CAMEL, HEROES, PARTY, healthOf} from './config';
+import {ABILITY, CAMEL, HEROES, PARTY, healthOf} from './config';
 import {invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
@@ -22,7 +22,7 @@ import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
 import {aimSlot, nextCard, placeCard, placeStartingCards, shuffled} from './track';
-import type {FightState, HeroId, Side, TurnInput, Unit} from './types';
+import type {AbilityId, FightState, HeroId, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
 export class RuleError extends Error {}
@@ -279,7 +279,12 @@ export function applyTurn(
   }
   state.awaiting = null;
   checkEnd(state);
-  if (unit.alive) placeCard(state, unit, aimSlot(state, unit));
+  if (unit.alive) placeCard(state, unit, aimSlot(state, unit) + chargeOf(def.id));
+}
+
+/** Slots a delayed volley's charge adds to its user's card (`ABILITY.volley.charge`). */
+export function chargeOf(ability: AbilityId): number {
+  return ability === 'volley' && ABILITY.volley.delayed ? ABILITY.volley.charge : 0;
 }
 
 /** A deep copy for previews and the AI; drops the log unless asked, and the events always. */

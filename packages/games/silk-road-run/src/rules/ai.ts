@@ -18,7 +18,8 @@ import {abilitiesOf, unusableReason} from './abilities';
 import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
-import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
+import {RuleError, advanceToDecision, applyTurn, chargeOf, cloneFight, mapOf} from './fight';
+import {actionCost as cardCost} from './track';
 import {camelOf} from './resolve';
 import {MAPS} from './map';
 import type {FightState, Side, TurnInput, Unit} from './types';
@@ -150,6 +151,11 @@ export function scoreOutcome(
   return score;
 }
 
+/** What a turn's charge costs its user: the share of a turn it waits, in damage. */
+function chargeCost(actor: Unit, input: TurnInput): number {
+  return (chargeOf(input.action.ability) / cardCost(actor)) * turnValue(actor);
+}
+
 /**
  * Every option for `unit` this turn, scored, up to `limit` simulations:
  * its abilities where it stands, then its moves, nearest first. A ground
@@ -196,7 +202,11 @@ export function scoreOptions(
     if (budget) budget.left--;
     const after = simulate(state, unit.id, input, true);
     if (!after) continue;
-    out.push({input, score: scoreOutcome(state, after, unit, threats), after});
+    out.push({
+      input,
+      score: scoreOutcome(state, after, unit, threats) - chargeCost(unit, input),
+      after,
+    });
   }
   return out;
 }
@@ -415,16 +425,16 @@ export function requestChooser(budget: SearchBudget): (state: FightState, unit: 
 }
 
 /**
- * Reward progress toward combat, as a cost (negative for progress). It
- * belongs to the acting team: subtracting both teams' absolute distances in
- * a static evaluation would cancel out in a duel and make Holding
- * preferable.
+ * Reward progress toward combat, as a cost (negative for progress), plus
+ * the turn's charge (`chargeCost`). Progress belongs to the acting team:
+ * subtracting both teams' absolute distances in a static evaluation would
+ * cancel out in a duel and make Holding preferable.
  */
 function actionCost(before: FightState, unit: Unit, option: ScoredOption): number {
   const hunting = huntsTemee(before, before.units.find((u) => u.id === unit.id)!);
   const gap = (state: FightState) =>
     quarryGap(state, state.units.find((u) => u.id === unit.id)!, hunting);
-  return -(gap(before) - gap(option.after)) * AI.perHexFromEnemy;
+  return -(gap(before) - gap(option.after)) * AI.perHexFromEnemy + chargeCost(unit, option.input);
 }
 
 /**

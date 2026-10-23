@@ -150,6 +150,12 @@ export const ABILITY = {
      * then, so the target can step out.
      */
     delayed: false as boolean,
+    /**
+     * With `delayed`: slots the Outrider's card goes on after a volley on
+     * top of its action cost, so the arrows land (at its next turn) later
+     * and it waits for them.
+     */
+    charge: 0 as number,
   },
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes

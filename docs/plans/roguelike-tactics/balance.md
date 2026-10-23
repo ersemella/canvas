@@ -1077,6 +1077,46 @@ Unfinished 0–1%.
   a player who reliably steps out would weaken it further. Delayed at
   range 2 is the next to try.
 
+#### Volley charged, at range 3 (2026-10-23)
+
+Owner's follow-up: the delay above costs the Outrider nothing, its arrows
+landing at the start of a turn it takes anyway. Made a charge: after a
+delayed volley the Outrider's card goes `ABILITY.volley.charge` more slots
+on than its action cost (6), and the arrows land at the start of that later
+turn, so the target has 6 + charge slots to step out. The AI prices a
+charge at its share of a turn (charge ÷ action cost × the Outrider's hit).
+`experiments/volley-charge.mjs`, 400 fights each, seeds from 1000:
+
+| | Adopted | Delayed, no charge | Charge 2 | Charge 4 | Charge 6 |
+|---|---:|---:|---:|---:|---:|
+| Side without Volley wins | 23.5% | 26.2% | 49.5% | 50.5% | 51% |
+| Side without the Bow wins | 38.3% | 34.8% | 21.5% | 18.5% | 15.5% |
+| Side without Hail / Grapple wins | 18.8 / 16.8% | 17.8 / 20.8% | 13.5 / 10.8% | 16 / 11% | 19 / 8.8% |
+| The Outrider's turns on Volley | 17% | 44% | 17% | 12% | 6% |
+| Volleys cast / hitting a unit, per fight | 2.7 / 2.7 | 8.6 / 5.3 | 2.5 / 1.9 | 1.7 / 1.4 | 0.9 / 0.6 |
+| Temee killed (of 400) | 54 | 34 | 36 | 46 | 46 |
+| Player wins vs Outrider + 2 wolves | 92.8% | 99.5% | 98.3% | 97.3% | 94.8% |
+| vs Bökh + Outrider + wolf | 72.7% | 84.7% | 81.8% | 81.8% | 73.5% |
+| vs Outrider + Storm + wolf | 87.8% | 97.5% | 95% | 92.3% | 87.3% |
+| vs Outrider + Outrider + wolf | 42.5% | 81.5% | 79% | 74% | 64.8% |
+| vs all three | 61.3% | 67.8% | 60.8% | 61% | 57.8% |
+
+No fight unfinished (0–0.3%).
+
+- **Any charge makes Volley worth nothing** (49.5–51%). It is a
+  breakpoint (principle 7): from charge 2 the window is 8 slots, the action
+  cost of every speed-2 unit, so every hero and wolf gets a turn to step
+  out before the arrows land. What Volley still hits is a unit that can't
+  walk (Immobilized, Stunned) or that stays; it lands about 75% of the
+  time but is cast rarely.
+- The Bow becomes the Outrider's attack again (side without it 15.5–21.5%,
+  core worth), and Grapple and Hail matter more.
+- The stages: two enemy Outriders stay easier than with the adopted
+  Volley (65–79% against 42.5%), the hardest stage-2 enemy at charge 6;
+  the last stage is as before.
+- A charge of 1 (a window of 7, under a speed-2 unit's turn) is the one
+  value left between paying too much and nothing.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
