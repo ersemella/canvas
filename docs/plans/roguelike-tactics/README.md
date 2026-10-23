@@ -41,8 +41,9 @@ the kits.**
   one space within 3 until the Storm Caller's next turn, Immobilizing
   whoever is in it or enters it; Grapple (melee; reach 2, stepping in, until
   the owner's call of 2026-10-23), Stunning
-  its target until the Champion takes damage, is Stunned or is no longer
-  next to it; Throw, Moving the grappled unit to a space next to the
+  its target until the Champion takes damage, is Stunned or ends a turn
+  no longer next to it, 1 more damage at each of the Champion's turns
+  meanwhile, never on the unit it already grapples; Throw, Moving the grappled unit to a space next to the
   Champion, so the grapple holds.
 - **Deleted with their code:** the Modao Vanguard's kit, ultimates and
   charged abilities, Leap, Sunlight, Shove, quicksand and the sandstorm,

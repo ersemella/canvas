@@ -133,6 +133,11 @@ export const ABILITY = {
    * until it disappears.
    */
   hail: {range: 3},
+  /**
+   * Each of the Champion's turns that a grapple lasts, its target takes
+   * this (owner, 2026-10-23), on top of the grapple's first hit.
+   */
+  grapple: {squeeze: 1},
 } as const;
 
 /** Enemy AI scoring (brief section 6), on the 2026-10-23 health scale (a hit is 1 or 2). */

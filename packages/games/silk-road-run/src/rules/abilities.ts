@@ -160,7 +160,7 @@ const hail: AbilityDef = {
 // ─── Bökh Champion ───────────────────────────────────────────────────────────
 
 /** Whether `user` is grappling `u`. */
-function grappling(user: Unit, u: Unit): boolean {
+export function grappling(user: Unit, u: Unit): boolean {
   return u.statuses.some((s) => s.grapple?.champion === user.id && s.grapple.target === u.id);
 }
 
@@ -199,19 +199,20 @@ const grapple: AbilityDef = {
   name: 'Grapple',
   kind: 'attack',
   summary: (user) =>
-    `Melee: it takes ${damageText(user)} and is Stunned until you take damage, are Stunned or are no longer next to it. One at a time.`,
+    `Melee: it takes ${damageText(user)} and is Stunned until you take damage, are Stunned or end a turn no longer next to it, taking ${ABILITY.grapple.squeeze} more at each of your turns meanwhile. One at a time.`,
   targetsUnit: true,
-  // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before).
-  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before),
+  // and not the unit it already grapples.
+  targets: (state, _map, user, from) =>
+    adjacentUnits(state, from, (u) => u !== user && !grappling(user, u)),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} grapples ${unitName(u)}.`);
     hit(ctx, user, u, 'The grapple');
     if (!u.alive) return;
     // One target at a time: an earlier grapple lets go.
-    endGrapples(ctx, (g) => g.champion === user.id && g.target !== u.id);
-    if (!grappling(user, u))
-      stun(ctx, u, {kind: 'stunned', grapple: {champion: user.id, target: u.id}});
+    endGrapples(ctx, (g) => g.champion === user.id);
+    stun(ctx, u, {kind: 'stunned', grapple: {champion: user.id, target: u.id}});
   },
 };
 

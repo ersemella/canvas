@@ -24,6 +24,7 @@ import {HIGHLIGHT, HOVER, drawLanes, drawPath, drawRangeOutline} from './board/o
 import {
   MARK,
   drawDamage,
+  drawGrappleChains,
   drawHealthBar,
   drawRug,
   drawStatusMark,
@@ -368,6 +369,9 @@ export class TacticsBoardSystem extends BaseSystem {
         drawDamage(ctx, at.x, at.y - 22, p.hpBefore - p.hpAfter, p.killed);
       }
     }
+
+    // Not on a party walking out, off their hexes.
+    drawGrappleChains(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));
 
     if (scene.range) drawRangeOutline(ctx, scene.range);
     if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);

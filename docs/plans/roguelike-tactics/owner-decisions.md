@@ -93,6 +93,12 @@ picked the reading below. Confirm or change each:
   questions 54 and 56).
 - **Grapple is melee** (owner, 2026-10-23; it reached 2 spaces,
   stepping in next to the target first).
+- **Grapple squeezes, and the Champion may walk while grappling**
+  (owner, 2026-10-23): at the start of each of the Champion's turns
+  while the grapple lasts, its target takes 1; a walk ends the grapple
+  only if it ends away from the target, not partway;
+  Grapple isn't offered on the unit already grappled; the board shows a
+  chain between the two while the grapple lasts.
 - **Throw Moves the target to a free space next to the Champion**, and
   the grapple holds (owner, 2026-10-23; the builder's first reading was a
   space next to the target, which could end the grapple); the damage

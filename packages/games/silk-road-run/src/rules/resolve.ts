@@ -4,7 +4,7 @@
  */
 import {hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {CAMEL, HEROES} from './config';
+import {ABILITY, CAMEL, HEROES} from './config';
 import {addStatus, hailOn} from './board';
 import {MAPS} from './map';
 import type {MapData} from './map';
@@ -168,8 +168,30 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 }
 
 /**
+ * At the start of a Champion's turn, each unit it still grapples takes
+ * `ABILITY.grapple.squeeze` (owner, 2026-10-23).
+ */
+export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
+  for (const u of ctx.state.units) {
+    if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
+    const amount = ABILITY.grapple.squeeze;
+    applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`);
+  }
+}
+
+/**
+ * Ends the grapples `unit` holds or is held by whose two are no longer
+ * next to each other.
+ */
+export function endGrapplesApart(ctx: Ctx, unit: Unit): void {
+  endGrapples(ctx, (g) => (g.champion === unit.id || g.target === unit.id) && apart(ctx.state, g));
+}
+
+/**
  * A grapple lasts while the two stay next to each other (owner,
- * 2026-10-22): moving either away, by walking or being moved, ends it.
+ * 2026-10-22): being moved away ends it, and so does a walk that ends
+ * away; the Champion may walk while it grapples, round its target
+ * (owner, 2026-10-23).
  */
 function apart(state: FightState, g: Grapple): boolean {
   const a = state.units.find((u) => u.id === g.champion)?.hex;
@@ -181,13 +203,20 @@ function apart(state: FightState, g: Grapple): boolean {
 
 /**
  * Moves a unit onto a space: by walking, or moved there by another unit
- * (`how`, for the page's playback). Grapples it leaves the reach of end;
- * hail there holds it.
+ * (`how`, for the page's playback). Grapples it leaves the reach of end,
+ * unless it's a step partway along a walk (`midWalk`), which checks them
+ * where it ends (`endGrapplesApart`); hail there holds it.
  */
-export function enterHex(ctx: Ctx, unit: Unit, h: Hex, how: Motion = 'walk'): void {
+export function enterHex(
+  ctx: Ctx,
+  unit: Unit,
+  h: Hex,
+  how: Motion = 'walk',
+  midWalk = false
+): void {
   const from = unit.hex;
   unit.hex = h;
   if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
-  endGrapples(ctx, (g) => (g.champion === unit.id || g.target === unit.id) && apart(ctx.state, g));
+  if (!midWalk) endGrapplesApart(ctx, unit);
   hailHolds(ctx, unit);
 }

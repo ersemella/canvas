@@ -11,6 +11,7 @@ import type {Hex} from '@canvas/engine/server';
 import {AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
 import {
   canMove,
+  invalidPath,
   lineOfFire,
   movementCap,
   reachableHexes,
@@ -560,6 +561,54 @@ describe('abilities', () => {
     )!;
     applyTurn(s, b, {move: away.path, action: {ability: 'hold'}});
     expect(target.statuses).toEqual([]);
+  });
+
+  it('Grapple isn’t offered on the unit the Champion already grapples', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
+    const b = unit(s, 'p-bokh');
+    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    expect(tryTurn(s, 'p-bokh', {action: {ability: 'grapple', target: {hex: at(2, 1)}}})).toThrow(
+      RuleError
+    );
+  });
+
+  it('Grapple holds while the Champion walks, if the walk ends next to its target', () => {
+    const s = setup({'p-bokh': at(3, 3), 'e-storm': at(4, 3), 'e-mangudai': at(8, 6)});
+    const b = unit(s, 'p-bokh');
+    const target = unit(s, 'e-storm');
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
+    // A step out of reach and back in, to another space beside the target.
+    const start = b.hex!;
+    const path = hexNeighbors(start)
+      .filter((out) => hexDistance(out, target.hex!) === 2)
+      .flatMap((out) =>
+        hexNeighbors(out)
+          .filter((h) => hexDistance(h, target.hex!) === 1 && hexDistance(h, start) === 1)
+          .map((back) => [out, back])
+      )
+      .find((p) => invalidPath(s, mapOf(s), b, p) === null)!;
+    expect(path).toBeDefined();
+    const back = path[1]!;
+    applyTurn(s, b, {move: path, action: {ability: 'hold'}});
+    expect(b.hex).toEqual(back);
+    expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
+  });
+
+  it('Grapple: each of the Champion’s turns while it lasts, its target takes 1', () => {
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(8, 6)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const b = unit(s, 'p-bokh');
+    const target = unit(s, 'e-storm');
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
+    const hp = target.hp;
+    b.slot = 1;
+    s.events = [];
+    expect(advanceToDecision(s)!.id).toBe('p-bokh');
+    expect(target.hp).toBe(hp - 1);
+    expect(s.events.some((e) => e.kind === 'damage' && e.unitId === 'e-storm')).toBe(true);
+    expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
   it('Grapple ends when the Champion takes damage, or is Stunned', () => {

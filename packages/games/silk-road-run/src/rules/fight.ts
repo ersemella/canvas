@@ -1,6 +1,6 @@
 /**
  * The fight's flow: creating it, the track advancing card by
- * card, start-of-turn effects (hail lifting, Stunned turns skipped) and applying
+ * card, start-of-turn effects (hail lifting, grapples squeezing, Stunned turns skipped) and applying
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals} from '@canvas/engine/server';
@@ -8,7 +8,7 @@ import {CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
 import {invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
-import {checkEnd, clearHail, enterHex, log, record, unitName} from './resolve';
+import {checkEnd, clearHail, enterHex, log, record, squeezeGrapples, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
@@ -170,6 +170,9 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     record(state, {kind: 'turn', unitId: unit.id});
     // Its hail lasts until its next turn: this one (owner, 2026-10-23).
     clearHail(state, unit);
+    squeezeGrapples(ctx, unit);
+    // The squeeze can end the fight.
+    if (state.phase !== 'fight') return;
     // The camel isn't a decision: it walks its road.
     if (HEROES[unit.hero].walksRoad) {
       walkRoad(ctx, unit);
@@ -247,7 +250,8 @@ export function applyTurn(
   if (path.length > 0) {
     const bad = invalidPath(state, map, unit, path);
     if (bad) throw new RuleError(bad);
-    for (const h of path) enterHex(ctx, unit, h);
+    // A grapple ends only if the walk ends apart (owner, 2026-10-23).
+    path.forEach((h, i) => enterHex(ctx, unit, h, 'walk', i < path.length - 1));
     log(ctx, `${unitName(unit)} moves.`);
   } else {
     const target = input.action.target ?? {};
