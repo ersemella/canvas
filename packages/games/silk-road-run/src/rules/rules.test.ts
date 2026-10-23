@@ -144,7 +144,7 @@ describe('the track', () => {
     expect(bokh.hp).toBe(bokh.maxHp - m.power);
   });
 
-  it('places a card 12 − 2 × speed slots on, whatever the turn did (3.2)', () => {
+  it('places a card 60 ÷ (speed + 5) slots on, rounded, whatever the turn did (3.2)', () => {
     const s = setup({
       'p-camel': at(0, 0),
       'p-mangudai': at(1, 3),
@@ -155,11 +155,11 @@ describe('the track', () => {
     const m = unit(s, 'p-mangudai');
     const b = unit(s, 'p-bokh');
     s.currentSlot = 25;
-    // Speed 3 costs 6 slots, speed 2 costs 8, wherever Temee's card is.
-    expect(aimSlot(s, m)).toBe(31);
-    expect(aimSlot(s, b)).toBe(33);
+    // Speed 3 costs 8 slots, speed 2 costs 9, wherever Temee's card is.
+    expect(aimSlot(s, m)).toBe(33);
+    expect(aimSlot(s, b)).toBe(34);
     s.currentSlot = 35;
-    expect(aimSlot(s, m)).toBe(41);
+    expect(aimSlot(s, m)).toBe(43);
     // A move and an ability place it alike.
     s.currentSlot = 25;
     m.slot = 25;
@@ -168,8 +168,8 @@ describe('the track', () => {
     applyTurn(moved, unit(moved, m.id), {move: [at(2, 3)], action: {ability: 'hold'}});
     const held = cloneFight(s);
     applyTurn(held, unit(held, m.id), {action: {ability: 'hold'}});
-    expect(unit(moved, m.id).slot).toBe(31);
-    expect(unit(held, m.id).slot).toBe(31);
+    expect(unit(moved, m.id).slot).toBe(33);
+    expect(unit(held, m.id).slot).toBe(33);
   });
 
   it('gives the faster more turns: Outriders before Bökh, Bökh before Temee', () => {
@@ -197,7 +197,7 @@ describe('the track', () => {
     camel.slot = 0;
     unit(s, 'e-bokh').slot = 500;
     advanceToDecision(s);
-    expect(camel.slot).toBe(RULES.actionBase - RULES.speedSlots * HEROES.camel.speed);
+    expect(camel.slot).toBe(RULES.actionBase);
   });
 
   it('yields an equal or slower card to the next free slot, cascading (3.3)', () => {
@@ -1013,7 +1013,7 @@ describe('previews, the AI and the run', () => {
         move: Array.from({length}, (_, i) => at(i + 1, 0)),
         action: {ability: 'hold'},
       };
-      const aim = s.currentSlot + RULES.actionBase - RULES.speedSlots * actor.speed;
+      const aim = s.currentSlot + actionCost(actor);
       unit(s, 'e-bokh').slot = aim;
       // The Outrider (3) is faster than Bökh (2): it takes the slot, and the preview says Bökh moves on.
       expect(previewTurn(s, actor.id, input)).toMatchObject({
@@ -1185,7 +1185,7 @@ describe('previews, the AI and the run', () => {
     const bokh = unit(s, 'p-bokh');
     s.awaiting = bokh.id;
     const input: TurnInput = {action: {ability: 'hold'}};
-    const aim = s.currentSlot + RULES.actionBase - RULES.speedSlots * bokh.speed;
+    const aim = s.currentSlot + actionCost(bokh);
     expect(previewTurn(s, bokh.id, input)).toMatchObject({aimSlot: aim, slot: aim});
     // Cards in the aimed slot and the one after: the card yields past both.
     unit(s, 'e-bokh').slot = aim;

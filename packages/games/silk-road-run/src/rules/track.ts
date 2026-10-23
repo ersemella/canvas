@@ -1,7 +1,8 @@
 /**
  * The track (timeline.md, section 3): numbered slots, one card per slot.
  * After each turn a card goes its unit's action cost on,
- * RULES.actionBase − RULES.speedSlots × speed (owner, 2026-10-23),
+ * RULES.actionBase × RULES.speedPivot ÷ (speed + RULES.speedPivot), rounded
+ * (owner, 2026-10-23),
  * the faster card keeping a slot two cards collide on.
  */
 import {HEROES, RULES} from './config';
@@ -9,7 +10,8 @@ import type {FightState, Unit} from './types';
 
 /** How many slots a unit's card goes on after each of its turns (3.2), at least 1. */
 export function actionCost(unit: Unit): number {
-  return Math.max(1, RULES.actionBase - RULES.speedSlots * unit.speed);
+  const {actionBase, speedPivot} = RULES;
+  return Math.max(1, Math.round((actionBase * speedPivot) / (unit.speed + speedPivot)));
 }
 
 /** Where a turn ending at slot `now` aims `unit`'s card, before yielding (3.2). */

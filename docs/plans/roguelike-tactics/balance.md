@@ -1087,19 +1087,19 @@ turn, so the target has 6 + charge slots to step out. The AI prices a
 charge at its share of a turn (charge ÷ action cost × the Outrider's hit).
 `experiments/volley-charge.mjs`, 400 fights each, seeds from 1000:
 
-| | Adopted | Delayed, no charge | Charge 2 | Charge 4 | Charge 6 |
-|---|---:|---:|---:|---:|---:|
-| Side without Volley wins | 23.5% | 26.2% | 49.5% | 50.5% | 51% |
-| Side without the Bow wins | 38.3% | 34.8% | 21.5% | 18.5% | 15.5% |
-| Side without Hail / Grapple wins | 18.8 / 16.8% | 17.8 / 20.8% | 13.5 / 10.8% | 16 / 11% | 19 / 8.8% |
-| The Outrider's turns on Volley | 17% | 44% | 17% | 12% | 6% |
-| Volleys cast / hitting a unit, per fight | 2.7 / 2.7 | 8.6 / 5.3 | 2.5 / 1.9 | 1.7 / 1.4 | 0.9 / 0.6 |
-| Temee killed (of 400) | 54 | 34 | 36 | 46 | 46 |
-| Player wins vs Outrider + 2 wolves | 92.8% | 99.5% | 98.3% | 97.3% | 94.8% |
-| vs Bökh + Outrider + wolf | 72.7% | 84.7% | 81.8% | 81.8% | 73.5% |
-| vs Outrider + Storm + wolf | 87.8% | 97.5% | 95% | 92.3% | 87.3% |
-| vs Outrider + Outrider + wolf | 42.5% | 81.5% | 79% | 74% | 64.8% |
-| vs all three | 61.3% | 67.8% | 60.8% | 61% | 57.8% |
+| | Adopted | Delayed, no charge | Charge 1 | Charge 2 | Charge 4 | Charge 6 |
+|---|---:|---:|---:|---:|---:|---:|
+| Side without Volley wins | 23.5% | 26.2% | 29.6% | 49.5% | 50.5% | 51% |
+| Side without the Bow wins | 38.3% | 34.8% | 25.5% | 21.5% | 18.5% | 15.5% |
+| Side without Hail / Grapple wins | 18.8 / 16.8% | 17.8 / 20.8% | 17 / 17.5% | 13.5 / 10.8% | 16 / 11% | 19 / 8.8% |
+| The Outrider's turns on Volley | 17% | 44% | 35% | 17% | 12% | 6% |
+| Volleys cast / hitting a unit, per fight | 2.7 / 2.7 | 8.6 / 5.3 | 5.7 / 4.1 | 2.5 / 1.9 | 1.7 / 1.4 | 0.9 / 0.6 |
+| Temee killed (of 400) | 54 | 34 | 14 | 36 | 46 | 46 |
+| Player wins vs Outrider + 2 wolves | 92.8% | 99.5% | 100% | 98.3% | 97.3% | 94.8% |
+| vs Bökh + Outrider + wolf | 72.7% | 84.7% | 89% | 81.8% | 81.8% | 73.5% |
+| vs Outrider + Storm + wolf | 87.8% | 97.5% | 95.7% | 95% | 92.3% | 87.3% |
+| vs Outrider + Outrider + wolf | 42.5% | 81.5% | 85.3% | 79% | 74% | 64.8% |
+| vs all three | 61.3% | 67.8% | 77.8% | 60.8% | 61% | 57.8% |
 
 No fight unfinished (0–0.3%).
 
@@ -1114,8 +1114,14 @@ No fight unfinished (0–0.3%).
 - The stages: two enemy Outriders stay easier than with the adopted
   Volley (65–79% against 42.5%), the hardest stage-2 enemy at charge 6;
   the last stage is as before.
-- A charge of 1 (a window of 7, under a speed-2 unit's turn) is the one
-  value left between paying too much and nothing.
+- **Charge 1 is no middle ground**: a window of 7 still gives a speed-2
+  unit a turn first on most volleys, yet Volley is worth what it was
+  with no charge (29.6% against 26.2%, within the noise) and takes 35% of
+  the Outrider's turns. The step from worth everything to worth nothing
+  is between charges 1 and 2. The stages get easier at charge 1 (all
+  three 77.8%, Temee killed in 14 of 400); why is not yet looked at.
+- No charge tuning gives Volley a second ability's worth (40–48%): with a
+  charge it needs a bigger payoff for a unit that is caught.
 
 ### Sunlight as Enhance (2026-10-23)
 

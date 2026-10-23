@@ -13,11 +13,13 @@ import type {AbilityId, HeroId} from './types';
 export const RULES = {
   /**
    * Action cost (timeline.md, 3.2; owner, 2026-10-23): after each turn, a
-   * unit's card goes `actionBase` − `speedSlots` × speed slots on, Temee's
-   * included, whatever the turn did.
+   * unit's card goes `actionBase` × `speedPivot` ÷ (speed + `speedPivot`)
+   * slots on, rounded, Temee's included, whatever the turn did. Each point
+   * of speed adds 1 ÷ `speedPivot` of Temee's turn rate: speed 10 acts 3×
+   * as often as Temee.
    */
   actionBase: 12,
-  speedSlots: 2,
+  speedPivot: 5,
   /** Temee's starting slot (3.4), after every other unit's starting card. */
   camelStartSlot: 12,
   /** Ordinary walking cap (5.1): 3 since 2026-10-22 (owner). */
