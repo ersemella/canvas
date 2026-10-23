@@ -101,7 +101,7 @@ export type FightEvent =
   | {kind: 'turn'; unitId: string}
   | {kind: 'step'; unitId: string; from: Hex; to: Hex; how: Motion}
   | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex}
-  /** A charged ability landing at its user's turn: a volley's arrows. */
+  /** A charged ability landing as its user's charging card comes back: a volley's arrows. */
   | {kind: 'land'; unitId: string; ability: AbilityId; target: Hex}
   | {kind: 'damage'; unitId: string; amount: number}
   | {kind: 'death'; unitId: string; hex: Hex}
@@ -131,8 +131,8 @@ export interface FightState {
   units: Unit[];
   effects: HailEffect[];
   /**
-   * Volleys in the air: each lands on its space at the start of its
-   * Outrider's next turn.
+   * Volleys in the air: each lands on its space when its Outrider's
+   * charging card comes back.
    */
   volleys?: VolleyInAir[];
   log: LogEntry[];

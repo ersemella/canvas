@@ -106,8 +106,9 @@ export function TurnControls(props: {
       <span className={styles.bigButtonCost}>{props.needsTarget}</span>
     </span>
   );
-  // A charged ability (Volley) puts the next turn off by its charge.
-  const next = (charge = 0) => (props.slotsLater !== null ? `+${props.slotsLater + charge}` : '');
+  // A charged ability (Volley) sends the card its charge on instead, to land.
+  const next = (charge = 0) =>
+    charge > 0 ? `+${charge}` : props.slotsLater !== null ? `+${props.slotsLater}` : '';
   const label = (name: string, icon: React.ReactNode, charge = 0) => (
     <span className={styles.bigButton}>
       <span className={styles.tileName}>
