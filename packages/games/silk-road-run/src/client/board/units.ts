@@ -333,11 +333,16 @@ export const STATUS_MARK: Record<StatusKind, [string, string]> = {
 };
 export const STATUS_KINDS = Object.keys(STATUS_MARK) as StatusKind[];
 
-/** A unit's status markers: I(mmobilized), S(tunned). */
+/** Enhance's marker: not a status kind, a number on the unit (`Unit.enhance`). */
+export const ENHANCE_MARK: [string, string] = ['E', PALETTE.jade];
+
+/** A unit's status markers: I(mmobilized), S(tunned), E(nhanced). */
 export function statusMarks(u: Unit): [string, string][] {
-  return STATUS_KINDS.filter((kind) => u.statuses.some((s) => s.kind === kind)).map(
+  const marks = STATUS_KINDS.filter((kind) => u.statuses.some((s) => s.kind === kind)).map(
     (kind) => STATUS_MARK[kind]
   );
+  if (u.enhance) marks.push(ENHANCE_MARK);
+  return marks;
 }
 
 /** A looked-at unit's status markers, in a centred row at `y` (see `healthStack`). */

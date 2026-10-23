@@ -1,5 +1,5 @@
-// Sunlight as Enhance (proposed, 2026-10-23; scripts/balance/sunlight.ts):
-// the Storm Caller's second ability, Enhance 1 on a unit within 3 until the
+// Sunlight as Enhance (2026-10-23; in the Storm Caller's kit since, at
+// Enhance 2): the Storm Caller's second ability, Enhance 1 on a unit within 3 until the
 // end of its next turn. Variants (owner): the Storm Caller may target itself
 // (`self`), the Champion's Enhance adds to its squeeze (`squeeze`), and
 // Sunlight melts hail where it lands (`melts`). Each variant: abilities
@@ -17,8 +17,7 @@ const variants = {
 };
 const patchFor =
   ({self = false, squeeze = false, melts = false, enhance = 1}) =>
-  ({ABILITY, HEROES}) => {
-    HEROES.storm.abilities = ['hail', 'sunlight', 'hold'];
+  ({ABILITY}) => {
     Object.assign(ABILITY.sunlight, {self, melts, enhance});
     ABILITY.grapple.enhancedSqueeze = squeeze;
   };
@@ -37,9 +36,15 @@ const caravans = {
   'vs-mangudai+storm+wolf': ['mangudai', 'storm', 'wolf'],
   'vs-all-three': ['bokh', 'mangudai', 'storm'],
 };
+// "today": the kit before Sunlight, Hail alone.
+const hailAlone = ({HEROES}) => {
+  HEROES.storm.abilities = ['hail', 'hold'];
+};
 export const experiments = {};
-for (const [name, ban] of Object.entries(bans)) experiments[`today:${name}`] = {mod: {ban}};
-for (const [name, enemies] of Object.entries(caravans)) experiments[`today:${name}`] = {enemies};
+for (const [name, ban] of Object.entries(bans))
+  if (name !== 'no-sunlight') experiments[`today:${name}`] = {patch: hailAlone, mod: {ban}};
+for (const [name, enemies] of Object.entries(caravans))
+  experiments[`today:${name}`] = {patch: hailAlone, enemies};
 for (const [v, opts] of Object.entries(variants)) {
   const patch = patchFor(opts);
   for (const [name, ban] of Object.entries(bans)) experiments[`${v}:${name}`] = {patch, mod: {ban}};

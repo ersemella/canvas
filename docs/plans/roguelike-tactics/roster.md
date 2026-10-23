@@ -68,6 +68,7 @@ also has Hold.
 | Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |
 | | | | | | Volley | Arrows from above aimed at one space within **3** with a unit on it, adjacent included, falling as hail does, so no line of fire is needed. **Charged**: the Outrider's card goes 2 slots further on than its action cost, and the arrows land at the start of that next turn: whoever stands there then takes 2 (the Outrider's power). The space shows marked while they are in the air; they are lost if the Outrider falls first. Owner, 2026-10-23: charge 2 at range 3 ([balance.md](balance.md#volley-charged-at-range-3-2026-10-23)), replacing an instant Volley at range 2. |
 | Yadachy Storm Caller | 2 | 2 | 1 | 6 | Hail | One space within 3 (not ruins). It stays until the Storm Caller's next turn begins (or it falls). A unit in the space when it lands, or that enters it (walking, which stops there, or Moved), is **Immobilized** until the hail disappears. Its damage is the Storm Caller's power, 1 (owner, 2026-10-23; 0 before). |
+| | | | | | Sunlight | A unit within 3 that hits (not Temee), ally or enemy, not already Enhanced, nor the Storm Caller itself: **Enhanced 2** until the end of its next turn. No damage. Owner, 2026-10-23, added as measured: a trap for today's AI ([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). |
 
 The Bökh Champion's Inevitable (2026-10-22) went with this rework: the
 owner's notes leave it out, and nothing Delays any more. The kits they
@@ -77,10 +78,14 @@ base 120) are in [history.md](history.md).
 
 **Added 2026-10-23 (owner):** Volley for the Outrider (range 2) and the
 swap as one of Throw's landings (rather than an ability of its own, so the
-Champion keeps one button for it). The Storm Caller has Hail alone for now:
-Overwatch, Sunlight and Fog were built, measured and removed with their
-code ([history.md](history.md), [balance.md](balance.md#new-abilities-2026-10-23)),
-and its second ability is open (open question below).
+Champion keeps one button for it). Overwatch, the first Sunlight (heal and
+cleanse) and Fog were built, measured and removed with their code
+([history.md](history.md), [balance.md](balance.md#new-abilities-2026-10-23)).
+
+**Added 2026-10-23 (owner):** Sunlight as Enhance 2 for the Storm Caller,
+as measured, though the AI misuses it
+([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). Variants left
+off: targeting itself, adding to the squeeze, melting hail.
 
 **First measurements (2026-10-23, [balance.md](balance.md#the-2026-10-23-rework)):**
 Grapple decides fights (a side without it wins 6% of AI-vs-AI fights),
@@ -100,7 +105,7 @@ and the Modao Vanguard stays in the roster above as a hero to build again.
 
 **Notes**
 - **Distinct tanks:** the Persian Cataphract charges in, the Bökh Champion holds the front line by grappling (on foot, unlike the mounted Mangudai Outrider), and the Mahout Bulwark cannot be moved (Unstoppable as a passive: no Push, Pull or Immobilized, but it can still be Delayed). The Modao Vanguard draws attacks onto itself and punishes enemies who close in (its Taunt went with the 2026-10-23 keywords; its kit is to be redesigned).
-- **Support needs:** healing (Waidan Alchemist; healing has no keyword since 2026-10-23), control on the track (Jinn Binder, Delaying enemies), curses (Sahira Enchantress: Degrade) and control in space (Yadachy Storm Caller, hail that Immobilizes). Buffs (Enhance, Shield) and Haste are uncovered.
+- **Support needs:** healing (Waidan Alchemist; healing has no keyword since 2026-10-23), control on the track (Jinn Binder, Delaying enemies), curses (Sahira Enchantress: Degrade) and control in space (Yadachy Storm Caller, hail that Immobilizes, and Sunlight's Enhance). Shield and Haste are uncovered.
 - **The Yadachy Storm Caller:** a storm controller, not a damage caster (power 1, its hail's sting; 0 until 2026-10-23): its hail holds enemies fast, while the Simurgh Summoner's strikes hurt and burn. The *Secret History*'s storm that turns back on its casters suggests a risk mechanic (a storm that can hit its own side). The yadachy tradition is folk belief rather than an organised religion, but it sits near steppe shamanism, which is still practised; keep it to weather-working and away from shamanic ritual (15.5).
 - **Two Arabian Nights magic users:** the Jinn Binder acts through a bound spirit that moves enemies on the track; the Sahira Enchantress casts directly, transforming enemies to weaken them. Keep their visual language distinct (a smoky spirit from a brass vessel versus spells that change a unit's shape).
 - **The Sahira Enchantress (Proposed):** a fictional role drawn from the *Nights*' enchantresses, who are mostly villains there; the hero keeps their transformation magic and turns it on the party's enemies. Its signature props need research.
@@ -152,11 +157,9 @@ were built and removed again on 2026-10-23; no hero has one now. The
 Mahout Bulwark's Unstoppable is the next candidate. Whether other heroes
 get one is open.
 
-**The Storm Caller's second ability** (owner, 2026-10-23): open. Hail is
-its only ability; Overwatch's, Sunlight's and Fog's measurements
-([balance.md](balance.md#new-abilities-2026-10-23)) are what a candidate is
-measured against. Sunlight as Enhance 1 for a turn (with self-targeting, the
-squeeze and melting hail as variants) was measured and is worth nothing;
-at Enhance 2 it is a trap with today's AI
-([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). Merged for
-experiments at Enhance 2 (owner, 2026-10-23), in no kit yet.
+**The Storm Caller's second ability** (owner, 2026-10-23): Sunlight,
+Enhance 2 for a turn, added as measured. Enhance 1 (with self-targeting, the
+squeeze and melting hail as variants) was worth nothing; at Enhance 2 it is
+a trap with today's AI, which counts its +2 at about twice what it delivers
+([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). Open: the AI's
+valuation, then whether Enhance 2 stays.

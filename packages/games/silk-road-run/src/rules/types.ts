@@ -12,7 +12,15 @@ export type Side = 'player' | 'enemy';
  * isn't a hero, and the wolf, an enemy NPC.
  */
 export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
-export type AbilityId = 'hold' | 'bow' | 'volley' | 'hail' | 'grapple' | 'throw' | 'bite';
+export type AbilityId =
+  | 'hold'
+  | 'bow'
+  | 'volley'
+  | 'hail'
+  | 'sunlight'
+  | 'grapple'
+  | 'throw'
+  | 'bite';
 
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';
@@ -49,8 +57,8 @@ export interface Unit {
   statuses: Status[];
   /**
    * Enhance (keywords.md, 17.6): its abilities deal this much more until
-   * the end of its next turn. Absent when it has none; nothing in the
-   * heroes' kits gives it yet (balance experiments only).
+   * the end of its next turn (the Storm Caller's Sunlight). Absent when it
+   * has none.
    */
   enhance?: number;
   /** Its turn has begun since it was Enhanced, so the Enhance ends with that turn. */

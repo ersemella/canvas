@@ -578,6 +578,26 @@ describe('stats and damage', () => {
     expect(squeezed(true)).toBe(2);
   });
 
+  it('Sunlight Enhances a unit within 3 that hits, not itself, Temee or one already Enhanced', () => {
+    const s = setup({
+      'p-storm': at(1, 3),
+      'p-mangudai': at(2, 3),
+      'p-bokh': at(6, 3),
+      'p-camel': at(1, 2),
+      'e-bokh': at(3, 3),
+      'e-mangudai': at(7, 6),
+    });
+    const storm = unit(s, 'p-storm');
+    const targets = () =>
+      ABILITIES.sunlight.targets(s, mapOf(s), storm, storm.hex!).map((t) => hexKey(t.hex!));
+    expect(targets().sort()).toEqual([hexKey(at(2, 3)), hexKey(at(3, 3))].sort());
+    s.awaiting = storm.id;
+    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
+    expect(unit(s, 'p-mangudai').enhance).toBe(ABILITY.sunlight.enhance);
+    expect(ABILITY.sunlight.enhance).toBe(2);
+    expect(targets()).toEqual([hexKey(at(3, 3))]);
+  });
+
   it('power 0 deals no damage, and says nothing of it', () => {
     const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
     const storm = unit(s, 'p-storm');

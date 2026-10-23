@@ -1156,6 +1156,15 @@ ability, on the edge of its usage band (8–25%). The stages are easier
 across the board; how much of that is the track and how much is Volley
 wasn't separated.
 
+**With Sunlight in the Storm Caller's kit** (Enhance 2, merged the same
+day), same runs: side without Volley 47.8%, the Bow 25.8%, Hail 33.1%,
+Sunlight **55.3%**, Grapple 11%, Throw 45%, the Bow and Volley 14.3%.
+Volley stays (just) in its band, on 21% of the Outrider's turns (3.5
+casts a fight, 2.5 hitting). Sunlight costs games, as measured before
+it was merged. Temee killed in 56 of 400. Player wins: Outrider + 2
+wolves 99.3%, Bökh + Outrider + wolf 86.3%, Outrider + Storm + wolf
+91.8%, two Outriders + wolf 88.5%, all three 69.3%.
+
 ### Sunlight as Enhance (2026-10-23)
 
 A proposal for the Storm Caller's second ability (open question in
@@ -1165,10 +1174,9 @@ next turn. The owner asked for three variants: the Storm Caller may target
 itself (**self**: its next Hail deals 2), a Champion's Enhance adds to its
 squeeze (**squeeze**), and Sunlight melts hail on its space, freeing whoever
 it held, with a space of hail alone a target too (**melts**). Built for
-measuring only: the Enhance rule is in the rules (`enhance` in resolve.ts,
-ending at its unit's turn end in fight.ts), but Sunlight itself is in
-`scripts/balance/sunlight.ts`, in no kit unless an experiment adds it, so
-the game and page are unchanged. `experiments/sunlight.mjs`, 400 fights
+measuring first, in no kit: the Enhance rule in the rules (`enhance` in
+resolve.ts, ending at its unit's turn end in fight.ts), Sunlight in the
+balance scripts. `experiments/sunlight.mjs`, 400 fights
 each, seeds from 1000, measured with the action cost at 12 − 2 × speed
 (before 60 ÷ (speed + 5), the same day).
 
@@ -1237,9 +1245,10 @@ on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
   player's own Sunlight that costs it. The AI counts the full +2 whenever
   an enemy is in reach, about twice what it delivers (principle 4).
 
-**Merged with Enhance 2** (owner, 2026-10-23): `ABILITY.sunlight.enhance`
-defaults to 2 in `scripts/balance/sunlight.ts`. It is still in no hero's
-kit.
+**Adopted at Enhance 2** (owner, 2026-10-23), as measured: Sunlight is in
+the Storm Caller's kit (`ABILITY.sunlight` in config.ts), with self,
+squeeze and melts off. The measurements above were taken before; the AI's
+valuation is unchanged, so it still misuses it.
 
 ## Principles for re-tuning
 
