@@ -14,8 +14,9 @@ revision they were run at. So do the files for the new abilities of 2026-10-23
 switches they patch were removed once the kits were chosen. So were
 Volley and its files' subject (`volley.mjs`, `volley-charge.mjs`,
 `volley-delayed.mjs`), replaced by Skirmish (2026-10-23); `skirmish.mjs`
-measures Skirmish at charges 0, ½ and 1. `pared.mjs`, `stats.mjs` and `caravans.mjs`
-run on the current rules. `sunlight.mjs` (2026-10-23) measures Sunlight's variants,
+measures Skirmish at charges 0, ½ and 1. `current.mjs` (each ability of
+today's kits removed, and every stage caravan), `pared.mjs`, `stats.mjs`
+and `caravans.mjs` run on the current rules. `sunlight.mjs` (2026-10-23) measures Sunlight's variants,
 and the kit before it (Hail alone) as `today`; `sunlight-ai.mjs` the AI's
 share of an Enhance's worth, and `sunlight-full.mjs` the kit as it plays
 against Hail alone.

@@ -1396,6 +1396,79 @@ No fight unfinished; medians 31–46 actions.
 - **It doesn't counter the Outrider**: two enemy Outriders win more often
   (92.3% player wins, 97% with Hail alone).
 
+### The game as it plays (2026-10-23, evening)
+
+The whole game rechecked after Skirmish was adopted and aimed at its space
+first: kits Bow, Skirmish; Hail, Sunlight (as adopted); Grapple, Throw.
+`experiments/current.mjs` and `experiments/stats.mjs`, 400 fights each,
+seeds from 1000; `mirror.mjs`, 500 pairs. No fight unfinished with a camel;
+median 38 actions, 79 slots.
+
+| Side without | Now | As Skirmish shipped |
+|---|---:|---:|
+| Bow | 35.5% | 33.5% |
+| Skirmish | 44% | 43% |
+| Bow and Skirmish | 15.5% | 14.3% |
+| Hail | 22.8% | 22.8% |
+| Sunlight | 48.8% | 49.8% |
+| Grapple | 18.3% | 18% |
+| Throw | 48.3% | 47.5% |
+
+| Control fights | |
+|---|---|
+| Outrider: walk / Bow / Skirmish / Hold | 38 / 34 / 17 / 10% |
+| Champion: walk / Grapple / Throw / Hold / swap | 50 / 35 / 9 / 4 / 3% |
+| Storm Caller: Hail / Sunlight / walk | 43 / 33 / 24% |
+| Turns a fight: Outrider / Champion / Storm Caller | 6.8 / 5.6 / 7.3 |
+| Damage (kills) a fight: Bow / Hail / Skirmish / Grapple / Throw | 10.9 (1.0) / 8 (1.3) / 5.2 (0.6) / 4.9 (0.55) / 1.8 (0.4) |
+| Sunlight's targets: self / Outrider / Champion / Temee (melting) | 31 / 38 / 30 / 1%; Enhance 5.4 damage a fight, 0.7 hails melted |
+| Survival: Storm Caller / Champion / Outrider; Temee killed | 44.5 / 34 / 32%; 34 of 400 |
+
+**Stage caravans**, player wins (a stronger enemy is lower):
+
+| Enemy | Player wins |
+|---|---:|
+| Outrider + 2 wolves | 100% |
+| Storm Caller + 2 wolves | 99.5% |
+| Bökh + 2 wolves | 96.8% |
+| Outrider + Outrider + wolf | 95.3% |
+| Outrider + Storm + wolf | 94.5% |
+| Bökh + Storm + wolf | 87.8% |
+| Storm + Storm + wolf | 86.5% |
+| Bökh + Outrider + wolf | 83.8% |
+| Bökh + Bökh + wolf | 75% |
+| All three | 68.3% |
+
+**Stats**, +1 (+2 health) on one hero of one side, the side with it wins:
+
+| | Speed | Defence | Power | Health |
+|---|---:|---:|---:|---:|
+| Bökh Champion | 61.3% | 54.5% | 51.3% | 54.5% |
+| Mangudai Outrider | 57.5% | 60% | 61.8% | 60% |
+| Yadachy Storm Caller | 67% | 52% | 66.5% | 52% |
+
+**Mirror** (no camel): player side 49.6% (46.5–52.8), first mover 48.9%,
+3.3% unfinished: no side bias.
+
+- **Nothing moved since Skirmish shipped**: every ablation is within a
+  point or two of its measurement then (one standard error is ±2.5).
+  Against principle 12 it passes: nothing unfinished, nothing above 50%,
+  every second ability at 44–49%.
+- **Sunlight and Throw are worth almost nothing** (48.8%, 48.3%), at the
+  top of a second ability's band. Throw is used on 9% of the Champion's
+  turns, so it costs little. Sunlight takes a third of the Storm Caller's
+  (33%, near principle 3's 35% line) for a share of 1.2 points; those
+  turns are Hail's.
+- **Grapple is worth more than a core action** (18.3%, below the core's
+  20–35%): the Champion's kit is Grapple and little else.
+- **Stage 2 is uneven.** Two Champions and a wolf (75%) are nearly stage
+  3 (68.3%); any pair with an Outrider but no Champion is a stage-1 fight
+  (94–95%).
+- **The Storm Caller gains most from stats**: +1 speed or power is worth
+  about 17 points, its defence and health 2. The Champion's power is worth
+  nothing (51.3%; Grapple's squeeze and Throw don't scale with it much),
+  its speed 11 points.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
