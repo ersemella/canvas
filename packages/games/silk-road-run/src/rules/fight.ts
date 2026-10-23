@@ -10,6 +10,7 @@ import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
 import {
   checkEnd,
+  clearFog,
   clearHail,
   clearOverwatch,
   endGrapplesApart,
@@ -178,8 +179,9 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     const ctx: Ctx = {state, map, slot: unit.slot!};
     state.currentSlot = unit.slot!;
     record(state, {kind: 'turn', unitId: unit.id});
-    // Its hail and overwatch last until its next turn: this one (owner, 2026-10-23).
+    // Its hail, fog and overwatch last until its next turn: this one (owner, 2026-10-23).
     clearHail(state, unit);
+    clearFog(state, unit);
     clearOverwatch(state, unit);
     squeezeGrapples(ctx, unit);
     // The squeeze can end the fight.
@@ -303,6 +305,7 @@ export function cloneFight(state: FightState, keepLog = false): FightState {
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
     ...(state.overwatch ? {overwatch: state.overwatch.map((o) => ({...o}))} : {}),
+    ...(state.fog ? {fog: state.fog.map((f) => ({...f, hex: {...f.hex}}))} : {}),
     log: keepLog ? state.log.map((l) => ({...l})) : [],
   };
 }

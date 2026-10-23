@@ -843,26 +843,64 @@ describe('abilities', () => {
     const storm = unit(s, 'p-storm');
     const ally = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
-    expect(HEROES.storm.abilities).toEqual(['hail', 'sunlight', 'hold']);
-    // Only spaces with a unit or hail on them.
-    const spots = ABILITIES.sunlight.targets(s, mapOf(s), storm, storm.hex!);
-    expect(spots.every((t) => unitAt(s, t.hex!))).toBe(true);
-    applyTurn(s, bokh, {action: {ability: 'grapple', target: {hex: ally.hex!}}});
-    expect(ally.hp).toBe(ally.maxHp - bokh.power);
-    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
-    expect(ally.hp).toBe(ally.maxHp);
-    expect(ally.statuses).toEqual([]);
-    // Already at full health: no more.
-    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
-    expect(ally.hp).toBe(ally.maxHp);
-    // Hail on a space, melted, frees the unit it held.
-    const foe = unit(s, 'e-storm');
-    foe.hex = at(2, 4);
-    applyTurn(s, foe, {action: {ability: 'hail', target: {hex: ally.hex!}}});
-    expect(ally.statuses.map((x) => x.kind)).toEqual(['immobilized']);
-    applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
-    expect(s.effects).toEqual([]);
-    expect(ally.statuses).toEqual([]);
+    // Sunlight is out of the kit while Fog is measured in its place: put it back for this test.
+    const kit = HEROES.storm.abilities;
+    HEROES.storm.abilities = ['hail', 'sunlight', 'hold'];
+    try {
+      // Only spaces with a unit or hail on them.
+      const spots = ABILITIES.sunlight.targets(s, mapOf(s), storm, storm.hex!);
+      expect(spots.every((t) => unitAt(s, t.hex!))).toBe(true);
+      applyTurn(s, bokh, {action: {ability: 'grapple', target: {hex: ally.hex!}}});
+      expect(ally.hp).toBe(ally.maxHp - bokh.power);
+      applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
+      expect(ally.hp).toBe(ally.maxHp);
+      expect(ally.statuses).toEqual([]);
+      // Already at full health: no more.
+      applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
+      expect(ally.hp).toBe(ally.maxHp);
+      // Hail on a space, melted, frees the unit it held.
+      const foe = unit(s, 'e-storm');
+      foe.hex = at(2, 4);
+      applyTurn(s, foe, {action: {ability: 'hail', target: {hex: ally.hex!}}});
+      expect(ally.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+      applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: ally.hex!}}});
+      expect(s.effects).toEqual([]);
+      expect(ally.statuses).toEqual([]);
+    } finally {
+      HEROES.storm.abilities = kit;
+    }
+  });
+
+  it('Fog: a unit standing in it deals 1 less, to at least 0, until the caster’s next turn', () => {
+    const s = setup({
+      'p-storm': at(1, 3),
+      'p-mangudai': at(3, 3),
+      'e-bokh': at(4, 3),
+      'e-storm': at(8, 6),
+    });
+    const storm = unit(s, 'p-storm');
+    const archer = unit(s, 'p-mangudai');
+    const bokh = unit(s, 'e-bokh');
+    expect(HEROES.storm.abilities).toEqual(['hail', 'fog', 'hold']);
+    const spots = ABILITIES.fog.targets(s, mapOf(s), storm, storm.hex!);
+    expect(spots.every((t) => hexDistance(t.hex!, storm.hex!) <= 3)).toBe(true);
+    expect(spots.some((t) => !unitAt(s, t.hex!))).toBe(true);
+    // Fog on the Champion: its grapple deals 0 but still Stuns.
+    applyTurn(s, storm, {action: {ability: 'fog', target: {hex: bokh.hex!}}});
+    expect(s.fog).toEqual([{hex: bokh.hex, source: 'p-storm'}]);
+    applyTurn(s, bokh, {action: {ability: 'grapple', target: {hex: archer.hex!}}});
+    expect(archer.hp).toBe(archer.maxHp);
+    expect(archer.statuses.map((x) => x.kind)).toEqual(['stunned']);
+    // Fog on the archer instead: its power-2 arrow deals 1. Being struck in fog changes nothing.
+    archer.statuses = [];
+    applyTurn(s, storm, {action: {ability: 'fog', target: {hex: archer.hex!}}});
+    applyTurn(s, archer, {action: {ability: 'bow', target: {hex: bokh.hex!}}});
+    expect(bokh.hp).toBe(bokh.maxHp - (archer.power - 1));
+    // It lifts at the caster's next turn.
+    s.units.forEach((u) => (u.controller = 'human'));
+    for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
+    expect(advanceToDecision(s)!.id).toBe('p-storm');
+    expect(s.fog).toEqual([]);
   });
 
   it('hail covers one space within three: a unit there is Immobilized until the caster’s next turn', () => {

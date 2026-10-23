@@ -227,6 +227,30 @@ const sunlight: AbilityDef = {
   },
 };
 
+/**
+ * Fog (owner, 2026-10-23): one space within 3, until the Storm Caller's
+ * next turn. A unit standing in it, ally or enemy, is Degraded: its
+ * abilities deal `ABILITY.fog.degrade` less (`hit` in resolve.ts). It
+ * Degrades whoever stands there when they act, not whoever is struck there.
+ */
+const fog: AbilityDef = {
+  id: 'fog',
+  name: 'Fog',
+  kind: 'control',
+  range: ABILITY.fog.range,
+  radius: ABILITY.fog.radius,
+  summary: () =>
+    `Fog on a space until your next turn: a unit standing in it is Degraded, its abilities dealing ${ABILITY.fog.degrade} less.`,
+  targets: (_state, map, _user, from) =>
+    hexesWithin(map, from, ABILITY.fog.range, (h) => tileAt(map, h) !== 'obstacle'),
+  resolve(ctx, user, target) {
+    const hex = target.hex!;
+    ctx.state.fog = (ctx.state.fog ?? []).filter((f) => !hexEquals(f.hex, hex));
+    ctx.state.fog.push({hex, source: user.id});
+    log(ctx, `${unitName(user)} calls down fog.`);
+  },
+};
+
 // ─── Bökh Champion ───────────────────────────────────────────────────────────
 
 /** Whether `user` is grappling `u`. */
@@ -317,6 +341,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   overwatch,
   hail,
   sunlight,
+  fog,
   grapple,
   throw: throwAbility,
   bite,

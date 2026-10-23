@@ -3,6 +3,7 @@
  * statuses (map.md, section 6; keywords.md, 17.5).
  */
 import {
+  hexDistance,
   hexEquals,
   hexLineSides,
   hexNeighbor,
@@ -27,7 +28,7 @@ export function unitAt(state: FightState, h: Hex): Unit | undefined {
 }
 
 /**
- * Plain sand: open ground with nothing on it (no unit, hail, overwatch or exit). It has
+ * Plain sand: open ground with nothing on it (no unit, hail, fog, overwatch or exit). It has
  * nothing to explain, so looking at it shows no tooltip or details.
  */
 export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
@@ -36,6 +37,7 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
     !map.exits.some((e) => hexEquals(e, h)) &&
     !unitAt(state, h) &&
     !state.effects.some((e) => hexEquals(e.hex, h)) &&
+    !fogOn(state, h) &&
     !overwatchedHexes(state, map).has(hexNumber(h))
   );
 }
@@ -73,6 +75,19 @@ export function movementCap(unit: Unit): number {
 /** Hail on `h`: entering it Immobilizes, so a move that enters it ends there. */
 export function hailOn(state: FightState, h: Hex): boolean {
   return state.effects.some((e) => hexEquals(e.hex, h));
+}
+
+/** Fog on `h`: within `ABILITY.fog.radius` of a fogged space. */
+export function fogOn(state: FightState, h: Hex): boolean {
+  return state.fog?.some((f) => hexDistance(f.hex, h) <= ABILITY.fog.radius) ?? false;
+}
+
+/**
+ * How much less `unit`'s abilities deal (Degrade, keywords.md 17.6): fog's
+ * `ABILITY.fog.degrade` while it stands in fog, else 0.
+ */
+export function degradeOf(state: FightState, unit: Unit): number {
+  return unit.hex && fogOn(state, unit.hex) ? ABILITY.fog.degrade : 0;
 }
 
 // ─── Movement ────────────────────────────────────────────────────────────────

@@ -18,6 +18,7 @@ export type AbilityId =
   | 'overwatch'
   | 'hail'
   | 'sunlight'
+  | 'fog'
   | 'grapple'
   | 'throw'
   | 'bite';
@@ -75,6 +76,17 @@ export interface HailEffect {
 }
 
 /**
+ * A Storm Caller's fog (owner, 2026-10-23): one space, until its caster's
+ * next turn. A unit standing in it is Degraded: its abilities deal
+ * `ABILITY.fog.degrade` less.
+ */
+export interface FogEffect {
+  hex: Hex;
+  /** The caster's unit id. */
+  source: string;
+}
+
+/**
  * An Outrider's overwatch (roster.md; owner, 2026-10-23): one of its bow's
  * lanes, held until its next turn. The first unit to enter the lane is shot,
  * and the overwatch ends.
@@ -113,6 +125,7 @@ export interface BoardSnapshot {
   units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped'>[];
   effects: HailEffect[];
   overwatch: Overwatch[];
+  fog: FogEffect[];
 }
 
 export type RecordedEvent = FightEvent & {after: BoardSnapshot};
@@ -131,6 +144,8 @@ export interface FightState {
   effects: HailEffect[];
   /** Overwatched lanes; absent in fights saved before Overwatch. */
   overwatch?: Overwatch[];
+  /** Fogged spaces; absent in fights saved before Fog. */
+  fog?: FogEffect[];
   log: LogEntry[];
   /**
    * What the last action set off, the player's turn and the AI turns after

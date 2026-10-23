@@ -68,7 +68,8 @@ also has Hold.
 | Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |
 | | | | | | Overwatch (**Proposed**) | One of the bow's lanes, until the Outrider's next turn: the first unit to enter it (walking, even passing through, or Moved; ally or enemy) takes 2, and the overwatch ends. Ends if the Outrider is Stunned. The shot doesn't stop a walk; walks keep out of a watched lane where a way around fits in the move. |
 | Yadachy Storm Caller | 2 | 2 | 1 | 6 | Hail | One space within 3 (not ruins). It stays until the Storm Caller's next turn begins (or it falls). A unit in the space when it lands, or that enters it (walking, which stops there, or Moved), is **Immobilized** until the hail disappears. Its damage is the Storm Caller's power, 1 (owner, 2026-10-23; 0 before). |
-| | | | | | Sunlight (**Proposed**) | One space within 3 with a unit or hail on it, at once (it takes the turn): hail there melts, freeing whoever it held; a unit there heals 1 (never past full) and is cleansed of every status, which ends a grapple on it. No damage. |
+| | | | | | Fog (**Proposed**; in the kit for measuring, in place of Sunlight) | One space within 3 (not ruins), until the Storm Caller's next turn: a unit standing in it, ally or enemy, is **Degraded** 1 (its abilities deal 1 less, at least 0). No damage. |
+| | | | | | Sunlight (**Proposed**; out of the kit while Fog is measured) | One space within 3 with a unit or hail on it, at once (it takes the turn): hail there melts, freeing whoever it held; a unit there heals 1 (never past full) and is cleansed of every status, which ends a grapple on it. No damage. |
 
 The Bökh Champion's Inevitable (2026-10-22) went with this rework: the
 owner's notes leave it out, and nothing Delays any more. The kits they
@@ -83,7 +84,10 @@ its own, so the Champion keeps one button for it). Chosen over Leap (it
 mostly repeats a 3-space walk) and Fog (Degrade 1 over 7 spaces is no
 damage at all there, from every unit but the Outrider). Measured in
 [balance.md](balance.md#new-abilities-2026-10-23): as built, neither
-Overwatch nor Sunlight wins games; Sunlight healing 2 does.
+Overwatch nor Sunlight wins games; Sunlight healing 2 does. Then (owner,
+2026-10-23) the AI values Overwatch's lanes, and Fog on one space is
+measured in Sunlight's place: Overwatch still adds nothing, nor does Fog
+on one space; Fog over a space and its neighbours adds a little.
 
 **First measurements (2026-10-23, [balance.md](balance.md#the-2026-10-23-rework)):**
 Grapple decides fights (a side without it wins 6% of AI-vs-AI fights),

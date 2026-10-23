@@ -86,7 +86,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
     // couldn't break a grapple.
     power: 1,
-    abilities: ['hail', 'sunlight', 'hold'],
+    // Fog in place of Sunlight (owner, 2026-10-23), to measure it.
+    abilities: ['hail', 'fog', 'hold'],
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -143,6 +144,13 @@ export const ABILITY = {
    * status; hail there melts.
    */
   sunlight: {range: 3, heal: 1},
+  /**
+   * One space within 3, until the Storm Caller's next turn (owner,
+   * 2026-10-23): a unit standing in it is Degraded by this much (its
+   * abilities deal that much less, at least 0). `radius` 1 is the owner's
+   * first proposal (the space and its neighbours), measured against it.
+   */
+  fog: {range: 3, radius: 0, degrade: 1},
   /**
    * The bow's lane, held until the Outrider's next turn (owner,
    * 2026-10-23). `everyUnit`: false, the first unit to enter it is shot and

@@ -52,6 +52,7 @@ export function displayFight(base: FightState, e: RecordedEvent, actor: string |
     currentSlot: after.currentSlot,
     effects: after.effects,
     overwatch: after.overwatch,
+    fog: after.fog,
     awaiting: actor,
     units: base.units.map((u) => ({...u, ...after.units.find((v) => v.id === u.id)})),
   };

@@ -91,6 +91,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // Banks of mist, drifting.
+  fog: {
+    kind: 'control',
+    rows: [
+      '............', //
+      '............',
+      '..#######...',
+      '............',
+      '.##########.',
+      '............',
+      '...########.',
+      '............',
+      '.#########..',
+      '............',
+      '....######..',
+      '............',
+    ],
+  },
   // A white cloud dropping hail's sky blue.
   hail: {
     colors: ['var(--c-ivory)', 'var(--c-dusk4)', 'var(--c-sky)'],

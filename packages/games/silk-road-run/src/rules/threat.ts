@@ -7,7 +7,7 @@
  * board blocking arrows (the acting unit aside, since it is the one moving).
  */
 import {ABILITY, HEROES} from './config';
-import {hostile, isStunned} from './board';
+import {degradeOf, hostile, isStunned} from './board';
 import {tileAt} from './map';
 import type {MapData} from './map';
 import type {AbilityId, FightState, Unit} from './types';
@@ -55,17 +55,19 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     if (!e.alive || !e.hex || e.slot === null || !hostile(e, actor) || e.power <= 0) continue;
     const hexes = new Map<number, number>();
     out.push({enemyId: e.id, hexes});
+    // Fog where it stands Degrades its hit.
+    const power = Math.max(0, e.power - degradeOf(state, e));
     const has = (a: AbilityId) => HEROES[e.hero].abilities.includes(a);
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple'))
-      for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), e.power);
+      for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
     if (has('bow')) {
       for (const [dq, dr] of AXIAL) {
         for (let i = 1; i <= ABILITY.bow.range; i++) {
           const k = id(fq + dq * i, fr + dr * i);
           const tile = board.get(k);
           if (tile === undefined || tile === 'obstacle') break;
-          mark(hexes, k, e.power);
+          mark(hexes, k, power);
           if (occupied.has(k)) break;
         }
       }

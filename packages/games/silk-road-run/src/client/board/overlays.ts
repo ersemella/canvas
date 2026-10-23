@@ -3,12 +3,14 @@
  * a move's path, an ability's range, the bow's lanes, Throw's arc,
  * overwatched lanes and charging areas.
  */
-import {hexCorners, hexKey, pixelToHex} from '@canvas/engine';
+import {hexCorners, hexKey, hexesInRange, pixelToHex} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {BOARD_LAYOUT} from '../layout';
-import {PALETTE, paletteAlpha} from '../palette';
+import {ABILITY} from '../../rules/config';
 import {arrowLane} from '../../rules/board';
 import {mapOf} from '../../rules/fight';
+import {onMap} from '../../rules/map';
+import {BOARD_LAYOUT} from '../layout';
+import {PALETTE, paletteAlpha} from '../palette';
 import type {FightState} from '../../rules/types';
 import {SIDE_LIGHT, TARGET_RGB, center, pixelShadow, tintHex} from './pixels';
 import type {HighlightStyle} from './pixels';
@@ -103,6 +105,32 @@ export function drawRangeOutline(ctx: CanvasRenderingContext2D, hexes: Hex[]): v
     ctx.stroke();
   }
   ctx.restore();
+}
+
+/**
+ * Fogged spaces: a pale bank of mist over the hex and whoever stands in
+ * it, banded as the icon is, so the unit still shows through.
+ */
+export function drawFog(ctx: CanvasRenderingContext2D, fight: FightState): void {
+  const map = mapOf(fight);
+  const fogged = (fight.fog ?? []).flatMap((f) =>
+    hexesInRange(f.hex, ABILITY.fog.radius).filter((h) => onMap(map, h))
+  );
+  for (const h of fogged) {
+    tintHex(ctx, h, PALETTE.ivory, 0.32);
+    const c = center(h);
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = PALETTE.ivory;
+    for (const [dx, dy, w] of [
+      [-16, -14, 30],
+      [-22, -2, 40],
+      [-12, 10, 34],
+      [-18, 22, 26],
+    ])
+      ctx.fillRect(c.x + dx!, c.y + dy!, w!, 3);
+    ctx.restore();
+  }
 }
 
 /**

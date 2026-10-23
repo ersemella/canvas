@@ -894,6 +894,55 @@ The last stage is harder (42.8% from 58.3%): an enemy Storm Caller's
 Sunlight keeps its side standing longer. The first two stages barely
 move.
 
+#### The AI valuing Overwatch's lanes, and Fog in place of Sunlight
+
+**The AI now values an overwatched lane** (`overwatchThreat` in
+`ai.ts`) by its one shot, at the most it is worth on a hostile unit acting
+before the Outrider's next turn that must cross it: Temee's next step into
+it is a sure hit (its health weight, 2 a point); a melee unit whose every
+way to a hex beside its quarry goes through the lane takes the shot or
+forgoes its hit, so the lesser of the two; ranged units lose nothing.
+Overwatch is still worth nothing (`experiments/ow-ai.mjs`): a side without
+it wins 49% (shooting every unit that enters: 49%; the shot stopping a
+walk: 50%). A sample of 30 fights shows why: of 552 Outrider decisions,
+the lanes were worth different amounts on 27 (5%), and the bow had a
+target on 435 (79%). On an 8 × 8 board with 3-space walks, one lane is
+almost never the only way to a target or the exit.
+
+**Fog** (owner, 2026-10-23), in place of Sunlight: one space within 3,
+until the Storm Caller's next turn; a unit standing in it is
+**Degraded** 1 (its abilities, the grapple's squeeze and an overwatch shot
+included, deal 1 less, at least 0). The AI values a unit in fog at the
+damage it Degrades from its next hit, if that comes before the fog lifts,
+and its threat map Degrades a fogged enemy's hit. `experiments/fog.mjs`
+and `fog-tuning.mjs`, 400 fights each:
+
+| Side without | Fog, 1 space, Degrade 1 | Fog, radius 1 (owner's first proposal) | Fog, 1 space, Degrade 2 |
+|---|---:|---:|---:|
+| Bow | 14.5% | | |
+| Overwatch | 48.1% | | |
+| Hail | 29.1% | 35.4% | 40.6% |
+| **Fog** | **49.9%** | **46.3%** | **55.5%** |
+| Grapple | 10.6% | | |
+| Throw | 44.4% | | |
+
+| | Fog, 1 space | Radius 1 | Degrade 2 |
+|---|---:|---:|---:|
+| Fog's share of the Storm Caller's turns | 28% | 35% | 35% |
+| Damage fog took off hits, per fight | 2.8 | 8.9 | 2.9 |
+| Unfinished | 1.5% | 0.5% | 0% |
+| Median slots | 78 | 86 | 91 |
+
+- **One space at Degrade 1 adds nothing**: most hits come from units that
+  can step out or shoot from elsewhere, and it takes Hail's turns.
+- **Radius 1 is worth a little** (46.3%, just inside the 40–48% band):
+  it takes three times the damage off, but it slows fights.
+- **Degrade 2 is a trap** (55.5%): the AI casts it on a third of the Storm
+  Caller's turns and loses more for it.
+- With Fog in place of Sunlight, the stages are back where they were
+  (`caravans.mjs`): all three heroes 56.7% (58.3% before any new ability,
+  42.8% with Sunlight); the rest within 3–7 points.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

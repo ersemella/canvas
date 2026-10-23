@@ -3,9 +3,9 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {hexEquals} from '@canvas/engine/server';
+import {hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {HEROES, RULES} from './config';
+import {ABILITY, HEROES, RULES} from './config';
 import {arrowLane} from './board';
 import {MAPS} from './map';
 import type {MapData, Tile} from './map';
@@ -48,6 +48,19 @@ export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   };
 }
 
+/** The fog on `hex`, in words, or null if there's none. */
+export function fogInfo(state: FightState, hex: Hex): HexInfo | null {
+  const fog = state.fog?.find((f) => hexDistance(f.hex, hex) <= ABILITY.fog.radius);
+  if (!fog) return null;
+  const caster = state.units.find((u) => u.id === fog.source);
+  const until = caster ? `${HEROES[caster.hero].name}’s next turn` : 'its caster’s next turn';
+  return {
+    name: 'Fog',
+    short: `Degraded: deals ${ABILITY.fog.degrade} less`,
+    detail: `A unit standing here is Degraded: its abilities deal ${ABILITY.fog.degrade} less, until ${until}.`,
+  };
+}
+
 /** The overwatch watching `hex`, in words, or null if none does. */
 export function overwatchInfo(state: FightState, hex: Hex): HexInfo | null {
   const map: MapData = {...MAPS[state.mapId]!, tiles: state.tiles};
@@ -77,6 +90,7 @@ export type KeywordId =
   | 'melee'
   | 'immobilized'
   | 'stunned'
+  | 'degraded'
   | 'move';
 
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
@@ -94,6 +108,10 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   stunned: {
     name: 'Stunned',
     detail: 'Can’t take any action, moving included: its turns are skipped.',
+  },
+  degraded: {
+    name: 'Degraded',
+    detail: 'Its abilities deal less damage, to at least 0.',
   },
   move: {name: 'Move', detail: 'Put on another space by someone else, not walking.'},
 };

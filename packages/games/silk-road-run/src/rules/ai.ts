@@ -3,8 +3,10 @@
  * then search actual timeline decisions with budgeted alpha-beta minimax.
  */
 import {hexDistance, hexKey} from '@canvas/engine/server';
-import {AI, CAMEL, HEROES} from './config';
+import {ABILITY, AI, CAMEL, HEROES} from './config';
 import {
+  arrowLane,
+  degradeOf,
   hostile,
   isImmobilized,
   isRanged,
@@ -12,6 +14,7 @@ import {
   movementCap,
   reachableHexes,
   roadDistance,
+  stepToExit,
 } from './board';
 import {abilitiesOf, unusableReason} from './abilities';
 import {allowedTargets} from './choices';
@@ -19,7 +22,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {camelOf} from './resolve';
-import {MAPS} from './map';
+import {MAPS, hexNumber} from './map';
 import type {FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
@@ -46,14 +49,22 @@ function attacksFromAfar(u: Unit): boolean {
 /**
  * What `u`'s statuses cost its side, in damage: Stunned a turn lost,
  * Immobilized the share of a turn it loses (all of the camel's, which only
- * walks).
+ * walks), and standing in fog the damage it Degrades from `u`'s next hit,
+ * if `u` acts before the fog lifts.
  */
-function statusPoints(u: Unit): number {
+function statusPoints(state: FightState, u: Unit): number {
   if (isStunned(u)) return turnValue(u) * AI.stunnedShare;
-  if (!isImmobilized(u)) return 0;
-  if (u.hero === CAMEL) return turnValue(u);
+  let points = 0;
+  const degrade = Math.min(u.power, degradeOf(state, u));
+  if (degrade > 0) {
+    const caster = state.fog!.find((f) => hexDistance(f.hex, u.hex!) <= ABILITY.fog.radius);
+    const lifts = state.units.find((c) => c.id === caster?.source)?.slot ?? null;
+    if (lifts === null || (u.slot !== null && u.slot < lifts)) points += degrade;
+  }
+  if (!isImmobilized(u)) return points;
+  if (u.hero === CAMEL) return points + turnValue(u);
   const share = attacksFromAfar(u) ? AI.immobilizedShare.ranged : AI.immobilizedShare.melee;
-  return turnValue(u) * share;
+  return points + turnValue(u) * share;
 }
 
 /**
@@ -79,6 +90,56 @@ function camelProgress(state: FightState, side: Side): number {
   return (side === 'enemy' ? 1 : -1) * camelDistance(state) * AI.perCamelHex;
 }
 
+/**
+ * What `side`'s overwatched lanes threaten, in damage (Overwatch,
+ * abilities.ts): for each, its one shot, at the most it is worth on a
+ * hostile unit acting before the Outrider's next turn that must cross the
+ * lane. Temee's next step into it is a sure hit (worth its health weight);
+ * a melee unit that can only reach a hostile through the lane takes the
+ * shot or forgoes its hit, so the lesser of the two. Ranged units attack
+ * from where they stand, and lose nothing.
+ */
+function overwatchThreat(state: FightState, side: Side): number {
+  if (!state.overwatch?.length) return 0;
+  const map = mapOf(state);
+  let total = 0;
+  for (const o of state.overwatch) {
+    const src = state.units.find((u) => u.id === o.source);
+    if (!src?.alive || !src.hex || src.side !== side || src.slot === null) continue;
+    const lane = new Set(arrowLane(state, map, src.hex, o.dir).hexes.map(hexNumber));
+    const inLane = (h: {q: number; r: number}) => lane.has(hexNumber(h));
+    let best = 0;
+    for (const u of state.units) {
+      if (!u.alive || !u.hex || !hostile(u, src) || u.slot === null || u.slot > src.slot) continue;
+      if (isImmobilized(u)) continue;
+      const shot = Math.min(src.power, u.hp);
+      if (u.hero === CAMEL) {
+        const step = stepToExit(state, map, u);
+        if (step && inLane(step)) best = Math.max(best, shot * AI.camelHealthWeight);
+        continue;
+      }
+      if (attacksFromAfar(u) || u.power <= 0) continue;
+      const foes = state.units.filter((e) => e.alive && e.hex && hostile(e, u));
+      const next = (h: {q: number; r: number}) => foes.some((e) => hexDistance(e.hex!, h) === 1);
+      if (next(u.hex)) continue;
+      // reachableHexes keeps out of the lane where it can: the hexes from
+      // which it could strike, every way there through the lane.
+      const strikes = reachableHexes(state, map, u).filter((r) => next(r.hex));
+      if (strikes.length > 0 && strikes.every((r) => r.path.some(inLane)))
+        best = Math.max(best, Math.min(shot, turnValue(u)));
+    }
+    total += best;
+  }
+  return total;
+}
+
+/** Overwatch's threat for `side` against its foes', in damage. */
+function overwatchBalance(state: FightState, side: Side): number {
+  return (
+    overwatchThreat(state, side) - overwatchThreat(state, side === 'player' ? 'enemy' : 'player')
+  );
+}
+
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
 export function scoreOutcome(
   before: FightState,
@@ -91,7 +152,7 @@ export function scoreOutcome(
     if (!b.alive) continue;
     const a = after.units.find((u) => u.id === b.id)!;
     const lost = b.hp - a.hp;
-    const statusDelta = statusPoints(a) - statusPoints(b);
+    const statusDelta = statusPoints(after, a) - statusPoints(before, b);
     if (hostile(b, actor)) {
       score += lost * (b.hero === CAMEL ? AI.camelHealthWeight : 1) + statusDelta;
       if (!a.alive) score += AI.kill;
@@ -107,7 +168,12 @@ export function scoreOutcome(
   // (a dead camel is no longer anywhere, so its walk alone would miss it).
   if (after.phase !== 'fight')
     score += ((after.phase === 'won') === (actor.side === 'player') ? 1 : -1) * AI.victory;
-  else score += camelProgress(after, actor.side) - camelProgress(before, actor.side);
+  else
+    score +=
+      camelProgress(after, actor.side) -
+      camelProgress(before, actor.side) +
+      overwatchBalance(after, actor.side) -
+      overwatchBalance(before, actor.side);
   const me = after.units.find((u) => u.id === actor.id)!;
   // What enemies could do to it before its next turn (one step of lookahead),
   // weighed by the share of its health it would lose and by the hero's caution.
@@ -222,11 +288,12 @@ export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
-  let score = camelProgress(state, side);
+  let score = camelProgress(state, side) + overwatchBalance(state, side);
   for (const u of state.units) {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
-    const value = u.hero === CAMEL ? u.hp * AI.camelHealthWeight : u.hp + AI.kill - statusPoints(u);
+    const value =
+      u.hero === CAMEL ? u.hp * AI.camelHealthWeight : u.hp + AI.kill - statusPoints(state, u);
     score += (u.side === side ? 1 : -1) * value;
   }
   return score;

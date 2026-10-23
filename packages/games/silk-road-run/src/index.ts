@@ -70,6 +70,7 @@ export {
   EXIT_INFO,
   KEYWORD_INFO,
   TILE_INFO,
+  fogInfo,
   hailInfo,
   overwatchInfo,
 } from './rules/info';

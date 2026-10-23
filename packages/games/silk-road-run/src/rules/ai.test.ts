@@ -4,9 +4,11 @@ import type {Hex} from '@canvas/engine/server';
 import {chooseAiTurn, evaluatePosition, requestChooser, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
 import {AI, HEROES} from './config';
-import {advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
+import {advance, advanceToDecision, applyTurn, cloneFight, createFight, mapOf} from './fight';
 import {createRun} from './run';
-import {SALT_FLATS} from './map';
+import {SALT_FLATS, tileAt} from './map';
+import {arrowLanes} from './abilities';
+import {stepToExit} from './board';
 import type {FightState, HeroId, TurnInput} from './types';
 
 const hex = (q: number, r: number): Hex => ({q, r});
@@ -264,5 +266,46 @@ describe('the search timeline', () => {
     expect(input).toEqual(best.input);
     expect(input).not.toEqual({action: {ability: 'hold'}});
     expect(budget.left).toBe(0);
+  });
+});
+
+describe('valuing overwatch', () => {
+  it('an Outrider with no shot watches the lane Temee is about to step into', () => {
+    let tried = 0;
+    for (const start of SALT_FLATS.hexes) {
+      const s = setup({'p-camel': start, 'p-bokh': hex(-3, 7), 'e-mangudai': hex(0, 0)});
+      const camel = unit(s, 'p-camel');
+      const m = unit(s, 'e-mangudai');
+      const step = stepToExit(s, mapOf(s), camel);
+      if (!step || tileAt(SALT_FLATS, start) !== 'sand') continue;
+      // An Outrider spot with no unit in any lane, one of them through Temee's next step.
+      const spot = SALT_FLATS.hexes.find((h) => {
+        if (tileAt(SALT_FLATS, h) !== 'sand' || hexDistance(h, start) < 2) return false;
+        if (hexDistance(h, hex(-3, 7)) === 0) return false;
+        m.hex = h;
+        const lanes = arrowLanes(s, mapOf(s), h);
+        return (
+          lanes.every((l) => !l.hit) &&
+          lanes.some((l) => l.hexes.some((x) => hexKey(x) === hexKey(step)))
+        );
+      });
+      if (!spot) continue;
+      tried++;
+      m.hex = spot;
+      // Temee walks before the Outrider's next turn, 6 slots on.
+      s.currentSlot = 40;
+      m.slot = 40;
+      camel.slot = 42;
+      unit(s, 'p-bokh').slot = 200;
+      s.awaiting = m.id;
+      const input = chooseAiTurn(s, m);
+      expect(input.action.ability).toBe('overwatch');
+      const lane = arrowLanes(s, mapOf(s), spot).find(
+        (l) => l.hexes[0] && hexKey(l.hexes[0]) === hexKey(input.action.target!.hex!)
+      )!;
+      expect(lane.hexes.some((x) => hexKey(x) === hexKey(step))).toBe(true);
+      if (tried >= 3) break;
+    }
+    expect(tried).toBeGreaterThan(0);
   });
 });

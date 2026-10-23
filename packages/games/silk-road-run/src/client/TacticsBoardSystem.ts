@@ -24,6 +24,7 @@ import {
   HIGHLIGHT,
   HOVER,
   drawLanes,
+  drawFog,
   drawOverwatch,
   drawPath,
   drawRangeOutline,
@@ -390,6 +391,8 @@ export class TacticsBoardSystem extends BaseSystem {
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
 
+    // Fog drifts over whoever stands in it.
+    drawFog(ctx, fight);
     if (playing) drawPlaybackEvent(ctx, playing);
 
     // Health and statuses show only on the unit whose turn it is, the unit

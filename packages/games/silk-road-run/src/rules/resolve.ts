@@ -5,7 +5,7 @@
 import {hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES} from './config';
-import {addStatus, arrowLane, hailOn} from './board';
+import {addStatus, arrowLane, degradeOf, hailOn} from './board';
 import {MAPS} from './map';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, Motion, Status, Unit} from './types';
@@ -50,6 +50,7 @@ function snapshot(state: FightState): BoardSnapshot {
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
     overwatch: (state.overwatch ?? []).map((o) => ({...o})),
+    fog: (state.fog ?? []).map((f) => ({...f, hex: {...f.hex}})),
   };
 }
 
@@ -60,16 +61,21 @@ export function unitName(u: Unit): string {
 
 /**
  * An ability's hit: exactly the attacker's power in damage (owner,
- * 2026-10-23). Power 0 deals none, and says nothing.
+ * 2026-10-23), less its Degrade (fog), at least 0. Power 0 deals none, and
+ * says nothing.
  */
 export function hit(ctx: Ctx, attacker: Unit, target: Unit, what: string): void {
   if (!target.alive || attacker.power <= 0) return;
-  applyDamage(
-    ctx,
-    target,
-    attacker.power,
-    `${what} hits ${unitName(target)} for ${attacker.power}`
-  );
+  const amount = degraded(ctx, attacker, attacker.power, what);
+  if (amount > 0)
+    applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`);
+}
+
+/** `amount` less the source's Degrade, at least 0, saying what the fog took. */
+function degraded(ctx: Ctx, source: Unit, amount: number, what: string): number {
+  const taken = Math.min(amount, degradeOf(ctx.state, source));
+  if (taken > 0) log(ctx, `The fog dulls ${what} by ${taken}.`);
+  return amount - taken;
 }
 
 /**
@@ -93,8 +99,9 @@ export function kill(ctx: Ctx, unit: Unit): void {
   log(ctx, `${unitName(unit)} falls.`);
   if (at) record(ctx.state, {kind: 'death', unitId: unit.id, hex: at});
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
-  // Its hail and overwatch lasted until its next turn, which won't come.
+  // Its hail, fog and overwatch lasted until its next turn, which won't come.
   clearHail(ctx.state, unit);
+  clearFog(ctx.state, unit);
   clearOverwatch(ctx.state, unit);
   checkEnd(ctx.state);
 }
@@ -132,6 +139,12 @@ export function atExit(state: FightState, h: Hex): boolean {
 export function clearHail(state: FightState, caster: Unit): void {
   state.effects = state.effects.filter((e) => e.source !== caster.id);
   for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);
+}
+
+/** `caster`'s fog disappears: its next turn has come, or it fell. */
+export function clearFog(state: FightState, caster: Unit): void {
+  if (state.fog?.some((f) => f.source === caster.id))
+    state.fog = state.fog.filter((f) => f.source !== caster.id);
 }
 
 /** A unit in hail is Immobilized until that hail disappears (owner, 2026-10-23). */
@@ -204,7 +217,8 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
   for (const u of ctx.state.units) {
     if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
-    const amount = ABILITY.grapple.squeeze;
+    // The squeeze is the Champion's ability's: fog Degrades it too.
+    const amount = degraded(ctx, champion, ABILITY.grapple.squeeze, 'the squeeze');
     applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`);
   }
 }
