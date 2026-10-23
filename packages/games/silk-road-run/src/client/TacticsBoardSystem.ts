@@ -275,12 +275,12 @@ export class TacticsBoardSystem extends BaseSystem {
     let playing: Playback | null = null;
     if (this.play) {
       const before = this.play.display;
-      if (this.play.step(deltaTime)) {
-        playing = this.play;
-        if (playing.display !== before) this.startTrackMotion(before, playing.display);
-      } else {
-        this.endPlayback();
-      }
+      const going = this.play.step(deltaTime);
+      // Even on the frame it ends: the last event (the player's turn coming
+      // up) shows for no time, but the card that acted before it still slides.
+      if (this.play.display !== before) this.startTrackMotion(before, this.play.display);
+      if (going) playing = this.play;
+      else this.endPlayback();
     }
     // While playing back, the board shows the events' fight, without the page's highlights.
     const scene: BoardScene = playing ? playbackScene(playing) : this.scene;
