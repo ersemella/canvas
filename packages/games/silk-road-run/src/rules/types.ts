@@ -16,6 +16,7 @@ export type AbilityId =
   | 'hold'
   | 'bow'
   | 'volley'
+  | 'skirmish'
   | 'hail'
   | 'sunlight'
   | 'grapple'
@@ -86,6 +87,12 @@ export interface HailEffect {
 export interface VolleyInAir {
   hex: Hex;
   source: string;
+  /**
+   * A charged Skirmish shot (experiment): the hex direction its arrow flies
+   * from the Outrider when it lands, hitting the first unit in that lane
+   * then, rather than whoever stands on `hex`.
+   */
+  dir?: number;
 }
 
 export interface LogEntry {

@@ -159,6 +159,14 @@ export const ABILITY = {
   sunlight: {range: 3, enhance: 2, self: true as boolean, melts: true as boolean},
   volley: {range: 3, charge: 0.5},
   /**
+   * Skirmish (experiment, in no kit): one step to a free space next to the
+   * Outrider, then the Bow's shot from there. `charge` as Volley's, a share
+   * of the action cost: 0 shoots at once; above 0 the arrow flies when the
+   * charging card comes back, down the lane it was aimed along, hitting
+   * the first unit there then.
+   */
+  skirmish: {charge: 0 as number},
+  /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
    */

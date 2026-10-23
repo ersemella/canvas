@@ -5,6 +5,7 @@
 import {hexDistance, hexKey} from '@canvas/engine/server';
 import {ABILITY, AI, CAMEL, HEROES} from './config';
 import {
+  firstInLane,
   hostile,
   isImmobilized,
   isRanged,
@@ -81,7 +82,12 @@ function canStrike(state: FightState, u: Unit): boolean {
     if (has('volley') && d <= ABILITY.volley.range) return true;
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
-    return has('bow') && (dq === 0 || dr === 0 || dq === -dr);
+    if (has('bow') && (dq === 0 || dr === 0 || dq === -dr)) return true;
+    // Skirmish: a line from a space next to it (dq, dr off a line by one step).
+    return (
+      has('skirmish') &&
+      Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) <= 1
+    );
   });
 }
 
@@ -125,8 +131,12 @@ function volleyPoints(state: FightState, side: Side): number {
   let score = 0;
   for (const v of state.volleys ?? []) {
     const source = state.units.find((u) => u.id === v.source);
-    const target = unitAt(state, v.hex);
-    if (!source?.alive || source.slot === null || !target) continue;
+    if (!source?.alive || source.slot === null || !source.hex) continue;
+    const target =
+      v.dir === undefined
+        ? unitAt(state, v.hex)
+        : firstInLane(state, mapOf(state), source.hex, v.dir, source);
+    if (!target) continue;
     const hit = Math.min(source.power, target.hp);
     const dodges =
       target.slot !== null &&

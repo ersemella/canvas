@@ -2,7 +2,7 @@
  * Board rules on the hex map: who stands where, movement, line of fire and
  * statuses (map.md, section 6; keywords.md, 17.5).
  */
-import {hexEquals, hexLineSides, hexNeighbors, hexToOffset} from '@canvas/engine/server';
+import {hexEquals, hexLineSides, hexNeighbor, hexNeighbors, hexToOffset} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES} from './config';
 import {hexNumber, onMap, tileAt} from './map';
@@ -264,6 +264,27 @@ export function lineOfFire(
     }
   }
   return {clear: true};
+}
+
+/**
+ * The first unit an arrow flying from `from` along hex direction `dir`
+ * hits, stopped by ruins and the map's edge (the bow's lane); `ignore`
+ * isn't in the way (the archer itself).
+ */
+export function firstInLane(
+  state: FightState,
+  map: MapData,
+  from: Hex,
+  dir: number,
+  ignore?: Unit
+): Unit | undefined {
+  let h = from;
+  for (;;) {
+    h = hexNeighbor(h, dir);
+    if (!onMap(map, h) || tileAt(map, h) === 'obstacle') return undefined;
+    const u = unitAt(state, h);
+    if (u && u !== ignore) return u;
+  }
 }
 
 // ─── Ordering ────────────────────────────────────────────────────────────────

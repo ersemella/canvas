@@ -5,7 +5,7 @@
 import {hexDistance, hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES} from './config';
-import {addStatus, hailOn, unitAt} from './board';
+import {addStatus, firstInLane, hailOn, unitAt} from './board';
 import {MAPS} from './map';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, Motion, Status, Unit} from './types';
@@ -163,8 +163,12 @@ export function landVolleys(ctx: Ctx, user: Unit): void {
   for (const v of mine) {
     log(ctx, `${unitName(user)}'s volley lands.`);
     record(ctx.state, {kind: 'land', unitId: user.id, ability: 'volley', target: v.hex});
-    const u = unitAt(ctx.state, v.hex);
-    if (u) hit(ctx, user, u, `${unitName(user)}'s volley`);
+    const u =
+      v.dir === undefined
+        ? unitAt(ctx.state, v.hex)
+        : firstInLane(ctx.state, ctx.map, user.hex!, v.dir, user);
+    if (u)
+      hit(ctx, user, u, `${unitName(user)}'s ${v.dir === undefined ? 'volley' : 'skirmish shot'}`);
   }
 }
 

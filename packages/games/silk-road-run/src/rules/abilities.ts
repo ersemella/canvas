@@ -7,7 +7,7 @@
 import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES} from './config';
-import {isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
+import {firstInLane, isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
 import {endGrapples, enhance, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
@@ -159,6 +159,47 @@ const volley: AbilityDef = {
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)} looses a volley.`);
     (ctx.state.volleys ??= []).push({hex: {...target.hex!}, source: user.id});
+  },
+};
+
+/**
+ * Skirmish (experiment, in no kit; ABILITY.skirmish): one step to a free
+ * space next to the Outrider (not while Immobilized), then the Bow's shot
+ * from there, its own old space no longer in the way. Charged
+ * (`ABILITY.skirmish.charge` above 0), the arrow flies when the charging
+ * card comes back, down the same lane (`landVolleys`), so the unit aimed
+ * at can step out of it, or another step into it.
+ */
+const skirmish: AbilityDef = {
+  id: 'skirmish',
+  name: 'Skirmish',
+  kind: 'attack',
+  summary: (user) =>
+    ABILITY.skirmish.charge > 0
+      ? `Step one space, then draw: charge ${chargeOf(user, 'skirmish')}, and when your card comes back the arrow flies down that line: the first unit in it then takes ${damageText(user)}.`
+      : `Step one space, then shoot straight: the first unit in line takes ${damageText(user)}.`,
+  targetsUnit: true,
+  targets(state, map, user, from) {
+    if (isImmobilized(user)) return [];
+    const out: ActionTarget[] = [];
+    const steps = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
+    for (const to of sortByHex(steps, (h) => h))
+      for (const dir of DIRECTIONS) {
+        const u = firstInLane(state, map, to, dir, user);
+        if (u && u !== user) out.push({hex: u.hex!, to});
+      }
+    return out;
+  },
+  resolve(ctx, user, target) {
+    enterHex(ctx, user, target.to!);
+    const u = unitAt(ctx.state, target.hex!)!;
+    if (ABILITY.skirmish.charge <= 0) {
+      hit(ctx, user, u, `${unitName(user)}'s skirmish shot`);
+      return;
+    }
+    const dir = DIRECTIONS.find((d) => firstInLane(ctx.state, ctx.map, user.hex!, d, user) === u)!;
+    log(ctx, `${unitName(user)} steps and draws.`);
+    (ctx.state.volleys ??= []).push({hex: {...target.hex!}, source: user.id, dir});
   },
 };
 
@@ -315,6 +356,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   bow,
   volley,
+  skirmish,
   hail,
   sunlight,
   grapple,

@@ -70,15 +70,27 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
           if (board.has(id(fq + dq, fr + dr))) mark(hexes, id(fq + dq, fr + dr), d);
     }
-    if (has('bow')) {
+    const lanes = (oq: number, or: number, d: number) => {
       for (const [dq, dr] of AXIAL) {
         for (let i = 1; i <= ABILITY.bow.range; i++) {
-          const k = id(fq + dq * i, fr + dr * i);
+          const k = id(oq + dq * i, or + dr * i);
           const tile = board.get(k);
           if (tile === undefined || tile === 'obstacle') break;
-          mark(hexes, k, power);
-          if (occupied.has(k)) break;
+          if (k !== id(fq, fr)) mark(hexes, k, d);
+          if (occupied.has(k) && k !== id(fq, fr)) break;
         }
+      }
+    };
+    if (has('bow')) lanes(fq, fr, power);
+    // Skirmish: the bow's lanes from each free space next to it, at the
+    // dodge share once charged.
+    if (has('skirmish')) {
+      const d = ABILITY.skirmish.charge > 0 ? power * AI.volleyDodgeShare : power;
+      for (const [sq, sr] of AXIAL) {
+        const k = id(fq + sq, fr + sr);
+        const tile = board.get(k);
+        if (tile === undefined || tile === 'obstacle' || occupied.has(k)) continue;
+        lanes(fq + sq, fr + sr, d);
       }
     }
   }

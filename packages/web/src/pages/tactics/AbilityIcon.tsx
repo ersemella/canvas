@@ -56,6 +56,25 @@ const ICON: Record<IconId, Icon> = {
     ],
   },
   // Arrows falling from above.
+  // Skirmish (an experiment, in no kit) borrows the Bow's.
+  skirmish: {
+    kind: 'attack',
+    rows: [
+      '..##........', //
+      '..+.#.......',
+      '..+..#......',
+      '..+...#.....',
+      '=.+...#..#..',
+      '###########.',
+      '=.+...#..#..',
+      '..+...#.....',
+      '..+..#......',
+      '..+.#.......',
+      '..##........',
+      '............',
+    ],
+  },
+  // Arrows falling from above.
   volley: {
     kind: 'attack',
     rows: [
