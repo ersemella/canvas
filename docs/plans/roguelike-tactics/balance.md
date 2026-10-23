@@ -1165,6 +1165,64 @@ it was merged. Temee killed in 56 of 400. Player wins: Outrider + 2
 wolves 99.3%, Bökh + Outrider + wolf 86.3%, Outrider + Storm + wolf
 91.8%, two Outriders + wolf 88.5%, all three 69.3%.
 
+### Skirmish in place of Volley (2026-10-23)
+
+Owner's question: replace Volley with a step of one space, then the Bow's
+shot from there; the step optional, so the Outrider can still shoot as
+he does now. A second form: the step, then a charged shot, so its target
+can dodge. Built as an experiment switch, in no kit: `ABILITY.skirmish`
+(`charge` a share of the action cost, as Volley's; 0 shoots at once). The
+Bow stays in the kit beside it, so a side without Skirmish shows what the
+step is worth and a side without both what the one merged ability would
+be. Charged, the arrow flies when the charging card comes back, down the
+lane it was aimed along, hitting the first unit in it then: the target
+can step out, and another unit can step in. The AI values a charged shot
+in the air by the first unit in its lane, at `AI.volleyDodgeShare` if that
+unit can walk first, and its threat map counts the Bow's lanes from each
+free space next to an Outrider (at the dodge share once charged).
+`experiments/skirmish.mjs`, 400 fights each, seeds from 1000:
+
+| | Today (Bow, Volley) | Step, shot at once | Step, charge ½ (4 slots) | Step, charge 1 (8 slots) |
+|---|---:|---:|---:|---:|
+| Side without the Bow wins | 29% | 45.3% | 33.5% | 26% |
+| Side without the second ability wins | 39.5% (Volley) | **31.5%** | **42.5%** | 49.8% |
+| Side without both | 18.3% | 14.8% | 14.3% | 19.3% |
+| Side without Hail / Grapple / Throw / Sunlight | 26.3 / 18.5 / 47.8 / 48% | 26 / 17 / 50.3 / 49.3% | 23 / 18 / 47.5 / 49.8% | 27.8 / 13.8 / 48.8 / 53.3% |
+| The Outrider's turns: walk / Bow / second / Hold | 35 / 29 / 30 / 6% | 33 / 22 / 31 / **14%** | 38 / 34 / 18 / 10% | 44 / 39 / 5 / 12% |
+| Second ability's damage / kills a fight | 8.8 / 1.1 | 9 / 0.8 | 4.8 / 0.55 | 1.5 / 0.23 |
+| Median actions / slots | 37 / 77 | 36 / 71 | 37 / 80 | 40 / 81 |
+| Temee killed (of 400) | 30 | 26 | 30 | 30 |
+| Player wins vs Outrider + 2 wolves | 99.8% | 99.3% | 100% | 98.5% |
+| vs Bökh + Outrider + wolf | 90.3% | 82.5% | 84.5% | 79.3% |
+| vs Outrider + Storm + wolf | 94% | 89.5% | 93.5% | 92.3% |
+| vs Outrider + Outrider + wolf | 88.3% | 83.5% | 92% | 88.8% |
+| vs all three | 74.8% | 69% | 69.5% | 68.5% |
+
+No fight unfinished. Today's Volley measured stronger here (39.5%) than
+when it was adopted (44%; Sunlight's merge since).
+
+- **The step with the shot at once is a better Bow, not a second
+  ability.** A side without it wins 31.5%, a core action's worth, and with
+  it the plain Bow is worth almost nothing (45.3%): it is the one merged
+  ability the owner described, "the Bow, with an optional step". As that,
+  the Outrider's attack is worth a little more than the Bow and Volley
+  together today (14.8% against 18.3% without), and every stage with an
+  enemy Outrider gets 3–8 points harder. It also costs the Outrider a
+  decision: two of his three choices are the same shot. The AI Holds more
+  (14% of his turns), which isn't looked into yet (the threat map's wider
+  reach may make it wary of walking).
+- **The step with a charge of half a turn fits every band** (principles
+  2, 3): Skirmish 42.5% and 18% of turns (a second ability's 40–48% and
+  8–25%), the Bow back as the core (33.5%, 34% of turns), nothing over
+  50%. It is a little weaker than today's Volley (42.5% against 39.5%),
+  hits less (4.8 damage a fight against 8.8), and two enemy Outriders are
+  no longer a hard stage 2 (92%); the last stage is a little harder.
+- **A full turn's charge is dead** (49.8%, 5% of turns): a step and a shot
+  12 slots later, against walking and then shooting, is no saving.
+- The charged result leans on how well the AI dodges, as Volley's did; a
+  player who steps out of the lane reliably would weaken it further, but
+  unlike Volley, the lane also catches a unit that walks into it.
+
 ### Sunlight as Enhance (2026-10-23)
 
 A proposal for the Storm Caller's second ability (open question in
