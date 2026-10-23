@@ -525,7 +525,7 @@ describe('stats and damage', () => {
     expect(storm.enhance).toBeUndefined();
   });
 
-  it('a Champion’s Enhance adds to its squeeze only when the rule says so', () => {
+  it('a Champion’s Enhance adds to its squeeze when the rule says so, as it does in play', () => {
     const squeezed = (enhancedSqueeze: boolean) => {
       const grapple = ABILITY.grapple as {enhancedSqueeze: boolean};
       const saved = grapple.enhancedSqueeze;
@@ -547,6 +547,8 @@ describe('stats and damage', () => {
     };
     expect(squeezed(false)).toBe(1);
     expect(squeezed(true)).toBe(2);
+    // On in play (owner, 2026-10-23).
+    expect(ABILITY.grapple.enhancedSqueeze).toBe(true);
   });
 
   it('Sunlight Enhances a unit within 3 that hits, itself included, not Temee or one already Enhanced', () => {

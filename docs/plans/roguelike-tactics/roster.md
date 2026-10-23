@@ -63,7 +63,7 @@ also has Hold.
 
 | Hero | Speed | Defence | Power | Health | Ability | Effect |
 |---|---|---|---|---|---|---|
-| Bökh Champion | 2 | 3 | 1 | 8 | Grapple | **Melee**: a unit next to the Champion (owner, 2026-10-23; until then it reached 2 spaces, stepping in first). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved; the Champion may walk while it grapples, and the grapple holds if the walk ends next to the target). At the start of each of the Champion's turns while it lasts, the target takes 1 more. One target at a time: a new grapple lets the last go, and it can't target the unit it already grapples. A chain on the board joins the two while it lasts (owner, 2026-10-23). |
+| Bökh Champion | 2 | 3 | 1 | 8 | Grapple | **Melee**: a unit next to the Champion (owner, 2026-10-23; until then it reached 2 spaces, stepping in first). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved; the Champion may walk while it grapples, and the grapple holds if the walk ends next to the target). At the start of each of the Champion's turns while it lasts, the target takes 1 more, plus the Champion's Enhance if it has one (owner, 2026-10-23). One target at a time: a new grapple lets the last go, and it can't target the unit it already grapples. A chain on the board joins the two while it lasts (owner, 2026-10-23). |
 | | | | | | Throw | Only the unit it grapples: **Moves** it to a free space next to the Champion, or swaps places with it (the Champion's own space as the landing; not while the Champion is Immobilized), then it takes 1 damage. The grapple holds (owner, 2026-10-23; the swap added the same day). |
 | Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |
 | | | | | | Volley | Arrows from above on one space within **2** with a unit on it, adjacent included, falling as hail does, so no line of fire is needed: it takes 2 (the Outrider's power). Owner, 2026-10-23: range 2, not the proposed 3 ([balance.md](balance.md#volley-in-place-of-overwatch)). |
@@ -85,8 +85,8 @@ cleanse) and Fog were built, measured and removed with their code
 **Added 2026-10-23 (owner):** Sunlight as Enhance 2 for the Storm Caller,
 as measured, though the AI misuses it
 ([balance.md](balance.md#sunlight-as-enhance-2026-10-23)); then (owner, the
-same day) targeting itself and melting hail. Adding to the squeeze stays
-off.
+same day) targeting itself, melting hail, and an Enhanced Champion's
+squeeze dealing its Enhance more.
 
 **First measurements (2026-10-23, [balance.md](balance.md#the-2026-10-23-rework)):**
 Grapple decides fights (a side without it wins 6% of AI-vs-AI fights),

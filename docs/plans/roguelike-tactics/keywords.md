@@ -22,7 +22,8 @@ and Barrier **Shield**.
 **Built (2026-10-23):** Immobilized, Stunned and Move, which the three
 prototype heroes' kits use (Hail, Grapple, Throw; [roster.md](roster.md)),
 and Enhance (the Storm Caller's Sunlight: until the end of the unit's next
-turn, a new one replacing the last; not added to Grapple's squeeze).
+turn, a new one replacing the last; a Champion's Enhance adds to its
+squeeze, owner, 2026-10-23).
 The others are defined here and built when an ability uses them.
 
 ## 17. Keywords and Effects

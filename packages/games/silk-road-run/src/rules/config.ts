@@ -175,8 +175,8 @@ export const ABILITY = {
    */
   grapple: {
     squeeze: 1,
-    /** Whether a Champion's Enhance adds to its squeeze (off, as adopted; balance.md). */
-    enhancedSqueeze: false,
+    /** Whether a Champion's Enhance adds to its squeeze: yes (owner, 2026-10-23; balance.md). */
+    enhancedSqueeze: true,
   },
 } as const;
 

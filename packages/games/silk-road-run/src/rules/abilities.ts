@@ -280,7 +280,7 @@ const grapple: AbilityDef = {
   name: 'Grapple',
   kind: 'attack',
   summary: (user) =>
-    `Melee: it takes ${damageText(user)} and is Stunned until you take damage, are Stunned or end a turn no longer next to it, taking ${ABILITY.grapple.squeeze} more at each of your turns meanwhile. One at a time.`,
+    `Melee: it takes ${damageText(user)} and is Stunned until you take damage, are Stunned or end a turn no longer next to it, taking ${ABILITY.grapple.squeeze} more at each of your turns meanwhile${ABILITY.grapple.enhancedSqueeze ? ' (plus your Enhance)' : ''}. One at a time.`,
   targetsUnit: true,
   // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before),
   // and not the unit it already grapples.
