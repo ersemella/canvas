@@ -182,7 +182,7 @@ Numbers are TBD tuning; none is built or measured yet.
 |---|---|
 | **Rooted** | This hero can't be Pushed or Pulled; unlike Unstoppable, it can still be Immobilized and Moved. |
 | **Light Step** | This hero walks through allies, and may swap places with an ally at the end of its move. |
-| **Rebound** | When this hero is Pushed, Pulled or Moved, the enemy is Pushed 1 space away from this hero's final position (question 65). |
+| **Rebound** | When this hero is Pushed, Pulled or Moved, by an ally or an enemy, each unit next to its final position, allies included, is Pushed 1 space away from it, one at a time as for any area (17.4). |
 
 **Damage and survival**
 
@@ -246,6 +246,7 @@ Numbers are TBD tuning; none is built or measured yet.
     place of it.
 64. How the final boss reads the build: which counters exist, how many it
     takes, and whether it is one unit or a unit with support.
-65. Rebound (19.8): which enemy is Pushed (the unit whose ability
-    displaced this hero, or each enemy next to its final position), and
-    whether an ally's displacement (Throw) triggers it.
+65. ~~Rebound (19.8): which enemy is Pushed, and whether an ally's
+    displacement (Throw) triggers it.~~ Answered 2026-10-24 (owner): every
+    unit next to the hero's final position, allies included, whoever
+    displaced the hero.
