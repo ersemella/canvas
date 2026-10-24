@@ -6,7 +6,7 @@ import {assetLoader, hexKey, hexNeighbors} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {onMap, tileAt} from '../../rules/map';
 import type {MapData, Tile} from '../../rules/map';
-import {SCENE_SIZE} from '../layout';
+import {BOARD_LAYOUT, SCENE_SIZE} from '../layout';
 import {PALETTE} from '../palette';
 import {
   HEX_SCALE,
@@ -87,7 +87,8 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     g.setTransform(scale, 0, 0, scale, 0, 0);
     g.clearRect(0, 0, SCENE_SIZE.width, SCENE_SIZE.height);
     for (const h of map.hexes) drawTile(g, h, tileAt(map, h));
-    for (const h of filler(map)) drawFiller(g, h);
+    const sides = boardSides(map);
+    for (const h of notches(map)) drawNotch(g, h, sides);
     ground = {canvas, key};
   }
   ctx.save();
@@ -97,29 +98,36 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
 }
 
 /**
- * The hexes off the map but inside its outline, where the end rows lost
- * their corners (2026-10-24): scenery, so the board's edge isn't left
- * gapped. Not spaces: nothing stands on them or answers a tap.
+ * The half hexes notched into the board's side edges, where a short row
+ * sits between two long ones (rows 4 and 6 from the top, since
+ * 2026-10-24): the hexes off the map with three neighbours on it. Filled
+ * with scenery, clipped to the board's straight edge, so the edge isn't
+ * left gapped. Not spaces: nothing stands on them or answers a tap.
  */
-function filler(map: MapData): Hex[] {
-  const xs = map.hexes.map((h) => center(h).x);
-  const ys = map.hexes.map((h) => center(h).y);
-  const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+function notches(map: MapData): Hex[] {
   const out = new Map<string, Hex>();
   for (const h of map.hexes)
-    for (const n of hexNeighbors(h)) {
-      const c = center(n);
-      if (!onMap(map, n) && c.x >= minX && c.x <= maxX && c.y >= minY && c.y <= maxY)
+    for (const n of hexNeighbors(h))
+      if (!onMap(map, n) && hexNeighbors(n).filter((m) => onMap(map, m)).length >= 3)
         out.set(hexKey(n), n);
-    }
   return [...out.values()];
 }
 
-/** Filler scenery: the sand darkened, with no border, so it reads as off the board. */
-function drawFiller(ctx: CanvasRenderingContext2D, h: Hex): void {
+/** The board's left and right edges: the long rows' outer sides. */
+function boardSides(map: MapData): {left: number; right: number} {
+  const xs = map.hexes.map((h) => center(h).x);
+  const half = (BOARD_LAYOUT.size * Math.sqrt(3)) / 2;
+  return {left: Math.min(...xs) - half, right: Math.max(...xs) + half};
+}
+
+/** A notch's scenery: the sand darkened, with no border, so it reads as off the board. */
+function drawNotch(ctx: CanvasRenderingContext2D, h: Hex, sides: {left: number; right: number}): void {
   const sand = assetLoader.requestImage(sandImage);
-  if (sand) drawHexImage(ctx, h, sand, {flipX: (h.q * 7 + h.r * 13) % 2 !== 0});
   ctx.save();
+  ctx.beginPath();
+  ctx.rect(sides.left, 0, sides.right - sides.left, SCENE_SIZE.height);
+  ctx.clip();
+  if (sand) drawHexImage(ctx, h, sand, {flipX: (h.q * 7 + h.r * 13) % 2 !== 0});
   hexPath(ctx, h, 0);
   ctx.fillStyle = sand ? 'rgba(34, 22, 14, 0.55)' : '#6e5a40';
   ctx.fill();
