@@ -50,10 +50,13 @@ tuning. This file has no combat-design section number.
   sandstone ruins, a desert, while every stage built is in the Steppe
   region ([setting.md](setting.md), 15.3a). The ground is now steppe
   grass (`tiles/grass.png`). Yurts (gers) replaced the ruins (owner,
-  2026-10-24): drawn in code for now (`yurtSprite` in
-  `client/board/ground.ts`, 30 × 22 art pixels: felt walls and roof, a
-  blue eave band, an orange door, a dark-brown outline like the other
-  terrain) until the owner's art comes. The ruins' art, a crumbling
+  2026-10-24): `tiles/yurt.png`, 32 × 24 art pixels, redrawn on the
+  sprites' grid from the owner's art (AI-assisted, about twice that
+  size), in its colours: felt walls and roof, a blue eave band, ropes, an
+  orange door, a dark-brown outline like the other terrain. Smoke rises
+  from its crown in code (`drawYurtSmoke`): square puffs that grow, drift
+  and fade, stepped at 8 frames a second, each yurt out of step, held
+  still for reduced motion. The ruins' art, a crumbling
   mudbrick wall (`tiles/ruins.png`) and a tower stump
   (`tiles/ruins-tower.png`), stays for a later region; mountains (`tiles/mountain-peak.png` and `mountain-twin.png`, the
   owner's, drawn for the flat-top hex: 42 wide, the base filling the hex's
