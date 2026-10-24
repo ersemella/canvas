@@ -8,6 +8,7 @@ import {
   hexNeighbor,
   hexNeighbors,
   hexToOffset,
+  hexesInRange,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES} from './config';
@@ -16,6 +17,79 @@ import type {MapData, Tile} from './map';
 import type {FightState, ShotInAir, Status, Unit} from './types';
 
 export {onMap};
+
+// ─── A fight's geometry ──────────────────────────────────────────────────────
+
+/**
+ * What never changes in a fight, worked out once per tile layout (a fight's
+ * ruins are random, so not once per map): the search asks the same
+ * questions of the same spaces thousands of times a turn. Its hexes are
+ * shared: nothing changes a hex in place.
+ */
+interface Geometry {
+  /** Each space's neighbours a unit may stand on, in `hexNeighbors` order. */
+  steps: Map<number, Hex[]>;
+  /** Each space's six lanes, by direction: the spaces up to ruins or the map's edge. */
+  lanes: Map<number, Hex[][]>;
+  /** The spaces on the map within a range of a space, in `sortByHex` order, by range then space. */
+  within: Map<number, Map<number, Hex[]>>;
+}
+
+const geometries = new WeakMap<Record<string, Tile>, Geometry>();
+
+function geometry(map: MapData): Geometry {
+  let g = geometries.get(map.tiles);
+  if (g) return g;
+  g = {steps: new Map(), lanes: new Map(), within: new Map()};
+  for (const h of map.hexes) {
+    const k = hexNumber(h);
+    g.steps.set(
+      k,
+      hexNeighbors(h).filter((n) => walkable(map, n))
+    );
+    g.lanes.set(
+      k,
+      [0, 1, 2, 3, 4, 5].map((dir) => {
+        const lane: Hex[] = [];
+        for (let at = hexNeighbor(h, dir); walkable(map, at); at = hexNeighbor(at, dir))
+          lane.push(at);
+        return lane;
+      })
+    );
+  }
+  geometries.set(map.tiles, g);
+  return g;
+}
+
+/** The spaces next to `h` a unit may stand on, in `hexNeighbors` order. */
+export function steps(map: MapData, h: Hex): Hex[] {
+  return geometry(map).steps.get(hexNumber(h)) ?? hexNeighbors(h).filter((n) => walkable(map, n));
+}
+
+/** The spaces from `h` along direction `dir` (left out) up to ruins or the map's edge. */
+export function lane(map: MapData, h: Hex, dir: number): Hex[] {
+  const lanes = geometry(map).lanes.get(hexNumber(h));
+  if (lanes) return lanes[dir]!;
+  const out: Hex[] = [];
+  for (let at = hexNeighbor(h, dir); walkable(map, at); at = hexNeighbor(at, dir)) out.push(at);
+  return out;
+}
+
+/** The spaces on the map within `range` of `h`, `h` included, in `sortByHex` order. */
+export function spacesWithin(map: MapData, h: Hex, range: number): Hex[] {
+  const g = geometry(map);
+  let byHex = g.within.get(range);
+  if (!byHex) g.within.set(range, (byHex = new Map()));
+  let out = byHex.get(hexNumber(h));
+  if (!out) {
+    out = sortByHex(
+      hexesInRange(h, range).filter((n) => onMap(map, n)),
+      (n) => n
+    );
+    byHex.set(hexNumber(h), out);
+  }
+  return out;
+}
 
 /** On the map and not an obstacle: a unit may stand here. */
 export function walkable(map: MapData, h: Hex): boolean {
@@ -103,8 +177,7 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
     const next: Hex[] = [];
     for (const from of frontier) {
       const fromPath = best.get(hexNumber(from))!;
-      for (const h of hexNeighbors(from)) {
-        if (!walkable(map, h)) continue;
+      for (const h of steps(map, from)) {
         const key = hexNumber(h);
         const other = occupant.get(key);
         if ((other && other !== unit) || best.has(key)) continue;
@@ -126,7 +199,7 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
  */
 export function canMove(state: FightState, map: MapData, unit: Unit): boolean {
   if (!unit.hex || movementCap(unit) === 0) return false;
-  return hexNeighbors(unit.hex).some((h) => walkable(map, h) && !unitAt(state, h));
+  return steps(map, unit.hex).some((h) => !unitAt(state, h));
 }
 
 /** Checks a submitted path; returns a player-facing reason if it's illegal. */
@@ -175,8 +248,8 @@ function exitDistances(map: MapData): Map<number, number> {
   for (let d = 1; frontier.length > 0; d++) {
     const next: Hex[] = [];
     for (const from of frontier)
-      for (const h of hexNeighbors(from)) {
-        if (!walkable(map, h) || dist.has(hexNumber(h))) continue;
+      for (const h of steps(map, from)) {
+        if (dist.has(hexNumber(h))) continue;
         dist.set(hexNumber(h), d);
         next.push(h);
       }
@@ -228,9 +301,9 @@ export function stepToExit(state: FightState, map: MapData, unit: Unit): Hex | u
   for (let d = 1; frontier.length > 0 && !dist.has(start); d++) {
     const next: Hex[] = [];
     for (const from of frontier)
-      for (const h of hexNeighbors(from)) {
+      for (const h of steps(map, from)) {
         const k = hexNumber(h);
-        if (!walkable(map, h) || dist.has(k) || (blocked.has(k) && k !== start)) continue;
+        if (dist.has(k) || (blocked.has(k) && k !== start)) continue;
         dist.set(k, d);
         next.push(h);
       }
@@ -284,13 +357,11 @@ export function firstInLane(
   dir: number,
   ignore?: Unit
 ): Unit | undefined {
-  let h = from;
-  for (;;) {
-    h = hexNeighbor(h, dir);
-    if (!onMap(map, h) || tileAt(map, h) === 'obstacle') return undefined;
+  for (const h of lane(map, from, dir)) {
     const u = unitAt(state, h);
     if (u && u !== ignore) return u;
   }
+  return undefined;
 }
 
 /**
@@ -301,22 +372,21 @@ export function firstInLane(
 export function shotLane(state: FightState, map: MapData, shot: ShotInAir): Hex[] {
   const archer = state.units.find((u) => u.id === shot.source);
   if (!archer?.alive || !archer.hex) return [];
-  const lane: Hex[] = [];
-  let h = archer.hex;
-  for (;;) {
-    h = hexNeighbor(h, shot.dir);
-    if (!onMap(map, h) || tileAt(map, h) === 'obstacle') return lane;
-    lane.push(h);
+  const out: Hex[] = [];
+  for (const h of lane(map, archer.hex, shot.dir)) {
+    out.push(h);
     const u = unitAt(state, h);
-    if (u && u !== archer) return lane;
+    if (u && u !== archer) break;
   }
+  return out;
 }
 
 // ─── Ordering ────────────────────────────────────────────────────────────────
 
 /** Sorts by offset row then column: the "hex index" used to break ties. */
 export function sortByHex<T>(items: T[], hexOf: (t: T) => Hex): T[] {
-  return [...items].sort((a, b) => hexIndex(hexOf(a)) - hexIndex(hexOf(b)));
+  const keyed = items.map((item) => ({item, key: hexIndex(hexOf(item))}));
+  return keyed.sort((a, b) => a.key - b.key).map((k) => k.item);
 }
 
 export function hexIndex(h: Hex): number {

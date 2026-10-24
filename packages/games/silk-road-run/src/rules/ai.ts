@@ -232,12 +232,6 @@ function chargeCost(actor: Unit, input: TurnInput): number {
   return (chargeOf(actor, input.action.ability) / cardCost(actor)) * turnValue(actor);
 }
 
-/** A turn as a string, to tell turns apart. */
-function inputKey(input: TurnInput): string {
-  const t = input.action.target;
-  return `${input.action.ability}:${t?.hex ? hexKey(t.hex) : ''}:${t?.to ? hexKey(t.to) : ''}:${input.move?.map(hexKey).join('/') ?? ''}`;
-}
-
 /**
  * Every distinct turn `unit` could take: its abilities where it stands,
  * then its moves, nearest first. A ground target is only tried where it
@@ -246,6 +240,7 @@ function inputKey(input: TurnInput): string {
 function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
   const map = mapOf(state);
   const inputs: TurnInput[] = [];
+  const tried = new Set<string>();
   for (const def of abilitiesOf(unit)) {
     if (unusableReason(unit, def)) continue;
     for (const target of allowedTargets(state, map, unit, def)) {
@@ -254,20 +249,18 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
         !state.units.some((u) => u.alive && u.hex && hexDistance(u.hex, target.hex!) <= def.radius!)
       )
         continue;
+      const key = `${def.id}:${target.hex ? hexKey(target.hex) : ''}:${target.to ? hexKey(target.to) : ''}`;
+      if (tried.has(key)) continue;
+      tried.add(key);
       inputs.push({action: {ability: def.id, target}});
     }
   }
+  // Walks need no such check: one path to each space.
   for (const reach of reachableHexes(state, map, unit).sort(
     (a, b) => a.path.length - b.path.length
   ))
     if (reach.path.length > 0) inputs.push({move: reach.path, action: {ability: 'hold'}});
-  const tried = new Set<string>();
-  return inputs.filter((input) => {
-    const key = inputKey(input);
-    if (tried.has(key)) return false;
-    tried.add(key);
-    return true;
-  });
+  return inputs;
 }
 
 /**
