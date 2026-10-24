@@ -16,7 +16,7 @@ export interface HexInfo {
 }
 
 export const TILE_INFO: Record<Tile, HexInfo> = {
-  sand: {name: 'Sand', short: 'Open ground', detail: 'Open ground: no effect.'},
+  sand: {name: 'Grass', short: 'Open ground', detail: 'Open ground: no effect.'},
   obstacle: {
     name: 'Ruins',
     short: 'Blocks movement and arrows',

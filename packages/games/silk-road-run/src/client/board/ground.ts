@@ -1,5 +1,5 @@
 /**
- * The ground under everything: sand, ruins and exits (cached per map), and
+ * The ground under everything: steppe grass, ruins and exits (cached per map), and
  * falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
@@ -18,15 +18,20 @@ import {
   insideHex,
 } from './pixels';
 import ruinsImage from '../tiles/ruins.png';
-import sandImage from '../tiles/sand.png';
+import grassImage from '../tiles/grass.png';
 
 /** The ground's colour until its textures load. */
-const SAND = '#d4b483';
+const GRASS = '#8e9858';
+/** Every hex's border: a shade darker than the grass. */
+const BORDER = '#5f6b3e';
 
-/** The ground texture of each tile type; ruins stand on sand. */
+/**
+ * The ground texture of each tile type: the Steppe's grass (the `sand`
+ * tile is open ground, whatever its look); ruins stand on grass.
+ */
 const TILE_TEXTURE: Record<Tile, string> = {
-  sand: sandImage,
-  obstacle: sandImage,
+  sand: grassImage,
+  obstacle: grassImage,
 };
 
 /**
@@ -96,9 +101,9 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
 }
 
 /**
- * A tile's ground: its texture (sand mirrored on alternate hexes, so the
- * board doesn't repeat) and its border. Until the image loads, flat sand
- * and a code-drawn mark show. Ruins stand on sand and are
+ * A tile's ground: its texture (grass mirrored on alternate hexes, so the
+ * board doesn't repeat) and its border. Until the image loads, flat grass
+ * and a code-drawn mark show. Ruins stand on grass and are
  * drawn later, by `drawRuins`.
  */
 function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
@@ -107,17 +112,17 @@ function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
     drawHexImage(ctx, h, ground, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
     ctx.save();
     hexPath(ctx, h, 0.5);
-    ctx.strokeStyle = '#8c7350';
+    ctx.strokeStyle = BORDER;
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
   } else {
-    // Until the textures load: plain sand.
+    // Until the textures load: plain grass.
     ctx.save();
     hexPath(ctx, h, 0.5);
-    ctx.fillStyle = SAND;
+    ctx.fillStyle = GRASS;
     ctx.fill();
-    ctx.strokeStyle = '#8c7350';
+    ctx.strokeStyle = BORDER;
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
@@ -176,14 +181,14 @@ export function drawRuins(ctx: CanvasRenderingContext2D, h: Hex): void {
   }
 }
 
-/** Ruins until their image loads: stacked blocks, a shape of their own, not only a colour (art direction). */
+/** Ruins until their image loads: stacked mudbrick blocks, a shape of their own, not only a colour (art direction). */
 function drawRuinsMark(ctx: CanvasRenderingContext2D, at: {x: number; y: number}): void {
   ctx.save();
   // Drawn around the origin at the size-32 scale, then scaled to the hex.
   ctx.translate(at.x, at.y);
   ctx.scale(HEX_SCALE, HEX_SCALE);
-  ctx.fillStyle = '#4a3f35';
-  ctx.strokeStyle = '#2b241e';
+  ctx.fillStyle = '#a67c50';
+  ctx.strokeStyle = '#221816';
   ctx.lineWidth = 1.5;
   for (const [dx, dy, w, h] of [
     [-14, 2, 13, 10],

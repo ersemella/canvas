@@ -46,6 +46,15 @@ tuning. This file has no combat-design section number.
   depth. Units are drawn in a three-quarter view, standing on their hex.
 - **No elevation** ([map.md](map.md), 6.4), so tiles need no height
   variants.
+- **The Steppe's ground** (owner, 2026-10-24): the board was sand and
+  sandstone ruins, a desert, while every stage built is in the Steppe
+  region ([setting.md](setting.md), 15.3a). The ground is now steppe
+  grass (`tiles/grass.png`) and the ruins a crumbling mudbrick wall, the
+  ruins of a steppe city such as the Uyghur capital Karabalgasun
+  (`tiles/ruins.png`); boulders and gers were tried and felt out of place.
+  Both are code-made stand-ins until the owner's final art. The `sand`
+  tile keeps its name in the rules (it is open ground, shown as Grass);
+  `tiles/sand.png` stays for a desert region's ground.
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct
   shape, not only a distinct colour: quicksand and sandstorm must read
   apart on a sand board.
