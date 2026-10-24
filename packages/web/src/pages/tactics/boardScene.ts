@@ -124,14 +124,17 @@ export function buildScene(input: SceneInput): BoardScene {
       if (acting.hex) out.path = [acting.hex, ...plannedMove.path];
     }
   } else if (ability) {
-    // How far it reaches, outlined; Longshot's lanes, an arrow along each to
+    // How far it reaches, outlined (Hail's ring inside and out); Longshot's lanes, an arrow along each to
     // an enemy it can hit, so it's plain why the others can't be.
     const def = ABILITIES[ability];
     const from = acting.hex;
     if (from && def.range) {
       const map = mapOf(fight);
       out.range = hexesInRange(from, def.range).filter(
-        (h) => hexDistance(h, from) <= def.range! && onMap(map, h)
+        (h) =>
+          hexDistance(h, from) <= def.range! &&
+          hexDistance(h, from) >= (def.minRange ?? 0) &&
+          onMap(map, h)
       );
     }
     // The Bow's lanes: Longshot's, Feigned Retreat's before its target is

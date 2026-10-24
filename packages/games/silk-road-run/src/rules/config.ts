@@ -27,8 +27,12 @@ export const RULES = {
    * 2026-10-24): a hero with this many takes no new one from an upgrade.
    */
   maxAbilities: 3,
-  /** Ordinary walking cap (5.1): 3 since 2026-10-22 (owner). */
-  movementCap: 3,
+  /**
+   * Ordinary walking cap (5.1): 2 since 2026-10-24 (owner; 3 from
+   * 2026-10-22). At 3 the side acting first won 64% of mirror matches; at
+   * 2 about 49% (balance.md, "Walk 2 and the ring of hail").
+   */
+  movementCap: 2,
   /** Size of the track window the page shows (open question 1). */
   trackWindow: 30,
 } as const;
@@ -157,12 +161,14 @@ export const ABILITY = {
    */
   longshot: {range: Infinity},
   /**
-   * One space, its centre within 3 (owner, 2026-10-23; was a radius-1 area
-   * with damage and a track Push). It stays until its caster's next turn;
-   * a unit in the space when it lands, or that enters it, is Immobilized
-   * until it disappears.
+   * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
+   * ring, so the spaces next to it and 3 or more away are safe; within 3
+   * from 2026-10-23, and before that a radius-1 area with damage and a
+   * track Push). It stays until its caster's next turn; a unit in the
+   * space when it lands, or that enters it, is Immobilized until it
+   * disappears.
    */
-  hail: {range: 3},
+  hail: {range: 2},
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Enhanced, is Enhanced `enhance` until the end of

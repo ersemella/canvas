@@ -3,7 +3,7 @@ import {hexDistance, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {chooseAiTurn, evaluatePosition, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
-import {AI, HEROES} from './config';
+import {AI, HEROES, RULES} from './config';
 import {advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
 import {createRun} from './run';
 import {SALT_FLATS} from './map';
@@ -185,7 +185,7 @@ describe('the search timeline', () => {
     const wolf: Hex = {q: 4, r: -2};
     const temee: Hex = {q: -4, r: 4};
     const cases = SALT_FLATS.hexes.filter((h) => !SALT_FLATS.tiles[hexKey(h)]);
-    // Nearer than Temee either way: in reach (a move of 3 and a bite), or not.
+    // Nearer than Temee either way: in reach (a walk of 2 and a bite), or not.
     const near = cases.find((h) => hexDistance(h, wolf) === 2 && hexDistance(h, temee) > 6)!;
     const far = cases.find((h) => hexDistance(h, wolf) === 5 && hexDistance(h, temee) > 6)!;
     const closesOn = (hero: Hex) => {
@@ -197,7 +197,7 @@ describe('the search timeline', () => {
       s.awaiting = me.id;
       return chooseAiTurn(s, me).move?.at(-1) ?? wolf;
     };
-    expect(hexDistance(closesOn(far), temee)).toBeLessThan(6);
+    expect(hexDistance(closesOn(far), temee)).toBe(hexDistance(wolf, temee) - RULES.movementCap);
     // In reach, the hero is the one to fight: the wolf waits for it, not
     // leaving it for Temee (since 2026-10-24 it may wait a step nearer
     // Temee, the hero no further off).
@@ -246,14 +246,14 @@ describe('the search timeline', () => {
   });
 
   it('only aims hail where a unit stands', () => {
-    const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0), 'p-mangudai': hex(8, 0)});
+    const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(2, 0), 'p-mangudai': hex(4, 0)});
     const me = unit(s, 'e-storm');
     me.slot = 0;
     const aimed = scoreOptions(s, me)
       .filter((o) => o.input.action.ability === 'hail')
       .map((o) => o.input.action.target!.hex!);
-    expect(aimed).toEqual(expect.arrayContaining([hex(0, 0), hex(3, 0)]));
-    expect(aimed).toHaveLength(2);
+    // Hail lands only on its ring, 2 away: the Champion, not the Outrider or itself.
+    expect(aimed).toEqual([hex(2, 0)]);
   });
 
   it('plays the turns it guesses best first, so a reply’s few tries include its best', () => {

@@ -86,7 +86,7 @@ Speed is a small whole number (1 to 3 for the prototype heroes, 9.1); each point
 ### 5.1 Rules (Decided)
 On its turn, a unit:
 - **must use one action** (an ability or Hold), which ends its turn, or
-- **may walk instead of using an ability:** up to **3 spaces** (owner, 2026-10-22), with allies and enemies blocking the path, and hail stopping it where it enters.
+- **may walk instead of using an ability:** up to **2 spaces** (owner, 2026-10-24; 3 from 2026-10-22), with allies and enemies blocking the path, and hail stopping it where it enters.
 
 Every hero has **Hold**, an action with no effect, so a unit can always end its turn. Walking and an ability cannot share a turn (2026-10-20). Whatever the unit does, its card is placed the same way (3.2).
 

@@ -78,6 +78,9 @@ else is a bias towards a side. It doesn't measure how well the AI plays: two
 copies of a weak AI are just as even. `sameTeamWonBothPct` is the share of
 pairs one team won from both sides, i.e. decided by the setup.
 
+On the hexagon board, runs before 2026-10-24's fix of `mirrorHex` are
+wrong: the mirrored fight stood units off the board and stalled.
+
 First run (2026-10-22, seeds 1000–1999, 2,000 fights): player side 49.8%
 (95% 47.5–52.2) of 1,730 finished; first mover 51.7%; same team won both
 70%; 13.5% unfinished at 400 actions (without the camel nothing ends a

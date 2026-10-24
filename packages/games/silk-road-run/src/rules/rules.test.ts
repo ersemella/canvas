@@ -1137,12 +1137,12 @@ describe('abilities', () => {
     expect(landings.length).toBeGreaterThan(0);
   });
 
-  it('hail covers one space within three: a unit there is Immobilized until the caster’s next turn', () => {
-    const s = setup({'p-storm': at(1, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
+  it('hail covers one space exactly two away: a unit there is Immobilized until the caster’s next turn', () => {
+    const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
     const targets = ABILITIES.hail.targets(s, SALT_FLATS, storm, storm.hex!);
-    expect(targets.some((t) => hexDistance(t.hex!, storm.hex!) === 3)).toBe(true);
-    expect(targets.every((t) => hexDistance(t.hex!, storm.hex!) <= 3)).toBe(true);
+    expect(targets.length).toBeGreaterThan(0);
+    expect(targets.every((t) => hexDistance(t.hex!, storm.hex!) === 2)).toBe(true);
     s.awaiting = storm.id;
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
     expect(s.effects).toEqual([{kind: 'hail', hex: at(4, 3), source: 'p-storm'}]);
@@ -1160,15 +1160,17 @@ describe('abilities', () => {
   });
 
   it('a Champion in hail grapples its caster: the hail hit came first, so the grapple holds and the caster’s turn is skipped', () => {
-    const s = setup({'e-storm': at(2, 1), 'p-bokh': at(1, 1), 'e-mangudai': at(8, 6)});
+    const s = setup({'e-storm': at(2, 1), 'p-bokh': at(0, 1), 'e-mangudai': at(8, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const storm = unit(s, 'e-storm');
     const b = unit(s, 'p-bokh');
-    // The Storm Caller hails the Champion's space.
+    // The Storm Caller hails the Champion's space, two away.
     s.awaiting = storm.id;
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: b.hex!}}});
     expect(b.hp).toBe(b.maxHp - storm.power);
     expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm'}]);
+    // Moved next to it (by a Haul, say), it stays Immobilized.
+    b.hex = at(1, 1);
     // The Champion's turn, with the Storm Caller's next.
     b.slot = 1;
     storm.slot = 2;
@@ -1193,7 +1195,7 @@ describe('abilities', () => {
   });
 
   it('hail lifts when its caster falls', () => {
-    const s = setup({'p-storm': at(1, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
+    const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
     kill({state: s, map: mapOf(s), slot: 0}, storm);
@@ -1370,8 +1372,8 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a move places the card as any turn does, with matching previews, taking a slower card’s slot', () => {
-    expect(RULES.movementCap).toBe(3);
-    for (const length of [1, 2, 3]) {
+    expect(RULES.movementCap).toBe(2);
+    for (const length of [1, 2]) {
       const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(7, 0)});
       const actor = unit(s, 'p-mangudai');
       const input: TurnInput = {
@@ -1395,17 +1397,17 @@ describe('previews, the AI and the run', () => {
     }
   });
 
-  it('refuses a move longer than 3 spaces', () => {
+  it('refuses a move longer than 2 spaces', () => {
     const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(7, 0)});
     expect(
       tryTurn(s, 'p-mangudai', {
-        move: [1, 2, 3, 4].map((c) => at(c, 0)),
+        move: [1, 2, 3].map((c) => at(c, 0)),
         action: {ability: 'hold'},
       })
     ).toThrow(/longer than the unit can go/);
     expect(
       Math.max(...reachableHexes(s, mapOf(s), unit(s, 'p-mangudai')).map((r) => r.path.length))
-    ).toBe(3);
+    ).toBe(2);
   });
 
   it('a Grapple and a move in one turn are refused', () => {
@@ -1695,7 +1697,7 @@ describe('previews, the AI and the run', () => {
   it('caps the AI’s search per turn, deterministically', () => {
     const run = createRun(0);
     const enemy = run.fight.units.find((u) => u.side === 'enemy')!;
-    expect(scoreOptions(run.fight, enemy, 10)).toHaveLength(10);
+    expect(scoreOptions(run.fight, enemy, 6)).toHaveLength(6);
     const budget = {left: 2 * AI.maxSimulations};
     const first = chooseAiTurn(run.fight, enemy, budget);
     expect(budget.left).toBeLessThan(2 * AI.maxSimulations);
