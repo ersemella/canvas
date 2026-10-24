@@ -6,6 +6,7 @@
 .canvas {
   display: block;
   background: #000;
+  width: var(--canvas-width);
   max-width: 100%;
   height: auto;
   /* Let games own touch gestures: no scrolling, zooming or double-tap zoom on the canvas. */

@@ -41,12 +41,18 @@ const TILE_TEXTURE: Record<Tile, string> = {
 /**
  * Fills a hex with a seamless pixel-art texture at the sprites' scale,
  * laid across the whole board from its origin rather than per hex, so
- * neighbouring hexes join up into one field.
+ * neighbouring hexes join up into one field. Each texture pixel is
+ * rounded to a whole number of canvas pixels: at an uneven scale (a
+ * phone's) they'd otherwise come out in mixed widths and the grass looks
+ * muddy.
  */
 function fillHexTexture(ctx: CanvasRenderingContext2D, h: Hex, img: HTMLImageElement): void {
   const pattern = ctx.createPattern(img, 'repeat');
   if (!pattern) return;
-  pattern.setTransform(new DOMMatrix().scale(SPRITE_SCALE));
+  const scale = ctx.getTransform().a;
+  pattern.setTransform(
+    new DOMMatrix().scale(Math.max(1, Math.round(SPRITE_SCALE * scale)) / scale)
+  );
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   hexPath(ctx, h, 0);

@@ -9,7 +9,7 @@ export interface WorldOptions {
   /**
    * Whole-number factor the scene is drawn at onto the canvas (the
    * manifest's `canvas.scale`): the scene is the canvas size divided by it.
-   * Defaults to 1.
+   * Defaults to 1. `setScale` changes it later, keeping the scene's size.
    */
   scale?: number;
   /** No image smoothing, and `image-rendering: pixelated` on the canvas. */
@@ -20,8 +20,11 @@ export class World {
   readonly canvas: HTMLCanvasElement;
   readonly ctx: CanvasRenderingContext2D;
   readonly events: EventBus = new EventBus();
-  readonly scale: number;
+  /** Canvas pixels per scene pixel. */
+  scale: number;
   readonly pixelArt: boolean;
+  private readonly sceneWidth: number;
+  private readonly sceneHeight: number;
 
   private systems: BaseSystem[] = [];
   /** The systems that say whether a frame can be held (`BaseSystem.holdsFrame`). */
@@ -42,18 +45,32 @@ export class World {
     if (!ctx) throw new Error('Failed to get 2D context from canvas');
     this.ctx = ctx;
     this.scale = options.scale ?? 1;
+    this.sceneWidth = options.canvas.width / this.scale;
+    this.sceneHeight = options.canvas.height / this.scale;
     this.pixelArt = options.pixelArt ?? false;
     if (this.pixelArt) this.canvas.style.imageRendering = 'pixelated';
   }
 
   /** Scene width in scene pixels (the canvas width divided by `scale`). */
   get width(): number {
-    return this.canvas.width / this.scale;
+    return this.sceneWidth;
   }
 
   /** Scene height in scene pixels (the canvas height divided by `scale`). */
   get height(): number {
-    return this.canvas.height / this.scale;
+    return this.sceneHeight;
+  }
+
+  /**
+   * Draws the scene at `scale` canvas pixels per scene pixel from the next
+   * frame, resizing the canvas to match (which clears it). The scene keeps
+   * its size, so positions and pointer coordinates don't change. Any
+   * factor: the web shell uses it to match the canvas to the screen's pixels.
+   */
+  setScale(scale: number): void {
+    this.scale = scale;
+    this.canvas.width = Math.round(this.sceneWidth * scale);
+    this.canvas.height = Math.round(this.sceneHeight * scale);
   }
 
   registerSystem(system: BaseSystem): void {
