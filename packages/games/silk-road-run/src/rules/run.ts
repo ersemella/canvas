@@ -28,7 +28,7 @@ import type {AbilityId, ActionTarget, FightState, HeroId, RunAction} from './typ
  * removed or reinterpreted): older runs are then ended rather than
  * patched (`runOutdated`), so the rules never handle an old shape.
  */
-export const RUN_FORMAT = 4;
+export const RUN_FORMAT = 5;
 
 export interface RunState {
   /** `RUN_FORMAT` when the run was created; missing in runs from before it existed. */

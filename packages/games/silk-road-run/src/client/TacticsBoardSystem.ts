@@ -388,7 +388,7 @@ export class TacticsBoardSystem extends BaseSystem {
 
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
-    // Drawn arrows in the air: a dotted arrow, as the bow aims, from the
+    // Drawn arrows in the air: a dotted arrow, as Longshot aims, from the
     // shooter to where it would hit now, in its side's light colour.
     for (const v of fight.shots ?? []) {
       const archer = fight.units.find((u) => u.id === v.source);

@@ -37,7 +37,7 @@ export interface AbilityDef {
   kind?: AbilityKind;
   /**
    * How far from its user it reaches, for an ability aimed within a range
-   * (not the bow, whose lanes run to the first unit, nor melee); the page
+   * (not Longshot, whose lanes run to the first unit, nor melee); the page
    * outlines it.
    */
   range?: number;
@@ -50,7 +50,7 @@ export interface AbilityDef {
   /** One line for the side panel, with its damage (the user's power). Range is left out. */
   summary(user: Unit): string;
   /**
-   * Aimed at a unit (melee, and the bow), not at a hex: with no unit to aim
+   * Aimed at a unit (melee, and Longshot), not at a hex: with no unit to aim
    * at, the page disables it. Ground-targeted abilities can be aimed at an
    * empty hex on purpose (hail to deny it).
    */
@@ -109,14 +109,14 @@ export interface ArrowLane {
 }
 
 /**
- * The bow's six lanes from `from`: each runs until the first unit (which
- * it hits), ruins or the map's edge (the bow has no range limit). For the
+ * Longshot's six lanes from `from`: each runs until the first unit (which
+ * it hits), ruins or the map's edge (Longshot has no range limit). For the
  * page to show where an arrow can fly, hit or not.
  */
 export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLane[] {
   return DIRECTIONS.map((dir) => {
     const lane: ArrowLane = {hexes: []};
-    for (const h of laneFrom(map, from, dir).slice(0, ABILITY.bow.range)) {
+    for (const h of laneFrom(map, from, dir).slice(0, ABILITY.longshot.range)) {
       lane.hexes.push(h);
       const u = unitAt(state, h);
       if (u) {
@@ -128,9 +128,9 @@ export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLan
   });
 }
 
-const bow: AbilityDef = {
-  id: 'bow',
-  name: 'Bow',
+const longshot: AbilityDef = {
+  id: 'longshot',
+  name: 'Longshot',
   kind: 'attack',
   summary: (user) => `Shoot straight: the first unit in line takes ${damageText(user)}.`,
   targetsUnit: true,
@@ -147,7 +147,7 @@ const bow: AbilityDef = {
 
 /**
  * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
- * space next to the Outrider (not while Immobilized), then the Bow's shot
+ * space next to the Outrider (not while Immobilized), then Longshot's shot
  * from there, its old space no longer in the way. The step is taken by
  * `applyTurn` before the action, as a walk (`steps`). Charged
  * (`ABILITY.skirmish.charge`), the arrow flies when the charging card comes
@@ -342,7 +342,7 @@ const bite: AbilityDef = {
 
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
-  bow,
+  longshot,
   skirmish,
   hail,
   sunlight,

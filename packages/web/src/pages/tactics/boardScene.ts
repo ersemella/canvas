@@ -86,7 +86,7 @@ export function buildScene(input: SceneInput): BoardScene {
   if (!acting) return out;
   if (ability && isAttack(ability)) {
     // An attack: every enemy, and the allies in the line of fire: those it
-    // can target (the units the bow's lanes reach, a melee ability's
+    // can target (the units Longshot's lanes reach, a melee ability's
     // neighbours) and those the aimed ability would hurt.
     const ids = new Set(fight.units.filter((u) => u.side === 'enemy').map((u) => u.id));
     if (ABILITIES[ability].targetsUnit)
@@ -123,7 +123,7 @@ export function buildScene(input: SceneInput): BoardScene {
       if (acting.hex) out.path = [acting.hex, ...plannedMove.path];
     }
   } else if (ability) {
-    // How far it reaches, outlined; the bow's lanes, an arrow along each to
+    // How far it reaches, outlined; Longshot's lanes, an arrow along each to
     // an enemy it can hit, so it's plain why the others can't be.
     const def = ABILITIES[ability];
     const from = acting.hex;
@@ -133,7 +133,7 @@ export function buildScene(input: SceneInput): BoardScene {
         (h) => hexDistance(h, from) <= def.range! && onMap(map, h)
       );
     }
-    if (from && ability === 'bow')
+    if (from && ability === 'longshot')
       out.lanes = {
         from,
         lanes: arrowLanes(fight, mapOf(fight), from).map((l) => ({

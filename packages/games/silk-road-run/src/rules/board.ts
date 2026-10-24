@@ -119,9 +119,9 @@ export function kitOf(unit: Unit): AbilityId[] {
   return unit.loadout?.abilities ?? HEROES[unit.hero].abilities;
 }
 
-/** A unit with a ranged attack (the bow). */
+/** A unit with a ranged attack (Longshot). */
 export function isRanged(unit: Unit): boolean {
-  return kitOf(unit).includes('bow');
+  return kitOf(unit).includes('longshot');
 }
 
 export function hostile(a: Unit, b: Unit): boolean {
@@ -352,7 +352,7 @@ export function lineOfFire(
 
 /**
  * The first unit an arrow flying from `from` along hex direction `dir`
- * hits, stopped by ruins and the map's edge (the bow's lane); `ignore`
+ * hits, stopped by ruins and the map's edge (Longshot's lane); `ignore`
  * isn't in the way (the archer itself).
  */
 export function firstInLane(

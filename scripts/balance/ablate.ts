@@ -40,7 +40,7 @@ type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 
 /** Damage sources, recognised by the fight log's wording. */
 const SOURCES: [RegExp, string][] = [
-  [/'s arrow hits/, 'bow'],
+  [/'s arrow hits/, 'longshot'],
   [/'s volley hits/, 'volley'],
   [/'s skirmish arrow hits/, 'skirmish'],
   [/^The throw hits/, 'throw'],

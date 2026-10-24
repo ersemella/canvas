@@ -24,7 +24,7 @@ export const SKIP: TurnInput = {action: {ability: 'hold', target: {}}};
 
 /** Why an ability has nothing to target, when that disables it. */
 const NO_TARGET: Partial<Record<AbilityId, string>> = {
-  bow: 'No enemy in any of the bow’s lanes.',
+  longshot: 'No enemy in any of Longshot’s lanes.',
   skirmish: 'No free space to step to with an enemy in line from it.',
   sunlight: 'No ally within reach to Enhance, nor hail to melt.',
   throw: 'You aren’t grappling an enemy, or there’s nowhere free to throw it.',

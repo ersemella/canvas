@@ -14,7 +14,7 @@ export type Side = 'player' | 'enemy';
 export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
 export type AbilityId =
   | 'hold'
-  | 'bow'
+  | 'longshot'
   | 'skirmish'
   | 'hail'
   | 'sunlight'

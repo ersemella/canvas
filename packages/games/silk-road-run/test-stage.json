@@ -5,7 +5,7 @@
   "camel": {},
   "player": [
     {"hero": "bokh"},
-    {"hero": "mangudai", "abilities": ["bow", "skirmish"]},
+    {"hero": "mangudai", "abilities": ["longshot", "skirmish"]},
     {"hero": "storm", "power": 2, "abilities": ["hail", "sunlight"]}
   ],
   "enemy": [
