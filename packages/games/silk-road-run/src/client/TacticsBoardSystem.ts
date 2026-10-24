@@ -15,10 +15,12 @@ import type {CardSlide, TrackAdvance} from './board/track';
 import {
   HAIL_FPS,
   HAIL_STILL_SECONDS,
+  SMOKE_FPS,
   drawExit,
   drawFallingHail,
   drawGround,
   drawObstacle,
+  drawYurtSmoke,
   exitArrowPush,
 } from './board/ground';
 import {
@@ -171,6 +173,7 @@ export class TacticsBoardSystem extends BaseSystem {
       if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
       if (this.scene.turnArrow !== false) parts.push(turnArrowBob(time));
       if (mapOf(fight).exits.length > 0) parts.push(exitArrowPush(time));
+      if (Object.values(fight.tiles).includes('obstacle')) parts.push(Math.floor(time * SMOKE_FPS));
     }
     return parts.join(' ');
   }
@@ -305,12 +308,16 @@ export class TacticsBoardSystem extends BaseSystem {
       if (slide.elapsed >= CARD_SLIDE_SECONDS) this.slides.delete(id);
     }
     const map = mapOf(fight);
-    // Hail, the turn arrow and the exit's chevrons move with time, unless the device asks for reduced motion.
+    // Hail, the turn arrow, the exit's chevrons and the yurts' smoke move with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h, t);
-    // Yurts under the units; mountains wait until after them (below).
-    for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawObstacle(ctx, h);
+    // Yurts and their smoke under the units; mountains wait until after them (below).
+    for (const h of map.hexes)
+      if (tileAt(map, h) === 'obstacle') {
+        drawObstacle(ctx, h);
+        drawYurtSmoke(ctx, h, t);
+      }
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
     // A frame mid-motion: the next draws again whatever the key says.

@@ -1,6 +1,6 @@
 /**
- * The ground under everything: steppe grass, yurts and exits (cached per map), and
- * falling hail.
+ * The ground under everything: steppe grass, yurts and their smoke, exits
+ * (cached per map), and falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
@@ -17,6 +17,7 @@ import {
   hexRandom,
   insideHex,
 } from './pixels';
+import yurtImage from '../tiles/yurt.png';
 import mountainPeakImage from '../tiles/mountain-peak.png';
 import mountainTwinImage from '../tiles/mountain-twin.png';
 import rockImage from '../tiles/rock.png';
@@ -188,15 +189,13 @@ const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
 
 /**
  * A yurt or a mountain standing on its hex like a unit: over hail, so it
- * always reads as blocked. A yurt is drawn in code (`yurtSprite`) until
- * its own art comes.
+ * always reads as blocked. The yurt (owner, 2026-10-24) is redrawn from
+ * the owner's art on the sprites' grid: 32 × 24 art pixels.
  */
 export function drawObstacle(ctx: CanvasRenderingContext2D, h: Hex, mountain = false): void {
-  const art = mountain
-    ? assetLoader.requestImage(
-        MOUNTAIN_IMAGES[Math.floor(hexRandom(h, 1)() * MOUNTAIN_IMAGES.length)]!
-      )
-    : yurtSprite();
+  const art = assetLoader.requestImage(
+    mountain ? MOUNTAIN_IMAGES[Math.floor(hexRandom(h, 1)() * MOUNTAIN_IMAGES.length)]! : yurtImage
+  );
   if (!art) {
     drawObstacleMark(ctx, center(h));
     return;
@@ -214,6 +213,42 @@ export function drawObstacle(ctx: CanvasRenderingContext2D, h: Hex, mountain = f
     width,
     height
   );
+  ctx.restore();
+}
+
+/** Smoke from a yurt's crown: puffs at a time, a cycle each, in steps of this many frames a second. */
+const SMOKE = {puffs: 6, seconds: 3.6, rise: 22, drift: 6};
+export const SMOKE_FPS = 8;
+/** The moment shown with reduced motion: a few puffs in the air. */
+const SMOKE_STILL_SECONDS = 1.1;
+/** The smoke hole, in art pixels from the hex's centre: the crown's middle, 2 rows down the 24-row yurt. */
+const SMOKE_FROM = {x: 0, y: SPRITE_FEET / SPRITE_SCALE - 24 + 2};
+
+/**
+ * Smoke rising from a yurt's crown, as pixel art: square puffs that grow,
+ * drift with the wind and fade as they rise, each yurt out of step with
+ * the others. Held still at one moment when the device asks for reduced
+ * motion (`time` null).
+ */
+export function drawYurtSmoke(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): void {
+  const t = Math.floor((time ?? SMOKE_STILL_SECONDS) * SMOKE_FPS) / SMOKE_FPS;
+  const offset = hexRandom(h, 2)() * SMOKE.seconds;
+  const c = center(h);
+  const px = SPRITE_SCALE;
+  ctx.save();
+  for (let i = 0; i < SMOKE.puffs; i++) {
+    const f = ((((t + offset) / SMOKE.seconds + i / SMOKE.puffs) % 1) + 1) % 1;
+    const size = 2 + Math.floor(f * 2.5);
+    const x = SMOKE_FROM.x + f * SMOKE.drift + Math.sin(f * 2 * Math.PI + i) * 1.2;
+    const y = SMOKE_FROM.y - f * SMOKE.rise;
+    ctx.fillStyle = `rgba(240, 236, 228, ${(0.95 * (1 - f * f)).toFixed(2)})`;
+    ctx.fillRect(
+      Math.round(c.x + Math.round(x - size / 2) * px),
+      Math.round(c.y + Math.round(y - size / 2) * px),
+      size * px,
+      size * px
+    );
+  }
   ctx.restore();
 }
 
@@ -239,61 +274,7 @@ function mountainClip(ctx: CanvasRenderingContext2D, c: {x: number; y: number}):
   ctx.clip();
 }
 
-/**
- * A ger, the steppe's felt tent (owner, 2026-10-24), as pixel art: a
- * low cone of a roof under its crown ring, a blue band at the eaves, round
- * felt walls tied with a rope and an orange painted door, lit from the
- * left, outlined in dark brown like the other terrain so the units stand
- * out. 30 × 22 art pixels, drawn at the sprites' scale; built once.
- */
-let yurt: HTMLCanvasElement | null = null;
-const YURT_W = 30;
-const YURT_H = 22;
-const YURT_OUTLINE = '#3b2a1e';
-
-function yurtSprite(): HTMLCanvasElement | null {
-  if (yurt || typeof document === 'undefined') return yurt;
-  const mid = YURT_W / 2;
-  // Each row's half width, and what it is: roof (2–8), eaves (9), wall.
-  const halfWidth = (y: number) =>
-    y < 2 ? 0 : y <= 8 ? 2 + (y - 2) * 2 : y <= 19 ? (y === 9 ? 14 : 13) : y === 20 ? 12 : 0;
-  const colour = (x: number, y: number): string | null => {
-    const dx = x + 0.5 - mid;
-    if (Math.abs(dx) > halfWidth(y)) return null;
-    // Light from the left: the right third in shade.
-    const shade = dx > halfWidth(y) / 3;
-    if (y <= 3) return PALETTE.sandDark; // the crown ring
-    if (y <= 8) return shade ? PALETTE.sand : PALETTE.sandLight;
-    if (y === 9) return x % 3 === 0 ? PALETTE.lapisLight : PALETTE.lapis;
-    if (Math.abs(dx) < 3 && y >= 12)
-      return y === 12 || Math.abs(dx) > 2 ? PALETTE.goldDark : PALETTE.gold;
-    if (y === 13 || y === 17) return PALETTE.sandDark; // the ropes
-    return shade ? PALETTE.sandLight : PALETTE.ivory;
-  };
-  const canvas = document.createElement('canvas');
-  canvas.width = YURT_W;
-  canvas.height = YURT_H;
-  const c = canvas.getContext('2d');
-  if (!c) return null;
-  for (let y = 0; y < YURT_H; y++)
-    for (let x = 0; x < YURT_W; x++) {
-      const own = colour(x, y);
-      const edge =
-        !own &&
-        [
-          [1, 0],
-          [-1, 0],
-          [0, 1],
-          [0, -1],
-        ].some(([dx, dy]) => colour(x + dx!, y + dy!));
-      if (!own && !edge) continue;
-      c.fillStyle = own ?? YURT_OUTLINE;
-      c.fillRect(x, y, 1, 1);
-    }
-  return (yurt = canvas);
-}
-
-/** A mountain until its image loads, or a yurt with no canvas to draw it on: stacked blocks, a shape of their own, not only a colour (art direction). */
+/** A yurt or a mountain until its image loads: stacked blocks, a shape of their own, not only a colour (art direction). */
 function drawObstacleMark(ctx: CanvasRenderingContext2D, at: {x: number; y: number}): void {
   ctx.save();
   // Drawn around the origin at the size-32 scale, then scaled to the hex.
