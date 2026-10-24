@@ -17,13 +17,13 @@ import {
   shotLane,
   unitAt,
 } from './board';
-import {ABILITIES, abilitiesOf, squallSpaces, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
 import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, chargeOf} from './track';
-import {camelOf, damageOf, shotEnhance, watchLane} from './resolve';
+import {camelOf, damageOf, shotEnhance} from './resolve';
 import {MAPS} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
@@ -43,12 +43,10 @@ function turnValue(u: Unit): number {
   return u.hero === CAMEL ? AI.perCamelHex : Math.max(1, u.power);
 }
 
-/** A unit whose attack reaches beyond its neighbours (Longshot, hail, and the experiments'). */
+/** A unit whose attack reaches beyond its neighbours (Longshot, Hail, Gale, Volley). */
 function attacksFromAfar(u: Unit): boolean {
   const kit = kitOf(u);
-  return (
-    isRanged(u) || ['hail', 'squall', 'gale', 'volley'].some((a) => kit.includes(a as AbilityId))
-  );
+  return isRanged(u) || ['hail', 'gale', 'volley'].some((a) => kit.includes(a as AbilityId));
 }
 
 /**
@@ -70,8 +68,7 @@ function statusPoints(state: FightState, u: Unit): number {
  */
 function rescueGain(state: FightState, u: Unit): number {
   const held = u.statuses.find((x) => x.grapple?.target === u.id)?.grapple;
-  // A loose grapple (Hold Loose) holds through damage.
-  if (!held || held.loose) return 0;
+  if (!held) return 0;
   const champion = state.units.find((c) => c.id === held.champion);
   if (!champion?.alive) return 0;
   const rescuer = state.units.some(
@@ -190,40 +187,6 @@ function shotPoints(state: FightState, side: Side): number {
   return score;
 }
 
-/**
- * What the Overwatch lanes on the board are worth to `side` (an
- * experiment): `AI.watchShare` of each one's hit while a unit hostile to
- * its Outrider could walk into it before it lifts.
- */
-function watchPoints(state: FightState, side: Side): number {
-  let score = 0;
-  for (const w of state.watches ?? []) {
-    const archer = state.units.find((u) => u.id === w.source);
-    if (!archer?.alive || archer.slot === null) continue;
-    const lane = watchLane(state, mapOf(state), w);
-    const walker = state.units.some(
-      (u) =>
-        u.alive &&
-        u.hex &&
-        hostile(u, archer) &&
-        u.slot !== null &&
-        u.slot < archer.slot! &&
-        !isImmobilized(u) &&
-        lane.some((h) => hexDistance(h, u.hex!) <= movementCap(u) && !unitAt(state, h))
-    );
-    if (walker) score += (archer.side === side ? 1 : -1) * AI.watchShare * damageOf(archer);
-  }
-  return score;
-}
-
-/**
- * What Hasting `u` from slot `from` to `to` is worth to its side (Tailwind,
- * an experiment): the share of a turn it gains.
- */
-function hasteValue(u: Unit, from: number, to: number): number {
-  return (Math.max(0, from - to) / cardCost(u)) * turnValue(u);
-}
-
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
 export function scoreOutcome(
   before: FightState,
@@ -236,10 +199,7 @@ export function scoreOutcome(
     if (!b.alive) continue;
     const a = after.units.find((u) => u.id === b.id)!;
     const lost = b.hp - a.hp;
-    let statusDelta = statusPoints(after, a) - statusPoints(before, b);
-    // Hasted by this turn (Tailwind): a turn's share sooner, a gain to its side.
-    if (a.hasted && !b.hasted && a.slot !== null && b.slot !== null)
-      statusDelta -= hasteValue(a, b.slot, a.slot);
+    const statusDelta = statusPoints(after, a) - statusPoints(before, b);
     if (hostile(b, actor)) {
       score += lost * (b.hero === CAMEL ? AI.camelHealthWeight : 1) + statusDelta;
       if (!a.alive) score += AI.kill;
@@ -255,7 +215,6 @@ export function scoreOutcome(
   else {
     score += camelProgress(after, actor.side) - camelProgress(before, actor.side);
     score += shotPoints(after, actor.side) - shotPoints(before, actor.side);
-    score += watchPoints(after, actor.side) - watchPoints(before, actor.side);
   }
   const me = after.units.find((u) => u.id === actor.id)!;
   // What enemies could do to it before its next turn (one step of lookahead),
@@ -325,7 +284,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
   if (input.move?.length || input.action.ability === 'hold') return closing;
   const ability = input.action.ability;
-  // Hit/harm value of a unit caught, signed by side: the experiments' areas.
+  // What catching a unit in Gale is worth, by its side.
   const sided = (u: Unit, value: number) =>
     hostile(u, unit) ? value : -value * AI.friendlyDamageFactor;
   if (ability === 'gale') {
@@ -338,15 +297,6 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     }
     return closing + value;
   }
-  if (ability === 'squall') {
-    let value = -1;
-    for (const h of squallSpaces(mapOf(state), target!.hex!, target!.to!)) {
-      const u = unitAt(state, h);
-      if (u) value += sided(u, 1 + turnValue(u) * AI.immobilizedShare.melee);
-    }
-    return closing + value;
-  }
-  if (ability === 'overwatch') return closing + AI.watchShare * damageOf(unit);
   const hit = target?.hex ? unitAt(state, target.hex) : undefined;
   // Hail on an empty space: denying it is seldom the best turn.
   if (!hit) return closing - 1;
@@ -355,16 +305,10 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     const gain = hit.power > 0 && !hit.enhance ? 1 + enhanceGuess(state, hit) : 0;
     return closing + (hostile(hit, unit) ? -gain : gain);
   }
-  if (ability === 'tailwind') {
-    const gain =
-      hit.slot === null ? 0 : hasteValue(hit, hit.slot, hit.slot - ABILITY.tailwind.haste);
-    return closing + (hostile(hit, unit) ? -gain : gain);
-  }
   const damage = ABILITIES[ability].damages === false ? 0 : Math.min(damageOf(unit), hit.hp);
   let value = damage * (hit.hero === CAMEL ? AI.camelHealthWeight : 1);
   if (damage > 0 && damage >= hit.hp && hit.hero !== CAMEL) value += AI.kill;
   if (input.action.ability === 'grapple') value += turnValue(hit) * AI.stunnedShare;
-  if (input.action.ability === 'holdLoose') value += turnValue(hit) * AI.immobilizedShare.melee;
   if (input.action.ability === 'hail') value += turnValue(hit) * AI.immobilizedShare.melee;
   // A drawn arrow (Skirmish): its target may step out before it lands, and
   // the charge holds the Outrider back (`shotPoints`, `chargeCost`).
@@ -550,7 +494,7 @@ export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
-  let score = camelProgress(state, side) + shotPoints(state, side) + watchPoints(state, side);
+  let score = camelProgress(state, side) + shotPoints(state, side);
   for (const u of state.units) {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.

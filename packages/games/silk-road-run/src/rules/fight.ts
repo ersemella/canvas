@@ -11,7 +11,6 @@ import {allowedTargets, onlyHold} from './choices';
 import {
   checkEnd,
   clearHail,
-  clearWatches,
   endTurnEffects,
   enterHex,
   landShots,
@@ -203,8 +202,6 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     record(state, {kind: 'turn', unitId: unit.id});
     // Its hail lasts until its next turn: this one (owner, 2026-10-23).
     clearHail(state, unit);
-    clearWatches(state, unit);
-    delete unit.hasted;
     // An Enhance lasts until the end of this turn.
     if (unit.enhance) unit.enhanceStarted = true;
     squeezeGrapples(ctx, unit);
@@ -243,7 +240,6 @@ export function charging(state: FightState, unit: Unit): boolean {
  * cost on (3.2), to the unit's next turn.
  */
 function landCharge(ctx: Ctx, unit: Unit): void {
-  delete unit.hasted;
   landShots(ctx, unit);
   checkEnd(ctx.state);
   if (unit.alive) placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
@@ -309,11 +305,7 @@ export function applyTurn(
     const bad = invalidPath(state, map, unit, path);
     if (bad) throw new RuleError(bad);
     // A grapple ends only if the walk ends apart (owner, 2026-10-23).
-    // An Overwatch arrow (an experiment) can kill it on the way.
-    for (const [i, h] of path.entries()) {
-      if (!unit.alive) break;
-      enterHex(ctx, unit, h, 'walk', i < path.length - 1);
-    }
+    path.forEach((h, i) => enterHex(ctx, unit, h, 'walk', i < path.length - 1));
     log(ctx, `${unitName(unit)} moves.`);
   } else {
     const target = input.action.target ?? {};
@@ -330,8 +322,7 @@ export function applyTurn(
       ability: def.id,
       ...(target.hex ? {target: target.hex} : {}),
     });
-    // An Overwatch arrow (an experiment) may have felled it as it stepped.
-    if (unit.alive) def.resolve(ctx, unit, target);
+    def.resolve(ctx, unit, target);
   }
   state.awaiting = null;
   checkEnd(state);
@@ -359,7 +350,6 @@ export function cloneFight(state: FightState, keepLog = false): FightState {
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
     ...(state.shots ? {shots: state.shots.map((v) => ({...v}))} : {}),
-    ...(state.watches ? {watches: state.watches.map((w) => ({...w}))} : {}),
     log: keepLog ? state.log.map((l) => ({...l})) : [],
   };
 }

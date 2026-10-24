@@ -51,14 +51,12 @@ const SOURCES: [RegExp, string][] = [
   [/^The throw hits/, 'throw'],
   [/^The grapple hits/, 'grapple'],
   [/^The hail hits/, 'hail'],
-  [/'s overwatch arrow hits/, 'overwatch'],
   [/'s parting arrow hits/, 'feignedRetreat'],
-  [/^The hip toss hits/, 'hipToss'],
   [/^The gale hits/, 'gale'],
   [/^The bite hits/, 'bite'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s overwatch arrow hits|'s parting arrow hits| hip-tosses| calls up a gale| shoves| hauls| calls down a squall| calls a tailwind| watches a line)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>

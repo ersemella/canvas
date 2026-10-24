@@ -437,7 +437,8 @@ export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
         <>
           {abilityIcon(def)}
           <b>{def.name}</b> · {KIND_NAME[def.kind]}
-          {def.kind !== 'support' && (
+          {/* No damage line for support, nor for a control ability that deals none (Shove, Haul). */}
+          {def.kind !== 'support' && def.damages !== false && (
             <>
               {' · '}
               <Term id="power">Damage {unit.power}</Term>

@@ -52,7 +52,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 | `speed` | 0 to 30. Its card goes 60 ÷ (speed + 5) slots on after each turn, rounded. | the hero's |
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
-| `abilities` | Any of `"longshot"`, `"skirmish"`, `"hail"`, `"sunlight"`, `"grapple"`, `"throw"`, `"bite"`, on any hero. Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
+| `abilities` | Up to 3 of `"longshot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"`, `"throw"`, `"haul"`, `"shove"`, `"bite"`, on any hero (a unit has at most 3 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
 | `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's starting column (yours the left edge, the enemy's the right) |
 
 The heroes' own numbers and starting kits are `HEROES` in

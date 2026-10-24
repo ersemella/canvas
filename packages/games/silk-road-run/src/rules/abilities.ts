@@ -4,13 +4,7 @@
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
-import {
-  hexDirectionTo,
-  hexDistance,
-  hexEquals,
-  hexNeighbor,
-  hexNeighbors,
-} from '@canvas/engine/server';
+import {hexDirectionTo, hexDistance, hexEquals, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY} from './config';
 import {
@@ -36,8 +30,8 @@ import {
   unitName,
 } from './resolve';
 import type {Ctx} from './resolve';
-import {onMap, tileAt} from './map';
-import {chargeOf, placeCard} from './track';
+import {tileAt} from './map';
+import {chargeOf} from './track';
 import type {MapData} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
@@ -351,11 +345,10 @@ const grapple: AbilityDef = {
   },
 };
 
-// ─── Second abilities measured (balance.md, 2026-10-24) ──────────────────────
-// Measured with scripts/balance/experiments/second-abilities.mjs. Shove and
-// Haul (the Champion), Feigned Retreat and Volley (the Outrider) and Gale
-// (the Storm Caller) are upgrades (owner, 2026-10-24); Hold Loose, Hip
-// Toss, Squall Line, Tailwind and Overwatch are experiments in no kit.
+// ─── Upgrades of 2026-10-24 ──────────────────────────────────────────────────
+// Shove and Haul (the Champion), Feigned Retreat and Volley (the Outrider)
+// and Gale (the Storm Caller): owner, 2026-10-24, as measured (balance.md,
+// "Second abilities measured").
 
 /** The direction from `from` to `to`, adjacent or in a straight line from it. */
 function directionTo(from: Hex, to: Hex): number {
@@ -386,7 +379,7 @@ const haul: AbilityDef = {
   damages: false,
   range: ABILITY.haul.range,
   summary: () =>
-    `Pull the first unit in a straight line within ${ABILITY.haul.range} ${ABILITY.haul.pull} spaces toward you. No damage.`,
+    `The first unit in a straight line 2 to ${ABILITY.haul.range} spaces away: Pull it ${ABILITY.haul.pull} spaces toward you. No damage.`,
   targetsUnit: true,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
@@ -401,72 +394,6 @@ const haul: AbilityDef = {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} hauls ${unitName(u)}.`);
     displace(ctx, u, directionTo(u.hex!, user.hex!), ABILITY.haul.pull, 'pull');
-  },
-};
-
-/**
- * Hold Loose, Grapple changed: the target is Immobilized, not Stunned, and
- * the grapple holds through damage and Stuns, ending only when the two part
- * (or one falls).
- */
-const holdLoose: AbilityDef = {
-  id: 'holdLoose',
-  name: 'Hold Loose',
-  kind: 'attack',
-  summary: (user) =>
-    `Melee: it takes ${damageText(user)} and is Immobilized until the two of you part, taking ${ABILITY.grapple.squeeze} more at each of your turns meanwhile. One at a time.`,
-  targetsUnit: true,
-  targets: (state, _map, user, from) =>
-    adjacentUnits(state, from, (u) => u !== user && !grappling(user, u)),
-  resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    log(ctx, `${unitName(user)} grapples ${unitName(u)}.`);
-    hit(ctx, user, u, 'The grapple');
-    if (!u.alive) return;
-    endGrapples(ctx, (g) => g.champion === user.id);
-    u.statuses.push({
-      kind: 'immobilized',
-      grapple: {champion: user.id, target: u.id, loose: true},
-    });
-  },
-};
-
-/**
- * Hip Toss, Throw changed: the unit it grapples lands on any free space
- * within `ABILITY.hipToss.range` of the Champion (or swaps with it), then
- * takes its power; the grapple ends.
- */
-const hipToss: AbilityDef = {
-  id: 'hipToss',
-  name: 'Hip Toss',
-  kind: 'attack',
-  summary: (user) =>
-    `Melee, on the unit you grapple: Move it to a free space within ${ABILITY.hipToss.range} of you, or swap places with it, then it takes ${damageText(user)}. The grapple ends.`,
-  targetsUnit: true,
-  targets(state, map, user, from) {
-    const out: ActionTarget[] = [];
-    for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u))) {
-      const landings = spacesWithin(map, from, ABILITY.hipToss.range).filter(
-        (h) => !hexEquals(h, from) && tileAt(map, h) !== 'obstacle' && !unitAt(state, h)
-      );
-      if (!isImmobilized(user)) landings.push(from);
-      for (const to of sortByHex(landings, (h) => h)) out.push({hex: t.hex!, to});
-    }
-    return out;
-  },
-  resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    if (hexEquals(target.to!, user.hex!)) {
-      const at = u.hex!;
-      log(ctx, `${unitName(user)} swaps places with ${unitName(u)}.`);
-      enterHex(ctx, u, user.hex!, 'swap', true);
-      enterHex(ctx, user, at, 'swap', true);
-    } else {
-      log(ctx, `${unitName(user)} hip-tosses ${unitName(u)}.`);
-      enterHex(ctx, u, target.to!, 'throw');
-    }
-    endGrapples(ctx, (g) => g.champion === user.id && g.target === u.id);
-    hit(ctx, user, u, 'The hip toss');
   },
 };
 
@@ -554,79 +481,6 @@ const gale: AbilityDef = {
   },
 };
 
-/** Squall Line's three spaces: `centre` and its two neighbours along the axis `to` names. */
-export function squallSpaces(map: MapData, centre: Hex, to: Hex): Hex[] {
-  const dir = directionTo(centre, to);
-  return [hexNeighbor(centre, dir + 3), centre, to].filter(
-    (h) => onMap(map, h) && tileAt(map, h) !== 'obstacle'
-  );
-}
-
-/**
- * Squall Line, Hail changed: hail on a space within range and its two
- * neighbours in a line (`to`, one of them, names the line), no damage.
- */
-const squall: AbilityDef = {
-  id: 'squall',
-  name: 'Squall Line',
-  kind: 'control',
-  range: ABILITY.squall.range,
-  radius: 1,
-  summary: () =>
-    `Hail on three spaces in a line until your next turn, no damage: a unit there or that enters is Immobilized until the hail is gone.`,
-  targets(_state, map, _user, from) {
-    const out: ActionTarget[] = [];
-    for (const centre of spacesWithin(map, from, ABILITY.squall.range)) {
-      if (tileAt(map, centre) === 'obstacle') continue;
-      for (const dir of [0, 1, 2]) out.push({hex: centre, to: hexNeighbor(centre, dir)});
-    }
-    return out;
-  },
-  resolve(ctx, user, target) {
-    const spaces = squallSpaces(ctx.map, target.hex!, target.to!);
-    ctx.state.effects = ctx.state.effects.filter((e) => !spaces.some((h) => hexEquals(e.hex, h)));
-    for (const hex of spaces) ctx.state.effects.push({kind: 'hail', hex, source: user.id});
-    log(ctx, `${unitName(user)} calls down a squall line.`);
-    for (const hex of spaces) {
-      const u = unitAt(ctx.state, hex);
-      if (u) hailHolds(ctx, u);
-    }
-  },
-};
-
-/**
- * Tailwind: Haste `ABILITY.tailwind.haste` on another unit within range,
- * never earlier than the next slot, once between its turns (the haste
- * limit).
- */
-const tailwind: AbilityDef = {
-  id: 'tailwind',
-  name: 'Tailwind',
-  kind: 'support',
-  range: ABILITY.tailwind.range,
-  summary: () =>
-    `Haste ${ABILITY.tailwind.haste} on a unit within ${ABILITY.tailwind.range}: its card comes ${ABILITY.tailwind.haste} slots sooner, once between its turns.`,
-  targets(state, map, user, from) {
-    return hexesWithin(map, from, ABILITY.tailwind.range, (h) => {
-      const u = unitAt(state, h);
-      return (
-        u !== undefined &&
-        u !== user &&
-        !u.hasted &&
-        u.slot !== null &&
-        u.slot > state.currentSlot + 1
-      );
-    });
-  },
-  resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    const to = Math.max(ctx.state.currentSlot + 1, u.slot! - ABILITY.tailwind.haste);
-    placeCard(ctx.state, u, to);
-    u.hasted = true;
-    log(ctx, `${unitName(user)} calls a tailwind behind ${unitName(u)}.`);
-  },
-};
-
 /**
  * Volley: arrows from above on a space within range, no line of fire,
  * charged as Skirmish (`ABILITY.volley.charge`): whoever stands there when
@@ -657,27 +511,6 @@ const volley: AbilityDef = {
   },
 };
 
-/**
- * Overwatch: one of the Bow's lanes (aimed at its first space) until the
- * Outrider's next turn; the first unit to enter it, ally or enemy, is
- * shot, and the lane lifts.
- */
-const overwatch: AbilityDef = {
-  id: 'overwatch',
-  name: 'Overwatch',
-  kind: 'attack',
-  summary: (user) =>
-    `Watch a straight line until your next turn: the first unit to enter it takes ${damageText(user)}.`,
-  targets: (_state, map, _user, from) =>
-    DIRECTIONS.map((dir) => laneFrom(map, from, dir)[0])
-      .filter((h): h is Hex => h !== undefined)
-      .map((hex) => ({hex})),
-  resolve(ctx, user, target) {
-    (ctx.state.watches ??= []).push({source: user.id, dir: directionTo(user.hex!, target.hex!)});
-    log(ctx, `${unitName(user)} watches a line.`);
-  },
-};
-
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 
 const bite: AbilityDef = {
@@ -705,14 +538,9 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   bite,
   shove,
   haul,
-  holdLoose,
-  hipToss,
   feignedRetreat,
   gale,
-  squall,
-  tailwind,
   volley,
-  overwatch,
 };
 
 export function abilitiesOf(unit: Unit): AbilityDef[] {

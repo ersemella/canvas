@@ -79,6 +79,11 @@ random from one pool:
   player doesn't care about.
 - **Proposed:** the hero slot favours heroes with the fewest upgrades so
   far, so no hero goes the whole run without one.
+- **At most three abilities** besides moving and Hold (owner, 2026-10-24;
+  [roster.md](roster.md)): the hero slot offers a new ability only to a
+  hero with fewer than three (`hasRoomForAbility` in board.ts); a change to
+  an ability it has is still offered. Whether a hero at three could swap
+  one out for a new one is open.
 
 ### 19.4 Recruits and Death (Proposed)
 Follows the death spiral rule (10.6): a hero who dies takes their

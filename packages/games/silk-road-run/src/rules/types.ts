@@ -21,18 +21,12 @@ export type AbilityId =
   | 'grapple'
   | 'throw'
   | 'bite'
-  // Upgrades (owner, 2026-10-24): Shove, Haul, Feigned Retreat, Gale, Volley;
-  // the rest experiments in no kit (balance.md, "Second abilities measured").
+  // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
-  | 'holdLoose'
-  | 'hipToss'
   | 'feignedRetreat'
   | 'gale'
-  | 'squall'
-  | 'tailwind'
-  | 'volley'
-  | 'overwatch';
+  | 'volley';
 
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';
@@ -46,7 +40,7 @@ export interface Status {
   /** From a Storm Caller's hail (its unit id): ends when that hail disappears, at the caster's next turn. */
   hail?: string;
   /** From a Grapple: ends when the grapple does (`breakGrapples` in resolve.ts). */
-  grapple?: {champion: string; target: string; loose?: boolean};
+  grapple?: {champion: string; target: string};
 }
 
 /**
@@ -91,11 +85,6 @@ export interface Unit {
   /** Its turn has begun since it was Enhanced, so the Enhance ends with that turn. */
   enhanceStarted?: boolean;
   /**
-   * Hasted since its last turn (Tailwind, an experiment): it can't be
-   * Hasted again until it next acts, the haste limit (keywords.md, 17.3).
-   */
-  hasted?: boolean;
-  /**
    * Its last turn was skipped (it could only Hold): its card shows it until
    * it next acts.
    */
@@ -123,7 +112,7 @@ export interface ShotInAir {
   source: string;
   /** A Skirmish arrow's lane direction; absent for a Volley. */
   dir?: number;
-  /** A Volley's space (an experiment): whoever stands there when it lands is hit. */
+  /** A Volley's space: whoever stands there when it lands is hit. */
   hex?: Hex;
   /**
    * The Outrider's Enhance when it drew: the arrow carries it, though the
@@ -179,11 +168,6 @@ export interface FightState {
    * Outrider's charging card comes back.
    */
   shots?: ShotInAir[];
-  /**
-   * Overwatch lanes (an experiment): each Outrider's lane until its next
-   * turn, the first unit to enter it shot.
-   */
-  watches?: {source: string; dir: number}[];
   log: LogEntry[];
   /**
    * What the last action set off, the player's turn and the AI turns after

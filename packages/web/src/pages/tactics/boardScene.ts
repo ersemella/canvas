@@ -133,14 +133,31 @@ export function buildScene(input: SceneInput): BoardScene {
         (h) => hexDistance(h, from) <= def.range! && onMap(map, h)
       );
     }
-    if (from && ability === 'longshot')
+    // The Bow's lanes: Longshot's, Feigned Retreat's before its target is
+    // picked; Haul's, as far as it reaches.
+    const lanesShown =
+      ability === 'longshot' ||
+      (ability === 'feignedRetreat' && !target?.hex) ||
+      ability === 'haul';
+    if (from && lanesShown)
       out.lanes = {
         from,
         lanes: arrowLanes(fight, mapOf(fight), from).map((l) => ({
-          hexes: l.hexes,
+          hexes: def.range ? l.hexes.slice(0, def.range) : l.hexes,
           target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
         })),
       };
+    // Who the turn Pushes or Pulls (Shove, Haul, Gale), and where to; a
+    // second pick's move (Throw's landing) is drawn as `step` instead.
+    if (preview && !targets.some((t) => t.to)) {
+      const displaced: [Hex, Hex][] = [];
+      for (const c of preview.changes) {
+        const u = fight.units.find((v) => v.id === c.unitId);
+        // The user too: a Gale beside it blows it away.
+        if (u?.hex && c.to && !c.killed && !hexEquals(u.hex, c.to)) displaced.push([u.hex, c.to]);
+      }
+      if (displaced.length) out.displaced = displaced;
+    }
     // Only what it may target; once Throw's target is picked, where it can
     // land, dashed so it never reads as more targets. Skirmish first offers
     // the spaces to step to, dashed, then the targets in line from the one

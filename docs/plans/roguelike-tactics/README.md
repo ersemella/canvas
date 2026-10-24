@@ -65,7 +65,11 @@ the kits.**
   Caller.
 - **Deleted with their code:** the Modao Vanguard's kit, ultimates and
   charged abilities, Leap, Shove, quicksand and the sandstorm,
-  and every keyword not in the new list ([history.md](history.md)).
+  and every keyword not in the new list ([history.md](history.md)); Shove
+  is back as an upgrade (2026-10-24). Hold Loose, Hip Toss, Squall Line,
+  Tailwind and Overwatch were measured and removed on 2026-10-24.
+- **At most three abilities** a hero, besides moving and Hold (owner,
+  2026-10-24; [roster.md](roster.md)).
 - Still pared back from 2026-10-22: the Modao Vanguard out of the
   roster; six ruins a fight; a move of at most 3 spaces; Temee not player
   controlled, walking itself one space a turn from the top row's first hex

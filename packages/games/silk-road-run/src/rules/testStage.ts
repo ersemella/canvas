@@ -10,8 +10,8 @@ import {hexEquals, hexKey, offsetToHex} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import config from '../../test-stage.json';
 import {ABILITIES} from './abilities';
-import {canMove} from './board';
-import {CAMEL, HEROES} from './config';
+import {abilityCount, canMove} from './board';
+import {CAMEL, HEROES, RULES} from './config';
 import {RuleError, makeUnit, mapOf, seededRandom} from './fight';
 import {log} from './resolve';
 import {SALT_FLATS, onMap, randomTiles} from './map';
@@ -95,6 +95,8 @@ function parseUnit(where: string, v: unknown, camel = false): UnitSetup {
       raw.abilities.some((a) => typeof a !== 'string' || !ids.includes(a))
     )
       fail(`${where}.abilities must be a list of ${ids.join(', ')}.`);
+    if (abilityCount([...new Set(raw.abilities as AbilityId[])]) > RULES.maxAbilities)
+      fail(`${where}.abilities can have at most ${RULES.maxAbilities}, besides Hold.`);
     // Hold is always there: a move-only turn is a move and Hold.
     loadout.abilities = [...new Set([...(raw.abilities as AbilityId[]), 'hold' as const])];
   }

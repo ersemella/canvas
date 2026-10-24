@@ -92,6 +92,8 @@ const TONE: Partial<Record<KeywordId, string>> = {
   immobilized: 'var(--c-gold)',
   stunned: 'var(--c-gold)',
   move: 'var(--c-gold)',
+  push: 'var(--c-gold)',
+  pull: 'var(--c-gold)',
   melee: 'var(--c-madderLight)',
   enhanced: 'var(--c-jade)',
 };
@@ -152,6 +154,8 @@ const WORDS: [RegExp, KeywordId][] = [
   [/Stunned/, 'stunned'],
   [/\bEnhance(?:d)?\b/, 'enhanced'],
   [/\bMove(?:d)?\b/, 'move'],
+  [/\bPush(?:ed)?\b/, 'push'],
+  [/\bPull(?:ed)?\b/, 'pull'],
 ];
 const ANY = new RegExp(WORDS.map(([re]) => `(${re.source})`).join('|'), 'g');
 

@@ -1532,8 +1532,8 @@ lane value (`AI.watchShare`, 0.25) at 0.1 and 0.5: 56.4% and 60.6%.
 
 **Adopted (owner, 2026-10-24): Gale, Volley, Feigned Retreat, Haul and
 Shove as upgrades** (`upgrades` in config.ts; [roster.md](roster.md)), as
-measured. Hold Loose, Hip Toss, Squall Line, Tailwind and Overwatch stay
-experiments in no kit.
+measured. Hold Loose, Hip Toss, Squall Line, Tailwind and Overwatch were
+removed with their code (owner, 2026-10-24; [history.md](history.md)).
 
 ## Principles for re-tuning
 

@@ -48,6 +48,7 @@ import type {Point} from './board/pixels';
 import {WALK_OUT_STEP_SECONDS, walkOutPlan, walkPosition} from './board/walkOut';
 import type {Walk} from './board/walkOut';
 import {drawPlaybackEvent, playbackScene, steppingAt} from './board/playbackDraw';
+import {drawVolleyMark} from './board/effects';
 
 /** Seconds a gone status's marker takes to rise off its unit and fade. */
 const MARK_EXPIRE_SECONDS = 0.9;
@@ -385,15 +386,18 @@ export class TacticsBoardSystem extends BaseSystem {
     if (scene.range) drawRangeOutline(ctx, scene.range);
     if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);
     if (scene.step) drawPath(ctx, scene.step);
+    for (const d of scene.displaced ?? []) drawPath(ctx, d);
 
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
     // Drawn arrows in the air: a dotted arrow, as Longshot aims, from the
     // shooter to where it would hit now, in its side's light colour.
+    // A Volley also marks the space it will land on.
     for (const v of fight.shots ?? []) {
       const archer = fight.units.find((u) => u.id === v.source);
       const last = shotLane(fight, map, v).at(-1);
       if (archer?.hex && last) drawLaneArrow(ctx, archer.hex, last, SIDE_LIGHT[archer.side], true);
+      if (archer && v.hex) drawVolleyMark(ctx, v.hex, SIDE_LIGHT[archer.side]);
     }
 
     if (playing) drawPlaybackEvent(ctx, playing);

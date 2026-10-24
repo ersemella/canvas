@@ -90,6 +90,16 @@ describe('the test stage', () => {
     expect(bad({...ok, player: [{hero: 'bokh', abilities: ['fireball']}]})).toMatch(
       /abilities must be a list of/
     );
+    // At most three besides Hold (owner, 2026-10-24).
+    expect(
+      bad({...ok, player: [{hero: 'bokh', abilities: ['grapple', 'throw', 'haul', 'shove']}]})
+    ).toMatch(/abilities can have at most 3/);
+    expect(
+      parseTestStage({
+        ...ok,
+        player: [{hero: 'bokh', abilities: ['grapple', 'throw', 'haul', 'hold']}],
+      }).player[0]!.loadout!.abilities
+    ).toEqual(['grapple', 'throw', 'haul', 'hold']);
     expect(bad({...ok, player: [{hero: 'bokh', at: space(9, 0)}]})).toMatch(/off the board/);
     expect(
       bad({

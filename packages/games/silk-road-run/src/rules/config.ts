@@ -22,6 +22,11 @@ export const RULES = {
   speedPivot: 5,
   /** Temee's starting slot (3.4), after every other unit's starting card. */
   camelStartSlot: 12,
+  /**
+   * The most abilities a unit has besides moving and Hold (owner,
+   * 2026-10-24): a hero with this many takes no new one from an upgrade.
+   */
+  maxAbilities: 3,
   /** Ordinary walking cap (5.1): 3 since 2026-10-22 (owner). */
   movementCap: 3,
   /** Size of the track window the page shows (open question 1). */
@@ -190,17 +195,12 @@ export const ABILITY = {
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
    * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
    * (each unit next to a space within `range` hit and Pushed) and Volley (a
-   * space within `range`, charged). Experiments, in no kit or upgrade list:
-   * Hip Toss (Throw landing within `range`), Squall Line (hail on three
-   * spaces in a line, no damage) and Tailwind (Haste a unit within `range`).
+   * space within `range`, charged as Skirmish).
    */
   shove: {push: 2},
   haul: {range: 3, pull: 2},
-  hipToss: {range: 2},
   feignedRetreat: {steps: 2},
   gale: {range: 3, push: 1},
-  squall: {range: 3},
-  tailwind: {range: 3, haste: 3},
   volley: {range: 3, charge: 0.5 as number},
 } as const;
 
@@ -246,11 +246,6 @@ export const AI = {
    * walk is worth this share of the hit: it can step out. PLACEHOLDER.
    */
   dodgeShare: 0.25,
-  /**
-   * An Overwatch lane an enemy could walk into before it lifts is worth
-   * this share of the Outrider's hit (an experiment). PLACEHOLDER.
-   */
-  watchShare: 0.25,
   /**
    * Minus this per space between the unit and what it closes in on after
    * its turn (for the enemy, Temee once no hero is in its reach; otherwise

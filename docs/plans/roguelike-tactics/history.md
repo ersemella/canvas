@@ -313,6 +313,19 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   ability's worth (44%). Replaced by Skirmish, a step and the Bow's shot,
   charged the same (owner).
 
+- **Hold Loose, Hip Toss, Squall Line, Tailwind and Overwatch** (2026-10-24;
+  built, measured and removed with their code the same day, owner;
+  [balance.md](balance.md#second-abilities-measured-2026-10-24)), weighed
+  beside the five that became upgrades (Shove, Haul, Feigned Retreat,
+  Gale, Volley). *Hold Loose* (Grapple changed): its target Immobilized,
+  not Stunned, the grapple holding through damage and Stuns; a nerf (39.4%
+  head to head). *Hip Toss* (Throw changed): landing within 2, the grapple
+  ending; no change (47.5%). *Squall Line* (Hail changed): hail on three
+  spaces in a line, no damage; a big nerf (29.4%) that slowed fights.
+  *Tailwind* (the Storm Caller): Haste 3 on a unit within 3, once between
+  its turns; a trap (a side without it won 57.2%). *Overwatch* (the
+  Outrider, a second time): a lane until its next turn, the first unit
+  entering it shot; it seldom fired and lost games (57.9%), as in 2026-10-23.
 - **Overwatch, Sunlight and Fog** (owner's proposals, 2026-10-23; built,
   measured and removed with their code the same day,
   [balance.md](balance.md#new-abilities-2026-10-23)). *Overwatch* (the

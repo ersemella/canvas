@@ -74,7 +74,9 @@ export type KeywordId =
   | 'immobilized'
   | 'stunned'
   | 'enhanced'
-  | 'move';
+  | 'move'
+  | 'push'
+  | 'pull';
 
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   speed: {
@@ -97,4 +99,14 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
     detail: 'Its abilities deal that much more damage, until the end of its next turn.',
   },
   move: {name: 'Move', detail: 'Put on another space by someone else, not walking.'},
+  push: {
+    name: 'Push',
+    detail:
+      'Moved that many spaces straight away from what pushed it, stopping early at ruins, another unit or the edge of the map. Hail it enters holds it.',
+  },
+  pull: {
+    name: 'Pull',
+    detail:
+      'Moved that many spaces straight toward what pulled it, stopping early at ruins, another unit or the edge of the map. Hail it enters holds it.',
+  },
 };

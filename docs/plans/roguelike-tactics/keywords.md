@@ -25,9 +25,8 @@ and Enhance (the Storm Caller's Sunlight: until the end of the unit's next
 turn, a new one replacing the last; a Champion's Enhance adds to its
 squeeze, owner, 2026-10-23). **Push** and **Pull** (2026-10-24), for the
 upgrades Shove, Gale and Haul ([roster.md](roster.md)): no collision
-damage when stopped early (question 55 open). Haste is built for the
-Tailwind experiment, in no kit, with a limit of one Haste between a
-unit's turns (question 41 open).
+damage when stopped early (question 55 open). Haste was built for the
+Tailwind experiment and removed with it (2026-10-24; [history.md](history.md)).
 The others are defined here and built when an ability uses them.
 
 ## 17. Keywords and Effects

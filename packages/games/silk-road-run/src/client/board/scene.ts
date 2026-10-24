@@ -31,6 +31,11 @@ export interface BoardScene {
    * unit's ghost would hide it under them.
    */
   step?: [Hex, Hex];
+  /**
+   * Where the planned ability Pushes or Pulls each unit (Shove, Haul,
+   * Gale): a move's arrow from where it stands to where it would end.
+   */
+  displaced?: [Hex, Hex][];
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
   /** The slot the planned turn aims at (3.2); when it's taken, the card yields on to `previewSlot`. */
