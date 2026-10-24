@@ -90,6 +90,11 @@ export interface HailEffect {
 export interface ShotInAir {
   source: string;
   dir: number;
+  /**
+   * The Outrider's Enhance when it drew: the arrow carries it, though the
+   * Enhance itself ends with that turn. Absent when it had none.
+   */
+  enhance?: number;
 }
 
 export interface LogEntry {

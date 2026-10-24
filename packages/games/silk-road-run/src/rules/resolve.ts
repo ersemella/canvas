@@ -8,7 +8,7 @@ import {ABILITY, CAMEL, HEROES} from './config';
 import {addStatus, hailOn, shotLane, unitAt} from './board';
 import {MAPS} from './map';
 import type {MapData} from './map';
-import type {BoardSnapshot, FightEvent, FightState, Motion, Status, Unit} from './types';
+import type {BoardSnapshot, FightEvent, FightState, Motion, ShotInAir, Status, Unit} from './types';
 
 export interface Ctx {
   state: FightState;
@@ -60,18 +60,33 @@ export function unitName(u: Unit): string {
 
 /**
  * An ability's hit: exactly the attacker's power in damage (owner,
- * 2026-10-23). Power 0 deals none, and says nothing.
+ * 2026-10-23), plus its Enhance (or `enhance`, one the hit carries from
+ * when it was made). Power 0 deals none, and says nothing.
  */
-export function hit(ctx: Ctx, attacker: Unit, target: Unit, what: string): void {
-  const amount = damageOf(attacker);
+export function hit(
+  ctx: Ctx,
+  attacker: Unit,
+  target: Unit,
+  what: string,
+  enhance = attacker.enhance ?? 0
+): void {
+  const amount = damageOf(attacker, enhance);
   if (!target.alive || amount <= 0) return;
-  if (attacker.enhance) log(ctx, `Enhance adds ${amount - attacker.power}.`);
+  if (enhance) log(ctx, `Enhance adds ${amount - attacker.power}.`);
   applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`);
 }
 
 /** An ability's damage (17.6, step 1): power plus Enhance, at least 0. */
-export function damageOf(attacker: Unit): number {
-  return Math.max(0, attacker.power + (attacker.enhance ?? 0));
+export function damageOf(attacker: Unit, enhance = attacker.enhance ?? 0): number {
+  return Math.max(0, attacker.power + enhance);
+}
+
+/**
+ * The Enhance a drawn arrow of `user`'s carries when it flies: the one it
+ * drew with, or one it has been given since, whichever is more.
+ */
+export function shotEnhance(user: Unit, shot: ShotInAir): number {
+  return Math.max(shot.enhance ?? 0, user.enhance ?? 0);
 }
 
 /** Enhances `u` by `amount` until the end of its next turn, replacing any Enhance it had. */
@@ -165,7 +180,8 @@ export function landShots(ctx: Ctx, user: Unit): void {
     const end = lane[lane.length - 1] ?? user.hex!;
     record(ctx.state, {kind: 'land', unitId: user.id, ability: 'skirmish', target: end});
     const u = unitAt(ctx.state, end);
-    if (u && u !== user) hit(ctx, user, u, `${unitName(user)}'s skirmish arrow`);
+    if (u && u !== user)
+      hit(ctx, user, u, `${unitName(user)}'s skirmish arrow`, shotEnhance(user, v));
   }
 }
 

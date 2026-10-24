@@ -239,6 +239,21 @@ describe('the track', () => {
     expect(s.shots).toEqual([]);
   });
 
+  it('a drawn arrow carries the Enhance its Outrider drew with, though the Enhance ends with that turn', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
+    const m = unit(s, 'p-mangudai');
+    const bokh = unit(s, 'e-bokh');
+    enhance({state: s, map: mapOf(s), slot: s.currentSlot}, m, 2);
+    m.enhanceStarted = true;
+    applyTurn(s, m, skirmishOn(s, m, bokh));
+    expect(m.enhance).toBeUndefined();
+    s.units.forEach((u) => (u.controller = 'human'));
+    for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
+      applyTurn(s, d, {action: {ability: 'hold'}});
+    expect(s.shots).toEqual([]);
+    expect(bokh.hp).toBe(bokh.maxHp - m.power - 2);
+  });
+
   it('a drawn arrow is lost when its Outrider falls first', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');

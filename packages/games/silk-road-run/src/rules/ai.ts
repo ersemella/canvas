@@ -21,7 +21,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, chargeOf} from './track';
-import {camelOf} from './resolve';
+import {camelOf, damageOf, shotEnhance} from './resolve';
 import {MAPS} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
@@ -142,7 +142,7 @@ function shotPoints(state: FightState, side: Side): number {
     const lane = shotLane(state, mapOf(state), v);
     const target = lane.length ? unitAt(state, lane[lane.length - 1]!) : undefined;
     if (!target) continue;
-    const hit = Math.min(source.power, target.hp);
+    const hit = Math.min(damageOf(source, shotEnhance(source, v)), target.hp);
     const dodges =
       target.slot !== null &&
       target.slot < source.slot &&

@@ -178,7 +178,11 @@ const skirmish: AbilityDef = {
     }
     const dir = DIRECTIONS.find((d) => firstInLane(ctx.state, ctx.map, user.hex!, d, user) === u)!;
     log(ctx, `${unitName(user)} draws on ${unitName(u)}.`);
-    (ctx.state.shots ??= []).push({source: user.id, dir});
+    (ctx.state.shots ??= []).push({
+      source: user.id,
+      dir,
+      ...(user.enhance ? {enhance: user.enhance} : {}),
+    });
   },
 };
 
