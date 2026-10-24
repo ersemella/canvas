@@ -1485,8 +1485,8 @@ keywords arrive.
    is chosen; ablation says what it is worth. Targets per kit, with the
    side lacking the ability at:
    - the **core** action: 20–35%;
-   - each **other** ability: 40–48% (it pulls its weight; none is
-     mandatory);
+   - each **other** ability: 40–50% (owner, 2026-10-24; was 40–48%):
+     it pulls its weight, and none is mandatory;
    - the **ultimate**: 40–47%;
    - **never above 50%**: an ability that loses games when used is a trap
      for players and the AI alike.

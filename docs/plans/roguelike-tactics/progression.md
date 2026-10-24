@@ -65,6 +65,10 @@ random from one pool:
 - **This replaces milestone upgrades** (10.9): offers come per region, not
   per hero's milestones, and the hero slot may add a new ability, not
   only adjust one.
+- **A new ability is held to a second ability's worth** (owner,
+  2026-10-24): a side without it wins 40–50% ([balance.md](balance.md),
+  principle 2). Skirmish (44%) and Sunlight (48.8%) both fit, so either
+  can be a hero upgrade rather than start in the kit.
 - Rationale: a fixed slot per kind means every offer has something for
   the build's identity (hero), something flexible (passive) and a
   swing pick (wildcard), and is never three upgrades for a hero the

@@ -58,7 +58,7 @@ Written 2026-10-17 from memory; details not checked against each game. The rules
 | A boon changes a verb (Zeus's attack chains lightning, Poseidon's knocks back) | An item that only changes numbers isn't a choice (9.7) |
 | Each god owns a theme (Zeus Jolted, Ares Doom, Demeter Chill) | Each keyword family has one clear identity |
 | One boon per verb slot (Attack, Special, Cast, Dash, Call) | Tie each gear slot to a verb, so items compete (9.3) |
-| Boons are transferable (the same Zeus boon on any weapon); Daedalus Hammer upgrades change one weapon's behaviour | Gear holds transferable modifiers; milestone upgrades hold hero-specific adjustments (10.9) |
+| Boons are transferable (the same Zeus boon on any weapon); Daedalus Hammer upgrades change one weapon's behaviour | Gear holds transferable modifiers; hero upgrades hold hero-specific adjustments and new abilities (19.3) |
 | Rarity scales the same effect | The fine-grained numbers live inside a qualitative choice (9.4) |
 | Duo and legendary boons need specific prerequisites | Bridge gear with prerequisites; taking an item early is a bet (9.7) |
 | Doors show which god's boon is behind them | Route nodes show their keyword family (9.7) |
