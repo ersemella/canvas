@@ -210,7 +210,7 @@ describe('the search timeline', () => {
         {'p-bokh': hex(0, 0), 'p-mangudai': hex(-4, 4), 'e-wolf': hex(1, 0), 'e-wolf-2': from},
         ['wolf', 'wolf']
       );
-      // On open ground: the fixed ruins sit beside the Champion on this board.
+      // On open ground: the fixed yurts sit beside the Champion on this board.
       s.tiles = {};
       const held = unit(s, 'e-wolf');
       held.statuses = [{kind: 'stunned', grapple: {champion: 'p-bokh', target: held.id}}];

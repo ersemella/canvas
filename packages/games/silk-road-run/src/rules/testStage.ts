@@ -30,9 +30,9 @@ interface UnitSetup {
 }
 
 interface TestSetup {
-  /** Scatters the ruins and the units without an `at`; null: the run's own seed. */
+  /** Scatters the yurts and the units without an `at`; null: the run's own seed. */
   seed: number | null;
-  ruins: 'random' | 'none' | 'map' | Hex[];
+  yurts: 'random' | 'none' | 'map' | Hex[];
   /** Null: no camel, so the fight is won or lost only by beating a side. */
   camel: UnitSetup | null;
   player: UnitSetup[];
@@ -120,22 +120,22 @@ function parseSide(where: string, v: unknown): UnitSetup[] {
 export function parseTestStage(raw: unknown): TestSetup {
   if (!isObject(raw)) fail('must be an object.');
   const v = raw as Record<string, unknown>;
-  onlyKeys('The file', v, ['seed', 'ruins', 'camel', 'player', 'enemy']);
+  onlyKeys('The file', v, ['seed', 'yurts', 'camel', 'player', 'enemy']);
   const seed = v.seed ?? null;
   if (seed !== null && (!Number.isInteger(seed) || (seed as number) < 0))
     fail('seed must be a whole number, or null for a new one each time.');
-  let ruins: TestSetup['ruins'] = 'random';
-  if (Array.isArray(v.ruins)) ruins = v.ruins.map((h, i) => parseSpace(`ruins[${i}]`, h));
-  else if (v.ruins !== undefined) {
-    if (v.ruins !== 'random' && v.ruins !== 'none' && v.ruins !== 'map')
-      fail('ruins must be "random", "none", "map" or a list of spaces.');
-    ruins = v.ruins as 'random' | 'none' | 'map';
+  let yurts: TestSetup['yurts'] = 'random';
+  if (Array.isArray(v.yurts)) yurts = v.yurts.map((h, i) => parseSpace(`yurts[${i}]`, h));
+  else if (v.yurts !== undefined) {
+    if (v.yurts !== 'random' && v.yurts !== 'none' && v.yurts !== 'map')
+      fail('yurts must be "random", "none", "map" or a list of spaces.');
+    yurts = v.yurts as 'random' | 'none' | 'map';
   }
   const camel =
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
   const setup: TestSetup = {
     seed: seed as number | null,
-    ruins,
+    yurts,
     camel,
     player: parseSide('player', v.player),
     enemy: parseSide('enemy', v.enemy),
@@ -146,7 +146,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     if (other) fail(`${where} starts on the same space as ${other}.`);
     taken.set(hexKey(h), where);
   };
-  if (Array.isArray(ruins)) ruins.forEach((h, i) => claim(`ruins[${i}]`, h));
+  if (Array.isArray(yurts)) yurts.forEach((h, i) => claim(`yurts[${i}]`, h));
   if (camel) claim('camel', camel.at ?? SALT_FLATS.camelStart);
   for (const side of ['player', 'enemy'] as const)
     setup[side].forEach((u, i) => u.at && claim(`${side}[${i}]`, u.at));
@@ -156,7 +156,7 @@ export function parseTestStage(raw: unknown): TestSetup {
 /**
  * The test stage's fight, already under way: the units on their spaces,
  * the rest scattered on their side's starting column (the player's left,
- * the enemy's right), the ruins as set; with random ruins, scattered again
+ * the enemy's right), the yurts as set; with random yurts, scattered again
  * until no unit starts boxed in, as in a stage's fight (`createFight`).
  */
 export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): FightState {
@@ -201,8 +201,8 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
   const fixed = units.filter((u) => u.hex).map((u) => u.hex!);
 
   for (let attempt = 0; ; attempt++) {
-    state.tiles = tilesFor(setup.ruins, random);
-    // A placed unit's space is never a ruin.
+    state.tiles = tilesFor(setup.yurts, random);
+    // A placed unit's space is never a yurt.
     for (const h of fixed) delete state.tiles[hexKey(h)];
     for (const side of ['player', 'enemy'] as const) {
       const loose = placed.filter(([u, {at}]) => u.side === side && !at && u !== camel);
@@ -216,8 +216,8 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
       const hexes = shuffled(free, random);
       loose.forEach(([u], i) => (u.hex = hexes[i]!));
     }
-    // Only random ruins can be scattered again; a layout set by hand stays as it is.
-    if (setup.ruins !== 'random' || attempt >= 50) break;
+    // Only random yurts can be scattered again; a layout set by hand stays as it is.
+    if (setup.yurts !== 'random' || attempt >= 50) break;
     if (units.every((u) => canMove(state, mapOf(state), u))) break;
   }
   placeStartingCards(state);
@@ -225,9 +225,9 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
   return state;
 }
 
-function tilesFor(ruins: TestSetup['ruins'], random: () => number): Record<string, Tile> {
-  if (ruins === 'random') return randomTiles(random);
-  if (ruins === 'none') return {};
-  if (ruins === 'map') return {...SALT_FLATS.tiles};
-  return Object.fromEntries(ruins.map((h) => [hexKey(h), 'obstacle' as const]));
+function tilesFor(yurts: TestSetup['yurts'], random: () => number): Record<string, Tile> {
+  if (yurts === 'random') return randomTiles(random);
+  if (yurts === 'none') return {};
+  if (yurts === 'map') return {...SALT_FLATS.tiles};
+  return Object.fromEntries(yurts.map((h) => [hexKey(h), 'obstacle' as const]));
 }

@@ -49,12 +49,13 @@ tuning. This file has no combat-design section number.
 - **The Steppe's ground** (owner, 2026-10-24): the board was sand and
   sandstone ruins, a desert, while every stage built is in the Steppe
   region ([setting.md](setting.md), 15.3a). The ground is now steppe
-  grass (`tiles/grass.png`) and the ruins those of a steppe city such as
-  the Uyghur capital Karabalgasun: a crumbling mudbrick wall
-  (`tiles/ruins.png`) or a collapsed tower stump (`tiles/ruins-tower.png`),
-  each ruin's hex picking one; softened from the owner's art (a dark-brown
-  outline instead of the units' ink, contrast cut to 72%) so they sit
-  back as terrain and the units stand out; mountains (`tiles/mountain-peak.png` and `mountain-twin.png`, the
+  grass (`tiles/grass.png`). Yurts (gers) replaced the ruins (owner,
+  2026-10-24): drawn in code for now (`yurtSprite` in
+  `client/board/ground.ts`, 30 × 22 art pixels: felt walls and roof, a
+  blue eave band, an orange door, a dark-brown outline like the other
+  terrain) until the owner's art comes. The ruins' art, a crumbling
+  mudbrick wall (`tiles/ruins.png`) and a tower stump
+  (`tiles/ruins-tower.png`), stays for a later region; mountains (`tiles/mountain-peak.png` and `mountain-twin.png`, the
   owner's, drawn for the flat-top hex: 42 wide, the base filling the hex's
   lower half; each mountain hex picks one; cut to 6 colours with an outline
   so they keep the other sprites' level of detail) stand on
@@ -62,7 +63,7 @@ tuning. This file has no combat-design section number.
   103-pixel tile laid across the board like the grass), drawn
   at 2× like every sprite: their base inside the hex, their peaks free to
   rise over the hexes beyond, in front of a unit standing there (drawn
-  after the units, before health and statuses) (rules in `randomTiles`, map.ts); boulders and gers were tried and felt out of place.
+  after the units, before health and statuses) (rules in `randomTiles`, map.ts); boulders and gers were tried and felt out of place (gers came back as the yurts, 2026-10-24).
   Both are the owner's (AI-assisted, 2026-10-24). The grass is a 64×64
   seamless tile laid across the board as one field (a pattern from the
   board's origin), not stamped per hex. The `sand`

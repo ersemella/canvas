@@ -765,17 +765,21 @@ try {
   );
 
   // Hovering a hex shows what it does, without planning a move.
-  // The steppe is open (no ruins): the road out is always there to hover.
-  const exit = {q: 0, r: 4};
+  // Each fight pitches its own yurts (two or three near the middle): find one in the view.
+  const [yq, yr] = Object.entries((await state()).view.fight.tiles)
+    .find(([, t]) => t === 'obstacle')[0]
+    .split(',')
+    .map(Number);
+  const yurt = {q: yq, r: yr};
   const versionBeforeHover = (await state()).view.version;
   {
-    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), exit);
+    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), yurt);
     const box = await page.locator('canvas').boundingBox();
     await page.mouse.move(box.x + (x * box.width) / SCENE_W, box.y + (y * box.height) / SCENE_H);
     await sleep(150);
   }
   const info = page.getByTestId('hex-info');
-  check('hovering the exit shows its rule', (await info.textContent()).includes('Road out'));
+  check('hovering a yurt shows its rule', (await info.textContent()).includes('Yurt'));
   check('hovering changes nothing', (await state()).view.version === versionBeforeHover);
   await shot(page, 'hover');
 

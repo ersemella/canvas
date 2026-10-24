@@ -1,7 +1,7 @@
 {
   "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file.",
   "seed": null,
-  "ruins": "random",
+  "yurts": "random",
   "camel": {},
   "player": [
     {"hero": "bokh"},

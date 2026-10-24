@@ -30,7 +30,7 @@ export class RuleError extends Error {}
 
 const fightMaps = new WeakMap<Record<string, Tile>, MapData>();
 
-/** The fight's map, with the fight's own ruins. */
+/** The fight's map, with the fight's own yurts. */
 export function mapOf(state: FightState): MapData {
   const map = MAPS[state.mapId]!;
   let own = fightMaps.get(state.tiles);
@@ -96,13 +96,13 @@ export function makeUnit(
 
 /**
  * A new fight on the Steppe Crossing, already under way: the seed scatters the
- * ruins, the player's party along the leftmost column and
+ * yurts, the player's party along the leftmost column and
  * the enemy's along the rightmost (owner, 2026-10-20; there is no
  * deployment step). The player's camel
  * starts at the board's top point (camel.md, 18.1; owner, 2026-10-24). The player brings
  * the heroes chosen on the start menu; the enemy brings `enemies`, all three
  * heroes unless the run's stage says otherwise (STAGES). No unit starts
- * boxed in by ruins and the units beside it: the seed scatters again until
+ * boxed in by yurts and the units beside it: the seed scatters again until
  * every one has a free hex to step to.
  */
 export function createFight(
@@ -256,7 +256,7 @@ function skipTurn(ctx: Ctx, unit: Unit, text: string): void {
 
 /**
  * The camel's turn (owner, 2026-10-22): one step toward the exit, around
- * ruins and units (`stepToExit`), then its card goes its action cost on
+ * yurts and units (`stepToExit`), then its card goes its action cost on
  * (3.2), whether or not it stepped. Immobilized or Stunned,
  * or with units shutting every way, it waits, its turn skipped.
  */

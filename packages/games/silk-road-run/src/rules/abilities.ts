@@ -131,7 +131,7 @@ export interface ArrowLane {
 
 /**
  * Longshot's six lanes from `from`: each runs until the first unit (which
- * it hits), ruins or the map's edge (Longshot has no range limit). For the
+ * it hits), yurts or the map's edge (Longshot has no range limit). For the
  * page to show where an arrow can fly, hit or not.
  */
 export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLane[] {
@@ -452,7 +452,7 @@ const feignedRetreat: AbilityDef = {
 };
 
 /**
- * Gale: a space within range (not ruins); each unit next to it, ally or
+ * Gale: a space within range (not yurts); each unit next to it, ally or
  * enemy, the Storm Caller included, takes its power and is Pushed 1 away
  * from it.
  */

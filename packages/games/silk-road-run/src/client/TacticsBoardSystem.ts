@@ -18,7 +18,7 @@ import {
   drawExit,
   drawFallingHail,
   drawGround,
-  drawRuins,
+  drawObstacle,
   exitArrowPush,
 } from './board/ground';
 import {
@@ -309,8 +309,8 @@ export class TacticsBoardSystem extends BaseSystem {
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h, t);
-    // Ruins under the units; mountains wait until after them (below).
-    for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
+    // Yurts under the units; mountains wait until after them (below).
+    for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawObstacle(ctx, h);
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
     // A frame mid-motion: the next draws again whatever the key says.
@@ -387,7 +387,7 @@ export class TacticsBoardSystem extends BaseSystem {
     // Mountains in front of the units (owner, 2026-10-24): a peak rises into
     // the space above it, in front of whoever stands there, as nearer things
     // are in a three-quarter view; never in front of health or statuses.
-    for (const h of map.hexes) if (tileAt(map, h) === 'mountain') drawRuins(ctx, h, true);
+    for (const h of map.hexes) if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, true);
 
     // Not on a party walking out, off their hexes.
     drawGrappleChains(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));

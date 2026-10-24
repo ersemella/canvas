@@ -145,7 +145,7 @@ export function drawLaneArrow(
 
 /**
  * Longshot's lanes from `from`: to a unit it may target, a light lapis
- * arrow pointing at it; along any other lane (blocked by an ally, a ruin
+ * arrow pointing at it; along any other lane (blocked by an ally, a yurt
  * or the edge), a faint dashed line to where the arrow would stop, so it's
  * plain why that enemy can't be shot.
  */

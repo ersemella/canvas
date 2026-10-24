@@ -18,7 +18,7 @@ export interface HexInfo {
 export const TILE_INFO: Record<Tile, HexInfo> = {
   sand: {name: 'Grass', short: 'Open ground', detail: 'Open ground: no effect.'},
   obstacle: {
-    name: 'Ruins',
+    name: 'Yurt',
     short: 'Blocks movement and arrows',
     detail: 'Blocks movement and arrows.',
   },
@@ -107,11 +107,11 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   push: {
     name: 'Push',
     detail:
-      'Moved that many spaces straight away from what pushed it, stopping early at ruins, another unit or the edge of the map. Hail it enters holds it.',
+      'Moved that many spaces straight away from what pushed it, stopping early at a yurt, another unit or the edge of the map. Hail it enters holds it.',
   },
   pull: {
     name: 'Pull',
     detail:
-      'Moved that many spaces straight toward what pulled it, stopping early at ruins, another unit or the edge of the map. Hail it enters holds it.',
+      'Moved that many spaces straight toward what pulled it, stopping early at a yurt, another unit or the edge of the map. Hail it enters holds it.',
   },
 };
