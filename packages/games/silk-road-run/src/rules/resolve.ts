@@ -213,11 +213,17 @@ export function endGrapples(ctx: Ctx, ends: (g: Grapple) => boolean, quiet = fal
 
 /**
  * Stuns `u`. A Stunned Bökh Champion lets go of the unit it grapples
- * (owner, 2026-10-23).
+ * (owner, 2026-10-23), and a Stunned Outrider loses the arrow it has drawn
+ * (owner, 2026-10-24): its card comes back as an ordinary turn, skipped
+ * while it is Stunned.
  */
 export function stun(ctx: Ctx, u: Unit, status: Status): void {
   addStatus(u, status);
   endGrapples(ctx, (g) => g.champion === u.id);
+  if (ctx.state.shots?.some((v) => v.source === u.id)) {
+    ctx.state.shots = ctx.state.shots.filter((v) => v.source !== u.id);
+    log(ctx, `${unitName(u)} loses the drawn arrow.`);
+  }
 }
 
 /**

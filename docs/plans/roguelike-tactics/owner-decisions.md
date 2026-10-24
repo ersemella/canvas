@@ -107,6 +107,10 @@ picked the reading below. Confirm or change each:
   the grapple holds (owner, 2026-10-23; the builder's first reading was a
   space next to the target, which could end the grapple); the damage
   comes after the Move.
+- **A Stunned Outrider loses its drawn arrow** (owner, 2026-10-24): a
+  grapple (or any Stun) landing between Skirmish and the arrow flying
+  cancels the shot; the card comes back as an ordinary turn, skipped
+  while Stunned. Damage alone doesn't cancel it, nor Immobilized.
 - **"Bökh takes damage" means any damage to its health.** Hail does
   count since the Storm Caller's power became 1 (owner, 2026-10-23).
 - **The Bökh Champion lost Inevitable**, which the notes left out and

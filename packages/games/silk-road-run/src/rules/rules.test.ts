@@ -39,7 +39,7 @@ import {
 } from './fight';
 import {previewTurn} from './preview';
 import {SALT_FLATS, onMap, tileAt} from './map';
-import {checkEnd, enhance, enterHex, hit, kill} from './resolve';
+import {checkEnd, enhance, enterHex, hit, kill, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {
   RUN_FORMAT,
@@ -260,6 +260,25 @@ describe('the track', () => {
     applyTurn(s, m, skirmishOn(s, m, unit(s, 'e-bokh')));
     kill({state: s, map: mapOf(s), slot: 0}, m);
     expect(s.shots).toEqual([]);
+  });
+
+  it('a drawn arrow is lost when its Outrider is Stunned first, and its card comes back as a skipped turn', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
+    const m = unit(s, 'p-mangudai');
+    const bokh = unit(s, 'e-bokh');
+    applyTurn(s, m, skirmishOn(s, m, bokh));
+    const back = m.slot;
+    stun({state: s, map: mapOf(s), slot: s.currentSlot}, m, {kind: 'stunned'});
+    expect(s.shots).toEqual([]);
+    expect(charging(s, m)).toBe(false);
+    // Everyone else holds until the Outrider's card has come back.
+    s.units.forEach((u) => (u.controller = 'human'));
+    for (let d = advanceToDecision(s); d && s.currentSlot <= back!; d = advanceToDecision(s))
+      applyTurn(s, d, {action: {ability: 'hold'}});
+    expect(bokh.hp).toBe(bokh.maxHp);
+    expect(s.log.some((l) => l.slot === back && l.text.includes('Stunned: turn skipped'))).toBe(
+      true
+    );
   });
 
   it('places a card 60 ÷ (speed + 5) slots on, rounded, whatever the turn did (3.2)', () => {

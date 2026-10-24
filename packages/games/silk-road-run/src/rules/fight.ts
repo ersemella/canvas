@@ -222,7 +222,8 @@ export function charging(state: FightState, unit: Unit): boolean {
 /**
  * A charging card come back (owner, 2026-10-23): its shots fly, and
  * that is all, no turn and nothing that comes with one (hail lifting, a
- * squeeze, an Enhance running out, Stunned); then the card goes its action
+ * squeeze, an Enhance running out, Stunned; a Stun before the card comes
+ * back has already lost the shots, in `stun`); then the card goes its action
  * cost on (3.2), to the unit's next turn.
  */
 function landCharge(ctx: Ctx, unit: Unit): void {
