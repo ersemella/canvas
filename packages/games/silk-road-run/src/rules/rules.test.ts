@@ -397,7 +397,11 @@ describe('the track', () => {
     }
     expect(starts.size).toBeGreaterThan(10);
     for (const h of map.startColumns.player) expect([-1, 0]).toContain(hexToOffset(h).col);
-    for (const h of map.startColumns.enemy) expect(hexToOffset(h).col).toBe(6);
+    // The end rows lose their corners, so their outermost column is 5.
+    for (const h of map.startColumns.enemy) {
+      const {col, row} = hexToOffset(h);
+      expect(col).toBe(row === -1 || row === 7 ? 5 : 6);
+    }
   });
 
   it('starts no unit boxed in by ruins and the units beside it', () => {
@@ -481,14 +485,19 @@ describe('the board', () => {
     expect(boxedIn).toBeGreaterThan(0);
   });
 
-  it('is 8 × 8 with a hex at column −1 on odd rows only, making an exact left-right mirror', () => {
+  it('is 64 hexes in 9 rows, the end rows without corners, a hex at column −1 on the other odd rows only, an exact left-right mirror', () => {
     const map = SALT_FLATS;
-    expect(map.hexes).toHaveLength(7 * 4 + 8 * 4);
-    for (const row of [1, 3, 5, 7]) expect(onMap(map, at(-1, row))).toBe(true);
-    for (const row of [0, 2, 4, 6]) expect(onMap(map, at(-1, row))).toBe(false);
+    expect(map.hexes).toHaveLength(6 + 7 + 8 + 7 + 8 + 7 + 8 + 7 + 6);
+    for (const row of [1, 3, 5]) expect(onMap(map, at(-1, row))).toBe(true);
+    for (const row of [-1, 0, 2, 4, 6, 7]) expect(onMap(map, at(-1, row))).toBe(false);
     for (const row of [0, 1]) expect(onMap(map, at(6, row))).toBe(true);
     for (const row of [0, 1]) expect(onMap(map, at(7, row))).toBe(false);
-    expect(onMap(map, at(0, 7))).toBe(true);
+    for (const row of [-1, 7]) {
+      expect(onMap(map, at(0, row))).toBe(true);
+      expect(onMap(map, at(5, row))).toBe(true);
+      expect(onMap(map, at(6, row))).toBe(false);
+    }
+    expect(onMap(map, at(0, -2))).toBe(false);
     expect(onMap(map, at(0, 8))).toBe(false);
     // Mirror about the board's centre line (through column 3 on even rows).
     const layout = {orientation: 'pointy' as const, size: 1, origin: {x: 0, y: 0}};
@@ -527,16 +536,18 @@ describe('the board', () => {
       for (const [key, tile] of Object.entries(map.tiles)) {
         const [q, r] = key.split(',').map(Number);
         const {col, row} = hexToOffset({q: q!, r: r!});
-        // Off the starting columns.
-        expect(col >= (row & 1 ? 0 : 1) && col <= 5).toBe(true);
+        // Off the starting columns (0 and 5 on the cornerless end rows).
+        const end = row === -1 || row === 7;
+        expect(col >= (row & 1 && !end ? 0 : 1) && col <= (end ? 4 : 5)).toBe(true);
         if (tile === 'obstacle') ruinRows.push(row);
       }
       // Spread out: no two ruins side by side.
       const ruins = Object.keys(map.tiles).map(hexFromKey);
       for (const a of ruins)
         for (const b of ruins) if (a !== b) expect(hexDistance(a, b)).toBeGreaterThan(1);
-      expect(ruinRows.filter((r) => r <= 3)).toHaveLength(3);
-      expect(ruinRows.filter((r) => r >= 4)).toHaveLength(3);
+      // Three in the top half and three in the bottom; the middle row (3) counts as either.
+      expect(ruinRows.filter((r) => r < 3).length).toBeLessThanOrEqual(3);
+      expect(ruinRows.filter((r) => r > 3).length).toBeLessThanOrEqual(3);
       // Every open hex can be walked to from every other.
       const open = map.hexes.filter((h) => tileAt(map, h) !== 'obstacle');
       const seen = new Set([hexKey(open[0]!)]);
@@ -1104,7 +1115,7 @@ describe('the caravan’s camel', () => {
       expect(camel.side).toBe('player');
       expect(camel.controller).toBe('ai');
       expect(camel.hex).toEqual(SALT_FLATS.camelStart);
-      expect(hexToOffset(camel.hex!)).toEqual({col: 0, row: 0});
+      expect(hexToOffset(camel.hex!)).toEqual({col: 0, row: -1});
       expect(camel.defence).toBe(HEROES.camel.defence);
       expect(camel.hp).toBe((1 + camel.defence) * 2);
       expect(s.units.filter((u) => u.hex && hexKey(u.hex) === hexKey(camel.hex!))).toHaveLength(1);
@@ -1113,7 +1124,7 @@ describe('the caravan’s camel', () => {
   });
 
   it('wins by reaching the one exit, in the bottom-right corner', () => {
-    expect(SALT_FLATS.exits.map((h) => hexToOffset(h))).toEqual([{col: 6, row: 7}]);
+    expect(SALT_FLATS.exits.map((h) => hexToOffset(h))).toEqual([{col: 5, row: 7}]);
   });
 
   it('follows a fixed shortest road around the ruins to the exit', () => {
@@ -1190,26 +1201,26 @@ describe('the caravan’s camel', () => {
 
     // In the corner, its three neighbours taken: nowhere to go.
     const boxed = setup({
-      'p-camel': at(0, 0),
-      'p-bokh': at(1, 0),
-      'p-mangudai': at(-1, 1),
-      'e-bokh': at(0, 1),
+      'p-camel': at(0, -1),
+      'p-bokh': at(1, -1),
+      'p-mangudai': at(0, 0),
+      'e-bokh': at(1, 0),
     });
     const cornered = unit(boxed, 'p-camel');
-    expect(hexNeighbors(at(0, 0)).filter((h) => onMap(SALT_FLATS, h) && !unitAt(boxed, h))).toEqual(
+    expect(hexNeighbors(at(0, -1)).filter((h) => onMap(SALT_FLATS, h) && !unitAt(boxed, h))).toEqual(
       []
     );
     cornered.slot = 90;
     advanceToDecision(boxed);
-    expect(cornered.hex).toEqual(at(0, 0));
+    expect(cornered.hex).toEqual(at(0, -1));
     expect(cornered.skipped).toBe(true);
   });
 
   it('wins the fight on reaching the exit, with enemies still standing', () => {
-    const s = setup({'p-camel': at(5, 7), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    const s = setup({'p-camel': at(4, 7), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     unit(s, 'p-camel').slot = 50;
     expect(advanceToDecision(s)).toBeUndefined();
-    expect(unit(s, 'p-camel').hex).toEqual(at(6, 7));
+    expect(unit(s, 'p-camel').hex).toEqual(at(5, 7));
     expect(s.phase).toBe('won');
   });
 

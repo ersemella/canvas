@@ -19,9 +19,9 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 ## 18. The Caravan's Camel
 
 > **Pared back (owner, 2026-10-22):** while the game is balanced, the
-> camel isn't player controlled. It starts in the **top-left corner** and
+> camel isn't player controlled. It starts on the **top row's first hex** and
 > walks itself **one space a turn** along a **shortest walk** around the
-> ruins to the **only exit, the bottom-right corner**, going around units
+> ruins to the **only exit, the bottom row's last hex**, going around units
 > in its way; it waits only when Immobilized, Stunned or boxed in.
 >
 > **On the track (owner, 2026-10-23):** it starts **last, at slot 12**,

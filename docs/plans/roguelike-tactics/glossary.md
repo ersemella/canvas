@@ -21,7 +21,7 @@ tuning. Section numbers are the combat design's.
 | **Composition** | The specific set of characters in the party. |
 | **Party** | The group of characters a player controls in combat. Maximum of 4 heroes; the camel isn't one of them. |
 | **Camel** | The caravan's camel, Temee: a unit that can't attack and walks one space a turn toward the exit (by itself while the game is pared back). It reaching an exit wins the fight; its death is game over; its damage carries over between fights (18). It starts last, at slot 12 (3.4). |
-| **Exit hex** | The hex the camel reaching wins the fight: the bottom-right corner while the game is pared back (18.2). |
+| **Exit hex** | The hex the camel reaching wins the fight: the bottom row's last hex while the game is pared back (18.2). |
 | **Unit** | Any combatant on the map, whether player-controlled or enemy. |
 | **Turn** | A single unit's opportunity to act. Turns are individual, not per side. |
 | **Track** | The row of numbered slots that sets turn order. Every unit and track entity has a card in one slot; the track advances slot by slot and each card acts when reached (3.1). After each turn a card goes its unit's action cost on. Drawn as a window of roughly the next 30 slots; tapping a card previews it (7.1). |
