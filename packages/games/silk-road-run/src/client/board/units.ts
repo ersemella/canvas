@@ -1,6 +1,6 @@
 /**
  * Units on the board: their sprites and rugs, the turn arrow, grapples'
- * chains, and, for a unit being looked at, its health bar, status markers and damage.
+ * fists, and, for a unit being looked at, its health bar, status markers and damage.
  */
 import {assetLoader, hexDistance} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
@@ -268,28 +268,33 @@ export function drawTurnArrow(
 }
 
 /**
- * The chain over a grapple (Grapple's icon on the page, `AbilityIcon`):
- * two links locked together, `#` gold, `=` its shade, in art pixels.
+ * The fists over a grapple (Grapple's icon on the page, `AbilityIcon`):
+ * two clenched fists, `#` gold, `=` its shade, `+` its light, in art pixels.
  */
-const CHAIN_ROWS = [
-  '.######.....',
-  '#......#....',
-  '#......#....',
-  '#......#....',
-  '#....======.',
-  '.######....=',
-  '....=......=',
-  '....=......=',
-  '....=......=',
-  '.....======.',
+const FISTS_ROWS = [
+  '..++....++..',
+  '.####..####.',
+  '+##=#..#=##+',
+  '#####..#####',
+  '##===..===##',
+  '###+#..#+###',
+  '##===..===##',
+  '###+#..#+###',
+  '.##==..==##.',
+  '..###..###..',
 ];
+const FISTS_COLORS: Record<string, string> = {
+  '#': PALETTE.gold,
+  '=': PALETTE.goldDark,
+  '+': PALETTE.goldLight,
+};
 
 /**
- * A chain on the edge between each Champion and the unit it grapples,
- * always shown, so it's plain who holds whom; it goes when the grapple
+ * Fists on the edge between each Champion and the unit it grapples,
+ * always shown, so it's plain who holds whom; they go when the grapple
  * does. `hexOf` is where each unit is drawn (null: not on the board).
  */
-export function drawGrappleChains(
+export function drawGrappleFists(
   ctx: CanvasRenderingContext2D,
   fight: FightState,
   hexOf: (u: Unit) => Hex | null
@@ -302,26 +307,26 @@ export function drawGrappleChains(
     if (!a || !b || hexDistance(a, b) !== 1) continue;
     const ca = center(a);
     const cb = center(b);
-    drawChain(ctx, (ca.x + cb.x) / 2, (ca.y + cb.y) / 2);
+    drawFists(ctx, (ca.x + cb.x) / 2, (ca.y + cb.y) / 2);
   }
 }
 
-/** The chain centred at (`x`, `y`): an ink outline one art pixel round it, then the links. */
-function drawChain(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+/** The fists centred at (`x`, `y`): an ink outline one art pixel round them, then the art. */
+function drawFists(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   const px = SPRITE_SCALE;
-  const left = Math.round(x - (CHAIN_ROWS[0]!.length * px) / 2);
-  const top = Math.round(y - (CHAIN_ROWS.length * px) / 2);
+  const left = Math.round(x - (FISTS_ROWS[0]!.length * px) / 2);
+  const top = Math.round(y - (FISTS_ROWS.length * px) / 2);
   ctx.save();
   ctx.fillStyle = PALETTE.ink;
-  CHAIN_ROWS.forEach((row, ay) =>
+  FISTS_ROWS.forEach((row, ay) =>
     [...row].forEach((c, ax) => {
       if (c !== '.') ctx.fillRect(left + (ax - 1) * px, top + (ay - 1) * px, 3 * px, 3 * px);
     })
   );
-  CHAIN_ROWS.forEach((row, ay) =>
+  FISTS_ROWS.forEach((row, ay) =>
     [...row].forEach((c, ax) => {
       if (c === '.') return;
-      ctx.fillStyle = c === '#' ? PALETTE.gold : PALETTE.goldDark;
+      ctx.fillStyle = FISTS_COLORS[c]!;
       ctx.fillRect(left + ax * px, top + ay * px, px, px);
     })
   );

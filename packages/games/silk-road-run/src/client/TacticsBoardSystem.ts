@@ -32,7 +32,7 @@ import {
 import {
   MARK,
   drawDamage,
-  drawGrappleChains,
+  drawGrappleFists,
   drawHealthBar,
   drawRug,
   drawStatusMark,
@@ -390,7 +390,7 @@ export class TacticsBoardSystem extends BaseSystem {
     for (const h of map.hexes) if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, true);
 
     // Not on a party walking out, off their hexes.
-    drawGrappleChains(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));
+    drawGrappleFists(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));
 
     if (scene.range) drawRangeOutline(ctx, scene.range);
     if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);

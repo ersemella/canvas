@@ -108,7 +108,8 @@ picked the reading below. Confirm or change each:
   while the grapple lasts, its target takes 1; a walk ends the grapple
   only if it ends away from the target, not partway;
   Grapple isn't offered on the unit already grappled; the board shows a
-  chain between the two while the grapple lasts.
+  chain between the two while the grapple lasts. (Since 2026-10-24, two
+  clenched fists, on the board and as Grapple's icon: owner.)
 - **Throw Moves the target to a free space next to the Champion**, and
   the grapple holds (owner, 2026-10-23; the builder's first reading was a
   space next to the target, which could end the grapple); the damage
