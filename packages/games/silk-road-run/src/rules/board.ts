@@ -125,8 +125,8 @@ export function abilityCount(kit: AbilityId[]): number {
 
 /**
  * Whether a kit has room for another ability (`RULES.maxAbilities`): an
- * upgrade adding one is offered only then. The Champion (2 to start) takes
- * one of Haul and Shove, the Outrider (1) two of Skirmish, Volley and
+ * upgrade adding one is offered only then. The Champion (1 to start) takes
+ * both Haul and Shove, the Outrider (1) two of Skirmish, Volley and
  * Feigned Retreat, the Storm Caller (1) both Sunlight and Gale.
  */
 export function hasRoomForAbility(kit: AbilityId[]): boolean {

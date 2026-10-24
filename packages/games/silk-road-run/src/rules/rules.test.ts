@@ -138,7 +138,7 @@ function request(run: RunState, turn?: TurnInput): RunState {
 
 describe('the track', () => {
   it('skips a turn with only Hold to choose, and marks it till the unit next acts', () => {
-    // Immobilized with no one in reach: Throw and Grapple have no target.
+    // Immobilized with no one in reach: Grapple has no target.
     const s = setup({'p-bokh': at(1, 1), 'e-bokh': at(6, 4), 'p-storm': at(1, 5)});
     const b = unit(s, 'p-bokh');
     b.statuses.push({kind: 'immobilized'});
@@ -183,15 +183,16 @@ describe('the track', () => {
   };
 
   it('the second abilities are upgrades, not in a starting kit', () => {
-    expect(HEROES.bokh.abilities).toEqual(['grapple', 'throw', 'hold']);
+    expect(HEROES.bokh.abilities).toEqual(['grapple', 'hold']);
     expect(HEROES.bokh.upgrades).toEqual(['haul', 'shove']);
     expect(HEROES.mangudai.abilities).toEqual(['longshot', 'hold']);
     expect(HEROES.mangudai.upgrades).toEqual(['skirmish', 'volley', 'feignedRetreat']);
     expect(HEROES.storm.abilities).toEqual(['hail', 'hold']);
     expect(HEROES.storm.upgrades).toEqual(['sunlight', 'gale']);
     // At most three abilities besides Hold (owner, 2026-10-24): the
-    // Champion takes one upgrade, the Outrider two, the Storm Caller both.
-    expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul'])).toBe(false);
+    // Champion and Storm Caller take both their upgrades, the Outrider two.
+    expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul'])).toBe(true);
+    expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul', 'shove'])).toBe(false);
     expect(hasRoomForAbility([...HEROES.mangudai.abilities, 'skirmish'])).toBe(true);
     expect(hasRoomForAbility([...HEROES.mangudai.abilities, 'skirmish', 'volley'])).toBe(false);
     expect(hasRoomForAbility([...HEROES.storm.abilities, 'sunlight'])).toBe(true);
@@ -960,7 +961,10 @@ describe('abilities', () => {
     const b = unit(s, 'p-bokh');
     expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    // Only throws are left: free spaces and its own, never the held unit's.
+    const after = ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!);
+    expect(after.length).toBeGreaterThan(0);
+    expect(after.some((t) => hexEquals(t.hex!, at(2, 1)))).toBe(false);
     expect(tryTurn(s, 'p-bokh', {action: {ability: 'grapple', target: {hex: at(2, 1)}}})).toThrow(
       RuleError
     );
@@ -1057,7 +1061,7 @@ describe('abilities', () => {
     expect(second.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Throw: only the grappled unit, Moved to a free space next to the Champion, then struck; the grapple holds', () => {
+  it('Grapple throws the held unit: Moved to the free space picked next to the Champion, then struck; the grapple holds', () => {
     const s = setup({
       'p-bokh': at(3, 4),
       'e-storm': hexNeighbors(at(3, 4))[0]!,
@@ -1065,27 +1069,29 @@ describe('abilities', () => {
     });
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
-    expect(HEROES.bokh.abilities).toEqual(['grapple', 'throw', 'hold']);
-    expect(ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    // No one held: only the unit next to it, to grapple.
+    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: target.hex!}]);
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
-    const throws = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!);
+    const throws = ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!);
     // Every free space around the Champion, not around the target, and the
-    // Champion's own (a swap).
+    // Champion's own (a swap): one tap, the held unit implied.
     expect(throws.length).toBe(6);
     for (const t of throws) {
-      expect(t.hex).toEqual(target.hex);
-      if (hexDistance(t.to!, b.hex!) === 0) continue;
-      expect(hexDistance(t.to!, b.hex!)).toBe(1);
-      expect(unitAt(s, t.to!)).toBeUndefined();
+      expect(t.to).toBeUndefined();
+      if (hexDistance(t.hex!, b.hex!) === 0) continue;
+      expect(hexDistance(t.hex!, b.hex!)).toBe(1);
+      expect(unitAt(s, t.hex!)).toBeUndefined();
     }
-    const far = throws.find((t) => hexDistance(t.to!, target.hex!) === 2)!;
-    applyTurn(s, b, {action: {ability: 'throw', target: far}});
-    expect(target.hex).toEqual(far.to);
+    // Offered, as aimed at the held enemy.
+    expect(offeredTargets(s, SALT_FLATS, b, ABILITIES.grapple)).toEqual(throws);
+    const far = throws.find((t) => hexDistance(t.hex!, target.hex!) === 2)!;
+    applyTurn(s, b, {action: {ability: 'grapple', target: far}});
+    expect(target.hex).toEqual(far.hex);
     expect(target.hp).toBe(target.maxHp - 2 * b.power);
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Throw can swap: the two trade spaces, it is struck, and the grapple holds', () => {
+  it('Grapple on the Champion’s own space swaps: the two trade spaces, it is struck, and the grapple holds', () => {
     const s = setup({
       'p-bokh': at(3, 4),
       'e-storm': hexNeighbors(at(3, 4))[0]!,
@@ -1095,14 +1101,14 @@ describe('abilities', () => {
     const target = unit(s, 'e-storm');
     const [bAt, tAt] = [b.hex!, target.hex!];
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: tAt}}});
-    applyTurn(s, b, {action: {ability: 'throw', target: {hex: tAt, to: bAt}}});
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: bAt}}});
     expect(b.hex).toEqual(tAt);
     expect(target.hex).toEqual(bAt);
     expect(target.hp).toBe(target.maxHp - 2 * b.power);
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
     // An Immobilized Champion can't swap: it would move itself.
     b.statuses.push({kind: 'immobilized'});
-    const landings = ABILITIES.throw.targets(s, SALT_FLATS, b, b.hex!).map((t) => t.to!);
+    const landings = ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!).map((t) => t.hex!);
     expect(landings.some((h) => hexDistance(h, b.hex!) === 0)).toBe(false);
     expect(landings.length).toBeGreaterThan(0);
   });

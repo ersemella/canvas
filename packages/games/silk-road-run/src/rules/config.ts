@@ -78,7 +78,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 2,
     defence: 3,
     power: 1,
-    abilities: ['grapple', 'throw', 'hold'],
+    // Throw folded into Grapple (owner, 2026-10-24), which leaves room for
+    // both upgrades.
+    abilities: ['grapple', 'hold'],
     // Haul and Shove (owner, 2026-10-24; balance.md, "Second abilities
     // measured"): side without them wins 47.8% and 49.6%.
     upgrades: ['haul', 'shove'],

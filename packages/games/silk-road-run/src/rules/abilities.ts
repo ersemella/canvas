@@ -70,8 +70,7 @@ export interface AbilityDef {
   targets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[];
   /**
    * Its target's `to` is a space its user steps to first, as a walk, before
-   * the ability resolves from there (Skirmish); otherwise `to` is where the
-   * target lands (Throw).
+   * the ability resolves from there (Skirmish).
    */
   steps?: boolean;
   /**
@@ -84,6 +83,12 @@ export interface AbilityDef {
    * Haul), so the AI's guess doesn't count a hit.
    */
   damages?: boolean;
+  /**
+   * The unit a target aims at, when it isn't simply the one on its hex
+   * (Grapple's throw: the held unit, aimed by where it lands). For the
+   * page's offered targets and the AI's guess.
+   */
+  aimedAt?(state: FightState, user: Unit, target: ActionTarget): Unit | undefined;
   /** Resolves the ability now. */
   resolve(ctx: Ctx, user: Unit, target: ActionTarget): void;
 }
@@ -284,57 +289,67 @@ export function grappling(user: Unit, u: Unit): boolean {
   return u.statuses.some((s) => s.grapple?.champion === user.id && s.grapple.target === u.id);
 }
 
-/**
- * Throw (owner, 2026-10-23): only the unit the Champion grapples, Moved to
- * any free space next to the Champion, or swapping places with it (the
- * Champion's own hex as the landing; owner, 2026-10-23), then struck. Either
- * way the two stay next to each other, so the grapple holds. An Immobilized
- * Champion can't swap: it would move itself.
- */
-const throwAbility: AbilityDef = {
-  id: 'throw',
-  name: 'Throw',
-  kind: 'attack',
-  summary: (user) =>
-    `Melee, on the unit you grapple: Move it to a free space next to you, or swap places with it, then it takes ${damageText(user)}. The grapple holds.`,
-  targetsUnit: true,
-  targets(state, map, user, from) {
-    const out: ActionTarget[] = [];
-    for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u))) {
-      const landings = stepsFrom(map, from).filter((h) => !unitAt(state, h));
-      if (!isImmobilized(user)) landings.push(from);
-      for (const to of sortByHex(landings, (h) => h)) out.push({hex: t.hex!, to});
-    }
-    return out;
-  },
-  resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    if (hexEquals(target.to!, user.hex!)) {
-      const at = u.hex!;
-      log(ctx, `${unitName(user)} swaps places with ${unitName(u)}.`);
-      // Each enters the other's space; side by side still, the grapple holds.
-      enterHex(ctx, u, user.hex!, 'swap', true);
-      enterHex(ctx, user, at, 'swap', true);
-    } else {
-      log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
-      enterHex(ctx, u, target.to!, 'throw');
-    }
-    hit(ctx, user, u, 'The throw');
-  },
-};
+/** The unit `user` grapples next to `from`, if any. */
+function heldNextTo(state: FightState, user: Unit, from: Hex): Unit | undefined {
+  return hexNeighbors(from)
+    .map((h) => unitAt(state, h))
+    .find((u) => u !== undefined && u !== user && grappling(user, u));
+}
 
+/**
+ * Whether `target` is a throw: a space without a unit, or the Champion's
+ * own (a swap), rather than a unit to grapple.
+ */
+function isThrow(state: FightState, user: Unit, target: ActionTarget): boolean {
+  const u = unitAt(state, target.hex!);
+  return !u || u === user;
+}
+
+/**
+ * Grapple, with Throw folded in (owner, 2026-10-24; separate abilities
+ * before). On a unit next to the Champion, not the one it holds: grapples
+ * it. While it holds one, on a free space next to it: Throw (owner,
+ * 2026-10-23), the held unit Moved there, then struck; on the Champion's
+ * own space: the two swap places, then it is struck. Either way the two
+ * stay next to each other, so the grapple holds. An Immobilized Champion
+ * can't swap: it would move itself.
+ */
 const grapple: AbilityDef = {
   id: 'grapple',
   name: 'Grapple',
   kind: 'attack',
   summary: (user) =>
-    `Melee: it takes ${damageText(user)} and is Stunned until you take damage, are Stunned or end a turn no longer next to it, taking ${ABILITY.grapple.squeeze} more at each of your turns meanwhile${ABILITY.grapple.enhancedSqueeze ? ' (plus your Enhance)' : ''}. One at a time.`,
+    `Melee: it takes ${damageText(user)} and is Stunned until you take damage, are Stunned or end a turn no longer next to it, taking ${ABILITY.grapple.squeeze} more at each of your turns meanwhile${ABILITY.grapple.enhancedSqueeze ? ' (plus your Enhance)' : ''}. One at a time. While you grapple one, pick a free space next to you to throw it there, or your own to swap places; then it takes ${damageText(user)} and the grapple holds.`,
   targetsUnit: true,
   // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before),
-  // and not the unit it already grapples.
-  targets: (state, _map, user, from) =>
-    adjacentUnits(state, from, (u) => u !== user && !grappling(user, u)),
+  // and not the unit it already grapples: that one is thrown instead.
+  targets(state, map, user, from) {
+    const out = adjacentUnits(state, from, (u) => u !== user && !grappling(user, u));
+    if (heldNextTo(state, user, from)) {
+      const landings = stepsFrom(map, from).filter((h) => !unitAt(state, h));
+      if (!isImmobilized(user)) landings.push(from);
+      for (const hex of sortByHex(landings, (h) => h)) out.push({hex});
+    }
+    return out;
+  },
+  aimedAt: (state, user, target) =>
+    isThrow(state, user, target) ? heldNextTo(state, user, user.hex!) : unitAt(state, target.hex!),
   resolve(ctx, user, target) {
+    if (isThrow(ctx.state, user, target)) {
+      const u = heldNextTo(ctx.state, user, user.hex!)!;
+      if (hexEquals(target.hex!, user.hex!)) {
+        const at = u.hex!;
+        log(ctx, `${unitName(user)} swaps places with ${unitName(u)}.`);
+        // Each enters the other's space; side by side still, the grapple holds.
+        enterHex(ctx, u, user.hex!, 'swap', true);
+        enterHex(ctx, user, at, 'swap', true);
+      } else {
+        log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
+        enterHex(ctx, u, target.hex!, 'throw');
+      }
+      hit(ctx, user, u, 'The throw');
+      return;
+    }
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} grapples ${unitName(u)}.`);
     hit(ctx, user, u, 'The grapple');
@@ -534,7 +549,6 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hail,
   sunlight,
   grapple,
-  throw: throwAbility,
   bite,
   shove,
   haul,
