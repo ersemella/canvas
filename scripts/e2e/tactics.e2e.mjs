@@ -765,21 +765,17 @@ try {
   );
 
   // Hovering a hex shows what it does, without planning a move.
-  // Each fight places its own ruins (and, pared back, nothing else): find one in the view.
-  const [qq, qr] = Object.entries((await state()).view.fight.tiles)
-    .find(([, t]) => t === 'obstacle')[0]
-    .split(',')
-    .map(Number);
-  const ruins = {q: qq, r: qr};
+  // The steppe is open (no ruins): the road out is always there to hover.
+  const exit = {q: 0, r: 4};
   const versionBeforeHover = (await state()).view.version;
   {
-    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), ruins);
+    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), exit);
     const box = await page.locator('canvas').boundingBox();
     await page.mouse.move(box.x + (x * box.width) / SCENE_W, box.y + (y * box.height) / SCENE_H);
     await sleep(150);
   }
   const info = page.getByTestId('hex-info');
-  check('hovering ruins shows their rule', (await info.textContent()).includes('Ruins'));
+  check('hovering the exit shows its rule', (await info.textContent()).includes('Road out'));
   check('hovering changes nothing', (await state()).view.version === versionBeforeHover);
   await shot(page, 'hover');
 

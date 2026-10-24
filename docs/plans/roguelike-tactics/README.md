@@ -70,14 +70,17 @@ the kits.**
 - **At most three abilities** a hero, besides moving and Hold (owner,
   2026-10-24; [roster.md](roster.md)).
 - Still pared back from 2026-10-22: the Modao Vanguard out of the
-  roster; six ruins a fight; a move of at most 3 spaces; Temee not player
+  roster; a move of at most 3 spaces; Temee not player
   controlled, walking itself one space a turn from the board's top point
   to the only exit, its bottom point, around units in its way. The board
   is a hexagon of 61 flat-top hexes, 4 from the centre, the sides starting
   on its straight outer columns of 5 (owner, 2026-10-24; 64 pointy-top
   hexes in 9 rows before); about half of fights have a range of 3 to 5
   mountains along one of the four slanted edges (never the sides, nor
-  Temee's middle column), which block as ruins do.
+  Temee's middle column), which block movement and arrows. **No ruins**
+  (owner, 2026-10-24; six a fight before): the board is the wide open
+  steppe, the mountains its only cover; ruins remain only as a test-stage
+  option and the tests' fixed layout.
 
 **Next step:** the owner reviews the builder's readings of the rework and
 the first measurements (Grapple decides fights, Throw goes unused) in

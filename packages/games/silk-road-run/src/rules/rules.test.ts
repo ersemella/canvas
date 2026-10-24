@@ -456,7 +456,7 @@ describe('the track', () => {
     expect(map.startColumns.enemy.map((h) => h.q)).toEqual([4, 4, 4, 4, 4]);
   });
 
-  it('starts no unit boxed in by ruins and the units beside it', () => {
+  it('starts no unit boxed in by mountains and the units beside it', () => {
     for (let seed = 0; seed < 300; seed++) {
       const s = createFight(seed);
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
@@ -563,7 +563,7 @@ describe('the board', () => {
     expect(spaceAt(4, 0)).toEqual(map.camelStart);
   });
 
-  it('raises one clump of 3 to 5 mountains along a slanted edge in about half of fights, off the sides, the middle and the centre, with no ruins in its half', () => {
+  it('raises one clump of 3 to 5 mountains along a slanted edge in about half of fights, off the sides, the middle and the centre', () => {
     const centre: Hex = {q: 0, r: 0};
     const corners = new Set<string>();
     let withMountains = 0;
@@ -592,7 +592,7 @@ describe('the board', () => {
       expect(seen.size).toBe(mountains.length);
       // One corner: all left of the middle column or all right, all in the
       // top half or all in the bottom, never on or next to the sides, at
-      // least one on the board's edge, and no ruins in that half.
+      // least one on the board's edge.
       const left = mountains[0]!.q < 0;
       const top = depth(mountains[0]!) < 0;
       for (const m of mountains) {
@@ -605,7 +605,6 @@ describe('the board', () => {
       // Hugging the edge: a hex in from it only once the edge's three are taken.
       const onEdge = mountains.filter((m) => hexDistance(m, centre) === 4).length;
       expect(onEdge).toBe(Math.min(3, mountains.length));
-      for (const r of at('obstacle')) expect(top ? depth(r) >= 0 : depth(r) <= 0).toBe(true);
       corners.add(`${left} ${top}`);
     }
     expect(withMountains).toBeGreaterThan(15);
@@ -614,37 +613,20 @@ describe('the board', () => {
     expect(corners.size).toBe(4);
   });
 
-  it('scatters each fight’s ruins by its seed: unmirrored, clear of the starting columns, spread out, the board connected', () => {
-    const count = (tiles: Record<string, string>, t: string) =>
-      Object.values(tiles).filter((v) => v === t).length;
+  it('lays out each fight’s tiles by its seed: no ruins, only mountains, clear of the starting columns, the board connected', () => {
     const layouts = new Set<string>();
-    let asymmetric = 0;
     for (let seed = 0; seed < 40; seed++) {
       const s = createFight(seed);
       const map = mapOf(s);
       expect(map.tiles).toBe(s.tiles);
       expect(JSON.stringify(createFight(seed).tiles)).toBe(JSON.stringify(s.tiles));
-      // Six ruins, or three beside a range of mountains (tested below).
-      const mountains = count(map.tiles, 'mountain');
-      expect(count(map.tiles, 'obstacle')).toBe(mountains ? 3 : 6);
-      expect(Object.keys(map.tiles)).toHaveLength(count(map.tiles, 'obstacle') + mountains);
-      const ruinDepths = [];
-      for (const [key, tile] of Object.entries(map.tiles)) {
-        const h = hexFromKey(key);
+      // The open steppe: mountains (tested above) and nothing else.
+      expect(Object.values(map.tiles).every((t) => t === 'mountain')).toBe(true);
+      for (const key of Object.keys(map.tiles)) {
         // Off the starting columns, the camel's start and the exit.
-        expect(Math.abs(h.q)).toBeLessThan(4);
+        expect(Math.abs(hexFromKey(key).q)).toBeLessThan(4);
         expect([map.camelStart, ...map.exits].map(hexKey)).not.toContain(key);
-        if (tile === 'obstacle') ruinDepths.push(depth(h));
       }
-      // Spread out: no two ruins side by side.
-      const ruins = Object.keys(map.tiles)
-        .filter((k) => map.tiles[k] === 'obstacle')
-        .map(hexFromKey);
-      for (const a of ruins)
-        for (const b of ruins) if (a !== b) expect(hexDistance(a, b)).toBeGreaterThan(1);
-      // Three in the top half and three in the bottom; the middle counts as either.
-      expect(ruinDepths.filter((d) => d < 0).length).toBeLessThanOrEqual(3);
-      expect(ruinDepths.filter((d) => d > 0).length).toBeLessThanOrEqual(3);
       // Every open hex can be walked to from every other.
       const open = map.hexes.filter((h) => !blocks(tileAt(map, h)));
       const seen = new Set([hexKey(open[0]!)]);
@@ -657,14 +639,8 @@ describe('the board', () => {
           }
       expect(seen.size).toBe(open.length);
       layouts.add(JSON.stringify(s.tiles));
-      const mirrored = Object.entries(map.tiles).every(([key, tile]) => {
-        const {q, r} = hexFromKey(key);
-        return map.tiles[hexKey({q: -q, r: r + q})] === tile;
-      });
-      if (!mirrored) asymmetric++;
     }
-    expect(layouts.size).toBeGreaterThan(20);
-    expect(asymmetric).toBeGreaterThan(30);
+    expect(layouts.size).toBeGreaterThan(10);
   });
 
   it('blocks allies, enemies and obstacles, routing around units', () => {
