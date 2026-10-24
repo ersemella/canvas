@@ -602,7 +602,9 @@ describe('the board', () => {
         expect(Math.abs(m.q)).toBeLessThan(4);
         if (Math.abs(m.q) === 3) expect(hexDistance(m, centre)).toBe(4);
       }
-      expect(mountains.some((m) => hexDistance(m, centre) === 4)).toBe(true);
+      // Hugging the edge: a hex in from it only once the edge's three are taken.
+      const onEdge = mountains.filter((m) => hexDistance(m, centre) === 4).length;
+      expect(onEdge).toBe(Math.min(3, mountains.length));
       for (const r of at('obstacle')) expect(top ? depth(r) >= 0 : depth(r) <= 0).toBe(true);
       corners.add(`${left} ${top}`);
     }

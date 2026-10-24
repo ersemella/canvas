@@ -6,7 +6,7 @@ import {assetLoader, hexKey} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {tileAt} from '../../rules/map';
 import type {MapData, Tile} from '../../rules/map';
-import {SCENE_SIZE} from '../layout';
+import {BOARD_LAYOUT, SCENE_SIZE} from '../layout';
 import {PALETTE} from '../palette';
 import {
   HEX_SCALE,
@@ -20,6 +20,7 @@ import {
 import ruinsImage from '../tiles/ruins.png';
 import ruinsTowerImage from '../tiles/ruins-tower.png';
 import mountainImage from '../tiles/mountain.png';
+import rockImage from '../tiles/rock.png';
 import grassImage from '../tiles/grass.png';
 
 /** The ground's colour until its textures load. */
@@ -29,12 +30,13 @@ const BORDER = '#3f4a27';
 
 /**
  * The ground texture of each tile type: the Steppe's grass (the `sand`
- * tile is open ground, whatever its look); ruins and mountains stand on grass.
+ * tile is open ground, whatever its look); ruins stand on grass, mountains
+ * on rocky ground of their own (owner, 2026-10-24; a code-made stand-in).
  */
 const TILE_TEXTURE: Record<Tile, string> = {
   sand: grassImage,
   obstacle: grassImage,
-  mountain: grassImage,
+  mountain: rockImage,
 };
 
 /**
@@ -159,6 +161,15 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex): void {
   ctx.restore();
 }
 
+/**
+ * Mountains are drawn bigger than everything else, 3× (owner, 2026-10-24):
+ * standing near the bottom of their hex, they rise into the space above
+ * and spread past its sides, a range rather than a rock; their base stays
+ * inside the hex (`mountainClip`).
+ */
+const MOUNTAIN_SCALE = 3;
+const MOUNTAIN_FEET = 34;
+
 /** The ruins' shapes, a wall and a tower stump: each ruin's hex picks one. */
 const RUINS_IMAGES = [ruinsImage, ruinsTowerImage];
 
@@ -171,13 +182,14 @@ export function drawRuins(ctx: CanvasRenderingContext2D, h: Hex, mountain = fals
   const ruins = assetLoader.requestImage(mountain ? mountainImage : RUINS_IMAGES[pick]!);
   if (ruins) {
     const c = center(h);
-    const size = ruins.width * SPRITE_SCALE;
+    const size = ruins.width * (mountain ? MOUNTAIN_SCALE : SPRITE_SCALE);
     ctx.save();
     ctx.imageSmoothingEnabled = false;
+    if (mountain) mountainClip(ctx, c);
     ctx.drawImage(
       ruins,
       Math.round(c.x - size / 2),
-      Math.round(c.y + SPRITE_FEET - size),
+      Math.round(c.y + (mountain ? MOUNTAIN_FEET : SPRITE_FEET) - size),
       size,
       size
     );
@@ -185,6 +197,28 @@ export function drawRuins(ctx: CanvasRenderingContext2D, h: Hex, mountain = fals
   } else {
     drawRuinsMark(ctx, center(h));
   }
+}
+
+/**
+ * Where a mountain may draw: its base, below the hex's middle, inside the
+ * hex's lower half, so it sits cleanly in its space; its peaks, above the
+ * middle, free to rise and spread over the hexes beyond.
+ */
+function mountainClip(ctx: CanvasRenderingContext2D, c: {x: number; y: number}): void {
+  const s = BOARD_LAYOUT.size;
+  const h = (Math.sqrt(3) / 2) * s;
+  const far = 4 * s;
+  ctx.beginPath();
+  ctx.moveTo(c.x - far, c.y - far);
+  ctx.lineTo(c.x + far, c.y - far);
+  ctx.lineTo(c.x + far, c.y);
+  ctx.lineTo(c.x + s, c.y);
+  ctx.lineTo(c.x + s / 2, c.y + h);
+  ctx.lineTo(c.x - s / 2, c.y + h);
+  ctx.lineTo(c.x - s, c.y);
+  ctx.lineTo(c.x - far, c.y);
+  ctx.closePath();
+  ctx.clip();
 }
 
 /** Ruins until their image loads: stacked mudbrick blocks, a shape of their own, not only a colour (art direction). */

@@ -164,7 +164,7 @@ export function randomTiles(random: () => number): Record<string, Tile> {
       .filter((h) => edge.inFrom(h) === 0 || (edge.inFrom(h) === 1 && Math.abs(h.q) < RADIUS - 1))
       .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP)
       .filter((h) => hexDistance(h, inFrontOfTemee) > 0);
-    ruins.push(...mountainRange(tiles, allowed, (h) => edge.inFrom(h) === 0, size, random));
+    ruins.push(...mountainRange(tiles, allowed, edge.inFrom, size, random));
     // The range's half gives up its ruins.
     ruinHalves = [RUIN_HALVES[edge.top ? 1 : 0]!];
   }
@@ -185,15 +185,17 @@ export function randomTiles(random: () => number): Record<string, Tile> {
 }
 
 /**
- * One clump of up to `size` mountains among `allowed`, marked in `tiles`:
- * from a random first hex that is `first` it grows a hex at a time onto a neighbour of the
- * range, the ones touching more of it first, so it stays together. Never
- * cuts the board in two.
+ * One clump of up to `size` mountains among `allowed`, marked in `tiles`,
+ * hugging the board's edge like the start of a longer range (owner,
+ * 2026-10-24): from a random first hex on the edge (`inFrom` 0) it grows a
+ * hex at a time onto a neighbour of the range, along the edge while it can
+ * and only then a hex in, the ones touching more of it first, so it
+ * thickens rather than sticks out. Never cuts the board in two.
  */
 function mountainRange(
   tiles: Record<string, Tile>,
   allowed: Hex[],
-  first: (h: Hex) => boolean,
+  inFrom: (h: Hex) => number,
   size: number,
   random: () => number
 ): Hex[] {
@@ -201,11 +203,13 @@ function mountainRange(
   const inRange = (h: Hex) => range.some((m) => hexDistance(m, h) === 0);
   while (range.length < size) {
     let free = allowed.filter((h) => !inRange(h) && connectedWithout(tiles, h));
-    if (!range.length) free = free.filter(first);
+    if (!range.length) free = free.filter((h) => inFrom(h) === 0);
     if (range.length) {
       const touching = (h: Hex) => range.filter((m) => hexDistance(m, h) === 1).length;
+      free = free.filter((h) => touching(h) > 0);
+      const nearest = Math.min(...free.map(inFrom));
+      free = free.filter((h) => inFrom(h) === nearest);
       const most = Math.max(0, ...free.map(touching));
-      if (most === 0) break;
       free = free.filter((h) => touching(h) === most);
     }
     if (!free.length) break;
