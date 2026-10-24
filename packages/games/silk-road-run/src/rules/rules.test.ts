@@ -991,6 +991,39 @@ describe('abilities', () => {
     expect(m.statuses).toEqual([]);
   });
 
+  it('a Champion in hail grapples its caster: the hail hit came first, so the grapple holds and the caster’s turn is skipped', () => {
+    const s = setup({'e-storm': at(2, 1), 'p-bokh': at(1, 1), 'e-mangudai': at(8, 6)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const storm = unit(s, 'e-storm');
+    const b = unit(s, 'p-bokh');
+    // The Storm Caller hails the Champion's space.
+    s.awaiting = storm.id;
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: b.hex!}}});
+    expect(b.hp).toBe(b.maxHp - storm.power);
+    expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm'}]);
+    // The Champion's turn, with the Storm Caller's next.
+    b.slot = 1;
+    storm.slot = 2;
+    unit(s, 'e-mangudai').slot = 500;
+    expect(advanceToDecision(s)!.id).toBe('p-bokh');
+    // Immobilized doesn't stop a melee Grapple: the Champion doesn't move.
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: storm.hex!}}});
+    expect(storm.statuses).toEqual([
+      {kind: 'stunned', grapple: {champion: 'p-bokh', target: 'e-storm'}},
+    ]);
+    // The Storm Caller's turn: its hail lifts, and Stunned, it skips the turn.
+    const hp = b.hp;
+    storm.slot = 2;
+    b.slot = 400;
+    s.events = [];
+    expect(advanceToDecision(s)!.id).not.toBe('e-storm');
+    expect(s.events.some((e) => e.kind === 'skip' && e.unitId === 'e-storm')).toBe(true);
+    expect(s.effects).toEqual([]);
+    expect(b.statuses).toEqual([]);
+    expect(b.hp).toBe(hp);
+    expect(storm.statuses.map((x) => x.kind)).toEqual(['stunned']);
+  });
+
   it('hail lifts when its caster falls', () => {
     const s = setup({'p-storm': at(1, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
