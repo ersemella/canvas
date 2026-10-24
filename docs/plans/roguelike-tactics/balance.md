@@ -1469,6 +1469,67 @@ median 38 actions, 79 slots.
   nothing (51.3%; Grapple's squeeze and Throw don't scale with it much),
   its speed 11 points.
 
+### Second abilities measured (2026-10-24)
+
+Owner's list: candidate second abilities and changes to existing ones, each
+held to principle 2 (a side without a second ability wins 40–50%) and the
+owner's rule that a second ability is for variety, not a straight buff.
+Built as experiments in no kit (`abilities.ts`, "Experiments"), on today's
+starting kits (Grapple, Throw; Bow; Hail; no upgrades).
+`experiments/second-abilities.mjs`, 1,000 fights each (one standard error
+about ±1.6), seeds from 1000. A **new** ability joins its hero's kit on
+both sides and one side goes without it. A **changed** ability replaces the
+original on one side only (`mod.kits`): head to head, above 50% is a buff.
+
+| New ability | Rule as built | Side without it wins | Hero's turns on it | Damage (kills) a fight |
+|---|---|---:|---:|---:|
+| Shove (Bökh) | Melee, Push 2, no damage | 49.6% | 1.1% | — |
+| Haul (Bökh) | Pull 2 the first unit in a lane 2–3 away, no damage | 47.8% | 7.6% | — |
+| Feigned Retreat (Outrider) | The Bow's shot at full damage, then a walk of 1–2 | **42.5%** | 12.8% | 4.7 (0.55) |
+| Volley (Outrider) | Any space within 3, no line of fire, charged ½ (4 slots) | **41.1%** | 19.9% | 5.6 (0.78) |
+| Overwatch (Outrider) | A lane until its next turn, the first unit entering shot | **57.9%** | 26% | 0.3 (0.02) |
+| Gale (Storm Caller) | Each unit next to a space within 3 takes 1 and is Pushed 1 | **40.6%** | 21.8% | 5 (0.53), 0.3 to allies |
+| Tailwind (Storm Caller) | Haste 3 on a unit within 3, once between its turns | **57.2%** | 4.9% | — |
+| *Skirmish (reference)* | *Today's upgrade* | *42.8%* | *14.3%* | *4 (0.48)* |
+| *Sunlight (reference)* | *Today's upgrade* | *46.7%* | *18.4%* | — |
+
+| Changed ability | Rule as built | Head to head, side with it wins | Side without it wins (original's) | Hero's turns on it |
+|---|---|---:|---:|---:|
+| Hold Loose (Grapple) | Immobilized, not Stunned; holds through damage and Stuns | **39.4%** | 19% (Grapple 10.3%) | 17.8% |
+| Hip Toss (Throw) | Lands within 2 of the Champion; the grapple ends | 47.5% | 53.1% (Throw 48.7%) | 5.1% |
+| Squall Line (Hail) | Hail on 3 spaces in a line, no damage | **29.4%** | 36.2% (Hail 20.1%) | 37.7% |
+
+No fight unfinished except with Squall Line (0.4% head to head, 1.4% with
+both sides on it; median 113 slots against 87). Overwatch with the AI's
+lane value (`AI.watchShare`, 0.25) at 0.1 and 0.5: 56.4% and 60.6%.
+
+- **In the band (40–50%): Feigned Retreat, Volley and Gale**, each a
+  second ability's worth, used in principle 3's band (13–22% of turns),
+  none above 50%. Feigned Retreat is worth about Skirmish (42.5% against
+  42.8%) though as built it is the Bow plus a free walk; at full damage
+  it is the Bow's best form whenever a step is wanted. Volley charged
+  measures as it did at its adoption (44% then). Gale is the Storm
+  Caller's strongest second ability so far, stronger than Sunlight
+  (40.6% against 46.7%), and costs Hail half its turns (47.6% from 66%).
+- **Shove, Haul: near nothing.** The AI seldom finds a use (Shove 1.1% of
+  turns): with no collision damage and hail the only thing to push
+  into, a displacement is worth only what the next turns make of it,
+  past the search's horizon. A player might do more with them.
+- **Overwatch and Tailwind lose games** (57.9%, 57.2%). Overwatch fires
+  almost never (0.3 damage a fight): the enemy AI walks round a lane it
+  sees, so the turn is lost, whatever value the AI gives a lane (56–61%);
+  as in 2026-10-23's measurement, a lane on an 8 × 8 board with
+  three-space walks is seldom in the way. Tailwind is a trap: used on 5%
+  of turns, each a turn of Hail given up for 3 slots of an ally's.
+- **Hold Loose is a nerf, not a sidegrade** (39.4% head to head): the
+  held unit still acts, and Stunned's lost turn is Grapple's worth. It is
+  still the Champion's core (19% without it).
+- **Hip Toss changes nothing** (47.5% head to head, 53.1% without it):
+  like Throw, it is seldom worth a turn.
+- **Squall Line is a big nerf** (29.4% head to head) and slows fights:
+  Hail's damage, which kills (1.0 a fight) and breaks grapples, is worth
+  more than two more spaces of Immobilize.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

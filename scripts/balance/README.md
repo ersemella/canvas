@@ -20,6 +20,10 @@ and `caravans.mjs` run on the current rules. `sunlight.mjs` (2026-10-23) measure
 and the kit before it (Hail alone) as `today`; `sunlight-ai.mjs` the AI's
 share of an Enhance's worth, and `sunlight-full.mjs` the kit as it plays
 against Hail alone.
+`second-abilities.mjs` (2026-10-24) measures the experiment abilities in no
+kit (Shove, Haul, Hold Loose, Hip Toss, Feigned Retreat, Gale, Squall Line,
+Tailwind, Volley, Overwatch); a changed ability against its original uses
+`mod.kits`, the modified side's kits by hero.
 
 ## Ability and stat ablation
 
