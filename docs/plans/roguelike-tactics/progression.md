@@ -22,8 +22,8 @@ tuning. Section numbers are the combat design's.
   the glossary's **stage** already does.
 - **The rhythm of a region:** stages 1 and 2 each award provisions
   (19.2); stage 3 is the region's high point, the hardest fight (19.5),
-  where the region's provisions are reassigned and then locked and an
-  upgrade is offered (19.3). The Byzantine's stage 4 is the final boss
+  after which the region's provisions are reassigned and then locked and an
+  upgrade is offered (19.3), setting the build for the next region. The Byzantine's stage 4 is the final boss
   (19.6).
 - Whether other route map nodes (caravanserais, bazaars, recruitment) sit
   between stages is unchanged by this: Phase 2's route map design
@@ -37,13 +37,16 @@ Each one adds 1 to one hero's speed, defence or power (9.1).
   region, so **2 per region, 12 in a run**, plus any taken from the
   wildcard slot (19.3).
 - **Assigned when earned**, to any hero in the party and any stat.
-- **Reassigned at stage 3, then locked:** at a region's third stage, the
-  provisions earned **in that region** can be moved freely between heroes
-  and stats. After that they are locked for the rest of the run. Earlier
+- **Reassigned after stage 3, then locked (owner, 2026-10-24):** after
+  winning a region's third stage, the provisions earned **in that
+  region** can be moved freely between heroes and stats. After that they
+  are locked for the rest of the run. Stage 3 itself is fought with them
+  where they were assigned when earned. Earlier
   regions' provisions never move again.
 - Rationale: each region's provisions are a small decision as they arrive
-  and a bigger one at stage 3, where the party commits to a build before
-  its hardest fight. Locking keeps the build a series of commitments, not
+  and a bigger one after stage 3: having seen the region's hardest fight,
+  the party commits to a build for the next region (in the Byzantine, for
+  the final boss). Locking keeps the build a series of commitments, not
   a sheet re-tuned before every fight, and keeps the reassignment to two
   points rather than the whole run's.
 - **What this changes:** until 2026-10-24 heroes had no stat growth
@@ -52,8 +55,9 @@ Each one adds 1 to one hero's speed, defence or power (9.1).
   per-hero caps may be needed (question 61).
 
 ### 19.3 The Upgrade Offer (Decided, owner 2026-10-24)
-At each region's third stage the party is offered **3 upgrades and picks
-1**: 6 offers in a run. The offer is built from fixed slots, not drawn at
+After winning each region's third stage, together with the reassignment
+(19.2), the party is offered **3 upgrades and picks 1**: 6 offers in a
+run, the last just before the final boss. The offer is built from fixed slots, not drawn at
 random from one pool:
 
 | Slot | Contents |
@@ -145,7 +149,7 @@ Counts assume every wildcard is taken as an upgrade.
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Run length (2026-10-24, owner) | 6 regions of 3 stages, the last of 4: 19 fights | Several levels per region, TBD (15.3a); 3 to 4 stages per region | A fixed rhythm per region: build up, commit, the hard fight |
-| Stat growth (2026-10-24, owner) | Provisions: 2 per region, assigned when earned, reassignable at stage 3 within the region, then locked | No stat growth outside gear (10.9); 1 point per stage, swappable every stage; swappable only between regions | Small, steady growth with one commitment per region |
+| Stat growth (2026-10-24, owner) | Provisions: 2 per region, assigned when earned, reassignable after stage 3's fight within the region, then locked | No stat growth outside gear (10.9); 1 point per stage, swappable every stage; swappable only between regions | Small, steady growth with one commitment per region |
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |
 | Final boss (2026-10-24, owner) | Counters the player's build | A fixed boss | The run ends on a test of the build the player made |
@@ -154,13 +158,13 @@ Counts assume every wildcard is taken as an upgrade.
 
 59. The provisions' final name (working name: provisions; others: favour,
     tribute, silk).
-60. Whether stage 3's reassignment and upgrade offer come before its fight
-    (the build is set for the hardest fight; read so here) or after it.
+60. ~~Whether stage 3's reassignment and upgrade offer come before its
+    fight or after it.~~ Answered 2026-10-24 (owner): after (19.2, 19.3).
 61. Per-hero, per-stat caps on provisions, and how many provisions the
     wildcard gives (1 assumed).
 62. How enemy heroes' 10 points and 4 upgrades ramp across regions, and
     the wolves' increase per region.
-63. Passives: when they can be moved between heroes (at stage 3, as
+63. Passives: when they can be moved between heroes (after stage 3, as
     provisions?), whether a dead hero's passive is lost, and how they
     relate to gear's transferable modifiers (9.7): alongside gear, or in
     place of it.
