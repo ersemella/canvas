@@ -563,7 +563,7 @@ describe('the board', () => {
     expect(spaceAt(4, 0)).toEqual(map.camelStart);
   });
 
-  it('raises one clump of 3 to 5 mountains in about half of fights, away from the centre, with no ruins in its half', () => {
+  it('raises one clump of 3 to 5 mountains along the top edge in about half of fights, away from the centre, with no ruins in the top half', () => {
     const centre: Hex = {q: 0, r: 0};
     let withMountains = 0;
     for (let seed = 0; seed < 60; seed++) {
@@ -589,13 +589,10 @@ describe('the board', () => {
             queue.push(n);
           }
       expect(seen.size).toBe(mountains.length);
-      // All in the top half or all in the bottom, and that half has no ruins.
-      const top = depth(mountains[0]!) < 0;
-      for (const m of mountains) {
-        expect(depth(m)).not.toBe(0);
-        expect(depth(m) < 0).toBe(top);
-      }
-      for (const r of at('obstacle')) expect(top ? depth(r) >= 0 : depth(r) <= 0).toBe(true);
+      // All in the board's top band, at least one on its edge, and no ruins in the top half.
+      for (const m of mountains) expect(depth(m)).toBeLessThanOrEqual(-4);
+      expect(mountains.some((m) => hexDistance(m, centre) === 4)).toBe(true);
+      for (const r of at('obstacle')) expect(depth(r)).toBeGreaterThanOrEqual(0);
     }
     expect(withMountains).toBeGreaterThan(15);
     expect(withMountains).toBeLessThan(45);

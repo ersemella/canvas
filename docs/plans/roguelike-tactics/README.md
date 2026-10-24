@@ -76,7 +76,7 @@ the kits.**
   is a hexagon of 61 flat-top hexes, 4 from the centre, the sides starting
   on its straight outer columns of 5 (owner, 2026-10-24; 64 pointy-top
   hexes in 9 rows before); about half of fights have a range of 3 to 5
-  mountains, which block as ruins do.
+  mountains along the top edge, which block as ruins do.
 
 **Next step:** the owner reviews the builder's readings of the rework and
 the first measurements (Grapple decides fights, Throw goes unused) in

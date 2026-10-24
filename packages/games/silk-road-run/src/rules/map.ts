@@ -115,12 +115,14 @@ const RUIN_GAP = 3;
 
 /**
  * Mountains (owner, 2026-10-24): about half of fights have one range, 3 to
- * 5 hexes in one clump, in the top or the bottom half, never within
- * `MOUNTAIN_CENTRE_GAP` − 1 hexes of the centre; that half has no ruins.
+ * 5 hexes in one clump along the top edge: starting from a hex on the edge,
+ * within `MOUNTAIN_DEPTH` of the top, never within `MOUNTAIN_CENTRE_GAP` − 1
+ * hexes of the centre. The top half then has no ruins.
  */
 const MOUNTAIN_CHANCE = 0.5;
 const MOUNTAIN_SIZES = [3, 4, 5];
-const MOUNTAIN_HALVES = [(h: Hex) => depth(h) < 0, (h: Hex) => depth(h) > 0];
+/** How deep a mountain may sit: `depth` −4 or higher up, the board's top band. */
+const MOUNTAIN_DEPTH = -4;
 const MOUNTAIN_CENTRE_GAP = 3;
 const CENTRE: Hex = {q: 0, r: 0};
 
@@ -141,13 +143,13 @@ export function randomTiles(random: () => number): Record<string, Tile> {
   );
   let ruinHalves = RUIN_HALVES;
   if (random() < MOUNTAIN_CHANCE) {
-    const half = Math.floor(random() * MOUNTAIN_HALVES.length);
     const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
     const allowed = candidates
-      .filter(MOUNTAIN_HALVES[half]!)
+      .filter((h) => depth(h) <= MOUNTAIN_DEPTH)
       .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP);
     ruins.push(...mountainRange(tiles, allowed, size, random));
-    ruinHalves = RUIN_HALVES.filter((_, i) => i !== half);
+    // The top half's ruins give way to the range.
+    ruinHalves = RUIN_HALVES.slice(1);
   }
   for (const inHalf of ruinHalves)
     for (let i = 0; i < RUINS_PER_HALF; i++)
@@ -167,7 +169,7 @@ export function randomTiles(random: () => number): Record<string, Tile> {
 
 /**
  * One clump of up to `size` mountains among `allowed`, marked in `tiles`:
- * from a random first hex it grows a hex at a time onto a neighbour of the
+ * from a random first hex on the board's edge it grows a hex at a time onto a neighbour of the
  * range, the ones touching more of it first, so it stays together. Never
  * cuts the board in two.
  */
@@ -181,6 +183,7 @@ function mountainRange(
   const inRange = (h: Hex) => range.some((m) => hexDistance(m, h) === 0);
   while (range.length < size) {
     let free = allowed.filter((h) => !inRange(h) && connectedWithout(tiles, h));
+    if (!range.length) free = free.filter((h) => hexDistance(h, CENTRE) === RADIUS);
     if (range.length) {
       const touching = (h: Hex) => range.filter((m) => hexDistance(m, h) === 1).length;
       const most = Math.max(0, ...free.map(touching));
