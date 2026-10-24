@@ -1008,9 +1008,13 @@ try {
   }
   const canvasBox = await phone.locator('canvas').boundingBox();
   const viewportWidth = phone.viewportSize().width;
+  // Edge to edge, or, where the screen is too short for that (an iPhone 13
+  // since the 64-hex board of 2026-10-24), as tall as it fits, centred.
   check(
-    'phone: the board runs edge to edge',
-    Math.abs(canvasBox.x) <= 1 && Math.abs(canvasBox.width - viewportWidth) <= 1,
+    'phone: the board runs edge to edge, or fills the height centred',
+    (Math.abs(canvasBox.x) <= 1 && Math.abs(canvasBox.width - viewportWidth) <= 1) ||
+      (canvasBox.y <= 1 &&
+        Math.abs(canvasBox.x - (viewportWidth - canvasBox.x - canvasBox.width)) <= 1),
     [canvasBox, viewportWidth]
   );
   const inViewport = (locator) =>
@@ -1202,15 +1206,16 @@ try {
     check('phone: tapping plain sand closes the tooltip', !(await tooltip.count()));
     await phone.touchscreen.tap(foeAt.x, foeAt.y);
     await sleep(200);
-    // Tapping away from the board (here, the space above it: the board
-    // sits down against the action bar) closes it too.
+    // Tapping away from the board (here, the space above it, or beside it
+    // when it fills the height: the board sits down against the action bar)
+    // closes it too.
     const box = await phone.locator('canvas').boundingBox();
     check(
       'phone: the board sits against the action section',
-      box.y > 8 && actionBarTop - (box.y + box.height) <= 12,
+      (box.y > 8 || box.x > 8) && actionBarTop - (box.y + box.height) <= 12,
       [box, actionBarTop]
     );
-    await phone.touchscreen.tap(4, box.y / 2);
+    await phone.touchscreen.tap(box.x / 2, box.y > 8 ? box.y / 2 : box.y + box.height / 2);
     await sleep(200);
     check('phone: tapping away closes the tooltip', !(await tooltip.count()));
     // Any tap outside the tooltip closes it, a turn button's too.
