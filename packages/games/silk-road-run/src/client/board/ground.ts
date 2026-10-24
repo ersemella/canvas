@@ -130,22 +130,22 @@ function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
 }
 
 /**
- * The exit's chevrons march off the board: each pushes out a few art
- * pixels towards the edge and back, the far one a beat behind the near, so
- * a wave runs down the road out.
+ * The exit's chevrons bounce off the board together: they push out a few
+ * art pixels towards the edge and back.
  */
-const EXIT_ARROW = {push: 3, seconds: 1.1, lag: 0.25};
+const EXIT_ARROW = {push: 3, seconds: 1.1};
 
-/** How far the exit's `i`th chevron (0 the nearer) has pushed out at a time, in whole art pixels. */
-export function exitArrowPush(time: number, i: number): number {
-  const phase = time / EXIT_ARROW.seconds - i * EXIT_ARROW.lag;
-  return Math.round((EXIT_ARROW.push * (1 - Math.cos(phase * 2 * Math.PI))) / 2);
+/** How far the exit's chevrons have pushed out at a time, in whole art pixels. */
+export function exitArrowPush(time: number): number {
+  return Math.round(
+    (EXIT_ARROW.push * (1 - Math.cos((time * 2 * Math.PI) / EXIT_ARROW.seconds))) / 2
+  );
 }
 
 /**
  * An exit, the road out (camel.md, 18.2): a worn ivory border and two
  * chevrons pointing down off the board's bottom point, outlined in ink
- * like the sprites. The chevrons march (`exitArrowPush`), unless the
+ * like the sprites. The chevrons bounce (`exitArrowPush`), unless the
  * device asks for reduced motion (`time` null).
  */
 export function drawExit(ctx: CanvasRenderingContext2D, h: Hex, time: number | null = null): void {
@@ -161,8 +161,9 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex, time: number | n
   ctx.scale(HEX_SCALE, HEX_SCALE);
   ctx.rotate(Math.PI / 2);
   ctx.lineJoin = 'miter';
-  [-6, 3].forEach((at, i) => {
-    const dx = at + (time === null ? 0 : exitArrowPush(time, i));
+  const push = time === null ? 0 : exitArrowPush(time);
+  for (const at of [-6, 3]) {
+    const dx = at + push;
     ctx.beginPath();
     ctx.moveTo(dx - 3, -7);
     ctx.lineTo(dx + 4, 0);
@@ -173,7 +174,7 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex, time: number | n
     ctx.strokeStyle = PALETTE.ivory;
     ctx.lineWidth = 2.5;
     ctx.stroke();
-  });
+  }
   ctx.restore();
 }
 

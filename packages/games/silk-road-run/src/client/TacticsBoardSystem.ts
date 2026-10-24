@@ -170,7 +170,7 @@ export class TacticsBoardSystem extends BaseSystem {
       for (const u of fight.units) if (u.alive && u.hex) parts.push(idleFrame(u.id, time));
       if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
       if (this.scene.turnArrow !== false) parts.push(turnArrowBob(time));
-      if (mapOf(fight).exits.length > 0) parts.push(exitArrowPush(time, 0), exitArrowPush(time, 1));
+      if (mapOf(fight).exits.length > 0) parts.push(exitArrowPush(time));
     }
     return parts.join(' ');
   }
