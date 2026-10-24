@@ -6,10 +6,11 @@
  */
 import {hexEquals, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, HEROES} from './config';
+import {ABILITY} from './config';
 import {
   firstInLane,
   isImmobilized,
+  kitOf,
   lane as laneFrom,
   sortByHex,
   spacesWithin,
@@ -351,13 +352,12 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
 };
 
 export function abilitiesOf(unit: Unit): AbilityDef[] {
-  return HEROES[unit.hero].abilities.map((id) => ABILITIES[id]);
+  return kitOf(unit).map((id) => ABILITIES[id]);
 }
 
 /** Why the unit can't use the ability at all right now, or null if it can. */
 export function unusableReason(unit: Unit, ability: AbilityDef): string | null {
-  if (!HEROES[unit.hero].abilities.includes(ability.id))
-    return 'That unit doesn’t have that ability.';
+  if (!kitOf(unit).includes(ability.id)) return 'That unit doesn’t have that ability.';
   return null;
 }
 

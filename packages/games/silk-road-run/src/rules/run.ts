@@ -18,6 +18,7 @@ import {
   refreshStats,
   seededRandom,
 } from './fight';
+import {createTestFight} from './testStage';
 import {shuffled} from './track';
 import type {AbilityId, ActionTarget, FightState, HeroId, RunAction} from './types';
 
@@ -37,6 +38,8 @@ export interface RunState {
   version: number;
   /** Which of STAGES the run is at. */
   stage: number;
+  /** A test stage (test-stage.json; `testStage.ts`): one fight, its own line-up, won to win the run. */
+  test?: boolean;
   fight: FightState;
 }
 
@@ -57,9 +60,16 @@ export interface RunView {
 /**
  * A new run with the party chosen on the start menu (`{party}`; all three
  * heroes if none is given), its fight advanced to the first decision,
- * the player's or the AI's.
+ * the player's or the AI's. `{test: true}` starts the test stage instead,
+ * a run of one fight set up in test-stage.json.
  */
 export function createRun(seed: number, setup?: unknown): RunState {
+  if ((setup as {test?: unknown} | null | undefined)?.test === true) {
+    const fight = createTestFight(seed);
+    fight.events = [];
+    advanceToDecision(fight);
+    return {format: RUN_FORMAT, seed, version: 0, stage: 0, test: true, fight};
+  }
   return {
     format: RUN_FORMAT,
     seed,
@@ -99,7 +109,8 @@ function survivors(fight: FightState): HeroId[] {
     .map((u) => u.hero);
 }
 
-const lastStage = STAGES.length - 1;
+/** How many stages the run has: STAGES, or the test stage alone. */
+const stageCount = (run: RunState) => (run.test ? 1 : STAGES.length);
 
 /**
  * Checks a start menu's party from the network: one to three of the
@@ -172,7 +183,7 @@ export function handleRunAction(run: RunState, raw: unknown): RunState {
   const action = parseAction(raw);
   const {stage} = run;
   if (action.type === 'next') {
-    if (run.fight.phase !== 'won' || stage >= lastStage)
+    if (run.fight.phase !== 'won' || stage >= stageCount(run) - 1)
       throw new RuleError('There is no next stage to go on to.');
     const fight = stageFight(run.seed, stage + 1, survivors(run.fight));
     return {...run, version: run.version + 1, stage: stage + 1, fight};
@@ -207,7 +218,7 @@ export function runView(run: RunState): RunView {
   return {
     version: run.version,
     stage: run.stage,
-    stages: STAGES.length,
+    stages: stageCount(run),
     fight: due ? {...run.fight, awaiting: null} : run.fight,
     aiDue: due,
   };
@@ -216,7 +227,7 @@ export function runView(run: RunState): RunView {
 /** Won once the last stage is won; a stage before it, won, waits for `next`. */
 export function runStatus(run: RunState): 'active' | 'won' | 'lost' {
   if (run.fight.phase === 'lost') return 'lost';
-  return run.fight.phase === 'won' && run.stage >= lastStage ? 'won' : 'active';
+  return run.fight.phase === 'won' && run.stage >= stageCount(run) - 1 ? 'won' : 'active';
 }
 
 /** Saved in another format than this version's (`RUN_FORMAT`): the platform ends it. */

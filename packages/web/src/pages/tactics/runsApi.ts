@@ -52,10 +52,11 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
 export const runsApi = {
   active: () => call<{activeRunId: string | null}>('/runs/active'),
   get: (runId: string) => call<RunResponse>(`/runs/${runId}`),
-  start: (party: HeroId[]) =>
+  /** A run with the chosen party, or the test stage (test-stage.json in the game's package). */
+  start: (setup: {party: HeroId[]} | {test: true}) =>
     call<RunResponse>('/runs', {
       method: 'POST',
-      body: JSON.stringify({game: 'silk-road-run', party}),
+      body: JSON.stringify({game: 'silk-road-run', ...setup}),
     }),
   turn: (runId: string, body: TurnInput) =>
     call<RunResponse>(`/runs/${runId}/turn`, {method: 'POST', body: JSON.stringify(body)}),

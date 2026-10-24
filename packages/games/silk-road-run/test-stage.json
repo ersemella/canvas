@@ -1,0 +1,16 @@
+{
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file.",
+  "seed": null,
+  "ruins": "random",
+  "camel": {},
+  "player": [
+    {"hero": "bokh"},
+    {"hero": "mangudai", "abilities": ["bow", "skirmish"]},
+    {"hero": "storm", "power": 2, "abilities": ["hail", "sunlight"]}
+  ],
+  "enemy": [
+    {"hero": "wolf"},
+    {"hero": "wolf", "speed": 3, "power": 2},
+    {"hero": "mangudai", "at": {"col": 5, "row": 3}}
+  ]
+}

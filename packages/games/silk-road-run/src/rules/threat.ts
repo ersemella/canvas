@@ -6,8 +6,8 @@
  * (walking and attacking are separate turns), with the units now on the
  * board blocking arrows (the acting unit aside, since it is the one moving).
  */
-import {ABILITY, AI, HEROES} from './config';
-import {hostile, isImmobilized, isStunned} from './board';
+import {ABILITY, AI} from './config';
+import {hostile, isImmobilized, isStunned, kitOf} from './board';
 import {damageOf} from './resolve';
 import {tileAt} from './map';
 import type {MapData} from './map';
@@ -57,7 +57,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     if (!e.alive || !e.hex || e.slot === null || !hostile(e, actor) || power <= 0) continue;
     const hexes = new Map<number, number>();
     out.push({enemyId: e.id, hexes});
-    const has = (a: AbilityId) => HEROES[e.hero].abilities.includes(a);
+    const has = (a: AbilityId) => kitOf(e).includes(a);
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);

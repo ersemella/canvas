@@ -266,6 +266,21 @@ check(
 );
 await api(`/runs/${duo.body.runId}/abandon`, alice, {method: 'POST'});
 
+// The test stage: one fight, set up in the game's test-stage.json.
+const testStage = await api('/runs', alice, {
+  method: 'POST',
+  body: JSON.stringify({game: 'silk-road-run', test: true}),
+});
+check(
+  'the test stage starts a run of one fight',
+  testStage.status === 201 &&
+    testStage.body.view.stages === 1 &&
+    testStage.body.view.fight.units.length > 0,
+  testStage.body
+);
+if (testStage.body?.runId)
+  await api(`/runs/${testStage.body.runId}/abandon`, alice, {method: 'POST'});
+
 // ── The page ─────────────────────────────────────────────────────────────────
 const browser = await chromium.launch();
 const page = await browser.newPage({viewport: {width: 1300, height: 900}});

@@ -14,7 +14,7 @@ import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES} from './config';
 import {hexNumber, onMap, tileAt} from './map';
 import type {MapData, Tile} from './map';
-import type {FightState, ShotInAir, Status, Unit} from './types';
+import type {AbilityId, FightState, ShotInAir, Status, Unit} from './types';
 
 export {onMap};
 
@@ -114,9 +114,14 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
   );
 }
 
+/** The abilities `unit` has: its hero's starting kit, or the test stage's (`Unit.loadout`). */
+export function kitOf(unit: Unit): AbilityId[] {
+  return unit.loadout?.abilities ?? HEROES[unit.hero].abilities;
+}
+
 /** A unit with a ranged attack (the bow). */
 export function isRanged(unit: Unit): boolean {
-  return HEROES[unit.hero].abilities.includes('bow');
+  return kitOf(unit).includes('bow');
 }
 
 export function hostile(a: Unit, b: Unit): boolean {

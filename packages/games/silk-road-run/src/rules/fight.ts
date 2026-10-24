@@ -23,7 +23,7 @@ import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, randomTiles} from './map';
 import type {MapData, Tile} from './map';
 import {aimSlot, chargeOf, nextCard, placeCard, placeStartingCards, shuffled} from './track';
-import type {FightState, HeroId, Side, TurnInput, Unit} from './types';
+import type {FightState, HeroId, Loadout, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
 export class RuleError extends Error {}
@@ -39,12 +39,15 @@ export function mapOf(state: FightState): MapData {
 }
 
 /**
- * A hero's speed, defence and power, from config.ts, and the health its
- * defence gives. Phase 1 has no gear and no stat changes, so these are
- * always a unit's stats.
+ * A hero's speed, defence and power, from config.ts, or the test stage's
+ * (`loadout`), and the health its defence gives. Phase 1 has no gear and
+ * no stat changes, so these are always a unit's stats.
  */
-function heroStats(hero: HeroId): Pick<Unit, 'speed' | 'defence' | 'power' | 'maxHp'> {
-  const {speed, defence, power} = HEROES[hero];
+function heroStats(
+  hero: HeroId,
+  loadout: Loadout = {}
+): Pick<Unit, 'speed' | 'defence' | 'power' | 'maxHp'> {
+  const {speed, defence, power} = {...HEROES[hero], ...loadout};
   return {speed, defence, power, maxHp: healthOf(defence)};
 }
 
@@ -57,14 +60,23 @@ function heroStats(hero: HeroId): Pick<Unit, 'speed' | 'defence' | 'power' | 'ma
  */
 export function refreshStats(state: FightState): void {
   for (const u of state.units) {
-    Object.assign(u, heroStats(u.hero));
+    Object.assign(u, heroStats(u.hero, u.loadout));
     u.hp = Math.min(u.hp, u.maxHp);
   }
 }
 
-/** `copy` numbers a second or later unit of the same hero on a side (e-wolf, e-wolf-2). */
-function makeUnit(side: Side, partyIndex: number, hero: HeroId, copy = 0): Unit {
-  const stats = heroStats(hero);
+/**
+ * `copy` numbers a second or later unit of the same hero on a side
+ * (e-wolf, e-wolf-2); `loadout` is the test stage's stats and kit for it.
+ */
+export function makeUnit(
+  side: Side,
+  partyIndex: number,
+  hero: HeroId,
+  copy = 0,
+  loadout?: Loadout
+): Unit {
+  const stats = heroStats(hero, loadout);
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}${copy ? `-${copy + 1}` : ''}`,
     hero,
@@ -77,6 +89,7 @@ function makeUnit(side: Side, partyIndex: number, hero: HeroId, copy = 0): Unit 
     ...stats,
     slot: null,
     statuses: [],
+    ...(loadout ? {loadout} : {}),
     alive: true,
   };
 }

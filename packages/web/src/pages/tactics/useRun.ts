@@ -168,9 +168,11 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   }, [latestVersion, aiPending, error, receive, run]);
 
   const startRun = useCallback(
-    (party: HeroId[]) => void send(() => runsApi.start(party), 'run'),
+    (party: HeroId[]) => void send(() => runsApi.start({party}), 'run'),
     [send]
   );
+  /** The test stage: one fight set up in the game package's test-stage.json. */
+  const startTest = useCallback(() => void send(() => runsApi.start({test: true}), 'run'), [send]);
 
   /** The run is waiting on the server or the board: an AI turn asked for or queued. */
   const waiting = busy || aiPending || queue.current.length > 0;
@@ -214,6 +216,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     startMenu,
     setStartMenu,
     startRun,
+    startTest,
     sendTurn,
     nextStage,
     playbackDone,

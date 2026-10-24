@@ -37,6 +37,19 @@ export interface Status {
   grapple?: {champion: string; target: string};
 }
 
+/**
+ * A unit's own stats and kit, in place of its hero's (config.ts), set up by
+ * the test stage (test-stage.json; `testStage.ts`). A field left out is
+ * the hero's.
+ */
+export interface Loadout {
+  speed?: number;
+  defence?: number;
+  power?: number;
+  /** Its abilities, Hold included. */
+  abilities?: AbilityId[];
+}
+
 export interface Unit {
   id: string;
   hero: HeroId;
@@ -55,6 +68,8 @@ export interface Unit {
   /** The unit's card on the track; null when dead or not yet placed. */
   slot: number | null;
   statuses: Status[];
+  /** The test stage's stats and kit for it; absent for a hero as config.ts has it. */
+  loadout?: Loadout;
   /**
    * Enhance (keywords.md, 17.6): its abilities deal this much more until
    * the end of its next turn (the Storm Caller's Sunlight). Absent when it
