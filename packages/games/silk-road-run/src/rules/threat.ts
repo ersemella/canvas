@@ -59,7 +59,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     out.push({enemyId: e.id, hexes});
     const has = (a: AbilityId) => kitOf(e).includes(a);
     const {q: fq, r: fr} = e.hex;
-    if (has('bite') || has('grapple'))
+    if (has('bite') || has('grapple') || has('holdLoose'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
     const lanes = (oq: number, or: number, d: number) => {
       for (const [dq, dr] of AXIAL) {
@@ -73,6 +73,17 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       }
     };
     if (has('longshot')) lanes(fq, fr, power);
+    // Volley (an experiment): any space within its range, at the dodge share.
+    if (has('volley')) {
+      const range = ABILITY.volley.range;
+      for (let dq = -range; dq <= range; dq++)
+        for (let dr = Math.max(-range, -dq - range); dr <= Math.min(range, -dq + range); dr++) {
+          const k = id(fq + dq, fr + dr);
+          const tile = board.get(k);
+          if ((dq || dr) && tile !== undefined && tile !== 'obstacle')
+            mark(hexes, k, power * AI.dodgeShare);
+        }
+    }
     // Skirmish: Longshot's lanes from each free space next to it, unless it
     // can't step, at the dodge share once charged.
     if (has('skirmish') && !isImmobilized(e)) {

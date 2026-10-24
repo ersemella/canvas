@@ -20,7 +20,18 @@ export type AbilityId =
   | 'sunlight'
   | 'grapple'
   | 'throw'
-  | 'bite';
+  | 'bite'
+  // Experiments (balance.md, "Second abilities measured", 2026-10-24): in no kit.
+  | 'shove'
+  | 'haul'
+  | 'holdLoose'
+  | 'hipToss'
+  | 'feignedRetreat'
+  | 'gale'
+  | 'squall'
+  | 'tailwind'
+  | 'volley'
+  | 'overwatch';
 
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';
@@ -34,7 +45,7 @@ export interface Status {
   /** From a Storm Caller's hail (its unit id): ends when that hail disappears, at the caster's next turn. */
   hail?: string;
   /** From a Grapple: ends when the grapple does (`breakGrapples` in resolve.ts). */
-  grapple?: {champion: string; target: string};
+  grapple?: {champion: string; target: string; loose?: boolean};
 }
 
 /**
@@ -79,6 +90,11 @@ export interface Unit {
   /** Its turn has begun since it was Enhanced, so the Enhance ends with that turn. */
   enhanceStarted?: boolean;
   /**
+   * Hasted since its last turn (Tailwind, an experiment): it can't be
+   * Hasted again until it next acts, the haste limit (keywords.md, 17.3).
+   */
+  hasted?: boolean;
+  /**
    * Its last turn was skipped (it could only Hold): its card shows it until
    * it next acts.
    */
@@ -104,7 +120,10 @@ export interface HailEffect {
  */
 export interface ShotInAir {
   source: string;
-  dir: number;
+  /** A Skirmish arrow's lane direction; absent for a Volley. */
+  dir?: number;
+  /** A Volley's space (an experiment): whoever stands there when it lands is hit. */
+  hex?: Hex;
   /**
    * The Outrider's Enhance when it drew: the arrow carries it, though the
    * Enhance itself ends with that turn. Absent when it had none.
@@ -118,7 +137,7 @@ export interface LogEntry {
 }
 
 /** How a unit came to enter a hex: walked, thrown, or swapped places by a Throw. */
-export type Motion = 'walk' | 'throw' | 'swap';
+export type Motion = 'walk' | 'throw' | 'swap' | 'push' | 'pull';
 
 /** Something that happened on the board, in the order the rules resolved it. */
 export type FightEvent =
@@ -159,6 +178,11 @@ export interface FightState {
    * Outrider's charging card comes back.
    */
   shots?: ShotInAir[];
+  /**
+   * Overwatch lanes (an experiment): each Outrider's lane until its next
+   * turn, the first unit to enter it shot.
+   */
+  watches?: {source: string; dir: number}[];
   log: LogEntry[];
   /**
    * What the last action set off, the player's turn and the AI turns after

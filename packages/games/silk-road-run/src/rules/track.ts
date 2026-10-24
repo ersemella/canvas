@@ -22,8 +22,14 @@ export function actionCost(unit: Unit): number {
  * (`landCharge` in fight.ts). Skirmish's; 0 for the rest.
  */
 export function chargeOf(unit: Unit, ability: AbilityId): number {
-  if (ability !== 'skirmish' || ABILITY.skirmish.charge <= 0) return 0;
-  return Math.max(1, Math.round(actionCost(unit) * ABILITY.skirmish.charge));
+  const charge =
+    ability === 'skirmish'
+      ? ABILITY.skirmish.charge
+      : ability === 'volley'
+        ? ABILITY.volley.charge
+        : 0;
+  if (charge <= 0) return 0;
+  return Math.max(1, Math.round(actionCost(unit) * charge));
 }
 
 /**

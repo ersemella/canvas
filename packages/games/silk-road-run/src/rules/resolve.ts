@@ -2,10 +2,10 @@
  * Effects every ability is built from: damage, entering a space, hail and
  * grapples ending, death and the end of the fight.
  */
-import {hexDistance, hexEquals} from '@canvas/engine/server';
+import {hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES} from './config';
-import {addStatus, hailOn, shotLane, unitAt} from './board';
+import {addStatus, hailOn, lane, shotLane, unitAt, walkable} from './board';
 import {MAPS} from './map';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, Motion, ShotInAir, Status, Unit} from './types';
@@ -113,7 +113,8 @@ export function applyDamage(ctx: Ctx, target: Unit, amount: number, text: string
   log(ctx, `${text}.`);
   record(ctx.state, {kind: 'damage', unitId: target.id, amount});
   if (target.hp === 0) kill(ctx, target);
-  else endGrapples(ctx, (g) => g.champion === target.id);
+  // A loose grapple (Hold Loose, an experiment) holds through damage.
+  else endGrapples(ctx, (g) => g.champion === target.id && !g.loose);
 }
 
 export function kill(ctx: Ctx, unit: Unit): void {
@@ -127,6 +128,7 @@ export function kill(ctx: Ctx, unit: Unit): void {
   // Its hail lasted until its next turn, which won't come; its shots until its card came back.
   clearHail(ctx.state, unit);
   if (ctx.state.shots) ctx.state.shots = ctx.state.shots.filter((v) => v.source !== unit.id);
+  clearWatches(ctx.state, unit);
   checkEnd(ctx.state);
 }
 
@@ -175,6 +177,14 @@ export function landShots(ctx: Ctx, user: Unit): void {
   if (!mine?.length) return;
   ctx.state.shots = ctx.state.shots!.filter((v) => v.source !== user.id);
   for (const v of mine) {
+    if (v.hex) {
+      // A Volley (an experiment): arrows from above on its space.
+      log(ctx, `${unitName(user)}'s volley lands.`);
+      record(ctx.state, {kind: 'land', unitId: user.id, ability: 'volley', target: v.hex});
+      const u = unitAt(ctx.state, v.hex);
+      if (u && u !== user) hit(ctx, user, u, `${unitName(user)}'s volley`, shotEnhance(user, v));
+      continue;
+    }
     log(ctx, `${unitName(user)} looses the drawn arrow.`);
     const lane = shotLane(ctx.state, ctx.map, v);
     const end = lane[lane.length - 1] ?? user.hex!;
@@ -219,7 +229,8 @@ export function endGrapples(ctx: Ctx, ends: (g: Grapple) => boolean, quiet = fal
  */
 export function stun(ctx: Ctx, u: Unit, status: Status): void {
   addStatus(u, status);
-  endGrapples(ctx, (g) => g.champion === u.id);
+  endGrapples(ctx, (g) => g.champion === u.id && !g.loose);
+  clearWatches(ctx.state, u);
   if (ctx.state.shots?.some((v) => v.source === u.id)) {
     ctx.state.shots = ctx.state.shots.filter((v) => v.source !== u.id);
     log(ctx, `${unitName(u)} loses the drawn arrow.`);
@@ -279,4 +290,61 @@ export function enterHex(
   if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
   if (!midWalk) endGrapplesApart(ctx, unit);
   hailHolds(ctx, unit);
+  watchFires(ctx, unit, h);
+}
+
+/**
+ * Displaces `unit` up to `n` spaces along hex direction `dir` (Push and
+ * Pull, keywords.md, 17.4): it stops early at ruins, another unit or the
+ * map's edge, with no collision damage (open question 55). Each space
+ * entered triggers as a walk's does.
+ */
+export function displace(ctx: Ctx, unit: Unit, dir: number, n: number, how: Motion): void {
+  for (let i = 0; i < n && unit.alive && unit.hex; i++) {
+    const next = hexNeighbor(unit.hex, dir);
+    if (!walkable(ctx.map, next) || unitAt(ctx.state, next)) break;
+    enterHex(ctx, unit, next, how, true);
+  }
+  if (unit.alive) endGrapplesApart(ctx, unit);
+}
+
+// ─── Overwatch (an experiment) ───────────────────────────────────────────────
+
+/** `archer`'s Overwatch lanes lift (its next turn, a Stun, or its death). */
+export function clearWatches(state: FightState, archer: Unit): void {
+  if (state.watches) state.watches = state.watches.filter((w) => w.source !== archer.id);
+}
+
+/**
+ * The spaces an Overwatch lane covers now: from its Outrider along its
+ * direction, up to ruins or the first unit in it other than `ignore` (the
+ * one entering it), that unit's space included.
+ */
+export function watchLane(
+  state: FightState,
+  map: MapData,
+  w: {source: string; dir: number},
+  ignore?: Unit
+): Hex[] {
+  const archer = state.units.find((u) => u.id === w.source);
+  if (!archer?.alive || !archer.hex) return [];
+  const out: Hex[] = [];
+  for (const h of lane(map, archer.hex, w.dir)) {
+    out.push(h);
+    const u = unitAt(state, h);
+    if (u && u !== ignore) break;
+  }
+  return out;
+}
+
+/** A unit entering an Overwatch lane is shot, and that lane lifts. */
+function watchFires(ctx: Ctx, unit: Unit, h: Hex): void {
+  for (const w of ctx.state.watches ?? []) {
+    if (w.source === unit.id || !unit.alive) continue;
+    if (!watchLane(ctx.state, ctx.map, w, unit).some((l) => hexEquals(l, h))) continue;
+    const archer = ctx.state.units.find((u) => u.id === w.source)!;
+    ctx.state.watches = ctx.state.watches!.filter((x) => x !== w);
+    hit(ctx, archer, unit, `${unitName(archer)}'s overwatch arrow`);
+    return;
+  }
 }

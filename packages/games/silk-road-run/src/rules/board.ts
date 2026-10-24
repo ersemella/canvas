@@ -377,8 +377,10 @@ export function firstInLane(
 export function shotLane(state: FightState, map: MapData, shot: ShotInAir): Hex[] {
   const archer = state.units.find((u) => u.id === shot.source);
   if (!archer?.alive || !archer.hex) return [];
+  // A Volley lands on its space.
+  if (shot.hex) return [shot.hex];
   const out: Hex[] = [];
-  for (const h of lane(map, archer.hex, shot.dir)) {
+  for (const h of lane(map, archer.hex, shot.dir!)) {
     out.push(h);
     const u = unitAt(state, h);
     if (u && u !== archer) break;

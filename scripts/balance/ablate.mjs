@@ -18,7 +18,7 @@ if (!file || file.startsWith('--')) {
   --fights N      Fights per experiment (default 400; one-sided ones pair seeds, so 200 seeds)
   --seed N        First fight seed (default 1000)
   --max-turns N   Chosen-action cutoff per fight (default 400)
-  --only NAME     Run one experiment from the file
+  --only NAMES    Run only these experiments from the file (comma-separated)
   --out PATH      JSON output (default work/ablate-results.json)
 EXPERIMENTS.mjs exports \`experiments\`: {name: {patch?, mod?}}; see
 scripts/balance/experiments/ and scripts/balance/README.md.`);
@@ -27,7 +27,7 @@ scripts/balance/experiments/ and scripts/balance/README.md.`);
 const fights = Number(value('--fights', '400'));
 const seed = Number(value('--seed', '1000'));
 const maxTurns = Number(value('--max-turns', '400'));
-const only = value('--only', undefined);
+const only = value('--only', undefined)?.split(',');
 const out = resolve(value('--out', resolve(repo, 'work/ablate-results.json')));
 const server = await createServer({
   configFile: false,
@@ -47,7 +47,7 @@ try {
   const {experiments} = await import(pathToFileURL(resolve(file)).href);
   const results = {};
   for (const [name, experiment] of Object.entries(experiments)) {
-    if (only && name !== only) continue;
+    if (only && !only.includes(name)) continue;
     const start = performance.now();
     results[name] = ablate({fights, seed, maxTurns, ...experiment});
     const r = results[name];

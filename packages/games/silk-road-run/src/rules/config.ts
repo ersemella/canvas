@@ -178,6 +178,23 @@ export const ABILITY = {
     /** Whether a Champion's Enhance adds to its squeeze: yes (owner, 2026-10-23; balance.md). */
     enhancedSqueeze: true,
   },
+  /**
+   * Experiments (balance.md, "Second abilities measured", 2026-10-24), in
+   * no kit: Shove (melee, Push), Haul (Pull the first unit in a lane within
+   * `range`), Hip Toss (Throw landing within `range`), Feigned Retreat (the
+   * Bow, then a walk of up to `steps`), Gale (each unit next to a space
+   * within `range` hit and Pushed), Squall Line (hail on three spaces in a
+   * line, no damage), Tailwind (Haste a unit within `range`), Volley (a
+   * space within `range`, charged) and Overwatch (a lane until the next turn).
+   */
+  shove: {push: 2},
+  haul: {range: 3, pull: 2},
+  hipToss: {range: 2},
+  feignedRetreat: {steps: 2},
+  gale: {range: 3, push: 1},
+  squall: {range: 3},
+  tailwind: {range: 3, haste: 3},
+  volley: {range: 3, charge: 0.5 as number},
 } as const;
 
 /** Enemy AI scoring (brief section 6), on the 2026-10-23 health scale (a hit is 1 or 2). */
@@ -222,6 +239,11 @@ export const AI = {
    * walk is worth this share of the hit: it can step out. PLACEHOLDER.
    */
   dodgeShare: 0.25,
+  /**
+   * An Overwatch lane an enemy could walk into before it lifts is worth
+   * this share of the Outrider's hit (an experiment). PLACEHOLDER.
+   */
+  watchShare: 0.25,
   /**
    * Minus this per space between the unit and what it closes in on after
    * its turn (for the enemy, Temee once no hero is in its reach; otherwise

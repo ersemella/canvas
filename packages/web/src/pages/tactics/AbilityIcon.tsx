@@ -19,7 +19,7 @@ interface Icon {
  * one icon per kind until then). Simple shapes read at 12×12: Throw, Pin
  * and Lunge as figures didn't.
  */
-const ICON: Record<IconId, Icon> = {
+const ICON: Partial<Record<IconId, Icon>> & Record<'move', Icon> = {
   move: {
     kind: 'move',
     rows: [
@@ -188,7 +188,8 @@ export const KIND_NAME: Record<AbilityKind, string> = {
  * before the name, spaced by a margin so the text still starts with it.
  */
 export function AbilityIcon({id, px = 2}: {id: IconId; px?: number}) {
-  const {rows, kind, colors} = ICON[id];
+  // The balance experiments' abilities (in no kit) have no icon of their own.
+  const {rows, kind, colors} = ICON[id] ?? ICON.move;
   const fill = colors ?? KIND_COLORS[kind!];
   return (
     <svg
