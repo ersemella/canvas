@@ -42,7 +42,7 @@ function turnValue(u: Unit): number {
   return u.hero === CAMEL ? AI.perCamelHex : Math.max(1, u.power);
 }
 
-/** A unit whose attack reaches beyond its neighbours (the bow, hail). */
+/** A unit whose attack reaches beyond its neighbours (Longshot, hail). */
 function attacksFromAfar(u: Unit): boolean {
   return isRanged(u) || HEROES[u.hero].abilities.includes('hail');
 }
@@ -105,7 +105,7 @@ function enhanceGain(state: FightState, u: Unit): number {
 /**
  * The enemies standing where `u` could hit them from where it is, roughly:
  * next to it for melee, within hail's range for the Storm Caller, on one of
- * the bow's lines, or of Skirmish's from a space next to it (ignoring what
+ * Longshot's lines, or of Skirmish's from a space next to it (ignoring what
  * blocks them), for the Outrider.
  */
 function strikable(state: FightState, u: Unit): Unit[] {
@@ -118,7 +118,7 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (has('hail') && d <= ABILITY.hail.range) return true;
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
-    if (has('bow') && (dq === 0 || dr === 0 || dq === -dr)) return true;
+    if (has('longshot') && (dq === 0 || dr === 0 || dq === -dr)) return true;
     // Skirmish: a line from a space next to it (one step off a line).
     return has('skirmish') && Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) <= 1;
   });

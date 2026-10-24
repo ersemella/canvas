@@ -81,7 +81,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    abilities: ['bow', 'hold'],
+    abilities: ['longshot', 'hold'],
     // Skirmish in place of Volley (owner, 2026-10-23; balance.md), an
     // upgrade since 2026-10-24 (owner).
     upgrades: ['skirmish'],
@@ -104,7 +104,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
    * 2026-10-22). It acts last in the starting order, at slot 12 (owner,
-   * 2026-10-23). Defence 9 (health 20, ten bow hits) is a PLACEHOLDER for
+   * 2026-10-23). Defence 9 (health 20, ten Longshot hits) is a PLACEHOLDER for
    * the owner's "very high health". Speed 0, so an action cost of 12
    * (owner, 2026-10-23).
    */
@@ -121,13 +121,14 @@ export const HEROES: Record<HeroId, HeroStats> = {
     actsLast: true,
   },
   /**
-   * An enemy NPC (owner, 2026-10-21): one attack, Bite. Speed 2, defence 1
-   * (health 4), power 1 are PLACEHOLDERS on the 2026-10-23 scale.
+   * An enemy NPC (owner, 2026-10-21): one attack, Bite. Speed 1 (owner,
+   * 2026-10-24; was 2). Defence 1 (health 4), power 1 are PLACEHOLDERS on
+   * the 2026-10-23 scale.
    */
   wolf: {
-    name: 'Wolf',
+    name: 'Grey Wolf',
     letter: 'W',
-    speed: 2,
+    speed: 1,
     defence: 1,
     power: 1,
     abilities: ['bite', 'hold'],
@@ -140,7 +141,7 @@ export const ABILITY = {
    * Six straight lanes with no range limit (owner, 2026-10-20): the arrow
    * flies until it hits a unit, ruins or the map's edge.
    */
-  bow: {range: Infinity},
+  longshot: {range: Infinity},
   /**
    * One space, its centre within 3 (owner, 2026-10-23; was a radius-1 area
    * with damage and a track Push). It stays until its caster's next turn;
@@ -158,13 +159,13 @@ export const ABILITY = {
   sunlight: {range: 3, enhance: 2, self: true as boolean, melts: true as boolean},
   /**
    * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
-   * space next to the Outrider, then the Bow's shot from there, charged:
+   * space next to the Outrider, then Longshot's shot from there, charged:
    * the Outrider's card is pushed `charge` of its action cost on, rounded
    * (half: 4 slots for the Outrider's 8), greyed while it charges; when it
    * comes back the arrow flies down the lane it was aimed along and the
    * first unit in it then takes the Outrider's power, with no turn for the
    * Outrider, and its card goes its action cost on to its next turn. At 0
-   * it shoots at once (measured: a better Bow rather than a second
+   * it shoots at once (measured: a better Longshot rather than a second
    * ability; balance.md).
    */
   skirmish: {charge: 0.5 as number},

@@ -68,9 +68,9 @@ describe('budgeted tactical search', () => {
     s.awaiting = me.id;
     const pruned = stats();
     const exhaustive = stats();
-    // The bow alone: a second attack would make the tree too big to search exhaustively.
+    // Longshot alone: a second attack would make the tree too big to search exhaustively.
     const kit = HEROES.mangudai.abilities;
-    HEROES.mangudai.abilities = ['bow', 'hold'];
+    HEROES.mangudai.abilities = ['longshot', 'hold'];
     let selected: TurnInput;
     try {
       selected = chooseAiTurn(s, me, {left: AI.maxSimulations}, pruned);

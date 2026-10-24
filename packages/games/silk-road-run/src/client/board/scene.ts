@@ -22,7 +22,7 @@ export interface BoardScene {
   /** The hexes the picked ability reaches from its user: outlined, so its range shows. */
   range?: Hex[];
   /**
-   * The bow's lanes from its user: an arrow along each to a unit it may
+   * Longshot's lanes from its user: an arrow along each to a unit it may
    * target, a faint dashed line along the rest to where the arrow stops.
    */
   lanes?: {from: Hex; lanes: BowLane[]};
@@ -45,7 +45,7 @@ export interface BoardScene {
   turnArrow?: boolean;
 }
 
-/** One of the bow's lanes, as the board draws it (see `BoardScene.lanes`). */
+/** One of Longshot's lanes, as the board draws it (see `BoardScene.lanes`). */
 export interface BowLane {
   hexes: Hex[];
   target: boolean;

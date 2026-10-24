@@ -114,9 +114,9 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
   );
 }
 
-/** A unit with a ranged attack (the bow). */
+/** A unit with a ranged attack (Longshot). */
 export function isRanged(unit: Unit): boolean {
-  return HEROES[unit.hero].abilities.includes('bow');
+  return HEROES[unit.hero].abilities.includes('longshot');
 }
 
 export function hostile(a: Unit, b: Unit): boolean {
@@ -347,7 +347,7 @@ export function lineOfFire(
 
 /**
  * The first unit an arrow flying from `from` along hex direction `dir`
- * hits, stopped by ruins and the map's edge (the bow's lane); `ignore`
+ * hits, stopped by ruins and the map's edge (Longshot's lane); `ignore`
  * isn't in the way (the archer itself).
  */
 export function firstInLane(

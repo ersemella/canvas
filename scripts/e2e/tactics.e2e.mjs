@@ -105,7 +105,7 @@ const version = started.body.view.version;
 
 const bad = await api(`/runs/${runId}/turn`, alice, {
   method: 'POST',
-  body: JSON.stringify({action: {ability: 'bow', target: {hex: {q: 50, r: 50}}}}),
+  body: JSON.stringify({action: {ability: 'longshot', target: {hex: {q: 50, r: 50}}}}),
 });
 check(
   'an illegal turn is refused with a reason',
@@ -138,7 +138,7 @@ const heroFight = startedFight;
 
 // The server enforces the same exclusive-action rule as the page.
 const actor = heroFight.units.find((u) => u.id === heroFight.awaiting);
-const firstAbility = {bokh: 'grapple', mangudai: 'bow', storm: 'hail'}[actor.hero];
+const firstAbility = {bokh: 'grapple', mangudai: 'longshot', storm: 'hail'}[actor.hero];
 const combined = await api(`/runs/${runId}/turn`, alice, {
   method: 'POST',
   body: JSON.stringify({
