@@ -7,8 +7,9 @@ One fight against the AI plays end to end: the rules in
 The page opens on a start menu (2026-10-21): the game in brief, which of
 the heroes to take (one to three of the three; the camel always comes), and Start;
 `POST /runs` takes the `party`. A run is three stages, each a fight (owner, 2026-10-24;
-`STAGES` in `src/rules/config.ts`): the enemy brings one random hero and
-two wolves, then that hero, another and a wolf, then all three heroes.
+`STAGES` in `src/rules/config.ts`): the enemy brings the Mangudai Outrider
+(`FIRST_ENEMY`) and two wolves, then the Outrider, one of the other two at
+random and a wolf, then all three heroes.
 Winning a stage offers Next stage (`POST /runs/:id/next`); the surviving
 heroes and the camel go on at full health, the fallen are gone for the
 run; winning the third stage wins the run.

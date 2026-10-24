@@ -7,7 +7,7 @@
 import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
-import {AI, CAMEL, MOUNTAIN_STAGES, PARTY, ROSTER, STAGES} from './config';
+import {AI, CAMEL, FIRST_ENEMY, MOUNTAIN_STAGES, PARTY, ROSTER, STAGES} from './config';
 import {
   RuleError,
   actingUnit,
@@ -80,13 +80,14 @@ export function createRun(seed: number, setup?: unknown): RunState {
 }
 
 /**
- * The enemy for a stage: its number of heroes, the first of one random
- * order for the whole run, from its seed, so a stage brings the heroes of
- * the one before it and more; then its wolves.
+ * The enemy for a stage: its number of heroes, the first of one order for
+ * the whole run, FIRST_ENEMY then the rest at random from its seed, so a
+ * stage brings the heroes of the one before it and more; then its wolves.
  */
 export function stageEnemies(seed: number, stage: number): HeroId[] {
   const {heroes, wolves} = STAGES[stage]!;
-  const picked = shuffled(ROSTER, seededRandom(seed ^ 0x5bd1e995));
+  const rest = ROSTER.filter((h) => h !== FIRST_ENEMY);
+  const picked = [FIRST_ENEMY, ...shuffled(rest, seededRandom(seed ^ 0x5bd1e995))];
   return [...picked.slice(0, heroes), ...Array<HeroId>(wolves).fill('wolf')];
 }
 
