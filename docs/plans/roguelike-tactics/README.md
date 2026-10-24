@@ -123,6 +123,7 @@ Always read this file first. Then:
 | Tuning numbers, or balancing a new hero, ability, keyword or gear: what each ability and stat is worth, measured; the proposed tuning; principles for re-tuning | [balance.md](balance.md) |
 | The twelve heroes | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
+| Run progression: regions and stages, provisions (stat points), upgrade offers, the enemy line-up per stage, the final boss | [progression.md](progression.md) |
 | The caravan's camel; how a fight is won and lost; ending stalled fights | [camel.md](camel.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |
@@ -156,6 +157,7 @@ The combat design's rules cite each other by section number ("section
 | 16 References | [references.md](references.md) |
 | 17 Keywords and effects | [keywords.md](keywords.md) |
 | 18 The caravan's camel | [camel.md](camel.md) |
+| 19 Run progression | [progression.md](progression.md) |
 
 ## Decisions
 
@@ -163,9 +165,11 @@ The combat design's rules cite each other by section number ("section
 **Decided** or **Proposed**, with a decision log at the end of the file.
 Run-level decisions: a run is a **route map with route choices** (as in
 Slay the Spire or Monster Train; node types and layout are Phase 2's
-design work), passing through six **regions** of several levels each, in
+design work), passing through six **regions** of 3 stages each, the last
+of 4 ending in a boss that counters the player's build, in
 a fixed order: Steppe, China, India, Persia, Arabia, Byzantine
-([setting.md](setting.md), 15.3a); route maps, encounters and recruitment offers come from the
+([setting.md](setting.md), 15.3a; [progression.md](progression.md), owner 2026-10-24); the party grows by
+**provisions** (stat points, 2 per region) and one **upgrade offer** per region; route maps, encounters and recruitment offers come from the
 run's seed. **Multiplayer and architecture** decisions are numbered:
 
 | | Decision | File |

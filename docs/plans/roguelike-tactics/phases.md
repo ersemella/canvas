@@ -50,7 +50,7 @@ their fixed order (15.3a), whose nodes are fights,
 caravanserais (rest and recovery, 10.11), bazaars (gear and consumables,
 9), recruitment (10.6) and optional risk (11.4). Permanent hero death and
 party wipes, the camel's health carried between fights, gear rewards, seeded recruitment offers,
-milestone upgrades, ultimates, run end. Gear offers follow the gear rules in 9.7 (drafted, build-aware previews, nodes showing their keyword family); steering offers across runs (10.12) can come later. More heroes and enemy bands;
+provisions and upgrade offers ([progression.md](progression.md)), the enemy line-up per region and the final boss (19.5, 19.6), ultimates, run end. Gear offers follow the gear rules in 9.7 (drafted, build-aware previews, nodes showing their keyword family); steering offers across runs (10.12) can come later. More heroes and enemy bands;
 difficulty scaling (11.4). Leave room on the map for rival caravan nodes
 (Phase 4).
 
