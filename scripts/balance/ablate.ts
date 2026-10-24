@@ -185,9 +185,9 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
       const input = chooseAiTurn(state, u);
       const moving = (input.move?.length ?? 0) > 0;
       const swap =
-        input.action.ability === 'throw' &&
-        input.action.target?.to?.q === u.hex?.q &&
-        input.action.target?.to?.r === u.hex?.r;
+        input.action.ability === 'grapple' &&
+        input.action.target?.hex?.q === u.hex?.q &&
+        input.action.target?.hex?.r === u.hex?.r;
       add((uses[u.hero] ??= {}), moving ? 'move' : swap ? 'swap' : input.action.ability);
       add(uses[u.hero]!, 'turns');
       if (input.action.ability === 'sunlight') {

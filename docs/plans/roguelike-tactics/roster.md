@@ -69,7 +69,8 @@ built, no hero has them in play (`upgrades` in config.ts).
 
 **At most three abilities** besides moving and Hold (owner, 2026-10-24;
 `RULES.maxAbilities`): a hero with three takes no new ability from an
-upgrade. So the Champion (Grapple, Throw) takes one of Shove and Haul;
+upgrade. So the Champion (Grapple, Throw folded in) takes both Shove and
+Haul (owner, 2026-10-24; one of them while Throw was its own ability);
 the Outrider (the Bow) two of Skirmish, Volley and Feigned Retreat; the
 Storm Caller (Hail) both Sunlight and Gale. The test stage holds a unit to
 three too.
@@ -77,7 +78,7 @@ three too.
 | Hero | Speed | Defence | Power | Health | Ability | Effect |
 |---|---|---|---|---|---|---|
 | Bökh Champion | 2 | 3 | 1 | 8 | Grapple | **Melee**: a unit next to the Champion (owner, 2026-10-23; until then it reached 2 spaces, stepping in first). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved; the Champion may walk while it grapples, and the grapple holds if the walk ends next to the target). At the start of each of the Champion's turns while it lasts, the target takes 1 more, plus the Champion's Enhance if it has one (owner, 2026-10-23). One target at a time: a new grapple lets the last go, and it can't target the unit it already grapples. A chain on the board joins the two while it lasts (owner, 2026-10-23). |
-| | | | | | Throw | Only the unit it grapples: **Moves** it to a free space next to the Champion, or swaps places with it (the Champion's own space as the landing; not while the Champion is Immobilized), then it takes 1 damage. The grapple holds (owner, 2026-10-23; the swap added the same day). |
+| | | | | | Grapple's throw | Part of Grapple since 2026-10-24 (owner; its own ability before, aimed at the grappled unit then its landing): while the Champion grapples a unit, Grapple also offers each landing, one tap with the held unit implied. Only the unit it grapples: **Moves** it to a free space next to the Champion, or swaps places with it (the Champion's own space as the landing; not while the Champion is Immobilized), then it takes 1 damage. The grapple holds (owner, 2026-10-23; the swap added the same day). |
 | | | | | | Shove (upgrade) | **Melee**: **Push 2**, no damage; stopped by ruins, a unit or the map's edge, with no collision damage. Owner, 2026-10-24 (a side without it wins 49.6%). |
 | | | | | | Haul (upgrade) | The first unit in a straight line 2 or 3 spaces away: **Pull 2** toward the Champion, no damage. Owner, 2026-10-24 (a side without it wins 47.8%). |
 | Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |

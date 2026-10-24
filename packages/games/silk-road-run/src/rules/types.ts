@@ -19,7 +19,6 @@ export type AbilityId =
   | 'hail'
   | 'sunlight'
   | 'grapple'
-  | 'throw'
   | 'bite'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
@@ -126,7 +125,7 @@ export interface LogEntry {
   text: string;
 }
 
-/** How a unit came to enter a hex: walked, thrown, or swapped places by a Throw. */
+/** How a unit came to enter a hex: walked, thrown, or swapped places by a Grapple's throw. */
 export type Motion = 'walk' | 'throw' | 'swap' | 'push' | 'pull';
 
 /** Something that happened on the board, in the order the rules resolved it. */
@@ -180,8 +179,8 @@ export interface FightState {
 }
 
 /**
- * What a turn's action targets. `to` is Throw's landing hex: the
- * Champion's own hex swaps the two.
+ * What a turn's action targets. `to` is a second space: where Skirmish
+ * steps first, or where Feigned Retreat falls back to.
  */
 export interface ActionTarget {
   hex?: Hex;

@@ -17,7 +17,7 @@ import {
   shotLane,
   unitAt,
 } from './board';
-import {ABILITIES, abilitiesOf, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, grappling, unusableReason} from './abilities';
 import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
@@ -297,7 +297,12 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     }
     return closing + value;
   }
-  const hit = target?.hex ? unitAt(state, target.hex) : undefined;
+  const def = ABILITIES[ability];
+  const hit = !target?.hex
+    ? undefined
+    : def.aimedAt
+      ? def.aimedAt(state, unit, target)
+      : unitAt(state, target.hex);
   // Hail on an empty space: denying it is seldom the best turn.
   if (!hit) return closing - 1;
   // Sunlight: an Enhance, for a side's own unit that could hit with it.
@@ -305,10 +310,12 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     const gain = hit.power > 0 && !hit.enhance ? 1 + enhanceGuess(state, hit) : 0;
     return closing + (hostile(hit, unit) ? -gain : gain);
   }
-  const damage = ABILITIES[ability].damages === false ? 0 : Math.min(damageOf(unit), hit.hp);
+  const damage = def.damages === false ? 0 : Math.min(damageOf(unit), hit.hp);
   let value = damage * (hit.hero === CAMEL ? AI.camelHealthWeight : 1);
   if (damage > 0 && damage >= hit.hp && hit.hero !== CAMEL) value += AI.kill;
-  if (input.action.ability === 'grapple') value += turnValue(hit) * AI.stunnedShare;
+  // A new grapple Stuns; a throw keeps the one there is.
+  if (input.action.ability === 'grapple' && !grappling(unit, hit))
+    value += turnValue(hit) * AI.stunnedShare;
   if (input.action.ability === 'hail') value += turnValue(hit) * AI.immobilizedShare.melee;
   // A drawn arrow (Skirmish): its target may step out before it lands, and
   // the charge holds the Outrider back (`shotPoints`, `chargeCost`).

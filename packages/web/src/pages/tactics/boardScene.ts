@@ -89,9 +89,10 @@ export function buildScene(input: SceneInput): BoardScene {
     // can target (the units Longshot's lanes reach, a melee ability's
     // neighbours) and those the aimed ability would hurt.
     const ids = new Set(fight.units.filter((u) => u.side === 'enemy').map((u) => u.id));
-    if (ABILITIES[ability].targetsUnit)
+    const def = ABILITIES[ability];
+    if (def.targetsUnit)
       for (const t of targets) {
-        const u = t.hex && unitAt(fight, t.hex);
+        const u = def.aimedAt ? def.aimedAt(fight, acting, t) : t.hex && unitAt(fight, t.hex);
         if (u) ids.add(u.id);
       }
     for (const c of preview?.changes ?? []) if (c.hpAfter < c.hpBefore) ids.add(c.unitId);
@@ -158,8 +159,9 @@ export function buildScene(input: SceneInput): BoardScene {
       }
       if (displaced.length) out.displaced = displaced;
     }
-    // Only what it may target; once Throw's target is picked, where it can
-    // land, dashed so it never reads as more targets. Skirmish first offers
+    // Only what it may target; once Feigned Retreat's target is picked,
+    // where it can fall back to, and Grapple's throws, where the held unit
+    // can land, dashed so they never read as more targets. Skirmish first offers
     // the spaces to step to, dashed, then the targets in line from the one
     // picked (or hovered), with the step drawn as a move's and an arrow's
     // line to each.
@@ -189,15 +191,21 @@ export function buildScene(input: SceneInput): BoardScene {
         out.lanes = {from: step, lanes: lines};
       }
     } else {
-      // Picked second: Throw's landing, Feigned Retreat's walk.
+      // Picked second: Feigned Retreat's walk.
       const second = targets.some((t) => t.to) && target?.hex;
+      // A Grapple's throw: a space without a unit, or the Champion's own.
+      const throws = (h: Hex) => {
+        if (ability !== 'grapple') return false;
+        const u = unitAt(fight, h);
+        return !u || u.id === acting.id;
+      };
       for (const t of targets)
         show(
           second ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex,
-          second ? 'landing' : 'target'
+          second || throws(t.hex!) ? 'landing' : 'target'
         );
-      // Where the thrown unit lands: the landing hovered, else the one picked,
-      // drawn as a move's.
+      // Where Feigned Retreat falls back to: the space hovered, else the one
+      // picked, drawn as a move's.
       const hoveredLanding =
         hovered && target?.hex
           ? targets.find((t) => t.to && hexEquals(t.hex!, target.hex!) && hexEquals(t.to, hovered))

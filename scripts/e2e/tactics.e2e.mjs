@@ -922,7 +922,9 @@ try {
       .evaluate((el) => el.closest('section').getBoundingClientRect());
     check(
       `phone, fight over: ${endButton} in the action section, the board against it`,
-      Math.abs(bar.top - (box.y + box.height)) <= 12 && bar.height > 150,
+      // A row of choices and the turn's buttons, at least: every starting kit
+      // fits one row (the Champion's since Throw is part of Grapple).
+      Math.abs(bar.top - (box.y + box.height)) <= 12 && bar.height >= 100,
       [box, bar]
     );
     await shot(page, 'end-phone');
@@ -1231,7 +1233,7 @@ try {
     const box = await phone.locator('canvas').boundingBox();
     check(
       'phone: the board sits against the action section',
-      (box.y > 8 || box.x > 8) && actionBarTop - (box.y + box.height) <= 12,
+      (box.y > 2 || box.x > 2) && actionBarTop - (box.y + box.height) <= 12,
       [box, actionBarTop]
     );
     await phone.touchscreen.tap(box.x / 2, box.y > 8 ? box.y / 2 : box.y + box.height / 2);

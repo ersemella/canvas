@@ -113,6 +113,11 @@ picked the reading below. Confirm or change each:
   the grapple holds (owner, 2026-10-23; the builder's first reading was a
   space next to the target, which could end the grapple); the damage
   comes after the Move.
+- **Throw is part of Grapple** (owner, 2026-10-24): the Champion holds
+  one unit at a time, so picking it was a wasted tap. While it grapples,
+  Grapple also offers the free spaces next to it (a throw) and its own
+  (a swap), picked in one tap; a unit next to it is still a new grapple.
+  The freed slot lets the Champion take both Haul and Shove.
 - **A Stunned Outrider loses its drawn arrow** (owner, 2026-10-24): a
   grapple (or any Stun) landing between Skirmish and the arrow flying
   cancels the shot; the card comes back as an ordinary turn, skipped

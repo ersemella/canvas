@@ -44,8 +44,10 @@ the kits.**
   the owner's call of 2026-10-23), Stunning
   its target until the Champion takes damage, is Stunned or ends a turn
   no longer next to it, 1 more damage at each of the Champion's turns
-  meanwhile, never on the unit it already grapples; Throw, Moving the grappled unit to a space next to the
-  Champion, or swapping places with it, so the grapple holds; Skirmish
+  meanwhile, never on the unit it already grapples, and while it holds one,
+  throwing it (part of Grapple since 2026-10-24, owner), Moving it to a
+  space next to the Champion, or swapping places with it, so the grapple
+  holds; Skirmish
   (owner, 2026-10-23, in place of Volley), a step of one space and then
   the Bow's shot from there, charged: the Outrider's card is pushed half
   its action cost on (4 slots), greyed; when it comes back the arrow flies

@@ -27,7 +27,6 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   longshot: 'No enemy in any of Longshot’s lanes.',
   skirmish: 'No free space to step to with an enemy in line from it.',
   sunlight: 'No ally within reach to Enhance, nor hail to melt.',
-  throw: 'You aren’t grappling an enemy, or there’s nowhere free to throw it.',
   grapple: 'No one within reach to grapple whom you aren’t grappling already.',
   bite: 'No enemy next to you.',
   shove: 'No one next to you to shove.',
@@ -37,12 +36,11 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
 
 /**
  * Abilities picked in two taps, the unit aimed at and a space (`to`), and
- * the prompt for the space: Throw's target, then where it lands; for an
- * ability that steps first (Skirmish, `steps`), the space, then the target
+ * the prompt for the space: Feigned Retreat's target, then where it falls
+ * back to; for an ability that steps first (Skirmish, `steps`), the space, then the target
  * in line from there.
  */
 const SECOND_PICK: Partial<Record<AbilityId, string>> = {
-  throw: 'Pick where to throw',
   feignedRetreat: 'Pick where to fall back',
   skirmish: 'Pick where to step',
 };
@@ -152,7 +150,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     [fight, acting]
   );
 
-  /** The hex picked last: the destination, the target, Throw's landing, or Skirmish's step before its target. */
+  /** The hex picked last: the destination, the target, Feigned Retreat's fall-back, or Skirmish's step before its target. */
   const lastPicked =
     plannedMove?.hex ??
     (stepsFirst(ability) ? (target?.hex ?? target?.to) : (target?.to ?? target?.hex)) ??
@@ -191,8 +189,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   }, [moving, plannedMove, clearMove, pick]);
 
   /**
-   * A tap on `h` that plans the turn: a hex to move to, a target, or Throw's
-   * landing or Skirmish's step (or un-picks one tapped again). False when the
+   * A tap on `h` that plans the turn: a hex to move to, a target (Grapple's
+   * throw is one: where it lands), Feigned Retreat's fall-back or Skirmish's step (or un-picks one tapped again). False when the
    * tap plans nothing, and the page looks at the hex instead.
    */
   const planTap = useCallback(
@@ -230,7 +228,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (SECOND_PICK[ability] && target?.hex) {
-        // Throw's landing, or where Feigned Retreat falls back to.
+        // Where Feigned Retreat falls back to.
         const second = targets.find(
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
         );

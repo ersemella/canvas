@@ -40,7 +40,7 @@ export function offeredTargets(
     });
   if (!def.targetsUnit) return targets;
   return targets.filter((t) => {
-    const u = t.hex && unitAt(state, t.hex);
+    const u = def.aimedAt ? def.aimedAt(state, unit, t) : t.hex && unitAt(state, t.hex);
     return u && u.side !== unit.side;
   });
 }
