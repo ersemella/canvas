@@ -1,4 +1,5 @@
 import {useEffect, useRef, useState, useCallback} from 'react';
+import type {CSSProperties} from 'react';
 import {Box, Button, Overlay, Text, Stack} from '@mantine/core';
 import styles from './GameCanvas.module.css';
 import {
@@ -89,8 +90,24 @@ export function GameCanvas({
 
     registerBuiltinComponents();
 
+    // At the manifest's size again (a world before this one may have resized it).
+    canvas.width = width * scale;
+    canvas.height = height * scale;
     const world = new World({canvas, scale, pixelArt});
     worldRef.current = world;
+
+    // A canvas pixel for each device pixel it's shown on, so a high-density
+    // screen (a phone's) doesn't stretch a small canvas and blur it; kept up
+    // as the layout resizes it. Never fewer than the manifest's. Pixel-art
+    // games keep their whole-number scale: CSS upscales them sharply.
+    const resize = pixelArt
+      ? undefined
+      : new ResizeObserver(() => {
+          const shown = canvas.getBoundingClientRect().width * (window.devicePixelRatio || 1);
+          const next = Math.max(scale, shown / width);
+          if (Math.abs(next - world.scale) > 0.01) world.setScale(next);
+        });
+    resize?.observe(canvas);
 
     world.registerSystem(new InputSystem());
     world.registerSystem(new InputFlushSystem());
@@ -127,12 +144,13 @@ export function GameCanvas({
       : undefined;
 
     return () => {
+      resize?.disconnect();
       unsubScore?.();
       unsubDied?.();
       unsubWon?.();
       world.stop();
     };
-  }, [sceneData, createSystems, events, scale, pixelArt, restartKey]);
+  }, [sceneData, createSystems, events, width, height, scale, pixelArt, restartKey]);
 
   const restart = useCallback(() => {
     setRestartKey((k) => k + 1);
@@ -144,6 +162,8 @@ export function GameCanvas({
         ref={canvasRef}
         width={width * scale}
         height={height * scale}
+        // Its shown size: the manifest's, not the canvas's (which `setScale` grows).
+        style={{'--canvas-width': `${width * scale}px`} as CSSProperties}
         className={styles.canvas!}
       />
       {events?.onScore && !outcome && (
