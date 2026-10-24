@@ -180,9 +180,39 @@ const held = await api(`/runs/${runId}/turn`, alice, {
   body: JSON.stringify({action: {ability: 'hold'}}),
 });
 check(
-  'a turn returns the next view, AI turns included',
+  'a turn returns the next view',
   held.status === 200 && held.body.view.version === heroView.version + 1,
   held.body?.message
+);
+// Each AI turn is a request of its own (`continue`), asked for while one is due.
+let latest = held.body;
+let continued = 0;
+let refusedWhileDue = null;
+for (let i = 0; i < 20 && latest.view.aiDue; i++) {
+  if (refusedWhileDue === null) {
+    const early = await api(`/runs/${runId}/turn`, alice, {
+      method: 'POST',
+      body: JSON.stringify({action: {ability: 'hold'}}),
+    });
+    refusedWhileDue = early.status === 400 && /not your turn/.test(early.body?.message ?? '');
+  }
+  const next = await api(`/runs/${runId}/continue`, alice, {method: 'POST'});
+  if (next.status !== 200 || next.body.view.version !== latest.view.version + 1) break;
+  latest = next.body;
+  continued++;
+}
+check(
+  'each AI turn comes from its own request, until yours',
+  !latest.view.aiDue && (latest.status !== 'active' || /^p-/.test(latest.view.fight.awaiting)),
+  {continued, awaiting: latest.view.fight.awaiting}
+);
+if (refusedWhileDue !== null)
+  check('your turn is refused while an AI turn is due', refusedWhileDue);
+const notDue = await api(`/runs/${runId}/continue`, alice, {method: 'POST'});
+check(
+  'no AI turn can be asked for on yours',
+  latest.status !== 'active' || (notDue.status === 400 && /No AI turn/.test(notDue.body?.message)),
+  notDue.body
 );
 
 const second = await api('/runs', alice, {
@@ -633,6 +663,8 @@ try {
     );
   const playingBack = await page.evaluate(() => window.__tactics.busy);
   const during = await turnButtonsEnabled();
+  // The enemy's turns, asked for one request each, playing back.
+  await shot(page, 'ai-turns');
   if (playingBack)
     check(
       'during a playback every turn button is disabled',

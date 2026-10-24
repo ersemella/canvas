@@ -179,4 +179,8 @@ export interface TurnInput {
 }
 
 /** A turn in the fight, or, once a stage short of the last is won, going on to the next stage. */
-export type RunAction = ({type: 'turn'} & TurnInput) | {type: 'next'};
+export type RunAction =
+  | ({type: 'turn'} & TurnInput)
+  /** The AI's turn that is due, one per request (owner, 2026-10-24). */
+  | {type: 'continue'}
+  | {type: 'next'};

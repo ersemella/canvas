@@ -233,19 +233,12 @@ export const AI = {
   camelHealthWeight: 2,
   perCamelHex: 0.75,
   /**
-   * Deterministic work caps shared across all AI turns in a request.
-   * An action simulation or automatic timeline card spends one unit.
-   * Exhaustion uses a legal Hold, with no extra search.
+   * Deterministic work cap for one AI turn, which has a request of its own
+   * (owner, 2026-10-24; was 110 a turn and 220 shared by all of a
+   * request's AI turns). An action simulation or automatic timeline card
+   * spends one unit. Exhaustion uses a legal Hold, with no extra search.
    */
-  maxSimulations: 110,
-  requestSimulations: 220,
-  /**
-   * What each AI turn in a request still gets once the request's budget is
-   * spent: enough for a greedy pick, no lookahead. With only Holds, a
-   * Champion grappling the last hero beside a wolf on the exit stalled the
-   * fight for good (2026-10-23, on the 8 × 8 board).
-   */
-  turnFloorSimulations: 48,
+  maxSimulations: 220,
   rootSimulations: 48,
   /**
    * Turns played at each reply, best guess first (ai.ts, `orderedInputs`): with

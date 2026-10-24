@@ -82,8 +82,9 @@ sequence, which is no longer legal in one turn.
 
 ## Work caps
 
-`AI` in `config.ts` sets 110 work units per AI turn and 220 across all AI
-turns triggered by one player request. Each simulated action and
+`AI` in `config.ts` sets 220 work units per AI turn, which has a request
+of its own (owner, 2026-10-24; see "Each AI turn a request"; it was 110 a
+turn and 220 shared by a request's AI turns). Each simulated action and
 automatic card advanced during search spends one unit. The old minimum
 search after exhaustion is gone: a depleted budget uses Hold, which is
 always legal. Actual live turns still resolve
@@ -244,3 +245,36 @@ A Durable Object's memory is evicted at any time, so to keep the AI
 deterministic the cache could only return the exact result a fresh search
 would, for an identical position; identical positions hardly recur
 outside retries.
+
+## Each AI turn a request, 2026-10-24
+
+All the AI turns after a player's turn used to run in that turn's
+request, sharing 220 units of work (at most 110 each). Now the server
+runs the track on to the next decision of either side and answers; while
+an AI turn is due the view says so (`aiDue`, with no `awaiting` unit for
+the page to control) and the page asks for it, `POST /runs/:id/continue`,
+one AI turn a request, each with 220 units (owner, 2026-10-24). A turn of
+the player's is refused while an AI turn is due, and `continue` while
+none is. The page asks as soon as an answer says one is due, while the
+board may still be playing back the one before, and plays the answers
+back in order (`useRun`); its turn controls stay up, greyed, for the
+party's unit whose card comes next.
+
+Requests on the same positions (30 fights, three runs each, an idle
+machine): before, the player's turn and every AI turn after it, median
+1.67 ms, p99 7.29 ms, maximum 16.43 ms; now an AI turn, median 2.39 ms,
+p99 5.65 ms, maximum 9.11 ms (a player's turn alone, p99 0.06 ms). Twice
+the work per AI turn for a smaller worst request. Head-to-head against
+the AI before (both on mirrored pairs, each AI's consecutive turns as
+the live requests had them; 500 pairs from seed 7000, about 870 finished
+fights each way): 53.8% as team b and 59.8% as team a, 56.8% on average.
+
+The guess that orders a decision's turns (`orderedInputs`) also learned,
+on the way, what a walk's end is worth to statuses and shots in the air
+(`standing`: out of an Enhanced Champion's reach, into reach of the
+Champion grappling an ally, out of a drawn arrow's lane) and that a drawn
+arrow can be dodged and costs its charge: the best turn is again among
+the six played on every decision of 12 runs, both sides'.
+
+A fight now takes about twice the requests (one per AI turn), against
+the Free plan's 100,000 a day ([architecture.md](architecture.md)).

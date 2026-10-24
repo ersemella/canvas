@@ -29,8 +29,8 @@ stats, starter gear and the defence formula; every unit's stat sheet; three
 prototype heroes and their ultimates; one enemy band built from the same heroes and gear, with
 a simple AI. The track UI. Platform: the player key, the `RunSystem`
 contract and registry support, `RunRoom`, its routes, and a minimal
-`PlayerLedger` (active run). One request per player turn (move and action,
-AI turns up to the player's next turn); hex rules and AI within the Free
+`PlayerLedger` (active run). One request per player turn (move and action;
+since 2026-10-24 each AI turn a request of its own); hex rules and AI within the Free
 plan's 10 ms ([architecture.md](architecture.md#long-lived-storage-and-cost)).
 The PvP seams: units with controllers, a `mode` field on runs, versioned
 full views in responses.

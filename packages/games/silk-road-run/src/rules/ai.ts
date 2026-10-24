@@ -292,6 +292,12 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   if (damage > 0 && damage >= hit.hp && hit.hero !== CAMEL) value += AI.kill;
   if (input.action.ability === 'grapple') value += turnValue(hit) * AI.stunnedShare;
   if (input.action.ability === 'hail') value += turnValue(hit) * AI.immobilizedShare.melee;
+  // A drawn arrow (Skirmish): its target may step out before it lands, and
+  // the charge holds the Outrider back (`shotPoints`, `chargeCost`).
+  if (chargeOf(unit, input.action.ability) > 0) {
+    if (!isStunned(hit) && !isImmobilized(hit)) value *= AI.dodgeShare;
+    value -= chargeCost(unit, input);
+  }
   return closing + (hostile(hit, unit) ? 1 + value : -1 - value * AI.friendlyDamageFactor);
 }
 
@@ -305,6 +311,21 @@ function enhanceGuess(state: FightState, u: Unit): number {
 }
 
 /**
+ * What where it stands is worth to `unit`'s side, as `scoreOutcome` weighs
+ * a turn's statuses and shots: the enemy's statuses (an Enhance with
+ * someone in reach, a grappled unit an ally could free) and the shots in
+ * the air. A walk's guess is this where it ends, less where it starts:
+ * stepping out of an Enhanced Champion's reach, or into reach of the
+ * Champion grappling an ally.
+ */
+function standing(state: FightState, unit: Unit): number {
+  let value = shotPoints(state, unit.side);
+  for (const u of state.units)
+    if (u.alive) value += (hostile(u, unit) ? 1 : -1) * statusPoints(state, u);
+  return value;
+}
+
+/**
  * `unit`'s turns, best guess first (`guessValue`): the search plays only
  * the first few at a reply, so they must be the likely best, not the
  * first listed (ai-search.md, "Searching smarter").
@@ -312,7 +333,27 @@ function enhanceGuess(state: FightState, u: Unit): number {
 function orderedInputs(state: FightState, unit: Unit): TurnInput[] {
   const inputs = candidateInputs(state, unit);
   const hunting = huntsTemee(state, unit);
-  const guesses = new Map(inputs.map((i) => [i, guessValue(state, unit, i, hunting)]));
+  const from = unit.hex;
+  const here = standing(state, unit);
+  const guess = (input: TurnInput) => {
+    let value = guessValue(state, unit, input, hunting);
+    // Where a walk or Skirmish's step ends: stood there for a moment, and put back.
+    const to = input.move?.length
+      ? input.move[input.move.length - 1]
+      : input.action.ability === 'skirmish'
+        ? input.action.target?.to
+        : undefined;
+    if (to) {
+      unit.hex = to;
+      try {
+        value += standing(state, unit) - here;
+      } finally {
+        unit.hex = from;
+      }
+    }
+    return value;
+  };
+  const guesses = new Map(inputs.map((i) => [i, guess(i)]));
   // Stable: equal guesses keep the listed order.
   return inputs.sort((a, b) => guesses.get(b)! - guesses.get(a)!);
 }
@@ -379,7 +420,7 @@ export function simulate(
   return sim;
 }
 
-/** Work left for all AI turns in one request: actions and automatic cards. */
+/** Work left for an AI turn: actions and automatic cards. */
 export interface SearchBudget {
   left: number;
 }
@@ -455,7 +496,7 @@ function shortlist<T extends ScoredOption>(options: T[]): T[] {
 export function chooseAiTurn(
   state: FightState,
   unit: Unit,
-  budget: SearchBudget = {left: AI.requestSimulations},
+  budget: SearchBudget = {left: AI.maxSimulations},
   stats?: SearchStats,
   settings: {prune?: boolean; depth?: number} = {}
 ): TurnInput {
@@ -610,38 +651,6 @@ export function chooseAiTurn(
     budget.left = initial - used;
     if (stats) stats.work = used;
   }
-}
-
-/**
- * Chooses the AI turns one request sets off, sharing `budget` among them:
- * each gets an equal share of what is left among the AI units due before
- * the next human turn, at most AI.maxSimulations and, once it is spent, a
- * greedy AI.turnFloorSimulations rather than a Hold. Taking the full cap in
- * turn order left the third unit of a stage-one band (a hero, two wolves)
- * nothing, so it Held where it stood, on 1 in 20 of the wolves' turns.
- */
-export function requestChooser(budget: SearchBudget): (state: FightState, unit: Unit) => TurnInput {
-  return (state, unit) => {
-    let human = Infinity;
-    for (const u of state.units)
-      if (u.alive && u.controller === 'human' && u.slot !== null) human = Math.min(human, u.slot);
-    const due = state.units.filter(
-      (u) =>
-        u !== unit &&
-        u.alive &&
-        u.controller === 'ai' &&
-        !HEROES[u.hero].walksRoad &&
-        u.slot !== null &&
-        u.slot <= human
-    ).length;
-    const share: SearchBudget = {
-      left: Math.max(AI.turnFloorSimulations, Math.floor(budget.left / (due + 1))),
-    };
-    const given = share.left;
-    const input = chooseAiTurn(state, unit, share);
-    budget.left = Math.max(0, budget.left - (given - share.left));
-    return input;
-  };
 }
 
 /**

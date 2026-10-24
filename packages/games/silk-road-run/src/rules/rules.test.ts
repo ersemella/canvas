@@ -50,6 +50,7 @@ import {
   runView,
   stageEnemies,
 } from './run';
+import type {RunState} from './run';
 import {
   actionCost,
   aimSlot,
@@ -97,6 +98,18 @@ const tryTurn = (s: FightState, id: string, input: TurnInput) => () => {
   const c = cloneFight(s);
   applyTurn(c, unit(c, id), input);
 };
+
+/**
+ * A run's next request, as the page sends it: the AI's turn when one is
+ * due (`continue`), otherwise the player's, `turn` or the AI's pick for it.
+ */
+function request(run: RunState, turn?: TurnInput): RunState {
+  if (runView(run).aiDue) return handleRunAction(run, {type: 'continue'});
+  return handleRunAction(run, {
+    type: 'turn',
+    ...(turn ?? chooseAiTurn(run.fight, actingUnit(run.fight)!)),
+  });
+}
 
 describe('the track', () => {
   it('skips a turn with only Hold to choose, and marks it till the unit next acts', () => {
@@ -460,8 +473,7 @@ describe('the board', () => {
           checked++;
           if (!anyMove(run.fight, u)) boxedIn++;
         }
-        const input = chooseAiTurn(run.fight, actingUnit(run.fight)!);
-        run = handleRunAction(run, {type: 'turn', ...input});
+        run = request(run);
       }
     }
     // Both answers came up, so neither side of the comparison went unchecked.
@@ -1431,11 +1443,38 @@ describe('previews, the AI and the run', () => {
     expect(previewTurn(s, bokh.id, input)).toMatchObject({aimSlot: aim, slot: aim + 2});
   });
 
+  it('plays each AI turn in a request of its own, and only when it is due', () => {
+    // An enemy Outrider, the fastest, acts before a party without one.
+    const runs = Array.from({length: 30}, (_, seed) => createRun(seed, {party: ['storm']}));
+    let run = runs.find((r) => runView(r).aiDue)!;
+    expect(run).toBeDefined();
+    const view = runView(run);
+    // The page has no unit to control while the AI's turn is due.
+    expect(view.fight.awaiting).toBeNull();
+    expect(actingUnit(run.fight)!.controller).toBe('ai');
+    const before = JSON.stringify(run);
+    expect(() => handleRunAction(run, {type: 'turn', action: {ability: 'hold'}})).toThrow(
+      'It is not your turn.'
+    );
+    expect(JSON.stringify(run)).toBe(before);
+    // One `continue`, one AI turn: the events hold one turn's action.
+    const ai = actingUnit(run.fight)!.id;
+    const next = handleRunAction(run, {type: 'continue'});
+    expect(next.version).toBe(run.version + 1);
+    const acted = next.fight.events!.filter((e) => e.kind === 'action' || e.kind === 'step');
+    expect(new Set(acted.map((e) => e.unitId))).toEqual(new Set([ai]));
+    // On the player's turn there is no AI turn to ask for.
+    let mine = next;
+    while (runView(mine).aiDue) mine = handleRunAction(mine, {type: 'continue'});
+    expect(runView(mine).fight.awaiting).toBe(actingUnit(mine.fight)!.id);
+    expect(() => handleRunAction(mine, {type: 'continue'})).toThrow('No AI turn is due.');
+  });
+
   it('is deterministic: the same seed and actions give the same fight', () => {
     const play = () => {
       let run = createRun(7);
       for (let i = 0; i < 5 && run.fight.phase === 'fight'; i++) {
-        run = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
+        run = request(run, {action: {ability: 'hold'}});
       }
       return run;
     };
@@ -1484,14 +1523,13 @@ describe('previews, the AI and the run', () => {
     let run = createRun(0);
     let worst = 0;
     for (let turns = 0; turns < 300 && run.fight.phase === 'fight'; turns++) {
-      const me = actingUnit(run.fight)!;
       const t0 = performance.now();
-      const input = chooseAiTurn(run.fight, me);
+      run = request(run);
       worst = Math.max(worst, performance.now() - t0);
-      run = handleRunAction(run, {type: 'turn', ...input});
     }
     expect(['won', 'lost']).toContain(run.fight.phase);
-    // Generous for a test machine; the Worker's limit is 10 ms per request.
+    // Generous for a test machine (a request here includes the player's pick);
+    // the Worker's limit is 10 ms per request.
     expect(worst).toBeLessThan(200);
   });
 
@@ -1533,19 +1571,19 @@ describe('previews, the AI and the run', () => {
     expect(AI.caution.bokh).toBe(0);
   });
 
-  it('caps the AI’s search per request, deterministically', () => {
+  it('caps the AI’s search per turn, deterministically', () => {
     const run = createRun(0);
     const enemy = run.fight.units.find((u) => u.side === 'enemy')!;
     expect(scoreOptions(run.fight, enemy, 10)).toHaveLength(10);
-    const budget = {left: AI.requestSimulations};
+    const budget = {left: 2 * AI.maxSimulations};
     const first = chooseAiTurn(run.fight, enemy, budget);
-    expect(budget.left).toBeLessThan(AI.requestSimulations);
-    expect(AI.requestSimulations - budget.left).toBeLessThanOrEqual(AI.maxSimulations);
+    expect(budget.left).toBeLessThan(2 * AI.maxSimulations);
+    expect(2 * AI.maxSimulations - budget.left).toBeLessThanOrEqual(AI.maxSimulations);
     // Exhaustion never spends beyond the request budget; Hold is always legal.
     const starved = {left: 0};
     expect(chooseAiTurn(run.fight, enemy, starved)).toEqual({action: {ability: 'hold'}});
     expect(starved.left).toBe(0);
-    expect(chooseAiTurn(run.fight, enemy, {left: AI.requestSimulations})).toEqual(first);
+    expect(chooseAiTurn(run.fight, enemy, {left: 2 * AI.maxSimulations})).toEqual(first);
   });
 
   it('refuses a turn that isn’t legal without changing the run', () => {
@@ -1573,7 +1611,7 @@ describe('events for playback', () => {
     run = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
     const events = run.fight.events!;
     expect(events[0]).toMatchObject({kind: 'action', ability: 'hold'});
-    // The track runs on to the next human turn, which is the last thing recorded.
+    // The track runs on to the next decision, either side's, the last thing recorded.
     expect(events[events.length - 1]).toMatchObject({kind: 'turn', unitId: run.fight.awaiting});
     const last = events[events.length - 1]!.after;
     for (const u of run.fight.units) {
@@ -1585,8 +1623,9 @@ describe('events for playback', () => {
       });
     }
     // The next action starts a fresh list.
-    const next = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
-    expect(next.fight.events![0]).toMatchObject({kind: 'action', ability: 'hold'});
+    const next = request(run, {action: {ability: 'hold'}});
+    expect(['action', 'step']).toContain(next.fight.events![0]!.kind);
+    expect(next.fight.events).not.toContain(events[0]);
   });
 
   it('records an ability, then its hit with the damage dealt', () => {
