@@ -115,16 +115,29 @@ const RUIN_GAP = 3;
 
 /**
  * Mountains (owner, 2026-10-24): about half of fights have one range, 3 to
- * 5 hexes in one clump along the top edge: starting from a hex on the edge,
- * within `MOUNTAIN_DEPTH` of the top, never within `MOUNTAIN_CENTRE_GAP` − 1
- * hexes of the centre. The top half then has no ruins.
+ * 5 hexes in one clump along one of the hexagon's four slanted edges (top
+ * left, top right, bottom left, bottom right), starting on that edge and
+ * at most one hex in from it. Never on the sides (the starting columns and
+ * the hexes in from them), never down the middle column, where Temee walks,
+ * so never directly in front of Temee, and never within
+ * `MOUNTAIN_CENTRE_GAP` − 1 hexes of the centre. The range's half (top or
+ * bottom) then has no ruins.
  */
 const MOUNTAIN_CHANCE = 0.5;
 const MOUNTAIN_SIZES = [3, 4, 5];
-/** How deep a mountain may sit: `depth` −4 or higher up, the board's top band. */
-const MOUNTAIN_DEPTH = -4;
 const MOUNTAIN_CENTRE_GAP = 3;
 const CENTRE: Hex = {q: 0, r: 0};
+
+/**
+ * The four slanted edges: which side of the middle column each is on, its
+ * half (top or bottom), and how far in from it a hex is (0 on the edge).
+ */
+const MOUNTAIN_EDGES: {left: boolean; top: boolean; inFrom: (h: Hex) => number}[] = [
+  {left: true, top: true, inFrom: (h) => h.q + h.r + RADIUS},
+  {left: false, top: true, inFrom: (h) => h.r + RADIUS},
+  {left: true, top: false, inFrom: (h) => RADIUS - h.r},
+  {left: false, top: false, inFrom: (h) => RADIUS - h.q - h.r},
+];
 
 /**
  * A fight's own ruins and mountains, from `random` in [0, 1). Ruins go
@@ -143,13 +156,17 @@ export function randomTiles(random: () => number): Record<string, Tile> {
   );
   let ruinHalves = RUIN_HALVES;
   if (random() < MOUNTAIN_CHANCE) {
+    const edge = MOUNTAIN_EDGES[Math.floor(random() * MOUNTAIN_EDGES.length)]!;
     const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
+    const inFrontOfTemee: Hex = {q: 0, r: SALT_FLATS.camelStart.r + 1};
     const allowed = candidates
-      .filter((h) => depth(h) <= MOUNTAIN_DEPTH)
-      .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP);
-    ruins.push(...mountainRange(tiles, allowed, size, random));
-    // The top half's ruins give way to the range.
-    ruinHalves = RUIN_HALVES.slice(1);
+      .filter((h) => (edge.left ? h.q < 0 : h.q > 0))
+      .filter((h) => edge.inFrom(h) === 0 || (edge.inFrom(h) === 1 && Math.abs(h.q) < RADIUS - 1))
+      .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP)
+      .filter((h) => hexDistance(h, inFrontOfTemee) > 0);
+    ruins.push(...mountainRange(tiles, allowed, (h) => edge.inFrom(h) === 0, size, random));
+    // The range's half gives up its ruins.
+    ruinHalves = [RUIN_HALVES[edge.top ? 1 : 0]!];
   }
   for (const inHalf of ruinHalves)
     for (let i = 0; i < RUINS_PER_HALF; i++)
@@ -169,13 +186,14 @@ export function randomTiles(random: () => number): Record<string, Tile> {
 
 /**
  * One clump of up to `size` mountains among `allowed`, marked in `tiles`:
- * from a random first hex on the board's edge it grows a hex at a time onto a neighbour of the
+ * from a random first hex that is `first` it grows a hex at a time onto a neighbour of the
  * range, the ones touching more of it first, so it stays together. Never
  * cuts the board in two.
  */
 function mountainRange(
   tiles: Record<string, Tile>,
   allowed: Hex[],
+  first: (h: Hex) => boolean,
   size: number,
   random: () => number
 ): Hex[] {
@@ -183,7 +201,7 @@ function mountainRange(
   const inRange = (h: Hex) => range.some((m) => hexDistance(m, h) === 0);
   while (range.length < size) {
     let free = allowed.filter((h) => !inRange(h) && connectedWithout(tiles, h));
-    if (!range.length) free = free.filter((h) => hexDistance(h, CENTRE) === RADIUS);
+    if (!range.length) free = free.filter(first);
     if (range.length) {
       const touching = (h: Hex) => range.filter((m) => hexDistance(m, h) === 1).length;
       const most = Math.max(0, ...free.map(touching));

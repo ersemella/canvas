@@ -563,8 +563,9 @@ describe('the board', () => {
     expect(spaceAt(4, 0)).toEqual(map.camelStart);
   });
 
-  it('raises one clump of 3 to 5 mountains along the top edge in about half of fights, away from the centre, with no ruins in the top half', () => {
+  it('raises one clump of 3 to 5 mountains along a slanted edge in about half of fights, off the sides, the middle and the centre, with no ruins in its half', () => {
     const centre: Hex = {q: 0, r: 0};
+    const corners = new Set<string>();
     let withMountains = 0;
     for (let seed = 0; seed < 60; seed++) {
       const tiles = createFight(seed).tiles;
@@ -589,13 +590,26 @@ describe('the board', () => {
             queue.push(n);
           }
       expect(seen.size).toBe(mountains.length);
-      // All in the board's top band, at least one on its edge, and no ruins in the top half.
-      for (const m of mountains) expect(depth(m)).toBeLessThanOrEqual(-4);
+      // One corner: all left of the middle column or all right, all in the
+      // top half or all in the bottom, never on or next to the sides, at
+      // least one on the board's edge, and no ruins in that half.
+      const left = mountains[0]!.q < 0;
+      const top = depth(mountains[0]!) < 0;
+      for (const m of mountains) {
+        expect(m.q).not.toBe(0);
+        expect(m.q < 0).toBe(left);
+        expect(depth(m) < 0).toBe(top);
+        expect(Math.abs(m.q)).toBeLessThan(4);
+        if (Math.abs(m.q) === 3) expect(hexDistance(m, centre)).toBe(4);
+      }
       expect(mountains.some((m) => hexDistance(m, centre) === 4)).toBe(true);
-      for (const r of at('obstacle')) expect(depth(r)).toBeGreaterThanOrEqual(0);
+      for (const r of at('obstacle')) expect(top ? depth(r) >= 0 : depth(r) <= 0).toBe(true);
+      corners.add(`${left} ${top}`);
     }
     expect(withMountains).toBeGreaterThan(15);
     expect(withMountains).toBeLessThan(45);
+    // Every corner comes up.
+    expect(corners.size).toBe(4);
   });
 
   it('scatters each fight’s ruins by its seed: unmirrored, clear of the starting columns, spread out, the board connected', () => {
