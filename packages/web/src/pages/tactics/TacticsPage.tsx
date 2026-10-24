@@ -91,6 +91,7 @@ export function TacticsPage() {
     startMenu,
     setStartMenu,
     startRun,
+    startTest,
     sendTurn,
     nextStage: goToNextStage,
     playbackDone,
@@ -380,7 +381,7 @@ export function TacticsPage() {
   }
 
   if (!run || !fight || run.status === 'abandoned' || startMenu) {
-    return <StartMenu busy={busy} error={error} onStart={startRun} />;
+    return <StartMenu busy={busy} error={error} onStart={startRun} onTest={startTest} />;
   }
 
   // The result waits for the playback to show how the fight ended.

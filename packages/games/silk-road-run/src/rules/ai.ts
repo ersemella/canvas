@@ -4,12 +4,13 @@
  */
 import {hexDistance, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, CAMEL, HEROES} from './config';
+import {ABILITY, AI, CAMEL} from './config';
 import {
   hostile,
   isImmobilized,
   isRanged,
   isStunned,
+  kitOf,
   movementCap,
   reachableHexes,
   roadDistance,
@@ -44,7 +45,7 @@ function turnValue(u: Unit): number {
 
 /** A unit whose attack reaches beyond its neighbours (the bow, hail). */
 function attacksFromAfar(u: Unit): boolean {
-  return isRanged(u) || HEROES[u.hero].abilities.includes('hail');
+  return isRanged(u) || kitOf(u).includes('hail');
 }
 
 /**
@@ -110,7 +111,7 @@ function enhanceGain(state: FightState, u: Unit): number {
  */
 function strikable(state: FightState, u: Unit): Unit[] {
   if (!u.hex) return [];
-  const has = (a: AbilityId) => HEROES[u.hero].abilities.includes(a);
+  const has = (a: AbilityId) => kitOf(u).includes(a);
   return state.units.filter((e) => {
     if (!e.alive || !e.hex || !hostile(e, u)) return false;
     const d = hexDistance(u.hex!, e.hex);

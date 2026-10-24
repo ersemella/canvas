@@ -124,6 +124,7 @@ Always read this file first. Then:
 | Visibility, previews, randomness | [information.md](information.md) |
 | Stats (health, speed, defence, power), gear, party, heroes' systems, recruitment, upgrades | [heroes-and-gear.md](heroes-and-gear.md) |
 | Keywords and effects: track and board effects, control, damage modifiers | [keywords.md](keywords.md) |
+| Play-testing a line-up, stats or kits by hand: the test stage (`test-stage.json`) | `packages/games/silk-road-run/test-stage.md` |
 | Tuning numbers, or balancing a new hero, ability, keyword or gear: what each ability and stat is worth, measured; the proposed tuning; principles for re-tuning | [balance.md](balance.md) |
 | The twelve heroes | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |

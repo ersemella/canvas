@@ -11,7 +11,7 @@
       "@canvas/engine/server": ["../../engine/src/server.ts"]
     }
   },
-  "include": ["src", "dev", "game.json"],
+  "include": ["src", "dev", "game.json", "test-stage.json"],
   "references": [
     {
       "path": "../../engine"
