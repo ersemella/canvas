@@ -1,5 +1,5 @@
 {
-  "$comment": "The test stage, started from the invisible button in the start menu's bottom-right corner. Every field is explained in test-stage.md beside this file.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file.",
   "seed": null,
   "ruins": "random",
   "camel": {},

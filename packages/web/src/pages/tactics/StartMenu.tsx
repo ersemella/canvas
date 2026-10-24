@@ -47,9 +47,8 @@ function savedParty(): HeroId[] {
 /**
  * The start menu: what the game is, which heroes to take (the camel always
  * comes), and Start, which always starts a new run (a new seed), and a way
- * back to the Canvas home page. An invisible button in the screen's
- * bottom-right corner starts the test stage instead, a run of one fight set
- * up in test-stage.json (in the game's package), for play-testing.
+ * back to the Canvas home page. Test stage starts a run of one fight set
+ * up in test-stage.json instead (in the game's package), for play-testing.
  */
 export function StartMenu(props: {
   busy: boolean;
@@ -134,19 +133,20 @@ export function StartMenu(props: {
             <Button component={Link} to="/" variant="subtle" color="yellow">
               Back to Canvas
             </Button>
+            <Button
+              variant="subtle"
+              color="gray"
+              size="xs"
+              onClick={props.onTest}
+              disabled={props.busy}
+              data-testid="test-stage"
+            >
+              Test stage (set up in test-stage.json)
+            </Button>
             {props.error && <Text c="var(--c-madderLight)">{props.error}</Text>}
           </Stack>
         </Stack>
       </Paper>
-      {/* The test stage, hidden in the screen's bottom-right corner. */}
-      <button
-        type="button"
-        className={styles.testStage}
-        aria-label="Test stage"
-        onClick={props.onTest}
-        disabled={props.busy}
-        data-testid="test-stage"
-      />
     </Stack>
   );
 }
