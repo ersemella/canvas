@@ -224,3 +224,23 @@ An undo journal in place of copying the fight (rolling back each line
 rather than copying it) was also tried: identical decisions, within noise
 of the copying search's time, since a fight is too small for copying to
 matter. Not merged.
+
+## Per-fight geometry, 2026-10-24
+
+What never changes in a fight is worked out once per tile layout
+(`geometry` in `board.ts`; a fight's ruins are random, so not once per
+map): each space's walkable neighbours, its six lanes up to ruins or the
+map's edge, and the spaces within a range of it, sorted. Walking, the
+camel's road, the bow's and Skirmish's lanes, shots in the air, Throw's
+landings and Hail's targets read them. Candidate turns no longer build a
+text key for every walk to drop duplicates (one path per space already);
+only ability targets are checked. Decisions are identical (475 turns over
+24 self-play runs, every chosen turn and resulting fight compared) and an
+AI turn is 16% faster: 2.07 → 1.74 ms, best of four passes over the same
+positions.
+
+A cache across requests was considered and not built (owner, 2026-10-24).
+A Durable Object's memory is evicted at any time, so to keep the AI
+deterministic the cache could only return the exact result a fresh search
+would, for an identical position; identical positions hardly recur
+outside retries.

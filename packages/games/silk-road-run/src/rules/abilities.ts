@@ -4,10 +4,18 @@
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
-import {hexEquals, hexNeighbor, hexNeighbors, hexesInRange} from '@canvas/engine/server';
+import {hexEquals, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES} from './config';
-import {firstInLane, isImmobilized, onMap, sortByHex, unitAt, walkable} from './board';
+import {
+  firstInLane,
+  isImmobilized,
+  lane as laneFrom,
+  sortByHex,
+  spacesWithin,
+  steps as stepsFrom,
+  unitAt,
+} from './board';
 import {endGrapples, enhance, enterHex, hailHolds, hit, log, stun, unitName} from './resolve';
 import type {Ctx} from './resolve';
 import {tileAt} from './map';
@@ -73,10 +81,9 @@ function hexesWithin(
   range: number,
   keep: (h: Hex) => boolean = () => true
 ): ActionTarget[] {
-  return sortByHex(
-    hexesInRange(from, range).filter((h) => onMap(map, h) && keep(h)),
-    (h) => h
-  ).map((hex) => ({hex}));
+  return spacesWithin(map, from, range)
+    .filter(keep)
+    .map((hex) => ({hex}));
 }
 
 /** "1 damage", or "no damage" at power 0. */
@@ -108,10 +115,7 @@ export interface ArrowLane {
 export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLane[] {
   return DIRECTIONS.map((dir) => {
     const lane: ArrowLane = {hexes: []};
-    let h = from;
-    for (let i = 0; i < ABILITY.bow.range; i++) {
-      h = hexNeighbor(h, dir);
-      if (!onMap(map, h) || tileAt(map, h) === 'obstacle') break;
+    for (const h of laneFrom(map, from, dir).slice(0, ABILITY.bow.range)) {
       lane.hexes.push(h);
       const u = unitAt(state, h);
       if (u) {
@@ -162,7 +166,7 @@ const skirmish: AbilityDef = {
   targets(state, map, user, from) {
     if (isImmobilized(user)) return [];
     const out: ActionTarget[] = [];
-    const steps = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
+    const steps = stepsFrom(map, from).filter((h) => !unitAt(state, h));
     for (const to of sortByHex(steps, (h) => h))
       for (const dir of DIRECTIONS) {
         const u = firstInLane(state, map, to, dir, user);
@@ -275,7 +279,7 @@ const throwAbility: AbilityDef = {
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
     for (const t of adjacentUnits(state, from, (u) => u !== user && grappling(user, u))) {
-      const landings = hexNeighbors(from).filter((h) => walkable(map, h) && !unitAt(state, h));
+      const landings = stepsFrom(map, from).filter((h) => !unitAt(state, h));
       if (!isImmobilized(user)) landings.push(from);
       for (const to of sortByHex(landings, (h) => h)) out.push({hex: t.hex!, to});
     }
