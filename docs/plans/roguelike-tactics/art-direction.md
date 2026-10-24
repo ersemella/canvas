@@ -56,11 +56,13 @@ tuning. This file has no combat-design section number.
   outline instead of the units' ink, contrast cut to 72%) so they sit
   back as terrain and the units stand out; mountains (`tiles/mountain-peak.png` and `mountain-twin.png`, the
   owner's, drawn for the flat-top hex: 42 wide, the base filling the hex's
-  lower half; each mountain hex picks one) stand on
+  lower half; each mountain hex picks one; cut to 6 colours with an outline
+  so they keep the other sprites' level of detail) stand on
   rocky ground of their own (`tiles/rock.png`, the owner's, a seamless
   103-pixel tile laid across the board like the grass), drawn
   at 2× like every sprite: their base inside the hex, their peaks free to
-  rise over the hexes beyond (rules in `randomTiles`, map.ts); boulders and gers were tried and felt out of place.
+  rise over the hexes beyond, in front of a unit standing there (drawn
+  after the units, before health and statuses) (rules in `randomTiles`, map.ts); boulders and gers were tried and felt out of place.
   Both are the owner's (AI-assisted, 2026-10-24). The grass is a 64×64
   seamless tile laid across the board as one field (a pattern from the
   board's origin), not stamped per hex. The `sand`

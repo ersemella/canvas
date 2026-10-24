@@ -2,7 +2,7 @@ import {assetLoader, BaseSystem, hexKey} from '@canvas/engine';
 import type {EventBus, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
 import {shotLane, unitAt} from '../rules/board';
-import {blocks, tileAt} from '../rules/map';
+import {tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {FightState} from '../rules/types';
 import {trackCards} from './layout';
@@ -309,10 +309,8 @@ export class TacticsBoardSystem extends BaseSystem {
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h, t);
-    for (const h of map.hexes) {
-      const tile = tileAt(map, h);
-      if (blocks(tile)) drawRuins(ctx, h, tile === 'mountain');
-    }
+    // Ruins under the units; mountains wait until after them (below).
+    for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
     // A frame mid-motion: the next draws again whatever the key says.
@@ -385,6 +383,11 @@ export class TacticsBoardSystem extends BaseSystem {
         drawDamage(ctx, at.x, at.y - 22, p.hpBefore - p.hpAfter, p.killed);
       }
     }
+
+    // Mountains in front of the units (owner, 2026-10-24): a peak rises into
+    // the space above it, in front of whoever stands there, as nearer things
+    // are in a three-quarter view; never in front of health or statuses.
+    for (const h of map.hexes) if (tileAt(map, h) === 'mountain') drawRuins(ctx, h, true);
 
     // Not on a party walking out, off their hexes.
     drawGrappleChains(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));
