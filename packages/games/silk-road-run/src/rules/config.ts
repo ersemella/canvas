@@ -296,15 +296,17 @@ export const ROSTER: HeroId[] = [...PARTY];
 /**
  * A run's stages, in order (owner, 2026-10-24; for a while four, from three
  * wolves): how many of the heroes (ROSTER) and how many wolves the
- * enemy brings to each. The heroes come in one random order for the whole
- * run, from its seed, so each stage brings the last one's heroes and one
- * more. The last is won to win the run.
+ * enemy brings to each. The heroes come in one order for the whole run,
+ * FIRST_ENEMY then the rest in a random order from its seed, so each stage
+ * brings the last one's heroes and one more. The last is won to win the run.
  */
 export const STAGES: {heroes: number; wolves: number}[] = [
   {heroes: 1, wolves: 2},
   {heroes: 2, wolves: 1},
   {heroes: 3, wolves: 0},
 ];
+/** The enemy hero of the first stage, and so of every stage (owner, 2026-10-24; was random). */
+export const FIRST_ENEMY: HeroId = 'mangudai';
 /** How many of a run's first stages always have mountains (owner, 2026-10-24; randomTiles). */
 export const MOUNTAIN_STAGES = 3;
 /** The player's camel, after the party in slot order; the enemy has none (camel.md). */

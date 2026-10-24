@@ -10,7 +10,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
+import {ABILITY, AI, FIRST_ENEMY, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
 import {
   canMove,
   invalidPath,
@@ -632,7 +632,9 @@ describe('the board', () => {
       expect(map.tiles).toBe(s.tiles);
       expect(JSON.stringify(createFight(seed).tiles)).toBe(JSON.stringify(s.tiles));
       // Yurts and mountains (tested above), nothing else.
-      expect(Object.values(map.tiles).every((t) => t === 'obstacle' || t === 'mountain')).toBe(true);
+      expect(Object.values(map.tiles).every((t) => t === 'obstacle' || t === 'mountain')).toBe(
+        true
+      );
       const yurts = Object.keys(map.tiles)
         .filter((k) => map.tiles[k] === 'obstacle')
         .map(hexFromKey);
@@ -1449,13 +1451,14 @@ describe('previews, the AI and the run', () => {
     expect(createRun(5).fight.units.filter((u) => u.side === 'player')).toHaveLength(4);
   });
 
-  it('the stages: one random hero and two wolves, that hero, another and a wolf, then all three', () => {
+  it('the stages: the Outrider and two wolves, the Outrider, a random other and a wolf, then all three', () => {
     expect(STAGES).toEqual([
       {heroes: 1, wolves: 2},
       {heroes: 2, wolves: 1},
       {heroes: 3, wolves: 0},
     ]);
-    const firsts = new Set<HeroId>();
+    expect(FIRST_ENEMY).toBe('mangudai');
+    const seconds = new Set<HeroId>();
     for (let seed = 0; seed < 30; seed++) {
       STAGES.forEach(({heroes, wolves}, stage) => {
         const enemies = stageEnemies(seed, stage);
@@ -1472,10 +1475,12 @@ describe('previews, the AI and the run', () => {
           expect(picked.slice(0, before.length)).toEqual(before);
         }
       });
-      firsts.add(stageEnemies(seed, 0)[0]!);
+      // The first stage always brings the Outrider.
+      expect(stageEnemies(seed, 0)[0]).toBe(FIRST_ENEMY);
+      seconds.add(stageEnemies(seed, 1)[1]!);
     }
-    // Random: every hero of the roster is the first to come for some seed.
-    expect(firsts.size).toBe(ROSTER.length);
+    // Random after that: every other hero of the roster is the second to come for some seed.
+    expect(seconds.size).toBe(ROSTER.length - 1);
   });
 
   it('winning a stage before the last goes on to the next, with the survivors', () => {
