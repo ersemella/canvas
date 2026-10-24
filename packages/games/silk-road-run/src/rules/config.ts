@@ -305,5 +305,7 @@ export const STAGES: {heroes: number; wolves: number}[] = [
   {heroes: 2, wolves: 1},
   {heroes: 3, wolves: 0},
 ];
+/** How many of a run's first stages always have mountains (owner, 2026-10-24; randomTiles). */
+export const MOUNTAIN_STAGES = 3;
 /** The player's camel, after the party in slot order; the enemy has none (camel.md). */
 export const CAMEL: HeroId = 'camel';

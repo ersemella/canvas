@@ -614,6 +614,14 @@ describe('the board', () => {
     expect(corners.size).toBe(4);
   });
 
+  it('always raises mountains in the first three stages of a run', () => {
+    const hasMountains = (s: FightState) => Object.values(s.tiles).includes('mountain');
+    for (let seed = 0; seed < 40; seed++) {
+      expect(hasMountains(createFight(seed, PARTY, PARTY, true))).toBe(true);
+      expect(hasMountains(createRun(seed).fight)).toBe(true);
+    }
+  });
+
   it('pitches two or three yurts near the middle by each fight’s seed: unmirrored, apart, clear of the starting columns, the board connected', () => {
     const layouts = new Set<string>();
     const counts = new Set<number>();

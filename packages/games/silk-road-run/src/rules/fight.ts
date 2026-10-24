@@ -103,12 +103,14 @@ export function makeUnit(
  * the heroes chosen on the start menu; the enemy brings `enemies`, all three
  * heroes unless the run's stage says otherwise (STAGES). No unit starts
  * boxed in by yurts and the units beside it: the seed scatters again until
- * every one has a free hex to step to.
+ * every one has a free hex to step to. With `mountains` the board always
+ * has a range of mountains (randomTiles).
  */
 export function createFight(
   seed: number,
   party: HeroId[] = PARTY,
-  enemies: HeroId[] = PARTY
+  enemies: HeroId[] = PARTY,
+  mountains = false
 ): FightState {
   const map = SALT_FLATS;
   const random = seededRandom(seed);
@@ -132,7 +134,7 @@ export function createFight(
   const camel = state.units.find((u) => u.hero === CAMEL)!;
   camel.hex = map.camelStart;
   do {
-    state.tiles = randomTiles(random);
+    state.tiles = randomTiles(random, mountains);
     for (const side of ['player', 'enemy'] as const) {
       const free = map.startColumns[side].filter((h) => !hexEquals(h, map.camelStart));
       const hexes = shuffled(free, random);
