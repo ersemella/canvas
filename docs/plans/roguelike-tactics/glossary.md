@@ -54,7 +54,7 @@ tuning. Section numbers are the combat design's.
 | **Gear slot** | One of four equipment positions on a hero: boots, gloves, armour, helmet. |
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |
-| **Milestone upgrade** | A hero-specific adjustment to one of that hero's abilities (its shape or an added effect), chosen from an offer at set points in a run (10.9). Unlike gear, it carries no transferable modifier. |
+| **Milestone upgrade** | A hero-specific adjustment to one of that hero's abilities (its shape or an added effect), or a new ability for that hero, chosen from an offer at set points in a run (10.9). Unlike gear, it carries no transferable modifier. |
 | **Keyword** | A named, shared condition or effect (for example Burn, Push, Stunned) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |
 | **Ghost team / ghost build** | A saved party build from another player, used as an opponent. **Decided 2026-10-15:** ghosts are **rival caravans**, met as a fight; see [ghosts.md](ghosts.md) (D8). |

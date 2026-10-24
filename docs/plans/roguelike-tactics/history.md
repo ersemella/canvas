@@ -245,6 +245,12 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   gear) to prevent a death spiral after a death: rejected, because a death
   is meant to start a death spiral with a low chance of recovery. Recruits
   join at base level with basic gear, and deaths don't change recruitment.
+- **Milestone upgrades as adjustments only, never new kits** (10.9,
+  until 2026-10-24): an upgrade could only make a slight change to an
+  ability the hero already had, never add one, so it couldn't replace the
+  hero's identity. Removed by the owner: an upgrade may add an ability,
+  so second abilities such as Skirmish and Sunlight can be earned during
+  a run rather than start in the kit.
 - **A movement cap based on speed** (for example
   `floor(M × speed / (speed + K))`): set aside, because speed already sets
   how often a unit acts, its cost per hex and its starting slot; adding
