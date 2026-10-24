@@ -6,13 +6,12 @@ One fight against the AI plays end to end: the rules in
 `PlayerLedger` in `@canvas/server`, the page at `/play/silk-road-run`.
 The page opens on a start menu (2026-10-21): the game in brief, which of
 the heroes to take (one to three of the three; the camel always comes), and Start;
-`POST /runs` takes the `party`. A run is four stages, each a fight (owner, 2026-10-24;
-`STAGES` in `src/rules/config.ts`): the enemy brings three wolves, then one
-random hero and two wolves, then that hero, another and a wolf, then all
-three heroes.
+`POST /runs` takes the `party`. A run is three stages, each a fight (owner, 2026-10-24;
+`STAGES` in `src/rules/config.ts`): the enemy brings one random hero and
+two wolves, then that hero, another and a wolf, then all three heroes.
 Winning a stage offers Next stage (`POST /runs/:id/next`); the surviving
 heroes and the camel go on at full health, the fallen are gone for the
-run; winning the fourth stage wins the run.
+run; winning the third stage wins the run.
 What the builder decided and where it departs from the brief is in
 [phase-1-brief.md](phase-1-brief.md#11-as-built-2026-10-19). The engine
 has hex geometry, a hex grid system, sprites and scaled pixel-art
@@ -138,7 +137,7 @@ Always read this file first. Then:
 | Tuning numbers, or balancing a new hero, ability, keyword or gear: what each ability and stat is worth, measured; the proposed tuning; principles for re-tuning | [balance.md](balance.md) |
 | The twelve heroes | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
-| Run progression: regions and stages, provisions (stat points), upgrade offers, the enemy line-up per stage, the final boss | [progression.md](progression.md) |
+| Run progression: regions and stages, provisions (stat points), upgrade offers, the proposed passives, the enemy line-up per stage, the final boss | [progression.md](progression.md) |
 | The caravan's camel; how a fight is won and lost; ending stalled fights | [camel.md](camel.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |

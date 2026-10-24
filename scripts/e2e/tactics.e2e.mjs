@@ -942,7 +942,7 @@ try {
         after.stage === before.stage + 1 &&
         JSON.stringify(after.fight.units.filter((u) => u.side === 'player').map((u) => u.hero)) ===
           JSON.stringify(survivors) &&
-        enemies.filter((u) => u.hero !== 'wolf').length === after.stage,
+        enemies.filter((u) => u.hero !== 'wolf').length === after.stage + 1,
       after.fight.units.map((u) => u.id)
     );
     await abandonOn(page);

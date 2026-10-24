@@ -63,7 +63,7 @@ random from one pool:
 | Slot | Contents |
 |---|---|
 | **Hero** | An upgrade for one hero in the party: a **new ability**, or a change to an existing ability that is **more than a stat increase** (its shape, its range, an added keyword, a new rule). |
-| **Passive** | A **hero-agnostic passive**: a rule, not a stat increase, that works on whichever hero carries it, and can be moved to another hero. |
+| **Passive** | A **hero-agnostic passive**: a rule, not a stat increase, that works on whichever hero carries it, and can be moved to another hero. The proposed pool is in 19.8. |
 | **Wildcard** | Either another upgrade (hero or passive) or provisions. |
 
 - **This replaces milestone upgrades** (10.9): offers come per region, not
@@ -128,8 +128,8 @@ passive is lost or returns to the party is question 63.
 - Difficulty therefore rises two ways: within a region, as wolves give
   way to heroes; across regions, as wolves' stats and enemy heroes'
   upgrades and stats grow.
-- **Not built yet:** the game today runs four stages: 3 wolves; 1 hero and
-  2 wolves; 2 heroes and 1 wolf; 3 heroes (`STAGES` in
+- **Not built yet:** the game today runs three stages: 1 hero and 2 wolves;
+  that hero, another and 1 wolf; 3 heroes (`STAGES` in
   `src/rules/config.ts`).
 
 ### 19.6 The Final Boss (Decided, owner 2026-10-24)
@@ -166,6 +166,66 @@ to your build.
 
 Counts assume every wildcard is taken as an upgrade.
 
+### 19.8 Passives (Proposed, owner 2026-10-24)
+The pool for the offer's passive slot (19.3). Each is a rule that works
+on whichever hero carries it ("this hero"), in the keywords' terms
+([keywords.md](keywords.md)); every one is public and previewable (D11).
+Numbers are TBD tuning; none is built or measured yet.
+
+**Track**
+
+| Passive | Rule |
+|---|---|
+| **Steady Gait** | Inevitable: this hero's card can't be Delayed or Hastened. |
+| **Second Wind** | The first time each fight this hero is at half its health or less, its card is Hastened 2. |
+| **Patient** | When this hero ends a turn without moving or using an ability, its card goes 2 fewer slots on. |
+| **Momentum** | After a turn in which this hero takes a unit off the board, its card is Hastened 1. |
+
+**Board**
+
+| Passive | Rule |
+|---|---|
+| **Rooted** | This hero can't be Pushed or Pulled; unlike Unstoppable, it can still be Immobilized and Moved. |
+| **Light Step** | This hero walks through allies, and may swap places with an ally at the end of its move. |
+| **Rebound** | When this hero is Pushed, Pulled or Moved, by an ally or an enemy, each unit next to its final position, allies included, is Pushed 1 space away from it, one at a time as for any area (17.4). |
+
+**Damage and survival**
+
+| Passive | Rule |
+|---|---|
+| **Hardened** | Armour 1 against the first hit this hero takes each fight. |
+| **Last Stand** | The first time each fight this hero would die, it is left at 1 health instead and is Stunned for its next turn. |
+| **Piercing Eye** | This hero's attacks Pierce against a unit that is Immobilized or Stunned. |
+| **Opportunist** | This hero's attacks deal 1 more damage (as Enhance 1) to a unit that hasn't had a turn since this hero's last turn. |
+| **Bulwark** | When an ally next to this hero takes its first hit between this hero's turns, the ally takes 1 less damage and this hero takes that 1. |
+| **Glass Cannon** | Enhance 1 always, but this hero starts each fight at half its health. |
+
+**Control**
+
+| Passive | Rule |
+|---|---|
+| **Iron Will** | The first time each fight this hero would be Stunned, it isn't. |
+| **Shake Loose** | When this hero takes damage while Stunned, the Stun ends. |
+
+**Position and allies**
+
+| Passive | Rule |
+|---|---|
+| **Flanker** | This hero's attacks deal 1 more damage when an ally stands on the far side of the target, opposite this hero. |
+| **Lone Wolf** | Enhance 1 while no ally is within 2 spaces. |
+| **Rally** | At the start of this hero's turn, each ally next to it gains Shield 1 until that ally's next turn. |
+| **Vengeance** | When an ally dies, this hero's card is Hastened 3 and it gains Enhance 1 for its next turn. |
+
+- Rationale: each bends one rule rather than adding a system (17.7), and
+  several answer a measured problem: Iron Will and Shake Loose counter
+  Grapple, which decides fights ([owner-decisions.md](owner-decisions.md));
+  Piercing Eye rewards pairing Hail or Grapple with damage.
+- **To watch:** passives that act on the other side's turns (Bulwark,
+  Rebound, Iron Will, Shake Loose, Vengeance) can't be ablated by a
+  one-sided ban, as with Hold the Line ([balance.md](balance.md));
+  Vengeance softens the death spiral (10.6); Glass Cannon and Lone Wolf
+  are deliberate risk picks.
+
 ## Decision log
 
 | Area | Decision | Alternatives considered | Reason |
@@ -191,3 +251,7 @@ Counts assume every wildcard is taken as an upgrade.
     place of it.
 64. How the final boss reads the build: which counters exist, how many it
     takes, and whether it is one unit or a unit with support.
+65. ~~Rebound (19.8): which enemy is Pushed, and whether an ally's
+    displacement (Throw) triggers it.~~ Answered 2026-10-24 (owner): every
+    unit next to the hero's final position, allies included, whoever
+    displaced the hero.
