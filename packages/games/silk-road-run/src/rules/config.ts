@@ -44,6 +44,11 @@ export interface HeroStats {
   /** The damage each of its abilities deals. */
   power: number;
   abilities: AbilityId[];
+  /**
+   * Abilities it can earn as a hero upgrade during a run, not in its
+   * starting kit (owner, 2026-10-24; progression.md, 19.3).
+   */
+  upgrades?: AbilityId[];
   /** Spaces a move may cover; RULES.movementCap if unset. */
   moveCap?: number;
   /** Its card starts the fight last, at RULES.camelStartSlot, whatever its speed (the camel). */
@@ -76,8 +81,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    // Skirmish in place of Volley (owner, 2026-10-23; balance.md).
-    abilities: ['bow', 'skirmish', 'hold'],
+    abilities: ['bow', 'hold'],
+    // Skirmish in place of Volley (owner, 2026-10-23; balance.md), an
+    // upgrade since 2026-10-24 (owner).
+    upgrades: ['skirmish'],
   },
   storm: {
     name: 'Yadachy Storm Caller',
@@ -87,9 +94,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
     // couldn't break a grapple.
     power: 1,
+    abilities: ['hail', 'hold'],
     // Sunlight added (owner, 2026-10-23), as measured: a trap for the AI
-    // at Enhance 2 (balance.md).
-    abilities: ['hail', 'sunlight', 'hold'],
+    // at Enhance 2 (balance.md); an upgrade since 2026-10-24 (owner).
+    upgrades: ['sunlight'],
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and

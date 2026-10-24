@@ -51,10 +51,14 @@ the kits.**
   the Bow's shot from there, charged: the Outrider's card is pushed half
   its action cost on (4 slots), greyed; when it comes back the arrow flies
   down the lane it was aimed along, hitting the first unit in it then,
-  with no turn for the Outrider, and the card goes its action cost on. The Storm Caller has Hail alone for now: Overwatch, Sunlight and
-  Fog were measured and removed ([history.md](history.md)).
+  with no turn for the Outrider, and the card goes its action cost on;
+  Sunlight (owner, 2026-10-23), Enhance 2 on a unit within 3, melting hail
+  there. **Skirmish and Sunlight are upgrades** (owner, 2026-10-24), out
+  of the starting kits: the Outrider starts with the Bow, the Storm Caller
+  with Hail, each earning the other from a region's upgrade offer
+  ([progression.md](progression.md), 19.3), not built yet.
 - **Deleted with their code:** the Modao Vanguard's kit, ultimates and
-  charged abilities, Leap, Sunlight, Shove, quicksand and the sandstorm,
+  charged abilities, Leap, Shove, quicksand and the sandstorm,
   and every keyword not in the new list ([history.md](history.md)).
 - Still pared back from 2026-10-22: the Modao Vanguard out of the
   roster; six ruins a fight; a move of at most 3 spaces; Temee not player

@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, onTestFinished} from 'vitest';
 import {
   hexDistance,
   hexEquals,
@@ -22,7 +22,7 @@ import {
   firstInLane,
   shotLane,
 } from './board';
-import {ABILITIES, abilitiesOf, arrowLanes} from './abilities';
+import {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {offeredTargets, onlyHold} from './choices';
@@ -63,6 +63,23 @@ import {
 import type {FightState, HeroId, TurnInput, Unit} from './types';
 
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
+
+/**
+ * Gives `hero` its upgrade abilities (`upgrades` in config.ts) for the
+ * current test, before Hold: Skirmish and Sunlight are earned during a run,
+ * not in a starting kit (owner, 2026-10-24).
+ */
+function upgrade(hero: HeroId): void {
+  const kit = HEROES[hero].abilities;
+  HEROES[hero].abilities = [
+    ...kit.filter((a) => a !== 'hold'),
+    ...(HEROES[hero].upgrades ?? []),
+    'hold',
+  ];
+  onTestFinished(() => {
+    HEROES[hero].abilities = kit;
+  });
+}
 
 /**
  * A fight in progress with units where a test wants them: every unit not
@@ -157,7 +174,20 @@ describe('the track', () => {
     return {action: {ability: 'skirmish', target: t}};
   };
 
+  it('Skirmish and Sunlight are upgrades, not in a starting kit', () => {
+    expect(HEROES.mangudai.abilities).toEqual(['bow', 'hold']);
+    expect(HEROES.mangudai.upgrades).toEqual(['skirmish']);
+    expect(HEROES.storm.abilities).toEqual(['hail', 'hold']);
+    expect(HEROES.storm.upgrades).toEqual(['sunlight']);
+    const s = setup({'p-mangudai': at(1, 3), 'p-storm': at(2, 3), 'e-bokh': at(5, 4)});
+    expect(unusableReason(unit(s, 'p-mangudai'), ABILITIES.skirmish)).not.toBeNull();
+    expect(unusableReason(unit(s, 'p-storm'), ABILITIES.sunlight)).not.toBeNull();
+    upgrade('mangudai');
+    expect(unusableReason(unit(s, 'p-mangudai'), ABILITIES.skirmish)).toBeNull();
+  });
+
   it('Skirmish steps one space, then draws on a unit in line from there, and the arrow flies as its charging card comes back', () => {
+    upgrade('mangudai');
     const s = setup({
       'p-mangudai': at(1, 3),
       'p-storm': at(2, 3),
@@ -166,7 +196,6 @@ describe('the track', () => {
     });
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
-    expect(HEROES.mangudai.abilities).toEqual(['bow', 'skirmish', 'hold']);
     // The ally stands between: the bow's lane stops at it.
     expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.side === 'enemy')).toBe(false);
     const options = ABILITIES.skirmish.targets(s, mapOf(s), m, m.hex!);
@@ -216,6 +245,7 @@ describe('the track', () => {
   });
 
   it('a charging card is pushed into its slot, whatever the speed of the card there', () => {
+    upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
     const storm = unit(s, 'e-storm');
@@ -229,6 +259,7 @@ describe('the track', () => {
   });
 
   it('a drawn arrow hits the first unit in its lane when it flies: its target can step out, and another step in', () => {
+    upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
@@ -253,6 +284,7 @@ describe('the track', () => {
   });
 
   it('a drawn arrow carries the Enhance its Outrider drew with, though the Enhance ends with that turn', () => {
+    upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
@@ -268,6 +300,7 @@ describe('the track', () => {
   });
 
   it('a drawn arrow is lost when its Outrider falls first', () => {
+    upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
     applyTurn(s, m, skirmishOn(s, m, unit(s, 'e-bokh')));
@@ -276,6 +309,7 @@ describe('the track', () => {
   });
 
   it('a drawn arrow is lost when its Outrider is Stunned first, and its card comes back as a skipped turn', () => {
+    upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
@@ -722,6 +756,7 @@ describe('stats and damage', () => {
   });
 
   it('Sunlight Enhances a unit within 3 that hits, itself included, not Temee or one already Enhanced', () => {
+    upgrade('storm');
     const s = setup({
       'p-storm': at(1, 3),
       'p-mangudai': at(2, 3),
@@ -751,6 +786,7 @@ describe('stats and damage', () => {
   });
 
   it('Sunlight melts hail on its space, freeing whoever it held; hail alone is a target', () => {
+    upgrade('storm');
     const s = setup({
       'p-storm': at(1, 3),
       'p-mangudai': at(2, 3),
@@ -1557,6 +1593,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('sees what enemies could do before its next turn, and arrows stop at the first unit', () => {
+    upgrade('mangudai');
     const s = setup({'p-mangudai': at(0, 0), 'e-mangudai': at(6, 0), 'e-bokh': at(6, 6)});
     const m = unit(s, 'p-mangudai');
     const threats = threatsTo(s, SALT_FLATS, m);
