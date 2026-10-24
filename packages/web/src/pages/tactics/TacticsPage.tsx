@@ -407,14 +407,18 @@ export function TacticsPage() {
   };
   // Once the fight is over, Next stage (a stage before the run's last won)
   // or New run takes Confirm's place, and the section keeps its height so
-  // the board doesn't move.
+  // the board doesn't move. Desktop shows Next stage in the Victory message
+  // instead.
   const {needsTarget, skipPreview, slotsLater, outOfReach, toggleMove, chooseAbility} = plan;
+  const nextStageButton = (
+    <Button size="lg" className={styles.seal!} fw="bold" loading={busy} onClick={nextStage}>
+      Next stage
+    </Button>
+  );
   const actions = finished ? (
     <div className={styles.confirmRow}>
       {nextAhead ? (
-        <Button size="lg" className={styles.seal!} fw="bold" loading={busy} onClick={nextStage}>
-          Next stage
-        </Button>
+        phone && nextStageButton
       ) : (
         <Button size="lg" className={styles.seal!} fw="bold" onClick={() => setStartMenu(true)}>
           New run
@@ -550,6 +554,7 @@ export function TacticsPage() {
                   <Text c="dimmed" fz="sm">
                     {outcomeText(fight)}
                   </Text>
+                  {!phone && nextAhead && nextStageButton}
                 </Stack>
               </Paper>
             )}
