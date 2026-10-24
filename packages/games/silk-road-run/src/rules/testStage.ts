@@ -6,7 +6,7 @@
  * the camel can be left out. The file is checked when the stage starts,
  * and a mistake is reported on the start menu.
  */
-import {hexEquals, hexKey, offsetToHex} from '@canvas/engine/server';
+import {hexEquals, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import config from '../../test-stage.json';
 import {ABILITIES} from './abilities';
@@ -14,7 +14,7 @@ import {abilityCount, canMove} from './board';
 import {CAMEL, HEROES, RULES} from './config';
 import {RuleError, makeUnit, mapOf, seededRandom} from './fight';
 import {log} from './resolve';
-import {SALT_FLATS, blocks, onMap, randomTiles} from './map';
+import {SALT_FLATS, blocks, onMap, randomTiles, spaceAt} from './map';
 import type {Tile} from './map';
 import {placeStartingCards, shuffled} from './track';
 import type {AbilityId, FightState, HeroId, Loadout, Unit} from './types';
@@ -39,7 +39,7 @@ interface TestSetup {
   enemy: UnitSetup[];
 }
 
-/** The most units a side may bring: its starting column's 9 hexes. */
+/** The most units a side may bring (those without an "at" must also fit its 5-hex starting column). */
 const MAX_SIDE = 9;
 /** Bounds on a stat, far past the game's own (0 to 9), to catch a typo rather than a test. */
 const MAX_STAT = 30;
@@ -57,13 +57,16 @@ function onlyKeys(where: string, v: Record<string, unknown>, keys: string[]): vo
       fail(`${where} has an unknown field "${k}" (expected ${keys.join(', ')}).`);
 }
 
-/** A space as the file gives it, `{col, row}` (rows −1 at the top to 7 at the bottom), on the board. */
+/**
+ * A space as the file gives it, `{col, row}`: a column 0 to 8, left to
+ * right, and a row counted down from that column's top, from 0 (`spaceAt`).
+ */
 function parseSpace(where: string, v: unknown): Hex {
   if (!isObject(v) || !Number.isInteger(v.col) || !Number.isInteger(v.row))
     fail(`${where} must be a space like {"col": 0, "row": 3}.`);
   const {col, row} = v as {col: number; row: number};
   onlyKeys(where, v as Record<string, unknown>, ['col', 'row']);
-  const hex = offsetToHex({col, row});
+  const hex = spaceAt(col, row);
   if (!onMap(SALT_FLATS, hex)) fail(`${where} {"col": ${col}, "row": ${row}} is off the board.`);
   return hex;
 }

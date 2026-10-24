@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {hexKey, hexToOffset, offsetToHex} from '@canvas/engine/server';
+import {hexKey} from '@canvas/engine/server';
+import {spaceAt, spaceOf} from './map';
 import {abilitiesOf, unusableReason, ABILITIES} from './abilities';
 import {HEROES} from './config';
 import {RuleError, refreshStats} from './fight';
@@ -51,12 +52,12 @@ describe('the test stage', () => {
       player: [{hero: 'bokh', at: space(3, 2)}],
       enemy: [{hero: 'wolf', at: space(3, 4)}, {hero: 'wolf'}],
     });
-    const at = (id: string) => hexToOffset(s.units.find((u) => u.id === id)!.hex!);
+    const at = (id: string) => spaceOf(s.units.find((u) => u.id === id)!.hex!);
     expect(at('p-bokh')).toEqual(space(3, 2));
     expect(at('p-camel')).toEqual(space(2, 0));
     expect(s.units.find((u) => u.id === 'p-camel')!.maxHp).toBe(4);
     expect(at('e-wolf')).toEqual(space(3, 4));
-    expect(s.tiles).toEqual({[hexKey(offsetToHex(space(3, 3)))]: 'obstacle'});
+    expect(s.tiles).toEqual({[hexKey(spaceAt(3, 3))]: 'obstacle'});
 
     const none = createTestFight(3, {
       camel: false,

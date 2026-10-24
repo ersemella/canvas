@@ -41,7 +41,7 @@ export const HEX_SCALE = BOARD_LAYOUT.size / 32;
  */
 export const SPRITE_SCALE = 2;
 /** How far below the hex's centre a sprite's bottom edge sits. */
-export const SPRITE_FEET = 29;
+export const SPRITE_FEET = 25;
 export interface HighlightStyle {
   fill: string;
   stroke: string;
@@ -62,7 +62,7 @@ export function center(h: Hex): {x: number; y: number} {
 export function hexPath(ctx: CanvasRenderingContext2D, h: Hex, inset = 1): void {
   const c = center(h);
   ctx.beginPath();
-  hexCorners('pointy', BOARD_LAYOUT.size - inset).forEach((p, i) =>
+  hexCorners('flat', BOARD_LAYOUT.size - inset).forEach((p, i) =>
     i === 0 ? ctx.moveTo(c.x + p.x, c.y + p.y) : ctx.lineTo(c.x + p.x, c.y + p.y)
   );
   ctx.closePath();
@@ -128,8 +128,9 @@ export function hexRandom(h: Hex, salt = 0): () => number {
 /** Whether a point (art pixels from a hex's centre) lies `margin` art pixels inside the hex. */
 export function insideHex(x: number, y: number, margin: number): boolean {
   const s = BOARD_LAYOUT.size / SPRITE_SCALE - margin;
-  const ax = Math.abs(x);
-  return ax <= (Math.sqrt(3) / 2) * s && Math.abs(y) <= s - ax / Math.sqrt(3);
+  // Flat-top: straight edges above and below, a corner to each side.
+  const ay = Math.abs(y);
+  return ay <= (Math.sqrt(3) / 2) * s && Math.abs(x) <= s - ay / Math.sqrt(3);
 }
 
 /** A 4×4 ordered-dither threshold (0 to 15) for each art pixel: a pixel at `level` (0 to 16) shows when its threshold is below it. */

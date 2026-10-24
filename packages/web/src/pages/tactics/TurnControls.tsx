@@ -246,11 +246,13 @@ export function BoardConfirm(props: {
 }) {
   const k = props.boardSize.width / SCENE_SIZE.width;
   const p = hexToPixel(props.hex, BOARD_LAYOUT);
-  const below = (p.y + BOARD_LAYOUT.size) * k + CHIP_GAP;
+  // A flat-top hex's top and bottom edges, half its height from its centre.
+  const half = (Math.sqrt(3) / 2) * BOARD_LAYOUT.size;
+  const below = (p.y + half) * k + CHIP_GAP;
   const top =
     below + CHIP_HEIGHT <= props.boardSize.height
       ? below
-      : (p.y - BOARD_LAYOUT.size) * k - CHIP_GAP - CHIP_HEIGHT;
+      : (p.y - half) * k - CHIP_GAP - CHIP_HEIGHT;
   const left = Math.min(Math.max(p.x * k, 64), props.boardSize.width - 64);
   return (
     <Button

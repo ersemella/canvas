@@ -2,7 +2,7 @@
 // measured"): Shove, Haul, Feigned Retreat, Gale and Volley, each given
 // here by loadout.
 import {describe, expect, it} from 'vitest';
-import {hexDistance, hexNeighbor, offsetToHex} from '@canvas/engine/server';
+import {hexDistance, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {PARTY} from './config';
 import {ABILITIES} from './abilities';
@@ -10,7 +10,7 @@ import {advanceToDecision, applyTurn, createFight, mapOf} from './fight';
 import {SALT_FLATS} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
-const centre = offsetToHex({col: 3, row: 3});
+const centre: Hex = {q: 0, r: 0};
 /** `n` spaces from the centre along direction `dir`. */
 const out = (dir: number, n: number, from: Hex = centre): Hex => {
   let h = from;

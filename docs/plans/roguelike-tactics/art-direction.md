@@ -29,7 +29,7 @@ tuning. This file has no combat-design section number.
   `imageSmoothingEnabled = false` and CSS `image-rendering: pixelated`.
   Non-integer scales make pixels uneven, so the art size is fixed by this
   choice: settle it before drawing anything.
-- **Hex size follows.** The 9 × 7 board (8 columns × 9 rows since 2026-10-20, drawn at hex size 42; [phase-1-brief.md](phase-1-brief.md),
+- **Hex size follows.** Since 2026-10-24 the board is a hexagon of flat-top hexes, nine columns of size 42 across, 73 pixels tall each ([phase-1-brief.md](phase-1-brief.md), question 9). Before it: the 9 × 7 board (8 columns × 9 rows since 2026-10-20, drawn at hex size 42; [phase-1-brief.md](phase-1-brief.md),
   question 9) gives hexes about **32 art pixels** wide, roughly Into the
   Breach's tile size.
 - **Phones.** When the canvas shrinks below 600 pixels, either use the

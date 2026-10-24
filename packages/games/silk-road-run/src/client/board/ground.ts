@@ -128,7 +128,8 @@ function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
 
 /**
  * An exit, the road out (camel.md, 18.2): a worn ivory border and two
- * chevrons pointing off the board, outlined in ink like the sprites.
+ * chevrons pointing down off the board's bottom point, outlined in ink
+ * like the sprites.
  */
 export function drawExit(ctx: CanvasRenderingContext2D, h: Hex): void {
   ctx.save();
@@ -141,6 +142,7 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex): void {
   const c = center(h);
   ctx.translate(Math.round(c.x), Math.round(c.y));
   ctx.scale(HEX_SCALE, HEX_SCALE);
+  ctx.rotate(Math.PI / 2);
   ctx.lineJoin = 'miter';
   for (const dx of [-6, 3]) {
     ctx.beginPath();

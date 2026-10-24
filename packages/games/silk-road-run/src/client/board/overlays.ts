@@ -68,7 +68,7 @@ export function drawPath(ctx: CanvasRenderingContext2D, path: Hex[]): void {
  */
 export function drawRangeOutline(ctx: CanvasRenderingContext2D, hexes: Hex[]): void {
   const inside = new Set(hexes.map(hexKey));
-  const corners = hexCorners('pointy', BOARD_LAYOUT.size);
+  const corners = hexCorners('flat', BOARD_LAYOUT.size);
   const edges: [{x: number; y: number}, {x: number; y: number}][] = [];
   for (const h of hexes) {
     const c = center(h);

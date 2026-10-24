@@ -54,7 +54,7 @@ fight's end ends the run.
 | 39. Ultimate unlock | One value for every hero: usable after spending **300 action cost** in the fight, moves included, Holds without a move not (owner, 2026-10-20; was **3 completed turns**, which cheap moves met within a few slots of first contact) (10.10); once per fight. A run saved earlier converts each counted turn to 100. |
 | 8. Movement action | Ordinary movement is a separate action: **20 + 10 per hex**, up to 4 hexes. No ability and ordinary movement in the same turn (owner, 2026-10-20). |
 | 28. Movement cap | **4 hexes** per movement action (owner, 2026-10-20; restored from 3 with separate movement). |
-| 9. Map | **64 hexes in 9 rows**, 6, 7, 8, 7, 8, 7, 8, 7, 6 wide: odd rows one hex wider, the two end rows without their corners (owner, 2026-10-24; 8 × 8 with odd rows 8 wide, 60 hexes, from 2026-10-23, and 9 × 7, 7 × 7, 8 × 8 and 9 × 9 before), pointy-top hexes. Drawn at hex size 42 on a 594 × 760 canvas beside the track panel. |
+| 9. Map | **A hexagon of 61 flat-top hexes**, 4 from the centre, its nine columns 5 to 9 to 5 long; the sides start on the straight outer columns, the camel at the top point, the exit at the bottom point; drawn at hex size 42 on a 594 × 826 canvas (owner, 2026-10-24). Before it: **64 hexes in 9 rows**, 6, 7, 8, 7, 8, 7, 8, 7, 6 wide: odd rows one hex wider, the two end rows without their corners (owner, 2026-10-24; 8 × 8 with odd rows 8 wide, 60 hexes, from 2026-10-23, and 9 × 7, 7 × 7, 8 × 8 and 9 × 9 before), pointy-top hexes. Drawn at hex size 42 on a 594 × 760 canvas beside the track panel. |
 | 10. Passing through units | Allies and enemies block ordinary walking. Movement abilities keep their own traversal rules (owner, 2026-10-20). |
 | 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so Freeze and a flank don't stack (Pin and hail had Vulnerable too until 2026-10-20). |
 | 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering (passing through included), then **4 damage** every slot spent on it (both doubled, to **80** and **8**, owner, 2026-10-20, once defence applied), whoever's turn it is (owner, 2026-10-19; was 40 on entering and at the start of each of the unit's own turns). Both go through Vulnerable and **defence** (owner, 2026-10-19; they ignored defence until then). Conceal (sandstorm): its occupant is **Obscured**, as in fog: ranged hits on it, and by it, deal **50% less** (owner, 2026-10-20; only hits on it before); the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
@@ -364,7 +364,10 @@ confirm or change:
   placeholder radius went from 2 to 1 with it, so stepping clear
   of enemies was possible; since 2026-10-20 it targets one unit within
   4 instead, and since 2026-10-21 one space. The AI counts healing or cleansing an enemy against an option.
-- **The map's coordinates** are in `src/rules/map.ts`: rows −1 to 7, even
+- **The map's coordinates** are in `src/rules/map.ts`: axial, the centre
+  hex {q: 0, r: 0}, every hex within 4 of it; the test stage names a space
+  by column (0 to 8) and row down that column (`spaceAt`) (flat-top
+  hexagon since 2026-10-24). Before that: rows −1 to 7, even
   rows columns 0 to 6, odd rows −1 to 6, but the end rows (−1 and 7) 0 to
   5 (2026-10-24; rows 0 to 7 from 2026-10-23, and 9 rows of 0 to 7 and −1
   to 7, 7 rows of 0 to 8 and −1 to 8, then briefly 1 to 7 and 0 to 7,

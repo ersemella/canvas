@@ -7,6 +7,7 @@ import type {Hex} from '@canvas/engine';
 import {HEROES} from '../../rules/config';
 import {unitAt} from '../../rules/board';
 import type {FightState, StatusKind, Unit} from '../../rules/types';
+import {BOARD_LAYOUT} from '../layout';
 import {PALETTE, paletteAlpha, pixelFont} from '../palette';
 import {
   HERO_COLOR,
@@ -115,8 +116,9 @@ export function hexOverlaySpan(
   const c = center(h);
   const unit = unitAt(fight, h);
   const stack = unit && healthStack(h, statusMarks(unit).length);
-  const hexTop = c.y - 36 * HEX_SCALE;
-  const hexBottom = c.y + 36 * HEX_SCALE;
+  // A flat-top hex's straight top and bottom edges, half its height from the centre.
+  const hexTop = c.y - (Math.sqrt(3) / 2) * BOARD_LAYOUT.size;
+  const hexBottom = c.y + (Math.sqrt(3) / 2) * BOARD_LAYOUT.size;
   return {
     x: c.x,
     top: stack ? stack.top : hexTop,

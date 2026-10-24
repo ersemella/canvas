@@ -95,11 +95,11 @@ export function makeUnit(
 }
 
 /**
- * A new fight on the Salt Flats, already under way: the seed scatters the
+ * A new fight on the Steppe Crossing, already under way: the seed scatters the
  * ruins, the player's party along the leftmost column and
  * the enemy's along the rightmost (owner, 2026-10-20; there is no
  * deployment step). The player's camel
- * starts in the top-left corner (camel.md, 18.1; owner, 2026-10-22). The player brings
+ * starts at the board's top point (camel.md, 18.1; owner, 2026-10-24). The player brings
  * the heroes chosen on the start menu; the enemy brings `enemies`, all three
  * heroes unless the run's stage says otherwise (STAGES). No unit starts
  * boxed in by ruins and the units beside it: the seed scatters again until

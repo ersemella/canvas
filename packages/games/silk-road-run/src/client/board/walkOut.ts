@@ -53,8 +53,8 @@ export function walkOutPlan(fight: FightState): Map<string, Walk> | null {
     arrival = Math.max(steps, arrival + 1);
     const route = path.map(center);
     const end = route[route.length - 1]!;
-    // The exits stick out on the right: walk on one hex width past them.
-    route.push({x: end.x + Math.sqrt(3) * BOARD_LAYOUT.size, y: end.y});
+    // The exit is the board's bottom point: walk on one hex down past it.
+    route.push({x: end.x, y: end.y + Math.sqrt(3) * BOARD_LAYOUT.size});
     walks.set(u.id, {route, delay: (arrival - steps) * WALK_OUT_HEX_SECONDS});
   }
   return walks;

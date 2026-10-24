@@ -22,7 +22,7 @@ export interface TacticsHoverPayload {
  * The board's taps and hover. Taps on a map hex emit `tactics:tap`, taps on
  * a track card `tactics:card`; a mouse moving over either emits
  * `tactics:hover` when what's under it changes. Picks against the map's own
- * hexes (odd rows reach column −1, which a `HexGrid` rectangle can't), and
+ * hexagon (which a `HexGrid` rectangle can't describe), and
  * runs before `MouseSystem` (950) clears the frame's tap.
  */
 export class TacticsInputSystem extends BaseSystem {

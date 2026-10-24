@@ -181,8 +181,9 @@ describe('the search timeline', () => {
   });
 
   it('closes in on Temee once no hero is within a walk and a hit', () => {
-    const wolf = hex(6, 0);
-    const temee = hex(0, 0);
+    // Opposite edges of the hexagon, 8 apart (on this board's own spaces).
+    const wolf: Hex = {q: 4, r: -2};
+    const temee: Hex = {q: -4, r: 4};
     const cases = SALT_FLATS.hexes.filter((h) => !SALT_FLATS.tiles[hexKey(h)]);
     // Nearer than Temee either way: in reach (a move of 3 and a bite), or not.
     const near = cases.find((h) => hexDistance(h, wolf) === 2 && hexDistance(h, temee) > 6)!;
@@ -209,6 +210,8 @@ describe('the search timeline', () => {
         {'p-bokh': hex(0, 0), 'p-mangudai': hex(-4, 4), 'e-wolf': hex(1, 0), 'e-wolf-2': from},
         ['wolf', 'wolf']
       );
+      // On open ground: the fixed ruins sit beside the Champion on this board.
+      s.tiles = {};
       const held = unit(s, 'e-wolf');
       held.statuses = [{kind: 'stunned', grapple: {champion: 'p-bokh', target: held.id}}];
       const me = unit(s, 'e-wolf-2');

@@ -1,20 +1,24 @@
 /**
- * The Salt Flats Crossing (brief section 7): 9 rows of pointy-top hexes
- * (−1 to 7), odd rows shoved right. Even rows have columns 0 to 6; odd rows
- * also have column −1, so neither side edge is notched (owner, 2026-10-19).
- * The end rows lose their corners, for 64 hexes, ruins included: rows
- * 6, 7, 8, 7, 8, 7, 8, 7, 6 wide (2026-10-24; 8 × 8 with odd rows 8 wide,
- * 60 hexes, from 2026-10-23, and 9 × 7, 7 × 7, 8 × 8 and 9 × 9 before).
- * It is an exact left-right mirror: column c and 6 − c on even rows (whose
- * column 3 is the centre hex), c and 5 − c on odd rows.
+ * The Steppe Crossing: a hexagon of flat-top hexes, 4 from the centre hex
+ * each way, 61 hexes (owner, 2026-10-24; a 64-hex block of pointy-top
+ * hexes, 9 rows with the corners cut, and before it the Salt Flats'
+ * smaller boards, from 2026-10-19). Its nine columns run 5, 6, 7, 8, 9, 8,
+ * 7, 6, 5 hexes from left to right, so the outermost columns, where the
+ * sides start, are straight, five hexes each. The camel starts at the top
+ * point and the only exit is the bottom one, the board's length apart.
  *
- * Each fight scatters its own ruins, not mirrored (owner, 2026-10-20; see
- * `randomTiles`). The fixed layout below is the map's own, which tests
- * place units around. Quicksand and the sandstorm were removed with their
- * keywords (owner, 2026-10-23).
+ * Hexes are axial, the centre hex {q: 0, r: 0}; on screen q runs left to
+ * right and r down each column. A space can also be named as a column (0
+ * to 8, left to right) and a row counted down from the top of that column
+ * (`spaceAt`), as the test stage's file does.
+ *
+ * Each fight scatters its own ruins, and in about half of fights a range of
+ * mountains (see `randomTiles`). The fixed layout below is the map's own,
+ * which tests place units around. Quicksand and the sandstorm were removed
+ * with their keywords (owner, 2026-10-23).
  */
-import {hexDistance, hexKey, hexNeighbors, offsetToHex} from '@canvas/engine/server';
-import type {Hex, OffsetCoord} from '@canvas/engine/server';
+import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
+import type {Hex} from '@canvas/engine/server';
 
 export type Tile = 'sand' | 'obstacle' | 'mountain';
 
@@ -26,130 +30,130 @@ export function blocks(tile: string | undefined): boolean {
 export interface MapData {
   id: string;
   name: string;
-  /** Every hex on the board, row by row. */
+  /** Every hex on the board, top to bottom, left to right. */
   hexes: Hex[];
   tiles: Record<string, Tile>;
   /** Where each side may start: the board's outermost column on its edge. */
   startColumns: {player: Hex[]; enemy: Hex[]};
-  /** The player's camel's starting hex, one of the player's starting column (camel.md, 18.1). */
+  /** The player's camel's starting hex (camel.md, 18.1). */
   camelStart: Hex;
   /** The camel reaching one of these wins the fight (camel.md, 18.2). */
   exits: Hex[];
 }
 
-/** Rows −1 to 7: odd rows (−1 included) are the wide ones, so both end rows are wide. */
-const FIRST_ROW = -1;
-const LAST_ROW = 7;
-/**
- * The columns of a row: even rows 0 to 6, odd rows −1 to 6 (odd rows sit
- * half a hex further left), but the end rows lose their corners: 0 to 5.
- */
-function columnsOf(row: number): number[] {
-  const cols = Array.from({length: row & 1 ? 8 : 7}, (_, i) => i - (row & 1));
-  return row === FIRST_ROW || row === LAST_ROW ? cols.slice(1, -1) : cols;
-}
-const at = (col: number, row: number): Hex => offsetToHex({col, row});
+/** How far the board reaches from its centre hex. */
+const RADIUS = 4;
 
-const special: [OffsetCoord, Tile][] = [
-  // Ruins: two per half, breaking the long sight lines across the board.
-  [{col: 2, row: 2}, 'obstacle'],
-  [{col: 4, row: 2}, 'obstacle'],
-  [{col: 1, row: 5}, 'obstacle'],
-  [{col: 4, row: 5}, 'obstacle'],
-];
+/**
+ * How far down the board a hex sits, in half hexes from the centre's
+ * level: −8 at the top point to 8 at the bottom one. Negative is the top
+ * half, positive the bottom, 0 the middle (either half).
+ */
+export const depth = (h: Hex): number => 2 * h.r + h.q;
+
+/** The rows of column `q` (−4 to 4), top to bottom. */
+function columnRs(q: number): number[] {
+  const top = Math.max(-RADIUS, -RADIUS - q);
+  const bottom = Math.min(RADIUS, RADIUS - q);
+  return Array.from({length: bottom - top + 1}, (_, i) => top + i);
+}
+
+/** The space at column `col` (0 to 8, left to right), `row` hexes down from that column's top. */
+export function spaceAt(col: number, row: number): Hex {
+  const q = col - RADIUS;
+  return {q, r: (columnRs(q)[0] ?? 0) + row};
+}
+
+/** A hex as a column and a row down that column (`spaceAt`'s inverse). */
+export function spaceOf(h: Hex): {col: number; row: number} {
+  return {col: h.q + RADIUS, row: h.r - Math.max(-RADIUS, -RADIUS - h.q)};
+}
 
 function boardHexes(): Hex[] {
   const out: Hex[] = [];
-  for (let row = FIRST_ROW; row <= LAST_ROW; row++) for (const col of columnsOf(row)) out.push(at(col, row));
-  return out;
+  for (let q = -RADIUS; q <= RADIUS; q++) for (const r of columnRs(q)) out.push({q, r});
+  return out.sort((a, b) => depth(a) - depth(b) || a.q - b.q);
 }
 
-/** The `n` hexes of each row nearest the left or right edge. */
-function edgeHexes(side: 'left' | 'right', n: number): Hex[] {
-  const out: Hex[] = [];
-  for (let row = FIRST_ROW; row <= LAST_ROW; row++) {
-    const cols = columnsOf(row);
-    for (const col of side === 'left' ? cols.slice(0, n) : cols.slice(-n)) out.push(at(col, row));
-  }
-  return out;
-}
+const column = (q: number): Hex[] => columnRs(q).map((r) => ({q, r}));
+
+const special: [Hex, Tile][] = [
+  // Ruins: two per half, breaking the long sight lines across the board
+  // (the board of rows' four, around its centre as they were).
+  [{q: -1, r: -1}, 'obstacle'],
+  [{q: 1, r: -1}, 'obstacle'],
+  [{q: -3, r: 2}, 'obstacle'],
+  [{q: 0, r: 2}, 'obstacle'],
+];
 
 export const SALT_FLATS: MapData = {
-  id: 'salt-flats',
-  name: 'The Salt Flats Crossing',
+  id: 'steppe',
+  name: 'The Steppe Crossing',
   hexes: boardHexes(),
-  tiles: Object.fromEntries(special.map(([c, t]) => [hexKey(offsetToHex(c)), t])),
-  startColumns: {player: edgeHexes('left', 1), enemy: edgeHexes('right', 1)},
-  // The top row's first hex (owner, 2026-10-22, the top-left corner; was
-  // the middle row's first hex).
-  camelStart: at(columnsOf(FIRST_ROW)[0]!, FIRST_ROW),
-  // The bottom row's last hex, the only exit (owner, 2026-10-22, the
-  // bottom-right corner; was the four hexes sticking out on the right edge).
-  exits: [at(columnsOf(LAST_ROW).at(-1)!, LAST_ROW)],
+  tiles: Object.fromEntries(special.map(([h, t]) => [hexKey(h), t])),
+  startColumns: {player: column(-RADIUS), enemy: column(RADIUS)},
+  // The top point (owner, 2026-10-24; the top-left corner on the board of
+  // rows before).
+  camelStart: {q: 0, r: -RADIUS},
+  // The bottom point, the only exit (owner, 2026-10-24; the bottom-right
+  // corner before).
+  exits: [{q: 0, r: RADIUS}],
 };
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};
 
 /**
- * Ruins per fight: three in the top rows and three in the bottom, to break
- * sight lines on both (owner, 2026-10-22; two each before). The middle row
- * counts as either.
+ * Ruins per fight: three in the top half and three in the bottom, to break
+ * sight lines on both (owner, 2026-10-22; two each before). The middle
+ * (depth 0) counts as either.
  */
-const RUIN_ROWS = [
-  [-1, 0, 1, 2, 3],
-  [3, 4, 5, 6, 7],
-];
-const RUINS_PER_ROWS = 3;
+const RUIN_HALVES = [(h: Hex) => depth(h) <= 0, (h: Hex) => depth(h) >= 0];
+const RUINS_PER_HALF = 3;
 
 /** How far apart a fight's ruins try to be: no two within two hexes, so they spread across the board. */
 const RUIN_GAP = 3;
 
 /**
  * Mountains (owner, 2026-10-24): about half of fights have one range, 3 to
- * 5 hexes in one clump, in the top or the bottom rows, never within
+ * 5 hexes in one clump, in the top or the bottom half, never within
  * `MOUNTAIN_CENTRE_GAP` − 1 hexes of the centre; that half has no ruins.
  */
 const MOUNTAIN_CHANCE = 0.5;
 const MOUNTAIN_SIZES = [3, 4, 5];
-const MOUNTAIN_ROWS = [
-  [-1, 0, 1, 2],
-  [4, 5, 6, 7],
-];
+const MOUNTAIN_HALVES = [(h: Hex) => depth(h) < 0, (h: Hex) => depth(h) > 0];
 const MOUNTAIN_CENTRE_GAP = 3;
-const CENTRE = at(3, 3);
+const CENTRE: Hex = {q: 0, r: 0};
 
 /**
- * A fight's own ruins and mountains, from `random` in [0, 1). Ruins go anywhere (not mirrored,
- * owner 2026-10-20) but the starting columns, top and bottom rows and the
- * hexes in front of the starting columns included (owner, 2026-10-24; two
- * columns clear of each edge before, which bunched them in the middle).
- * Each keeps `RUIN_GAP` hexes from the others where it can, closing in
- * only when nothing that far is left, and never cuts the board in two. A range of mountains comes first, when
- * the fight has one, and the ruins then keep their distance from it too.
+ * A fight's own ruins and mountains, from `random` in [0, 1). Ruins go
+ * anywhere (not mirrored, owner 2026-10-20) but the starting columns, the
+ * camel's start and the exit. Each keeps `RUIN_GAP` hexes from the others
+ * where it can, closing in only when nothing that far is left, and never
+ * cuts the board in two. A range of mountains comes first, when the fight
+ * has one, and the ruins then keep their distance from it too.
  */
 export function randomTiles(random: () => number): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
   const ruins: Hex[] = [];
-  const candidates: OffsetCoord[] = [];
-  for (let row = FIRST_ROW; row <= LAST_ROW; row++)
-    for (const col of columnsOf(row).slice(1, -1)) candidates.push({col, row});
-  let ruinRows = RUIN_ROWS;
+  const reserved = [SALT_FLATS.camelStart, ...SALT_FLATS.exits];
+  const candidates = SALT_FLATS.hexes.filter(
+    (h) => Math.abs(h.q) < RADIUS && !reserved.some((x) => hexDistance(x, h) === 0)
+  );
+  let ruinHalves = RUIN_HALVES;
   if (random() < MOUNTAIN_CHANCE) {
-    const half = Math.floor(random() * MOUNTAIN_ROWS.length);
+    const half = Math.floor(random() * MOUNTAIN_HALVES.length);
     const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
     const allowed = candidates
-      .filter((c) => MOUNTAIN_ROWS[half]!.includes(c.row))
-      .map((c) => offsetToHex(c))
+      .filter(MOUNTAIN_HALVES[half]!)
       .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP);
     ruins.push(...mountainRange(tiles, allowed, size, random));
-    ruinRows = RUIN_ROWS.filter((_, i) => i !== half);
+    ruinHalves = RUIN_HALVES.filter((_, i) => i !== half);
   }
-  for (const rows of ruinRows)
-    for (let i = 0; i < RUINS_PER_ROWS; i++)
+  for (const inHalf of ruinHalves)
+    for (let i = 0; i < RUINS_PER_HALF; i++)
       for (let gap = RUIN_GAP; gap >= 1; gap--) {
         const free = candidates
-          .filter((c) => rows.includes(c.row))
-          .map((c) => offsetToHex(c))
+          .filter(inHalf)
           .filter((h) => ruins.every((r) => hexDistance(r, h) >= gap))
           .filter((h) => connectedWithout(tiles, h));
         if (!free.length) continue;

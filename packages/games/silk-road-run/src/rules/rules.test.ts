@@ -40,7 +40,7 @@ import {
   refreshStats,
 } from './fight';
 import {previewTurn} from './preview';
-import {SALT_FLATS, blocks, onMap, tileAt} from './map';
+import {SALT_FLATS, blocks, depth, onMap, spaceAt, spaceOf, tileAt} from './map';
 import {checkEnd, enhance, enterHex, hit, kill, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {
@@ -64,7 +64,16 @@ import {
 } from './track';
 import type {FightState, HeroId, TurnInput, Unit} from './types';
 
-const at = (col: number, row: number): Hex => offsetToHex({col, row});
+/**
+ * A space written as the old board of rows' column and row (pointy-top,
+ * 9 rows, its centre at column 3, row 3), moved so that centre is this
+ * board's centre hex: the tests' layouts keep every distance, lane and
+ * neighbour they had.
+ */
+const at = (col: number, row: number): Hex => {
+  const h = offsetToHex({col, row});
+  return {q: h.q - 2, r: h.r - 3};
+};
 
 /**
  * Gives `hero` upgrade abilities (`upgrades` in config.ts; its first by
@@ -431,7 +440,10 @@ describe('the track', () => {
       expect(JSON.stringify(createFight(seed))).toBe(JSON.stringify(s));
       for (const side of ['player', 'enemy'] as const) {
         const column = new Set(map.startColumns[side].map(hexKey));
-        const hexes = s.units.filter((u) => u.side === side).map((u) => hexKey(u.hex!));
+        // The camel starts at the top point (tested with the camel).
+        const hexes = s.units
+          .filter((u) => u.side === side && u.hero !== 'camel')
+          .map((u) => hexKey(u.hex!));
         expect(hexes.every((h) => column.has(h))).toBe(true);
         expect(new Set(hexes).size).toBe(hexes.length);
       }
@@ -439,12 +451,9 @@ describe('the track', () => {
       expect(s.units.every((u) => u.slot !== null)).toBe(true);
     }
     expect(starts.size).toBeGreaterThan(10);
-    for (const h of map.startColumns.player) expect([-1, 0]).toContain(hexToOffset(h).col);
-    // The end rows lose their corners, so their outermost column is 5.
-    for (const h of map.startColumns.enemy) {
-      const {col, row} = hexToOffset(h);
-      expect(col).toBe(row === -1 || row === 7 ? 5 : 6);
-    }
+    // The hexagon's straight left and right columns, five hexes each.
+    expect(map.startColumns.player.map((h) => h.q)).toEqual([-4, -4, -4, -4, -4]);
+    expect(map.startColumns.enemy.map((h) => h.q)).toEqual([4, 4, 4, 4, 4]);
   });
 
   it('starts no unit boxed in by ruins and the units beside it', () => {
@@ -528,43 +537,34 @@ describe('the board', () => {
     expect(boxedIn).toBeGreaterThan(0);
   });
 
-  it('is 64 hexes in 9 rows, the end rows without corners, a hex at column −1 on the other odd rows only, an exact left-right mirror', () => {
+  it('is a hexagon of 61 flat-top hexes, 4 from the centre, its columns 5 to 9 to 5 long, a left-right mirror', () => {
     const map = SALT_FLATS;
-    expect(map.hexes).toHaveLength(6 + 7 + 8 + 7 + 8 + 7 + 8 + 7 + 6);
-    for (const row of [1, 3, 5]) expect(onMap(map, at(-1, row))).toBe(true);
-    for (const row of [-1, 0, 2, 4, 6, 7]) expect(onMap(map, at(-1, row))).toBe(false);
-    for (const row of [0, 1]) expect(onMap(map, at(6, row))).toBe(true);
-    for (const row of [0, 1]) expect(onMap(map, at(7, row))).toBe(false);
-    for (const row of [-1, 7]) {
-      expect(onMap(map, at(0, row))).toBe(true);
-      expect(onMap(map, at(5, row))).toBe(true);
-      expect(onMap(map, at(6, row))).toBe(false);
-    }
-    expect(onMap(map, at(0, -2))).toBe(false);
-    expect(onMap(map, at(0, 8))).toBe(false);
-    // Mirror about the board's centre line (through column 3 on even rows).
-    const layout = {orientation: 'pointy' as const, size: 1, origin: {x: 0, y: 0}};
-    const mid = hexToPixel(at(3, 0), layout).x;
-    const mirror = (h: Hex) => {
-      const p = hexToPixel(h, layout);
-      return SALT_FLATS.hexes.find((m) => {
-        const q = hexToPixel(m, layout);
-        return Math.abs(q.x - (2 * mid - p.x)) < 1e-9 && q.y === p.y;
-      });
-    };
-    for (const h of map.hexes) expect(mirror(h)).toBeDefined();
+    expect(map.hexes).toHaveLength(61);
+    expect(new Set(map.hexes.map(hexKey)).size).toBe(61);
+    for (const h of map.hexes) expect(hexDistance(h, {q: 0, r: 0})).toBeLessThanOrEqual(4);
+    const lengths = [-4, -3, -2, -1, 0, 1, 2, 3, 4].map(
+      (q) => map.hexes.filter((h) => h.q === q).length
+    );
+    expect(lengths).toEqual([5, 6, 7, 8, 9, 8, 7, 6, 5]);
+    // Top to bottom: the camel's top point first, the exit last.
+    expect(map.hexes[0]).toEqual(map.camelStart);
+    expect(map.hexes.at(-1)).toEqual(map.exits[0]);
+    // Mirror about the centre column: flat-top hexes keep their height, r + q/2.
+    const mirror = (h: Hex): Hex => ({q: -h.q, r: h.r + h.q});
+    for (const h of map.hexes) expect(onMap(map, mirror(h))).toBe(true);
     const zone = new Set(map.startColumns.enemy.map(hexKey));
-    for (const h of map.startColumns.player) expect(zone.has(hexKey(mirror(h)!))).toBe(true);
-    expect(map.startColumns.player.some((h) => hexToOffset(h).col === -1)).toBe(true);
-    // Every feature has its mirror image.
-    for (const [key, tile] of Object.entries(map.tiles)) {
-      const [q, r] = key.split(',').map(Number);
-      expect(map.tiles[hexKey(mirror({q: q!, r: r!})!)]).toBe(tile);
+    for (const h of map.startColumns.player) expect(zone.has(hexKey(mirror(h)))).toBe(true);
+    // A column and a row down it name each space once.
+    for (const h of map.hexes) {
+      const {col, row} = spaceOf(h);
+      expect(spaceAt(col, row)).toEqual(h);
     }
+    expect(spaceAt(0, 0)).toEqual(map.startColumns.player[0]);
+    expect(spaceAt(4, 0)).toEqual(map.camelStart);
   });
 
   it('raises one clump of 3 to 5 mountains in about half of fights, away from the centre, with no ruins in its half', () => {
-    const centre = offsetToHex({col: 3, row: 3});
+    const centre: Hex = {q: 0, r: 0};
     let withMountains = 0;
     for (let seed = 0; seed < 60; seed++) {
       const tiles = createFight(seed).tiles;
@@ -589,13 +589,13 @@ describe('the board', () => {
             queue.push(n);
           }
       expect(seen.size).toBe(mountains.length);
-      // All in the top rows or all in the bottom, and that half has no ruins.
-      const top = hexToOffset(mountains[0]!).row < 3;
-      for (const m of mountains) expect(hexToOffset(m).row < 3).toBe(top);
-      for (const r of at('obstacle')) {
-        const {row} = hexToOffset(r);
-        expect(top ? row >= 3 : row <= 3).toBe(true);
+      // All in the top half or all in the bottom, and that half has no ruins.
+      const top = depth(mountains[0]!) < 0;
+      for (const m of mountains) {
+        expect(depth(m)).not.toBe(0);
+        expect(depth(m) < 0).toBe(top);
       }
+      for (const r of at('obstacle')) expect(top ? depth(r) >= 0 : depth(r) <= 0).toBe(true);
     }
     expect(withMountains).toBeGreaterThan(15);
     expect(withMountains).toBeLessThan(45);
@@ -615,14 +615,13 @@ describe('the board', () => {
       const mountains = count(map.tiles, 'mountain');
       expect(count(map.tiles, 'obstacle')).toBe(mountains ? 3 : 6);
       expect(Object.keys(map.tiles)).toHaveLength(count(map.tiles, 'obstacle') + mountains);
-      const ruinRows = [];
+      const ruinDepths = [];
       for (const [key, tile] of Object.entries(map.tiles)) {
-        const [q, r] = key.split(',').map(Number);
-        const {col, row} = hexToOffset({q: q!, r: r!});
-        // Off the starting columns (0 and 5 on the cornerless end rows).
-        const end = row === -1 || row === 7;
-        expect(col >= (row & 1 && !end ? 0 : 1) && col <= (end ? 4 : 5)).toBe(true);
-        if (tile === 'obstacle') ruinRows.push(row);
+        const h = hexFromKey(key);
+        // Off the starting columns, the camel's start and the exit.
+        expect(Math.abs(h.q)).toBeLessThan(4);
+        expect([map.camelStart, ...map.exits].map(hexKey)).not.toContain(key);
+        if (tile === 'obstacle') ruinDepths.push(depth(h));
       }
       // Spread out: no two ruins side by side.
       const ruins = Object.keys(map.tiles)
@@ -630,9 +629,9 @@ describe('the board', () => {
         .map(hexFromKey);
       for (const a of ruins)
         for (const b of ruins) if (a !== b) expect(hexDistance(a, b)).toBeGreaterThan(1);
-      // Three in the top half and three in the bottom; the middle row (3) counts as either.
-      expect(ruinRows.filter((r) => r < 3).length).toBeLessThanOrEqual(3);
-      expect(ruinRows.filter((r) => r > 3).length).toBeLessThanOrEqual(3);
+      // Three in the top half and three in the bottom; the middle counts as either.
+      expect(ruinDepths.filter((d) => d < 0).length).toBeLessThanOrEqual(3);
+      expect(ruinDepths.filter((d) => d > 0).length).toBeLessThanOrEqual(3);
       // Every open hex can be walked to from every other.
       const open = map.hexes.filter((h) => !blocks(tileAt(map, h)));
       const seen = new Set([hexKey(open[0]!)]);
@@ -646,9 +645,8 @@ describe('the board', () => {
       expect(seen.size).toBe(open.length);
       layouts.add(JSON.stringify(s.tiles));
       const mirrored = Object.entries(map.tiles).every(([key, tile]) => {
-        const [q, r] = key.split(',').map(Number);
-        const {col, row} = hexToOffset({q: q!, r: r!});
-        return map.tiles[hexKey(offsetToHex({col: (row & 1 ? 6 : 7) - col, row}))] === tile;
+        const {q, r} = hexFromKey(key);
+        return map.tiles[hexKey({q: -q, r: r + q})] === tile;
       });
       if (!mirrored) asymmetric++;
     }
@@ -889,13 +887,13 @@ describe('stats and damage', () => {
 
 describe('abilities', () => {
   it('shows every Longshot lane to the map’s edge, stopping at the first unit or an obstacle', () => {
-    const s = setup({'p-mangudai': at(-1, 3), 'e-bokh': at(8, 6)});
+    const s = setup({'p-mangudai': at(-1, 3), 'e-bokh': at(3, 6)});
     const from = at(-1, 3);
     const east = (l: ReturnType<typeof arrowLanes>) => l[0]!;
     // Nothing in the way: Longshot has no range limit, so the lane runs to the edge.
     let lanes = arrowLanes(s, mapOf(s), from);
     expect(lanes).toHaveLength(6);
-    expect(east(lanes)).toEqual({hexes: [0, 1, 2, 3, 4, 5, 6].map((c) => at(c, 3))});
+    expect(east(lanes)).toEqual({hexes: [0, 1, 2, 3, 4, 5, 6, 7].map((c) => at(c, 3))});
     expect(ABILITIES.longshot.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([]);
     // A unit in it: the lane ends there, and that unit is Longshot's target.
     unit(s, 'e-bokh').hex = at(2, 3);
@@ -1195,14 +1193,14 @@ describe('the caravan’s camel', () => {
     }
   });
 
-  it('joins the player’s side in the top-left corner, with high defence and the health it gives', () => {
+  it('joins the player’s side at the top point, with high defence and the health it gives', () => {
     for (const seed of [1, 2, 3]) {
       const s = createFight(seed);
       const camel = unit(s, 'p-camel');
       expect(camel.side).toBe('player');
       expect(camel.controller).toBe('ai');
       expect(camel.hex).toEqual(SALT_FLATS.camelStart);
-      expect(hexToOffset(camel.hex!)).toEqual({col: 0, row: -1});
+      expect(camel.hex).toEqual({q: 0, r: -4});
       expect(camel.defence).toBe(HEROES.camel.defence);
       expect(camel.hp).toBe((1 + camel.defence) * 2);
       expect(s.units.filter((u) => u.hex && hexKey(u.hex) === hexKey(camel.hex!))).toHaveLength(1);
@@ -1210,8 +1208,8 @@ describe('the caravan’s camel', () => {
     }
   });
 
-  it('wins by reaching the one exit, in the bottom-right corner', () => {
-    expect(SALT_FLATS.exits.map((h) => hexToOffset(h))).toEqual([{col: 5, row: 7}]);
+  it('wins by reaching the one exit, at the bottom point', () => {
+    expect(SALT_FLATS.exits).toEqual([{q: 0, r: 4}]);
   });
 
   it('follows a fixed shortest road around the ruins to the exit', () => {

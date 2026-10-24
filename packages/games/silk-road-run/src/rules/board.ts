@@ -7,12 +7,11 @@ import {
   hexLineSides,
   hexNeighbor,
   hexNeighbors,
-  hexToOffset,
   hexesInRange,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES} from './config';
-import {blocks, hexNumber, onMap, tileAt} from './map';
+import {blocks, depth, hexNumber, onMap, tileAt} from './map';
 import type {MapData, Tile} from './map';
 import type {AbilityId, FightState, ShotInAir, Status, Unit} from './types';
 
@@ -405,13 +404,12 @@ export function shotLane(state: FightState, map: MapData, shot: ShotInAir): Hex[
 
 // ─── Ordering ────────────────────────────────────────────────────────────────
 
-/** Sorts by offset row then column: the "hex index" used to break ties. */
+/** Sorts top to bottom, then left to right: the "hex index" used to break ties. */
 export function sortByHex<T>(items: T[], hexOf: (t: T) => Hex): T[] {
   const keyed = items.map((item) => ({item, key: hexIndex(hexOf(item))}));
   return keyed.sort((a, b) => a.key - b.key).map((k) => k.item);
 }
 
 export function hexIndex(h: Hex): number {
-  const {col, row} = hexToOffset(h);
-  return row * 100 + col;
+  return depth(h) * 100 + h.q;
 }

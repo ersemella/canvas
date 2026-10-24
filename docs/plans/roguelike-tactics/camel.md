@@ -49,7 +49,9 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   2026-10-23; it acted first, at slot 0, from 2026-10-21): its card starts
   at slot 12, after every other card's starting slot (3.4).
 - Its card goes 12 slots a turn (speed 0, owner, 2026-10-23: 3.2). Its road
-  from the top-left corner to the exit is about 12 steps, so a fight
+  from the board's top point to the exit at its bottom point is 8 steps
+  across open ground (since 2026-10-24; about 12 from the top-left corner
+  of the board of rows before), so a fight
   lasts at most about 150 slots unless the enemy holds it back.
 - **It isn't a hero:** it doesn't take one of the party's four places
   (10.1), and has no gear, upgrades or ultimate. *(Proposed.)*

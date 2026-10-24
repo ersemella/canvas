@@ -27,7 +27,7 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
   "enemy": [
     {"hero": "wolf"},
     {"hero": "wolf", "speed": 3, "power": 2},
-    {"hero": "mangudai", "at": {"col": 5, "row": 3}}
+    {"hero": "mangudai", "at": {"col": 7, "row": 2}}
   ]
 }
 ```
@@ -39,8 +39,8 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 | `seed` | A whole number: the same seed scatters the ruins and units the same way every time. `null`: a new scatter each time. | `null` |
 | `ruins` | `"random"` (scattered as in a normal fight: six ruins, or three and a range of 3 to 5 mountains in about half of fights), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
-| `player` | Your units, 1 to 9, in party order. You control every one. | required |
-| `enemy` | The AI's units, 1 to 9. | required |
+| `player` | Your units, 1 to 9, in party order (at most 5 without an `at`: the starting column's spaces). You control every one. | required |
+| `enemy` | The AI's units, 1 to 9 (at most 5 without an `at`). | required |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
 
@@ -62,9 +62,12 @@ the test stage too.
 
 ### Spaces
 
-Rows run from `-1` (top) to `7` (bottom). On even rows (0, 2, 4, 6) columns
-run `0` to `6`; on odd rows `-1` to `6`, except the top and bottom rows
-(`-1` and `7`), which run `0` to `5`. The camel starts at `{"col": 0, "row":
--1}` (top left) and walks to the only exit, `{"col": 5, "row": 7}` (bottom
-right). A unit placed on one of the random or the map's ruins clears it;
+The board is a hexagon of flat-top hexes in nine columns, `0` (left) to
+`8` (right), 5, 6, 7, 8, 9, 8, 7, 6 and 5 hexes long. A space's `row`
+counts down its column from `0` at that column's top, so column 0 has rows
+`0` to `4`, column 4 (the middle) `0` to `8`. Your units start on column 0,
+the enemy's on column 8. The camel starts at the top point, `{"col": 4,
+"row": 0}`, and walks to the only exit, the bottom point, `{"col": 4,
+"row": 8}`. A unit placed on one of the random or the map's ruins (or
+mountains) clears it;
 two things on one space (ruins you list included) is an error.
