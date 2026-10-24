@@ -21,7 +21,7 @@ import yurtImage from '../tiles/yurt.png';
 import mountainPeakImage from '../tiles/mountain-peak.png';
 import mountainTwinImage from '../tiles/mountain-twin.png';
 import rockImage from '../tiles/rock.png';
-import grassImage from '../tiles/grass-calm.png';
+import grassImage from '../tiles/grass-soft.png';
 
 /** The ground's colour until its textures load. */
 const GRASS = '#8e9858';
@@ -31,9 +31,10 @@ const BORDER = '#3f4a27';
 /**
  * The ground texture of each tile type: the Steppe's grass (the `sand`
  * tile is open ground, whatever its look); yurts stand on grass, mountains
- * on rocky ground of their own (owner, 2026-10-24). The grass is a calm
- * one, a flat field with sparse tufts: the owner's busier `grass.png` read
- * as mud on a phone (owner, 2026-10-24).
+ * on rocky ground of their own (owner, 2026-10-24). The grass is the
+ * owner's `grass.png` softened: its blotches at 60% of their contrast and a
+ * touch greener, since at full strength it read as mud on a phone (owner,
+ * 2026-10-24).
  */
 const TILE_TEXTURE: Record<Tile, string> = {
   sand: grassImage,
