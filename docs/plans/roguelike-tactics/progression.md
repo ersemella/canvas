@@ -98,6 +98,23 @@ passive is lost or returns to the party is question 63.
 - **Wolves** may be reskinned per region (the setting's creatures, 15.7)
   and get a **small stat increase each region**. Their numbers per region
   are TBD.
+- **Reskins (Proposed, 2026-10-24):** each region's basic creature is a
+  small, common pest that preys on travellers, never a famous monster; the
+  setting's great creatures (15.5) stay for elites and bosses. Each is the
+  wolf's unit with that region's stats, so the basic enemy reads the same
+  everywhere.
+
+  | Region | Basic creature | Why it fits | Alternative |
+  |---|---|---|---|
+  | Steppe | **Grey wolf** (built) | The Mongols' mythic ancestor in the *Secret History*; the real threat to steppe herds | — |
+  | China | **Fox spirit** (huli jing, one-tailed) | A trickster preying on travellers; leaves the nine-tailed fox for a boss | Jiangshi, iconic but from later folklore |
+  | India | **Jackal** | The *Panchatantra*'s schemers (Karataka and Damanaka); a scavenger pack trailing caravans | Vetala, more an elite |
+  | Persia | **Lesser div** | The *Shahnameh*'s rank-and-file demons, before the White Div as a boss | Cheetah, the Sasanian royal hunting cat |
+  | Arabia | **Ghul** | The desert shapeshifter luring travellers off the caravan track | Striped hyena, tied to ghuls in Arab folklore |
+  | Byzantine | **Kallikantzaros** | Greek folk goblins, small and swarming; leaves the griffin and drakos for the endgame | Wild boar, the Byzantine hunting animal |
+
+  Every region also supplies heroes, so no culture supplies only monsters
+  (15.7).
 - **Enemy heroes** are built from the player's own systems (11.1): random
   hero upgrades and stat increases, up to **10 stat points and 4 upgrades**
   at most. The player's party can end a run with 12 provisions and 6
