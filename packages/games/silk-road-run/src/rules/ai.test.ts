@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {hexDistance, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {chooseAiTurn, evaluatePosition, requestChooser, scoreOptions, simulate} from './ai';
-import type {SearchStats, SearchTree} from './ai';
+import type {SearchStats} from './ai';
 import {AI, HEROES} from './config';
 import {advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
 import {createRun} from './run';
@@ -194,16 +194,13 @@ describe('the search timeline', () => {
       unit(s, 'p-bokh').slot = 1;
       unit(s, 'p-camel').slot = 2;
       s.awaiting = me.id;
-      const end = chooseAiTurn(s, me).move?.at(-1) ?? wolf;
-      return hexDistance(end, temee) < 6
-        ? 'temee'
-        : hexDistance(end, hero) < hexDistance(wolf, hero)
-          ? 'hero'
-          : 'neither';
+      return chooseAiTurn(s, me).move?.at(-1) ?? wolf;
     };
-    expect(closesOn(far)).toBe('temee');
-    // In reach, the hero is the one to fight (here the wolf waits for it).
-    expect(closesOn(near)).not.toBe('temee');
+    expect(hexDistance(closesOn(far), temee)).toBeLessThan(6);
+    // In reach, the hero is the one to fight: the wolf waits for it, not
+    // leaving it for Temee (since 2026-10-24 it may wait a step nearer
+    // Temee, the hero no further off).
+    expect(hexDistance(closesOn(near), near)).toBeLessThanOrEqual(hexDistance(wolf, near));
   });
 
   it('goes for the Champion grappling an ally, rather than Holding behind it', () => {
@@ -292,28 +289,6 @@ describe('the search timeline', () => {
         advance(s, requestChooser({left: AI.requestSimulations}));
       }
     }
-  });
-
-  it('hands the next AI turn the part of its search that follows from its choice', () => {
-    const s = opening();
-    const me = unit(s, s.awaiting!);
-    let tree: SearchTree | undefined;
-    const input = chooseAiTurn(s, me, {left: AI.maxSimulations}, undefined, {
-      keep: (t) => (tree = t),
-    });
-    applyTurn(s, me, input);
-    const next = advanceToDecision(s)!;
-    const reached = tree!.root.children.get(tree!.chosen)!;
-    expect(reached.actor!.id).toBe(next.id);
-    const fresh = stats();
-    const lent = stats();
-    chooseAiTurn(s, next, {left: AI.maxSimulations}, fresh, {depth: 2});
-    const before = JSON.stringify(s);
-    chooseAiTurn(s, next, {left: AI.maxSimulations}, lent, {depth: 2, reuse: reached});
-    // The same horizon for less work: the replies it was handed are already played.
-    expect(lent.completedDepth).toBe(2);
-    expect(lent.work).toBeLessThan(fresh.work);
-    expect(JSON.stringify(s)).toBe(before);
   });
 
   it('still picks a greedy turn, not a Hold, once a request’s budget is spent', () => {

@@ -80,6 +80,11 @@ stall); median 45 actions.
 
 ### AI variants
 
+Team a has the speed ties in both fights of a pair (cards keep their
+slots), which is worth about 4 points: the production AI against itself
+gives team a 54.4% (2026-10-24). Compare AIs with each as team a and take
+the mean ([ai-search.md](../../docs/plans/roguelike-tactics/ai-search.md)).
+
 `--ai A,B` gives each team its own AI (`production`, `greedy`: no lookahead,
 the heuristic's best root action; `deep`: horizon 4 and four times the work
 cap). Each AI keeps its team across a mirrored pair, so `aWinPct` is team a's

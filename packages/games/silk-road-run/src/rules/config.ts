@@ -247,25 +247,14 @@ export const AI = {
    */
   turnFloorSimulations: 48,
   rootSimulations: 48,
-  replySimulations: 8,
+  /**
+   * Turns played at each reply, best guess first (ai.ts, `orderedInputs`): with
+   * the guess, 6 beat 8 (ai-search.md, "Searching smarter").
+   */
+  replySimulations: 6,
+  searchWidth: 4,
   /** Includes the root action: try two decisions, then three if work remains. */
   searchDepth: 3,
-  /**
-   * How the search spends its work (ai-search.md, "Searching smarter"):
-   * `ordered` ranks every turn with a cheap guess before playing the best
-   * ones, rather than the first ones listed; `frontier` scores the last
-   * decision's turns as they're played, stopping once one settles it,
-   * rather than running the track on after each; `widths` is how many
-   * turns are searched on at each decision from the root (the last for
-   * any deeper); `reuse` hands the next AI turn in a request the part of
-   * the previous turn's search that follows from what it chose.
-   */
-  search: {
-    ordered: true,
-    frontier: true,
-    widths: [4, 4, 3, 2] as readonly number[],
-    reuse: true,
-  },
   victory: 1_000_000,
 } as const;
 

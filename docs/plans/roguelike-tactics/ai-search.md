@@ -8,9 +8,14 @@ deepening. It remains deterministic: no randomness or clock-based cutoff.
 
 - Rank up to 48 root actions with the existing heuristic, including its
   cached threat map. Keep the best four, with stable ties.
-- At future decisions, rank up to eight actions and keep four. This uses
-  immediate effects, status, positioning and action time, without building
-  another speculative threat map: these replies are simulated explicitly.
+- At future decisions, play up to six actions, best guess first, and keep
+  four (eight, in the order listed, until 2026-10-24; see "Searching
+  smarter"). Scoring uses immediate effects, status and positioning,
+  without building another speculative threat map: these replies are
+  simulated explicitly.
+- At the last decision of an iteration, each action is evaluated as it is
+  played, from the fight it leaves, with no track run on after it, and the
+  rest go unplayed once one settles the decision (alpha-beta, 2026-10-24).
 - Try a horizon of two decisions, including the root action. If work
   remains, try three. Only a fully completed iteration replaces the choice;
   interruption returns the previous iteration, or the greedy root choice.
@@ -40,16 +45,17 @@ deepening. It remains deterministic: no randomness or clock-based cutoff.
   move that brings a hero into reach isn't scored as a leap of progress.
   Over 2,100 AI-vs-AI fights (stage shapes in turn, seeds 9000 on):
 
-  | Enemy rule | Enemy wins | Temee killed | Temee's share of enemy damage |
-  |---|---:|---:|---:|
-  | Nearest unit, weight 1 (before) | 16.0% | 111 | 26.5% |
-  | Nearest unit, weight 2 | 13.8% | 95 | 29.3% |
-  | Always Temee, weight 2 | 9.7% | 90 | 36.5% |
-  | **Temee once no hero is in reach, weight 2 (built)** | **13.9%** | **104** | **30.1%** |
+  | Enemy rule                                           | Enemy wins | Temee killed | Temee's share of enemy damage |
+  | ---------------------------------------------------- | ---------: | -----------: | ----------------------------: |
+  | Nearest unit, weight 1 (before)                      |      16.0% |          111 |                         26.5% |
+  | Nearest unit, weight 2                               |      13.8% |           95 |                         29.3% |
+  | Always Temee, weight 2                               |       9.7% |           90 |                         36.5% |
+  | **Temee once no hero is in reach, weight 2 (built)** |  **13.9%** |      **104** |                     **30.1%** |
 
   Always hunting Temee had the enemy cut down walking past the party.
   The party here is the AI too, guarding Temee harder at weight 2, which
   accounts for most of the drop from 16%.
+
 - Alpha-beta avoids expanding branches that cannot improve the result.
   Successor timelines and subsequent reply sets are generated only when
   visited. A small candidate pool is still simulated up front at each
@@ -112,12 +118,12 @@ all subsequent AI turns and recorded playback events, excluding the time
 spent selecting the human action.
 
 | Local measurement, 2,976 requests each | Previous AI | New search |
-|---|---:|---:|
-| Median elapsed time | 1.15 ms | 1.64 ms |
-| p99 elapsed time | 6.24 ms | 5.36 ms |
-| Maximum elapsed time | 32.16 ms | 10.40 ms |
-| Elapsed samples over 10 ms | 3 | 1 |
-| p99 process CPU time | 9.13 ms | 9.08 ms |
+| -------------------------------------- | ----------: | ---------: |
+| Median elapsed time                    |     1.15 ms |    1.64 ms |
+| p99 elapsed time                       |     6.24 ms |    5.36 ms |
+| Maximum elapsed time                   |    32.16 ms |   10.40 ms |
+| Elapsed samples over 10 ms             |           3 |          1 |
+| p99 process CPU time                   |     9.13 ms |    9.08 ms |
 
 Elapsed measurements include scheduling and GC; process CPU includes
 runtime/background work and is not Cloudflare's per-invocation CPU meter.
@@ -155,3 +161,66 @@ For repeatable local throughput checks of the current implementation, run
 prepares all three default enemy layouts and human choices before timing
 individual whole requests. Its corpus follows the current AI's self-play,
 so use a fixed saved corpus when comparing different implementations.
+
+## Searching smarter, 2026-10-24
+
+Four ways to look further on the same work were built and measured
+against the previous AI; two were kept.
+
+- **Best guess first (kept).** A reply plays only its first few
+  candidates, which were the first listed: abilities, then the shortest
+  walks. On 322 self-play positions the reply's best action, by its own
+  score, was outside the eight played in 109; walks of two or three spaces
+  were never considered. `guessValue` now ranks every candidate without
+  playing it (a hit's damage, kill and status on an enemy, against an
+  ally; an Enhance from Sunlight; the spaces left to the quarry,
+  `quarryGap`), and the best guesses are played. The best action is then
+  among the six played in every one of 333 positions (a test pins this
+  down over four runs); of the true top four, 8 in 1,332 were missed (626
+  before).
+- **The last decision scored as played (kept).** At the iteration's last
+  decision the actions are evaluated from the fight right after each
+  (`evaluatePosition`), without copying it, running the track on or
+  scoring it with the heuristic, and alpha-beta stops playing them once
+  one settles the decision. Together with the ordering, depth three now
+  completes on 69% of turns, up from 10%, for the same CPU per turn
+  (2.82 ms against 2.81, alternating runs on 242 positions).
+- **Narrower deeper decisions (removed).** Searching four, three, then
+  two actions per decision only matters from depth four, which 110 units
+  of work never reached: no change in play.
+- **Reusing the previous turn's search (removed).** The next AI turn in a
+  request took over the decisions the previous turn's search had already
+  played and searched after its choice. Within the noise in win rate
+  (below), so not worth the machinery.
+
+Head-to-head (`mirror.mjs`-style duels on mirrored pairs, each team's
+consecutive turns sharing a request's 220 units of work as in live play,
+600 pairs from seed 5000, about 1,060 finished fights each):
+
+| New AI vs                      | As team a | As team b |  Mean |
+| ------------------------------ | --------: | --------: | ----: |
+| Previous AI                    |     64.9% |     58.6% | 61.8% |
+| Previous AI with 30% more work |     64.0% |     58.0% | 61.0% |
+| (with reuse) Previous AI       |     63.0% |     58.8% | 60.9% |
+
+The previous AI against itself gives team a 54.4%: in a mirrored pair the
+cards keep their slots, so team a has the speed ties in both fights. Each
+matchup was therefore played with each AI as team a, and the mean is the
+fair figure. On a first, smaller round (300 pairs, the new AI as team b
+only) ordering alone and the last-decision scoring alone were each no
+better than the previous AI; together they won, and six replies beat
+eight (59.9% against 56.4% as team b).
+
+Whole requests (413, from 20 runs, three alternating runs each): mean
+1.12 → 1.29 ms, p99 5.29 → 6.35 ms, maximum 9.15 → 8.20 ms.
+
+One test changed: a wolf with a hero two spaces off now waits a step
+nearer Temee, keeping the hero two spaces off; the test checked "not
+within 6 of Temee" and now checks that it doesn't move away from the hero.
+The previous AI held where it stood even at depth three: the new one sees
+the Champion's best replies, which the old order of play left out.
+
+An undo journal in place of copying the fight (rolling back each line
+rather than copying it) was also tried: identical decisions, within noise
+of the copying search's time, since a fight is too small for copying to
+matter. Not merged.

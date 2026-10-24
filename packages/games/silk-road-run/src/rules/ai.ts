@@ -272,7 +272,7 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
 
 /**
  * A cheap guess at what a turn is worth, without playing it, in the
- * units `scoreOutcome` uses (AI.search.ordered): a hit's damage, a
+ * units `scoreOutcome` uses: a hit's damage, a
  * kill's worth and a status's, on an enemy, against an ally; and the
  * spaces the turn leaves between `unit` and what it closes in on
  * (`quarryGap`). Any turn aimed at an enemy ranks above any walk.
@@ -311,10 +311,13 @@ function enhanceGuess(state: FightState, u: Unit): number {
   return AI.enhancedShare * (ABILITY.sunlight.enhance + (kill ? AI.kill : 0));
 }
 
-/** `unit`'s turns, best guess first (`guessValue`), or as listed without AI.search.ordered. */
+/**
+ * `unit`'s turns, best guess first (`guessValue`): the search plays only
+ * the first few at a reply, so they must be the likely best, not the
+ * first listed (ai-search.md, "Searching smarter").
+ */
 function orderedInputs(state: FightState, unit: Unit): TurnInput[] {
   const inputs = candidateInputs(state, unit);
-  if (!AI.search.ordered) return inputs;
   const hunting = huntsTemee(state, unit);
   const guesses = new Map(inputs.map((i) => [i, guessValue(state, unit, i, hunting)]));
   // Stable: equal guesses keep the listed order.
@@ -414,9 +417,8 @@ interface SearchNode {
   tried: number;
   /** The legal ones of those, scored, in the order played. */
   scored: SearchOption[];
-  /** The best of `scored`, searched on, once the node is screened, and how many were kept. */
+  /** The best of `scored`, searched on, once the node is screened. */
   options?: SearchOption[];
-  width?: number;
   children: Map<SearchOption, SearchNode>;
   /**
    * The fight ended while the track ran on to the next decision (a shot
@@ -446,22 +448,9 @@ export function evaluatePosition(state: FightState, side: Side): number {
   return score;
 }
 
-/** The `width` best options; equal scores keep the order they were tried in. */
-function shortlist<T extends ScoredOption>(options: T[], width: number): T[] {
-  return [...options].sort((a, b) => b.score - a.score).slice(0, width);
-}
-
-/** How many options a decision `ply` decisions from the root searches on (AI.search.widths). */
-function widthAt(ply: number): number {
-  const {widths} = AI.search;
-  return widths[Math.min(ply, widths.length - 1)]!;
-}
-
-/** What a request's next AI turn may take over of the turn before's search (AI.search.reuse). */
-export interface SearchTree {
-  root: SearchNode;
-  /** The root option the turn chose. */
-  chosen: SearchOption;
+/** Keep a small heuristic shortlist; equal scores keep the order they were tried in. */
+function shortlist<T extends ScoredOption>(options: T[]): T[] {
+  return [...options].sort((a, b) => b.score - a.score).slice(0, AI.searchWidth);
 }
 
 /**
@@ -469,21 +458,13 @@ export interface SearchTree {
  * successor expansion, and iterative deepening only commits complete depths.
  * `prune=false` is an exhaustive reference over the same selective tree.
  * A depth override supports comparisons at a fixed completed horizon.
- * `reuse`, the decision reached in the previous turn's search, lends this
- * search the subtrees of the options both share; `keep` receives this
- * one's tree for the next.
  */
 export function chooseAiTurn(
   state: FightState,
   unit: Unit,
   budget: SearchBudget = {left: AI.requestSimulations},
   stats?: SearchStats,
-  settings: {
-    prune?: boolean;
-    depth?: number;
-    reuse?: SearchNode | undefined;
-    keep?: (tree: SearchTree) => void;
-  } = {}
+  settings: {prune?: boolean; depth?: number} = {}
 ): TurnInput {
   const initial = Math.max(0, budget.left);
   const local: SearchBudget = {left: Math.min(AI.maxSimulations, initial)};
@@ -522,7 +503,8 @@ export function chooseAiTurn(
     for (const o of node.scored)
       if (Number.isNaN(o.score))
         o.score =
-          scoreOutcome(node.state, o.after, node.actor!, threats) - chargeCost(node.actor!, o.input);
+          scoreOutcome(node.state, o.after, node.actor!, threats) -
+          chargeCost(node.actor!, o.input);
   };
   const childOf = (node: SearchNode, option: SearchOption): SearchNode => {
     let child = node.children.get(option);
@@ -536,13 +518,7 @@ export function chooseAiTurn(
     }
     return child;
   };
-  const search = (
-    node: SearchNode,
-    ply: number,
-    depth: number,
-    alpha: number,
-    beta: number
-  ): number => {
+  const search = (node: SearchNode, depth: number, alpha: number, beta: number): number => {
     // A fight already over: sooner is worth more, a win taken now above one
     // a turn later, a loss now below a later one.
     if (node.state.phase !== 'fight')
@@ -562,12 +538,12 @@ export function chooseAiTurn(
       }
       return false;
     };
-    // The last decision (AI.search.frontier): each reply scored as it is
+    // The last decision: each reply scored as it is
     // played, as the fight it leaves, with no track run on after it, and
     // the rest left unplayed once one settles the node. Replies use the
     // immediate heuristic: their actual consequences are searched, so
     // rebuilding a speculative threat map here is wasteful.
-    if (depth === 1 && AI.search.frontier && !node.options) {
+    if (depth === 1 && !node.options) {
       for (let i = 0; ; i++) {
         while (node.scored.length <= i && tryNext(node, AI.replySimulations));
         const option = node.scored[i];
@@ -578,50 +554,31 @@ export function chooseAiTurn(
       if (node.scored.length === 0) throw exhausted;
       return value;
     }
-    // A node handed over from the previous turn's search may have been
-    // shortlisted a decision further from that search's root, narrower.
-    if (!node.options || node.width !== widthAt(ply)) {
+    if (!node.options) {
       while (tryNext(node, AI.replySimulations));
       scoreAll(node);
-      node.width = widthAt(ply);
-      node.options = shortlist(node.scored, node.width);
+      node.options = shortlist(node.scored);
       if (node.options.length === 0) throw exhausted;
     }
     for (const option of node.options) {
       const adjustment = maximize ? -option.cost : option.cost;
       const next =
-        search(childOf(node, option), ply + 1, depth - 1, alpha - adjustment, beta - adjustment) +
+        search(childOf(node, option), depth - 1, alpha - adjustment, beta - adjustment) +
         adjustment;
       if (consider(option, next)) break;
     }
     return value;
   };
   let completed: SearchOption | undefined;
-  let root: SearchNode | undefined;
   try {
     if (local.left <= 0) return {action: {ability: 'hold'}};
-    root = nodeAt(state, unit);
-    // The previous turn's search reached this decision: the turns it played
-    // here, in the same order, come at no cost, and those it searched on
-    // bring their subtrees, already screened. The root scores them afresh,
-    // with its threat map.
-    if (settings.reuse?.inputs) {
-      const lent = settings.reuse;
-      root.inputs = lent.inputs!;
-      root.tried = lent.tried;
-      for (const theirs of lent.scored) {
-        const mine = {...theirs, score: NaN};
-        root.scored.push(mine);
-        const child = lent.children.get(theirs);
-        if (child) root.children.set(mine, child);
-      }
-    }
+    const root = nodeAt(state, unit);
     // Reserve most work for actual replies, rather than spending it all
     // on the root. Small remaining budgets retain a useful greedy turn.
     const rootLimit = Math.min(AI.rootSimulations, local.left);
     while (tryNext(root, rootLimit));
     scoreAll(root, threatsFor(state, unit, true));
-    const options = shortlist(root.scored, widthAt(0));
+    const options = shortlist(root.scored);
     root.options = options;
     if (!options.length) return {action: {ability: 'hold'}};
     completed = options[0]!;
@@ -632,8 +589,7 @@ export function chooseAiTurn(
       const values = new Map<ScoredOption, number>();
       for (const option of options) {
         const next =
-          search(childOf(root, option), 1, depth - 1, value + option.cost, Infinity) -
-          option.cost;
+          search(childOf(root, option), depth - 1, value + option.cost, Infinity) - option.cost;
         values.set(option, next);
         if (next > value) {
           value = next;
@@ -660,15 +616,7 @@ export function chooseAiTurn(
     const used = Math.min(AI.maxSimulations, initial) - local.left;
     budget.left = initial - used;
     if (stats) stats.work = used;
-    if (root && completed) settings.keep?.({root, chosen: completed});
   }
-}
-
-/** The parts of a fight that decide what happens next: not its log or events. */
-function sameFight(a: FightState, b: FightState): boolean {
-  const key = (s: FightState) =>
-    JSON.stringify([s.phase, s.currentSlot, s.awaiting, s.units, s.effects, s.shots ?? []]);
-  return a.mapId === b.mapId && a.tiles === b.tiles && key(a) === key(b);
 }
 
 /**
@@ -678,12 +626,8 @@ function sameFight(a: FightState, b: FightState): boolean {
  * greedy AI.turnFloorSimulations rather than a Hold. Taking the full cap in
  * turn order left the third unit of a stage-one band (a hero, two wolves)
  * nothing, so it Held where it stood, on 1 in 20 of the wolves' turns.
- * Each turn's search hands the next the part of its tree that follows from
- * what it chose, when the fight came out as that search expected
- * (AI.search.reuse).
  */
 export function requestChooser(budget: SearchBudget): (state: FightState, unit: Unit) => TurnInput {
-  let previous: SearchTree | undefined;
   return (state, unit) => {
     let human = Infinity;
     for (const u of state.units)
@@ -701,16 +645,7 @@ export function requestChooser(budget: SearchBudget): (state: FightState, unit: 
       left: Math.max(AI.turnFloorSimulations, Math.floor(budget.left / (due + 1))),
     };
     const given = share.left;
-    const reached = previous?.root.children.get(previous.chosen);
-    const reuse =
-      AI.search.reuse && reached?.actor?.id === unit.id && sameFight(reached.state, state)
-        ? reached
-        : undefined;
-    previous = undefined;
-    const input = chooseAiTurn(state, unit, share, undefined, {
-      reuse,
-      keep: (tree) => (previous = tree),
-    });
+    const input = chooseAiTurn(state, unit, share);
     budget.left = Math.max(0, budget.left - (given - share.left));
     return input;
   };
