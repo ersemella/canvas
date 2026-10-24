@@ -54,7 +54,7 @@ fight's end ends the run.
 | 39. Ultimate unlock | One value for every hero: usable after spending **300 action cost** in the fight, moves included, Holds without a move not (owner, 2026-10-20; was **3 completed turns**, which cheap moves met within a few slots of first contact) (10.10); once per fight. A run saved earlier converts each counted turn to 100. |
 | 8. Movement action | Ordinary movement is a separate action: **20 + 10 per hex**, up to 4 hexes. No ability and ordinary movement in the same turn (owner, 2026-10-20). |
 | 28. Movement cap | **4 hexes** per movement action (owner, 2026-10-20; restored from 3 with separate movement). |
-| 9. Map | Offset rectangle, **8 columns × 9 rows** (owner, 2026-10-20; was 9 × 7, then briefly 7 × 7 and 8 × 8), pointy-top hexes, odd rows one hex wider. Drawn at hex size 42 on a 594 × 697 canvas beside the track panel. |
+| 9. Map | **64 hexes in 9 rows**, 6, 7, 8, 7, 8, 7, 8, 7, 6 wide: odd rows one hex wider, the two end rows without their corners (owner, 2026-10-24; 8 × 8 with odd rows 8 wide, 60 hexes, from 2026-10-23, and 9 × 7, 7 × 7, 8 × 8 and 9 × 9 before), pointy-top hexes. Drawn at hex size 42 on a 594 × 760 canvas beside the track panel. |
 | 10. Passing through units | Allies and enemies block ordinary walking. Movement abilities keep their own traversal rules (owner, 2026-10-20). |
 | 11. Flanking effect | A flanked unit is **Vulnerable 25%** while flanked: it takes 25% more damage from every source (6.3). Every Vulnerable in Phase 1, from a flank or an ability, combines by **max** (17.2), so Freeze and a flank don't stack (Pin and hail had Vulnerable too until 2026-10-20). |
 | 12. Hazards and conceal | Hazard (quicksand): **40 damage** on entering (passing through included), then **4 damage** every slot spent on it (both doubled, to **80** and **8**, owner, 2026-10-20, once defence applied), whoever's turn it is (owner, 2026-10-19; was 40 on entering and at the start of each of the unit's own turns). Both go through Vulnerable and **defence** (owner, 2026-10-19; they ignored defence until then). Conceal (sandstorm): its occupant is **Obscured**, as in fog: ranged hits on it, and by it, deal **50% less** (owner, 2026-10-20; only hits on it before); the occupant's identity stays visible. Obstacles block movement and line of fire; conceal doesn't block line of fire. |
@@ -216,12 +216,14 @@ scope), mirrored left to right like the PvP-style maps (6.6):
 - **Starting columns:** the leftmost hex of each row (player) and the
   rightmost (enemy), rows 1 to 9; the run's seed scatters each party
   along its column, with no deployment step (owner, 2026-10-20; the
-  zones were the two outermost hexes of each row, chosen by the player). Odd rows have a ninth hex at
-  column −1, so neither side edge is notched (owner, 2026-10-19). Four
-  columns between them on even rows, five on odd rows (8 columns × 9
-  rows since 2026-10-20, owner): contact in about one to two turns of movement (6.6).
-- **Obstacles (ruins):** 4 hexes breaking the long sight lines: two in
-  rows 1–4 and two in rows 6–9 (counting from 1), placed at random each
+  zones were the two outermost hexes of each row, chosen by the player). Odd rows have an extra hex at
+  column −1, so neither side edge is notched (owner, 2026-10-19). Five
+  columns between them on even rows, six on odd rows, four on the two
+  cornerless end rows (64 hexes in 9 rows since 2026-10-24, owner): contact
+  in about one to two turns of movement (6.6).
+- **Obstacles (ruins):** 6 hexes breaking the long sight lines (4 until
+  2026-10-22): three in the top rows and three in the bottom, the middle
+  row counting as either (two in rows 1–4 and two in rows 6–9 before), placed at random each
   fight and not mirrored (owner, 2026-10-20; they were fixed, mirrored, in
   rows 3 and 6). Since 2026-10-24 (owner) they may sit anywhere but the
   starting columns, top and bottom rows included, and keep apart (no two
@@ -362,9 +364,12 @@ confirm or change:
   placeholder radius went from 2 to 1 with it, so stepping clear
   of enemies was possible; since 2026-10-20 it targets one unit within
   4 instead, and since 2026-10-21 one space. The AI counts healing or cleansing an enemy against an option.
-- **The map's coordinates** are in `src/rules/map.ts`: 9 rows, even rows
-  columns 0 to 7, odd rows −1 to 7 (2026-10-20; 7 rows of 0 to 8 and −1
-  to 8, then briefly 1 to 7 and 0 to 7, before). Odd rows reaching one
+- **The map's coordinates** are in `src/rules/map.ts`: rows −1 to 7, even
+  rows columns 0 to 6, odd rows −1 to 6, but the end rows (−1 and 7) 0 to
+  5 (2026-10-24; rows 0 to 7 from 2026-10-23, and 9 rows of 0 to 7 and −1
+  to 7, 7 rows of 0 to 8 and −1 to 8, then briefly 1 to 7 and 0 to 7,
+  before). The row on top is −1 so that the other rows kept their
+  coordinates. Odd rows reaching one
   column further (owner, 2026-10-19) makes the board an exact left-right
   mirror, and every feature, the quicksand included, is mirrored. The enemy's placement is one of three layouts, chosen by the
   run's seed.

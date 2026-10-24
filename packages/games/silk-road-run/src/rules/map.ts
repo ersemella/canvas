@@ -1,11 +1,12 @@
 /**
- * The Salt Flats Crossing (brief section 7): 8 rows of pointy-top hexes,
- * odd rows shoved right. Even rows have columns 0 to 6; odd rows also have
- * column −1, so neither side edge is notched (owner, 2026-10-19). 8 × 8
- * (odd rows 8 hexes wide) since 2026-10-23 (owner; it was 9 × 7, then
- * briefly 7 × 7 and 8 × 8, then 9 × 9 from 2026-10-20). It is an exact
- * left-right mirror: column c and 6 − c on even rows (whose column 3 is
- * the centre hex), c and 5 − c on odd rows.
+ * The Salt Flats Crossing (brief section 7): 9 rows of pointy-top hexes
+ * (−1 to 7), odd rows shoved right. Even rows have columns 0 to 6; odd rows
+ * also have column −1, so neither side edge is notched (owner, 2026-10-19).
+ * The end rows lose their corners, for 64 hexes, ruins included: rows
+ * 6, 7, 8, 7, 8, 7, 8, 7, 6 wide (2026-10-24; 8 × 8 with odd rows 8 wide,
+ * 60 hexes, from 2026-10-23, and 9 × 7, 7 × 7, 8 × 8 and 9 × 9 before).
+ * It is an exact left-right mirror: column c and 6 − c on even rows (whose
+ * column 3 is the centre hex), c and 5 − c on odd rows.
  *
  * Each fight scatters its own ruins, not mirrored (owner, 2026-10-20; see
  * `randomTiles`). The fixed layout below is the map's own, which tests
@@ -31,10 +32,17 @@ export interface MapData {
   exits: Hex[];
 }
 
-const ROWS = 8;
-/** The columns of a row: even rows 0 to 6, odd rows −1 to 6 (odd rows sit half a hex further left). */
-const columnsOf = (row: number): number[] =>
-  Array.from({length: row & 1 ? 8 : 7}, (_, i) => i - (row & 1));
+/** Rows −1 to 7: odd rows (−1 included) are the wide ones, so both end rows are wide. */
+const FIRST_ROW = -1;
+const LAST_ROW = 7;
+/**
+ * The columns of a row: even rows 0 to 6, odd rows −1 to 6 (odd rows sit
+ * half a hex further left), but the end rows lose their corners: 0 to 5.
+ */
+function columnsOf(row: number): number[] {
+  const cols = Array.from({length: row & 1 ? 8 : 7}, (_, i) => i - (row & 1));
+  return row === FIRST_ROW || row === LAST_ROW ? cols.slice(1, -1) : cols;
+}
 const at = (col: number, row: number): Hex => offsetToHex({col, row});
 
 const special: [OffsetCoord, Tile][] = [
@@ -47,14 +55,14 @@ const special: [OffsetCoord, Tile][] = [
 
 function boardHexes(): Hex[] {
   const out: Hex[] = [];
-  for (let row = 0; row < ROWS; row++) for (const col of columnsOf(row)) out.push(at(col, row));
+  for (let row = FIRST_ROW; row <= LAST_ROW; row++) for (const col of columnsOf(row)) out.push(at(col, row));
   return out;
 }
 
 /** The `n` hexes of each row nearest the left or right edge. */
 function edgeHexes(side: 'left' | 'right', n: number): Hex[] {
   const out: Hex[] = [];
-  for (let row = 0; row < ROWS; row++) {
+  for (let row = FIRST_ROW; row <= LAST_ROW; row++) {
     const cols = columnsOf(row);
     for (const col of side === 'left' ? cols.slice(0, n) : cols.slice(-n)) out.push(at(col, row));
   }
@@ -67,22 +75,24 @@ export const SALT_FLATS: MapData = {
   hexes: boardHexes(),
   tiles: Object.fromEntries(special.map(([c, t]) => [hexKey(offsetToHex(c)), t])),
   startColumns: {player: edgeHexes('left', 1), enemy: edgeHexes('right', 1)},
-  // The top-left corner (owner, 2026-10-22; was the middle row's first hex).
-  camelStart: at(0, 0),
-  // The bottom-right corner, the only exit (owner, 2026-10-22; was the four
-  // hexes sticking out on the right edge).
-  exits: [at(columnsOf(ROWS - 1).at(-1)!, ROWS - 1)],
+  // The top row's first hex (owner, 2026-10-22, the top-left corner; was
+  // the middle row's first hex).
+  camelStart: at(columnsOf(FIRST_ROW)[0]!, FIRST_ROW),
+  // The bottom row's last hex, the only exit (owner, 2026-10-22, the
+  // bottom-right corner; was the four hexes sticking out on the right edge).
+  exits: [at(columnsOf(LAST_ROW).at(-1)!, LAST_ROW)],
 };
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};
 
 /**
  * Ruins per fight: three in the top rows and three in the bottom, to break
- * sight lines on both (owner, 2026-10-22; two each before).
+ * sight lines on both (owner, 2026-10-22; two each before). The middle row
+ * counts as either.
  */
 const RUIN_ROWS = [
-  [0, 1, 2, 3],
-  [4, 5, 6, 7],
+  [-1, 0, 1, 2, 3],
+  [3, 4, 5, 6, 7],
 ];
 const RUINS_PER_ROWS = 3;
 
@@ -101,7 +111,7 @@ export function randomTiles(random: () => number): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
   const ruins: Hex[] = [];
   const candidates: OffsetCoord[] = [];
-  for (let row = 0; row < ROWS; row++)
+  for (let row = FIRST_ROW; row <= LAST_ROW; row++)
     for (const col of columnsOf(row).slice(1, -1)) candidates.push({col, row});
   for (const rows of RUIN_ROWS)
     for (let i = 0; i < RUINS_PER_ROWS; i++)

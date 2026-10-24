@@ -27,7 +27,7 @@ const api = async (path, playerKey, init = {}) => {
 };
 /** The board canvas's scene size (game.json). */
 const SCENE_W = 594;
-const SCENE_H = 697;
+const SCENE_H = 760;
 const shot = (page, name) => page.screenshot({path: join(OUT_DIR, `tactics-${name}.png`)});
 
 // ── The API ──────────────────────────────────────────────────────────────────
@@ -42,9 +42,13 @@ const started = await api('/runs', alice, {
   method: 'POST',
   body: JSON.stringify({game: 'silk-road-run'}),
 });
-/** The leftmost hex of row `r`, in axial coordinates (odd rows reach column −1). */
-const leftEdge = (r) => ({q: (r & 1 ? -1 : 0) - (r - (r & 1)) / 2, r});
-const rightEdge = (r) => ({q: 6 - (r - (r & 1)) / 2, r});
+/** Whether row `r` is one of the board's two end rows, which lose their corners (−1 and 7). */
+const endRow = (r) => r === -1 || r === 7;
+/** A hex in axial coordinates from its column and row. */
+const hexAt = (col, r) => ({q: col - (r - (r & 1)) / 2, r});
+/** The leftmost hex of row `r` (odd rows reach column −1, but for the end rows). */
+const leftEdge = (r) => hexAt(endRow(r) ? 0 : r & 1 ? -1 : 0, r);
+const rightEdge = (r) => hexAt(endRow(r) ? 5 : 6, r);
 const sameHex = (a, b) => a.q === b.q && a.r === b.r;
 const startedFight = started.body?.view?.fight;
 check(
@@ -271,7 +275,7 @@ page.on('pageerror', (e) => {
   console.log('  [page error]', e.message);
 });
 
-/** Clicks a hex on the board canvas, scaled from the 594×697 scene to the canvas on screen. */
+/** Clicks a hex on the board canvas, scaled from the 594×760 scene to the canvas on screen. */
 /** Where a hex's centre is on the screen. */
 async function hexPoint(hex) {
   const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
@@ -1004,9 +1008,13 @@ try {
   }
   const canvasBox = await phone.locator('canvas').boundingBox();
   const viewportWidth = phone.viewportSize().width;
+  // Edge to edge, or, where the screen is too short for that (an iPhone 13
+  // since the 64-hex board of 2026-10-24), as tall as it fits, centred.
   check(
-    'phone: the board runs edge to edge',
-    Math.abs(canvasBox.x) <= 1 && Math.abs(canvasBox.width - viewportWidth) <= 1,
+    'phone: the board runs edge to edge, or fills the height centred',
+    (Math.abs(canvasBox.x) <= 1 && Math.abs(canvasBox.width - viewportWidth) <= 1) ||
+      (canvasBox.y <= 1 &&
+        Math.abs(canvasBox.x - (viewportWidth - canvasBox.x - canvasBox.width)) <= 1),
     [canvasBox, viewportWidth]
   );
   const inViewport = (locator) =>
@@ -1198,15 +1206,16 @@ try {
     check('phone: tapping plain sand closes the tooltip', !(await tooltip.count()));
     await phone.touchscreen.tap(foeAt.x, foeAt.y);
     await sleep(200);
-    // Tapping away from the board (here, the space above it: the board
-    // sits down against the action bar) closes it too.
+    // Tapping away from the board (here, the space above it, or beside it
+    // when it fills the height: the board sits down against the action bar)
+    // closes it too.
     const box = await phone.locator('canvas').boundingBox();
     check(
       'phone: the board sits against the action section',
-      box.y > 8 && actionBarTop - (box.y + box.height) <= 12,
+      (box.y > 8 || box.x > 8) && actionBarTop - (box.y + box.height) <= 12,
       [box, actionBarTop]
     );
-    await phone.touchscreen.tap(4, box.y / 2);
+    await phone.touchscreen.tap(box.x / 2, box.y > 8 ? box.y / 2 : box.y + box.height / 2);
     await sleep(200);
     check('phone: tapping away closes the tooltip', !(await tooltip.count()));
     // Any tap outside the tooltip closes it, a turn button's too.

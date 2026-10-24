@@ -58,8 +58,9 @@ the kits.**
   and every keyword not in the new list ([history.md](history.md)).
 - Still pared back from 2026-10-22: the Modao Vanguard out of the
   roster; six ruins a fight; a move of at most 3 spaces; Temee not player
-  controlled, walking itself one space a turn from the top-left corner
-  to the only exit, in the bottom-right corner, around units in its way.
+  controlled, walking itself one space a turn from the top row's first hex
+  to the only exit, the bottom row's last hex, around units in its way
+  (64 hexes in 9 rows, the end rows without corners, since 2026-10-24).
 
 **Next step:** the owner reviews the builder's readings of the rework and
 the first measurements (Grapple decides fights, Throw goes unused) in
