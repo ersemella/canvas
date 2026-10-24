@@ -482,9 +482,14 @@ export function evaluatePosition(state: FightState, side: Side): number {
   return score;
 }
 
-/** Keep a small heuristic shortlist; equal scores keep the order they were tried in. */
-function shortlist<T extends ScoredOption>(options: T[]): T[] {
-  return [...options].sort((a, b) => b.score - a.score).slice(0, AI.searchWidth);
+/**
+ * Keep a small heuristic shortlist for a decision `ply` decisions from the
+ * root (AI.searchWidths); equal scores keep the order they were tried in.
+ */
+function shortlist<T extends ScoredOption>(options: T[], ply: number): T[] {
+  const widths = AI.searchWidths;
+  const width = widths[Math.min(ply, widths.length - 1)]!;
+  return [...options].sort((a, b) => b.score - a.score).slice(0, width);
 }
 
 /**
@@ -552,7 +557,13 @@ export function chooseAiTurn(
     }
     return child;
   };
-  const search = (node: SearchNode, depth: number, alpha: number, beta: number): number => {
+  const search = (
+    node: SearchNode,
+    ply: number,
+    depth: number,
+    alpha: number,
+    beta: number
+  ): number => {
     // A fight already over: sooner is worth more, a win taken now above one
     // a turn later, a loss now below a later one.
     if (node.state.phase !== 'fight')
@@ -591,13 +602,13 @@ export function chooseAiTurn(
     if (!node.options) {
       while (tryNext(node, AI.replySimulations));
       scoreAll(node);
-      node.options = shortlist(node.scored);
+      node.options = shortlist(node.scored, ply);
       if (node.options.length === 0) throw exhausted;
     }
     for (const option of node.options) {
       const adjustment = maximize ? -option.cost : option.cost;
       const next =
-        search(childOf(node, option), depth - 1, alpha - adjustment, beta - adjustment) +
+        search(childOf(node, option), ply + 1, depth - 1, alpha - adjustment, beta - adjustment) +
         adjustment;
       if (consider(option, next)) break;
     }
@@ -612,7 +623,7 @@ export function chooseAiTurn(
     const rootLimit = Math.min(AI.rootSimulations, local.left);
     while (tryNext(root, rootLimit));
     scoreAll(root, threatsFor(state, unit, true));
-    const options = shortlist(root.scored);
+    const options = shortlist(root.scored, 0);
     root.options = options;
     if (!options.length) return {action: {ability: 'hold'}};
     completed = options[0]!;
@@ -623,7 +634,7 @@ export function chooseAiTurn(
       const values = new Map<ScoredOption, number>();
       for (const option of options) {
         const next =
-          search(childOf(root, option), depth - 1, value + option.cost, Infinity) - option.cost;
+          search(childOf(root, option), 1, depth - 1, value + option.cost, Infinity) - option.cost;
         values.set(option, next);
         if (next > value) {
           value = next;

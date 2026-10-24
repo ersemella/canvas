@@ -245,7 +245,11 @@ export const AI = {
    * the guess, 6 beat 8 (ai-search.md, "Searching smarter").
    */
   replySimulations: 6,
-  searchWidth: 4,
+  /**
+   * How many options a decision searches on, by its distance from the
+   * root (the root first), the last for any deeper.
+   */
+  searchWidths: [4] as readonly number[],
   /** Includes the root action: try two decisions, then three if work remains. */
   searchDepth: 3,
   victory: 1_000_000,
