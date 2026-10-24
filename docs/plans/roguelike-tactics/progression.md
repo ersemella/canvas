@@ -123,8 +123,8 @@ passive is lost or returns to the party is question 63.
 - Difficulty therefore rises two ways: within a region, as wolves give
   way to heroes; across regions, as wolves' stats and enemy heroes'
   upgrades and stats grow.
-- **Not built yet:** the game today runs four stages: 3 wolves; 1 hero and
-  2 wolves; 2 heroes and 1 wolf; 3 heroes (`STAGES` in
+- **Not built yet:** the game today runs three stages: 1 hero and 2 wolves;
+  that hero, another and 1 wolf; 3 heroes (`STAGES` in
   `src/rules/config.ts`).
 
 ### 19.6 The Final Boss (Decided, owner 2026-10-24)
