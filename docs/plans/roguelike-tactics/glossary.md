@@ -55,7 +55,7 @@ tuning. Section numbers are the combat design's.
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |
 | **Milestone upgrade** | Replaced 2026-10-24 by the upgrade offer (19.3). Was: a hero-specific adjustment to one of that hero's abilities, chosen at set points in a run (10.9). |
-| **Provisions** | Working name for stat points: 1 at the end of each region's first and second stages, each +1 to one hero's speed, defence or power; the region's own can be reassigned after its third stage's fight, then locked (19.2). |
+| **Provisions** | The run's stat points (named by the owner, 2026-10-24): 1 at the end of each region's first and second stages, each +1 to one hero's speed, defence or power; the region's own can be reassigned after its third stage's fight, then locked (19.2). |
 | **Upgrade offer** | After each region's third stage's fight, 3 upgrades from fixed slots (hero, passive, wildcard), of which the party picks 1 (19.3). |
 | **Keyword** | A named, shared condition or effect (for example Burn, Push, Stunned) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |

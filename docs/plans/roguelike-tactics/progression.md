@@ -29,7 +29,7 @@ tuning. Section numbers are the combat design's.
   between stages is unchanged by this: Phase 2's route map design
   ([phases.md](phases.md#phase-2-a-run-on-the-route-map)).
 
-### 19.2 Provisions (Decided, owner 2026-10-24; name is a working name)
+### 19.2 Provisions (Decided, owner 2026-10-24)
 **Provisions** are stat points the party earns and assigns to its heroes.
 Each one adds 1 to one hero's speed, defence or power (9.1).
 
@@ -156,8 +156,7 @@ Counts assume every wildcard is taken as an upgrade.
 
 ## Open questions
 
-59. The provisions' final name (working name: provisions; others: favour,
-    tribute, silk).
+59. ~~The provisions' final name.~~ Answered 2026-10-24 (owner): provisions.
 60. ~~Whether stage 3's reassignment and upgrade offer come before its
     fight or after it.~~ Answered 2026-10-24 (owner): after (19.2, 19.3).
 61. Per-hero, per-stat caps on provisions, and how many provisions the
