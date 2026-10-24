@@ -21,7 +21,8 @@ export type AbilityId =
   | 'grapple'
   | 'throw'
   | 'bite'
-  // Experiments (balance.md, "Second abilities measured", 2026-10-24): in no kit.
+  // Upgrades (owner, 2026-10-24): Shove, Haul, Feigned Retreat, Gale, Volley;
+  // the rest experiments in no kit (balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
   | 'holdLoose'

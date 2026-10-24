@@ -60,7 +60,9 @@ These bands predate the stats' rework (owner, 2026-10-23; [heroes-and-gear.md](h
 
 Every ability deals exactly its user's power in damage (9.2). Each hero
 also has Hold. Skirmish and Sunlight are **upgrades**, not in the starting
-kits (owner, 2026-10-24): a hero earns one from the hero slot of a
+kits (owner, 2026-10-24), and so are Shove and Haul (the Champion),
+Volley and Feigned Retreat (the Outrider) and Gale (the Storm Caller),
+added the same day as measured ([balance.md](balance.md#second-abilities-measured-2026-10-24)): a hero earns one from the hero slot of a
 region's upgrade offer ([progression.md](progression.md), 19.3), each
 worth a second ability (a side without it wins 40–50%). Until offers are
 built, no hero has them in play (`upgrades` in config.ts).
@@ -69,10 +71,15 @@ built, no hero has them in play (`upgrades` in config.ts).
 |---|---|---|---|---|---|---|
 | Bökh Champion | 2 | 3 | 1 | 8 | Grapple | **Melee**: a unit next to the Champion (owner, 2026-10-23; until then it reached 2 spaces, stepping in first). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved; the Champion may walk while it grapples, and the grapple holds if the walk ends next to the target). At the start of each of the Champion's turns while it lasts, the target takes 1 more, plus the Champion's Enhance if it has one (owner, 2026-10-23). One target at a time: a new grapple lets the last go, and it can't target the unit it already grapples. A chain on the board joins the two while it lasts (owner, 2026-10-23). |
 | | | | | | Throw | Only the unit it grapples: **Moves** it to a free space next to the Champion, or swaps places with it (the Champion's own space as the landing; not while the Champion is Immobilized), then it takes 1 damage. The grapple holds (owner, 2026-10-23; the swap added the same day). |
+| | | | | | Shove (upgrade) | **Melee**: **Push 2**, no damage; stopped by ruins, a unit or the map's edge, with no collision damage. Owner, 2026-10-24 (a side without it wins 49.6%). |
+| | | | | | Haul (upgrade) | The first unit in a straight line 2 or 3 spaces away: **Pull 2** toward the Champion, no damage. Owner, 2026-10-24 (a side without it wins 47.8%). |
 | Mangudai Outrider | 3 | 1 | 2 | 4 | Bow | Unchanged in shape: six straight lanes with no range limit, hitting the first unit in a lane (an ally included), stopped by ruins. 2 damage. |
 | | | | | | Skirmish (upgrade) | One step to a free space next to the Outrider (not while Immobilized), then the Bow's shot from there, along any of its six lanes. **Charged**: the Outrider's card goes half its action cost on (4 slots), greyed, and the arrow flies when it comes back, in place of a turn: the first unit in that lane then takes 2 (the Outrider's power), so its target can step out, and another unit can step in. The lane shows marked while the arrow is drawn; it is lost if the Outrider falls or is Stunned first (owner, 2026-10-24: a grapple before the card comes back spoils the shot), and the card then comes back as an ordinary turn. Owner, 2026-10-23: in place of Volley ([balance.md](balance.md#skirmish-in-place-of-volley-2026-10-23)). |
+| | | | | | Volley (upgrade) | Any space within 3 (not ruins), no line of fire. **Charged** as Skirmish (4 slots): when the Outrider's card comes back the arrows land, and whoever stands there then takes 2. Lost if the Outrider falls or is Stunned first. Owner, 2026-10-24: back as an upgrade beside Skirmish (a side without it wins 41.1%). |
+| | | | | | Feigned Retreat (upgrade) | The Bow's shot (2 damage), then a walk of 1 or 2 spaces (not while Immobilized). Owner, 2026-10-24 (a side without it wins 42.5%). |
 | Yadachy Storm Caller | 2 | 2 | 1 | 6 | Hail | One space within 3 (not ruins). It stays until the Storm Caller's next turn begins (or it falls). A unit in the space when it lands, or that enters it (walking, which stops there, or Moved), is **Immobilized** until the hail disappears. Its damage is the Storm Caller's power, 1 (owner, 2026-10-23; 0 before). |
 | | | | | | Sunlight (upgrade) | One space within 3 (not ruins). Hail there melts, freeing whoever it held. A unit there that hits (not Temee), ally or enemy, the Storm Caller itself included, not already Enhanced, is **Enhanced 2** until the end of its next turn. No damage. A player is offered only its own side and spaces of hail. Owner, 2026-10-23: added as measured (a trap for today's AI), then with self-targeting and melting ([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). |
+| | | | | | Gale (upgrade) | One space within 3 (not ruins): each unit next to it, ally or enemy, the Storm Caller included, takes 1 and is **Pushed 1** away from it. Owner, 2026-10-24 (a side without it wins 40.6%). |
 
 The Bökh Champion's Inevitable (2026-10-22) went with this rework: the
 owner's notes leave it out, and nothing Delays any more. The kits they

@@ -81,6 +81,11 @@ export interface AbilityDef {
    */
   steps?: boolean;
   /**
+   * Its user walks to `to` after the ability resolves (Feigned Retreat):
+   * the page aims the unit first, then the space.
+   */
+  walksAfter?: boolean;
+  /**
    * False for an ability aimed at a unit that deals no damage (Shove,
    * Haul), so the AI's guess doesn't count a hit.
    */
@@ -346,8 +351,11 @@ const grapple: AbilityDef = {
   },
 };
 
-// ─── Experiments (balance.md, "Second abilities measured", 2026-10-24) ──────
-// In no hero's kit: measured with scripts/balance/experiments/second-abilities.mjs.
+// ─── Second abilities measured (balance.md, 2026-10-24) ──────────────────────
+// Measured with scripts/balance/experiments/second-abilities.mjs. Shove and
+// Haul (the Champion), Feigned Retreat and Volley (the Outrider) and Gale
+// (the Storm Caller) are upgrades (owner, 2026-10-24); Hold Loose, Hip
+// Toss, Squall Line, Tailwind and Overwatch are experiments in no kit.
 
 /** The direction from `from` to `to`, adjacent or in a straight line from it. */
 function directionTo(from: Hex, to: Hex): number {
@@ -484,6 +492,7 @@ const feignedRetreat: AbilityDef = {
   id: 'feignedRetreat',
   name: 'Feigned Retreat',
   kind: 'attack',
+  walksAfter: true,
   summary: (user) =>
     `Shoot straight: the first unit in line takes ${damageText(user)}. Then walk up to ${ABILITY.feignedRetreat.steps} spaces.`,
   targetsUnit: true,

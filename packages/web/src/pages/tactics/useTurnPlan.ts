@@ -30,6 +30,9 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   throw: 'You aren’t grappling an enemy, or there’s nowhere free to throw it.',
   grapple: 'No one within reach to grapple whom you aren’t grappling already.',
   bite: 'No enemy next to you.',
+  shove: 'No one next to you to shove.',
+  haul: 'No one 2 or 3 spaces away in a straight line.',
+  feignedRetreat: 'No enemy in any of your lanes, or nowhere to fall back to.',
 };
 
 /**
@@ -40,6 +43,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
  */
 const SECOND_PICK: Partial<Record<AbilityId, string>> = {
   throw: 'Pick where to throw',
+  feignedRetreat: 'Pick where to fall back',
   skirmish: 'Pick where to step',
 };
 const stepsFirst = (id: AbilityId | null) => Boolean(id && ABILITIES[id].steps);
@@ -226,7 +230,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (SECOND_PICK[ability] && target?.hex) {
-        // Throw's landing.
+        // Throw's landing, or where Feigned Retreat falls back to.
         const second = targets.find(
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
         );

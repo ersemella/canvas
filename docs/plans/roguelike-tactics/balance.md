@@ -1530,6 +1530,11 @@ lane value (`AI.watchShare`, 0.25) at 0.1 and 0.5: 56.4% and 60.6%.
   Hail's damage, which kills (1.0 a fight) and breaks grapples, is worth
   more than two more spaces of Immobilize.
 
+**Adopted (owner, 2026-10-24): Gale, Volley, Feigned Retreat, Haul and
+Shove as upgrades** (`upgrades` in config.ts; [roster.md](roster.md)), as
+measured. Hold Loose, Hip Toss, Squall Line, Tailwind and Overwatch stay
+experiments in no kit.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

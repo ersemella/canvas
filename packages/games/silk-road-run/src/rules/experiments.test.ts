@@ -1,5 +1,6 @@
-// The balance experiments' abilities (balance.md, "Second abilities
-// measured", 2026-10-24): in no hero's kit, given here by loadout.
+// The abilities measured on 2026-10-24 (balance.md, "Second abilities
+// measured"): the upgrades among them and the experiments in no kit, each
+// given here by loadout.
 import {describe, expect, it} from 'vitest';
 import {hexDistance, hexEquals, hexNeighbor, offsetToHex} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
@@ -8,7 +9,7 @@ import {isImmobilized, isStunned, unitAt} from './board';
 import {ABILITIES} from './abilities';
 import {advanceToDecision, applyTurn, createFight, mapOf} from './fight';
 import {SALT_FLATS} from './map';
-import type {AbilityId, FightState, TurnInput, Unit} from './types';
+import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
 const centre = offsetToHex({col: 3, row: 3});
 /** `n` spaces from the centre along direction `dir`. */
@@ -38,7 +39,7 @@ function setup(placements: Record<string, Hex>): FightState {
 const unit = (s: FightState, id: string): Unit => s.units.find((u) => u.id === id)!;
 
 /** `id` takes `input`, with `ability` in its kit. */
-function act(s: FightState, id: string, ability: AbilityId, target: TurnInput['action']['target']) {
+function act(s: FightState, id: string, ability: AbilityId, target: ActionTarget) {
   const u = unit(s, id);
   u.loadout = {abilities: [ability, 'hold']};
   applyTurn(s, u, {action: {ability, target}});

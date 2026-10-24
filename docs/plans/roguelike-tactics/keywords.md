@@ -23,7 +23,11 @@ and Barrier **Shield**.
 prototype heroes' kits use (Hail, Grapple, Throw; [roster.md](roster.md)),
 and Enhance (the Storm Caller's Sunlight: until the end of the unit's next
 turn, a new one replacing the last; a Champion's Enhance adds to its
-squeeze, owner, 2026-10-23).
+squeeze, owner, 2026-10-23). **Push** and **Pull** (2026-10-24), for the
+upgrades Shove, Gale and Haul ([roster.md](roster.md)): no collision
+damage when stopped early (question 55 open). Haste is built for the
+Tailwind experiment, in no kit, with a limit of one Haste between a
+unit's turns (question 41 open).
 The others are defined here and built when an ability uses them.
 
 ## 17. Keywords and Effects

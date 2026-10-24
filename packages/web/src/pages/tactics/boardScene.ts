@@ -172,7 +172,8 @@ export function buildScene(input: SceneInput): BoardScene {
         out.lanes = {from: step, lanes: lines};
       }
     } else {
-      const second = ability === 'throw' && target?.hex;
+      // Picked second: Throw's landing, Feigned Retreat's walk.
+      const second = targets.some((t) => t.to) && target?.hex;
       for (const t of targets)
         show(
           second ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex,
@@ -186,7 +187,7 @@ export function buildScene(input: SceneInput): BoardScene {
               ?.to
           : undefined;
       const landing = hoveredLanding ?? target?.to;
-      if (second && landing) out.step = [target.hex!, landing];
+      if (second && landing) out.step = [def.walksAfter && from ? from : target.hex!, landing];
     }
     if (target?.hex) {
       // An area ability: highlight the area around the chosen hex (none since Hail covers one space).

@@ -48,6 +48,12 @@ export function shotInfo(shot: ShotInAir, state: FightState): HexInfo {
   const archer = state.units.find((u) => u.id === shot.source);
   const who = archer ? `the ${HEROES[archer.hero].name}’s` : 'its archer’s';
   const damage = archer ? `${archer.power} damage` : 'its damage';
+  if (shot.hex)
+    return {
+      name: 'Volley',
+      short: 'Lands here when its card comes back',
+      detail: `A volley loosed high: it lands on this space when ${who} greyed, charging card comes back, and whoever stands here then takes ${damage}.`,
+    };
   return {
     name: 'Drawn arrow',
     short: 'Flies down this line when its card comes back',

@@ -38,7 +38,7 @@ the kits.**
 - **The keywords** are a new, shorter list: Delay, Haste, Inevitable,
   Push, Pull, Move, Immobilized, Unstoppable, Stunned, Burn, Shield,
   Pierce, Enhance, Degrade, Armour, Immortal ([keywords.md](keywords.md));
-  Immobilized, Stunned and Move are built.
+  Immobilized, Stunned, Move, Push and Pull are built.
 - **The kits** ([roster.md](roster.md)): the Bow, unchanged in shape; Hail,
   one space within 3 until the Storm Caller's next turn, Immobilizing
   whoever is in it or enters it; Grapple (melee; reach 2, stepping in, until
@@ -56,7 +56,13 @@ the kits.**
   there. **Skirmish and Sunlight are upgrades** (owner, 2026-10-24), out
   of the starting kits: the Outrider starts with the Bow, the Storm Caller
   with Hail, each earning the other from a region's upgrade offer
-  ([progression.md](progression.md), 19.3), not built yet.
+  ([progression.md](progression.md), 19.3), not built yet. **Also
+  upgrades** (owner, 2026-10-24, as measured in
+  [balance.md](balance.md#second-abilities-measured-2026-10-24)): Shove
+  (melee Push 2) and Haul (Pull 2) for the Champion, Volley (a space within
+  3, charged) and Feigned Retreat (the Bow, then a walk of up to 2) for the
+  Outrider, Gale (each unit next to a space hit and Pushed 1) for the Storm
+  Caller.
 - **Deleted with their code:** the Modao Vanguard's kit, ultimates and
   charged abilities, Leap, Shove, quicksand and the sandstorm,
   and every keyword not in the new list ([history.md](history.md)).

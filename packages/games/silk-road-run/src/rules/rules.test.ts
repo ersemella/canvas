@@ -174,11 +174,13 @@ describe('the track', () => {
     return {action: {ability: 'skirmish', target: t}};
   };
 
-  it('Skirmish and Sunlight are upgrades, not in a starting kit', () => {
+  it('the second abilities are upgrades, not in a starting kit', () => {
+    expect(HEROES.bokh.abilities).toEqual(['grapple', 'throw', 'hold']);
+    expect(HEROES.bokh.upgrades).toEqual(['haul', 'shove']);
     expect(HEROES.mangudai.abilities).toEqual(['longshot', 'hold']);
-    expect(HEROES.mangudai.upgrades).toEqual(['skirmish']);
+    expect(HEROES.mangudai.upgrades).toEqual(['skirmish', 'volley', 'feignedRetreat']);
     expect(HEROES.storm.abilities).toEqual(['hail', 'hold']);
-    expect(HEROES.storm.upgrades).toEqual(['sunlight']);
+    expect(HEROES.storm.upgrades).toEqual(['sunlight', 'gale']);
     const s = setup({'p-mangudai': at(1, 3), 'p-storm': at(2, 3), 'e-bokh': at(5, 4)});
     expect(unusableReason(unit(s, 'p-mangudai'), ABILITIES.skirmish)).not.toBeNull();
     expect(unusableReason(unit(s, 'p-storm'), ABILITIES.sunlight)).not.toBeNull();

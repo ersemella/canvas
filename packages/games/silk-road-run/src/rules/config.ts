@@ -74,6 +74,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
     defence: 3,
     power: 1,
     abilities: ['grapple', 'throw', 'hold'],
+    // Haul and Shove (owner, 2026-10-24; balance.md, "Second abilities
+    // measured"): side without them wins 47.8% and 49.6%.
+    upgrades: ['haul', 'shove'],
   },
   mangudai: {
     name: 'Mangudai Outrider',
@@ -83,8 +86,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 2,
     abilities: ['longshot', 'hold'],
     // Skirmish in place of Volley (owner, 2026-10-23; balance.md), an
-    // upgrade since 2026-10-24 (owner).
-    upgrades: ['skirmish'],
+    // upgrade since 2026-10-24 (owner). Volley and Feigned Retreat
+    // upgrades too (owner, 2026-10-24; balance.md, "Second abilities
+    // measured"): side without them wins 41.1% and 42.5%.
+    upgrades: ['skirmish', 'volley', 'feignedRetreat'],
   },
   storm: {
     name: 'Yadachy Storm Caller',
@@ -96,8 +101,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 1,
     abilities: ['hail', 'hold'],
     // Sunlight added (owner, 2026-10-23), as measured: a trap for the AI
-    // at Enhance 2 (balance.md); an upgrade since 2026-10-24 (owner).
-    upgrades: ['sunlight'],
+    // at Enhance 2 (balance.md); an upgrade since 2026-10-24 (owner). Gale
+    // an upgrade too (owner, 2026-10-24; balance.md, "Second abilities
+    // measured"): side without it wins 40.6%.
+    upgrades: ['sunlight', 'gale'],
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -179,13 +186,13 @@ export const ABILITY = {
     enhancedSqueeze: true,
   },
   /**
-   * Experiments (balance.md, "Second abilities measured", 2026-10-24), in
-   * no kit: Shove (melee, Push), Haul (Pull the first unit in a lane within
-   * `range`), Hip Toss (Throw landing within `range`), Feigned Retreat (the
-   * Bow, then a walk of up to `steps`), Gale (each unit next to a space
-   * within `range` hit and Pushed), Squall Line (hail on three spaces in a
-   * line, no damage), Tailwind (Haste a unit within `range`), Volley (a
-   * space within `range`, charged) and Overwatch (a lane until the next turn).
+   * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
+   * Shove (melee, Push), Haul (Pull the first unit in a lane within
+   * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
+   * (each unit next to a space within `range` hit and Pushed) and Volley (a
+   * space within `range`, charged). Experiments, in no kit or upgrade list:
+   * Hip Toss (Throw landing within `range`), Squall Line (hail on three
+   * spaces in a line, no damage) and Tailwind (Haste a unit within `range`).
    */
   shove: {push: 2},
   haul: {range: 3, pull: 2},
