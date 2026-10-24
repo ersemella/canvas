@@ -12,7 +12,7 @@
  * place units around. Quicksand and the sandstorm were removed with their
  * keywords (owner, 2026-10-23).
  */
-import {hexKey, offsetToHex} from '@canvas/engine/server';
+import {hexDistance, hexKey, hexNeighbors, offsetToHex} from '@canvas/engine/server';
 import type {Hex, OffsetCoord} from '@canvas/engine/server';
 
 export type Tile = 'sand' | 'obstacle';
@@ -86,22 +86,56 @@ const RUIN_ROWS = [
 ];
 const RUINS_PER_ROWS = 3;
 
+/** How far apart a fight's ruins try to be: no two within two hexes, so they spread across the board. */
+const RUIN_GAP = 3;
+
 /**
  * A fight's own ruins, from `random` in [0, 1): anywhere (not mirrored,
- * owner 2026-10-20) but two columns clear of each side's edge (the
- * starting columns and the hexes in front of them), off each other.
+ * owner 2026-10-20) but the starting columns, top and bottom rows and the
+ * hexes in front of the starting columns included (owner, 2026-10-24; two
+ * columns clear of each edge before, which bunched them in the middle).
+ * Each keeps `RUIN_GAP` hexes from the others where it can, closing in
+ * only when nothing that far is left, and never cuts the board in two.
  */
 export function randomTiles(random: () => number): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
+  const ruins: Hex[] = [];
   const candidates: OffsetCoord[] = [];
   for (let row = 0; row < ROWS; row++)
-    for (const col of columnsOf(row).slice(2, -2)) candidates.push({col, row});
+    for (const col of columnsOf(row).slice(1, -1)) candidates.push({col, row});
   for (const rows of RUIN_ROWS)
-    for (let i = 0; i < RUINS_PER_ROWS; i++) {
-      const free = candidates.filter((c) => rows.includes(c.row) && !tiles[hexKey(offsetToHex(c))]);
-      tiles[hexKey(offsetToHex(free[Math.floor(random() * free.length)]!))] = 'obstacle';
-    }
+    for (let i = 0; i < RUINS_PER_ROWS; i++)
+      for (let gap = RUIN_GAP; gap >= 1; gap--) {
+        const free = candidates
+          .filter((c) => rows.includes(c.row))
+          .map((c) => offsetToHex(c))
+          .filter((h) => ruins.every((r) => hexDistance(r, h) >= gap))
+          .filter((h) => connectedWithout(tiles, h));
+        if (!free.length) continue;
+        const h = free[Math.floor(random() * free.length)]!;
+        tiles[hexKey(h)] = 'obstacle';
+        ruins.push(h);
+        break;
+      }
   return tiles;
+}
+
+/** Whether every open hex can still walk to every other with `extra` ruined too. */
+function connectedWithout(tiles: Record<string, Tile>, extra: Hex): boolean {
+  const blocked = new Set([...Object.keys(tiles), hexKey(extra)]);
+  const all = new Set(SALT_FLATS.hexes.map(hexKey));
+  const open = SALT_FLATS.hexes.filter((h) => !blocked.has(hexKey(h)));
+  const seen = new Set([hexKey(open[0]!)]);
+  const queue = [open[0]!];
+  for (let h; (h = queue.shift()); )
+    for (const n of hexNeighbors(h)) {
+      const k = hexKey(n);
+      if (all.has(k) && !blocked.has(k) && !seen.has(k)) {
+        seen.add(k);
+        queue.push(n);
+      }
+    }
+  return seen.size === open.length;
 }
 
 /** A hex as one number, for cheap lookups in the AI's hot loops (unique while |r| < 32768). */

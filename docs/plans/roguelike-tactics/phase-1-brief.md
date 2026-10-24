@@ -223,10 +223,13 @@ scope), mirrored left to right like the PvP-style maps (6.6):
 - **Obstacles (ruins):** 4 hexes breaking the long sight lines: two in
   rows 1–4 and two in rows 6–9 (counting from 1), placed at random each
   fight and not mirrored (owner, 2026-10-20; they were fixed, mirrored, in
-  rows 3 and 6).
+  rows 3 and 6). Since 2026-10-24 (owner) they may sit anywhere but the
+  starting columns, top and bottom rows included, and keep apart (no two
+  within two hexes where possible, never side by side) so they don't
+  bunch up in the middle.
 - **Hazards (quicksand):** 2 hexes placed at random each fight, not
   mirrored (owner, 2026-10-20; they were either side of the centre hex of
-  row 4). Random ruins and quicksand stay two columns clear of each edge
+  row 4). Random quicksand stayed (as ruins did until 2026-10-24) two columns clear of each edge
   and off the sandstorm; the run's seed decides them.
 - **Conceal (sandstorm):** 3 hexes, mirrored, between the ruins: two in
   row 3 (an even row has no centre hex) and the centre hex of row 6.
