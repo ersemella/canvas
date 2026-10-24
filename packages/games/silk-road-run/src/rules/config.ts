@@ -247,7 +247,11 @@ export const AI = {
    */
   turnFloorSimulations: 48,
   rootSimulations: 48,
-  replySimulations: 8,
+  /**
+   * Turns played at each reply, best guess first (ai.ts, `orderedInputs`): with
+   * the guess, 6 beat 8 (ai-search.md, "Searching smarter").
+   */
+  replySimulations: 6,
   searchWidth: 4,
   /** Includes the root action: try two decisions, then three if work remains. */
   searchDepth: 3,

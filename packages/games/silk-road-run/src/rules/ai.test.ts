@@ -194,16 +194,13 @@ describe('the search timeline', () => {
       unit(s, 'p-bokh').slot = 1;
       unit(s, 'p-camel').slot = 2;
       s.awaiting = me.id;
-      const end = chooseAiTurn(s, me).move?.at(-1) ?? wolf;
-      return hexDistance(end, temee) < 6
-        ? 'temee'
-        : hexDistance(end, hero) < hexDistance(wolf, hero)
-          ? 'hero'
-          : 'neither';
+      return chooseAiTurn(s, me).move?.at(-1) ?? wolf;
     };
-    expect(closesOn(far)).toBe('temee');
-    // In reach, the hero is the one to fight (here the wolf waits for it).
-    expect(closesOn(near)).not.toBe('temee');
+    expect(hexDistance(closesOn(far), temee)).toBeLessThan(6);
+    // In reach, the hero is the one to fight: the wolf waits for it, not
+    // leaving it for Temee (since 2026-10-24 it may wait a step nearer
+    // Temee, the hero no further off).
+    expect(hexDistance(closesOn(near), near)).toBeLessThanOrEqual(hexDistance(wolf, near));
   });
 
   it('goes for the Champion grappling an ally, rather than Holding behind it', () => {
@@ -274,6 +271,22 @@ describe('the search timeline', () => {
         expect(budget.left).toBeGreaterThanOrEqual(0);
         // Only a unit acting a second time may find the budget spent.
         expect(given.slice(0, 3).every((left) => left > 0)).toBe(true);
+      }
+    }
+  });
+
+  it('plays the turns it guesses best first, so a reply’s few tries include its best', () => {
+    for (let seed = 0; seed < 4; seed++) {
+      const run = createRun(seed);
+      const s = run.fight;
+      for (let request = 0; request < 12 && s.phase === 'fight'; request++) {
+        const me = unit(s, s.awaiting!);
+        const all = scoreOptions(s, me, Infinity, undefined, false);
+        const best = Math.max(...all.map((o) => o.score));
+        const tried = scoreOptions(s, me, AI.replySimulations, undefined, false);
+        expect(Math.max(...tried.map((o) => o.score))).toBe(best);
+        applyTurn(s, me, chooseAiTurn(s, me));
+        advance(s, requestChooser({left: AI.requestSimulations}));
       }
     }
   });
