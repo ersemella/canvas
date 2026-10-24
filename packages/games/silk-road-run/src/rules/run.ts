@@ -6,12 +6,12 @@
  */
 import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
-import {chooseAiTurn, requestChooser} from './ai';
+import {chooseAiTurn} from './ai';
 import {AI, CAMEL, PARTY, ROSTER, STAGES} from './config';
 import {
   RuleError,
   actingUnit,
-  advance,
+  advanceToDecision,
   applyTurn,
   cloneFight,
   createFight,
@@ -45,13 +45,19 @@ export interface RunView {
   /** Which stage of the run this is, from 0, of `stages`. */
   stage: number;
   stages: number;
+  /**
+   * The fight. While an AI unit's turn is due its `awaiting` is null: the
+   * page has no unit to control.
+   */
   fight: FightState;
+  /** An AI unit's turn is due: the page asks for it (`continue`), one a request. */
+  aiDue: boolean;
 }
 
 /**
  * A new run with the party chosen on the start menu (`{party}`; all three
- * heroes if none is given), its fight advanced to the player's first turn
- * (the enemy may move first).
+ * heroes if none is given), its fight advanced to the first decision,
+ * the player's or the AI's.
  */
 export function createRun(seed: number, setup?: unknown): RunState {
   return {
@@ -76,11 +82,11 @@ export function stageEnemies(seed: number, stage: number): HeroId[] {
 /** Each stage's map and start from its own seed; the first stage's is the run's. */
 const stageSeed = (seed: number, stage: number) => (seed + stage * 0x9e3779b9) >>> 0;
 
-/** A stage's fight, advanced to the player's first turn (the enemy may move first). */
+/** A stage's fight, advanced to its first decision, the player's or the AI's. */
 function stageFight(seed: number, stage: number, party: HeroId[]): FightState {
   const fight = createFight(stageSeed(seed, stage), party, stageEnemies(seed, stage));
   fight.events = [];
-  advance(fight, (state, unit) => chooseAiTurn(state, unit, {left: AI.requestSimulations}));
+  advanceToDecision(fight);
   return fight;
 }
 
@@ -126,6 +132,7 @@ export function parseAction(raw: unknown): RunAction {
   const a = raw as Record<string, unknown> | null;
   if (!a || typeof a !== 'object') throw new RuleError('Malformed action.');
   if (a.type === 'next') return {type: 'next'};
+  if (a.type === 'continue') return {type: 'continue'};
   if (a.type === 'turn') {
     const action = a.action as
       | {ability?: unknown; target?: {hex?: unknown; to?: unknown}}
@@ -153,6 +160,13 @@ export function parseAction(raw: unknown): RunAction {
   throw new RuleError('Unknown action.');
 }
 
+/**
+ * One action: the player's turn, or the AI's turn that is due
+ * (`continue`), each a request of its own, so each AI turn has its own
+ * work cap (AI.maxSimulations; owner, 2026-10-24); then the track runs on
+ * to the next decision, either side's. Or, once a stage short of the last
+ * is won, on to the next.
+ */
 export function handleRunAction(run: RunState, raw: unknown): RunState {
   const action = parseAction(raw);
   const {stage} = run;
@@ -168,18 +182,34 @@ export function handleRunAction(run: RunState, raw: unknown): RunState {
   fight.events = [];
   if (fight.phase !== 'fight') throw new RuleError('The fight is not in progress.');
   const unit = actingUnit(fight);
-  if (!unit) throw new RuleError('It is not your turn.');
-  const {type: _type, ...input} = action;
-  applyTurn(fight, unit, input);
-  // The AI turns this action sets off share one search budget (AI.requestSimulations).
-  advance(fight, requestChooser({left: AI.requestSimulations}));
+  if (action.type === 'continue') {
+    if (unit?.controller !== 'ai') throw new RuleError('No AI turn is due.');
+    applyTurn(fight, unit, chooseAiTurn(fight, unit, {left: AI.maxSimulations}));
+  } else {
+    if (unit?.controller !== 'human') throw new RuleError('It is not your turn.');
+    const {type: _type, ...input} = action;
+    applyTurn(fight, unit, input);
+  }
+  advanceToDecision(fight);
   return {...run, version: run.version + 1, fight};
+}
+
+/** Whether the fight waits on an AI unit's turn. */
+function aiDue(fight: FightState): boolean {
+  return actingUnit(fight)?.controller === 'ai';
 }
 
 export function runView(run: RunState): RunView {
   // A run started before the stats were re-tuned shows, and previews with, today's.
   refreshStats(run.fight);
-  return {version: run.version, stage: run.stage, stages: STAGES.length, fight: run.fight};
+  const due = aiDue(run.fight);
+  return {
+    version: run.version,
+    stage: run.stage,
+    stages: STAGES.length,
+    fight: due ? {...run.fight, awaiting: null} : run.fight,
+    aiDue: due,
+  };
 }
 
 /** Won once the last stage is won; a stage before it, won, waits for `next`. */

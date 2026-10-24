@@ -23,8 +23,11 @@ function savedStartMenu(): boolean {
  * action sets off is played back on the board (`tactics:playback` on
  * `events`), and the page waits for it (`playing`) until the board says
  * it's done (`playbackDone`); a new run or stage plays back its opening,
- * the camel's first step and any enemy turns before the player's, once the
- * board is up (`boardReady`). Also whether the start menu is open over it.
+ * the camel's first steps up to the first decision, once the board is up
+ * (`boardReady`). While an AI turn is due (`view.aiDue`) the page asks for
+ * it, one request each (`continue`), as soon as the view says so, and
+ * plays the answers back in turn: an answer that comes during a playback
+ * waits for it (`queue`). Also whether the start menu is open over it.
  */
 export function useRun(events: MutableRefObject<EventBus | null>) {
   const [run, setRun] = useState<RunResponse | null>(null);
@@ -48,8 +51,13 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   }, []);
 
   const fight = run?.view.fight ?? null;
-  const fightRef = useRef(fight);
-  fightRef.current = fight;
+  /** The last answer from the server, which may be ahead of the run shown. */
+  const latest = useRef<RunResponse | null>(null);
+  /** Answers waiting for the playback before them, each with its own. */
+  const queue = useRef<{response: RunResponse; payload: PlaybackPayload | null}[]>([]);
+  /** An AI turn is being asked for; `continue` turns it on and off for renders. */
+  const asking = useRef(false);
+  const [aiPending, setAiPending] = useState(false);
   /**
    * A new run's opening, played on its board once that mounts
    * (`boardReady`), and kept until it has played: a board mounted twice (as
@@ -57,11 +65,64 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
    */
   const opening = useRef<PlaybackPayload | null>(null);
 
+  /** `playing`, as soon as it changes: two answers can come before a render. */
+  const playingRef = useRef(false);
+  const setPlayback = useCallback((on: boolean) => {
+    playingRef.current = on;
+    setPlaying(on);
+  }, []);
+
+  /** Shows an answer: the run it holds, and its playback, if any; whether one started. */
+  const show = useCallback(
+    (r: RunResponse, payload: PlaybackPayload | null, deferred = false): boolean => {
+      setRun(r);
+      if (payload && deferred) {
+        // A new run's board mounts only once the start menu closes, so its
+        // opening waits for it (`boardReady`).
+        setPlayback(true);
+        opening.current = payload;
+        return true;
+      }
+      if (!payload || !events.current) return false;
+      setPlayback(true);
+      events.current.emit('tactics:playback', payload);
+      return true;
+    },
+    [events, setPlayback]
+  );
+
+  /** Takes an answer from the server: shown now, or after the playbacks before it. */
+  const receive = useCallback(
+    (r: RunResponse, playback: 'turn' | 'stage' | 'run') => {
+      const before = latest.current?.view.fight;
+      latest.current = r;
+      // What the action set off, from the last answer; a new fight, its opening.
+      const payload =
+        playback === 'turn'
+          ? before && r.view.fight.events?.length
+            ? {from: before, to: r.view.fight}
+            : null
+          : openingPlayback(r.view.fight);
+      if (playback !== 'turn') queue.current = [];
+      if (playback === 'turn' && (queue.current.length > 0 || playingRef.current))
+        queue.current.push({response: r, payload});
+      else show(r, payload, playback === 'run');
+    },
+    [show]
+  );
+
   // Resume the key's active run, if any.
   useEffect(() => {
     runsApi
       .active()
-      .then(({activeRunId}) => (activeRunId ? runsApi.get(activeRunId).then(setRun) : undefined))
+      .then(({activeRunId}) =>
+        activeRunId
+          ? runsApi.get(activeRunId).then((r) => {
+              latest.current = r;
+              setRun(r);
+            })
+          : undefined
+      )
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -70,25 +131,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     async (request: () => Promise<RunResponse>, playback: 'turn' | 'stage' | 'run') => {
       setBusy(true);
       try {
-        const before = fightRef.current;
-        const r = await request();
-        // Play back what the action set off (the player's turn, then the AI's),
-        // or a new fight's opening. A new run's board mounts only once the
-        // start menu closes, so its opening waits for it (`boardReady`).
-        const payload =
-          playback === 'turn'
-            ? before && r.view.fight.events?.length
-              ? {from: before, to: r.view.fight}
-              : null
-            : openingPlayback(r.view.fight);
-        if (payload && playback === 'run') {
-          setPlaying(true);
-          opening.current = payload;
-        } else if (payload && events.current) {
-          setPlaying(true);
-          events.current.emit('tactics:playback', payload);
-        }
-        setRun(r);
+        receive(await request(), playback);
         setStartMenu(false);
         setError(null);
       } catch (e) {
@@ -97,21 +140,48 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
         setBusy(false);
       }
     },
-    [events, setStartMenu]
+    [receive, setStartMenu]
   );
+
+  // An AI turn is due in the last answer: ask for it now, while the board
+  // may still be playing back the one before. Stops at an error, until the
+  // next answer.
+  const latestVersion = latest.current?.view.version ?? -1;
+  useEffect(() => {
+    const r = latest.current;
+    if (!r || r.status !== 'active' || !r.view.aiDue || asking.current || error) return;
+    asking.current = true;
+    setAiPending(true);
+    runsApi
+      .continue(r.runId)
+      .then((next) => {
+        // Unless a new run or stage has started since.
+        if (latest.current !== r) return;
+        receive(next, 'turn');
+        setError(null);
+      })
+      .catch((e: Error) => setError(e.message))
+      .finally(() => {
+        asking.current = false;
+        setAiPending(false);
+      });
+  }, [latestVersion, aiPending, error, receive, run]);
 
   const startRun = useCallback(
     (party: HeroId[]) => void send(() => runsApi.start(party), 'run'),
     [send]
   );
 
+  /** The run is waiting on the server or the board: an AI turn asked for or queued. */
+  const waiting = busy || aiPending || queue.current.length > 0;
+
   /** Sends a turn, unless one is being sent or played back. */
   const sendTurn = useCallback(
     (turn: TurnInput) => {
-      if (!run || busy || playing) return;
+      if (!run || waiting || playing) return;
       void send(() => runsApi.turn(run.runId, turn), 'turn');
     },
-    [run, send, busy, playing]
+    [run, send, waiting, playing]
   );
 
   /** On to the run's next stage, once this one is won: a new board, its opening played back. */
@@ -120,10 +190,13 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     void send(() => runsApi.next(run.runId), 'stage');
   }, [run, send, busy]);
 
+  /** The board has played back an answer: the next one waiting shows, or the page is free. */
   const playbackDone = useCallback(() => {
     opening.current = null;
-    setPlaying(false);
-  }, []);
+    for (let next = queue.current.shift(); next; next = queue.current.shift())
+      if (show(next.response, next.payload)) return;
+    setPlayback(false);
+  }, [show, setPlayback]);
 
   /** The board has mounted: a new run's opening plays back on it. */
   const boardReady = useCallback(() => {
@@ -134,7 +207,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     run,
     fight,
     loading,
-    busy,
+    busy: waiting,
     playing,
     error,
     setError,

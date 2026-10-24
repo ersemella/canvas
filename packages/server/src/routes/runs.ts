@@ -13,7 +13,9 @@ import {json} from '../json';
  *   POST /runs                {game, party?} -> start a run; abandons the key's active one
  *   GET  /runs/active                      -> {activeRunId} for this key
  *   GET  /runs/:id                         -> the current view (resume after a reload)
- *   POST /runs/:id/turn       {move?, action}  -> one turn, then AI turns up to yours
+ *   POST /runs/:id/turn       {move?, action}  -> your turn, then on to the next decision
+ *   POST /runs/:id/continue                -> the game's own turn that is due (an AI's), one
+ *                                             a request, so each has its own CPU allowance
  *   POST /runs/:id/next                    -> on to the run's next stage, once this one is won
  *   POST /runs/:id/abandon                 -> give up the run
  */
@@ -41,8 +43,8 @@ export async function handleRunsRoute(request: Request, env: Env, url: URL): Pro
     const action = {...(body as object), type: 'turn'};
     return room.fetch('https://do/action', {method: 'POST', headers, body: JSON.stringify(action)});
   }
-  if (request.method === 'POST' && sub === '/next') {
-    const action = {type: 'next'};
+  if (request.method === 'POST' && (sub === '/next' || sub === '/continue')) {
+    const action = {type: sub.slice(1)};
     return room.fetch('https://do/action', {method: 'POST', headers, body: JSON.stringify(action)});
   }
   if (request.method === 'POST' && sub === '/abandon')

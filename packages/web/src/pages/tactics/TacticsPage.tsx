@@ -121,6 +121,16 @@ export function TacticsPage() {
 
   const plan = useTurnPlan(fight, phone, hover.hex);
   const {acting, ability, plannedMove, moving, reaches, targets, input, preview} = plan;
+  // While AI turns are due (one request each) there's no unit to control:
+  // the controls stay up, greyed, for the party's unit whose card comes
+  // next, so the page doesn't jump.
+  const upcoming =
+    acting ??
+    (run?.view.aiDue && fight
+      ? fight.units
+          .filter((u) => u.alive && u.controller === 'human' && u.slot !== null)
+          .sort((a, b) => a.slot! - b.slot!)[0]
+      : undefined);
 
   // A tap anywhere but the board or (on desktop) the side panel stops
   // inspecting, and the details go back to the unit whose turn it is. On a
@@ -413,21 +423,21 @@ export function TacticsPage() {
       {menu}
     </div>
   ) : (
-    acting && (
+    upcoming && (
       <TurnControls
         slotsLater={slotsLater}
         outOfReach={outOfReach}
-        unit={acting}
+        unit={upcoming}
         ability={ability}
         plannedMove={plannedMove}
         moving={moving}
         canMove={reaches.some((r) => r.path.length > 0) || plannedMove !== null}
-        waiting={busy || playing}
+        waiting={busy || playing || !acting}
         // Phones keep room for the party's most rows, so the board stays put.
         rows={
           phone
             ? Math.max(...fight.units.filter((u) => u.side === 'player').map(choiceRows))
-            : choiceRows(acting)
+            : choiceRows(upcoming)
         }
         keys={!phone}
         needsTarget={needsTarget}
@@ -442,10 +452,10 @@ export function TacticsPage() {
       >
         <SkipButton
           // A new turn (or unit) starts it disarmed.
-          key={`${acting.id}@${fight.currentSlot}`}
+          key={`${upcoming.id}@${fight.currentSlot}`}
           fight={fight}
           preview={skipPreview}
-          busy={busy || playing}
+          busy={busy || playing || !acting}
           onSkip={() => commit(SKIP)}
           size={phone ? 'lg' : 'sm'}
           hotkey={phone ? undefined : 's'}

@@ -59,5 +59,7 @@ export const runsApi = {
     }),
   turn: (runId: string, body: TurnInput) =>
     call<RunResponse>(`/runs/${runId}/turn`, {method: 'POST', body: JSON.stringify(body)}),
+  /** The AI's turn that is due (`view.aiDue`): one a request, so each has its own CPU allowance. */
+  continue: (runId: string) => call<RunResponse>(`/runs/${runId}/continue`, {method: 'POST'}),
   next: (runId: string) => call<RunResponse>(`/runs/${runId}/next`, {method: 'POST'}),
 };

@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {hexDistance, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {chooseAiTurn, evaluatePosition, requestChooser, scoreOptions, simulate} from './ai';
+import {chooseAiTurn, evaluatePosition, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
 import {AI, HEROES} from './config';
 import {advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
@@ -43,8 +43,8 @@ describe('budgeted tactical search', () => {
     const me = unit(s, s.awaiting!);
     const pruned = stats();
     const exhaustive = stats();
-    const selected = chooseAiTurn(s, me, {left: AI.requestSimulations}, pruned, {depth: 2});
-    const reference = chooseAiTurn(s, me, {left: AI.requestSimulations}, exhaustive, {
+    const selected = chooseAiTurn(s, me, {left: AI.maxSimulations}, pruned, {depth: 2});
+    const reference = chooseAiTurn(s, me, {left: AI.maxSimulations}, exhaustive, {
       depth: 2,
       prune: false,
     });
@@ -73,10 +73,10 @@ describe('budgeted tactical search', () => {
     HEROES.mangudai.abilities = ['bow', 'hold'];
     let selected: TurnInput;
     try {
-      selected = chooseAiTurn(s, me, {left: AI.requestSimulations}, pruned);
-      expect(
-        chooseAiTurn(s, me, {left: AI.requestSimulations}, exhaustive, {prune: false})
-      ).toEqual(selected);
+      selected = chooseAiTurn(s, me, {left: AI.maxSimulations}, pruned);
+      expect(chooseAiTurn(s, me, {left: AI.maxSimulations}, exhaustive, {prune: false})).toEqual(
+        selected
+      );
     } finally {
       HEROES.mangudai.abilities = kit;
     }
@@ -90,7 +90,7 @@ describe('budgeted tactical search', () => {
     const s = opening();
     const me = unit(s, s.awaiting!);
     const completed = stats();
-    const expected = chooseAiTurn(s, me, {left: AI.requestSimulations}, completed, {depth: 2});
+    const expected = chooseAiTurn(s, me, {left: AI.maxSimulations}, completed, {depth: 2});
     expect(completed.completedDepth).toBe(2);
     const interrupted = stats();
     const budget = {left: completed.work + 1};
@@ -137,7 +137,7 @@ describe('budgeted tactical search', () => {
     expect(options.some((o) => canBeKilled(o.input))).toBe(true);
     expect(options.some((o) => !canBeKilled(o.input))).toBe(true);
     const detail = stats();
-    const selected = chooseAiTurn(s, me, {left: AI.requestSimulations}, detail, {depth: 2});
+    const selected = chooseAiTurn(s, me, {left: AI.maxSimulations}, detail, {depth: 2});
     expect(detail.completedDepth).toBe(2);
     expect(canBeKilled(selected)).toBe(false);
     expect(evaluatePosition(s, 'enemy')).toBe(-evaluatePosition(s, 'player'));
@@ -174,7 +174,7 @@ describe('the search timeline', () => {
     unit(s, 'p-mangudai').hp = 2;
     s.awaiting = me.id;
     const detail = stats();
-    const input = chooseAiTurn(s, me, {left: AI.requestSimulations}, detail, {depth: 2});
+    const input = chooseAiTurn(s, me, {left: AI.maxSimulations}, detail, {depth: 2});
     expect(input.action.ability).toBe('bite');
     expect(detail.completedDepth).toBe(2);
     expect(detail.value).toBeGreaterThanOrEqual(AI.victory);
@@ -253,28 +253,6 @@ describe('the search timeline', () => {
     expect(aimed).toHaveLength(2);
   });
 
-  it('leaves every AI unit in a request some of its budget', () => {
-    // A stage-one band is a hero and two wolves: three turns in a row.
-    for (let seed = 0; seed < 4; seed++) {
-      const run = createRun(seed);
-      const s = run.fight;
-      for (let request = 0; request < 10 && s.phase === 'fight'; request++) {
-        const me = unit(s, s.awaiting!);
-        applyTurn(s, me, chooseAiTurn(s, me));
-        const budget = {left: AI.requestSimulations};
-        const choose = requestChooser(budget);
-        const given: number[] = [];
-        advance(s, (state, u) => {
-          given.push(budget.left);
-          return choose(state, u);
-        });
-        expect(budget.left).toBeGreaterThanOrEqual(0);
-        // Only a unit acting a second time may find the budget spent.
-        expect(given.slice(0, 3).every((left) => left > 0)).toBe(true);
-      }
-    }
-  });
-
   it('plays the turns it guesses best first, so a reply’s few tries include its best', () => {
     for (let seed = 0; seed < 4; seed++) {
       const run = createRun(seed);
@@ -286,19 +264,8 @@ describe('the search timeline', () => {
         const tried = scoreOptions(s, me, AI.replySimulations, undefined, false);
         expect(Math.max(...tried.map((o) => o.score))).toBe(best);
         applyTurn(s, me, chooseAiTurn(s, me));
-        advance(s, requestChooser({left: AI.requestSimulations}));
+        advanceToDecision(s);
       }
     }
-  });
-
-  it('still picks a greedy turn, not a Hold, once a request’s budget is spent', () => {
-    const s = opening();
-    const me = unit(s, s.awaiting!);
-    const budget = {left: 0};
-    const input = requestChooser(budget)(s, me);
-    const best = scoreOptions(s, me, AI.turnFloorSimulations).sort((a, b) => b.score - a.score)[0]!;
-    expect(input).toEqual(best.input);
-    expect(input).not.toEqual({action: {ability: 'hold'}});
-    expect(budget.left).toBe(0);
   });
 });
