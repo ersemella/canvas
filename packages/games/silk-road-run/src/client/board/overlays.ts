@@ -1,7 +1,7 @@
 /**
  * What the turn being planned draws over the board: highlighted hexes,
  * a move's path, an ability's range, Longshot's lanes and drawn arrows in
- * the air, Throw's arc, and charging areas.
+ * the air, Throw's arc, charging areas, and Temee's next step.
  */
 import {hexCorners, hexKey, pixelToHex} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
@@ -175,4 +175,36 @@ export function drawLanes(ctx: CanvasRenderingContext2D, from: Hex, lanes: BowLa
     ctx.stroke();
     ctx.restore();
   }
+}
+
+/**
+ * Temee's next step: a short ivory arrow across the side between its hex
+ * and the next, so it never reads as a move of yours (light lapis).
+ */
+export function drawCamelStep(ctx: CanvasRenderingContext2D, from: Hex, to: Hex): void {
+  const a = center(from);
+  const b = center(to);
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const ux = (b.x - a.x) / len;
+  const uy = (b.y - a.y) / len;
+  // Neighbours' centres are about 73px apart, their shared side halfway.
+  const start = {x: a.x + ux * 24, y: a.y + uy * 24};
+  const tip = {x: a.x + ux * 52, y: a.y + uy * 52};
+  ctx.save();
+  ctx.strokeStyle = PALETTE.ivory;
+  ctx.fillStyle = PALETTE.ivory;
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'square';
+  pixelShadow(ctx, 1);
+  ctx.beginPath();
+  ctx.moveTo(start.x, start.y);
+  ctx.lineTo(tip.x - ux * 8, tip.y - uy * 8);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(tip.x, tip.y);
+  ctx.lineTo(tip.x - ux * 10 - uy * 7, tip.y - uy * 10 + ux * 7);
+  ctx.lineTo(tip.x - ux * 10 + uy * 7, tip.y - uy * 10 - ux * 7);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 }

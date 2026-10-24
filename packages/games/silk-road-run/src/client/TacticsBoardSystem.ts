@@ -26,6 +26,7 @@ import {
 import {
   HIGHLIGHT,
   HOVER,
+  drawCamelStep,
   drawLaneArrow,
   drawLanes,
   drawPath,
@@ -52,6 +53,7 @@ import {WALK_OUT_STEP_SECONDS, walkOutPlan, walkPosition} from './board/walkOut'
 import type {Walk} from './board/walkOut';
 import {drawPlaybackEvent, playbackScene, steppingAt} from './board/playbackDraw';
 import {drawVolleyMark} from './board/effects';
+import {camelNextStep} from './board/camelStep';
 
 /** Seconds a gone status's marker takes to rise off its unit and fade. */
 const MARK_EXPIRE_SECONDS = 0.9;
@@ -398,6 +400,10 @@ export class TacticsBoardSystem extends BaseSystem {
 
     // Not on a party walking out, off their hexes.
     drawGrappleFists(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));
+
+    // Where Temee walks next, as things stand (and as the planned turn would leave them).
+    const camelStep = playing || walking ? undefined : camelNextStep(fight, scene.preview);
+    if (camelStep) drawCamelStep(ctx, camelStep.from, camelStep.to);
 
     if (scene.range) drawRangeOutline(ctx, scene.range);
     if (scene.lanes) drawLanes(ctx, scene.lanes.from, scene.lanes.lanes);

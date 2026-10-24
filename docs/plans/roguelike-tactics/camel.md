@@ -23,6 +23,9 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 > walks itself **one space a turn** along a **shortest walk** around the
 > ruins to the **only exit, the bottom row's last hex**, going around units
 > in its way; it waits only when Immobilized, Stunned or boxed in.
+> A short ivory arrow from its hex shows that next step (2026-10-24),
+> worked out again as units move, the planned turn's included, so it
+> turns when something gets in its way; none while it would wait.
 >
 > **On the track (owner, 2026-10-23):** it starts **last, at slot 12**,
 > and its card goes its action cost on after each of its turns, like any
