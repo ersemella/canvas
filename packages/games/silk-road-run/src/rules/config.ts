@@ -60,7 +60,7 @@ export interface HeroStats {
   actsLast?: boolean;
   /**
    * Not player controlled: on each of its turns it steps along the shortest
-   * walk to the exit, around ruins and units (`stepToExit` in board.ts)
+   * walk to the exit, around yurts and units (`stepToExit` in board.ts)
    * (the camel).
    */
   walksRoad?: boolean;
@@ -153,7 +153,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
 export const ABILITY = {
   /**
    * Six straight lanes with no range limit (owner, 2026-10-20): the arrow
-   * flies until it hits a unit, ruins or the map's edge.
+   * flies until it hits a unit, a yurt or the map's edge.
    */
   longshot: {range: Infinity},
   /**

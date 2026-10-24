@@ -614,15 +614,29 @@ describe('the board', () => {
     expect(corners.size).toBe(4);
   });
 
-  it('lays out each fight’s tiles by its seed: no ruins, only mountains, clear of the starting columns, the board connected', () => {
+  it('pitches two or three yurts near the middle by each fight’s seed: unmirrored, apart, clear of the starting columns, the board connected', () => {
     const layouts = new Set<string>();
+    const counts = new Set<number>();
+    let asymmetric = 0;
     for (let seed = 0; seed < 40; seed++) {
       const s = createFight(seed);
       const map = mapOf(s);
       expect(map.tiles).toBe(s.tiles);
       expect(JSON.stringify(createFight(seed).tiles)).toBe(JSON.stringify(s.tiles));
-      // The open steppe: mountains (tested above) and nothing else.
-      expect(Object.values(map.tiles).every((t) => t === 'mountain')).toBe(true);
+      // Yurts and mountains (tested above), nothing else.
+      expect(Object.values(map.tiles).every((t) => t === 'obstacle' || t === 'mountain')).toBe(true);
+      const yurts = Object.keys(map.tiles)
+        .filter((k) => map.tiles[k] === 'obstacle')
+        .map(hexFromKey);
+      expect(yurts.length).toBeGreaterThanOrEqual(2);
+      expect(yurts.length).toBeLessThanOrEqual(3);
+      counts.add(yurts.length);
+      // Near the middle, no two side by side.
+      for (const y of yurts) expect(hexDistance(y, {q: 0, r: 0})).toBeLessThanOrEqual(2);
+      for (const a of yurts)
+        for (const b of yurts) if (a !== b) expect(hexDistance(a, b)).toBeGreaterThan(1);
+      if (!yurts.every((y) => map.tiles[hexKey({q: -y.q, r: y.r + y.q})] === 'obstacle'))
+        asymmetric++;
       for (const key of Object.keys(map.tiles)) {
         // Off the starting columns, the camel's start and the exit.
         expect(Math.abs(hexFromKey(key).q)).toBeLessThan(4);
@@ -641,7 +655,9 @@ describe('the board', () => {
       expect(seen.size).toBe(open.length);
       layouts.add(JSON.stringify(s.tiles));
     }
-    expect(layouts.size).toBeGreaterThan(10);
+    expect(layouts.size).toBeGreaterThan(20);
+    expect(counts).toEqual(new Set([2, 3]));
+    expect(asymmetric).toBeGreaterThan(30);
   });
 
   it('blocks allies, enemies and obstacles, routing around units', () => {
@@ -651,7 +667,7 @@ describe('the board', () => {
     const key = (h: Hex) => `${h.q},${h.r}`;
     expect(keys).not.toContain(key(at(1, 3))); // ally's hex
     expect(keys).not.toContain(key(at(1, 2))); // enemy
-    expect(keys).not.toContain(key(at(2, 2))); // ruins
+    expect(keys).not.toContain(key(at(2, 2))); // a yurt
     for (const r of reach) expect(r.path.map(key)).not.toContain(key(at(1, 3)));
     expect(
       simulate(s, 'p-bokh', {move: [at(1, 3), at(2, 3)], action: {ability: 'hold'}})
@@ -688,7 +704,7 @@ describe('the board', () => {
     expect(movementCap(b)).toBe(0);
   });
 
-  it('blocks line of fire on a unit or ruins, and along a border if either hex is taken (6.7, rule 29)', () => {
+  it('blocks line of fire on a unit or a yurt, and along a border if either hex is taken (6.7, rule 29)', () => {
     const s = setup({'p-mangudai': at(0, 0), 'p-bokh': at(8, 6), 'e-bokh': at(0, 6)});
     const map = mapOf(s);
     const b = unit(s, 'p-bokh');
@@ -1207,11 +1223,11 @@ describe('the caravan’s camel', () => {
     expect(SALT_FLATS.exits).toEqual([{q: 0, r: 4}]);
   });
 
-  it('follows a fixed shortest road around the ruins to the exit', () => {
+  it('follows a fixed shortest road around the yurts to the exit', () => {
     for (let seed = 0; seed < 20; seed++) {
       const map = mapOf(createFight(seed));
       const road = roadToExit(map, SALT_FLATS.camelStart);
-      // Every step to a neighbour, never onto ruins, ending on the exit.
+      // Every step to a neighbour, never onto yurts, ending on the exit.
       let from = SALT_FLATS.camelStart;
       for (const h of road) {
         expect(hexDistance(from, h)).toBe(1);
@@ -1219,7 +1235,7 @@ describe('the caravan’s camel', () => {
         from = h;
       }
       expect(road[road.length - 1]).toEqual(SALT_FLATS.exits[0]);
-      // Shortest: no walk around the ruins is shorter.
+      // Shortest: no walk around the yurts is shorter.
       const dist = new Map([[hexKey(SALT_FLATS.camelStart), 0]]);
       const queue = [SALT_FLATS.camelStart];
       for (let h; (h = queue.shift()); )

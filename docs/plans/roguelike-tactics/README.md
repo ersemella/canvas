@@ -81,8 +81,9 @@ the kits.**
   mountains along one of the four slanted edges (never the sides, nor
   Temee's middle column), which block movement and arrows. **No ruins**
   (owner, 2026-10-24; six a fight before): the board is the wide open
-  steppe, the mountains its only cover; ruins remain only as a test-stage
-  option and the tests' fixed layout.
+  steppe, with **two or three yurts** a fight within 2 hexes of the
+  centre, no two side by side, blocking as ruins did (the `obstacle`
+  tile, renamed for the player; `randomTiles` in map.ts).
 
 **Next step:** the owner reviews the builder's readings of the rework and
 the first measurements (Grapple decides fights, Throw goes unused) in

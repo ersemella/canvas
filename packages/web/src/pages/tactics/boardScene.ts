@@ -250,7 +250,7 @@ export function buildScene(input: SceneInput): BoardScene {
 }
 
 /**
- * `hexes` (all near `from`) with the holes in them filled: allies, ruins and
+ * `hexes` (all near `from`) with the holes in them filled: allies, yurts and
  * the like a move can't end on but stand inside its reach, so only the
  * outer bounds get outlined.
  */

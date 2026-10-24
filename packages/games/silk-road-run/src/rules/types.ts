@@ -154,7 +154,7 @@ export type FightPhase = 'fight' | 'won' | 'lost';
 
 export interface FightState {
   mapId: string;
-  /** This fight's tiles by hex key (its ruins are random per fight). */
+  /** This fight's tiles by hex key (its yurts are random per fight). */
   tiles: Record<string, Tile>;
   mode: 'solo';
   phase: FightPhase;

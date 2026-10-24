@@ -17,7 +17,7 @@ describe('the test stage', () => {
 
   it('brings the units listed, with their own stats and abilities and Hold always', () => {
     const s = createTestFight(7, {
-      ruins: 'none',
+      yurts: 'none',
       player: [{hero: 'mangudai', speed: 5, power: 3, abilities: ['skirmish']}, {hero: 'wolf'}],
       enemy: [{hero: 'storm', defence: 0, abilities: ['sunlight', 'bite']}, {hero: 'storm'}],
     });
@@ -47,7 +47,7 @@ describe('the test stage', () => {
 
   it('places units at their spaces, the camel too, or leaves the camel out', () => {
     const s = createTestFight(3, {
-      ruins: [space(3, 3)],
+      yurts: [space(3, 3)],
       camel: {at: space(2, 0), defence: 1},
       player: [{hero: 'bokh', at: space(3, 2)}],
       enemy: [{hero: 'wolf', at: space(3, 4)}, {hero: 'wolf'}],
@@ -109,7 +109,7 @@ describe('the test stage', () => {
         enemy: [{hero: 'wolf', at: space(2, 2)}],
       })
     ).toMatch(/enemy\[0\] starts on the same space as player\[0\]/);
-    expect(bad({...ok, ruins: 'lots'})).toMatch(/ruins must be/);
+    expect(bad({...ok, yurts: 'lots'})).toMatch(/yurts must be/);
   });
 
   it('is a run of one fight, won to win the run', () => {

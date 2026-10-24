@@ -21,14 +21,14 @@ export {onMap};
 
 /**
  * What never changes in a fight, worked out once per tile layout (a fight's
- * ruins are random, so not once per map): the search asks the same
+ * yurts are random, so not once per map): the search asks the same
  * questions of the same spaces thousands of times a turn. Its hexes are
  * shared: nothing changes a hex in place.
  */
 interface Geometry {
   /** Each space's neighbours a unit may stand on, in `hexNeighbors` order. */
   steps: Map<number, Hex[]>;
-  /** Each space's six lanes, by direction: the spaces up to ruins or the map's edge. */
+  /** Each space's six lanes, by direction: the spaces up to yurts or the map's edge. */
   lanes: Map<number, Hex[][]>;
   /** The spaces on the map within a range of a space, in `sortByHex` order, by range then space. */
   within: Map<number, Map<number, Hex[]>>;
@@ -65,7 +65,7 @@ export function steps(map: MapData, h: Hex): Hex[] {
   return geometry(map).steps.get(hexNumber(h)) ?? hexNeighbors(h).filter((n) => walkable(map, n));
 }
 
-/** The spaces from `h` along direction `dir` (left out) up to ruins or the map's edge. */
+/** The spaces from `h` along direction `dir` (left out) up to yurts or the map's edge. */
 export function lane(map: MapData, h: Hex, dir: number): Hex[] {
   const lanes = geometry(map).lanes.get(hexNumber(h));
   if (lanes) return lanes[dir]!;
@@ -256,7 +256,7 @@ export function invalidPath(
 const roads = new WeakMap<Record<string, Tile>, Map<number, number>>();
 
 /**
- * Hexes from every walkable hex to the nearest exit, walking around ruins.
+ * Hexes from every walkable hex to the nearest exit, walking around yurts.
  * Units are left out: the road is fixed for the fight (owner, 2026-10-22).
  */
 function exitDistances(map: MapData): Map<number, number> {
@@ -278,14 +278,14 @@ function exitDistances(map: MapData): Map<number, number> {
   return dist;
 }
 
-/** Hexes along the camel's road from `from` to the exit; Infinity if ruins cut it off. */
+/** Hexes along the camel's road from `from` to the exit; Infinity if yurts cut it off. */
 export function roadDistance(map: MapData, from: Hex): number {
   return exitDistances(map).get(hexNumber(from)) ?? Infinity;
 }
 
 /**
  * The camel's road from `from` (left out) to the exit: a shortest walk
- * around ruins, each step to the first neighbour one hex nearer, so the
+ * around yurts, each step to the first neighbour one hex nearer, so the
  * road from any hex on it is the rest of it. Empty at the exit, or with no
  * way there.
  */
@@ -302,7 +302,7 @@ export function roadToExit(map: MapData, from: Hex): Hex[] {
 
 /**
  * The camel's next step from where it stands (owner, 2026-10-22): one hex
- * along a shortest walk to the exit around ruins and the other units, so
+ * along a shortest walk to the exit around yurts and the other units, so
  * it keeps to its road when nothing is in the way and walks around what
  * is. A unit standing on the exit itself only blocks the last step. When
  * units shut every way around, a step along its road if that hex is free.
@@ -366,7 +366,7 @@ export function lineOfFire(
 
 /**
  * The first unit an arrow flying from `from` along hex direction `dir`
- * hits, stopped by ruins and the map's edge (Longshot's lane); `ignore`
+ * hits, stopped by yurts and the map's edge (Longshot's lane); `ignore`
  * isn't in the way (the archer itself).
  */
 export function firstInLane(
@@ -386,7 +386,7 @@ export function firstInLane(
 /**
  * A shot in the air's lane, as it would fly now: from its Outrider's space
  * along its direction, up to and including the first unit in it, or to
- * ruins or the map's edge. Empty once its Outrider is gone.
+ * yurts or the map's edge. Empty once its Outrider is gone.
  */
 export function shotLane(state: FightState, map: MapData, shot: ShotInAir): Hex[] {
   const archer = state.units.find((u) => u.id === shot.source);

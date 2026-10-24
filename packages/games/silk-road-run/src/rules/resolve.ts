@@ -291,7 +291,7 @@ export function enterHex(
 
 /**
  * Displaces `unit` up to `n` spaces along hex direction `dir` (Push and
- * Pull, keywords.md, 17.4): it stops early at ruins, another unit or the
+ * Pull, keywords.md, 17.4): it stops early at a yurt, another unit or the
  * map's edge, with no collision damage (open question 55). Each space
  * entered triggers as a walk's does.
  */

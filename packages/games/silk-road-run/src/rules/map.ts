@@ -12,18 +12,20 @@
  * to 8, left to right) and a row counted down from the top of that column
  * (`spaceAt`), as the test stage's file does.
  *
- * The open steppe: a fight has no ruins (owner, 2026-10-24; six scattered
- * per fight before), only, in about half of fights, a range of mountains
- * (see `randomTiles`). The fixed layout of four ruins below is kept for
- * the tests, which place units around it, and the test stage's `"map"`. Quicksand and the sandstorm were removed
+ * The open steppe: each fight pitches two or three yurts near the board's
+ * middle and, in about half of fights, raises a range of mountains along
+ * an edge (see `randomTiles`); the ruins scattered before are gone (owner,
+ * 2026-10-24). The fixed layout of four yurts below is the map's own,
+ * which tests place units around, and the test stage's `"map"`. Quicksand and the sandstorm were removed
  * with their keywords (owner, 2026-10-23).
  */
 import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 
+/** `obstacle` is a yurt (ruins until 2026-10-24; saved runs keep the name). */
 export type Tile = 'sand' | 'obstacle' | 'mountain';
 
-/** Ruins and mountains: no unit may stand there, and they stop arrows. */
+/** Yurts and mountains: no unit may stand there, and they stop arrows. */
 export function blocks(tile: string | undefined): boolean {
   return tile === 'obstacle' || tile === 'mountain';
 }
@@ -79,8 +81,7 @@ function boardHexes(): Hex[] {
 const column = (q: number): Hex[] => columnRs(q).map((r) => ({q, r}));
 
 const special: [Hex, Tile][] = [
-  // Ruins: two per half, breaking the long sight lines across the board
-  // (the board of rows' four, around its centre as they were).
+  // Yurts: two per half, around the centre (the ruins' places before).
   [{q: -1, r: -1}, 'obstacle'],
   [{q: 1, r: -1}, 'obstacle'],
   [{q: -3, r: 2}, 'obstacle'],
@@ -102,6 +103,13 @@ export const SALT_FLATS: MapData = {
 };
 
 export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};
+
+/**
+ * Yurts (owner, 2026-10-24): two or three a fight, within `YURT_REACH` of
+ * the centre, no two side by side, never cutting the board in two.
+ */
+const YURT_COUNTS = [2, 3];
+const YURT_REACH = 2;
 
 /**
  * Mountains (owner, 2026-10-24): about half of fights have one range, 3 to
@@ -132,8 +140,7 @@ const MOUNTAIN_EDGES: {left: boolean; inFrom: (h: Hex) => number}[] = [
 /**
  * A fight's own tiles, from `random` in [0, 1): a range of mountains in
  * about half of fights, off the starting columns, the camel's start and
- * the exit, and nothing else; the steppe is open (owner, 2026-10-24, the
- * ruins gone).
+ * the exit, then two or three yurts near the middle (not mirrored).
  */
 export function randomTiles(random: () => number): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
@@ -151,6 +158,18 @@ export function randomTiles(random: () => number): Record<string, Tile> {
       .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP)
       .filter((h) => hexDistance(h, inFrontOfTemee) > 0);
     mountainRange(tiles, allowed, edge.inFrom, size, random);
+  }
+  const yurts: Hex[] = [];
+  const count = YURT_COUNTS[Math.floor(random() * YURT_COUNTS.length)]!;
+  for (let i = 0; i < count; i++) {
+    const free = candidates
+      .filter((h) => hexDistance(h, CENTRE) <= YURT_REACH)
+      .filter((h) => yurts.every((y) => hexDistance(y, h) > 1))
+      .filter((h) => connectedWithout(tiles, h));
+    if (!free.length) break;
+    const h = free[Math.floor(random() * free.length)]!;
+    tiles[hexKey(h)] = 'obstacle';
+    yurts.push(h);
   }
   return tiles;
 }
@@ -191,7 +210,7 @@ function mountainRange(
   return range;
 }
 
-/** Whether every open hex can still walk to every other with `extra` ruined too. */
+/** Whether every open hex can still walk to every other with `extra` blocked too. */
 function connectedWithout(tiles: Record<string, Tile>, extra: Hex): boolean {
   const blocked = new Set([...Object.keys(tiles), hexKey(extra)]);
   const all = new Set(SALT_FLATS.hexes.map(hexKey));

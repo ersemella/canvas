@@ -17,7 +17,7 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 ```json
 {
   "seed": null,
-  "ruins": "random",
+  "yurts": "random",
   "camel": {},
   "player": [
     {"hero": "bokh"},
@@ -36,8 +36,8 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 
 | Field | What it is | Left out |
 |---|---|---|
-| `seed` | A whole number: the same seed lays out the mountains and units the same way every time. `null`: a new scatter each time. | `null` |
-| `ruins` | `"random"` (as in a normal fight: no ruins, and a range of 3 to 5 mountains in about half of fights), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
+| `seed` | A whole number: the same seed lays out the yurts, mountains and units the same way every time. `null`: a new scatter each time. | `null` |
+| `yurts` | `"random"` (as in a normal fight: two or three yurts near the middle, and a range of 3 to 5 mountains in about half of fights), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 5 without an `at`: the starting column's spaces). You control every one. | required |
 | `enemy` | The AI's units, 1 to 9 (at most 5 without an `at`). | required |
@@ -68,5 +68,6 @@ counts down its column from `0` at that column's top, so column 0 has rows
 `0` to `4`, column 4 (the middle) `0` to `8`. Your units start on column 0,
 the enemy's on column 8. The camel starts at the top point, `{"col": 4,
 "row": 0}`, and walks to the only exit, the bottom point, `{"col": 4,
-"row": 8}`. A unit placed on a random mountain or one of the map's ruins clears it;
-two things on one space (ruins you list included) is an error.
+"row": 8}`. A unit placed on one of the random or the map's yurts (or mountains)
+clears it;
+two things on one space (yurts you list included) is an error.
