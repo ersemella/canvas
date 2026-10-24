@@ -49,7 +49,9 @@ tuning. This file has no combat-design section number.
 - **The Steppe's ground** (owner, 2026-10-24): the board was sand and
   sandstone ruins, a desert, while every stage built is in the Steppe
   region ([setting.md](setting.md), 15.3a). The ground is now steppe
-  grass (`tiles/grass.png`). Yurts (gers) replaced the ruins (owner,
+  grass (`tiles/grass-calm.png`: a flat field, a few broad low-contrast
+  patches and sparse tufts, since the owner's busier `tiles/grass.png`
+  read as mud on a phone; owner, 2026-10-24). Yurts (gers) replaced the ruins (owner,
   2026-10-24): `tiles/yurt.png`, 32 × 24 art pixels, redrawn on the
   sprites' grid from the owner's art (AI-assisted, about twice that
   size), in its colours: felt walls and roof, a blue eave band, ropes, an
