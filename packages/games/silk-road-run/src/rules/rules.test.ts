@@ -1334,8 +1334,9 @@ describe('previews, the AI and the run', () => {
     expect(createRun(5).fight.units.filter((u) => u.side === 'player')).toHaveLength(4);
   });
 
-  it('the stages: one random hero and two wolves, two and one, then all three', () => {
+  it('the stages: three wolves, then one random hero and two wolves, two and one, then all three', () => {
     expect(STAGES).toEqual([
+      {heroes: 0, wolves: 3},
       {heroes: 1, wolves: 2},
       {heroes: 2, wolves: 1},
       {heroes: 3, wolves: 0},
@@ -1351,10 +1352,15 @@ describe('previews, the AI and the run', () => {
         expect(enemies.filter((h) => h === 'wolf')).toHaveLength(wolves);
         // The same seed, the same enemy.
         expect(stageEnemies(seed, stage)).toEqual(enemies);
+        // Each stage brings the last one's heroes, and more.
+        if (stage > 0) {
+          const before = stageEnemies(seed, stage - 1).filter((h) => h !== 'wolf');
+          expect(picked.slice(0, before.length)).toEqual(before);
+        }
       });
-      firsts.add(stageEnemies(seed, 0)[0]!);
+      firsts.add(stageEnemies(seed, 1)[0]!);
     }
-    // Random: every hero of the roster leads the first stage for some seed.
+    // Random: every hero of the roster is the first to come for some seed.
     expect(firsts.size).toBe(ROSTER.length);
   });
 
@@ -1444,9 +1450,15 @@ describe('previews, the AI and the run', () => {
   });
 
   it('plays each AI turn in a request of its own, and only when it is due', () => {
-    // An enemy Outrider, the fastest, acts before a party without one.
-    const runs = Array.from({length: 30}, (_, seed) => createRun(seed, {party: ['storm']}));
-    let run = runs.find((r) => runView(r).aiDue)!;
+    // An enemy Outrider, the fastest, acts before a party without one; the
+    // first stage brings only wolves, so the second.
+    const runs = Array.from({length: 30}, (_, seed) => {
+      const first = createRun(seed, {party: ['storm']});
+      const won = {...first, fight: cloneFight(first.fight)};
+      won.fight.phase = 'won';
+      return handleRunAction(won, {type: 'next'});
+    });
+    const run = runs.find((r) => runView(r).aiDue)!;
     expect(run).toBeDefined();
     const view = runView(run);
     // The page has no unit to control while the AI's turn is due.

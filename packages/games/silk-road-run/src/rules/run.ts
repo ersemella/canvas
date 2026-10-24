@@ -70,12 +70,13 @@ export function createRun(seed: number, setup?: unknown): RunState {
 }
 
 /**
- * The enemy for a stage: its number of heroes, picked at random from the
- * run's seed, then its wolves.
+ * The enemy for a stage: its number of heroes, the first of one random
+ * order for the whole run, from its seed, so a stage brings the heroes of
+ * the one before it and more; then its wolves.
  */
 export function stageEnemies(seed: number, stage: number): HeroId[] {
   const {heroes, wolves} = STAGES[stage]!;
-  const picked = shuffled(ROSTER, seededRandom(stageSeed(seed, stage) ^ 0x5bd1e995));
+  const picked = shuffled(ROSTER, seededRandom(seed ^ 0x5bd1e995));
   return [...picked.slice(0, heroes), ...Array<HeroId>(wolves).fill('wolf')];
 }
 
