@@ -166,9 +166,11 @@ export const ABILITY = {
    * first unit in it then takes the Outrider's power, with no turn for the
    * Outrider, and its card goes its action cost on to its next turn. At 0
    * it shoots at once (measured: a better Longshot rather than a second
-   * ability; balance.md).
+   * ability; balance.md). `range` (how far the arrow flies) and `stay`
+   * (the step optional: it may shoot from where it stands, Immobilized
+   * included) are experiment switches (2026-10-24), off as shipped.
    */
-  skirmish: {charge: 0.5 as number},
+  skirmish: {charge: 0.5 as number, range: Infinity as number, stay: false as boolean},
   /**
    * Each of the Champion's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.

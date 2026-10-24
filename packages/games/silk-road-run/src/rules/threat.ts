@@ -61,9 +61,9 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
-    const lanes = (oq: number, or: number, d: number) => {
+    const lanes = (oq: number, or: number, d: number, range: number) => {
       for (const [dq, dr] of AXIAL) {
-        for (let i = 1; i <= ABILITY.longshot.range; i++) {
+        for (let i = 1; i <= range; i++) {
           const k = id(oq + dq * i, or + dr * i);
           const tile = board.get(k);
           if (tile === undefined || tile === 'obstacle') break;
@@ -72,17 +72,21 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         }
       }
     };
-    if (has('longshot')) lanes(fq, fr, power);
+    if (has('longshot')) lanes(fq, fr, power, ABILITY.longshot.range);
     // Skirmish: Longshot's lanes from each free space next to it, unless it
-    // can't step, at the dodge share once charged.
-    if (has('skirmish') && !isImmobilized(e)) {
+    // can't step, and from its own if it may stay; at the dodge share once
+    // charged.
+    if (has('skirmish')) {
+      const {range, stay} = ABILITY.skirmish;
       const d = ABILITY.skirmish.charge > 0 ? power * AI.dodgeShare : power;
-      for (const [sq, sr] of AXIAL) {
-        const k = id(fq + sq, fr + sr);
-        const tile = board.get(k);
-        if (tile === undefined || tile === 'obstacle' || occupied.has(k)) continue;
-        lanes(fq + sq, fr + sr, d);
-      }
+      if (stay) lanes(fq, fr, d, range);
+      if (!isImmobilized(e))
+        for (const [sq, sr] of AXIAL) {
+          const k = id(fq + sq, fr + sr);
+          const tile = board.get(k);
+          if (tile === undefined || tile === 'obstacle' || occupied.has(k)) continue;
+          lanes(fq + sq, fr + sr, d, range);
+        }
     }
   }
   return out;

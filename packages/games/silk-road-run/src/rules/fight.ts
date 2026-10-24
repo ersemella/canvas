@@ -312,7 +312,7 @@ export function applyTurn(
     if (!trustTarget && !allowedTargets(state, map, unit, def).some((t) => sameTarget(t, target)))
       throw new RuleError(`${def.name} can’t target that.`);
     // A step before the ability (Skirmish), a walk of one space.
-    if (def.steps) {
+    if (def.steps && !hexEquals(target.to!, unit.hex!)) {
       enterHex(ctx, unit, target.to!);
       log(ctx, `${unitName(unit)} steps.`);
     }

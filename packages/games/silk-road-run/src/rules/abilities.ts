@@ -165,12 +165,13 @@ const skirmish: AbilityDef = {
       : `Step one space, then shoot straight: the first unit in line takes ${damageText(user)}.`,
   targetsUnit: true,
   targets(state, map, user, from) {
-    if (isImmobilized(user)) return [];
+    const {range, stay} = ABILITY.skirmish;
+    const steps = isImmobilized(user) ? [] : stepsFrom(map, from).filter((h) => !unitAt(state, h));
+    const origins = sortByHex(stay ? [from, ...steps] : steps, (h) => h);
     const out: ActionTarget[] = [];
-    const steps = stepsFrom(map, from).filter((h) => !unitAt(state, h));
-    for (const to of sortByHex(steps, (h) => h))
+    for (const to of origins)
       for (const dir of DIRECTIONS) {
-        const u = firstInLane(state, map, to, dir, user);
+        const u = firstInLane(state, map, to, dir, user, range);
         if (u) out.push({hex: u.hex!, to});
       }
     return out;
@@ -181,7 +182,9 @@ const skirmish: AbilityDef = {
       hit(ctx, user, u, `${unitName(user)}'s skirmish arrow`);
       return;
     }
-    const dir = DIRECTIONS.find((d) => firstInLane(ctx.state, ctx.map, user.hex!, d, user) === u)!;
+    const dir = DIRECTIONS.find(
+      (d) => firstInLane(ctx.state, ctx.map, user.hex!, d, user, ABILITY.skirmish.range) === u
+    )!;
     log(ctx, `${unitName(user)} draws on ${unitName(u)}.`);
     (ctx.state.shots ??= []).push({
       source: user.id,

@@ -121,7 +121,11 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const dr = e.hex.r - u.hex!.r;
     if (has('longshot') && (dq === 0 || dr === 0 || dq === -dr)) return true;
     // Skirmish: a line from a space next to it (one step off a line).
-    return has('skirmish') && Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) <= 1;
+    return (
+      has('skirmish') &&
+      d <= ABILITY.skirmish.range + 1 &&
+      Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) <= 1
+    );
   });
 }
 

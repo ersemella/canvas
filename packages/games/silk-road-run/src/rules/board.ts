@@ -11,7 +11,7 @@ import {
   hexesInRange,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {HEROES, RULES} from './config';
+import {ABILITY, HEROES, RULES} from './config';
 import {hexNumber, onMap, tileAt} from './map';
 import type {MapData, Tile} from './map';
 import type {AbilityId, FightState, ShotInAir, Status, Unit} from './types';
@@ -119,9 +119,10 @@ export function kitOf(unit: Unit): AbilityId[] {
   return unit.loadout?.abilities ?? HEROES[unit.hero].abilities;
 }
 
-/** A unit with a ranged attack (Longshot). */
+/** A unit with a ranged attack (Longshot, Skirmish). */
 export function isRanged(unit: Unit): boolean {
-  return kitOf(unit).includes('longshot');
+  const kit = kitOf(unit);
+  return kit.includes('longshot') || kit.includes('skirmish');
 }
 
 export function hostile(a: Unit, b: Unit): boolean {
@@ -360,9 +361,10 @@ export function firstInLane(
   map: MapData,
   from: Hex,
   dir: number,
-  ignore?: Unit
+  ignore?: Unit,
+  range = Infinity
 ): Unit | undefined {
-  for (const h of lane(map, from, dir)) {
+  for (const h of lane(map, from, dir).slice(0, range)) {
     const u = unitAt(state, h);
     if (u && u !== ignore) return u;
   }
@@ -378,7 +380,7 @@ export function shotLane(state: FightState, map: MapData, shot: ShotInAir): Hex[
   const archer = state.units.find((u) => u.id === shot.source);
   if (!archer?.alive || !archer.hex) return [];
   const out: Hex[] = [];
-  for (const h of lane(map, archer.hex, shot.dir)) {
+  for (const h of lane(map, archer.hex, shot.dir).slice(0, ABILITY.skirmish.range)) {
     out.push(h);
     const u = unitAt(state, h);
     if (u && u !== archer) break;
