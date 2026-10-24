@@ -2,9 +2,9 @@
  * The ground under everything: sand, ruins and exits (cached per map), and
  * falling hail.
  */
-import {assetLoader, hexKey} from '@canvas/engine';
+import {assetLoader, hexKey, hexNeighbors} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {tileAt} from '../../rules/map';
+import {onMap, tileAt} from '../../rules/map';
 import type {MapData, Tile} from '../../rules/map';
 import {SCENE_SIZE} from '../layout';
 import {PALETTE} from '../palette';
@@ -87,11 +87,42 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     g.setTransform(scale, 0, 0, scale, 0, 0);
     g.clearRect(0, 0, SCENE_SIZE.width, SCENE_SIZE.height);
     for (const h of map.hexes) drawTile(g, h, tileAt(map, h));
+    for (const h of filler(map)) drawFiller(g, h);
     ground = {canvas, key};
   }
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(ground.canvas, 0, 0, ground.canvas.width / scale, ground.canvas.height / scale);
+  ctx.restore();
+}
+
+/**
+ * The hexes off the map but inside its outline, where the end rows lost
+ * their corners (2026-10-24): scenery, so the board's edge isn't left
+ * gapped. Not spaces: nothing stands on them or answers a tap.
+ */
+function filler(map: MapData): Hex[] {
+  const xs = map.hexes.map((h) => center(h).x);
+  const ys = map.hexes.map((h) => center(h).y);
+  const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const out = new Map<string, Hex>();
+  for (const h of map.hexes)
+    for (const n of hexNeighbors(h)) {
+      const c = center(n);
+      if (!onMap(map, n) && c.x >= minX && c.x <= maxX && c.y >= minY && c.y <= maxY)
+        out.set(hexKey(n), n);
+    }
+  return [...out.values()];
+}
+
+/** Filler scenery: the sand darkened, with no border, so it reads as off the board. */
+function drawFiller(ctx: CanvasRenderingContext2D, h: Hex): void {
+  const sand = assetLoader.requestImage(sandImage);
+  if (sand) drawHexImage(ctx, h, sand, {flipX: (h.q * 7 + h.r * 13) % 2 !== 0});
+  ctx.save();
+  hexPath(ctx, h, 0);
+  ctx.fillStyle = sand ? 'rgba(34, 22, 14, 0.55)' : '#6e5a40';
+  ctx.fill();
   ctx.restore();
 }
 
