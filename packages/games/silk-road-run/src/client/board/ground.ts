@@ -35,25 +35,19 @@ const TILE_TEXTURE: Record<Tile, string> = {
 };
 
 /**
- * A pixel-art image (42×42 for a ground texture or effect) clipped to a hex,
- * at the sprites' scale, centred on it.
+ * Fills a hex with a seamless pixel-art texture at the sprites' scale,
+ * laid across the whole board from its origin rather than per hex, so
+ * neighbouring hexes join up into one field.
  */
-function drawHexImage(
-  ctx: CanvasRenderingContext2D,
-  h: Hex,
-  img: HTMLImageElement,
-  opts: {flipX?: boolean} = {}
-): void {
-  const c = center(h);
-  const side = img.height;
-  const size = side * SPRITE_SCALE;
+function fillHexTexture(ctx: CanvasRenderingContext2D, h: Hex, img: HTMLImageElement): void {
+  const pattern = ctx.createPattern(img, 'repeat');
+  if (!pattern) return;
+  pattern.setTransform(new DOMMatrix().scale(SPRITE_SCALE));
   ctx.save();
-  hexPath(ctx, h, 0);
-  ctx.clip();
   ctx.imageSmoothingEnabled = false;
-  ctx.translate(Math.round(c.x), Math.round(c.y));
-  if (opts.flipX) ctx.scale(-1, 1);
-  ctx.drawImage(img, 0, 0, side, side, -size / 2, -size / 2, size, size);
+  hexPath(ctx, h, 0);
+  ctx.fillStyle = pattern;
+  ctx.fill();
   ctx.restore();
 }
 
@@ -101,15 +95,15 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
 }
 
 /**
- * A tile's ground: its texture (grass mirrored on alternate hexes, so the
- * board doesn't repeat) and its border. Until the image loads, flat grass
+ * A tile's ground: its texture, one field across the board, and its
+ * border. Until the image loads, flat grass
  * and a code-drawn mark show. Ruins stand on grass and are
  * drawn later, by `drawRuins`.
  */
 function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
   const ground = assetLoader.requestImage(TILE_TEXTURE[tile]);
   if (ground) {
-    drawHexImage(ctx, h, ground, {flipX: tile === 'sand' && (h.q * 7 + h.r * 13) % 2 !== 0});
+    fillHexTexture(ctx, h, ground);
     ctx.save();
     hexPath(ctx, h, 0.5);
     ctx.strokeStyle = BORDER;

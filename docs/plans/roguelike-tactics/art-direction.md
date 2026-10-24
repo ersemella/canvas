@@ -52,8 +52,9 @@ tuning. This file has no combat-design section number.
   grass (`tiles/grass.png`) and the ruins a crumbling mudbrick wall, the
   ruins of a steppe city such as the Uyghur capital Karabalgasun
   (`tiles/ruins.png`); boulders and gers were tried and felt out of place.
-  The ruin is the owner's (AI-assisted, 2026-10-24); the grass is a
-  code-made stand-in until the owner's final art. The `sand`
+  Both are the owner's (AI-assisted, 2026-10-24). The grass is a 64×64
+  seamless tile laid across the board as one field (a pattern from the
+  board's origin), not stamped per hex. The `sand`
   tile keeps its name in the rules (it is open ground, shown as Grass);
   `tiles/sand.png` stays for a desert region's ground.
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct
