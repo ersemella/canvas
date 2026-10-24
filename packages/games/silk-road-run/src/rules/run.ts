@@ -7,7 +7,7 @@
 import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
-import {AI, CAMEL, PARTY, ROSTER, STAGES} from './config';
+import {AI, CAMEL, MOUNTAIN_STAGES, PARTY, ROSTER, STAGES} from './config';
 import {
   RuleError,
   actingUnit,
@@ -93,9 +93,17 @@ export function stageEnemies(seed: number, stage: number): HeroId[] {
 /** Each stage's map and start from its own seed; the first stage's is the run's. */
 const stageSeed = (seed: number, stage: number) => (seed + stage * 0x9e3779b9) >>> 0;
 
-/** A stage's fight, advanced to its first decision, the player's or the AI's. */
+/**
+ * A stage's fight, advanced to its first decision, the player's or the AI's;
+ * the first `MOUNTAIN_STAGES` always have mountains.
+ */
 function stageFight(seed: number, stage: number, party: HeroId[]): FightState {
-  const fight = createFight(stageSeed(seed, stage), party, stageEnemies(seed, stage));
+  const fight = createFight(
+    stageSeed(seed, stage),
+    party,
+    stageEnemies(seed, stage),
+    stage < MOUNTAIN_STAGES
+  );
   fight.events = [];
   advanceToDecision(fight);
   return fight;

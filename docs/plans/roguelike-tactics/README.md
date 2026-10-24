@@ -77,7 +77,8 @@ the kits.**
   to the only exit, its bottom point, around units in its way. The board
   is a hexagon of 61 flat-top hexes, 4 from the centre, the sides starting
   on its straight outer columns of 5 (owner, 2026-10-24; 64 pointy-top
-  hexes in 9 rows before); about half of fights have a range of 3 to 5
+  hexes in 9 rows before); about half of fights, and every fight of a
+  run's first three stages (`MOUNTAIN_STAGES`), have a range of 3 to 5
   mountains along one of the four slanted edges (never the sides, nor
   Temee's middle column), which block movement and arrows. **No ruins**
   (owner, 2026-10-24; six a fight before): the board is the wide open

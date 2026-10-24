@@ -112,7 +112,8 @@ const YURT_COUNTS = [2, 3];
 const YURT_REACH = 2;
 
 /**
- * Mountains (owner, 2026-10-24): about half of fights have one range, 3 to
+ * Mountains (owner, 2026-10-24): about half of fights, and every fight of a
+ * run's first `MOUNTAIN_STAGES` stages (config.ts), have one range, 3 to
  * 5 hexes in one clump along one of the hexagon's four slanted edges (top
  * left, top right, bottom left, bottom right), starting on that edge and
  * at most one hex in from it. Never on the sides (the starting columns and
@@ -139,16 +140,18 @@ const MOUNTAIN_EDGES: {left: boolean; inFrom: (h: Hex) => number}[] = [
 
 /**
  * A fight's own tiles, from `random` in [0, 1): a range of mountains in
- * about half of fights, off the starting columns, the camel's start and
- * the exit, then two or three yurts near the middle (not mirrored).
+ * about half of fights, or always with `mountains`, off the starting
+ * columns, the camel's start and the exit, then two or three yurts near the
+ * middle (not mirrored).
  */
-export function randomTiles(random: () => number): Record<string, Tile> {
+export function randomTiles(random: () => number, mountains = false): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
   const reserved = [SALT_FLATS.camelStart, ...SALT_FLATS.exits];
   const candidates = SALT_FLATS.hexes.filter(
     (h) => Math.abs(h.q) < RADIUS && !reserved.some((x) => hexDistance(x, h) === 0)
   );
-  if (random() < MOUNTAIN_CHANCE) {
+  // Rolled even when forced, so a seed's other draws stay the same.
+  if (random() < MOUNTAIN_CHANCE || mountains) {
     const edge = MOUNTAIN_EDGES[Math.floor(random() * MOUNTAIN_EDGES.length)]!;
     const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
     const inFrontOfTemee: Hex = {q: 0, r: SALT_FLATS.camelStart.r + 1};
