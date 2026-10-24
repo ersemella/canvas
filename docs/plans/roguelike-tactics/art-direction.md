@@ -54,11 +54,13 @@ tuning. This file has no combat-design section number.
   (`tiles/ruins.png`) or a collapsed tower stump (`tiles/ruins-tower.png`),
   each ruin's hex picking one; softened from the owner's art (a dark-brown
   outline instead of the units' ink, contrast cut to 72%) so they sit
-  back as terrain and the units stand out; mountains (`tiles/mountain.png`, the owner's) stand on
+  back as terrain and the units stand out; mountains (`tiles/mountain-peak.png` and `mountain-twin.png`, the
+  owner's, drawn for the flat-top hex: 42 wide, the base filling the hex's
+  lower half; each mountain hex picks one) stand on
   rocky ground of their own (`tiles/rock.png`, the owner's, a seamless
   103-pixel tile laid across the board like the grass), drawn
-  at 3×: their base inside the hex, their peaks free to rise over the hexes
-  beyond (rules in `randomTiles`, map.ts); boulders and gers were tried and felt out of place.
+  at 2× like every sprite: their base inside the hex, their peaks free to
+  rise over the hexes beyond (rules in `randomTiles`, map.ts); boulders and gers were tried and felt out of place.
   Both are the owner's (AI-assisted, 2026-10-24). The grass is a 64×64
   seamless tile laid across the board as one field (a pattern from the
   board's origin), not stamped per hex. The `sand`

@@ -19,7 +19,8 @@ import {
 } from './pixels';
 import ruinsImage from '../tiles/ruins.png';
 import ruinsTowerImage from '../tiles/ruins-tower.png';
-import mountainImage from '../tiles/mountain.png';
+import mountainPeakImage from '../tiles/mountain-peak.png';
+import mountainTwinImage from '../tiles/mountain-twin.png';
 import rockImage from '../tiles/rock.png';
 import grassImage from '../tiles/grass.png';
 
@@ -162,13 +163,14 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex): void {
 }
 
 /**
- * Mountains are drawn bigger than everything else, 3× (owner, 2026-10-24):
- * standing near the bottom of their hex, they rise into the space above
- * and spread past its sides, a range rather than a rock; their base stays
- * inside the hex (`mountainClip`).
+ * The mountains' shapes, a single peak and a twin (owner, 2026-10-24),
+ * each hex picking one. Drawn for the hex: 42 pixels wide, its base the
+ * hex's lower half, standing on the hex's bottom edge, the peak rising
+ * into the space above (`mountainClip` keeps the base inside the hex).
  */
-const MOUNTAIN_SCALE = 3;
-const MOUNTAIN_FEET = 34;
+const MOUNTAIN_IMAGES = [mountainPeakImage, mountainTwinImage];
+/** A flat-top hex's bottom edge, below its centre. */
+const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
 
 /** The ruins' shapes, a wall and a tower stump: each ruin's hex picks one. */
 const RUINS_IMAGES = [ruinsImage, ruinsTowerImage];
@@ -178,20 +180,22 @@ const RUINS_IMAGES = [ruinsImage, ruinsTowerImage];
  * hail, so it always reads as blocked.
  */
 export function drawRuins(ctx: CanvasRenderingContext2D, h: Hex, mountain = false): void {
-  const pick = Math.floor(hexRandom(h, 1)() * RUINS_IMAGES.length);
-  const ruins = assetLoader.requestImage(mountain ? mountainImage : RUINS_IMAGES[pick]!);
+  const images = mountain ? MOUNTAIN_IMAGES : RUINS_IMAGES;
+  const pick = Math.floor(hexRandom(h, 1)() * images.length);
+  const ruins = assetLoader.requestImage(images[pick]!);
   if (ruins) {
     const c = center(h);
-    const size = ruins.width * (mountain ? MOUNTAIN_SCALE : SPRITE_SCALE);
+    const width = ruins.width * SPRITE_SCALE;
+    const height = ruins.height * SPRITE_SCALE;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     if (mountain) mountainClip(ctx, c);
     ctx.drawImage(
       ruins,
-      Math.round(c.x - size / 2),
-      Math.round(c.y + (mountain ? MOUNTAIN_FEET : SPRITE_FEET) - size),
-      size,
-      size
+      Math.round(c.x - width / 2),
+      Math.round(c.y + (mountain ? MOUNTAIN_FEET : SPRITE_FEET) - height),
+      width,
+      height
     );
     ctx.restore();
   } else {
