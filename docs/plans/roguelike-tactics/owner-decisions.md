@@ -39,10 +39,12 @@ The wolf's and the camel's numbers are still the builder's placeholders
 
 ### 3. CPU per request: capped (watch)
 
-The enemy AI runs inside the request. It now uses selective alpha-beta
+The enemy AI runs inside the request, one AI turn a request since
+2026-10-24 (`POST /runs/:id/continue`). It uses selective alpha-beta
 lookahead (2026-10-20): four candidates, two decisions including the root,
-then three if work remains; 110 work units per AI turn, 220 shared per
-request, with Hold when exhausted. Automatic turns (the camel's, skipped
+then three if work remains; 220 work units per AI turn (owner,
+2026-10-24; 110 a turn and 220 shared per request before), with Hold
+when exhausted. Automatic turns (the camel's, skipped
 ones) use the real timeline. See [ai-search.md](ai-search.md) for the algorithm,
 regressions and local whole-request comparison (p99 elapsed 6.24 →
 5.36 ms; p99 process CPU 9.13 → 9.08 ms). This is local calibration, not a

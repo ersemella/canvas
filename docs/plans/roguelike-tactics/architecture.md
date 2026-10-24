@@ -205,8 +205,9 @@ to 2,000 fights a day. Plenty for building, testing and a small audience.
 
 To stretch Free:
 - **One request per turn:** a unit's move and action (5.1) are sent
-  together, and the response includes every AI turn up to the player's
-  next turn, so the clock never needs a request of its own.
+  together, and each AI turn is a request of its own (`continue`, owner,
+  2026-10-24: each gets its own 10 ms), so a fight takes about twice the
+  player's turns in requests; the clock never needs a request of its own.
 - **Previews are local** (D11).
 - **One row per save:** store the run's state as one value, written once
   per action; no alarms on `RunRoom` (each `setAlarm()` is a row written).
