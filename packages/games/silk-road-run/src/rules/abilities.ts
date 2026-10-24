@@ -52,6 +52,8 @@ export interface AbilityDef {
    * outlines it.
    */
   range?: number;
+  /** The nearest it reaches, when nearer spaces are out of it (Hail's ring); the page outlines it too. */
+  minRange?: number;
   /**
    * A ground-targeted area (hail): the spaces within this of the target
    * (0: the space alone). Its effect doesn't depend on where the user
@@ -224,11 +226,17 @@ const hail: AbilityDef = {
   name: 'Hail',
   kind: 'control',
   range: ABILITY.hail.range,
+  minRange: ABILITY.hail.range,
   radius: 0,
   summary: (user) =>
-    `Hail on a space until your next turn: a unit there takes ${damageText(user)}, and a unit there or that enters it is Immobilized until the hail is gone.`,
+    `Hail on a space exactly ${ABILITY.hail.range} away until your next turn: a unit there takes ${damageText(user)}, and a unit there or that enters it is Immobilized until the hail is gone.`,
   targets: (_state, map, _user, from) =>
-    hexesWithin(map, from, ABILITY.hail.range, (h) => !blocks(tileAt(map, h))),
+    hexesWithin(
+      map,
+      from,
+      ABILITY.hail.range,
+      (h) => hexDistance(from, h) === ABILITY.hail.range && !blocks(tileAt(map, h))
+    ),
   resolve(ctx, user, target) {
     const hex = target.hex!;
     ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, hex));

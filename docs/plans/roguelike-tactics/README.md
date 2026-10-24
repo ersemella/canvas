@@ -40,7 +40,8 @@ the kits.**
   Pierce, Enhance, Degrade, Armour, Immortal ([keywords.md](keywords.md));
   Immobilized, Stunned, Move, Push and Pull are built.
 - **The kits** ([roster.md](roster.md)): the Bow, unchanged in shape; Hail,
-  one space within 3 until the Storm Caller's next turn, Immobilizing
+  one space exactly 2 away (a ring; within 3 until 2026-10-24) until the
+  Storm Caller's next turn, Immobilizing
   whoever is in it or enters it; Grapple (melee; reach 2, stepping in, until
   the owner's call of 2026-10-23), Stunning
   its target until the Champion takes damage, is Stunned or ends a turn
@@ -73,7 +74,7 @@ the kits.**
 - **At most three abilities** a hero, besides moving and Hold (owner,
   2026-10-24; [roster.md](roster.md)).
 - Still pared back from 2026-10-22: the Modao Vanguard out of the
-  roster; a move of at most 3 spaces; Temee not player
+  roster; a move of at most 2 spaces (3 until 2026-10-24); Temee not player
   controlled, walking itself one space a turn from the board's top point
   to the only exit, its bottom point, around units in its way. The board
   is a hexagon of 61 flat-top hexes, 4 from the centre, the sides starting

@@ -36,7 +36,7 @@ tuning. Section numbers are the combat design's.
 | **Status** | A keyword effect on a unit for as long as its source states, such as Burn, Immobilized or Stunned; public, shown on its stat sheet and the board (17.2). |
 | **Track entity** | A card that acts independently of the character who created it, for example a summoned zombie (3.7). |
 | **Action** | The single ability a unit uses on its turn, or a walk instead. Required: an action ends the turn (5.1). |
-| **Walk** | A unit moving itself across spaces on its turn, instead of an ability: up to 3 spaces (5.1). |
+| **Walk** | A unit moving itself across spaces on its turn, instead of an ability: up to 2 spaces (5.1). |
 | **Ability** | Any action a unit can perform, including basic attacks. Abilities are granted by characters and gear. |
 | **Hex / hex grid** | The map is divided into hexagonal tiles ("hexes"). Each hex has 6 neighbors. |
 | **Adjacent** | Two hexes that share an edge. |

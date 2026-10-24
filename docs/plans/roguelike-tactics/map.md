@@ -17,7 +17,7 @@ tuning. Section numbers are the combat design's.
 - A single map shape should be chosen and used consistently (options: large hexagon, offset rectangle). Shape TBD.
 
 ### 6.2 Movement (Decided)
-- Movement is measured **per hex.** Ordinary walking is a turn's action, up to 3 spaces (5.1); since 2026-10-23 it places the card like any action (3.2).
+- Movement is measured **per hex.** Ordinary walking is a turn's action, up to 2 spaces (5.1; 3 until 2026-10-24); since 2026-10-23 it places the card like any action (3.2).
 - Ordinary walking cannot pass allies, enemies or blocking obstacles, and a walk that enters hail ends there (it Immobilizes; [keywords.md](keywords.md), 17.4).
 
 ### 6.3 Flanking (out of the game since 2026-10-23)
@@ -46,7 +46,7 @@ Maps can contain three types of special tile:
 ### 6.5 Rationale
 - Hexes give uniform distances in all directions and clean flanking rules.
 - Known tradeoffs: straight-line and cone-shaped area effects only align cleanly in 6 directions and need careful design; room-like layouts look less natural than on square grids.
-- Ordinary movement is capped at 3 spaces per action (5.1) and cannot share a turn with an ability.
+- Ordinary movement is capped at 2 spaces per action (5.1) and cannot share a turn with an ability.
 
 ### 6.6 Deployment (Decided)
 - Each side has a **deployment zone**: a set of starting hexes. Before the fight, players place their units anywhere within their zone, with full visibility of the map and enemy positions. Placement is the first decision of the fight.

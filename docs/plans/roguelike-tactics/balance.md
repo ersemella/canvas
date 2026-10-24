@@ -1535,6 +1535,49 @@ Shove as upgrades** (`upgrades` in config.ts; [roster.md](roster.md)), as
 measured. Hold Loose, Hip Toss, Squall Line, Tailwind and Overwatch were
 removed with their code (owner, 2026-10-24; [history.md](history.md)).
 
+### Walk 2 and the ring of hail (2026-10-24)
+
+Asked for: less first-mover advantage and a Hail that reads at a glance.
+`scripts/balance/mirror.mjs`, 300 pairs (600 fights, no camel; ±4 points
+at 95%), and `ablate.mjs` for Hail's worth, 400 fights with the camel;
+starting kits, seeds from 1000. The mirror runs follow the fix of that
+day: until then `mirror.ts` flipped the old 8-column board, so on the
+hexagon every mirrored fight stood units off the board and stalled.
+
+Movement, Hail as it was (any space within 3):
+
+| Variant | First mover wins | Mirror unfinished | Median actions |
+|---|---:|---:|---:|
+| Walk 3, Hold (as it was) | 64.4% | 10% | 40 |
+| Walk 2 | 45.7% | 9.8% | 45 |
+| No idle Hold (AI only) | 57.5% | 12.5% | 39 |
+| Walk 2, no Hold | 43.9% | 10% | 43 |
+| Walks by hero (Outrider straight lines up to 3, others 2) | 43.3% | 7.7% | 45 |
+
+Hail's shape, at walk 2:
+
+| Hail lands on | Spaces | First mover wins | Mirror unfinished | Side without Hail wins | Storm Caller's turns on Hail |
+|---|---:|---:|---:|---:|---:|
+| Within 3 | up to 37 | 45.7% | 9.8% | 22.3% | 65.5% |
+| Within 2 | 19 | 48.8% | 21.5% | 26.5% | 56.4% |
+| Straight lines up to 3 | 18 | 44.7% | 28.8% | 30.3% | 53.4% |
+| **Exactly 2 away** | 12 | **48.6%** | 22.2% | **28.8%** | **46%** |
+
+- **Walk 3 handed the fight to the first mover** (64.4%): one walk and a
+  hit reached almost anything. Walk 2 leaves a middle distance and
+  slightly favours the second mover (about 55%).
+- **Removing Hold doesn't end stalls**: the units shuffle instead.
+- **The ring reads best and measures well**: a shape round the Storm
+  Caller, safe next to it and 3 or more away (the Champion's way in);
+  first mover near even; Hail still the core (28.8%, in principle 2's
+  20–35%) and in principle 3's usage band (46% from 65.5%).
+- **Its cost: more stalls without the camel** (22.2%) and longer fights
+  (median 53 actions, from 46, with the camel). With the camel nothing
+  went unfinished; a mirror or PvP mode needs an objective of its own.
+
+**Adopted (owner, 2026-10-24): walks of at most 2, and Hail on a space
+exactly 2 away** (`RULES.movementCap`, `ABILITY.hail` in config.ts).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
