@@ -53,7 +53,8 @@ tuning. This file has no combat-design section number.
   2026-10-24): `tiles/yurt.png`, 32 × 24 art pixels, redrawn on the
   sprites' grid from the owner's art (AI-assisted, about twice that
   size), in its colours: felt walls and roof, a blue eave band, ropes, an
-  orange door, a dark-brown outline like the other terrain. Smoke rises
+  orange door; its outline soft (owner, 2026-10-24), each edge pixel a
+  darker shade of the colour inside it, darkest along the foot. Smoke rises
   from its crown in code (`drawYurtSmoke`): square puffs that grow, drift
   and fade, stepped at 8 frames a second, each yurt out of step, held
   still for reduced motion. The ruins' art, a crumbling
