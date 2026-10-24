@@ -5,7 +5,7 @@
   },
   "canvas": {
     "width": 594,
-    "height": 697
+    "height": 760
   },
   "systems": ["MouseSystem", "HexGridSystem", "TacticsInputSystem", "TacticsBoardSystem"],
   "scene": {
