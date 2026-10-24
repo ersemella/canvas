@@ -259,11 +259,14 @@ export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /** Every hero the start menu offers and the enemy draws from, in party slot order. */
 export const ROSTER: HeroId[] = [...PARTY];
 /**
- * A run's stages, in order (owner, 2026-10-21): how many of the heroes
- * (ROSTER), picked at random from the run's seed, and how many wolves the
- * enemy brings to each. The last is won to win the run.
+ * A run's stages, in order (owner, 2026-10-24; was three, from one hero and
+ * two wolves): how many of the heroes (ROSTER) and how many wolves the
+ * enemy brings to each. The heroes come in one random order for the whole
+ * run, from its seed, so each stage brings the last one's heroes and one
+ * more. The last is won to win the run.
  */
 export const STAGES: {heroes: number; wolves: number}[] = [
+  {heroes: 0, wolves: 3},
   {heroes: 1, wolves: 2},
   {heroes: 2, wolves: 1},
   {heroes: 3, wolves: 0},
