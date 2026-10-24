@@ -31,7 +31,7 @@ const BORDER = '#3f4a27';
 /**
  * The ground texture of each tile type: the Steppe's grass (the `sand`
  * tile is open ground, whatever its look); ruins stand on grass, mountains
- * on rocky ground of their own (owner, 2026-10-24; a code-made stand-in).
+ * on rocky ground of their own (owner, 2026-10-24).
  */
 const TILE_TEXTURE: Record<Tile, string> = {
   sand: grassImage,
