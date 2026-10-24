@@ -278,3 +278,33 @@ the six played on every decision of 12 runs, both sides'.
 
 A fight now takes about twice the requests (one per AI turn), against
 the Free plan's 100,000 a day ([architecture.md](architecture.md)).
+
+## Looking deeper with narrower decisions, 2026-10-24
+
+With 220 units a turn, depth three (`AI.searchDepth`) completes on every
+turn and stops there with work left (831 positions, 2.15 ms a turn).
+A deeper horizon with fewer options per decision further from the root
+was measured (branch `claude/ai-width-taper`, `AI.searchWidths`; widths
+listed from the root, the last for any deeper), against today's search
+on mirrored pairs, each as team a in turn:
+
+| Search | Units | Mean win share | AI request p99 | Over 10 ms |
+|---|---:|---:|---:|---:|
+| Today: width 4, depth 3 | 220 | — | 4.83 ms | 0–2 of 3,681 |
+| 4, depth 5 | 220 | 53.4% | | |
+| 4, 3, 2, depth 5 | 220 | 56.0% | 10.34 ms | 44 of 3,681 |
+| 4, 4, 2, depth 5 | 220 | 55.4% | 9.16 ms | 16 of 3,681 |
+| 3, 3, 2, depth 5 | 220 | 53.5% | | |
+| 4, 3, 2, depth 5 | 150 | 49.6% | 6.72 ms | 6 of 3,681 |
+| 4, 3, 2, depth 5 | 110 | 50.2% | 4.79 ms | 0 of 3,681 |
+
+(300–400 pairs each way; about ±3 points at 95%. Today's own maximum
+had one-off spikes to 21 ms from the machine; the p99 is the figure to
+trust.)
+
+Narrowing pays only with the CPU to go deeper: at 220 units, 4, 3, 2 to
+depth five wins 56% but puts about 1 in 100 AI turns over the Free plan's
+10 ms; at a budget as safe as today's it is even. Not built. On Workers
+Paid (30 s a request) it is the next step: `searchWidths` [4, 3, 2],
+`searchDepth` 5, 220 units or more ([owner-decisions.md](owner-decisions.md),
+section 3).
