@@ -104,13 +104,15 @@ export function drawRangeOutline(ctx: CanvasRenderingContext2D, hexes: Hex[]): v
 
 /**
  * A targeting arrow from `from` towards `to`, its head stopping at `to`'s
- * hex and pointing at it: the bow's lanes, and a drawn arrow in the air.
+ * hex and pointing at it: the bow's lanes, and (`dotted`) a drawn arrow in
+ * the air.
  */
 export function drawLaneArrow(
   ctx: CanvasRenderingContext2D,
   from: Hex,
   to: Hex,
-  color: string = PALETTE.lapisLight
+  color: string = PALETTE.lapisLight,
+  dotted = false
 ): void {
   const a = center(from);
   const b = center(to);
@@ -125,10 +127,13 @@ export function drawLaneArrow(
   ctx.fillStyle = color;
   ctx.lineWidth = 3;
   pixelShadow(ctx, 1);
+  // Square caps grow each 2px dash into a 5px square dot.
+  if (dotted) ctx.setLineDash([2, 8]);
   ctx.beginPath();
   ctx.moveTo(start.x, start.y);
   ctx.lineTo(end.x - ux * 4, end.y - uy * 4);
   ctx.stroke();
+  ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(end.x + ux * 8, end.y + uy * 8);
   ctx.lineTo(end.x - ux * 6 - uy * 8, end.y - uy * 6 + ux * 8);
