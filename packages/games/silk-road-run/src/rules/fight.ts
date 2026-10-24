@@ -5,7 +5,7 @@
  */
 import {hexEquals} from '@canvas/engine/server';
 import {CAMEL, HEROES, PARTY, healthOf} from './config';
-import {invalidPath, isImmobilized, isStunned, stepToExit} from './board';
+import {canMove, invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
 import {
@@ -88,7 +88,9 @@ function makeUnit(side: Side, partyIndex: number, hero: HeroId, copy = 0): Unit 
  * deployment step). The player's camel
  * starts in the top-left corner (camel.md, 18.1; owner, 2026-10-22). The player brings
  * the heroes chosen on the start menu; the enemy brings `enemies`, all three
- * heroes unless the run's stage says otherwise (STAGES).
+ * heroes unless the run's stage says otherwise (STAGES). No unit starts
+ * boxed in by ruins and the units beside it: the seed scatters again until
+ * every one has a free hex to step to.
  */
 export function createFight(
   seed: number,
@@ -99,7 +101,7 @@ export function createFight(
   const random = seededRandom(seed);
   const state: FightState = {
     mapId: map.id,
-    tiles: randomTiles(random),
+    tiles: {},
     mode: 'solo',
     phase: 'fight',
     currentSlot: 0,
@@ -116,13 +118,16 @@ export function createFight(
   };
   const camel = state.units.find((u) => u.hero === CAMEL)!;
   camel.hex = map.camelStart;
-  for (const side of ['player', 'enemy'] as const) {
-    const free = map.startColumns[side].filter((h) => !hexEquals(h, map.camelStart));
-    const hexes = shuffled(free, random);
-    state.units
-      .filter((u) => u.side === side && u !== camel)
-      .forEach((u, i) => (u.hex = hexes[i]!));
-  }
+  do {
+    state.tiles = randomTiles(random);
+    for (const side of ['player', 'enemy'] as const) {
+      const free = map.startColumns[side].filter((h) => !hexEquals(h, map.camelStart));
+      const hexes = shuffled(free, random);
+      state.units
+        .filter((u) => u.side === side && u !== camel)
+        .forEach((u, i) => (u.hex = hexes[i]!));
+    }
+  } while (state.units.some((u) => !canMove(state, mapOf(state), u)));
   placeStartingCards(state);
   log({state, map: mapOf(state), slot: 0}, 'The fight begins.');
   return state;

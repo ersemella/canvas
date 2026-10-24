@@ -368,6 +368,13 @@ describe('the track', () => {
     for (const h of map.startColumns.enemy) expect(hexToOffset(h).col).toBe(6);
   });
 
+  it('starts no unit boxed in by ruins and the units beside it', () => {
+    for (let seed = 0; seed < 300; seed++) {
+      const s = createFight(seed);
+      for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
+    }
+  });
+
   it('orders simultaneous placement: speed, then the player’s side first, then party order', () => {
     const s = createFight(0);
     const order = simultaneousOrder(s.units).map((u) => u.id);
