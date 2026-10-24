@@ -54,7 +54,9 @@ tuning. Section numbers are the combat design's.
 | **Gear slot** | One of four equipment positions on a hero: boots, gloves, armour, helmet. |
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |
-| **Milestone upgrade** | A hero-specific adjustment to one of that hero's abilities (its shape or an added effect), chosen from an offer at set points in a run (10.9). Unlike gear, it carries no transferable modifier. |
+| **Milestone upgrade** | Replaced 2026-10-24 by the upgrade offer (19.3). Was: a hero-specific adjustment to one of that hero's abilities, chosen at set points in a run (10.9). |
+| **Provisions** | Working name for stat points: 1 at the end of each region's first and second stages, each +1 to one hero's speed, defence or power; the region's own can be reassigned at its third stage, then locked (19.2). |
+| **Upgrade offer** | At each region's third stage, 3 upgrades from fixed slots (hero, passive, wildcard), of which the party picks 1 (19.3). |
 | **Keyword** | A named, shared condition or effect (for example Burn, Push, Stunned) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |
 | **Ghost team / ghost build** | A saved party build from another player, used as an opponent. **Decided 2026-10-15:** ghosts are **rival caravans**, met as a fight; see [ghosts.md](ghosts.md) (D8). |
@@ -71,5 +73,5 @@ tuning. Section numbers are the combat design's.
 | **Rival caravan** | An AI-controlled copy of another player's party, met as a fight on its own map; the game's ghosts. See [ghosts.md](ghosts.md). |
 | **Route map** | The run's map of the road, with route choices between nodes (fights, rests, bazaars, recruitment), as in Slay the Spire. |
 | **Stage** | A run's **position along the road** on the route map (its row or step); rival caravans are matched by it, and difficulty scales with it. |
-| **Region** | One of the six civilizations a run passes through, in order: Steppe (Mongol and Turkic), China, India, Persia, Arabia, Byzantine. Each is a part of the route map made of several levels (stages) (15.3a). |
+| **Region** | One of the six civilizations a run passes through, in order: Steppe (Mongol and Turkic), China, India, Persia, Arabia, Byzantine. Each has 3 stages, the Byzantine 4 (15.3a, 19.1). |
 | **Party wipe** | Every hero in the party dead; the run ends. A rival caravan that wipes a party counts a kill (D9). |

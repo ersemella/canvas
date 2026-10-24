@@ -19,6 +19,21 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 - **Run structure as a pure sequence of fights** (as in Slice & Dice):
   rejected for a route map with route choices.
 
+- **Milestone upgrades with no stat growth** (until 2026-10-24): heroes
+  grew only by hero-specific adjustments to their abilities, offered at
+  per-hero milestones (fights joined or survived), 2 or 3 a run, with no
+  stat growth outside gear (10.9). Replaced by the owner with provisions
+  (stat points) and one upgrade offer per region ([progression.md](progression.md)).
+- **Four stages for a whole run** (built 2026-10-24): 3 wolves; 1 hero and
+  2 wolves; 2 heroes and 1 wolf; 3 heroes. Replaced by the owner with three
+  stages per region, the last region four (19.1, 19.5); the code still
+  runs the four.
+- **Progression ideas weighed before 2026-10-24's decision:** 1 stat
+  point every stage, swappable between heroes every stage (busywork, and
+  19 points would outweigh the upgrades); swappable only between regions;
+  picking 1 or 2 of 3 random upgrades (picking 2 of 3 is only choosing
+  which to skip).
+
 ## Multiplayer
 
 - **Live invasions with mutual opt-in at the door:** at the door after a

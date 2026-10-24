@@ -57,6 +57,8 @@ Difficulty rises over a run mainly by making enemies better built, not by inflat
 **Raw stats**
 - Stat growth beyond what gear provides is kept small, if used at all.
 
+**The run's enemy line-up (Decided, owner 2026-10-24)** is in [progression.md](progression.md) (19.5, 19.6): per region, 2 wolves and a hero, then a wolf and 2 heroes, then 3 heroes; wolves gain a little in stats each region; enemy heroes carry random upgrades and stat points, up to 10 points and 4 upgrades; the run ends on a boss that counters the player's build.
+
 ### 11.5 Open Questions on Difficulty
 - Enemy unit cap per encounter.
 - List of elite affixes and when they begin appearing.

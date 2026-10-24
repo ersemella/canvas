@@ -49,7 +49,7 @@ The road is divided into six **regions**, one for each civilization the caravan 
 - **The order is fixed,** the same in every run; route choices (the route map) vary within a region, not the order of regions.
 - **The road runs east to west** and ends in the Byzantine region, where the ruler at the road's end grants the Charter (15.2).
 - **The six regions are home to the hero cultures,** one each except the Steppe, home to both the Mongol and the Turkic peoples, so every hero has a home region, and every region supplies both heroes and creatures (15.7).
-- **Levels and stages:** a region's levels are stages of the route map (glossary), so stage numbers keep counting across regions and rival caravan pools stay per stage ([ghosts.md](ghosts.md), D8). The number of levels per region is TBD (Phase 2).
+- **Levels and stages:** a region's levels are stages of the route map (glossary), so stage numbers keep counting across regions and rival caravan pools stay per stage ([ghosts.md](ghosts.md), D8). Each region has 3 stages and the Byzantine 4, the last a boss (owner, 2026-10-24; [progression.md](progression.md), 19.1).
 - **Cultures without a region** (Silla Korea, Nara Japan, Tibet, Srivijaya and Java, Egypt, Aksum) remain sources for places, neutral characters, creatures and bosses inside the six regions. Where each appears is open (question 33).
 
 ### 15.4 Historical Reach of the Road
@@ -136,4 +136,4 @@ Named fictional characters and folklore creatures. Each suggests a mechanic from
 ## Open questions (from section 14, original numbers)
 
 32. Setting: confirm the prize (Charter and Closing Road are proposed) and Egypt's era.
-33. Regions (15.3a): how many levels each region has; whether each region ends in a boss; and where the cultures without a region appear (for example Tibet's Gesar bosses in the China region's mountain passes, the nine-tailed fox in India and then China, Egypt and Aksum on Arabia's Red Sea coast).
+33. Regions (15.3a): ~~how many levels each region has; whether each region ends in a boss~~ (answered 2026-10-24: 3 stages, the Byzantine 4 ending in the final boss; [progression.md](progression.md)); and where the cultures without a region appear (for example Tibet's Gesar bosses in the China region's mountain passes, the nine-tailed fox in India and then China, Egypt and Aksum on Arabia's Red Sea coast).

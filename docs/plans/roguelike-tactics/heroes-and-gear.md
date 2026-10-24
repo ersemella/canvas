@@ -177,7 +177,9 @@ Stats are small whole numbers since 2026-10-23 (9.1), so a single point from gea
 - **Track win rates by team** to find and tune dominant compositions.
 - Already adopted: recruitment during the run from limited, random offers (10.6).
 
-### 10.9 Milestone Upgrades (Decided)
+### 10.9 Milestone Upgrades (Replaced 2026-10-24)
+**Replaced by the owner on 2026-10-24** by provisions (stat points, 2 per region) and one upgrade offer per region, whose hero slot may add a new ability ([progression.md](progression.md), 19.2 and 19.3). The rule below no longer holds where they differ: offers are per region, not per hero's milestones; heroes do grow in stats; a hero upgrade may be a new ability. The rule as it stood:
+
 - Heroes are customized during a run through **choice-based upgrades**, not experience-based stat growth.
 - At a few milestones per run, each hero is offered a choice of upgrades that modify their abilities, generally along keyword lines.
 - The offered upgrades are **randomized but specific to each hero**, drawn from that hero's own upgrade pool. This is similar to how boons are offered in Hades.
@@ -232,7 +234,7 @@ A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks f
 | Power (2026-10-23) | Exactly the damage each of the unit's abilities deals | Power scaling an ability's base damage and healing, ×(1 + power / 50) (2026-10-18 to 2026-10-23); power plus influence; physical/magical split | Owner's call: an attack's damage reads straight off the stat sheet |
 | Gear slots | Boots, gloves, armour, helmet | Including a weapon slot | Weapons are unique per hero and tied to abilities and visual language |
 | Consumables | Limited; used only between fights; stat buffs or statuses for the next combat, or health recovery; shared party inventory | Usable in combat as actions with their own cost; no consumables; unlimited consumables | Keeps combat about abilities and the track; makes preparation between fights a decision; no hoarding |
-| Hero progression | Milestone upgrades from a randomized, hero-specific pool; no stat growth; recruits join without upgrades and earn them by reaching milestones | Experience levels with stat growth | Build variety without stat inflation |
+| Hero progression (2026-10-24, owner) | Provisions (stat points, 2 per region) and one upgrade offer per region from slots: hero, passive, wildcard ([progression.md](progression.md)) | Milestone upgrades from a hero-specific pool with no stat growth (until 2026-10-24); experience levels with stat growth | A steady, small stat growth with one commitment per region; every offer useful |
 | Ultimates | Unlocked after the hero spends a set amount of action cost in the fight (turns taken until 2026-10-20), shown publicly; then once per combat; an action, a charged ability or a track entity, defined per ultimate | Usable from the start of the fight; charge meter filled by keyword actions; cooldown-based ultimates; no ultimates | Fights build toward ultimates; a visible unlock gives the other side a threat to play around; once per combat makes each use a decision |
 | Recovery (2026-10-21, owner) | Heroes start each fight fresh; the camel's damage carries over, its statuses cleared | Heroes recover partially after each fight, fully at rests or from consumables (until 2026-10-21); no healing between fights | Attrition through the camel's health, which the whole party protects |
 | Recruits | Join at base level with basic gear; offers unaffected by deaths | Join at the party's upgrade level; special replacement mechanics after a death | A death is meant to start a death spiral with a low chance of recovery, giving permanent death its weight |
@@ -247,7 +249,7 @@ A meta layer like Hades's Mirror of Night, unlocked by the progression unlocks f
 23. ~~Value of `defenceConstant`, and whether a minimum of 1 damage applies (section 9.1).~~ Retired 2026-10-23: defence sets health, damage is power minus Armour, and there is no minimum ([keywords.md](keywords.md), 17.6).
 24. Which gear slots carry keyword modifiers. Gear carries them (9.7, decided 2026-10-17); whether every slot does, and which modifiers suit which slot, is still open (see question 49).
 25. Whether a rival caravan copy carries the consumable buffs active when it was copied ([ghosts.md](ghosts.md)).
-26. Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.
+26. ~~Number of milestone upgrades per run, choices per offer, and the per-hero milestone criteria.~~ Answered 2026-10-24: one offer of 3 per region, pick 1 ([progression.md](progression.md), 19.3).
 37. **Damage buckets** (9.7 proposes publishing the rule, in the style of Path of Exile's "increased" and "more"): whether bonuses are grouped so that those in the same group add together and the groups multiply, in a fixed order (for example base, power and gear percentages, situation such as flanking and conceal, then target defence and barrier), making stacking predictable and tuning a matter of which group a bonus joins. Phase 1 uses a fixed multiplicative order ([phase-1-brief.md](phase-1-brief.md), section 2).
 38. Whether consumables can be used before a PvP duel, and which ones ([pvp.md](pvp.md)).
 39. How an ultimate unlocks now that actions have no cost (10.10): after a number of Temee's turns, of the hero's own turns, or something else; and whether ultimates come back at all.
