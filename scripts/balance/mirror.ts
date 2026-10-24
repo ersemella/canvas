@@ -10,7 +10,7 @@
 import {createFight, advance, applyTurn, actingUnit} from '@balance-rules/fight';
 import {chooseAiTurn} from '@balance-rules/ai';
 import {AI, CAMEL} from '@balance-rules/config';
-import {hexKey, hexToOffset, offsetToHex} from '@canvas/engine/server';
+import {hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import type {FightState, HeroId, Side, TurnInput, Unit} from '@balance-rules/types';
 
@@ -45,10 +45,9 @@ function chooser(variant: Variant) {
   };
 }
 
-/** The board's left-right mirror (map.ts): column c and 7 − c on even rows, c and 6 − c on odd. */
+/** The board's left-right mirror (map.ts): the hexagon of flat-top hexes about its centre column. */
 function mirrorHex(h: Hex): Hex {
-  const {col, row} = hexToOffset(h);
-  return offsetToHex({col: (row & 1 ? 6 : 7) - col, row});
+  return {q: -h.q, r: h.q + h.r};
 }
 
 /** A fight as dealt by its seed, with the camel taken out. */
