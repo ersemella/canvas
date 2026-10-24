@@ -18,12 +18,13 @@ import {
   insideHex,
 } from './pixels';
 import ruinsImage from '../tiles/ruins.png';
+import ruinsTowerImage from '../tiles/ruins-tower.png';
 import grassImage from '../tiles/grass.png';
 
 /** The ground's colour until its textures load. */
 const GRASS = '#8e9858';
 /** Every hex's border: a shade darker than the grass. */
-const BORDER = '#5f6b3e';
+const BORDER = '#3f4a27';
 
 /**
  * The ground texture of each tile type: the Steppe's grass (the `sand`
@@ -154,9 +155,13 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex): void {
   ctx.restore();
 }
 
+/** The ruins' shapes, a wall and a tower stump: each ruin's hex picks one. */
+const RUINS_IMAGES = [ruinsImage, ruinsTowerImage];
+
 /** A ruin standing on its hex like a unit: over sandstorm and hail, so it always reads as blocked. */
 export function drawRuins(ctx: CanvasRenderingContext2D, h: Hex): void {
-  const ruins = assetLoader.requestImage(ruinsImage);
+  const pick = Math.floor(hexRandom(h, 1)() * RUINS_IMAGES.length);
+  const ruins = assetLoader.requestImage(RUINS_IMAGES[pick]!);
   if (ruins) {
     const c = center(h);
     const size = ruins.width * SPRITE_SCALE;

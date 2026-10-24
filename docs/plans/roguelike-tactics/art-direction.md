@@ -49,9 +49,10 @@ tuning. This file has no combat-design section number.
 - **The Steppe's ground** (owner, 2026-10-24): the board was sand and
   sandstone ruins, a desert, while every stage built is in the Steppe
   region ([setting.md](setting.md), 15.3a). The ground is now steppe
-  grass (`tiles/grass.png`) and the ruins a crumbling mudbrick wall, the
-  ruins of a steppe city such as the Uyghur capital Karabalgasun
-  (`tiles/ruins.png`); boulders and gers were tried and felt out of place.
+  grass (`tiles/grass.png`) and the ruins those of a steppe city such as
+  the Uyghur capital Karabalgasun: a crumbling mudbrick wall
+  (`tiles/ruins.png`) or a collapsed tower stump (`tiles/ruins-tower.png`),
+  each ruin's hex picking one; boulders and gers were tried and felt out of place.
   Both are the owner's (AI-assisted, 2026-10-24). The grass is a 64×64
   seamless tile laid across the board as one field (a pattern from the
   board's origin), not stamped per hex. The `sand`
