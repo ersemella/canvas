@@ -414,8 +414,9 @@ interface SearchNode {
   tried: number;
   /** The legal ones of those, scored, in the order played. */
   scored: SearchOption[];
-  /** The best of `scored`, searched on, once the node is screened. */
+  /** The best of `scored`, searched on, once the node is screened, and how many were kept. */
   options?: SearchOption[];
+  width?: number;
   children: Map<SearchOption, SearchNode>;
   /**
    * The fight ended while the track ran on to the next decision (a shot
@@ -577,10 +578,13 @@ export function chooseAiTurn(
       if (node.scored.length === 0) throw exhausted;
       return value;
     }
-    if (!node.options) {
+    // A node handed over from the previous turn's search may have been
+    // shortlisted a decision further from that search's root, narrower.
+    if (!node.options || node.width !== widthAt(ply)) {
       while (tryNext(node, AI.replySimulations));
       scoreAll(node);
-      node.options = shortlist(node.scored, widthAt(ply));
+      node.width = widthAt(ply);
+      node.options = shortlist(node.scored, node.width);
       if (node.options.length === 0) throw exhausted;
     }
     for (const option of node.options) {
@@ -597,6 +601,21 @@ export function chooseAiTurn(
   try {
     if (local.left <= 0) return {action: {ability: 'hold'}};
     root = nodeAt(state, unit);
+    // The previous turn's search reached this decision: the turns it played
+    // here, in the same order, come at no cost, and those it searched on
+    // bring their subtrees, already screened. The root scores them afresh,
+    // with its threat map.
+    if (settings.reuse?.inputs) {
+      const lent = settings.reuse;
+      root.inputs = lent.inputs!;
+      root.tried = lent.tried;
+      for (const theirs of lent.scored) {
+        const mine = {...theirs, score: NaN};
+        root.scored.push(mine);
+        const child = lent.children.get(theirs);
+        if (child) root.children.set(mine, child);
+      }
+    }
     // Reserve most work for actual replies, rather than spending it all
     // on the root. Small remaining budgets retain a useful greedy turn.
     const rootLimit = Math.min(AI.rootSimulations, local.left);
@@ -606,16 +625,6 @@ export function chooseAiTurn(
     root.options = options;
     if (!options.length) return {action: {ability: 'hold'}};
     completed = options[0]!;
-    // The previous turn's search reached this decision: an option it
-    // searched on brings its subtree, already screened, at no cost.
-    if (settings.reuse) {
-      const lent = new Map(settings.reuse.scored.map((o) => [inputKey(o.input), o]));
-      for (const option of options) {
-        const theirs = lent.get(inputKey(option.input));
-        const child = theirs && settings.reuse.children.get(theirs);
-        if (child) root.children.set(option, child);
-      }
-    }
     if (stats) stats.completedDepth = 1;
     for (let depth = 2; depth <= (settings.depth ?? AI.searchDepth); depth++) {
       let winner = options[0]!;
