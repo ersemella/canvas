@@ -1,7 +1,8 @@
 // Skirmish as the Outrider's main attack (2026-10-24): in place of the Bow,
 // instant (charge 0), the step optional (it may shoot from where it
-// stands), at ranges unlimited, 5, 4 and 3; against today's kit (the Bow
-// and Hold) as `today`. Each ability removed from one side, and the
+// stands), at ranges unlimited, 5, 4 and 3, and at range 3 with the step
+// required (`range-3-step`); against today's kit (the Bow and Hold) as
+// `today`. Each ability removed from one side, and the
 // caravans that bring an Outrider (player wins).
 const variants = {
   today: null,
@@ -9,6 +10,7 @@ const variants = {
   'range-5': 5,
   'range-4': 4,
   'range-3': 3,
+  'range-3-step': {range: 3, stay: false},
 };
 const caravans = {
   'mangudai+2wolves': ['mangudai', 'wolf', 'wolf'],
@@ -23,7 +25,8 @@ export const experiments = Object.fromEntries(
     const patch = (c) => {
       if (range === null) return;
       c.HEROES.mangudai.abilities = ['skirmish', 'hold'];
-      Object.assign(c.ABILITY.skirmish, {charge: 0, stay: true, range});
+      const set = typeof range === 'number' ? {range, stay: true} : range;
+      Object.assign(c.ABILITY.skirmish, {charge: 0, ...set});
     };
     const bans = [[attack], ['hail'], ['grapple'], ['throw']];
     return [
