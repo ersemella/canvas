@@ -3,6 +3,7 @@ import {
   hexDistance,
   hexEquals,
   hexKey,
+  hexFromKey,
   hexNeighbors,
   hexToOffset,
   hexToPixel,
@@ -457,7 +458,7 @@ describe('the board', () => {
     }
   });
 
-  it('scatters each fight’s ruins by its seed: unmirrored, clear of the edges, the board connected', () => {
+  it('scatters each fight’s ruins by its seed: unmirrored, clear of the starting columns, spread out, the board connected', () => {
     const count = (tiles: Record<string, string>, t: string) =>
       Object.values(tiles).filter((v) => v === t).length;
     const layouts = new Set<string>();
@@ -473,10 +474,14 @@ describe('the board', () => {
       for (const [key, tile] of Object.entries(map.tiles)) {
         const [q, r] = key.split(',').map(Number);
         const {col, row} = hexToOffset({q: q!, r: r!});
-        // Two columns clear of each edge.
-        expect(col >= (row & 1 ? 1 : 2) && col <= 4).toBe(true);
+        // Off the starting columns.
+        expect(col >= (row & 1 ? 0 : 1) && col <= 5).toBe(true);
         if (tile === 'obstacle') ruinRows.push(row);
       }
+      // Spread out: no two ruins side by side.
+      const ruins = Object.keys(map.tiles).map(hexFromKey);
+      for (const a of ruins)
+        for (const b of ruins) if (a !== b) expect(hexDistance(a, b)).toBeGreaterThan(1);
       expect(ruinRows.filter((r) => r <= 3)).toHaveLength(3);
       expect(ruinRows.filter((r) => r >= 4)).toHaveLength(3);
       // Every open hex can be walked to from every other.
