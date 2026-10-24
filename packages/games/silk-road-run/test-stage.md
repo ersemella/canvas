@@ -2,8 +2,8 @@
 
 A single fight you set up by hand in [`test-stage.json`](test-stage.json),
 for play-testing a line-up, stats or an ability the run's stages don't
-bring. Start it from the start menu: tap the invisible button in the
-screen's bottom-right corner (a 48-pixel square). It is a run of one fight: win it and the run is won; there is no
+bring. Start it from the start menu's **Test stage** button (under Back to
+Canvas). It is a run of one fight: win it and the run is won; there is no
 next stage.
 
 The server reads the file when the stage starts, so after an edit start
