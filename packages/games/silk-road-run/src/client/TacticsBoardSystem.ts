@@ -20,7 +20,14 @@ import {
   drawGround,
   drawRuins,
 } from './board/ground';
-import {HIGHLIGHT, HOVER, drawLanes, drawPath, drawRangeOutline} from './board/overlays';
+import {
+  HIGHLIGHT,
+  HOVER,
+  drawLaneArrow,
+  drawLanes,
+  drawPath,
+  drawRangeOutline,
+} from './board/overlays';
 import {
   MARK,
   drawDamage,
@@ -36,12 +43,11 @@ import {
   statusMarks,
   turnArrowBob,
 } from './board/units';
-import {center, fillHex} from './board/pixels';
+import {SIDE_LIGHT, center, fillHex} from './board/pixels';
 import type {Point} from './board/pixels';
 import {WALK_OUT_STEP_SECONDS, walkOutPlan, walkPosition} from './board/walkOut';
 import type {Walk} from './board/walkOut';
 import {drawPlaybackEvent, playbackScene, steppingAt} from './board/playbackDraw';
-import {drawShotMark} from './board/effects';
 
 /** Seconds a gone status's marker takes to rise off its unit and fade. */
 const MARK_EXPIRE_SECONDS = 0.9;
@@ -382,10 +388,12 @@ export class TacticsBoardSystem extends BaseSystem {
 
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
-    // Drawn arrows' lanes, in front of whoever stands in them.
+    // Drawn arrows in the air: an arrow, as the bow aims, from the shooter to
+    // where it would hit now, in its side's light colour.
     for (const v of fight.shots ?? []) {
-      const side = fight.units.find((u) => u.id === v.source)?.side ?? 'player';
-      drawShotMark(ctx, shotLane(fight, map, v), side);
+      const archer = fight.units.find((u) => u.id === v.source);
+      const last = shotLane(fight, map, v).at(-1);
+      if (archer?.hex && last) drawLaneArrow(ctx, archer.hex, last, SIDE_LIGHT[archer.side]);
     }
 
     if (playing) drawPlaybackEvent(ctx, playing);

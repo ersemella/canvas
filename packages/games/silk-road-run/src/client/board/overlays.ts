@@ -1,7 +1,7 @@
 /**
  * What the turn being planned draws over the board: highlighted hexes,
- * a move's path, an ability's range, the bow's lanes, Throw's arc, and
- * charging areas.
+ * a move's path, an ability's range, the bow's lanes and drawn arrows in
+ * the air, Throw's arc, and charging areas.
  */
 import {hexCorners, hexKey, pixelToHex} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
@@ -103,6 +103,42 @@ export function drawRangeOutline(ctx: CanvasRenderingContext2D, hexes: Hex[]): v
 }
 
 /**
+ * A targeting arrow from `from` towards `to`, its head stopping at `to`'s
+ * hex and pointing at it: the bow's lanes, and a drawn arrow in the air.
+ */
+export function drawLaneArrow(
+  ctx: CanvasRenderingContext2D,
+  from: Hex,
+  to: Hex,
+  color: string = PALETTE.lapisLight
+): void {
+  const a = center(from);
+  const b = center(to);
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const ux = (b.x - a.x) / len;
+  const uy = (b.y - a.y) / len;
+  const start = {x: a.x + ux * 26, y: a.y + uy * 26};
+  const end = {x: b.x - ux * 34, y: b.y - uy * 34};
+  ctx.save();
+  ctx.lineCap = 'square';
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 3;
+  pixelShadow(ctx, 1);
+  ctx.beginPath();
+  ctx.moveTo(start.x, start.y);
+  ctx.lineTo(end.x - ux * 4, end.y - uy * 4);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(end.x + ux * 8, end.y + uy * 8);
+  ctx.lineTo(end.x - ux * 6 - uy * 8, end.y - uy * 6 + ux * 8);
+  ctx.lineTo(end.x - ux * 6 + uy * 8, end.y - uy * 6 - ux * 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+/**
  * The bow's lanes from `from`: to a unit it may target, a light lapis
  * arrow pointing at it; along any other lane (blocked by an ally, a ruin
  * or the edge), a faint dashed line to where the arrow would stop, so it's
@@ -113,44 +149,25 @@ export function drawLanes(ctx: CanvasRenderingContext2D, from: Hex, lanes: BowLa
   for (const lane of lanes) {
     const last = lane.hexes[lane.hexes.length - 1];
     if (!last) continue;
+    if (lane.target) {
+      drawLaneArrow(ctx, from, last);
+      continue;
+    }
+    // To the last hex's centre.
     const b = center(last);
     const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
     const ux = (b.x - a.x) / len;
     const uy = (b.y - a.y) / len;
-    const start = {x: a.x + ux * 26, y: a.y + uy * 26};
     ctx.save();
     ctx.lineCap = 'square';
-    if (lane.target) {
-      // The head stops at the target's hex, pointing at it.
-      const end = {x: b.x - ux * 34, y: b.y - uy * 34};
-      ctx.strokeStyle = PALETTE.lapisLight;
-      ctx.fillStyle = PALETTE.lapisLight;
-      ctx.lineWidth = 3;
-      pixelShadow(ctx, 1);
-      ctx.beginPath();
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x - ux * 4, end.y - uy * 4);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(end.x + ux * 8, end.y + uy * 8);
-      ctx.lineTo(end.x - ux * 6 - uy * 8, end.y - uy * 6 + ux * 8);
-      ctx.lineTo(end.x - ux * 6 + uy * 8, end.y - uy * 6 - ux * 8);
-      ctx.closePath();
-      ctx.fill();
-    } else {
-      // To the last hex's centre.
-      const end = b;
-      ctx.save();
-      ctx.globalAlpha = 0.6;
-      ctx.strokeStyle = PALETTE.lapisLight;
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 5]);
-      ctx.beginPath();
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x, end.y);
-      ctx.stroke();
-      ctx.restore();
-    }
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = PALETTE.lapisLight;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath();
+    ctx.moveTo(a.x + ux * 26, a.y + uy * 26);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
     ctx.restore();
   }
 }

@@ -1,20 +1,10 @@
 /**
  * Abilities' effects as a turn plays back (Sunlight's beam; the arrows are
- * drawn by the playback), and a drawn arrow's lane while it is in the air.
+ * drawn by the playback).
  */
 import type {Hex} from '@canvas/engine';
-import type {AbilityId, Side} from '../../rules/types';
-import {
-  SIDE_LIGHT,
-  SPRITE_SCALE,
-  artCell,
-  artLine,
-  artPixel,
-  center,
-  ditherFill,
-  hexPath,
-  hexRandom,
-} from './pixels';
+import type {AbilityId} from '../../rules/types';
+import {SPRITE_SCALE, artCell, artLine, artPixel, center, ditherFill, hexRandom} from './pixels';
 
 /** Frames a second the playback's effects move in: steps, like the units' idles and the weather. */
 export const EFFECT_FPS = 12;
@@ -134,30 +124,4 @@ function drawSunlight(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): 
     const [ax, ay] = artCell(x, c.y + 14 - m * 60);
     artPixel(ctx, ax, ay, i % 3 === 0 ? '#ffffff' : '#fde047');
   }
-}
-
-/**
- * A drawn arrow's lane while it is in the air: a bold dashed edge in the
- * shooter's side's light colour (targeting's lapis, or madder) round each
- * of its spaces, and on the last, where it would hit now, three
- * arrows hanging point-down. Drawn over the units, like hail, but only at
- * the edge, so whoever stands there still shows.
- */
-export function drawShotMark(ctx: CanvasRenderingContext2D, lane: Hex[], side: Side): void {
-  lane.forEach((h, i) => {
-    ctx.save();
-    hexPath(ctx, h, 3);
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = '#221816';
-    ctx.stroke();
-    ctx.setLineDash([7, 5]);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = SIDE_LIGHT[side];
-    ctx.stroke();
-    ctx.restore();
-    if (i < lane.length - 1) return;
-    const c = center(h);
-    for (const dx of [-14, 0, 14])
-      drawPixelArrow(ctx, c.x + dx, c.y - 22 + Math.abs(dx) / 2, 0, 1, 6);
-  });
 }
