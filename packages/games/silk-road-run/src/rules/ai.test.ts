@@ -206,6 +206,29 @@ describe('the search timeline', () => {
     expect(closesOn(near)).not.toBe('temee');
   });
 
+  it('goes for the Champion grappling an ally, rather than Holding behind it', () => {
+    const rescue = (from: Hex) => {
+      const s = setup(
+        {'p-bokh': hex(0, 0), 'p-mangudai': hex(-4, 4), 'e-wolf': hex(1, 0), 'e-wolf-2': from},
+        ['wolf', 'wolf']
+      );
+      const held = unit(s, 'e-wolf');
+      held.statuses = [{kind: 'stunned', grapple: {champion: 'p-bokh', target: held.id}}];
+      const me = unit(s, 'e-wolf-2');
+      me.slot = 0;
+      unit(s, 'p-bokh').slot = 1;
+      unit(s, 'p-mangudai').slot = 2;
+      held.slot = 3;
+      s.awaiting = me.id;
+      return chooseAiTurn(s, me);
+    };
+    // Behind its packmate, out of reach: it walks up to the Champion...
+    const end = rescue(hex(2, 0)).move?.at(-1);
+    expect(end && hexDistance(end, hex(0, 0))).toBe(1);
+    // ...and next to it, bites it, which breaks the grapple.
+    expect(rescue(hex(0, 1)).action).toEqual({ability: 'bite', target: {hex: hex(0, 0)}});
+  });
+
   it('lifts its own hail before stopping for an AI decision, only once', () => {
     const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
     const me = unit(s, 'e-storm');

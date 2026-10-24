@@ -190,6 +190,12 @@ export const AI = {
    */
   enhancedShare: 0.5 as number,
   /**
+   * The share of a grappled unit's status cost the AI takes off while an
+   * ally could strike the Champion holding it (`rescueGain` in ai.ts): the
+   * hit, which breaks the grapple, comes only on that ally's next turn.
+   */
+  rescueShare: 0.5,
+  /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends
    * × the share of its health that is, and this share of `kill` if it

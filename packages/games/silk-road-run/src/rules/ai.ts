@@ -52,7 +52,32 @@ function attacksFromAfar(u: Unit): boolean {
  * walks), less what an Enhance gains it.
  */
 function statusPoints(state: FightState, u: Unit): number {
-  return statusCost(u) - enhanceGain(state, u);
+  return statusCost(u) - enhanceGain(state, u) - rescueGain(state, u);
+}
+
+/**
+ * What a grappled unit's status is less worth while one of its side's units
+ * that can act could strike the Champion holding it (`strikable`): a hit
+ * breaks the grapple. `AI.rescueShare` of it, so stepping into reach of the
+ * Champion counts and the hit that frees the unit still does. Without it a
+ * wolf behind its grappled packmate Held: the hit was past the search's
+ * horizon, and the Champion's threat outweighed closing in.
+ */
+function rescueGain(state: FightState, u: Unit): number {
+  const held = u.statuses.find((x) => x.grapple?.target === u.id)?.grapple;
+  if (!held) return 0;
+  const champion = state.units.find((c) => c.id === held.champion);
+  if (!champion?.alive) return 0;
+  const rescuer = state.units.some(
+    (a) =>
+      a !== u &&
+      a.alive &&
+      a.side === u.side &&
+      a.power > 0 &&
+      !isStunned(a) &&
+      strikable(state, a).includes(champion)
+  );
+  return rescuer ? AI.rescueShare * statusCost(u) : 0;
 }
 
 /**
