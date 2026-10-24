@@ -3,6 +3,7 @@
  * then search actual timeline decisions with budgeted alpha-beta minimax.
  */
 import {hexDistance, hexKey} from '@canvas/engine/server';
+import type {Hex} from '@canvas/engine/server';
 import {ABILITY, AI, CAMEL, HEROES} from './config';
 import {
   hostile,
@@ -231,25 +232,19 @@ function chargeCost(actor: Unit, input: TurnInput): number {
   return (chargeOf(actor, input.action.ability) / cardCost(actor)) * turnValue(actor);
 }
 
+/** A turn as a string, to tell turns apart. */
+function inputKey(input: TurnInput): string {
+  const t = input.action.target;
+  return `${input.action.ability}:${t?.hex ? hexKey(t.hex) : ''}:${t?.to ? hexKey(t.to) : ''}:${input.move?.map(hexKey).join('/') ?? ''}`;
+}
+
 /**
- * Every option for `unit` this turn, scored, up to `limit` simulations:
- * its abilities where it stands, then its moves, nearest first. A ground
- * target is only tried where it would affect a unit.
+ * Every distinct turn `unit` could take: its abilities where it stands,
+ * then its moves, nearest first. A ground target is only tried where it
+ * would affect a unit.
  */
-export function scoreOptions(
-  state: FightState,
-  unit: Unit,
-  limit = Infinity,
-  budget?: SearchBudget,
-  includeThreats = true
-): ScoredOption[] {
-  if (limit <= 0 || (budget && budget.left <= 0)) return [];
-  let simulations = 0;
+function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
   const map = mapOf(state);
-  const threats =
-    includeThreats && AI.threatFactor * AI.caution[unit.hero] > 0
-      ? threatsTo(state, map, unit)
-      : [];
   const inputs: TurnInput[] = [];
   for (const def of abilitiesOf(unit)) {
     if (unusableReason(unit, def)) continue;
@@ -266,22 +261,106 @@ export function scoreOptions(
     (a, b) => a.path.length - b.path.length
   ))
     if (reach.path.length > 0) inputs.push({move: reach.path, action: {ability: 'hold'}});
-  const out: ScoredOption[] = [];
   const tried = new Set<string>();
-  for (const input of inputs) {
-    const key = `${input.action.ability}:${input.action.target?.hex ? hexKey(input.action.target.hex) : ''}:${input.action.target?.to ? hexKey(input.action.target.to) : ''}:${input.move?.map(hexKey).join('/') ?? ''}`;
-    if (tried.has(key)) continue;
+  return inputs.filter((input) => {
+    const key = inputKey(input);
+    if (tried.has(key)) return false;
     tried.add(key);
+    return true;
+  });
+}
+
+/**
+ * A cheap guess at what a turn is worth, without playing it, in the
+ * units `scoreOutcome` uses (AI.search.ordered): a hit's damage, a
+ * kill's worth and a status's, on an enemy, against an ally; and the
+ * spaces the turn leaves between `unit` and what it closes in on
+ * (`quarryGap`). Any turn aimed at an enemy ranks above any walk.
+ */
+function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: boolean): number {
+  const target = input.action.target;
+  const end = input.move?.length
+    ? input.move[input.move.length - 1]!
+    : input.action.ability === 'skirmish' && target?.to
+      ? target.to
+      : unit.hex!;
+  const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
+  if (input.move?.length || input.action.ability === 'hold') return closing;
+  const hit = target?.hex ? unitAt(state, target.hex) : undefined;
+  // Hail on an empty space: denying it is seldom the best turn.
+  if (!hit) return closing - 1;
+  // Sunlight: an Enhance, for a side's own unit that could hit with it.
+  if (input.action.ability === 'sunlight') {
+    const gain = hit.power > 0 && !hit.enhance ? 1 + enhanceGuess(state, hit) : 0;
+    return closing + (hostile(hit, unit) ? -gain : gain);
+  }
+  const damage = Math.min(damageOf(unit), hit.hp);
+  let value = damage * (hit.hero === CAMEL ? AI.camelHealthWeight : 1);
+  if (damage > 0 && damage >= hit.hp && hit.hero !== CAMEL) value += AI.kill;
+  if (input.action.ability === 'grapple') value += turnValue(hit) * AI.stunnedShare;
+  if (input.action.ability === 'hail') value += turnValue(hit) * AI.immobilizedShare.melee;
+  return closing + (hostile(hit, unit) ? 1 + value : -1 - value * AI.friendlyDamageFactor);
+}
+
+/** What Sunlight's Enhance on `u` might be worth (`enhanceGain`, before it has an Enhance). */
+function enhanceGuess(state: FightState, u: Unit): number {
+  const targets = strikable(state, u);
+  if (targets.length === 0) return 0;
+  const reach = u.power + ABILITY.sunlight.enhance;
+  const kill = targets.some((t) => t.hero !== CAMEL && t.hp > u.power && t.hp <= reach);
+  return AI.enhancedShare * (ABILITY.sunlight.enhance + (kill ? AI.kill : 0));
+}
+
+/** `unit`'s turns, best guess first (`guessValue`), or as listed without AI.search.ordered. */
+function orderedInputs(state: FightState, unit: Unit): TurnInput[] {
+  const inputs = candidateInputs(state, unit);
+  if (!AI.search.ordered) return inputs;
+  const hunting = huntsTemee(state, unit);
+  const guesses = new Map(inputs.map((i) => [i, guessValue(state, unit, i, hunting)]));
+  // Stable: equal guesses keep the listed order.
+  return inputs.sort((a, b) => guesses.get(b)! - guesses.get(a)!);
+}
+
+/** The threat map `unit`'s options are scored against, if its caution counts it. */
+function threatsFor(state: FightState, unit: Unit, includeThreats: boolean): Threat[] {
+  return includeThreats && AI.threatFactor * AI.caution[unit.hero] > 0
+    ? threatsTo(state, mapOf(state), unit)
+    : [];
+}
+
+/** `input` played for `unit` and scored (`scoreOutcome`), or null if illegal. */
+function scoreOption(
+  state: FightState,
+  unit: Unit,
+  input: TurnInput,
+  threats: Threat[]
+): ScoredOption | null {
+  const after = simulate(state, unit.id, input, true);
+  if (!after) return null;
+  return {input, score: scoreOutcome(state, after, unit, threats) - chargeCost(unit, input), after};
+}
+
+/**
+ * Every option for `unit` this turn, scored, up to `limit` simulations,
+ * best guess first (`orderedInputs`).
+ */
+export function scoreOptions(
+  state: FightState,
+  unit: Unit,
+  limit = Infinity,
+  budget?: SearchBudget,
+  includeThreats = true
+): ScoredOption[] {
+  if (limit <= 0 || (budget && budget.left <= 0)) return [];
+  let simulations = 0;
+  const threats = threatsFor(state, unit, includeThreats);
+  const out: ScoredOption[] = [];
+  for (const input of orderedInputs(state, unit)) {
     if (simulations >= limit || (budget && budget.left <= 0)) return out;
     simulations++;
     if (budget) budget.left--;
-    const after = simulate(state, unit.id, input, true);
-    if (!after) continue;
-    out.push({
-      input,
-      score: scoreOutcome(state, after, unit, threats) - chargeCost(unit, input),
-      after,
-    });
+    const option = scoreOption(state, unit, input, threats);
+    if (option) out.push(option);
   }
   return out;
 }
@@ -317,11 +396,27 @@ export interface SearchStats {
   value?: number;
 }
 
+/**
+ * An option the search tried, with its `actionCost`. Its `score` is NaN
+ * until the node is shortlisted (`scoreAll`): the last decision only
+ * evaluates the fight after it.
+ */
+interface SearchOption extends ScoredOption {
+  cost: number;
+}
+
 interface SearchNode {
   state: FightState;
   actor: Unit | undefined;
-  options?: ScoredOption[];
-  children: Map<ScoredOption, SearchNode>;
+  /** Its actor's turns in the order they're tried (`orderedInputs`), once listed. */
+  inputs?: TurnInput[];
+  /** How many of `inputs` have been played, illegal ones included. */
+  tried: number;
+  /** The legal ones of those, scored, in the order played. */
+  scored: SearchOption[];
+  /** The best of `scored`, searched on, once the node is screened. */
+  options?: SearchOption[];
+  children: Map<SearchOption, SearchNode>;
   /**
    * The fight ended while the track ran on to the next decision (a shot
    * landing, a squeeze), not with the option itself: a turn later.
@@ -350,9 +445,22 @@ export function evaluatePosition(state: FightState, side: Side): number {
   return score;
 }
 
-/** Keep a small heuristic shortlist; equal scores retain the enumeration order. */
-function shortlist(options: ScoredOption[]): ScoredOption[] {
-  return options.sort((a, b) => b.score - a.score).slice(0, AI.searchWidth);
+/** The `width` best options; equal scores keep the order they were tried in. */
+function shortlist<T extends ScoredOption>(options: T[], width: number): T[] {
+  return [...options].sort((a, b) => b.score - a.score).slice(0, width);
+}
+
+/** How many options a decision `ply` decisions from the root searches on (AI.search.widths). */
+function widthAt(ply: number): number {
+  const {widths} = AI.search;
+  return widths[Math.min(ply, widths.length - 1)]!;
+}
+
+/** What a request's next AI turn may take over of the turn before's search (AI.search.reuse). */
+export interface SearchTree {
+  root: SearchNode;
+  /** The root option the turn chose. */
+  chosen: SearchOption;
 }
 
 /**
@@ -360,13 +468,21 @@ function shortlist(options: ScoredOption[]): ScoredOption[] {
  * successor expansion, and iterative deepening only commits complete depths.
  * `prune=false` is an exhaustive reference over the same selective tree.
  * A depth override supports comparisons at a fixed completed horizon.
+ * `reuse`, the decision reached in the previous turn's search, lends this
+ * search the subtrees of the options both share; `keep` receives this
+ * one's tree for the next.
  */
 export function chooseAiTurn(
   state: FightState,
   unit: Unit,
   budget: SearchBudget = {left: AI.requestSimulations},
   stats?: SearchStats,
-  settings: {prune?: boolean; depth?: number} = {}
+  settings: {
+    prune?: boolean;
+    depth?: number;
+    reuse?: SearchNode | undefined;
+    keep?: (tree: SearchTree) => void;
+  } = {}
 ): TurnInput {
   const initial = Math.max(0, budget.left);
   const local: SearchBudget = {left: Math.min(AI.maxSimulations, initial)};
@@ -374,24 +490,58 @@ export function chooseAiTurn(
     Object.assign(stats, {completedDepth: 0, cutoffs: 0, work: 0});
     delete stats.value;
   }
+  const prune = settings.prune !== false;
   const spend = () => {
     if (local.left <= 0) throw exhausted;
     local.left--;
   };
-  const childOf = (node: SearchNode, option: ScoredOption): SearchNode => {
+  const nodeAt = (state: FightState, actor: Unit | undefined): SearchNode => ({
+    state,
+    actor,
+    tried: 0,
+    scored: [],
+    children: new Map(),
+  });
+  // Plays a node's next untried turn, spending a unit of work; false once
+  // none is left within `limit`.
+  const tryNext = (node: SearchNode, limit: number): boolean => {
+    node.inputs ??= orderedInputs(node.state, node.actor!);
+    if (node.tried >= Math.min(limit, node.inputs.length)) return false;
+    spend();
+    const input = node.inputs[node.tried++]!;
+    const after = simulate(node.state, node.actor!.id, input, true);
+    if (after) {
+      const option = {input, after, score: NaN};
+      node.scored.push({...option, cost: actionCost(node.state, node.actor!, option)});
+    }
+    return true;
+  };
+  // Scores a node's played options (`scoreOutcome`) for its shortlist.
+  const scoreAll = (node: SearchNode, threats: Threat[] = []) => {
+    for (const o of node.scored)
+      if (Number.isNaN(o.score))
+        o.score =
+          scoreOutcome(node.state, o.after, node.actor!, threats) - chargeCost(node.actor!, o.input);
+  };
+  const childOf = (node: SearchNode, option: SearchOption): SearchNode => {
     let child = node.children.get(option);
     if (!child) {
       // Advance lazily: a cutoff never runs this branch's timeline or
       // generates its replies. Cached copies are private to this turn.
       const state = cloneFight(option.after);
-      const actor = advanceToDecision(state, spend);
-      child = {state, actor, children: new Map()};
+      child = nodeAt(state, advanceToDecision(state, spend));
       if (option.after.phase === 'fight' && state.phase !== 'fight') child.endedLater = true;
       node.children.set(option, child);
     }
     return child;
   };
-  const search = (node: SearchNode, depth: number, alpha: number, beta: number): number => {
+  const search = (
+    node: SearchNode,
+    ply: number,
+    depth: number,
+    alpha: number,
+    beta: number
+  ): number => {
     // A fight already over: sooner is worth more, a win taken now above one
     // a turn later, a loss now below a later one.
     if (node.state.phase !== 'fight')
@@ -399,53 +549,82 @@ export function chooseAiTurn(
         evaluatePosition(node.state, unit.side) * (1 + (depth - (node.endedLater ? 1 : 0)) / 100)
       );
     if (depth === 0 || !node.actor) return evaluatePosition(node.state, unit.side);
-    if (!node.options) {
-      if (local.left <= 0) throw exhausted;
-      const allowance = Math.min(AI.replySimulations, local.left);
-      // Replies use the immediate heuristic: their actual consequences
-      // are searched, so rebuilding a speculative threat map here is wasteful.
-      node.options = shortlist(scoreOptions(node.state, node.actor, allowance, local, false));
-      // A partially screened node must not turn an unfinished depth into
-      // an apparently complete one when the budget ran out mid-screen.
-      if (local.left <= 0 || node.options.length === 0) throw exhausted;
-    }
     const maximize = node.actor.side === unit.side;
     let value = maximize ? -Infinity : Infinity;
-    for (const option of node.options) {
-      const cost = actionCost(node.state, node.actor, option);
-      const adjustment = maximize ? -cost : cost;
-      const next =
-        search(childOf(node, option), depth - 1, alpha - adjustment, beta - adjustment) +
-        adjustment;
+    const consider = (option: SearchOption, next: number): boolean => {
       value = maximize ? Math.max(value, next) : Math.min(value, next);
       if (maximize) alpha = Math.max(alpha, value);
       else beta = Math.min(beta, value);
-      if (settings.prune !== false && alpha >= beta) {
+      if (prune && alpha >= beta) {
         if (stats) stats.cutoffs++;
-        break;
+        return true;
       }
+      return false;
+    };
+    // The last decision (AI.search.frontier): each reply scored as it is
+    // played, as the fight it leaves, with no track run on after it, and
+    // the rest left unplayed once one settles the node. Replies use the
+    // immediate heuristic: their actual consequences are searched, so
+    // rebuilding a speculative threat map here is wasteful.
+    if (depth === 1 && AI.search.frontier && !node.options) {
+      for (let i = 0; ; i++) {
+        while (node.scored.length <= i && tryNext(node, AI.replySimulations));
+        const option = node.scored[i];
+        if (!option) break;
+        const adjustment = maximize ? -option.cost : option.cost;
+        if (consider(option, evaluatePosition(option.after, unit.side) + adjustment)) break;
+      }
+      if (node.scored.length === 0) throw exhausted;
+      return value;
+    }
+    if (!node.options) {
+      while (tryNext(node, AI.replySimulations));
+      scoreAll(node);
+      node.options = shortlist(node.scored, widthAt(ply));
+      if (node.options.length === 0) throw exhausted;
+    }
+    for (const option of node.options) {
+      const adjustment = maximize ? -option.cost : option.cost;
+      const next =
+        search(childOf(node, option), ply + 1, depth - 1, alpha - adjustment, beta - adjustment) +
+        adjustment;
+      if (consider(option, next)) break;
     }
     return value;
   };
-  let completedInput: TurnInput = {action: {ability: 'hold'}};
+  let completed: SearchOption | undefined;
+  let root: SearchNode | undefined;
   try {
     if (local.left <= 0) return {action: {ability: 'hold'}};
+    root = nodeAt(state, unit);
     // Reserve most work for actual replies, rather than spending it all
     // on the root. Small remaining budgets retain a useful greedy turn.
     const rootLimit = Math.min(AI.rootSimulations, local.left);
-    const options = shortlist(scoreOptions(state, unit, rootLimit, local));
-    let best = options[0]?.input ?? {action: {ability: 'hold'} as const};
-    completedInput = best;
-    if (!options.length) return best;
+    while (tryNext(root, rootLimit));
+    scoreAll(root, threatsFor(state, unit, true));
+    const options = shortlist(root.scored, widthAt(0));
+    root.options = options;
+    if (!options.length) return {action: {ability: 'hold'}};
+    completed = options[0]!;
+    // The previous turn's search reached this decision: an option it
+    // searched on brings its subtree, already screened, at no cost.
+    if (settings.reuse) {
+      const lent = new Map(settings.reuse.scored.map((o) => [inputKey(o.input), o]));
+      for (const option of options) {
+        const theirs = lent.get(inputKey(option.input));
+        const child = theirs && settings.reuse.children.get(theirs);
+        if (child) root.children.set(option, child);
+      }
+    }
     if (stats) stats.completedDepth = 1;
-    const root: SearchNode = {state, actor: unit, options, children: new Map()};
     for (let depth = 2; depth <= (settings.depth ?? AI.searchDepth); depth++) {
       let winner = options[0]!;
       let value = -Infinity;
       const values = new Map<ScoredOption, number>();
       for (const option of options) {
-        const cost = actionCost(state, unit, option);
-        const next = search(childOf(root, option), depth - 1, value + cost, Infinity) - cost;
+        const next =
+          search(childOf(root, option), 1, depth - 1, value + option.cost, Infinity) -
+          option.cost;
         values.set(option, next);
         if (next > value) {
           value = next;
@@ -457,23 +636,30 @@ export function chooseAiTurn(
       // A pruned option's value is only an upper bound, which still sorts it
       // below the winner it lost to.
       options.sort((a, b) => values.get(b)! - values.get(a)!);
-      best = winner.input;
-      completedInput = best;
+      completed = winner;
       if (stats) {
         stats.completedDepth = depth;
         stats.value = value;
       }
     }
-    return best;
+    return completed.input;
   } catch (e) {
     if (e !== exhausted) throw e;
     // Updated only after every root candidate has completed the depth.
-    return completedInput;
+    return completed?.input ?? {action: {ability: 'hold'}};
   } finally {
     const used = Math.min(AI.maxSimulations, initial) - local.left;
     budget.left = initial - used;
     if (stats) stats.work = used;
+    if (root && completed) settings.keep?.({root, chosen: completed});
   }
+}
+
+/** The parts of a fight that decide what happens next: not its log or events. */
+function sameFight(a: FightState, b: FightState): boolean {
+  const key = (s: FightState) =>
+    JSON.stringify([s.phase, s.currentSlot, s.awaiting, s.units, s.effects, s.shots ?? []]);
+  return a.mapId === b.mapId && a.tiles === b.tiles && key(a) === key(b);
 }
 
 /**
@@ -483,8 +669,12 @@ export function chooseAiTurn(
  * greedy AI.turnFloorSimulations rather than a Hold. Taking the full cap in
  * turn order left the third unit of a stage-one band (a hero, two wolves)
  * nothing, so it Held where it stood, on 1 in 20 of the wolves' turns.
+ * Each turn's search hands the next the part of its tree that follows from
+ * what it chose, when the fight came out as that search expected
+ * (AI.search.reuse).
  */
 export function requestChooser(budget: SearchBudget): (state: FightState, unit: Unit) => TurnInput {
+  let previous: SearchTree | undefined;
   return (state, unit) => {
     let human = Infinity;
     for (const u of state.units)
@@ -502,7 +692,16 @@ export function requestChooser(budget: SearchBudget): (state: FightState, unit: 
       left: Math.max(AI.turnFloorSimulations, Math.floor(budget.left / (due + 1))),
     };
     const given = share.left;
-    const input = chooseAiTurn(state, unit, share);
+    const reached = previous?.root.children.get(previous.chosen);
+    const reuse =
+      AI.search.reuse && reached?.actor?.id === unit.id && sameFight(reached.state, state)
+        ? reached
+        : undefined;
+    previous = undefined;
+    const input = chooseAiTurn(state, unit, share, undefined, {
+      reuse,
+      keep: (tree) => (previous = tree),
+    });
     budget.left = Math.max(0, budget.left - (given - share.left));
     return input;
   };
@@ -544,12 +743,18 @@ function huntsTemee(state: FightState, me: Unit): boolean {
  * to close in on.
  */
 function quarryGap(state: FightState, me: Unit, hunting: boolean): number {
-  if (!me.alive || !me.hex || me.hero === CAMEL) return 0;
+  if (!me.alive || !me.hex) return 0;
+  return gapFrom(state, me, me.hex, hunting);
+}
+
+/** `quarryGap` were `me` standing on `at`. */
+function gapFrom(state: FightState, me: Unit, at: Hex, hunting: boolean): number {
+  if (me.hero === CAMEL) return 0;
   const camel = hunting ? camelOf(state) : undefined;
-  if (camel?.alive && camel.hex) return hexDistance(me.hex, camel.hex);
+  if (camel?.alive && camel.hex) return hexDistance(at, camel.hex);
   let nearest = Infinity;
   for (const e of state.units) {
-    if (e.alive && e.hex && hostile(e, me)) nearest = Math.min(nearest, hexDistance(me.hex, e.hex));
+    if (e.alive && e.hex && hostile(e, me)) nearest = Math.min(nearest, hexDistance(at, e.hex));
   }
   return Number.isFinite(nearest) ? nearest : 0;
 }

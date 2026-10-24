@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {hexDistance, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {chooseAiTurn, evaluatePosition, requestChooser, scoreOptions, simulate} from './ai';
-import type {SearchStats} from './ai';
+import type {SearchStats, SearchTree} from './ai';
 import {AI, HEROES} from './config';
 import {advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
 import {createRun} from './run';
@@ -276,6 +276,44 @@ describe('the search timeline', () => {
         expect(given.slice(0, 3).every((left) => left > 0)).toBe(true);
       }
     }
+  });
+
+  it('plays the turns it guesses best first, so a reply’s few tries include its best', () => {
+    for (let seed = 0; seed < 4; seed++) {
+      const run = createRun(seed);
+      const s = run.fight;
+      for (let request = 0; request < 12 && s.phase === 'fight'; request++) {
+        const me = unit(s, s.awaiting!);
+        const all = scoreOptions(s, me, Infinity, undefined, false);
+        const best = Math.max(...all.map((o) => o.score));
+        const tried = scoreOptions(s, me, AI.replySimulations, undefined, false);
+        expect(Math.max(...tried.map((o) => o.score))).toBe(best);
+        applyTurn(s, me, chooseAiTurn(s, me));
+        advance(s, requestChooser({left: AI.requestSimulations}));
+      }
+    }
+  });
+
+  it('hands the next AI turn the part of its search that follows from its choice', () => {
+    const s = opening();
+    const me = unit(s, s.awaiting!);
+    let tree: SearchTree | undefined;
+    const input = chooseAiTurn(s, me, {left: AI.maxSimulations}, undefined, {
+      keep: (t) => (tree = t),
+    });
+    applyTurn(s, me, input);
+    const next = advanceToDecision(s)!;
+    const reached = tree!.root.children.get(tree!.chosen)!;
+    expect(reached.actor!.id).toBe(next.id);
+    const fresh = stats();
+    const lent = stats();
+    chooseAiTurn(s, next, {left: AI.maxSimulations}, fresh, {depth: 2});
+    const before = JSON.stringify(s);
+    chooseAiTurn(s, next, {left: AI.maxSimulations}, lent, {depth: 2, reuse: reached});
+    // The same horizon for less work: the replies it was handed are already played.
+    expect(lent.completedDepth).toBe(2);
+    expect(lent.work).toBeLessThan(fresh.work);
+    expect(JSON.stringify(s)).toBe(before);
   });
 
   it('still picks a greedy turn, not a Hold, once a request’s budget is spent', () => {
