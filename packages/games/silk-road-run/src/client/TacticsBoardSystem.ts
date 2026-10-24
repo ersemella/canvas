@@ -19,6 +19,7 @@ import {
   drawFallingHail,
   drawGround,
   drawRuins,
+  exitArrowPush,
 } from './board/ground';
 import {
   HIGHLIGHT,
@@ -144,8 +145,9 @@ export class TacticsBoardSystem extends BaseSystem {
   /**
    * True when this frame would draw what the last one did, so the canvas is
    * left as it is: the board is pixel art, which steps a few times a second
-   * (idle frames, quicksand, weather, hail, the turn arrow's bob), so most
-   * frames have nothing new unless something is moving.
+   * (idle frames, quicksand, weather, hail, the turn arrow's bob, the
+   * exit's chevrons), so most frames have nothing new unless something is
+   * moving.
    */
   holdsFrame({deltaTime, canvas}: SystemContext): boolean {
     this.key = this.frameKey(this.time + deltaTime, canvas);
@@ -168,6 +170,7 @@ export class TacticsBoardSystem extends BaseSystem {
       for (const u of fight.units) if (u.alive && u.hex) parts.push(idleFrame(u.id, time));
       if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
       if (this.scene.turnArrow !== false) parts.push(turnArrowBob(time));
+      if (mapOf(fight).exits.length > 0) parts.push(exitArrowPush(time, 0), exitArrowPush(time, 1));
     }
     return parts.join(' ');
   }
@@ -302,10 +305,10 @@ export class TacticsBoardSystem extends BaseSystem {
       if (slide.elapsed >= CARD_SLIDE_SECONDS) this.slides.delete(id);
     }
     const map = mapOf(fight);
-    // Hail and the turn arrow move with time, unless the device asks for reduced motion.
+    // Hail, the turn arrow and the exit's chevrons move with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
-    for (const h of map.exits) drawExit(ctx, h);
+    for (const h of map.exits) drawExit(ctx, h, t);
     for (const h of map.hexes) {
       const tile = tileAt(map, h);
       if (blocks(tile)) drawRuins(ctx, h, tile === 'mountain');
