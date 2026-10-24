@@ -12,7 +12,7 @@ import {
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES} from './config';
-import {hexNumber, onMap, tileAt} from './map';
+import {blocks, hexNumber, onMap, tileAt} from './map';
 import type {MapData, Tile} from './map';
 import type {AbilityId, FightState, ShotInAir, Status, Unit} from './types';
 
@@ -93,7 +93,7 @@ export function spacesWithin(map: MapData, h: Hex, range: number): Hex[] {
 
 /** On the map and not an obstacle: a unit may stand here. */
 export function walkable(map: MapData, h: Hex): boolean {
-  return onMap(map, h) && tileAt(map, h) !== 'obstacle';
+  return onMap(map, h) && !blocks(tileAt(map, h));
 }
 
 export function unitAt(state: FightState, h: Hex): Unit | undefined {
@@ -359,7 +359,7 @@ export function lineOfFire(
     for (const h of step) {
       const u = unitAt(state, h);
       if (u) return {clear: false, blocker: u};
-      if (tileAt(map, h) === 'obstacle') return {clear: false};
+      if (blocks(tileAt(map, h))) return {clear: false};
     }
   }
   return {clear: true};

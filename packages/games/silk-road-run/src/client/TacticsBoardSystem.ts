@@ -2,7 +2,7 @@ import {assetLoader, BaseSystem, hexKey} from '@canvas/engine';
 import type {EventBus, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
 import {shotLane, unitAt} from '../rules/board';
-import {tileAt} from '../rules/map';
+import {blocks, tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {FightState} from '../rules/types';
 import {trackCards} from './layout';
@@ -306,7 +306,10 @@ export class TacticsBoardSystem extends BaseSystem {
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h);
-    for (const h of map.hexes) if (tileAt(map, h) === 'obstacle') drawRuins(ctx, h);
+    for (const h of map.hexes) {
+      const tile = tileAt(map, h);
+      if (blocks(tile)) drawRuins(ctx, h, tile === 'mountain');
+    }
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
     // A frame mid-motion: the next draws again whatever the key says.

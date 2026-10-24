@@ -30,7 +30,7 @@ import {
   unitName,
 } from './resolve';
 import type {Ctx} from './resolve';
-import {tileAt} from './map';
+import {blocks, tileAt} from './map';
 import {chargeOf} from './track';
 import type {MapData} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
@@ -223,7 +223,7 @@ const hail: AbilityDef = {
   summary: (user) =>
     `Hail on a space until your next turn: a unit there takes ${damageText(user)}, and a unit there or that enters it is Immobilized until the hail is gone.`,
   targets: (_state, map, _user, from) =>
-    hexesWithin(map, from, ABILITY.hail.range, (h) => tileAt(map, h) !== 'obstacle'),
+    hexesWithin(map, from, ABILITY.hail.range, (h) => !blocks(tileAt(map, h))),
   resolve(ctx, user, target) {
     const hex = target.hex!;
     ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, hex));
@@ -254,7 +254,7 @@ const sunlight: AbilityDef = {
   targets(state, map, user, from) {
     const {range, self, melts} = ABILITY.sunlight;
     return hexesWithin(map, from, range, (h) => {
-      if (tileAt(map, h) === 'obstacle') return false;
+      if (blocks(tileAt(map, h))) return false;
       if (melts && state.effects.some((e) => hexEquals(e.hex, h))) return true;
       const u = unitAt(state, h);
       return u !== undefined && u.power > 0 && !u.enhance && (u !== user || self);
@@ -465,7 +465,7 @@ const gale: AbilityDef = {
   summary: (user) =>
     `A gale bursts from a space: each unit next to it takes ${damageText(user)} and is Pushed ${ABILITY.gale.push} away.`,
   targets: (_state, map, _user, from) =>
-    hexesWithin(map, from, ABILITY.gale.range, (h) => tileAt(map, h) !== 'obstacle'),
+    hexesWithin(map, from, ABILITY.gale.range, (h) => !blocks(tileAt(map, h))),
   resolve(ctx, user, target) {
     const centre = target.hex!;
     log(ctx, `${unitName(user)} calls up a gale.`);
@@ -499,7 +499,7 @@ const volley: AbilityDef = {
       map,
       from,
       ABILITY.volley.range,
-      (h) => !hexEquals(h, from) && tileAt(map, h) !== 'obstacle'
+      (h) => !hexEquals(h, from) && !blocks(tileAt(map, h))
     ),
   resolve(ctx, user, target) {
     log(ctx, `${unitName(user)} looses a volley.`);

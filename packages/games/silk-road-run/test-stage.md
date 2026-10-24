@@ -37,7 +37,7 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 | Field | What it is | Left out |
 |---|---|---|
 | `seed` | A whole number: the same seed scatters the ruins and units the same way every time. `null`: a new scatter each time. | `null` |
-| `ruins` | `"random"` (six, scattered as in a normal fight), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
+| `ruins` | `"random"` (scattered as in a normal fight: six ruins, or three and a range of 3 to 5 mountains in about half of fights), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order. You control every one. | required |
 | `enemy` | The AI's units, 1 to 9. | required |

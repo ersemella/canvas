@@ -9,7 +9,7 @@
 import {ABILITY, AI} from './config';
 import {hostile, isImmobilized, isStunned, kitOf} from './board';
 import {damageOf} from './resolve';
-import {tileAt} from './map';
+import {blocks, tileAt} from './map';
 import type {MapData} from './map';
 import type {AbilityId, FightState, Unit} from './types';
 
@@ -66,7 +66,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         for (let i = 1; i <= ABILITY.longshot.range; i++) {
           const k = id(oq + dq * i, or + dr * i);
           const tile = board.get(k);
-          if (tile === undefined || tile === 'obstacle') break;
+          if (tile === undefined || blocks(tile)) break;
           if (k !== id(fq, fr)) mark(hexes, k, d);
           if (occupied.has(k) && k !== id(fq, fr)) break;
         }
@@ -80,7 +80,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         for (let dr = Math.max(-range, -dq - range); dr <= Math.min(range, -dq + range); dr++) {
           const k = id(fq + dq, fr + dr);
           const tile = board.get(k);
-          if ((dq || dr) && tile !== undefined && tile !== 'obstacle')
+          if ((dq || dr) && tile !== undefined && !blocks(tile))
             mark(hexes, k, power * AI.dodgeShare);
         }
     }
@@ -91,7 +91,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       for (const [sq, sr] of AXIAL) {
         const k = id(fq + sq, fr + sr);
         const tile = board.get(k);
-        if (tile === undefined || tile === 'obstacle' || occupied.has(k)) continue;
+        if (tile === undefined || blocks(tile) || occupied.has(k)) continue;
         lanes(fq + sq, fr + sr, d);
       }
     }

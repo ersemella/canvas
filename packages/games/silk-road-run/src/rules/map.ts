@@ -16,7 +16,12 @@
 import {hexDistance, hexKey, hexNeighbors, offsetToHex} from '@canvas/engine/server';
 import type {Hex, OffsetCoord} from '@canvas/engine/server';
 
-export type Tile = 'sand' | 'obstacle';
+export type Tile = 'sand' | 'obstacle' | 'mountain';
+
+/** Ruins and mountains: no unit may stand there, and they stop arrows. */
+export function blocks(tile: string | undefined): boolean {
+  return tile === 'obstacle' || tile === 'mountain';
+}
 
 export interface MapData {
   id: string;
@@ -100,12 +105,27 @@ const RUINS_PER_ROWS = 3;
 const RUIN_GAP = 3;
 
 /**
- * A fight's own ruins, from `random` in [0, 1): anywhere (not mirrored,
+ * Mountains (owner, 2026-10-24): about half of fights have one range, 3 to
+ * 5 hexes in one clump, in the top or the bottom rows, never within
+ * `MOUNTAIN_CENTRE_GAP` − 1 hexes of the centre; that half has no ruins.
+ */
+const MOUNTAIN_CHANCE = 0.5;
+const MOUNTAIN_SIZES = [3, 4, 5];
+const MOUNTAIN_ROWS = [
+  [-1, 0, 1, 2],
+  [4, 5, 6, 7],
+];
+const MOUNTAIN_CENTRE_GAP = 3;
+const CENTRE = at(3, 3);
+
+/**
+ * A fight's own ruins and mountains, from `random` in [0, 1). Ruins go anywhere (not mirrored,
  * owner 2026-10-20) but the starting columns, top and bottom rows and the
  * hexes in front of the starting columns included (owner, 2026-10-24; two
  * columns clear of each edge before, which bunched them in the middle).
  * Each keeps `RUIN_GAP` hexes from the others where it can, closing in
- * only when nothing that far is left, and never cuts the board in two.
+ * only when nothing that far is left, and never cuts the board in two. A range of mountains comes first, when
+ * the fight has one, and the ruins then keep their distance from it too.
  */
 export function randomTiles(random: () => number): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
@@ -113,7 +133,18 @@ export function randomTiles(random: () => number): Record<string, Tile> {
   const candidates: OffsetCoord[] = [];
   for (let row = FIRST_ROW; row <= LAST_ROW; row++)
     for (const col of columnsOf(row).slice(1, -1)) candidates.push({col, row});
-  for (const rows of RUIN_ROWS)
+  let ruinRows = RUIN_ROWS;
+  if (random() < MOUNTAIN_CHANCE) {
+    const half = Math.floor(random() * MOUNTAIN_ROWS.length);
+    const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
+    const allowed = candidates
+      .filter((c) => MOUNTAIN_ROWS[half]!.includes(c.row))
+      .map((c) => offsetToHex(c))
+      .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP);
+    ruins.push(...mountainRange(tiles, allowed, size, random));
+    ruinRows = RUIN_ROWS.filter((_, i) => i !== half);
+  }
+  for (const rows of ruinRows)
     for (let i = 0; i < RUINS_PER_ROWS; i++)
       for (let gap = RUIN_GAP; gap >= 1; gap--) {
         const free = candidates
@@ -128,6 +159,36 @@ export function randomTiles(random: () => number): Record<string, Tile> {
         break;
       }
   return tiles;
+}
+
+/**
+ * One clump of up to `size` mountains among `allowed`, marked in `tiles`:
+ * from a random first hex it grows a hex at a time onto a neighbour of the
+ * range, the ones touching more of it first, so it stays together. Never
+ * cuts the board in two.
+ */
+function mountainRange(
+  tiles: Record<string, Tile>,
+  allowed: Hex[],
+  size: number,
+  random: () => number
+): Hex[] {
+  const range: Hex[] = [];
+  const inRange = (h: Hex) => range.some((m) => hexDistance(m, h) === 0);
+  while (range.length < size) {
+    let free = allowed.filter((h) => !inRange(h) && connectedWithout(tiles, h));
+    if (range.length) {
+      const touching = (h: Hex) => range.filter((m) => hexDistance(m, h) === 1).length;
+      const most = Math.max(0, ...free.map(touching));
+      if (most === 0) break;
+      free = free.filter((h) => touching(h) === most);
+    }
+    if (!free.length) break;
+    const h = free[Math.floor(random() * free.length)]!;
+    tiles[hexKey(h)] = 'mountain';
+    range.push(h);
+  }
+  return range;
 }
 
 /** Whether every open hex can still walk to every other with `extra` ruined too. */

@@ -22,6 +22,11 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
     short: 'Blocks movement and arrows',
     detail: 'Blocks movement and arrows.',
   },
+  mountain: {
+    name: 'Mountains',
+    short: 'Blocks movement and arrows',
+    detail: 'Blocks movement and arrows.',
+  },
 };
 
 /** The exit (camel.md, 18.2): not a tile but the camel's goal, said beside its tile. */

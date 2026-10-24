@@ -54,7 +54,8 @@ tuning. This file has no combat-design section number.
   (`tiles/ruins.png`) or a collapsed tower stump (`tiles/ruins-tower.png`),
   each ruin's hex picking one; softened from the owner's art (a dark-brown
   outline instead of the units' ink, contrast cut to 72%) so they sit
-  back as terrain and the units stand out; boulders and gers were tried and felt out of place.
+  back as terrain and the units stand out; mountains (`tiles/mountain.png`, a code-made
+  stand-in) stand on grass the same way (rules in `randomTiles`, map.ts); boulders and gers were tried and felt out of place.
   Both are the owner's (AI-assisted, 2026-10-24). The grass is a 64×64
   seamless tile laid across the board as one field (a pattern from the
   board's origin), not stamped per hex. The `sand`

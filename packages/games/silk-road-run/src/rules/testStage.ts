@@ -14,7 +14,7 @@ import {abilityCount, canMove} from './board';
 import {CAMEL, HEROES, RULES} from './config';
 import {RuleError, makeUnit, mapOf, seededRandom} from './fight';
 import {log} from './resolve';
-import {SALT_FLATS, onMap, randomTiles} from './map';
+import {SALT_FLATS, blocks, onMap, randomTiles} from './map';
 import type {Tile} from './map';
 import {placeStartingCards, shuffled} from './track';
 import type {AbilityId, FightState, HeroId, Loadout, Unit} from './types';
@@ -204,7 +204,7 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
     for (const side of ['player', 'enemy'] as const) {
       const loose = placed.filter(([u, {at}]) => u.side === side && !at && u !== camel);
       const free = map.startColumns[side].filter(
-        (h) => !fixed.some((f) => hexEquals(f, h)) && state.tiles[hexKey(h)] !== 'obstacle'
+        (h) => !fixed.some((f) => hexEquals(f, h)) && !blocks(state.tiles[hexKey(h)])
       );
       if (loose.length > free.length)
         fail(

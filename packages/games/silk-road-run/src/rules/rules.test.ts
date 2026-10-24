@@ -40,7 +40,7 @@ import {
   refreshStats,
 } from './fight';
 import {previewTurn} from './preview';
-import {SALT_FLATS, onMap, tileAt} from './map';
+import {SALT_FLATS, blocks, onMap, tileAt} from './map';
 import {checkEnd, enhance, enterHex, hit, kill, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {
@@ -563,6 +563,44 @@ describe('the board', () => {
     }
   });
 
+  it('raises one clump of 3 to 5 mountains in about half of fights, away from the centre, with no ruins in its half', () => {
+    const centre = offsetToHex({col: 3, row: 3});
+    let withMountains = 0;
+    for (let seed = 0; seed < 60; seed++) {
+      const tiles = createFight(seed).tiles;
+      const at = (t: string) =>
+        Object.keys(tiles)
+          .filter((k) => tiles[k] === t)
+          .map(hexFromKey);
+      const mountains = at('mountain');
+      if (!mountains.length) continue;
+      withMountains++;
+      expect(mountains.length).toBeGreaterThanOrEqual(3);
+      expect(mountains.length).toBeLessThanOrEqual(5);
+      // Never near the centre.
+      for (const m of mountains) expect(hexDistance(m, centre)).toBeGreaterThanOrEqual(3);
+      // One clump: every mountain reachable from the first through mountains.
+      const seen = new Set([hexKey(mountains[0]!)]);
+      const queue = [mountains[0]!];
+      for (let h; (h = queue.shift()); )
+        for (const n of mountains)
+          if (hexDistance(h, n) === 1 && !seen.has(hexKey(n))) {
+            seen.add(hexKey(n));
+            queue.push(n);
+          }
+      expect(seen.size).toBe(mountains.length);
+      // All in the top rows or all in the bottom, and that half has no ruins.
+      const top = hexToOffset(mountains[0]!).row < 3;
+      for (const m of mountains) expect(hexToOffset(m).row < 3).toBe(top);
+      for (const r of at('obstacle')) {
+        const {row} = hexToOffset(r);
+        expect(top ? row >= 3 : row <= 3).toBe(true);
+      }
+    }
+    expect(withMountains).toBeGreaterThan(15);
+    expect(withMountains).toBeLessThan(45);
+  });
+
   it('scatters each fight’s ruins by its seed: unmirrored, clear of the starting columns, spread out, the board connected', () => {
     const count = (tiles: Record<string, string>, t: string) =>
       Object.values(tiles).filter((v) => v === t).length;
@@ -573,8 +611,10 @@ describe('the board', () => {
       const map = mapOf(s);
       expect(map.tiles).toBe(s.tiles);
       expect(JSON.stringify(createFight(seed).tiles)).toBe(JSON.stringify(s.tiles));
-      expect(count(map.tiles, 'obstacle')).toBe(6);
-      expect(Object.keys(map.tiles)).toHaveLength(6);
+      // Six ruins, or three beside a range of mountains (tested below).
+      const mountains = count(map.tiles, 'mountain');
+      expect(count(map.tiles, 'obstacle')).toBe(mountains ? 3 : 6);
+      expect(Object.keys(map.tiles)).toHaveLength(count(map.tiles, 'obstacle') + mountains);
       const ruinRows = [];
       for (const [key, tile] of Object.entries(map.tiles)) {
         const [q, r] = key.split(',').map(Number);
@@ -585,19 +625,21 @@ describe('the board', () => {
         if (tile === 'obstacle') ruinRows.push(row);
       }
       // Spread out: no two ruins side by side.
-      const ruins = Object.keys(map.tiles).map(hexFromKey);
+      const ruins = Object.keys(map.tiles)
+        .filter((k) => map.tiles[k] === 'obstacle')
+        .map(hexFromKey);
       for (const a of ruins)
         for (const b of ruins) if (a !== b) expect(hexDistance(a, b)).toBeGreaterThan(1);
       // Three in the top half and three in the bottom; the middle row (3) counts as either.
       expect(ruinRows.filter((r) => r < 3).length).toBeLessThanOrEqual(3);
       expect(ruinRows.filter((r) => r > 3).length).toBeLessThanOrEqual(3);
       // Every open hex can be walked to from every other.
-      const open = map.hexes.filter((h) => tileAt(map, h) !== 'obstacle');
+      const open = map.hexes.filter((h) => !blocks(tileAt(map, h)));
       const seen = new Set([hexKey(open[0]!)]);
       const queue = [open[0]!];
       for (let h; (h = queue.shift()); )
         for (const n of hexNeighbors(h))
-          if (onMap(map, n) && tileAt(map, n) !== 'obstacle' && !seen.has(hexKey(n))) {
+          if (onMap(map, n) && !blocks(tileAt(map, n)) && !seen.has(hexKey(n))) {
             seen.add(hexKey(n));
             queue.push(n);
           }
@@ -1180,7 +1222,7 @@ describe('the caravan’s camel', () => {
       let from = SALT_FLATS.camelStart;
       for (const h of road) {
         expect(hexDistance(from, h)).toBe(1);
-        expect(tileAt(map, h)).not.toBe('obstacle');
+        expect(blocks(tileAt(map, h))).toBe(false);
         from = h;
       }
       expect(road[road.length - 1]).toEqual(SALT_FLATS.exits[0]);
@@ -1189,7 +1231,7 @@ describe('the caravan’s camel', () => {
       const queue = [SALT_FLATS.camelStart];
       for (let h; (h = queue.shift()); )
         for (const n of hexNeighbors(h))
-          if (onMap(map, n) && tileAt(map, n) !== 'obstacle' && !dist.has(hexKey(n))) {
+          if (onMap(map, n) && !blocks(tileAt(map, n)) && !dist.has(hexKey(n))) {
             dist.set(hexKey(n), dist.get(hexKey(h))! + 1);
             queue.push(n);
           }

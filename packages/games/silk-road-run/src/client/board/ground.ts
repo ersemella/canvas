@@ -19,6 +19,7 @@ import {
 } from './pixels';
 import ruinsImage from '../tiles/ruins.png';
 import ruinsTowerImage from '../tiles/ruins-tower.png';
+import mountainImage from '../tiles/mountain.png';
 import grassImage from '../tiles/grass.png';
 
 /** The ground's colour until its textures load. */
@@ -28,11 +29,12 @@ const BORDER = '#3f4a27';
 
 /**
  * The ground texture of each tile type: the Steppe's grass (the `sand`
- * tile is open ground, whatever its look); ruins stand on grass.
+ * tile is open ground, whatever its look); ruins and mountains stand on grass.
  */
 const TILE_TEXTURE: Record<Tile, string> = {
   sand: grassImage,
   obstacle: grassImage,
+  mountain: grassImage,
 };
 
 /**
@@ -158,10 +160,13 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex): void {
 /** The ruins' shapes, a wall and a tower stump: each ruin's hex picks one. */
 const RUINS_IMAGES = [ruinsImage, ruinsTowerImage];
 
-/** A ruin standing on its hex like a unit: over sandstorm and hail, so it always reads as blocked. */
-export function drawRuins(ctx: CanvasRenderingContext2D, h: Hex): void {
+/**
+ * A ruin or a mountain standing on its hex like a unit: over sandstorm and
+ * hail, so it always reads as blocked.
+ */
+export function drawRuins(ctx: CanvasRenderingContext2D, h: Hex, mountain = false): void {
   const pick = Math.floor(hexRandom(h, 1)() * RUINS_IMAGES.length);
-  const ruins = assetLoader.requestImage(RUINS_IMAGES[pick]!);
+  const ruins = assetLoader.requestImage(mountain ? mountainImage : RUINS_IMAGES[pick]!);
   if (ruins) {
     const c = center(h);
     const size = ruins.width * SPRITE_SCALE;
