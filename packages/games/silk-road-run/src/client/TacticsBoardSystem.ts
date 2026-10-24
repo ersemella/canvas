@@ -383,7 +383,10 @@ export class TacticsBoardSystem extends BaseSystem {
     // Hail falls in front of whoever stands in it; with reduced motion, held mid-fall.
     for (const effect of fight.effects) drawFallingHail(ctx, effect.hex, t ?? HAIL_STILL_SECONDS);
     // Drawn arrows' lanes, in front of whoever stands in them.
-    for (const v of fight.shots ?? []) drawShotMark(ctx, shotLane(fight, map, v));
+    for (const v of fight.shots ?? []) {
+      const side = fight.units.find((u) => u.id === v.source)?.side ?? 'player';
+      drawShotMark(ctx, shotLane(fight, map, v), side);
+    }
 
     if (playing) drawPlaybackEvent(ctx, playing);
 

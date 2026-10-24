@@ -3,8 +3,9 @@
  * drawn by the playback), and a drawn arrow's lane while it is in the air.
  */
 import type {Hex} from '@canvas/engine';
-import type {AbilityId} from '../../rules/types';
+import type {AbilityId, Side} from '../../rules/types';
 import {
+  SIDE_LIGHT,
   SPRITE_SCALE,
   artCell,
   artLine,
@@ -136,12 +137,13 @@ function drawSunlight(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): 
 }
 
 /**
- * A drawn arrow's lane while it is in the air: a bold dashed orange edge
- * round each of its spaces, and on the last, where it would hit now, three
+ * A drawn arrow's lane while it is in the air: a bold dashed edge in the
+ * shooter's side's light colour (targeting's lapis, or madder) round each
+ * of its spaces, and on the last, where it would hit now, three
  * arrows hanging point-down. Drawn over the units, like hail, but only at
  * the edge, so whoever stands there still shows.
  */
-export function drawShotMark(ctx: CanvasRenderingContext2D, lane: Hex[]): void {
+export function drawShotMark(ctx: CanvasRenderingContext2D, lane: Hex[], side: Side): void {
   lane.forEach((h, i) => {
     ctx.save();
     hexPath(ctx, h, 3);
@@ -150,7 +152,7 @@ export function drawShotMark(ctx: CanvasRenderingContext2D, lane: Hex[]): void {
     ctx.stroke();
     ctx.setLineDash([7, 5]);
     ctx.lineWidth = 3;
-    ctx.strokeStyle = '#fb923c';
+    ctx.strokeStyle = SIDE_LIGHT[side];
     ctx.stroke();
     ctx.restore();
     if (i < lane.length - 1) return;
