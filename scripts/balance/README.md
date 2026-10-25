@@ -32,6 +32,9 @@ switches (`AI.standoff`, `AI.linesUp`, `AI.clearShot`) were removed once
 the clear shot was adopted.
 `hail-turns.mjs` (2026-10-25) reruns the whole game with Hail lasting 1
 and 2 turns (`ABILITY.hail.turns`) on the current rules.
+`china.mjs` (2026-10-25) measures the China line-up (fox, Modao Vanguard,
+Waidan Alchemist) against the Steppe party, on the Gobi (an experiment's
+`map`) and the Steppe, and each Chinese hero in each Steppe hero's seat.
 
 ## Ability and stat ablation
 

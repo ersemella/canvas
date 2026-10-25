@@ -1739,6 +1739,58 @@ Mirror (Hail 2 turns, 500 pairs, no camel): first mover 53.2%.
   The Storm Caller is the weakest enemy hero in every caravan, 1 or 2
   turns of Hail alike.
 
+### The China line-up against the Steppe party (2026-10-25)
+
+Asked for: the Chinese units (the test stage's line-up: a fox spirit, the
+Modao Vanguard and the Waidan Alchemist, starting kits and the builder's
+untested numbers) against the Steppe party. `ablate.mjs` with
+`experiments/china.mjs`, **400 fights each** (about ±2.5 points), seeds
+from 1000. `ablate.ts` now takes an experiment's `map` (the Gobi: four or
+five ruins, no mountains) and attributes Cleave's damage.
+
+The full party (three heroes and the camel) against each enemy, player
+wins (lower is a stronger enemy):
+
+| Enemy | Map | Player wins | Heroes lost a win |
+|---|---|---:|---:|
+| Fox + Vanguard + Alchemist | Gobi | 100% | 0.09 |
+| Fox + Vanguard + Alchemist | Steppe | 100% | 0.09 |
+| Fox + Fox + Alchemist (no Vanguard) | Gobi | 100% | 0.01 |
+| Fox + Vanguard + Fox (no Alchemist) | Gobi | 100% | 0.06 |
+| Three foxes | Gobi | 100% | 0 |
+| Outrider + 2 wolves (stage 1) | Steppe | 99% | 0.08 |
+| All three Steppe heroes (stage 3) | Gobi | 73% | 0.57 |
+
+Hero for hero (`mod.party`): one side has a Chinese hero in a Steppe
+hero's seat, the other the three Steppe heroes, every seed from both
+sides; the camel with the player. The Chinese side's share of wins:
+
+| Swapped in | for the Champion | for the Outrider | for the Storm Caller |
+|---|---:|---:|---:|
+| Modao Vanguard | 38.5% | 40.5% | 52.5% |
+| Waidan Alchemist | 32% | 35.3% | 40.6% |
+| Vanguard and Alchemist (for the Champion and the Storm Caller) | 27.3% | | |
+
+- **The China line-up is a stage-1 fight**: the party wins every one and
+  loses a hero in under one fight in ten, as against the Outrider and two
+  wolves. The Gobi changes nothing (100% on both maps); the Steppe's stage
+  3 played on the Gobi (73%) is as hard as on the Steppe (76%).
+- **The Vanguard is the stronger of the two**, about the Storm Caller's
+  equal (52.5% in its seat) and weaker than the Champion (38.5%) and the
+  Outrider (40.5%). It deals 5–6 damage a fight with Cleave, used on 35–40%
+  of its turns, almost never on its own side (0.1–0.2 a fight). At speed 1
+  it takes half the Outrider's turns.
+- **The Alchemist is the weakest hero measured**, below every Steppe hero
+  in every seat (32–41%), and the pair together loses 3 fights in 4. Elixir
+  is 60–70% of its turns but adds only 2–4 Enhanced damage a fight; it
+  deals none itself, and at health 4 it is the first to die. Taking it
+  out of the China line-up (a second fox) costs the enemy nothing.
+- **To bring them to the Steppe's level** (about 50% in a
+  seat): the Vanguard about one stat point (speed 2 would give it the
+  Champion's turns), the Alchemist more than that; Elixir at range 2 and
+  power 2 is too little for a whole turn. Not changed: the numbers are
+  the owner's to set.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

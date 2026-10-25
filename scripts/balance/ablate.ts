@@ -8,6 +8,7 @@ import {placeStartingCards} from '@balance-rules/track';
 import {chooseAiTurn} from '@balance-rules/ai';
 import {ABILITY, AI, CAMEL, HEROES, RULES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
+import {MAPS} from '@balance-rules/map';
 import type {AbilityId, FightState, HeroId, Side} from '@balance-rules/types';
 
 /** Mutable views of the config, for experiments to patch. */
@@ -40,6 +41,8 @@ export type Experiment = {
    */
   party?: HeroId[];
   enemies?: HeroId[];
+  /** The map (`MAPS` in map.ts): `steppe` by default; `gobi` never has mountains. */
+  map?: string;
 };
 type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 
@@ -54,9 +57,10 @@ const SOURCES: [RegExp, string][] = [
   [/'s parting arrow hits/, 'feignedRetreat'],
   [/^The gale hits/, 'gale'],
   [/^The bite hits/, 'bite'],
+  [/^The cleave hits/, 'cleave'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| gives .+ an elixir)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -93,7 +97,7 @@ export function ablate(options: Options) {
   }
 }
 
-function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
+function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
   const kits = Object.fromEntries(Object.entries(HEROES).map(([h, s]) => [h, [...s.abilities]]));
   // Abilities are listed per hero, not per unit, so the modified side's kit is
   // swapped in for its own decisions only. Its search then also assumes the
@@ -135,7 +139,14 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
     const modSide: Side | null = mod ? (f & 1 ? 'enemy' : 'player') : null;
     const sideParty = (side: Side) =>
       side === modSide && mod?.party ? mod.party : side === 'player' ? party : (enemies ?? party);
-    const state = createFight(seed + (mod ? f >> 1 : f), sideParty('player'), sideParty('enemy'));
+    const state = createFight(
+      seed + (mod ? f >> 1 : f),
+      sideParty('player'),
+      sideParty('enemy'),
+      false,
+      [],
+      MAPS[map ?? 'steppe']
+    );
     for (const u of state.units) u.controller = 'human';
     if (mod?.stats) {
       for (const u of state.units.filter((u) => u.side === modSide)) {
