@@ -23,7 +23,7 @@
  * Each region has a map of its own (2026-10-25; setting.md, 15.3a), the
  * same board under another look: the Steppe's (`STEPPE`) and the Gobi
  * Crossing (`GOBI`), the China region's way in, where the `obstacle` tile
- * is a mudbrick ruin rather than a yurt. A stage names its map (`STAGES`
+ * is a sandstone ruin rather than a yurt. A stage names its map (`STAGES`
  * in config.ts); the page draws each map's look (`ground.ts`).
  */
 import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
@@ -51,6 +51,11 @@ export interface MapData {
   exits: Hex[];
   /** Whether its fights raise ranges of mountains (`randomTiles`): not in the Gobi (2026-10-25). */
   mountains: boolean;
+  /**
+   * Its fights' yurts (ruins): how many, one of `counts` at random, and
+   * how far from the centre they may stand (`randomTiles`).
+   */
+  obstacles: {counts: number[]; reach: number};
 }
 
 /** How far the board reaches from its centre hex. */
@@ -113,18 +118,23 @@ export const STEPPE: MapData = {
   // corner before).
   exits: [{q: 0, r: RADIUS}],
   mountains: true,
+  // Two or three yurts, within 2 hexes of the centre (owner, 2026-10-24).
+  obstacles: {counts: [2, 3], reach: 2},
 };
 
 /**
  * The Gobi Crossing (2026-10-25), the China region's first map: the
- * Steppe's board, its yurts' places now mudbrick ruins of the old frontier
- * posts, on gravel desert, and no mountains, whatever the stage.
+ * Steppe's board, its yurts' places now sandstone ruins of the old frontier
+ * posts, on gravel desert, and no mountains, whatever the stage. With no
+ * mountains to break up the board, more ruins (owner, 2026-10-25): four or
+ * five, within 3 hexes of the centre, still off the starting columns.
  */
 export const GOBI: MapData = {
   ...STEPPE,
   id: 'gobi',
   name: 'The Gobi Crossing',
   mountains: false,
+  obstacles: {counts: [4, 5], reach: 3},
 };
 
 export const MAPS: Record<string, MapData> = {[STEPPE.id]: STEPPE, [GOBI.id]: GOBI};
@@ -135,13 +145,6 @@ export function mapById(id: string): MapData {
   if (!map) throw new Error(`No map "${id}".`);
   return map;
 }
-
-/**
- * Yurts (owner, 2026-10-24), or the Gobi's ruins: two or three a fight, within `YURT_REACH` of
- * the centre, no two side by side, never cutting the board in two.
- */
-const YURT_COUNTS = [2, 3];
-const YURT_REACH = 2;
 
 /**
  * Mountains (owner, 2026-10-24): about half of fights, and every fight of a
@@ -199,11 +202,17 @@ export function randomTiles(
       .filter((h) => hexDistance(h, inFrontOfTemee) > 0);
     mountainRange(map, tiles, allowed, edge.inFrom, size, random);
   }
+  // Yurts (owner, 2026-10-24), or the Gobi's ruins: as many as the map
+  // says, within its reach of the centre and off the starting columns, not
+  // next to the camel's start or the exit, no two side by side, never
+  // cutting the board in two.
   const yurts: Hex[] = [];
-  const count = YURT_COUNTS[Math.floor(random() * YURT_COUNTS.length)]!;
+  const {counts, reach} = map.obstacles;
+  const count = counts[Math.floor(random() * counts.length)]!;
   for (let i = 0; i < count; i++) {
     const free = candidates
-      .filter((h) => hexDistance(h, CENTRE) <= YURT_REACH)
+      .filter((h) => hexDistance(h, CENTRE) <= reach && Math.abs(h.q) < RADIUS - 1)
+      .filter((h) => reserved.every((x) => hexDistance(x, h) > 1))
       .filter((h) => yurts.every((y) => hexDistance(y, h) > 1))
       .filter((h) => connectedWithout(map, tiles, h));
     if (!free.length) break;

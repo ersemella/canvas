@@ -83,10 +83,15 @@ tuning. This file has no combat-design section number.
   from the steppe ([setting.md](setting.md), 15.3a), brings back the
   desert board's art: `tiles/sand.png` stamped centred on each hex and
   mirrored on alternate hexes, as it was before the grass, hex borders in
-  `sandDark`, and the mudbrick wall (`tiles/ruins.png`) and tower stump
-  (`tiles/ruins-tower.png`) in place of the yurts, each ruin's hex picking
-  one, with no smoke, and no mountains (`MapData.mountains`; the
-  owner's call, 2026-10-25), even on a stage that always has them. The page calls them Ruins, and the open ground
+  `sandDark`, and in place of the yurts the desert board's own ruin, a
+  crumbling sandstone wall (`tiles/ruins-sandstone.png`, the `ruins.png`
+  of 2026-10-22, before the mudbrick one; the owner's call, 2026-10-25:
+  the mudbrick wall and tower stump, drawn on the grass, read as the
+  Steppe's), with no smoke. There are no mountains (`MapData.mountains`;
+  the owner's call, 2026-10-25), even on a stage that always has them, so
+  more ruins break up the board: four or five a fight, within 3 hexes of
+  the centre (`MapData.obstacles`; owner, 2026-10-25), where the Steppe
+  has two or three yurts within 2. The page calls them Ruins, and the open ground
   Gravel (`tileInfo` in info.ts). Every stage of a run is still the
   Steppe's (`STAGES` in config.ts); the test stage's `"map"` shows the
   Gobi.

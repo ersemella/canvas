@@ -1,6 +1,6 @@
 /**
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
- * grass, yurts and their smoke, the Gobi's sand and mudbrick ruins; exits
+ * grass, yurts and their smoke, the Gobi's sand and sandstone ruins; exits
  * (cached per map), and falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
@@ -19,8 +19,7 @@ import {
   insideHex,
 } from './pixels';
 import yurtImage from '../tiles/yurt.png';
-import ruinsImage from '../tiles/ruins.png';
-import ruinsTowerImage from '../tiles/ruins-tower.png';
+import sandstoneRuinsImage from '../tiles/ruins-sandstone.png';
 import sandImage from '../tiles/sand.png';
 import mountainPeakImage from '../tiles/mountain-peak.png';
 import mountainTwinImage from '../tiles/mountain-twin.png';
@@ -52,8 +51,9 @@ export interface Look {
  * softened: its blotches at 60% of their contrast and a touch greener,
  * since at full strength it read as mud on a phone. The Gobi (2026-10-25)
  * brings back the desert board's art from before the Steppe: the sand
- * stamped per hex, as it was, and the owner's mudbrick wall and tower
- * stump in place of the yurts.
+ * stamped per hex and the crumbling sandstone ruin, as they were
+ * (2026-10-22), in place of the yurts. The mudbrick wall and tower stump
+ * drawn for the Steppe (`ruins.png`, `ruins-tower.png`) stay unused.
  */
 const LOOKS: Record<string, Look> = {
   steppe: {
@@ -69,7 +69,7 @@ const LOOKS: Record<string, Look> = {
     stamp: true,
     colour: PALETTE.sand,
     border: PALETTE.sandDark,
-    obstacles: [ruinsImage, ruinsTowerImage],
+    obstacles: [sandstoneRuinsImage],
     smoke: false,
   },
 };
@@ -268,7 +268,7 @@ const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
  * A yurt, a ruin or a mountain standing on its hex like a unit: over hail,
  * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
  * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
- * ruins, a wall and a tower stump, are 32 × 32. `map` gives the look.
+ * Gobi's sandstone ruin is 32 × 32. `map` gives the look.
  */
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,

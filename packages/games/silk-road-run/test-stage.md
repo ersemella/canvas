@@ -43,7 +43,7 @@ one.
 | Field | What it is | Left out |
 |---|---|---|
 | `seed` | A whole number: the same seed lays out the yurts, mountains and units the same way every time. `null`: a new scatter each time. | `null` |
-| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far) or `"gobi"` (the Gobi Crossing, the China region's way in: sand and mudbrick ruins, which block as yurts do, and never mountains, whatever `yurts` says). The board itself is the same. | `"steppe"` |
+| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far) or `"gobi"` (the Gobi Crossing, the China region's way in: sand and sandstone ruins, which block as yurts do, four or five a fight in place of two or three yurts, and never mountains, whatever `yurts` says). The board itself is the same. | `"steppe"` |
 | `yurts` | `"random"` (as in a normal fight: two or three yurts near the middle, and a range of 3 to 5 mountains in about half of fights), `"mountains"` (the same, always with the mountains, as in a run's first three stages), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
