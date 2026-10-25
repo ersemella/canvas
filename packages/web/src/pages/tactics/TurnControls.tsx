@@ -142,7 +142,7 @@ export function TurnControls(props: {
             props.waiting
               ? 'Not this unit’s turn yet'
               : plannedMove
-                ? (confirm?.title ?? 'Move there; tap the hex again to pick another')
+                ? (confirm?.title ?? 'Move there; tap the hex again to confirm')
                 : moving
                   ? 'Pick where to move, or tap to put Move down'
                   : props.canMove
@@ -175,7 +175,7 @@ export function TurnControls(props: {
                 props.waiting
                   ? 'Not this unit’s turn yet'
                   : ready
-                    ? (confirm?.title ?? `${def.name} there; tap the target again to pick another`)
+                    ? (confirm?.title ?? `${def.name} there; tap the target again to confirm`)
                     : picked
                       ? `Pick a target, or tap to put ${def.name} down`
                       : (reason ?? def.summary(unit))

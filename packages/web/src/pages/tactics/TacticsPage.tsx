@@ -74,9 +74,9 @@ function outcomeText(fight: FightState): string {
  * hovering a hex shows what's there; Move, then a hex, plans the move;
  * an ability, then a target, previews that ability instead. Move and abilities
  * are separate actions; once its hex or target is picked, the picked button
- * confirms it. Skip turn ends the turn with Hold. On desktop a click on a
- * reachable hex plans a move without Move, a second click on the hex picked
- * last commits, and keys and a right-click do the rest (phase-1-brief.md).
+ * confirms it, as does a second tap on the hex picked last. Skip turn ends
+ * the turn with Hold. On desktop a click on a reachable hex plans a move
+ * without Move, and keys and a right-click do the rest (phase-1-brief.md).
  */
 export function TacticsPage() {
   const eventsRef = useRef<EventBus | null>(null);
@@ -182,9 +182,8 @@ export function TacticsPage() {
         return;
       }
       if (!fight || busy) return;
-      // Desktop: a second click on the hex just picked commits the turn.
-      // Phones un-pick it instead: there the board is only for looking and aiming.
-      if (!phone && input && preview && plan.lastPicked && hexEquals(plan.lastPicked, h)) {
+      // A second tap on the hex just picked commits the turn.
+      if (input && preview && plan.lastPicked && hexEquals(plan.lastPicked, h)) {
         commit();
         return;
       }

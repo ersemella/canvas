@@ -512,8 +512,9 @@ confirm or change:
   does the looking on desktop; a Confirm under that hex does too. Esc or a
   right-click steps back one pick at a time. Keys: 1–9 press the turn's
   buttons in order (Move first, each showing its number), Enter or Space
-  confirms, S presses Skip turn (twice, as with taps). Phones keep the
-  board for looking and aiming only, as above. The side panel is as tall
+  confirms, S presses Skip turn (twice, as with taps). (Phones too since
+  2026-10-25, owner: a second tap on the hex picked last commits, as a
+  click does; it no longer un-picks it.) The side panel is as tall
   as the board, which fills the screen: the buttons level with the track,
   the details under them, and the picked ability's explanation and a
   one-line key hint at its foot.

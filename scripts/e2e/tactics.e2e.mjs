@@ -1277,12 +1277,12 @@ try {
         !(await tooltip.count()) && /^Confirm/.test(await phoneMove.textContent()),
         await phoneMove.textContent()
       );
-      // Put the move down again: un-pick the hex (Move's button now
-      // confirms it), then Move.
-      await phone.touchscreen.tap(stepAt.x, stepAt.y);
-      await sleep(200);
-      await phone.touchscreen.tap(moveAt.x, moveAt.y);
-      await sleep(200);
+      // Put the move down again (a second tap on the hex would commit it,
+      // and a phone has no Esc): a reload keeps the run but not the picks.
+      await phone.reload();
+      await phone.waitForFunction(() => window.__tactics?.run);
+      await phoneMove.waitFor({timeout: 15_000});
+      await sleep(300);
       check(
         'phone: the move is put down again, nothing committed',
         (await phoneMove.getAttribute('aria-pressed')) === 'false' &&
@@ -1380,9 +1380,11 @@ try {
       /^Confirm\+\d+( → \+\d+)?$/.test(await phoneMove.textContent()),
       await phoneMove.textContent()
     );
-    await phone.tap('canvas', {position: at}); // un-pick the hex
-    await sleep(250);
-    await phoneMove.click(); // and put Move down
+    // Put the move down (a second tap on the hex would commit it).
+    await phone.reload();
+    await phone.waitForFunction(() => window.__tactics?.run);
+    await phoneMove.waitFor({timeout: 15_000});
+    await sleep(300);
     check(
       'phone: putting the move down shows the range again',
       (await phoneMove.getAttribute('aria-pressed')) === 'false' &&
@@ -1398,7 +1400,7 @@ try {
       await phone.getByRole('button', {name: /^Skip turn/}).textContent()
     )
   );
-  // Tapping a target twice un-picks it: only the button commits.
+  // Tapping a target twice commits it, as a second click does on desktop.
   const tapOn = async (hex) => {
     const {x, y} = await phone.evaluate((h) => window.__tactics.hexToCanvas(h), hex);
     const box = await phone.locator('canvas').boundingBox();
@@ -1457,12 +1459,13 @@ try {
     [hailCost, phoneConfirm]
   );
   await tapOn(aim);
+  await phone.waitForFunction((v) => window.__tactics.run.view.version > v, phoneVersion, {
+    timeout: 15_000,
+  });
   check(
-    'phone: a second tap on the target un-picks it, without committing',
-    (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion &&
-      /^HailPick a target$/.test(await phoneHail.textContent())
+    'phone: a second tap on the target commits the turn',
+    (await phone.evaluate(() => window.__tactics.run.view.version)) > phoneVersion
   );
-  await tapOn(aim);
   check('phone: there are no numbered steps', !(await phone.getByTestId('turn-steps').count()));
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone.png')});
   await phone.screenshot({path: join(OUT_DIR, 'tactics-phone-full.png'), fullPage: true});
