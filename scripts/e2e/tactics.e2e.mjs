@@ -831,9 +831,6 @@ try {
     }
     return (await state()).view.fight.phase !== 'fight';
   };
-  // Played on a phone, which notes the action section's height to keep
-  // once the fight ends (checked below); the result is read on desktop.
-  await page.setViewportSize({width: 390, height: 664});
   for (let attempt = 0; attempt < 3 && !(await playOut()); attempt++) {
     console.log('  (fight stalled; abandoning it for a fresh one)');
     const stalled = (await state()).runId;
@@ -846,7 +843,6 @@ try {
       .waitFor({timeout: 15_000});
     check('abandoning starts a fresh run', (await state()).runId !== stalled);
   }
-  await page.setViewportSize({width: 1300, height: 900});
   run = await state();
   check(
     'the fight ends in victory or defeat',

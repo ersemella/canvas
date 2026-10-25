@@ -31,9 +31,8 @@ export function choiceRows(unit: Unit): number {
 /**
  * The turn's choices, the same on phones and desktop: Move and the
  * abilities as big buttons (the name, then when the next turn comes), in rows of
- * two, or three for a hero with more to choose from; on phones, the
- * unit's portrait and the run's menu above them (desktop has the menu at
- * the side panel's foot).
+ * two, or three for a hero with more to choose from, and the run's menu:
+ * under them on desktop, above them on phones (with the unit's portrait).
  * There is no skipping: a turn walks or uses an ability. The picked one asks for its hex
  * or target, then, once it's picked, becomes its Confirm: players tap the
  * button they picked again to go (owner, 2026-10-21).
@@ -72,11 +71,11 @@ export function TurnControls(props: {
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
   onConfirm: () => void;
-  /** Phones: the run's menu, above the choices. */
-  menu?: React.ReactNode;
+  /** The run's menu, beside the choices (under them; above them on phones). */
+  menu: React.ReactNode;
   /**
-   * Phones: the unit's portrait before the menu, to say whose turn it is (the
-   * board's arrow over it read as "tap here"); a tap on it looks at the unit.
+   * The unit's portrait before the menu, to say whose turn it is (on a
+   * phone, the board's arrow over it read as "tap here"); a tap on it looks at the unit.
    */
   onPortrait?: (() => void) | undefined;
   /** The unit's details are showing (its portrait reads as pressed). */
@@ -114,15 +113,18 @@ export function TurnControls(props: {
       <span className={styles.bigButtonCost}>{next(charge)}</span>
     </span>
   );
+  const turnRow = (
+    <div className={`${styles.confirmRow} ${styles.turnRow}`}>
+      {props.onPortrait && (
+        <UnitPortrait unit={unit} open={Boolean(props.portraitOpen)} onTap={props.onPortrait} />
+      )}
+      {props.menu}
+    </div>
+  );
   return (
     <Stack gap={8} data-testid="turn-controls">
       {/* Phones: whose turn it is and the menu above the choices, near the board. */}
-      {props.onPortrait && (
-        <div className={`${styles.confirmRow} ${styles.turnRow}`}>
-          <UnitPortrait unit={unit} open={Boolean(props.portraitOpen)} onTap={props.onPortrait} />
-          {props.menu}
-        </div>
-      )}
+      {props.onPortrait && turnRow}
       {/* One choice per turn: Move or an ability, picked like any other. */}
       <div
         className={styles.abilityGrid}
@@ -195,6 +197,7 @@ export function TurnControls(props: {
           );
         })}
       </div>
+      {!props.onPortrait && turnRow}
     </Stack>
   );
 }

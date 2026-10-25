@@ -193,16 +193,6 @@
   flex-direction: column;
   gap: 8px;
 }
-.footRow {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  justify-content: space-between;
-}
-/* Alone once the fight ends, the menu stays right. */
-.footRow > :last-child {
-  margin-left: auto;
-}
 .keysHint.keysHint {
   font-size: 15px;
   color: var(--c-dusk4);
