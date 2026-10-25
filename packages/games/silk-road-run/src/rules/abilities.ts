@@ -320,7 +320,8 @@ function isThrow(state: FightState, user: Unit, target: ActionTarget): boolean {
  * 2026-10-23), the held unit Moved there, then struck; on the Champion's
  * own space: the two swap places, then it is struck. Either way the two
  * stay next to each other, so the grapple holds. An Immobilized Champion
- * can't swap: it would move itself.
+ * still swaps (owner, 2026-10-25): the swap is the grapple's move, not a
+ * walk of its own.
  */
 const grapple: AbilityDef = {
   id: 'grapple',
@@ -335,8 +336,7 @@ const grapple: AbilityDef = {
     const out = adjacentUnits(state, from, (u) => u !== user && !grappling(user, u));
     if (heldNextTo(state, user, from)) {
       const landings = stepsFrom(map, from).filter((h) => !unitAt(state, h));
-      if (!isImmobilized(user)) landings.push(from);
-      for (const hex of sortByHex(landings, (h) => h)) out.push({hex});
+      for (const hex of sortByHex([...landings, from], (h) => h)) out.push({hex});
     }
     return out;
   },

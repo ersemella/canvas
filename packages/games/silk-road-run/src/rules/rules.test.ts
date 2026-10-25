@@ -1117,7 +1117,7 @@ describe('abilities', () => {
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Grapple on the Champion’s own space swaps: the two trade spaces, it is struck, and the grapple holds', () => {
+  it('Grapple on the Champion’s own space swaps: the two trade spaces, it is struck, and the grapple holds, Immobilized or not', () => {
     const s = setup({
       'p-bokh': at(3, 4),
       'e-storm': hexNeighbors(at(3, 4))[0]!,
@@ -1132,11 +1132,13 @@ describe('abilities', () => {
     expect(target.hex).toEqual(bAt);
     expect(target.hp).toBe(target.maxHp - 2 * b.power);
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
-    // An Immobilized Champion can't swap: it would move itself.
+    // An Immobilized Champion (in hail, say) still swaps back.
     b.statuses.push({kind: 'immobilized'});
     const landings = ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!).map((t) => t.hex!);
-    expect(landings.some((h) => hexDistance(h, b.hex!) === 0)).toBe(false);
-    expect(landings.length).toBeGreaterThan(0);
+    expect(landings.some((h) => hexDistance(h, b.hex!) === 0)).toBe(true);
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: tAt}}});
+    expect(b.hex).toEqual(bAt);
+    expect(target.hex).toEqual(tAt);
   });
 
   it('hail covers one space exactly two away: a unit there is Immobilized until the caster’s next turn', () => {

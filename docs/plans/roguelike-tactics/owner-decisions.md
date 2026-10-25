@@ -119,6 +119,10 @@ picked the reading below. Confirm or change each:
   Grapple also offers the free spaces next to it (a throw) and its own
   (a swap), picked in one tap; a unit next to it is still a new grapple.
   The freed slot lets the Champion take both Haul and Shove.
+- **An Immobilized Champion still swaps** (owner, 2026-10-25): standing
+  in hail doesn't stop it swapping places with the unit it grapples (the
+  builder's reading had been that the swap moves the Champion itself, so
+  Immobilized ruled it out).
 - **A Stunned Outrider loses its drawn arrow** (owner, 2026-10-24): a
   grapple (or any Stun) landing between Skirmish and the arrow flying
   cancels the shot; the card comes back as an ordinary turn, skipped
