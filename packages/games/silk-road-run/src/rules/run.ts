@@ -8,7 +8,7 @@
 import type {Hex, RunContext} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
-import {AI, CAMEL, FIRST_ENEMY, MOUNTAIN_STAGES, PARTY, ROSTER, STAGES} from './config';
+import {AI, CAMEL, FIRST_ENEMY, MOUNTAIN_STAGES, PARTY, ROSTER, RULES, STAGES} from './config';
 import {
   RuleError,
   actingUnit,
@@ -142,6 +142,24 @@ function survivors(fight: FightState): HeroId[] {
     .map((u) => u.hero);
 }
 
+const STATS: StatId[] = ['speed', 'defence', 'power'];
+
+/** The party's heroes standing, as a provision sees them: any with a stat below RULES.statMax. */
+function raisable(fight: FightState): Unit[] {
+  return fight.units.filter(
+    (u) =>
+      u.side === 'player' && u.hero !== CAMEL && u.alive && STATS.some((s) => u[s] < RULES.statMax)
+  );
+}
+
+/**
+ * Whether winning the run's stage earns a provision: one that earns them
+ * (STAGES), unless every hero standing has every stat at RULES.statMax.
+ */
+function provisionOwed(run: RunState): boolean {
+  return !run.test && Boolean(STAGES[run.stage]?.provision) && raisable(run.fight).length > 0;
+}
+
 /** How many stages the run has: STAGES, or the test stage alone. */
 const stageCount = (run: RunState) => (run.test ? 1 : STAGES.length);
 
@@ -162,8 +180,6 @@ export function parseParty(setup: unknown): HeroId[] {
   }
   return party as HeroId[];
 }
-
-const STATS: StatId[] = ['speed', 'defence', 'power'];
 
 const isInt = (n: unknown): n is number => Number.isInteger(n) && Math.abs(n as number) < 1000;
 
@@ -236,13 +252,17 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
       throw new RuleError('There is no next stage to go on to.');
     const party = survivors(run.fight);
     const provisions = [...(run.provisions ?? [])];
-    if (STAGES[stage]!.provision) {
+    if (provisionOwed(run)) {
       if (!action.provision) throw new RuleError('Choose a hero and a stat to raise.');
-      if (!party.includes(action.provision.hero))
+      const {hero, stat} = action.provision;
+      if (!party.includes(hero))
         throw new RuleError('Only a hero still in the party can take a provision.');
+      const unit = run.fight.units.find((u) => u.side === 'player' && u.hero === hero)!;
+      if (unit[stat] >= RULES.statMax)
+        throw new RuleError(`No stat can go above ${RULES.statMax}.`);
       provisions.push(action.provision);
     } else if (action.provision) {
-      throw new RuleError('This stage earned no provision.');
+      throw new RuleError('There is no provision to take.');
     }
     const fight = stageFight(run.seed, stage + 1, party, provisions);
     return {...run, version: run.version + 1, stage: stage + 1, provisions, fight};
@@ -286,7 +306,7 @@ export function runView(run: RunState): RunView {
     version: run.version,
     stage: run.stage,
     stages: stageCount(run),
-    provision: !run.test && Boolean(STAGES[run.stage]?.provision),
+    provision: provisionOwed(run),
     fight: due ? {...run.fight, awaiting: null} : run.fight,
     aiDue: due,
   };

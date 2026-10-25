@@ -1646,6 +1646,42 @@ describe('previews, the AI and the run', () => {
     });
     // The third stage earns none (its reassignment and upgrade aren't built).
     expect(runView(third).provision).toBe(false);
+    // No stat goes above RULES.statMax: not by a provision, nor at all.
+    expect(RULES.statMax).toBe(10);
+    const capped = win(run);
+    Object.assign(capped.fight.units.find((u) => u.id === 'p-bokh')!, {
+      power: RULES.statMax,
+      provisions: {power: RULES.statMax},
+    });
+    expect(() =>
+      handleRunAction(capped, {type: 'next', provision: {hero: 'bokh', stat: 'power'}})
+    ).toThrow(RuleError);
+    expect(
+      handleRunAction(capped, {type: 'next', provision: {hero: 'bokh', stat: 'speed'}}).provisions
+    ).toEqual([{hero: 'bokh', stat: 'speed'}]);
+    const piled = {
+      ...run,
+      provisions: Array.from({length: 12}, () => ({hero: 'bokh' as const, stat: 'power' as const})),
+    };
+    const over = handleRunAction(win(piled), {
+      type: 'next',
+      provision: {hero: 'storm', stat: 'power'},
+    });
+    expect(over.fight.units.find((u) => u.id === 'p-bokh')!.power).toBe(RULES.statMax);
+    // Every stat of every hero standing at the most: no provision to take.
+    const full = win(run);
+    for (const u of full.fight.units.filter((u) => u.side === 'player' && u.hero !== 'camel'))
+      Object.assign(u, {
+        speed: 10,
+        defence: 10,
+        power: 10,
+        provisions: {speed: 10, defence: 10, power: 10},
+      });
+    expect(runView(full).provision).toBe(false);
+    expect(handleRunAction(full, {type: 'next'}).stage).toBe(1);
+    expect(() =>
+      handleRunAction(full, {type: 'next', provision: {hero: 'bokh', stat: 'speed'}})
+    ).toThrow(RuleError);
     // A test stage earns none either.
     expect(runView(createRun(7, {test: true})).provision).toBe(false);
   });

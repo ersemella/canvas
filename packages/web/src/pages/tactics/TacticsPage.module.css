@@ -882,6 +882,11 @@
     inset var(--px) var(--px) 0 var(--c-dusk2),
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
 }
+/* A stat already at the most it can reach. */
+.provisionStat:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
 .provisionStat:focus-visible {
   outline: var(--px) solid var(--c-goldLight);
   outline-offset: calc(-2 * var(--px));

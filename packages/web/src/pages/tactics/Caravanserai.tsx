@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {Button, Paper, Stack, Text} from '@mantine/core';
-import {HEROES, HERO_PORTRAIT, healthOf} from '@canvas/games-silk-road-run';
+import {HEROES, HERO_PORTRAIT, RULES, healthOf} from '@canvas/games-silk-road-run';
 import type {FightState, Provision, StatId, Unit} from '@canvas/games-silk-road-run';
 import {PALETTE_VARS} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
@@ -103,7 +103,10 @@ export function Caravanserai(props: {
   );
 }
 
-/** One hero standing: portrait and name, and a choice for each stat, showing what 1 more makes it. */
+/**
+ * One hero standing: portrait and name, and a choice for each stat, showing
+ * what 1 more makes it; a stat already at RULES.statMax can't be chosen.
+ */
 function ProvisionRow(props: {unit: Unit; picked: StatId | null; onPick: (stat: StatId) => void}) {
   const {unit} = props;
   const hero = HEROES[unit.hero];
@@ -117,20 +120,31 @@ function ProvisionRow(props: {unit: Unit; picked: StatId | null; onPick: (stat: 
       <div className={styles.provisionStats}>
         {STATS.map(({stat, label}) => {
           const on = props.picked === stat;
+          // No stat goes above RULES.statMax.
+          const full = unit[stat] >= RULES.statMax;
           return (
             <button
               key={stat}
               type="button"
               className={`${styles.provisionStat} ${on ? styles.heroPicked : ''}`}
               aria-pressed={on}
+              disabled={full}
               data-testid={`provision-${unit.hero}-${stat}`}
               onClick={() => props.onPick(stat)}
             >
               <span>{label}</span>
               <span>
-                {unit[stat]} → <b>{unit[stat] + 1}</b>
+                {full ? (
+                  <>
+                    {unit[stat]} <span className={styles.provisionNote}>at most</span>
+                  </>
+                ) : (
+                  <>
+                    {unit[stat]} → <b>{unit[stat] + 1}</b>
+                  </>
+                )}
               </span>
-              {stat === 'defence' && (
+              {stat === 'defence' && !full && (
                 <span className={styles.provisionNote}>
                   health {unit.maxHp} → {healthOf(unit.defence + 1)}
                 </span>

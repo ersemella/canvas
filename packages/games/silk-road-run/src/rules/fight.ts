@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals, hexKey} from '@canvas/engine/server';
-import {CAMEL, HEROES, PARTY, healthOf} from './config';
+import {CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
 import {canMove, invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
@@ -23,7 +23,7 @@ import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, blocks, randomTiles} from './map';
 import type {MapData, Tile} from './map';
 import {aimSlot, chargeOf, nextCard, placeCard, placeStartingCards, shuffled} from './track';
-import type {FightState, HeroId, Loadout, Provision, Side, TurnInput, Unit} from './types';
+import type {FightState, HeroId, Loadout, Provision, Side, StatId, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
 export class RuleError extends Error {}
@@ -40,7 +40,8 @@ export function mapOf(state: FightState): MapData {
 
 /**
  * A hero's speed, defence and power, from config.ts, or the test stage's
- * (`loadout`), plus its provisions, and the health its defence gives.
+ * (`loadout`), plus its provisions, each at most RULES.statMax, and the
+ * health its defence gives.
  * Phase 1 has no gear, so these are always a unit's stats.
  */
 function heroStats(
@@ -49,9 +50,10 @@ function heroStats(
   provisions: Unit['provisions'] = {}
 ): Pick<Unit, 'speed' | 'defence' | 'power' | 'maxHp'> {
   const base = {...HEROES[hero], ...loadout};
-  const speed = base.speed + (provisions.speed ?? 0);
-  const defence = base.defence + (provisions.defence ?? 0);
-  const power = base.power + (provisions.power ?? 0);
+  const stat = (id: StatId) => Math.min(RULES.statMax, base[id] + (provisions[id] ?? 0));
+  const speed = stat('speed');
+  const defence = stat('defence');
+  const power = stat('power');
   return {speed, defence, power, maxHp: healthOf(defence)};
 }
 

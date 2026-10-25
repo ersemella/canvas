@@ -34,6 +34,8 @@ export const RULES = {
    * 2 about 49% (balance.md, "Walk 2 and the ring of hail").
    */
   movementCap: 2,
+  /** The most any stat (speed, defence or power) can reach (owner, 2026-10-25). */
+  statMax: 10,
   /** Size of the track window the page shows (open question 1). */
   trackWindow: 30,
 } as const;
