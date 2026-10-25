@@ -709,13 +709,32 @@ try {
     );
     await shot(page, 'end-phone');
   }
-  // Next stage starts the run's next stage, against a bigger band, with the survivors.
+  // Next stage opens the caravanserai, where one survivor takes a provision
+  // (1 more of a stat); Set out there starts the run's next stage, against a
+  // bigger band, with the survivors.
   if (nextAhead) {
     const before = (await state()).view;
     const survivors = before.fight.units
       .filter((u) => u.side === 'player' && u.alive)
       .map((u) => u.hero);
+    const raised = before.fight.units.find(
+      (u) => u.side === 'player' && u.alive && u.hero !== 'camel'
+    );
     await page.getByRole('button', {name: 'Next stage'}).click();
+    await page.getByTestId('caravanserai').waitFor({timeout: 15_000});
+    const setOut = page.getByRole('button', {name: 'Set out'});
+    check(
+      'the caravanserai: a choice for each stat of each hero standing, Set out waiting on one',
+      (await page.locator('[data-testid^="provision-"][aria-pressed]').count()) ===
+        3 * survivors.filter((h) => h !== 'camel').length &&
+        (await page.getByTestId('provision-camel-power').count()) === 0 &&
+        (await setOut.isDisabled()),
+      survivors
+    );
+    await page.getByTestId(`provision-${raised.hero}-power`).click();
+    check('a stat picked, Set out is ready', await setOut.isEnabled());
+    await shot(page, 'caravanserai-phone');
+    await setOut.click();
     await page.waitForFunction((x) => window.__tactics.run.view.stage > x, before.stage, {
       timeout: 15_000,
     });
@@ -730,6 +749,11 @@ try {
           JSON.stringify(survivors) &&
         enemies.filter((u) => u.hero !== 'wolf').length === after.stage + 1,
       after.fight.units.map((u) => u.id)
+    );
+    check(
+      'Set out: the hero picked at the caravanserai has 1 more power',
+      after.fight.units.find((u) => u.id === raised.id)?.power === raised.power + 1,
+      after.fight.units.find((u) => u.id === raised.id)
     );
   }
   // New run opens the start menu; Start there starts a fresh fight, ready for a turn.

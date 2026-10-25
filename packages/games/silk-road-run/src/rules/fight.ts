@@ -23,7 +23,7 @@ import type {Ctx} from './resolve';
 import {MAPS, SALT_FLATS, blocks, randomTiles} from './map';
 import type {MapData, Tile} from './map';
 import {aimSlot, chargeOf, nextCard, placeCard, placeStartingCards, shuffled} from './track';
-import type {FightState, HeroId, Loadout, Side, TurnInput, Unit} from './types';
+import type {FightState, HeroId, Loadout, Provision, Side, TurnInput, Unit} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
 export class RuleError extends Error {}
@@ -40,15 +40,28 @@ export function mapOf(state: FightState): MapData {
 
 /**
  * A hero's speed, defence and power, from config.ts, or the test stage's
- * (`loadout`), and the health its defence gives. Phase 1 has no gear and
- * no stat changes, so these are always a unit's stats.
+ * (`loadout`), plus its provisions, and the health its defence gives.
+ * Phase 1 has no gear, so these are always a unit's stats.
  */
 function heroStats(
   hero: HeroId,
-  loadout: Loadout = {}
+  loadout: Loadout = {},
+  provisions: Unit['provisions'] = {}
 ): Pick<Unit, 'speed' | 'defence' | 'power' | 'maxHp'> {
-  const {speed, defence, power} = {...HEROES[hero], ...loadout};
+  const base = {...HEROES[hero], ...loadout};
+  const speed = base.speed + (provisions.speed ?? 0);
+  const defence = base.defence + (provisions.defence ?? 0);
+  const power = base.power + (provisions.power ?? 0);
   return {speed, defence, power, maxHp: healthOf(defence)};
+}
+
+/** A hero's provisions (progression.md, 19.2), stat by stat; undefined with none. */
+function provisionsOf(hero: HeroId, provisions: Provision[]): Unit['provisions'] {
+  const own = provisions.filter((p) => p.hero === hero);
+  if (own.length === 0) return undefined;
+  const out: NonNullable<Unit['provisions']> = {};
+  for (const {stat} of own) out[stat] = (out[stat] ?? 0) + 1;
+  return out;
 }
 
 /**
@@ -60,23 +73,25 @@ function heroStats(
  */
 export function refreshStats(state: FightState): void {
   for (const u of state.units) {
-    Object.assign(u, heroStats(u.hero, u.loadout));
+    Object.assign(u, heroStats(u.hero, u.loadout, u.provisions));
     u.hp = Math.min(u.hp, u.maxHp);
   }
 }
 
 /**
  * `copy` numbers a second or later unit of the same hero on a side
- * (e-wolf, e-wolf-2); `loadout` is the test stage's stats and kit for it.
+ * (e-wolf, e-wolf-2); `loadout` is the test stage's stats and kit for it;
+ * `provisions` the stat points the run has given it.
  */
 export function makeUnit(
   side: Side,
   partyIndex: number,
   hero: HeroId,
   copy = 0,
-  loadout?: Loadout
+  loadout?: Loadout,
+  provisions?: Unit['provisions']
 ): Unit {
-  const stats = heroStats(hero, loadout);
+  const stats = heroStats(hero, loadout, provisions);
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}${copy ? `-${copy + 1}` : ''}`,
     hero,
@@ -90,6 +105,7 @@ export function makeUnit(
     slot: null,
     statuses: [],
     ...(loadout ? {loadout} : {}),
+    ...(provisions ? {provisions} : {}),
     alive: true,
   };
 }
@@ -104,13 +120,15 @@ export function makeUnit(
  * heroes unless the run's stage says otherwise (STAGES). No unit starts
  * boxed in by yurts and the units beside it: the seed scatters again until
  * every one has a free hex to step to. With `mountains` the board always
- * has a range of mountains (randomTiles).
+ * has a range of mountains (randomTiles). The party's heroes come with
+ * the run's `provisions` (progression.md, 19.2).
  */
 export function createFight(
   seed: number,
   party: HeroId[] = PARTY,
   enemies: HeroId[] = PARTY,
-  mountains = false
+  mountains = false,
+  provisions: Provision[] = []
 ): FightState {
   const map = SALT_FLATS;
   const random = seededRandom(seed);
@@ -121,7 +139,9 @@ export function createFight(
     phase: 'fight',
     currentSlot: 0,
     units: [
-      ...party.map((hero, i) => makeUnit('player', i, hero)),
+      ...party.map((hero, i) =>
+        makeUnit('player', i, hero, 0, undefined, provisionsOf(hero, provisions))
+      ),
       makeUnit('player', party.length, CAMEL),
       ...enemies.map((hero, i) =>
         makeUnit('enemy', i, hero, enemies.slice(0, i).filter((h) => h === hero).length)

@@ -27,6 +27,7 @@ import type {
   FightState,
   TacticsCardPayload,
   TacticsHoverPayload,
+  Provision,
   TacticsTapPayload,
   TurnInput,
 } from '@canvas/games-silk-road-run';
@@ -35,6 +36,7 @@ import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
+import {Caravanserai} from './Caravanserai';
 import {StartMenu} from './StartMenu';
 import {HexTooltip} from './HexTooltip';
 import {Glossary} from './Keywords';
@@ -117,9 +119,19 @@ export function TacticsPage() {
   /** Phones: the action section's height during the fight, kept once it ends so the board stays put. */
   const actionsHeight = useRef(0);
   const [worldReady, setWorldReady] = useState(0);
+  /**
+   * The caravanserai is open, between a stage won and the next: Next stage
+   * opens it, Set out there goes on.
+   */
+  const [atCaravanserai, setAtCaravanserai] = useState(false);
 
   const hasBoard =
-    !loading && run !== null && fight !== null && run.status !== 'abandoned' && !startMenu;
+    !loading &&
+    run !== null &&
+    fight !== null &&
+    run.status !== 'abandoned' &&
+    !startMenu &&
+    !atCaravanserai;
   const {boardRef, boardSlotRef, boardSize, fitWidth} = useBoardFit(phone, hasBoard);
 
   const plan = useTurnPlan(fight, phone, hover.hex);
@@ -168,11 +180,22 @@ export function TacticsPage() {
     [input, sendTurn]
   );
 
+  /** Next stage: by way of the caravanserai, which gives the provision the stage earned. */
   const nextStage = useCallback(() => {
     if (busy) return;
     stopLooking();
-    goToNextStage();
-  }, [busy, stopLooking, goToNextStage]);
+    setAtCaravanserai(true);
+  }, [busy, stopLooking]);
+  const setOut = useCallback(
+    (provision?: Provision) => {
+      if (busy) return;
+      goToNextStage(provision);
+    },
+    [busy, goToNextStage]
+  );
+  // The caravanserai closes once the next stage is under way, or a new run starts.
+  const stage = run?.view.stage;
+  useEffect(() => setAtCaravanserai(false), [stage, run?.runId]);
 
   // ── Taps on the board ──────────────────────────────────────────────────────
 
@@ -397,9 +420,23 @@ export function TacticsPage() {
 
   // The result waits for the playback to show how the fight ended.
   const finished = (fight.phase === 'won' || fight.phase === 'lost') && !playing;
-  const {stage, stages} = run.view;
+  const {stages} = run.view;
   /** A stage short of the run's last, won: the next one waits. */
-  const nextAhead = fight.phase === 'won' && stage < stages - 1;
+  const nextAhead = fight.phase === 'won' && run.view.stage < stages - 1;
+
+  if (atCaravanserai && nextAhead) {
+    return (
+      <Caravanserai
+        fight={fight}
+        stage={run.view.stage}
+        stages={stages}
+        provision={run.view.provision}
+        busy={busy}
+        error={error}
+        onSetOut={setOut}
+      />
+    );
+  }
   const selected =
     fight.units.find((u) => u.id === (hover.unitId ?? selectedId ?? acting?.id)) ?? null;
 

@@ -2,7 +2,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import type {MutableRefObject} from 'react';
 import type {EventBus} from '@canvas/engine';
 import {openingPlayback} from '@canvas/games-silk-road-run';
-import type {HeroId, PlaybackPayload, TurnInput} from '@canvas/games-silk-road-run';
+import type {HeroId, PlaybackPayload, Provision, TurnInput} from '@canvas/games-silk-road-run';
 import {claimTab, localRuns} from './localRuns';
 import type {RunResponse} from './localRuns';
 
@@ -198,11 +198,19 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     [run, send, waiting, playing]
   );
 
-  /** On to the run's next stage, once this one is won: a new board, its opening played back. */
-  const nextStage = useCallback(() => {
-    if (!run || busy) return;
-    void send(() => localRuns.next(run.runId), 'stage');
-  }, [run, send, busy]);
+  /**
+   * On to the run's next stage, once this one is won, with the provision
+   * chosen at the caravanserai if it earned one: a new board, its opening
+   * played back. The caravanserai closes the board, so the opening waits
+   * for the board to mount again, as a new run's does.
+   */
+  const nextStage = useCallback(
+    (provision?: Provision) => {
+      if (!run || busy) return;
+      void send(() => localRuns.next(run.runId, provision), 'run');
+    },
+    [run, send, busy]
+  );
 
   /** The board has played back an answer: the next one waiting shows, or the page is free. */
   const playbackDone = useCallback(() => {

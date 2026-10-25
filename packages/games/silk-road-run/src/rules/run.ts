@@ -1,7 +1,8 @@
 /**
  * A run: its stages (STAGES in config.ts) one after another, each a fight
  * against a bigger enemy band. Heroes who fall are gone for the run; the
- * survivors and the camel go on to the next stage. The run keeps the seed;
+ * survivors and the camel go on to the next stage, by way of the
+ * caravanserai, where a stage that earns one gives a provision. The run keeps the seed;
  * the view is the fight, which never contains it.
  */
 import type {Hex, RunContext} from '@canvas/engine/server';
@@ -25,7 +26,9 @@ import type {
   ActionTarget,
   FightState,
   HeroId,
+  Provision,
   RunAction,
+  StatId,
   TurnInput,
   Unit,
 } from './types';
@@ -48,6 +51,11 @@ export interface RunState {
   stage: number;
   /** A test stage (test-stage.json; `testStage.ts`): one fight, its own line-up, won to win the run. */
   test?: boolean;
+  /**
+   * The provisions earned so far, in the order earned (progression.md,
+   * 19.2), a fallen hero's included; missing in runs from before them.
+   */
+  provisions?: Provision[];
   fight: FightState;
 }
 
@@ -56,6 +64,8 @@ export interface RunView {
   /** Which stage of the run this is, from 0, of `stages`. */
   stage: number;
   stages: number;
+  /** Winning this stage earns a provision, assigned at the caravanserai on the way to the next. */
+  provision: boolean;
   /**
    * The fight. While an AI unit's turn is due its `awaiting` is null: the
    * page has no unit to control.
@@ -106,12 +116,18 @@ const stageSeed = (seed: number, stage: number) => (seed + stage * 0x9e3779b9) >
  * A stage's fight, advanced to its first decision, the player's or the AI's;
  * the first `MOUNTAIN_STAGES` always have mountains.
  */
-function stageFight(seed: number, stage: number, party: HeroId[]): FightState {
+function stageFight(
+  seed: number,
+  stage: number,
+  party: HeroId[],
+  provisions: Provision[] = []
+): FightState {
   const fight = createFight(
     stageSeed(seed, stage),
     party,
     stageEnemies(seed, stage),
-    stage < MOUNTAIN_STAGES
+    stage < MOUNTAIN_STAGES,
+    provisions
   );
   fight.events = [];
   advanceToDecision(fight);
@@ -147,6 +163,8 @@ export function parseParty(setup: unknown): HeroId[] {
   return party as HeroId[];
 }
 
+const STATS: StatId[] = ['speed', 'defence', 'power'];
+
 const isInt = (n: unknown): n is number => Number.isInteger(n) && Math.abs(n as number) < 1000;
 
 function parseHex(raw: unknown): Hex {
@@ -160,7 +178,18 @@ function parseHex(raw: unknown): Hex {
 export function parseAction(raw: unknown): RunAction {
   const a = raw as Record<string, unknown> | null;
   if (!a || typeof a !== 'object') throw new RuleError('Malformed action.');
-  if (a.type === 'next') return {type: 'next'};
+  if (a.type === 'next') {
+    if (a.provision === undefined) return {type: 'next'};
+    const p = a.provision as {hero?: unknown; stat?: unknown} | null;
+    if (
+      !p ||
+      typeof p !== 'object' ||
+      !ROSTER.includes(p.hero as HeroId) ||
+      !STATS.includes(p.stat as StatId)
+    )
+      throw new RuleError('Malformed provision.');
+    return {type: 'next', provision: {hero: p.hero as HeroId, stat: p.stat as StatId}};
+  }
   if (a.type === 'continue') return {type: 'continue'};
   if (a.type === 'turn') {
     const action = a.action as
@@ -193,7 +222,8 @@ export function parseAction(raw: unknown): RunAction {
  * One action: the player's turn, or the AI's turn that is due
  * (`continue`), each on its own, so the page can play one back while the
  * next is worked out; then the track runs on to the next decision, either
- * side's. Or, once a stage short of the last is won, on to the next. Given
+ * side's. Or, once a stage short of the last is won, on to the next, with
+ * the provision it earned given to one of the survivors. Given
  * a clock (`context.now`) the AI looks as deep as it gets in
  * AI.browser.thinkMs; without one it keeps to AI.maxSimulations, the same
  * turn on every machine (tests, balance).
@@ -204,8 +234,18 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
   if (action.type === 'next') {
     if (run.fight.phase !== 'won' || stage >= stageCount(run) - 1)
       throw new RuleError('There is no next stage to go on to.');
-    const fight = stageFight(run.seed, stage + 1, survivors(run.fight));
-    return {...run, version: run.version + 1, stage: stage + 1, fight};
+    const party = survivors(run.fight);
+    const provisions = [...(run.provisions ?? [])];
+    if (STAGES[stage]!.provision) {
+      if (!action.provision) throw new RuleError('Choose a hero and a stat to raise.');
+      if (!party.includes(action.provision.hero))
+        throw new RuleError('Only a hero still in the party can take a provision.');
+      provisions.push(action.provision);
+    } else if (action.provision) {
+      throw new RuleError('This stage earned no provision.');
+    }
+    const fight = stageFight(run.seed, stage + 1, party, provisions);
+    return {...run, version: run.version + 1, stage: stage + 1, provisions, fight};
   }
   const fight = cloneFight(run.fight, true);
   refreshStats(fight);
@@ -246,6 +286,7 @@ export function runView(run: RunState): RunView {
     version: run.version,
     stage: run.stage,
     stages: stageCount(run),
+    provision: !run.test && Boolean(STAGES[run.stage]?.provision),
     fight: due ? {...run.fight, awaiting: null} : run.fight,
     aiDue: due,
   };

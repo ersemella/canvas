@@ -11,7 +11,7 @@ import {
   offsetToHex,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, FIRST_ENEMY, HEROES, PARTY, ROSTER, RULES, STAGES} from './config';
+import {ABILITY, AI, FIRST_ENEMY, HEROES, PARTY, ROSTER, RULES, STAGES, healthOf} from './config';
 import {
   canMove,
   invalidPath,
@@ -1516,9 +1516,9 @@ describe('previews, the AI and the run', () => {
 
   it('the stages: the Outrider and two wolves, the Outrider, a random other and a wolf, then all three', () => {
     expect(STAGES).toEqual([
-      {heroes: 1, wolves: 2},
-      {heroes: 2, wolves: 1},
-      {heroes: 3, wolves: 0},
+      {heroes: 1, wolves: 2, provision: true},
+      {heroes: 2, wolves: 1, provision: true},
+      {heroes: 3, wolves: 0, provision: false},
     ]);
     expect(FIRST_ENEMY).toBe('mangudai');
     const seconds = new Set<HeroId>();
@@ -1557,7 +1557,7 @@ describe('previews, the AI and the run', () => {
     m.alive = false;
     m.hex = null;
     expect(runStatus(won)).toBe('active');
-    const next = handleRunAction(won, {type: 'next'});
+    const next = handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'power'}});
     expect(next.stage).toBe(1);
     expect(next.version).toBe(run.version + 1);
     expect(next.fight.phase).toBe('fight');
@@ -1583,8 +1583,72 @@ describe('previews, the AI and the run', () => {
     last.fight.phase = 'won';
     expect(runStatus(last)).toBe('won');
     expect(() => handleRunAction(last, {type: 'next'})).toThrow(RuleError);
+    expect(() =>
+      handleRunAction(last, {type: 'next', provision: {hero: 'bokh', stat: 'power'}})
+    ).toThrow(RuleError);
     // A lost stage loses the run, whatever its number.
     expect(runStatus({...run, fight: {...run.fight, phase: 'lost'}})).toBe('lost');
+  });
+
+  it("the caravanserai after stages 1 and 2: a provision raises one survivor's stat for the rest of the run", () => {
+    const win = (r: RunState): RunState => {
+      const fight = cloneFight(r.fight);
+      fight.phase = 'won';
+      return {...r, fight};
+    };
+    const run = createRun(7);
+    expect(runView(run).provision).toBe(true);
+    const won = win(run);
+    // A provision is owed: none, or a malformed one, is refused.
+    for (const provision of [
+      undefined,
+      {hero: 'bokh'},
+      {hero: 'bokh', stat: 'health'},
+      {hero: 'wolf', stat: 'power'},
+      {hero: 'camel', stat: 'speed'},
+      'bokh',
+    ])
+      expect(() => handleRunAction(won, {type: 'next', provision})).toThrow(RuleError);
+    // Only to a hero still standing.
+    const fallen = win(run);
+    const s = fallen.fight.units.find((u) => u.id === 'p-storm')!;
+    s.alive = false;
+    s.hex = null;
+    expect(() =>
+      handleRunAction(fallen, {type: 'next', provision: {hero: 'storm', stat: 'power'}})
+    ).toThrow(RuleError);
+
+    const second = handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'defence'}});
+    expect(second.provisions).toEqual([{hero: 'bokh', stat: 'defence'}]);
+    const bokh = second.fight.units.find((u) => u.id === 'p-bokh')!;
+    expect(bokh).toMatchObject({
+      defence: HEROES.bokh.defence + 1,
+      maxHp: healthOf(HEROES.bokh.defence + 1),
+      provisions: {defence: 1},
+    });
+    // Never the enemy's copy of the hero, and the others untouched.
+    for (const u of second.fight.units.filter((u) => u.id !== 'p-bokh')) {
+      expect(u.provisions).toBeUndefined();
+      expect(u.defence).toBe(HEROES[u.hero].defence);
+    }
+    // Kept when the stats are refreshed, and into the stage after, with the next one.
+    expect(runView(second).fight.units.find((u) => u.id === 'p-bokh')!.defence).toBe(
+      HEROES.bokh.defence + 1
+    );
+    expect(runView(second).provision).toBe(true);
+    const third = handleRunAction(win(second), {
+      type: 'next',
+      provision: {hero: 'bokh', stat: 'speed'},
+    });
+    expect(third.fight.units.find((u) => u.id === 'p-bokh')).toMatchObject({
+      speed: HEROES.bokh.speed + 1,
+      defence: HEROES.bokh.defence + 1,
+      provisions: {speed: 1, defence: 1},
+    });
+    // The third stage earns none (its reassignment and upgrade aren't built).
+    expect(runView(third).provision).toBe(false);
+    // A test stage earns none either.
+    expect(runView(createRun(7, {test: true})).provision).toBe(false);
   });
 
   it('a party must be one to three different heroes of the roster', () => {

@@ -49,6 +49,14 @@ Each one adds 1 to one hero's speed, defence or power (9.1).
   the final boss). Locking keeps the build a series of commitments, not
   a sheet re-tuned before every fight, and keeps the reassignment to two
   points rather than the whole run's.
+- **Built (2026-10-25), for the run's three stages:** winning stage 1 or
+  2 (`STAGES[stage].provision` in `src/rules/config.ts`) leads, through
+  Next stage, to the **caravanserai** screen (`Caravanserai.tsx` in the
+  web package), where one surviving hero takes +1 speed, power or defence
+  before Set out (`next` with its `provision`; the run keeps them in
+  `RunState.provisions`, each unit in `Unit.provisions`). Nothing happens
+  there after stage 3 yet: the reassignment and the upgrade offer (19.3)
+  aren't built, and stage 3 is the run's last.
 - **What this changes:** until 2026-10-24 heroes had no stat growth
   outside gear (10.9). Provisions are deliberate, small stat growth: on the
   0-to-3 scale, about +4 per hero over a run with three heroes, so

@@ -840,3 +840,73 @@
   background: var(--c-gold);
   box-shadow: inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-goldDark);
 }
+
+/*
+ * The caravanserai: a hero standing, a row like the start menu's, with a
+ * tile for each stat to raise; the picked one raised lapis.
+ */
+.provisionHero {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  grid-template-areas:
+    'portrait name'
+    'portrait stats';
+  align-items: center;
+  gap: 6px 12px;
+  padding: 10px;
+  background: var(--c-dusk0);
+}
+.provisionHero > .heroPickPortrait {
+  grid-area: portrait;
+}
+.provisionStats {
+  grid-area: stats;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.provisionStat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 6px 8px;
+  color: var(--c-ivory);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  border: var(--px) solid var(--c-ink);
+  background: var(--c-dusk1);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-dusk2),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
+}
+.provisionStat:focus-visible {
+  outline: var(--px) solid var(--c-goldLight);
+  outline-offset: calc(-2 * var(--px));
+}
+.provisionStat.heroPicked {
+  background: var(--c-lapisDark);
+  box-shadow:
+    inset var(--px) var(--px) 0 var(--c-lapis),
+    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-ink);
+}
+.provisionStat b {
+  color: var(--c-goldLight);
+}
+.provisionNote {
+  font-size: 11px;
+  color: var(--c-sandDark);
+}
+.heroPicked .provisionNote {
+  color: var(--c-lapisLight);
+}
+/* A phone: the stats under the portrait and name, full width. */
+@media (max-width: 560px) {
+  .provisionHero {
+    grid-template-areas:
+      'portrait name'
+      'stats stats';
+  }
+}

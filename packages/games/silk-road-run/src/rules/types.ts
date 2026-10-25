@@ -27,6 +27,18 @@ export type AbilityId =
   | 'gale'
   | 'volley';
 
+/** The stats a provision raises (heroes-and-gear.md, 9.1). */
+export type StatId = 'speed' | 'defence' | 'power';
+
+/**
+ * A provision (progression.md, 19.2): 1 more of one stat for one hero of
+ * the party, from the stage it was earned on for the rest of the run.
+ */
+export interface Provision {
+  hero: HeroId;
+  stat: StatId;
+}
+
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';
 
@@ -75,6 +87,8 @@ export interface Unit {
   statuses: Status[];
   /** The test stage's stats and kit for it; absent for a hero as config.ts has it. */
   loadout?: Loadout;
+  /** Its provisions, stat by stat, added to its hero's or loadout's stats; absent with none. */
+  provisions?: Partial<Record<StatId, number>>;
   /**
    * Enhance (keywords.md, 17.6): its abilities deal this much more until
    * the end of its next turn (the Storm Caller's Sunlight). Absent when it
@@ -212,4 +226,8 @@ export type RunAction =
   | ({type: 'turn'} & TurnInput)
   /** The AI's turn that is due, one per request (owner, 2026-10-24). */
   | {type: 'continue'}
-  | {type: 'next'};
+  /**
+   * On to the next stage from the caravanserai, with the provision the
+   * stage won earned, if it earned one (`STAGES[stage].provision`).
+   */
+  | {type: 'next'; provision?: Provision};

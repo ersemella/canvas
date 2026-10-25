@@ -332,11 +332,13 @@ export const ROSTER: HeroId[] = [...PARTY];
  * enemy brings to each. The heroes come in one order for the whole run,
  * FIRST_ENEMY then the rest in a random order from its seed, so each stage
  * brings the last one's heroes and one more. The last is won to win the run.
+ * `provision`: winning it earns a provision, assigned at the caravanserai
+ * before the next (progression.md, 19.2: a region's stages 1 and 2).
  */
-export const STAGES: {heroes: number; wolves: number}[] = [
-  {heroes: 1, wolves: 2},
-  {heroes: 2, wolves: 1},
-  {heroes: 3, wolves: 0},
+export const STAGES: {heroes: number; wolves: number; provision: boolean}[] = [
+  {heroes: 1, wolves: 2, provision: true},
+  {heroes: 2, wolves: 1, provision: true},
+  {heroes: 3, wolves: 0, provision: false},
 ];
 /** The enemy hero of the first stage, and so of every stage (owner, 2026-10-24; was random). */
 export const FIRST_ENEMY: HeroId = 'mangudai';
