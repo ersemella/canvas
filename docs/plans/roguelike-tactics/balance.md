@@ -1677,6 +1677,68 @@ budget per turn (rules.test.ts).
 **Adopted (2026-10-25): an archer closes in by lining up a clear shot**
 (`shotGap` in ai.ts).
 
+### Hail for two turns, rechecked (2026-10-25)
+
+Asked for: the whole game again, in case Hail lasting 2 turns is too
+strong, now that the Outrider moves straight and lines up a clear shot.
+`ablate.mjs` with `experiments/hail-turns.mjs`, **800 fights each** (about
+±1.8 points of standard error), seeds from 1000; the upgrade rows give the
+Storm Caller Hail and that upgrade on both sides. `heldTurnsPerFight`
+(new in `ablate.ts`) counts the turns units begin Immobilized by hail.
+
+| | Hail 1 turn | Hail 2 turns (as built) |
+|---|---:|---:|
+| Side without Hail wins | 31.1% | 30.1% |
+| Side without the Bow | 17.4% | 15.6% |
+| Side without Grapple | 12.5% | 13.1% |
+| With Sunlight: side without Sunlight / without Hail | 46.8% / 31.9% | 44.6% / 30.6% |
+| With Gale: side without Gale / without Hail | 31.1% / 49% | 31.6% / 48.5% |
+| Storm Caller +1 speed / +1 power | 57% / 65% | 58% / 64.5% |
+| Storm Caller's turns: Hail / move / Hold | 44 / 44 / 12% | 43 / 45 / 12% |
+| Hail damage (kills) a fight | 8.2 (1.19) | 8.2 (1.17) |
+| Turns begun held by hail a fight: enemy / own side | 3.30 / 0 | 3.42 / 0.02 |
+| Median actions; unfinished | 50; 0% | 52; 0% |
+
+Stage caravans, player wins (the full party; lower is a stronger enemy):
+
+| Enemy | Hail 1 turn | Hail 2 turns |
+|---|---:|---:|
+| Outrider + 2 wolves | 98.9% | 98.9% |
+| Bökh + 2 wolves | 99.4% | 99.4% |
+| Storm Caller + 2 wolves | 99.8% | 99.8% |
+| Bökh + Bökh + wolf | 79.6% | 81.4% |
+| Outrider + Outrider + wolf | 84.9% | 85.3% |
+| Bökh + Outrider + wolf | 90.9% | 91.6% |
+| Outrider + Storm + wolf | 96.3% | 95.6% |
+| Bökh + Storm + wolf | 96.6% | 97.5% |
+| Storm + Storm + wolf | 96.8% | 96.4% |
+| All three | 75.9% | 76.3% |
+
+Mirror (Hail 2 turns, 500 pairs, no camel): first mover 53.2%.
+
+- **Hail lasting 2 turns is not too strong**: every row is within one
+  standard error of 1 turn. Hail's worth (30.1%) sits in the core's
+  20–35% band (principle 2), its use (43%) in principle 3's 25–45%.
+- **Why it changes so little**: the Storm Caller hails again on most of its
+  turns, which replaces the last hail, so the second turn rarely stands.
+  Units begin only 0.12 more turns a fight held (3.42 from 3.30), and the
+  Storm Caller's own side is almost never caught (0.02).
+- **The second turn would matter if the Storm Caller could hail and still
+  act**: with Sunlight it hails on 30% of turns, not 43%, and the hail's
+  damage rises a little at 2 turns (6.3 from 5.8 a fight), still within
+  noise (Sunlight 44.6% from 46.8%). Re-check Hail's duration when a kit
+  gives the Storm Caller more to do between hails.
+- **Not Hail's problem, but out of band**: **Gale** is far stronger than
+  when it was made an upgrade (side without it 31.6%, from 40.6% on
+  2026-10-24; principle 2 wants 40–50% for a second ability), and with
+  Gale, Hail is worth nothing (48.5%): Gale replaces it. The Bow (15.6%)
+  and Grapple (13.1%) remain worth more than a core action should
+  (20–35%), as before.
+- **Stage 2 is still uneven**: two Champions and a wolf (81.4%) are near
+  stage 3 (76.3%); pairs with a Storm Caller are stage-1 fights (95–97%).
+  The Storm Caller is the weakest enemy hero in every caravan, 1 or 2
+  turns of Hail alike.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
