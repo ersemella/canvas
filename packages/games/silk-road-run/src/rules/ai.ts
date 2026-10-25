@@ -8,6 +8,7 @@ import {ABILITY, AI, CAMEL, RULES} from './config';
 import {
   hostile,
   isImmobilized,
+  firstInLane,
   isRanged,
   isStunned,
   kitOf,
@@ -714,7 +715,7 @@ function huntsTemee(state: FightState, me: Unit): boolean {
 }
 
 /**
- * Spaces from `me` to what it closes in on: Temee when it hunts it
+ * Spaces from `me` to what it closes in on (for an archer, to a shot: `shotGap`): Temee when it hunts it
  * (`huntsTemee`), otherwise the nearest hostile unit. 0 for the camel,
  * which walks to the exit (its progress is weighed apart), or with nothing
  * to close in on.
@@ -724,14 +725,32 @@ function quarryGap(state: FightState, me: Unit, hunting: boolean): number {
   return gapFrom(state, me, me.hex, hunting);
 }
 
+/**
+ * How far `me` on `at` is from shooting `target` (an archer, `isRanged`):
+ * 0 with a clear shot down a lane, 1 on one of its lines with a unit in
+ * the way, otherwise the steps onto the nearest of its lines. Longshot has
+ * no range, so closing in by spaces only walked the Outrider into melee
+ * once its move became Longshot's shape (balance.md, "The Outrider's AI").
+ */
+function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
+  const dq = at.q - target.hex!.q;
+  const dr = at.r - target.hex!.r;
+  const steps = Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr));
+  if (steps > 0) return steps;
+  const map = mapOf(state);
+  return [0, 1, 2, 3, 4, 5].some((d) => firstInLane(state, map, at, d, me) === target) ? 0 : 1;
+}
+
 /** `quarryGap` were `me` standing on `at`. */
 function gapFrom(state: FightState, me: Unit, at: Hex, hunting: boolean): number {
   if (me.hero === CAMEL) return 0;
+  const gap = (target: Unit) =>
+    isRanged(me) ? shotGap(state, me, at, target) : hexDistance(at, target.hex!);
   const camel = hunting ? camelOf(state) : undefined;
-  if (camel?.alive && camel.hex) return hexDistance(at, camel.hex);
+  if (camel?.alive && camel.hex) return gap(camel);
   let nearest = Infinity;
   for (const e of state.units) {
-    if (e.alive && e.hex && hostile(e, me)) nearest = Math.min(nearest, hexDistance(at, e.hex));
+    if (e.alive && e.hex && hostile(e, me)) nearest = Math.min(nearest, gap(e));
   }
   return Number.isFinite(nearest) ? nearest : 0;
 }

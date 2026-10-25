@@ -1631,6 +1631,52 @@ pairs (600 fights, no camel), the walk of 2 at the commit before.
 - **More stalls without the camel** (32.2%, from 22.5%): with the camel
   nothing went unfinished.
 
+### The Outrider's AI (2026-10-25)
+
+Asked for: an AI heuristic that plays the straight move well. The cause of
+the Outrider's deaths: the AI's closing-in reward (`AI.perHexFromEnemy`,
+0.2 a space nearer the nearest enemy) grows with the move's length. A walk
+of 2 earned at most 0.4 a turn; a dash of 5 earns 1.0, more than the
+threat of ending next to the Champion costs the Outrider (about 0.25), so
+he dashed into melee. `ablate.mjs` with `experiments/outrider-ai.mjs` and
+`outrider-ai-2.mjs` (they patch switches removed once the variant was
+chosen), 400 fights each, starting kits, seeds from 1000. Player-side
+figures are against all three heroes.
+
+| AI variant | Side without the Bow wins | Player wins | Temee killed | Party killed | Player's Outrider survives | Longshot damage / kills | Outrider's turns: Longshot / move / Hold |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Walk 2, closing by spaces (before the straight move) | 10.5% | 70.3% | 76 | 43 | 63.8% | 17.2 / 1.57 | 42% / 42% / 15% |
+| Closing by spaces (as it was) | 21.3% | 65.8% | 93 | 44 | 49.3% | 13.7 / 1.09 | 43% / 41% / 16% |
+| Standoff 3: no reward for closing within 3 | 17.3% | 55.5% | 151 | 27 | 74.3% | 13.7 / 1.1 | 26% / 21% / 54% |
+| Caution 2 (from 1) | 22.3% | 68.5% | 86 | 40 | 56.8% | 14.4 / 1.16 | 42% / 41% / 18% |
+| Closing by lining up: steps onto a target's line | 17.3% | 69.8% | 109 | 12 | 91.3% | 16 / 1.33 | 32% / 31% / 38% |
+| **Lining up a clear shot** | **17%** | **78%** | **68** | 20 | 76.5% | **18 / 1.51** | 45% / 40% / 15% |
+
+Standoffs of 2 and 4 and the standoff with caution 2 measured like
+standoff 3: he survives but holds, and Temee dies.
+
+- **A standoff saves him and loses the fight**: with no reward inside 3
+  spaces he holds over half his turns and Temee dies twice as often.
+- **Lining up is the right measure for an archer**: Longshot has no range,
+  so the distance to an enemy says nothing about a shot. On a line he
+  stops dashing in, but a line with a unit in the way counted as a shot,
+  so he held 38% of his turns.
+- **A clear shot fixes that**: 0 with a clear lane to the target, 1 on its
+  line with a unit in the way, otherwise the steps onto its nearest line.
+  The best of every variant: the party wins 78% against all three, Temee
+  is killed least, Longshot does the most damage, and his turns split as
+  they did before.
+
+With it (the production AI since), the starting kits: side without the Bow
+wins 17%, without Hail 28.8%, without Grapple 12%. Mirror matches, 300
+pairs: **first mover wins 53.5%** (41.3% before: nearer even),
+33.7% unfinished without the camel (32.2%). Fights take about 30%
+more CPU in the simulation; the AI-against-AI fight stays within the CPU
+budget per turn (rules.test.ts).
+
+**Adopted (2026-10-25): an archer closes in by lining up a clear shot**
+(`shotGap` in ai.ts).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
