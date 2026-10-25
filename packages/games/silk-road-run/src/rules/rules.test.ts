@@ -1332,6 +1332,48 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
     }
   });
 
+  it('Cleave with Delay (a switch, off as built) Delays every unit it leaves standing', () => {
+    const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
+    const cleave = ABILITY.cleave as {delay: number};
+    const saved = cleave.delay;
+    cleave.delay = 3;
+    try {
+      const m = unit(s, 'e-mangudai');
+      const before = m.slot!;
+      applyTurn(s, unit(s, 'p-modao'), {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
+      expect(m.slot).toBeGreaterThanOrEqual(before + 3);
+    } finally {
+      cleave.delay = saved;
+    }
+  });
+
+  it('Elixir as a burst or an aura (switches, off as built) reaches every unit around its centre', () => {
+    const s = setup(
+      {
+        'p-alchemist': at(1, 3),
+        'p-mangudai': at(2, 3),
+        'e-mangudai': at(2, 2),
+        'e-modao': at(8, 6),
+      },
+      party
+    );
+    const elixir = ABILITY.elixir as {shape: string};
+    const saved = {...ABILITY.elixir};
+    try {
+      for (const shape of ['burst', 'aura'] as const) {
+        elixir.shape = shape;
+        const c = cloneFight(s);
+        const hex = shape === 'aura' ? at(1, 3) : at(2, 3);
+        applyTurn(c, unit(c, 'p-alchemist'), {action: {ability: 'elixir', target: {hex}}});
+        expect(unit(c, 'p-mangudai').enhance).toBe(unit(c, 'p-alchemist').power);
+        expect(unit(c, 'e-mangudai').degrade).toBe(unit(c, 'p-alchemist').power);
+        expect(unit(c, 'p-alchemist').enhance).toBeUndefined();
+      }
+    } finally {
+      Object.assign(elixir, saved);
+    }
+  });
+
   it('Degrade takes off a hit until the end of the unit’s next turn, then ends', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
     s.units.forEach((u) => (u.controller = 'human'));

@@ -22,6 +22,7 @@ import {
 import {
   clearHail,
   degrade,
+  delay,
   displace,
   endGrapples,
   enhance,
@@ -579,16 +580,38 @@ const cleave: AbilityDef = {
     // Who stands in the line as it swings: a kill doesn't let the blade reach further.
     const caught = line.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
     for (const u of caught) hit(ctx, user, u, 'The cleave');
+    for (const u of caught) delay(ctx, u, ABILITY.cleave.delay);
   },
 };
 
 // ─── Waidan Alchemist ────────────────────────────────────────────────────────
 
+/** Whether Elixir can take on `u`: a unit that hits, not the Alchemist itself. */
+const elixirTakes =
+  (user: Unit) =>
+  (u: Unit | undefined): u is Unit =>
+    u !== undefined && u !== user && u.power > 0;
+
+/**
+ * The units an Elixir aimed at `target` from `from` reaches, by
+ * `ABILITY.elixir.shape`: the one on it, those within the radius of it
+ * (`burst`), or those within the radius of the Alchemist (`aura`).
+ */
+export function elixirCaught(state: FightState, user: Unit, from: Hex, target: Hex): Unit[] {
+  const {shape, radius} = ABILITY.elixir;
+  if (shape === 'unit') return [unitAt(state, target)].filter(elixirTakes(user));
+  const centre = shape === 'aura' ? from : target;
+  return state.units.filter(
+    (u) => u.alive && u.hex && hexDistance(u.hex, centre) <= radius && elixirTakes(user)(u)
+  );
+}
+
 /**
  * Elixir (owner, 2026-10-25): a unit within `ABILITY.elixir.range` that
  * hits (not Temee), not the Alchemist itself, with no line of fire. An
  * ally is Enhanced, an enemy Degraded, by the Alchemist's power, until the
- * end of its next turn, replacing any it had. No damage.
+ * end of its next turn, replacing any it had. No damage. Other shapes,
+ * for measuring, by `ABILITY.elixir.shape` (`elixirCaught`).
  */
 const elixir: AbilityDef = {
   id: 'elixir',
@@ -600,16 +623,25 @@ const elixir: AbilityDef = {
     `A unit within ${ABILITY.elixir.range}: an ally is Enhanced ${user.power}, an enemy Degraded ${user.power}, until the end of its next turn.`,
   targetsUnit: true,
   targets(state, map, user, from) {
-    return spacesWithin(map, from, ABILITY.elixir.range)
+    const {shape, range} = ABILITY.elixir;
+    if (shape === 'aura')
+      return elixirCaught(state, user, from, from).length > 0 ? [{hex: {...from}}] : [];
+    if (shape === 'burst')
+      return spacesWithin(map, from, range)
+        .filter((h) => elixirCaught(state, user, from, h).length > 0)
+        .map((h) => ({hex: h}));
+    return spacesWithin(map, from, range)
       .map((h) => unitAt(state, h))
-      .filter((u): u is Unit => u !== undefined && u !== user && u.power > 0)
+      .filter(elixirTakes(user))
       .map((u) => ({hex: u.hex!}));
   },
   resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
-    if (u.side === user.side) enhance(ctx, u, user.power);
-    else degrade(ctx, u, user.power);
+    const caught = elixirCaught(ctx.state, user, user.hex!, target.hex!);
+    for (const u of caught) {
+      log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
+      if (u.side === user.side) enhance(ctx, u, user.power);
+      else degrade(ctx, u, user.power);
+    }
   },
 };
 

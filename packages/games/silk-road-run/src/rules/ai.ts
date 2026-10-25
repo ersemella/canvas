@@ -18,7 +18,7 @@ import {
   shotLane,
   unitAt,
 } from './board';
-import {ABILITIES, abilitiesOf, grappling, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, elixirCaught, grappling, unusableReason} from './abilities';
 import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
@@ -322,6 +322,19 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (!u) continue;
       const damage = Math.min(damageOf(unit), u.hp);
       value += sided(u, damage + (damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0));
+      // Cleave's Delay (a switch, off as built): the share of a turn its card loses.
+      if (ability === 'cleave' && ABILITY.cleave.delay > 0 && damage < u.hp)
+        value += sided(u, (turnValue(u) * ABILITY.cleave.delay) / cardCost(u));
+    }
+    return closing + value;
+  }
+  // Elixir: an Enhance on each ally it reaches, a Degrade on each enemy,
+  // both by the Alchemist's power (`elixirCaught`, by its shape).
+  if (ability === 'elixir') {
+    let value = 0;
+    for (const u of elixirCaught(state, unit, unit.hex!, target!.hex!)) {
+      if (!hostile(u, unit)) value += u.enhance ? 0 : 1 + enhanceGuess(state, u, unit.power);
+      else value += u.degrade ? 0 : 1 + degradeGuess(state, u, unit.power);
     }
     return closing + value;
   }
@@ -338,12 +351,6 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     const gain =
       hit.power > 0 && !hit.enhance ? 1 + enhanceGuess(state, hit, ABILITY.sunlight.enhance) : 0;
     return closing + (hostile(hit, unit) ? -gain : gain);
-  }
-  // Elixir: an Enhance on an ally, a Degrade on an enemy, both by the Alchemist's power.
-  if (input.action.ability === 'elixir') {
-    if (!hostile(hit, unit))
-      return closing + (hit.enhance ? 0 : 1 + enhanceGuess(state, hit, unit.power));
-    return closing + (hit.degrade ? 0 : 1 + degradeGuess(state, hit, unit.power));
   }
   const damage = def.damages === false ? 0 : Math.min(damageOf(unit), hit.hp);
   let value = damage * (hit.hero === CAMEL ? AI.camelHealthWeight : 1);

@@ -256,8 +256,11 @@ export const ABILITY = {
    * Cleave (owner, 2026-10-25): the Modao Vanguard's line of `reach`
    * spaces out from it along one of the six directions, stopped by yurts;
    * each unit in it, ally or enemy, takes the Vanguard's power.
+   * `delay`: each unit still standing in it is then Delayed this many
+   * slots (keywords.md 17.3); 0 as built. A switch for measuring
+   * (balance.md, "Elixir's shape and Cleave's Delay").
    */
-  cleave: {reach: 2},
+  cleave: {reach: 2, delay: 0 as number},
   /**
    * Elixir (owner, 2026-10-25): a unit within `range` that hits, not the
    * Alchemist itself, no line of fire. An ally is Enhanced, an enemy
@@ -265,8 +268,13 @@ export const ABILITY = {
    * new one replacing the last. No damage. The amount from power is an
    * exception to keywords.md 17.2 ("no stat scales a keyword"), the
    * owner's call.
+   * `shape`, a switch for measuring (balance.md, "Elixir's shape and
+   * Cleave's Delay"): `unit` as built; `burst`, a space within `range` and
+   * every unit within `radius` of it; `aura`, every unit within `radius`
+   * of the Alchemist, aimed at its own space. The page shows the built
+   * shape only.
    */
-  elixir: {range: 2},
+  elixir: {range: 2, shape: 'unit' as 'unit' | 'burst' | 'aura', radius: 1},
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within

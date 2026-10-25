@@ -7,6 +7,7 @@ import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES} from './config';
 import {addStatus, hailOn, shotLane, unitAt, walkable} from './board';
 import {MAPS} from './map';
+import {placeCard} from './track';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, Motion, ShotInAir, Status, Unit} from './types';
 
@@ -104,6 +105,17 @@ export function degrade(ctx: Ctx, u: Unit, amount: number): void {
   u.degrade = amount;
   delete u.degradeStarted;
   log(ctx, `${unitName(u)} is Degraded ${amount}.`);
+}
+
+/**
+ * Delays `u`'s card `n` slots later (keywords.md 17.3), a taken slot
+ * resolved by speed as any placement is (3.3). The delay limit (3.6) is
+ * not built.
+ */
+export function delay(ctx: Ctx, u: Unit, n: number): void {
+  if (!u.alive || u.slot === null || n <= 0) return;
+  placeCard(ctx.state, u, u.slot + n);
+  log(ctx, `${unitName(u)} is Delayed ${n}.`);
 }
 
 /** At the end of a unit's turn: an Enhance or Degrade whose turn this was ends. */
