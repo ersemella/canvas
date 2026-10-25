@@ -59,7 +59,8 @@ export type PlayAnswer = {id: number; record: RunRecord} | {id: number; error: s
 
 /**
  * Actions are played in `aiWorker.ts`, in order, so an AI turn's search
- * never holds up the page; where a module worker can't start, here.
+ * never holds up the page; where a module worker can't start, here, with
+ * the AI's fixed, quick search.
  */
 let worker: Worker | null | undefined;
 let nextId = 0;
@@ -89,8 +90,10 @@ function startWorker(): Worker | null {
 function play(record: RunRecord, action: unknown): Promise<RunRecord> {
   if (worker === undefined) worker = startWorker();
   if (!worker) {
+    // No clock, so the AI keeps to its fixed cap (a few ms): searching for
+    // AI.browser.thinkMs here would stop the page that long every AI turn.
     try {
-      return Promise.resolve(playRun(silkRoadRun, record, action, {now: () => performance.now()}));
+      return Promise.resolve(playRun(silkRoadRun, record, action));
     } catch (err) {
       return Promise.reject(err instanceof RunError ? err : new Error('Something went wrong.'));
     }

@@ -109,7 +109,9 @@ slow phone; on the main thread it would stall the board's playback.
   between calls would let them hit; measure first (it was the open idea
   of 2026-10-25 for `RunRoom`).
 - A browser without module workers (none the game supports today, but
-  check) runs the same call on the main thread.
+  check) runs the call on the main thread **without a clock**, so the AI
+  keeps its fixed cap (a few ms a turn) rather than stopping the page for
+  `thinkMs` every AI turn (2026-10-25).
 
 ### L3. One saved run in `localStorage`
 
