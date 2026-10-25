@@ -20,23 +20,30 @@ function choiceAbilities(unit: Unit) {
 }
 
 /**
- * Move and the abilities in rows of two, or three for a hero with more to
- * choose from; Move alone (the camel) fills the row.
+ * Move and a hero's ability side by side; with two abilities, Move fills
+ * its own row and the two share the row under it. Move alone (the camel)
+ * fills the row.
  */
 function choiceColumns(unit: Unit): number {
-  const choices = choiceAbilities(unit).length + 1;
-  return choices === 1 ? 1 : choices > 4 ? 3 : 2;
+  return choiceAbilities(unit).length === 0 ? 1 : 2;
+}
+
+/** Move fills its row when the abilities fill the rows under it. */
+function moveSpansRow(unit: Unit): boolean {
+  return choiceAbilities(unit).length % choiceColumns(unit) === 0;
 }
 
 /** The rows a unit's choices take. */
 export function choiceRows(unit: Unit): number {
-  return Math.ceil((choiceAbilities(unit).length + 1) / choiceColumns(unit));
+  const abilities = choiceAbilities(unit).length;
+  const columns = choiceColumns(unit);
+  return moveSpansRow(unit) ? 1 + abilities / columns : Math.ceil((abilities + 1) / columns);
 }
 
 /**
  * The turn's choices, the same on phones and desktop: Move and the
  * abilities as big buttons (the name, then when the next turn comes), in rows of
- * two, or three for a hero with more to choose from; then Skip turn,
+ * two, Move on its own row over a hero's two abilities; then Skip turn,
  * filling its row beside the run's menu. The picked one asks for its hex
  * or target, then, once it's picked, becomes its Confirm: players tap the
  * button they picked again to go (owner, 2026-10-21).
@@ -134,6 +141,7 @@ export function TurnControls(props: {
         <Button
           size="lg"
           className={`${styles.tile} ${plannedMove && confirm ? styles.tileConfirm : ''}`}
+          style={moveSpansRow(unit) ? {gridColumn: '1 / -1'} : undefined}
           disabled={!props.canMove || props.waiting || Boolean(plannedMove && confirm?.blocked)}
           data-choice="move"
           data-key={props.keys ? 1 : undefined}

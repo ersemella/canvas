@@ -24,9 +24,10 @@ export const RULES = {
   camelStartSlot: 12,
   /**
    * The most abilities a unit has besides moving and Hold (owner,
-   * 2026-10-24): a hero with this many takes no new one from an upgrade.
+   * 2026-10-25; 3 from 2026-10-24): a hero with this many takes no new
+   * one from an upgrade.
    */
-  maxAbilities: 3,
+  maxAbilities: 2,
   /**
    * Ordinary walking cap (5.1): 2 since 2026-10-24 (owner; 3 from
    * 2026-10-22). At 3 the side acting first won 64% of mirror matches; at

@@ -79,7 +79,7 @@ const at = (col: number, row: number): Hex => {
 /**
  * Gives `hero` upgrade abilities (`upgrades` in config.ts; its first by
  * default) for the current test, before Hold: they are earned during a
- * run, not in a starting kit (owner, 2026-10-24), up to three abilities.
+ * run, not in a starting kit (owner, 2026-10-24), up to two abilities.
  */
 function upgrade(hero: HeroId, abilities = HEROES[hero].upgrades!.slice(0, 1)): void {
   const kit = HEROES[hero].abilities;
@@ -190,13 +190,12 @@ describe('the track', () => {
     expect(HEROES.mangudai.upgrades).toEqual(['skirmish', 'volley', 'feignedRetreat']);
     expect(HEROES.storm.abilities).toEqual(['hail', 'hold']);
     expect(HEROES.storm.upgrades).toEqual(['sunlight', 'gale']);
-    // At most three abilities besides Hold (owner, 2026-10-24): the
-    // Champion and Storm Caller take both their upgrades, the Outrider two.
-    expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul'])).toBe(true);
-    expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul', 'shove'])).toBe(false);
-    expect(hasRoomForAbility([...HEROES.mangudai.abilities, 'skirmish'])).toBe(true);
-    expect(hasRoomForAbility([...HEROES.mangudai.abilities, 'skirmish', 'volley'])).toBe(false);
-    expect(hasRoomForAbility([...HEROES.storm.abilities, 'sunlight'])).toBe(true);
+    // At most two abilities besides Hold (owner, 2026-10-25): each hero
+    // takes one of its upgrades.
+    for (const h of ROSTER) expect(hasRoomForAbility(HEROES[h].abilities)).toBe(true);
+    expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul'])).toBe(false);
+    expect(hasRoomForAbility([...HEROES.mangudai.abilities, 'skirmish'])).toBe(false);
+    expect(hasRoomForAbility([...HEROES.storm.abilities, 'sunlight'])).toBe(false);
     for (const h of ROSTER)
       expect(abilityCount(HEROES[h].abilities)).toBeLessThanOrEqual(RULES.maxAbilities);
     const s = setup({'p-mangudai': at(1, 3), 'p-storm': at(2, 3), 'e-bokh': at(5, 4)});

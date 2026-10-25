@@ -67,13 +67,13 @@ region's upgrade offer ([progression.md](progression.md), 19.3), each
 worth a second ability (a side without it wins 40–50%). Until offers are
 built, no hero has them in play (`upgrades` in config.ts).
 
-**At most three abilities** besides moving and Hold (owner, 2026-10-24;
-`RULES.maxAbilities`): a hero with three takes no new ability from an
-upgrade. So the Champion (Grapple, Throw folded in) takes both Shove and
-Haul (owner, 2026-10-24; one of them while Throw was its own ability);
-the Outrider (the Bow) two of Skirmish, Volley and Feigned Retreat; the
-Storm Caller (Hail) both Sunlight and Gale. The test stage holds a unit to
-three too.
+**At most two abilities** besides moving and Hold (owner, 2026-10-25;
+three from 2026-10-24; `RULES.maxAbilities`): a hero with two takes no
+new ability from an upgrade. So each hero takes one of its upgrades: the
+Champion (Grapple, Throw folded in) Shove or Haul; the Outrider (the Bow)
+one of Skirmish, Volley and Feigned Retreat; the Storm Caller (Hail)
+Sunlight or Gale. The test stage holds a unit to
+two too.
 
 | Hero | Speed | Defence | Power | Health | Ability | Effect |
 |---|---|---|---|---|---|---|
