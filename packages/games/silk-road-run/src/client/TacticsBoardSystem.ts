@@ -21,6 +21,7 @@ import {
   drawGround,
   drawObstacle,
   drawYurtSmoke,
+  smokes,
   exitArrowPush,
 } from './board/ground';
 import {
@@ -175,7 +176,8 @@ export class TacticsBoardSystem extends BaseSystem {
       if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
       if (this.scene.turnArrow !== false) parts.push(turnArrowBob(time));
       if (mapOf(fight).exits.length > 0) parts.push(exitArrowPush(time));
-      if (Object.values(fight.tiles).includes('obstacle')) parts.push(Math.floor(time * SMOKE_FPS));
+      if (smokes(mapOf(fight)) && Object.values(fight.tiles).includes('obstacle'))
+        parts.push(Math.floor(time * SMOKE_FPS));
     }
     return parts.join(' ');
   }
@@ -314,11 +316,11 @@ export class TacticsBoardSystem extends BaseSystem {
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h, t);
-    // Yurts and their smoke under the units; mountains wait until after them (below).
+    // Yurts (ruins) and their smoke under the units; mountains wait until after them (below).
     for (const h of map.hexes)
       if (tileAt(map, h) === 'obstacle') {
-        drawObstacle(ctx, h);
-        drawYurtSmoke(ctx, h, t);
+        drawObstacle(ctx, h, map);
+        if (smokes(map)) drawYurtSmoke(ctx, h, t);
       }
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
@@ -396,7 +398,7 @@ export class TacticsBoardSystem extends BaseSystem {
     // Mountains in front of the units (owner, 2026-10-24): a peak rises into
     // the space above it, in front of whoever stands there, as nearer things
     // are in a three-quarter view; never in front of health or statuses.
-    for (const h of map.hexes) if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, true);
+    for (const h of map.hexes) if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, map, true);
 
     // Not on a party walking out, off their hexes.
     drawGrappleFists(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));

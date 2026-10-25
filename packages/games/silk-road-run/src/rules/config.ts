@@ -189,6 +189,20 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 1,
     abilities: ['bite', 'hold'],
   },
+  /**
+   * The China region's basic creature (progression.md, 19.5, the reskins;
+   * 2026-10-25): a one-tailed fox spirit, the huli jing, the wolf's unit
+   * with its stats and Bite under the fox's name and art, until the
+   * region's own numbers are set.
+   */
+  fox: {
+    name: 'Fox Spirit',
+    letter: 'F',
+    speed: 1,
+    defence: 1,
+    power: 1,
+    abilities: ['bite', 'hold'],
+  },
 };
 
 /** Each ability's shape. Damage is never listed: it is the user's power. */
@@ -303,10 +317,16 @@ export const AI = {
    * tank's job is to take hits, and at 1 it held back out of reach; the
    * Modao Vanguard's too, for the same reason (untested).
    */
-  caution: {bokh: 0, mangudai: 1, storm: 1, modao: 0, alchemist: 1, camel: 0, wolf: 1} as Record<
-    HeroId,
-    number
-  >,
+  caution: {
+    bokh: 0,
+    mangudai: 1,
+    storm: 1,
+    modao: 0,
+    alchemist: 1,
+    camel: 0,
+    wolf: 1,
+    fox: 1,
+  } as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   /**
    * A charged shot in the air on a unit that acts before it lands and can
@@ -384,11 +404,13 @@ export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist'];
  * brings the last one's heroes and one more. The last is won to win the run.
  * `provision`: winning it earns a provision, assigned at the caravanserai
  * before the next (progression.md, 19.2: a region's stages 1 and 2).
+ * `map`: the id of the map it is fought on (MAPS in map.ts): every stage so
+ * far is the Steppe region's; the Gobi (`gobi`) waits for the China region.
  */
-export const STAGES: {heroes: number; wolves: number; provision: boolean}[] = [
-  {heroes: 1, wolves: 2, provision: true},
-  {heroes: 2, wolves: 1, provision: true},
-  {heroes: 3, wolves: 0, provision: false},
+export const STAGES: {heroes: number; wolves: number; provision: boolean; map: string}[] = [
+  {heroes: 1, wolves: 2, provision: true, map: 'steppe'},
+  {heroes: 2, wolves: 1, provision: true, map: 'steppe'},
+  {heroes: 3, wolves: 0, provision: false, map: 'steppe'},
 ];
 /** The enemy hero of the first stage, and so of every stage (owner, 2026-10-24; was random). */
 export const FIRST_ENEMY: HeroId = 'mangudai';

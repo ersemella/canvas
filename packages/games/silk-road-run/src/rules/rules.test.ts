@@ -41,7 +41,8 @@ import {
   refreshStats,
 } from './fight';
 import {previewTurn} from './preview';
-import {SALT_FLATS, blocks, depth, onMap, spaceAt, spaceOf, tileAt} from './map';
+import {GOBI, MAPS, STEPPE, blocks, depth, mapById, onMap, spaceAt, spaceOf, tileAt} from './map';
+import {tileInfo} from './info';
 import {checkEnd, damageOf, degrade, enhance, enterHex, hit, kill, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {
@@ -98,7 +99,7 @@ function upgrade(hero: HeroId, abilities = HEROES[hero].upgrades!.slice(0, 1)): 
 function setup(placements: Record<string, Hex>, party: HeroId[] = PARTY): FightState {
   const state = createFight(0, party, party);
   // The fixed layout, which these tests place units around.
-  state.tiles = {...SALT_FLATS.tiles};
+  state.tiles = {...STEPPE.tiles};
   state.phase = 'fight';
   state.units = state.units.filter((u) => u.hero !== 'camel' || u.id in placements);
   let slot = 100;
@@ -169,9 +170,7 @@ describe('the track', () => {
     expect(ABILITIES.bite.targets(s, mapOf(s), w, w.hex!).length).toBe(1);
     expect(onlyHold(s, mapOf(s), w)).toBe(true);
     // An enemy beside it gives it a bite.
-    unit(s, 'e-bokh').hex = hexNeighbors(w.hex!).find(
-      (h) => !unitAt(s, h) && onMap(SALT_FLATS, h)
-    )!;
+    unit(s, 'e-bokh').hex = hexNeighbors(w.hex!).find((h) => !unitAt(s, h) && onMap(STEPPE, h))!;
     expect(onlyHold(s, mapOf(s), w)).toBe(false);
   });
 
@@ -290,7 +289,7 @@ describe('the track', () => {
     // The Champion steps out of the line; the Storm Caller steps into it, nearer.
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
     const away = hexNeighbors(bokh.hex!).find(
-      (h) => onMap(SALT_FLATS, h) && !unitAt(s, h) && !lane.some((l) => hexKey(l) === hexKey(h))
+      (h) => onMap(STEPPE, h) && !unitAt(s, h) && !lane.some((l) => hexKey(l) === hexKey(h))
     )!;
     enterHex(ctx, bokh, away);
     enterHex(ctx, storm, lane[0]!);
@@ -433,7 +432,7 @@ describe('the track', () => {
   });
 
   it('starts each side on its two outermost columns, scattered by the seed, with no deployment', () => {
-    const map = SALT_FLATS;
+    const map = STEPPE;
     const starts = new Set<string>();
     const columns = new Set<number>();
     for (let seed = 0; seed < 20; seed++) {
@@ -525,6 +524,38 @@ describe('the track', () => {
 });
 
 describe('the board', () => {
+  it('has a map per region, the Gobi the Steppe’s board under another look', () => {
+    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi']);
+    expect(mapById('gobi')).toBe(GOBI);
+    expect(() => mapById('atlantis')).toThrow();
+    expect(GOBI.hexes).toBe(STEPPE.hexes);
+    expect(GOBI.camelStart).toEqual(STEPPE.camelStart);
+    expect(GOBI.exits).toEqual(STEPPE.exits);
+    // Each stage names a map there is.
+    for (const stage of STAGES) expect(MAPS[stage.map]).toBeDefined();
+  });
+
+  it('fights on the map given, its ruins scattered as the yurts are, the Gobi with no mountains', () => {
+    for (let seed = 0; seed < 10; seed++) {
+      // Even a stage that always has mountains has none in the Gobi.
+      const s = createFight(seed, undefined, undefined, true, [], GOBI);
+      expect(s.mapId).toBe('gobi');
+      expect(mapOf(s).name).toBe('The Gobi Crossing');
+      const tiles = Object.values(s.tiles);
+      expect(tiles.filter((t) => t === 'obstacle').length).toBeGreaterThanOrEqual(2);
+      expect(tiles).not.toContain('mountain');
+      for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
+    }
+    expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
+  });
+
+  it('names the ground after the map’s look', () => {
+    expect(tileInfo('steppe', 'obstacle').name).toBe('Yurt');
+    expect(tileInfo('gobi', 'obstacle').name).toBe('Ruins');
+    expect(tileInfo('gobi', 'sand').name).toBe('Gravel');
+    expect(tileInfo('gobi', 'mountain').name).toBe('Mountains');
+  });
+
   it('says a unit can move exactly when its reachable hexes include a move', () => {
     const anyMove = (s: FightState, u: Unit) =>
       reachableHexes(s, mapOf(s), u).some((r) => r.path.length > 0);
@@ -550,7 +581,7 @@ describe('the board', () => {
   });
 
   it('is a hexagon of 61 flat-top hexes, 4 from the centre, its columns 5 to 9 to 5 long, a left-right mirror', () => {
-    const map = SALT_FLATS;
+    const map = STEPPE;
     expect(map.hexes).toHaveLength(61);
     expect(new Set(map.hexes.map(hexKey)).size).toBe(61);
     for (const h of map.hexes) expect(hexDistance(h, {q: 0, r: 0})).toBeLessThanOrEqual(4);
@@ -997,10 +1028,10 @@ describe('abilities', () => {
   it('Grapple isn’t offered on the unit the Champion already grapples', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
-    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
+    expect(ABILITIES.grapple.targets(s, STEPPE, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     // Only throws are left: free spaces and its own, never the held unit's.
-    const after = ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!);
+    const after = ABILITIES.grapple.targets(s, STEPPE, b, b.hex!);
     expect(after.length).toBeGreaterThan(0);
     expect(after.some((t) => hexEquals(t.hex!, at(2, 1)))).toBe(false);
     expect(tryTurn(s, 'p-bokh', {action: {ability: 'grapple', target: {hex: at(2, 1)}}})).toThrow(
@@ -1076,9 +1107,9 @@ describe('abilities', () => {
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
     // Two spaces away is out of reach.
-    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([]);
+    expect(ABILITIES.grapple.targets(s, STEPPE, b, b.hex!)).toEqual([]);
     target.hex = at(2, 1);
-    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
+    expect(ABILITIES.grapple.targets(s, STEPPE, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     expect(b.hex).toEqual(at(1, 1));
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
@@ -1108,9 +1139,9 @@ describe('abilities', () => {
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
     // No one held: only the unit next to it, to grapple.
-    expect(ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!)).toEqual([{hex: target.hex!}]);
+    expect(ABILITIES.grapple.targets(s, STEPPE, b, b.hex!)).toEqual([{hex: target.hex!}]);
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
-    const throws = ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!);
+    const throws = ABILITIES.grapple.targets(s, STEPPE, b, b.hex!);
     // Every free space around the Champion, not around the target, and the
     // Champion's own (a swap): one tap, the held unit implied.
     expect(throws.length).toBe(6);
@@ -1121,7 +1152,7 @@ describe('abilities', () => {
       expect(unitAt(s, t.hex!)).toBeUndefined();
     }
     // Offered, as aimed at the held enemy.
-    expect(offeredTargets(s, SALT_FLATS, b, ABILITIES.grapple)).toEqual(throws);
+    expect(offeredTargets(s, STEPPE, b, ABILITIES.grapple)).toEqual(throws);
     const far = throws.find((t) => hexDistance(t.hex!, target.hex!) === 2)!;
     applyTurn(s, b, {action: {ability: 'grapple', target: far}});
     expect(target.hex).toEqual(far.hex);
@@ -1146,7 +1177,7 @@ describe('abilities', () => {
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
     // An Immobilized Champion (in hail, say) still swaps back.
     b.statuses.push({kind: 'immobilized'});
-    const landings = ABILITIES.grapple.targets(s, SALT_FLATS, b, b.hex!).map((t) => t.hex!);
+    const landings = ABILITIES.grapple.targets(s, STEPPE, b, b.hex!).map((t) => t.hex!);
     expect(landings.some((h) => hexDistance(h, b.hex!) === 0)).toBe(true);
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: tAt}}});
     expect(b.hex).toEqual(bAt);
@@ -1156,7 +1187,7 @@ describe('abilities', () => {
   it('hail covers one space exactly two away: a unit there is Immobilized until the caster’s turn after next', () => {
     const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
-    const targets = ABILITIES.hail.targets(s, SALT_FLATS, storm, storm.hex!);
+    const targets = ABILITIES.hail.targets(s, STEPPE, storm, storm.hex!);
     expect(targets.length).toBeGreaterThan(0);
     expect(targets.every((t) => hexDistance(t.hex!, storm.hex!) === 2)).toBe(true);
     s.awaiting = storm.id;
@@ -1191,7 +1222,7 @@ describe('abilities', () => {
     for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
     expect(advanceToDecision(s)!.id).toBe('p-storm');
     const other = ABILITIES.hail
-      .targets(s, SALT_FLATS, storm, storm.hex!)
+      .targets(s, STEPPE, storm, storm.hex!)
       .find((t) => !unitAt(s, t.hex!))!.hex!;
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: other}}});
     expect(s.effects).toEqual([{kind: 'hail', hex: other, source: 'p-storm', turns: 2}]);
@@ -1348,7 +1379,7 @@ describe('the caravan’s camel', () => {
       const camel = unit(s, 'p-camel');
       expect(camel.side).toBe('player');
       expect(camel.controller).toBe('ai');
-      expect(camel.hex).toEqual(SALT_FLATS.camelStart);
+      expect(camel.hex).toEqual(STEPPE.camelStart);
       expect(camel.hex).toEqual({q: 0, r: -4});
       expect(camel.defence).toBe(HEROES.camel.defence);
       expect(camel.hp).toBe((1 + camel.defence) * 2);
@@ -1358,31 +1389,31 @@ describe('the caravan’s camel', () => {
   });
 
   it('wins by reaching the one exit, at the bottom point', () => {
-    expect(SALT_FLATS.exits).toEqual([{q: 0, r: 4}]);
+    expect(STEPPE.exits).toEqual([{q: 0, r: 4}]);
   });
 
   it('follows a fixed shortest road around the yurts to the exit', () => {
     for (let seed = 0; seed < 20; seed++) {
       const map = mapOf(createFight(seed));
-      const road = roadToExit(map, SALT_FLATS.camelStart);
+      const road = roadToExit(map, STEPPE.camelStart);
       // Every step to a neighbour, never onto yurts, ending on the exit.
-      let from = SALT_FLATS.camelStart;
+      let from = STEPPE.camelStart;
       for (const h of road) {
         expect(hexDistance(from, h)).toBe(1);
         expect(blocks(tileAt(map, h))).toBe(false);
         from = h;
       }
-      expect(road[road.length - 1]).toEqual(SALT_FLATS.exits[0]);
+      expect(road[road.length - 1]).toEqual(STEPPE.exits[0]);
       // Shortest: no walk around the yurts is shorter.
-      const dist = new Map([[hexKey(SALT_FLATS.camelStart), 0]]);
-      const queue = [SALT_FLATS.camelStart];
+      const dist = new Map([[hexKey(STEPPE.camelStart), 0]]);
+      const queue = [STEPPE.camelStart];
       for (let h; (h = queue.shift()); )
         for (const n of hexNeighbors(h))
           if (onMap(map, n) && !blocks(tileAt(map, n)) && !dist.has(hexKey(n))) {
             dist.set(hexKey(n), dist.get(hexKey(h))! + 1);
             queue.push(n);
           }
-      expect(road).toHaveLength(dist.get(hexKey(SALT_FLATS.exits[0]!))!);
+      expect(road).toHaveLength(dist.get(hexKey(STEPPE.exits[0]!))!);
       // Fixed: the road from a hex on it is the rest of it.
       expect(roadToExit(map, road[2]!)).toEqual(road.slice(3));
     }
@@ -1441,9 +1472,9 @@ describe('the caravan’s camel', () => {
       'e-bokh': at(1, 0),
     });
     const cornered = unit(boxed, 'p-camel');
-    expect(
-      hexNeighbors(at(0, -1)).filter((h) => onMap(SALT_FLATS, h) && !unitAt(boxed, h))
-    ).toEqual([]);
+    expect(hexNeighbors(at(0, -1)).filter((h) => onMap(STEPPE, h) && !unitAt(boxed, h))).toEqual(
+      []
+    );
     cornered.slot = 90;
     advanceToDecision(boxed);
     expect(cornered.hex).toEqual(at(0, -1));
@@ -1601,9 +1632,9 @@ describe('previews, the AI and the run', () => {
 
   it('the stages: the Outrider and two wolves, the Outrider, a random other and a wolf, then all three', () => {
     expect(STAGES).toEqual([
-      {heroes: 1, wolves: 2, provision: true},
-      {heroes: 2, wolves: 1, provision: true},
-      {heroes: 3, wolves: 0, provision: false},
+      {heroes: 1, wolves: 2, provision: true, map: 'steppe'},
+      {heroes: 2, wolves: 1, provision: true, map: 'steppe'},
+      {heroes: 3, wolves: 0, provision: false, map: 'steppe'},
     ]);
     expect(FIRST_ENEMY).toBe('mangudai');
     const seconds = new Set<HeroId>();
@@ -1926,7 +1957,7 @@ describe('previews, the AI and the run', () => {
     upgrade('mangudai');
     const s = setup({'p-mangudai': at(0, 0), 'e-mangudai': at(6, 0), 'e-bokh': at(6, 6)});
     const m = unit(s, 'p-mangudai');
-    const threats = threatsTo(s, SALT_FLATS, m);
+    const threats = threatsTo(s, STEPPE, m);
     const at3 = (h: Hex) => {
       const c = cloneFight(s);
       const me = unit(c, 'p-mangudai');
@@ -1950,7 +1981,7 @@ describe('previews, the AI and the run', () => {
     });
     unit(blocked, 'e-mangudai').statuses.push({kind: 'immobilized'});
     const bm = unit(blocked, 'p-mangudai');
-    const bt = threatsTo(blocked, SALT_FLATS, bm);
+    const bt = threatsTo(blocked, STEPPE, bm);
     bm.slot = blocked.currentSlot + 1;
     unit(blocked, 'e-mangudai').slot = 0;
     expect(threatDamage(bt, blocked, bm)).toBe(0);
@@ -2038,7 +2069,7 @@ describe('events for playback', () => {
       {from: at(1, 4), to: at(2, 4), how: 'walk'},
     ]);
     s.events = [];
-    enterHex({state: s, map: SALT_FLATS, slot: 0}, unit(s, 'e-bokh'), at(5, 6), 'throw');
+    enterHex({state: s, map: STEPPE, slot: 0}, unit(s, 'e-bokh'), at(5, 6), 'throw');
     expect(s.events[0]).toMatchObject({kind: 'step', unitId: 'e-bokh', how: 'throw'});
   });
 

@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {createRun, handleRunAction} from '../rules/run';
-import {SALT_FLATS} from '../rules/map';
+import {STEPPE} from '../rules/map';
 import {Playback, displayFight, eventSeconds, openingPlayback} from './playback';
 
 /** A fight at the player's first turn and one turn after it, as the page sees them. */
@@ -74,7 +74,7 @@ describe('playback', () => {
     const to = createRun(0).fight;
     const {from} = openingPlayback(to)!;
     const camel = (f: typeof to) => f.units.find((u) => u.hero === 'camel')!;
-    expect(camel(from).hex).toEqual(SALT_FLATS.camelStart);
+    expect(camel(from).hex).toEqual(STEPPE.camelStart);
     expect(from.currentSlot).toBe(0);
     // Temee acts last in the starting order (3.4), so it hasn't moved yet.
     expect(camel(from).slot).toBe(12);

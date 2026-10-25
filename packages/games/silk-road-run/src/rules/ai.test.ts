@@ -6,7 +6,7 @@ import type {SearchStats} from './ai';
 import {AI, HEROES, RULES} from './config';
 import {advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
 import {createRun} from './run';
-import {SALT_FLATS} from './map';
+import {STEPPE} from './map';
 import type {FightState, HeroId, TurnInput} from './types';
 
 const hex = (q: number, r: number): Hex => ({q, r});
@@ -15,7 +15,7 @@ const stats = (): SearchStats => ({completedDepth: 0, cutoffs: 0, work: 0});
 function setup(placements: Record<string, Hex>, enemies?: HeroId[]): FightState {
   const s = createFight(0, undefined, enemies);
   // The fixed layout, which these tests place units around.
-  s.tiles = {...SALT_FLATS.tiles};
+  s.tiles = {...STEPPE.tiles};
   s.phase = 'fight';
   // An unlisted camel isn't there at all: dead, it would lose the fight.
   s.units = s.units.filter((u) => u.hero !== 'camel' || u.id in placements);
@@ -206,7 +206,7 @@ describe('the search timeline', () => {
     // Opposite edges of the hexagon, 8 apart (on this board's own spaces).
     const wolf: Hex = {q: 4, r: -2};
     const temee: Hex = {q: -4, r: 4};
-    const cases = SALT_FLATS.hexes.filter((h) => !SALT_FLATS.tiles[hexKey(h)]);
+    const cases = STEPPE.hexes.filter((h) => !STEPPE.tiles[hexKey(h)]);
     // Nearer than Temee either way: in reach (a walk of 2 and a bite), or not.
     const near = cases.find((h) => hexDistance(h, wolf) === 2 && hexDistance(h, temee) > 6)!;
     const far = cases.find((h) => hexDistance(h, wolf) === 5 && hexDistance(h, temee) > 6)!;

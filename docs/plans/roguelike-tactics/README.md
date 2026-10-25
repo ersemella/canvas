@@ -21,6 +21,11 @@ run; winning the third stage wins the run. Between stages the caravan
 stops at a **caravanserai** (2026-10-25): after stages 1 and 2 one
 survivor takes a provision, +1 to one stat for the rest of the run
 ([progression.md](progression.md), 19.2); nothing yet after stage 3.
+**Maps per region** (2026-10-25): each stage names its map (`STAGES`,
+`MAPS` in map.ts), every one so far the Steppe's; the **Gobi Crossing**
+(`gobi`), the China region's way in, is the same board in the desert's
+look, sand and mudbrick ruins and no mountains ([art-direction.md](art-direction.md)),
+played from the test stage until the China region's stages exist.
 What the builder decided and where it departs from the brief is in
 [phase-1-brief.md](phase-1-brief.md#11-as-built-2026-10-19). The engine
 has hex geometry, a hex grid system, sprites and scaled pixel-art

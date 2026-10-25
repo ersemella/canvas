@@ -31,6 +31,7 @@ export const HERO_COLOR = {
   alchemist: '#0f766e',
   camel: '#a8742f',
   wolf: '#6b7280',
+  fox: '#c2410c',
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to

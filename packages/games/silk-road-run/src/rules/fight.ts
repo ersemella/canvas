@@ -20,7 +20,7 @@ import {
   unitName,
 } from './resolve';
 import type {Ctx} from './resolve';
-import {MAPS, SALT_FLATS, blocks, randomTiles} from './map';
+import {MAPS, STEPPE, blocks, randomTiles} from './map';
 import type {MapData, Tile} from './map';
 import {aimSlot, chargeOf, nextCard, placeCard, placeStartingCards, shuffled} from './track';
 import type {FightState, HeroId, Loadout, Provision, Side, StatId, TurnInput, Unit} from './types';
@@ -123,16 +123,17 @@ export function makeUnit(
  * boxed in by yurts and the units beside it: the seed scatters again until
  * every one has a free hex to step to. With `mountains` the board always
  * has a range of mountains (randomTiles). The party's heroes come with
- * the run's `provisions` (progression.md, 19.2).
+ * the run's `provisions` (progression.md, 19.2). It is fought on `map`,
+ * the Steppe's unless a stage says otherwise (STAGES).
  */
 export function createFight(
   seed: number,
   party: HeroId[] = PARTY,
   enemies: HeroId[] = PARTY,
   mountains = false,
-  provisions: Provision[] = []
+  provisions: Provision[] = [],
+  map: MapData = STEPPE
 ): FightState {
-  const map = SALT_FLATS;
   const random = seededRandom(seed);
   const state: FightState = {
     mapId: map.id,
@@ -156,7 +157,7 @@ export function createFight(
   const camel = state.units.find((u) => u.hero === CAMEL)!;
   camel.hex = map.camelStart;
   do {
-    state.tiles = randomTiles(random, mountains);
+    state.tiles = randomTiles(random, mountains, map);
     for (const side of ['player', 'enemy'] as const) {
       // A mountain may stand in the inner of the two columns.
       const free = map.startColumns[side].filter(

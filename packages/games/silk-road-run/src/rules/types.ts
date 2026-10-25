@@ -10,9 +10,17 @@ export type Side = 'player' | 'enemy';
 /**
  * The three prototype heroes, the Modao Vanguard and the Waidan Alchemist
  * (owner, 2026-10-25), the caravan's camel (camel.md), a unit that isn't a
- * hero, and the wolf, an enemy NPC.
+ * hero, and the enemy NPCs, the wolf and the fox.
  */
-export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'modao' | 'alchemist' | 'camel' | 'wolf';
+export type HeroId =
+  | 'bokh'
+  | 'mangudai'
+  | 'storm'
+  | 'modao'
+  | 'alchemist'
+  | 'camel'
+  | 'wolf'
+  | 'fox';
 export type AbilityId =
   | 'hold'
   | 'longshot'

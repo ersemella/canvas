@@ -65,7 +65,15 @@ export type {
 } from './client/TacticsInputSystem';
 export {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './rules/abilities';
 export type {AbilityDef, AbilityKind, ArrowLane} from './rules/abilities';
-export {CAMEL_RULE, EXIT_INFO, KEYWORD_INFO, TILE_INFO, hailInfo, shotInfo} from './rules/info';
+export {
+  CAMEL_RULE,
+  EXIT_INFO,
+  KEYWORD_INFO,
+  TILE_INFO,
+  hailInfo,
+  shotInfo,
+  tileInfo,
+} from './rules/info';
 export type {HexInfo, KeywordId} from './rules/info';
 export {ABILITY, HEROES, PARTY, ROSTER, RULES, healthOf} from './rules/config';
 export {
@@ -85,7 +93,7 @@ export {previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
 export {allowedTargets, offeredTargets, onlyHold} from './rules/choices';
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
-export {SALT_FLATS, onMap, tileAt} from './rules/map';
+export {GOBI, MAPS, STEPPE, mapById, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';
 export type {RunView} from './rules/run';
 export type * from './rules/types';

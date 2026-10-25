@@ -9,13 +9,13 @@ import {
   HEROES,
   HERO_PORTRAIT,
   PALETTE,
-  TILE_INFO,
   abilitiesOf,
   atExit,
   hailEnds,
   hailInfo,
   mapOf,
   tileAt,
+  tileInfo,
   unitName,
   shotInfo,
   shotLane,
@@ -229,7 +229,7 @@ export function HexInspector({
   return (
     <Stack gap={dense ? 6 : 8} data-testid="hex-info">
       {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
-      {tile !== 'sand' && <GroundCard info={TILE_INFO[tile]} dense={dense} />}
+      {tile !== 'sand' && <GroundCard info={tileInfo(fight.mapId, tile)} dense={dense} />}
       {atExit(fight, hex) && (
         <GroundCard info={EXIT_INFO} color="var(--c-lapisLight)" dense={dense} />
       )}

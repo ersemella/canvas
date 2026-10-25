@@ -123,7 +123,7 @@ passive is lost or returns to the party is question 63.
   | Region | Basic creature | Why it fits | Alternative |
   |---|---|---|---|
   | Steppe | **Grey wolf** (built) | The Mongols' mythic ancestor in the *Secret History*; the real threat to steppe herds | — |
-  | China | **Fox spirit** (huli jing, one-tailed) | A trickster preying on travellers; leaves the nine-tailed fox for a boss | Jiangshi, iconic but from later folklore |
+  | China | **Fox spirit** (huli jing, one-tailed; built 2026-10-25 as the `fox` unit, the wolf's stats, on the test stage) | A trickster preying on travellers; leaves the nine-tailed fox for a boss | Jiangshi, iconic but from later folklore |
   | India | **Jackal** | The *Panchatantra*'s schemers (Karataka and Damanaka); a scavenger pack trailing caravans | Vetala, more an elite |
   | Persia | **Lesser div** | The *Shahnameh*'s rank-and-file demons, before the White Div as a boss | Cheetah, the Sasanian royal hunting cat |
   | Arabia | **Ghul** | The desert shapeshifter luring travellers off the caravan track | Striped hyena, tied to ghuls in Arab folklore |

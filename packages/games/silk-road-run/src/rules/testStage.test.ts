@@ -15,6 +15,17 @@ describe('the test stage', () => {
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
 
+  it('fights on the map named, the Steppe’s if none, and says which maps there are', () => {
+    const units = {player: [{hero: 'bokh'}], enemy: [{hero: 'wolf'}]};
+    expect(createTestFight(1, units).mapId).toBe('steppe');
+    const gobi = createTestFight(1, {...units, map: 'gobi', yurts: 'map'});
+    expect(gobi.mapId).toBe('gobi');
+    expect(Object.values(gobi.tiles).filter((t) => t === 'obstacle')).toHaveLength(4);
+    expect(() => parseTestStage({...units, map: 'atlantis'})).toThrow(
+      'map must be one of "steppe", "gobi".'
+    );
+  });
+
   it('brings the units listed, with their own stats and abilities and Hold always', () => {
     const s = createTestFight(7, {
       yurts: 'none',

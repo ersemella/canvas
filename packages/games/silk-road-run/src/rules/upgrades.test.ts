@@ -7,7 +7,7 @@ import type {Hex} from '@canvas/engine/server';
 import {PARTY} from './config';
 import {ABILITIES} from './abilities';
 import {advanceToDecision, applyTurn, createFight, mapOf} from './fight';
-import {SALT_FLATS} from './map';
+import {STEPPE} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
 const centre: Hex = {q: 0, r: 0};
@@ -21,7 +21,7 @@ const out = (dir: number, n: number, from: Hex = centre): Hex => {
 /** Units where the test wants them, on open sand, the rest dead; cards far apart. */
 function setup(placements: Record<string, Hex>): FightState {
   const state = createFight(0, PARTY, PARTY);
-  state.tiles = Object.fromEntries(Object.keys(SALT_FLATS.tiles).map((k) => [k, 'sand']));
+  state.tiles = Object.fromEntries(Object.keys(STEPPE.tiles).map((k) => [k, 'sand']));
   state.units = state.units.filter((u) => u.hero !== 'camel');
   let slot = 100;
   for (const u of state.units) {

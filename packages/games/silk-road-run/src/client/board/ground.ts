@@ -1,5 +1,6 @@
 /**
- * The ground under everything: steppe grass, yurts and their smoke, exits
+ * The ground under everything, in each map's look (`LOOKS`): the Steppe's
+ * grass, yurts and their smoke, the Gobi's sand and mudbrick ruins; exits
  * (cached per map), and falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
@@ -18,29 +19,72 @@ import {
   insideHex,
 } from './pixels';
 import yurtImage from '../tiles/yurt.png';
+import ruinsImage from '../tiles/ruins.png';
+import ruinsTowerImage from '../tiles/ruins-tower.png';
+import sandImage from '../tiles/sand.png';
 import mountainPeakImage from '../tiles/mountain-peak.png';
 import mountainTwinImage from '../tiles/mountain-twin.png';
 import rockImage from '../tiles/rock.png';
 import grassImage from '../tiles/grass-soft.png';
 
-/** The ground's colour until its textures load. */
-const GRASS = '#8e9858';
-/** Every hex's border: a shade darker than the grass. */
-const BORDER = '#3f4a27';
+/** How a map looks (map.ts): its open ground, what its `obstacle` tile is, and whether that smokes. */
+export interface Look {
+  /** The open ground's texture; yurts and ruins stand on it, mountains on rocky ground of their own. */
+  ground: string;
+  /**
+   * Laid across the board as one field (`fillHexTexture`, a seamless
+   * tile), or stamped centred on each hex, mirrored on alternate hexes so
+   * the board doesn't repeat (`stampHex`, a 42 × 42 hex-sized image).
+   */
+  stamp: boolean;
+  /** The ground's colour until its texture loads. */
+  colour: string;
+  /** Every hex's border: a shade darker than the ground. */
+  border: string;
+  /** The `obstacle` tile's art; each hex picks one. */
+  obstacles: string[];
+  /** Smoke rises from each obstacle's crown (a yurt's). */
+  smoke: boolean;
+}
 
 /**
- * The ground texture of each tile type: the Steppe's grass (the `sand`
- * tile is open ground, whatever its look); yurts stand on grass, mountains
- * on rocky ground of their own (owner, 2026-10-24). The grass is the
- * owner's `grass.png` softened: its blotches at 60% of their contrast and a
- * touch greener, since at full strength it read as mud on a phone (owner,
- * 2026-10-24).
+ * The Steppe's grass (owner, 2026-10-24) is the owner's `grass.png`
+ * softened: its blotches at 60% of their contrast and a touch greener,
+ * since at full strength it read as mud on a phone. The Gobi (2026-10-25)
+ * brings back the desert board's art from before the Steppe: the sand
+ * stamped per hex, as it was, and the owner's mudbrick wall and tower
+ * stump in place of the yurts.
  */
-const TILE_TEXTURE: Record<Tile, string> = {
-  sand: grassImage,
-  obstacle: grassImage,
-  mountain: rockImage,
+const LOOKS: Record<string, Look> = {
+  steppe: {
+    ground: grassImage,
+    stamp: false,
+    colour: '#8e9858',
+    border: '#3f4a27',
+    obstacles: [yurtImage],
+    smoke: true,
+  },
+  gobi: {
+    ground: sandImage,
+    stamp: true,
+    colour: PALETTE.sand,
+    border: PALETTE.sandDark,
+    obstacles: [ruinsImage, ruinsTowerImage],
+    smoke: false,
+  },
 };
+
+/** A map's look; the Steppe's for a map without one of its own. */
+export function lookOf(map: MapData): Look {
+  return LOOKS[map.id] ?? LOOKS.steppe!;
+}
+
+/** Whether a map's obstacles smoke, so the board keeps drawing frames for it. */
+export const smokes = (map: MapData): boolean => lookOf(map).smoke;
+
+/** A tile's ground texture on a map: the map's open ground, or rock under a mountain (owner, 2026-10-24). */
+const textureOf = (look: Look, tile: Tile): string =>
+  tile === 'mountain' ? rockImage : look.ground;
 
 /**
  * Fills a hex with a seamless pixel-art texture at the sprites' scale,
@@ -65,6 +109,28 @@ function fillHexTexture(ctx: CanvasRenderingContext2D, h: Hex, img: HTMLImageEle
   ctx.restore();
 }
 
+/**
+ * A hex-sized pixel-art image (42 × 42) clipped to a hex at the sprites'
+ * scale, centred on it, mirrored when `flipX`.
+ */
+function stampHex(
+  ctx: CanvasRenderingContext2D,
+  h: Hex,
+  img: HTMLImageElement,
+  flipX: boolean
+): void {
+  const c = center(h);
+  const size = img.height * SPRITE_SCALE;
+  ctx.save();
+  hexPath(ctx, h, 0);
+  ctx.clip();
+  ctx.imageSmoothingEnabled = false;
+  ctx.translate(Math.round(c.x), Math.round(c.y));
+  if (flipX) ctx.scale(-1, 1);
+  ctx.drawImage(img, -size / 2, -size / 2, size, size);
+  ctx.restore();
+}
+
 /** Each map's tiles as a string, for the ground's cache key: worked out once per map. */
 const mapKeys = new WeakMap<MapData, string>();
 
@@ -78,16 +144,17 @@ let ground: {canvas: HTMLCanvasElement; key: string} | null = null;
  * texture finishes loading, or the canvas's scale changes.
  */
 export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
+  const look = lookOf(map);
   if (typeof document === 'undefined') {
-    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h));
+    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), look);
     return;
   }
   let mapKey = mapKeys.get(map);
   if (mapKey === undefined) {
-    mapKey = map.hexes.map((h) => `${hexKey(h)}:${tileAt(map, h)}`).join(' ');
+    mapKey = `${map.id}|${map.hexes.map((h) => `${hexKey(h)}:${tileAt(map, h)}`).join(' ')}`;
     mapKeys.set(map, mapKey);
   }
-  const loaded = [...new Set(Object.values(TILE_TEXTURE))]
+  const loaded = [look.ground, rockImage]
     .map((src) => (assetLoader.requestImage(src) ? 1 : 0))
     .join('');
   const scale = ctx.getTransform().a;
@@ -99,7 +166,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     const g = canvas.getContext('2d')!;
     g.setTransform(scale, 0, 0, scale, 0, 0);
     g.clearRect(0, 0, SCENE_SIZE.width, SCENE_SIZE.height);
-    for (const h of map.hexes) drawTile(g, h, tileAt(map, h));
+    for (const h of map.hexes) drawTile(g, h, tileAt(map, h), look);
     ground = {canvas, key};
   }
   ctx.save();
@@ -109,28 +176,29 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
 }
 
 /**
- * A tile's ground: its texture, one field across the board, and its
- * border. Until the image loads, flat grass
- * and a code-drawn mark show. Ruins stand on grass and are
- * drawn later, by `drawRuins`.
+ * A tile's ground in the map's look: its texture, one field across the
+ * board or stamped per hex, and its border. Until the image loads, the
+ * look's flat colour shows. Yurts, ruins and mountains stand on it and are
+ * drawn later, by `drawObstacle`.
  */
-function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile): void {
-  const ground = assetLoader.requestImage(TILE_TEXTURE[tile]);
+function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, look: Look): void {
+  const ground = assetLoader.requestImage(textureOf(look, tile));
   if (ground) {
-    fillHexTexture(ctx, h, ground);
+    if (look.stamp && tile !== 'mountain') stampHex(ctx, h, ground, (h.q * 7 + h.r * 13) % 2 !== 0);
+    else fillHexTexture(ctx, h, ground);
     ctx.save();
     hexPath(ctx, h, 0.5);
-    ctx.strokeStyle = BORDER;
+    ctx.strokeStyle = look.border;
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
   } else {
-    // Until the textures load: plain grass.
+    // Until the textures load: the look's plain ground.
     ctx.save();
     hexPath(ctx, h, 0.5);
-    ctx.fillStyle = GRASS;
+    ctx.fillStyle = look.colour;
     ctx.fill();
-    ctx.strokeStyle = BORDER;
+    ctx.strokeStyle = look.border;
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.restore();
@@ -197,14 +265,19 @@ const MOUNTAIN_IMAGES = [mountainPeakImage, mountainTwinImage];
 const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
 
 /**
- * A yurt or a mountain standing on its hex like a unit: over hail, so it
- * always reads as blocked. The yurt (owner, 2026-10-24) is redrawn from
- * the owner's art on the sprites' grid: 32 × 24 art pixels.
+ * A yurt, a ruin or a mountain standing on its hex like a unit: over hail,
+ * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
+ * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
+ * ruins, a wall and a tower stump, are 32 × 32. `map` gives the look.
  */
-export function drawObstacle(ctx: CanvasRenderingContext2D, h: Hex, mountain = false): void {
-  const art = assetLoader.requestImage(
-    mountain ? MOUNTAIN_IMAGES[Math.floor(hexRandom(h, 1)() * MOUNTAIN_IMAGES.length)]! : yurtImage
-  );
+export function drawObstacle(
+  ctx: CanvasRenderingContext2D,
+  h: Hex,
+  map: MapData,
+  mountain = false
+): void {
+  const images = mountain ? MOUNTAIN_IMAGES : lookOf(map).obstacles;
+  const art = assetLoader.requestImage(images[Math.floor(hexRandom(h, 1)() * images.length)]!);
   if (!art) {
     drawObstacleMark(ctx, center(h));
     return;
@@ -283,7 +356,7 @@ function mountainClip(ctx: CanvasRenderingContext2D, c: {x: number; y: number}):
   ctx.clip();
 }
 
-/** A yurt or a mountain until its image loads: stacked blocks, a shape of their own, not only a colour (art direction). */
+/** A yurt, a ruin or a mountain until its image loads: stacked blocks, a shape of their own, not only a colour (art direction). */
 function drawObstacleMark(ctx: CanvasRenderingContext2D, at: {x: number; y: number}): void {
   ctx.save();
   // Drawn around the origin at the size-32 scale, then scaled to the hex.
