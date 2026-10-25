@@ -1,8 +1,8 @@
 // Silk Road Run, the tactical roguelike planned in
 // docs/plans/roguelike-tactics/. The client entry (this file) is the game
 // definition the web shell builds in, plus the rules its page uses for
-// previews. The server-authoritative rules run in the platform's RunRoom
-// through the DOM-free `./server` entry; the page sends turns over HTTP.
+// previews. The whole run plays in the browser through the DOM-free `./run`
+// entry (docs/plans/client-side-runs.md), its AI in a Web Worker.
 
 import {SystemRegistry} from '@canvas/engine';
 import type {EntityData, GameDefinition, GameManifest} from '@canvas/engine';

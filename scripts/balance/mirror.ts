@@ -14,14 +14,21 @@ import {hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import type {FightState, HeroId, Side, TurnInput, Unit} from '@balance-rules/types';
 
-/** How an AI searches: its horizon in decisions and its work cap per turn (production: 3 and 110). */
-type Variant = {depth: number; work: number};
+/**
+ * How an AI searches: its horizon in decisions and its work cap per turn,
+ * and optionally its widths by decision and a time limit per turn.
+ */
+type Variant = {depth: number; work: number; widths?: readonly number[]; thinkMs?: number};
 export const VARIANTS: Record<string, Variant> = {
   production: {depth: AI.searchDepth, work: AI.maxSimulations},
   /** No lookahead: the heuristic's best root action. */
   greedy: {depth: 1, work: AI.maxSimulations},
   /** A horizon of four and four times the work. */
   deep: {depth: 4, work: 4 * AI.maxSimulations},
+  /** The browser's AI (AI.browser), as deep as this machine gets in its time. */
+  browser: {...AI.browser},
+  /** The browser's AI with a quarter of the time, for a slower device. */
+  'browser-slow': {...AI.browser, thinkMs: AI.browser.thinkMs / 4},
 };
 type Options = {
   pairs: number;
@@ -38,7 +45,10 @@ function chooser(variant: Variant) {
     const saved = ai.maxSimulations;
     ai.maxSimulations = variant.work;
     try {
-      return chooseAiTurn(state, unit, {left: variant.work}, undefined, {depth: variant.depth});
+      const {depth, work, widths, thinkMs} = variant;
+      const start = performance.now();
+      const stop = thinkMs === undefined ? undefined : () => performance.now() - start > thinkMs;
+      return chooseAiTurn(state, unit, {left: work}, undefined, {depth, work, widths, stop});
     } finally {
       ai.maxSimulations = saved;
     }

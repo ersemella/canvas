@@ -99,6 +99,28 @@ describe('budgeted tactical search', () => {
     expect(budget.left).toBe(0);
   });
 
+  it("looks deeper with the browser's widths, and a clock ends it at its last completed depth", () => {
+    const s = opening();
+    const me = unit(s, s.awaiting!);
+    const {work, depth, widths} = AI.browser;
+    const deep = stats();
+    chooseAiTurn(s, me, {left: work}, deep, {work, depth, widths, stop: () => false});
+    expect(deep.completedDepth).toBeGreaterThan(AI.searchDepth);
+    // A clock read every 32nd unit of work: stopped after the second read.
+    let reads = 0;
+    const stopped = stats();
+    const input = chooseAiTurn(s, me, {left: work}, stopped, {
+      work,
+      depth,
+      widths,
+      stop: () => ++reads > 1,
+    });
+    expect(stopped.work).toBeLessThanOrEqual(64);
+    expect(stopped.completedDepth).toBeLessThan(deep.completedDepth);
+    const copy = cloneFight(s);
+    expect(() => applyTurn(copy, unit(copy, me.id), input)).not.toThrow();
+  });
+
   it('bounds all turns sharing a request, including tiny and exhausted budgets', () => {
     const s = opening();
     const me = unit(s, s.awaiting!);

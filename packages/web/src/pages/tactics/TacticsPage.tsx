@@ -68,9 +68,9 @@ function outcomeText(fight: FightState): string {
 }
 
 /**
- * Silk Road Run: a run of fights against the AI. The run lives on
- * the server (a RunRoom, `useRun`); this page draws its view, previews turns with the
- * same rules locally (D11, `useTurnPlan`), and sends each turn as one request. Tapping or
+ * Silk Road Run: a run of fights against the AI, played in this browser
+ * (`useRun`, docs/plans/client-side-runs.md); this page draws its view, previews turns with the
+ * same rules (D11, `useTurnPlan`), and plays each turn as one action. Tapping or
  * hovering a hex shows what's there; Move, then a hex, plans the move;
  * an ability, then a target, previews that ability instead. Move and abilities
  * are separate actions; once its hex or target is picked, the picked button
@@ -85,6 +85,7 @@ export function TacticsPage() {
     run,
     fight,
     loading,
+    elsewhere,
     busy,
     playing,
     error,
@@ -376,6 +377,16 @@ export function TacticsPage() {
     return (
       <Center h="100dvh">
         <Loader size="sm" />
+      </Center>
+    );
+  }
+
+  if (elsewhere) {
+    return (
+      <Center h="100dvh" p="md">
+        <Text ta="center" data-testid="run-elsewhere">
+          This run is open in another tab. Close it to play here.
+        </Text>
       </Center>
     );
   }

@@ -5,11 +5,15 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./run": "./src/run.ts",
     "./server": "./src/server.ts",
     "./game.json": "./game.json"
   },
   "typesVersions": {
     "*": {
+      "run": [
+        "src/run.ts"
+      ],
       "server": [
         "src/server.ts"
       ]
