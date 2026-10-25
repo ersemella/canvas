@@ -213,9 +213,10 @@ unit: well within the Free plan's 10 ms
 One hand-made map, **"The Salt Flats Crossing"** (map generation is out of
 scope), mirrored left to right like the PvP-style maps (6.6):
 
-- **Starting columns:** the leftmost hex of each row (player) and the
-  rightmost (enemy), rows 1 to 9; the run's seed scatters each party
-  along its column, with no deployment step (owner, 2026-10-20; the
+- **Starting columns:** the two leftmost columns (player) and the two
+  rightmost (enemy); the run's seed scatters each party over its two
+  columns (owner, 2026-10-25; the outermost column alone from
+  2026-10-20), with no deployment step (owner, 2026-10-20; the
   zones were the two outermost hexes of each row, chosen by the player). Odd rows have an extra hex at
   column −1, so neither side edge is notched (owner, 2026-10-19). Five
   columns between them on even rows, six on odd rows, four on the two

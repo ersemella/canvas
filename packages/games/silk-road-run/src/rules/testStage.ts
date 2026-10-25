@@ -39,7 +39,7 @@ interface TestSetup {
   enemy: UnitSetup[];
 }
 
-/** The most units a side may bring (those without an "at" must also fit its 5-hex starting column). */
+/** The most units a side may bring (those without an "at" must also fit its starting columns). */
 const MAX_SIDE = 9;
 /** Bounds on a stat, far past the game's own (0 to 9), to catch a typo rather than a test. */
 const MAX_STAT = 30;
@@ -155,7 +155,7 @@ export function parseTestStage(raw: unknown): TestSetup {
 
 /**
  * The test stage's fight, already under way: the units on their spaces,
- * the rest scattered on their side's starting column (the player's left,
+ * the rest scattered over their side's two starting columns (the player's left,
  * the enemy's right), the yurts as set; with random yurts, scattered again
  * until no unit starts boxed in, as in a stage's fight (`createFight`).
  */
@@ -211,7 +211,7 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
       );
       if (loose.length > free.length)
         fail(
-          `${side} has more units without an "at" than free spaces on its starting column (${free.length}): give some an "at".`
+          `${side} has more units without an "at" than free spaces on its starting columns (${free.length}): give some an "at".`
         );
       const hexes = shuffled(free, random);
       loose.forEach(([u], i) => (u.hex = hexes[i]!));

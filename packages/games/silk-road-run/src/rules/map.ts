@@ -3,8 +3,9 @@
  * each way, 61 hexes (owner, 2026-10-24; a 64-hex block of pointy-top
  * hexes, 9 rows with the corners cut, and before it the Salt Flats'
  * smaller boards, from 2026-10-19). Its nine columns run 5, 6, 7, 8, 9, 8,
- * 7, 6, 5 hexes from left to right, so the outermost columns, where the
- * sides start, are straight, five hexes each. The camel starts at the top
+ * 7, 6, 5 hexes from left to right, so the outermost columns are straight,
+ * five hexes each. Each side starts in the two columns on its edge (owner,
+ * 2026-10-25; the outermost column alone before). The camel starts at the top
  * point and the only exit is the bottom one, the board's length apart.
  *
  * Hexes are axial, the centre hex {q: 0, r: 0}; on screen q runs left to
@@ -36,7 +37,7 @@ export interface MapData {
   /** Every hex on the board, top to bottom, left to right. */
   hexes: Hex[];
   tiles: Record<string, Tile>;
-  /** Where each side may start: the board's outermost column on its edge. */
+  /** Where each side may start: the board's two outermost columns on its edge. */
   startColumns: {player: Hex[]; enemy: Hex[]};
   /** The player's camel's starting hex (camel.md, 18.1). */
   camelStart: Hex;
@@ -93,7 +94,10 @@ export const SALT_FLATS: MapData = {
   name: 'The Steppe Crossing',
   hexes: boardHexes(),
   tiles: Object.fromEntries(special.map(([h, t]) => [hexKey(h), t])),
-  startColumns: {player: column(-RADIUS), enemy: column(RADIUS)},
+  startColumns: {
+    player: [...column(-RADIUS), ...column(1 - RADIUS)],
+    enemy: [...column(RADIUS), ...column(RADIUS - 1)],
+  },
   // The top point (owner, 2026-10-24; the top-left corner on the board of
   // rows before).
   camelStart: {q: 0, r: -RADIUS},

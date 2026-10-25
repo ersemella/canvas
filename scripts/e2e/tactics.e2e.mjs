@@ -42,12 +42,8 @@ const started = await api('/runs', alice, {
   method: 'POST',
   body: JSON.stringify({game: 'silk-road-run'}),
 });
-/**
- * The hexagon's straight outer columns, where the sides start: q −4 on the
- * left, 4 on the right (axial, the centre hex {q: 0, r: 0}), r down each.
- */
-const leftEdge = (r) => ({q: -4, r});
-const rightEdge = (r) => ({q: 4, r});
+// Each side starts in the hexagon's two columns on its edge: q −4 and −3 on
+// the left, 4 and 3 on the right (axial, the centre hex {q: 0, r: 0}).
 const sameHex = (a, b) => a.q === b.q && a.r === b.r;
 const startedFight = started.body?.view?.fight;
 check(
@@ -64,14 +60,16 @@ const actedFirst = new Set(
     .map((e) => e.unitId)
 );
 check(
-  'each side starts on its outermost column',
+  'each side starts on its two outermost columns',
   startedFight.units
     .filter((u) => !actedFirst.has(u.id))
     .every((u) =>
       // The camel starts at the top point, not on a column.
       u.hero === 'camel'
         ? sameHex(u.hex, {q: 0, r: -4})
-        : sameHex(u.hex, (u.side === 'player' ? leftEdge : rightEdge)(u.hex.r))
+        : u.side === 'player'
+          ? u.hex.q === -4 || u.hex.q === -3
+          : u.hex.q === 4 || u.hex.q === 3
     ) &&
     startedFight.units.every(
       (u) => u.side === 'enemy' || u.hero === 'camel' || !actedFirst.has(u.id)
@@ -155,18 +153,21 @@ check(
   combined.status === 400 && combined.body?.message?.includes('separate turns'),
   combined.body
 );
-// Walk up the column into the nearest ally, when it is within a move's reach (2 hexes).
+// Walk up the column into the nearest ally on it, when it is within a move's reach (2 hexes).
 const ally = heroFight.units
-  .filter((u) => u.side === 'player' && u !== actor && u.hero !== 'camel')
+  .filter(
+    (u) => u.side === 'player' && u !== actor && u.hero !== 'camel' && u.hex.q === actor.hex.q
+  )
   .sort((a, b) => Math.abs(a.hex.r - actor.hex.r) - Math.abs(b.hex.r - actor.hex.r))[0];
-const gap = ally.hex.r - actor.hex.r;
+const gap = ally ? ally.hex.r - actor.hex.r : Infinity;
 if (Math.abs(gap) <= 2) {
   const throughAlly = await api(`/runs/${runId}/turn`, alice, {
     method: 'POST',
     body: JSON.stringify({
-      move: Array.from({length: Math.abs(gap)}, (_, i) =>
-        leftEdge(actor.hex.r + Math.sign(gap) * (i + 1))
-      ),
+      move: Array.from({length: Math.abs(gap)}, (_, i) => ({
+        q: actor.hex.q,
+        r: actor.hex.r + Math.sign(gap) * (i + 1),
+      })),
       action: {ability: 'hold'},
     }),
   });

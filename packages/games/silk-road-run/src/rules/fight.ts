@@ -3,7 +3,7 @@
  * card, start-of-turn effects (hail lifting, grapples squeezing, Stunned turns skipped) and applying
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
-import {hexEquals} from '@canvas/engine/server';
+import {hexEquals, hexKey} from '@canvas/engine/server';
 import {CAMEL, HEROES, PARTY, healthOf} from './config';
 import {canMove, invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
@@ -20,7 +20,7 @@ import {
   unitName,
 } from './resolve';
 import type {Ctx} from './resolve';
-import {MAPS, SALT_FLATS, randomTiles} from './map';
+import {MAPS, SALT_FLATS, blocks, randomTiles} from './map';
 import type {MapData, Tile} from './map';
 import {aimSlot, chargeOf, nextCard, placeCard, placeStartingCards, shuffled} from './track';
 import type {FightState, HeroId, Loadout, Side, TurnInput, Unit} from './types';
@@ -96,9 +96,9 @@ export function makeUnit(
 
 /**
  * A new fight on the Steppe Crossing, already under way: the seed scatters the
- * yurts, the player's party along the leftmost column and
- * the enemy's along the rightmost (owner, 2026-10-20; there is no
- * deployment step). The player's camel
+ * yurts, the player's party over the two leftmost columns and
+ * the enemy's over the two rightmost (owner, 2026-10-25; the outermost
+ * column alone from 2026-10-20; there is no deployment step). The player's camel
  * starts at the board's top point (camel.md, 18.1; owner, 2026-10-24). The player brings
  * the heroes chosen on the start menu; the enemy brings `enemies`, all three
  * heroes unless the run's stage says otherwise (STAGES). No unit starts
@@ -136,7 +136,10 @@ export function createFight(
   do {
     state.tiles = randomTiles(random, mountains);
     for (const side of ['player', 'enemy'] as const) {
-      const free = map.startColumns[side].filter((h) => !hexEquals(h, map.camelStart));
+      // A mountain may stand in the inner of the two columns.
+      const free = map.startColumns[side].filter(
+        (h) => !hexEquals(h, map.camelStart) && !blocks(state.tiles[hexKey(h)])
+      );
       const hexes = shuffled(free, random);
       state.units
         .filter((u) => u.side === side && u !== camel)

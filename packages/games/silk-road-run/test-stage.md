@@ -39,8 +39,8 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 | `seed` | A whole number: the same seed lays out the yurts, mountains and units the same way every time. `null`: a new scatter each time. | `null` |
 | `yurts` | `"random"` (as in a normal fight: two or three yurts near the middle, and a range of 3 to 5 mountains in about half of fights), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
-| `player` | Your units, 1 to 9, in party order (at most 5 without an `at`: the starting column's spaces). You control every one. | required |
-| `enemy` | The AI's units, 1 to 9 (at most 5 without an `at`). | required |
+| `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
+| `enemy` | The AI’s units, 1 to 9 (at most 11 without an `at`). | required |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
 
@@ -53,7 +53,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
 | `abilities` | Up to 3 of `"longshot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, on any hero (a unit has at most 3 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
-| `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's starting column (yours the left edge, the enemy's the right) |
+| `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's two starting columns (yours the two on the left edge, the enemy's the two on the right) |
 
 The heroes' own numbers and starting kits are `HEROES` in
 [`src/rules/config.ts`](src/rules/config.ts); ability shapes (ranges,

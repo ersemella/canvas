@@ -432,9 +432,10 @@ describe('the track', () => {
     expect(unit(s, 'e-bokh').slot).toBe(12);
   });
 
-  it('starts each side on its outermost column, scattered by the seed, with no deployment', () => {
+  it('starts each side on its two outermost columns, scattered by the seed, with no deployment', () => {
     const map = SALT_FLATS;
     const starts = new Set<string>();
+    const columns = new Set<number>();
     for (let seed = 0; seed < 20; seed++) {
       const s = createFight(seed);
       expect(s.phase).toBe('fight');
@@ -447,14 +448,24 @@ describe('the track', () => {
           .map((u) => hexKey(u.hex!));
         expect(hexes.every((h) => column.has(h))).toBe(true);
         expect(new Set(hexes).size).toBe(hexes.length);
+        expect(hexes.every((h) => !blocks(s.tiles[h]))).toBe(true);
+        for (const h of hexes) columns.add(hexFromKey(h).q);
       }
       starts.add(s.units.map((u) => hexKey(u.hex!)).join(' '));
       expect(s.units.every((u) => u.slot !== null)).toBe(true);
     }
     expect(starts.size).toBeGreaterThan(10);
-    // The hexagon's straight left and right columns, five hexes each.
-    expect(map.startColumns.player.map((h) => h.q)).toEqual([-4, -4, -4, -4, -4]);
-    expect(map.startColumns.enemy.map((h) => h.q)).toEqual([4, 4, 4, 4, 4]);
+    // Both columns are used.
+    expect(columns).toEqual(new Set([-4, -3, 3, 4]));
+    // The hexagon's two columns on each side: the straight edge, five hexes, and six in from it.
+    expect(map.startColumns.player.map((h) => h.q)).toEqual([
+      ...Array(5).fill(-4),
+      ...Array(6).fill(-3),
+    ]);
+    expect(map.startColumns.enemy.map((h) => h.q)).toEqual([
+      ...Array(5).fill(4),
+      ...Array(6).fill(3),
+    ]);
   });
 
   it('starts no unit boxed in by mountains and the units beside it', () => {
@@ -622,7 +633,7 @@ describe('the board', () => {
     }
   });
 
-  it('pitches two or three yurts near the middle by each fight’s seed: unmirrored, apart, clear of the starting columns, the board connected', () => {
+  it('pitches two or three yurts near the middle by each fight’s seed: unmirrored, apart, clear of the outermost columns, the board connected', () => {
     const layouts = new Set<string>();
     const counts = new Set<number>();
     let asymmetric = 0;
@@ -648,7 +659,7 @@ describe('the board', () => {
       if (!yurts.every((y) => map.tiles[hexKey({q: -y.q, r: y.r + y.q})] === 'obstacle'))
         asymmetric++;
       for (const key of Object.keys(map.tiles)) {
-        // Off the starting columns, the camel's start and the exit.
+        // Off the outermost columns, the camel's start and the exit.
         expect(Math.abs(hexFromKey(key).q)).toBeLessThan(4);
         expect([map.camelStart, ...map.exits].map(hexKey)).not.toContain(key);
       }
