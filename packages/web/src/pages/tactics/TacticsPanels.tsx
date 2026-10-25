@@ -67,12 +67,14 @@ const SKIP_ARMED_MS = 3000;
 
 /**
  * Skip turn: ends the turn with Hold, whatever is picked, saying when the
- * next turn comes. A quiet tile: the turn's action is confirmed by a
- * second tap on the hex picked last (Move's or the ability's button cancels it).
+ * next turn comes. A quiet tile: the turn's action is confirmed from its
+ * own button (Move or the ability, once its hex or target is picked).
  * Like Reset run, the first tap only arms it ("Tap again to skip"), so a
  * stray tap doesn't throw a turn away (owner, 2026-10-21); it disarms after
  * `SKIP_ARMED_MS`, on a tap anywhere else (which still does what it does),
- * or when the turn changes (the page keys it by turn).
+ * or when the turn changes (the page keys it by turn). Once Move's hex or
+ * an ability's target is picked, it is Cancel instead (`onCancel`): one tap
+ * puts the choice down (owner, 2026-10-25).
  */
 export function SkipButton(props: {
   fight: FightState;
@@ -82,12 +84,18 @@ export function SkipButton(props: {
   /** Phones: full height for a thumb. */
   size?: 'sm' | 'lg';
   onSkip: () => void;
+  /** A turn is ready to confirm: the button cancels it instead, at once. */
+  onCancel?: (() => void) | undefined;
   /** Desktop: a key that presses it (twice to skip, as with taps), shown on it. */
   hotkey?: string | undefined;
 }) {
   const [armed, setArmed] = useState(false);
   const ref = useRef<HTMLButtonElement>(null);
   const press = () => {
+    if (props.onCancel) {
+      setArmed(false);
+      return props.onCancel();
+    }
     if (!armed) return setArmed(true);
     setArmed(false);
     props.onSkip();
@@ -123,7 +131,7 @@ export function SkipButton(props: {
   return (
     <Button
       ref={ref}
-      className={`${styles.skip} ${armed ? styles.skipArmed : ''}`}
+      className={`${styles.skip} ${armed && !props.onCancel ? styles.skipArmed : ''}`}
       data-testid="skip-turn"
       fw="bold"
       size={props.size ?? 'sm'}
@@ -132,12 +140,18 @@ export function SkipButton(props: {
       data-key={hotkey?.toUpperCase()}
       onClick={press}
       title={
-        armed
-          ? `Tap again${hotkey ? ` (or press ${hotkey.toUpperCase()})` : ''} to end the turn without moving or using an ability`
-          : (next?.title ?? 'End the turn without moving or using an ability')
+        props.onCancel
+          ? 'Put the picked move or ability down'
+          : armed
+            ? `Tap again${hotkey ? ` (or press ${hotkey.toUpperCase()})` : ''} to end the turn without moving or using an ability`
+            : (next?.title ?? 'End the turn without moving or using an ability')
       }
     >
-      {armed ? 'Tap again to skip' : `Skip turn${next?.text ? ` · ${next.text}` : ''}`}
+      {props.onCancel
+        ? 'Cancel'
+        : armed
+          ? 'Tap again to skip'
+          : `Skip turn${next?.text ? ` · ${next.text}` : ''}`}
     </Button>
   );
 }

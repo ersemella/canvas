@@ -501,11 +501,10 @@ confirm or change:
   ("Tap again to skip", in gold), as Reset run's does, so a stray tap
   doesn't throw a turn away (owner, 2026-10-21); it disarms after 3
   seconds, on a tap anywhere else (owner, the same day; the tap still
-  does what it does), or when the turn changes.
-  (Superseded 2026-10-25, owner: a second tap on the hex picked last
-  commits, on phones as on desktop, and the picked button becomes its
-  **Cancel** instead, still saying when the next turn comes: a tap on it
-  puts Move or the ability down. Desktop keeps the board's Confirm and Enter.)
+  does what it does), or when the turn changes. Once Move's hex or an
+  ability's target is picked, Skip turn reads **Cancel** instead, and one
+  tap puts the choice down (owner, 2026-10-25), so a phone can back out
+  of a pick (a second tap on the hex now commits).
 - **Desktop controls** (owner, 2026-10-21): picking an ability, clicking
   the board, then going back to the panel to confirm was cumbersome. As in
   XCOM, Into the Breach and Divinity: Original Sin 2, the turn stays on the

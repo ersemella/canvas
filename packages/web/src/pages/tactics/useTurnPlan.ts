@@ -130,7 +130,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
             : 'Pick a target'
         : null;
 
-  /** The picked turn, once its hex or target is: a second tap on that hex confirms it. */
+  /** The picked turn, once its hex or target is: the picked button confirms it. */
   const input: TurnInput | null = useMemo(() => {
     if (needsTarget || (!action && !plannedMove)) return null;
     const out: TurnInput = {action: action ?? {ability: 'hold', target: {}}};
@@ -199,7 +199,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       if (moveMode) {
         const reach = reaches.find((r) => r.path.length > 0 && hexEquals(r.hex, h));
         if (!reach) return false;
-        // Tapping the chosen hex again un-picks it (once the turn is ready, the page commits instead).
+        // Tapping the chosen hex again un-picks it (Move's button confirms).
         pick({plannedMove: plannedMove && hexEquals(plannedMove.hex, h) ? null : reach});
         return true;
       }
@@ -212,7 +212,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
             (t) => hexEquals(t.to!, target.to!) && t.hex && hexEquals(t.hex, h)
           );
           if (shot) {
-            // Tapping the chosen target again un-picks it (once the turn is ready, the page commits instead).
+            // Tapping the chosen target again un-picks it (the button confirms).
             if (target.hex && hexEquals(target.hex, h)) pick({target: {to: target.to}});
             else chooseTarget(shot);
             return true;
@@ -233,7 +233,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
         );
         if (second) {
-          // Tapping the chosen hex again un-picks it (once the turn is ready, the page commits instead).
+          // Tapping the chosen hex again un-picks it (the button confirms).
           if (!target.to || !hexEquals(target.to, h)) chooseTarget(second);
           else pick({target: {hex: target.hex}});
           return true;
@@ -241,7 +241,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       }
       const match = targets.find((t) => t.hex && hexEquals(t.hex, h));
       if (!match) return false;
-      // Tapping the chosen target again un-picks it (once the turn is ready, the page commits instead).
+      // Tapping the chosen target again un-picks it (the button confirms).
       if (target?.hex && hexEquals(target.hex, h)) pick({target: null});
       else if (SECOND_PICK[ability]) chooseTarget({hex: h});
       else chooseTarget(match);

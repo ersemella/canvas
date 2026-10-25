@@ -411,7 +411,7 @@ try {
     await tapHex(step);
     check(
       'desktop: a click on a reachable hex plans the move, with no Move first',
-      /^Cancel/.test(await heroMove.textContent()),
+      /^Confirm/.test(await heroMove.textContent()),
       await heroMove.textContent()
     );
     check(
@@ -524,22 +524,13 @@ try {
     /^HailPick a target$/.test(await hailButton.textContent()),
     await hailButton.textContent()
   );
-  // Aimed, its button cancels it; a right-click un-picks the target.
+  // Aimed, its button confirms it; a right-click un-picks the target.
   await tapHex(hailTo);
   check(
-    'once its target is picked, the ability’s button cancels it, saying when the next turn comes',
-    /^Cancel\+\d+( → \+\d+)?$/.test(await hailButton.textContent()),
+    'once its target is picked, the ability’s button confirms it',
+    /^Confirm\+\d+( → \+\d+)?$/.test(await hailButton.textContent()),
     await hailButton.textContent()
   );
-  await hailButton.click();
-  check(
-    'tapping an aimed ability’s button puts it down, without committing',
-    (await state()).view.version === before &&
-      (await hailButton.getAttribute('aria-pressed')) === 'false',
-    await hailButton.textContent()
-  );
-  await hailButton.click();
-  await tapHex(hailTo);
   {
     const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hailTo);
     const box = await page.locator('canvas').boundingBox();
@@ -586,8 +577,8 @@ try {
     (await moveButton.getAttribute('aria-pressed')) === 'true'
   );
   check(
-    'once its hex is picked, Move’s button cancels it, saying when the next turn comes',
-    /^Cancel\+\d+( → \+\d+)?$/.test(await moveButton.textContent()),
+    'once its hex is picked, Move’s button confirms it, saying when the next turn comes',
+    /^Confirm\+\d+( → \+\d+)?$/.test(await moveButton.textContent()),
     await moveButton.textContent()
   );
   // Esc un-picks the hex; then tapping Move puts it down.
@@ -626,14 +617,27 @@ try {
     'tapping another reachable hex changes the destination',
     (await state()).view.version === before &&
       (await moveButton.getAttribute('aria-pressed')) === 'true' &&
-      /^Cancel/.test(await moveButton.textContent())
+      /^Confirm/.test(await moveButton.textContent())
   );
   // A turn has one action, so there is no order to swap.
   check(
     'Swap order is offered only when the other order is legal',
     !(await page.getByRole('button', {name: /Swap order/}).count())
   );
+  // With the turn ready to confirm, Skip turn is its Cancel: one tap puts it down.
   const skip = page.getByTestId('skip-turn');
+  check(
+    'with a turn ready, Skip turn reads Cancel',
+    (await skip.textContent()) === 'Cancel',
+    await skip.textContent()
+  );
+  await skip.click();
+  check(
+    'a tap on Cancel puts the move down, without committing',
+    (await state()).view.version === before &&
+      (await moveButton.getAttribute('aria-pressed')) === 'false',
+    await moveButton.textContent()
+  );
   check(
     'Skip turn says when the next turn comes, in slots from now',
     /^Skip turn · \+\d+( → \+\d+)?$/.test(await skip.textContent()),
@@ -646,8 +650,7 @@ try {
     (await skip.textContent()) === 'Tap again to skip' && (await state()).view.version === before,
     await skip.textContent()
   );
-  // A tap anywhere else disarms it (here, on the board: the unit, or an
-  // enemy if the board's Confirm covers the unit).
+  // A tap anywhere else disarms it (here, on the board: the unit, or an enemy).
   const enemyHexes = (await state()).view.fight.units
     .filter((u) => u.side === 'enemy' && u.alive)
     .map((u) => u.hex);
@@ -665,16 +668,20 @@ try {
     await skip.textContent()
   );
   check(
-    'the board’s Confirm is the only one: the picked button cancels',
-    (await page.getByRole('button', {name: /^Confirm/}).count()) === 1 &&
-      (await page.getByTestId('board-confirm').count()) === 1
-  );
-  check(
     'desktop: S arms Skip turn',
     (await page.keyboard.press('s'), await skip.textContent()) === 'Tap again to skip'
   );
   await tapUncovered(acting.hex, ...enemyHexes); // disarm it again
   await sleep(200);
+  // Plan the move again.
+  await tapHex(dest);
+  check(
+    'only the picked button confirms, and the board’s Confirm',
+    (await page
+      .getByTestId('turn-controls')
+      .getByRole('button', {name: /^Confirm/})
+      .count()) === 1 && (await page.getByRole('button', {name: /^Confirm/}).count()) === 2
+  );
   await shot(page, 'preview');
   // A second click on the destination commits the move.
   await tapHex(dest);
@@ -1281,11 +1288,11 @@ try {
       await sleep(200);
       check(
         'phone: tapping a hex to move to closes the tooltip (and plans the move)',
-        !(await tooltip.count()) && /^Cancel/.test(await phoneMove.textContent()),
+        !(await tooltip.count()) && /^Confirm/.test(await phoneMove.textContent()),
         await phoneMove.textContent()
       );
-      // Put the move down again: Move's button cancels it.
-      await phone.touchscreen.tap(moveAt.x, moveAt.y);
+      // Put the move down again: Skip turn is its Cancel now.
+      await phone.getByTestId('skip-turn').tap();
       await sleep(200);
       check(
         'phone: the move is put down again, nothing committed',
@@ -1380,11 +1387,12 @@ try {
     await phone.tap('canvas', {position: at});
     await sleep(250);
     check(
-      'phone: a planned move turns the Move button into its Cancel, with its slots',
-      /^Cancel\+\d+( → \+\d+)?$/.test(await phoneMove.textContent()),
+      'phone: a planned move turns the Move button into its Confirm, with its slots',
+      /^Confirm\+\d+( → \+\d+)?$/.test(await phoneMove.textContent()),
       await phoneMove.textContent()
     );
-    await phoneMove.click(); // Cancel puts Move down
+    await phone.getByTestId('skip-turn').tap(); // Cancel puts Move down
+    await sleep(250);
     check(
       'phone: putting the move down shows the range again',
       (await phoneMove.getAttribute('aria-pressed')) === 'false' &&
@@ -1447,22 +1455,32 @@ try {
   }
   const aim = await phone.evaluate(() => window.__tactics.targets[0].hex);
   await tapOn(aim);
-  const phoneCancel = await phoneHail.textContent();
+  const phoneConfirm = await phoneHail.textContent();
   check(
-    'phone: aimed, the ability’s button cancels it, saying when the next turn comes',
-    /^Cancel\+\d+( → \+\d+)?$/.test(phoneCancel),
-    phoneCancel
+    'phone: aimed, the ability’s button confirms it, saying when the next turn comes',
+    /^Confirm\+\d+( → \+\d+)?$/.test(phoneConfirm),
+    phoneConfirm
   );
   check(
-    'phone: the ability button showed the same slots as its Cancel',
-    hailCost.endsWith(phoneCancel.match(/^Cancel(\+\d+)/)[1]),
-    [hailCost, phoneCancel]
+    'phone: the ability button showed the same slots as its Confirm',
+    hailCost.endsWith(phoneConfirm.match(/^Confirm(\+\d+)/)[1]),
+    [hailCost, phoneConfirm]
   );
-  await phoneHail.click();
+  // Aimed, Skip turn is its Cancel: one tap puts Hail down.
+  const phoneSkip = phone.getByTestId('skip-turn');
   check(
-    'phone: tapping an aimed ability’s button puts it down, without committing',
+    'phone: aimed, Skip turn reads Cancel',
+    (await phoneSkip.textContent()) === 'Cancel',
+    await phoneSkip.textContent()
+  );
+  await phoneSkip.tap();
+  await sleep(250);
+  check(
+    'phone: a tap on Cancel puts the ability down, without committing',
     (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion &&
-      (await phoneHail.getAttribute('aria-pressed')) === 'false'
+      (await phoneHail.getAttribute('aria-pressed')) === 'false' &&
+      /^Skip turn/.test(await phoneSkip.textContent()),
+    await phoneSkip.textContent()
   );
   await phoneHail.click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);

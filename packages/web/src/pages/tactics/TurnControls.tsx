@@ -38,8 +38,8 @@ export function choiceRows(unit: Unit): number {
  * abilities as big buttons (the name, then when the next turn comes), in rows of
  * two, or three for a hero with more to choose from; then Skip turn,
  * filling its row beside the run's menu. The picked one asks for its hex
- * or target, then, once it's picked, becomes its Cancel, saying when the
- * next turn comes: a second tap on the hex goes (owner, 2026-10-25).
+ * or target, then, once it's picked, becomes its Confirm: players tap the
+ * button they picked again to go (owner, 2026-10-21).
  */
 export function TurnControls(props: {
   /** Slots until the unit's next turn, whatever it does, before yielding (3.2). */
@@ -68,12 +68,13 @@ export function TurnControls(props: {
   /** What the picked choice still needs picked on the board, if anything: its button says so. */
   needsTarget: string | null;
   /**
-   * The picked choice is ready: its button cancels it, saying when the
+   * The picked choice is ready: its button confirms it, saying when the
    * next turn comes (`blocked` when the rules refuse it).
    */
   confirm: {text: string; title?: string; blocked?: boolean} | null;
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
+  onConfirm: () => void;
   /** The run's menu, beside Skip turn. */
   menu: React.ReactNode;
   /**
@@ -89,13 +90,11 @@ export function TurnControls(props: {
 }) {
   const {unit, ability, plannedMove, moving, confirm} = props;
   const defs = choiceAbilities(unit);
-  // The picked button: Cancel once it's ready, else what it still needs.
-  const cancelLabel = confirm && (
+  // The picked button: Confirm once it's ready, else what it still needs.
+  const confirmLabel = confirm && (
     <span className={styles.bigButton}>
-      <span className={styles.tileName}>Cancel</span>
-      <span className={styles.bigButtonCost}>
-        {confirm.blocked ? 'Can’t do that' : confirm.text}
-      </span>
+      <span className={styles.tileName}>{confirm.blocked ? 'Can’t do that' : 'Confirm'}</span>
+      <span className={styles.bigButtonCost}>{confirm.text}</span>
     </span>
   );
   const asking = (name: string, icon: React.ReactNode) => (
@@ -134,8 +133,8 @@ export function TurnControls(props: {
       >
         <Button
           size="lg"
-          className={styles.tile!}
-          disabled={!props.canMove || props.waiting}
+          className={`${styles.tile} ${plannedMove && confirm ? styles.tileConfirm : ''}`}
+          disabled={!props.canMove || props.waiting || Boolean(plannedMove && confirm?.blocked)}
           data-choice="move"
           data-key={props.keys ? 1 : undefined}
           aria-pressed={moving || plannedMove !== null}
@@ -143,17 +142,17 @@ export function TurnControls(props: {
             props.waiting
               ? 'Not this unit’s turn yet'
               : plannedMove
-                ? (confirm?.title ?? 'Tap the hex again to move there, or tap here to cancel')
+                ? (confirm?.title ?? 'Move there; tap the hex again to confirm')
                 : moving
                   ? 'Pick where to move, or tap to put Move down'
                   : props.canMove
                     ? 'Move instead of using an ability; units block the path'
                     : 'Can’t move now'
           }
-          onClick={props.onMove}
+          onClick={plannedMove && confirm ? props.onConfirm : props.onMove}
         >
-          {plannedMove && cancelLabel
-            ? cancelLabel
+          {plannedMove && confirmLabel
+            ? confirmLabel
             : moving && !plannedMove
               ? asking('Move', <AbilityIcon id="move" />)
               : label('Move', <AbilityIcon id="move" />)}
@@ -167,8 +166,8 @@ export function TurnControls(props: {
             <Button
               key={def.id}
               size="lg"
-              className={styles.tile!}
-              disabled={reason !== null || props.waiting}
+              className={`${styles.tile} ${ready ? styles.tileConfirm : ''}`}
+              disabled={reason !== null || props.waiting || Boolean(ready && confirm?.blocked)}
               data-choice={def.id}
               data-key={props.keys ? i + 2 : undefined}
               aria-pressed={picked}
@@ -176,17 +175,16 @@ export function TurnControls(props: {
                 props.waiting
                   ? 'Not this unit’s turn yet'
                   : ready
-                    ? (confirm?.title ??
-                      `Tap the target again to use ${def.name}, or tap here to cancel`)
+                    ? (confirm?.title ?? `${def.name} there; tap the target again to confirm`)
                     : picked
                       ? `Pick a target, or tap to put ${def.name} down`
                       : (reason ?? def.summary(unit))
               }
-              onClick={() => props.onAbility(picked ? null : def.id)}
+              onClick={ready ? props.onConfirm : () => props.onAbility(picked ? null : def.id)}
             >
-              {/* When the next turn comes; once picked and aimed, Cancel, with any yielding. */}
-              {ready && cancelLabel
-                ? cancelLabel
+              {/* When the next turn comes; once picked and aimed, Confirm, with any yielding. */}
+              {ready && confirmLabel
+                ? confirmLabel
                 : picked
                   ? asking(def.name, abilityIcon(def))
                   : label(def.name, abilityIcon(def), chargeOf(unit, def.id))}
