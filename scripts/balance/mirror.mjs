@@ -17,7 +17,7 @@ if (args.includes('--help')) {
   --seed N        First fight seed (default 1000)
   --max-turns N   Chosen-action cutoff per fight (default 400)
   --party A,B,C   Each side's heroes (default bokh,mangudai,storm)
-  --ai A,B        Team a's and team b's AIs: production, greedy or deep (default production,production)`);
+  --ai A,B        Team a's and team b's AIs: production, greedy, deep, browser or browser-slow (default production,production)`);
   process.exit(0);
 }
 const pairs = Number(value('--pairs', '200'));

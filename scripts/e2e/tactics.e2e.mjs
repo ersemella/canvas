@@ -1,298 +1,41 @@
 /**
- * Silk Road Run end to end: the `/runs` API against the Worker (player
- * keys, ownership, the view never carrying the seed, one active run per
- * key, illegal turns refused), then the page in Chromium: start,
+ * Silk Road Run end to end, in Chromium: the run plays in the browser, so
+ * the page sends no `/runs` request (docs/plans/client-side-runs.md). Start,
  * a turn played with real taps and its preview, an enemy's stat sheet, a
- * reload that resumes exactly, and the fight played to victory or defeat
- * (the remaining turns chosen by the AI through a dev-server hook).
+ * reload that resumes exactly, a second tab refused while the first has
+ * the run (and taking it over once that one closes), and the fight played
+ * to victory or defeat (the remaining turns chosen by the AI through a
+ * dev-server hook). The rules behind the page are unit-tested in the game
+ * package (`src/rules/*.test.ts`).
  *
- * Against production (no dev hook) the page part only starts a fight. Every run the suite starts is abandoned at the end, so smoke
- * tests don't leave active runs behind.
+ * Against production (no dev hook) the page part only starts a fight.
  */
 import {chromium, devices} from 'playwright';
 import {join} from 'node:path';
-import {randomBytes} from 'node:crypto';
-import {API_URL, OUT_DIR, WEB_URL, check, finish, sleep} from './lib.mjs';
+import {OUT_DIR, WEB_URL, check, finish, sleep} from './lib.mjs';
 
-const key = () => randomBytes(32).toString('base64url');
-const api = async (path, playerKey, init = {}) => {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(playerKey ? {Authorization: `Bearer ${playerKey}`} : {}),
-    },
-  });
-  return {status: res.status, body: await res.json().catch(() => null)};
-};
 /** The board canvas's scene size (game.json). */
 const SCENE_W = 594;
 const SCENE_H = 826;
 const shot = (page, name) => page.screenshot({path: join(OUT_DIR, `tactics-${name}.png`)});
-
-// ── The API ──────────────────────────────────────────────────────────────────
-const alice = key();
-const bob = key();
-
-check(
-  'a run needs a player key',
-  (await api('/runs', null, {method: 'POST', body: '{"game":"silk-road-run"}'})).status === 401
-);
-const started = await api('/runs', alice, {
-  method: 'POST',
-  body: JSON.stringify({game: 'silk-road-run'}),
-});
-// Each side starts in the hexagon's two columns on its edge: q −4 and −3 on
-// the left, 4 and 3 on the right (axial, the centre hex {q: 0, r: 0}).
+/** Where the page saves its run (`localRuns.ts`). */
+const RUN_STORAGE = 'canvas:tactics:run';
 const sameHex = (a, b) => a.q === b.q && a.r === b.r;
-const startedFight = started.body?.view?.fight;
-check(
-  'starting a run returns a fight already under way',
-  started.status === 201 && startedFight?.phase === 'fight',
-  started
-);
-// The camel walks itself, first; an enemy that wins a starting speed tie
-// (shuffled) may already have had its turn; every other unit (the awaited
-// one included) is still where it started.
-const actedFirst = new Set(
-  (startedFight.events ?? [])
-    .filter((e) => e.kind === 'turn' && e.unitId !== startedFight.awaiting)
-    .map((e) => e.unitId)
-);
-check(
-  'each side starts on its two outermost columns',
-  startedFight.units
-    .filter((u) => !actedFirst.has(u.id))
-    .every((u) =>
-      // The camel starts at the top point, not on a column.
-      u.hero === 'camel'
-        ? sameHex(u.hex, {q: 0, r: -4})
-        : u.side === 'player'
-          ? u.hex.q === -4 || u.hex.q === -3
-          : u.hex.q === 4 || u.hex.q === 3
-    ) &&
-    startedFight.units.every(
-      (u) => u.side === 'enemy' || u.hero === 'camel' || !actedFirst.has(u.id)
-    ),
-  startedFight.units.map((u) => [u.id, u.hex, actedFirst.has(u.id)])
-);
-check(
-  'the response stops on one of your units',
-  /^p-/.test(startedFight.awaiting ?? ''),
-  startedFight.awaiting
-);
-const runId = started.body.runId;
-const raw = JSON.stringify(started.body);
-check('the view never carries the seed', !/seed/i.test(raw));
-
-check('another key can’t see the run', (await api(`/runs/${runId}`, bob)).status === 403);
-check(
-  'another key can’t act on the run',
-  (
-    await api(`/runs/${runId}/turn`, bob, {
-      method: 'POST',
-      body: JSON.stringify({action: {ability: 'hold'}}),
-    })
-  ).status === 403
-);
-check(
-  'the key’s active run is remembered',
-  (await api('/runs/active', alice)).body?.activeRunId === runId
-);
-check(
-  'there is no deployment step',
-  (await api(`/runs/${runId}/deploy`, alice, {method: 'POST', body: '{}'})).status === 404
-);
-const version = started.body.view.version;
-
-const bad = await api(`/runs/${runId}/turn`, alice, {
-  method: 'POST',
-  body: JSON.stringify({action: {ability: 'longshot', target: {hex: {q: 50, r: 50}}}}),
-});
-check(
-  'an illegal turn is refused with a reason',
-  bad.status === 400 && typeof bad.body?.message === 'string',
-  bad.body
-);
-check(
-  'a refused turn changes nothing',
-  (await api(`/runs/${runId}`, alice)).body.view.version === version
-);
-
-// The camel acts last in the starting order (timeline.md, 3.4), at slot
-// 12, after every other card; the turn stops on a hero, whose turn the
-// checks below use.
-const openingUnits = startedFight.events?.[0]?.after?.units ?? [];
-const openingCamel = openingUnits.find((u) => u.id === 'p-camel');
-check(
-  'the camel starts last, at slot 12, after every other card',
-  openingCamel?.slot === 12 &&
-    openingUnits.every((u) => u.id === 'p-camel' || u.slot < openingCamel.slot),
-  openingUnits.map((u) => [u.id, u.slot])
-);
-check(
-  'the turn stops on a hero, never the camel',
-  /^p-/.test(startedFight.awaiting) && startedFight.awaiting !== 'p-camel',
-  startedFight.awaiting
-);
-const heroView = started.body.view;
-const heroFight = startedFight;
-
-// The server enforces the same exclusive-action rule as the page.
-const actor = heroFight.units.find((u) => u.id === heroFight.awaiting);
-const firstAbility = {bokh: 'grapple', mangudai: 'longshot', storm: 'hail'}[actor.hero];
-const combined = await api(`/runs/${runId}/turn`, alice, {
-  method: 'POST',
-  body: JSON.stringify({
-    move: [{q: actor.hex.q + 1, r: actor.hex.r}],
-    action: {ability: firstAbility, target: {hex: {q: actor.hex.q + 2, r: actor.hex.r}}},
-  }),
-});
-check(
-  'walking plus ability is refused',
-  combined.status === 400 && combined.body?.message?.includes('separate turns'),
-  combined.body
-);
-// Walk up the column into the nearest ally on it, when it is within a move's reach (2 hexes).
-const ally = heroFight.units
-  .filter(
-    (u) => u.side === 'player' && u !== actor && u.hero !== 'camel' && u.hex.q === actor.hex.q
-  )
-  .sort((a, b) => Math.abs(a.hex.r - actor.hex.r) - Math.abs(b.hex.r - actor.hex.r))[0];
-const gap = ally ? ally.hex.r - actor.hex.r : Infinity;
-if (Math.abs(gap) <= 2) {
-  const throughAlly = await api(`/runs/${runId}/turn`, alice, {
-    method: 'POST',
-    body: JSON.stringify({
-      move: Array.from({length: Math.abs(gap)}, (_, i) => ({
-        q: actor.hex.q,
-        r: actor.hex.r + Math.sign(gap) * (i + 1),
-      })),
-      action: {ability: 'hold'},
-    }),
-  });
-  check(
-    'the server refuses walking through an ally',
-    throughAlly.status === 400 && throughAlly.body?.message?.includes('Units block'),
-    throughAlly.body
-  );
-} else {
-  console.log('  (no ally within reach of the first hero; walking-through check skipped)');
-}
-check(
-  'refused movement changes neither fight nor version',
-  JSON.stringify((await api(`/runs/${runId}`, alice)).body.view) === JSON.stringify(heroView)
-);
-
-const held = await api(`/runs/${runId}/turn`, alice, {
-  method: 'POST',
-  body: JSON.stringify({action: {ability: 'hold'}}),
-});
-check(
-  'a turn returns the next view',
-  held.status === 200 && held.body.view.version === heroView.version + 1,
-  held.body?.message
-);
-// Each AI turn is a request of its own (`continue`), asked for while one is due.
-let latest = held.body;
-let continued = 0;
-let refusedWhileDue = null;
-for (let i = 0; i < 20 && latest.view.aiDue; i++) {
-  if (refusedWhileDue === null) {
-    const early = await api(`/runs/${runId}/turn`, alice, {
-      method: 'POST',
-      body: JSON.stringify({action: {ability: 'hold'}}),
-    });
-    refusedWhileDue = early.status === 400 && /not your turn/.test(early.body?.message ?? '');
-  }
-  const next = await api(`/runs/${runId}/continue`, alice, {method: 'POST'});
-  if (next.status !== 200 || next.body.view.version !== latest.view.version + 1) break;
-  latest = next.body;
-  continued++;
-}
-check(
-  'each AI turn comes from its own request, until yours',
-  !latest.view.aiDue && (latest.status !== 'active' || /^p-/.test(latest.view.fight.awaiting)),
-  {continued, awaiting: latest.view.fight.awaiting}
-);
-if (refusedWhileDue !== null)
-  check('your turn is refused while an AI turn is due', refusedWhileDue);
-const notDue = await api(`/runs/${runId}/continue`, alice, {method: 'POST'});
-check(
-  'no AI turn can be asked for on yours',
-  latest.status !== 'active' || (notDue.status === 400 && /No AI turn/.test(notDue.body?.message)),
-  notDue.body
-);
-
-const second = await api('/runs', alice, {
-  method: 'POST',
-  body: JSON.stringify({game: 'silk-road-run'}),
-});
-check(
-  'starting another run abandons the first',
-  (await api(`/runs/${runId}`, alice)).body?.status === 'abandoned'
-);
-check(
-  'the new run is the active one',
-  (await api('/runs/active', alice)).body?.activeRunId === second.body.runId
-);
-const abandoned = await api(`/runs/${second.body.runId}/abandon`, alice, {method: 'POST'});
-check('a run can be abandoned', abandoned.body?.status === 'abandoned', abandoned.body);
-check(
-  'an abandoned run is no longer active',
-  (await api('/runs/active', alice)).body?.activeRunId === null
-);
-
-// The start menu's party: the chosen heroes and the camel; a bad one is refused.
-const duo = await api('/runs', alice, {
-  method: 'POST',
-  body: JSON.stringify({game: 'silk-road-run', party: ['mangudai', 'storm']}),
-});
-check(
-  'a run starts with the chosen party and the camel',
-  duo.status === 201 &&
-    JSON.stringify(
-      duo.body.view.fight.units.filter((u) => u.side === 'player').map((u) => u.hero)
-    ) === JSON.stringify(['mangudai', 'storm', 'camel']),
-  duo.body
-);
-const badParty = await api('/runs', alice, {
-  method: 'POST',
-  body: JSON.stringify({game: 'silk-road-run', party: ['bokh', 'bokh']}),
-});
-check(
-  'a party with a hero twice is refused',
-  badParty.status === 400 && /heroes/.test(badParty.body?.message),
-  badParty
-);
-check(
-  'a refused start leaves the active run alone',
-  (await api('/runs/active', alice)).body?.activeRunId === duo.body.runId
-);
-await api(`/runs/${duo.body.runId}/abandon`, alice, {method: 'POST'});
-
-// The test stage: one fight, set up in the game's test-stage.json.
-const testStage = await api('/runs', alice, {
-  method: 'POST',
-  body: JSON.stringify({game: 'silk-road-run', test: true}),
-});
-check(
-  'the test stage starts a run of one fight',
-  testStage.status === 201 &&
-    testStage.body.view.stages === 1 &&
-    testStage.body.view.fight.units.length > 0,
-  testStage.body
-);
-if (testStage.body?.runId)
-  await api(`/runs/${testStage.body.runId}/abandon`, alice, {method: 'POST'});
 
 // ── The page ─────────────────────────────────────────────────────────────────
 const browser = await chromium.launch();
-const page = await browser.newPage({viewport: {width: 1300, height: 900}});
+// One context for the desktop's tabs, which share the run's storage and its tab lock.
+const desktop = await browser.newContext({viewport: {width: 1300, height: 900}});
+const page = await desktop.newPage();
 const pageErrors = [];
 page.on('pageerror', (e) => {
   pageErrors.push(e.message);
   console.log('  [page error]', e.message);
+});
+/** Requests to the Worker's old `/runs` routes: the run never leaves the browser. */
+const runRequests = [];
+desktop.on('request', (r) => {
+  if (/\/runs(\/|$|\?)/.test(new URL(r.url()).pathname)) runRequests.push(r.url());
 });
 
 /** Clicks a hex on the board canvas, scaled from the 594×760 scene to the canvas on screen. */
@@ -327,11 +70,13 @@ const state = () => page.evaluate(() => window.__tactics?.run);
 const waitIdle = () =>
   page.waitForFunction(() => window.__tactics && !window.__tactics.busy, null, {timeout: 15_000});
 
-/** Abandons the page's active run through the API (quicker than the page's two-tap Reset run), so none is left behind. */
+/** Abandons the page's saved run (quicker than the page's two-tap Reset run): a reload then opens the start menu. */
 async function abandonOn(p) {
-  const key = await p.evaluate(() => localStorage.getItem('canvas:playerKey'));
-  const {body} = await api('/runs/active', key);
-  if (body?.activeRunId) await api(`/runs/${body.activeRunId}/abandon`, key, {method: 'POST'});
+  await p.evaluate((key) => {
+    const run = JSON.parse(localStorage.getItem(key) ?? 'null');
+    if (run?.status === 'active')
+      localStorage.setItem(key, JSON.stringify({...run, status: 'abandoned'}));
+  }, RUN_STORAGE);
 }
 
 try {
@@ -386,7 +131,6 @@ try {
     check('the page starts a fight', true);
     check('no page errors', pageErrors.length === 0, pageErrors);
     console.log('  (deep checks skipped: no __tactics hook — not a dev-server build)');
-    await abandonOn(page);
     await browser.close();
     finish();
   }
@@ -804,6 +548,27 @@ try {
   await page.waitForFunction(() => window.__tactics?.run);
   check('a reload resumes the run exactly', JSON.stringify((await state()).view) === snapshot);
 
+  // Only one tab plays the run (owner, 2026-10-25): a second one says so.
+  {
+    const second = await desktop.newPage();
+    await second.goto(`${WEB_URL}/play/silk-road-run`);
+    check(
+      'a second tab is refused while the first has the run',
+      await second
+        .getByTestId('run-elsewhere')
+        .waitFor({timeout: 15_000})
+        .then(() => true)
+        .catch(() => false)
+    );
+    check(
+      'the refused tab offers no turn or start menu',
+      !(await second.getByTestId('turn-controls').count()) &&
+        !(await second.getByTestId('hero-picks').count())
+    );
+    await shot(second, 'elsewhere');
+    await second.close();
+  }
+
   // Reset run, in the menu: the first tap only arms it; the second opens the
   // start menu, which can't go back to the fight but can go back to the Canvas
   // home page; Start there starts a fresh run.
@@ -841,11 +606,11 @@ try {
     'Start, after Reset run, starts a fresh fight',
     (await state()).view.fight.phase === 'fight'
   );
-  const resetOld = await api(
-    `/runs/${beforeReset}`,
-    await page.evaluate(() => localStorage.getItem('canvas:playerKey'))
+  check(
+    'the fresh run is the one saved',
+    (await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).runId, RUN_STORAGE)) ===
+      (await state()).runId
   );
-  check('the reset run is abandoned', resetOld.body?.status === 'abandoned', resetOld.body);
 
   // Skip turn, tapped twice, ends the turn with Hold.
   {
@@ -966,7 +731,6 @@ try {
         enemies.filter((u) => u.hero !== 'wolf').length === after.stage + 1,
       after.fight.units.map((u) => u.id)
     );
-    await abandonOn(page);
   }
   // New run opens the start menu; Start there starts a fresh fight, ready for a turn.
   if (!nextAhead) {
@@ -981,9 +745,27 @@ try {
       'New run, then Start, starts a fresh fight',
       (await state()).view.fight.phase === 'fight'
     );
-    await abandonOn(page);
+  }
+
+  // A tab refused for another takes the run over once that one closes.
+  {
+    const runId = (await state()).runId;
+    const second = await desktop.newPage();
+    second.on('pageerror', (e) => pageErrors.push(e.message));
+    await second.goto(`${WEB_URL}/play/silk-road-run`);
+    await second.getByTestId('run-elsewhere').waitFor({timeout: 15_000});
+    await page.close();
+    check(
+      'once the first tab closes, the second takes the run over',
+      await second
+        .waitForFunction((id) => window.__tactics?.run?.runId === id, runId, {timeout: 15_000})
+        .then(() => true)
+        .catch(() => false)
+    );
+    await second.close();
   }
   check('no page errors', pageErrors.length === 0, pageErrors);
+  check('the page sends no request to /runs', runRequests.length === 0, runRequests);
 
   // A phone: board on top, details in a tooltip over it, the action section
   // pinned to the bottom of the screen; no heading or hints; no scrolling.
@@ -1538,7 +1320,6 @@ try {
       box
     );
   }
-  await abandonOn(phone);
 } finally {
   await browser.close();
 }

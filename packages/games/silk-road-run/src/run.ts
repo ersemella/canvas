@@ -1,6 +1,7 @@
 /**
- * Silk Road Run's server rules, DOM-free, for the platform's `RunRoom`
- * (`@canvas/server`): a run is its stages' fights, one after another.
+ * Silk Road Run's run rules, DOM-free, for the page's run host
+ * (`@canvas/engine/server`, `playRun`), in the browser and its AI's Web
+ * Worker: a run is its stages' fights, one after another.
  */
 import type {RunSystem} from '@canvas/engine/server';
 import {createRun, handleRunAction, runOutdated, runStatus, runView} from './rules/run';

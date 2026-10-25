@@ -3,8 +3,8 @@ import type {MutableRefObject} from 'react';
 import type {EventBus} from '@canvas/engine';
 import {openingPlayback} from '@canvas/games-silk-road-run';
 import type {HeroId, PlaybackPayload, TurnInput} from '@canvas/games-silk-road-run';
-import {runsApi} from './runsApi';
-import type {RunResponse} from './runsApi';
+import {claimTab, localRuns} from './localRuns';
+import type {RunResponse} from './localRuns';
 
 /** Remembers, for this tab, that the start menu is open over the fight. */
 const START_MENU_STORAGE = 'canvas:tactics:startMenu';
@@ -18,16 +18,18 @@ function savedStartMenu(): boolean {
 }
 
 /**
- * The run on the server, as the page sees it: resumed on load, then one
- * request per action (`/runs`), each answered with the whole view. What an
+ * The run, played in this browser (`localRuns`): resumed on load, then one
+ * call per action, each answered with the whole view. What an
  * action sets off is played back on the board (`tactics:playback` on
  * `events`), and the page waits for it (`playing`) until the board says
  * it's done (`playbackDone`); a new run or stage plays back its opening,
  * the camel's first steps up to the first decision, once the board is up
  * (`boardReady`). While an AI turn is due (`view.aiDue`) the page asks for
- * it, one request each (`continue`), as soon as the view says so, and
- * plays the answers back in turn: an answer that comes during a playback
- * waits for it (`queue`). Also whether the start menu is open over it.
+ * it, one call each (`continue`, worked out in a Web Worker), as soon as
+ * the view says so, and plays the answers back in turn: an answer that
+ * comes during a playback waits for it (`queue`). Also whether the start
+ * menu is open over it, and whether another tab has the run (`elsewhere`),
+ * in which case this one waits for it to close (owner, 2026-10-25).
  */
 export function useRun(events: MutableRefObject<EventBus | null>) {
   const [run, setRun] = useState<RunResponse | null>(null);
@@ -36,6 +38,8 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   /** The board is playing back what the last turn set off; the page waits for it. */
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Another tab is playing the run; this one waits until it closes. */
+  const [elsewhere, setElsewhere] = useState(false);
   // The start menu, over the fight (New run, Reset run) until a new run
   // starts; there's no going back to the old one, which is abandoned then. A
   // refresh keeps it open.
@@ -51,7 +55,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   }, []);
 
   const fight = run?.view.fight ?? null;
-  /** The last answer from the server, which may be ahead of the run shown. */
+  /** The last answer, which may be ahead of the run shown. */
   const latest = useRef<RunResponse | null>(null);
   /** Answers waiting for the playback before them, each with its own. */
   const queue = useRef<{response: RunResponse; payload: PlaybackPayload | null}[]>([]);
@@ -91,7 +95,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     [events, setPlayback]
   );
 
-  /** Takes an answer from the server: shown now, or after the playbacks before it. */
+  /** Takes an answer: shown now, or after the playbacks before it. */
   const receive = useCallback(
     (r: RunResponse, playback: 'turn' | 'stage' | 'run') => {
       const before = latest.current?.view.fight;
@@ -111,18 +115,23 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     [show]
   );
 
-  // Resume the key's active run, if any.
+  // Resume the active run, if any, once this tab has it.
   useEffect(() => {
-    runsApi
-      .active()
-      .then(({activeRunId}) =>
-        activeRunId
-          ? runsApi.get(activeRunId).then((r) => {
-              latest.current = r;
-              setRun(r);
-            })
-          : undefined
-      )
+    const tab = claimTab();
+    void tab.elsewhere.then(() => {
+      setElsewhere(true);
+      setLoading(false);
+    });
+    void tab.held
+      .then(() => {
+        setElsewhere(false);
+        return localRuns.active();
+      })
+      .then((r) => {
+        if (!r) return;
+        latest.current = r;
+        setRun(r);
+      })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -152,7 +161,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     if (!r || r.status !== 'active' || !r.view.aiDue || asking.current || error) return;
     asking.current = true;
     setAiPending(true);
-    runsApi
+    localRuns
       .continue(r.runId)
       .then((next) => {
         // Unless a new run or stage has started since.
@@ -168,20 +177,23 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   }, [latestVersion, aiPending, error, receive, run]);
 
   const startRun = useCallback(
-    (party: HeroId[]) => void send(() => runsApi.start({party}), 'run'),
+    (party: HeroId[]) => void send(() => localRuns.start({party}), 'run'),
     [send]
   );
   /** The test stage: one fight set up in the game package's test-stage.json. */
-  const startTest = useCallback(() => void send(() => runsApi.start({test: true}), 'run'), [send]);
+  const startTest = useCallback(
+    () => void send(() => localRuns.start({test: true}), 'run'),
+    [send]
+  );
 
-  /** The run is waiting on the server or the board: an AI turn asked for or queued. */
+  /** The run is waiting on an answer or the board: an AI turn asked for or queued. */
   const waiting = busy || aiPending || queue.current.length > 0;
 
   /** Sends a turn, unless one is being sent or played back. */
   const sendTurn = useCallback(
     (turn: TurnInput) => {
       if (!run || waiting || playing) return;
-      void send(() => runsApi.turn(run.runId, turn), 'turn');
+      void send(() => localRuns.turn(run.runId, turn), 'turn');
     },
     [run, send, waiting, playing]
   );
@@ -189,7 +201,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   /** On to the run's next stage, once this one is won: a new board, its opening played back. */
   const nextStage = useCallback(() => {
     if (!run || busy) return;
-    void send(() => runsApi.next(run.runId), 'stage');
+    void send(() => localRuns.next(run.runId), 'stage');
   }, [run, send, busy]);
 
   /** The board has played back an answer: the next one waiting shows, or the page is free. */
@@ -209,6 +221,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     run,
     fight,
     loading,
+    elsewhere,
     busy: waiting,
     playing,
     error,

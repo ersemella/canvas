@@ -308,3 +308,34 @@ depth five wins 56% but puts about 1 in 100 AI turns over the Free plan's
 Paid (30 s a request) it is the next step: `searchWidths` [4, 3, 2],
 `searchDepth` 5, 220 units or more ([owner-decisions.md](owner-decisions.md),
 section 3).
+
+## As deep as the device gets, 2026-10-25
+
+The run plays in the browser now ([../client-side-runs.md](../client-side-runs.md),
+L5), so the 10 ms ceiling is gone, and the owner chose to look as deep as
+the device allows. Given a clock (`RunContext.now`, from the page's Web
+Worker) an AI turn searches until `AI.browser.thinkMs` (400 ms) has
+passed, reading it every 32nd unit of work; it narrows further from the
+root (`AI.browser.widths` [4, 3, 2], the width taper of
+`claude/ai-width-taper`, now `AI.searchWidths`) up to 24 decisions and
+24,000 units, which bound the search's memory. An iteration that plays
+nothing new (every line ended) stops the deepening. Iterative deepening
+still only commits a completed depth.
+
+This gives up determinism in the browser: a faster device looks deeper.
+Without a clock (tests, balance scripts, `autoTurn`) the search keeps
+`maxSimulations` 220 and `searchDepth` 3, unchanged, with widths [4].
+
+Measured in Node on 40 AI turns from six runs: 11 to 24 decisions
+completed in 400 ms, median 13 (3 before), about 15,000 units of work and
+up to 63 MB. Head-to-head against the AI before (`mirror.mjs`, variants
+`browser` and `browser-slow`, the latter a quarter of the time; 80 pairs
+from seed 7000 each way, the machine shared with other runs), at 100 ms:
+
+| Browser AI (100 ms) vs AI before | As team a | As team b |  Mean | Unfinished |
+| -------------------------------- | --------: | --------: | ----: | ---------: |
+| Share of decided fights          |     90.3% |     84.2% | 87.3% |   25–29%   |
+
+More fights go unfinished (400 actions without a winner) than the AI
+before's 10.7 to 13.7% against other AIs: seeing far enough that every
+attack is answered, it may wait. To watch in play.

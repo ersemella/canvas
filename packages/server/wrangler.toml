@@ -10,16 +10,6 @@ class_name = "GameRoom"
 name = "MANIFEST_REGISTRY"
 class_name = "ManifestRegistry"
 
-# Single-player runs (Silk Road Run): one RunRoom per run, one
-# PlayerLedger per player key. See src/routes/runs.ts.
-[[durable_objects.bindings]]
-name = "RUN_ROOM"
-class_name = "RunRoom"
-
-[[durable_objects.bindings]]
-name = "PLAYER_LEDGER"
-class_name = "PlayerLedger"
-
 # Caps POST /rooms at 10 per minute per client IP (src/routes/rooms.ts).
 [[unsafe.bindings]]
 name = "ROOM_CREATE_LIMITER"
@@ -34,6 +24,12 @@ new_sqlite_classes = ["GameRoom", "ManifestRegistry"]
 [[migrations]]
 tag = "v2"
 new_sqlite_classes = ["RunRoom", "PlayerLedger"]
+
+# Silk Road Run's runs play in the browser now (docs/plans/client-side-runs.md):
+# deleting the classes deletes the runs they stored.
+[[migrations]]
+tag = "v3"
+deleted_classes = ["RunRoom", "PlayerLedger"]
 
 # ManifestRegistry is retired (manifests are bundled into the web build) but
 # still bound here until a deleted_classes migration removes it; see the

@@ -1658,6 +1658,21 @@ describe('previews, the AI and the run', () => {
     expect(() => handleRunAction(mine, {type: 'continue'})).toThrow('No AI turn is due.');
   });
 
+  it('given a clock, plays an AI turn searched as long as AI.browser.thinkMs allows', () => {
+    const run = Array.from({length: 30}, (_, seed) => createRun(seed, {party: ['storm']})).find(
+      (r) => runView(r).aiDue
+    )!;
+    const before = JSON.stringify(run);
+    // A clock that runs out after a few reads: the search stops early, legally.
+    let t = 0;
+    const now = () => (t += AI.browser.thinkMs / 4);
+    const next = handleRunAction(run, {type: 'continue'}, {now});
+    expect(JSON.stringify(run)).toBe(before);
+    expect(next.version).toBe(run.version + 1);
+    expect(t).toBeGreaterThan(AI.browser.thinkMs);
+    expect(t).toBeLessThan(AI.browser.thinkMs * 2);
+  });
+
   it('is deterministic: the same seed and actions give the same fight', () => {
     const play = () => {
       let run = createRun(7);

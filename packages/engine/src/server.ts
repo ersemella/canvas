@@ -1,12 +1,14 @@
 /**
  * Multiplayer contract between the platform's room server (`GameRoom` in
- * `@canvas/server`) and a game's server-side rules, plus DOM-free helpers
- * a game's server rules share with its client (hex geometry). Free of DOM
- * and of the engine's ECS runtime, so a Worker can depend on it: import it
- * as `@canvas/engine/server`.
+ * `@canvas/server`) and a game's server-side rules, the single-player run
+ * contract and its host (`runs.ts`, played in the browser), plus DOM-free
+ * helpers a game's rules share with its client (hex geometry). Free of DOM
+ * and of the engine's ECS runtime, so a Worker or a Web Worker can depend
+ * on it: import it as `@canvas/engine/server`.
  */
 
 export * from './math/Hex';
+export * from './runs';
 
 export interface RoomPlayer {
   connectionId: string;
@@ -87,51 +89,4 @@ export interface RoomPolicy {
    * refused, and a new connection with the token replaces an old one).
    */
   seatIdentity?: 'name' | 'token';
-}
-
-/**
- * Rules of a single-player run, played over plain HTTP in its own
- * `RunRoom` Durable Object (one per run, owned by an anonymous player key;
- * docs/plans/roguelike-tactics/architecture.md, D3 and D7). The room
- * stores the state and calls these; the game owns every rule.
- */
-export interface RunSystem<TState = unknown, TAction = unknown, TView = unknown> {
-  kind: 'run';
-  systemName: string;
-  /**
-   * A new run from a server-chosen seed, which must never reach the player,
-   * and the player's choices from the start request (`setup`, unchecked).
-   * Throws with a player-facing message for a setup it can't use.
-   */
-  createRun(seed: number, setup?: unknown): TState;
-  /**
-   * Applies one player action and everything that follows it up to the
-   * player's next decision (AI turns included). Returns the new state
-   * without mutating `state`; throws with a player-facing message for an
-   * illegal action.
-   */
-  handleAction(state: TState, action: TAction): TState;
-  /** Everything the player may see, sent whole on every response: never the seed. */
-  getView(state: TState): TView;
-  status(state: TState): 'active' | 'won' | 'lost';
-  /**
-   * True for a run saved by an older version of the rules, which this one
-   * can't play on. The room ends it (`expired`) before calling anything
-   * else, so the rules only ever see states in their current format.
-   */
-  outdated?(state: TState): boolean;
-}
-
-/** A run's status, as every `/runs` response carries it. */
-export type RunStatus = 'active' | 'won' | 'lost' | 'abandoned';
-
-/**
- * Every `/runs` response: the run's whole public view (`RunSystem.getView`),
- * shared by the platform's Worker and its pages.
- */
-export interface RunResponse<TView = unknown> {
-  runId: string;
-  game: string;
-  status: RunStatus;
-  view: TView;
 }

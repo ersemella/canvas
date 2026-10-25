@@ -2,8 +2,13 @@
 
 Status: **Phase 1 built (2026-10-19); stats, keywords, track and kits reworked by the owner (2026-10-23).**
 One fight against the AI plays end to end: the rules in
-`packages/games/silk-road-run/src/rules/`, `RunRoom` and
-`PlayerLedger` in `@canvas/server`, the page at `/play/silk-road-run`.
+`packages/games/silk-road-run/src/rules/`, the page at `/play/silk-road-run`.
+**Since 2026-10-25 the whole run plays in the browser** (the owner's
+call, [../client-side-runs.md](../client-side-runs.md), replacing D3, D4
+and D7): saved in `localStorage`, one tab at a time, its AI in a Web
+Worker searching as deep as the device gets; the Worker's `RunRoom`,
+`PlayerLedger` and `/runs` are gone. Routes named below (`POST /runs`)
+are now the page's `localRuns` calls of the same names.
 The page opens on a start menu (2026-10-21): the game in brief, which of
 the heroes to take (one to three of the three; the camel always comes), and Start;
 `POST /runs` takes the `party`. A run is three stages, each a fight (owner, 2026-10-24;
@@ -203,9 +208,9 @@ run's seed. **Multiplayer and architecture** decisions are numbered:
 |---|---|---|
 | D1 | Ghosts only (rival caravans); no live opponents; no real-time turn timers | [ghosts.md](ghosts.md) |
 | D2 | A rival caravan fight: PvP-style maps; a beaten caravan drops part of its gear and one of its heroes may join your next recruitment offer | [ghosts.md](ghosts.md) |
-| D3 | One Durable Object per run; one active run per player key | [architecture.md](architecture.md) |
-| D4 | No accounts; an anonymous player key | [architecture.md](architecture.md) |
-| D7 | Runs get their own Durable Object class (`RunRoom`); plain HTTP | [architecture.md](architecture.md) |
+| D3 | One Durable Object per run; one active run per player key. **Replaced 2026-10-25:** the run plays in the browser, one a browser | [architecture.md](architecture.md), [../client-side-runs.md](../client-side-runs.md) |
+| D4 | No accounts; an anonymous player key. **Replaced 2026-10-25:** no player key; the run is the browser's | [architecture.md](architecture.md), [../client-side-runs.md](../client-side-runs.md) |
+| D7 | Runs get their own Durable Object class (`RunRoom`); plain HTTP. **Replaced 2026-10-25:** the engine's run host, in the page | [architecture.md](architecture.md), [../client-side-runs.md](../client-side-runs.md) |
 | D8 | Rival caravans: at most one per fight; a player faces each run's caravan at most once; pool per stage | [ghosts.md](ghosts.md) |
 | D9 | A caravan's kills reward its owner: a kill is a full party wipe; unique players slain; recognition unlocks | [ghosts.md](ghosts.md) |
 | D10 | Built in this repository, for now | [architecture.md](architecture.md) |

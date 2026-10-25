@@ -100,7 +100,9 @@ the mean ([ai-search.md](../../docs/plans/roguelike-tactics/ai-search.md)).
 
 `--ai A,B` gives each team its own AI (`production`, `greedy`: no lookahead,
 the heuristic's best root action; `deep`: horizon 4 and four times the work
-cap). Each AI keeps its team across a mirrored pair, so `aWinPct` is team a's
+cap; `browser`: the page's AI, `AI.browser`, as deep as this machine gets in
+its time, and `browser-slow`, a quarter of that time; both depend on the
+machine and its load). Each AI keeps its team across a mirrored pair, so `aWinPct` is team a's
 AI's share of wins on fair setups; a better AI should win more than 50%.
 
 First runs (2026-10-22, seeds 1000–1499, 1,000 fights each, bokh, mangudai,

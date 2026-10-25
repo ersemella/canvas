@@ -4,7 +4,7 @@
  * survivors and the camel go on to the next stage. The run keeps the seed;
  * the view is the fight, which never contains it.
  */
-import type {Hex} from '@canvas/engine/server';
+import type {Hex, RunContext} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
 import {AI, CAMEL, FIRST_ENEMY, MOUNTAIN_STAGES, PARTY, ROSTER, STAGES} from './config';
@@ -20,7 +20,15 @@ import {
 } from './fight';
 import {createTestFight} from './testStage';
 import {shuffled} from './track';
-import type {AbilityId, ActionTarget, FightState, HeroId, RunAction} from './types';
+import type {
+  AbilityId,
+  ActionTarget,
+  FightState,
+  HeroId,
+  RunAction,
+  TurnInput,
+  Unit,
+} from './types';
 
 /**
  * The format of what a run saves. Bump it with any change to `RunState` or
@@ -183,12 +191,14 @@ export function parseAction(raw: unknown): RunAction {
 
 /**
  * One action: the player's turn, or the AI's turn that is due
- * (`continue`), each a request of its own, so each AI turn has its own
- * work cap (AI.maxSimulations; owner, 2026-10-24); then the track runs on
- * to the next decision, either side's. Or, once a stage short of the last
- * is won, on to the next.
+ * (`continue`), each on its own, so the page can play one back while the
+ * next is worked out; then the track runs on to the next decision, either
+ * side's. Or, once a stage short of the last is won, on to the next. Given
+ * a clock (`context.now`) the AI looks as deep as it gets in
+ * AI.browser.thinkMs; without one it keeps to AI.maxSimulations, the same
+ * turn on every machine (tests, balance).
  */
-export function handleRunAction(run: RunState, raw: unknown): RunState {
+export function handleRunAction(run: RunState, raw: unknown, context?: RunContext): RunState {
   const action = parseAction(raw);
   const {stage} = run;
   if (action.type === 'next') {
@@ -205,7 +215,7 @@ export function handleRunAction(run: RunState, raw: unknown): RunState {
   const unit = actingUnit(fight);
   if (action.type === 'continue') {
     if (unit?.controller !== 'ai') throw new RuleError('No AI turn is due.');
-    applyTurn(fight, unit, chooseAiTurn(fight, unit, {left: AI.maxSimulations}));
+    applyTurn(fight, unit, aiTurn(fight, unit, context?.now));
   } else {
     if (unit?.controller !== 'human') throw new RuleError('It is not your turn.');
     const {type: _type, ...input} = action;
@@ -213,6 +223,14 @@ export function handleRunAction(run: RunState, raw: unknown): RunState {
   }
   advanceToDecision(fight);
   return {...run, version: run.version + 1, fight};
+}
+
+function aiTurn(fight: FightState, unit: Unit, now?: () => number): TurnInput {
+  if (!now) return chooseAiTurn(fight, unit, {left: AI.maxSimulations});
+  const {work, depth, widths, thinkMs} = AI.browser;
+  const start = now();
+  const stop = () => now() - start > thinkMs;
+  return chooseAiTurn(fight, unit, {left: work}, undefined, {work, depth, widths, stop});
 }
 
 /** Whether the fight waits on an AI unit's turn. */

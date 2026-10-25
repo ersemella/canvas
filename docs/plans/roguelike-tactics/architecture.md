@@ -4,6 +4,13 @@ How the game runs on the platform: one Durable Object per run, the player
 key, the classes and routes it adds, platform constraints, and what it
 costs on the Free plan. Decisions D3, D4, D7, D10, D11.
 
+> **Replaced in part, 2026-10-25:** the run now plays in the browser
+> ([../client-side-runs.md](../client-side-runs.md)). D3, D4 and D7 and
+> the server-authoritative rules below describe the design as it was
+> until then; *Long-lived storage and cost* no longer counts runs (they
+> make no requests). They stay for rival caravans, which would need a
+> server again.
+
 > Part of the roguelike tactics plan. Start at [README.md](README.md),
 > which has the status, the next step and an index of every decision.
 > Abandoned approaches are in [history.md](history.md).

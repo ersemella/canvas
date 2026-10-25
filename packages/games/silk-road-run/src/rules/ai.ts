@@ -456,7 +456,10 @@ export interface SearchBudget {
   left: number;
 }
 
-/** Optional diagnostics; no clocks, randomness or persistent caches affect decisions. */
+/**
+ * Optional diagnostics. No randomness or persistent caches affect
+ * decisions, and no clock unless the caller passes one (`stop`).
+ */
 export interface SearchStats {
   completedDepth: number;
   cutoffs: number;
@@ -513,9 +516,36 @@ export function evaluatePosition(state: FightState, side: Side): number {
   return score;
 }
 
-/** Keep a small heuristic shortlist; equal scores keep the order they were tried in. */
-function shortlist<T extends ScoredOption>(options: T[]): T[] {
-  return [...options].sort((a, b) => b.score - a.score).slice(0, AI.searchWidth);
+/**
+ * Keep a small heuristic shortlist for a decision `ply` decisions from the
+ * root (`widths`, the last for any deeper); equal scores keep the order
+ * they were tried in.
+ */
+function shortlist<T extends ScoredOption>(
+  options: T[],
+  widths: readonly number[],
+  ply: number
+): T[] {
+  const width = widths[Math.min(ply, widths.length - 1)]!;
+  return [...options].sort((a, b) => b.score - a.score).slice(0, width);
+}
+
+/** How a search may go on: AI.maxSimulations and AI.searchDepth unless overridden. */
+export interface SearchSettings {
+  /** False: an exhaustive reference over the same selective tree. */
+  prune?: boolean;
+  /** The deepest horizon tried, root action included. */
+  depth?: number;
+  /** Options searched on at each decision from the root (`shortlist`). */
+  widths?: readonly number[];
+  /** The work cap, in place of AI.maxSimulations. */
+  work?: number;
+  /**
+   * Checked as work is spent: true ends the search as if its work had run
+   * out, keeping the last completed depth. A clock makes the turn depend
+   * on the machine; without one the search is deterministic.
+   */
+  stop?: () => boolean;
 }
 
 /**
@@ -529,17 +559,21 @@ export function chooseAiTurn(
   unit: Unit,
   budget: SearchBudget = {left: AI.maxSimulations},
   stats?: SearchStats,
-  settings: {prune?: boolean; depth?: number} = {}
+  settings: SearchSettings = {}
 ): TurnInput {
   const initial = Math.max(0, budget.left);
-  const local: SearchBudget = {left: Math.min(AI.maxSimulations, initial)};
+  const cap = settings.work ?? AI.maxSimulations;
+  const local: SearchBudget = {left: Math.min(cap, initial)};
+  const widths = settings.widths ?? AI.searchWidths;
+  const {stop} = settings;
   if (stats) {
     Object.assign(stats, {completedDepth: 0, cutoffs: 0, work: 0});
     delete stats.value;
   }
   const prune = settings.prune !== false;
   const spend = () => {
-    if (local.left <= 0) throw exhausted;
+    // A clock is slow to read next to a unit of work: every 32nd.
+    if (local.left <= 0 || (stop && (local.left & 31) === 0 && stop())) throw exhausted;
     local.left--;
   };
   const nodeAt = (state: FightState, actor: Unit | undefined): SearchNode => ({
@@ -583,7 +617,13 @@ export function chooseAiTurn(
     }
     return child;
   };
-  const search = (node: SearchNode, depth: number, alpha: number, beta: number): number => {
+  const search = (
+    node: SearchNode,
+    ply: number,
+    depth: number,
+    alpha: number,
+    beta: number
+  ): number => {
     // A fight already over: sooner is worth more, a win taken now above one
     // a turn later, a loss now below a later one.
     if (node.state.phase !== 'fight')
@@ -622,13 +662,13 @@ export function chooseAiTurn(
     if (!node.options) {
       while (tryNext(node, AI.replySimulations));
       scoreAll(node);
-      node.options = shortlist(node.scored);
+      node.options = shortlist(node.scored, widths, ply);
       if (node.options.length === 0) throw exhausted;
     }
     for (const option of node.options) {
       const adjustment = maximize ? -option.cost : option.cost;
       const next =
-        search(childOf(node, option), depth - 1, alpha - adjustment, beta - adjustment) +
+        search(childOf(node, option), ply + 1, depth - 1, alpha - adjustment, beta - adjustment) +
         adjustment;
       if (consider(option, next)) break;
     }
@@ -643,18 +683,19 @@ export function chooseAiTurn(
     const rootLimit = Math.min(AI.rootSimulations, local.left);
     while (tryNext(root, rootLimit));
     scoreAll(root, threatsFor(state, unit, true));
-    const options = shortlist(root.scored);
+    const options = shortlist(root.scored, widths, 0);
     root.options = options;
     if (!options.length) return {action: {ability: 'hold'}};
     completed = options[0]!;
     if (stats) stats.completedDepth = 1;
     for (let depth = 2; depth <= (settings.depth ?? AI.searchDepth); depth++) {
+      const before = local.left;
       let winner = options[0]!;
       let value = -Infinity;
       const values = new Map<ScoredOption, number>();
       for (const option of options) {
         const next =
-          search(childOf(root, option), depth - 1, value + option.cost, Infinity) - option.cost;
+          search(childOf(root, option), 1, depth - 1, value + option.cost, Infinity) - option.cost;
         values.set(option, next);
         if (next > value) {
           value = next;
@@ -671,6 +712,9 @@ export function chooseAiTurn(
         stats.completedDepth = depth;
         stats.value = value;
       }
+      // Nothing new played: every line ended within the horizon, so deeper
+      // finds no more.
+      if (local.left === before) break;
     }
     return completed.input;
   } catch (e) {
@@ -678,7 +722,7 @@ export function chooseAiTurn(
     // Updated only after every root candidate has completed the depth.
     return completed?.input ?? {action: {ability: 'hold'}};
   } finally {
-    const used = Math.min(AI.maxSimulations, initial) - local.left;
+    const used = Math.min(cap, initial) - local.left;
     budget.left = initial - used;
     if (stats) stats.work = used;
   }
