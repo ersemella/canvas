@@ -764,6 +764,38 @@ try {
     );
     await second.close();
   }
+
+  // Without Web Workers the AI plays its turns on the page, with its quick fixed search.
+  {
+    const noWorkers = await browser.newContext({viewport: {width: 1300, height: 900}});
+    await noWorkers.addInitScript(() => delete window.Worker);
+    const p = await noWorkers.newPage();
+    p.on('pageerror', (e) => pageErrors.push(e.message));
+    await p.goto(`${WEB_URL}/play/silk-road-run`);
+    await p.getByRole('button', {name: 'Start', exact: true}).click();
+    await p.getByTestId('turn-controls').waitFor({timeout: 15_000});
+    const settled = (v) =>
+      p.waitForFunction(
+        (x) =>
+          window.__tactics.run.view.version > x &&
+          !window.__tactics.busy &&
+          !window.__tactics.run.view.aiDue,
+        v,
+        {timeout: 15_000}
+      );
+    await settled(-1);
+    let aiPlayed = false;
+    for (let i = 0; i < 20 && !aiPlayed; i++) {
+      const {view} = await p.evaluate(() => window.__tactics.run);
+      if (view.fight.phase !== 'fight') break;
+      await p.evaluate(() => window.__tactics.autoTurn());
+      await settled(view.version);
+      // One version for the turn played, one more for each AI turn after it.
+      aiPlayed = (await p.evaluate(() => window.__tactics.run.view.version)) > view.version + 1;
+    }
+    check('without Web Workers, the AI still plays its turns', aiPlayed);
+    await noWorkers.close();
+  }
   check('no page errors', pageErrors.length === 0, pageErrors);
   check('the page sends no request to /runs', runRequests.length === 0, runRequests);
 
