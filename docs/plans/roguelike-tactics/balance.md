@@ -1836,6 +1836,9 @@ The aura within 2 and Delay 3 together: China 97.5%.
   points each (within noise), 5 slots (half a turn of a speed-2 hero)
   about 9 (61.8%, above the Storm Caller and the measure's 50%). Delay 3
   is about a third of a Steppe hero's turn.
+  In the Champion's seat (the same measure, `mod.party` with the Vanguard
+  for the Champion) Delay 5 lifts it from 38.5% to 46.8%: still below the
+  Champion, within about 1.3 standard errors of its equal.
 - **The China line-up stays a stage-1 fight** with every variant
   (97.5–100%): the fox and the Alchemist's 4 health are the weak part,
   not the kits. Its difficulty is a matter of numbers (or of the line-up),
