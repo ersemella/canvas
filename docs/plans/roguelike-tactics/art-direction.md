@@ -76,6 +76,20 @@ tuning. This file has no combat-design section number.
   board's origin), not stamped per hex. The `sand`
   tile keeps its name in the rules (it is open ground, shown as Grass);
   `tiles/sand.png` stays for a desert region's ground.
+- **A look per map** (2026-10-25): each map (`MAPS` in map.ts) draws in
+  a look of its own (`LOOKS` in `ground.ts`): its ground, what its
+  `obstacle` tile is, and whether that smokes; mountains stand on rock
+  everywhere. **The Gobi Crossing** (`gobi`), the China region's way in
+  from the steppe ([setting.md](setting.md), 15.3a), brings back the
+  desert board's art: `tiles/sand.png` stamped centred on each hex and
+  mirrored on alternate hexes, as it was before the grass, hex borders in
+  `sandDark`, and the mudbrick wall (`tiles/ruins.png`) and tower stump
+  (`tiles/ruins-tower.png`) in place of the yurts, each ruin's hex picking
+  one, with no smoke, and no mountains (`MapData.mountains`; the
+  owner's call, 2026-10-25), even on a stage that always has them. The page calls them Ruins, and the open ground
+  Gravel (`tileInfo` in info.ts). Every stage of a run is still the
+  Steppe's (`STAGES` in config.ts); the test stage's `"map"` shows the
+  Gobi.
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct
   shape, not only a distinct colour: quicksand and sandstorm must read
   apart on a sand board.

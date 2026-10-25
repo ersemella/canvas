@@ -14,8 +14,8 @@ import {abilityCount, canMove} from './board';
 import {CAMEL, HEROES, RULES} from './config';
 import {RuleError, makeUnit, mapOf, seededRandom} from './fight';
 import {log} from './resolve';
-import {SALT_FLATS, blocks, onMap, randomTiles, spaceAt} from './map';
-import type {Tile} from './map';
+import {MAPS, STEPPE, blocks, mapById, onMap, randomTiles, spaceAt} from './map';
+import type {MapData, Tile} from './map';
 import {placeStartingCards, shuffled} from './track';
 import type {AbilityId, FightState, HeroId, Loadout, Unit} from './types';
 
@@ -32,6 +32,8 @@ interface UnitSetup {
 interface TestSetup {
   /** Scatters the yurts and the units without an `at`; null: the run's own seed. */
   seed: number | null;
+  /** The map's id (MAPS in map.ts): its look, and its name for the yurts. */
+  map: string;
   yurts: 'random' | 'mountains' | 'none' | 'map' | Hex[];
   /** Null: no camel, so the fight is won or lost only by beating a side. */
   camel: UnitSetup | null;
@@ -67,7 +69,7 @@ function parseSpace(where: string, v: unknown): Hex {
   const {col, row} = v as {col: number; row: number};
   onlyKeys(where, v as Record<string, unknown>, ['col', 'row']);
   const hex = spaceAt(col, row);
-  if (!onMap(SALT_FLATS, hex)) fail(`${where} {"col": ${col}, "row": ${row}} is off the board.`);
+  if (!onMap(STEPPE, hex)) fail(`${where} {"col": ${col}, "row": ${row}} is off the board.`);
   return hex;
 }
 
@@ -120,7 +122,14 @@ function parseSide(where: string, v: unknown): UnitSetup[] {
 export function parseTestStage(raw: unknown): TestSetup {
   if (!isObject(raw)) fail('must be an object.');
   const v = raw as Record<string, unknown>;
-  onlyKeys('The file', v, ['seed', 'yurts', 'camel', 'player', 'enemy']);
+  onlyKeys('The file', v, ['seed', 'map', 'yurts', 'camel', 'player', 'enemy']);
+  const map = v.map ?? STEPPE.id;
+  if (typeof map !== 'string' || !MAPS[map])
+    fail(
+      `map must be one of ${Object.keys(MAPS)
+        .map((id) => `"${id}"`)
+        .join(', ')}.`
+    );
   const seed = v.seed ?? null;
   if (seed !== null && (!Number.isInteger(seed) || (seed as number) < 0))
     fail('seed must be a whole number, or null for a new one each time.');
@@ -135,6 +144,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
   const setup: TestSetup = {
     seed: seed as number | null,
+    map: map as string,
     yurts,
     camel,
     player: parseSide('player', v.player),
@@ -147,7 +157,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     taken.set(hexKey(h), where);
   };
   if (Array.isArray(yurts)) yurts.forEach((h, i) => claim(`yurts[${i}]`, h));
-  if (camel) claim('camel', camel.at ?? SALT_FLATS.camelStart);
+  if (camel) claim('camel', camel.at ?? STEPPE.camelStart);
   for (const side of ['player', 'enemy'] as const)
     setup[side].forEach((u, i) => u.at && claim(`${side}[${i}]`, u.at));
   return setup;
@@ -162,7 +172,7 @@ export function parseTestStage(raw: unknown): TestSetup {
 export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): FightState {
   const setup = parseTestStage(raw);
   const random = seededRandom(setup.seed ?? runSeed);
-  const map = SALT_FLATS;
+  const map = mapById(setup.map);
   const copies = (list: UnitSetup[], i: number) =>
     list.slice(0, i).filter((u) => u.hero === list[i]!.hero).length;
   // Each unit with its setup, in the order a stage's fight lists them: the party, the camel, the enemy.
@@ -201,7 +211,7 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
   const fixed = units.filter((u) => u.hex).map((u) => u.hex!);
 
   for (let attempt = 0; ; attempt++) {
-    state.tiles = tilesFor(setup.yurts, random);
+    state.tiles = tilesFor(setup.yurts, random, map);
     // A placed unit's space is never a yurt.
     for (const h of fixed) delete state.tiles[hexKey(h)];
     for (const side of ['player', 'enemy'] as const) {
@@ -225,10 +235,14 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
   return state;
 }
 
-function tilesFor(yurts: TestSetup['yurts'], random: () => number): Record<string, Tile> {
+function tilesFor(
+  yurts: TestSetup['yurts'],
+  random: () => number,
+  map: MapData
+): Record<string, Tile> {
   if (yurts === 'random' || yurts === 'mountains')
-    return randomTiles(random, yurts === 'mountains');
+    return randomTiles(random, yurts === 'mountains', map);
   if (yurts === 'none') return {};
-  if (yurts === 'map') return {...SALT_FLATS.tiles};
+  if (yurts === 'map') return {...map.tiles};
   return Object.fromEntries(yurts.map((h) => [hexKey(h), 'obstacle' as const]));
 }

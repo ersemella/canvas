@@ -19,14 +19,20 @@
  * 2026-10-24). The fixed layout of four yurts below is the map's own,
  * which tests place units around, and the test stage's `"map"`. Quicksand and the sandstorm were removed
  * with their keywords (owner, 2026-10-23).
+ *
+ * Each region has a map of its own (2026-10-25; setting.md, 15.3a), the
+ * same board under another look: the Steppe's (`STEPPE`) and the Gobi
+ * Crossing (`GOBI`), the China region's way in, where the `obstacle` tile
+ * is a mudbrick ruin rather than a yurt. A stage names its map (`STAGES`
+ * in config.ts); the page draws each map's look (`ground.ts`).
  */
 import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 
-/** `obstacle` is a yurt (ruins until 2026-10-24; saved runs keep the name). */
+/** `obstacle` is a yurt on the Steppe, a ruin in the Gobi (ruins everywhere until 2026-10-24; saved runs keep the name). */
 export type Tile = 'sand' | 'obstacle' | 'mountain';
 
-/** Yurts and mountains: no unit may stand there, and they stop arrows. */
+/** Yurts (ruins) and mountains: no unit may stand there, and they stop arrows. */
 export function blocks(tile: string | undefined): boolean {
   return tile === 'obstacle' || tile === 'mountain';
 }
@@ -43,6 +49,8 @@ export interface MapData {
   camelStart: Hex;
   /** The camel reaching one of these wins the fight (camel.md, 18.2). */
   exits: Hex[];
+  /** Whether its fights raise ranges of mountains (`randomTiles`): not in the Gobi (2026-10-25). */
+  mountains: boolean;
 }
 
 /** How far the board reaches from its centre hex. */
@@ -89,7 +97,7 @@ const special: [Hex, Tile][] = [
   [{q: 0, r: 2}, 'obstacle'],
 ];
 
-export const SALT_FLATS: MapData = {
+export const STEPPE: MapData = {
   id: 'steppe',
   name: 'The Steppe Crossing',
   hexes: boardHexes(),
@@ -104,12 +112,32 @@ export const SALT_FLATS: MapData = {
   // The bottom point, the only exit (owner, 2026-10-24; the bottom-right
   // corner before).
   exits: [{q: 0, r: RADIUS}],
+  mountains: true,
 };
 
-export const MAPS: Record<string, MapData> = {[SALT_FLATS.id]: SALT_FLATS};
+/**
+ * The Gobi Crossing (2026-10-25), the China region's first map: the
+ * Steppe's board, its yurts' places now mudbrick ruins of the old frontier
+ * posts, on gravel desert, and no mountains, whatever the stage.
+ */
+export const GOBI: MapData = {
+  ...STEPPE,
+  id: 'gobi',
+  name: 'The Gobi Crossing',
+  mountains: false,
+};
+
+export const MAPS: Record<string, MapData> = {[STEPPE.id]: STEPPE, [GOBI.id]: GOBI};
+
+/** A map by its id; a mistake, never a fallback, if there's none. */
+export function mapById(id: string): MapData {
+  const map = MAPS[id];
+  if (!map) throw new Error(`No map "${id}".`);
+  return map;
+}
 
 /**
- * Yurts (owner, 2026-10-24): two or three a fight, within `YURT_REACH` of
+ * Yurts (owner, 2026-10-24), or the Gobi's ruins: two or three a fight, within `YURT_REACH` of
  * the centre, no two side by side, never cutting the board in two.
  */
 const YURT_COUNTS = [2, 3];
@@ -144,27 +172,32 @@ const MOUNTAIN_EDGES: {left: boolean; inFrom: (h: Hex) => number}[] = [
 
 /**
  * A fight's own tiles, from `random` in [0, 1): a range of mountains in
- * about half of fights, or always with `mountains`, off the starting
+ * about half of fights, or always with `mountains`, never on a map without
+ * them (`MapData.mountains`), off the starting
  * columns, the camel's start and the exit, then two or three yurts near the
- * middle (not mirrored).
+ * middle (not mirrored), on `map`'s board.
  */
-export function randomTiles(random: () => number, mountains = false): Record<string, Tile> {
+export function randomTiles(
+  random: () => number,
+  mountains = false,
+  map: MapData = STEPPE
+): Record<string, Tile> {
   const tiles: Record<string, Tile> = {};
-  const reserved = [SALT_FLATS.camelStart, ...SALT_FLATS.exits];
-  const candidates = SALT_FLATS.hexes.filter(
+  const reserved = [map.camelStart, ...map.exits];
+  const candidates = map.hexes.filter(
     (h) => Math.abs(h.q) < RADIUS && !reserved.some((x) => hexDistance(x, h) === 0)
   );
   // Rolled even when forced, so a seed's other draws stay the same.
-  if (random() < MOUNTAIN_CHANCE || mountains) {
+  if ((random() < MOUNTAIN_CHANCE || mountains) && map.mountains) {
     const edge = MOUNTAIN_EDGES[Math.floor(random() * MOUNTAIN_EDGES.length)]!;
     const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
-    const inFrontOfTemee: Hex = {q: 0, r: SALT_FLATS.camelStart.r + 1};
+    const inFrontOfTemee: Hex = {q: 0, r: map.camelStart.r + 1};
     const allowed = candidates
       .filter((h) => (edge.left ? h.q < 0 : h.q > 0))
       .filter((h) => edge.inFrom(h) === 0 || (edge.inFrom(h) === 1 && Math.abs(h.q) < RADIUS - 1))
       .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP)
       .filter((h) => hexDistance(h, inFrontOfTemee) > 0);
-    mountainRange(tiles, allowed, edge.inFrom, size, random);
+    mountainRange(map, tiles, allowed, edge.inFrom, size, random);
   }
   const yurts: Hex[] = [];
   const count = YURT_COUNTS[Math.floor(random() * YURT_COUNTS.length)]!;
@@ -172,7 +205,7 @@ export function randomTiles(random: () => number, mountains = false): Record<str
     const free = candidates
       .filter((h) => hexDistance(h, CENTRE) <= YURT_REACH)
       .filter((h) => yurts.every((y) => hexDistance(y, h) > 1))
-      .filter((h) => connectedWithout(tiles, h));
+      .filter((h) => connectedWithout(map, tiles, h));
     if (!free.length) break;
     const h = free[Math.floor(random() * free.length)]!;
     tiles[hexKey(h)] = 'obstacle';
@@ -190,6 +223,7 @@ export function randomTiles(random: () => number, mountains = false): Record<str
  * thickens rather than sticks out. Never cuts the board in two.
  */
 function mountainRange(
+  map: MapData,
   tiles: Record<string, Tile>,
   allowed: Hex[],
   inFrom: (h: Hex) => number,
@@ -199,7 +233,7 @@ function mountainRange(
   const range: Hex[] = [];
   const inRange = (h: Hex) => range.some((m) => hexDistance(m, h) === 0);
   while (range.length < size) {
-    let free = allowed.filter((h) => !inRange(h) && connectedWithout(tiles, h));
+    let free = allowed.filter((h) => !inRange(h) && connectedWithout(map, tiles, h));
     if (!range.length) free = free.filter((h) => inFrom(h) === 0);
     if (range.length) {
       const touching = (h: Hex) => range.filter((m) => hexDistance(m, h) === 1).length;
@@ -217,11 +251,11 @@ function mountainRange(
   return range;
 }
 
-/** Whether every open hex can still walk to every other with `extra` blocked too. */
-function connectedWithout(tiles: Record<string, Tile>, extra: Hex): boolean {
+/** Whether every open hex of `map` can still walk to every other with `extra` blocked too. */
+function connectedWithout(map: MapData, tiles: Record<string, Tile>, extra: Hex): boolean {
   const blocked = new Set([...Object.keys(tiles), hexKey(extra)]);
-  const all = new Set(SALT_FLATS.hexes.map(hexKey));
-  const open = SALT_FLATS.hexes.filter((h) => !blocked.has(hexKey(h)));
+  const all = new Set(map.hexes.map(hexKey));
+  const open = map.hexes.filter((h) => !blocked.has(hexKey(h)));
   const seen = new Set([hexKey(open[0]!)]);
   const queue = [open[0]!];
   for (let h; (h = queue.shift()); )

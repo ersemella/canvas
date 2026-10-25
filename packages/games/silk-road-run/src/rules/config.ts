@@ -337,11 +337,13 @@ export const ROSTER: HeroId[] = [...PARTY];
  * brings the last one's heroes and one more. The last is won to win the run.
  * `provision`: winning it earns a provision, assigned at the caravanserai
  * before the next (progression.md, 19.2: a region's stages 1 and 2).
+ * `map`: the id of the map it is fought on (MAPS in map.ts): every stage so
+ * far is the Steppe region's; the Gobi (`gobi`) waits for the China region.
  */
-export const STAGES: {heroes: number; wolves: number; provision: boolean}[] = [
-  {heroes: 1, wolves: 2, provision: true},
-  {heroes: 2, wolves: 1, provision: true},
-  {heroes: 3, wolves: 0, provision: false},
+export const STAGES: {heroes: number; wolves: number; provision: boolean; map: string}[] = [
+  {heroes: 1, wolves: 2, provision: true, map: 'steppe'},
+  {heroes: 2, wolves: 1, provision: true, map: 'steppe'},
+  {heroes: 3, wolves: 0, provision: false, map: 'steppe'},
 ];
 /** The enemy hero of the first stage, and so of every stage (owner, 2026-10-24; was random). */
 export const FIRST_ENEMY: HeroId = 'mangudai';

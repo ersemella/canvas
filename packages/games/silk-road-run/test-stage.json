@@ -1,6 +1,7 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, a run's third stage: the whole party against all three heroes, starting kits, always mountains.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, a run's third stage fought in the Gobi: the whole party against all three heroes, starting kits; the Gobi has no mountains.",
   "seed": null,
+  "map": "gobi",
   "yurts": "mountains",
   "camel": {},
   "player": [{"hero": "bokh"}, {"hero": "mangudai"}, {"hero": "storm"}],

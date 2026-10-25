@@ -30,6 +30,26 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
   },
 };
 
+/**
+ * Where a map's look renames a tile (map.ts): the Gobi's open ground is
+ * gravel and its yurts are ruins of the old frontier posts.
+ */
+const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
+  gobi: {
+    sand: {name: 'Gravel', short: 'Open ground', detail: 'No effect.'},
+    obstacle: {
+      name: 'Ruins',
+      short: 'Blocks movement and arrows',
+      detail: 'Blocks movement and arrows.',
+    },
+  },
+};
+
+/** What a tile is called and does on the map `mapId`. */
+export function tileInfo(mapId: string, tile: Tile): HexInfo {
+  return MAP_TILE_INFO[mapId]?.[tile] ?? TILE_INFO[tile];
+}
+
 /** The exit (camel.md, 18.2): not a tile but the camel's goal, said beside its tile. */
 export const EXIT_INFO: HexInfo = {
   name: 'Road out',

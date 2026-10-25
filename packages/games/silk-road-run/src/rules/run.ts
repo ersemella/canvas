@@ -19,6 +19,7 @@ import {
   refreshStats,
   seededRandom,
 } from './fight';
+import {mapById} from './map';
 import {createTestFight} from './testStage';
 import {shuffled} from './track';
 import type {
@@ -113,8 +114,8 @@ export function stageEnemies(seed: number, stage: number): HeroId[] {
 const stageSeed = (seed: number, stage: number) => (seed + stage * 0x9e3779b9) >>> 0;
 
 /**
- * A stage's fight, advanced to its first decision, the player's or the AI's;
- * the first `MOUNTAIN_STAGES` always have mountains.
+ * A stage's fight, on its map, advanced to its first decision, the player's
+ * or the AI's; the first `MOUNTAIN_STAGES` always have mountains.
  */
 function stageFight(
   seed: number,
@@ -127,7 +128,8 @@ function stageFight(
     party,
     stageEnemies(seed, stage),
     stage < MOUNTAIN_STAGES,
-    provisions
+    provisions,
+    mapById(STAGES[stage]!.map)
   );
   fight.events = [];
   advanceToDecision(fight);
