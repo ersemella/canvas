@@ -411,7 +411,7 @@ try {
     await tapHex(step);
     check(
       'desktop: a click on a reachable hex plans the move, with no Move first',
-      /^Confirm/.test(await heroMove.textContent()),
+      /^Cancel/.test(await heroMove.textContent()),
       await heroMove.textContent()
     );
     check(
@@ -524,13 +524,22 @@ try {
     /^HailPick a target$/.test(await hailButton.textContent()),
     await hailButton.textContent()
   );
-  // Aimed, its button confirms it; a right-click un-picks the target.
+  // Aimed, its button cancels it; a right-click un-picks the target.
   await tapHex(hailTo);
   check(
-    'once its target is picked, the ability’s button confirms it',
-    /^Confirm\+\d+( → \+\d+)?$/.test(await hailButton.textContent()),
+    'once its target is picked, the ability’s button cancels it, saying when the next turn comes',
+    /^Cancel\+\d+( → \+\d+)?$/.test(await hailButton.textContent()),
     await hailButton.textContent()
   );
+  await hailButton.click();
+  check(
+    'tapping an aimed ability’s button puts it down, without committing',
+    (await state()).view.version === before &&
+      (await hailButton.getAttribute('aria-pressed')) === 'false',
+    await hailButton.textContent()
+  );
+  await hailButton.click();
+  await tapHex(hailTo);
   {
     const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hailTo);
     const box = await page.locator('canvas').boundingBox();
@@ -577,8 +586,8 @@ try {
     (await moveButton.getAttribute('aria-pressed')) === 'true'
   );
   check(
-    'once its hex is picked, Move’s button confirms it, saying when the next turn comes',
-    /^Confirm\+\d+( → \+\d+)?$/.test(await moveButton.textContent()),
+    'once its hex is picked, Move’s button cancels it, saying when the next turn comes',
+    /^Cancel\+\d+( → \+\d+)?$/.test(await moveButton.textContent()),
     await moveButton.textContent()
   );
   // Esc un-picks the hex; then tapping Move puts it down.
@@ -617,7 +626,7 @@ try {
     'tapping another reachable hex changes the destination',
     (await state()).view.version === before &&
       (await moveButton.getAttribute('aria-pressed')) === 'true' &&
-      /^Confirm/.test(await moveButton.textContent())
+      /^Cancel/.test(await moveButton.textContent())
   );
   // A turn has one action, so there is no order to swap.
   check(
@@ -656,11 +665,9 @@ try {
     await skip.textContent()
   );
   check(
-    'only the picked button confirms, and the board’s Confirm',
-    (await page
-      .getByTestId('turn-controls')
-      .getByRole('button', {name: /^Confirm/})
-      .count()) === 1 && (await page.getByRole('button', {name: /^Confirm/}).count()) === 2
+    'the board’s Confirm is the only one: the picked button cancels',
+    (await page.getByRole('button', {name: /^Confirm/}).count()) === 1 &&
+      (await page.getByTestId('board-confirm').count()) === 1
   );
   check(
     'desktop: S arms Skip turn',
@@ -1274,15 +1281,12 @@ try {
       await sleep(200);
       check(
         'phone: tapping a hex to move to closes the tooltip (and plans the move)',
-        !(await tooltip.count()) && /^Confirm/.test(await phoneMove.textContent()),
+        !(await tooltip.count()) && /^Cancel/.test(await phoneMove.textContent()),
         await phoneMove.textContent()
       );
-      // Put the move down again (a second tap on the hex would commit it,
-      // and a phone has no Esc): a reload keeps the run but not the picks.
-      await phone.reload();
-      await phone.waitForFunction(() => window.__tactics?.run);
-      await phoneMove.waitFor({timeout: 15_000});
-      await sleep(300);
+      // Put the move down again: Move's button cancels it.
+      await phone.touchscreen.tap(moveAt.x, moveAt.y);
+      await sleep(200);
       check(
         'phone: the move is put down again, nothing committed',
         (await phoneMove.getAttribute('aria-pressed')) === 'false' &&
@@ -1376,15 +1380,11 @@ try {
     await phone.tap('canvas', {position: at});
     await sleep(250);
     check(
-      'phone: a planned move turns the Move button into its Confirm, with its slots',
-      /^Confirm\+\d+( → \+\d+)?$/.test(await phoneMove.textContent()),
+      'phone: a planned move turns the Move button into its Cancel, with its slots',
+      /^Cancel\+\d+( → \+\d+)?$/.test(await phoneMove.textContent()),
       await phoneMove.textContent()
     );
-    // Put the move down (a second tap on the hex would commit it).
-    await phone.reload();
-    await phone.waitForFunction(() => window.__tactics?.run);
-    await phoneMove.waitFor({timeout: 15_000});
-    await sleep(300);
+    await phoneMove.click(); // Cancel puts Move down
     check(
       'phone: putting the move down shows the range again',
       (await phoneMove.getAttribute('aria-pressed')) === 'false' &&
@@ -1447,17 +1447,26 @@ try {
   }
   const aim = await phone.evaluate(() => window.__tactics.targets[0].hex);
   await tapOn(aim);
-  const phoneConfirm = await phoneHail.textContent();
+  const phoneCancel = await phoneHail.textContent();
   check(
-    'phone: aimed, the ability’s button confirms it, saying when the next turn comes',
-    /^Confirm\+\d+( → \+\d+)?$/.test(phoneConfirm),
-    phoneConfirm
+    'phone: aimed, the ability’s button cancels it, saying when the next turn comes',
+    /^Cancel\+\d+( → \+\d+)?$/.test(phoneCancel),
+    phoneCancel
   );
   check(
-    'phone: the ability button showed the same slots as its Confirm',
-    hailCost.endsWith(phoneConfirm.match(/^Confirm(\+\d+)/)[1]),
-    [hailCost, phoneConfirm]
+    'phone: the ability button showed the same slots as its Cancel',
+    hailCost.endsWith(phoneCancel.match(/^Cancel(\+\d+)/)[1]),
+    [hailCost, phoneCancel]
   );
+  await phoneHail.click();
+  check(
+    'phone: tapping an aimed ability’s button puts it down, without committing',
+    (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion &&
+      (await phoneHail.getAttribute('aria-pressed')) === 'false'
+  );
+  await phoneHail.click();
+  await phone.waitForFunction(() => window.__tactics.targets.length > 0);
+  await tapOn(aim);
   await tapOn(aim);
   await phone.waitForFunction((v) => window.__tactics.run.view.version > v, phoneVersion, {
     timeout: 15_000,

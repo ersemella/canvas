@@ -73,8 +73,8 @@ function outcomeText(fight: FightState): string {
  * same rules locally (D11, `useTurnPlan`), and sends each turn as one request. Tapping or
  * hovering a hex shows what's there; Move, then a hex, plans the move;
  * an ability, then a target, previews that ability instead. Move and abilities
- * are separate actions; once its hex or target is picked, the picked button
- * confirms it, as does a second tap on the hex picked last. Skip turn ends
+ * are separate actions; once its hex or target is picked, a second tap on
+ * that hex confirms it and the picked button cancels it. Skip turn ends
  * the turn with Hold. On desktop a click on a reachable hex plans a move
  * without Move, and keys and a right-click do the rest (phase-1-brief.md).
  */
@@ -448,7 +448,6 @@ export function TacticsPage() {
         confirm={input ? (nextTurn(fight, preview) ?? {text: '', blocked: true}) : null}
         onMove={toggleMove}
         onAbility={chooseAbility}
-        onConfirm={() => commit()}
         menu={menu}
         // Desktop: the details show the unit's portrait instead.
         onPortrait={phone ? lookAtActing : undefined}

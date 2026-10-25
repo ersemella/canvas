@@ -67,8 +67,8 @@ const SKIP_ARMED_MS = 3000;
 
 /**
  * Skip turn: ends the turn with Hold, whatever is picked, saying when the
- * next turn comes. A quiet tile: the turn's action is confirmed from its
- * own button (Move or the ability, once its hex or target is picked).
+ * next turn comes. A quiet tile: the turn's action is confirmed by a
+ * second tap on the hex picked last (Move's or the ability's button cancels it).
  * Like Reset run, the first tap only arms it ("Tap again to skip"), so a
  * stray tap doesn't throw a turn away (owner, 2026-10-21); it disarms after
  * `SKIP_ARMED_MS`, on a tap anywhere else (which still does what it does),

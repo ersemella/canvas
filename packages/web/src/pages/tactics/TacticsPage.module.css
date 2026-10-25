@@ -591,21 +591,6 @@
   align-items: center;
 }
 
-/* The picked choice, ready: its Confirm, in Confirm's bright lapis (an ultimate's too). */
-.tile.tileConfirm.tileConfirm {
-  color: var(--c-ivory);
-  border-color: var(--c-ink);
-  background: var(--c-lapis);
-  box-shadow:
-    inset var(--px) var(--px) 0 var(--c-lapisLight),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
-}
-.tile.tileConfirm.tileConfirm:hover:not(:disabled) {
-  box-shadow:
-    inset var(--px) var(--px) 0 var(--c-lapisPale),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
-}
-
 /* Skip turn: a quiet dusk tile, beside the run's menu (on phones, the portrait's 50px tall). */
 .skip.skip {
   color: var(--c-ivory);
