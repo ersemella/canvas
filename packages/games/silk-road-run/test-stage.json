@@ -1,9 +1,9 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, a region's first stage fought in the Gobi: the whole party against the Mangudai Outrider and two fox spirits, starting kits; the Gobi has no mountains.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, a region's first stage fought in the Gobi: the whole party against a fox spirit, the Modao Vanguard and the Waidan Alchemist, starting kits; the Gobi has no mountains.",
   "seed": null,
   "map": "gobi",
   "yurts": "mountains",
   "camel": {},
   "player": [{"hero": "bokh"}, {"hero": "mangudai"}, {"hero": "storm"}],
-  "enemy": [{"hero": "mangudai"}, {"hero": "fox"}, {"hero": "fox"}]
+  "enemy": [{"hero": "fox"}, {"hero": "modao"}, {"hero": "alchemist"}]
 }
