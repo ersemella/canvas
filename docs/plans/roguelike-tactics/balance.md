@@ -1866,6 +1866,7 @@ The aura within 2 and Delay 3 together: China 97.5%.
 - **Found while building it**: the page never offers Elixir on an enemy.
   `offeredTargets` (choices.ts) shows a support ability's targets on its
   own side only, so a player's Alchemist can't Degrade; the AI's can.
+  Fixed 2026-10-25: Elixir is offered on either side (`bothSides`).
 
 ## Principles for re-tuning
 

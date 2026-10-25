@@ -97,6 +97,11 @@ export interface AbilityDef {
    */
   damages?: boolean;
   /**
+   * Helps a unit of its user's side and hinders one of the other (Elixir:
+   * Enhance or Degrade), so the page offers units of either side.
+   */
+  bothSides?: boolean;
+  /**
    * The unit a target aims at, when it isn't simply the one on its hex
    * (Grapple's throw: the held unit, aimed by where it lands). For the
    * page's offered targets and the AI's guess.
@@ -620,6 +625,7 @@ const elixir: AbilityDef = {
   name: 'Elixir',
   kind: 'support',
   damages: false,
+  bothSides: true,
   range: ABILITY.elixir.range,
   summary: (user) =>
     `A unit within ${ABILITY.elixir.range}: an ally is Enhanced ${user.power}, an enemy Degraded ${user.power}, until the end of its next turn.`,

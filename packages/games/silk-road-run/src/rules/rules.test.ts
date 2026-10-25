@@ -1321,6 +1321,12 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
     const alchemist = unit(s, 'p-alchemist');
     const targets = ABILITIES.elixir.targets(s, mapOf(s), alchemist, alchemist.hex!);
     expect(targets.some((t) => hexEquals(t.hex!, alchemist.hex!))).toBe(false);
+    // The player is offered both: an ally to Enhance, an enemy to Degrade.
+    expect(
+      offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
+        .map((t) => hexKey(t.hex!))
+        .sort()
+    ).toEqual([at(2, 3), at(3, 3)].map(hexKey).sort());
     for (const [hex, id, key] of [
       [at(3, 3), 'p-mangudai', 'enhance'],
       [at(2, 3), 'e-mangudai', 'degrade'],
