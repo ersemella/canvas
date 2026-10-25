@@ -536,13 +536,20 @@ describe('the board', () => {
   });
 
   it('fights on the map given, its ruins scattered as the yurts are, the Gobi with no mountains', () => {
-    for (let seed = 0; seed < 10; seed++) {
+    for (let seed = 0; seed < 40; seed++) {
       // Even a stage that always has mountains has none in the Gobi.
       const s = createFight(seed, undefined, undefined, true, [], GOBI);
       expect(s.mapId).toBe('gobi');
       expect(mapOf(s).name).toBe('The Gobi Crossing');
       const tiles = Object.values(s.tiles);
-      expect(tiles.filter((t) => t === 'obstacle').length).toBeGreaterThanOrEqual(2);
+      // More ruins than the Steppe's yurts, since there are no mountains.
+      expect([4, 5]).toContain(tiles.filter((t) => t === 'obstacle').length);
+      // None next to the camel's start or the exit.
+      for (const [key, t] of Object.entries(s.tiles)) {
+        const [q, r] = key.split(',').map(Number);
+        for (const x of [GOBI.camelStart, ...GOBI.exits])
+          if (t === 'obstacle') expect(hexDistance({q: q!, r: r!}, x)).toBeGreaterThan(1);
+      }
       expect(tiles).not.toContain('mountain');
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
     }
