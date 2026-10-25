@@ -3,7 +3,7 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {HEROES, RULES} from './config';
+import {HEROES} from './config';
 import {hailEnds} from './resolve';
 import type {Tile} from './map';
 import type {FightState, HailEffect, ShotInAir} from './types';
@@ -90,10 +90,10 @@ export type KeywordId =
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   speed: {
     name: 'Speed',
-    detail: `Sets action cost: the card goes ${RULES.actionBase * RULES.speedPivot} ÷ (speed + ${RULES.speedPivot}) slots on per turn, rounded. Fastest act first.`,
+    detail: 'Lowers action cost: the faster act more often, and first.',
   },
   power: {name: 'Power', detail: 'Damage its abilities deal.'},
-  defence: {name: 'Defence', detail: 'Sets health: (1 + defence) × 2.'},
+  defence: {name: 'Defence', detail: 'Raises health.'},
   melee: {name: 'Melee', detail: 'Targets a unit next to you.'},
   immobilized: {
     name: 'Immobilized',
