@@ -117,11 +117,6 @@ function hexesWithin(
     .map((hex) => ({hex}));
 }
 
-/** "1 damage", or "no damage" at power 0. */
-function damageText(user: Unit): string {
-  return user.power > 0 ? `${user.power} damage` : 'no damage';
-}
-
 const hold: AbilityDef = {
   id: 'hold',
   name: 'Hold',
@@ -162,7 +157,7 @@ const longshot: AbilityDef = {
   id: 'longshot',
   name: 'Longshot',
   kind: 'attack',
-  summary: (user) => `Shoot straight: the first unit in line takes ${damageText(user)}.`,
+  summary: () => 'Shoot straight: hits the first unit in line.',
   targetsUnit: true,
   targets(state, map, _user, from) {
     return arrowLanes(state, map, from)
@@ -191,8 +186,8 @@ const skirmish: AbilityDef = {
   steps: true,
   summary: (user) =>
     ABILITY.skirmish.charge > 0
-      ? `Step one space, then draw on a line: charge ${chargeOf(user, 'skirmish')} (half your action cost). When your card comes back the arrow flies down that line instead of your turn: the first unit in it then takes ${damageText(user)}. Then your card goes on to your next turn.`
-      : `Step one space, then shoot straight: the first unit in line takes ${damageText(user)}.`,
+      ? `Step 1 space, then draw on a line: charge ${chargeOf(user, 'skirmish')}. When your card comes back, the arrow hits the first unit in that line instead of your turn.`
+      : 'Step 1 space, then shoot straight: hits the first unit in line.',
   targetsUnit: true,
   targets(state, map, user, from) {
     if (isImmobilized(user)) return [];
@@ -230,8 +225,8 @@ const hail: AbilityDef = {
   range: ABILITY.hail.range,
   minRange: ABILITY.hail.range,
   radius: 0,
-  summary: (user) =>
-    `Hail on a space exactly ${ABILITY.hail.range} away until ${hailEnds(ABILITY.hail.turns, 'your')}, or until you hail again: a unit there takes ${damageText(user)}, and a unit there or that enters it is Immobilized until the hail is gone.`,
+  summary: () =>
+    `A space exactly ${ABILITY.hail.range} away, until ${hailEnds(ABILITY.hail.turns, 'your')}: hits a unit there; units there or entering are Immobilized.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(
       map,
@@ -267,7 +262,7 @@ const sunlight: AbilityDef = {
   kind: 'support',
   range: ABILITY.sunlight.range,
   summary: () =>
-    `Sunlight on a space: hail there melts, and a unit there not Enhanced already, you included, is Enhanced ${ABILITY.sunlight.enhance}: its abilities deal ${ABILITY.sunlight.enhance} more until the end of its next turn.`,
+    `A space within ${ABILITY.sunlight.range}: hail there melts; a unit there is Enhanced ${ABILITY.sunlight.enhance}.`,
   targets(state, map, user, from) {
     const {range, self, melts} = ABILITY.sunlight;
     return hexesWithin(map, from, range, (h) => {
@@ -331,8 +326,8 @@ const grapple: AbilityDef = {
   id: 'grapple',
   name: 'Grapple',
   kind: 'attack',
-  summary: (user) =>
-    `Melee: it takes ${damageText(user)} and is Stunned until you take damage, are Stunned or end a turn no longer next to it, taking ${ABILITY.grapple.squeeze} more at each of your turns meanwhile${ABILITY.grapple.enhancedSqueeze ? ' (plus your Enhance)' : ''}. One at a time. While you grapple one, pick a free space next to you to throw it there, or your own to swap places; then it takes ${damageText(user)} and the grapple holds.`,
+  summary: () =>
+    `Melee: hits it, and it is Stunned until you take damage or are Stunned, taking ${ABILITY.grapple.squeeze} more damage each of your turns. While grappling: Move it to a free space next to you, or swap places, and hit it again.`,
   targetsUnit: true,
   // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before),
   // and not the unit it already grapples: that one is thrown instead.
@@ -388,7 +383,7 @@ const shove: AbilityDef = {
   name: 'Shove',
   kind: 'control',
   damages: false,
-  summary: () => `Melee: Push it ${ABILITY.shove.push} spaces away. No damage.`,
+  summary: () => `Melee: Push ${ABILITY.shove.push}.`,
   targetsUnit: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
@@ -406,7 +401,7 @@ const haul: AbilityDef = {
   damages: false,
   range: ABILITY.haul.range,
   summary: () =>
-    `The first unit in a straight line 2 to ${ABILITY.haul.range} spaces away: Pull it ${ABILITY.haul.pull} spaces toward you. No damage.`,
+    `First unit in a line 2–${ABILITY.haul.range} spaces away: Pull ${ABILITY.haul.pull}.`,
   targetsUnit: true,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
@@ -447,8 +442,8 @@ const feignedRetreat: AbilityDef = {
   name: 'Feigned Retreat',
   kind: 'attack',
   walksAfter: true,
-  summary: (user) =>
-    `Shoot straight: the first unit in line takes ${damageText(user)}. Then walk up to ${ABILITY.feignedRetreat.steps} spaces.`,
+  summary: () =>
+    `Shoot straight: hits the first unit in line. Then walk up to ${ABILITY.feignedRetreat.steps} spaces.`,
   targetsUnit: true,
   targets(state, map, user, from) {
     if (isImmobilized(user)) return [];
@@ -489,8 +484,8 @@ const gale: AbilityDef = {
   kind: 'control',
   range: ABILITY.gale.range,
   radius: 1,
-  summary: (user) =>
-    `A gale bursts from a space: each unit next to it takes ${damageText(user)} and is Pushed ${ABILITY.gale.push} away.`,
+  summary: () =>
+    `A space within ${ABILITY.gale.range}: each unit next to it is hit and Pushed ${ABILITY.gale.push}.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.gale.range, (h) => !blocks(tileAt(map, h))),
   resolve(ctx, user, target) {
@@ -520,7 +515,7 @@ const volley: AbilityDef = {
   range: ABILITY.volley.range,
   radius: 0,
   summary: (user) =>
-    `Loose arrows high at a space within ${ABILITY.volley.range}: charge ${chargeOf(user, 'volley')}. When your card comes back they land, and whoever stands there takes ${damageText(user)}.`,
+    `A space within ${ABILITY.volley.range}: charge ${chargeOf(user, 'volley')}. When your card comes back, hits whoever is there.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(
       map,
@@ -544,7 +539,7 @@ const bite: AbilityDef = {
   id: 'bite',
   name: 'Bite',
   kind: 'attack',
-  summary: (user) => `Melee: ${damageText(user)}.`,
+  summary: () => 'Melee.',
   targetsUnit: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {

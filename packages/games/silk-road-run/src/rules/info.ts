@@ -17,7 +17,7 @@ export interface HexInfo {
 }
 
 export const TILE_INFO: Record<Tile, HexInfo> = {
-  sand: {name: 'Grass', short: 'Open ground', detail: 'Open ground: no effect.'},
+  sand: {name: 'Grass', short: 'Open ground', detail: 'No effect.'},
   obstacle: {
     name: 'Yurt',
     short: 'Blocks movement and arrows',
@@ -34,11 +34,11 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
 export const EXIT_INFO: HexInfo = {
   name: 'Road out',
   short: `${HEROES.camel.name} reaching it wins`,
-  detail: `The road out: ${HEROES.camel.name} reaching it wins the fight.`,
+  detail: `${HEROES.camel.name} reaching it wins.`,
 };
 
 /** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2; timeline.md, 3.2). */
-export const CAMEL_RULE = `Can’t attack, and walks itself: 1 space a turn toward the exit, around anything in its way, its card then going its action cost on, like any unit’s. Reaching the road out wins the fight; if it falls, the fight is lost.`;
+export const CAMEL_RULE = `Can’t attack. Walks 1 space a turn toward the road out, around anything in its way. Reaching it wins; falling loses.`;
 
 export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   const caster = state.units.find((u) => u.id === hail.source);
@@ -49,7 +49,7 @@ export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   return {
     name: 'Hail',
     short: 'Immobilizes a unit that enters it',
-    detail: `A unit here, or that enters it, is Immobilized until the hail is gone: at ${until}.`,
+    detail: `Units here or entering are Immobilized until ${until}.`,
   };
 }
 
@@ -61,12 +61,12 @@ export function shotInfo(shot: ShotInAir, state: FightState): HexInfo {
     return {
       name: 'Volley',
       short: 'Lands here when its card comes back',
-      detail: `A volley loosed high: it lands on this space when ${who} greyed, charging card comes back, and whoever stands here then takes ${damage}.`,
+      detail: `Lands when ${who} charging card comes back: ${damage} to whoever is here.`,
     };
   return {
     name: 'Drawn arrow',
     short: 'Flies down this line when its card comes back',
-    detail: `A drawn arrow: it flies down this line when ${who} greyed, charging card comes back, and the first unit in the line then takes ${damage}.`,
+    detail: `Flies when ${who} charging card comes back: ${damage} to the first unit in this line.`,
   };
 }
 
@@ -90,32 +90,30 @@ export type KeywordId =
 export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   speed: {
     name: 'Speed',
-    detail: `Sets the action cost: after each turn, the card goes ${RULES.actionBase * RULES.speedPivot} ÷ (speed + ${RULES.speedPivot}) slots on, rounded, so the faster act more often. The fight starts with the fastest cards first, ${HEROES.camel.name}’s last.`,
+    detail: `Sets action cost: the card goes ${RULES.actionBase * RULES.speedPivot} ÷ (speed + ${RULES.speedPivot}) slots on per turn, rounded. Fastest act first.`,
   },
-  power: {name: 'Power', detail: 'The damage each of its abilities deals.'},
+  power: {name: 'Power', detail: 'Damage its abilities deal.'},
   defence: {name: 'Defence', detail: 'Sets health: (1 + defence) × 2.'},
-  melee: {name: 'Melee', detail: 'Targets a unit next to the user.'},
+  melee: {name: 'Melee', detail: 'Targets a unit next to you.'},
   immobilized: {
     name: 'Immobilized',
-    detail: 'Can’t move to a different space by itself. Can still act, and be moved by others.',
+    detail: 'Can’t walk. Can still act and be Moved.',
   },
   stunned: {
     name: 'Stunned',
-    detail: 'Can’t take any action, moving included: its turns are skipped.',
+    detail: 'Turns skipped.',
   },
   enhanced: {
     name: 'Enhanced',
-    detail: 'Its abilities deal that much more damage, until the end of its next turn.',
+    detail: 'Its abilities deal that much more damage until the end of its next turn.',
   },
-  move: {name: 'Move', detail: 'Put on another space by someone else, not walking.'},
+  move: {name: 'Move', detail: 'Put on another space by others, not walking.'},
   push: {
     name: 'Push',
-    detail:
-      'Moved that many spaces straight away from what pushed it, stopping early at a yurt, another unit or the edge of the map. Hail it enters holds it.',
+    detail: 'Moved that many spaces straight away, stopping at anything in the way.',
   },
   pull: {
     name: 'Pull',
-    detail:
-      'Moved that many spaces straight toward what pulled it, stopping early at a yurt, another unit or the edge of the map. Hail it enters holds it.',
+    detail: 'Moved that many spaces straight toward it, stopping at anything in the way.',
   },
 };

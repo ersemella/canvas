@@ -12,6 +12,7 @@ import {
   TILE_INFO,
   abilitiesOf,
   atExit,
+  hailEnds,
   hailInfo,
   mapOf,
   tileAt,
@@ -279,7 +280,7 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
       ? ''
       : s.grapple
         ? `by ${unitName(holder)}’s grapple`
-        : `by hail, until ${unitName(holder)}’s next turn`;
+        : `by hail, until ${hailEnds(fight.effects.find((e) => e.source === holder.id)?.turns ?? 1, `${unitName(holder)}’s`)}`;
     out.push({id: s.kind, label: s.kind === 'stunned' ? 'Stunned' : 'Immobilized', rest});
   }
   if (unit.enhance)
