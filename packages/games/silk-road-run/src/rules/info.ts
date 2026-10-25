@@ -4,6 +4,7 @@
  * rule values, so the text follows config.ts.
  */
 import {HEROES, RULES} from './config';
+import {hailEnds} from './resolve';
 import type {Tile} from './map';
 import type {FightState, HailEffect, ShotInAir} from './types';
 
@@ -41,7 +42,10 @@ export const CAMEL_RULE = `Can’t attack, and walks itself: 1 space a turn towa
 
 export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   const caster = state.units.find((u) => u.id === hail.source);
-  const until = caster ? `${HEROES[caster.hero].name}’s next turn` : 'its caster’s next turn';
+  const until = hailEnds(
+    hail.turns ?? 1,
+    caster ? `the ${HEROES[caster.hero].name}’s` : 'its caster’s'
+  );
   return {
     name: 'Hail',
     short: 'Immobilizes a unit that enters it',

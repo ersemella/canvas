@@ -229,7 +229,7 @@ describe('the search timeline', () => {
     expect(rescue(hex(0, 1)).action).toEqual({ability: 'bite', target: {hex: hex(0, 0)}});
   });
 
-  it('lifts its own hail before stopping for an AI decision, only once', () => {
+  it('lifts its own hail on its last turn before stopping for an AI decision, only once (a hail without a count, saved before it had one, lasts 1)', () => {
     const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
     const me = unit(s, 'e-storm');
     const held = unit(s, 'p-bokh');

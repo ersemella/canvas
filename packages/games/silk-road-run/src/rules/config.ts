@@ -164,11 +164,13 @@ export const ABILITY = {
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
    * ring, so the spaces next to it and 3 or more away are safe; within 3
    * from 2026-10-23, and before that a radius-1 area with damage and a
-   * track Push). It stays until its caster's next turn; a unit in the
-   * space when it lands, or that enters it, is Immobilized until it
-   * disappears.
+   * track Push). It stays for `turns` of its caster's turns: it lifts as
+   * the last of them starts (2, the turn after next, since 2026-10-25; 1,
+   * the next turn, before), or when its caster casts it again, one hail a
+   * caster. A unit in the space when it lands, or that enters it, is
+   * Immobilized until it disappears.
    */
-  hail: {range: 2},
+  hail: {range: 2, turns: 2},
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Enhanced, is Enhanced `enhance` until the end of

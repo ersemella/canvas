@@ -19,10 +19,12 @@ import {
   unitAt,
 } from './board';
 import {
+  clearHail,
   displace,
   endGrapples,
   enhance,
   enterHex,
+  hailEnds,
   hailHolds,
   hit,
   log,
@@ -229,7 +231,7 @@ const hail: AbilityDef = {
   minRange: ABILITY.hail.range,
   radius: 0,
   summary: (user) =>
-    `Hail on a space exactly ${ABILITY.hail.range} away until your next turn: a unit there takes ${damageText(user)}, and a unit there or that enters it is Immobilized until the hail is gone.`,
+    `Hail on a space exactly ${ABILITY.hail.range} away until ${hailEnds(ABILITY.hail.turns, 'your')}, or until you hail again: a unit there takes ${damageText(user)}, and a unit there or that enters it is Immobilized until the hail is gone.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(
       map,
@@ -239,8 +241,10 @@ const hail: AbilityDef = {
     ),
   resolve(ctx, user, target) {
     const hex = target.hex!;
+    // One hail a caster: a new one replaces the last (owner, 2026-10-25).
+    clearHail(ctx.state, user);
     ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, hex));
-    ctx.state.effects.push({kind: 'hail', hex, source: user.id});
+    ctx.state.effects.push({kind: 'hail', hex, source: user.id, turns: ABILITY.hail.turns});
     log(ctx, `${unitName(user)} calls down hail.`);
     const u = unitAt(ctx.state, hex);
     if (!u) return;

@@ -1578,6 +1578,29 @@ Hail's shape, at walk 2:
 **Adopted (owner, 2026-10-24): walks of at most 2, and Hail on a space
 exactly 2 away** (`RULES.movementCap`, `ABILITY.hail` in config.ts).
 
+### Hail for two turns (2026-10-25)
+
+Asked for: whether the ring left Hail too weak, and a Hail lasting 2 of
+its caster's turns to make up for it. `ablate.mjs`, 400 fights each,
+starting kits, seeds from 1000, with a `turns` setting patched in:
+
+| Hail lasts | Side without Hail wins | Without Grapple | Without the Bow | Storm Caller's turns on Hail (vs all three) | Player wins vs all three | Median actions |
+|---|---:|---:|---:|---:|---:|---:|
+| 1 turn (as it was) | 27.8% | 10.5% | 13.3% | 46.6% | 75.5% | 53 |
+| 2 turns, a new hail replacing the last | 25.5% | 10.8% | 14.3% | 47.4% | 72% | 54 |
+| 2 turns, two hails at once | 25.3% | 10.8% | 12.8% | 49.4% | 72% | 52 |
+
+- **The ring hadn't left Hail weak**: 27.8% without it, within the core's
+  20–35% (principle 2), and Hail on 46.6% of turns, at the top of the
+  core's usage band.
+- **Two turns changes little**, all within the ±2.5 points of 400 fights:
+  the Storm Caller mostly hails again on its next turn, replacing the
+  last. Doubling the hold's worth in the AI's first guess gave the same
+  fights exactly: that guess only orders its search.
+
+**Adopted (owner, 2026-10-25): Hail lasts until its caster's turn after
+next, and hailing again replaces it** (`ABILITY.hail.turns`).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

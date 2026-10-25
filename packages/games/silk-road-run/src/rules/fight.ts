@@ -10,7 +10,7 @@ import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
 import {
   checkEnd,
-  clearHail,
+  ageHail,
   endTurnEffects,
   enterHex,
   landShots,
@@ -205,8 +205,8 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
       continue;
     }
     record(state, {kind: 'turn', unitId: unit.id});
-    // Its hail lasts until its next turn: this one (owner, 2026-10-23).
-    clearHail(state, unit);
+    // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25).
+    ageHail(state, unit);
     // An Enhance lasts until the end of this turn.
     if (unit.enhance) unit.enhanceStarted = true;
     squeezeGrapples(ctx, unit);

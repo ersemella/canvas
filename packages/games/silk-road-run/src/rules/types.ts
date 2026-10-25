@@ -36,7 +36,7 @@ export type StatusKind = 'immobilized' | 'stunned';
  */
 export interface Status {
   kind: StatusKind;
-  /** From a Storm Caller's hail (its unit id): ends when that hail disappears, at the caster's next turn. */
+  /** From a Storm Caller's hail (its unit id): ends when that hail disappears (`HailEffect`). */
   hail?: string;
   /** From a Grapple: ends when the grapple does (`breakGrapples` in resolve.ts). */
   grapple?: {champion: string; target: string};
@@ -93,13 +93,19 @@ export interface Unit {
 
 /**
  * A temporary board effect: the space a Storm Caller's hail covers. It
- * disappears when its caster's next turn starts, or when the caster falls.
+ * disappears as its caster's `turns`th turn from now starts, when the
+ * caster casts it again, or when the caster falls.
  */
 export interface HailEffect {
   kind: 'hail';
   hex: Hex;
   /** The caster's unit id. */
   source: string;
+  /**
+   * Its caster's turns still to start before it lifts, counting the one it
+   * lifts on. Absent in runs saved before 2026-10-25, when hail lasted 1.
+   */
+  turns?: number;
 }
 
 /**

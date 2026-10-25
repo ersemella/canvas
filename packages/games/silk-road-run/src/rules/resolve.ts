@@ -124,7 +124,7 @@ export function kill(ctx: Ctx, unit: Unit): void {
   log(ctx, `${unitName(unit)} falls.`);
   if (at) record(ctx.state, {kind: 'death', unitId: unit.id, hex: at});
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
-  // Its hail lasted until its next turn, which won't come; its shots until its card came back.
+  // Its hail lasted until a turn of its, which won't come; its shots until its card came back.
   clearHail(ctx.state, unit);
   if (ctx.state.shots) ctx.state.shots = ctx.state.shots.filter((v) => v.source !== unit.id);
   checkEnd(ctx.state);
@@ -157,9 +157,27 @@ export function atExit(state: FightState, h: Hex): boolean {
 // ─── Hail ────────────────────────────────────────────────────────────────────
 
 /**
- * `caster`'s hail disappears (its next turn has come, or it fell), and with
- * it the Immobilized it gave.
+ * `caster`'s hail disappears (it fell, or casts it again), and with it the
+ * Immobilized it gave.
  */
+/** When hail with `turns` of its caster's turns to go lifts, for the rule text: `whose` turn. */
+export function hailEnds(turns: number, whose: string): string {
+  if (turns <= 1) return `${whose} next turn`;
+  if (turns === 2) return `${whose} turn after next`;
+  return `${whose} turn ${turns} turns from now`;
+}
+
+/**
+ * `caster`'s turn starts: its hail has a turn fewer to stand, and lifts if
+ * this was its last.
+ */
+export function ageHail(state: FightState, caster: Unit): void {
+  const hail = state.effects.find((e) => e.source === caster.id);
+  if (!hail) return;
+  hail.turns = (hail.turns ?? 1) - 1;
+  if (hail.turns <= 0) clearHail(state, caster);
+}
+
 export function clearHail(state: FightState, caster: Unit): void {
   state.effects = state.effects.filter((e) => e.source !== caster.id);
   for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);

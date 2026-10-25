@@ -97,7 +97,9 @@ picked the reading below. Confirm or change each:
 - **Hail Immobilizes a unit standing in its space when it lands**, as well
   as one that enters it, and **any unit**, allies and the Storm Caller
   included. A walk that enters it ends there. It disappears when the
-  Storm Caller's next turn starts, or when the Storm Caller falls.
+  Storm Caller's turn after next starts (owner, 2026-10-25; its next
+  turn before), when the Storm Caller hails again (one hail at a time),
+  or when the Storm Caller falls.
 - **Immobilized still lets others displace the unit** (the 2026-10-19
   rule kept), and **Stunned has no lockout guard** (keywords.md, open
   questions 54 and 56).
