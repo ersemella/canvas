@@ -32,7 +32,7 @@ interface UnitSetup {
 interface TestSetup {
   /** Scatters the yurts and the units without an `at`; null: the run's own seed. */
   seed: number | null;
-  yurts: 'random' | 'none' | 'map' | Hex[];
+  yurts: 'random' | 'mountains' | 'none' | 'map' | Hex[];
   /** Null: no camel, so the fight is won or lost only by beating a side. */
   camel: UnitSetup | null;
   player: UnitSetup[];
@@ -127,9 +127,9 @@ export function parseTestStage(raw: unknown): TestSetup {
   let yurts: TestSetup['yurts'] = 'random';
   if (Array.isArray(v.yurts)) yurts = v.yurts.map((h, i) => parseSpace(`yurts[${i}]`, h));
   else if (v.yurts !== undefined) {
-    if (v.yurts !== 'random' && v.yurts !== 'none' && v.yurts !== 'map')
-      fail('yurts must be "random", "none", "map" or a list of spaces.');
-    yurts = v.yurts as 'random' | 'none' | 'map';
+    if (!['random', 'mountains', 'none', 'map'].includes(v.yurts as string))
+      fail('yurts must be "random", "mountains", "none", "map" or a list of spaces.');
+    yurts = v.yurts as 'random' | 'mountains' | 'none' | 'map';
   }
   const camel =
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
@@ -217,7 +217,7 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
       loose.forEach(([u], i) => (u.hex = hexes[i]!));
     }
     // Only random yurts can be scattered again; a layout set by hand stays as it is.
-    if (setup.yurts !== 'random' || attempt >= 50) break;
+    if ((setup.yurts !== 'random' && setup.yurts !== 'mountains') || attempt >= 50) break;
     if (units.every((u) => canMove(state, mapOf(state), u))) break;
   }
   placeStartingCards(state);
@@ -226,7 +226,8 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
 }
 
 function tilesFor(yurts: TestSetup['yurts'], random: () => number): Record<string, Tile> {
-  if (yurts === 'random') return randomTiles(random);
+  if (yurts === 'random' || yurts === 'mountains')
+    return randomTiles(random, yurts === 'mountains');
   if (yurts === 'none') return {};
   if (yurts === 'map') return {...SALT_FLATS.tiles};
   return Object.fromEntries(yurts.map((h) => [hexKey(h), 'obstacle' as const]));

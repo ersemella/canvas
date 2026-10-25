@@ -1,16 +1,8 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, a run's third stage: the whole party against all three heroes, starting kits, always mountains.",
   "seed": null,
-  "yurts": "random",
+  "yurts": "mountains",
   "camel": {},
-  "player": [
-    {"hero": "bokh"},
-    {"hero": "mangudai", "abilities": ["longshot", "skirmish"]},
-    {"hero": "storm", "power": 2, "abilities": ["hail", "sunlight"]}
-  ],
-  "enemy": [
-    {"hero": "wolf"},
-    {"hero": "wolf", "speed": 3, "power": 2},
-    {"hero": "mangudai", "at": {"col": 7, "row": 2}}
-  ]
+  "player": [{"hero": "bokh"}, {"hero": "mangudai"}, {"hero": "storm"}],
+  "enemy": [{"hero": "mangudai"}, {"hero": "bokh"}, {"hero": "storm"}]
 }

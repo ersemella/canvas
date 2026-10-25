@@ -14,20 +14,23 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 
 ## Example
 
+The committed file, a run's third stage: the whole party against all three
+heroes, every kit the starting one, and always a range of mountains.
+
 ```json
 {
   "seed": null,
-  "yurts": "random",
+  "yurts": "mountains",
   "camel": {},
   "player": [
     {"hero": "bokh"},
-    {"hero": "mangudai", "abilities": ["longshot", "skirmish"]},
-    {"hero": "storm", "power": 2, "abilities": ["hail", "sunlight"]}
+    {"hero": "mangudai"},
+    {"hero": "storm"}
   ],
   "enemy": [
-    {"hero": "wolf"},
-    {"hero": "wolf", "speed": 3, "power": 2},
-    {"hero": "mangudai", "at": {"col": 7, "row": 2}}
+    {"hero": "mangudai"},
+    {"hero": "bokh"},
+    {"hero": "storm"}
   ]
 }
 ```
@@ -37,7 +40,7 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 | Field | What it is | Left out |
 |---|---|---|
 | `seed` | A whole number: the same seed lays out the yurts, mountains and units the same way every time. `null`: a new scatter each time. | `null` |
-| `yurts` | `"random"` (as in a normal fight: two or three yurts near the middle, and a range of 3 to 5 mountains in about half of fights), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
+| `yurts` | `"random"` (as in a normal fight: two or three yurts near the middle, and a range of 3 to 5 mountains in about half of fights), `"mountains"` (the same, always with the mountains, as in a run's first three stages), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
 | `enemy` | The AI’s units, 1 to 9 (at most 11 without an `at`). | required |

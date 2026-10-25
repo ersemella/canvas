@@ -72,6 +72,17 @@ describe('the test stage', () => {
     expect(createTestFight(1, setup)).toEqual(createTestFight(2, setup));
   });
 
+  it('always lays a range of mountains with "mountains", as a run\'s first stages do', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = createTestFight(seed, {
+        yurts: 'mountains',
+        player: [{hero: 'bokh'}],
+        enemy: [{hero: 'wolf'}],
+      });
+      expect(Object.values(s.tiles)).toContain('mountain');
+    }
+  });
+
   it('names what is wrong with the file', () => {
     const bad = (raw: unknown) => {
       try {
