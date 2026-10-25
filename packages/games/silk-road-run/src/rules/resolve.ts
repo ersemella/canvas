@@ -61,7 +61,7 @@ export function unitName(u: Unit): string {
 /**
  * An ability's hit: exactly the attacker's power in damage (owner,
  * 2026-10-23), plus its Enhance (or `enhance`, one the hit carries from
- * when it was made). Power 0 deals none, and says nothing.
+ * when it was made), less its Degrade. Power 0 deals none, and says nothing.
  */
 export function hit(
   ctx: Ctx,
@@ -71,14 +71,17 @@ export function hit(
   enhance = attacker.enhance ?? 0
 ): void {
   const amount = damageOf(attacker, enhance);
-  if (!target.alive || amount <= 0) return;
-  if (enhance) log(ctx, `Enhance adds ${amount - attacker.power}.`);
+  if (!target.alive) return;
+  if (attacker.degrade && attacker.power + enhance > 0)
+    log(ctx, `Degrade takes off ${attacker.power + enhance - amount}.`);
+  if (amount <= 0) return;
+  if (enhance) log(ctx, `Enhance adds ${enhance}.`);
   applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`);
 }
 
-/** An ability's damage (17.6, step 1): power plus Enhance, at least 0. */
+/** An ability's damage (17.6, step 1): power plus Enhance, minus Degrade, at least 0. */
 export function damageOf(attacker: Unit, enhance = attacker.enhance ?? 0): number {
-  return Math.max(0, attacker.power + enhance);
+  return Math.max(0, attacker.power + enhance - (attacker.degrade ?? 0));
 }
 
 /**
@@ -96,11 +99,23 @@ export function enhance(ctx: Ctx, u: Unit, amount: number): void {
   log(ctx, `${unitName(u)} is Enhanced ${amount}.`);
 }
 
-/** At the end of a unit's turn: an Enhance whose turn this was ends. */
+/** Degrades `u` by `amount` until the end of its next turn, replacing any Degrade it had. */
+export function degrade(ctx: Ctx, u: Unit, amount: number): void {
+  u.degrade = amount;
+  delete u.degradeStarted;
+  log(ctx, `${unitName(u)} is Degraded ${amount}.`);
+}
+
+/** At the end of a unit's turn: an Enhance or Degrade whose turn this was ends. */
 export function endTurnEffects(unit: Unit): void {
-  if (!unit.enhanceStarted) return;
-  delete unit.enhance;
-  delete unit.enhanceStarted;
+  if (unit.enhanceStarted) {
+    delete unit.enhance;
+    delete unit.enhanceStarted;
+  }
+  if (unit.degradeStarted) {
+    delete unit.degrade;
+    delete unit.degradeStarted;
+  }
 }
 
 /**
@@ -259,8 +274,12 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
   for (const u of ctx.state.units) {
     if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
-    const amount =
-      ABILITY.grapple.squeeze + (ABILITY.grapple.enhancedSqueeze ? (champion.enhance ?? 0) : 0);
+    const amount = Math.max(
+      0,
+      ABILITY.grapple.squeeze +
+        (ABILITY.grapple.enhancedSqueeze ? (champion.enhance ?? 0) : 0) -
+        (champion.degrade ?? 0)
+    );
     applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`);
   }
 }

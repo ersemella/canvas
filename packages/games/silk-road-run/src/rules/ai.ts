@@ -44,10 +44,12 @@ function turnValue(u: Unit): number {
   return u.hero === CAMEL ? AI.perCamelHex : Math.max(1, u.power);
 }
 
-/** A unit whose attack reaches beyond its neighbours (Longshot, Hail, Gale, Volley). */
+/** A unit whose attack reaches beyond its neighbours (Longshot, Hail, Gale, Volley, Cleave). */
 function attacksFromAfar(u: Unit): boolean {
   const kit = kitOf(u);
-  return isRanged(u) || ['hail', 'gale', 'volley'].some((a) => kit.includes(a as AbilityId));
+  return (
+    isRanged(u) || ['hail', 'gale', 'volley', 'cleave'].some((a) => kit.includes(a as AbilityId))
+  );
 }
 
 /**
@@ -56,7 +58,7 @@ function attacksFromAfar(u: Unit): boolean {
  * walks), less what an Enhance gains it.
  */
 function statusPoints(state: FightState, u: Unit): number {
-  return statusCost(u) - enhanceGain(state, u) - rescueGain(state, u);
+  return statusCost(u) + degradeLoss(state, u) - enhanceGain(state, u) - rescueGain(state, u);
 }
 
 /**
@@ -106,6 +108,23 @@ function enhanceGain(state: FightState, u: Unit): number {
 }
 
 /**
+ * What a Degrade costs `u` (the Alchemist's Elixir), as `enhanceGain` is
+ * an Enhance's worth: the damage it takes off `u`'s next hit, if an enemy
+ * is within reach, plus a kill's worth if that hit would kill only without
+ * it, all times `AI.enhancedShare`. Once its turn has begun it no longer
+ * counts.
+ */
+function degradeLoss(state: FightState, u: Unit): number {
+  if (!u.degrade || u.degradeStarted || u.power <= 0) return 0;
+  const targets = strikable(state, u);
+  if (targets.length === 0) return 0;
+  const full = u.power + (u.enhance ?? 0);
+  const left = damageOf(u);
+  const kill = targets.some((t) => t.hero !== CAMEL && t.hp > left && t.hp <= full);
+  return AI.enhancedShare * (full - left + (kill ? AI.kill : 0));
+}
+
+/**
  * The enemies standing where `u` could hit them from where it is, roughly:
  * next to it for melee, on hail's ring for the Storm Caller, on one of
  * Longshot's lines, or of Skirmish's from a space next to it (ignoring what
@@ -123,7 +142,9 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (has('gale') && d <= ABILITY.gale.range + 1) return true;
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
-    if (has('longshot') && (dq === 0 || dr === 0 || dq === -dr)) return true;
+    const inLine = dq === 0 || dr === 0 || dq === -dr;
+    if (has('longshot') && inLine) return true;
+    if (has('cleave') && inLine && d <= ABILITY.cleave.reach) return true;
     // Skirmish: a line from a space next to it (one step off a line).
     return has('skirmish') && Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) <= 1;
   });
@@ -288,9 +309,15 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // What catching a unit in Gale is worth, by its side.
   const sided = (u: Unit, value: number) =>
     hostile(u, unit) ? value : -value * AI.friendlyDamageFactor;
-  if (ability === 'gale') {
+  const caughtBy =
+    ability === 'gale'
+      ? hexNeighbors(target!.hex!)
+      : ability === 'cleave'
+        ? ABILITIES.cleave.area!(mapOf(state), unit.hex!, target!.hex!)
+        : undefined;
+  if (caughtBy) {
     let value = -1;
-    for (const h of hexNeighbors(target!.hex!)) {
+    for (const h of caughtBy) {
       const u = unitAt(state, h);
       if (!u) continue;
       const damage = Math.min(damageOf(unit), u.hp);
@@ -308,8 +335,15 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   if (!hit) return closing - 1;
   // Sunlight: an Enhance, for a side's own unit that could hit with it.
   if (input.action.ability === 'sunlight') {
-    const gain = hit.power > 0 && !hit.enhance ? 1 + enhanceGuess(state, hit) : 0;
+    const gain =
+      hit.power > 0 && !hit.enhance ? 1 + enhanceGuess(state, hit, ABILITY.sunlight.enhance) : 0;
     return closing + (hostile(hit, unit) ? -gain : gain);
+  }
+  // Elixir: an Enhance on an ally, a Degrade on an enemy, both by the Alchemist's power.
+  if (input.action.ability === 'elixir') {
+    if (!hostile(hit, unit))
+      return closing + (hit.enhance ? 0 : 1 + enhanceGuess(state, hit, unit.power));
+    return closing + (hit.degrade ? 0 : 1 + degradeGuess(state, hit, unit.power));
   }
   const damage = def.damages === false ? 0 : Math.min(damageOf(unit), hit.hp);
   let value = damage * (hit.hero === CAMEL ? AI.camelHealthWeight : 1);
@@ -332,13 +366,23 @@ function endsElsewhere(ability: AbilityId): boolean {
   return ability === 'skirmish' || ability === 'feignedRetreat';
 }
 
-/** What Sunlight's Enhance on `u` might be worth (`enhanceGain`, before it has an Enhance). */
-function enhanceGuess(state: FightState, u: Unit): number {
+/** What an Enhance of `amount` on `u` might be worth (`enhanceGain`, before it has an Enhance). */
+function enhanceGuess(state: FightState, u: Unit, amount: number): number {
   const targets = strikable(state, u);
   if (targets.length === 0) return 0;
-  const reach = u.power + ABILITY.sunlight.enhance;
+  const reach = u.power + amount;
   const kill = targets.some((t) => t.hero !== CAMEL && t.hp > u.power && t.hp <= reach);
-  return AI.enhancedShare * (ABILITY.sunlight.enhance + (kill ? AI.kill : 0));
+  return AI.enhancedShare * (amount + (kill ? AI.kill : 0));
+}
+
+/** What a Degrade of `amount` on `u` might be worth (`degradeLoss`, before it has a Degrade). */
+function degradeGuess(state: FightState, u: Unit, amount: number): number {
+  const targets = strikable(state, u);
+  if (targets.length === 0) return 0;
+  const full = damageOf(u);
+  const left = Math.max(0, full - amount);
+  const kill = targets.some((t) => t.hero !== CAMEL && t.hp > left && t.hp <= full);
+  return AI.enhancedShare * (full - left + (kill ? AI.kill : 0));
 }
 
 /**

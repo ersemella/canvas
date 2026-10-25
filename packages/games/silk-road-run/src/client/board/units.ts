@@ -26,6 +26,8 @@ import camelPortrait from '../sprites/camel-portrait.png';
 import camelSprite from '../sprites/camel.png';
 import mangudaiSprite from '../sprites/mangudai.png';
 import mangudaiPortrait from '../sprites/mangudai-portrait.png';
+import modaoPortrait from '../sprites/modao-portrait.png';
+import modaoSprite from '../sprites/modao.png';
 import stormPortrait from '../sprites/storm-portrait.png';
 import stormSprite from '../sprites/storm.png';
 import wolfPortrait from '../sprites/wolf-portrait.png';
@@ -48,6 +50,7 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
   storm: stormSprite,
+  modao: modaoSprite,
   camel: camelSprite,
   wolf: wolfSprite,
 };
@@ -56,6 +59,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   bokh: {src: bokhPortrait, faceX: 17},
   mangudai: {src: mangudaiPortrait, faceX: 18},
   storm: {src: stormPortrait, faceX: 19},
+  modao: {src: modaoPortrait, faceX: 18},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
 };
@@ -343,12 +347,16 @@ export const STATUS_KINDS = Object.keys(STATUS_MARK) as StatusKind[];
 /** Enhance's marker: not a status kind, a number on the unit (`Unit.enhance`). */
 export const ENHANCE_MARK: [string, string] = ['E', PALETTE.jade];
 
-/** A unit's status markers: I(mmobilized), S(tunned), E(nhanced). */
+/** Degrade's marker, like Enhance's (`Unit.degrade`). */
+export const DEGRADE_MARK: [string, string] = ['D', PALETTE.madderLight];
+
+/** A unit's status markers: I(mmobilized), S(tunned), E(nhanced), D(egraded). */
 export function statusMarks(u: Unit): [string, string][] {
   const marks = STATUS_KINDS.filter((kind) => u.statuses.some((s) => s.kind === kind)).map(
     (kind) => STATUS_MARK[kind]
   );
   if (u.enhance) marks.push(ENHANCE_MARK);
+  if (u.degrade) marks.push(DEGRADE_MARK);
   return marks;
 }
 

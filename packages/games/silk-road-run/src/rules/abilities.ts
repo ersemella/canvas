@@ -1,5 +1,6 @@
 /**
- * The three prototype heroes' abilities (roster.md; owner, 2026-10-23) and
+ * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
+ * the Modao Vanguard's and the Waidan Alchemist's (owner, 2026-10-25), and
  * the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
@@ -20,6 +21,7 @@ import {
 } from './board';
 import {
   clearHail,
+  degrade,
   displace,
   endGrapples,
   enhance,
@@ -62,6 +64,12 @@ export interface AbilityDef {
    * stands. None for the rest.
    */
   radius?: number;
+  /**
+   * The spaces it covers, for an ability whose area runs from its user
+   * rather than around its target (Cleave's line): the page and the
+   * playback light these up in place of `radius`'s.
+   */
+  area?(map: MapData, from: Hex, target: Hex): Hex[];
   /** One line for the side panel, with its damage (the user's power). Range is left out. */
   summary(user: Unit): string;
   /**
@@ -533,6 +541,78 @@ const volley: AbilityDef = {
   },
 };
 
+// ─── Modao Vanguard ──────────────────────────────────────────────────────────
+
+/**
+ * Cleave's line from `from` along hex direction `dir`: up to
+ * `ABILITY.cleave.reach` spaces, stopped by yurts and the map's edge (not
+ * by units: the long blade cuts through the first into the one behind).
+ */
+export function cleaveLine(map: MapData, from: Hex, dir: number): Hex[] {
+  return laneFrom(map, from, dir).slice(0, ABILITY.cleave.reach);
+}
+
+/**
+ * Cleave (owner, 2026-10-25): a line of 2 spaces out from the Vanguard;
+ * each unit in it, ally or enemy, takes the Vanguard's power. Aimed at the
+ * line's first space, which may be empty when a unit stands in the second.
+ */
+const cleave: AbilityDef = {
+  id: 'cleave',
+  name: 'Cleave',
+  kind: 'attack',
+  summary: () =>
+    `A line of ${ABILITY.cleave.reach} spaces out from you: hits every unit in it, allies included.`,
+  area: (map, from, target) => cleaveLine(map, from, directionTo(from, target)),
+  targets(state, map, user, from) {
+    const out: ActionTarget[] = [];
+    for (const dir of DIRECTIONS) {
+      const line = cleaveLine(map, from, dir);
+      if (line.some((h) => unitAt(state, h) && unitAt(state, h) !== user))
+        out.push({hex: line[0]!});
+    }
+    return out;
+  },
+  resolve(ctx, user, target) {
+    const line = cleaveLine(ctx.map, user.hex!, directionTo(user.hex!, target.hex!));
+    log(ctx, `${unitName(user)} cleaves.`);
+    // Who stands in the line as it swings: a kill doesn't let the blade reach further.
+    const caught = line.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
+    for (const u of caught) hit(ctx, user, u, 'The cleave');
+  },
+};
+
+// ─── Waidan Alchemist ────────────────────────────────────────────────────────
+
+/**
+ * Elixir (owner, 2026-10-25): a unit within `ABILITY.elixir.range` that
+ * hits (not Temee), not the Alchemist itself, with no line of fire. An
+ * ally is Enhanced, an enemy Degraded, by the Alchemist's power, until the
+ * end of its next turn, replacing any it had. No damage.
+ */
+const elixir: AbilityDef = {
+  id: 'elixir',
+  name: 'Elixir',
+  kind: 'support',
+  damages: false,
+  range: ABILITY.elixir.range,
+  summary: (user) =>
+    `A unit within ${ABILITY.elixir.range}: an ally is Enhanced ${user.power}, an enemy Degraded ${user.power}, until the end of its next turn.`,
+  targetsUnit: true,
+  targets(state, map, user, from) {
+    return spacesWithin(map, from, ABILITY.elixir.range)
+      .map((h) => unitAt(state, h))
+      .filter((u): u is Unit => u !== undefined && u !== user && u.power > 0)
+      .map((u) => ({hex: u.hex!}));
+  },
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
+    if (u.side === user.side) enhance(ctx, u, user.power);
+    else degrade(ctx, u, user.power);
+  },
+};
+
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 
 const bite: AbilityDef = {
@@ -557,6 +637,8 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   sunlight,
   grapple,
   bite,
+  cleave,
+  elixir,
   shove,
   haul,
   feignedRetreat,

@@ -8,10 +8,11 @@ import type {Tile} from './map';
 
 export type Side = 'player' | 'enemy';
 /**
- * The three prototype heroes, the caravan's camel (camel.md), a unit that
- * isn't a hero, and the wolf, an enemy NPC.
+ * The three prototype heroes, the Modao Vanguard and the Waidan Alchemist
+ * (owner, 2026-10-25), the caravan's camel (camel.md), a unit that isn't a
+ * hero, and the wolf, an enemy NPC.
  */
-export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
+export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'modao' | 'alchemist' | 'camel' | 'wolf';
 export type AbilityId =
   | 'hold'
   | 'longshot'
@@ -20,6 +21,8 @@ export type AbilityId =
   | 'sunlight'
   | 'grapple'
   | 'bite'
+  | 'cleave'
+  | 'elixir'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
@@ -97,6 +100,14 @@ export interface Unit {
   enhance?: number;
   /** Its turn has begun since it was Enhanced, so the Enhance ends with that turn. */
   enhanceStarted?: boolean;
+  /**
+   * Degrade (keywords.md, 17.6): its abilities deal this much less, to at
+   * least 0, until the end of its next turn (the Waidan Alchemist's
+   * Elixir). Absent when it has none.
+   */
+  degrade?: number;
+  /** Its turn has begun since it was Degraded, so the Degrade ends with that turn. */
+  degradeStarted?: boolean;
   /**
    * Its last turn was skipped (it could only Hold): its card shows it until
    * it next acts.

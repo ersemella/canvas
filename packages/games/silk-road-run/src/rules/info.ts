@@ -83,6 +83,7 @@ export type KeywordId =
   | 'immobilized'
   | 'stunned'
   | 'enhanced'
+  | 'degraded'
   | 'move'
   | 'push'
   | 'pull';
@@ -106,6 +107,11 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   enhanced: {
     name: 'Enhanced',
     detail: 'Its abilities deal that much more damage until the end of its next turn.',
+  },
+  degraded: {
+    name: 'Degraded',
+    detail:
+      'Its abilities deal that much less damage, to at least 0, until the end of its next turn.',
   },
   move: {name: 'Move', detail: 'Put on another space by others, not walking.'},
   push: {

@@ -120,6 +120,16 @@ Shove), with their code. They were built on action costs and the old
 numbers; their designs are in git history and [history.md](history.md),
 and the Modao Vanguard stays in the roster above as a hero to build again.
 
+**Built 2026-10-25 (owner): the Modao Vanguard and the Waidan Alchemist**,
+in the roster with the prototype heroes (`ROSTER` in config.ts), with the
+builder's first numbers, untested; neither is measured yet (principle 12
+in [balance.md](balance.md)).
+
+| Hero | Speed | Defence | Power | Health | Ability | Effect |
+|---|---|---|---|---|---|---|
+| Modao Vanguard | 1 | 3 | 2 | 8 | Cleave | A line of 2 spaces out from the Vanguard, stopped by ruins but not by units: each unit in it, ally or enemy, takes the Vanguard's power. No Push: it would undo the Vanguard's job, and in a full line the first unit is blocked by the second. The sprite and portrait are the first kit's (2026-10-22). |
+| Waidan Alchemist | 2 | 1 | 2 | 4 | Elixir | A unit within 2 that hits, not the Alchemist itself, no line of fire: an ally is **Enhanced**, an enemy **Degraded**, by the Alchemist's power, until the end of its next turn, a new one replacing the last. No damage. An exception to "no stat scales a keyword" ([keywords.md](keywords.md), 17.2), the owner's call; and an ability whose effect depends on whose unit it lands on, against [map.md](map.md) 6.7. A placeholder disc until it has art. |
+
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
 - A mount is reflected only in the hero's **base stats**: a horse raises speed; the Persian Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed.

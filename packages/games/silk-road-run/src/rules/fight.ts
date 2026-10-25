@@ -229,8 +229,9 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     record(state, {kind: 'turn', unitId: unit.id});
     // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25).
     ageHail(state, unit);
-    // An Enhance lasts until the end of this turn.
+    // An Enhance or Degrade lasts until the end of this turn.
     if (unit.enhance) unit.enhanceStarted = true;
+    if (unit.degrade) unit.degradeStarted = true;
     squeezeGrapples(ctx, unit);
     // The squeeze can end the fight.
     if (state.phase !== 'fight') return;

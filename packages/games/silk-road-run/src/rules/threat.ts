@@ -73,6 +73,15 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       }
     };
     if (has('longshot')) lanes(fq, fr, power);
+    // Cleave: a line of its reach, through units, stopped by yurts.
+    if (has('cleave'))
+      for (const [dq, dr] of AXIAL)
+        for (let i = 1; i <= ABILITY.cleave.reach; i++) {
+          const k = id(fq + dq * i, fr + dr * i);
+          const tile = board.get(k);
+          if (tile === undefined || blocks(tile)) break;
+          mark(hexes, k, power);
+        }
     // Volley (an experiment): any space within its range, at the dodge share.
     if (has('volley')) {
       const range = ABILITY.volley.range;

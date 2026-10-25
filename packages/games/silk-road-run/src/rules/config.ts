@@ -128,6 +128,34 @@ export const HEROES: Record<HeroId, HeroStats> = {
     upgrades: ['sunlight', 'gale'],
   },
   /**
+   * The Modao Vanguard (owner, 2026-10-25; roster.md): a slow tank with
+   * reach. Its first kit (2026-10-22) was removed with action costs on
+   * 2026-10-23 (history.md). Speed 1, defence 3 (health 8) and power 2 are
+   * the builder's first numbers, untested.
+   */
+  modao: {
+    name: 'Modao Vanguard',
+    letter: 'V',
+    speed: 1,
+    defence: 3,
+    power: 2,
+    abilities: ['cleave', 'hold'],
+  },
+  /**
+   * The Waidan Alchemist (owner, 2026-10-25; roster.md): a support whose
+   * Elixir Enhances an ally or Degrades an enemy by its power, and deals
+   * no damage. Speed 2, defence 1 (health 4) and power 2 are the
+   * builder's first numbers, untested; no art yet, so a lettered disc.
+   */
+  alchemist: {
+    name: 'Waidan Alchemist',
+    letter: 'A',
+    speed: 2,
+    defence: 1,
+    power: 2,
+    abilities: ['elixir', 'hold'],
+  },
+  /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
@@ -211,6 +239,21 @@ export const ABILITY = {
     enhancedSqueeze: true,
   },
   /**
+   * Cleave (owner, 2026-10-25): the Modao Vanguard's line of `reach`
+   * spaces out from it along one of the six directions, stopped by yurts;
+   * each unit in it, ally or enemy, takes the Vanguard's power.
+   */
+  cleave: {reach: 2},
+  /**
+   * Elixir (owner, 2026-10-25): a unit within `range` that hits, not the
+   * Alchemist itself, no line of fire. An ally is Enhanced, an enemy
+   * Degraded, by the Alchemist's power, until the end of its next turn, a
+   * new one replacing the last. No damage. The amount from power is an
+   * exception to keywords.md 17.2 ("no stat scales a keyword"), the
+   * owner's call.
+   */
+  elixir: {range: 2},
+  /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
    * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
@@ -257,9 +300,13 @@ export const AI = {
   threatFactor: 1,
   /**
    * Per hero, how much the threat counts. The Bökh Champion's is 0: a
-   * tank's job is to take hits, and at 1 it held back out of reach.
+   * tank's job is to take hits, and at 1 it held back out of reach; the
+   * Modao Vanguard's too, for the same reason (untested).
    */
-  caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0, wolf: 1} as Record<HeroId, number>,
+  caution: {bokh: 0, mangudai: 1, storm: 1, modao: 0, alchemist: 1, camel: 0, wolf: 1} as Record<
+    HeroId,
+    number
+  >,
   friendlyDamageFactor: 1.5,
   /**
    * A charged shot in the air on a unit that acts before it lands and can
@@ -328,7 +375,7 @@ export const AI = {
  */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /** Every hero the start menu offers and the enemy draws from, in party slot order. */
-export const ROSTER: HeroId[] = [...PARTY];
+export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist'];
 /**
  * A run's stages, in order (owner, 2026-10-24; for a while four, from three
  * wolves): how many of the heroes (ROSTER) and how many wolves the

@@ -27,6 +27,10 @@ squeeze, owner, 2026-10-23). **Push** and **Pull** (2026-10-24), for the
 upgrades Shove, Gale and Haul ([roster.md](roster.md)): no collision
 damage when stopped early (question 55 open). Haste was built for the
 Tailwind experiment and removed with it (2026-10-24; [history.md](history.md)).
+**Degrade** (2026-10-25), for the Waidan Alchemist's Elixir, lasting as
+Enhance does; with Enhance it nets out, and it reduces a Champion's
+squeeze too. Elixir's Enhance and Degrade equal the Alchemist's power,
+an exception to 17.2 (owner, 2026-10-25).
 The others are defined here and built when an ability uses them.
 
 ## 17. Keywords and Effects

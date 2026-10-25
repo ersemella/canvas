@@ -15,6 +15,10 @@ const LORE: Partial<Record<HeroId, string>> = {
     'A Mongol horse archer from the vanguard of the Mongol army. The Outrider strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
   storm:
     'A Turkic weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail that holds whoever it catches fast, though storms never choose sides.',
+  modao:
+    'An armoured spearhead of the Tang army, wielding the modao, a long two-handed blade. The Vanguard is slow, but its blade cuts through the first foe into the one behind.',
+  alchemist:
+    'A Tang master of waidan, the art of elixirs brewed from minerals in sealed crucibles. The Alchemist strengthens allies with a remedy and weakens enemies with a poison.',
 };
 
 /**

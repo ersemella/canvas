@@ -42,7 +42,7 @@ import {
 } from './fight';
 import {previewTurn} from './preview';
 import {SALT_FLATS, blocks, depth, onMap, spaceAt, spaceOf, tileAt} from './map';
-import {checkEnd, enhance, enterHex, hit, kill, stun} from './resolve';
+import {checkEnd, damageOf, degrade, enhance, enterHex, hit, kill, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {
   RUN_FORMAT,
@@ -1246,6 +1246,92 @@ describe('abilities', () => {
   });
 });
 
+describe('the Modao Vanguard and the Waidan Alchemist', () => {
+  const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
+
+  it('Cleave hits every unit in a line of 2, allies included, and nothing past it', () => {
+    const s = setup(
+      {'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'p-alchemist': at(3, 3), 'e-modao': at(4, 3)},
+      party
+    );
+    const modao = unit(s, 'p-modao');
+    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
+    expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - modao.power);
+    expect(unit(s, 'p-alchemist').hp).toBe(unit(s, 'p-alchemist').maxHp - modao.power);
+    expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp);
+  });
+
+  it('Cleave is aimed at its line’s first space, even when only the second holds a unit', () => {
+    const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(3, 3)}, party);
+    const modao = unit(s, 'p-modao');
+    const targets = ABILITIES.cleave.targets(s, mapOf(s), modao, modao.hex!);
+    expect(targets).toEqual([{hex: at(2, 3)}]);
+    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
+    expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - modao.power);
+  });
+
+  it('Elixir Enhances an ally and Degrades an enemy by the Alchemist’s power, dealing no damage', () => {
+    const s = setup(
+      {
+        'p-alchemist': at(1, 3),
+        'e-mangudai': at(2, 3),
+        'p-mangudai': at(3, 3),
+        'e-modao': at(8, 6),
+      },
+      party
+    );
+    const alchemist = unit(s, 'p-alchemist');
+    const targets = ABILITIES.elixir.targets(s, mapOf(s), alchemist, alchemist.hex!);
+    expect(targets.some((t) => hexEquals(t.hex!, alchemist.hex!))).toBe(false);
+    for (const [hex, id, key] of [
+      [at(3, 3), 'p-mangudai', 'enhance'],
+      [at(2, 3), 'e-mangudai', 'degrade'],
+    ] as const) {
+      const c = cloneFight(s);
+      applyTurn(c, unit(c, 'p-alchemist'), {action: {ability: 'elixir', target: {hex}}});
+      expect(unit(c, id)[key]).toBe(alchemist.power);
+      expect(unit(c, id).hp).toBe(unit(c, id).maxHp);
+    }
+  });
+
+  it('Degrade takes off a hit until the end of the unit’s next turn, then ends', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
+    s.units.forEach((u) => (u.controller = 'human'));
+    const m = unit(s, 'p-mangudai');
+    degrade({state: s, map: mapOf(s), slot: 0}, m, 1);
+    m.slot = 1;
+    expect(advanceToDecision(s)!.id).toBe('p-mangudai');
+    applyTurn(s, m, {action: {ability: 'longshot', target: {hex: at(4, 3)}}});
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - (m.power - 1));
+    expect(m.degrade).toBeUndefined();
+  });
+
+  it('a Degrade as large as the hit takes it all, and Enhance and Degrade net out', () => {
+    const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3)});
+    const m = unit(s, 'p-mangudai');
+    const target = unit(s, 'e-bokh');
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
+    degrade(ctx, m, m.power + 1);
+    hit(ctx, m, target, 'The test');
+    expect(target.hp).toBe(target.maxHp);
+    enhance(ctx, m, 2);
+    degrade(ctx, m, 1);
+    expect(damageOf(m)).toBe(m.power + 1);
+  });
+
+  it('plays a whole fight with both to an end, AI against AI, using Cleave and Elixir', () => {
+    let run = createRun(0, {party});
+    const used = new Set<string>();
+    for (let turns = 0; turns < 300 && run.fight.phase === 'fight'; turns++) {
+      run = request(run);
+      for (const e of run.fight.events ?? []) if (e.kind === 'action') used.add(e.ability);
+    }
+    expect(['won', 'lost']).toContain(run.fight.phase);
+    expect(used.has('cleave')).toBe(true);
+    expect(used.has('elixir')).toBe(true);
+  });
+});
+
 describe('the caravan’s camel', () => {
   it('acts last in the starting order, at slot 12, despite its speed', () => {
     for (let seed = 0; seed < 10; seed++) {
@@ -1687,9 +1773,10 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a party must be one to three different heroes of the roster', () => {
-    expect(ROSTER).toEqual(PARTY);
+    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist']);
+    expect(() => createRun(5, {party: ['modao', 'alchemist']})).not.toThrow();
     for (const party of [
-      ['modao', 'storm'],
+      ['modao', 'alchemist', 'storm', 'bokh'],
       ['bokh', 'mangudai', 'storm', 'wolf'],
       [],
       ['bokh', 'bokh'],

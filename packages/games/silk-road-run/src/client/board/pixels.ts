@@ -27,6 +27,8 @@ export const HERO_COLOR = {
   mangudai: '#15803d',
   storm: '#4f46e5',
   modao: '#9f1239',
+  // A placeholder until the Alchemist has art: its disc's colour.
+  alchemist: '#0f766e',
   camel: '#a8742f',
   wolf: '#6b7280',
 };

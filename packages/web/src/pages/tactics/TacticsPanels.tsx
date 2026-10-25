@@ -289,6 +289,12 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
       label: `Enhanced ${unit.enhance}`,
       rest: unit.enhanceStarted ? 'until the end of this turn' : 'until the end of its next turn',
     });
+  if (unit.degrade)
+    out.push({
+      id: 'degraded',
+      label: `Degraded ${unit.degrade}`,
+      rest: unit.degradeStarted ? 'until the end of this turn' : 'until the end of its next turn',
+    });
   return out;
 }
 

@@ -218,9 +218,13 @@ export function buildScene(input: SceneInput): BoardScene {
       if (second && landing) out.step = [def.walksAfter && from ? from : target.hex!, landing];
     }
     if (target?.hex) {
-      // An area ability: highlight the area around the chosen hex (none since Hail covers one space).
+      // An area ability: highlight the area around the chosen hex (none since Hail covers one space),
+      // or the one running out from the user (Cleave's line).
       const radius = ABILITIES[ability].radius;
-      if (radius) {
+      if (def.area && from) {
+        for (const h of def.area(mapOf(fight), from, target.hex))
+          if (!hexEquals(h, target.hex)) highlights.push({hex: h, kind: 'area'});
+      } else if (radius) {
         const map = mapOf(fight);
         for (const h of hexesInRange(target.hex, radius))
           if (hexDistance(h, target.hex) <= radius && onMap(map, h))
