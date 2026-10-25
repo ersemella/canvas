@@ -15,7 +15,7 @@ tuning. Section numbers are the combat design's.
 ### 3.1 Summary (Decided)
 Combat runs on a **track** of numbered **slots**. Every unit, and every track entity (3.7), has a card in one slot. The track advances slot by slot; when it reaches a card, that unit or entity takes its turn. After acting, a unit's card is placed further along the track.
 
-**Every action costs `60 ÷ (speed + 5)` slots, rounded (owner, 2026-10-23, replacing `12 − 2 × speed` the same day).** After any turn a unit's card goes that many slots on, Temee's included: speed 3 costs 8, speed 2 costs 9, speed 1 costs 10, and Temee, speed 0, always 12. Each point of speed adds a fifth of Temee's turn rate, so speed 10 (cost 4) acts 3× as often as Temee. What a unit does on its turn (an ability, a move, a Hold) doesn't change the cost, so a faster unit simply acts more often. Temee's card is placed like any other; its walk toward the exit is still the fight's clock ([camel.md](camel.md)).
+**Every action costs `60 ÷ (speed + 5)` slots, rounded (owner, 2026-10-23, replacing `12 − 2 × speed` the same day).** After any turn a unit's card goes that many slots on, Temee's included: speed 3 costs 8, speed 2 costs 9, speed 1 costs 10, and Temee, speed 0, always 12. Each point of speed adds a fifth of Temee's turn rate, so speed 10 (cost 4) acts 3× as often as Temee. What a unit does on its turn (an ability or a move) doesn't change the cost, so a faster unit simply acts more often. Temee's card is placed like any other; its walk toward the exit is still the fight's clock ([camel.md](camel.md)).
 
 This model keeps the visible card track of Mana Khemia and Final Fantasy X. Earlier on 2026-10-23 the track was paced by Temee, with every unit acting once in each of its rounds; before that, every action had its own cost ([history.md](history.md)).
 
@@ -24,7 +24,7 @@ After a unit's turn, its card goes to:
 ```
 slot = current slot + round(actionBase × speedPivot ÷ (speed + speedPivot))      (actionBase = 12, speedPivot = 5)
 ```
-- The same for every turn: an ability, a move, a Hold, or a skipped turn (Stunned, or nothing to do but Hold).
+- The same for every turn: an ability, a move, or a skipped turn (Stunned, or nothing to do).
 - **Temee's card** follows the same rule, whether it stepped or waited: speed 0 (owner, 2026-10-23), so always 12 slots.
 - Speed runs 1 to 3 for the heroes (9.1), so costs run 8 to 10; up to speed 10 they run down to 4. A cost is never less than 1 slot. Whole slots bunch the top end: speeds 6, 7 and 8 all cost 5, and 9 and 10 cost 4 (a finer track or a carried fraction would separate them). Collisions go to the faster card (3.3).
 
@@ -85,10 +85,10 @@ Speed is a small whole number (1 to 3 for the prototype heroes, 9.1); each point
 
 ### 5.1 Rules (Decided)
 On its turn, a unit:
-- **must use one action** (an ability or Hold), which ends its turn, or
-- **may walk instead of using an ability:** up to **2 spaces** (owner, 2026-10-24; 3 from 2026-10-22), with allies and enemies blocking the path, and hail stopping it where it enters.
+- **must use one ability**, which ends its turn, or
+- **walk instead of using an ability:** up to **2 spaces** (owner, 2026-10-24; 3 from 2026-10-22), with allies and enemies blocking the path, and hail stopping it where it enters.
 
-Every hero has **Hold**, an action with no effect, so a unit can always end its turn. Walking and an ability cannot share a turn (2026-10-20). Whatever the unit does, its card is placed the same way (3.2).
+**There is no passing** (owner, 2026-10-25): Hold, an action with no effect that every hero had, is gone, and Skip turn with it. A unit that can neither walk nor use an ability on anything offered (Immobilized or boxed in, with no target) has its turn skipped, as a Stunned one does. Walking and an ability cannot share a turn (2026-10-20). Whatever the unit does, its card is placed the same way (3.2).
 
 ### 5.2 No Cooldowns (Decided)
 - Abilities have no cooldowns. An ability can be used on any turn.
@@ -112,7 +112,7 @@ Every hero has **Hold**, an action with no effect, so a unit can always end its 
 | Track entities | Some abilities place independent cards (for example summons); activation costs an action | Only units on the track | Summons and similar effects act on their own timeline and can be manipulated like units |
 | Ultimates (removed 2026-10-23) | None | Unlocked after action cost spent, once per combat (until 2026-10-23) | Owner's call: removed with action costs and the parked kits |
 | Movement | One move per turn, capped by a single global value (3) | Unlimited movement with exponential cost per hex; a cost per hex (until 2026-10-23); a cap based on speed; a per-hero cap modified by gear | A cap prevents strikes across the map; one global value keeps speed from also setting reach, for now |
-| Turns | An action is required to end a turn; every hero has Hold, an action with no effect | Move-only and wait turns with a minimum cost; each hero's cheapest real ability as the fallback | One decision per turn |
+| Turns | A turn walks or uses an ability; with neither possible it is skipped (owner, 2026-10-25) | Hold, an action with no effect (until 2026-10-25); move-only and wait turns with a minimum cost; each hero's cheapest real ability as the fallback | One decision per turn, and no waiting out the other side |
 | Delay limit | Cap on total Delay between a card's own turns (Push limit until 2026-10-23) | Diminishing returns on repeated Delays; a guaranteed turn after a set delay | Simple, previewable, and prevents lockout |
 | Haste | No earlier than the next slot (Pull until 2026-10-23) | Moving a card to any earlier slot | Cannot skip the track; as Final Fantasy Tactics' Quick |
 | Effects over time | Do not occupy slots; each lasts and acts as its source states (Burn at the start of the unit's turns) | Effects as track entries; acting at the beginning of slots (until 2026-10-23) | Keeps the track for cards; each effect stays exact and previewable |

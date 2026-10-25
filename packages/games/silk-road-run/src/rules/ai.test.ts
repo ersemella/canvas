@@ -70,7 +70,7 @@ describe('budgeted tactical search', () => {
     const exhaustive = stats();
     // Longshot alone: a second attack would make the tree too big to search exhaustively.
     const kit = HEROES.mangudai.abilities;
-    HEROES.mangudai.abilities = ['longshot', 'hold'];
+    HEROES.mangudai.abilities = ['longshot'];
     let selected: TurnInput;
     try {
       selected = chooseAiTurn(s, me, {left: AI.maxSimulations}, pruned);
@@ -175,7 +175,7 @@ describe('the search timeline', () => {
     s.awaiting = me.id;
     const detail = stats();
     const input = chooseAiTurn(s, me, {left: AI.maxSimulations}, detail, {depth: 2});
-    expect(input.action.ability).toBe('bite');
+    expect(input.action?.ability).toBe('bite');
     expect(detail.completedDepth).toBe(2);
     expect(detail.value).toBeGreaterThanOrEqual(AI.victory);
   });
@@ -204,7 +204,7 @@ describe('the search timeline', () => {
     expect(hexDistance(closesOn(near), near)).toBeLessThanOrEqual(hexDistance(wolf, near));
   });
 
-  it('goes for the Champion grappling an ally, rather than Holding behind it', () => {
+  it('goes for the Champion grappling an ally, rather than standing behind it', () => {
     const rescue = (from: Hex) => {
       const s = setup(
         {'p-bokh': hex(0, 0), 'p-mangudai': hex(-4, 4), 'e-wolf': hex(1, 0), 'e-wolf-2': from},
@@ -250,8 +250,8 @@ describe('the search timeline', () => {
     const me = unit(s, 'e-storm');
     me.slot = 0;
     const aimed = scoreOptions(s, me)
-      .filter((o) => o.input.action.ability === 'hail')
-      .map((o) => o.input.action.target!.hex!);
+      .filter((o) => o.input.action?.ability === 'hail')
+      .map((o) => o.input.action!.target!.hex!);
     // Hail lands only on its ring, 2 away: the Champion, not the Outrider or itself.
     expect(aimed).toEqual([hex(2, 0)]);
   });

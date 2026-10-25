@@ -15,7 +15,7 @@ describe('the test stage', () => {
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
 
-  it('brings the units listed, with their own stats and abilities and Hold always', () => {
+  it('brings the units listed, with their own stats and abilities', () => {
     const s = createTestFight(7, {
       yurts: 'none',
       player: [{hero: 'mangudai', speed: 5, power: 3, abilities: ['skirmish']}, {hero: 'wolf'}],
@@ -30,11 +30,11 @@ describe('the test stage', () => {
     ]);
     const [archer, wolf, , caller, caller2] = s.units;
     expect(archer).toMatchObject({speed: 5, power: 3, defence: HEROES.mangudai.defence});
-    expect(abilitiesOf(archer!).map((a) => a.id)).toEqual(['skirmish', 'hold']);
+    expect(abilitiesOf(archer!).map((a) => a.id)).toEqual(['skirmish']);
     expect(unusableReason(archer!, ABILITIES.longshot)).not.toBeNull();
     expect(wolf!.controller).toBe('human');
     expect(caller).toMatchObject({defence: 0, maxHp: 2, hp: 2});
-    expect(abilitiesOf(caller!).map((a) => a.id)).toEqual(['sunlight', 'bite', 'hold']);
+    expect(abilitiesOf(caller!).map((a) => a.id)).toEqual(['sunlight', 'bite']);
     expect(abilitiesOf(caller2!).map((a) => a.id)).toEqual(HEROES.storm.abilities);
     expect(Object.keys(s.tiles)).toEqual([]);
   });
@@ -91,16 +91,16 @@ describe('the test stage', () => {
     expect(bad({...ok, player: [{hero: 'bokh', abilities: ['fireball']}]})).toMatch(
       /abilities must be a list of/
     );
-    // At most three besides Hold (owner, 2026-10-24).
+    // At most three (owner, 2026-10-24); a repeat counts once.
     expect(
       bad({...ok, player: [{hero: 'bokh', abilities: ['grapple', 'haul', 'shove', 'skirmish']}]})
     ).toMatch(/abilities can have at most 3/);
     expect(
       parseTestStage({
         ...ok,
-        player: [{hero: 'bokh', abilities: ['grapple', 'haul', 'hold']}],
+        player: [{hero: 'bokh', abilities: ['grapple', 'haul', 'shove', 'haul']}],
       }).player[0]!.loadout!.abilities
-    ).toEqual(['grapple', 'haul', 'hold']);
+    ).toEqual(['grapple', 'haul', 'shove']);
     expect(bad({...ok, player: [{hero: 'bokh', at: space(9, 0)}]})).toMatch(/off the board/);
     expect(
       bad({

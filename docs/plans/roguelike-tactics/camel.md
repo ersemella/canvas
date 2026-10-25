@@ -123,8 +123,8 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 - **Rules:** the camel is a unit of the player's side (`camel` in
   `HEROES`, `src/rules/config.ts`; health 1,500, speed 10, defence 40 and
   a move of 1 hex costing 100 until 2026-10-23; now defence 9, health 20,
-  power 0, speed 0, its card going 12 slots a turn (3.2); only Hold among
-  abilities). It
+  power 0, speed 0, its card going 12 slots a turn (3.2); no abilities,
+  only Hold until 2026-10-25). It
   starts at column 0 of row 4 (0-based), the middle of the player's
   column; the heroes are scattered over the rest. The exits are
   `SALT_FLATS.exits`. `checkEnd` (`resolve.ts`) checks, in order: the camel

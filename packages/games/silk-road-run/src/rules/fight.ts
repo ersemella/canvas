@@ -7,7 +7,7 @@ import {hexEquals} from '@canvas/engine/server';
 import {CAMEL, HEROES, PARTY, healthOf} from './config';
 import {canMove, invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
-import {allowedTargets, onlyHold} from './choices';
+import {allowedTargets, nothingToDo} from './choices';
 import {
   checkEnd,
   clearHail,
@@ -218,9 +218,9 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
       skipTurn(ctx, unit, `${unitName(unit)} is Stunned: turn skipped.`);
       continue;
     }
-    // Nothing to do but Hold: the track goes on without asking.
-    if (onlyHold(state, map, unit)) {
-      skipTurn(ctx, unit, `${unitName(unit)} can only hold: turn skipped.`);
+    // Nothing to do: the track goes on without asking.
+    if (nothingToDo(state, map, unit)) {
+      skipTurn(ctx, unit, `${unitName(unit)} can’t act: turn skipped.`);
       continue;
     }
     delete unit.skipped;
@@ -247,7 +247,7 @@ function landCharge(ctx: Ctx, unit: Unit): void {
   if (unit.alive) placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
 }
 
-/** A turn it can't take, or with only Hold to choose: its card marked as skipped, placed as after any turn. */
+/** A turn it can't take, or with nothing to do: its card marked as skipped, placed as after any turn. */
 function skipTurn(ctx: Ctx, unit: Unit, text: string): void {
   unit.skipped = true;
   log(ctx, text);
@@ -294,23 +294,23 @@ export function applyTurn(
 ): void {
   const map = mapOf(state);
   const ctx: Ctx = {state, map, slot: state.currentSlot};
-  const def = ABILITIES[input.action.ability];
-  if (!def) throw new RuleError('Unknown ability.');
-  const reason = unusableReason(unit, def);
-  if (reason) throw new RuleError(reason);
   const path = input.move ?? [];
-  // Move + Hold encodes a move-only turn without changing the turn protocol.
-  if (path.length > 0 && def.id !== 'hold')
+  if (path.length > 0 && input.action)
     throw new RuleError('Movement and an ability require separate turns.');
+  if (path.length === 0 && !input.action) throw new RuleError('A turn walks or uses an ability.');
+  const def = input.action && ABILITIES[input.action.ability];
+  if (input.action && !def) throw new RuleError('Unknown ability.');
+  const reason = def && unusableReason(unit, def);
+  if (reason) throw new RuleError(reason);
 
-  if (path.length > 0) {
+  if (!def) {
     const bad = invalidPath(state, map, unit, path);
     if (bad) throw new RuleError(bad);
     // A grapple ends only if the walk ends apart (owner, 2026-10-23).
     path.forEach((h, i) => enterHex(ctx, unit, h, 'walk', i < path.length - 1));
     log(ctx, `${unitName(unit)} moves.`);
   } else {
-    const target = input.action.target ?? {};
+    const target = input.action!.target ?? {};
     if (!trustTarget && !allowedTargets(state, map, unit, def).some((t) => sameTarget(t, target)))
       throw new RuleError(`${def.name} can’t target that.`);
     // A step before the ability (Skirmish), a walk of one space.
@@ -334,8 +334,8 @@ export function applyTurn(
     placeCard(
       state,
       unit,
-      aimSlot(state, unit, state.currentSlot, def.id),
-      chargeOf(unit, def.id) > 0
+      aimSlot(state, unit, state.currentSlot, def?.id),
+      def ? chargeOf(unit, def.id) > 0 : false
     );
 }
 

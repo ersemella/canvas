@@ -28,7 +28,7 @@ import type {AbilityId, ActionTarget, FightState, HeroId, RunAction} from './typ
  * removed or reinterpreted): older runs are then ended rather than
  * patched (`runOutdated`), so the rules never handle an old shape.
  */
-export const RUN_FORMAT = 7;
+export const RUN_FORMAT = 8;
 
 export interface RunState {
   /** `RUN_FORMAT` when the run was created; missing in runs from before it existed. */
@@ -157,20 +157,25 @@ export function parseAction(raw: unknown): RunAction {
   if (a.type === 'turn') {
     const action = a.action as
       | {ability?: unknown; target?: {hex?: unknown; to?: unknown}}
+      | null
       | undefined;
-    if (
-      !action ||
-      typeof action.ability !== 'string' ||
-      !Object.hasOwn(ABILITIES, action.ability)
-    ) {
-      throw new RuleError('Unknown ability.');
-    }
-    const out: RunAction = {type: 'turn', action: {ability: action.ability as AbilityId}};
-    if (action.target !== undefined) {
-      const target: ActionTarget = {};
-      if (action.target.hex !== undefined) target.hex = parseHex(action.target.hex);
-      if (action.target.to !== undefined) target.to = parseHex(action.target.to);
-      out.action.target = target;
+    const out: RunAction = {type: 'turn'};
+    // A walk has no action; applyTurn checks a turn has exactly one of the two.
+    if (action !== undefined) {
+      if (
+        !action ||
+        typeof action.ability !== 'string' ||
+        !Object.hasOwn(ABILITIES, action.ability)
+      ) {
+        throw new RuleError('Unknown ability.');
+      }
+      out.action = {ability: action.ability as AbilityId};
+      if (action.target !== undefined) {
+        const target: ActionTarget = {};
+        if (action.target.hex !== undefined) target.hex = parseHex(action.target.hex);
+        if (action.target.to !== undefined) target.to = parseHex(action.target.to);
+        out.action.target = target;
+      }
     }
     if (a.move !== undefined) {
       if (!Array.isArray(a.move) || a.move.length > 10) throw new RuleError('Malformed move.');

@@ -40,7 +40,7 @@ const unit = (s: FightState, id: string): Unit => s.units.find((u) => u.id === i
 /** `id` takes `input`, with `ability` in its kit. */
 function act(s: FightState, id: string, ability: AbilityId, target: ActionTarget) {
   const u = unit(s, id);
-  u.loadout = {abilities: [ability, 'hold']};
+  u.loadout = {abilities: [ability]};
   applyTurn(s, u, {action: {ability, target}});
 }
 

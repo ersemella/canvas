@@ -43,7 +43,6 @@ import {
   HexInspector,
   PALETTE_VARS,
   RunMenu,
-  SkipButton,
   nextTurn,
   StatSheet,
 } from './TacticsPanels';
@@ -52,7 +51,7 @@ import {buildScene} from './boardScene';
 import {useBoardFit} from './useBoardFit';
 import {useDesktopControls} from './useDesktopControls';
 import {useRun} from './useRun';
-import {SKIP, useTurnPlan} from './useTurnPlan';
+import {useTurnPlan} from './useTurnPlan';
 import styles from './TacticsPage.module.css';
 
 /** Under the result: how the fight ended (camel.md, 18.2). */
@@ -74,7 +73,7 @@ function outcomeText(fight: FightState): string {
  * hovering a hex shows what's there; Move, then a hex, plans the move;
  * an ability, then a target, previews that ability instead. Move and abilities
  * are separate actions; once its hex or target is picked, the picked button
- * confirms it. Skip turn ends the turn with Hold. On desktop a click on a
+ * confirms it; there is no skipping a turn. On desktop a click on a
  * reachable hex plans a move without Move, a second click on the hex picked
  * last commits, and keys and a right-click do the rest (phase-1-brief.md).
  */
@@ -410,7 +409,7 @@ export function TacticsPage() {
   // or New run takes Confirm's place, and the section keeps its height so
   // the board doesn't move. Desktop shows Next stage in the Victory message
   // instead.
-  const {needsTarget, skipPreview, slotsLater, outOfReach, toggleMove, chooseAbility} = plan;
+  const {needsTarget, slotsLater, outOfReach, toggleMove, chooseAbility} = plan;
   const nextStageButton = (
     <Button size="lg" className={styles.seal!} fw="bold" loading={busy} onClick={nextStage}>
       Next stage
@@ -454,18 +453,7 @@ export function TacticsPage() {
         // Desktop: the details show the unit's portrait instead.
         onPortrait={phone ? lookAtActing : undefined}
         portraitOpen={lookingAtActing}
-      >
-        <SkipButton
-          // A new turn (or unit) starts it disarmed.
-          key={`${upcoming.id}@${fight.currentSlot}`}
-          fight={fight}
-          preview={skipPreview}
-          busy={busy || playing || !acting}
-          onSkip={() => commit(SKIP)}
-          size={phone ? 'lg' : 'sm'}
-          hotkey={phone ? undefined : 's'}
-        />
-      </TurnControls>
+      />
     )
   );
   // Phones: the details are a tooltip over the board, beside the tapped hex

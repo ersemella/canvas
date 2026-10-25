@@ -4,7 +4,7 @@ import type {RefObject} from 'react';
 /**
  * Desktop keys and the right button. 1–9 press the turn's buttons in order
  * (`[data-choice]` in `actions`, Move first), Enter or Space confirms
- * what's picked, Esc steps back (Skip turn has S). A right-click on the
+ * what's picked, Esc steps back. A right-click on the
  * board steps back too, and never reaches the board as a click. None of it
  * on a phone.
  */

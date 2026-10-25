@@ -44,8 +44,7 @@ export type AbilityKind = 'attack' | 'control' | 'support';
 export interface AbilityDef {
   id: AbilityId;
   name: string;
-  /** None for Hold. */
-  kind?: AbilityKind;
+  kind: AbilityKind;
   /**
    * How far from its user it reaches, for an ability aimed within a range
    * (not Longshot, whose lanes run to the first unit, nor melee); the page
@@ -119,14 +118,6 @@ function hexesWithin(
 function damageText(user: Unit): string {
   return user.power > 0 ? `${user.power} damage` : 'no damage';
 }
-
-const hold: AbilityDef = {
-  id: 'hold',
-  name: 'Hold',
-  summary: () => 'End the turn with no effect.',
-  targets: () => [{}],
-  resolve: (ctx, user) => log(ctx, `${unitName(user)} holds.`),
-};
 
 // ─── Mangudai Outrider ───────────────────────────────────────────────────────
 
@@ -551,7 +542,6 @@ const bite: AbilityDef = {
 };
 
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
-  hold,
   longshot,
   skirmish,
   hail,

@@ -71,8 +71,11 @@ the kits.**
   and every keyword not in the new list ([history.md](history.md)); Shove
   is back as an upgrade (2026-10-24). Hold Loose, Hip Toss, Squall Line,
   Tailwind and Overwatch were measured and removed on 2026-10-24.
-- **At most three abilities** a hero, besides moving and Hold (owner,
+- **At most three abilities** a hero, besides moving (owner,
   2026-10-24; [roster.md](roster.md)).
+- **No Hold, no passing** (owner, 2026-10-25): a turn walks or uses an
+  ability; one with neither possible is skipped
+  ([timeline.md](timeline.md), 5.1).
 - Still pared back from 2026-10-22: the Modao Vanguard out of the
   roster; a move of at most 2 spaces (3 until 2026-10-24); Temee not player
   controlled, walking itself one space a turn from the board's top point

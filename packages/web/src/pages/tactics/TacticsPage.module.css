@@ -339,11 +339,11 @@
 .confirmRow > :first-child {
   flex: 1;
 }
-/* Whose turn it is, before Skip turn (which still takes the rest). */
+/* Whose turn it is, before the menu. */
 .confirmRow > .portrait {
   flex: none;
 }
-/* The art scales as the board's does; Skip turn and the menu centre beside it. */
+/* The art scales as the board's does; the menu centres beside it. */
 .portrait {
   --portrait: 50px;
   all: unset;
@@ -374,6 +374,14 @@
 }
 .confirmRow > .portrait + * {
   flex: 1;
+}
+/* The turn's row: the portrait (phones) and the menu at the ends, neither stretched. */
+.turnRow {
+  justify-content: space-between;
+}
+.turnRow > :first-child,
+.turnRow > .portrait + * {
+  flex: none;
 }
 
 /* A keyword: tappable for its rule (Keywords.tsx). */
@@ -604,33 +612,6 @@
   box-shadow:
     inset var(--px) var(--px) 0 var(--c-lapisPale),
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-lapisDark);
-}
-
-/* Skip turn: a quiet dusk tile, beside the run's menu (on phones, the portrait's 50px tall). */
-.skip.skip {
-  color: var(--c-ivory);
-  border: var(--px) solid var(--c-ink);
-  border-radius: 0;
-  background: var(--c-dusk2);
-  box-shadow:
-    inset var(--px) var(--px) 0 var(--c-dusk3),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
-  clip-path: var(--notch);
-}
-.skip.skip:hover:not(:disabled) {
-  box-shadow:
-    inset var(--px) var(--px) 0 var(--c-dusk4),
-    inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
-}
-/* Armed: one more tap skips the turn, in the warnings' gold. */
-.skip.skipArmed.skipArmed {
-  color: var(--c-goldLight);
-  border-color: var(--c-gold);
-}
-.skip.skip:disabled {
-  color: var(--c-dusk4);
-  background: var(--c-dusk1);
-  box-shadow: none;
 }
 
 /* Confirm: the same tile in your units' lapis (their hexes and cards); while it waits for a target, a flat dusk tile asking for one. */

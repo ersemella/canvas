@@ -43,8 +43,8 @@ The enemy AI runs inside the request, one AI turn a request since
 2026-10-24 (`POST /runs/:id/continue`). It uses selective alpha-beta
 lookahead (2026-10-20): four candidates, two decisions including the root,
 then three if work remains; 220 work units per AI turn (owner,
-2026-10-24; 110 a turn and 220 shared per request before), with Hold
-when exhausted. More CPU now buys strength: on Workers Paid, a deeper
+2026-10-24; 110 a turn and 220 shared per request before), with the
+likeliest-best turn unplayed when exhausted (Hold until 2026-10-25). More CPU now buys strength: on Workers Paid, a deeper
 search (depth 5, narrowing to 4, 3, 2 options) wins 56% against today's,
 but on Free it would put about 1 AI turn in 100 over 10 ms
 ([ai-search.md](ai-search.md), "Looking deeper with narrower

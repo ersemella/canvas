@@ -13,7 +13,6 @@ export type Side = 'player' | 'enemy';
  */
 export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
 export type AbilityId =
-  | 'hold'
   | 'longshot'
   | 'skirmish'
   | 'hail'
@@ -51,7 +50,7 @@ export interface Loadout {
   speed?: number;
   defence?: number;
   power?: number;
-  /** Its abilities, Hold included. */
+  /** Its abilities. */
   abilities?: AbilityId[];
 }
 
@@ -84,7 +83,7 @@ export interface Unit {
   /** Its turn has begun since it was Enhanced, so the Enhance ends with that turn. */
   enhanceStarted?: boolean;
   /**
-   * Its last turn was skipped (it could only Hold): its card shows it until
+   * Its last turn was skipped (it had nothing to do): its card shows it until
    * it next acts.
    */
   skipped?: boolean;
@@ -137,7 +136,7 @@ export type FightEvent =
   | {kind: 'land'; unitId: string; ability: AbilityId; target: Hex}
   | {kind: 'damage'; unitId: string; amount: number}
   | {kind: 'death'; unitId: string; hex: Hex}
-  /** Its turn came up with nothing to do but Hold, so the track went on without it. */
+  /** Its turn came up with nothing to do, so the track went on without it. */
   | {kind: 'skip'; unitId: string};
 
 /** What the board looks like right after an event: enough to draw it, not to play on. */
@@ -193,12 +192,13 @@ export interface TurnAction {
 }
 
 /**
- * One turn: either an ability without walking, or a nonempty walking path
- * encoded with action Hold. Either way the card is placed the same (3.2).
+ * One turn: exactly one of a nonempty walking path or an ability, never
+ * both and never neither (there is no passing). Either way the card is
+ * placed the same (3.2).
  */
 export interface TurnInput {
   move?: Hex[];
-  action: TurnAction;
+  action?: TurnAction;
 }
 
 /** A turn in the fight, or, once a stage short of the last is won, going on to the next stage. */

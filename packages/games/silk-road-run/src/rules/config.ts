@@ -23,7 +23,7 @@ export const RULES = {
   /** Temee's starting slot (3.4), after every other unit's starting card. */
   camelStartSlot: 12,
   /**
-   * The most abilities a unit has besides moving and Hold (owner,
+   * The most abilities a unit has besides moving (owner,
    * 2026-10-24): a hero with this many takes no new one from an upgrade.
    */
   maxAbilities: 3,
@@ -84,7 +84,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 1,
     // Throw folded into Grapple (owner, 2026-10-24), which leaves room for
     // both upgrades.
-    abilities: ['grapple', 'hold'],
+    abilities: ['grapple'],
     // Haul and Shove (owner, 2026-10-24; balance.md, "Second abilities
     // measured"): side without them wins 47.8% and 49.6%.
     upgrades: ['haul', 'shove'],
@@ -95,7 +95,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    abilities: ['longshot', 'hold'],
+    abilities: ['longshot'],
     // Skirmish in place of Volley (owner, 2026-10-23; balance.md), an
     // upgrade since 2026-10-24 (owner). Volley and Feigned Retreat
     // upgrades too (owner, 2026-10-24; balance.md, "Second abilities
@@ -110,7 +110,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
     // couldn't break a grapple.
     power: 1,
-    abilities: ['hail', 'hold'],
+    abilities: ['hail'],
     // Sunlight added (owner, 2026-10-23), as measured: a trap for the AI
     // at Enhance 2 (balance.md); an upgrade since 2026-10-24 (owner). Gale
     // an upgrade too (owner, 2026-10-24; balance.md, "Second abilities
@@ -133,7 +133,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 0,
     defence: 9,
     power: 0,
-    abilities: ['hold'],
+    abilities: [],
     moveCap: 1,
     walksRoad: true,
     actsLast: true,
@@ -149,7 +149,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 1,
     defence: 1,
     power: 1,
-    abilities: ['bite', 'hold'],
+    abilities: ['bite'],
   },
 };
 

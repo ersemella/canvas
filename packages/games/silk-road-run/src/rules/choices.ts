@@ -1,7 +1,7 @@
 /**
  * What a unit may choose on its turn, as the page offers it: the targets
- * shown for each ability, and whether anything but a Hold is left. A turn
- * with nothing left is skipped (`advanceToDecision`).
+ * shown for each ability, and whether anything is left at all. A turn
+ * with nothing left is skipped (`advanceToDecision`); there is no passing.
  */
 import {abilitiesOf, unusableReason} from './abilities';
 import type {AbilityDef} from './abilities';
@@ -46,15 +46,13 @@ export function offeredTargets(
 }
 
 /**
- * Whether Hold is all `unit` can do: it can't move (Immobilized, or boxed
+ * Whether `unit` has nothing to do: it can't move (Immobilized, or boxed
  * in) and no usable ability is offered a target.
  */
-export function onlyHold(state: FightState, map: MapData, unit: Unit): boolean {
+export function nothingToDo(state: FightState, map: MapData, unit: Unit): boolean {
   if (canMove(state, map, unit)) return false;
   return abilitiesOf(unit).every(
     (def) =>
-      def.id === 'hold' ||
-      unusableReason(unit, def) !== null ||
-      offeredTargets(state, map, unit, def).length === 0
+      unusableReason(unit, def) !== null || offeredTargets(state, map, unit, def).length === 0
   );
 }
