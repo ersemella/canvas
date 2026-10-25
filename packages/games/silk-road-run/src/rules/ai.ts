@@ -715,8 +715,9 @@ function huntsTemee(state: FightState, me: Unit): boolean {
 }
 
 /**
- * Spaces from `me` to what it closes in on (for an archer, to a shot: `shotGap`): Temee when it hunts it
- * (`huntsTemee`), otherwise the nearest hostile unit. 0 for the camel,
+ * Spaces from `me` to what it closes in on (for an archer, to a shot:
+ * `shotGap`): Temee when it hunts it (`huntsTemee`), otherwise the nearest
+ * hostile unit. 0 for the camel,
  * which walks to the exit (its progress is weighed apart), or with nothing
  * to close in on.
  */
