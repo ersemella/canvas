@@ -1566,8 +1566,7 @@ Hail's shape, at walk 2:
 - **Walk 3 handed the fight to the first mover** (64.4%): one walk and a
   hit reached almost anything. Walk 2 leaves a middle distance and
   slightly favours the second mover (about 55%).
-- **Removing Hold doesn't end stalls**: the units shuffle instead
-  (Hold was removed on 2026-10-25: "No Hold", below).
+- **Removing Hold doesn't end stalls**: the units shuffle instead.
 - **The ring reads best and measures well**: a shape round the Storm
   Caller, safe next to it and 3 or more away (the Champion's way in);
   first mover near even; Hail still the core (28.8%, in principle 2's
@@ -1578,30 +1577,6 @@ Hail's shape, at walk 2:
 
 **Adopted (owner, 2026-10-24): walks of at most 2, and Hail on a space
 exactly 2 away** (`RULES.movementCap`, `ABILITY.hail` in config.ts).
-
-## No Hold (2026-10-25)
-
-Hold and Skip turn removed (owner; [timeline.md](timeline.md), 5.1): a
-turn walks or uses an ability, and one with neither possible is skipped.
-`current.mjs`, 400 fights each, before and after. The ablation harness
-changed with it: the modified side's kits are now its units' own
-(`loadout`), not the heroes' kits swapped in for its decisions, so the
-other side's search sees them too (it assumed the full kits before), and
-the "no X" rows mix both changes.
-
-| Experiment | With Hold | Without |
-|---|---:|---:|
-| No Longshot (modified side wins) | 13.3% | 17% |
-| No Hail | 27.8% | 27.5% |
-| No Grapple | 10.5% | 15.8% |
-| Party against all three heroes | 75.5% | 79.5% |
-| Party against two Outriders and a wolf | 86.3% | 89.3% |
-| Party against two Champions and a wolf | 72.8% | 72.3% |
-
-- **Little changes**: no stalls either way, fights a little shorter
-  (median 50 actions against all three, from 53), and the party wins a
-  few more of the hardest stages: the enemy loses its waits behind
-  cover. The kits' ranking is unchanged.
 
 ## Principles for re-tuning
 
