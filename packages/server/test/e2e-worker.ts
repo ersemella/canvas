@@ -3,12 +3,12 @@
  * `wrangler dev test/e2e-worker.ts`): the production Worker plus a test-only
  * async game. Production deploys `src/index.ts`, which never imports this.
  */
-import worker, {GameRoom, ManifestRegistry, RunRoom, PlayerLedger} from '../src/index';
+import worker, {GameRoom, ManifestRegistry} from '../src/index';
 import {serverSystemRegistry} from '../src/games/registry';
 import type {ServerSystem} from '../src/types';
 import {asyncTestGame} from './asyncTestGame';
 
 serverSystemRegistry.set(asyncTestGame.systemName, asyncTestGame as ServerSystem);
 
-export {GameRoom, ManifestRegistry, RunRoom, PlayerLedger};
+export {GameRoom, ManifestRegistry};
 export default worker;

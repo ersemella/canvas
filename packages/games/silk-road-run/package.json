@@ -6,16 +6,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./run": "./src/run.ts",
-    "./server": "./src/server.ts",
     "./game.json": "./game.json"
   },
   "typesVersions": {
     "*": {
       "run": [
         "src/run.ts"
-      ],
-      "server": [
-        "src/server.ts"
       ]
     }
   },
@@ -33,8 +29,5 @@
     "vite": "^5.0.0",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^3.2.7"
-  },
-  "canvas": {
-    "serverKind": "run"
   }
 }

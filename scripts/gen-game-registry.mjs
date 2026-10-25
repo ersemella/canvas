@@ -12,9 +12,9 @@
  *   node scripts/gen-game-registry.mjs --check   fail if any of them is stale (CI)
  *
  * A game has server rules when its package.json exports "./server"; that
- * entry default-exports a ServerSystem (a multiplayer GameRoom game), or a
- * RunSystem (a single-player run in a RunRoom) when its package.json says
- * `"canvas": {"serverKind": "run"}`.
+ * entry default-exports a ServerSystem (a multiplayer GameRoom game). A
+ * single-player run's rules (a RunSystem) play in the browser instead, from
+ * the game's own entry for them (docs/plans/client-side-runs.md).
  */
 import {existsSync, readFileSync, writeFileSync} from 'node:fs';
 import {dirname, join, relative, resolve} from 'node:path';
@@ -46,10 +46,7 @@ const games = (Array.isArray(ids) ? ids : []).map((id) => {
   if (pkg.name !== name)
     problems.push(`"${id}": ${pkgPath} is named ${pkg.name}, expected ${name}`);
   const server = Boolean(pkg.exports?.['./server']);
-  const kind = pkg.canvas?.serverKind ?? 'room';
-  if (!['room', 'run'].includes(kind))
-    problems.push(`"${id}": canvas.serverKind must be "room" or "run"`);
-  return {id, name, server, kind};
+  return {id, name, server};
 });
 
 if (problems.length) {
@@ -59,8 +56,6 @@ if (problems.length) {
 }
 
 const serverGames = games.filter((g) => g.server);
-const roomGames = serverGames.filter((g) => g.kind === 'room');
-const runGames = serverGames.filter((g) => g.kind === 'run');
 // `sudoku` -> `sudoku`, `tic-tac-toe` -> `ticTacToe`: a valid identifier per game.
 const ident = (id) => id.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
 const HEADER =
@@ -88,7 +83,7 @@ export const PLATFORM_GAMES: readonly GameDefinition[] = [${games.map((g) => ide
 outputs.set(
   'packages/server/src/games/registry.ts',
   HEADER +
-    `import type {RunSystem, ServerSystem} from '../types';
+    `import type {ServerSystem} from '../types';
 ${serverGames.map((g) => `import ${ident(g.id)} from '${g.name}/server';`).join('\n')}
 
 /**
@@ -96,18 +91,10 @@ ${serverGames.map((g) => `import ${ident(g.id)} from '${g.name}/server';`).join(
  * in platform.games.json whose package exports \`./server\` for a GameRoom.
  */
 export const serverSystemRegistry = new Map<string, ServerSystem>([
-${roomGames.map((g) => `  [${ident(g.id)}.systemName, ${ident(g.id)} as ServerSystem],`).join('\n')}
+${serverGames.map((g) => `  [${ident(g.id)}.systemName, ${ident(g.id)} as ServerSystem],`).join('\n')}
 ]);
 
-/**
- * Map of game id -> RunSystem, for every game whose \`./server\` runs
- * single-player runs in a RunRoom (\`"canvas": {"serverKind": "run"}\`).
- */
-export const runSystemRegistry = new Map<string, RunSystem>([
-${runGames.map((g) => `  ['${g.id}', ${ident(g.id)} as RunSystem],`).join('\n')}
-]);
-
-if (serverSystemRegistry.size !== ${roomGames.length}) {
+if (serverSystemRegistry.size !== ${serverGames.length}) {
   throw new Error('Two games share a ServerSystem systemName');
 }
 `
@@ -180,7 +167,7 @@ if (check) {
     process.exit(1);
   }
   console.log(
-    `✓ game files match platform.games.json (${games.length} games, ${roomGames.length} multiplayer, ${runGames.length} with runs)`
+    `✓ game files match platform.games.json (${games.length} games, ${serverGames.length} multiplayer)`
   );
 } else {
   for (const [path, text] of stale) writeFileSync(join(root, path), text);

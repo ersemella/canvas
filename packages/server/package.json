@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "@canvas/engine": "workspace:*",
-    "@canvas/games-poker": "workspace:*",
-    "@canvas/games-silk-road-run": "workspace:*"
+    "@canvas/games-poker": "workspace:*"
   },
   "devDependencies": {
     "@canvas/configs": "workspace:*",

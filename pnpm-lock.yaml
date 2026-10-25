@@ -131,9 +131,6 @@ importers:
       '@canvas/games-poker':
         specifier: workspace:*
         version: link:../games/poker
-      '@canvas/games-silk-road-run':
-        specifier: workspace:*
-        version: link:../games/silk-road-run
     devDependencies:
       '@canvas/configs':
         specifier: workspace:*
