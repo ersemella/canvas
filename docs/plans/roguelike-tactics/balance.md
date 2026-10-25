@@ -1601,6 +1601,36 @@ starting kits, seeds from 1000, with a `turns` setting patched in:
 **Adopted (owner, 2026-10-25): Hail lasts until its caster's turn after
 next, and hailing again replaces it** (`ABILITY.hail.turns`).
 
+### The Outrider's straight move (2026-10-25)
+
+Asked for: the balance after the Outrider's move became Longshot's shape
+(any number of spaces straight along one of the six lanes, up to the first
+unit, yurts or the map's edge). `ablate.mjs` with
+`experiments/outrider-straight.mjs`, 400 fights each, starting kits, seeds
+from 1000, the walk of 2 patched back in for comparison; `mirror.mjs`, 300
+pairs (600 fights, no camel), the walk of 2 at the commit before.
+
+| Outrider moves | Side without the Bow wins | Without Hail | Without Grapple | Player wins vs all three | Outrider survives (control) | Outrider's turns per fight | Longshot damage / kills per fight | First mover wins (mirror) | Mirror unfinished |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Walk 2 (as it was) | 10.5% | 27.8% | 8.3% | 70.3% | 47.8% | 10.1 | 16.6 / 1.61 | 42.4% | 22.5% |
+| Straight, no cap | 21.3% | 27.8% | 10.5% | 65.8% | 36.8% | 8.0 | 13.4 / 1.14 | 41.3% | 32.2% |
+
+- **The straight move makes the Outrider weaker, not stronger.** He dies
+  more (survives 36.8% of fights, from 47.8%), so he gets fewer turns and
+  shoots less: Longshot deals about a fifth less and kills about 30% less.
+  The likely cause is lost footwork: a walk of 2 reaches the six spaces
+  between the lanes, and the straight move can't, so he can't step out of
+  a lane or round a unit in front of him.
+- **The Bow comes into principle 2's core band**: the side without it
+  wins 21.3%, inside 20–35%, from 10.5%, when the Bow was worth more than
+  a core action should be. Its use is unchanged (42% of his turns, inside
+  principle 3's band).
+- **The fight as a whole barely moves**: the party wins 65.8% against all
+  three, from 70.3% (inside the noise of 400 fights at 95%); Hail and
+  Grapple are worth the same; first mover unchanged.
+- **More stalls without the camel** (32.2%, from 22.5%): with the camel
+  nothing went unfinished.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

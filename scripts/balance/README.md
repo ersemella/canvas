@@ -25,6 +25,8 @@ against Hail alone.
 Hold Loose, Hip Toss, Squall Line, Tailwind and Overwatch, measured with
 them, were removed with their code. A changed ability against its original
 uses `mod.kits`, the modified side's kits by hero.
+`outrider-straight.mjs` (2026-10-25) measures the Outrider's straight move
+against the walk of 2 it replaced.
 
 ## Ability and stat ablation
 
