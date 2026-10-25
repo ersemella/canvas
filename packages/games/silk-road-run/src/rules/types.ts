@@ -11,7 +11,7 @@ export type Side = 'player' | 'enemy';
  * The three prototype heroes, the caravan's camel (camel.md), a unit that
  * isn't a hero, and the wolf, an enemy NPC.
  */
-export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf';
+export type HeroId = 'bokh' | 'mangudai' | 'storm' | 'camel' | 'wolf' | 'fox';
 export type AbilityId =
   | 'hold'
   | 'longshot'

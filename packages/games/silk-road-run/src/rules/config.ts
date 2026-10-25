@@ -161,6 +161,20 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 1,
     abilities: ['bite', 'hold'],
   },
+  /**
+   * The China region's basic creature (progression.md, 19.5, the reskins;
+   * 2026-10-25): a one-tailed fox spirit, the huli jing, the wolf's unit
+   * with its stats and Bite under the fox's name and art, until the
+   * region's own numbers are set.
+   */
+  fox: {
+    name: 'Fox Spirit',
+    letter: 'F',
+    speed: 1,
+    defence: 1,
+    power: 1,
+    abilities: ['bite', 'hold'],
+  },
 };
 
 /** Each ability's shape. Damage is never listed: it is the user's power. */
@@ -259,7 +273,7 @@ export const AI = {
    * Per hero, how much the threat counts. The Bökh Champion's is 0: a
    * tank's job is to take hits, and at 1 it held back out of reach.
    */
-  caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0, wolf: 1} as Record<HeroId, number>,
+  caution: {bokh: 0, mangudai: 1, storm: 1, camel: 0, wolf: 1, fox: 1} as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   /**
    * A charged shot in the air on a unit that acts before it lands and can

@@ -14,9 +14,10 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 
 ## Example
 
-The committed file, a run's third stage fought in the Gobi: the whole
-party against all three heroes, every kit the starting one. Its
-`"mountains"` asks for a range, but the Gobi never has one.
+The committed file, a region's first stage fought in the Gobi: the whole
+party against the Mangudai Outrider and two fox spirits, every kit the
+starting one. Its `"mountains"` asks for a range, but the Gobi never has
+one.
 
 ```json
 {
@@ -31,8 +32,8 @@ party against all three heroes, every kit the starting one. Its
   ],
   "enemy": [
     {"hero": "mangudai"},
-    {"hero": "bokh"},
-    {"hero": "storm"}
+    {"hero": "fox"},
+    {"hero": "fox"}
   ]
 }
 ```
@@ -54,7 +55,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 
 | Field | What it is | Left out |
 |---|---|---|
-| `hero` | `"bokh"` (Bökh Champion), `"mangudai"` (Mangudai Outrider), `"storm"` (Yadachy Storm Caller) or `"wolf"`. A hero may appear more than once, on either side. | required |
+| `hero` | `"bokh"` (Bökh Champion), `"mangudai"` (Mangudai Outrider), `"storm"` (Yadachy Storm Caller), `"wolf"` or `"fox"` (the Fox Spirit: the wolf's stats and Bite, the China region's creature). A hero may appear more than once, on either side. | required |
 | `speed` | 0 to 30. Its card goes 60 ÷ (speed + 5) slots on after each turn, rounded. | the hero's |
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |

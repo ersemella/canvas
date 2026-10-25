@@ -29,6 +29,7 @@ export const HERO_COLOR = {
   modao: '#9f1239',
   camel: '#a8742f',
   wolf: '#6b7280',
+  fox: '#c2410c',
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to
