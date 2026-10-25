@@ -423,6 +423,8 @@ export function TacticsPage() {
   const {stages} = run.view;
   /** A stage short of the run's last, won: the next one waits. */
   const nextAhead = fight.phase === 'won' && run.view.stage < stages - 1;
+  /** The run's last stage won: the road built so far is done. */
+  const runWon = fight.phase === 'won' && !nextAhead;
 
   if (atCaravanserai && nextAhead) {
     return (
@@ -605,6 +607,11 @@ export function TacticsPage() {
                   <Text c="dimmed" fz="sm">
                     {outcomeText(fight)}
                   </Text>
+                  {runWon && (
+                    <Text fz="sm" ta="center" data-testid="more-to-come">
+                      That's the road so far. More to come!
+                    </Text>
+                  )}
                   {!phone && nextAhead && nextStageButton}
                 </Stack>
               </Paper>

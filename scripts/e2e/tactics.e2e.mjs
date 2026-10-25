@@ -691,6 +691,12 @@ try {
     `${nextAhead ? 'Next stage' : 'New run'} takes the turn’s buttons’ place`,
     await page.getByRole('button', {name: nextAhead ? 'Next stage' : 'New run'}).isVisible()
   );
+  // Only the run's last stage won says there's more to come.
+  const runWon = run.view.fight.phase === 'won' && !nextAhead;
+  check(
+    `the more-to-come message ${runWon ? 'shown' : 'not shown'}`,
+    (await page.getByTestId('more-to-come').isVisible()) === runWon
+  );
   // On a phone the finished fight keeps the action section's height, so the board stays put.
   await page.setViewportSize({width: 390, height: 664});
   await sleep(300);
