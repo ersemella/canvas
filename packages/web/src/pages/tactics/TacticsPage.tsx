@@ -154,7 +154,7 @@ export function TacticsPage() {
   // (The camel's shorter turns keep it through `rows`.)
   useLayoutEffect(() => {
     const el = actionsRef.current;
-    if (el?.querySelector('[data-testid="turn-controls"]'))
+    if (phone && el?.querySelector('[data-testid="turn-controls"]'))
       actionsHeight.current = Math.max(actionsHeight.current, el.offsetHeight);
   });
 
@@ -424,7 +424,7 @@ export function TacticsPage() {
           New run
         </Button>
       )}
-      {menu}
+      {phone && menu}
     </div>
   ) : (
     upcoming && (
@@ -449,8 +449,8 @@ export function TacticsPage() {
         onMove={toggleMove}
         onAbility={chooseAbility}
         onConfirm={() => commit()}
-        menu={menu}
-        // Desktop: the details show the unit's portrait instead.
+        // Desktop: the menu is at the panel's foot, and the details show the unit's portrait.
+        menu={phone ? menu : undefined}
         onPortrait={phone ? lookAtActing : undefined}
         portraitOpen={lookingAtActing}
       />
@@ -569,11 +569,15 @@ export function TacticsPage() {
               {details}
               <div className={styles.panelFoot}>
                 {chosen}
-                {!finished && (
-                  <Text className={styles.keysHint!} data-testid="keys-hint">
-                    Click a hex to move or aim, and again to go. Esc or right-click steps back.
-                  </Text>
-                )}
+                {/* The run's menu at the bottom right, beside the hint. */}
+                <div className={styles.footRow}>
+                  {!finished && (
+                    <Text className={styles.keysHint!} data-testid="keys-hint">
+                      Click a hex to move or aim, and again to go. Esc or right-click steps back.
+                    </Text>
+                  )}
+                  {menu}
+                </div>
               </div>
             </>
           )}
