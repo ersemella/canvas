@@ -145,7 +145,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Waidan Alchemist (owner, 2026-10-25; roster.md): a support whose
    * Elixir Enhances an ally or Degrades an enemy by its power, and deals
    * no damage. Speed 2, defence 1 (health 4) and power 2 are the
-   * builder's first numbers, untested; no art yet, so a lettered disc.
+   * builder's first numbers, untested.
    */
   alchemist: {
     name: 'Waidan Alchemist',

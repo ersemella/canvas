@@ -20,6 +20,8 @@ import {
   label,
   pixelRect,
 } from './pixels';
+import alchemistPortrait from '../sprites/alchemist-portrait.png';
+import alchemistSprite from '../sprites/alchemist.png';
 import bokhPortrait from '../sprites/bokh-portrait.png';
 import bokhSprite from '../sprites/bokh.png';
 import camelPortrait from '../sprites/camel-portrait.png';
@@ -53,6 +55,7 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   mangudai: mangudaiSprite,
   storm: stormSprite,
   modao: modaoSprite,
+  alchemist: alchemistSprite,
   camel: camelSprite,
   wolf: wolfSprite,
   // From the owner's AI-assisted art (2026-10-25): cut out, shrunk to the
@@ -65,6 +68,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   mangudai: {src: mangudaiPortrait, faceX: 18},
   storm: {src: stormPortrait, faceX: 19},
   modao: {src: modaoPortrait, faceX: 18},
+  alchemist: {src: alchemistPortrait, faceX: 19},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},
