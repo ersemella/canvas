@@ -14,9 +14,9 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 
 ## Example
 
-The committed file, a region's first stage fought in the Gobi: the whole
-party against a fox spirit, the Modao Vanguard and the Waidan Alchemist,
-every kit the starting one. Its `"mountains"` asks for a range, but the
+The committed file, fought in the Gobi: the Waidan Alchemist, the Modao
+Vanguard and the Mangudai Outrider against the three Steppe heroes, every
+kit the starting one. Its `"mountains"` asks for a range, but the
 Gobi never has one.
 
 ```json
@@ -26,14 +26,14 @@ Gobi never has one.
   "yurts": "mountains",
   "camel": {},
   "player": [
+    {"hero": "alchemist"},
+    {"hero": "modao"},
+    {"hero": "mangudai"}
+  ],
+  "enemy": [
     {"hero": "bokh"},
     {"hero": "mangudai"},
     {"hero": "storm"}
-  ],
-  "enemy": [
-    {"hero": "fox"},
-    {"hero": "modao"},
-    {"hero": "alchemist"}
   ]
 }
 ```
