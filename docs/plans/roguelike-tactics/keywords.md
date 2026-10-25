@@ -31,6 +31,12 @@ Tailwind experiment and removed with it (2026-10-24; [history.md](history.md)).
 Enhance does; with Enhance it nets out, and it reduces a Champion's
 squeeze too. Elixir's Enhance and Degrade equal the Alchemist's power,
 an exception to 17.2 (owner, 2026-10-25).
+**Haste**, **Inevitable**, **Shield**, **Armour** and **Pierce**
+(2026-10-25), for the passives ([progression.md](progression.md), 19.8):
+Haste for Second Wind, Momentum and Vengeance, Inevitable as Steady Gait,
+Shield 1 from Rally (until the unit's next turn), Armour 1 as Hardened and
+Pierce as Piercing Eye. No hero has a passive yet; neither the delay nor
+the haste limit is built.
 The others are defined here and built when an ability uses them.
 
 ## 17. Keywords and Effects

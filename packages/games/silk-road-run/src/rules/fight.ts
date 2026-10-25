@@ -13,17 +13,32 @@ import {
   ageHail,
   endTurnEffects,
   enterHex,
+  haste,
   landShots,
   log,
   record,
   squeezeGrapples,
+  startTurnPassives,
+  takeHasteDue,
   unitName,
+  walk,
 } from './resolve';
 import type {Ctx} from './resolve';
 import {MAPS, STEPPE, blocks, randomTiles} from './map';
 import type {MapData, Tile} from './map';
+import {hasPassive} from './passives';
 import {aimSlot, chargeOf, nextCard, placeCard, placeStartingCards, shuffled} from './track';
-import type {FightState, HeroId, Loadout, Provision, Side, StatId, TurnInput, Unit} from './types';
+import type {
+  AbilityId,
+  FightState,
+  HeroId,
+  Loadout,
+  Provision,
+  Side,
+  StatId,
+  TurnInput,
+  Unit,
+} from './types';
 
 /** A player-facing rule violation; the server sends its message back. */
 export class RuleError extends Error {}
@@ -82,8 +97,9 @@ export function refreshStats(state: FightState): void {
 
 /**
  * `copy` numbers a second or later unit of the same hero on a side
- * (e-wolf, e-wolf-2); `loadout` is the test stage's stats and kit for it;
- * `provisions` the stat points the run has given it.
+ * (e-wolf, e-wolf-2); `loadout` is the test stage's stats, kit and
+ * passives for it; `provisions` the stat points the run has given it.
+ * Glass Cannon (19.8) starts it at half its health.
  */
 export function makeUnit(
   side: Side,
@@ -94,6 +110,7 @@ export function makeUnit(
   provisions?: Unit['provisions']
 ): Unit {
   const stats = heroStats(hero, loadout, provisions);
+  const passives = loadout?.passives;
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}${copy ? `-${copy + 1}` : ''}`,
     hero,
@@ -102,11 +119,12 @@ export function makeUnit(
     controller: side === 'player' && !HEROES[hero].walksRoad ? 'human' : 'ai',
     partyIndex,
     hex: null,
-    hp: stats.maxHp,
+    hp: passives?.includes('glassCannon') ? Math.ceil(stats.maxHp / 2) : stats.maxHp,
     ...stats,
     slot: null,
     statuses: [],
     ...(loadout ? {loadout} : {}),
+    ...(passives?.length ? {passives: [...passives]} : {}),
     ...(provisions ? {provisions} : {}),
     alive: true,
   };
@@ -228,6 +246,7 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
       continue;
     }
     record(state, {kind: 'turn', unitId: unit.id});
+    startTurnPassives(ctx, unit);
     // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25).
     ageHail(state, unit);
     // An Enhance or Degrade lasts until the end of this turn.
@@ -243,6 +262,8 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     }
     if (isStunned(unit)) {
       skipTurn(ctx, unit, `${unitName(unit)} is Stunned: turn skipped.`);
+      // Last Stand's Stun lasts this one turn (19.8).
+      unit.statuses = unit.statuses.filter((s) => !s.lastStand);
       continue;
     }
     // Nothing to do but Hold: the track goes on without asking.
@@ -271,7 +292,31 @@ export function charging(state: FightState, unit: Unit): boolean {
 function landCharge(ctx: Ctx, unit: Unit): void {
   landShots(ctx, unit);
   checkEnd(ctx.state);
-  if (unit.alive) placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
+  if (unit.alive) {
+    placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
+    takeHasteDue(ctx.state, unit);
+  }
+}
+
+/**
+ * Places `unit`'s card at the end of its turn (3.2): its action cost on,
+ * or `ability`'s charge, `idle` (a turn without moving or an ability) 2
+ * fewer slots on with Patient (19.8); then the Haste it was given during
+ * the turn, Momentum's included.
+ */
+function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId): void {
+  const {state} = ctx;
+  if (unit.tookOff && hasPassive(unit, 'momentum')) {
+    log(ctx, `${unitName(unit)} rides its momentum.`);
+    haste(ctx, unit, 1);
+  }
+  delete unit.tookOff;
+  if (!unit.alive) return;
+  const now = state.currentSlot;
+  let slot = aimSlot(state, unit, now, ability);
+  if (idle && hasPassive(unit, 'patient')) slot = Math.max(now + 1, slot - 2);
+  placeCard(state, unit, slot, ability !== undefined && chargeOf(unit, ability) > 0);
+  takeHasteDue(state, unit);
 }
 
 /** A turn it can't take, or with only Hold to choose: its card marked as skipped, placed as after any turn. */
@@ -280,7 +325,7 @@ function skipTurn(ctx: Ctx, unit: Unit, text: string): void {
   log(ctx, text);
   record(ctx.state, {kind: 'skip', unitId: unit.id});
   endTurnEffects(unit);
-  placeCard(ctx.state, unit, aimSlot(ctx.state, unit));
+  endTurn(ctx, unit, true);
 }
 
 /**
@@ -302,7 +347,7 @@ function walkRoad(ctx: Ctx, unit: Unit): void {
   }
   checkEnd(ctx.state);
   endTurnEffects(unit);
-  if (unit.alive) placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
+  endTurn(ctx, unit, !next);
 }
 
 /**
@@ -334,7 +379,7 @@ export function applyTurn(
     const bad = invalidPath(state, map, unit, path);
     if (bad) throw new RuleError(bad);
     // A grapple ends only if the walk ends apart (owner, 2026-10-23).
-    path.forEach((h, i) => enterHex(ctx, unit, h, 'walk', i < path.length - 1));
+    walk(ctx, unit, path);
     log(ctx, `${unitName(unit)} moves.`);
   } else {
     const target = input.action.target ?? {};
@@ -357,13 +402,7 @@ export function applyTurn(
   checkEnd(state);
   endTurnEffects(unit);
   // A charged ability's card is pushed out to its charge, the cards there moving on.
-  if (unit.alive)
-    placeCard(
-      state,
-      unit,
-      aimSlot(state, unit, state.currentSlot, def.id),
-      chargeOf(unit, def.id) > 0
-    );
+  endTurn(ctx, unit, path.length === 0 && def.id === 'hold', def.id);
 }
 
 /** A deep copy for previews and the AI; drops the log unless asked, and the events always. */

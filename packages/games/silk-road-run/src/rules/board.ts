@@ -12,6 +12,7 @@ import {
 import type {Hex} from '@canvas/engine/server';
 import {HEROES, RULES} from './config';
 import {blocks, depth, hexNumber, onMap, tileAt} from './map';
+import {hasPassive} from './passives';
 import type {MapData, Tile} from './map';
 import type {AbilityId, FightState, ShotInAir, Status, Unit} from './types';
 
@@ -177,32 +178,47 @@ export interface Reach {
   path: Hex[];
 }
 
+/** Light Step (19.8): the unit walks through allies, and may end on one, swapping places. */
+export function passesAllies(unit: Unit): boolean {
+  return hasPassive(unit, 'lightStep');
+}
+
 /**
  * Every hex the unit can end its move on, with a shortest path to it, the
  * start included with an empty path. Units and obstacles block walking;
  * a move can't end on another unit (brief section 2), and one that enters
- * hail ends there (it Immobilizes). A unit that `movesStraight` goes along
- * the six lanes instead (`straightReaches`).
+ * hail ends there (it Immobilizes). With Light Step (19.8) allies don't
+ * block, and a walk may end on one whose space it entered from a free one
+ * (or its start): the two swap, the ally Moved to that space (`walk` in
+ * resolve.ts). A unit that `movesStraight` goes along the six lanes
+ * instead (`straightReaches`).
  */
 export function reachableHexes(state: FightState, map: MapData, unit: Unit): Reach[] {
   if (!unit.hex) return [];
   const cap = movementCap(unit);
   if (HEROES[unit.hero].movesStraight) return straightReaches(state, map, unit, cap);
+  const through = passesAllies(unit);
   // unitAt for every hex at once: the first living unit standing there.
   const occupant = new Map<number, Unit>();
   for (const u of state.units)
-    if (u.alive && u.hex && !occupant.has(hexNumber(u.hex))) occupant.set(hexNumber(u.hex), u);
+    if (u.alive && u.hex && u !== unit && !occupant.has(hexNumber(u.hex)))
+      occupant.set(hexNumber(u.hex), u);
   const best = new Map<number, Hex[]>();
+  // Allies' spaces a walk can end on, swapping: the shortest walk entering each from a free space.
+  const swaps = new Map<number, Hex[]>();
   best.set(hexNumber(unit.hex), []);
   let frontier: Hex[] = [unit.hex];
   for (let step = 0; step < cap; step++) {
     const next: Hex[] = [];
     for (const from of frontier) {
       const fromPath = best.get(hexNumber(from))!;
+      const fromFree = !occupant.has(hexNumber(from));
       for (const h of steps(map, from)) {
         const key = hexNumber(h);
         const other = occupant.get(key);
-        if ((other && other !== unit) || best.has(key)) continue;
+        if (other && (!through || hostile(other, unit))) continue;
+        if (other && fromFree && !swaps.has(key)) swaps.set(key, [...fromPath, h]);
+        if (best.has(key)) continue;
         best.set(key, [...fromPath, h]);
         // Hail stops the walk where it enters.
         if (!hailOn(state, h)) next.push(h);
@@ -210,24 +226,32 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
     }
     frontier = next;
   }
-  const out = [...best.values()].map((path) => ({hex: path[path.length - 1] ?? unit.hex!, path}));
+  const out = [...best.entries()]
+    .filter(([key]) => !occupant.has(key))
+    .map(([, path]) => ({hex: path[path.length - 1] ?? unit.hex!, path}));
+  for (const path of swaps.values()) out.push({hex: path[path.length - 1]!, path});
   return sortByHex(out, (r) => r.hex);
 }
 
 /**
  * `reachableHexes` for a unit that `movesStraight`: each of the six lanes
- * from its space, up to the first unit, yurts or the map's edge, and ending
- * on the first hail it enters.
+ * from its space, up to the first unit (ally or enemy; the first enemy with
+ * Light Step), yurts or the map's edge, and ending on the first hail it
+ * enters.
  */
 function straightReaches(state: FightState, map: MapData, unit: Unit, cap: number): Reach[] {
   const out: Reach[] = [{hex: unit.hex!, path: []}];
   if (cap > 0) {
     for (let dir = 0; dir < 6; dir++) {
       const path: Hex[] = [];
+      let prevFree = true;
       for (const h of lane(map, unit.hex!, dir).slice(0, cap)) {
-        if (unitAt(state, h)) break;
+        const other = unitAt(state, h);
+        // Light Step passes allies, and may end on one entered from a free space.
+        if (other && (!passesAllies(unit) || hostile(other, unit))) break;
         path.push(h);
-        out.push({hex: h, path: [...path]});
+        if (!other || prevFree) out.push({hex: h, path: [...path]});
+        prevFree = !other;
         if (hailOn(state, h)) break;
       }
     }
@@ -242,7 +266,11 @@ function straightReaches(state: FightState, map: MapData, unit: Unit, cap: numbe
  */
 export function canMove(state: FightState, map: MapData, unit: Unit): boolean {
   if (!unit.hex || movementCap(unit) === 0) return false;
-  return steps(map, unit.hex).some((h) => !unitAt(state, h));
+  return steps(map, unit.hex).some((h) => {
+    const other = unitAt(state, h);
+    // With Light Step, an ally next to it is a swap.
+    return !other || (passesAllies(unit) && !hostile(other, unit));
+  });
 }
 
 /** Checks a submitted path; returns a player-facing reason if it's illegal. */
@@ -263,19 +291,26 @@ export function invalidPath(
   const straightDir = HEROES[unit.hero].movesStraight
     ? hexNeighbors(unit.hex).findIndex((n) => hexEquals(n, path[0]!))
     : -1;
+  const other = (h: Hex) =>
+    state.units.find((u) => u !== unit && u.alive && u.hex && hexEquals(u.hex, h));
   for (const [i, h] of path.entries()) {
     if (!hexNeighbors(from).some((n) => hexEquals(n, h)))
       return 'Each step must be to an adjacent hex.';
     if (straightDir >= 0 && !hexEquals(hexNeighbor(from, straightDir), h))
       return 'That unit moves in a straight line.';
     if (!walkable(map, h)) return 'That path crosses an obstacle or leaves the map.';
-    const other = unitAt(state, h);
-    if (other && other !== unit) return 'Units block that path.';
+    const there = other(h);
+    // Light Step (19.8) walks through allies.
+    if (there && (!passesAllies(unit) || hostile(there, unit))) return 'Units block that path.';
     if (hailOn(state, h) && i < path.length - 1) return 'Hail stops a move where it enters.';
     from = h;
   }
-  const end = unitAt(state, from);
-  if (end && end !== unit) return 'A move can’t end on another unit.';
+  if (other(from)) {
+    if (!passesAllies(unit)) return 'A move can’t end on another unit.';
+    // A swap: the ally goes to the space the walk came from, which must be free.
+    const back = path.length > 1 ? path[path.length - 2]! : unit.hex;
+    if (other(back)) return 'A swap needs a free space to put the ally on.';
+  }
   return null;
 }
 

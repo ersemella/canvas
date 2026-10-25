@@ -38,6 +38,37 @@ export type AbilityId =
   | 'gale'
   | 'volley';
 
+/**
+ * The passives (progression.md, 19.8; owner, 2026-10-24): hero-agnostic
+ * rules a unit carries, from an upgrade offer's passive slot (19.3). No
+ * hero has one yet; the test stage gives them (`Loadout.passives`).
+ */
+export type PassiveId =
+  // Track
+  | 'steadyGait'
+  | 'secondWind'
+  | 'patient'
+  | 'momentum'
+  // Board
+  | 'rooted'
+  | 'lightStep'
+  | 'rebound'
+  // Damage and survival
+  | 'hardened'
+  | 'lastStand'
+  | 'piercingEye'
+  | 'opportunist'
+  | 'bulwark'
+  | 'glassCannon'
+  // Control
+  | 'ironWill'
+  | 'shakeLoose'
+  // Position and allies
+  | 'flanker'
+  | 'loneWolf'
+  | 'rally'
+  | 'vengeance';
+
 /** The stats a provision raises (heroes-and-gear.md, 9.1). */
 export type StatId = 'speed' | 'defence' | 'power';
 
@@ -63,6 +94,8 @@ export interface Status {
   hail?: string;
   /** From a Grapple: ends when the grapple does (`breakGrapples` in resolve.ts). */
   grapple?: {champion: string; target: string};
+  /** From Last Stand (19.8): Stunned for the unit's next turn, ending with it. */
+  lastStand?: boolean;
 }
 
 /**
@@ -76,6 +109,8 @@ export interface Loadout {
   power?: number;
   /** Its abilities, Hold included. */
   abilities?: AbilityId[];
+  /** Its passives (progression.md, 19.8). */
+  passives?: PassiveId[];
 }
 
 export interface Unit {
@@ -116,6 +151,32 @@ export interface Unit {
   degrade?: number;
   /** Its turn has begun since it was Degraded, so the Degrade ends with that turn. */
   degradeStarted?: boolean;
+  /** Its passives (progression.md, 19.8); absent with none. */
+  passives?: PassiveId[];
+  /**
+   * Its passives that work once a fight (Second Wind, Hardened, Last Stand,
+   * Iron Will) and have been used this fight. Absent while none has.
+   */
+  spent?: PassiveId[];
+  /**
+   * Shield (keywords.md, 17.6): a pool reduced before health, until the
+   * start of the unit's next turn (Rally). Absent when it has none.
+   */
+  shield?: number;
+  /**
+   * Haste (keywords.md, 17.3) given while its own turn was under way, its
+   * card not yet placed: taken off as the card is placed at the turn's end.
+   */
+  hasteDue?: number;
+  /** It took a unit off the board this turn (Momentum, 19.8). */
+  tookOff?: boolean;
+  /** The slots its last two turns started on, the latest last (Opportunist, 19.8). */
+  turns?: number[];
+  /**
+   * The allies next to it that have taken their first hit since its last
+   * turn (Bulwark, 19.8), by unit id. Absent while none has.
+   */
+  covered?: string[];
   /**
    * Its last turn was skipped (it could only Hold): its card shows it until
    * it next acts.

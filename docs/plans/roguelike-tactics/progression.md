@@ -177,11 +177,58 @@ to your build.
 
 Counts assume every wildcard is taken as an upgrade.
 
-### 19.8 Passives (Proposed, owner 2026-10-24)
+### 19.8 Passives (Proposed, owner 2026-10-24; built 2026-10-25, on no hero)
 The pool for the offer's passive slot (19.3). Each is a rule that works
 on whichever hero carries it ("this hero"), in the keywords' terms
 ([keywords.md](keywords.md)); every one is public and previewable (D11).
-Numbers are TBD tuning; none is built or measured yet.
+Numbers are TBD tuning; none is measured yet.
+
+**Built (2026-10-25), on no hero:** every passive below works in the
+rules (`src/rules/passives.ts`, its effects in resolve.ts, fight.ts and
+board.ts; tested in `passives.test.ts`), shown on the stat sheet, and can
+be given to any unit on the test stage (`"passives"`, test-stage.md). No
+hero starts with one, and the upgrade offer that would grant them (19.3)
+isn't built. Built with them: **Haste** and **Inevitable** (Steady Gait),
+**Shield** (Rally), **Armour** and **Pierce** (Hardened, Piercing Eye)
+([keywords.md](keywords.md)). The builder's readings, where the text left a
+choice:
+
+- **"First" passives** (Second Wind, Hardened, Last Stand, Iron Will) are
+  spent once each fight, even when the effect is nothing (a Pierced first
+  hit still spends Hardened).
+- **A hit** is an ability's damage (and a charged shot's); a grapple's
+  squeeze is damage but not a hit, so Hardened, Bulwark, Opportunist and
+  Flanker ignore it. Glass Cannon's and Lone Wolf's Enhance add to the
+  squeeze, as an Enhance does (owner, 2026-10-23).
+- **Taking damage** means health lost: damage a Shield absorbs whole
+  doesn't break a grapple, set off Shake Loose or count for Second Wind.
+- **Haste during the hero's own turn** (Momentum, a Second Wind or
+  Vengeance from its own Gale or Cleave) is taken off as its card is
+  placed at the turn's end. Steady Gait blocks the hero's own Haste too.
+  Neither the delay nor the haste limit (17.3) is built.
+- **Patient** counts any turn without a move or an ability: Hold, and a
+  skipped turn, a Stunned one included.
+- **Momentum** counts a kill on the hero's turn (a squeeze at its start
+  included), not one by a charged shot landing, which isn't a turn.
+- **Light Step's swap** puts the ally on the space the walk came from,
+  which must be free (so not an ally walked through); an Outrider's
+  straight walk passes allies too. The ally is Moved (Rebound triggers).
+- **Rebound** triggers only when the hero actually changes space; a
+  Grapple's throw and swap Move the held unit. Rebounds can set off
+  Rebounds, to a safety depth of 12.
+- **Opportunist** compares turns: the target's last turn came before the
+  hero's last one (its previous one, during its own turn), or the target
+  hasn't had one. A skipped turn is a turn (17.5).
+- **Flanker** needs the target in a straight line from the hero; the ally
+  is on the next space beyond it along that line.
+- **Bulwark** follows each ally's first hit between the Bulwark's turns
+  wherever it is; only a hit landing next to the Bulwark is shared, and
+  the first such Bulwark (party order) takes the 1. Its 1 isn't a hit.
+- **Last Stand's Stun** goes after the one turn it skips; Iron Will turns
+  it, Shake Loose doesn't (it is given after the damage).
+- **Vengeance's Enhance** keeps a stronger one the hero has, and lasts
+  until the end of its next turn.
+- **Glass Cannon** starts at half health, rounded up.
 
 **Track**
 
