@@ -1,13 +1,11 @@
 # Plan: Silk Road Run in the browser
 
-Status: **draft, 2026-10-25; waiting on the owner's decisions (*Open
-questions*).** Nothing is built. It would replace decisions D3, D4 and D7
-of [roguelike-tactics/architecture.md](roguelike-tactics/architecture.md)
-for Silk Road Run, so it needs the owner's go-ahead first. **When starting
-the work,** read this file, then `architecture.md` (D3, D7, D11 and
-*Long-lived storage and cost*), [roguelike-tactics/ai-search.md](roguelike-tactics/ai-search.md)
-(*Work caps* and *Looking deeper with narrower decisions*) and
-`.claude/skills/verify/SKILL.md`.
+Status: **built 2026-10-25** (phases 1 to 4; *Built*, below). Drafted the
+same day, and the owner's answers are in *Owner's decisions*. It replaces
+decisions D3, D4 and D7 of
+[roguelike-tactics/architecture.md](roguelike-tactics/architecture.md) for
+Silk Road Run. **For later work on it,** read *Built* and the decision it
+concerns, then `.claude/skills/verify/SKILL.md`.
 
 ## Goal
 
@@ -67,7 +65,7 @@ players:
   create, act, view, abandon, end an outdated run, and nothing else the
   browser needs (the ledger only tracks the one active run).
 
-## Decisions (proposed)
+## Decisions
 
 ### L1. A local `runsApi`, same interface
 
@@ -126,9 +124,10 @@ action, before answering. `active` reads it. Starting a run overwrites it
 - Storage blocked (private mode, some embeds): the run lives in memory
   for the page load and a reload starts over, as the player key does
   today.
-- Two tabs: the last write wins. Listen for the `storage` event and
-  reload the run in the other tab, or show "this run is open in another
-  tab". Proposed: reload it.
+- Two tabs: only one plays the run (owner, 2026-10-25). The first to
+  open it holds a Web Lock; another shows "This run is open in another
+  tab" and waits for the lock, taking the run over once that tab closes.
+  Without Web Locks every tab plays and the last write wins.
 - `RUN_FORMAT` and `outdated` keep working: a run saved by an older
   release is ended, not migrated, as now.
 
@@ -139,53 +138,56 @@ does now. The view still never carries it (`getView` is unchanged, and
 the page only ever renders the view), but the saved run does. No attempt
 to hide it: anything the page can read, the player can.
 
-### L5. A larger AI budget (its own phase)
+### L5. The AI as deep as the device allows
 
-Once the AI runs in a worker, the budget is the owner's call, not the
-platform's:
+The owner chose (2026-10-25) to look as deep as the current device gets,
+rather than a fixed cap from a time target. So in the browser:
 
-- Merge the width taper (branch `claude/ai-width-taper`,
-  `AI.searchWidths`, still unmerged): `[4, 3, 2]`, `searchDepth` 5,
-  220 units won 56% on mirrored pairs (ai-search.md).
-- Keep the cap in work units, never a clock, so the AI stays
-  deterministic: the same position gets the same turn on every device.
-- Choose the cap from a time target on a slow device, for example the
-  slowest AI turn under 100 ms with Chrome's CPU throttled 4× (Playwright
-  can emulate it). Measure what deeper horizons and larger caps buy with
-  `mirror.mjs`, as before.
-- The balance scripts (`scripts/balance/`) already run the AI locally, so
-  their numbers stay comparable.
+- The host passes the rules a clock (`RunContext.now`), and an AI turn
+  searches until `AI.browser.thinkMs` (400 ms) has passed, deepening one
+  decision at a time and keeping the last depth it completed, as before.
+  The clock is read every 32nd unit of work.
+- The width taper (from branch `claude/ai-width-taper`, now merged as
+  `AI.searchWidths`): `AI.browser.widths` [4, 3, 2], the last for any
+  deeper decision. A ceiling of 24 decisions, and 24,000 units of work to
+  bound memory (the search keeps every fight it plays: about 60 MB at
+  20,000).
+- **The AI is no longer deterministic in the browser:** a faster device
+  looks deeper and may choose another turn. Nothing needs it to be (no
+  server replays the run). Without a clock (unit tests, `scripts/balance/`)
+  it keeps `AI.maxSimulations` and `searchDepth` 3, and plays exactly as
+  before, so balance numbers stay comparable.
 
-### L6. The server code goes, in a later phase
+### L6. The server code goes
 
-After the browser version has shipped and played well for a while:
+The owner chose (2026-10-25) to remove it once the page had moved; done in
+the same change:
 
 - Remove `RunRoom`, `PlayerLedger`, `routes/runs.ts`, `playerKey.ts` (if
   nothing else uses it) and their bindings, with a `deleted_classes`
   migration in `wrangler.toml` (as planned for `ManifestRegistry`).
   Deleting a class deletes its stored runs.
-- Remove `"canvas": {"serverKind": "run"}` from the game's `package.json`,
-  so `gen-game-registry.mjs` leaves it out of the Worker bundle. Decide
-  whether `RunSystem` stays in `@canvas/engine/server` (proposed: yes,
-  the browser uses it, and option 2 would need it on the server again).
+- Remove `"canvas": {"serverKind": "run"}` and the `./server` entry from
+  the game's `package.json` (its entry is `./run`), so
+  `gen-game-registry.mjs` leaves it out of the Worker bundle; the
+  generator no longer knows run games. `RunSystem` stays in
+  `@canvas/engine/server`, with the run host that took `RunRoom`'s logic
+  (owner: keep what's reusable in the engine).
 - Runs on the server when the page switches are left behind: the page
   never asks for them again and their players start a new run (the same
   as a `RUN_FORMAT` bump). They're deleted with the class.
 
-**Why later:** until then the switch can be undone by reverting one
-import, and the server's tests keep proving the rules work under the
-Worker too, which option 2 would need.
+Going back to the server (option 2) would mean a host like `RunRoom`
+again, calling the same `playRun`.
 
 ## Phases
 
 1. **Local runs.** `localRuns.ts` (L1, L3, L4) and the AI worker (L2);
    `useRun` switched; same AI budget as now. The Worker still has
    `/runs`, unused by the page.
-   - Tests: the page has no unit test runner, so either add Vitest to
-     `@canvas/web` for `localRuns` (start, a turn, an illegal turn leaving
-     the run unchanged, `continue` refused when no AI turn is due, a
-     reload resuming, an outdated run ending, storage blocked), or test
-     it through the browser suite. Proposed: Vitest.
+   - Tests: the run host's logic is unit-tested in the engine
+     (`runs.test.ts`); the page itself through the browser suite only
+     (owner, 2026-10-25).
    - `tactics.e2e.mjs`: the page part keeps every check it has, and
      checks that the page sends no `/runs` request. A reload resuming and
      Reset run work as they did. The API part (player keys, another
@@ -202,13 +204,56 @@ Worker too, which option 2 would need.
    owner-decisions.md section 3, the verify skill's `tactics.e2e.mjs`
    row, and `ARCHITECTURE.md` where it describes runs.
 
-## Open questions (the owner's)
+## Owner's decisions (2026-10-25)
 
-1. **Go ahead at all?** It gives up enforced permadeath, the hidden seed
-   and (until a server returns, option 2) rival caravans.
-2. **The AI budget** (L5): what time target on what device.
-3. **Two tabs** (L3): reload the run in the other tab, or refuse there.
-4. **Unit tests in `@canvas/web`** (phase 1): add Vitest, or browser
-   tests only.
-5. **When to remove the server's runs** (L6), and whether `RunSystem`
-   stays in the engine.
+1. **Go ahead.**
+2. **The AI budget** (L5): be flexible, as deep as possible on the
+   current device.
+3. **Two tabs** (L3): refuse to play in the second.
+4. **Tests:** browser tests only in `@canvas/web` (no Vitest there).
+5. **The server's runs** (L6): removed once the page has moved; what's
+   reusable stays in the engine.
+
+## Built (2026-10-25)
+
+- **Engine:** `src/runs.ts` in `@canvas/engine/server`: `RunSystem` (its
+  `handleAction` takes a `RunContext`), `RunRecord`, and the host,
+  `startRun`, `playRun`, `runResponse`, `outdatedRun`, `expireRun`,
+  `abandonRun`, throwing `RunError` with the player's message. Tests in
+  `src/runs.test.ts`.
+- **Page:** `pages/tactics/localRuns.ts` (L1, L3, L4: the methods
+  `runsApi` had, the run in `localStorage` under `canvas:tactics:run`, in
+  memory when storage is blocked; the tab claimed with a Web Lock,
+  `canvas:tactics:tab`) and `aiWorker.ts` (L2: every action, played in
+  order). A tab without the lock shows "This run is open in another tab"
+  and takes the run over once that tab closes. `runsApi.ts` and the dev
+  server's `/runs` proxy are gone.
+- **Game:** `src/run.ts` (the `./run` entry) in place of `src/server.ts`;
+  `handleRunAction` takes the context and, given a clock, searches with
+  `AI.browser` (L5).
+- **Server:** `RunRoom`, `PlayerLedger`, `routes/runs.ts` and
+  `playerKey.ts` removed; migration `v3` deletes both classes (L6).
+- **Tests:** `tactics.e2e.mjs` lost its API part (the rules behind it are
+  in `rules.test.ts`) and checks that the page sends no `/runs` request, a
+  second tab is refused, and takes over once the first closes.
+
+**Measured** (this machine, Node, 40 AI turns from six runs): in 400 ms
+the search completed 11 to 24 decisions, median 13, against 3 before, on
+about 15,000 units of work, with up to 63 MB held while it runs. Against
+the AI before (`scripts/balance/mirror.mjs --ai browser-slow,production`
+and the other way round, 80 mirrored pairs from seed 7000 each way), at
+only 100 ms a turn and with the machine's four cores shared by two runs and
+the end-to-end suites: **87% of decided fights** (90.3% as team a, 84.2%
+as team b). Unfinished fights (no winner in 400 actions) were 25 to 29%, against
+10.7 to 13.7% in the balance README's runs of the AI before against
+other AIs (2026-10-22): worth watching in play.
+
+## Follow-ups
+
+- **Slow phones:** the depth reached is untested on a phone. 400 ms and
+  24,000 units are the knobs (`AI.browser`); a phone's memory may want a
+  lower `work`.
+- **Stalled fights:** see *Measured*; the evaluation may prefer waiting
+  when it sees far enough to know an attack is answered.
+- `ManifestRegistry`'s `deleted_classes` migration (engine-platform-split
+  follow-ups) can go in the next one.

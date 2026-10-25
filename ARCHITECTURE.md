@@ -2,22 +2,21 @@
 
 Canvas is a browser game arcade: a small ECS engine renders games to a 2D
 canvas. Poker is played over a live, server-authoritative connection;
-Silk Road Run, a single-player tactical roguelike, runs its fights on
-the server over plain HTTP. Everything else is a static, declarative
-manifest.
+Silk Road Run, a single-player tactical roguelike, plays its whole run in
+the browser, its AI in a Web Worker. Everything else is a static,
+declarative manifest.
 
 ## Overview
 
 ```
 Browser (@canvas/web)                    Cloudflare Worker (@canvas/server)
-  React + react-router                      routes: /rooms, /runs
+  React + react-router                      routes: /rooms
   @canvas/engine ECS + Canvas2D  <——HTTP/WS——>
-                                                     │ DO stubs
-                                     ┌───────────────┴────────────────┐
-                                     ▼                                ▼
-                   GameRoom (Durable Object) × 1 per room   RunRoom × 1 per run (HTTP)
-                     idFromName(roomId) · WebSocket          idFromName('run:' + runId)
-                     Hibernation · SQLite storage · alarms   PlayerLedger × 1 per player key
+  Silk Road Run: run host + localStorage            │ DO stub
+    AI in a Web Worker                              ▼
+                                       GameRoom (Durable Object) × 1 per room
+                                         idFromName(roomId) · WebSocket
+                                         Hibernation · SQLite storage · alarms
 ```
 
 Static assets (the `@canvas/web` build output) ship separately via Cloudflare
@@ -27,19 +26,19 @@ Four of six games (`snake`, `blackjack`, `solitaire`, `sudoku`) are pure
 client-side manifests: a `game.json` describing a scene and a list of
 engine systems, bundled into the web build and rendered entirely in the browser.
 `poker` runs against the server, using a `GameRoom` Durable Object as the
-authoritative game state and WebSocket hub. `silk-road-run` keeps each
-run in a `RunRoom` Durable Object, played over plain HTTP with an anonymous
-player key; its page previews turns locally with the same rules.
+authoritative game state and WebSocket hub. `silk-road-run` plays each
+run in the browser with the engine's run host, saved in `localStorage`;
+its page previews turns with the same rules.
 
 ## Package layout
 
 | Package | Role | Notes |
 |---|---|---|
-| `@canvas/engine` | ECS core, generic components/systems, manifest loader, plugin API | Built with `tsc -b` to `dist/` (ESM + `.d.ts`), which its `exports` point at; inside the repo every consumer resolves it to `src/` through tsconfig `paths`, so nothing needs a build first. Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and game-agnostic systems (grid, hex grid, physics, drag/drop, click, card piles, grid puzzles, side panel, network). No game-specific code: games add their own through `register()`. `@canvas/engine/server` is a DOM-free entry with the `ServerSystem` contract and the hex geometry (`math/Hex`), so a game's server rules and its renderer share one. Rendering: rects, text, circles, hexagons and sprite-sheet frames (loaded through `assetLoader`); a manifest's `canvas.scale` draws the scene at a low resolution scaled up by a whole number, and `canvas.pixelArt` keeps the pixels sharp. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
+| `@canvas/engine` | ECS core, generic components/systems, manifest loader, plugin API | Built with `tsc -b` to `dist/` (ESM + `.d.ts`), which its `exports` point at; inside the repo every consumer resolves it to `src/` through tsconfig `paths`, so nothing needs a build first. Ships `World`, `Scene`, `Entity`, a `SystemRegistry`, and game-agnostic systems (grid, hex grid, physics, drag/drop, click, card piles, grid puzzles, side panel, network). No game-specific code: games add their own through `register()`. `@canvas/engine/server` is a DOM-free entry with the `ServerSystem` contract, the single-player `RunSystem` contract and its host (`runs.ts`), and the hex geometry (`math/Hex`), so a game's rules and its renderer share one. Rendering: rects, text, circles, hexagons and sprite-sheet frames (loaded through `assetLoader`); a manifest's `canvas.scale` draws the scene at a low resolution scaled up by a whole number, and `canvas.pixelArt` keeps the pixels sharp. Input is keyboard plus Pointer Events (mouse, touch and pen drive the same click/drag state; touch swipes become `Swipe*` virtual keys). |
 | `@canvas/web` | React shell, routing, canvas host, poker lobby UI | Builds in the games listed in `src/platform.games.ts` (generated), instantiates a `World` per game, and is the only package with a UI framework. |
-| `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` and `RunRoom` Durable Objects. Games' server rules are registered in `src/games/registry.ts` (generated): `ServerSystem`s for rooms, `RunSystem`s for runs. |
+| `@canvas/server` | Cloudflare Worker: routing, CORS, DO orchestration | Thin — most logic lives in the `GameRoom` Durable Object. Games' server rules (`ServerSystem`s) are registered in `src/games/registry.ts` (generated). |
 | `games/poker` | Poker client systems + server-authoritative Texas Hold'em logic | `.` exports the game definition, whose `register()` adds the table's client systems in `src/client/` (`PokerSystem` sends actions and turns server state into a view, `PokerRendererSystem` draws it); `./server` (DOM-free) exports a `ServerSystem` consumed by `GameRoom` — the only implementation of the rules, with the deck, hand evaluator, and public-state redaction. |
-| `games/silk-road-run` | Tactical roguelike: rules, server entry, board renderer | `src/rules/` is DOM-free and shared: `./server` exports a `RunSystem` for `RunRoom`, and the page (`@canvas/web`'s `pages/tactics/`) imports the same rules for previews. Plan: `docs/plans/roguelike-tactics/`. Hero numbers in `src/rules/config.ts` are placeholders. |
+| `games/silk-road-run` | Tactical roguelike: rules, run entry, board renderer | `src/rules/` is DOM-free and shared: `./run` exports a `RunSystem` that the page (`@canvas/web`'s `pages/tactics/`, `localRuns.ts` and `aiWorker.ts`) plays, and the page imports the same rules for previews. Plan: `docs/plans/roguelike-tactics/`. Hero numbers in `src/rules/config.ts` are placeholders. |
 | `games/{snake,blackjack,solitaire,sudoku}` | Game definitions | `game.json` (some from a build-time `generate.mjs`) and `src/index.ts` exporting the `GameDefinition`. Blackjack registers `BlackjackSystem`, Sudoku its puzzle generator, Solitaire the Klondike deal; Snake is manifest-only. |
 | `configs` | Shared tsconfig / eslint base | — |
 
@@ -122,25 +121,25 @@ a singleton `ManifestRegistry` Durable Object that the deploy uploaded every
 class is retired and unreachable, but still bound in `wrangler.toml` until a
 `deleted_classes` migration removes it.
 
-### Single-player runs: one RunRoom per run, plain HTTP
-Silk Road Run' runs live on the server even though nobody else is in
-the fight (rival caravans and rewards will affect other players, so a
-client-run game could forge a party). `POST /runs` makes a `RunRoom`
-(`idFromName('run:' + runId)`); every route needs `Authorization: Bearer
-<player key>`, a random secret the browser keeps in `localStorage`, of
-which the server stores only the SHA-256 hash. A `PlayerLedger` per key
-remembers the active run (starting another abandons it). Each turn is one
-request: the room calls the game's `RunSystem.handleAction`, which applies
-the turn and every AI turn up to the player's next one, stores the state as
-one value and returns the whole view (never the seed). Finished runs are
-deleted three days later by an alarm. `GameRoom`, `RoomPolicy` and
-`routes/rooms.ts` are untouched. Design: `docs/plans/roguelike-tactics/architecture.md`.
+### Single-player runs play in the browser
+Silk Road Run's run never leaves the browser (owner, 2026-10-25;
+`docs/plans/client-side-runs.md`). The page (`pages/tactics/localRuns.ts`)
+hosts it with the engine's run host (`@canvas/engine/server`, `runs.ts`:
+`startRun`, `playRun`, `runResponse`, which own what the retired `RunRoom`
+did: refused and finished actions, runs saved by older rules ended as
+`expired`) and saves it in `localStorage` after every action, one run a
+browser. Only one tab plays it (a Web Lock); another says so and takes over
+once that tab closes. Each action, an AI turn above all, runs in a Web
+Worker (`aiWorker.ts`), so a long search never stalls the board's playback.
 
-**Tradeoff** — the enemy AI runs inside the request, so CPU grows with its
-search. To stay within the Free plan's 10 ms, the search is capped by a
-count of simulated options per AI turn and per request (`AI` in the game's
-`rules/config.ts`), not by time, so fights stay deterministic; a capped AI
-can miss a far-move option.
+**Tradeoff** — nothing is enforced: a player can read the seed (future
+encounters and offers) or restore a saved run after a death. That only
+touches their own game, while nothing reaches other players; rival caravans
+and rewards would need a server to replay what other players see. In return
+the AI has no CPU limit: given a clock (`RunContext.now`) it searches as
+deep as the device gets in `AI.browser.thinkMs`, so a turn depends on the
+machine. Without a clock (unit tests, balance scripts) it keeps to a fixed
+work cap and stays deterministic.
 
 ### Multiplayer is server-authoritative for exactly one game
 Only poker has a `ServerSystem` (`createInitialState` / `handleAction` /
