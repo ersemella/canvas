@@ -60,6 +60,12 @@ export interface HeroStats {
   upgrades?: AbilityId[];
   /** Spaces a move may cover; RULES.movementCap if unset. */
   moveCap?: number;
+  /**
+   * Moves the way Longshot flies: any number of spaces straight along one of
+   * the six directions, up to the first unit, yurts or the map's edge (the
+   * Outrider; owner, 2026-10-25). Hail still ends the move where it enters.
+   */
+  movesStraight?: boolean;
   /** Its card starts the fight last, at RULES.camelStartSlot, whatever its speed (the camel). */
   actsLast?: boolean;
   /**
@@ -96,6 +102,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     defence: 1,
     power: 2,
     abilities: ['longshot', 'hold'],
+    movesStraight: true,
     // Skirmish in place of Volley (owner, 2026-10-23; balance.md), an
     // upgrade since 2026-10-24 (owner). Volley and Feigned Retreat
     // upgrades too (owner, 2026-10-24; balance.md, "Second abilities

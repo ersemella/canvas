@@ -35,7 +35,7 @@ The stat set is kept small, so every unit's stat sheet, enemies' included (D11),
 
   The wolf (2, 1, 1: health 4) and Temee (defence 9: health 20) are the builder's placeholders on the same scale ([owner-decisions.md](owner-decisions.md)).
 - **Health and gear:** health was fixed per hero (2026-10-18), never raised by gear. With health now following defence, gear that adds defence would raise it; whether defence gear exists, or health stays fixed by keeping defence off gear, is open question 58.
-- **No movement stat.** Every unit walks up to 3 spaces (5.1).
+- **No movement stat.** Every unit walks up to 2 spaces (5.1; 3 until 2026-10-24), except the Outrider, which moves the way Longshot flies: any number of spaces straight along one of the six directions, up to the first unit, yurts or the map's edge, stopping in hail (owner, 2026-10-25).
 - **No accuracy, evasion or critical hits**, since every attack hits (section 8).
 
 ### 9.2 Power (Decided; redefined 2026-10-23)

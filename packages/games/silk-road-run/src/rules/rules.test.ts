@@ -4,6 +4,7 @@ import {
   hexEquals,
   hexKey,
   hexFromKey,
+  hexNeighbor,
   hexNeighbors,
   hexToOffset,
   hexToPixel,
@@ -1440,16 +1441,36 @@ describe('previews, the AI and the run', () => {
   });
 
   it('refuses a move longer than 2 spaces', () => {
-    const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(7, 0)});
+    const s = setup({'p-storm': at(0, 0), 'e-bokh': at(7, 0)});
     expect(
-      tryTurn(s, 'p-mangudai', {
+      tryTurn(s, 'p-storm', {
         move: [1, 2, 3].map((c) => at(c, 0)),
         action: {ability: 'hold'},
       })
     ).toThrow(/longer than the unit can go/);
     expect(
-      Math.max(...reachableHexes(s, mapOf(s), unit(s, 'p-mangudai')).map((r) => r.path.length))
+      Math.max(...reachableHexes(s, mapOf(s), unit(s, 'p-storm')).map((r) => r.path.length))
     ).toBe(2);
+  });
+
+  it('moves the Outrider any number of spaces straight, up to the first unit', () => {
+    const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(7, 0)});
+    const outrider = unit(s, 'p-mangudai');
+    const reaches = reachableHexes(s, mapOf(s), outrider);
+    // Every reach keeps to one direction from its space.
+    for (const {path} of reaches.filter((r) => r.path.length > 0)) {
+      const dir = hexNeighbors(outrider.hex!).findIndex((n) => hexEquals(n, path[0]!));
+      path.forEach((h, i) => expect(h).toEqual(hexNeighbor(i ? path[i - 1]! : outrider.hex!, dir)));
+    }
+    expect(reaches.some((r) => hexEquals(r.hex, at(6, 0)))).toBe(true);
+    expect(reaches.some((r) => hexEquals(r.hex, at(7, 0)))).toBe(false);
+    const bent = [at(1, 0), hexNeighbors(at(1, 0)).find((n) => hexDistance(n, at(0, 0)) === 1)!];
+    expect(invalidPath(s, mapOf(s), outrider, bent)).not.toBeNull();
+    applyTurn(s, outrider, {
+      move: [1, 2, 3, 4, 5, 6].map((c) => at(c, 0)),
+      action: {ability: 'hold'},
+    });
+    expect(outrider.hex).toEqual(at(6, 0));
   });
 
   it('a Grapple and a move in one turn are refused', () => {

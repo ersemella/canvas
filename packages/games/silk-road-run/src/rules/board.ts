@@ -160,6 +160,7 @@ export function addStatus(unit: Unit, status: Status): void {
 
 export function movementCap(unit: Unit): number {
   if (isImmobilized(unit)) return 0;
+  if (HEROES[unit.hero].movesStraight) return Infinity;
   return HEROES[unit.hero].moveCap ?? RULES.movementCap;
 }
 
@@ -180,11 +181,13 @@ export interface Reach {
  * Every hex the unit can end its move on, with a shortest path to it, the
  * start included with an empty path. Units and obstacles block walking;
  * a move can't end on another unit (brief section 2), and one that enters
- * hail ends there (it Immobilizes).
+ * hail ends there (it Immobilizes). A unit that `movesStraight` goes along
+ * the six lanes instead (`straightReaches`).
  */
 export function reachableHexes(state: FightState, map: MapData, unit: Unit): Reach[] {
   if (!unit.hex) return [];
   const cap = movementCap(unit);
+  if (HEROES[unit.hero].movesStraight) return straightReaches(state, map, unit, cap);
   // unitAt for every hex at once: the first living unit standing there.
   const occupant = new Map<number, Unit>();
   for (const u of state.units)
@@ -208,6 +211,27 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
     frontier = next;
   }
   const out = [...best.values()].map((path) => ({hex: path[path.length - 1] ?? unit.hex!, path}));
+  return sortByHex(out, (r) => r.hex);
+}
+
+/**
+ * `reachableHexes` for a unit that `movesStraight`: each of the six lanes
+ * from its space, up to the first unit, yurts or the map's edge, and ending
+ * on the first hail it enters.
+ */
+function straightReaches(state: FightState, map: MapData, unit: Unit, cap: number): Reach[] {
+  const out: Reach[] = [{hex: unit.hex!, path: []}];
+  if (cap > 0) {
+    for (let dir = 0; dir < 6; dir++) {
+      const path: Hex[] = [];
+      for (const h of lane(map, unit.hex!, dir).slice(0, cap)) {
+        if (unitAt(state, h)) break;
+        path.push(h);
+        out.push({hex: h, path: [...path]});
+        if (hailOn(state, h)) break;
+      }
+    }
+  }
   return sortByHex(out, (r) => r.hex);
 }
 
@@ -236,9 +260,14 @@ export function invalidPath(
       : 'That move is longer than the unit can go.';
   }
   let from = unit.hex;
+  const straightDir = HEROES[unit.hero].movesStraight
+    ? hexNeighbors(unit.hex).findIndex((n) => hexEquals(n, path[0]!))
+    : -1;
   for (const [i, h] of path.entries()) {
     if (!hexNeighbors(from).some((n) => hexEquals(n, h)))
       return 'Each step must be to an adjacent hex.';
+    if (straightDir >= 0 && !hexEquals(hexNeighbor(from, straightDir), h))
+      return 'That unit moves in a straight line.';
     if (!walkable(map, h)) return 'That path crosses an obstacle or leaves the map.';
     const other = unitAt(state, h);
     if (other && other !== unit) return 'Units block that path.';

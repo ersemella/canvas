@@ -4,7 +4,7 @@
  */
 import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, CAMEL} from './config';
+import {ABILITY, AI, CAMEL, RULES} from './config';
 import {
   hostile,
   isImmobilized,
@@ -705,7 +705,8 @@ function actionCost(before: FightState, unit: Unit, option: ScoredOption): numbe
  */
 function huntsTemee(state: FightState, me: Unit): boolean {
   if (me.side !== 'enemy' || !me.hex || !camelOf(state)?.alive) return false;
-  const reach = movementCap(me) + 1;
+  // The Outrider's straight move has no cap: weighed as an ordinary walk.
+  const reach = Math.min(movementCap(me), RULES.movementCap) + 1;
   return !state.units.some(
     (e) =>
       e.alive && e.hex && hostile(e, me) && e.hero !== CAMEL && hexDistance(me.hex!, e.hex) <= reach
