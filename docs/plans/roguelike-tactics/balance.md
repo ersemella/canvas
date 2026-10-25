@@ -1843,9 +1843,26 @@ The aura within 2 and Delay 3 together: China 97.5%.
   (97.5–100%): the fox and the Alchemist's 4 health are the weak part,
   not the kits. Its difficulty is a matter of numbers (or of the line-up),
   not of Elixir's shape or Cleave's Delay alone.
-- **Not changed**: both switches stay off; the choice is the owner's. If
-  one is adopted, the page needs the shape's area drawn (`radius`, or an
-  `area` for the aura), and Delay its limit (3.6).
+- **Adopted (owner, 2026-10-25): Cleave's Delay 5.** Elixir's shape stays
+  a switch, `unit` as built; an area shape needs its area drawn on the page
+  (`radius`, or an `area` for the aura). The delay limit (3.6) is not built.
+- **The Alchemist with a stat point more** (`experiments/alchemist.mjs`,
+  the same seat measure, 400 fights each):
+
+  | Elixir | as built | +1 defence | +1 speed | +1 power |
+  |---|---:|---:|---:|---:|
+  | A unit within 2 | 40.6% | 44% | **49.2%** | 41% |
+  | Burst of 1 within 2 | 46.4% | **51.4%** | 64.1% | 52.6% |
+  | Aura of 2 | 46.2% | 48.2% | 60.2% | 48% |
+
+  Speed is worth the most, as for every hero (principle 6): speed 3 brings
+  the built Elixir to the Storm Caller's level; with an area shape it
+  overshoots by 10–14 points. With the burst, defence 2 (health 6) does
+  it instead. Power adds little to the single Elixir: more Enhance on one
+  ally seldom changes a kill.
+  **Recommended:** speed 3 with Elixir as built (no page work), or the
+  burst with defence 2 if an area Elixir is wanted. **Adopted (owner,
+  2026-10-25): speed 3, Elixir as built.**
 - **Found while building it**: the page never offers Elixir on an enemy.
   `offeredTargets` (choices.ts) shows a support ability's targets on its
   own side only, so a player's Alchemist can't Degrade; the AI's can.

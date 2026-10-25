@@ -51,7 +51,8 @@ the kits.**
 - **The keywords** are a new, shorter list: Delay, Haste, Inevitable,
   Push, Pull, Move, Immobilized, Unstoppable, Stunned, Burn, Shield,
   Pierce, Enhance, Degrade, Armour, Immortal ([keywords.md](keywords.md));
-  Immobilized, Stunned, Move, Push and Pull are built.
+  Immobilized, Stunned, Move, Push, Pull, Enhance, Degrade and Delay
+  (Cleave's Delay 5, owner, 2026-10-25) are built.
 - **The kits** ([roster.md](roster.md)): the Bow, unchanged in shape; Hail,
   one space exactly 2 away (a ring; within 3 until 2026-10-24) until the
   Storm Caller's next turn, Immobilizing
