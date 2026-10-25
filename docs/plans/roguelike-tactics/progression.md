@@ -79,7 +79,7 @@ random from one pool:
   player doesn't care about.
 - **Proposed:** the hero slot favours heroes with the fewest upgrades so
   far, so no hero goes the whole run without one.
-- **At most three abilities** besides moving (owner, 2026-10-24;
+- **At most three abilities** besides moving and Hold (owner, 2026-10-24;
   [roster.md](roster.md)): the hero slot offers a new ability only to a
   hero with fewer than three (`hasRoomForAbility` in board.ts); a change to
   an ability it has is still offered. Whether a hero at three could swap

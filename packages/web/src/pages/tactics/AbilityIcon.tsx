@@ -1,7 +1,7 @@
-import type {AbilityId, AbilityKind} from '@canvas/games-silk-road-run';
+import type {AbilityDef, AbilityId, AbilityKind} from '@canvas/games-silk-road-run';
 
-/** What has an icon: every ability, and Move. */
-export type IconId = AbilityId | 'move';
+/** What has an icon: every ability but Hold, and Move. */
+export type IconId = Exclude<AbilityId, 'hold'> | 'move';
 
 /** An ability's kind, or walking's, for the icons' colours. */
 type IconKind = AbilityKind | 'move';
@@ -289,4 +289,9 @@ export function AbilityIcon({id, px = 2}: {id: IconId; px?: number}) {
       )}
     </svg>
   );
+}
+
+/** An ability's icon, or nothing for Hold. */
+export function abilityIcon(def: AbilityDef) {
+  return def.id === 'hold' ? null : <AbilityIcon id={def.id} />;
 }

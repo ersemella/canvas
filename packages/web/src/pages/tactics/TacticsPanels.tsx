@@ -1,6 +1,6 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router-dom';
-import {ActionIcon, Group, Menu, Paper, Stack, Text} from '@mantine/core';
+import {ActionIcon, Button, Group, Menu, Paper, Stack, Text} from '@mantine/core';
 import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {
@@ -27,7 +27,7 @@ import type {
   TurnPreview,
   Unit,
 } from '@canvas/games-silk-road-run';
-import {AbilityIcon, KIND_NAME} from './AbilityIcon';
+import {abilityIcon, KIND_NAME} from './AbilityIcon';
 import {AbilityName, Glossary, GlossaryBox, KeywordText, Term} from './Keywords';
 import styles from './TacticsPage.module.css';
 
@@ -60,6 +60,86 @@ export function nextTurn(
     text: `+${aim - now} → +${slot - now}`,
     title: `Your speed aims at slot +${aim - now}, but cards hold the slots up to +${slot - now - 1}: yours yields to the first free one.`,
   };
+}
+
+/** How long an armed Skip turn waits for its second tap. */
+const SKIP_ARMED_MS = 3000;
+
+/**
+ * Skip turn: ends the turn with Hold, whatever is picked, saying when the
+ * next turn comes. A quiet tile: the turn's action is confirmed from its
+ * own button (Move or the ability, once its hex or target is picked).
+ * Like Reset run, the first tap only arms it ("Tap again to skip"), so a
+ * stray tap doesn't throw a turn away (owner, 2026-10-21); it disarms after
+ * `SKIP_ARMED_MS`, on a tap anywhere else (which still does what it does),
+ * or when the turn changes (the page keys it by turn).
+ */
+export function SkipButton(props: {
+  fight: FightState;
+  /** The turn as a Hold. */
+  preview: TurnPreview | null;
+  busy: boolean;
+  /** Phones: full height for a thumb. */
+  size?: 'sm' | 'lg';
+  onSkip: () => void;
+  /** Desktop: a key that presses it (twice to skip, as with taps), shown on it. */
+  hotkey?: string | undefined;
+}) {
+  const [armed, setArmed] = useState(false);
+  const ref = useRef<HTMLButtonElement>(null);
+  const press = () => {
+    if (!armed) return setArmed(true);
+    setArmed(false);
+    props.onSkip();
+  };
+  const pressRef = useRef(press);
+  pressRef.current = press;
+  const {hotkey} = props;
+  const usable = Boolean(props.preview) && !props.busy;
+  useEffect(() => {
+    if (!hotkey || !usable) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.key.toLowerCase() !== hotkey) return;
+      if ((e.target as HTMLElement | null)?.closest('input, textarea')) return;
+      pressRef.current();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [hotkey, usable]);
+  useEffect(() => {
+    if (!armed) return;
+    const t = setTimeout(() => setArmed(false), SKIP_ARMED_MS);
+    // A press anywhere but the button (the board, another button) disarms it.
+    const onPress = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setArmed(false);
+    };
+    document.addEventListener('pointerdown', onPress, true);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener('pointerdown', onPress, true);
+    };
+  }, [armed]);
+  const next = nextTurn(props.fight, props.preview);
+  return (
+    <Button
+      ref={ref}
+      className={`${styles.skip} ${armed ? styles.skipArmed : ''}`}
+      data-testid="skip-turn"
+      fw="bold"
+      size={props.size ?? 'sm'}
+      loading={props.busy}
+      disabled={!props.preview}
+      data-key={hotkey?.toUpperCase()}
+      onClick={press}
+      title={
+        armed
+          ? `Tap again${hotkey ? ` (or press ${hotkey.toUpperCase()})` : ''} to end the turn without moving or using an ability`
+          : (next?.title ?? 'End the turn without moving or using an ability')
+      }
+    >
+      {armed ? 'Tap again to skip' : `Skip turn${next?.text ? ` · ${next.text}` : ''}`}
+    </Button>
+  );
 }
 
 /**
@@ -212,7 +292,8 @@ export function StatSheet({
   dense?: boolean;
 }) {
   const statuses = statusesOf(fight, unit);
-  const abilities = abilitiesOf(unit);
+  // Hold isn't offered as an action (End turn is).
+  const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold');
   // The camel has none.
   const acts = abilities.length > 0;
   const stats = [
@@ -313,7 +394,7 @@ export function StatSheet({
                   id={def.id}
                   body={<AbilityDetail unit={unit} def={def} />}
                 >
-                  <AbilityIcon id={def.id} />
+                  {abilityIcon(def)}
                   {def.name}
                 </AbilityName>
               ))}
@@ -352,15 +433,20 @@ function SheetPortrait({unit}: {unit: Unit}) {
 export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
   return (
     <Text fz="xs">
-      <AbilityIcon id={def.id} />
-      <b>{def.name}</b> · {KIND_NAME[def.kind]}
-      {/* No damage line for support, nor for a control ability that deals none (Shove, Haul). */}
-      {def.kind !== 'support' && def.damages !== false && (
+      {def.kind && (
         <>
-          {' · '}
-          <Term id="power">Damage {unit.power}</Term>
+          {abilityIcon(def)}
+          <b>{def.name}</b> · {KIND_NAME[def.kind]}
+          {/* No damage line for support, nor for a control ability that deals none (Shove, Haul). */}
+          {def.kind !== 'support' && def.damages !== false && (
+            <>
+              {' · '}
+              <Term id="power">Damage {unit.power}</Term>
+            </>
+          )}
         </>
       )}
+      {!def.kind && <b>{def.name}</b>}
       <br />
       <span className={styles.abilitySummary}>
         <KeywordText text={def.summary(unit)} />

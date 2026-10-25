@@ -55,7 +55,7 @@ export function previewTurn(
   return {
     changes: diff(state, after),
     slot: unit.slot,
-    aimSlot: unit.alive ? aimSlot(after, unit, after.currentSlot, input.action?.ability) : null,
+    aimSlot: unit.alive ? aimSlot(after, unit, after.currentSlot, input.action.ability) : null,
     bumped: bumpedCards(state, after, unitId),
   };
 }
@@ -105,8 +105,8 @@ export interface EnemyOption {
 export function unitOptions(state: FightState, unit: Unit): EnemyOption[] {
   const byAbility = new Map<AbilityId, Map<string, {damage: number; statuses: Set<string>}>>();
   for (const option of scoreOptions(state, unit)) {
-    const ability = option.input.action?.ability;
-    if (!ability) continue;
+    const ability = option.input.action.ability;
+    if (ability === 'hold') continue;
     if (!byAbility.has(ability)) byAbility.set(ability, new Map());
     const effects = byAbility.get(ability)!;
     for (const c of diff(state, option.after)) {

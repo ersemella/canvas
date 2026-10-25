@@ -118,6 +118,11 @@ export function kitOf(unit: Unit): AbilityId[] {
   return unit.loadout?.abilities ?? HEROES[unit.hero].abilities;
 }
 
+/** How many abilities a kit has besides Hold (and moving, which isn't one). */
+export function abilityCount(kit: AbilityId[]): number {
+  return kit.filter((a) => a !== 'hold').length;
+}
+
 /**
  * Whether a kit has room for another ability (`RULES.maxAbilities`): an
  * upgrade adding one is offered only then. The Champion (1 to start) takes
@@ -125,7 +130,7 @@ export function kitOf(unit: Unit): AbilityId[] {
  * Feigned Retreat, the Storm Caller (1) both Sunlight and Gale.
  */
 export function hasRoomForAbility(kit: AbilityId[]): boolean {
-  return kit.length < RULES.maxAbilities;
+  return abilityCount(kit) < RULES.maxAbilities;
 }
 
 /** A unit with a ranged attack (Longshot). */

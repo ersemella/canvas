@@ -167,12 +167,6 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   chose it on 2% of the Storm Caller's turns. A burst pushing every
   adjacent unit away was tried and not taken, as the AI can't value
   escapes ([phase-1-brief.md](phase-1-brief.md), section 4).
-- **Hold and Skip turn** (until 2026-10-25): every hero had Hold, an
-  action with no effect, so a unit could always end its turn; a walk was
-  sent as a move and Hold, and the page's Skip turn (two taps) sent Hold.
-  Removed by the owner: a turn walks or uses an ability, and a unit that
-  can do neither has its turn skipped ([timeline.md](timeline.md), 5.1).
-  The AI, out of work, takes its likeliest-best turn unplayed instead.
 - **Taunt forbidding Hold** (until 2026-10-20): a taunted unit that could
   reach the taunter had to attack it, since a Hold escape made Taunt the
   same as Dazed. Hold is now allowed (owner), to tone down Pin; the AI

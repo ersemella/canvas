@@ -67,7 +67,7 @@ describe('RunRoom', () => {
     const action = await r.call('/action', {
       method: 'POST',
       headers: {'X-Owner': 'owner'},
-      body: JSON.stringify({type: 'turn', move: [{q: 0, r: 0}]}),
+      body: JSON.stringify({type: 'turn', action: {ability: 'hold'}}),
     });
     expect(action.status).toBe(410);
     expect(r.ledger).toHaveLength(1);

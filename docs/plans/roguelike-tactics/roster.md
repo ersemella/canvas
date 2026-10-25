@@ -58,8 +58,8 @@ These bands predate the stats' rework (owner, 2026-10-23; [heroes-and-gear.md](h
 
 **The prototype heroes' kits (owner, 2026-10-23; built)**
 
-Every ability deals exactly its user's power in damage (9.2). No hero
-has Hold since 2026-10-25 (owner; [timeline.md](timeline.md), 5.1). Skirmish and Sunlight are **upgrades**, not in the starting
+Every ability deals exactly its user's power in damage (9.2). Each hero
+also has Hold. Skirmish and Sunlight are **upgrades**, not in the starting
 kits (owner, 2026-10-24), and so are Shove and Haul (the Champion),
 Volley and Feigned Retreat (the Outrider) and Gale (the Storm Caller),
 added the same day as measured ([balance.md](balance.md#second-abilities-measured-2026-10-24)): a hero earns one from the hero slot of a
@@ -67,7 +67,7 @@ region's upgrade offer ([progression.md](progression.md), 19.3), each
 worth a second ability (a side without it wins 40–50%). Until offers are
 built, no hero has them in play (`upgrades` in config.ts).
 
-**At most three abilities** besides moving (owner, 2026-10-24;
+**At most three abilities** besides moving and Hold (owner, 2026-10-24;
 `RULES.maxAbilities`): a hero with three takes no new ability from an
 upgrade. So the Champion (Grapple, Throw folded in) takes both Shove and
 Haul (owner, 2026-10-24; one of them while Throw was its own ability);

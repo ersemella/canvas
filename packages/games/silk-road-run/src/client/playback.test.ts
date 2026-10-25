@@ -1,7 +1,5 @@
 import {describe, expect, it} from 'vitest';
 import {createRun, handleRunAction} from '../rules/run';
-import {actingUnit, mapOf} from '../rules/fight';
-import {reachableHexes} from '../rules/board';
 import {SALT_FLATS} from '../rules/map';
 import {Playback, displayFight, eventSeconds, openingPlayback} from './playback';
 
@@ -9,8 +7,7 @@ import {Playback, displayFight, eventSeconds, openingPlayback} from './playback'
 function played() {
   let run = createRun(0);
   const from = run.fight;
-  const walk = reachableHexes(from, mapOf(from), actingUnit(from)!).find((r) => r.path.length > 0)!;
-  run = handleRunAction(run, {type: 'turn', move: walk.path});
+  run = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
   return {from, to: run.fight};
 }
 
@@ -40,12 +37,13 @@ describe('playback', () => {
     }
   });
 
-  it('skips the player’s own turn coming up', () => {
+  it('skips a Hold and the player’s own turn coming up', () => {
     const {to} = played();
     const events = to.events!;
     const last = events[events.length - 1]!;
     expect(last.kind).toBe('turn');
     expect(eventSeconds(last, true)).toBe(0);
+    expect(eventSeconds(events[0]!, false)).toBe(0); // the player's Hold
   });
 
   it('shows the unit whose turn it is as acting', () => {

@@ -11,28 +11,33 @@ import {
   unusableReason,
 } from '@canvas/games-silk-road-run';
 import type {AbilityId, Reach, Unit} from '@canvas/games-silk-road-run';
-import {AbilityIcon} from './AbilityIcon';
+import {AbilityIcon, abilityIcon} from './AbilityIcon';
 import styles from './TacticsPage.module.css';
+
+/** The abilities a unit's turn offers as buttons: no Hold, since Confirm reads End turn with no action picked. */
+function choiceAbilities(unit: Unit) {
+  return abilitiesOf(unit).filter((def) => def.id !== 'hold');
+}
 
 /**
  * Move and the abilities in rows of two, or three for a hero with more to
  * choose from; Move alone (the camel) fills the row.
  */
 function choiceColumns(unit: Unit): number {
-  const choices = abilitiesOf(unit).length + 1;
+  const choices = choiceAbilities(unit).length + 1;
   return choices === 1 ? 1 : choices > 4 ? 3 : 2;
 }
 
 /** The rows a unit's choices take. */
 export function choiceRows(unit: Unit): number {
-  return Math.ceil((abilitiesOf(unit).length + 1) / choiceColumns(unit));
+  return Math.ceil((choiceAbilities(unit).length + 1) / choiceColumns(unit));
 }
 
 /**
  * The turn's choices, the same on phones and desktop: Move and the
  * abilities as big buttons (the name, then when the next turn comes), in rows of
- * two, or three for a hero with more to choose from; then the run's menu.
- * There is no skipping: a turn walks or uses an ability. The picked one asks for its hex
+ * two, or three for a hero with more to choose from; then Skip turn,
+ * filling its row beside the run's menu. The picked one asks for its hex
  * or target, then, once it's picked, becomes its Confirm: players tap the
  * button they picked again to go (owner, 2026-10-21).
  */
@@ -70,10 +75,10 @@ export function TurnControls(props: {
   onMove: () => void;
   onAbility: (id: AbilityId | null) => void;
   onConfirm: () => void;
-  /** The run's menu, under the choices. */
+  /** The run's menu, beside Skip turn. */
   menu: React.ReactNode;
   /**
-   * The unit's portrait before the menu, to say whose turn it is (on a
+   * The unit's portrait before Skip turn, to say whose turn it is (on a
    * phone, the board's arrow over it read as "tap here"); a tap on it looks at the unit.
    */
   onPortrait?: (() => void) | undefined;
@@ -81,9 +86,10 @@ export function TurnControls(props: {
   portraitOpen?: boolean;
   /** Desktop: each choice shows its number key. */
   keys?: boolean;
+  children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving, confirm} = props;
-  const defs = abilitiesOf(unit);
+  const defs = choiceAbilities(unit);
   // The picked button: Confirm once it's ready, else what it still needs.
   const confirmLabel = confirm && (
     <span className={styles.bigButton}>
@@ -180,16 +186,17 @@ export function TurnControls(props: {
               {ready && confirmLabel
                 ? confirmLabel
                 : picked
-                  ? asking(def.name, <AbilityIcon id={def.id} />)
-                  : label(def.name, <AbilityIcon id={def.id} />, chargeOf(unit, def.id))}
+                  ? asking(def.name, abilityIcon(def))
+                  : label(def.name, abilityIcon(def), chargeOf(unit, def.id))}
             </Button>
           );
         })}
       </div>
-      <div className={`${styles.confirmRow} ${styles.turnRow}`}>
+      <div className={styles.confirmRow}>
         {props.onPortrait && (
           <UnitPortrait unit={unit} open={Boolean(props.portraitOpen)} onTap={props.onPortrait} />
         )}
+        {props.children}
         {props.menu}
       </div>
     </Stack>

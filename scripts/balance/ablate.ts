@@ -27,7 +27,7 @@ export type Mod = {
   party?: HeroId[];
   /**
    * The modified side's kits, by hero, in place of the config's: an
-   * ability changed against the original.
+   * ability changed (Hold Loose for Grapple) against the original.
    */
   kits?: Partial<Record<HeroId, AbilityId[]>>;
 };
@@ -94,6 +94,17 @@ export function ablate(options: Options) {
 }
 
 function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
+  const kits = Object.fromEntries(Object.entries(HEROES).map(([h, s]) => [h, [...s.abilities]]));
+  // Abilities are listed per hero, not per unit, so the modified side's kit is
+  // swapped in for its own decisions only. Its search then also assumes the
+  // other side lacks the banned abilities; the other side's search doesn't.
+  const useKits = (side: Side | null, modSide: Side | null) => {
+    for (const [h, s] of Object.entries(HEROES) as [HeroId, {abilities: AbilityId[]}][]) {
+      const mine = side === modSide;
+      const banned = mine && mod?.ban ? mod.ban : [];
+      s.abilities = ((mine && mod?.kits?.[h]) || kits[h]!).filter((a) => !banned.includes(a));
+    }
+  };
   const add = (o: Record<string, number>, k: string, n = 1) => (o[k] = (o[k] ?? 0) + n);
   const uses: Record<string, Record<string, number>> = {};
   const damage: Record<string, {enemy: number; ally: number}> = {};
@@ -124,14 +135,6 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
       side === modSide && mod?.party ? mod.party : side === 'player' ? party : (enemies ?? party);
     const state = createFight(seed + (mod ? f >> 1 : f), sideParty('player'), sideParty('enemy'));
     for (const u of state.units) u.controller = 'human';
-    // The modified side's kits are its units' own (`Unit.loadout`), so both
-    // sides' searches see each unit's real kit.
-    if (mod?.ban || mod?.kits) {
-      for (const u of state.units.filter((u) => u.side === modSide)) {
-        const kit = mod.kits?.[u.hero] ?? HEROES[u.hero].abilities;
-        u.loadout = {abilities: kit.filter((a) => !mod.ban?.includes(a))};
-      }
-    }
     if (mod?.stats) {
       for (const u of state.units.filter((u) => u.side === modSide)) {
         const extra = mod.stats[u.hero] ?? {};
@@ -178,16 +181,17 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
     let turns = 0;
     while (state.phase === 'fight' && turns < maxTurns) {
       const u = actingUnit(state)!;
+      useKits(u.side, modSide);
       const input = chooseAiTurn(state, u);
-      const {action} = input;
+      const moving = (input.move?.length ?? 0) > 0;
       const swap =
-        action?.ability === 'grapple' &&
-        action.target?.hex?.q === u.hex?.q &&
-        action.target?.hex?.r === u.hex?.r;
-      add((uses[u.hero] ??= {}), !action ? 'move' : swap ? 'swap' : action.ability);
+        input.action.ability === 'grapple' &&
+        input.action.target?.hex?.q === u.hex?.q &&
+        input.action.target?.hex?.r === u.hex?.r;
+      add((uses[u.hero] ??= {}), moving ? 'move' : swap ? 'swap' : input.action.ability);
       add(uses[u.hero]!, 'turns');
-      if (action?.ability === 'sunlight') {
-        const at = action.target!.hex!;
+      if (input.action.ability === 'sunlight') {
+        const at = input.action.target!.hex!;
         const t = state.units.find((v) => v.alive && v.hex?.q === at.q && v.hex.r === at.r);
         add(
           sunlight,
@@ -202,17 +206,19 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
                   : `ally:${t.hero}`
         );
       }
-      if (!action) {
+      if (moving) {
         moveTurns++;
         movedHexes += input.move!.length;
       }
       actor = u.side;
       applyTurn(state, u, input);
+      useKits(null, modSide);
       readLog(state);
       turns++;
       advance(state, chooseAiTurn);
       readLog(state);
     }
+    useKits(null, modSide);
     for (const u of state.units) {
       add(units, u.hero);
       if (u.alive) add(survivors, u.hero);
@@ -264,7 +270,7 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
     medianSlots: median(slots),
     hexesPerMove: round(movedHexes / (moveTurns || 1), 2),
     turnsPerUnit: Object.fromEntries(Object.entries(uses).map(([h, m]) => [h, perUnit(m.turns!)])),
-    /** Share of each hero's turns spent on each ability or a move. */
+    /** Share of each hero's turns spent on each ability, a move, or Hold. */
     usePct: Object.fromEntries(
       Object.entries(uses).map(([h, m]) => [
         h,

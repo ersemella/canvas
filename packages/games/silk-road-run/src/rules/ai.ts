@@ -18,7 +18,7 @@ import {
   unitAt,
 } from './board';
 import {ABILITIES, abilitiesOf, grappling, unusableReason} from './abilities';
-import {allowedTargets, offeredTargets} from './choices';
+import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
@@ -233,7 +233,6 @@ export function scoreOutcome(
 
 /** What a turn's charge costs its user: the share of a turn it waits, in damage. */
 function chargeCost(actor: Unit, input: TurnInput): number {
-  if (!input.action) return 0;
   return (chargeOf(actor, input.action.ability) / cardCost(actor)) * turnValue(actor);
 }
 
@@ -264,7 +263,7 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
   for (const reach of reachableHexes(state, map, unit).sort(
     (a, b) => a.path.length - b.path.length
   ))
-    if (reach.path.length > 0) inputs.push({move: reach.path});
+    if (reach.path.length > 0) inputs.push({move: reach.path, action: {ability: 'hold'}});
   return inputs;
 }
 
@@ -276,14 +275,14 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
  * (`quarryGap`). Any turn aimed at an enemy ranks above any walk.
  */
 function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: boolean): number {
-  const target = input.action?.target;
+  const target = input.action.target;
   const end = input.move?.length
     ? input.move[input.move.length - 1]!
-    : input.action && endsElsewhere(input.action.ability) && target?.to
+    : endsElsewhere(input.action.ability) && target?.to
       ? target.to
       : unit.hex!;
   const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
-  if (!input.action) return closing;
+  if (input.move?.length || input.action.ability === 'hold') return closing;
   const ability = input.action.ability;
   // What catching a unit in Gale is worth, by its side.
   const sided = (u: Unit, value: number) =>
@@ -371,7 +370,7 @@ function orderedInputs(state: FightState, unit: Unit): TurnInput[] {
     // Where a walk or Skirmish's step ends: stood there for a moment, and put back.
     const to = input.move?.length
       ? input.move[input.move.length - 1]
-      : input.action && endsElsewhere(input.action.ability)
+      : endsElsewhere(input.action.ability)
         ? input.action.target?.to
         : undefined;
     if (to) {
@@ -387,23 +386,6 @@ function orderedInputs(state: FightState, unit: Unit): TurnInput[] {
   const guesses = new Map(inputs.map((i) => [i, guess(i)]));
   // Stable: equal guesses keep the listed order.
   return inputs.sort((a, b) => guesses.get(b)! - guesses.get(a)!);
-}
-
-/**
- * A legal turn without playing any, for when the work runs out (there is
- * no passing): the likeliest best (`orderedInputs`), or else the first
- * target an ability is offered, such as hail on a space no unit is near.
- * A unit with neither never gets a turn (`nothingToDo`).
- */
-function fallbackTurn(state: FightState, unit: Unit): TurnInput {
-  const likeliest = orderedInputs(state, unit)[0];
-  if (likeliest) return likeliest;
-  for (const def of abilitiesOf(unit)) {
-    if (unusableReason(unit, def)) continue;
-    const target = offeredTargets(state, mapOf(state), unit, def)[0];
-    if (target) return {action: {ability: def.id, target}};
-  }
-  throw new RuleError(`${unit.id} has no turn to take.`);
 }
 
 /** The threat map `unit`'s options are scored against, if its caution counts it. */
@@ -653,7 +635,7 @@ export function chooseAiTurn(
   };
   let completed: SearchOption | undefined;
   try {
-    if (local.left <= 0) return fallbackTurn(state, unit);
+    if (local.left <= 0) return {action: {ability: 'hold'}};
     const root = nodeAt(state, unit);
     // Reserve most work for actual replies, rather than spending it all
     // on the root. Small remaining budgets retain a useful greedy turn.
@@ -662,7 +644,7 @@ export function chooseAiTurn(
     scoreAll(root, threatsFor(state, unit, true));
     const options = shortlist(root.scored);
     root.options = options;
-    if (!options.length) return fallbackTurn(state, unit);
+    if (!options.length) return {action: {ability: 'hold'}};
     completed = options[0]!;
     if (stats) stats.completedDepth = 1;
     for (let depth = 2; depth <= (settings.depth ?? AI.searchDepth); depth++) {
@@ -693,7 +675,7 @@ export function chooseAiTurn(
   } catch (e) {
     if (e !== exhausted) throw e;
     // Updated only after every root candidate has completed the depth.
-    return completed?.input ?? fallbackTurn(state, unit);
+    return completed?.input ?? {action: {ability: 'hold'}};
   } finally {
     const used = Math.min(AI.maxSimulations, initial) - local.left;
     budget.left = initial - used;
@@ -705,7 +687,7 @@ export function chooseAiTurn(
  * Reward progress toward combat, as a cost (negative for progress), plus
  * the turn's charge (`chargeCost`). Progress belongs to the acting team:
  * subtracting both teams' absolute distances in a static evaluation would
- * cancel out in a duel and make standing still preferable.
+ * cancel out in a duel and make Holding preferable.
  */
 function actionCost(before: FightState, unit: Unit, option: ScoredOption): number {
   const hunting = huntsTemee(before, before.units.find((u) => u.id === unit.id)!);

@@ -21,12 +21,13 @@ import {
   unitAt,
   firstInLane,
   shotLane,
+  abilityCount,
   hasRoomForAbility,
 } from './board';
 import {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
-import {nothingToDo, offeredTargets} from './choices';
+import {offeredTargets, onlyHold} from './choices';
 import {
   RuleError,
   actingUnit,
@@ -40,7 +41,7 @@ import {
 } from './fight';
 import {previewTurn} from './preview';
 import {SALT_FLATS, blocks, depth, onMap, spaceAt, spaceOf, tileAt} from './map';
-import {checkEnd, endTurnEffects, enhance, enterHex, hit, kill, stun} from './resolve';
+import {checkEnd, enhance, enterHex, hit, kill, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {
   RUN_FORMAT,
@@ -76,13 +77,13 @@ const at = (col: number, row: number): Hex => {
 
 /**
  * Gives `hero` upgrade abilities (`upgrades` in config.ts; its first by
- * default) for the current test: they are earned during a
+ * default) for the current test, before Hold: they are earned during a
  * run, not in a starting kit (owner, 2026-10-24), up to three abilities.
  */
 function upgrade(hero: HeroId, abilities = HEROES[hero].upgrades!.slice(0, 1)): void {
   const kit = HEROES[hero].abilities;
-  HEROES[hero].abilities = [...kit, ...abilities];
-  expect(HEROES[hero].abilities.length).toBeLessThanOrEqual(RULES.maxAbilities);
+  HEROES[hero].abilities = [...kit.filter((a) => a !== 'hold'), ...abilities, 'hold'];
+  expect(abilityCount(HEROES[hero].abilities)).toBeLessThanOrEqual(RULES.maxAbilities);
   onTestFinished(() => {
     HEROES[hero].abilities = kit;
   });
@@ -124,22 +125,6 @@ const tryTurn = (s: FightState, id: string, input: TurnInput) => () => {
 };
 
 /**
- * Ends `u`'s turn having done nothing, which the rules don't allow (a turn
- * walks or uses an ability), for tests that only need the track to run on.
- */
-function idle(s: FightState, u: Unit): void {
-  s.awaiting = null;
-  endTurnEffects(u);
-  placeCard(s, u, aimSlot(s, u));
-}
-
-/** The acting unit's first walk: a turn for tests that need one, whatever it is. */
-function aWalk(s: FightState): TurnInput {
-  const u = actingUnit(s)!;
-  return {move: reachableHexes(s, mapOf(s), u).find((r) => r.path.length > 0)!.path};
-}
-
-/**
  * A run's next request, as the page sends it: the AI's turn when one is
  * due (`continue`), otherwise the player's, `turn` or the AI's pick for it.
  */
@@ -152,13 +137,13 @@ function request(run: RunState, turn?: TurnInput): RunState {
 }
 
 describe('the track', () => {
-  it('skips a turn with nothing to do, and marks it till the unit next acts', () => {
+  it('skips a turn with only Hold to choose, and marks it till the unit next acts', () => {
     // Immobilized with no one in reach: Grapple has no target.
     const s = setup({'p-bokh': at(1, 1), 'e-bokh': at(6, 4), 'p-storm': at(1, 5)});
     const b = unit(s, 'p-bokh');
     b.statuses.push({kind: 'immobilized'});
     s.events = [];
-    expect(nothingToDo(s, mapOf(s), b)).toBe(true);
+    expect(onlyHold(s, mapOf(s), b)).toBe(true);
     const from = b.slot!;
     const next = advanceToDecision(s)!;
     expect(next.id).not.toBe('p-bokh');
@@ -170,22 +155,23 @@ describe('the track', () => {
     expect(b.slot).toBeGreaterThan(next.slot!);
     // Free again by its next turn: it acts, and the mark goes.
     b.statuses = [];
-    for (let u = next; u.id !== 'p-bokh'; u = advanceToDecision(s)!) idle(s, u);
+    for (let u = next; u.id !== 'p-bokh'; u = advanceToDecision(s)!)
+      applyTurn(s, u, {action: {ability: 'hold'}});
     expect(b.skipped).toBeUndefined();
   });
 
   it('skips a unit whose only targets are allies', () => {
-    // Allies aren't offered as targets, so an Immobilized wolf with only an ally beside it has nothing to do.
+    // Allies aren't offered as targets, so an Immobilized wolf with only an ally beside it holds.
     const s = setup({'p-wolf': at(1, 1), 'p-bokh': at(2, 1), 'e-bokh': at(6, 6)}, ['wolf', 'bokh']);
     const w = unit(s, 'p-wolf');
     w.statuses.push({kind: 'immobilized'});
     expect(ABILITIES.bite.targets(s, mapOf(s), w, w.hex!).length).toBe(1);
-    expect(nothingToDo(s, mapOf(s), w)).toBe(true);
+    expect(onlyHold(s, mapOf(s), w)).toBe(true);
     // An enemy beside it gives it a bite.
     unit(s, 'e-bokh').hex = hexNeighbors(w.hex!).find(
       (h) => !unitAt(s, h) && onMap(SALT_FLATS, h)
     )!;
-    expect(nothingToDo(s, mapOf(s), w)).toBe(false);
+    expect(onlyHold(s, mapOf(s), w)).toBe(false);
   });
 
   /** A Skirmish on `target`: the first of its steps that has it in line. */
@@ -197,13 +183,13 @@ describe('the track', () => {
   };
 
   it('the second abilities are upgrades, not in a starting kit', () => {
-    expect(HEROES.bokh.abilities).toEqual(['grapple']);
+    expect(HEROES.bokh.abilities).toEqual(['grapple', 'hold']);
     expect(HEROES.bokh.upgrades).toEqual(['haul', 'shove']);
-    expect(HEROES.mangudai.abilities).toEqual(['longshot']);
+    expect(HEROES.mangudai.abilities).toEqual(['longshot', 'hold']);
     expect(HEROES.mangudai.upgrades).toEqual(['skirmish', 'volley', 'feignedRetreat']);
-    expect(HEROES.storm.abilities).toEqual(['hail']);
+    expect(HEROES.storm.abilities).toEqual(['hail', 'hold']);
     expect(HEROES.storm.upgrades).toEqual(['sunlight', 'gale']);
-    // At most three abilities (owner, 2026-10-24): the
+    // At most three abilities besides Hold (owner, 2026-10-24): the
     // Champion and Storm Caller take both their upgrades, the Outrider two.
     expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul'])).toBe(true);
     expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul', 'shove'])).toBe(false);
@@ -211,7 +197,7 @@ describe('the track', () => {
     expect(hasRoomForAbility([...HEROES.mangudai.abilities, 'skirmish', 'volley'])).toBe(false);
     expect(hasRoomForAbility([...HEROES.storm.abilities, 'sunlight'])).toBe(true);
     for (const h of ROSTER)
-      expect(HEROES[h].abilities.length).toBeLessThanOrEqual(RULES.maxAbilities);
+      expect(abilityCount(HEROES[h].abilities)).toBeLessThanOrEqual(RULES.maxAbilities);
     const s = setup({'p-mangudai': at(1, 3), 'p-storm': at(2, 3), 'e-bokh': at(5, 4)});
     expect(unusableReason(unit(s, 'p-mangudai'), ABILITIES.skirmish)).not.toBeNull();
     expect(unusableReason(unit(s, 'p-storm'), ABILITIES.sunlight)).not.toBeNull();
@@ -244,8 +230,8 @@ describe('the track', () => {
       ).toBe(true);
     }
     const input = skirmishOn(s, m, bokh);
-    expect(input.action!.target).toBeDefined();
-    const step = input.action!.target!.to!;
+    expect(input.action.target).toBeDefined();
+    const step = input.action.target!.to!;
     // Charged: the card goes half its action cost on (4 of 8), and the preview says so.
     const now = s.currentSlot;
     expect(actionCost(m)).toBe(8);
@@ -258,9 +244,10 @@ describe('the track', () => {
     expect(bokh.hp).toBe(bokh.maxHp);
     expect(s.shots).toHaveLength(1);
     expect(shotLane(s, mapOf(s), s.shots![0]!).at(-1)).toEqual(bokh.hex);
-    // Everyone else idles, so the next decision of the Outrider's is its turn after the shot.
+    // Everyone else holds, so the next decision of the Outrider's is its turn after the shot.
     s.units.forEach((u) => (u.controller = 'human'));
-    for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s)) idle(s, d);
+    for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
+      applyTurn(s, d, {action: {ability: 'hold'}});
     expect(bokh.hp).toBe(bokh.maxHp - m.power);
     expect(s.shots).toEqual([]);
     expect(charging(s, m)).toBe(false);
@@ -308,7 +295,8 @@ describe('the track', () => {
     enterHex(ctx, bokh, away);
     enterHex(ctx, storm, lane[0]!);
     s.units.forEach((u) => (u.controller = 'human'));
-    for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s)) idle(s, d);
+    for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
+      applyTurn(s, d, {action: {ability: 'hold'}});
     expect(bokh.hp).toBe(bokh.maxHp);
     expect(storm.hp).toBe(storm.maxHp - m.power);
     expect(s.shots).toEqual([]);
@@ -324,7 +312,8 @@ describe('the track', () => {
     applyTurn(s, m, skirmishOn(s, m, bokh));
     expect(m.enhance).toBeUndefined();
     s.units.forEach((u) => (u.controller = 'human'));
-    for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s)) idle(s, d);
+    for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
+      applyTurn(s, d, {action: {ability: 'hold'}});
     expect(s.shots).toEqual([]);
     expect(bokh.hp).toBe(bokh.maxHp - m.power - 2);
   });
@@ -348,10 +337,10 @@ describe('the track', () => {
     stun({state: s, map: mapOf(s), slot: s.currentSlot}, m, {kind: 'stunned'});
     expect(s.shots).toEqual([]);
     expect(charging(s, m)).toBe(false);
-    // Everyone else idles until the Outrider's card has come back.
+    // Everyone else holds until the Outrider's card has come back.
     s.units.forEach((u) => (u.controller = 'human'));
     for (let d = advanceToDecision(s); d && s.currentSlot <= back!; d = advanceToDecision(s))
-      idle(s, d);
+      applyTurn(s, d, {action: {ability: 'hold'}});
     expect(bokh.hp).toBe(bokh.maxHp);
     expect(s.log.some((l) => l.slot === back && l.text.includes('Stunned: turn skipped'))).toBe(
       true
@@ -379,12 +368,11 @@ describe('the track', () => {
     m.slot = 25;
     s.awaiting = m.id;
     const moved = cloneFight(s);
-    applyTurn(moved, unit(moved, m.id), {move: [at(2, 3)]});
-    const shot = cloneFight(s);
-    unit(shot, 'e-bokh').hex = at(4, 3);
-    applyTurn(shot, unit(shot, m.id), {action: {ability: 'longshot', target: {hex: at(4, 3)}}});
+    applyTurn(moved, unit(moved, m.id), {move: [at(2, 3)], action: {ability: 'hold'}});
+    const held = cloneFight(s);
+    applyTurn(held, unit(held, m.id), {action: {ability: 'hold'}});
     expect(unit(moved, m.id).slot).toBe(33);
-    expect(unit(shot, m.id).slot).toBe(33);
+    expect(unit(held, m.id).slot).toBe(33);
   });
 
   it('gives the faster more turns: Outriders before Bökh, Bökh before Temee', () => {
@@ -399,7 +387,7 @@ describe('the track', () => {
     unit(s, 'p-camel').statuses.push({kind: 'immobilized'});
     s.events = [];
     for (let u = advanceToDecision(s); u && s.currentSlot < 600; u = advanceToDecision(s))
-      idle(s, u);
+      applyTurn(s, u, {action: {ability: 'hold'}});
     const turns = (id: string) =>
       s.events!.filter((e) => e.kind === 'turn' && e.unitId === id).length;
     expect(turns('p-mangudai')).toBeGreaterThan(turns('p-bokh'));
@@ -691,7 +679,9 @@ describe('the board', () => {
     expect(keys).not.toContain(key(at(1, 2))); // enemy
     expect(keys).not.toContain(key(at(2, 2))); // a yurt
     for (const r of reach) expect(r.path.map(key)).not.toContain(key(at(1, 3)));
-    expect(simulate(s, 'p-bokh', {move: [at(1, 3), at(2, 3)]})).toBeNull();
+    expect(
+      simulate(s, 'p-bokh', {move: [at(1, 3), at(2, 3)], action: {ability: 'hold'}})
+    ).toBeNull();
     expect(reach.every((r) => r.path.length <= RULES.movementCap)).toBe(true);
   });
 
@@ -706,9 +696,9 @@ describe('the board', () => {
     const reach = reachableHexes(s, mapOf(s), b);
     expect(reach.some((r) => hexKey(r.hex) === hexKey(dest))).toBe(false);
     expect(reach.some((r) => hexKey(r.hex) === hexKey(at(3, 4)))).toBe(true);
-    expect(simulate(s, 'p-bokh', {move: [at(3, 4), dest]})).toBeNull();
+    expect(simulate(s, 'p-bokh', {move: [at(3, 4), dest], action: {ability: 'hold'}})).toBeNull();
     s.awaiting = b.id;
-    applyTurn(s, b, {move: [at(3, 4)]});
+    applyTurn(s, b, {move: [at(3, 4)], action: {ability: 'hold'}});
     expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm'}]);
     expect(movementCap(b)).toBe(0);
   });
@@ -719,7 +709,7 @@ describe('the board', () => {
     expect(movementCap(b)).toBe(RULES.movementCap);
     b.statuses.push({kind: 'immobilized'});
     expect(reachableHexes(s, mapOf(s), b)).toHaveLength(1);
-    expect(() => applyTurn(s, b, {move: [at(1, 3)]})).toThrow(RuleError);
+    expect(() => applyTurn(s, b, {move: [at(1, 3)], action: {ability: 'hold'}})).toThrow(RuleError);
     b.statuses = [{kind: 'stunned'}];
     expect(movementCap(b)).toBe(0);
   });
@@ -795,7 +785,7 @@ describe('stats and damage', () => {
     storm.slot = 1;
     expect(advanceToDecision(s)!.id).toBe('p-storm');
     enhance({state: s, map: mapOf(s), slot: s.currentSlot}, storm, 1);
-    idle(s, storm);
+    applyTurn(s, storm, {action: {ability: 'hold'}});
     expect(storm.enhance).toBe(1);
     storm.slot = s.currentSlot + 1;
     expect(advanceToDecision(s)!.id).toBe('p-storm');
@@ -988,7 +978,7 @@ describe('abilities', () => {
     const away = reachableHexes(s, mapOf(s), b).find(
       (r) => r.path.length === 1 && hexDistance(r.hex, target.hex!) === 2
     )!;
-    applyTurn(s, b, {move: away.path});
+    applyTurn(s, b, {move: away.path, action: {ability: 'hold'}});
     expect(target.statuses).toEqual([]);
   });
 
@@ -1023,7 +1013,7 @@ describe('abilities', () => {
       .find((p) => invalidPath(s, mapOf(s), b, p) === null)!;
     expect(path).toBeDefined();
     const back = path[1]!;
-    applyTurn(s, b, {move: path});
+    applyTurn(s, b, {move: path, action: {ability: 'hold'}});
     expect(b.hex).toEqual(back);
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
@@ -1280,7 +1270,7 @@ describe('the caravan’s camel', () => {
     const road = roadToExit(mapOf(s), at(2, 4));
     camel.slot = 90;
     unit(s, 'p-bokh').slot = 95;
-    expect(abilitiesOf(camel)).toEqual([]);
+    expect(abilitiesOf(camel).map((d) => d.id)).toEqual(['hold']);
     // Bökh's card is at 95: the camel's turn comes first, with no decision.
     expect(advanceToDecision(s)!.id).toBe('p-bokh');
     expect(camel.hex).toEqual(road[0]);
@@ -1369,7 +1359,7 @@ describe('the caravan’s camel', () => {
     archer.slot = 50;
     advanceToDecision(shot);
     const input = chooseAiTurn(shot, archer);
-    expect(input.action?.ability).toBe('longshot');
+    expect(input.action.ability).toBe('longshot');
     expect(simulate(shot, archer.id, input)!.phase).toBe('lost');
   });
 });
@@ -1392,6 +1382,7 @@ describe('previews, the AI and the run', () => {
       const actor = unit(s, 'p-mangudai');
       const input: TurnInput = {
         move: Array.from({length}, (_, i) => at(i + 1, 0)),
+        action: {ability: 'hold'},
       };
       const aim = s.currentSlot + actionCost(actor);
       unit(s, 'e-bokh').slot = aim;
@@ -1415,6 +1406,7 @@ describe('previews, the AI and the run', () => {
     expect(
       tryTurn(s, 'p-mangudai', {
         move: [1, 2, 3].map((c) => at(c, 0)),
+        action: {ability: 'hold'},
       })
     ).toThrow(/longer than the unit can go/);
     expect(
@@ -1555,7 +1547,7 @@ describe('previews, the AI and the run', () => {
     const run = createRun(3);
     const acting = actingUnit(run.fight)!;
     const reach = reachableHexes(run.fight, mapOf(run.fight), acting);
-    const input: TurnInput = {move: reach[reach.length - 1]!.path};
+    const input: TurnInput = {move: reach[reach.length - 1]!.path, action: {ability: 'hold'}};
     const preview = previewTurn(run.fight, acting.id, input)!;
     const after = cloneFight(run.fight);
     applyTurn(after, after.units.find((u) => u.id === acting.id)!, input);
@@ -1571,7 +1563,7 @@ describe('previews, the AI and the run', () => {
     const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(5, 3), 'e-storm': at(6, 3)});
     const bokh = unit(s, 'p-bokh');
     s.awaiting = bokh.id;
-    const input: TurnInput = {move: [at(1, 4)]};
+    const input: TurnInput = {action: {ability: 'hold'}};
     const aim = s.currentSlot + actionCost(bokh);
     expect(previewTurn(s, bokh.id, input)).toMatchObject({aimSlot: aim, slot: aim});
     // Cards in the aimed slot and the one after: the card yields past both.
@@ -1590,7 +1582,9 @@ describe('previews, the AI and the run', () => {
     expect(view.fight.awaiting).toBeNull();
     expect(actingUnit(run.fight)!.controller).toBe('ai');
     const before = JSON.stringify(run);
-    expect(() => handleRunAction(run, {type: 'turn'})).toThrow('It is not your turn.');
+    expect(() => handleRunAction(run, {type: 'turn', action: {ability: 'hold'}})).toThrow(
+      'It is not your turn.'
+    );
     expect(JSON.stringify(run)).toBe(before);
     // One `continue`, one AI turn: the events hold one turn's action.
     const ai = actingUnit(run.fight)!.id;
@@ -1609,7 +1603,7 @@ describe('previews, the AI and the run', () => {
     const play = () => {
       let run = createRun(7);
       for (let i = 0; i < 5 && run.fight.phase === 'fight'; i++) {
-        run = request(run);
+        run = request(run, {action: {ability: 'hold'}});
       }
       return run;
     };
@@ -1627,7 +1621,7 @@ describe('previews, the AI and the run', () => {
     const run = createRun(0);
     expect(run.format).toBe(RUN_FORMAT);
     expect(runOutdated(run)).toBe(false);
-    const next = handleRunAction(run, {type: 'turn', ...aWalk(run.fight)});
+    const next = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
     expect(next.format).toBe(RUN_FORMAT);
     expect(runOutdated(next)).toBe(false);
     // Saved before formats existed, or in an older one.
@@ -1649,7 +1643,7 @@ describe('previews, the AI and the run', () => {
       4,
     ]);
     Object.assign(old, {speed: 7, defence: 8});
-    const next = handleRunAction(saved, {type: 'turn', ...aWalk(saved.fight)});
+    const next = handleRunAction(saved, {type: 'turn', action: {ability: 'hold'}});
     expect(next.fight.units.find((u) => u.id === 'p-mangudai')!.speed).toBe(HEROES.mangudai.speed);
   });
 
@@ -1715,11 +1709,10 @@ describe('previews, the AI and the run', () => {
     const first = chooseAiTurn(run.fight, enemy, budget);
     expect(budget.left).toBeLessThan(2 * AI.maxSimulations);
     expect(2 * AI.maxSimulations - budget.left).toBeLessThanOrEqual(AI.maxSimulations);
-    // Exhaustion never spends beyond the request budget, and still takes a legal turn.
+    // Exhaustion never spends beyond the request budget; Hold is always legal.
     const starved = {left: 0};
-    const fallback = chooseAiTurn(run.fight, enemy, starved);
+    expect(chooseAiTurn(run.fight, enemy, starved)).toEqual({action: {ability: 'hold'}});
     expect(starved.left).toBe(0);
-    expect(tryTurn(run.fight, enemy.id, fallback)).not.toThrow();
     expect(chooseAiTurn(run.fight, enemy, {left: 2 * AI.maxSimulations})).toEqual(first);
   });
 
@@ -1745,9 +1738,9 @@ describe('previews, the AI and the run', () => {
 describe('events for playback', () => {
   it('a run action records what it set off, ending on the board it leaves', () => {
     let run = createRun(0);
-    run = handleRunAction(run, {type: 'turn', ...aWalk(run.fight)});
+    run = handleRunAction(run, {type: 'turn', action: {ability: 'hold'}});
     const events = run.fight.events!;
-    expect(events[0]).toMatchObject({kind: 'step'});
+    expect(events[0]).toMatchObject({kind: 'action', ability: 'hold'});
     // The track runs on to the next decision, either side's, the last thing recorded.
     expect(events[events.length - 1]).toMatchObject({kind: 'turn', unitId: run.fight.awaiting});
     const last = events[events.length - 1]!.after;
@@ -1760,7 +1753,7 @@ describe('events for playback', () => {
       });
     }
     // The next action starts a fresh list.
-    const next = request(run);
+    const next = request(run, {action: {ability: 'hold'}});
     expect(['action', 'step']).toContain(next.fight.events![0]!.kind);
     expect(next.fight.events).not.toContain(events[0]);
   });
@@ -1779,7 +1772,7 @@ describe('events for playback', () => {
   it('records each hex of a move, and a throw as a throw', () => {
     const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(6, 6)});
     s.events = [];
-    applyTurn(s, unit(s, 'p-bokh'), {move: [at(1, 4), at(2, 4)]});
+    applyTurn(s, unit(s, 'p-bokh'), {move: [at(1, 4), at(2, 4)], action: {ability: 'hold'}});
     expect(s.events.filter((e) => e.kind === 'step')).toMatchObject([
       {from: at(1, 3), to: at(1, 4), how: 'walk'},
       {from: at(1, 4), to: at(2, 4), how: 'walk'},
@@ -1794,7 +1787,7 @@ describe('events for playback', () => {
     s.events = [];
     const copy = cloneFight(s, true);
     expect(copy.events).toBeUndefined();
-    applyTurn(copy, unit(copy, 'p-bokh'), {move: [at(1, 4)]});
+    applyTurn(copy, unit(copy, 'p-bokh'), {move: [at(1, 4)], action: {ability: 'hold'}});
     expect(copy.events).toBeUndefined();
     expect(s.events).toEqual([]);
   });

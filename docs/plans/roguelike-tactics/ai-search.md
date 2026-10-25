@@ -27,7 +27,7 @@ deepening. It remains deterministic: no randomness or clock-based cutoff.
   combat is signed for the acting team (since 2026-10-23 every turn places
   the card the same, so time has no cost to weigh).
   Progress is evaluated per action; subtracting both teams' absolute
-  distances would cancel out in a duel and encourage standing still.
+  distances would cancel out in a duel and encourage Holding.
 - Maximize for the root side and minimize for the opposing side, regardless
   of controller. The timeline can give several consecutive turns to allies.
   Each decision node is whoever's card comes next on the track
@@ -75,7 +75,8 @@ Ordinary walking now blocks on either side’s units and is a separate action
 costing 20 plus 10 per hex, capped at four hexes. Leap jumps exactly two, over one hex.
 Candidate generation and threat estimates respect these rules. The search’s
 per-action time calculation uses the same authoritative movement cost as the
-server and previews. The lethal-reply regression checks a legal escape that
+server and previews; the Hold scoring adjustment applies only to idle Hold,
+not move-only turns. The lethal-reply regression checks a legal escape that
 survives all immediate replies rather than requiring the former move-and-Pin
 sequence, which is no longer legal in one turn.
 
@@ -85,9 +86,8 @@ sequence, which is no longer legal in one turn.
 of its own (owner, 2026-10-24; see "Each AI turn a request"; it was 110 a
 turn and 220 shared by a request's AI turns). Each simulated action and
 automatic card advanced during search spends one unit. The old minimum
-search after exhaustion is gone: a depleted budget takes the likeliest-best
-turn by the cheap guess, unplayed (`fallbackTurn`; Hold until 2026-10-25,
-when passing went). Actual live turns still resolve
+search after exhaustion is gone: a depleted budget uses Hold, which is
+always legal. Actual live turns still resolve
 normally. Candidate generation, evaluation and threat-map setup have
 bounded overhead outside this counter.
 

@@ -19,6 +19,9 @@ import type {
   TurnInput,
 } from '@canvas/games-silk-road-run';
 
+/** Skip turn's turn: Hold, without moving. */
+export const SKIP: TurnInput = {action: {ability: 'hold', target: {}}};
+
 /** Why an ability has nothing to target, when that disables it. */
 const NO_TARGET: Partial<Record<AbilityId, string>> = {
   longshot: 'No enemy in any of Longshot’s lanes.',
@@ -130,12 +133,21 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   /** The picked turn, once its hex or target is: the picked button confirms it. */
   const input: TurnInput | null = useMemo(() => {
     if (needsTarget || (!action && !plannedMove)) return null;
-    return action ? {action} : plannedMove!.path.length > 0 ? {move: plannedMove!.path} : null;
+    const out: TurnInput = {action: action ?? {ability: 'hold', target: {}}};
+    if (plannedMove && plannedMove.path.length > 0) {
+      out.move = plannedMove.path;
+    }
+    return out;
   }, [action, needsTarget, plannedMove]);
 
   const preview = useMemo(
     () => (fight && acting && input ? previewTurn(fight, acting.id, input) : null),
     [fight, acting, input]
+  );
+  /** Skip turn: a Hold, whatever is picked. */
+  const skipPreview = useMemo(
+    () => (fight && acting ? previewTurn(fight, acting.id, SKIP) : null),
+    [fight, acting]
   );
 
   /** The hex picked last: the destination, the target, Feigned Retreat's fall-back, or Skirmish's step before its target. */
@@ -150,7 +162,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   const chooseAbility = useCallback(
     (id: AbilityId | null) => {
       if (!id) return pick({plannedMove: null, moving: false, ability: null, target: null});
-      // Abilities with no target preview at once.
+      // Abilities with no target (Hold) preview at once.
       const own =
         fight && acting ? ABILITIES[id].targets(fight, mapOf(fight), acting, acting.hex!) : [];
       pick({
@@ -269,7 +281,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     if (!fight || !acting?.alive) return out;
     const map = mapOf(fight);
     for (const def of abilitiesOf(acting)) {
-      if (offeredTargets(fight, map, acting, def).length > 0) continue;
+      if (def.id === 'hold' || offeredTargets(fight, map, acting, def).length > 0) continue;
       out.set(def.id, {why: NO_TARGET[def.id] ?? 'Nothing to target from here.'});
     }
     return out;
@@ -288,6 +300,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     needsTarget,
     input,
     preview,
+    skipPreview,
     lastPicked,
     chooseAbility,
     toggleMove,

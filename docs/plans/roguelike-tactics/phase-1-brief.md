@@ -495,8 +495,7 @@ confirm or change:
   or target, and tapping it puts it down. Tapping the chosen hex or target
   again un-picks it (it used to do nothing): a tap on the board never
   commits, since the board is where players look around. The button
-  under the choices was an explicit Skip turn (Hold, whatever is picked;
-  removed with Hold, owner, 2026-10-25: there is no passing),
+  under the choices is an explicit Skip turn (Hold, whatever is picked),
   a quiet dusk tile saying when the next turn comes. Its first tap only arms it
   ("Tap again to skip", in gold), as Reset run's does, so a stray tap
   doesn't throw a turn away (owner, 2026-10-21); it disarms after 3
@@ -512,7 +511,7 @@ confirm or change:
   does the looking on desktop; a Confirm under that hex does too. Esc or a
   right-click steps back one pick at a time. Keys: 1–9 press the turn's
   buttons in order (Move first, each showing its number), Enter or Space
-  confirms (S pressed Skip turn until 2026-10-25). Phones keep the
+  confirms, S presses Skip turn (twice, as with taps). Phones keep the
   board for looking and aiming only, as above. The side panel is as tall
   as the board, which fills the screen: the buttons level with the track,
   the details under them, and the picked ability's explanation and a

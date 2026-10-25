@@ -93,7 +93,7 @@ check(
   (
     await api(`/runs/${runId}/turn`, bob, {
       method: 'POST',
-      body: JSON.stringify({move: [{q: 0, r: 0}]}),
+      body: JSON.stringify({action: {ability: 'hold'}}),
     })
   ).status === 403
 );
@@ -167,6 +167,7 @@ if (Math.abs(gap) <= 2) {
       move: Array.from({length: Math.abs(gap)}, (_, i) =>
         leftEdge(actor.hex.r + Math.sign(gap) * (i + 1))
       ),
+      action: {ability: 'hold'},
     }),
   });
   check(
@@ -182,42 +183,24 @@ check(
   JSON.stringify((await api(`/runs/${runId}`, alice)).body.view) === JSON.stringify(heroView)
 );
 
-const idle = await api(`/runs/${runId}/turn`, alice, {method: 'POST', body: '{}'});
-check(
-  'a turn that neither walks nor uses an ability is refused (there is no passing)',
-  idle.status === 400 && idle.body?.message?.includes('walks or uses an ability'),
-  idle.body
-);
-// A step to the first free space next to the hero: refused ones change nothing.
-let walked;
-for (const [dq, dr] of [
-  [1, 0],
-  [1, -1],
-  [0, -1],
-  [-1, 0],
-  [-1, 1],
-  [0, 1],
-]) {
-  walked = await api(`/runs/${runId}/turn`, alice, {
-    method: 'POST',
-    body: JSON.stringify({move: [{q: actor.hex.q + dq, r: actor.hex.r + dr}]}),
-  });
-  if (walked.status === 200) break;
-}
+const held = await api(`/runs/${runId}/turn`, alice, {
+  method: 'POST',
+  body: JSON.stringify({action: {ability: 'hold'}}),
+});
 check(
   'a turn returns the next view',
-  walked.status === 200 && walked.body.view.version === heroView.version + 1,
-  walked.body?.message
+  held.status === 200 && held.body.view.version === heroView.version + 1,
+  held.body?.message
 );
 // Each AI turn is a request of its own (`continue`), asked for while one is due.
-let latest = walked.body;
+let latest = held.body;
 let continued = 0;
 let refusedWhileDue = null;
 for (let i = 0; i < 20 && latest.view.aiDue; i++) {
   if (refusedWhileDue === null) {
     const early = await api(`/runs/${runId}/turn`, alice, {
       method: 'POST',
-      body: JSON.stringify({move: [{q: 0, r: 0}]}),
+      body: JSON.stringify({action: {ability: 'hold'}}),
     });
     refusedWhileDue = early.status === 400 && /not your turn/.test(early.body?.message ?? '');
   }
@@ -436,7 +419,8 @@ try {
     );
     check(
       'desktop: the choices show their keys',
-      (await heroMove.getAttribute('data-key')) === '1'
+      (await heroMove.getAttribute('data-key')) === '1' &&
+        (await page.getByTestId('skip-turn').getAttribute('data-key')) === 'S'
     );
     // Pressed, the board's Confirm stays where it is, so a click anywhere on
     // it lands (pressing once dropped its centring, and a press on its left
@@ -522,11 +506,7 @@ try {
     (await moveButton.getAttribute('aria-pressed')) === 'false' &&
       !(await page.getByTestId('board-confirm').count())
   );
-  check(
-    'there is no Hold nor Skip turn: a turn walks or uses an ability',
-    !(await page.getByRole('button', {name: /^(Hold|Skip turn)/}).count()) &&
-      !(await page.getByTestId('skip-turn').count())
-  );
+  check('there is no Hold button', !(await page.getByRole('button', {name: /^Hold/}).count()));
   // Select Hail and its target, then replace it with Move and a hex. Picked,
   // Hail is explained under the details; nothing is before.
   const chosen = page.getByTestId('chosen-ability');
@@ -643,6 +623,37 @@ try {
     'Swap order is offered only when the other order is legal',
     !(await page.getByRole('button', {name: /Swap order/}).count())
   );
+  const skip = page.getByTestId('skip-turn');
+  check(
+    'Skip turn says when the next turn comes, in slots from now',
+    /^Skip turn · \+\d+( → \+\d+)?$/.test(await skip.textContent()),
+    await skip.textContent()
+  );
+  // Its first tap only arms it, and it disarms on its own.
+  await skip.click();
+  check(
+    'a first tap on Skip turn only arms it',
+    (await skip.textContent()) === 'Tap again to skip' && (await state()).view.version === before,
+    await skip.textContent()
+  );
+  // A tap anywhere else disarms it (here, on the board: the unit, or an
+  // enemy if the board's Confirm covers the unit).
+  const enemyHexes = (await state()).view.fight.units
+    .filter((u) => u.side === 'enemy' && u.alive)
+    .map((u) => u.hex);
+  await tapUncovered(acting.hex, ...enemyHexes);
+  check(
+    'a tap elsewhere disarms Skip turn',
+    /^Skip turn/.test(await skip.textContent()) && (await state()).view.version === before,
+    await skip.textContent()
+  );
+  await skip.click();
+  await sleep(3300);
+  check(
+    'an armed Skip turn disarms after a while',
+    /^Skip turn/.test(await skip.textContent()),
+    await skip.textContent()
+  );
   check(
     'only the picked button confirms, and the board’s Confirm',
     (await page
@@ -650,6 +661,12 @@ try {
       .getByRole('button', {name: /^Confirm/})
       .count()) === 1 && (await page.getByRole('button', {name: /^Confirm/}).count()) === 2
   );
+  check(
+    'desktop: S arms Skip turn',
+    (await page.keyboard.press('s'), await skip.textContent()) === 'Tap again to skip'
+  );
+  await tapUncovered(acting.hex, ...enemyHexes); // disarm it again
+  await sleep(200);
   await shot(page, 'preview');
   // A second click on the destination commits the move.
   await tapHex(dest);
@@ -815,6 +832,34 @@ try {
   );
   check('the reset run is abandoned', resetOld.body?.status === 'abandoned', resetOld.body);
 
+  // Skip turn, tapped twice, ends the turn with Hold.
+  {
+    await waitIdle();
+    const r = await state();
+    if (r.view.fight.phase === 'fight') {
+      const unit = r.view.fight.awaiting;
+      const skipButton = page.getByTestId('skip-turn');
+      await skipButton.click();
+      check(
+        'its first tap arms it',
+        (await skipButton.textContent()) === 'Tap again to skip',
+        await skipButton.textContent()
+      );
+      await skipButton.click();
+      await page.waitForFunction((v) => window.__tactics.run.view.version > v, r.view.version, {
+        timeout: 15_000,
+      });
+      const after = await state();
+      check(
+        'a second tap on Skip turn ends the turn',
+        after.view.fight.phase !== 'fight' ||
+          after.view.fight.awaiting !== unit ||
+          after.view.fight.currentSlot > r.view.fight.currentSlot,
+        [unit, after.view.fight.awaiting]
+      );
+    }
+  }
+
   // Play the rest with the AI choosing for you. With placeholder numbers a
   // fight can stall, so after 150 turns
   // abandon it and play a fresh one, at most three times.
@@ -951,7 +996,7 @@ try {
           'manipulation'
     )
   );
-  // Whose turn it is: the unit's portrait before the menu (no arrow on the board).
+  // Whose turn it is: the unit's portrait before Skip turn (no arrow on the board).
   {
     const portrait = phone.getByTestId('turn-portrait');
     const name = await phone.evaluate(() => {
@@ -1344,9 +1389,13 @@ try {
       await phoneMove.textContent()
     );
   }
+  // No Hold button: Skip turn, at the bottom, ends the turn with Hold.
+  check('phone: no Hold button', !(await phone.getByRole('button', {name: /^Hold/}).count()));
   check(
-    'phone: no Hold nor Skip turn button',
-    !(await phone.getByRole('button', {name: /^(Hold|Skip turn)/}).count())
+    'phone: Skip turn says when the next turn comes',
+    /^Skip turn · \+\d+( → \+\d+)?$/.test(
+      await phone.getByRole('button', {name: /^Skip turn/}).textContent()
+    )
   );
   // Tapping a target twice un-picks it: only the button commits.
   const tapOn = async (hex) => {
