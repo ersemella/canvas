@@ -1400,14 +1400,17 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
     expect(damageOf(m)).toBe(m.power + 1);
   });
 
-  it('plays a whole fight with both to an end, AI against AI, using Cleave and Elixir', () => {
-    let run = createRun(0, {party});
+  it('plays whole fights with both to an end, AI against AI, using Cleave and Elixir', () => {
     const used = new Set<string>();
-    for (let turns = 0; turns < 300 && run.fight.phase === 'fight'; turns++) {
-      run = request(run);
-      for (const e of run.fight.events ?? []) if (e.kind === 'action') used.add(e.ability);
+    // A seed's fight may end before one of them acts: a few seeds, until both have.
+    for (let seed = 0; seed < 5 && !(used.has('cleave') && used.has('elixir')); seed++) {
+      let run = createRun(seed, {party});
+      for (let turns = 0; turns < 300 && run.fight.phase === 'fight'; turns++) {
+        run = request(run);
+        for (const e of run.fight.events ?? []) if (e.kind === 'action') used.add(e.ability);
+      }
+      expect(['won', 'lost']).toContain(run.fight.phase);
     }
-    expect(['won', 'lost']).toContain(run.fight.phase);
     expect(used.has('cleave')).toBe(true);
     expect(used.has('elixir')).toBe(true);
   });

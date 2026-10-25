@@ -1861,7 +1861,8 @@ The aura within 2 and Delay 3 together: China 97.5%.
   it instead. Power adds little to the single Elixir: more Enhance on one
   ally seldom changes a kill.
   **Recommended:** speed 3 with Elixir as built (no page work), or the
-  burst with defence 2 if an area Elixir is wanted.
+  burst with defence 2 if an area Elixir is wanted. **Adopted (owner,
+  2026-10-25): speed 3, Elixir as built.**
 - **Found while building it**: the page never offers Elixir on an enemy.
   `offeredTargets` (choices.ts) shows a support ability's targets on its
   own side only, so a player's Alchemist can't Degrade; the AI's can.
