@@ -15,9 +15,9 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 ## Example
 
 The committed file, a region's first stage fought in the Gobi: the whole
-party against the Mangudai Outrider and two fox spirits, every kit the
-starting one. Its `"mountains"` asks for a range, but the Gobi never has
-one.
+party against a fox spirit, the Modao Vanguard and the Waidan Alchemist,
+every kit the starting one. Its `"mountains"` asks for a range, but the
+Gobi never has one.
 
 ```json
 {
@@ -31,9 +31,9 @@ one.
     {"hero": "storm"}
   ],
   "enemy": [
-    {"hero": "mangudai"},
     {"hero": "fox"},
-    {"hero": "fox"}
+    {"hero": "modao"},
+    {"hero": "alchemist"}
   ]
 }
 ```
@@ -55,11 +55,11 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 
 | Field | What it is | Left out |
 |---|---|---|
-| `hero` | `"bokh"` (Bökh Champion), `"mangudai"` (Mangudai Outrider), `"storm"` (Yadachy Storm Caller), `"wolf"` or `"fox"` (the Fox Spirit: the wolf's stats and Bite, the China region's creature). A hero may appear more than once, on either side. | required |
+| `hero` | `"bokh"` (Bökh Champion), `"mangudai"` (Mangudai Outrider), `"storm"` (Yadachy Storm Caller), `"modao"` (Modao Vanguard), `"alchemist"` (Waidan Alchemist), `"wolf"` or `"fox"` (the Fox Spirit: the wolf's stats and Bite, the China region's creature). A hero may appear more than once, on either side. | required |
 | `speed` | 0 to 30. Its card goes 60 ÷ (speed + 5) slots on after each turn, rounded. | the hero's |
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
-| `abilities` | Up to 2 of `"longshot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
+| `abilities` | Up to 2 of `"longshot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
 | `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's two starting columns (yours the two on the left edge, the enemy's the two on the right) |
 
 The heroes' own numbers and starting kits are `HEROES` in
