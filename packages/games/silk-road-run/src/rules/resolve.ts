@@ -2,12 +2,19 @@
  * Effects every ability is built from: damage, entering a space, hail and
  * grapples ending, death and the end of the fight.
  */
-import {hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
+import {
+  hexDirectionTo,
+  hexDistance,
+  hexEquals,
+  hexNeighbor,
+  hexNeighbors,
+} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES} from './config';
-import {addStatus, hailOn, shotLane, unitAt, walkable} from './board';
+import {addStatus, hailOn, isImmobilized, isStunned, shotLane, unitAt, walkable} from './board';
 import {MAPS} from './map';
-import {placeCard} from './track';
+import {hasPassive, spendPassive} from './passives';
+import {placeCard, simultaneousOrder} from './track';
 import type {MapData} from './map';
 import type {BoardSnapshot, FightEvent, FightState, Motion, ShotInAir, Status, Unit} from './types';
 
@@ -62,7 +69,11 @@ export function unitName(u: Unit): string {
 /**
  * An ability's hit: exactly the attacker's power in damage (owner,
  * 2026-10-23), plus its Enhance (or `enhance`, one the hit carries from
- * when it was made), less its Degrade. Power 0 deals none, and says nothing.
+ * when it was made) and its passives' (Glass Cannon, Lone Wolf, and
+ * against this target Opportunist and Flanker), less its Degrade; then
+ * the target's Armour (Hardened) unless it Pierces (Piercing Eye), and an
+ * ally's Bulwark (17.6's damage order; 19.8). Power 0 deals none, and
+ * says nothing.
  */
 export function hit(
   ctx: Ctx,
@@ -71,18 +82,104 @@ export function hit(
   what: string,
   enhance = attacker.enhance ?? 0
 ): void {
-  const amount = damageOf(attacker, enhance);
   if (!target.alive) return;
-  if (attacker.degrade && attacker.power + enhance > 0)
-    log(ctx, `Degrade takes off ${attacker.power + enhance - amount}.`);
+  const bonus = passiveEnhance(attacker, ctx.state) + bonusAgainst(ctx.state, attacker, target);
+  const full = attacker.power + enhance + bonus;
+  if (attacker.degrade && full > 0)
+    log(ctx, `Degrade takes off ${Math.min(full, attacker.degrade)}.`);
+  let amount = Math.max(0, full - (attacker.degrade ?? 0));
   if (amount <= 0) return;
   if (enhance) log(ctx, `Enhance adds ${enhance}.`);
-  applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`);
+  if (bonus) log(ctx, `Passives add ${bonus}.`);
+  const pierces = hasPassive(attacker, 'piercingEye') && isImmobilized(target);
+  // Hardened: Armour 1 against the first hit each fight, spent even when Pierced.
+  if (spendPassive(target, 'hardened')) {
+    if (pierces) log(ctx, `The hit Pierces ${unitName(target)}’s Armour.`);
+    else {
+      amount -= 1;
+      log(ctx, `Armour takes off 1.`);
+    }
+  }
+  if (amount <= 0) return;
+  amount = bulwark(ctx, attacker, target, amount);
+  if (amount <= 0) return;
+  applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`, attacker);
 }
 
-/** An ability's damage (17.6, step 1): power plus Enhance, minus Degrade, at least 0. */
-export function damageOf(attacker: Unit, enhance = attacker.enhance ?? 0): number {
-  return Math.max(0, attacker.power + enhance - (attacker.degrade ?? 0));
+/**
+ * An ability's damage (17.6, step 1): power plus Enhance and the Enhance
+ * of its passives (`passiveEnhance`, Lone Wolf's only with the `state`),
+ * minus Degrade, at least 0. A hit's own bonuses against its target
+ * (`bonusAgainst`) aren't in it.
+ */
+export function damageOf(
+  attacker: Unit,
+  enhance = attacker.enhance ?? 0,
+  state?: FightState
+): number {
+  return Math.max(
+    0,
+    attacker.power + enhance + passiveEnhance(attacker, state) - (attacker.degrade ?? 0)
+  );
+}
+
+/**
+ * The Enhance `u`'s passives give it (19.8): Glass Cannon's always, Lone
+ * Wolf's while no ally is within 2 spaces (known only with the `state`).
+ */
+export function passiveEnhance(u: Unit, state?: FightState): number {
+  let n = hasPassive(u, 'glassCannon') ? 1 : 0;
+  if (state && hasPassive(u, 'loneWolf') && u.hex) {
+    const near = state.units.some(
+      (a) => a !== u && a.alive && a.hex && a.side === u.side && hexDistance(a.hex, u.hex!) <= 2
+    );
+    if (!near) n += 1;
+  }
+  return n;
+}
+
+/**
+ * What `attacker`'s passives add to a hit on `target` (19.8): Opportunist's
+ * 1 if the target hasn't had a turn since the attacker's last one (its turn
+ * before this one, if this is its turn); Flanker's 1 if an ally of the
+ * attacker stands on the target's far side, along the straight line from
+ * the attacker (none off a straight line).
+ */
+export function bonusAgainst(state: FightState, attacker: Unit, target: Unit): number {
+  let n = 0;
+  if (hasPassive(attacker, 'opportunist')) {
+    const mine = attacker.turns ?? [];
+    const acting = mine[mine.length - 1] === state.currentSlot;
+    const since = acting ? mine[mine.length - 2] : mine[mine.length - 1];
+    const theirs = target.turns?.[target.turns.length - 1];
+    if (theirs === undefined || (since !== undefined && theirs < since)) n += 1;
+  }
+  if (hasPassive(attacker, 'flanker') && attacker.hex && target.hex) {
+    const dir = hexDirectionTo(attacker.hex, target.hex);
+    const beyond = dir === null ? undefined : unitAt(state, hexNeighbor(target.hex, dir));
+    if (beyond && beyond !== attacker && beyond.side === attacker.side) n += 1;
+  }
+  return n;
+}
+
+/**
+ * Bulwark (19.8): a hit on `target` is its first since each Bulwark ally's
+ * last turn, or not; the first Bulwark ally next to it whose first it is
+ * takes 1 of the damage. Returns what is left for the target.
+ */
+function bulwark(ctx: Ctx, attacker: Unit, target: Unit, amount: number): number {
+  let guard: Unit | undefined;
+  for (const g of ctx.state.units) {
+    if (g === target || !g.alive || g.side !== target.side || !hasPassive(g, 'bulwark')) continue;
+    if (g.covered?.includes(target.id)) continue;
+    // A new list: copies of a fight share a unit's arrays.
+    g.covered = [...(g.covered ?? []), target.id];
+    if (!guard && g.hex && target.hex && hexDistance(g.hex, target.hex) === 1) guard = g;
+  }
+  if (!guard) return amount;
+  log(ctx, `${unitName(guard)} takes 1 for ${unitName(target)}.`);
+  applyDamage(ctx, guard, 1, `${unitName(guard)} takes 1`, attacker);
+  return amount - 1;
 }
 
 /**
@@ -108,14 +205,73 @@ export function degrade(ctx: Ctx, u: Unit, amount: number): void {
 }
 
 /**
+ * Enhances `u` by at least `amount` until the end of its next turn
+ * (Vengeance, 19.8): a stronger Enhance it has stays, and lasts as long.
+ */
+export function enhanceAtLeast(ctx: Ctx, u: Unit, amount: number): void {
+  u.enhance = Math.max(u.enhance ?? 0, amount);
+  delete u.enhanceStarted;
+  log(ctx, `${unitName(u)} is Enhanced ${u.enhance}.`);
+}
+
+/** Inevitable (17.3; Steady Gait, 19.8): the card can't be Delayed or Hastened. */
+function inevitable(ctx: Ctx, u: Unit): boolean {
+  if (!hasPassive(u, 'steadyGait')) return false;
+  log(ctx, `${unitName(u)} is Inevitable.`);
+  return true;
+}
+
+/**
  * Delays `u`'s card `n` slots later (keywords.md 17.3), a taken slot
  * resolved by speed as any placement is (3.3). The delay limit (3.6) is
  * not built.
  */
 export function delay(ctx: Ctx, u: Unit, n: number): void {
-  if (!u.alive || u.slot === null || n <= 0) return;
+  if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
   placeCard(ctx.state, u, u.slot + n);
   log(ctx, `${unitName(u)} is Delayed ${n}.`);
+}
+
+/**
+ * Hastens `u`'s card `n` slots earlier (keywords.md 17.3), never earlier
+ * than the next slot, a taken slot resolved by speed (3.3). During its own
+ * turn (or a charging card's landing), its card not yet placed, the Haste
+ * is taken off as the card is placed (`Unit.hasteDue`). The haste limit
+ * is not built.
+ */
+export function haste(ctx: Ctx, u: Unit, n: number): void {
+  if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
+  log(ctx, `${unitName(u)} is Hastened ${n}.`);
+  if (u.slot <= ctx.state.currentSlot) u.hasteDue = (u.hasteDue ?? 0) + n;
+  else placeCard(ctx.state, u, Math.max(ctx.state.currentSlot + 1, u.slot - n));
+}
+
+/** Takes off the Haste `unit` was given during its turn, its card just placed (`haste`). */
+export function takeHasteDue(state: FightState, unit: Unit): void {
+  const n = unit.hasteDue;
+  delete unit.hasteDue;
+  if (!n || !unit.alive || unit.slot === null) return;
+  placeCard(state, unit, Math.max(state.currentSlot + 1, unit.slot - n));
+}
+
+/**
+ * At the start of `unit`'s turn, its passives' bookkeeping (19.8): the
+ * turn noted (Opportunist), its Shield gone (Rally's lasts until now), a
+ * fresh count of its allies' first hits (Bulwark) and of what it takes off
+ * the board (Momentum); then Rally Shields each ally next to it.
+ */
+export function startTurnPassives(ctx: Ctx, unit: Unit): void {
+  unit.turns = [...(unit.turns ?? []).slice(-1), ctx.slot];
+  delete unit.shield;
+  delete unit.covered;
+  delete unit.tookOff;
+  if (!hasPassive(unit, 'rally') || !unit.hex) return;
+  for (const h of hexNeighbors(unit.hex)) {
+    const a = unitAt(ctx.state, h);
+    if (!a || a.side !== unit.side) continue;
+    a.shield = Math.max(a.shield ?? 0, 1);
+    log(ctx, `${unitName(unit)} rallies ${unitName(a)}: Shield ${a.shield}.`);
+  }
 }
 
 /** At the end of a unit's turn: an Enhance or Degrade whose turn this was ends. */
@@ -131,19 +287,60 @@ export function endTurnEffects(unit: Unit): void {
 }
 
 /**
- * Health lost. A Bökh Champion that takes damage lets go of the unit it
- * grapples (owner, 2026-10-23).
+ * Damage taken (17.6, steps 3 and 4): its Shield takes it first, health
+ * the rest. A Bökh Champion that takes damage lets go of the unit it
+ * grapples (owner, 2026-10-23); damage a Shield absorbs whole isn't taken.
+ * Then the passives that answer damage (19.8): Shake Loose, Last Stand,
+ * Second Wind. `source`, the unit dealing it, if any, is credited with a
+ * kill (Momentum).
  */
-export function applyDamage(ctx: Ctx, target: Unit, amount: number, text: string): void {
+export function applyDamage(
+  ctx: Ctx,
+  target: Unit,
+  amount: number,
+  text: string,
+  source?: Unit
+): void {
   if (!target.alive || amount <= 0) return;
-  target.hp = Math.max(0, target.hp - amount);
+  if (target.shield) {
+    const absorbed = Math.min(target.shield, amount);
+    target.shield -= absorbed;
+    if (!target.shield) delete target.shield;
+    amount -= absorbed;
+    log(ctx, `${unitName(target)}’s Shield takes ${absorbed}.`);
+    if (amount <= 0) return;
+  }
+  const stunned = isStunned(target);
+  const standing = target.hp - amount <= 0 && spendPassive(target, 'lastStand');
+  target.hp = standing ? 1 : Math.max(0, target.hp - amount);
   log(ctx, `${text}.`);
   record(ctx.state, {kind: 'damage', unitId: target.id, amount});
-  if (target.hp === 0) kill(ctx, target);
-  else endGrapples(ctx, (g) => g.champion === target.id);
+  if (target.hp === 0) {
+    kill(ctx, target, source);
+    return;
+  }
+  endGrapples(ctx, (g) => g.champion === target.id);
+  if (stunned && hasPassive(target, 'shakeLoose') && isStunned(target)) {
+    endGrapples(ctx, (g) => g.target === target.id, true);
+    target.statuses = target.statuses.filter((s) => s.kind !== 'stunned');
+    log(ctx, `${unitName(target)} shakes loose.`);
+  }
+  if (standing) {
+    log(ctx, `${unitName(target)} makes a last stand.`);
+    stun(ctx, target, {kind: 'stunned', lastStand: true});
+  }
+  if (target.hp * 2 <= target.maxHp && spendPassive(target, 'secondWind')) {
+    log(ctx, `${unitName(target)} finds a second wind.`);
+    haste(ctx, target, 2);
+  }
 }
 
-export function kill(ctx: Ctx, unit: Unit): void {
+/**
+ * `unit` falls, `killer` (if any) having taken it off the board
+ * (Momentum); each ally of its with Vengeance is Hastened 3 and Enhanced
+ * 1 for its next turn (19.8).
+ */
+export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
   const at = unit.hex;
   unit.alive = false;
   unit.slot = null;
@@ -154,7 +351,15 @@ export function kill(ctx: Ctx, unit: Unit): void {
   // Its hail lasted until a turn of its, which won't come; its shots until its card came back.
   clearHail(ctx.state, unit);
   if (ctx.state.shots) ctx.state.shots = ctx.state.shots.filter((v) => v.source !== unit.id);
+  if (killer) killer.tookOff = true;
   checkEnd(ctx.state);
+  if (ctx.state.phase !== 'fight') return;
+  for (const a of ctx.state.units) {
+    if (!a.alive || a.side !== unit.side || !hasPassive(a, 'vengeance')) continue;
+    log(ctx, `${unitName(a)} swears vengeance.`);
+    haste(ctx, a, 3);
+    enhanceAtLeast(ctx, a, 1);
+  }
 }
 
 export function checkEnd(state: FightState): void {
@@ -265,12 +470,17 @@ export function endGrapples(ctx: Ctx, ends: (g: Grapple) => boolean, quiet = fal
 }
 
 /**
- * Stuns `u`. A Stunned Bökh Champion lets go of the unit it grapples
+ * Stuns `u`, unless Iron Will turns it (19.8). A Stunned Bökh Champion lets go of the unit it grapples
  * (owner, 2026-10-23), and a Stunned Outrider loses the arrow it has drawn
  * (owner, 2026-10-24): its card comes back as an ordinary turn, skipped
  * while it is Stunned.
  */
 export function stun(ctx: Ctx, u: Unit, status: Status): void {
+  // Iron Will (19.8): the first Stun each fight doesn't take.
+  if (spendPassive(u, 'ironWill')) {
+    log(ctx, `${unitName(u)}’s iron will holds: not Stunned.`);
+    return;
+  }
   addStatus(u, status);
   endGrapples(ctx, (g) => g.champion === u.id);
   if (ctx.state.shots?.some((v) => v.source === u.id)) {
@@ -286,13 +496,14 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
   for (const u of ctx.state.units) {
     if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
+    const enhanced = (champion.enhance ?? 0) + passiveEnhance(champion, ctx.state);
     const amount = Math.max(
       0,
       ABILITY.grapple.squeeze +
-        (ABILITY.grapple.enhancedSqueeze ? (champion.enhance ?? 0) : 0) -
+        (ABILITY.grapple.enhancedSqueeze ? enhanced : 0) -
         (champion.degrade ?? 0)
     );
-    applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`);
+    applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`, champion);
   }
 }
 
@@ -342,13 +553,67 @@ export function enterHex(
  * Displaces `unit` up to `n` spaces along hex direction `dir` (Push and
  * Pull, keywords.md, 17.4): it stops early at a yurt, another unit or the
  * map's edge, with no collision damage (open question 55). Each space
- * entered triggers as a walk's does.
+ * entered triggers as a walk's does. A Rooted unit isn't moved (19.8); one
+ * that is, with Rebound, Pushes its new neighbours (`displaced`).
  */
 export function displace(ctx: Ctx, unit: Unit, dir: number, n: number, how: Motion): void {
+  if (hasPassive(unit, 'rooted')) {
+    log(ctx, `${unitName(unit)} is Rooted.`);
+    return;
+  }
+  const from = unit.hex;
   for (let i = 0; i < n && unit.alive && unit.hex; i++) {
     const next = hexNeighbor(unit.hex, dir);
     if (!walkable(ctx.map, next) || unitAt(ctx.state, next)) break;
     enterHex(ctx, unit, next, how, true);
   }
-  if (unit.alive) endGrapplesApart(ctx, unit);
+  if (!unit.alive) return;
+  endGrapplesApart(ctx, unit);
+  if (from && unit.hex && !hexEquals(from, unit.hex)) displaced(ctx, unit);
+}
+
+/** How deep Rebounds set off by Rebounds go: a safety bound, as each must move a unit. */
+const MAX_REBOUNDS = 12;
+let rebounds = 0;
+
+/**
+ * `unit` has been Pushed, Pulled or Moved onto a new space, by an ally or
+ * an enemy: with Rebound (19.8), each unit next to it there, allies
+ * included, is Pushed 1 away from it, one at a time in the order for cards
+ * placed at the same moment (17.4, 3.3).
+ */
+export function displaced(ctx: Ctx, unit: Unit): void {
+  if (!hasPassive(unit, 'rebound') || !unit.alive || !unit.hex || rebounds >= MAX_REBOUNDS) return;
+  const around = hexNeighbors(unit.hex)
+    .map((h) => unitAt(ctx.state, h))
+    .filter((u): u is Unit => u !== undefined && u !== unit);
+  if (around.length === 0) return;
+  log(ctx, `${unitName(unit)} rebounds.`);
+  rebounds++;
+  try {
+    for (const u of simultaneousOrder(around)) {
+      if (!u.alive || !u.hex || !unit.hex || hexDistance(u.hex, unit.hex) !== 1) continue;
+      displace(ctx, u, hexDirectionTo(unit.hex, u.hex)!, 1, 'push');
+    }
+  } finally {
+    rebounds--;
+  }
+}
+
+/**
+ * `unit` walks `path` (its start left out). With Light Step (19.8) the walk
+ * may pass allies, and end on one: the two swap places, the ally Moved to
+ * the space the walk came from (`reachableHexes`).
+ */
+export function walk(ctx: Ctx, unit: Unit, path: Hex[]): void {
+  if (path.length === 0 || !unit.hex) return;
+  const end = path[path.length - 1]!;
+  const back = path.length > 1 ? path[path.length - 2]! : unit.hex;
+  const ally = ctx.state.units.find((u) => u !== unit && u.alive && u.hex && hexEquals(u.hex, end));
+  path.forEach((h, i) => enterHex(ctx, unit, h, 'walk', i < path.length - 1 || ally !== undefined));
+  if (!ally) return;
+  log(ctx, `${unitName(unit)} swaps places with ${unitName(ally)}.`);
+  enterHex(ctx, ally, back, 'swap');
+  endGrapplesApart(ctx, unit);
+  displaced(ctx, ally);
 }

@@ -2,7 +2,8 @@
  * The test stage: one fight set up by hand in test-stage.json (explained in
  * test-stage.md), for play-testing a line-up, stats or a kit the run's
  * stages don't bring. Each unit names its hero and may give its own speed,
- * defence, power and abilities (`Unit.loadout`) and its starting space;
+ * defence, power, abilities and passives (`Unit.loadout`) and its starting
+ * space;
  * the camel can be left out. The file is checked when the stage starts,
  * and a mistake is reported on the start menu.
  */
@@ -13,11 +14,12 @@ import {ABILITIES} from './abilities';
 import {abilityCount, canMove} from './board';
 import {CAMEL, HEROES, RULES} from './config';
 import {RuleError, makeUnit, mapOf, seededRandom} from './fight';
+import {PASSIVES} from './passives';
 import {log} from './resolve';
 import {MAPS, STEPPE, blocks, mapById, onMap, randomTiles, spaceAt} from './map';
 import type {MapData, Tile} from './map';
 import {placeStartingCards, shuffled} from './track';
-import type {AbilityId, FightState, HeroId, Loadout, Unit} from './types';
+import type {AbilityId, FightState, HeroId, Loadout, PassiveId, Unit} from './types';
 
 /** The committed test-stage.json. */
 export const TEST_STAGE: unknown = config;
@@ -76,7 +78,7 @@ function parseSpace(where: string, v: unknown): Hex {
 function parseUnit(where: string, v: unknown, camel = false): UnitSetup {
   if (!isObject(v)) fail(`${where} must be an object like {"hero": "wolf"}.`);
   const raw = v as Record<string, unknown>;
-  const fields = ['speed', 'defence', 'power', 'abilities', 'at'];
+  const fields = ['speed', 'defence', 'power', 'abilities', 'passives', 'at'];
   onlyKeys(where, raw, camel ? fields.filter((f) => f !== 'abilities') : ['hero', ...fields]);
   let hero: HeroId = CAMEL;
   if (!camel) {
@@ -104,6 +106,15 @@ function parseUnit(where: string, v: unknown, camel = false): UnitSetup {
       fail(`${where}.abilities can have at most ${RULES.maxAbilities}, besides Hold.`);
     // Hold is always there: a move-only turn is a move and Hold.
     loadout.abilities = [...new Set([...(raw.abilities as AbilityId[]), 'hold' as const])];
+  }
+  if (raw.passives !== undefined) {
+    const ids = Object.keys(PASSIVES);
+    if (
+      !Array.isArray(raw.passives) ||
+      raw.passives.some((a) => typeof a !== 'string' || !ids.includes(a))
+    )
+      fail(`${where}.passives must be a list of ${ids.join(', ')}.`);
+    loadout.passives = [...new Set(raw.passives as PassiveId[])];
   }
   return {
     hero,

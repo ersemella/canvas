@@ -24,6 +24,7 @@ import {
   degrade,
   delay,
   displace,
+  displaced,
   endGrapples,
   enhance,
   enterHex,
@@ -33,6 +34,7 @@ import {
   log,
   stun,
   unitName,
+  walk,
 } from './resolve';
 import type {Ctx} from './resolve';
 import {blocks, tileAt} from './map';
@@ -368,6 +370,8 @@ const grapple: AbilityDef = {
         log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
         enterHex(ctx, u, target.hex!, 'throw');
       }
+      // The held unit is Moved: with Rebound it Pushes its new neighbours (19.8).
+      displaced(ctx, u);
       hit(ctx, user, u, 'The throw');
       return;
     }
@@ -471,18 +475,15 @@ const feignedRetreat: AbilityDef = {
     const u = unitAt(ctx.state, target.hex!)!;
     hit(ctx, user, u, `${unitName(user)}'s parting arrow`);
     if (!user.alive || isImmobilized(user)) return;
-    const walk = walksWithin(
+    const back = walksWithin(
       ctx.state,
       ctx.map,
       user,
       user.hex!,
       ABILITY.feignedRetreat.steps
     ).find((r) => hexEquals(r.hex, target.to!));
-    if (!walk) return;
-    for (const [i, h] of walk.path.entries()) {
-      if (!user.alive) return;
-      enterHex(ctx, user, h, 'walk', i < walk.path.length - 1);
-    }
+    if (!back) return;
+    walk(ctx, user, back.path);
     log(ctx, `${unitName(user)} falls back.`);
   },
 };

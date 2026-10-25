@@ -85,6 +85,9 @@ the kits.**
   and every keyword not in the new list ([history.md](history.md)); Shove
   is back as an upgrade (2026-10-24). Hold Loose, Hip Toss, Squall Line,
   Tailwind and Overwatch were measured and removed on 2026-10-24.
+- **The passives** (progression.md, 19.8) are built (2026-10-25) but on
+  no hero: any unit can carry them on the test stage (`"passives"`), and
+  the upgrade offer that will grant them isn't built.
 - **At most two abilities** a hero, besides moving and Hold (owner,
   2026-10-25; three from 2026-10-24; [roster.md](roster.md)): on the
   page, Move fills its own row over a hero's two abilities.
@@ -165,7 +168,7 @@ Always read this file first. Then:
 | Tuning numbers, or balancing a new hero, ability, keyword or gear: what each ability and stat is worth, measured; the proposed tuning; principles for re-tuning | [balance.md](balance.md) |
 | The twelve heroes | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
-| Run progression: regions and stages, provisions (stat points), upgrade offers, the proposed passives, the enemy line-up per stage, the final boss | [progression.md](progression.md) |
+| Run progression: regions and stages, provisions (stat points), upgrade offers, the passives (built, on no hero), the enemy line-up per stage, the final boss | [progression.md](progression.md) |
 | The caravan's camel; how a fight is won and lost; ending stalled fights | [camel.md](camel.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |

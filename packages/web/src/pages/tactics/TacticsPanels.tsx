@@ -14,6 +14,7 @@ import {
   hailEnds,
   hailInfo,
   mapOf,
+  passivesOf,
   tileAt,
   tileInfo,
   unitName,
@@ -295,6 +296,8 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
       label: `Degraded ${unit.degrade}`,
       rest: unit.degradeStarted ? 'until the end of this turn' : 'until the end of its next turn',
     });
+  if (unit.shield)
+    out.push({id: 'shield', label: `Shield ${unit.shield}`, rest: 'until its next turn'});
   return out;
 }
 
@@ -315,6 +318,8 @@ export function StatSheet({
   const statuses = statusesOf(fight, unit);
   // Hold isn't offered as an action (End turn is).
   const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold');
+  // Its passives (progression.md, 19.8), listed after its abilities, tapped the same way.
+  const passives = passivesOf(unit);
   // The camel has none.
   const acts = abilities.length > 0;
   const stats = [
@@ -417,6 +422,21 @@ export function StatSheet({
                 >
                   {abilityIcon(def)}
                   {def.name}
+                </AbilityName>
+              ))}
+              {passives.map((p) => (
+                <AbilityName
+                  key={p.id}
+                  id={`passive:${p.id}`}
+                  body={
+                    <Text fz="xs">
+                      <b>{p.name}</b> · Passive
+                      <br />
+                      <KeywordText text={p.rule} />
+                    </Text>
+                  }
+                >
+                  {p.name}
                 </AbilityName>
               ))}
             </div>
