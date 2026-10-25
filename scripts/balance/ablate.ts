@@ -128,6 +128,8 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
   const sunlight: Record<string, number> = {};
   let enhanceDamage = 0;
   let melts = 0;
+  /** Turns begun Immobilized by hail, by whose hail: the unit's side's, or the other's. */
+  const held = {ally: 0, enemy: 0};
 
   for (let f = 0; f < fights; f++) {
     const modSide: Side | null = mod ? (f & 1 ? 'enemy' : 'player') : null;
@@ -182,6 +184,11 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
     while (state.phase === 'fight' && turns < maxTurns) {
       const u = actingUnit(state)!;
       useKits(u.side, modSide);
+      const hold = u.statuses.find((x) => x.hail);
+      if (hold) {
+        const caster = state.units.find((v) => v.id === hold.hail);
+        held[caster?.side === u.side ? 'ally' : 'enemy']++;
+      }
       const input = chooseAiTurn(state, u);
       const moving = (input.move?.length ?? 0) > 0;
       const swap =
@@ -269,6 +276,8 @@ function run({fights, seed, maxTurns, mod, party, enemies}: Options) {
     medianTurns: median(lengths),
     medianSlots: median(slots),
     hexesPerMove: round(movedHexes / (moveTurns || 1), 2),
+    /** Turns a fight begun Immobilized by hail: the other side's, or its own side's. */
+    heldTurnsPerFight: {enemy: round(held.enemy / fights, 2), ally: round(held.ally / fights, 2)},
     turnsPerUnit: Object.fromEntries(Object.entries(uses).map(([h, m]) => [h, perUnit(m.turns!)])),
     /** Share of each hero's turns spent on each ability, a move, or Hold. */
     usePct: Object.fromEntries(

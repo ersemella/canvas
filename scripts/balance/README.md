@@ -30,6 +30,8 @@ against the walk of 2 it replaced (it runs on the current rules);
 `outrider-ai.mjs` and `outrider-ai-2.mjs` the AI's variants for it, whose
 switches (`AI.standoff`, `AI.linesUp`, `AI.clearShot`) were removed once
 the clear shot was adopted.
+`hail-turns.mjs` (2026-10-25) reruns the whole game with Hail lasting 1
+and 2 turns (`ABILITY.hail.turns`) on the current rules.
 
 ## Ability and stat ablation
 
