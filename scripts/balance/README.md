@@ -35,6 +35,8 @@ and 2 turns (`ABILITY.hail.turns`) on the current rules.
 `china.mjs` (2026-10-25) measures the China line-up (fox, Modao Vanguard,
 Waidan Alchemist) against the Steppe party, on the Gobi (an experiment's
 `map`) and the Steppe, and each Chinese hero in each Steppe hero's seat.
+`elixir-cleave.mjs` (2026-10-25) measures Elixir's shapes and Cleave's
+Delay by their switches (`ABILITY.elixir.shape`, `ABILITY.cleave.delay`).
 
 ## Ability and stat ablation
 

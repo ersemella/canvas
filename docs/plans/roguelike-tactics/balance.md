@@ -1791,6 +1791,62 @@ sides; the camel with the player. The Chinese side's share of wins:
   power 2 is too little for a whole turn. Not changed: the numbers are
   the owner's to set.
 
+### Elixir's shape and Cleave's Delay (2026-10-25)
+
+Asked for: a different shape for Elixir, and Delay on the Vanguard's
+Cleave. Both are switches, the built kits unchanged: `ABILITY.elixir.shape`
+(`unit` as built; `burst`, a space within `range` and every unit within
+`radius` of it; `aura`, every unit within `radius` of the Alchemist, aimed
+at its own space; the Alchemist never itself) and `ABILITY.cleave.delay`
+(each unit Cleave leaves standing Delayed that many slots, keywords.md
+17.3; 0 as built). Delay is new in `resolve.ts`, without the delay limit
+(3.6). The AI values a shape's Enhances and Degrades unit by unit, and a
+Delay as the share of a turn the card loses (Delay ÷ the unit's action
+cost). `ablate.mjs` with `experiments/elixir-cleave.mjs`, **400 fights
+each** (about ±2.5 points), seeds from 1000. *Seat*: the hero in the
+Storm Caller's seat against the three Steppe heroes, its side's share of
+wins (50% the Storm Caller's equal). *China*: the fox, Vanguard and
+Alchemist against the Steppe party on the Gobi, player wins.
+
+| Elixir | Seat | China | Elixir's share of turns (seat) | Enhanced damage a fight (seat) |
+|---|---:|---:|---:|---:|
+| A unit within 2 (as built) | 40.6% | 100% | 63% | 2.6 |
+| A unit within 3 | 43.4% | 100% | 69% | 3.0 |
+| Burst: a space within 2 and its neighbours | **46.4%** | 99.3% | 74% | 3.9 |
+| Aura: the Alchemist's neighbours | 41.8% | 100% | 41% | 2.1 |
+| Aura: within 2 of the Alchemist | **46.2%** | 98.5% | 65% | 3.8 |
+
+| Cleave's Delay | Seat | China |
+|---|---:|---:|
+| 0 (as built) | 52.5% | 100% |
+| 2 | 54.5% | 99.5% |
+| 3 | 55.8% | 100% |
+| 5 | 61.8% | 99.8% |
+
+The aura within 2 and Delay 3 together: China 97.5%.
+
+- **An area Elixir is worth about 6 points in the seat**: the burst
+  (46.4%) and the aura within 2 (46.2%) Enhance and Degrade more than one
+  unit a turn (3.8–3.9 Enhanced damage a fight, from 2.6). Range 3 alone
+  is worth 3 points, within noise. The aura of 1 does nothing (41.8%): the
+  Alchemist must stand in the fight to use it, and it is used on only 41%
+  of turns. None of them lifts the Alchemist to the Storm Caller's level;
+  the area shapes come within 1.5 standard errors of it.
+- **Delay helps the Vanguard in steps**: 2 and 3 slots are worth 2–3
+  points each (within noise), 5 slots (half a turn of a speed-2 hero)
+  about 9 (61.8%, above the Storm Caller and the measure's 50%). Delay 3
+  is about a third of a Steppe hero's turn.
+- **The China line-up stays a stage-1 fight** with every variant
+  (97.5–100%): the fox and the Alchemist's 4 health are the weak part,
+  not the kits. Its difficulty is a matter of numbers (or of the line-up),
+  not of Elixir's shape or Cleave's Delay alone.
+- **Not changed**: both switches stay off; the choice is the owner's. If
+  one is adopted, the page needs the shape's area drawn (`radius`, or an
+  `area` for the aura), and Delay its limit (3.6).
+- **Found while building it**: the page never offers Elixir on an enemy.
+  `offeredTargets` (choices.ts) shows a support ability's targets on its
+  own side only, so a player's Alchemist can't Degrade; the AI's can.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
