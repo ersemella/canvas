@@ -555,15 +555,17 @@ export function cleaveLine(map: MapData, from: Hex, dir: number): Hex[] {
 
 /**
  * Cleave (owner, 2026-10-25): a line of 2 spaces out from the Vanguard;
- * each unit in it, ally or enemy, takes the Vanguard's power. Aimed at the
- * line's first space, which may be empty when a unit stands in the second.
+ * each unit in it, ally or enemy, takes the Vanguard's power, and each one
+ * left standing is Delayed `ABILITY.cleave.delay` (5, owner, 2026-10-25).
+ * Aimed at the line's first space, which may be empty when a unit stands
+ * in the second.
  */
 const cleave: AbilityDef = {
   id: 'cleave',
   name: 'Cleave',
   kind: 'attack',
   summary: () =>
-    `A line of ${ABILITY.cleave.reach} spaces out from you: hits every unit in it, allies included.`,
+    `A line of ${ABILITY.cleave.reach} spaces out from you: hits every unit in it, allies included, and Delays ${ABILITY.cleave.delay} each one left standing.`,
   area: (map, from, target) => cleaveLine(map, from, directionTo(from, target)),
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];

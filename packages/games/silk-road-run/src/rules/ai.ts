@@ -322,7 +322,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (!u) continue;
       const damage = Math.min(damageOf(unit), u.hp);
       value += sided(u, damage + (damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0));
-      // Cleave's Delay (a switch, off as built): the share of a turn its card loses.
+      // Cleave's Delay: the share of a turn its card loses.
       if (ability === 'cleave' && ABILITY.cleave.delay > 0 && damage < u.hp)
         value += sided(u, (turnValue(u) * ABILITY.cleave.delay) / cardCost(u));
     }

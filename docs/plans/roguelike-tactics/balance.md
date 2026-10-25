@@ -1843,9 +1843,9 @@ The aura within 2 and Delay 3 together: China 97.5%.
   (97.5–100%): the fox and the Alchemist's 4 health are the weak part,
   not the kits. Its difficulty is a matter of numbers (or of the line-up),
   not of Elixir's shape or Cleave's Delay alone.
-- **Not changed**: both switches stay off; the choice is the owner's. If
-  one is adopted, the page needs the shape's area drawn (`radius`, or an
-  `area` for the aura), and Delay its limit (3.6).
+- **Adopted (owner, 2026-10-25): Cleave's Delay 5.** Elixir's shape stays
+  a switch, `unit` as built; an area shape needs its area drawn on the page
+  (`radius`, or an `area` for the aura). The delay limit (3.6) is not built.
 - **Found while building it**: the page never offers Elixir on an enemy.
   `offeredTargets` (choices.ts) shows a support ability's targets on its
   own side only, so a player's Alchemist can't Degrade; the AI's can.

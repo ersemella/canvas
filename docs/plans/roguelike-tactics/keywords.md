@@ -31,6 +31,9 @@ Tailwind experiment and removed with it (2026-10-24; [history.md](history.md)).
 Enhance does; with Enhance it nets out, and it reduces a Champion's
 squeeze too. Elixir's Enhance and Degrade equal the Alchemist's power,
 an exception to 17.2 (owner, 2026-10-25).
+**Delay** (2026-10-25), for the Modao Vanguard's Cleave (Delay 5): the
+card moves 5 slots later, a taken slot resolved by speed as any placement
+is; the delay limit (3.6) is not built yet.
 The others are defined here and built when an ability uses them.
 
 ## 17. Keywords and Effects

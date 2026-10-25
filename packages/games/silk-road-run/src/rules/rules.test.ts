@@ -1332,19 +1332,20 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
     }
   });
 
-  it('Cleave with Delay (a switch, off as built) Delays every unit it leaves standing', () => {
+  it('Cleave Delays every unit it leaves standing 5 slots, and not the ones it kills', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
-    const cleave = ABILITY.cleave as {delay: number};
-    const saved = cleave.delay;
-    cleave.delay = 3;
-    try {
-      const m = unit(s, 'e-mangudai');
-      const before = m.slot!;
-      applyTurn(s, unit(s, 'p-modao'), {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
-      expect(m.slot).toBeGreaterThanOrEqual(before + 3);
-    } finally {
-      cleave.delay = saved;
-    }
+    expect(ABILITY.cleave.delay).toBe(5);
+    const m = unit(s, 'e-mangudai');
+    const before = m.slot!;
+    applyTurn(s, unit(s, 'p-modao'), {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
+    expect(m.alive).toBe(true);
+    expect(m.slot).toBeGreaterThanOrEqual(before + 5);
+    expect(s.log.some((l) => l.text.endsWith('is Delayed 5.'))).toBe(true);
+    const k = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
+    unit(k, 'e-mangudai').hp = 1;
+    applyTurn(k, unit(k, 'p-modao'), {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
+    expect(unit(k, 'e-mangudai').alive).toBe(false);
+    expect(k.log.some((l) => l.text.includes('Delayed'))).toBe(false);
   });
 
   it('Elixir as a burst or an aura (switches, off as built) reaches every unit around its centre', () => {
