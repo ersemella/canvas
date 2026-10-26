@@ -106,7 +106,15 @@ tuning. This file has no combat-design section number.
   rock or fire by what most of it was; its rock then taken halfway to the
   red earth's browns, the orange it takes from the fire kept, and the
   outline's lower half dark earth rather than ink, as at first, redder and
-  outlined, it didn't blend with the ground (owner, 2026-10-26). It replaced gullied sandstone
+  outlined, it didn't blend with the ground (owner, 2026-10-26). Its
+  base, drawn as a diamond, is warped to the hex's lower half, flat along
+  the bottom and out to the side corners, as the diamond didn't fit the
+  hex. Its fire burns in 8 frames at 8 a second (`mountainFrames`,
+  `FLAME_FPS`), each mountain out of step, held on the first for reduced
+  motion: only the flames above the base change, a brightness rising up
+  them, their tips flickering and three embers rising from the peak; the
+  rock and the glowing cracks low on it never change (owner, 2026-10-26).
+  It replaced gullied sandstone
   ridges with flames added on their crests: a separate flame per crest
   read as a lid on the peak, then animated frames made the mountains look
   as if they shook (owner, 2026-10-26). The mountains stand not along an

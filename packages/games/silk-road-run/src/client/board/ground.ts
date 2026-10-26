@@ -51,6 +51,12 @@ export interface Look {
   smoke: boolean;
   /** The mountains' shapes, each hex picking one. */
   mountains: string[];
+  /**
+   * How many frames each mountain image holds, side by side, 42 pixels
+   * wide each, looping at `FLAME_FPS`: 1, a still image, but for the
+   * Flaming Mountains' fire.
+   */
+  mountainFrames: number;
   /** The ground under a mountain, a seamless tile laid like the grass. */
   mountainGround: string;
 }
@@ -71,8 +77,15 @@ const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
  * each pixel taken as rock or fire by what most of it was, its rock taken
  * halfway to the red earth's browns and its outline's lower half dark
  * earth, so it sits in the ground (owner, 2026-10-26); and the same
- * mirrored, each hex picking one. It took the place of red sandstone
- * ridges with flames added on their crests, which looked off.
+ * mirrored, each hex picking one. Its base, drawn as a diamond, is warped
+ * to the hex's lower half, flat along its bottom edge and out to its side
+ * corners, its edges dark earth, so it fills its space. Its fire burns in
+ * 8 frames (`mountainFrames`): only the flames above the base change, a
+ * brightness rising up them, their tips flickering and embers rising from
+ * the peak, while the rock and the glowing cracks low on it hold still,
+ * so the mountain itself never moves (2026-10-26; frames that redrew the
+ * rock made mountains look as if they shook). It took the place of red
+ * sandstone ridges with flames added on their crests, which looked off.
  */
 const FLAMING_MOUNTAINS = [burningMountainImage, burningMirroredImage];
 
@@ -97,6 +110,7 @@ const LOOKS: Record<string, Look> = {
     obstacles: [yurtImage],
     smoke: true,
     mountains: STEPPE_MOUNTAINS,
+    mountainFrames: 1,
     mountainGround: rockImage,
   },
   gobi: {
@@ -107,6 +121,7 @@ const LOOKS: Record<string, Look> = {
     obstacles: [sandstoneRuinsImage],
     smoke: false,
     mountains: STEPPE_MOUNTAINS,
+    mountainFrames: 1,
     mountainGround: rockImage,
   },
   flaming: {
@@ -117,6 +132,7 @@ const LOOKS: Record<string, Look> = {
     obstacles: [mudbrickRuinsImage],
     smoke: false,
     mountains: FLAMING_MOUNTAINS,
+    mountainFrames: 8,
     mountainGround: redEarthImage,
   },
 };
@@ -128,6 +144,12 @@ export function lookOf(map: MapData): Look {
 
 /** Whether a map's obstacles smoke, so the board keeps drawing frames for it. */
 export const smokes = (map: MapData): boolean => lookOf(map).smoke;
+
+/** Whether a map's mountains burn (move), so the board keeps drawing frames for it. */
+export const burns = (map: MapData): boolean => lookOf(map).mountainFrames > 1;
+
+/** The Flaming Mountains' fire, in frames a second (owner, 2026-10-26). */
+export const FLAME_FPS = 8;
 
 /** A tile's ground texture on a map: the map's open ground, or its mountains' ground under one (rock, owner, 2026-10-24). */
 const textureOf = (look: Look, tile: Tile): string =>
@@ -314,22 +336,33 @@ export function drawObstacle(
   ctx: CanvasRenderingContext2D,
   h: Hex,
   map: MapData,
-  mountain = false
+  mountain = false,
+  time: number | null = null
 ): void {
-  const images = mountain ? lookOf(map).mountains : lookOf(map).obstacles;
+  const look = lookOf(map);
+  const images = mountain ? look.mountains : look.obstacles;
   const art = assetLoader.requestImage(images[Math.floor(hexRandom(h, 1)() * images.length)]!);
   if (!art) {
     drawObstacleMark(ctx, center(h));
     return;
   }
+  // A burning mountain's frame, each hex out of step; the first held for reduced motion.
+  const frames = mountain ? look.mountainFrames : 1;
+  const frameWidth = art.width / frames;
+  const offset = Math.floor(hexRandom(h, 3)() * frames);
+  const frame = time === null ? 0 : (Math.floor(time * FLAME_FPS) + offset) % frames;
   const c = center(h);
-  const width = art.width * SPRITE_SCALE;
+  const width = frameWidth * SPRITE_SCALE;
   const height = art.height * SPRITE_SCALE;
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   if (mountain) mountainClip(ctx, c);
   ctx.drawImage(
     art,
+    frame * frameWidth,
+    0,
+    frameWidth,
+    art.height,
     Math.round(c.x - width / 2),
     Math.round(c.y + (mountain ? MOUNTAIN_FEET : SPRITE_FEET) - height),
     width,
