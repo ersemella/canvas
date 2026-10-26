@@ -129,6 +129,38 @@ lacks it. 400 fights give about ±2.5 points of standard error on a win rate.
 The findings and the principles built on them are in
 `docs/plans/roguelike-tactics/balance.md`.
 
+## Whole runs
+
+`runs.mjs` plays whole runs: a party through `STAGES` as the page does
+(`run.ts`), the fallen gone for the run and the survivors and the camel
+going on at full health, until a stage is lost or the last is won. The
+production AI plays both sides at its fixed work cap, so a seed always
+plays the same run.
+
+```sh
+node scripts/balance/runs.mjs scripts/balance/experiments/roles.mjs --runs 200 --jobs 4
+```
+
+An experiments file exports `experiments`, a map from a name to
+`{party, group?, patch?, provision?}`: `party` the player's heroes (the
+camel is added), `patch` as in `ablate.mjs`, and `group` a label whose
+parties' mean run win rate and spread are printed at the end. The
+caravanserai's choices follow one fixed policy for every party: each
+provision raises `provision` (`defence` by default) on the survivor with
+the lowest stat total, and the first passive offered goes to the first
+survivor without it. Output per experiment: `runWinPct`; by stage, the
+share of runs reaching it, its win rate, its losses by how they ended
+(camel killed, party killed, stalled at `--max-turns`), heroes going in and
+heroes left per win; and of the runs won, the share each hero finished
+standing in. 200 runs give about ±3.5 points of standard error on a run win
+rate near 50%.
+
+`experiments/roles.mjs` (2026-10-26) asks whether a party needs one hero of
+each role (roster.md): every party of three from the roster, grouped as
+one of each, no tank, no damage or no support. The one-of-each parties'
+spread is how much the choice of heroes moves a run on its own; a missing
+role matters only if its group falls clearly below it.
+
 ## Mirror matches
 
 `mirror.mjs` checks the AI and rules for side bias: the same heroes on both

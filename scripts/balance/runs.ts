@@ -1,0 +1,148 @@
+// Whole runs, AI against AI: a party plays STAGES one after another as the
+// page does (run.ts), the fallen gone for the run, the survivors and the
+// camel going on at full health, until a stage is lost or the last is won.
+// The production AI plays both sides, the player's heroes included, at its
+// fixed work cap, so a seed always plays the same run.
+import {createRun, handleRunAction, passiveOffer, runStatus} from '@balance-rules/run';
+import type {RunState} from '@balance-rules/run';
+import {actingUnit, advanceToDecision, applyTurn} from '@balance-rules/fight';
+import {chooseAiTurn} from '@balance-rules/ai';
+import {ABILITY, AI, CAMEL, HEROES, RULES, STAGES} from '@balance-rules/config';
+import {ABILITIES} from '@balance-rules/abilities';
+import {hasPassive} from '@balance-rules/passives';
+import type {HeroId, StatId} from '@balance-rules/types';
+import {snapshot, type Config} from './snapshot';
+
+export type RunExperiment = {
+  /** The player's heroes, one to three of ROSTER; the camel is added. */
+  party: HeroId[];
+  /** Changes the config for both sides, undone afterwards (as ablate.ts's `patch`). */
+  patch?: (config: Config) => void;
+  /**
+   * The stat each provision raises (progression.md, 19.2), on the survivor
+   * with the lowest stat total, party order breaking ties: `defence` by
+   * default. The same policy for every party, so it doesn't favour one.
+   */
+  provision?: StatId;
+};
+type Options = RunExperiment & {runs: number; seed: number; maxTurns: number};
+
+/** How a lost stage ended: the camel killed, every hero killed, or no end within `maxTurns`. */
+type Loss = 'camelKilled' | 'partyKilled' | 'stalled';
+
+export function simulateRuns(options: Options) {
+  const config: Config = {ABILITY, AI, HEROES, RULES, ABILITIES};
+  const restore = snapshot(config);
+  try {
+    options.patch?.(config);
+    return run(options);
+  } finally {
+    restore();
+  }
+}
+
+function run({runs, seed, maxTurns, party, provision = 'defence'}: Options) {
+  const stages = STAGES.map(() => ({
+    reached: 0,
+    won: 0,
+    lost: {camelKilled: 0, partyKilled: 0, stalled: 0} as Record<Loss, number>,
+    /** Heroes standing at the start of the stage, summed over the runs that reached it. */
+    heroesIn: 0,
+    /** Heroes standing at the end of the stages won. */
+    heroesOutOfWins: 0,
+  }));
+  /** Runs each hero of the party was still standing at the end of. */
+  const finishedWith: Record<string, number> = {};
+  let won = 0;
+
+  for (let r = 0; r < runs; r++) {
+    let state: RunState = createRun(seed + r, {party});
+    for (;;) {
+      const stage = stages[state.stage]!;
+      const heroes = () =>
+        state.fight.units.filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive);
+      stage.reached++;
+      stage.heroesIn += heroes().length;
+      const fight = state.fight;
+      let turns = 0;
+      while (fight.phase === 'fight' && turns < maxTurns) {
+        const unit = actingUnit(fight)!;
+        applyTurn(fight, unit, chooseAiTurn(fight, unit, {left: AI.maxSimulations}));
+        advanceToDecision(fight);
+        turns++;
+      }
+      if (fight.phase !== 'won') {
+        const camel = fight.units.find((u) => u.hero === CAMEL);
+        stage.lost[
+          fight.phase === 'fight' ? 'stalled' : camel?.alive ? 'partyKilled' : 'camelKilled'
+        ]++;
+        break;
+      }
+      stage.won++;
+      stage.heroesOutOfWins += heroes().length;
+      if (runStatus(state) === 'won') {
+        won++;
+        for (const u of heroes()) finishedWith[u.hero] = (finishedWith[u.hero] ?? 0) + 1;
+        break;
+      }
+      state = handleRunAction(state, {type: 'next', ...caravanserai(state, provision)});
+    }
+  }
+
+  const round = (n: number, places = 1) => +n.toFixed(places);
+  const pct = (n: number, of: number) => round((100 * n) / (of || 1));
+  return {
+    runs,
+    party,
+    runWinPct: pct(won, runs),
+    /** By stage: the share of runs reaching it, its win rate, and how it was lost. */
+    stages: stages.map((s, i) => ({
+      stage: i + 1,
+      region: STAGES[i]!.region,
+      reachedPct: pct(s.reached, runs),
+      winPct: pct(s.won, s.reached),
+      lost: s.lost,
+      heroesIn: round(s.heroesIn / (s.reached || 1), 2),
+      heroesLeftPerWin: round(s.heroesOutOfWins / (s.won || 1), 2),
+    })),
+    /** Of the runs won, the share each hero finished standing in. */
+    finishedWithPct: Object.fromEntries(party.map((h) => [h, pct(finishedWith[h] ?? 0, won)])),
+  };
+}
+
+/**
+ * The caravanserai's choices after a won stage: the provision owed (the
+ * view's `provision`) to the weakest survivor, and the first passive offered
+ * to the first survivor not carrying it.
+ */
+function caravanserai(state: RunState, stat: StatId) {
+  const standing = state.fight.units
+    .filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive)
+    .sort((a, b) => a.partyIndex - b.partyIndex);
+  const out: {provision?: {hero: HeroId; stat: StatId}; passive?: {hero: HeroId; passive: string}} =
+    {};
+  if (STAGES[state.stage]!.provision) {
+    const total = (u: (typeof standing)[number]) => u.speed + u.defence + u.power;
+    // At RULES.statMax for everyone standing, the first stat still below it.
+    const stats: StatId[] = [stat, 'defence', 'power', 'speed'];
+    for (const s of stats) {
+      const weakest = standing
+        .filter((u) => u[s] < RULES.statMax)
+        .reduce<
+          (typeof standing)[number] | undefined
+        >((best, u) => (!best || total(u) < total(best) ? u : best), undefined);
+      if (weakest) {
+        out.provision = {hero: weakest.hero, stat: s};
+        break;
+      }
+    }
+  }
+  for (const passive of passiveOffer(state)) {
+    const taker = standing.find((u) => !hasPassive(u, passive));
+    if (taker) {
+      out.passive = {hero: taker.hero, passive};
+      break;
+    }
+  }
+  return out;
+}

@@ -11,15 +11,10 @@ import {ABILITIES} from '@balance-rules/abilities';
 import {unitName} from '@balance-rules/resolve';
 import {MAPS} from '@balance-rules/map';
 import type {AbilityId, FightState, HeroId, Side} from '@balance-rules/types';
+import {snapshot, type Config} from './snapshot';
 
-/** Mutable views of the config, for experiments to patch. */
-export type Config = {
-  ABILITY: any;
-  AI: any;
-  HEROES: any;
-  RULES: any;
-  ABILITIES: any;
-};
+export type {Config};
+
 export type Mod = {
   /** Abilities the modified side can't use. */
   ban?: AbilityId[];
@@ -80,30 +75,6 @@ function searchWith({depth, work}: {depth: number; work: number}) {
     } finally {
       ai.maxSimulations = saved;
     }
-  };
-}
-
-function snapshot(config: Config) {
-  const copy = (x: unknown) =>
-    JSON.parse(
-      JSON.stringify(x, (_k, v) => (v === Infinity ? 'Infinity' : v)),
-      (_k, v) => (v === 'Infinity' ? Infinity : v)
-    );
-  const saved = copy({
-    ABILITY: config.ABILITY,
-    AI: config.AI,
-    HEROES: config.HEROES,
-    RULES: config.RULES,
-  });
-  return () => {
-    const restore = (target: any, from: any) => {
-      for (const [k, v] of Object.entries(from)) {
-        if (v && typeof v === 'object' && !Array.isArray(v)) restore(target[k], v);
-        else target[k] = v;
-      }
-    };
-    for (const key of ['ABILITY', 'AI', 'HEROES', 'RULES'] as const)
-      restore(config[key], saved[key]);
   };
 }
 
