@@ -25,6 +25,7 @@ import sandImage from '../tiles/sand.png';
 import mountainPeakImage from '../tiles/mountain-peak.png';
 import mountainTwinImage from '../tiles/mountain-twin.png';
 import rockImage from '../tiles/rock.png';
+import redRockImage from '../tiles/rock-red.png';
 import grassImage from '../tiles/grass-soft.png';
 import redEarthImage from '../tiles/red-earth.png';
 import mudbrickRuinsImage from '../tiles/ruins.png';
@@ -97,7 +98,8 @@ const FLAMING_MOUNTAINS = [burningMountainImage, burningMirroredImage];
  * stamped per hex and the crumbling sandstone ruin, as they were
  * (2026-10-22), in place of the yurts. The Flaming Mountains (owner,
  * 2026-10-26): the owner's cracked red earth (AI-assisted, cut to 128
- * pixels and 5 colours), under the mountains too. Its fights have no
+ * pixels and 5 colours); under the mountains, the Steppe's rock in the
+ * burning mountain's browns (`rock-red.png`). Its fights have no
  * obstacles for now (map.ts); the mudbrick wall drawn for the Steppe
  * (`ruins.png`) stands in for one placed by hand on the test stage.
  */
@@ -133,7 +135,10 @@ const LOOKS: Record<string, Look> = {
     smoke: false,
     mountains: FLAMING_MOUNTAINS,
     mountainFrames: 8,
-    mountainGround: redEarthImage,
+    // The Steppe's rock in the burning mountain's own browns, so the
+    // corners of its hex beside the peak read as the mountain's (owner,
+    // 2026-10-26); on the red earth, they looked left unfilled.
+    mountainGround: redRockImage,
   },
 };
 

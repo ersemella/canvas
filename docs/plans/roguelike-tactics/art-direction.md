@@ -98,7 +98,10 @@ tuning. This file has no combat-design section number.
   sandstone ridges near Turpan, set alight as in *Journey to the West*.
   All the art is the owner's (AI-assisted), cut to the sprites' grid: a
   cracked red earth (`tiles/red-earth.png`, 128 pixels, 5 colours, laid
-  as one field like the grass, under the mountains too); and the owner's
+  as one field like the grass); under the mountains, the Steppe's rock
+  (`tiles/rock-red.png`) recoloured in the burning mountain's own five
+  browns by its shades, as on the red earth the corners of a mountain's
+  hex beside its peak looked left unfilled (owner, 2026-10-26); and the owner's
   burning mountain (`tiles/mountain-burning.png`, 42 × 48, and its mirror
   `mountain-burning-mirrored.png`, each hex picking one): red rock cliffs
   with the fire running up the ridges, drawn as one image, its rock cut to
