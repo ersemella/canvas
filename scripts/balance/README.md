@@ -78,6 +78,8 @@ was measured).
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.
+`china-mirror.mjs` (2026-10-26) measures the China party on both sides,
+and each Chinese hero swapped for each Steppe hero on one side.
 
 ## Ability and stat ablation
 

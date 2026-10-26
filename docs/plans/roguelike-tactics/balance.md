@@ -2355,6 +2355,42 @@ never in it (`self` off), no Empower or Weaken; the built Elixir is China
   measured with it on, since it changes how Cleave's Delay and Swift
   Strike's Haste are weighed too.
 
+### The China mirror (2026-10-26)
+
+Asked for: whether a Chinese hero is weak in a China mirror (the China
+party on both sides), on the current rules (the Elixir as Haste 3 and
+Delay 3, Cleave Delay 8, Swift Strike Haste 3).
+`experiments/china-mirror.mjs`, seeds from 1000: the mirror, 400 fights,
+the camel with the player (the player wins 55.6%); each Chinese hero
+swapped for each Steppe hero on one side, **800 fights each** (about ±1.8
+points), every seed from both sides.
+
+| In the mirror | Youxia | Vanguard | Alchemist |
+|---|---:|---:|---:|
+| Survives | **44.9%** | 51.8% | 54.6% |
+| Turns a fight | 10.3 | 7.3 | 10.4 |
+
+The swapped side's share of wins (above 50%: the hero taken out was the
+weaker):
+
+| Taken out | Bökh Champion in | Mangudai Outrider in | Storm Caller in | Mean |
+|---|---:|---:|---:|---:|
+| **Youxia Swordsman** | **71%** | 54.1% | 43.1% | **56.1%** |
+| Modao Vanguard | 64.3% | 58.4% | 36% | 52.9% |
+| Waidan Alchemist | 58.8% | 57.5% | 38.9% | 51.7% |
+
+- **The Swordsman is the weakest in the mirror**: it survives least,
+  taking as many turns as the Alchemist, and taking it out gains the most
+  (the Champion in its seat 71%, the largest swing; the highest mean).
+- **Not by much outside melee**: for the Outrider, taking out the
+  Swordsman gains the least (54% against 57–58%); only the Champion's
+  column separates the three clearly, so health 4 in melee against the
+  Vanguard's Cleave (14.2 damage and 3 kills a fight, the mirror's only
+  attributed damage) is the cost.
+- **The Storm Caller is weak in any Chinese seat** (36–43%), as it is
+  the Steppe's weakest.
+- Not changed: the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
