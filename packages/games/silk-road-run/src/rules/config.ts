@@ -184,8 +184,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * (owner, 2026-10-23).
    */
   camel: {
-    // Temee until 2026-10-26 (owner): no real names in the game's text.
-    name: 'Camel',
+    // Humphrey (owner, 2026-10-26; Temee before, the Mongolian for camel):
+    // a name, so no "Your" before it (unitName).
+    name: 'Humphrey',
     letter: 'C',
     speed: 0,
     defence: 9,

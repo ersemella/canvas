@@ -98,9 +98,9 @@ export function StartMenu(props: {
               Caravan
             </Text>
             <Text>
-              Lead a caravan down a long road across the world. Your camel carries the cargo and
-              walks the road on its own: guard it against rival caravans and the spirits and
-              monsters of every land you cross.
+              Lead a caravan down a long road across the world. Humphrey, your camel, carries the
+              cargo and walks the road on its own: guard it against rival caravans and the spirits
+              and monsters of every land you cross.
             </Text>
           </Stack>
 
