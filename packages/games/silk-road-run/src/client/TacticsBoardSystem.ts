@@ -21,7 +21,6 @@ import {
   drawExit,
   drawFallingHail,
   drawGround,
-  drawMountainFlames,
   drawObstacle,
   drawYurtSmoke,
   smokes,
@@ -403,12 +402,9 @@ export class TacticsBoardSystem extends BaseSystem {
     // Mountains in front of the units (owner, 2026-10-24): a peak rises into
     // the space above it, in front of whoever stands there, as nearer things
     // are in a three-quarter view; never in front of health or statuses.
-    // In the Flaming Mountains, flames burn on them (owner, 2026-10-26).
+    // In the Flaming Mountains, they burn (owner, 2026-10-26).
     for (const h of map.hexes)
-      if (tileAt(map, h) === 'mountain') {
-        drawObstacle(ctx, h, map, true);
-        drawMountainFlames(ctx, h, map, t);
-      }
+      if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, map, true, t);
 
     // Not on a party walking out, off their hexes.
     drawGrappleFists(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));

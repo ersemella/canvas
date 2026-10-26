@@ -100,11 +100,14 @@ tuning. This file has no combat-design section number.
   cracked red earth (`tiles/red-earth.png`, 128 pixels, 5 colours, laid
   as one field like the grass, under the mountains too); two gullied
   ridges (`tiles/mountain-flaming.png` and `mountain-flaming-twin.png`,
-  shrunk to the hex's 42 pixels, 5 colours and an ink outline); and a
-  flame (`tiles/flames.png`, 8 frames of 22 × 22, 5 colours) burning on
-  each ridge's crest at 8 frames a second, each flame out of step, held
-  still for reduced motion (`drawMountainFlames`, its feet set per image
-  in `FLAMING_MOUNTAINS`). The mudbrick wall (`tiles/ruins.png`) stands
+  shrunk to the hex's 42 pixels, 5 colours and an ink outline), each a
+  strip of 8 frames with the owner's flames (8 frames of 22 × 22, 5
+  colours) baked in on its crest, the twin's on both peaks, looping at 8
+  frames a second, each mountain out of step, held still for reduced
+  motion. Drawn first as a flame on top of each crest, its flat foot
+  read as a lid on the peak (owner, 2026-10-26); now each flame's foot
+  follows the ridge, sunk into it, the flames shortening down the slope,
+  so the fire grows out of the rock. The mudbrick wall (`tiles/ruins.png`) stands
   for the ruins of Gaochang at the mountains' foot; its tower stump read
   too dark on the red earth. Every fight has a range of mountains
   (`MapData.mountains`: `'always'`) and two or three ruins, as the

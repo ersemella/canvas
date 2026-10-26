@@ -30,16 +30,14 @@ import redEarthImage from '../tiles/red-earth.png';
 import mudbrickRuinsImage from '../tiles/ruins.png';
 import flamingMountainImage from '../tiles/mountain-flaming.png';
 import flamingTwinImage from '../tiles/mountain-flaming-twin.png';
-import flamesImage from '../tiles/flames.png';
 
 /**
- * A mountain's art, drawn for the hex (`drawObstacle`), and where flames
- * burn on it (`drawMountainFlames`): each the middle of a flame's foot, in
- * art pixels from the image's top left.
+ * A mountain's art, drawn for the hex (`drawObstacle`): one image, or a
+ * strip of `frames` 42-pixel-wide frames looping at `FLAME_FPS`.
  */
 interface MountainArt {
   image: string;
-  flames: {x: number; y: number}[];
+  frames: number;
 }
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
@@ -73,26 +71,23 @@ export interface Look {
  * into the space above (`mountainClip` keeps the base inside the hex).
  */
 const STEPPE_MOUNTAINS: MountainArt[] = [
-  {image: mountainPeakImage, flames: []},
-  {image: mountainTwinImage, flames: []},
+  {image: mountainPeakImage, frames: 1},
+  {image: mountainTwinImage, frames: 1},
 ];
 
 /**
  * The Flaming Mountains' (owner, 2026-10-26): red sandstone ridges cut by
  * gullies, from the owner's art (AI-assisted) shrunk to the hex's 42
  * pixels and cut to 5 colours with an ink outline, as the Steppe's are.
- * Flames burn on the peak's crest, and on the twin's back peak and front
- * ridge.
+ * Each is a strip of 8 frames with the owner's flames (AI-assisted, cut
+ * to the grid and 5 colours) burning on its crest, the twin's on both
+ * peaks: each flame's foot follows the ridge, sunk into it, and the
+ * flames shorten down the slope, so they grow out of the rock rather
+ * than sit on it (2026-10-26). Baked into the art, not drawn over it.
  */
 const FLAMING_MOUNTAINS: MountainArt[] = [
-  {image: flamingMountainImage, flames: [{x: 22, y: 3}]},
-  {
-    image: flamingTwinImage,
-    flames: [
-      {x: 17, y: 3},
-      {x: 30, y: 16},
-    ],
-  },
+  {image: flamingMountainImage, frames: 8},
+  {image: flamingTwinImage, frames: 8},
 ];
 
 /**
@@ -149,8 +144,7 @@ export function lookOf(map: MapData): Look {
 export const smokes = (map: MapData): boolean => lookOf(map).smoke;
 
 /** Whether a map's mountains burn, so the board keeps drawing frames for it. */
-export const burns = (map: MapData): boolean =>
-  lookOf(map).mountains.some((m) => m.flames.length > 0);
+export const burns = (map: MapData): boolean => lookOf(map).mountains.some((m) => m.frames > 1);
 
 /** A tile's ground texture on a map: the map's open ground, or its mountains' ground under one (rock, owner, 2026-10-24). */
 const textureOf = (look: Look, tile: Tile): string =>
@@ -337,76 +331,43 @@ export function drawObstacle(
   ctx: CanvasRenderingContext2D,
   h: Hex,
   map: MapData,
-  mountain = false
+  mountain = false,
+  time: number | null = null
 ): void {
-  const images = mountain ? lookOf(map).mountains.map((m) => m.image) : lookOf(map).obstacles;
-  const art = assetLoader.requestImage(images[Math.floor(hexRandom(h, 1)() * images.length)]!);
-  if (!art) {
+  const pick = hexRandom(h, 1)();
+  const art: MountainArt = mountain
+    ? lookOf(map).mountains[Math.floor(pick * lookOf(map).mountains.length)]!
+    : {image: lookOf(map).obstacles[Math.floor(pick * lookOf(map).obstacles.length)]!, frames: 1};
+  const img = assetLoader.requestImage(art.image);
+  if (!img) {
     drawObstacleMark(ctx, center(h));
     return;
   }
-  const at = spriteCorner(h, art, mountain);
-  ctx.save();
-  ctx.imageSmoothingEnabled = false;
-  if (mountain) mountainClip(ctx, center(h));
-  ctx.drawImage(art, at.x, at.y, art.width * SPRITE_SCALE, art.height * SPRITE_SCALE);
-  ctx.restore();
-}
-
-/** Where an obstacle's image's top left goes on `h`: centred, its foot on the hex's bottom edge for a mountain. */
-function spriteCorner(h: Hex, art: HTMLImageElement, mountain: boolean): {x: number; y: number} {
   const c = center(h);
-  return {
-    x: Math.round(c.x - (art.width * SPRITE_SCALE) / 2),
-    y: Math.round(c.y + (mountain ? MOUNTAIN_FEET : SPRITE_FEET) - art.height * SPRITE_SCALE),
-  };
-}
-
-/** The flames' strip (owner, 2026-10-26): 8 frames of 22 × 22 art pixels, each flame's foot at its bottom middle. */
-const FLAME = {frames: 8, size: 22};
-export const FLAME_FPS = 8;
-
-/**
- * Flames burning on a mountain of the Flaming Mountains (owner,
- * 2026-10-26), where its art says (`MountainArt.flames`): the owner's
- * flames (AI-assisted, cut to the sprites' grid and 5 colours), looping
- * at 8 frames a second, each flame out of step with the others. Held on
- * one frame each when the device asks for reduced motion (`time` null).
- * Drawn over the mountain, unclipped, rising into the space above.
- */
-export function drawMountainFlames(
-  ctx: CanvasRenderingContext2D,
-  h: Hex,
-  map: MapData,
-  time: number | null
-): void {
-  const {mountains} = lookOf(map);
-  const mountain = mountains[Math.floor(hexRandom(h, 1)() * mountains.length)]!;
-  const art = assetLoader.requestImage(mountain.image);
-  const flames = assetLoader.requestImage(flamesImage);
-  if (!art || !flames || mountain.flames.length === 0) return;
-  const at = spriteCorner(h, art, true);
-  const next = hexRandom(h, 3);
-  const px = SPRITE_SCALE;
+  const width = (img.width / art.frames) * SPRITE_SCALE;
+  const height = img.height * SPRITE_SCALE;
+  // A burning mountain's frame, each hex out of step; one frame held for reduced motion.
+  const offset = Math.floor(hexRandom(h, 3)() * art.frames);
+  const frame = (Math.floor((time ?? 0) * FLAME_FPS) + offset) % art.frames;
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  for (const f of mountain.flames) {
-    const offset = Math.floor(next() * FLAME.frames);
-    const frame = (Math.floor((time ?? 0) * FLAME_FPS) + offset) % FLAME.frames;
-    ctx.drawImage(
-      flames,
-      frame * FLAME.size,
-      0,
-      FLAME.size,
-      FLAME.size,
-      at.x + (f.x - FLAME.size / 2) * px,
-      at.y + (f.y - FLAME.size) * px,
-      FLAME.size * px,
-      FLAME.size * px
-    );
-  }
+  if (mountain) mountainClip(ctx, c);
+  ctx.drawImage(
+    img,
+    frame * (img.width / art.frames),
+    0,
+    img.width / art.frames,
+    img.height,
+    Math.round(c.x - width / 2),
+    Math.round(c.y + (mountain ? MOUNTAIN_FEET : SPRITE_FEET) - height),
+    width,
+    height
+  );
   ctx.restore();
 }
+
+/** The Flaming Mountains' flames, in frames a second (owner, 2026-10-26). */
+export const FLAME_FPS = 8;
 
 /** Smoke from a yurt's crown: puffs at a time, a cycle each, in steps of this many frames a second. */
 const SMOKE = {puffs: 6, seconds: 3.6, rise: 22, drift: 6};
