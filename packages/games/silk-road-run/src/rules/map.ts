@@ -116,7 +116,7 @@ const special: [Hex, Tile][] = [
 
 export const STEPPE: MapData = {
   id: 'steppe',
-  name: 'The Steppe Crossing',
+  name: 'The Grassland Crossing',
   hexes: boardHexes(),
   tiles: Object.fromEntries(special.map(([h, t]) => [hexKey(h), t])),
   startColumns: {
@@ -146,7 +146,7 @@ export const STEPPE: MapData = {
 export const GOBI: MapData = {
   ...STEPPE,
   id: 'gobi',
-  name: 'The Gobi Crossing',
+  name: 'The Desert Crossing',
   mountains: 'never',
   obstacles: {counts: [4, 5], reach: 3},
 };
@@ -166,7 +166,7 @@ export const GOBI: MapData = {
 export const FLAMING: MapData = {
   ...STEPPE,
   id: 'flaming',
-  name: 'The Flaming Mountains',
+  name: 'The Burning Mountains',
   mountains: 'always',
   mountainPlaces: 'middle',
   obstacles: {counts: [1, 2], reach: 3},

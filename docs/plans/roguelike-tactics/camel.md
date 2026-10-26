@@ -169,7 +169,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Ending stalled fights (2026-10-21, owner) | The caravan's camel: a unit that can't attack, moves one hex a turn at typical cost; reaching one of four exit hexes on the enemy's edge wins; its death is game over; every ability reaches it, displacement and Immobilized included; its damage carries over between fights | A fight limit at a set slot; a surrender rule; stronger finishers or weaker heals; a fourth hero; a camel the enemy plunders, with cargo that can't be won back | The player can always end a fight; fits the caravan setting; gives fights an objective; the camel's health becomes the run's attrition |
-| The camel's name (2026-10-21, owner) | Temee, shown wherever the game names the camel ("Temee reaches the road out") | "Caravan Camel" | A name gives the caravan a character to protect |
+| The camel's name (2026-10-21, owner) | "Camel" ("Your Camel" in the log) since 2026-10-26; Temee before | Temee; "Caravan Camel" | No real names, places or cultures in the game's text (owner, 2026-10-26; roster.md's decision log); Temee had given the caravan a character to protect |
 
 ## Open questions
 

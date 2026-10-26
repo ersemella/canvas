@@ -8,19 +8,23 @@ import styles from './TacticsPage.module.css';
 
 const PARTY_STORAGE = 'canvas:tactics:party';
 
-/** Each hero in a line or two of story (roster.md, 15.8): who they are, not their numbers. */
+/**
+ * Each hero in a line or two of story (roster.md, 15.8): who they are, not
+ * their numbers. No real names, places or cultures: those show only in the
+ * art (owner, 2026-10-26).
+ */
 const LORE: Partial<Record<HeroId, string>> = {
-  bokh: 'A Mongol wrestler famed at the naadam games. The Grappler fights bare handed, seizing enemies, pinning them down, and hurling them aside.',
+  bokh: 'A champion wrestler of the festival games. The Grappler fights bare handed, seizing enemies, pinning them down, and hurling them aside.',
   mangudai:
-    'A Mongol horse archer from the vanguard of the Mongol army. The Horse Archer strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
+    'A mounted archer who rides ahead of the army. The Horse Archer strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
   storm:
-    'A Turkic weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail that holds whoever it catches fast, though storms never choose sides.',
+    'A weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail that holds whoever it catches fast, though storms never choose sides.',
   modao:
-    'An armoured spearhead of the Tang army, wielding the modao, a long two-handed blade. The Vanguard is slow, but its blade cuts through the first foe into the one behind.',
+    'An armoured spearhead of the imperial army, wielding a long two-handed blade. The Vanguard is slow, but its blade cuts through the first foe into the one behind.',
   alchemist:
-    'A Tang master of waidan, the art of elixirs brewed from minerals in sealed crucibles. The Alchemist splashes an elixir beside it that strengthens the allies it touches and weakens the enemies.',
+    'A master of elixirs, brewed from minerals in sealed crucibles. The Alchemist splashes an elixir beside it that strengthens the allies it touches and weakens the enemies.',
   youxia:
-    'A wandering knight-errant of Tang China, sworn to keep their word and avenge wrongs. The Swordsman travels light with a straight jian, and every stroke that lands quickens the next.',
+    'A wandering knight-errant, sworn to keep their word and avenge wrongs. The Swordsman travels light with a straight sword, and every stroke that lands quickens the next.',
 };
 
 /**
@@ -94,9 +98,9 @@ export function StartMenu(props: {
               Caravan
             </Text>
             <Text>
-              Lead a caravan from the Mongolian steppe to Byzantium. Temee, your camel, carries the
-              cargo and walks the road on its own: guard it against rival caravans and the spirits
-              and monsters of every land you cross.
+              Lead a caravan down a long road across the world. Your camel carries the cargo and
+              walks the road on its own: guard it against rival caravans and the spirits and
+              monsters of every land you cross.
             </Text>
           </Stack>
 

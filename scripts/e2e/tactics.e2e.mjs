@@ -538,7 +538,7 @@ try {
     await sleep(150);
   }
   const info = page.getByTestId('hex-info');
-  check('hovering a yurt shows its rule', (await info.textContent()).includes('Yurt'));
+  check('hovering a yurt shows its rule', (await info.textContent()).includes('Tent'));
   check('hovering changes nothing', (await state()).view.version === versionBeforeHover);
   await shot(page, 'hover');
 

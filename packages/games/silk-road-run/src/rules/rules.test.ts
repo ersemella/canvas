@@ -569,7 +569,7 @@ describe('the board', () => {
       // Even a stage that always has mountains has none in the Gobi.
       const s = createFight(seed, undefined, undefined, true, [], GOBI);
       expect(s.mapId).toBe('gobi');
-      expect(mapOf(s).name).toBe('The Gobi Crossing');
+      expect(mapOf(s).name).toBe('The Desert Crossing');
       const tiles = Object.values(s.tiles);
       // More ruins than the Steppe's yurts, since there are no mountains.
       expect([4, 5]).toContain(tiles.filter((t) => t === 'obstacle').length);
@@ -592,7 +592,7 @@ describe('the board', () => {
       // Not a stage that asks for mountains: the map raises them itself.
       const s = createFight(seed, undefined, undefined, false, [], FLAMING);
       expect(s.mapId).toBe('flaming');
-      expect(mapOf(s).name).toBe('The Flaming Mountains');
+      expect(mapOf(s).name).toBe('The Burning Mountains');
       // Three pairs in the middle, apart, off the
       // starting columns and Temee's road, not next to its start or exit.
       const mountains = Object.keys(s.tiles)
@@ -645,13 +645,13 @@ describe('the board', () => {
   });
 
   it('names the ground after the map’s look', () => {
-    expect(tileInfo('steppe', 'obstacle').name).toBe('Yurt');
+    expect(tileInfo('steppe', 'obstacle').name).toBe('Tent');
     expect(tileInfo('gobi', 'obstacle').name).toBe('Ruins');
     expect(tileInfo('gobi', 'sand').name).toBe('Gravel');
     expect(tileInfo('gobi', 'mountain').name).toBe('Mountains');
     expect(tileInfo('flaming', 'sand').name).toBe('Red earth');
     expect(tileInfo('flaming', 'obstacle').name).toBe('Beacon tower');
-    expect(tileInfo('flaming', 'mountain').name).toBe('Flaming Mountains');
+    expect(tileInfo('flaming', 'mountain').name).toBe('Burning mountains');
   });
 
   it('says a unit can move exactly when its reachable hexes include a move', () => {

@@ -19,7 +19,7 @@ export interface HexInfo {
 export const TILE_INFO: Record<Tile, HexInfo> = {
   sand: {name: 'Grass', short: 'Open ground', detail: 'No effect.'},
   obstacle: {
-    name: 'Yurt',
+    name: 'Tent',
     short: 'Blocks movement and arrows',
     detail: 'Blocks movement and arrows.',
   },
@@ -53,7 +53,7 @@ const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
       detail: 'Blocks movement and arrows.',
     },
     mountain: {
-      name: 'Flaming Mountains',
+      name: 'Burning mountains',
       short: 'Blocks movement and arrows',
       detail: 'Blocks movement and arrows.',
     },

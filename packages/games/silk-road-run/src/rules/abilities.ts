@@ -726,8 +726,8 @@ const swiftStrike: AbilityDef = {
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
-    log(ctx, `${unitName(user)} strikes ${unitName(u)} with the jian.`);
-    hit(ctx, user, u, 'The jian');
+    log(ctx, `${unitName(user)} strikes ${unitName(u)} with the sword.`);
+    hit(ctx, user, u, 'The sword');
     haste(ctx, user, ABILITY.swiftStrike.haste);
   },
 };
