@@ -2305,6 +2305,55 @@ turns as above.
   near the target; `hastesPerFight` doesn't count it by ally.
 - Not changed: the Elixir stays Empower and Weaken (the owner's call).
 
+### Elixir with more Haste than Delay, and the AI counting them (2026-10-26)
+
+Asked for: whether the AI values Haste and Delay, and the Elixir's Haste
+and Delay apart. **The AI counted them only in part**: `guessValue`
+orders options by the share of a turn a card moves (Cleave's Delay too),
+but `scoreOutcome`, which screens the options the search plays on,
+counted Haste and Delay as nothing while it counts Empower and Weaken as
+statuses, and the leaf evaluation has no track term; the search saw a
+moved card only where the turn it moved fell within its horizon.
+Switches for measuring: `ABILITY.elixir.haste` and `.delay` (the one
+`tempo` until now) and `AI.trackWorth` (0 as built: above 0,
+`scoreOutcome` counts each other card a turn moves, the share of a turn ×
+its turn's worth × this, as `guessValue` does). `ablate.ts` counts Hastes
+by ally (`hastesPerFight.*.to`).
+`experiments/elixir-haste-delay.mjs`, **800 fights each** (about ±1.8
+points), seeds from 1000: the burst next to the Alchemist, the Alchemist
+never in it (`self` off), no Empower or Weaken; the built Elixir is China
+40.1%, the seat 49.8%. Vanguard Hastes and turns are China's, a fight.
+
+| Haste / Delay | China vs Steppe | Alchemist for the Storm Caller | Vanguard Hastened | Vanguard's turns | Cleaves |
+|---|---:|---:|---:|---:|---:|
+| 3 / 3 | 43.4% | 49.8% | 3.3 | 7.6 | 3 |
+| 3 / 0 | 29.8% | 36.4% | 2.7 | 7 | 2.7 |
+| 4 / 0 | 33% | 37.9% | 2.8 | 7.2 | 2.7 |
+| 3 / 1 | 36.5% | 44.1% | 3.2 | 7.2 | 2.7 |
+| 4 / 1 | 35.5% | 44.1% | 3 | 7.1 | 2.8 |
+| 5 / 1 | 40.1% | 44.1% | 3 | 7.3 | 2.9 |
+| 4 / 2 | 39.6% | 47.3% | 3.2 | 7.5 | 2.9 |
+| **`trackWorth` 1:** built Elixir | 40.7% | 49.9% | — | 7.8 | 1.8 |
+| 3 / 3 | 47.6% | 54.6% | 4 | 7.8 | 3.2 |
+| 4 / 1 | 42% | 46.9% | 4 | 7.6 | 3.1 |
+
+- **Delay carries the Elixir, not Haste.** With the same Delay, more
+  Haste adds little (3/1 to 5/1: 36.5–40.1%, the seat 44.1% throughout);
+  with no Delay it loses badly (30–33%). Every pair with more Haste than
+  Delay is under 3 / 3.
+- **The Vanguard is Hastened about three times a fight** (the most of any
+  ally; the Swordsman about 2, the camel 1.3), yet takes no more turns
+  (7–7.8, 7.8 with the built Elixir): about a turn's worth of slots a
+  fight, spread over the fight.
+- **Counting Haste and Delay in the screen is worth 4–6 points to the
+  Haste Elixir** (3/3: 47.6% from 43.4%, the seat 54.6%; 4/1: 42% from
+  35.5%) and nothing to the built one (40.7%). With it, 3 / 3 is still
+  ahead of 4 / 1.
+- Not changed: the Elixir stays Empower and Weaken, `trackWorth` 0 (the
+  owner's call). Before `trackWorth` is adopted it needs the whole game
+  measured with it on, since it changes how Cleave's Delay and Swift
+  Strike's Haste are weighed too.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
