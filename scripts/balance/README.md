@@ -47,7 +47,10 @@ hero's seat; `china-buffs.mjs` (2026-10-26) whether the AI is why China
 loses (`mod.search`, the modified side's own horizon and work cap) and
 buffs that even it; `vanguard-buffs.mjs` the Vanguard's buffs other
 than speed, with Swift Strike Haste 3; `cleave-shape.mjs` Cleave's shape by its
-switch (`ABILITY.cleave.shape`).
+switch (`ABILITY.cleave.shape`); `hail-elixir.mjs` two hails at once and
+hail on entry (`ABILITY.hail.max`, `.entry`), and a power-0 Elixir of
+radius 1 at melee range with Empower 2 and Weaken 1 (`ABILITY.elixir.empower`,
+`.weaken`).
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.

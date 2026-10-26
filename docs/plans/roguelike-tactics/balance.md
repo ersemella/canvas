@@ -2119,6 +2119,51 @@ the units each source hits (`hitsPerFight`).
   lines would be the measured equivalent (not run).
 - Not changed: the shape is the owner's.
 
+### Two hails, hail on entry, and a melee Elixir (2026-10-26)
+
+Asked for: Hail with two hails standing at once and damage on entering
+it, and the Alchemist at power 0 with an Elixir of radius 1 at melee
+range, an ally Empowered 2 and an enemy Weakened 1 (no hit, no heal).
+Switches for measuring, all off as built: `ABILITY.hail.max` (a caster's
+hails standing at once, a new one past it replacing the oldest; each
+lifts on its own and frees only whoever it held), `ABILITY.hail.entry` (a
+unit entering hail, walking or Moved, takes the caster's power), and
+`ABILITY.elixir.empower` and `.weaken` (each side's amount apart).
+`experiments/hail-elixir.mjs`, **800 fights each** (about ±1.8 points),
+seeds from 1000, Delay 8 and Haste 3 as built. *Seat*: a hero in a Steppe
+hero's seat against the three Steppe heroes, its side's share of wins.
+
+| Hail | Side without Hail | Youxia / Vanguard / Alchemist for the Storm Caller | Party vs all three (player wins) | Storm + Storm + wolf | China vs Steppe | Hail's hits a fight |
+|---|---:|---:|---:|---:|---:|---:|
+| built | 30.1% | 64.4 / 62.4 / 54.6% | 76.3% | 96.4% | 52.6% | 4.86 |
+| two at once | 28% | 63.1 / 61.8 / 54.5% | 74.4% | 95.6% | 51.7% | 5.06 |
+| entry | 30% | 64.3 / 62.9 / 55.1% | 75.9% | 96.4% | 53.1% | 4.94 |
+| two and entry | 28.6% | 63.3 / 63 / 54.5% | 74.4% | 95.6% | 51.8% | 5.14 |
+
+- **Neither changes Hail measurably**: every row within about one
+  standard error of the built one. Entry damage almost never fires (0.05
+  more hits a fight): the AI walks round hail, since being held already
+  costs it more than the damage. Two hails add little because the Storm
+  Caller hails again on most turns, as with Hail lasting 2 (above): units
+  begin 2.3 turns a fight held, from 2.2.
+- **The Storm Caller is now the weakest Steppe hero by more**: with Haste
+  3 and Delay 8 the Youxia and the Vanguard in its seat win 62–64% (57–59%
+  before), the Alchemist 55%.
+
+| Elixir | Alchemist for the Champion / Outrider / Storm Caller | China vs Steppe | Elixir's share of turns (China) | Empowered damage a fight (China) |
+|---|---:|---:|---:|---:|
+| built (a unit within 2, power 1, a hit and a heal) | 47.6 / 49 / 54.6% | 52.6% | 71% | 1.3 |
+| power 0, aura of 1 (every unit next to it), Empower 2, Weaken 1 | 29.1 / 35 / 42.6% | **29.9%** | 43% | 2.5 |
+| power 0, burst of 1 on a space next to it, Empower 2, Weaken 1 | 43.7 / 44.1 / 52% | 41.4% | 65% | 4.3 |
+
+- **The aura is far too weak** (China 29.9%, 23 points under the built):
+  it needs the Alchemist in the melee, at health 4, and catches a unit
+  only on 43% of turns (it moves on half of them).
+- **The burst plays as a support** (Empowered damage 4.3–5.5 a fight,
+  three times the built Elixir's) but costs about 4–11 points: China
+  41.4%, 44–52% in a seat. Unfinished fights rise a little (0.3–1.6%).
+- Not changed: the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
