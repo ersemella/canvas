@@ -1,4 +1,4 @@
-// Silk Road Run, the tactical roguelike planned in
+// Caravan, the tactical roguelike planned in
 // docs/plans/roguelike-tactics/. The client entry (this file) is the game
 // definition the web shell builds in, plus the rules its page uses for
 // previews. The whole run plays in the browser through the DOM-free `./run`

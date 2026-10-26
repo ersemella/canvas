@@ -11,7 +11,7 @@ import type {RunRecord, RunResponse as AnyRunResponse} from '@canvas/engine/serv
 import silkRoadRun from '@canvas/games-silk-road-run/run';
 import type {HeroId, PassivePick, Provision, RunView, TurnInput} from '@canvas/games-silk-road-run';
 
-/** What every answer about a Silk Road Run run carries: the engine's type, with its view. */
+/** What every answer about a Caravan run carries: the engine's type, with its view. */
 export type RunResponse = AnyRunResponse<RunView>;
 
 const GAME = 'silk-road-run';

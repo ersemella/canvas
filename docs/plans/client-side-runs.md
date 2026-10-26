@@ -1,10 +1,10 @@
-# Plan: Silk Road Run in the browser
+# Plan: Caravan in the browser
 
 Status: **built 2026-10-25** (phases 1 to 4; *Built*, below). Drafted the
 same day, and the owner's answers are in *Owner's decisions*. It replaces
 decisions D3, D4 and D7 of
 [roguelike-tactics/architecture.md](roguelike-tactics/architecture.md) for
-Silk Road Run. **For later work on it,** read *Built* and the decision it
+Caravan. **For later work on it,** read *Built* and the decision it
 concerns, then `.claude/skills/verify/SKILL.md`.
 
 ## Goal

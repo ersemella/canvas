@@ -91,7 +91,7 @@ export function StartMenu(props: {
         <Stack gap="lg">
           <Stack gap="xs">
             <Text component="h1" className={styles.display!} fz={28} fw="bold" m={0}>
-              Silk Road Run
+              Caravan
             </Text>
             <Text>
               Lead a caravan from the Mongolian steppe to Byzantium. Temee, your camel, carries the

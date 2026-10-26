@@ -1,4 +1,4 @@
-# Plan: Silk Road Run
+# Plan: Caravan
 
 Status: **Phase 1 built (2026-10-19); stats, keywords, track and kits reworked by the owner (2026-10-23).**
 One fight against the AI plays end to end: the rules in

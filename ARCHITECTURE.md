@@ -2,7 +2,7 @@
 
 Canvas is a browser game arcade: a small ECS engine renders games to a 2D
 canvas. Poker is played over a live, server-authoritative connection;
-Silk Road Run, a single-player tactical roguelike, plays its whole run in
+Caravan, a single-player tactical roguelike, plays its whole run in
 the browser, its AI in a Web Worker. Everything else is a static,
 declarative manifest.
 
@@ -12,7 +12,7 @@ declarative manifest.
 Browser (@canvas/web)                    Cloudflare Worker (@canvas/server)
   React + react-router                      routes: /rooms
   @canvas/engine ECS + Canvas2D  <——HTTP/WS——>
-  Silk Road Run: run host + localStorage            │ DO stub
+  Caravan: run host + localStorage            │ DO stub
     AI in a Web Worker                              ▼
                                        GameRoom (Durable Object) × 1 per room
                                          idFromName(roomId) · WebSocket
@@ -122,7 +122,7 @@ class is retired and unreachable, but still bound in `wrangler.toml` until a
 `deleted_classes` migration removes it.
 
 ### Single-player runs play in the browser
-Silk Road Run's run never leaves the browser (owner, 2026-10-25;
+Caravan's run never leaves the browser (owner, 2026-10-25;
 `docs/plans/client-side-runs.md`). The page (`pages/tactics/localRuns.ts`)
 hosts it with the engine's run host (`@canvas/engine/server`, `runs.ts`:
 `startRun`, `playRun`, `runResponse`, which own what the retired `RunRoom`

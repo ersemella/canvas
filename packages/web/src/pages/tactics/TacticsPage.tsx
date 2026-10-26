@@ -70,7 +70,7 @@ function outcomeText(fight: FightState): string {
 }
 
 /**
- * Silk Road Run: a run of fights against the AI, played in this browser
+ * Caravan: a run of fights against the AI, played in this browser
  * (`useRun`, docs/plans/client-side-runs.md); this page draws its view, previews turns with the
  * same rules (D11, `useTurnPlan`), and plays each turn as one action. Tapping or
  * hovering a hex shows what's there; Move, then a hex, plans the move;

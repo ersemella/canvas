@@ -25,7 +25,7 @@ new_sqlite_classes = ["GameRoom", "ManifestRegistry"]
 tag = "v2"
 new_sqlite_classes = ["RunRoom", "PlayerLedger"]
 
-# Silk Road Run's runs play in the browser now (docs/plans/client-side-runs.md):
+# Caravan's runs play in the browser now (docs/plans/client-side-runs.md):
 # deleting the classes deletes the runs they stored.
 [[migrations]]
 tag = "v3"

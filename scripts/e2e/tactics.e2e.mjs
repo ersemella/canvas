@@ -1,5 +1,5 @@
 /**
- * Silk Road Run end to end, in Chromium: the run plays in the browser, so
+ * Caravan end to end, in Chromium: the run plays in the browser, so
  * the page sends no `/runs` request (docs/plans/client-side-runs.md). Start,
  * a turn played with real taps and its preview, an enemy's stat sheet, a
  * reload that resumes exactly, a second tab refused while the first has

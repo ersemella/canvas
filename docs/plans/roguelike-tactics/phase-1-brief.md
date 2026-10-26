@@ -271,9 +271,10 @@ turn, so a bad preview can't cause an illegal move.
   like poker's (`packages/web/src/app/router.tsx`, before the generic
   `/play/:gameId`, which only runs browser-only games). Listed on the home
   page through `platform.games.json` like every game.
-- **Title: Silk Road Run**, on the home page, the page heading and the
-  package name (`@canvas/games-silk-road-run`, game ID
-  `silk-road-run`).
+- **Title: Caravan** (owner, 2026-10-26; Silk Road Run before), on the
+  home page and the page heading. The package name
+  (`@canvas/games-silk-road-run`), game ID and route (`silk-road-run`)
+  keep the old name.
 - **Layout:** the hex board drawn with the engine on the canvas (hex
   geometry and picking are new: the engine's grids are square); the
   **track**, the selected unit's **stat sheet**, and the **preview**

@@ -1,5 +1,5 @@
 /**
- * Silk Road Run's run rules, DOM-free, for the page's run host
+ * Caravan's run rules, DOM-free, for the page's run host
  * (`@canvas/engine/server`, `playRun`), in the browser and its AI's Web
  * Worker: a run is its stages' fights, one after another.
  */

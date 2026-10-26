@@ -547,3 +547,6 @@ Learned:
   titles considered: Silk Road Caravans, Caravans of the Silk Road, Silk
   Road: Rival Caravans, The Silk Road Charter, Silk Road: The Closing
   Road, Last Caravan on the Silk Road, Silk Road Gambit.
+- **Silk Road Run** (2026-10-26): renamed **Caravan**; owner's call. The
+  package, game ID, route and `localStorage` keys keep `silk-road-run` /
+  `tactics`, so saved runs and links still work.

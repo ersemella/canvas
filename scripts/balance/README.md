@@ -1,4 +1,4 @@
-# Silk Road Run balance simulation
+# Caravan balance simulation
 
 The movement-rules runner (`run.mjs`, `simulate.ts`, `pnpm balance:tactics`)
 was removed on 2026-10-23 with `FightState.experiment`, the overrides it
