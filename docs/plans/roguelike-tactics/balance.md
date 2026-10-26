@@ -2265,6 +2265,47 @@ The Alchemist's and Vanguard's turns are China's, a fight.
   to need. Neither built; not changed, the Elixir stays Empower and
   Weaken (the owner's call).
 
+### Elixir as Haste and Delay, other shapes (2026-10-26)
+
+Asked for: Haste and Delay kept, the shape changed. A switch for
+measuring, `ABILITY.elixir.self` (on as built): off, the Alchemist never
+takes its own Elixir, so it can't Hasten itself, the loop above. Every
+row here has it off. `experiments/elixir-tempo-shapes.mjs`, **800 fights
+each** (about ±1.8 points), seeds from 1000; the built Elixir (Empower 2,
+Weaken 1) is China 40.1%, the seat 49.8% (above). Delays, *again* and the
+turns as above.
+
+| Shape | Haste and Delay | China vs Steppe | Alchemist for the Storm Caller | Elixir's Delays a fight (again) | Its Hastes | Vanguard's turns |
+|---|---:|---:|---:|---:|---:|---:|
+| Burst next to it (as built) | 2 | 35.5% | 43.5% | 8.5 (2.7) | 6 | 6.9 |
+| | 3 | 43.4% | **49.8%** | 8.7 (3.4) | 6.5 | 7.6 |
+| | 4 | 53.9% | 58.1% | 9.5 (4.4) | 7.2 | 8 |
+| Burst within 2 | 2 | 40.4% | 47.8% | 9.7 (3) | 7.2 | 7.1 |
+| | 3 | **50.5%** | 56.4% | 10.8 (4.1) | 8 | 7.7 |
+| | 4 | 59% | 61.8% | 10.5 (4.7) | 8 | 8.1 |
+| One unit within 2 | 2 | 29.4% | 33.9% | 3.6 (0.6) | 2.6 | 6.7 |
+| | 3 | 30.4% | 44.4% | 4 (0.8) | 2.7 | 6.8 |
+| | 4 | 38% | 47.9% | 4.1 (1) | 2.9 | 7.3 |
+| One unit within 3 | 2 | 29% | 36.1% | 3.7 (0.5) | 2.7 | 6.8 |
+| | 3 | 32.7% | 44.1% | 4.2 (0.7) | 3 | 7.1 |
+| | 4 | 40% | 47.4% | 4.3 (0.8) | 3.1 | 7.4 |
+
+- **Without itself in it, there is no lockout**: no unfinished fights at
+  any amount, the Alchemist's turns stay at about 12 (56 at 4 with
+  itself), and about 40% of its Delays find a unit already Delayed, from
+  73–97%. The delay limit (3.6) would still cut that 40%.
+- **A burst is needed**: one unit loses at every amount (China 29–40%),
+  as the single Empower did; a burst catches about two units a use.
+- **The burst next to it at 3 is the Storm Caller's equal** (49.8%) and
+  China gains 3 points on the built Elixir (43.4%). **Thrown within 2 at
+  3 evens China** (50.5%) but is 6 points over the Storm Caller in its
+  seat.
+- **The Vanguard gains little**: under a turn a fight at 3 or 4 (7.6–8.1,
+  7.8 with the built Elixir). The Haste reaches whoever stands near
+  the Alchemist, mostly the Swordsman, which `hastesPerFight` doesn't
+  split by target.
+- Not changed: the Elixir stays Empower and Weaken (the owner's call).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

@@ -62,6 +62,9 @@ files touching the Alchemist that don't set every one of these
 Delay in place of Empower and Weaken (`ABILITY.elixir.tempo`), counting
 Delays on a unit already Delayed since its last turn (`delaysPerFight`)
 and the Hastes the Alchemist gives itself (`hastesPerFight`).
+`elixir-tempo-shapes.mjs` (2026-10-26) measures the same Elixir in other
+shapes (bursts next to the Alchemist and within 2, one unit within 2 and
+3), the Alchemist never taking its own (`ABILITY.elixir.self` off).
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.
