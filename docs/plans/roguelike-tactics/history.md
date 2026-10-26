@@ -484,8 +484,8 @@ Learned:
 - **Div Binder** (removed 2026-10-26; owner's call): Persia's support
   for a few hours, a controller whose bound div pushed enemies and
   disrupted their turns (after Tahmuras Divband of the *Shahnameh*;
-  chains or a lasso). Removed when Persia was recast as the **Pilban
-  Bulwark** (the Mahout Bulwark's war elephant, now Sasanian) as tank,
+  chains or a lasso). Removed when Persia was recast as the **Mahout
+  Bulwark** (back from the India region, now Sasanian) as tank,
   the **Persian Cataphract** as damage, and the **Simurgh Feather Burner**
   as a healing support, as the Simurgh heals in the *Shahnameh*. The
   Simurgh's earlier kit, area strikes leaving Burn, left with its damage
