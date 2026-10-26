@@ -103,11 +103,14 @@ tuning. This file has no combat-design section number.
   `mountain-burning-mirrored.png`, each hex picking one): red rock cliffs
   with the fire running up the ridges, drawn as one image, its rock cut to
   5 colours with an ink outline and its fire to 4, each pixel taken as
-  rock or fire by what most of it was. It replaced gullied sandstone
+  rock or fire by what most of it was; its rock then taken halfway to the
+  red earth's browns, the orange it takes from the fire kept, and the
+  outline's lower half dark earth rather than ink, as at first, redder and
+  outlined, it didn't blend with the ground (owner, 2026-10-26). It replaced gullied sandstone
   ridges with flames added on their crests: a separate flame per crest
   read as a lid on the peak, then animated frames made the mountains look
   as if they shook (owner, 2026-10-26). The mountains stand not along an
-  edge, as the Steppe's, but in one or two clumps of 2 to 4 in the middle
+  edge, as the Steppe's, but in two or three clumps of 2 to 4 in the middle
   of the board (`MapData.mountainPlaces`: `'middle'`, `middleClumps` in
   map.ts; owner, 2026-10-26), off the starting columns and Temee's road,
   in every fight (`MapData.mountains`: `'always'`), and, for now, nothing else:

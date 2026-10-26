@@ -59,7 +59,7 @@ export interface MapData {
   mountains: 'sometimes' | 'never' | 'always';
   /**
    * Where they stand: one range along one of the board's slanted edges
-   * (the Steppe's), or one or two clumps in its middle (the Flaming
+   * (the Steppe's), or two or three clumps in its middle (the Flaming
    * Mountains', owner, 2026-10-26; `middleClumps`).
    */
   mountainPlaces: 'edge' | 'middle';
@@ -154,7 +154,7 @@ export const GOBI: MapData = {
 /**
  * The Flaming Mountains (owner, 2026-10-26), the China region's map: red
  * earth below the burning ridges of *Journey to the West*, which stand in
- * every fight, in one or two clumps in the middle of the board, not
+ * every fight, in two or three clumps in the middle of the board, not
  * along its edges (owner, 2026-10-26). No obstacles in its fights for now: the mudbrick ruins
  * first scattered there, and fissures burning whoever entered them, were
  * taken out (owner, 2026-10-26), until art for an obstacle in the middle
@@ -302,16 +302,16 @@ function mountainRange(
 }
 
 /**
- * The Flaming Mountains' (owner, 2026-10-26): one or two clumps of 2 to 4
+ * The Flaming Mountains' (owner, 2026-10-26): two or three clumps of 2 to 4
  * mountains in the middle of the board, each from a first hex within
  * `MIDDLE_CLUMP.start` of the centre growing a hex at a time onto a
  * neighbour of the clump within `MIDDLE_CLUMP.reach`, the ones touching
  * more of it first, so it bunches up rather than strings out. Off the
  * starting columns, off Temee's road down the
- * middle column, not next to the camel's start or the exit, the two clumps
+ * middle column, not next to the camel's start or the exit, the clumps
  * apart, and never cutting the board in two.
  */
-const MIDDLE_CLUMP = {counts: [1, 2], sizes: [2, 3, 4], start: 2, reach: 3};
+const MIDDLE_CLUMP = {counts: [2, 3], sizes: [2, 3, 4], start: 2, reach: 3};
 
 function middleClumps(
   map: MapData,

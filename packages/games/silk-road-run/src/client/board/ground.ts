@@ -68,7 +68,9 @@ const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
  * (AI-assisted), red rock cliffs with flames running up the ridges, drawn
  * as one image with the fire in it, shrunk to the hex's 42 pixels (42 ×
  * 48), its rock cut to 5 colours with an ink outline and its fire to 4,
- * each pixel taken as rock or fire by what most of it was; and the same
+ * each pixel taken as rock or fire by what most of it was, its rock taken
+ * halfway to the red earth's browns and its outline's lower half dark
+ * earth, so it sits in the ground (owner, 2026-10-26); and the same
  * mirrored, each hex picking one. It took the place of red sandstone
  * ridges with flames added on their crests, which looked off.
  */

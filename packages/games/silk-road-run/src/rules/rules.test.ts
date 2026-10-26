@@ -579,7 +579,7 @@ describe('the board', () => {
       expect(s.mapId).toBe('flaming');
       expect(mapOf(s).name).toBe('The Flaming Mountains');
       const tiles = Object.values(s.tiles);
-      // One or two clumps of 2 to 4 in the middle, apart, off the
+      // Two or three clumps of 2 to 4 in the middle, apart, off the
       // starting columns and Temee's road, not next to its start or exit.
       const mountains = Object.keys(s.tiles)
         .filter((k) => s.tiles[k] === 'mountain')
@@ -599,7 +599,7 @@ describe('the board', () => {
         for (const c of touching) clumps.splice(clumps.indexOf(c), 1);
         clumps.push(merged);
       }
-      expect([1, 2]).toContain(clumps.length);
+      expect([2, 3]).toContain(clumps.length);
       for (const c of clumps) expect(c.length).toBeGreaterThanOrEqual(2);
       for (const c of clumps) expect(c.length).toBeLessThanOrEqual(4);
       expect(tiles.filter((t) => t === 'obstacle')).toHaveLength(0);
