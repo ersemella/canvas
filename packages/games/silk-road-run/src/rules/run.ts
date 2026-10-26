@@ -88,9 +88,6 @@ export interface RunView {
    * taken: the region's last stage, short of the run's last; none otherwise.
    */
   passives: PassiveId[];
-  /** The region this stage is in, by name, and the next stage's, if there is one. */
-  region: string;
-  nextRegion: string | null;
   /**
    * The fight. While an AI unit's turn is due its `awaiting` is null: the
    * page has no unit to control.
@@ -391,11 +388,6 @@ export function runView(run: RunState): RunView {
     stages: stageCount(run),
     provision: provisionOwed(run),
     passives: passiveOffer(run),
-    region: run.test ? '' : REGIONS[STAGES[run.stage]!.region].name,
-    nextRegion:
-      run.test || run.stage >= stageCount(run) - 1
-        ? null
-        : REGIONS[STAGES[run.stage + 1]!.region].name,
     fight: due ? {...run.fight, awaiting: null} : run.fight,
     aiDue: due,
   };

@@ -2117,11 +2117,7 @@ describe('previews, the AI and the run', () => {
     };
     const at = (r: RunState, stage: number): RunState => ({...r, stage});
     const run = createRun(11);
-    expect(runView(run)).toMatchObject({
-      passives: [],
-      region: 'the Steppe',
-      nextRegion: 'the Steppe',
-    });
+    expect(runView(run).passives).toEqual([]);
     // No passive on a stage that offers none.
     expect(() =>
       handleRunAction(win(run), {
@@ -2133,7 +2129,7 @@ describe('previews, the AI and the run', () => {
 
     const last = win(at(run, 2));
     const view = runView(last);
-    expect(view).toMatchObject({region: 'the Steppe', nextRegion: 'China', provision: false});
+    expect(view.provision).toBe(false);
     const offer = view.passives;
     expect(offer).toHaveLength(PASSIVE_OFFER);
     expect(new Set(offer).size).toBe(PASSIVE_OFFER);
@@ -2173,7 +2169,7 @@ describe('previews, the AI and the run', () => {
       'fox',
       'fox',
     ]);
-    expect(runView(china)).toMatchObject({region: 'China', provision: true, passives: []});
+    expect(runView(china)).toMatchObject({provision: true, passives: []});
     const storm = china.fight.units.find((u) => u.id === 'p-storm')!;
     expect(storm.passives).toEqual([pick]);
     // Never the enemy's copy, nor another hero.

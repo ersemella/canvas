@@ -45,8 +45,8 @@ export interface SetOut {
  * The caravanserai, between a won stage and the next (progression.md,
  * 19.2): after a stage that earns a provision, one hero still standing
  * takes 1 more of one stat, for the rest of the run, and the caravan sets
- * out. Between regions (`passives` offered, 19.3's passive slot) one of
- * three passives is taken, and one hero standing carries it for the rest
+ * out. When the stage offers passives (`passives`, 19.3's passive slot) one
+ * of three is taken, and one hero standing carries it for the rest
  * of the run. The camel takes neither. After a stage that earns nothing
  * the caravan only rests.
  */
@@ -56,8 +56,6 @@ export function Caravanserai(props: {
   stages: number;
   provision: boolean;
   passives: PassiveId[];
-  region: string;
-  nextRegion: string | null;
   busy: boolean;
   error: string | null;
   onSetOut: (choices: SetOut) => void;
@@ -66,7 +64,6 @@ export function Caravanserai(props: {
   const [passive, setPassive] = useState<PassiveId | null>(null);
   const [carrier, setCarrier] = useState<Unit['hero'] | null>(null);
   const offered = props.passives.length > 0;
-  const crossing = props.nextRegion !== null && props.nextRegion !== props.region;
   const carries = (unit: Unit, id: PassiveId | null) =>
     id !== null && (unit.passives?.includes(id) ?? false);
   const heroes = props.fight.units
@@ -90,10 +87,8 @@ export function Caravanserai(props: {
               Caravanserai
             </Text>
             <Text>
-              Stage {props.stage + 1} of {props.stages} won.{' '}
-              {crossing
-                ? `${capitalize(props.region)} is behind you; ${props.nextRegion} lies ahead. At the last inn before the border, travellers from both roads trade what they know`
-                : 'The caravan rests behind the inn’s walls before the road goes on'}
+              Stage {props.stage + 1} of {props.stages} won. The caravan rests behind the inn’s
+              walls before the road goes on
               {props.provision
                 ? ': raise one stat of one hero by 1, for the rest of the run.'
                 : offered
@@ -267,5 +262,3 @@ function ProvisionRow(props: {unit: Unit; picked: StatId | null; onPick: (stat: 
     </div>
   );
 }
-
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

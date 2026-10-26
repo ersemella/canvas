@@ -470,10 +470,10 @@ export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist', 'youxia'];
  * first stage, and so of every one of its stages.
  */
 export type RegionId = 'steppe' | 'china';
-export const REGIONS: Record<RegionId, {name: string; creature: HeroId; firstEnemy: HeroId}> = {
-  steppe: {name: 'the Steppe', creature: 'wolf', firstEnemy: 'mangudai'},
+export const REGIONS: Record<RegionId, {creature: HeroId; firstEnemy: HeroId}> = {
+  steppe: {creature: 'wolf', firstEnemy: 'mangudai'},
   // The Youxia Swordsman, China's damage hero, as the Outrider is the Steppe's.
-  china: {name: 'China', creature: 'fox', firstEnemy: 'youxia'},
+  china: {creature: 'fox', firstEnemy: 'youxia'},
 };
 /**
  * A run's stages, in order (owner, 2026-10-24; for a while four, from three

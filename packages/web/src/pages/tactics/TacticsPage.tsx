@@ -434,8 +434,6 @@ export function TacticsPage() {
         stages={stages}
         provision={run.view.provision}
         passives={run.view.passives}
-        region={run.view.region}
-        nextRegion={run.view.nextRegion}
         busy={busy}
         error={error}
         onSetOut={setOut}
