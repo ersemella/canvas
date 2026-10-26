@@ -8,6 +8,7 @@ import {placeStartingCards} from '@balance-rules/track';
 import {chooseAiTurn} from '@balance-rules/ai';
 import {ABILITY, AI, CAMEL, HEROES, RULES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
+import {unitName} from '@balance-rules/resolve';
 import {MAPS} from '@balance-rules/map';
 import type {AbilityId, FightState, HeroId, Side} from '@balance-rules/types';
 
@@ -156,6 +157,14 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
   let melts = 0;
   /** Turns begun Immobilized by hail, by whose hail: the unit's side's, or the other's. */
   const held = {ally: 0, enemy: 0};
+  /**
+   * Track effects, by the ability that gave them: Delays, the slots they
+   * moved, and those on a unit already Delayed since its last turn (the
+   * lockout the delay limit, 3.6, would stop); Hastes, and those its user
+   * gave itself.
+   */
+  const delays: Record<string, {count: number; slots: number; again: number}> = {};
+  const hastes: Record<string, {count: number; slots: number; self: number}> = {};
 
   for (let f = 0; f < fights; f++) {
     const modSide: Side | null = mod ? (f & 1 ? 'enemy' : 'player') : null;
@@ -184,7 +193,18 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
     }
     let actor: Side | null = null;
     let lastSource: string | null = null;
+    /** The acting unit and its ability, for the track effects it gives. */
+    let acting: {name: string; ability: string} | null = null;
+    /** Units Delayed since their last turn, by name (unique in the experiments that count it). */
+    const delayedSince = new Set<string>();
+    // Turns and skipped turns, read from the fight's events to clear `delayedSince`.
+    state.events = [];
     const readLog = (s: FightState) => {
+      // A turn is recorded as it starts, before the acting unit's own Delays and Hastes.
+      for (const e of s.events ?? [])
+        if (e.kind === 'turn' || e.kind === 'skip')
+          delayedSince.delete(unitName(s.units.find((u) => u.id === e.unitId)!));
+      s.events = [];
       for (const {text} of s.log) {
         const who = ACTOR.exec(text);
         if (who) actor = who[1] === 'Your' ? 'player' : 'enemy';
@@ -208,6 +228,22 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
         const added = /^Empower adds (\d+)\.$/.exec(text);
         if (added) empowerDamage += Number(added[1]);
         if (text === 'The sunlight melts the hail.') melts++;
+        const track = /^(.+) is (Delayed|Hastened) (\d+)\.$/.exec(text);
+        if (track && acting) {
+          const [, name, kind, n] = track;
+          if (kind === 'Delayed') {
+            const d = (delays[acting.ability] ??= {count: 0, slots: 0, again: 0});
+            d.count++;
+            d.slots += Number(n);
+            if (delayedSince.has(name!)) d.again++;
+            delayedSince.add(name!);
+          } else {
+            const h = (hastes[acting.ability] ??= {count: 0, slots: 0, self: 0});
+            h.count++;
+            h.slots += Number(n);
+            if (name === acting.name) h.self++;
+          }
+        }
       }
       s.log = [];
     };
@@ -255,9 +291,11 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
         movedHexes += input.move!.length;
       }
       actor = u.side;
+      acting = {name: unitName(u), ability: moving ? 'move' : input.action.ability};
       applyTurn(state, u, input);
       useKits(null, modSide);
       readLog(state);
+      acting = null;
       turns++;
       advance(state, chooseAiTurn);
       readLog(state);
@@ -326,6 +364,28 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
             .sort(([, a], [, b]) => b - a)
             .map(([k, n]) => [k, round((100 * n) / m.turns!)])
         ),
+      ])
+    ),
+    /** Delays a fight by source: how many, slots moved, and how many on a unit already Delayed since its last turn. */
+    delaysPerFight: Object.fromEntries(
+      Object.entries(delays).map(([k, v]) => [
+        k,
+        {
+          count: round(v.count / fights, 2),
+          slots: perFight(v.slots),
+          again: round(v.again / fights, 2),
+        },
+      ])
+    ),
+    /** Hastes a fight by source: how many, slots gained, and how many the user gave itself. */
+    hastesPerFight: Object.fromEntries(
+      Object.entries(hastes).map(([k, v]) => [
+        k,
+        {
+          count: round(v.count / fights, 2),
+          slots: perFight(v.slots),
+          self: round(v.self / fights, 2),
+        },
       ])
     ),
     hitsPerFight: Object.fromEntries(
