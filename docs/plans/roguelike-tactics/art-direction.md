@@ -185,6 +185,10 @@ tuning. This file has no combat-design section number.
   Beacon tower and Flaming Mountains. Every stage of a run is still the
   Steppe's (`STAGES` in config.ts); the test stage's `"map"` shows the
   Flaming Mountains.
+- **The Salt Flats** (`salt`, proposed 2026-10-26, not built), Persia's
+  map: a salt crust, large salt domes standing alone as its mountains and
+  windcatchers as its obstacle; its look and the prompts for its art are
+  in [salt-flats.md](salt-flats.md).
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct
   shape, not only a distinct colour: quicksand and sandstorm must read
   apart on a sand board.
