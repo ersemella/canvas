@@ -30,7 +30,6 @@ import grassImage from '../tiles/grass-soft.png';
 import redEarthImage from '../tiles/red-earth.png';
 import mudbrickRuinsImage from '../tiles/ruins.png';
 import burningMountainImage from '../tiles/mountain-burning.png';
-import burningMirroredImage from '../tiles/mountain-burning-mirrored.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
@@ -77,8 +76,9 @@ const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
  * 48), its rock cut to 5 colours with an ink outline and its fire to 4,
  * each pixel taken as rock or fire by what most of it was, its rock taken
  * halfway to the red earth's browns and its outline's lower half dark
- * earth, so it sits in the ground (owner, 2026-10-26); and the same
- * mirrored, each hex picking one. Its base, drawn as a diamond, is warped
+ * earth, so it sits in the ground (owner, 2026-10-26). One image, not
+ * mirrored on some hexes: its peak leans and its light falls one way, and
+ * a clump leaning both ways looked off (owner, 2026-10-26). Its base, drawn as a diamond, is warped
  * to the hex's lower half, flat along its bottom edge and out to its side
  * corners, its edges dark earth, so it fills its space. Its fire burns in
  * 8 frames (`mountainFrames`): only the flames above the base change, a
@@ -88,7 +88,7 @@ const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
  * rock made mountains look as if they shook). It took the place of red
  * sandstone ridges with flames added on their crests, which looked off.
  */
-const FLAMING_MOUNTAINS = [burningMountainImage, burningMirroredImage];
+const FLAMING_MOUNTAINS = [burningMountainImage];
 
 /**
  * The Steppe's grass (owner, 2026-10-24) is the owner's `grass.png`

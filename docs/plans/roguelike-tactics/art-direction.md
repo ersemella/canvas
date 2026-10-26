@@ -102,8 +102,9 @@ tuning. This file has no combat-design section number.
   (`tiles/rock-red.png`) recoloured in the burning mountain's own five
   browns by its shades, as on the red earth the corners of a mountain's
   hex beside its peak looked left unfilled (owner, 2026-10-26); and the owner's
-  burning mountain (`tiles/mountain-burning.png`, 42 × 48, and its mirror
-  `mountain-burning-mirrored.png`, each hex picking one): red rock cliffs
+  burning mountain (`tiles/mountain-burning.png`, 42 × 48, every mountain
+  the same way round: mirrored on some hexes, a clump's peaks and light
+  leaned both ways, which looked off; owner, 2026-10-26): red rock cliffs
   with the fire running up the ridges, drawn as one image, its rock cut to
   5 colours with an ink outline and its fire to 4, each pixel taken as
   rock or fire by what most of it was; its rock then taken halfway to the
