@@ -1,8 +1,8 @@
 # Roguelike tactics: the Salt Flats, Persia's map
 
-The Persia region's first map: a salt desert of white crust with large
-salt domes standing out of it, its rules, its look, and the prompts for
-making its art in ChatGPT.
+The Persia region's first map: a salt desert of white crust with one
+large salt dome in the middle of the board, its rules, its look, and the
+prompts for making its art in ChatGPT.
 
 > Part of the roguelike tactics plan. Start at [README.md](README.md).
 > The region and its biome are in [setting.md](setting.md) (15.3a,
@@ -10,7 +10,8 @@ making its art in ChatGPT.
 > [art-direction.md](art-direction.md).
 
 Everything here is **Proposed** (2026-10-26, from the owner's brief: "the
-salt flats, but should feature large salt domes"). Nothing is built.
+salt flats, but should feature large salt domes"; then "1 large salt dome
+directly in the middle", owner, 2026-10-26). Nothing is built.
 
 ## The place
 
@@ -21,8 +22,8 @@ to grey over brown mud. Through it rise **salt domes** (diapirs): salt
 pushed up from below into round, hummocky hills, banded white, grey and
 dusty pink with red clay, some with a crown collapsed into a crater or
 salt flowing down a flank like a glacier. The Kavir's basin has dozens of
-them. They give the board its landmark, as the burning ridges give the
-Flaming Mountains theirs, and they read as Persia's because no other
+them. One gives the board its landmark, as the burning ridges give the
+Flaming Mountains theirs, and it reads as Persia's because no other
 region's ground is white.
 
 In the game's text the place stays unnamed (owner, 2026-10-26: the setting
@@ -36,28 +37,34 @@ The Steppe's board (`STEPPE` in map.ts), as every map so far:
 | | The Salt Flats | Why |
 |---|---|---|
 | Open ground (`sand`) | **Salt flat** | No effect, as the Steppe's grass and China's red earth |
-| Mountains (`mountain`) | **Salt domes**, in every fight (`mountains: 'always'`) | The brief's large salt domes; blocks movement and arrows as every mountain does |
-| Where they stand | **Three or four domes standing alone**, in the middle, no two side by side (a new `mountainPlaces: 'scattered'`) | Each map gets its own shape: the Steppe a range on the edge, China three ridges across the middle, Persia single hills. Lone domes break lines of fire without walling a lane, so the board plays as open ground with cover, which suits a salt flat and gives the Horse Archer and the Bow something different from China |
-| Obstacle (`obstacle`) | **One or two windcatchers** within 3 of the centre, not next to a dome | The roofline that reads as Persia at a glance, as the tiled pavilion roof reads as China: the slotted tower of a desert cistern (*ab anbar*) |
-| Covered | At most 8 spaces (`MAX_COVERED`): four domes and two windcatchers cover 6 | As the Flaming Mountains |
+| Mountains (`mountain`) | **One large salt dome** on the centre space and the six around it, in every fight, always in the same place (a fixed tile set, not rolled by `randomTiles`) | The owner's call: one large dome directly in the middle. Seven spaces, a hexagon in the middle of the hexagon board, is large and keeps the board symmetrical; it blocks movement and arrows as every mountain does |
+| Obstacle (`obstacle`) | **One windcatcher**, rolled each fight on a space 3 from the centre, off the starting columns and not next to the camel's start or the exit | The roofline that reads as Persia at a glance, as the tiled pavilion roof reads as China: the slotted tower of a desert cistern (*ab anbar*). Ten spaces 3 from the centre are off the starting columns; two of them are next to the camel's start or the exit, so eight are left |
+| Covered | 8 spaces, the cap (`MAX_COVERED`): the dome's 7 and the windcatcher | As the Flaming Mountains |
 | Hazard | None at first | The setting's hazard, a crust over mud that gives way, is a candidate only. China's fissures were tried and taken out (owner, 2026-10-26), so the map starts without one; see Later |
 
-Domes stay off the starting columns, the camel's middle column and the
-spaces next to each other, as the Flaming Mountains' pairs do; the board
-must stay connected (`connectedWithout`).
+**How it plays.** The dome splits the board into two flanks: nothing can
+walk or shoot across the middle, so a fight is two fights around its
+sides until one side wins its flank and comes round. The windcatcher, on
+one flank or the other, makes the two flanks different each fight. The
+camel's road runs into the dome: its shortest walk from the top point to
+the exit goes round it, **10 steps instead of 8**, by either side
+(the camel already walks the shortest way around what blocks it,
+[camel.md](camel.md)), so the flank it takes is the one to hold. Units
+start on the side columns, 3 or 4 from the centre, so the dome doesn't
+touch the starting spaces.
 
-**Large, one to a space.** The owner took out art spanning several spaces
-in China (it was "the only thing on the board spanning spaces"), so a dome
-is one sprite in one hex, made large by height: its base fills the hex's
-lower half as the mountains' do, and its round top rises over the hex
-behind, about 46 pixels tall against the Steppe peak's 43 and the ridge's
-39. Drawn after the units, as mountains are, so it stands in front of a
-unit behind it.
+**Spanning several spaces.** In China the owner took out the ridges drawn
+in code because they were "the only thing on the board spanning spaces".
+Here that is the point: the dome is the one thing on the board that spans
+spaces, so it reads as the landmark. It is **one sprite** over its seven
+spaces, not seven pieces, drawn as mountains are, after the units in its
+row and before those in front of it, so its crown stands in front of a
+unit just behind it.
 
-**Two domes, not one mirrored.** A mirrored sprite turns its light the
-wrong way (the burning cone, 2026-10-26), so there are two drawings, each
-dome picking one: a **round dome**, and a **broken dome** with a collapsed
-crater crown and a tongue of salt flowing down its front.
+**Low, not tall.** A salt dome is wider than it is tall, and a tall one
+would hide the units in the spaces behind it. Its body fills its seven
+spaces and its crown rises only about a third of a hex above the back
+of them.
 
 ## The look
 
@@ -78,17 +85,21 @@ A `LOOKS` entry for `salt`, built as the Flaming Mountains' was:
   (`skyLight`, `#cfe8f2`), which is close to the salt. It needs checking
   on the board; if it is lost, the hail's outline goes to the deeper sky
   (`#6fb6d8`) on this map.
-- **Salt domes:** `tiles/salt-dome.png`, two frames side by side, 42 wide
-  and about 46 tall, standing on the salt itself (no rock under them, as
-  the ridges stand on red earth), in 6 colours taken from the salt's own
-  shades plus a dusty pink and a clay red for the bands, lit from the
-  upper left as the Steppe's peaks are, outlined in a dark grey-brown
-  rather than ink, so it blends with the ground.
-- **What moves:** a few **salt crystals glinting** on each dome, a single
+- **The salt dome:** `tiles/salt-dome.png`, about **106 × 124**: its
+  seven spaces' outline is 105 wide and 109 tall (three hexes of 42 by
+  36 in the middle column, a column either side), and the crown rises
+  about 12 above that. A broad, lumpy dome with a collapsed crater on its
+  crown and a tongue of salt flowing down its front, banded white, grey
+  and dusty pink with red clay, in about 7 colours taken from the salt's
+  own shades plus the pink and the clay, lit from the upper left as the
+  Steppe's peaks are, outlined in a dark grey-brown rather than ink, so
+  it blends with the ground. It stands on the salt itself, its foot
+  spreading a little onto the salt around it, inside its outer spaces.
+- **What moves:** a few **salt crystals glinting** on the dome, a single
   bright pixel growing to a small cross and fading, in 4 frames at 3 a
-  second (the fire's pace, `FLAME_FPS`), each dome out of step, held on
-  the first frame for reduced motion. Drawn in code, as the yurts' smoke
-  is, so the sprites stay still.
+  second (the fire's pace, `FLAME_FPS`), out of step with each other, held
+  on the first frame for reduced motion. Drawn in code, as the yurts'
+  smoke is, so the sprite stays still.
 - **Windcatcher:** `tiles/windcatcher.png`, about 34 × 46, its base 24
   wide so it stays inside its space, as the beacon tower's: a square
   mudbrick tower with tall vent slots at the top and a band of turquoise
@@ -108,7 +119,9 @@ size by hand. To keep the style:
   `tiles/mountain-twin.png` (a mountain on its hex) and
   `tiles/beacon-tower.png` (an obstacle), from
   `packages/games/silk-road-run/src/client/tiles/`, scaled up 8× with
-  nearest-neighbour so the model sees the pixels.
+  nearest-neighbour so the model sees the pixels. For the dome, also a
+  picture of its seven spaces' outline (a hexagon of seven flat-top
+  hexes), so it fills the right shape.
 - **Ask for one asset per image**, large and on a flat background, then
   scale it down to the sizes above and fix the grid, the palette and the
   outline in Aseprite.
@@ -138,49 +151,39 @@ or tiles. Match the pixel density and restraint of the attached
 references.
 ```
 
-### 2. Salt dome, round
+### 2. The large salt dome
 
 ```
-Pixel art sprite of a single large salt dome for a hex-grid tactics game,
-in the same style, size and viewpoint as the attached mountain sprite:
-seen from a three-quarter view above, its base fitting the lower half of
-a flat-topped hexagon (flat along the bottom, out to the hexagon's two
-side corners), its rounded top rising well above the hexagon.
+Pixel art sprite of one large salt dome, the centrepiece of a hex-grid
+tactics map, in the same style, viewpoint and outline as the attached
+mountain sprite, which fills one hexagon; this dome fills seven.
 
-Subject: a salt diapir, a rounded hill of rock salt pushed up out of a
-white salt flat. A broad, slightly lumpy dome, wider than it is tall, its
-flanks wrinkled and gullied by rain, with soft horizontal and folded
-bands of white, pale grey and dusty pink salt, a few streaks of red clay,
-small sparkling crystal faces near the top. Not a volcano, not a snowy
-mountain, not a sand dune: rounded and massive, like a pale melted-candle
-hill.
+Footprint: it sits on a cluster of seven flat-topped hexagons, one in the
+centre and six around it (the attached outline), seen from a three-quarter
+view above. Its foot follows the cluster's outer edge, and its body covers
+the whole cluster. It is low and wide: much wider than it is tall, its
+crown rising only a little above the cluster's back edge, so units
+standing behind it stay visible.
 
-Style: 42 x 46 pixel art on a transparent background, shown scaled up
-with hard square pixels, no anti-aliasing or gradients. At most 6
-colours: off-white, pale grey, mid grey, dusty pink, clay red, and a dark
-grey-brown outline. Light from the upper left. Low saturation so it sits
-on a white salt ground. Match the outline weight and level of detail of
-the attached mountain.
+Subject: a salt diapir, a huge rounded hill of rock salt pushed up out of
+a flat white salt desert. A broad, lumpy dome whose flanks are wrinkled
+and gullied by rain, with soft folded bands of white, pale grey and dusty
+pink salt and a few streaks of red clay. Its crown has collapsed into a
+shallow crater with jagged white rims, and a tongue of salt flows down its
+front toward the viewer like a small glacier, ending in a lobe at its
+foot. Small sparkling crystal faces near the top. Not a volcano, not a
+snowy mountain, not a sand dune: rounded and massive, like a pale
+melted-candle hill.
+
+Style: 106 x 124 pixel art on a transparent background, shown scaled up
+with hard square pixels, no anti-aliasing or gradients. At most 7
+colours: off-white, pale grey, mid grey, a cool grey shadow, dusty pink,
+clay red, and a dark grey-brown outline. Light from the upper left. Low
+saturation so it sits on a white salt ground. Keep the detail as coarse
+as the attached mountain's: large clusters of pixels, not fine texture.
 ```
 
-### 3. Salt dome, broken
-
-```
-Same style, size, viewpoint, palette and lighting as the previous salt
-dome, as its companion sprite (the two will stand on the same board).
-
-Subject: a second salt dome, a different shape: its crown has collapsed
-into a shallow crater with jagged white rims, and a tongue of salt flows
-down its front flank toward the viewer like a small glacier, ending in a
-lobe on the salt flat at its base. Folded bands of white, grey and dusty
-pink salt show in the crater's walls. Lit from the upper left, like the
-first; do not mirror it.
-
-42 x 46 pixels, transparent background, at most 6 colours, hard pixels,
-no anti-aliasing.
-```
-
-### 4. Windcatcher (obstacle)
+### 3. Windcatcher (obstacle)
 
 ```
 Pixel art sprite of a desert windcatcher for a hex-grid tactics game, in
@@ -205,7 +208,7 @@ darker teal for the tile, and a dark earth outline. Light from the upper
 left. Match the outline and level of detail of the attached watchtower.
 ```
 
-### 5. Later: soft crust (hazard, not planned yet)
+### 4. Later: soft crust (hazard, not planned yet)
 
 Only if the owner wants a hazard here; kept for when one is wanted.
 
@@ -223,29 +226,36 @@ pixels.
 
 When the art is in, as the Flaming Mountains were built:
 
-1. `SALT` in map.ts: `{...STEPPE, id: 'salt', name: 'The Salt Flats',
-   mountains: 'always', mountainPlaces: 'scattered', obstacles: {counts:
-   [1, 2], reach: 3}}`, added to `MAPS`.
-2. `'scattered'` in `randomTiles`: three or four domes within the middle
-   columns, off the starting columns and the middle column, no two next to
-   each other, rolled after the windcatchers and within `MAX_COVERED`.
-3. A `LOOKS` entry: the salt crust as the ground field, the two domes
-   picked per hex, the windcatcher as the obstacle, the glints in code.
+1. `SALT` in map.ts: `{...STEPPE, id: 'salt', name: 'The Salt Flats'}`,
+   its `tiles` the centre and its six neighbours as `mountain` in place of
+   the Steppe's yurt places, `mountains: 'never'` (none rolled: the dome
+   is fixed), `obstacles: {counts: [1], reach: 3}`, added to `MAPS`.
+2. The windcatcher's roll in `randomTiles`: exactly 3 from the centre
+   (not within it, as the yurts are), off the starting columns and the
+   spaces next to the camel's start and the exit.
+3. A `LOOKS` entry: the salt crust as the ground field, the dome drawn
+   once for its seven spaces (a new case: every mountain so far is a
+   sprite per hex), in the units' draw order by its front row, the
+   windcatcher as the obstacle, the glints in code.
 4. `MAP_TILE_INFO.salt` in info.ts: Salt flat, Salt dome, Windcatcher.
 5. Shown on the test stage (`"map": "salt"`) until Persia's stages exist.
+6. Watch the camel's walk round the dome in a few fights (the AI already
+   scores the camel by its walk, `roadDistance`, not a straight line).
 
 ## Later
 
-- **A hazard:** the soft crust (prompt 5), on entry Immobilizing or
+- **A hazard:** the soft crust (prompt 4), on entry Immobilizing or
   dealing 1, once a region's fights are played and the board wants one.
 - **Oasis gardens** ([setting.md](setting.md), 15.3b) as Persia's second
   map, and the **Alborz** for its last or boss stage.
 
 ## Open questions
 
-- Whether three or four lone domes, or pairs as China's, play better:
-  play-test on the test stage, and measure if it matters
+- Whether a split board plays well: ranged heroes lose the middle, and a
+  flank can stall. Play-test on the test stage, and measure if it matters
   ([balance.md](balance.md)).
+- One windcatcher or one on each flank (9 spaces covered, over the cap),
+  if a flank without one feels empty.
 - Whether the salt is bright enough to read as salt yet dim enough for the
   units, the ivory labels and hail.
 - Whether the windcatcher's turquoise is the region's accent across its
