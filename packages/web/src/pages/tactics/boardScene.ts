@@ -202,11 +202,20 @@ export function buildScene(input: SceneInput): BoardScene {
         const u = unitAt(fight, h);
         return !u || u.id === acting.id;
       };
-      for (const t of targets)
-        show(
-          second ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex,
-          second || throws(t.hex!) ? 'landing' : 'target'
-        );
+      // Cleave's line or cone: every unit each swing would hit, not just the
+      // space it's aimed at, so a swing that catches several shows them all.
+      if (def.area && from)
+        for (const t of targets)
+          for (const h of def.area(mapOf(fight), from, t.hex!)) {
+            const u = unitAt(fight, h);
+            if (u && u.id !== acting.id) show(h, 'target');
+          }
+      else
+        for (const t of targets)
+          show(
+            second ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex,
+            second || throws(t.hex!) ? 'landing' : 'target'
+          );
       // Where Feigned Retreat falls back to: the space hovered, else the one
       // picked, drawn as a move's.
       const hoveredLanding =
