@@ -2202,6 +2202,35 @@ Head to head, a Steppe mirror with one side's Storm Caller at speed 3:
 - Hail's worth (20.3%) stays in the core's band, at its bottom edge.
 - Not changed: the numbers are the owner's.
 
+### China against the Steppe, role for role (2026-10-26)
+
+Asked for: each Chinese hero against the Steppe hero of its role (owner:
+compare heroes only within a role), and the parties together, on the
+current rules (two hails, hail on entry, the burst Elixir, the Storm
+Caller at speed 2). `experiments/china-steppe.mjs`, **1,600 fights each**
+(about ±1.25 points), seeds from 1000.
+
+| Role | Chinese hero in the Steppe hero's seat | Its side wins |
+|---|---|---:|
+| Tank | Modao Vanguard for the Bökh Champion | 47% |
+| Damage | Youxia Swordsman for the Mangudai Outrider | 47.3% |
+| Support | Waidan Alchemist for the Storm Caller | 49.3% |
+| Party | China for the Steppe | **40.4%** |
+
+| China vs Steppe | Youxia | Vanguard | Alchemist | Outrider | Champion | Storm Caller |
+|---|---:|---:|---:|---:|---:|---:|
+| Survives | 33% | 48% | 59% | 77% | 66% | 76% |
+| Damage a fight | 7.9 | 6.8 | (4.2 through Empower) | 9.9 | 2.5 | 3.5 |
+
+- **Each Chinese hero is within 3 points of its counterpart**, all a
+  little under; the support pair is even.
+- **Together they lose 60 to 40**: about three times the sum of the
+  seats' gaps. China is all melee (the burst reaches only next to the
+  Alchemist), so its three heroes walk in through the Outrider's arrows
+  and two hails that now hit on entry; the Youxia, first in, survives a
+  third of fights. In a Steppe party each Chinese hero has the Outrider
+  and Hail on its side, which is why it measures near even alone.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
