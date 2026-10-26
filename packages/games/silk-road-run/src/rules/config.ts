@@ -277,8 +277,17 @@ export const ABILITY = {
    * `fixed`, a switch for measuring: 0 as built; above 0, the Enhance and
    * Degrade are that many instead of the Alchemist's power, and an enemy
    * also takes a hit (the Alchemist's power), so any enemy can be aimed at.
+   * `heal`, with `fixed`, a switch for measuring: an ally also heals the
+   * Alchemist's power, up to its health, so a hurt ally can be aimed at;
+   * `all` any ally, the camel too, `heroes` not the camel.
    */
-  elixir: {range: 2, shape: 'unit' as 'unit' | 'burst' | 'aura', radius: 1, fixed: 0 as number},
+  elixir: {
+    range: 2,
+    shape: 'unit' as 'unit' | 'burst' | 'aura',
+    radius: 1,
+    fixed: 0 as number,
+    heal: false as false | 'all' | 'heroes',
+  },
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within

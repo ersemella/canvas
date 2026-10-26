@@ -1899,6 +1899,32 @@ above.
   harness doesn't attribute Elixir's own damage or kills.
 - Not adopted: the numbers are the owner's to set.
 
+**With a heal** (asked for the same day): an ally also heals the
+Alchemist's power, up to its health, so a hurt ally can be aimed at
+(`ABILITY.elixir.heal`: `all`, the camel too; `heroes`, not the camel); the
+Enhance and Degrade stay fixed at 1, an enemy still takes a hit. The AI
+values a heal point as a point of damage. Healing is new in `resolve.ts`
+(`heal`) and records no event, so the page's playback wouldn't show it.
+
+| Elixir | Seat | China | Elixir's share of turns (seat) |
+|---|---:|---:|---:|
+| Fixed 1, a hit, no heal, power 2 | 71.5% | 88.3% | 55.6% |
+| Fixed 1, a hit, heal any ally, power 2 | 69.3% | 87.3% | 68.5% |
+| Fixed 1, a hit, heal heroes only, power 2 | 69% | 87.3% | 61.7% |
+| Fixed 1, a hit, no heal, power 1 | 53% | | 59.2% |
+| Fixed 1, a hit, heal any ally, power 1 | 55.8% | | 69.8% |
+| Fixed 1, a hit, heal heroes only, power 1 | 57.5% | | 65.1% |
+
+- **The heal adds little**: within noise at power 2, 3–4 points at power 1
+  (about 1.5 standard errors). Elixir is used more (the heal is taken),
+  but a heal of 1 or 2 mostly trades for a hit that would have taken as
+  much off an enemy and could kill.
+- **Healing the camel changes nothing measurable** (55.8% against 57.5%).
+  China's two rows are the same fights: the enemy has no camel.
+- **No stalls from healing**: 0–0.8% unfinished, as without it.
+- At power 1 every variant is about the Storm Caller's equal; power 2 is
+  too strong with or without the heal.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
