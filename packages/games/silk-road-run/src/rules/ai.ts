@@ -151,7 +151,9 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const dr = e.hex.r - u.hex!.r;
     const inLine = dq === 0 || dr === 0 || dq === -dr;
     if (has('longshot') && inLine) return true;
-    if (has('cleave') && inLine && d <= ABILITY.cleave.reach) return true;
+    // Cleave: straight up or down within its reach, or a side cone's far space (yurts aside).
+    if (has('cleave') && dq === 0 && d <= ABILITY.cleave.reach) return true;
+    if (has('cleave') && d === 2 && dq === -2 * dr) return true;
     // Skirmish: a line from a space next to it (one step off a line).
     return has('skirmish') && Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) <= 1;
   });

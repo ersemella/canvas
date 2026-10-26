@@ -256,8 +256,10 @@ export const ABILITY = {
   },
   /**
    * Cleave (owner, 2026-10-25): the Modao Vanguard's line of `reach`
-   * spaces out from it along one of the six directions, stopped by yurts;
-   * each unit in it, ally or enemy, takes the Vanguard's power, and each
+   * spaces straight up or down from it, stopped by yurts, or a cone to one
+   * side, its two diagonal neighbours and the space straight across beyond
+   * them (owner, 2026-10-26; board.ts, `cleaveAreas`); each unit in it,
+   * ally or enemy, takes the Vanguard's power, and each
    * one still standing is Delayed `delay` slots (keywords.md 17.3): 5
    * (owner, 2026-10-25; balance.md, "Elixir's shape and Cleave's Delay").
    */

@@ -217,7 +217,7 @@ export function buildScene(input: SceneInput): BoardScene {
       const landing = hoveredLanding ?? target?.to;
       if (second && landing) out.step = [def.walksAfter && from ? from : target.hex!, landing];
     }
-    // Cleave's line, before it's aimed: the one under the mouse, by any of its spaces.
+    // Cleave's line or cone, before it's aimed: the one under the mouse, by any of its spaces.
     const hoveredAim =
       !target?.hex && from && hovered
         ? targetAt(mapOf(fight), from, def, targets, hovered)?.hex
@@ -227,7 +227,7 @@ export function buildScene(input: SceneInput): BoardScene {
         if (!hexEquals(h, hoveredAim)) highlights.push({hex: h, kind: 'area'});
     if (target?.hex) {
       // An area ability: highlight the area around the chosen hex (none since Hail covers one space),
-      // or the one running out from the user (Cleave's line).
+      // or the one running out from the user (Cleave's line or cone).
       const radius = ABILITIES[ability].radius;
       if (def.area && from) {
         for (const h of def.area(mapOf(fight), from, target.hex))

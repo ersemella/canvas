@@ -240,7 +240,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
           return true;
         }
       }
-      // Cleave's line: a tap anywhere along it aims it.
+      // Cleave's line or cone: a tap anywhere in it aims it.
       const match =
         fight && acting.hex && targetAt(mapOf(fight), acting.hex, ABILITIES[ability], targets, h);
       if (!match) return false;

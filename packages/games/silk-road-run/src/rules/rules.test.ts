@@ -1346,35 +1346,69 @@ describe('abilities', () => {
 describe('the Modao Vanguard and the Waidan Alchemist', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
 
-  it('Cleave hits every unit in a line of 2, allies included, and nothing past it', () => {
+  // Cleave's shape from `c`: hex directions 2 and 5 run straight up and down the
+  // (flat-topped) board; 0 and 1 are the right-hand diagonals, `across` the space
+  // straight right beyond them.
+  const c = at(4, 4);
+  const up = (n: number) => ({q: c.q, r: c.r - n});
+  const across = hexNeighbor(hexNeighbor(c, 0), 1);
+
+  it('Cleave hits every unit in a line of 2 straight up, allies included, and nothing past it', () => {
     const s = setup(
-      {'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'p-alchemist': at(3, 3), 'e-modao': at(4, 3)},
+      {'p-modao': c, 'e-mangudai': up(1), 'p-alchemist': up(2), 'e-modao': up(3)},
       party
     );
     const modao = unit(s, 'p-modao');
-    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
+    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: up(1)}}});
     expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - modao.power);
     expect(unit(s, 'p-alchemist').hp).toBe(unit(s, 'p-alchemist').maxHp - modao.power);
     expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp);
   });
 
-  it('Cleave is aimed at its line’s first space, even when only the second holds a unit', () => {
-    const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(3, 3)}, party);
+  it('Cleave to the side hits a cone: both diagonals and the space straight across', () => {
+    const s = setup(
+      {
+        'p-modao': c,
+        'e-mangudai': hexNeighbor(c, 0),
+        'p-alchemist': hexNeighbor(c, 1),
+        'e-modao': across,
+        'p-mangudai': hexNeighbor(hexNeighbor(c, 0), 0),
+      },
+      party
+    );
+    const modao = unit(s, 'p-modao');
+    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: hexNeighbor(c, 0)}}});
+    for (const id of ['e-mangudai', 'p-alchemist', 'e-modao'])
+      expect(unit(s, id).hp).toBe(unit(s, id).maxHp - modao.power);
+    // Two out along a diagonal is outside the cone.
+    expect(unit(s, 'p-mangudai').hp).toBe(unit(s, 'p-mangudai').maxHp);
+  });
+
+  it('Cleave is aimed at its area’s first space, even when only another holds a unit', () => {
+    const s = setup({'p-modao': c, 'e-mangudai': across}, party);
     const modao = unit(s, 'p-modao');
     const targets = ABILITIES.cleave.targets(s, mapOf(s), modao, modao.hex!);
-    expect(targets).toEqual([{hex: at(2, 3)}]);
-    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
+    expect(targets).toEqual([{hex: hexNeighbor(c, 0)}]);
+    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: hexNeighbor(c, 0)}}});
     expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - modao.power);
   });
 
-  it('Cleave is picked by a tap on any space of its line, the unit two out included', () => {
-    const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(3, 3)}, party);
+  it('Cleave no longer reaches two out along a diagonal', () => {
+    const s = setup({'p-modao': c, 'e-mangudai': hexNeighbor(hexNeighbor(c, 0), 0)}, party);
+    const modao = unit(s, 'p-modao');
+    expect(ABILITIES.cleave.targets(s, mapOf(s), modao, modao.hex!)).toEqual([]);
+  });
+
+  it('Cleave is picked by a tap on any space of its line or cone', () => {
+    const s = setup({'p-modao': c, 'e-mangudai': up(2), 'e-modao': across}, party);
     const modao = unit(s, 'p-modao');
     const targets = offeredTargets(s, mapOf(s), modao, ABILITIES.cleave);
     const tap = (h: Hex) => targetAt(mapOf(s), modao.hex!, ABILITIES.cleave, targets, h);
-    expect(tap(at(3, 3))).toEqual({hex: at(2, 3)});
-    expect(tap(at(2, 3))).toEqual({hex: at(2, 3)});
-    expect(tap(at(4, 3))).toBeUndefined();
+    expect(tap(up(2))).toEqual({hex: up(1)});
+    expect(tap(up(1))).toEqual({hex: up(1)});
+    expect(tap(up(3))).toBeUndefined();
+    for (const h of [hexNeighbor(c, 0), hexNeighbor(c, 1), across])
+      expect(tap(h)).toEqual({hex: hexNeighbor(c, 0)});
   });
 
   it('Elixir Enhances an ally and Degrades an enemy by the Alchemist’s power, dealing no damage', () => {

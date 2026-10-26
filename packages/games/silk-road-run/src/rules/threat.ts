@@ -7,7 +7,7 @@
  * board blocking arrows (the acting unit aside, since it is the one moving).
  */
 import {ABILITY, AI} from './config';
-import {hostile, isImmobilized, isStunned, kitOf} from './board';
+import {cleaveAreas, hostile, isImmobilized, isStunned, kitOf} from './board';
 import {damageOf} from './resolve';
 import {blocks, tileAt} from './map';
 import type {MapData} from './map';
@@ -73,15 +73,10 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       }
     };
     if (has('longshot')) lanes(fq, fr, power);
-    // Cleave: a line of its reach, through units, stopped by yurts.
+    // Cleave: its lines up and down and its cones to the sides.
     if (has('cleave'))
-      for (const [dq, dr] of AXIAL)
-        for (let i = 1; i <= ABILITY.cleave.reach; i++) {
-          const k = id(fq + dq * i, fr + dr * i);
-          const tile = board.get(k);
-          if (tile === undefined || blocks(tile)) break;
-          mark(hexes, k, power);
-        }
+      for (const area of cleaveAreas(map, e.hex))
+        for (const h of area) mark(hexes, id(h.q, h.r), power);
     // Elixir with `fixed` (an experiment): a hit on any space within its range.
     if (has('elixir') && ABILITY.elixir.fixed > 0) {
       const range = ABILITY.elixir.range;

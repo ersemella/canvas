@@ -9,6 +9,7 @@ import {hexDirectionTo, hexDistance, hexEquals, hexNeighbors} from '@canvas/engi
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL} from './config';
 import {
+  cleaveAreas,
   firstInLane,
   isImmobilized,
   kitOf,
@@ -552,43 +553,39 @@ const volley: AbilityDef = {
 
 // ─── Modao Vanguard ──────────────────────────────────────────────────────────
 
-/**
- * Cleave's line from `from` along hex direction `dir`: up to
- * `ABILITY.cleave.reach` spaces, stopped by yurts and the map's edge (not
- * by units: the long blade cuts through the first into the one behind).
- */
-export function cleaveLine(map: MapData, from: Hex, dir: number): Hex[] {
-  return laneFrom(map, from, dir).slice(0, ABILITY.cleave.reach);
+/** The Cleave area (see `cleaveAreas`) from `from` that holds `target`. */
+function cleaveArea(map: MapData, from: Hex, target: Hex): Hex[] {
+  return cleaveAreas(map, from).find((a) => a.some((h) => hexEquals(h, target))) ?? [];
 }
 
 /**
- * Cleave (owner, 2026-10-25): a line of 2 spaces out from the Vanguard;
- * each unit in it, ally or enemy, takes the Vanguard's power, and each one
- * left standing is Delayed `ABILITY.cleave.delay` (5, owner, 2026-10-25).
- * Aimed at the line's first space, which may be empty when a unit stands
- * in the second.
+ * Cleave (owner, 2026-10-25; its shape, 2026-10-26): a line of 2 spaces
+ * straight up or down from the Vanguard, or a cone to one side (the two
+ * diagonal spaces and the one straight across beyond them); each unit in
+ * it, ally or enemy, takes the Vanguard's power, and each one left
+ * standing is Delayed `ABILITY.cleave.delay` (5, owner, 2026-10-25).
+ * Aimed at the area's first space, which may be empty when a unit stands
+ * in another.
  */
 const cleave: AbilityDef = {
   id: 'cleave',
   name: 'Cleave',
   kind: 'attack',
   summary: () =>
-    `A line of ${ABILITY.cleave.reach} spaces out from you: hits every unit in it, allies included, and Delays ${ABILITY.cleave.delay} each one left standing.`,
-  area: (map, from, target) => cleaveLine(map, from, directionTo(from, target)),
+    `A line of ${ABILITY.cleave.reach} spaces straight up or down from you, or a cone of 3 to one side: hits every unit in it, allies included, and Delays ${ABILITY.cleave.delay} each one left standing.`,
+  area: cleaveArea,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
-    for (const dir of DIRECTIONS) {
-      const line = cleaveLine(map, from, dir);
-      if (line.some((h) => unitAt(state, h) && unitAt(state, h) !== user))
-        out.push({hex: line[0]!});
-    }
+    for (const area of cleaveAreas(map, from))
+      if (area.some((h) => unitAt(state, h) && unitAt(state, h) !== user))
+        out.push({hex: area[0]!});
     return out;
   },
   resolve(ctx, user, target) {
-    const line = cleaveLine(ctx.map, user.hex!, directionTo(user.hex!, target.hex!));
+    const area = cleaveArea(ctx.map, user.hex!, target.hex!);
     log(ctx, `${unitName(user)} cleaves.`);
-    // Who stands in the line as it swings: a kill doesn't let the blade reach further.
-    const caught = line.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
+    // Who stands in the area as it swings: a kill doesn't let the blade reach further.
+    const caught = area.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
     for (const u of caught) hit(ctx, user, u, 'The cleave');
     for (const u of caught) delay(ctx, u, ABILITY.cleave.delay);
   },
