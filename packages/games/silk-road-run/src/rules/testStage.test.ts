@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {hexKey} from '@canvas/engine/server';
-import {spaceAt, spaceOf} from './map';
+import {DOME, spaceAt, spaceOf} from './map';
 import {abilitiesOf, unusableReason, ABILITIES} from './abilities';
 import {HEROES} from './config';
 import {RuleError, refreshStats} from './fight';
@@ -22,8 +22,19 @@ describe('the test stage', () => {
     expect(gobi.mapId).toBe('gobi');
     expect(Object.values(gobi.tiles).filter((t) => t === 'obstacle')).toHaveLength(4);
     expect(() => parseTestStage({...units, map: 'atlantis'})).toThrow(
-      'map must be one of "steppe", "gobi", "flaming".'
+      'map must be one of "steppe", "gobi", "flaming", "salt".'
     );
+  });
+
+  it('keeps the Salt Flats’ dome whatever the yurts, and starts no unit inside it', () => {
+    const units = {player: [{hero: 'bokh'}], enemy: [{hero: 'wolf'}]};
+    for (const yurts of ['none', 'map', [{col: 1, row: 1}]] as const) {
+      const s = createTestFight(1, {...units, map: 'salt', yurts});
+      for (const h of DOME) expect(s.tiles[hexKey(h)]).toBe('mountain');
+    }
+    expect(() =>
+      createTestFight(1, {...units, map: 'salt', player: [{hero: 'bokh', at: {col: 4, row: 4}}]})
+    ).toThrow('No unit can start inside the salt dome');
   });
 
   it('brings the units listed, with their own stats and abilities and Hold always', () => {

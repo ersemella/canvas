@@ -183,12 +183,15 @@ tuning. This file has no combat-design section number.
   fire hazard waits for the region's boss ([setting.md](setting.md), the
   Bull Demon King's fire mountain). The page calls the tiles Red earth,
   Beacon tower and Flaming Mountains. Every stage of a run is still the
-  Steppe's (`STAGES` in config.ts); the test stage's `"map"` shows the
-  Flaming Mountains.
-- **The Salt Flats** (`salt`, proposed 2026-10-26, not built), Persia's
-  map: a salt crust, one large salt dome over the middle seven spaces and a
-  windcatcher as its obstacle; its look and the prompts for its art are
-  in [salt-flats.md](salt-flats.md).
+  Steppe's (`STAGES` in config.ts); the test stage's `"map"` showed the
+  Flaming Mountains until the Salt Flats (below).
+- **The Salt Flats** (`salt`, owner, 2026-10-26), Persia's map: the
+  owner's salt crust (156 pixels, 5 colours, its cracks softened so the
+  hex borders show) and one large salt dome (124 × 111) drawn once over
+  the middle seven spaces, the only art on the board spanning spaces; a
+  sandstone ruin stands in for its windcatcher until that art is in. The
+  test stage's `"map"` shows it. Its look, how the art was cut and the
+  prompts for it are in [salt-flats.md](salt-flats.md).
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct
   shape, not only a distinct colour: quicksand and sandstorm must read
   apart on a sand board.

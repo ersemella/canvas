@@ -55,10 +55,12 @@ import {
 import {PASSIVES} from './passives';
 import {previewTurn} from './preview';
 import {
+  DOME,
   FLAMING,
   GOBI,
   MAPS,
   MAX_COVERED,
+  SALT,
   STEPPE,
   blocks,
   depth,
@@ -564,11 +566,12 @@ describe('the track', () => {
 
 describe('the board', () => {
   it('has a map per region, each the Steppe’s board under another look', () => {
-    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming']);
+    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'salt']);
     expect(mapById('gobi')).toBe(GOBI);
     expect(mapById('flaming')).toBe(FLAMING);
+    expect(mapById('salt')).toBe(SALT);
     expect(() => mapById('atlantis')).toThrow();
-    for (const map of [GOBI, FLAMING]) {
+    for (const map of [GOBI, FLAMING, SALT]) {
       expect(map.hexes).toBe(STEPPE.hexes);
       expect(map.camelStart).toEqual(STEPPE.camelStart);
       expect(map.exits).toEqual(STEPPE.exits);
@@ -596,6 +599,26 @@ describe('the board', () => {
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
     }
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
+  });
+
+  it('stands one salt dome over the Salt Flats’ middle seven spaces in every fight, with one obstacle 3 from the centre', () => {
+    for (let seed = 0; seed < 40; seed++) {
+      const s = createFight(seed, undefined, undefined, false, [], SALT);
+      expect(s.mapId).toBe('salt');
+      expect(mapOf(s).name).toBe('The Salt Flats');
+      const mountains = Object.keys(s.tiles).filter((k) => s.tiles[k] === 'mountain');
+      expect(mountains.sort()).toEqual(DOME.map(hexKey).sort());
+      const obstacles = Object.keys(s.tiles)
+        .filter((k) => s.tiles[k] === 'obstacle')
+        .map((k) => k.split(',').map(Number) as [number, number])
+        .map(([q, r]) => ({q, r}));
+      expect(obstacles).toHaveLength(1);
+      expect(hexDistance(obstacles[0]!, {q: 0, r: 0})).toBe(3);
+      for (const x of [SALT.camelStart, ...SALT.exits])
+        expect(hexDistance(obstacles[0]!, x)).toBeGreaterThan(1);
+      expect(Object.keys(s.tiles)).toHaveLength(MAX_COVERED);
+      for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
+    }
   });
 
   it('raises the Flaming Mountains in every fight, in side-by-side pairs in the middle, with one or two beacon towers', () => {

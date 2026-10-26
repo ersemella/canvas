@@ -11,7 +11,10 @@ prompts for making its art in ChatGPT.
 
 Everything here is **Proposed** (2026-10-26, from the owner's brief: "the
 salt flats, but should feature large salt domes"; then "1 large salt dome
-directly in the middle", owner, 2026-10-26). Nothing is built.
+directly in the middle", owner, 2026-10-26). **Built** the same day
+from the owner's art (see Built): the map, its salt crust and its dome,
+shown on the test stage; the windcatcher waits for its art, the glints
+are not drawn yet.
 
 ## The place
 
@@ -222,25 +225,38 @@ in the middle. Readable as "unsafe ground" by shape, not only colour.
 pixels.
 ```
 
-## Building it
+## Built (2026-10-26)
 
-When the art is in, as the Flaming Mountains were built:
+From the owner's salt crust and salt dome (AI-assisted, from prompts 1
+and 2):
 
-1. `SALT` in map.ts: `{...STEPPE, id: 'salt', name: 'The Salt Flats'}`,
-   its `tiles` the centre and its six neighbours as `mountain` in place of
-   the Steppe's yurt places, `mountains: 'never'` (none rolled: the dome
-   is fixed), `obstacles: {counts: [1], reach: 3}`, added to `MAPS`.
-2. The windcatcher's roll in `randomTiles`: exactly 3 from the centre
-   (not within it, as the yurts are), off the starting columns and the
-   spaces next to the camel's start and the exit.
-3. A `LOOKS` entry: the salt crust as the ground field, the dome drawn
-   once for its seven spaces (a new case: every mountain so far is a
-   sprite per hex), in the units' draw order by its front row, the
-   windcatcher as the obstacle, the glints in code.
-4. `MAP_TILE_INFO.salt` in info.ts: Salt flat, Salt dome, Windcatcher.
-5. Shown on the test stage (`"map": "salt"`) until Persia's stages exist.
-6. Watch the camel's walk round the dome in a few fights (the AI already
-   scores the camel by its walk, `roadDistance`, not a straight line).
+- **Rules** (map.ts): `SALT`, `mountainPlaces: 'centre'`, its tiles the
+  dome's seven spaces (`DOME`), which `fixedTiles` adds to every fight,
+  the test stage's included, whatever its `yurts` (no unit can start
+  inside the dome). `randomTiles` adds the one obstacle, 3 from the
+  centre as it may not stand next to a mountain, off the starting columns
+  and the spaces next to the camel's start and the exit: 8 covered, the
+  cap. The page names the tiles Salt flat, Salt dome and Ruins (info.ts).
+- **The crust** (`tiles/salt-crust.png`): the art was drawn on a grid of
+  156 pixels, so it stays 156 (not 128), cut to 5 colours; it tiles
+  seamlessly. Its cracks are pulled 45% towards the salt, and the hex
+  borders are a darker warm grey (`#7d7570`), as at full contrast the
+  cracks were as dark as the borders and the grid was lost in them.
+- **The dome** (`tiles/salt-dome.png`, 124 × 111): drawn 144 × 112 on its
+  own grid, wider than the seven spaces are tall, so taken to 124 wide
+  and stretched 1.15 tall to cover them; 8 colours from the art
+  (whites, three greys, the pinks and clay red) and a dark grey-brown
+  outline. Drawn once from the centre space (`drawDome` in ground.ts),
+  its foot on the bottom space's bottom edge, clipped as seven mountains
+  are, so it rises over the spaces behind it but never covers a unit in
+  front.
+- **The obstacle** is the Gobi's sandstone ruin until the windcatcher's
+  art is in (prompt 3).
+- **The test stage** (`test-stage.json`) is on the Salt Flats.
+
+Still to do: the windcatcher (prompt 3, then `Look.obstacles` and the
+page's name for it), the glints on the dome, and watching the camel's
+walk round it in a few fights.
 
 ## Later
 

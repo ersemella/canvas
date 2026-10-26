@@ -24,7 +24,9 @@
  * same board under another look: the Steppe's (`STEPPE`), the Gobi
  * Crossing (`GOBI`), where the `obstacle` tile is a sandstone ruin rather
  * than a yurt, and the Flaming Mountains (`FLAMING`), the China region's
- * (owner, 2026-10-26), its obstacles beacon towers and its mountains on fire. A
+ * (owner, 2026-10-26), its obstacles beacon towers and its mountains on fire,
+ * and the Salt Flats (`SALT`), the Persia region's (owner, 2026-10-26),
+ * one large salt dome over the middle seven spaces. A
  * stage names its map (`STAGES` in config.ts); the page draws each map's
  * look (`ground.ts`).
  */
@@ -59,10 +61,12 @@ export interface MapData {
   mountains: 'sometimes' | 'never' | 'always';
   /**
    * Where they stand: one range along one of the board's slanted edges
-   * (the Steppe's), or three side-by-side pairs in its middle (the Flaming
-   * Mountains', owner, 2026-10-26; `middleClumps`).
+   * (the Steppe's), three side-by-side pairs in its middle (the Flaming
+   * Mountains', owner, 2026-10-26; `middleClumps`), or one salt dome on
+   * the centre and the six spaces around it, the same in every fight (the
+   * Salt Flats', owner, 2026-10-26; `DOME`).
    */
-  mountainPlaces: 'edge' | 'middle';
+  mountainPlaces: 'edge' | 'middle' | 'centre';
   /**
    * Its fights' yurts (ruins): how many, one of `counts` at random, and
    * how far from the centre they may stand (`randomTiles`).
@@ -172,11 +176,45 @@ export const FLAMING: MapData = {
   obstacles: {counts: [1, 2], reach: 3},
 };
 
+/**
+ * The salt dome's spaces: the centre and the six around it (owner,
+ * 2026-10-26), a hexagon in the middle of the hexagon board.
+ */
+export const DOME: Hex[] = [{q: 0, r: 0}, ...hexNeighbors({q: 0, r: 0})];
+
+/**
+ * The Salt Flats (owner, 2026-10-26), the Persia region's map: the salt
+ * crust of a desert's dry lake, and one large salt dome over the middle
+ * seven spaces in every fight (`DOME`), the same each time, so the board
+ * fights round its two sides; the camel walks round it, 10 steps to the
+ * exit instead of 8. One obstacle a fight, 3 from the centre, so never
+ * next to the dome: a windcatcher in the design (salt-flats.md), shown as
+ * the Gobi's sandstone ruin until its art is in. The dome's 7 spaces and
+ * the obstacle cover `MAX_COVERED`.
+ */
+export const SALT: MapData = {
+  ...STEPPE,
+  id: 'salt',
+  name: 'The Salt Flats',
+  tiles: Object.fromEntries(DOME.map((h) => [hexKey(h), 'mountain' as const])),
+  mountains: 'always',
+  mountainPlaces: 'centre',
+  obstacles: {counts: [1], reach: 3},
+};
+
 export const MAPS: Record<string, MapData> = {
   [STEPPE.id]: STEPPE,
   [GOBI.id]: GOBI,
   [FLAMING.id]: FLAMING,
+  [SALT.id]: SALT,
 };
+
+/** A map's mountains that stand in every fight, the same each time: the Salt Flats' dome; none elsewhere. */
+export function fixedTiles(map: MapData): Record<string, Tile> {
+  return map.mountainPlaces === 'centre'
+    ? Object.fromEntries(DOME.map((h) => [hexKey(h), 'mountain' as const]))
+    : {};
+}
 
 /** A map by its id; a mistake, never a fallback, if there's none. */
 export function mapById(id: string): MapData {
@@ -217,7 +255,8 @@ const MOUNTAIN_EDGES: {left: boolean; inFrom: (h: Hex) => number}[] = [
  * about half of fights, or always with `mountains` or on a map that always
  * has them, never on a map without them (`MapData.mountains`), along an
  * edge or in clumps in the middle as the map says (`mountainPlaces`), off
- * the starting columns, the camel's start and the exit, then two or three yurts near the
+ * the starting columns, the camel's start and the exit, or the Salt Flats'
+ * dome (`fixedTiles`), then two or three yurts near the
  * middle (not mirrored), on `map`'s board.
  */
 export function randomTiles(
@@ -225,7 +264,8 @@ export function randomTiles(
   mountains = false,
   map: MapData = STEPPE
 ): Record<string, Tile> {
-  const tiles: Record<string, Tile> = {};
+  const tiles: Record<string, Tile> = fixedTiles(map);
+  const fixed = map.mountainPlaces === 'centre';
   const reserved = [map.camelStart, ...map.exits];
   const candidates = map.hexes.filter(
     (h) => Math.abs(h.q) < RADIUS && !reserved.some((x) => hexDistance(x, h) === 0)
@@ -234,6 +274,8 @@ export function randomTiles(
   const rolled = random() < MOUNTAIN_CHANCE;
   const raise = map.mountains !== 'never' && (rolled || mountains || map.mountains === 'always');
   const middle = raise && map.mountainPlaces === 'middle';
+  // Kept apart from the mountains, as among the middle clumps.
+  const apart = middle || fixed;
   // How many yurts (ruins, towers): on a map of middle clumps, rolled
   // before them, so the clumps leave the obstacles room under
   // `MAX_COVERED`; after the mountains elsewhere, as it always was.
@@ -241,7 +283,7 @@ export function randomTiles(
   const roll = () => counts[Math.floor(random() * counts.length)]!;
   let count = middle ? roll() : 0;
   if (middle) middleClumps(map, tiles, candidates, random, MAX_COVERED - count);
-  else if (raise) {
+  else if (raise && !fixed) {
     const edge = MOUNTAIN_EDGES[Math.floor(random() * MOUNTAIN_EDGES.length)]!;
     const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
     const inFrontOfTemee: Hex = {q: 0, r: map.camelStart.r + 1};
@@ -256,11 +298,11 @@ export function randomTiles(
   // says, within its reach of the centre and off the starting columns, not
   // next to the camel's start or the exit, no two side by side, never
   // cutting the board in two.
-  // Among middle clumps, not next to a mountain either, so a tower stands
-  // on its own rather than reading as part of a clump.
+  // Among middle clumps or by the dome, not next to a mountain either, so
+  // a tower stands on its own rather than reading as part of a clump.
   const yurts: Hex[] = [];
   if (!middle) count = roll();
-  const mountainHexes = middle ? map.hexes.filter((h) => tiles[hexKey(h)] === 'mountain') : [];
+  const mountainHexes = apart ? map.hexes.filter((h) => tiles[hexKey(h)] === 'mountain') : [];
   for (let i = 0; i < count; i++) {
     const free = candidates
       .filter((h) => hexDistance(h, CENTRE) <= reach && Math.abs(h.q) < RADIUS - 1)

@@ -1,12 +1,13 @@
 /**
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
  * grass, yurts and their smoke, the Gobi's sand and sandstone ruins, the
- * Flaming Mountains' red earth, beacon towers and burning ridges; exits
- * (cached per map), and falling hail.
+ * Flaming Mountains' red earth, beacon towers and burning ridges, the Salt
+ * Flats' salt crust and their one salt dome; exits (cached per map), and
+ * falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {tileAt} from '../../rules/map';
+import {DOME, tileAt} from '../../rules/map';
 import type {MapData, Tile} from '../../rules/map';
 import {BOARD_LAYOUT, SCENE_SIZE} from '../layout';
 import {PALETTE} from '../palette';
@@ -29,6 +30,8 @@ import grassImage from '../tiles/grass-soft.png';
 import redEarthImage from '../tiles/red-earth.png';
 import burningRidgeImage from '../tiles/mountain-ridge.png';
 import beaconTowerImage from '../tiles/beacon-tower.png';
+import saltCrustImage from '../tiles/salt-crust.png';
+import saltDomeImage from '../tiles/salt-dome.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
@@ -66,6 +69,11 @@ export interface Look {
   mountainFrames: number;
   /** The ground under a mountain, a seamless tile laid like the grass. */
   mountainGround: string;
+  /**
+   * One image for all the mountains, drawn once over the Salt Flats' seven
+   * spaces (`DOME`) in place of one a hex; `null` on the other maps.
+   */
+  dome: string | null;
 }
 
 /** An obstacle's smoke: where it rises from, in art pixels above the hex's feet, and its colour (r, g, b). */
@@ -133,6 +141,7 @@ const LOOKS: Record<string, Look> = {
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
+    dome: null,
   },
   gobi: {
     ground: sandImage,
@@ -145,6 +154,7 @@ const LOOKS: Record<string, Look> = {
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
+    dome: null,
   },
   flaming: {
     ground: redEarthImage,
@@ -160,6 +170,27 @@ const LOOKS: Record<string, Look> = {
     // The red earth itself, as the ridge is in its colours (owner,
     // 2026-10-26; the Steppe's rock in redder browns before).
     mountainGround: redEarthImage,
+    dome: null,
+  },
+  // The Salt Flats (owner, 2026-10-26): the owner's salt crust and salt
+  // dome (AI-assisted), cut to their own pixel grids (156 pixels and 5
+  // colours, its cracks pulled 45% towards the salt, as at full contrast
+  // they were as dark as the hex borders and hid them; the dome, 144 wide, taken to 124 by 111 and 8 colours with a
+  // dark grey-brown outline, a little taller than drawn so it covers its
+  // seven spaces). Its obstacle is the Gobi's sandstone ruin until the
+  // windcatcher's art is in (salt-flats.md).
+  salt: {
+    ground: saltCrustImage,
+    stamp: false,
+    colour: '#e9e1d7',
+    border: '#7d7570',
+    obstacles: [sandstoneRuinsImage],
+    smoke: null,
+    obstacleFrames: 1,
+    mountains: [],
+    mountainFrames: 1,
+    mountainGround: saltCrustImage,
+    dome: saltDomeImage,
   },
 };
 
@@ -371,6 +402,11 @@ export function drawObstacle(
   time: number | null = null
 ): void {
   const look = lookOf(map);
+  if (mountain && look.dome) {
+    // The dome is drawn once, from its centre space.
+    if (h.q === 0 && h.r === 0) drawDome(ctx, look.dome);
+    return;
+  }
   const images = mountain ? look.mountains : look.obstacles;
   const art = assetLoader.requestImage(images[Math.floor(hexRandom(h, 1)() * images.length)]!);
   if (!art) {
@@ -399,6 +435,32 @@ export function drawObstacle(
     width,
     height
   );
+  ctx.restore();
+}
+
+/**
+ * The Salt Flats' salt dome (owner, 2026-10-26): one image over its seven
+ * spaces (`DOME`), centred on the middle one, its foot on the bottom
+ * space's bottom edge. Clipped as seven mountains are (`mountainClip`):
+ * inside its spaces below their middles, free above them, so it rises over
+ * the spaces behind it but never covers the units in front.
+ */
+function drawDome(ctx: CanvasRenderingContext2D, src: string): void {
+  const art = assetLoader.requestImage(src);
+  const c = center({q: 0, r: 0});
+  if (!art) {
+    drawObstacleMark(ctx, c);
+    return;
+  }
+  const width = art.width * SPRITE_SCALE;
+  const height = art.height * SPRITE_SCALE;
+  const foot = center({q: 0, r: 1}).y + MOUNTAIN_FEET;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.beginPath();
+  for (const h of DOME) mountainClipPath(ctx, center(h));
+  ctx.clip();
+  ctx.drawImage(art, Math.round(c.x - width / 2), Math.round(foot - height), width, height);
   ctx.restore();
 }
 
@@ -450,10 +512,16 @@ export function drawObstacleSmoke(
  * middle, free to rise and spread over the hexes beyond.
  */
 function mountainClip(ctx: CanvasRenderingContext2D, c: {x: number; y: number}): void {
+  ctx.beginPath();
+  mountainClipPath(ctx, c);
+  ctx.clip();
+}
+
+/** `mountainClip`'s shape, added to the current path, so several can make one clip (the dome's). */
+function mountainClipPath(ctx: CanvasRenderingContext2D, c: {x: number; y: number}): void {
   const s = BOARD_LAYOUT.size;
   const h = (Math.sqrt(3) / 2) * s;
   const far = 4 * s;
-  ctx.beginPath();
   ctx.moveTo(c.x - far, c.y - far);
   ctx.lineTo(c.x + far, c.y - far);
   ctx.lineTo(c.x + far, c.y);
@@ -463,7 +531,6 @@ function mountainClip(ctx: CanvasRenderingContext2D, c: {x: number; y: number}):
   ctx.lineTo(c.x - s, c.y);
   ctx.lineTo(c.x - far, c.y);
   ctx.closePath();
-  ctx.clip();
 }
 
 /** A yurt, a ruin or a mountain until its image loads: stacked blocks, a shape of their own, not only a colour (art direction). */

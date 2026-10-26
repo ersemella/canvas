@@ -95,7 +95,7 @@ export {previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
 export {allowedTargets, offeredTargets, onlyHold, targetAt} from './rules/choices';
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
-export {FLAMING, GOBI, MAPS, STEPPE, mapById, onMap, tileAt} from './rules/map';
+export {DOME, FLAMING, GOBI, MAPS, SALT, STEPPE, mapById, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';
 export type {RunView} from './rules/run';
 export type * from './rules/types';

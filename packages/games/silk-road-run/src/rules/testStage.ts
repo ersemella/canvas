@@ -16,7 +16,7 @@ import {CAMEL, HEROES, RULES} from './config';
 import {RuleError, makeUnit, mapOf, seededRandom} from './fight';
 import {PASSIVES} from './passives';
 import {log} from './resolve';
-import {MAPS, STEPPE, blocks, mapById, onMap, randomTiles, spaceAt} from './map';
+import {MAPS, STEPPE, blocks, fixedTiles, mapById, onMap, randomTiles, spaceAt} from './map';
 import type {MapData, Tile} from './map';
 import {placeStartingCards, shuffled} from './track';
 import type {AbilityId, FightState, HeroId, Loadout, PassiveId, Unit} from './types';
@@ -220,6 +220,10 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
   const camel = units.find((u) => u.hero === CAMEL);
   for (const [u, {at}] of placed) u.hex = at ?? (u === camel ? map.camelStart : null);
   const fixed = units.filter((u) => u.hex).map((u) => u.hex!);
+  // The Salt Flats' dome can't be cleared: it is drawn as one.
+  const dome = fixedTiles(map);
+  for (const h of fixed)
+    if (dome[hexKey(h)]) fail(`No unit can start inside the salt dome (${hexKey(h)}).`);
 
   for (let attempt = 0; ; attempt++) {
     state.tiles = tilesFor(setup.yurts, random, map);
@@ -253,7 +257,11 @@ function tilesFor(
 ): Record<string, Tile> {
   if (yurts === 'random' || yurts === 'mountains')
     return randomTiles(random, yurts === 'mountains', map);
-  if (yurts === 'none') return {};
+  // The Salt Flats' dome stands whatever the yurts.
+  if (yurts === 'none') return fixedTiles(map);
   if (yurts === 'map') return {...map.tiles};
-  return Object.fromEntries(yurts.map((h) => [hexKey(h), 'obstacle' as const]));
+  return {
+    ...fixedTiles(map),
+    ...Object.fromEntries(yurts.map((h) => [hexKey(h), 'obstacle' as const])),
+  };
 }
