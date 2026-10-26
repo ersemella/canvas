@@ -41,6 +41,7 @@ function statusWords(before: Unit, after: Unit): string[] {
   if (after.alive && !isStunned(after) && isStunned(before)) out.push('Released');
   if (after.empower && after.empower !== before.empower) out.push(`Empowered ${after.empower}`);
   if (after.weaken && after.weaken !== before.weaken) out.push(`Weakened ${after.weaken}`);
+  if (after.unstoppable && !before.unstoppable) out.push('Unstoppable');
   return out;
 }
 

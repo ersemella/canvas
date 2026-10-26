@@ -75,6 +75,13 @@ Alchemist that don't set every one of these (`hail-elixir.mjs`,
 revision; the three `elixir-tempo*.mjs` and `elixir-haste-delay.mjs` files
 set them all (`elixir-tempo.mjs` with the Alchemist in its burst, as it
 was measured).
+`elixir-unstoppable.mjs` (2026-10-26) measures the Elixir on one ally
+within 3, healing the Alchemist's power (1) and making it Unstoppable
+until its next turn (`ABILITY.elixir.unstoppable`), against the heal alone
+and the built burst. Built since then: the Alchemist's power 1, and an
+Empower or Weaken of 0 no longer falling back to power (`elixirAmount`),
+and `heal` no longer needing `fixed`; files that set the power and every
+Elixir switch still reproduce.
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.

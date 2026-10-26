@@ -179,6 +179,12 @@ export interface Unit {
    */
   shield?: number;
   /**
+   * Unstoppable (keywords.md, 17.4): can't be Pushed, Pulled or
+   * Immobilized, until the start of the unit's next turn (an Elixir, a
+   * switch: `ABILITY.elixir.unstoppable`). Absent when it isn't.
+   */
+  unstoppable?: boolean;
+  /**
    * Haste (keywords.md, 17.3) given while its own turn was under way, its
    * card not yet placed: taken off as the card is placed at the turn's end.
    */

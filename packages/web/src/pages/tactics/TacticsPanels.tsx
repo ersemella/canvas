@@ -298,6 +298,8 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
     });
   if (unit.shield)
     out.push({id: 'shield', label: `Shield ${unit.shield}`, rest: 'until its next turn'});
+  if (unit.unstoppable)
+    out.push({id: 'unstoppable', label: 'Unstoppable', rest: 'until its next turn'});
   return out;
 }
 

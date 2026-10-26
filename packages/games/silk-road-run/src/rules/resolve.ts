@@ -273,13 +273,15 @@ export function takeHasteDue(state: FightState, unit: Unit): void {
 
 /**
  * At the start of `unit`'s turn, its passives' bookkeeping (19.8): the
- * turn noted (Opportunist), its Shield gone (Rally's lasts until now), a
+ * turn noted (Opportunist), its Shield and Unstoppable gone (Rally's and
+ * the Elixir's last until now), a
  * fresh count of its allies' first hits (Bulwark) and of what it takes off
  * the board (Momentum); then Rally Shields each ally next to it.
  */
 export function startTurnPassives(ctx: Ctx, unit: Unit): void {
   unit.turns = [...(unit.turns ?? []).slice(-1), ctx.slot];
   delete unit.shield;
+  delete unit.unstoppable;
   delete unit.covered;
   delete unit.tookOff;
   if (!hasPassive(unit, 'rally') || !unit.hex) return;
@@ -436,6 +438,13 @@ export function liftHail(state: FightState, hail: HailEffect): void {
     );
 }
 
+/** `unit` is made Unstoppable: the hail holding it lets go (keywords.md, 17.4). */
+export function makeUnstoppable(ctx: Ctx, unit: Unit): void {
+  unit.unstoppable = true;
+  unit.statuses = unit.statuses.filter((s) => !(s.kind === 'immobilized' && s.hail));
+  log(ctx, `${unitName(unit)} is Unstoppable until its next turn.`);
+}
+
 export function clearHail(state: FightState, caster: Unit): void {
   state.effects = state.effects.filter((e) => e.source !== caster.id);
   for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);
@@ -469,9 +478,12 @@ export function landShots(ctx: Ctx, user: Unit): void {
   }
 }
 
-/** A unit in hail is Immobilized until that hail disappears (owner, 2026-10-23). */
+/**
+ * A unit in hail is Immobilized until that hail disappears (owner,
+ * 2026-10-23); not while Unstoppable.
+ */
 export function hailHolds(ctx: Ctx, unit: Unit): void {
-  if (!unit.alive || !unit.hex || !hailOn(ctx.state, unit.hex)) return;
+  if (!unit.alive || !unit.hex || unit.unstoppable || !hailOn(ctx.state, unit.hex)) return;
   const hail = ctx.state.effects.find((e) => hexEquals(e.hex, unit.hex!))!;
   if (unit.statuses.some((s) => s.hail === hail.source && (!s.at || hexEquals(s.at, hail.hex))))
     return;
@@ -590,12 +602,17 @@ export function enterHex(
  * Displaces `unit` up to `n` spaces along hex direction `dir` (Push and
  * Pull, keywords.md, 17.4): it stops early at a yurt, another unit or the
  * map's edge, with no collision damage (open question 55). Each space
- * entered triggers as a walk's does. A Rooted unit isn't moved (19.8); one
- * that is, with Rebound, Pushes its new neighbours (`displaced`).
+ * entered triggers as a walk's does. A Rooted (19.8) or Unstoppable unit
+ * isn't moved; one that is, with Rebound, Pushes its new neighbours
+ * (`displaced`).
  */
 export function displace(ctx: Ctx, unit: Unit, dir: number, n: number, how: Motion): void {
   if (hasPassive(unit, 'rooted')) {
     log(ctx, `${unitName(unit)} is Rooted.`);
+    return;
+  }
+  if (unit.unstoppable) {
+    log(ctx, `${unitName(unit)} is Unstoppable.`);
     return;
   }
   const from = unit.hex;

@@ -2391,6 +2391,43 @@ weaker):
   the Steppe's weakest.
 - Not changed: the numbers are the owner's.
 
+### Elixir on one ally within 3: a heal and Unstoppable (2026-10-26)
+
+Asked for: the Elixir as one unit within 3, healing the Alchemist's power
+and making it Unstoppable until the next turn, with the Alchemist's power
+1 (built the same day; the built burst doesn't use it). Unstoppable
+(keywords.md 17.4) is built as a switch for measuring,
+`ABILITY.elixir.unstoppable` (off as built): the ally can't be Pushed,
+Pulled or Immobilized until the start of its own next turn, and hail
+holding it lets go; a Move (Throw, the grapple's swap) still moves it
+(open question 54). The heal no longer needs `fixed` (`ABILITY.elixir.heal`
+alone), and an Empower or Weaken of 0 no longer falls back to power, so the
+built burst gives none at power 1. The AI's guess counts the hail it frees
+an ally from; the rest is the search's.
+`experiments/elixir-unstoppable.mjs`, **800 fights each** (about ±1.8
+points), seeds from 1000: only allies, never the Alchemist, no Haste,
+Delay, Empower, Weaken or hit; `heal-only` is the same without
+Unstoppable. The built burst (Haste 3, Delay 3) was China 43.4%, the seat
+49.8%, at power 0 (above).
+
+| Elixir | China vs Steppe | Alchemist for the Storm Caller | Elixir's share of the Alchemist's turns (China) | Hold |
+|---|---:|---:|---:|---:|
+| Built burst, power 1 | 40% | 49.4% | 57.6% | 0.5% |
+| One ally within 3: heal 1, Unstoppable | 30.7% | 43.1% | 59% | 3.4% |
+| One ally within 3: heal 1 | 25.8% | 39% | 53.1% | 10.7% |
+
+- **The single-target Elixir loses**: China 30.7% (9 points under the
+  burst), the seat 43.1% (6 under), as every one-unit Elixir has (above:
+  29–40%).
+- **Unstoppable is worth about 4–5 points over the heal alone** (30.7%
+  from 25.8%, the seat 43.1% from 39%): against the Steppe it answers the
+  Storm Caller's hail and nothing else (Gale and Shove are upgrades). With
+  the heal alone the Alchemist Holds a tenth of its turns, no ally hurt.
+- **Power 1 changes the built burst little**: China 40% from 43.4% at
+  power 0 (under 2 standard errors), the seat 49.4% from 49.8%.
+- Not changed: the built Elixir stays the burst (the owner's call);
+  `unstoppable` stays off.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

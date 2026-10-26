@@ -347,29 +347,30 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     }
     return closing + value;
   }
-  // Elixir: an Empower on each ally it reaches, a Weaken on each enemy,
-  // both by the Alchemist's power (`elixirCaught`, by its shape).
+  // Elixir: what it gives each unit it reaches (`elixirCaught`, by its shape).
   if (ability === 'elixir') {
     let value = 0;
-    const {fixed, haste, delay} = ABILITY.elixir;
+    const {fixed, haste, delay, unstoppable} = ABILITY.elixir;
     for (const u of elixirCaught(state, unit, unit.hex!, target!.hex!)) {
       if (!hostile(u, unit)) {
         if (elixirHeals(u))
           value +=
             Math.min(unit.power, u.maxHp - u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
-        const empowers = elixirAmount(unit, 'empower');
+        const empowers = elixirAmount('empower');
         if (u.power > 0 && empowers > 0)
           value += u.empower ? 0 : 1 + empowerGuess(state, u, empowers);
         // `haste`: the share of a turn its card gains, as Cleave's Delay is weighed.
         if (haste) value += (turnValue(u) * haste) / cardCost(u);
+        // `unstoppable`: the hail holding it lets go (what else it stops is the search's).
+        if (unstoppable && u.statuses.some((x) => x.hail)) value += statusCost(u);
         continue;
       }
       // With `fixed`, a hit first, as any attack's.
       const damage = fixed ? Math.min(damageOf(unit), u.hp) : 0;
       value += damage * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
       if (damage > 0 && damage >= u.hp && u.hero !== CAMEL) value += AI.kill;
-      else if (u.power > 0 && elixirAmount(unit, 'weaken') > 0)
-        value += u.weaken ? 0 : 1 + weakenGuess(state, u, elixirAmount(unit, 'weaken'));
+      else if (u.power > 0 && elixirAmount('weaken') > 0)
+        value += u.weaken ? 0 : 1 + weakenGuess(state, u, elixirAmount('weaken'));
       if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
     }
     return closing + value;

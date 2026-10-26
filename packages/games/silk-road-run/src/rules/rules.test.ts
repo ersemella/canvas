@@ -69,7 +69,18 @@ import {
   tileAt,
 } from './map';
 import {tileInfo} from './info';
-import {checkEnd, damageOf, weaken, empower, enterHex, hit, kill, stun} from './resolve';
+import {
+  checkEnd,
+  damageOf,
+  displace,
+  weaken,
+  empower,
+  enterHex,
+  hit,
+  kill,
+  startTurnPassives,
+  stun,
+} from './resolve';
 import type {Ctx} from './resolve';
 import {
   RUN_FORMAT,
@@ -1550,7 +1561,8 @@ describe('the Vanguard and the Alchemist', () => {
       party
     );
     const alchemist = unit(s, 'p-alchemist');
-    expect(alchemist.power).toBe(0);
+    // Power 1 (2026-10-26), which the built Elixir doesn't turn into an Empower or Weaken.
+    expect(alchemist.power).toBe(1);
     expect(ABILITIES.elixir.targetsUnit).toBe(false);
     expect(ABILITIES.elixir.radius).toBe(1);
     // Offered: the spaces within 1 whose burst catches a unit.
@@ -1632,6 +1644,41 @@ describe('the Vanguard and the Alchemist', () => {
       expect(offered()).toBe(true);
       applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
       expect(unit(s, 'p-camel').hp).toBe(unit(s, 'p-camel').maxHp - 2);
+    }));
+
+  it('the single-unit Elixir within 3 (switches) heals an ally its power and makes it Unstoppable until its next turn', () =>
+    withElixir({...single, range: 3, fixed: 0, self: false, unstoppable: true}, 1, () => {
+      const s = setup(
+        {
+          'p-alchemist': at(1, 3),
+          'p-mangudai': at(4, 3),
+          'e-mangudai': at(2, 3),
+          'e-modao': at(8, 6),
+        },
+        party
+      );
+      const alchemist = unit(s, 'p-alchemist');
+      // Allies only, the Alchemist not, healthy or not: nothing it does reaches an enemy.
+      expect(
+        offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir).map((t) => hexKey(t.hex!))
+      ).toEqual([hexKey(at(4, 3))]);
+      expect(ABILITIES.elixir.summary(alchemist)).toBe(
+        'A unit within 3: allies heal 1 and are Unstoppable until its next turn.'
+      );
+      const m = unit(s, 'p-mangudai');
+      m.hp -= 2;
+      m.statuses.push({kind: 'immobilized', hail: 'e-storm'});
+      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(4, 3)}}});
+      expect(m.hp).toBe(m.maxHp - 1);
+      expect(m.unstoppable).toBe(true);
+      // The hail holding it lets go, and a Push doesn't move it.
+      expect(m.statuses).toEqual([]);
+      const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+      displace(ctx, m, 0, 2, 'push');
+      expect(m.hex).toEqual(at(4, 3));
+      // Its next turn starts: no longer Unstoppable.
+      startTurnPassives(ctx, m);
+      expect(m.unstoppable).toBeUndefined();
     }));
 
   it('Cleave Delays every unit it leaves standing 8 slots, and not the ones it kills', () => {
