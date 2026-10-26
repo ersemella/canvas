@@ -2224,8 +2224,8 @@ Caller at speed 2). `experiments/china-steppe.mjs`, **1,600 fights each**
 
 - **Each Chinese hero is within 3 points of its counterpart**, all a
   little under; the support pair is even.
-- **Together they lose 60 to 40**: about three times the sum of the
-  seats' gaps. China is all melee (the burst reaches only next to the
+- **Together they lose 60 to 40**: a 9.6-point gap, half again the
+  seats' gaps added up (6.4). China is all melee (the burst reaches only next to the
   Alchemist), so its three heroes walk in through the Outrider's arrows
   and two hails that now hit on entry; the Youxia, first in, survives a
   third of fights. In a Steppe party each Chinese hero has the Outrider
