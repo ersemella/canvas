@@ -2231,6 +2231,40 @@ Caller at speed 2). `experiments/china-steppe.mjs`, **1,600 fights each**
   third of fights. In a Steppe party each Chinese hero has the Outrider
   and Hail on its side, which is why it measures near even alone.
 
+### Elixir as Haste and Delay (2026-10-26)
+
+Asked for: the burst Elixir as built (a space next to the Alchemist,
+radius 1) with Haste and Delay in place of Empower and Weaken, an ally
+Hastened and an enemy Delayed `tempo` slots (`ABILITY.elixir.tempo`,
+`empower` and `weaken` 0), to support the Vanguard. Fixed first: an
+amount of 0 gave Empower 0, replacing an Empower the unit had.
+`experiments/elixir-tempo.mjs`, **800 fights each** (about ±1.8 points),
+seeds from 1000. `ablate.ts` now counts Delays and Hastes by source
+(`delaysPerFight`, `hastesPerFight`): *again* is a Delay on a unit already
+Delayed since its last turn, *self* a Haste the Alchemist gave itself.
+The Alchemist's and Vanguard's turns are China's, a fight.
+
+| Elixir | China vs Steppe | Alchemist for the Storm Caller | Unfinished (China) | Elixir's Delays a fight (again) | Its Hastes (on itself) | Alchemist's turns | Vanguard's turns |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| built (Empower 2, Weaken 1) | 40.1% | 49.8% | 0.8% | — | — | 12 | 7.8 |
+| Haste and Delay 2 | 39.4% | 50.4% | 0.1% | 12.2 (5.7) | 17.9 (9.3) | 14.6 | 7.3 |
+| Haste and Delay 3 | **58%** | 67% | 0.6% | 20.1 (14.6) | 28.7 (14) | 18.5 | 8.2 |
+| Haste and Delay 4 | 83.8% | 89.8% | 12.6% | 123 (119.7) | 83.5 (52.9) | 56 | 10.9 |
+
+- **At 2 it is the built Elixir's equal** (39.4% and 50.4%, within
+  noise): a Haste and Delay Elixir is a workable support at that size.
+- **3 and 4 are a lockout, not a Vanguard buff.** The Vanguard gains
+  under half a turn a fight at 3; the gain is the Alchemist Hastening
+  itself (about half its Hastes) and Delaying the same enemy again
+  before it acts (73% of its Delays at 3, 97% at 4). At 4 a speed-3
+  Alchemist (action cost 8) Hastened 4 acts every 4 slots and pushes
+  the enemy next to it 4 each time, so that enemy never acts: 56
+  Alchemist turns a fight and one in eight fights unfinished.
+- **What it needs before a higher amount**: the Alchemist kept out of its
+  own Haste, and the delay limit (3.6), which this is the first ability
+  to need. Neither built; not changed, the Elixir stays Empower and
+  Weaken (the owner's call).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

@@ -58,6 +58,10 @@ files touching the Alchemist that don't set every one of these
 `cleave-shape.mjs`, `elixir-fixed.mjs`) reproduce only at their revision;
 `hail-elixir.mjs` sets them all.
 `storm-speed.mjs` (2026-10-26) measures the Storm Caller at speed 3.
+`elixir-tempo.mjs` (2026-10-26) measures the burst Elixir with Haste and
+Delay in place of Empower and Weaken (`ABILITY.elixir.tempo`), counting
+Delays on a unit already Delayed since its last turn (`delaysPerFight`)
+and the Hastes the Alchemist gives itself (`hastesPerFight`).
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.
