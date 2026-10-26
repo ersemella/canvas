@@ -323,12 +323,6 @@ export class TacticsBoardSystem extends BaseSystem {
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h, t);
-    // Yurts (ruins) and their smoke under the units; mountains wait until after them (below).
-    for (const h of map.hexes)
-      if (tileAt(map, h) === 'obstacle') {
-        drawObstacle(ctx, h, map, false, t);
-        drawObstacleSmoke(ctx, h, map, t);
-      }
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
     // A frame mid-motion: the next draws again whatever the key says.
@@ -396,17 +390,30 @@ export class TacticsBoardSystem extends BaseSystem {
           ghost: true,
           frame: 0,
         });
-      if (p && p.hpAfter !== p.hpBefore) {
-        const at = center(p.to ?? hex);
-        drawDamage(ctx, at.x, at.y - 22, p.hpBefore - p.hpAfter, p.killed);
-      }
     }
 
-    // Mountains in front of the units (owner, 2026-10-24): a peak rises into
-    // the space above it, in front of whoever stands there, as nearer things
-    // are in a three-quarter view; never in front of health or statuses.
+    // Yurts, ruins, beacon towers (and their smoke) and mountains in front
+    // of the units (owner, 2026-10-24; obstacles under them until a beacon
+    // tower's top was drawn under the unit behind it, 2026-10-26): each
+    // rises into the space above it, in front of whoever stands there, as
+    // nearer things are in a three-quarter view, and stays inside its own
+    // space below, so never covers the unit in front; never in front of
+    // health, statuses or damage.
+    for (const h of map.hexes)
+      if (tileAt(map, h) === 'obstacle') {
+        drawObstacle(ctx, h, map, false, t);
+        drawObstacleSmoke(ctx, h, map, t);
+      }
     for (const h of map.hexes)
       if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, map, true, t);
+
+    // The damage a planned turn would deal, over everything standing.
+    for (const u of fight.units) {
+      const p = previewed.get(u.id);
+      if (!u.alive || !u.hex || !p || p.hpAfter === p.hpBefore || walking?.has(u.id)) continue;
+      const at = center(p.to ?? u.hex);
+      drawDamage(ctx, at.x, at.y - 22, p.hpBefore - p.hpAfter, p.killed);
+    }
 
     // Not on a party walking out, off their hexes.
     drawGrappleFists(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));

@@ -145,7 +145,10 @@ tuning. This file has no combat-design section number.
   2026-10-26), two rows clear above the finial and three columns either
   side, so the pennant isn't cut off
   at the sprite's edge; its pennant flies in 4 frames at the fire's pace,
-  `Look.obstacleFrames`) is the owner's (AI-assisted),
+  `Look.obstacleFrames`). Obstacles are drawn after the units, as the mountains are, so a
+  tower stands in front of a unit in the space behind it (drawn before
+  them, the tower's top sat under that unit; owner, 2026-10-26); damage
+  numbers are drawn after both is the owner's (AI-assisted),
   redrawn by hand on the sprites' grid, as shrinking it left the roof a
   dark blob: rammed earth in reed-layered bands under a watch pavilion
   with a grey tiled roof whose corners sweep up, red posts and a red
