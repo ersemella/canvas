@@ -134,7 +134,8 @@ tuning. This file has no combat-design section number.
   within 3 of the centre, not next to a mountain or each other, and the
   mountains and towers together cover **at most 8 spaces** (`MAX_COVERED`
   in map.ts: the towers are rolled first and the clumps cut to fit). The
-  tower (`tiles/beacon-tower.png`, 32 × 44) is the owner's (AI-assisted),
+  tower (`tiles/beacon-tower.png`, 32 × 46, two rows clear above the
+  finial and the pennant so their outline isn't cut off) is the owner's (AI-assisted),
   redrawn by hand on the sprites' grid, as shrinking it left the roof a
   dark blob: rammed earth in reed-layered bands under a watch pavilion
   with a grey tiled roof whose corners sweep up, red posts and a red
@@ -150,7 +151,8 @@ tuning. This file has no combat-design section number.
   Steppe's twin peak, so it is drawn as the other mountains are and fits
   its hex the same way: its base, the hex's lower half, unchanged, its
   peaks lowered to 0.65 of their height into two low humps, its six
-  shades as red sandstone, on the Steppe's rock in the same browns
+  shades in the red earth's own browns, a little darker and lighter, so
+  it blends with the ground (redder, it stood out; owner, 2026-10-26), on the Steppe's rock in the same browns
   (`rock-red.png`). Only its fire moves, in 8 frames: flames 1 to 5
   pixels tall along the crest in waves, a tongue flaring every few
   pixels, embers rising. Tried first the same day and replaced (owner):

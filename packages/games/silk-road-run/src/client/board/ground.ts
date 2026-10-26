@@ -86,7 +86,8 @@ const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
  * Steppe's twin peak so it is drawn as the other mountains are and fits
  * its hex the same way: its base, the hex's lower half, as it was, the
  * peaks above it lowered to 0.65 of their height into a ridge of two low
- * humps, its six shades as red sandstone. Only the fire along its crest
+ * humps, its six shades in the red earth's own browns, so it blends with
+ * the ground (owner, 2026-10-26). Only the fire along its crest
  * moves, in 8 frames (`mountainFrames`): flames 1 to 5 pixels tall in
  * waves, a tongue flaring every few pixels, embers rising; the rock never
  * changes. It replaced a burning cone (`mountain-burning.png`), which read
@@ -111,7 +112,7 @@ const FLAMING_MOUNTAINS = [burningRidgeImage];
  * chipped, with rubble at its foot and a dark-earth outline below the
  * roof so it sits in the ground, under a watch pavilion with a grey tiled roof whose corners sweep up, red posts
  * and a red pennant, the roofline being what reads as China at a glance.
- * Redrawn by hand on the sprites' grid (32 × 44), as shrinking the art
+ * Redrawn by hand on the sprites' grid (32 × 46), as shrinking the art
  * left the roof a dark blob. No smoke: it would rise from the roof.
  */
 const LOOKS: Record<string, Look> = {
@@ -345,7 +346,7 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex, time: number | n
  * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
  * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
  * Gobi's sandstone ruin and the mudbrick wall are 32 × 32, the beacon
- * tower 32 × 44. `map` gives the look.
+ * tower 32 × 46. `map` gives the look.
  */
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,
