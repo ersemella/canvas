@@ -563,7 +563,7 @@ function cleaveArea(map: MapData, from: Hex, target: Hex): Hex[] {
  * straight up or down from the Vanguard, or a cone to one side (the two
  * diagonal spaces and the one straight across beyond them); each unit in
  * it, ally or enemy, takes the Vanguard's power, and each one left
- * standing is Delayed `ABILITY.cleave.delay` (5, owner, 2026-10-25).
+ * standing is Delayed `ABILITY.cleave.delay` (8, owner, 2026-10-26).
  * Aimed at the area's first space, which may be empty when a unit stands
  * in another.
  */

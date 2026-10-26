@@ -2085,7 +2085,9 @@ and the buff, and the Vanguard alone in the Champion's seat (no Haste).
   (81%): its target loses most of a turn.
 - Power +1 and a walk of 3 even China too but do less for the Vanguard in
   a Steppe party; defence +2 does both, slower; reach 3 adds nothing.
-- Not changed: the numbers are the owner's.
+- **Adopted (owner, 2026-10-26): Cleave Delay 8 and Swift Strike
+  Haste 3.** The earlier files that set neither (`china-steppe.mjs`,
+  `china-buffs.mjs`) reproduce their tables only at their revision.
 
 ## Principles for re-tuning
 

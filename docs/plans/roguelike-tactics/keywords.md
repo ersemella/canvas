@@ -31,13 +31,13 @@ Tailwind experiment and removed with it (2026-10-24; [history.md](history.md)).
 Empower does; with Empower it nets out, and it reduces a Champion's
 squeeze too. Elixir's Empower and Weaken are a fixed 1 (owner,
 2026-10-26; the Alchemist's power from 2026-10-25, an exception to 17.2).
-**Delay** (2026-10-25), for the Modao Vanguard's Cleave (Delay 5): the
-card moves 5 slots later, a taken slot resolved by speed as any placement
+**Delay** (2026-10-25), for the Modao Vanguard's Cleave (Delay 8 since
+2026-10-26; 5 before): the card moves 8 slots later, a taken slot resolved by speed as any placement
 is; the delay limit (3.6) is not built yet.
 **Haste**, **Inevitable**, **Shield**, **Armour** and **Pierce**
 (2026-10-25), for the passives ([progression.md](progression.md), 19.8):
 Haste for Second Wind, Momentum and Vengeance (and since 2026-10-26 the
-Youxia Swordsman's Swift Strike, Haste 2 when it hits), Inevitable as Steady Gait,
+Youxia Swordsman's Swift Strike, Haste 3 when it hits, 2 before 2026-10-26), Inevitable as Steady Gait,
 Shield 1 from Rally (until the unit's next turn), Armour 1 as Hardened and
 Pierce as Piercing Eye. No hero has a passive yet; neither the delay nor
 the haste limit is built.

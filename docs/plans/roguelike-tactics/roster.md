@@ -123,12 +123,12 @@ in [balance.md](balance.md)).
 
 | Hero | Speed | Defence | Power | Health | Ability | Effect |
 |---|---|---|---|---|---|---|
-| Modao Vanguard | 1 | 3 | 2 | 8 | Cleave | A line of 2 spaces straight up or down from the Vanguard, stopped by ruins but not by units, or a cone to one side: the two diagonal spaces next to it and the space straight across beyond them (owner, 2026-10-26; it was a line of 2 in any of the six directions). Either way each unit in it, ally or enemy, takes the Vanguard's power, and each one left standing is **Delayed 5** (owner, 2026-10-25, as measured in [balance.md](balance.md#elixirs-shape-and-cleaves-delay-2026-10-25)). No Push: it would undo the Vanguard's job, and in a full line the first unit is blocked by the second. The sprite and portrait are the first kit's (2026-10-22). |
+| Modao Vanguard | 1 | 3 | 2 | 8 | Cleave | A line of 2 spaces straight up or down from the Vanguard, stopped by ruins but not by units, or a cone to one side: the two diagonal spaces next to it and the space straight across beyond them (owner, 2026-10-26; it was a line of 2 in any of the six directions). Either way each unit in it, ally or enemy, takes the Vanguard's power, and each one left standing is **Delayed 8** (owner, 2026-10-26, as measured in [balance.md](balance.md#the-vanguards-buffs-other-than-speed-2026-10-26); 5 from 2026-10-25). No Push: it would undo the Vanguard's job, and in a full line the first unit is blocked by the second. The sprite and portrait are the first kit's (2026-10-22). |
 | Waidan Alchemist | 3 (2 until 2026-10-25, owner; [balance.md](balance.md#elixirs-shape-and-cleaves-delay-2026-10-25)) | 1 | 1 (2 until 2026-10-26, owner; [balance.md](balance.md#elixir-fixed-at-1-with-a-hit-2026-10-26)) | 4 | Elixir | A unit within 2, the Alchemist itself too (owner, 2026-10-26), no line of fire: an ally **heals** the Alchemist's power, up to its health, and is **Empowered 1**; an enemy takes the Alchemist's power and is **Weakened 1**; each until the end of its next turn, a new one replacing the last. Any enemy can be aimed at, and an ally that hits or is hurt, the camel too (owner, 2026-10-26: [balance.md](balance.md#elixir-fixed-at-1-with-a-hit-2026-10-26); until then the Empower and Weaken were the Alchemist's power, with no hit or heal, an exception to [keywords.md](keywords.md) 17.2 that the fixed 1 ends). An ability whose effect depends on whose unit it lands on, against [map.md](map.md) 6.7. Art by the owner (ChatGPT), shrunk with scripts/shrink-sprite.py. |
 
 **Built 2026-10-26 (owner): the Youxia Swordsman**, in the roster
-(`ROSTER`), with the owner's stats; Swift Strike' Haste 2 is the builder's
-first number, untested and not measured yet. Art by the owner (ChatGPT,
+(`ROSTER`), with the owner's stats; Swift Strike's Haste 3 is the owner's
+(2026-10-26; 2 the builder's first, [balance.md](balance.md#the-vanguards-buffs-other-than-speed-2026-10-26)). Art by the owner (ChatGPT,
 2026-10-26), shrunk with scripts/shrink-sprite.py (the portrait cropped
 without `--lines`), a 2-frame idle split at row 20, the figure shrunk to 85% of the frame
 (owner: smaller than the Modao Vanguard). A wide bamboo hat
@@ -137,7 +137,7 @@ beard it read as the Waidan Alchemist.
 
 | Hero | Speed | Defence | Power | Health | Walk | Ability | Effect |
 |---|---|---|---|---|---|---|---|
-| Youxia Swordsman | 3 | 1 | 2 | 4 | 3 (the ordinary cap is 2) | Swift Strike | Melee, a *jian* stroke for the Swordsman's power (named Ten Paces, after Li Bai's swordsman who "kills one man every ten paces", until the owner asked for a more familiar name the same day); when it hits, the Swordsman's card is **Hastened 2** ([keywords.md](keywords.md) 17.3), taken off as its card is placed after the turn: 6 slots to its next turn after a strike instead of its usual 8. |
+| Youxia Swordsman | 3 | 1 | 2 | 4 | 3 (the ordinary cap is 2) | Swift Strike | Melee, a *jian* stroke for the Swordsman's power (named Ten Paces, after Li Bai's swordsman who "kills one man every ten paces", until the owner asked for a more familiar name the same day); when it hits, the Swordsman's card is **Hastened 3** ([keywords.md](keywords.md) 17.3; 2 until 2026-10-26), taken off as its card is placed after the turn: 5 slots to its next turn after a strike instead of its usual 8. |
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).

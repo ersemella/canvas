@@ -1500,15 +1500,15 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
     expect(unit(s, 'p-camel').hp).toBe(unit(s, 'p-camel').maxHp - 2);
   });
 
-  it('Cleave Delays every unit it leaves standing 5 slots, and not the ones it kills', () => {
+  it('Cleave Delays every unit it leaves standing 8 slots, and not the ones it kills', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
-    expect(ABILITY.cleave.delay).toBe(5);
+    expect(ABILITY.cleave.delay).toBe(8);
     const m = unit(s, 'e-mangudai');
     const before = m.slot!;
     applyTurn(s, unit(s, 'p-modao'), {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
     expect(m.alive).toBe(true);
-    expect(m.slot).toBeGreaterThanOrEqual(before + 5);
-    expect(s.log.some((l) => l.text.endsWith('is Delayed 5.'))).toBe(true);
+    expect(m.slot).toBeGreaterThanOrEqual(before + 8);
+    expect(s.log.some((l) => l.text.endsWith('is Delayed 8.'))).toBe(true);
     const k = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
     unit(k, 'e-mangudai').hp = 1;
     applyTurn(k, unit(k, 'p-modao'), {action: {ability: 'cleave', target: {hex: at(2, 3)}}});

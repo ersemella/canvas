@@ -276,10 +276,11 @@ export const ABILITY = {
    * side, its two diagonal neighbours and the space straight across beyond
    * them (owner, 2026-10-26; board.ts, `cleaveAreas`); each unit in it,
    * ally or enemy, takes the Vanguard's power, and each
-   * one still standing is Delayed `delay` slots (keywords.md 17.3): 5
-   * (owner, 2026-10-25; balance.md, "Elixir's shape and Cleave's Delay").
+   * one still standing is Delayed `delay` slots (keywords.md 17.3): 8
+   * (owner, 2026-10-26; 5 from 2026-10-25; balance.md, "The Vanguard's buffs other than speed": China
+   * against the Steppe 52.5% with Swift Strike's Haste 3).
    */
-  cleave: {reach: 2, delay: 5 as number},
+  cleave: {reach: 2, delay: 8 as number},
   /**
    * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within `range`,
    * the Alchemist itself too, no line of fire. An ally heals the
@@ -314,9 +315,9 @@ export const ABILITY = {
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),
    * the Youxia Swordsman's *jian*: melee, and when it hits, the Swordsman's card is Hastened `haste` slots (keywords.md
-   * 17.3). 2 is the builder's first number, untested.
+   * 17.3). 3 (owner, 2026-10-26; 2 the builder's first; balance.md, "The Vanguard's buffs other than speed").
    */
-  swiftStrike: {haste: 2 as number},
+  swiftStrike: {haste: 3 as number},
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
