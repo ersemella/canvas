@@ -609,7 +609,7 @@ const cleave: AbilityDef = {
 /**
  * Whether Elixir can take on `u`: a unit that hits, the Alchemist itself
  * too (owner, 2026-10-26); with `ABILITY.elixir.fixed`, any enemy, since it takes a hit;
- * with `tempo`, any unit. Not the Alchemist with `self` off.
+ * with `haste` or `delay`, any unit on that side. Not the Alchemist with `self` off.
  */
 const elixirTakes =
   (user: Unit) =>
@@ -617,7 +617,7 @@ const elixirTakes =
     u !== undefined &&
     (ABILITY.elixir.self || u.id !== user.id) &&
     (u.power > 0 ||
-      ABILITY.elixir.tempo > 0 ||
+      (u.side === user.side ? ABILITY.elixir.haste : ABILITY.elixir.delay) > 0 ||
       (ABILITY.elixir.fixed > 0 && u.side !== user.side) ||
       (elixirHeals(u) && u.side === user.side && u.hp < u.maxHp));
 
@@ -672,19 +672,20 @@ const elixir: AbilityDef = {
     return ABILITY.elixir.shape === 'unit';
   },
   summary(user) {
-    const {shape, range, radius, fixed, heal, tempo} = ABILITY.elixir;
+    const {shape, range, radius, fixed, heal, haste: hastes, delay: delays} = ABILITY.elixir;
     const empowers = elixirAmount(user, 'empower');
     const weakens = elixirAmount(user, 'weaken');
-    // Each side's part, the amounts at 0 left out (with `tempo` alone, only Haste and Delay).
-    const ally = [empowers ? `Empowered ${empowers}` : '', tempo ? `Hastened ${tempo}` : ''].filter(
-      Boolean
-    );
-    const enemy = [weakens ? `Weakened ${weakens}` : '', tempo ? `Delayed ${tempo}` : ''].filter(
+    // Each side's part, the amounts at 0 left out (with Haste and Delay alone, only those).
+    const ally = [
+      empowers ? `Empowered ${empowers}` : '',
+      hastes ? `Hastened ${hastes}` : '',
+    ].filter(Boolean);
+    const enemy = [weakens ? `Weakened ${weakens}` : '', delays ? `Delayed ${delays}` : ''].filter(
       Boolean
     );
     const effect = (them: string) =>
       `${fixed && heal ? `allies heal ${user.power} and are` : 'allies are'} ${ally.join(' and ')}, ${fixed ? `enemies are hit, then` : 'enemies'} ${enemy.join(' and ')}${empowers || weakens ? `, until the end of ${them} next turn` : ''}.`;
-    const who = `${tempo ? 'unit' : 'unit that hits'}${ABILITY.elixir.self ? '' : ' but you'}`;
+    const who = `${hastes || delays ? 'unit' : 'unit that hits'}${ABILITY.elixir.self ? '' : ' but you'}`;
     if (shape === 'burst')
       return `${range === 1 ? 'A space next to you, or your own' : `A space within ${range}`}, and every ${who} within ${radius} of it: ${effect('their')}`;
     if (shape === 'aura') return `Every ${who} within ${radius} of you: ${effect('their')}`;
@@ -705,7 +706,7 @@ const elixir: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const caught = elixirCaught(ctx.state, user, user.hex!, target.hex!);
-    const {fixed, tempo} = ABILITY.elixir;
+    const {fixed, haste: hastes, delay: delays} = ABILITY.elixir;
     for (const u of caught) {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
       if (u.side === user.side) {
@@ -713,12 +714,12 @@ const elixir: AbilityDef = {
         // An amount of 0 gives none, rather than replacing an Empower it has.
         const empowers = elixirAmount(user, 'empower');
         if (u.power > 0 && empowers > 0) empower(ctx, u, empowers);
-        haste(ctx, u, tempo);
+        haste(ctx, u, hastes);
       } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
         const weakens = elixirAmount(user, 'weaken');
         if (u.alive && u.power > 0 && weakens > 0) weaken(ctx, u, weakens);
-        delay(ctx, u, tempo);
+        delay(ctx, u, delays);
       }
     }
   },

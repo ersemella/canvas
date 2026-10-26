@@ -9,7 +9,7 @@ const china = {enemies: ['fox', 'modao', 'alchemist'], map: 'gobi'};
 const elixir =
   (power, {fixed = 0, heal = false, tempo = 0} = {}) =>
   (c) => {
-    Object.assign(c.ABILITY.elixir, {fixed, heal, tempo});
+    Object.assign(c.ABILITY.elixir, {fixed, heal, haste: tempo, delay: tempo});
     c.HEROES.alchemist.power = power;
   };
 export const experiments = {

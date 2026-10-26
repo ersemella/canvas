@@ -235,6 +235,12 @@ export function scoreOutcome(
     const a = after.units.find((u) => u.id === b.id)!;
     const lost = b.hp - a.hp;
     const statusDelta = statusPoints(after, a) - statusPoints(before, b);
+    // `AI.trackWorth`: a card moved by the turn, the share of a turn it moved
+    // (later is worse for its side), not counting the actor's own placement.
+    if (AI.trackWorth && b.id !== actor.id && a.alive && a.slot !== null && b.slot !== null) {
+      const later = ((a.slot - b.slot) / cardCost(b)) * turnValue(b) * AI.trackWorth;
+      score += hostile(b, actor) ? later : -later;
+    }
     if (hostile(b, actor)) {
       score += lost * (b.hero === CAMEL ? AI.camelHealthWeight : 1) + statusDelta;
       if (!a.alive) score += AI.kill;
@@ -345,7 +351,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // both by the Alchemist's power (`elixirCaught`, by its shape).
   if (ability === 'elixir') {
     let value = 0;
-    const {fixed, tempo} = ABILITY.elixir;
+    const {fixed, haste, delay} = ABILITY.elixir;
     for (const u of elixirCaught(state, unit, unit.hex!, target!.hex!)) {
       if (!hostile(u, unit)) {
         if (elixirHeals(u))
@@ -354,8 +360,8 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         const empowers = elixirAmount(unit, 'empower');
         if (u.power > 0 && empowers > 0)
           value += u.empower ? 0 : 1 + empowerGuess(state, u, empowers);
-        // `tempo`: the share of a turn its card gains, as Cleave's Delay is weighed.
-        if (tempo) value += (turnValue(u) * tempo) / cardCost(u);
+        // `haste`: the share of a turn its card gains, as Cleave's Delay is weighed.
+        if (haste) value += (turnValue(u) * haste) / cardCost(u);
         continue;
       }
       // With `fixed`, a hit first, as any attack's.
@@ -364,7 +370,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (damage > 0 && damage >= u.hp && u.hero !== CAMEL) value += AI.kill;
       else if (u.power > 0 && elixirAmount(unit, 'weaken') > 0)
         value += u.weaken ? 0 : 1 + weakenGuess(state, u, elixirAmount(unit, 'weaken'));
-      if (tempo && damage < u.hp) value += (turnValue(u) * tempo) / cardCost(u);
+      if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
     }
     return closing + value;
   }

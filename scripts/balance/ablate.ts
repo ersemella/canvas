@@ -160,11 +160,14 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
   /**
    * Track effects, by the ability that gave them: Delays, the slots they
    * moved, and those on a unit already Delayed since its last turn (the
-   * lockout the delay limit, 3.6, would stop); Hastes, and those its user
-   * gave itself.
+   * lockout the delay limit, 3.6, would stop); Hastes, those its user
+   * gave itself, and how many each unit took, by name without its side.
    */
   const delays: Record<string, {count: number; slots: number; again: number}> = {};
-  const hastes: Record<string, {count: number; slots: number; self: number}> = {};
+  const hastes: Record<
+    string,
+    {count: number; slots: number; self: number; to: Record<string, number>}
+  > = {};
 
   for (let f = 0; f < fights; f++) {
     const modSide: Side | null = mod ? (f & 1 ? 'enemy' : 'player') : null;
@@ -238,8 +241,9 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
             if (delayedSince.has(name!)) d.again++;
             delayedSince.add(name!);
           } else {
-            const h = (hastes[acting.ability] ??= {count: 0, slots: 0, self: 0});
+            const h = (hastes[acting.ability] ??= {count: 0, slots: 0, self: 0, to: {}});
             h.count++;
+            add(h.to, name!.replace(/^(Your|Enemy) /, ''));
             h.slots += Number(n);
             if (name === acting.name) h.self++;
           }
@@ -377,7 +381,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
         },
       ])
     ),
-    /** Hastes a fight by source: how many, slots gained, and how many the user gave itself. */
+    /** Hastes a fight by source: how many, slots gained, how many the user gave itself, and by unit. */
     hastesPerFight: Object.fromEntries(
       Object.entries(hastes).map(([k, v]) => [
         k,
@@ -385,6 +389,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
           count: round(v.count / fights, 2),
           slots: perFight(v.slots),
           self: round(v.self / fights, 2),
+          to: Object.fromEntries(Object.entries(v.to).map(([u, n]) => [u, round(n / fights, 2)])),
         },
       ])
     ),

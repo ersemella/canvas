@@ -315,8 +315,9 @@ export const ABILITY = {
    * when they default to power.
    * `heal`, with `fixed`: an ally heals the Alchemist's power, `all` the
    * camel too, `heroes` not; off as built.
-   * `tempo`, a switch for measuring: an ally is also Hastened, an enemy
-   * Delayed, that many slots, so any unit can be aimed at; 0 as built.
+   * `haste`, `delay`, switches for measuring: an ally is also Hastened
+   * `haste` slots, an enemy Delayed `delay`, so any unit on that side can
+   * be aimed at; 0 as built (`tempo`, both at once, until 2026-10-26).
    * `empower`, `weaken`: the Empower on an ally and the Weaken on an enemy
    * (2 and 1 as built); 0 falls back to `fixed`, then power.
    * `self`, a switch for measuring: whether the Alchemist takes its own
@@ -329,7 +330,8 @@ export const ABILITY = {
     radius: 1 as number,
     fixed: 0 as number,
     heal: false as false | 'all' | 'heroes',
-    tempo: 0 as number,
+    haste: 0 as number,
+    delay: 0 as number,
     empower: 2 as number,
     weaken: 1 as number,
     self: true as boolean,
@@ -378,6 +380,14 @@ export const AI = {
    * hit, which breaks the grapple, comes only on that ally's next turn.
    */
   rescueShare: 0.5,
+  /**
+   * A switch for measuring (2026-10-26): what a turn's Haste or Delay on
+   * other units is worth when its options are screened (`scoreOutcome`),
+   * × the share of a turn each card moved × its turn's worth, as
+   * `guessValue` orders them. 0 as built: Delay and Haste count only in
+   * that ordering and where the search plays the turn they move.
+   */
+  trackWorth: 0 as number,
   /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends

@@ -1,6 +1,6 @@
 // Elixir with Haste and Delay in place of Empower and Weaken (2026-10-26):
 // the built burst (a space next to the Alchemist, radius 1), its allies
-// Hastened and its enemies Delayed `tempo` slots, no Empower or Weaken
+// Hastened and its enemies Delayed the same slots (`haste`, `delay`), no Empower or Weaken
 // (`ABILITY.elixir.empower`, `.weaken` 0), against the built Elixir.
 // *China*: the China party against the Steppe party (`modWinPct`).
 // *Seat*: the Alchemist in the Storm Caller's seat against the three Steppe
@@ -10,10 +10,10 @@ const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['youxia', 'modao', 'alchemist'];
 const burst = {shape: 'burst', range: 1, radius: 1, fixed: 0, heal: false};
 const variants = {
-  built: {empower: 2, weaken: 1, tempo: 0},
-  'tempo-2': {empower: 0, weaken: 0, tempo: 2},
-  'tempo-3': {empower: 0, weaken: 0, tempo: 3},
-  'tempo-4': {empower: 0, weaken: 0, tempo: 4},
+  built: {empower: 2, weaken: 1, haste: 0, delay: 0},
+  'tempo-2': {empower: 0, weaken: 0, haste: 2, delay: 2},
+  'tempo-3': {empower: 0, weaken: 0, haste: 3, delay: 3},
+  'tempo-4': {empower: 0, weaken: 0, haste: 4, delay: 4},
 };
 export const experiments = {};
 for (const [name, v] of Object.entries(variants)) {

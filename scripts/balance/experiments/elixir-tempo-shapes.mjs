@@ -1,4 +1,4 @@
-// Elixir as Haste and Delay (`ABILITY.elixir.tempo`, no Empower or Weaken)
+// Elixir as Haste and Delay (`ABILITY.elixir.haste` and `.delay`, no Empower or Weaken)
 // in other shapes, the Alchemist never taking its own (`self` off), so it
 // can't Hasten itself (2026-10-26; elixir-tempo.mjs measured the built burst,
 // the Alchemist in it). *China*: the China party against the Steppe party
@@ -23,7 +23,7 @@ for (const [shape, s] of Object.entries(shapes))
         c.ABILITY.elixir,
         {radius: 1, fixed: 0, heal: false, empower: 0, weaken: 0, self: false},
         s,
-        {tempo}
+        {haste: tempo, delay: tempo}
       );
       c.HEROES.alchemist.power = 0;
     };
