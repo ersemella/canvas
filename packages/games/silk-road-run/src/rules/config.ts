@@ -36,8 +36,6 @@ export const RULES = {
   movementCap: 2,
   /** The most any stat (speed, defence or power) can reach (owner, 2026-10-25). */
   statMax: 10,
-  /** Size of the track window the page shows (open question 1). */
-  trackWindow: 30,
 } as const;
 
 /** Health from defence (owner, 2026-10-23): (1 + defence) × 2. */

@@ -6,6 +6,7 @@
  */
 import {hexKey, pixelToHex} from '@canvas/engine';
 import type {Hex, HexLayout} from '@canvas/engine';
+import {RULES} from '../rules/config';
 import {onMap} from '../rules/map';
 import type {MapData} from '../rules/map';
 import type {FightState} from '../rules/types';
@@ -40,8 +41,12 @@ export interface TrackCard {
   h: number;
 }
 
-/** The deck's cards: at least this many, more when a unit's card lies further out. */
-const MIN_SLOT_CELLS = 18;
+/**
+ * The deck's cards: at least this many, more when a unit's card lies
+ * further out (a Delay). The camel's start slot and its speed-0 action
+ * cost of 12 both reach 13 cards; nothing else goes further without a Delay.
+ */
+const MIN_SLOT_CELLS = RULES.camelStartSlot + 1;
 
 export interface TrackSlots {
   /** The slot of the first card (now). */
