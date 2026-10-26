@@ -309,9 +309,10 @@ function mountainRange(
  * more of it first, so it bunches up rather than strings out. Off the
  * starting columns, off Temee's road down the
  * middle column, not next to the camel's start or the exit, the clumps
- * apart, and never cutting the board in two.
+ * apart, at most `MIDDLE_CLUMP.most` mountains in all (owner, 2026-10-26:
+ * the biggest clump a mountain smaller until they fit, none under 2), and never cutting the board in two.
  */
-const MIDDLE_CLUMP = {counts: [2, 3], sizes: [2, 3, 4], start: 2, reach: 3};
+const MIDDLE_CLUMP = {counts: [2, 3], sizes: [2, 3, 4], most: 8, start: 2, reach: 3};
 
 function middleClumps(
   map: MapData,
@@ -326,29 +327,56 @@ function middleClumps(
     .filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.reach)
     .filter((h) => reserved.every((x) => hexDistance(x, h) > 1));
   const count = MIDDLE_CLUMP.counts[Math.floor(random() * MIDDLE_CLUMP.counts.length)]!;
-  for (let c = 0; c < count; c++) {
-    const size = MIDDLE_CLUMP.sizes[Math.floor(random() * MIDDLE_CLUMP.sizes.length)]!;
-    const clump: Hex[] = [];
-    // Apart from the clumps before it.
-    const open = allowed.filter((h) => placed.every((p) => hexDistance(p, h) > 1));
-    while (clump.length < size) {
-      let free = open.filter(
-        (h) => !clump.some((m) => hexDistance(m, h) === 0) && connectedWithout(map, tiles, h)
-      );
-      if (!clump.length) free = free.filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.start);
-      else {
-        const touching = (h: Hex) => clump.filter((m) => hexDistance(m, h) === 1).length;
-        free = free.filter((h) => touching(h) > 0);
-        const most = Math.max(0, ...free.map(touching));
-        free = free.filter((h) => touching(h) === most);
-      }
-      if (!free.length) break;
-      const h = free[Math.floor(random() * free.length)]!;
-      tiles[hexKey(h)] = 'mountain';
-      clump.push(h);
-    }
-    placed.push(...clump);
+  const sizes = Array.from(
+    {length: count},
+    () => MIDDLE_CLUMP.sizes[Math.floor(random() * MIDDLE_CLUMP.sizes.length)]!
+  );
+  while (sizes.reduce((a, b) => a + b, 0) > MIDDLE_CLUMP.most) {
+    const biggest = sizes.indexOf(Math.max(...sizes));
+    sizes[biggest]!--;
   }
+  for (const size of sizes) {
+    // Apart from the clumps before it.
+    let open = allowed.filter((h) => placed.every((p) => hexDistance(p, h) > 1));
+    let clump: Hex[] = [];
+    // A clump stuck at one mountain, with nowhere free beside it, is taken
+    // back and started again elsewhere, a few times at most.
+    for (let tries = 0; tries < 6 && clump.length < 2; tries++) {
+      for (const h of clump) delete tiles[hexKey(h)];
+      if (clump.length) open = open.filter((h) => hexDistance(h, clump[0]!) > 0);
+      clump = growClump(map, tiles, open, size, random);
+    }
+    if (clump.length < 2) for (const h of clump) delete tiles[hexKey(h)];
+    else placed.push(...clump);
+  }
+}
+
+/** One clump of up to `size` mountains among `open`, marked in `tiles` (`middleClumps`). */
+function growClump(
+  map: MapData,
+  tiles: Record<string, Tile>,
+  open: Hex[],
+  size: number,
+  random: () => number
+): Hex[] {
+  const clump: Hex[] = [];
+  while (clump.length < size) {
+    let free = open.filter(
+      (h) => !clump.some((m) => hexDistance(m, h) === 0) && connectedWithout(map, tiles, h)
+    );
+    if (!clump.length) free = free.filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.start);
+    else {
+      const touching = (h: Hex) => clump.filter((m) => hexDistance(m, h) === 1).length;
+      free = free.filter((h) => touching(h) > 0);
+      const most = Math.max(0, ...free.map(touching));
+      free = free.filter((h) => touching(h) === most);
+    }
+    if (!free.length) break;
+    const h = free[Math.floor(random() * free.length)]!;
+    tiles[hexKey(h)] = 'mountain';
+    clump.push(h);
+  }
+  return clump;
 }
 
 /** Whether every open hex of `map` can still walk to every other with `extra` blocked too. */

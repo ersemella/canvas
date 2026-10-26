@@ -600,6 +600,7 @@ describe('the board', () => {
         clumps.push(merged);
       }
       expect([2, 3]).toContain(clumps.length);
+      expect(mountains.length).toBeLessThanOrEqual(8);
       for (const c of clumps) expect(c.length).toBeGreaterThanOrEqual(2);
       for (const c of clumps) expect(c.length).toBeLessThanOrEqual(4);
       expect(tiles.filter((t) => t === 'obstacle')).toHaveLength(0);
