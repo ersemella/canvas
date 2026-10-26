@@ -245,8 +245,14 @@ and 2):
 - **The dome** (`tiles/salt-dome.png`, 124 × 111): drawn 144 × 112 on its
   own grid, wider than the seven spaces are tall, so taken to 124 wide
   and stretched 1.15 tall to cover them; 8 colours from the art
-  (whites, three greys, the pinks and clay red) and a dark grey-brown
-  outline. Drawn once from the centre space (`drawDome` in ground.ts),
+  (whites, three greys, the pinks and clay red). In the art's own colours
+  it stood out from the ground (owner, 2026-10-26), so each was taken 60%
+  of the way to the crust's (`#e9e1d7` and its warm greys), the pinks
+  becoming a dusty clay, with a dark grey-brown outline (`#4f4540`) so it
+  still reads as blocked; taken all the way, its lit side was lost in the
+  salt. Real salt domes are earthier than the art: their salt darkened by
+  clays and dust brought up with it, a gypsum rim, and red, grey and dark
+  rock mixed in, so the muted dome is also the truer one. Drawn once from the centre space (`drawDome` in ground.ts),
   its foot on the bottom space's bottom edge, clipped as seven mountains
   are, so it rises over the spaces behind it but never covers a unit in
   front.

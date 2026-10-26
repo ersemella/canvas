@@ -175,9 +175,12 @@ const LOOKS: Record<string, Look> = {
   // The Salt Flats (owner, 2026-10-26): the owner's salt crust and salt
   // dome (AI-assisted), cut to their own pixel grids (156 pixels and 5
   // colours, its cracks pulled 45% towards the salt, as at full contrast
-  // they were as dark as the hex borders and hid them; the dome, 144 wide, taken to 124 by 111 and 8 colours with a
-  // dark grey-brown outline, a little taller than drawn so it covers its
-  // seven spaces). Its obstacle is the Gobi's sandstone ruin until the
+  // they were as dark as the hex borders and hid them; the dome, 144
+  // wide, taken to 124 by 111 and 8 colours, a little taller than drawn
+  // so it covers its seven spaces, then its colours taken 60% of the way
+  // to the crust's, its pinks to a dusty clay, with a dark grey-brown
+  // outline, as in the art's own whites and pinks it stood out; owner,
+  // 2026-10-26). Its obstacle is the Gobi's sandstone ruin until the
   // windcatcher's art is in (salt-flats.md).
   salt: {
     ground: saltCrustImage,
