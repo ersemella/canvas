@@ -15,7 +15,7 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 ## Example
 
 The committed file, fought in the Flaming Mountains: the Waidan
-Alchemist, the Modao Vanguard and the Mangudai Outrider against the three
+Alchemist, the Modao Vanguard and the Youxia Swordsman against the three
 Steppe heroes, every kit the starting one. Its `"random"` yurts still
 bring mountains: the Flaming Mountains always have two clumps
 of them in the middle.
@@ -29,7 +29,7 @@ of them in the middle.
   "player": [
     {"hero": "alchemist"},
     {"hero": "modao"},
-    {"hero": "mangudai"}
+    {"hero": "youxia"}
   ],
   "enemy": [
     {"hero": "bokh"},
