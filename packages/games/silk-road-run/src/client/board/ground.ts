@@ -1,6 +1,7 @@
 /**
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
- * grass, yurts and their smoke, the Gobi's sand and sandstone ruins; exits
+ * grass, yurts and their smoke, the Gobi's sand and sandstone ruins, the
+ * Flaming Mountains' red earth, mudbrick ruins and burning mountains; exits
  * (cached per map), and falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
@@ -25,10 +26,25 @@ import mountainPeakImage from '../tiles/mountain-peak.png';
 import mountainTwinImage from '../tiles/mountain-twin.png';
 import rockImage from '../tiles/rock.png';
 import grassImage from '../tiles/grass-soft.png';
+import redEarthImage from '../tiles/red-earth.png';
+import mudbrickRuinsImage from '../tiles/ruins.png';
+import flamingMountainImage from '../tiles/mountain-flaming.png';
+import flamingTwinImage from '../tiles/mountain-flaming-twin.png';
+import flamesImage from '../tiles/flames.png';
 
-/** How a map looks (map.ts): its open ground, what its `obstacle` tile is, and whether that smokes. */
+/**
+ * A mountain's art, drawn for the hex (`drawObstacle`), and where flames
+ * burn on it (`drawMountainFlames`): each the middle of a flame's foot, in
+ * art pixels from the image's top left.
+ */
+interface MountainArt {
+  image: string;
+  flames: {x: number; y: number}[];
+}
+
+/** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
-  /** The open ground's texture; yurts and ruins stand on it, mountains on rocky ground of their own. */
+  /** The open ground's texture; yurts and ruins stand on it, mountains on `mountainGround`. */
   ground: string;
   /**
    * Laid across the board as one field (`fillHexTexture`, a seamless
@@ -44,7 +60,40 @@ export interface Look {
   obstacles: string[];
   /** Smoke rises from each obstacle's crown (a yurt's). */
   smoke: boolean;
+  /** The mountains' shapes, each hex picking one. */
+  mountains: MountainArt[];
+  /** The ground under a mountain, a seamless tile laid like the grass. */
+  mountainGround: string;
 }
+
+/**
+ * The mountains' shapes, a single peak and a twin (owner, 2026-10-24),
+ * each hex picking one. Drawn for the hex: 42 pixels wide, its base the
+ * hex's lower half, standing on the hex's bottom edge, the peak rising
+ * into the space above (`mountainClip` keeps the base inside the hex).
+ */
+const STEPPE_MOUNTAINS: MountainArt[] = [
+  {image: mountainPeakImage, flames: []},
+  {image: mountainTwinImage, flames: []},
+];
+
+/**
+ * The Flaming Mountains' (owner, 2026-10-26): red sandstone ridges cut by
+ * gullies, from the owner's art (AI-assisted) shrunk to the hex's 42
+ * pixels and cut to 5 colours with an ink outline, as the Steppe's are.
+ * Flames burn on the peak's crest, and on the twin's back peak and front
+ * ridge.
+ */
+const FLAMING_MOUNTAINS: MountainArt[] = [
+  {image: flamingMountainImage, flames: [{x: 22, y: 3}]},
+  {
+    image: flamingTwinImage,
+    flames: [
+      {x: 17, y: 3},
+      {x: 30, y: 16},
+    ],
+  },
+];
 
 /**
  * The Steppe's grass (owner, 2026-10-24) is the owner's `grass.png`
@@ -52,8 +101,11 @@ export interface Look {
  * since at full strength it read as mud on a phone. The Gobi (2026-10-25)
  * brings back the desert board's art from before the Steppe: the sand
  * stamped per hex and the crumbling sandstone ruin, as they were
- * (2026-10-22), in place of the yurts. The mudbrick wall and tower stump
- * drawn for the Steppe (`ruins.png`, `ruins-tower.png`) stay unused.
+ * (2026-10-22), in place of the yurts. The Flaming Mountains (owner,
+ * 2026-10-26): the owner's cracked red earth (AI-assisted, cut to 128
+ * pixels and 5 colours), under the mountains too, and the mudbrick wall
+ * drawn for the Steppe (`ruins.png`) as the ruins of Gaochang; its tower
+ * stump (`ruins-tower.png`), too dark on the red earth, stays unused.
  */
 const LOOKS: Record<string, Look> = {
   steppe: {
@@ -63,6 +115,8 @@ const LOOKS: Record<string, Look> = {
     border: '#3f4a27',
     obstacles: [yurtImage],
     smoke: true,
+    mountains: STEPPE_MOUNTAINS,
+    mountainGround: rockImage,
   },
   gobi: {
     ground: sandImage,
@@ -71,6 +125,18 @@ const LOOKS: Record<string, Look> = {
     border: PALETTE.sandDark,
     obstacles: [sandstoneRuinsImage],
     smoke: false,
+    mountains: STEPPE_MOUNTAINS,
+    mountainGround: rockImage,
+  },
+  flaming: {
+    ground: redEarthImage,
+    stamp: false,
+    colour: '#97633c',
+    border: '#5c3a26',
+    obstacles: [mudbrickRuinsImage],
+    smoke: false,
+    mountains: FLAMING_MOUNTAINS,
+    mountainGround: redEarthImage,
   },
 };
 
@@ -82,9 +148,13 @@ export function lookOf(map: MapData): Look {
 /** Whether a map's obstacles smoke, so the board keeps drawing frames for it. */
 export const smokes = (map: MapData): boolean => lookOf(map).smoke;
 
-/** A tile's ground texture on a map: the map's open ground, or rock under a mountain (owner, 2026-10-24). */
+/** Whether a map's mountains burn, so the board keeps drawing frames for it. */
+export const burns = (map: MapData): boolean =>
+  lookOf(map).mountains.some((m) => m.flames.length > 0);
+
+/** A tile's ground texture on a map: the map's open ground, or its mountains' ground under one (rock, owner, 2026-10-24). */
 const textureOf = (look: Look, tile: Tile): string =>
-  tile === 'mountain' ? rockImage : look.ground;
+  tile === 'mountain' ? look.mountainGround : look.ground;
 
 /**
  * Fills a hex with a seamless pixel-art texture at the sprites' scale,
@@ -154,7 +224,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     mapKey = `${map.id}|${map.hexes.map((h) => `${hexKey(h)}:${tileAt(map, h)}`).join(' ')}`;
     mapKeys.set(map, mapKey);
   }
-  const loaded = [look.ground, rockImage]
+  const loaded = [look.ground, look.mountainGround]
     .map((src) => (assetLoader.requestImage(src) ? 1 : 0))
     .join('');
   const scale = ctx.getTransform().a;
@@ -254,13 +324,6 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex, time: number | n
   ctx.restore();
 }
 
-/**
- * The mountains' shapes, a single peak and a twin (owner, 2026-10-24),
- * each hex picking one. Drawn for the hex: 42 pixels wide, its base the
- * hex's lower half, standing on the hex's bottom edge, the peak rising
- * into the space above (`mountainClip` keeps the base inside the hex).
- */
-const MOUNTAIN_IMAGES = [mountainPeakImage, mountainTwinImage];
 /** A flat-top hex's bottom edge, below its centre. */
 const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
 
@@ -268,7 +331,7 @@ const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
  * A yurt, a ruin or a mountain standing on its hex like a unit: over hail,
  * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
  * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
- * Gobi's sandstone ruin is 32 × 32. `map` gives the look.
+ * Gobi's sandstone ruin and the mudbrick wall are 32 × 32. `map` gives the look.
  */
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,
@@ -276,25 +339,72 @@ export function drawObstacle(
   map: MapData,
   mountain = false
 ): void {
-  const images = mountain ? MOUNTAIN_IMAGES : lookOf(map).obstacles;
+  const images = mountain ? lookOf(map).mountains.map((m) => m.image) : lookOf(map).obstacles;
   const art = assetLoader.requestImage(images[Math.floor(hexRandom(h, 1)() * images.length)]!);
   if (!art) {
     drawObstacleMark(ctx, center(h));
     return;
   }
-  const c = center(h);
-  const width = art.width * SPRITE_SCALE;
-  const height = art.height * SPRITE_SCALE;
+  const at = spriteCorner(h, art, mountain);
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  if (mountain) mountainClip(ctx, c);
-  ctx.drawImage(
-    art,
-    Math.round(c.x - width / 2),
-    Math.round(c.y + (mountain ? MOUNTAIN_FEET : SPRITE_FEET) - height),
-    width,
-    height
-  );
+  if (mountain) mountainClip(ctx, center(h));
+  ctx.drawImage(art, at.x, at.y, art.width * SPRITE_SCALE, art.height * SPRITE_SCALE);
+  ctx.restore();
+}
+
+/** Where an obstacle's image's top left goes on `h`: centred, its foot on the hex's bottom edge for a mountain. */
+function spriteCorner(h: Hex, art: HTMLImageElement, mountain: boolean): {x: number; y: number} {
+  const c = center(h);
+  return {
+    x: Math.round(c.x - (art.width * SPRITE_SCALE) / 2),
+    y: Math.round(c.y + (mountain ? MOUNTAIN_FEET : SPRITE_FEET) - art.height * SPRITE_SCALE),
+  };
+}
+
+/** The flames' strip (owner, 2026-10-26): 8 frames of 22 × 22 art pixels, each flame's foot at its bottom middle. */
+const FLAME = {frames: 8, size: 22};
+export const FLAME_FPS = 8;
+
+/**
+ * Flames burning on a mountain of the Flaming Mountains (owner,
+ * 2026-10-26), where its art says (`MountainArt.flames`): the owner's
+ * flames (AI-assisted, cut to the sprites' grid and 5 colours), looping
+ * at 8 frames a second, each flame out of step with the others. Held on
+ * one frame each when the device asks for reduced motion (`time` null).
+ * Drawn over the mountain, unclipped, rising into the space above.
+ */
+export function drawMountainFlames(
+  ctx: CanvasRenderingContext2D,
+  h: Hex,
+  map: MapData,
+  time: number | null
+): void {
+  const {mountains} = lookOf(map);
+  const mountain = mountains[Math.floor(hexRandom(h, 1)() * mountains.length)]!;
+  const art = assetLoader.requestImage(mountain.image);
+  const flames = assetLoader.requestImage(flamesImage);
+  if (!art || !flames || mountain.flames.length === 0) return;
+  const at = spriteCorner(h, art, true);
+  const next = hexRandom(h, 3);
+  const px = SPRITE_SCALE;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  for (const f of mountain.flames) {
+    const offset = Math.floor(next() * FLAME.frames);
+    const frame = (Math.floor((time ?? 0) * FLAME_FPS) + offset) % FLAME.frames;
+    ctx.drawImage(
+      flames,
+      frame * FLAME.size,
+      0,
+      FLAME.size,
+      FLAME.size,
+      at.x + (f.x - FLAME.size / 2) * px,
+      at.y + (f.y - FLAME.size) * px,
+      FLAME.size * px,
+      FLAME.size * px
+    );
+  }
   ctx.restore();
 }
 

@@ -92,9 +92,28 @@ tuning. This file has no combat-design section number.
   more ruins break up the board: four or five a fight, within 3 hexes of
   the centre (`MapData.obstacles`; owner, 2026-10-25), where the Steppe
   has two or three yurts within 2. The page calls them Ruins, and the open ground
-  Gravel (`tileInfo` in info.ts). Every stage of a run is still the
+  Gravel (`tileInfo` in info.ts). The Gobi's desert is now kept for the
+  Arabia region (owner, 2026-10-26). **The Flaming Mountains**
+  (`flaming`, owner, 2026-10-26) are the China region's map: the red
+  sandstone ridges near Turpan, set alight as in *Journey to the West*.
+  All the art is the owner's (AI-assisted), cut to the sprites' grid: a
+  cracked red earth (`tiles/red-earth.png`, 128 pixels, 5 colours, laid
+  as one field like the grass, under the mountains too); two gullied
+  ridges (`tiles/mountain-flaming.png` and `mountain-flaming-twin.png`,
+  shrunk to the hex's 42 pixels, 5 colours and an ink outline); and a
+  flame (`tiles/flames.png`, 8 frames of 22 × 22, 5 colours) burning on
+  each ridge's crest at 8 frames a second, each flame out of step, held
+  still for reduced motion (`drawMountainFlames`, its feet set per image
+  in `FLAMING_MOUNTAINS`). The mudbrick wall (`tiles/ruins.png`) stands
+  for the ruins of Gaochang at the mountains' foot; its tower stump read
+  too dark on the red earth. Every fight has a range of mountains
+  (`MapData.mountains`: `'always'`) and two or three ruins, as the
+  Steppe's yurts. The flames are only drawn: the mountains block as any
+  do; a fire hazard waits for the region's boss ([setting.md](setting.md),
+  the Bull Demon King's fire mountain). The page calls the tiles Red
+  earth, Ruins and Flaming Mountains. Every stage of a run is still the
   Steppe's (`STAGES` in config.ts); the test stage's `"map"` shows the
-  Gobi.
+  Flaming Mountains.
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct
   shape, not only a distinct colour: quicksand and sandstorm must read
   apart on a sand board.

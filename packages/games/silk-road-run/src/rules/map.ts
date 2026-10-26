@@ -21,15 +21,17 @@
  * with their keywords (owner, 2026-10-23).
  *
  * Each region has a map of its own (2026-10-25; setting.md, 15.3a), the
- * same board under another look: the Steppe's (`STEPPE`) and the Gobi
- * Crossing (`GOBI`), the China region's way in, where the `obstacle` tile
- * is a sandstone ruin rather than a yurt. A stage names its map (`STAGES`
- * in config.ts); the page draws each map's look (`ground.ts`).
+ * same board under another look: the Steppe's (`STEPPE`), the Gobi
+ * Crossing (`GOBI`), where the `obstacle` tile is a sandstone ruin rather
+ * than a yurt, and the Flaming Mountains (`FLAMING`), the China region's
+ * (owner, 2026-10-26), its ruins mudbrick and its mountains on fire. A
+ * stage names its map (`STAGES` in config.ts); the page draws each map's
+ * look (`ground.ts`).
  */
 import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 
-/** `obstacle` is a yurt on the Steppe, a ruin in the Gobi (ruins everywhere until 2026-10-24; saved runs keep the name). */
+/** `obstacle` is a yurt on the Steppe, a ruin in the Gobi and the Flaming Mountains (ruins everywhere until 2026-10-24; saved runs keep the name). */
 export type Tile = 'sand' | 'obstacle' | 'mountain';
 
 /** Yurts (ruins) and mountains: no unit may stand there, and they stop arrows. */
@@ -49,8 +51,12 @@ export interface MapData {
   camelStart: Hex;
   /** The camel reaching one of these wins the fight (camel.md, 18.2). */
   exits: Hex[];
-  /** Whether its fights raise ranges of mountains (`randomTiles`): not in the Gobi (2026-10-25). */
-  mountains: boolean;
+  /**
+   * Whether its fights raise a range of mountains (`randomTiles`): in about
+   * half of them, or when the stage says (the Steppe's); never (the Gobi's,
+   * 2026-10-25); or in every one (the Flaming Mountains', 2026-10-26).
+   */
+  mountains: 'sometimes' | 'never' | 'always';
   /**
    * Its fights' yurts (ruins): how many, one of `counts` at random, and
    * how far from the centre they may stand (`randomTiles`).
@@ -117,14 +123,15 @@ export const STEPPE: MapData = {
   // The bottom point, the only exit (owner, 2026-10-24; the bottom-right
   // corner before).
   exits: [{q: 0, r: RADIUS}],
-  mountains: true,
+  mountains: 'sometimes',
   // Two or three yurts, within 2 hexes of the centre (owner, 2026-10-24).
   obstacles: {counts: [2, 3], reach: 2},
 };
 
 /**
- * The Gobi Crossing (2026-10-25), the China region's first map: the
- * Steppe's board, its yurts' places now sandstone ruins of the old frontier
+ * The Gobi Crossing (2026-10-25), made as the China region's way in; the
+ * Flaming Mountains took its place there and its desert is kept for the
+ * Arabia region (owner, 2026-10-26). The Steppe's board, its yurts' places now sandstone ruins of the old frontier
  * posts, on gravel desert, and no mountains, whatever the stage. With no
  * mountains to break up the board, more ruins (owner, 2026-10-25): four or
  * five, within 3 hexes of the centre, still off the starting columns.
@@ -133,11 +140,30 @@ export const GOBI: MapData = {
   ...STEPPE,
   id: 'gobi',
   name: 'The Gobi Crossing',
-  mountains: false,
+  mountains: 'never',
   obstacles: {counts: [4, 5], reach: 3},
 };
 
-export const MAPS: Record<string, MapData> = {[STEPPE.id]: STEPPE, [GOBI.id]: GOBI};
+/**
+ * The Flaming Mountains (owner, 2026-10-26), the China region's map: red
+ * earth below the burning ridges of *Journey to the West*, which stand in
+ * every fight, and the yurts' places the mudbrick ruins of Gaochang at
+ * their foot. Two or three ruins, as the Steppe's yurts, since the
+ * mountains already break up the board. The flames are only drawn: the
+ * mountains block as any do.
+ */
+export const FLAMING: MapData = {
+  ...STEPPE,
+  id: 'flaming',
+  name: 'The Flaming Mountains',
+  mountains: 'always',
+};
+
+export const MAPS: Record<string, MapData> = {
+  [STEPPE.id]: STEPPE,
+  [GOBI.id]: GOBI,
+  [FLAMING.id]: FLAMING,
+};
 
 /** A map by its id; a mistake, never a fallback, if there's none. */
 export function mapById(id: string): MapData {
@@ -175,8 +201,8 @@ const MOUNTAIN_EDGES: {left: boolean; inFrom: (h: Hex) => number}[] = [
 
 /**
  * A fight's own tiles, from `random` in [0, 1): a range of mountains in
- * about half of fights, or always with `mountains`, never on a map without
- * them (`MapData.mountains`), off the starting
+ * about half of fights, or always with `mountains` or on a map that always
+ * has them, never on a map without them (`MapData.mountains`), off the starting
  * columns, the camel's start and the exit, then two or three yurts near the
  * middle (not mirrored), on `map`'s board.
  */
@@ -191,7 +217,8 @@ export function randomTiles(
     (h) => Math.abs(h.q) < RADIUS && !reserved.some((x) => hexDistance(x, h) === 0)
   );
   // Rolled even when forced, so a seed's other draws stay the same.
-  if ((random() < MOUNTAIN_CHANCE || mountains) && map.mountains) {
+  const rolled = random() < MOUNTAIN_CHANCE;
+  if (map.mountains !== 'never' && (rolled || mountains || map.mountains === 'always')) {
     const edge = MOUNTAIN_EDGES[Math.floor(random() * MOUNTAIN_EDGES.length)]!;
     const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
     const inFrontOfTemee: Hex = {q: 0, r: map.camelStart.r + 1};
@@ -202,7 +229,7 @@ export function randomTiles(
       .filter((h) => hexDistance(h, inFrontOfTemee) > 0);
     mountainRange(map, tiles, allowed, edge.inFrom, size, random);
   }
-  // Yurts (owner, 2026-10-24), or the Gobi's ruins: as many as the map
+  // Yurts (owner, 2026-10-24), or ruins: as many as the map
   // says, within its reach of the centre and off the starting columns, not
   // next to the camel's start or the exit, no two side by side, never
   // cutting the board in two.

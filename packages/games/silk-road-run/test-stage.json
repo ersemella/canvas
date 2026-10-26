@@ -1,8 +1,8 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Gobi: the Waidan Alchemist, the Modao Vanguard and the Mangudai Outrider against the three Steppe heroes, starting kits; the Gobi has no mountains.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Flaming Mountains: the Waidan Alchemist, the Modao Vanguard and the Mangudai Outrider against the three Steppe heroes, starting kits; the Flaming Mountains always have mountains.",
   "seed": null,
-  "map": "gobi",
-  "yurts": "mountains",
+  "map": "flaming",
+  "yurts": "random",
   "camel": {},
   "player": [{"hero": "alchemist"}, {"hero": "modao"}, {"hero": "mangudai"}],
   "enemy": [{"hero": "bokh"}, {"hero": "mangudai"}, {"hero": "storm"}]

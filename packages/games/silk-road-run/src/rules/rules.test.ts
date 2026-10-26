@@ -41,7 +41,19 @@ import {
   refreshStats,
 } from './fight';
 import {previewTurn} from './preview';
-import {GOBI, MAPS, STEPPE, blocks, depth, mapById, onMap, spaceAt, spaceOf, tileAt} from './map';
+import {
+  FLAMING,
+  GOBI,
+  MAPS,
+  STEPPE,
+  blocks,
+  depth,
+  mapById,
+  onMap,
+  spaceAt,
+  spaceOf,
+  tileAt,
+} from './map';
 import {tileInfo} from './info';
 import {checkEnd, damageOf, degrade, enhance, enterHex, hit, kill, stun} from './resolve';
 import type {Ctx} from './resolve';
@@ -524,13 +536,16 @@ describe('the track', () => {
 });
 
 describe('the board', () => {
-  it('has a map per region, the Gobi the Steppe’s board under another look', () => {
-    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi']);
+  it('has a map per region, each the Steppe’s board under another look', () => {
+    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming']);
     expect(mapById('gobi')).toBe(GOBI);
+    expect(mapById('flaming')).toBe(FLAMING);
     expect(() => mapById('atlantis')).toThrow();
-    expect(GOBI.hexes).toBe(STEPPE.hexes);
-    expect(GOBI.camelStart).toEqual(STEPPE.camelStart);
-    expect(GOBI.exits).toEqual(STEPPE.exits);
+    for (const map of [GOBI, FLAMING]) {
+      expect(map.hexes).toBe(STEPPE.hexes);
+      expect(map.camelStart).toEqual(STEPPE.camelStart);
+      expect(map.exits).toEqual(STEPPE.exits);
+    }
     // Each stage names a map there is.
     for (const stage of STAGES) expect(MAPS[stage.map]).toBeDefined();
   });
@@ -556,11 +571,32 @@ describe('the board', () => {
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
   });
 
+  it('raises the Flaming Mountains in every fight, with the Steppe’s two or three ruins', () => {
+    let steppeWithout = 0;
+    for (let seed = 0; seed < 40; seed++) {
+      // Not a stage that asks for mountains: the map raises them itself.
+      const s = createFight(seed, undefined, undefined, false, [], FLAMING);
+      expect(s.mapId).toBe('flaming');
+      expect(mapOf(s).name).toBe('The Flaming Mountains');
+      const tiles = Object.values(s.tiles);
+      expect(tiles.filter((t) => t === 'mountain').length).toBeGreaterThanOrEqual(3);
+      expect([2, 3]).toContain(tiles.filter((t) => t === 'obstacle').length);
+      for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
+      // The same seed's Steppe fight lacks them about half the time.
+      const steppe = createFight(seed, undefined, undefined, false);
+      if (!Object.values(steppe.tiles).includes('mountain')) steppeWithout++;
+    }
+    expect(steppeWithout).toBeGreaterThan(0);
+  });
+
   it('names the ground after the map’s look', () => {
     expect(tileInfo('steppe', 'obstacle').name).toBe('Yurt');
     expect(tileInfo('gobi', 'obstacle').name).toBe('Ruins');
     expect(tileInfo('gobi', 'sand').name).toBe('Gravel');
     expect(tileInfo('gobi', 'mountain').name).toBe('Mountains');
+    expect(tileInfo('flaming', 'sand').name).toBe('Red earth');
+    expect(tileInfo('flaming', 'obstacle').name).toBe('Ruins');
+    expect(tileInfo('flaming', 'mountain').name).toBe('Flaming Mountains');
   });
 
   it('says a unit can move exactly when its reachable hexes include a move', () => {
