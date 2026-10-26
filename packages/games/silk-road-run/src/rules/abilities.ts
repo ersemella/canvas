@@ -343,9 +343,11 @@ function isThrow(state: FightState, user: Unit, target: ActionTarget): boolean {
  * Grapple, with Throw folded in (owner, 2026-10-24; separate abilities
  * before). On a unit next to the Grappler, not the one it holds: grapples
  * it. While it holds one, on a free space next to it: Throw (owner,
- * 2026-10-23), the held unit Moved there, then struck; on the Grappler's
- * own space: the two swap places, then it is struck. Either way the two
- * stay next to each other, so the grapple holds. An Immobilized Grappler
+ * 2026-10-23), the held unit Moved there; on the Grappler's own space: the
+ * two swap places. Neither hits (owner, 2026-10-26: the squeeze is the
+ * grapple's damage, so a held unit takes the Grappler's power once a turn,
+ * not twice). Either way the two stay next to each other, so the grapple
+ * holds. An Immobilized Grappler
  * still swaps (owner, 2026-10-25): the swap is the grapple's move, not a
  * walk of its own.
  */
@@ -354,7 +356,7 @@ const grapple: AbilityDef = {
   name: 'Grapple',
   kind: 'attack',
   summary: () =>
-    `Melee: hits it, and it is Stunned until you take damage or are Stunned, taking ${ABILITY.grapple.squeeze} more damage each of your turns. While grappling: Move it to a free space next to you, or swap places, and hit it again.`,
+    `Melee: hits it, and it is Stunned until you take damage or are Stunned, taking ${ABILITY.grapple.squeeze} more damage each of your turns. While grappling: Move it to a free space next to you, or swap places.`,
   targetsUnit: true,
   // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before),
   // and not the unit it already grapples: that one is thrown instead.
@@ -383,7 +385,6 @@ const grapple: AbilityDef = {
       }
       // The held unit is Moved: with Rebound it Pushes its new neighbours (19.8).
       displaced(ctx, u);
-      hit(ctx, user, u, 'The throw');
       return;
     }
     const u = unitAt(ctx.state, target.hex!)!;

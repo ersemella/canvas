@@ -39,7 +39,7 @@ The stat set is kept small, so every unit's stat sheet, enemies' included (D11),
 - **No accuracy, evasion or critical hits**, since every attack hits (section 8).
 
 ### 9.2 Power (Decided; redefined 2026-10-23)
-There is **one offensive stat, power**, and it is **exactly the damage each of the unit's abilities deals** (owner, 2026-10-23): the Horse Archer's Bow and the Grappler's Grapple and Throw deal their user's power, and the Storm Caller's Hail deals its power, 1 (owner, 2026-10-23; at power 0 it dealt none, and couldn't break a grapple: [balance.md](balance.md#hail-deals-1-2026-10-23)). Abilities have no base damage of their own; an ability's worth beyond its damage is its shape and its keywords.
+There is **one offensive stat, power**, and it is **exactly the damage each of the unit's abilities deals** (owner, 2026-10-23): the Horse Archer's Bow and the Grappler's Grapple deal their user's power (Grapple's throw deals none, owner, 2026-10-26), and the Storm Caller's Hail deals its power, 1 (owner, 2026-10-23; at power 0 it dealt none, and couldn't break a grapple: [balance.md](balance.md#hail-deals-1-2026-10-23)). Abilities have no base damage of their own; an ability's worth beyond its damage is its shape and its keywords.
 
 - **Power scales nothing else.** Keyword effects keep the value their source states ([keywords.md](keywords.md), 17.2): Burn, Shield, Delay and Haste slots, displacement distances and every duration. Empower and Weaken change the damage an ability deals directly.
 - **Roles come from kits and stats together.** A control hero matters mostly through its keywords (Hail's Immobilized), but power 0 left Hail unable to break a grapple or finish a kill, and the Storm Caller weak (2026-10-23).

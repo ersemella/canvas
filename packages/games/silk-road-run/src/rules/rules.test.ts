@@ -1241,7 +1241,7 @@ describe('abilities', () => {
     expect(second.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Grapple throws the held unit: Moved to the free space picked next to the Grappler, then struck; the grapple holds', () => {
+  it('Grapple throws the held unit: Moved to the free space picked next to the Grappler, not struck; the grapple holds', () => {
     const s = setup({
       'p-bokh': at(3, 4),
       'e-storm': hexNeighbors(at(3, 4))[0]!,
@@ -1267,11 +1267,12 @@ describe('abilities', () => {
     const far = throws.find((t) => hexDistance(t.hex!, target.hex!) === 2)!;
     applyTurn(s, b, {action: {ability: 'grapple', target: far}});
     expect(target.hex).toEqual(far.hex);
-    expect(target.hp).toBe(target.maxHp - 2 * b.power);
+    // Only the grapple hit: the throw deals nothing.
+    expect(target.hp).toBe(target.maxHp - b.power);
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Grapple on the Grappler’s own space swaps: the two trade spaces, it is struck, and the grapple holds, Immobilized or not', () => {
+  it('Grapple on the Grappler’s own space swaps: the two trade spaces, it is not struck, and the grapple holds, Immobilized or not', () => {
     const s = setup({
       'p-bokh': at(3, 4),
       'e-storm': hexNeighbors(at(3, 4))[0]!,
@@ -1284,7 +1285,8 @@ describe('abilities', () => {
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: bAt}}});
     expect(b.hex).toEqual(tAt);
     expect(target.hex).toEqual(bAt);
-    expect(target.hp).toBe(target.maxHp - 2 * b.power);
+    // Only the grapple hit: the throw deals nothing.
+    expect(target.hp).toBe(target.maxHp - b.power);
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
     // An Immobilized Grappler (in hail, say) still swaps back.
     b.statuses.push({kind: 'immobilized'});

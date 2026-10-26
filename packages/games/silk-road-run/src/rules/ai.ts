@@ -389,12 +389,13 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       hit.power > 0 && !hit.empower ? 1 + empowerGuess(state, hit, ABILITY.sunlight.empower) : 0;
     return closing + (hostile(hit, unit) ? -gain : gain);
   }
-  const damage = def.damages === false ? 0 : Math.min(damageOf(unit), hit.hp);
+  // Grapple's throw (on the unit it grapples) hits nothing (owner, 2026-10-26).
+  const throws = input.action.ability === 'grapple' && grappling(unit, hit);
+  const damage = def.damages === false || throws ? 0 : Math.min(damageOf(unit), hit.hp);
   let value = damage * (hit.hero === CAMEL ? AI.camelHealthWeight : 1);
   if (damage > 0 && damage >= hit.hp && hit.hero !== CAMEL) value += AI.kill;
   // A new grapple Stuns; a throw keeps the one there is.
-  if (input.action.ability === 'grapple' && !grappling(unit, hit))
-    value += turnValue(hit) * AI.stunnedShare;
+  if (input.action.ability === 'grapple' && !throws) value += turnValue(hit) * AI.stunnedShare;
   if (input.action.ability === 'hail') value += turnValue(hit) * AI.immobilizedShare.melee;
   // A drawn arrow (Skirmish): its target may step out before it lands, and
   // the charge holds the Horse Archer back (`shotPoints`, `chargeCost`).
