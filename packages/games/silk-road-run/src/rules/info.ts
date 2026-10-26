@@ -35,8 +35,7 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
  * gravel and its yurts are ruins of the old frontier posts; the Flaming
  * Mountains' is red earth, a yurt placed there by hand a ruin and their
  * mountains on fire, though they block as any do; the Salt Flats' is salt,
- * their mountains one salt dome and their obstacle a ruin until the
- * windcatcher's art is in.
+ * their mountains one salt dome and a yurt placed there by hand a ruin.
  */
 const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
   gobi: {

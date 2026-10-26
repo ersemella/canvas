@@ -181,8 +181,8 @@ const LOOKS: Record<string, Look> = {
   // reached over the spaces beside them; owner, 2026-10-26), then its colours taken 60% of the way
   // to the crust's, its pinks to a dusty clay, and its outline the hex
   // borders' grey, as in the art's own whites and pinks, and with a dark
-  // outline, it stood out; owner, 2026-10-26). Its obstacle is the Gobi's
-  // sandstone ruin until the windcatcher's art is in (salt-flats.md).
+  // outline, it stood out; owner, 2026-10-26). A yurt placed there by hand
+  // is the Gobi's sandstone ruin; its fights have none (salt-flats.md).
   salt: {
     ground: saltCrustImage,
     stamp: false,

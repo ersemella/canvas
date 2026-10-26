@@ -601,22 +601,13 @@ describe('the board', () => {
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
   });
 
-  it('stands one salt dome over the Salt Flats’ middle seven spaces in every fight, with one obstacle 3 from the centre', () => {
+  it('stands one salt dome over the Salt Flats’ middle seven spaces in every fight, and nothing else', () => {
     for (let seed = 0; seed < 40; seed++) {
       const s = createFight(seed, undefined, undefined, false, [], SALT);
       expect(s.mapId).toBe('salt');
       expect(mapOf(s).name).toBe('The Salt Flats');
-      const mountains = Object.keys(s.tiles).filter((k) => s.tiles[k] === 'mountain');
-      expect(mountains.sort()).toEqual(DOME.map(hexKey).sort());
-      const obstacles = Object.keys(s.tiles)
-        .filter((k) => s.tiles[k] === 'obstacle')
-        .map((k) => k.split(',').map(Number) as [number, number])
-        .map(([q, r]) => ({q, r}));
-      expect(obstacles).toHaveLength(1);
-      expect(hexDistance(obstacles[0]!, {q: 0, r: 0})).toBe(3);
-      for (const x of [SALT.camelStart, ...SALT.exits])
-        expect(hexDistance(obstacles[0]!, x)).toBeGreaterThan(1);
-      expect(Object.keys(s.tiles)).toHaveLength(MAX_COVERED);
+      expect(Object.keys(s.tiles).sort()).toEqual(DOME.map(hexKey).sort());
+      expect(Object.values(s.tiles).every((t) => t === 'mountain')).toBe(true);
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
     }
   });

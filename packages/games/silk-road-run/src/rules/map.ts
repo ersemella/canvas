@@ -187,10 +187,9 @@ export const DOME: Hex[] = [{q: 0, r: 0}, ...hexNeighbors({q: 0, r: 0})];
  * crust of a desert's dry lake, and one large salt dome over the middle
  * seven spaces in every fight (`DOME`), the same each time, so the board
  * fights round its two sides; the camel walks round it, 10 steps to the
- * exit instead of 8. One obstacle a fight, 3 from the centre, so never
- * next to the dome: a windcatcher in the design (salt-flats.md), shown as
- * the Gobi's sandstone ruin until its art is in. The dome's 7 spaces and
- * the obstacle cover `MAX_COVERED`.
+ * exit instead of 8. Only the dome: the one obstacle a fight, a ruin
+ * standing in for the design's windcatcher (salt-flats.md), was taken out
+ * (owner, 2026-10-26).
  */
 export const SALT: MapData = {
   ...STEPPE,
@@ -199,7 +198,7 @@ export const SALT: MapData = {
   tiles: Object.fromEntries(DOME.map((h) => [hexKey(h), 'mountain' as const])),
   mountains: 'always',
   mountainPlaces: 'centre',
-  obstacles: {counts: [1], reach: 3},
+  obstacles: {counts: [0], reach: 3},
 };
 
 export const MAPS: Record<string, MapData> = {

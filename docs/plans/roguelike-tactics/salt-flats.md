@@ -13,8 +13,9 @@ Everything here is **Proposed** (2026-10-26, from the owner's brief: "the
 salt flats, but should feature large salt domes"; then "1 large salt dome
 directly in the middle", owner, 2026-10-26). **Built** the same day
 from the owner's art (see Built): the map, its salt crust and its dome,
-shown on the test stage; the windcatcher waits for its art, the glints
-are not drawn yet.
+shown on the test stage; the glints are not drawn yet. The windcatcher
+(and the ruin standing in for it) was taken out: only the dome is on the
+map (owner, 2026-10-26).
 
 ## The place
 
@@ -41,14 +42,13 @@ The Steppe's board (`STEPPE` in map.ts), as every map so far:
 |---|---|---|
 | Open ground (`sand`) | **Salt flat** | No effect, as the Steppe's grass and China's red earth |
 | Mountains (`mountain`) | **One large salt dome** on the centre space and the six around it, in every fight, always in the same place (a fixed tile set, not rolled by `randomTiles`) | The owner's call: one large dome directly in the middle. Seven spaces, a hexagon in the middle of the hexagon board, is large and keeps the board symmetrical; it blocks movement and arrows as every mountain does |
-| Obstacle (`obstacle`) | **One windcatcher**, rolled each fight on a space 3 from the centre, off the starting columns and not next to the camel's start or the exit | The roofline that reads as Persia at a glance, as the tiled pavilion roof reads as China: the slotted tower of a desert cistern (*ab anbar*). Ten spaces 3 from the centre are off the starting columns; two of them are next to the camel's start or the exit, so eight are left |
-| Covered | 8 spaces, the cap (`MAX_COVERED`): the dome's 7 and the windcatcher | As the Flaming Mountains |
+| Obstacle (`obstacle`) | **None** (owner, 2026-10-26: only the salt dome on the map). Designed first: **one windcatcher**, rolled each fight on a space 3 from the centre, off the starting columns and not next to the camel's start or the exit | The roofline that reads as Persia at a glance, as the tiled pavilion roof reads as China: the slotted tower of a desert cistern (*ab anbar*). Ten spaces 3 from the centre are off the starting columns; two of them are next to the camel's start or the exit, so eight are left |
+| Covered | 7 spaces, the dome's | Under the cap (`MAX_COVERED`, 8) |
 | Hazard | None at first | The setting's hazard, a crust over mud that gives way, is a candidate only. China's fissures were tried and taken out (owner, 2026-10-26), so the map starts without one; see Later |
 
 **How it plays.** The dome splits the board into two flanks: nothing can
 walk or shoot across the middle, so a fight is two fights around its
-sides until one side wins its flank and comes round. The windcatcher, on
-one flank or the other, makes the two flanks different each fight. The
+sides until one side wins its flank and comes round. The
 camel's road runs into the dome: its shortest walk from the top point to
 the exit goes round it, **10 steps instead of 8**, by either side
 (the camel already walks the shortest way around what blocks it,
@@ -234,10 +234,10 @@ and 2):
 - **Rules** (map.ts): `SALT`, `mountainPlaces: 'centre'`, its tiles the
   dome's seven spaces (`DOME`), which `fixedTiles` adds to every fight,
   the test stage's included, whatever its `yurts` (no unit can start
-  inside the dome). `randomTiles` adds the one obstacle, 3 from the
-  centre as it may not stand next to a mountain, off the starting columns
-  and the spaces next to the camel's start and the exit: 8 covered, the
-  cap. The page names the tiles Salt flat, Salt dome and Ruins (info.ts).
+  inside the dome). Its fights have no obstacle (`obstacles.counts`
+  `[0]`; one ruin, 3 from the centre, until taken out, owner,
+  2026-10-26). The page names the tiles Salt flat, Salt dome and, for a
+  yurt placed by hand on the test stage, Ruins (info.ts).
 - **The crust** (`tiles/salt-crust.png`): the art was drawn on a grid of
   156 pixels, so it stays 156 (not 128), cut to 5 colours; it tiles
   seamlessly. Its cracks are pulled 45% towards the salt, and the hex
@@ -261,12 +261,12 @@ and 2):
   its foot on the bottom space's bottom edge, clipped as seven mountains
   are, so it rises over the spaces behind it but never covers a unit in
   front.
-- **The obstacle** is the Gobi's sandstone ruin until the windcatcher's
-  art is in (prompt 3).
+- **No obstacle**: the Gobi's sandstone ruin stood in for the windcatcher
+  until taken out (owner, 2026-10-26); a yurt placed by hand on the test
+  stage is drawn as one.
 - **The test stage** (`test-stage.json`) is on the Salt Flats.
 
-Still to do: the windcatcher (prompt 3, then `Look.obstacles` and the
-page's name for it), the glints on the dome, and watching the camel's
+Still to do: the glints on the dome, and watching the camel's
 walk round it in a few fights.
 
 ## Later
@@ -281,8 +281,8 @@ walk round it in a few fights.
 - Whether a split board plays well: ranged heroes lose the middle, and a
   flank can stall. Play-test on the test stage, and measure if it matters
   ([balance.md](balance.md)).
-- One windcatcher or one on each flank (9 spaces covered, over the cap),
-  if a flank without one feels empty.
+- Whether to bring back a windcatcher (prompt 3), one or one on each
+  flank, if the flanks without one feel empty.
 - Whether the salt is bright enough to read as salt yet dim enough for the
   units, the ivory labels and hail.
 - Whether the windcatcher's turquoise is the region's accent across its
