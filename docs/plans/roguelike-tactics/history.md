@@ -477,6 +477,11 @@ Learned:
   call. The savaran remain its inspiration.
 - **Djinn-Binder** (2026-10-17): renamed the **Genie Binder**; owner's
   call. The spirit it commands is still called a djinn.
+- **Persian Cataphract** (2026-10-26): renamed the **Sasanian
+  Cataphract**, after the dynasty rather than the modern country; owner's
+  call. Weighed: Savaran Lancer (the native term and the damage role,
+  matching the roster's term-plus-role names), Azadan Lancer, Savaran
+  Charger.
 - **Jinn Binder** (2026-10-26): became the **Div Binder** after moving to
   Persia; owner's call. Same role (a controller whose bound spirit pushes
   and disrupts), now from the *Shahnameh*'s divs and Tahmuras Divband
