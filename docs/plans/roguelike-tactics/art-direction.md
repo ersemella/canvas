@@ -136,23 +136,35 @@ tuning. This file has no combat-design section number.
   in map.ts: the towers are rolled first and the clumps cut to fit). The
   tower (`tiles/beacon-tower.png`, 32 × 44) is the owner's (AI-assisted),
   redrawn by hand on the sprites' grid, as shrinking it left the roof a
-  dark blob: pale rammed earth in reed-layered bands under a watch
-  pavilion with a grey tiled roof whose corners sweep up, red posts and a
-  red pennant, the roofline being what reads as China at a glance (a
-  plain rammed-earth tower read as any desert's). No smoke, which would
-  rise from the roof. **The mountains are ridges** (owner, 2026-10-26),
-  as the real Flaming Mountains are long, low, gullied ridges and the
-  burning cone read as a volcano: the owner's ridge (AI-assisted), its
-  fire taken out and its rock shrunk to 56 × 27 art pixels (stretched
-  half again in height, as at its own proportions it lay flat as a log)
-  in 16 colours, reaching a little past its hex's side corners, its base
-  22 pixels below the hex's centre rather than on its bottom edge
-  (`Look.mountainFeet`), so it covers the hex's middle
-  (`tiles/mountain-ridge.png`). Its fire is drawn on it in 8 frames:
-  flames 1 to 2 pixels tall along the crest, a taller tongue every sixth
-  column, rising and falling out of step, and three embers, the rock
-  never redrawn. The layout is unchanged; the cone
-  (`mountain-burning.png`) is no longer used. Tried before
+  dark blob: rammed earth in reed-layered bands under a watch pavilion
+  with a grey tiled roof whose corners sweep up, red posts and a red
+  pennant, the roofline being what reads as China at a glance (a plain
+  rammed-earth tower read as any desert's). Its earth is in the red
+  earth's own browns, a little lighter, chipped at the edges, with rubble
+  at its foot and a dark-earth outline below the roof, as pale and
+  ink-outlined it didn't blend in (owner, 2026-10-26). No smoke, which
+  would rise from the roof. **The mountains are burning ridges** (owner,
+  2026-10-26), as the real Flaming Mountains are long, low, gullied
+  ridges and the burning cone read as a volcano; a ridge sprite on each
+  hex (the owner's, AI-assisted) looked out of place, broken where
+  neighbouring ridges didn't join and its fire barely moving, so the
+  ridges are drawn in code, one landform per clump (`board/ridges.ts`):
+  a crest through the centres of a clump's mountains that stand side by
+  side, never between two in one column (it would run the ridge into the
+  screen), its loose ends running on east or west and tapering to the
+  plain, mountains one above another standing as parallel ridges, a
+  range seen from the front. Each is a height field drawn back to front
+  in art pixels: straight, slightly hollow slopes to a sharp, jagged
+  crest, V-shaped gullies down them, a darker band of strata every 5
+  pixels up, shaded from the upper left in the owner's ridge's red
+  sandstone, rising straight from the red earth (no rock under it), and
+  drawn once per layout. Its fire is drawn each frame (`FLAME_FPS`):
+  flames 1 to 6 pixels tall along every crest, in waves running along
+  it, taller tongues flaring out of step, sparks and rising embers, held
+  still for reduced motion. A clump grows beside its mountains (in a
+  neighbouring column) before above or below them, so its ridge runs on
+  unbroken (`growClump` in map.ts). The cone (`mountain-burning.png`)
+  and the Steppe's rock in its browns (`rock-red.png`) are no longer used. Tried before
   and taken out, as they didn't look good (owner, 2026-10-26): two or
   three mudbrick ruins (`tiles/ruins.png`, as the ruins of Gaochang, now
   unused) and one or two fissures, a hazard burning 1 on each entry. The flames are only drawn: the mountains block as any do; a

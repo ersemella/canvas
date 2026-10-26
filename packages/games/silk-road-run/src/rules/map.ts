@@ -366,7 +366,11 @@ function middleClumps(
   }
 }
 
-/** One clump of up to `size` mountains among `open`, marked in `tiles` (`middleClumps`). */
+/**
+ * One clump of up to `size` mountains among `open`, marked in `tiles`
+ * (`middleClumps`), each mountain after the first beside one already in
+ * it where it can be, else above or below one.
+ */
 function growClump(
   map: MapData,
   tiles: Record<string, Tile>,
@@ -383,6 +387,11 @@ function growClump(
     else {
       const touching = (h: Hex) => clump.filter((m) => hexDistance(m, h) === 1).length;
       free = free.filter((h) => touching(h) > 0);
+      // Beside one already (in a neighbouring column) before above or below
+      // it, so the clump's ridge runs on unbroken (ridges.ts; owner,
+      // 2026-10-26).
+      const beside = free.filter((h) => clump.some((m) => hexDistance(m, h) === 1 && m.q !== h.q));
+      if (beside.length) free = beside;
       const most = Math.max(0, ...free.map(touching));
       free = free.filter((h) => touching(h) === most);
     }

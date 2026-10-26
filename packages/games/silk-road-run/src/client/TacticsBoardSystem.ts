@@ -23,9 +23,11 @@ import {
   drawGround,
   drawObstacle,
   drawObstacleSmoke,
+  lookOf,
   smokes,
   exitArrowPush,
 } from './board/ground';
+import {drawRidges} from './board/ridges';
 import {
   HIGHLIGHT,
   HOVER,
@@ -402,8 +404,10 @@ export class TacticsBoardSystem extends BaseSystem {
     // Mountains in front of the units (owner, 2026-10-24): a peak rises into
     // the space above it, in front of whoever stands there, as nearer things
     // are in a three-quarter view; never in front of health or statuses.
-    for (const h of map.hexes)
-      if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, map, true, t);
+    if (lookOf(map).ridges) drawRidges(ctx, map, t);
+    else
+      for (const h of map.hexes)
+        if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, map, true, t);
 
     // Not on a party walking out, off their hexes.
     drawGrappleFists(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));

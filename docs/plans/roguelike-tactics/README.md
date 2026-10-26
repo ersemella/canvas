@@ -31,7 +31,7 @@ run (2026-10-26; 19.3's passive slot alone).
 (`gobi`) is the same board in the desert's look, sand and sandstone ruins
 and no mountains, built for the China region, kept for Arabia's until that region was cut (2026-10-26), and now proposed as the Steppe's last stage ([setting.md](setting.md), 15.3b, with every region's biome);
 the **Flaming Mountains** (`flaming`, owner, 2026-10-26) are the China
-region's: red earth, two clumps of burning mountains in the middle of every fight and one or two Han beacon towers, at most 8 spaces covered in all (2026-10-26), the mountains drawn as burning ridges and the towers with a tiled pavilion roof, so the board reads as China's
+region's: red earth, two clumps of burning mountains in the middle of every fight and one or two Han beacon towers, at most 8 spaces covered in all (2026-10-26), the mountains drawn as burning ridges, each clump one continuous landform (`board/ridges.ts`), and the towers with a tiled pavilion roof, so the board reads as China's
 ([art-direction.md](art-direction.md)), played from the test stage until
 the China region's stages exist.
 What the builder decided and where it departs from the brief is in
