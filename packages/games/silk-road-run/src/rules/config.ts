@@ -464,25 +464,54 @@ export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /** Every hero the start menu offers and the enemy draws from, in party slot order. */
 export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist', 'youxia'];
 /**
+ * The regions a run passes through, in order (setting.md, 15.3a), so far
+ * the two whose stages are built: each names its basic creature (the
+ * wolf's unit reskinned, progression.md, 19.5) and the enemy hero of its
+ * first stage, and so of every one of its stages.
+ */
+export type RegionId = 'steppe' | 'china';
+export const REGIONS: Record<RegionId, {name: string; creature: HeroId; firstEnemy: HeroId}> = {
+  steppe: {name: 'the Steppe', creature: 'wolf', firstEnemy: 'mangudai'},
+  // The Youxia Swordsman, China's damage hero, as the Outrider is the Steppe's.
+  china: {name: 'China', creature: 'fox', firstEnemy: 'youxia'},
+};
+/**
  * A run's stages, in order (owner, 2026-10-24; for a while four, from three
- * wolves): how many of the heroes (ROSTER) and how many wolves the
- * enemy brings to each. The heroes come in one order for the whole run,
- * FIRST_ENEMY then the rest in a random order from its seed, so each stage
- * brings the last one's heroes and one more. The last is won to win the run.
+ * wolves), region by region: how many of the heroes (ROSTER) and how many
+ * of its region's creatures the enemy brings to each. In a region the
+ * heroes come in one order, its first enemy then the rest in a random order
+ * from the run's seed, so each stage brings the last one's heroes and one
+ * more. The last is won to win the run.
  * `provision`: winning it earns a provision, assigned at the caravanserai
  * before the next (progression.md, 19.2: a region's stages 1 and 2).
- * `map`: the id of the map it is fought on (MAPS in map.ts): every stage so
- * far is the Steppe region's; the Flaming Mountains (`flaming`) wait for the
- * China region; the Gobi (`gobi`) was kept for the Arabia region, cut
- * 2026-10-26, and has no region now.
+ * `passive`: winning it, the region's last, offers a passive at the
+ * caravanserai on the way to the next region (19.3's passive slot, alone
+ * for now: three of the pool at random, one taken).
+ * `map`: the id of the map it is fought on (MAPS in map.ts): the Steppe's
+ * stages on the Steppe Crossing, China's on the Flaming Mountains; the Gobi
+ * (`gobi`) was kept for the Arabia region, cut 2026-10-26, and has no
+ * region now.
  */
-export const STAGES: {heroes: number; wolves: number; provision: boolean; map: string}[] = [
-  {heroes: 1, wolves: 2, provision: true, map: 'steppe'},
-  {heroes: 2, wolves: 1, provision: true, map: 'steppe'},
-  {heroes: 3, wolves: 0, provision: false, map: 'steppe'},
+export interface Stage {
+  region: RegionId;
+  heroes: number;
+  creatures: number;
+  provision: boolean;
+  passive: boolean;
+  map: string;
+}
+export const STAGES: Stage[] = [
+  {region: 'steppe', heroes: 1, creatures: 2, provision: true, passive: false, map: 'steppe'},
+  {region: 'steppe', heroes: 2, creatures: 1, provision: true, passive: false, map: 'steppe'},
+  {region: 'steppe', heroes: 3, creatures: 0, provision: false, passive: true, map: 'steppe'},
+  {region: 'china', heroes: 1, creatures: 2, provision: true, passive: false, map: 'flaming'},
+  {region: 'china', heroes: 2, creatures: 1, provision: true, passive: false, map: 'flaming'},
+  {region: 'china', heroes: 3, creatures: 0, provision: false, passive: false, map: 'flaming'},
 ];
-/** The enemy hero of the first stage, and so of every stage (owner, 2026-10-24; was random). */
-export const FIRST_ENEMY: HeroId = 'mangudai';
+/** How many passives the caravanserai between regions offers, one to be taken. */
+export const PASSIVE_OFFER = 3;
+/** The enemy hero of the first stage, and so of every Steppe stage (owner, 2026-10-24; was random). */
+export const FIRST_ENEMY: HeroId = REGIONS.steppe.firstEnemy;
 /** How many of a run's first stages always have mountains (owner, 2026-10-24; randomTiles). */
 export const MOUNTAIN_STAGES = 3;
 /** The player's camel, after the party in slot order; the enemy has none (camel.md). */

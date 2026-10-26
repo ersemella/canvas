@@ -9,7 +9,7 @@ import {
 } from '@canvas/engine/server';
 import type {RunRecord, RunResponse as AnyRunResponse} from '@canvas/engine/server';
 import silkRoadRun from '@canvas/games-silk-road-run/run';
-import type {HeroId, Provision, RunView, TurnInput} from '@canvas/games-silk-road-run';
+import type {HeroId, PassivePick, Provision, RunView, TurnInput} from '@canvas/games-silk-road-run';
 
 /** What every answer about a Silk Road Run run carries: the engine's type, with its view. */
 export type RunResponse = AnyRunResponse<RunView>;
@@ -144,8 +144,12 @@ export const localRuns = {
   turn: (runId: string, body: TurnInput) => act(runId, {...body, type: 'turn'}),
   /** The AI's turn that is due (`view.aiDue`), as deep as this device gets in its time. */
   continue: (runId: string) => act(runId, {type: 'continue'}),
-  /** On to the next stage, with the provision the stage won earned (`view.provision`). */
-  next: (runId: string, provision?: Provision) => act(runId, {type: 'next', provision}),
+  /**
+   * On to the next stage, with the provision the stage won earned
+   * (`view.provision`) and the passive taken from its offer (`view.passives`).
+   */
+  next: (runId: string, choices: {provision?: Provision; passive?: PassivePick} = {}) =>
+    act(runId, {type: 'next', ...choices}),
 };
 
 /**

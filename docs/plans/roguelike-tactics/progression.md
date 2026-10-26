@@ -93,6 +93,18 @@ random from one pool:
   player doesn't care about.
 - **Proposed:** the hero slot favours heroes with the fewest upgrades so
   far, so no hero goes the whole run without one.
+- **Built (2026-10-26): the passive slot alone, between regions.**
+  Winning a region's last stage short of the run's last (the Steppe's
+  stage 3; `STAGES[stage].passive`) leads, through Next stage, to the
+  caravanserai, which offers **3 passives** of the pool (19.8) at random
+  (`passiveOffer` in run.ts, from the run's seed and the stage, so a
+  reload offers the same three; `PASSIVE_OFFER` in config.ts; a passive
+  every hero standing already carries isn't offered). The player picks one
+  and the hero standing who carries it (`next` with its `passive`), for
+  the rest of the run (`RunState.passives`, each unit's `passives`). The
+  hero and wildcard slots, the provisions' reassignment, and moving a
+  passive between heroes (question 63) aren't built; a fallen hero's
+  passive goes with them.
 - **At most two abilities** besides moving and Hold (owner, 2026-10-25;
   three from 2026-10-24; [roster.md](roster.md)): the hero slot offers a
   new ability only to a hero with fewer than two (`hasRoomForAbility` in
@@ -142,9 +154,16 @@ passive is lost or returns to the party is question 63.
 - Difficulty therefore rises two ways: within a region, as wolves give
   way to heroes; across regions, as wolves' stats and enemy heroes'
   upgrades and stats grow.
-- **Not built yet:** the game today runs three stages: 1 hero and 2 wolves;
-  that hero, another and 1 wolf; 3 heroes (`STAGES` in
-  `src/rules/config.ts`).
+- **Built (2026-10-26), for two regions:** the game runs the Steppe's
+  three stages and China's three (`STAGES` and `REGIONS` in
+  `src/rules/config.ts`): each region's first enemy (the Mangudai Outrider
+  on the Steppe, the Youxia Swordsman in China) and 2 of its creatures
+  (wolves, fox spirits); that hero, another and 1 creature; 3 heroes. A
+  region's heroes come in one order drawn from the whole roster, so each
+  stage brings the last one's and one more. China's stages are on the
+  Flaming Mountains. The creatures' stat increase per region and enemy
+  heroes' upgrades and stats aren't built: China's fights are the Steppe's
+  with other units.
 
 ### 19.6 The Final Boss (Decided, owner 2026-10-24)
 The Byzantine's stage 4, the run's last fight, is a boss that **counters
@@ -179,7 +198,7 @@ to your build.
 Counts assume every wildcard is taken as an upgrade, and the region
 rhythm of 19.1 (question 66).
 
-### 19.8 Passives (Proposed, owner 2026-10-24; built 2026-10-25, on no hero)
+### 19.8 Passives (Proposed, owner 2026-10-24; built 2026-10-25, offered between regions 2026-10-26)
 The pool for the offer's passive slot (19.3). Each is a rule that works
 on whichever hero carries it ("this hero"), in the keywords' terms
 ([keywords.md](keywords.md)); every one is public and previewable (D11).
@@ -189,8 +208,8 @@ Numbers are TBD tuning; none is measured yet.
 rules (`src/rules/passives.ts`, its effects in resolve.ts, fight.ts and
 board.ts; tested in `passives.test.ts`), shown on the stat sheet, and can
 be given to any unit on the test stage (`"passives"`, test-stage.md). No
-hero starts with one, and the upgrade offer that would grant them (19.3)
-isn't built. Built with them: **Haste** and **Inevitable** (Steady Gait),
+hero starts with one; since 2026-10-26 the caravanserai between regions
+offers three, one taken (19.3). Built with them: **Haste** and **Inevitable** (Steady Gait),
 **Shield** (Rally), **Armour** and **Pierce** (Hardened, Piercing Eye)
 ([keywords.md](keywords.md)). The builder's readings, where the text left a
 choice:

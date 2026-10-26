@@ -17,10 +17,15 @@ the heroes to take (one to three of the three; the camel always comes), and Star
 random and a wolf, then all three heroes.
 Winning a stage offers Next stage (`POST /runs/:id/next`); the surviving
 heroes and the camel go on at full health, the fallen are gone for the
-run; winning the third stage wins the run. Between stages the caravan
-stops at a **caravanserai** (2026-10-25): after stages 1 and 2 one
+run; winning the last stage wins the run. **Two regions** (2026-10-26):
+the Steppe's three stages, then China's three on the Flaming Mountains
+against fox spirits and the Youxia Swordsman first
+([progression.md](progression.md), 19.5). Between stages the caravan
+stops at a **caravanserai** (2026-10-25): after a region's stages 1 and 2 one
 survivor takes a provision, +1 to one stat for the rest of the run
-([progression.md](progression.md), 19.2); nothing yet after stage 3.
+([progression.md](progression.md), 19.2); between the regions it offers
+**three passives at random**, one taken by a survivor for the rest of the
+run (2026-10-26; 19.3's passive slot alone).
 **Maps per region** (2026-10-25): each stage names its map (`STAGES`,
 `MAPS` in map.ts), every one so far the Steppe's; the **Gobi Crossing**
 (`gobi`) is the same board in the desert's look, sand and sandstone ruins
@@ -88,9 +93,10 @@ the kits.**
   and every keyword not in the new list ([history.md](history.md)); Shove
   is back as an upgrade (2026-10-24). Hold Loose, Hip Toss, Squall Line,
   Tailwind and Overwatch were measured and removed on 2026-10-24.
-- **The passives** (progression.md, 19.8) are built (2026-10-25) but on
-  no hero: any unit can carry them on the test stage (`"passives"`), and
-  the upgrade offer that will grant them isn't built.
+- **The passives** (progression.md, 19.8) are built (2026-10-25): any
+  unit can carry them on the test stage (`"passives"`), and since
+  2026-10-26 the caravanserai between the Steppe and China offers three,
+  one taken; the rest of the upgrade offer isn't built.
 - **At most two abilities** a hero, besides moving and Hold (owner,
   2026-10-25; three from 2026-10-24; [roster.md](roster.md)): on the
   page, Move fills its own row over a hero's two abilities.
@@ -171,7 +177,7 @@ Always read this file first. Then:
 | Tuning numbers, or balancing a new hero, ability, keyword or gear: what each ability and stat is worth, measured; the proposed tuning; principles for re-tuning | [balance.md](balance.md) |
 | The heroes, three per region | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
-| Run progression: regions and stages, provisions (stat points), upgrade offers, the passives (built, on no hero), the enemy line-up per stage, the final boss | [progression.md](progression.md) |
+| Run progression: regions and stages, provisions (stat points), upgrade offers, the passives (offered between regions), the enemy line-up per stage, the final boss | [progression.md](progression.md) |
 | The caravan's camel; how a fight is won and lost; ending stalled fights | [camel.md](camel.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |

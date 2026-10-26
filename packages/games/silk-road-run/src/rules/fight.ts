@@ -33,6 +33,8 @@ import type {
   FightState,
   HeroId,
   Loadout,
+  PassiveId,
+  PassivePick,
   Provision,
   Side,
   StatId,
@@ -98,7 +100,8 @@ export function refreshStats(state: FightState): void {
 /**
  * `copy` numbers a second or later unit of the same hero on a side
  * (e-wolf, e-wolf-2); `loadout` is the test stage's stats, kit and
- * passives for it; `provisions` the stat points the run has given it.
+ * passives for it; `provisions` the stat points the run has given it, and
+ * `passives` those taken at its caravanserais (beside its loadout's).
  * Glass Cannon (19.8) starts it at half its health.
  */
 export function makeUnit(
@@ -107,10 +110,11 @@ export function makeUnit(
   hero: HeroId,
   copy = 0,
   loadout?: Loadout,
-  provisions?: Unit['provisions']
+  provisions?: Unit['provisions'],
+  taken: PassiveId[] = []
 ): Unit {
   const stats = heroStats(hero, loadout, provisions);
-  const passives = loadout?.passives;
+  const passives = [...new Set([...(loadout?.passives ?? []), ...taken])];
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}${copy ? `-${copy + 1}` : ''}`,
     hero,
@@ -119,12 +123,12 @@ export function makeUnit(
     controller: side === 'player' && !HEROES[hero].walksRoad ? 'human' : 'ai',
     partyIndex,
     hex: null,
-    hp: passives?.includes('glassCannon') ? Math.ceil(stats.maxHp / 2) : stats.maxHp,
+    hp: passives.includes('glassCannon') ? Math.ceil(stats.maxHp / 2) : stats.maxHp,
     ...stats,
     slot: null,
     statuses: [],
     ...(loadout ? {loadout} : {}),
-    ...(passives?.length ? {passives: [...passives]} : {}),
+    ...(passives.length ? {passives} : {}),
     ...(provisions ? {provisions} : {}),
     alive: true,
   };
@@ -141,7 +145,8 @@ export function makeUnit(
  * boxed in by yurts and the units beside it: the seed scatters again until
  * every one has a free hex to step to. With `mountains` the board always
  * has a range of mountains (randomTiles). The party's heroes come with
- * the run's `provisions` (progression.md, 19.2). It is fought on `map`,
+ * the run's `provisions` (progression.md, 19.2) and the passives taken
+ * at its caravanserais (`passives`, 19.3). It is fought on `map`,
  * the Steppe's unless a stage says otherwise (STAGES).
  */
 export function createFight(
@@ -150,7 +155,8 @@ export function createFight(
   enemies: HeroId[] = PARTY,
   mountains = false,
   provisions: Provision[] = [],
-  map: MapData = STEPPE
+  map: MapData = STEPPE,
+  passives: PassivePick[] = []
 ): FightState {
   const random = seededRandom(seed);
   const state: FightState = {
@@ -161,7 +167,15 @@ export function createFight(
     currentSlot: 0,
     units: [
       ...party.map((hero, i) =>
-        makeUnit('player', i, hero, 0, undefined, provisionsOf(hero, provisions))
+        makeUnit(
+          'player',
+          i,
+          hero,
+          0,
+          undefined,
+          provisionsOf(hero, provisions),
+          passives.filter((p) => p.hero === hero).map((p) => p.passive)
+        )
       ),
       makeUnit('player', party.length, CAMEL),
       ...enemies.map((hero, i) =>

@@ -2,7 +2,13 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import type {MutableRefObject} from 'react';
 import type {EventBus} from '@canvas/engine';
 import {openingPlayback} from '@canvas/games-silk-road-run';
-import type {HeroId, PlaybackPayload, Provision, TurnInput} from '@canvas/games-silk-road-run';
+import type {
+  HeroId,
+  PassivePick,
+  PlaybackPayload,
+  Provision,
+  TurnInput,
+} from '@canvas/games-silk-road-run';
 import {claimTab, localRuns} from './localRuns';
 import type {RunResponse} from './localRuns';
 
@@ -200,14 +206,14 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
 
   /**
    * On to the run's next stage, once this one is won, with the provision
-   * chosen at the caravanserai if it earned one: a new board, its opening
+   * and the passive chosen at the caravanserai if it earned them: a new board, its opening
    * played back. The caravanserai closes the board, so the opening waits
    * for the board to mount again, as a new run's does.
    */
   const nextStage = useCallback(
-    (provision?: Provision) => {
+    (choices: {provision?: Provision; passive?: PassivePick} = {}) => {
       if (!run || busy) return;
-      void send(() => localRuns.next(run.runId, provision), 'run');
+      void send(() => localRuns.next(run.runId, choices), 'run');
     },
     [run, send, busy]
   );

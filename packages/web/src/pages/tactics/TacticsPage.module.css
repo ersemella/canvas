@@ -907,11 +907,56 @@
 .heroPicked .provisionNote {
   color: var(--c-lapisLight);
 }
-/* A phone: the stats under the portrait and name, full width. */
+/*
+ * Between regions: three passives side by side, each a tile like a stat's,
+ * its kind over its name and its rule; then who carries it, a row of heroes.
+ */
+.passiveOffer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.passiveCard {
+  gap: 4px;
+  padding: 10px 12px;
+}
+.passiveName {
+  font-size: 18px;
+  font-weight: bold;
+}
+.carriers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.carrier {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+}
+.carrierPortrait {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: var(--px) solid var(--c-ink);
+  background: linear-gradient(var(--c-lapis) 50%, var(--c-lapisDark) 50%);
+  font-weight: bold;
+}
+.carrierPortrait img {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+/* A phone: the stats under the portrait and name, full width; the passives stacked. */
 @media (max-width: 560px) {
   .provisionHero {
     grid-template-areas:
       'portrait name'
       'stats stats';
+  }
+  .passiveOffer {
+    grid-template-columns: 1fr;
   }
 }

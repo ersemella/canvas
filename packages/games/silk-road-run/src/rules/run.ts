@@ -2,13 +2,24 @@
  * A run: its stages (STAGES in config.ts) one after another, each a fight
  * against a bigger enemy band. Heroes who fall are gone for the run; the
  * survivors and the camel go on to the next stage, by way of the
- * caravanserai, where a stage that earns one gives a provision. The run keeps the seed;
+ * caravanserai, where a stage that earns one gives a provision, and the
+ * last stage of a region offers three passives, one taken. The run keeps the seed;
  * the view is the fight, which never contains it.
  */
 import type {Hex, RunContext} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {chooseAiTurn} from './ai';
-import {AI, CAMEL, FIRST_ENEMY, MOUNTAIN_STAGES, PARTY, ROSTER, RULES, STAGES} from './config';
+import {
+  AI,
+  CAMEL,
+  MOUNTAIN_STAGES,
+  PARTY,
+  PASSIVE_OFFER,
+  REGIONS,
+  ROSTER,
+  RULES,
+  STAGES,
+} from './config';
 import {
   RuleError,
   actingUnit,
@@ -20,6 +31,7 @@ import {
   seededRandom,
 } from './fight';
 import {mapById} from './map';
+import {PASSIVES, hasPassive} from './passives';
 import {createTestFight} from './testStage';
 import {shuffled} from './track';
 import type {
@@ -27,6 +39,8 @@ import type {
   ActionTarget,
   FightState,
   HeroId,
+  PassiveId,
+  PassivePick,
   Provision,
   RunAction,
   StatId,
@@ -40,7 +54,7 @@ import type {
  * removed or reinterpreted): older runs are then ended rather than
  * patched (`runOutdated`), so the rules never handle an old shape.
  */
-export const RUN_FORMAT = 7;
+export const RUN_FORMAT = 8;
 
 export interface RunState {
   /** `RUN_FORMAT` when the run was created; missing in runs from before it existed. */
@@ -57,6 +71,8 @@ export interface RunState {
    * 19.2), a fallen hero's included; missing in runs from before them.
    */
   provisions?: Provision[];
+  /** The passives taken at the caravanserais between regions, in the order taken. */
+  passives?: PassivePick[];
   fight: FightState;
 }
 
@@ -67,6 +83,14 @@ export interface RunView {
   stages: number;
   /** Winning this stage earns a provision, assigned at the caravanserai on the way to the next. */
   provision: boolean;
+  /**
+   * The passives the caravanserai offers once this stage is won, one to be
+   * taken: the region's last stage, short of the run's last; none otherwise.
+   */
+  passives: PassiveId[];
+  /** The region this stage is in, by name, and the next stage's, if there is one. */
+  region: string;
+  nextRegion: string | null;
   /**
    * The fight. While an AI unit's turn is due its `awaiting` is null: the
    * page has no unit to control.
@@ -100,14 +124,18 @@ export function createRun(seed: number, setup?: unknown): RunState {
 
 /**
  * The enemy for a stage: its number of heroes, the first of one order for
- * the whole run, FIRST_ENEMY then the rest at random from its seed, so a
- * stage brings the heroes of the one before it and more; then its wolves.
+ * its whole region, the region's first enemy then the rest at random from
+ * the run's seed, so a stage brings the heroes of the one before it in the
+ * region and more; then the region's creatures (wolves on the Steppe).
  */
 export function stageEnemies(seed: number, stage: number): HeroId[] {
-  const {heroes, wolves} = STAGES[stage]!;
-  const rest = ROSTER.filter((h) => h !== FIRST_ENEMY);
-  const picked = [FIRST_ENEMY, ...shuffled(rest, seededRandom(seed ^ 0x5bd1e995))];
-  return [...picked.slice(0, heroes), ...Array<HeroId>(wolves).fill('wolf')];
+  const {region, heroes, creatures} = STAGES[stage]!;
+  const {firstEnemy, creature} = REGIONS[region];
+  const regionIndex = Object.keys(REGIONS).indexOf(region);
+  const rest = ROSTER.filter((h) => h !== firstEnemy);
+  const random = seededRandom((seed ^ 0x5bd1e995) + regionIndex * 0x9e3779b9);
+  const picked = [firstEnemy, ...shuffled(rest, random)];
+  return [...picked.slice(0, heroes), ...Array<HeroId>(creatures).fill(creature)];
 }
 
 /** Each stage's map and start from its own seed; the first stage's is the run's. */
@@ -121,7 +149,8 @@ function stageFight(
   seed: number,
   stage: number,
   party: HeroId[],
-  provisions: Provision[] = []
+  provisions: Provision[] = [],
+  passives: PassivePick[] = []
 ): FightState {
   const fight = createFight(
     stageSeed(seed, stage),
@@ -129,7 +158,8 @@ function stageFight(
     stageEnemies(seed, stage),
     stage < MOUNTAIN_STAGES,
     provisions,
-    mapById(STAGES[stage]!.map)
+    mapById(STAGES[stage]!.map),
+    passives
   );
   fight.events = [];
   advanceToDecision(fight);
@@ -160,6 +190,27 @@ function raisable(fight: FightState): Unit[] {
  */
 function provisionOwed(run: RunState): boolean {
   return !run.test && Boolean(STAGES[run.stage]?.provision) && raisable(run.fight).length > 0;
+}
+
+/**
+ * The passives the caravanserai offers once the run's stage is won: on a
+ * region's last stage (STAGES) short of the run's last, `PASSIVE_OFFER` of
+ * the pool at random from the run's seed and the stage, so a reload offers
+ * the same ones. A passive every hero standing already carries isn't offered.
+ */
+export function passiveOffer(run: RunState): PassiveId[] {
+  const {stage} = run;
+  if (run.test || !STAGES[stage]?.passive || stage >= stageCount(run) - 1) return [];
+  const standing = run.fight.units.filter(
+    (u) => u.side === 'player' && u.hero !== CAMEL && u.alive
+  );
+  const open = (Object.keys(PASSIVES) as PassiveId[]).filter((id) =>
+    standing.some((u) => !hasPassive(u, id))
+  );
+  return shuffled(open, seededRandom(stageSeed(run.seed, stage) ^ 0x27d4eb2f)).slice(
+    0,
+    PASSIVE_OFFER
+  );
 }
 
 /** How many stages the run has: STAGES, or the test stage alone. */
@@ -197,16 +248,31 @@ export function parseAction(raw: unknown): RunAction {
   const a = raw as Record<string, unknown> | null;
   if (!a || typeof a !== 'object') throw new RuleError('Malformed action.');
   if (a.type === 'next') {
-    if (a.provision === undefined) return {type: 'next'};
-    const p = a.provision as {hero?: unknown; stat?: unknown} | null;
-    if (
-      !p ||
-      typeof p !== 'object' ||
-      !ROSTER.includes(p.hero as HeroId) ||
-      !STATS.includes(p.stat as StatId)
-    )
-      throw new RuleError('Malformed provision.');
-    return {type: 'next', provision: {hero: p.hero as HeroId, stat: p.stat as StatId}};
+    const out: RunAction = {type: 'next'};
+    if (a.provision !== undefined) {
+      const p = a.provision as {hero?: unknown; stat?: unknown} | null;
+      if (
+        !p ||
+        typeof p !== 'object' ||
+        !ROSTER.includes(p.hero as HeroId) ||
+        !STATS.includes(p.stat as StatId)
+      )
+        throw new RuleError('Malformed provision.');
+      out.provision = {hero: p.hero as HeroId, stat: p.stat as StatId};
+    }
+    if (a.passive !== undefined) {
+      const p = a.passive as {hero?: unknown; passive?: unknown} | null;
+      if (
+        !p ||
+        typeof p !== 'object' ||
+        !ROSTER.includes(p.hero as HeroId) ||
+        typeof p.passive !== 'string' ||
+        !Object.hasOwn(PASSIVES, p.passive)
+      )
+        throw new RuleError('Malformed passive.');
+      out.passive = {hero: p.hero as HeroId, passive: p.passive as PassiveId};
+    }
+    return out;
   }
   if (a.type === 'continue') return {type: 'continue'};
   if (a.type === 'turn') {
@@ -241,7 +307,8 @@ export function parseAction(raw: unknown): RunAction {
  * (`continue`), each on its own, so the page can play one back while the
  * next is worked out; then the track runs on to the next decision, either
  * side's. Or, once a stage short of the last is won, on to the next, with
- * the provision it earned given to one of the survivors. Given
+ * the provision it earned given to one of the survivors, and on leaving a
+ * region one of the passives offered (`passiveOffer`) to one of them. Given
  * a clock (`context.now`) the AI looks as deep as it gets in
  * AI.browser.thinkMs; without one it keeps to AI.maxSimulations, the same
  * turn on every machine (tests, balance).
@@ -266,8 +333,22 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
     } else if (action.provision) {
       throw new RuleError('There is no provision to take.');
     }
-    const fight = stageFight(run.seed, stage + 1, party, provisions);
-    return {...run, version: run.version + 1, stage: stage + 1, provisions, fight};
+    const passives = [...(run.passives ?? [])];
+    const offer = passiveOffer(run);
+    if (offer.length > 0) {
+      if (!action.passive) throw new RuleError('Choose a passive and a hero to carry it.');
+      const {hero, passive} = action.passive;
+      if (!offer.includes(passive)) throw new RuleError('That passive isn’t on offer.');
+      if (!party.includes(hero))
+        throw new RuleError('Only a hero still in the party can take a passive.');
+      const unit = run.fight.units.find((u) => u.side === 'player' && u.hero === hero)!;
+      if (hasPassive(unit, passive)) throw new RuleError('That hero already carries it.');
+      passives.push(action.passive);
+    } else if (action.passive) {
+      throw new RuleError('There is no passive to take.');
+    }
+    const fight = stageFight(run.seed, stage + 1, party, provisions, passives);
+    return {...run, version: run.version + 1, stage: stage + 1, provisions, passives, fight};
   }
   const fight = cloneFight(run.fight, true);
   refreshStats(fight);
@@ -309,6 +390,12 @@ export function runView(run: RunState): RunView {
     stage: run.stage,
     stages: stageCount(run),
     provision: provisionOwed(run),
+    passives: passiveOffer(run),
+    region: run.test ? '' : REGIONS[STAGES[run.stage]!.region].name,
+    nextRegion:
+      run.test || run.stage >= stageCount(run) - 1
+        ? null
+        : REGIONS[STAGES[run.stage + 1]!.region].name,
     fight: due ? {...run.fight, awaiting: null} : run.fight,
     aiDue: due,
   };

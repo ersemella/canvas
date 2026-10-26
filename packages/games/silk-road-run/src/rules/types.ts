@@ -84,6 +84,16 @@ export interface Provision {
   stat: StatId;
 }
 
+/**
+ * A passive taken at the caravanserai between regions (progression.md,
+ * 19.3, the passive slot): one hero of the party carries it from the next
+ * stage for the rest of the run.
+ */
+export interface PassivePick {
+  hero: HeroId;
+  passive: PassiveId;
+}
+
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';
 
@@ -314,6 +324,7 @@ export type RunAction =
   | {type: 'continue'}
   /**
    * On to the next stage from the caravanserai, with the provision the
-   * stage won earned, if it earned one (`STAGES[stage].provision`).
+   * stage won earned, if it earned one (`STAGES[stage].provision`), and the
+   * passive taken from its offer, if it made one (`STAGES[stage].passive`).
    */
-  | {type: 'next'; provision?: Provision};
+  | {type: 'next'; provision?: Provision; passive?: PassivePick};

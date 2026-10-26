@@ -27,7 +27,6 @@ import type {
   FightState,
   TacticsCardPayload,
   TacticsHoverPayload,
-  Provision,
   TacticsTapPayload,
   TurnInput,
 } from '@canvas/games-silk-road-run';
@@ -37,6 +36,7 @@ import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {Caravanserai} from './Caravanserai';
+import type {SetOut} from './Caravanserai';
 import {StartMenu} from './StartMenu';
 import {HexTooltip} from './HexTooltip';
 import {Glossary} from './Keywords';
@@ -180,16 +180,16 @@ export function TacticsPage() {
     [input, sendTurn]
   );
 
-  /** Next stage: by way of the caravanserai, which gives the provision the stage earned. */
+  /** Next stage: by way of the caravanserai, which gives the provision or passive the stage earned. */
   const nextStage = useCallback(() => {
     if (busy) return;
     stopLooking();
     setAtCaravanserai(true);
   }, [busy, stopLooking]);
   const setOut = useCallback(
-    (provision?: Provision) => {
+    (choices: SetOut) => {
       if (busy) return;
-      goToNextStage(provision);
+      goToNextStage(choices);
     },
     [busy, goToNextStage]
   );
@@ -433,6 +433,9 @@ export function TacticsPage() {
         stage={run.view.stage}
         stages={stages}
         provision={run.view.provision}
+        passives={run.view.passives}
+        region={run.view.region}
+        nextRegion={run.view.nextRegion}
         busy={busy}
         error={error}
         onSetOut={setOut}
