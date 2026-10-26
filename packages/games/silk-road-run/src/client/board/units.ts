@@ -72,7 +72,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   storm: {src: stormPortrait, faceX: 19},
   modao: {src: modaoPortrait, faceX: 18},
   alchemist: {src: alchemistPortrait, faceX: 19},
-  youxia: {src: youxiaPortrait, faceX: 20},
+  youxia: {src: youxiaPortrait, faceX: 19},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},

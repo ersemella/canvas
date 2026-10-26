@@ -130,7 +130,9 @@ in [balance.md](balance.md)).
 (`ROSTER`), with the owner's stats; Swift Strike' Haste 2 is the builder's
 first number, untested and not measured yet. Art by the owner (ChatGPT,
 2026-10-26), shrunk with scripts/shrink-sprite.py (the portrait cropped
-to 280,95,1250,1065, without `--lines`), a 2-frame idle split at row 19.
+without `--lines`), a 2-frame idle split at row 18. A wide bamboo hat
+(*douli*) and no beard since the same day (owner): with a topknot and a
+beard it read as the Waidan Alchemist.
 
 | Hero | Speed | Defence | Power | Health | Walk | Ability | Effect |
 |---|---|---|---|---|---|---|---|
