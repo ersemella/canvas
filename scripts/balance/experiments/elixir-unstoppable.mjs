@@ -12,19 +12,21 @@
 const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['youxia', 'modao', 'alchemist'];
 const none = {fixed: 0, empower: 0, weaken: 0, self: false};
-const single = (unstoppable, empower = 0, haste = 0) => (c) => {
-  Object.assign(c.ABILITY.elixir, none, {
-    shape: 'unit',
-    range: 3,
-    radius: 1,
-    heal: 'all',
-    empower,
-    haste,
-    delay: 0,
-    unstoppable,
-  });
-  c.HEROES.alchemist.power = 1;
-};
+const single =
+  (unstoppable, empower = 0, haste = 0) =>
+  (c) => {
+    Object.assign(c.ABILITY.elixir, none, {
+      shape: 'unit',
+      range: 3,
+      radius: 1,
+      heal: 'all',
+      empower,
+      haste,
+      delay: 0,
+      unstoppable,
+    });
+    c.HEROES.alchemist.power = 1;
+  };
 const built = (c) => {
   Object.assign(c.ABILITY.elixir, none, {
     shape: 'burst',
