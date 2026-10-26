@@ -2301,9 +2301,8 @@ turns as above.
   3 evens China** (50.5%) but is 6 points over the Storm Caller in its
   seat.
 - **The Vanguard gains little**: under a turn a fight at 3 or 4 (7.6–8.1,
-  7.8 with the built Elixir). The Haste reaches whoever stands near
-  the Alchemist, mostly the Swordsman, which `hastesPerFight` doesn't
-  split by target.
+  7.8 with the built Elixir). The Haste reaches whichever ally stands
+  near the target; `hastesPerFight` doesn't count it by ally.
 - Not changed: the Elixir stays Empower and Weaken (the owner's call).
 
 ## Principles for re-tuning
