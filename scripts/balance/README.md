@@ -101,9 +101,8 @@ Caller at each speed; it reproduces only at `a9f89d0`, before Hastes
 collided by speed.
 `tempo-collision.mjs` (2026-10-26) measures a Hastened or Delayed card
 taking its slot against its colliding by speed (`RULES.delayWins`,
-`.hasteWins`, at `a9f89d0`); built since: a Hastened card by speed and a
-Delayed card always yielding, the switches removed, so its `built` rows
-measure that.
+`.hasteWins`, at `a9f89d0`); built since: both by speed, the switches
+removed, so its `built` and `by-speed` rows both measure that.
 
 ## Ability and stat ablation
 

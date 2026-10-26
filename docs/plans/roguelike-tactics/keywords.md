@@ -91,7 +91,7 @@ puts it on another space.
 
 | Keyword | Rule |
 |---|---|
-| **Delay N** | Moves the unit's card N slots later on the track. It yields past every taken slot whatever its speed, the cards there staying (3.3; owner, 2026-10-26). Within the delay limit (3.6). |
+| **Delay N** | Moves the unit's card N slots later on the track. A taken slot is resolved by speed, cascading, as any placement is (3.3; owner, 2026-10-26). Within the delay limit (3.6). |
 | **Haste N** | Moves the unit's card N slots earlier, never earlier than the next slot. A taken slot is resolved by speed, as any placement is (3.3; owner, 2026-10-26). Within a haste limit, like the delay limit (value TBD). |
 | **Inevitable** | The unit's card can't be Delayed or Hastened, by allies or enemies. It still collides as usual when placed after its own turn (3.3). |
 

@@ -329,12 +329,7 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId): void
   const now = state.currentSlot;
   let slot = aimSlot(state, unit, now, ability);
   if (idle && hasPassive(unit, 'patient')) slot = Math.max(now + 1, slot - 2);
-  placeCard(
-    state,
-    unit,
-    slot,
-    ability !== undefined && chargeOf(unit, ability) > 0 ? 'takes' : 'speed'
-  );
+  placeCard(state, unit, slot, ability !== undefined && chargeOf(unit, ability) > 0);
   takeHasteDue(state, unit);
 }
 

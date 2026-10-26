@@ -239,13 +239,13 @@ function inevitable(ctx: Ctx, u: Unit): boolean {
 }
 
 /**
- * Delays `u`'s card `n` slots later (keywords.md 17.3). It yields past
- * every taken slot whatever its speed, the cards there staying (3.3; owner,
- * 2026-10-26). The delay limit (3.6) is not built.
+ * Delays `u`'s card `n` slots later (keywords.md 17.3), a taken slot
+ * resolved by speed as any placement is (3.3; owner, 2026-10-26). The delay
+ * limit (3.6) is not built.
  */
 export function delay(ctx: Ctx, u: Unit, n: number): void {
   if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
-  placeCard(ctx.state, u, u.slot + n, 'yields');
+  placeCard(ctx.state, u, u.slot + n);
   log(ctx, `${unitName(u)} is Delayed ${n}.`);
 }
 

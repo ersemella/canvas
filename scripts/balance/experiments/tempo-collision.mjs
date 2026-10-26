@@ -4,9 +4,9 @@
 // and only a Hastened one colliding by speed (`haste-by-speed`): China for the Steppe, each Chinese hero in its
 // role's Steppe seat (50% its equal), and stage caravans against the Steppe
 // party and camel (`playerWinPct`; lower, a stronger enemy).
-// Built since (owner, 2026-10-26): a Hastened card colliding by speed and a
-// Delayed one always yielding, the switches removed, so `built` now measures
-// that and `by-speed` and `haste-by-speed` reproduce only at `a9f89d0`.
+// Built since (owner, 2026-10-26): both colliding by speed, the switches
+// removed, so `built` and `by-speed` now both measure that, and the rows
+// recorded for `built` and `haste-by-speed` reproduce only at `a9f89d0`.
 const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['youxia', 'modao', 'alchemist'];
 const roles = {modao: 'bokh', youxia: 'mangudai', alchemist: 'storm'};

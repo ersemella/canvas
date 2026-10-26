@@ -2620,9 +2620,9 @@ points), seeds from 1000; the variants' switches (`RULES.delayWins`,
 | Rule | China vs Steppe | Vanguard for Grappler | Swordsman for Horse Archer | Alchemist for Storm Caller | vs China party | vs Swordsman + Vanguard + wolf | vs all three |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Hastened or Delayed card takes its slot (was built) | 62% | 49% | 49.3% | 60.3% | 45.1% | 87.6% | 76.3% |
-| Both by speed, as any placement | 50.4% | 49% | 50% | 54.8% | 59.3% | 89.9% | 76.3% |
+| **Both by speed, as any placement (built)** | 50.4% | 49% | 50% | 54.8% | 59.3% | 89.9% | 76.3% |
 | Haste by speed, Delay takes its slot | 50.4% | 49% | 50% | (stopped) | | | |
-| **Haste by speed, Delay always yields (built)** | **50.8%** | 49.3% | 50% | **54.8%** | 58.1% | 89.6% | 76.3% |
+| Haste by speed, Delay always yields (built for a day) | **50.8%** | 49.3% | 50% | **54.8%** | 58.1% | 89.6% | 76.3% |
 
 The "vs" columns are stage caravans against the Steppe party and camel
 (player wins; lower, a stronger enemy).
@@ -2631,14 +2631,14 @@ The "vs" columns are stage caravans against the Steppe party and camel
   from 62% to about 50%. How a Delay collides changes nothing measurable:
   Cleave's targets (speed 2 and 3) rarely land on a taken slot they
   wouldn't win anyway.
-- **Adopted (owner, 2026-10-26): a Hastened card collides by speed, a
-  Delayed card always yields** (`placeCard`'s `yields`), so Cleave stays
-  dependable however fast its targets are.
+- **Adopted (owner, 2026-10-26): Hastened and Delayed cards collide by
+  speed**, as any placement, one rule for every card. A Delayed card
+  always yielding was built first and measured the same.
 - **Support is still the pairing that's off**: the Alchemist 54.8% in the
-  Storm Caller's seat, about 5 over; tank and damage within a point of
+  Storm Caller's seat under either rule, about 5 over; tank and damage within a point of
   even.
-- **China as an enemy is about 13 points easier** (the Steppe party
-  58.1% from 45.1%); the other caravans move 2 points or less.
+- **China as an enemy is about 14 points easier** (the Steppe party
+  59.3% from 45.1%); the other caravans move 2 points or less.
 
 ## Principles for re-tuning
 
