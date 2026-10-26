@@ -33,7 +33,7 @@ export type AbilityId =
   | 'bite'
   | 'cleave'
   | 'elixir'
-  | 'tenPaces'
+  | 'swiftStrike'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'

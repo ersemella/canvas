@@ -161,8 +161,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * The Youxia Swordsman (owner, 2026-10-26; roster.md): China's fast
    * melee striker. Speed 3, power 2, defence 1 (health 4) and a walk of 3
-   * are the owner's; Ten Paces, its sword stroke, Hastens it when it hits
-   * (`ABILITY.tenPaces`).
+   * are the owner's; Swift Strike, its sword stroke, Hastens it when it hits
+   * (`ABILITY.swiftStrike`).
    */
   youxia: {
     name: 'Youxia Swordsman',
@@ -170,7 +170,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    abilities: ['tenPaces', 'hold'],
+    abilities: ['swiftStrike', 'hold'],
     moveCap: 3,
   },
   /**
@@ -312,12 +312,11 @@ export const ABILITY = {
     tempo: 0 as number,
   },
   /**
-   * Ten Paces (owner, 2026-10-26), the Youxia Swordsman's *jian*, named for
-   * Li Bai's swordsman who "kills one man every ten paces": melee, and when
-   * it hits, the Swordsman's card is Hastened `haste` slots (keywords.md
+   * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),
+   * the Youxia Swordsman's *jian*: melee, and when it hits, the Swordsman's card is Hastened `haste` slots (keywords.md
    * 17.3). 2 is the builder's first number, untested.
    */
-  tenPaces: {haste: 2 as number},
+  swiftStrike: {haste: 2 as number},
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within

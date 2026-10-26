@@ -37,7 +37,7 @@ is; the delay limit (3.6) is not built yet.
 **Haste**, **Inevitable**, **Shield**, **Armour** and **Pierce**
 (2026-10-25), for the passives ([progression.md](progression.md), 19.8):
 Haste for Second Wind, Momentum and Vengeance (and since 2026-10-26 the
-Youxia Swordsman's Ten Paces, Haste 2 when it hits), Inevitable as Steady Gait,
+Youxia Swordsman's Swift Strike, Haste 2 when it hits), Inevitable as Steady Gait,
 Shield 1 from Rally (until the unit's next turn), Armour 1 as Hardened and
 Pierce as Piercing Eye. No hero has a passive yet; neither the delay nor
 the haste limit is built.

@@ -681,22 +681,22 @@ const elixir: AbilityDef = {
 // ─── Youxia Swordsman ────────────────────────────────────────────────────────
 
 /**
- * Ten Paces (owner, 2026-10-26): melee, the Swordsman's power; when it
- * hits, its card is Hastened `ABILITY.tenPaces.haste`, taken off as its
+ * Swift Strike (owner, 2026-10-26): melee, the Swordsman's power; when it
+ * hits, its card is Hastened `ABILITY.swiftStrike.haste`, taken off as its
  * card is placed after this turn (`haste`).
  */
-const tenPaces: AbilityDef = {
-  id: 'tenPaces',
-  name: 'Ten Paces',
+const swiftStrike: AbilityDef = {
+  id: 'swiftStrike',
+  name: 'Swift Strike',
   kind: 'attack',
-  summary: () => `Melee. When it hits, its card is Hastened ${ABILITY.tenPaces.haste}.`,
+  summary: () => `Melee. When it hits, its card is Hastened ${ABILITY.swiftStrike.haste}.`,
   targetsUnit: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} strikes ${unitName(u)} with the jian.`);
     hit(ctx, user, u, 'The jian');
-    haste(ctx, user, ABILITY.tenPaces.haste);
+    haste(ctx, user, ABILITY.swiftStrike.haste);
   },
 };
 
@@ -726,7 +726,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   bite,
   cleave,
   elixir,
-  tenPaces,
+  swiftStrike,
   shove,
   haul,
   feignedRetreat,

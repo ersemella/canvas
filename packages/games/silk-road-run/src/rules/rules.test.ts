@@ -1354,15 +1354,15 @@ describe('the Youxia Swordsman', () => {
     expect(Math.max(...reachableHexes(s, mapOf(s), y).map((r) => r.path.length))).toBe(3);
   });
 
-  it('Ten Paces hits an enemy next to it, and Hastens its own card', () => {
+  it('Swift Strike hits an enemy next to it, and Hastens its own card', () => {
     const s = setup({'p-youxia': c, 'e-modao': hexNeighbor(c, 0), 'e-mangudai': at(4, 7)}, party);
     const y = unit(s, 'p-youxia');
-    const targets = ABILITIES.tenPaces.targets(s, mapOf(s), y, y.hex!);
+    const targets = ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!);
     expect(targets).toEqual([{hex: hexNeighbor(c, 0)}]);
     y.slot = s.currentSlot;
-    applyTurn(s, y, {action: {ability: 'tenPaces', target: {hex: hexNeighbor(c, 0)}}});
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: hexNeighbor(c, 0)}}});
     expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - y.power);
-    expect(y.slot).toBe(actionCost(y) - ABILITY.tenPaces.haste);
+    expect(y.slot).toBe(actionCost(y) - ABILITY.swiftStrike.haste);
   });
 
   it('a walk and Hold leave its card where it was due', () => {

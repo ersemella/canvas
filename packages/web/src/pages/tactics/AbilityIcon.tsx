@@ -256,7 +256,7 @@ const ICON: Record<IconId, Icon> = {
     ],
   },
   // A jian, the straight sword, drawn on the slant: its guard the accent, its grip the shade.
-  tenPaces: {
+  swiftStrike: {
     kind: 'attack',
     rows: [
       '...........#', //
