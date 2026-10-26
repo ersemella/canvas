@@ -145,26 +145,21 @@ tuning. This file has no combat-design section number.
   ink-outlined it didn't blend in (owner, 2026-10-26). No smoke, which
   would rise from the roof. **The mountains are burning ridges** (owner,
   2026-10-26), as the real Flaming Mountains are long, low, gullied
-  ridges and the burning cone read as a volcano; a ridge sprite on each
-  hex (the owner's, AI-assisted) looked out of place, broken where
-  neighbouring ridges didn't join and its fire barely moving, so the
-  ridges are drawn in code, one landform per clump (`board/ridges.ts`):
-  a crest through the centres of a clump's mountains that stand side by
-  side, never between two in one column (it would run the ridge into the
-  screen), its loose ends running on east or west and tapering to the
-  plain, mountains one above another standing as parallel ridges, a
-  range seen from the front. Each is a height field drawn back to front
-  in art pixels: straight, slightly hollow slopes to a sharp, jagged
-  crest, V-shaped gullies down them, a darker band of strata every 5
-  pixels up, shaded from the upper left in the owner's ridge's red
-  sandstone, rising straight from the red earth (no rock under it), and
-  drawn once per layout. Its fire is drawn each frame (`FLAME_FPS`):
-  flames 1 to 6 pixels tall along every crest, in waves running along
-  it, taller tongues flaring out of step, sparks and rising embers, held
-  still for reduced motion. A clump grows beside its mountains (in a
-  neighbouring column) before above or below them, so its ridge runs on
-  unbroken (`growClump` in map.ts). The cone (`mountain-burning.png`)
-  and the Steppe's rock in its browns (`rock-red.png`) are no longer used. Tried before
+  ridges and the burning cone read as a volcano. The ridge
+  (`tiles/mountain-ridge.png`, 42 × 39 a frame) is made from the
+  Steppe's twin peak, so it is drawn as the other mountains are and fits
+  its hex the same way: its base, the hex's lower half, unchanged, its
+  peaks lowered to 0.65 of their height into two low humps, its six
+  shades as red sandstone, on the Steppe's rock in the same browns
+  (`rock-red.png`). Only its fire moves, in 8 frames: flames 1 to 5
+  pixels tall along the crest in waves, a tongue flaring every few
+  pixels, embers rising. Tried first the same day and replaced (owner):
+  the owner's ridge (AI-assisted), wider than its hex, which looked out
+  of place where neighbouring ridges didn't join and whose 1 to 2 pixel
+  flames looked still; then ridges drawn in code, one continuous
+  landform per clump, which were too detailed and the only thing on the
+  board spanning spaces. The cone (`mountain-burning.png`) is no longer
+  used. Tried before
   and taken out, as they didn't look good (owner, 2026-10-26): two or
   three mudbrick ruins (`tiles/ruins.png`, as the ruins of Gaochang, now
   unused) and one or two fissures, a hazard burning 1 on each entry. The flames are only drawn: the mountains block as any do; a
