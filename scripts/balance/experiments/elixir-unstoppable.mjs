@@ -9,6 +9,7 @@
 // `heal-empower`, `heal-haste`, `heal-empower-haste` (asked the same day):
 // the one-ally heal without Unstoppable, the ally also Empowered 1 (one
 // that hits, until the end of its next turn), Hastened 3, or both.
+// `heal-empower-N-haste-M`: both at other amounts (asked the same day).
 const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['youxia', 'modao', 'alchemist'];
 const none = {fixed: 0, empower: 0, weaken: 0, self: false};
@@ -53,3 +54,9 @@ both('heal-only', single(false));
 both('heal-empower', single(false, 1));
 both('heal-haste', single(false, 0, 3));
 both('heal-empower-haste', single(false, 1, 3));
+for (const [e, h] of [
+  [2, 3],
+  [3, 3],
+  [2, 2],
+])
+  both(`heal-empower-${e}-haste-${h}`, single(false, e, h));

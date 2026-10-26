@@ -2451,6 +2451,21 @@ Hastes are China's, a fight, the camel's in brackets.
   speeding it to the exit.
 - Not changed: the built Elixir stays the burst (the owner's call).
 
+**A higher Empower** (asked the same day: should it be higher?): the
+same, `heal-empower-N-haste-M`.
+
+| Empower / Haste | China vs Steppe | Alchemist for the Storm Caller | Empower damage |
+|---|---:|---:|---:|
+| 1 / 3 (above) | 47.2% | 54.3% | 2.9 |
+| 2 / 2 | 55.3% | 63.1% | 4.8 |
+| 2 / 3 | 59.8% | 67.4% | 5.2 |
+| 3 / 3 | 62.2% | 73.5% | 7.7 |
+
+- **Empower 2 is too strong at either Haste**: China 55–60%, the seat
+  63–67%, 14–18 points over the Storm Caller's equal. Each point of
+  Empower adds about 2.5 damage a fight. Empower 1 is the right size; if
+  anything, 1 / 3 is a little over in the seat.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
