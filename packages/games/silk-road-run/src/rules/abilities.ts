@@ -7,7 +7,7 @@
  */
 import {hexDirectionTo, hexDistance, hexEquals, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY} from './config';
+import {ABILITY, CAMEL} from './config';
 import {
   firstInLane,
   isImmobilized,
@@ -30,6 +30,7 @@ import {
   enterHex,
   hailEnds,
   hailHolds,
+  heal,
   hit,
   log,
   stun,
@@ -603,7 +604,14 @@ const elixirTakes =
   (u: Unit | undefined): u is Unit =>
     u !== undefined &&
     u !== user &&
-    (u.power > 0 || (ABILITY.elixir.fixed > 0 && u.side !== user.side));
+    (u.power > 0 ||
+      (ABILITY.elixir.fixed > 0 && u.side !== user.side) ||
+      (elixirHeals(u) && u.side === user.side && u.hp < u.maxHp));
+
+/** Whether Elixir's heal (`ABILITY.elixir.heal`, with `fixed`) can heal `u`. */
+export const elixirHeals = (u: Unit): boolean =>
+  ABILITY.elixir.fixed > 0 &&
+  (ABILITY.elixir.heal === 'all' || (ABILITY.elixir.heal === 'heroes' && u.hero !== CAMEL));
 
 /**
  * The units an Elixir aimed at `target` from `from` reaches, by
@@ -656,8 +664,10 @@ const elixir: AbilityDef = {
     const {fixed} = ABILITY.elixir;
     for (const u of caught) {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
-      if (u.side === user.side) enhance(ctx, u, fixed || user.power);
-      else {
+      if (u.side === user.side) {
+        if (elixirHeals(u)) heal(ctx, u, user.power);
+        if (u.power > 0) enhance(ctx, u, fixed || user.power);
+      } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
         if (u.alive) degrade(ctx, u, fixed || user.power);
       }

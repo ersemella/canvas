@@ -18,7 +18,14 @@ import {
   shotLane,
   unitAt,
 } from './board';
-import {ABILITIES, abilitiesOf, elixirCaught, grappling, unusableReason} from './abilities';
+import {
+  ABILITIES,
+  abilitiesOf,
+  elixirCaught,
+  elixirHeals,
+  grappling,
+  unusableReason,
+} from './abilities';
 import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
@@ -335,7 +342,10 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     const {fixed} = ABILITY.elixir;
     for (const u of elixirCaught(state, unit, unit.hex!, target!.hex!)) {
       if (!hostile(u, unit)) {
-        value += u.enhance ? 0 : 1 + enhanceGuess(state, u, fixed || unit.power);
+        if (elixirHeals(u))
+          value +=
+            Math.min(unit.power, u.maxHp - u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
+        if (u.power > 0) value += u.enhance ? 0 : 1 + enhanceGuess(state, u, fixed || unit.power);
         continue;
       }
       // With `fixed`, a hit first, as any attack's.

@@ -197,6 +197,14 @@ export function enhance(ctx: Ctx, u: Unit, amount: number): void {
   log(ctx, `${unitName(u)} is Enhanced ${amount}.`);
 }
 
+/** Heals `u` by `amount`, up to its health (Elixir's heal, a switch for measuring). */
+export function heal(ctx: Ctx, u: Unit, amount: number): void {
+  const healed = Math.min(amount, u.maxHp - u.hp);
+  if (healed <= 0) return;
+  u.hp += healed;
+  log(ctx, `${unitName(u)} heals ${healed}.`);
+}
+
 /** Degrades `u` by `amount` until the end of its next turn, replacing any Degrade it had. */
 export function degrade(ctx: Ctx, u: Unit, amount: number): void {
   u.degrade = amount;

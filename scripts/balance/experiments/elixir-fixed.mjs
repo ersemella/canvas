@@ -13,3 +13,19 @@ export const experiments = {
   'china-built': {enemies: ['fox', 'modao', 'alchemist'], map: 'gobi'},
   'china-fixed': {patch: fixed, enemies: ['fox', 'modao', 'alchemist'], map: 'gobi'},
 };
+
+// Elixir that also heals an ally the Alchemist's power (`ABILITY.elixir.heal`):
+// any ally (`all`, the camel too) or heroes only, at power 2 and power 1.
+const heals = (heal) => (c) => Object.assign(c.ABILITY.elixir, {fixed: 1, heal});
+for (const heal of ['all', 'heroes']) {
+  experiments[`seat-heal-${heal}`] = {patch: heals(heal), mod: {party: seat}};
+  experiments[`seat-heal-${heal}-power1`] = {
+    patch: heals(heal),
+    mod: {party: seat, stats: {alchemist: {power: -1}}},
+  };
+  experiments[`china-heal-${heal}`] = {
+    patch: heals(heal),
+    enemies: ['fox', 'modao', 'alchemist'],
+    map: 'gobi',
+  };
+}
