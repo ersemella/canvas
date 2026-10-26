@@ -59,7 +59,7 @@ export interface MapData {
   mountains: 'sometimes' | 'never' | 'always';
   /**
    * Where they stand: one range along one of the board's slanted edges
-   * (the Steppe's), or two clumps in its middle (the Flaming
+   * (the Steppe's), or three side-by-side pairs in its middle (the Flaming
    * Mountains', owner, 2026-10-26; `middleClumps`).
    */
   mountainPlaces: 'edge' | 'middle';
@@ -154,7 +154,7 @@ export const GOBI: MapData = {
 /**
  * The Flaming Mountains (owner, 2026-10-26), the China region's map: red
  * earth below the burning ridges of *Journey to the West*, which stand in
- * every fight, in two clumps in the middle of the board, not
+ * every fight, in three side-by-side pairs in the middle of the board, not
  * along its edges (owner, 2026-10-26), and one or two Han **beacon
  * towers** (owner, 2026-10-26), the rammed-earth watchtowers along the
  * Hexi Corridor, as its `obstacle`, within 3 of the centre and not next to
@@ -313,18 +313,20 @@ function mountainRange(
 }
 
 /**
- * The Flaming Mountains' (owner, 2026-10-26): two clumps of 2 to 4
- * mountains in the middle of the board, at most `budget` in all (8 less
- * the beacon towers, `MAX_COVERED`), each from a first hex within
- * `MIDDLE_CLUMP.start` of the centre growing a hex at a time onto a
- * neighbour of the clump within `MIDDLE_CLUMP.reach`, the ones touching
- * more of it first, so it bunches up rather than strings out. Off the
- * starting columns, off Temee's road down the
- * middle column, not next to the camel's start or the exit, the clumps
- * apart, and never cutting the board in two. (Two or three clumps at
- * first, then at most 8 mountains; two, owner, 2026-10-26.)
+ * The Flaming Mountains' (owner, 2026-10-26): three pairs of mountains in
+ * the middle of the board, at most `budget` in all (8 less the beacon
+ * towers, `MAX_COVERED`), each pair side by side in neighbouring columns,
+ * never one above the other, so each reads as one ridge running across
+ * the board (owner, 2026-10-26; clumps of 2 to 4 before, which stacked
+ * ridges one above another). With the mountains kept to the two columns
+ * either side of the middle, a pair is the most that can stand side by
+ * side without two in one column touching. Each pair's first hex is within
+ * `MIDDLE_CLUMP.start` of the centre, its second within
+ * `MIDDLE_CLUMP.reach`. Off the starting columns, off Temee's road down
+ * the middle column, not next to the camel's start or the exit, the pairs
+ * apart, and never cutting the board in two.
  */
-const MIDDLE_CLUMP = {count: 2, sizes: [2, 3, 4], start: 2, reach: 3};
+const MIDDLE_CLUMP = {count: 3, start: 2, reach: 3};
 
 /**
  * On a map of middle clumps, the most spaces its mountains and obstacles
@@ -346,52 +348,47 @@ function middleClumps(
     .filter((h) => Math.abs(h.q) < RADIUS - 1 && h.q !== 0)
     .filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.reach)
     .filter((h) => reserved.every((x) => hexDistance(x, h) > 1));
-  for (let c = 0; c < MIDDLE_CLUMP.count; c++) {
-    // Rolled even when the budget cuts it, so a seed's other draws stay the same.
-    const rolledSize = MIDDLE_CLUMP.sizes[Math.floor(random() * MIDDLE_CLUMP.sizes.length)]!;
-    const size = Math.min(rolledSize, budget - placed.length);
-    if (size < 2) break;
-    // Apart from the clumps before it.
+  for (let c = 0; c < MIDDLE_CLUMP.count && budget - placed.length >= 2; c++) {
+    // Apart from the pairs before it.
     let open = allowed.filter((h) => placed.every((p) => hexDistance(p, h) > 1));
-    let clump: Hex[] = [];
-    // A clump stuck at one mountain, with nowhere free beside it, is taken
+    let pair: Hex[] = [];
+    // A pair stuck at one mountain, with nowhere free beside it, is taken
     // back and started again elsewhere, a few times at most.
-    for (let tries = 0; tries < 6 && clump.length < 2; tries++) {
-      for (const h of clump) delete tiles[hexKey(h)];
-      if (clump.length) open = open.filter((h) => hexDistance(h, clump[0]!) > 0);
-      clump = growClump(map, tiles, open, size, random);
+    for (let tries = 0; tries < 6 && pair.length < 2; tries++) {
+      for (const h of pair) delete tiles[hexKey(h)];
+      if (pair.length) open = open.filter((h) => hexDistance(h, pair[0]!) > 0);
+      pair = growPair(map, tiles, open, random);
     }
-    if (clump.length < 2) for (const h of clump) delete tiles[hexKey(h)];
-    else placed.push(...clump);
+    if (pair.length < 2) for (const h of pair) delete tiles[hexKey(h)];
+    else placed.push(...pair);
   }
 }
 
-/** One clump of up to `size` mountains among `open`, marked in `tiles` (`middleClumps`). */
-function growClump(
+/**
+ * One pair of mountains among `open`, marked in `tiles` (`middleClumps`):
+ * a first hex, then one beside it in a neighbouring column; just the first
+ * if there's none.
+ */
+function growPair(
   map: MapData,
   tiles: Record<string, Tile>,
   open: Hex[],
-  size: number,
   random: () => number
 ): Hex[] {
-  const clump: Hex[] = [];
-  while (clump.length < size) {
+  const pair: Hex[] = [];
+  while (pair.length < 2) {
     let free = open.filter(
-      (h) => !clump.some((m) => hexDistance(m, h) === 0) && connectedWithout(map, tiles, h)
+      (h) => !pair.some((m) => hexDistance(m, h) === 0) && connectedWithout(map, tiles, h)
     );
-    if (!clump.length) free = free.filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.start);
-    else {
-      const touching = (h: Hex) => clump.filter((m) => hexDistance(m, h) === 1).length;
-      free = free.filter((h) => touching(h) > 0);
-      const most = Math.max(0, ...free.map(touching));
-      free = free.filter((h) => touching(h) === most);
-    }
+    free = pair.length
+      ? free.filter((h) => hexDistance(pair[0]!, h) === 1 && h.q !== pair[0]!.q)
+      : free.filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.start);
     if (!free.length) break;
     const h = free[Math.floor(random() * free.length)]!;
     tiles[hexKey(h)] = 'mountain';
-    clump.push(h);
+    pair.push(h);
   }
-  return clump;
+  return pair;
 }
 
 /** Whether every open hex of `map` can still walk to every other with `extra` blocked too. */

@@ -585,7 +585,7 @@ describe('the board', () => {
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
   });
 
-  it('raises the Flaming Mountains in every fight, in clumps in the middle, with one or two beacon towers', () => {
+  it('raises the Flaming Mountains in every fight, in side-by-side pairs in the middle, with one or two beacon towers', () => {
     let steppeWithout = 0;
     const towerCounts = new Set<number>();
     for (let seed = 0; seed < 40; seed++) {
@@ -593,7 +593,7 @@ describe('the board', () => {
       const s = createFight(seed, undefined, undefined, false, [], FLAMING);
       expect(s.mapId).toBe('flaming');
       expect(mapOf(s).name).toBe('The Flaming Mountains');
-      // Two clumps of 2 to 4 in the middle, apart, off the
+      // Three pairs in the middle, apart, off the
       // starting columns and Temee's road, not next to its start or exit.
       const mountains = Object.keys(s.tiles)
         .filter((k) => s.tiles[k] === 'mountain')
@@ -613,9 +613,12 @@ describe('the board', () => {
         for (const c of touching) clumps.splice(clumps.indexOf(c), 1);
         clumps.push(merged);
       }
-      expect(clumps).toHaveLength(2);
-      for (const c of clumps) expect(c.length).toBeGreaterThanOrEqual(2);
-      for (const c of clumps) expect(c.length).toBeLessThanOrEqual(4);
+      expect(clumps).toHaveLength(3);
+      // Each pair side by side, in neighbouring columns, never one above the other.
+      for (const c of clumps) {
+        expect(c).toHaveLength(2);
+        expect(c[0]!.q).not.toBe(c[1]!.q);
+      }
       // One or two beacon towers, apart from each other and the mountains,
       // covering at most 8 spaces with them.
       const towers = Object.keys(s.tiles)

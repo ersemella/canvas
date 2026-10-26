@@ -124,7 +124,12 @@ tuning. This file has no combat-design section number.
   ridges with flames added on their crests: a separate flame per crest
   read as a lid on the peak, then animated frames made the mountains look
   as if they shook (owner, 2026-10-26). The mountains stand not along an
-  edge, as the Steppe's, but in two clumps of 2 to 4, so at most 8 mountains (owner, 2026-10-26; two or three clumps at first), in the middle
+  edge, as the Steppe's, but in **three pairs**, each side by side in neighbouring columns,
+  never one above the other, so each reads as one ridge running across
+  the board (owner, 2026-10-26; two clumps of 2 to 4 before, which
+  stacked ridges one above another, and two or three clumps at first;
+  with the mountains kept to the two columns either side of the middle, a
+  pair is the most that fits side by side), in the middle
   of the board (`MapData.mountainPlaces`: `'middle'`, `middleClumps` in
   map.ts; owner, 2026-10-26), off the starting columns and Temee's road,
   in every fight (`MapData.mountains`: `'always'`), with one or two Han
@@ -133,9 +138,12 @@ tuning. This file has no combat-design section number.
   board reads as China's rather than as a volcanic desert. They stand
   within 3 of the centre, not next to a mountain or each other, and the
   mountains and towers together cover **at most 8 spaces** (`MAX_COVERED`
-  in map.ts: the towers are rolled first and the clumps cut to fit). The
-  tower (`tiles/beacon-tower.png`, 38 × 46 a frame, two rows clear above
-  the finial and three columns either side, so the pennant isn't cut off
+  in map.ts: the towers are rolled first and leave the mountains room: three pairs
+  and two towers cover 8). The
+  tower (`tiles/beacon-tower.png`, 38 × 46 a frame, its base 24 wide so it
+  stays inside its space (28 before, which reached past it; owner,
+  2026-10-26), two rows clear above the finial and three columns either
+  side, so the pennant isn't cut off
   at the sprite's edge; its pennant flies in 4 frames at the fire's pace,
   `Look.obstacleFrames`) is the owner's (AI-assisted),
   redrawn by hand on the sprites' grid, as shrinking it left the roof a
