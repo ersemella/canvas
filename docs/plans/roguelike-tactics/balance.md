@@ -2528,6 +2528,47 @@ seat:
   these rules (`caravans.mjs`).
 - Not changed: the numbers are the owner's.
 
+### Does a party need one of each role? Whole runs (2026-10-26)
+
+Asked for: whether a party needs a tank, a damage hero and a support to
+get through a run, the owner wanting to encourage one of each without
+requiring it. `scripts/balance/runs.mjs` plays whole runs (all six
+stages, the fallen gone, survivors at full health, the production AI on
+both sides; each provision +1 defence to the weakest survivor, the first
+passive offered to the first survivor without it);
+`experiments/roles.mjs` plays every party of three from the six built
+heroes, 200 runs each (seeds 1000–1199, about ±2.5 points on rates near
+15%).
+
+| Shape | Parties | Runs won, mean | Range |
+|---|---:|---:|---:|
+| One of each | 8 | 17.3% | 5.5–36.5% |
+| No damage | 4 | 21.9% | 12–35% |
+| No support | 4 | 14.8% | 4.5–24% |
+| No tank | 4 | 8.8% | 3–15.5% |
+
+- **Roles don't decide a run yet; heroes do.** One of each is no better
+  than average, and no damage beats it. The one-of-each parties alone
+  span 5.5–36.5%, wider than the gap between any two shapes.
+- **Two heroes carry runs:** parties with the Grappler win 22.1% (9.9%
+  without), with the Alchemist 21.1% (10.9% without). Every other hero's
+  parties win less than those without it: the Storm Caller 11.5% (20.5%),
+  the Swordsman 12.1% (19.9%), the Horse Archer 14.2% (17.8%), the
+  Vanguard 15.2% (16.9%). The Grappler and Alchemist together win 35–36.5%
+  with any third but the Storm Caller (24.5%).
+- **No tank is the one shape that hurts** (8.8%), mostly because it
+  can't have the Grappler.
+- **Losses are the camel's whatever the shape:** 79–86% of lost stages
+  end with the camel killed, 13–20% with the party, stalls about 1%. A
+  missing role doesn't change how a run is lost, so no role is doing a
+  job the others can't (camel.md's tank job isn't built).
+- **Stage 3 and stage 6 decide runs:** the regions' last fights, against
+  three heroes, are won 22–81% of the time; stage 1 93–100%.
+
+Next: the role jobs (the tank protecting the camel first), then this
+experiment again; a one-of-each edge needs the heroes' spread within a
+role narrowed too, or hero strength will keep hiding it.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
