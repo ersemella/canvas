@@ -1745,7 +1745,7 @@ describe('the Vanguard and the Alchemist', () => {
       expect(m.unstoppable).toBeUndefined();
     }));
 
-  it('a card Delayed or Hastened onto a taken slot takes it, whatever its speed, the card there moving on', () => {
+  it('a card Delayed onto a taken slot yields, whatever its speed; one Hastened collides by speed', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
     const slow = unit(s, 'p-modao');
@@ -1754,18 +1754,23 @@ describe('the Vanguard and the Alchemist', () => {
     slow.speed = 1;
     fast.speed = 3;
     other.speed = 3;
-    // Delayed onto the faster card's slot: it takes it, the faster card moves on.
-    slow.slot = 5;
-    fast.slot = 8;
+    // Delayed, the faster card onto the slower card's slot: it yields past it.
+    slow.slot = 8;
+    fast.slot = 5;
     other.slot = 20;
-    delay(ctx, slow, 3);
-    expect(slow.slot).toBe(8);
+    delay(ctx, fast, 3);
     expect(fast.slot).toBe(9);
-    // Hastened onto a faster card's slot: the same.
+    expect(slow.slot).toBe(8);
+    // Hastened onto a faster card's slot: it yields.
     other.slot = 4;
     haste(ctx, slow, 4);
-    expect(slow.slot).toBe(4);
-    expect(other.slot).toBe(5);
+    expect(slow.slot).toBe(5);
+    expect(other.slot).toBe(4);
+    // Hastened onto a slower card's slot: it takes it, the slower card moving on.
+    slow.slot = 6;
+    haste(ctx, fast, 3);
+    expect(fast.slot).toBe(6);
+    expect(slow.slot).toBe(7);
   });
 
   it('Cleave Delays every unit it leaves standing 8 slots, and not the ones it kills', () => {

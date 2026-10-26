@@ -60,19 +60,26 @@ export function freeSlotFrom(state: FightState, slot: number, ignore?: Unit): nu
  * Places a unit's card at `slot`, resolving collisions by speed (3.3;
  * owner, 2026-10-23): a faster arriving card takes the slot and the card
  * there moves on to the next, colliding again by the same rule; an equal
- * or slower one yields to the next slot itself. A `push`ed card takes
- * its slot whatever its speed (a charge's, and a card Hastened or Delayed,
- * owner, 2026-10-26), the card there moving on as above. Returns the
- * unit's slot.
+ * or slower one yields to the next slot itself. A card that `takes` its
+ * slot does so whatever its speed (a charge's), the card there moving on as
+ * above; one that `yields` moves on past every taken slot whatever its speed
+ * (a card Delayed; owner, 2026-10-26). Returns the unit's slot.
  */
-export function placeCard(state: FightState, unit: Unit, slot: number, push = false): number {
+export function placeCard(
+  state: FightState,
+  unit: Unit,
+  slot: number,
+  priority: 'speed' | 'takes' | 'yields' = 'speed'
+): number {
   unit.slot = null;
   let moving = unit;
   let s = slot;
   for (;;) {
     const there = state.units.find((u) => u.alive && u !== moving && u.slot === s);
     if (!there) break;
-    if (moving.speed > there.speed || (push && moving === unit)) {
+    const wins =
+      moving === unit && priority !== 'speed' ? priority === 'takes' : moving.speed > there.speed;
+    if (wins) {
       moving.slot = s;
       moving = there;
     }

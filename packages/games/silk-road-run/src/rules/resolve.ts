@@ -10,7 +10,7 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, HEROES, RULES} from './config';
+import {ABILITY, CAMEL, HEROES} from './config';
 import {addStatus, hailOn, isImmobilized, isStunned, shotLane, unitAt, walkable} from './board';
 import {MAPS} from './map';
 import {hasPassive, spendPassive} from './passives';
@@ -239,30 +239,28 @@ function inevitable(ctx: Ctx, u: Unit): boolean {
 }
 
 /**
- * Delays `u`'s card `n` slots later (keywords.md 17.3). It takes a taken
- * slot whatever its speed, the card there moving on by speed as any
- * placement does (3.3; owner, 2026-10-26). The delay limit (3.6) is
- * not built.
+ * Delays `u`'s card `n` slots later (keywords.md 17.3). It yields past
+ * every taken slot whatever its speed, the cards there staying (3.3; owner,
+ * 2026-10-26). The delay limit (3.6) is not built.
  */
 export function delay(ctx: Ctx, u: Unit, n: number): void {
   if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
-  placeCard(ctx.state, u, u.slot + n, RULES.delayWins);
+  placeCard(ctx.state, u, u.slot + n, 'yields');
   log(ctx, `${unitName(u)} is Delayed ${n}.`);
 }
 
 /**
  * Hastens `u`'s card `n` slots earlier (keywords.md 17.3), never earlier
- * than the next slot, taking a taken slot whatever its speed (3.3; owner,
- * 2026-10-26), as a Delay does. During its own
- * turn (or a charging card's landing), its card not yet placed, the Haste
- * is taken off as the card is placed (`Unit.hasteDue`). The haste limit
- * is not built.
+ * than the next slot, a taken slot resolved by speed as any placement is
+ * (3.3; owner, 2026-10-26). During its own turn (or a charging card's
+ * landing), its card not yet placed, the Haste is taken off as the card is
+ * placed (`Unit.hasteDue`). The haste limit is not built.
  */
 export function haste(ctx: Ctx, u: Unit, n: number): void {
   if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
   log(ctx, `${unitName(u)} is Hastened ${n}.`);
   if (u.slot <= ctx.state.currentSlot) u.hasteDue = (u.hasteDue ?? 0) + n;
-  else placeCard(ctx.state, u, Math.max(ctx.state.currentSlot + 1, u.slot - n), RULES.hasteWins);
+  else placeCard(ctx.state, u, Math.max(ctx.state.currentSlot + 1, u.slot - n));
 }
 
 /** Takes off the Haste `unit` was given during its turn, its card just placed (`haste`). */
@@ -270,7 +268,7 @@ export function takeHasteDue(state: FightState, unit: Unit): void {
   const n = unit.hasteDue;
   delete unit.hasteDue;
   if (!n || !unit.alive || unit.slot === null) return;
-  placeCard(state, unit, Math.max(state.currentSlot + 1, unit.slot - n), RULES.hasteWins);
+  placeCard(state, unit, Math.max(state.currentSlot + 1, unit.slot - n));
 }
 
 /**

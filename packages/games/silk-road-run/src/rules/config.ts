@@ -36,12 +36,6 @@ export const RULES = {
   movementCap: 2,
   /** The most any stat (speed, defence or power) can reach (owner, 2026-10-25). */
   statMax: 10,
-  /**
-   * A card Delayed, and one Hastened, takes a taken slot whatever its speed
-   * (3.3; owner, 2026-10-26); off, it collides by speed as any placement.
-   */
-  delayWins: true as boolean,
-  hasteWins: true as boolean,
 } as const;
 
 /** Health from defence (owner, 2026-10-23): (1 + defence) × 2. */
