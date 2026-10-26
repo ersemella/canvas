@@ -477,6 +477,14 @@ Learned:
   call. The savaran remain its inspiration.
 - **Djinn-Binder** (2026-10-17): renamed the **Genie Binder**; owner's
   call. The spirit it commands is still called a djinn.
+- **Simurgh Feather Burner** (removed 2026-10-26; owner's call): the
+  Simurgh, called by burning one of its feathers. Persia's area-damage
+  hero (strikes sweeping areas and leaving Burn) until that day, then
+  briefly a healing support, as the Simurgh heals in the *Shahnameh*;
+  replaced by the **Magus Astrologer**, a track controller, the role the
+  Div Binder had left empty. Weighed for the magus: the Simurgh kept with
+  the magus as an expansion hero; the magus's track-control kit given to a
+  Byzantine support (a *mechanikos* with a water clock or astrolabe).
 - **Persian Cataphract** (2026-10-26): renamed the **Sasanian
   Cataphract**, after the dynasty rather than the modern country; owner's
   call. Weighed: Savaran Lancer (the native term and the damage role,
