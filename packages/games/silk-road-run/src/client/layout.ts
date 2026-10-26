@@ -86,7 +86,11 @@ export function trackSlots(
   bumps: TrackBumps = {}
 ): TrackSlots {
   const entries = trackEntries(fight, previewSlot, bumps);
-  const last = entries.length > 0 ? entries[entries.length - 1]!.slot : start;
+  // Cards the planned turn moves earlier keep the slots they leave on the deck, marked.
+  const last = Math.max(
+    entries.length > 0 ? entries[entries.length - 1]!.slot : start,
+    ...fight.units.filter((u) => u.alive && u.slot !== null).map((u) => u.slot!)
+  );
   const count = Math.max(MIN_SLOT_CELLS, last - start + 1);
   const x0 = TRACK_AREA.x + 6;
   const w = (TRACK_AREA.width - 12) / (count - 1 + DECK_CARD_STRIPS);

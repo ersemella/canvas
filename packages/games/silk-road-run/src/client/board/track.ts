@@ -101,9 +101,11 @@ function bandCard(
  * The track as a fanned deck, as in Mana Khemia: a card for every
  * slot from now on, empty ones blank, the current one in front at the left
  * and each later one tucked behind the one before, showing a strip with
- * its unit. The planned turn's landing card is dashed; when it had to yield
- * past taken slots, the slot its cost aimed at is marked too, with an arrow
- * on to where it lands. The acting unit's card stands a little taller in
+ * its unit. The planned turn's landing card is dashed; when it lands off
+ * the slot its cost aimed at (it yields past taken slots, or is Hastened),
+ * that slot is marked too, with an arrow on to where it lands, and so is
+ * every other card the turn moves (Hastened, Delayed or bumped on), from
+ * its slot now to where it goes (`drawMoves`). The acting unit's card stands a little taller in
  * front. After a turn, its card slides back to its new slot over the
  * others, and the empty cards it passed lift up off the track one by one,
  * the rest sliding forward, until the next turn's card is in front.
@@ -173,8 +175,41 @@ export function drawTrack(
       opts
     );
   }
-  if (!advance && previewSlot !== null && aimSlot !== null && aimSlot < previewSlot)
-    drawYield(ctx, deck, aimSlot, previewSlot);
+  if (!advance && previewSlot !== null)
+    drawMoves(ctx, deck, trackMoves(fight, previewSlot, aimSlot, bumps));
+}
+
+/**
+ * A card the planned turn moves on the track, from the slot it holds (or,
+ * for the acting card, the slot its cost aims at) to where it lands.
+ */
+interface TrackMove {
+  from: number;
+  to: number;
+  /** The acting unit's own card: it yields on, or is Hastened back. */
+  acting: boolean;
+}
+
+/**
+ * Every card the planned turn moves: the acting card when it lands off the
+ * slot its cost aims at (it yields, 3.3, or is Hastened), and every other
+ * card it Hastens, Delays or bumps on (`TurnPreview.bumped`).
+ */
+function trackMoves(
+  fight: FightState,
+  previewSlot: number,
+  aimSlot: number | null,
+  bumps: TrackBumps
+): TrackMove[] {
+  const moves: TrackMove[] = [];
+  if (aimSlot !== null && aimSlot !== previewSlot)
+    moves.push({from: aimSlot, to: previewSlot, acting: true});
+  for (const u of fight.units) {
+    const to = bumps[u.id];
+    if (u.id === fight.awaiting || to === undefined || u.slot === null || to === u.slot) continue;
+    moves.push({from: u.slot, to, acting: false});
+  }
+  return moves;
 }
 
 /** Whether `u`'s card is out charging (a drawn arrow of its in the air): drawn greyed. */
@@ -333,45 +368,74 @@ function drawSkipMark(ctx: CanvasRenderingContext2D, x: number, y: number): void
 }
 
 /**
- * A card that yields (3.3): the strip of the slot its cost aimed at,
- * outlined dashed, and an arrow below the units from there to where it
- * lands, over the cards in the way.
+ * The planned turn's moves on the track (3.3, Haste and Delay): for each,
+ * the strip of the slot it leaves (or, for the acting card, the slot its
+ * cost aimed at) outlined dashed, and an arrow below the units from there
+ * to where it lands, over the cards in the way: blue for the acting card,
+ * jade for a card brought earlier, gold for one sent later. Arrows whose
+ * spans overlap sit on rows one above another, so each reads.
  */
-function drawYield(
+function drawMoves(ctx: CanvasRenderingContext2D, deck: TrackSlots, moves: TrackMove[]): void {
+  const rows: {lo: number; hi: number}[][] = [];
+  // The acting card's first, on the bottom row; then the rest, nearest first.
+  const ordered = [...moves].sort((a, b) => Number(b.acting) - Number(a.acting) || a.from - b.from);
+  for (const m of ordered) {
+    const lo = Math.min(m.from, m.to);
+    const hi = Math.max(m.from, m.to);
+    let row = rows.findIndex((r) => r.every((o) => hi < o.lo || lo > o.hi));
+    if (row < 0) row = rows.push([]) - 1;
+    rows[row]!.push({lo, hi});
+    const color = m.acting ? PALETTE.lapisLight : m.to < m.from ? PALETTE.jade : PALETTE.gold;
+    drawMove(ctx, deck, m.from, m.to, color, row);
+  }
+}
+
+/** Pixels between rows of move arrows. */
+const MOVE_ROW_STEP = 9;
+
+/**
+ * One move (`drawMoves`): the strip of slot `from` outlined dashed in
+ * `color`, and an arrow `row` rows up from the bottom from there to `to`.
+ */
+function drawMove(
   ctx: CanvasRenderingContext2D,
   deck: TrackSlots,
-  aim: number,
-  land: number
+  from: number,
+  to: number,
+  color: string,
+  row: number
 ): void {
   // The middle of a slot's showing strip: the right `w` of its card.
   const mid = (slot: number) => deck.x0 + (slot - deck.start) * deck.w + deck.cardW - deck.w / 2;
-  const left = mid(aim) - deck.w / 2;
+  const left = mid(from) - deck.w / 2;
   ctx.save();
   ctx.setLineDash([3, 2]);
-  ctx.strokeStyle = PALETTE.lapisLight;
+  ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   pixelRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
   ctx.stroke();
   ctx.setLineDash([]);
-  const y = deck.y + deck.h - 18;
-  const x1 = mid(aim);
-  const x2 = mid(land) - 4;
-  // Dark under the blue, so it reads over any card.
-  for (const [color, width] of [
+  const y = deck.y + deck.h - 18 - row * MOVE_ROW_STEP;
+  // Pointing right to a later slot, left to an earlier one.
+  const dir = to > from ? 1 : -1;
+  const x1 = mid(from);
+  const x2 = mid(to) - 4 * dir;
+  // Dark under the colour, so it reads over any card.
+  for (const [stroke, width] of [
     [PALETTE.ink, 4],
-    [PALETTE.lapisLight, 2],
+    [color, 2],
   ] as const) {
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
+    ctx.strokeStyle = stroke;
+    ctx.fillStyle = stroke;
     ctx.lineWidth = width;
     ctx.beginPath();
     ctx.moveTo(x1, y);
-    ctx.lineTo(x2 - 2, y);
+    ctx.lineTo(x2 - 2 * dir, y);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(x2 + width / 2 + 2, y);
-    ctx.lineTo(x2 - 5, y - 4 - width / 2);
-    ctx.lineTo(x2 - 5, y + 4 + width / 2);
+    ctx.moveTo(x2 + (width / 2 + 2) * dir, y);
+    ctx.lineTo(x2 - 5 * dir, y - 4 - width / 2);
+    ctx.lineTo(x2 - 5 * dir, y + 4 + width / 2);
     ctx.closePath();
     ctx.fill();
   }

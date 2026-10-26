@@ -46,7 +46,7 @@ export const PALETTE_VARS = Object.fromEntries(
  * When the unit's next turn comes after a previewed turn, in slots from
  * now: "+3", or, when the slot the turn aims at (3.2) is taken and the
  * card yields further on (3.3), "+3 → +5", the aim and then where the
- * card lands, as the track draws it. Null with no preview.
+ * card lands, as the track draws it; "+8 → +5" when the turn Hastens it. Null with no preview.
  */
 export function nextTurn(
   fight: FightState,
@@ -57,10 +57,13 @@ export function nextTurn(
   const slot = preview.slot;
   const aim = preview.aimSlot ?? slot;
   if (slot === null) return {text: ''};
-  if (aim === null || slot <= aim) return {text: `+${slot - now}`};
+  if (aim === null || slot === aim) return {text: `+${slot - now}`};
   return {
     text: `+${aim - now} → +${slot - now}`,
-    title: `Your speed aims at slot +${aim - now}, but cards hold the slots up to +${slot - now - 1}: yours yields to the first free one.`,
+    title:
+      slot > aim
+        ? `Your speed aims at slot +${aim - now}, but cards hold the slots up to +${slot - now - 1}: yours yields to the first free one.`
+        : `Your speed aims at slot +${aim - now}, but this turn brings your card on to +${slot - now}.`,
   };
 }
 
