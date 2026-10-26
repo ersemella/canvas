@@ -41,7 +41,7 @@ The road is divided into four **regions**, one for each civilization the caravan
 |---|---|---|---|
 | 1 | **Steppe** | Mongol and Turkic | Mangudai Outrider, Bökh Champion (Mongol); Yadachy Storm Caller (Turkic) |
 | 2 | **China** | Tang China | Modao Vanguard, Youxia Swordsman, Waidan Alchemist |
-| 3 | **Persia** | Persia and Sogdiana, with the Abbasid *Nights*' folklore | Persian Cataphract, Simurgh Summoner, Jinn Binder |
+| 3 | **Persia** | Persia and Sogdiana, with the Abbasid *Nights*' folklore | Persian Cataphract, Simurgh Feather Burner, Jinn Binder |
 | 4 | **Byzantine** | Byzantium | Varangian Guard (tank and support open, question 33 in [roster.md](roster.md)) |
 
 - **The order is fixed,** the same in every run; route choices (the route map) vary within a region, not the order of regions.
