@@ -594,15 +594,14 @@ const cleave: AbilityDef = {
 // ─── Waidan Alchemist ────────────────────────────────────────────────────────
 
 /**
- * Whether Elixir can take on `u`: a unit that hits, not the Alchemist
- * itself; with `ABILITY.elixir.fixed`, any enemy, since it takes a hit;
+ * Whether Elixir can take on `u`: a unit that hits, the Alchemist itself
+ * too (owner, 2026-10-26); with `ABILITY.elixir.fixed`, any enemy, since it takes a hit;
  * with `tempo`, any unit.
  */
 const elixirTakes =
   (user: Unit) =>
   (u: Unit | undefined): u is Unit =>
     u !== undefined &&
-    u !== user &&
     (u.power > 0 ||
       ABILITY.elixir.tempo > 0 ||
       (ABILITY.elixir.fixed > 0 && u.side !== user.side) ||
@@ -629,7 +628,8 @@ export function elixirCaught(state: FightState, user: Unit, from: Hex, target: H
 
 /**
  * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within
- * `ABILITY.elixir.range`, not the Alchemist itself, with no line of fire.
+ * `ABILITY.elixir.range`, the Alchemist itself too (owner, 2026-10-26),
+ * with no line of fire.
  * An ally heals the Alchemist's power and is Empowered `fixed` (1); an
  * enemy is hit for the Alchemist's power, then Weakened `fixed`; each until
  * the end of its next turn, replacing any it had. Other shapes and
@@ -644,8 +644,8 @@ const elixir: AbilityDef = {
   range: ABILITY.elixir.range,
   summary: (user) =>
     ABILITY.elixir.fixed
-      ? `A unit within ${ABILITY.elixir.range}: an ally ${ABILITY.elixir.heal ? `heals ${user.power} and ` : ''}is Empowered ${ABILITY.elixir.fixed}; an enemy is hit, then Weakened ${ABILITY.elixir.fixed}, until the end of its next turn.`
-      : `A unit within ${ABILITY.elixir.range}: an ally is Empowered ${user.power}, an enemy Weakened ${user.power}, until the end of its next turn.`,
+      ? `A unit within ${ABILITY.elixir.range}, itself too: an ally ${ABILITY.elixir.heal ? `heals ${user.power} and ` : ''}is Empowered ${ABILITY.elixir.fixed}; an enemy is hit, then Weakened ${ABILITY.elixir.fixed}, until the end of its next turn.`
+      : `A unit within ${ABILITY.elixir.range}, itself too: an ally is Empowered ${user.power}, an enemy Weakened ${user.power}, until the end of its next turn.`,
   targetsUnit: true,
   targets(state, map, user, from) {
     const {shape, range} = ABILITY.elixir;

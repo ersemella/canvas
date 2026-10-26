@@ -1423,14 +1423,19 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
     );
     const alchemist = unit(s, 'p-alchemist');
     expect(alchemist.power).toBe(1);
-    const targets = ABILITIES.elixir.targets(s, mapOf(s), alchemist, alchemist.hex!);
-    expect(targets.some((t) => hexEquals(t.hex!, alchemist.hex!))).toBe(false);
-    // The player is offered both: an ally to heal and Empower, an enemy to hit and Weaken.
+    // The player is offered both: an ally to heal and Empower, an enemy to
+    // hit and Weaken, and the Alchemist itself.
     expect(
       offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
         .map((t) => hexKey(t.hex!))
         .sort()
-    ).toEqual([at(2, 3), at(3, 3)].map(hexKey).sort());
+    ).toEqual([at(1, 3), at(2, 3), at(3, 3)].map(hexKey).sort());
+    // On itself: hurt, it heals its power and is Empowered 1, lasting through its next turn.
+    const m = cloneFight(s);
+    unit(m, 'p-alchemist').hp -= 2;
+    applyTurn(m, unit(m, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(1, 3)}}});
+    expect(unit(m, 'p-alchemist').hp).toBe(unit(m, 'p-alchemist').maxHp - 1);
+    expect(unit(m, 'p-alchemist').empower).toBe(1);
     // An ally down 2 heals 1 (the Alchemist's power) and is Empowered 1.
     const a = cloneFight(s);
     a.events = [];
@@ -1500,7 +1505,8 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
         applyTurn(c, unit(c, 'p-alchemist'), {action: {ability: 'elixir', target: {hex}}});
         expect(unit(c, 'p-mangudai').empower).toBe(unit(c, 'p-alchemist').power);
         expect(unit(c, 'e-mangudai').weaken).toBe(unit(c, 'p-alchemist').power);
-        expect(unit(c, 'p-alchemist').empower).toBeUndefined();
+        // The Alchemist is within the radius too, so it takes the elixir.
+        expect(unit(c, 'p-alchemist').empower).toBe(unit(c, 'p-alchemist').power);
       }
     } finally {
       Object.assign(elixir, saved);

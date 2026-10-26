@@ -267,7 +267,7 @@ export const ABILITY = {
   cleave: {reach: 2, delay: 5 as number},
   /**
    * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within `range`,
-   * not the Alchemist itself, no line of fire. An ally heals the
+   * the Alchemist itself too, no line of fire. An ally heals the
    * Alchemist's power, up to its health, and is Empowered `fixed` (1); an
    * enemy takes a hit (the Alchemist's power) and is Weakened `fixed`; each
    * until the end of its next turn, a new one replacing the last. Any enemy
