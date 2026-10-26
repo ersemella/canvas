@@ -1548,43 +1548,89 @@ describe('the Vanguard and the Alchemist', () => {
       expect(tap(h)).toEqual({hex: hexNeighbor(c, 0)});
   });
 
-  it('Elixir as a burst: a space next to the Alchemist, every unit around it but the Alchemist, allies Hastened 3 and enemies Delayed 3', () => {
+  it('the built Elixir: one ally within 3, not the Alchemist, healed 1, Empowered 1 and Hastened 3; no enemy', () => {
     const s = setup(
       {
-        'p-alchemist': c,
-        'p-mangudai': hexNeighbor(c, 0),
-        // Two away, next to the space aimed at.
-        'e-mangudai': hexNeighbor(hexNeighbor(c, 0), 0),
-        'p-camel': hexNeighbor(c, 3),
-        'e-modao': at(0, 0),
+        'p-alchemist': at(1, 3),
+        'p-mangudai': at(4, 3),
+        'e-mangudai': at(2, 3),
+        'p-camel': at(1, 4),
+        'e-modao': at(8, 6),
       },
       party
     );
     const alchemist = unit(s, 'p-alchemist');
-    // Power 1 (2026-10-26), which the built Elixir doesn't turn into an Empower or Weaken.
     expect(alchemist.power).toBe(1);
-    expect(ABILITIES.elixir.targetsUnit).toBe(false);
-    expect(ABILITIES.elixir.radius).toBe(1);
-    // Offered: the spaces within 1 whose burst catches a unit.
-    const offered = offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir).map((t) => t.hex!);
-    expect(offered.every((h) => hexDistance(h, c) <= 1)).toBe(true);
-    expect(offered.some((h) => hexEquals(h, hexNeighbor(c, 0)))).toBe(true);
+    expect(ABILITIES.elixir.targetsUnit).toBe(true);
+    expect(ABILITIES.elixir.range).toBe(3);
+    // The healthy camel too, for the Haste; not the enemy, nor the Alchemist.
+    expect(
+      offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
+        .map((t) => hexKey(t.hex!))
+        .sort()
+    ).toEqual([at(4, 3), at(1, 4)].map(hexKey).sort());
+    expect(ABILITIES.elixir.summary(alchemist)).toBe(
+      'A unit within 3: allies heal 1 and are Empowered 1 and Hastened 3, until the end of its next turn.'
+    );
     const ally = unit(s, 'p-mangudai');
-    const enemy = unit(s, 'e-mangudai');
+    ally.hp -= 2;
     // Far enough off that a Haste of 3 isn't cut short at the next slot.
     ally.slot = s.currentSlot + 10;
-    const enemyBefore = enemy.slot!;
-    applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: hexNeighbor(c, 0)}}});
+    applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(4, 3)}}});
+    expect(ally.hp).toBe(ally.maxHp - 1);
+    expect(ally.empower).toBe(1);
     expect(ally.slot).toBe(s.currentSlot + 7);
-    expect(enemy.slot).toBeGreaterThanOrEqual(enemyBefore + 3);
-    // No Empower or Weaken, no hit, and not the Alchemist itself, though its burst covers it.
-    expect(ally.empower).toBeUndefined();
-    expect(enemy.weaken).toBeUndefined();
-    expect(enemy.hp).toBe(enemy.maxHp);
-    expect(s.log.some((l) => l.text === 'Your Alchemist is Hastened 3.')).toBe(false);
-    // The camel, out of the burst, takes nothing.
-    expect(s.log.some((l) => l.text.startsWith(`${HEROES.camel.name} is`))).toBe(false);
+    expect(unit(s, 'e-mangudai').weaken).toBeUndefined();
   });
+
+  /** The burst (2026-10-26, built until later that day). */
+  const burst = {
+    range: 1,
+    shape: 'burst',
+    heal: false,
+    empower: 0,
+    haste: 3,
+    delay: 3,
+  } as const;
+
+  it('Elixir as a burst (a switch): a space next to the Alchemist, every unit around it but the Alchemist, allies Hastened 3 and enemies Delayed 3', () =>
+    withElixir(burst, 1, () => {
+      const s = setup(
+        {
+          'p-alchemist': c,
+          'p-mangudai': hexNeighbor(c, 0),
+          // Two away, next to the space aimed at.
+          'e-mangudai': hexNeighbor(hexNeighbor(c, 0), 0),
+          'p-camel': hexNeighbor(c, 3),
+          'e-modao': at(0, 0),
+        },
+        party
+      );
+      const alchemist = unit(s, 'p-alchemist');
+      // Power 1, which the burst doesn't turn into an Empower or Weaken.
+      expect(alchemist.power).toBe(1);
+      expect(ABILITIES.elixir.targetsUnit).toBe(false);
+      expect(ABILITIES.elixir.radius).toBe(1);
+      // Offered: the spaces within 1 whose burst catches a unit.
+      const offered = offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir).map((t) => t.hex!);
+      expect(offered.every((h) => hexDistance(h, c) <= 1)).toBe(true);
+      expect(offered.some((h) => hexEquals(h, hexNeighbor(c, 0)))).toBe(true);
+      const ally = unit(s, 'p-mangudai');
+      const enemy = unit(s, 'e-mangudai');
+      // Far enough off that a Haste of 3 isn't cut short at the next slot.
+      ally.slot = s.currentSlot + 10;
+      const enemyBefore = enemy.slot!;
+      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: hexNeighbor(c, 0)}}});
+      expect(ally.slot).toBe(s.currentSlot + 7);
+      expect(enemy.slot).toBeGreaterThanOrEqual(enemyBefore + 3);
+      // No Empower or Weaken, no hit, and not the Alchemist itself, though its burst covers it.
+      expect(ally.empower).toBeUndefined();
+      expect(enemy.weaken).toBeUndefined();
+      expect(enemy.hp).toBe(enemy.maxHp);
+      expect(s.log.some((l) => l.text === 'Your Alchemist is Hastened 3.')).toBe(false);
+      // The camel, out of the burst, takes nothing.
+      expect(s.log.some((l) => l.text.startsWith(`${HEROES.camel.name} is`))).toBe(false);
+    }));
 
   it('the single-unit Elixir (a switch) heals an ally its power and Empowers it 1, and hits an enemy for its power and Weakens it 1', () =>
     withElixir(single, 1, () => {

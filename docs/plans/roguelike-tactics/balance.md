@@ -2465,6 +2465,9 @@ same, `heal-empower-N-haste-M`.
   63–67%, 14–18 points over the Storm Caller's equal. Each point of
   Empower adds about 2.5 damage a fight. Empower 1 is the right size; if
   anything, 1 / 3 is a little over in the seat.
+- **Adopted (owner, 2026-10-26): heal 1, Empower 1, Haste 3 on one ally
+  within 3** (`shape: 'unit'`, `range: 3`, `heal: 'all'`, `empower: 1`,
+  `haste: 3`, `delay: 0`, `self: false`), the Alchemist's power 1.
 
 ## Principles for re-tuning
 

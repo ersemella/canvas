@@ -82,6 +82,11 @@ and the built burst, and the heal with Empower 1, Haste 3 or both. Built since t
 Empower or Weaken of 0 no longer falling back to power (`elixirAmount`),
 and `heal` no longer needing `fixed`; files that set the power and every
 Elixir switch still reproduce.
+Built since late 2026-10-26: one ally within 3, heal 1, Empower 1, Haste
+3 (`shape: 'unit'`, `range: 3`, `heal: 'all'`, `empower: 1`, `haste: 3`,
+`delay: 0`), so the files touching the Alchemist that don't set every
+Elixir switch reproduce only at their revision; `elixir-unstoppable.mjs`
+and `elixir-haste-delay.mjs` set them all.
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.
