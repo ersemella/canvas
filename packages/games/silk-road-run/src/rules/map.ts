@@ -59,7 +59,7 @@ export interface MapData {
   mountains: 'sometimes' | 'never' | 'always';
   /**
    * Where they stand: one range along one of the board's slanted edges
-   * (the Steppe's), or two or three clumps in its middle (the Flaming
+   * (the Steppe's), or two clumps in its middle (the Flaming
    * Mountains', owner, 2026-10-26; `middleClumps`).
    */
   mountainPlaces: 'edge' | 'middle';
@@ -154,7 +154,7 @@ export const GOBI: MapData = {
 /**
  * The Flaming Mountains (owner, 2026-10-26), the China region's map: red
  * earth below the burning ridges of *Journey to the West*, which stand in
- * every fight, in two or three clumps in the middle of the board, not
+ * every fight, in two clumps in the middle of the board, not
  * along its edges (owner, 2026-10-26). No obstacles in its fights for now: the mudbrick ruins
  * first scattered there, and fissures burning whoever entered them, were
  * taken out (owner, 2026-10-26), until art for an obstacle in the middle
@@ -302,17 +302,17 @@ function mountainRange(
 }
 
 /**
- * The Flaming Mountains' (owner, 2026-10-26): two or three clumps of 2 to 4
- * mountains in the middle of the board, each from a first hex within
+ * The Flaming Mountains' (owner, 2026-10-26): two clumps of 2 to 4
+ * mountains in the middle of the board, so at most 8 in all, each from a first hex within
  * `MIDDLE_CLUMP.start` of the centre growing a hex at a time onto a
  * neighbour of the clump within `MIDDLE_CLUMP.reach`, the ones touching
  * more of it first, so it bunches up rather than strings out. Off the
  * starting columns, off Temee's road down the
  * middle column, not next to the camel's start or the exit, the clumps
- * apart, at most `MIDDLE_CLUMP.most` mountains in all (owner, 2026-10-26:
- * the biggest clump a mountain smaller until they fit, none under 2), and never cutting the board in two.
+ * apart, and never cutting the board in two. (Two or three clumps at
+ * first, then at most 8 mountains; two, owner, 2026-10-26.)
  */
-const MIDDLE_CLUMP = {counts: [2, 3], sizes: [2, 3, 4], most: 8, start: 2, reach: 3};
+const MIDDLE_CLUMP = {count: 2, sizes: [2, 3, 4], start: 2, reach: 3};
 
 function middleClumps(
   map: MapData,
@@ -326,16 +326,8 @@ function middleClumps(
     .filter((h) => Math.abs(h.q) < RADIUS - 1 && h.q !== 0)
     .filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.reach)
     .filter((h) => reserved.every((x) => hexDistance(x, h) > 1));
-  const count = MIDDLE_CLUMP.counts[Math.floor(random() * MIDDLE_CLUMP.counts.length)]!;
-  const sizes = Array.from(
-    {length: count},
-    () => MIDDLE_CLUMP.sizes[Math.floor(random() * MIDDLE_CLUMP.sizes.length)]!
-  );
-  while (sizes.reduce((a, b) => a + b, 0) > MIDDLE_CLUMP.most) {
-    const biggest = sizes.indexOf(Math.max(...sizes));
-    sizes[biggest]!--;
-  }
-  for (const size of sizes) {
+  for (let c = 0; c < MIDDLE_CLUMP.count; c++) {
+    const size = MIDDLE_CLUMP.sizes[Math.floor(random() * MIDDLE_CLUMP.sizes.length)]!;
     // Apart from the clumps before it.
     let open = allowed.filter((h) => placed.every((p) => hexDistance(p, h) > 1));
     let clump: Hex[] = [];

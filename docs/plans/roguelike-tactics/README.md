@@ -26,7 +26,7 @@ survivor takes a provision, +1 to one stat for the rest of the run
 (`gobi`) is the same board in the desert's look, sand and sandstone ruins
 and no mountains, built for the China region and now kept for Arabia's;
 the **Flaming Mountains** (`flaming`, owner, 2026-10-26) are the China
-region's: red earth and two or three clumps of burning mountains in the middle of every fight, no other obstacle yet
+region's: red earth and two clumps of burning mountains in the middle of every fight, no other obstacle yet
 ([art-direction.md](art-direction.md)), played from the test stage until
 the China region's stages exist.
 What the builder decided and where it departs from the brief is in

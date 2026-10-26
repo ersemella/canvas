@@ -122,7 +122,7 @@ tuning. This file has no combat-design section number.
   ridges with flames added on their crests: a separate flame per crest
   read as a lid on the peak, then animated frames made the mountains look
   as if they shook (owner, 2026-10-26). The mountains stand not along an
-  edge, as the Steppe's, but in two or three clumps of 2 to 4, at most 8 in all (owner, 2026-10-26), in the middle
+  edge, as the Steppe's, but in two clumps of 2 to 4, so at most 8 mountains (owner, 2026-10-26; two or three clumps at first), in the middle
   of the board (`MapData.mountainPlaces`: `'middle'`, `middleClumps` in
   map.ts; owner, 2026-10-26), off the starting columns and Temee's road,
   in every fight (`MapData.mountains`: `'always'`), and, for now, nothing else:
