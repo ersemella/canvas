@@ -246,7 +246,7 @@ const hail: AbilityDef = {
   minRange: ABILITY.hail.range,
   radius: 0,
   summary: () =>
-    `A space exactly ${ABILITY.hail.range} away, until ${hailEnds(ABILITY.hail.turns, 'your')}: hits a unit there; units there or entering are Immobilized.`,
+    `A space exactly ${ABILITY.hail.range} away, until ${hailEnds(ABILITY.hail.turns, 'your')}: hits a unit there; units there or entering are Immobilized, and entering hits them too. Up to ${ABILITY.hail.max} stand at once.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(
       map,
@@ -256,8 +256,8 @@ const hail: AbilityDef = {
     ),
   resolve(ctx, user, target) {
     const hex = target.hex!;
-    // One hail a caster: a new one replaces the last (owner, 2026-10-25);
-    // with `ABILITY.hail.max` above 1, the oldest past it.
+    // `ABILITY.hail.max` a caster (2 since 2026-10-26): a new one past it
+    // replaces the oldest; at 1, the last (owner, 2026-10-25).
     if (ABILITY.hail.max <= 1) clearHail(ctx.state, user);
     else {
       const mine = ctx.state.effects.filter((e) => e.source === user.id);

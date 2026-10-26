@@ -199,7 +199,7 @@ export function movementCap(unit: Unit): number {
   return HEROES[unit.hero].moveCap ?? RULES.movementCap;
 }
 
-/** Hail on `h`: entering it Immobilizes, so a move that enters it ends there. */
+/** Hail on `h`: entering it Immobilizes (and hits, `ABILITY.hail.entry`), so a move that enters it ends there. */
 export function hailOn(state: FightState, h: Hex): boolean {
   return state.effects.some((e) => hexEquals(e.hex, h));
 }

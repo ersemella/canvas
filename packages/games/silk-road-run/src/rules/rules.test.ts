@@ -837,8 +837,10 @@ describe('the board', () => {
     expect(simulate(s, 'p-bokh', {move: [at(3, 4), dest], action: {ability: 'hold'}})).toBeNull();
     s.awaiting = b.id;
     applyTurn(s, b, {move: [at(3, 4)], action: {ability: 'hold'}});
-    expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm'}]);
+    expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm', at: at(3, 4)}]);
     expect(movementCap(b)).toBe(0);
+    // Entering it hits too (owner, 2026-10-26).
+    expect(b.hp).toBe(b.maxHp - unit(s, 'e-storm').power);
   });
 
   it('can’t move while Immobilized or Stunned', () => {
@@ -1289,7 +1291,7 @@ describe('abilities', () => {
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
     expect(s.effects).toEqual([{kind: 'hail', hex: at(4, 3), source: 'p-storm', turns: 2}]);
     const m = unit(s, 'e-mangudai');
-    expect(m.statuses).toEqual([{kind: 'immobilized', hail: 'p-storm'}]);
+    expect(m.statuses).toEqual([{kind: 'immobilized', hail: 'p-storm', at: at(4, 3)}]);
     // Moved out of it, it stays Immobilized until the hail is gone.
     enterHex({state: s, map: mapOf(s), slot: s.currentSlot}, m, at(5, 3), 'throw');
     expect(m.statuses.map((x) => x.kind)).toEqual(['immobilized']);
@@ -1307,33 +1309,16 @@ describe('abilities', () => {
     expect(m.statuses).toEqual([]);
   });
 
-  it('hailing again replaces the caster’s last hail, and frees whoever it held', () => {
+  it('with `ABILITY.hail.max` 1, hailing again replaces the caster’s last hail, and frees whoever it held', () => {
     const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
-    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
-    const m = unit(s, 'e-mangudai');
-    expect(m.statuses.map((x) => x.kind)).toEqual(['immobilized']);
-    s.units.forEach((u) => (u.controller = 'human'));
-    for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
-    expect(advanceToDecision(s)!.id).toBe('p-storm');
-    const other = ABILITIES.hail
-      .targets(s, STEPPE, storm, storm.hex!)
-      .find((t) => !unitAt(s, t.hex!))!.hex!;
-    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: other}}});
-    expect(s.effects).toEqual([{kind: 'hail', hex: other, source: 'p-storm', turns: 2}]);
-    expect(m.statuses).toEqual([]);
-  });
-
-  it('with `ABILITY.hail.max` 2, two hails stand, each lifting on its own; `entry` hurts a unit walking in', () => {
-    const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
-    const storm = unit(s, 'p-storm');
-    const hail = ABILITY.hail as {max: number; entry: boolean};
+    const hail = ABILITY.hail as {max: number};
     const saved = {...ABILITY.hail};
     try {
-      hail.max = 2;
-      hail.entry = true;
+      hail.max = 1;
       applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
       const m = unit(s, 'e-mangudai');
+      expect(m.statuses.map((x) => x.kind)).toEqual(['immobilized']);
       s.units.forEach((u) => (u.controller = 'human'));
       for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
       expect(advanceToDecision(s)!.id).toBe('p-storm');
@@ -1341,22 +1326,38 @@ describe('abilities', () => {
         .targets(s, STEPPE, storm, storm.hex!)
         .find((t) => !unitAt(s, t.hex!))!.hex!;
       applyTurn(s, storm, {action: {ability: 'hail', target: {hex: other}}});
-      expect(s.effects.map((e) => e.turns)).toEqual([1, 2]);
-      expect(m.statuses.map((x) => x.kind)).toEqual(['immobilized']);
-      // A unit walking into the second takes the caster's power and is held.
-      const b = unit(s, 'e-bokh');
-      enterHex({state: s, map: mapOf(s), slot: s.currentSlot}, b, other);
-      expect(b.hp).toBe(b.maxHp - storm.power);
-      expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
-      // The caster's next turn: the first lifts, freeing only whoever it held.
-      for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
-      expect(advanceToDecision(s)!.id).toBe('p-storm');
-      expect(s.effects).toEqual([{kind: 'hail', hex: other, source: 'p-storm', turns: 1}]);
+      expect(s.effects).toEqual([{kind: 'hail', hex: other, source: 'p-storm', turns: 2}]);
       expect(m.statuses).toEqual([]);
-      expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
     } finally {
       Object.assign(hail, saved);
     }
+  });
+
+  it('two hails stand at once, each lifting on its own, and entering one hurts', () => {
+    const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
+    const storm = unit(s, 'p-storm');
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
+    const m = unit(s, 'e-mangudai');
+    s.units.forEach((u) => (u.controller = 'human'));
+    for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
+    expect(advanceToDecision(s)!.id).toBe('p-storm');
+    const other = ABILITIES.hail
+      .targets(s, STEPPE, storm, storm.hex!)
+      .find((t) => !unitAt(s, t.hex!))!.hex!;
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: other}}});
+    expect(s.effects.map((e) => e.turns)).toEqual([1, 2]);
+    expect(m.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+    // A unit walking into the second takes the caster's power and is held.
+    const b = unit(s, 'e-bokh');
+    enterHex({state: s, map: mapOf(s), slot: s.currentSlot}, b, other);
+    expect(b.hp).toBe(b.maxHp - storm.power);
+    expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+    // The caster's next turn: the first lifts, freeing only whoever it held.
+    for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
+    expect(advanceToDecision(s)!.id).toBe('p-storm');
+    expect(s.effects).toEqual([{kind: 'hail', hex: other, source: 'p-storm', turns: 1}]);
+    expect(m.statuses).toEqual([]);
+    expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
   });
 
   it('a Champion in hail grapples its caster: the hail hit came first, so the grapple holds and the caster’s turn is skipped', () => {
@@ -1368,7 +1369,7 @@ describe('abilities', () => {
     s.awaiting = storm.id;
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: b.hex!}}});
     expect(b.hp).toBe(b.maxHp - storm.power);
-    expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm'}]);
+    expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm', at: at(0, 1)}]);
     // Moved next to it (by a Haul, say), it stays Immobilized.
     b.hex = at(1, 1);
     // The Champion's turn, with the Storm Caller's next.

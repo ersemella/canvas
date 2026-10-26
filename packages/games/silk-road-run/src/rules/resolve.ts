@@ -578,7 +578,7 @@ export function enterHex(
   if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
   if (!midWalk) endGrapplesApart(ctx, unit);
   if (ABILITY.hail.entry && hailOn(ctx.state, h)) {
-    // `ABILITY.hail.entry`, for measuring: entering hail hurts, its caster's power.
+    // `ABILITY.hail.entry` (owner, 2026-10-26): entering hail hurts, its caster's power.
     const source = ctx.state.effects.find((e) => hexEquals(e.hex, h))!.source;
     const caster = ctx.state.units.find((u) => u.id === source);
     if (caster) hit(ctx, caster, unit, 'The hail', 0);

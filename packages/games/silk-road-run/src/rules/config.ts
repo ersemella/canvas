@@ -236,15 +236,16 @@ export const ABILITY = {
    * from 2026-10-23, and before that a radius-1 area with damage and a
    * track Push). It stays for `turns` of its caster's turns: it lifts as
    * the last of them starts (2, the turn after next, since 2026-10-25; 1,
-   * the next turn, before), or when its caster casts it again, one hail a
-   * caster. A unit in the space when it lands, or that enters it, is
-   * Immobilized until it disappears.
-   * `max`, a switch for measuring: how many of a caster's hails stand at
-   * once, a new one past it replacing the oldest; 1 as built.
-   * `entry`, a switch for measuring: a unit that enters hail (walking or
-   * Moved) also takes its caster's power; off as built.
+   * the next turn, before). A unit in the space when it lands, or that
+   * enters it, is Immobilized until it disappears.
+   * `max`: how many of a caster's hails stand at once, a new one past it
+   * replacing the oldest; each lifts on its own, freeing only whoever it
+   * held. 2 (owner, 2026-10-26; 1, one hail a caster, before).
+   * `entry`: a unit that enters hail (walking or Moved) takes its caster's
+   * power (owner, 2026-10-26). Both as measured, changing little
+   * (balance.md, "Two hails, hail on entry, and a melee Elixir").
    */
-  hail: {range: 2, turns: 2, max: 1 as number, entry: false as boolean},
+  hail: {range: 2, turns: 2, max: 2 as number, entry: true as boolean},
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Empowered, is Empowered `empower` until the end of

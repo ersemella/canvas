@@ -3,7 +3,7 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {HEROES} from './config';
+import {ABILITY, HEROES} from './config';
 import {hailEnds} from './resolve';
 import type {Tile} from './map';
 import type {FightState, HailEffect, ShotInAir} from './types';
@@ -83,8 +83,10 @@ export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   );
   return {
     name: 'Hail',
-    short: 'Immobilizes a unit that enters it',
-    detail: `Units here or entering are Immobilized until ${until}.`,
+    short: ABILITY.hail.entry
+      ? 'Hits and Immobilizes a unit that enters it'
+      : 'Immobilizes a unit that enters it',
+    detail: `Units here or entering are Immobilized until ${until}${ABILITY.hail.entry ? `; entering takes ${caster ? caster.power : 'its caster’s power'} damage` : ''}.`,
   };
 }
 

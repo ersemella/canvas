@@ -2162,7 +2162,10 @@ hero's seat against the three Steppe heroes, its side's share of wins.
 - **The burst plays as a support** (Empowered damage 4.3–5.5 a fight,
   three times the built Elixir's) but costs about 4–11 points: China
   41.4%, 44–52% in a seat. Unfinished fights rise a little (0.3–1.6%).
-- Not changed: the numbers are the owner's.
+- **Adopted (owner, 2026-10-26): two hails at once and hail on entry**
+  (`max: 2`, `entry: true`); the Elixir unchanged. `hail-elixir.mjs` sets
+  every switch in each variant, reproducing these tables on the new
+  defaults.
 
 ## Principles for re-tuning
 
