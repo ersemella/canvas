@@ -319,6 +319,9 @@ export const ABILITY = {
    * Delayed, that many slots, so any unit can be aimed at; 0 as built.
    * `empower`, `weaken`: the Empower on an ally and the Weaken on an enemy
    * (2 and 1 as built); 0 falls back to `fixed`, then power.
+   * `self`, a switch for measuring: whether the Alchemist takes its own
+   * Elixir (true as built); off, a burst or aura passes it over and it
+   * can't be aimed at itself.
    */
   elixir: {
     range: 1 as number,
@@ -329,6 +332,7 @@ export const ABILITY = {
     tempo: 0 as number,
     empower: 2 as number,
     weaken: 1 as number,
+    self: true as boolean,
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),

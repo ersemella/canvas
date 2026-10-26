@@ -609,12 +609,13 @@ const cleave: AbilityDef = {
 /**
  * Whether Elixir can take on `u`: a unit that hits, the Alchemist itself
  * too (owner, 2026-10-26); with `ABILITY.elixir.fixed`, any enemy, since it takes a hit;
- * with `tempo`, any unit.
+ * with `tempo`, any unit. Not the Alchemist with `self` off.
  */
 const elixirTakes =
   (user: Unit) =>
   (u: Unit | undefined): u is Unit =>
     u !== undefined &&
+    (ABILITY.elixir.self || u.id !== user.id) &&
     (u.power > 0 ||
       ABILITY.elixir.tempo > 0 ||
       (ABILITY.elixir.fixed > 0 && u.side !== user.side) ||
@@ -683,11 +684,11 @@ const elixir: AbilityDef = {
     );
     const effect = (them: string) =>
       `${fixed && heal ? `allies heal ${user.power} and are` : 'allies are'} ${ally.join(' and ')}, ${fixed ? `enemies are hit, then` : 'enemies'} ${enemy.join(' and ')}${empowers || weakens ? `, until the end of ${them} next turn` : ''}.`;
-    const who = tempo ? 'unit' : 'unit that hits';
+    const who = `${tempo ? 'unit' : 'unit that hits'}${ABILITY.elixir.self ? '' : ' but you'}`;
     if (shape === 'burst')
       return `${range === 1 ? 'A space next to you, or your own' : `A space within ${range}`}, and every ${who} within ${radius} of it: ${effect('their')}`;
     if (shape === 'aura') return `Every ${who} within ${radius} of you: ${effect('their')}`;
-    return `A unit within ${range}, yourself too: ${effect('its')}`;
+    return `A unit within ${range}${ABILITY.elixir.self ? ', yourself too' : ''}: ${effect('its')}`;
   },
   targets(state, map, user, from) {
     const {shape, range} = ABILITY.elixir;
