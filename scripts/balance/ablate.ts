@@ -31,6 +31,11 @@ export type Mod = {
    * ability changed (Hold Loose for Grapple) against the original.
    */
   kits?: Partial<Record<HeroId, AbilityId[]>>;
+  /**
+   * The modified side's search in place of production's: a horizon in
+   * decisions and a work cap a turn (mirror.ts's `deep` is 4 and 4 × the cap).
+   */
+  search?: {depth: number; work: number};
 };
 export type Experiment = {
   patch?: (config: Config) => void;
@@ -62,6 +67,20 @@ const SOURCES: [RegExp, string][] = [
 ];
 const ACTOR =
   /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the jian| gives .+ an elixir)/;
+
+/** chooseAiTurn with its own horizon and work cap (as mirror.ts's `chooser`). */
+function searchWith({depth, work}: {depth: number; work: number}) {
+  const ai = AI as {maxSimulations: number};
+  return (state: FightState, unit: Parameters<typeof chooseAiTurn>[1]) => {
+    const saved = ai.maxSimulations;
+    ai.maxSimulations = work;
+    try {
+      return chooseAiTurn(state, unit, {left: work}, undefined, {depth, work});
+    } finally {
+      ai.maxSimulations = saved;
+    }
+  };
+}
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
@@ -201,7 +220,10 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
         const caster = state.units.find((v) => v.id === hold.hail);
         held[caster?.side === u.side ? 'ally' : 'enemy']++;
       }
-      const input = chooseAiTurn(state, u);
+      const input =
+        u.side === modSide && mod?.search
+          ? searchWith(mod.search)(state, u)
+          : chooseAiTurn(state, u);
       const moving = (input.move?.length ?? 0) > 0;
       const swap =
         input.action.ability === 'grapple' &&

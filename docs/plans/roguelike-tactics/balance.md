@@ -2007,6 +2007,58 @@ hero's seat); the Chinese side's share of wins:
   4 in melee is the cost.
 - Not changed: the numbers are the owner's to set.
 
+### Why China loses, and buffs that even it (2026-10-26)
+
+Asked for: whether the AI is why China loses (36.8% party for party,
+above), and the obvious buffs. `experiments/china-buffs.mjs`, 400 fights
+unless marked; China's side only for the stats (`mod.stats`), the patches
+touch only China's abilities. `ablate.ts`'s `mod.search` gives the
+modified side its own horizon and work cap (`deep`: 4 and 4 × 220).
+
+**The AI** (China's share of wins):
+
+| Search | China wins |
+|---|---:|
+| Both production | 36.8% (2,400) |
+| China deep, the Steppe production | 50% |
+| The Steppe deep, China production | 29% |
+| Both deep | **41.2%** (800) |
+| The Youxia with no caution (0, from 1) | 30.8% |
+| The Vanguard with caution 1 (from 0) | 33.8% |
+
+- **Mostly not the AI.** A deeper search is worth about 10 points to
+  either side (+11.7 for China, +9.2 for the Steppe); with both deep
+  China gains about 4 points (41.2%), so the production AI underplays
+  China a little, and most of the 13-point gap is the kits. The caution
+  settings as built are the better ones for both heroes.
+
+**Buffs**, China against the Steppe, and the hero in a Steppe seat:
+
+| Buff | China wins | In a seat |
+|---|---:|---:|
+| none | 36.8% | Youxia for Outrider 46.9%; Vanguard for Champion 40%; Alchemist for Storm Caller 55% |
+| Alchemist power +1 (2) | 60% (1,200) | 67.7% for the Storm Caller |
+| Youxia speed +1 (4) | 58.2% (1,200) | 60% for the Outrider |
+| Elixir range 3 | 50% (1,200) | 65.3% for the Storm Caller |
+| Swift Strike Haste 4 | 47.8% | 55.1% for the Outrider (800) |
+| Vanguard speed +1 (2) | 47.8% | 45.9% for the Champion (800) |
+| Youxia power +1 (3) | 47.5% | |
+| Every Chinese hero defence +1 | 47.8% | |
+| Youxia defence +1 (health 6) | 43.1% | |
+| Vanguard power +1 (3) | 43.3% | |
+| Alchemist defence +1 (health 6) | 40.8% | |
+| **Vanguard speed 2 and Haste 3** | **51.7%** (800) | Haste 3: 47.6% for the Outrider (800); speed 2: 45.9% for the Champion |
+| Vanguard speed 2 and Haste 4 | 57.9% (800) | |
+
+- **A buff to the Alchemist overshoots**: power 2 or range 3 even
+  China but make it the best hero in a Steppe party (65–68% in a seat);
+  it is already above 50% there. So does the Youxia at speed 4.
+- **Health doesn't fix it**: defence +1 on every Chinese hero is worth
+  11 points, on the Youxia or Alchemist alone 3–6.
+- **The Vanguard at speed 2 and Swift Strike Haste 3** even the parties
+  (51.7%) and bring the two heroes under 50% in their seats up to
+  46–48%, none past 50%. Not changed: the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
