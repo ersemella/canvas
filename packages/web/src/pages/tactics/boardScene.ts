@@ -14,7 +14,7 @@ import {
   hexesInRange,
 } from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {ABILITIES, arrowLanes, mapOf, onMap, unitAt} from '@canvas/games-silk-road-run';
+import {ABILITIES, arrowLanes, mapOf, onMap, targetAt, unitAt} from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
   ActionTarget,
@@ -217,6 +217,14 @@ export function buildScene(input: SceneInput): BoardScene {
       const landing = hoveredLanding ?? target?.to;
       if (second && landing) out.step = [def.walksAfter && from ? from : target.hex!, landing];
     }
+    // Cleave's line, before it's aimed: the one under the mouse, by any of its spaces.
+    const hoveredAim =
+      !target?.hex && from && hovered
+        ? targetAt(mapOf(fight), from, def, targets, hovered)?.hex
+        : undefined;
+    if (def.area && from && hoveredAim)
+      for (const h of def.area(mapOf(fight), from, hoveredAim))
+        if (!hexEquals(h, hoveredAim)) highlights.push({hex: h, kind: 'area'});
     if (target?.hex) {
       // An area ability: highlight the area around the chosen hex (none since Hail covers one space),
       // or the one running out from the user (Cleave's line).

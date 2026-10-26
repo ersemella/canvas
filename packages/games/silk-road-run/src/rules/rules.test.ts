@@ -28,7 +28,7 @@ import {
 import {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
-import {offeredTargets, onlyHold} from './choices';
+import {offeredTargets, onlyHold, targetAt} from './choices';
 import {
   RuleError,
   actingUnit,
@@ -1306,6 +1306,16 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
     expect(targets).toEqual([{hex: at(2, 3)}]);
     applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
     expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - modao.power);
+  });
+
+  it('Cleave is picked by a tap on any space of its line, the unit two out included', () => {
+    const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(3, 3)}, party);
+    const modao = unit(s, 'p-modao');
+    const targets = offeredTargets(s, mapOf(s), modao, ABILITIES.cleave);
+    const tap = (h: Hex) => targetAt(mapOf(s), modao.hex!, ABILITIES.cleave, targets, h);
+    expect(tap(at(3, 3))).toEqual({hex: at(2, 3)});
+    expect(tap(at(2, 3))).toEqual({hex: at(2, 3)});
+    expect(tap(at(4, 3))).toBeUndefined();
   });
 
   it('Elixir Enhances an ally and Degrades an enemy by the Alchemist’s power, dealing no damage', () => {

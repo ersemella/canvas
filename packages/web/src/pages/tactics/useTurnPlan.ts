@@ -10,6 +10,7 @@ import {
   offeredTargets,
   previewTurn,
   reachableHexes,
+  targetAt,
 } from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
@@ -239,15 +240,17 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
           return true;
         }
       }
-      const match = targets.find((t) => t.hex && hexEquals(t.hex, h));
+      // Cleave's line: a tap anywhere along it aims it.
+      const match =
+        fight && acting.hex && targetAt(mapOf(fight), acting.hex, ABILITIES[ability], targets, h);
       if (!match) return false;
       // Tapping the chosen target again un-picks it (the button confirms).
-      if (target?.hex && hexEquals(target.hex, h)) pick({target: null});
-      else if (SECOND_PICK[ability]) chooseTarget({hex: h});
+      if (target?.hex && hexEquals(target.hex, match.hex!)) pick({target: null});
+      else if (SECOND_PICK[ability]) chooseTarget({hex: match.hex!});
       else chooseTarget(match);
       return true;
     },
-    [acting, moveMode, reaches, plannedMove, ability, target, targets, chooseTarget, pick]
+    [fight, acting, moveMode, reaches, plannedMove, ability, target, targets, chooseTarget, pick]
   );
 
   /**

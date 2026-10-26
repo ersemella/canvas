@@ -3,6 +3,8 @@
  * shown for each ability, and whether anything but a Hold is left. A turn
  * with nothing left is skipped (`advanceToDecision`).
  */
+import {hexEquals} from '@canvas/engine/server';
+import type {Hex} from '@canvas/engine/server';
 import {abilitiesOf, unusableReason} from './abilities';
 import type {AbilityDef} from './abilities';
 import {canMove, unitAt} from './board';
@@ -45,6 +47,27 @@ export function offeredTargets(
     const u = def.aimedAt ? def.aimedAt(state, unit, t) : t.hex && unitAt(state, t.hex);
     return u && u.side !== unit.side;
   });
+}
+
+/**
+ * The target among `targets` that a tap on `h` picks for `def` from
+ * `from`: the one on `h`, else, for an ability whose area runs out from
+ * its user, the one whose area holds `h` (Cleave: any space of its line,
+ * not just the first it's aimed at).
+ */
+export function targetAt(
+  map: MapData,
+  from: Hex,
+  def: AbilityDef,
+  targets: ActionTarget[],
+  h: Hex
+): ActionTarget | undefined {
+  return (
+    targets.find((t) => t.hex && hexEquals(t.hex, h)) ??
+    (def.area
+      ? targets.find((t) => t.hex && def.area!(map, from, t.hex).some((a) => hexEquals(a, h)))
+      : undefined)
+  );
 }
 
 /**

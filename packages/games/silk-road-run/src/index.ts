@@ -93,7 +93,7 @@ export {atExit, camelOf, enterHex, hailEnds, unitName} from './rules/resolve';
 export {aimSlot, chargeOf} from './rules/track';
 export {previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
-export {allowedTargets, offeredTargets, onlyHold} from './rules/choices';
+export {allowedTargets, offeredTargets, onlyHold, targetAt} from './rules/choices';
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
 export {GOBI, MAPS, STEPPE, mapById, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';
