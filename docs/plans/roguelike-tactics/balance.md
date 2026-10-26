@@ -1961,6 +1961,52 @@ gains or loses.
 - Unfinished fights stay at 0–0.8%. The camel walking out still wins a
   fight, so a lone Alchemist at power 0 can win by Hastening it.
 
+### China against the Steppe, with the Youxia (2026-10-26)
+
+Asked for: the China party (Youxia Swordsman, Modao Vanguard, Waidan
+Alchemist, as built) against the Steppe party, and the Youxia in the
+Outrider's seat in a Steppe mirror. `ablate.mjs` with
+`experiments/china-steppe.mjs`, **400 fights each** (about ±2.5 points),
+seeds from 1000; the two headline rows also 2,000 more from seed 5000.
+`ablate.ts` now attributes Swift Strike's damage (`swiftStrike`).
+
+Party for party (`mod.party`), the camel with the player, every seed from
+both sides; the China side's share of wins:
+
+| China party against the Steppe party | China wins |
+|---|---:|
+| Steppe map, 2,400 fights | **36.8%** (36.5% of 2,000, 38.3% of 400) |
+| Gobi | 37% |
+
+As a stage on the Gobi (the player's party and camel against three
+heroes): the Steppe party beats the China heroes 82.3%; the China party
+beats the Steppe heroes 53.3%.
+
+Hero for hero in a Steppe mirror (one side a Chinese hero in a Steppe
+hero's seat); the Chinese side's share of wins:
+
+| Swapped in | for the Champion | for the Outrider | for the Storm Caller |
+|---|---:|---:|---:|
+| Youxia Swordsman | 41% | **46.9%** (2,400 fights; 45% of 400, 47.3% of 2,000) | 57% |
+| Modao Vanguard | 40% | 44.5% | 58.8% |
+| Waidan Alchemist | 44.1% | 50.8% | 55% |
+
+- **China is the weaker region**: about 37 to 63 party for party, on
+  either map, and as an enemy it is easier than the Steppe's heroes
+  (82% player wins against 53%). Unfinished fights 0–0.3%.
+- **Each Chinese hero is near the Steppe's level alone** (41–59% in a
+  seat): every one beats the Storm Caller in its seat and loses to the
+  Champion in its. So the gap is the line-up, not one hero: China has no
+  ranged damage or area, and in the party match the Outrider deals 12.3
+  damage a fight with Longshot against the Youxia's 6.8 and the
+  Vanguard's 5.6, and survives 79% against their 36%.
+- **The Youxia for the Outrider: 46.9% (95% about 45–49)**, a little
+  under the hero it replaces. Same turns a fight (4.7 against 4.8),
+  Swift Strike on 34% of them and moving on 57%; it deals 6.1 damage a
+  fight against the Outrider's 8.7 and survives 36% against 49%: health
+  4 in melee is the cost.
+- Not changed: the numbers are the owner's to set.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

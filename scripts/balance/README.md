@@ -41,6 +41,9 @@ Delay by their switches (`ABILITY.elixir.shape`, `ABILITY.cleave.delay`).
 Weaken of 1 and a hit on an enemy (`ABILITY.elixir.fixed`), and with a
 heal on allies (`ABILITY.elixir.heal`), and at power 0 with Haste and
 Delay (`ABILITY.elixir.tempo`).
+`china-steppe.mjs` (2026-10-26) measures the China party (Youxia, Vanguard,
+Alchemist) against the Steppe party, and each Chinese hero in each Steppe
+hero's seat.
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.

@@ -58,9 +58,10 @@ const SOURCES: [RegExp, string][] = [
   [/^The gale hits/, 'gale'],
   [/^The bite hits/, 'bite'],
   [/^The cleave hits/, 'cleave'],
+  [/^The jian hits/, 'swiftStrike'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| gives .+ an elixir)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the jian| gives .+ an elixir)/;
 
 function snapshot(config: Config) {
   const copy = (x: unknown) =>
