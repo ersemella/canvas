@@ -94,8 +94,9 @@ files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 and each Chinese hero swapped for each Steppe hero on one side.
 `china-steppe-retune.mjs` (2026-10-26) measures Cleave's Delay 6 and 5,
 Swift Strike's Haste 2, the Elixir's Haste 2 and the Storm Caller at speed
-3, each on both sides, party for party and each Chinese hero in its role's
-Steppe seat; it runs on the current rules.
+3 (and with defence 1), each on both sides, party for party and each
+Chinese hero in its role's Steppe seat, and stage caravans with a Storm
+Caller at each speed; it runs on the current rules.
 
 ## Ability and stat ablation
 

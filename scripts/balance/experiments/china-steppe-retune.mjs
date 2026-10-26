@@ -12,6 +12,11 @@ const variants = {
   'swift-2': (c) => void (c.ABILITY.swiftStrike.haste = 2),
   'elixir-haste-2': (c) => void (c.ABILITY.elixir.haste = 2),
   'storm-speed-3': (c) => void (c.HEROES.storm.speed = 3),
+  // Speed 3 and defence 1 (health 4, from 6).
+  'storm-speed-3-def-1': (c) => {
+    c.HEROES.storm.speed = 3;
+    c.HEROES.storm.defence = 1;
+  },
 };
 export const experiments = {};
 for (const [name, patch] of Object.entries(variants)) {
@@ -22,3 +27,16 @@ for (const [name, patch] of Object.entries(variants)) {
       mod: {party: steppe.map((h) => (h === seat ? hero : h))},
     };
 }
+// Stage caravans with a Storm Caller against the Steppe party and camel
+// (`playerWinPct`; lower, a stronger enemy), built and for each Storm Caller
+// variant.
+const caravans = {
+  'storm+2wolves': ['storm', 'wolf', 'wolf'],
+  'bokh+storm+wolf': ['bokh', 'storm', 'wolf'],
+  'mangudai+storm+wolf': ['mangudai', 'storm', 'wolf'],
+  'storm+storm+wolf': ['storm', 'storm', 'wolf'],
+  'all-three': steppe,
+};
+for (const name of ['built', 'storm-speed-3', 'storm-speed-3-def-1'])
+  for (const [caravan, enemies] of Object.entries(caravans))
+    experiments[`${name}-vs-${caravan}`] = {patch: variants[name], enemies};

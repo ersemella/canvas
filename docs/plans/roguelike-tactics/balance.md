@@ -2515,6 +2515,7 @@ seat:
 | Swift Strike Haste 2 | 55.3% | 49% | 47.4% | 60.3% |
 | Elixir Haste 2 | 55.1% | 49% | 49.3% | 58.9% |
 | Storm Caller speed 3 | **52.1%** | 46.4% | 49.9% | 55.3% |
+| Storm Caller speed 3, defence 1 (health 4) | 55% | 47.5% | 49.9% | 55.4% |
 
 - **Nerfing Cleave evens the parties by breaking the tank pair**: at
   Delay 5 the Vanguard is 9 points under the Grappler, and the support gap
@@ -2524,8 +2525,23 @@ seat:
 - **The Storm Caller at speed 3 comes closest everywhere**: the parties
   52.1%, every role within about 5 points, unfinished fights at most
   1.4%. Speed 3 was declined earlier the same day, when China lost 40 to
-  60; stage caravans with a Storm Caller have not been rerun at speed 3 on
-  these rules (`caravans.mjs`).
+  60.
+- **Defence 1 with speed 3 gives back about 3 points**: the parties 55%,
+  the roles unchanged within noise.
+
+Stage caravans with a Storm Caller against the Steppe party and camel
+(player wins; lower, a stronger enemy):
+
+| Caravan | Built | Speed 3 | Speed 3, defence 1 |
+|---|---:|---:|---:|
+| Storm Caller + 2 wolves | 99.6% | 99% | 99.1% |
+| Grappler + Storm Caller + wolf | 96.4% | 93% | 94.6% |
+| Horse Archer + Storm Caller + wolf | 95.5% | 92.1% | 93.5% |
+| Storm Caller + Storm Caller + wolf | 95.3% | 89.2% | 89% |
+| All three | 76.3% | 74% | 76.5% |
+
+- **As an enemy either variant changes little**: stage 1 and 2 caravans
+  stay at 89% or more, stage 3 within 2 points.
 - Not changed: the numbers are the owner's.
 
 ### Does a party need one of each role? Whole runs (2026-10-26)
