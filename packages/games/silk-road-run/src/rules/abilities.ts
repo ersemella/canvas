@@ -594,11 +594,16 @@ const cleave: AbilityDef = {
 
 // ─── Waidan Alchemist ────────────────────────────────────────────────────────
 
-/** Whether Elixir can take on `u`: a unit that hits, not the Alchemist itself. */
+/**
+ * Whether Elixir can take on `u`: a unit that hits, not the Alchemist
+ * itself; with `ABILITY.elixir.fixed`, any enemy, since it takes a hit.
+ */
 const elixirTakes =
   (user: Unit) =>
   (u: Unit | undefined): u is Unit =>
-    u !== undefined && u !== user && u.power > 0;
+    u !== undefined &&
+    u !== user &&
+    (u.power > 0 || (ABILITY.elixir.fixed > 0 && u.side !== user.side));
 
 /**
  * The units an Elixir aimed at `target` from `from` reaches, by
@@ -629,7 +634,9 @@ const elixir: AbilityDef = {
   bothSides: true,
   range: ABILITY.elixir.range,
   summary: (user) =>
-    `A unit within ${ABILITY.elixir.range}: an ally is Enhanced ${user.power}, an enemy Degraded ${user.power}, until the end of its next turn.`,
+    ABILITY.elixir.fixed
+      ? `A unit within ${ABILITY.elixir.range}: an ally is Enhanced ${ABILITY.elixir.fixed}; an enemy is hit, then Degraded ${ABILITY.elixir.fixed}, until the end of its next turn.`
+      : `A unit within ${ABILITY.elixir.range}: an ally is Enhanced ${user.power}, an enemy Degraded ${user.power}, until the end of its next turn.`,
   targetsUnit: true,
   targets(state, map, user, from) {
     const {shape, range} = ABILITY.elixir;
@@ -646,10 +653,14 @@ const elixir: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const caught = elixirCaught(ctx.state, user, user.hex!, target.hex!);
+    const {fixed} = ABILITY.elixir;
     for (const u of caught) {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
-      if (u.side === user.side) enhance(ctx, u, user.power);
-      else degrade(ctx, u, user.power);
+      if (u.side === user.side) enhance(ctx, u, fixed || user.power);
+      else {
+        if (fixed) hit(ctx, user, u, 'The elixir');
+        if (u.alive) degrade(ctx, u, fixed || user.power);
+      }
     }
   },
 };

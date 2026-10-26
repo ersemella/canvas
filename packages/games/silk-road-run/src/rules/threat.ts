@@ -82,6 +82,13 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           if (tile === undefined || blocks(tile)) break;
           mark(hexes, k, power);
         }
+    // Elixir with `fixed` (an experiment): a hit on any space within its range.
+    if (has('elixir') && ABILITY.elixir.fixed > 0) {
+      const range = ABILITY.elixir.range;
+      for (let dq = -range; dq <= range; dq++)
+        for (let dr = Math.max(-range, -dq - range); dr <= Math.min(range, -dq + range); dr++)
+          if (dq || dr) mark(hexes, id(fq + dq, fr + dr), power);
+    }
     // Volley (an experiment): any space within its range, at the dodge share.
     if (has('volley')) {
       const range = ABILITY.volley.range;
