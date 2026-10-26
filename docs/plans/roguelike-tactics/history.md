@@ -477,6 +477,10 @@ Learned:
   call. The savaran remain its inspiration.
 - **Djinn-Binder** (2026-10-17): renamed the **Genie Binder**; owner's
   call. The spirit it commands is still called a djinn.
+- **Jinn Binder** (2026-10-26): became the **Div Binder** after moving to
+  Persia; owner's call. Same role (a controller whose bound spirit pushes
+  and disrupts), now from the *Shahnameh*'s divs and Tahmuras Divband
+  rather than the *Arabian Nights*' sealed jinn.
 - **Baatar** (2026-10-17): the horse archer renamed the **Mangudai**;
   owner's call. *Baatar* (baghatur) was a title for any renowned
   warrior; the mangudai were Mongol army units, though sources disagree
