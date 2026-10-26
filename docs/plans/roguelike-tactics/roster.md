@@ -130,7 +130,8 @@ in [balance.md](balance.md)).
 (`ROSTER`), with the owner's stats; Swift Strike' Haste 2 is the builder's
 first number, untested and not measured yet. Art by the owner (ChatGPT,
 2026-10-26), shrunk with scripts/shrink-sprite.py (the portrait cropped
-without `--lines`), a 2-frame idle split at row 18. A wide bamboo hat
+without `--lines`), a 2-frame idle split at row 20, the figure shrunk to 85% of the frame
+(owner: smaller than the Modao Vanguard). A wide bamboo hat
 (*douli*) and no beard since the same day (owner): with a topknot and a
 beard it read as the Waidan Alchemist.
 
