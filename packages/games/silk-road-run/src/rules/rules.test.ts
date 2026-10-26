@@ -58,6 +58,7 @@ import {
   FLAMING,
   GOBI,
   MAPS,
+  MAX_COVERED,
   STEPPE,
   blocks,
   depth,
@@ -584,14 +585,14 @@ describe('the board', () => {
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
   });
 
-  it('raises the Flaming Mountains in every fight, in clumps in the middle, and nothing else for now', () => {
+  it('raises the Flaming Mountains in every fight, in clumps in the middle, with one or two beacon towers', () => {
     let steppeWithout = 0;
+    const towerCounts = new Set<number>();
     for (let seed = 0; seed < 40; seed++) {
       // Not a stage that asks for mountains: the map raises them itself.
       const s = createFight(seed, undefined, undefined, false, [], FLAMING);
       expect(s.mapId).toBe('flaming');
       expect(mapOf(s).name).toBe('The Flaming Mountains');
-      const tiles = Object.values(s.tiles);
       // Two clumps of 2 to 4 in the middle, apart, off the
       // starting columns and Temee's road, not next to its start or exit.
       const mountains = Object.keys(s.tiles)
@@ -613,16 +614,31 @@ describe('the board', () => {
         clumps.push(merged);
       }
       expect(clumps).toHaveLength(2);
-      expect(mountains.length).toBeLessThanOrEqual(8);
       for (const c of clumps) expect(c.length).toBeGreaterThanOrEqual(2);
       for (const c of clumps) expect(c.length).toBeLessThanOrEqual(4);
-      expect(tiles.filter((t) => t === 'obstacle')).toHaveLength(0);
+      // One or two beacon towers, apart from each other and the mountains,
+      // covering at most 8 spaces with them.
+      const towers = Object.keys(s.tiles)
+        .filter((k) => s.tiles[k] === 'obstacle')
+        .map((k) => k.split(',').map(Number) as [number, number])
+        .map(([q, r]) => ({q, r}));
+      expect(towers.length).toBeGreaterThanOrEqual(1);
+      expect(towers.length).toBeLessThanOrEqual(2);
+      towerCounts.add(towers.length);
+      expect(mountains.length + towers.length).toBeLessThanOrEqual(MAX_COVERED);
+      expect(MAX_COVERED).toBe(8);
+      for (const t of towers) {
+        expect(hexDistance(t, {q: 0, r: 0})).toBeLessThanOrEqual(3);
+        for (const o of [...towers, ...mountains])
+          if (o !== t) expect(hexDistance(t, o)).toBeGreaterThan(1);
+      }
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
       // The same seed's Steppe fight lacks them about half the time.
       const steppe = createFight(seed, undefined, undefined, false);
       if (!Object.values(steppe.tiles).includes('mountain')) steppeWithout++;
     }
     expect(steppeWithout).toBeGreaterThan(0);
+    expect([...towerCounts].sort()).toEqual([1, 2]);
   });
 
   it('names the ground after the map’s look', () => {
@@ -631,7 +647,7 @@ describe('the board', () => {
     expect(tileInfo('gobi', 'sand').name).toBe('Gravel');
     expect(tileInfo('gobi', 'mountain').name).toBe('Mountains');
     expect(tileInfo('flaming', 'sand').name).toBe('Red earth');
-    expect(tileInfo('flaming', 'obstacle').name).toBe('Ruins');
+    expect(tileInfo('flaming', 'obstacle').name).toBe('Beacon tower');
     expect(tileInfo('flaming', 'mountain').name).toBe('Flaming Mountains');
   });
 

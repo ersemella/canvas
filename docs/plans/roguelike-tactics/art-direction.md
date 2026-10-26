@@ -126,16 +126,26 @@ tuning. This file has no combat-design section number.
   edge, as the Steppe's, but in two clumps of 2 to 4, so at most 8 mountains (owner, 2026-10-26; two or three clumps at first), in the middle
   of the board (`MapData.mountainPlaces`: `'middle'`, `middleClumps` in
   map.ts; owner, 2026-10-26), off the starting columns and Temee's road,
-  in every fight (`MapData.mountains`: `'always'`), and, for now, nothing else:
-  two or three mudbrick ruins (`tiles/ruins.png`, as the ruins of
-  Gaochang) and one or two fissures, a hazard burning 1 on each entry,
-  were tried and taken out, as they didn't look good (owner, 2026-10-26).
-  An obstacle for the middle of the board waits on new art; until then
-  the mudbrick wall is drawn only for one placed by hand on the test
-  stage. The flames are only drawn: the mountains block as any do; a
+  in every fight (`MapData.mountains`: `'always'`), with one or two Han
+  **beacon towers** (owner, 2026-10-26) as the map's obstacle: the
+  rammed-earth watchtowers of the Hexi Corridor, as at Yumen Pass, so the
+  board reads as China's rather than as a volcanic desert. They stand
+  within 3 of the centre, not next to a mountain or each other, and the
+  mountains and towers together cover **at most 8 spaces** (`MAX_COVERED`
+  in map.ts: the towers are rolled first and the clumps cut to fit). The
+  tower (`tiles/beacon-tower.png`, 32 × 40) is a placeholder drawn by the
+  builder, pale loess with reed layers, a crenellated top and a fire
+  basket, smoke rising grey from it as the yurts' does (`Look.smoke`,
+  `drawObstacleSmoke`), until the owner's art replaces it. **The
+  mountains are to be redrawn as ridges** (owner, 2026-10-26): the real
+  Flaming Mountains are long, low, gullied ridges, and the cone reads as a
+  volcano; waiting on the owner's art, the layout unchanged. Tried before
+  and taken out, as they didn't look good (owner, 2026-10-26): two or
+  three mudbrick ruins (`tiles/ruins.png`, as the ruins of Gaochang, now
+  unused) and one or two fissures, a hazard burning 1 on each entry. The flames are only drawn: the mountains block as any do; a
   fire hazard waits for the region's boss ([setting.md](setting.md), the
   Bull Demon King's fire mountain). The page calls the tiles Red earth,
-  Ruins and Flaming Mountains. Every stage of a run is still the
+  Beacon tower and Flaming Mountains. Every stage of a run is still the
   Steppe's (`STAGES` in config.ts); the test stage's `"map"` shows the
   Flaming Mountains.
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct

@@ -1,7 +1,8 @@
 /**
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
  * grass, yurts and their smoke, the Gobi's sand and sandstone ruins, the
- * Flaming Mountains' red earth and burning mountains; exits
+ * Flaming Mountains' red earth, beacon towers and their smoke and burning
+ * mountains; exits
  * (cached per map), and falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
@@ -28,8 +29,8 @@ import rockImage from '../tiles/rock.png';
 import redRockImage from '../tiles/rock-red.png';
 import grassImage from '../tiles/grass-soft.png';
 import redEarthImage from '../tiles/red-earth.png';
-import mudbrickRuinsImage from '../tiles/ruins.png';
 import burningMountainImage from '../tiles/mountain-burning.png';
+import beaconTowerImage from '../tiles/beacon-tower.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
@@ -47,8 +48,11 @@ export interface Look {
   border: string;
   /** The `obstacle` tile's art; each hex picks one. */
   obstacles: string[];
-  /** Smoke rises from each obstacle's crown (a yurt's). */
-  smoke: boolean;
+  /**
+   * Smoke rising from each obstacle's top (`drawObstacleSmoke`): from a
+   * yurt's crown, or a beacon tower's fire; `null`, none.
+   */
+  smoke: Smoke | null;
   /** The mountains' shapes, each hex picking one. */
   mountains: string[];
   /**
@@ -59,6 +63,12 @@ export interface Look {
   mountainFrames: number;
   /** The ground under a mountain, a seamless tile laid like the grass. */
   mountainGround: string;
+}
+
+/** An obstacle's smoke: where it rises from, in art pixels above the hex's feet, and its colour (r, g, b). */
+interface Smoke {
+  from: number;
+  colour: string;
 }
 
 /**
@@ -99,9 +109,10 @@ const FLAMING_MOUNTAINS = [burningMountainImage];
  * (2026-10-22), in place of the yurts. The Flaming Mountains (owner,
  * 2026-10-26): the owner's cracked red earth (AI-assisted, cut to 128
  * pixels and 5 colours); under the mountains, the Steppe's rock in the
- * burning mountain's browns (`rock-red.png`). Its fights have no
- * obstacles for now (map.ts); the mudbrick wall drawn for the Steppe
- * (`ruins.png`) stands in for one placed by hand on the test stage.
+ * burning mountain's browns (`rock-red.png`); its obstacle a Han beacon
+ * tower (owner, 2026-10-26; map.ts), pale rammed earth with reed layers
+ * standing out from the red ground, 32 × 40, smoke rising grey from its
+ * fire as a beacon's signal did.
  */
 const LOOKS: Record<string, Look> = {
   steppe: {
@@ -110,7 +121,8 @@ const LOOKS: Record<string, Look> = {
     colour: '#8e9858',
     border: '#3f4a27',
     obstacles: [yurtImage],
-    smoke: true,
+    // The crown's middle, 2 rows down the 24-row yurt.
+    smoke: {from: 22, colour: '240, 236, 228'},
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
@@ -121,7 +133,7 @@ const LOOKS: Record<string, Look> = {
     colour: PALETTE.sand,
     border: PALETTE.sandDark,
     obstacles: [sandstoneRuinsImage],
-    smoke: false,
+    smoke: null,
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
@@ -131,8 +143,9 @@ const LOOKS: Record<string, Look> = {
     stamp: false,
     colour: '#97633c',
     border: '#5c3a26',
-    obstacles: [mudbrickRuinsImage],
-    smoke: false,
+    obstacles: [beaconTowerImage],
+    // The fire basket on the top, 5 rows down the 40-row tower.
+    smoke: {from: 35, colour: '196, 188, 178'},
     mountains: FLAMING_MOUNTAINS,
     mountainFrames: 8,
     // The Steppe's rock in the burning mountain's own browns, so the
@@ -148,7 +161,7 @@ export function lookOf(map: MapData): Look {
 }
 
 /** Whether a map's obstacles smoke, so the board keeps drawing frames for it. */
-export const smokes = (map: MapData): boolean => lookOf(map).smoke;
+export const smokes = (map: MapData): boolean => lookOf(map).smoke !== null;
 
 /** Whether a map's mountains burn (move), so the board keeps drawing frames for it. */
 export const burns = (map: MapData): boolean => lookOf(map).mountainFrames > 1;
@@ -335,7 +348,8 @@ const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
  * A yurt, a ruin or a mountain standing on its hex like a unit: over hail,
  * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
  * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
- * Gobi's sandstone ruin and the mudbrick wall are 32 × 32. `map` gives the look.
+ * Gobi's sandstone ruin and the mudbrick wall are 32 × 32, the beacon
+ * tower 32 × 40. `map` gives the look.
  */
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,
@@ -376,21 +390,27 @@ export function drawObstacle(
   ctx.restore();
 }
 
-/** Smoke from a yurt's crown: puffs at a time, a cycle each, in steps of this many frames a second. */
+/** Smoke from a yurt's crown or a beacon's fire: puffs at a time, a cycle each, in steps of this many frames a second. */
 const SMOKE = {puffs: 6, seconds: 3.6, rise: 22, drift: 6};
 export const SMOKE_FPS = 8;
 /** The moment shown with reduced motion: a few puffs in the air. */
 const SMOKE_STILL_SECONDS = 1.1;
-/** The smoke hole, in art pixels from the hex's centre: the crown's middle, 2 rows down the 24-row yurt. */
-const SMOKE_FROM = {x: 0, y: SPRITE_FEET / SPRITE_SCALE - 24 + 2};
-
 /**
- * Smoke rising from a yurt's crown, as pixel art: square puffs that grow,
- * drift with the wind and fade as they rise, each yurt out of step with
+ * Smoke rising from an obstacle's top in the map's look (`Look.smoke`), a
+ * yurt's crown or a beacon tower's fire, as pixel art: square puffs that
+ * grow, drift with the wind and fade as they rise, each out of step with
  * the others. Held still at one moment when the device asks for reduced
  * motion (`time` null).
  */
-export function drawYurtSmoke(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): void {
+export function drawObstacleSmoke(
+  ctx: CanvasRenderingContext2D,
+  h: Hex,
+  map: MapData,
+  time: number | null
+): void {
+  const smoke = lookOf(map).smoke;
+  if (!smoke) return;
+  const from = {x: 0, y: SPRITE_FEET / SPRITE_SCALE - smoke.from};
   const t = Math.floor((time ?? SMOKE_STILL_SECONDS) * SMOKE_FPS) / SMOKE_FPS;
   const offset = hexRandom(h, 2)() * SMOKE.seconds;
   const c = center(h);
@@ -399,9 +419,9 @@ export function drawYurtSmoke(ctx: CanvasRenderingContext2D, h: Hex, time: numbe
   for (let i = 0; i < SMOKE.puffs; i++) {
     const f = ((((t + offset) / SMOKE.seconds + i / SMOKE.puffs) % 1) + 1) % 1;
     const size = 2 + Math.floor(f * 2.5);
-    const x = SMOKE_FROM.x + f * SMOKE.drift + Math.sin(f * 2 * Math.PI + i) * 1.2;
-    const y = SMOKE_FROM.y - f * SMOKE.rise;
-    ctx.fillStyle = `rgba(240, 236, 228, ${(0.95 * (1 - f * f)).toFixed(2)})`;
+    const x = from.x + f * SMOKE.drift + Math.sin(f * 2 * Math.PI + i) * 1.2;
+    const y = from.y - f * SMOKE.rise;
+    ctx.fillStyle = `rgba(${smoke.colour}, ${(0.95 * (1 - f * f)).toFixed(2)})`;
     ctx.fillRect(
       Math.round(c.x + Math.round(x - size / 2) * px),
       Math.round(c.y + Math.round(y - size / 2) * px),
