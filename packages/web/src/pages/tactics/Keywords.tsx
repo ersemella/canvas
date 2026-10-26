@@ -98,6 +98,7 @@ const TONE: Partial<Record<KeywordId, string>> = {
   enhanced: 'var(--c-jade)',
   shield: 'var(--c-jade)',
   degraded: 'var(--c-madderLight)',
+  haste: 'var(--c-jade)',
 };
 
 /**
@@ -156,6 +157,7 @@ const WORDS: [RegExp, KeywordId][] = [
   [/Stunned/, 'stunned'],
   [/\bEnhance(?:d)?\b/, 'enhanced'],
   [/\bDegrade(?:d)?\b/, 'degraded'],
+  [/\bHasten(?:ed)?\b/, 'haste'],
   [/\bShield\b/, 'shield'],
   [/\bMove(?:d)?\b/, 'move'],
   [/\bPush(?:ed)?\b/, 'push'],

@@ -9,7 +9,8 @@ import type {Tile} from './map';
 export type Side = 'player' | 'enemy';
 /**
  * The three prototype heroes, the Modao Vanguard and the Waidan Alchemist
- * (owner, 2026-10-25), the caravan's camel (camel.md), a unit that isn't a
+ * (owner, 2026-10-25), the Youxia Swordsman (owner, 2026-10-26), the
+ * caravan's camel (camel.md), a unit that isn't a
  * hero, and the enemy NPCs, the wolf and the fox.
  */
 export type HeroId =
@@ -18,6 +19,7 @@ export type HeroId =
   | 'storm'
   | 'modao'
   | 'alchemist'
+  | 'youxia'
   | 'camel'
   | 'wolf'
   | 'fox';
@@ -31,6 +33,7 @@ export type AbilityId =
   | 'bite'
   | 'cleave'
   | 'elixir'
+  | 'tenPaces'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'

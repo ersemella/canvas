@@ -59,7 +59,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     out.push({enemyId: e.id, hexes});
     const has = (a: AbilityId) => kitOf(e).includes(a);
     const {q: fq, r: fr} = e.hex;
-    if (has('bite') || has('grapple'))
+    if (has('bite') || has('grapple') || has('tenPaces'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
     const lanes = (oq: number, or: number, d: number) => {
       for (const [dq, dr] of AXIAL) {
