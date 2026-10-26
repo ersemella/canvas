@@ -88,7 +88,7 @@ Written 2026-10-17 from memory; details not checked against each game. The rules
 - [The Thinker's Garden: Magical treasure hunting in Islamic Egypt](https://thethinkersgarden.com/magical-treasure-hunting-in-islamic-egypt/)
 
 **Setting sources: hero roster (15.8)**
-- Simurgh Summoner: [Wikipedia: Simurgh](https://en.wikipedia.org/wiki/Simurgh)
+- Simurgh Feather Burner: [Wikipedia: Simurgh](https://en.wikipedia.org/wiki/Simurgh)
 - The travelling fox (15.6): [Wikipedia: Fox spirit](https://en.wikipedia.org/wiki/Fox_spirit)
 - Waidan Alchemist's hand cannon: [Wikipedia: Heilongjiang hand cannon](https://en.wikipedia.org/wiki/Heilongjiang_hand_cannon)
 - Waidan Alchemist (fangshi, waidan): [Wikipedia: Fangshi](https://en.wikipedia.org/wiki/Fangshi); [Wikipedia: Waidan](https://en.wikipedia.org/wiki/Waidan); [EBSCO Research Starters: Invention of gunpowder and guns](https://www.ebsco.com/research-starters/history/invention-gunpowder-and-guns) (Daoist alchemists seeking an elixir of life, 9th century)

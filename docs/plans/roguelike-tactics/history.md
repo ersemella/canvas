@@ -511,6 +511,9 @@ Learned:
   "Persian" reads instantly).
 - **Elephant Rider** (2026-10-16): renamed the **Mahout**, the historical
   name for an elephant's driver; owner's call.
+- **Simurgh Summoner** (2026-10-26): renamed the **Simurgh Feather
+  Burner**, after how it calls the Simurgh: in the *Shahnameh* the bird
+  comes when one of its feathers is burned; owner's call.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game
   is **Silk Road Run** (`packages/games/silk-road-run`). Other
   titles considered: Silk Road Caravans, Caravans of the Silk Road, Silk
