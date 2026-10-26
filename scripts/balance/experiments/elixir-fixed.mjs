@@ -13,7 +13,7 @@ const elixir =
     c.HEROES.alchemist.power = power;
   };
 export const experiments = {
-  // Enhance and Degrade by power, no hit (the Elixir of 2026-10-25).
+  // Empower and Weaken by power, no hit (the Elixir of 2026-10-25).
   'seat-built': {patch: elixir(2), mod: {party: seat}},
   'china-built': {patch: elixir(2), ...china},
   // Fixed 1 and a hit of the Alchemist's power.
@@ -31,14 +31,14 @@ for (const heal of ['all', 'heroes']) {
     mod: {party: seat},
   };
   experiments[`china-heal-${heal}`] = {patch: elixir(2, {fixed: 1, heal}), ...china};
-  // Everything by power at power 2: the Enhance and Degrade 2 too.
+  // Everything by power at power 2: the Empower and Weaken 2 too.
   experiments[`seat-heal-${heal}-all-by-power2`] = {
     patch: elixir(2, {fixed: 2, heal}),
     mod: {party: seat},
   };
 }
 
-// No damage at power 0: an ally Enhanced and Hastened, an enemy Degraded and
+// No damage at power 0: an ally Empowered and Hastened, an enemy Weakened and
 // Delayed, by fixed amounts (`fixed`, `tempo`), any unit a target.
 for (const fixed of [1, 2])
   for (const tempo of [0, 3, 5]) {

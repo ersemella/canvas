@@ -130,7 +130,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
   let movedHexes = 0;
   /** Sunlight's targets (self, ally hero, camel, enemy, or hail alone) and what it added. */
   const sunlight: Record<string, number> = {};
-  let enhanceDamage = 0;
+  let empowerDamage = 0;
   let melts = 0;
   /** Turns begun Immobilized by hail, by whose hail: the unit's side's, or the other's. */
   const held = {ally: 0, enemy: 0};
@@ -182,8 +182,8 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
           lastSource = source;
         }
         if (/ falls\.$/.test(text) && lastSource) add(kills, lastSource);
-        const added = /^Enhance adds (\d+)\.$/.exec(text);
-        if (added) enhanceDamage += Number(added[1]);
+        const added = /^Empower adds (\d+)\.$/.exec(text);
+        if (added) empowerDamage += Number(added[1]);
         if (text === 'The sunlight melts the hail.') melts++;
       }
       s.log = [];
@@ -312,7 +312,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
       Object.entries(kills).map(([k, n]) => [k, round(n / fights, 2)])
     ),
     sunlightTargets: sunlight,
-    enhanceDamagePerFight: perFight(enhanceDamage),
+    empowerDamagePerFight: perFight(empowerDamage),
     meltsPerFight: round(melts / fights, 2),
     survivalPct: Object.fromEntries(
       Object.entries(units).map(([h, n]) => [h, round((100 * (survivors[h] ?? 0)) / n)])

@@ -284,17 +284,17 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
         : `by hail, until ${hailEnds(fight.effects.find((e) => e.source === holder.id)?.turns ?? 1, `${unitName(holder)}’s`)}`;
     out.push({id: s.kind, label: s.kind === 'stunned' ? 'Stunned' : 'Immobilized', rest});
   }
-  if (unit.enhance)
+  if (unit.empower)
     out.push({
-      id: 'enhanced',
-      label: `Enhanced ${unit.enhance}`,
-      rest: unit.enhanceStarted ? 'until the end of this turn' : 'until the end of its next turn',
+      id: 'empowered',
+      label: `Empowered ${unit.empower}`,
+      rest: unit.empowerStarted ? 'until the end of this turn' : 'until the end of its next turn',
     });
-  if (unit.degrade)
+  if (unit.weaken)
     out.push({
-      id: 'degraded',
-      label: `Degraded ${unit.degrade}`,
-      rest: unit.degradeStarted ? 'until the end of this turn' : 'until the end of its next turn',
+      id: 'weakened',
+      label: `Weakened ${unit.weaken}`,
+      rest: unit.weakenStarted ? 'until the end of this turn' : 'until the end of its next turn',
     });
   if (unit.shield)
     out.push({id: 'shield', label: `Shield ${unit.shield}`, rest: 'until its next turn'});

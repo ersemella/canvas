@@ -354,19 +354,19 @@ export const STATUS_MARK: Record<StatusKind, [string, string]> = {
 };
 export const STATUS_KINDS = Object.keys(STATUS_MARK) as StatusKind[];
 
-/** Enhance's marker: not a status kind, a number on the unit (`Unit.enhance`). */
-export const ENHANCE_MARK: [string, string] = ['E', PALETTE.jade];
+/** Empower's marker: not a status kind, a number on the unit (`Unit.empower`). */
+export const EMPOWER_MARK: [string, string] = ['E', PALETTE.jade];
 
-/** Degrade's marker, like Enhance's (`Unit.degrade`). */
-export const DEGRADE_MARK: [string, string] = ['D', PALETTE.madderLight];
+/** Weaken's marker, like Empower's (`Unit.weaken`). */
+export const WEAKEN_MARK: [string, string] = ['D', PALETTE.madderLight];
 
 /** A unit's status markers: I(mmobilized), S(tunned), E(nhanced), D(egraded). */
 export function statusMarks(u: Unit): [string, string][] {
   const marks = STATUS_KINDS.filter((kind) => u.statuses.some((s) => s.kind === kind)).map(
     (kind) => STATUS_MARK[kind]
   );
-  if (u.enhance) marks.push(ENHANCE_MARK);
-  if (u.degrade) marks.push(DEGRADE_MARK);
+  if (u.empower) marks.push(EMPOWER_MARK);
+  if (u.weaken) marks.push(WEAKEN_MARK);
   return marks;
 }
 

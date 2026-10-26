@@ -53,8 +53,8 @@ the kits.**
   3.4). Per-action costs are gone.
 - **The keywords** are a new, shorter list: Delay, Haste, Inevitable,
   Push, Pull, Move, Immobilized, Unstoppable, Stunned, Burn, Shield,
-  Pierce, Enhance, Degrade, Armour, Immortal ([keywords.md](keywords.md));
-  Immobilized, Stunned, Move, Push, Pull, Enhance, Degrade and Delay
+  Pierce, Empower, Weaken, Armour, Immortal ([keywords.md](keywords.md));
+  Immobilized, Stunned, Move, Push, Pull, Empower, Weaken and Delay
   (Cleave's Delay 5, owner, 2026-10-25) are built.
 - **The kits** ([roster.md](roster.md)): the Bow, unchanged in shape; Hail,
   one space exactly 2 away (a ring; within 3 until 2026-10-24) until the
@@ -72,7 +72,7 @@ the kits.**
   its action cost on (4 slots), greyed; when it comes back the arrow flies
   down the lane it was aimed along, hitting the first unit in it then,
   with no turn for the Outrider, and the card goes its action cost on;
-  Sunlight (owner, 2026-10-23), Enhance 2 on a unit within 3, melting hail
+  Sunlight (owner, 2026-10-23), Empower 2 on a unit within 3, melting hail
   there. **Skirmish and Sunlight are upgrades** (owner, 2026-10-24), out
   of the starting kits: the Outrider starts with the Bow, the Storm Caller
   with Hail, each earning the other from a region's upgrade offer

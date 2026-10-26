@@ -277,7 +277,7 @@ const ICON: Record<IconId, Icon> = {
 
 /**
  * Each kind's colour, shade and accent, from the palette: damage's light
- * madder, walking's ivory, the harmful statuses' gold, and Enhance's
+ * madder, walking's ivory, the harmful statuses' gold, and Empower's
  * jade under a bright sun.
  */
 const KIND_COLORS: Record<IconKind, [string, string, string]> = {

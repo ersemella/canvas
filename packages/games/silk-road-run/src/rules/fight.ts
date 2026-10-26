@@ -249,9 +249,9 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     startTurnPassives(ctx, unit);
     // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25).
     ageHail(state, unit);
-    // An Enhance or Degrade lasts until the end of this turn.
-    if (unit.enhance) unit.enhanceStarted = true;
-    if (unit.degrade) unit.degradeStarted = true;
+    // An Empower or Weaken lasts until the end of this turn.
+    if (unit.empower) unit.empowerStarted = true;
+    if (unit.weaken) unit.weakenStarted = true;
     squeezeGrapples(ctx, unit);
     // The squeeze can end the fight.
     if (state.phase !== 'fight') return;
@@ -285,7 +285,7 @@ export function charging(state: FightState, unit: Unit): boolean {
 /**
  * A charging card come back (owner, 2026-10-23): its shots fly, and
  * that is all, no turn and nothing that comes with one (hail lifting, a
- * squeeze, an Enhance running out, Stunned; a Stun before the card comes
+ * squeeze, an Empower running out, Stunned; a Stun before the card comes
  * back has already lost the shots, in `stun`); then the card goes its action
  * cost on (3.2), to the unit's next turn.
  */

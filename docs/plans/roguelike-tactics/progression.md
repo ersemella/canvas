@@ -200,8 +200,8 @@ choice:
   hit still spends Hardened).
 - **A hit** is an ability's damage (and a charged shot's); a grapple's
   squeeze is damage but not a hit, so Hardened, Bulwark, Opportunist and
-  Flanker ignore it. Glass Cannon's and Lone Wolf's Enhance add to the
-  squeeze, as an Enhance does (owner, 2026-10-23).
+  Flanker ignore it. Glass Cannon's and Lone Wolf's Empower add to the
+  squeeze, as an Empower does (owner, 2026-10-23).
 - **Taking damage** means health lost: damage a Shield absorbs whole
   doesn't break a grapple, set off Shake Loose or count for Second Wind.
 - **Haste during the hero's own turn** (Momentum, a Second Wind or
@@ -228,7 +228,7 @@ choice:
   the first such Bulwark (party order) takes the 1. Its 1 isn't a hit.
 - **Last Stand's Stun** goes after the one turn it skips; Iron Will turns
   it, Shake Loose doesn't (it is given after the damage).
-- **Vengeance's Enhance** keeps a stronger one the hero has, and lasts
+- **Vengeance's Empower** keeps a stronger one the hero has, and lasts
   until the end of its next turn.
 - **Glass Cannon** starts at half health, rounded up.
 
@@ -256,9 +256,9 @@ choice:
 | **Hardened** | Armour 1 against the first hit this hero takes each fight. |
 | **Last Stand** | The first time each fight this hero would die, it is left at 1 health instead and is Stunned for its next turn. |
 | **Piercing Eye** | This hero's attacks Pierce against a unit that is Immobilized or Stunned. |
-| **Opportunist** | This hero's attacks deal 1 more damage (as Enhance 1) to a unit that hasn't had a turn since this hero's last turn. |
+| **Opportunist** | This hero's attacks deal 1 more damage (as Empower 1) to a unit that hasn't had a turn since this hero's last turn. |
 | **Bulwark** | When an ally next to this hero takes its first hit between this hero's turns, the ally takes 1 less damage and this hero takes that 1. |
-| **Glass Cannon** | Enhance 1 always, but this hero starts each fight at half its health. |
+| **Glass Cannon** | Empower 1 always, but this hero starts each fight at half its health. |
 
 **Control**
 
@@ -272,9 +272,9 @@ choice:
 | Passive | Rule |
 |---|---|
 | **Flanker** | This hero's attacks deal 1 more damage when an ally stands on the far side of the target, opposite this hero. |
-| **Lone Wolf** | Enhance 1 while no ally is within 2 spaces. |
+| **Lone Wolf** | Empower 1 while no ally is within 2 spaces. |
 | **Rally** | At the start of this hero's turn, each ally next to it gains Shield 1 until that ally's next turn. |
-| **Vengeance** | When an ally dies, this hero's card is Hastened 3 and it gains Enhance 1 for its next turn. |
+| **Vengeance** | When an ally dies, this hero's card is Hastened 3 and it gains Empower 1 for its next turn. |
 
 - Rationale: each bends one rule rather than adding a system (17.7), and
   several answer a measured problem: Iron Will and Shake Loose counter

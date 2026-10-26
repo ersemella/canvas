@@ -21,15 +21,15 @@ and Barrier **Shield**.
 
 **Built (2026-10-23):** Immobilized, Stunned and Move, which the three
 prototype heroes' kits use (Hail, Grapple, Throw; [roster.md](roster.md)),
-and Enhance (the Storm Caller's Sunlight: until the end of the unit's next
-turn, a new one replacing the last; a Champion's Enhance adds to its
+and Empower (the Storm Caller's Sunlight: until the end of the unit's next
+turn, a new one replacing the last; a Champion's Empower adds to its
 squeeze, owner, 2026-10-23). **Push** and **Pull** (2026-10-24), for the
 upgrades Shove, Gale and Haul ([roster.md](roster.md)): no collision
 damage when stopped early (question 55 open). Haste was built for the
 Tailwind experiment and removed with it (2026-10-24; [history.md](history.md)).
-**Degrade** (2026-10-25), for the Waidan Alchemist's Elixir, lasting as
-Enhance does; with Enhance it nets out, and it reduces a Champion's
-squeeze too. Elixir's Enhance and Degrade are a fixed 1 (owner,
+**Weaken** (2026-10-25), for the Waidan Alchemist's Elixir, lasting as
+Empower does; with Empower it nets out, and it reduces a Champion's
+squeeze too. Elixir's Empower and Weaken are a fixed 1 (owner,
 2026-10-26; the Alchemist's power from 2026-10-25, an exception to 17.2).
 **Delay** (2026-10-25), for the Modao Vanguard's Cleave (Delay 5): the
 card moves 5 slots later, a taken slot resolved by speed as any placement
@@ -51,7 +51,7 @@ The others are defined here and built when an ability uses them.
 | Track | Delay, Haste, Inevitable |
 | Board | Push, Pull, Move, Immobilized, Unstoppable |
 | Control | Stunned |
-| Damage | Burn, Shield, Pierce, Enhance, Degrade, Armour, Immortal |
+| Damage | Burn, Shield, Pierce, Empower, Weaken, Armour, Immortal |
 
 **Terms (Decided):** **Delay** and **Haste** always mean the **track**
 (moving a card later or earlier). **Push**, **Pull** and **Move** always
@@ -73,8 +73,8 @@ puts it on another space.
   already on the unit (add, replace, or keep the stronger). Different
   statuses always combine.
 - **Effect values are fixed by their source.** No stat scales a keyword:
-  Burn, Shield, Delay and Haste slots, displacement distances, Enhance,
-  Degrade and Armour keep the value the ability, gear or upgrade states.
+  Burn, Shield, Delay and Haste slots, displacement distances, Empower,
+  Weaken and Armour keep the value the ability, gear or upgrade states.
   Gear and milestone upgrades change them directly (9.7, 10.9). Power is
   an ability's own damage (9.2), nothing else.
 - **A keyword can be an ability property, a status or a passive.** Pierce
@@ -139,14 +139,14 @@ a guard is needed is open question 56.
 | **Burn N** | The unit takes N damage at the start of each of its turns while it lasts. |
 | **Shield N** | A separate pool of N, reduced before health. Damage the Shield can't absorb carries on to health. |
 | **Pierce** | The attack's damage ignores Armour. |
-| **Enhance N** | The unit's abilities deal N more damage. |
-| **Degrade N** | The unit's abilities deal N less damage, to at least 0. |
+| **Empower N** | The unit's abilities deal N more damage. |
+| **Weaken N** | The unit's abilities deal N less damage, to at least 0. |
 | **Armour N** | Damage the unit takes is reduced by N, to at least 0. A flat reduction, not a percentage. |
 | **Immortal** | The unit's health can't be reduced: damage that reaches health becomes 0. Damage still reduces and breaks its Shield. |
 
 **Damage order (Decided 2026-10-23):**
-1. The ability's damage: its user's **power** (9.2), plus Enhance, minus
-   Degrade, at least 0.
+1. The ability's damage: its user's **power** (9.2), plus Empower, minus
+   Weaken, at least 0.
 2. Minus the target's **Armour**, unless the attack **Pierces**; at least 0.
 3. The target's **Shield** takes it first; what it can't absorb goes on.
 4. **Health** takes the rest, unless the target is **Immortal**.
@@ -161,7 +161,7 @@ unless the Burn Pierces; TBD, open question 57).
   rather than adding a system, matching the enemy design principle (11.1).
 - Each has a counter in the list: Inevitable against Delay and Haste,
   Unstoppable against displacement and Immobilized, Pierce against
-  Armour, Degrade against Enhance, damage (to break a grapple) and
+  Armour, Weaken against Empower, damage (to break a grapple) and
   Stunned against Stunned.
 - Small whole numbers (9.1) make every effect countable at a glance:
   Armour 1 against a power-2 bow halves it.
@@ -170,7 +170,7 @@ unless the Burn Pierces; TBD, open question 57).
 
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
-| Effect list (2026-10-23) | Delay, Haste, Inevitable, Push, Pull, Move, Immobilized, Unstoppable, Stunned, Burn, Shield, Pierce, Enhance, Degrade, Armour, Immortal | The 2026-10-16 list ([history.md](history.md)) | Owner's call, with the stats' rework: fewer keywords, each a small whole number or a plain rule |
+| Effect list (2026-10-23) | Delay, Haste, Inevitable, Push, Pull, Move, Immobilized, Unstoppable, Stunned, Burn, Shield, Pierce, Empower, Weaken, Armour, Immortal | The 2026-10-16 list ([history.md](history.md)) | Owner's call, with the stats' rework: fewer keywords, each a small whole number or a plain rule |
 | Terms (2026-10-23) | **Delay** and **Haste** for the track; **Push**, **Pull** and **Move** for the board | Push and Pull for the track, Displace for the board (2026-10-16) | Owner's call: Push and Pull read as the board in plain speech |
 | Shield (2026-10-23) | A separate pool before health; what it can't absorb carries on to health | Barrier: the hit that spent it was absorbed whole, its excess lost (2026-10-22) | Owner's call ("reduced before affecting HP") |
 | Armour (2026-10-23) | A flat reduction, Pierce ignoring it; defence only sets health | Defence as a percentage reduction (9.1, until 2026-10-23) | Owner's call: with damage of 1 or 2, a percentage rounds away |

@@ -105,7 +105,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'glassCannon',
     'Glass Cannon',
     'damage',
-    'Enhance 1 always, but starts each fight at half its health.'
+    'Empower 1 always, but starts each fight at half its health.'
   ),
   ironWill: def(
     'ironWill',
@@ -125,7 +125,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'allies',
     'Its attacks deal 1 more when an ally stands on the far side of the target, opposite it.'
   ),
-  loneWolf: def('loneWolf', 'Lone Wolf', 'allies', 'Enhance 1 while no ally is within 2 spaces.'),
+  loneWolf: def('loneWolf', 'Lone Wolf', 'allies', 'Empower 1 while no ally is within 2 spaces.'),
   rally: def(
     'rally',
     'Rally',
@@ -136,7 +136,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'vengeance',
     'Vengeance',
     'allies',
-    'When an ally falls, its card is Hastened 3 and it is Enhanced 1 for its next turn.'
+    'When an ally falls, its card is Hastened 3 and it is Empowered 1 for its next turn.'
   ),
 };
 

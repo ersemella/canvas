@@ -22,12 +22,12 @@ import {
 } from './board';
 import {
   clearHail,
-  degrade,
+  weaken,
   delay,
   displace,
   displaced,
   endGrapples,
-  enhance,
+  empower,
   enterHex,
   hailEnds,
   hailHolds,
@@ -47,7 +47,7 @@ import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
 /**
  * What an ability is broadly for, shown as an icon by its name: hurting
- * enemies, controlling the board (statuses, hail), or helping (Enhance).
+ * enemies, controlling the board (statuses, hail), or helping (Empower).
  */
 export type AbilityKind = 'attack' | 'control' | 'support';
 
@@ -103,7 +103,7 @@ export interface AbilityDef {
   damages?: boolean;
   /**
    * Helps a unit of its user's side and hinders one of the other (Elixir:
-   * Enhance or Degrade), so the page offers units of either side.
+   * Empower or Weaken), so the page offers units of either side.
    */
   bothSides?: boolean;
   /**
@@ -230,7 +230,7 @@ const skirmish: AbilityDef = {
     (ctx.state.shots ??= []).push({
       source: user.id,
       dir,
-      ...(user.enhance ? {enhance: user.enhance} : {}),
+      ...(user.empower ? {empower: user.empower} : {}),
     });
   },
 };
@@ -270,8 +270,8 @@ const hail: AbilityDef = {
 /**
  * Sunlight (owner, 2026-10-23): a space within `ABILITY.sunlight.range`.
  * Hail there melts (`melts`), freeing whoever it held; a unit there that
- * hits (not Temee) and isn't already Enhanced (renewing an Enhance on
- * itself, the Storm Caller never spent it) is Enhanced until the end of
+ * hits (not Temee) and isn't already Empowered (renewing an Empower on
+ * itself, the Storm Caller never spent it) is Empowered until the end of
  * its next turn. The Storm Caller may target itself (`self`). Aimed at a
  * space, since hail alone is a target.
  */
@@ -281,14 +281,14 @@ const sunlight: AbilityDef = {
   kind: 'support',
   range: ABILITY.sunlight.range,
   summary: () =>
-    `A space within ${ABILITY.sunlight.range}: hail there melts; a unit there is Enhanced ${ABILITY.sunlight.enhance}.`,
+    `A space within ${ABILITY.sunlight.range}: hail there melts; a unit there is Empowered ${ABILITY.sunlight.empower}.`,
   targets(state, map, user, from) {
     const {range, self, melts} = ABILITY.sunlight;
     return hexesWithin(map, from, range, (h) => {
       if (blocks(tileAt(map, h))) return false;
       if (melts && state.effects.some((e) => hexEquals(e.hex, h))) return true;
       const u = unitAt(state, h);
-      return u !== undefined && u.power > 0 && !u.enhance && (u !== user || self);
+      return u !== undefined && u.power > 0 && !u.empower && (u !== user || self);
     });
   },
   resolve(ctx, user, target) {
@@ -304,7 +304,7 @@ const sunlight: AbilityDef = {
       }
     }
     const u = unitAt(ctx.state, hex);
-    if (u) enhance(ctx, u, ABILITY.sunlight.enhance);
+    if (u) empower(ctx, u, ABILITY.sunlight.empower);
   },
 };
 
@@ -546,7 +546,7 @@ const volley: AbilityDef = {
     (ctx.state.shots ??= []).push({
       source: user.id,
       hex: {...target.hex!},
-      ...(user.enhance ? {enhance: user.enhance} : {}),
+      ...(user.empower ? {empower: user.empower} : {}),
     });
   },
 };
@@ -630,8 +630,8 @@ export function elixirCaught(state: FightState, user: Unit, from: Hex, target: H
 /**
  * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within
  * `ABILITY.elixir.range`, not the Alchemist itself, with no line of fire.
- * An ally heals the Alchemist's power and is Enhanced `fixed` (1); an
- * enemy is hit for the Alchemist's power, then Degraded `fixed`; each until
+ * An ally heals the Alchemist's power and is Empowered `fixed` (1); an
+ * enemy is hit for the Alchemist's power, then Weakened `fixed`; each until
  * the end of its next turn, replacing any it had. Other shapes and
  * amounts, for measuring, by `ABILITY.elixir` (`elixirCaught`).
  */
@@ -644,8 +644,8 @@ const elixir: AbilityDef = {
   range: ABILITY.elixir.range,
   summary: (user) =>
     ABILITY.elixir.fixed
-      ? `A unit within ${ABILITY.elixir.range}: an ally ${ABILITY.elixir.heal ? `heals ${user.power} and ` : ''}is Enhanced ${ABILITY.elixir.fixed}; an enemy is hit, then Degraded ${ABILITY.elixir.fixed}, until the end of its next turn.`
-      : `A unit within ${ABILITY.elixir.range}: an ally is Enhanced ${user.power}, an enemy Degraded ${user.power}, until the end of its next turn.`,
+      ? `A unit within ${ABILITY.elixir.range}: an ally ${ABILITY.elixir.heal ? `heals ${user.power} and ` : ''}is Empowered ${ABILITY.elixir.fixed}; an enemy is hit, then Weakened ${ABILITY.elixir.fixed}, until the end of its next turn.`
+      : `A unit within ${ABILITY.elixir.range}: an ally is Empowered ${user.power}, an enemy Weakened ${user.power}, until the end of its next turn.`,
   targetsUnit: true,
   targets(state, map, user, from) {
     const {shape, range} = ABILITY.elixir;
@@ -667,11 +667,11 @@ const elixir: AbilityDef = {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
       if (u.side === user.side) {
         if (elixirHeals(u)) heal(ctx, u, user.power);
-        if (u.power > 0) enhance(ctx, u, fixed || user.power);
+        if (u.power > 0) empower(ctx, u, fixed || user.power);
         haste(ctx, u, tempo);
       } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
-        if (u.alive && u.power > 0) degrade(ctx, u, fixed || user.power);
+        if (u.alive && u.power > 0) weaken(ctx, u, fixed || user.power);
         delay(ctx, u, tempo);
       }
     }

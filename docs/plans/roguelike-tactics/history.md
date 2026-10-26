@@ -124,7 +124,7 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
     track Push and Pull renamed Delay and Haste, Displace split into Push,
     Pull and Move, Barrier renamed Shield (now passing what it can't
     absorb on to health), Dazed replaced by Stunned, Vulnerable by
-    Enhance and Degrade, defence's reduction by Armour.
+    Empower and Weaken, defence's reduction by Armour.
   - **The kits:** Hail as a radius-1 area within 3 that dealt base 20 and
     Pushed 5 on landing and base 20 to a unit starting its turn in it, for
     20 slots; Grapple (reach 2 with a step in) dealing base 60 and
@@ -337,10 +337,10 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   within 3, heal 1 and cleanse every status (ending a grapple), melting
   hail; worth nothing at heal 1, worth having at heal 2 but it lengthened
   fights and made the last stage harder (42.8% player wins). *Fog* (the
-  Storm Caller): one space within 3 until its next turn, Degrade 1 on a
+  Storm Caller): one space within 3 until its next turn, Weaken 1 on a
   unit standing in it; worth nothing on one space, a little over a space
   and its neighbours (the first proposal, judged too strong on paper),
-  a trap at Degrade 2. Also weighed: *Leap* for the Outrider (it mostly
+  a trap at Weaken 2. Also weighed: *Leap* for the Outrider (it mostly
   repeats a 3-space walk). The Storm Caller has Hail alone until its
   second ability is chosen.
 
@@ -397,7 +397,7 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   2026-10-26; owner's call): South India's fast melee damage hero
   (kalaripayattu, the urumi) and immovable tank (a war elephant,
   Unstoppable as a passive), and Abbasid Arabia's curser (the *Nights*'
-  enchantresses, Degrade), cut with the India and Arabia regions
+  enchantresses, Weaken), cut with the India and Arabia regions
   ([setting.md](setting.md), 15.3a). The Jinn Binder moved to Persia
   instead, as its support. The Kalari's fast-melee niche went to the
   **Youxia Swordsman**, China's damage hero, a role rather than a named

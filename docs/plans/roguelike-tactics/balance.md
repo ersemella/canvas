@@ -911,13 +911,13 @@ almost never the only way to a target or the exit.
 
 **Fog** (owner, 2026-10-23), in place of Sunlight: one space within 3,
 until the Storm Caller's next turn; a unit standing in it is
-**Degraded** 1 (its abilities, the grapple's squeeze and an overwatch shot
+**Weakened** 1 (its abilities, the grapple's squeeze and an overwatch shot
 included, deal 1 less, at least 0). The AI values a unit in fog at the
-damage it Degrades from its next hit, if that comes before the fog lifts,
-and its threat map Degrades a fogged enemy's hit. `experiments/fog.mjs`
+damage it Weakens from its next hit, if that comes before the fog lifts,
+and its threat map Weakens a fogged enemy's hit. `experiments/fog.mjs`
 and `fog-tuning.mjs`, 400 fights each:
 
-| Side without | Fog, 1 space, Degrade 1 | Fog, radius 1 (owner's first proposal) | Fog, 1 space, Degrade 2 |
+| Side without | Fog, 1 space, Weaken 1 | Fog, radius 1 (owner's first proposal) | Fog, 1 space, Weaken 2 |
 |---|---:|---:|---:|
 | Bow | 14.5% | | |
 | Overwatch | 48.1% | | |
@@ -926,18 +926,18 @@ and `fog-tuning.mjs`, 400 fights each:
 | Grapple | 10.6% | | |
 | Throw | 44.4% | | |
 
-| | Fog, 1 space | Radius 1 | Degrade 2 |
+| | Fog, 1 space | Radius 1 | Weaken 2 |
 |---|---:|---:|---:|
 | Fog's share of the Storm Caller's turns | 28% | 35% | 35% |
 | Damage fog took off hits, per fight | 2.8 | 8.9 | 2.9 |
 | Unfinished | 1.5% | 0.5% | 0% |
 | Median slots | 78 | 86 | 91 |
 
-- **One space at Degrade 1 adds nothing**: most hits come from units that
+- **One space at Weaken 1 adds nothing**: most hits come from units that
   can step out or shoot from elsewhere, and it takes Hail's turns.
 - **Radius 1 is worth a little** (46.3%, just inside the 40–48% band):
   it takes three times the damage off, but it slows fights.
-- **Degrade 2 is a trap** (55.5%): the AI casts it on a third of the Storm
+- **Weaken 2 is a trap** (55.5%): the AI casts it on a third of the Storm
   Caller's turns and loses more for it.
 - With Fog in place of Sunlight, the stages are back where they were
   (`caravans.mjs`): all three heroes 56.7% (58.3% before any new ability,
@@ -1156,7 +1156,7 @@ ability, on the edge of its usage band (8–25%). The stages are easier
 across the board; how much of that is the track and how much is Volley
 wasn't separated.
 
-**With Sunlight in the Storm Caller's kit** (Enhance 2, merged the same
+**With Sunlight in the Storm Caller's kit** (Empower 2, merged the same
 day), same runs: side without Volley 47.8%, the Bow 25.8%, Hail 33.1%,
 Sunlight **55.3%**, Grapple 11%, Throw 45%, the Bow and Volley 14.3%.
 Volley stays (just) in its band, on 21% of the Outrider's turns (3.5
@@ -1237,22 +1237,22 @@ Grapple 18%, Throw 47.5%; the Outrider walks 38%, Bows 34%, Skirmishes
 wolves 100%, Bökh + Outrider + wolf 84.5%, Outrider + Storm + wolf 93.5%,
 two Outriders + wolf 91.8%, all three 69.5%.
 
-### Sunlight as Enhance (2026-10-23)
+### Sunlight as Empower (2026-10-23)
 
 A proposal for the Storm Caller's second ability (open question in
-[roster.md](roster.md)): **Sunlight**, Enhance 1 on a unit within 3 that
-hits (not Temee, not a unit already Enhanced) until the end of that unit's
+[roster.md](roster.md)): **Sunlight**, Empower 1 on a unit within 3 that
+hits (not Temee, not a unit already Empowered) until the end of that unit's
 next turn. The owner asked for three variants: the Storm Caller may target
-itself (**self**: its next Hail deals 2), a Champion's Enhance adds to its
+itself (**self**: its next Hail deals 2), a Champion's Empower adds to its
 squeeze (**squeeze**), and Sunlight melts hail on its space, freeing whoever
 it held, with a space of hail alone a target too (**melts**). Built for
-measuring first, in no kit: the Enhance rule in the rules (`enhance` in
+measuring first, in no kit: the Empower rule in the rules (`empower` in
 resolve.ts, ending at its unit's turn end in fight.ts), Sunlight in the
 balance scripts. `experiments/sunlight.mjs`, 400 fights
 each, seeds from 1000, measured with the action cost at 12 − 2 × speed
 (before 60 ÷ (speed + 5), the same day).
 
-**The AI's valuation** (`enhanceGain` in ai.ts): an Enhance is worth one
+**The AI's valuation** (`empowerGain` in ai.ts): an Empower is worth one
 hit's extra damage while its unit has an enemy within reach, and stops
 counting once its unit's turn begins (it is being spent). Two first tries
 made it a trap, which says more about the scoring than the ability
@@ -1261,13 +1261,13 @@ made it a trap, which says more about the scoring than the ability
   it, so the bonus cancelled out: the side without Sunlight won 57%, and
   70% with self, the Storm Caller recasting on itself (972 casts in 400
   fights) for 0.9 extra damage a fight. Recasting on a unit already
-  Enhanced is now refused.
-- Counted with no enemy in reach, it Enhanced Champions about to walk.
+  Empowered is now refused.
+- Counted with no enemy in reach, it Empowered Champions about to walk.
 
 **Each ability removed from one side** (modified side's wins; "today" is
 the adopted kit, Hail alone):
 
-| Side without | Today | Sunlight | + self | + squeeze | + melts | All three | Enhance 2 |
+| Side without | Today | Sunlight | + self | + squeeze | + melts | All three | Empower 2 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Sunlight | | 50.3% | 49.5% | 50% | 49.8% | 50% | **57%** |
 | Hail | 18.8% | 22.5% | 24% | 24.3% | 23% | 24.5% | 31.3% |
@@ -1275,10 +1275,10 @@ the adopted kit, Hail alone):
 | Bow | 38.3% | 41.8% | 39.8% | 42% | 41.8% | 40.8% | 42% |
 | Volley | 23.5% | 23.8% | 23.8% | 23.8% | 24.8% | 24.3% | 20% |
 
-| Control fights | Today | Sunlight | + self | + squeeze | + melts | All three | Enhance 2 |
+| Control fights | Today | Sunlight | + self | + squeeze | + melts | All three | Empower 2 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Storm Caller: Hail / Sunlight | 72% / | 67% / 7% | 67% / 8% | 66% / 8% | 65% / 10% | 64% / 11% | 45% / 26% |
-| Enhance's damage a fight | | 0.8 | 0.8 | 0.8 | 0.9 | 0.9 | 4.1 |
+| Empower's damage a fight | | 0.8 | 0.8 | 0.8 | 0.9 | 0.9 | 4.1 |
 | Temee killed (of 400) | 54 | 64 | 62 | 64 | 56 | 54 | **104** |
 
 Targets, base Sunlight: the Outrider 66%, the Champion 34%. Self was taken
@@ -1287,7 +1287,7 @@ on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
 
 **Stage caravans**, player wins:
 
-| Enemy | Today | Sunlight | + self | + squeeze | + melts | All three | Enhance 2 |
+| Enemy | Today | Sunlight | + self | + squeeze | + melts | All three | Empower 2 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Outrider + 2 wolves | 92.8% | 93.5% | 93% | 93.5% | 93.5% | 93% | 88.5% |
 | Outrider + Outrider + wolf | 42.5% | 43% | 44.5% | 43% | 43% | 44.5% | 37.8% |
@@ -1295,7 +1295,7 @@ on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
 | Outrider + Storm + wolf | 87.8% | 87.3% | 87.3% | 87.3% | 87.5% | 87.5% | 78% |
 | All three | 61.3% | 62% | 61% | 62.3% | 60.3% | 60% | 56% |
 
-- **Enhance 1 for one turn is worth nothing in every variant** (49.5–50.3%,
+- **Empower 1 for one turn is worth nothing in every variant** (49.5–50.3%,
   within the ±2.5 points of noise), on 7–11% of the Storm Caller's turns.
   A Hail (1 damage and a hold) almost always beats +1 on an ally's next
   hit; it pays only when the +1 makes a kill.
@@ -1307,33 +1307,33 @@ on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
   only keeps Temee alive a little more (56 killed of 400, 64 without it).
 - **It doesn't counter the Outrider**: stages with enemy Outriders move
   within noise (two Outriders 43–44.5%, 42.5% today).
-- **Enhance 2 is a trap** (57%): it takes a quarter of the Storm Caller's
+- **Empower 2 is a trap** (57%): it takes a quarter of the Storm Caller's
   turns (3.75 casts a fight) and Hail's from it (Hail on 45% of turns, its
   damage 6.5 a fight from 10.1), yet adds only 4.1 damage a fight, about
-  1.1 of each cast's 2: the Enhanced ally often has no hit on its next
+  1.1 of each cast's 2: the Empowered ally often has no hit on its next
   turn. Without Hail holding them, enemies reach Temee: it dies in 104 of
   400 control fights (54 today), and in 46 of 400 against the Outrider and
   two wolves (29 today), a caravan with no Storm Caller, so it is the
   player's own Sunlight that costs it. The AI counts the full +2 whenever
   an enemy is in reach, about twice what it delivers (principle 4).
 
-**Adopted at Enhance 2** (owner, 2026-10-23), as measured: Sunlight is in
+**Adopted at Empower 2** (owner, 2026-10-23), as measured: Sunlight is in
 the Storm Caller's kit (`ABILITY.sunlight` in config.ts), then with self,
-melts and squeeze on (owner, the same day). That combination, at Enhance 2,
+melts and squeeze on (owner, the same day). That combination, at Empower 2,
 wasn't measured; the AI's valuation is unchanged, so it still
 misuses it.
 
 ### Sunlight as it plays, and the AI's valuation (2026-10-23)
 
-Sunlight as adopted (owner): Enhance 2, the Storm Caller may target
-itself, hail melts, and an Enhanced Champion's squeeze deals its Enhance
+Sunlight as adopted (owner): Empower 2, the Storm Caller may target
+itself, hail melts, and an Empowered Champion's squeeze deals its Empower
 more; on the day's later rules (action cost 60 ÷ (speed + 5), Volley
 charged at range 3).
 
-**The valuation** (`enhanceGain` in ai.ts), rebuilt: an Enhance is worth
+**The valuation** (`empowerGain` in ai.ts), rebuilt: an Empower is worth
 its extra damage on the unit's next hit if an enemy is in reach, twice
 that for a Champion that grapples (its squeeze), plus a kill's worth if
-that hit kills only with it, all times `AI.enhancedShare`.
+that hit kills only with it, all times `AI.empoweredShare`.
 `experiments/sunlight-ai.mjs`, 400 fights each:
 
 | Share counted | 1 | ¾ | ½ | ¼ |
@@ -1343,7 +1343,7 @@ that hit kills only with it, all times `AI.enhancedShare`.
 | Self-casts, of all casts | 37% | 37% | 27% | 22% |
 | Temee killed (of 400) | 48 | 46 | **40** | 52 |
 
-**Adopted: ½** (`AI.enhancedShare`). At 1 Sunlight is still a slight trap
+**Adopted: ½** (`AI.empoweredShare`). At 1 Sunlight is still a slight trap
 and crowds Hail out; at ½ it is no longer one, the Storm Caller Hails
 most, and Temee dies least. No share makes Sunlight worth anything.
 
@@ -1364,7 +1364,7 @@ same rules.
 |---|---:|---:|
 | Storm Caller: Hail / Sunlight / walk | 40% / 33% / 27% | 72% / / 27% |
 | Sunlight's targets: self / Champion / Outrider | 27% / 35% / 38% | |
-| Enhance's damage a fight; hails melted | 4.8; 0.84 | |
+| Empower's damage a fight; hails melted | 4.8; 0.84 | |
 | Temee killed (of 400) | 40 | 30 |
 
 **Stage caravans**, player wins:
@@ -1387,11 +1387,11 @@ No fight unfinished; medians 31–46 actions.
 - **Sunlight still adds nothing** (49.3%) and takes Hail's turns: the side
   without Hail wins 22.5% (15.8% with Hail alone).
 - **It makes Volley worth nothing** (51.8%, 44% with Hail alone): an
-  Enhanced Outrider's Bow (4 damage, a kill on any 4-health unit) is
+  Empowered Outrider's Bow (4 damage, a kill on any 4-health unit) is
   worth more than a charged Volley. The Bow is worth more (24.8%).
 - **The enemy gains more from it than the player**: every stage with an
   enemy Storm Caller is harder, most with two (84.8% from 97.8%; they
-  Enhance each other, a Hail then dealing 3), and the last stage falls to
+  Empower each other, a Hail then dealing 3), and the last stage falls to
   67.5% from 73.8%. With no enemy Storm Caller the stages move 1–5 points.
 - **It doesn't counter the Outrider**: two enemy Outriders win more often
   (92.3% player wins, 97% with Hail alone).
@@ -1421,7 +1421,7 @@ median 38 actions, 79 slots.
 | Storm Caller: Hail / Sunlight / walk | 43 / 33 / 24% |
 | Turns a fight: Outrider / Champion / Storm Caller | 6.8 / 5.6 / 7.3 |
 | Damage (kills) a fight: Bow / Hail / Skirmish / Grapple / Throw | 10.9 (1.0) / 8 (1.3) / 5.2 (0.6) / 4.9 (0.55) / 1.8 (0.4) |
-| Sunlight's targets: self / Outrider / Champion / Temee (melting) | 31 / 38 / 30 / 1%; Enhance 5.4 damage a fight, 0.7 hails melted |
+| Sunlight's targets: self / Outrider / Champion / Temee (melting) | 31 / 38 / 30 / 1%; Empower 5.4 damage a fight, 0.7 hails melted |
 | Survival: Storm Caller / Champion / Outrider; Temee killed | 44.5 / 34 / 32%; 34 of 400 |
 
 **Stage caravans**, player wins (a stronger enemy is lower):
@@ -1782,7 +1782,7 @@ sides; the camel with the player. The Chinese side's share of wins:
   it takes half the Outrider's turns.
 - **The Alchemist is the weakest hero measured**, below every Steppe hero
   in every seat (32–41%), and the pair together loses 3 fights in 4. Elixir
-  is 60–70% of its turns but adds only 2–4 Enhanced damage a fight; it
+  is 60–70% of its turns but adds only 2–4 Empowered damage a fight; it
   deals none itself, and at health 4 it is the first to die. Taking it
   out of the China line-up (a second fox) costs the enemy nothing.
 - **To bring them to the Steppe's level** (about 50% in a
@@ -1800,7 +1800,7 @@ Cleave. Both are switches, the built kits unchanged: `ABILITY.elixir.shape`
 at its own space; the Alchemist never itself) and `ABILITY.cleave.delay`
 (each unit Cleave leaves standing Delayed that many slots, keywords.md
 17.3; 0 as built). Delay is new in `resolve.ts`, without the delay limit
-(3.6). The AI values a shape's Enhances and Degrades unit by unit, and a
+(3.6). The AI values a shape's Empowers and Weakens unit by unit, and a
 Delay as the share of a turn the card loses (Delay ÷ the unit's action
 cost). `ablate.mjs` with `experiments/elixir-cleave.mjs`, **400 fights
 each** (about ±2.5 points), seeds from 1000. *Seat*: the hero in the
@@ -1808,7 +1808,7 @@ Storm Caller's seat against the three Steppe heroes, its side's share of
 wins (50% the Storm Caller's equal). *China*: the fox, Vanguard and
 Alchemist against the Steppe party on the Gobi, player wins.
 
-| Elixir | Seat | China | Elixir's share of turns (seat) | Enhanced damage a fight (seat) |
+| Elixir | Seat | China | Elixir's share of turns (seat) | Empowered damage a fight (seat) |
 |---|---:|---:|---:|---:|
 | A unit within 2 (as built) | 40.6% | 100% | 63% | 2.6 |
 | A unit within 3 | 43.4% | 100% | 69% | 3.0 |
@@ -1826,8 +1826,8 @@ Alchemist against the Steppe party on the Gobi, player wins.
 The aura within 2 and Delay 3 together: China 97.5%.
 
 - **An area Elixir is worth about 6 points in the seat**: the burst
-  (46.4%) and the aura within 2 (46.2%) Enhance and Degrade more than one
-  unit a turn (3.8–3.9 Enhanced damage a fight, from 2.6). Range 3 alone
+  (46.4%) and the aura within 2 (46.2%) Empower and Weaken more than one
+  unit a turn (3.8–3.9 Empowered damage a fight, from 2.6). Range 3 alone
   is worth 3 points, within noise. The aura of 1 does nothing (41.8%): the
   Alchemist must stand in the fight to use it, and it is used on only 41%
   of turns. None of them lifts the Alchemist to the Storm Caller's level;
@@ -1858,29 +1858,29 @@ The aura within 2 and Delay 3 together: China 97.5%.
   Speed is worth the most, as for every hero (principle 6): speed 3 brings
   the built Elixir to the Storm Caller's level; with an area shape it
   overshoots by 10–14 points. With the burst, defence 2 (health 6) does
-  it instead. Power adds little to the single Elixir: more Enhance on one
+  it instead. Power adds little to the single Elixir: more Empower on one
   ally seldom changes a kill.
   **Recommended:** speed 3 with Elixir as built (no page work), or the
   burst with defence 2 if an area Elixir is wanted. **Adopted (owner,
   2026-10-25): speed 3, Elixir as built.**
 - **Found while building it**: the page never offers Elixir on an enemy.
   `offeredTargets` (choices.ts) shows a support ability's targets on its
-  own side only, so a player's Alchemist can't Degrade; the AI's can.
+  own side only, so a player's Alchemist can't Weaken; the AI's can.
   Fixed 2026-10-25: Elixir is offered on either side (`bothSides`).
 
 ### Elixir fixed at 1, with a hit (2026-10-26)
 
-Asked for: Elixir's Enhance and Degrade fixed at 1, not the Alchemist's
+Asked for: Elixir's Empower and Weaken fixed at 1, not the Alchemist's
 power, and an enemy also taking a hit of its power, so power is damage
 again (9.2) and the exception to 17.2 goes. A switch,
-`ABILITY.elixir.fixed` (0 as built; above 0 that Enhance and Degrade, a
+`ABILITY.elixir.fixed` (0 as built; above 0 that Empower and Weaken, a
 hit on an enemy first, and any enemy a target); the AI values the hit as
 any attack's, and the lookahead marks every space within Elixir's range.
 `ablate.mjs` with `experiments/elixir-fixed.mjs`, **400 fights each**
 (about ±2.5 points), seeds from 1000. *Seat* and *China* as in the section
 above.
 
-| Elixir | Seat | China | Enhanced damage a fight (seat) |
+| Elixir | Seat | China | Empowered damage a fight (seat) |
 |---|---:|---:|---:|
 | By power, no damage (as built) | 49.4% | 98.8% | 4.0 |
 | Fixed 1, a hit of power 2 | **71.5%** | 88.3% | 0.9 |
@@ -1888,21 +1888,21 @@ above.
 
 - **At power 2 it is too strong**, about 20 points over the Storm
   Caller: the hit is the Bow's damage at the Outrider's speed, on any unit
-  within 2 with no line of fire, and a Degrade besides.
+  within 2 with no line of fire, and a Weaken besides.
 - **At power 1 it is the Storm Caller's equal** (within noise), with no
   unfinished fights (0.8% as built); the China line-up, at power 2, is
   harder (88.3% from 98.8%).
 - **The Alchemist stops being a support**: the AI spends Elixir on
-  enemies, the hit worth more than an Enhance of 1, and the damage it adds
-  through allies falls from 4 a fight to 1. A larger Enhance on allies
-  than the Degrade on enemies would pull it back; not measured. The
+  enemies, the hit worth more than an Empower of 1, and the damage it adds
+  through allies falls from 4 a fight to 1. A larger Empower on allies
+  than the Weaken on enemies would pull it back; not measured. The
   harness doesn't attribute Elixir's own damage or kills.
 - Not adopted on its own; adopted with a heal at power 1 (below).
 
 **With a heal** (asked for the same day): an ally also heals the
 Alchemist's power, up to its health, so a hurt ally can be aimed at
 (`ABILITY.elixir.heal`: `all`, the camel too; `heroes`, not the camel); the
-Enhance and Degrade stay fixed at 1, an enemy still takes a hit. The AI
+Empower and Weaken stay fixed at 1, an enemy still takes a hit. The AI
 values a heal point as a point of damage. Healing is new in `resolve.ts`
 (`heal`) and records no event, so the page's playback wouldn't show it.
 
@@ -1924,11 +1924,11 @@ values a heal point as a point of damage. Healing is new in `resolve.ts`
 - **No stalls from healing**: 0–0.8% unfinished, as without it.
 - At power 1 every variant is about the Storm Caller's equal; power 2 is
   too strong with or without the heal.
-- **Everything by power** (the Enhance and Degrade too) is the same as
+- **Everything by power** (the Empower and Weaken too) is the same as
   these at power 1, but a power point then raises four effects: at power
   2 (one provision) it wins 74–75% in the seat (heal any ally 75.3%,
-  heroes only 74%), against 69% with the Enhance and Degrade fixed.
-- **Adopted (owner, 2026-10-26): power 1, the Enhance and Degrade fixed at
+  heroes only 74%), against 69% with the Empower and Weaken fixed.
+- **Adopted (owner, 2026-10-26): power 1, the Empower and Weaken fixed at
   1, a heal and a hit of the Alchemist's power, the camel healed too**
   (`fixed: 1`, `heal: 'all'`; 55.8% in the seat). A heal is recorded as
   an event and shown in the playback (+N in jade). The China line-up with
@@ -1937,13 +1937,13 @@ values a heal point as a point of damage. Healing is new in `resolve.ts`
   the new defaults.
 
 **No damage, power 0, with Haste and Delay** (asked for the same day): the
-Alchemist's power 0; an ally Enhanced and **Hastened**, an enemy Degraded
+Alchemist's power 0; an ally Empowered and **Hastened**, an enemy Weakened
 and **Delayed**, by fixed amounts (`fixed`; `tempo`, Haste and Delay
 slots), any unit a target (the camel too, so it can be Hastened). The AI
 values Haste and Delay as Cleave's Delay, the share of a turn the card
 gains or loses.
 
-| Enhance/Degrade | Haste/Delay | Seat | China |
+| Empower/Weaken | Haste/Delay | Seat | China |
 |---:|---:|---:|---:|
 | 1 | 0 | 37.3% | 99.7% |
 | 1 | 3 | 55.3% | 98.7% |
@@ -1953,7 +1953,7 @@ gains or loses.
 | 2 | 5 | **74%** | 84.8% |
 
 - **The tempo carries it**: each step of Haste and Delay is worth more
-  than a point of Enhance and Degrade. 1 and 3 is the Storm Caller's equal
+  than a point of Empower and Weaken. 1 and 3 is the Storm Caller's equal
   (within noise of 50%); 2 and 0 (the built Elixir at power 0, fixed) is
   just under; 2 and 5 is as strong as the Alchemist hitting for 2.
 - **Delay 3 is about a third of a Steppe hero's turn**; at speed 3 the

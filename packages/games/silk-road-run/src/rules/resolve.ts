@@ -68,9 +68,9 @@ export function unitName(u: Unit): string {
 
 /**
  * An ability's hit: exactly the attacker's power in damage (owner,
- * 2026-10-23), plus its Enhance (or `enhance`, one the hit carries from
+ * 2026-10-23), plus its Empower (or `empower`, one the hit carries from
  * when it was made) and its passives' (Glass Cannon, Lone Wolf, and
- * against this target Opportunist and Flanker), less its Degrade; then
+ * against this target Opportunist and Flanker), less its Weaken; then
  * the target's Armour (Hardened) unless it Pierces (Piercing Eye), and an
  * ally's Bulwark (17.6's damage order; 19.8). Power 0 deals none, and
  * says nothing.
@@ -80,16 +80,15 @@ export function hit(
   attacker: Unit,
   target: Unit,
   what: string,
-  enhance = attacker.enhance ?? 0
+  empower = attacker.empower ?? 0
 ): void {
   if (!target.alive) return;
-  const bonus = passiveEnhance(attacker, ctx.state) + bonusAgainst(ctx.state, attacker, target);
-  const full = attacker.power + enhance + bonus;
-  if (attacker.degrade && full > 0)
-    log(ctx, `Degrade takes off ${Math.min(full, attacker.degrade)}.`);
-  let amount = Math.max(0, full - (attacker.degrade ?? 0));
+  const bonus = passiveEmpower(attacker, ctx.state) + bonusAgainst(ctx.state, attacker, target);
+  const full = attacker.power + empower + bonus;
+  if (attacker.weaken && full > 0) log(ctx, `Weaken takes off ${Math.min(full, attacker.weaken)}.`);
+  let amount = Math.max(0, full - (attacker.weaken ?? 0));
   if (amount <= 0) return;
-  if (enhance) log(ctx, `Enhance adds ${enhance}.`);
+  if (empower) log(ctx, `Empower adds ${empower}.`);
   if (bonus) log(ctx, `Passives add ${bonus}.`);
   const pierces = hasPassive(attacker, 'piercingEye') && isImmobilized(target);
   // Hardened: Armour 1 against the first hit each fight, spent even when Pierced.
@@ -107,27 +106,27 @@ export function hit(
 }
 
 /**
- * An ability's damage (17.6, step 1): power plus Enhance and the Enhance
- * of its passives (`passiveEnhance`, Lone Wolf's only with the `state`),
- * minus Degrade, at least 0. A hit's own bonuses against its target
+ * An ability's damage (17.6, step 1): power plus Empower and the Empower
+ * of its passives (`passiveEmpower`, Lone Wolf's only with the `state`),
+ * minus Weaken, at least 0. A hit's own bonuses against its target
  * (`bonusAgainst`) aren't in it.
  */
 export function damageOf(
   attacker: Unit,
-  enhance = attacker.enhance ?? 0,
+  empower = attacker.empower ?? 0,
   state?: FightState
 ): number {
   return Math.max(
     0,
-    attacker.power + enhance + passiveEnhance(attacker, state) - (attacker.degrade ?? 0)
+    attacker.power + empower + passiveEmpower(attacker, state) - (attacker.weaken ?? 0)
   );
 }
 
 /**
- * The Enhance `u`'s passives give it (19.8): Glass Cannon's always, Lone
+ * The Empower `u`'s passives give it (19.8): Glass Cannon's always, Lone
  * Wolf's while no ally is within 2 spaces (known only with the `state`).
  */
-export function passiveEnhance(u: Unit, state?: FightState): number {
+export function passiveEmpower(u: Unit, state?: FightState): number {
   let n = hasPassive(u, 'glassCannon') ? 1 : 0;
   if (state && hasPassive(u, 'loneWolf') && u.hex) {
     const near = state.units.some(
@@ -183,18 +182,18 @@ function bulwark(ctx: Ctx, attacker: Unit, target: Unit, amount: number): number
 }
 
 /**
- * The Enhance a drawn arrow of `user`'s carries when it flies: the one it
+ * The Empower a drawn arrow of `user`'s carries when it flies: the one it
  * drew with, or one it has been given since, whichever is more.
  */
-export function shotEnhance(user: Unit, shot: ShotInAir): number {
-  return Math.max(shot.enhance ?? 0, user.enhance ?? 0);
+export function shotEmpower(user: Unit, shot: ShotInAir): number {
+  return Math.max(shot.empower ?? 0, user.empower ?? 0);
 }
 
-/** Enhances `u` by `amount` until the end of its next turn, replacing any Enhance it had. */
-export function enhance(ctx: Ctx, u: Unit, amount: number): void {
-  u.enhance = amount;
-  delete u.enhanceStarted;
-  log(ctx, `${unitName(u)} is Enhanced ${amount}.`);
+/** Empowers `u` by `amount` until the end of its next turn, replacing any Empower it had. */
+export function empower(ctx: Ctx, u: Unit, amount: number): void {
+  u.empower = amount;
+  delete u.empowerStarted;
+  log(ctx, `${unitName(u)} is Empowered ${amount}.`);
 }
 
 /** Heals `u` by `amount`, up to its health (Elixir). */
@@ -206,21 +205,21 @@ export function heal(ctx: Ctx, u: Unit, amount: number): void {
   record(ctx.state, {kind: 'heal', unitId: u.id, amount: healed});
 }
 
-/** Degrades `u` by `amount` until the end of its next turn, replacing any Degrade it had. */
-export function degrade(ctx: Ctx, u: Unit, amount: number): void {
-  u.degrade = amount;
-  delete u.degradeStarted;
-  log(ctx, `${unitName(u)} is Degraded ${amount}.`);
+/** Weakens `u` by `amount` until the end of its next turn, replacing any Weaken it had. */
+export function weaken(ctx: Ctx, u: Unit, amount: number): void {
+  u.weaken = amount;
+  delete u.weakenStarted;
+  log(ctx, `${unitName(u)} is Weakened ${amount}.`);
 }
 
 /**
- * Enhances `u` by at least `amount` until the end of its next turn
- * (Vengeance, 19.8): a stronger Enhance it has stays, and lasts as long.
+ * Empowers `u` by at least `amount` until the end of its next turn
+ * (Vengeance, 19.8): a stronger Empower it has stays, and lasts as long.
  */
-export function enhanceAtLeast(ctx: Ctx, u: Unit, amount: number): void {
-  u.enhance = Math.max(u.enhance ?? 0, amount);
-  delete u.enhanceStarted;
-  log(ctx, `${unitName(u)} is Enhanced ${u.enhance}.`);
+export function empowerAtLeast(ctx: Ctx, u: Unit, amount: number): void {
+  u.empower = Math.max(u.empower ?? 0, amount);
+  delete u.empowerStarted;
+  log(ctx, `${unitName(u)} is Empowered ${u.empower}.`);
 }
 
 /** Inevitable (17.3; Steady Gait, 19.8): the card can't be Delayed or Hastened. */
@@ -283,15 +282,15 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
   }
 }
 
-/** At the end of a unit's turn: an Enhance or Degrade whose turn this was ends. */
+/** At the end of a unit's turn: an Empower or Weaken whose turn this was ends. */
 export function endTurnEffects(unit: Unit): void {
-  if (unit.enhanceStarted) {
-    delete unit.enhance;
-    delete unit.enhanceStarted;
+  if (unit.empowerStarted) {
+    delete unit.empower;
+    delete unit.empowerStarted;
   }
-  if (unit.degradeStarted) {
-    delete unit.degrade;
-    delete unit.degradeStarted;
+  if (unit.weakenStarted) {
+    delete unit.weaken;
+    delete unit.weakenStarted;
   }
 }
 
@@ -346,7 +345,7 @@ export function applyDamage(
 
 /**
  * `unit` falls, `killer` (if any) having taken it off the board
- * (Momentum); each ally of its with Vengeance is Hastened 3 and Enhanced
+ * (Momentum); each ally of its with Vengeance is Hastened 3 and Empowered
  * 1 for its next turn (19.8).
  */
 export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
@@ -367,7 +366,7 @@ export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
     if (!a.alive || a.side !== unit.side || !hasPassive(a, 'vengeance')) continue;
     log(ctx, `${unitName(a)} swears vengeance.`);
     haste(ctx, a, 3);
-    enhanceAtLeast(ctx, a, 1);
+    empowerAtLeast(ctx, a, 1);
   }
 }
 
@@ -439,7 +438,7 @@ export function landShots(ctx: Ctx, user: Unit): void {
       log(ctx, `${unitName(user)}'s volley lands.`);
       record(ctx.state, {kind: 'land', unitId: user.id, ability: 'volley', target: v.hex});
       const u = unitAt(ctx.state, v.hex);
-      if (u && u !== user) hit(ctx, user, u, `${unitName(user)}'s volley`, shotEnhance(user, v));
+      if (u && u !== user) hit(ctx, user, u, `${unitName(user)}'s volley`, shotEmpower(user, v));
       continue;
     }
     log(ctx, `${unitName(user)} looses the drawn arrow.`);
@@ -448,7 +447,7 @@ export function landShots(ctx: Ctx, user: Unit): void {
     record(ctx.state, {kind: 'land', unitId: user.id, ability: 'skirmish', target: end});
     const u = unitAt(ctx.state, end);
     if (u && u !== user)
-      hit(ctx, user, u, `${unitName(user)}'s skirmish arrow`, shotEnhance(user, v));
+      hit(ctx, user, u, `${unitName(user)}'s skirmish arrow`, shotEmpower(user, v));
   }
 }
 
@@ -505,12 +504,12 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
   for (const u of ctx.state.units) {
     if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
-    const enhanced = (champion.enhance ?? 0) + passiveEnhance(champion, ctx.state);
+    const empowered = (champion.empower ?? 0) + passiveEmpower(champion, ctx.state);
     const amount = Math.max(
       0,
       ABILITY.grapple.squeeze +
-        (ABILITY.grapple.enhancedSqueeze ? enhanced : 0) -
-        (champion.degrade ?? 0)
+        (ABILITY.grapple.empoweredSqueeze ? empowered : 0) -
+        (champion.weaken ?? 0)
     );
     applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`, champion);
   }

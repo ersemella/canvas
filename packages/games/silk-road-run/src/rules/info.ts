@@ -117,8 +117,8 @@ export type KeywordId =
   | 'melee'
   | 'immobilized'
   | 'stunned'
-  | 'enhanced'
-  | 'degraded'
+  | 'empowered'
+  | 'weakened'
   | 'shield'
   | 'move'
   | 'push'
@@ -140,12 +140,12 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
     name: 'Stunned',
     detail: 'Turns skipped.',
   },
-  enhanced: {
-    name: 'Enhanced',
+  empowered: {
+    name: 'Empowered',
     detail: 'Its abilities deal that much more damage until the end of its next turn.',
   },
-  degraded: {
-    name: 'Degraded',
+  weakened: {
+    name: 'Weakened',
     detail:
       'Its abilities deal that much less damage, to at least 0, until the end of its next turn.',
   },

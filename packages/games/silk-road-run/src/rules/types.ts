@@ -136,21 +136,21 @@ export interface Unit {
   /** Its provisions, stat by stat, added to its hero's or loadout's stats; absent with none. */
   provisions?: Partial<Record<StatId, number>>;
   /**
-   * Enhance (keywords.md, 17.6): its abilities deal this much more until
+   * Empower (keywords.md, 17.6): its abilities deal this much more until
    * the end of its next turn (the Storm Caller's Sunlight). Absent when it
    * has none.
    */
-  enhance?: number;
-  /** Its turn has begun since it was Enhanced, so the Enhance ends with that turn. */
-  enhanceStarted?: boolean;
+  empower?: number;
+  /** Its turn has begun since it was Empowered, so the Empower ends with that turn. */
+  empowerStarted?: boolean;
   /**
-   * Degrade (keywords.md, 17.6): its abilities deal this much less, to at
+   * Weaken (keywords.md, 17.6): its abilities deal this much less, to at
    * least 0, until the end of its next turn (the Waidan Alchemist's
    * Elixir). Absent when it has none.
    */
-  degrade?: number;
-  /** Its turn has begun since it was Degraded, so the Degrade ends with that turn. */
-  degradeStarted?: boolean;
+  weaken?: number;
+  /** Its turn has begun since it was Weakened, so the Weaken ends with that turn. */
+  weakenStarted?: boolean;
   /** Its passives (progression.md, 19.8); absent with none. */
   passives?: PassiveId[];
   /**
@@ -214,10 +214,10 @@ export interface ShotInAir {
   /** A Volley's space: whoever stands there when it lands is hit. */
   hex?: Hex;
   /**
-   * The Outrider's Enhance when it drew: the arrow carries it, though the
-   * Enhance itself ends with that turn. Absent when it had none.
+   * The Outrider's Empower when it drew: the arrow carries it, though the
+   * Empower itself ends with that turn. Absent when it had none.
    */
-  enhance?: number;
+  empower?: number;
 }
 
 export interface LogEntry {

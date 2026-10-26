@@ -239,7 +239,7 @@ describe('the passives: damage and survival', () => {
     expect(guard.hp).toBe(guard.maxHp - 1);
   });
 
-  it('Glass Cannon: Enhance 1, starting each fight at half its health', () => {
+  it('Glass Cannon: Empower 1, starting each fight at half its health', () => {
     const u = makeUnit('player', 0, 'bokh', 0, {passives: ['glassCannon']});
     expect(u.hp).toBe(u.maxHp / 2);
     const s = setup({'p-mangudai': centre, 'e-bokh': out(0, 3)});
@@ -284,7 +284,7 @@ describe('the passives: position and allies', () => {
     expect(unit(t, 'e-storm').hp).toBe(unit(t, 'e-storm').maxHp - 1);
   });
 
-  it('Lone Wolf: Enhance 1 while no ally is within 2', () => {
+  it('Lone Wolf: Empower 1 while no ally is within 2', () => {
     const s = setup({'p-mangudai': centre, 'p-storm': out(3, 3), 'e-bokh': out(0, 3)});
     const u = give(s, 'p-mangudai', 'loneWolf');
     const target = unit(s, 'e-bokh');
@@ -315,7 +315,7 @@ describe('the passives: position and allies', () => {
     expect(ally.shield).toBeUndefined();
   });
 
-  it('Vengeance: when an ally falls, Hastened 3 and Enhanced 1', () => {
+  it('Vengeance: when an ally falls, Hastened 3 and Empowered 1', () => {
     const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
     const u = give(s, 'p-bokh', 'vengeance');
     const ally = unit(s, 'p-storm');
@@ -323,7 +323,7 @@ describe('the passives: position and allies', () => {
     hit(ctxOf(s), unit(s, 'e-mangudai'), ally, 'The arrow');
     expect(ally.alive).toBe(false);
     expect(u.slot).toBe(97);
-    expect(u.enhance).toBe(1);
+    expect(u.empower).toBe(1);
   });
 });
 

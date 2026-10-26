@@ -122,7 +122,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 1,
     abilities: ['hail', 'hold'],
     // Sunlight added (owner, 2026-10-23), as measured: a trap for the AI
-    // at Enhance 2 (balance.md); an upgrade since 2026-10-24 (owner). Gale
+    // at Empower 2 (balance.md); an upgrade since 2026-10-24 (owner). Gale
     // an upgrade too (owner, 2026-10-24; balance.md, "Second abilities
     // measured"): side without it wins 40.6%.
     upgrades: ['sunlight', 'gale'],
@@ -143,8 +143,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
   },
   /**
    * The Waidan Alchemist (owner, 2026-10-25; roster.md): a support whose
-   * Elixir heals an ally its power and Enhances it 1, or hits an enemy for
-   * its power and Degrades it 1 (`ABILITY.elixir`). Speed 3 (owner,
+   * Elixir heals an ally its power and Empowers it 1, or hits an enemy for
+   * its power and Weakens it 1 (`ABILITY.elixir`). Speed 3 (owner,
    * 2026-10-25; 2 before; balance.md, "Elixir's shape and Cleave's Delay":
    * the Storm Caller's equal in its seat, 49.2% from 40.6%); power 1
    * (owner, 2026-10-26; 2 before; balance.md, "Elixir fixed at 1, with a
@@ -228,12 +228,12 @@ export const ABILITY = {
   hail: {range: 2, turns: 2},
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
-   * Temee), not already Enhanced, is Enhanced `enhance` until the end of
+   * Temee), not already Empowered, is Empowered `empower` until the end of
    * its next turn. `self`: the Storm Caller may target itself. `melts`:
    * hail on the target's space melts, and a space of hail alone is a
    * target. Both on since the owner's call the same day (balance.md).
    */
-  sunlight: {range: 3, enhance: 2, self: true as boolean, melts: true as boolean},
+  sunlight: {range: 3, empower: 2, self: true as boolean, melts: true as boolean},
   /**
    * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
    * space next to the Outrider, then Longshot's shot from there, charged:
@@ -252,8 +252,8 @@ export const ABILITY = {
    */
   grapple: {
     squeeze: 1,
-    /** Whether a Champion's Enhance adds to its squeeze: yes (owner, 2026-10-23; balance.md). */
-    enhancedSqueeze: true,
+    /** Whether a Champion's Empower adds to its squeeze: yes (owner, 2026-10-23; balance.md). */
+    empoweredSqueeze: true,
   },
   /**
    * Cleave (owner, 2026-10-25): the Modao Vanguard's line of `reach`
@@ -268,11 +268,11 @@ export const ABILITY = {
   /**
    * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within `range`,
    * not the Alchemist itself, no line of fire. An ally heals the
-   * Alchemist's power, up to its health, and is Enhanced `fixed` (1); an
-   * enemy takes a hit (the Alchemist's power) and is Degraded `fixed`; each
+   * Alchemist's power, up to its health, and is Empowered `fixed` (1); an
+   * enemy takes a hit (the Alchemist's power) and is Weakened `fixed`; each
    * until the end of its next turn, a new one replacing the last. Any enemy
    * can be aimed at, and an ally that hits or is hurt, the camel too
-   * (`heal: 'all'`). Until 2026-10-26 the Enhance and Degrade were the
+   * (`heal: 'all'`). Until 2026-10-26 the Empower and Weaken were the
    * Alchemist's power, with no hit or heal, an exception to keywords.md
    * 17.2 that the fixed amount ends (balance.md, "Elixir fixed at 1, with
    * a hit").
@@ -282,7 +282,7 @@ export const ABILITY = {
    * of the Alchemist, aimed at its own space. The page shows the built
    * shape only.
    * `fixed`: 1 as built; 0, a switch for measuring, gives the Elixir of
-   * 2026-10-25 (Enhance and Degrade by power, no hit, no heal).
+   * 2026-10-25 (Empower and Weaken by power, no hit, no heal).
    * `heal`, with `fixed`: `all` as built; `heroes` not the camel, or
    * `false` no heal, switches for measuring.
    * `tempo`, a switch for measuring: an ally is also Hastened, an enemy
@@ -322,12 +322,12 @@ export const AI = {
   immobilizedShare: {ranged: 0.1, melee: 0.4},
   stunnedShare: 1,
   /**
-   * The share of an Enhance's worth the AI counts (`enhanceGain` in
+   * The share of an Empower's worth the AI counts (`empowerGain` in
    * ai.ts): its extra damage, and a kill it makes, happen only if its unit
    * gets to hit on its next turn. ½ (2026-10-23; balance.md): at 1
    * Sunlight was a trap, at ½ the Storm Caller Hails most.
    */
-  enhancedShare: 0.5 as number,
+  empoweredShare: 0.5 as number,
   /**
    * The share of a grappled unit's status cost the AI takes off while an
    * ally could strike the Champion holding it (`rescueGain` in ai.ts): the

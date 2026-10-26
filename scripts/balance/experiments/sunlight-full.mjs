@@ -1,5 +1,5 @@
-// Sunlight as it plays (Enhance 2, self, melts, squeeze; the AI counting
-// half an Enhance's worth), against the Storm Caller with Hail alone, on
+// Sunlight as it plays (Empower 2, self, melts, squeeze; the AI counting
+// half an Empower's worth), against the Storm Caller with Hail alone, on
 // the same rules (2026-10-23): each ability removed from one side, and
 // every stage caravan against the full party.
 const heroes = ['bokh', 'mangudai', 'storm'];

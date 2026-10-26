@@ -18,7 +18,7 @@ measures Skirmish at charges 0, ½ and 1. `current.mjs` (each ability of
 today's kits removed, and every stage caravan), `pared.mjs`, `stats.mjs`
 and `caravans.mjs` run on the current rules. `sunlight.mjs` (2026-10-23) measures Sunlight's variants,
 and the kit before it (Hail alone) as `today`; `sunlight-ai.mjs` the AI's
-share of an Enhance's worth, and `sunlight-full.mjs` the kit as it plays
+share of an Empower's worth, and `sunlight-full.mjs` the kit as it plays
 against Hail alone.
 `second-abilities.mjs` (2026-10-24) measures the upgrades of that day
 (Shove, Haul, Feigned Retreat, Gale, Volley) beside Skirmish and Sunlight;
@@ -37,8 +37,8 @@ Waidan Alchemist) against the Steppe party, on the Gobi (an experiment's
 `map`) and the Steppe, and each Chinese hero in each Steppe hero's seat.
 `elixir-cleave.mjs` (2026-10-25) measures Elixir's shapes and Cleave's
 Delay by their switches (`ABILITY.elixir.shape`, `ABILITY.cleave.delay`).
-`elixir-fixed.mjs` (2026-10-26) measures Elixir with a fixed Enhance and
-Degrade of 1 and a hit on an enemy (`ABILITY.elixir.fixed`), and with a
+`elixir-fixed.mjs` (2026-10-26) measures Elixir with a fixed Empower and
+Weaken of 1 and a hit on an enemy (`ABILITY.elixir.fixed`), and with a
 heal on allies (`ABILITY.elixir.heal`), and at power 0 with Haste and
 Delay (`ABILITY.elixir.tempo`).
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier

@@ -55,7 +55,7 @@ import {
   tileAt,
 } from './map';
 import {tileInfo} from './info';
-import {checkEnd, damageOf, degrade, enhance, enterHex, hit, kill, stun} from './resolve';
+import {checkEnd, damageOf, weaken, empower, enterHex, hit, kill, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {
   RUN_FORMAT,
@@ -313,15 +313,15 @@ describe('the track', () => {
     expect(s.shots).toEqual([]);
   });
 
-  it('a drawn arrow carries the Enhance its Outrider drew with, though the Enhance ends with that turn', () => {
+  it('a drawn arrow carries the Empower its Outrider drew with, though the Empower ends with that turn', () => {
     upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
-    enhance({state: s, map: mapOf(s), slot: s.currentSlot}, m, 2);
-    m.enhanceStarted = true;
+    empower({state: s, map: mapOf(s), slot: s.currentSlot}, m, 2);
+    m.empowerStarted = true;
     applyTurn(s, m, skirmishOn(s, m, bokh));
-    expect(m.enhance).toBeUndefined();
+    expect(m.empower).toBeUndefined();
     s.units.forEach((u) => (u.controller = 'human'));
     for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
       applyTurn(s, d, {action: {ability: 'hold'}});
@@ -874,62 +874,62 @@ describe('stats and damage', () => {
     expect(storm.power).toBe(1);
   });
 
-  it('Enhance adds to a hit until the end of the unit’s next turn, then ends', () => {
+  it('Empower adds to a hit until the end of the unit’s next turn, then ends', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const m = unit(s, 'p-mangudai');
     const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
-    enhance(ctx, m, 1);
+    empower(ctx, m, 1);
     m.slot = 1;
     expect(advanceToDecision(s)!.id).toBe('p-mangudai');
     applyTurn(s, m, {action: {ability: 'longshot', target: {hex: at(4, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 3);
-    expect(m.enhance).toBeUndefined();
+    expect(m.empower).toBeUndefined();
   });
 
-  it('Enhance given on the unit’s own turn lasts through its next one', () => {
+  it('Empower given on the unit’s own turn lasts through its next one', () => {
     const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const storm = unit(s, 'p-storm');
     storm.slot = 1;
     expect(advanceToDecision(s)!.id).toBe('p-storm');
-    enhance({state: s, map: mapOf(s), slot: s.currentSlot}, storm, 1);
+    empower({state: s, map: mapOf(s), slot: s.currentSlot}, storm, 1);
     applyTurn(s, storm, {action: {ability: 'hold'}});
-    expect(storm.enhance).toBe(1);
+    expect(storm.empower).toBe(1);
     storm.slot = s.currentSlot + 1;
     expect(advanceToDecision(s)!.id).toBe('p-storm');
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
-    expect(storm.enhance).toBeUndefined();
+    expect(storm.empower).toBeUndefined();
   });
 
-  it('a Champion’s Enhance adds to its squeeze when the rule says so, as it does in play', () => {
-    const squeezed = (enhancedSqueeze: boolean) => {
-      const grapple = ABILITY.grapple as {enhancedSqueeze: boolean};
-      const saved = grapple.enhancedSqueeze;
-      grapple.enhancedSqueeze = enhancedSqueeze;
+  it('a Champion’s Empower adds to its squeeze when the rule says so, as it does in play', () => {
+    const squeezed = (empoweredSqueeze: boolean) => {
+      const grapple = ABILITY.grapple as {empoweredSqueeze: boolean};
+      const saved = grapple.empoweredSqueeze;
+      grapple.empoweredSqueeze = empoweredSqueeze;
       try {
         const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(8, 6)});
         s.units.forEach((u) => (u.controller = 'human'));
         const b = unit(s, 'p-bokh');
         const target = unit(s, 'e-storm');
         applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
-        enhance({state: s, map: mapOf(s), slot: s.currentSlot}, b, 1);
+        empower({state: s, map: mapOf(s), slot: s.currentSlot}, b, 1);
         const hp = target.hp;
         b.slot = 1;
         advanceToDecision(s);
         return hp - target.hp;
       } finally {
-        grapple.enhancedSqueeze = saved;
+        grapple.empoweredSqueeze = saved;
       }
     };
     expect(squeezed(false)).toBe(1);
     expect(squeezed(true)).toBe(2);
     // On in play (owner, 2026-10-23).
-    expect(ABILITY.grapple.enhancedSqueeze).toBe(true);
+    expect(ABILITY.grapple.empoweredSqueeze).toBe(true);
   });
 
-  it('Sunlight Enhances a unit within 3 that hits, itself included, not Temee or one already Enhanced', () => {
+  it('Sunlight Empowers a unit within 3 that hits, itself included, not Temee or one already Empowered', () => {
     upgrade('storm');
     const s = setup({
       'p-storm': at(1, 3),
@@ -954,8 +954,8 @@ describe('stats and damage', () => {
     ).toEqual([at(1, 3), at(2, 3)].map(hexKey).sort());
     s.awaiting = storm.id;
     applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
-    expect(unit(s, 'p-mangudai').enhance).toBe(ABILITY.sunlight.enhance);
-    expect(ABILITY.sunlight.enhance).toBe(2);
+    expect(unit(s, 'p-mangudai').empower).toBe(ABILITY.sunlight.empower);
+    expect(ABILITY.sunlight.empower).toBe(2);
     expect(targets()).toEqual([at(1, 3), at(3, 3)].map(hexKey).sort());
   });
 
@@ -983,7 +983,7 @@ describe('stats and damage', () => {
     applyTurn(s, storm, {action: {ability: 'sunlight', target: {hex: at(2, 3)}}});
     expect(s.effects.map((e) => hexKey(e.hex))).toEqual([hexKey(at(1, 4))]);
     expect(m.statuses).toEqual([]);
-    expect(m.enhance).toBe(2);
+    expect(m.empower).toBe(2);
   });
 
   it('power 0 deals no damage, and says nothing of it', () => {
@@ -1411,7 +1411,7 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
       expect(tap(h)).toEqual({hex: hexNeighbor(c, 0)});
   });
 
-  it('Elixir heals an ally its power and Enhances it 1, and hits an enemy for its power and Degrades it 1', () => {
+  it('Elixir heals an ally its power and Empowers it 1, and hits an enemy for its power and Weakens it 1', () => {
     const s = setup(
       {
         'p-alchemist': at(1, 3),
@@ -1425,29 +1425,29 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
     expect(alchemist.power).toBe(1);
     const targets = ABILITIES.elixir.targets(s, mapOf(s), alchemist, alchemist.hex!);
     expect(targets.some((t) => hexEquals(t.hex!, alchemist.hex!))).toBe(false);
-    // The player is offered both: an ally to heal and Enhance, an enemy to hit and Degrade.
+    // The player is offered both: an ally to heal and Empower, an enemy to hit and Weaken.
     expect(
       offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
         .map((t) => hexKey(t.hex!))
         .sort()
     ).toEqual([at(2, 3), at(3, 3)].map(hexKey).sort());
-    // An ally down 2 heals 1 (the Alchemist's power) and is Enhanced 1.
+    // An ally down 2 heals 1 (the Alchemist's power) and is Empowered 1.
     const a = cloneFight(s);
     a.events = [];
     unit(a, 'p-mangudai').hp -= 2;
     applyTurn(a, unit(a, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
     expect(unit(a, 'p-mangudai').hp).toBe(unit(a, 'p-mangudai').maxHp - 1);
-    expect(unit(a, 'p-mangudai').enhance).toBe(1);
+    expect(unit(a, 'p-mangudai').empower).toBe(1);
     expect(a.events!.some((e) => e.kind === 'heal' && e.amount === 1)).toBe(true);
     // A healthy ally isn't healed past its health.
     const f = cloneFight(s);
     applyTurn(f, unit(f, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
     expect(unit(f, 'p-mangudai').hp).toBe(unit(f, 'p-mangudai').maxHp);
-    // An enemy takes the Alchemist's power and is Degraded 1.
+    // An enemy takes the Alchemist's power and is Weakened 1.
     const e = cloneFight(s);
     applyTurn(e, unit(e, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
     expect(unit(e, 'e-mangudai').hp).toBe(unit(e, 'e-mangudai').maxHp - 1);
-    expect(unit(e, 'e-mangudai').degrade).toBe(1);
+    expect(unit(e, 'e-mangudai').weaken).toBe(1);
   });
 
   it('Elixir heals the camel once it is hurt, and leaves it alone at full health', () => {
@@ -1498,37 +1498,37 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
         const c = cloneFight(s);
         const hex = shape === 'aura' ? at(1, 3) : at(2, 3);
         applyTurn(c, unit(c, 'p-alchemist'), {action: {ability: 'elixir', target: {hex}}});
-        expect(unit(c, 'p-mangudai').enhance).toBe(unit(c, 'p-alchemist').power);
-        expect(unit(c, 'e-mangudai').degrade).toBe(unit(c, 'p-alchemist').power);
-        expect(unit(c, 'p-alchemist').enhance).toBeUndefined();
+        expect(unit(c, 'p-mangudai').empower).toBe(unit(c, 'p-alchemist').power);
+        expect(unit(c, 'e-mangudai').weaken).toBe(unit(c, 'p-alchemist').power);
+        expect(unit(c, 'p-alchemist').empower).toBeUndefined();
       }
     } finally {
       Object.assign(elixir, saved);
     }
   });
 
-  it('Degrade takes off a hit until the end of the unit’s next turn, then ends', () => {
+  it('Weaken takes off a hit until the end of the unit’s next turn, then ends', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const m = unit(s, 'p-mangudai');
-    degrade({state: s, map: mapOf(s), slot: 0}, m, 1);
+    weaken({state: s, map: mapOf(s), slot: 0}, m, 1);
     m.slot = 1;
     expect(advanceToDecision(s)!.id).toBe('p-mangudai');
     applyTurn(s, m, {action: {ability: 'longshot', target: {hex: at(4, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - (m.power - 1));
-    expect(m.degrade).toBeUndefined();
+    expect(m.weaken).toBeUndefined();
   });
 
-  it('a Degrade as large as the hit takes it all, and Enhance and Degrade net out', () => {
+  it('a Weaken as large as the hit takes it all, and Empower and Weaken net out', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3)});
     const m = unit(s, 'p-mangudai');
     const target = unit(s, 'e-bokh');
     const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
-    degrade(ctx, m, m.power + 1);
+    weaken(ctx, m, m.power + 1);
     hit(ctx, m, target, 'The test');
     expect(target.hp).toBe(target.maxHp);
-    enhance(ctx, m, 2);
-    degrade(ctx, m, 1);
+    empower(ctx, m, 2);
+    weaken(ctx, m, 1);
     expect(damageOf(m)).toBe(m.power + 1);
   });
 

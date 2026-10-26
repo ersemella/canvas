@@ -27,7 +27,7 @@ export const SKIP: TurnInput = {action: {ability: 'hold', target: {}}};
 const NO_TARGET: Partial<Record<AbilityId, string>> = {
   longshot: 'No enemy in any of Longshot’s lanes.',
   skirmish: 'No free space to step to with an enemy in line from it.',
-  sunlight: 'No ally within reach to Enhance, nor hail to melt.',
+  sunlight: 'No ally within reach to Empower, nor hail to melt.',
   grapple: 'No one within reach to grapple whom you aren’t grappling already.',
   bite: 'No enemy next to you.',
   shove: 'No one next to you to shove.',

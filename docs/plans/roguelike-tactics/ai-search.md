@@ -174,7 +174,7 @@ against the previous AI; two were kept.
   score, was outside the eight played in 109; walks of two or three spaces
   were never considered. `guessValue` now ranks every candidate without
   playing it (a hit's damage, kill and status on an enemy, against an
-  ally; an Enhance from Sunlight; the spaces left to the quarry,
+  ally; an Empower from Sunlight; the spaces left to the quarry,
   `quarryGap`), and the best guesses are played. The best action is then
   among the six played in every one of 333 positions (a test pins this
   down over four runs); of the true top four, 8 in 1,332 were missed (626
@@ -271,7 +271,7 @@ fights each way): 53.8% as team b and 59.8% as team a, 56.8% on average.
 
 The guess that orders a decision's turns (`orderedInputs`) also learned,
 on the way, what a walk's end is worth to statuses and shots in the air
-(`standing`: out of an Enhanced Champion's reach, into reach of the
+(`standing`: out of an Empowered Champion's reach, into reach of the
 Champion grappling an ally, out of a drawn arrow's lane) and that a drawn
 arrow can be dodged and costs its charge: the best turn is again among
 the six played on every decision of 12 runs, both sides'.

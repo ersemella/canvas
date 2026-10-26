@@ -66,7 +66,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 
 The heroes' own numbers and starting kits are `HEROES` in
 [`src/rules/config.ts`](src/rules/config.ts); ability shapes (ranges,
-Sunlight's Enhance, Skirmish's charge) are `ABILITY` there, and apply to
+Sunlight's Empower, Skirmish's charge) are `ABILITY` there, and apply to
 the test stage too.
 
 ### Spaces

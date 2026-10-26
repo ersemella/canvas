@@ -31,7 +31,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, chargeOf} from './track';
-import {camelOf, damageOf, shotEnhance} from './resolve';
+import {camelOf, damageOf, shotEmpower} from './resolve';
 import {MAPS} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
@@ -62,10 +62,10 @@ function attacksFromAfar(u: Unit): boolean {
 /**
  * What `u`'s statuses cost its side, in damage: Stunned a turn lost,
  * Immobilized the share of a turn it loses (all of the camel's, which only
- * walks), less what an Enhance gains it.
+ * walks), less what an Empower gains it.
  */
 function statusPoints(state: FightState, u: Unit): number {
-  return statusCost(u) + degradeLoss(state, u) - enhanceGain(state, u) - rescueGain(state, u);
+  return statusCost(u) + weakenLoss(state, u) - empowerGain(state, u) - rescueGain(state, u);
 }
 
 /**
@@ -94,41 +94,41 @@ function rescueGain(state: FightState, u: Unit): number {
 }
 
 /**
- * What an Enhance is worth (balance.md): its extra damage on `u`'s next
+ * What an Empower is worth (balance.md): its extra damage on `u`'s next
  * hit, if an enemy is within reach (`strikable`), plus a kill's worth if
  * that hit would kill only with it, and for a Champion grappling a unit
- * the squeeze's extra too (`ABILITY.grapple.enhancedSqueeze`), all times
- * `AI.enhancedShare`, the share of Enhances that get used. Once its turn
+ * the squeeze's extra too (`ABILITY.grapple.empoweredSqueeze`), all times
+ * `AI.empoweredShare`, the share of Empowers that get used. Once its turn
  * has begun it is being spent, so it no longer counts: spending it on a
  * hit must not score as losing it.
  */
-function enhanceGain(state: FightState, u: Unit): number {
-  if (!u.enhance || u.enhanceStarted || u.power <= 0) return 0;
+function empowerGain(state: FightState, u: Unit): number {
+  if (!u.empower || u.empowerStarted || u.power <= 0) return 0;
   const targets = strikable(state, u);
   if (targets.length === 0) return 0;
   const squeezes =
-    ABILITY.grapple.enhancedSqueeze &&
+    ABILITY.grapple.empoweredSqueeze &&
     state.units.some((t) => t.alive && t.statuses.some((x) => x.grapple?.champion === u.id));
-  const reach = u.power + u.enhance;
+  const reach = u.power + u.empower;
   const kill = targets.some((t) => t.hero !== CAMEL && t.hp > u.power && t.hp <= reach);
-  return AI.enhancedShare * (u.enhance * (squeezes ? 2 : 1) + (kill ? AI.kill : 0));
+  return AI.empoweredShare * (u.empower * (squeezes ? 2 : 1) + (kill ? AI.kill : 0));
 }
 
 /**
- * What a Degrade costs `u` (the Alchemist's Elixir), as `enhanceGain` is
- * an Enhance's worth: the damage it takes off `u`'s next hit, if an enemy
+ * What a Weaken costs `u` (the Alchemist's Elixir), as `empowerGain` is
+ * an Empower's worth: the damage it takes off `u`'s next hit, if an enemy
  * is within reach, plus a kill's worth if that hit would kill only without
- * it, all times `AI.enhancedShare`. Once its turn has begun it no longer
+ * it, all times `AI.empoweredShare`. Once its turn has begun it no longer
  * counts.
  */
-function degradeLoss(state: FightState, u: Unit): number {
-  if (!u.degrade || u.degradeStarted || u.power <= 0) return 0;
+function weakenLoss(state: FightState, u: Unit): number {
+  if (!u.weaken || u.weakenStarted || u.power <= 0) return 0;
   const targets = strikable(state, u);
   if (targets.length === 0) return 0;
-  const full = u.power + (u.enhance ?? 0);
+  const full = u.power + (u.empower ?? 0);
   const left = damageOf(u);
   const kill = targets.some((t) => t.hero !== CAMEL && t.hp > left && t.hp <= full);
-  return AI.enhancedShare * (full - left + (kill ? AI.kill : 0));
+  return AI.empoweredShare * (full - left + (kill ? AI.kill : 0));
 }
 
 /**
@@ -203,7 +203,7 @@ function shotPoints(state: FightState, side: Side): number {
     const lane = shotLane(state, mapOf(state), v);
     const target = lane.length ? unitAt(state, lane[lane.length - 1]!) : undefined;
     if (!target) continue;
-    const hit = Math.min(damageOf(source, shotEnhance(source, v)), target.hp);
+    const hit = Math.min(damageOf(source, shotEmpower(source, v)), target.hp);
     const dodges =
       target.slot !== null &&
       target.slot < source.slot &&
@@ -337,7 +337,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     }
     return closing + value;
   }
-  // Elixir: an Enhance on each ally it reaches, a Degrade on each enemy,
+  // Elixir: an Empower on each ally it reaches, a Weaken on each enemy,
   // both by the Alchemist's power (`elixirCaught`, by its shape).
   if (ability === 'elixir') {
     let value = 0;
@@ -347,7 +347,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         if (elixirHeals(u))
           value +=
             Math.min(unit.power, u.maxHp - u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
-        if (u.power > 0) value += u.enhance ? 0 : 1 + enhanceGuess(state, u, fixed || unit.power);
+        if (u.power > 0) value += u.empower ? 0 : 1 + empowerGuess(state, u, fixed || unit.power);
         // `tempo`: the share of a turn its card gains, as Cleave's Delay is weighed.
         if (tempo) value += (turnValue(u) * tempo) / cardCost(u);
         continue;
@@ -356,8 +356,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       const damage = fixed ? Math.min(damageOf(unit), u.hp) : 0;
       value += damage * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
       if (damage > 0 && damage >= u.hp && u.hero !== CAMEL) value += AI.kill;
-      else if (u.power > 0)
-        value += u.degrade ? 0 : 1 + degradeGuess(state, u, fixed || unit.power);
+      else if (u.power > 0) value += u.weaken ? 0 : 1 + weakenGuess(state, u, fixed || unit.power);
       if (tempo && damage < u.hp) value += (turnValue(u) * tempo) / cardCost(u);
     }
     return closing + value;
@@ -370,10 +369,10 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       : unitAt(state, target.hex);
   // Hail on an empty space: denying it is seldom the best turn.
   if (!hit) return closing - 1;
-  // Sunlight: an Enhance, for a side's own unit that could hit with it.
+  // Sunlight: an Empower, for a side's own unit that could hit with it.
   if (input.action.ability === 'sunlight') {
     const gain =
-      hit.power > 0 && !hit.enhance ? 1 + enhanceGuess(state, hit, ABILITY.sunlight.enhance) : 0;
+      hit.power > 0 && !hit.empower ? 1 + empowerGuess(state, hit, ABILITY.sunlight.empower) : 0;
     return closing + (hostile(hit, unit) ? -gain : gain);
   }
   const damage = def.damages === false ? 0 : Math.min(damageOf(unit), hit.hp);
@@ -397,31 +396,31 @@ function endsElsewhere(ability: AbilityId): boolean {
   return ability === 'skirmish' || ability === 'feignedRetreat';
 }
 
-/** What an Enhance of `amount` on `u` might be worth (`enhanceGain`, before it has an Enhance). */
-function enhanceGuess(state: FightState, u: Unit, amount: number): number {
+/** What an Empower of `amount` on `u` might be worth (`empowerGain`, before it has an Empower). */
+function empowerGuess(state: FightState, u: Unit, amount: number): number {
   const targets = strikable(state, u);
   if (targets.length === 0) return 0;
   const reach = u.power + amount;
   const kill = targets.some((t) => t.hero !== CAMEL && t.hp > u.power && t.hp <= reach);
-  return AI.enhancedShare * (amount + (kill ? AI.kill : 0));
+  return AI.empoweredShare * (amount + (kill ? AI.kill : 0));
 }
 
-/** What a Degrade of `amount` on `u` might be worth (`degradeLoss`, before it has a Degrade). */
-function degradeGuess(state: FightState, u: Unit, amount: number): number {
+/** What a Weaken of `amount` on `u` might be worth (`weakenLoss`, before it has a Weaken). */
+function weakenGuess(state: FightState, u: Unit, amount: number): number {
   const targets = strikable(state, u);
   if (targets.length === 0) return 0;
   const full = damageOf(u);
   const left = Math.max(0, full - amount);
   const kill = targets.some((t) => t.hero !== CAMEL && t.hp > left && t.hp <= full);
-  return AI.enhancedShare * (full - left + (kill ? AI.kill : 0));
+  return AI.empoweredShare * (full - left + (kill ? AI.kill : 0));
 }
 
 /**
  * What where it stands is worth to `unit`'s side, as `scoreOutcome` weighs
- * a turn's statuses and shots: the enemy's statuses (an Enhance with
+ * a turn's statuses and shots: the enemy's statuses (an Empower with
  * someone in reach, a grappled unit an ally could free) and the shots in
  * the air. A walk's guess is this where it ends, less where it starts:
- * stepping out of an Enhanced Champion's reach, or into reach of the
+ * stepping out of an Empowered Champion's reach, or into reach of the
  * Champion grappling an ally.
  */
 function standing(state: FightState, unit: Unit): number {

@@ -73,7 +73,7 @@ two too.
 
 | Hero | Speed | Defence | Power | Health | Ability | Effect |
 |---|---|---|---|---|---|---|
-| Bökh Champion | 2 | 3 | 1 | 8 | Grapple | **Melee**: a unit next to the Champion (owner, 2026-10-23; until then it reached 2 spaces, stepping in first). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved; the Champion may walk while it grapples, and the grapple holds if the walk ends next to the target). At the start of each of the Champion's turns while it lasts, the target takes 1 more, plus the Champion's Enhance if it has one (owner, 2026-10-23). One target at a time: a new grapple lets the last go, and it can't target the unit it already grapples. Two clenched fists on the board between the two show it while it lasts, and are its icon (owner, 2026-10-24; a chain until then). |
+| Bökh Champion | 2 | 3 | 1 | 8 | Grapple | **Melee**: a unit next to the Champion (owner, 2026-10-23; until then it reached 2 spaces, stepping in first). It takes 1 damage and is **Stunned** until the grapple ends: the Champion takes damage, is Stunned, or the two are no longer next to each other (either moved; the Champion may walk while it grapples, and the grapple holds if the walk ends next to the target). At the start of each of the Champion's turns while it lasts, the target takes 1 more, plus the Champion's Empower if it has one (owner, 2026-10-23). One target at a time: a new grapple lets the last go, and it can't target the unit it already grapples. Two clenched fists on the board between the two show it while it lasts, and are its icon (owner, 2026-10-24; a chain until then). |
 | | | | | | Grapple's throw | Part of Grapple since 2026-10-24 (owner; its own ability before, aimed at the grappled unit then its landing): while the Champion grapples a unit, Grapple also offers each landing, one tap with the held unit implied. Only the unit it grapples: **Moves** it to a free space next to the Champion, or swaps places with it (the Champion's own space as the landing; even while the Champion is Immobilized, owner, 2026-10-25), then it takes 1 damage. The grapple holds (owner, 2026-10-23; the swap added the same day). |
 | | | | | | Shove (upgrade) | **Melee**: **Push 2**, no damage; stopped by ruins, a unit or the map's edge, with no collision damage. Owner, 2026-10-24 (a side without it wins 49.6%). |
 | | | | | | Haul (upgrade) | The first unit in a straight line 2 or 3 spaces away: **Pull 2** toward the Champion, no damage. Owner, 2026-10-24 (a side without it wins 47.8%). |
@@ -82,7 +82,7 @@ two too.
 | | | | | | Volley (upgrade) | Any space within 3 (not ruins), no line of fire. **Charged** as Skirmish (4 slots): when the Outrider's card comes back the arrows land, and whoever stands there then takes 2. Lost if the Outrider falls or is Stunned first. Owner, 2026-10-24: back as an upgrade beside Skirmish (a side without it wins 41.1%). |
 | | | | | | Feigned Retreat (upgrade) | The Bow's shot (2 damage), then a walk of 1 or 2 spaces (not while Immobilized). Owner, 2026-10-24 (a side without it wins 42.5%). |
 | Yadachy Storm Caller | 2 | 2 | 1 | 6 | Hail | One space exactly 2 away (not ruins): a ring, so the spaces next to the Storm Caller and 3 or more away are safe (owner, 2026-10-24; within 3 before; [balance.md](balance.md#walk-2-and-the-ring-of-hail-2026-10-24)). It stays until the Storm Caller's next turn begins (or it falls). A unit in the space when it lands, or that enters it (walking, which stops there, or Moved), is **Immobilized** until the hail disappears. Its damage is the Storm Caller's power, 1 (owner, 2026-10-23; 0 before). |
-| | | | | | Sunlight (upgrade) | One space within 3 (not ruins). Hail there melts, freeing whoever it held. A unit there that hits (not Temee), ally or enemy, the Storm Caller itself included, not already Enhanced, is **Enhanced 2** until the end of its next turn. No damage. A player is offered only its own side and spaces of hail. Owner, 2026-10-23: added as measured (a trap for today's AI), then with self-targeting and melting ([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). |
+| | | | | | Sunlight (upgrade) | One space within 3 (not ruins). Hail there melts, freeing whoever it held. A unit there that hits (not Temee), ally or enemy, the Storm Caller itself included, not already Empowered, is **Empowered 2** until the end of its next turn. No damage. A player is offered only its own side and spaces of hail. Owner, 2026-10-23: added as measured (a trap for today's AI), then with self-targeting and melting ([balance.md](balance.md#sunlight-as-empower-2026-10-23)). |
 | | | | | | Gale (upgrade) | One space within 3 (not ruins): each unit next to it, ally or enemy, the Storm Caller included, takes 1 and is **Pushed 1** away from it. Owner, 2026-10-24 (a side without it wins 40.6%). |
 
 The Bökh Champion's Inevitable (2026-10-22) went with this rework: the
@@ -98,11 +98,11 @@ Champion keeps one button for it). Overwatch, the first Sunlight (heal and
 cleanse) and Fog were built, measured and removed with their code
 ([history.md](history.md), [balance.md](balance.md#new-abilities-2026-10-23)).
 
-**Added 2026-10-23 (owner):** Sunlight as Enhance 2 for the Storm Caller,
+**Added 2026-10-23 (owner):** Sunlight as Empower 2 for the Storm Caller,
 as measured, though the AI misuses it
-([balance.md](balance.md#sunlight-as-enhance-2026-10-23)); then (owner, the
-same day) targeting itself, melting hail, and an Enhanced Champion's
-squeeze dealing its Enhance more.
+([balance.md](balance.md#sunlight-as-empower-2026-10-23)); then (owner, the
+same day) targeting itself, melting hail, and an Empowered Champion's
+squeeze dealing its Empower more.
 
 **First measurements (2026-10-23, [balance.md](balance.md#the-2026-10-23-rework)):**
 Grapple decides fights (a side without it wins 6% of AI-vs-AI fights),
@@ -124,7 +124,7 @@ in [balance.md](balance.md)).
 | Hero | Speed | Defence | Power | Health | Ability | Effect |
 |---|---|---|---|---|---|---|
 | Modao Vanguard | 1 | 3 | 2 | 8 | Cleave | A line of 2 spaces straight up or down from the Vanguard, stopped by ruins but not by units, or a cone to one side: the two diagonal spaces next to it and the space straight across beyond them (owner, 2026-10-26; it was a line of 2 in any of the six directions). Either way each unit in it, ally or enemy, takes the Vanguard's power, and each one left standing is **Delayed 5** (owner, 2026-10-25, as measured in [balance.md](balance.md#elixirs-shape-and-cleaves-delay-2026-10-25)). No Push: it would undo the Vanguard's job, and in a full line the first unit is blocked by the second. The sprite and portrait are the first kit's (2026-10-22). |
-| Waidan Alchemist | 3 (2 until 2026-10-25, owner; [balance.md](balance.md#elixirs-shape-and-cleaves-delay-2026-10-25)) | 1 | 1 (2 until 2026-10-26, owner; [balance.md](balance.md#elixir-fixed-at-1-with-a-hit-2026-10-26)) | 4 | Elixir | A unit within 2, not the Alchemist itself, no line of fire: an ally **heals** the Alchemist's power, up to its health, and is **Enhanced 1**; an enemy takes the Alchemist's power and is **Degraded 1**; each until the end of its next turn, a new one replacing the last. Any enemy can be aimed at, and an ally that hits or is hurt, the camel too (owner, 2026-10-26: [balance.md](balance.md#elixir-fixed-at-1-with-a-hit-2026-10-26); until then the Enhance and Degrade were the Alchemist's power, with no hit or heal, an exception to [keywords.md](keywords.md) 17.2 that the fixed 1 ends). An ability whose effect depends on whose unit it lands on, against [map.md](map.md) 6.7. Art by the owner (ChatGPT), shrunk with scripts/shrink-sprite.py. |
+| Waidan Alchemist | 3 (2 until 2026-10-25, owner; [balance.md](balance.md#elixirs-shape-and-cleaves-delay-2026-10-25)) | 1 | 1 (2 until 2026-10-26, owner; [balance.md](balance.md#elixir-fixed-at-1-with-a-hit-2026-10-26)) | 4 | Elixir | A unit within 2, not the Alchemist itself, no line of fire: an ally **heals** the Alchemist's power, up to its health, and is **Empowered 1**; an enemy takes the Alchemist's power and is **Weakened 1**; each until the end of its next turn, a new one replacing the last. Any enemy can be aimed at, and an ally that hits or is hurt, the camel too (owner, 2026-10-26: [balance.md](balance.md#elixir-fixed-at-1-with-a-hit-2026-10-26); until then the Empower and Weaken were the Alchemist's power, with no hit or heal, an exception to [keywords.md](keywords.md) 17.2 that the fixed 1 ends). An ability whose effect depends on whose unit it lands on, against [map.md](map.md) 6.7. Art by the owner (ChatGPT), shrunk with scripts/shrink-sprite.py. |
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
@@ -132,7 +132,7 @@ in [balance.md](balance.md)).
 
 **Notes**
 - **Distinct tanks:** the Persian Cataphract charges in, the Bökh Champion holds the front line by grappling (on foot, unlike the mounted Mangudai Outrider),. The Modao Vanguard draws attacks onto itself and punishes enemies who close in (its Taunt went with the 2026-10-23 keywords; its kit is to be redesigned).
-- **Support needs:** healing (Waidan Alchemist; healing has no keyword since 2026-10-23), control on the track (Jinn Binder, Delaying enemies) and control in space (Yadachy Storm Caller, hail that Immobilizes, and Sunlight's Enhance). Degrade comes only from the Elixir on an enemy since the Sahira Enchantress was removed (2026-10-26). Shield and Haste are uncovered: candidates for Byzantium's support.
+- **Support needs:** healing (Waidan Alchemist; healing has no keyword since 2026-10-23), control on the track (Jinn Binder, Delaying enemies) and control in space (Yadachy Storm Caller, hail that Immobilizes, and Sunlight's Empower). Weaken comes only from the Elixir on an enemy since the Sahira Enchantress was removed (2026-10-26). Shield and Haste are uncovered: candidates for Byzantium's support.
 - **The Yadachy Storm Caller:** a storm controller, not a damage caster (power 1, its hail's sting; 0 until 2026-10-23): its hail holds enemies fast, while the Simurgh Summoner's strikes hurt and burn. The *Secret History*'s storm that turns back on its casters suggests a risk mechanic (a storm that can hit its own side). The yadachy tradition is folk belief rather than an organised religion, but it sits near steppe shamanism, which is still practised; keep it to weather-working and away from shamanic ritual (15.5).
 - **The Jinn Binder in Persia** (2026-10-26, owner): when the Arabia region was cut, its folklore went to Persia (15.3a), and the Binder with it, as Persia's support. It keeps its *Arabian Nights* sources; the *Nights*' Persian roots make the move honest.
 - **Damage covers four niches:** area caster (Simurgh Summoner), ranged (Mangudai Outrider), fast melee (Youxia Swordsman), heavy melee (Varangian Guard).
@@ -187,10 +187,10 @@ removed Mahout Bulwark's Unstoppable is still a candidate. Whether other heroes
 get one is open.
 
 **The Storm Caller's second ability** (owner, 2026-10-23): Sunlight,
-Enhance 2 for a turn, added as measured. Enhance 1 (with self-targeting, the
-squeeze and melting hail as variants) was worth nothing; at Enhance 2 it is
+Empower 2 for a turn, added as measured. Empower 1 (with self-targeting, the
+squeeze and melting hail as variants) was worth nothing; at Empower 2 it is
 a trap with that day's AI, which counted its +2 at about twice what it
-delivered ([balance.md](balance.md#sunlight-as-enhance-2026-10-23)). With
+delivered ([balance.md](balance.md#sunlight-as-empower-2026-10-23)). With
 the AI's valuation fixed and the kit as it plays (self, melts, squeeze), it
 is no longer a trap but still adds nothing, takes Hail's turns, and makes
 enemy Storm Callers stronger ([balance.md](balance.md#sunlight-as-it-plays-and-the-ais-valuation-2026-10-23)).

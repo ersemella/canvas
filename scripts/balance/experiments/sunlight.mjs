@@ -1,25 +1,25 @@
-// Sunlight as Enhance (2026-10-23; in the Storm Caller's kit since, at
-// Enhance 2): the Storm Caller's second ability, Enhance 1 on a unit within 3 until the
+// Sunlight as Empower (2026-10-23; in the Storm Caller's kit since, at
+// Empower 2): the Storm Caller's second ability, Empower 1 on a unit within 3 until the
 // end of its next turn. Variants (owner): the Storm Caller may target itself
-// (`self`), the Champion's Enhance adds to its squeeze (`squeeze`), and
+// (`self`), the Champion's Empower adds to its squeeze (`squeeze`), and
 // Sunlight melts hail where it lands (`melts`). Each variant: abilities
 // removed from one side, then the stage caravans where the Storm Caller
-// meets the Outrider. The AI counts an Enhance as one hit's extra damage
-// while the unit has an enemy within reach (`enhanceGain` in ai.ts).
+// meets the Outrider. The AI counts an Empower as one hit's extra damage
+// while the unit has an enemy within reach (`empowerGain` in ai.ts).
 const variants = {
   base: {},
   self: {self: true},
   squeeze: {squeeze: true},
   melts: {melts: true},
   all: {self: true, squeeze: true, melts: true},
-  // The default since 2026-10-23 (owner); the variants above measure Enhance 1.
-  enhance2: {enhance: 2},
+  // The default since 2026-10-23 (owner); the variants above measure Empower 1.
+  empower2: {empower: 2},
 };
 const patchFor =
-  ({self = false, squeeze = false, melts = false, enhance = 1}) =>
+  ({self = false, squeeze = false, melts = false, empower = 1}) =>
   ({ABILITY}) => {
-    Object.assign(ABILITY.sunlight, {self, melts, enhance});
-    ABILITY.grapple.enhancedSqueeze = squeeze;
+    Object.assign(ABILITY.sunlight, {self, melts, empower});
+    ABILITY.grapple.empoweredSqueeze = squeeze;
   };
 const bans = {
   control: [],
