@@ -41,6 +41,9 @@ Delay by their switches (`ABILITY.elixir.shape`, `ABILITY.cleave.delay`).
 Degrade of 1 and a hit on an enemy (`ABILITY.elixir.fixed`), and with a
 heal on allies (`ABILITY.elixir.heal`), and at power 0 with Haste and
 Delay (`ABILITY.elixir.tempo`).
+Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
+files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
+`elixir-cleave.mjs`) reproduce only at their revision.
 
 ## Ability and stat ablation
 

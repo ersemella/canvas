@@ -236,6 +236,7 @@ export type FightEvent =
   /** A charged ability landing as its user's charging card comes back: a Skirmish shot, at what it hits (or the lane's end). */
   | {kind: 'land'; unitId: string; ability: AbilityId; target: Hex}
   | {kind: 'damage'; unitId: string; amount: number}
+  | {kind: 'heal'; unitId: string; amount: number}
   | {kind: 'death'; unitId: string; hex: Hex}
   /** Its turn came up with nothing to do but Hold, so the track went on without it. */
   | {kind: 'skip'; unitId: string};

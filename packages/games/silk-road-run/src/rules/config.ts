@@ -143,18 +143,19 @@ export const HEROES: Record<HeroId, HeroStats> = {
   },
   /**
    * The Waidan Alchemist (owner, 2026-10-25; roster.md): a support whose
-   * Elixir Enhances an ally or Degrades an enemy by its power, and deals
-   * no damage. Speed 3 (owner, 2026-10-25; 2 before; balance.md, "Elixir's
-   * shape and Cleave's Delay": the Storm Caller's equal in its seat, 49.2%
-   * from 40.6%); defence 1 (health 4) and power 2 the builder's first
-   * numbers.
+   * Elixir heals an ally its power and Enhances it 1, or hits an enemy for
+   * its power and Degrades it 1 (`ABILITY.elixir`). Speed 3 (owner,
+   * 2026-10-25; 2 before; balance.md, "Elixir's shape and Cleave's Delay":
+   * the Storm Caller's equal in its seat, 49.2% from 40.6%); power 1
+   * (owner, 2026-10-26; 2 before; balance.md, "Elixir fixed at 1, with a
+   * hit"); defence 1 (health 4) the builder's first number.
    */
   alchemist: {
     name: 'Waidan Alchemist',
     letter: 'A',
     speed: 3,
     defence: 1,
-    power: 2,
+    power: 1,
     abilities: ['elixir', 'hold'],
   },
   /**
@@ -265,23 +266,25 @@ export const ABILITY = {
    */
   cleave: {reach: 2, delay: 5 as number},
   /**
-   * Elixir (owner, 2026-10-25): a unit within `range` that hits, not the
-   * Alchemist itself, no line of fire. An ally is Enhanced, an enemy
-   * Degraded, by the Alchemist's power, until the end of its next turn, a
-   * new one replacing the last. No damage. The amount from power is an
-   * exception to keywords.md 17.2 ("no stat scales a keyword"), the
-   * owner's call.
+   * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within `range`,
+   * not the Alchemist itself, no line of fire. An ally heals the
+   * Alchemist's power, up to its health, and is Enhanced `fixed` (1); an
+   * enemy takes a hit (the Alchemist's power) and is Degraded `fixed`; each
+   * until the end of its next turn, a new one replacing the last. Any enemy
+   * can be aimed at, and an ally that hits or is hurt, the camel too
+   * (`heal: 'all'`). Until 2026-10-26 the Enhance and Degrade were the
+   * Alchemist's power, with no hit or heal, an exception to keywords.md
+   * 17.2 that the fixed amount ends (balance.md, "Elixir fixed at 1, with
+   * a hit").
    * `shape`, a switch for measuring (balance.md, "Elixir's shape and
    * Cleave's Delay"): `unit` as built; `burst`, a space within `range` and
    * every unit within `radius` of it; `aura`, every unit within `radius`
    * of the Alchemist, aimed at its own space. The page shows the built
    * shape only.
-   * `fixed`, a switch for measuring: 0 as built; above 0, the Enhance and
-   * Degrade are that many instead of the Alchemist's power, and an enemy
-   * also takes a hit (the Alchemist's power), so any enemy can be aimed at.
-   * `heal`, with `fixed`, a switch for measuring: an ally also heals the
-   * Alchemist's power, up to its health, so a hurt ally can be aimed at;
-   * `all` any ally, the camel too, `heroes` not the camel.
+   * `fixed`: 1 as built; 0, a switch for measuring, gives the Elixir of
+   * 2026-10-25 (Enhance and Degrade by power, no hit, no heal).
+   * `heal`, with `fixed`: `all` as built; `heroes` not the camel, or
+   * `false` no heal, switches for measuring.
    * `tempo`, a switch for measuring: an ally is also Hastened, an enemy
    * Delayed, that many slots, so any unit can be aimed at; 0 as built.
    */
@@ -289,8 +292,8 @@ export const ABILITY = {
     range: 2,
     shape: 'unit' as 'unit' | 'burst' | 'aura',
     radius: 1,
-    fixed: 0 as number,
-    heal: false as false | 'all' | 'heroes',
+    fixed: 1 as number,
+    heal: 'all' as false | 'all' | 'heroes',
     tempo: 0 as number,
   },
   /**

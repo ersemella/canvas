@@ -608,7 +608,7 @@ const elixirTakes =
       (ABILITY.elixir.fixed > 0 && u.side !== user.side) ||
       (elixirHeals(u) && u.side === user.side && u.hp < u.maxHp));
 
-/** Whether Elixir's heal (`ABILITY.elixir.heal`, with `fixed`) can heal `u`. */
+/** Whether Elixir heals `u` (`ABILITY.elixir.heal`, with `fixed`). */
 export const elixirHeals = (u: Unit): boolean =>
   ABILITY.elixir.fixed > 0 &&
   (ABILITY.elixir.heal === 'all' || (ABILITY.elixir.heal === 'heroes' && u.hero !== CAMEL));
@@ -628,11 +628,12 @@ export function elixirCaught(state: FightState, user: Unit, from: Hex, target: H
 }
 
 /**
- * Elixir (owner, 2026-10-25): a unit within `ABILITY.elixir.range` that
- * hits (not Temee), not the Alchemist itself, with no line of fire. An
- * ally is Enhanced, an enemy Degraded, by the Alchemist's power, until the
- * end of its next turn, replacing any it had. No damage. Other shapes,
- * for measuring, by `ABILITY.elixir.shape` (`elixirCaught`).
+ * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within
+ * `ABILITY.elixir.range`, not the Alchemist itself, with no line of fire.
+ * An ally heals the Alchemist's power and is Enhanced `fixed` (1); an
+ * enemy is hit for the Alchemist's power, then Degraded `fixed`; each until
+ * the end of its next turn, replacing any it had. Other shapes and
+ * amounts, for measuring, by `ABILITY.elixir` (`elixirCaught`).
  */
 const elixir: AbilityDef = {
   id: 'elixir',
@@ -643,7 +644,7 @@ const elixir: AbilityDef = {
   range: ABILITY.elixir.range,
   summary: (user) =>
     ABILITY.elixir.fixed
-      ? `A unit within ${ABILITY.elixir.range}: an ally is Enhanced ${ABILITY.elixir.fixed}; an enemy is hit, then Degraded ${ABILITY.elixir.fixed}, until the end of its next turn.`
+      ? `A unit within ${ABILITY.elixir.range}: an ally ${ABILITY.elixir.heal ? `heals ${user.power} and ` : ''}is Enhanced ${ABILITY.elixir.fixed}; an enemy is hit, then Degraded ${ABILITY.elixir.fixed}, until the end of its next turn.`
       : `A unit within ${ABILITY.elixir.range}: an ally is Enhanced ${user.power}, an enemy Degraded ${user.power}, until the end of its next turn.`,
   targetsUnit: true,
   targets(state, map, user, from) {

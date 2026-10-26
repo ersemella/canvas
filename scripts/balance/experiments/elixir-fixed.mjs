@@ -1,50 +1,56 @@
-// Elixir with a fixed Enhance and Degrade of 1 and a hit on an enemy
-// (`ABILITY.elixir.fixed`), against the built Elixir (by power, no damage).
+// Elixir's amounts (2026-10-26), each variant setting `ABILITY.elixir` and
+// the Alchemist's power in full, so it doesn't depend on the built values.
 // *Seat*: the Alchemist in the Storm Caller's seat against the three Steppe
-// heroes (`modWinPct`, 50% its equal); at power 2 as built and power 1.
-// *China*: the fox, Vanguard and Alchemist against the Steppe party on the
-// Gobi (`playerWinPct`, lower a stronger enemy).
+// heroes (`modWinPct`, 50% its equal). *China*: the fox, Vanguard and
+// Alchemist against the Steppe party on the Gobi (`playerWinPct`, lower a
+// stronger enemy).
 const seat = ['bokh', 'mangudai', 'alchemist'];
-const fixed = (c) => Object.assign(c.ABILITY.elixir, {fixed: 1});
+const china = {enemies: ['fox', 'modao', 'alchemist'], map: 'gobi'};
+const elixir =
+  (power, {fixed = 0, heal = false, tempo = 0} = {}) =>
+  (c) => {
+    Object.assign(c.ABILITY.elixir, {fixed, heal, tempo});
+    c.HEROES.alchemist.power = power;
+  };
 export const experiments = {
-  'seat-built': {mod: {party: seat}},
-  'seat-fixed': {patch: fixed, mod: {party: seat}},
-  'seat-fixed-power1': {patch: fixed, mod: {party: seat, stats: {alchemist: {power: -1}}}},
-  'china-built': {enemies: ['fox', 'modao', 'alchemist'], map: 'gobi'},
-  'china-fixed': {patch: fixed, enemies: ['fox', 'modao', 'alchemist'], map: 'gobi'},
+  // Enhance and Degrade by power, no hit (the Elixir of 2026-10-25).
+  'seat-built': {patch: elixir(2), mod: {party: seat}},
+  'china-built': {patch: elixir(2), ...china},
+  // Fixed 1 and a hit of the Alchemist's power.
+  'seat-fixed': {patch: elixir(2, {fixed: 1}), mod: {party: seat}},
+  'seat-fixed-power1': {patch: elixir(1, {fixed: 1}), mod: {party: seat}},
+  'china-fixed': {patch: elixir(2, {fixed: 1}), ...china},
 };
 
-// Elixir that also heals an ally the Alchemist's power (`ABILITY.elixir.heal`):
-// any ally (`all`, the camel too) or heroes only, at power 2 and power 1.
-const heals = (heal) => (c) => Object.assign(c.ABILITY.elixir, {fixed: 1, heal});
+// And a heal of the Alchemist's power on allies: any ally (`all`, the camel
+// too; built since 2026-10-26 at power 1) or heroes only.
 for (const heal of ['all', 'heroes']) {
-  experiments[`seat-heal-${heal}`] = {patch: heals(heal), mod: {party: seat}};
+  experiments[`seat-heal-${heal}`] = {patch: elixir(2, {fixed: 1, heal}), mod: {party: seat}};
   experiments[`seat-heal-${heal}-power1`] = {
-    patch: heals(heal),
-    mod: {party: seat, stats: {alchemist: {power: -1}}},
+    patch: elixir(1, {fixed: 1, heal}),
+    mod: {party: seat},
   };
-  experiments[`china-heal-${heal}`] = {
-    patch: heals(heal),
-    enemies: ['fox', 'modao', 'alchemist'],
-    map: 'gobi',
+  experiments[`china-heal-${heal}`] = {patch: elixir(2, {fixed: 1, heal}), ...china};
+  // Everything by power at power 2: the Enhance and Degrade 2 too.
+  experiments[`seat-heal-${heal}-all-by-power2`] = {
+    patch: elixir(2, {fixed: 2, heal}),
+    mod: {party: seat},
   };
 }
 
 // No damage at power 0: an ally Enhanced and Hastened, an enemy Degraded and
 // Delayed, by fixed amounts (`fixed`, `tempo`), any unit a target.
-const tempo = (fixed, slots) => (c) => {
-  Object.assign(c.ABILITY.elixir, {fixed, tempo: slots});
-  c.HEROES.alchemist.power = 0;
-};
 for (const fixed of [1, 2])
-  for (const slots of [0, 3, 5]) {
-    experiments[`seat-power0-fixed${fixed}-tempo${slots}`] = {
-      patch: tempo(fixed, slots),
+  for (const tempo of [0, 3, 5]) {
+    experiments[`seat-power0-fixed${fixed}-tempo${tempo}`] = {
+      patch: elixir(0, {fixed, tempo}),
       mod: {party: seat},
     };
-    experiments[`china-power0-fixed${fixed}-tempo${slots}`] = {
-      patch: tempo(fixed, slots),
-      enemies: ['fox', 'modao', 'alchemist'],
-      map: 'gobi',
+    experiments[`china-power0-fixed${fixed}-tempo${tempo}`] = {
+      patch: elixir(0, {fixed, tempo}),
+      ...china,
     };
   }
+
+// The built Elixir in the China line-up at power 1.
+experiments['china-built-2026-10-26'] = {patch: elixir(1, {fixed: 1, heal: 'all'}), ...china};

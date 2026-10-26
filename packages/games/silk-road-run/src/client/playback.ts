@@ -34,6 +34,7 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
     case 'land':
       return 0.5;
     case 'damage':
+    case 'heal':
       return 0.45;
     case 'death':
       return 0.5;

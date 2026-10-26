@@ -1897,7 +1897,7 @@ above.
   through allies falls from 4 a fight to 1. A larger Enhance on allies
   than the Degrade on enemies would pull it back; not measured. The
   harness doesn't attribute Elixir's own damage or kills.
-- Not adopted: the numbers are the owner's to set.
+- Not adopted on its own; adopted with a heal at power 1 (below).
 
 **With a heal** (asked for the same day): an ally also heals the
 Alchemist's power, up to its health, so a hurt ally can be aimed at
@@ -1924,6 +1924,17 @@ values a heal point as a point of damage. Healing is new in `resolve.ts`
 - **No stalls from healing**: 0–0.8% unfinished, as without it.
 - At power 1 every variant is about the Storm Caller's equal; power 2 is
   too strong with or without the heal.
+- **Everything by power** (the Enhance and Degrade too) is the same as
+  these at power 1, but a power point then raises four effects: at power
+  2 (one provision) it wins 74–75% in the seat (heal any ally 75.3%,
+  heroes only 74%), against 69% with the Enhance and Degrade fixed.
+- **Adopted (owner, 2026-10-26): power 1, the Enhance and Degrade fixed at
+  1, a heal and a hit of the Alchemist's power, the camel healed too**
+  (`fixed: 1`, `heal: 'all'`; 55.8% in the seat). A heal is recorded as
+  an event and shown in the playback (+N in jade). The China line-up with
+  it: 98.5% player wins, still a stage-1 fight. `elixir-fixed.mjs` now sets
+  every amount and the power in each variant, reproducing these tables on
+  the new defaults.
 
 **No damage, power 0, with Haste and Delay** (asked for the same day): the
 Alchemist's power 0; an ally Enhanced and **Hastened**, an enemy Degraded

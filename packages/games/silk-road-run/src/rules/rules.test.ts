@@ -1411,7 +1411,7 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
       expect(tap(h)).toEqual({hex: hexNeighbor(c, 0)});
   });
 
-  it('Elixir Enhances an ally and Degrades an enemy by the Alchemist’s power, dealing no damage', () => {
+  it('Elixir heals an ally its power and Enhances it 1, and hits an enemy for its power and Degrades it 1', () => {
     const s = setup(
       {
         'p-alchemist': at(1, 3),
@@ -1422,23 +1422,46 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
       party
     );
     const alchemist = unit(s, 'p-alchemist');
+    expect(alchemist.power).toBe(1);
     const targets = ABILITIES.elixir.targets(s, mapOf(s), alchemist, alchemist.hex!);
     expect(targets.some((t) => hexEquals(t.hex!, alchemist.hex!))).toBe(false);
-    // The player is offered both: an ally to Enhance, an enemy to Degrade.
+    // The player is offered both: an ally to heal and Enhance, an enemy to hit and Degrade.
     expect(
       offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
         .map((t) => hexKey(t.hex!))
         .sort()
     ).toEqual([at(2, 3), at(3, 3)].map(hexKey).sort());
-    for (const [hex, id, key] of [
-      [at(3, 3), 'p-mangudai', 'enhance'],
-      [at(2, 3), 'e-mangudai', 'degrade'],
-    ] as const) {
-      const c = cloneFight(s);
-      applyTurn(c, unit(c, 'p-alchemist'), {action: {ability: 'elixir', target: {hex}}});
-      expect(unit(c, id)[key]).toBe(alchemist.power);
-      expect(unit(c, id).hp).toBe(unit(c, id).maxHp);
-    }
+    // An ally down 2 heals 1 (the Alchemist's power) and is Enhanced 1.
+    const a = cloneFight(s);
+    a.events = [];
+    unit(a, 'p-mangudai').hp -= 2;
+    applyTurn(a, unit(a, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
+    expect(unit(a, 'p-mangudai').hp).toBe(unit(a, 'p-mangudai').maxHp - 1);
+    expect(unit(a, 'p-mangudai').enhance).toBe(1);
+    expect(a.events!.some((e) => e.kind === 'heal' && e.amount === 1)).toBe(true);
+    // A healthy ally isn't healed past its health.
+    const f = cloneFight(s);
+    applyTurn(f, unit(f, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
+    expect(unit(f, 'p-mangudai').hp).toBe(unit(f, 'p-mangudai').maxHp);
+    // An enemy takes the Alchemist's power and is Degraded 1.
+    const e = cloneFight(s);
+    applyTurn(e, unit(e, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
+    expect(unit(e, 'e-mangudai').hp).toBe(unit(e, 'e-mangudai').maxHp - 1);
+    expect(unit(e, 'e-mangudai').degrade).toBe(1);
+  });
+
+  it('Elixir heals the camel once it is hurt, and leaves it alone at full health', () => {
+    const s = setup({'p-alchemist': at(1, 3), 'p-camel': at(2, 3), 'e-modao': at(8, 6)}, party);
+    const alchemist = unit(s, 'p-alchemist');
+    const offered = () =>
+      ABILITIES.elixir
+        .targets(s, mapOf(s), alchemist, alchemist.hex!)
+        .some((t) => hexEquals(t.hex!, at(2, 3)));
+    expect(offered()).toBe(false);
+    unit(s, 'p-camel').hp -= 3;
+    expect(offered()).toBe(true);
+    applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
+    expect(unit(s, 'p-camel').hp).toBe(unit(s, 'p-camel').maxHp - 2);
   });
 
   it('Cleave Delays every unit it leaves standing 5 slots, and not the ones it kills', () => {

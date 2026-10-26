@@ -77,7 +77,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     if (has('cleave'))
       for (const area of cleaveAreas(map, e.hex))
         for (const h of area) mark(hexes, id(h.q, h.r), power);
-    // Elixir with `fixed` (an experiment): a hit on any space within its range.
+    // Elixir: a hit on any space within its range (`fixed`; none at 0).
     if (has('elixir') && ABILITY.elixir.fixed > 0) {
       const range = ABILITY.elixir.range;
       for (let dq = -range; dq <= range; dq++)
