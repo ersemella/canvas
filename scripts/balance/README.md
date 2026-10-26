@@ -97,7 +97,13 @@ Swift Strike's Haste 2, the Elixir's Haste 2 and the Storm Caller at speed
 3 (and with defence 1), and Hail's damage 2, 3 turns and 3 at once, each
 on both sides, party for party and each
 Chinese hero in its role's Steppe seat, and stage caravans with a Storm
-Caller at each speed; it runs on the current rules.
+Caller at each speed; it reproduces only at `a9f89d0`, before Hastes
+collided by speed.
+`tempo-collision.mjs` (2026-10-26) measures a Hastened or Delayed card
+taking its slot against its colliding by speed (`RULES.delayWins`,
+`.hasteWins`, at `a9f89d0`); built since: a Hastened card by speed and a
+Delayed card always yielding, the switches removed, so its `built` rows
+measure that.
 
 ## Ability and stat ablation
 
