@@ -2542,6 +2542,29 @@ Stage caravans with a Storm Caller against the Steppe party and camel
 
 - **As an enemy either variant changes little**: stage 1 and 2 caravans
   stay at 89% or more, stage 3 within 2 points.
+
+Hail in place of speed (asked the same day): damage 2 (the Storm
+Caller's power 2, Hail its only hit, on landing and on entry), lasting 3
+of its caster's turns (`ABILITY.hail.turns`), or 3 at once
+(`ABILITY.hail.max`).
+
+| Change | Party | Tank | Damage | Support | vs Grappler + Storm + wolf | vs Storm + Storm + wolf | vs all three |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| built | 62% | 49% | 49.3% | 60.3% | 96.4% | 95.3% | 76.3% |
+| Storm Caller speed 3 | 52.1% | 46.4% | 49.9% | 55.3% | 93% | 89.2% | 74% |
+| Hail damage 2 | **51.1%** | 48.6% | 52.8% | **50.6%** | 91.6% | 84% | **68.3%** |
+| Hail lasting 3 turns | 62.1% | 48% | 50.1% | 59.5% | 96.4% | 94.8% | 72.8% |
+| 3 hails at once | 62% | 49% | 49.3% | 60.3% | 96.4% | 95.3% | 76.3% |
+
+- **Hail damage 2 evens every pairing**: the parties 51.1%, each role
+  within 3 points, the support pair even (50.6%) where speed 3 left it
+  5 over. Fights run shorter (median 46 actions from 49).
+- **It makes enemy Storm Callers harder**: stage 3's three heroes fall
+  to the player 68.3% from 76.3%, two Storm Callers and a wolf 84% from
+  95.3%.
+- **Lasting longer does nothing for the matchup**, and **3 at once never
+  comes into play**: a hail lasting 2 turns lifts before a third can be
+  cast, so the results match the built game's exactly.
 - Not changed: the numbers are the owner's.
 
 ### Does a party need one of each role? Whole runs (2026-10-26)

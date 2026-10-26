@@ -17,6 +17,11 @@ const variants = {
     c.HEROES.storm.speed = 3;
     c.HEROES.storm.defence = 1;
   },
+  // Hail in place of speed: damage 2 (power 2, Hail its only hit), lasting
+  // 3 of its caster's turns, or 3 standing at once.
+  'hail-damage-2': (c) => void (c.HEROES.storm.power = 2),
+  'hail-turns-3': (c) => void (c.ABILITY.hail.turns = 3),
+  'hail-max-3': (c) => void (c.ABILITY.hail.max = 3),
 };
 export const experiments = {};
 for (const [name, patch] of Object.entries(variants)) {
@@ -37,6 +42,13 @@ const caravans = {
   'storm+storm+wolf': ['storm', 'storm', 'wolf'],
   'all-three': steppe,
 };
-for (const name of ['built', 'storm-speed-3', 'storm-speed-3-def-1'])
+for (const name of [
+  'built',
+  'storm-speed-3',
+  'storm-speed-3-def-1',
+  'hail-damage-2',
+  'hail-turns-3',
+  'hail-max-3',
+])
   for (const [caravan, enemies] of Object.entries(caravans))
     experiments[`${name}-vs-${caravan}`] = {patch: variants[name], enemies};
