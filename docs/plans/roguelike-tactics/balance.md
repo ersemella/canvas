@@ -2059,6 +2059,34 @@ modified side its own horizon and work cap (`deep`: 4 and 4 × 220).
   (51.7%) and bring the two heroes under 50% in their seats up to
   46–48%, none past 50%. Not changed: the numbers are the owner's.
 
+### The Vanguard's buffs other than speed (2026-10-26)
+
+Asked for: with Swift Strike Haste 3 (owner: seems good), a buff for the
+Vanguard that isn't speed, keeping its kit a slow tank's.
+`experiments/vanguard-buffs.mjs`: China against the Steppe with Haste 3
+and the buff, and the Vanguard alone in the Champion's seat (no Haste).
+
+| Vanguard buff, with Haste 3 | China wins | Vanguard for the Champion |
+|---|---:|---:|
+| none (Haste 3 alone) | 43.4% (1,600) | 40% |
+| speed 2 (above) | 51.7% (800) | 45.9% (800) |
+| **Cleave Delay 8** (from 5) | **52.5%** (1,600) | 46.9% (800) |
+| Cleave Delay 7 | 49% (800) | 47.5% |
+| power +1 (3) | 50.2% (800) | 42.8% |
+| defence +2 (health 12) | 49% (800) | 46.5% |
+| a walk of 3 (from 2) | 48.6% (800) | 43% |
+| defence +1 (health 10) | 45.5% (800) | 43.8% |
+| Cleave reach 3 | 43.6% (800) | 41.3% |
+
+- **Cleave's Delay does what speed did**: Delay 8 is speed 2's equal
+  for China and in the seat; 7 is a step under (49%). With Delay 8 the
+  Vanguard Cleaves on 38% of its turns (33% at 5), deals 7.1 damage a
+  fight (5.9) and survives 50% (44%), and the Outrider facing it 66%
+  (81%): its target loses most of a turn.
+- Power +1 and a walk of 3 even China too but do less for the Vanguard in
+  a Steppe party; defence +2 does both, slower; reach 3 adds nothing.
+- Not changed: the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
