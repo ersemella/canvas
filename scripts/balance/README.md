@@ -46,7 +46,8 @@ Alchemist) against the Steppe party, and each Chinese hero in each Steppe
 hero's seat; `china-buffs.mjs` (2026-10-26) whether the AI is why China
 loses (`mod.search`, the modified side's own horizon and work cap) and
 buffs that even it; `vanguard-buffs.mjs` the Vanguard's buffs other
-than speed, with Swift Strike Haste 3.
+than speed, with Swift Strike Haste 3; `cleave-shape.mjs` Cleave's shape by its
+switch (`ABILITY.cleave.shape`).
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.

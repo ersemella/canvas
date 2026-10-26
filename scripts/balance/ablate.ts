@@ -133,6 +133,8 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
   const uses: Record<string, Record<string, number>> = {};
   const damage: Record<string, {enemy: number; ally: number}> = {};
   const kills: Record<string, number> = {};
+  /** Units hit, by source and side, for an area's catch per use. */
+  const hits: Record<string, {enemy: number; ally: number}> = {};
   const units: Record<string, number> = {};
   const survivors: Record<string, number> = {};
   const lengths: number[] = [];
@@ -199,6 +201,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
                 : 'enemy';
           const friendly = actor === target;
           (damage[source] ??= {enemy: 0, ally: 0})[friendly ? 'ally' : 'enemy'] += n;
+          (hits[source] ??= {enemy: 0, ally: 0})[friendly ? 'ally' : 'enemy']++;
           lastSource = source;
         }
         if (/ falls\.$/.test(text) && lastSource) add(kills, lastSource);
@@ -323,6 +326,12 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
             .sort(([, a], [, b]) => b - a)
             .map(([k, n]) => [k, round((100 * n) / m.turns!)])
         ),
+      ])
+    ),
+    hitsPerFight: Object.fromEntries(
+      Object.entries(hits).map(([k, v]) => [
+        k,
+        {enemy: round(v.enemy / fights, 2), ally: round(v.ally / fights, 2)},
       ])
     ),
     damagePerFight: Object.fromEntries(

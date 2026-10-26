@@ -555,7 +555,13 @@ const volley: AbilityDef = {
 
 /** The Cleave area (see `cleaveAreas`) from `from` that holds `target`. */
 function cleaveArea(map: MapData, from: Hex, target: Hex): Hex[] {
-  return cleaveAreas(map, from).find((a) => a.some((h) => hexEquals(h, target))) ?? [];
+  const areas = cleaveAreas(map, from);
+  // Aimed at its first space; the switches' areas overlap (`ABILITY.cleave.shape`).
+  return (
+    areas.find((a) => hexEquals(a[0]!, target)) ??
+    areas.find((a) => a.some((h) => hexEquals(h, target))) ??
+    []
+  );
 }
 
 /**

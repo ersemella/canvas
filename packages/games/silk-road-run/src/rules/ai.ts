@@ -2,10 +2,11 @@
  * Deterministic selective lookahead: rank actions with the preview heuristic,
  * then search actual timeline decisions with budgeted alpha-beta minimax.
  */
-import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
+import {hexDistance, hexEquals, hexKey, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, AI, CAMEL, RULES} from './config';
 import {
+  cleaveAreas,
   hostile,
   isImmobilized,
   firstInLane,
@@ -152,6 +153,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const inLine = dq === 0 || dr === 0 || dq === -dr;
     if (has('longshot') && inLine) return true;
     // Cleave: straight up or down within its reach, or a side cone's far space (yurts aside).
+    if (has('cleave') && ABILITY.cleave.shape !== 'built')
+      return cleaveAreas(mapOf(state), u.hex!).some((a) => a.some((h) => hexEquals(h, e.hex!)));
     if (has('cleave') && dq === 0 && d <= ABILITY.cleave.reach) return true;
     if (has('cleave') && d === 2 && dq === -2 * dr) return true;
     // Skirmish: a line from a space next to it (one step off a line).

@@ -85,6 +85,18 @@ export function lane(map: MapData, h: Hex, dir: number): Hex[] {
  * isn't a yurt.
  */
 export function cleaveAreas(map: MapData, h: Hex): Hex[][] {
+  const {shape, reach} = ABILITY.cleave;
+  if (shape !== 'built') {
+    const open = (area: Hex[]) => area.filter((n) => walkable(map, n));
+    const areas = [0, 1, 2, 3, 4, 5].map((d) =>
+      shape === 'lines'
+        ? lane(map, h, d).slice(0, reach)
+        : shape === 'arcs'
+          ? open([hexNeighbor(h, d), hexNeighbor(h, d - 1), hexNeighbor(h, d + 1)])
+          : open([hexNeighbor(h, d), hexNeighbor(h, d + 1), hexNeighbor(hexNeighbor(h, d), d + 1)])
+    );
+    return areas.filter((area) => area.length > 0);
+  }
   const lines = [2, 5].map((dir) => lane(map, h, dir).slice(0, ABILITY.cleave.reach));
   const cones = [
     [0, 1],

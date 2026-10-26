@@ -280,7 +280,13 @@ export const ABILITY = {
    * (owner, 2026-10-26; 5 from 2026-10-25; balance.md, "The Vanguard's buffs other than speed": China
    * against the Steppe 52.5% with Swift Strike's Haste 3).
    */
-  cleave: {reach: 2, delay: 8 as number},
+  /**
+   * `shape`, a switch for measuring (board.ts, `cleaveAreas`): `built` as
+   * above; `lines`, a line of `reach` in each of the six directions (the
+   * shape before 2026-10-26); `arcs`, three neighbours side by side, six
+   * ways; `cones`, the built cone six ways.
+   */
+  cleave: {reach: 2, delay: 8 as number, shape: 'built' as 'built' | 'lines' | 'arcs' | 'cones'},
   /**
    * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within `range`,
    * the Alchemist itself too, no line of fire. An ally heals the

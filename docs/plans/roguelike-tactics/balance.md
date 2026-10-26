@@ -2089,6 +2089,36 @@ and the buff, and the Vanguard alone in the Champion's seat (no Haste).
   Haste 3.** The earlier files that set neither (`china-steppe.mjs`,
   `china-buffs.mjs`) reproduce their tables only at their revision.
 
+### Cleave's shape (2026-10-26)
+
+Asked for: whether Cleave's shape (a line of 2 up or down, or a cone of
+3 to either side) holds the Vanguard back. A switch for measuring,
+`ABILITY.cleave.shape` (board.ts, `cleaveAreas`; the AI's `strikable`
+reads the areas for the switch's shapes): `lines`, a line of 2 six ways
+(the shape before 2026-10-26); `arcs`, three neighbours side by side, six
+ways; `cones`, the built cone six ways. `experiments/cleave-shape.mjs`,
+**800 fights each**, Delay 8 and Haste 3 as built. `ablate.ts` now counts
+the units each source hits (`hitsPerFight`).
+
+| Shape | China wins | Vanguard for the Champion | Cleaves a fight (China) |
+|---|---:|---:|---:|
+| built | 52.6% | 47.4% | 1.46 |
+| lines six ways | **60%** | 51.9% | 1.61 |
+| cones six ways | 57.3% | 50% | 1.51 |
+| arcs six ways | 48.1% | 44.6% | 1.28 |
+
+- **The shape costs the Vanguard about 4–7 points** against a line six
+  ways; arcs (every swing next to it) cost more. A swing catches about as
+  many enemies in every shape: what the better shapes add is a swing on
+  more turns, since more of the spaces around the Vanguard are in one.
+- The built shape misses four of the six spaces 2 away straight out
+  (the diagonals' lines) and reaches the space between two diagonals
+  instead: a unit 2 away on a diagonal can't be hit, though it reads as
+  in reach.
+- With lines six ways, Delay 8 would overshoot (60%); a lower Delay with
+  lines would be the measured equivalent (not run).
+- Not changed: the shape is the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
