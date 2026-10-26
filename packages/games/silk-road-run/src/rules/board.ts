@@ -96,6 +96,11 @@ export function walkable(map: MapData, h: Hex): boolean {
   return onMap(map, h) && !blocks(tileAt(map, h));
 }
 
+/** 1 on a fissure (map.ts), which burns whoever enters it; else 0. */
+export function fissureAt(map: MapData, h: Hex): number {
+  return tileAt(map, h) === 'fissure' ? 1 : 0;
+}
+
 export function unitAt(state: FightState, h: Hex): Unit | undefined {
   return state.units.find((u) => u.alive && u.hex !== null && hexEquals(u.hex, h));
 }
@@ -207,19 +212,34 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
   // Allies' spaces a walk can end on, swapping: the shortest walk entering each from a free space.
   const swaps = new Map<number, Hex[]>();
   best.set(hexNumber(unit.hex), []);
+  // Of the shortest walks to a space, the one through fewest fissures
+  // (owner, 2026-10-26): how many each best walk enters, and the step it
+  // was found on, as only a walk as short may replace it.
+  const burns = new Map<number, number>([[hexNumber(unit.hex), 0]]);
+  const foundAt = new Map<number, number>();
   let frontier: Hex[] = [unit.hex];
   for (let step = 0; step < cap; step++) {
     const next: Hex[] = [];
     for (const from of frontier) {
       const fromPath = best.get(hexNumber(from))!;
       const fromFree = !occupant.has(hexNumber(from));
+      const fromBurns = burns.get(hexNumber(from)) ?? 0;
       for (const h of steps(map, from)) {
         const key = hexNumber(h);
         const other = occupant.get(key);
         if (other && (!through || hostile(other, unit))) continue;
         if (other && fromFree && !swaps.has(key)) swaps.set(key, [...fromPath, h]);
-        if (best.has(key)) continue;
+        const hBurns = fromBurns + fissureAt(map, h);
+        if (best.has(key)) {
+          if (foundAt.get(key) === step && hBurns < burns.get(key)!) {
+            best.set(key, [...fromPath, h]);
+            burns.set(key, hBurns);
+          }
+          continue;
+        }
         best.set(key, [...fromPath, h]);
+        burns.set(key, hBurns);
+        foundAt.set(key, step);
         // Hail stops the walk where it enters.
         if (!hailOn(state, h)) next.push(h);
       }
@@ -368,7 +388,8 @@ export function roadToExit(map: MapData, from: Hex): Hex[] {
  * The camel's next step from where it stands (owner, 2026-10-22): one hex
  * along a shortest walk to the exit around yurts and the other units, so
  * it keeps to its road when nothing is in the way and walks around what
- * is. A unit standing on the exit itself only blocks the last step. When
+ * is, and around a fissure when it can be at no extra step. A unit
+ * standing on the exit itself only blocks the last step. When
  * units shut every way around, a step along its road if that hex is free.
  * Undefined at the exit, or with nowhere to step.
  */
@@ -397,7 +418,10 @@ export function stepToExit(state: FightState, map: MapData, unit: Unit): Hex | u
   const around =
     d === undefined
       ? undefined
-      : hexNeighbors(unit.hex).find((h) => dist.get(hexNumber(h)) === d - 1 && free(h));
+      : // Around a fissure where a step as short is clear of one (owner, 2026-10-26).
+        hexNeighbors(unit.hex)
+          .filter((h) => dist.get(hexNumber(h)) === d - 1 && free(h))
+          .sort((a, b) => fissureAt(map, a) - fissureAt(map, b))[0];
   if (around) return around;
   const road = roadToExit(map, unit.hex)[0];
   return road && free(road) ? road : undefined;

@@ -30,6 +30,7 @@ import redEarthImage from '../tiles/red-earth.png';
 import mudbrickRuinsImage from '../tiles/ruins.png';
 import flamingMountainImage from '../tiles/mountain-flaming.png';
 import flamingTwinImage from '../tiles/mountain-flaming-twin.png';
+import fissureImage from '../tiles/fissure.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
@@ -199,7 +200,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     mapKey = `${map.id}|${map.hexes.map((h) => `${hexKey(h)}:${tileAt(map, h)}`).join(' ')}`;
     mapKeys.set(map, mapKey);
   }
-  const loaded = [look.ground, look.mountainGround]
+  const loaded = [look.ground, look.mountainGround, fissureImage]
     .map((src) => (assetLoader.requestImage(src) ? 1 : 0))
     .join('');
   const scale = ctx.getTransform().a;
@@ -223,7 +224,8 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
 /**
  * A tile's ground in the map's look: its texture, one field across the
  * board or stamped per hex, and its border. Until the image loads, the
- * look's flat colour shows. Yurts, ruins and mountains stand on it and are
+ * look's flat colour shows. A fissure's crack is drawn over its ground.
+ * Yurts, ruins and mountains stand on it and are
  * drawn later, by `drawObstacle`.
  */
 function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, look: Look): void {
@@ -231,6 +233,10 @@ function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, look: Look)
   if (ground) {
     if (look.stamp && tile !== 'mountain') stampHex(ctx, h, ground, (h.q * 7 + h.r * 13) % 2 !== 0);
     else fillHexTexture(ctx, h, ground);
+    // A fissure (owner, 2026-10-26): its glowing crack over the ground,
+    // drawn in its colours on the sprites' grid, mirrored on alternate hexes.
+    const crack = tile === 'fissure' ? assetLoader.requestImage(fissureImage) : null;
+    if (crack) stampHex(ctx, h, crack, (h.q * 7 + h.r * 13) % 2 !== 0);
     ctx.save();
     hexPath(ctx, h, 0.5);
     ctx.strokeStyle = look.border;

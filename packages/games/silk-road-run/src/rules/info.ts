@@ -3,7 +3,7 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {HEROES} from './config';
+import {HEROES, RULES} from './config';
 import {hailEnds} from './resolve';
 import type {Tile} from './map';
 import type {FightState, HailEffect, ShotInAir} from './types';
@@ -27,6 +27,11 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
     name: 'Mountains',
     short: 'Blocks movement and arrows',
     detail: 'Blocks movement and arrows.',
+  },
+  fissure: {
+    name: 'Fissure',
+    short: `Burns ${RULES.fissureDamage} on entering`,
+    detail: `A unit takes ${RULES.fissureDamage} damage each time it enters: walking through, stepping, or Pushed, Pulled or thrown in. Arrows pass over it.`,
   },
 };
 

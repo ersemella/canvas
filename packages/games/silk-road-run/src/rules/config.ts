@@ -36,6 +36,12 @@ export const RULES = {
   movementCap: 2,
   /** The most any stat (speed, defence or power) can reach (owner, 2026-10-25). */
   statMax: 10,
+  /**
+   * What a fissure (the Flaming Mountains' hazard, map.ts) deals a unit
+   * each time it enters one, walking through, stepping or Pushed, Pulled
+   * or thrown in (owner, 2026-10-26).
+   */
+  fissureDamage: 1,
   /** Size of the track window the page shows (open question 1). */
   trackWindow: 30,
 } as const;

@@ -10,9 +10,9 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, HEROES} from './config';
+import {ABILITY, CAMEL, HEROES, RULES} from './config';
 import {addStatus, hailOn, isImmobilized, isStunned, shotLane, unitAt, walkable} from './board';
-import {MAPS} from './map';
+import {MAPS, tileAt} from './map';
 import {hasPassive, spendPassive} from './passives';
 import {placeCard, simultaneousOrder} from './track';
 import type {MapData} from './map';
@@ -533,7 +533,8 @@ function apart(state: FightState, g: Grapple): boolean {
  * Moves a unit onto a space: by walking, or moved there by another unit
  * (`how`, for the page's playback). Grapples it leaves the reach of end,
  * unless it's a step partway along a walk (`midWalk`), which checks them
- * where it ends (`endGrapplesApart`); hail there holds it.
+ * where it ends (`endGrapplesApart`); hail there holds it, and a fissure
+ * there burns it (`RULES.fissureDamage`), which may kill it on the way.
  */
 export function enterHex(
   ctx: Ctx,
@@ -542,11 +543,20 @@ export function enterHex(
   how: Motion = 'walk',
   midWalk = false
 ): void {
+  // Fallen on the way (a fissure), it goes no further.
+  if (!unit.alive) return;
   const from = unit.hex;
   unit.hex = h;
   if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
   if (!midWalk) endGrapplesApart(ctx, unit);
   hailHolds(ctx, unit);
+  if (tileAt(ctx.map, h) === 'fissure')
+    applyDamage(
+      ctx,
+      unit,
+      RULES.fissureDamage,
+      `The fissure burns ${unitName(unit)} for ${RULES.fissureDamage}`
+    );
 }
 
 /**
@@ -610,7 +620,11 @@ export function walk(ctx: Ctx, unit: Unit, path: Hex[]): void {
   const end = path[path.length - 1]!;
   const back = path.length > 1 ? path[path.length - 2]! : unit.hex;
   const ally = ctx.state.units.find((u) => u !== unit && u.alive && u.hex && hexEquals(u.hex, end));
-  path.forEach((h, i) => enterHex(ctx, unit, h, 'walk', i < path.length - 1 || ally !== undefined));
+  for (const [i, h] of path.entries()) {
+    enterHex(ctx, unit, h, 'walk', i < path.length - 1 || ally !== undefined);
+    // A fissure on the way can end the walk, and the unit.
+    if (!unit.alive) return;
+  }
   if (!ally) return;
   log(ctx, `${unitName(unit)} swaps places with ${unitName(ally)}.`);
   enterHex(ctx, ally, back, 'swap');

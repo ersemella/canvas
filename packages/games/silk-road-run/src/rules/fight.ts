@@ -390,13 +390,16 @@ export function applyTurn(
       enterHex(ctx, unit, target.to!);
       log(ctx, `${unitName(unit)} steps.`);
     }
-    record(state, {
-      kind: 'action',
-      unitId: unit.id,
-      ability: def.id,
-      ...(target.hex ? {target: target.hex} : {}),
-    });
-    def.resolve(ctx, unit, target);
+    // Unless the step was into a fissure that killed it.
+    if (unit.alive) {
+      record(state, {
+        kind: 'action',
+        unitId: unit.id,
+        ability: def.id,
+        ...(target.hex ? {target: target.hex} : {}),
+      });
+      def.resolve(ctx, unit, target);
+    }
   }
   state.awaiting = null;
   checkEnd(state);
