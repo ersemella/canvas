@@ -246,7 +246,7 @@ function inevitable(ctx: Ctx, u: Unit): boolean {
  */
 export function delay(ctx: Ctx, u: Unit, n: number): void {
   if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
-  placeCard(ctx.state, u, u.slot + n, RULES.tempoWins);
+  placeCard(ctx.state, u, u.slot + n, RULES.delayWins);
   log(ctx, `${unitName(u)} is Delayed ${n}.`);
 }
 
@@ -262,7 +262,7 @@ export function haste(ctx: Ctx, u: Unit, n: number): void {
   if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
   log(ctx, `${unitName(u)} is Hastened ${n}.`);
   if (u.slot <= ctx.state.currentSlot) u.hasteDue = (u.hasteDue ?? 0) + n;
-  else placeCard(ctx.state, u, Math.max(ctx.state.currentSlot + 1, u.slot - n), RULES.tempoWins);
+  else placeCard(ctx.state, u, Math.max(ctx.state.currentSlot + 1, u.slot - n), RULES.hasteWins);
 }
 
 /** Takes off the Haste `unit` was given during its turn, its card just placed (`haste`). */
@@ -270,7 +270,7 @@ export function takeHasteDue(state: FightState, unit: Unit): void {
   const n = unit.hasteDue;
   delete unit.hasteDue;
   if (!n || !unit.alive || unit.slot === null) return;
-  placeCard(state, unit, Math.max(state.currentSlot + 1, unit.slot - n), RULES.tempoWins);
+  placeCard(state, unit, Math.max(state.currentSlot + 1, unit.slot - n), RULES.hasteWins);
 }
 
 /**
