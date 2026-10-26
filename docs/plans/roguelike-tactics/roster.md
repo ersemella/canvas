@@ -128,8 +128,9 @@ in [balance.md](balance.md)).
 
 **Built 2026-10-26 (owner): the Youxia Swordsman**, in the roster
 (`ROSTER`), with the owner's stats; Swift Strike' Haste 2 is the builder's
-first number, untested and not measured yet. A lettered disc (Y) until it
-has art.
+first number, untested and not measured yet. Art by the owner (ChatGPT,
+2026-10-26), shrunk with scripts/shrink-sprite.py (the portrait cropped
+to 280,95,1250,1065, without `--lines`), a 2-frame idle split at row 19.
 
 | Hero | Speed | Defence | Power | Health | Walk | Ability | Effect |
 |---|---|---|---|---|---|---|---|
