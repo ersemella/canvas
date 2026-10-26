@@ -6,16 +6,20 @@
 // power 1. *China*: the China party against the Steppe party (`modWinPct`).
 // *Seat*: the Alchemist in the Storm Caller's seat against the three
 // Steppe heroes.
+// `heal-empower`, `heal-haste`, `heal-empower-haste` (asked the same day):
+// the one-ally heal without Unstoppable, the ally also Empowered 1 (one
+// that hits, until the end of its next turn), Hastened 3, or both.
 const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['youxia', 'modao', 'alchemist'];
 const none = {fixed: 0, empower: 0, weaken: 0, self: false};
-const single = (unstoppable) => (c) => {
+const single = (unstoppable, empower = 0, haste = 0) => (c) => {
   Object.assign(c.ABILITY.elixir, none, {
     shape: 'unit',
     range: 3,
     radius: 1,
     heal: 'all',
-    haste: 0,
+    empower,
+    haste,
     delay: 0,
     unstoppable,
   });
@@ -44,3 +48,6 @@ export const experiments = {};
 both('built', built);
 both('heal-unstoppable', single(true));
 both('heal-only', single(false));
+both('heal-empower', single(false, 1));
+both('heal-haste', single(false, 0, 3));
+both('heal-empower-haste', single(false, 1, 3));

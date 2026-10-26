@@ -2428,6 +2428,29 @@ Unstoppable. The built burst (Haste 3, Delay 3) was China 43.4%, the seat
 - Not changed: the built Elixir stays the burst (the owner's call);
   `unstoppable` stays off.
 
+**With Empower and Haste** (asked the same day): the same one-ally heal,
+no Unstoppable, the ally also Empowered 1 (one that hits, until the end
+of its next turn), Hastened 3, or both; the same file, fights and seeds.
+Hastes are China's, a fight, the camel's in brackets.
+
+| Elixir | China vs Steppe | Alchemist for the Storm Caller | Elixir's share of the Alchemist's turns (China) | Hastes (camel) | Empower damage |
+|---|---:|---:|---:|---:|---:|
+| Heal 1, Empower 1 | 29.7% | 45.5% | 65.1% | — | 1.9 |
+| Heal 1, Haste 3 | 39.9% | 46.1% | 61.1% | 6.9 (2.6) | — |
+| Heal 1, Empower 1, Haste 3 | **47.2%** | **54.3%** | 63.7% | 7.1 (2.3) | 2.9 |
+
+- **Both together are the strongest Elixir measured for China**: 47.2%,
+  7 points over the built burst (40%) and 17 over the heal alone; in the
+  seat 54.3%, 5 over the Storm Caller's equal (49.4%).
+- **Haste carries it, Empower adds to it**: Haste alone is the burst's
+  equal for China (39.9%), Empower alone adds nothing for China (29.7%
+  from 25.8% with Unstoppable's 30.7%) but 6 points in the seat. Together
+  they add more than apart (Empower's damage 2.9 a fight from 1.9: a
+  Hastened ally strikes sooner, while Empowered).
+- **A third of the Hastes go to the camel** (2.3–2.6 a fight), the AI
+  speeding it to the exit.
+- Not changed: the built Elixir stays the burst (the owner's call).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

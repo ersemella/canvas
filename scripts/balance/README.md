@@ -78,7 +78,7 @@ was measured).
 `elixir-unstoppable.mjs` (2026-10-26) measures the Elixir on one ally
 within 3, healing the Alchemist's power (1) and making it Unstoppable
 until its next turn (`ABILITY.elixir.unstoppable`), against the heal alone
-and the built burst. Built since then: the Alchemist's power 1, and an
+and the built burst, and the heal with Empower 1, Haste 3 or both. Built since then: the Alchemist's power 1, and an
 Empower or Weaken of 0 no longer falling back to power (`elixirAmount`),
 and `heal` no longer needing `fixed`; files that set the power and every
 Elixir switch still reproduce.
