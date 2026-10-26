@@ -1868,6 +1868,37 @@ The aura within 2 and Delay 3 together: China 97.5%.
   own side only, so a player's Alchemist can't Degrade; the AI's can.
   Fixed 2026-10-25: Elixir is offered on either side (`bothSides`).
 
+### Elixir fixed at 1, with a hit (2026-10-26)
+
+Asked for: Elixir's Enhance and Degrade fixed at 1, not the Alchemist's
+power, and an enemy also taking a hit of its power, so power is damage
+again (9.2) and the exception to 17.2 goes. A switch,
+`ABILITY.elixir.fixed` (0 as built; above 0 that Enhance and Degrade, a
+hit on an enemy first, and any enemy a target); the AI values the hit as
+any attack's, and the lookahead marks every space within Elixir's range.
+`ablate.mjs` with `experiments/elixir-fixed.mjs`, **400 fights each**
+(about ±2.5 points), seeds from 1000. *Seat* and *China* as in the section
+above.
+
+| Elixir | Seat | China | Enhanced damage a fight (seat) |
+|---|---:|---:|---:|
+| By power, no damage (as built) | 49.4% | 98.8% | 4.0 |
+| Fixed 1, a hit of power 2 | **71.5%** | 88.3% | 0.9 |
+| Fixed 1, a hit of power 1 | 53% | | 1.0 |
+
+- **At power 2 it is too strong**, about 20 points over the Storm
+  Caller: the hit is the Bow's damage at the Outrider's speed, on any unit
+  within 2 with no line of fire, and a Degrade besides.
+- **At power 1 it is the Storm Caller's equal** (within noise), with no
+  unfinished fights (0.8% as built); the China line-up, at power 2, is
+  harder (88.3% from 98.8%).
+- **The Alchemist stops being a support**: the AI spends Elixir on
+  enemies, the hit worth more than an Enhance of 1, and the damage it adds
+  through allies falls from 4 a fight to 1. A larger Enhance on allies
+  than the Degrade on enemies would pull it back; not measured. The
+  harness doesn't attribute Elixir's own damage or kills.
+- Not adopted: the numbers are the owner's to set.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

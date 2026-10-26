@@ -332,9 +332,18 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // both by the Alchemist's power (`elixirCaught`, by its shape).
   if (ability === 'elixir') {
     let value = 0;
+    const {fixed} = ABILITY.elixir;
     for (const u of elixirCaught(state, unit, unit.hex!, target!.hex!)) {
-      if (!hostile(u, unit)) value += u.enhance ? 0 : 1 + enhanceGuess(state, u, unit.power);
-      else value += u.degrade ? 0 : 1 + degradeGuess(state, u, unit.power);
+      if (!hostile(u, unit)) {
+        value += u.enhance ? 0 : 1 + enhanceGuess(state, u, fixed || unit.power);
+        continue;
+      }
+      // With `fixed`, a hit first, as any attack's.
+      const damage = fixed ? Math.min(damageOf(unit), u.hp) : 0;
+      value += damage * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
+      if (damage > 0 && damage >= u.hp && u.hero !== CAMEL) value += AI.kill;
+      else if (u.power > 0)
+        value += u.degrade ? 0 : 1 + degradeGuess(state, u, fixed || unit.power);
     }
     return closing + value;
   }

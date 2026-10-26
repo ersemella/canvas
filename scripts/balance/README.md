@@ -37,6 +37,8 @@ Waidan Alchemist) against the Steppe party, on the Gobi (an experiment's
 `map`) and the Steppe, and each Chinese hero in each Steppe hero's seat.
 `elixir-cleave.mjs` (2026-10-25) measures Elixir's shapes and Cleave's
 Delay by their switches (`ABILITY.elixir.shape`, `ABILITY.cleave.delay`).
+`elixir-fixed.mjs` (2026-10-26) measures Elixir with a fixed Enhance and
+Degrade of 1 and a hit on an enemy (`ABILITY.elixir.fixed`).
 
 ## Ability and stat ablation
 

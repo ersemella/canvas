@@ -274,8 +274,11 @@ export const ABILITY = {
    * every unit within `radius` of it; `aura`, every unit within `radius`
    * of the Alchemist, aimed at its own space. The page shows the built
    * shape only.
+   * `fixed`, a switch for measuring: 0 as built; above 0, the Enhance and
+   * Degrade are that many instead of the Alchemist's power, and an enemy
+   * also takes a hit (the Alchemist's power), so any enemy can be aimed at.
    */
-  elixir: {range: 2, shape: 'unit' as 'unit' | 'burst' | 'aura', radius: 1},
+  elixir: {range: 2, shape: 'unit' as 'unit' | 'burst' | 'aura', radius: 1, fixed: 0 as number},
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
