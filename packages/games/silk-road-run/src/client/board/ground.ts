@@ -25,7 +25,6 @@ import sandImage from '../tiles/sand.png';
 import mountainPeakImage from '../tiles/mountain-peak.png';
 import mountainTwinImage from '../tiles/mountain-twin.png';
 import rockImage from '../tiles/rock.png';
-import redRockImage from '../tiles/rock-red.png';
 import grassImage from '../tiles/grass-soft.png';
 import redEarthImage from '../tiles/red-earth.png';
 import burningRidgeImage from '../tiles/mountain-ridge.png';
@@ -52,6 +51,11 @@ export interface Look {
    * yurt's crown, or a beacon tower's fire; `null`, none.
    */
   smoke: Smoke | null;
+  /**
+   * How many frames each obstacle image holds, side by side, looping at
+   * `FLAME_FPS`: 1, a still image, but for the beacon tower's pennant.
+   */
+  obstacleFrames: number;
   /** The mountains' shapes, each hex picking one. */
   mountains: string[];
   /**
@@ -86,8 +90,8 @@ const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
  * Steppe's twin peak so it is drawn as the other mountains are and fits
  * its hex the same way: its base, the hex's lower half, as it was, the
  * peaks above it lowered to 0.65 of their height into a ridge of two low
- * humps, its six shades in the red earth's own browns, so it blends with
- * the ground (owner, 2026-10-26). Only the fire along its crest
+ * humps, its six shades the red earth's own colours and its border's, so
+ * it blends with the ground (owner, 2026-10-26). Only the fire along its crest
  * moves, in 8 frames (`mountainFrames`): flames 1 to 5 pixels tall in
  * waves, a tongue flaring every few pixels, embers rising; the rock never
  * changes. It replaced a burning cone (`mountain-burning.png`), which read
@@ -112,7 +116,8 @@ const FLAMING_MOUNTAINS = [burningRidgeImage];
  * chipped, with rubble at its foot and a dark-earth outline below the
  * roof so it sits in the ground, under a watch pavilion with a grey tiled roof whose corners sweep up, red posts
  * and a red pennant, the roofline being what reads as China at a glance.
- * Redrawn by hand on the sprites' grid (32 × 46), as shrinking the art
+ * Redrawn by hand on the sprites' grid (38 × 46, with room for the
+ * pennant, which flies in 4 frames), as shrinking the art
  * left the roof a dark blob. No smoke: it would rise from the roof.
  */
 const LOOKS: Record<string, Look> = {
@@ -124,6 +129,7 @@ const LOOKS: Record<string, Look> = {
     obstacles: [yurtImage],
     // The crown's middle, 2 rows down the 24-row yurt.
     smoke: {from: 22, colour: '240, 236, 228'},
+    obstacleFrames: 1,
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
@@ -135,6 +141,7 @@ const LOOKS: Record<string, Look> = {
     border: PALETTE.sandDark,
     obstacles: [sandstoneRuinsImage],
     smoke: null,
+    obstacleFrames: 1,
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
@@ -146,12 +153,13 @@ const LOOKS: Record<string, Look> = {
     border: '#5c3a26',
     obstacles: [beaconTowerImage],
     smoke: null,
+    // Its pennant flies in 4 frames.
+    obstacleFrames: 4,
     mountains: FLAMING_MOUNTAINS,
     mountainFrames: 8,
-    // The Steppe's rock in the burning mountain's own browns, so the
-    // corners of its hex beside the peak read as the mountain's (owner,
-    // 2026-10-26); on the red earth, they looked left unfilled.
-    mountainGround: redRockImage,
+    // The red earth itself, as the ridge is in its colours (owner,
+    // 2026-10-26; the Steppe's rock in redder browns before).
+    mountainGround: redEarthImage,
   },
 };
 
@@ -166,8 +174,15 @@ export const smokes = (map: MapData): boolean => lookOf(map).smoke !== null;
 /** Whether a map's mountains burn (move), so the board keeps drawing frames for it. */
 export const burns = (map: MapData): boolean => lookOf(map).mountainFrames > 1;
 
-/** The Flaming Mountains' fire, in frames a second (owner, 2026-10-26). */
-export const FLAME_FPS = 8;
+/** Whether a map's obstacles move (a pennant flying), so the board keeps drawing frames for it. */
+export const flies = (map: MapData): boolean => lookOf(map).obstacleFrames > 1;
+
+/**
+ * The Flaming Mountains' fire and the beacon towers' pennants, in frames a
+ * second: 3 (owner, 2026-10-26; 8 at first, quicker than the units' idles,
+ * which change every 0.6 seconds).
+ */
+export const FLAME_FPS = 3;
 
 /** A tile's ground texture on a map: the map's open ground, or its mountains' ground under one (rock, owner, 2026-10-24). */
 const textureOf = (look: Look, tile: Tile): string =>
@@ -346,7 +361,7 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex, time: number | n
  * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
  * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
  * Gobi's sandstone ruin and the mudbrick wall are 32 × 32, the beacon
- * tower 32 × 46. `map` gives the look.
+ * tower 38 × 46. `map` gives the look.
  */
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,
@@ -362,8 +377,8 @@ export function drawObstacle(
     drawObstacleMark(ctx, center(h));
     return;
   }
-  // A burning mountain's frame, each hex out of step; the first held for reduced motion.
-  const frames = mountain ? look.mountainFrames : 1;
+  // A burning mountain's or a flying pennant's frame, each hex out of step; the first held for reduced motion.
+  const frames = mountain ? look.mountainFrames : look.obstacleFrames;
   const frameWidth = art.width / frames;
   const offset = Math.floor(hexRandom(h, 3)() * frames);
   const frame = time === null ? 0 : (Math.floor(time * FLAME_FPS) + offset) % frames;

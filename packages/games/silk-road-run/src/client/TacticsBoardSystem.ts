@@ -18,6 +18,7 @@ import {
   HAIL_STILL_SECONDS,
   SMOKE_FPS,
   burns,
+  flies,
   drawExit,
   drawFallingHail,
   drawGround,
@@ -182,6 +183,8 @@ export class TacticsBoardSystem extends BaseSystem {
         parts.push(Math.floor(time * SMOKE_FPS));
       if (burns(mapOf(fight)) && Object.values(fight.tiles).includes('mountain'))
         parts.push(Math.floor(time * FLAME_FPS));
+      else if (flies(mapOf(fight)) && Object.values(fight.tiles).includes('obstacle'))
+        parts.push(Math.floor(time * FLAME_FPS));
     }
     return parts.join(' ');
   }
@@ -323,7 +326,7 @@ export class TacticsBoardSystem extends BaseSystem {
     // Yurts (ruins) and their smoke under the units; mountains wait until after them (below).
     for (const h of map.hexes)
       if (tileAt(map, h) === 'obstacle') {
-        drawObstacle(ctx, h, map);
+        drawObstacle(ctx, h, map, false, t);
         drawObstacleSmoke(ctx, h, map, t);
       }
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.

@@ -134,8 +134,10 @@ tuning. This file has no combat-design section number.
   within 3 of the centre, not next to a mountain or each other, and the
   mountains and towers together cover **at most 8 spaces** (`MAX_COVERED`
   in map.ts: the towers are rolled first and the clumps cut to fit). The
-  tower (`tiles/beacon-tower.png`, 32 × 46, two rows clear above the
-  finial and the pennant so their outline isn't cut off) is the owner's (AI-assisted),
+  tower (`tiles/beacon-tower.png`, 38 × 46 a frame, two rows clear above
+  the finial and three columns either side, so the pennant isn't cut off
+  at the sprite's edge; its pennant flies in 4 frames at the fire's pace,
+  `Look.obstacleFrames`) is the owner's (AI-assisted),
   redrawn by hand on the sprites' grid, as shrinking it left the roof a
   dark blob: rammed earth in reed-layered bands under a watch pavilion
   with a grey tiled roof whose corners sweep up, red posts and a red
@@ -151,17 +153,19 @@ tuning. This file has no combat-design section number.
   Steppe's twin peak, so it is drawn as the other mountains are and fits
   its hex the same way: its base, the hex's lower half, unchanged, its
   peaks lowered to 0.65 of their height into two low humps, its six
-  shades in the red earth's own browns, a little darker and lighter, so
-  it blends with the ground (redder, it stood out; owner, 2026-10-26), on the Steppe's rock in the same browns
-  (`rock-red.png`). Only its fire moves, in 8 frames: flames 1 to 5
+  shades the red earth's own colours and its hex border's, so it blends
+  with the ground (redder, then in browns near the ground's, it stood
+  out; owner, 2026-10-26), standing on the red earth itself. Only its
+  fire moves, in 8 frames at 3 a second (`FLAME_FPS`; 8 a second at
+  first, quicker than the units' idles; owner, 2026-10-26): flames 1 to 5
   pixels tall along the crest in waves, a tongue flaring every few
   pixels, embers rising. Tried first the same day and replaced (owner):
   the owner's ridge (AI-assisted), wider than its hex, which looked out
   of place where neighbouring ridges didn't join and whose 1 to 2 pixel
   flames looked still; then ridges drawn in code, one continuous
   landform per clump, which were too detailed and the only thing on the
-  board spanning spaces. The cone (`mountain-burning.png`) is no longer
-  used. Tried before
+  board spanning spaces. The cone (`mountain-burning.png`) and the Steppe's rock in
+  red browns (`rock-red.png`) are no longer used. Tried before
   and taken out, as they didn't look good (owner, 2026-10-26): two or
   three mudbrick ruins (`tiles/ruins.png`, as the ruins of Gaochang, now
   unused) and one or two fissures, a hazard burning 1 on each entry. The flames are only drawn: the mountains block as any do; a
