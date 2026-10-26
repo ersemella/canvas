@@ -2163,7 +2163,9 @@ hero's seat against the three Steppe heroes, its side's share of wins.
   three times the built Elixir's) but costs about 4–11 points: China
   41.4%, 44–52% in a seat. Unfinished fights rise a little (0.3–1.6%).
 - **Adopted (owner, 2026-10-26): two hails at once and hail on entry**
-  (`max: 2`, `entry: true`); the Elixir unchanged. `hail-elixir.mjs` sets
+  (`max: 2`, `entry: true`), then the same day **the burst Elixir** as
+  measured (`shape: 'burst'`, `range: 1`, `radius: 1`, `empower: 2`,
+  `weaken: 1`, no hit or heal, the Alchemist's power 0). `hail-elixir.mjs` sets
   every switch in each variant, reproducing these tables on the new
   defaults.
 

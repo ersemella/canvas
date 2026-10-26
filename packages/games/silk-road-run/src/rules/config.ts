@@ -143,19 +143,20 @@ export const HEROES: Record<HeroId, HeroStats> = {
   },
   /**
    * The Waidan Alchemist (owner, 2026-10-25; roster.md): a support whose
-   * Elixir heals an ally its power and Empowers it 1, or hits an enemy for
-   * its power and Weakens it 1 (`ABILITY.elixir`). Speed 3 (owner,
-   * 2026-10-25; 2 before; balance.md, "Elixir's shape and Cleave's Delay":
-   * the Storm Caller's equal in its seat, 49.2% from 40.6%); power 1
-   * (owner, 2026-10-26; 2 before; balance.md, "Elixir fixed at 1, with a
-   * hit"); defence 1 (health 4) the builder's first number.
+   * Elixir, a burst next to it, Empowers allies 2 and Weakens enemies 1
+   * (`ABILITY.elixir`). Speed 3 (owner, 2026-10-25; 2 before; balance.md,
+   * "Elixir's shape and Cleave's Delay": the Storm Caller's equal in its
+   * seat, 49.2% from 40.6%); power 0 (owner, 2026-10-26, with the burst: it
+   * deals no damage; 1 from earlier that day, 2 before; balance.md, "Two
+   * hails, hail on entry, and a melee Elixir"); defence 1 (health 4) the
+   * builder's first number.
    */
   alchemist: {
     name: 'Waidan Alchemist',
     letter: 'A',
     speed: 3,
     defence: 1,
-    power: 1,
+    power: 0,
     abilities: ['elixir', 'hold'],
   },
   /**
@@ -293,40 +294,40 @@ export const ABILITY = {
    */
   cleave: {reach: 2, delay: 8 as number, shape: 'built' as 'built' | 'lines' | 'arcs' | 'cones'},
   /**
-   * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within `range`,
-   * the Alchemist itself too, no line of fire. An ally heals the
-   * Alchemist's power, up to its health, and is Empowered `fixed` (1); an
-   * enemy takes a hit (the Alchemist's power) and is Weakened `fixed`; each
-   * until the end of its next turn, a new one replacing the last. Any enemy
-   * can be aimed at, and an ally that hits or is hurt, the camel too
-   * (`heal: 'all'`). Until 2026-10-26 the Empower and Weaken were the
-   * Alchemist's power, with no hit or heal, an exception to keywords.md
-   * 17.2 that the fixed amount ends (balance.md, "Elixir fixed at 1, with
-   * a hit").
-   * `shape`, a switch for measuring (balance.md, "Elixir's shape and
-   * Cleave's Delay"): `unit` as built; `burst`, a space within `range` and
-   * every unit within `radius` of it; `aura`, every unit within `radius`
-   * of the Alchemist, aimed at its own space. The page shows the built
-   * shape only.
-   * `fixed`: 1 as built; 0, a switch for measuring, gives the Elixir of
-   * 2026-10-25 (Empower and Weaken by power, no hit, no heal).
-   * `heal`, with `fixed`: `all` as built; `heroes` not the camel, or
-   * `false` no heal, switches for measuring.
+   * Elixir (owner, 2026-10-25; a burst since 2026-10-26, as measured in
+   * balance.md, "Two hails, hail on entry, and a melee Elixir"): a space
+   * within `range` (1: next to the Alchemist, or its own), no line of fire,
+   * and every unit within `radius` of it that hits, either side: an ally
+   * is Empowered `empower` (2), an enemy Weakened `weaken` (1), each until
+   * the end of its next turn, a new one replacing the last. No hit and no
+   * heal (`fixed` 0); the Alchemist's power is 0, so it never takes its own.
+   * Earlier that day a unit within 2, the Alchemist itself too: an ally
+   * healed the Alchemist's power and was Empowered 1, an enemy took a hit
+   * and was Weakened 1 (`shape: 'unit'`, `range: 2`, `fixed: 1`, `heal:
+   * 'all'`, power 1; balance.md, "Elixir fixed at 1, with a hit").
+   * `shape`: `burst` as built; `unit`, the unit on a space within `range`;
+   * `aura`, every unit within `radius` of the Alchemist, aimed at its own
+   * space (switches for measuring; the page draws a burst's area and aims
+   * a unit's, but not an aura's).
+   * `fixed`, a switch for measuring: above 0 an enemy is also hit for the
+   * Alchemist's power, and the Empower and Weaken default to it; 0 as built,
+   * when they default to power.
+   * `heal`, with `fixed`: an ally heals the Alchemist's power, `all` the
+   * camel too, `heroes` not; off as built.
    * `tempo`, a switch for measuring: an ally is also Hastened, an enemy
    * Delayed, that many slots, so any unit can be aimed at; 0 as built.
-   * `empower`, `weaken`, switches for measuring: above 0, the Empower on
-   * an ally and the Weaken on an enemy, in place of `fixed` (or power);
-   * 0 as built.
+   * `empower`, `weaken`: the Empower on an ally and the Weaken on an enemy
+   * (2 and 1 as built); 0 falls back to `fixed`, then power.
    */
   elixir: {
-    range: 2,
-    shape: 'unit' as 'unit' | 'burst' | 'aura',
-    radius: 1,
-    fixed: 1 as number,
-    heal: 'all' as false | 'all' | 'heroes',
+    range: 1 as number,
+    shape: 'burst' as 'unit' | 'burst' | 'aura',
+    radius: 1 as number,
+    fixed: 0 as number,
+    heal: false as false | 'all' | 'heroes',
     tempo: 0 as number,
-    empower: 0 as number,
-    weaken: 0 as number,
+    empower: 2 as number,
+    weaken: 1 as number,
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),

@@ -18,7 +18,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   modao:
     'An armoured spearhead of the Tang army, wielding the modao, a long two-handed blade. The Vanguard is slow, but its blade cuts through the first foe into the one behind.',
   alchemist:
-    'A Tang master of waidan, the art of elixirs brewed from minerals in sealed crucibles. The Alchemist heals and strengthens allies with a remedy, and wounds and weakens enemies with a poison.',
+    'A Tang master of waidan, the art of elixirs brewed from minerals in sealed crucibles. The Alchemist splashes an elixir beside it that strengthens the allies it touches and weakens the enemies.',
   youxia:
     'A wandering knight-errant of Tang China, sworn to keep their word and avenge wrongs. The Swordsman travels light with a straight jian, and every stroke that lands quickens the next.',
 };

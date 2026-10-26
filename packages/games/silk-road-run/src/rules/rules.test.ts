@@ -1442,6 +1442,23 @@ describe('the Youxia Swordsman', () => {
 describe('the Modao Vanguard and the Waidan Alchemist', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
 
+  /** Runs `test` with the Elixir set by `settings` and the Alchemist's `power`, then restores them. */
+  function withElixir(settings: Partial<typeof ABILITY.elixir>, power: number, test: () => void) {
+    const elixir = ABILITY.elixir as Record<string, unknown>;
+    const saved = {...ABILITY.elixir};
+    const savedPower = HEROES.alchemist.power;
+    Object.assign(elixir, settings);
+    (HEROES.alchemist as {power: number}).power = power;
+    try {
+      test();
+    } finally {
+      Object.assign(elixir, saved);
+      (HEROES.alchemist as {power: number}).power = savedPower;
+    }
+  }
+  /** The single-unit Elixir before the burst (2026-10-26). */
+  const single = {range: 2, shape: 'unit', fixed: 1, heal: 'all', empower: 0, weaken: 0} as const;
+
   // Cleave's shape from `c`: hex directions 2 and 5 run straight up and down the
   // (flat-topped) board; 0 and 1 are the right-hand diagonals, `across` the space
   // straight right beyond them.
@@ -1507,63 +1524,96 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
       expect(tap(h)).toEqual({hex: hexNeighbor(c, 0)});
   });
 
-  it('Elixir heals an ally its power and Empowers it 1, and hits an enemy for its power and Weakens it 1', () => {
+  it('Elixir as a burst: a space next to the Alchemist, every unit around it that hits, allies Empowered 2 and enemies Weakened 1', () => {
     const s = setup(
       {
-        'p-alchemist': at(1, 3),
-        'e-mangudai': at(2, 3),
-        'p-mangudai': at(3, 3),
-        'e-modao': at(8, 6),
+        'p-alchemist': c,
+        'p-mangudai': hexNeighbor(c, 0),
+        // Two away, next to the space aimed at.
+        'e-mangudai': hexNeighbor(hexNeighbor(c, 0), 0),
+        'p-camel': hexNeighbor(c, 3),
+        'e-modao': at(0, 0),
       },
       party
     );
     const alchemist = unit(s, 'p-alchemist');
-    expect(alchemist.power).toBe(1);
-    // The player is offered both: an ally to heal and Empower, an enemy to
-    // hit and Weaken, and the Alchemist itself.
-    expect(
-      offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
-        .map((t) => hexKey(t.hex!))
-        .sort()
-    ).toEqual([at(1, 3), at(2, 3), at(3, 3)].map(hexKey).sort());
-    // On itself: hurt, it heals its power and is Empowered 1, lasting through its next turn.
-    const m = cloneFight(s);
-    unit(m, 'p-alchemist').hp -= 2;
-    applyTurn(m, unit(m, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(1, 3)}}});
-    expect(unit(m, 'p-alchemist').hp).toBe(unit(m, 'p-alchemist').maxHp - 1);
-    expect(unit(m, 'p-alchemist').empower).toBe(1);
-    // An ally down 2 heals 1 (the Alchemist's power) and is Empowered 1.
-    const a = cloneFight(s);
-    a.events = [];
-    unit(a, 'p-mangudai').hp -= 2;
-    applyTurn(a, unit(a, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
-    expect(unit(a, 'p-mangudai').hp).toBe(unit(a, 'p-mangudai').maxHp - 1);
-    expect(unit(a, 'p-mangudai').empower).toBe(1);
-    expect(a.events!.some((e) => e.kind === 'heal' && e.amount === 1)).toBe(true);
-    // A healthy ally isn't healed past its health.
-    const f = cloneFight(s);
-    applyTurn(f, unit(f, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
-    expect(unit(f, 'p-mangudai').hp).toBe(unit(f, 'p-mangudai').maxHp);
-    // An enemy takes the Alchemist's power and is Weakened 1.
-    const e = cloneFight(s);
-    applyTurn(e, unit(e, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
-    expect(unit(e, 'e-mangudai').hp).toBe(unit(e, 'e-mangudai').maxHp - 1);
-    expect(unit(e, 'e-mangudai').weaken).toBe(1);
+    expect(alchemist.power).toBe(0);
+    expect(ABILITIES.elixir.targetsUnit).toBe(false);
+    expect(ABILITIES.elixir.radius).toBe(1);
+    // Offered: the spaces within 1 whose burst catches a unit that hits.
+    const offered = offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir).map((t) => t.hex!);
+    expect(offered.every((h) => hexDistance(h, c) <= 1)).toBe(true);
+    expect(offered.some((h) => hexEquals(h, hexNeighbor(c, 0)))).toBe(true);
+    const camel = unit(s, 'p-camel');
+    camel.hp -= 2;
+    applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: hexNeighbor(c, 0)}}});
+    expect(unit(s, 'p-mangudai').empower).toBe(2);
+    expect(unit(s, 'e-mangudai').weaken).toBe(1);
+    // No hit, no heal, and not the Alchemist itself (it doesn't hit).
+    expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp);
+    expect(alchemist.empower).toBeUndefined();
+    expect(camel.hp).toBe(camel.maxHp - 2);
   });
 
-  it('Elixir heals the camel once it is hurt, and leaves it alone at full health', () => {
-    const s = setup({'p-alchemist': at(1, 3), 'p-camel': at(2, 3), 'e-modao': at(8, 6)}, party);
-    const alchemist = unit(s, 'p-alchemist');
-    const offered = () =>
-      ABILITIES.elixir
-        .targets(s, mapOf(s), alchemist, alchemist.hex!)
-        .some((t) => hexEquals(t.hex!, at(2, 3)));
-    expect(offered()).toBe(false);
-    unit(s, 'p-camel').hp -= 3;
-    expect(offered()).toBe(true);
-    applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
-    expect(unit(s, 'p-camel').hp).toBe(unit(s, 'p-camel').maxHp - 2);
-  });
+  it('the single-unit Elixir (a switch) heals an ally its power and Empowers it 1, and hits an enemy for its power and Weakens it 1', () =>
+    withElixir(single, 1, () => {
+      const s = setup(
+        {
+          'p-alchemist': at(1, 3),
+          'e-mangudai': at(2, 3),
+          'p-mangudai': at(3, 3),
+          'e-modao': at(8, 6),
+        },
+        party
+      );
+      const alchemist = unit(s, 'p-alchemist');
+      expect(alchemist.power).toBe(1);
+      // The player is offered both: an ally to heal and Empower, an enemy to
+      // hit and Weaken, and the Alchemist itself.
+      expect(
+        offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
+          .map((t) => hexKey(t.hex!))
+          .sort()
+      ).toEqual([at(1, 3), at(2, 3), at(3, 3)].map(hexKey).sort());
+      // On itself: hurt, it heals its power and is Empowered 1, lasting through its next turn.
+      const m = cloneFight(s);
+      unit(m, 'p-alchemist').hp -= 2;
+      applyTurn(m, unit(m, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(1, 3)}}});
+      expect(unit(m, 'p-alchemist').hp).toBe(unit(m, 'p-alchemist').maxHp - 1);
+      expect(unit(m, 'p-alchemist').empower).toBe(1);
+      // An ally down 2 heals 1 (the Alchemist's power) and is Empowered 1.
+      const a = cloneFight(s);
+      a.events = [];
+      unit(a, 'p-mangudai').hp -= 2;
+      applyTurn(a, unit(a, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
+      expect(unit(a, 'p-mangudai').hp).toBe(unit(a, 'p-mangudai').maxHp - 1);
+      expect(unit(a, 'p-mangudai').empower).toBe(1);
+      expect(a.events!.some((e) => e.kind === 'heal' && e.amount === 1)).toBe(true);
+      // A healthy ally isn't healed past its health.
+      const f = cloneFight(s);
+      applyTurn(f, unit(f, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
+      expect(unit(f, 'p-mangudai').hp).toBe(unit(f, 'p-mangudai').maxHp);
+      // An enemy takes the Alchemist's power and is Weakened 1.
+      const e = cloneFight(s);
+      applyTurn(e, unit(e, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
+      expect(unit(e, 'e-mangudai').hp).toBe(unit(e, 'e-mangudai').maxHp - 1);
+      expect(unit(e, 'e-mangudai').weaken).toBe(1);
+    }));
+
+  it('the single-unit Elixir heals the camel once it is hurt, and leaves it alone at full health', () =>
+    withElixir(single, 1, () => {
+      const s = setup({'p-alchemist': at(1, 3), 'p-camel': at(2, 3), 'e-modao': at(8, 6)}, party);
+      const alchemist = unit(s, 'p-alchemist');
+      const offered = () =>
+        ABILITIES.elixir
+          .targets(s, mapOf(s), alchemist, alchemist.hex!)
+          .some((t) => hexEquals(t.hex!, at(2, 3)));
+      expect(offered()).toBe(false);
+      unit(s, 'p-camel').hp -= 3;
+      expect(offered()).toBe(true);
+      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
+      expect(unit(s, 'p-camel').hp).toBe(unit(s, 'p-camel').maxHp - 2);
+    }));
 
   it('Cleave Delays every unit it leaves standing 8 slots, and not the ones it kills', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
@@ -1581,33 +1631,34 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
     expect(k.log.some((l) => l.text.includes('Delayed'))).toBe(false);
   });
 
-  it('Elixir as a burst or an aura (switches, off as built) reaches every unit around its centre', () => {
-    const s = setup(
-      {
-        'p-alchemist': at(1, 3),
-        'p-mangudai': at(2, 3),
-        'e-mangudai': at(2, 2),
-        'e-modao': at(8, 6),
-      },
-      party
-    );
-    const elixir = ABILITY.elixir as {shape: string};
-    const saved = {...ABILITY.elixir};
-    try {
-      for (const shape of ['burst', 'aura'] as const) {
-        elixir.shape = shape;
-        const c = cloneFight(s);
-        const hex = shape === 'aura' ? at(1, 3) : at(2, 3);
-        applyTurn(c, unit(c, 'p-alchemist'), {action: {ability: 'elixir', target: {hex}}});
-        expect(unit(c, 'p-mangudai').empower).toBe(unit(c, 'p-alchemist').power);
-        expect(unit(c, 'e-mangudai').weaken).toBe(unit(c, 'p-alchemist').power);
-        // The Alchemist is within the radius too, so it takes the elixir.
-        expect(unit(c, 'p-alchemist').empower).toBe(unit(c, 'p-alchemist').power);
+  it('Elixir as a burst or an aura reaches every unit around its centre', () =>
+    withElixir({range: 2, fixed: 1, heal: 'all', empower: 0, weaken: 0}, 1, () => {
+      const s = setup(
+        {
+          'p-alchemist': at(1, 3),
+          'p-mangudai': at(2, 3),
+          'e-mangudai': at(2, 2),
+          'e-modao': at(8, 6),
+        },
+        party
+      );
+      const elixir = ABILITY.elixir as {shape: string};
+      const saved = {...ABILITY.elixir};
+      try {
+        for (const shape of ['burst', 'aura'] as const) {
+          elixir.shape = shape;
+          const c = cloneFight(s);
+          const hex = shape === 'aura' ? at(1, 3) : at(2, 3);
+          applyTurn(c, unit(c, 'p-alchemist'), {action: {ability: 'elixir', target: {hex}}});
+          expect(unit(c, 'p-mangudai').empower).toBe(unit(c, 'p-alchemist').power);
+          expect(unit(c, 'e-mangudai').weaken).toBe(unit(c, 'p-alchemist').power);
+          // The Alchemist is within the radius too, so it takes the elixir.
+          expect(unit(c, 'p-alchemist').empower).toBe(unit(c, 'p-alchemist').power);
+        }
+      } finally {
+        Object.assign(elixir, saved);
       }
-    } finally {
-      Object.assign(elixir, saved);
-    }
-  });
+    }));
 
   it('Elixir’s `empower` and `weaken` switches set each side’s amount apart', () => {
     const s = setup(

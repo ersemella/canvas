@@ -70,7 +70,7 @@ export interface AbilityDef {
    * (0: the space alone). Its effect doesn't depend on where the user
    * stands. None for the rest.
    */
-  radius?: number;
+  radius?: number | undefined;
   /**
    * The spaces it covers, for an ability whose area runs from its user
    * rather than around its target (Cleave's line): the page and the
@@ -644,13 +644,13 @@ export function elixirCaught(state: FightState, user: Unit, from: Hex, target: H
 }
 
 /**
- * Elixir (owner, 2026-10-25; reworked 2026-10-26): a unit within
- * `ABILITY.elixir.range`, the Alchemist itself too (owner, 2026-10-26),
- * with no line of fire.
- * An ally heals the Alchemist's power and is Empowered `fixed` (1); an
- * enemy is hit for the Alchemist's power, then Weakened `fixed`; each until
- * the end of its next turn, replacing any it had. Other shapes and
- * amounts, for measuring, by `ABILITY.elixir` (`elixirCaught`).
+ * Elixir (owner, 2026-10-25; a burst since 2026-10-26): a space within
+ * `ABILITY.elixir.range` (1: next to the Alchemist, or its own), no line of
+ * fire; each unit within `radius` of it that hits, either side, takes it:
+ * an ally is Empowered `empower` (2), an enemy Weakened `weaken` (1), each
+ * until the end of its next turn, replacing any it had. No hit, no heal:
+ * the Alchemist's power is 0. Other shapes and amounts, for measuring, by
+ * `ABILITY.elixir` (`elixirCaught`).
  */
 const elixir: AbilityDef = {
   id: 'elixir',
@@ -658,12 +658,27 @@ const elixir: AbilityDef = {
   kind: 'support',
   damages: false,
   bothSides: true,
-  range: ABILITY.elixir.range,
-  summary: (user) =>
-    ABILITY.elixir.fixed
-      ? `A unit within ${ABILITY.elixir.range}, itself too: an ally ${ABILITY.elixir.heal ? `heals ${user.power} and ` : ''}is Empowered ${ABILITY.elixir.fixed}; an enemy is hit, then Weakened ${ABILITY.elixir.fixed}, until the end of its next turn.`
-      : `A unit within ${ABILITY.elixir.range}, itself too: an ally is Empowered ${user.power}, an enemy Weakened ${user.power}, until the end of its next turn.`,
-  targetsUnit: true,
+  // Getters, so the measuring switches (`ABILITY.elixir`) reach the page and the AI.
+  get range() {
+    return ABILITY.elixir.range;
+  },
+  /** A burst's area, round the space it's aimed at; the other shapes have none. */
+  get radius() {
+    return ABILITY.elixir.shape === 'burst' ? ABILITY.elixir.radius : undefined;
+  },
+  /** Only the single-unit shape is aimed at a unit; a burst can land on an empty space. */
+  get targetsUnit() {
+    return ABILITY.elixir.shape === 'unit';
+  },
+  summary(user) {
+    const {shape, range, radius, fixed, heal} = ABILITY.elixir;
+    const effect = (them: string) =>
+      `${fixed && heal ? `allies heal ${user.power} and are` : 'allies are'} Empowered ${elixirAmount(user, 'empower')}, ${fixed ? `enemies are hit, then` : 'enemies'} Weakened ${elixirAmount(user, 'weaken')}, until the end of ${them} next turn.`;
+    if (shape === 'burst')
+      return `${range === 1 ? 'A space next to you, or your own' : `A space within ${range}`}, and every unit within ${radius} of it that hits: ${effect('their')}`;
+    if (shape === 'aura') return `Every unit within ${radius} of you that hits: ${effect('their')}`;
+    return `A unit within ${range}, yourself too: ${effect('its')}`;
+  },
   targets(state, map, user, from) {
     const {shape, range} = ABILITY.elixir;
     if (shape === 'aura')

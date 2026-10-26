@@ -51,6 +51,12 @@ switch (`ABILITY.cleave.shape`); `hail-elixir.mjs` two hails at once and
 hail on entry (`ABILITY.hail.max`, `.entry`), and a power-0 Elixir of
 radius 1 at melee range with Empower 2 and Weaken 1 (`ABILITY.elixir.empower`,
 `.weaken`).
+Built since 2026-10-26: the burst (`shape: 'burst'`, `range: 1`, `fixed: 0`,
+`heal: false`, `empower: 2`, `weaken: 1`, the Alchemist's power 0), so the
+files touching the Alchemist that don't set every one of these
+(`china-steppe.mjs`, `china-buffs.mjs`, `vanguard-buffs.mjs`,
+`cleave-shape.mjs`, `elixir-fixed.mjs`) reproduce only at their revision;
+`hail-elixir.mjs` sets them all.
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.

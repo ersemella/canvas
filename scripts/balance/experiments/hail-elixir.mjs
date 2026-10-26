@@ -20,7 +20,18 @@ const hailVariants = {
 const hail = (v) => (c) => Object.assign(c.ABILITY.hail, {max: 1, entry: false, ...v});
 
 const elixirVariants = {
-  built: () => {},
+  // The single-unit Elixir, built until the burst replaced it (2026-10-26).
+  built: (c) => {
+    Object.assign(c.ABILITY.elixir, {
+      shape: 'unit',
+      range: 2,
+      fixed: 1,
+      heal: 'all',
+      empower: 0,
+      weaken: 0,
+    });
+    c.HEROES.alchemist.power = 1;
+  },
   aura: (c) => {
     Object.assign(c.ABILITY.elixir, {
       shape: 'aura',
