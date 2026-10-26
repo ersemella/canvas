@@ -909,7 +909,7 @@
 }
 /*
  * Between regions: three passives side by side, each a tile like a stat's,
- * its kind over its name and its rule; then who carries it, a row of heroes.
+ * its name over its rule; then who carries it, a row of heroes.
  */
 .passiveOffer {
   display: grid;

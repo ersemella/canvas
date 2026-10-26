@@ -3,7 +3,6 @@ import {Button, Paper, Stack, Text} from '@mantine/core';
 import {HEROES, HERO_PORTRAIT, PASSIVES, RULES, healthOf} from '@canvas/games-silk-road-run';
 import type {
   FightState,
-  PassiveGroup,
   PassiveId,
   PassivePick,
   Provision,
@@ -24,15 +23,6 @@ const STAT_RULE: Record<StatId, string> = {
   speed: 'Its card comes round the track sooner, so it acts more often.',
   power: 'Each of its abilities deals 1 more damage.',
   defence: 'It has 2 more health.',
-};
-
-/** A passive's kind, over its name (progression.md, 19.8's headings). */
-const GROUP_LABEL: Record<PassiveGroup, string> = {
-  track: 'Track',
-  board: 'Board',
-  damage: 'Damage and survival',
-  control: 'Control',
-  allies: 'Position and allies',
 };
 
 /** What the caravan takes with it from the caravanserai. */
@@ -117,7 +107,6 @@ export function Caravanserai(props: {
                         if (unit && carries(unit, id)) setCarrier(null);
                       }}
                     >
-                      <span className={styles.provisionNote}>{GROUP_LABEL[def.group]}</span>
                       <span className={`${styles.display} ${styles.passiveName}`}>{def.name}</span>
                       <span>{def.rule}</span>
                     </button>
