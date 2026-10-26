@@ -13,11 +13,9 @@ import type {BoardScene} from './board/scene';
 import {CARD_SLIDE_SECONDS, drawTrack, slideIndex, trackStart} from './board/track';
 import type {CardSlide, TrackAdvance} from './board/track';
 import {
-  FLAME_FPS,
   HAIL_FPS,
   HAIL_STILL_SECONDS,
   SMOKE_FPS,
-  burns,
   drawExit,
   drawFallingHail,
   drawGround,
@@ -180,8 +178,6 @@ export class TacticsBoardSystem extends BaseSystem {
       if (mapOf(fight).exits.length > 0) parts.push(exitArrowPush(time));
       if (smokes(mapOf(fight)) && Object.values(fight.tiles).includes('obstacle'))
         parts.push(Math.floor(time * SMOKE_FPS));
-      if (burns(mapOf(fight)) && Object.values(fight.tiles).includes('mountain'))
-        parts.push(Math.floor(time * FLAME_FPS));
     }
     return parts.join(' ');
   }
@@ -316,7 +312,7 @@ export class TacticsBoardSystem extends BaseSystem {
       if (slide.elapsed >= CARD_SLIDE_SECONDS) this.slides.delete(id);
     }
     const map = mapOf(fight);
-    // Hail, the turn arrow, the exit's chevrons, the yurts' smoke and the mountains' flames move with time, unless the device asks for reduced motion.
+    // Hail, the turn arrow, the exit's chevrons and the yurts' smoke move with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h, t);
@@ -402,9 +398,7 @@ export class TacticsBoardSystem extends BaseSystem {
     // Mountains in front of the units (owner, 2026-10-24): a peak rises into
     // the space above it, in front of whoever stands there, as nearer things
     // are in a three-quarter view; never in front of health or statuses.
-    // In the Flaming Mountains, they burn (owner, 2026-10-26).
-    for (const h of map.hexes)
-      if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, map, true, t);
+    for (const h of map.hexes) if (tileAt(map, h) === 'mountain') drawObstacle(ctx, h, map, true);
 
     // Not on a party walking out, off their hexes.
     drawGrappleFists(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));
