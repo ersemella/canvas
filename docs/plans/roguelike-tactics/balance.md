@@ -1925,6 +1925,31 @@ values a heal point as a point of damage. Healing is new in `resolve.ts`
 - At power 1 every variant is about the Storm Caller's equal; power 2 is
   too strong with or without the heal.
 
+**No damage, power 0, with Haste and Delay** (asked for the same day): the
+Alchemist's power 0; an ally Enhanced and **Hastened**, an enemy Degraded
+and **Delayed**, by fixed amounts (`fixed`; `tempo`, Haste and Delay
+slots), any unit a target (the camel too, so it can be Hastened). The AI
+values Haste and Delay as Cleave's Delay, the share of a turn the card
+gains or loses.
+
+| Enhance/Degrade | Haste/Delay | Seat | China |
+|---:|---:|---:|---:|
+| 1 | 0 | 37.3% | 99.7% |
+| 1 | 3 | 55.3% | 98.7% |
+| 1 | 5 | 62.3% | 92% |
+| 2 | 0 | 46.3% | 98.5% |
+| 2 | 3 | 62.1% | 95.7% |
+| 2 | 5 | **74%** | 84.8% |
+
+- **The tempo carries it**: each step of Haste and Delay is worth more
+  than a point of Enhance and Degrade. 1 and 3 is the Storm Caller's equal
+  (within noise of 50%); 2 and 0 (the built Elixir at power 0, fixed) is
+  just under; 2 and 5 is as strong as the Alchemist hitting for 2.
+- **Delay 3 is about a third of a Steppe hero's turn**; at speed 3 the
+  Alchemist hands it out on most of its turns (64–70% Elixir).
+- Unfinished fights stay at 0–0.8%. The camel walking out still wins a
+  fight, so a lone Alchemist at power 0 can win by Hastening it.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

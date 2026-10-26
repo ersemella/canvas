@@ -30,6 +30,7 @@ import {
   enterHex,
   hailEnds,
   hailHolds,
+  haste,
   heal,
   hit,
   log,
@@ -597,7 +598,8 @@ const cleave: AbilityDef = {
 
 /**
  * Whether Elixir can take on `u`: a unit that hits, not the Alchemist
- * itself; with `ABILITY.elixir.fixed`, any enemy, since it takes a hit.
+ * itself; with `ABILITY.elixir.fixed`, any enemy, since it takes a hit;
+ * with `tempo`, any unit.
  */
 const elixirTakes =
   (user: Unit) =>
@@ -605,6 +607,7 @@ const elixirTakes =
     u !== undefined &&
     u !== user &&
     (u.power > 0 ||
+      ABILITY.elixir.tempo > 0 ||
       (ABILITY.elixir.fixed > 0 && u.side !== user.side) ||
       (elixirHeals(u) && u.side === user.side && u.hp < u.maxHp));
 
@@ -661,15 +664,17 @@ const elixir: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const caught = elixirCaught(ctx.state, user, user.hex!, target.hex!);
-    const {fixed} = ABILITY.elixir;
+    const {fixed, tempo} = ABILITY.elixir;
     for (const u of caught) {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
       if (u.side === user.side) {
         if (elixirHeals(u)) heal(ctx, u, user.power);
         if (u.power > 0) enhance(ctx, u, fixed || user.power);
+        haste(ctx, u, tempo);
       } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
-        if (u.alive) degrade(ctx, u, fixed || user.power);
+        if (u.alive && u.power > 0) degrade(ctx, u, fixed || user.power);
+        delay(ctx, u, tempo);
       }
     }
   },

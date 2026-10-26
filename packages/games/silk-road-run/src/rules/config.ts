@@ -280,6 +280,8 @@ export const ABILITY = {
    * `heal`, with `fixed`, a switch for measuring: an ally also heals the
    * Alchemist's power, up to its health, so a hurt ally can be aimed at;
    * `all` any ally, the camel too, `heroes` not the camel.
+   * `tempo`, a switch for measuring: an ally is also Hastened, an enemy
+   * Delayed, that many slots, so any unit can be aimed at; 0 as built.
    */
   elixir: {
     range: 2,
@@ -287,6 +289,7 @@ export const ABILITY = {
     radius: 1,
     fixed: 0 as number,
     heal: false as false | 'all' | 'heroes',
+    tempo: 0 as number,
   },
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):

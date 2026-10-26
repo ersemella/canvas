@@ -339,13 +339,15 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // both by the Alchemist's power (`elixirCaught`, by its shape).
   if (ability === 'elixir') {
     let value = 0;
-    const {fixed} = ABILITY.elixir;
+    const {fixed, tempo} = ABILITY.elixir;
     for (const u of elixirCaught(state, unit, unit.hex!, target!.hex!)) {
       if (!hostile(u, unit)) {
         if (elixirHeals(u))
           value +=
             Math.min(unit.power, u.maxHp - u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
         if (u.power > 0) value += u.enhance ? 0 : 1 + enhanceGuess(state, u, fixed || unit.power);
+        // `tempo`: the share of a turn its card gains, as Cleave's Delay is weighed.
+        if (tempo) value += (turnValue(u) * tempo) / cardCost(u);
         continue;
       }
       // With `fixed`, a hit first, as any attack's.
@@ -354,6 +356,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (damage > 0 && damage >= u.hp && u.hero !== CAMEL) value += AI.kill;
       else if (u.power > 0)
         value += u.degrade ? 0 : 1 + degradeGuess(state, u, fixed || unit.power);
+      if (tempo && damage < u.hp) value += (turnValue(u) * tempo) / cardCost(u);
     }
     return closing + value;
   }

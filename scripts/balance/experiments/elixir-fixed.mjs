@@ -29,3 +29,22 @@ for (const heal of ['all', 'heroes']) {
     map: 'gobi',
   };
 }
+
+// No damage at power 0: an ally Enhanced and Hastened, an enemy Degraded and
+// Delayed, by fixed amounts (`fixed`, `tempo`), any unit a target.
+const tempo = (fixed, slots) => (c) => {
+  Object.assign(c.ABILITY.elixir, {fixed, tempo: slots});
+  c.HEROES.alchemist.power = 0;
+};
+for (const fixed of [1, 2])
+  for (const slots of [0, 3, 5]) {
+    experiments[`seat-power0-fixed${fixed}-tempo${slots}`] = {
+      patch: tempo(fixed, slots),
+      mod: {party: seat},
+    };
+    experiments[`china-power0-fixed${fixed}-tempo${slots}`] = {
+      patch: tempo(fixed, slots),
+      enemies: ['fox', 'modao', 'alchemist'],
+      map: 'gobi',
+    };
+  }
