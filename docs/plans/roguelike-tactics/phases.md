@@ -45,7 +45,7 @@ player key can't act on the run.
 ### Phase 2: A run on the route map
 
 The run as a **route map with route choices** (as in Slay the Spire or
-Monster Train): stretches of road (15.3), grouped into the six regions in
+Monster Train): stretches of road (15.3), grouped into the four regions in
 their fixed order (15.3a), whose nodes are fights,
 caravanserais (rest and recovery, 10.11), bazaars (gear and consumables,
 9), recruitment (10.6) and optional risk (11.4). Permanent hero death and

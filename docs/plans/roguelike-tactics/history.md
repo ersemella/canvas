@@ -393,7 +393,30 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
   The spelling changed from **Yadachi** to **Yadachy** (2026-10-18;
   owner's call), following the Wikipedia article's form.
 
+- **Kalari Duelist, Mahout Bulwark and Sahira Enchantress** (removed
+  2026-10-26; owner's call): South India's fast melee damage hero
+  (kalaripayattu, the urumi) and immovable tank (a war elephant,
+  Unstoppable as a passive), and Abbasid Arabia's curser (the *Nights*'
+  enchantresses, Degrade), cut with the India and Arabia regions
+  ([setting.md](setting.md), 15.3a). The Jinn Binder moved to Persia
+  instead, as its support. The Kalari's fast-melee niche went to the
+  **Youxia Swordsman**, China's damage hero, a role rather than a named
+  *chuanqi* swordswoman (Nie Yinniang, Hongxian); also weighed for that
+  slot: a Tang crossbowman with Pierce, a Daoist flying-sword adept, a
+  *cike* assassin. For Persia's support, a **Sogdian caravan master**
+  (Haste or Shield) was weighed against moving the Jinn Binder.
+
 ## Setting
+
+- **Six regions** (2026-10-17 to 2026-10-26): Steppe, China, India,
+  Persia, Arabia, Byzantine, of 3 stages each and the Byzantine 4.
+  Cut to four (owner's call): the familiar, distinct civilizations of the
+  overland road; India lay south of the Himalayas, off it, and Arabia's
+  folklore overlapped Persia's and moved there. Weighed: putting China
+  before the Steppe, recasting the Steppe as Central Asia; rejected, as the
+  Steppe is Mongolia and would send the caravan back northeast from Turpan.
+  India's basic creature was the jackal (the *Panchatantra*'s schemers),
+  Arabia's the ghul.
 
 - **"Steppe peoples (Turkic and Mongol)"** as one culture (renamed
   **Mongol**, 2026-10-16): it matched the setting's 7th to 8th century

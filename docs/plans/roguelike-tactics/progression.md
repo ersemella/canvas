@@ -14,11 +14,14 @@ tuning. Section numbers are the combat design's.
 
 ## 19. Run Progression
 
-### 19.1 Regions and Stages (Decided, owner 2026-10-24)
-- A run passes through the **six regions** in their fixed order
-  ([setting.md](setting.md), 15.3a). Each region has **3 stages**, except
-  the last, the Byzantine, which has **4**: **19 stages** in a run.
-- Every stage is a fight. Stage numbers count across regions (1 to 19), as
+### 19.1 Regions and Stages (Decided, owner 2026-10-24; four regions since 2026-10-26)
+- A run passes through the **four regions** in their fixed order
+  ([setting.md](setting.md), 15.3a): Steppe, China, Persia, Byzantine.
+  With six regions, each had **3 stages**, except the last, the
+  Byzantine, which had **4**: 19 stages in a run. How many stages each of
+  the four has is open (question 66): kept at 3 (the Byzantine 4), a run
+  is 13 stages.
+- Every stage is a fight. Stage numbers count across regions, as
   the glossary's **stage** already does.
 - **The rhythm of a region:** stages 1 and 2 each award provisions
   (19.2); stage 3 is the region's high point, the hardest fight (19.5),
@@ -34,7 +37,7 @@ tuning. Section numbers are the combat design's.
 Each one adds 1 to one hero's speed, defence or power (9.1).
 
 - **Earned:** 1 at the end of stage 1 and 1 at the end of stage 2 of each
-  region, so **2 per region, 12 in a run**, plus any taken from the
+  region, so **2 per region** (8 in a run of four regions; 12 with six), plus any taken from the
   wildcard slot (19.3).
 - **Assigned when earned**, to any hero in the party and any stat.
 - **Reassigned after stage 3, then locked (owner, 2026-10-24):** after
@@ -124,17 +127,17 @@ passive is lost or returns to the party is question 63.
   |---|---|---|---|
   | Steppe | **Grey wolf** (built) | The Mongols' mythic ancestor in the *Secret History*; the real threat to steppe herds | — |
   | China | **Fox spirit** (huli jing, one-tailed; built 2026-10-25 as the `fox` unit, the wolf's stats, on the test stage) | A trickster preying on travellers; leaves the nine-tailed fox for a boss | Jiangshi, iconic but from later folklore |
-  | India | **Jackal** | The *Panchatantra*'s schemers (Karataka and Damanaka); a scavenger pack trailing caravans | Vetala, more an elite |
-  | Persia | **Lesser div** | The *Shahnameh*'s rank-and-file demons, before the White Div as a boss | Cheetah, the Sasanian royal hunting cat |
-  | Arabia | **Ghul** | The desert shapeshifter luring travellers off the caravan track | Striped hyena, tied to ghuls in Arab folklore |
+  | Persia | **Lesser div** | The *Shahnameh*'s rank-and-file demons, before the White Div as a boss | Cheetah, the Sasanian royal hunting cat; the ghul, the *Nights*' desert shapeshifter (Arabia's basic creature until the region was cut, 2026-10-26) |
   | Byzantine | **Kallikantzaros** | Greek folk goblins, small and swarming; leaves the griffin and drakos for the endgame | Wild boar, the Byzantine hunting animal |
 
   Every region also supplies heroes, so no culture supplies only monsters
   (15.7).
 - **Enemy heroes** are built from the player's own systems (11.1): random
   hero upgrades and stat increases, up to **10 stat points and 4 upgrades**
-  at most. The player's party can end a run with 12 provisions and 6
-  upgrades, so the strongest enemy heroes stay a step behind it. How the
+  at most. The player's party could end a run of six regions with 12
+  provisions and 6 upgrades, so the strongest enemy heroes stayed a step
+  behind it; with four regions (8 and 4) the cap needs revisiting
+  (question 62). How the
   enemy's budget grows region by region is question 62.
 - Difficulty therefore rises two ways: within a region, as wolves give
   way to heroes; across regions, as wolves' stats and enemy heroes'
@@ -170,12 +173,11 @@ to your build.
 |---|---|---|---|
 | 1 Steppe | 2 | 1 | 3 heroes, lightly built |
 | 2 China | 4 | 2 | |
-| 3 India | 6 | 3 | |
-| 4 Persia | 8 | 4 | |
-| 5 Arabia | 10 | 5 | |
-| 6 Byzantine (before stage 4) | 12 | 6 | up to 10 points, 4 upgrades each; then the boss |
+| 3 Persia | 6 | 3 | |
+| 4 Byzantine (before stage 4) | 8 | 4 | the enemy's most built heroes (question 62); then the boss |
 
-Counts assume every wildcard is taken as an upgrade.
+Counts assume every wildcard is taken as an upgrade, and the region
+rhythm of 19.1 (question 66).
 
 ### 19.8 Passives (Proposed, owner 2026-10-24; built 2026-10-25, on no hero)
 The pool for the offer's passive slot (19.3). Each is a rule that works
@@ -313,3 +315,7 @@ choice:
     displacement (Throw) triggers it.~~ Answered 2026-10-24 (owner): every
     unit next to the hero's final position, allies included, whoever
     displaced the hero.
+66. How many stages each of the four regions has (2026-10-26; with six,
+    3 each and the Byzantine 4). Keeping 3 makes a run of 13 stages, 8
+    provisions and 4 upgrades; longer regions keep the run's length but
+    need a new rhythm for provisions and the high point (19.1).

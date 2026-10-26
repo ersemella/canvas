@@ -137,8 +137,8 @@ export const STEPPE: MapData = {
 
 /**
  * The Gobi Crossing (2026-10-25), made as the China region's way in; the
- * Flaming Mountains took its place there and its desert is kept for the
- * Arabia region (owner, 2026-10-26). The Steppe's board, its yurts' places now sandstone ruins of the old frontier
+ * Flaming Mountains took its place there and its desert was kept for the
+ * Arabia region (owner, 2026-10-26), cut the same day; no region has it now. The Steppe's board, its yurts' places now sandstone ruins of the old frontier
  * posts, on gravel desert, and no mountains, whatever the stage. With no
  * mountains to break up the board, more ruins (owner, 2026-10-25): four or
  * five, within 3 hexes of the centre, still off the starting columns.

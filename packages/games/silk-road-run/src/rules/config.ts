@@ -435,7 +435,8 @@ export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist'];
  * before the next (progression.md, 19.2: a region's stages 1 and 2).
  * `map`: the id of the map it is fought on (MAPS in map.ts): every stage so
  * far is the Steppe region's; the Flaming Mountains (`flaming`) wait for the
- * China region, the Gobi (`gobi`) for the Arabia region.
+ * China region; the Gobi (`gobi`) was kept for the Arabia region, cut
+ * 2026-10-26, and has no region now.
  */
 export const STAGES: {heroes: number; wolves: number; provision: boolean; map: string}[] = [
   {heroes: 1, wolves: 2, provision: true, map: 'steppe'},

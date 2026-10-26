@@ -25,7 +25,7 @@ A **fantasy Silk Road**. Caravans of travellers from many cultures race along th
 
 | System | Silk Road version |
 |---|---|
-| Run stages | Stretches of road: steppe, desert, mountain pass, oasis city, river crossing, sea crossing; grouped into six **regions**, one per civilization (15.3a). |
+| Run stages | Stretches of road: steppe, desert, mountain pass, oasis city, river crossing, sea crossing; grouped into four **regions**, one per civilization (15.3a). |
 | Recovery between fights (10.11) | **Caravanserais** (historical roadside inns) as rest points: partial recovery plus occasional full rests. |
 | Gear offers and consumables (9) | Bazaars and traders along the route. |
 | Recruitment (10.6) | Hiring travellers at caravanserais: guards, scholars, exiles, mystics from many cultures. |
@@ -34,23 +34,23 @@ A **fantasy Silk Road**. Caravans of travellers from many cultures race along th
 | Map tiles (6.4) | Sandstorms and smoke as conceal; quicksand and salt flats as hazards; ruins and rocks as obstacles. |
 | Heroes and signature weapons (10.2) | Each hero's culture gives a distinct silhouette and weapon, supporting the diegetic design language. |
 
-### 15.3a Regions (Decided, owner's call 2026-10-17)
-The road is divided into six **regions**, one for each civilization the caravan passes. Each region is a part of the route map made of several levels (stages), and a run passes through them in this order:
+### 15.3a Regions (Decided, owner's call 2026-10-17; four since 2026-10-26)
+The road is divided into four **regions**, one for each civilization the caravan passes. Each region is a part of the route map made of several levels (stages), and a run passes through them in this order:
 
 | # | Region | Culture (15.5) | Home heroes (15.8) |
 |---|---|---|---|
 | 1 | **Steppe** | Mongol and Turkic | Mangudai Outrider, Bökh Champion (Mongol); Yadachy Storm Caller (Turkic) |
-| 2 | **China** | Tang China | Waidan Alchemist, Modao Vanguard |
-| 3 | **India** | South India | Kalari Duelist, Mahout Bulwark |
-| 4 | **Persia** | Persia and Sogdiana | Persian Cataphract, Simurgh Summoner |
-| 5 | **Arabia** | Abbasid Arabia | Jinn Binder, Sahira Enchantress |
-| 6 | **Byzantine** | Byzantium | Varangian Guard |
+| 2 | **China** | Tang China | Modao Vanguard, Youxia Swordsman, Waidan Alchemist |
+| 3 | **Persia** | Persia and Sogdiana, with the Abbasid *Nights*' folklore | Persian Cataphract, Simurgh Summoner, Jinn Binder |
+| 4 | **Byzantine** | Byzantium | Varangian Guard (tank and support open, question 33 in [roster.md](roster.md)) |
 
 - **The order is fixed,** the same in every run; route choices (the route map) vary within a region, not the order of regions.
 - **The road runs east to west** and ends in the Byzantine region, where the ruler at the road's end grants the Charter (15.2).
-- **The six regions are home to the hero cultures,** one each except the Steppe, home to both the Mongol and the Turkic peoples, so every hero has a home region, and every region supplies both heroes and creatures (15.7).
-- **Levels and stages:** a region's levels are stages of the route map (glossary), so stage numbers keep counting across regions and rival caravan pools stay per stage ([ghosts.md](ghosts.md), D8). Each region has 3 stages and the Byzantine 4, the last a boss (owner, 2026-10-24; [progression.md](progression.md), 19.1).
-- **Cultures without a region** (Silla Korea, Nara Japan, Tibet, Srivijaya and Java, Egypt, Aksum) remain sources for places, neutral characters, creatures and bosses inside the six regions. Where each appears is open (question 33).
+- **The four regions are home to the hero cultures,** one each except the Steppe, home to both the Mongol and the Turkic peoples, so every hero has a home region, and every region supplies both heroes and creatures (15.7). Each region has three heroes, a tank, a damage hero and a support (15.8; owner, 2026-10-26).
+- **Why four** (owner, 2026-10-26; six from 2026-10-17: Steppe, China, India, Persia, Arabia, Byzantine): the four are the most familiar civilizations of the road, look nothing alike (horse nomads, Tang silk and lacquer, Sasanian silver and cataphracts, mosaics and Greek fire), and lie along the overland road from Mongolia across the Gobi, west through China to Turpan, through Sogdiana into Persia, and on to Anatolia and Constantinople. India sat off that line, south of the Himalayas. Arabia's folklore (jinn, peris, ghuls, the roc, Sinbad) goes to Persia, honestly: the *Nights* grew from the Persian *Hazār Afsān*, and jinn and peris are shared Perso-Arabic folklore.
+- **The Steppe comes first:** it is Mongolia, and the Turkic peoples belong there too (the Göktürk and Uyghur khaganates ruled from the Orkhon valley in the setting's 7th to 8th century core). Putting China first would send the caravan back northeast from Turpan.
+- **Levels and stages:** a region's levels are stages of the route map (glossary), so stage numbers keep counting across regions and rival caravan pools stay per stage ([ghosts.md](ghosts.md), D8). With six regions each had 3 stages and the Byzantine 4, the last a boss (owner, 2026-10-24); how many each of the four has is open ([progression.md](progression.md), 19.1, question 66).
+- **Cultures without a region** (Silla Korea, Nara Japan, Tibet, South India, Srivijaya and Java, Egypt, Aksum) remain sources for places, neutral characters, creatures and bosses inside the four regions; Abbasid Arabia's folklore is Persia's. Where each appears is open (question 33).
 
 ### 15.4 Historical Reach of the Road
 The Silk Road was a network, not a single route. The overland core ran through China, Central Asia, Persia and the Middle East; the wider network, including the Maritime Silk Road, reached:
@@ -66,7 +66,7 @@ Twelve cultures, chosen for both historical relevance and variety in culture, ae
 
 **Folklore over religion (Decided):** creatures, epic heroes and folk tales are the source material. Deities, saints and figures still worshipped today are left out.
 
-This list is the wider setting palette. Heroes come from six of these cultures, plus the Turkic steppe for the Yadachy Storm Caller (15.8); the folklore below remains a source for creatures, bosses, places and neutral characters.
+This list is the wider setting palette. Heroes come from four of these cultures (Mongol, Tang China, Persia and Sogdiana, Byzantium), plus the Turkic steppe for the Yadachy Storm Caller (15.8); the folklore below remains a source for creatures, bosses, places and neutral characters.
 
 | # | Culture | Role on the road | Aesthetic | Folklore creatures | Heroes and tales |
 |---|---|---|---|---|---|
@@ -119,7 +119,7 @@ Named fictional characters and folklore creatures. Each suggests a mechanic from
 - **Balance across cultures:** each culture should contribute both heroes and creatures. If one culture only ever supplies monsters, that reads badly.
 - **Folklore over living religion:** see 15.5.
 - **Readability over authenticity:** cultural variety must not break the design language. A burn effect should look the same whether it comes from a Persian mage or a Chinese alchemist.
-- **Weighting:** in the hero roster (15.8), each hero culture has two heroes, except Turkic and Byzantium, with one each. Other cultures can be strengthened through places, neutral characters and expansion heroes.
+- **Weighting:** in the hero roster (15.8), each region has three heroes, one per role (2026-10-26): the Steppe's are two Mongol and one Turkic, and Byzantium has one until its tank and support are chosen. Other cultures can be strengthened through places, neutral characters and expansion heroes.
 - **The Mongols' era:** the Mongol Empire's Pax Mongolica is 13th to 14th century, centuries after Tang China, Nara and the early Abbasids; in their time the steppe was ruled by Turkic khaganates. The Mongols are chosen as the iconic steppe empire of the Silk Road; fantasy allows the mix.
 - **Egypt's era:** during the Silk Road period Egypt was Ptolemaic, Roman, then Islamic. The pharaonic look is more iconic but anachronistic; fantasy allows either.
 - **Research gaps:** Aksumite and Swahili folklore need proper research before design work.
@@ -130,10 +130,10 @@ Named fictional characters and folklore creatures. Each suggests a mechanic from
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Setting | Fantasy Silk Road; folklore over religion as source material | Stopped Clock, Fallen Star, Succession, Last Refuge, Grand Melee, Ascent | Rivalry between caravans explains rival bands and ghost teams; folklore supplies creatures and bosses; caravanserais and bazaars map onto recovery and gear |
-| Run structure | Six **regions** of several levels each, in a fixed order: Steppe, China, India, Persia, Arabia, Byzantine (15.3a) | Stretches of road only, with no grouping by culture; "worlds" as the name (owner preferred "region") | One region per hero culture gives each culture a home and the run a journey from east to west; owner's call, 2026-10-17. The first region, Mongolia, widened to the **Steppe** (Mongol and Turkic) when the Turkic Yadachy Storm Caller joined; the Turkic khaganates ruled the Mongolian steppe in the setting's 7th to 8th century core; owner's call, 2026-10-18 |
+| Run structure | Four **regions** of several levels each, in a fixed order: Steppe, China, Persia, Byzantine (15.3a; six until 2026-10-26, with India after China and Arabia after Persia) | Stretches of road only, with no grouping by culture; "worlds" as the name (owner preferred "region") | One region per hero culture gives each culture a home and the run a journey from east to west; owner's call, 2026-10-17. The first region, Mongolia, widened to the **Steppe** (Mongol and Turkic) when the Turkic Yadachy Storm Caller joined; the Turkic khaganates ruled the Mongolian steppe in the setting's 7th to 8th century core; owner's call, 2026-10-18. Cut to four on 2026-10-26 (owner): the most familiar, most distinct civilizations along the overland road; Arabia's folklore folded into Persia, India off the overland line |
 | Steppe culture | **Mongol**, with Mongol folklore; since 2026-10-18 the Steppe region also holds Turkic heroes and folklore (the Yadachy Storm Caller) | Steppe peoples (Turkic and Mongol); Turkic khaganates (period-accurate) | The iconic steppe empire of the Silk Road, matching the heroes' Mongol names (Bökh Champion, Mangudai Outrider); owner's call, 2026-10-16 |
 
 ## Open questions (from section 14, original numbers)
 
 32. Setting: confirm the prize (Charter and Closing Road are proposed) and Egypt's era.
-33. Regions (15.3a): ~~how many levels each region has; whether each region ends in a boss~~ (answered 2026-10-24: 3 stages, the Byzantine 4 ending in the final boss; [progression.md](progression.md)); and where the cultures without a region appear (for example Tibet's Gesar bosses in the China region's mountain passes, the nine-tailed fox in India and then China, Egypt and Aksum on Arabia's Red Sea coast).
+33. Regions (15.3a): ~~how many levels each region has; whether each region ends in a boss~~ (answered 2026-10-24 for six regions: 3 stages, the Byzantine 4 ending in the final boss; with four regions the count is open again, [progression.md](progression.md) question 66); and where the cultures without a region appear (for example Tibet's Gesar bosses in the China region's mountain passes, the nine-tailed fox arriving from India into China, South India's vetala and yali as travellers' tales or creatures, Egypt and Aksum through Persia's sea trade).

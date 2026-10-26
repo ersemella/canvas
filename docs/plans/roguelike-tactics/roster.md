@@ -1,6 +1,6 @@
 # Roguelike tactics: hero roster
 
-The twelve heroes: identity, roles, stat profiles, mounts, and what was considered.
+The heroes, three per region: identity, roles, stat profiles, mounts, and what was considered.
 
 > Part of the roguelike tactics plan. Start at [README.md](README.md),
 > which maps every combat-design section number ("section 3.4") to its
@@ -11,14 +11,14 @@ Rules are marked **Decided** or **Proposed**; numbers marked TBD are
 tuning. Section numbers are the combat design's.
 
 ### 15.8 Hero Roster (Decided, working roster)
-Twelve heroes drawn from **seven cultures**, two heroes each except **Turkic** (the Yadachy Storm Caller, who shares the Steppe region with the Mongol heroes) and **Byzantium** (since the Strategos was removed), which have one each (open question 33). Every hero is based on a **role** (a profession, unit or folklore type) or a **named fictional character** (from a novel, epic or folk tale); never a real historical individual, since real figures can be culturally sensitive. Figures still worshipped today stay out (15.5).
+Each of the four regions ([setting.md](setting.md), 15.3a) has **three heroes: a tank, a damage hero and a support** (owner, 2026-10-26). Ten are chosen, from **five cultures**: the Steppe's Mongol heroes and the Turkic Yadachy Storm Caller, three from Tang China, three from Persia and Sogdiana, and one from Byzantium, whose tank and support are open (open question 33). The India and Arabia heroes went with their regions (2026-10-26; the Jinn Binder moved to Persia). Every hero is based on a **role** (a profession, unit or folklore type) or a **named fictional character** (from a novel, epic or folk tale); never a real historical individual, since real figures can be culturally sensitive. Figures still worshipped today stay out (15.5).
 
 **Mechanical roles**
 - **Tank:** protects allies, absorbs or prevents damage, holds space.
 - **Damage:** primary source of kills.
 - **Support:** heals, buffs, or controls the board and the track.
 
-The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, random recruitment offers (10.6) can usually supply each role.
+The roster is balanced at **4 tanks, 4 damage, 4 support**, one of each per region, so that limited, random recruitment offers (10.6) can usually supply each role. Until Byzantium's tank and support are chosen it has 3 tanks, 4 damage and 3 supports.
 
 **Identity and role**
 
@@ -30,16 +30,14 @@ The roster is balanced at **4 tanks, 4 damage, 4 support**, so that limited, ran
 | 4 | Mangudai Outrider | Mongol | The mangudai, units of the Mongol army (sources disagree on what they were: light cavalry, vanguards or "suicide troops"); Mongol warriors fought as mounted archers | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
 | 5 | Bökh Champion | Mongol | Champion wrestlers (bökh), the highlight of the naadam games and of feasts in the epics | Historical | Brawler / grappler | Tank | Grappler: grabs, pins and throws enemies to hold the front line | None | Bare hands (wrestling vest) |
 | 6 | Yadachy Storm Caller | Turkic | The yadachy of Turkic folk belief (in Turkish, Azeri, Kazakh, Kyrgyz and Bashkir traditions): weather-workers born with the power, marked by a caul, to lead storms and hail away from their land, send them onto rivals' fields, and fight storm-bringing demons and rival yadachy with their souls while they sleep; tied to the rain stone (*yada tashy*). The Mongols shared the stone (*jada*): in the *Secret History of the Mongols* (143) a storm raised with it turns back on its casters | Folklore | Druid / storm caller | Support | Storm controller: hail that Immobilizes whoever it catches until the Storm Caller's turn after next (2026-10-25; its next turn from 2026-10-23; earlier kits with Slowed, fog, a track Push, healing Sunlight and a freezing ultimate are in [history.md](history.md)) | None | Rain stone and water |
-| 7 | Jinn Binder | Abbasid Arabia | Jinn sealed in vessels and bound to serve, from the *Arabian Nights* tradition (for example "The Fisherman and the Jinni") | Folklore | Wizard | Support | Controller: a bound jinn pushes back and disrupts enemy turns | None | Sealed brass vessel |
-| 8 | Sahira Enchantress | Abbasid Arabia | The enchantresses (Arabic *sāḥira*, sorceress) of the *Arabian Nights*: Queen Lab, who turned the men of her city into beasts, and the king's daughter in "The Second Kalandar's Tale", who fought an ifrit in a battle of transformations | Folklore | Witch / enchanter | Support | Curser (Proposed): transformations weaken enemies (Degrade, stats down) | None | Spells and enchanted water (proposed, unverified) |
-| 9 | Kalari Duelist | South India | Practitioners of kalaripayattu, the martial art of Kerala | Historical | Martial artist | Damage | Fast melee: cheap, quick actions | None | Urumi (flexible sword) |
-| 10 | Mahout Bulwark | South India | The mahout, driver of the war elephants of Indian armies | Historical | Juggernaut / beast rider | Tank | Immovable wall: Unstoppable (passive) | War elephant | Ankus (elephant goad) and spear |
-| 11 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
-| 12 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger: draws enemies onto itself and punishes those who close in. Its first kit (built 2026-10-22, removed 2026-10-23 with action costs; [history.md](history.md)) punished enemies walking away from it, taunted, guarded itself with a Barrier and pushed what it hit back on the track | None | Modao (long two-handed blade) |
+| 7 | Jinn Binder | Persia and Sogdiana (Abbasid Arabia until 2026-10-26) | Jinn sealed in vessels and bound to serve, from the *Arabian Nights* tradition (for example "The Fisherman and the Jinni"); the *Nights* grew from a Persian collection, the *Hazār Afsān*, and jinn and peris are shared Perso-Arabic folklore | Folklore | Wizard | Support | Controller: a bound jinn pushes back and disrupts enemy turns | None | Sealed brass vessel |
+| 8 | Varangian Guard | Byzantium | The Varangian Guard, the Norse axe-bearing bodyguard of the Byzantine emperors | Historical | Barbarian / heavy warrior | Damage | Heavy melee: slow, hard-hitting burst | None | Great axe |
+| 9 | Modao Vanguard | Tang China | The modao troops, elite Tang infantry armed with the modao, a long two-handed blade, and placed at the front of the army as spearheads | Historical | Guardian / polearm warrior | Tank | Challenger: draws enemies onto itself and punishes those who close in. Its first kit (built 2026-10-22, removed 2026-10-23 with action costs; [history.md](history.md)) punished enemies walking away from it, taunted, guarded itself with a Barrier and pushed what it hit back on the track | None | Modao (long two-handed blade) |
+| 10 | Youxia Swordsman | Tang China | The youxia ("wandering knights-errant"), free swordsmen who kept their word and avenged wrongs, given a chapter of Sima Qian's *Records of the Grand Historian* and celebrated in Tang poetry (Li Bai's *Ballad of the Knight-Errant*); the swordswomen of Tang *chuanqi* tales inspire its abilities | Historical | Swordsman / rogue | Damage | Fast melee: cheap, quick actions; striking unseen (Proposed) | None | Jian (straight double-edged sword) |
 
 **Stat profiles (relative, untuned)**
 
-These bands predate the stats' rework (owner, 2026-10-23; [heroes-and-gear.md](heroes-and-gear.md), 9.1): stats are now small whole numbers, health is (1 + defence) × 2 and power is exactly an ability's damage. The three prototype heroes' numbers are set (below); the others' bands are a guide for when they are built. Power is the damage of every ability, so the control supports (Jinn Binder, Sahira Enchantress) keep low power.
+These bands predate the stats' rework (owner, 2026-10-23; [heroes-and-gear.md](heroes-and-gear.md), 9.1): stats are now small whole numbers, health is (1 + defence) × 2 and power is exactly an ability's damage. The three prototype heroes' numbers are set (below); the others' bands are a guide for when they are built. Power is the damage of every ability, so the control support (the Jinn Binder) keeps low power.
 
 | Name | Health | Speed | Defence | Power |
 |---|---|---|---|---|
@@ -50,11 +48,9 @@ These bands predate the stats' rework (owner, 2026-10-23; [heroes-and-gear.md](h
 | Bökh Champion | High | Medium | Medium | Low |
 | Yadachy Storm Caller | Medium | Medium | Medium | Medium |
 | Jinn Binder | Low | Medium | Low | Low |
-| Sahira Enchantress | Medium | Medium | Low | Low |
-| Kalari Duelist | Medium | High | Low | High |
-| Mahout Bulwark | Very high | Very low | Very high | Medium |
 | Varangian Guard | High | Low | Medium | High |
 | Modao Vanguard | Medium | Low | High | Medium |
+| Youxia Swordsman | Medium | High | Low | High |
 
 **The prototype heroes' kits (owner, 2026-10-23; built)**
 
@@ -132,29 +128,28 @@ in [balance.md](balance.md)).
 
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
-- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Persian Cataphract's armoured horse offsets the speed cost of its armour; the war elephant gives very high defence and health at very low speed.
+- A mount is reflected only in the hero's **base stats**: a horse raises speed; the Persian Cataphract's armoured horse offsets the speed cost of its armour.
 
 **Notes**
-- **Distinct tanks:** the Persian Cataphract charges in, the Bökh Champion holds the front line by grappling (on foot, unlike the mounted Mangudai Outrider), and the Mahout Bulwark cannot be moved (Unstoppable as a passive: no Push, Pull or Immobilized, but it can still be Delayed). The Modao Vanguard draws attacks onto itself and punishes enemies who close in (its Taunt went with the 2026-10-23 keywords; its kit is to be redesigned).
-- **Support needs:** healing (Waidan Alchemist; healing has no keyword since 2026-10-23), control on the track (Jinn Binder, Delaying enemies), curses (Sahira Enchantress: Degrade) and control in space (Yadachy Storm Caller, hail that Immobilizes, and Sunlight's Enhance). Shield and Haste are uncovered.
+- **Distinct tanks:** the Persian Cataphract charges in, the Bökh Champion holds the front line by grappling (on foot, unlike the mounted Mangudai Outrider),. The Modao Vanguard draws attacks onto itself and punishes enemies who close in (its Taunt went with the 2026-10-23 keywords; its kit is to be redesigned).
+- **Support needs:** healing (Waidan Alchemist; healing has no keyword since 2026-10-23), control on the track (Jinn Binder, Delaying enemies) and control in space (Yadachy Storm Caller, hail that Immobilizes, and Sunlight's Enhance). Degrade comes only from the Elixir on an enemy since the Sahira Enchantress was removed (2026-10-26). Shield and Haste are uncovered: candidates for Byzantium's support.
 - **The Yadachy Storm Caller:** a storm controller, not a damage caster (power 1, its hail's sting; 0 until 2026-10-23): its hail holds enemies fast, while the Simurgh Summoner's strikes hurt and burn. The *Secret History*'s storm that turns back on its casters suggests a risk mechanic (a storm that can hit its own side). The yadachy tradition is folk belief rather than an organised religion, but it sits near steppe shamanism, which is still practised; keep it to weather-working and away from shamanic ritual (15.5).
-- **Two Arabian Nights magic users:** the Jinn Binder acts through a bound spirit that moves enemies on the track; the Sahira Enchantress casts directly, transforming enemies to weaken them. Keep their visual language distinct (a smoky spirit from a brass vessel versus spells that change a unit's shape).
-- **The Sahira Enchantress (Proposed):** a fictional role drawn from the *Nights*' enchantresses, who are mostly villains there; the hero keeps their transformation magic and turns it on the party's enemies. Its signature props need research.
-- **Damage covers four niches:** area caster (Simurgh Summoner), ranged (Mangudai Outrider), fast melee (Kalari Duelist), heavy melee (Varangian Guard).
+- **The Jinn Binder in Persia** (2026-10-26, owner): when the Arabia region was cut, its folklore went to Persia (15.3a), and the Binder with it, as Persia's support. It keeps its *Arabian Nights* sources; the *Nights*' Persian roots make the move honest.
+- **Damage covers four niches:** area caster (Simurgh Summoner), ranged (Mangudai Outrider), fast melee (Youxia Swordsman), heavy melee (Varangian Guard).
 - **The Simurgh Summoner (Proposed):** each ability burns a feather; the Simurgh's strikes sweep areas and leave fire (Burn), so its damage comes in two parts: a big hit up front, scaled by power, and burns left behind, whose values are set by the abilities. The Simurgh appears for the strike and leaves; it never stays on the board which keeps it apart from the Jinn Binder's bound jinn. Its abilities hurt; control stays with the supports. Fragile (low health and defence) is the price of its damage.
 - **Two summoners of great spirits:** the Jinn Binder's jinn pushes and disrupts; the Simurgh strikes and burns. Keep their visual language distinct (a smoky spirit from a brass vessel versus a vast bird from the sky).
 - **The Simurgh as religious-adjacent material:** it has roots in Zoroastrian texts, a living religion. Keep to the *Shahnameh*'s epic framing (15.5).
 - **Jinn as religious-adjacent material:** jinn also appear in the Qur'an. Keep to the *Arabian Nights* folklore framing (15.5). In "The Fisherman and the Jinni", the jinni was sealed in his jar by Solomon, a prophet in Islam; use the motif of a jinn sealed in a vessel without the religious figure.
-- **Speed:** two heroes have high speed (Mangudai Outrider, Kalari Duelist). The Varangian Guard pays for its damage with low speed, the Modao Vanguard for its armour. Speed sets how often a hero acts: every 60 ÷ (speed + 5) slots ([timeline.md](timeline.md), 3.2).
+- **The Youxia Swordsman (Proposed, 2026-10-26):** the *youxia*, free swordsmen who kept their word and avenged wrongs; Sima Qian gives them a chapter, and Tang poets sang of them (Li Bai's swordsman "kills one man every ten paces" and leaves without giving his name). A fast melee striker with cheap, quick actions, possibly striking from Stealth, like the *chuanqi* swordswomen (Nie Yinniang, Hongxian) who inspire its abilities without being the hero. Plain travelling clothes and a light *jian* keep it apart from the armoured Modao Vanguard and the Varangian Guard's slow, heavy blows. Its kit and numbers are TBD.
+- **Speed:** two heroes have high speed (Mangudai Outrider, Youxia Swordsman). The Varangian Guard pays for its damage with low speed, the Modao Vanguard for its armour. Speed sets how often a hero acts: every 60 ÷ (speed + 5) slots ([timeline.md](timeline.md), 3.2).
 - **Only four damage heroes:** gear and upgrades can shift tanks and supports toward damage; guaranteed role coverage in recruitment offers would also help (10.7).
 - **The Waidan Alchemist's ultimate (Proposed): the hand cannon.** A single shot, direct ranged at long range, needing line of fire, for large damage with **Pierce**. Based on the Heilongjiang hand cannon (about 1288, Yuan dynasty), the oldest surviving metal gun, and on the alchemists' discovery of gunpowder; an era stretch like the Mongols'. It gives the healer one decisive shot without making it a damage hero; the ultimate rules (10.10) would keep it to once per fight (ultimates are out of the game since 2026-10-23).
 - **Area damage:** the Simurgh Summoner is the area-damage hero; its areas follow the friendly-fire rules like any other.
 - **Every ability reaches both sides** ([map.md](map.md), 6.7, 2026-10-19): heals, cleanses and buffs reach enemies too, so area supports must position away from the melee, and new support kits should lean on single targets or small radii.
-- **Boss conflict:** the multi-hex boss example (11.3) should use a creature other than a war elephant, so it reads differently from the Mahout Bulwark.
 - **Unverified details:** signature weapons are proposals and need research for accuracy (for example, the Simurgh Summoner's brazier).
 
 **Cultures without heroes**
-Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast (with Aksum) have no heroes in this roster. With Egypt removed, no African culture has a hero; Egypt, Aksum and the Swahili coast should be well represented as places and neutral characters, and are strong expansion candidates. They remain part of the setting as places (Nara at the eastern end, the Tibetan passes, the Strait of Malacca, Swahili ports), as neutral characters (traders, innkeepers, guides), and as candidates for expansion heroes. They should not appear only as monsters (15.7).
+Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, the Swahili coast (with Aksum), and since 2026-10-26 South India and Abbasid Arabia have no heroes in this roster. With Egypt removed, no African culture has a hero; Egypt, Aksum and the Swahili coast should be well represented as places and neutral characters, and are strong expansion candidates. They remain part of the setting as places (Nara at the eastern end, the Tibetan passes, the Strait of Malacca, Swahili ports), as neutral characters (traders, innkeepers, guides), and as candidates for expansion heroes. They should not appear only as monsters (15.7).
 
 **Rejected or replaced along the way**
 - Named figures (Abe no Seimei, King Gesar, Zal, Gajah Mada, Fumo Liyongo) replaced by roles, for cultural sensitivity. Since 2026-10-16 named **fictional** characters are allowed (owner's call); historical figures and figures still worshipped remain out.
@@ -167,25 +162,28 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, and the Swahili coast
 - Nizari "Assassins" avoided: the term originated as a slur against a religious community that still exists.
 - Xiangxi Corpse Driver removed: its legends (and the hopping jiangshi) are Qing-era, after the Silk Road, and set in Hunan, off the road. The jiangshi stays available as a creature.
 - Fox-Spirit Sorcerer replaced by the Simurgh Summoner: as a trickster it played as support, and even recast as a fox-fire caster it left Tang China with three heroes and Persia with one. The fox remains a setting motif (15.6).
+- Kalari Duelist (fast melee damage), Mahout Bulwark (an immovable tank on a war elephant) and Sahira Enchantress (a curser) removed with the India and Arabia regions (2026-10-26, owner); the Jinn Binder moved to Persia instead. Their designs are in git history.
+- A *chuanqi* swordswoman (Nie Yinniang or Hongxian, named fictional characters of Tang tales) set aside for the Youxia Swordsman, a role rather than a person (2026-10-26, owner); also weighed: a Tang crossbowman with Pierce (overlaps the Mangudai's lanes), a Daoist flying-sword adept (near living religion), a *cike* assassin (its famous examples are historical people).
 - Shadow Puppeteer, Caravan Guard, Senapati, Monsoon Navigator and others considered and not used; several remain options for expansion.
 
 ## Decision log (from section 13)
 
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
-| Hero roster | 12 heroes from 7 cultures, two each (Turkic and Byzantium one each since 2026-10-17), based on roles or named fictional characters; 4 tanks, 4 damage, 4 support | One hero per culture across 12 cultures; named historical figures; roles only (until 2026-10-16) | Every culture gets depth; real figures can be culturally sensitive, fictional ones are fair game (owner's call); balanced roles suit random recruitment |
+| Hero roster | Three heroes per region, a tank, a damage hero and a support (2026-10-26; before, 12 heroes from 7 cultures, two each), based on roles or named fictional characters; 4 tanks, 4 damage, 4 support | One hero per culture across 12 cultures; named historical figures; roles only (until 2026-10-16) | Every region gets a full party's worth of heroes; real figures can be culturally sensitive, fictional ones are fair game (owner's call); balanced roles suit random recruitment |
+| China damage hero | The Youxia Swordsman, a wandering knight-errant with a *jian*: fast melee (2026-10-26) | A *chuanqi* swordswoman (Nie Yinniang, Hongxian); a Tang crossbowman; a Daoist flying-sword adept; a *cike* assassin | A role, not a person, like the Kalari Duelist whose fast-melee niche it takes; very Tang (Li Bai's *Ballad of the Knight-Errant*); owner's call |
 | Area-damage caster | The Simurgh Summoner (Persia and Sogdiana); its kit (area strikes and Burn) Proposed | Fox-Spirit Sorcerer as a trickster (illusions, decoys, conceal), then as a fox-fire caster; a thunder-rite master; a gu sorcerer; an Egyptian magician; an onmyōji | The trickster read as support; moving the slot to Persia gives every culture two heroes; owner's call, 2026-10-16 |
 | Steppe heroes | Bökh Champion, a wrestler and grappler fighting on foot (tank); the horse archer is named Mangudai Outrider | Batyr (steppe hero-warrior) as the tank beside a Horse Archer; the archer named Baatar (until 2026-10-17); wolf guard (böri); shaman-protector | Batyr is a generic title and steppe warriors were horse archers, so the title fits the archer; the proper Mongol terms; owner's calls, 2026-10-16 and 2026-10-17 |
 | Mounts | Reflected only in base stats | Dedicated mount mechanics (cheaper movement, charge, dismounting) | Simplicity; the speed versus defence tradeoff already expresses mounts |
 
 ## Open questions (from section 14, original numbers)
 
-33. Hero roster. **Culture balance** (since 2026-10-17): the Yadachy Storm Caller is Turkic, a seventh hero culture sharing the Steppe region with the Mongol (the region was widened from Mongolia, 2026-10-18), so the Steppe has three heroes; Byzantium has one (the Strategos was removed; the Abbasid slot went to the Sahira Enchantress). Options: accept it, or add a second Byzantine hero (ideas: a Byzantine automaton engineer, mechanikos; an akrites-style scout; Digenis Akritas, replacing the Varangian Guard as a local damage hero). The Tang China tank slot is filled by the Modao Vanguard (2026-10-17); a Shaolin warrior monk was the earlier candidate (Sun Wukong goes to bosses instead, 15.6). Tabled 2026-10-16: a Tang China damage hero, such as a *chuanqi* swordswoman-assassin striking from Stealth, a Tang crossbowman with Pierce, or a Daoist flying-sword adept, as a replacement or expansion): signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
+33. Hero roster. **Byzantium's tank and support** (since 2026-10-26, three heroes per region): Byzantium has only the Varangian Guard (damage). Ideas: an *akritas*, a border warrior of the Taurus frontier from the *Digenis Akritas* epic, as the tank; a Byzantine automaton engineer (*mechanikos*) as the support, perhaps with Shield or Haste, which no hero gives. The Steppe, China (the Youxia Swordsman filled its damage slot, 2026-10-26) and Persia (the Jinn Binder moved there as its support) are complete. Also open: signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
 **Passives:** an always-on trait rather than an action. The Modao
 Vanguard's Hold the Line and the Bökh Champion's Inevitable (2026-10-22)
 were built and removed again on 2026-10-23; no hero has one now. The
-Mahout Bulwark's Unstoppable is the next candidate. Whether other heroes
+removed Mahout Bulwark's Unstoppable is still a candidate. Whether other heroes
 get one is open.
 
 **The Storm Caller's second ability** (owner, 2026-10-23): Sunlight,

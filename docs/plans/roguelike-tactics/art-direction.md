@@ -92,8 +92,9 @@ tuning. This file has no combat-design section number.
   more ruins break up the board: four or five a fight, within 3 hexes of
   the centre (`MapData.obstacles`; owner, 2026-10-25), where the Steppe
   has two or three yurts within 2. The page calls them Ruins, and the open ground
-  Gravel (`tileInfo` in info.ts). The Gobi's desert is now kept for the
-  Arabia region (owner, 2026-10-26). **The Flaming Mountains**
+  Gravel (`tileInfo` in info.ts). The Gobi's desert was kept for the
+  Arabia region (owner, 2026-10-26) until that region was cut the same
+  day; it has no region now. **The Flaming Mountains**
   (`flaming`, owner, 2026-10-26) are the China region's map: the red
   sandstone ridges near Turpan, set alight as in *Journey to the West*.
   All the art is the owner's (AI-assisted), cut to the sprites' grid: a
