@@ -647,9 +647,9 @@ export function elixirCaught(state: FightState, user: Unit, from: Hex, target: H
 /**
  * Elixir (owner, 2026-10-25; a burst since 2026-10-26): a space within
  * `ABILITY.elixir.range` (1: next to the Alchemist, or its own), no line of
- * fire; each unit within `radius` of it that hits, either side, takes it:
- * an ally is Empowered `empower` (2), an enemy Weakened `weaken` (1), each
- * until the end of its next turn, replacing any it had. No hit, no heal:
+ * fire; each unit within `radius` of it but the Alchemist, either side,
+ * takes it: an ally is Hastened `haste` (3), an enemy Delayed `delay` (3)
+ * (owner, 2026-10-26; Empowered 2 and Weakened 1 before). No hit, no heal:
  * the Alchemist's power is 0. Other shapes and amounts, for measuring, by
  * `ABILITY.elixir` (`elixirCaught`).
  */

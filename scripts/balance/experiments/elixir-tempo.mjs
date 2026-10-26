@@ -8,7 +8,7 @@
 // Delays on a unit already Delayed since its last turn.
 const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['youxia', 'modao', 'alchemist'];
-const burst = {shape: 'burst', range: 1, radius: 1, fixed: 0, heal: false};
+const burst = {shape: 'burst', range: 1, radius: 1, fixed: 0, heal: false, self: true};
 const variants = {
   built: {empower: 2, weaken: 1, haste: 0, delay: 0},
   'tempo-2': {empower: 0, weaken: 0, haste: 2, delay: 2},

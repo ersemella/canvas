@@ -143,8 +143,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
   },
   /**
    * The Alchemist (owner, 2026-10-25; roster.md): a support whose
-   * Elixir, a burst next to it, Empowers allies 2 and Weakens enemies 1
-   * (`ABILITY.elixir`). Speed 3 (owner, 2026-10-25; 2 before; balance.md,
+   * Elixir, a burst next to it, Hastens allies 3 and Delays enemies 3
+   * (`ABILITY.elixir`; Empower 2 and Weaken 1 until 2026-10-26). Speed 3 (owner, 2026-10-25; 2 before; balance.md,
    * "Elixir's shape and Cleave's Delay": the Storm Caller's equal in its
    * seat, 49.2% from 40.6%); power 0 (owner, 2026-10-26, with the burst: it
    * deals no damage; 1 from earlier that day, 2 before; balance.md, "Two
@@ -298,10 +298,12 @@ export const ABILITY = {
    * Elixir (owner, 2026-10-25; a burst since 2026-10-26, as measured in
    * balance.md, "Two hails, hail on entry, and a melee Elixir"): a space
    * within `range` (1: next to the Alchemist, or its own), no line of fire,
-   * and every unit within `radius` of it that hits, either side: an ally
-   * is Empowered `empower` (2), an enemy Weakened `weaken` (1), each until
-   * the end of its next turn, a new one replacing the last. No hit and no
-   * heal (`fixed` 0); the Alchemist's power is 0, so it never takes its own.
+   * and every unit within `radius` of it but the Alchemist (`self` off),
+   * either side: an ally is Hastened `haste` (3), an enemy Delayed `delay`
+   * (3) (owner, 2026-10-26, as measured in balance.md, "Elixir as Haste and
+   * Delay, other shapes"; until then an ally Empowered 2 and an enemy
+   * Weakened 1, a unit that hits only). No hit and no heal (`fixed` 0;
+   * the Alchemist's power is 0).
    * Earlier that day a unit within 2, the Alchemist itself too: an ally
    * healed the Alchemist's power and was Empowered 1, an enemy took a hit
    * and was Weakened 1 (`shape: 'unit'`, `range: 2`, `fixed: 1`, `heal:
@@ -315,14 +317,16 @@ export const ABILITY = {
    * when they default to power.
    * `heal`, with `fixed`: an ally heals the Alchemist's power, `all` the
    * camel too, `heroes` not; off as built.
-   * `haste`, `delay`, switches for measuring: an ally is also Hastened
-   * `haste` slots, an enemy Delayed `delay`, so any unit on that side can
-   * be aimed at; 0 as built (`tempo`, both at once, until 2026-10-26).
+   * `haste`, `delay`: an ally is Hastened `haste` slots, an enemy Delayed
+   * `delay`, so any unit on that side is caught (3 and 3 as built; `tempo`,
+   * both at once, a switch before).
    * `empower`, `weaken`: the Empower on an ally and the Weaken on an enemy
-   * (2 and 1 as built); 0 falls back to `fixed`, then power.
-   * `self`, a switch for measuring: whether the Alchemist takes its own
-   * Elixir (true as built); off, a burst or aura passes it over and it
-   * can't be aimed at itself.
+   * (0 as built, 2 and 1 until 2026-10-26); 0 falls back to `fixed`, then
+   * power (0).
+   * `self`: whether the Alchemist takes its own Elixir; off as built
+   * (owner, 2026-10-26: with it, it Hastened itself on every Elixir and
+   * kept the enemy beside it from acting), so a burst or aura passes it
+   * over and it can't be aimed at itself.
    */
   elixir: {
     range: 1 as number,
@@ -330,11 +334,11 @@ export const ABILITY = {
     radius: 1 as number,
     fixed: 0 as number,
     heal: false as false | 'all' | 'heroes',
-    haste: 0 as number,
-    delay: 0 as number,
-    empower: 2 as number,
-    weaken: 1 as number,
-    self: true as boolean,
+    haste: 3 as number,
+    delay: 3 as number,
+    empower: 0 as number,
+    weaken: 0 as number,
+    self: false as boolean,
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),

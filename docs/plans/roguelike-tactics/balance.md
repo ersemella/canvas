@@ -2303,7 +2303,9 @@ turns as above.
 - **The Vanguard gains little**: under a turn a fight at 3 or 4 (7.6–8.1,
   7.8 with the built Elixir). The Haste reaches whichever ally stands
   near the target; `hastesPerFight` doesn't count it by ally.
-- Not changed: the Elixir stays Empower and Weaken (the owner's call).
+- **Adopted (owner, 2026-10-26): the burst next to the Alchemist, Haste
+  3 and Delay 3, the Alchemist kept out of it** (`haste: 3`, `delay: 3`,
+  `empower: 0`, `weaken: 0`, `self: false`).
 
 ### Elixir with more Haste than Delay, and the AI counting them (2026-10-26)
 
@@ -2349,8 +2351,7 @@ never in it (`self` off), no Empower or Weaken; the built Elixir is China
   Haste Elixir** (3/3: 47.6% from 43.4%, the seat 54.6%; 4/1: 42% from
   35.5%) and nothing to the built one (40.7%). With it, 3 / 3 is still
   ahead of 4 / 1.
-- Not changed: the Elixir stays Empower and Weaken, `trackWorth` 0 (the
-  owner's call). Before `trackWorth` is adopted it needs the whole game
+- `trackWorth` stays 0. The Elixir was then built as 3 / 3 (above). Before `trackWorth` is adopted it needs the whole game
   measured with it on, since it changes how Cleave's Delay and Swift
   Strike's Haste are weighed too.
 

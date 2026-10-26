@@ -31,6 +31,9 @@ Tailwind experiment and removed with it (2026-10-24; [history.md](history.md)).
 Empower does; with Empower it nets out, and it reduces a Grappler's
 squeeze too. Elixir's Empower and Weaken are a fixed 1 (owner,
 2026-10-26; the Alchemist's power from 2026-10-25, an exception to 17.2).
+Since later that day the Elixir **Hastens allies 3 and Delays enemies 3**
+instead (owner), so no hero Weakens; the haste and delay limits are
+still not built.
 **Delay** (2026-10-25), for the Vanguard's Cleave (Delay 8 since
 2026-10-26; 5 before): the card moves 8 slots later, a taken slot resolved by speed as any placement
 is; the delay limit (3.6) is not built yet.

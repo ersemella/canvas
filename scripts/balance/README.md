@@ -68,6 +68,13 @@ shapes (bursts next to the Alchemist and within 2, one unit within 2 and
 `elixir-haste-delay.mjs` (2026-10-26) measures more Haste than Delay
 (`ABILITY.elixir.haste`, `.delay`, one `tempo` before), and the AI counting
 Haste and Delay when it screens its options (`AI.trackWorth`).
+Built since 2026-10-26: Haste 3 and Delay 3 (`haste: 3`, `delay: 3`,
+`empower: 0`, `weaken: 0`, `self: false`), so the files touching the
+Alchemist that don't set every one of these (`hail-elixir.mjs`,
+`storm-speed.mjs`, `china-steppe.mjs` and earlier) reproduce only at their
+revision; the three `elixir-tempo*.mjs` and `elixir-haste-delay.mjs` files
+set them all (`elixir-tempo.mjs` with the Alchemist in its burst, as it
+was measured).
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.

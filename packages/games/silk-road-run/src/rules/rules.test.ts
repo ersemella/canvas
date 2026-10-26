@@ -1460,7 +1460,17 @@ describe('the Vanguard and the Alchemist', () => {
     }
   }
   /** The single-unit Elixir before the burst (2026-10-26). */
-  const single = {range: 2, shape: 'unit', fixed: 1, heal: 'all', empower: 0, weaken: 0} as const;
+  const single = {
+    range: 2,
+    shape: 'unit',
+    fixed: 1,
+    heal: 'all',
+    empower: 0,
+    weaken: 0,
+    haste: 0,
+    delay: 0,
+    self: true,
+  } as const;
 
   // Cleave's shape from `c`: hex directions 2 and 5 run straight up and down the
   // (flat-topped) board; 0 and 1 are the right-hand diagonals, `across` the space
@@ -1527,7 +1537,7 @@ describe('the Vanguard and the Alchemist', () => {
       expect(tap(h)).toEqual({hex: hexNeighbor(c, 0)});
   });
 
-  it('Elixir as a burst: a space next to the Alchemist, every unit around it that hits, allies Empowered 2 and enemies Weakened 1', () => {
+  it('Elixir as a burst: a space next to the Alchemist, every unit around it but the Alchemist, allies Hastened 3 and enemies Delayed 3', () => {
     const s = setup(
       {
         'p-alchemist': c,
@@ -1543,19 +1553,25 @@ describe('the Vanguard and the Alchemist', () => {
     expect(alchemist.power).toBe(0);
     expect(ABILITIES.elixir.targetsUnit).toBe(false);
     expect(ABILITIES.elixir.radius).toBe(1);
-    // Offered: the spaces within 1 whose burst catches a unit that hits.
+    // Offered: the spaces within 1 whose burst catches a unit.
     const offered = offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir).map((t) => t.hex!);
     expect(offered.every((h) => hexDistance(h, c) <= 1)).toBe(true);
     expect(offered.some((h) => hexEquals(h, hexNeighbor(c, 0)))).toBe(true);
-    const camel = unit(s, 'p-camel');
-    camel.hp -= 2;
+    const ally = unit(s, 'p-mangudai');
+    const enemy = unit(s, 'e-mangudai');
+    // Far enough off that a Haste of 3 isn't cut short at the next slot.
+    ally.slot = s.currentSlot + 10;
+    const enemyBefore = enemy.slot!;
     applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: hexNeighbor(c, 0)}}});
-    expect(unit(s, 'p-mangudai').empower).toBe(2);
-    expect(unit(s, 'e-mangudai').weaken).toBe(1);
-    // No hit, no heal, and not the Alchemist itself (it doesn't hit).
-    expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp);
-    expect(alchemist.empower).toBeUndefined();
-    expect(camel.hp).toBe(camel.maxHp - 2);
+    expect(ally.slot).toBe(s.currentSlot + 7);
+    expect(enemy.slot).toBeGreaterThanOrEqual(enemyBefore + 3);
+    // No Empower or Weaken, no hit, and not the Alchemist itself, though its burst covers it.
+    expect(ally.empower).toBeUndefined();
+    expect(enemy.weaken).toBeUndefined();
+    expect(enemy.hp).toBe(enemy.maxHp);
+    expect(s.log.some((l) => l.text === 'Your Alchemist is Hastened 3.')).toBe(false);
+    // The camel, out of the burst, takes nothing.
+    expect(s.log.some((l) => l.text.startsWith(`${HEROES.camel.name} is`))).toBe(false);
   });
 
   it('the single-unit Elixir (a switch) heals an ally its power and Empowers it 1, and hits an enemy for its power and Weakens it 1', () =>
@@ -1635,33 +1651,37 @@ describe('the Vanguard and the Alchemist', () => {
   });
 
   it('Elixir as a burst or an aura reaches every unit around its centre', () =>
-    withElixir({range: 2, fixed: 1, heal: 'all', empower: 0, weaken: 0}, 1, () => {
-      const s = setup(
-        {
-          'p-alchemist': at(1, 3),
-          'p-mangudai': at(2, 3),
-          'e-mangudai': at(2, 2),
-          'e-modao': at(8, 6),
-        },
-        party
-      );
-      const elixir = ABILITY.elixir as {shape: string};
-      const saved = {...ABILITY.elixir};
-      try {
-        for (const shape of ['burst', 'aura'] as const) {
-          elixir.shape = shape;
-          const c = cloneFight(s);
-          const hex = shape === 'aura' ? at(1, 3) : at(2, 3);
-          applyTurn(c, unit(c, 'p-alchemist'), {action: {ability: 'elixir', target: {hex}}});
-          expect(unit(c, 'p-mangudai').empower).toBe(unit(c, 'p-alchemist').power);
-          expect(unit(c, 'e-mangudai').weaken).toBe(unit(c, 'p-alchemist').power);
-          // The Alchemist is within the radius too, so it takes the elixir.
-          expect(unit(c, 'p-alchemist').empower).toBe(unit(c, 'p-alchemist').power);
+    withElixir(
+      {range: 2, fixed: 1, heal: 'all', empower: 0, weaken: 0, haste: 0, delay: 0, self: true},
+      1,
+      () => {
+        const s = setup(
+          {
+            'p-alchemist': at(1, 3),
+            'p-mangudai': at(2, 3),
+            'e-mangudai': at(2, 2),
+            'e-modao': at(8, 6),
+          },
+          party
+        );
+        const elixir = ABILITY.elixir as {shape: string};
+        const saved = {...ABILITY.elixir};
+        try {
+          for (const shape of ['burst', 'aura'] as const) {
+            elixir.shape = shape;
+            const c = cloneFight(s);
+            const hex = shape === 'aura' ? at(1, 3) : at(2, 3);
+            applyTurn(c, unit(c, 'p-alchemist'), {action: {ability: 'elixir', target: {hex}}});
+            expect(unit(c, 'p-mangudai').empower).toBe(unit(c, 'p-alchemist').power);
+            expect(unit(c, 'e-mangudai').weaken).toBe(unit(c, 'p-alchemist').power);
+            // The Alchemist is within the radius too, so it takes the elixir.
+            expect(unit(c, 'p-alchemist').empower).toBe(unit(c, 'p-alchemist').power);
+          }
+        } finally {
+          Object.assign(elixir, saved);
         }
-      } finally {
-        Object.assign(elixir, saved);
       }
-    }));
+    ));
 
   it('Elixir’s `empower` and `weaken` switches set each side’s amount apart', () => {
     const s = setup(
@@ -1681,7 +1701,7 @@ describe('the Vanguard and the Alchemist', () => {
     };
     const saved = {...ABILITY.elixir};
     try {
-      Object.assign(elixir, {shape: 'aura', fixed: 0, empower: 2, weaken: 1});
+      Object.assign(elixir, {shape: 'aura', fixed: 0, empower: 2, weaken: 1, haste: 0, delay: 0});
       applyTurn(s, unit(s, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(1, 3)}}});
       expect(unit(s, 'p-mangudai').empower).toBe(2);
       expect(unit(s, 'e-mangudai').weaken).toBe(1);
