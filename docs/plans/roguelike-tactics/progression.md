@@ -156,8 +156,8 @@ passive is lost or returns to the party is question 63.
   upgrades and stats grow.
 - **Built (2026-10-26), for two regions:** the game runs the Steppe's
   three stages and China's three (`STAGES` and `REGIONS` in
-  `src/rules/config.ts`): each region's first enemy (the Mangudai Outrider
-  on the Steppe, the Youxia Swordsman in China) and 2 of its creatures
+  `src/rules/config.ts`): each region's first enemy (the Horse Archer
+  on the Steppe, the Swordsman in China) and 2 of its creatures
   (wolves, fox spirits); that hero, another and 1 creature; 3 heroes. A
   region's heroes come in one order drawn from the whole roster, so each
   stage brings the last one's and one more. China's stages are on the
@@ -232,7 +232,7 @@ choice:
 - **Momentum** counts a kill on the hero's turn (a squeeze at its start
   included), not one by a charged shot landing, which isn't a turn.
 - **Light Step's swap** puts the ally on the space the walk came from,
-  which must be free (so not an ally walked through); an Outrider's
+  which must be free (so not an ally walked through); an Horse Archer's
   straight walk passes allies too. The ally is Moved (Rebound triggers).
 - **Rebound** triggers only when the hero actually changes space; a
   Grapple's throw and swap Move the held unit. Rebounds can set off

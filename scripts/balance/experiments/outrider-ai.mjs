@@ -1,6 +1,6 @@
-// The AI with the Outrider's straight move (2026-10-25; balance.md): its
+// The AI with the Horse Archer's straight move (2026-10-25; balance.md): its
 // closing-in reward (`AI.perHexFromEnemy`) grows with the move's length, so
-// the Outrider dashed into melee. Variants: a standoff below which closing in
+// the Horse Archer dashed into melee. Variants: a standoff below which closing in
 // earns nothing (`AI.standoff`), more caution, and the walk of 2 for
 // reference. Each with the Bow removed from one side, and the full party
 // against all three heroes.

@@ -37,7 +37,7 @@ Opening damage and starting tie priority:
 
 Hero survival at completion or the action cutoff (per starting unit):
 
-| Rules                  | Bökh Champion | Mangudai Outrider | Storm Caller |
+| Rules                  | Grappler | Horse Archer | Storm Caller |
 | ---------------------- | ------------: | ----------------: | -----------: |
 | Current rules          |           40% |             33.1% |        48.1% |
 | Blocking only          |           39% |             33.5% |        47.8% |
@@ -75,7 +75,7 @@ Opening damage and starting tie priority:
 
 Hero survival at completion or the action cutoff (per starting unit):
 
-| Rules                  | Bökh Champion | Mangudai Outrider | Storm Caller |
+| Rules                  | Grappler | Horse Archer | Storm Caller |
 | ---------------------- | ------------: | ----------------: | -----------: |
 | Current rules          |           40% |             33.1% |        48.1% |
 | Blocking only          |           39% |             33.5% |        47.8% |
@@ -90,7 +90,7 @@ Hero survival at completion or the action cutoff (per starting unit):
 
 **The combination does not show an additional pacing penalty at quick cost.** Both variants have the same medians; the combination has 17 unfinished fights versus 24 with separate movement alone. That small gap is not sufficient to claim that blocking improves the game. It does mean the proposed compounded slowdown did not materialize in this experiment.
 
-**The melee Champion is particularly affected in the quick-cost comparison.** Survival drops from 40.0% to 25.1% with separate movement, while the Storm Caller stays near 50%. This suggests checking the Champion’s approach tools and engagement opportunities before adopting separate movement. Survival alone does not establish each hero’s contribution or value.
+**The melee Grappler is particularly affected in the quick-cost comparison.** Survival drops from 40.0% to 25.1% with separate movement, while the Storm Caller stays near 50%. This suggests checking the Grappler’s approach tools and engagement opportunities before adopting separate movement. Survival alone does not establish each hero’s contribution or value.
 
 **The typical-cost movement action fails badly with the current AI.** With a base cost of 100, 88.1% of fights remain unfinished at 400 actions, with or without blocking. Walking falls to 0.2% of chosen turns and idle Holds occupy about 80%. This is an AI compatibility failure as well as a warning about the price of movement: the one-turn evaluator charges timeline delay at 10 score per slot but rewards approaching by only 15 per hex. It can prefer repeated Hold over paying for an approach whose payoff comes next turn. These runs do not prove that 88.1% of human games would stall.
 

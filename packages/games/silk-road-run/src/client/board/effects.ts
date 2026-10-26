@@ -201,7 +201,7 @@ function drawGale(ctx: CanvasRenderingContext2D, {target, area, k}: EffectFrame)
 }
 
 /**
- * Shove: the Champion's blow lands, a burst on the struck unit's side
+ * Shove: the Grappler's blow lands, a burst on the struck unit's side
  * facing it, and chevrons drive on the way it is Pushed.
  */
 function drawShove(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame): void {
@@ -244,7 +244,7 @@ function drawShove(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame
 }
 
 /**
- * Haul: a rope flies from the Champion to the unit and draws taut, then
+ * Haul: a rope flies from the Grappler to the unit and draws taut, then
  * slackens as it is Pulled in.
  */
 function drawHaul(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame): void {

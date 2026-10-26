@@ -10,9 +10,9 @@ const PARTY_STORAGE = 'canvas:tactics:party';
 
 /** Each hero in a line or two of story (roster.md, 15.8): who they are, not their numbers. */
 const LORE: Partial<Record<HeroId, string>> = {
-  bokh: 'A Mongol wrestler famed at the naadam games. The Champion fights bare handed, seizing enemies, pinning them down, and hurling them aside.',
+  bokh: 'A Mongol wrestler famed at the naadam games. The Grappler fights bare handed, seizing enemies, pinning them down, and hurling them aside.',
   mangudai:
-    'A Mongol horse archer from the vanguard of the Mongol army. The Outrider strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
+    'A Mongol horse archer from the vanguard of the Mongol army. The Horse Archer strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
   storm:
     'A Turkic weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail that holds whoever it catches fast, though storms never choose sides.',
   modao:

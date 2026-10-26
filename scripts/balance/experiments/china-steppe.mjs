@@ -1,5 +1,5 @@
-// The China party (Youxia Swordsman, Modao Vanguard, Waidan Alchemist)
-// against the Steppe party (Bökh Champion, Mangudai Outrider, Storm Caller)
+// The China party (Swordsman, Vanguard, Alchemist)
+// against the Steppe party (Grappler, Horse Archer, Storm Caller)
 // on the current rules, and each Chinese hero in each Steppe hero's seat.
 // `mod` experiments: `modWinPct` is the modified side's share of finished
 // fights, every seed played from both sides, the camel with the player.
@@ -14,7 +14,7 @@ export const experiments = {
   'steppe-vs-china-enemy-gobi': {enemies: china, map: 'gobi'},
   'china-vs-steppe-enemy-gobi': {party: china, enemies: steppe, map: 'gobi'},
 };
-// Hero for hero in a Steppe mirror; the Youxia for the Outrider is the
+// Hero for hero in a Steppe mirror; the Swordsman for the Horse Archer is the
 // damage hero for the damage hero.
 for (const hero of china)
   for (const [i, out] of steppe.entries())

@@ -542,6 +542,22 @@ Learned:
 - **Simurgh Summoner** (2026-10-26): renamed the **Simurgh Feather
   Burner**, after how it calls the Simurgh: in the *Shahnameh* the bird
   comes when one of its feathers is burned; owner's call.
+- **Every hero** (2026-10-26): renamed with a plain English role, the
+  native term dropped: the **Alchemist** (Waidan Alchemist), **Swordsman**
+  (Youxia Swordsman), **Storm Caller** (Yadachy Storm Caller), **Magus**
+  (Magus Astrologer), **Cataphract** (Sasanian Cataphract, the Persian
+  Cataphract earlier that day), **Grappler** (Bökh Champion), **Horse
+  Archer** (Mangudai Outrider), **Elephant Rider** (Mahout Bulwark, its
+  name of 2026-10-16 back), **Vanguard** (Modao Vanguard) and
+  **Barbarian** (Varangian Guard); owner's calls. The native terms stay
+  in each hero's inspiration (roster.md, 15.8). Weighed: Astrologer for
+  the Magus; Axeman for the Barbarian, which Byzantine writers called the
+  Varangians ("axe-bearing barbarians"); Wrestler, Strongman, Brawler,
+  Titan for the Grappler, its specialty; Lancer; Mahout; Glaivesman. The
+  board letters followed for the Grappler (G, B before) and the Horse
+  Archer (H, M before); the Swordsman keeps Y, as S is the Storm
+  Caller's. Hero ids (`bokh`, `mangudai`, `youxia` and so on) and file
+  names are unchanged.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game
   is **Silk Road Run** (`packages/games/silk-road-run`). Other
   titles considered: Silk Road Caravans, Caravans of the Silk Road, Silk

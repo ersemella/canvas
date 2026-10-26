@@ -1,8 +1,8 @@
 // A charged Volley at range 3 (2026-10-23; charges 1, 2, 4 and 6; 2 adopted):
-// the Outrider's card goes `ABILITY.volley.charge` more slots on after
+// the Horse Archer's card goes `ABILITY.volley.charge` more slots on after
 // a volley, so its arrows land later, at its next turn, and it waits for
 // them. Each charge with each ability removed from one side, and the stage
-// caravans that bring an Outrider (player wins).
+// caravans that bring an Horse Archer (player wins).
 const charges = [1, 2, 4, 6];
 const abilities = ['bow', 'volley', 'hail', 'grapple', 'throw'];
 const caravans = {

@@ -105,33 +105,33 @@ picked the reading below. Confirm or change each:
   questions 54 and 56).
 - **Grapple is melee** (owner, 2026-10-23; it reached 2 spaces,
   stepping in next to the target first).
-- **Grapple squeezes, and the Champion may walk while grappling**
-  (owner, 2026-10-23): at the start of each of the Champion's turns
+- **Grapple squeezes, and the Grappler may walk while grappling**
+  (owner, 2026-10-23): at the start of each of the Grappler's turns
   while the grapple lasts, its target takes 1; a walk ends the grapple
   only if it ends away from the target, not partway;
   Grapple isn't offered on the unit already grappled; the board shows a
   chain between the two while the grapple lasts. (Since 2026-10-24, two
   clenched fists, on the board and as Grapple's icon: owner.)
-- **Throw Moves the target to a free space next to the Champion**, and
+- **Throw Moves the target to a free space next to the Grappler**, and
   the grapple holds (owner, 2026-10-23; the builder's first reading was a
   space next to the target, which could end the grapple); the damage
   comes after the Move.
-- **Throw is part of Grapple** (owner, 2026-10-24): the Champion holds
+- **Throw is part of Grapple** (owner, 2026-10-24): the Grappler holds
   one unit at a time, so picking it was a wasted tap. While it grapples,
   Grapple also offers the free spaces next to it (a throw) and its own
   (a swap), picked in one tap; a unit next to it is still a new grapple.
-  The freed slot lets the Champion take both Haul and Shove.
-- **An Immobilized Champion still swaps** (owner, 2026-10-25): standing
+  The freed slot lets the Grappler take both Haul and Shove.
+- **An Immobilized Grappler still swaps** (owner, 2026-10-25): standing
   in hail doesn't stop it swapping places with the unit it grapples (the
-  builder's reading had been that the swap moves the Champion itself, so
+  builder's reading had been that the swap moves the Grappler itself, so
   Immobilized ruled it out).
-- **A Stunned Outrider loses its drawn arrow** (owner, 2026-10-24): a
+- **A Stunned Horse Archer loses its drawn arrow** (owner, 2026-10-24): a
   grapple (or any Stun) landing between Skirmish and the arrow flying
   cancels the shot; the card comes back as an ordinary turn, skipped
   while Stunned. Damage alone doesn't cancel it, nor Immobilized.
 - **"Bökh takes damage" means any damage to its health.** Hail does
   count since the Storm Caller's power became 1 (owner, 2026-10-23).
-- **The Bökh Champion lost Inevitable**, which the notes left out and
+- **The Grappler lost Inevitable**, which the notes left out and
   nothing would use (nothing Delays any more).
 - **Placeholders:** the wolf at speed 2, defence 1 (health 4), power 1;
   Temee at defence 9 (health 20; "very high health"). The AI's weights
@@ -140,8 +140,8 @@ picked the reading below. Confirm or change each:
   Temee's health 2 a point, and the enemy closes in on Temee once no
   hero is in its reach, since
   2026-10-23, [ai-search.md](ai-search.md)).
-- **Deleted:** every parked ability and the Modao Vanguard's kit, with
-  their code (owner, 2026-10-23); the Modao Vanguard stays in the roster
+- **Deleted:** every parked ability and the Vanguard's kit, with
+  their code (owner, 2026-10-23); the Vanguard stays in the roster
   as a hero to rebuild.
 
 ### 2. What the first measurements show (2026-10-23)
@@ -150,10 +150,10 @@ Over 200 AI-vs-AI fights each ([balance.md](balance.md#the-2026-10-23-rework)):
 
 - **Grapple decides fights.** A side without it wins 6%: the Stunned
   target loses every turn while the grapple lasts, and Grapple is used on
-  69% of the Champion's turns. Options: a lockout guard on Stunned
+  69% of the Grappler's turns. Options: a lockout guard on Stunned
   (keywords.md, open question 56), a duration, or letting the target's
   allies break it more easily.
-- **Throw is almost never used** (3% of the Champion's turns; a side
+- **Throw is almost never used** (3% of the Grappler's turns; a side
   without it wins exactly as often): it trades a held Stun for 1 damage
   and a space. Options: Throw keeps hold wherever it lands, deals more,
   or does something a Stun can't.
@@ -162,7 +162,7 @@ Over 200 AI-vs-AI fights each ([balance.md](balance.md#the-2026-10-23-rework)):
   Hail deals 1 and can break a grapple
   ([balance.md](balance.md#hail-deals-1-2026-10-23)).
 - **Stages:** a full party beats one enemy hero and two wolves 87–99% of
-  the time, two heroes and a wolf 39–97% (two Champions are the hardest,
+  the time, two heroes and a wolf 39–97% (two Grapplers are the hardest,
   39%), and all three 73%.
 
 ### 3. The builder's choices in Phase 1
@@ -174,7 +174,7 @@ confirm or change:
   nothing in reach hold forever. Since 2026-10-20, a one-step **lookahead**:
   the damage the enemies acting within its next turn could deal it where
   it ends, weighed by the share of its health and by a per-hero caution
-  (0 for the Bökh Champion, a tank). Without it the AI walked into an
+  (0 for the Grappler, a tank). Without it the AI walked into an
   archer's reach, and on speed ties the side that moved first lost 60–67%
   of AI-vs-AI fights; with it, 49–51%.
 - **Movement is a separate action, capped at 3** (owner, 2026-10-20 and

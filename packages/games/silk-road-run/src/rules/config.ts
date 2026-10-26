@@ -66,7 +66,7 @@ export interface HeroStats {
   /**
    * Moves the way Longshot flies: any number of spaces straight along one of
    * the six directions, up to the first unit, yurts or the map's edge (the
-   * Outrider; owner, 2026-10-25). Hail still ends the move where it enters.
+   * Horse Archer; owner, 2026-10-25). Hail still ends the move where it enters.
    */
   movesStraight?: boolean;
   /** Its card starts the fight last, at RULES.camelStartSlot, whatever its speed (the camel). */
@@ -86,8 +86,8 @@ export interface HeroStats {
  */
 export const HEROES: Record<HeroId, HeroStats> = {
   bokh: {
-    name: 'Bökh Champion',
-    letter: 'B',
+    name: 'Grappler',
+    letter: 'G',
     speed: 2,
     defence: 3,
     power: 1,
@@ -99,8 +99,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     upgrades: ['haul', 'shove'],
   },
   mangudai: {
-    name: 'Mangudai Outrider',
-    letter: 'M',
+    name: 'Horse Archer',
+    letter: 'H',
     speed: 3,
     defence: 1,
     power: 2,
@@ -113,7 +113,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     upgrades: ['skirmish', 'volley', 'feignedRetreat'],
   },
   storm: {
-    name: 'Yadachy Storm Caller',
+    name: 'Storm Caller',
     letter: 'S',
     speed: 2,
     defence: 2,
@@ -128,13 +128,13 @@ export const HEROES: Record<HeroId, HeroStats> = {
     upgrades: ['sunlight', 'gale'],
   },
   /**
-   * The Modao Vanguard (owner, 2026-10-25; roster.md): a slow tank with
+   * The Vanguard (owner, 2026-10-25; roster.md): a slow tank with
    * reach. Its first kit (2026-10-22) was removed with action costs on
    * 2026-10-23 (history.md). Speed 1, defence 3 (health 8) and power 2 are
    * the builder's first numbers, untested.
    */
   modao: {
-    name: 'Modao Vanguard',
+    name: 'Vanguard',
     letter: 'V',
     speed: 1,
     defence: 3,
@@ -142,7 +142,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['cleave', 'hold'],
   },
   /**
-   * The Waidan Alchemist (owner, 2026-10-25; roster.md): a support whose
+   * The Alchemist (owner, 2026-10-25; roster.md): a support whose
    * Elixir, a burst next to it, Empowers allies 2 and Weakens enemies 1
    * (`ABILITY.elixir`). Speed 3 (owner, 2026-10-25; 2 before; balance.md,
    * "Elixir's shape and Cleave's Delay": the Storm Caller's equal in its
@@ -152,7 +152,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * builder's first number.
    */
   alchemist: {
-    name: 'Waidan Alchemist',
+    name: 'Alchemist',
     letter: 'A',
     speed: 3,
     defence: 1,
@@ -160,13 +160,13 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['elixir', 'hold'],
   },
   /**
-   * The Youxia Swordsman (owner, 2026-10-26; roster.md): China's fast
+   * The Swordsman (owner, 2026-10-26; roster.md): China's fast
    * melee striker. Speed 3, power 2, defence 1 (health 4) and a walk of 3
    * are the owner's; Swift Strike, its sword stroke, Hastens it when it hits
    * (`ABILITY.swiftStrike`).
    */
   youxia: {
-    name: 'Youxia Swordsman',
+    name: 'Swordsman',
     letter: 'Y',
     speed: 3,
     defence: 1,
@@ -257,27 +257,27 @@ export const ABILITY = {
   sunlight: {range: 3, empower: 2, self: true as boolean, melts: true as boolean},
   /**
    * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
-   * space next to the Outrider, then Longshot's shot from there, charged:
-   * the Outrider's card is pushed `charge` of its action cost on, rounded
-   * (half: 4 slots for the Outrider's 8), greyed while it charges; when it
+   * space next to the Horse Archer, then Longshot's shot from there, charged:
+   * the Horse Archer's card is pushed `charge` of its action cost on, rounded
+   * (half: 4 slots for the Horse Archer's 8), greyed while it charges; when it
    * comes back the arrow flies down the lane it was aimed along and the
-   * first unit in it then takes the Outrider's power, with no turn for the
-   * Outrider, and its card goes its action cost on to its next turn. At 0
+   * first unit in it then takes the Horse Archer's power, with no turn for the
+   * Horse Archer, and its card goes its action cost on to its next turn. At 0
    * it shoots at once (measured: a better Longshot rather than a second
    * ability; balance.md).
    */
   skirmish: {charge: 0.5 as number},
   /**
-   * Each of the Champion's turns that a grapple lasts, its target takes
+   * Each of the Grappler's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
    */
   grapple: {
     squeeze: 1,
-    /** Whether a Champion's Empower adds to its squeeze: yes (owner, 2026-10-23; balance.md). */
+    /** Whether a Grappler's Empower adds to its squeeze: yes (owner, 2026-10-23; balance.md). */
     empoweredSqueeze: true,
   },
   /**
-   * Cleave (owner, 2026-10-25): the Modao Vanguard's line of `reach`
+   * Cleave (owner, 2026-10-25): the Vanguard's line of `reach`
    * spaces straight up or down from it, stopped by yurts, or a cone to one
    * side, its two diagonal neighbours and the space straight across beyond
    * them (owner, 2026-10-26; board.ts, `cleaveAreas`); each unit in it,
@@ -331,7 +331,7 @@ export const ABILITY = {
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),
-   * the Youxia Swordsman's *jian*: melee, and when it hits, the Swordsman's card is Hastened `haste` slots (keywords.md
+   * the Swordsman's *jian*: melee, and when it hits, the Swordsman's card is Hastened `haste` slots (keywords.md
    * 17.3). 3 (owner, 2026-10-26; 2 the builder's first; balance.md, "The Vanguard's buffs other than speed").
    */
   swiftStrike: {haste: 3 as number},
@@ -369,7 +369,7 @@ export const AI = {
   empoweredShare: 0.5 as number,
   /**
    * The share of a grappled unit's status cost the AI takes off while an
-   * ally could strike the Champion holding it (`rescueGain` in ai.ts): the
+   * ally could strike the Grappler holding it (`rescueGain` in ai.ts): the
    * hit, which breaks the grapple, comes only on that ally's next turn.
    */
   rescueShare: 0.5,
@@ -381,9 +381,9 @@ export const AI = {
    */
   threatFactor: 1,
   /**
-   * Per hero, how much the threat counts. The Bökh Champion's is 0: a
+   * Per hero, how much the threat counts. The Grappler's is 0: a
    * tank's job is to take hits, and at 1 it held back out of reach; the
-   * Modao Vanguard's too, for the same reason (untested).
+   * Vanguard's too, for the same reason (untested).
    */
   caution: {
     bokh: 0,
@@ -413,7 +413,7 @@ export const AI = {
    * The caravan's camel (camel.md): its health is worth this much a point,
    * and each space it stands from the exit is worth `perCamelHex` to the
    * enemy. A hero's or wolf's point is worth 1, plus `kill` when it falls:
-   * at most 2 a point spread over its health (a wolf's or the Outrider's 4).
+   * at most 2 a point spread over its health (a wolf's or the Horse Archer's 4).
    * Temee's death is the enemy's victory, so it has no kill value; at 2 a
    * point, a hit on it is never worth less than the same hit's share of
    * any other unit, and only a finishing blow outranks it. PLACEHOLDERS;
@@ -474,7 +474,7 @@ export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist', 'youxia'];
 export type RegionId = 'steppe' | 'china';
 export const REGIONS: Record<RegionId, {creature: HeroId; firstEnemy: HeroId}> = {
   steppe: {creature: 'wolf', firstEnemy: 'mangudai'},
-  // The Youxia Swordsman, China's damage hero, as the Outrider is the Steppe's.
+  // The Swordsman, China's damage hero, as the Horse Archer is the Steppe's.
   china: {creature: 'fox', firstEnemy: 'youxia'},
 };
 /**

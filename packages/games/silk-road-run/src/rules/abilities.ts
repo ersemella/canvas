@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
- * the Modao Vanguard's and the Waidan Alchemist's (owner, 2026-10-25), the
- * Youxia Swordsman's (owner, 2026-10-26), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
+ * Swordsman's (owner, 2026-10-26), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -145,7 +145,7 @@ const hold: AbilityDef = {
   resolve: (ctx, user) => log(ctx, `${unitName(user)} holds.`),
 };
 
-// ─── Mangudai Outrider ───────────────────────────────────────────────────────
+// ─── Horse Archer ────────────────────────────────────────────────────────────
 
 /** An arrow's flight along one hex direction: the hexes it crosses, and the unit it stops at. */
 export interface ArrowLane {
@@ -192,7 +192,7 @@ const longshot: AbilityDef = {
 
 /**
  * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
- * space next to the Outrider (not while Immobilized), then Longshot's shot
+ * space next to the Horse Archer (not while Immobilized), then Longshot's shot
  * from there, its old space no longer in the way. The step is taken by
  * `applyTurn` before the action, as a walk (`steps`). Charged
  * (`ABILITY.skirmish.charge`), the arrow flies when the charging card comes
@@ -236,7 +236,7 @@ const skirmish: AbilityDef = {
   },
 };
 
-// ─── Yadachy Storm Caller ────────────────────────────────────────────────────
+// ─── Storm Caller ────────────────────────────────────────────────────────────
 
 const hail: AbilityDef = {
   id: 'hail',
@@ -315,7 +315,7 @@ const sunlight: AbilityDef = {
   },
 };
 
-// ─── Bökh Champion ───────────────────────────────────────────────────────────
+// ─── Grappler ────────────────────────────────────────────────────────────────
 
 /** Whether `user` is grappling `u`. */
 export function grappling(user: Unit, u: Unit): boolean {
@@ -330,7 +330,7 @@ function heldNextTo(state: FightState, user: Unit, from: Hex): Unit | undefined 
 }
 
 /**
- * Whether `target` is a throw: a space without a unit, or the Champion's
+ * Whether `target` is a throw: a space without a unit, or the Grappler's
  * own (a swap), rather than a unit to grapple.
  */
 function isThrow(state: FightState, user: Unit, target: ActionTarget): boolean {
@@ -340,11 +340,11 @@ function isThrow(state: FightState, user: Unit, target: ActionTarget): boolean {
 
 /**
  * Grapple, with Throw folded in (owner, 2026-10-24; separate abilities
- * before). On a unit next to the Champion, not the one it holds: grapples
+ * before). On a unit next to the Grappler, not the one it holds: grapples
  * it. While it holds one, on a free space next to it: Throw (owner,
- * 2026-10-23), the held unit Moved there, then struck; on the Champion's
+ * 2026-10-23), the held unit Moved there, then struck; on the Grappler's
  * own space: the two swap places, then it is struck. Either way the two
- * stay next to each other, so the grapple holds. An Immobilized Champion
+ * stay next to each other, so the grapple holds. An Immobilized Grappler
  * still swaps (owner, 2026-10-25): the swap is the grapple's move, not a
  * walk of its own.
  */
@@ -396,7 +396,7 @@ const grapple: AbilityDef = {
 };
 
 // ─── Upgrades of 2026-10-24 ──────────────────────────────────────────────────
-// Shove and Haul (the Champion), Feigned Retreat and Volley (the Outrider)
+// Shove and Haul (the Grappler), Feigned Retreat and Volley (the Horse Archer)
 // and Gale (the Storm Caller): owner, 2026-10-24, as measured (balance.md,
 // "Second abilities measured").
 
@@ -421,7 +421,7 @@ const shove: AbilityDef = {
   },
 };
 
-/** Haul: the first unit in a lane within range, not next to the Champion, Pulled 2. No damage. */
+/** Haul: the first unit in a lane within range, not next to the Grappler, Pulled 2. No damage. */
 const haul: AbilityDef = {
   id: 'haul',
   name: 'Haul',
@@ -531,7 +531,7 @@ const gale: AbilityDef = {
 /**
  * Volley: arrows from above on a space within range, no line of fire,
  * charged as Skirmish (`ABILITY.volley.charge`): whoever stands there when
- * the Outrider's card comes back takes its power (`landShots`).
+ * the Horse Archer's card comes back takes its power (`landShots`).
  */
 const volley: AbilityDef = {
   id: 'volley',
@@ -558,7 +558,7 @@ const volley: AbilityDef = {
   },
 };
 
-// ─── Modao Vanguard ──────────────────────────────────────────────────────────
+// ─── Vanguard ────────────────────────────────────────────────────────────────
 
 /** The Cleave area (see `cleaveAreas`) from `from` that holds `target`. */
 function cleaveArea(map: MapData, from: Hex, target: Hex): Hex[] {
@@ -604,7 +604,7 @@ const cleave: AbilityDef = {
   },
 };
 
-// ─── Waidan Alchemist ────────────────────────────────────────────────────────
+// ─── Alchemist ───────────────────────────────────────────────────────────────
 
 /**
  * Whether Elixir can take on `u`: a unit that hits, the Alchemist itself
@@ -710,7 +710,7 @@ const elixir: AbilityDef = {
   },
 };
 
-// ─── Youxia Swordsman ────────────────────────────────────────────────────────
+// ─── Swordsman ───────────────────────────────────────────────────────────────
 
 /**
  * Swift Strike (owner, 2026-10-26): melee, the Swordsman's power; when it

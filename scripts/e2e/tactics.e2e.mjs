@@ -709,7 +709,7 @@ try {
     check(
       `phone, fight over: ${endButton} in the action section, the board against it`,
       // A row of choices and the turn's buttons, at least: every starting kit
-      // fits one row (the Champion's since Throw is part of Grapple).
+      // fits one row (the Grappler's since Throw is part of Grapple).
       Math.abs(bar.top - (box.y + box.height)) <= 12 && bar.height >= 100,
       [box, bar]
     );

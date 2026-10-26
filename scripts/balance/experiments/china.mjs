@@ -1,5 +1,5 @@
-// The China line-up (the test stage's: a fox spirit, the Modao Vanguard and
-// the Waidan Alchemist) against the Steppe party (three heroes and the
+// The China line-up (the test stage's: a fox spirit, the Vanguard and
+// the Alchemist) against the Steppe party (three heroes and the
 // camel), on the Gobi and on the Steppe, beside the Steppe's own stages as
 // references, and with each Chinese unit swapped for a fox to see what it
 // adds. `playerWinPct` is the measure: lower means a stronger enemy.

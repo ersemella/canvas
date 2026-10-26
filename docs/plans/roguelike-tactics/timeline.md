@@ -38,7 +38,7 @@ Cards placed at the same moment (combat start, or one effect moving several card
 ### 3.4 Starting Positions (Decided 2026-10-23)
 Every card but Temee's is placed from **slot 0** in the simultaneous order (3.3): the highest speed first, ties the player's side first. Cards of the same speed sit side by side; **one free slot** separates one speed from the next. **Temee acts last**, at **slot 12**, whatever its speed (owner, 2026-10-23; it started first, at slot 0, from 2026-10-21); should the other cards ever reach slot 12, its card goes just after them.
 
-For example, two Outriders (speed 3) and four speed-2 units start at slots 0 and 1, then 3, 4, 5 and 6, and Temee at 12.
+For example, two Horse Archers (speed 3) and four speed-2 units start at slots 0 and 1, then 3, 4, 5 and 6, and Temee at 12.
 
 ### 3.5 Delay, Haste and Track Manipulation (Decided)
 Terminology (owner, 2026-10-23): **Delay** moves a card later on the track and **Haste** earlier; **Push**, **Pull** and **Move** move a unit across the board (keywords in [keywords.md](keywords.md)). Delay and Haste never mean the board.

@@ -1,9 +1,9 @@
-// The Modao Vanguard (roster.md, 15.8), being balanced before it joins the
-// party. Its team is the Vanguard with the Outrider and the Storm Caller.
+// The Vanguard (roster.md, 15.8), being balanced before it joins the
+// party. Its team is the Vanguard with the Horse Archer and the Storm Caller.
 const team = ['modao', 'mangudai', 'storm'];
 const kit = ['reap', 'challenge', 'advance'];
 export const experiments = {
-  // The Vanguard's team against the prototype party: Vanguard against Champion as the tank.
+  // The Vanguard's team against the prototype party: Vanguard against Grappler as the tank.
   'modao-for-bokh': {mod: {party: team}},
   // The Vanguard mirror: a sanity check, and its usage and damage.
   control: {party: team, mod: {}},

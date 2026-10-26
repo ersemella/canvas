@@ -1,4 +1,4 @@
-// The Outrider's AI, second round (2026-10-25; balance.md): closing in by
+// The Horse Archer's AI, second round (2026-10-25; balance.md): closing in by
 // lining up a shot (`AI.linesUp`: the steps onto one of the target's six
 // lines, not the spaces to it; `AI.clearShot`: only a line with a clear
 // shot down it), with the straight move and the walk of 2.

@@ -29,17 +29,17 @@ The stat set is kept small, so every unit's stat sheet, enemies' included (D11),
 
   | Hero | Speed | Defence | Power | Health |
   |---|---|---|---|---|
-  | Bökh Champion | 2 | 3 | 1 | 8 |
-  | Mangudai Outrider | 3 | 1 | 2 | 4 |
-  | Yadachy Storm Caller | 2 | 2 | 0 | 6 |
+  | Grappler | 2 | 3 | 1 | 8 |
+  | Horse Archer | 3 | 1 | 2 | 4 |
+  | Storm Caller | 2 | 2 | 0 | 6 |
 
   The wolf (2, 1, 1: health 4) and Temee (defence 9: health 20) are the builder's placeholders on the same scale ([owner-decisions.md](owner-decisions.md)).
 - **Health and gear:** health was fixed per hero (2026-10-18), never raised by gear. With health now following defence, gear that adds defence would raise it; whether defence gear exists, or health stays fixed by keeping defence off gear, is open question 58.
-- **No movement stat.** Every unit walks up to 2 spaces (5.1; 3 until 2026-10-24), except the Outrider, which moves the way Longshot flies: any number of spaces straight along one of the six directions, up to the first unit, yurts or the map's edge, stopping in hail (owner, 2026-10-25).
+- **No movement stat.** Every unit walks up to 2 spaces (5.1; 3 until 2026-10-24), except the Horse Archer, which moves the way Longshot flies: any number of spaces straight along one of the six directions, up to the first unit, yurts or the map's edge, stopping in hail (owner, 2026-10-25).
 - **No accuracy, evasion or critical hits**, since every attack hits (section 8).
 
 ### 9.2 Power (Decided; redefined 2026-10-23)
-There is **one offensive stat, power**, and it is **exactly the damage each of the unit's abilities deals** (owner, 2026-10-23): the Outrider's Bow and the Champion's Grapple and Throw deal their user's power, and the Storm Caller's Hail deals its power, 1 (owner, 2026-10-23; at power 0 it dealt none, and couldn't break a grapple: [balance.md](balance.md#hail-deals-1-2026-10-23)). Abilities have no base damage of their own; an ability's worth beyond its damage is its shape and its keywords.
+There is **one offensive stat, power**, and it is **exactly the damage each of the unit's abilities deals** (owner, 2026-10-23): the Horse Archer's Bow and the Grappler's Grapple and Throw deal their user's power, and the Storm Caller's Hail deals its power, 1 (owner, 2026-10-23; at power 0 it dealt none, and couldn't break a grapple: [balance.md](balance.md#hail-deals-1-2026-10-23)). Abilities have no base damage of their own; an ability's worth beyond its damage is its shape and its keywords.
 
 - **Power scales nothing else.** Keyword effects keep the value their source states ([keywords.md](keywords.md), 17.2): Burn, Shield, Delay and Haste slots, displacement distances and every duration. Empower and Weaken change the damage an ability deals directly.
 - **Roles come from kits and stats together.** A control hero matters mostly through its keywords (Hail's Immobilized), but power 0 left Hail unable to break a grapple or finish a kill, and the Storm Caller weak (2026-10-23).
@@ -199,7 +199,7 @@ Stats are small whole numbers since 2026-10-23 (9.1), so a single point from gea
 - **Once per combat.** Once unlocked, each ultimate can be used once per fight. There is no cooldown, and the meter doesn't refill.
 - **Priced on the track:** an ultimate may be an ordinary action with its own cost, a charged ability, or a track entity (3.7); that is defined per ultimate. Charged and track-entity ultimates are visible on the track, so opponents can answer them.
 - **Public:** for every unit, on both sides, its progress toward its ultimate (cost spent and cost needed), whether it is ready, and whether it has been used are shown on its card and stat sheet, consistent with complete information.
-- Rationale: ultimates are held back from the opening, so a fight builds toward them, and an ultimate that is about to unlock is a visible threat the other side can play around: pushing the hero's card also delays the unlock, and defeating it first prevents it. Counting cost spent, rather than filling a meter from specific actions (damage dealt, keywords), keeps the rule simple and fair to supports. Cost spent per slot is fixed for a given speed, so the meter measures time spent acting: fast units unlock a little sooner, and waiting doesn't charge it. Counting turns (until 2026-10-20) let a few cheap moves, priced as full turns, unlock it: in AI-vs-AI fights around slot 20 for the Outrider and Champion and 32 for the Storm Caller, a few slots after first contact (slot 14, fights ending around 83); at 300 cost all three unlock around slot 38.
+- Rationale: ultimates are held back from the opening, so a fight builds toward them, and an ultimate that is about to unlock is a visible threat the other side can play around: pushing the hero's card also delays the unlock, and defeating it first prevents it. Counting cost spent, rather than filling a meter from specific actions (damage dealt, keywords), keeps the rule simple and fair to supports. Cost spent per slot is fixed for a given speed, so the meter measures time spent acting: fast units unlock a little sooner, and waiting doesn't charge it. Counting turns (until 2026-10-20) let a few cheap moves, priced as full turns, unlock it: in AI-vs-AI fights around slot 20 for the Horse Archer and Grappler and 32 for the Storm Caller, a few slots after first contact (slot 14, fights ending around 83); at 300 cost all three unlock around slot 38.
 - **Gear can modify ultimates** like any other ability.
 
 ### 10.11 Recovery Between Fights (Decided)

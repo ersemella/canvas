@@ -162,7 +162,7 @@ the way are named in the caravan's story but don't count.
 - **Notification** of a kill could reuse the async plan's Web Push work
   once it exists; until then the tally shows on the next visit.
 - **A caravan's story** (from Dragon's Dogma's pawns, see
-  [prior-art.md](prior-art.md)): show what it did ("killed Ash's Bökh Champion at
+  [prior-art.md](prior-art.md)): show what it did ("killed Ash's Grappler at
   stage 5", "wiped Rook's party at stage 7", "beaten by Lin at stage 8").
   The ledger already receives every credit; keeping the victim's name,
   heroes and stage makes recognition vivid for little cost. Replays would

@@ -38,7 +38,7 @@ experiments['both-deep'] = {
   },
 };
 // The buffs that close the gap, in a Steppe hero's seat (china-steppe.mjs's
-// seats: the Alchemist for the Storm Caller 55%, the Youxia for the Outrider
+// seats: the Alchemist for the Storm Caller 55%, the Swordsman for the Horse Archer
 // 46.9%): a buff that evens China shouldn't make the hero a must-pick.
 experiments['elixir-range-3-for-storm'] = {
   mod: {party: ['bokh', 'mangudai', 'alchemist']},

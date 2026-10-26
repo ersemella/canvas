@@ -1,5 +1,5 @@
 // The whole game with Hail lasting 2 of its caster's turns (owner,
-// 2026-10-25) against 1, after the Outrider's straight move and clear-shot
+// 2026-10-25) against 1, after the Horse Archer's straight move and clear-shot
 // AI: each starting ability removed from one side, the Storm Caller's
 // upgrades (each joining its starting kit on both sides, one side without
 // it), its speed and power, and every stage caravan against the full party

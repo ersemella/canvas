@@ -25,15 +25,15 @@ against Hail alone.
 Hold Loose, Hip Toss, Squall Line, Tailwind and Overwatch, measured with
 them, were removed with their code. A changed ability against its original
 uses `mod.kits`, the modified side's kits by hero.
-`outrider-straight.mjs` (2026-10-25) measures the Outrider's straight move
+`outrider-straight.mjs` (2026-10-25) measures the Horse Archer's straight move
 against the walk of 2 it replaced (it runs on the current rules);
 `outrider-ai.mjs` and `outrider-ai-2.mjs` the AI's variants for it, whose
 switches (`AI.standoff`, `AI.linesUp`, `AI.clearShot`) were removed once
 the clear shot was adopted.
 `hail-turns.mjs` (2026-10-25) reruns the whole game with Hail lasting 1
 and 2 turns (`ABILITY.hail.turns`) on the current rules.
-`china.mjs` (2026-10-25) measures the China line-up (fox, Modao Vanguard,
-Waidan Alchemist) against the Steppe party, on the Gobi (an experiment's
+`china.mjs` (2026-10-25) measures the China line-up (fox, Vanguard,
+Alchemist) against the Steppe party, on the Gobi (an experiment's
 `map`) and the Steppe, and each Chinese hero in each Steppe hero's seat.
 `elixir-cleave.mjs` (2026-10-25) measures Elixir's shapes and Cleave's
 Delay by their switches (`ABILITY.elixir.shape`, `ABILITY.cleave.delay`).
@@ -41,7 +41,7 @@ Delay by their switches (`ABILITY.elixir.shape`, `ABILITY.cleave.delay`).
 Weaken of 1 and a hit on an enemy (`ABILITY.elixir.fixed`), and with a
 heal on allies (`ABILITY.elixir.heal`), and at power 0 with Haste and
 Delay (`ABILITY.elixir.tempo`).
-`china-steppe.mjs` (2026-10-26) measures the China party (Youxia, Vanguard,
+`china-steppe.mjs` (2026-10-26) measures the China party (Swordsman, Vanguard,
 Alchemist) against the Steppe party, and each Chinese hero in each Steppe
 hero's seat; `china-buffs.mjs` (2026-10-26) whether the AI is why China
 loses (`mod.search`, the modified side's own horizon and work cap) and

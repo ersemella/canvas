@@ -46,7 +46,7 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   units or obstacles, and hazards it enters trigger, 6.2.)
 - **Very high health and High defence** (owner; defence High since
   2026-10-21, was none). Built with defence 9, so health 20 since
-  2026-10-23 (placeholder; the Bökh Champion has 8; was 1,500 against
+  2026-10-23 (placeholder; the Grappler has 8; was 1,500 against
   540), so the enemy has to commit several turns to it, not one burst.
 - **It acts last in the starting order, despite its speed** (owner,
   2026-10-23; it acted first, at slot 0, from 2026-10-21): its card starts
@@ -79,9 +79,9 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
 - The enemy is **trying to kill it.** Every ability reaches it like any
   other unit: damage, statuses, **displacement** and **Immobilized**
   included (owner). Pushing it back or holding it in place is a legitimate
-  tactic; no ability lasts forever, and a Bökh Champion grappling it turn
-  after turn means the player has to deal with the Champion (owner).
-- A Stunned camel (an enemy Bökh Champion's Grapple) or an Immobilized
+  tactic; no ability lasts forever, and a Grappler grappling it turn
+  after turn means the player has to deal with the Grappler (owner).
+- A Stunned camel (an enemy Grappler's Grapple) or an Immobilized
   one (hail) waits; its card still goes a round on.
 - **Friendly fire applies** (owner, 6.7): the party's own Bow and Hail
   can hit it. As a unit, it

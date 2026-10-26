@@ -1,7 +1,7 @@
-// Buffs for the Modao Vanguard other than speed, which keep its kit a slow
+// Buffs for the Vanguard other than speed, which keep its kit a slow
 // tank's (owner, 2026-10-26): each with Swift Strike Haste 3, China's party
 // against the Steppe's (`china-buffs.mjs`: speed 2 and Haste 3 gave 51.7%),
-// and the Vanguard alone in the Champion's seat (speed 2: 45.9%; as built
+// and the Vanguard alone in the Grappler's seat (speed 2: 45.9%; as built
 // 40%). `modWinPct` is China's share, or the seat's.
 const china = ['youxia', 'modao', 'alchemist'];
 const seat = ['modao', 'mangudai', 'storm'];

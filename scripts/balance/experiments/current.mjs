@@ -1,5 +1,5 @@
 // The game as it plays (2026-10-23, after Skirmish was adopted): each
-// ability of the kits removed from one side, the Outrider's two attacks
+// ability of the kits removed from one side, the Horse Archer's two attacks
 // together, and every stage caravan against the full party (player wins).
 const heroes = ['bokh', 'mangudai', 'storm'];
 const bans = [['longshot'], ['skirmish'], ['hail'], ['sunlight'], ['grapple'], ['throw'], ['longshot', 'skirmish']];

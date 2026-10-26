@@ -10,7 +10,7 @@ the rest is **Proposed**: the numbers are the owner's to set
 > Numbers are in `packages/games/silk-road-run/src/rules/config.ts`;
 > the stat and keyword rules are in [heroes-and-gear.md](heroes-and-gear.md)
 > and [keywords.md](keywords.md); the track is [timeline.md](timeline.md).
-> The Bökh Champion's Pin was renamed Grapple (owner, 2026-10-22); the
+> The Grappler's Pin was renamed Grapple (owner, 2026-10-22); the
 > measurements below keep the name they were taken under.
 >
 > **Everything before [the 2026-10-23 rework](#the-2026-10-23-rework) was
@@ -47,7 +47,7 @@ the rest is **Proposed**: the numbers are the owner's to set
   for point, and its value comes in steps set by the track's rounding.
   Changing `C` doesn't fix it (tested); pricing gear speed by the slots it
   saves does.
-- **The Mangudai Outrider takes 2–3 times as many turns as anyone else**,
+- **The Horse Archer takes 2–3 times as many turns as anyone else**,
   81% of them moves or Dashes to line up its six arrow lanes: a lot of
   clicks for one hero.
 - **The track's own tools (Push, Pull) aren't in any Phase 1 kit**, so the
@@ -83,13 +83,13 @@ at 400 chosen actions. The harness is `scripts/balance/ablate.mjs`; see
 
 | Hero | Turns per fight | Share of its turns |
 |---|---:|---|
-| Mangudai Outrider | 25 | move 63%, Dash 18%, **Bow 13.5%**, Volley 3.8%, Hold 1.4% |
-| Bökh Champion | 7.7 | move 42%, **Throw 30%**, Pin 16%, Rampage 6.5%, Hold 5.4% |
-| Yadachy Storm Caller | 8.3 | **Fog 39%**, Hail 20.5%, move 18.6%, Sunlight 11.7%, Freeze 10.5% |
+| Horse Archer | 25 | move 63%, Dash 18%, **Bow 13.5%**, Volley 3.8%, Hold 1.4% |
+| Grappler | 7.7 | move 42%, **Throw 30%**, Pin 16%, Rampage 6.5%, Hold 5.4% |
+| Storm Caller | 8.3 | **Fog 39%**, Hail 20.5%, move 18.6%, Sunlight 11.7%, Freeze 10.5% |
 
 Median 53 chosen actions and 84 slots per fight; 6.8% unfinished.
 Ultimates unlock around slot 32 to 39 and are used around 38 to 50. The
-Champion uses Rampage in only half of fights, because it often dies
+Grappler uses Rampage in only half of fights, because it often dies
 first.
 
 Damage and kills per fight (both sides together; Hail can also hit
@@ -119,7 +119,7 @@ in tuning 1 below. "Package" is tunings 1 to 3.
 |---|---:|---:|---:|---|
 | Bow | 19.7% | 7.9% | | The core of the game |
 | Hail | 28.1% | 25.8% | | Core; the Storm Caller's real job is damage |
-| Throw | 30.6% | 35.1% | | Core; the Champion's only real damage |
+| Throw | 30.6% | 35.1% | | Core; the Grappler's only real damage |
 | Rampage | 45.2% | 44.1% | 45.4% | Pulls its weight |
 | Dash | 49.9% | 44.6% | 48.2% | Mostly replaceable by walking |
 | Pin | 52.0% | 47.9% | 50.6% | Adds nothing measurable |
@@ -139,18 +139,18 @@ a look at individual fights, or a redesign.
 
 ### Tactical options and strategy
 
-- **Decisions per turn are few and the same each fight.** The Outrider
+- **Decisions per turn are few and the same each fight.** The Horse Archer
   steps into a lane and shoots. The Storm Caller places hail on whoever
-  is in reach. The Champion walks in and throws. Fog and Pin are chosen
+  is in reach. The Grappler walks in and throws. Fog and Pin are chosen
   often but change nothing. A "turtle" plan (fog, heal, pin) loses to a
   damage race.
 - **The six-lane bow, with no range limit, sets the positioning game.**
   Lining up an arrow costs 2–3 cheap moves per shot. That makes the
-  Outrider tedious to play: 25 turns a fight against the others' 8. A
-  higher move cost doesn't help: at base 30 or 40 the Outrider switches
+  Horse Archer tedious to play: 25 turns a fight against the others' 8. A
+  higher move cost doesn't help: at base 30 or 40 the Horse Archer switches
   to Dash (65–69% of its turns) and takes as many turns.
-- **The tank doesn't tank.** The Champion has the lowest survival (27% vs
-  41–43%) and a third of the Outrider's damage per slot (raw 9.6 vs 30.9).
+- **The tank doesn't tank.** The Grappler has the lowest survival (27% vs
+  41–43%) and a third of the Horse Archer's damage per slot (raw 9.6 vs 30.9).
   Pin, its control tool, measures as worthless. What protection it gives
   comes from blocking arrow lanes with its body.
 - **Track play is missing.** No Phase 1 ability Pushes or Pulls a card.
@@ -163,19 +163,19 @@ a look at individual fights, or a redesign.
 ### Costs, damage, stats and constants
 
 Hits to kill with each hero's main attack (current numbers, no
-Vulnerable; the Outrider and Storm Caller at 300 and 420 health since
+Vulnerable; the Horse Archer and Storm Caller at 300 and 420 health since
 2026-10-21, 360 before, when Throw took 5 and 6, Hail 6 and 8, and
-Volley 2 on the Outrider):
+Volley 2 on the Horse Archer):
 
-| Attack (raw after power) | vs Champion (540, def 25) | vs Outrider (300, def 10) | vs Storm Caller (420, def 25) |
+| Attack (raw after power) | vs Grappler (540, def 25) | vs Horse Archer (300, def 10) | vs Storm Caller (420, def 25) |
 |---|---:|---:|---:|
 | Bow (216) | 4 (144 each) | 2 (180) | 3 (144) |
 | Throw (96) | 9 (64) | 4 (80) | 7 (64) |
 | Hail hit (75) | 11 (50) | 5 (62) | 9 (50) |
 | Volley (360) | 3 (240) | **1 (300)** | 2 (240) |
 
-Damage per slot of a typical action: Outrider 216 / 7 slots = 30.9;
-Champion 96 / 10 = 9.6; Storm Caller 75 / 10 = 7.5 plus the lingering
+Damage per slot of a typical action: Horse Archer 216 / 7 slots = 30.9;
+Grappler 96 / 10 = 9.6; Storm Caller 75 / 10 = 7.5 plus the lingering
 hex.
 
 Stat exchange rates (win rate for +10 on one hero of one side; +60
@@ -183,29 +183,28 @@ health for reference):
 
 | Hero | +10 speed | +10 power | +10 defence | +60 health |
 |---|---:|---:|---:|---:|
-| Bökh Champion | 60.5% | 59.1% | 53.7% | 58.4% |
-| Mangudai Outrider | 64.6% | 54.7% | 57.9% | 58.2% |
-| Yadachy Storm Caller | 65.4% | 53.9% (61.3% with heal 50) | 55.6% | 55.7% |
+| Grappler | 60.5% | 59.1% | 53.7% | 58.4% |
+| Horse Archer | 64.6% | 54.7% | 57.9% | 58.2% |
+| Storm Caller | 65.4% | 53.9% (61.3% with heal 50) | 55.6% | 55.7% |
 
 - **Speed is the strongest stat for every hero.** Power's worth depends on
-  the kit: +10 hardly moves the Outrider (no hits-to-kill threshold
+  the kit: +10 hardly moves the Horse Archer (no hits-to-kill threshold
   crossed), but matters for the Storm Caller once Sunlight's heal is
   worth having.
 - **Speed's value comes in steps.** For a Medium (25) hero, +10 speed
   turns a typical action from 10 slots into 8 after rounding down.
   Rescaling the formula so the three stats share one constant (`C` 50,
   `speedScale` 7.5, giving typical turns of 8, 10 and 12 slots) measured
-  the same: +10 speed on the Storm Caller and the Outrider gave 65.3% and
+  the same: +10 speed on the Storm Caller and the Horse Archer gave 65.3% and
   63.4%, against 63.0% and 61.0% under the same tuning with today's `C`.
   The slot a turn lands on is what counts, not the formula, so `C` can
   stay.
 - **Typical turns fall outside the 8 to 12 slot aim** at the ends (High
   7, Low 14; [timeline.md](timeline.md), 3.2). Harmless with three
-  heroes; it starts to matter when Low heroes (Varangian Guard, Modao
-  Vanguard) and Very low heroes (Mahout Bulwark) arrive.
+  heroes; it starts to matter when Low heroes (Barbarian, Vanguard) and Very low heroes (Elephant Rider) arrive.
 - **Movement:** a one-hex move costs 30, about 3 slots, so stepping is
   nearly free. That suits the separate-movement rule, but it's why the
-  Outrider shuffles.
+  Horse Archer shuffles.
 
 ### Enemy caravans: solo strength and pair synergy (2026-10-22)
 
@@ -220,14 +219,14 @@ dead at the end, per finished fight. Experiments file:
 
 | Enemy caravan | Player wins | Heroes lost | Player's losses: party / camel | Unfinished |
 |---|---:|---:|---|---:|
-| Champion + 2 wolves | 99.7% | 0.28 | 0 / 1 | 0.8% |
-| Outrider + 2 wolves | 99.7% | 0.34 | 1 / 0 | 0.3% |
+| Grappler + 2 wolves | 99.7% | 0.28 | 0 / 1 | 0.8% |
+| Horse Archer + 2 wolves | 99.7% | 0.34 | 1 / 0 | 0.3% |
 | Storm Caller + 2 wolves | 98.3% | 0.47 | 7 / 0 | 0% |
-| Champion + Outrider + wolf | 93.8% | 0.78 | 17 / 7 | 2.8% |
-| Champion + Storm Caller + wolf | 84.5% | 1.02 | 60 / 2 | 0% |
-| Outrider + Storm Caller + wolf | 82.8% | 1.11 | 63 / 4 | 2.8% |
-| *Champion ×2 + wolf* | 98.2% | 0.64 | 7 / 0 | 0.8% |
-| *Outrider ×2 + wolf* | 96.1% | 0.68 | 12 / 3 | 2.8% |
+| Grappler + Horse Archer + wolf | 93.8% | 0.78 | 17 / 7 | 2.8% |
+| Grappler + Storm Caller + wolf | 84.5% | 1.02 | 60 / 2 | 0% |
+| Horse Archer + Storm Caller + wolf | 82.8% | 1.11 | 63 / 4 | 2.8% |
+| *Grappler ×2 + wolf* | 98.2% | 0.64 | 7 / 0 | 0.8% |
+| *Horse Archer ×2 + wolf* | 96.1% | 0.68 | 12 / 3 | 2.8% |
 | *Storm Caller ×2 + wolf* | 73.1% | 1.41 | 106 / 1 | 0.5% |
 | All three, no wolves (stage 3) | 62.5% | 1.70 | 128 / 18 | 2.8% |
 
@@ -237,13 +236,13 @@ dead at the end, per finished fight. Experiments file:
   stage-1 enemy that wins a few fights.
 - **The Storm Caller is the strongest enemy hero by a wide margin.** Every
   caravan with it is 10–25 points harder than one without, and two of them
-  beat any mixed pair. Hail looks like the cause: the player's Outrider
+  beat any mixed pair. Hail looks like the cause: the player's Horse Archer
   (300 health) survives 54–58% of fights against a mixed pair with a Storm
   Caller and 35% against two, against 67–96% in caravans without one.
 - **Synergy is small.** Against the average of its two doubles, the
-  Champion and Outrider together lose the player 3.4 points more fights
+  Grappler and Horse Archer together lose the player 3.4 points more fights
   (6.2% against 2.9%) and 0.12 more heroes: the one pair clearly worth more
-  than its parts (perhaps the Champion's body screening the Outrider; not
+  than its parts (perhaps the Grappler's body screening the Horse Archer; not
   checked).
   Pairs with the Storm Caller are about additive (losses +1.1 and +1.8
   points, heroes lost +0.0 and +0.07, inside noise).
@@ -259,20 +258,20 @@ power).** The same caravans, player win % and heroes lost per fight:
 
 | Enemy caravan | Hail 50 | **Hail 40** | Hail 35 |
 |---|---|---|---|
-| Champion + 2 wolves | 99.7%, 0.28 | 99.5%, 0.32 | 100%, 0.31 |
-| Outrider + 2 wolves | 99.7%, 0.34 | 98.0%, 0.43 | 99.0%, 0.50 |
+| Grappler + 2 wolves | 99.7%, 0.28 | 99.5%, 0.32 | 100%, 0.31 |
+| Horse Archer + 2 wolves | 99.7%, 0.34 | 98.0%, 0.43 | 99.0%, 0.50 |
 | Storm Caller + 2 wolves | 98.3%, 0.47 | 98.5%, 0.38 | 99.5%, 0.35 |
-| Champion + Outrider + wolf | 93.8%, 0.78 | 93.0%, 0.84 | 92.7%, 0.90 |
-| Champion + Storm Caller + wolf | 84.5%, 1.02 | 91.1%, 0.85 | 92.4%, 0.76 |
-| Outrider + Storm Caller + wolf | 82.8%, 1.11 | 87.0%, 1.00 | 83.9%, 1.06 |
-| *Champion ×2 + wolf* | 98.2%, 0.64 | 97.5%, 0.68 | 97.0%, 0.72 |
-| *Outrider ×2 + wolf* | 96.1%, 0.68 | 94.8%, 0.81 | 95.1%, 0.88 |
+| Grappler + Horse Archer + wolf | 93.8%, 0.78 | 93.0%, 0.84 | 92.7%, 0.90 |
+| Grappler + Storm Caller + wolf | 84.5%, 1.02 | 91.1%, 0.85 | 92.4%, 0.76 |
+| Horse Archer + Storm Caller + wolf | 82.8%, 1.11 | 87.0%, 1.00 | 83.9%, 1.06 |
+| *Grappler ×2 + wolf* | 98.2%, 0.64 | 97.5%, 0.68 | 97.0%, 0.72 |
+| *Horse Archer ×2 + wolf* | 96.1%, 0.68 | 94.8%, 0.81 | 95.1%, 0.88 |
 | *Storm Caller ×2 + wolf* | 73.1%, 1.41 | 83.0%, 1.10 | 91.2%, 0.84 |
 | All three (unfinished) | 62.5%, 1.70 (2.8%) | 64.5%, 1.65 (4.3%) | 60.0%, 1.68 (10%) |
 
 At 40 the stage-2 spread narrows from 83–94% to 87–93%, and the Storm
 Caller stops being the hardest solo enemy (0.38 heroes lost, between the
-Champion's and the Outrider's). Two Storm Callers are still the hardest
+Grappler's and the Horse Archer's). Two Storm Callers are still the hardest
 double (83%), but no longer by 23 points. At 35 the Storm Caller is the
 weakest enemy hero, and a tenth of mirror fights go unfinished: Hail is
 also the side's damage, so cutting it lengthens fights. Unfinished fights
@@ -310,7 +309,7 @@ was read as a Volley). Measured, same seeds:
 | Side without Pin / Dash wins | 48.7% / 50.6% | 50.3% / 48.4% |
 
 Pricing the hits a ranged unit loses standing in fog was tried and
-dropped: the Outrider shuffled out of every fog and sandstorm hex (20.5
+dropped: the Horse Archer shuffled out of every fog and sandstorm hex (20.5
 turns a fight instead of 15) and 6.4% of fights went unfinished. Without
 the charge-dodge assumption, unfinished fights fall to 2.8% but Volley is
 worth nothing (50.3%); it is kept, since the stalls are the kind a
@@ -360,7 +359,7 @@ across Sunlight 27%, Hail 27%, Fog 20% and moves 18%.
    2026-10-20). Both ultimates
    then sit in the 40–48% band, and Volley, an arcing rain of arrows,
    keeps the game's one charged, answerable threat (3.7).
-   Volley's charge is 1 slot at the Outrider's speed, so little can answer
+   Volley's charge is 1 slot at the Horse Archer's speed, so little can answer
    it. A longer charge at the same total (charge 40, recovery 40) was
    tried: a side without Volley then wins 48.0% (42.6% at charge 20) and
    5.6% of fights go unfinished (4.1%). Volley stays at charge 20.
@@ -378,7 +377,7 @@ a straight line, over whatever is in the hex between, cost 20. Dash went
 up to 3 in a line, stopped by ruins and enemies, at 40, and read as a
 cheaper walk. Measured with the camel in play, 400 fights each:
 
-| Version | Side without it wins | Share of the Outrider's turns | Slots (Outrider) |
+| Version | Side without it wins | Share of the Horse Archer's turns | Slots (Horse Archer) |
 |---|---:|---:|---:|
 | Dash (up to 3, cost 40) | 45.1% | 16.5% | 3 |
 | **Leap, cost 20** | **40.3%** | 33% | 1 |
@@ -386,12 +385,12 @@ cheaper walk. Measured with the camel in play, 400 fights each:
 | Leap, cost 40 | 50.8% | 9% | 3 |
 | Leap over up to 2 spaces, cost 40 | 46.3% | 18% | 3 |
 
-A short hop only pays when it's cheap: at the Outrider's speed, 20 and
+A short hop only pays when it's cheap: at the Horse Archer's speed, 20 and
 25 cost 1 slot, 30 costs 2. Its share of turns is above a situational
 ability's band; it mostly replaces walking (9.6 turns a fight against
 8.9), so watch it rather than tune it now.
 As shipped, with Sunlight clearing hail and fog too, a side without Leap
-wins 44.8%, and Leap is a third of the Outrider's turns.
+wins 44.8%, and Leap is a third of the Horse Archer's turns.
 
 **Measured 2026-10-21, not applied: a step before the Bow or Pin.** Each
 was added as an extra option beside the ability (step one hex, then
@@ -400,11 +399,11 @@ shows what the step is worth. 400 fights each:
 
 | Option | Cost | Side without it wins | Note |
 |---|---:|---:|---|
-| Step, then fire | 100 | **29.0%** | 39% of the Outrider's turns; fights 54 → 44 actions |
+| Step, then fire | 100 | **29.0%** | 39% of the Horse Archer's turns; fights 54 → 44 actions |
 | Step, then fire | 120 | 34.8% | |
-| Step, then fire | **150 (slow)** | **43.0%** | 20% of its turns; 7.1 Outrider turns a fight (10.0 today) |
+| Step, then fire | **150 (slow)** | **43.0%** | 20% of its turns; 7.1 Horse Archer turns a fight (10.0 today) |
 | Step, then fire | 180 | 50.0% | |
-| Step, then pin | 100 | 47.0% | Champion survival 34.5% → 29.1% |
+| Step, then pin | 100 | 47.0% | Grappler survival 34.5% → 29.1% |
 | Step, then pin | 120 | 52.8% | |
 
 Fog, three identities with the current AI (which prices fog only as
@@ -438,7 +437,7 @@ in, 400 fights each: a side without Pin wins 50.0%, without Sunlight
 40.8%, without the Bow 7.5%; 53 actions a fight.
 
 **Applied 2026-10-22 (owner): Pin melee only, Crushed 10; Lunge replaces
-Rampage.** The Bökh Champion's ultimate is now Lunge: a unit within 3,
+Rampage.** The Grappler's ultimate is now Lunge: a unit within 3,
 after a bound of up to 2 hexes to a free hex beside it, takes base 100
 and is pinned as by Pin, with no Vulnerable. Measured first with a
 prototype, 400 fights a row (win rate of the side without the ability):
@@ -458,9 +457,9 @@ prototype, 400 fights a row (win rate of the side without the ability):
 Pin's step made no measurable difference, and a cheaper Pin was used more
 without winning more; its crush damage is what moved it. As built, Pin
 is worth about as much as Throw (a side without Throw wins 44.5%) and is
-31% of the Champion's turns (Throw 18%, Lunge 8.8%); Lunge is a little
+31% of the Grappler's turns (Throw 18%, Lunge 8.8%); Lunge is a little
 under Rampage, within noise. 3.5% of fights unfinished, 54 actions a
-fight; the Champion survives 29% of fights.
+fight; the Grappler survives 29% of fights.
 
 **Applied 2026-10-22 (owner): Freeze base damage 60 → 120.** Measured
 under the production rules first, 400 fights a row (win rate of the side
@@ -502,15 +501,15 @@ rule; its damage −7%), Sunlight unchanged (40.3%).
    change): better, but not yet worth having. The AI still values fog by
    its flat weights, not by the arrows it blocks, so value it by the bow
    damage it stops (principle 4) before judging the rule.
-6. **Outrider click load.** Two candidates, both untested: the bow hits
+6. **Horse Archer click load.** Two candidates, both untested: the bow hits
    any unit in a range (5 or 6) with line of fire, not only six lanes; or
    a move-and-shoot ability (a "Parthian shot", 120 cost) replaces Dash.
    Either gives fewer, more meaningful turns.
-7. **The Champion as a tank.** It needs a reason to be hit or to hold
+7. **The Grappler as a tank.** It needs a reason to be hit or to hold
    ground. Tried after tunings 1 to 3: **Pin that doesn't Immobilize the
-   Champion itself** (the pin still breaks if the two are parted). A side
+   Grappler itself** (the pin still breaks if the two are parted). A side
    without Pin then wins 44.8% (about 50% before): Pin becomes worth having,
-   at no cost in stalls (3.5%). **Applied 2026-10-20:** the Champion
+   at no cost in stalls (3.5%). **Applied 2026-10-20:** the Grappler
    stays free, and moving away releases the target. A zone of control is
    untested.
 8. **Stalls still need a guaranteed end.** Tuning brought them to 2.5%,
@@ -518,12 +517,12 @@ rule; its damage −7%), Sunlight unchanged (40.3%).
    to the exit ends a fight ([camel.md](camel.md)); built 2026-10-21, and
    over 200 AI-vs-AI fights none went unfinished.
 
-## The Modao Vanguard (2026-10-22)
+## The Vanguard (2026-10-22)
 
 The fourth hero, measured before it joined the roster. Ablation as above
 (`scripts/balance/ablate.mjs`), 400 fights an experiment, about ±2.5
-points. "Vanguard team": the Vanguard, the Outrider and the Storm Caller,
-against the prototype party (the Champion in its place). Experiments:
+points. "Vanguard team": the Vanguard, the Horse Archer and the Storm Caller,
+against the prototype party (the Grappler in its place). Experiments:
 `scripts/balance/experiments/modao.mjs`, `modao-tuning.mjs`,
 `modao-tuning-2.mjs`; results in `work/modao-v*.json` (not committed).
 
@@ -582,7 +581,7 @@ other side's turns, so a one-sided ban can't ablate it.
 Measured on the rules pared back for balancing (README, owner
 2026-10-22): kits Bow; Hail (base 40 and Push 5 landing, 20 slots, base
 20 to a unit starting its turn in it); Grapple (reach 2 with a step in,
-base 60, pinned while adjacent) and Throw (beside the Champion), with
+base 60, pinned while adjacent) and Throw (beside the Grappler), with
 Inevitable; moves of at most 3; six ruins, no quicksand or sandstorm;
 Temee walking itself to the one exit. Production AI on both sides,
 `scripts/balance/ablate.mjs` and `mirror.mjs`, seeds from 1000; results in
@@ -608,20 +607,20 @@ run showed 184 of the Bow's damage as friendly fire: enemy arrows hitting
 Temee, whose log name has no "Your", were miscounted. Fixed in
 `ablate.ts` 2026-10-23; over 60 fights the AI shot 401 arrows, none at
 its own side, 92 of the enemy's at Temee.) Each hero spends 52–58% of its turns moving; the Storm
-Caller casts Hail on 48% of its turns, the Champion grapples on 28% and
-throws on 13%. Survival: Storm Caller 47%, Champion 29%, Outrider 20%.
+Caller casts Hail on 48% of its turns, the Grappler grapples on 28% and
+throws on 13%. Survival: Storm Caller 47%, Grappler 29%, Horse Archer 20%.
 
 **Stage enemies against the full party** (`experiments/caravans.mjs`, 400
 fights each; lower is a stronger enemy):
 
 | Enemy | Player wins | Median actions |
 |---|---:|---:|
-| Champion and two wolves | 100% | 40 |
-| Outrider and two wolves | 99.8% | 40 |
+| Grappler and two wolves | 100% | 40 |
+| Horse Archer and two wolves | 99.8% | 40 |
 | Storm Caller and two wolves | 98.3% | 44 |
-| Champion, Outrider, wolf | 97.3% | 44 |
-| Outrider, Storm Caller, wolf | 87.3% | 47 |
-| Champion, Storm Caller, wolf | 86.5% | 54 |
+| Grappler, Horse Archer, wolf | 97.3% | 44 |
+| Horse Archer, Storm Caller, wolf | 87.3% | 47 |
+| Grappler, Storm Caller, wolf | 86.5% | 54 |
 | Two Storm Callers, wolf | 71.3% | 59 |
 | All three heroes | 63.8% | 55 |
 
@@ -635,9 +634,9 @@ extra wins):
 
 | +10 / +60 health | Speed | Defence | Power | Health |
 |---|---:|---:|---:|---:|
-| Bökh Champion | 60.8% | 58.0% | 56.8% | 56.0% |
-| Mangudai Outrider | 49.3% | 61.5% | 58.3% | 61.0% |
-| Yadachy Storm Caller | 66.3% | 65.5% | 60.0% | 57.0% |
+| Grappler | 60.8% | 58.0% | 56.8% | 56.0% |
+| Horse Archer | 49.3% | 61.5% | 58.3% | 61.0% |
+| Storm Caller | 66.3% | 65.5% | 60.0% | 57.0% |
 
 **Mirror matches** (no camel, 500 pairs): player side 50.7% (47.3–54.0),
 first mover 51.4%: no side bias. 16.5% unfinished at 400 actions, with
@@ -645,7 +644,7 @@ nothing to end a stall.
 
 **Reading.** Hail carries the game: with no damage of their own outside
 it, the side losing it almost never wins, and two Storm Callers are the
-strongest pair. Throw adds least. The Outrider gains nothing from +10
+strongest pair. Throw adds least. The Horse Archer gains nothing from +10
 speed (its track steps don't change at that step) but dies first. Temee
 is rarely attacked and rarely decides a fight, so the race to the exit
 does little at these lengths.
@@ -655,8 +654,8 @@ does little at these lengths.
 `experiments/hail-tuning.mjs`, 400 fights each, the full party against
 two Storm Callers and a wolf (Hail's best enemy) and against all three
 heroes (stage 3). The player's win rate rises as Hail weakens; for
-reference, two Outriders and a wolf lose 95.8% of the time, two
-Champions and a wolf 100%.
+reference, two Horse Archers and a wolf lose 95.8% of the time, two
+Grapplers and a wolf 100%.
 
 | Hail (base values) | vs two Storm Callers | vs all three | Temee out, of 400 (all three) | Unfinished (all three) |
 |---|---:|---:|---:|---:|
@@ -731,14 +730,14 @@ it adds nothing):
 In the control fights (the player's side also played by the AI): the
 player's side won 66.7% of finished fights (enemies beaten 58, Temee out
 70, Temee killed 32, party killed 32 of 192 finished); a median 254 slots,
-about 12 of Temee's rounds. Share of each hero's turns: the Champion
-Grapples on 69%, walks on 27% and Throws on 3%; the Outrider shoots on 41%,
+about 12 of Temee's rounds. Share of each hero's turns: the Grappler
+Grapples on 69%, walks on 27% and Throws on 3%; the Horse Archer shoots on 41%,
 walks on 36% and Holds on 23% (nothing in its lanes); the Storm Caller
 hails on 81%. Per fight, the Bow dealt 15.6 damage and Grapple 10.9;
 kills were Grapple 1.44, Bow 1.35, Throw 0.01.
 
 - **Grapple is the strongest ability in the game.** Its Stun takes away
-  every turn of the grappled unit until the Champion is damaged, Stunned
+  every turn of the grappled unit until the Grappler is damaged, Stunned
   or moved apart, and the AI rarely breaks it: a side without it wins 6%.
 - **Throw is a trap:** it gives up a held Stun (when it lands away) for 1
   damage. The AI almost never takes it, and removing it changes nothing.
@@ -750,18 +749,18 @@ against each stage's enemy):
 
 | Enemy | Player wins |
 |---|---:|
-| Bökh Champion + 2 wolves | 87% |
-| Mangudai Outrider + 2 wolves | 95.5% |
-| Yadachy Storm Caller + 2 wolves | 98.5% |
-| Bökh + Bökh + wolf | 39% |
-| Bökh + Mangudai + wolf | 80% |
-| Bökh + Storm + wolf | 84.3% |
-| Mangudai + Mangudai + wolf | 93.5% |
-| Mangudai + Storm + wolf | 97% |
+| Grappler + 2 wolves | 87% |
+| Horse Archer + 2 wolves | 95.5% |
+| Storm Caller + 2 wolves | 98.5% |
+| Grappler + Grappler + wolf | 39% |
+| Grappler + Horse Archer + wolf | 80% |
+| Grappler + Storm + wolf | 84.3% |
+| Horse Archer + Horse Archer + wolf | 93.5% |
+| Horse Archer + Storm + wolf | 97% |
 | Storm + Storm + wolf | 99.5% |
 | all three | 72.5% |
 
-Every enemy with a Champion is the hard one; the wolves (placeholders) are
+Every enemy with a Grappler is the hard one; the wolves (placeholders) are
 weak.
 
 ### Hail deals 1 (2026-10-23)
@@ -797,21 +796,21 @@ without Throw crashed in the harness (a fight with no acting unit).
 - **Throw still adds nothing** in every variant.
 - In the power-1 control fights the player's side (also the AI) won 58%
   of finished fights; Temee survived 92% and was killed in 16 of 200.
-  Survival: the Champion 30.5%, the Outrider 37.5%, the Storm Caller
+  Survival: the Grappler 30.5%, the Horse Archer 37.5%, the Storm Caller
   42.5%.
 
 **Stage caravans** (`experiments/caravans.mjs`), player wins:
 
 | Enemy | Power 0 | Power 1 |
 |---|---:|---:|
-| Bökh Champion + 2 wolves | 84.5% | 97.5% |
-| Mangudai Outrider + 2 wolves | 92.5% | 96.5% |
-| Yadachy Storm Caller + 2 wolves | 100% | 100% |
-| Bökh + Bökh + wolf | 38.5% | 79% |
-| Bökh + Mangudai + wolf | 38.5% | 64% |
-| Bökh + Storm + wolf | 78.5% | 92% |
-| Mangudai + Mangudai + wolf | 39.5% | 60.5% |
-| Mangudai + Storm + wolf | 88.3% | 87.5% |
+| Grappler + 2 wolves | 84.5% | 97.5% |
+| Horse Archer + 2 wolves | 92.5% | 96.5% |
+| Storm Caller + 2 wolves | 100% | 100% |
+| Grappler + Grappler + wolf | 38.5% | 79% |
+| Grappler + Horse Archer + wolf | 38.5% | 64% |
+| Grappler + Storm + wolf | 78.5% | 92% |
+| Horse Archer + Horse Archer + wolf | 39.5% | 60.5% |
+| Horse Archer + Storm + wolf | 88.3% | 87.5% |
 | Storm + Storm + wolf | 100% | 99% |
 | all three | 39.8% | 54.5% |
 
@@ -821,12 +820,12 @@ were as hard as stage 3.
 
 **Stats at power 0** (`experiments/stats.mjs`, +1 to one hero of one
 side): the Storm Caller's power +1 won 79% (the change adopted), the
-Champion's speed +1 71.7%; the rest 49.5–61.5%.
+Grappler's speed +1 71.7%; the rest 49.5–61.5%.
 
 ### New abilities (2026-10-23)
 
 The owner's proposals, built on a branch (not merged): **Overwatch** for
-the Outrider, **Sunlight** for the Storm Caller (heal 1, cleanse, melts
+the Horse Archer, **Sunlight** for the Storm Caller (heal 1, cleanse, melts
 hail), and a **swap** as one of Throw's landings ([roster.md](roster.md)).
 `experiments/new-abilities.mjs` and `new-abilities-tuning.mjs`, 400 fights
 each, seeds from 1000, the production AI on both sides. The AI was changed
@@ -850,9 +849,9 @@ Unfinished 0–0.8%. Control fights: median 49 actions (42 before), 91
 slots (78); the player's side (the AI, with Temee) won 43.2% of finished
 fights (59% before), Temee killed in 84 of 400 (48).
 
-Share of turns: the Outrider shoots 46%, walks 30%, Overwatches 24% (it
+Share of turns: the Horse Archer shoots 46%, walks 30%, Overwatches 24% (it
 no longer Holds: 15.5% before); the Storm Caller Hails 51%, Sunlights 33%,
-walks 17%; the Champion swaps on 2.6% and Throws on 8.3%. Per fight:
+walks 17%; the Grappler swaps on 2.6% and Throws on 8.3%. Per fight:
 Overwatch fires 0.2 shots (0.3 damage, 0.1 of it on allies); Sunlight
 heals 6.6.
 
@@ -871,7 +870,7 @@ heals 6.6.
   Storm Caller's turns (over the 35% that makes a non-core ability
   suspect), 1.5–1.8% of fights go unfinished, the median fight is 55
   actions, and 19.4 health is healed a fight.
-- **The swap is dead** (2.6% of the Champion's turns, under 5%), as
+- **The swap is dead** (2.6% of the Grappler's turns, under 5%), as
   expected: a second adjacent unit to grapple, or Throw's 1 damage
   somewhere else, is nearly always better. It costs no button.
 
@@ -879,14 +878,14 @@ heals 6.6.
 
 | Enemy | Before | With the new abilities |
 |---|---:|---:|
-| Bökh Champion + 2 wolves | 98% | 98.5% |
-| Mangudai Outrider + 2 wolves | 96.8% | 96.3% |
-| Yadachy Storm Caller + 2 wolves | 99.8% | 100% |
-| Bökh + Bökh + wolf | 78.3% | 75.9% |
-| Bökh + Mangudai + wolf | 66.5% | 68.4% |
-| Bökh + Storm + wolf | 94% | 94.7% |
-| Mangudai + Mangudai + wolf | 64.8% | 59.5% |
-| Mangudai + Storm + wolf | 90.8% | 89.4% |
+| Grappler + 2 wolves | 98% | 98.5% |
+| Horse Archer + 2 wolves | 96.8% | 96.3% |
+| Storm Caller + 2 wolves | 99.8% | 100% |
+| Grappler + Grappler + wolf | 78.3% | 75.9% |
+| Grappler + Horse Archer + wolf | 66.5% | 68.4% |
+| Grappler + Storm + wolf | 94% | 94.7% |
+| Horse Archer + Horse Archer + wolf | 64.8% | 59.5% |
+| Horse Archer + Storm + wolf | 90.8% | 89.4% |
 | Storm + Storm + wolf | 99% | 97.2% |
 | all three | 58.3% | **42.8%** |
 
@@ -898,13 +897,13 @@ move.
 
 **The AI now values an overwatched lane** (`overwatchThreat` in
 `ai.ts`) by its one shot, at the most it is worth on a hostile unit acting
-before the Outrider's next turn that must cross it: Temee's next step into
+before the Horse Archer's next turn that must cross it: Temee's next step into
 it is a sure hit (its health weight, 2 a point); a melee unit whose every
 way to a hex beside its quarry goes through the lane takes the shot or
 forgoes its hit, so the lesser of the two; ranged units lose nothing.
 Overwatch is still worth nothing (`experiments/ow-ai.mjs`): a side without
 it wins 49% (shooting every unit that enters: 49%; the shot stopping a
-walk: 50%). A sample of 30 fights shows why: of 552 Outrider decisions,
+walk: 50%). A sample of 30 fights shows why: of 552 Horse Archer decisions,
 the lanes were worth different amounts on 27 (5%), and the bow had a
 target on 435 (79%). On an 8 × 8 board with 3-space walks, one lane is
 almost never the only way to a target or the exit.
@@ -945,9 +944,9 @@ and `fog-tuning.mjs`, 400 fights each:
 
 #### Volley in place of Overwatch
 
-**Volley** (owner, 2026-10-23): the Outrider's arrows loosed high onto one
+**Volley** (owner, 2026-10-23): the Horse Archer's arrows loosed high onto one
 space within 3, falling as hail does, so no line of fire is needed; the
-unit there takes the Outrider's power (2), as the Bow's arrow does. Fog
+unit there takes the Horse Archer's power (2), as the Bow's arrow does. Fog
 stays in the Storm Caller's kit; the swap stays (owner). The threat map
 counts every space within its reach. `experiments/volley.mjs` and
 `volley-tuning.mjs`, 400 fights each.
@@ -956,11 +955,11 @@ counts every space within its reach. `experiments/volley.mjs` and
 |---|---:|---:|---:|---:|
 | Side without Volley wins | **14.5%** | 24.4% | 28% | 15% |
 | Side without the Bow wins | 42.5% | 36.6% | 33% | 22.8% |
-| Volley's share of the Outrider's turns | 29% | 17% | 47% | 29% |
+| Volley's share of the Horse Archer's turns | 29% | 17% | 47% | 29% |
 | Temee killed (of 400 control fights) | **168** | 48 | 24 | 170 |
-| Player wins vs Outrider + 2 wolves | 77.5% | 93.5% | 100% | 78.3% |
-| vs Bökh + Outrider + wolf | 52.5% | 73.7% | 89% | 52.3% |
-| vs Outrider + Outrider + wolf | **13%** | 43% | 84.8% | 13.3% |
+| Player wins vs Horse Archer + 2 wolves | 77.5% | 93.5% | 100% | 78.3% |
+| vs Grappler + Horse Archer + wolf | 52.5% | 73.7% | 89% | 52.3% |
+| vs Horse Archer + Horse Archer + wolf | **13%** | 43% | 84.8% | 13.3% |
 | vs all three | 42.5% | 62.6% | 69.9% | 42% |
 
 Before any new ability: Temee killed in 48 of 400; the stage caravans
@@ -972,15 +971,15 @@ without): Hail 39.1%, Fog 51.4%, Grapple 29.3% (10.3% before), Throw
   damage with none of its limits (line of fire, the first unit in the
   lane). It makes the Bow the lesser attack, takes Grapple's place as what
   decides fights, and hunts Temee over anything in the way: Temee dies in
-  42% of fights. An enemy with two Outriders wins 87% of stage 2.
+  42% of fights. An enemy with two Horse Archers wins 87% of stage 2.
 - **Range 2 fits**: Volley a strong second attack (24.4%), the Bow still
   worth having (36.6%), Volley on 17% of turns, Temee killed as often as
-  before; stage 2 with two Outriders is the hard one (43%), the last
+  before; stage 2 with two Horse Archers is the hard one (43%), the last
   stage a little easier (62.6%).
 - **1 less damage** is a weak attack the AI uses on nearly half of the
-  Outrider's turns (over the 35% that makes a non-core ability suspect),
+  Horse Archer's turns (over the 35% that makes a non-core ability suspect),
   and every stage gets easier.
-- **Not on adjacent units** changes nothing: the Outrider stands off
+- **Not on adjacent units** changes nothing: the Horse Archer stands off
   anyway.
 
 **Neither the Bow nor Volley on an adjacent unit** (owner's question,
@@ -992,23 +991,23 @@ and `volley.minRange` 2; an adjacent unit still stops the Bow's arrow.
 | Side without Volley wins | **13.4%** | 20.2% | 24.4% |
 | Side without the Bow wins | 41.3% | 43.4% | 36.6% |
 | Side without Grapple wins | 23.7% | 17.4% | |
-| The Outrider's turns: Hold | **37.9%** | **42.4%** | 10.7% |
+| The Horse Archer's turns: Hold | **37.9%** | **42.4%** | 10.7% |
 | Volley / Bow / walking | 34% / 9% / 19% | 22% / 11% / 25% | 17% / 39% / 33% |
 | Temee killed (of 400) | 130 | 44 | 48 |
-| Player wins vs Outrider + 2 wolves | 88.5% | 99% | 93.5% |
-| vs Bökh + Outrider + wolf | 73.7% | 84.5% | 73.7% |
-| vs Outrider + Outrider + wolf | 30.1% | 81% | 43% |
+| Player wins vs Horse Archer + 2 wolves | 88.5% | 99% | 93.5% |
+| vs Grappler + Horse Archer + wolf | 73.7% | 84.5% | 73.7% |
+| vs Horse Archer + Horse Archer + wolf | 30.1% | 81% | 43% |
 | vs all three | 54.4% | 62% | 62.6% |
 | Unfinished | 0% | 2.5% | 0% |
 
 - **At range 3 it is still too strong**: Volley still decides fights
   (13.4%), Temee still dies far more often (130 of 400), and two enemy
-  Outriders still win 70% of stage 2.
-- **At range 2 the numbers balance, the Outrider doesn't**: Volley only
+  Horse Archers still win 70% of stage 2.
+- **At range 2 the numbers balance, the Horse Archer doesn't**: Volley only
   reaches the ring two spaces out, so with an enemy beside it or none at
-  two the Outrider Holds on 42% of its turns, and the Bow, hardly used
+  two the Horse Archer Holds on 42% of its turns, and the Bow, hardly used
   (11%), is worth little (43.4%). Stage 2 gets easier than before any new
-  ability. Range 2 with adjacent targets allowed keeps the Outrider busy
+  ability. Range 2 with adjacent targets allowed keeps the Horse Archer busy
   (Holds 10.7%) at similar worth.
 
 #### The kits adopted (owner, 2026-10-23)
@@ -1028,16 +1027,16 @@ Hail alone; Overwatch, Sunlight and Fog removed with their code
 | Bow and Volley | 7.5% |
 
 No fight unfinished; median 40 actions, 74 slots. Share of turns: the
-Outrider shoots 38%, volleys 17%, walks 33%, Holds 13%; the Storm Caller
-Hails 72%; the Champion Grapples 36%, Throws 10%, swaps 2%. Control
+Horse Archer shoots 38%, volleys 17%, walks 33%, Holds 13%; the Storm Caller
+Hails 72%; the Grappler Grapples 36%, Throws 10%, swaps 2%. Control
 fights: the player's side won 65%, Temee killed in 54 of 400. Stage
 caravans, player wins: one hero and two wolves 92.8–99.5%; two heroes and
-a wolf 72.7–99% but 42.5% against two Outriders; all three 61.3%.
+a wolf 72.7–99% but 42.5% against two Horse Archers; all three 61.3%.
 
 #### Volley delayed, at range 3 (2026-10-23)
 
 Owner's question: a wider Volley, range 3, whose arrows land on the marked
-space at the start of the Outrider's next turn, on whoever stands there
+space at the start of the Horse Archer's next turn, on whoever stands there
 then; nothing else changed (still aimed at a space with a unit on it).
 Built as an experiment switch, off in play: `ABILITY.volley.delayed`. The
 AI values a volley in the air at its hit, `AI.volleyDodgeShare` (0.25, a
@@ -1051,27 +1050,27 @@ the adopted kits on the same seeds:
 | Side without Volley wins | 23.5% | 26.2% |
 | Side without the Bow wins | 38.3% | 34.8% |
 | Side without Hail / Grapple / Throw wins | 18.8% / 16.8% / 49.5% | 17.8% / 20.8% / 49.5% |
-| The Outrider's turns: Volley / Bow / walking / Hold | 17 / 38 / 33 / 13% | **44** / 25 / 30 / 1% |
+| The Horse Archer's turns: Volley / Bow / walking / Hold | 17 / 38 / 33 / 13% | **44** / 25 / 30 / 1% |
 | Volley damage per fight (both sides) | 5.3 | 10.5 |
 | Volley kills per fight | 0.56 | 1.74 |
 | Volleys that hit a unit | 100% | about 60% |
 | Temee killed (of 400 control fights) | 54 | 34 |
-| Player wins vs Outrider + 2 wolves | 92.8% | 99.5% |
-| vs Bökh + Outrider + wolf | 72.7% | 84.7% |
-| vs Outrider + Storm + wolf | 87.8% | 97.5% |
-| vs Outrider + Outrider + wolf | **42.5%** | **81.5%** |
+| Player wins vs Horse Archer + 2 wolves | 92.8% | 99.5% |
+| vs Grappler + Horse Archer + wolf | 72.7% | 84.7% |
+| vs Horse Archer + Storm + wolf | 87.8% | 97.5% |
+| vs Horse Archer + Horse Archer + wolf | **42.5%** | **81.5%** |
 | vs all three | 61.3% | 67.8% |
 
 Unfinished 0–1%.
 
-- **The stage spike goes**: two enemy Outriders become an ordinary stage-2
+- **The stage spike goes**: two enemy Horse Archers become an ordinary stage-2
   enemy, and Temee dies less often. A volley on a unit that can still walk
   mostly makes it step aside.
 - **Volley's worth doesn't fall**: a side without it still wins only
   26.2%, a core ability's worth for a second attack, and the AI takes it
-  on 44% of the Outrider's turns (over the 35% that makes a non-core
+  on 44% of the Horse Archer's turns (over the 35% that makes a non-core
   ability suspect), with twice the damage and three times the kills. At
-  range 3 it nearly always has a target, so it becomes the Outrider's main
+  range 3 it nearly always has a target, so it becomes the Horse Archer's main
   attack and the Bow its fallback.
 - The result leans on how well the AI dodges (about 40% of volleys miss);
   a player who reliably steps out would weaken it further. Delayed at
@@ -1079,12 +1078,12 @@ Unfinished 0–1%.
 
 #### Volley charged, at range 3 (2026-10-23)
 
-Owner's follow-up: the delay above costs the Outrider nothing, its arrows
+Owner's follow-up: the delay above costs the Horse Archer nothing, its arrows
 landing at the start of a turn it takes anyway. Made a charge: after a
-delayed volley the Outrider's card goes `ABILITY.volley.charge` more slots
+delayed volley the Horse Archer's card goes `ABILITY.volley.charge` more slots
 on than its action cost (6), and the arrows land at the start of that later
 turn, so the target has 6 + charge slots to step out. The AI prices a
-charge at its share of a turn (charge ÷ action cost × the Outrider's hit).
+charge at its share of a turn (charge ÷ action cost × the Horse Archer's hit).
 `experiments/volley-charge.mjs`, 400 fights each, seeds from 1000:
 
 | | Adopted | Delayed, no charge | Charge 1 | Charge 2 | Charge 4 | Charge 6 |
@@ -1092,13 +1091,13 @@ charge at its share of a turn (charge ÷ action cost × the Outrider's hit).
 | Side without Volley wins | 23.5% | 26.2% | 29.6% | 49.5% | 50.5% | 51% |
 | Side without the Bow wins | 38.3% | 34.8% | 25.5% | 21.5% | 18.5% | 15.5% |
 | Side without Hail / Grapple wins | 18.8 / 16.8% | 17.8 / 20.8% | 17 / 17.5% | 13.5 / 10.8% | 16 / 11% | 19 / 8.8% |
-| The Outrider's turns on Volley | 17% | 44% | 35% | 17% | 12% | 6% |
+| The Horse Archer's turns on Volley | 17% | 44% | 35% | 17% | 12% | 6% |
 | Volleys cast / hitting a unit, per fight | 2.7 / 2.7 | 8.6 / 5.3 | 5.7 / 4.1 | 2.5 / 1.9 | 1.7 / 1.4 | 0.9 / 0.6 |
 | Temee killed (of 400) | 54 | 34 | 14 | 36 | 46 | 46 |
-| Player wins vs Outrider + 2 wolves | 92.8% | 99.5% | 100% | 98.3% | 97.3% | 94.8% |
-| vs Bökh + Outrider + wolf | 72.7% | 84.7% | 89% | 81.8% | 81.8% | 73.5% |
-| vs Outrider + Storm + wolf | 87.8% | 97.5% | 95.7% | 95% | 92.3% | 87.3% |
-| vs Outrider + Outrider + wolf | 42.5% | 81.5% | 85.3% | 79% | 74% | 64.8% |
+| Player wins vs Horse Archer + 2 wolves | 92.8% | 99.5% | 100% | 98.3% | 97.3% | 94.8% |
+| vs Grappler + Horse Archer + wolf | 72.7% | 84.7% | 89% | 81.8% | 81.8% | 73.5% |
+| vs Horse Archer + Storm + wolf | 87.8% | 97.5% | 95.7% | 95% | 92.3% | 87.3% |
+| vs Horse Archer + Horse Archer + wolf | 42.5% | 81.5% | 85.3% | 79% | 74% | 64.8% |
 | vs all three | 61.3% | 67.8% | 77.8% | 60.8% | 61% | 57.8% |
 
 No fight unfinished (0–0.3%).
@@ -1109,15 +1108,15 @@ No fight unfinished (0–0.3%).
   out before the arrows land. What Volley still hits is a unit that can't
   walk (Immobilized, Stunned) or that stays; it lands about 75% of the
   time but is cast rarely.
-- The Bow becomes the Outrider's attack again (side without it 15.5–21.5%,
+- The Bow becomes the Horse Archer's attack again (side without it 15.5–21.5%,
   core worth), and Grapple and Hail matter more.
-- The stages: two enemy Outriders stay easier than with the adopted
+- The stages: two enemy Horse Archers stay easier than with the adopted
   Volley (65–79% against 42.5%), the hardest stage-2 enemy at charge 6;
   the last stage is as before.
 - **Charge 1 is no middle ground**: a window of 7 still gives a speed-2
   unit a turn first on most volleys, yet Volley is worth what it was
   with no charge (29.6% against 26.2%, within the noise) and takes 35% of
-  the Outrider's turns. The step from worth everything to worth nothing
+  the Horse Archer's turns. The step from worth everything to worth nothing
   is between charges 1 and 2. The stages get easier at charge 1 (all
   three 77.8%, Temee killed in 14 of 400); why is not yet looked at.
 - No charge tuning gives Volley a second ability's worth (40–48%): with a
@@ -1129,12 +1128,12 @@ The AI search now counts a fight that ends while the track runs on to the
 next decision (a volley landing, a squeeze) as a turn later than one its
 option ends, so a Bow shot that kills now wins over a sure volley that
 kills at the next turn. Measured as shipped (`volley.mjs`-style ablation
-and the Outrider caravans, 400 fights each), the same as charge 2 above:
+and the Horse Archer caravans, 400 fights each), the same as charge 2 above:
 side without Volley 49.5%, without the Bow 21.5%, Hail 13.5%, Grapple
 10.8%, Throw 49.3%; player wins 98.3%, 81.8%, 95%, 79% and 60.8%.
 
 **Remeasured on the new track** (action cost 60 ÷ (speed + 5), rounded,
-merged the same day: the Outrider's is 8, a speed-2 unit's 9, so a volley
+merged the same day: the Horse Archer's is 8, a speed-2 unit's 9, so a volley
 lands 10 slots after it is cast and every unit that walks still gets a
 turn first). 400 fights each, seeds from 1000:
 
@@ -1147,10 +1146,10 @@ turn first). 400 fights each, seeds from 1000:
 | Throw | 47.3% |
 | Bow and Volley | 19.3% |
 
-The Outrider's turns: walking 37%, Bow 34%, Volley 26%, Hold 3%; 3.8
+The Horse Archer's turns: walking 37%, Bow 34%, Volley 26%, Hold 3%; 3.8
 volleys cast a fight, 2.5 hitting, 1 kill. Temee killed in 30 of 400.
-Stage caravans, player wins: Outrider + 2 wolves 100%, Bökh + Outrider +
-wolf 89.8%, Outrider + Storm + wolf 99%, two Outriders + wolf 97%, all
+Stage caravans, player wins: Horse Archer + 2 wolves 100%, Grappler + Horse Archer +
+wolf 89.8%, Horse Archer + Storm + wolf 99%, two Horse Archers + wolf 97%, all
 three 73.8%. On this track Volley is in the 40–48% band for a second
 ability, on the edge of its usage band (8–25%). The stages are easier
 across the board; how much of that is the track and how much is Volley
@@ -1159,16 +1158,16 @@ wasn't separated.
 **With Sunlight in the Storm Caller's kit** (Empower 2, merged the same
 day), same runs: side without Volley 47.8%, the Bow 25.8%, Hail 33.1%,
 Sunlight **55.3%**, Grapple 11%, Throw 45%, the Bow and Volley 14.3%.
-Volley stays (just) in its band, on 21% of the Outrider's turns (3.5
+Volley stays (just) in its band, on 21% of the Horse Archer's turns (3.5
 casts a fight, 2.5 hitting). Sunlight costs games, as measured before
-it was merged. Temee killed in 56 of 400. Player wins: Outrider + 2
-wolves 99.3%, Bökh + Outrider + wolf 86.3%, Outrider + Storm + wolf
-91.8%, two Outriders + wolf 88.5%, all three 69.3%.
+it was merged. Temee killed in 56 of 400. Player wins: Horse Archer + 2
+wolves 99.3%, Grappler + Horse Archer + wolf 86.3%, Horse Archer + Storm + wolf
+91.8%, two Horse Archers + wolf 88.5%, all three 69.3%.
 
 ### Skirmish in place of Volley (2026-10-23)
 
 Owner's question: replace Volley with a step of one space, then the Bow's
-shot from there; the step optional, so the Outrider can still shoot as
+shot from there; the step optional, so the Horse Archer can still shoot as
 he does now. A second form: the step, then a charged shot, so its target
 can dodge. Built as an experiment switch, in no kit: `ABILITY.skirmish`
 (`charge` a share of the action cost, as Volley's; 0 shoots at once). The
@@ -1179,7 +1178,7 @@ lane it was aimed along, hitting the first unit in it then: the target
 can step out, and another unit can step in. The AI values a charged shot
 in the air by the first unit in its lane, at `AI.volleyDodgeShare` if that
 unit can walk first, and its threat map counts the Bow's lanes from each
-free space next to an Outrider (at the dodge share once charged).
+free space next to an Horse Archer (at the dodge share once charged).
 `experiments/skirmish.mjs`, 400 fights each, seeds from 1000:
 
 | | Today (Bow, Volley) | Step, shot at once | Step, charge ½ (4 slots) | Step, charge 1 (8 slots) |
@@ -1188,14 +1187,14 @@ free space next to an Outrider (at the dodge share once charged).
 | Side without the second ability wins | 39.5% (Volley) | **31.5%** | **42.5%** | 49.8% |
 | Side without both | 18.3% | 14.8% | 14.3% | 19.3% |
 | Side without Hail / Grapple / Throw / Sunlight | 26.3 / 18.5 / 47.8 / 48% | 26 / 17 / 50.3 / 49.3% | 23 / 18 / 47.5 / 49.8% | 27.8 / 13.8 / 48.8 / 53.3% |
-| The Outrider's turns: walk / Bow / second / Hold | 35 / 29 / 30 / 6% | 33 / 22 / 31 / **14%** | 38 / 34 / 18 / 10% | 44 / 39 / 5 / 12% |
+| The Horse Archer's turns: walk / Bow / second / Hold | 35 / 29 / 30 / 6% | 33 / 22 / 31 / **14%** | 38 / 34 / 18 / 10% | 44 / 39 / 5 / 12% |
 | Second ability's damage / kills a fight | 8.8 / 1.1 | 9 / 0.8 | 4.8 / 0.55 | 1.5 / 0.23 |
 | Median actions / slots | 37 / 77 | 36 / 71 | 37 / 80 | 40 / 81 |
 | Temee killed (of 400) | 30 | 26 | 30 | 30 |
-| Player wins vs Outrider + 2 wolves | 99.8% | 99.3% | 100% | 98.5% |
-| vs Bökh + Outrider + wolf | 90.3% | 82.5% | 84.5% | 79.3% |
-| vs Outrider + Storm + wolf | 94% | 89.5% | 93.5% | 92.3% |
-| vs Outrider + Outrider + wolf | 88.3% | 83.5% | 92% | 88.8% |
+| Player wins vs Horse Archer + 2 wolves | 99.8% | 99.3% | 100% | 98.5% |
+| vs Grappler + Horse Archer + wolf | 90.3% | 82.5% | 84.5% | 79.3% |
+| vs Horse Archer + Storm + wolf | 94% | 89.5% | 93.5% | 92.3% |
+| vs Horse Archer + Horse Archer + wolf | 88.3% | 83.5% | 92% | 88.8% |
 | vs all three | 74.8% | 69% | 69.5% | 68.5% |
 
 No fight unfinished. Today's Volley measured stronger here (39.5%) than
@@ -1205,9 +1204,9 @@ when it was adopted (44%; Sunlight's merge since).
   ability.** A side without it wins 31.5%, a core action's worth, and with
   it the plain Bow is worth almost nothing (45.3%): it is the one merged
   ability the owner described, "the Bow, with an optional step". As that,
-  the Outrider's attack is worth a little more than the Bow and Volley
+  the Horse Archer's attack is worth a little more than the Bow and Volley
   together today (14.8% against 18.3% without), and every stage with an
-  enemy Outrider gets 3–8 points harder. It also costs the Outrider a
+  enemy Horse Archer gets 3–8 points harder. It also costs the Horse Archer a
   decision: two of his three choices are the same shot. The AI Holds more
   (14% of his turns), which isn't looked into yet (the threat map's wider
   reach may make it wary of walking).
@@ -1215,7 +1214,7 @@ when it was adopted (44%; Sunlight's merge since).
   2, 3): Skirmish 42.5% and 18% of turns (a second ability's 40–48% and
   8–25%), the Bow back as the core (33.5%, 34% of turns), nothing over
   50%. It is a little weaker than today's Volley (42.5% against 39.5%),
-  hits less (4.8 damage a fight against 8.8), and two enemy Outriders are
+  hits less (4.8 damage a fight against 8.8), and two enemy Horse Archers are
   no longer a hard stage 2 (92%); the last stage is a little harder.
 - **A full turn's charge is dead** (49.8%, 5% of turns): a step and a shot
   12 slots later, against walking and then shooting, is no saving.
@@ -1225,17 +1224,17 @@ when it was adopted (44%; Sunlight's merge since).
 
 **Adopted (owner, 2026-10-23): the step with a charge of half a turn**, in
 place of Volley, which was removed with its code ([history.md](history.md)).
-`ABILITY.skirmish` `{charge: 0.5}`; the Outrider's kit is the Bow,
+`ABILITY.skirmish` `{charge: 0.5}`; the Horse Archer's kit is the Bow,
 Skirmish and Hold. A drawn arrow in the air is `FightState.shots`, its
 lane drawn on the board up to the first unit in it (`shotLane`); the AI's
-threat map leaves out a Skirmish step for an Immobilized Outrider. The
+threat map leaves out a Skirmish step for an Immobilized Horse Archer. The
 page aims it in two taps, the space to step to and then a unit in line
 from there (owner, 2026-10-23; the unit first until then). Measured as shipped, 400 fights each: side without
 Skirmish 43%, the Bow 33.5%, both 14.3%, Hail 22.8%, Sunlight 49.8%,
-Grapple 18%, Throw 47.5%; the Outrider walks 38%, Bows 34%, Skirmishes
-18%, Holds 10%; Temee killed in 30 of 400. Player wins: Outrider + 2
-wolves 100%, Bökh + Outrider + wolf 84.5%, Outrider + Storm + wolf 93.5%,
-two Outriders + wolf 91.8%, all three 69.5%.
+Grapple 18%, Throw 47.5%; the Horse Archer walks 38%, Bows 34%, Skirmishes
+18%, Holds 10%; Temee killed in 30 of 400. Player wins: Horse Archer + 2
+wolves 100%, Grappler + Horse Archer + wolf 84.5%, Horse Archer + Storm + wolf 93.5%,
+two Horse Archers + wolf 91.8%, all three 69.5%.
 
 ### Sunlight as Empower (2026-10-23)
 
@@ -1243,7 +1242,7 @@ A proposal for the Storm Caller's second ability (open question in
 [roster.md](roster.md)): **Sunlight**, Empower 1 on a unit within 3 that
 hits (not Temee, not a unit already Empowered) until the end of that unit's
 next turn. The owner asked for three variants: the Storm Caller may target
-itself (**self**: its next Hail deals 2), a Champion's Empower adds to its
+itself (**self**: its next Hail deals 2), a Grappler's Empower adds to its
 squeeze (**squeeze**), and Sunlight melts hail on its space, freeing whoever
 it held, with a space of hail alone a target too (**melts**). Built for
 measuring first, in no kit: the Empower rule in the rules (`empower` in
@@ -1262,7 +1261,7 @@ made it a trap, which says more about the scoring than the ability
   70% with self, the Storm Caller recasting on itself (972 casts in 400
   fights) for 0.9 extra damage a fight. Recasting on a unit already
   Empowered is now refused.
-- Counted with no enemy in reach, it Empowered Champions about to walk.
+- Counted with no enemy in reach, it Empowered Grapplers about to walk.
 
 **Each ability removed from one side** (modified side's wins; "today" is
 the adopted kit, Hail alone):
@@ -1281,18 +1280,18 @@ the adopted kit, Hail alone):
 | Empower's damage a fight | | 0.8 | 0.8 | 0.8 | 0.9 | 0.9 | 4.1 |
 | Temee killed (of 400) | 54 | 64 | 62 | 64 | 56 | 54 | **104** |
 
-Targets, base Sunlight: the Outrider 66%, the Champion 34%. Self was taken
-on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
+Targets, base Sunlight: the Horse Archer 66%, the Grappler 34%. Self was taken
+on 8% of casts; squeeze raised the Grappler's share to 40%; melts melted
 0.5 hails a fight. No fight went unfinished; medians 39–43 actions.
 
 **Stage caravans**, player wins:
 
 | Enemy | Today | Sunlight | + self | + squeeze | + melts | All three | Empower 2 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Outrider + 2 wolves | 92.8% | 93.5% | 93% | 93.5% | 93.5% | 93% | 88.5% |
-| Outrider + Outrider + wolf | 42.5% | 43% | 44.5% | 43% | 43% | 44.5% | 37.8% |
-| Bökh + Outrider + wolf | 72.7% | 73.9% | 73.4% | 74.2% | 73.9% | 73.7% | 66.2% |
-| Outrider + Storm + wolf | 87.8% | 87.3% | 87.3% | 87.3% | 87.5% | 87.5% | 78% |
+| Horse Archer + 2 wolves | 92.8% | 93.5% | 93% | 93.5% | 93.5% | 93% | 88.5% |
+| Horse Archer + Horse Archer + wolf | 42.5% | 43% | 44.5% | 43% | 43% | 44.5% | 37.8% |
+| Grappler + Horse Archer + wolf | 72.7% | 73.9% | 73.4% | 74.2% | 73.9% | 73.7% | 66.2% |
+| Horse Archer + Storm + wolf | 87.8% | 87.3% | 87.3% | 87.3% | 87.5% | 87.5% | 78% |
 | All three | 61.3% | 62% | 61% | 62.3% | 60.3% | 60% | 56% |
 
 - **Empower 1 for one turn is worth nothing in every variant** (49.5–50.3%,
@@ -1305,14 +1304,14 @@ on 8% of casts; squeeze raised the Champion's share to 40%; melts melted
   turn (a turn now for +1 next turn); the squeeze adds a point at most to
   a grapple already deciding fights; melting is rare (0.5 a fight) and
   only keeps Temee alive a little more (56 killed of 400, 64 without it).
-- **It doesn't counter the Outrider**: stages with enemy Outriders move
-  within noise (two Outriders 43–44.5%, 42.5% today).
+- **It doesn't counter the Horse Archer**: stages with enemy Horse Archers move
+  within noise (two Horse Archers 43–44.5%, 42.5% today).
 - **Empower 2 is a trap** (57%): it takes a quarter of the Storm Caller's
   turns (3.75 casts a fight) and Hail's from it (Hail on 45% of turns, its
   damage 6.5 a fight from 10.1), yet adds only 4.1 damage a fight, about
   1.1 of each cast's 2: the Empowered ally often has no hit on its next
   turn. Without Hail holding them, enemies reach Temee: it dies in 104 of
-  400 control fights (54 today), and in 46 of 400 against the Outrider and
+  400 control fights (54 today), and in 46 of 400 against the Horse Archer and
   two wolves (29 today), a caravan with no Storm Caller, so it is the
   player's own Sunlight that costs it. The AI counts the full +2 whenever
   an enemy is in reach, about twice what it delivers (principle 4).
@@ -1326,13 +1325,13 @@ misuses it.
 ### Sunlight as it plays, and the AI's valuation (2026-10-23)
 
 Sunlight as adopted (owner): Empower 2, the Storm Caller may target
-itself, hail melts, and an Empowered Champion's squeeze deals its Empower
+itself, hail melts, and an Empowered Grappler's squeeze deals its Empower
 more; on the day's later rules (action cost 60 ÷ (speed + 5), Volley
 charged at range 3).
 
 **The valuation** (`empowerGain` in ai.ts), rebuilt: an Empower is worth
 its extra damage on the unit's next hit if an enemy is in reach, twice
-that for a Champion that grapples (its squeeze), plus a kill's worth if
+that for a Grappler that grapples (its squeeze), plus a kill's worth if
 that hit kills only with it, all times `AI.empoweredShare`.
 `experiments/sunlight-ai.mjs`, 400 fights each:
 
@@ -1363,7 +1362,7 @@ same rules.
 | Control fights | Sunlight kit | Hail alone |
 |---|---:|---:|
 | Storm Caller: Hail / Sunlight / walk | 40% / 33% / 27% | 72% / / 27% |
-| Sunlight's targets: self / Champion / Outrider | 27% / 35% / 38% | |
+| Sunlight's targets: self / Grappler / Horse Archer | 27% / 35% / 38% | |
 | Empower's damage a fight; hails melted | 4.8; 0.84 | |
 | Temee killed (of 400) | 40 | 30 |
 
@@ -1371,14 +1370,14 @@ same rules.
 
 | Enemy | Sunlight kit | Hail alone |
 |---|---:|---:|
-| Bökh + 2 wolves | 94% | 96.8% |
-| Outrider + 2 wolves | 99.8% | 100% |
+| Grappler + 2 wolves | 94% | 96.8% |
+| Horse Archer + 2 wolves | 99.8% | 100% |
 | Storm Caller + 2 wolves | 99.8% | 100% |
-| Bökh + Bökh + wolf | 70.8% | 72.3% |
-| Bökh + Outrider + wolf | 87% | 89.8% |
-| Bökh + Storm + wolf | 89.8% | 91.8% |
-| Outrider + Outrider + wolf | 92.3% | 97% |
-| Outrider + Storm + wolf | 93.3% | 99% |
+| Grappler + Grappler + wolf | 70.8% | 72.3% |
+| Grappler + Horse Archer + wolf | 87% | 89.8% |
+| Grappler + Storm + wolf | 89.8% | 91.8% |
+| Horse Archer + Horse Archer + wolf | 92.3% | 97% |
+| Horse Archer + Storm + wolf | 93.3% | 99% |
 | Storm + Storm + wolf | **84.8%** | 97.8% |
 | All three | 67.5% | 73.8% |
 
@@ -1387,13 +1386,13 @@ No fight unfinished; medians 31–46 actions.
 - **Sunlight still adds nothing** (49.3%) and takes Hail's turns: the side
   without Hail wins 22.5% (15.8% with Hail alone).
 - **It makes Volley worth nothing** (51.8%, 44% with Hail alone): an
-  Empowered Outrider's Bow (4 damage, a kill on any 4-health unit) is
+  Empowered Horse Archer's Bow (4 damage, a kill on any 4-health unit) is
   worth more than a charged Volley. The Bow is worth more (24.8%).
 - **The enemy gains more from it than the player**: every stage with an
   enemy Storm Caller is harder, most with two (84.8% from 97.8%; they
   Empower each other, a Hail then dealing 3), and the last stage falls to
   67.5% from 73.8%. With no enemy Storm Caller the stages move 1–5 points.
-- **It doesn't counter the Outrider**: two enemy Outriders win more often
+- **It doesn't counter the Horse Archer**: two enemy Horse Archers win more often
   (92.3% player wins, 97% with Hail alone).
 
 ### The game as it plays (2026-10-23, evening)
@@ -1416,36 +1415,36 @@ median 38 actions, 79 slots.
 
 | Control fights | |
 |---|---|
-| Outrider: walk / Bow / Skirmish / Hold | 38 / 34 / 17 / 10% |
-| Champion: walk / Grapple / Throw / Hold / swap | 50 / 35 / 9 / 4 / 3% |
+| Horse Archer: walk / Bow / Skirmish / Hold | 38 / 34 / 17 / 10% |
+| Grappler: walk / Grapple / Throw / Hold / swap | 50 / 35 / 9 / 4 / 3% |
 | Storm Caller: Hail / Sunlight / walk | 43 / 33 / 24% |
-| Turns a fight: Outrider / Champion / Storm Caller | 6.8 / 5.6 / 7.3 |
+| Turns a fight: Horse Archer / Grappler / Storm Caller | 6.8 / 5.6 / 7.3 |
 | Damage (kills) a fight: Bow / Hail / Skirmish / Grapple / Throw | 10.9 (1.0) / 8 (1.3) / 5.2 (0.6) / 4.9 (0.55) / 1.8 (0.4) |
-| Sunlight's targets: self / Outrider / Champion / Temee (melting) | 31 / 38 / 30 / 1%; Empower 5.4 damage a fight, 0.7 hails melted |
-| Survival: Storm Caller / Champion / Outrider; Temee killed | 44.5 / 34 / 32%; 34 of 400 |
+| Sunlight's targets: self / Horse Archer / Grappler / Temee (melting) | 31 / 38 / 30 / 1%; Empower 5.4 damage a fight, 0.7 hails melted |
+| Survival: Storm Caller / Grappler / Horse Archer; Temee killed | 44.5 / 34 / 32%; 34 of 400 |
 
 **Stage caravans**, player wins (a stronger enemy is lower):
 
 | Enemy | Player wins |
 |---|---:|
-| Outrider + 2 wolves | 100% |
+| Horse Archer + 2 wolves | 100% |
 | Storm Caller + 2 wolves | 99.5% |
-| Bökh + 2 wolves | 96.8% |
-| Outrider + Outrider + wolf | 95.3% |
-| Outrider + Storm + wolf | 94.5% |
-| Bökh + Storm + wolf | 87.8% |
+| Grappler + 2 wolves | 96.8% |
+| Horse Archer + Horse Archer + wolf | 95.3% |
+| Horse Archer + Storm + wolf | 94.5% |
+| Grappler + Storm + wolf | 87.8% |
 | Storm + Storm + wolf | 86.5% |
-| Bökh + Outrider + wolf | 83.8% |
-| Bökh + Bökh + wolf | 75% |
+| Grappler + Horse Archer + wolf | 83.8% |
+| Grappler + Grappler + wolf | 75% |
 | All three | 68.3% |
 
 **Stats**, +1 (+2 health) on one hero of one side, the side with it wins:
 
 | | Speed | Defence | Power | Health |
 |---|---:|---:|---:|---:|
-| Bökh Champion | 61.3% | 54.5% | 51.3% | 54.5% |
-| Mangudai Outrider | 57.5% | 60% | 61.8% | 60% |
-| Yadachy Storm Caller | 67% | 52% | 66.5% | 52% |
+| Grappler | 61.3% | 54.5% | 51.3% | 54.5% |
+| Horse Archer | 57.5% | 60% | 61.8% | 60% |
+| Storm Caller | 67% | 52% | 66.5% | 52% |
 
 **Mirror** (no camel): player side 49.6% (46.5–52.8), first mover 48.9%,
 3.3% unfinished: no side bias.
@@ -1455,17 +1454,17 @@ median 38 actions, 79 slots.
   Against principle 12 it passes: nothing unfinished, nothing above 50%,
   every second ability at 44–49%.
 - **Sunlight and Throw are worth almost nothing** (48.8%, 48.3%), at the
-  top of a second ability's band. Throw is used on 9% of the Champion's
+  top of a second ability's band. Throw is used on 9% of the Grappler's
   turns, so it costs little. Sunlight takes a third of the Storm Caller's
   (33%, near principle 3's 35% line) for a share of 1.2 points; those
   turns are Hail's.
 - **Grapple is worth more than a core action** (18.3%, below the core's
-  20–35%): the Champion's kit is Grapple and little else.
-- **Stage 2 is uneven.** Two Champions and a wolf (75%) are nearly stage
-  3 (68.3%); any pair with an Outrider but no Champion is a stage-1 fight
+  20–35%): the Grappler's kit is Grapple and little else.
+- **Stage 2 is uneven.** Two Grapplers and a wolf (75%) are nearly stage
+  3 (68.3%); any pair with an Horse Archer but no Grappler is a stage-1 fight
   (94–95%).
 - **The Storm Caller gains most from stats**: +1 speed or power is worth
-  about 17 points, its defence and health 2. The Champion's power is worth
+  about 17 points, its defence and health 2. The Grappler's power is worth
   nothing (51.3%; Grapple's squeeze and Throw don't scale with it much),
   its speed 11 points.
 
@@ -1483,11 +1482,11 @@ original on one side only (`mod.kits`): head to head, above 50% is a buff.
 
 | New ability | Rule as built | Side without it wins | Hero's turns on it | Damage (kills) a fight |
 |---|---|---:|---:|---:|
-| Shove (Bökh) | Melee, Push 2, no damage | 49.6% | 1.1% | — |
-| Haul (Bökh) | Pull 2 the first unit in a lane 2–3 away, no damage | 47.8% | 7.6% | — |
-| Feigned Retreat (Outrider) | The Bow's shot at full damage, then a walk of 1–2 | **42.5%** | 12.8% | 4.7 (0.55) |
-| Volley (Outrider) | Any space within 3, no line of fire, charged ½ (4 slots) | **41.1%** | 19.9% | 5.6 (0.78) |
-| Overwatch (Outrider) | A lane until its next turn, the first unit entering shot | **57.9%** | 26% | 0.3 (0.02) |
+| Shove (Grappler) | Melee, Push 2, no damage | 49.6% | 1.1% | — |
+| Haul (Grappler) | Pull 2 the first unit in a lane 2–3 away, no damage | 47.8% | 7.6% | — |
+| Feigned Retreat (Horse Archer) | The Bow's shot at full damage, then a walk of 1–2 | **42.5%** | 12.8% | 4.7 (0.55) |
+| Volley (Horse Archer) | Any space within 3, no line of fire, charged ½ (4 slots) | **41.1%** | 19.9% | 5.6 (0.78) |
+| Overwatch (Horse Archer) | A lane until its next turn, the first unit entering shot | **57.9%** | 26% | 0.3 (0.02) |
 | Gale (Storm Caller) | Each unit next to a space within 3 takes 1 and is Pushed 1 | **40.6%** | 21.8% | 5 (0.53), 0.3 to allies |
 | Tailwind (Storm Caller) | Haste 3 on a unit within 3, once between its turns | **57.2%** | 4.9% | — |
 | *Skirmish (reference)* | *Today's upgrade* | *42.8%* | *14.3%* | *4 (0.48)* |
@@ -1496,7 +1495,7 @@ original on one side only (`mod.kits`): head to head, above 50% is a buff.
 | Changed ability | Rule as built | Head to head, side with it wins | Side without it wins (original's) | Hero's turns on it |
 |---|---|---:|---:|---:|
 | Hold Loose (Grapple) | Immobilized, not Stunned; holds through damage and Stuns | **39.4%** | 19% (Grapple 10.3%) | 17.8% |
-| Hip Toss (Throw) | Lands within 2 of the Champion; the grapple ends | 47.5% | 53.1% (Throw 48.7%) | 5.1% |
+| Hip Toss (Throw) | Lands within 2 of the Grappler; the grapple ends | 47.5% | 53.1% (Throw 48.7%) | 5.1% |
 | Squall Line (Hail) | Hail on 3 spaces in a line, no damage | **29.4%** | 36.2% (Hail 20.1%) | 37.7% |
 
 No fight unfinished except with Squall Line (0.4% head to head, 1.4% with
@@ -1523,7 +1522,7 @@ lane value (`AI.watchShare`, 0.25) at 0.1 and 0.5: 56.4% and 60.6%.
   of turns, each a turn of Hail given up for 3 slots of an ally's.
 - **Hold Loose is a nerf, not a sidegrade** (39.4% head to head): the
   held unit still acts, and Stunned's lost turn is Grapple's worth. It is
-  still the Champion's core (19% without it).
+  still the Grappler's core (19% without it).
 - **Hip Toss changes nothing** (47.5% head to head, 53.1% without it):
   like Throw, it is seldom worth a turn.
 - **Squall Line is a big nerf** (29.4% head to head) and slows fights:
@@ -1552,7 +1551,7 @@ Movement, Hail as it was (any space within 3):
 | Walk 2 | 45.7% | 9.8% | 45 |
 | No idle Hold (AI only) | 57.5% | 12.5% | 39 |
 | Walk 2, no Hold | 43.9% | 10% | 43 |
-| Walks by hero (Outrider straight lines up to 3, others 2) | 43.3% | 7.7% | 45 |
+| Walks by hero (Horse Archer straight lines up to 3, others 2) | 43.3% | 7.7% | 45 |
 
 Hail's shape, at walk 2:
 
@@ -1568,7 +1567,7 @@ Hail's shape, at walk 2:
   slightly favours the second mover (about 55%).
 - **Removing Hold doesn't end stalls**: the units shuffle instead.
 - **The ring reads best and measures well**: a shape round the Storm
-  Caller, safe next to it and 3 or more away (the Champion's way in);
+  Caller, safe next to it and 3 or more away (the Grappler's way in);
   first mover near even; Hail still the core (28.8%, in principle 2's
   20–35%) and in principle 3's usage band (46% from 65.5%).
 - **Its cost: more stalls without the camel** (22.2%) and longer fights
@@ -1601,21 +1600,21 @@ starting kits, seeds from 1000, with a `turns` setting patched in:
 **Adopted (owner, 2026-10-25): Hail lasts until its caster's turn after
 next, and hailing again replaces it** (`ABILITY.hail.turns`).
 
-### The Outrider's straight move (2026-10-25)
+### The Horse Archer's straight move (2026-10-25)
 
-Asked for: the balance after the Outrider's move became Longshot's shape
+Asked for: the balance after the Horse Archer's move became Longshot's shape
 (any number of spaces straight along one of the six lanes, up to the first
 unit, yurts or the map's edge). `ablate.mjs` with
 `experiments/outrider-straight.mjs`, 400 fights each, starting kits, seeds
 from 1000, the walk of 2 patched back in for comparison; `mirror.mjs`, 300
 pairs (600 fights, no camel), the walk of 2 at the commit before.
 
-| Outrider moves | Side without the Bow wins | Without Hail | Without Grapple | Player wins vs all three | Outrider survives (control) | Outrider's turns per fight | Longshot damage / kills per fight | First mover wins (mirror) | Mirror unfinished |
+| Horse Archer moves | Side without the Bow wins | Without Hail | Without Grapple | Player wins vs all three | Horse Archer survives (control) | Horse Archer's turns per fight | Longshot damage / kills per fight | First mover wins (mirror) | Mirror unfinished |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | Walk 2 (as it was) | 10.5% | 27.8% | 8.3% | 70.3% | 47.8% | 10.1 | 16.6 / 1.61 | 42.4% | 22.5% |
 | Straight, no cap | 21.3% | 27.8% | 10.5% | 65.8% | 36.8% | 8.0 | 13.4 / 1.14 | 41.3% | 32.2% |
 
-- **The straight move makes the Outrider weaker, not stronger.** He dies
+- **The straight move makes the Horse Archer weaker, not stronger.** He dies
   more (survives 36.8% of fights, from 47.8%), so he gets fewer turns and
   shoots less: Longshot deals about a fifth less and kills about 30% less.
   The likely cause is lost footwork: a walk of 2 reaches the six spaces
@@ -1631,19 +1630,19 @@ pairs (600 fights, no camel), the walk of 2 at the commit before.
 - **More stalls without the camel** (32.2%, from 22.5%): with the camel
   nothing went unfinished.
 
-### The Outrider's AI (2026-10-25)
+### The Horse Archer's AI (2026-10-25)
 
 Asked for: an AI heuristic that plays the straight move well. The cause of
-the Outrider's deaths: the AI's closing-in reward (`AI.perHexFromEnemy`,
+the Horse Archer's deaths: the AI's closing-in reward (`AI.perHexFromEnemy`,
 0.2 a space nearer the nearest enemy) grows with the move's length. A walk
 of 2 earned at most 0.4 a turn; a dash of 5 earns 1.0, more than the
-threat of ending next to the Champion costs the Outrider (about 0.25), so
+threat of ending next to the Grappler costs the Horse Archer (about 0.25), so
 he dashed into melee. `ablate.mjs` with `experiments/outrider-ai.mjs` and
 `outrider-ai-2.mjs` (they patch switches removed once the variant was
 chosen), 400 fights each, starting kits, seeds from 1000. Player-side
 figures are against all three heroes.
 
-| AI variant | Side without the Bow wins | Player wins | Temee killed | Party killed | Player's Outrider survives | Longshot damage / kills | Outrider's turns: Longshot / move / Hold |
+| AI variant | Side without the Bow wins | Player wins | Temee killed | Party killed | Player's Horse Archer survives | Longshot damage / kills | Horse Archer's turns: Longshot / move / Hold |
 |---|---:|---:|---:|---:|---:|---:|---|
 | Walk 2, closing by spaces (before the straight move) | 10.5% | 70.3% | 76 | 43 | 63.8% | 17.2 / 1.57 | 42% / 42% / 15% |
 | Closing by spaces (as it was) | 21.3% | 65.8% | 93 | 44 | 49.3% | 13.7 / 1.09 | 43% / 41% / 16% |
@@ -1680,7 +1679,7 @@ budget per turn (rules.test.ts).
 ### Hail for two turns, rechecked (2026-10-25)
 
 Asked for: the whole game again, in case Hail lasting 2 turns is too
-strong, now that the Outrider moves straight and lines up a clear shot.
+strong, now that the Horse Archer moves straight and lines up a clear shot.
 `ablate.mjs` with `experiments/hail-turns.mjs`, **800 fights each** (about
 ±1.8 points of standard error), seeds from 1000; the upgrade rows give the
 Storm Caller Hail and that upgrade on both sides. `heldTurnsPerFight`
@@ -1703,14 +1702,14 @@ Stage caravans, player wins (the full party; lower is a stronger enemy):
 
 | Enemy | Hail 1 turn | Hail 2 turns |
 |---|---:|---:|
-| Outrider + 2 wolves | 98.9% | 98.9% |
-| Bökh + 2 wolves | 99.4% | 99.4% |
+| Horse Archer + 2 wolves | 98.9% | 98.9% |
+| Grappler + 2 wolves | 99.4% | 99.4% |
 | Storm Caller + 2 wolves | 99.8% | 99.8% |
-| Bökh + Bökh + wolf | 79.6% | 81.4% |
-| Outrider + Outrider + wolf | 84.9% | 85.3% |
-| Bökh + Outrider + wolf | 90.9% | 91.6% |
-| Outrider + Storm + wolf | 96.3% | 95.6% |
-| Bökh + Storm + wolf | 96.6% | 97.5% |
+| Grappler + Grappler + wolf | 79.6% | 81.4% |
+| Horse Archer + Horse Archer + wolf | 84.9% | 85.3% |
+| Grappler + Horse Archer + wolf | 90.9% | 91.6% |
+| Horse Archer + Storm + wolf | 96.3% | 95.6% |
+| Grappler + Storm + wolf | 96.6% | 97.5% |
 | Storm + Storm + wolf | 96.8% | 96.4% |
 | All three | 75.9% | 76.3% |
 
@@ -1734,7 +1733,7 @@ Mirror (Hail 2 turns, 500 pairs, no camel): first mover 53.2%.
   Gale, Hail is worth nothing (48.5%): Gale replaces it. The Bow (15.6%)
   and Grapple (13.1%) remain worth more than a core action should
   (20–35%), as before.
-- **Stage 2 is still uneven**: two Champions and a wolf (81.4%) are near
+- **Stage 2 is still uneven**: two Grapplers and a wolf (81.4%) are near
   stage 3 (76.3%); pairs with a Storm Caller are stage-1 fights (95–97%).
   The Storm Caller is the weakest enemy hero in every caravan, 1 or 2
   turns of Hail alike.
@@ -1742,7 +1741,7 @@ Mirror (Hail 2 turns, 500 pairs, no camel): first mover 53.2%.
 ### The China line-up against the Steppe party (2026-10-25)
 
 Asked for: the Chinese units (the test stage's line-up: a fox spirit, the
-Modao Vanguard and the Waidan Alchemist, starting kits and the builder's
+Vanguard and the Alchemist, starting kits and the builder's
 untested numbers) against the Steppe party. `ablate.mjs` with
 `experiments/china.mjs`, **400 fights each** (about ±2.5 points), seeds
 from 1000. `ablate.ts` now takes an experiment's `map` (the Gobi: four or
@@ -1758,28 +1757,28 @@ wins (lower is a stronger enemy):
 | Fox + Fox + Alchemist (no Vanguard) | Gobi | 100% | 0.01 |
 | Fox + Vanguard + Fox (no Alchemist) | Gobi | 100% | 0.06 |
 | Three foxes | Gobi | 100% | 0 |
-| Outrider + 2 wolves (stage 1) | Steppe | 99% | 0.08 |
+| Horse Archer + 2 wolves (stage 1) | Steppe | 99% | 0.08 |
 | All three Steppe heroes (stage 3) | Gobi | 73% | 0.57 |
 
 Hero for hero (`mod.party`): one side has a Chinese hero in a Steppe
 hero's seat, the other the three Steppe heroes, every seed from both
 sides; the camel with the player. The Chinese side's share of wins:
 
-| Swapped in | for the Champion | for the Outrider | for the Storm Caller |
+| Swapped in | for the Grappler | for the Horse Archer | for the Storm Caller |
 |---|---:|---:|---:|
-| Modao Vanguard | 38.5% | 40.5% | 52.5% |
-| Waidan Alchemist | 32% | 35.3% | 40.6% |
-| Vanguard and Alchemist (for the Champion and the Storm Caller) | 27.3% | | |
+| Vanguard | 38.5% | 40.5% | 52.5% |
+| Alchemist | 32% | 35.3% | 40.6% |
+| Vanguard and Alchemist (for the Grappler and the Storm Caller) | 27.3% | | |
 
 - **The China line-up is a stage-1 fight**: the party wins every one and
-  loses a hero in under one fight in ten, as against the Outrider and two
+  loses a hero in under one fight in ten, as against the Horse Archer and two
   wolves. The Gobi changes nothing (100% on both maps); the Steppe's stage
   3 played on the Gobi (73%) is as hard as on the Steppe (76%).
 - **The Vanguard is the stronger of the two**, about the Storm Caller's
-  equal (52.5% in its seat) and weaker than the Champion (38.5%) and the
-  Outrider (40.5%). It deals 5–6 damage a fight with Cleave, used on 35–40%
+  equal (52.5% in its seat) and weaker than the Grappler (38.5%) and the
+  Horse Archer (40.5%). It deals 5–6 damage a fight with Cleave, used on 35–40%
   of its turns, almost never on its own side (0.1–0.2 a fight). At speed 1
-  it takes half the Outrider's turns.
+  it takes half the Horse Archer's turns.
 - **The Alchemist is the weakest hero measured**, below every Steppe hero
   in every seat (32–41%), and the pair together loses 3 fights in 4. Elixir
   is 60–70% of its turns but adds only 2–4 Empowered damage a fight; it
@@ -1787,7 +1786,7 @@ sides; the camel with the player. The Chinese side's share of wins:
   out of the China line-up (a second fox) costs the enemy nothing.
 - **To bring them to the Steppe's level** (about 50% in a
   seat): the Vanguard about one stat point (speed 2 would give it the
-  Champion's turns), the Alchemist more than that; Elixir at range 2 and
+  Grappler's turns), the Alchemist more than that; Elixir at range 2 and
   power 2 is too little for a whole turn. Not changed: the numbers are
   the owner's to set.
 
@@ -1836,9 +1835,9 @@ The aura within 2 and Delay 3 together: China 97.5%.
   points each (within noise), 5 slots (half a turn of a speed-2 hero)
   about 9 (61.8%, above the Storm Caller and the measure's 50%). Delay 3
   is about a third of a Steppe hero's turn.
-  In the Champion's seat (the same measure, `mod.party` with the Vanguard
-  for the Champion) Delay 5 lifts it from 38.5% to 46.8%: still below the
-  Champion, within about 1.3 standard errors of its equal.
+  In the Grappler's seat (the same measure, `mod.party` with the Vanguard
+  for the Grappler) Delay 5 lifts it from 38.5% to 46.8%: still below the
+  Grappler, within about 1.3 standard errors of its equal.
 - **The China line-up stays a stage-1 fight** with every variant
   (97.5–100%): the fox and the Alchemist's 4 health are the weak part,
   not the kits. Its difficulty is a matter of numbers (or of the line-up),
@@ -1887,7 +1886,7 @@ above.
 | Fixed 1, a hit of power 1 | 53% | | 1.0 |
 
 - **At power 2 it is too strong**, about 20 points over the Storm
-  Caller: the hit is the Bow's damage at the Outrider's speed, on any unit
+  Caller: the hit is the Bow's damage at the Horse Archer's speed, on any unit
   within 2 with no line of fire, and a Weaken besides.
 - **At power 1 it is the Storm Caller's equal** (within noise), with no
   unfinished fights (0.8% as built); the China line-up, at power 2, is
@@ -1961,11 +1960,10 @@ gains or loses.
 - Unfinished fights stay at 0–0.8%. The camel walking out still wins a
   fight, so a lone Alchemist at power 0 can win by Hastening it.
 
-### China against the Steppe, with the Youxia (2026-10-26)
+### China against the Steppe, with the Swordsman (2026-10-26)
 
-Asked for: the China party (Youxia Swordsman, Modao Vanguard, Waidan
-Alchemist, as built) against the Steppe party, and the Youxia in the
-Outrider's seat in a Steppe mirror. `ablate.mjs` with
+Asked for: the China party (Swordsman, Vanguard, Alchemist, as built) against the Steppe party, and the Swordsman in the
+Horse Archer's seat in a Steppe mirror. `ablate.mjs` with
 `experiments/china-steppe.mjs`, **400 fights each** (about ±2.5 points),
 seeds from 1000; the two headline rows also 2,000 more from seed 5000.
 `ablate.ts` now attributes Swift Strike's damage (`swiftStrike`).
@@ -1985,25 +1983,25 @@ beats the Steppe heroes 53.3%.
 Hero for hero in a Steppe mirror (one side a Chinese hero in a Steppe
 hero's seat); the Chinese side's share of wins:
 
-| Swapped in | for the Champion | for the Outrider | for the Storm Caller |
+| Swapped in | for the Grappler | for the Horse Archer | for the Storm Caller |
 |---|---:|---:|---:|
-| Youxia Swordsman | 41% | **46.9%** (2,400 fights; 45% of 400, 47.3% of 2,000) | 57% |
-| Modao Vanguard | 40% | 44.5% | 58.8% |
-| Waidan Alchemist | 44.1% | 50.8% | 55% |
+| Swordsman | 41% | **46.9%** (2,400 fights; 45% of 400, 47.3% of 2,000) | 57% |
+| Vanguard | 40% | 44.5% | 58.8% |
+| Alchemist | 44.1% | 50.8% | 55% |
 
 - **China is the weaker region**: about 37 to 63 party for party, on
   either map, and as an enemy it is easier than the Steppe's heroes
   (82% player wins against 53%). Unfinished fights 0–0.3%.
 - **Each Chinese hero is near the Steppe's level alone** (41–59% in a
   seat): every one beats the Storm Caller in its seat and loses to the
-  Champion in its. So the gap is the line-up, not one hero: China has no
-  ranged damage or area, and in the party match the Outrider deals 12.3
-  damage a fight with Longshot against the Youxia's 6.8 and the
+  Grappler in its. So the gap is the line-up, not one hero: China has no
+  ranged damage or area, and in the party match the Horse Archer deals 12.3
+  damage a fight with Longshot against the Swordsman's 6.8 and the
   Vanguard's 5.6, and survives 79% against their 36%.
-- **The Youxia for the Outrider: 46.9% (95% about 45–49)**, a little
+- **The Swordsman for the Horse Archer: 46.9% (95% about 45–49)**, a little
   under the hero it replaces. Same turns a fight (4.7 against 4.8),
   Swift Strike on 34% of them and moving on 57%; it deals 6.1 damage a
-  fight against the Outrider's 8.7 and survives 36% against 49%: health
+  fight against the Horse Archer's 8.7 and survives 36% against 49%: health
   4 in melee is the cost.
 - Not changed: the numbers are the owner's to set.
 
@@ -2023,7 +2021,7 @@ modified side its own horizon and work cap (`deep`: 4 and 4 × 220).
 | China deep, the Steppe production | 50% |
 | The Steppe deep, China production | 29% |
 | Both deep | **41.2%** (800) |
-| The Youxia with no caution (0, from 1) | 30.8% |
+| The Swordsman with no caution (0, from 1) | 30.8% |
 | The Vanguard with caution 1 (from 0) | 33.8% |
 
 - **Mostly not the AI.** A deeper search is worth about 10 points to
@@ -2036,25 +2034,25 @@ modified side its own horizon and work cap (`deep`: 4 and 4 × 220).
 
 | Buff | China wins | In a seat |
 |---|---:|---:|
-| none | 36.8% | Youxia for Outrider 46.9%; Vanguard for Champion 40%; Alchemist for Storm Caller 55% |
+| none | 36.8% | Swordsman for Horse Archer 46.9%; Vanguard for Grappler 40%; Alchemist for Storm Caller 55% |
 | Alchemist power +1 (2) | 60% (1,200) | 67.7% for the Storm Caller |
-| Youxia speed +1 (4) | 58.2% (1,200) | 60% for the Outrider |
+| Swordsman speed +1 (4) | 58.2% (1,200) | 60% for the Horse Archer |
 | Elixir range 3 | 50% (1,200) | 65.3% for the Storm Caller |
-| Swift Strike Haste 4 | 47.8% | 55.1% for the Outrider (800) |
-| Vanguard speed +1 (2) | 47.8% | 45.9% for the Champion (800) |
-| Youxia power +1 (3) | 47.5% | |
+| Swift Strike Haste 4 | 47.8% | 55.1% for the Horse Archer (800) |
+| Vanguard speed +1 (2) | 47.8% | 45.9% for the Grappler (800) |
+| Swordsman power +1 (3) | 47.5% | |
 | Every Chinese hero defence +1 | 47.8% | |
-| Youxia defence +1 (health 6) | 43.1% | |
+| Swordsman defence +1 (health 6) | 43.1% | |
 | Vanguard power +1 (3) | 43.3% | |
 | Alchemist defence +1 (health 6) | 40.8% | |
-| **Vanguard speed 2 and Haste 3** | **51.7%** (800) | Haste 3: 47.6% for the Outrider (800); speed 2: 45.9% for the Champion |
+| **Vanguard speed 2 and Haste 3** | **51.7%** (800) | Haste 3: 47.6% for the Horse Archer (800); speed 2: 45.9% for the Grappler |
 | Vanguard speed 2 and Haste 4 | 57.9% (800) | |
 
 - **A buff to the Alchemist overshoots**: power 2 or range 3 even
   China but make it the best hero in a Steppe party (65–68% in a seat);
-  it is already above 50% there. So does the Youxia at speed 4.
+  it is already above 50% there. So does the Swordsman at speed 4.
 - **Health doesn't fix it**: defence +1 on every Chinese hero is worth
-  11 points, on the Youxia or Alchemist alone 3–6.
+  11 points, on the Swordsman or Alchemist alone 3–6.
 - **The Vanguard at speed 2 and Swift Strike Haste 3** even the parties
   (51.7%) and bring the two heroes under 50% in their seats up to
   46–48%, none past 50%. Not changed: the numbers are the owner's.
@@ -2064,9 +2062,9 @@ modified side its own horizon and work cap (`deep`: 4 and 4 × 220).
 Asked for: with Swift Strike Haste 3 (owner: seems good), a buff for the
 Vanguard that isn't speed, keeping its kit a slow tank's.
 `experiments/vanguard-buffs.mjs`: China against the Steppe with Haste 3
-and the buff, and the Vanguard alone in the Champion's seat (no Haste).
+and the buff, and the Vanguard alone in the Grappler's seat (no Haste).
 
-| Vanguard buff, with Haste 3 | China wins | Vanguard for the Champion |
+| Vanguard buff, with Haste 3 | China wins | Vanguard for the Grappler |
 |---|---:|---:|
 | none (Haste 3 alone) | 43.4% (1,600) | 40% |
 | speed 2 (above) | 51.7% (800) | 45.9% (800) |
@@ -2081,7 +2079,7 @@ and the buff, and the Vanguard alone in the Champion's seat (no Haste).
 - **Cleave's Delay does what speed did**: Delay 8 is speed 2's equal
   for China and in the seat; 7 is a step under (49%). With Delay 8 the
   Vanguard Cleaves on 38% of its turns (33% at 5), deals 7.1 damage a
-  fight (5.9) and survives 50% (44%), and the Outrider facing it 66%
+  fight (5.9) and survives 50% (44%), and the Horse Archer facing it 66%
   (81%): its target loses most of a turn.
 - Power +1 and a walk of 3 even China too but do less for the Vanguard in
   a Steppe party; defence +2 does both, slower; reach 3 adds nothing.
@@ -2100,7 +2098,7 @@ ways; `cones`, the built cone six ways. `experiments/cleave-shape.mjs`,
 **800 fights each**, Delay 8 and Haste 3 as built. `ablate.ts` now counts
 the units each source hits (`hitsPerFight`).
 
-| Shape | China wins | Vanguard for the Champion | Cleaves a fight (China) |
+| Shape | China wins | Vanguard for the Grappler | Cleaves a fight (China) |
 |---|---:|---:|---:|
 | built | 52.6% | 47.4% | 1.46 |
 | lines six ways | **60%** | 51.9% | 1.61 |
@@ -2133,7 +2131,7 @@ unit entering hail, walking or Moved, takes the caster's power), and
 seeds from 1000, Delay 8 and Haste 3 as built. *Seat*: a hero in a Steppe
 hero's seat against the three Steppe heroes, its side's share of wins.
 
-| Hail | Side without Hail | Youxia / Vanguard / Alchemist for the Storm Caller | Party vs all three (player wins) | Storm + Storm + wolf | China vs Steppe | Hail's hits a fight |
+| Hail | Side without Hail | Swordsman / Vanguard / Alchemist for the Storm Caller | Party vs all three (player wins) | Storm + Storm + wolf | China vs Steppe | Hail's hits a fight |
 |---|---:|---:|---:|---:|---:|---:|
 | built | 30.1% | 64.4 / 62.4 / 54.6% | 76.3% | 96.4% | 52.6% | 4.86 |
 | two at once | 28% | 63.1 / 61.8 / 54.5% | 74.4% | 95.6% | 51.7% | 5.06 |
@@ -2147,10 +2145,10 @@ hero's seat against the three Steppe heroes, its side's share of wins.
   Caller hails again on most turns, as with Hail lasting 2 (above): units
   begin 2.3 turns a fight held, from 2.2.
 - **The Storm Caller is now the weakest Steppe hero by more**: with Haste
-  3 and Delay 8 the Youxia and the Vanguard in its seat win 62–64% (57–59%
+  3 and Delay 8 the Swordsman and the Vanguard in its seat win 62–64% (57–59%
   before), the Alchemist 55%.
 
-| Elixir | Alchemist for the Champion / Outrider / Storm Caller | China vs Steppe | Elixir's share of turns (China) | Empowered damage a fight (China) |
+| Elixir | Alchemist for the Grappler / Horse Archer / Storm Caller | China vs Steppe | Elixir's share of turns (China) | Empowered damage a fight (China) |
 |---|---:|---:|---:|---:|
 | built (a unit within 2, power 1, a hit and a heal) | 47.6 / 49 / 54.6% | 52.6% | 71% | 1.3 |
 | power 0, aura of 1 (every unit next to it), Empower 2, Weaken 1 | 29.1 / 35 / 42.6% | **29.9%** | 43% | 2.5 |
@@ -2180,13 +2178,13 @@ Caller).
 
 | | Speed 2 (built) | Speed 3 |
 |---|---:|---:|
-| Youxia for the Storm Caller | 63.3% | **50.4%** |
+| Swordsman for the Storm Caller | 63.3% | **50.4%** |
 | Vanguard for the Storm Caller | 63% | 60.8% |
 | Alchemist for the Storm Caller | 49.8% | 39.5% |
 | China vs Steppe | 40.1% | **25%** |
 | Side without Hail | 28.6% | 20.3% |
 | Party vs all three (player wins) | 74.4% | 73.6% |
-| vs Bökh + Storm + wolf | 96.1% | 93.2% |
+| vs Grappler + Storm + wolf | 96.1% | 93.2% |
 | vs Storm + Storm + wolf | 95.6% | 89.3% |
 | Storm Caller's turns a fight (China vs Steppe) | 5.3 | 7 |
 | Its survival (China vs Steppe) | 76% | 93% |
@@ -2194,7 +2192,7 @@ Caller).
 Head to head, a Steppe mirror with one side's Storm Caller at speed 3:
 57%.
 
-- **Speed 3 brings it level with the Youxia** (50.4%) but not the Vanguard
+- **Speed 3 brings it level with the Swordsman** (50.4%) but not the Vanguard
   (60.8%), and puts it 10 points over the burst Alchemist.
 - **It widens the gap between the regions**: China falls from 40.1% to
   25% party for party, as the Storm Caller takes a third more turns and
@@ -2247,17 +2245,17 @@ keywords arrive.
    points of win rate, +10 power 4–11, +10 defence 4–8. With the AI
    scoring statuses and fog in damage (2026-10-20), much of speed's
    premium went: +10 speed gives the Storm Caller 55.3% and +10 power
-   61.8%; the Champion 57.4% for speed; the Outrider 62% for speed and
+   61.8%; the Grappler 57.4% for speed; the Horse Archer 62% for speed and
    57.1% for power. Part of speed's value was the old AI turning cheap
    actions into many low-value turns. Speed still matters most for the
-   hero whose damage is its job (the Outrider). Price gear speed by the
+   hero whose damage is its job (the Horse Archer). Price gear speed by the
    slots it saves for that hero's main action, in steps that cross a slot
    breakpoint, and publish slot tables (cost × speed → slots). Neither
    `C` 50 nor carrying the fraction rounding discards to the next turn
    changed speed's measured worth (both tested).
 7. **Breakpoints are what matter.** Hits to kill and slots per action are
    the only numbers that change outcomes. Size a gear stat line to move
-   one of them (Bow vs Champion from 4 hits to 3 needs 180 a hit), and let
+   one of them (Bow vs Grappler from 4 hits to 3 needs 180 a hit), and let
    previews show it ([heroes-and-gear.md](heroes-and-gear.md), 9.7).
 8. **End stalls by rule, not by weak healing.** With a guaranteed end (the
    camel's walk to the exit, [camel.md](camel.md)), heals can be priced

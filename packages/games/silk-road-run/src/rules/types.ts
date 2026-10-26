@@ -8,8 +8,8 @@ import type {Tile} from './map';
 
 export type Side = 'player' | 'enemy';
 /**
- * The three prototype heroes, the Modao Vanguard and the Waidan Alchemist
- * (owner, 2026-10-25), the Youxia Swordsman (owner, 2026-10-26), the
+ * The three prototype heroes, the Vanguard and the Alchemist
+ * (owner, 2026-10-25), the Swordsman (owner, 2026-10-26), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, and the enemy NPCs, the wolf and the fox.
  */
@@ -160,7 +160,7 @@ export interface Unit {
   empowerStarted?: boolean;
   /**
    * Weaken (keywords.md, 17.6): its abilities deal this much less, to at
-   * least 0, until the end of its next turn (the Waidan Alchemist's
+   * least 0, until the end of its next turn (the Alchemist's
    * Elixir). Absent when it has none.
    */
   weaken?: number;
@@ -218,8 +218,8 @@ export interface HailEffect {
 }
 
 /**
- * A charged Skirmish shot in the air: its Outrider's unit id, and the hex
- * direction the arrow flies from the Outrider when the charging card comes
+ * A charged Skirmish shot in the air: its Horse Archer's unit id, and the hex
+ * direction the arrow flies from the Horse Archer when the charging card comes
  * back, hitting the first unit in that lane then (`shotLane` in board.ts).
  */
 export interface ShotInAir {
@@ -229,7 +229,7 @@ export interface ShotInAir {
   /** A Volley's space: whoever stands there when it lands is hit. */
   hex?: Hex;
   /**
-   * The Outrider's Empower when it drew: the arrow carries it, though the
+   * The Horse Archer's Empower when it drew: the arrow carries it, though the
    * Empower itself ends with that turn. Absent when it had none.
    */
   empower?: number;
@@ -280,7 +280,7 @@ export interface FightState {
   effects: HailEffect[];
   /**
    * Skirmish shots in the air: each flies down its lane when its
-   * Outrider's charging card comes back.
+   * Horse Archer's charging card comes back.
    */
   shots?: ShotInAir[];
   log: LogEntry[];

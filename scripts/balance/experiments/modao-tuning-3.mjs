@@ -1,4 +1,4 @@
-// The Modao Vanguard's third re-tuning, after experiments/modao-tuning-2.mjs
+// The Vanguard's third re-tuning, after experiments/modao-tuning-2.mjs
 // (2026-10-22): the owner keeps it slow (speed 10). On the best Challenge
 // (quick, Barrier for 6 slots), Reap Push 3 and Advance instant, Reap's
 // damage is raised instead of speed.

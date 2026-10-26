@@ -24,7 +24,7 @@ refer to the combat design (see the map in the README).
 **In Phase 1:** one fight, from the opening to victory or defeat. The
 track and action economy; a hex map with obstacle, hazard and
 conceal tiles; flanking, line of fire, area abilities with friendly fire,
-two charged abilities (the Mangudai Outrider's arcing Volley and the
+two charged abilities (the Horse Archer's arcing Volley and the
 Storm Caller's Freeze);
 displacement; a temporary board effect (the Storm Caller's hail); the
 keywords of section 3; **ultimates** (10.10, brought in 2026-10-18); the
@@ -50,7 +50,7 @@ fight's end ends the run.
 | 1. Costs and `C` | Typical action **100**, quick **60**, slow **150**; movement action **20 + 10 per hex**; starting cost **100**, a typical action (owner, 2026-10-19; was 50, which bunched all six cards into slots 3 to 8); `C` = **25** and `speedScale` = **5**: slots = cost × 5 ÷ (speed + 25) (owner, 2026-10-20, putting speed on the shared stat scale; was cost ÷ (speed + 6) with speeds 5 times smaller, the same placements). With speed 25, a typical turn lands 10 slots ahead (3.2). A card always moves at least 1 slot. |
 | 2. Speed | Speed divides action and movement cost (3.2) and sets the starting slot (3.4). On the shared stat scale, Low 10 / Medium 25 / High 40 (owner, 2026-10-20; was 1 to 10). No gear in Phase 1, so nothing lowers it (4.2's armour trade-off waits for gear). |
 | 4. Simultaneous placement | Higher speed first; equal speeds in a **random** order from the fight's seed (owner, 2026-10-21; was alternating sides starting with the **player's**, then party slot order) (3.3). |
-| 6. Charged abilities | One in Phase 1, an ultimate: the Mangudai Outrider's Volley (arcing area). The Storm Caller's Freeze was charged too until 2026-10-20 (owner: now instant, section 4). |
+| 6. Charged abilities | One in Phase 1, an ultimate: the Horse Archer's Volley (arcing area). The Storm Caller's Freeze was charged too until 2026-10-20 (owner: now instant, section 4). |
 | 39. Ultimate unlock | One value for every hero: usable after spending **300 action cost** in the fight, moves included, Holds without a move not (owner, 2026-10-20; was **3 completed turns**, which cheap moves met within a few slots of first contact) (10.10); once per fight. A run saved earlier converts each counted turn to 100. |
 | 8. Movement action | Ordinary movement is a separate action: **20 + 10 per hex**, up to 4 hexes. No ability and ordinary movement in the same turn (owner, 2026-10-20). |
 | 28. Movement cap | **4 hexes** per movement action (owner, 2026-10-20; restored from 3 with separate movement). |
@@ -94,7 +94,7 @@ The keyword vocabulary comes before heroes (10.8); the full list is in
 | Keyword | Meaning |
 |---|---|
 | **Displace N** | Moves the target N hexes directly away from the attacker (along the hex direction from attacker to target; for an area centred on a hex, away from that centre). Stops early at an obstacle, another unit or the map edge: the displaced unit takes **20 damage**, and a unit it hits also takes 20 (ignoring defence). Entering a hazard triggers it. Doesn't move the displaced unit's card. |
-| **Displace to a hex** | The Bökh Champion's Throw: the target is set down on a chosen free hex the ability names. No collision, since the hex is free; a hazard there triggers. |
+| **Displace to a hex** | The Grappler's Throw: the target is set down on a chosen free hex the ability names. No collision, since the hex is free; a hazard there triggers. |
 | **Immobilized** | No movement, and no ability that moves the unit (Leap; Lunge then strikes only a unit next to it). It still acts, and can still be displaced, staying Immobilized where it lands (17.5). |
 | **Slowed N** | Movement cap lowered by N, to at least 1 hex (17.5). Combines by max. |
 | **Vulnerable N%** | Takes N% more damage from every source (17.6). Combines by max, flanks included (section 2). |
@@ -123,9 +123,9 @@ values marked TBD below, are still to be set, in the config module.
 
 | Hero | Niche | Health | Speed | Defence | Power | Signature weapon |
 |---|---|---|---|---|---|---|
-| **Bökh Champion** | Front line (tank): grabs, pins, throws | High | Medium | Medium | Low | Bare hands |
-| **Mangudai Outrider** | Ranged in straight lines, mobility, a delayed arcing area | Low | High | Low | High | Composite bow (mounted, reflected only in stats) |
-| **Yadachy Storm Caller** | Support: slows and moves enemies, heals and cleanses whoever stands near it | Medium | Medium | Medium | Medium | Rain stone and water |
+| **Grappler** | Front line (tank): grabs, pins, throws | High | Medium | Medium | Low | Bare hands |
+| **Horse Archer** | Ranged in straight lines, mobility, a delayed arcing area | Low | High | Low | High | Composite bow (mounted, reflected only in stats) |
+| **Storm Caller** | Support: slows and moves enemies, heals and cleanses whoever stands near it | Medium | Medium | Medium | Medium | Rain stone and water |
 
 "Melee" means an adjacent hex. Every hero also has **Hold** (decided): a
 **30-cost** action with no effect (owner, 2026-10-19; was a quick action,
@@ -135,15 +135,15 @@ turn that only Holds, without moving, doesn't count toward the ultimate
 reading of the owner's one-line descriptions; the owner can change them
 (section 10).
 
-**Mangudai Outrider**
+**Horse Archer**
 
 | Ability | Rule |
 |---|---|
 | **Bow** | Fires an arrow along one of the six hex directions, with **no range limit** (owner, 2026-10-20; range 5 before); it stops at the **first unit** on that line, an obstacle or the map's edge. It **can't target a unit in, or past, an Obscured hex** (sandstorm, 17.6): the lane stops short of it (owner, 2026-10-21; from 2026-10-20 that halved it instead). An archer standing in a sandstorm **can't shoot out** of it (owner, 2026-10-21). That unit, **ally or enemy**, takes base damage **120** (owner, 2026-10-19: two hits kill a Mangudai, four a Yadachy) (6.7, 2026-10-19), so allies still block the shot. A straight hex line replaces free-angle line of fire (6.7) for this ability. Typical cost. |
-| **Leap** (Dash until 2026-10-21, owner) | The Outrider jumps **exactly 2 hexes in a straight line**, over whatever is in the hex between: ruins, a unit of either side, quicksand or hail, none of which affect it. It must land on a free, walkable hex, which applies as usual. It is the turn’s action, so it cannot be combined with ordinary movement. Not usable while Immobilized. Cost 20 (owner, 2026-10-21). Dash moved up to 3 hexes in a line, stopped by ruins and enemies, at cost 40: too close to walking to have its own identity ([balance.md](balance.md)). |
+| **Leap** (Dash until 2026-10-21, owner) | The Horse Archer jumps **exactly 2 hexes in a straight line**, over whatever is in the hex between: ruins, a unit of either side, quicksand or hail, none of which affect it. It must land on a free, walkable hex, which applies as usual. It is the turn’s action, so it cannot be combined with ordinary movement. Not usable while Immobilized. Cost 20 (owner, 2026-10-21). Dash moved up to 3 hexes in a line, stopped by ruins and enemies, at cost 40: too close to walking to have its own identity ([balance.md](balance.md)). |
 | **Volley** (ultimate) | An **arcing, charged** area: targets a hex within range TBD, ignoring line of fire; when the charge triggers, every unit in the area (radius TBD) takes base damage **200** (owner, 2026-10-20; 135 before), allies included. Charge and recovery costs TBD (3.7). |
 
-**Yadachy Storm Caller**
+**Storm Caller**
 
 | Ability | Rule |
 |---|---|
@@ -152,33 +152,32 @@ reading of the owner's one-line descriptions; the owner can change them
 | ~~Fog~~ | **Removed (owner, 2026-10-21).** It replaced Gale on 2026-10-20: its hexes were Obscured for 20 slots. No version measured worth its turn, and fog that blocked sight made fights 15–35% longer ([balance.md](balance.md)). The Storm Caller's kit is Sunlight, Hail and Freeze. |
 | **Freeze** (ultimate) | An area, **instant** at typical cost (owner, 2026-10-20; it was charged, with a casting time, from 2026-10-18, and its targets stepped out of it: [balance.md](balance.md)): targets any hex within maximum range TBD, no line of fire needed. Every unit in the area (radius TBD), allies included, takes base damage **120** (owner, 2026-10-22; 60 from 2026-10-20) and is then **Immobilized** and **Vulnerable 50%** for 20 slots (owner, 2026-10-20: ultimates buffed; no damage, 25% for 15 before). |
 
-**Bökh Champion**
+**Grappler**
 
 | Ability | Rule |
 |---|---|
-| **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Champion**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
-| **Grapple** (Pin until 2026-10-22, owner) | **Melee** (owner, 2026-10-22; from 2026-10-21 it could step one hex first, to a free hex next to the target): the target is **Immobilized** for TBD slots (the Champion was too until 2026-10-20; owner: it stays free, and moving away releases the target, as a wrestler would), and the target is **Crushed** and **Taunted** by the Champion for the same (owner, 2026-10-19; it was also Vulnerable until 2026-10-20). Crushed: base **10** damage every slot (owner, 2026-10-22; 6 from 2026-10-20, 8 before), scaled by the Champion's power, through Vulnerable and defence like quicksand. Taunted (17.5): while it can affect the Champion from any hex it can reach, its action must target the Champion or include it in its area, or be a Hold (owner, 2026-10-20), and a damaging charge is drawn onto the Champion if in range; it ends if the Champion dies. Sunlight's cleanse of the target removes them all (breaking the grapple). Both still act. The grapple **breaks** if the target is cleansed or the two are no longer adjacent (either displaced away, or the Champion moving away), clearing **every status the Grapple gave either unit** (owner, 2026-10-20). Cleansing the Champion doesn't break it. Typical cost. |
-| **Lunge** (ultimate) | Replaced **Rampage** (owner, 2026-10-22; a 3-hex charge in a straight line, base 160 to each unit in or beside its path and Displace 1). A unit within **3**: next to the Champion, struck where it stands; otherwise the Champion first **bounds** up to 2 hexes, along free walkable hexes, to a free hex beside it (the player picks it), entering only that hex. The target takes base **100**, then is **grappled** as by Grapple (Immobilized, Crushed and Taunted while the two stay adjacent; no Vulnerable). Immobilized, only a unit next to it. Allies too (6.7; owner confirmed, 2026-10-22). The bound is blocked by units and ruins as walking is (owner confirmed, 2026-10-22). Typical cost. |
+| **Throw** | Melee: **displaces** the target **to any other free hex adjacent to the Grappler**. The target takes base damage TBD (owner's call, 2026-10-18); a hazard where it lands triggers too. Typical cost. |
+| **Grapple** (Pin until 2026-10-22, owner) | **Melee** (owner, 2026-10-22; from 2026-10-21 it could step one hex first, to a free hex next to the target): the target is **Immobilized** for TBD slots (the Grappler was too until 2026-10-20; owner: it stays free, and moving away releases the target, as a wrestler would), and the target is **Crushed** and **Taunted** by the Grappler for the same (owner, 2026-10-19; it was also Vulnerable until 2026-10-20). Crushed: base **10** damage every slot (owner, 2026-10-22; 6 from 2026-10-20, 8 before), scaled by the Grappler's power, through Vulnerable and defence like quicksand. Taunted (17.5): while it can affect the Grappler from any hex it can reach, its action must target the Grappler or include it in its area, or be a Hold (owner, 2026-10-20), and a damaging charge is drawn onto the Grappler if in range; it ends if the Grappler dies. Sunlight's cleanse of the target removes them all (breaking the grapple). Both still act. The grapple **breaks** if the target is cleansed or the two are no longer adjacent (either displaced away, or the Grappler moving away), clearing **every status the Grapple gave either unit** (owner, 2026-10-20). Cleansing the Grappler doesn't break it. Typical cost. |
+| **Lunge** (ultimate) | Replaced **Rampage** (owner, 2026-10-22; a 3-hex charge in a straight line, base 160 to each unit in or beside its path and Displace 1). A unit within **3**: next to the Grappler, struck where it stands; otherwise the Grappler first **bounds** up to 2 hexes, along free walkable hexes, to a free hex beside it (the player picks it), entering only that hex. The target takes base **100**, then is **grappled** as by Grapple (Immobilized, Crushed and Taunted while the two stay adjacent; no Vulnerable). Immobilized, only a unit next to it. Allies too (6.7; owner confirmed, 2026-10-22). The bound is blocked by units and ruins as walking is (owner confirmed, 2026-10-22). Typical cost. |
 
 **Interactions to know** (they follow from the keyword rules, not new
 rules): an Immobilized unit can still be displaced (owner's call,
-2026-10-19), so the Champion's flow is **Grapple, then Throw**: the target
-lands where the Champion chooses, still Immobilized, and
-can't walk back; it lands beside the Champion, so the grapple holds. Frozen units can likewise be thrown, blown back or
-lunged at. A grappling Champion can Lunge at another unit, which releases the first if it bounds away; Lunge then Throw keeps the new grapple. Throw onto
+2026-10-19), so the Grappler's flow is **Grapple, then Throw**: the target
+lands where the Grappler chooses, still Immobilized, and
+can't walk back; it lands beside the Grappler, so the grapple holds. Frozen units can likewise be thrown, blown back or
+lunged at. A grappling Grappler can Lunge at another unit, which releases the first if it bounds away; Lunge then Throw keeps the new grapple. Throw onto
 quicksand (a held unit then stays in it), and Freeze on the area a Volley is charging at (frozen
 units can't step out of it), are the obvious combinations. Freeze's Vulnerable doesn't stack with a
 flank's (max, section 2).
 
 **No gear in Phase 1** (owner, 2026-10-20): heroes fight with their base
-stats only. Starter armour (medium on the Bökh Champion and Yadachy Storm
-Caller, light on the Mangudai Outrider) was removed so the numbers on the
+stats only. Starter armour (medium on the Grappler and Storm Caller, light on the Horse Archer) was removed so the numbers on the
 stat sheet are the hero's own; gear arrives with the route map (Phase 2).
 
 ## 5. The enemy band
 
-A band built from the same heroes and gear (11.1): Bökh Champion,
-Mangudai Outrider and Yadachy Storm Caller, **three against your three**
+A band built from the same heroes and gear (11.1): Grappler,
+Horse Archer and Storm Caller, **three against your three**
 (owner's call, 2026-10-18; the AI is weaker than a player, so even
 numbers are still a fair first opponent). Duplicates across sides are
 allowed (10.4).
@@ -315,13 +314,13 @@ confirm or change:
 
 - **Placeholder numbers.** Every hero stat and ability value marked TBD
   in section 4 has a placeholder in `src/rules/config.ts`, marked as such,
-  from the roster's bands (health 300/420/540; the Outrider and the
+  from the roster's bands (health 300/420/540; the Horse Archer and the
   Storm Caller were both 360 from 2026-10-20 to 2026-10-21 (owner); speed, defence and
   power on one scale, Low 10 / Medium 25 / High 40, since 2026-10-20
   (owner; speed was 4 and 7, defence 5 and 10)) so a fight can be played. Tuned once against AI-vs-AI fights
-  that stalled: damage up (Bökh Champions pinned each other forever,
+  that stalled: damage up (Grapplers pinned each other forever,
   since the AI's status weights outscored their small damage) and Clear
-  the Storm's heal down (a Storm Caller out-healed a Champion).
+  the Storm's heal down (a Storm Caller out-healed a Grappler).
 - **A fight could stall** while the Storm Caller had no damaging ability:
   about 1 in 20 AI-vs-AI fights from random deployments went on forever.
   Hail now deals damage (owner, 2026-10-19), and none of 1,000 such fights
@@ -342,7 +341,7 @@ confirm or change:
   the damage the enemies acting within the unit's next turn (at least a
   typical turn, so a cheap Hold doesn't look safe) could deal where it
   ends, times the share of its health, times its hero's caution
-  (`AI.caution`, 0 for the Bökh Champion, which otherwise Held on 44% of
+  (`AI.caution`, 0 for the Grappler, which otherwise Held on 44% of
   its turns). This heuristic now ranks candidates for a **selective
   alpha-beta search** (2026-10-20): four candidates per node, actual future
   timeline decisions, two decisions including the root then three if work
@@ -458,7 +457,7 @@ confirm or change:
   2026-10-22): the hexes picked after the target, where Throw lands its
   target and where Lunge bounds to first, are dashed, so they don't read
   as more targets; a unit Lunge reaches only by bounding has a dashed
-  ring. A dashed arc swings around the Champion from the unit thrown to
+  ring. A dashed arc swings around the Grappler from the unit thrown to
   where it lands, and Lunge's bound is drawn as a move's arrow over the
   units; on desktop, hovering a landing or a unit with one landing
   previews it.

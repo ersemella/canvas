@@ -1,5 +1,5 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Flaming Mountains: the Waidan Alchemist, the Modao Vanguard and the Youxia Swordsman against the three Steppe heroes, starting kits; the Flaming Mountains always have two clumps of mountains in the middle.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Flaming Mountains: the Alchemist, the Vanguard and the Swordsman against the three Steppe heroes, starting kits; the Flaming Mountains always have two clumps of mountains in the middle.",
   "seed": null,
   "map": "flaming",
   "yurts": "random",

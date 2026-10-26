@@ -1,7 +1,7 @@
 // Volley variants (2026-10-23): range 2; 1 less damage; and a range of 2 to
 // 3, so not on adjacent units. Each measured by removing Volley, or the
 // Bow, from one side with the variant on both, and against the stage
-// caravans that bring an Outrider (player wins; caravans.mjs for the rest).
+// caravans that bring an Horse Archer (player wins; caravans.mjs for the rest).
 const variants = {
   range2: (c) => (c.ABILITY.volley.range = 2),
   less1: (c) => (c.ABILITY.volley.less = 1),

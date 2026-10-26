@@ -22,22 +22,22 @@ and Barrier **Shield**.
 **Built (2026-10-23):** Immobilized, Stunned and Move, which the three
 prototype heroes' kits use (Hail, Grapple, Throw; [roster.md](roster.md)),
 and Empower (the Storm Caller's Sunlight: until the end of the unit's next
-turn, a new one replacing the last; a Champion's Empower adds to its
+turn, a new one replacing the last; a Grappler's Empower adds to its
 squeeze, owner, 2026-10-23). **Push** and **Pull** (2026-10-24), for the
 upgrades Shove, Gale and Haul ([roster.md](roster.md)): no collision
 damage when stopped early (question 55 open). Haste was built for the
 Tailwind experiment and removed with it (2026-10-24; [history.md](history.md)).
-**Weaken** (2026-10-25), for the Waidan Alchemist's Elixir, lasting as
-Empower does; with Empower it nets out, and it reduces a Champion's
+**Weaken** (2026-10-25), for the Alchemist's Elixir, lasting as
+Empower does; with Empower it nets out, and it reduces a Grappler's
 squeeze too. Elixir's Empower and Weaken are a fixed 1 (owner,
 2026-10-26; the Alchemist's power from 2026-10-25, an exception to 17.2).
-**Delay** (2026-10-25), for the Modao Vanguard's Cleave (Delay 8 since
+**Delay** (2026-10-25), for the Vanguard's Cleave (Delay 8 since
 2026-10-26; 5 before): the card moves 8 slots later, a taken slot resolved by speed as any placement
 is; the delay limit (3.6) is not built yet.
 **Haste**, **Inevitable**, **Shield**, **Armour** and **Pierce**
 (2026-10-25), for the passives ([progression.md](progression.md), 19.8):
 Haste for Second Wind, Momentum and Vengeance (and since 2026-10-26 the
-Youxia Swordsman's Swift Strike, Haste 3 when it hits, 2 before 2026-10-26), Inevitable as Steady Gait,
+Swordsman's Swift Strike, Haste 3 when it hits, 2 before 2026-10-26), Inevitable as Steady Gait,
 Shield 1 from Rally (until the unit's next turn), Armour 1 as Hardened and
 Pierce as Piercing Eye. No hero has a passive yet; neither the delay nor
 the haste limit is built.
@@ -102,8 +102,8 @@ between its own turns.
 |---|---|
 | **Push N** | Displaces the unit N spaces directly away from the source (along the hex direction from the source to the unit; for an area, away from its centre). |
 | **Pull N** | Displaces the unit N spaces directly toward the source. Ending next to the source is not a collision. |
-| **Move** | Displaces the unit to a space the ability states (Throw: a free space next to the Champion). |
-| **Immobilized** | The unit can't move to a different space by itself: no walking on its turn, and no ability that moves it (none does since Grapple became melee, 2026-10-23, but the Champion's swap with the unit it grapples, allowed while Immobilized: owner, 2026-10-25). It **still acts** with any ability that doesn't move it, and it **can still be Pushed, Pulled or Moved** by others. |
+| **Move** | Displaces the unit to a space the ability states (Throw: a free space next to the Grappler). |
+| **Immobilized** | The unit can't move to a different space by itself: no walking on its turn, and no ability that moves it (none does since Grapple became melee, 2026-10-23, but the Grappler's swap with the unit it grapples, allowed while Immobilized: owner, 2026-10-25). It **still acts** with any ability that doesn't move it, and it **can still be Pushed, Pulled or Moved** by others. |
 | **Unstoppable** | The unit can't be Pushed, Pulled or Immobilized, by allies or enemies. (Whether it can be Moved is open question 54.) |
 
 - **Displacement is instant:** it resolves completely when the ability
@@ -128,9 +128,9 @@ Immobilized (17.4) is the lesser control: the unit still acts.
 **A skipped turn is still a turn:** it resets the delay and haste limits,
 and the unit's card is placed by the usual rule, so Stunned costs a turn,
 not a place on the track. Stunned has **no lockout guard** for now
-(owner, 2026-10-23): a Bökh Champion can hold a unit Stunned turn after
+(owner, 2026-10-23): a Grappler can hold a unit Stunned turn after
 turn while its grapple lasts. Its counters are the grapple's own ends:
-damaging the Champion, Stunning it, or moving either unit apart. Whether
+damaging the Grappler, Stunning it, or moving either unit apart. Whether
 a guard is needed is open question 56.
 
 ### 17.6 Damage effects (Decided)

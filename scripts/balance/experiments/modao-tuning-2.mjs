@@ -1,4 +1,4 @@
-// The Modao Vanguard's second re-tuning, after experiments/modao-tuning.mjs
+// The Vanguard's second re-tuning, after experiments/modao-tuning.mjs
 // (2026-10-22): Reap at base 85 and Push 3 and Advance instant worked;
 // Challenge at typical cost fell to 3% of turns and the Vanguard's team to
 // 36% against the prototype party. Three middle grounds for Challenge.

@@ -219,7 +219,7 @@ One test changed: a wolf with a hero two spaces off now waits a step
 nearer Temee, keeping the hero two spaces off; the test checked "not
 within 6 of Temee" and now checks that it doesn't move away from the hero.
 The previous AI held where it stood even at depth three: the new one sees
-the Champion's best replies, which the old order of play left out.
+the Grappler's best replies, which the old order of play left out.
 
 An undo journal in place of copying the fight (rolling back each line
 rather than copying it) was also tried: identical decisions, within noise
@@ -271,8 +271,8 @@ fights each way): 53.8% as team b and 59.8% as team a, 56.8% on average.
 
 The guess that orders a decision's turns (`orderedInputs`) also learned,
 on the way, what a walk's end is worth to statuses and shots in the air
-(`standing`: out of an Empowered Champion's reach, into reach of the
-Champion grappling an ally, out of a drawn arrow's lane) and that a drawn
+(`standing`: out of an Empowered Grappler's reach, into reach of the
+Grappler grappling an ally, out of a drawn arrow's lane) and that a drawn
 arrow can be dodged and costs its charge: the best turn is again among
 the six played on every decision of 12 runs, both sides'.
 

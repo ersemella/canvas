@@ -1,4 +1,4 @@
-// A first re-tuning of the Modao Vanguard, after experiments/modao.mjs
+// A first re-tuning of the Vanguard, after experiments/modao.mjs
 // (2026-10-22): Challenge used on 57% of its turns and its Barrier refreshed
 // every 8 slots, Reap on 2%, Advance worth nothing (a side without it won 50%).
 const team = ['modao', 'mangudai', 'storm'];

@@ -1,4 +1,4 @@
-// The Waidan Alchemist's tuning (2026-10-25): Elixir's shapes
+// The Alchemist's tuning (2026-10-25): Elixir's shapes
 // (`ABILITY.elixir.shape`) with a stat point more, in the Storm Caller's
 // seat against the three Steppe heroes (`modWinPct`, 50% its equal).
 const seat = ['bokh', 'mangudai', 'alchemist'];

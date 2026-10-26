@@ -1,10 +1,10 @@
 // Sunlight as Empower (2026-10-23; in the Storm Caller's kit since, at
 // Empower 2): the Storm Caller's second ability, Empower 1 on a unit within 3 until the
 // end of its next turn. Variants (owner): the Storm Caller may target itself
-// (`self`), the Champion's Empower adds to its squeeze (`squeeze`), and
+// (`self`), the Grappler's Empower adds to its squeeze (`squeeze`), and
 // Sunlight melts hail where it lands (`melts`). Each variant: abilities
 // removed from one side, then the stage caravans where the Storm Caller
-// meets the Outrider. The AI counts an Empower as one hit's extra damage
+// meets the Horse Archer. The AI counts an Empower as one hit's extra damage
 // while the unit has an enemy within reach (`empowerGain` in ai.ts).
 const variants = {
   base: {},

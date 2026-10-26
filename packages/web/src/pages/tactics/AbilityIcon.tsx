@@ -237,7 +237,7 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
-  // The long blade's sweep (the first Modao Vanguard's Reap, 2026-10-22).
+  // The long blade's sweep (the first Vanguard's Reap, 2026-10-22).
   cleave: {
     kind: 'attack',
     rows: [
