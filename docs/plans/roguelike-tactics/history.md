@@ -481,6 +481,17 @@ Learned:
   Persia; owner's call. Same role (a controller whose bound spirit pushes
   and disrupts), now from the *Shahnameh*'s divs and Tahmuras Divband
   rather than the *Arabian Nights*' sealed jinn.
+- **Div Binder** (removed 2026-10-26; owner's call): Persia's support
+  for a few hours, a controller whose bound div pushed enemies and
+  disrupted their turns (after Tahmuras Divband of the *Shahnameh*;
+  chains or a lasso). Removed when Persia was recast as the **Pilban
+  Bulwark** (the Mahout Bulwark's war elephant, now Sasanian) as tank,
+  the **Persian Cataphract** as damage, and the **Simurgh Feather Burner**
+  as a healing support, as the Simurgh heals in the *Shahnameh*. The
+  Simurgh's earlier kit, area strikes leaving Burn, left with its damage
+  role. Notes kept for a return: a bound div must never look like an
+  enemy lesser div; divs descend from Zoroastrian *daevas*, so keep to the
+  *Shahnameh*'s framing.
 - **Baatar** (2026-10-17): the horse archer renamed the **Mangudai**;
   owner's call. *Baatar* (baghatur) was a title for any renowned
   warrior; the mangudai were Mongol army units, though sources disagree
