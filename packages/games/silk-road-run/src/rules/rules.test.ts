@@ -72,10 +72,12 @@ import {tileInfo} from './info';
 import {
   checkEnd,
   damageOf,
+  delay,
   displace,
   weaken,
   empower,
   enterHex,
+  haste,
   hit,
   kill,
   startTurnPassives,
@@ -1728,6 +1730,29 @@ describe('the Vanguard and the Alchemist', () => {
       startTurnPassives(ctx, m);
       expect(m.unstoppable).toBeUndefined();
     }));
+
+  it('a card Delayed or Hastened onto a taken slot takes it, whatever its speed, the card there moving on', () => {
+    const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
+    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    const slow = unit(s, 'p-modao');
+    const fast = unit(s, 'e-mangudai');
+    const other = unit(s, 'e-modao');
+    slow.speed = 1;
+    fast.speed = 3;
+    other.speed = 3;
+    // Delayed onto the faster card's slot: it takes it, the faster card moves on.
+    slow.slot = 5;
+    fast.slot = 8;
+    other.slot = 20;
+    delay(ctx, slow, 3);
+    expect(slow.slot).toBe(8);
+    expect(fast.slot).toBe(9);
+    // Hastened onto a faster card's slot: the same.
+    other.slot = 4;
+    haste(ctx, slow, 4);
+    expect(slow.slot).toBe(4);
+    expect(other.slot).toBe(5);
+  });
 
   it('Cleave Delays every unit it leaves standing 8 slots, and not the ones it kills', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);

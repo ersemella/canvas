@@ -61,8 +61,9 @@ export function freeSlotFrom(state: FightState, slot: number, ignore?: Unit): nu
  * owner, 2026-10-23): a faster arriving card takes the slot and the card
  * there moves on to the next, colliding again by the same rule; an equal
  * or slower one yields to the next slot itself. A `push`ed card takes
- * its slot whatever its speed (a charge's), the card there moving on as
- * above. Returns the unit's slot.
+ * its slot whatever its speed (a charge's, and a card Hastened or Delayed,
+ * owner, 2026-10-26), the card there moving on as above. Returns the
+ * unit's slot.
  */
 export function placeCard(state: FightState, unit: Unit, slot: number, push = false): number {
   unit.slot = null;
