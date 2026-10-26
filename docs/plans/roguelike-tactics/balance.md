@@ -2169,6 +2169,41 @@ hero's seat against the three Steppe heroes, its side's share of wins.
   every switch in each variant, reproducing these tables on the new
   defaults.
 
+### The Storm Caller at speed 3 (2026-10-26)
+
+Asked for: the Storm Caller at speed 3 (from 2), Hail untouched, on the
+current rules (two hails, hail on entry, the burst Elixir).
+`experiments/storm-speed.mjs`, **800 fights each** (about ±1.8 points),
+seeds from 1000. *Seat*: a Chinese hero in the Storm Caller's seat
+against the three Steppe heroes (50% its equal; lower, a stronger Storm
+Caller).
+
+| | Speed 2 (built) | Speed 3 |
+|---|---:|---:|
+| Youxia for the Storm Caller | 63.3% | **50.4%** |
+| Vanguard for the Storm Caller | 63% | 60.8% |
+| Alchemist for the Storm Caller | 49.8% | 39.5% |
+| China vs Steppe | 40.1% | **25%** |
+| Side without Hail | 28.6% | 20.3% |
+| Party vs all three (player wins) | 74.4% | 73.6% |
+| vs Bökh + Storm + wolf | 96.1% | 93.2% |
+| vs Storm + Storm + wolf | 95.6% | 89.3% |
+| Storm Caller's turns a fight (China vs Steppe) | 5.3 | 7 |
+| Its survival (China vs Steppe) | 76% | 93% |
+
+Head to head, a Steppe mirror with one side's Storm Caller at speed 3:
+57%.
+
+- **Speed 3 brings it level with the Youxia** (50.4%) but not the Vanguard
+  (60.8%), and puts it 10 points over the burst Alchemist.
+- **It widens the gap between the regions**: China falls from 40.1% to
+  25% party for party, as the Storm Caller takes a third more turns and
+  almost never falls.
+- **As an enemy it changes little**: stage caravans with a Storm Caller
+  stay stage-1 fights (89–93%), and stage 3 is unchanged.
+- Hail's worth (20.3%) stays in the core's band, at its bottom edge.
+- Not changed: the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

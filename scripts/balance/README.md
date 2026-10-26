@@ -57,6 +57,7 @@ files touching the Alchemist that don't set every one of these
 (`china-steppe.mjs`, `china-buffs.mjs`, `vanguard-buffs.mjs`,
 `cleave-shape.mjs`, `elixir-fixed.mjs`) reproduce only at their revision;
 `hail-elixir.mjs` sets them all.
+`storm-speed.mjs` (2026-10-26) measures the Storm Caller at speed 3.
 Built since 2026-10-26: power 1, `fixed: 1`, `heal: 'all'`, so the earlier
 files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.
