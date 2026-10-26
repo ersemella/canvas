@@ -52,6 +52,19 @@ The road is divided into four **regions**, one for each civilization the caravan
 - **Levels and stages:** a region's levels are stages of the route map (glossary), so stage numbers keep counting across regions and rival caravan pools stay per stage ([ghosts.md](ghosts.md), D8). With six regions each had 3 stages and the Byzantine 4, the last a boss (owner, 2026-10-24); how many each of the four has is open ([progression.md](progression.md), 19.1, question 66).
 - **Cultures without a region** (Silla Korea, Nara Japan, Tibet, South India, Srivijaya and Java, Egypt, Aksum) remain sources for places, neutral characters, creatures and bosses inside the four regions; Abbasid Arabia's folklore is Persia's. Where each appears is open (question 33).
 
+### 15.3b Biomes (Proposed, owner 2026-10-26)
+Each region's maps follow the road's real landscape, and the regions' colours change along the run, so a glance tells the player where on the road a fight is: steppe grass, then sand and red earth, then white salt, then Mediterranean green and blue. Terrain stays low in saturation, so units stand out ([art-direction.md](art-direction.md), Palette).
+
+| Region | Biome | Maps and features | Palette |
+|---|---|---|---|
+| **Steppe** | Grassland and the Gobi's gravel desert | The Steppe (built: grass, yurts, mountains on the edge); the **Gobi Crossing** (built, no region since 2026-10-26) as the Steppe's last stage, the crossing south into China | Grass green, felt white, gravel and sand |
+| **China** | The Hexi Corridor and the Turpan basin | The **Flaming Mountains** (built: red earth, two clumps of burning mountains) | Red earth, ochre |
+| **Persia** | Salt desert and oasis gardens, from Sogdiana across the Iranian plateau | **Salt flats** of the Dasht-e Kavir, which the Khorasan road skirted: a white crust over mud that can give way, a natural hazard tile (15.3). **Oasis gardens** for cover and obstacles: qanat channels (underground canals surfacing), poplars, walled *chahar bagh* gardens; they also stand for Sogdiana's irrigated Zarafshan valley around Samarkand. The **Alborz** for a late or boss stage: in the *Shahnameh* the Simurgh raises Zal on Alborz, and Zahhak is chained under Mount Damavand | White salt, ochre, turquoise tile |
+| **Byzantine** | Anatolia: Cappadocia, the Taurus passes, Constantinople | **Cappadocia's volcanic tuff**: fairy chimneys as obstacles, rock-cut churches, underground cities such as Derinkuyu. **The Taurus passes** (the Cilician Gates), the Byzantine frontier with the Caliphate and the world of *Digenis Akritas*, for a rival-caravan stage. **Constantinople** for the final boss: the Theodosian Walls or the shore of the Golden Horn, with cypress, olive and Mediterranean scrub | Pale tuff, grey limestone, sea blue, olive green |
+
+- **The run ends somewhere new:** Constantinople is the only green-and-blue map, so the last fight looks like the end of the road.
+- **Hazards and obstacles** (6.4) are named here as candidates; none is designed yet. Which stage of a region uses which map is open, as is whether a region's maps are chosen by the route map or fixed per stage.
+
 ### 15.4 Historical Reach of the Road
 The Silk Road was a network, not a single route. The overland core ran through China, Central Asia, Persia and the Middle East; the wider network, including the Maritime Silk Road, reached:
 - **Korea:** Silla (capital Gyeongju) at the eastern end. Roman and Persian glass has been found in Silla royal tombs, Sogdian traders lived in Silla, and Sogdian warrior statues guard the tombs of two Silla kings (died 798 and 836).

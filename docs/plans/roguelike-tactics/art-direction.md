@@ -148,6 +148,7 @@ tuning. This file has no combat-design section number.
   Cultures ([setting.md](setting.md)) differ by shapes, costume and accent
   colours from the shared palette, so twelve cultures still look like one
   game.
+- **Each region has its own terrain colours** ([setting.md](setting.md), 15.3b): steppe grass, then sand and red earth, Persia's white salt and turquoise, and the Byzantine's tuff, sea blue and olive, all from the shared palette.
 - **Units stand out from terrain.** Desert tones (sand, ochre, dust) blend
   easily, so terrain is low in saturation and narrow in brightness; units
   are saturated, with a **dark outline** and a **team-coloured rim**

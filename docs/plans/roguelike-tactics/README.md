@@ -24,7 +24,7 @@ survivor takes a provision, +1 to one stat for the rest of the run
 **Maps per region** (2026-10-25): each stage names its map (`STAGES`,
 `MAPS` in map.ts), every one so far the Steppe's; the **Gobi Crossing**
 (`gobi`) is the same board in the desert's look, sand and sandstone ruins
-and no mountains, built for the China region, kept for Arabia's until that region was cut (2026-10-26), and now unassigned;
+and no mountains, built for the China region, kept for Arabia's until that region was cut (2026-10-26), and now proposed as the Steppe's last stage ([setting.md](setting.md), 15.3b, with every region's biome);
 the **Flaming Mountains** (`flaming`, owner, 2026-10-26) are the China
 region's: red earth and two clumps of burning mountains in the middle of every fight, no other obstacle yet
 ([art-direction.md](art-direction.md)), played from the test stage until
