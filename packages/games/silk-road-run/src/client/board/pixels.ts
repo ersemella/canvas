@@ -29,6 +29,8 @@ export const HERO_COLOR = {
   modao: '#9f1239',
   // The Alchemist's disc, shown while its sprite loads.
   alchemist: '#0f766e',
+  // The Swordsman's disc, until it has a sprite.
+  youxia: '#0e7490',
   camel: '#a8742f',
   wolf: '#6b7280',
   fox: '#c2410c',

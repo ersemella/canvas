@@ -30,6 +30,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   sunlight: 'No ally within reach to Empower, nor hail to melt.',
   grapple: 'No one within reach to grapple whom you aren’t grappling already.',
   bite: 'No enemy next to you.',
+  tenPaces: 'No enemy next to you.',
   shove: 'No one next to you to shove.',
   haul: 'No one 2 or 3 spaces away in a straight line.',
   feignedRetreat: 'No enemy in any of your lanes, or nowhere to fall back to.',

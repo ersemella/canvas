@@ -1343,6 +1343,37 @@ describe('abilities', () => {
   });
 });
 
+describe('the Youxia Swordsman', () => {
+  const party: HeroId[] = ['youxia', 'modao', 'mangudai'];
+  const c = at(4, 4);
+
+  it('has speed 3, power 2, defence 1 and walks up to 3', () => {
+    const s = setup({'p-youxia': c}, party);
+    const y = unit(s, 'p-youxia');
+    expect([y.speed, y.power, y.defence, y.maxHp]).toEqual([3, 2, 1, healthOf(1)]);
+    expect(Math.max(...reachableHexes(s, mapOf(s), y).map((r) => r.path.length))).toBe(3);
+  });
+
+  it('Ten Paces hits an enemy next to it, and Hastens its own card', () => {
+    const s = setup({'p-youxia': c, 'e-modao': hexNeighbor(c, 0), 'e-mangudai': at(4, 7)}, party);
+    const y = unit(s, 'p-youxia');
+    const targets = ABILITIES.tenPaces.targets(s, mapOf(s), y, y.hex!);
+    expect(targets).toEqual([{hex: hexNeighbor(c, 0)}]);
+    y.slot = s.currentSlot;
+    applyTurn(s, y, {action: {ability: 'tenPaces', target: {hex: hexNeighbor(c, 0)}}});
+    expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - y.power);
+    expect(y.slot).toBe(actionCost(y) - ABILITY.tenPaces.haste);
+  });
+
+  it('a walk and Hold leave its card where it was due', () => {
+    const s = setup({'p-youxia': c, 'e-modao': at(4, 7)}, party);
+    const y = unit(s, 'p-youxia');
+    y.slot = s.currentSlot;
+    applyTurn(s, y, {action: {ability: 'hold', target: {}}});
+    expect(y.slot).toBe(actionCost(y));
+  });
+});
+
 describe('the Modao Vanguard and the Waidan Alchemist', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
 
@@ -1995,7 +2026,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a party must be one to three different heroes of the roster', () => {
-    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist']);
+    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist', 'youxia']);
     expect(() => createRun(5, {party: ['modao', 'alchemist']})).not.toThrow();
     for (const party of [
       ['modao', 'alchemist', 'storm', 'bokh'],

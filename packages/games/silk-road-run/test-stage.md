@@ -56,7 +56,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 
 | Field | What it is | Left out |
 |---|---|---|
-| `hero` | `"bokh"` (Bökh Champion), `"mangudai"` (Mangudai Outrider), `"storm"` (Yadachy Storm Caller), `"modao"` (Modao Vanguard), `"alchemist"` (Waidan Alchemist), `"wolf"` or `"fox"` (the Fox Spirit: the wolf's stats and Bite, the China region's creature). A hero may appear more than once, on either side. | required |
+| `hero` | `"bokh"` (Bökh Champion), `"mangudai"` (Mangudai Outrider), `"storm"` (Yadachy Storm Caller), `"modao"` (Modao Vanguard), `"alchemist"` (Waidan Alchemist), `"youxia"` (Youxia Swordsman), `"wolf"` or `"fox"` (the Fox Spirit: the wolf's stats and Bite, the China region's creature). A hero may appear more than once, on either side. | required |
 | `speed` | 0 to 30. Its card goes 60 ÷ (speed + 5) slots on after each turn, rounded. | the hero's |
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |

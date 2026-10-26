@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
- * the Modao Vanguard's and the Waidan Alchemist's (owner, 2026-10-25), and
- * the wolf's. Each lists its legal targets from a hex (for validation,
+ * the Modao Vanguard's and the Waidan Alchemist's (owner, 2026-10-25), the
+ * Youxia Swordsman's (owner, 2026-10-26), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -678,6 +678,28 @@ const elixir: AbilityDef = {
   },
 };
 
+// ─── Youxia Swordsman ────────────────────────────────────────────────────────
+
+/**
+ * Ten Paces (owner, 2026-10-26): melee, the Swordsman's power; when it
+ * hits, its card is Hastened `ABILITY.tenPaces.haste`, taken off as its
+ * card is placed after this turn (`haste`).
+ */
+const tenPaces: AbilityDef = {
+  id: 'tenPaces',
+  name: 'Ten Paces',
+  kind: 'attack',
+  summary: () => `Melee. When it hits, its card is Hastened ${ABILITY.tenPaces.haste}.`,
+  targetsUnit: true,
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} strikes ${unitName(u)} with the jian.`);
+    hit(ctx, user, u, 'The jian');
+    haste(ctx, user, ABILITY.tenPaces.haste);
+  },
+};
+
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 
 const bite: AbilityDef = {
@@ -704,6 +726,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   bite,
   cleave,
   elixir,
+  tenPaces,
   shove,
   haul,
   feignedRetreat,

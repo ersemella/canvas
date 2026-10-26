@@ -159,6 +159,21 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['elixir', 'hold'],
   },
   /**
+   * The Youxia Swordsman (owner, 2026-10-26; roster.md): China's fast
+   * melee striker. Speed 3, power 2, defence 1 (health 4) and a walk of 3
+   * are the owner's; Ten Paces, its sword stroke, Hastens it when it hits
+   * (`ABILITY.tenPaces`).
+   */
+  youxia: {
+    name: 'Youxia Swordsman',
+    letter: 'Y',
+    speed: 3,
+    defence: 1,
+    power: 2,
+    abilities: ['tenPaces', 'hold'],
+    moveCap: 3,
+  },
+  /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
@@ -297,6 +312,13 @@ export const ABILITY = {
     tempo: 0 as number,
   },
   /**
+   * Ten Paces (owner, 2026-10-26), the Youxia Swordsman's *jian*, named for
+   * Li Bai's swordsman who "kills one man every ten paces": melee, and when
+   * it hits, the Swordsman's card is Hastened `haste` slots (keywords.md
+   * 17.3). 2 is the builder's first number, untested.
+   */
+  tenPaces: {haste: 2 as number},
+  /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
    * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
@@ -352,6 +374,7 @@ export const AI = {
     storm: 1,
     modao: 0,
     alchemist: 1,
+    youxia: 1,
     camel: 0,
     wolf: 1,
     fox: 1,
@@ -424,7 +447,7 @@ export const AI = {
  */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /** Every hero the start menu offers and the enemy draws from, in party slot order. */
-export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist'];
+export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist', 'youxia'];
 /**
  * A run's stages, in order (owner, 2026-10-24; for a while four, from three
  * wolves): how many of the heroes (ROSTER) and how many wolves the

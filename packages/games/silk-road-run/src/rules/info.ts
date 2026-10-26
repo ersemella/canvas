@@ -119,6 +119,7 @@ export type KeywordId =
   | 'stunned'
   | 'empowered'
   | 'weakened'
+  | 'haste'
   | 'shield'
   | 'move'
   | 'push'
@@ -152,6 +153,11 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   shield: {
     name: 'Shield',
     detail: 'Takes damage before health, until the start of its next turn.',
+  },
+  haste: {
+    name: 'Haste',
+    detail:
+      'Its card moves that many slots earlier on the track, never earlier than the next slot.',
   },
   move: {name: 'Move', detail: 'Put on another space by others, not walking.'},
   push: {
