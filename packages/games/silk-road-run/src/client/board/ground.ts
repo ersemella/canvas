@@ -178,9 +178,9 @@ const LOOKS: Record<string, Look> = {
   // they were as dark as the hex borders and hid them; the dome, 144
   // wide, taken to 124 by 111 and 8 colours, a little taller than drawn
   // so it covers its seven spaces, then its colours taken 60% of the way
-  // to the crust's, its pinks to a dusty clay, with a dark grey-brown
-  // outline, as in the art's own whites and pinks it stood out; owner,
-  // 2026-10-26). Its obstacle is the Gobi's sandstone ruin until the
+  // to the crust's, its pinks to a dusty clay, and its outline the hex
+  // borders' grey, as in the art's own whites and pinks, and with a dark
+  // outline, it stood out; owner, 2026-10-26). Its obstacle is the Gobi's sandstone ruin until the
   // windcatcher's art is in (salt-flats.md).
   salt: {
     ground: saltCrustImage,

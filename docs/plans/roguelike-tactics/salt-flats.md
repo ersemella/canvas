@@ -248,9 +248,10 @@ and 2):
   (whites, three greys, the pinks and clay red). In the art's own colours
   it stood out from the ground (owner, 2026-10-26), so each was taken 60%
   of the way to the crust's (`#e9e1d7` and its warm greys), the pinks
-  becoming a dusty clay, with a dark grey-brown outline (`#4f4540`) so it
-  still reads as blocked; taken all the way, its lit side was lost in the
-  salt. Real salt domes are earthier than the art: their salt darkened by
+  becoming a dusty clay; taken all the way, its lit side was lost in the
+  salt. Its outline is the hex borders' grey (`#7d7570`), as China's
+  ridges are outlined in their border's colour: the dark grey-brown
+  (`#4f4540`) tried first still made it stand out (owner, 2026-10-26). Real salt domes are earthier than the art: their salt darkened by
   clays and dust brought up with it, a gypsum rim, and red, grey and dark
   rock mixed in, so the muted dome is also the truer one. Drawn once from the centre space (`drawDome` in ground.ts),
   its foot on the bottom space's bottom edge, clipped as seven mountains
