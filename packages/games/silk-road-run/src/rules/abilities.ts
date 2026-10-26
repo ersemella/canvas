@@ -31,6 +31,7 @@ import {
   enterHex,
   hailEnds,
   hailHolds,
+  liftHail,
   haste,
   heal,
   hit,
@@ -255,8 +256,14 @@ const hail: AbilityDef = {
     ),
   resolve(ctx, user, target) {
     const hex = target.hex!;
-    // One hail a caster: a new one replaces the last (owner, 2026-10-25).
-    clearHail(ctx.state, user);
+    // One hail a caster: a new one replaces the last (owner, 2026-10-25);
+    // with `ABILITY.hail.max` above 1, the oldest past it.
+    if (ABILITY.hail.max <= 1) clearHail(ctx.state, user);
+    else {
+      const mine = ctx.state.effects.filter((e) => e.source === user.id);
+      for (const old of mine.slice(0, Math.max(0, mine.length - ABILITY.hail.max + 1)))
+        liftHail(ctx.state, old);
+    }
     ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, hex));
     ctx.state.effects.push({kind: 'hail', hex, source: user.id, turns: ABILITY.hail.turns});
     log(ctx, `${unitName(user)} calls down hail.`);
@@ -613,6 +620,10 @@ const elixirTakes =
       (ABILITY.elixir.fixed > 0 && u.side !== user.side) ||
       (elixirHeals(u) && u.side === user.side && u.hp < u.maxHp));
 
+/** Elixir's Empower or Weaken: `ABILITY.elixir`'s own amount if set, else `fixed`, else power. */
+export const elixirAmount = (user: Unit, which: 'empower' | 'weaken'): number =>
+  ABILITY.elixir[which] || ABILITY.elixir.fixed || user.power;
+
 /** Whether Elixir heals `u` (`ABILITY.elixir.heal`, with `fixed`). */
 export const elixirHeals = (u: Unit): boolean =>
   ABILITY.elixir.fixed > 0 &&
@@ -673,11 +684,11 @@ const elixir: AbilityDef = {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
       if (u.side === user.side) {
         if (elixirHeals(u)) heal(ctx, u, user.power);
-        if (u.power > 0) empower(ctx, u, fixed || user.power);
+        if (u.power > 0) empower(ctx, u, elixirAmount(user, 'empower'));
         haste(ctx, u, tempo);
       } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
-        if (u.alive && u.power > 0) weaken(ctx, u, fixed || user.power);
+        if (u.alive && u.power > 0) weaken(ctx, u, elixirAmount(user, 'weaken'));
         delay(ctx, u, tempo);
       }
     }

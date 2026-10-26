@@ -239,8 +239,12 @@ export const ABILITY = {
    * the next turn, before), or when its caster casts it again, one hail a
    * caster. A unit in the space when it lands, or that enters it, is
    * Immobilized until it disappears.
+   * `max`, a switch for measuring: how many of a caster's hails stand at
+   * once, a new one past it replacing the oldest; 1 as built.
+   * `entry`, a switch for measuring: a unit that enters hail (walking or
+   * Moved) also takes its caster's power; off as built.
    */
-  hail: {range: 2, turns: 2},
+  hail: {range: 2, turns: 2, max: 1 as number, entry: false as boolean},
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Empowered, is Empowered `empower` until the end of
@@ -309,6 +313,9 @@ export const ABILITY = {
    * `false` no heal, switches for measuring.
    * `tempo`, a switch for measuring: an ally is also Hastened, an enemy
    * Delayed, that many slots, so any unit can be aimed at; 0 as built.
+   * `empower`, `weaken`, switches for measuring: above 0, the Empower on
+   * an ally and the Weaken on an enemy, in place of `fixed` (or power);
+   * 0 as built.
    */
   elixir: {
     range: 2,
@@ -317,6 +324,8 @@ export const ABILITY = {
     fixed: 1 as number,
     heal: 'all' as false | 'all' | 'heroes',
     tempo: 0 as number,
+    empower: 0 as number,
+    weaken: 0 as number,
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),

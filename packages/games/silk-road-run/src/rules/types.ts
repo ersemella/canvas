@@ -95,6 +95,8 @@ export interface Status {
   kind: StatusKind;
   /** From a Storm Caller's hail (its unit id): ends when that hail disappears (`HailEffect`). */
   hail?: string;
+  /** With `hail`, the space of the hail that gave it (`ABILITY.hail.max`); absent before 2026-10-26. */
+  at?: Hex;
   /** From a Grapple: ends when the grapple does (`breakGrapples` in resolve.ts). */
   grapple?: {champion: string; target: string};
   /** From Last Stand (19.8): Stunned for the unit's next turn, ending with it. */

@@ -22,6 +22,7 @@ import {
 import {
   ABILITIES,
   abilitiesOf,
+  elixirAmount,
   elixirCaught,
   elixirHeals,
   grappling,
@@ -350,7 +351,8 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         if (elixirHeals(u))
           value +=
             Math.min(unit.power, u.maxHp - u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
-        if (u.power > 0) value += u.empower ? 0 : 1 + empowerGuess(state, u, fixed || unit.power);
+        if (u.power > 0)
+          value += u.empower ? 0 : 1 + empowerGuess(state, u, elixirAmount(unit, 'empower'));
         // `tempo`: the share of a turn its card gains, as Cleave's Delay is weighed.
         if (tempo) value += (turnValue(u) * tempo) / cardCost(u);
         continue;
@@ -359,7 +361,8 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       const damage = fixed ? Math.min(damageOf(unit), u.hp) : 0;
       value += damage * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
       if (damage > 0 && damage >= u.hp && u.hero !== CAMEL) value += AI.kill;
-      else if (u.power > 0) value += u.weaken ? 0 : 1 + weakenGuess(state, u, fixed || unit.power);
+      else if (u.power > 0)
+        value += u.weaken ? 0 : 1 + weakenGuess(state, u, elixirAmount(unit, 'weaken'));
       if (tempo && damage < u.hp) value += (turnValue(u) * tempo) / cardCost(u);
     }
     return closing + value;

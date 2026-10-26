@@ -1295,6 +1295,41 @@ describe('abilities', () => {
     expect(m.statuses).toEqual([]);
   });
 
+  it('with `ABILITY.hail.max` 2, two hails stand, each lifting on its own; `entry` hurts a unit walking in', () => {
+    const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
+    const storm = unit(s, 'p-storm');
+    const hail = ABILITY.hail as {max: number; entry: boolean};
+    const saved = {...ABILITY.hail};
+    try {
+      hail.max = 2;
+      hail.entry = true;
+      applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
+      const m = unit(s, 'e-mangudai');
+      s.units.forEach((u) => (u.controller = 'human'));
+      for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
+      expect(advanceToDecision(s)!.id).toBe('p-storm');
+      const other = ABILITIES.hail
+        .targets(s, STEPPE, storm, storm.hex!)
+        .find((t) => !unitAt(s, t.hex!))!.hex!;
+      applyTurn(s, storm, {action: {ability: 'hail', target: {hex: other}}});
+      expect(s.effects.map((e) => e.turns)).toEqual([1, 2]);
+      expect(m.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+      // A unit walking into the second takes the caster's power and is held.
+      const b = unit(s, 'e-bokh');
+      enterHex({state: s, map: mapOf(s), slot: s.currentSlot}, b, other);
+      expect(b.hp).toBe(b.maxHp - storm.power);
+      expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+      // The caster's next turn: the first lifts, freeing only whoever it held.
+      for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
+      expect(advanceToDecision(s)!.id).toBe('p-storm');
+      expect(s.effects).toEqual([{kind: 'hail', hex: other, source: 'p-storm', turns: 1}]);
+      expect(m.statuses).toEqual([]);
+      expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
+    } finally {
+      Object.assign(hail, saved);
+    }
+  });
+
   it('a Champion in hail grapples its caster: the hail hit came first, so the grapple holds and the caster’s turn is skipped', () => {
     const s = setup({'e-storm': at(2, 1), 'p-bokh': at(0, 1), 'e-mangudai': at(8, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
@@ -1539,6 +1574,34 @@ describe('the Modao Vanguard and the Waidan Alchemist', () => {
         // The Alchemist is within the radius too, so it takes the elixir.
         expect(unit(c, 'p-alchemist').empower).toBe(unit(c, 'p-alchemist').power);
       }
+    } finally {
+      Object.assign(elixir, saved);
+    }
+  });
+
+  it('Elixir’s `empower` and `weaken` switches set each side’s amount apart', () => {
+    const s = setup(
+      {
+        'p-alchemist': at(1, 3),
+        'p-mangudai': at(2, 3),
+        'e-mangudai': at(2, 2),
+        'e-modao': at(8, 6),
+      },
+      party
+    );
+    const elixir = ABILITY.elixir as {
+      shape: string;
+      fixed: number;
+      empower: number;
+      weaken: number;
+    };
+    const saved = {...ABILITY.elixir};
+    try {
+      Object.assign(elixir, {shape: 'aura', fixed: 0, empower: 2, weaken: 1});
+      applyTurn(s, unit(s, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(1, 3)}}});
+      expect(unit(s, 'p-mangudai').empower).toBe(2);
+      expect(unit(s, 'e-mangudai').weaken).toBe(1);
+      expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp);
     } finally {
       Object.assign(elixir, saved);
     }

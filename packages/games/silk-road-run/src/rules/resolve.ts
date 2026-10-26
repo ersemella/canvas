@@ -16,7 +16,16 @@ import {MAPS} from './map';
 import {hasPassive, spendPassive} from './passives';
 import {placeCard, simultaneousOrder} from './track';
 import type {MapData} from './map';
-import type {BoardSnapshot, FightEvent, FightState, Motion, ShotInAir, Status, Unit} from './types';
+import type {
+  BoardSnapshot,
+  FightEvent,
+  FightState,
+  HailEffect,
+  Motion,
+  ShotInAir,
+  Status,
+  Unit,
+} from './types';
 
 export interface Ctx {
   state: FightState;
@@ -412,10 +421,19 @@ export function hailEnds(turns: number, whose: string): string {
  * this was its last.
  */
 export function ageHail(state: FightState, caster: Unit): void {
-  const hail = state.effects.find((e) => e.source === caster.id);
-  if (!hail) return;
-  hail.turns = (hail.turns ?? 1) - 1;
-  if (hail.turns <= 0) clearHail(state, caster);
+  for (const hail of state.effects.filter((e) => e.source === caster.id)) {
+    hail.turns = (hail.turns ?? 1) - 1;
+    if (hail.turns <= 0) liftHail(state, hail);
+  }
+}
+
+/** One hail lifts, freeing whoever it held (`ABILITY.hail.max` lets a caster have more than one). */
+export function liftHail(state: FightState, hail: HailEffect): void {
+  state.effects = state.effects.filter((e) => e !== hail);
+  for (const u of state.units)
+    u.statuses = u.statuses.filter(
+      (s) => s.hail !== hail.source || (s.at !== undefined && !hexEquals(s.at, hail.hex))
+    );
 }
 
 export function clearHail(state: FightState, caster: Unit): void {
@@ -455,8 +473,13 @@ export function landShots(ctx: Ctx, user: Unit): void {
 export function hailHolds(ctx: Ctx, unit: Unit): void {
   if (!unit.alive || !unit.hex || !hailOn(ctx.state, unit.hex)) return;
   const hail = ctx.state.effects.find((e) => hexEquals(e.hex, unit.hex!))!;
-  if (unit.statuses.some((s) => s.hail === hail.source)) return;
-  addStatus(unit, {kind: 'immobilized', hail: hail.source});
+  if (unit.statuses.some((s) => s.hail === hail.source && (!s.at || hexEquals(s.at, hail.hex))))
+    return;
+  addStatus(unit, {
+    kind: 'immobilized',
+    hail: hail.source,
+    ...(ABILITY.hail.max > 1 ? {at: {...hail.hex}} : {}),
+  });
   log(ctx, `Hail holds ${unitName(unit)} fast.`);
 }
 
@@ -554,6 +577,12 @@ export function enterHex(
   unit.hex = h;
   if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
   if (!midWalk) endGrapplesApart(ctx, unit);
+  if (ABILITY.hail.entry && hailOn(ctx.state, h)) {
+    // `ABILITY.hail.entry`, for measuring: entering hail hurts, its caster's power.
+    const source = ctx.state.effects.find((e) => hexEquals(e.hex, h))!.source;
+    const caster = ctx.state.units.find((u) => u.id === source);
+    if (caster) hit(ctx, caster, unit, 'The hail', 0);
+  }
   hailHolds(ctx, unit);
 }
 
