@@ -2469,6 +2469,65 @@ same, `heal-empower-N-haste-M`.
   within 3** (`shape: 'unit'`, `range: 3`, `heal: 'all'`, `empower: 1`,
   `haste: 3`, `delay: 0`, `self: false`), the Alchemist's power 1.
 
+### China against the Steppe after the collision rule (2026-10-26)
+
+Asked for: a balance check of China against the Steppe on the current
+rules, then whether to nerf Cleave or Swift Strike or buff the Storm
+Caller. `experiments/china-steppe.mjs` and
+`experiments/china-steppe-retune.mjs`, **800 fights each** (about ±1.8
+points), seeds from 1000.
+
+Two rule changes since the Elixir was adopted, rerun at the revision
+before each:
+
+| Revision | China vs Steppe | Alchemist for the Storm Caller |
+|---|---:|---:|
+| Elixir adopted (`50e7963`) | 47.2% | 54.3% |
+| Grapple's throw deals no damage (`b0e5d7c`) | 50.4% | 54.8% |
+| A Hastened or Delayed card wins the collision (`64bb617`, built) | **62%** | 60.3% |
+
+On the built rules: China vs Steppe 60% on the Gobi; as a stage on the
+Gobi, the China party and camel beat the three Steppe heroes 74.1%, the
+Steppe party China's 53.9%. Each Chinese hero in each Steppe seat:
+
+| | Grappler | Horse Archer | Storm Caller |
+|---|---:|---:|---:|
+| Swordsman | 49.3% | 49.3% | 64.5% |
+| Vanguard | 49% | 48.5% | 62% |
+| Alchemist | 46.1% | 56.1% | 60.3% |
+
+- **The collision rule is worth 12 points to China**: Cleave's Delay and
+  the Hastes now always land, and the Steppe's turns fall (the Horse
+  Archer's 5.1 a fight to 4.26, the Grappler's 4.12 to 3.79, the Storm
+  Caller's 4.56 to 4.22) while China's hold. Cleave's Delays rose from
+  2.57 a fight to 2.88.
+- **Role for role, only support is off**: tank 49%, damage 49.3%,
+  support 60.3%.
+
+Each change on both sides, the party and each Chinese hero in its role's
+seat:
+
+| Change | Party | Tank | Damage | Support |
+|---|---:|---:|---:|---:|
+| built | 62% | 49% | 49.3% | 60.3% |
+| Cleave Delay 6 | 55.1% | 44.3% | 49.3% | 60.3% |
+| Cleave Delay 5 | 49.4% | **40.8%** | 49.3% | 60.3% |
+| Swift Strike Haste 2 | 55.3% | 49% | 47.4% | 60.3% |
+| Elixir Haste 2 | 55.1% | 49% | 49.3% | 58.9% |
+| Storm Caller speed 3 | **52.1%** | 46.4% | 49.9% | 55.3% |
+
+- **Nerfing Cleave evens the parties by breaking the tank pair**: at
+  Delay 5 the Vanguard is 9 points under the Grappler, and the support gap
+  is untouched. Swift Strike's Haste 2 leaves China at 55% and the
+  Swordsman a little under the Horse Archer.
+- **The Elixir's Haste 2 barely moves the support pair** (58.9%).
+- **The Storm Caller at speed 3 comes closest everywhere**: the parties
+  52.1%, every role within about 5 points, unfinished fights at most
+  1.4%. Speed 3 was declined earlier the same day, when China lost 40 to
+  60; stage caravans with a Storm Caller have not been rerun at speed 3 on
+  these rules (`caravans.mjs`).
+- Not changed: the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

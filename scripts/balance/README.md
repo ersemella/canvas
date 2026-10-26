@@ -92,6 +92,10 @@ files touching the Alchemist (`china.mjs`, `alchemist.mjs`,
 `elixir-cleave.mjs`) reproduce only at their revision.
 `china-mirror.mjs` (2026-10-26) measures the China party on both sides,
 and each Chinese hero swapped for each Steppe hero on one side.
+`china-steppe-retune.mjs` (2026-10-26) measures Cleave's Delay 6 and 5,
+Swift Strike's Haste 2, the Elixir's Haste 2 and the Storm Caller at speed
+3, each on both sides, party for party and each Chinese hero in its role's
+Steppe seat; it runs on the current rules.
 
 ## Ability and stat ablation
 
