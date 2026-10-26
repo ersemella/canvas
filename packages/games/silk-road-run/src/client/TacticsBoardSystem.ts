@@ -22,7 +22,7 @@ import {
   drawFallingHail,
   drawGround,
   drawObstacle,
-  drawYurtSmoke,
+  drawObstacleSmoke,
   smokes,
   exitArrowPush,
 } from './board/ground';
@@ -324,7 +324,7 @@ export class TacticsBoardSystem extends BaseSystem {
     for (const h of map.hexes)
       if (tileAt(map, h) === 'obstacle') {
         drawObstacle(ctx, h, map);
-        if (smokes(map)) drawYurtSmoke(ctx, h, t);
+        drawObstacleSmoke(ctx, h, map, t);
       }
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);

@@ -24,14 +24,14 @@
  * same board under another look: the Steppe's (`STEPPE`), the Gobi
  * Crossing (`GOBI`), where the `obstacle` tile is a sandstone ruin rather
  * than a yurt, and the Flaming Mountains (`FLAMING`), the China region's
- * (owner, 2026-10-26), its ruins mudbrick and its mountains on fire. A
+ * (owner, 2026-10-26), its obstacles beacon towers and its mountains on fire. A
  * stage names its map (`STAGES` in config.ts); the page draws each map's
  * look (`ground.ts`).
  */
 import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 
-/** `obstacle` is a yurt on the Steppe, a ruin in the Gobi and the Flaming Mountains (ruins everywhere until 2026-10-24; saved runs keep the name). */
+/** `obstacle` is a yurt on the Steppe, a ruin in the Gobi and a beacon tower in the Flaming Mountains (ruins everywhere until 2026-10-24; saved runs keep the name). */
 export type Tile = 'sand' | 'obstacle' | 'mountain';
 
 /** Yurts (ruins) and mountains: no unit may stand there, and they stop arrows. */
@@ -155,11 +155,13 @@ export const GOBI: MapData = {
  * The Flaming Mountains (owner, 2026-10-26), the China region's map: red
  * earth below the burning ridges of *Journey to the West*, which stand in
  * every fight, in two clumps in the middle of the board, not
- * along its edges (owner, 2026-10-26). No obstacles in its fights for now: the mudbrick ruins
- * first scattered there, and fissures burning whoever entered them, were
- * taken out (owner, 2026-10-26), until art for an obstacle in the middle
- * of the board is drawn. The flames are only drawn: the mountains block
- * as any do.
+ * along its edges (owner, 2026-10-26), and one or two Han **beacon
+ * towers** (owner, 2026-10-26), the rammed-earth watchtowers along the
+ * Hexi Corridor, as its `obstacle`, within 3 of the centre and not next to
+ * a mountain. Mountains and towers together cover at most
+ * `MAX_COVERED` spaces. The mudbrick ruins first scattered there, and
+ * fissures burning whoever entered them, were taken out (owner,
+ * 2026-10-26). The flames are only drawn: the mountains block as any do.
  */
 export const FLAMING: MapData = {
   ...STEPPE,
@@ -167,7 +169,7 @@ export const FLAMING: MapData = {
   name: 'The Flaming Mountains',
   mountains: 'always',
   mountainPlaces: 'middle',
-  obstacles: {counts: [0], reach: 2},
+  obstacles: {counts: [1, 2], reach: 3},
 };
 
 export const MAPS: Record<string, MapData> = {
@@ -231,7 +233,14 @@ export function randomTiles(
   // Rolled even when forced, so a seed's other draws stay the same.
   const rolled = random() < MOUNTAIN_CHANCE;
   const raise = map.mountains !== 'never' && (rolled || mountains || map.mountains === 'always');
-  if (raise && map.mountainPlaces === 'middle') middleClumps(map, tiles, candidates, random);
+  const middle = raise && map.mountainPlaces === 'middle';
+  // How many yurts (ruins, towers): on a map of middle clumps, rolled
+  // before them, so the clumps leave the obstacles room under
+  // `MAX_COVERED`; after the mountains elsewhere, as it always was.
+  const {counts, reach} = map.obstacles;
+  const roll = () => counts[Math.floor(random() * counts.length)]!;
+  let count = middle ? roll() : 0;
+  if (middle) middleClumps(map, tiles, candidates, random, MAX_COVERED - count);
   else if (raise) {
     const edge = MOUNTAIN_EDGES[Math.floor(random() * MOUNTAIN_EDGES.length)]!;
     const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
@@ -247,14 +256,16 @@ export function randomTiles(
   // says, within its reach of the centre and off the starting columns, not
   // next to the camel's start or the exit, no two side by side, never
   // cutting the board in two.
+  // Among middle clumps, not next to a mountain either, so a tower stands
+  // on its own rather than reading as part of a clump.
   const yurts: Hex[] = [];
-  const {counts, reach} = map.obstacles;
-  const count = counts[Math.floor(random() * counts.length)]!;
+  if (!middle) count = roll();
+  const mountainHexes = middle ? map.hexes.filter((h) => tiles[hexKey(h)] === 'mountain') : [];
   for (let i = 0; i < count; i++) {
     const free = candidates
       .filter((h) => hexDistance(h, CENTRE) <= reach && Math.abs(h.q) < RADIUS - 1)
       .filter((h) => reserved.every((x) => hexDistance(x, h) > 1))
-      .filter((h) => yurts.every((y) => hexDistance(y, h) > 1))
+      .filter((h) => [...yurts, ...mountainHexes].every((y) => hexDistance(y, h) > 1))
       .filter((h) => connectedWithout(map, tiles, h));
     if (!free.length) break;
     const h = free[Math.floor(random() * free.length)]!;
@@ -303,7 +314,8 @@ function mountainRange(
 
 /**
  * The Flaming Mountains' (owner, 2026-10-26): two clumps of 2 to 4
- * mountains in the middle of the board, so at most 8 in all, each from a first hex within
+ * mountains in the middle of the board, at most `budget` in all (8 less
+ * the beacon towers, `MAX_COVERED`), each from a first hex within
  * `MIDDLE_CLUMP.start` of the centre growing a hex at a time onto a
  * neighbour of the clump within `MIDDLE_CLUMP.reach`, the ones touching
  * more of it first, so it bunches up rather than strings out. Off the
@@ -314,11 +326,19 @@ function mountainRange(
  */
 const MIDDLE_CLUMP = {count: 2, sizes: [2, 3, 4], start: 2, reach: 3};
 
+/**
+ * On a map of middle clumps, the most spaces its mountains and obstacles
+ * (the beacon towers) cover together (owner, 2026-10-26), so the board
+ * stays open enough to manoeuvre.
+ */
+export const MAX_COVERED = 8;
+
 function middleClumps(
   map: MapData,
   tiles: Record<string, Tile>,
   candidates: Hex[],
-  random: () => number
+  random: () => number,
+  budget: number
 ): void {
   const reserved = [map.camelStart, ...map.exits];
   const placed: Hex[] = [];
@@ -327,7 +347,10 @@ function middleClumps(
     .filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.reach)
     .filter((h) => reserved.every((x) => hexDistance(x, h) > 1));
   for (let c = 0; c < MIDDLE_CLUMP.count; c++) {
-    const size = MIDDLE_CLUMP.sizes[Math.floor(random() * MIDDLE_CLUMP.sizes.length)]!;
+    // Rolled even when the budget cuts it, so a seed's other draws stay the same.
+    const rolledSize = MIDDLE_CLUMP.sizes[Math.floor(random() * MIDDLE_CLUMP.sizes.length)]!;
+    const size = Math.min(rolledSize, budget - placed.length);
+    if (size < 2) break;
     // Apart from the clumps before it.
     let open = allowed.filter((h) => placed.every((p) => hexDistance(p, h) > 1));
     let clump: Hex[] = [];

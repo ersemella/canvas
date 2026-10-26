@@ -48,7 +48,7 @@ const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
   flaming: {
     sand: {name: 'Red earth', short: 'Open ground', detail: 'No effect.'},
     obstacle: {
-      name: 'Ruins',
+      name: 'Beacon tower',
       short: 'Blocks movement and arrows',
       detail: 'Blocks movement and arrows.',
     },
