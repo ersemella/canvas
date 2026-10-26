@@ -1,6 +1,7 @@
 /**
  * Abilities' effects as a turn plays back (Sunlight's beam, Gale's gusts,
- * a Volley's arrows falling, Shove's blow, Haul's rope; Longshot's and
+ * a Volley's arrows falling, Shove's blow, Haul's rope, Cleave's swing,
+ * Swift Strike's thrust; Longshot's and
  * Feigned Retreat's arrows are drawn by the playback).
  */
 import type {Hex} from '@canvas/engine';
@@ -40,6 +41,8 @@ export const ABILITY_EFFECT: Partial<
   volley: drawVolley,
   shove: drawShove,
   haul: drawHaul,
+  cleave: drawCleave,
+  swiftStrike: drawSwiftStrike,
 };
 
 /** Fades an effect out over the last part of its event, from `start` (0 to 1) on. */
@@ -269,6 +272,169 @@ function drawHaul(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame)
       const r = (i / 12) * Math.PI * 2;
       const [ax, ay] = artCell(b.x + Math.cos(r) * 12, b.y - 10 + Math.sin(r) * 7);
       artPixel(ctx, ax, ay, i % 2 ? '#a16207' : '#ca8a04');
+    }
+}
+
+/** The blade's steel, its bright edge and its outline. */
+const STEEL = '#cbd5e1';
+const EDGE = '#ffffff';
+const OUTLINE = '#221816';
+
+/**
+ * A slash across a space: a short streak at angle `a` through (x, y),
+ * drawn out from one end over `t` (0 to 1), white edge on steel, outlined.
+ * Once `fade` drops below 0.4 every other pixel goes, as the Gale's do.
+ */
+function drawSlash(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  a: number,
+  half: number,
+  t: number,
+  fade: number
+): void {
+  if (t <= 0 || fade <= 0) return;
+  t = Math.min(1, t);
+  const ux = Math.cos(a);
+  const uy = Math.sin(a);
+  const cells = artLine(
+    x - ux * half,
+    y - uy * half,
+    x - ux * half + ux * 2 * half * t,
+    y - uy * half + uy * 2 * half * t
+  );
+  for (const [cx, cy] of cells) {
+    if (fade <= 0.4 && (cx + cy) % 2 !== 0) continue;
+    artPixel(ctx, cx, cy + 1, OUTLINE);
+  }
+  cells.forEach(([cx, cy], i) => {
+    if (fade <= 0.4 && (cx + cy) % 2 !== 0) return;
+    // Thin at the ends, the bright edge along the middle.
+    const end = i < 2 || i >= cells.length - 2;
+    artPixel(ctx, cx, cy, end ? STEEL : EDGE);
+    if (!end) artPixel(ctx, cx, cy - 1, STEEL);
+  });
+}
+
+/**
+ * Cleave: the great blade swings round the Vanguard, a crescent of steel
+ * sweeping across the spaces it reaches (a chop along a line straight up
+ * or down), and each space is slashed as the swing passes it.
+ */
+function drawCleave(ctx: CanvasRenderingContext2D, {from, area, k}: EffectFrame): void {
+  if (!from || area.length === 0) return;
+  const a = center(from);
+  const fade = fadeOut(k, 0.7);
+  if (fade <= 0) return;
+  // Each space's bearing from the user, round their mean, so the swing doesn't wrap.
+  const spots = area.map((h) => {
+    const c = center(h);
+    return {c, dx: c.x - a.x, dy: c.y - a.y};
+  });
+  const mx = spots.reduce((s, p) => s + p.dx, 0);
+  const my = spots.reduce((s, p) => s + p.dy, 0);
+  const mean = Math.atan2(my, mx);
+  const rel = spots.map((p) =>
+    Math.atan2(
+      Math.cos(mean) * p.dy - Math.sin(mean) * p.dx,
+      Math.cos(mean) * p.dx + Math.sin(mean) * p.dy
+    )
+  );
+  // At least a wide arc, so a line's chop still swings.
+  const span = Math.max(Math.PI / 2, Math.max(...rel) - Math.min(...rel) + Math.PI / 3);
+  const start = mean - span / 2;
+  // The swing: over the first 45%, its head bright and thick, the arc behind it thinning out.
+  const swing = Math.min(1, k / 0.45);
+  const nearest = Math.min(...spots.map((p) => Math.hypot(p.dx, p.dy)));
+  const radius = nearest * 0.8;
+  const head = start + span * swing;
+  const steps = Math.ceil((span * radius * swing) / SPRITE_SCALE);
+  for (let i = 0; i <= steps; i++) {
+    const t = steps ? i / steps : 1;
+    const ang = lerp(start, head, t);
+    const near = Math.max(0, 1 - (head - ang) / (span / 3));
+    const thick = 1 + Math.round(near * 3);
+    for (let j = 0; j < thick; j++) {
+      const r = radius - 6 + j * 4;
+      const [cx, cy] = artCell(a.x + Math.cos(ang) * r, a.y - 10 + Math.sin(ang) * r * 0.85);
+      // The old part of the arc, and all of it as it fades, every other pixel.
+      if ((near === 0 || fade <= 0.4) && (cx + cy) % 2 !== 0) continue;
+      artPixel(ctx, cx, cy, j === thick - 1 ? EDGE : STEEL);
+    }
+  }
+  // Each space slashed as the swing reaches its bearing (along a line, the near one first).
+  spots.forEach((p, i) => {
+    const reached = (rel[i]! - (start - mean)) / span;
+    const further = Math.hypot(p.dx, p.dy) / nearest - 1;
+    const at = Math.max(0, Math.min(0.45, reached * 0.45)) + further * 0.1;
+    const t = Math.min(1, (k - at) / 0.12);
+    // Across the swing's path there, tilted the way it travels.
+    drawSlash(ctx, p.c.x, p.c.y - 12, mean + rel[i]! + Math.PI / 2 + 0.5, 20, t, fade);
+  });
+}
+
+/**
+ * Swift Strike: the Swordsman's jian darts out to the unit in a thin
+ * bright streak, two quick cuts cross on it, and jade speed lines run back
+ * past the Swordsman as its card is Hastened.
+ */
+function drawSwiftStrike(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame): void {
+  if (!from) return;
+  const a = center(from);
+  const b = center(target);
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const ux = (b.x - a.x) / len;
+  const uy = (b.y - a.y) / len;
+  const fade = fadeOut(k, 0.7);
+  if (fade <= 0) return;
+  // The thrust, over the first quarter: its tail catching up as it lands.
+  if (k < 0.35) {
+    const h = Math.min(1, k / 0.2);
+    const t = Math.max(0, (k - 0.1) / 0.25);
+    for (const [cx, cy] of artLine(
+      lerp(a.x, b.x, t * 0.8) + ux * 10,
+      lerp(a.y, b.y, t * 0.8) + uy * 10 - 14,
+      lerp(a.x, b.x, h * 0.8) + ux * 10,
+      lerp(a.y, b.y, h * 0.8) + uy * 10 - 14
+    )) {
+      artPixel(ctx, cx, cy + 1, '#0e7490');
+      artPixel(ctx, cx, cy, EDGE);
+    }
+  }
+  // Two cuts crossing on the unit, one after the other.
+  drawSlash(ctx, b.x, b.y - 12, -Math.PI / 4, 16, (k - 0.18) / 0.1, fade);
+  drawSlash(ctx, b.x, b.y - 12, Math.PI / 4, 16, (k - 0.3) / 0.1, fade);
+  // The glint where they cross.
+  if (k >= 0.3 && k < 0.55) {
+    const [gx, gy] = artCell(b.x, b.y - 12);
+    const r = k < 0.42 ? 3 : 2;
+    for (let i = -r; i <= r; i++) {
+      artPixel(ctx, gx + i, gy, i === 0 ? EDGE : '#a5f3fc');
+      artPixel(ctx, gx, gy + i, i === 0 ? EDGE : '#a5f3fc');
+    }
+  }
+  // Haste: speed lines running back past the Swordsman.
+  const run = (k - 0.35) / 0.65;
+  if (run > 0)
+    for (const [side, lag] of [
+      [-1, 0],
+      [0, 0.15],
+      [1, 0.3],
+    ] as const) {
+      const m = Math.min(1, Math.max(0, run * 1.4 - lag));
+      if (m <= 0 || m >= 1) continue;
+      const ox = a.x - uy * side * 12;
+      const oy = a.y - 12 + ux * side * 8;
+      const d0 = 4 + m * 30;
+      for (const [cx, cy] of artLine(
+        ox - ux * d0,
+        oy - uy * d0,
+        ox - ux * (d0 + 12),
+        oy - uy * (d0 + 12)
+      ))
+        if (fade > 0.4 || (cx + cy) % 2 === 0)
+          artPixel(ctx, cx, cy, m < 0.5 ? '#86efac' : '#5bb26f');
     }
 }
 
