@@ -17,8 +17,7 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 The committed file, fought in the Flaming Mountains: the Waidan
 Alchemist, the Modao Vanguard and the Mangudai Outrider against the three
 Steppe heroes, every kit the starting one. Its `"random"` yurts still
-bring a range of mountains and one or two fissures: the Flaming
-Mountains always have them.
+bring a range of mountains: the Flaming Mountains always have one.
 
 ```json
 {
@@ -44,7 +43,7 @@ Mountains always have them.
 | Field | What it is | Left out |
 |---|---|---|
 | `seed` | A whole number: the same seed lays out the yurts, mountains and units the same way every time. `null`: a new scatter each time. | `null` |
-| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far), `"gobi"` (the Gobi Crossing, its desert kept for the Arabia region: sand and sandstone ruins, which block as yurts do, four or five a fight in place of two or three yurts, and never mountains, whatever `yurts` says) or `"flaming"` (the Flaming Mountains, the China region's: red earth, two or three mudbrick ruins, which block as yurts do, a range of burning mountains, and one or two fissures, each burning 1 on every entry, whenever `yurts` is `"random"` or `"mountains"`; the flames on the mountains are only drawn). The board itself is the same. | `"steppe"` |
+| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far), `"gobi"` (the Gobi Crossing, its desert kept for the Arabia region: sand and sandstone ruins, which block as yurts do, four or five a fight in place of two or three yurts, and never mountains, whatever `yurts` says) or `"flaming"` (the Flaming Mountains, the China region's: red earth and a range of burning mountains whenever `yurts` is `"random"` or `"mountains"`, and no yurts but those placed by hand, drawn as a mudbrick ruin; the flames are only drawn). The board itself is the same. | `"steppe"` |
 | `yurts` | `"random"` (as in a normal fight: two or three yurts near the middle, and a range of 3 to 5 mountains in about half of fights), `"mountains"` (the same, always with the mountains, as in a run's first three stages), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |

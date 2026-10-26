@@ -35,7 +35,7 @@ Maps can contain three types of special tile:
 | Tile | Effect |
 |---|---|
 | **Obstacle** | Cannot be moved through or occupied. |
-| **Hazard** | Deals damage and/or applies status effects to a unit that enters or occupies it. Phase 1's quicksand was removed on 2026-10-23 (it was out of fights since 2026-10-22). The **fissure** (owner, 2026-10-26), the Flaming Mountains' (the China region's map): a glowing crack in open ground that deals 1 damage (`RULES.fissureDamage`) each time a unit **enters** it, walking through included, as well as stepping onto it or being Pushed, Pulled or thrown in; standing in it does nothing more. It doesn't block movement or arrows. A unit it kills falls where it entered, its walk ended. Walks and Temee's road go around a fissure when a way as short is clear of one. One or two a fight, off the starting columns and Temee's road down the middle, never side by side. Other hazards' triggers stay open. |
+| **Hazard** | Deals damage and/or applies status effects to a unit that enters or occupies it. Exact trigger (on entry, at turn start, or both) TBD. Phase 1's quicksand was removed on 2026-10-23 (it was out of fights since 2026-10-22). |
 | **Conceal** | Smoke or weather that hides or protects its occupant; rule TBD. Phase 1's sandstorm, which made its occupant Obscured, was removed with that keyword on 2026-10-23 ([history.md](history.md)). |
 
 - No other modifier types for now, to keep the board readable.
@@ -106,7 +106,6 @@ Friendly fire is used as a positioning cost that limits ranged characters, not a
 | Flanking | The flanked unit is Vulnerable while flanked | A flat damage bonus to attackers; ignoring defence; pinning; pushing the card on each hit | One rule players already know from the keyword list; the board state shows it |
 | Grid | Compact hex grid | No grid, rows, square grid, gridless | Uniform distances, clean flanking |
 | Map modifiers | Three tile types: obstacle, hazard, conceal; no elevation or facing | Full terrain systems | Readability, with enough variety for positional decisions |
-| The fissure | A hazard that burns 1 on each entry, passing through included (owner, 2026-10-26) | Burning only a unit that ends its turn there; decoration only; kept for the Bull Demon King's fight | Makes pushes, pulls and throws onto it count and paths through it a cost; a decoration that looks dangerous would mislead |
 | Friendly fire | Every ability affects every unit it reaches, ally or enemy, heals included (2026-10-19); direct ranged attacks need a clear line of fire (any unit blocks); arcing attacks ignore line of fire at a higher cost; gear and upgrades can exempt allies | No friendly fire; stray shots hitting units in the path; friendly fire for areas only, with single-target and path abilities and heals filtered by side (until 2026-10-19) | Limits ranged power through positioning; deterministic and previewed, so never accidental |
 | Deployment | Player placement within deployment zones; opposite and mirrored in PvP, varied in PvE | Fixed spawn positions | Placement is a meaningful first decision; variety keeps PvE openings fresh |
 
@@ -114,7 +113,7 @@ Friendly fire is used as a positioning cost that limits ranged characters, not a
 
 9. Map size and shape.
 10. Whether units can pass through allied units.
-12. Map modifier details: hazard trigger timing and effects (the fissure's decided, on entry, 2026-10-26); whether conceal grants full ranged immunity or a reduction; whether conceal hides the occupant's identity; which tiles block line of fire (section 6.7).
+12. Map modifier details: hazard trigger timing and effects; whether conceal grants full ranged immunity or a reduction; whether conceal hides the occupant's identity; which tiles block line of fire (section 6.7).
    - Deployment zone sizes, engagement distance, and the set of PvE deployment layouts.
 29. Hex line-of-fire edge case: when the line runs exactly along the border between two hexes, whether it is blocked if either hex is occupied or only if both are (section 6.7).
 30. Pricing of arcing attacks: charge and recovery costs per ability.

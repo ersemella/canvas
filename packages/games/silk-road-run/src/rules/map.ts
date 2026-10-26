@@ -31,13 +31,8 @@
 import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 
-/**
- * `obstacle` is a yurt on the Steppe, a ruin in the Gobi and the Flaming
- * Mountains (ruins everywhere until 2026-10-24; saved runs keep the
- * name). `fissure`, the Flaming Mountains' only: open ground that burns
- * whoever enters it (`RULES.fissureDamage`, resolve.ts).
- */
-export type Tile = 'sand' | 'obstacle' | 'mountain' | 'fissure';
+/** `obstacle` is a yurt on the Steppe, a ruin in the Gobi and the Flaming Mountains (ruins everywhere until 2026-10-24; saved runs keep the name). */
+export type Tile = 'sand' | 'obstacle' | 'mountain';
 
 /** Yurts (ruins) and mountains: no unit may stand there, and they stop arrows. */
 export function blocks(tile: string | undefined): boolean {
@@ -67,8 +62,6 @@ export interface MapData {
    * how far from the centre they may stand (`randomTiles`).
    */
   obstacles: {counts: number[]; reach: number};
-  /** How many fissures its fights open, one of these at random (`randomTiles`): none but in the Flaming Mountains. */
-  fissures: number[];
 }
 
 /** How far the board reaches from its centre hex. */
@@ -133,7 +126,6 @@ export const STEPPE: MapData = {
   mountains: 'sometimes',
   // Two or three yurts, within 2 hexes of the centre (owner, 2026-10-24).
   obstacles: {counts: [2, 3], reach: 2},
-  fissures: [0],
 };
 
 /**
@@ -155,18 +147,18 @@ export const GOBI: MapData = {
 /**
  * The Flaming Mountains (owner, 2026-10-26), the China region's map: red
  * earth below the burning ridges of *Journey to the West*, which stand in
- * every fight, and the yurts' places the mudbrick ruins of Gaochang at
- * their foot. Two or three ruins, as the Steppe's yurts, since the
- * mountains already break up the board. The flames on the mountains are
- * only drawn: they block as any do. One or two fissures open in the red
- * earth, burning whoever enters them (owner, 2026-10-26).
+ * every fight. No obstacles in its fights for now: the mudbrick ruins
+ * first scattered there, and fissures burning whoever entered them, were
+ * taken out (owner, 2026-10-26), until art for an obstacle in the middle
+ * of the board is drawn. The flames are only drawn: the mountains block
+ * as any do.
  */
 export const FLAMING: MapData = {
   ...STEPPE,
   id: 'flaming',
   name: 'The Flaming Mountains',
   mountains: 'always',
-  fissures: [1, 2],
+  obstacles: {counts: [0], reach: 2},
 };
 
 export const MAPS: Record<string, MapData> = {
@@ -256,25 +248,6 @@ export function randomTiles(
     const h = free[Math.floor(random() * free.length)]!;
     tiles[hexKey(h)] = 'obstacle';
     yurts.push(h);
-  }
-  // Fissures (owner, 2026-10-26), only drawn for on a map that has them, so
-  // the other maps' seeds lay out as before: on open ground within 3 of the
-  // centre, off the starting columns and Temee's road down the middle,
-  // not next to the camel's start or the exit, no two side by side.
-  if (map.fissures.some((n) => n > 0)) {
-    const fissures: Hex[] = [];
-    const count = map.fissures[Math.floor(random() * map.fissures.length)]!;
-    for (let i = 0; i < count; i++) {
-      const free = candidates
-        .filter((h) => hexDistance(h, CENTRE) <= 3 && Math.abs(h.q) < RADIUS - 1 && h.q !== 0)
-        .filter((h) => !tiles[hexKey(h)])
-        .filter((h) => reserved.every((x) => hexDistance(x, h) > 1))
-        .filter((h) => fissures.every((f) => hexDistance(f, h) > 1));
-      if (!free.length) break;
-      const h = free[Math.floor(random() * free.length)]!;
-      tiles[hexKey(h)] = 'fissure';
-      fissures.push(h);
-    }
   }
   return tiles;
 }

@@ -1,7 +1,7 @@
 /**
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
  * grass, yurts and their smoke, the Gobi's sand and sandstone ruins, the
- * Flaming Mountains' red earth, mudbrick ruins and burning mountains; exits
+ * Flaming Mountains' red earth and burning mountains; exits
  * (cached per map), and falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
@@ -30,7 +30,6 @@ import redEarthImage from '../tiles/red-earth.png';
 import mudbrickRuinsImage from '../tiles/ruins.png';
 import flamingMountainImage from '../tiles/mountain-flaming.png';
 import flamingTwinImage from '../tiles/mountain-flaming-twin.png';
-import fissureImage from '../tiles/fissure.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
@@ -83,9 +82,9 @@ const FLAMING_MOUNTAINS = [flamingMountainImage, flamingTwinImage];
  * stamped per hex and the crumbling sandstone ruin, as they were
  * (2026-10-22), in place of the yurts. The Flaming Mountains (owner,
  * 2026-10-26): the owner's cracked red earth (AI-assisted, cut to 128
- * pixels and 5 colours), under the mountains too, and the mudbrick wall
- * drawn for the Steppe (`ruins.png`) as the ruins of Gaochang; its tower
- * stump (`ruins-tower.png`), too dark on the red earth, stays unused.
+ * pixels and 5 colours), under the mountains too. Its fights have no
+ * obstacles for now (map.ts); the mudbrick wall drawn for the Steppe
+ * (`ruins.png`) stands in for one placed by hand on the test stage.
  */
 const LOOKS: Record<string, Look> = {
   steppe: {
@@ -200,7 +199,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     mapKey = `${map.id}|${map.hexes.map((h) => `${hexKey(h)}:${tileAt(map, h)}`).join(' ')}`;
     mapKeys.set(map, mapKey);
   }
-  const loaded = [look.ground, look.mountainGround, fissureImage]
+  const loaded = [look.ground, look.mountainGround]
     .map((src) => (assetLoader.requestImage(src) ? 1 : 0))
     .join('');
   const scale = ctx.getTransform().a;
@@ -224,8 +223,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
 /**
  * A tile's ground in the map's look: its texture, one field across the
  * board or stamped per hex, and its border. Until the image loads, the
- * look's flat colour shows. A fissure's crack is drawn over its ground.
- * Yurts, ruins and mountains stand on it and are
+ * look's flat colour shows. Yurts, ruins and mountains stand on it and are
  * drawn later, by `drawObstacle`.
  */
 function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, look: Look): void {
@@ -233,10 +231,6 @@ function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, look: Look)
   if (ground) {
     if (look.stamp && tile !== 'mountain') stampHex(ctx, h, ground, (h.q * 7 + h.r * 13) % 2 !== 0);
     else fillHexTexture(ctx, h, ground);
-    // A fissure (owner, 2026-10-26): its glowing crack over the ground,
-    // drawn in its colours on the sprites' grid, mirrored on alternate hexes.
-    const crack = tile === 'fissure' ? assetLoader.requestImage(fissureImage) : null;
-    if (crack) stampHex(ctx, h, crack, (h.q * 7 + h.r * 13) % 2 !== 0);
     ctx.save();
     hexPath(ctx, h, 0.5);
     ctx.strokeStyle = look.border;

@@ -1,6 +1,5 @@
 import {describe, expect, it, onTestFinished} from 'vitest';
 import {
-  hexDirectionTo,
   hexDistance,
   hexEquals,
   hexKey,
@@ -20,7 +19,6 @@ import {
   movementCap,
   reachableHexes,
   roadToExit,
-  stepToExit,
   unitAt,
   firstInLane,
   shotLane,
@@ -57,7 +55,7 @@ import {
   tileAt,
 } from './map';
 import {tileInfo} from './info';
-import {checkEnd, damageOf, degrade, displace, enhance, enterHex, hit, kill, stun} from './resolve';
+import {checkEnd, damageOf, degrade, enhance, enterHex, hit, kill, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {
   RUN_FORMAT,
@@ -556,7 +554,6 @@ describe('the board', () => {
     for (let seed = 0; seed < 40; seed++) {
       // Even a stage that always has mountains has none in the Gobi.
       const s = createFight(seed, undefined, undefined, true, [], GOBI);
-      expect(Object.values(s.tiles)).not.toContain('fissure');
       expect(s.mapId).toBe('gobi');
       expect(mapOf(s).name).toBe('The Gobi Crossing');
       const tiles = Object.values(s.tiles);
@@ -574,7 +571,7 @@ describe('the board', () => {
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
   });
 
-  it('raises the Flaming Mountains in every fight, with the Steppe’s two or three ruins', () => {
+  it('raises the Flaming Mountains in every fight, and nothing else for now', () => {
     let steppeWithout = 0;
     for (let seed = 0; seed < 40; seed++) {
       // Not a stage that asks for mountains: the map raises them itself.
@@ -583,22 +580,7 @@ describe('the board', () => {
       expect(mapOf(s).name).toBe('The Flaming Mountains');
       const tiles = Object.values(s.tiles);
       expect(tiles.filter((t) => t === 'mountain').length).toBeGreaterThanOrEqual(3);
-      expect([2, 3]).toContain(tiles.filter((t) => t === 'obstacle').length);
-      // One or two fissures: off the starting columns and Temee's road,
-      // not next to its start or the exit, nor to each other.
-      const fissures = Object.keys(s.tiles)
-        .filter((k) => s.tiles[k] === 'fissure')
-        .map((k) => k.split(',').map(Number) as [number, number])
-        .map(([q, r]) => ({q, r}));
-      expect([1, 2]).toContain(fissures.length);
-      for (const f of fissures) {
-        expect(Math.abs(f.q)).toBeLessThan(3);
-        expect(f.q).not.toBe(0);
-        for (const x of [FLAMING.camelStart, ...FLAMING.exits])
-          expect(hexDistance(f, x)).toBeGreaterThan(1);
-        for (const g of fissures) if (g !== f) expect(hexDistance(f, g)).toBeGreaterThan(1);
-        expect(s.units.some((u) => u.hex && hexKey(u.hex) === hexKey(f))).toBe(false);
-      }
+      expect(tiles.filter((t) => t === 'obstacle')).toHaveLength(0);
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
       // The same seed's Steppe fight lacks them about half the time.
       const steppe = createFight(seed, undefined, undefined, false);
@@ -805,86 +787,6 @@ describe('the board', () => {
     applyTurn(s, b, {move: [at(3, 4)], action: {ability: 'hold'}});
     expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm'}]);
     expect(movementCap(b)).toBe(0);
-  });
-
-  it('burns a unit each time it enters a fissure, and walks around one when it can', () => {
-    const s = setup({'p-bokh': at(3, 3), 'e-storm': at(6, 6)});
-    s.tiles = {...s.tiles, [hexKey(at(3, 4))]: 'fissure'};
-    const b = unit(s, 'p-bokh');
-    const dest = at(3, 5); // via (3, 4), the fissure, or (4, 4)
-    const reach = reachableHexes(s, mapOf(s), b).find((r) => hexKey(r.hex) === hexKey(dest))!;
-    expect(reach.path.map(hexKey)).toEqual([at(4, 4), dest].map(hexKey));
-    // Walked through it on purpose: burnt on the way, and on to the end.
-    const hp = b.hp;
-    s.awaiting = b.id;
-    applyTurn(s, b, {move: [at(3, 4), dest], action: {ability: 'hold'}});
-    expect(b.hp).toBe(hp - RULES.fissureDamage);
-    expect(hexKey(b.hex!)).toBe(hexKey(dest));
-    expect(tileInfo('flaming', 'fissure').name).toBe('Fissure');
-  });
-
-  it('ends a walk where a fissure kills the walker', () => {
-    const s = setup({'p-bokh': at(3, 3), 'p-storm': at(0, 3), 'e-storm': at(6, 6)});
-    s.tiles = {...s.tiles, [hexKey(at(3, 4))]: 'fissure'};
-    const b = unit(s, 'p-bokh');
-    b.hp = RULES.fissureDamage;
-    s.awaiting = b.id;
-    applyTurn(s, b, {move: [at(3, 4), at(3, 5)], action: {ability: 'hold'}});
-    expect(b.alive).toBe(false);
-    expect(b.hex).toBeNull();
-    expect(b.slot).toBeNull();
-  });
-
-  it('burns a unit Pushed or Pulled into a fissure, for each one it enters', () => {
-    // Pushed 3 to the right from the centre, over a fissure into another.
-    const lane = [
-      {q: 1, r: 0},
-      {q: 2, r: 0},
-      {q: 3, r: 0},
-    ];
-    const s = setup({'p-bokh': at(0, 0), 'e-bokh': {q: 0, r: 0}});
-    s.tiles = {...s.tiles, [hexKey(lane[0]!)]: 'fissure', [hexKey(lane[2]!)]: 'fissure'};
-    const e = unit(s, 'e-bokh');
-    const hp = e.hp;
-    const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
-    displace(ctx, e, hexDirectionTo({q: 0, r: 0}, lane[0]!)!, 3, 'push');
-    expect(hexKey(e.hex!)).toBe(hexKey(lane[2]!));
-    expect(e.hp).toBe(hp - 2 * RULES.fissureDamage);
-  });
-
-  it('plays whole fights in the Flaming Mountains to an end, AI against AI, fissures burning', () => {
-    let burns = 0;
-    // The committed test stage is fought in the Flaming Mountains.
-    for (let seed = 0; seed < 6; seed++) {
-      let run = createRun(seed, {test: true});
-      expect(run.fight.mapId).toBe('flaming');
-      for (let turns = 0; turns < 300 && run.fight.phase === 'fight'; turns++) {
-        run = request(run);
-        burns += run.fight.log.filter((l) => l.text.startsWith('The fissure burns')).length;
-      }
-      expect(['won', 'lost']).toContain(run.fight.phase);
-    }
-    expect(burns).toBeGreaterThan(0);
-  });
-
-  it('walks Temee around a fissure when a step as short is clear of it', () => {
-    // From one column off the middle, two steps are as short: whichever
-    // holds the fissure, Temee takes the other.
-    const s = setup({'p-camel': {q: 1, r: 0}, 'e-storm': at(8, 0)});
-    const camel = unit(s, 'p-camel');
-    for (const [fissure, other] of [
-      [
-        {q: 0, r: 1},
-        {q: 1, r: 1},
-      ],
-      [
-        {q: 1, r: 1},
-        {q: 0, r: 1},
-      ],
-    ] as const) {
-      s.tiles = {[hexKey(fissure)]: 'fissure'};
-      expect(hexKey(stepToExit(s, mapOf(s), camel)!)).toBe(hexKey(other));
-    }
   });
 
   it('can’t move while Immobilized or Stunned', () => {

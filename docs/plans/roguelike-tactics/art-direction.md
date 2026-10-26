@@ -106,20 +106,17 @@ tuning. This file has no combat-design section number.
   into it, and shorter down the slope, so the fire grows out of the rock.
   Drawn first as a separate flame on each crest, its flat foot read as a
   lid on the peak; then animated in 8 frames, which made the mountains
-  look as if they shook (owner, 2026-10-26). The mudbrick wall (`tiles/ruins.png`) stands
-  for the ruins of Gaochang at the mountains' foot; its tower stump read
-  too dark on the red earth. Every fight has a range of mountains
-  (`MapData.mountains`: `'always'`) and two or three ruins, as the
-  Steppe's yurts. The flames are only drawn: the mountains block as any
-  do. One or two **fissures** a fight (owner, 2026-10-26), a hazard
-  ([map.md](map.md), 6.4): a glowing crack (`tiles/fissure.png`, 42 × 42)
-  drawn over the red earth, stamped centred on its hex and mirrored on
-  alternate hexes. The owner's fissure tile (AI-assisted) was a raised,
-  pointy-top hex, which doesn't fit the board's flat-top hexes, and its
-  crack lost its shape when cut out at this size, so the crack is drawn
-  on the sprites' grid in that tile's colours: a pale core, yellow and
-  orange, a dark rim, three branches and a few embers. The page calls the
-  tiles Red earth, Ruins, Flaming Mountains and Fissure. Every stage of a run is still the
+  look as if they shook (owner, 2026-10-26). Every fight has a range of
+  mountains (`MapData.mountains`: `'always'`) and, for now, nothing else:
+  two or three mudbrick ruins (`tiles/ruins.png`, as the ruins of
+  Gaochang) and one or two fissures, a hazard burning 1 on each entry,
+  were tried and taken out, as they didn't look good (owner, 2026-10-26).
+  An obstacle for the middle of the board waits on new art; until then
+  the mudbrick wall is drawn only for one placed by hand on the test
+  stage. The flames are only drawn: the mountains block as any do; a
+  fire hazard waits for the region's boss ([setting.md](setting.md), the
+  Bull Demon King's fire mountain). The page calls the tiles Red earth,
+  Ruins and Flaming Mountains. Every stage of a run is still the
   Steppe's (`STAGES` in config.ts); the test stage's `"map"` shows the
   Flaming Mountains.
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct
