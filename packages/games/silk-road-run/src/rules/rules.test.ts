@@ -571,7 +571,7 @@ describe('the board', () => {
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
   });
 
-  it('raises the Flaming Mountains in every fight, and nothing else for now', () => {
+  it('raises the Flaming Mountains in every fight, in clumps in the middle, and nothing else for now', () => {
     let steppeWithout = 0;
     for (let seed = 0; seed < 40; seed++) {
       // Not a stage that asks for mountains: the map raises them itself.
@@ -579,7 +579,29 @@ describe('the board', () => {
       expect(s.mapId).toBe('flaming');
       expect(mapOf(s).name).toBe('The Flaming Mountains');
       const tiles = Object.values(s.tiles);
-      expect(tiles.filter((t) => t === 'mountain').length).toBeGreaterThanOrEqual(3);
+      // One or two clumps of 2 to 4 in the middle, apart, off the
+      // starting columns and Temee's road, not next to its start or exit.
+      const mountains = Object.keys(s.tiles)
+        .filter((k) => s.tiles[k] === 'mountain')
+        .map((k) => k.split(',').map(Number) as [number, number])
+        .map(([q, r]) => ({q, r}));
+      for (const m of mountains) {
+        expect(hexDistance(m, {q: 0, r: 0})).toBeLessThanOrEqual(3);
+        expect(Math.abs(m.q)).toBeLessThan(3);
+        expect(m.q).not.toBe(0);
+        for (const x of [FLAMING.camelStart, ...FLAMING.exits])
+          expect(hexDistance(m, x)).toBeGreaterThan(1);
+      }
+      const clumps: Hex[][] = [];
+      for (const m of mountains) {
+        const touching = clumps.filter((c) => c.some((n) => hexDistance(n, m) === 1));
+        const merged = [m, ...touching.flat()];
+        for (const c of touching) clumps.splice(clumps.indexOf(c), 1);
+        clumps.push(merged);
+      }
+      expect([1, 2]).toContain(clumps.length);
+      for (const c of clumps) expect(c.length).toBeGreaterThanOrEqual(2);
+      for (const c of clumps) expect(c.length).toBeLessThanOrEqual(4);
       expect(tiles.filter((t) => t === 'obstacle')).toHaveLength(0);
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
       // The same seed's Steppe fight lacks them about half the time.

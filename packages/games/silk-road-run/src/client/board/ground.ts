@@ -28,8 +28,8 @@ import rockImage from '../tiles/rock.png';
 import grassImage from '../tiles/grass-soft.png';
 import redEarthImage from '../tiles/red-earth.png';
 import mudbrickRuinsImage from '../tiles/ruins.png';
-import flamingMountainImage from '../tiles/mountain-flaming.png';
-import flamingTwinImage from '../tiles/mountain-flaming-twin.png';
+import burningMountainImage from '../tiles/mountain-burning.png';
+import burningMirroredImage from '../tiles/mountain-burning-mirrored.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
@@ -64,15 +64,15 @@ export interface Look {
 const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
 
 /**
- * The Flaming Mountains' (owner, 2026-10-26): red sandstone ridges cut by
- * gullies, from the owner's art (AI-assisted) shrunk to the hex's 42
- * pixels and cut to 5 colours with an ink outline, as the Steppe's are.
- * Each is one still image with the owner's flames (AI-assisted, cut to
- * the grid and 5 colours) burning on its crest, the twin's on both
- * peaks, each flame's foot following the ridge (2026-10-26; animated
- * at first, the changing frames made the mountains look as if they shook).
+ * The Flaming Mountains' (owner, 2026-10-26): the owner's burning mountain
+ * (AI-assisted), red rock cliffs with flames running up the ridges, drawn
+ * as one image with the fire in it, shrunk to the hex's 42 pixels (42 ×
+ * 48), its rock cut to 5 colours with an ink outline and its fire to 4,
+ * each pixel taken as rock or fire by what most of it was; and the same
+ * mirrored, each hex picking one. It took the place of red sandstone
+ * ridges with flames added on their crests, which looked off.
  */
-const FLAMING_MOUNTAINS = [flamingMountainImage, flamingTwinImage];
+const FLAMING_MOUNTAINS = [burningMountainImage, burningMirroredImage];
 
 /**
  * The Steppe's grass (owner, 2026-10-24) is the owner's `grass.png`

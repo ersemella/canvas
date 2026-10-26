@@ -58,6 +58,12 @@ export interface MapData {
    */
   mountains: 'sometimes' | 'never' | 'always';
   /**
+   * Where they stand: one range along one of the board's slanted edges
+   * (the Steppe's), or one or two clumps in its middle (the Flaming
+   * Mountains', owner, 2026-10-26; `middleClumps`).
+   */
+  mountainPlaces: 'edge' | 'middle';
+  /**
    * Its fights' yurts (ruins): how many, one of `counts` at random, and
    * how far from the centre they may stand (`randomTiles`).
    */
@@ -124,6 +130,7 @@ export const STEPPE: MapData = {
   // corner before).
   exits: [{q: 0, r: RADIUS}],
   mountains: 'sometimes',
+  mountainPlaces: 'edge',
   // Two or three yurts, within 2 hexes of the centre (owner, 2026-10-24).
   obstacles: {counts: [2, 3], reach: 2},
 };
@@ -147,7 +154,8 @@ export const GOBI: MapData = {
 /**
  * The Flaming Mountains (owner, 2026-10-26), the China region's map: red
  * earth below the burning ridges of *Journey to the West*, which stand in
- * every fight. No obstacles in its fights for now: the mudbrick ruins
+ * every fight, in one or two clumps in the middle of the board, not
+ * along its edges (owner, 2026-10-26). No obstacles in its fights for now: the mudbrick ruins
  * first scattered there, and fissures burning whoever entered them, were
  * taken out (owner, 2026-10-26), until art for an obstacle in the middle
  * of the board is drawn. The flames are only drawn: the mountains block
@@ -158,6 +166,7 @@ export const FLAMING: MapData = {
   id: 'flaming',
   name: 'The Flaming Mountains',
   mountains: 'always',
+  mountainPlaces: 'middle',
   obstacles: {counts: [0], reach: 2},
 };
 
@@ -204,8 +213,9 @@ const MOUNTAIN_EDGES: {left: boolean; inFrom: (h: Hex) => number}[] = [
 /**
  * A fight's own tiles, from `random` in [0, 1): a range of mountains in
  * about half of fights, or always with `mountains` or on a map that always
- * has them, never on a map without them (`MapData.mountains`), off the starting
- * columns, the camel's start and the exit, then two or three yurts near the
+ * has them, never on a map without them (`MapData.mountains`), along an
+ * edge or in clumps in the middle as the map says (`mountainPlaces`), off
+ * the starting columns, the camel's start and the exit, then two or three yurts near the
  * middle (not mirrored), on `map`'s board.
  */
 export function randomTiles(
@@ -220,7 +230,9 @@ export function randomTiles(
   );
   // Rolled even when forced, so a seed's other draws stay the same.
   const rolled = random() < MOUNTAIN_CHANCE;
-  if (map.mountains !== 'never' && (rolled || mountains || map.mountains === 'always')) {
+  const raise = map.mountains !== 'never' && (rolled || mountains || map.mountains === 'always');
+  if (raise && map.mountainPlaces === 'middle') middleClumps(map, tiles, candidates, random);
+  else if (raise) {
     const edge = MOUNTAIN_EDGES[Math.floor(random() * MOUNTAIN_EDGES.length)]!;
     const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
     const inFrontOfTemee: Hex = {q: 0, r: map.camelStart.r + 1};
@@ -287,6 +299,56 @@ function mountainRange(
     range.push(h);
   }
   return range;
+}
+
+/**
+ * The Flaming Mountains' (owner, 2026-10-26): one or two clumps of 2 to 4
+ * mountains in the middle of the board, each from a first hex within
+ * `MIDDLE_CLUMP.start` of the centre growing a hex at a time onto a
+ * neighbour of the clump within `MIDDLE_CLUMP.reach`, the ones touching
+ * more of it first, so it bunches up rather than strings out. Off the
+ * starting columns, off Temee's road down the
+ * middle column, not next to the camel's start or the exit, the two clumps
+ * apart, and never cutting the board in two.
+ */
+const MIDDLE_CLUMP = {counts: [1, 2], sizes: [2, 3, 4], start: 2, reach: 3};
+
+function middleClumps(
+  map: MapData,
+  tiles: Record<string, Tile>,
+  candidates: Hex[],
+  random: () => number
+): void {
+  const reserved = [map.camelStart, ...map.exits];
+  const placed: Hex[] = [];
+  const allowed = candidates
+    .filter((h) => Math.abs(h.q) < RADIUS - 1 && h.q !== 0)
+    .filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.reach)
+    .filter((h) => reserved.every((x) => hexDistance(x, h) > 1));
+  const count = MIDDLE_CLUMP.counts[Math.floor(random() * MIDDLE_CLUMP.counts.length)]!;
+  for (let c = 0; c < count; c++) {
+    const size = MIDDLE_CLUMP.sizes[Math.floor(random() * MIDDLE_CLUMP.sizes.length)]!;
+    const clump: Hex[] = [];
+    // Apart from the clumps before it.
+    const open = allowed.filter((h) => placed.every((p) => hexDistance(p, h) > 1));
+    while (clump.length < size) {
+      let free = open.filter(
+        (h) => !clump.some((m) => hexDistance(m, h) === 0) && connectedWithout(map, tiles, h)
+      );
+      if (!clump.length) free = free.filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.start);
+      else {
+        const touching = (h: Hex) => clump.filter((m) => hexDistance(m, h) === 1).length;
+        free = free.filter((h) => touching(h) > 0);
+        const most = Math.max(0, ...free.map(touching));
+        free = free.filter((h) => touching(h) === most);
+      }
+      if (!free.length) break;
+      const h = free[Math.floor(random() * free.length)]!;
+      tiles[hexKey(h)] = 'mountain';
+      clump.push(h);
+    }
+    placed.push(...clump);
+  }
 }
 
 /** Whether every open hex of `map` can still walk to every other with `extra` blocked too. */

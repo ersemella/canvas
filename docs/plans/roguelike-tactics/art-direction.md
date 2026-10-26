@@ -98,16 +98,19 @@ tuning. This file has no combat-design section number.
   sandstone ridges near Turpan, set alight as in *Journey to the West*.
   All the art is the owner's (AI-assisted), cut to the sprites' grid: a
   cracked red earth (`tiles/red-earth.png`, 128 pixels, 5 colours, laid
-  as one field like the grass, under the mountains too); two gullied
-  ridges (`tiles/mountain-flaming.png` and `mountain-flaming-twin.png`,
-  shrunk to the hex's 42 pixels, 5 colours and an ink outline), each one
-  still image with the owner's flames (5 colours) painted in on its crest,
-  the twin's on both peaks, each flame's foot following the ridge, sunk
-  into it, and shorter down the slope, so the fire grows out of the rock.
-  Drawn first as a separate flame on each crest, its flat foot read as a
-  lid on the peak; then animated in 8 frames, which made the mountains
-  look as if they shook (owner, 2026-10-26). Every fight has a range of
-  mountains (`MapData.mountains`: `'always'`) and, for now, nothing else:
+  as one field like the grass, under the mountains too); and the owner's
+  burning mountain (`tiles/mountain-burning.png`, 42 × 48, and its mirror
+  `mountain-burning-mirrored.png`, each hex picking one): red rock cliffs
+  with the fire running up the ridges, drawn as one image, its rock cut to
+  5 colours with an ink outline and its fire to 4, each pixel taken as
+  rock or fire by what most of it was. It replaced gullied sandstone
+  ridges with flames added on their crests: a separate flame per crest
+  read as a lid on the peak, then animated frames made the mountains look
+  as if they shook (owner, 2026-10-26). The mountains stand not along an
+  edge, as the Steppe's, but in one or two clumps of 2 to 4 in the middle
+  of the board (`MapData.mountainPlaces`: `'middle'`, `middleClumps` in
+  map.ts; owner, 2026-10-26), off the starting columns and Temee's road,
+  in every fight (`MapData.mountains`: `'always'`), and, for now, nothing else:
   two or three mudbrick ruins (`tiles/ruins.png`, as the ruins of
   Gaochang) and one or two fissures, a hazard burning 1 on each entry,
   were tried and taken out, as they didn't look good (owner, 2026-10-26).
