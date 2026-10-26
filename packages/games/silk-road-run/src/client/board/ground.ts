@@ -176,12 +176,13 @@ const LOOKS: Record<string, Look> = {
   // dome (AI-assisted), cut to their own pixel grids (156 pixels and 5
   // colours, its cracks pulled 45% towards the salt, as at full contrast
   // they were as dark as the hex borders and hid them; the dome, 144
-  // wide, taken to 124 by 111 and 8 colours, a little taller than drawn
-  // so it covers its seven spaces, then its colours taken 60% of the way
+  // wide, taken to 100 by 108 and 8 colours, narrower and taller than
+  // drawn so it stays within its seven spaces (124 wide at first, it
+  // reached over the spaces beside them; owner, 2026-10-26), then its colours taken 60% of the way
   // to the crust's, its pinks to a dusty clay, and its outline the hex
   // borders' grey, as in the art's own whites and pinks, and with a dark
-  // outline, it stood out; owner, 2026-10-26). Its obstacle is the Gobi's sandstone ruin until the
-  // windcatcher's art is in (salt-flats.md).
+  // outline, it stood out; owner, 2026-10-26). Its obstacle is the Gobi's
+  // sandstone ruin until the windcatcher's art is in (salt-flats.md).
   salt: {
     ground: saltCrustImage,
     stamp: false,

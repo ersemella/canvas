@@ -187,7 +187,7 @@ tuning. This file has no combat-design section number.
   Flaming Mountains until the Salt Flats (below).
 - **The Salt Flats** (`salt`, owner, 2026-10-26), Persia's map: the
   owner's salt crust (156 pixels, 5 colours, its cracks softened so the
-  hex borders show) and one large salt dome (124 × 111, its colours taken most of the way to
+  hex borders show) and one large salt dome (100 × 108, within its spaces, its colours taken most of the way to
   the crust's so it blends in) drawn once over
   the middle seven spaces, the only art on the board spanning spaces; a
   sandstone ruin stands in for its windcatcher until that art is in. The

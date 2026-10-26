@@ -88,7 +88,8 @@ A `LOOKS` entry for `salt`, built as the Flaming Mountains' was:
   (`skyLight`, `#cfe8f2`), which is close to the salt. It needs checking
   on the board; if it is lost, the hail's outline goes to the deeper sky
   (`#6fb6d8`) on this map.
-- **The salt dome:** `tiles/salt-dome.png`, about **106 × 124**: its
+- **The salt dome:** `tiles/salt-dome.png`, about **106 × 124** as
+  designed (built at 100 × 108, see Built): its
   seven spaces' outline is 105 wide and 109 tall (three hexes of 42 by
   36 in the middle column, a column either side), and the crown rises
   about 12 above that. A broad, lumpy dome with a collapsed crater on its
@@ -242,9 +243,12 @@ and 2):
   seamlessly. Its cracks are pulled 45% towards the salt, and the hex
   borders are a darker warm grey (`#7d7570`), as at full contrast the
   cracks were as dark as the borders and the grid was lost in them.
-- **The dome** (`tiles/salt-dome.png`, 124 × 111): drawn 144 × 112 on its
-  own grid, wider than the seven spaces are tall, so taken to 124 wide
-  and stretched 1.15 tall to cover them; 8 colours from the art
+- **The dome** (`tiles/salt-dome.png`, 100 × 108): drawn 144 × 112 on its
+  own grid, wider than the seven spaces (105 × 109) are tall, so taken to
+  100 wide and stretched to 108 tall to stay within them: at 124 × 111
+  at first it covered them all but reached about 10 pixels over the spaces
+  either side (owner, 2026-10-26); now the outline's corners show salt,
+  as round as a dome is; 8 colours from the art
   (whites, three greys, the pinks and clay red). In the art's own colours
   it stood out from the ground (owner, 2026-10-26), so each was taken 60%
   of the way to the crust's (`#e9e1d7` and its warm greys), the pinks
