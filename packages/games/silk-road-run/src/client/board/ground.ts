@@ -1,8 +1,7 @@
 /**
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
  * grass, yurts and their smoke, the Gobi's sand and sandstone ruins, the
- * Flaming Mountains' red earth, beacon towers and their smoke and burning
- * mountains; exits
+ * Flaming Mountains' red earth, beacon towers and burning ridges; exits
  * (cached per map), and falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
@@ -29,7 +28,7 @@ import rockImage from '../tiles/rock.png';
 import redRockImage from '../tiles/rock-red.png';
 import grassImage from '../tiles/grass-soft.png';
 import redEarthImage from '../tiles/red-earth.png';
-import burningMountainImage from '../tiles/mountain-burning.png';
+import burningRidgeImage from '../tiles/mountain-ridge.png';
 import beaconTowerImage from '../tiles/beacon-tower.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
@@ -63,6 +62,13 @@ export interface Look {
   mountainFrames: number;
   /** The ground under a mountain, a seamless tile laid like the grass. */
   mountainGround: string;
+  /**
+   * How far below the hex's centre a mountain's base stands, in scene
+   * pixels: the hex's bottom edge for a peak (`MOUNTAIN_FEET`), higher
+   * for a low ridge, so it fills its hex rather than leaving the top half
+   * bare.
+   */
+  mountainFeet: number;
 }
 
 /** An obstacle's smoke: where it rises from, in art pixels above the hex's feet, and its colour (r, g, b). */
@@ -70,6 +76,9 @@ interface Smoke {
   from: number;
   colour: string;
 }
+
+/** A flat-top hex's bottom edge, below its centre. */
+const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
 
 /**
  * The mountains' shapes, a single peak and a twin (owner, 2026-10-24),
@@ -80,25 +89,18 @@ interface Smoke {
 const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
 
 /**
- * The Flaming Mountains' (owner, 2026-10-26): the owner's burning mountain
- * (AI-assisted), red rock cliffs with flames running up the ridges, drawn
- * as one image with the fire in it, shrunk to the hex's 42 pixels (42 ×
- * 48), its rock cut to 5 colours with an ink outline and its fire to 4,
- * each pixel taken as rock or fire by what most of it was, its rock taken
- * halfway to the red earth's browns and its outline's lower half dark
- * earth, so it sits in the ground (owner, 2026-10-26). One image, not
- * mirrored on some hexes: its peak leans and its light falls one way, and
- * a clump leaning both ways looked off (owner, 2026-10-26). Its base, drawn as a diamond, is warped
- * to the hex's lower half, flat along its bottom edge and out to its side
- * corners, its edges dark earth, so it fills its space. Its fire burns in
- * 8 frames (`mountainFrames`): only the flames above the base change, a
- * brightness rising up them, their tips flickering and embers rising from
- * the peak, while the rock and the glowing cracks low on it hold still,
- * so the mountain itself never moves (2026-10-26; frames that redrew the
- * rock made mountains look as if they shook). It took the place of red
- * sandstone ridges with flames added on their crests, which looked off.
+ * The Flaming Mountains' (owner, 2026-10-26): a long, low ridge of red
+ * sandstone, as the real ones near Turpan are, from the owner's art
+ * (AI-assisted), its rock shrunk to 54 × 18 art pixels and 16 colours, so
+ * it reaches a little over its hex's side corners, with a band of fire
+ * along its crest. Only the fire moves, in 8 frames (`mountainFrames`):
+ * flames 1 to 2 pixels tall along the crest, every sixth column a taller
+ * tongue, rising and falling out of step, and three embers rising, the
+ * rock never redrawn, so the ridge itself holds still. It replaced a
+ * burning cone (`mountain-burning.png`), which read as a volcano (owner,
+ * 2026-10-26).
  */
-const FLAMING_MOUNTAINS = [burningMountainImage];
+const FLAMING_MOUNTAINS = [burningRidgeImage];
 
 /**
  * The Steppe's grass (owner, 2026-10-24) is the owner's `grass.png`
@@ -110,9 +112,12 @@ const FLAMING_MOUNTAINS = [burningMountainImage];
  * 2026-10-26): the owner's cracked red earth (AI-assisted, cut to 128
  * pixels and 5 colours); under the mountains, the Steppe's rock in the
  * burning mountain's browns (`rock-red.png`); its obstacle a Han beacon
- * tower (owner, 2026-10-26; map.ts), pale rammed earth with reed layers
- * standing out from the red ground, 32 × 40, smoke rising grey from its
- * fire as a beacon's signal did.
+ * tower (owner, 2026-10-26; map.ts), from the owner's art: pale rammed
+ * earth in reed-layered bands, standing out from the red ground, under a
+ * watch pavilion with a grey tiled roof whose corners sweep up, red posts
+ * and a red pennant, the roofline being what reads as China at a glance.
+ * Redrawn by hand on the sprites' grid (32 × 44), as shrinking the art
+ * left the roof a dark blob. No smoke: it would rise from the roof.
  */
 const LOOKS: Record<string, Look> = {
   steppe: {
@@ -126,6 +131,7 @@ const LOOKS: Record<string, Look> = {
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
+    mountainFeet: MOUNTAIN_FEET,
   },
   gobi: {
     ground: sandImage,
@@ -137,6 +143,7 @@ const LOOKS: Record<string, Look> = {
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
+    mountainFeet: MOUNTAIN_FEET,
   },
   flaming: {
     ground: redEarthImage,
@@ -144,14 +151,15 @@ const LOOKS: Record<string, Look> = {
     colour: '#97633c',
     border: '#5c3a26',
     obstacles: [beaconTowerImage],
-    // The fire basket on the top, 5 rows down the 40-row tower.
-    smoke: {from: 35, colour: '196, 188, 178'},
+    smoke: null,
     mountains: FLAMING_MOUNTAINS,
     mountainFrames: 8,
     // The Steppe's rock in the burning mountain's own browns, so the
     // corners of its hex beside the peak read as the mountain's (owner,
     // 2026-10-26); on the red earth, they looked left unfilled.
     mountainGround: redRockImage,
+    // Its base halfway down the hex's lower half, so the low ridge covers its middle.
+    mountainFeet: 22,
   },
 };
 
@@ -341,15 +349,12 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex, time: number | n
   ctx.restore();
 }
 
-/** A flat-top hex's bottom edge, below its centre. */
-const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
-
 /**
  * A yurt, a ruin or a mountain standing on its hex like a unit: over hail,
  * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
  * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
  * Gobi's sandstone ruin and the mudbrick wall are 32 × 32, the beacon
- * tower 32 × 40. `map` gives the look.
+ * tower 32 × 44. `map` gives the look.
  */
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,
@@ -383,7 +388,7 @@ export function drawObstacle(
     frameWidth,
     art.height,
     Math.round(c.x - width / 2),
-    Math.round(c.y + (mountain ? MOUNTAIN_FEET : SPRITE_FEET) - height),
+    Math.round(c.y + (mountain ? look.mountainFeet : SPRITE_FEET) - height),
     width,
     height
   );

@@ -102,7 +102,8 @@ tuning. This file has no combat-design section number.
   as one field like the grass); under the mountains, the Steppe's rock
   (`tiles/rock-red.png`) recoloured in the burning mountain's own five
   browns by its shades, as on the red earth the corners of a mountain's
-  hex beside its peak looked left unfilled (owner, 2026-10-26); and the owner's
+  hex beside its peak looked left unfilled (owner, 2026-10-26); and, until
+  the ridges below replaced it the same day, the owner's
   burning mountain (`tiles/mountain-burning.png`, 42 × 48, every mountain
   the same way round: mirrored on some hexes, a clump's peaks and light
   leaned both ways, which looked off; owner, 2026-10-26): red rock cliffs
@@ -133,13 +134,25 @@ tuning. This file has no combat-design section number.
   within 3 of the centre, not next to a mountain or each other, and the
   mountains and towers together cover **at most 8 spaces** (`MAX_COVERED`
   in map.ts: the towers are rolled first and the clumps cut to fit). The
-  tower (`tiles/beacon-tower.png`, 32 × 40) is a placeholder drawn by the
-  builder, pale loess with reed layers, a crenellated top and a fire
-  basket, smoke rising grey from it as the yurts' does (`Look.smoke`,
-  `drawObstacleSmoke`), until the owner's art replaces it. **The
-  mountains are to be redrawn as ridges** (owner, 2026-10-26): the real
-  Flaming Mountains are long, low, gullied ridges, and the cone reads as a
-  volcano; waiting on the owner's art, the layout unchanged. Tried before
+  tower (`tiles/beacon-tower.png`, 32 × 44) is the owner's (AI-assisted),
+  redrawn by hand on the sprites' grid, as shrinking it left the roof a
+  dark blob: pale rammed earth in reed-layered bands under a watch
+  pavilion with a grey tiled roof whose corners sweep up, red posts and a
+  red pennant, the roofline being what reads as China at a glance (a
+  plain rammed-earth tower read as any desert's). No smoke, which would
+  rise from the roof. **The mountains are ridges** (owner, 2026-10-26),
+  as the real Flaming Mountains are long, low, gullied ridges and the
+  burning cone read as a volcano: the owner's ridge (AI-assisted), its
+  fire taken out and its rock shrunk to 56 × 27 art pixels (stretched
+  half again in height, as at its own proportions it lay flat as a log)
+  in 16 colours, reaching a little past its hex's side corners, its base
+  22 pixels below the hex's centre rather than on its bottom edge
+  (`Look.mountainFeet`), so it covers the hex's middle
+  (`tiles/mountain-ridge.png`). Its fire is drawn on it in 8 frames:
+  flames 1 to 2 pixels tall along the crest, a taller tongue every sixth
+  column, rising and falling out of step, and three embers, the rock
+  never redrawn. The layout is unchanged; the cone
+  (`mountain-burning.png`) is no longer used. Tried before
   and taken out, as they didn't look good (owner, 2026-10-26): two or
   three mudbrick ruins (`tiles/ruins.png`, as the ruins of Gaochang, now
   unused) and one or two fissures, a hazard burning 1 on each entry. The flames are only drawn: the mountains block as any do; a
