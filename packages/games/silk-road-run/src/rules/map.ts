@@ -162,8 +162,9 @@ export const GOBI: MapData = {
 /**
  * The Flaming Mountains (owner, 2026-10-26), the China region's map: red
  * earth below the burning ridges of *Journey to the West*, which stand in
- * every fight, in three side-by-side pairs in the middle of the board, not
- * along its edges (owner, 2026-10-26), and one or two Han **beacon
+ * every fight, in three side-by-side pairs between the starting columns,
+ * reaching the slanted edges too (owner, 2026-10-27; kept off them from
+ * 2026-10-26), and one or two Han **beacon
  * towers** (owner, 2026-10-26), the rammed-earth watchtowers along the
  * Hexi Corridor, as its `obstacle`, within 3 of the centre and not next to
  * a mountain. Mountains and towers together cover at most
@@ -369,11 +370,13 @@ function mountainRange(
  * either side of the middle, a pair is the most that can stand side by
  * side without two in one column touching. Each pair's first hex is within
  * `MIDDLE_CLUMP.start` of the centre, its second within
- * `MIDDLE_CLUMP.reach`. Off the starting columns, off Temee's road down
+ * `MIDDLE_CLUMP.reach`, so a ridge may reach the board's slanted edges
+ * (owner, 2026-10-27; within 2 and 3 of the centre before, never on an
+ * edge). Off the starting columns, off Temee's road down
  * the middle column, not next to the camel's start or the exit, the pairs
  * apart, and never cutting the board in two.
  */
-const MIDDLE_CLUMP = {count: 3, start: 2, reach: 3};
+const MIDDLE_CLUMP = {count: 3, start: 3, reach: RADIUS};
 
 /**
  * On a map of middle clumps, the most spaces its mountains and obstacles

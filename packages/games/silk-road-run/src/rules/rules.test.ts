@@ -615,22 +615,23 @@ describe('the board', () => {
   });
 
   it('raises the Flaming Mountains in every fight, in side-by-side pairs in the middle, with one or two beacon towers', () => {
+    let onEdge = 0;
     const towerCounts = new Set<number>();
     for (let seed = 0; seed < 40; seed++) {
       // Not a stage that asks for mountains: the map raises them itself.
       const s = createFight(seed, undefined, undefined, false, [], FLAMING);
       expect(s.mapId).toBe('flaming');
       expect(mapOf(s).name).toBe('The Burning Mountains');
-      // Three pairs in the middle, apart, off the
+      // Three pairs between the starting columns, apart, off the
       // starting columns and Temee's road, not next to its start or exit.
       const mountains = Object.keys(s.tiles)
         .filter((k) => s.tiles[k] === 'mountain')
         .map((k) => k.split(',').map(Number) as [number, number])
         .map(([q, r]) => ({q, r}));
       for (const m of mountains) {
-        expect(hexDistance(m, {q: 0, r: 0})).toBeLessThanOrEqual(3);
         expect(Math.abs(m.q)).toBeLessThan(3);
         expect(m.q).not.toBe(0);
+        if (hexDistance(m, {q: 0, r: 0}) === 4) onEdge++;
         for (const x of [FLAMING.camelStart, ...FLAMING.exits])
           expect(hexDistance(m, x)).toBeGreaterThan(1);
       }
@@ -665,6 +666,8 @@ describe('the board', () => {
       }
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
     }
+    // Ridges reach the board's slanted edges in some fights.
+    expect(onEdge).toBeGreaterThan(0);
     expect([...towerCounts].sort()).toEqual([1, 2]);
   });
 
