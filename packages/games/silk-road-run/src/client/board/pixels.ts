@@ -31,7 +31,7 @@ export const HERO_COLOR = {
   alchemist: '#0f766e',
   // The Swordsman's disc, shown while its sprite loads.
   youxia: '#0e7490',
-  // The Magus's disc: it has no sprite yet.
+  // The Magus's disc, shown while its sprite loads.
   magus: '#7e22ce',
   // The Elephant Rider's disc: it has no sprite yet.
   mahout: '#78716c',

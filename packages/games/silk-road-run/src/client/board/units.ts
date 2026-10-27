@@ -32,6 +32,8 @@ import modaoPortrait from '../sprites/modao-portrait.png';
 import modaoSprite from '../sprites/modao.png';
 import stormPortrait from '../sprites/storm-portrait.png';
 import stormSprite from '../sprites/storm.png';
+import magusPortrait from '../sprites/magus-portrait.png';
+import magusSprite from '../sprites/magus.png';
 import youxiaPortrait from '../sprites/youxia-portrait.png';
 import youxiaSprite from '../sprites/youxia.png';
 import wolfPortrait from '../sprites/wolf-portrait.png';
@@ -59,6 +61,9 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   modao: modaoSprite,
   alchemist: alchemistSprite,
   youxia: youxiaSprite,
+  // From the owner's AI-assisted art (2026-10-27): shrunk to 32×32, its beard
+  // put back by hand.
+  magus: magusSprite,
   camel: camelSprite,
   wolf: wolfSprite,
   // From the owner's AI-assisted art (2026-10-25): cut out, shrunk to the
@@ -73,6 +78,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   modao: {src: modaoPortrait, faceX: 18},
   alchemist: {src: alchemistPortrait, faceX: 19},
   youxia: {src: youxiaPortrait, faceX: 19},
+  magus: {src: magusPortrait, faceX: 20},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},
