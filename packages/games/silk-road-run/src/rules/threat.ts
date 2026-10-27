@@ -73,6 +73,15 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       }
     };
     if (has('longshot')) lanes(fq, fr, power);
+    // Trample: the spaces it walks into, `steps` each way.
+    if (has('trample') && !isImmobilized(e))
+      for (const [dq, dr] of AXIAL)
+        for (let i = 1; i <= ABILITY.trample.steps; i++) {
+          const k = id(fq + dq * i, fr + dr * i);
+          const tile = board.get(k);
+          if (tile === undefined || blocks(tile)) break;
+          mark(hexes, k, power);
+        }
     // Cleave: its line of `reach` each way.
     if (has('cleave'))
       for (const area of cleaveAreas(map, e.hex))

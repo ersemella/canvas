@@ -11,7 +11,16 @@ import {
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES} from './config';
-import {addStatus, hailOn, isImmobilized, isStunned, shotLane, unitAt, walkable} from './board';
+import {
+  addStatus,
+  hailOn,
+  isImmobilized,
+  isStunned,
+  isUnstoppable,
+  shotLane,
+  unitAt,
+  walkable,
+} from './board';
 import {MAPS} from './map';
 import {hasPassive, spendPassive} from './passives';
 import {placeCard, simultaneousOrder} from './track';
@@ -463,10 +472,16 @@ export function liftHail(state: FightState, hail: HailEffect): void {
     );
 }
 
-/** `unit` is made Unstoppable: the hail holding it lets go (keywords.md, 17.4). */
+/**
+ * `unit` is made Unstoppable (keywords.md, 17.4): the hail holding it lets
+ * go, and a Stun on it ends, a grapple with it.
+ */
 export function makeUnstoppable(ctx: Ctx, unit: Unit): void {
   unit.unstoppable = true;
-  unit.statuses = unit.statuses.filter((s) => !(s.kind === 'immobilized' && s.hail));
+  endGrapples(ctx, (g) => g.target === unit.id);
+  unit.statuses = unit.statuses.filter(
+    (s) => !(s.kind === 'immobilized' && s.hail) && s.kind !== 'stunned'
+  );
   log(ctx, `${unitName(unit)} is Unstoppable until its next turn.`);
 }
 
@@ -561,7 +576,7 @@ export function landShots(ctx: Ctx, user: Unit): void {
  * 2026-10-23); not while Unstoppable.
  */
 export function hailHolds(ctx: Ctx, unit: Unit): void {
-  if (!unit.alive || !unit.hex || unit.unstoppable || !hailOn(ctx.state, unit.hex)) return;
+  if (!unit.alive || !unit.hex || isUnstoppable(unit) || !hailOn(ctx.state, unit.hex)) return;
   const hail = ctx.state.effects.find((e) => hexEquals(e.hex, unit.hex!))!;
   if (unit.statuses.some((s) => s.hail === hail.source && (!s.at || hexEquals(s.at, hail.hex))))
     return;
@@ -591,12 +606,16 @@ export function endGrapples(ctx: Ctx, ends: (g: Grapple) => boolean, quiet = fal
 }
 
 /**
- * Stuns `u`, unless Iron Will turns it (19.8). A Stunned Grappler lets go of the unit it grapples
+ * Stuns `u`, unless it is Unstoppable (17.4) or Iron Will turns it (19.8). A Stunned Grappler lets go of the unit it grapples
  * (owner, 2026-10-23), and a Stunned Horse Archer loses the arrow it has drawn
  * (owner, 2026-10-24): its card comes back as an ordinary turn, skipped
  * while it is Stunned.
  */
 export function stun(ctx: Ctx, u: Unit, status: Status): void {
+  if (isUnstoppable(u)) {
+    log(ctx, `${unitName(u)} is Unstoppable: not Stunned.`);
+    return;
+  }
   // Iron Will (19.8): the first Stun each fight doesn't take.
   if (spendPassive(u, 'ironWill')) {
     log(ctx, `${unitName(u)}’s iron will holds: not Stunned.`);
@@ -689,7 +708,7 @@ export function displace(ctx: Ctx, unit: Unit, dir: number, n: number, how: Moti
     log(ctx, `${unitName(unit)} is Rooted.`);
     return;
   }
-  if (unit.unstoppable) {
+  if (isUnstoppable(unit)) {
     log(ctx, `${unitName(unit)} is Unstoppable.`);
     return;
   }

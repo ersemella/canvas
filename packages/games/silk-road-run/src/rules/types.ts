@@ -10,7 +10,7 @@ export type Side = 'player' | 'enemy';
 /**
  * The three prototype heroes, the Vanguard and the Alchemist
  * (owner, 2026-10-25), the Swordsman (owner, 2026-10-26), the Magus
- * (owner, 2026-10-27), the
+ * (owner, 2026-10-27), the Elephant Rider (`mahout`, owner, 2026-10-27), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, and the enemy NPCs, the wolf and the fox.
  */
@@ -22,6 +22,7 @@ export type HeroId =
   | 'alchemist'
   | 'youxia'
   | 'magus'
+  | 'mahout'
   | 'camel'
   | 'wolf'
   | 'fox';
@@ -37,6 +38,7 @@ export type AbilityId =
   | 'elixir'
   | 'swiftStrike'
   | 'conjunction'
+  | 'trample'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
@@ -47,7 +49,8 @@ export type AbilityId =
 /**
  * The passives (progression.md, 19.8; owner, 2026-10-24): hero-agnostic
  * rules a unit carries, from an upgrade offer's passive slot (19.3), or
- * from the start (`HeroStats.passives`: the Magus's Steady Gait); the test
+ * from the start (`HeroStats.passives`: the Magus's Steady Gait, the
+ * Elephant Rider's Unstoppable); the test
  * stage gives them too (`Loadout.passives`).
  */
 export type PassiveId =
@@ -58,6 +61,7 @@ export type PassiveId =
   | 'momentum'
   // Board
   | 'rooted'
+  | 'unstoppable'
   | 'lightStep'
   | 'rebound'
   // Damage and survival
@@ -183,9 +187,10 @@ export interface Unit {
    */
   shield?: number;
   /**
-   * Unstoppable (keywords.md, 17.4): can't be Pushed, Pulled or
-   * Immobilized, until the start of the unit's next turn (an Elixir, a
-   * switch: `ABILITY.elixir.unstoppable`). Absent when it isn't.
+   * Unstoppable (keywords.md, 17.4): can't be Pushed, Pulled, Immobilized
+   * or Stunned, until the start of the unit's next turn (an Elixir, a
+   * switch: `ABILITY.elixir.unstoppable`); always with the Unstoppable
+   * passive (`isUnstoppable`). Absent when it isn't.
    */
   unstoppable?: boolean;
   /**

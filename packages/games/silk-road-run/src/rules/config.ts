@@ -198,6 +198,22 @@ export const HEROES: Record<HeroId, HeroStats> = {
     passives: ['steadyGait'],
   },
   /**
+   * The Elephant Rider (owner, 2026-10-27; roster.md): Persia's tank, a
+   * mahout on a war elephant. Speed 1, defence 3 (health 8) and power 2
+   * are the owner's. Unstoppable from the start (17.4): no Push, Pull,
+   * Immobilized or Stunned, so no grapple, and hail doesn't stop its walk.
+   * Trample drives units in its way back ahead of it (`ABILITY.trample`).
+   */
+  mahout: {
+    name: 'Elephant Rider',
+    letter: 'E',
+    speed: 1,
+    defence: 3,
+    power: 2,
+    abilities: ['trample', 'hold'],
+    passives: ['unstoppable'],
+  },
+  /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
@@ -406,6 +422,15 @@ export const ABILITY = {
    */
   conjunction: {range: 2 as number},
   /**
+   * Trample (owner, 2026-10-27; roster.md), the Elephant Rider's: a walk of
+   * 1 to `steps` spaces straight out in any of the six directions, stopped
+   * by yurts and the map's edge, a plain walk with no one in the way. The
+   * units in its way, ally or enemy, a row of them together, each take its
+   * power and are Pushed back ahead of it, one space for each it walks; a
+   * row that can't be Pushed stops it behind.
+   */
+  trample: {steps: 2 as number},
+  /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
    * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
@@ -482,6 +507,8 @@ export const AI = {
     alchemist: 1,
     youxia: 1,
     magus: 1,
+    // A tank, as the Grappler and the Vanguard.
+    mahout: 0,
     camel: 0,
     wolf: 1,
     fox: 1,
@@ -554,7 +581,7 @@ export const AI = {
  */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /** Every hero the start menu offers and the enemy draws from, in party slot order. */
-export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist', 'youxia', 'magus'];
+export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist', 'youxia', 'magus', 'mahout'];
 /**
  * The regions a run passes through, in order (setting.md, 15.3a), so far
  * the two whose stages are built: each names its basic creature (the

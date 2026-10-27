@@ -81,16 +81,16 @@ async function abandonOn(p) {
 
 try {
   await page.goto(`${WEB_URL}/play/silk-road-run`);
-  // The start menu: the game in brief, the seven heroes (the three
+  // The start menu: the game in brief, the eight heroes (the three
   // prototype heroes taken at first), Start.
   const picks = page.getByTestId('hero-picks').getByRole('button');
   await picks.first().waitFor({timeout: 15_000});
-  check('the start menu offers the seven heroes', (await picks.count()) === 7);
+  check('the start menu offers the eight heroes', (await picks.count()) === 8);
   check(
     'the three prototype heroes start in the party',
     JSON.stringify(
       await picks.evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-pressed')))
-    ) === JSON.stringify(['true', 'true', 'true', 'false', 'false', 'false', 'false'])
+    ) === JSON.stringify(['true', 'true', 'true', 'false', 'false', 'false', 'false', 'false'])
   );
   await shot(page, 'start-menu');
   const startButton = page.getByRole('button', {name: 'Start', exact: true});

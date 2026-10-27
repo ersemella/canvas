@@ -59,6 +59,12 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'board',
     'Can’t be Pushed or Pulled. Can still be Immobilized and Moved.'
   ),
+  unstoppable: def(
+    'unstoppable',
+    'Unstoppable',
+    'board',
+    'Can’t be Pushed, Pulled, Immobilized or Stunned, so it can’t be grappled and hail doesn’t stop its walk.'
+  ),
   lightStep: def(
     'lightStep',
     'Light Step',
@@ -139,6 +145,13 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'When an ally falls, its card is Hastened 3 and it is Empowered 1 for its next turn.'
   ),
 };
+
+/**
+ * Passives a hero starts with that the caravanserai doesn't offer:
+ * Unstoppable, the Elephant Rider's (owner, 2026-10-27), isn't in 19.8's
+ * pool.
+ */
+export const NOT_OFFERED: readonly PassiveId[] = ['unstoppable'];
 
 /** Whether `unit` carries the passive `id`. */
 export function hasPassive(unit: Unit, id: PassiveId): boolean {

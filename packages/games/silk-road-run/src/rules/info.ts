@@ -173,7 +173,8 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   },
   unstoppable: {
     name: 'Unstoppable',
-    detail: 'Can’t be Pushed, Pulled or Immobilized, until the start of its next turn.',
+    detail:
+      'Can’t be Pushed, Pulled, Immobilized or Stunned, so it can’t be grappled and hail doesn’t stop its walk.',
   },
   haste: {
     name: 'Haste',
