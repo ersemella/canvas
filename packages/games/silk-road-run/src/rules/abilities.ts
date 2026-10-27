@@ -217,7 +217,8 @@ const snapShot: AbilityDef = {
  * map's edge, through units and yurts, since nothing blocks it.
  */
 export function longshotLines(map: MapData, from: Hex): Hex[][] {
-  return DIRECTIONS.map((dir) => lineFrom(map, from, dir).slice(0, ABILITY.longshot.range));
+  const {minRange, range} = ABILITY.longshot;
+  return DIRECTIONS.map((dir) => lineFrom(map, from, dir).slice(minRange - 1, range));
 }
 
 /**
@@ -234,12 +235,16 @@ const longshot: AbilityDef = {
   targets(state, map, _user, from) {
     const out: ActionTarget[] = [];
     for (const l of longshotLines(map, from))
-      for (const h of l) if (unitAt(state, h)) out.push({hex: h});
+      for (const h of l) {
+        const u = unitAt(state, h);
+        if (u && (ABILITY.longshot.camel || u.hero !== CAMEL)) out.push({hex: h});
+      }
     return out;
   },
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
-    hit(ctx, user, u, `${unitName(user)}'s arrow`);
+    const far = hexDistance(user.hex!, u.hex!) > ABILITY.longshot.falloff;
+    hit(ctx, user, u, `${unitName(user)}'s arrow`, (user.empower ?? 0) - (far ? 1 : 0));
   },
 };
 
@@ -913,6 +918,11 @@ const conjunction: AbilityDef = {
     const b = unitAt(ctx.state, target.to!)!;
     log(ctx, `${unitName(user)} reads a conjunction in the stars.`);
     swapCards(ctx, a, b);
+    for (const u of [a, b]) {
+      if (u.side === user.side) continue;
+      if (ABILITY.conjunction.hit) hit(ctx, user, u, `${unitName(user)}'s stars`);
+      delay(ctx, u, ABILITY.conjunction.delay);
+    }
   },
 };
 

@@ -409,7 +409,14 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     const b = unitAt(state, target!.to!)!;
     const later = (u: Unit, by: number) =>
       ((hostile(u, unit) ? 1 : -1) * turnValue(u) * by) / cardCost(u);
-    return closing + later(a, b.slot! - a.slot!) + later(b, a.slot! - b.slot!);
+    // Its switches (off as built): a hit and a Delay on each enemy swapped.
+    let extra = 0;
+    for (const u of [a, b]) {
+      if (!hostile(u, unit)) continue;
+      if (ABILITY.conjunction.hit) extra += Math.min(damageOf(unit), u.hp);
+      extra += (turnValue(u) * ABILITY.conjunction.delay) / cardCost(u);
+    }
+    return closing + later(a, b.slot! - a.slot!) + later(b, a.slot! - b.slot!) + extra;
   }
   const def = ABILITIES[ability];
   const hit = !target?.hex
