@@ -445,6 +445,44 @@ export function makeUnstoppable(ctx: Ctx, unit: Unit): void {
   log(ctx, `${unitName(unit)} is Unstoppable until its next turn.`);
 }
 
+/**
+ * An Elixir's swap (`ABILITY.elixir.swap`, a switch for measuring): `unit`'s
+ * speed becomes its health and its health its speed, until `unswap`.
+ */
+export function swapSpeedHealth(ctx: Ctx, unit: Unit): void {
+  unit.swapped = {speed: unit.speed, hp: unit.hp};
+  [unit.speed, unit.hp] = [unit.hp, unit.speed];
+  log(ctx, `${unitName(unit)} swaps its speed and health: speed ${unit.speed}, health ${unit.hp}.`);
+}
+
+/**
+ * Its speed and health back from a swap: its own speed, and its own health
+ * (`pool`) or that less what it lost while swapped, or more what it gained
+ * (`carry`, falling if none is left), up to its health.
+ */
+export function unswap(ctx: Ctx, unit: Unit): void {
+  const was = unit.swapped;
+  if (!was) return;
+  delete unit.swapped;
+  if (!unit.alive) return;
+  const hp = ABILITY.elixir.swap === 'carry' ? was.hp + unit.hp - was.speed : was.hp;
+  unit.speed = was.speed;
+  unit.hp = Math.min(unit.maxHp, Math.max(0, hp));
+  log(
+    ctx,
+    `${unitName(unit)}’s speed and health swap back: speed ${unit.speed}, health ${unit.hp}.`
+  );
+  if (unit.hp === 0) kill(ctx, unit);
+}
+
+/** The health `unit` will have once a swap ends (`unswap`); its health when not swapped. */
+export function healthAfterSwap(unit: Unit): number {
+  const was = unit.swapped;
+  if (!was || !unit.alive) return unit.hp;
+  const hp = ABILITY.elixir.swap === 'carry' ? was.hp + unit.hp - was.speed : was.hp;
+  return Math.min(unit.maxHp, Math.max(0, hp));
+}
+
 export function clearHail(state: FightState, caster: Unit): void {
   state.effects = state.effects.filter((e) => e.source !== caster.id);
   for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);

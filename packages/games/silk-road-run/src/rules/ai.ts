@@ -25,6 +25,7 @@ import {
   elixirAmount,
   elixirCaught,
   elixirHeals,
+  elixirSwaps,
   grappling,
   unusableReason,
 } from './abilities';
@@ -33,7 +34,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, chargeOf} from './track';
-import {camelOf, damageOf, shotEmpower} from './resolve';
+import {camelOf, damageOf, healthAfterSwap, shotEmpower} from './resolve';
 import {MAPS} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
@@ -233,7 +234,8 @@ export function scoreOutcome(
   for (const b of before.units) {
     if (!b.alive) continue;
     const a = after.units.find((u) => u.id === b.id)!;
-    const lost = b.hp - a.hp;
+    // A swapped unit (`ABILITY.elixir.swap`) by the health it will have back.
+    const lost = healthAfterSwap(b) - healthAfterSwap(a);
     const statusDelta = statusPoints(after, a) - statusPoints(before, b);
     // `AI.trackWorth`: a card moved by the turn, the share of a turn it moved
     // (later is worse for its side), not counting the actor's own placement.
@@ -363,6 +365,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         if (haste) value += (turnValue(u) * haste) / cardCost(u);
         // `unstoppable`: the hail holding it lets go (what else it stops is the search's).
         if (unstoppable && u.statuses.some((x) => x.hail)) value += statusCost(u);
+        if (elixirSwaps(u)) value += swapGuess(u);
         continue;
       }
       // With `fixed`, a hit first, as any attack's.
@@ -407,6 +410,22 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
 }
 
 /** An ability whose `to` is where its user ends up (Skirmish's step, Feigned Retreat's walk). */
+/**
+ * An Elixir's swap of `u`'s speed and health (`ABILITY.elixir.swap`): lasting
+ * through its next turn, the share of a turn its card gains or loses then, as
+ * Haste is weighed; with `pool`, health it gains as a heal; health it loses
+ * for now at `AI.swapRisk` (whether it is struck meanwhile is the search's).
+ */
+function swapGuess(u: Unit): number {
+  let value = 0;
+  if (ABILITY.elixir.swapUntil === 'end')
+    value += (turnValue(u) * (cardCost(u) - cardCost({...u, speed: u.hp}))) / cardCost(u);
+  const gain = u.speed - u.hp;
+  if (gain < 0) value += gain * AI.swapRisk;
+  else if (ABILITY.elixir.swap === 'pool') value += gain;
+  return value;
+}
+
 function endsElsewhere(ability: AbilityId): boolean {
   return ability === 'skirmish' || ability === 'feignedRetreat';
 }
@@ -599,7 +618,9 @@ export function evaluatePosition(state: FightState, side: Side): number {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
     const value =
-      u.hero === CAMEL ? u.hp * AI.camelHealthWeight : u.hp + AI.kill - statusPoints(state, u);
+      u.hero === CAMEL
+        ? u.hp * AI.camelHealthWeight
+        : healthAfterSwap(u) + AI.kill - statusPoints(state, u);
     score += (u.side === side ? 1 : -1) * value;
   }
   return score;

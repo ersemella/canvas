@@ -332,6 +332,13 @@ export const ABILITY = {
    * (owner, 2026-10-26: with it, it Hastened itself on every Elixir and
    * kept the enemy beside it from acting), so a burst or aura passes it
    * over and it can't be aimed at itself.
+   * `swap`, a switch for measuring (2026-10-27): an ally but the camel
+   * swaps its speed and its health (`swapSpeedHealth` in resolve.ts),
+   * until the end of its next turn (`swapUntil: 'end'`, its card placed
+   * after that turn at the swapped speed) or the start of it (`'start'`);
+   * `pool`, the swapped health a pool of its own, the unit's own health
+   * back untouched unless it fell, or `carry`, the health it gains or loses
+   * meanwhile carried back, falling if none is left; off as built.
    */
   elixir: {
     range: 3 as number,
@@ -345,6 +352,8 @@ export const ABILITY = {
     weaken: 0 as number,
     self: false as boolean,
     unstoppable: false as boolean,
+    swap: false as false | 'pool' | 'carry',
+    swapUntil: 'end' as 'start' | 'end',
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),
@@ -398,6 +407,12 @@ export const AI = {
    * that ordering and where the search plays the turn they move.
    */
   trackWorth: 0 as number,
+  /**
+   * An Elixir's swap (`ABILITY.elixir.swap`, a switch for measuring): each
+   * point of health the ally loses for now, in the AI's first guess (the
+   * search sees whether it is struck meanwhile).
+   */
+  swapRisk: 0.5 as number,
   /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends

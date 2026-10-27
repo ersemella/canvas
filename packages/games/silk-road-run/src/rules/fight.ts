@@ -4,7 +4,7 @@
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
 import {hexEquals, hexKey} from '@canvas/engine/server';
-import {CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
+import {ABILITY, CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
 import {canMove, invalidPath, isImmobilized, isStunned, stepToExit} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
@@ -21,6 +21,7 @@ import {
   startTurnPassives,
   takeHasteDue,
   unitName,
+  unswap,
   walk,
 } from './resolve';
 import type {Ctx} from './resolve';
@@ -261,6 +262,12 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     }
     record(state, {kind: 'turn', unitId: unit.id});
     startTurnPassives(ctx, unit);
+    // An Elixir's swap lasting until the start of this turn ends (`ABILITY.elixir.swapUntil`).
+    if (unit.swapped && ABILITY.elixir.swapUntil === 'start') {
+      unswap(ctx, unit);
+      if (state.phase !== 'fight') return;
+      if (!unit.alive) continue;
+    }
     // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25).
     ageHail(state, unit);
     // An Empower or Weaken lasts until the end of this turn.
@@ -331,6 +338,8 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId): void
   if (idle && hasPassive(unit, 'patient')) slot = Math.max(now + 1, slot - 2);
   placeCard(state, unit, slot, ability !== undefined && chargeOf(unit, ability) > 0);
   takeHasteDue(state, unit);
+  // An Elixir's swap ends with this turn, its card placed at the swapped speed.
+  if (unit.swapped) unswap(ctx, unit);
 }
 
 /** A turn it can't take, or with only Hold to choose: its card marked as skipped, placed as after any turn. */

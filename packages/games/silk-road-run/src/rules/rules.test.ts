@@ -82,8 +82,10 @@ import {
   haste,
   hit,
   kill,
+  applyDamage,
   startTurnPassives,
   stun,
+  unswap,
 } from './resolve';
 import type {Ctx} from './resolve';
 import {
@@ -1744,6 +1746,56 @@ describe('the Vanguard and the Alchemist', () => {
       startTurnPassives(ctx, m);
       expect(m.unstoppable).toBeUndefined();
     }));
+
+  it('the Elixir swapping speed and health (a switch) lasts through the ally’s next turn', () =>
+    withElixir(
+      {...single, range: 3, fixed: 0, heal: false, self: false, swap: 'carry', swapUntil: 'end'},
+      0,
+      () => {
+        const s = setup(
+          {
+            'p-alchemist': at(1, 3),
+            'p-modao': at(3, 3),
+            'e-mangudai': at(8, 3),
+            'e-modao': at(8, 6),
+          },
+          party
+        );
+        const v = unit(s, 'p-modao');
+        applyTurn(s, unit(s, 'p-alchemist'), {
+          action: {ability: 'elixir', target: {hex: at(3, 3)}},
+        });
+        expect([v.speed, v.hp]).toEqual([8, 1]);
+        // Its next turn: its card goes on at speed 8, then its own speed and health come back.
+        s.currentSlot = 20;
+        s.awaiting = v.id;
+        applyTurn(s, v, {action: {ability: 'hold'}});
+        expect(v.slot).toBe(20 + actionCost({...v, speed: 8}));
+        expect([v.speed, v.hp, v.swapped]).toEqual([1, 8, undefined]);
+      }
+    ));
+
+  it('a swapped unit’s health comes back whole (`pool`) or less what it lost (`carry`)', () => {
+    for (const swap of ['pool', 'carry'] as const)
+      withElixir({...single, range: 3, fixed: 0, heal: false, self: false, swap}, 0, () => {
+        const s = setup(
+          {'p-alchemist': at(1, 3), 'p-mangudai': at(3, 3), 'e-modao': at(8, 6)},
+          party
+        );
+        const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+        const m = unit(s, 'p-mangudai');
+        m.hp = 1;
+        applyTurn(s, unit(s, 'p-alchemist'), {
+          action: {ability: 'elixir', target: {hex: at(3, 3)}},
+        });
+        expect([m.speed, m.hp]).toEqual([1, 3]);
+        applyDamage(ctx, m, 2, 'Hit');
+        unswap(ctx, m);
+        expect(m.speed).toBe(3);
+        // `pool`: its own 1 back; `carry`: 1 less the 2 it lost, so it falls.
+        expect(m.alive).toBe(swap === 'pool');
+      });
+  });
 
   it('a card Delayed or Hastened onto a taken slot collides by speed', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);

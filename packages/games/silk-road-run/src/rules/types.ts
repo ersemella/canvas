@@ -185,6 +185,12 @@ export interface Unit {
    */
   unstoppable?: boolean;
   /**
+   * Its speed and health swapped by an Elixir (a switch:
+   * `ABILITY.elixir.swap`), with the speed and health it had before.
+   * Absent when they aren't.
+   */
+  swapped?: {speed: number; hp: number};
+  /**
    * Haste (keywords.md, 17.3) given while its own turn was under way, its
    * card not yet placed: taken off as the card is placed at the turn's end.
    */

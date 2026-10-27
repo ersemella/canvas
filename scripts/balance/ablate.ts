@@ -139,6 +139,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
     string,
     {count: number; slots: number; self: number; to: Record<string, number>}
   > = {};
+  const swaps = {count: 0, fellBack: 0, to: {} as Record<string, number>};
 
   for (let f = 0; f < fights; f++) {
     const modSide: Side | null = mod ? (f & 1 ? 'enemy' : 'player') : null;
@@ -165,6 +166,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
       }
       placeStartingCards(state);
     }
+    let swappingBack = false;
     let actor: Side | null = null;
     let lastSource: string | null = null;
     /** The acting unit and its ability, for the track effects it gives. */
@@ -202,6 +204,15 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
         const added = /^Empower adds (\d+)\.$/.exec(text);
         if (added) empowerDamage += Number(added[1]);
         if (text === 'The sunlight melts the hail.') melts++;
+        // An Elixir's swap (`ABILITY.elixir.swap`): on whom, and units falling as it ends.
+        const swapped = /^(.+) swaps its speed and health/.exec(text);
+        if (swapped) {
+          swaps.count++;
+          add(swaps.to, swapped[1]!.replace(/^(Your|Enemy) /, ''));
+        }
+        if (/speed and health swap back/.test(text)) swappingBack = true;
+        else if (swappingBack && / falls\.$/.test(text)) swaps.fellBack++;
+        else swappingBack = false;
         const track = /^(.+) is (Delayed|Hastened) (\d+)\.$/.exec(text);
         if (track && acting) {
           const [, name, kind, n] = track;
@@ -364,6 +375,12 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
         },
       ])
     ),
+    /** Elixir's swaps a fight (`ABILITY.elixir.swap`): how many, by unit, and units falling as one ends. */
+    swapsPerFight: {
+      count: round(swaps.count / fights, 2),
+      fellBack: round(swaps.fellBack / fights, 2),
+      to: Object.fromEntries(Object.entries(swaps.to).map(([u, n]) => [u, round(n / fights, 2)])),
+    },
     hitsPerFight: Object.fromEntries(
       Object.entries(hits).map(([k, v]) => [
         k,
