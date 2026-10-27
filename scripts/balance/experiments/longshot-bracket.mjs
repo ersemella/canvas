@@ -47,3 +47,23 @@ for (const [name, party] of [
       patch: (c) => Object.assign(c.ABILITY.conjunction, {mode: 'bracket', once: true, range}),
       mod: {party: seat(party, 2, 'magus')},
     };
+// Then (2026-10-27): the first-unit Longshot with Push 1 or 2, and Conjunction
+// putting its second unit just before the Magus's next turn (`mode: 'before'`),
+// at range 2 and 3.
+for (const [name, party, archerSeat] of [
+  ['steppe', steppe, 1],
+  ['china', china, 0],
+]) {
+  for (const push of [1, 2])
+    experiments[`archer-first+pierce+push${push}-${name}`] = {
+      party,
+      patch: (c) => Object.assign(c.ABILITY.longshot, {first: true, pierce: true, push}),
+      mod: {party: seat(party, archerSeat, 'archer')},
+    };
+  for (const range of [2, 3])
+    experiments[`magus-before${range === 3 ? '+range3' : ''}-${name}`] = {
+      party,
+      patch: (c) => Object.assign(c.ABILITY.conjunction, {mode: 'before', range}),
+      mod: {party: seat(party, 2, 'magus')},
+    };
+}

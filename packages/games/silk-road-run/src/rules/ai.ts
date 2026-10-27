@@ -418,8 +418,12 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       extra += (turnValue(u) * ABILITY.conjunction.delay) / cardCost(u);
     }
     const moves =
-      ABILITY.conjunction.mode === 'bracket'
-        ? later(a, state.currentSlot + 1 - a.slot!) + later(b, aimSlot(state, unit) + 1 - b.slot!)
+      ABILITY.conjunction.mode !== 'swap'
+        ? later(a, state.currentSlot + 1 - a.slot!) +
+          later(
+            b,
+            aimSlot(state, unit) + (ABILITY.conjunction.mode === 'before' ? -1 : 1) - b.slot!
+          )
         : later(a, b.slot! - a.slot!) + later(b, a.slot! - b.slot!);
     return closing + moves + extra;
   }

@@ -265,6 +265,8 @@ const longshot: AbilityDef = {
       (user.empower ?? 0) - (far ? 1 : 0),
       ABILITY.longshot.pierce
     );
+    if (ABILITY.longshot.push && u.alive && u.hex)
+      displace(ctx, u, directionTo(user.hex!, u.hex), ABILITY.longshot.push, 'push');
   },
 };
 
@@ -921,16 +923,18 @@ const conjunction: AbilityDef = {
   bothSides: true,
   pairs: true,
   get ordered() {
-    return ABILITY.conjunction.mode === 'bracket';
+    return ABILITY.conjunction.mode !== 'swap';
   },
   targetsUnit: true,
   get range() {
     return ABILITY.conjunction.range;
   },
   summary: () =>
-    ABILITY.conjunction.mode === 'bracket'
-      ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just after your next turn.`
-      : `Two units within ${ABILITY.conjunction.range} whose turns come before your next swap places on the track.`,
+    ABILITY.conjunction.mode === 'before'
+      ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just before your next turn.`
+      : ABILITY.conjunction.mode === 'bracket'
+        ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just after your next turn.`
+        : `Two units within ${ABILITY.conjunction.range} whose turns come before your next swap places on the track.`,
   targets(state, _map, user, from) {
     const units = sortByHex(conjunctionTakes(state, user, from), (u) => u.hex!);
     const {mode, once} = ABILITY.conjunction;
@@ -950,6 +954,10 @@ const conjunction: AbilityDef = {
       setCard(ctx, b, aimSlot(ctx.state, user) + 1);
       b.bracketed = true;
       log(ctx, `${unitName(a)} acts next; ${unitName(b)} after ${unitName(user)} again.`);
+    } else if (ABILITY.conjunction.mode === 'before') {
+      setCard(ctx, a, ctx.state.currentSlot + 1);
+      setCard(ctx, b, aimSlot(ctx.state, user) - 1);
+      log(ctx, `${unitName(a)} acts next; ${unitName(b)} just before ${unitName(user)} again.`);
     } else swapCards(ctx, a, b);
     for (const u of [a, b]) {
       if (u.side === user.side) continue;

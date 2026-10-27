@@ -293,7 +293,8 @@ export const ABILITY = {
    * buffs"), off as built: `minRange`, the nearest space it shoots;
    * `camel`, whether it may shoot the camel; `falloff`, the range past
    * which its hit is 1 less; `first`, stopped by the first unit or yurt
-   * in its line, as Snap Shot; `pierce`, its hit Pierces Armour (17.6).
+   * in its line, as Snap Shot; `pierce`, its hit Pierces Armour (17.6);
+   * `push`, the unit hit then Pushed this far away from the Archer (17.4).
    */
   longshot: {
     range: Infinity as number,
@@ -302,6 +303,7 @@ export const ABILITY = {
     falloff: Infinity as number,
     first: false as boolean,
     pierce: false as boolean,
+    push: 0 as number,
   },
   /**
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
@@ -456,14 +458,15 @@ export const ABILITY = {
    * power; `delay`, each enemy swapped then Delayed this much more.
    * `mode`: `swap` (as built), or `bracket`, the first unit's card put
    * just after the Magus's current turn and the second's just after his
-   * next, in place of a swap; `once`, a unit put after his next turn
-   * can't be put there again until it has acted.
+   * next, in place of a swap; `before`, the second's just before his
+   * next turn instead; `once` (with `bracket`), a unit put after his next
+   * turn can't be put there again until it has acted.
    */
   conjunction: {
     range: 2 as number,
     hit: false as boolean,
     delay: 0 as number,
-    mode: 'swap' as 'swap' | 'bracket',
+    mode: 'swap' as 'swap' | 'bracket' | 'before',
     once: false as boolean,
   },
   /**

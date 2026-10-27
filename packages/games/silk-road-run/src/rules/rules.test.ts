@@ -1539,6 +1539,35 @@ describe('the Magus', () => {
     }
   });
 
+  it('Conjunction as `before` puts the first card next and the second just before its next turn', () => {
+    const was = {...ABILITY.conjunction};
+    Object.assign(ABILITY.conjunction, {mode: 'before'});
+    try {
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': hexNeighbor(c, 0),
+          'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      const e = unit(s, 'e-mangudai');
+      const b = unit(s, 'p-bokh');
+      m.slot = s.currentSlot;
+      e.slot = 1;
+      b.slot = 7;
+      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!, to: e.hex!}}});
+      expect([b.slot, e.slot, m.slot]).toEqual([
+        s.currentSlot + 1,
+        actionCost(m) - 1,
+        actionCost(m),
+      ]);
+    } finally {
+      Object.assign(ABILITY.conjunction, was);
+    }
+  });
+
   it('Conjunction passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
     const s = setup(
       {
@@ -1769,6 +1798,19 @@ describe('the Archer', () => {
       applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
       // Armour 1 (Hardened) Pierced: the full 3.
       expect(bokh.hp).toBe(bokh.maxHp - 3);
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
+  });
+
+  it('Longshot with `push` Pushes the unit it hits away from the Archer', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {first: true, push: 1});
+    try {
+      const {s, a} = ready({'e-bokh': along(c, 0, 2)});
+      const bokh = unit(s, 'e-bokh');
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+      expect(bokh.hex).toEqual(along(c, 0, 3));
     } finally {
       Object.assign(ABILITY.longshot, was);
     }

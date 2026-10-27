@@ -3489,6 +3489,30 @@ rows are the baseline. Switches, off as built: `ABILITY.longshot.first`,
 
 Not changed: the owner's call. Built as switches only.
 
+**Then** (the owner): Push on the first-unit Longshot, and the bracket's
+second unit put just *before* the Magus's next turn (`mode: 'before'`), so
+every unit he moves still acts before he does again and no lock is
+possible (`once` not needed). `ABILITY.longshot.push`, same seats, seeds
+and fights.
+
+| Variant | Steppe | China |
+|---|---:|---:|
+| Archer, first in line, Piercing (above) | 47.6% | 42.1% |
+| **The same, Push 1** | **50.3%** | **45.6%** |
+| The same, Push 2 | 48.6% | 47.2% |
+| Magus, bracket with `once` (above) | 41.4% | 46.6% |
+| Magus, second just before his next turn | 32.4% | 41.3% |
+| The same, range 3 | 37.5% | 51.6% |
+
+- **Push brings the Archer in line**: Push 1 even on the Steppe and 4
+  under in China, Push 2 within 3 points on both. Pushing the front line
+  back gives the next shot a lane and keeps a melee hero off it.
+- **Before his next turn is the weakest bracket**: 32–41%, only a few
+  points over the swap. The second unit's Delay is what paid: put
+  before his next turn, an enemy acting late anyway barely moves, and
+  one already early is Delayed less than after it. Range 3 helps in
+  China only (51.6%, 37.5% on the Steppe).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
