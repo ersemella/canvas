@@ -34,7 +34,7 @@ squeeze too. Elixir's Empower and Weaken are a fixed 1 (owner,
 Since later that day the Elixir **Hastens allies 3 and Delays enemies 3**
 instead (owner), so no hero Weakens; later still, one ally within 3 is
 healed 1, **Empowered 1** and **Hastened 3**, nothing on an enemy (owner).
-Since 2026-10-27 one unit within 2: an ally healed 1 and **Empowered 2**,
+Since 2026-10-27 one unit within 2, the Alchemist too: an ally healed 1 and **Empowered 2**,
 an enemy hit for 1 and **Weakened 2** (owner), so the Alchemist Weakens again.
 The haste and delay limits are still not built.
 **Delay** (2026-10-25), for the Vanguard's Cleave (Delay 8 since

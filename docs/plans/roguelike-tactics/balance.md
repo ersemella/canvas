@@ -3087,6 +3087,7 @@ Immortal".
 | built (one ally within 3, heal 1, Empower 1, Haste 3, power 1) | 44.8% | 46.1% | 61% | 2.7 | 55.4% |
 | within 2, Empower 2, Weaken 2, power 1 | **49.3%** | **50.6%** | 66% | 3.1 | 59.1% |
 | within 2, Empower 2, Weaken 2, power 2 | 68.5% | 64.9% | 65% | 2.2 | 68.5% |
+| within 2, Empower 2, Weaken 2, power 1, itself too | 55.6% | 49.6% | 69% | 3.4 | 66.3% |
 
 - **At power 1 it is the Storm Caller's equal and China's best Elixir
   yet**: 4–5 points over the built one (about 2.5–3 standard errors),
@@ -3105,6 +3106,12 @@ Immortal".
   worth far more than one on any other hero.
 - **Adopted (owner, 2026-10-27): at power 1** (`range: 2`, `fixed: 1`,
   `heal: 'all'`, `empower: 2`, `weaken: 2`, `haste: 0`).
+- **Itself too** (asked for and adopted the same day, owner: `self: true`,
+  its own Empower given on its turn lasting through the end of its next
+  one, as any Empower given on a unit's own turn does): China gains 6
+  points (55.6%, from 49.3%), the seat is unchanged (49.6%, within noise).
+  The Alchemist Empowers itself to hit for 3 and heals itself (it
+  survives 66.3% in China's fights, from 59.1%); no unfinished fights.
 
 ### Cleave as a line of 2 six ways, on today's rules (2026-10-27)
 

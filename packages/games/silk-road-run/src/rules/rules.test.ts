@@ -1557,7 +1557,7 @@ describe('the Vanguard and the Alchemist', () => {
     expect(tap(across)).toBeUndefined();
   });
 
-  it('the built Elixir: a unit within 2, not the Alchemist; an ally healed 1 and Empowered 2, an enemy hit for 1 and Weakened 2', () => {
+  it('the built Elixir: a unit within 2, the Alchemist too; an ally healed 1 and Empowered 2, an enemy hit for 1 and Weakened 2', () => {
     const s = setup(
       {
         'p-alchemist': at(1, 3),
@@ -1572,14 +1572,14 @@ describe('the Vanguard and the Alchemist', () => {
     expect(alchemist.power).toBe(1);
     expect(ABILITIES.elixir.targetsUnit).toBe(true);
     expect(ABILITIES.elixir.range).toBe(2);
-    // The ally and the enemy; not the healthy camel (no power to Empower), nor the Alchemist.
+    // The ally, the enemy and the Alchemist; not the healthy camel (no power to Empower).
     expect(
       offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
         .map((t) => hexKey(t.hex!))
         .sort()
-    ).toEqual([at(2, 3), at(3, 3)].map(hexKey).sort());
+    ).toEqual([at(1, 3), at(2, 3), at(3, 3)].map(hexKey).sort());
     expect(ABILITIES.elixir.summary(alchemist)).toBe(
-      'A unit within 2: allies heal 1 and are Empowered 2, enemies are hit, then Weakened 2, until the end of its next turn.'
+      'A unit within 2, yourself too: allies heal 1 and are Empowered 2, enemies are hit, then Weakened 2, until the end of its next turn.'
     );
     // An ally down 2 heals 1 and is Empowered 2, its card not Hastened.
     const a = cloneFight(s);
@@ -1597,6 +1597,25 @@ describe('the Vanguard and the Alchemist', () => {
     expect(unit(e, 'e-mangudai').weaken).toBe(2);
   });
 
+  it('the Alchemist’s Elixir on itself heals it and Empowers it 2 through the end of its next turn', () => {
+    const s = setup({'p-alchemist': at(1, 3), 'e-mangudai': at(3, 3), 'e-modao': at(8, 6)}, party);
+    s.units.forEach((u) => (u.controller = 'human'));
+    const alchemist = unit(s, 'p-alchemist');
+    alchemist.slot = 1;
+    alchemist.hp -= 2;
+    expect(advanceToDecision(s)!.id).toBe('p-alchemist');
+    applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(1, 3)}}});
+    expect(alchemist.hp).toBe(alchemist.maxHp - 1);
+    // Its own turn ending doesn't take it off.
+    expect(alchemist.empower).toBe(2);
+    alchemist.slot = s.currentSlot + 1;
+    expect(advanceToDecision(s)!.id).toBe('p-alchemist');
+    // Its next turn: a hit of its power 1 + Empower 2, then the Empower ends.
+    applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
+    expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - 3);
+    expect(alchemist.empower).toBeUndefined();
+  });
+
   /** The burst (2026-10-26, built until later that day). */
   const burst = {
     range: 1,
@@ -1605,6 +1624,7 @@ describe('the Vanguard and the Alchemist', () => {
     empower: 0,
     weaken: 0,
     fixed: 0,
+    self: false,
     haste: 3,
     delay: 3,
   } as const;

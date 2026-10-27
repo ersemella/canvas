@@ -300,8 +300,8 @@ export const ABILITY = {
   /**
    * Elixir (owner, 2026-10-25; as built since 2026-10-27, as measured in
    * balance.md, "The Elixir on one unit within 2, Empower 2 and Weaken
-   * 2"): a unit within `range` (2), not the Alchemist (`self` off), no line
-   * of fire. An ally is healed the Alchemist's power (1, `heal`: the camel
+   * 2"): a unit within `range` (2), the Alchemist itself too (`self`, owner,
+   * 2026-10-27), no line of fire. An ally is healed the Alchemist's power (1, `heal`: the camel
    * too) and Empowered `empower` (2, a unit that hits, until the end of its
    * next turn); an enemy is hit for the Alchemist's power (`fixed` 1) and
    * Weakened `weaken` (2, a unit that hits, until the end of its next
@@ -335,10 +335,11 @@ export const ABILITY = {
    * `unstoppable`, a switch for measuring (2026-10-26): an ally is also
    * Unstoppable (keywords.md, 17.4) until the start of its next turn; off
    * as built.
-   * `self`: whether the Alchemist takes its own Elixir; off as built
-   * (owner, 2026-10-26: with it, it Hastened itself on every Elixir and
-   * kept the enemy beside it from acting), so a burst or aura passes it
-   * over and it can't be aimed at itself.
+   * `self`: whether the Alchemist takes its own Elixir; on as built
+   * (owner, 2026-10-27: its own Empower 2 lasting through the end of its
+   * next turn); off from 2026-10-26 (with it, it Hastened itself on every
+   * Elixir and kept the enemy beside it from acting), so a burst or aura
+   * passed it over and it couldn't be aimed at itself.
    * `swap`, a switch for measuring (2026-10-27): an ally but the camel
    * swaps its speed and its health (`swapSpeedHealth` in resolve.ts),
    * until the end of its next turn (`swapUntil: 'end'`, its card placed
@@ -363,7 +364,7 @@ export const ABILITY = {
     delay: 0 as number,
     empower: 2 as number,
     weaken: 2 as number,
-    self: false as boolean,
+    self: true as boolean,
     unstoppable: false as boolean,
     swap: false as false | 'pool' | 'carry',
     immortal: false as false | 'all' | 'heroes',
