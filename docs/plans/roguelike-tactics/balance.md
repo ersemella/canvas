@@ -3296,6 +3296,93 @@ line stops kills the 4-health heroes in two turns from anywhere on a line.
 - Not changed: the owner's call. As built, `ABILITY.longshot.range` is
   `Infinity`; 4 is one line in config.ts.
 
+### All nine heroes (2026-10-27)
+
+Asked for: a balance check of all nine heroes, the Steppe's (Grappler,
+Horse Archer, Storm Caller), China's (Vanguard, Swordsman, Alchemist) and
+Persia's (Elephant Rider, Archer, Magus), each as built today (Longshot at
+any range). `experiments/roster-nine.mjs`, `modWinPct`, **800 fights
+each** (about ±1.8 points), seeds from 1000, production AI on both sides;
+Persia's party is the Elephant Rider, the Archer and the Magus, one per
+role. No whole runs: Persia isn't in a run yet.
+
+**Each hero in every seat of the two other regions' mirrors** (the side
+with the swap wins; 50% is the hero's equal there):
+
+| In the seat of | Steppe | | | China | | | Persia | | |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| | Grappler | Horse Archer | Storm Caller | Vanguard | Swordsman | Alchemist | Elephant | Archer | Magus |
+| Grappler | | | | 48.8% | 58.3% | 52% | 42.8% | 25.9% | 63.1% |
+| Vanguard | 52.7% | 52.9% | 50.5% | | | | 59.9% | 36.6% | 72.9% |
+| Elephant Rider | 52.3% | 56.3% | 48.5% | 34% | 33.3% | 25.8% | | | |
+| Horse Archer | | | | 49.1% | 50.1% | 48.3% | 54.6% | 34.1% | 64.8% |
+| Swordsman | 50.1% | 52.8% | 47.5% | | | | 46.9% | 35.9% | 70.8% |
+| Archer | 62.2% | 67.1% | 64.2% | 58% | 64.5% | 61.9% | | | |
+| Storm Caller | | | | 55.6% | 56.2% | 48.9% | 54.9% | 36% | 68.6% |
+| Alchemist | 53.9% | 52.5% | 46.4% | | | | 57.5% | 37.4% | 72.6% |
+| Magus | 24.8% | 32.5% | 28.9% | 22.1% | 35.8% | 31.5% | | | |
+
+Each hero's mean: in the six seats of the other regions, and its side's
+wins when each of the six others takes its seat (its worth where it is):
+
+| | Grappler | Vanguard | Elephant | Horse Archer | Swordsman | Archer | Storm Caller | Alchemist | Magus |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| In others' seats | 48.5% | 54.3% | 41.7% | 50.2% | 50.7% | **63%** | 53.4% | 53.4% | **29.3%** |
+| Kept in its own | 50.7% | 55.4% | 47.2% | 47.6% | 50.3% | **65.7%** | 52.3% | 55.3% | **31.2%** |
+
+Party against party: China beats the Steppe **56.1%**, Persia beats the
+Steppe **56%**, Persia loses to China **29.6%**. Unfinished fights 0–0.6%
+everywhere.
+
+- **The six of the Steppe and China are still within about 3 points
+  of each other in a role** (as "The roster checked again"): the
+  Vanguard 52.7% for the Grappler, the Grappler 48.8% for it; the
+  Swordsman and the Horse Archer 52.8% and 50.1%; the Alchemist and the
+  Storm Caller 46.4% and 48.9%, each better in its own party.
+- **The Archer is too strong, everywhere**: 58–67% in every seat, any
+  other hero in its seat 26–37%. Within its role, 15 points or more over
+  the Horse Archer and the Swordsman both ways. The 200-fight check above
+  ("The Archer and Longshot") holds at 800; Longshot's range 4 measured in
+  line there.
+- **The Magus is too weak, everywhere**: 22–36% in every seat, any other
+  hero in its seat 63–73%, about 20 points under the Storm Caller and the
+  Alchemist both ways. Power 0 and a swap on the track don't make up for a
+  hero that never hits, heals or Empowers: Conjunction is a whole turn
+  spent moving two cards.
+- **The Elephant Rider is weak, and depends on its party**: in the
+  Steppe's seats about even (48.5–56.3%), in China's 25.8–34%, and the
+  Vanguard in its seat 59.9%. Against the Grappler it holds both ways
+  (52.3%, and 42.8% for the Grappler in its seat), against the Vanguard
+  it loses both ways (34%, 59.9%). The tanks don't order cleanly; China's
+  mirror, with Cleave's Delay 8 on a speed-1 hero and Swift Strike's
+  Haste, is where it suffers, not yet traced.
+- **Persia's party is even with the Steppe only because its extremes
+  cancel**: the Archer's surplus and the Magus's deficit, each about 15–20
+  points. Against China, whose Vanguard and Alchemist are the strongest of
+  the first six, it loses 70–30.
+
+**Skill**, the Persian heroes, as "The roster checked again" measured
+the others (one hero played a decision deep or four deep, in its role's
+seat of a Steppe mirror on both sides; its side's wins):
+
+| Played by | Elephant Rider | Archer | Magus |
+|---|---:|---:|---:|
+| Novice | 45.4% | 48.5% | 44.3% |
+| Expert | 52.6% | 52.6% | 53% |
+| Span | 7.2 | **4.1** | 8.7 |
+
+- The Elephant Rider (7.2) and the Magus (8.7) sit with their roles
+  (tanks 6.4–7.6, supports 9.5–10.5, a little under). **The Archer
+  rewards play least of all nine** (4.1, the damage heroes 6.9–8.7): a shot
+  at any range on any line, never blocked, leaves little to choose.
+  Longshot's range 4 should add choices back (where to stand).
+
+Not changed: the numbers are the owner's. What would most help, in order:
+the Archer's Longshot to range 4 (measured above); the Magus given
+something that pays when Conjunction doesn't (a power above 0, or a hit
+or Delay riding on the swap), then measured again; and the Elephant
+Rider's loss in China's mirror traced before its numbers change.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
