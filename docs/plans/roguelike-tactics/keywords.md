@@ -111,7 +111,7 @@ between its own turns.
 | **Pull N** | Displaces the unit N spaces directly toward the source. Ending next to the source is not a collision. |
 | **Move** | Displaces the unit to a space the ability states (Throw: a free space next to the Grappler). |
 | **Immobilized** | The unit can't move to a different space by itself: no walking on its turn, and no ability that moves it (none does since Grapple became melee, 2026-10-23, but the Grappler's swap with the unit it grapples, allowed while Immobilized: owner, 2026-10-25). It **still acts** with any ability that doesn't move it, and it **can still be Pushed, Pulled or Moved** by others. |
-| **Unstoppable** | The unit can't be Pushed, Pulled or Immobilized, by allies or enemies. (Whether it can be Moved is open question 54.) Built 2026-10-26 for measuring only, from an Elixir (`ABILITY.elixir.unstoppable`, off): until the start of the unit's next turn, and it frees the unit from hail holding it; a Move (Throw, the grapple's swap) still moves it. |
+| **Unstoppable** | The unit can't be Pushed, Pulled, Immobilized or **Stunned**, by allies or enemies (Stunned added by the owner, 2026-10-27). So it can't be grappled (Grapple's hold is a Stun, so it can't target an Unstoppable unit), and hail doesn't stop it: it walks on through a hail space, still taking the hail's hit for entering (owner, 2026-10-27, for the Elephant Rider). (Whether it can be Moved is open question 54.) Built 2026-10-26 for measuring only, from an Elixir (`ABILITY.elixir.unstoppable`, off): until the start of the unit's next turn, and it frees the unit from hail holding it; a Move (Throw, the grapple's swap) still moves it. |
 
 - **Displacement is instant:** it resolves completely when the ability
   resolves; nothing happens part-way through it.
@@ -168,7 +168,7 @@ unless the Burn Pierces; TBD, open question 57).
 - Each keyword bends one rule (the track, the board, the damage order)
   rather than adding a system, matching the enemy design principle (11.1).
 - Each has a counter in the list: Inevitable against Delay and Haste,
-  Unstoppable against displacement and Immobilized, Pierce against
+  Unstoppable against displacement, Immobilized and Stunned, Pierce against
   Armour, Weaken against Empower, damage (to break a grapple) and
   Stunned against Stunned.
 - Small whole numbers (9.1) make every effect countable at a glance:
