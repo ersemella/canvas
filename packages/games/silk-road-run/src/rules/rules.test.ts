@@ -1797,6 +1797,31 @@ describe('the Vanguard and the Alchemist', () => {
       });
   });
 
+  it('the Elixir making an ally Immortal (a switch) keeps its health until its next turn', () =>
+    withElixir(
+      {...single, range: 3, fixed: 0, heal: false, self: false, immortal: 'heroes'},
+      0,
+      () => {
+        const s = setup(
+          {'p-alchemist': at(1, 3), 'p-mangudai': at(3, 3), 'e-modao': at(8, 6)},
+          party
+        );
+        const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+        const m = unit(s, 'p-mangudai');
+        applyTurn(s, unit(s, 'p-alchemist'), {
+          action: {ability: 'elixir', target: {hex: at(3, 3)}},
+        });
+        expect(m.immortal).toBe(true);
+        m.shield = 1;
+        applyDamage(ctx, m, 9, 'Hit');
+        // Its Shield still takes damage; its health none.
+        expect([m.shield, m.hp]).toEqual([undefined, m.maxHp]);
+        startTurnPassives(ctx, m);
+        applyDamage(ctx, m, 1, 'Hit');
+        expect(m.hp).toBe(m.maxHp - 1);
+      }
+    ));
+
   it('a card Delayed or Hastened onto a taken slot collides by speed', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};

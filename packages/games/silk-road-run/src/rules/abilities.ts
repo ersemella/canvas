@@ -36,6 +36,7 @@ import {
   heal,
   hit,
   log,
+  makeImmortal,
   makeUnstoppable,
   swapSpeedHealth,
   stun,
@@ -624,6 +625,7 @@ const elixirTakes =
       return fixed > 0 || delay > 0 || (u.power > 0 && elixirAmount('weaken') > 0);
     return (
       elixirSwaps(u) ||
+      elixirImmortal(u) ||
       haste > 0 ||
       unstoppable ||
       (u.power > 0 && elixirAmount('empower') > 0) ||
@@ -638,6 +640,12 @@ const elixirTakes =
  */
 export const elixirSwaps = (u: Unit): boolean =>
   Boolean(ABILITY.elixir.swap) && u.hero !== CAMEL && !u.swapped && u.speed !== u.hp;
+
+/** Whether Elixir makes `u` Immortal (`ABILITY.elixir.immortal`): an ally not already, the camel with `all`. */
+export const elixirImmortal = (u: Unit): boolean => {
+  const {immortal} = ABILITY.elixir;
+  return Boolean(immortal) && !u.immortal && (immortal === 'all' || u.hero !== CAMEL);
+};
 
 /** Elixir's Empower or Weaken: `ABILITY.elixir`'s own amount if set, else `fixed` (0: none). */
 export const elixirAmount = (which: 'empower' | 'weaken'): number =>
@@ -707,6 +715,7 @@ const elixir: AbilityDef = {
         empowers ? `Empowered ${empowers}` : '',
         hastes ? `Hastened ${hastes}` : '',
         unstoppable ? `Unstoppable until ${them} next turn` : '',
+        ABILITY.elixir.immortal ? `Immortal until ${them} next turn` : '',
         ABILITY.elixir.swap
           ? `swapped speed for health until the ${ABILITY.elixir.swapUntil} of ${them} next turn`
           : '',
@@ -759,6 +768,7 @@ const elixir: AbilityDef = {
         haste(ctx, u, hastes);
         if (unstoppable) makeUnstoppable(ctx, u);
         if (elixirSwaps(u)) swapSpeedHealth(ctx, u);
+        if (elixirImmortal(u)) makeImmortal(ctx, u);
       } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
         const weakens = elixirAmount('weaken');

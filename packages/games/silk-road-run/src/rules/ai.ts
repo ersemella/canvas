@@ -26,6 +26,7 @@ import {
   elixirCaught,
   elixirHeals,
   elixirSwaps,
+  elixirImmortal,
   grappling,
   unusableReason,
 } from './abilities';
@@ -366,6 +367,12 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         // `unstoppable`: the hail holding it lets go (what else it stops is the search's).
         if (unstoppable && u.statuses.some((x) => x.hail)) value += statusCost(u);
         if (elixirSwaps(u)) value += swapGuess(u);
+        // `immortal`: the damage it would take before its next turn, and its fall.
+        if (elixirImmortal(u)) {
+          const threat = threatDamage(threatsTo(state, mapOf(state), u), state, u);
+          value += Math.min(threat, u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
+          if (threat >= u.hp && u.hero !== CAMEL) value += AI.kill;
+        }
         continue;
       }
       // With `fixed`, a hit first, as any attack's.

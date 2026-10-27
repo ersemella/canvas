@@ -140,6 +140,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
     {count: number; slots: number; self: number; to: Record<string, number>}
   > = {};
   const swaps = {count: 0, fellBack: 0, to: {} as Record<string, number>};
+  const immortals = {given: 0, blocked: 0};
 
   for (let f = 0; f < fights; f++) {
     const modSide: Side | null = mod ? (f & 1 ? 'enemy' : 'player') : null;
@@ -210,6 +211,9 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
           swaps.count++;
           add(swaps.to, swapped[1]!.replace(/^(Your|Enemy) /, ''));
         }
+        // An Elixir's Immortal (`ABILITY.elixir.immortal`): given, and hits it turned to nothing.
+        if (/ is Immortal until its next turn\.$/.test(text)) immortals.given++;
+        if (/ is Immortal: no damage\.$/.test(text)) immortals.blocked++;
         if (/speed and health swap back/.test(text)) swappingBack = true;
         else if (swappingBack && / falls\.$/.test(text)) swaps.fellBack++;
         else swappingBack = false;
@@ -380,6 +384,11 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
       count: round(swaps.count / fights, 2),
       fellBack: round(swaps.fellBack / fights, 2),
       to: Object.fromEntries(Object.entries(swaps.to).map(([u, n]) => [u, round(n / fights, 2)])),
+    },
+    /** Elixir's Immortals a fight (`ABILITY.elixir.immortal`): given, and hits that took no health. */
+    immortalsPerFight: {
+      given: round(immortals.given / fights, 2),
+      blocked: round(immortals.blocked / fights, 2),
     },
     hitsPerFight: Object.fromEntries(
       Object.entries(hits).map(([k, v]) => [

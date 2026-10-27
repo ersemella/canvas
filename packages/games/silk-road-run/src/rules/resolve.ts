@@ -282,6 +282,7 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
   unit.turns = [...(unit.turns ?? []).slice(-1), ctx.slot];
   delete unit.shield;
   delete unit.unstoppable;
+  delete unit.immortal;
   delete unit.covered;
   delete unit.tookOff;
   if (!hasPassive(unit, 'rally') || !unit.hex) return;
@@ -328,6 +329,11 @@ export function applyDamage(
     amount -= absorbed;
     log(ctx, `${unitName(target)}’s Shield takes ${absorbed}.`);
     if (amount <= 0) return;
+  }
+  // Immortal (17.6): what reaches health becomes 0.
+  if (target.immortal) {
+    log(ctx, `${unitName(target)} is Immortal: no damage.`);
+    return;
   }
   const stunned = isStunned(target);
   const standing = target.hp - amount <= 0 && spendPassive(target, 'lastStand');
@@ -481,6 +487,12 @@ export function healthAfterSwap(unit: Unit): number {
   if (!was || !unit.alive) return unit.hp;
   const hp = ABILITY.elixir.swap === 'carry' ? was.hp + unit.hp - was.speed : was.hp;
   return Math.min(unit.maxHp, Math.max(0, hp));
+}
+
+/** `unit` is made Immortal until the start of its next turn (keywords.md, 17.6). */
+export function makeImmortal(ctx: Ctx, unit: Unit): void {
+  unit.immortal = true;
+  log(ctx, `${unitName(unit)} is Immortal until its next turn.`);
 }
 
 export function clearHail(state: FightState, caster: Unit): void {

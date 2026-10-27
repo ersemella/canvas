@@ -339,6 +339,9 @@ export const ABILITY = {
    * `pool`, the swapped health a pool of its own, the unit's own health
    * back untouched unless it fell, or `carry`, the health it gains or loses
    * meanwhile carried back, falling if none is left; off as built.
+   * `immortal`, a switch for measuring (2026-10-27): an ally is also
+   * Immortal (keywords.md, 17.6) until the start of its next turn, `all`
+   * the camel too, `heroes` not; off as built.
    */
   elixir: {
     range: 3 as number,
@@ -353,6 +356,7 @@ export const ABILITY = {
     self: false as boolean,
     unstoppable: false as boolean,
     swap: false as false | 'pool' | 'carry',
+    immortal: false as false | 'all' | 'heroes',
     swapUntil: 'end' as 'start' | 'end',
   },
   /**

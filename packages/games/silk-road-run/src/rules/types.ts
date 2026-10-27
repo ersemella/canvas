@@ -191,6 +191,12 @@ export interface Unit {
    */
   swapped?: {speed: number; hp: number};
   /**
+   * Immortal (keywords.md, 17.6): its health can't be reduced, until the
+   * start of its next turn (an Elixir, a switch: `ABILITY.elixir.immortal`).
+   * Absent when it isn't.
+   */
+  immortal?: boolean;
+  /**
    * Haste (keywords.md, 17.3) given while its own turn was under way, its
    * card not yet placed: taken off as the card is placed at the turn's end.
    */
