@@ -644,7 +644,9 @@ export const elixirSwaps = (u: Unit): boolean =>
 /** Whether Elixir makes `u` Immortal (`ABILITY.elixir.immortal`): an ally not already, the camel with `all`. */
 export const elixirImmortal = (u: Unit): boolean => {
   const {immortal} = ABILITY.elixir;
-  return Boolean(immortal) && !u.immortal && (immortal === 'all' || u.hero !== CAMEL);
+  return (
+    Boolean(immortal) && !u.immortal && !u.immortalDue && (immortal === 'all' || u.hero !== CAMEL)
+  );
 };
 
 /** Elixir's Empower or Weaken: `ABILITY.elixir`'s own amount if set, else `fixed` (0: none). */
@@ -715,7 +717,11 @@ const elixir: AbilityDef = {
         empowers ? `Empowered ${empowers}` : '',
         hastes ? `Hastened ${hastes}` : '',
         unstoppable ? `Unstoppable until ${them} next turn` : '',
-        ABILITY.elixir.immortal ? `Immortal until ${them} next turn` : '',
+        ABILITY.elixir.immortal
+          ? ABILITY.elixir.immortalWhen === 'delayed'
+            ? `Immortal from the start of ${them} next turn until the turn after`
+            : `Immortal until ${them} next turn`
+          : '',
         ABILITY.elixir.swap
           ? `swapped speed for health until the ${ABILITY.elixir.swapUntil} of ${them} next turn`
           : '',

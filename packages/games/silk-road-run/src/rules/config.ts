@@ -341,7 +341,10 @@ export const ABILITY = {
    * meanwhile carried back, falling if none is left; off as built.
    * `immortal`, a switch for measuring (2026-10-27): an ally is also
    * Immortal (keywords.md, 17.6) until the start of its next turn, `all`
-   * the camel too, `heroes` not; off as built.
+   * the camel too, `heroes` not; off as built. `immortalWhen`: `now`, from
+   * the Elixir until the start of its next turn, or `delayed`, from the
+   * start of its next turn until the start of the turn after (so it acts
+   * Immortal).
    */
   elixir: {
     range: 3 as number,
@@ -357,6 +360,7 @@ export const ABILITY = {
     unstoppable: false as boolean,
     swap: false as false | 'pool' | 'carry',
     immortal: false as false | 'all' | 'heroes',
+    immortalWhen: 'now' as 'now' | 'delayed',
     swapUntil: 'end' as 'start' | 'end',
   },
   /**
@@ -417,6 +421,11 @@ export const AI = {
    * search sees whether it is struck meanwhile).
    */
   swapRisk: 0.5 as number,
+  /**
+   * An Elixir's delayed Immortal (`ABILITY.elixir.immortalWhen`), in the
+   * AI's first guess: this share of a turn of the ally's, taken without fear.
+   */
+  immortalWorth: 1 as number,
   /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends

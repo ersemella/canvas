@@ -283,6 +283,12 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
   delete unit.shield;
   delete unit.unstoppable;
   delete unit.immortal;
+  // A delayed Immortal begins now, lasting until the start of its next turn.
+  if (unit.immortalDue) {
+    delete unit.immortalDue;
+    unit.immortal = true;
+    log(ctx, `${unitName(unit)} is Immortal until its next turn.`);
+  }
   delete unit.covered;
   delete unit.tookOff;
   if (!hasPassive(unit, 'rally') || !unit.hex) return;
@@ -489,8 +495,17 @@ export function healthAfterSwap(unit: Unit): number {
   return Math.min(unit.maxHp, Math.max(0, hp));
 }
 
-/** `unit` is made Immortal until the start of its next turn (keywords.md, 17.6). */
+/**
+ * `unit` is made Immortal until the start of its next turn (keywords.md,
+ * 17.6), or with `ABILITY.elixir.immortalWhen` `delayed` from then until the
+ * start of the turn after (`startTurnPassives`).
+ */
 export function makeImmortal(ctx: Ctx, unit: Unit): void {
+  if (ABILITY.elixir.immortalWhen === 'delayed') {
+    unit.immortalDue = true;
+    log(ctx, `${unitName(unit)} will be Immortal from its next turn.`);
+    return;
+  }
   unit.immortal = true;
   log(ctx, `${unitName(unit)} is Immortal until its next turn.`);
 }

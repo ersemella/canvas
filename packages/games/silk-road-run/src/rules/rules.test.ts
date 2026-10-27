@@ -1822,6 +1822,41 @@ describe('the Vanguard and the Alchemist', () => {
       }
     ));
 
+  it('a delayed Immortal (a switch) begins with the ally’s next turn and lasts until the turn after', () =>
+    withElixir(
+      {
+        ...single,
+        range: 3,
+        fixed: 0,
+        heal: false,
+        self: false,
+        immortal: 'heroes',
+        immortalWhen: 'delayed',
+      },
+      0,
+      () => {
+        const s = setup(
+          {'p-alchemist': at(1, 3), 'p-mangudai': at(3, 3), 'e-modao': at(8, 6)},
+          party
+        );
+        const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+        const m = unit(s, 'p-mangudai');
+        applyTurn(s, unit(s, 'p-alchemist'), {
+          action: {ability: 'elixir', target: {hex: at(3, 3)}},
+        });
+        // Not yet: a hit before its turn takes health.
+        expect([m.immortal, m.immortalDue]).toEqual([undefined, true]);
+        applyDamage(ctx, m, 1, 'Hit');
+        expect(m.hp).toBe(m.maxHp - 1);
+        // Its turn starts: Immortal through it and until the next.
+        startTurnPassives(ctx, m);
+        applyDamage(ctx, m, 1, 'Hit');
+        expect(m.hp).toBe(m.maxHp - 1);
+        startTurnPassives(ctx, m);
+        expect(m.immortal).toBeUndefined();
+      }
+    ));
+
   it('a card Delayed or Hastened onto a taken slot collides by speed', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};

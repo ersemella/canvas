@@ -4,6 +4,9 @@
 // of its next turn (`ABILITY.elixir.immortal`), the Alchemist's power 0, no
 // heal, Empower or Haste. `heroes`: not the camel; `all`: the camel too.
 // `built`: the Elixir as built (heal 1, Empower 1, Haste 3, power 1).
+// `delayed-*` (asked the same day): Immortal from the start of the ally's
+// next turn until the start of the turn after (`ABILITY.elixir.immortalWhen`),
+// so it acts Immortal; the ally fears no enemy while Immortal (`scoreOutcome`).
 // *China*: the China party against the Steppe party (`modWinPct`). *Seat*:
 // the Alchemist in the Storm Caller's seat against the three Steppe heroes.
 const steppe = ['bokh', 'mangudai', 'storm'];
@@ -20,13 +23,27 @@ const base = {
   swap: false,
 };
 const built = (c) => {
-  Object.assign(c.ABILITY.elixir, base, {heal: 'all', empower: 1, haste: 3, immortal: false});
+  Object.assign(c.ABILITY.elixir, base, {
+    heal: 'all',
+    empower: 1,
+    haste: 3,
+    immortal: false,
+    immortalWhen: 'now',
+  });
   c.HEROES.alchemist.power = 1;
 };
-const immortal = (who) => (c) => {
-  Object.assign(c.ABILITY.elixir, base, {heal: false, empower: 0, haste: 0, immortal: who});
-  c.HEROES.alchemist.power = 0;
-};
+const immortal =
+  (who, when = 'now') =>
+  (c) => {
+    Object.assign(c.ABILITY.elixir, base, {
+      heal: false,
+      empower: 0,
+      haste: 0,
+      immortal: who,
+      immortalWhen: when,
+    });
+    c.HEROES.alchemist.power = 0;
+  };
 const both = (name, patch) => {
   experiments[`${name}-china-for-steppe`] = {patch, mod: {party: china}};
   experiments[`${name}-alchemist-for-storm`] = {
@@ -38,3 +55,5 @@ export const experiments = {};
 both('built', built);
 both('immortal-heroes', immortal('heroes'));
 both('immortal-all', immortal('all'));
+both('delayed-heroes', immortal('heroes', 'delayed'));
+both('delayed-all', immortal('all', 'delayed'));

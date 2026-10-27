@@ -196,6 +196,8 @@ export interface Unit {
    * Absent when it isn't.
    */
   immortal?: boolean;
+  /** An Immortal due from the start of its next turn (`ABILITY.elixir.immortalWhen: 'delayed'`). */
+  immortalDue?: boolean;
   /**
    * Haste (keywords.md, 17.3) given while its own turn was under way, its
    * card not yet placed: taken off as the card is placed at the turn's end.

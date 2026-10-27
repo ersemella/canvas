@@ -264,7 +264,8 @@ export function scoreOutcome(
   // What enemies could do to it before its next turn (one step of lookahead),
   // weighed by the share of its health it would lose and by the hero's caution.
   const caution = AI.threatFactor * AI.caution[me.hero];
-  if (caution > 0 && me.alive) {
+  // Immortal until its next turn (`ABILITY.elixir.immortal`), it has nothing to fear before then.
+  if (caution > 0 && me.alive && !me.immortal) {
     const threat = threatDamage(threats, after, me);
     if (threat > 0) {
       score -= Math.min(threat, me.hp) * Math.min(1, threat / me.hp) * caution;
@@ -367,8 +368,11 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         // `unstoppable`: the hail holding it lets go (what else it stops is the search's).
         if (unstoppable && u.statuses.some((x) => x.hail)) value += statusCost(u);
         if (elixirSwaps(u)) value += swapGuess(u);
-        // `immortal`: the damage it would take before its next turn, and its fall.
-        if (elixirImmortal(u)) {
+        // A delayed `immortal`: a turn of its taken without fear (`AI.immortalWorth`).
+        if (elixirImmortal(u) && ABILITY.elixir.immortalWhen === 'delayed')
+          value += turnValue(u) * AI.immortalWorth;
+        // `immortal` now: the damage it would take before its next turn, and its fall.
+        else if (elixirImmortal(u)) {
           const threat = threatDamage(threatsTo(state, mapOf(state), u), state, u);
           value += Math.min(threat, u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
           if (threat >= u.hp && u.hero !== CAMEL) value += AI.kill;
