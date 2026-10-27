@@ -116,10 +116,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 2,
     defence: 2,
     // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
-    // couldn't break a grapple. Eye of the Storm heals it.
+    // couldn't break a grapple. Eye of the Storm heals and hits it.
     power: 1,
-    // Eye of the Storm in place of Hail (the owner's proposal, 2026-10-27;
-    // balance.md, "Eye of the Storm"); Hail an upgrade since.
+    // Eye of the Storm in place of Hail (owner, 2026-10-27; balance.md,
+    // "Eye of the Storm healing and hitting"); Hail an upgrade since.
     abilities: ['eye', 'hold'],
     // Sunlight added (owner, 2026-10-23), as measured: a trap for the AI
     // at Empower 2 (balance.md); an upgrade since 2026-10-24 (owner). Gale
@@ -250,31 +250,35 @@ export const ABILITY = {
    */
   hail: {range: 2, turns: 2, max: 2 as number, entry: true as boolean},
   /**
-   * Eye of the Storm (the owner's proposal, 2026-10-27; the Storm Caller's
-   * core in place of Hail): an ally exactly `range` away, or the Storm Caller itself,
-   * heals the Storm Caller's power (with its Empower and Weaken, as a hit's
-   * damage); then every unit next to it, of either side, is Weakened
-   * `weaken` until the end of its next turn. A ring, as Hail's, so the
-   * Storm Caller is never next to the ally it heals. For measuring:
-   * `heal`, added to the power it heals (0 as built); `immobilize`, every
-   * unit next to it, the camel too, Immobilized until the end of its next
-   * turn (off as built); `anywhere`, a space with no unit on it a target
-   * too, the storm round it with no heal (off as built); `damage`, every
-   * unit next to it, either side, hit for the Storm Caller's power (off as
-   * built); `follows`, the storm following the unit healed until the Storm
-   * Caller's next turn, catching each unit that comes next to it once, as
-   * it lands (off as built); a walk that the storm Immobilizes stops there.
-   * `ring`: its target exactly `range` away (on as built); off, anywhere
-   * within it, where the Storm Caller can be in its own storm.
+   * Eye of the Storm (owner, 2026-10-27; the Storm Caller's core in place
+   * of Hail, an upgrade since): an ally exactly `range` away, or the Storm
+   * Caller itself, heals the Storm Caller's power, with its Empower and
+   * Weaken as a hit's damage; then every unit next to it, of either side,
+   * the camel too, is hit for the Storm Caller's power (`damage`). A ring,
+   * as Hail's, so the Storm Caller is never in the storm round an ally it
+   * heals. As measured (balance.md, "Eye of the Storm healing and
+   * hitting"): level with Hail, and on an ally its hit stops outgrowing
+   * Hail's after one point of power, since the storm hurts its own side too.
+   * For measuring, the shapes it was measured in: `weaken`, every unit next
+   * to it that hits Weakened this much until the end of its next turn (1
+   * when proposed, 0 as built); `heal`, added to the power it heals;
+   * `immobilize`, every unit next to it Immobilized until the end of its
+   * next turn; `anywhere`, a space with no unit on it a target too, the
+   * storm round it with no heal; `follows`, the storm following the unit
+   * healed until the Storm Caller's next turn, catching each unit that
+   * comes next to it once, as it lands, a walk that the storm Immobilizes
+   * stopping there (all off as built). `ring`: its target exactly `range`
+   * away (on as built); off, anywhere within it, where the Storm Caller can
+   * be in its own storm.
    */
   eye: {
     range: 2 as number,
     ring: true as boolean,
-    weaken: 1 as number,
+    damage: true as boolean,
+    weaken: 0 as number,
     heal: 0 as number,
     immobilize: false as boolean,
     anywhere: false as boolean,
-    damage: false as boolean,
     follows: false as boolean,
   },
   /**

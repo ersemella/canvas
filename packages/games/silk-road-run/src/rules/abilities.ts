@@ -2,7 +2,7 @@
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
  * Swordsman's (owner, 2026-10-26), the Storm Caller's Eye of the Storm
- * (the owner's proposal, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -278,12 +278,13 @@ const hail: AbilityDef = {
 };
 
 /**
- * Eye of the Storm (the owner's proposal, 2026-10-27, in place of Hail): a
- * unit of the Storm Caller's side exactly `ABILITY.eye.range` away, or the
- * Storm Caller itself, heals the Storm Caller's power, with its Empower and
- * Weaken (`healOf`); then every unit next to it that hits, ally or enemy,
- * is Weakened `ABILITY.eye.weaken` until the end of its next turn. The
- * ring keeps the Storm Caller out of the storm round an ally it heals.
+ * Eye of the Storm (owner, 2026-10-27, in place of Hail): a unit of the
+ * Storm Caller's side exactly `ABILITY.eye.range` away, or the Storm Caller
+ * itself, heals the Storm Caller's power, with its Empower and Weaken
+ * (`healOf`); then every unit next to it, ally or enemy, the camel too, is
+ * hit for the Storm Caller's power (`ABILITY.eye.damage`). The ring keeps
+ * the Storm Caller out of the storm round an ally it heals. The other
+ * shapes it was measured in stay as switches (`ABILITY.eye`).
  */
 const eye: AbilityDef = {
   id: 'eye',

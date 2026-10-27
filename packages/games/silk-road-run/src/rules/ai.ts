@@ -56,11 +56,13 @@ function turnValue(u: Unit): number {
   return u.hero === CAMEL ? AI.perCamelHex : Math.max(1, u.power);
 }
 
-/** A unit whose attack reaches beyond its neighbours (Longshot, Hail, Gale, Volley, Cleave). */
+/** A unit whose attack reaches beyond its neighbours (Longshot, Hail, Gale, Volley, Cleave, Eye of the Storm). */
 function attacksFromAfar(u: Unit): boolean {
   const kit = kitOf(u);
   return (
-    isRanged(u) || ['hail', 'gale', 'volley', 'cleave'].some((a) => kit.includes(a as AbilityId))
+    isRanged(u) ||
+    ['hail', 'gale', 'volley', 'cleave'].some((a) => kit.includes(a as AbilityId)) ||
+    (ABILITY.eye.damage && kit.includes('eye'))
   );
 }
 
@@ -138,7 +140,7 @@ function weakenLoss(state: FightState, u: Unit): number {
 
 /**
  * The enemies standing where `u` could hit them from where it is, roughly:
- * next to it for melee, on hail's ring for the Storm Caller, on one of
+ * next to it for melee, on hail's ring or round Eye of the Storm's for the Storm Caller, on one of
  * Longshot's lines, or of Skirmish's from a space next to it (ignoring what
  * blocks them), for the Horse Archer.
  */
@@ -152,6 +154,7 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (has('hail') && d === ABILITY.hail.range) return true;
     if (has('volley') && d <= ABILITY.volley.range) return true;
     if (has('gale') && d <= ABILITY.gale.range + 1) return true;
+    if (has('eye') && ABILITY.eye.damage && d <= ABILITY.eye.range + 1) return true;
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
     const inLine = dq === 0 || dr === 0 || dq === -dr;
@@ -910,10 +913,11 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
   return [0, 1, 2, 3, 4, 5].some((d) => firstInLane(state, map, at, d, me) === target) ? 0 : 1;
 }
 
-/** Whether any of `u`'s abilities hurts: an attack, or one that hits (Hail, Gale). */
+/** Whether any of `u`'s abilities hurts: an attack, or one that hits (Hail, Gale, Eye of the Storm). */
 function hurts(u: Unit): boolean {
   return kitOf(u).some((a) => {
     const def = ABILITIES[a];
+    if (a === 'eye') return ABILITY.eye.damage;
     return a !== 'hold' && def.damages !== false && def.kind !== 'support';
   });
 }

@@ -2685,8 +2685,7 @@ both 98.5, 91.9, 69.6, 94.4, 79.8, 62.1.
   raised, mostly in China's last stage (34% to 54% and 62%), where the
   enemy fields all three heroes; the player's Storm Caller loses some of
   its strength, the enemy's more.
-- Not changed: built on the branch `eye-of-the-storm`, Hail still the
-  core on `main`; the numbers are the owner's.
+- Not adopted in this shape: Eye healing and hitting was (below).
 
 #### Eye of the Storm Immobilizing its storm (2026-10-27)
 
@@ -2832,6 +2831,9 @@ empty space too 99.5, 94, 59.9, 93.8, 68.6, 52.8.
   pull further from the other heroes as a run raises its power.
 - A stronger Storm Caller widens the Steppe's lead over China (balance.md,
   "China against the Steppe").
+- **Adopted (owner, 2026-10-27): Eye hitting, on an ally or itself**, as
+  the Storm Caller's core; Hail an upgrade (`ABILITY.eye.damage` on,
+  `weaken` 0).
 
 #### Eye of the Storm's storm following its target (2026-10-27)
 
