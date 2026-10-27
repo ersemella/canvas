@@ -14,7 +14,15 @@ import {
   hexesInRange,
 } from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {ABILITIES, arrowLanes, mapOf, onMap, targetAt, unitAt} from '@canvas/games-silk-road-run';
+import {
+  ABILITIES,
+  arrowLanes,
+  longshotLines,
+  mapOf,
+  onMap,
+  targetAt,
+  unitAt,
+} from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
   ActionTarget,
@@ -151,6 +159,22 @@ export function buildScene(input: SceneInput): BoardScene {
           target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
         })),
       };
+    // Longshot's six lines, to the map's edge through everything, an arrow
+    // to each unit it may hit along them.
+    if (from && ability === 'longshot')
+      out.lanes = {
+        from,
+        lanes: longshotLines(mapOf(fight), from).flatMap(
+          (line): NonNullable<BoardScene['lanes']>['lanes'] => {
+            const hits = targets.filter((t) => t.hex && line.some((h) => hexEquals(h, t.hex!)));
+            if (!hits.length) return [{hexes: line, target: false}];
+            return hits.map((t) => ({
+              hexes: line.slice(0, line.findIndex((h) => hexEquals(h, t.hex!)) + 1),
+              target: true,
+            }));
+          }
+        ),
+      };
     // Who the turn Pushes or Pulls (Shove, Haul, Gale), and where to; a
     // second pick's move (Throw's landing) is drawn as `step` instead.
     if (preview && !targets.some((t) => t.to)) {
@@ -224,7 +248,8 @@ export function buildScene(input: SceneInput): BoardScene {
               ?.to
           : undefined;
       const landing = hoveredLanding ?? target?.to;
-      if (second && landing && !def.pairs) out.step = [def.walksAfter && from ? from : target.hex!, landing];
+      if (second && landing && !def.pairs)
+        out.step = [def.walksAfter && from ? from : target.hex!, landing];
     }
     // Cleave's line, before it's aimed: the one under the mouse, by any of its spaces.
     const hoveredAim =

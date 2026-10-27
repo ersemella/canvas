@@ -56,7 +56,7 @@ function turnValue(u: Unit): number {
   return u.hero === CAMEL ? AI.perCamelHex : Math.max(1, u.power);
 }
 
-/** A unit whose attack reaches beyond its neighbours (Snap Shot, Hail, Gale, Volley, Cleave). */
+/** A unit whose attack reaches beyond its neighbours (Snap Shot, Longshot, Hail, Gale, Volley, Cleave). */
 function attacksFromAfar(u: Unit): boolean {
   const kit = kitOf(u);
   return (
@@ -140,7 +140,7 @@ function weakenLoss(state: FightState, u: Unit): number {
  * The enemies standing where `u` could hit them from where it is, roughly:
  * next to it for melee, on hail's ring for the Storm Caller, on one of
  * Snap Shot's lines, or of Skirmish's from a space next to it (ignoring what
- * blocks them), for the Horse Archer.
+ * blocks them), for the Horse Archer, or on Longshot's, for the Archer.
  */
 function strikable(state: FightState, u: Unit): Unit[] {
   if (!u.hex) return [];
@@ -157,7 +157,7 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
     const inLine = dq === 0 || dr === 0 || dq === -dr;
-    if (has('snapShot') && inLine) return true;
+    if ((has('snapShot') || has('longshot')) && inLine) return true;
     // Cleave: any space of its lines.
     if (
       has('cleave') &&
@@ -915,8 +915,8 @@ function quarryGap(state: FightState, me: Unit, hunting: boolean): number {
 
 /**
  * How far `me` on `at` is from shooting `target` (an archer, `isRanged`):
- * 0 with a clear shot down a lane, 1 on one of its lines with a unit in
- * the way, otherwise the steps onto the nearest of its lines. Snap Shot has
+ * 0 with a clear shot down a lane (on any of its lines, for Longshot), 1 on
+ * one of its lines with a unit in the way, otherwise the steps onto the nearest of its lines. Snap Shot has
  * no range, so closing in by spaces only walked the Horse Archer into melee
  * once its move became Snap Shot's shape (balance.md, "The Horse Archer's AI").
  */
@@ -925,6 +925,8 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
   const dr = at.r - target.hex!.r;
   const steps = Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr));
   if (steps > 0) return steps;
+  // Longshot: nothing in the way blocks it.
+  if (kitOf(me).includes('longshot')) return 0;
   const map = mapOf(state);
   return [0, 1, 2, 3, 4, 5].some((d) => firstInLane(state, map, at, d, me) === target) ? 0 : 1;
 }

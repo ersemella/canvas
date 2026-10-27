@@ -1662,6 +1662,76 @@ describe('the Elephant Rider', () => {
   });
 });
 
+describe('the Archer', () => {
+  const party: HeroId[] = ['archer', 'bokh', 'storm'];
+  const c = at(1, 4);
+  /** `n` spaces from `h` along direction `dir`. */
+  const along = (h: Hex, dir: number, n: number): Hex => {
+    for (let i = 0; i < n; i++) h = hexNeighbor(h, dir);
+    return h;
+  };
+  /** A fight with the Archer at `c` to act, and units where `placements` puts them. */
+  const ready = (placements: Record<string, Hex>) => {
+    const s = setup({'p-archer': c, ...placements}, party);
+    const a = unit(s, 'p-archer');
+    a.slot = s.currentSlot;
+    s.awaiting = a.id;
+    return {s, a};
+  };
+  const isTarget = (s: FightState, a: Unit, h: Hex) =>
+    ABILITIES.longshot.targets(s, mapOf(s), a, a.hex!).some((t) => hexEquals(t.hex!, h));
+
+  it('has speed 2, defence 1, power 3, and is on the roster', () => {
+    const {a} = ready({});
+    expect([a.speed, a.defence, a.power, a.maxHp]).toEqual([2, 1, 3, healthOf(1)]);
+    expect(abilitiesOf(a).map((d) => d.id)).toEqual(['longshot', 'hold']);
+    expect(ROSTER).toContain('archer');
+  });
+
+  it('Longshot hits any unit on its six lines, past the units and yurts in between', () => {
+    const {s, a} = ready({
+      'p-bokh': along(c, 0, 1),
+      'e-bokh': along(c, 0, 2),
+      'e-storm': along(c, 0, 4),
+    });
+    // A yurt in the line too, between the Grappler and the Storm Caller.
+    s.tiles = {...s.tiles, [`${along(c, 0, 3).q},${along(c, 0, 3).r}`]: 'obstacle'};
+    for (const id of ['p-bokh', 'e-bokh', 'e-storm'])
+      expect(isTarget(s, a, unit(s, id).hex!)).toBe(true);
+    const storm = unit(s, 'e-storm');
+    applyTurn(s, a, {action: {ability: 'longshot', target: {hex: storm.hex!}}});
+    expect(storm.hp).toBe(storm.maxHp - 3);
+    // The units it flew over are untouched.
+    expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp);
+  });
+
+  it('Longshot reaches only its six lines', () => {
+    const {s, a} = ready({'e-bokh': hexNeighbor(along(c, 0, 2), 1)});
+    expect(isTarget(s, a, unit(s, 'e-bokh').hex!)).toBe(false);
+    expect(ABILITIES.longshot.targets(s, mapOf(s), a, a.hex!)).toEqual([]);
+  });
+
+  it('threatens its whole lines, whatever stands in them', () => {
+    const {s} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
+    for (const u of s.units) u.side = u.id === 'p-archer' ? 'enemy' : 'player';
+    const storm = unit(s, 'e-storm');
+    const threats = threatsTo(s, mapOf(s), storm);
+    const archer = threats.find((t) => t.enemyId === 'p-archer')!;
+    const key = (h: Hex) => (h.q + 64) * 128 + (h.r + 64);
+    expect(archer.hexes.get(key(storm.hex!))).toBe(3);
+  });
+
+  it('the AI shoots with Longshot and plays a legal turn', () => {
+    const {s, a} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
+    a.controller = 'ai';
+    const turn = chooseAiTurn(s, a);
+    expect(turn.action.ability).toBe('longshot');
+    applyTurn(s, a, turn);
+    expect(s.units.some((u) => u.side === 'enemy' && u.hp < u.maxHp)).toBe(true);
+  });
+});
+
 describe('the Vanguard and the Alchemist', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
 
@@ -2780,7 +2850,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a party must be one to three different heroes of the roster', () => {
-    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist', 'youxia', 'magus', 'mahout']);
+    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist', 'youxia', 'magus', 'mahout', 'archer']);
     expect(() => createRun(5, {party: ['modao', 'alchemist']})).not.toThrow();
     for (const party of [
       ['modao', 'alchemist', 'storm', 'bokh'],

@@ -291,6 +291,24 @@ const ICON: Record<IconId, Icon> = {
       '...=........',
     ],
   },
+  // An arrow flying over a block in its way, its fletching the accent.
+  longshot: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '........#...',
+      '........##..',
+      '++.########.',
+      '........##..',
+      '........#...',
+      '............',
+      '....===.....',
+      '...=====....',
+      '...=====....',
+      '...=====....',
+      '............',
+    ],
+  },
   // An elephant's foot coming down, the dust it raises the accent.
   trample: {
     kind: 'attack',

@@ -27,6 +27,8 @@ const LORE: Partial<Record<HeroId, string>> = {
     'A wandering knight-errant, sworn to keep their word and avenge wrongs. The Swordsman travels light with a straight sword, and every stroke that lands quickens the next.',
   mahout:
     'A driver of war elephants, perched behind the ears of a beast no one can shift. The Elephant Rider tramples through whatever stands in the way, driving a whole line of foes back before it, and neither a wrestler’s grip nor the hail can hold it.',
+  archer:
+    'A foot archer of the royal army, who looses arrows high over the heads of friend and foe. The Archer hits harder than anyone, and its shot flies past whoever stands in the way to strike any foe in line, but it is frail and must be kept out of reach.',
   magus:
     'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but brings two fates into conjunction, trading when each will act, while its own course is fixed and cannot be hurried or held back.',
 };

@@ -214,6 +214,20 @@ export const HEROES: Record<HeroId, HeroStats> = {
     passives: ['unstoppable'],
   },
   /**
+   * The Archer (owner, 2026-10-27; roster.md): a Persian foot archer, a
+   * candidate for Persia's damage hero beside the Cataphract. Speed 2,
+   * defence 1 (health 4) and power 3, the most of any hero, are the
+   * owner's. Longshot reaches past a front line (`ABILITY.longshot`).
+   */
+  archer: {
+    name: 'Archer',
+    letter: 'R',
+    speed: 2,
+    defence: 1,
+    power: 3,
+    abilities: ['longshot', 'hold'],
+  },
+  /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
@@ -271,6 +285,12 @@ export const ABILITY = {
    * flies until it hits a unit, a yurt or the map's edge.
    */
   snapShot: {range: Infinity},
+  /**
+   * Longshot (owner, 2026-10-27; roster.md), the Archer's: any space on one
+   * of the six straight lines from it, at any range, hitting the unit
+   * there. Nothing blocks it: units and yurts in between are passed over.
+   */
+  longshot: {range: Infinity},
   /**
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
    * ring, so the spaces next to it and 3 or more away are safe; within 3
@@ -509,6 +529,7 @@ export const AI = {
     magus: 1,
     // A tank, as the Grappler and the Vanguard.
     mahout: 0,
+    archer: 1,
     camel: 0,
     wolf: 1,
     fox: 1,
@@ -581,7 +602,15 @@ export const AI = {
  */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /** Every hero the start menu offers and the enemy draws from, in party slot order. */
-export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist', 'youxia', 'magus', 'mahout'];
+export const ROSTER: HeroId[] = [
+  ...PARTY,
+  'modao',
+  'alchemist',
+  'youxia',
+  'magus',
+  'mahout',
+  'archer',
+];
 /**
  * The regions a run passes through, in order (setting.md, 15.3a), so far
  * the two whose stages are built: each names its basic creature (the

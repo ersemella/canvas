@@ -76,6 +76,17 @@ export function lane(map: MapData, h: Hex, dir: number): Hex[] {
 }
 
 /**
+ * The hexes straight out from `h` in direction `dir` to the map's edge,
+ * yurts and other obstacles included (Longshot's line, which nothing
+ * blocks).
+ */
+export function line(map: MapData, h: Hex, dir: number): Hex[] {
+  const out: Hex[] = [];
+  for (let at = hexNeighbor(h, dir); onMap(map, at); at = hexNeighbor(at, dir)) out.push(at);
+  return out;
+}
+
+/**
  * Cleave's areas from `h` (owner, 2026-10-27), each one way it can swing,
  * empty ones left out: a line of `ABILITY.cleave.reach` spaces straight
  * out in each of the six directions, stopped by yurts and the map's edge
@@ -153,9 +164,10 @@ export function hasRoomForAbility(kit: AbilityId[]): boolean {
   return abilityCount(kit) < RULES.maxAbilities;
 }
 
-/** A unit with a ranged attack (Snap Shot). */
+/** A unit with a ranged attack (Snap Shot, Longshot). */
 export function isRanged(unit: Unit): boolean {
-  return kitOf(unit).includes('snapShot');
+  const kit = kitOf(unit);
+  return kit.includes('snapShot') || kit.includes('longshot');
 }
 
 export function hostile(a: Unit, b: Unit): boolean {

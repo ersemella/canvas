@@ -73,6 +73,14 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       }
     };
     if (has('snapShot')) lanes(fq, fr, power);
+    // Longshot: its six lines to the map's edge, through units and yurts.
+    if (has('longshot'))
+      for (const [dq, dr] of AXIAL)
+        for (let i = 1; i <= ABILITY.longshot.range; i++) {
+          const k = id(fq + dq * i, fr + dr * i);
+          if (!board.has(k)) break;
+          mark(hexes, k, power);
+        }
     // Trample: the spaces it walks into, `steps` each way.
     if (has('trample') && !isImmobilized(e))
       for (const [dq, dr] of AXIAL)

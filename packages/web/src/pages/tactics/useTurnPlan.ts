@@ -33,6 +33,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   swiftStrike: 'No enemy next to you.',
   conjunction: 'Not two units within 2 whose turns come before your next.',
   trample: 'Nowhere to walk in a straight line.',
+  longshot: 'No one on any of your six lines.',
   shove: 'No one next to you to shove.',
   haul: 'No one 2 or 3 spaces away in a straight line.',
   feignedRetreat: 'No enemy in any of your lanes, or nowhere to fall back to.',

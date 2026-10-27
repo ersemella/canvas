@@ -197,6 +197,74 @@ tuning. This file has no combat-design section number.
   shape, not only a distinct colour: quicksand and sandstorm must read
   apart on a sand board.
 
+## Prompts for the Archer (2026-10-27)
+
+The Archer (roster.md) plays as a lettered disc (`archer` in
+`HERO_COLOR`) until its art exists. Like the other heroes' art, it
+starts as the owner's AI-assisted picture, cut down by hand to the
+sprites' grid and palette: a **32 × 32** board sprite facing right, split
+into the 2-frame idle by `scripts/idle-sheet.py` (64 × 32 in all, as
+`magus.png` and `youxia.png`), and a **32 × 32** portrait for the track
+(`archer.png` and `archer-portrait.png` in `src/client/sprites/`).
+
+- **Attach the references** with each prompt, scaled up 8× with
+  nearest-neighbour: `youxia.png` and `magus.png` (a hero on foot) for the
+  sprite; `magus-portrait.png` and `youxia-portrait.png` for the portrait.
+- **One asset per image**, large, on a flat magenta background (#FF00FF),
+  so it cuts out cleanly.
+- If it comes back too detailed, ask it to "halve the detail and use
+  fewer, larger pixel clusters"; if the bow is lost at size, "make the bow
+  bigger and darker, a thick dark curve against the body".
+
+### 1. Board sprite
+
+```
+Pixel art sprite of a single character for a hex-grid tactics game, in the
+exact style, size, viewpoint and dark outline of the attached sprites.
+
+Subject: a Persian foot archer of late antiquity (Sasanian era). A lean
+standing figure in a knee-length crimson tunic belted at the waist, loose
+ochre trousers tucked into soft boots, and a rounded off-white felt cap with
+two short ribbons fluttering behind the head. A quiver of arrows hangs at
+the hip. In both hands, held forward and ready, a large dark recurved
+composite bow, an arrow nocked, pointing right. Calm, confident stance, feet
+apart, weight back, as if about to loose a long shot.
+
+Framing: full body, facing right, three-quarter view from slightly above,
+as the attached sprites. The figure fills a 32 x 32 pixel frame with about
+2 pixels free on each side; the bow must stay readable at that size.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 12 colours. Saturated costume colours
+(crimson, ochre, off-white, dark wood) so it stands out on pale ground; no
+light blue, which the game keeps for its targeting overlay. A small soft
+grey oval shadow under the feet. Flat magenta (#FF00FF) background. One
+sprite only, no text, no frame, no extra poses.
+```
+
+### 2. Track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same Persian foot archer: a lean young face with a short dark
+beard and a narrow moustache, dark eyes looking right along an arrow, a
+rounded off-white felt cap with a ribbon trailing behind, a crimson tunic
+at the shoulders. The upper limb of a dark recurved bow and the fletching
+of a drawn arrow show at the right edge.
+
+Framing: head and shoulders, facing right in three-quarter view, the face
+in the middle of the frame and large, the cap touching the top edge, cropped
+at the shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours, warm skin tones as in the references. Flat magenta (#FF00FF)
+background. One portrait only, no text, no border.
+```
+
 ## Palette (Proposed)
 
 - **One fixed palette** of about **24–32 colours** across every culture.

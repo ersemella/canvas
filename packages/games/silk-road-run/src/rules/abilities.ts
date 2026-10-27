@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Swordsman's (owner, 2026-10-26), the Magus's and the Elephant Rider's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * Swordsman's (owner, 2026-10-26), the Magus's, the Elephant Rider's and the Archer's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -21,6 +21,7 @@ import {
   isUnstoppable,
   kitOf,
   lane as laneFrom,
+  line as lineFrom,
   reachableHexes,
   sortByHex,
   spacesWithin,
@@ -202,6 +203,39 @@ const snapShot: AbilityDef = {
     return arrowLanes(state, map, from)
       .filter((lane) => lane.hit)
       .map((lane) => ({hex: lane.hit!.hex!}));
+  },
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    hit(ctx, user, u, `${unitName(user)}'s arrow`);
+  },
+};
+
+// ─── Archer ──────────────────────────────────────────────────────────────────
+
+/**
+ * Longshot's six lines from `from` (owner, 2026-10-27): each runs to the
+ * map's edge, through units and yurts, since nothing blocks it.
+ */
+export function longshotLines(map: MapData, from: Hex): Hex[][] {
+  return DIRECTIONS.map((dir) => lineFrom(map, from, dir).slice(0, ABILITY.longshot.range));
+}
+
+/**
+ * Longshot (owner, 2026-10-27; roster.md): any unit on one of the six
+ * straight lines from the Archer, at any range, ally or enemy; it flies
+ * over everything in between.
+ */
+const longshot: AbilityDef = {
+  id: 'longshot',
+  name: 'Longshot',
+  kind: 'attack',
+  summary: () => 'Shoot straight at any unit in line: nothing blocks it.',
+  targetsUnit: true,
+  targets(state, map, _user, from) {
+    const out: ActionTarget[] = [];
+    for (const l of longshotLines(map, from))
+      for (const h of l) if (unitAt(state, h)) out.push({hex: h});
+    return out;
   },
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
@@ -1015,6 +1049,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   swiftStrike,
   conjunction,
   trample,
+  longshot,
   shove,
   haul,
   feignedRetreat,

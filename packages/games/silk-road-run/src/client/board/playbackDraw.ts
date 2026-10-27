@@ -103,6 +103,7 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
       // An arrow flying from the bow to its mark, or a drawn one down its lane.
       const shot =
         e.ability === 'snapShot' ||
+        e.ability === 'longshot' ||
         e.ability === 'feignedRetreat' ||
         (e.ability === 'skirmish' && !charged);
       if (shot && e.target && u.hex && stepped < 0.7) {

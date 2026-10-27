@@ -11,6 +11,7 @@ export type Side = 'player' | 'enemy';
  * The three prototype heroes, the Vanguard and the Alchemist
  * (owner, 2026-10-25), the Swordsman (owner, 2026-10-26), the Magus
  * (owner, 2026-10-27), the Elephant Rider (`mahout`, owner, 2026-10-27), the
+ * Archer (owner, 2026-10-27), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, and the enemy NPCs, the wolf and the fox.
  */
@@ -23,6 +24,7 @@ export type HeroId =
   | 'youxia'
   | 'magus'
   | 'mahout'
+  | 'archer'
   | 'camel'
   | 'wolf'
   | 'fox';
@@ -39,6 +41,7 @@ export type AbilityId =
   | 'swiftStrike'
   | 'conjunction'
   | 'trample'
+  | 'longshot'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
