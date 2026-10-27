@@ -39,7 +39,9 @@ export type AbilityId =
   | 'haul'
   | 'feignedRetreat'
   | 'gale'
-  | 'volley';
+  | 'volley'
+  // A measuring switch for the Storm Caller in place of Hail (2026-10-27).
+  | 'rain';
 
 /**
  * The passives (progression.md, 19.8; owner, 2026-10-24): hero-agnostic

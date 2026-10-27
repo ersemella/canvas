@@ -316,6 +316,43 @@ const sunlight: AbilityDef = {
   },
 };
 
+/** The units Rain aimed at `target` heals: hurt, within its radius, by `ABILITY.rain`. */
+export function rainCaught(state: FightState, user: Unit, target: Hex): Unit[] {
+  const {radius, self, enemies} = ABILITY.rain;
+  return state.units.filter(
+    (u) =>
+      u.alive &&
+      u.hex &&
+      u.hp < u.maxHp &&
+      hexDistance(u.hex, target) <= radius &&
+      (u.side === user.side ? self || u.id !== user.id : enemies)
+  );
+}
+
+/** Rain (2026-10-27), a switch for measuring in place of Hail: `ABILITY.rain`. */
+const rain: AbilityDef = {
+  id: 'rain',
+  name: 'Rain',
+  kind: 'support',
+  damages: false,
+  get range() {
+    return ABILITY.rain.range;
+  },
+  get radius() {
+    return ABILITY.rain.radius;
+  },
+  summary: (user) =>
+    `A space within ${ABILITY.rain.range}: ${ABILITY.rain.enemies ? 'every unit' : 'every ally'} within ${ABILITY.rain.radius} of it heals ${user.power}.`,
+  targets: (state, map, user, from) =>
+    spacesWithin(map, from, ABILITY.rain.range)
+      .filter((h) => rainCaught(state, user, h).length > 0)
+      .map((h) => ({hex: h})),
+  resolve(ctx, user, target) {
+    log(ctx, `${unitName(user)} calls down rain.`);
+    for (const u of rainCaught(ctx.state, user, target.hex!)) heal(ctx, u, user.power);
+  },
+};
+
 // ─── Grappler ────────────────────────────────────────────────────────────────
 
 /** Whether `user` is grappling `u`. */
@@ -809,6 +846,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   feignedRetreat,
   gale,
   volley,
+  rain,
 };
 
 export function abilitiesOf(unit: Unit): AbilityDef[] {

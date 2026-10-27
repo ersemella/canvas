@@ -24,6 +24,7 @@ import {
   abilitiesOf,
   elixirAmount,
   elixirCaught,
+  rainCaught,
   elixirHeals,
   grappling,
   unusableReason,
@@ -372,6 +373,15 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       else if (u.power > 0 && elixirAmount('weaken') > 0)
         value += u.weaken ? 0 : 1 + weakenGuess(state, u, elixirAmount('weaken'));
       if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
+    }
+    return closing + value;
+  }
+  // Rain: the health it gives back, the camel's at its weight; an enemy's against it.
+  if (ability === 'rain') {
+    let value = 0;
+    for (const u of rainCaught(state, unit, target!.hex!)) {
+      const healed = Math.min(unit.power, u.maxHp - u.hp);
+      value += (hostile(u, unit) ? -healed : healed) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
     }
     return closing + value;
   }

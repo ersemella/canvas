@@ -363,6 +363,14 @@ export const ABILITY = {
   feignedRetreat: {steps: 2},
   gale: {range: 3, push: 1},
   volley: {range: 3, charge: 0.5 as number},
+  /**
+   * Rain, a switch for measuring (2026-10-27; balance.md, "Rain in place
+   * of Hail"): a space within `range`; each ally within `radius` of it, the
+   * camel too and its caster with `self`, heals its caster's power, and
+   * each enemy there too with `enemies`. In no kit; an experiment puts it in
+   * the Storm Caller's in place of Hail.
+   */
+  rain: {range: 3 as number, radius: 1 as number, self: true as boolean, enemies: false as boolean},
 } as const;
 
 /** Enemy AI scoring (brief section 6), on the 2026-10-23 health scale (a hit is 1 or 2). */
