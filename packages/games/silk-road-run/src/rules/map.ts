@@ -14,8 +14,8 @@
  * (`spaceAt`), as the test stage's file does.
  *
  * The open steppe: each fight pitches two or three yurts near the board's
- * middle and, in about half of fights, raises a range of mountains along
- * an edge (see `randomTiles`); the ruins scattered before are gone (owner,
+ * middle and raises mountains at the top, to Humphrey's left, right or
+ * both (owner, 2026-10-27; see `randomTiles`); the ruins scattered before are gone (owner,
  * 2026-10-24). The fixed layout of four yurts below is the map's own,
  * which tests place units around, and the test stage's `"map"`. Quicksand and the sandstorm were removed
  * with their keywords (owner, 2026-10-23).
@@ -55,13 +55,15 @@ export interface MapData {
   exits: Hex[];
   /**
    * Whether its fights raise a range of mountains (`randomTiles`): in about
-   * half of them, or when the stage says (the Steppe's); never (the Gobi's,
-   * 2026-10-25); or in every one (the Flaming Mountains', 2026-10-26).
+   * half of them, or when the stage says (no map now; the Steppe's until
+   * 2026-10-27); never (the Gobi's, 2026-10-25); or in every one (the
+   * Steppe's, owner, 2026-10-27, and the Flaming Mountains', 2026-10-26).
    */
   mountains: 'sometimes' | 'never' | 'always';
   /**
-   * Where they stand: one range along one of the board's slanted edges
-   * (the Steppe's), three side-by-side pairs in its middle (the Flaming
+   * Where they stand: a range along one or both of the board's top
+   * slanted edges, either side of Humphrey's start (the Steppe's; any of
+   * the four slanted edges until 2026-10-27), three side-by-side pairs in its middle (the Flaming
    * Mountains', owner, 2026-10-26; `middleClumps`), or one salt dome on
    * the centre and the six spaces around it, the same in every fight (the
    * Salt Flats', owner, 2026-10-26; `DOME`).
@@ -133,7 +135,9 @@ export const STEPPE: MapData = {
   // The bottom point, the only exit (owner, 2026-10-24; the bottom-right
   // corner before).
   exits: [{q: 0, r: RADIUS}],
-  mountains: 'sometimes',
+  // Always, at the top (owner, 2026-10-27; about half of fights, on any
+  // slanted edge, before).
+  mountains: 'always',
   mountainPlaces: 'edge',
   // Two or three yurts, within 2 hexes of the centre (owner, 2026-10-24).
   obstacles: {counts: [2, 3], reach: 2},
@@ -223,14 +227,15 @@ export function mapById(id: string): MapData {
 }
 
 /**
- * Mountains (owner, 2026-10-24): about half of fights, and every fight of a
- * run's first `MOUNTAIN_STAGES` stages (config.ts), have one range, 3 to
- * 5 hexes in one clump along one of the hexagon's four slanted edges (top
- * left, top right, bottom left, bottom right), starting on that edge and
- * at most one hex in from it. Never on the sides (the starting columns and
- * the hexes in from them), never down the middle column, where Temee walks,
- * so never directly in front of Temee, and never within
- * `MOUNTAIN_CENTRE_GAP` − 1 hexes of the centre.
+ * Mountains (owner, 2026-10-24): on a map that raises them along its
+ * edges (the Steppe's, in every fight since 2026-10-27), one range or two,
+ * each 3 to 5 hexes in one clump along one of the hexagon's two top
+ * slanted edges, to the left of Humphrey's start, to its right, or one on
+ * each (owner, 2026-10-27; one range on any of the four slanted edges
+ * before), starting on that edge and at most one hex in from it. Never on
+ * the sides (the starting columns and the hexes in from them), never down
+ * the middle column, where Humphrey walks, so never directly in front of
+ * Humphrey, and never within `MOUNTAIN_CENTRE_GAP` − 1 hexes of the centre.
  */
 const MOUNTAIN_CHANCE = 0.5;
 const MOUNTAIN_SIZES = [3, 4, 5];
@@ -238,22 +243,21 @@ const MOUNTAIN_CENTRE_GAP = 3;
 const CENTRE: Hex = {q: 0, r: 0};
 
 /**
- * The four slanted edges, top left, top right, bottom left and bottom
- * right: which side of the middle column each is on, and how far in from
- * it a hex is (0 on the edge).
+ * The two top slanted edges, left and right of Humphrey's start: which
+ * side of the middle column each is on, and how far in from it a hex is
+ * (0 on the edge).
  */
-const MOUNTAIN_EDGES: {left: boolean; inFrom: (h: Hex) => number}[] = [
-  {left: true, inFrom: (h) => h.q + h.r + RADIUS},
-  {left: false, inFrom: (h) => h.r + RADIUS},
-  {left: true, inFrom: (h) => RADIUS - h.r},
-  {left: false, inFrom: (h) => RADIUS - h.q - h.r},
-];
+type Edge = {left: boolean; inFrom: (h: Hex) => number};
+const TOP_LEFT: Edge = {left: true, inFrom: (h) => h.q + h.r + RADIUS};
+const TOP_RIGHT: Edge = {left: false, inFrom: (h) => h.r + RADIUS};
+/** Where a fight's ranges go, one of these at random: left, right or both. */
+const MOUNTAIN_SIDES: Edge[][] = [[TOP_LEFT], [TOP_RIGHT], [TOP_LEFT, TOP_RIGHT]];
 
 /**
  * A fight's own tiles, from `random` in [0, 1): a range of mountains in
  * about half of fights, or always with `mountains` or on a map that always
- * has them, never on a map without them (`MapData.mountains`), along an
- * edge or in clumps in the middle as the map says (`mountainPlaces`), off
+ * has them, never on a map without them (`MapData.mountains`), along the
+ * top edges or in clumps in the middle as the map says (`mountainPlaces`), off
  * the starting columns, the camel's start and the exit, or the Salt Flats'
  * dome (`fixedTiles`), then two or three yurts near the
  * middle (not mirrored), on `map`'s board.
@@ -283,15 +287,17 @@ export function randomTiles(
   let count = middle ? roll() : 0;
   if (middle) middleClumps(map, tiles, candidates, random, MAX_COVERED - count);
   else if (raise && !fixed) {
-    const edge = MOUNTAIN_EDGES[Math.floor(random() * MOUNTAIN_EDGES.length)]!;
-    const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
-    const inFrontOfTemee: Hex = {q: 0, r: map.camelStart.r + 1};
-    const allowed = candidates
-      .filter((h) => (edge.left ? h.q < 0 : h.q > 0))
-      .filter((h) => edge.inFrom(h) === 0 || (edge.inFrom(h) === 1 && Math.abs(h.q) < RADIUS - 1))
-      .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP)
-      .filter((h) => hexDistance(h, inFrontOfTemee) > 0);
-    mountainRange(map, tiles, allowed, edge.inFrom, size, random);
+    const sides = MOUNTAIN_SIDES[Math.floor(random() * MOUNTAIN_SIDES.length)]!;
+    const inFrontOfHumphrey: Hex = {q: 0, r: map.camelStart.r + 1};
+    for (const edge of sides) {
+      const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
+      const allowed = candidates
+        .filter((h) => (edge.left ? h.q < 0 : h.q > 0))
+        .filter((h) => edge.inFrom(h) === 0 || (edge.inFrom(h) === 1 && Math.abs(h.q) < RADIUS - 1))
+        .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP)
+        .filter((h) => hexDistance(h, inFrontOfHumphrey) > 0);
+      mountainRange(map, tiles, allowed, edge.inFrom, size, random);
+    }
   }
   // Yurts (owner, 2026-10-24), or ruins: as many as the map
   // says, within its reach of the centre and off the starting columns, not

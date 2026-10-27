@@ -615,7 +615,6 @@ describe('the board', () => {
   });
 
   it('raises the Flaming Mountains in every fight, in side-by-side pairs in the middle, with one or two beacon towers', () => {
-    let steppeWithout = 0;
     const towerCounts = new Set<number>();
     for (let seed = 0; seed < 40; seed++) {
       // Not a stage that asks for mountains: the map raises them itself.
@@ -665,11 +664,7 @@ describe('the board', () => {
           if (o !== t) expect(hexDistance(t, o)).toBeGreaterThan(1);
       }
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
-      // The same seed's Steppe fight lacks them about half the time.
-      const steppe = createFight(seed, undefined, undefined, false);
-      if (!Object.values(steppe.tiles).includes('mountain')) steppeWithout++;
     }
-    expect(steppeWithout).toBeGreaterThan(0);
     expect([...towerCounts].sort()).toEqual([1, 2]);
   });
 
@@ -733,54 +728,48 @@ describe('the board', () => {
     expect(spaceAt(4, 0)).toEqual(map.camelStart);
   });
 
-  it('raises one clump of 3 to 5 mountains along a slanted edge in about half of fights, off the sides, the middle and the centre', () => {
+  it('raises mountains at the top in every Steppe fight, left of Humphrey, right of it or both, off the sides, the middle and the centre', () => {
     const centre: Hex = {q: 0, r: 0};
-    const corners = new Set<string>();
-    let withMountains = 0;
+    const sides = new Set<string>();
     for (let seed = 0; seed < 60; seed++) {
       const tiles = createFight(seed).tiles;
-      const at = (t: string) =>
-        Object.keys(tiles)
-          .filter((k) => tiles[k] === t)
-          .map(hexFromKey);
-      const mountains = at('mountain');
-      if (!mountains.length) continue;
-      withMountains++;
-      expect(mountains.length).toBeGreaterThanOrEqual(3);
-      expect(mountains.length).toBeLessThanOrEqual(5);
-      // Never near the centre.
-      for (const m of mountains) expect(hexDistance(m, centre)).toBeGreaterThanOrEqual(3);
-      // One clump: every mountain reachable from the first through mountains.
-      const seen = new Set([hexKey(mountains[0]!)]);
-      const queue = [mountains[0]!];
-      for (let h; (h = queue.shift()); )
-        for (const n of mountains)
-          if (hexDistance(h, n) === 1 && !seen.has(hexKey(n))) {
-            seen.add(hexKey(n));
-            queue.push(n);
-          }
-      expect(seen.size).toBe(mountains.length);
-      // One corner: all left of the middle column or all right, all in the
-      // top half or all in the bottom, never on or next to the sides, at
-      // least one on the board's edge.
-      const left = mountains[0]!.q < 0;
-      const top = depth(mountains[0]!) < 0;
-      for (const m of mountains) {
-        expect(m.q).not.toBe(0);
-        expect(m.q < 0).toBe(left);
-        expect(depth(m) < 0).toBe(top);
-        expect(Math.abs(m.q)).toBeLessThan(4);
-        if (Math.abs(m.q) === 3) expect(hexDistance(m, centre)).toBe(4);
+      const mountains = Object.keys(tiles)
+        .filter((k) => tiles[k] === 'mountain')
+        .map(hexFromKey);
+      const left = mountains.filter((m) => m.q < 0);
+      const right = mountains.filter((m) => m.q > 0);
+      // Never down the middle column.
+      expect(left.length + right.length).toBe(mountains.length);
+      for (const range of [left, right]) {
+        if (!range.length) continue;
+        expect(range.length).toBeGreaterThanOrEqual(3);
+        expect(range.length).toBeLessThanOrEqual(5);
+        // One clump: every mountain reachable from the first through mountains.
+        const seen = new Set([hexKey(range[0]!)]);
+        const queue = [range[0]!];
+        for (let h; (h = queue.shift()); )
+          for (const n of range)
+            if (hexDistance(h, n) === 1 && !seen.has(hexKey(n))) {
+              seen.add(hexKey(n));
+              queue.push(n);
+            }
+        expect(seen.size).toBe(range.length);
+        for (const m of range) {
+          // In the top half, never near the centre, never on or next to the sides.
+          expect(depth(m)).toBeLessThan(0);
+          expect(hexDistance(m, centre)).toBeGreaterThanOrEqual(3);
+          expect(Math.abs(m.q)).toBeLessThan(4);
+          if (Math.abs(m.q) === 3) expect(hexDistance(m, centre)).toBe(4);
+        }
+        // Hugging the edge: a hex in from it only once the edge's three are taken.
+        const onEdge = range.filter((m) => hexDistance(m, centre) === 4).length;
+        expect(onEdge).toBe(Math.min(3, range.length));
       }
-      // Hugging the edge: a hex in from it only once the edge's three are taken.
-      const onEdge = mountains.filter((m) => hexDistance(m, centre) === 4).length;
-      expect(onEdge).toBe(Math.min(3, mountains.length));
-      corners.add(`${left} ${top}`);
+      sides.add(`${left.length > 0} ${right.length > 0}`);
+      expect(sides.has('false false')).toBe(false);
     }
-    expect(withMountains).toBeGreaterThan(15);
-    expect(withMountains).toBeLessThan(45);
-    // Every corner comes up.
-    expect(corners.size).toBe(4);
+    // Left alone, right alone and both all come up.
+    expect([...sides].sort()).toEqual(['false true', 'true false', 'true true']);
   });
 
   it('always raises mountains in the first three stages of a run', () => {
