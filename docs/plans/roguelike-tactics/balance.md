@@ -3103,7 +3103,8 @@ Immortal".
   the fixed-1 Elixir with a hit was at power 2 (71.5%): the hit, the heal
   and the Weaken add up. A provision of power on the Alchemist would be
   worth far more than one on any other hero.
-- Not changed: the Elixir stays as built; the numbers are the owner's.
+- **Adopted (owner, 2026-10-27): at power 1** (`range: 2`, `fixed: 1`,
+  `heal: 'all'`, `empower: 2`, `weaken: 2`, `haste: 0`).
 
 ### Cleave as a line of 2 six ways, on today's rules (2026-10-27)
 

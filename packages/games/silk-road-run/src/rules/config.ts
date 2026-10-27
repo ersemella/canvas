@@ -142,13 +142,15 @@ export const HEROES: Record<HeroId, HeroStats> = {
   },
   /**
    * The Alchemist (owner, 2026-10-25; roster.md): a support whose
-   * Elixir heals an ally within 3 its power, Empowers it 1 and Hastens it 3
-   * (`ABILITY.elixir`; earlier on 2026-10-26 a burst next to it of Haste 3
+   * Elixir, on a unit within 2, heals an ally its power and Empowers it 2,
+   * or hits an enemy for its power and Weakens it 2 (`ABILITY.elixir`;
+   * 2026-10-27; an ally within 3 healed, Empowered 1 and Hastened 3 before
+   * that; earlier on 2026-10-26 a burst next to it of Haste 3
    * and Delay 3, before that of Empower 2 and Weaken 1). Speed 3 (owner, 2026-10-25; 2 before; balance.md,
    * "Elixir's shape and Cleave's Delay": the Storm Caller's equal in its
    * seat, 49.2% from 40.6%); power 1 (owner, 2026-10-26; 0 with the
    * burst earlier that day, 1 before it, 2 before that; balance.md, "Two
-   * hails, hail on entry, and a melee Elixir"): the Elixir's heal;
+   * hails, hail on entry, and a melee Elixir"): the Elixir's heal and hit;
    * defence 1 (health 4) the builder's first number.
    */
   alchemist: {
@@ -295,12 +297,16 @@ export const ABILITY = {
    */
   cleave: {reach: 2, delay: 8 as number, shape: 'built' as 'built' | 'lines' | 'arcs' | 'cones'},
   /**
-   * Elixir (owner, 2026-10-25; as built since late on 2026-10-26, as
-   * measured in balance.md, "Elixir on one ally within 3"): an ally within
-   * `range` (3), not the Alchemist (`self` off), no line of fire, is healed
-   * the Alchemist's power (1, `heal`: the camel too), Empowered `empower`
-   * (1, a unit that hits, until the end of its next turn) and Hastened
-   * `haste` (3). Nothing on an enemy (`fixed` 0, `delay` 0, `weaken` 0).
+   * Elixir (owner, 2026-10-25; as built since 2026-10-27, as measured in
+   * balance.md, "The Elixir on one unit within 2, Empower 2 and Weaken
+   * 2"): a unit within `range` (2), not the Alchemist (`self` off), no line
+   * of fire. An ally is healed the Alchemist's power (1, `heal`: the camel
+   * too) and Empowered `empower` (2, a unit that hits, until the end of its
+   * next turn); an enemy is hit for the Alchemist's power (`fixed` 1) and
+   * Weakened `weaken` (2, a unit that hits, until the end of its next
+   * turn). No Haste or Delay.
+   * From late on 2026-10-26 until then, an ally within 3 only, healed 1,
+   * Empowered 1 and Hastened 3, nothing on an enemy.
    * Earlier on 2026-10-26 a burst next to the Alchemist (`shape: 'burst'`,
    * `range: 1`, no heal or Empower): every unit within `radius` of it but
    * the Alchemist, an ally Hastened 3, an enemy Delayed 3; before that the
@@ -347,15 +353,15 @@ export const ABILITY = {
    * Immortal).
    */
   elixir: {
-    range: 3 as number,
+    range: 2 as number,
     shape: 'unit' as 'unit' | 'burst' | 'aura',
     radius: 1 as number,
-    fixed: 0 as number,
+    fixed: 1 as number,
     heal: 'all' as false | 'all' | 'heroes',
-    haste: 3 as number,
+    haste: 0 as number,
     delay: 0 as number,
-    empower: 1 as number,
-    weaken: 0 as number,
+    empower: 2 as number,
+    weaken: 2 as number,
     self: false as boolean,
     unstoppable: false as boolean,
     swap: false as false | 'pool' | 'carry',
