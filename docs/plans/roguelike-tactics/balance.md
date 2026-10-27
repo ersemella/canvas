@@ -2749,6 +2749,10 @@ anywhere 2/2 99.5, 95, 72.5, 94.2, 84.5, 61.5.
   measured).
 - Not changed: `anywhere` off, heal 1 and Weaken 1 as built.
 
+Then, asked for, on an empty space too and Immobilizing in place of the
+Weaken (`anywhere`, `immobilize`, `weaken: 0`), head to head only: Hail
+wins 61.1% at heal 1 and 54.6% at heal 2 (Anywhere 2/2, Weakening, 55.4%).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

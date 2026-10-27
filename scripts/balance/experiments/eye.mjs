@@ -110,3 +110,17 @@ for (const [name, patch] of Object.entries(anywhere)) {
       mod: {party: steppe.map((h) => (h === 'storm' ? hero : h))},
     };
 }
+// Asked for (2026-10-27): on an empty space too, healing and Immobilizing
+// (no Weaken), at heal 1 and heal 2; head to head against Hail only.
+experiments['anywhere+imm:hail-vs-eye'] = {
+  patch: (c) => {
+    Object.assign(c.ABILITY.eye, {anywhere: true, immobilize: true, weaken: 0});
+  },
+  mod: {kits: {storm: ['hail', 'hold']}},
+};
+experiments['anywhere+imm+heal2:hail-vs-eye'] = {
+  patch: (c) => {
+    Object.assign(c.ABILITY.eye, {anywhere: true, immobilize: true, weaken: 0, heal: 1});
+  },
+  mod: {kits: {storm: ['hail', 'hold']}},
+};
