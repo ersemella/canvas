@@ -3383,6 +3383,71 @@ something that pays when Conjunction doesn't (a power above 0, or a hit
 or Delay riding on the swap), then measured again; and the Elephant
 Rider's loss in China's mirror traced before its numbers change.
 
+### Archer nerfs and Magus buffs (2026-10-27)
+
+Asked for: nerfs for the Archer other than Longshot's range, and buffs
+for the Magus (the owner: the Elephant Rider is fine for now).
+`experiments/archer-magus.mjs`, `modWinPct`, **800 fights each** (about
+±1.8 points), the Archer in the damage seat and the Magus in the support
+seat of a Steppe and a China mirror. The new switches, off as built:
+`ABILITY.longshot.minRange`, `.camel`, `.falloff`, and
+`ABILITY.conjunction.hit`, `.delay`.
+
+**The Archer** (built 67.1% and 61.7%; 50% its equal):
+
+| Variant | Steppe | China |
+|---|---:|---:|
+| As built | 67.1% | 61.7% |
+| No shot at the spaces next to it (`minRange` 2) | 64.8% | 59.1% |
+| A hit 1 less beyond 3 spaces (`falloff` 3) | 62.6% | 56.1% |
+| A hit 1 less beyond 2 (`falloff` 2) | 58.9% | 53.1% |
+| Can't shoot Humphrey (`camel` off) | 56.6% | 50% |
+| Defence 0 (health 2) | 54.1% | 57.7% |
+| Power 2 | 54.8% | 48.8% |
+| *Range 4 ("The Archer and Longshot", 200 fights)* | *48.5%* | *52%* |
+
+- **Humphrey is a third of the Archer's edge**: leaving the camel out
+  takes 10 points off on the Steppe and 12 in China, keeping power 3 and
+  any range. A shot over the guards at the caravan is what no one else
+  has, and the camel's health is the run's ([camel.md](camel.md)).
+- **Power 2 is the nearest alone** (54.8%, 48.8%), at the cost of its
+  identity; falloff 2 does half as much; `minRange` 2 almost nothing (it
+  seldom has an enemy next to it); defence 0 only on the Steppe.
+- No single nerf but range 4 and power 2 brings it within 3 points on
+  both maps. **The pair to try**: no camel with falloff 2 or defence 0
+  (not measured together).
+
+**The Magus** (built 28.9% and 31.4%):
+
+| Variant | Steppe | China |
+|---|---:|---:|
+| As built | 28.9% | 31.4% |
+| Speed 3 | 27.9% | 30.8% |
+| Defence 2 (health 6) | 30.1% | 31.7% |
+| Range 3 | 33.2% | 40.9% |
+| Each enemy swapped Delayed 2 more | 32.5% | 38.4% |
+| Each enemy swapped Delayed 3 more | 35.2% | 46.4% |
+| Each enemy swapped hit, power 1 | 42.4% | 41.8% |
+| Each enemy swapped hit, power 2 | 55.1% | 60.6% |
+| **Hit at power 1 and range 3** | **52.3%** | **56.3%** |
+
+- **Stats don't help**: more turns or more health for a hero whose turns
+  do too little change nothing (speed 3 and defence 2 within noise).
+  The kit is the problem.
+- **More track control helps in China only** (Delay 3: 46.4% there, 35.2%
+  on the Steppe): China's Vanguard and Swordsman lean on their own
+  tempo, the Steppe's heroes less.
+- **A hit on the enemies it swaps is what works**: power 1 lifts it 13
+  points, power 2 overshoots (55–61%). **Power 1 with range 3 lands it
+  even** (52.3%, 56.3%), more than either alone: range gives the hit more
+  pairs to choose from. Within 3 points on the Steppe, about 6 over in
+  China.
+- The hit makes it a star-reader that also harms, against the pure
+  track controller of its design (roster.md); a Delay rider keeps that
+  identity but measured short.
+
+Not changed: the owner's call.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
