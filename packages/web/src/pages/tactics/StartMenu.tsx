@@ -22,7 +22,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   modao:
     'An armoured spearhead of the imperial army, wielding a long two-handed blade. The Vanguard is slow, but its blade cuts through the first foe into the one behind.',
   alchemist:
-    'A master of elixirs, brewed from minerals in sealed crucibles. The Alchemist hands an ally an elixir that mends their wounds, strengthens their blows and quickens them.',
+    'A master of elixirs, brewed from minerals in sealed crucibles. The Alchemist throws an elixir at anyone close by, itself included: an ally is mended and strikes harder, while an enemy is scalded and weakened.',
   youxia:
     'A wandering knight-errant, sworn to keep their word and avenge wrongs. The Swordsman travels light with a straight sword, and every stroke that lands quickens the next.',
 };
