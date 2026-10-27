@@ -217,7 +217,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Archer (owner, 2026-10-27; roster.md): a Persian foot archer, a
    * candidate for Persia's damage hero beside the Cataphract. Speed 2,
    * defence 1 (health 4) and power 3, the most of any hero, are the
-   * owner's. Longshot reaches past a front line (`ABILITY.longshot`).
+   * owner's. Longshot hits the first unit in line, Piercing, and Delays it
+   * 3 (`ABILITY.longshot`).
    */
   archer: {
     name: 'Archer',
@@ -286,9 +287,13 @@ export const ABILITY = {
    */
   snapShot: {range: Infinity},
   /**
-   * Longshot (owner, 2026-10-27; roster.md), the Archer's: any space on one
-   * of the six straight lines from it, at any range, hitting the unit
-   * there. Nothing blocks it: units and yurts in between are passed over.
+   * Longshot (owner, 2026-10-27; roster.md), the Archer's: down any of
+   * its six lines, at any range, the first unit in line hit, stopped by
+   * yurts as Snap Shot (`first`), Piercing (`pierce`), and Delayed 3
+   * (`delay`; owner, later 2026-10-27; balance.md, "Longshot's effect":
+   * 49.4% in the Steppe's damage seat, 50.9% in China's). Built first
+   * hitting any unit on its lines, past everything (`first` off, no
+   * Pierce or Delay): 58–67% in every seat.
    * Switches for measuring nerfs (balance.md, "Archer nerfs and Magus
    * buffs"), off as built: `minRange`, the nearest space it shoots;
    * `camel`, whether it may shoot the camel; `falloff`, the range past
@@ -304,10 +309,10 @@ export const ABILITY = {
     minRange: 1 as number,
     camel: true as boolean,
     falloff: Infinity as number,
-    first: false as boolean,
-    pierce: false as boolean,
+    first: true as boolean,
+    pierce: true as boolean,
     push: 0 as number,
-    delay: 0 as number,
+    delay: 3 as number,
     weaken: 0 as number,
     pin: false as boolean,
   },

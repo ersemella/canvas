@@ -3544,7 +3544,11 @@ next turn, not an Unstoppable one), off as built.
 - Weaken is even on the Steppe but short in China (43–46%): it blunts
   damage, and China's Alchemist heals and Empowers it back.
 
-Not changed: the owner's call.
+**Built since** (the owner, 2026-10-27): Delay 3, with the first unit and
+Pierce (`first`, `pierce`, `delay: 3` by default). The files measuring the
+Archer before it (`archer.mjs`, `archer-tuning.mjs`, `archer-magus.mjs`,
+`roster-nine.mjs`, `longshot-bracket.mjs`) set the switches they were
+measured with.
 
 ## Principles for re-tuning
 

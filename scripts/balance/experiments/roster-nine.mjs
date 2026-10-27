@@ -50,8 +50,10 @@ for (const hero of persia) {
   ])
     experiments[`${level}-${hero}`] = {party, mod: {search, searchHeroes: [hero]}};
 }
-// Measured with Conjunction as a swap, built until later that day.
+// Measured with Conjunction as a swap and Longshot as first built (any unit
+// on its lines, no Pierce or Delay), both built until later that day.
 for (const e of Object.values(experiments))
   e.patch = (c) => {
     c.ABILITY.conjunction.mode = 'swap';
+    Object.assign(c.ABILITY.longshot, {first: false, pierce: false, delay: 0});
   };

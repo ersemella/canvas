@@ -12,4 +12,10 @@ for (const [name, party] of [
   ['china', china],
 ])
   for (const [i, out] of party.entries())
-    experiments[`archer-for-${out}-${name}`] = {party, mod: {party: seat(party, i, 'archer')}};
+    experiments[`archer-for-${out}-${name}`] = {
+      party,
+      // Measured with Longshot as first built: any unit on its lines, past
+      // everything, no Pierce or Delay.
+      patch: (c) => Object.assign(c.ABILITY.longshot, {first: false, pierce: false, delay: 0}),
+      mod: {party: seat(party, i, 'archer')},
+    };

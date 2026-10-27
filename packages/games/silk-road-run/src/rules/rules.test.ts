@@ -1765,22 +1765,28 @@ describe('the Archer', () => {
     expect(ROSTER).toContain('archer');
   });
 
-  it('Longshot hits any unit on its six lines, past the units and yurts in between', () => {
-    const {s, a} = ready({
-      'p-bokh': along(c, 0, 1),
-      'e-bokh': along(c, 0, 2),
-      'e-storm': along(c, 0, 4),
-    });
-    // A yurt in the line too, between the Grappler and the Storm Caller.
-    s.tiles = {...s.tiles, [`${along(c, 0, 3).q},${along(c, 0, 3).r}`]: 'obstacle'};
-    for (const id of ['p-bokh', 'e-bokh', 'e-storm'])
-      expect(isTarget(s, a, unit(s, id).hex!)).toBe(true);
-    const storm = unit(s, 'e-storm');
-    applyTurn(s, a, {action: {ability: 'longshot', target: {hex: storm.hex!}}});
-    expect(storm.hp).toBe(storm.maxHp - 3);
-    // The units it flew over are untouched.
-    expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
-    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp);
+  it('Longshot as first built (`first` off) hits any unit on its six lines, past the units and yurts in between', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {first: false, pierce: false, delay: 0});
+    try {
+      const {s, a} = ready({
+        'p-bokh': along(c, 0, 1),
+        'e-bokh': along(c, 0, 2),
+        'e-storm': along(c, 0, 4),
+      });
+      // A yurt in the line too, between the Grappler and the Storm Caller.
+      s.tiles = {...s.tiles, [`${along(c, 0, 3).q},${along(c, 0, 3).r}`]: 'obstacle'};
+      for (const id of ['p-bokh', 'e-bokh', 'e-storm'])
+        expect(isTarget(s, a, unit(s, id).hex!)).toBe(true);
+      const storm = unit(s, 'e-storm');
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: storm.hex!}}});
+      expect(storm.hp).toBe(storm.maxHp - 3);
+      // The units it flew over are untouched.
+      expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
+      expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp);
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
   });
 
   it('Longshot reaches only its six lines', () => {
@@ -1789,31 +1795,39 @@ describe('the Archer', () => {
     expect(ABILITIES.longshot.targets(s, mapOf(s), a, a.hex!)).toEqual([]);
   });
 
-  it('threatens its whole lines, whatever stands in them', () => {
-    const {s} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
-    for (const u of s.units) u.side = u.id === 'p-archer' ? 'enemy' : 'player';
-    const storm = unit(s, 'e-storm');
-    const threats = threatsTo(s, mapOf(s), storm);
-    const archer = threats.find((t) => t.enemyId === 'p-archer')!;
-    const key = (h: Hex) => (h.q + 64) * 128 + (h.r + 64);
-    expect(archer.hexes.get(key(storm.hex!))).toBe(3);
-  });
-
-  it('Longshot as `first` stops at the first unit in line, and its hit Pierces with `pierce`', () => {
+  it('as first built, threatens its whole lines, whatever stands in them', () => {
     const was = {...ABILITY.longshot};
-    Object.assign(ABILITY.longshot, {first: true, pierce: true});
+    Object.assign(ABILITY.longshot, {first: false, pierce: false, delay: 0});
     try {
-      const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
-      const bokh = unit(s, 'e-bokh');
-      bokh.passives = ['hardened'];
-      expect(isTarget(s, a, bokh.hex!)).toBe(true);
-      expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
-      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
-      // Armour 1 (Hardened) Pierced: the full 3.
-      expect(bokh.hp).toBe(bokh.maxHp - 3);
+      const {s} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
+      for (const u of s.units) u.side = u.id === 'p-archer' ? 'enemy' : 'player';
+      const storm = unit(s, 'e-storm');
+      const threats = threatsTo(s, mapOf(s), storm);
+      const archer = threats.find((t) => t.enemyId === 'p-archer')!;
+      const key = (h: Hex) => (h.q + 64) * 128 + (h.r + 64);
+      expect(archer.hexes.get(key(storm.hex!))).toBe(3);
     } finally {
       Object.assign(ABILITY.longshot, was);
     }
+  });
+
+  it('Longshot hits the first unit in line, Piercing, and Delays it 3', () => {
+    const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
+    const bokh = unit(s, 'e-bokh');
+    bokh.passives = ['hardened'];
+    bokh.slot = 5;
+    expect(isTarget(s, a, bokh.hex!)).toBe(true);
+    expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
+    applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+    // Armour 1 (Hardened) Pierced: the full 3.
+    expect(bokh.hp).toBe(bokh.maxHp - 3);
+    expect(bokh.slot).toBe(5 + 3);
+  });
+
+  it('Longshot stops at a yurt in line', () => {
+    const {s, a} = ready({'e-storm': along(c, 0, 4)});
+    s.tiles = {...s.tiles, [`${along(c, 0, 2).q},${along(c, 0, 2).r}`]: 'obstacle'};
+    expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
   });
 
   it('Longshot with `push` Pushes the unit it hits away from the Archer', () => {

@@ -4,15 +4,16 @@
 // `.pierce`), and Conjunction putting its first unit's card just after the
 // Magus's current turn and its second's just after his next, in place of a
 // swap (`ABILITY.conjunction.mode: 'bracket'`).
+// Longshot's Delay is 3 as built since 2026-10-27, so each Archer row sets its own.
 const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['youxia', 'modao', 'alchemist'];
 const seat = (party, i, hero) => party.map((h, j) => (j === i ? hero : h));
 const archer = {
   'first+pierce': (c) => {
-    Object.assign(c.ABILITY.longshot, {first: true, pierce: true});
+    Object.assign(c.ABILITY.longshot, {first: true, pierce: true, delay: 0});
   },
   'first+pierce+noCamel': (c) => {
-    Object.assign(c.ABILITY.longshot, {first: true, pierce: true, camel: false});
+    Object.assign(c.ABILITY.longshot, {first: true, pierce: true, camel: false, delay: 0});
   },
 };
 // The baseline swap is set by archer-magus.mjs; these set their own mode.
@@ -58,7 +59,7 @@ for (const [name, party, archerSeat] of [
   for (const push of [1, 2])
     experiments[`archer-first+pierce+push${push}-${name}`] = {
       party,
-      patch: (c) => Object.assign(c.ABILITY.longshot, {first: true, pierce: true, push}),
+      patch: (c) => Object.assign(c.ABILITY.longshot, {first: true, pierce: true, delay: 0, push}),
       mod: {party: seat(party, archerSeat, 'archer')},
     };
   for (const range of [2, 3])
@@ -84,6 +85,7 @@ for (const [name, party, archerSeat] of [
   for (const [e, switches] of Object.entries(effects))
     experiments[`archer-first+pierce+${e}-${name}`] = {
       party,
-      patch: (c) => Object.assign(c.ABILITY.longshot, {first: true, pierce: true, ...switches}),
+      patch: (c) =>
+        Object.assign(c.ABILITY.longshot, {first: true, pierce: true, delay: 0, ...switches}),
       mod: {party: seat(party, archerSeat, 'archer')},
     };

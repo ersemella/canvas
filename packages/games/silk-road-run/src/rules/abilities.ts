@@ -217,7 +217,7 @@ const snapShot: AbilityDef = {
 // ─── Archer ──────────────────────────────────────────────────────────────────
 
 /**
- * Longshot's six lines from `from` (owner, 2026-10-27): each runs to the
+ * Longshot's six lines from `from`, as first built (`ABILITY.longshot.first` off): each runs to the
  * map's edge, through units and yurts, since nothing blocks it.
  */
 export function longshotLines(map: MapData, from: Hex): Hex[][] {
@@ -234,7 +234,14 @@ const longshot: AbilityDef = {
   id: 'longshot',
   name: 'Longshot',
   kind: 'attack',
-  summary: () => 'Shoot straight at any unit in line: nothing blocks it.',
+  summary: () => {
+    const {first, pierce, delay: slots} = ABILITY.longshot;
+    const shot = first
+      ? 'Shoot straight: hits the first unit in line'
+      : 'Shoot straight at any unit in line: nothing blocks it';
+    const more = [pierce && 'Pierces', slots > 0 && `Delays it ${slots}`].filter(Boolean);
+    return more.length ? `${shot}. ${more.join(', ')}.` : `${shot}.`;
+  },
   targetsUnit: true,
   targets(state, map, _user, from) {
     const out: ActionTarget[] = [];

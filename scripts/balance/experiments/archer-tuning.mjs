@@ -25,4 +25,13 @@ for (const [v, patch] of Object.entries(variants))
     ['steppe', steppe, 1],
     ['china', china, 0],
   ])
-    experiments[`${v}-${name}`] = {party, patch, mod: {party: seat(party, i, 'archer')}};
+    experiments[`${v}-${name}`] = {
+      party,
+      // Measured with Longshot as first built: any unit on its lines, past
+      // everything, no Pierce or Delay.
+      patch: (c) => {
+        Object.assign(c.ABILITY.longshot, {first: false, pierce: false, delay: 0});
+        patch(c);
+      },
+      mod: {party: seat(party, i, 'archer')},
+    };

@@ -72,9 +72,10 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         }
       }
     };
-    if (has('snapShot')) lanes(fq, fr, power);
-    // Longshot: its six lines to the map's edge, through units and yurts.
-    if (has('longshot'))
+    if (has('snapShot') || (has('longshot') && ABILITY.longshot.first)) lanes(fq, fr, power);
+    // Longshot built first (`first` off): its six lines to the map's edge,
+    // through units and yurts.
+    else if (has('longshot'))
       for (const [dq, dr] of AXIAL)
         for (let i = 1; i <= ABILITY.longshot.range; i++) {
           const k = id(fq + dq * i, fr + dr * i);

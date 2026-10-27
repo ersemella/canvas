@@ -75,9 +75,12 @@ for (const [hero, variants, steppeSeat, chinaSeat] of [
     ])
       experiments[`${hero}-${v}-${name}`] = {
         party,
-        // Measured with Conjunction as a swap, built until later that day.
+        // Measured with Conjunction as a swap and Longshot as first built
+        // (any unit on its lines, no Pierce or Delay), both built until
+        // later that day.
         patch: (c) => {
           c.ABILITY.conjunction.mode = 'swap';
+          Object.assign(c.ABILITY.longshot, {first: false, pierce: false, delay: 0});
           patch(c);
         },
         mod: {party: seat(party, i, hero)},
