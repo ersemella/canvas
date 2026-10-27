@@ -3045,6 +3045,32 @@ that took no health (`immortalsPerFight`).
   whole turn; on top of the built Elixir, or with the Alchemist's power
   back for a heal, it might; not measured.
 
+**Delayed, so the ally acts Immortal** (asked the same day: the AI
+doesn't press in with an Immortal ally, since Immortal ends as its turn
+starts): `ABILITY.elixir.immortalWhen` `delayed`, Immortal from the start
+of the ally's next turn until the start of the turn after; while Immortal
+the ally fears no enemy (`scoreOutcome`'s caution skipped), and the AI's
+first guess values it as a turn of the ally's (`AI.immortalWorth`, 1). The
+same file, fights and seeds.
+
+| Immortal | China vs Steppe | Alchemist for the Storm Caller | Elixir's share of its turns (China) | Immortals a fight (hits turned to nothing) | Cleave's damage a fight |
+|---|---:|---:|---:|---:|---:|
+| now, heroes (above) | 20.9% | 26.2% | 39% | 4 (1.7) | 5.7 |
+| delayed, heroes | 18.9% | 24% | 28% | 2.5 (1.4) | 5.6 |
+| now, the camel too (above) | 24.6% | 31.4% | 43% | 4.9 (3.2) | 5.9 |
+| delayed, the camel too | 20.3% | 26.5% | 32% | 3.2 (2.1) | |
+
+- **Delaying it costs 2–5 points**: the ally's own Immortal turn adds no
+  damage (the Vanguard's Cleave 5.6 a fight, 5.7 Immortal now, 7.7 with
+  the built Elixir), and fewer Elixirs come to anything (2.5 Immortals a
+  fight from 4: the ally can fall first, and the AI gives it less).
+- **Fearless spacing isn't worth much here**: the China heroes are melee
+  and already walk in (the caution weighs only the hits before its next
+  turn); what holds them back is the Outrider's arrows and the hail on the
+  way, which an Immortal walk-in shrugs off for one turn only. The enemy's
+  search still strikes whoever isn't Immortal.
+- Not changed: `immortalWhen` stays `now`, `immortal` off.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
