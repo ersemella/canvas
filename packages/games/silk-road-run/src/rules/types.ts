@@ -27,7 +27,7 @@ export type HeroId =
   | 'fox';
 export type AbilityId =
   | 'hold'
-  | 'longshot'
+  | 'snapShot'
   | 'skirmish'
   | 'hail'
   | 'sunlight'

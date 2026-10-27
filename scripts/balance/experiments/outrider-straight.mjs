@@ -6,7 +6,7 @@ const walk2 = (c) => {
   c.HEROES.mangudai.movesStraight = false;
 };
 const rules = {straight: undefined, walk2};
-const bans = [['longshot'], ['hail'], ['grapple']];
+const bans = [['snapShot'], ['hail'], ['grapple']];
 const heroes = ['bokh', 'mangudai', 'storm'];
 export const experiments = Object.fromEntries(
   Object.entries(rules).flatMap(([name, patch]) => [

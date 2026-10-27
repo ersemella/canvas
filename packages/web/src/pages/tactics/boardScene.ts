@@ -86,7 +86,7 @@ export function buildScene(input: SceneInput): BoardScene {
   if (!acting) return out;
   if (ability && isAttack(ability)) {
     // An attack: every enemy, and the allies in the line of fire: those it
-    // can target (the units Longshot's lanes reach, a melee ability's
+    // can target (the units Snap Shot's lanes reach, a melee ability's
     // neighbours) and those the aimed ability would hurt.
     const ids = new Set(fight.units.filter((u) => u.side === 'enemy').map((u) => u.id));
     const def = ABILITIES[ability];
@@ -124,7 +124,7 @@ export function buildScene(input: SceneInput): BoardScene {
       if (acting.hex) out.path = [acting.hex, ...plannedMove.path];
     }
   } else if (ability) {
-    // How far it reaches, outlined (Hail's ring inside and out); Longshot's lanes, an arrow along each to
+    // How far it reaches, outlined (Hail's ring inside and out); Snap Shot's lanes, an arrow along each to
     // an enemy it can hit, so it's plain why the others can't be.
     const def = ABILITIES[ability];
     const from = acting.hex;
@@ -137,10 +137,10 @@ export function buildScene(input: SceneInput): BoardScene {
           onMap(map, h)
       );
     }
-    // The Bow's lanes: Longshot's, Feigned Retreat's before its target is
+    // The Bow's lanes: Snap Shot's, Feigned Retreat's before its target is
     // picked; Haul's, as far as it reaches.
     const lanesShown =
-      ability === 'longshot' ||
+      ability === 'snapShot' ||
       (ability === 'feignedRetreat' && !target?.hex) ||
       ability === 'haul';
     if (from && lanesShown)

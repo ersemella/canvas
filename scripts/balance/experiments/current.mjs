@@ -2,7 +2,7 @@
 // ability of the kits removed from one side, the Horse Archer's two attacks
 // together, and every stage caravan against the full party (player wins).
 const heroes = ['bokh', 'mangudai', 'storm'];
-const bans = [['longshot'], ['skirmish'], ['hail'], ['sunlight'], ['grapple'], ['throw'], ['longshot', 'skirmish']];
+const bans = [['snapShot'], ['skirmish'], ['hail'], ['sunlight'], ['grapple'], ['throw'], ['snapShot', 'skirmish']];
 export const experiments = {
   control: {mod: {}},
   ...Object.fromEntries(bans.map((ban) => [`no-${ban.join('-')}`, {mod: {ban}}])),

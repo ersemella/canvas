@@ -38,7 +38,7 @@ const ICON: Record<IconId, Icon> = {
     ],
   },
   // A bow drawn, its string the accent.
-  longshot: {
+  snapShot: {
     kind: 'attack',
     rows: [
       '..##........', //

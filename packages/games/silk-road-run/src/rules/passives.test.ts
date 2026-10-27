@@ -96,10 +96,10 @@ describe('the passives: the track', () => {
     const s = setup({'p-mangudai': centre, 'e-storm': out(0, 2), 'e-bokh': out(3, 2)});
     give(s, 'p-mangudai', 'momentum');
     unit(s, 'e-storm').hp = 1;
-    act(s, 'p-mangudai', 'longshot', {hex: out(0, 2)});
+    act(s, 'p-mangudai', 'snapShot', {hex: out(0, 2)});
     expect(unit(s, 'e-storm').alive).toBe(false);
     expect(unit(s, 'p-mangudai').slot).toBe(actionCost(unit(s, 'p-mangudai')) - 1);
-    act(s, 'p-mangudai', 'longshot', {hex: out(3, 2)});
+    act(s, 'p-mangudai', 'snapShot', {hex: out(3, 2)});
     expect(unit(s, 'p-mangudai').slot).toBe(actionCost(unit(s, 'p-mangudai')));
   });
 });

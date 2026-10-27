@@ -62,7 +62,7 @@ the kits.**
   Pierce, Empower, Weaken, Armour, Immortal ([keywords.md](keywords.md));
   Immobilized, Stunned, Move, Push, Pull, Empower, Weaken and Delay
   (Cleave's Delay 8, owner, 2026-10-26; 5 before) are built.
-- **The kits** ([roster.md](roster.md)): the Bow, unchanged in shape; Hail,
+- **The kits** ([roster.md](roster.md)): Snap Shot (the Bow until 2026-10-27), unchanged in shape; Hail,
   one space exactly 2 away (a ring; within 3 until 2026-10-24) until the
   Storm Caller's next turn, Immobilizing
   whoever is in it or enters it; Grapple (melee; reach 2, stepping in, until
@@ -74,19 +74,19 @@ the kits.**
   space next to the Grappler, or swapping places with it, so the grapple
   holds; Skirmish
   (owner, 2026-10-23, in place of Volley), a step of one space and then
-  the Bow's shot from there, charged: the Horse Archer's card is pushed half
+  Snap Shot's shot from there, charged: the Horse Archer's card is pushed half
   its action cost on (4 slots), greyed; when it comes back the arrow flies
   down the lane it was aimed along, hitting the first unit in it then,
   with no turn for the Horse Archer, and the card goes its action cost on;
   Sunlight (owner, 2026-10-23), Empower 2 on a unit within 3, melting hail
   there. **Skirmish and Sunlight are upgrades** (owner, 2026-10-24), out
-  of the starting kits: the Horse Archer starts with the Bow, the Storm Caller
+  of the starting kits: the Horse Archer starts with Snap Shot, the Storm Caller
   with Hail, each earning the other from a region's upgrade offer
   ([progression.md](progression.md), 19.3), not built yet. **Also
   upgrades** (owner, 2026-10-24, as measured in
   [balance.md](balance.md#second-abilities-measured-2026-10-24)): Shove
   (melee Push 2) and Haul (Pull 2) for the Grappler, Volley (a space within
-  3, charged) and Feigned Retreat (the Bow, then a walk of up to 2) for the
+  3, charged) and Feigned Retreat (Snap Shot, then a walk of up to 2) for the
   Horse Archer, Gale (each unit next to a space hit and Pushed 1) for the Storm
   Caller.
 - **Deleted with their code:** the Vanguard's kit, ultimates and

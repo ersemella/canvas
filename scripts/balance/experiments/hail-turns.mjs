@@ -18,7 +18,7 @@ export const experiments = Object.fromEntries(
     const patch = turns(n);
     return [
       [`t${n}-control`, {patch, mod: {}}],
-      ...['longshot', 'hail', 'grapple'].map((a) => [`t${n}-no-${a}`, {patch, mod: {ban: [a]}}]),
+      ...['snapShot', 'hail', 'grapple'].map((a) => [`t${n}-no-${a}`, {patch, mod: {ban: [a]}}]),
       ...['sunlight', 'gale'].flatMap((u) => [
         [`t${n}-${u}-no-${u}`, {patch: withUpgrade(n, u), mod: {ban: [u]}}],
         [`t${n}-${u}-no-hail`, {patch: withUpgrade(n, u), mod: {ban: ['hail']}}],

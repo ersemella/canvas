@@ -8,7 +8,7 @@
 // code (history.md), and their experiments with them.
 const BASE = {
   bokh: ['grapple', 'throw', 'hold'],
-  mangudai: ['longshot', 'hold'],
+  mangudai: ['snapShot', 'hold'],
   storm: ['hail', 'hold'],
 };
 /** `hero`'s starting kit with `ability` before Hold, on both sides. */

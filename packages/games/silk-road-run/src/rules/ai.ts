@@ -55,7 +55,7 @@ function turnValue(u: Unit): number {
   return u.hero === CAMEL ? AI.perCamelHex : Math.max(1, u.power);
 }
 
-/** A unit whose attack reaches beyond its neighbours (Longshot, Hail, Gale, Volley, Cleave). */
+/** A unit whose attack reaches beyond its neighbours (Snap Shot, Hail, Gale, Volley, Cleave). */
 function attacksFromAfar(u: Unit): boolean {
   const kit = kitOf(u);
   return (
@@ -138,7 +138,7 @@ function weakenLoss(state: FightState, u: Unit): number {
 /**
  * The enemies standing where `u` could hit them from where it is, roughly:
  * next to it for melee, on hail's ring for the Storm Caller, on one of
- * Longshot's lines, or of Skirmish's from a space next to it (ignoring what
+ * Snap Shot's lines, or of Skirmish's from a space next to it (ignoring what
  * blocks them), for the Horse Archer.
  */
 function strikable(state: FightState, u: Unit): Unit[] {
@@ -154,7 +154,7 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
     const inLine = dq === 0 || dr === 0 || dq === -dr;
-    if (has('longshot') && inLine) return true;
+    if (has('snapShot') && inLine) return true;
     // Cleave: any space of its lines.
     if (
       has('cleave') &&
@@ -906,9 +906,9 @@ function quarryGap(state: FightState, me: Unit, hunting: boolean): number {
 /**
  * How far `me` on `at` is from shooting `target` (an archer, `isRanged`):
  * 0 with a clear shot down a lane, 1 on one of its lines with a unit in
- * the way, otherwise the steps onto the nearest of its lines. Longshot has
+ * the way, otherwise the steps onto the nearest of its lines. Snap Shot has
  * no range, so closing in by spaces only walked the Horse Archer into melee
- * once its move became Longshot's shape (balance.md, "The Horse Archer's AI").
+ * once its move became Snap Shot's shape (balance.md, "The Horse Archer's AI").
  */
 function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
   const dq = at.q - target.hex!.q;

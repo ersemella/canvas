@@ -55,7 +55,7 @@ export interface HighlightStyle {
   dash?: number[];
 }
 /**
- * Targeting is all one light blue (your side's light lapis) (Longshot's lanes'), stronger the closer it is
+ * Targeting is all one light blue (your side's light lapis) (Snap Shot's lanes'), stronger the closer it is
  * to what's picked, so it never reads as either side's tint.
  */
 /** `PALETTE.lapisLight`, as channels for the highlights' opacities. */

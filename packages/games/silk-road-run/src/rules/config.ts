@@ -67,7 +67,7 @@ export interface HeroStats {
   /** Spaces a move may cover; RULES.movementCap if unset. */
   moveCap?: number;
   /**
-   * Moves the way Longshot flies: any number of spaces straight along one of
+   * Moves the way Snap Shot flies: any number of spaces straight along one of
    * the six directions, up to the first unit, yurts or the map's edge (the
    * Horse Archer; owner, 2026-10-25). Hail still ends the move where it enters.
    */
@@ -107,7 +107,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 2,
-    abilities: ['longshot', 'hold'],
+    abilities: ['snapShot', 'hold'],
     movesStraight: true,
     // Skirmish in place of Volley (owner, 2026-10-23; balance.md), an
     // upgrade since 2026-10-24 (owner). Volley and Feigned Retreat
@@ -202,7 +202,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
    * 2026-10-22). It acts last in the starting order, at slot 12 (owner,
-   * 2026-10-23). Defence 9 (health 20, ten Longshot hits) is a PLACEHOLDER for
+   * 2026-10-23). Defence 9 (health 20, ten Snap Shot hits) is a PLACEHOLDER for
    * the owner's "very high health". Speed 0, so an action cost of 12
    * (owner, 2026-10-23).
    */
@@ -254,7 +254,7 @@ export const ABILITY = {
    * Six straight lanes with no range limit (owner, 2026-10-20): the arrow
    * flies until it hits a unit, a yurt or the map's edge.
    */
-  longshot: {range: Infinity},
+  snapShot: {range: Infinity},
   /**
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
    * ring, so the spaces next to it and 3 or more away are safe; within 3
@@ -281,13 +281,13 @@ export const ABILITY = {
   sunlight: {range: 3, empower: 2, self: true as boolean, melts: true as boolean},
   /**
    * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
-   * space next to the Horse Archer, then Longshot's shot from there, charged:
+   * space next to the Horse Archer, then Snap Shot's shot from there, charged:
    * the Horse Archer's card is pushed `charge` of its action cost on, rounded
    * (half: 4 slots for the Horse Archer's 8), greyed while it charges; when it
    * comes back the arrow flies down the lane it was aimed along and the
    * first unit in it then takes the Horse Archer's power, with no turn for the
    * Horse Archer, and its card goes its action cost on to its next turn. At 0
-   * it shoots at once (measured: a better Longshot rather than a second
+   * it shoots at once (measured: a better Snap Shot rather than a second
    * ability; balance.md).
    */
   skirmish: {charge: 0.5 as number},

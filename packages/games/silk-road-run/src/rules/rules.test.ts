@@ -228,7 +228,7 @@ describe('the track', () => {
   it('the second abilities are upgrades, not in a starting kit', () => {
     expect(HEROES.bokh.abilities).toEqual(['grapple', 'hold']);
     expect(HEROES.bokh.upgrades).toEqual(['haul', 'shove']);
-    expect(HEROES.mangudai.abilities).toEqual(['longshot', 'hold']);
+    expect(HEROES.mangudai.abilities).toEqual(['snapShot', 'hold']);
     expect(HEROES.mangudai.upgrades).toEqual(['skirmish', 'volley', 'feignedRetreat']);
     expect(HEROES.storm.abilities).toEqual(['hail', 'hold']);
     expect(HEROES.storm.upgrades).toEqual(['sunlight', 'gale']);
@@ -257,7 +257,7 @@ describe('the track', () => {
     });
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
-    // The ally stands between: Longshot's lane stops at it.
+    // The ally stands between: Snap Shot's lane stops at it.
     expect(arrowLanes(s, mapOf(s), m.hex!).some((l) => l.hit?.side === 'enemy')).toBe(false);
     const options = ABILITIES.skirmish.targets(s, mapOf(s), m, m.hex!);
     // Every option steps to a free space next to it, with its target first in a lane from there.
@@ -915,7 +915,7 @@ describe('stats and damage', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
     const m = unit(s, 'p-mangudai');
     s.awaiting = m.id;
-    applyTurn(s, m, {action: {ability: 'longshot', target: {hex: at(4, 3)}}});
+    applyTurn(s, m, {action: {ability: 'snapShot', target: {hex: at(4, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - m.power);
     expect(m.power).toBe(2);
   });
@@ -937,7 +937,7 @@ describe('stats and damage', () => {
     empower(ctx, m, 1);
     m.slot = 1;
     expect(advanceToDecision(s)!.id).toBe('p-mangudai');
-    applyTurn(s, m, {action: {ability: 'longshot', target: {hex: at(4, 3)}}});
+    applyTurn(s, m, {action: {ability: 'snapShot', target: {hex: at(4, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 3);
     expect(m.empower).toBeUndefined();
   });
@@ -1066,26 +1066,26 @@ describe('stats and damage', () => {
 });
 
 describe('abilities', () => {
-  it('shows every Longshot lane to the map’s edge, stopping at the first unit or an obstacle', () => {
+  it('shows every Snap Shot lane to the map’s edge, stopping at the first unit or an obstacle', () => {
     const s = setup({'p-mangudai': at(-1, 3), 'e-bokh': at(3, 6)});
     const from = at(-1, 3);
     const east = (l: ReturnType<typeof arrowLanes>) => l[0]!;
-    // Nothing in the way: Longshot has no range limit, so the lane runs to the edge.
+    // Nothing in the way: Snap Shot has no range limit, so the lane runs to the edge.
     let lanes = arrowLanes(s, mapOf(s), from);
     expect(lanes).toHaveLength(6);
     expect(east(lanes)).toEqual({hexes: [0, 1, 2, 3, 4, 5, 6, 7].map((c) => at(c, 3))});
-    expect(ABILITIES.longshot.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([]);
-    // A unit in it: the lane ends there, and that unit is Longshot's target.
+    expect(ABILITIES.snapShot.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([]);
+    // A unit in it: the lane ends there, and that unit is Snap Shot's target.
     unit(s, 'e-bokh').hex = at(2, 3);
     lanes = arrowLanes(s, mapOf(s), from);
     expect(east(lanes).hexes).toEqual([at(0, 3), at(1, 3), at(2, 3)]);
     expect(east(lanes).hit!.id).toBe('e-bokh');
-    expect(ABILITIES.longshot.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([
+    expect(ABILITIES.snapShot.targets(s, mapOf(s), unit(s, 'p-mangudai'), from)).toEqual([
       {hex: at(2, 3)},
     ]);
   });
 
-  it('Longshot hits the first unit on its line, an ally included, never past it', () => {
+  it('Snap Shot hits the first unit on its line, an ally included, never past it', () => {
     const s = setup({
       'p-mangudai': at(0, 0),
       'p-bokh': at(1, 0),
@@ -1093,7 +1093,7 @@ describe('abilities', () => {
       'e-storm': at(0, 6),
     });
     const m = unit(s, 'p-mangudai');
-    const targets = ABILITIES.longshot.targets(s, mapOf(s), m, m.hex!);
+    const targets = ABILITIES.snapShot.targets(s, mapOf(s), m, m.hex!);
     expect(
       targets.some(
         (t) => t.hex!.q === unit(s, 'e-bokh').hex!.q && t.hex!.r === unit(s, 'e-bokh').hex!.r
@@ -1105,7 +1105,7 @@ describe('abilities', () => {
       )
     ).toBe(true);
     const hp = unit(s, 'p-bokh').hp;
-    applyTurn(s, m, {action: {ability: 'longshot', target: {hex: at(1, 0)}}});
+    applyTurn(s, m, {action: {ability: 'snapShot', target: {hex: at(1, 0)}}});
     expect(unit(s, 'p-bokh').hp).toBeLessThan(hp);
   });
 
@@ -2075,7 +2075,7 @@ describe('the Vanguard and the Alchemist', () => {
     weaken({state: s, map: mapOf(s), slot: 0}, m, 1);
     m.slot = 1;
     expect(advanceToDecision(s)!.id).toBe('p-mangudai');
-    applyTurn(s, m, {action: {ability: 'longshot', target: {hex: at(4, 3)}}});
+    applyTurn(s, m, {action: {ability: 'snapShot', target: {hex: at(4, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - (m.power - 1));
     expect(m.weaken).toBeUndefined();
   });
@@ -2260,7 +2260,7 @@ describe('the caravan’s camel', () => {
     archer.slot = 50;
     advanceToDecision(shot);
     const input = chooseAiTurn(shot, archer);
-    expect(input.action.ability).toBe('longshot');
+    expect(input.action.ability).toBe('snapShot');
     expect(simulate(shot, archer.id, input)!.phase).toBe('lost');
   });
 });
@@ -2268,7 +2268,7 @@ describe('the caravan’s camel', () => {
 describe('previews, the AI and the run', () => {
   it('rejects walking plus an ability without mutating the fight', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3)});
-    const shot = {ability: 'longshot' as const, target: {hex: at(4, 3)}};
+    const shot = {ability: 'snapShot' as const, target: {hex: at(4, 3)}};
     const before = JSON.stringify(s);
     const input: TurnInput = {action: shot, move: [at(0, 3)]};
     expect(previewTurn(s, 'p-mangudai', input)).toBeNull();
@@ -2884,7 +2884,7 @@ describe('previews, the AI and the run', () => {
     expect(JSON.stringify(run)).toBe(before);
     expect(
       simulate(run.fight, actingUnit(run.fight)!.id, {
-        action: {ability: 'longshot', target: {hex: {q: 99, r: 99}}},
+        action: {ability: 'snapShot', target: {hex: {q: 99, r: 99}}},
       })
     ).toBeNull();
     expect(nextCard(run.fight)).toBeDefined();
@@ -2919,7 +2919,7 @@ describe('events for playback', () => {
     s.events = [];
     const target = unit(s, 'e-bokh');
     const before = target.hp;
-    applyTurn(s, unit(s, 'p-mangudai'), {action: {ability: 'longshot', target: {hex: at(4, 3)}}});
+    applyTurn(s, unit(s, 'p-mangudai'), {action: {ability: 'snapShot', target: {hex: at(4, 3)}}});
     expect(s.events.map((e) => e.kind)).toEqual(['action', 'damage']);
     expect(s.events[1]).toMatchObject({unitId: 'e-bokh', amount: before - target.hp});
     expect(s.events[1]!.after.units.find((u) => u.id === 'e-bokh')!.hp).toBe(target.hp);

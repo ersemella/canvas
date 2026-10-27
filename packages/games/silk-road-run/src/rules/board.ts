@@ -153,9 +153,9 @@ export function hasRoomForAbility(kit: AbilityId[]): boolean {
   return abilityCount(kit) < RULES.maxAbilities;
 }
 
-/** A unit with a ranged attack (Longshot). */
+/** A unit with a ranged attack (Snap Shot). */
 export function isRanged(unit: Unit): boolean {
-  return kitOf(unit).includes('longshot');
+  return kitOf(unit).includes('snapShot');
 }
 
 export function hostile(a: Unit, b: Unit): boolean {
@@ -449,7 +449,7 @@ export function lineOfFire(
 
 /**
  * The first unit an arrow flying from `from` along hex direction `dir`
- * hits, stopped by yurts and the map's edge (Longshot's lane); `ignore`
+ * hits, stopped by yurts and the map's edge (Snap Shot's lane); `ignore`
  * isn't in the way (the archer itself).
  */
 export function firstInLane(

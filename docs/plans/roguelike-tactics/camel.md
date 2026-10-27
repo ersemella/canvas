@@ -83,7 +83,7 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
   after turn means the player has to deal with the Grappler (owner).
 - A Stunned camel (an enemy Grappler's Grapple) or an Immobilized
   one (hail) waits; its card still goes a round on.
-- **Friendly fire applies** (owner, 6.7): the party's own Bow and Hail
+- **Friendly fire applies** (owner, 6.7): the party's own Snap Shot and Hail
   can hit it. As a unit, it
   blocks lines of fire for both sides, so it can shield an archer, and it
   takes the arrow when it does.

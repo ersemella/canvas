@@ -1,7 +1,7 @@
 /**
  * Abilities' effects as a turn plays back (Sunlight's beam, Gale's gusts,
  * a Volley's arrows falling, Shove's blow, Haul's rope, Cleave's swing,
- * Swift Strike's thrust; Longshot's and
+ * Swift Strike's thrust; Snap Shot's and
  * Feigned Retreat's arrows are drawn by the playback).
  */
 import type {Hex} from '@canvas/engine';

@@ -29,7 +29,7 @@ const variants = {
 const heroes = ['bokh', 'mangudai', 'storm'];
 export const experiments = Object.fromEntries(
   Object.entries(variants).flatMap(([name, patch]) => [
-    [`${name}-no-longshot`, {patch, mod: {ban: ['longshot']}}],
+    [`${name}-no-snapShot`, {patch, mod: {ban: ['snapShot']}}],
     [`${name}-vs-all-three`, {patch, enemies: heroes}],
   ])
 );

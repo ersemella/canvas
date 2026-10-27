@@ -63,7 +63,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
     const lanes = (oq: number, or: number, d: number) => {
       for (const [dq, dr] of AXIAL) {
-        for (let i = 1; i <= ABILITY.longshot.range; i++) {
+        for (let i = 1; i <= ABILITY.snapShot.range; i++) {
           const k = id(oq + dq * i, or + dr * i);
           const tile = board.get(k);
           if (tile === undefined || blocks(tile)) break;
@@ -72,7 +72,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         }
       }
     };
-    if (has('longshot')) lanes(fq, fr, power);
+    if (has('snapShot')) lanes(fq, fr, power);
     // Cleave: its line of `reach` each way.
     if (has('cleave'))
       for (const area of cleaveAreas(map, e.hex))
@@ -95,7 +95,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
             mark(hexes, k, power * AI.dodgeShare);
         }
     }
-    // Skirmish: Longshot's lanes from each free space next to it, unless it
+    // Skirmish: Snap Shot's lanes from each free space next to it, unless it
     // can't step, at the dodge share once charged.
     if (has('skirmish') && !isImmobilized(e)) {
       const d = ABILITY.skirmish.charge > 0 ? power * AI.dodgeShare : power;

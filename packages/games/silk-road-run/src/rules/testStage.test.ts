@@ -53,7 +53,7 @@ describe('the test stage', () => {
     const [archer, wolf, , caller, caller2] = s.units;
     expect(archer).toMatchObject({speed: 5, power: 3, defence: HEROES.mangudai.defence});
     expect(abilitiesOf(archer!).map((a) => a.id)).toEqual(['skirmish', 'hold']);
-    expect(unusableReason(archer!, ABILITIES.longshot)).not.toBeNull();
+    expect(unusableReason(archer!, ABILITIES.snapShot)).not.toBeNull();
     expect(wolf!.controller).toBe('human');
     expect(caller).toMatchObject({defence: 0, maxHp: 2, hp: 2});
     expect(abilitiesOf(caller!).map((a) => a.id)).toEqual(['sunlight', 'bite', 'hold']);

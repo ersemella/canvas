@@ -1,6 +1,6 @@
 /**
  * What the turn being planned draws over the board: highlighted hexes,
- * a move's path, an ability's range, Longshot's lanes and drawn arrows in
+ * a move's path, an ability's range, Snap Shot's lanes and drawn arrows in
  * the air, Throw's arc, charging areas, and Temee's next step.
  */
 import {hexCorners, hexKey, pixelToHex} from '@canvas/engine';
@@ -104,7 +104,7 @@ export function drawRangeOutline(ctx: CanvasRenderingContext2D, hexes: Hex[]): v
 
 /**
  * A targeting arrow from `from` towards `to`, its head stopping at `to`'s
- * hex and pointing at it: Longshot's lanes, and (`dotted`) a drawn arrow in
+ * hex and pointing at it: Snap Shot's lanes, and (`dotted`) a drawn arrow in
  * the air.
  */
 export function drawLaneArrow(
@@ -144,7 +144,7 @@ export function drawLaneArrow(
 }
 
 /**
- * Longshot's lanes from `from`: to a unit it may target, a light lapis
+ * Snap Shot's lanes from `from`: to a unit it may target, a light lapis
  * arrow pointing at it; along any other lane (blocked by an ally, a yurt
  * or the edge), a faint dashed line to where the arrow would stop, so it's
  * plain why that enemy can't be shot.
