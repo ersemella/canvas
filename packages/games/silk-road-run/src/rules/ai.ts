@@ -25,6 +25,7 @@ import {
   elixirAmount,
   elixirCaught,
   elixirHeals,
+  eyeHeal,
   eyeWeakens,
   grappling,
   unusableReason,
@@ -381,7 +382,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   if (ability === 'eye') {
     const healed = unitAt(state, target!.hex!)!;
     let value =
-      Math.min(healOf(unit, state), healed.maxHp - healed.hp) *
+      Math.min(eyeHeal(unit, state), healed.maxHp - healed.hp) *
       (healed.hero === CAMEL ? AI.camelHealthWeight : 1);
     for (const u of eyeWeakens(state, target!.hex!))
       if (!u.weaken) value += sided(u, 1 + weakenGuess(state, u, ABILITY.eye.weaken));

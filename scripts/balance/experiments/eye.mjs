@@ -38,3 +38,27 @@ for (const [core, patch] of Object.entries(cores)) {
   experiments[`${core}:vs-mangudai+storm+wolf`] = {patch, enemies: ['mangudai', 'storm', 'wolf']};
   experiments[`${core}:vs-all-three`] = {patch, enemies: steppe};
 }
+// Asked for (2026-10-27): Eye healing 2 (`ABILITY.eye.heal` 1 over power 1),
+// Weakening 2, and both, each head to head against Hail, its worth, and
+// each Chinese hero in the Storm Caller's seat.
+const tunings = {
+  heal2: (c) => {
+    c.ABILITY.eye.heal = 1;
+  },
+  weaken2: (c) => {
+    c.ABILITY.eye.weaken = 2;
+  },
+  'heal2+weaken2': (c) => {
+    c.ABILITY.eye.heal = 1;
+    c.ABILITY.eye.weaken = 2;
+  },
+};
+for (const [name, patch] of Object.entries(tunings)) {
+  experiments[`${name}:hail-vs-eye`] = {patch, mod: {kits: {storm: ['hail', 'hold']}}};
+  experiments[`${name}:no-eye`] = {patch, mod: {ban: ['eye']}};
+  for (const hero of china)
+    experiments[`${name}:${hero}-for-storm`] = {
+      patch,
+      mod: {party: steppe.map((h) => (h === 'storm' ? hero : h))},
+    };
+}

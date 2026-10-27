@@ -295,7 +295,7 @@ const eye: AbilityDef = {
   minRange: ABILITY.eye.range,
   radius: 1,
   summary: (user) =>
-    `An ally exactly ${ABILITY.eye.range} away, or yourself: it heals ${healOf(user)}; every unit next to it is Weakened ${ABILITY.eye.weaken} until the end of its next turn.`,
+    `An ally exactly ${ABILITY.eye.range} away, or yourself: it heals ${eyeHeal(user)}; every unit next to it is Weakened ${ABILITY.eye.weaken} until the end of its next turn.`,
   targets: (state, map, user, from) => [
     {hex: {...from}},
     ...hexesWithin(map, from, ABILITY.eye.range, (h) => {
@@ -306,10 +306,14 @@ const eye: AbilityDef = {
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} opens the eye of the storm over ${unitName(u)}.`);
-    heal(ctx, u, healOf(user, ctx.state));
+    heal(ctx, u, eyeHeal(user, ctx.state));
     for (const n of eyeWeakens(ctx.state, u.hex!)) weaken(ctx, n, ABILITY.eye.weaken);
   },
 };
+
+/** What Eye of the Storm heals: `healOf`, and `ABILITY.eye.heal` more (measuring). */
+export const eyeHeal = (user: Unit, state?: FightState): number =>
+  healOf(user, state) + ABILITY.eye.heal;
 
 /** The units Eye of the Storm on `centre` Weakens: those next to it that hit. */
 export function eyeWeakens(state: FightState, centre: Hex): Unit[] {

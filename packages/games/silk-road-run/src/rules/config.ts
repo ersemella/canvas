@@ -255,9 +255,10 @@ export const ABILITY = {
    * heals the Storm Caller's power (with its Empower and Weaken, as a hit's
    * damage); then every unit next to it, of either side, is Weakened
    * `weaken` until the end of its next turn. A ring, as Hail's, so the
-   * Storm Caller is never next to the ally it heals.
+   * Storm Caller is never next to the ally it heals. `heal`: added to the
+   * power it heals, for measuring (0 as built).
    */
-  eye: {range: 2, weaken: 1 as number},
+  eye: {range: 2, weaken: 1 as number, heal: 0 as number},
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Empowered, is Empowered `empower` until the end of

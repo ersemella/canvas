@@ -11,3 +11,10 @@ export const experiments = {
     },
   },
 };
+experiments['heal2+weaken2'] = {
+  party: steppe,
+  patch: ({ABILITY}) => {
+    ABILITY.eye.heal = 1;
+    ABILITY.eye.weaken = 2;
+  },
+};
