@@ -1516,6 +1516,34 @@ describe('abilities', () => {
     expect(unit(s, 'e-bokh').weaken).toBe(1);
   });
 
+  it('with `ABILITY.eye.immobilize`, every unit next to its target, the camel too, is Immobilized through its next turn', () => {
+    const eye = ABILITY.eye as {immobilize: boolean; weaken: number};
+    const saved = {...ABILITY.eye};
+    onTestFinished(() => void Object.assign(eye, saved));
+    eye.immobilize = true;
+    eye.weaken = 0;
+    const s = eyeSetup();
+    s.units.forEach((u) => (u.controller = 'human'));
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'p-mangudai');
+    expect(ABILITIES.eye.summary(storm)).toBe(
+      'An ally exactly 2 away, or yourself: it heals 1; every unit next to it is Immobilized until the end of its next turn.'
+    );
+    applyTurn(s, storm, {action: {ability: 'eye', target: {hex: m.hex!}}});
+    const e = unit(s, 'e-bokh');
+    for (const id of ['e-bokh', 'p-bokh', 'p-camel'])
+      expect(unit(s, id).statuses).toEqual([{kind: 'immobilized', eye: true}]);
+    expect(e.weaken).toBeUndefined();
+    expect(m.statuses).toEqual([]);
+    // Its next turn it can't walk; at its end, it is free.
+    for (const u of s.units) if (u !== e && u.alive) u.slot = 900;
+    e.slot = s.currentSlot + 1;
+    expect(advanceToDecision(s)!.id).toBe('e-bokh');
+    expect(movementCap(e)).toBe(0);
+    applyTurn(s, e, {action: {ability: 'hold'}});
+    expect(e.statuses).toEqual([]);
+  });
+
   it('a heal adds its healer’s Empower and loses its Weaken, as a hit’s damage does', () => {
     const s = eyeSetup();
     const storm = unit(s, 'p-storm');

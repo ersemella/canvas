@@ -25,6 +25,7 @@ import {
   elixirAmount,
   elixirCaught,
   elixirHeals,
+  eyeCaught,
   eyeHeal,
   eyeWeakens,
   grappling,
@@ -168,6 +169,11 @@ function strikable(state: FightState, u: Unit): Unit[] {
 function statusCost(u: Unit): number {
   if (isStunned(u)) return turnValue(u) * AI.stunnedShare;
   if (!isImmobilized(u)) return 0;
+  return immobilizeGuess(u);
+}
+
+/** What Immobilized costs `u`: all of the camel's turn, which only walks; a share of anyone else's. */
+function immobilizeGuess(u: Unit): number {
   if (u.hero === CAMEL) return turnValue(u);
   const share = attacksFromAfar(u) ? AI.immobilizedShare.ranged : AI.immobilizedShare.melee;
   return turnValue(u) * share;
@@ -384,8 +390,13 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     let value =
       Math.min(eyeHeal(unit, state), healed.maxHp - healed.hp) *
       (healed.hero === CAMEL ? AI.camelHealthWeight : 1);
-    for (const u of eyeWeakens(state, target!.hex!))
-      if (!u.weaken) value += sided(u, 1 + weakenGuess(state, u, ABILITY.eye.weaken));
+    if (ABILITY.eye.weaken > 0)
+      for (const u of eyeWeakens(state, target!.hex!))
+        if (!u.weaken) value += sided(u, 1 + weakenGuess(state, u, ABILITY.eye.weaken));
+    // `immobilize`: the share of a turn each loses, as hail's Immobilize is weighed.
+    if (ABILITY.eye.immobilize)
+      for (const u of eyeCaught(state, target!.hex!))
+        if (!isImmobilized(u)) value += sided(u, immobilizeGuess(u));
     return closing + value;
   }
   const def = ABILITIES[ability];

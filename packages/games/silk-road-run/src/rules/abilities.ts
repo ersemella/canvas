@@ -294,8 +294,13 @@ const eye: AbilityDef = {
   range: ABILITY.eye.range,
   minRange: ABILITY.eye.range,
   radius: 1,
-  summary: (user) =>
-    `An ally exactly ${ABILITY.eye.range} away, or yourself: it heals ${eyeHeal(user)}; every unit next to it is Weakened ${ABILITY.eye.weaken} until the end of its next turn.`,
+  summary(user) {
+    const {weaken: weakens, immobilize} = ABILITY.eye;
+    const storm = [weakens ? `Weakened ${weakens}` : '', immobilize ? 'Immobilized' : '']
+      .filter(Boolean)
+      .join(' and ');
+    return `An ally exactly ${ABILITY.eye.range} away, or yourself: it heals ${eyeHeal(user)}${storm ? `; every unit next to it is ${storm} until the end of its next turn` : ''}.`;
+  },
   targets: (state, map, user, from) => [
     {hex: {...from}},
     ...hexesWithin(map, from, ABILITY.eye.range, (h) => {
@@ -307,7 +312,14 @@ const eye: AbilityDef = {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} opens the eye of the storm over ${unitName(u)}.`);
     heal(ctx, u, eyeHeal(user, ctx.state));
-    for (const n of eyeWeakens(ctx.state, u.hex!)) weaken(ctx, n, ABILITY.eye.weaken);
+    if (ABILITY.eye.weaken > 0)
+      for (const n of eyeWeakens(ctx.state, u.hex!)) weaken(ctx, n, ABILITY.eye.weaken);
+    if (ABILITY.eye.immobilize)
+      for (const n of eyeCaught(ctx.state, u.hex!))
+        if (!n.statuses.some((s) => s.eye)) {
+          n.statuses.push({kind: 'immobilized', eye: true});
+          log(ctx, `${unitName(n)} is Immobilized.`);
+        }
   },
 };
 
@@ -315,15 +327,19 @@ const eye: AbilityDef = {
 export const eyeHeal = (user: Unit, state?: FightState): number =>
   healOf(user, state) + ABILITY.eye.heal;
 
-/** The units Eye of the Storm on `centre` Weakens: those next to it that hit. */
-export function eyeWeakens(state: FightState, centre: Hex): Unit[] {
+/** The units next to Eye of the Storm's `centre`, in its storm. */
+export function eyeCaught(state: FightState, centre: Hex): Unit[] {
   return sortByHex(
     hexNeighbors(centre)
       .map((h) => unitAt(state, h))
-      .filter((u): u is Unit => u !== undefined && u.power > 0),
+      .filter((u): u is Unit => u !== undefined),
     (u) => u.hex!
   );
 }
+
+/** The units Eye of the Storm on `centre` Weakens: those in its storm that hit. */
+export const eyeWeakens = (state: FightState, centre: Hex): Unit[] =>
+  eyeCaught(state, centre).filter((u) => u.power > 0);
 
 /**
  * Sunlight (owner, 2026-10-23): a space within `ABILITY.sunlight.range`.

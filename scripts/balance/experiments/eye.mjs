@@ -62,3 +62,29 @@ for (const [name, patch] of Object.entries(tunings)) {
       mod: {party: steppe.map((h) => (h === 'storm' ? hero : h))},
     };
 }
+// Asked for (2026-10-27): the storm round Eye's target Immobilizing every
+// unit in it until the end of its next turn (`ABILITY.eye.immobilize`), in
+// place of the Weaken, beside it, and with heal 2.
+const immobilizing = {
+  imm: (c) => {
+    c.ABILITY.eye.immobilize = true;
+    c.ABILITY.eye.weaken = 0;
+  },
+  'imm+weaken1': (c) => {
+    c.ABILITY.eye.immobilize = true;
+  },
+  'imm+heal2': (c) => {
+    c.ABILITY.eye.immobilize = true;
+    c.ABILITY.eye.weaken = 0;
+    c.ABILITY.eye.heal = 1;
+  },
+};
+for (const [name, patch] of Object.entries(immobilizing)) {
+  experiments[`${name}:hail-vs-eye`] = {patch, mod: {kits: {storm: ['hail', 'hold']}}};
+  experiments[`${name}:no-eye`] = {patch, mod: {ban: ['eye']}};
+  for (const hero of china)
+    experiments[`${name}:${hero}-for-storm`] = {
+      patch,
+      mod: {party: steppe.map((h) => (h === 'storm' ? hero : h))},
+    };
+}

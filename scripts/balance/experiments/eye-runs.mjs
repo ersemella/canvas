@@ -18,3 +18,16 @@ experiments['heal2+weaken2'] = {
     ABILITY.eye.weaken = 2;
   },
 };
+experiments.imm = {
+  party: steppe,
+  patch: ({ABILITY}) => {
+    ABILITY.eye.immobilize = true;
+    ABILITY.eye.weaken = 0;
+  },
+};
+experiments['imm+weaken1'] = {
+  party: steppe,
+  patch: ({ABILITY}) => {
+    ABILITY.eye.immobilize = true;
+  },
+};

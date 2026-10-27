@@ -301,8 +301,12 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
   }
 }
 
-/** At the end of a unit's turn: an Empower or Weaken whose turn this was ends. */
+/**
+ * At the end of a unit's turn: an Empower or Weaken whose turn this was
+ * ends, and an Immobilize from Eye of the Storm.
+ */
 export function endTurnEffects(unit: Unit): void {
+  if (unit.statuses.some((s) => s.eye)) unit.statuses = unit.statuses.filter((s) => !s.eye);
   if (unit.empowerStarted) {
     delete unit.empower;
     delete unit.empowerStarted;

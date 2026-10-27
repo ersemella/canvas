@@ -112,6 +112,8 @@ export interface Status {
   grapple?: {champion: string; target: string};
   /** From Last Stand (19.8): Stunned for the unit's next turn, ending with it. */
   lastStand?: boolean;
+  /** From Eye of the Storm (`ABILITY.eye.immobilize`): Immobilized for the unit's next turn, ending with it. */
+  eye?: boolean;
 }
 
 /**
