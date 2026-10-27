@@ -2688,6 +2688,37 @@ both 98.5, 91.9, 69.6, 94.4, 79.8, 62.1.
 - Not changed: built on the branch `eye-of-the-storm`, Hail still the
   core on `main`; the numbers are the owner's.
 
+#### Eye of the Storm Immobilizing its storm (2026-10-27)
+
+Asked for next: the storm round Eye's target Immobilizing every unit in
+it, either side and the camel too, until the end of its next turn
+(`ABILITY.eye.immobilize`), in place of the Weaken (*Imm*), beside Weaken
+1 (*Imm + Weaken 1*), and with heal 2 in place of the Weaken (*Imm + heal
+2*). The same experiments, files and seeds as above.
+
+| | Hail (built) | Eye 1/1 | Imm | Imm + Weaken 1 | Imm + heal 2 |
+|---|---:|---:|---:|---:|---:|
+| Hail against Eye, head to head | | 66.2% | 64.7% | 58.8% | 57.3% |
+| Side without the core ability | 28.6% | 38.3% | 42.1% | 36% | 37% |
+| Swordsman for the Storm Caller | 62.3% | 74.5% | 74.4% | 70.1% | 74.8% |
+| Vanguard for the Storm Caller | 61.5% | 71.7% | 71.9% | 67.5% | 67.7% |
+| Alchemist for the Storm Caller | 55% | 66.4% | 69.8% | 63.7% | 64.4% |
+| Whole runs won (both sides' Storm Callers) | 11.5% | 17% | 9% | 15.5% | |
+
+Whole runs by stage: Imm 97.5, 81, 46.2, 84.9, 69.4, 41.9; Imm + Weaken 1
+97, 83, 52.8, 85.9, 79.5, 53.4.
+
+- **Immobilizing in place of the Weaken is no stronger** in the seat rows
+  and worth less to a side (42.1% without it): a melee unit held next to
+  an ally still hits it, and the storm holds the healed ally's own
+  neighbours, allies included, as often as its enemies.
+- **Immobilize with Weaken 1 is the strongest Eye measured head to head**
+  (Hail 58.8%) and as a side's worth (36%), but the seat rows stay 6–9
+  points behind Hail's.
+- **An enemy Storm Caller holding the party's walkers makes runs harder**:
+  Imm alone 9% of runs, under Hail's 11.5%; with Weaken 1 15.5%.
+- Not changed: `immobilize` off as built.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
