@@ -3066,8 +3066,8 @@ same file, fights and seeds.
   fight from 4: the ally can fall first, and the AI gives it less).
 - **Fearless spacing isn't worth much here**: the China heroes are melee
   and already walk in (the caution weighs only the hits before its next
-  turn); what holds them back is the Outrider's arrows and the hail on the
-  way, which an Immortal walk-in shrugs off for one turn only. The enemy's
+  turn); most likely what holds them back is the Outrider’s arrows and the hail on the
+  way (not measured), which an Immortal walk-in shrugs off for one turn only. The enemy’s
   search still strikes whoever isn't Immortal.
 - Not changed: `immortalWhen` stays `now`, `immortal` off.
 
