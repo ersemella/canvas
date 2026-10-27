@@ -3105,6 +3105,39 @@ Immortal".
   worth far more than one on any other hero.
 - Not changed: the Elixir stays as built; the numbers are the owner's.
 
+### Cleave as a line of 2 six ways, on today's rules (2026-10-27)
+
+Asked for: Cleave as simply a line of 2 spaces straight out, in place of
+the built shape (a line of 2 up or down, or a cone of 3 to either side).
+The measuring switch already has it, `ABILITY.cleave.shape: 'lines'` (a
+line of `reach` 2 in each of the six directions, stopped by yurts, not by
+units; the shape before 2026-10-26): no rules change. Rerun from "Cleave's
+shape" on the rules since (the collision rule, the Elixir as built).
+`experiments/cleave-lines.mjs`, **1,600 fights each** (about ±1.25
+points), seeds from 1000, Delay 8 and Haste 3 as built. *China*: the China
+party against the Steppe party. *Seat*: the Vanguard in the Grappler's
+seat against the three Steppe heroes.
+
+| Cleave | China vs Steppe | Vanguard for the Grappler | Cleave's share of the Vanguard's turns (China) | Units hit a fight, enemy / ally (China) | Cleave's damage a fight (China) | Vanguard survives (China) |
+|---|---:|---:|---:|---:|---:|---:|
+| built (line up or down, cone to the sides) | 44.8% | 47.1% | 40.3% | 3.17 / 0.15 | 7.7 | 47.6% |
+| line of 2 six ways | **48.4%** | **52.5%** | 43.6% | 3.32 / 0.10 | 8.1 | 53.1% |
+
+- **The line six ways is worth 3.5–5.5 points to the Vanguard** (about
+  2–3 standard errors of the difference): China within 2 points of even,
+  the Vanguard a little above the Grappler in its seat. Less than on
+  2026-10-26 for China (7.4 then, 52.6% to 60%), about the same in the
+  seat (4.5 then). No unfinished fights.
+- **It swings more often and hits allies less**: Cleave on 43.6% of the
+  Vanguard's turns (40.3%), a few more enemies a fight, a third fewer
+  allies (0.10 from 0.15) since no cone reaches round beside it. Damage
+  barely moves (8.1 from 7.7); the Vanguard survives 5 points more (53.1%
+  from 47.6%), not attributed.
+- At 52.5% in the seat it sits just over the 50% line; Delay 7 with the
+  line would likely bring it back (not run; Delay 7 cost China about 3.5 points
+  in "The Vanguard's buffs other than speed").
+- Not changed: the shape is the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
