@@ -3550,6 +3550,52 @@ Archer before it (`archer.mjs`, `archer-tuning.mjs`, `archer-magus.mjs`,
 `roster-nine.mjs`, `longshot-bracket.mjs`) set the switches they were
 measured with.
 
+### Omen (2026-10-27)
+
+Asked for: the Magus's ability on **one** unit, its side choosing the
+effect as the Elixir's does (an ally acts next, an enemy just after the
+Magus's next turn), with no guard; and whether it rewards play.
+`experiments/omen.mjs`, 800 fights each, `ABILITY.conjunction.mode:
+'omen'` (off as built) and `.rider` (the ally Empowered, the enemy
+Weakened). In the support seat of a Steppe and a China mirror:
+
+| Variant | Steppe | China |
+|---|---:|---:|
+| Conjunction as built (the bracket; above) | 47.9% | 60.1% |
+| Omen, range 2 | 45.8% | 46.8% |
+| **Omen, range 3** | **48.8%** | **51.7%** |
+| Omen, range 2, rider 1 | 53.1% | 57.9% |
+| Omen, range 3, rider 1 | 59.2% | 66.2% |
+
+**Skill**, as "The roster checked again" measured it: the Magus played a
+decision deep (novice) or four deep (expert), the rest of both sides by
+production, in a Steppe mirror with a Magus on each side (its side's wins):
+
+| Played by | Conjunction (bracket) | Omen, range 2 | Omen, range 3 |
+|---|---:|---:|---:|
+| Novice | 45.6% | 41.5% | 38.6% |
+| Expert | 52.2% | 53.3% | 53.8% |
+| Span | 6.6 | 11.8 | **15.2** |
+
+- **Omen at range 3 is even on both maps** (48.8%, 51.7%), the first of the
+  Magus's variants within 2 points on both, where the bracket is 12
+  points over in China.
+- **It rewards play more than any hero measured**: a span of 15.2, against
+  the Alchemist's 9.5 and the Storm Caller's 10.5, the highest before. One
+  unit and the side deciding the effect is the Elixir's choice; the
+  bracket's pair, with more to pick from, rewards play least of the
+  supports (6.6): with two units moved, a careless pick still lands one.
+  A novice's Omen loses more than a production one (38.6%), so a bad
+  read costs.
+- The rider overshoots (53–66%): Empower and Weaken on top of the track
+  move are too much.
+- **Unfinished fights**: 0.4–1.4% in the seats, but 1.9–3.9% with a Magus
+  on each side (the skill rows), at or over principle 12's 3%. Two Magi
+  putting each other's side back stall; with no guard an Omen can still
+  hold one enemy back each turn, and two Magi can each hold one.
+
+Not changed: the owner's call.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

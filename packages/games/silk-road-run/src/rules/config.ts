@@ -473,14 +473,19 @@ export const ABILITY = {
    * `mode`: `bracket` (as built), or `swap`, the first built (the two
    * cards swap places, one Hastened and the other Delayed by the gap); `before`, the second's just before his
    * next turn instead; `once` (with `bracket`), a unit put after his next
-   * turn can't be put there again until it has acted.
+   * turn can't be put there again until it has acted; `omen` (balance.md,
+   * "Omen"), one unit in place of two, an ally's card put just after his
+   * current turn and an enemy's just after his next, the Elixir's choice
+   * of side. `rider` (with `omen`): the ally Empowered, the enemy
+   * Weakened, this much.
    */
   conjunction: {
     range: 2 as number,
     hit: false as boolean,
     delay: 0 as number,
-    mode: 'bracket' as 'swap' | 'bracket' | 'before',
+    mode: 'bracket' as 'swap' | 'bracket' | 'before' | 'omen',
     once: false as boolean,
+    rider: 0 as number,
   },
   /**
    * Trample (owner, 2026-10-27; roster.md), the Elephant Rider's: a walk of
