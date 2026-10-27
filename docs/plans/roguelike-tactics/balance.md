@@ -3257,6 +3257,45 @@ Not changed: the numbers are the owner's. What would most help, measured
 above: something that restores Humphrey between stages (or the carry-over
 softened), after which every role is even within about 3 points.
 
+### The Archer and Longshot (2026-10-27)
+
+Asked for: whether the Archer as built (speed 2, defence 1, power 3,
+Longshot: any unit on its six lines, at any range, never blocked) is in
+line with the roster, whose seats measured within about 3 points of 50%
+("The roster checked again"). `modWinPct`, 200 fights each (about ±3.5
+points), production AI on both sides.
+
+**In every seat** (`experiments/archer.mjs`), the Archer in place of:
+
+| Seat | Steppe mirror | China mirror |
+|---|---|---|
+| Tank (Grappler, Vanguard) | 60% | 56.5% |
+| Damage (Horse Archer, Swordsman) | 65% | 58.5% |
+| Support (Storm Caller, Alchemist) | 66.8% | 60% |
+
+**Too strong everywhere**, by 7 to 17 points: a shot of 3 that no front
+line stops kills the 4-health heroes in two turns from anywhere on a line.
+
+**Tuning** (`experiments/archer-tuning.mjs`), in the damage seat:
+
+| Variant | Steppe | China |
+|---|---|---|
+| As built | 65% | 58.5% |
+| Power 2 | 54% | 48.2% |
+| Longshot's range 4 | 48.5% | 52% |
+| Speed 1 | 59.5% | 51% |
+| Defence 0 (health 2) | 53% | 53.3% |
+
+- **Range 4 brings it in line** (48.5% and 52%) and keeps power 3, its
+  identity: still the hardest hit on the roster, from up to 4 spaces over
+  anything in between, where Snap Shot has no range but stops at the first
+  unit.
+- Power 2 also does (54%, 48.2%), but leaves it a Horse Archer that
+  ignores blockers. Defence 0 is close (53%) but dies to any one hit of 2.
+  Speed 1 isn't enough on the Steppe.
+- Not changed: the owner's call. As built, `ABILITY.longshot.range` is
+  `Infinity`; 4 is one line in config.ts.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
