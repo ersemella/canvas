@@ -405,6 +405,13 @@ export const AI = {
    */
   empoweredShare: 0.5 as number,
   /**
+   * A switch for measuring (2026-10-27): a unit with no ability that hurts
+   * (an Eye of the Storm Storm Caller) closes in on the ally it could reach
+   * with Eye, standing `ABILITY.eye.range` from it, not on the nearest enemy
+   * (`gapFrom` in ai.ts). Off as built.
+   */
+  supportKeepsBack: false as boolean,
+  /**
    * The share of a grappled unit's status cost the AI takes off while an
    * ally could strike the Grappler holding it (`rescueGain` in ai.ts): the
    * hit, which breaks the grapple, comes only on that ally's next turn.

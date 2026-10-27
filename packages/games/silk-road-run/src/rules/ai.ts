@@ -900,9 +900,24 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
   return [0, 1, 2, 3, 4, 5].some((d) => firstInLane(state, map, at, d, me) === target) ? 0 : 1;
 }
 
+/** Whether any of `u`'s abilities hurts: an attack, or one that hits (Hail, Gale). */
+function hurts(u: Unit): boolean {
+  return kitOf(u).some((a) => {
+    const def = ABILITIES[a];
+    return a !== 'hold' && def.damages !== false && def.kind !== 'support';
+  });
+}
+
 /** `quarryGap` were `me` standing on `at`. */
 function gapFrom(state: FightState, me: Unit, at: Hex, hunting: boolean): number {
   if (me.hero === CAMEL) return 0;
+  if (AI.supportKeepsBack && !hurts(me)) {
+    let nearest = Infinity;
+    for (const a of state.units)
+      if (a !== me && a.alive && a.hex && !hostile(a, me))
+        nearest = Math.min(nearest, Math.abs(hexDistance(at, a.hex) - ABILITY.eye.range));
+    return Number.isFinite(nearest) ? nearest : 0;
+  }
   const gap = (target: Unit) =>
     isRanged(me) ? shotGap(state, me, at, target) : hexDistance(at, target.hex!);
   const camel = hunting ? camelOf(state) : undefined;
