@@ -85,6 +85,7 @@ import {
   kill,
   startTurnPassives,
   stun,
+  walk,
 } from './resolve';
 import type {Ctx} from './resolve';
 import {
@@ -1590,6 +1591,61 @@ describe('abilities', () => {
     for (const id of ['e-bokh', 'p-bokh', 'p-camel'])
       expect(unit(s, id).hp).toBe(unit(s, id).maxHp - storm.power);
     expect(unit(s, 'e-bokh').weaken).toBeUndefined();
+  });
+
+  it('with `ABILITY.eye.follows`, the storm goes with the unit healed until the Storm Caller’s next turn, catching each unit once', () => {
+    const saved = {...ABILITY.eye};
+    onTestFinished(() => void Object.assign(ABILITY.eye, saved));
+    Object.assign(ABILITY.eye, {follows: true, weaken: 1, immobilize: true, damage: false});
+    const s = setup({
+      'p-storm': at(2, 3),
+      'p-mangudai': at(4, 3),
+      'e-bokh': at(5, 3),
+      'e-mangudai': at(7, 3),
+    });
+    s.units.forEach((u) => (u.controller = 'human'));
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'p-mangudai');
+    const b = unit(s, 'e-bokh');
+    const em = unit(s, 'e-mangudai');
+    applyTurn(s, storm, {action: {ability: 'eye', target: {hex: m.hex!}}});
+    expect(b.weaken).toBe(1);
+    expect(storm.storm).toEqual({target: 'p-mangudai', caught: ['e-bokh']});
+    // The Horse Archer is Moved next to the enemy Horse Archer: the storm goes with it.
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    const next = hexNeighbors(em.hex!).find(
+      (h) => !unitAt(s, h) && hexDistance(h, b.hex!) > 1 && hexDistance(h, storm.hex!) > 1
+    )!;
+    enterHex(ctx, m, next, 'throw');
+    expect(em.weaken).toBe(1);
+    expect(em.statuses).toEqual([{kind: 'immobilized', eye: true}]);
+    // Caught once: the Grappler, caught already, isn't caught again.
+    expect(storm.storm!.caught).toEqual(['e-bokh', 'e-mangudai']);
+    // The Storm Caller's next turn: the storm is gone.
+    for (const u of s.units) if (u !== storm && u.alive) u.slot = 900;
+    storm.slot = s.currentSlot + 1;
+    expect(advanceToDecision(s)!.id).toBe('p-storm');
+    expect(storm.storm).toBeUndefined();
+  });
+
+  it('a walk into a following storm that Immobilizes stops there', () => {
+    const saved = {...ABILITY.eye};
+    onTestFinished(() => void Object.assign(ABILITY.eye, saved));
+    Object.assign(ABILITY.eye, {follows: true, weaken: 0, immobilize: true, damage: false});
+    const s = setup({'p-storm': at(2, 3), 'p-mangudai': at(4, 3), 'e-bokh': at(7, 3)});
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'p-mangudai');
+    const b = unit(s, 'e-bokh');
+    applyTurn(s, storm, {action: {ability: 'eye', target: {hex: m.hex!}}});
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    // A walk of two past the Horse Archer: it stops at the first space next to it.
+    const first = at(6, 3);
+    const second = at(5, 3);
+    expect(hexDistance(first, m.hex!)).toBe(2);
+    expect(hexDistance(second, m.hex!)).toBe(1);
+    walk(ctx, b, [first, second, at(5, 4)]);
+    expect(b.hex).toEqual(second);
+    expect(b.statuses).toEqual([{kind: 'immobilized', eye: true}]);
   });
 
   it('a heal adds its healer’s Empower and loses its Weaken, as a hit’s damage does', () => {

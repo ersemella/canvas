@@ -175,3 +175,17 @@ for (const [name, eye] of [
   experiments[`${name}:vs-mangudai+storm+wolf`] = {patch, enemies: ['mangudai', 'storm', 'wolf']};
   experiments[`${name}:vs-all-three`] = {patch, enemies: steppe};
 }
+// Asked for (2026-10-27): the storm following the unit healed until the
+// Storm Caller's next turn (`ABILITY.eye.follows`), Weakening, Immobilizing,
+// and both, no hit; head to head against Hail only.
+for (const [name, eye] of [
+  ['follows+weaken', {follows: true, damage: false, weaken: 1}],
+  ['follows+imm', {follows: true, damage: false, weaken: 0, immobilize: true}],
+  ['follows+imm+weaken', {follows: true, damage: false, weaken: 1, immobilize: true}],
+])
+  experiments[`${name}:hail-vs-eye`] = {
+    patch: (c) => {
+      Object.assign(c.ABILITY.eye, eye);
+    },
+    mod: {kits: {storm: ['hail', 'hold']}},
+  };

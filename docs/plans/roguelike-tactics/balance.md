@@ -2833,6 +2833,27 @@ empty space too 99.5, 94, 59.9, 93.8, 68.6, 52.8.
 - A stronger Storm Caller widens the Steppe's lead over China (balance.md,
   "China against the Steppe").
 
+#### Eye of the Storm's storm following its target (2026-10-27)
+
+Asked for: the storm going with the unit healed until the Storm Caller's
+next turn (`ABILITY.eye.follows`), catching each unit that comes next to
+it once, a walk it Immobilizes stopping there; Weakening 1, Immobilizing,
+and both, no hit, on an ally or itself. Head to head only, 400 fights,
+Hail wins:
+
+| | Storm where cast | Storm following |
+|---|---:|---:|
+| Weaken 1 | 66.2% | 66.2% |
+| Immobilize | 64.7% | 66.4% |
+| Immobilize and Weaken 1 | 58.8% | 60.8% |
+
+- **Following changes nothing** (all within 2 points, inside the noise):
+  the AI's guess at Eye counts only the units next to the target as it is
+  cast, and its short search seldom walks the healed ally into enemies to
+  use the storm; a person might.
+- With both, more fights go unfinished (5.5%, from 3.5%).
+- Not changed: `follows` off as built.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

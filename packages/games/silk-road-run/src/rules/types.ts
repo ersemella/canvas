@@ -167,6 +167,12 @@ export interface Unit {
    * Elixir). Absent when it has none.
    */
   weaken?: number;
+  /**
+   * The storm of its Eye of the Storm following a unit (`ABILITY.eye.follows`):
+   * the unit it follows, and the units it has caught, each caught once. It
+   * ends as its caster's next turn starts.
+   */
+  storm?: {target: string; caught: string[]};
   /** Its turn has begun since it was Weakened, so the Weaken ends with that turn. */
   weakenStarted?: boolean;
   /** Its passives (progression.md, 19.8); absent with none. */

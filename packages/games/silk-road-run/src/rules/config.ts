@@ -261,7 +261,9 @@ export const ABILITY = {
    * turn (off as built); `anywhere`, a space with no unit on it a target
    * too, the storm round it with no heal (off as built); `damage`, every
    * unit next to it, either side, hit for the Storm Caller's power (off as
-   * built).
+   * built); `follows`, the storm following the unit healed until the Storm
+   * Caller's next turn, catching each unit that comes next to it once, as
+   * it lands (off as built); a walk that the storm Immobilizes stops there.
    */
   eye: {
     range: 2,
@@ -270,6 +272,7 @@ export const ABILITY = {
     immobilize: false as boolean,
     anywhere: false as boolean,
     damage: false as boolean,
+    follows: false as boolean,
   },
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not

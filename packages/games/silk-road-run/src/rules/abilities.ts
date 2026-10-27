@@ -336,6 +336,9 @@ const eye: AbilityDef = {
           n.statuses.push({kind: 'immobilized', eye: true});
           log(ctx, `${unitName(n)} is Immobilized.`);
         }
+    // `follows`: the storm goes with the unit healed, catching whoever comes next to it.
+    if (ABILITY.eye.follows && u)
+      user.storm = {target: u.id, caught: eyeCaught(ctx.state, centre).map((n) => n.id)};
   },
 };
 

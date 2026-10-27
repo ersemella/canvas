@@ -381,6 +381,7 @@ export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
   // Its hail lasted until a turn of its, which won't come; its shots until its card came back.
   clearHail(ctx.state, unit);
+  delete unit.storm;
   if (ctx.state.shots) ctx.state.shots = ctx.state.shots.filter((v) => v.source !== unit.id);
   if (killer) killer.tookOff = true;
   checkEnd(ctx.state);
@@ -608,6 +609,51 @@ export function enterHex(
     if (caster) hit(ctx, caster, unit, 'The hail', 0);
   }
   hailHolds(ctx, unit);
+  if (unit.alive) stormFollows(ctx, unit);
+}
+
+/**
+ * What Eye of the Storm's storm does to `u`, caught in it (`ABILITY.eye`):
+ * a hit for `caster`'s power (`damage`), a Weaken (`weaken`, one that hits)
+ * and an Immobilize through its next turn (`immobilize`).
+ */
+export function stormStrikes(ctx: Ctx, caster: Unit, u: Unit): void {
+  if (ABILITY.eye.damage) hit(ctx, caster, u, 'The storm');
+  if (!u.alive) return;
+  if (ABILITY.eye.weaken > 0 && u.power > 0) weaken(ctx, u, ABILITY.eye.weaken);
+  if (ABILITY.eye.immobilize && !u.statuses.some((s) => s.eye)) {
+    // A new array: copies of a fight share a unit's arrays.
+    u.statuses = [...u.statuses, {kind: 'immobilized', eye: true}];
+    log(ctx, `${unitName(u)} is Immobilized.`);
+  }
+}
+
+/**
+ * A following storm (`ABILITY.eye.follows`) catching whoever `unit`'s move
+ * brings next to the unit it follows: `unit` itself, or, when it is that
+ * unit, its new neighbours. Each is caught once a storm.
+ */
+function stormFollows(ctx: Ctx, unit: Unit): void {
+  for (const caster of ctx.state.units) {
+    const storm = caster.storm;
+    if (!storm || !caster.alive) continue;
+    const target = ctx.state.units.find((t) => t.id === storm.target);
+    if (!target?.alive || !target.hex || !unit.hex) continue;
+    const caught =
+      unit === target
+        ? hexNeighbors(target.hex)
+            .map((h) => unitAt(ctx.state, h))
+            .filter((u): u is Unit => u !== undefined)
+        : hexDistance(unit.hex, target.hex) === 1
+          ? [unit]
+          : [];
+    for (const u of caught) {
+      if (caster.storm!.caught.includes(u.id)) continue;
+      caster.storm = {...caster.storm!, caught: [...caster.storm!.caught, u.id]};
+      log(ctx, `The storm catches ${unitName(u)}.`);
+      stormStrikes(ctx, caster, u);
+    }
+  }
 }
 
 /**
@@ -676,7 +722,17 @@ export function walk(ctx: Ctx, unit: Unit, path: Hex[]): void {
   const end = path[path.length - 1]!;
   const back = path.length > 1 ? path[path.length - 2]! : unit.hex;
   const ally = ctx.state.units.find((u) => u !== unit && u.alive && u.hex && hexEquals(u.hex, end));
-  path.forEach((h, i) => enterHex(ctx, unit, h, 'walk', i < path.length - 1 || ally !== undefined));
+  for (const [i, h] of path.entries()) {
+    const held = unit.statuses.some((s) => s.eye);
+    enterHex(ctx, unit, h, 'walk', i < path.length - 1 || ally !== undefined);
+    if (!unit.alive) return;
+    // A following storm (`ABILITY.eye.follows`) Immobilizing it stops the walk there.
+    if (!held && unit.statuses.some((s) => s.eye) && i < path.length - 1) {
+      endGrapplesApart(ctx, unit);
+      log(ctx, `${unitName(unit)} is held by the storm.`);
+      return;
+    }
+  }
   if (!ally) return;
   log(ctx, `${unitName(unit)} swaps places with ${unitName(ally)}.`);
   enterHex(ctx, ally, back, 'swap');

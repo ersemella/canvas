@@ -263,6 +263,8 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     startTurnPassives(ctx, unit);
     // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25).
     ageHail(state, unit);
+    // Its following storm (`ABILITY.eye.follows`) lasts until now.
+    delete unit.storm;
     // An Empower or Weaken lasts until the end of this turn.
     if (unit.empower) unit.empowerStarted = true;
     if (unit.weaken) unit.weakenStarted = true;
