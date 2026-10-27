@@ -2803,6 +2803,36 @@ wins):
   40.6%): the storm must sit round one of its own side's units, so the
   more it hits the more of its own side it hurts.
 
+Then, asked for: both hitting Eyes against the game's balance at power
+1, the same experiments as for the first Eye (`eye.mjs`, `eye-runs.mjs`).
+
+| | Hail (built) | Eye hitting, ally or itself | Eye hitting, empty space too |
+|---|---:|---:|---:|
+| Side without the core ability | 28.6%¹ | 24.3% | 20.8% |
+| Swordsman for the Storm Caller | 62.3% | 61.5% | 52.3% |
+| Vanguard for the Storm Caller | 61.5% | 59.3% | 52% |
+| Alchemist for the Storm Caller | 55% | 57.8% | 54.1% |
+| vs Storm + 2 wolves (player wins) | 99.5% | 100% | 100% |
+| vs Grappler + Storm + wolf | 96% | 97.3% | 96% |
+| vs Horse Archer + Storm + wolf | 95% | 98% | 98% |
+| vs all three | 78.3% | 70.8% | 78.3% |
+| Whole runs won | 11.5% | 14% | 19% |
+
+¹ From "The Storm Caller at speed 3", not rerun.
+
+Whole runs by stage: on an ally 98, 90.3, 58.2, 85.4, 64.8, 49.1; on an
+empty space too 99.5, 94, 59.9, 93.8, 68.6, 52.8.
+
+- **On an ally or itself it sits where Hail does**: every seat row within
+  3 points of Hail's, the caravans within 3 but the full Steppe caravan
+  (70.8%, 7.5 harder), runs 14% to 11.5%; worth a little more (24.3%).
+- **On an empty space too it is the strongest Storm Caller measured**:
+  the Swordsman and the Vanguard only even with it (52%), worth 20.8%, at
+  the core's band's bottom edge; with the power scaling above, it would
+  pull further from the other heroes as a run raises its power.
+- A stronger Storm Caller widens the Steppe's lead over China (balance.md,
+  "China against the Steppe").
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
