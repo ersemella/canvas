@@ -931,8 +931,8 @@ describe('stats and damage', () => {
     const storm = unit(s, 'p-storm');
     s.awaiting = storm.id;
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
-    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 1);
-    expect(storm.power).toBe(1);
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+    expect(storm.power).toBe(2);
   });
 
   it('Empower adds to a hit until the end of the unit’s next turn, then ends', () => {
@@ -960,7 +960,7 @@ describe('stats and damage', () => {
     storm.slot = s.currentSlot + 1;
     expect(advanceToDecision(s)!.id).toBe('p-storm');
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
-    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 3);
     expect(storm.empower).toBeUndefined();
   });
 

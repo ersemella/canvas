@@ -2954,7 +2954,7 @@ Head to head, a Steppe mirror with one side's Storm Caller at power 2:
   measured in the Storm Caller's seat: a Grappler's throw finds no held
   unit next to it (`grapple.resolve` in abilities.ts, `heldNextTo`
   undefined). Two Grapplers never meet on one side in a run.
-- Not changed: the numbers are the owner's.
+- **Adopted (owner, 2026-10-27)**: the Storm Caller's power is 2.
 
 ## Principles for re-tuning
 

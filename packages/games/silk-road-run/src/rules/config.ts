@@ -115,9 +115,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     letter: 'S',
     speed: 2,
     defence: 2,
-    // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
-    // couldn't break a grapple.
-    power: 1,
+    // 2 since 2026-10-27 (owner; balance.md, "The Storm Caller at power
+    // 2"): at 1 the Swordsman and Vanguard in its seat won 63%. 1 from
+    // 2026-10-23: at 0 Hail dealt nothing and couldn't break a grapple.
+    power: 2,
     abilities: ['hail', 'hold'],
     // Sunlight added (owner, 2026-10-23), as measured: a trap for the AI
     // at Empower 2 (balance.md); an upgrade since 2026-10-24 (owner). Gale

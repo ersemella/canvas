@@ -50,7 +50,7 @@ the kits.**
   every ability deals exactly its user's power
   ([heroes-and-gear.md](heroes-and-gear.md), 9.1–9.2). Grappler speed
   2, defence 3, power 1; Horse Archer 3, 1, 2; Storm Caller
-  2, 2, 0.
+  2, 2, 2 (power 2 since 2026-10-27).
 - **The track:** after any turn a unit's card goes 60 ÷ (speed + 5) slots
   on, rounded, Temee's included, so the faster act more often. A fight starts from
   slot 0, fastest first, equal speeds side by side and a free slot between

@@ -78,8 +78,9 @@ describe('the upgrades of 2026-10-24', () => {
     act(s, 'p-storm', 'gale', {hex: centre});
     expect(unit(s, 'e-bokh').hex).toEqual(out(0, 2));
     expect(unit(s, 'p-bokh').hex).toEqual(out(2, 2));
-    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 1);
-    expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp - 1);
+    const power = unit(s, 'p-storm').power;
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - power);
+    expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp - power);
   });
 
   it('Volley is charged and lands on whoever stands there', () => {
