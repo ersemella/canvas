@@ -88,6 +88,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   alchemist: {src: alchemistPortrait, faceX: 19},
   youxia: {src: youxiaPortrait, faceX: 19},
   magus: {src: magusPortrait, faceX: 20},
+  // Its turban recoloured saffron (owner, 2026-10-27), apart from the Magus's.
   mahout: {src: mahoutPortrait, faceX: 24},
   archer: {src: archerPortrait, faceX: 18},
   camel: {src: camelPortrait, faceX: 19},

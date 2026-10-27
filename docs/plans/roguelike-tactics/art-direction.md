@@ -201,7 +201,9 @@ tuning. This file has no combat-design section number.
 
 **Built from the owner's art (2026-10-27):** the sprite shrunk to
 32 × 32, the whole bow inside the frame (the body filling it at first,
-then a little smaller, owner),
+then a little smaller, owner; its head redrawn by hand to the second
+portrait's look, a tall pointed crimson cap with a brown band and a
+moustache, so the three Persians' portraits don't read alike),
 the bow traced back in from the art where shrinking broke it, the face
 (cap, eye, beard) redrawn by hand, and a 2-frame idle split at the knees
 (`--split 25`) so the bow moves with the body; the portrait cropped to
