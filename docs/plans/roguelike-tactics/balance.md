@@ -2872,6 +2872,38 @@ Caller), Hail wins:
 - The hitting Eye stays level with Hail either way, so hitting alone,
   not freeing allies, is what brings it there.
 
+#### Eye of the Storm following, Weakening and Immobilizing, within 3 (2026-10-27)
+
+Asked for: the storm following the unit healed (`follows`), heal by
+power, Weaken 1 and Immobilize, no hit, an ally anywhere within 3 or the
+Storm Caller itself (`ring` off, `range` 3), against the game's balance.
+`eye.mjs`, `eye-runs.mjs`, 400 fights and 200 runs each.
+
+| | Hail (built) | Eye hitting, ally exactly 2 away | This Eye |
+|---|---:|---:|---:|
+| Hail against it, head to head | | 50% | 56.6% |
+| Side without the core ability | 28.6%¹ | 24.3% | 30.3% |
+| Swordsman for the Storm Caller | 62.3% | 61.5% | 54.7% |
+| Vanguard for the Storm Caller | 61.5% | 59.3% | 58.2% |
+| Alchemist for the Storm Caller | 55% | 57.8% | 55.7% |
+| vs Storm + 2 wolves (player wins) | 99.5% | 100% | 100% |
+| vs Grappler + Storm + wolf | 96% | 97.3% | 99.7% |
+| vs Horse Archer + Storm + wolf | 95% | 98% | 96.9% |
+| vs all three | 78.3% | 70.8% | 72.8% |
+| Whole runs won | 11.5% | 14% | 13.5% |
+
+¹ From "The Storm Caller at speed 3", not rerun.
+
+Whole runs by stage: 96.5, 90.2, 55.7, 89.7, 69, 45.
+
+- **Level with Hail against the other heroes, behind it head to head**:
+  the seat rows match Hail's or beat them (the Swordsman 54.7% to 62.3%),
+  but Hail beats it 56.6% when the two meet.
+- **Fights stall more**: 8% unfinished against the Grappler, Storm and
+  wolf, 5.3% against all three, 3.8% head to head (0–2% for Hail). The
+  storm holds the camel and both sides' melee units in place.
+- Not changed: `follows`, `immobilize`, `ring` and `range` as built.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
