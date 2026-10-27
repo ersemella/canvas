@@ -3039,8 +3039,8 @@ that took no health (`immortalsPerFight`).
   China's fights (69.5% built); it is a lone target the enemy must hit to
   win that way.
 - **Who it keeps standing**: the Vanguard survives 42% with Immortal
-  (heroes) against 47.6% built, the Swordsman 31.6% against 34.3%; the
-  built Elixir keeps them alive as well by ending fights sooner.
+  (heroes) against 47.6% built, the Swordsman 31.6% against 34.3%: the
+  built Elixir keeps them standing better, though it blocks nothing.
 - Not changed: `immortal` stays off. Immortal alone doesn't pay for a
   whole turn; on top of the built Elixir, or with the Alchemist's power
   back for a heal, it might; not measured.
