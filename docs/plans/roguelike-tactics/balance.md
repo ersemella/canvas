@@ -2719,6 +2719,36 @@ Whole runs by stage: Imm 97.5, 81, 46.2, 84.9, 69.4, 41.9; Imm + Weaken 1
   Imm alone 9% of runs, under Hail's 11.5%; with Weaken 1 15.5%.
 - Not changed: `immobilize` off as built.
 
+#### Eye of the Storm on an empty space (2026-10-27)
+
+Asked for next: heal and Weaken again, the Storm Caller able to open the
+eye on a free space exactly 2 away with no unit on it too, the storm round
+it Weakening with no heal (`ABILITY.eye.anywhere`); at heal 1 and Weaken
+1, and at heal 2 and Weaken 2. The same experiments, files and seeds.
+
+| | Hail (built) | Eye 1/1 | Anywhere 1/1 | Eye 2/2 | Anywhere 2/2 |
+|---|---:|---:|---:|---:|---:|
+| Hail against Eye, head to head | | 66.2% | 63.4% | 61.6% | **55.4%** |
+| Side without the core ability | 28.6% | 38.3% | 37.7% | 38.5% | **32.7%** |
+| Swordsman for the Storm Caller | 62.3% | 74.5% | 70.6% | 64.2% | **59%** |
+| Vanguard for the Storm Caller | 61.5% | 71.7% | 65.3% | 64.9% | **61.2%** |
+| Alchemist for the Storm Caller | 55% | 66.4% | 67.3% | 61.7% | 60.2% |
+| Whole runs won (both sides' Storm Callers) | 11.5% | 17% | 24% | 29.5% | 33.5% |
+
+Whole runs by stage: anywhere 1/1 98.5, 92.4, 62.1, 92, 74, 62.3;
+anywhere 2/2 99.5, 95, 72.5, 94.2, 84.5, 61.5.
+
+- **Placing it on an empty space helps most at 2/2**: the first Eye level
+  with Hail in the seat rows (the Swordsman 59% to Hail's 62.3%, the
+  Vanguard 61.2% to 61.5%, the Alchemist 60.2% to 55%), and near it as a
+  side's worth (32.7% to 28.6%). Head to head Hail still wins 55.4%.
+- At 1/1 it helps a little (3–6 points in two seat rows, none in the
+  third).
+- **Runs get easier still** (24% and 33.5% from Hail's 11.5%): the
+  player's Storm Caller gains more from it than the enemy's, whose AI
+  Weakens the party's melee heroes but seldom shields its own.
+- Not changed: `anywhere` off, heal 1 and Weaken 1 as built.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
