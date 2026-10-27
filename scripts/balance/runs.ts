@@ -24,6 +24,12 @@ export type RunExperiment = {
    * default. The same policy for every party, so it doesn't favour one.
    */
   provision?: StatId;
+  /**
+   * The player's heroes' search in place of production's (ablate.ts's
+   * `mod.search`): a horizon in decisions and a work cap a turn. The camel
+   * and the enemy keep production's.
+   */
+  search?: {depth: number; work: number};
 };
 type Options = RunExperiment & {runs: number; seed: number; maxTurns: number};
 
@@ -41,7 +47,7 @@ export function simulateRuns(options: Options) {
   }
 }
 
-function run({runs, seed, maxTurns, party, provision = 'defence'}: Options) {
+function run({runs, seed, maxTurns, party, provision = 'defence', search}: Options) {
   const stages = STAGES.map(() => ({
     reached: 0,
     won: 0,
@@ -67,7 +73,14 @@ function run({runs, seed, maxTurns, party, provision = 'defence'}: Options) {
       let turns = 0;
       while (fight.phase === 'fight' && turns < maxTurns) {
         const unit = actingUnit(fight)!;
-        applyTurn(fight, unit, chooseAiTurn(fight, unit, {left: AI.maxSimulations}));
+        const own = search && unit.side === 'player' && unit.hero !== CAMEL;
+        applyTurn(
+          fight,
+          unit,
+          own
+            ? chooseWith(search)(fight, unit)
+            : chooseAiTurn(fight, unit, {left: AI.maxSimulations})
+        );
         advanceToDecision(fight);
         turns++;
       }
@@ -107,6 +120,20 @@ function run({runs, seed, maxTurns, party, provision = 'defence'}: Options) {
     })),
     /** Of the runs won, the share each hero finished standing in. */
     finishedWithPct: Object.fromEntries(party.map((h) => [h, pct(finishedWith[h] ?? 0, won)])),
+  };
+}
+
+/** chooseAiTurn with its own horizon and work cap (as ablate.ts's `searchWith`). */
+function chooseWith({depth, work}: {depth: number; work: number}) {
+  const ai = AI as {maxSimulations: number};
+  return (fight: RunState['fight'], unit: Parameters<typeof chooseAiTurn>[1]) => {
+    const saved = ai.maxSimulations;
+    ai.maxSimulations = work;
+    try {
+      return chooseAiTurn(fight, unit, {left: work}, undefined, {depth, work});
+    } finally {
+      ai.maxSimulations = saved;
+    }
   };
 }
 

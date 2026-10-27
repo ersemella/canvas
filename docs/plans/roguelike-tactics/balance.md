@@ -3148,6 +3148,115 @@ seat against the three Steppe heroes.
   8 kept. The switch's `lines` is now `built`; `cleave-shape.mjs` and
   `cleave-lines.mjs` reproduce only at their revision.
 
+### The roster checked again: seats, whole runs and skill (2026-10-27)
+
+Asked for: the balance again on today's rules (Cleave a line of 2 six
+ways, the Elixir on one unit within 2, the Storm Caller at power 2, the
+Steppe's mountains in every fight, Humphrey's health carried from stage to
+stage); whether any hero is strictly better to have than another,
+especially within a role; and how much the game rewards playing well.
+`experiments/roster-check.mjs` (fights, **1,600 each**, about ±1.25
+points) and `experiments/roster-runs.mjs` (whole runs, **400 each**, about
+±1 point on rates near 5%, ±1.7 near 12%), seeds from 1000. *Skill* is the
+AI's search standing in for a player: a **novice** looks one decision
+ahead (`depth: 1`), production three, an **expert** four with four times
+the work (mirror.ts's `deep`); `mod.searchHeroes` (ablate.ts) gives it to
+one hero only, `search` (runs.ts) to the player's heroes in a run.
+
+**One fight, each hero in another's seat** (the side with the swap wins;
+50% is the hero's equal there):
+
+| In the seat of | Steppe mirror | | | China mirror | | |
+|---|---:|---:|---:|---:|---:|---:|
+| | Grappler | Horse Archer | Storm Caller | Swordsman | Vanguard | Alchemist |
+| Grappler | | | | 54.4% | 49.6% | 52.3% |
+| Vanguard | 52.1% | 53.2% | 50.2% | | | |
+| Horse Archer | | | | 51.9% | 56% | 49.3% |
+| Swordsman | 53.4% | 52.2% | 47.8% | | | |
+| Storm Caller | | | | 56.8% | 52.9% | 46.2% |
+| Alchemist | 54.1% | 52.8% | 46.6% | | | |
+
+China against the Steppe party for party: **53.9%**, no unfinished fights.
+
+- **No hero is strictly better than its role's other**, each pair measured
+  both ways: the Vanguard in the Grappler's seat 52.1%, the Grappler in the
+  Vanguard's 49.6% (the Vanguard 1–2 points ahead, about noise); the
+  Swordsman for the Horse Archer 52.2%, the Horse Archer for the Swordsman
+  51.9% (each a little better in the other's party); the Alchemist for the
+  Storm Caller 46.6%, the Storm Caller for the Alchemist 46.2% (each better
+  in its own party). Every role is within about 2 points.
+- **Across roles, only the Storm Caller over the Swordsman holds both
+  ways**: in the Swordsman's seat 56.8%, the Swordsman in its seat 47.8%.
+  Every other cross-role pair flips with the party. A hero from the other
+  region tends to help a little (most swaps 50–54%): mixing kits pays.
+- Left out: a hero in a party already holding one. Two Horse Archers or
+  two Storm Callers stall (36–50% unfinished), and a second Vanguard or
+  Alchemist in a China party wins 75–79% (two Cleaves' Delay 8, two
+  Weaken 2s stacking). A run's party never holds two of a hero, nor does
+  a stage caravan, so this matters only if one ever does.
+
+**Whole runs, every party of three** (the production AI on both sides):
+
+| | Runs won, mean (range) | Steppe stage 3 won | Reach China | Stage 6 won |
+|---|---:|---:|---:|---:|
+| Every party (20) | 1.8% (0–7%) | 17–49% | 8–43% | 0–45% |
+| One of each (8), Humphrey's health carried (built) | 1.3% (0–6.5%) | 34% | 27% | 20% |
+| The same, Humphrey at full health each stage | **12.5%** (7.8–16.5%) | 53% | 46% | 43% |
+
+Of every stage lost, 92% end with Humphrey killed.
+
+- **Humphrey's carried health is now the balance**: it takes runs from
+  12.5% to 1.3% (as built since earlier today; 17.3% on 2026-10-26, before
+  power 2 and the mountains). Stage 3, the Steppe's three heroes, is won a
+  third of the time, and China's stages against a camel still hurt from
+  the Steppe less still.
+- **It makes the Alchemist the hero to have**, the only thing that heals
+  Humphrey: parties with it win 3.1% of runs, without it 0.5%; the
+  Storm Caller in its place costs 2–6 points of runs in four of six
+  parties. With Humphrey at full health the order flips (the Alchemist's
+  parties 11.3%, the Storm Caller's 13.8%): it is the carry-over, not the
+  Elixir, that makes it a must-pick. The Horse Archer's parties win least
+  either way (0.8% carried, 11.9% full), the Swordsman's reaching China
+  1–7 points more than the Horse Archer's in the same party.
+- **At full health every role is within about 3 points** (the Grappler
+  14.1%, the Vanguard 10.9%; the Swordsman 13.2%, the Horse Archer 11.9%;
+  the Storm Caller 13.8%, the Alchemist 11.3%), each about 2 standard
+  errors: no strictly better hero.
+
+**Skill expression.** One hero played by a novice or an expert, the rest
+of both sides by production, in a Steppe mirror with that hero in its
+role's seat on both sides (its side's wins):
+
+| Played by | Grappler | Vanguard | Horse Archer | Swordsman | Storm Caller | Alchemist | Steppe party | China party |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Novice | 46.2% | 46.1% | 44.6% | 44.5% | 43.7% | 45.8% | 33.4% | 28.8% |
+| Expert | 52.6% | 53.7% | 53.3% | 51.4% | 54.2% | 55.3% | 60.3% | 55.6% |
+| Span | 6.4 | 7.6 | 8.7 | 6.9 | 10.5 | 9.5 | 26.9 | 26.8 |
+
+In whole runs (the one-of-each parties, Humphrey's health carried): a
+novice wins 0.6% of runs and reaches China in 20.7%, production 1.3% and
+27.2%, an expert 2.3% and 37.8% (Steppe stage 3: 28%, 34%, 44%).
+
+- **Play is worth about 27 points in a fight**, the same for either
+  region: a whole party played a decision deep loses two in three to
+  production, one played four deep wins three in five. The heroes' spans
+  add up to about the party's, so no hero's worth hides in another's.
+- **Supports reward play most, tanks least** (Storm Caller 10.5, Alchemist
+  9.5; Grappler 6.4, Vanguard 7.6), as the roles suggest: a tank's job is
+  to stand in front, a support's to pick its moment. The Swordsman (6.9)
+  is the damage hero that rewards play less, its one hit and Haste leaving
+  fewer choices than the Horse Archer's lanes.
+- **In a run, play shows in how far it gets, not in runs won**: an expert
+  reaches China nearly twice as often as a novice, but both rarely finish
+  while Humphrey's health carries over. With runs near 1%, skill can't
+  show at the end of a run.
+- Limits: a deeper search is a stand-in for a player, who reads and plans
+  differently; and the expert is only one decision deeper than the enemy.
+
+Not changed: the numbers are the owner's. What would most help, measured
+above: something that restores Humphrey between stages (or the carry-over
+softened), after which every role is even within about 3 points.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

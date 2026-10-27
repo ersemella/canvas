@@ -130,6 +130,12 @@ Alchemist's power 1 and 2, against the built Elixir.
 (`ABILITY.cleave.shape: 'lines'`) against the built shape, on today's rules;
 adopted the same day, so `lines` is now `built`, and it and `cleave-shape.mjs`
 reproduce only at their revision.
+`roster-check.mjs` (2026-10-27) puts every hero in every seat of a Steppe
+mirror and a China mirror, and plays one hero, or a whole side, by a
+novice (`depth: 1`) or an expert (`deep`) search (`mod.searchHeroes`, the
+heroes of the modified side that use `mod.search`). `roster-runs.mjs`
+(2026-10-27) plays every party of three in whole runs, and the one-of-each
+parties by a novice and an expert (`search`, the player's heroes' search).
 
 ## Ability and stat ablation
 
