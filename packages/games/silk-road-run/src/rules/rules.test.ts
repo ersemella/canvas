@@ -1648,6 +1648,28 @@ describe('abilities', () => {
     expect(b.statuses).toEqual([{kind: 'immobilized', eye: true}]);
   });
 
+  it('with `ABILITY.eye.ring` off, an ally anywhere within `range` is a target', () => {
+    const saved = {...ABILITY.eye};
+    onTestFinished(() => void Object.assign(ABILITY.eye, saved));
+    Object.assign(ABILITY.eye, {ring: false, range: 3});
+    const s = setup({
+      'p-storm': at(2, 3),
+      'p-bokh': at(3, 3),
+      'p-mangudai': at(5, 3),
+      'e-bokh': at(4, 3),
+      'e-mangudai': at(8, 6),
+    });
+    const storm = unit(s, 'p-storm');
+    expect(hexDistance(at(5, 3), storm.hex!)).toBe(3);
+    const targets = ABILITIES.eye
+      .targets(s, mapOf(s), storm, storm.hex!)
+      .map((t) => hexKey(t.hex!))
+      .sort();
+    expect(targets).toEqual([at(2, 3), at(3, 3), at(5, 3)].map(hexKey).sort());
+    expect(ABILITIES.eye.minRange).toBe(1);
+    expect(ABILITIES.eye.summary(storm)).toContain('An ally within 3, or yourself');
+  });
+
   it('a heal adds its healer’s Empower and loses its Weaken, as a hit’s damage does', () => {
     const s = eyeSetup();
     const storm = unit(s, 'p-storm');

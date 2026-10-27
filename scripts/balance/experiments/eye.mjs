@@ -204,3 +204,30 @@ for (const [name, eye] of [
     },
     mod: {kits: {storm: ['hail', 'hold']}},
   };
+// Asked for (2026-10-27): the storm following the unit healed, heal by
+// power, Weaken 1 and Immobilize, no hit, an ally anywhere within 3 or
+// itself (`ring` off, `range` 3), against the game's balance.
+{
+  const patch = (c) => {
+    Object.assign(c.ABILITY.eye, {
+      follows: true,
+      damage: false,
+      weaken: 1,
+      immobilize: true,
+      ring: false,
+      range: 3,
+    });
+  };
+  const name = 'follows+imm+weaken+within3';
+  experiments[`${name}:hail-vs-eye`] = {patch, mod: {kits: {storm: ['hail', 'hold']}}};
+  experiments[`${name}:no-eye`] = {patch, mod: {ban: ['eye']}};
+  for (const hero of china)
+    experiments[`${name}:${hero}-for-storm`] = {
+      patch,
+      mod: {party: steppe.map((h) => (h === 'storm' ? hero : h))},
+    };
+  experiments[`${name}:vs-storm+2wolves`] = {patch, enemies: ['storm', 'wolf', 'wolf']};
+  experiments[`${name}:vs-bokh+storm+wolf`] = {patch, enemies: ['bokh', 'storm', 'wolf']};
+  experiments[`${name}:vs-mangudai+storm+wolf`] = {patch, enemies: ['mangudai', 'storm', 'wolf']};
+  experiments[`${name}:vs-all-three`] = {patch, enemies: steppe};
+}

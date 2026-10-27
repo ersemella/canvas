@@ -57,3 +57,16 @@ experiments['anywhere+damage'] = {
     Object.assign(ABILITY.eye, {anywhere: true, damage: true, weaken: 0});
   },
 };
+experiments['follows+imm+weaken+within3'] = {
+  party: steppe,
+  patch: ({ABILITY}) => {
+    Object.assign(ABILITY.eye, {
+      follows: true,
+      damage: false,
+      weaken: 1,
+      immobilize: true,
+      ring: false,
+      range: 3,
+    });
+  },
+};

@@ -294,8 +294,13 @@ const eye: AbilityDef = {
   get targetsUnit() {
     return !ABILITY.eye.anywhere;
   },
-  range: ABILITY.eye.range,
-  minRange: ABILITY.eye.range,
+  // Getters, so the measuring switches (`ABILITY.eye.range`, `.ring`) reach the page and the AI.
+  get range() {
+    return ABILITY.eye.range;
+  },
+  get minRange() {
+    return ABILITY.eye.ring ? ABILITY.eye.range : 1;
+  },
   radius: 1,
   summary(user) {
     const {weaken: weakens, immobilize, damage} = ABILITY.eye;
@@ -304,15 +309,17 @@ const eye: AbilityDef = {
       .join(' and ');
     const until = lasting ? `${lasting} until the end of its next turn` : '';
     const storm = damage ? (until ? `hit and ${until}` : 'hit') : until;
+    const reach = `${ABILITY.eye.ring ? 'exactly' : 'within'} ${ABILITY.eye.range}${ABILITY.eye.ring ? ' away' : ''}`;
     const where = ABILITY.eye.anywhere
-      ? `A space exactly ${ABILITY.eye.range} away, or yourself: an ally there heals`
-      : `An ally exactly ${ABILITY.eye.range} away, or yourself: it heals`;
+      ? `A space ${reach}, or yourself: an ally there heals`
+      : `An ally ${reach}, or yourself: it heals`;
     return `${where} ${eyeHeal(user)}${storm ? `; every unit next to it is ${storm}` : ''}.`;
   },
   targets: (state, map, user, from) => [
     {hex: {...from}},
     ...hexesWithin(map, from, ABILITY.eye.range, (h) => {
-      if (hexDistance(from, h) !== ABILITY.eye.range) return false;
+      const d = hexDistance(from, h);
+      if (d === 0 || (ABILITY.eye.ring && d !== ABILITY.eye.range)) return false;
       const u = unitAt(state, h);
       if (u) return u.side === user.side;
       return ABILITY.eye.anywhere && !blocks(tileAt(map, h));

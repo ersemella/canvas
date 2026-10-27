@@ -264,9 +264,12 @@ export const ABILITY = {
    * built); `follows`, the storm following the unit healed until the Storm
    * Caller's next turn, catching each unit that comes next to it once, as
    * it lands (off as built); a walk that the storm Immobilizes stops there.
+   * `ring`: its target exactly `range` away (on as built); off, anywhere
+   * within it, where the Storm Caller can be in its own storm.
    */
   eye: {
-    range: 2,
+    range: 2 as number,
+    ring: true as boolean,
     weaken: 1 as number,
     heal: 0 as number,
     immobilize: false as boolean,
