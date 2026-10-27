@@ -199,8 +199,16 @@ tuning. This file has no combat-design section number.
 
 ## Prompts for the Archer (2026-10-27)
 
-The Archer (roster.md) plays as a lettered disc (`archer` in
-`HERO_COLOR`) until its art exists. Like the other heroes' art, it
+**Built from the owner's art (2026-10-27):** the sprite shrunk to
+32 × 32 with the body filling the frame, the bow's top tip at its edge,
+the bow traced back in from the art where shrinking broke it, the face
+(cap, eye, beard) redrawn by hand, and a 2-frame idle split at the knees
+(`--split 25`) so the bow moves with the body; the portrait cropped to
+the face with the bow behind, cut to 14 colours, the cap's felt smoothed
+into a few tones and the eye put back by hand. The prompts it came from:
+
+The Archer (roster.md) played as a lettered disc (`archer` in
+`HERO_COLOR`) until then. Like the other heroes' art, it
 starts as the owner's AI-assisted picture, cut down by hand to the
 sprites' grid and palette: a **32 × 32** board sprite facing right, split
 into the 2-frame idle by `scripts/idle-sheet.py` (64 × 32 in all, as

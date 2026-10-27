@@ -22,6 +22,8 @@ import {
 } from './pixels';
 import alchemistPortrait from '../sprites/alchemist-portrait.png';
 import alchemistSprite from '../sprites/alchemist.png';
+import archerPortrait from '../sprites/archer-portrait.png';
+import archerSprite from '../sprites/archer.png';
 import bokhPortrait from '../sprites/bokh-portrait.png';
 import bokhSprite from '../sprites/bokh.png';
 import camelPortrait from '../sprites/camel-portrait.png';
@@ -68,6 +70,9 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // put back by hand.
   magus: magusSprite,
   mahout: mahoutSprite,
+  // From the owner's AI-assisted art (2026-10-27): shrunk to 32×32, the bow
+  // traced back in from the art, the face redrawn by hand.
+  archer: archerSprite,
   camel: camelSprite,
   wolf: wolfSprite,
   // From the owner's AI-assisted art (2026-10-25): cut out, shrunk to the
@@ -84,6 +89,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   youxia: {src: youxiaPortrait, faceX: 19},
   magus: {src: magusPortrait, faceX: 20},
   mahout: {src: mahoutPortrait, faceX: 24},
+  archer: {src: archerPortrait, faceX: 18},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},

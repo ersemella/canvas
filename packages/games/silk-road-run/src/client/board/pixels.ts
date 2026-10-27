@@ -35,7 +35,7 @@ export const HERO_COLOR = {
   magus: '#7e22ce',
   // The Elephant Rider's disc, shown while its sprite loads.
   mahout: '#78716c',
-  // The Archer's disc: it has no sprite yet.
+  // The Archer's disc, shown while its sprite loads.
   archer: '#0369a1',
   camel: '#a8742f',
   wolf: '#6b7280',
