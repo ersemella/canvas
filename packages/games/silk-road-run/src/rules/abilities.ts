@@ -939,7 +939,10 @@ const conjunction: AbilityDef = {
   kind: 'control',
   damages: false,
   bothSides: true,
-  pairs: true,
+  // Omen aims one unit.
+  get pairs() {
+    return ABILITY.conjunction.mode !== 'omen';
+  },
   get ordered() {
     return ABILITY.conjunction.mode !== 'swap';
   },
@@ -948,15 +951,18 @@ const conjunction: AbilityDef = {
     return ABILITY.conjunction.range;
   },
   summary: () =>
-    ABILITY.conjunction.mode === 'before'
-      ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just before your next turn.`
-      : ABILITY.conjunction.mode === 'bracket'
-        ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just after your next turn.`
-        : `Two units within ${ABILITY.conjunction.range} whose turns come before your next swap places on the track.`,
+    ABILITY.conjunction.mode === 'omen'
+      ? `A unit within ${ABILITY.conjunction.range} whose turn comes before your next: an ally acts next, an enemy just after your next turn.`
+      : ABILITY.conjunction.mode === 'before'
+        ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just before your next turn.`
+        : ABILITY.conjunction.mode === 'bracket'
+          ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just after your next turn.`
+          : `Two units within ${ABILITY.conjunction.range} whose turns come before your next swap places on the track.`,
   targets(state, _map, user, from) {
     const units = sortByHex(conjunctionTakes(state, user, from), (u) => u.hex!);
     const {mode, once} = ABILITY.conjunction;
     const out: ActionTarget[] = [];
+    if (mode === 'omen') return units.map((u) => ({hex: {...u.hex!}}));
     for (const a of units)
       for (const b of units)
         if (a !== b && !(mode === 'bracket' && once && b.bracketed))
@@ -965,6 +971,20 @@ const conjunction: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const a = unitAt(ctx.state, target.hex!)!;
+    if (ABILITY.conjunction.mode === 'omen') {
+      const {rider} = ABILITY.conjunction;
+      log(ctx, `${unitName(user)} reads an omen in the stars.`);
+      if (a.side === user.side) {
+        setCard(ctx, a, ctx.state.currentSlot + 1);
+        log(ctx, `${unitName(a)} acts next.`);
+        if (rider) empower(ctx, a, rider);
+      } else {
+        setCard(ctx, a, aimSlot(ctx.state, user) + 1);
+        log(ctx, `${unitName(a)} waits until after ${unitName(user)} again.`);
+        if (rider) weaken(ctx, a, rider);
+      }
+      return;
+    }
     const b = unitAt(ctx.state, target.to!)!;
     log(ctx, `${unitName(user)} reads a conjunction in the stars.`);
     if (ABILITY.conjunction.mode === 'bracket') {

@@ -407,9 +407,14 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // or gains (an ally's), as Cleave's Delay is weighed.
   if (ability === 'conjunction') {
     const a = unitAt(state, target!.hex!)!;
-    const b = unitAt(state, target!.to!)!;
     const later = (u: Unit, by: number) =>
       ((hostile(u, unit) ? 1 : -1) * turnValue(u) * by) / cardCost(u);
+    // Omen: one unit, an ally to act next, an enemy after the Magus's next turn.
+    if (ABILITY.conjunction.mode === 'omen') {
+      const to = hostile(a, unit) ? aimSlot(state, unit) + 1 : state.currentSlot + 1;
+      return closing + later(a, to - a.slot!) + (ABILITY.conjunction.rider ? 1 : 0);
+    }
+    const b = unitAt(state, target!.to!)!;
     // Its switches (off as built): a hit and a Delay on each enemy swapped.
     let extra = 0;
     for (const u of [a, b]) {

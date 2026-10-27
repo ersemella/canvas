@@ -1581,6 +1581,44 @@ describe('the Magus', () => {
     }
   });
 
+  it('Conjunction as `omen` aims one unit: an ally acts next, an enemy after its next turn', () => {
+    const was = {...ABILITY.conjunction};
+    Object.assign(ABILITY.conjunction, {mode: 'omen'});
+    try {
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': hexNeighbor(c, 0),
+          'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      const e = unit(s, 'e-mangudai');
+      const b = unit(s, 'p-bokh');
+      m.slot = s.currentSlot;
+      e.slot = 1;
+      b.slot = 7;
+      expect(conjunction(s, m).map((t) => [unitAt(s, t.hex!)!.id, t.to])).toEqual(
+        expect.arrayContaining([
+          ['e-mangudai', undefined],
+          ['p-bokh', undefined],
+        ])
+      );
+      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!}}});
+      expect(b.slot).toBe(s.currentSlot + 1);
+      const s2 = setup({'p-magus': c, 'e-mangudai': hexNeighbor(c, 0)}, party);
+      const m2 = unit(s2, 'p-magus');
+      const e2 = unit(s2, 'e-mangudai');
+      m2.slot = s2.currentSlot;
+      e2.slot = 1;
+      applyTurn(s2, m2, {action: {ability: 'conjunction', target: {hex: e2.hex!}}});
+      expect(e2.slot).toBe(actionCost(m2) + 1);
+    } finally {
+      Object.assign(ABILITY.conjunction, was);
+    }
+  });
+
   it('Conjunction passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
     const s = setup(
       {
