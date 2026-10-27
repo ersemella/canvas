@@ -47,6 +47,7 @@ Swordsman's Swift Strike, Haste 3 when it hits, 2 before 2026-10-26), Inevitable
 Shield 1 from Rally (until the unit's next turn), Armour 1 as Hardened and
 Pierce as Piercing Eye. No hero has a passive yet; neither the delay nor
 the haste limit is built.
+**Inevitable from the start** (2026-10-27): the Magus carries Steady Gait as its hero's own (`HeroStats.passives`), and its Conjunction swaps two cards, Inevitable ones never, which no keyword names: one Hastened and one Delayed by the gap between them.
 The others are defined here and built when an ability uses them.
 
 ## 17. Keywords and Effects

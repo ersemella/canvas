@@ -302,6 +302,8 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
       const key = `${def.id}:${target.hex ? hexKey(target.hex) : ''}:${target.to ? hexKey(target.to) : ''}`;
       if (tried.has(key)) continue;
       tried.add(key);
+      // A pair either way round is one turn (Conjunction).
+      if (def.pairs) tried.add(`${def.id}:${hexKey(target.to!)}:${hexKey(target.hex!)}`);
       inputs.push({action: {ability: def.id, target}});
     }
   }
@@ -389,6 +391,15 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
     }
     return closing + value;
+  }
+  // Conjunction: the share of a turn each card loses (an enemy's, a gain)
+  // or gains (an ally's), as Cleave's Delay is weighed.
+  if (ability === 'conjunction') {
+    const a = unitAt(state, target!.hex!)!;
+    const b = unitAt(state, target!.to!)!;
+    const later = (u: Unit, by: number) =>
+      ((hostile(u, unit) ? 1 : -1) * turnValue(u) * by) / cardCost(u);
+    return closing + later(a, b.slot! - a.slot!) + later(b, a.slot! - b.slot!);
   }
   const def = ABILITIES[ability];
   const hit = !target?.hex

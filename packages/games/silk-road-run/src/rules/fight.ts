@@ -102,7 +102,8 @@ export function refreshStats(state: FightState): void {
  * `copy` numbers a second or later unit of the same hero on a side
  * (e-wolf, e-wolf-2); `loadout` is the test stage's stats, kit and
  * passives for it; `provisions` the stat points the run has given it, and
- * `passives` those taken at its caravanserais (beside its loadout's).
+ * `passives` those taken at its caravanserais (beside its hero's and its
+ * loadout's).
  * Glass Cannon (19.8) starts it at half its health.
  */
 export function makeUnit(
@@ -115,7 +116,9 @@ export function makeUnit(
   taken: PassiveId[] = []
 ): Unit {
   const stats = heroStats(hero, loadout, provisions);
-  const passives = [...new Set([...(loadout?.passives ?? []), ...taken])];
+  const passives = [
+    ...new Set([...(HEROES[hero].passives ?? []), ...(loadout?.passives ?? []), ...taken]),
+  ];
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}${copy ? `-${copy + 1}` : ''}`,
     hero,

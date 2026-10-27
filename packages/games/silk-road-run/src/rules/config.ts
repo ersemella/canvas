@@ -8,7 +8,7 @@
  * exactly its user's power in damage. Values marked PLACEHOLDER are the
  * builder's, for units the owner hasn't set.
  */
-import type {AbilityId, HeroId} from './types';
+import type {AbilityId, HeroId, PassiveId} from './types';
 
 export const RULES = {
   /**
@@ -59,6 +59,11 @@ export interface HeroStats {
    * starting kit (owner, 2026-10-24; progression.md, 19.3).
    */
   upgrades?: AbilityId[];
+  /**
+   * Passives it carries from the start, beside any it takes (progression.md,
+   * 19.8): the Magus's Inevitable, as Steady Gait (owner, 2026-10-27).
+   */
+  passives?: PassiveId[];
   /** Spaces a move may cover; RULES.movementCap if unset. */
   moveCap?: number;
   /**
@@ -175,6 +180,22 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 2,
     abilities: ['swiftStrike', 'hold'],
     moveCap: 3,
+  },
+  /**
+   * The Magus (owner, 2026-10-27; roster.md): Persia's support, a track
+   * controller. Speed 2, defence 1 (health 4) and power 0 are the owner's:
+   * no ability of its deals damage. Inevitable from the start (Steady
+   * Gait): nothing Delays or Hastens its card, its own Conjunction
+   * included, though a collision still bumps it (3.3; owner, 2026-10-27).
+   */
+  magus: {
+    name: 'Magus',
+    letter: 'M',
+    speed: 2,
+    defence: 1,
+    power: 0,
+    abilities: ['conjunction', 'hold'],
+    passives: ['steadyGait'],
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -378,6 +399,13 @@ export const ABILITY = {
    */
   swiftStrike: {haste: 3 as number},
   /**
+   * Conjunction (owner, 2026-10-27; roster.md), the Magus's: two units
+   * within `range` (2), of either side, the camel too, neither Inevitable,
+   * whose cards both come before the Magus's next turn, swap places on the
+   * track, one Hastened and the other Delayed by the same gap.
+   */
+  conjunction: {range: 2 as number},
+  /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
    * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
@@ -453,6 +481,7 @@ export const AI = {
     modao: 0,
     alchemist: 1,
     youxia: 1,
+    magus: 1,
     camel: 0,
     wolf: 1,
     fox: 1,
@@ -525,7 +554,7 @@ export const AI = {
  */
 export const PARTY: HeroId[] = ['bokh', 'mangudai', 'storm'];
 /** Every hero the start menu offers and the enemy draws from, in party slot order. */
-export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist', 'youxia'];
+export const ROSTER: HeroId[] = [...PARTY, 'modao', 'alchemist', 'youxia', 'magus'];
 /**
  * The regions a run passes through, in order (setting.md, 15.3a), so far
  * the two whose stages are built: each names its basic creature (the

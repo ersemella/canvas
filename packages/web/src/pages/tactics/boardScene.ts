@@ -214,7 +214,7 @@ export function buildScene(input: SceneInput): BoardScene {
         for (const t of targets)
           show(
             second ? (hexEquals(t.hex!, target!.hex!) ? t.to : undefined) : t.hex,
-            second || throws(t.hex!) ? 'landing' : 'target'
+            (second && !def.pairs) || throws(t.hex!) ? 'landing' : 'target'
           );
       // Where Feigned Retreat falls back to: the space hovered, else the one
       // picked, drawn as a move's.
@@ -224,7 +224,7 @@ export function buildScene(input: SceneInput): BoardScene {
               ?.to
           : undefined;
       const landing = hoveredLanding ?? target?.to;
-      if (second && landing) out.step = [def.walksAfter && from ? from : target.hex!, landing];
+      if (second && landing && !def.pairs) out.step = [def.walksAfter && from ? from : target.hex!, landing];
     }
     // Cleave's line, before it's aimed: the one under the mouse, by any of its spaces.
     const hoveredAim =

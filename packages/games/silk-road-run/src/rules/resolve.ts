@@ -263,6 +263,19 @@ export function haste(ctx: Ctx, u: Unit, n: number): void {
   else placeCard(ctx.state, u, Math.max(ctx.state.currentSlot + 1, u.slot - n));
 }
 
+/**
+ * Swaps two cards' places on the track (the Magus's Conjunction): each
+ * takes the slot the other leaves, so nothing collides. The later one is
+ * Hastened and the earlier Delayed by the same gap, neither if either is
+ * Inevitable (17.3).
+ */
+export function swapCards(ctx: Ctx, a: Unit, b: Unit): void {
+  if (!a.alive || !b.alive || a.slot === null || b.slot === null) return;
+  if (inevitable(ctx, a) || inevitable(ctx, b)) return;
+  [a.slot, b.slot] = [b.slot, a.slot];
+  log(ctx, `${unitName(a)} and ${unitName(b)} swap places on the track.`);
+}
+
 /** Takes off the Haste `unit` was given during its turn, its card just placed (`haste`). */
 export function takeHasteDue(state: FightState, unit: Unit): void {
   const n = unit.hasteDue;

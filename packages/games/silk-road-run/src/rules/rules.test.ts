@@ -1465,6 +1465,92 @@ describe('the Swordsman', () => {
   });
 });
 
+describe('the Magus', () => {
+  const party: HeroId[] = ['magus', 'mangudai', 'bokh'];
+  const c = at(4, 4);
+  const conjunction = (s: FightState, m: Unit) =>
+    ABILITIES.conjunction.targets(s, mapOf(s), m, m.hex!);
+
+  it('has speed 2, power 0, defence 1, and is Inevitable from the start', () => {
+    const s = setup({'p-magus': c}, party);
+    const m = unit(s, 'p-magus');
+    expect([m.speed, m.power, m.defence, m.maxHp]).toEqual([2, 0, 1, healthOf(1)]);
+    expect(m.passives).toEqual(['steadyGait']);
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
+    const was = m.slot;
+    delay(ctx, m, 3);
+    haste(ctx, m, 3);
+    expect(m.slot).toBe(was);
+  });
+
+  it('Conjunction swaps two cards within 2 that come before its next turn', () => {
+    const s = setup(
+      {'p-magus': c, 'e-mangudai': hexNeighbor(c, 0), 'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3)},
+      party
+    );
+    const m = unit(s, 'p-magus');
+    const e = unit(s, 'e-mangudai');
+    const b = unit(s, 'p-bokh');
+    m.slot = s.currentSlot;
+    e.slot = 1;
+    b.slot = 7;
+    const targets = conjunction(s, m);
+    expect(targets).toHaveLength(2);
+    // Either way round is the same swap.
+    applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: e.hex!, to: b.hex!}}});
+    expect([e.slot, b.slot]).toEqual([7, 1]);
+    expect(m.slot).toBe(actionCost(m));
+    expect(m.power).toBe(0);
+    expect(e.hp).toBe(e.maxHp);
+  });
+
+  it('Conjunction passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
+    const s = setup(
+      {
+        'p-magus': c,
+        'e-mangudai': hexNeighbor(c, 0),
+        'e-bokh': hexNeighbor(c, 1),
+        'p-bokh': hexNeighbor(c, 2),
+        'p-mangudai': at(4, 7),
+        'p-camel': hexNeighbor(c, 4),
+      },
+      party
+    );
+    const m = unit(s, 'p-magus');
+    m.slot = s.currentSlot;
+    const next = aimSlot(s, m);
+    unit(s, 'e-mangudai').slot = next - 1;
+    unit(s, 'e-bokh').slot = next + 1;
+    unit(s, 'p-bokh').slot = 2;
+    unit(s, 'p-bokh').passives = ['steadyGait'];
+    unit(s, 'p-mangudai').slot = 3;
+    unit(s, 'p-camel').slot = 4;
+    // Only the Horse Archer next to it and Humphrey remain: one pair, either way round.
+    const ids = conjunction(s, m).map((t) => [unitAt(s, t.hex!)!.id, unitAt(s, t.to!)!.id]);
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        ['e-mangudai', 'p-camel'],
+        ['p-camel', 'e-mangudai'],
+      ])
+    );
+    expect(ids).toHaveLength(2);
+    // With one unit left, there is nothing to swap.
+    unit(s, 'p-camel').slot = next + 2;
+    expect(conjunction(s, m)).toEqual([]);
+    expect(offeredTargets(s, mapOf(s), m, ABILITIES.conjunction)).toEqual([]);
+  });
+
+  it('an Inevitable card is still bumped on by a collision', () => {
+    const s = setup({'p-magus': c, 'e-mangudai': at(4, 7)}, party);
+    const m = unit(s, 'p-magus');
+    const e = unit(s, 'e-mangudai');
+    m.slot = 5;
+    placeCard(s, e, 5);
+    // The faster card keeps the slot (3.3).
+    expect([e.slot, m.slot]).toEqual([5, 6]);
+  });
+});
+
 describe('the Vanguard and the Alchemist', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
 
@@ -2583,7 +2669,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a party must be one to three different heroes of the roster', () => {
-    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist', 'youxia']);
+    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist', 'youxia', 'magus']);
     expect(() => createRun(5, {party: ['modao', 'alchemist']})).not.toThrow();
     for (const party of [
       ['modao', 'alchemist', 'storm', 'bokh'],

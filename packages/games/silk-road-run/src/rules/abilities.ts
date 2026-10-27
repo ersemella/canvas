@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Swordsman's (owner, 2026-10-26), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * Swordsman's (owner, 2026-10-26), the Magus's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -40,12 +40,14 @@ import {
   makeUnstoppable,
   swapSpeedHealth,
   stun,
+  swapCards,
   unitName,
   walk,
 } from './resolve';
 import type {Ctx} from './resolve';
 import {blocks, tileAt} from './map';
-import {chargeOf} from './track';
+import {aimSlot, chargeOf} from './track';
+import {hasPassive} from './passives';
 import type {MapData} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
@@ -110,6 +112,11 @@ export interface AbilityDef {
    * Empower or Weaken), so the page offers units of either side.
    */
   bothSides?: boolean;
+  /**
+   * Aimed at two units, `hex` and `to`, either way round (Conjunction): the
+   * page aims one and then the other, and the AI tries each pair once.
+   */
+  pairs?: boolean;
   /**
    * The unit a target aims at, when it isn't simply the one on its hex
    * (Grapple's throw: the held unit, aimed by where it lands). For the
@@ -806,6 +813,61 @@ const swiftStrike: AbilityDef = {
   },
 };
 
+// ─── Magus ───────────────────────────────────────────────────────────────────
+
+/**
+ * The units Conjunction can take from `from`: within its range, not the
+ * Magus, not Inevitable, and with a card before the Magus's next turn
+ * (its action cost on from now), so each still acts before it does again.
+ */
+export function conjunctionTakes(state: FightState, user: Unit, from: Hex): Unit[] {
+  const next = aimSlot(state, user);
+  return state.units.filter(
+    (u) =>
+      u.alive &&
+      u !== user &&
+      u.hex !== null &&
+      u.slot !== null &&
+      u.slot > state.currentSlot &&
+      u.slot < next &&
+      hexDistance(u.hex, from) <= ABILITY.conjunction.range &&
+      !hasPassive(u, 'steadyGait')
+  );
+}
+
+/**
+ * Conjunction (owner, 2026-10-27; roster.md): two units within
+ * `ABILITY.conjunction.range`, of either side, the camel too, swap places
+ * on the track (`swapCards`), both cards before the Magus's next turn.
+ */
+const conjunction: AbilityDef = {
+  id: 'conjunction',
+  name: 'Conjunction',
+  kind: 'control',
+  damages: false,
+  bothSides: true,
+  pairs: true,
+  targetsUnit: true,
+  get range() {
+    return ABILITY.conjunction.range;
+  },
+  summary: () =>
+    `Two units within ${ABILITY.conjunction.range} whose turns come before your next swap places on the track.`,
+  targets(state, _map, user, from) {
+    const units = sortByHex(conjunctionTakes(state, user, from), (u) => u.hex!);
+    const out: ActionTarget[] = [];
+    for (const a of units)
+      for (const b of units) if (a !== b) out.push({hex: {...a.hex!}, to: {...b.hex!}});
+    return out;
+  },
+  resolve(ctx, user, target) {
+    const a = unitAt(ctx.state, target.hex!)!;
+    const b = unitAt(ctx.state, target.to!)!;
+    log(ctx, `${unitName(user)} reads a conjunction in the stars.`);
+    swapCards(ctx, a, b);
+  },
+};
+
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 
 const bite: AbilityDef = {
@@ -833,6 +895,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   cleave,
   elixir,
   swiftStrike,
+  conjunction,
   shove,
   haul,
   feignedRetreat,

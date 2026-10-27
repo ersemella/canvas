@@ -25,6 +25,8 @@ const LORE: Partial<Record<HeroId, string>> = {
     'A master of elixirs, brewed from minerals in sealed crucibles. The Alchemist throws an elixir at anyone close by, itself included: an ally is mended and strikes harder, while an enemy is scalded and weakened.',
   youxia:
     'A wandering knight-errant, sworn to keep their word and avenge wrongs. The Swordsman travels light with a straight sword, and every stroke that lands quickens the next.',
+  magus:
+    'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but brings two fates into conjunction, trading when each will act, while its own course is fixed and cannot be hurried or held back.',
 };
 
 /**

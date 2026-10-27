@@ -273,6 +273,24 @@ const ICON: Record<IconId, Icon> = {
       '=...........',
     ],
   },
+  // Two stars meeting, the brighter one the accent.
+  conjunction: {
+    kind: 'control',
+    rows: [
+      '............', //
+      '..#.........',
+      '..#.........',
+      '#####.......',
+      '..#.....+...',
+      '..#.....+...',
+      '......+++++.',
+      '........+...',
+      '........+...',
+      '...=........',
+      '..===.......',
+      '...=........',
+    ],
+  },
   // An elixir gourd, its stopper the accent.
   elixir: {
     kind: 'support',

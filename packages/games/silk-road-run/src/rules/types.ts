@@ -9,7 +9,8 @@ import type {Tile} from './map';
 export type Side = 'player' | 'enemy';
 /**
  * The three prototype heroes, the Vanguard and the Alchemist
- * (owner, 2026-10-25), the Swordsman (owner, 2026-10-26), the
+ * (owner, 2026-10-25), the Swordsman (owner, 2026-10-26), the Magus
+ * (owner, 2026-10-27), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, and the enemy NPCs, the wolf and the fox.
  */
@@ -20,6 +21,7 @@ export type HeroId =
   | 'modao'
   | 'alchemist'
   | 'youxia'
+  | 'magus'
   | 'camel'
   | 'wolf'
   | 'fox';
@@ -34,6 +36,7 @@ export type AbilityId =
   | 'cleave'
   | 'elixir'
   | 'swiftStrike'
+  | 'conjunction'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
@@ -43,8 +46,9 @@ export type AbilityId =
 
 /**
  * The passives (progression.md, 19.8; owner, 2026-10-24): hero-agnostic
- * rules a unit carries, from an upgrade offer's passive slot (19.3). No
- * hero has one yet; the test stage gives them (`Loadout.passives`).
+ * rules a unit carries, from an upgrade offer's passive slot (19.3), or
+ * from the start (`HeroStats.passives`: the Magus's Steady Gait); the test
+ * stage gives them too (`Loadout.passives`).
  */
 export type PassiveId =
   // Track
