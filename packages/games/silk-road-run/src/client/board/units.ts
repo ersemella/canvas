@@ -52,8 +52,9 @@ const RUG = {
   enemy: {field: paletteAlpha('madder', 0.8), stitch: PALETTE.ivory},
 };
 /**
- * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
- * hero, the Elephant Rider, the camel, the wolf or the fox) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
+ * Board sprites, facing right: square frames (32×32, 36×36 for a mounted
+ * hero, the camel, the wolf or the fox, or 44×44 for the Elephant Rider,
+ * whose head and rider rise above its hex) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
 const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
