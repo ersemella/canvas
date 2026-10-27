@@ -104,6 +104,10 @@ taking its slot against its colliding by speed (`RULES.delayWins`,
 `.hasteWins`, at `a9f89d0`); built since: both by speed, the switches
 removed, so its `built` and `by-speed` rows both measure that.
 
+`eye.mjs` (2026-10-27) measures Eye of the Storm as the Storm Caller's core
+in place of Hail (`mod.kits`), with heal 2 (`ABILITY.eye.heal`) and Weaken
+2 (`ABILITY.eye.weaken`); `eye-runs.mjs` the same in whole runs.
+
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production

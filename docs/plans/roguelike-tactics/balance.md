@@ -2640,6 +2640,54 @@ The "vs" columns are stage caravans against the Steppe party and camel
 - **China as an enemy is about 14 points easier** (the Steppe party
   59.3% from 45.1%); the other caravans move 2 points or less.
 
+### Eye of the Storm in place of Hail (2026-10-27)
+
+The owner's proposal: Eye of the Storm as the Storm Caller's core in place
+of Hail, Hail an upgrade beside Sunlight and Gale. An ally exactly 2 away,
+or the Storm Caller itself, heals the Storm Caller's power (1), with its
+Empower and Weaken (heals take them since this proposal, the Elixir's
+too); then every unit next to it that hits, of either side, is Weakened 1.
+Then, asked for, heal 2 (`ABILITY.eye.heal` 1) and Weaken 2.
+`experiments/eye.mjs` and `eye-runs.mjs`, **400 fights each** (about
+±2.5 points) from seed 1000, 200 whole runs (about ±3.5). *Head to head*:
+one side's Storm Caller with Hail as its core against Eye (above 50%, Hail
+the stronger). *Seat*: a Chinese hero in the Storm Caller's seat against
+the three Steppe heroes (50% its equal; lower, a stronger Storm Caller).
+
+| | Hail (built) | Eye 1/1 | Heal 2 | Weaken 2 | Both |
+|---|---:|---:|---:|---:|---:|
+| Hail against Eye, head to head | | 66.2% | 62% | 63.3% | 61.6% |
+| Side without the core ability | 28.6%¹ | 38.3% | 37.7% | 40.6% | 38.5% |
+| Swordsman for the Storm Caller | 62.3% | 74.5% | 70.5% | 69.8% | 64.2% |
+| Vanguard for the Storm Caller | 61.5% | 71.7% | 65.9% | 71.2% | 64.9% |
+| Alchemist for the Storm Caller | 55% | 66.4% | 61.1% | 66.2% | 61.7% |
+| Whole runs won (both sides' Storm Callers) | 11.5% | 17% | | | 29.5% |
+
+¹ From "The Storm Caller at speed 3", not rerun.
+
+With an upgrade, Hail + Sunlight beats Eye + Sunlight 60.4%, Hail + Gale
+Eye + Gale 56%. Stage caravans with an enemy Storm Caller, player wins
+with Hail and Eye 1/1: Storm + 2 wolves 99.5% and 100%, Grappler + Storm +
+wolf 96% and 98.7%, Horse Archer + Storm + wolf 95% and 98.8%, all three
+78.3% and 81.5%. Whole runs by stage (Steppe 1–3, China 1–3): Hail 98,
+88.3, 56.6, 95.9, 71.3, 34.3; Eye 1/1 98.5, 87.3, 58.7, 90.1, 69.2, 54;
+both 98.5, 91.9, 69.6, 94.4, 79.8, 62.1.
+
+- **Eye is weaker than Hail at every number tried**: Hail wins 62–66%
+  head to head, and every Chinese hero beats an Eye Storm Caller by more
+  than it beats a Hail one (5–12 points at 1/1, 3–9 with both raised).
+- **Eye is still worth having** (a side without it wins 38–41%), but less
+  than Hail (28.6%), at the bottom of the core's band or below it.
+- **Heal 2 and Weaken 2 each close the gap a little; both together close
+  it most**, the seat rows 2–10 points nearer Hail's, still 2–3 short.
+- **Runs get easier, not harder**: an enemy Storm Caller with Eye is a
+  weaker one, so runs won rise from 11.5% to 17%, and to 29.5% with both
+  raised, mostly in China's last stage (34% to 54% and 62%), where the
+  enemy fields all three heroes; the player's Storm Caller loses some of
+  its strength, the enemy's more.
+- Not changed: built on the branch `eye-of-the-storm`, Hail still the
+  core on `main`; the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
