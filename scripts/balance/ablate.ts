@@ -32,6 +32,8 @@ export type Mod = {
    * decisions and a work cap a turn (mirror.ts's `deep` is 4 and 4 × the cap).
    */
   search?: {depth: number; work: number};
+  /** Only these heroes of the modified side use `search`; the rest, production's. */
+  searchHeroes?: HeroId[];
 };
 export type Experiment = {
   patch?: (config: Config) => void;
@@ -250,7 +252,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
         held[caster?.side === u.side ? 'ally' : 'enemy']++;
       }
       const input =
-        u.side === modSide && mod?.search
+        u.side === modSide && mod?.search && (!mod.searchHeroes || mod.searchHeroes.includes(u.hero))
           ? searchWith(mod.search)(state, u)
           : chooseAiTurn(state, u);
       const moving = (input.move?.length ?? 0) > 0;
