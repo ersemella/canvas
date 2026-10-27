@@ -100,7 +100,8 @@ export function StartMenu(props: {
             <Text>
               Lead a caravan down a long road across the world. Humphrey, your camel, carries the
               cargo and walks the road on its own: guard it against rival caravans and the spirits
-              and monsters of every land you cross.
+              and monsters of every land you cross. Your heroes start every fight fresh, but
+              Humphrey’s wounds stay with it all the way down the road.
             </Text>
           </Stack>
 

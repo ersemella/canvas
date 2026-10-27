@@ -37,8 +37,9 @@ export interface SetOut {
  * takes 1 more of one stat, for the rest of the run, and the caravan sets
  * out. When the stage offers passives (`passives`, 19.3's passive slot) one
  * of three is taken, and one hero standing carries it for the rest
- * of the run. The camel takes neither. After a stage that earns nothing
- * the caravan only rests.
+ * of the run. The camel takes neither, and goes on with the health it
+ * ended the stage with. After a stage that earns nothing the caravan only
+ * rests.
  */
 export function Caravanserai(props: {
   fight: FightState;
@@ -59,6 +60,7 @@ export function Caravanserai(props: {
   const heroes = props.fight.units
     .filter((u) => u.side === 'player' && u.alive && !HEROES[u.hero].walksRoad)
     .sort((a, b) => a.partyIndex - b.partyIndex);
+  const camel = props.fight.units.find((u) => u.side === 'player' && HEROES[u.hero].walksRoad);
 
   return (
     <Stack
@@ -85,6 +87,12 @@ export function Caravanserai(props: {
                   ? ': take one of three passives for one hero, for the rest of the run.'
                   : '.'}
             </Text>
+            {camel && (
+              <Text fz="sm" c="dimmed" data-testid="camel-health">
+                {HEROES[camel.hero].name} goes on with {camel.hp} of {camel.maxHp} health: its
+                wounds stay with it from stage to stage. The heroes start each stage at full health.
+              </Text>
+            )}
           </Stack>
 
           {offered && (

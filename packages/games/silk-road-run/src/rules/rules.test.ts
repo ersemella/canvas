@@ -2373,6 +2373,27 @@ describe('previews, the AI and the run', () => {
     expect(runStatus({...run, fight: {...run.fight, phase: 'lost'}})).toBe('lost');
   });
 
+  it('the camel takes the health it ended a stage with to the next; the heroes start at full health', () => {
+    const run = createRun(5);
+    const won = {...run, fight: cloneFight(run.fight)};
+    won.fight.phase = 'won';
+    const camel = won.fight.units.find((u) => u.hero === 'camel')!;
+    camel.hp = camel.maxHp - 7;
+    camel.statuses = [{kind: 'immobilized'}];
+    const bokh = won.fight.units.find((u) => u.id === 'p-bokh')!;
+    bokh.hp = 1;
+    const next = handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'speed'}});
+    const taken = (id: string) =>
+      next.fight
+        .events!.filter((e) => e.kind === 'damage' && e.unitId === id)
+        .reduce((sum, e) => sum + (e as {amount: number}).amount, 0);
+    const after = next.fight.units.find((u) => u.hero === 'camel')!;
+    expect(after.hp + taken(after.id)).toBe(camel.maxHp - 7);
+    expect(after.statuses).toEqual([]);
+    const fresh = next.fight.units.find((u) => u.id === 'p-bokh')!;
+    expect(fresh.hp + taken(fresh.id)).toBe(fresh.maxHp);
+  });
+
   it("the caravanserai after stages 1 and 2: a provision raises one survivor's stat for the rest of the run", () => {
     const win = (r: RunState): RunState => {
       const fight = cloneFight(r.fight);

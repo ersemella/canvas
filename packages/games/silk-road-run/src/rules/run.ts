@@ -3,7 +3,9 @@
  * against a bigger enemy band. Heroes who fall are gone for the run; the
  * survivors and the camel go on to the next stage, by way of the
  * caravanserai, where a stage that earns one gives a provision, and the
- * last stage of a region offers three passives, one taken. The run keeps the seed;
+ * last stage of a region offers three passives, one taken. The heroes start
+ * each stage at full health; the camel keeps the health it ended the last
+ * one with (camel.md, 18.4). The run keeps the seed;
  * the view is the fight, which never contains it.
  */
 import type {Hex, RunContext} from '@canvas/engine/server';
@@ -140,14 +142,17 @@ const stageSeed = (seed: number, stage: number) => (seed + stage * 0x9e3779b9) >
 
 /**
  * A stage's fight, on its map, advanced to its first decision, the player's
- * or the AI's; the first `MOUNTAIN_STAGES` always have mountains.
+ * or the AI's; the first `MOUNTAIN_STAGES` always have mountains. The camel
+ * starts it with `camelHp`, the health it ended the stage before with; at
+ * full health on the first.
  */
 function stageFight(
   seed: number,
   stage: number,
   party: HeroId[],
   provisions: Provision[] = [],
-  passives: PassivePick[] = []
+  passives: PassivePick[] = [],
+  camelHp?: number
 ): FightState {
   const fight = createFight(
     stageSeed(seed, stage),
@@ -158,6 +163,8 @@ function stageFight(
     mapById(STAGES[stage]!.map),
     passives
   );
+  const camel = fight.units.find((u) => u.hero === CAMEL)!;
+  if (camelHp !== undefined) camel.hp = Math.min(camelHp, camel.maxHp);
   fight.events = [];
   advanceToDecision(fight);
   return fight;
@@ -305,7 +312,8 @@ export function parseAction(raw: unknown): RunAction {
  * next is worked out; then the track runs on to the next decision, either
  * side's. Or, once a stage short of the last is won, on to the next, with
  * the provision it earned given to one of the survivors, and on leaving a
- * region one of the passives offered (`passiveOffer`) to one of them. Given
+ * region one of the passives offered (`passiveOffer`) to one of them; the
+ * camel takes its health on with it. Given
  * a clock (`context.now`) the AI looks as deep as it gets in
  * AI.browser.thinkMs; without one it keeps to AI.maxSimulations, the same
  * turn on every machine (tests, balance).
@@ -344,7 +352,8 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
     } else if (action.passive) {
       throw new RuleError('There is no passive to take.');
     }
-    const fight = stageFight(run.seed, stage + 1, party, provisions, passives);
+    const camel = run.fight.units.find((u) => u.hero === CAMEL)!;
+    const fight = stageFight(run.seed, stage + 1, party, provisions, passives, camel.hp);
     return {...run, version: run.version + 1, stage: stage + 1, provisions, passives, fight};
   }
   const fight = cloneFight(run.fight, true);

@@ -16,7 +16,8 @@ the heroes to take (one to three of the three; the camel always comes), and Star
 (`FIRST_ENEMY`) and two wolves, then the Horse Archer, one of the other two at
 random and a wolf, then all three heroes.
 Winning a stage offers Next stage (`POST /runs/:id/next`); the surviving
-heroes and the camel go on at full health, the fallen are gone for the
+heroes go on at full health, the camel with the health it ended the
+stage with (2026-10-27, [camel.md](camel.md), 18.4), the fallen are gone for the
 run; winning the last stage wins the run. **Two regions** (2026-10-26):
 the Steppe's three stages, then China's three on the Flaming Mountains
 against fox spirits and the Swordsman first

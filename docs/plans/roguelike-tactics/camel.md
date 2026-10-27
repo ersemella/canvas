@@ -14,7 +14,7 @@ tuning. Section numbers are the combat design's.
 
 **Status:** decided (owner, 2026-10-21) as the answer to how a stalled
 fight ends ([owner-decisions.md](owner-decisions.md), issue 1); **built in
-the fight (2026-10-21)**, with its sprite and portrait. Carrying its health between fights waits for Phase 2's run.
+the fight (2026-10-21)**, with its sprite and portrait. **Its health carries over** from stage to stage of a run (built 2026-10-27, 18.4).
 
 ## 18. The Caravan's Camel
 
@@ -97,6 +97,13 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   10.11).
 - *(Proposed:* the camel recovers health only at rests (caravanserais) and
   from consumables (9.6), so route choices weigh the camel's health.)
+- **Built (2026-10-27, owner):** on Next stage the camel starts the new
+  fight with the health it ended the last with (`stageFight` in
+  `src/rules/run.ts`), its statuses cleared; nothing restores it yet, so
+  20 health is the whole run's. The caravanserai says how much it goes on
+  with, and the start menu that its wounds stay with it. Not measured:
+  the balance runner plays single fights, so how often a run now ends on
+  the camel in a later stage is unknown.
 
 ### 18.5 Rationale
 - **It ends stalled fights.** Before the camel, a fight ended only when
@@ -160,9 +167,9 @@ the fight (2026-10-21)**, with its sprite and portrait. Carrying its health betw
   (`sprites/camel-portrait.png`), both from ChatGPT images through
   `scripts/shrink-sprite.py` (the portrait without `--lines`, which muddied
   the face).
-- **Still to do:** carrying its health
-  between fights (Phase 2); the balance runner's camel only waits at its
-  start unless the AI moves it.
+- **Still to do:** recovering the camel's health between fights (18.4,
+  open question); the balance runner's camel only waits at its start
+  unless the AI moves it. Its health carries over since 2026-10-27.
 
 ## Decision log
 
