@@ -3006,6 +3006,45 @@ seeds from 1000; `ablate.ts` counts swaps by ally (`swapsPerFight`).
   to its health through its next turn, health untouched) is the part that
   pays; neither measured.
 
+### The Elixir granting Immortal (2026-10-27)
+
+Asked for: the Elixir granting only Immortal until the ally's next turn.
+A switch for measuring, `ABILITY.elixir.immortal` (off as built): one ally
+within 3, never the Alchemist, is Immortal (keywords.md 17.6: its health
+can't be reduced, its Shield still takes damage) until the start of its
+next turn; `heroes`, not the camel, `all`, the camel too. The Alchemist's
+power 0; no heal, Empower or Haste. The AI's first guess values it as
+the damage the ally would take before its next turn, and its fall
+(`threatDamage`); the search sees the hits turned to nothing.
+`experiments/elixir-immortal.mjs`, **1,600 fights each** (about ±1.25
+points), seeds from 1000; `ablate.ts` counts Immortals given and the hits
+that took no health (`immortalsPerFight`).
+
+| Elixir | China vs Steppe | Alchemist for the Storm Caller | Elixir's share of its turns (China) | Immortals a fight (hits turned to nothing) |
+|---|---:|---:|---:|---:|
+| built (heal 1, Empower 1, Haste 3, power 1) | **44.8%** | **46.1%** | 61% | |
+| Immortal, heroes | 20.9% | 26.2% | 39% | 4 (1.7) |
+| Immortal, the camel too | 24.6% | 31.4% | 43% | 4.9 (3.2) |
+
+- **Immortal is about the swap's worth, 20–25 points under the built
+  Elixir**: China 20.9–24.6% (the swap 15.6–23%, above), the seat
+  26–31%.
+- **The enemy hits someone else**: of about 4 Immortals a fight, under
+  half turn a hit to nothing (1.7 a fight on heroes, about 3 damage). An
+  Immortal unit is one the other side's search simply doesn't strike; with
+  power 0 the Alchemist adds no damage of its own, and its Elixir no
+  tempo, which is what carries the built one (Haste 3).
+- **The camel is the best target**: with it allowed the side gains 4–5
+  points, the camel blocking about 1.5 hits a fight and surviving 77% in
+  China's fights (69.5% built); it is a lone target the enemy must hit to
+  win that way.
+- **Who it keeps standing**: the Vanguard survives 42% with Immortal
+  (heroes) against 47.6% built, the Swordsman 31.6% against 34.3%; the
+  built Elixir keeps them alive as well by ending fights sooner.
+- Not changed: `immortal` stays off. Immortal alone doesn't pay for a
+  whole turn; on top of the built Elixir, or with the Alchemist's power
+  back for a heal, it might; not measured.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

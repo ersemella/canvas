@@ -119,6 +119,10 @@ either core's side, and a Storm Caller that can't hurt keeping back
 speed and health (`ABILITY.elixir.swap`, `.swapUntil`), the AI's first
 guess at its risk at 0.5 and 0 (`AI.swapRisk`), against the built Elixir.
 
+`elixir-immortal.mjs` (2026-10-27) measures the Elixir granting Immortal
+until the ally's next turn (`ABILITY.elixir.immortal`), on heroes and on
+the camel too, against the built Elixir.
+
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production
