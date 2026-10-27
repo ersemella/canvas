@@ -31,3 +31,17 @@ experiments['imm+weaken1'] = {
     ABILITY.eye.immobilize = true;
   },
 };
+experiments.anywhere = {
+  party: steppe,
+  patch: ({ABILITY}) => {
+    ABILITY.eye.anywhere = true;
+  },
+};
+experiments['anywhere+heal2+weaken2'] = {
+  party: steppe,
+  patch: ({ABILITY}) => {
+    ABILITY.eye.anywhere = true;
+    ABILITY.eye.heal = 1;
+    ABILITY.eye.weaken = 2;
+  },
+};

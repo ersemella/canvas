@@ -290,7 +290,10 @@ const eye: AbilityDef = {
   name: 'Eye of the Storm',
   kind: 'support',
   damages: false,
-  targetsUnit: true,
+  // A getter, so the measuring switch (`ABILITY.eye.anywhere`) reaches the page and the AI.
+  get targetsUnit() {
+    return !ABILITY.eye.anywhere;
+  },
   range: ABILITY.eye.range,
   minRange: ABILITY.eye.range,
   radius: 1,
@@ -299,23 +302,31 @@ const eye: AbilityDef = {
     const storm = [weakens ? `Weakened ${weakens}` : '', immobilize ? 'Immobilized' : '']
       .filter(Boolean)
       .join(' and ');
-    return `An ally exactly ${ABILITY.eye.range} away, or yourself: it heals ${eyeHeal(user)}${storm ? `; every unit next to it is ${storm} until the end of its next turn` : ''}.`;
+    const where = ABILITY.eye.anywhere
+      ? `A space exactly ${ABILITY.eye.range} away, or yourself: an ally there heals`
+      : `An ally exactly ${ABILITY.eye.range} away, or yourself: it heals`;
+    return `${where} ${eyeHeal(user)}${storm ? `; every unit next to it is ${storm} until the end of its next turn` : ''}.`;
   },
   targets: (state, map, user, from) => [
     {hex: {...from}},
     ...hexesWithin(map, from, ABILITY.eye.range, (h) => {
+      if (hexDistance(from, h) !== ABILITY.eye.range) return false;
       const u = unitAt(state, h);
-      return hexDistance(from, h) === ABILITY.eye.range && u !== undefined && u.side === user.side;
+      if (u) return u.side === user.side;
+      return ABILITY.eye.anywhere && !blocks(tileAt(map, h));
     }),
   ],
   resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    log(ctx, `${unitName(user)} opens the eye of the storm over ${unitName(u)}.`);
-    heal(ctx, u, eyeHeal(user, ctx.state));
+    const centre = target.hex!;
+    const u = unitAt(ctx.state, centre);
+    if (u) {
+      log(ctx, `${unitName(user)} opens the eye of the storm over ${unitName(u)}.`);
+      heal(ctx, u, eyeHeal(user, ctx.state));
+    } else log(ctx, `${unitName(user)} opens the eye of the storm.`);
     if (ABILITY.eye.weaken > 0)
-      for (const n of eyeWeakens(ctx.state, u.hex!)) weaken(ctx, n, ABILITY.eye.weaken);
+      for (const n of eyeWeakens(ctx.state, centre)) weaken(ctx, n, ABILITY.eye.weaken);
     if (ABILITY.eye.immobilize)
-      for (const n of eyeCaught(ctx.state, u.hex!))
+      for (const n of eyeCaught(ctx.state, centre))
         if (!n.statuses.some((s) => s.eye)) {
           n.statuses.push({kind: 'immobilized', eye: true});
           log(ctx, `${unitName(n)} is Immobilized.`);

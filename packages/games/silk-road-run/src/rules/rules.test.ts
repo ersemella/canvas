@@ -1544,6 +1544,34 @@ describe('abilities', () => {
     expect(e.statuses).toEqual([]);
   });
 
+  it('with `ABILITY.eye.anywhere`, an empty space 2 away is a target too: the storm round it, no heal', () => {
+    const eye = ABILITY.eye as {anywhere: boolean};
+    onTestFinished(() => void (eye.anywhere = false));
+    eye.anywhere = true;
+    const s = eyeSetup();
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'p-mangudai');
+    const e = unit(s, 'e-bokh');
+    // Move the Horse Archer off, leaving its space empty next to the Grappler.
+    m.hex = at(8, 0);
+    const targets = ABILITIES.eye.targets(s, mapOf(s), storm, storm.hex!);
+    expect(targets.some((t) => hexEquals(t.hex!, at(4, 3)))).toBe(true);
+    // Never an enemy's space, nor one 1 or 3 away.
+    const free = targets.find((t) => !unitAt(s, t.hex!) && !hexEquals(t.hex!, at(4, 3)))!.hex!;
+    unit(s, 'e-mangudai').hex = free;
+    expect(
+      ABILITIES.eye.targets(s, mapOf(s), storm, storm.hex!).some((t) => hexEquals(t.hex!, free))
+    ).toBe(false);
+    expect(targets.every((t) => [0, 2].includes(hexDistance(t.hex!, storm.hex!)))).toBe(true);
+    expect(ABILITIES.eye.targetsUnit).toBe(false);
+    expect(ABILITIES.eye.summary(storm)).toBe(
+      'A space exactly 2 away, or yourself: an ally there heals 1; every unit next to it is Weakened 1 until the end of its next turn.'
+    );
+    applyTurn(s, storm, {action: {ability: 'eye', target: {hex: at(4, 3)}}});
+    expect(e.weaken).toBe(1);
+    expect(unit(s, 'p-bokh').weaken).toBe(1);
+  });
+
   it('a heal adds its healer’s Empower and loses its Weaken, as a hit’s damage does', () => {
     const s = eyeSetup();
     const storm = unit(s, 'p-storm');

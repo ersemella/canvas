@@ -258,9 +258,16 @@ export const ABILITY = {
    * Storm Caller is never next to the ally it heals. For measuring:
    * `heal`, added to the power it heals (0 as built); `immobilize`, every
    * unit next to it, the camel too, Immobilized until the end of its next
-   * turn (off as built).
+   * turn (off as built); `anywhere`, a space with no unit on it a target
+   * too, the storm round it with no heal (off as built).
    */
-  eye: {range: 2, weaken: 1 as number, heal: 0 as number, immobilize: false as boolean},
+  eye: {
+    range: 2,
+    weaken: 1 as number,
+    heal: 0 as number,
+    immobilize: false as boolean,
+    anywhere: false as boolean,
+  },
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Empowered, is Empowered `empower` until the end of

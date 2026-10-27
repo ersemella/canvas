@@ -88,3 +88,25 @@ for (const [name, patch] of Object.entries(immobilizing)) {
       mod: {party: steppe.map((h) => (h === 'storm' ? hero : h))},
     };
 }
+// Asked for (2026-10-27): heal and Weaken again, the Storm Caller able to
+// open the eye on an empty space 2 away too (`ABILITY.eye.anywhere`), at
+// heal 1 and Weaken 1 and at heal 2 and Weaken 2.
+const anywhere = {
+  anywhere: (c) => {
+    c.ABILITY.eye.anywhere = true;
+  },
+  'anywhere+heal2+weaken2': (c) => {
+    c.ABILITY.eye.anywhere = true;
+    c.ABILITY.eye.heal = 1;
+    c.ABILITY.eye.weaken = 2;
+  },
+};
+for (const [name, patch] of Object.entries(anywhere)) {
+  experiments[`${name}:hail-vs-eye`] = {patch, mod: {kits: {storm: ['hail', 'hold']}}};
+  experiments[`${name}:no-eye`] = {patch, mod: {ban: ['eye']}};
+  for (const hero of china)
+    experiments[`${name}:${hero}-for-storm`] = {
+      patch,
+      mod: {party: steppe.map((h) => (h === 'storm' ? hero : h))},
+    };
+}

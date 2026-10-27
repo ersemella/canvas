@@ -386,10 +386,11 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   }
   // Eye of the Storm: the heal on its target, and a Weaken on each unit next to it, by its side.
   if (ability === 'eye') {
-    const healed = unitAt(state, target!.hex!)!;
-    let value =
-      Math.min(eyeHeal(unit, state), healed.maxHp - healed.hp) *
-      (healed.hero === CAMEL ? AI.camelHealthWeight : 1);
+    const healed = unitAt(state, target!.hex!);
+    let value = !healed
+      ? 0
+      : Math.min(eyeHeal(unit, state), healed.maxHp - healed.hp) *
+        (healed.hero === CAMEL ? AI.camelHealthWeight : 1);
     if (ABILITY.eye.weaken > 0)
       for (const u of eyeWeakens(state, target!.hex!))
         if (!u.weaken) value += sided(u, 1 + weakenGuess(state, u, ABILITY.eye.weaken));
