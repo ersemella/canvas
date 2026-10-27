@@ -252,7 +252,9 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
         held[caster?.side === u.side ? 'ally' : 'enemy']++;
       }
       const input =
-        u.side === modSide && mod?.search && (!mod.searchHeroes || mod.searchHeroes.includes(u.hero))
+        u.side === modSide &&
+        mod?.search &&
+        (!mod.searchHeroes || mod.searchHeroes.includes(u.hero))
           ? searchWith(mod.search)(state, u)
           : chooseAiTurn(state, u);
       const moving = (input.move?.length ?? 0) > 0;
