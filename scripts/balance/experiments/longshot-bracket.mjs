@@ -15,6 +15,7 @@ const archer = {
     Object.assign(c.ABILITY.longshot, {first: true, pierce: true, camel: false});
   },
 };
+// The baseline swap is set by archer-magus.mjs; these set their own mode.
 const magus = {
   bracket: (c) => {
     c.ABILITY.conjunction.mode = 'bracket';
@@ -67,3 +68,22 @@ for (const [name, party, archerSeat] of [
       mod: {party: seat(party, 2, 'magus')},
     };
 }
+// Then (2026-10-27): the first-unit Longshot with an effect other than Push:
+// Delay 2 or 3, Weaken 1 or 2, or pinned (Immobilized through its next turn).
+const effects = {
+  delay2: {delay: 2},
+  delay3: {delay: 3},
+  weaken1: {weaken: 1},
+  weaken2: {weaken: 2},
+  pin: {pin: true},
+};
+for (const [name, party, archerSeat] of [
+  ['steppe', steppe, 1],
+  ['china', china, 0],
+])
+  for (const [e, switches] of Object.entries(effects))
+    experiments[`archer-first+pierce+${e}-${name}`] = {
+      party,
+      patch: (c) => Object.assign(c.ABILITY.longshot, {first: true, pierce: true, ...switches}),
+      mod: {party: seat(party, archerSeat, 'archer')},
+    };

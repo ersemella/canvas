@@ -3513,6 +3513,39 @@ and fights.
   one already early is Delayed less than after it. Range 3 helps in
   China only (51.6%, 37.5% on the Steppe).
 
+**Built since** (the owner, 2026-10-27): Conjunction as the bracket,
+without `once` (`mode: 'bracket'` by default). The files measuring the
+Magus before it (`roster-nine.mjs`, `archer-magus.mjs`) set `mode: 'swap'`.
+
+### Longshot's effect (2026-10-27)
+
+Asked for: an effect for the first-unit, Piercing Longshot other than
+Push. Same seats, seeds and 800 fights (`longshot-bracket.mjs`);
+`ABILITY.longshot.delay`, `.weaken`, `.pin` (Immobilized through the unit's
+next turn, not an Unstoppable one), off as built.
+
+| Effect | Steppe | China |
+|---|---:|---:|
+| None (above) | 47.6% | 42.1% |
+| Push 1 (above) | 50.3% | 45.6% |
+| Push 2 (above) | 48.6% | 47.2% |
+| **Delay 2** | **49.3%** | **48.2%** |
+| **Delay 3** | **49.4%** | **50.9%** |
+| Weaken 1 | 50.8% | 43.2% |
+| Weaken 2 | 50.9% | 45.5% |
+| Pinned (Immobilized through its next turn) | 55.4% | 55% |
+
+- **Delay is the most even of every Archer variant**: Delay 2 within 2
+  points on both maps, Delay 3 within 1. An arrow that staggers its
+  target sets the Archer on the track, as Cleave's Delay does the
+  Vanguard, and it reads well from range.
+- Pinning overshoots by 5 points on both: a unit that can't walk can't
+  close on the Archer or leave its line, so the next arrow comes too.
+- Weaken is even on the Steppe but short in China (43–46%): it blunts
+  damage, and China's Alchemist heals and Empowers it back.
+
+Not changed: the owner's call.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

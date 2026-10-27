@@ -8,7 +8,17 @@ const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['modao', 'youxia', 'alchemist'];
 const persia = ['mahout', 'archer', 'magus'];
 const heroes = [...steppe, ...china, ...persia];
-const role = {bokh: 0, modao: 0, mahout: 0, mangudai: 1, youxia: 1, archer: 1, storm: 2, alchemist: 2, magus: 2};
+const role = {
+  bokh: 0,
+  modao: 0,
+  mahout: 0,
+  mangudai: 1,
+  youxia: 1,
+  archer: 1,
+  storm: 2,
+  alchemist: 2,
+  magus: 2,
+};
 // As roster-check.mjs: a novice looks one decision ahead, an expert as
 // mirror.ts's `deep`.
 const novice = {depth: 1, work: 220};
@@ -40,3 +50,8 @@ for (const hero of persia) {
   ])
     experiments[`${level}-${hero}`] = {party, mod: {search, searchHeroes: [hero]}};
 }
+// Measured with Conjunction as a swap, built until later that day.
+for (const e of Object.values(experiments))
+  e.patch = (c) => {
+    c.ABILITY.conjunction.mode = 'swap';
+  };

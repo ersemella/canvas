@@ -343,6 +343,7 @@ export function endTurnEffects(unit: Unit): void {
     delete unit.weaken;
     delete unit.weakenStarted;
   }
+  unit.statuses = unit.statuses.filter((s) => !s.pinned);
 }
 
 /**

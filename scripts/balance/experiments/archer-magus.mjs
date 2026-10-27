@@ -73,4 +73,12 @@ for (const [hero, variants, steppeSeat, chinaSeat] of [
       ['steppe', steppe, steppeSeat],
       ['china', china, chinaSeat],
     ])
-      experiments[`${hero}-${v}-${name}`] = {party, patch, mod: {party: seat(party, i, hero)}};
+      experiments[`${hero}-${v}-${name}`] = {
+        party,
+        // Measured with Conjunction as a swap, built until later that day.
+        patch: (c) => {
+          c.ABILITY.conjunction.mode = 'swap';
+          patch(c);
+        },
+        mod: {party: seat(party, i, hero)},
+      };

@@ -36,6 +36,7 @@ import {
   shotLane,
   abilityCount,
   hasRoomForAbility,
+  isImmobilized,
 } from './board';
 import {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
@@ -84,6 +85,7 @@ import {
   kill,
   applyDamage,
   startTurnPassives,
+  endTurnEffects,
   stun,
   unswap,
 } from './resolve';
@@ -1483,30 +1485,39 @@ describe('the Magus', () => {
     expect(m.slot).toBe(was);
   });
 
-  it('Conjunction swaps two cards within 2 that come before its next turn', () => {
-    const s = setup(
-      {'p-magus': c, 'e-mangudai': hexNeighbor(c, 0), 'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3)},
-      party
-    );
-    const m = unit(s, 'p-magus');
-    const e = unit(s, 'e-mangudai');
-    const b = unit(s, 'p-bokh');
-    m.slot = s.currentSlot;
-    e.slot = 1;
-    b.slot = 7;
-    const targets = conjunction(s, m);
-    expect(targets).toHaveLength(2);
-    // Either way round is the same swap.
-    applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: e.hex!, to: b.hex!}}});
-    expect([e.slot, b.slot]).toEqual([7, 1]);
-    expect(m.slot).toBe(actionCost(m));
-    expect(m.power).toBe(0);
-    expect(e.hp).toBe(e.maxHp);
+  it('Conjunction as `swap` (the first built) swaps two cards within 2 before its next turn', () => {
+    const was = {...ABILITY.conjunction};
+    Object.assign(ABILITY.conjunction, {mode: 'swap'});
+    try {
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': hexNeighbor(c, 0),
+          'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      const e = unit(s, 'e-mangudai');
+      const b = unit(s, 'p-bokh');
+      m.slot = s.currentSlot;
+      e.slot = 1;
+      b.slot = 7;
+      const targets = conjunction(s, m);
+      expect(targets).toHaveLength(2);
+      // Either way round is the same swap.
+      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: e.hex!, to: b.hex!}}});
+      expect([e.slot, b.slot]).toEqual([7, 1]);
+      expect(m.slot).toBe(actionCost(m));
+      expect(m.power).toBe(0);
+      expect(e.hp).toBe(e.maxHp);
+    } finally {
+      Object.assign(ABILITY.conjunction, was);
+    }
   });
 
-  it('Conjunction as `bracket` puts the first card next and the second just after its next turn', () => {
+  it('Conjunction puts the first card next and the second just after its next turn', () => {
     const was = {...ABILITY.conjunction};
-    Object.assign(ABILITY.conjunction, {mode: 'bracket', once: true});
     try {
       const s = setup(
         {
@@ -1527,13 +1538,15 @@ describe('the Magus', () => {
       applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!, to: e.hex!}}});
       expect([b.slot, e.slot]).toEqual([s.currentSlot + 1, actionCost(m) + 1]);
       expect(m.slot).toBe(actionCost(m));
-      // With `once`, the Horse Archer can't be put back again before it acts,
-      // only aimed first.
+      // As built, the Horse Archer can be put back again before it acts.
       s.currentSlot = actionCost(m);
       s.awaiting = m.id;
       b.slot = actionCost(m) + 2;
-      const again = conjunction(s, m).map((t) => unitAt(s, t.to!)!.id);
-      expect(again).toEqual(['p-bokh']);
+      const seconds = () => conjunction(s, m).map((t) => unitAt(s, t.to!)!.id);
+      expect(seconds().sort()).toEqual(['e-mangudai', 'p-bokh']);
+      // With `once` (a switch, off), not until it has acted: only aimed first.
+      Object.assign(ABILITY.conjunction, {once: true});
+      expect(seconds()).toEqual(['p-bokh']);
     } finally {
       Object.assign(ABILITY.conjunction, was);
     }
@@ -1811,6 +1824,21 @@ describe('the Archer', () => {
       const bokh = unit(s, 'e-bokh');
       applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
       expect(bokh.hex).toEqual(along(c, 0, 3));
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
+  });
+
+  it('Longshot with `pin` Immobilizes the unit it hits through its next turn', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {first: true, pin: true});
+    try {
+      const {s, a} = ready({'e-bokh': along(c, 0, 2)});
+      const bokh = unit(s, 'e-bokh');
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+      expect(isImmobilized(bokh)).toBe(true);
+      endTurnEffects(bokh);
+      expect(isImmobilized(bokh)).toBe(false);
     } finally {
       Object.assign(ABILITY.longshot, was);
     }

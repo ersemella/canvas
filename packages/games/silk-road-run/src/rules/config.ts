@@ -294,7 +294,10 @@ export const ABILITY = {
    * `camel`, whether it may shoot the camel; `falloff`, the range past
    * which its hit is 1 less; `first`, stopped by the first unit or yurt
    * in its line, as Snap Shot; `pierce`, its hit Pierces Armour (17.6);
-   * `push`, the unit hit then Pushed this far away from the Archer (17.4).
+   * `push`, the unit hit then Pushed this far away from the Archer (17.4);
+   * in its place (balance.md, "Longshot's effect"), `delay`, the unit hit
+   * Delayed this much (17.3); `weaken`, Weakened this much (17.6); `pin`,
+   * Immobilized through its next turn (17.5), unless Unstoppable.
    */
   longshot: {
     range: Infinity as number,
@@ -304,6 +307,9 @@ export const ABILITY = {
     first: false as boolean,
     pierce: false as boolean,
     push: 0 as number,
+    delay: 0 as number,
+    weaken: 0 as number,
+    pin: false as boolean,
   },
   /**
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
@@ -451,14 +457,16 @@ export const ABILITY = {
   /**
    * Conjunction (owner, 2026-10-27; roster.md), the Magus's: two units
    * within `range` (2), of either side, the camel too, neither Inevitable,
-   * whose cards both come before the Magus's next turn, swap places on the
-   * track, one Hastened and the other Delayed by the same gap.
+   * whose cards both come before the Magus's next turn: the first's card
+   * put just after his current turn, the second's just after his next
+   * (`mode: 'bracket'`, owner, 2026-10-27; balance.md, "Longshot stopped by
+   * the first unit, and Conjunction as a bracket"), with no guard against
+   * putting the same unit back each turn (`once` off, the owner's call).
    * Switches for measuring buffs (balance.md, "Archer nerfs and Magus
    * buffs"), off as built: `hit`, each enemy swapped hit for the Magus's
    * power; `delay`, each enemy swapped then Delayed this much more.
-   * `mode`: `swap` (as built), or `bracket`, the first unit's card put
-   * just after the Magus's current turn and the second's just after his
-   * next, in place of a swap; `before`, the second's just before his
+   * `mode`: `bracket` (as built), or `swap`, the first built (the two
+   * cards swap places, one Hastened and the other Delayed by the gap); `before`, the second's just before his
    * next turn instead; `once` (with `bracket`), a unit put after his next
    * turn can't be put there again until it has acted.
    */
@@ -466,7 +474,7 @@ export const ABILITY = {
     range: 2 as number,
     hit: false as boolean,
     delay: 0 as number,
-    mode: 'swap' as 'swap' | 'bracket' | 'before',
+    mode: 'bracket' as 'swap' | 'bracket' | 'before',
     once: false as boolean,
   },
   /**

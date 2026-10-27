@@ -146,7 +146,10 @@ against each other, and the Persian heroes by a novice and an expert.
 unit and Piercing (`ABILITY.longshot.first`, `.pierce`) and Conjunction as a
 bracket (`ABILITY.conjunction.mode`, `.once`), against `archer-magus.mjs`'s
 `built` rows; then Longshot's Push (`ABILITY.longshot.push`) and the bracket
-with its second unit before the Magus's next turn (`mode: 'before'`).
+with its second unit before the Magus's next turn (`mode: 'before'`), and
+Longshot with Delay, Weaken or a pin in place of Push (`.delay`, `.weaken`,
+`.pin`). Conjunction is the bracket since 2026-10-27, so `roster-nine.mjs` and
+`archer-magus.mjs` set `mode: 'swap'`, as they were measured.
 
 ## Ability and stat ablation
 

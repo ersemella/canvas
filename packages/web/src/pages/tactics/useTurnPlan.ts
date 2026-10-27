@@ -47,7 +47,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
  */
 const SECOND_PICK: Partial<Record<AbilityId, string>> = {
   feignedRetreat: 'Pick where to fall back',
-  conjunction: 'Pick the unit to swap with',
+  conjunction: 'Pick the unit to wait until after your next turn',
   skirmish: 'Pick where to step',
 };
 const stepsFirst = (id: AbilityId | null) => Boolean(id && ABILITIES[id].steps);

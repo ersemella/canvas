@@ -30,7 +30,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   archer:
     'A foot archer of the royal army, who looses arrows high over the heads of friend and foe. The Archer hits harder than anyone, and its shot flies past whoever stands in the way to strike any foe in line, but it is frail and must be kept out of reach.',
   magus:
-    'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but brings two fates into conjunction, trading when each will act, while its own course is fixed and cannot be hurried or held back.',
+    'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but brings two fates into conjunction: one acts at once, the other must wait until the Magus has acted again, while its own course is fixed and cannot be hurried or held back.',
 };
 
 /**

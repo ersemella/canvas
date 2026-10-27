@@ -15,6 +15,7 @@ import {
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL} from './config';
 import {
+  addStatus,
   cleaveAreas,
   firstInLane,
   isImmobilized,
@@ -265,8 +266,18 @@ const longshot: AbilityDef = {
       (user.empower ?? 0) - (far ? 1 : 0),
       ABILITY.longshot.pierce
     );
-    if (ABILITY.longshot.push && u.alive && u.hex)
-      displace(ctx, u, directionTo(user.hex!, u.hex), ABILITY.longshot.push, 'push');
+    const {push, delay: slots, weaken: less, pin} = ABILITY.longshot;
+    if (!u.alive || !u.hex) return;
+    if (push) displace(ctx, u, directionTo(user.hex!, u.hex), push, 'push');
+    delay(ctx, u, slots);
+    if (less) weaken(ctx, u, less);
+    if (pin) {
+      if (isUnstoppable(u)) log(ctx, `${unitName(u)} is Unstoppable: not pinned.`);
+      else {
+        addStatus(u, {kind: 'immobilized', pinned: true});
+        log(ctx, `${unitName(u)} is pinned: Immobilized through its next turn.`);
+      }
+    }
   },
 };
 

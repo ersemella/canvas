@@ -122,6 +122,8 @@ export interface Status {
   grapple?: {champion: string; target: string};
   /** From Last Stand (19.8): Stunned for the unit's next turn, ending with it. */
   lastStand?: boolean;
+  /** From a pinning Longshot (`ABILITY.longshot.pin`): Immobilized until the end of the unit's next turn. */
+  pinned?: boolean;
 }
 
 /**
