@@ -25,6 +25,7 @@ import {
   elixirAmount,
   elixirCaught,
   elixirHeals,
+  eyeWeakens,
   grappling,
   unusableReason,
 } from './abilities';
@@ -33,7 +34,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, chargeOf} from './track';
-import {camelOf, damageOf, shotEmpower} from './resolve';
+import {camelOf, damageOf, healOf, shotEmpower} from './resolve';
 import {MAPS} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
@@ -117,7 +118,7 @@ function empowerGain(state: FightState, u: Unit): number {
 }
 
 /**
- * What a Weaken costs `u` (the Alchemist's Elixir), as `empowerGain` is
+ * What a Weaken costs `u` (Eye of the Storm), as `empowerGain` is
  * an Empower's worth: the damage it takes off `u`'s next hit, if an enemy
  * is within reach, plus a kill's worth if that hit would kill only without
  * it, all times `AI.empoweredShare`. Once its turn has begun it no longer
@@ -355,7 +356,8 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (!hostile(u, unit)) {
         if (elixirHeals(u))
           value +=
-            Math.min(unit.power, u.maxHp - u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
+            Math.min(healOf(unit, state), u.maxHp - u.hp) *
+            (u.hero === CAMEL ? AI.camelHealthWeight : 1);
         const empowers = elixirAmount('empower');
         if (u.power > 0 && empowers > 0)
           value += u.empower ? 0 : 1 + empowerGuess(state, u, empowers);
@@ -373,6 +375,16 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         value += u.weaken ? 0 : 1 + weakenGuess(state, u, elixirAmount('weaken'));
       if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
     }
+    return closing + value;
+  }
+  // Eye of the Storm: the heal on its target, and a Weaken on each unit next to it, by its side.
+  if (ability === 'eye') {
+    const healed = unitAt(state, target!.hex!)!;
+    let value =
+      Math.min(healOf(unit, state), healed.maxHp - healed.hp) *
+      (healed.hero === CAMEL ? AI.camelHealthWeight : 1);
+    for (const u of eyeWeakens(state, target!.hex!))
+      if (!u.weaken) value += sided(u, 1 + weakenGuess(state, u, ABILITY.eye.weaken));
     return closing + value;
   }
   const def = ABILITIES[ability];

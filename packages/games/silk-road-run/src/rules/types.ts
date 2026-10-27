@@ -28,6 +28,7 @@ export type AbilityId =
   | 'longshot'
   | 'skirmish'
   | 'hail'
+  | 'eye'
   | 'sunlight'
   | 'grapple'
   | 'bite'

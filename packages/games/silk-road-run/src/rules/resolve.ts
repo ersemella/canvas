@@ -132,6 +132,14 @@ export function damageOf(
 }
 
 /**
+ * What `healer`'s heals restore (owner, 2026-10-27): its power plus
+ * Empower, minus Weaken, at least 0, as a hit's damage (`damageOf`).
+ */
+export function healOf(healer: Unit, state?: FightState): number {
+  return damageOf(healer, healer.empower ?? 0, state);
+}
+
+/**
  * The Empower `u`'s passives give it (19.8): Glass Cannon's always, Lone
  * Wolf's while no ally is within 2 spaces (known only with the `state`).
  */
@@ -205,7 +213,7 @@ export function empower(ctx: Ctx, u: Unit, amount: number): void {
   log(ctx, `${unitName(u)} is Empowered ${amount}.`);
 }
 
-/** Heals `u` by `amount`, up to its health (Elixir). */
+/** Heals `u` by `amount`, up to its health (Elixir, Eye of the Storm; `healOf`). */
 export function heal(ctx: Ctx, u: Unit, amount: number): void {
   const healed = Math.min(amount, u.maxHp - u.hp);
   if (healed <= 0) return;

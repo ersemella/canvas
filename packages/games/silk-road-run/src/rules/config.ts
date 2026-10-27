@@ -116,14 +116,16 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 2,
     defence: 2,
     // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
-    // couldn't break a grapple.
+    // couldn't break a grapple. Eye of the Storm heals it.
     power: 1,
-    abilities: ['hail', 'hold'],
+    // Eye of the Storm in place of Hail (the owner's proposal, 2026-10-27;
+    // balance.md, "Eye of the Storm"); Hail an upgrade since.
+    abilities: ['eye', 'hold'],
     // Sunlight added (owner, 2026-10-23), as measured: a trap for the AI
     // at Empower 2 (balance.md); an upgrade since 2026-10-24 (owner). Gale
     // an upgrade too (owner, 2026-10-24; balance.md, "Second abilities
     // measured"): side without it wins 40.6%.
-    upgrades: ['sunlight', 'gale'],
+    upgrades: ['hail', 'sunlight', 'gale'],
   },
   /**
    * The Vanguard (owner, 2026-10-25; roster.md): a slow tank with
@@ -247,6 +249,15 @@ export const ABILITY = {
    * (balance.md, "Two hails, hail on entry, and a melee Elixir").
    */
   hail: {range: 2, turns: 2, max: 2 as number, entry: true as boolean},
+  /**
+   * Eye of the Storm (the owner's proposal, 2026-10-27; the Storm Caller's
+   * core in place of Hail): an ally exactly `range` away, or the Storm Caller itself,
+   * heals the Storm Caller's power (with its Empower and Weaken, as a hit's
+   * damage); then every unit next to it, of either side, is Weakened
+   * `weaken` until the end of its next turn. A ring, as Hail's, so the
+   * Storm Caller is never next to the ally it heals.
+   */
+  eye: {range: 2, weaken: 1 as number},
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Empowered, is Empowered `empower` until the end of

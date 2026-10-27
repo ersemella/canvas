@@ -109,6 +109,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // A storm's ring of cloud, swirling, round a clear eye.
+  eye: {
+    colors: ['var(--c-ivory)', 'var(--c-dusk4)', 'var(--c-sky)'],
+    rows: [
+      '....####....', //
+      '..##====##..',
+      '.#==....=##.',
+      '.#=.......#.',
+      '#=...++...=#',
+      '#=..++++..=#',
+      '#=..++++..=#',
+      '#=...++...=#',
+      '.#.......=#.',
+      '.##=....==#.',
+      '..##====##..',
+      '....####....',
+    ],
+  },
   // Two clenched fists, side on, knuckles lit (owner, 2026-10-24; two
   // chain links until then).
   grapple: {

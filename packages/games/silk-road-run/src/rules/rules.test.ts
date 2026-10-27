@@ -80,6 +80,7 @@ import {
   empower,
   enterHex,
   haste,
+  healOf,
   hit,
   kill,
   startTurnPassives,
@@ -228,8 +229,8 @@ describe('the track', () => {
     expect(HEROES.bokh.upgrades).toEqual(['haul', 'shove']);
     expect(HEROES.mangudai.abilities).toEqual(['longshot', 'hold']);
     expect(HEROES.mangudai.upgrades).toEqual(['skirmish', 'volley', 'feignedRetreat']);
-    expect(HEROES.storm.abilities).toEqual(['hail', 'hold']);
-    expect(HEROES.storm.upgrades).toEqual(['sunlight', 'gale']);
+    expect(HEROES.storm.abilities).toEqual(['eye', 'hold']);
+    expect(HEROES.storm.upgrades).toEqual(['hail', 'sunlight', 'gale']);
     // At most two abilities besides Hold (owner, 2026-10-25): each hero
     // takes one of its upgrades.
     for (const h of ROSTER) expect(hasRoomForAbility(HEROES[h].abilities)).toBe(true);
@@ -927,6 +928,7 @@ describe('stats and damage', () => {
   });
 
   it('hail hits for the Storm Caller’s power', () => {
+    upgrade('storm', ['hail']);
     const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
     const storm = unit(s, 'p-storm');
     s.awaiting = storm.id;
@@ -949,6 +951,7 @@ describe('stats and damage', () => {
   });
 
   it('Empower given on the unit’s own turn lasts through its next one', () => {
+    upgrade('storm', ['hail']);
     const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const storm = unit(s, 'p-storm');
@@ -991,7 +994,7 @@ describe('stats and damage', () => {
   });
 
   it('Sunlight Empowers a unit within 3 that hits, itself included, not Temee or one already Empowered', () => {
-    upgrade('storm');
+    upgrade('storm', ['sunlight']);
     const s = setup({
       'p-storm': at(1, 3),
       'p-mangudai': at(2, 3),
@@ -1021,7 +1024,7 @@ describe('stats and damage', () => {
   });
 
   it('Sunlight melts hail on its space, freeing whoever it held; hail alone is a target', () => {
-    upgrade('storm');
+    upgrade('storm', ['sunlight']);
     const s = setup({
       'p-storm': at(1, 3),
       'p-mangudai': at(2, 3),
@@ -1048,6 +1051,7 @@ describe('stats and damage', () => {
   });
 
   it('power 0 deals no damage, and says nothing of it', () => {
+    upgrade('storm', ['hail']);
     const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
     const storm = unit(s, 'p-storm');
     storm.power = 0;
@@ -1314,6 +1318,7 @@ describe('abilities', () => {
   });
 
   it('hail covers one space exactly two away: a unit there is Immobilized until the caster’s turn after next', () => {
+    upgrade('storm', ['hail']);
     const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
     const targets = ABILITIES.hail.targets(s, STEPPE, storm, storm.hex!);
@@ -1342,6 +1347,7 @@ describe('abilities', () => {
   });
 
   it('with `ABILITY.hail.max` 1, hailing again replaces the caster’s last hail, and frees whoever it held', () => {
+    upgrade('storm', ['hail']);
     const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
     const hail = ABILITY.hail as {max: number};
@@ -1366,6 +1372,7 @@ describe('abilities', () => {
   });
 
   it('two hails stand at once, each lifting on its own, and entering one hurts', () => {
+    upgrade('storm', ['hail']);
     const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
@@ -1393,6 +1400,7 @@ describe('abilities', () => {
   });
 
   it('a Grappler in hail grapples its caster: the hail hit came first, so the grapple holds and the caster’s turn is skipped', () => {
+    upgrade('storm', ['hail']);
     const s = setup({'e-storm': at(2, 1), 'p-bokh': at(0, 1), 'e-mangudai': at(8, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const storm = unit(s, 'e-storm');
@@ -1431,12 +1439,104 @@ describe('abilities', () => {
   });
 
   it('hail lifts when its caster falls', () => {
+    upgrade('storm', ['hail']);
     const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
     kill({state: s, map: mapOf(s), slot: 0}, storm);
     expect(s.effects).toEqual([]);
     expect(unit(s, 'e-mangudai').statuses).toEqual([]);
+  });
+
+  /** The Storm Caller at at(2, 3), its ally the Horse Archer 2 away, and three units round the Horse Archer. */
+  const eyeSetup = () => {
+    const centre = at(4, 3);
+    const [bokh, camel] = hexNeighbors(centre).filter(
+      (h) => hexDistance(h, at(2, 3)) > 1 && !hexEquals(h, at(5, 3))
+    );
+    return setup({
+      'p-storm': at(2, 3),
+      'p-mangudai': centre,
+      'e-bokh': at(5, 3),
+      'p-bokh': bokh!,
+      'p-camel': camel!,
+      'e-mangudai': at(8, 6),
+    });
+  };
+
+  it('Eye of the Storm, the Storm Caller’s core: an ally exactly 2 away or itself, not an enemy', () => {
+    expect(HEROES.storm.abilities).toEqual(['eye', 'hold']);
+    const s = eyeSetup();
+    const storm = unit(s, 'p-storm');
+    unit(s, 'e-mangudai').hex = at(4, 2);
+    expect(hexDistance(at(4, 2), storm.hex!)).toBe(2);
+    const targets = ABILITIES.eye
+      .targets(s, mapOf(s), storm, storm.hex!)
+      .map((t) => hexKey(t.hex!))
+      .sort();
+    // Itself, and the allies on its ring: the Horse Archer, not the enemy.
+    const ring = s.units.filter(
+      (u) => u.alive && u.side === 'player' && hexDistance(u.hex!, storm.hex!) === 2
+    );
+    expect(ring.map((u) => u.id)).toContain('p-mangudai');
+    expect(targets).toEqual([storm.hex!, ...ring.map((u) => u.hex!)].map(hexKey).sort());
+    expect(offeredTargets(s, mapOf(s), storm, ABILITIES.eye).length).toBe(targets.length);
+  });
+
+  it('Eye of the Storm heals its target the Storm Caller’s power and Weakens every unit next to it that hits, of either side', () => {
+    const s = eyeSetup();
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'p-mangudai');
+    m.hp -= 2;
+    s.awaiting = storm.id;
+    applyTurn(s, storm, {action: {ability: 'eye', target: {hex: m.hex!}}});
+    expect(m.hp).toBe(m.maxHp - 1);
+    expect(m.weaken).toBeUndefined();
+    expect(unit(s, 'e-bokh').weaken).toBe(1);
+    expect(unit(s, 'p-bokh').weaken).toBe(1);
+    // The camel never hits; the Storm Caller, 2 away, is out of the storm.
+    expect(unit(s, 'p-camel').weaken).toBeUndefined();
+    expect(storm.weaken).toBeUndefined();
+    // The Weakened Grappler's grapple does no damage.
+    const e = unit(s, 'e-bokh');
+    const hp = unit(s, 'p-bokh').hp;
+    s.awaiting = 'p-bokh';
+    applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: e.hex!}}});
+    expect(e.hp).toBe(e.maxHp);
+    expect(unit(s, 'p-bokh').hp).toBe(hp);
+  });
+
+  it('Eye of the Storm on the Storm Caller itself heals it and Weakens its neighbours', () => {
+    const s = setup({'p-storm': at(2, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(8, 6)});
+    const storm = unit(s, 'p-storm');
+    storm.hp -= 1;
+    applyTurn(s, storm, {action: {ability: 'eye', target: {hex: storm.hex!}}});
+    expect(storm.hp).toBe(storm.maxHp);
+    expect(storm.weaken).toBeUndefined();
+    expect(unit(s, 'e-bokh').weaken).toBe(1);
+  });
+
+  it('a heal adds its healer’s Empower and loses its Weaken, as a hit’s damage does', () => {
+    const s = eyeSetup();
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'p-mangudai');
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
+    expect(healOf(storm)).toBe(1);
+    empower(ctx, storm, 2);
+    expect(healOf(storm)).toBe(3);
+    expect(ABILITIES.eye.summary(storm)).toContain('it heals 3');
+    m.hp = 1;
+    applyTurn(s, storm, {action: {ability: 'eye', target: {hex: m.hex!}}});
+    expect(m.hp).toBe(4);
+    // Weakened as much as its power, it heals nothing.
+    const t = eyeSetup();
+    const st = unit(t, 'p-storm');
+    weaken({state: t, map: mapOf(t), slot: 0}, st, 1);
+    expect(healOf(st)).toBe(0);
+    const tm = unit(t, 'p-mangudai');
+    tm.hp = 1;
+    applyTurn(t, st, {action: {ability: 'eye', target: {hex: tm.hex!}}});
+    expect(tm.hp).toBe(1);
   });
 });
 

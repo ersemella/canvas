@@ -18,7 +18,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   mangudai:
     'A mounted archer who rides ahead of the army. The Horse Archer strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
   storm:
-    'A weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail that holds whoever it catches fast, though storms never choose sides.',
+    'A weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller opens a calm eye over an ally to mend them, while the storm around it saps whoever stands close, for storms never choose sides.',
   modao:
     'An armoured spearhead of the imperial army, wielding a long two-handed blade. The Vanguard is slow, but its blade cuts through the first foe into the one behind.',
   alchemist:
