@@ -208,7 +208,11 @@ the bow traced back in from the art where shrinking broke it, the face
 (cap, eye, beard) redrawn by hand, and a 2-frame idle split at the knees
 (`--split 25`) so the bow moves with the body; the portrait cropped to
 the face with the bow behind, cut to 14 colours, the cap's felt smoothed
-into a few tones and the eye put back by hand. The prompts it came from:
+into a few tones and the eye put back by hand. Then replaced (owner, 2026-10-27) by a
+second portrait in a tall pointed crimson cap with a brown band and a
+moustache, from the revised prompt, since the first's cream cap and beard
+read like the Magus's and the Elephant Rider's; cut to 14 colours, its
+eye and the profile's outline put back by hand. The prompts it came from:
 
 The Archer (roster.md) played as a lettered disc (`archer` in
 `HERO_COLOR`) until then. Like the other heroes' art, it
