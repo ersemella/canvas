@@ -2854,6 +2854,24 @@ Hail wins:
 - With both, more fights go unfinished (5.5%, from 3.5%).
 - Not changed: `follows` off as built.
 
+#### Is breaking grapples why the hitting cores win? (2026-10-27)
+
+Asked for: whether Hail and the hitting Eye beat the Weakening Eye because
+a hit frees a grappled unit. Hail against Eye head to head, 400 fights,
+with no Grappler on either side (the Vanguard, Horse Archer and Storm
+Caller), Hail wins:
+
+| | With the Grappler | Without |
+|---|---:|---:|
+| Eye Weakening 1 | 66.2% | 60.7% |
+| Eye hitting | 50% | 49.5% |
+
+- **Breaking grapples is part of it, not most**: without Grapplers Hail's
+  lead over the Weakening Eye shrinks by 5.5 points (about two standard
+  errors), but Hail still wins 60.7%. The hit itself is worth more.
+- The hitting Eye stays level with Hail either way, so hitting alone,
+  not freeing allies, is what brings it there.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

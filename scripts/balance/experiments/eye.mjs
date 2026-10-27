@@ -189,3 +189,18 @@ for (const [name, eye] of [
     },
     mod: {kits: {storm: ['hail', 'hold']}},
   };
+// Asked for (2026-10-27): is breaking grapples why the hitting cores win?
+// Hail against Eye head to head with no Grappler on either side (the
+// Vanguard in its place), Eye as proposed (Weaken 1) and hitting.
+const noGrappler = ['modao', 'mangudai', 'storm'];
+for (const [name, eye] of [
+  ['weaken', {damage: false, weaken: 1}],
+  ['damage', {damage: true, weaken: 0}],
+])
+  experiments[`no-grappler:${name}:hail-vs-eye`] = {
+    party: noGrappler,
+    patch: (c) => {
+      Object.assign(c.ABILITY.eye, eye);
+    },
+    mod: {kits: {storm: ['hail', 'hold']}},
+  };
