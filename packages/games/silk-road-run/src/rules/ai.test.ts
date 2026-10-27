@@ -271,17 +271,9 @@ describe('the search timeline', () => {
     const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(2, 0), 'p-mangudai': hex(4, 0)});
     const me = unit(s, 'e-storm');
     me.slot = 0;
-    // Hail is an upgrade since Eye of the Storm took its place (2026-10-27).
-    const kit = HEROES.storm.abilities;
-    HEROES.storm.abilities = ['eye', 'hail', 'hold'];
-    let aimed: Hex[];
-    try {
-      aimed = scoreOptions(s, me)
-        .filter((o) => o.input.action.ability === 'hail')
-        .map((o) => o.input.action.target!.hex!);
-    } finally {
-      HEROES.storm.abilities = kit;
-    }
+    const aimed = scoreOptions(s, me)
+      .filter((o) => o.input.action.ability === 'hail')
+      .map((o) => o.input.action.target!.hex!);
     // Hail lands only on its ring, 2 away: the Grappler, not the Horse Archer or itself.
     expect(aimed).toEqual([hex(2, 0)]);
   });

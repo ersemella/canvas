@@ -57,7 +57,6 @@ const SOURCES: [RegExp, string][] = [
   [/^The hail hits/, 'hail'],
   [/'s parting arrow hits/, 'feignedRetreat'],
   [/^The gale hits/, 'gale'],
-  [/^The storm hits/, 'eye'],
   [/^The bite hits/, 'bite'],
   [/^The cleave hits/, 'cleave'],
   [/^The jian hits/, 'swiftStrike'],

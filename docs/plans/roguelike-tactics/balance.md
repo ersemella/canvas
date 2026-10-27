@@ -2642,6 +2642,11 @@ The "vs" columns are stage caravans against the Steppe party and camel
 
 ### Eye of the Storm in place of Hail (2026-10-27)
 
+**Reverted (owner, 2026-10-27)**: Hail is the Storm Caller's core again
+and Eye's code is removed; `experiments/eye*.mjs` reproduce these tables
+only at `26ce722`, where its switches (`ABILITY.eye`, `AI.supportKeepsBack`)
+exist.
+
 The owner's proposal: Eye of the Storm as the Storm Caller's core in place
 of Hail, Hail an upgrade beside Sunlight and Gale. An ally exactly 2 away,
 or the Storm Caller itself, heals the Storm Caller's power (1), with its
@@ -2832,8 +2837,8 @@ empty space too 99.5, 94, 59.9, 93.8, 68.6, 52.8.
 - A stronger Storm Caller widens the Steppe's lead over China (balance.md,
   "China against the Steppe").
 - **Adopted (owner, 2026-10-27): Eye hitting, on an ally or itself**, as
-  the Storm Caller's core; Hail an upgrade (`ABILITY.eye.damage` on,
-  `weaken` 0).
+  the Storm Caller's core, Hail an upgrade; **reverted to Hail the same
+  day** (owner), Eye's code removed (at `26ce722` before that).
 
 #### Eye of the Storm's storm following its target (2026-10-27)
 

@@ -304,14 +304,18 @@ earlier texts are in git history (`docs/plans/roguelite-invasions.md`,
 
 ## Roster
 
-- **Hail as the Storm Caller's core** (owner, 2026-10-23 to 2026-10-27;
-  an upgrade since): replaced by Eye of the Storm. **Eye of the Storm's
-  other shapes** (the owner's, 2026-10-27; built as switches,
-  `ABILITY.eye`, and measured: [balance.md](balance.md#eye-of-the-storm-in-place-of-hail-2026-10-27)):
-  a heal and Weaken 1 round it, as proposed; heal 2, Weaken 2; Immobilizing
-  round it; and a free space a target too. Each was weaker than Hail
-  (Hail won 55–66% head to head); a free space with a hit round it was
-  stronger, and outgrew Hail with every point of power.
+- **Eye of the Storm** (the owner's proposal, 2026-10-27; built as the
+  Storm Caller's core in place of Hail, merged, then reverted to Hail the
+  same day, owner; its code removed, at `26ce722` before that;
+  [balance.md](balance.md#eye-of-the-storm-in-place-of-hail-2026-10-27)):
+  an ally exactly 2 away, or the Storm Caller itself, healed its power,
+  heals taking Empower and Weaken as a hit does. The storm round it was
+  measured Weakening (as proposed), with heal 2 and Weaken 2,
+  Immobilizing, on an empty space too, following the unit healed until the
+  Storm Caller's next turn, and within 3: every shape without a hit lost to
+  Hail head to head (55–66%). Hitting every unit round it for the Storm
+  Caller's power was level with Hail and was built; on an empty space too
+  it outgrew Hail with every point of power. Hail kept.
 
 - **Volley** (the Outrider, owner, 2026-10-23; removed with its code the
   same day for Skirmish, [balance.md](balance.md#skirmish-in-place-of-volley-2026-10-23)):

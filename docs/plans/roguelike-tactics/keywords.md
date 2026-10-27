@@ -35,9 +35,6 @@ Since later that day the Elixir **Hastens allies 3 and Delays enemies 3**
 instead (owner), so no hero Weakens; later still, one ally within 3 is
 healed 1, **Empowered 1** and **Hastened 3**, nothing on an enemy (owner).
 The haste and delay limits are still not built.
-**Heals** (2026-10-27, owner, with Eye of the Storm): a heal is its
-healer's power plus its Empower, less its Weaken, at least 0, as a hit's
-damage is, the Elixir's too.
 **Delay** (2026-10-25), for the Vanguard's Cleave (Delay 8 since
 2026-10-26; 5 before): the card moves 8 slots later, a taken slot resolved by speed as any placement
 is; the delay limit (3.6) is not built yet.
@@ -147,8 +144,8 @@ a guard is needed is open question 56.
 | **Burn N** | The unit takes N damage at the start of each of its turns while it lasts. |
 | **Shield N** | A separate pool of N, reduced before health. Damage the Shield can't absorb carries on to health. |
 | **Pierce** | The attack's damage ignores Armour. |
-| **Empower N** | The unit's abilities deal N more damage, and heal N more (owner, 2026-10-27). |
-| **Weaken N** | The unit's abilities deal N less damage, and heal N less, to at least 0 (healing, owner, 2026-10-27). |
+| **Empower N** | The unit's abilities deal N more damage. |
+| **Weaken N** | The unit's abilities deal N less damage, to at least 0. |
 | **Armour N** | Damage the unit takes is reduced by N, to at least 0. A flat reduction, not a percentage. |
 | **Immortal** | The unit's health can't be reduced: damage that reaches health becomes 0. Damage still reduces and breaks its Shield. |
 

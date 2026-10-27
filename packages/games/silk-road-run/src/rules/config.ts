@@ -116,16 +116,14 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 2,
     defence: 2,
     // 1 since 2026-10-23 (owner; balance.md): at 0 Hail dealt nothing and
-    // couldn't break a grapple. Eye of the Storm heals and hits it.
+    // couldn't break a grapple.
     power: 1,
-    // Eye of the Storm in place of Hail (owner, 2026-10-27; balance.md,
-    // "Eye of the Storm healing and hitting"); Hail an upgrade since.
-    abilities: ['eye', 'hold'],
+    abilities: ['hail', 'hold'],
     // Sunlight added (owner, 2026-10-23), as measured: a trap for the AI
     // at Empower 2 (balance.md); an upgrade since 2026-10-24 (owner). Gale
     // an upgrade too (owner, 2026-10-24; balance.md, "Second abilities
     // measured"): side without it wins 40.6%.
-    upgrades: ['hail', 'sunlight', 'gale'],
+    upgrades: ['sunlight', 'gale'],
   },
   /**
    * The Vanguard (owner, 2026-10-25; roster.md): a slow tank with
@@ -249,38 +247,6 @@ export const ABILITY = {
    * (balance.md, "Two hails, hail on entry, and a melee Elixir").
    */
   hail: {range: 2, turns: 2, max: 2 as number, entry: true as boolean},
-  /**
-   * Eye of the Storm (owner, 2026-10-27; the Storm Caller's core in place
-   * of Hail, an upgrade since): an ally exactly `range` away, or the Storm
-   * Caller itself, heals the Storm Caller's power, with its Empower and
-   * Weaken as a hit's damage; then every unit next to it, of either side,
-   * the camel too, is hit for the Storm Caller's power (`damage`). A ring,
-   * as Hail's, so the Storm Caller is never in the storm round an ally it
-   * heals. As measured (balance.md, "Eye of the Storm healing and
-   * hitting"): level with Hail, and on an ally its hit stops outgrowing
-   * Hail's after one point of power, since the storm hurts its own side too.
-   * For measuring, the shapes it was measured in: `weaken`, every unit next
-   * to it that hits Weakened this much until the end of its next turn (1
-   * when proposed, 0 as built); `heal`, added to the power it heals;
-   * `immobilize`, every unit next to it Immobilized until the end of its
-   * next turn; `anywhere`, a space with no unit on it a target too, the
-   * storm round it with no heal; `follows`, the storm following the unit
-   * healed until the Storm Caller's next turn, catching each unit that
-   * comes next to it once, as it lands, a walk that the storm Immobilizes
-   * stopping there (all off as built). `ring`: its target exactly `range`
-   * away (on as built); off, anywhere within it, where the Storm Caller can
-   * be in its own storm.
-   */
-  eye: {
-    range: 2 as number,
-    ring: true as boolean,
-    damage: true as boolean,
-    weaken: 0 as number,
-    heal: 0 as number,
-    immobilize: false as boolean,
-    anywhere: false as boolean,
-    follows: false as boolean,
-  },
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Empowered, is Empowered `empower` until the end of
@@ -417,13 +383,6 @@ export const AI = {
    * Sunlight was a trap, at ½ the Storm Caller Hails most.
    */
   empoweredShare: 0.5 as number,
-  /**
-   * A switch for measuring (2026-10-27): a unit with no ability that hurts
-   * (an Eye of the Storm Storm Caller) closes in on the ally it could reach
-   * with Eye, standing `ABILITY.eye.range` from it, not on the nearest enemy
-   * (`gapFrom` in ai.ts). Off as built.
-   */
-  supportKeepsBack: false as boolean,
   /**
    * The share of a grappled unit's status cost the AI takes off while an
    * ally could strike the Grappler holding it (`rescueGain` in ai.ts): the

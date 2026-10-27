@@ -25,9 +25,6 @@ import {
   elixirAmount,
   elixirCaught,
   elixirHeals,
-  eyeCaught,
-  eyeHeal,
-  eyeWeakens,
   grappling,
   unusableReason,
 } from './abilities';
@@ -36,7 +33,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, chargeOf} from './track';
-import {camelOf, damageOf, healOf, shotEmpower} from './resolve';
+import {camelOf, damageOf, shotEmpower} from './resolve';
 import {MAPS} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
@@ -56,13 +53,11 @@ function turnValue(u: Unit): number {
   return u.hero === CAMEL ? AI.perCamelHex : Math.max(1, u.power);
 }
 
-/** A unit whose attack reaches beyond its neighbours (Longshot, Hail, Gale, Volley, Cleave, Eye of the Storm). */
+/** A unit whose attack reaches beyond its neighbours (Longshot, Hail, Gale, Volley, Cleave). */
 function attacksFromAfar(u: Unit): boolean {
   const kit = kitOf(u);
   return (
-    isRanged(u) ||
-    ['hail', 'gale', 'volley', 'cleave'].some((a) => kit.includes(a as AbilityId)) ||
-    (ABILITY.eye.damage && kit.includes('eye'))
+    isRanged(u) || ['hail', 'gale', 'volley', 'cleave'].some((a) => kit.includes(a as AbilityId))
   );
 }
 
@@ -122,7 +117,7 @@ function empowerGain(state: FightState, u: Unit): number {
 }
 
 /**
- * What a Weaken costs `u` (Eye of the Storm), as `empowerGain` is
+ * What a Weaken costs `u` (the Alchemist's Elixir), as `empowerGain` is
  * an Empower's worth: the damage it takes off `u`'s next hit, if an enemy
  * is within reach, plus a kill's worth if that hit would kill only without
  * it, all times `AI.empoweredShare`. Once its turn has begun it no longer
@@ -140,7 +135,7 @@ function weakenLoss(state: FightState, u: Unit): number {
 
 /**
  * The enemies standing where `u` could hit them from where it is, roughly:
- * next to it for melee, on hail's ring or round Eye of the Storm's for the Storm Caller, on one of
+ * next to it for melee, on hail's ring for the Storm Caller, on one of
  * Longshot's lines, or of Skirmish's from a space next to it (ignoring what
  * blocks them), for the Horse Archer.
  */
@@ -154,7 +149,6 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (has('hail') && d === ABILITY.hail.range) return true;
     if (has('volley') && d <= ABILITY.volley.range) return true;
     if (has('gale') && d <= ABILITY.gale.range + 1) return true;
-    if (has('eye') && ABILITY.eye.damage && d <= ABILITY.eye.range + 1) return true;
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
     const inLine = dq === 0 || dr === 0 || dq === -dr;
@@ -172,11 +166,6 @@ function strikable(state: FightState, u: Unit): Unit[] {
 function statusCost(u: Unit): number {
   if (isStunned(u)) return turnValue(u) * AI.stunnedShare;
   if (!isImmobilized(u)) return 0;
-  return immobilizeGuess(u);
-}
-
-/** What Immobilized costs `u`: all of the camel's turn, which only walks; a share of anyone else's. */
-function immobilizeGuess(u: Unit): number {
   if (u.hero === CAMEL) return turnValue(u);
   const share = attacksFromAfar(u) ? AI.immobilizedShare.ranged : AI.immobilizedShare.melee;
   return turnValue(u) * share;
@@ -366,8 +355,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (!hostile(u, unit)) {
         if (elixirHeals(u))
           value +=
-            Math.min(healOf(unit, state), u.maxHp - u.hp) *
-            (u.hero === CAMEL ? AI.camelHealthWeight : 1);
+            Math.min(unit.power, u.maxHp - u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
         const empowers = elixirAmount('empower');
         if (u.power > 0 && empowers > 0)
           value += u.empower ? 0 : 1 + empowerGuess(state, u, empowers);
@@ -385,32 +373,6 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         value += u.weaken ? 0 : 1 + weakenGuess(state, u, elixirAmount('weaken'));
       if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
     }
-    return closing + value;
-  }
-  // Eye of the Storm: the heal on its target, and a Weaken on each unit next to it, by its side.
-  if (ability === 'eye') {
-    const healed = unitAt(state, target!.hex!);
-    let value = !healed
-      ? 0
-      : Math.min(eyeHeal(unit, state), healed.maxHp - healed.hp) *
-        (healed.hero === CAMEL ? AI.camelHealthWeight : 1);
-    // `damage`: each unit in the storm hit, as Gale's are weighed.
-    if (ABILITY.eye.damage)
-      for (const u of eyeCaught(state, target!.hex!)) {
-        const damage = Math.min(damageOf(unit), u.hp);
-        value += sided(
-          u,
-          damage * (u.hero === CAMEL ? AI.camelHealthWeight : 1) +
-            (damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0)
-        );
-      }
-    if (ABILITY.eye.weaken > 0)
-      for (const u of eyeWeakens(state, target!.hex!))
-        if (!u.weaken) value += sided(u, 1 + weakenGuess(state, u, ABILITY.eye.weaken));
-    // `immobilize`: the share of a turn each loses, as hail's Immobilize is weighed.
-    if (ABILITY.eye.immobilize)
-      for (const u of eyeCaught(state, target!.hex!))
-        if (!isImmobilized(u)) value += sided(u, immobilizeGuess(u));
     return closing + value;
   }
   const def = ABILITIES[ability];
@@ -913,25 +875,9 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
   return [0, 1, 2, 3, 4, 5].some((d) => firstInLane(state, map, at, d, me) === target) ? 0 : 1;
 }
 
-/** Whether any of `u`'s abilities hurts: an attack, or one that hits (Hail, Gale, Eye of the Storm). */
-function hurts(u: Unit): boolean {
-  return kitOf(u).some((a) => {
-    const def = ABILITIES[a];
-    if (a === 'eye') return ABILITY.eye.damage;
-    return a !== 'hold' && def.damages !== false && def.kind !== 'support';
-  });
-}
-
 /** `quarryGap` were `me` standing on `at`. */
 function gapFrom(state: FightState, me: Unit, at: Hex, hunting: boolean): number {
   if (me.hero === CAMEL) return 0;
-  if (AI.supportKeepsBack && !hurts(me)) {
-    let nearest = Infinity;
-    for (const a of state.units)
-      if (a !== me && a.alive && a.hex && !hostile(a, me))
-        nearest = Math.min(nearest, Math.abs(hexDistance(at, a.hex) - ABILITY.eye.range));
-    return Number.isFinite(nearest) ? nearest : 0;
-  }
   const gap = (target: Unit) =>
     isRanged(me) ? shotGap(state, me, at, target) : hexDistance(at, target.hex!);
   const camel = hunting ? camelOf(state) : undefined;

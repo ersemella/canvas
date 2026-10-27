@@ -1,8 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Swordsman's (owner, 2026-10-26), the Storm Caller's Eye of the Storm
- * (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * Swordsman's (owner, 2026-10-26), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -35,7 +34,6 @@ import {
   liftHail,
   haste,
   heal,
-  healOf,
   hit,
   log,
   makeUnstoppable,
@@ -276,97 +274,6 @@ const hail: AbilityDef = {
     hailHolds(ctx, u);
   },
 };
-
-/**
- * Eye of the Storm (owner, 2026-10-27, in place of Hail): a unit of the
- * Storm Caller's side exactly `ABILITY.eye.range` away, or the Storm Caller
- * itself, heals the Storm Caller's power, with its Empower and Weaken
- * (`healOf`); then every unit next to it, ally or enemy, the camel too, is
- * hit for the Storm Caller's power (`ABILITY.eye.damage`). The ring keeps
- * the Storm Caller out of the storm round an ally it heals. The other
- * shapes it was measured in stay as switches (`ABILITY.eye`).
- */
-const eye: AbilityDef = {
-  id: 'eye',
-  name: 'Eye of the Storm',
-  kind: 'support',
-  damages: false,
-  // A getter, so the measuring switch (`ABILITY.eye.anywhere`) reaches the page and the AI.
-  get targetsUnit() {
-    return !ABILITY.eye.anywhere;
-  },
-  // Getters, so the measuring switches (`ABILITY.eye.range`, `.ring`) reach the page and the AI.
-  get range() {
-    return ABILITY.eye.range;
-  },
-  get minRange() {
-    return ABILITY.eye.ring ? ABILITY.eye.range : 1;
-  },
-  radius: 1,
-  summary(user) {
-    const {weaken: weakens, immobilize, damage} = ABILITY.eye;
-    const lasting = [weakens ? `Weakened ${weakens}` : '', immobilize ? 'Immobilized' : '']
-      .filter(Boolean)
-      .join(' and ');
-    const until = lasting ? `${lasting} until the end of its next turn` : '';
-    const storm = damage ? (until ? `hit and ${until}` : 'hit') : until;
-    const reach = `${ABILITY.eye.ring ? 'exactly' : 'within'} ${ABILITY.eye.range}${ABILITY.eye.ring ? ' away' : ''}`;
-    const where = ABILITY.eye.anywhere
-      ? `A space ${reach}, or yourself: an ally there heals`
-      : `An ally ${reach}, or yourself: it heals`;
-    return `${where} ${eyeHeal(user)}${storm ? `; every unit next to it is ${storm}` : ''}.`;
-  },
-  targets: (state, map, user, from) => [
-    {hex: {...from}},
-    ...hexesWithin(map, from, ABILITY.eye.range, (h) => {
-      const d = hexDistance(from, h);
-      if (d === 0 || (ABILITY.eye.ring && d !== ABILITY.eye.range)) return false;
-      const u = unitAt(state, h);
-      if (u) return u.side === user.side;
-      return ABILITY.eye.anywhere && !blocks(tileAt(map, h));
-    }),
-  ],
-  resolve(ctx, user, target) {
-    const centre = target.hex!;
-    const u = unitAt(ctx.state, centre);
-    if (u) {
-      log(ctx, `${unitName(user)} opens the eye of the storm over ${unitName(u)}.`);
-      heal(ctx, u, eyeHeal(user, ctx.state));
-    } else log(ctx, `${unitName(user)} opens the eye of the storm.`);
-    if (ABILITY.eye.damage)
-      for (const n of eyeCaught(ctx.state, centre)) hit(ctx, user, n, 'The storm');
-    if (ABILITY.eye.weaken > 0)
-      for (const n of eyeWeakens(ctx.state, centre))
-        if (n.alive) weaken(ctx, n, ABILITY.eye.weaken);
-    if (ABILITY.eye.immobilize)
-      for (const n of eyeCaught(ctx.state, centre))
-        if (!n.statuses.some((s) => s.eye)) {
-          n.statuses.push({kind: 'immobilized', eye: true});
-          log(ctx, `${unitName(n)} is Immobilized.`);
-        }
-    // `follows`: the storm goes with the unit healed, catching whoever comes next to it.
-    if (ABILITY.eye.follows && u)
-      user.storm = {target: u.id, caught: eyeCaught(ctx.state, centre).map((n) => n.id)};
-  },
-};
-
-/** What Eye of the Storm heals: `healOf`, and `ABILITY.eye.heal` more (measuring). */
-export const eyeHeal = (user: Unit, state?: FightState): number =>
-  healOf(user, state) + ABILITY.eye.heal;
-
-/** The units next to Eye of the Storm's `centre`, in its storm. */
-export function eyeCaught(state: FightState, centre: Hex): Unit[] {
-  return sortByHex(
-    hexNeighbors(centre)
-      .map((h) => unitAt(state, h))
-      .filter((u): u is Unit => u !== undefined),
-    (u) => u.hex!
-  );
-}
-
-/** The units Eye of the Storm on `centre` Weakens: those in its storm that hit. */
-export const eyeWeakens = (state: FightState, centre: Hex): Unit[] =>
-  eyeCaught(state, centre).filter((u) => u.power > 0);
 
 /**
  * Sunlight (owner, 2026-10-23): a space within `ABILITY.sunlight.range`.
@@ -747,8 +654,7 @@ export function elixirCaught(state: FightState, user: Unit, from: Hex, target: H
 /**
  * Elixir (owner, 2026-10-25; as built since late on 2026-10-26): an ally
  * within `ABILITY.elixir.range` (3) but the Alchemist, no line of fire,
- * heals the Alchemist's power (with its Empower and Weaken since
- * 2026-10-27, `healOf`), is Empowered `empower` (1) and Hastened
+ * heals the Alchemist's power, is Empowered `empower` (1) and Hastened
  * `haste` (3); nothing on an enemy. Earlier that day a burst next to the
  * Alchemist, Hastening allies 3 and Delaying enemies 3. Other shapes and
  * amounts, a hit and Unstoppable, for measuring, by `ABILITY.elixir`
@@ -797,7 +703,7 @@ const elixir: AbilityDef = {
         delays ? `Delayed ${delays}` : '',
       ].filter(Boolean);
       const allies = heal
-        ? `allies heal ${healOf(user)}${ally.length ? ` and are ${ally.join(' and ')}` : ''}`
+        ? `allies heal ${user.power}${ally.length ? ` and are ${ally.join(' and ')}` : ''}`
         : ally.length
           ? `allies are ${ally.join(' and ')}`
           : '';
@@ -833,7 +739,7 @@ const elixir: AbilityDef = {
     for (const u of caught) {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
       if (u.side === user.side) {
-        if (elixirHeals(u)) heal(ctx, u, healOf(user, ctx.state));
+        if (elixirHeals(u)) heal(ctx, u, user.power);
         // An amount of 0 gives none, rather than replacing an Empower it has.
         const empowers = elixirAmount('empower');
         if (u.power > 0 && empowers > 0) empower(ctx, u, empowers);
@@ -892,7 +798,6 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   longshot,
   skirmish,
   hail,
-  eye,
   sunlight,
   grapple,
   bite,

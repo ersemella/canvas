@@ -204,11 +204,11 @@ try {
   // No top bar: the board gets the whole screen, on desktop too.
   check('no top bar', (await page.locator('header').count()) === 0);
 
-  // One turn with real taps: select Eye of the Storm, replace it with Move,
-  // confirm. Eye always has a target (the Storm Caller itself), so it's the
-  // Storm Caller's turn: let the AI play until it comes. It starts somewhere
-  // on the left edge, so the hexes come from the page: Eye's farthest
-  // target, and a move off its reach if one is.
+  // One turn with real taps: select Hail, replace it with Move, confirm.
+  // Hail is aimed at a space, a unit there or not, so it's the Storm
+  // Caller's turn: let the AI play until it comes. It starts somewhere on
+  // the left edge, so the hexes come from the page: Hail's farthest target,
+  // and a move off its reach if one is.
   for (let i = 0; i < 20 && run.view.fight.awaiting !== stormCaller; i++) {
     await page.evaluate(() => window.__tactics.autoTurn());
     await page.waitForFunction((x) => window.__tactics.run.view.version > x, run.view.version, {
@@ -222,19 +222,19 @@ try {
   check('the Storm Caller’s turn comes', acting.id === stormCaller, acting.id);
   const hexDistance = (a, b) =>
     (Math.abs(a.q - b.q) + Math.abs(a.r - b.r) + Math.abs(a.q + a.r - b.q - b.r)) / 2;
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Eye of the Storm/}).click();
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Hail/}).click();
   await page.waitForFunction(() => window.__tactics.targets.length > 0);
-  const eyeTargets = await page.evaluate(() => window.__tactics.targets.map((t) => t.hex));
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Eye of the Storm/}).click(); // and off again
-  const eyeTo = eyeTargets.sort(
+  const hailTargets = await page.evaluate(() => window.__tactics.targets.map((t) => t.hex));
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Hail/}).click(); // and off again
+  const hailTo = hailTargets.sort(
     (a, b) => hexDistance(b, acting.hex) - hexDistance(a, acting.hex)
   )[0];
-  // The nearest reachable hex, off Eye's reach if one is.
+  // The nearest reachable hex, off Hail's reach if one is.
   const dest = (await page.evaluate(() => window.__tactics.reaches.map((r) => r.hex)))
-    .filter((h) => hexDistance(h, acting.hex) > 0 && !sameHex(h, eyeTo))
+    .filter((h) => hexDistance(h, acting.hex) > 0 && !sameHex(h, hailTo))
     .sort(
       (a, b) =>
-        eyeTargets.some((t) => sameHex(t, a)) - eyeTargets.some((t) => sameHex(t, b)) ||
+        hailTargets.some((t) => sameHex(t, a)) - hailTargets.some((t) => sameHex(t, b)) ||
         hexDistance(a, acting.hex) - hexDistance(b, acting.hex)
     )[0];
   // On desktop a click plans a move without Move; Esc puts it down.
@@ -252,31 +252,31 @@ try {
       !(await page.getByTestId('board-confirm').count())
   );
   check('there is no Hold button', !(await page.getByRole('button', {name: /^Hold/}).count()));
-  // Select Eye and its target, then replace it with Move and a hex. Picked,
-  // Eye is explained under the details; nothing is before.
+  // Select Hail and its target, then replace it with Move and a hex. Picked,
+  // Hail is explained under the details; nothing is before.
   const chosen = page.getByTestId('chosen-ability');
   const chosenBefore = await chosen.count();
-  await page.getByTestId('turn-controls').getByRole('button', {name: /^Eye of the Storm/}).click();
+  await page.getByTestId('turn-controls').getByRole('button', {name: /^Hail/}).click();
   check(
     'picking an ability explains it under the details (and nothing before)',
-    chosenBefore === 0 && (await chosen.textContent()).startsWith('Eye of the Storm'),
+    chosenBefore === 0 && (await chosen.textContent()).startsWith('Hail'),
     await chosen.textContent().catch(() => null)
   );
-  const eyeButton = page.locator('[data-choice="eye"]');
+  const hailButton = page.locator('[data-choice="hail"]');
   check(
     'a picked ability without a target asks for one',
-    /^Eye of the StormPick a target$/.test(await eyeButton.textContent()),
-    await eyeButton.textContent()
+    /^HailPick a target$/.test(await hailButton.textContent()),
+    await hailButton.textContent()
   );
   // Aimed, its button confirms it; a right-click un-picks the target.
-  await tapHex(eyeTo);
+  await tapHex(hailTo);
   check(
     'once its target is picked, the ability’s button confirms it',
-    /^Confirm\+\d+( → \+\d+)?$/.test(await eyeButton.textContent()),
-    await eyeButton.textContent()
+    /^Confirm\+\d+( → \+\d+)?$/.test(await hailButton.textContent()),
+    await hailButton.textContent()
   );
   {
-    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), eyeTo);
+    const {x, y} = await page.evaluate((h) => window.__tactics.hexToCanvas(h), hailTo);
     const box = await page.locator('canvas').boundingBox();
     await page.mouse.click(box.x + (x * box.width) / SCENE_W, box.y + (y * box.height) / SCENE_H, {
       button: 'right',
@@ -286,33 +286,33 @@ try {
   check(
     'desktop: a right-click un-picks the target, without committing',
     (await state()).view.version === before &&
-      /^Eye of the StormPick a target$/.test(await eyeButton.textContent()) &&
-      (await eyeButton.getAttribute('aria-pressed')) === 'true',
-    await eyeButton.textContent()
+      /^HailPick a target$/.test(await hailButton.textContent()) &&
+      (await hailButton.getAttribute('aria-pressed')) === 'true',
+    await hailButton.textContent()
   );
   // Before a target, tapping the ability again puts it down; so does its key.
-  await eyeButton.click();
+  await hailButton.click();
   check(
     'tapping an ability with no target again puts it down',
-    (await eyeButton.getAttribute('aria-pressed')) === 'false'
+    (await hailButton.getAttribute('aria-pressed')) === 'false'
   );
-  await page.keyboard.press(await eyeButton.getAttribute('data-key'));
+  await page.keyboard.press(await hailButton.getAttribute('data-key'));
   check(
     'desktop: an ability’s key picks it',
-    (await eyeButton.getAttribute('aria-pressed')) === 'true'
+    (await hailButton.getAttribute('aria-pressed')) === 'true'
   );
   await page.keyboard.press('Escape');
   check(
     'desktop: Esc puts an ability with no target down',
-    (await eyeButton.getAttribute('aria-pressed')) === 'false'
+    (await hailButton.getAttribute('aria-pressed')) === 'false'
   );
-  await eyeButton.click();
-  await tapHex(eyeTo);
+  await hailButton.click();
+  await tapHex(hailTo);
   await moveButton.click();
   await tapHex(dest);
   check(
     'Move replaces the ability selection',
-    (await eyeButton.getAttribute('aria-pressed')) === 'false'
+    (await hailButton.getAttribute('aria-pressed')) === 'false'
   );
   check('putting the ability down hides its explanation', !(await chosen.count()));
   check('there are no numbered steps', !(await page.getByTestId('turn-steps').count()));
@@ -345,17 +345,17 @@ try {
   );
   await moveButton.click();
   await tapHex(dest);
-  await eyeButton.click();
-  await tapHex(eyeTo);
+  await hailButton.click();
+  await tapHex(hailTo);
   check(
     'an ability replaces a planned move',
-    (await eyeButton.getAttribute('aria-pressed')) === 'true' &&
+    (await hailButton.getAttribute('aria-pressed')) === 'true' &&
       (await moveButton.getAttribute('aria-pressed')) === 'false'
   );
   // Like an ability's target, the destination can be changed by tapping
   // another reachable hex.
   await moveButton.click();
-  await tapHex(eyeTo);
+  await tapHex(hailTo);
   await tapHex(dest);
   check(
     'tapping another reachable hex changes the destination',
@@ -1262,7 +1262,7 @@ try {
     await sleep(250);
   };
   // The camel walks itself; the AI plays on until the Storm Caller, with
-  // Eye of the Storm (always a target: itself), is up.
+  // Hail (aimed at a space), is up.
   for (
     let i = 0;
     i < 20 && (await phone.evaluate(() => window.__tactics.run.view.fight.awaiting)) !== 'p-storm';
@@ -1276,17 +1276,17 @@ try {
       {timeout: 15_000}
     );
   }
-  await phone.locator('[data-choice="eye"]').waitFor({timeout: 15_000});
+  await phone.locator('[data-choice="hail"]').waitFor({timeout: 15_000});
   const phoneVersion = await phone.evaluate(() => window.__tactics.run.view.version);
   const moveBoxBefore = await phoneMove.boundingBox();
-  const phoneEye = phone.locator('[data-choice="eye"]');
-  const eyeCost = await phoneEye.textContent();
-  await phoneEye.click();
+  const phoneHail = phone.locator('[data-choice="hail"]');
+  const hailCost = await phoneHail.textContent();
+  await phoneHail.click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
   check(
     'phone: with no target yet, the ability’s button asks for one',
-    /^Eye of the StormPick a target$/.test(await phoneEye.textContent()),
-    await phoneEye.textContent()
+    /^HailPick a target$/.test(await phoneHail.textContent()),
+    await phoneHail.textContent()
   );
   {
     const after = await phoneMove.boundingBox();
@@ -1299,7 +1299,7 @@ try {
   }
   const aim = await phone.evaluate(() => window.__tactics.targets[0].hex);
   await tapOn(aim);
-  const phoneConfirm = await phoneEye.textContent();
+  const phoneConfirm = await phoneHail.textContent();
   check(
     'phone: aimed, the ability’s button confirms it, saying when the next turn comes',
     /^Confirm\+\d+( → \+\d+)?$/.test(phoneConfirm),
@@ -1307,10 +1307,10 @@ try {
   );
   check(
     'phone: the ability button showed the same slots as its Confirm',
-    eyeCost.endsWith(phoneConfirm.match(/^Confirm(\+\d+)/)[1]),
-    [eyeCost, phoneConfirm]
+    hailCost.endsWith(phoneConfirm.match(/^Confirm(\+\d+)/)[1]),
+    [hailCost, phoneConfirm]
   );
-  // Aimed, Skip turn is its Cancel: one tap puts Eye down.
+  // Aimed, Skip turn is its Cancel: one tap puts Hail down.
   const phoneSkip = phone.getByTestId('skip-turn');
   check(
     'phone: aimed, Skip turn reads Cancel',
@@ -1322,11 +1322,11 @@ try {
   check(
     'phone: a tap on Cancel puts the ability down, without committing',
     (await phone.evaluate(() => window.__tactics.run.view.version)) === phoneVersion &&
-      (await phoneEye.getAttribute('aria-pressed')) === 'false' &&
+      (await phoneHail.getAttribute('aria-pressed')) === 'false' &&
       /^Skip turn/.test(await phoneSkip.textContent()),
     await phoneSkip.textContent()
   );
-  await phoneEye.click();
+  await phoneHail.click();
   await phone.waitForFunction(() => window.__tactics.targets.length > 0);
   await tapOn(aim);
   await tapOn(aim);
