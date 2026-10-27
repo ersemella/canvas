@@ -2956,6 +2956,57 @@ Head to head, a Steppe mirror with one side's Storm Caller at power 2:
   undefined). Two Grapplers never meet on one side in a run.
 - **Adopted (owner, 2026-10-27)**: the Storm Caller's power is 2.
 
+### The Elixir swapping speed and health (2026-10-27)
+
+Asked for: the Elixir swapping an ally's stats until its next turn, its
+speed for its health, the Alchemist's power 0. A switch for measuring,
+`ABILITY.elixir.swap` (off as built): one ally within 3, never the
+Alchemist or the camel (its speed 0 would be its health), swaps its speed
+and its current health; no heal, Empower or Haste. The builder's choices,
+each measured both ways: how long (`swapUntil`: `end`, through the ally's
+next turn, its card placed after it at the swapped speed; `start`, until
+that turn starts, so the speed counts only in collisions), and what the
+health does (`pool`, the swapped health a pool of its own, the unit's own
+health back untouched unless it fell; `carry`, what it gained or lost
+meanwhile carried back, falling if none is left). The AI reads a swapped
+unit by the health it will have back (`healthAfterSwap`), and its first
+guess counts each point of health lost for now at `AI.swapRisk` (0.5);
+at 0.5 it almost never swaps, so every variant is also run at 0.
+`experiments/elixir-swap.mjs`, **800 fights each** (about ±1.8 points),
+seeds from 1000; `ablate.ts` counts swaps by ally (`swapsPerFight`).
+
+| Elixir | `swapRisk` | China vs Steppe | Alchemist for the Storm Caller | Elixir's share of its turns (China) | Swaps a fight (Vanguard / Swordsman) |
+|---|---:|---:|---:|---:|---:|
+| built (heal 1, Empower 1, Haste 3, power 1) | | **42.8%** | **44.2%** | 61% | |
+| swap, pool, through its turn | 0 | 23% | 22.5% | 28% | 1.5 / 1.3 |
+| swap, carry, through its turn | 0 | 21.9% | 21.8% | 21% | 1.6 / 0.5 |
+| swap, pool, until its turn | 0 | 17.9% | 17.8% | 28% | 1.2 / 1.7 |
+| swap, carry, until its turn | 0 | 15.6% | 17.4% | 26% | 1.3 / 1.3 |
+| swap, pool, through its turn | 0.5 | 16.9% | 18.9% | 8% | 0 / 0.8 |
+| swap, carry, through its turn | 0.5 | 15.6% | 17.8% | 1% | 0 / 0.1 |
+
+- **The swap is close to no Elixir at all**: the carry row at 0.5, where
+  the AI swaps under once a fight, is in effect an Alchemist with nothing
+  to do (15.6%, holding 40% of its turns); the best swap adds 7 points to
+  that, the built Elixir 27. In the seat every variant wins 17–23%, about
+  half the built Elixir's 44%.
+- **What it is used for is the Vanguard's speed**: health 8 for speed 8
+  takes its next card 5 slots on instead of 10, half a turn, but leaves
+  it at health 1 meanwhile; its survival falls from 45% to 26–28%. The
+  Steppe's other heroes have 4–6 health against speed 2–3, so for them
+  the swap is a slot or two of speed for 1–3 health, or (hurt) a little
+  health for a slower card.
+- **Lasting through the ally's turn is worth about 5 points** over ending
+  as it starts (the speed then counts only in collisions); `pool` and
+  `carry` differ by 1–2 points, within noise. Carry's falls as a swap ends
+  are rare (0–0.1 a fight).
+- **The Alchemist at power 0 has nothing else**: with the swap seldom
+  worth a turn it moves or Holds on 70–80% of its turns.
+- Not changed: `swap` stays off. To be worth a turn it would need to come
+  on top of the built Elixir, or the speed half alone (an ally's speed set
+  to its health through its next turn, health untouched) is the part that
+  pays; neither measured.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

@@ -115,6 +115,10 @@ in place of Hail (`mod.kits`), with heal 2 (`ABILITY.eye.heal`) and Weaken
 either core's side, and a Storm Caller that can't hurt keeping back
 (`AI.supportKeepsBack`).
 
+`elixir-swap.mjs` (2026-10-27) measures the Elixir swapping an ally's
+speed and health (`ABILITY.elixir.swap`, `.swapUntil`), the AI's first
+guess at its risk at 0.5 and 0 (`AI.swapRisk`), against the built Elixir.
+
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production
