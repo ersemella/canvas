@@ -576,20 +576,19 @@ function cleaveArea(map: MapData, from: Hex, target: Hex): Hex[] {
 }
 
 /**
- * Cleave (owner, 2026-10-25; its shape, 2026-10-26): a line of 2 spaces
- * straight up or down from the Vanguard, or a cone to one side (the two
- * diagonal spaces and the one straight across beyond them); each unit in
- * it, ally or enemy, takes the Vanguard's power, and each one left
+ * Cleave (owner, 2026-10-25; its shape, 2026-10-27): a line of 2 spaces
+ * straight out from the Vanguard in any of the six directions; each unit
+ * in it, ally or enemy, takes the Vanguard's power, and each one left
  * standing is Delayed `ABILITY.cleave.delay` (8, owner, 2026-10-26).
- * Aimed at the area's first space, which may be empty when a unit stands
- * in another.
+ * Aimed at the line's first space, which may be empty when a unit stands
+ * in the second.
  */
 const cleave: AbilityDef = {
   id: 'cleave',
   name: 'Cleave',
   kind: 'attack',
   summary: () =>
-    `A line of ${ABILITY.cleave.reach} spaces straight up or down from you, or a cone of 3 to one side: hits every unit in it, allies included, and Delays ${ABILITY.cleave.delay} each one left standing.`,
+    `A line of ${ABILITY.cleave.reach} spaces straight out from you, any way: hits every unit in it, allies included, and Delays ${ABILITY.cleave.delay} each one left standing.`,
   area: cleaveArea,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];

@@ -73,7 +73,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       }
     };
     if (has('longshot')) lanes(fq, fr, power);
-    // Cleave: its lines up and down and its cones to the sides.
+    // Cleave: its line of `reach` each way.
     if (has('cleave'))
       for (const area of cleaveAreas(map, e.hex))
         for (const h of area) mark(hexes, id(h.q, h.r), power);

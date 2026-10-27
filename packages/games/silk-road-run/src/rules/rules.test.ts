@@ -1494,9 +1494,10 @@ describe('the Vanguard and the Alchemist', () => {
 
   // Cleave's shape from `c`: hex directions 2 and 5 run straight up and down the
   // (flat-topped) board; 0 and 1 are the right-hand diagonals, `across` the space
-  // straight right beyond them.
+  // straight right beyond them, `diag(n)` the space `n` out along direction 0.
   const c = at(4, 4);
   const up = (n: number) => ({q: c.q, r: c.r - n});
+  const diag = (n: number): Hex => (n === 1 ? hexNeighbor(c, 0) : hexNeighbor(diag(n - 1), 0));
   const across = hexNeighbor(hexNeighbor(c, 0), 1);
 
   it('Cleave hits every unit in a line of 2 straight up, allies included, and nothing past it', () => {
@@ -1511,58 +1512,57 @@ describe('the Vanguard and the Alchemist', () => {
     expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp);
   });
 
-  it('Cleave to the side hits a cone: both diagonals and the space straight across', () => {
+  it('Cleave hits a line of 2 along a diagonal too, and not the spaces beside it', () => {
     const s = setup(
       {
         'p-modao': c,
-        'e-mangudai': hexNeighbor(c, 0),
-        'p-alchemist': hexNeighbor(c, 1),
+        'e-mangudai': diag(1),
+        'p-alchemist': diag(2),
         'e-modao': across,
-        'p-mangudai': hexNeighbor(hexNeighbor(c, 0), 0),
+        'p-mangudai': hexNeighbor(c, 1),
       },
       party
     );
     const modao = unit(s, 'p-modao');
-    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: hexNeighbor(c, 0)}}});
-    for (const id of ['e-mangudai', 'p-alchemist', 'e-modao'])
+    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: diag(1)}}});
+    for (const id of ['e-mangudai', 'p-alchemist'])
       expect(unit(s, id).hp).toBe(unit(s, id).maxHp - modao.power);
-    // Two out along a diagonal is outside the cone.
-    expect(unit(s, 'p-mangudai').hp).toBe(unit(s, 'p-mangudai').maxHp);
+    for (const id of ['e-modao', 'p-mangudai']) expect(unit(s, id).hp).toBe(unit(s, id).maxHp);
   });
 
-  it('Cleave is aimed at its area’s first space, even when only another holds a unit', () => {
-    const s = setup({'p-modao': c, 'e-mangudai': across}, party);
+  it('Cleave is aimed at its line’s first space, even when only the second holds a unit', () => {
+    const s = setup({'p-modao': c, 'e-mangudai': diag(2)}, party);
     const modao = unit(s, 'p-modao');
     const targets = ABILITIES.cleave.targets(s, mapOf(s), modao, modao.hex!);
-    expect(targets).toEqual([{hex: hexNeighbor(c, 0)}]);
-    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: hexNeighbor(c, 0)}}});
+    expect(targets).toEqual([{hex: diag(1)}]);
+    applyTurn(s, modao, {action: {ability: 'cleave', target: {hex: diag(1)}}});
     expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - modao.power);
   });
 
-  it('Cleave no longer reaches two out along a diagonal', () => {
-    const s = setup({'p-modao': c, 'e-mangudai': hexNeighbor(hexNeighbor(c, 0), 0)}, party);
+  it('Cleave no longer reaches the space straight across between two diagonals', () => {
+    const s = setup({'p-modao': c, 'e-mangudai': across}, party);
     const modao = unit(s, 'p-modao');
     expect(ABILITIES.cleave.targets(s, mapOf(s), modao, modao.hex!)).toEqual([]);
   });
 
-  it('Cleave is picked by a tap on any space of its line or cone', () => {
-    const s = setup({'p-modao': c, 'e-mangudai': up(2), 'e-modao': across}, party);
+  it('Cleave is picked by a tap on either space of its line', () => {
+    const s = setup({'p-modao': c, 'e-mangudai': up(2), 'e-modao': diag(2)}, party);
     const modao = unit(s, 'p-modao');
     const targets = offeredTargets(s, mapOf(s), modao, ABILITIES.cleave);
     const tap = (h: Hex) => targetAt(mapOf(s), modao.hex!, ABILITIES.cleave, targets, h);
     expect(tap(up(2))).toEqual({hex: up(1)});
     expect(tap(up(1))).toEqual({hex: up(1)});
     expect(tap(up(3))).toBeUndefined();
-    for (const h of [hexNeighbor(c, 0), hexNeighbor(c, 1), across])
-      expect(tap(h)).toEqual({hex: hexNeighbor(c, 0)});
+    for (const h of [diag(1), diag(2)]) expect(tap(h)).toEqual({hex: diag(1)});
+    expect(tap(across)).toBeUndefined();
   });
 
-  it('the built Elixir: one ally within 3, not the Alchemist, healed 1, Empowered 1 and Hastened 3; no enemy', () => {
+  it('the built Elixir: a unit within 2, not the Alchemist; an ally healed 1 and Empowered 2, an enemy hit for 1 and Weakened 2', () => {
     const s = setup(
       {
         'p-alchemist': at(1, 3),
-        'p-mangudai': at(4, 3),
         'e-mangudai': at(2, 3),
+        'p-mangudai': at(3, 3),
         'p-camel': at(1, 4),
         'e-modao': at(8, 6),
       },
@@ -1571,25 +1571,30 @@ describe('the Vanguard and the Alchemist', () => {
     const alchemist = unit(s, 'p-alchemist');
     expect(alchemist.power).toBe(1);
     expect(ABILITIES.elixir.targetsUnit).toBe(true);
-    expect(ABILITIES.elixir.range).toBe(3);
-    // The healthy camel too, for the Haste; not the enemy, nor the Alchemist.
+    expect(ABILITIES.elixir.range).toBe(2);
+    // The ally and the enemy; not the healthy camel (no power to Empower), nor the Alchemist.
     expect(
       offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
         .map((t) => hexKey(t.hex!))
         .sort()
-    ).toEqual([at(4, 3), at(1, 4)].map(hexKey).sort());
+    ).toEqual([at(2, 3), at(3, 3)].map(hexKey).sort());
     expect(ABILITIES.elixir.summary(alchemist)).toBe(
-      'A unit within 3: allies heal 1 and are Empowered 1 and Hastened 3, until the end of its next turn.'
+      'A unit within 2: allies heal 1 and are Empowered 2, enemies are hit, then Weakened 2, until the end of its next turn.'
     );
-    const ally = unit(s, 'p-mangudai');
+    // An ally down 2 heals 1 and is Empowered 2, its card not Hastened.
+    const a = cloneFight(s);
+    const ally = unit(a, 'p-mangudai');
     ally.hp -= 2;
-    // Far enough off that a Haste of 3 isn't cut short at the next slot.
-    ally.slot = s.currentSlot + 10;
-    applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(4, 3)}}});
+    ally.slot = a.currentSlot + 10;
+    applyTurn(a, unit(a, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
     expect(ally.hp).toBe(ally.maxHp - 1);
-    expect(ally.empower).toBe(1);
-    expect(ally.slot).toBe(s.currentSlot + 7);
-    expect(unit(s, 'e-mangudai').weaken).toBeUndefined();
+    expect(ally.empower).toBe(2);
+    expect(ally.slot).toBe(a.currentSlot + 10);
+    // An enemy takes the Alchemist's power and is Weakened 2.
+    const e = cloneFight(s);
+    applyTurn(e, unit(e, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
+    expect(unit(e, 'e-mangudai').hp).toBe(unit(e, 'e-mangudai').maxHp - 1);
+    expect(unit(e, 'e-mangudai').weaken).toBe(2);
   });
 
   /** The burst (2026-10-26, built until later that day). */
@@ -1598,6 +1603,8 @@ describe('the Vanguard and the Alchemist', () => {
     shape: 'burst',
     heal: false,
     empower: 0,
+    weaken: 0,
+    fixed: 0,
     haste: 3,
     delay: 3,
   } as const;

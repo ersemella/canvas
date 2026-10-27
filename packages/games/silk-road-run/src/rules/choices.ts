@@ -52,8 +52,8 @@ export function offeredTargets(
 /**
  * The target among `targets` that a tap on `h` picks for `def` from
  * `from`: the one on `h`, else, for an ability whose area runs out from
- * its user, the one whose area holds `h` (Cleave: any space of its line
- * or cone, not just the first it's aimed at).
+ * its user, the one whose area holds `h` (Cleave: any space of its line,
+ * not just the first it's aimed at).
  */
 export function targetAt(
   map: MapData,
