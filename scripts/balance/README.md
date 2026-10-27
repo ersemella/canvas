@@ -98,6 +98,10 @@ Swift Strike's Haste 2, the Elixir's Haste 2 and the Storm Caller at speed
 on both sides, party for party and each
 Chinese hero in its role's Steppe seat, and stage caravans with a Storm
 Caller at each speed; it runs on the current rules.
+`rain.mjs` (2026-10-27) measures Rain in place of Hail for the Storm Caller
+(`ABILITY.rain`, in no kit): heal 1, heal 2 and heal 1 on enemies too, the
+Storm Caller in each hero's seat in every party, and the regions' last
+stages; its `hail` rows are the built game's.
 
 ## Ability and stat ablation
 

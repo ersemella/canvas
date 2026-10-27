@@ -2567,6 +2567,60 @@ of its caster's turns (`ABILITY.hail.turns`), or 3 at once
   cast, so the results match the built game's exactly.
 - Not changed: the numbers are the owner's.
 
+### Rain in place of Hail (2026-10-27)
+
+Asked for: whether any hero strictly dominates another, then how games
+with the Storm Caller are lost, then Rain in place of Hail. On the built
+rules (a Hastened card colliding by speed, a Delayed one always yielding).
+
+**Dominance.** Every hero in every other's seat in every party of three
+(90 swaps, 400 fights each, every seed from both sides, the camel with the
+player), and `experiments/roles.mjs` again (200 runs a party). The swapped-in
+hero's mean share of wins: the Grappler 60.7%, the Vanguard 53.5%, the
+Horse Archer 51.4%, the Swordsman 50.3%, the Alchemist 46.2%, **the Storm
+Caller 37.8%**. The Storm Caller loses in every party to the Grappler
+(24.6–35%), the Vanguard (29.8–42.5%), the Horse Archer (30.1–44.3%) and
+the Swordsman (32.3–47%), and in whole runs to all but the Swordsman; the
+Grappler beats every hero in nearly every party, fights and runs. The
+other four are mixed, each better in some parties and worse in others.
+
+**How it loses.** The Grappler, Horse Archer and Storm Caller with the
+camel against China's last stage win 51% (the Alchemist in the seat 67%,
+the Swordsman 64.4%); 45.5% of fights end with the camel killed (27%,
+32%), 3.5% with the party (6%, 3.5%). The Storm Caller survives 90%: about
+two Hails a fight for 4 damage and 2.5 enemy turns held do little against
+melee units already next to the camel, and nothing speeds the camel out
+(it walks out 13% of fights, 26.5% with the Alchemist's Hastes). In whole
+runs its parties lose most at the regions' last stages (48% and 38% won,
+61% and 46% without it), about 85% by the camel.
+
+**Rain.** `ABILITY.rain` (a switch, in no kit): a space within 3, each hurt
+ally within 1 of it, the camel and the caster too, healing the caster's
+power; `everyone` heals enemies there too. `experiments/rain.mjs`: the
+Storm Caller swapped in for each hero in every party (30 swaps), and the
+regions' last stages (the Steppe's has an enemy Storm Caller, with Rain
+too, so it can't attack: an easier stage, not only a stronger party).
+
+| Storm Caller with | Mean | for Grappler | Vanguard | Horse Archer | Swordsman | Alchemist | vs China 3 (camel killed) | vs Steppe 3 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Hail (built) | 37.8% | 30.1% | 37.3% | 37.6% | 37.8% | 46.4% | 51% (45.5%) | 78.3% |
+| Rain, heal 1 | 27.3% | 18.6% | 24.2% | 32% | 27.9% | 33.8% | 52.5% (38%) | 84.4% |
+| Rain, heal 2 (power 2) | 35.8% | 25.5% | 32.3% | 42% | 36.5% | 42.8% | **66.3%** (24%) | 93.2% |
+| Rain, heal 1, enemies too | 26.4% | 17.5% | 23.6% | 30.9% | 26.7% | 33.3% | 51% (40%) | 85.8% |
+
+- **Rain at heal 1 is worse than Hail** (27.3% from 37.8%), worst beside
+  the Alchemist (7.3% for the Grappler with the Swordsman and Alchemist):
+  two heals and no damage lose the race to kill.
+- **At heal 2 it saves the camel**: against China's last stage 66.3%, the
+  camel killed in 24% of fights from 45.5%, walking out 32% from 13%, as
+  the Alchemist's seat does. But it is still beaten in nearly every party
+  by the Grappler (10.8–39.3%) and the Vanguard (22–44%): a party without
+  the third hero's damage is out-raced by one with it.
+- **Healing enemies too changes little** (26.4% from 27.3%): the AI aims
+  it where they aren't.
+- Unfinished fights up to 4.3% with heal 2 (1% with Hail): heals stall.
+- Not changed: Rain stays a switch, in no kit.
+
 ### Does a party need one of each role? Whole runs (2026-10-26)
 
 Asked for: whether a party needs a tank, a damage hero and a support to
