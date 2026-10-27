@@ -3136,7 +3136,9 @@ seat against the three Steppe heroes.
 - At 52.5% in the seat it sits just over the 50% line; Delay 7 with the
   line would likely bring it back (not run; Delay 7 cost China about 3.5 points
   in "The Vanguard's buffs other than speed").
-- Not changed: the shape is the owner's.
+- **Adopted (owner, 2026-10-27): Cleave as a line of 2 six ways**, Delay
+  8 kept. The switch's `lines` is now `built`; `cleave-shape.mjs` and
+  `cleave-lines.mjs` reproduce only at their revision.
 
 ## Principles for re-tuning
 

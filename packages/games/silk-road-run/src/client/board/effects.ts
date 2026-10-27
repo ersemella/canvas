@@ -319,8 +319,8 @@ function drawSlash(
 
 /**
  * Cleave: the great blade swings round the Vanguard, a crescent of steel
- * sweeping across the spaces it reaches (a chop along a line straight up
- * or down), and each space is slashed as the swing passes it.
+ * sweeping across the spaces it reaches (a chop along its line), and each space
+ * is slashed as the swing passes it.
  */
 function drawCleave(ctx: CanvasRenderingContext2D, {from, area, k}: EffectFrame): void {
   if (!from || area.length === 0) return;

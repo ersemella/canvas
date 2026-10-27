@@ -127,7 +127,9 @@ the camel too, against the built Elixir.
 an ally healed and Empowered 2, an enemy hit and Weakened 2, at the
 Alchemist's power 1 and 2, against the built Elixir.
 `cleave-lines.mjs` (2026-10-27) measures Cleave as a line of 2 six ways
-(`ABILITY.cleave.shape: 'lines'`) against the built shape, on today's rules.
+(`ABILITY.cleave.shape: 'lines'`) against the built shape, on today's rules;
+adopted the same day, so `lines` is now `built`, and it and `cleave-shape.mjs`
+reproduce only at their revision.
 
 ## Ability and stat ablation
 

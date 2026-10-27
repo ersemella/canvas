@@ -76,37 +76,22 @@ export function lane(map: MapData, h: Hex, dir: number): Hex[] {
 }
 
 /**
- * Cleave's four areas from `h` (owner, 2026-10-26), each one way it can
- * swing, empty ones left out: a line of `ABILITY.cleave.reach` spaces
- * straight up and one straight down (hex directions 2 and 5), stopped by
- * yurts and the map's edge but not by units; and a cone to each side, the
- * two diagonal spaces next to `h` (directions 0 and 1, or 3 and 4) and the
- * space straight across beyond them, reached through either diagonal that
- * isn't a yurt.
+ * Cleave's areas from `h` (owner, 2026-10-27), each one way it can swing,
+ * empty ones left out: a line of `ABILITY.cleave.reach` spaces straight
+ * out in each of the six directions, stopped by yurts and the map's edge
+ * but not by units.
  */
 export function cleaveAreas(map: MapData, h: Hex): Hex[][] {
   const {shape, reach} = ABILITY.cleave;
-  if (shape !== 'built') {
-    const open = (area: Hex[]) => area.filter((n) => walkable(map, n));
-    const areas = [0, 1, 2, 3, 4, 5].map((d) =>
-      shape === 'lines'
-        ? lane(map, h, d).slice(0, reach)
-        : shape === 'arcs'
-          ? open([hexNeighbor(h, d), hexNeighbor(h, d - 1), hexNeighbor(h, d + 1)])
-          : open([hexNeighbor(h, d), hexNeighbor(h, d + 1), hexNeighbor(hexNeighbor(h, d), d + 1)])
-    );
-    return areas.filter((area) => area.length > 0);
-  }
-  const lines = [2, 5].map((dir) => lane(map, h, dir).slice(0, ABILITY.cleave.reach));
-  const cones = [
-    [0, 1],
-    [3, 4],
-  ].map(([a, b]) => {
-    const near = [hexNeighbor(h, a!), hexNeighbor(h, b!)].filter((n) => walkable(map, n));
-    const far = hexNeighbor(hexNeighbor(h, a!), b!);
-    return near.length > 0 && walkable(map, far) ? [...near, far] : near;
-  });
-  return [...lines, ...cones].filter((area) => area.length > 0);
+  const open = (area: Hex[]) => area.filter((n) => walkable(map, n));
+  const areas = [0, 1, 2, 3, 4, 5].map((d) =>
+    shape === 'built'
+      ? lane(map, h, d).slice(0, reach)
+      : shape === 'arcs'
+        ? open([hexNeighbor(h, d), hexNeighbor(h, d - 1), hexNeighbor(h, d + 1)])
+        : open([hexNeighbor(h, d), hexNeighbor(h, d + 1), hexNeighbor(hexNeighbor(h, d), d + 1)])
+  );
+  return areas.filter((area) => area.length > 0);
 }
 
 /** The spaces on the map within `range` of `h`, `h` included, in `sortByHex` order. */

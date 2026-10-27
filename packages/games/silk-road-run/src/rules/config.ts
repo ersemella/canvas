@@ -279,9 +279,10 @@ export const ABILITY = {
   },
   /**
    * Cleave (owner, 2026-10-25): the Vanguard's line of `reach`
-   * spaces straight up or down from it, stopped by yurts, or a cone to one
-   * side, its two diagonal neighbours and the space straight across beyond
-   * them (owner, 2026-10-26; board.ts, `cleaveAreas`); each unit in it,
+   * spaces straight out from it in any of the six directions, stopped by
+   * yurts (owner, 2026-10-27, as measured in balance.md, "Cleave as a line
+   * of 2 six ways"; from 2026-10-26 a line up or down or a cone of 3 to one
+   * side; board.ts, `cleaveAreas`); each unit in it,
    * ally or enemy, takes the Vanguard's power, and each
    * one still standing is Delayed `delay` slots (keywords.md 17.3): 8
    * (owner, 2026-10-26; 5 from 2026-10-25; balance.md, "The Vanguard's buffs other than speed": China
@@ -289,11 +290,11 @@ export const ABILITY = {
    */
   /**
    * `shape`, a switch for measuring (board.ts, `cleaveAreas`): `built` as
-   * above; `lines`, a line of `reach` in each of the six directions (the
-   * shape before 2026-10-26); `arcs`, three neighbours side by side, six
-   * ways; `cones`, the built cone six ways.
+   * above (`lines` before 2026-10-27); `arcs`, three neighbours side by
+   * side, six ways; `cones`, two diagonal neighbours and the space straight
+   * across beyond them, six ways.
    */
-  cleave: {reach: 2, delay: 8 as number, shape: 'built' as 'built' | 'lines' | 'arcs' | 'cones'},
+  cleave: {reach: 2, delay: 8 as number, shape: 'built' as 'built' | 'arcs' | 'cones'},
   /**
    * Elixir (owner, 2026-10-25; as built since late on 2026-10-26, as
    * measured in balance.md, "Elixir on one ally within 3"): an ally within
