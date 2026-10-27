@@ -2753,6 +2753,30 @@ Then, asked for, on an empty space too and Immobilizing in place of the
 Weaken (`anywhere`, `immobilize`, `weaken: 0`), head to head only: Hail
 wins 61.1% at heal 1 and 54.6% at heal 2 (Anywhere 2/2, Weakening, 55.4%).
 
+#### Is the AI underplaying Eye? (2026-10-27)
+
+Asked for: whether Hail wins because the AI plays Eye badly.
+`experiments/eye-ai.mjs`, 400 fights each, the best Eye (on an empty
+space too, heal 2, Weaken 2) unless it says otherwise.
+
+| | Production AI | Changed |
+|---|---:|---:|
+| Eye's side, its AI deeper (depth 4, 4 × the work), against Hail | 44.6% | 50.6% (+6) |
+| Hail's side, its AI deeper, against Eye | 55.4% | 60.7% (+5.3) |
+| Hail against Eye 2/2, a Storm Caller that can't hurt keeping 2 from an ally (`AI.supportKeepsBack`) | 55.4% | 56.6% |
+| Hail against Eye 1/1 on an empty space, the same | 63.4% | 62.3% |
+
+- **A deeper search helps both cores alike** (6 and 5.3 points), so the
+  production AI doesn't underplay Eye more than Hail; with Eye's side
+  deeper, the two are even (50.6%).
+- **Keeping an Eye Storm Caller back changes nothing** (both within a
+  point and a half, inside the noise).
+- So Hail's lead is the ability's, as far as these check: not the AI's
+  horizon or where it stands the Storm Caller. Not checked: how much the
+  AI counts a Weaken (`AI.empoweredShare`, ½, tuned for Empower), or how a
+  person plays it.
+- Not changed: `supportKeepsBack` off as built.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

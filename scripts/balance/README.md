@@ -109,6 +109,9 @@ in place of Hail (`mod.kits`), with heal 2 (`ABILITY.eye.heal`) and Weaken
 2 (`ABILITY.eye.weaken`), and the storm Immobilizing
 (`ABILITY.eye.immobilize`), and on an empty space (`ABILITY.eye.anywhere`);
 `eye-runs.mjs` the same in whole runs.
+`eye-ai.mjs` (2026-10-27) whether the AI underplays Eye: a deeper search for
+either core's side, and a Storm Caller that can't hurt keeping back
+(`AI.supportKeepsBack`).
 
 ## Ability and stat ablation
 
