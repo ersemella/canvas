@@ -33,7 +33,7 @@ export const HERO_COLOR = {
   youxia: '#0e7490',
   // The Magus's disc, shown while its sprite loads.
   magus: '#7e22ce',
-  // The Elephant Rider's disc: it has no sprite yet.
+  // The Elephant Rider's disc, shown while its sprite loads.
   mahout: '#78716c',
   camel: '#a8742f',
   wolf: '#6b7280',
