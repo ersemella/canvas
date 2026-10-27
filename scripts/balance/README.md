@@ -123,6 +123,10 @@ guess at its risk at 0.5 and 0 (`AI.swapRisk`), against the built Elixir.
 until the ally's next turn (`ABILITY.elixir.immortal`), on heroes and on
 the camel too, against the built Elixir.
 
+`elixir-range2.mjs` (2026-10-27) measures the Elixir on one unit within 2,
+an ally healed and Empowered 2, an enemy hit and Weakened 2, at the
+Alchemist's power 1 and 2, against the built Elixir.
+
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production

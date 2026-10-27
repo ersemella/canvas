@@ -3071,6 +3071,40 @@ same file, fights and seeds.
   search still strikes whoever isn't Immortal.
 - Not changed: `immortalWhen` stays `now`, `immortal` off.
 
+### The Elixir on one unit within 2, Empower 2 and Weaken 2 (2026-10-27)
+
+Asked for: the Elixir on one space within 2, an ally healed the
+Alchemist's power and Empowered 2, an enemy hit for its power and
+Weakened 2; no Haste. Already switches, no rules change: `shape: 'unit'`,
+`range: 2`, `fixed: 1` (the hit), `heal: 'all'`, `empower: 2`, `weaken: 2`,
+`haste: 0`. At the Alchemist's power 1 (as built) and 2 (one provision).
+`experiments/elixir-range2.mjs`, **1,600 fights each** (about ±1.25
+points), seeds from 1000. *China* and *Seat* as in "The Elixir granting
+Immortal".
+
+| Elixir | China vs Steppe | Alchemist for the Storm Caller | Elixir's share of its turns (China) | Empowered damage a fight (China) | Alchemist survives (China) |
+|---|---:|---:|---:|---:|---:|
+| built (one ally within 3, heal 1, Empower 1, Haste 3, power 1) | 44.8% | 46.1% | 61% | 2.7 | 55.4% |
+| within 2, Empower 2, Weaken 2, power 1 | **49.3%** | **50.6%** | 66% | 3.1 | 59.1% |
+| within 2, Empower 2, Weaken 2, power 2 | 68.5% | 64.9% | 65% | 2.2 | 68.5% |
+
+- **At power 1 it is the Storm Caller's equal and China's best Elixir
+  yet**: 4–5 points over the built one (about 2.5–3 standard errors),
+  50.6% in the seat, China within a point of even. No unfinished fights.
+- **Most likely the Weaken 2 does the work Haste 3 did** (not isolated):
+  a hit of 2 Weakened 2
+  deals nothing (a Horse Archer's Bow, a Storm Caller's Hail), so the
+  enemy's next hit is gone, besides the 1 damage. The Vanguard and the
+  Swordsman survive 2–5 points more (50.1% and 39.6%, from 47.6% and
+  34.3%); the Empower 2 adds a little damage through allies (3.1 a fight,
+  from 2.7). The harness doesn't attribute Elixir's own hits or the hits
+  Weaken took off.
+- **At power 2 it is too strong**, 15–20 points over the Storm Caller, as
+  the fixed-1 Elixir with a hit was at power 2 (71.5%): the hit, the heal
+  and the Weaken add up. A provision of power on the Alchemist would be
+  worth far more than one on any other hero.
+- Not changed: the Elixir stays as built; the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
