@@ -2745,8 +2745,8 @@ anywhere 2/2 99.5, 95, 72.5, 94.2, 84.5, 61.5.
 - At 1/1 it helps a little (3–6 points in two seat rows, none in the
   third).
 - **Runs get easier still** (24% and 33.5% from Hail's 11.5%): the
-  player's Storm Caller gains more from it than the enemy's, whose AI
-  Weakens the party's melee heroes but seldom shields its own.
+  player's Storm Caller gains more from it than the enemy's (why is not
+  measured).
 - Not changed: `anywhere` off, heal 1 and Weaken 1 as built.
 
 ## Principles for re-tuning
