@@ -289,8 +289,17 @@ export const ABILITY = {
    * Longshot (owner, 2026-10-27; roster.md), the Archer's: any space on one
    * of the six straight lines from it, at any range, hitting the unit
    * there. Nothing blocks it: units and yurts in between are passed over.
+   * Switches for measuring nerfs (balance.md, "Archer nerfs and Magus
+   * buffs"), off as built: `minRange`, the nearest space it shoots;
+   * `camel`, whether it may shoot the camel; `falloff`, the range past
+   * which its hit is 1 less.
    */
-  longshot: {range: Infinity},
+  longshot: {
+    range: Infinity as number,
+    minRange: 1 as number,
+    camel: true as boolean,
+    falloff: Infinity as number,
+  },
   /**
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
    * ring, so the spaces next to it and 3 or more away are safe; within 3
@@ -439,8 +448,11 @@ export const ABILITY = {
    * within `range` (2), of either side, the camel too, neither Inevitable,
    * whose cards both come before the Magus's next turn, swap places on the
    * track, one Hastened and the other Delayed by the same gap.
+   * Switches for measuring buffs (balance.md, "Archer nerfs and Magus
+   * buffs"), off as built: `hit`, each enemy swapped hit for the Magus's
+   * power; `delay`, each enemy swapped then Delayed this much more.
    */
-  conjunction: {range: 2 as number},
+  conjunction: {range: 2 as number, hit: false as boolean, delay: 0 as number},
   /**
    * Trample (owner, 2026-10-27; roster.md), the Elephant Rider's: a walk of
    * 1 to `steps` spaces straight out in any of the six directions, stopped
