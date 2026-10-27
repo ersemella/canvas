@@ -2911,6 +2911,51 @@ Whole runs by stage: 96.5, 90.2, 55.7, 89.7, 69, 45.
   storm holds the camel and both sides' melee units in place.
 - Not changed: `follows`, `immobilize`, `ring` and `range` as built.
 
+### The Storm Caller at power 2 (2026-10-27)
+
+Asked for: whether the Storm Caller at power 2 (from 1), so Hail hits for
+2 on landing and on entry, is too strong, on the current rules (Hail the
+core again, the Elixir on one ally within 3). `experiments/storm-power.mjs`,
+**1,600 fights each** (about ±1.25 points), seeds from 1000. *Seat*: another
+hero in the Storm Caller's seat against the three Steppe heroes (50% its
+equal; lower, a stronger Storm Caller). The power applies to every Storm
+Caller on both sides.
+
+| | Power 1 (built) | Power 2 |
+|---|---:|---:|
+| Swordsman for the Storm Caller | 62.9% | **48.9%** |
+| Vanguard for the Storm Caller | 62.9% | **46.8%** |
+| Horse Archer for the Storm Caller¹ | 54.1% | 40% |
+| Vanguard for the Grappler (tank) | 49.1% | 47.1% |
+| Swordsman for the Horse Archer (damage) | 48.1% | 53.4% |
+| Side without Hail | 26.7% | **15.4%** |
+| vs Storm + 2 wolves (player wins) | 99.5% | 98.5% |
+| vs Grappler + Storm + wolf | 96.9% | 91.8% |
+| vs Horse Archer + Storm + wolf | 94.7% | 91.6% |
+| vs Storm + Storm + wolf | 95.4% | **84.1%** |
+| vs all three | 75.3% | **69.1%** |
+
+¹ 43.9% of these fights unfinished at both powers: two Horse Archers on a
+side stall, so the row is less sure than the others.
+
+Head to head, a Steppe mirror with one side's Storm Caller at power 2:
+66.1% (speed 3, the same way: 57%).
+
+- **Power 2 moves it from last of the seats to just ahead**: the
+  Swordsman and Vanguard fall from 63% to 47–49%, 1 to 3 points under even,
+  where speed 3 left the Vanguard at 60.8%.
+- **Hail becomes as much of the game as the Bow or Grapple**: a side
+  without it wins 15.4% (from 26.7%), where the Bow's and Grapple's sides
+  without them won 15.6% and 13.1% when last measured ("Hail for two
+  turns, rechecked").
+- **As an enemy it is harder**: stage 3 falls 6 points to 69.1%, two Storm
+  Callers and a wolf 11 points to 84.1%; stage 1 is unchanged.
+- **Two Grapplers on a side crash the rules**, so the Grappler wasn't
+  measured in the Storm Caller's seat: a Grappler's throw finds no held
+  unit next to it (`grapple.resolve` in abilities.ts, `heldNextTo`
+  undefined). Two Grapplers never meet on one side in a run.
+- Not changed: the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
