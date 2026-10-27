@@ -215,6 +215,11 @@ export interface Unit {
    * card not yet placed: taken off as the card is placed at the turn's end.
    */
   hasteDue?: number;
+  /**
+   * Put after the Magus's next turn by a Conjunction (`bracket`) and not
+   * yet acted since: with `ABILITY.conjunction.once`, not put there again.
+   */
+  bracketed?: boolean;
   /** It took a unit off the board this turn (Momentum, 19.8). */
   tookOff?: boolean;
   /** The slots its last two turns started on, the latest last (Opportunist, 19.8). */

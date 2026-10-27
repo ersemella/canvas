@@ -1504,6 +1504,41 @@ describe('the Magus', () => {
     expect(e.hp).toBe(e.maxHp);
   });
 
+  it('Conjunction as `bracket` puts the first card next and the second just after its next turn', () => {
+    const was = {...ABILITY.conjunction};
+    Object.assign(ABILITY.conjunction, {mode: 'bracket', once: true});
+    try {
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': hexNeighbor(c, 0),
+          'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      const e = unit(s, 'e-mangudai');
+      const b = unit(s, 'p-bokh');
+      m.slot = s.currentSlot;
+      e.slot = 1;
+      b.slot = 7;
+      // Which is aimed first matters: both orders are offered.
+      expect(conjunction(s, m)).toHaveLength(2);
+      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!, to: e.hex!}}});
+      expect([b.slot, e.slot]).toEqual([s.currentSlot + 1, actionCost(m) + 1]);
+      expect(m.slot).toBe(actionCost(m));
+      // With `once`, the Horse Archer can't be put back again before it acts,
+      // only aimed first.
+      s.currentSlot = actionCost(m);
+      s.awaiting = m.id;
+      b.slot = actionCost(m) + 2;
+      const again = conjunction(s, m).map((t) => unitAt(s, t.to!)!.id);
+      expect(again).toEqual(['p-bokh']);
+    } finally {
+      Object.assign(ABILITY.conjunction, was);
+    }
+  });
+
   it('Conjunction passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
     const s = setup(
       {
@@ -1720,6 +1755,23 @@ describe('the Archer', () => {
     const archer = threats.find((t) => t.enemyId === 'p-archer')!;
     const key = (h: Hex) => (h.q + 64) * 128 + (h.r + 64);
     expect(archer.hexes.get(key(storm.hex!))).toBe(3);
+  });
+
+  it('Longshot as `first` stops at the first unit in line, and its hit Pierces with `pierce`', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {first: true, pierce: true});
+    try {
+      const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
+      const bokh = unit(s, 'e-bokh');
+      bokh.passives = ['hardened'];
+      expect(isTarget(s, a, bokh.hex!)).toBe(true);
+      expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+      // Armour 1 (Hardened) Pierced: the full 3.
+      expect(bokh.hp).toBe(bokh.maxHp - 3);
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
   });
 
   it('the AI shoots with Longshot and plays a legal turn', () => {
