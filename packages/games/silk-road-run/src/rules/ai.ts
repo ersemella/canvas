@@ -35,7 +35,7 @@ import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
-import {actionCost as cardCost, chargeOf} from './track';
+import {actionCost as cardCost, aimSlot, chargeOf} from './track';
 import {camelOf, damageOf, healthAfterSwap, shotEmpower} from './resolve';
 import {MAPS} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
@@ -306,7 +306,8 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
       if (tried.has(key)) continue;
       tried.add(key);
       // A pair either way round is one turn (Conjunction).
-      if (def.pairs) tried.add(`${def.id}:${hexKey(target.to!)}:${hexKey(target.hex!)}`);
+      if (def.pairs && !def.ordered)
+        tried.add(`${def.id}:${hexKey(target.to!)}:${hexKey(target.hex!)}`);
       inputs.push({action: {ability: def.id, target}});
     }
   }
@@ -416,7 +417,11 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (ABILITY.conjunction.hit) extra += Math.min(damageOf(unit), u.hp);
       extra += (turnValue(u) * ABILITY.conjunction.delay) / cardCost(u);
     }
-    return closing + later(a, b.slot! - a.slot!) + later(b, a.slot! - b.slot!) + extra;
+    const moves =
+      ABILITY.conjunction.mode === 'bracket'
+        ? later(a, state.currentSlot + 1 - a.slot!) + later(b, aimSlot(state, unit) + 1 - b.slot!)
+        : later(a, b.slot! - a.slot!) + later(b, a.slot! - b.slot!);
+    return closing + moves + extra;
   }
   const def = ABILITIES[ability];
   const hit = !target?.hex
@@ -933,7 +938,7 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
   const steps = Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr));
   if (steps > 0) return steps;
   // Longshot: nothing in the way blocks it.
-  if (kitOf(me).includes('longshot')) return 0;
+  if (kitOf(me).includes('longshot') && !ABILITY.longshot.first) return 0;
   const map = mapOf(state);
   return [0, 1, 2, 3, 4, 5].some((d) => firstInLane(state, map, at, d, me) === target) ? 0 : 1;
 }

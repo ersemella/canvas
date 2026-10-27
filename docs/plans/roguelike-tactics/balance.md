@@ -3448,6 +3448,47 @@ seat of a Steppe and a China mirror. The new switches, off as built:
 
 Not changed: the owner's call.
 
+### Longshot stopped by the first unit, and Conjunction as a bracket (2026-10-27)
+
+Asked for (the owner): Longshot hitting the first thing in its path and
+Piercing, its damage untouched; and Conjunction putting its first unit
+just after the Magus's current turn and its second just after his next,
+in place of a swap. `experiments/longshot-bracket.mjs`, the same seats,
+seeds and 800 fights as "Archer nerfs and Magus buffs", whose *as built*
+rows are the baseline. Switches, off as built: `ABILITY.longshot.first`,
+`.pierce`; `ABILITY.conjunction.mode: 'bracket'`, `.once`.
+
+| Variant | Steppe | China |
+|---|---:|---:|
+| Archer as built | 67.1% | 61.7% |
+| **Archer, first unit or yurt in line, Piercing** | **47.6%** | **42.1%** |
+| The same, and no shot at Humphrey | 42.8% | 34.3% |
+| Magus as built | 28.9% | 31.4% |
+| Magus, bracket | 47.9% | 60.1% |
+| Magus, bracket, range 3 | 54.8% | 72.4% |
+| **Magus, bracket, a unit not put back twice before it acts (`once`)** | **41.4%** | **46.6%** |
+| The same, range 3 | 47.3% | 59.6% |
+
+- **The Archer stopped by the first unit swings past even**: 20 points
+  off on both maps, even on the Steppe, about 8 under in China. It is now
+  a slower Snap Shot that hits for 3: the front line protects again, and
+  Humphrey with it (leaving the camel out as well takes 5–8 points more,
+  so not needed). Pierce changes nothing yet: Armour comes only from
+  Hardened, which no hero has.
+- **The bracket lifts the Magus 19–29 points, but it can lock a unit
+  out**: the unit put after his next turn is again before his next turn
+  when it comes, so he can put it back every turn, and it never acts
+  while he lives and it stays within 2 (unfinished fights to 0.8–1.9%).
+  The fixed-star limit (roster.md) assumed every card he moves still
+  acts before he does again; the bracket breaks it.
+- **With `once`** (a unit put back can't be put back again until it has
+  acted) **the lock is gone and the Magus lands 41–47%**: 12–15 points up
+  from the swap, without dealing damage, still 3–9 short. Range 3
+  overshoots in China (59.6%). China's mirror again rewards track control
+  more than the Steppe's.
+
+Not changed: the owner's call. Built as switches only.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

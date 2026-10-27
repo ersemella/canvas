@@ -292,13 +292,16 @@ export const ABILITY = {
    * Switches for measuring nerfs (balance.md, "Archer nerfs and Magus
    * buffs"), off as built: `minRange`, the nearest space it shoots;
    * `camel`, whether it may shoot the camel; `falloff`, the range past
-   * which its hit is 1 less.
+   * which its hit is 1 less; `first`, stopped by the first unit or yurt
+   * in its line, as Snap Shot; `pierce`, its hit Pierces Armour (17.6).
    */
   longshot: {
     range: Infinity as number,
     minRange: 1 as number,
     camel: true as boolean,
     falloff: Infinity as number,
+    first: false as boolean,
+    pierce: false as boolean,
   },
   /**
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
@@ -451,8 +454,18 @@ export const ABILITY = {
    * Switches for measuring buffs (balance.md, "Archer nerfs and Magus
    * buffs"), off as built: `hit`, each enemy swapped hit for the Magus's
    * power; `delay`, each enemy swapped then Delayed this much more.
+   * `mode`: `swap` (as built), or `bracket`, the first unit's card put
+   * just after the Magus's current turn and the second's just after his
+   * next, in place of a swap; `once`, a unit put after his next turn
+   * can't be put there again until it has acted.
    */
-  conjunction: {range: 2 as number, hit: false as boolean, delay: 0 as number},
+  conjunction: {
+    range: 2 as number,
+    hit: false as boolean,
+    delay: 0 as number,
+    mode: 'swap' as 'swap' | 'bracket',
+    once: false as boolean,
+  },
   /**
    * Trample (owner, 2026-10-27; roster.md), the Elephant Rider's: a walk of
    * 1 to `steps` spaces straight out in any of the six directions, stopped
