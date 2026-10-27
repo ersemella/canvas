@@ -122,6 +122,8 @@ export interface Status {
   grapple?: {champion: string; target: string};
   /** From Last Stand (19.8): Stunned for the unit's next turn, ending with it. */
   lastStand?: boolean;
+  /** From a pinning Longshot (`ABILITY.longshot.pin`): Immobilized until the end of the unit's next turn. */
+  pinned?: boolean;
 }
 
 /**
@@ -215,6 +217,11 @@ export interface Unit {
    * card not yet placed: taken off as the card is placed at the turn's end.
    */
   hasteDue?: number;
+  /**
+   * Put after the Magus's next turn by a Conjunction (`bracket`) and not
+   * yet acted since: with `ABILITY.conjunction.once`, not put there again.
+   */
+  bracketed?: boolean;
   /** It took a unit off the board this turn (Momentum, 19.8). */
   tookOff?: boolean;
   /** The slots its last two turns started on, the latest last (Opportunist, 19.8). */

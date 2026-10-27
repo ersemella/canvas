@@ -3448,6 +3448,108 @@ seat of a Steppe and a China mirror. The new switches, off as built:
 
 Not changed: the owner's call.
 
+### Longshot stopped by the first unit, and Conjunction as a bracket (2026-10-27)
+
+Asked for (the owner): Longshot hitting the first thing in its path and
+Piercing, its damage untouched; and Conjunction putting its first unit
+just after the Magus's current turn and its second just after his next,
+in place of a swap. `experiments/longshot-bracket.mjs`, the same seats,
+seeds and 800 fights as "Archer nerfs and Magus buffs", whose *as built*
+rows are the baseline. Switches, off as built: `ABILITY.longshot.first`,
+`.pierce`; `ABILITY.conjunction.mode: 'bracket'`, `.once`.
+
+| Variant | Steppe | China |
+|---|---:|---:|
+| Archer as built | 67.1% | 61.7% |
+| **Archer, first unit or yurt in line, Piercing** | **47.6%** | **42.1%** |
+| The same, and no shot at Humphrey | 42.8% | 34.3% |
+| Magus as built | 28.9% | 31.4% |
+| Magus, bracket | 47.9% | 60.1% |
+| Magus, bracket, range 3 | 54.8% | 72.4% |
+| **Magus, bracket, a unit not put back twice before it acts (`once`)** | **41.4%** | **46.6%** |
+| The same, range 3 | 47.3% | 59.6% |
+
+- **The Archer stopped by the first unit swings past even**: 20 points
+  off on both maps, even on the Steppe, about 8 under in China. It is now
+  a slower Snap Shot that hits for 3: the front line protects again, and
+  Humphrey with it (leaving the camel out as well takes 5–8 points more,
+  so not needed). Pierce changes nothing yet: Armour comes only from
+  Hardened, which no hero has.
+- **The bracket lifts the Magus 19–29 points, but it can lock a unit
+  out**: the unit put after his next turn is again before his next turn
+  when it comes, so he can put it back every turn, and it never acts
+  while he lives and it stays within 2 (unfinished fights to 0.8–1.9%).
+  The fixed-star limit (roster.md) assumed every card he moves still
+  acts before he does again; the bracket breaks it.
+- **With `once`** (a unit put back can't be put back again until it has
+  acted) **the lock is gone and the Magus lands 41–47%**: 12–15 points up
+  from the swap, without dealing damage, still 3–9 short. Range 3
+  overshoots in China (59.6%). China's mirror again rewards track control
+  more than the Steppe's.
+
+Not changed: the owner's call. Built as switches only.
+
+**Then** (the owner): Push on the first-unit Longshot, and the bracket's
+second unit put just *before* the Magus's next turn (`mode: 'before'`), so
+every unit he moves still acts before he does again and no lock is
+possible (`once` not needed). `ABILITY.longshot.push`, same seats, seeds
+and fights.
+
+| Variant | Steppe | China |
+|---|---:|---:|
+| Archer, first in line, Piercing (above) | 47.6% | 42.1% |
+| **The same, Push 1** | **50.3%** | **45.6%** |
+| The same, Push 2 | 48.6% | 47.2% |
+| Magus, bracket with `once` (above) | 41.4% | 46.6% |
+| Magus, second just before his next turn | 32.4% | 41.3% |
+| The same, range 3 | 37.5% | 51.6% |
+
+- **Push brings the Archer in line**: Push 1 even on the Steppe and 4
+  under in China, Push 2 within 3 points on both. Pushing the front line
+  back gives the next shot a lane and keeps a melee hero off it.
+- **Before his next turn is the weakest bracket**: 32–41%, only a few
+  points over the swap. The second unit's Delay is what paid: put
+  before his next turn, an enemy acting late anyway barely moves, and
+  one already early is Delayed less than after it. Range 3 helps in
+  China only (51.6%, 37.5% on the Steppe).
+
+**Built since** (the owner, 2026-10-27): Conjunction as the bracket,
+without `once` (`mode: 'bracket'` by default). The files measuring the
+Magus before it (`roster-nine.mjs`, `archer-magus.mjs`) set `mode: 'swap'`.
+
+### Longshot's effect (2026-10-27)
+
+Asked for: an effect for the first-unit, Piercing Longshot other than
+Push. Same seats, seeds and 800 fights (`longshot-bracket.mjs`);
+`ABILITY.longshot.delay`, `.weaken`, `.pin` (Immobilized through the unit's
+next turn, not an Unstoppable one), off as built.
+
+| Effect | Steppe | China |
+|---|---:|---:|
+| None (above) | 47.6% | 42.1% |
+| Push 1 (above) | 50.3% | 45.6% |
+| Push 2 (above) | 48.6% | 47.2% |
+| **Delay 2** | **49.3%** | **48.2%** |
+| **Delay 3** | **49.4%** | **50.9%** |
+| Weaken 1 | 50.8% | 43.2% |
+| Weaken 2 | 50.9% | 45.5% |
+| Pinned (Immobilized through its next turn) | 55.4% | 55% |
+
+- **Delay is the most even of every Archer variant**: Delay 2 within 2
+  points on both maps, Delay 3 within 1. An arrow that staggers its
+  target sets the Archer on the track, as Cleave's Delay does the
+  Vanguard, and it reads well from range.
+- Pinning overshoots by 5 points on both: a unit that can't walk can't
+  close on the Archer or leave its line, so the next arrow comes too.
+- Weaken is even on the Steppe but short in China (43–46%): it blunts
+  damage, and China's Alchemist heals and Empowers it back.
+
+**Built since** (the owner, 2026-10-27): Delay 3, with the first unit and
+Pierce (`first`, `pierce`, `delay: 3` by default). The files measuring the
+Archer before it (`archer.mjs`, `archer-tuning.mjs`, `archer-magus.mjs`,
+`roster-nine.mjs`, `longshot-bracket.mjs`) set the switches they were
+measured with.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

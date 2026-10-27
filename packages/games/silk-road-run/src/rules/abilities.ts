@@ -15,6 +15,7 @@ import {
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL} from './config';
 import {
+  addStatus,
   cleaveAreas,
   firstInLane,
   isImmobilized,
@@ -51,6 +52,7 @@ import {
   swapSpeedHealth,
   stun,
   swapCards,
+  setCard,
   unitName,
   walk,
 } from './resolve';
@@ -127,6 +129,8 @@ export interface AbilityDef {
    * page aims one and then the other, and the AI tries each pair once.
    */
   pairs?: boolean;
+  /** With `pairs`, which unit is aimed first matters (Conjunction as `bracket`). */
+  ordered?: boolean;
   /**
    * The unit a target aims at, when it isn't simply the one on its hex
    * (Grapple's throw: the held unit, aimed by where it lands). For the
@@ -213,7 +217,7 @@ const snapShot: AbilityDef = {
 // ─── Archer ──────────────────────────────────────────────────────────────────
 
 /**
- * Longshot's six lines from `from` (owner, 2026-10-27): each runs to the
+ * Longshot's six lines from `from`, as first built (`ABILITY.longshot.first` off): each runs to the
  * map's edge, through units and yurts, since nothing blocks it.
  */
 export function longshotLines(map: MapData, from: Hex): Hex[][] {
@@ -230,21 +234,57 @@ const longshot: AbilityDef = {
   id: 'longshot',
   name: 'Longshot',
   kind: 'attack',
-  summary: () => 'Shoot straight at any unit in line: nothing blocks it.',
+  summary: () => {
+    const {first, pierce, delay: slots} = ABILITY.longshot;
+    const shot = first
+      ? 'Shoot straight: hits the first unit in line'
+      : 'Shoot straight at any unit in line: nothing blocks it';
+    const more = [pierce && 'Pierces', slots > 0 && `Delays it ${slots}`].filter(Boolean);
+    return more.length ? `${shot}. ${more.join(', ')}.` : `${shot}.`;
+  },
   targetsUnit: true,
   targets(state, map, _user, from) {
     const out: ActionTarget[] = [];
+    const {first, minRange, range, camel} = ABILITY.longshot;
+    if (first) {
+      for (const dir of DIRECTIONS) {
+        const u = firstInLane(state, map, from, dir, _user);
+        const d = u ? hexDistance(from, u.hex!) : 0;
+        if (u && d >= minRange && d <= range && (camel || u.hero !== CAMEL))
+          out.push({hex: {...u.hex!}});
+      }
+      return out;
+    }
     for (const l of longshotLines(map, from))
       for (const h of l) {
         const u = unitAt(state, h);
-        if (u && (ABILITY.longshot.camel || u.hero !== CAMEL)) out.push({hex: h});
+        if (u && (camel || u.hero !== CAMEL)) out.push({hex: h});
       }
     return out;
   },
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     const far = hexDistance(user.hex!, u.hex!) > ABILITY.longshot.falloff;
-    hit(ctx, user, u, `${unitName(user)}'s arrow`, (user.empower ?? 0) - (far ? 1 : 0));
+    hit(
+      ctx,
+      user,
+      u,
+      `${unitName(user)}'s arrow`,
+      (user.empower ?? 0) - (far ? 1 : 0),
+      ABILITY.longshot.pierce
+    );
+    const {push, delay: slots, weaken: less, pin} = ABILITY.longshot;
+    if (!u.alive || !u.hex) return;
+    if (push) displace(ctx, u, directionTo(user.hex!, u.hex), push, 'push');
+    delay(ctx, u, slots);
+    if (less) weaken(ctx, u, less);
+    if (pin) {
+      if (isUnstoppable(u)) log(ctx, `${unitName(u)} is Unstoppable: not pinned.`);
+      else {
+        addStatus(u, {kind: 'immobilized', pinned: true});
+        log(ctx, `${unitName(u)} is pinned: Immobilized through its next turn.`);
+      }
+    }
   },
 };
 
@@ -900,24 +940,43 @@ const conjunction: AbilityDef = {
   damages: false,
   bothSides: true,
   pairs: true,
+  get ordered() {
+    return ABILITY.conjunction.mode !== 'swap';
+  },
   targetsUnit: true,
   get range() {
     return ABILITY.conjunction.range;
   },
   summary: () =>
-    `Two units within ${ABILITY.conjunction.range} whose turns come before your next swap places on the track.`,
+    ABILITY.conjunction.mode === 'before'
+      ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just before your next turn.`
+      : ABILITY.conjunction.mode === 'bracket'
+        ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just after your next turn.`
+        : `Two units within ${ABILITY.conjunction.range} whose turns come before your next swap places on the track.`,
   targets(state, _map, user, from) {
     const units = sortByHex(conjunctionTakes(state, user, from), (u) => u.hex!);
+    const {mode, once} = ABILITY.conjunction;
     const out: ActionTarget[] = [];
     for (const a of units)
-      for (const b of units) if (a !== b) out.push({hex: {...a.hex!}, to: {...b.hex!}});
+      for (const b of units)
+        if (a !== b && !(mode === 'bracket' && once && b.bracketed))
+          out.push({hex: {...a.hex!}, to: {...b.hex!}});
     return out;
   },
   resolve(ctx, user, target) {
     const a = unitAt(ctx.state, target.hex!)!;
     const b = unitAt(ctx.state, target.to!)!;
     log(ctx, `${unitName(user)} reads a conjunction in the stars.`);
-    swapCards(ctx, a, b);
+    if (ABILITY.conjunction.mode === 'bracket') {
+      setCard(ctx, a, ctx.state.currentSlot + 1);
+      setCard(ctx, b, aimSlot(ctx.state, user) + 1);
+      b.bracketed = true;
+      log(ctx, `${unitName(a)} acts next; ${unitName(b)} after ${unitName(user)} again.`);
+    } else if (ABILITY.conjunction.mode === 'before') {
+      setCard(ctx, a, ctx.state.currentSlot + 1);
+      setCard(ctx, b, aimSlot(ctx.state, user) - 1);
+      log(ctx, `${unitName(a)} acts next; ${unitName(b)} just before ${unitName(user)} again.`);
+    } else swapCards(ctx, a, b);
     for (const u of [a, b]) {
       if (u.side === user.side) continue;
       if (ABILITY.conjunction.hit) hit(ctx, user, u, `${unitName(user)}'s stars`);

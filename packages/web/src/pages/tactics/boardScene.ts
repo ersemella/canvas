@@ -16,6 +16,7 @@ import {
 import type {Hex} from '@canvas/engine';
 import {
   ABILITIES,
+  ABILITY,
   arrowLanes,
   longshotLines,
   mapOf,
@@ -145,10 +146,12 @@ export function buildScene(input: SceneInput): BoardScene {
           onMap(map, h)
       );
     }
-    // The Bow's lanes: Snap Shot's, Feigned Retreat's before its target is
+    // The Bow's lanes: Snap Shot's, Longshot's (stopped by the first unit),
+    // Feigned Retreat's before its target is
     // picked; Haul's, as far as it reaches.
     const lanesShown =
       ability === 'snapShot' ||
+      (ability === 'longshot' && ABILITY.longshot.first) ||
       (ability === 'feignedRetreat' && !target?.hex) ||
       ability === 'haul';
     if (from && lanesShown)
@@ -159,9 +162,9 @@ export function buildScene(input: SceneInput): BoardScene {
           target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
         })),
       };
-    // Longshot's six lines, to the map's edge through everything, an arrow
+    // Longshot as first built (`first` off): its six lines, to the map's edge through everything, an arrow
     // to each unit it may hit along them.
-    if (from && ability === 'longshot')
+    if (from && ability === 'longshot' && !ABILITY.longshot.first)
       out.lanes = {
         from,
         lanes: longshotLines(mapOf(fight), from).flatMap(

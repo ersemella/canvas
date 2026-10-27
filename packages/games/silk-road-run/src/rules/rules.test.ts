@@ -36,6 +36,7 @@ import {
   shotLane,
   abilityCount,
   hasRoomForAbility,
+  isImmobilized,
 } from './board';
 import {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
@@ -84,6 +85,7 @@ import {
   kill,
   applyDamage,
   startTurnPassives,
+  endTurnEffects,
   stun,
   unswap,
 } from './resolve';
@@ -1483,25 +1485,100 @@ describe('the Magus', () => {
     expect(m.slot).toBe(was);
   });
 
-  it('Conjunction swaps two cards within 2 that come before its next turn', () => {
-    const s = setup(
-      {'p-magus': c, 'e-mangudai': hexNeighbor(c, 0), 'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3)},
-      party
-    );
-    const m = unit(s, 'p-magus');
-    const e = unit(s, 'e-mangudai');
-    const b = unit(s, 'p-bokh');
-    m.slot = s.currentSlot;
-    e.slot = 1;
-    b.slot = 7;
-    const targets = conjunction(s, m);
-    expect(targets).toHaveLength(2);
-    // Either way round is the same swap.
-    applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: e.hex!, to: b.hex!}}});
-    expect([e.slot, b.slot]).toEqual([7, 1]);
-    expect(m.slot).toBe(actionCost(m));
-    expect(m.power).toBe(0);
-    expect(e.hp).toBe(e.maxHp);
+  it('Conjunction as `swap` (the first built) swaps two cards within 2 before its next turn', () => {
+    const was = {...ABILITY.conjunction};
+    Object.assign(ABILITY.conjunction, {mode: 'swap'});
+    try {
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': hexNeighbor(c, 0),
+          'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      const e = unit(s, 'e-mangudai');
+      const b = unit(s, 'p-bokh');
+      m.slot = s.currentSlot;
+      e.slot = 1;
+      b.slot = 7;
+      const targets = conjunction(s, m);
+      expect(targets).toHaveLength(2);
+      // Either way round is the same swap.
+      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: e.hex!, to: b.hex!}}});
+      expect([e.slot, b.slot]).toEqual([7, 1]);
+      expect(m.slot).toBe(actionCost(m));
+      expect(m.power).toBe(0);
+      expect(e.hp).toBe(e.maxHp);
+    } finally {
+      Object.assign(ABILITY.conjunction, was);
+    }
+  });
+
+  it('Conjunction puts the first card next and the second just after its next turn', () => {
+    const was = {...ABILITY.conjunction};
+    try {
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': hexNeighbor(c, 0),
+          'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      const e = unit(s, 'e-mangudai');
+      const b = unit(s, 'p-bokh');
+      m.slot = s.currentSlot;
+      e.slot = 1;
+      b.slot = 7;
+      // Which is aimed first matters: both orders are offered.
+      expect(conjunction(s, m)).toHaveLength(2);
+      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!, to: e.hex!}}});
+      expect([b.slot, e.slot]).toEqual([s.currentSlot + 1, actionCost(m) + 1]);
+      expect(m.slot).toBe(actionCost(m));
+      // As built, the Horse Archer can be put back again before it acts.
+      s.currentSlot = actionCost(m);
+      s.awaiting = m.id;
+      b.slot = actionCost(m) + 2;
+      const seconds = () => conjunction(s, m).map((t) => unitAt(s, t.to!)!.id);
+      expect(seconds().sort()).toEqual(['e-mangudai', 'p-bokh']);
+      // With `once` (a switch, off), not until it has acted: only aimed first.
+      Object.assign(ABILITY.conjunction, {once: true});
+      expect(seconds()).toEqual(['p-bokh']);
+    } finally {
+      Object.assign(ABILITY.conjunction, was);
+    }
+  });
+
+  it('Conjunction as `before` puts the first card next and the second just before its next turn', () => {
+    const was = {...ABILITY.conjunction};
+    Object.assign(ABILITY.conjunction, {mode: 'before'});
+    try {
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': hexNeighbor(c, 0),
+          'p-bokh': hexNeighbor(hexNeighbor(c, 3), 3),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      const e = unit(s, 'e-mangudai');
+      const b = unit(s, 'p-bokh');
+      m.slot = s.currentSlot;
+      e.slot = 1;
+      b.slot = 7;
+      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!, to: e.hex!}}});
+      expect([b.slot, e.slot, m.slot]).toEqual([
+        s.currentSlot + 1,
+        actionCost(m) - 1,
+        actionCost(m),
+      ]);
+    } finally {
+      Object.assign(ABILITY.conjunction, was);
+    }
   });
 
   it('Conjunction passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
@@ -1688,22 +1765,28 @@ describe('the Archer', () => {
     expect(ROSTER).toContain('archer');
   });
 
-  it('Longshot hits any unit on its six lines, past the units and yurts in between', () => {
-    const {s, a} = ready({
-      'p-bokh': along(c, 0, 1),
-      'e-bokh': along(c, 0, 2),
-      'e-storm': along(c, 0, 4),
-    });
-    // A yurt in the line too, between the Grappler and the Storm Caller.
-    s.tiles = {...s.tiles, [`${along(c, 0, 3).q},${along(c, 0, 3).r}`]: 'obstacle'};
-    for (const id of ['p-bokh', 'e-bokh', 'e-storm'])
-      expect(isTarget(s, a, unit(s, id).hex!)).toBe(true);
-    const storm = unit(s, 'e-storm');
-    applyTurn(s, a, {action: {ability: 'longshot', target: {hex: storm.hex!}}});
-    expect(storm.hp).toBe(storm.maxHp - 3);
-    // The units it flew over are untouched.
-    expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
-    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp);
+  it('Longshot as first built (`first` off) hits any unit on its six lines, past the units and yurts in between', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {first: false, pierce: false, delay: 0});
+    try {
+      const {s, a} = ready({
+        'p-bokh': along(c, 0, 1),
+        'e-bokh': along(c, 0, 2),
+        'e-storm': along(c, 0, 4),
+      });
+      // A yurt in the line too, between the Grappler and the Storm Caller.
+      s.tiles = {...s.tiles, [`${along(c, 0, 3).q},${along(c, 0, 3).r}`]: 'obstacle'};
+      for (const id of ['p-bokh', 'e-bokh', 'e-storm'])
+        expect(isTarget(s, a, unit(s, id).hex!)).toBe(true);
+      const storm = unit(s, 'e-storm');
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: storm.hex!}}});
+      expect(storm.hp).toBe(storm.maxHp - 3);
+      // The units it flew over are untouched.
+      expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
+      expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp);
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
   });
 
   it('Longshot reaches only its six lines', () => {
@@ -1712,14 +1795,67 @@ describe('the Archer', () => {
     expect(ABILITIES.longshot.targets(s, mapOf(s), a, a.hex!)).toEqual([]);
   });
 
-  it('threatens its whole lines, whatever stands in them', () => {
-    const {s} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
-    for (const u of s.units) u.side = u.id === 'p-archer' ? 'enemy' : 'player';
-    const storm = unit(s, 'e-storm');
-    const threats = threatsTo(s, mapOf(s), storm);
-    const archer = threats.find((t) => t.enemyId === 'p-archer')!;
-    const key = (h: Hex) => (h.q + 64) * 128 + (h.r + 64);
-    expect(archer.hexes.get(key(storm.hex!))).toBe(3);
+  it('as first built, threatens its whole lines, whatever stands in them', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {first: false, pierce: false, delay: 0});
+    try {
+      const {s} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
+      for (const u of s.units) u.side = u.id === 'p-archer' ? 'enemy' : 'player';
+      const storm = unit(s, 'e-storm');
+      const threats = threatsTo(s, mapOf(s), storm);
+      const archer = threats.find((t) => t.enemyId === 'p-archer')!;
+      const key = (h: Hex) => (h.q + 64) * 128 + (h.r + 64);
+      expect(archer.hexes.get(key(storm.hex!))).toBe(3);
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
+  });
+
+  it('Longshot hits the first unit in line, Piercing, and Delays it 3', () => {
+    const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
+    const bokh = unit(s, 'e-bokh');
+    bokh.passives = ['hardened'];
+    bokh.slot = 5;
+    expect(isTarget(s, a, bokh.hex!)).toBe(true);
+    expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
+    applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+    // Armour 1 (Hardened) Pierced: the full 3.
+    expect(bokh.hp).toBe(bokh.maxHp - 3);
+    expect(bokh.slot).toBe(5 + 3);
+  });
+
+  it('Longshot stops at a yurt in line', () => {
+    const {s, a} = ready({'e-storm': along(c, 0, 4)});
+    s.tiles = {...s.tiles, [`${along(c, 0, 2).q},${along(c, 0, 2).r}`]: 'obstacle'};
+    expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
+  });
+
+  it('Longshot with `push` Pushes the unit it hits away from the Archer', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {first: true, push: 1});
+    try {
+      const {s, a} = ready({'e-bokh': along(c, 0, 2)});
+      const bokh = unit(s, 'e-bokh');
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+      expect(bokh.hex).toEqual(along(c, 0, 3));
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
+  });
+
+  it('Longshot with `pin` Immobilizes the unit it hits through its next turn', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {first: true, pin: true});
+    try {
+      const {s, a} = ready({'e-bokh': along(c, 0, 2)});
+      const bokh = unit(s, 'e-bokh');
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+      expect(isImmobilized(bokh)).toBe(true);
+      endTurnEffects(bokh);
+      expect(isImmobilized(bokh)).toBe(false);
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
   });
 
   it('the AI shoots with Longshot and plays a legal turn', () => {

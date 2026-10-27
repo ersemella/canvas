@@ -98,7 +98,8 @@ export function hit(
   attacker: Unit,
   target: Unit,
   what: string,
-  empower = attacker.empower ?? 0
+  empower = attacker.empower ?? 0,
+  pierce = false
 ): void {
   if (!target.alive) return;
   const bonus = passiveEmpower(attacker, ctx.state) + bonusAgainst(ctx.state, attacker, target);
@@ -108,7 +109,7 @@ export function hit(
   if (amount <= 0) return;
   if (empower) log(ctx, `Empower adds ${empower}.`);
   if (bonus) log(ctx, `Passives add ${bonus}.`);
-  const pierces = hasPassive(attacker, 'piercingEye') && isImmobilized(target);
+  const pierces = pierce || (hasPassive(attacker, 'piercingEye') && isImmobilized(target));
   // Hardened: Armour 1 against the first hit each fight, spent even when Pierced.
   if (spendPassive(target, 'hardened')) {
     if (pierces) log(ctx, `The hit Pierces ${unitName(target)}’s Armour.`);
@@ -285,6 +286,15 @@ export function swapCards(ctx: Ctx, a: Unit, b: Unit): void {
   log(ctx, `${unitName(a)} and ${unitName(b)} swap places on the track.`);
 }
 
+/**
+ * Puts `u`'s card on `slot` exactly, a card already there moved on (the
+ * Magus's Conjunction as `bracket`), unless `u` is Inevitable (17.3).
+ */
+export function setCard(ctx: Ctx, u: Unit, slot: number): void {
+  if (!u.alive || u.slot === null || inevitable(ctx, u)) return;
+  placeCard(ctx.state, u, slot, true);
+}
+
 /** Takes off the Haste `unit` was given during its turn, its card just placed (`haste`). */
 export function takeHasteDue(state: FightState, unit: Unit): void {
   const n = unit.hasteDue;
@@ -313,6 +323,7 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
   }
   delete unit.covered;
   delete unit.tookOff;
+  delete unit.bracketed;
   if (!hasPassive(unit, 'rally') || !unit.hex) return;
   for (const h of hexNeighbors(unit.hex)) {
     const a = unitAt(ctx.state, h);
@@ -332,6 +343,7 @@ export function endTurnEffects(unit: Unit): void {
     delete unit.weaken;
     delete unit.weakenStarted;
   }
+  unit.statuses = unit.statuses.filter((s) => !s.pinned);
 }
 
 /**
