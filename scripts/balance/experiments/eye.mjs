@@ -139,3 +139,18 @@ experiments['anywhere+damage:hail-vs-eye'] = {
   },
   mod: {kits: {storm: ['hail', 'hold']}},
 };
+// Asked for (2026-10-27): how Eye's heal and hit scale with power, as
+// provisions raise it. Both sides' Storm Callers at power 2 and 3, Hail
+// against Eye (hitting, on an empty space too, and on an ally only).
+for (const power of [2, 3])
+  for (const [name, eye] of [
+    ['anywhere+damage', {anywhere: true, damage: true, weaken: 0}],
+    ['damage', {damage: true, weaken: 0}],
+  ])
+    experiments[`power${power}:${name}:hail-vs-eye`] = {
+      patch: (c) => {
+        c.HEROES.storm.power = power;
+        Object.assign(c.ABILITY.eye, eye);
+      },
+      mod: {kits: {storm: ['hail', 'hold']}},
+    };

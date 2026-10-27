@@ -2786,6 +2786,23 @@ Hail wins **50%** against it on an ally or itself, and **42.3%** with an
 empty space a target too (`anywhere`): the first Eye stronger than Hail.
 The seat rows and whole runs are not measured.
 
+Then, asked for: how it scales with power, as provisions raise it. Both
+sides' Storm Callers at power 2 and 3, Hail against Eye head to head (Hail
+wins):
+
+| Power | Eye hitting, on an empty space too | Eye hitting, on an ally or itself |
+|---:|---:|---:|
+| 1 (built) | 42.3% | 50% |
+| 2 | 29.6% | 37.7% |
+| 3 | 23.7% | 40.6% |
+
+- **On an empty space too, it outgrows Hail with every point of power**:
+  Hail's share falls from 42.3% to 23.7%. A power provision adds 1 to
+  every unit in the storm, up to six, where Hail's adds 1 to one.
+- **On an ally or itself only, it grows once and then holds** (37.7%,
+  40.6%): the storm must sit round one of its own side's units, so the
+  more it hits the more of its own side it hurts.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
