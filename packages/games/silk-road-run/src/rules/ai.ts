@@ -391,6 +391,16 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       ? 0
       : Math.min(eyeHeal(unit, state), healed.maxHp - healed.hp) *
         (healed.hero === CAMEL ? AI.camelHealthWeight : 1);
+    // `damage`: each unit in the storm hit, as Gale's are weighed.
+    if (ABILITY.eye.damage)
+      for (const u of eyeCaught(state, target!.hex!)) {
+        const damage = Math.min(damageOf(unit), u.hp);
+        value += sided(
+          u,
+          damage * (u.hero === CAMEL ? AI.camelHealthWeight : 1) +
+            (damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0)
+        );
+      }
     if (ABILITY.eye.weaken > 0)
       for (const u of eyeWeakens(state, target!.hex!))
         if (!u.weaken) value += sided(u, 1 + weakenGuess(state, u, ABILITY.eye.weaken));

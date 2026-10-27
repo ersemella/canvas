@@ -1572,6 +1572,26 @@ describe('abilities', () => {
     expect(unit(s, 'p-bokh').weaken).toBe(1);
   });
 
+  it('with `ABILITY.eye.damage`, every unit next to its target, either side, is hit for the Storm Caller’s power', () => {
+    const eye = ABILITY.eye as {damage: boolean; weaken: number};
+    const saved = {...ABILITY.eye};
+    onTestFinished(() => void Object.assign(eye, saved));
+    eye.damage = true;
+    eye.weaken = 0;
+    const s = eyeSetup();
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'p-mangudai');
+    m.hp -= 1;
+    expect(ABILITIES.eye.summary(storm)).toBe(
+      'An ally exactly 2 away, or yourself: it heals 1; every unit next to it is hit.'
+    );
+    applyTurn(s, storm, {action: {ability: 'eye', target: {hex: m.hex!}}});
+    expect(m.hp).toBe(m.maxHp);
+    for (const id of ['e-bokh', 'p-bokh', 'p-camel'])
+      expect(unit(s, id).hp).toBe(unit(s, id).maxHp - storm.power);
+    expect(unit(s, 'e-bokh').weaken).toBeUndefined();
+  });
+
   it('a heal adds its healer’s Empower and loses its Weaken, as a hit’s damage does', () => {
     const s = eyeSetup();
     const storm = unit(s, 'p-storm');

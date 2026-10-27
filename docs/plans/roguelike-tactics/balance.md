@@ -2777,6 +2777,15 @@ space too, heal 2, Weaken 2) unless it says otherwise.
   person plays it.
 - Not changed: `supportKeepsBack` off as built.
 
+#### Eye of the Storm healing and hitting (2026-10-27)
+
+Asked for: Eye healing its target the Storm Caller's power and hitting
+every unit in the storm round it, either side and the camel too, for the
+same (`ABILITY.eye.damage`), no Weaken. Head to head only, 400 fights:
+Hail wins **50%** against it on an ally or itself, and **42.3%** with an
+empty space a target too (`anywhere`): the first Eye stronger than Hail.
+The seat rows and whole runs are not measured.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

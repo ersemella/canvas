@@ -124,3 +124,18 @@ experiments['anywhere+imm+heal2:hail-vs-eye'] = {
   },
   mod: {kits: {storm: ['hail', 'hold']}},
 };
+// Asked for (2026-10-27): Eye healing and hitting every unit in the storm,
+// both its power (`ABILITY.eye.damage`), no Weaken; on an ally only and on
+// an empty space too; head to head against Hail only.
+experiments['damage:hail-vs-eye'] = {
+  patch: (c) => {
+    Object.assign(c.ABILITY.eye, {damage: true, weaken: 0});
+  },
+  mod: {kits: {storm: ['hail', 'hold']}},
+};
+experiments['anywhere+damage:hail-vs-eye'] = {
+  patch: (c) => {
+    Object.assign(c.ABILITY.eye, {anywhere: true, damage: true, weaken: 0});
+  },
+  mod: {kits: {storm: ['hail', 'hold']}},
+};

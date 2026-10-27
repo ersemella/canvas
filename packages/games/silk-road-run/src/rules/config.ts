@@ -259,7 +259,9 @@ export const ABILITY = {
    * `heal`, added to the power it heals (0 as built); `immobilize`, every
    * unit next to it, the camel too, Immobilized until the end of its next
    * turn (off as built); `anywhere`, a space with no unit on it a target
-   * too, the storm round it with no heal (off as built).
+   * too, the storm round it with no heal (off as built); `damage`, every
+   * unit next to it, either side, hit for the Storm Caller's power (off as
+   * built).
    */
   eye: {
     range: 2,
@@ -267,6 +269,7 @@ export const ABILITY = {
     heal: 0 as number,
     immobilize: false as boolean,
     anywhere: false as boolean,
+    damage: false as boolean,
   },
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not

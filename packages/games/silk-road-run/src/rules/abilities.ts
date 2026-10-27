@@ -298,14 +298,16 @@ const eye: AbilityDef = {
   minRange: ABILITY.eye.range,
   radius: 1,
   summary(user) {
-    const {weaken: weakens, immobilize} = ABILITY.eye;
-    const storm = [weakens ? `Weakened ${weakens}` : '', immobilize ? 'Immobilized' : '']
+    const {weaken: weakens, immobilize, damage} = ABILITY.eye;
+    const lasting = [weakens ? `Weakened ${weakens}` : '', immobilize ? 'Immobilized' : '']
       .filter(Boolean)
       .join(' and ');
+    const until = lasting ? `${lasting} until the end of its next turn` : '';
+    const storm = damage ? (until ? `hit and ${until}` : 'hit') : until;
     const where = ABILITY.eye.anywhere
       ? `A space exactly ${ABILITY.eye.range} away, or yourself: an ally there heals`
       : `An ally exactly ${ABILITY.eye.range} away, or yourself: it heals`;
-    return `${where} ${eyeHeal(user)}${storm ? `; every unit next to it is ${storm} until the end of its next turn` : ''}.`;
+    return `${where} ${eyeHeal(user)}${storm ? `; every unit next to it is ${storm}` : ''}.`;
   },
   targets: (state, map, user, from) => [
     {hex: {...from}},
@@ -323,8 +325,11 @@ const eye: AbilityDef = {
       log(ctx, `${unitName(user)} opens the eye of the storm over ${unitName(u)}.`);
       heal(ctx, u, eyeHeal(user, ctx.state));
     } else log(ctx, `${unitName(user)} opens the eye of the storm.`);
+    if (ABILITY.eye.damage)
+      for (const n of eyeCaught(ctx.state, centre)) hit(ctx, user, n, 'The storm');
     if (ABILITY.eye.weaken > 0)
-      for (const n of eyeWeakens(ctx.state, centre)) weaken(ctx, n, ABILITY.eye.weaken);
+      for (const n of eyeWeakens(ctx.state, centre))
+        if (n.alive) weaken(ctx, n, ABILITY.eye.weaken);
     if (ABILITY.eye.immobilize)
       for (const n of eyeCaught(ctx.state, centre))
         if (!n.statuses.some((s) => s.eye)) {
