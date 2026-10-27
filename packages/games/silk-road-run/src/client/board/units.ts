@@ -32,6 +32,10 @@ import modaoPortrait from '../sprites/modao-portrait.png';
 import modaoSprite from '../sprites/modao.png';
 import stormPortrait from '../sprites/storm-portrait.png';
 import stormSprite from '../sprites/storm.png';
+import magusPortrait from '../sprites/magus-portrait.png';
+import magusSprite from '../sprites/magus.png';
+import mahoutPortrait from '../sprites/mahout-portrait.png';
+import mahoutSprite from '../sprites/mahout.png';
 import youxiaPortrait from '../sprites/youxia-portrait.png';
 import youxiaSprite from '../sprites/youxia.png';
 import wolfPortrait from '../sprites/wolf-portrait.png';
@@ -49,7 +53,7 @@ const RUG = {
 };
 /**
  * Board sprites, facing right: square frames (32×32, or 36×36 for a mounted
- * hero, the camel, the wolf or the fox) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
+ * hero, the Elephant Rider, the camel, the wolf or the fox) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
 const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
@@ -59,6 +63,10 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   modao: modaoSprite,
   alchemist: alchemistSprite,
   youxia: youxiaSprite,
+  // From the owner's AI-assisted art (2026-10-27): shrunk to 32×32, its beard
+  // put back by hand.
+  magus: magusSprite,
+  mahout: mahoutSprite,
   camel: camelSprite,
   wolf: wolfSprite,
   // From the owner's AI-assisted art (2026-10-25): cut out, shrunk to the
@@ -73,6 +81,8 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   modao: {src: modaoPortrait, faceX: 18},
   alchemist: {src: alchemistPortrait, faceX: 19},
   youxia: {src: youxiaPortrait, faceX: 19},
+  magus: {src: magusPortrait, faceX: 20},
+  mahout: {src: mahoutPortrait, faceX: 24},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},

@@ -2,7 +2,7 @@
  * Deterministic selective lookahead: rank actions with the preview heuristic,
  * then search actual timeline decisions with budgeted alpha-beta minimax.
  */
-import {hexDistance, hexEquals, hexKey, hexNeighbors} from '@canvas/engine/server';
+import {hexDirectionTo, hexDistance, hexEquals, hexKey, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, AI, CAMEL, RULES} from './config';
 import {
@@ -28,6 +28,7 @@ import {
   elixirSwaps,
   elixirImmortal,
   grappling,
+  tramplePlan,
   unusableReason,
 } from './abilities';
 import {allowedTargets} from './choices';
@@ -150,6 +151,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (d <= 1) return true;
     if (has('hail') && d === ABILITY.hail.range) return true;
     if (has('volley') && d <= ABILITY.volley.range) return true;
+    if (has('trample') && d <= ABILITY.trample.steps && hexDirectionTo(u.hex!, e.hex) !== null)
+      return true;
     if (has('gale') && d <= ABILITY.gale.range + 1) return true;
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
@@ -324,15 +327,22 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
  */
 function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: boolean): number {
   const target = input.action.target;
+  // Trample: whom it hits, and where it ends (`tramplePlan`).
+  const plan =
+    input.action.ability === 'trample'
+      ? tramplePlan(state, mapOf(state), unit.hex!, target!.hex!)
+      : undefined;
   const end = input.move?.length
     ? input.move[input.move.length - 1]!
-    : endsElsewhere(input.action.ability) && target?.to
-      ? target.to
-      : unit.hex!;
+    : plan
+      ? plan.end
+      : endsElsewhere(input.action.ability) && target?.to
+        ? target.to
+        : unit.hex!;
   const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
   if (input.move?.length || input.action.ability === 'hold') return closing;
   const ability = input.action.ability;
-  // What catching a unit in Gale is worth, by its side.
+  // What catching a unit in Gale, Cleave or Trample is worth, by its side.
   const sided = (u: Unit, value: number) =>
     hostile(u, unit) ? value : -value * AI.friendlyDamageFactor;
   const caughtBy =
@@ -340,7 +350,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       ? hexNeighbors(target!.hex!)
       : ability === 'cleave'
         ? ABILITIES.cleave.area!(mapOf(state), unit.hex!, target!.hex!)
-        : undefined;
+        : plan?.caught.map((u) => u.hex!);
   if (caughtBy) {
     let value = -1;
     for (const h of caughtBy) {

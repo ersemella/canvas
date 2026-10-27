@@ -1,17 +1,24 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Swordsman's (owner, 2026-10-26), the Magus's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * Swordsman's (owner, 2026-10-26), the Magus's and the Elephant Rider's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
-import {hexDirectionTo, hexDistance, hexEquals, hexNeighbors} from '@canvas/engine/server';
+import {
+  hexDirectionTo,
+  hexDistance,
+  hexEquals,
+  hexNeighbor,
+  hexNeighbors,
+} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL} from './config';
 import {
   cleaveAreas,
   firstInLane,
   isImmobilized,
+  isUnstoppable,
   kitOf,
   lane as laneFrom,
   reachableHexes,
@@ -19,6 +26,7 @@ import {
   spacesWithin,
   steps as stepsFrom,
   unitAt,
+  walkable,
 } from './board';
 import {
   clearHail,
@@ -27,6 +35,7 @@ import {
   displace,
   displaced,
   endGrapples,
+  endGrapplesApart,
   empower,
   enterHex,
   hailEnds,
@@ -368,9 +377,14 @@ const grapple: AbilityDef = {
     `Melee: hits it, and it is Stunned until you take damage or are Stunned, taking ${ABILITY.grapple.squeeze} more damage each of your turns. While grappling: Move it to a free space next to you, or swap places.`,
   targetsUnit: true,
   // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before),
-  // and not the unit it already grapples: that one is thrown instead.
+  // and not the unit it already grapples: that one is thrown instead. Nor
+  // an Unstoppable one (17.4), which a grapple's Stun can't hold.
   targets(state, map, user, from) {
-    const out = adjacentUnits(state, from, (u) => u !== user && !grappling(user, u));
+    const out = adjacentUnits(
+      state,
+      from,
+      (u) => u !== user && !grappling(user, u) && !isUnstoppable(u)
+    );
     if (heldNextTo(state, user, from)) {
       const landings = stepsFrom(map, from).filter((h) => !unitAt(state, h));
       for (const hex of sortByHex([...landings, from], (h) => h)) out.push({hex});
@@ -868,6 +882,110 @@ const conjunction: AbilityDef = {
   },
 };
 
+// ─── Elephant Rider ──────────────────────────────────────────────────────────
+
+/** The units standing in a row from `h` along direction `dir`, `h`'s first; none if it is free. */
+function rowFrom(state: FightState, h: Hex, dir: number): Unit[] {
+  const row: Unit[] = [];
+  for (let at = h, u = unitAt(state, at); u; at = hexNeighbor(at, dir), u = unitAt(state, at))
+    row.push(u);
+  return row;
+}
+
+/** Whether a row of units can be Pushed 1 along `dir`: none Rooted or Unstoppable, and free ground past it. */
+function rowGives(state: FightState, map: MapData, row: Unit[], dir: number): boolean {
+  const past = hexNeighbor(row[row.length - 1]!.hex!, dir);
+  return (
+    walkable(map, past) &&
+    !unitAt(state, past) &&
+    row.every((u) => !isUnstoppable(u) && !hasPassive(u, 'rooted'))
+  );
+}
+
+/**
+ * What a Trample from `from` toward `target` would do, without doing it:
+ * the units it would hit, and where the Elephant Rider would end, if no
+ * one falls and nothing it enters on the way changes the board (hail's
+ * hits, Rebound). For the AI's guess.
+ */
+export function tramplePlan(
+  state: FightState,
+  map: MapData,
+  from: Hex,
+  target: Hex
+): {caught: Unit[]; end: Hex} {
+  const dir = hexDirectionTo(from, target)!;
+  const caught = new Set<Unit>();
+  let at = from;
+  // A copy of the units' spaces, the row Pushed along in it.
+  const view: FightState = {
+    ...state,
+    units: state.units.map((u) => (u.hex ? {...u, hex: {...u.hex}} : u)),
+  };
+  for (let i = hexDistance(from, target); i > 0; i--) {
+    const next = hexNeighbor(at, dir);
+    const row = rowFrom(view, next, dir);
+    for (const u of row) caught.add(state.units.find((o) => o.id === u.id)!);
+    if (row.length > 0) {
+      if (!rowGives(view, map, row, dir)) break;
+      for (const u of row) u.hex = hexNeighbor(u.hex!, dir);
+    }
+    at = next;
+  }
+  return {caught: [...caught], end: at};
+}
+
+/**
+ * Trample (owner, 2026-10-27; roster.md): the Elephant Rider walks 1 to
+ * `ABILITY.trample.steps` spaces straight out in any of the six
+ * directions, stopped by yurts and the map's edge; with no one in its way
+ * it is just that walk. The units in its way, ally or enemy, the whole row
+ * when they stand in a line, each take its power once and are Pushed back
+ * ahead of it, a space for each it walks, the farthest first. A row that
+ * can't be Pushed (yurts, a unit past it, the map's edge, or a Rooted or
+ * Unstoppable unit in it) stops the Elephant Rider behind it, hit all the
+ * same. Its walk goes through hail, which hits but can't hold it
+ * (Unstoppable); a unit Pushed into hail is held and hit as any entering it.
+ */
+const trample: AbilityDef = {
+  id: 'trample',
+  name: 'Trample',
+  kind: 'attack',
+  summary: () =>
+    `Walk up to ${ABILITY.trample.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
+  targets(state, map, user, from) {
+    if (isImmobilized(user)) return [];
+    const out: ActionTarget[] = [];
+    for (const dir of DIRECTIONS)
+      for (const hex of laneFrom(map, from, dir).slice(0, ABILITY.trample.steps)) out.push({hex});
+    return sortByHex(out, (t) => t.hex!);
+  },
+  resolve(ctx, user, target) {
+    const dir = hexDirectionTo(user.hex!, target.hex!)!;
+    log(ctx, `${unitName(user)} tramples.`);
+    const struck = new Set<string>();
+    for (let i = hexDistance(user.hex!, target.hex!); i > 0 && user.alive && user.hex; i--) {
+      const next = hexNeighbor(user.hex, dir);
+      if (!walkable(ctx.map, next)) break;
+      for (const u of rowFrom(ctx.state, next, dir))
+        if (!struck.has(u.id)) {
+          struck.add(u.id);
+          hit(ctx, user, u, 'The trample');
+        }
+      // Those still standing are Pushed, the farthest first, so each has room.
+      const row = rowFrom(ctx.state, next, dir);
+      if (row.length > 0 && !rowGives(ctx.state, ctx.map, row, dir)) {
+        log(ctx, `${unitName(user)} is stopped.`);
+        break;
+      }
+      for (const u of [...row].reverse()) displace(ctx, u, dir, 1, 'push');
+      if (unitAt(ctx.state, next) || !user.alive) break;
+      enterHex(ctx, user, next, 'walk', true);
+    }
+    if (user.alive) endGrapplesApart(ctx, user);
+  },
+};
+
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 
 const bite: AbilityDef = {
@@ -896,6 +1014,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   elixir,
   swiftStrike,
   conjunction,
+  trample,
   shove,
   haul,
   feignedRetreat,

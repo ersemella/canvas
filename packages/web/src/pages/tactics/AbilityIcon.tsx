@@ -291,6 +291,24 @@ const ICON: Record<IconId, Icon> = {
       '...=........',
     ],
   },
+  // An elephant's foot coming down, the dust it raises the accent.
+  trample: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '...######...',
+      '...######...',
+      '...######...',
+      '...######...',
+      '..########..',
+      '..########..',
+      '..=.=..=.=..',
+      '............',
+      '+.+......+.+',
+      '.+.+....+.+.',
+      '............',
+    ],
+  },
   // An elixir gourd, its stopper the accent.
   elixir: {
     kind: 'support',

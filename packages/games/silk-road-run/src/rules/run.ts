@@ -33,7 +33,7 @@ import {
   seededRandom,
 } from './fight';
 import {mapById} from './map';
-import {PASSIVES, hasPassive} from './passives';
+import {NOT_OFFERED, PASSIVES, hasPassive} from './passives';
 import {createTestFight} from './testStage';
 import {shuffled} from './track';
 import type {
@@ -208,8 +208,8 @@ export function passiveOffer(run: RunState): PassiveId[] {
   const standing = run.fight.units.filter(
     (u) => u.side === 'player' && u.hero !== CAMEL && u.alive
   );
-  const open = (Object.keys(PASSIVES) as PassiveId[]).filter((id) =>
-    standing.some((u) => !hasPassive(u, id))
+  const open = (Object.keys(PASSIVES) as PassiveId[]).filter(
+    (id) => !NOT_OFFERED.includes(id) && standing.some((u) => !hasPassive(u, id))
   );
   return shuffled(open, seededRandom(stageSeed(run.seed, stage) ^ 0x27d4eb2f)).slice(
     0,

@@ -174,6 +174,22 @@ export function isStunned(unit: Unit): boolean {
   return unit.statuses.some((s) => s.kind === 'stunned');
 }
 
+/**
+ * Unstoppable (keywords.md, 17.4): can't be Pushed, Pulled, Immobilized or
+ * Stunned, from the Unstoppable passive (the Elephant Rider's, owner,
+ * 2026-10-27) or for a while (an Elixir, a switch). So it can't be
+ * grappled (a grapple's hold is a Stun), and hail, which ends a walk by
+ * Immobilizing, doesn't stop its walk.
+ */
+export function isUnstoppable(unit: Unit): boolean {
+  return Boolean(unit.unstoppable) || hasPassive(unit, 'unstoppable');
+}
+
+/** Whether a walk of `unit`'s ends on entering `h`: hail there would Immobilize it. */
+export function stopsWalk(state: FightState, unit: Unit, h: Hex): boolean {
+  return hailOn(state, h) && !isUnstoppable(unit);
+}
+
 export function addStatus(unit: Unit, status: Status): void {
   unit.statuses.push(status);
 }
@@ -206,7 +222,7 @@ export function passesAllies(unit: Unit): boolean {
  * Every hex the unit can end its move on, with a shortest path to it, the
  * start included with an empty path. Units and obstacles block walking;
  * a move can't end on another unit (brief section 2), and one that enters
- * hail ends there (it Immobilizes). With Light Step (19.8) allies don't
+ * hail ends there (it Immobilizes), unless the unit is Unstoppable. With Light Step (19.8) allies don't
  * block, and a walk may end on one whose space it entered from a free one
  * (or its start): the two swap, the ally Moved to that space (`walk` in
  * resolve.ts). A unit that `movesStraight` goes along the six lanes
@@ -239,8 +255,8 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
         if (other && fromFree && !swaps.has(key)) swaps.set(key, [...fromPath, h]);
         if (best.has(key)) continue;
         best.set(key, [...fromPath, h]);
-        // Hail stops the walk where it enters.
-        if (!hailOn(state, h)) next.push(h);
+        // Hail stops the walk where it enters, unless Unstoppable.
+        if (!stopsWalk(state, unit, h)) next.push(h);
       }
     }
     frontier = next;
@@ -271,7 +287,7 @@ function straightReaches(state: FightState, map: MapData, unit: Unit, cap: numbe
         path.push(h);
         if (!other || prevFree) out.push({hex: h, path: [...path]});
         prevFree = !other;
-        if (hailOn(state, h)) break;
+        if (stopsWalk(state, unit, h)) break;
       }
     }
   }
@@ -321,7 +337,8 @@ export function invalidPath(
     const there = other(h);
     // Light Step (19.8) walks through allies.
     if (there && (!passesAllies(unit) || hostile(there, unit))) return 'Units block that path.';
-    if (hailOn(state, h) && i < path.length - 1) return 'Hail stops a move where it enters.';
+    if (stopsWalk(state, unit, h) && i < path.length - 1)
+      return 'Hail stops a move where it enters.';
     from = h;
   }
   if (other(from)) {

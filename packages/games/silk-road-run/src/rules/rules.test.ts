@@ -1551,6 +1551,117 @@ describe('the Magus', () => {
   });
 });
 
+describe('the Elephant Rider', () => {
+  const party: HeroId[] = ['mahout', 'bokh', 'storm'];
+  const c = at(4, 4);
+  /** `n` spaces from `h` along direction `dir`. */
+  const along = (h: Hex, dir: number, n: number): Hex => {
+    for (let i = 0; i < n; i++) h = hexNeighbor(h, dir);
+    return h;
+  };
+  /** A fight with the Elephant Rider at `c` to act, and units where `placements` puts them. */
+  const ready = (placements: Record<string, Hex>) => {
+    const s = setup({'p-mahout': c, ...placements}, party);
+    // Open ground: the layout's yurts taken off, so every line runs on.
+    s.tiles = Object.fromEntries(
+      Object.entries(s.tiles).map(([k, t]) => [k, t === 'obstacle' ? 'sand' : t])
+    );
+    const e = unit(s, 'p-mahout');
+    e.slot = s.currentSlot;
+    s.awaiting = e.id;
+    return {s, e};
+  };
+  const trample = (s: FightState, e: Unit, hex: Hex) =>
+    applyTurn(s, e, {action: {ability: 'trample', target: {hex}}});
+
+  it('has speed 1, defence 3, power 2, and is Unstoppable from the start', () => {
+    const {s, e} = ready({});
+    expect([e.speed, e.defence, e.power, e.maxHp]).toEqual([1, 3, 2, healthOf(3)]);
+    expect(e.passives).toEqual(['unstoppable']);
+    expect(ROSTER).toContain('mahout');
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
+    displace(ctx, e, 0, 2, 'push');
+    expect(e.hex).toEqual(c);
+    stun(ctx, e, {kind: 'stunned'});
+    expect(e.statuses).toEqual([]);
+  });
+
+  it('can’t be grappled: Unstoppable means it can’t be Stunned', () => {
+    const {s} = ready({'e-bokh': hexNeighbor(c, 0)});
+    const g = unit(s, 'e-bokh');
+    expect(ABILITIES.grapple.targets(s, mapOf(s), g, g.hex!)).toEqual([]);
+  });
+
+  it('Trample with no one in the way is a walk of up to 2 in a straight line', () => {
+    const {s, e} = ready({});
+    const targets = ABILITIES.trample.targets(s, mapOf(s), e, c);
+    expect(targets).toHaveLength(12);
+    trample(s, e, along(c, 0, 2));
+    expect(e.hex).toEqual(along(c, 0, 2));
+    expect(e.hp).toBe(e.maxHp);
+  });
+
+  it('Trample hits every unit lined up in its way and Pushes the whole row back', () => {
+    // Direction 2, the longest line from the middle: room for the row to go.
+    const {s, e} = ready({'e-bokh': along(c, 2, 1), 'p-bokh': along(c, 2, 2)});
+    trample(s, e, along(c, 2, 2));
+    // Each takes the Elephant Rider's power once, its ally too, and is Pushed 2.
+    for (const [id, n] of [
+      ['e-bokh', 3],
+      ['p-bokh', 4],
+    ] as const) {
+      expect(unit(s, id).hex).toEqual(along(c, 2, n));
+      expect(unit(s, id).hp).toBe(unit(s, id).maxHp - 2);
+    }
+    expect(e.hex).toEqual(along(c, 2, 2));
+  });
+
+  it('a row that can’t be Pushed stops the Elephant Rider behind it, hit all the same', () => {
+    const {s, e} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 2)});
+    unit(s, 'e-storm').passives = ['rooted'];
+    trample(s, e, along(c, 0, 2));
+    expect(e.hex).toEqual(c);
+    expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 1));
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+    expect(unit(s, 'e-storm').hp).toBe(unit(s, 'e-storm').maxHp - 2);
+  });
+
+  it('a row Pushed after a step only once it is reached: a unit 2 away is Pushed 1', () => {
+    const {s, e} = ready({'e-bokh': along(c, 0, 2)});
+    trample(s, e, along(c, 0, 2));
+    expect(e.hex).toEqual(along(c, 0, 2));
+    expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 3));
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+  });
+
+  it('walks through hail, hit but not held, and a unit Pushed into hail is held', () => {
+    const {s, e} = ready({'e-storm': at(0, 0), 'e-bokh': along(c, 0, 2)});
+    s.effects.push({kind: 'hail', hex: along(c, 0, 1), source: 'e-storm', turns: 2});
+    s.effects.push({kind: 'hail', hex: along(c, 0, 3), source: 'e-storm', turns: 2});
+    // An ordinary walk goes on through hail too.
+    const past = hexNeighbor(along(c, 0, 1), 1);
+    expect(invalidPath(s, mapOf(s), e, [along(c, 0, 1), past])).toBeNull();
+    expect(reachableHexes(s, mapOf(s), e).some((r) => hexEquals(r.hex, past))).toBe(true);
+    trample(s, e, along(c, 0, 2));
+    expect(e.hex).toEqual(along(c, 0, 2));
+    expect(e.statuses).toEqual([]);
+    // The hail's sting on entering: the Storm Caller's power.
+    expect(e.hp).toBe(e.maxHp - unit(s, 'e-storm').power);
+    const b = unit(s, 'e-bokh');
+    expect(b.hex).toEqual(along(c, 0, 3));
+    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+  });
+
+  it('the AI weighs Trample and plays a legal turn with it', () => {
+    const {s, e} = ready({'e-bokh': hexNeighbor(c, 0), 'e-storm': at(8, 8)});
+    e.controller = 'ai';
+    const turn = chooseAiTurn(s, e);
+    expect(turn.action.ability).toBe('trample');
+    applyTurn(s, e, turn);
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+  });
+});
+
 describe('the Vanguard and the Alchemist', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
 
@@ -2669,7 +2780,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a party must be one to three different heroes of the roster', () => {
-    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist', 'youxia', 'magus']);
+    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist', 'youxia', 'magus', 'mahout']);
     expect(() => createRun(5, {party: ['modao', 'alchemist']})).not.toThrow();
     for (const party of [
       ['modao', 'alchemist', 'storm', 'bokh'],
