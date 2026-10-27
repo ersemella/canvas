@@ -154,3 +154,24 @@ for (const power of [2, 3])
       },
       mod: {kits: {storm: ['hail', 'hold']}},
     };
+// Asked for (2026-10-27): Eye hitting (on an ally only, and on an empty
+// space too) against the game's balance, at power 1: its worth, each
+// Chinese hero in its seat, and the stage caravans with a Storm Caller.
+for (const [name, eye] of [
+  ['damage', {damage: true, weaken: 0}],
+  ['anywhere+damage', {anywhere: true, damage: true, weaken: 0}],
+]) {
+  const patch = (c) => {
+    Object.assign(c.ABILITY.eye, eye);
+  };
+  experiments[`${name}:no-eye`] = {patch, mod: {ban: ['eye']}};
+  for (const hero of china)
+    experiments[`${name}:${hero}-for-storm`] = {
+      patch,
+      mod: {party: steppe.map((h) => (h === 'storm' ? hero : h))},
+    };
+  experiments[`${name}:vs-storm+2wolves`] = {patch, enemies: ['storm', 'wolf', 'wolf']};
+  experiments[`${name}:vs-bokh+storm+wolf`] = {patch, enemies: ['bokh', 'storm', 'wolf']};
+  experiments[`${name}:vs-mangudai+storm+wolf`] = {patch, enemies: ['mangudai', 'storm', 'wolf']};
+  experiments[`${name}:vs-all-three`] = {patch, enemies: steppe};
+}

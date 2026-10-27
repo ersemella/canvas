@@ -45,3 +45,15 @@ experiments['anywhere+heal2+weaken2'] = {
     ABILITY.eye.weaken = 2;
   },
 };
+experiments.damage = {
+  party: steppe,
+  patch: ({ABILITY}) => {
+    Object.assign(ABILITY.eye, {damage: true, weaken: 0});
+  },
+};
+experiments['anywhere+damage'] = {
+  party: steppe,
+  patch: ({ABILITY}) => {
+    Object.assign(ABILITY.eye, {anywhere: true, damage: true, weaken: 0});
+  },
+};
