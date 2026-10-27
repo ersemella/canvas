@@ -2993,9 +2993,8 @@ seeds from 1000; `ablate.ts` counts swaps by ally (`swapsPerFight`).
 - **What it is used for is the Vanguard's speed**: health 8 for speed 8
   takes its next card 5 slots on instead of 10, half a turn, but leaves
   it at health 1 meanwhile; its survival falls from 45% to 26–28%. The
-  Steppe's other heroes have 4–6 health against speed 2–3, so for them
-  the swap is a slot or two of speed for 1–3 health, or (hurt) a little
-  health for a slower card.
+  Swordsman and the Horse Archer (health 4, speed 3) trade a slot of speed
+  for 1 health, or, hurt, a little health for a slower card.
 - **Lasting through the ally's turn is worth about 5 points** over ending
   as it starts (the speed then counts only in collisions); `pool` and
   `carry` differ by 1–2 points, within noise. Carry's falls as a swap ends
