@@ -31,6 +31,8 @@ const LORE: Partial<Record<HeroId, string>> = {
     'A foot archer of the royal army, whose heavy arrows punch through armour. The Ranger hits harder than anyone, and the first unit in its line staggers, losing time, but it is frail and must be kept out of reach.',
   varangian:
     'A guardsman from the far north, sworn to the emperor and paid in gold. The Barbarian is slow, but its great axe hits harder than anyone’s, swung through every foe at its side or hurled through a line of them, though then it must fetch the axe back.',
+  priest:
+    'A priest of the imperial city, who walks with the army to tend the wounded. The Priest strikes no blow of his own, but his blessing mends an ally within reach, himself too, and what it cannot mend becomes a ward against the next blows.',
   magus:
     'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but reads an omen for one unit: an ally acts at once, an enemy must wait until the Magus has acted again, while its own course is fixed and cannot be hurried or held back.',
 };

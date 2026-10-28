@@ -48,6 +48,12 @@ Shield 1 from Rally (until the unit's next turn), Armour 1 as Hardened and
 Pierce as Piercing Eye. No hero has a passive yet; neither the delay nor
 the haste limit is built.
 **Inevitable from the start** (2026-10-27): the Magus carries Steady Gait as its hero's own (`HeroStats.passives`), and its Omen (Conjunction until 2026-10-28, a swap of two cards) moves cards, Inevitable ones never, which no keyword names: one Hastened and one Delayed by the gap between them.
+**Shield from an ability** (2026-10-28): the Priest's Blessing heals an
+ally his power, and what the heal can't restore becomes Shield, added to
+any it has, until the start of that ally's next turn, as Rally's
+([roster.md](roster.md)). The AI counts a Shield off the threat a unit
+fears, and values one by the hits it could absorb before the unit's next
+turn (`AI.shieldShare`); the board marks a Shielded unit P(rotected).
 The others are defined here and built when an ability uses them.
 
 ## 17. Keywords and Effects

@@ -35,6 +35,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   omen: 'No unit within 3 whose turn comes before your next.',
   stomp: 'Nowhere to Stomp.',
   longshot: 'No one in any of your lanes.',
+  blessing: 'No ally within 2.',
   smash: 'No enemy next to you.',
   boulder: 'No one in any of your lanes.',
   shove: 'No one next to you to shove.',

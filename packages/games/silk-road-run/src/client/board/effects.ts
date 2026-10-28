@@ -1,7 +1,8 @@
 /**
  * Abilities' effects as a turn plays back (Sunlight's beam, Gale's gusts,
  * a Volley's arrows falling, Shove's blow, Haul's rope, Cleave's swing,
- * Swift Strike's thrust, Reave's swing and throw, Elixir's flask, Omen's clock, Stomp's quake,
+ * Swift Strike's thrust, Reave's swing and throw, Elixir's flask, Omen's clock,
+ * Blessing's halo, Stomp's quake,
  * Bite's jaws; Snap Shot's and Feigned Retreat's arrows are drawn by the
  * playback, Hail's stones and Grapple's fists by the board).
  */
@@ -48,6 +49,7 @@ export const ABILITY_EFFECT: Partial<
   swiftStrike: drawSwiftStrike,
   elixir: drawElixir,
   omen: drawOmen,
+  blessing: drawBlessing,
   stomp: drawStomp,
   bite: drawBite,
 };
@@ -628,6 +630,52 @@ function drawOmen(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): void
         i % 2 ? '#e3aee4' : '#ffffff'
       );
     }
+  }
+}
+
+/** The Blessing's halo: its half-width and half-height in art pixels. */
+const HALO = {rx: 7, ry: 2};
+
+/**
+ * Blessing: a golden halo settles from above onto the ally, motes of light
+ * falling with it, then a pale ward rises round it as a dome of dithered
+ * light, and thins away.
+ */
+function drawBlessing(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): void {
+  const c = center(target);
+  const fade = fadeOut(k, 0.7);
+  if (fade <= 0) return;
+  const keep = (x: number, y: number) => fade > 0.4 || (x + y) % 2 === 0;
+  const put = (x: number, y: number, color: string) => {
+    if (keep(x, y)) artPixel(ctx, x, y, color);
+  };
+  // The halo: from high above, down to the head over the first half.
+  const fall = Math.min(1, k / 0.45);
+  const [hx, hy] = artCell(c.x, c.y - 30 - (1 - fall) * 40);
+  for (let a = 0; a < 32; a++) {
+    const t = (a / 32) * Math.PI * 2;
+    const x = hx + Math.round(Math.cos(t) * HALO.rx);
+    const y = hy + Math.round(Math.sin(t) * HALO.ry);
+    put(x, y + 1, OUTLINE);
+    put(x, y, a % 4 === 0 ? '#fff6c8' : '#ffdf5e');
+  }
+  // Motes of light falling round it.
+  const next = hexRandom(target, 23);
+  for (let i = 0; i < 6; i++) {
+    const x = hx + Math.round((next() - 0.5) * 2 * (HALO.rx + 3));
+    const y = hy - 6 + Math.round(((next() + k * 2) % 1) * 14);
+    put(x, y, i % 2 ? '#ffffff' : '#ffdf5e');
+  }
+  // The ward: a dome over the unit, once the halo has settled.
+  if (k < 0.45) return;
+  const rise = Math.min(1, (k - 0.45) / 0.2);
+  const [dx, dy] = artCell(c.x, c.y + 12);
+  const r = Math.round(13 * rise);
+  for (let a = 0; a <= 40; a++) {
+    const t = Math.PI + (a / 40) * Math.PI;
+    const x = dx + Math.round(Math.cos(t) * r);
+    const y = dy + Math.round(Math.sin(t) * r * 1.4);
+    put(x, y, a % 5 === 0 ? '#ffffff' : '#cfe8f2');
   }
 }
 

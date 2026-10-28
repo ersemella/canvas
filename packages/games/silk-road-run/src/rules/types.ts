@@ -12,7 +12,7 @@ export type Side = 'player' | 'enemy';
  * (owner, 2026-10-25), the Duelist (owner, 2026-10-26), the Magus
  * (owner, 2026-10-27), the Juggernaut (`mahout`, owner, 2026-10-27), the
  * Ranger (owner, 2026-10-27), the Barbarian (`varangian`, owner,
- * 2026-10-28), the
+ * 2026-10-28), the Priest (owner, 2026-10-28), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, the enemy NPCs, the wolf and the fox, and the Steppe's boss, the
  * One-Eyed Giant (`giant`, owner, 2026-10-28; enemies.md).
@@ -27,6 +27,7 @@ export type HeroId =
   | 'magus'
   | 'mahout'
   | 'archer'
+  | 'priest'
   | 'varangian'
   | 'camel'
   | 'wolf'
@@ -46,6 +47,7 @@ export type AbilityId =
   | 'omen'
   | 'stomp'
   | 'longshot'
+  | 'blessing'
   | 'reave'
   // The One-Eyed Giant's (owner, 2026-10-28).
   | 'smash'
@@ -210,7 +212,8 @@ export interface Unit {
   spent?: PassiveId[];
   /**
    * Shield (keywords.md, 17.6): a pool reduced before health, until the
-   * start of the unit's next turn (Rally). Absent when it has none.
+   * start of the unit's next turn (Rally, the Priest's Blessing). Absent
+   * when it has none.
    */
   shield?: number;
   /**

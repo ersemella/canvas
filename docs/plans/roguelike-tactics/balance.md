@@ -3713,6 +3713,50 @@ points); `ABILITY.longshot.push` 0, 1 (as built) and 2, no Delay.
 **Built since** (the owner, 2026-10-28): no Push (`push: 0` by default).
 `longshot-push.mjs` sets the Push of each row, so it still reproduces.
 
+### The Priest (2026-10-28)
+
+Asked for (the owner): the Priest, Byzantium's support, speed 2, defence
+1, power 3, with Blessing (an ally within 2, himself and Humphrey too,
+healed his power, the rest of the heal Shield until the ally's next
+turn). `experiments/priest.mjs` and `priest-buffs.mjs`: the Priest in
+the support seat of a Steppe, a China and a Persia mirror (in place of
+the Storm Caller, the Alchemist and the Magus), 400 fights each (about
+±2.5 points), `modWinPct`, Humphrey on the field. The target band is
+45–55%.
+
+| Priest | Steppe | China | Persia |
+|---|---:|---:|---:|
+| **As built** | **42.7%** | **22.8%** | **41.6%** |
+| Power 2 | 32.6% | 19.8% | 30.3% |
+| No overheal (heal only) | 29.7% | 27.5% | 34.3% |
+| Shield 1 on top of the heal (`shield: 1`) | 47.7% | 23.3% | 46.1% |
+| Humphrey not a target (`camel: false`) | 37.8% | 21.5% | 39.2% |
+| Range 3 | 46.4% | 25.0% | |
+| Speed 3 | 43.1% | 32.0% | |
+| Defence 2 | 44.8% | 25.3% | |
+| The AI valuing a Shield in full (`AI.shieldShare` 1) | 41.3% | 20.5% | |
+| An enemy within 2 hit for his power (`smite`) | 60.4% | 47.5% | |
+| Smite and speed 3 | 70.8% | 69.8% | |
+
+- **Weak as built**, most in China's seat, where he replaces the
+  Alchemist (22.8%): a side with a Priest has one hero fewer that hits,
+  and the 4-health heroes of these fights die to two or three hits,
+  faster than a heal of 3 every 9 slots mends them.
+- **The overheal is most of his worth**: without it he loses 7–13
+  points on the Steppe and in Persia. Power is worth about 10 points a
+  point. The camel's heals are worth 2–5 points.
+- **No defensive buff closes the gap in China**: a Shield of 1 on top,
+  range 3, speed 3 or defence 2 each add 1–9 points; the AI's
+  valuation of a Shield isn't the cause (shieldShare 1 changes nothing).
+- **A smite does**: Blessing hitting an enemy for his power, as the
+  Elixir does, brings him to 60.4% and 47.5%, the Alchemist's shape.
+  With speed 3 too it's far too strong (70%).
+
+**Built as measured** (the owner to decide): no smite. The likeliest
+tunings are the smite at power 2 (power 3 already overshoots the
+Steppe), or a Shield of 1 on top with a second, damaging ability as an
+upgrade; neither is measured yet.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

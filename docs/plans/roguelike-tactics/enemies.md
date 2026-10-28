@@ -47,7 +47,9 @@ wolves', and Snap Shot's lanes.
   (health 12), power 3. `giant` in config.ts; not in the ROSTER, so the
   start menu doesn't offer it. The Steppe's fourth stage brings it with
   two wolves (`REGIONS.steppe.boss`; progression.md, 19.1), and so does
-  the test stage (test-stage.json, as committed). No sprite yet: a lettered disc, its eye drawn on its hex.
+  the test stage (test-stage.json, as committed). Its sprite and portrait
+  are the owner's AI-assisted art (2026-10-28; art-direction.md), its
+  facing still drawn as an eye on its hex's edge.
 - **One Eye** (a passive, `oneEye`, not offered at the caravanserai):
   Armour 3 (`ONE_EYE.armour`) against a hit, or a grapple's squeeze, from
   a unit not standing in its front lane, the line straight out the way it

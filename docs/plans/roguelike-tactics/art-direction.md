@@ -401,8 +401,14 @@ background. One portrait only, no text, no border.
 
 ## Prompts for the One-Eyed Giant (2026-10-28)
 
+**Built from the owner's art (2026-10-28):** the sprite shrunk to
+44 × 44 with `shrink-sprite.py`, its eye redrawn by hand (3 × 2, the
+pupil looking right) since shrinking lost it, and a 2-frame idle split at
+row 33; the portrait cropped to the face (`--crop 380,120,1254,994
+--lines 0.5`). The prompts it came from:
+
 The Steppe's boss (enemies.md, 11.3a), a lettered disc (`giant` in
-`HERO_COLOR`) until its art comes. A **44 × 44** board sprite facing right,
+`HERO_COLOR`) until its art came. A **44 × 44** board sprite facing right,
 the Juggernaut's frame, so it outsizes the heroes and rises above its hex,
 split into the 2-frame idle by `scripts/idle-sheet.py` (88 × 44 in all);
 and a **32 × 32** track portrait (`giant.png` and `giant-portrait.png` in
@@ -468,6 +474,77 @@ Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
 anti-aliasing, no gradients, no dithering, a dark outline, at most 14
 colours. Flat magenta (#FF00FF) background. One portrait only, no text,
 no border.
+```
+
+## Prompts for the Priest (2026-10-28)
+
+The Priest (roster.md), Byzantium's support, plays as a lettered disc
+(`priest` in `HERO_COLOR`) until his art comes. As the Archer's: a
+**32 × 32** board sprite facing right, split into the 2-frame idle by
+`scripts/idle-sheet.py` (64 × 32 in all), and a **32 × 32** track portrait
+(`priest.png` and `priest-portrait.png` in `src/client/sprites/`).
+Keep him a role, not a saint (roster.md, 15.5): no halo of his own (the
+Blessing's halo is the playback's), no icon, relic or holy figure, and no
+cross large enough to be the first thing read.
+
+- **Attach the references**, scaled up 8× with nearest-neighbour:
+  `magus.png` and `alchemist.png` (robed heroes on foot) for the sprite;
+  `magus-portrait.png` and `alchemist-portrait.png` for the portrait.
+- One asset per image, on flat magenta (#FF00FF), as the Archer's.
+- His colours: cream and gold over dark brown, apart from the Magus's
+  plum and the Alchemist's teal; no red (the enemy's) and no light blue
+  (targeting, and the Shield marker).
+- If it comes back too detailed: "halve the detail and use fewer, larger
+  pixel clusters"; if the censer is lost at size: "make the censer bigger,
+  a bright gold ball on a dark chain, with a small puff of pale smoke".
+
+### 1. Board sprite
+
+```
+Pixel art sprite of a single character for a hex-grid tactics game, in the
+exact style, size, viewpoint and dark outline of the attached sprites.
+
+Subject: a Byzantine army priest of late antiquity, a healer who walks
+with the soldiers. A sturdy middle-aged man with a full dark beard, in a
+long dark brown cassock to the ankles, under a wide cream outer robe with
+a broad gold border at the hem and the edges, falling to the knees. A
+tall dark brown cylindrical brimless cap. In his right hand, held out in
+front, a small gold censer on a dark chain, a thin puff of pale smoke
+rising from it; his left hand raised, palm forward, in a blessing.
+Calm, steady stance, feet together.
+
+Framing: full body, facing right, three-quarter view from slightly above,
+as the attached sprites. The figure fills a 32 x 32 pixel frame with about
+2 pixels free on each side; the censer must stay readable at that size.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 12 colours. Cream, gold and dark brown,
+with warm skin; no red and no light blue, which the game keeps for its
+own markings. A small soft grey oval shadow under the feet. Flat magenta
+(#FF00FF) background. One sprite only, no text, no frame, no extra poses.
+```
+
+### 2. Track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same Byzantine army priest: a kindly, weathered face with a
+full dark beard touched with grey, dark eyes looking right, a tall dark
+brown cylindrical brimless cap, the cream outer robe with its broad gold
+border at the shoulders. A little pale censer smoke drifting up at the
+right edge.
+
+Framing: head and shoulders, facing right in three-quarter view, the face
+in the middle of the frame and large, the cap touching the top edge,
+cropped at the shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours, warm skin tones as in the references. Flat magenta (#FF00FF)
+background. One portrait only, no text, no border.
 ```
 
 ## Palette (Proposed)
