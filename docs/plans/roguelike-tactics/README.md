@@ -18,10 +18,11 @@ random and a wolf, then all three heroes.
 Winning a stage offers Next stage (`POST /runs/:id/next`); the surviving
 heroes go on at full health, the camel with the health it ended the
 stage with (2026-10-27, [camel.md](camel.md), 18.4), the fallen are gone for the
-run; winning the last stage wins the run. **Two regions** (2026-10-26):
-the Steppe's three stages, then China's three on the Flaming Mountains
-against fox spirits and the Duelist first
-([progression.md](progression.md), 19.5). Between stages the caravan
+run; winning the last stage wins the run. **Three regions** (2026-10-28):
+the Steppe's three stages, then China's three in the Gobi, its own heroes
+with the Steppe's in place of fox spirits, the Duelist first, then
+Persia's three on the Salt Flats, its own heroes with the Steppe's or
+China's, the Ranger first ([progression.md](progression.md), 19.5). Between stages the caravan
 stops at a **caravanserai** (2026-10-25): after a region's stages 1 and 2 one
 survivor takes a provision, +1 to one stat for the rest of the run
 ([progression.md](progression.md), 19.2); between the regions it offers
