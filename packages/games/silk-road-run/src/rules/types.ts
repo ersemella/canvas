@@ -236,6 +236,12 @@ export interface Unit {
    */
   shield?: number;
   /**
+   * The part of its Shield that stays until damage spends it, not going at
+   * its next turn (a Blessing with `ABILITY.blessing.lasts`). Absent when
+   * none does.
+   */
+  lastingShield?: number;
+  /**
    * Unstoppable (keywords.md, 17.4): can't be Pushed, Pulled, Immobilized
    * or Stunned, until the start of the unit's next turn (an Elixir, a
    * switch: `ABILITY.elixir.unstoppable`); always with the Unstoppable

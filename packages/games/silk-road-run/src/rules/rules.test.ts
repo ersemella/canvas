@@ -39,14 +39,7 @@ import {
   disarmed,
   lane,
 } from './board';
-import {
-  ABILITIES,
-  abilitiesOf,
-  arrowLanes,
-  ridePlan,
-  stompPlan,
-  unusableReason,
-} from './abilities';
+import {ABILITIES, abilitiesOf, arrowLanes, ridePlan, stompPlan, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {offeredTargets, onlyHold, targetAt} from './choices';
@@ -2488,6 +2481,38 @@ describe('the Priest', () => {
       3,
       undefined,
     ]);
+  });
+
+  it('with `lasts`, the Shield stays past the ally’s turn until spent, at most his power', () => {
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0), 'e-priest': at(5, 4)});
+    const blessing = ABILITY.blessing as {lasts: boolean; heal: boolean};
+    onTestFinished(() => {
+      blessing.lasts = false;
+      blessing.heal = true;
+    });
+    blessing.lasts = true;
+    blessing.heal = false;
+    const ally = unit(s, 'p-bokh');
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    bless(s, p, ally);
+    expect([ally.shield, ally.lastingShield]).toEqual([3, 3]);
+    // At most his power: a second Blessing adds nothing.
+    p.slot = s.currentSlot;
+    s.awaiting = p.id;
+    bless(s, p, ally);
+    expect(ally.shield).toBe(3);
+    startTurnPassives(ctx, ally);
+    expect(ally.shield).toBe(3);
+    // Rally's Shield on top goes first, and the lasting part with the hit.
+    ally.shield = 4;
+    hit(ctx, unit(s, 'e-priest'), ally, 'The blow');
+    expect([ally.shield, ally.lastingShield]).toEqual([1, 1]);
+    startTurnPassives(ctx, ally);
+    expect(ally.shield).toBe(1);
+    hit(ctx, unit(s, 'e-priest'), ally, 'The blow');
+    expect(ally.shield).toBeUndefined();
+    expect(ally.lastingShield).toBeUndefined();
+    expect(ally.hp).toBe(ally.maxHp - 2);
   });
 
   it('the AI blesses a hurt ally rather than hold', () => {

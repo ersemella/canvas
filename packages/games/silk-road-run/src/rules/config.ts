@@ -456,8 +456,14 @@ export const ABILITY = {
    * heal, the ally Shielded the Priest's power (and `shield` more);
    * `shape` `aura`, every ally within `radius` of the Priest at once, in
    * place of one within `range`.
+   * `lasts` (owner's question, 2026-10-28; balance.md, "A lasting
+   * Shield"), off as built: a Blessing's Shield stays until damage spends
+   * it, not until the ally's next turn, a unit holding at most `cap` × the
+   * Priest's power of it.
    */
   blessing: {
+    lasts: false as boolean,
+    cap: 1 as number,
     range: 2 as number,
     heal: true as boolean,
     shape: 'unit' as 'unit' | 'aura',
@@ -793,6 +799,11 @@ export const AI = {
    * then could deal it, at most its Shield. PLACEHOLDER.
    */
   shieldShare: 0.75,
+  /**
+   * A lasting Shield (`ABILITY.blessing.lasts`) is worth at least this share
+   * of it: it stays until spent. PLACEHOLDER.
+   */
+  lastingShieldShare: 0.75,
   /**
    * A charged shot in the air on a unit that acts before it lands and can
    * walk is worth this share of the hit: it can step out. PLACEHOLDER.

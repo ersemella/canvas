@@ -89,8 +89,17 @@ function statusPoints(state: FightState, u: Unit): number {
     weakenLoss(state, u) -
     empowerGain(state, u) -
     rescueGain(state, u) -
-    shieldWorth(state, u, u.shield ?? 0)
+    lastingWorth(state, u, u.shield ?? 0, u.lastingShield ?? 0)
   );
+}
+
+/**
+ * A lasting Shield's worth (`ABILITY.blessing.lasts`): `AI.lastingShieldShare`
+ * of it, since it stays until spent, or what it could absorb before the
+ * unit's next turn (`shieldWorth`), whichever is more.
+ */
+function lastingWorth(state: FightState, u: Unit, amount: number, lasting: number): number {
+  return Math.max(shieldWorth(state, u, amount), AI.lastingShieldShare * lasting);
 }
 
 /**
@@ -522,8 +531,13 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       const given = blessingOf(unit, a);
       value +=
         given.heal * (a.hero === CAMEL ? AI.camelHealthWeight : 1) +
-        shieldWorth(state, a, (a.shield ?? 0) + given.shield) -
-        shieldWorth(state, a, a.shield ?? 0);
+        lastingWorth(
+          state,
+          a,
+          (a.shield ?? 0) + given.shield,
+          (a.lastingShield ?? 0) + (ABILITY.blessing.lasts ? given.shield : 0)
+        ) -
+        lastingWorth(state, a, a.shield ?? 0, a.lastingShield ?? 0);
     }
     return closing + value;
   }

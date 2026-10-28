@@ -257,9 +257,10 @@ export function heal(ctx: Ctx, u: Unit, amount: number): void {
  * Shields `u` by `amount` more (keywords.md, 17.6; the Priest's Blessing),
  * added to any Shield it has, until the start of its next turn.
  */
-export function shield(ctx: Ctx, u: Unit, amount: number): void {
+export function shield(ctx: Ctx, u: Unit, amount: number, lasting = false): void {
   if (!u.alive || amount <= 0) return;
   u.shield = (u.shield ?? 0) + amount;
+  if (lasting) u.lastingShield = (u.lastingShield ?? 0) + amount;
   log(ctx, `${unitName(u)} gains Shield ${amount}: Shield ${u.shield}.`);
 }
 
@@ -351,7 +352,9 @@ export function takeHasteDue(state: FightState, unit: Unit): void {
  */
 export function startTurnPassives(ctx: Ctx, unit: Unit): void {
   unit.turns = [...(unit.turns ?? []).slice(-1), ctx.slot];
-  delete unit.shield;
+  // A lasting Shield (`Unit.lastingShield`) stays; the rest goes.
+  if (unit.lastingShield) unit.shield = unit.lastingShield;
+  else delete unit.shield;
   delete unit.unstoppable;
   delete unit.immortal;
   // A delayed Immortal begins now, lasting until the start of its next turn.
@@ -407,6 +410,11 @@ export function applyDamage(
     const absorbed = Math.min(target.shield, amount);
     target.shield -= absorbed;
     if (!target.shield) delete target.shield;
+    // What goes, goes from the part that would end at its next turn first.
+    if (target.lastingShield && target.lastingShield > (target.shield ?? 0)) {
+      if (target.shield) target.lastingShield = target.shield;
+      else delete target.lastingShield;
+    }
     amount -= absorbed;
     log(ctx, `${unitName(target)}’s Shield takes ${absorbed}.`);
     if (amount <= 0) return;
