@@ -45,6 +45,8 @@ import wolfPortrait from '../sprites/wolf-portrait.png';
 import wolfSprite from '../sprites/wolf.png';
 import foxPortrait from '../sprites/fox-portrait.png';
 import foxSprite from '../sprites/fox.png';
+import giantPortrait from '../sprites/giant-portrait.png';
+import giantSprite from '../sprites/giant.png';
 
 /**
  * The rug a unit stands on, filling its hex: a field in its side's colour,
@@ -56,7 +58,7 @@ const RUG = {
 };
 /**
  * Board sprites, facing right: square frames (32×32, 36×36 for a mounted
- * hero, the camel, the wolf or the fox, or 44×44 for the Juggernaut,
+ * hero, the camel, the wolf or the fox, or 44×44 for the Juggernaut and the One-Eyed Giant,
  * whose head and rider rise above its hex) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
@@ -79,6 +81,9 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // From the owner's AI-assisted art (2026-10-25): cut out, shrunk to the
   // wolf's frame, 10 colours, inked at the edge, the wolf's shadow.
   fox: foxSprite,
+  // From the owner's AI-assisted art (2026-10-28): shrunk to 44×44, the
+  // Juggernaut's frame, its eye redrawn by hand.
+  giant: giantSprite,
 };
 /** Track portraits (32×32, facing right), filling the card; `faceX` is the face's column. */
 export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
@@ -95,6 +100,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},
+  giant: {src: giantPortrait, faceX: 20},
 };
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
 export const HEALTH_BAR = {w: 60, h: 10, y: 50};

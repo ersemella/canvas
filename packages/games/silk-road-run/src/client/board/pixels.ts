@@ -44,7 +44,7 @@ export const HERO_COLOR = {
   camel: '#a8742f',
   wolf: '#6b7280',
   fox: '#c2410c',
-  // The One-Eyed Giant's disc: it has no sprite yet.
+  // The One-Eyed Giant's disc, shown while its sprite loads.
   giant: '#57534e',
 };
 /**

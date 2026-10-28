@@ -401,8 +401,14 @@ background. One portrait only, no text, no border.
 
 ## Prompts for the One-Eyed Giant (2026-10-28)
 
+**Built from the owner's art (2026-10-28):** the sprite shrunk to
+44 × 44 with `shrink-sprite.py`, its eye redrawn by hand (3 × 2, the
+pupil looking right) since shrinking lost it, and a 2-frame idle split at
+row 33; the portrait cropped to the face (`--crop 380,120,1254,994
+--lines 0.5`). The prompts it came from:
+
 The Steppe's boss (enemies.md, 11.3a), a lettered disc (`giant` in
-`HERO_COLOR`) until its art comes. A **44 × 44** board sprite facing right,
+`HERO_COLOR`) until its art came. A **44 × 44** board sprite facing right,
 the Juggernaut's frame, so it outsizes the heroes and rises above its hex,
 split into the 2-frame idle by `scripts/idle-sheet.py` (88 × 44 in all);
 and a **32 × 32** track portrait (`giant.png` and `giant-portrait.png` in
