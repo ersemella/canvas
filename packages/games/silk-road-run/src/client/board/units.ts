@@ -2,7 +2,7 @@
  * Units on the board: their sprites and rugs, the turn arrow, grapples'
  * fists, and, for a unit being looked at, its health bar, status markers and damage.
  */
-import {assetLoader, hexDistance} from '@canvas/engine';
+import {assetLoader, hexDistance, hexNeighbor} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {HEROES} from '../../rules/config';
 import {unitAt} from '../../rules/board';
@@ -15,6 +15,7 @@ import {
   SIDE_COLOR,
   SPRITE_FEET,
   SPRITE_SCALE,
+  artPixel,
   center,
   hexPath,
   label,
@@ -251,7 +252,46 @@ export function drawUnit(
     ctx.stroke();
     label(ctx, HEROES[u.hero].letter, c.x, c.y + 1, PALETTE.ivory, 15, true);
   }
+  if (u.facing !== undefined) drawEye(ctx, hex, c, u.facing);
   ctx.restore();
+}
+
+/**
+ * One Eye's eye (owner, 2026-10-28), in art pixels: `#` the outline, `o`
+ * the white, `+` the pupil. Drawn on the edge of the unit's hex it faces,
+ * so its front lane runs on from there.
+ */
+const EYE = [
+  '..#######..', //
+  '.#ooooooo#.',
+  '#ooo+++ooo#',
+  '#ooo+++ooo#',
+  '#ooo+++ooo#',
+  '.#ooooooo#.',
+  '..#######..',
+];
+const EYE_COLOR: Record<string, string> = {'#': PALETTE.ink, o: PALETTE.ivory, '+': PALETTE.madder};
+
+/** The eye on the edge of `hex` toward `facing`, `c` being where the unit is drawn. */
+function drawEye(
+  ctx: CanvasRenderingContext2D,
+  hex: Hex,
+  c: {x: number; y: number},
+  facing: number
+): void {
+  const a = center(hex);
+  const b = center(hexNeighbor(hex, facing));
+  // Most of the way to the edge: the neighbour's centre is a hex's width away.
+  const x = c.x + (b.x - a.x) * 0.38;
+  const y = c.y + (b.y - a.y) * 0.38;
+  const left = Math.round(x / SPRITE_SCALE) - 5;
+  const top = Math.round(y / SPRITE_SCALE) - 3;
+  EYE.forEach((row, dy) =>
+    [...row].forEach((ch, dx) => {
+      const color = EYE_COLOR[ch];
+      if (color) artPixel(ctx, left + dx, top + dy, color);
+    })
+  );
 }
 
 /**

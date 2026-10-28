@@ -38,7 +38,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
-import {camelOf, damageOf, healthAfterSwap, shotEmpower} from './resolve';
+import {camelOf, damageOf, eyeArmour, healthAfterSwap, shotEmpower} from './resolve';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
@@ -192,7 +192,7 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
     const inLine = dq === 0 || dr === 0 || dq === -dr;
-    if ((has('snapShot') || has('longshot')) && inLine) return true;
+    if ((has('snapShot') || has('longshot') || has('boulder')) && inLine) return true;
     // Cleave: any space of its lines.
     if (
       has('cleave') &&
@@ -500,7 +500,11 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   }
   // Grapple's throw (on the unit it grapples) hits nothing (owner, 2026-10-26).
   const throws = input.action.ability === 'grapple' && grappling(unit, hit);
-  const damage = def.damages === false || throws ? 0 : Math.min(damageOf(unit), hit.hp);
+  // One Eye's Armour, unless it stands in the lane the eye faces (Longshot Pierces it).
+  const pierces = input.action.ability === 'longshot' && ABILITY.longshot.pierce;
+  const armour = eyeArmour(undefined, hit, unit.hex, pierces);
+  const damage =
+    def.damages === false || throws ? 0 : Math.min(Math.max(0, damageOf(unit) - armour), hit.hp);
   let value = damage * (hit.hero === CAMEL ? AI.camelHealthWeight : 1);
   if (damage > 0 && damage >= hit.hp && hit.hero !== CAMEL) value += AI.kill;
   // A new grapple Stuns; a throw keeps the one there is.

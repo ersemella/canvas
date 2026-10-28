@@ -35,6 +35,46 @@ tuning. Section numbers are the combat design's.
 | Build | **Mimic:** copies the last ability used against it. | Build variety; punishes one-dimensional builds |
 | Build | **Summoner:** schedules reinforcements on the track. | Burst builds (kill before arrival) versus sustain builds (outlast) |
 
+### 11.3a The One-Eyed Giant, the Steppe's boss (Built 2026-10-28; the Steppe's stage 4 since later that day)
+Tepegöz of the *Book of Dede Korkut* (setting.md, 15.6a), the one-eyed
+giant whose hide turned Basat's arrows until Basat struck the eye. In the
+game's text, the One-Eyed Giant (no real names, roster.md). Its bent rule
+is **vulnerable only from the front** (11.3's "vulnerable only when
+flanked", turned around), and its kit is the Steppe's own: a hit like the
+wolves', and Snap Shot's lanes.
+
+- **Stats (the builder's first numbers, untested):** speed 1, defence 5
+  (health 12), power 3. `giant` in config.ts; not in the ROSTER, so the
+  start menu doesn't offer it. The Steppe's fourth stage brings it with
+  two wolves (`REGIONS.steppe.boss`; progression.md, 19.1), and so does
+  the test stage (test-stage.json, as committed). No sprite yet: a lettered disc, its eye drawn on its hex.
+- **One Eye** (a passive, `oneEye`, not offered at the caravanserai):
+  Armour 3 (`ONE_EYE.armour`) against a hit, or a grapple's squeeze, from
+  a unit not standing in its front lane, the line straight out the way it
+  faces at any distance, whatever stands between. A Piercing hit
+  (Longshot) ignores it, as it does any Armour (17.6). It starts the fight
+  facing across the board, toward the party; it turns the way it last
+  stepped on a walk, or toward what it aims at if that is in a straight
+  line; a Push or Pull doesn't turn it (`Unit.facing`).
+- **Smash:** melee, its power.
+- **Boulder:** down any of Snap Shot's six lanes, the first unit in it hit
+  for its power; then every other unit next to where it lands, ally or
+  enemy, the giant aside, is Pushed 1 away from it, unhurt
+  (`ABILITY.boulder.push`).
+- **Seize, first proposed** (a grapple Stunning and squeezing for 3, as the
+  Grappler's), was dropped before it was built (owner, 2026-10-28): the
+  giant faced the unit it held, so the held unit stood in the only lane
+  where the giant could be hurt, and nothing could break the hold. Smash
+  and Boulder's Push took its place.
+- **First measured (2026-10-28, 30 AI fights a line-up, the production
+  AI on both sides, Humphrey in play):** the Steppe party beat the giant
+  alone 30 of 30, with one wolf 30 of 30, with two wolves 29 of 30; about
+  half of those wins were Humphrey reaching the road out. Health 20 and
+  speed 2 changed little (29 to 30 of 30, more of them by Humphrey): the
+  giant doesn't stop the camel. The AI found the front lane easily (about
+  150 to 200 hits by the eye against 250 to 330 taken off by its hide).
+  To tune before it enters a run.
+
 ---
 
 ### 11.4 Difficulty Scaling (Decided)

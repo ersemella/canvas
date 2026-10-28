@@ -1488,6 +1488,45 @@ describe('the Duelist', () => {
   });
 });
 
+describe('the Barbarian', () => {
+  const party: HeroId[] = ['varangian', 'modao', 'mangudai'];
+  const c = at(4, 4);
+
+  it('has speed 1, power 3, defence 2, and is on the roster', () => {
+    const s = setup({'p-varangian': c}, party);
+    const b = unit(s, 'p-varangian');
+    expect([b.speed, b.power, b.defence, b.maxHp]).toEqual([1, 3, 2, healthOf(2)]);
+    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['hew', 'hold']);
+    expect(ROSTER).toContain('varangian');
+  });
+
+  it('Hew hits a unit next to it for its power', () => {
+    const s = setup(
+      {'p-varangian': c, 'e-modao': hexNeighbor(c, 0), 'e-mangudai': at(4, 7)},
+      party
+    );
+    const b = unit(s, 'p-varangian');
+    expect(ABILITIES.hew.targets(s, mapOf(s), b, b.hex!)).toEqual([{hex: hexNeighbor(c, 0)}]);
+    b.slot = s.currentSlot;
+    applyTurn(s, b, {action: {ability: 'hew', target: {hex: hexNeighbor(c, 0)}}});
+    expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - 3);
+    expect(b.slot).toBe(actionCost(b));
+  });
+
+  it('the AI hews an enemy next to it', () => {
+    const s = setup(
+      {'e-varangian': c, 'p-modao': hexNeighbor(c, 0), 'p-mangudai': at(4, 8)},
+      party
+    );
+    const b = unit(s, 'e-varangian');
+    b.controller = 'ai';
+    b.slot = s.currentSlot;
+    s.awaiting = b.id;
+    const turn = chooseAiTurn(s, b);
+    expect(turn.action.ability).toBe('hew');
+  });
+});
+
 describe('the Magus', () => {
   const party: HeroId[] = ['magus', 'mangudai', 'bokh'];
   const c = at(4, 4);
@@ -3038,57 +3077,72 @@ describe('previews, the AI and the run', () => {
     expect(createRun(5).fight.units.filter((u) => u.side === 'player')).toHaveLength(4);
   });
 
-  it('the stages: per region, one of its heroes at random and two creatures or outsiders, it, another and one more, then its three', () => {
+  it('the stages: per region, one of its heroes at random and two creatures or outsiders, it, another and one more, its three, then its boss', () => {
     const row = (
       region: string,
+      boss: boolean,
       heroes: number,
       outsiders: number,
       creatures: number,
       map: string
     ) => ({
       region,
+      boss,
       heroes,
       outsiders,
       creatures,
       map,
     });
-    expect(STAGES.map((s) => row(s.region, s.heroes, s.outsiders, s.creatures, s.map))).toEqual([
-      row('steppe', 1, 0, 2, 'steppe'),
-      row('steppe', 2, 0, 1, 'steppe'),
-      row('steppe', 3, 0, 0, 'steppe'),
-      row('china', 1, 2, 0, 'gobi'),
-      row('china', 2, 1, 0, 'gobi'),
-      row('china', 3, 0, 0, 'gobi'),
-      row('persia', 1, 2, 0, 'salt'),
-      row('persia', 2, 1, 0, 'salt'),
-      row('persia', 3, 0, 0, 'salt'),
+    expect(
+      STAGES.map((s) => row(s.region, s.boss, s.heroes, s.outsiders, s.creatures, s.map))
+    ).toEqual([
+      row('steppe', false, 1, 0, 2, 'steppe'),
+      row('steppe', false, 2, 0, 1, 'steppe'),
+      row('steppe', false, 3, 0, 0, 'steppe'),
+      row('steppe', true, 3, 0, 2, 'steppe'),
+      row('china', false, 1, 2, 0, 'gobi'),
+      row('china', false, 2, 1, 0, 'gobi'),
+      row('china', false, 3, 0, 0, 'gobi'),
+      row('china', true, 3, 0, 0, 'gobi'),
+      row('persia', false, 1, 2, 0, 'salt'),
+      row('persia', false, 2, 1, 0, 'salt'),
+      row('persia', false, 3, 0, 0, 'salt'),
+      row('persia', true, 3, 0, 0, 'salt'),
     ]);
-    // Provisions after a region's stages 1 and 2, a passive after its 3, but the run's last.
+    // Provisions after a region's stages 1, 2 and 3 (owner, 2026-10-28), a
+    // passive after its 4th, the boss's, but the run's last.
     expect(STAGES.map((s) => [s.provision, s.passive])).toEqual([
       ...[1, 2].flatMap(() => [
+        [true, false],
         [true, false],
         [true, false],
         [false, true],
       ]),
       [true, false],
       [true, false],
+      [true, false],
       [false, false],
     ]);
     expect(REGIONS).toEqual({
-      steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf'},
-      china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null},
-      persia: {heroes: ['archer', 'mahout', 'magus'], creature: null},
+      steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: 'giant'},
+      china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: null},
+      persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
+      byzantium: {heroes: ['varangian', 'priest'], creature: null, boss: null},
     });
-    // Every hero on the roster but the Priest, whose region (Byzantium) isn't built.
     expect(
       Object.values(REGIONS)
         .flatMap((r) => r.heroes)
         .sort()
-    ).toEqual(ROSTER.filter((h) => h !== 'priest').sort());
+    ).toEqual([...ROSTER].sort());
+    // The Steppe's boss stage: the One-Eyed Giant and two wolves, whatever the seed.
+    for (let seed = 0; seed < 5; seed++)
+      expect(stageEnemies(seed, 3)).toEqual(['giant', 'wolf', 'wolf']);
     const firsts = new Set<HeroId>();
     const outsiders = new Set<HeroId>();
     for (let seed = 0; seed < 30; seed++) {
-      STAGES.forEach(({region, heroes, outsiders: count, creatures}, stage) => {
+      STAGES.forEach(({region, boss, heroes, outsiders: count, creatures}, stage) => {
+        // A boss stage with its boss built is checked above.
+        if (boss && REGIONS[region].boss) return;
         const own = REGIONS[region].heroes;
         const regions = Object.keys(REGIONS) as (keyof typeof REGIONS)[];
         const before = regions.slice(0, regions.indexOf(region)).flatMap((r) => REGIONS[r].heroes);
@@ -3117,10 +3171,12 @@ describe('previews, the AI and the run', () => {
           expect(others).toEqual(prev.slice(last.heroes, last.heroes + count));
         }
       });
-      for (const stage of [0, 3, 6]) firsts.add(stageEnemies(seed, stage)[0]!);
+      for (const stage of [0, 4, 8]) firsts.add(stageEnemies(seed, stage)[0]!);
     }
-    // Random from the first: each region's every hero leads its stages for some seed.
-    expect(firsts.size).toBe(ROSTER.length - 1);
+    // Random from the first: each region's every hero leads its stages for
+    // some seed, but Byzantium's, which has no stages yet.
+    expect(firsts.size).toBe(ROSTER.length - REGIONS.byzantium.heroes.length);
+    expect(STAGES.some((s) => s.region === 'byzantium')).toBe(false);
     // Persia's outsiders are any of the Steppe's and China's heroes.
     expect(outsiders.size).toBe(6);
   });
@@ -3249,9 +3305,17 @@ describe('previews, the AI and the run', () => {
       defence: HEROES.bokh.defence + 1,
       provisions: {speed: 1, defence: 1},
     });
-    // The third stage earns none (its reassignment and upgrade aren't built).
-    expect(runView(third).provision).toBe(false);
-    expect(runView(third).passives).toHaveLength(PASSIVE_OFFER);
+    // The third earns one too (owner, 2026-10-28); the fourth, the boss's,
+    // none but the passive offer (its upgrade isn't built).
+    expect(runView(third).provision).toBe(true);
+    expect(runView(third).passives).toEqual([]);
+    const fourth = handleRunAction(win(third), {
+      type: 'next',
+      provision: {hero: 'bokh', stat: 'power'},
+    });
+    expect(fourth.fight.units.find((u) => u.id === 'p-bokh')!.power).toBe(HEROES.bokh.power + 1);
+    expect(runView(fourth).provision).toBe(false);
+    expect(runView(fourth).passives).toHaveLength(PASSIVE_OFFER);
     // No stat goes above RULES.statMax: not by a provision, nor at all.
     expect(RULES.statMax).toBe(10);
     const capped = win(run);
@@ -3346,7 +3410,7 @@ describe('previews, the AI and the run', () => {
 
     // No heal where no provision is earned: between regions.
     expect(() =>
-      handleRunAction(win({...run, stage: 2}, maxHp - 7), {type: 'next', heal: true})
+      handleRunAction(win({...run, stage: 3}, maxHp - 7), {type: 'next', heal: true})
     ).toThrow(RuleError);
   });
 
@@ -3449,7 +3513,7 @@ describe('previews, the AI and the run', () => {
     ).toBe(1);
 
     // Between regions too, alongside the passive; never after the run's last, nor on a test stage.
-    const between = win({...run, stage: 2});
+    const between = win({...run, stage: 3});
     const view = runView(between);
     expect(view).toMatchObject({provision: false, extraProvision: true});
     const china = handleRunAction(between, {
@@ -3482,7 +3546,7 @@ describe('previews, the AI and the run', () => {
       })
     ).toThrow(RuleError);
 
-    const last = win(at(run, 2));
+    const last = win(at(run, 3));
     const view = runView(last);
     expect(view.provision).toBe(false);
     const offer = view.passives;
@@ -3493,7 +3557,7 @@ describe('previews, the AI and the run', () => {
     expect(runView(last).passives).toEqual(offer);
     const offers = new Set<string>();
     for (let seed = 0; seed < 20; seed++)
-      offers.add(runView(win(at(createRun(seed), 2))).passives.join());
+      offers.add(runView(win(at(createRun(seed), 3))).passives.join());
     expect(offers.size).toBeGreaterThan(10);
 
     const [pick, other] = offer as [PassiveId, PassiveId];
@@ -3509,18 +3573,18 @@ describe('previews, the AI and the run', () => {
     ])
       expect(() => handleRunAction(last, {type: 'next', passive})).toThrow(RuleError);
     // Only to a hero still standing.
-    const fallen = win(at(run, 2));
+    const fallen = win(at(run, 3));
     Object.assign(fallen.fight.units.find((u) => u.id === 'p-storm')!, {alive: false, hex: null});
     expect(() =>
       handleRunAction(fallen, {type: 'next', passive: {hero: 'storm', passive: pick}})
     ).toThrow(RuleError);
 
     const china = handleRunAction(last, {type: 'next', passive: {hero: 'storm', passive: pick}});
-    expect(china.stage).toBe(3);
+    expect(china.stage).toBe(4);
     expect(china.passives).toEqual([{hero: 'storm', passive: pick}]);
     expect(china.fight.mapId).toBe('gobi');
     expect(china.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
-      stageEnemies(run.seed, 3)
+      stageEnemies(run.seed, 4)
     );
     expect(runView(china)).toMatchObject({provision: true, passives: []});
     const storm = china.fight.units.find((u) => u.id === 'p-storm')!;
@@ -3536,7 +3600,7 @@ describe('previews, the AI and the run', () => {
     expect(next.fight.units.find((u) => u.id === 'p-storm')!.passives).toEqual([pick]);
     expect(next.passives).toEqual([{hero: 'storm', passive: pick}]);
     // A hero can't take one it already carries; another hero can.
-    const again = win(at({...run, passives: [{hero: 'storm', passive: pick}]}, 2));
+    const again = win(at({...run, passives: [{hero: 'storm', passive: pick}]}, 3));
     again.fight.units.find((u) => u.id === 'p-storm')!.passives = [pick];
     expect(() =>
       handleRunAction(again, {type: 'next', passive: {hero: 'storm', passive: pick}})
@@ -3561,6 +3625,7 @@ describe('previews, the AI and the run', () => {
       'magus',
       'mahout',
       'archer',
+      'varangian',
       'priest',
     ]);
     expect(() => createRun(5, {party: ['modao', 'alchemist']})).not.toThrow();

@@ -37,11 +37,15 @@ export const HERO_COLOR = {
   mahout: '#78716c',
   // The Ranger's disc, shown while its sprite loads.
   archer: '#0369a1',
+  // The Barbarian's disc: it has no sprite yet.
+  varangian: '#57534e',
   // The Priest's disc: it has no sprite yet.
   priest: '#ca8a04',
   camel: '#a8742f',
   wolf: '#6b7280',
   fox: '#c2410c',
+  // The One-Eyed Giant's disc: it has no sprite yet.
+  giant: '#57534e',
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to

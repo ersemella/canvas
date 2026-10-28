@@ -137,22 +137,23 @@ export function createRun(seed: number, setup?: unknown): RunState {
  * one random order for its whole region from the run's seed, so a stage brings the heroes of the one before
  * it in the region and more; then its outsiders, the first of one random
  * order of the heroes of the regions before; then the region's creatures
- * (wolves on the Steppe).
+ * (wolves on the Steppe). A boss stage brings the region's boss and its
+ * creatures in their place, once the region has a boss (REGIONS).
  */
 export function stageEnemies(seed: number, stage: number): HeroId[] {
-  const {region, heroes, outsiders, creatures} = STAGES[stage]!;
+  const {region, boss, heroes, outsiders, creatures} = STAGES[stage]!;
+  const creature = REGIONS[region].creature;
+  const fill = () => (creature ? Array<HeroId>(creatures).fill(creature) : []);
+  // A boss stage: the region's boss and its creatures, if it has a boss yet.
+  const theBoss = boss ? REGIONS[region].boss : null;
+  if (theBoss) return [theBoss, ...fill()];
   const regions = Object.keys(REGIONS) as RegionId[];
   const regionIndex = regions.indexOf(region);
   const random = seededRandom((seed ^ 0x5bd1e995) + regionIndex * 0x9e3779b9);
   const picked = shuffled(REGIONS[region].heroes, random);
   const before = regions.slice(0, regionIndex).flatMap((r) => REGIONS[r].heroes);
   const others = shuffled(before, random);
-  const creature = REGIONS[region].creature;
-  return [
-    ...picked.slice(0, heroes),
-    ...others.slice(0, outsiders),
-    ...(creature ? Array<HeroId>(creatures).fill(creature) : []),
-  ];
+  return [...picked.slice(0, heroes), ...others.slice(0, outsiders), ...fill()];
 }
 
 /** Each stage's map and start from its own seed; the first stage's is the run's. */
