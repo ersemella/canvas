@@ -241,9 +241,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * The Barbarian (owner, 2026-10-28; roster.md): Byzantium's damage hero,
    * a Varangian guardsman with a great axe, slow and hard-hitting. Speed 1,
-   * defence 2 (health 6) and power 3 are the owner's. Hew, a plain melee
-   * blow (`hew` in abilities.ts), is the builder's placeholder until the owner
-   * picks its kit from the ideas in roster.md.
+   * defence 2 (health 6) and power 3 are the owner's. Reave (owner,
+   * 2026-10-28; `ABILITY.reave`): the axe swung through three spaces next
+   * to it, or thrown down a line of three, left lying where it lands.
    */
   varangian: {
     name: 'Barbarian',
@@ -251,7 +251,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 1,
     defence: 2,
     power: 3,
-    abilities: ['hew', 'hold'],
+    abilities: ['reave', 'hold'],
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -570,6 +570,16 @@ export const ABILITY = {
    */
   boulder: {push: 1 as number},
   /**
+   * Reave (owner, 2026-10-28; roster.md), the Barbarian's great axe, one
+   * ability aimed two ways. A **swipe**: a space next to it and the two
+   * either side of that one, every unit there hit, allies and Humphrey
+   * too. A **throw**: a line of `throwRange` spaces straight out from it,
+   * stopped early by a yurt or the map's edge (at least 2 spaces), every
+   * unit along it hit; the axe lands on its last space, and until the
+   * Barbarian enters a space on or next to it, it can only move and Hold.
+   */
+  reave: {throwRange: 3 as number},
+  /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
    * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
@@ -669,6 +679,12 @@ export const AI = {
    * forever; small next to any hit.
    */
   perHexFromEnemy: 0.2,
+  /**
+   * The Barbarian with its axe thrown (Reave): it closes in on the axe
+   * first, and lying out the axe counts as this many spaces more, so
+   * picking it up is progress and a throw costs it. PLACEHOLDER.
+   */
+  axeOut: 5,
   /**
    * The caravan's camel (camel.md): its health is worth this much a point,
    * and each space it stands from the exit is worth `perCamelHex` to the

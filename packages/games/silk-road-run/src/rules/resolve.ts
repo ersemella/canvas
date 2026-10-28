@@ -725,6 +725,11 @@ export function enterHex(
 ): void {
   const from = unit.hex;
   unit.hex = h;
+  // On or next to its thrown axe (Reave): it picks it up.
+  if (unit.axe && hexDistance(h, unit.axe) <= 1) {
+    delete unit.axe;
+    log(ctx, `${unitName(unit)} picks up its axe.`);
+  }
   if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
   if (!midWalk) endGrapplesApart(ctx, unit);
   if (ABILITY.hail.entry && hailOn(ctx.state, h)) {

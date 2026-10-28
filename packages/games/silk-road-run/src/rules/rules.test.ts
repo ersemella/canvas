@@ -36,6 +36,7 @@ import {
   abilityCount,
   hasRoomForAbility,
   isImmobilized,
+  disarmed,
 } from './board';
 import {ABILITIES, abilitiesOf, arrowLanes, stompPlan, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
@@ -1492,38 +1493,90 @@ describe('the Barbarian', () => {
   const party: HeroId[] = ['varangian', 'modao', 'mangudai'];
   const c = at(4, 4);
 
-  it('has speed 1, power 3, defence 2, and is on the roster', () => {
-    const s = setup({'p-varangian': c}, party);
-    const b = unit(s, 'p-varangian');
+  /** `n` spaces from `h` along direction `dir`. */
+  const along = (h: Hex, dir: number, n: number): Hex => {
+    for (let i = 0; i < n; i++) h = hexNeighbor(h, dir);
+    return h;
+  };
+  /** A fight with no yurts and the Barbarian at `c` to act. */
+  const ready = (placements: Record<string, Hex>, who = 'p-varangian') => {
+    const s = setup({[who]: c, ...placements}, party);
+    s.tiles = {};
+    const b = unit(s, who);
+    b.slot = s.currentSlot;
+    s.awaiting = b.id;
+    return {s, b};
+  };
+  const hp = (s: FightState, id: string) => unit(s, id).maxHp - unit(s, id).hp;
+
+  it('has speed 1, power 3, defence 2, Reave, and is on the roster', () => {
+    const {b} = ready({});
     expect([b.speed, b.power, b.defence, b.maxHp]).toEqual([1, 3, 2, healthOf(2)]);
-    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['hew', 'hold']);
+    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['reave', 'hold']);
     expect(ROSTER).toContain('varangian');
   });
 
-  it('Hew hits a unit next to it for its power', () => {
-    const s = setup(
-      {'p-varangian': c, 'e-modao': hexNeighbor(c, 0), 'e-mangudai': at(4, 7)},
-      party
-    );
-    const b = unit(s, 'p-varangian');
-    expect(ABILITIES.hew.targets(s, mapOf(s), b, b.hex!)).toEqual([{hex: hexNeighbor(c, 0)}]);
-    b.slot = s.currentSlot;
-    applyTurn(s, b, {action: {ability: 'hew', target: {hex: hexNeighbor(c, 0)}}});
-    expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - 3);
+  it('Reave swipes three spaces next to it, hitting allies too, and keeps the axe', () => {
+    const {s, b} = ready({
+      'e-modao': hexNeighbor(c, 0),
+      'p-modao': hexNeighbor(c, 1),
+      'e-mangudai': hexNeighbor(c, 3),
+    });
+    applyTurn(s, b, {action: {ability: 'reave', target: {hex: hexNeighbor(c, 0)}}});
+    expect([hp(s, 'e-modao'), hp(s, 'p-modao'), hp(s, 'e-mangudai')]).toEqual([3, 3, 0]);
+    expect(b.axe).toBeUndefined();
     expect(b.slot).toBe(actionCost(b));
   });
 
-  it('the AI hews an enemy next to it', () => {
-    const s = setup(
-      {'e-varangian': c, 'p-modao': hexNeighbor(c, 0), 'p-mangudai': at(4, 8)},
-      party
-    );
-    const b = unit(s, 'e-varangian');
+  it('Reave throws the axe down a line of 3, hitting every unit along it, and it lies on the last space', () => {
+    const {s, b} = ready({
+      'e-modao': along(c, 3, 2),
+      'p-modao': along(c, 3, 3),
+      'e-mangudai': along(c, 3, 4),
+    });
+    const targets = ABILITIES.reave.targets(s, mapOf(s), b, b.hex!);
+    // A swipe toward each unit next to it (none), and a throw down each line that catches one.
+    expect(targets).toEqual([{hex: along(c, 3, 3)}]);
+    applyTurn(s, b, {action: {ability: 'reave', target: {hex: along(c, 3, 3)}}});
+    expect([hp(s, 'e-modao'), hp(s, 'p-modao'), hp(s, 'e-mangudai')]).toEqual([3, 3, 0]);
+    expect(b.axe).toEqual(along(c, 3, 3));
+  });
+
+  it('with its axe lying away from it, it can only move and Hold until it walks on or next to it', () => {
+    const {s, b} = ready({'e-modao': hexNeighbor(c, 0)});
+    b.axe = along(c, 3, 3);
+    expect(disarmed(b)).toBe(true);
+    expect(unusableReason(b, ABILITIES.reave)).not.toBeNull();
+    expect(unusableReason(b, ABILITIES.hold)).toBeNull();
+    expect(
+      tryTurn(s, b.id, {action: {ability: 'reave', target: {hex: hexNeighbor(c, 0)}}})
+    ).toThrow(RuleError);
+    // A walk of 2 ends next to the axe: picked up.
+    applyTurn(s, b, {move: [along(c, 3, 1), along(c, 3, 2)], action: {ability: 'hold'}});
+    expect(b.axe).toBeUndefined();
+    expect(disarmed(b)).toBe(false);
+  });
+
+  it('a yurt stops the throw short, and a line of fewer than 2 spaces offers none', () => {
+    const {s, b} = ready({'e-modao': along(c, 3, 2)});
+    s.tiles = {[hexKey(along(c, 3, 3))]: 'obstacle'};
+    expect(ABILITIES.reave.targets(s, mapOf(s), b, b.hex!)).toEqual([{hex: along(c, 3, 2)}]);
+    s.tiles = {[hexKey(along(c, 3, 2))]: 'obstacle'};
+    unit(s, 'e-modao').hex = along(c, 3, 1);
+    // Only the swipes that catch it, next to the Barbarian.
+    expect(
+      ABILITIES.reave.targets(s, mapOf(s), b, b.hex!).every((t) => hexDistance(t.hex!, c) === 1)
+    ).toBe(true);
+  });
+
+  it('the AI swipes an enemy next to it, and walks back to its thrown axe', () => {
+    const {s, b} = ready({'p-modao': hexNeighbor(c, 0), 'p-mangudai': at(4, 8)}, 'e-varangian');
     b.controller = 'ai';
-    b.slot = s.currentSlot;
-    s.awaiting = b.id;
+    expect(chooseAiTurn(s, b).action.ability).toBe('reave');
+    b.axe = along(c, 3, 3);
     const turn = chooseAiTurn(s, b);
-    expect(turn.action.ability).toBe('hew');
+    expect(turn.move?.length).toBeGreaterThan(0);
+    expect(hexDistance(turn.move!.at(-1)!, b.axe)).toBeLessThanOrEqual(1);
   });
 });
 
