@@ -14,9 +14,9 @@ const PARTY_STORAGE = 'canvas:tactics:party';
  * art (owner, 2026-10-26).
  */
 const LORE: Partial<Record<HeroId, string>> = {
-  bokh: 'A champion wrestler of the festival games. The Grappler fights bare handed, seizing enemies, pinning them down, and hurling them aside.',
+  bokh: 'A champion wrestler of the festival games. The Bonebreaker fights bare handed, seizing enemies, pinning them down, and hurling them aside.',
   mangudai:
-    'A mounted archer who rides ahead of the army. The Horse Archer strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
+    'A mounted archer who rides ahead of the army. The Harrier strikes from afar with a composite bow and relies on a fast horse to stay out of reach.',
   storm:
     'A weather worker born with the gift of commanding storms. With a sacred rain stone, the Storm Caller brings down hail that holds whoever it catches fast, though storms never choose sides.',
   modao:
@@ -24,11 +24,11 @@ const LORE: Partial<Record<HeroId, string>> = {
   alchemist:
     'A master of elixirs, brewed from minerals in sealed crucibles. The Alchemist throws an elixir at anyone close by, itself included: an ally is mended and strikes harder, while an enemy is scalded and weakened.',
   youxia:
-    'A wandering knight-errant, sworn to keep their word and avenge wrongs. The Swordsman travels light with a straight sword, and every stroke that lands quickens the next.',
+    'A wandering knight-errant, sworn to keep their word and avenge wrongs. The Oathblade travels light with a straight sword, and every stroke that lands quickens the next.',
   mahout:
-    'A driver of war elephants, perched behind the ears of a beast no one can shift. The Elephant Rider tramples through whatever stands in the way, driving a whole line of foes back before it, and neither a wrestler’s grip nor the hail can hold it.',
+    'A driver of war elephants, perched behind the ears of a beast no one can shift. The Juggernaut tramples through whatever stands in the way, driving a whole line of foes back before it, and neither a wrestler’s grip nor the hail can hold it.',
   archer:
-    'A foot archer of the royal army, whose heavy arrows punch through armour. The Archer hits harder than anyone, and the first unit in its line staggers, losing time, but it is frail and must be kept out of reach.',
+    'A foot archer of the royal army, whose heavy arrows punch through armour. The Deadeye hits harder than anyone, and the first unit in its line staggers, losing time, but it is frail and must be kept out of reach.',
   magus:
     'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but reads an omen for one unit: an ally acts at once, an enemy must wait until the Magus has acted again, while its own course is fixed and cannot be hurried or held back.',
 };

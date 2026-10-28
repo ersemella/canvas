@@ -29,13 +29,13 @@ export const HERO_COLOR = {
   modao: '#9f1239',
   // The Alchemist's disc, shown while its sprite loads.
   alchemist: '#0f766e',
-  // The Swordsman's disc, shown while its sprite loads.
+  // The Oathblade's disc, shown while its sprite loads.
   youxia: '#0e7490',
   // The Magus's disc, shown while its sprite loads.
   magus: '#7e22ce',
-  // The Elephant Rider's disc, shown while its sprite loads.
+  // The Juggernaut's disc, shown while its sprite loads.
   mahout: '#78716c',
-  // The Archer's disc, shown while its sprite loads.
+  // The Deadeye's disc, shown while its sprite loads.
   archer: '#0369a1',
   camel: '#a8742f',
   wolf: '#6b7280',

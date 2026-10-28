@@ -350,7 +350,7 @@ export class TacticsBoardSystem extends BaseSystem {
 
     const acting = fight.awaiting;
     // A unit's border covers its hex's outline, so a targeted unit rings
-    // itself; so does the Grappler, as Throw's swap landing.
+    // itself; so does the Bonebreaker, as Throw's swap landing.
     const targeted = new Map<string, 'target' | 'chosen'>();
     for (const h of scene.highlights)
       if (h.kind === 'chosen') targeted.set(hexKey(h.hex), 'chosen');
@@ -494,7 +494,6 @@ export class TacticsBoardSystem extends BaseSystem {
       fight,
       trackCards(fight, scene.previewSlot ?? null, scene.previewBumps),
       scene.previewSlot ?? null,
-      scene.aimSlot ?? null,
       scene.previewBumps ?? {},
       this.advance,
       this.slides,

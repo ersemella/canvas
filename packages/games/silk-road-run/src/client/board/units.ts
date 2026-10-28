@@ -55,7 +55,7 @@ const RUG = {
 };
 /**
  * Board sprites, facing right: square frames (32×32, 36×36 for a mounted
- * hero, the camel, the wolf or the fox, or 44×44 for the Elephant Rider,
+ * hero, the camel, the wolf or the fox, or 44×44 for the Juggernaut,
  * whose head and rider rise above its hex) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
@@ -326,7 +326,7 @@ const FISTS_COLORS: Record<string, string> = {
 };
 
 /**
- * Fists on the edge between each Grappler and the unit it grapples,
+ * Fists on the edge between each Bonebreaker and the unit it grapples,
  * always shown, so it's plain who holds whom; they go when the grapple
  * does. `hexOf` is where each unit is drawn (null: not on the board).
  */

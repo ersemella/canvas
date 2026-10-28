@@ -140,7 +140,7 @@ describe('budgeted tactical search', () => {
   });
 
   it('avoids a lethal reply when a turn can escape it', () => {
-    // A wounded wolf next to the Grappler, in the Horse Archer's lane.
+    // A wounded wolf next to the Bonebreaker, in the Harrier's lane.
     const s = setup({'e-wolf': hex(2, 0), 'p-bokh': hex(3, 0), 'p-mangudai': hex(-1, 0)}, ['wolf']);
     const me = unit(s, 'e-wolf');
     me.hp = 2;
@@ -226,13 +226,13 @@ describe('the search timeline', () => {
     expect(hexDistance(closesOn(near), near)).toBeLessThanOrEqual(hexDistance(wolf, near));
   });
 
-  it('goes for the Grappler grappling an ally, rather than Holding behind it', () => {
+  it('goes for the Bonebreaker grappling an ally, rather than Holding behind it', () => {
     const rescue = (from: Hex) => {
       const s = setup(
         {'p-bokh': hex(0, 0), 'p-mangudai': hex(-4, 4), 'e-wolf': hex(1, 0), 'e-wolf-2': from},
         ['wolf', 'wolf']
       );
-      // On open ground: the fixed yurts sit beside the Grappler on this board.
+      // On open ground: the fixed yurts sit beside the Bonebreaker on this board.
       s.tiles = {};
       const held = unit(s, 'e-wolf');
       held.statuses = [{kind: 'stunned', grapple: {champion: 'p-bokh', target: held.id}}];
@@ -244,7 +244,7 @@ describe('the search timeline', () => {
       s.awaiting = me.id;
       return chooseAiTurn(s, me);
     };
-    // Behind its packmate, out of reach: it walks up to the Grappler...
+    // Behind its packmate, out of reach: it walks up to the Bonebreaker...
     const end = rescue(hex(2, 0)).move?.at(-1);
     expect(end && hexDistance(end, hex(0, 0))).toBe(1);
     // ...and next to it, bites it, which breaks the grapple.
@@ -274,7 +274,7 @@ describe('the search timeline', () => {
     const aimed = scoreOptions(s, me)
       .filter((o) => o.input.action.ability === 'hail')
       .map((o) => o.input.action.target!.hex!);
-    // Hail lands only on its ring, 2 away: the Grappler, not the Horse Archer or itself.
+    // Hail lands only on its ring, 2 away: the Bonebreaker, not the Harrier or itself.
     expect(aimed).toEqual([hex(2, 0)]);
   });
 
