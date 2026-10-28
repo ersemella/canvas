@@ -258,14 +258,14 @@ tuning. This file has no combat-design section number.
   Flaming Mountains until the Salt Flats (below).
 - **The Cyclops's cave** (`cave`, owner, 2026-10-28), the Steppe's boss
   fight: the Steppe's board on a cave's stone floor, nothing on it. The
-  floor is drawn in code until the owner's art comes
-  (`scripts/cave-floor.py`, `tiles/cave-floor.png`): a seamless 128-pixel
-  tile in 6 cool grey-browns, worn stone plates a third of a hex or so
-  across, some a shade darker as if damp, their seams only a little darker
-  than the stone, so the hex borders (`#2a2421`) still read over them
-  (seams as dark as the borders, at first, hid the grid). The page calls
-  it Cave floor. Prompts for the art are below ("Prompts for the cave
-  floor").
+  floor is the owner's art (AI-assisted, ChatGPT, 2026-10-28, from the
+  prompt below): flat stone slabs with soft cracks, gravel between them,
+  darker damp earth and two small bones, cut to a seamless 128-pixel tile
+  in 6 colours (`scripts/cave-floor.py`: five of its warm grey-browns by
+  k-means, the bones' pale colour kept apart; each art pixel its block's
+  most common colour), the hex borders `#3a3029`. Before it, the same day,
+  a floor drawn in code, worn plates whose seams, as dark as the borders
+  at first, hid the grid. The page calls it Cave floor.
 - **The Salt Flats** (`salt`, owner, 2026-10-26), Persia's map: the
   owner's salt crust (156 pixels, 5 colours, its cracks softened so the
   hex borders show) and one large salt dome (100 × 108, within its spaces, its colours taken most of the way to
@@ -803,16 +803,18 @@ portrait only, no text, no border.
 
 ## Prompts for the cave floor (2026-10-28)
 
+**Built from the owner's art (2026-10-28):** `tiles/cave-floor.png`, cut
+by `scripts/cave-floor.py` from ChatGPT's 1254-pixel picture of this
+prompt, which came back seamless. The prompt it came from:
+
 The Cyclops's cave (`cave`), the Steppe's boss fight, has only its floor:
-no mountains, no yurts. Until this art comes the floor is drawn in code
-(`tiles/cave-floor.png`, from `scripts/cave-floor.py`). Like the red
+no mountains, no yurts. Like the red
 earth and the tuff it is a **seamless texture** laid across the board as
 one field, with the hex borders drawn over it, so its lines must stay
 soft. Written for ChatGPT's image generation; optionally attach
 `tiles/rock.png` and `tiles/red-earth.png`, scaled up 8× with
-nearest-neighbour, as style references. Cut the result to 128 × 128
-(`scripts/cappadocia-art.py` does the same for the tuff) and at most 6
-colours.
+nearest-neighbour, as style references. Cut the result to 128 × 128 and at most 6 colours
+(`scripts/cave-floor.py`).
 
 ```
 Create a single square pixel-art texture tile of a cave floor, seen

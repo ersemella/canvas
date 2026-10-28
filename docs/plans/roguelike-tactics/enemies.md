@@ -79,9 +79,9 @@ wolves', and Snap Shot's lanes.
 - **Its map, the Cyclops's cave** (`cave`, owner, 2026-10-28: each boss
   fight on a map of its own): the Steppe's board on a cave's stone floor
   with nothing on it, no mountains and no yurts (`CAVE` in map.ts); the
-  Steppe's fourth stage is fought there (`STAGES`). The floor is drawn in
-  code (`scripts/cave-floor.py`) until the owner's art comes
-  (art-direction.md, "Prompts for the cave floor").
+  Steppe's fourth stage is fought there (`STAGES`). The floor is the
+  owner's art (AI-assisted, 2026-10-28; art-direction.md, "Prompts for
+  the cave floor").
 
 ### 11.3b The Bull Demon King and Princess Iron Fan, China's boss (Built 2026-10-28; China's stage 4 since later that day)
 The Bull Demon King and Princess Iron Fan of *Journey to the West*,

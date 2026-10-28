@@ -260,14 +260,14 @@ const LOOKS: Record<string, Look> = {
 
 // The Flaming Mountains for China's boss (map.ts, `FIRE_MOUNTAIN`): the same look, nothing on it.
 LOOKS.fireMountain = LOOKS.flaming!;
-// The Cyclops's cave (map.ts, `CAVE`, 2026-10-28): a cave's stone floor, worn plates with
-// dark seams, drawn in code (`scripts/cave-floor.py`, 128 pixels, 6 colours) until the
-// owner's art comes; nothing stands on it but a yurt placed there by hand.
+// The Cyclops's cave (map.ts, `CAVE`, 2026-10-28): the owner's cave floor (AI-assisted),
+// flat stone slabs, gravel and two bones, cut to a seamless 128-pixel tile in 6 colours
+// (`scripts/cave-floor.py`); nothing stands on it but a yurt placed there by hand.
 LOOKS.cave = {
   ...LOOKS.steppe!,
   ground: caveFloorImage,
-  colour: '#6e665e',
-  border: '#2a2421',
+  colour: '#796b5d',
+  border: '#3a3029',
   smoke: null,
   mountainGround: caveFloorImage,
 };
