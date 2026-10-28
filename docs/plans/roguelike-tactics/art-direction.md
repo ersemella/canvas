@@ -776,6 +776,91 @@ colours. No red, no light blue. Flat magenta (#FF00FF) background. One
 portrait only, no text, no border.
 ```
 
+## Prompts for the Cataphract (2026-10-28)
+
+The Cataphract (roster.md), Byzantium's tank, armoured heavy cavalry,
+played as a lettered disc (`cataphract` in `HERO_COLOR`) until its art
+comes. Mounted, as the Outrider: a **36 × 36** board sprite facing right,
+split into the 2-frame idle by `scripts/idle-sheet.py` (72 × 36 in all),
+and a **32 × 32** track portrait (`cataphract.png` and
+`cataphract-portrait.png` in `src/client/sprites/`). It never walks, only
+charges, so the couched lance and the armoured horse are what must read
+at size: heavier and darker than the Outrider's light horse.
+
+- **Attach the references**, scaled up 8× with nearest-neighbour:
+  `mangudai.png` (the mounted frame) and `varangian.png` (Byzantium's
+  look) for the sprite; `mangudai-portrait.png` and
+  `varangian-portrait.png` for the portrait.
+- One asset per image, on flat magenta (#FF00FF), as the Archer's.
+- Its colours: dark iron lamellar with bronze edging, an ochre-gold
+  surcoat and pennant, a dark bay horse in iron-grey scale barding, apart
+  from the Barbarian's steel and green and the Priest's cream and gold;
+  no red (the enemy's) and no light blue (targeting). No cross or
+  religious emblem on the pennant or shield: a plain pennant.
+- Ask for the shadow in flat grey (#444444): ChatGPT's purple shadows
+  read as background to `shrink-sprite.py` (the Priest's, the Barbarian's).
+- If it comes back too detailed: "halve the detail and use fewer, larger
+  pixel clusters"; if the lance is lost at size: "make the lance a single
+  bold dark line with a bright steel tip and a small ochre pennant, held
+  level and pointing right"; if the horse reads as unarmoured: "cover the
+  horse's chest, neck and flanks in grey scale armour down to the knees".
+
+### 1. Board sprite
+
+```
+Pixel art sprite of a single mounted character for a hex-grid tactics
+game, in the exact style, size, viewpoint and dark outline of the attached
+sprites.
+
+Subject: a Byzantine cataphract, an armoured heavy cavalryman, charging.
+The rider wears a dark iron lamellar coat edged in bronze over an
+ochre-gold surcoat, iron arm guards, and a rounded iron helmet with a mail
+aventail hiding the neck and lower face, only the eyes showing. He holds a
+long lance couched under his right arm, level and pointing straight ahead,
+with a bright steel tip and a small plain ochre pennant behind it; a small
+round dark shield on his left arm. The horse is a heavy dark bay
+warhorse, its head, neck, chest and flanks covered in iron-grey scale
+barding down to the knees, a bronze-trimmed chamfron on its face, legs and
+dark hooves showing below, mid-stride in a heavy canter.
+
+Framing: full body of horse and rider, facing right, three-quarter view
+from slightly above, as the attached mounted sprite. Horse and rider fill
+a 36 x 36 pixel frame with about 1 pixel free on each side; the lance tip
+reaches the right edge and stays inside the frame, and must stay readable
+at that size.
+
+Style: 36 x 36 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 14 colours. Dark iron, iron grey, bronze,
+ochre gold, dark bay brown and warm skin; no red and no light blue, which
+the game keeps for its own markings. A small flat grey (#444444) oval
+shadow under the hooves. Flat magenta (#FF00FF) background. One sprite
+only, no text, no frame, no extra poses.
+```
+
+### 2. Track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same Byzantine cataphract: a stern face with dark eyes
+looking right, a short dark beard just visible, a rounded iron helmet with
+a bronze rim and a mail aventail hanging at the cheeks and neck, dark
+iron lamellar edged in bronze at the shoulders over an ochre-gold
+surcoat. The steel tip of his lance and its small ochre pennant rise
+behind one shoulder at the right edge.
+
+Framing: head and shoulders, facing right in three-quarter view, the face
+in the middle of the frame and large, the helmet's top touching the top
+edge, cropped at the shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours, warm skin tones as in the references. Flat magenta (#FF00FF)
+background. One portrait only, no text, no border.
+```
+
 ## Palette (Proposed)
 
 - **One fixed palette** of about **24–32 colours** across every culture.
