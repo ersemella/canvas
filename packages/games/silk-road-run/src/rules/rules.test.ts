@@ -1811,7 +1811,7 @@ describe('the Archer', () => {
 
   it('Longshot as first built (`first` off) hits any unit on its six lines, past the units and yurts in between', () => {
     const was = {...ABILITY.longshot};
-    Object.assign(ABILITY.longshot, {first: false, pierce: false, delay: 0});
+    Object.assign(ABILITY.longshot, {first: false, pierce: false, minRange: 1, push: 0, delay: 0});
     try {
       const {s, a} = ready({
         'p-bokh': along(c, 0, 1),
@@ -1855,7 +1855,7 @@ describe('the Archer', () => {
     }
   });
 
-  it('Longshot hits the first unit in line, Piercing, and Delays it 3', () => {
+  it('Longshot hits the first unit in line, Piercing, and Pushes it 1', () => {
     const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
     const bokh = unit(s, 'e-bokh');
     bokh.passives = ['hardened'];
@@ -1865,7 +1865,14 @@ describe('the Archer', () => {
     applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
     // Armour 1 (Hardened) Pierced: the full 3.
     expect(bokh.hp).toBe(bokh.maxHp - 3);
-    expect(bokh.slot).toBe(5 + 3);
+    expect(bokh.hex).toEqual(along(c, 0, 3));
+    expect(bokh.slot).toBe(5);
+  });
+
+  it('Longshot never hits the spaces next to the Archer, and a unit there stops its arrow', () => {
+    const {s, a} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
+    expect(isTarget(s, a, unit(s, 'e-bokh').hex!)).toBe(false);
+    expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
   });
 
   it('Longshot stops at a yurt in line', () => {
@@ -1874,14 +1881,15 @@ describe('the Archer', () => {
     expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
   });
 
-  it('Longshot with `push` Pushes the unit it hits away from the Archer', () => {
+  it('Longshot with `delay` Delays the unit it hits', () => {
     const was = {...ABILITY.longshot};
-    Object.assign(ABILITY.longshot, {first: true, push: 1});
+    Object.assign(ABILITY.longshot, {first: true, push: 0, delay: 3});
     try {
       const {s, a} = ready({'e-bokh': along(c, 0, 2)});
       const bokh = unit(s, 'e-bokh');
+      bokh.slot = 5;
       applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
-      expect(bokh.hex).toEqual(along(c, 0, 3));
+      expect(bokh.slot).toBe(5 + 3);
     } finally {
       Object.assign(ABILITY.longshot, was);
     }
@@ -1903,7 +1911,7 @@ describe('the Archer', () => {
   });
 
   it('the AI shoots with Longshot and plays a legal turn', () => {
-    const {s, a} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
+    const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
     a.controller = 'ai';
     const turn = chooseAiTurn(s, a);
     expect(turn.action.ability).toBe('longshot');

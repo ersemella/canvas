@@ -217,8 +217,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Archer (owner, 2026-10-27; roster.md): a Persian foot archer, a
    * candidate for Persia's damage hero beside the Cataphract. Speed 2,
    * defence 1 (health 4) and power 3, the most of any hero, are the
-   * owner's. Longshot hits the first unit in line, Piercing, and Delays it
-   * 3 (`ABILITY.longshot`).
+   * owner's. Longshot hits the first unit in line, Piercing, and Pushes it
+   * 1 (`ABILITY.longshot`).
    */
   archer: {
     name: 'Archer',
@@ -289,13 +289,16 @@ export const ABILITY = {
   /**
    * Longshot (owner, 2026-10-27; roster.md), the Archer's: down any of
    * its six lines, at any range, the first unit in line hit, stopped by
-   * yurts as Snap Shot (`first`), Piercing (`pierce`), and Delayed 3
-   * (`delay`; owner, later 2026-10-27; balance.md, "Longshot's effect":
-   * 49.4% in the Steppe's damage seat, 50.9% in China's). Built first
-   * hitting any unit on its lines, past everything (`first` off, no
-   * Pierce or Delay): 58–67% in every seat.
+   * yurts as Snap Shot (`first`), Piercing (`pierce`), and Pushed 1
+   * (`push`; owner, 2026-10-28; Delayed 3, `delay`, from later
+   * 2026-10-27: balance.md, "Longshot's effect", 49.4% in the Steppe's
+   * damage seat, 50.9% in China's). Built first hitting any unit on its
+   * lines, past everything (`first` off, no Pierce or Delay): 58–67% in
+   * every seat.
    * Switches for measuring nerfs (balance.md, "Archer nerfs and Magus
-   * buffs"), off as built: `minRange`, the nearest space it shoots;
+   * buffs"), off as built but `minRange` and `push`: `minRange`, the nearest space
+   * it shoots, 2 (owner, 2026-10-28: no shot at the spaces next to the
+   * Archer; a unit there still stops its arrow, as the Bow's 2026-10-23);
    * `camel`, whether it may shoot the camel; `falloff`, the range past
    * which its hit is 1 less; `first`, stopped by the first unit or yurt
    * in its line, as Snap Shot; `pierce`, its hit Pierces Armour (17.6);
@@ -306,13 +309,13 @@ export const ABILITY = {
    */
   longshot: {
     range: Infinity as number,
-    minRange: 1 as number,
+    minRange: 2 as number,
     camel: true as boolean,
     falloff: Infinity as number,
     first: true as boolean,
     pierce: true as boolean,
-    push: 0 as number,
-    delay: 3 as number,
+    push: 1 as number,
+    delay: 0 as number,
     weaken: 0 as number,
     pin: false as boolean,
   },
