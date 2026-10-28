@@ -83,7 +83,7 @@ wolves', and Snap Shot's lanes.
   code (`scripts/cave-floor.py`) until the owner's art comes
   (art-direction.md, "Prompts for the cave floor").
 
-### 11.3b The Bull Demon King and Princess Iron Fan, China's boss (Built 2026-10-28, on the test stage only)
+### 11.3b The Bull Demon King and Princess Iron Fan, China's boss (Built 2026-10-28; China's stage 4 since later that day)
 The Bull Demon King and Princess Iron Fan of *Journey to the West*,
 named so in the game's text too (owner, 2026-10-28; the Ox King and the
 Fan Lady before, under roster.md's no real names). Their bent rule
@@ -93,8 +93,10 @@ fire hazard the art doc kept for the region's boss (art-direction.md).
 
 - **Stats (the owner's):** the Ox King speed 1, defence 5 (health 12),
   power 3; the Fan Lady speed 3, defence 2 (health 6), power 1. `oxKing`
-  and `fanLady` in config.ts; not in the ROSTER, so neither the start
-  menu nor a run's stages bring them. The test stage does (test-stage.json,
+  and `fanLady` in config.ts; not in the ROSTER, so the start menu
+  doesn't offer them. China's fourth stage brings the two of them, nothing
+  else (`REGIONS.china.boss`, owner, 2026-10-28; a region's boss is one
+  unit or two), and so does the test stage (test-stage.json,
   as committed: China's three heroes against the two of them on
   `fireMountain`).
   Their sprites and portraits are the owner's AI-assisted art
@@ -132,8 +134,10 @@ fire hazard the art doc kept for the region's boss (art-direction.md).
   beacon tower with two or three burning ridges, single mountain spaces
   within 3 of the centre, Fan the Flames aimed at one of them anywhere on
   the board and its open neighbours alight; a fight saved there still
-  loads (`MAPS.ridges`). China's stages are still in the Gobi: the pair
-  isn't in a run yet.
+  loads (`MAPS.ridges`). China's fourth stage is fought here, its first
+  three in the Gobi. Three AI-vs-AI fights of that stage (the production
+  AI, China's party, 2026-10-28) were all won by the party, in 50 to 66
+  turns, the fan dropped in each: untuned, as the Cyclops is.
 - **China's tools against them** (as the owner set out; each checked in
   `bosses.test.ts`): the Vanguard's Cleave through both Hastens each by 3
   and then Delays each by 8, a net Delay of 5 on both; the Duelist,

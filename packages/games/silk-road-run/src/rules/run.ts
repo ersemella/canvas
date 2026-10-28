@@ -153,9 +153,9 @@ export function stageEnemies(seed: number, stage: number): HeroId[] {
   const {region, boss, heroes, outsiders, creatures} = STAGES[stage]!;
   const creature = REGIONS[region].creature;
   const fill = () => (creature ? Array<HeroId>(creatures).fill(creature) : []);
-  // A boss stage: the region's boss and its creatures, if it has a boss yet.
+  // A boss stage: the region's boss (one unit, or two) and its creatures, if it has a boss yet.
   const theBoss = boss ? REGIONS[region].boss : null;
-  if (theBoss) return [theBoss, ...fill()];
+  if (theBoss) return [...theBoss, ...fill()];
   const {picked, others} = regionOrder(seed, region);
   return [...picked.slice(0, heroes), ...others.slice(0, outsiders), ...fill()];
 }

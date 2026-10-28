@@ -354,7 +354,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * China's boss, one of two (owner, 2026-10-28; enemies.md, "The Bull Demon King
    * and Princess Iron Fan"): the Bull Demon King of *Journey to the West*. Gore
    * is Trample as first built, a charge (`ABILITY.gore`). Devoted to
-   * Princess Iron Fan (`DEVOTED`). Not in the ROSTER: the test stage brings them.
+   * Princess Iron Fan (`DEVOTED`). Not in the ROSTER: China's fourth stage brings them (owner, 2026-10-28), as the test stage does.
    * Speed 1, defence 5 (health 12), power 3 are the owner's.
    */
   oxKing: {
@@ -907,15 +907,16 @@ export const ROSTER: HeroId[] = [
 export type RegionId = 'steppe' | 'china' | 'persia' | 'byzantium';
 /**
  * `boss`: the region's boss, the enemy of its last stage (owner,
- * 2026-10-28; enemies.md), the Cyclops on the Steppe; null while
- * the region has none built, and its last stage brings its heroes.
+ * 2026-10-28; enemies.md), one unit or two: the Cyclops on the Steppe,
+ * the Bull Demon King and Princess Iron Fan in China (owner, 2026-10-28);
+ * null while the region has none built, and its last stage brings its heroes.
  */
 export const REGIONS: Record<
   RegionId,
-  {heroes: HeroId[]; creature: HeroId | null; boss: HeroId | null}
+  {heroes: HeroId[]; creature: HeroId | null; boss: HeroId[] | null}
 > = {
-  steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: 'giant'},
-  china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: null},
+  steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: ['giant']},
+  china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: ['oxKing', 'fanLady']},
   persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
   byzantium: {heroes: ['varangian', 'cataphract', 'priest'], creature: null, boss: null},
 };
@@ -943,7 +944,8 @@ export const REGIONS: Record<
  * stages on the Steppe Crossing, its boss's in the Cyclops's cave (`cave`;
  * owner, 2026-10-28: each boss fight on a map of its own), China's in the Gobi Desert (`gobi`; owner,
  * 2026-10-28; the Flaming Mountains, `flaming`, from 2026-10-26, kept so
- * a run saved there still loads), Persia's on the Salt Flats (`salt`).
+ * a run saved there still loads), its boss's in the Flaming Mountains
+ * with nothing on them (`fireMountain`; owner, 2026-10-28), Persia's on the Salt Flats (`salt`).
  */
 export interface Stage {
   region: RegionId;
@@ -1034,7 +1036,7 @@ export const STAGES: Stage[] = [
     creatures: 0,
     provision: false,
     passive: true,
-    map: 'gobi',
+    map: 'fireMountain',
   },
   {
     region: 'persia',

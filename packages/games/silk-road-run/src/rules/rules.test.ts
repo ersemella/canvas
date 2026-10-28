@@ -3441,7 +3441,7 @@ describe('previews, the AI and the run', () => {
       row('china', false, 1, 2, 0, 'gobi'),
       row('china', false, 2, 1, 0, 'gobi'),
       row('china', false, 3, 0, 0, 'gobi'),
-      row('china', true, 3, 0, 0, 'gobi'),
+      row('china', true, 3, 0, 0, 'fireMountain'),
       row('persia', false, 1, 2, 0, 'salt'),
       row('persia', false, 2, 1, 0, 'salt'),
       row('persia', false, 3, 0, 0, 'salt'),
@@ -3462,8 +3462,12 @@ describe('previews, the AI and the run', () => {
       [false, false],
     ]);
     expect(REGIONS).toEqual({
-      steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: 'giant'},
-      china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: null},
+      steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: ['giant']},
+      china: {
+        heroes: ['youxia', 'modao', 'alchemist'],
+        creature: null,
+        boss: ['oxKing', 'fanLady'],
+      },
       persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
       byzantium: {heroes: ['varangian', 'cataphract', 'priest'], creature: null, boss: null},
     });
@@ -3475,6 +3479,10 @@ describe('previews, the AI and the run', () => {
     // The Steppe's boss stage: the Cyclops and two wolves, whatever the seed.
     for (let seed = 0; seed < 5; seed++)
       expect(stageEnemies(seed, 3)).toEqual(['giant', 'wolf', 'wolf']);
+    // China's: the Bull Demon King and Princess Iron Fan, in the Flaming Mountains.
+    for (let seed = 0; seed < 5; seed++)
+      expect(stageEnemies(seed, 7)).toEqual(['oxKing', 'fanLady']);
+    expect(STAGES[7]!.map).toBe('fireMountain');
     const firsts = new Set<HeroId>();
     const outsiders = new Set<HeroId>();
     for (let seed = 0; seed < 30; seed++) {

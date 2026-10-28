@@ -807,32 +807,45 @@ The Cyclops's cave (`cave`), the Steppe's boss fight, has only its floor:
 no mountains, no yurts. Until this art comes the floor is drawn in code
 (`tiles/cave-floor.png`, from `scripts/cave-floor.py`). Like the red
 earth and the tuff it is a **seamless texture** laid across the board as
-one field, so the hex borders are drawn over it: keep its lines soft.
-Attach `tiles/rock.png` (the Steppe's rock) and `tiles/red-earth.png`,
-scaled up 8× with nearest-neighbour. Cut the result to 128 × 128 and at
-most 6 colours.
+one field, with the hex borders drawn over it, so its lines must stay
+soft. Written for ChatGPT's image generation; optionally attach
+`tiles/rock.png` and `tiles/red-earth.png`, scaled up 8× with
+nearest-neighbour, as style references. Cut the result to 128 × 128
+(`scripts/cappadocia-art.py` does the same for the tuff) and at most 6
+colours.
 
 ```
-Pixel art terrain texture, top-down view, seamlessly tileable on all four
-edges, for a hex-grid tactics game in the style of Into the Breach,
-matching the pixel density and restraint of the attached textures.
+Create a single square pixel-art texture tile of a cave floor, seen
+straight from above, for a top-down hex-grid tactics game (style like
+Into the Breach). It must tile seamlessly: its left edge continues into
+its right edge and its top edge into its bottom edge, with no visible
+seam, border or frame.
 
-Subject: the floor of a giant's cave in the Central Asian steppe hills.
-Worn bedrock and packed earth, cool grey-brown, broken into a few large
-flat stone slabs with shallow cracks between them, a scatter of small
-pebbles and gravel, one or two faint pale bones half buried, a few damp
-darker patches. Lit softly from the top left. No walls, no stalagmites,
-no fire, no plants, nothing standing up.
+Subject: the floor of a one-eyed giant's cave in the hills of the Central
+Asian steppe. Worn, flat bedrock and packed earth in cool grey-browns,
+broken into a few large flat stone slabs with shallow cracks between
+them, a scatter of small pebbles and gravel, one or two small pale bones
+half buried in the dirt, and a few slightly darker damp patches. Soft
+light from the top left. Completely flat ground only: no walls, no
+stalagmites, no rocks standing up, no fire, no plants, no shadows of
+objects, no characters, no text.
 
-Style: 128 x 128 pixel art shown scaled up with hard square pixels, no
-anti-aliasing, no gradients, no dithering noise. At most 6 colours, all
-muted cool grey-browns close in value, so a dark hex grid drawn on top
-still reads: the cracks only a little darker than the stone, never
-black. Slabs about 20 to 40 pixels across.
+Style: true pixel art at 128 x 128 pixels, shown scaled up with hard
+square pixels: no anti-aliasing, no gradients, no blur, no dithering
+noise. At most 6 colours, all muted grey-browns close in value (from
+about #5C554F to #8A8075). The cracks only a little darker than the
+stone, never black, because a dark hex grid will be drawn on top and
+must stay readable. Stone slabs about 20 to 40 pixels across. Calm and
+low in contrast, so game pieces stand out on it.
+
+Output: one square image, the texture filling the whole canvas edge to
+edge.
 ```
 
-If the grid gets lost in it: "halve the contrast of the cracks; they
-must be lighter than a dark grid line drawn over the texture".
+If the grid gets lost in it: "halve the contrast of the cracks; they must
+be lighter than a dark grid line drawn over the texture". If it comes
+back as a scene with walls or depth: "flat ground only, seen from
+directly above, like a floor texture in a game".
 
 ## Prompts for Princess Iron Fan's iron fan (2026-10-28)
 
