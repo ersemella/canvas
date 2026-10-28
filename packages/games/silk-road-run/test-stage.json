@@ -1,7 +1,7 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, on the Salt Flats: the Alchemist, the Vanguard and the Swordsman against the three Steppe heroes, starting kits; the Salt Flats always have one salt dome over the middle seven spaces.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Flaming Mountains: the Alchemist, the Vanguard and the Swordsman against the three Steppe heroes, starting kits; random yurts bring three side-by-side pairs of burning mountains and one or two beacon towers.",
   "seed": null,
-  "map": "salt",
+  "map": "flaming",
   "yurts": "random",
   "camel": {},
   "player": [{"hero": "alchemist"}, {"hero": "modao"}, {"hero": "youxia"}],
