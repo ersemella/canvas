@@ -5,6 +5,7 @@
 // fixed work cap, so a seed always plays the same run.
 import {
   createRun,
+  draftRivals,
   handleRunAction,
   passiveOffer,
   rivalPicks,
@@ -191,7 +192,7 @@ function caravanserai(state: RunState, stat: StatId) {
         ...mine.map((p) => p.passive),
         ...rivalPicks(
           offer,
-          view.rivals,
+          draftRivals(state),
           mine.map((p) => p.passive)
         ).map((p) => p.passive),
       ];

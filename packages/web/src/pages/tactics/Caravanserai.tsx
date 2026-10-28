@@ -1,14 +1,7 @@
 import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {Button, Paper, Stack, Text} from '@mantine/core';
-import {
-  HEROES,
-  HERO_PORTRAIT,
-  PASSIVES,
-  RULES,
-  healthOf,
-  rivalPicks,
-} from '@canvas/games-silk-road-run';
+import {HEROES, HERO_PORTRAIT, PASSIVES, RULES, healthOf} from '@canvas/games-silk-road-run';
 import type {
   FightState,
   PassiveId,
@@ -55,9 +48,10 @@ export interface SetOut {
  * takes 1 more of one stat, for the rest of the run, or the camel is
  * healed RULES.camelHeal instead, and the caravan sets out. When the stage
  * offers passives (`passives`, 19.3a) four are drafted: the party picks
- * one, the rival one for the next region's first hero (`rivals`), the
- * party another, and the last goes to the rival's second; each a hero
- * standing, or the rival's, carries for the rest of the run. Unless healed,
+ * one, a rival caravan one in answer (`rivalTakes`), the party another,
+ * and the last goes to the rivals too; each pick is carried by a hero
+ * standing for the rest of the run. Which rival hero carries what is never
+ * shown: the heroes of the region ahead stay hidden. Unless healed,
  * the camel goes on with the health it ended the stage with. If the camel
  * took no damage in the stage (`extraProvision`), one more provision is
  * taken the same way. After a stage that earns nothing the caravan only rests.
@@ -69,8 +63,8 @@ export function Caravanserai(props: {
   provision: boolean;
   extraProvision: boolean;
   passives: PassiveId[];
-  /** The enemy heroes the rival drafts for, its first pick's then its second's. */
-  rivals: Unit['hero'][];
+  /** For each passive the party could pick first, the one a rival caravan takes in answer. */
+  rivalTakes: Partial<Record<PassiveId, PassiveId>>;
   busy: boolean;
   error: string | null;
   onSetOut: (choices: SetOut) => void;
@@ -79,13 +73,16 @@ export function Caravanserai(props: {
   /** The party's draft picks so far, in order; the last may wait for its carrier. */
   const [draft, setDraft] = useState<{passive: PassiveId; carrier: Unit['hero'] | null}[]>([]);
   const offered = props.passives.length > 0;
-  /** The rival's picks, each following the party's pick before it. */
-  const rival = rivalPicks(
-    props.passives,
-    props.rivals,
-    draft.filter((p) => p.carrier !== null).map((p) => p.passive)
-  );
-  const rivalOf = (id: PassiveId) => rival.find((p) => p.passive === id);
+  /** The rivals' picks, each following the party's pick before it: its answer, then the last left. */
+  const picked = draft.filter((p) => p.carrier !== null).map((p) => p.passive);
+  const rival: PassiveId[] = [];
+  const answer = picked[0] && props.rivalTakes[picked[0]];
+  if (answer) rival.push(answer);
+  if (picked.length === 2) {
+    const last = props.passives.find((id) => !picked.includes(id) && !rival.includes(id));
+    if (last) rival.push(last);
+  }
+  const rivalOf = (id: PassiveId) => rival.includes(id);
   const mineOf = (id: PassiveId) => draft.findIndex((p) => p.passive === id);
   /** The pick being made: the last, while it waits for a carrier or there is another to make. */
   const active = draft.at(-1);
@@ -222,10 +219,9 @@ export function Caravanserai(props: {
               count={`${draft.filter((p) => p.carrier !== null).length} of 2`}
               lead={
                 <>
-                  Four passives, drafted: you pick one, the rival caravan one for its{' '}
-                  {rivalName(props.rivals[0])}, you another, and the last goes to its{' '}
-                  {rivalName(props.rivals[1])}, the first two heroes of the region ahead. Each is
-                  carried for the rest of the run.
+                  Four passives, drafted: you pick one, a rival caravan on the road ahead takes one,
+                  you pick another, and the rivals take the last. Each is carried for the rest of
+                  the run.
                 </>
               }
               rule={draftRule(draft, rival)}
@@ -245,7 +241,7 @@ export function Caravanserai(props: {
                       aria-pressed={mine >= 0}
                       disabled={Boolean(theirs) || (draftDone && mine < 0)}
                       data-testid={`passive-${id}`}
-                      data-rival={theirs ? theirs.hero : undefined}
+                      data-rival={theirs ? 'true' : undefined}
                       onClick={() => tapPassive(id)}
                     >
                       <span className={`${styles.display} ${styles.passiveName}`}>{def.name}</span>
@@ -257,9 +253,7 @@ export function Caravanserai(props: {
                         </span>
                       )}
                       {theirs && (
-                        <span className={styles.passiveTaken}>
-                          Rival’s: {HEROES[theirs.hero].name}
-                        </span>
+                        <span className={styles.passiveTaken}>Taken by a rival caravan</span>
                       )}
                     </button>
                   );
@@ -414,13 +408,10 @@ function CamelHealth(props: {camel: Unit}) {
   );
 }
 
-/** A rival hero's name, as the draft's lead names it. */
-const rivalName = (hero: Unit['hero'] | undefined) => (hero ? HEROES[hero].name : 'hero');
-
-/** What the draft so far does: each pick and who carries it, the party's and the rival's in turn. */
+/** What the draft so far does: each pick and who carries it, and what the rivals take in turn. */
 function draftRule(
   draft: {passive: PassiveId; carrier: Unit['hero'] | null}[],
-  rival: PassivePick[]
+  rival: PassiveId[]
 ) {
   if (!draft.length) return 'Choose a passive.';
   const lines: string[] = [];
@@ -431,7 +422,7 @@ function draftRule(
         : `Choose a hero to carry ${PASSIVES[p.passive].name}.`
     );
     const r = rival[i];
-    if (r) lines.push(`The rival’s ${HEROES[r.hero].name} takes ${PASSIVES[r.passive].name}.`);
+    if (r) lines.push(`A rival caravan takes ${PASSIVES[r].name}.`);
   });
   if (draft.length === 1 && draft[0]!.carrier) lines.push('Choose your second passive.');
   return lines.map((l) => <div key={l}>{l}</div>);

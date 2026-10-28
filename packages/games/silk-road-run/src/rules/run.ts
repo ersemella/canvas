@@ -106,10 +106,12 @@ export interface RunView {
    */
   passives: PassiveId[];
   /**
-   * The enemy heroes the rival drafts for, in its picks' order: the next
-   * region's first two (`draftRivals`); none without a draft.
+   * For each passive the party could pick first, the one the rival takes
+   * in answer (`rivalPicks`); empty without a draft. Which of the next
+   * region's heroes carries it stays hidden (owner, 2026-10-28): the page
+   * never learns the heroes ahead.
    */
-  rivals: HeroId[];
+  rivalTakes: Partial<Record<PassiveId, PassiveId>>;
   /**
    * The fight. While an AI unit's turn is due its `awaiting` is null: the
    * page has no unit to control.
@@ -314,6 +316,13 @@ export function rivalPicks(
     picks.push({hero, passive: i === 0 ? draftPick(hero, left) : left[0]!});
   });
   return picks;
+}
+
+/** The view's `rivalTakes`: the rival's answer to each first pick the party could make. */
+function rivalTakes(run: RunState): Partial<Record<PassiveId, PassiveId>> {
+  const offer = passiveOffer(run);
+  const rivals = draftRivals(run);
+  return Object.fromEntries(offer.map((id) => [id, rivalPicks(offer, rivals, [id])[0]!.passive]));
 }
 
 /** How many stages the run has: STAGES, or the test stage alone. */
@@ -570,7 +579,7 @@ export function runView(run: RunState): RunView {
     provision: provisionOwed(run),
     extraProvision: extraOwed(run),
     passives: passiveOffer(run),
-    rivals: draftRivals(run),
+    rivalTakes: rivalTakes(run),
     fight: due ? {...run.fight, awaiting: null} : run.fight,
     aiDue: due,
   };

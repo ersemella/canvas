@@ -127,7 +127,10 @@ random from one pool:
   to the rival for the next region's **second hero**. `next` carries the
   party's two picks (`passives`, in order); the rival's follow from them
   (`rivalPicks`), so the page shows the rival's answer as soon as the
-  first pick has a carrier. The rival's picks are kept in
+  first pick has a carrier. **The heroes ahead stay hidden (owner,
+  2026-10-28):** the caravanserai says only that a rival caravan takes a
+  passive, never which hero carries it; the view carries the rival's
+  answer to each possible first pick (`rivalTakes`), not its heroes. The rival's picks are kept in
   `RunState.rivalPassives`, and that enemy hero carries its passive in
   every stage it fights for the rest of the run, as an outsider in later
   regions too. How the rival judges "supplements most" is
