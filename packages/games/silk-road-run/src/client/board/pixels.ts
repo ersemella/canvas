@@ -37,6 +37,8 @@ export const HERO_COLOR = {
   mahout: '#78716c',
   // The Ranger's disc, shown while its sprite loads.
   archer: '#0369a1',
+  // The Priest's disc: it has no sprite yet.
+  priest: '#ca8a04',
   camel: '#a8742f',
   wolf: '#6b7280',
   fox: '#c2410c',

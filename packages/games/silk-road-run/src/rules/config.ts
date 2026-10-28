@@ -239,6 +239,20 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['longshot', 'hold'],
   },
   /**
+   * The Priest (owner, 2026-10-28; roster.md): Byzantium's support, a
+   * healer. Speed 2, defence 1 (health 4) and power 3 are the owner's.
+   * Blessing heals an ally his power, and what it can't heal becomes
+   * Shield (`ABILITY.blessing`).
+   */
+  priest: {
+    name: 'Priest',
+    letter: 'P',
+    speed: 2,
+    defence: 1,
+    power: 3,
+    abilities: ['blessing', 'hold'],
+  },
+  /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
@@ -331,6 +345,24 @@ export const ABILITY = {
     delay: 0 as number,
     weaken: 0 as number,
     pin: false as boolean,
+  },
+  /**
+   * Blessing (owner, 2026-10-28; roster.md), the Priest's: one ally within
+   * `range` (2), the Priest himself too (`self`) and the camel too
+   * (`camel`), no line of fire, heals the Priest's power; with `overheal`,
+   * the heal beyond the ally's missing health becomes Shield (keywords.md,
+   * 17.6), and `shield` more is given on top whatever it heals. A Shield lasts until the start of the ally's next turn and adds
+   * to one it has. Nothing on an enemy, unless `smite`: an enemy within
+   * range is hit for the Priest's power instead (a switch for measuring,
+   * off as built). `shield` 0 as built: the overheal is the Shield.
+   */
+  blessing: {
+    range: 2 as number,
+    smite: false as boolean,
+    self: true as boolean,
+    camel: true as boolean,
+    overheal: true as boolean,
+    shield: 0 as number,
   },
   /**
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
@@ -600,11 +632,18 @@ export const AI = {
     // A tank, as the Grappler and the Vanguard.
     mahout: 0,
     archer: 1,
+    priest: 1,
     camel: 0,
     wolf: 1,
     fox: 1,
   } as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
+  /**
+   * A Shield (Blessing, Rally) is worth this share of the damage it could
+   * absorb before the unit's next turn: the hits the enemies acting before
+   * then could deal it, at most its Shield. PLACEHOLDER.
+   */
+  shieldShare: 0.75,
   /**
    * A charged shot in the air on a unit that acts before it lands and can
    * walk is worth this share of the hit: it can step out. PLACEHOLDER.
@@ -680,6 +719,7 @@ export const ROSTER: HeroId[] = [
   'magus',
   'mahout',
   'archer',
+  'priest',
 ];
 /**
  * The regions a run passes through, in order (setting.md, 15.3a), so far

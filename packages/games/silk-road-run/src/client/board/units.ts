@@ -382,13 +382,17 @@ export const EMPOWER_MARK: [string, string] = ['E', PALETTE.jade];
 /** Weaken's marker, like Empower's (`Unit.weaken`). */
 export const WEAKEN_MARK: [string, string] = ['D', PALETTE.madderLight];
 
-/** A unit's status markers: I(mmobilized), S(tunned), E(nhanced), D(egraded). */
+/** Shield's marker (`Unit.shield`, keywords.md 17.6), like Empower's: P(rotected). */
+export const SHIELD_MARK: [string, string] = ['P', PALETTE.skyLight];
+
+/** A unit's status markers: I(mmobilized), S(tunned), E(nhanced), D(egraded), P(rotected). */
 export function statusMarks(u: Unit): [string, string][] {
   const marks = STATUS_KINDS.filter((kind) => u.statuses.some((s) => s.kind === kind)).map(
     (kind) => STATUS_MARK[kind]
   );
   if (u.empower) marks.push(EMPOWER_MARK);
   if (u.weaken) marks.push(WEAKEN_MARK);
+  if (u.shield) marks.push(SHIELD_MARK);
   return marks;
 }
 

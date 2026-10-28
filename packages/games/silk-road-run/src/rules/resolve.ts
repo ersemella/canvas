@@ -224,6 +224,16 @@ export function heal(ctx: Ctx, u: Unit, amount: number): void {
   record(ctx.state, {kind: 'heal', unitId: u.id, amount: healed});
 }
 
+/**
+ * Shields `u` by `amount` more (keywords.md, 17.6; the Priest's Blessing),
+ * added to any Shield it has, until the start of its next turn.
+ */
+export function shield(ctx: Ctx, u: Unit, amount: number): void {
+  if (!u.alive || amount <= 0) return;
+  u.shield = (u.shield ?? 0) + amount;
+  log(ctx, `${unitName(u)} gains Shield ${amount}: Shield ${u.shield}.`);
+}
+
 /** Weakens `u` by `amount` until the end of its next turn, replacing any Weaken it had. */
 export function weaken(ctx: Ctx, u: Unit, amount: number): void {
   u.weaken = amount;

@@ -27,6 +27,7 @@ import {
   elixirHeals,
   elixirSwaps,
   elixirImmortal,
+  blessingOf,
   grappling,
   longshotLanes,
   stompPlan,
@@ -70,7 +71,35 @@ function attacksFromAfar(u: Unit): boolean {
  * walks), less what an Empower gains it.
  */
 function statusPoints(state: FightState, u: Unit): number {
-  return statusCost(u) + weakenLoss(state, u) - empowerGain(state, u) - rescueGain(state, u);
+  return (
+    statusCost(u) +
+    weakenLoss(state, u) -
+    empowerGain(state, u) -
+    rescueGain(state, u) -
+    shieldWorth(state, u, u.shield ?? 0)
+  );
+}
+
+/**
+ * What `amount` of Shield on `u` is worth (Blessing, Rally): `AI.shieldShare`
+ * of the damage it could absorb, the hits of the enemies that act before
+ * `u`'s next turn and could strike it where it stands (`strikable`), at
+ * most `amount`.
+ */
+function shieldWorth(state: FightState, u: Unit, amount: number): number {
+  if (amount <= 0 || !u.alive || u.slot === null) return 0;
+  let incoming = 0;
+  for (const e of state.units)
+    if (
+      e.alive &&
+      hostile(e, u) &&
+      e.slot !== null &&
+      e.slot < u.slot &&
+      !isStunned(e) &&
+      strikable(state, e).includes(u)
+    )
+      incoming += damageOf(e);
+  return AI.shieldShare * Math.min(amount, incoming);
 }
 
 /**
@@ -408,6 +437,26 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
     }
     return closing + value;
+  }
+  // Blessing: the health it heals, as any heal is weighed, and the Shield's worth.
+  if (ability === 'blessing') {
+    const u = unitAt(state, target!.hex!)!;
+    // `ABILITY.blessing.smite`: a hit, as any attack's.
+    if (hostile(u, unit)) {
+      const damage = Math.min(damageOf(unit), u.hp);
+      return (
+        closing +
+        damage * (u.hero === CAMEL ? AI.camelHealthWeight : 1) +
+        (damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0)
+      );
+    }
+    const given = blessingOf(unit, u);
+    return (
+      closing +
+      given.heal * (u.hero === CAMEL ? AI.camelHealthWeight : 1) +
+      shieldWorth(state, u, (u.shield ?? 0) + given.shield) -
+      shieldWorth(state, u, u.shield ?? 0)
+    );
   }
   // Omen: the share of a turn each card loses (an enemy's, a gain)
   // or gains (an ally's), as Cleave's Delay is weighed.

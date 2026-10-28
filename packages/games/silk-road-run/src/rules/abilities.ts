@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), the Priest's (owner, 2026-10-28), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -55,6 +55,7 @@ import {
   stun,
   swapCards,
   setCard,
+  shield,
   unitName,
   walk,
 } from './resolve';
@@ -922,6 +923,81 @@ const elixir: AbilityDef = {
   },
 };
 
+// ─── Priest ──────────────────────────────────────────────────────────────────
+
+/**
+ * Whether Blessing can take `u`: an ally of `user`'s, the Priest himself
+ * with `ABILITY.blessing.self`, the camel with `.camel`.
+ */
+const blessingTakes =
+  (user: Unit) =>
+  (u: Unit | undefined): u is Unit =>
+    u !== undefined &&
+    u.alive &&
+    (u.side === user.side || ABILITY.blessing.smite) &&
+    (ABILITY.blessing.self || u.id !== user.id) &&
+    (ABILITY.blessing.camel || u.hero !== CAMEL);
+
+/**
+ * What Blessing gives `u` from `user`: the health it heals (the Priest's
+ * power, up to what `u` is missing) and the Shield it gains (the rest of
+ * the heal, with `overheal`, and `ABILITY.blessing.shield` more).
+ */
+export function blessingOf(user: Unit, u: Unit): {heal: number; shield: number} {
+  const {overheal, shield: extra} = ABILITY.blessing;
+  const healed = Math.min(user.power, Math.max(0, u.maxHp - u.hp));
+  return {heal: healed, shield: (overheal ? user.power - healed : 0) + extra};
+}
+
+/**
+ * Blessing (owner, 2026-10-28; roster.md): one ally within
+ * `ABILITY.blessing.range` (2), the Priest himself too, the camel too, no
+ * line of fire, heals the Priest's power; what the heal can't restore
+ * becomes Shield until the start of the ally's next turn (keywords.md,
+ * 17.6). Nothing on an enemy, unless `ABILITY.blessing.smite`: then it
+ * hits an enemy for the Priest's power.
+ */
+const blessing: AbilityDef = {
+  id: 'blessing',
+  name: 'Blessing',
+  kind: 'support',
+  damages: false,
+  targetsUnit: true,
+  get bothSides() {
+    return ABILITY.blessing.smite;
+  },
+  get range() {
+    return ABILITY.blessing.range;
+  },
+  summary(user) {
+    const {range, self, overheal, shield: extra} = ABILITY.blessing;
+    const shields = [
+      overheal ? 'what it can’t heal becomes Shield' : '',
+      extra ? `Shield ${extra} more` : '',
+    ].filter(Boolean);
+    const smite = ABILITY.blessing.smite ? ` An enemy within ${range} is hit instead.` : '';
+    return `An ally within ${range}${self ? ', yourself too' : ''}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, until its next turn` : ''}.${smite}`;
+  },
+  targets(state, map, user, from) {
+    return spacesWithin(map, from, ABILITY.blessing.range)
+      .map((h) => unitAt(state, h))
+      .filter(blessingTakes(user))
+      .map((u) => ({hex: u.hex!}));
+  },
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    if (u.side !== user.side) {
+      log(ctx, `${unitName(user)} smites ${unitName(u)}.`);
+      hit(ctx, user, u, 'The smiting');
+      return;
+    }
+    const given = blessingOf(user, u);
+    log(ctx, `${unitName(user)} blesses ${unitName(u)}.`);
+    heal(ctx, u, given.heal);
+    shield(ctx, u, given.shield);
+  },
+};
+
 // ─── Duelist ─────────────────────────────────────────────────────────────────
 
 /**
@@ -1265,6 +1341,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   omen,
   stomp,
   longshot,
+  blessing,
   shove,
   haul,
   feignedRetreat,

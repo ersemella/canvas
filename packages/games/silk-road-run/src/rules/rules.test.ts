@@ -2095,6 +2095,97 @@ describe('the Ranger', () => {
   });
 });
 
+describe('the Priest', () => {
+  const party: HeroId[] = ['priest', 'bokh', 'storm'];
+  const c = at(1, 4);
+  /** A fight with the Priest at `c` to act, and units where `placements` puts them. */
+  const ready = (placements: Record<string, Hex>) => {
+    const s = setup({'p-priest': c, ...placements}, party);
+    const p = unit(s, 'p-priest');
+    p.slot = s.currentSlot;
+    s.awaiting = p.id;
+    return {s, p};
+  };
+  const isTarget = (s: FightState, p: Unit, h: Hex) =>
+    ABILITIES.blessing.targets(s, mapOf(s), p, p.hex!).some((t) => hexEquals(t.hex!, h));
+  const bless = (s: FightState, p: Unit, u: Unit) =>
+    applyTurn(s, p, {action: {ability: 'blessing', target: {hex: u.hex!}}});
+
+  it('has speed 2, defence 1, power 3, and is on the roster', () => {
+    const {p} = ready({});
+    expect([p.speed, p.defence, p.power, p.maxHp]).toEqual([2, 1, 3, healthOf(1)]);
+    expect(abilitiesOf(p).map((d) => d.id)).toEqual(['blessing', 'hold']);
+    expect(ROSTER).toContain('priest');
+  });
+
+  it('Blessing reaches allies within 2, the Priest too, and no enemy', () => {
+    const {s, p} = ready({
+      'p-bokh': hexNeighbor(hexNeighbor(c, 0), 0),
+      'p-storm': hexNeighbor(hexNeighbor(hexNeighbor(c, 3), 3), 3),
+      'e-bokh': hexNeighbor(c, 1),
+    });
+    expect(isTarget(s, p, c)).toBe(true);
+    expect(isTarget(s, p, unit(s, 'p-bokh').hex!)).toBe(true);
+    expect(isTarget(s, p, unit(s, 'p-storm').hex!)).toBe(false);
+    expect(isTarget(s, p, unit(s, 'e-bokh').hex!)).toBe(false);
+  });
+
+  it('heals its power, and what it can’t heal becomes Shield', () => {
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0)});
+    const ally = unit(s, 'p-bokh');
+    ally.hp = ally.maxHp - 1;
+    bless(s, p, ally);
+    expect(ally.hp).toBe(ally.maxHp);
+    expect(ally.shield).toBe(2);
+  });
+
+  it('a badly hurt ally heals the whole power and gains no Shield', () => {
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0)});
+    const ally = unit(s, 'p-bokh');
+    ally.hp = 2;
+    bless(s, p, ally);
+    expect(ally.hp).toBe(5);
+    expect(ally.shield).toBeUndefined();
+  });
+
+  it('the Shield takes hits first, adds to one it has, and goes at the ally’s next turn', () => {
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0), 'e-priest': at(5, 4)});
+    const ally = unit(s, 'p-bokh');
+    ally.shield = 1;
+    bless(s, p, ally);
+    expect(ally.shield).toBe(4);
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    // A hit of 3 from the enemy's Priest, its power.
+    hit(ctx, unit(s, 'e-priest'), ally, 'The blow');
+    expect(ally.hp).toBe(ally.maxHp);
+    expect(ally.shield).toBe(1);
+    startTurnPassives(ctx, ally);
+    expect(ally.shield).toBeUndefined();
+  });
+
+  it('the AI blesses a hurt ally rather than hold', () => {
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0), 'e-bokh': at(6, 4)});
+    p.controller = 'ai';
+    const ally = unit(s, 'p-bokh');
+    ally.hp = 3;
+    const turn = chooseAiTurn(s, p);
+    expect(turn.action.ability).toBe('blessing');
+    applyTurn(s, p, turn);
+    expect(ally.hp).toBe(6);
+  });
+
+  it('a Shield lowers the threat the AI fears', () => {
+    const {s, p} = ready({'e-bokh': hexNeighbor(c, 3)});
+    unit(s, 'e-bokh').slot = 1;
+    p.slot = 50;
+    const threats = threatsTo(s, mapOf(s), p);
+    const bare = threatDamage(threats, s, p);
+    expect(bare).toBeGreaterThan(0);
+    p.shield = 1;
+    expect(threatDamage(threats, s, p)).toBe(bare - 1);
+  });
+});
+
 describe('the Vanguard and the Alchemist', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
 
@@ -2988,11 +3079,12 @@ describe('previews, the AI and the run', () => {
       china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null},
       persia: {heroes: ['archer', 'mahout', 'magus'], creature: null},
     });
+    // Every hero on the roster but the Priest, whose region (Byzantium) isn't built.
     expect(
       Object.values(REGIONS)
         .flatMap((r) => r.heroes)
         .sort()
-    ).toEqual([...ROSTER].sort());
+    ).toEqual(ROSTER.filter((h) => h !== 'priest').sort());
     const firsts = new Set<HeroId>();
     const outsiders = new Set<HeroId>();
     for (let seed = 0; seed < 30; seed++) {
@@ -3028,7 +3120,7 @@ describe('previews, the AI and the run', () => {
       for (const stage of [0, 3, 6]) firsts.add(stageEnemies(seed, stage)[0]!);
     }
     // Random from the first: each region's every hero leads its stages for some seed.
-    expect(firsts.size).toBe(ROSTER.length);
+    expect(firsts.size).toBe(ROSTER.length - 1);
     // Persia's outsiders are any of the Steppe's and China's heroes.
     expect(outsiders.size).toBe(6);
   });
@@ -3461,7 +3553,16 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a party must be one to three different heroes of the roster', () => {
-    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist', 'youxia', 'magus', 'mahout', 'archer']);
+    expect(ROSTER).toEqual([
+      ...PARTY,
+      'modao',
+      'alchemist',
+      'youxia',
+      'magus',
+      'mahout',
+      'archer',
+      'priest',
+    ]);
     expect(() => createRun(5, {party: ['modao', 'alchemist']})).not.toThrow();
     for (const party of [
       ['modao', 'alchemist', 'storm', 'bokh'],
