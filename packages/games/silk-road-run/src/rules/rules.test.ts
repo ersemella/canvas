@@ -616,61 +616,53 @@ describe('the board', () => {
     }
   });
 
-  it('raises the Flaming Mountains in every fight, in side-by-side pairs in the middle, with one or two beacon towers', () => {
-    let onEdge = 0;
-    const towerCounts = new Set<number>();
+  it('raises the Flaming Mountains in every fight, as ridges along three of the slanted edges, with one beacon tower', () => {
+    const lengths = new Set<number>();
     for (let seed = 0; seed < 40; seed++) {
       // Not a stage that asks for mountains: the map raises them itself.
       const s = createFight(seed, undefined, undefined, false, [], FLAMING);
       expect(s.mapId).toBe('flaming');
       expect(mapOf(s).name).toBe('The Burning Mountains');
-      // Three pairs between the starting columns, apart, off the
-      // starting columns and Temee's road, not next to its start or exit.
       const mountains = Object.keys(s.tiles)
         .filter((k) => s.tiles[k] === 'mountain')
         .map((k) => k.split(',').map(Number) as [number, number])
         .map(([q, r]) => ({q, r}));
+      // On the rim, off Temee's road and the outermost columns.
       for (const m of mountains) {
-        expect(Math.abs(m.q)).toBeLessThan(3);
+        expect(hexDistance(m, {q: 0, r: 0})).toBe(4);
         expect(m.q).not.toBe(0);
-        if (hexDistance(m, {q: 0, r: 0}) === 4) onEdge++;
-        for (const x of [FLAMING.camelStart, ...FLAMING.exits])
-          expect(hexDistance(m, x)).toBeGreaterThan(1);
+        expect(Math.abs(m.q)).toBeLessThan(4);
       }
-      const clumps: Hex[][] = [];
+      const ridges: Hex[][] = [];
       for (const m of mountains) {
-        const touching = clumps.filter((c) => c.some((n) => hexDistance(n, m) === 1));
+        const touching = ridges.filter((c) => c.some((n) => hexDistance(n, m) === 1));
         const merged = [m, ...touching.flat()];
-        for (const c of touching) clumps.splice(clumps.indexOf(c), 1);
-        clumps.push(merged);
+        for (const c of touching) ridges.splice(ridges.indexOf(c), 1);
+        ridges.push(merged);
       }
-      expect(clumps).toHaveLength(3);
-      // Each pair side by side, in neighbouring columns, never one above the other.
-      for (const c of clumps) {
-        expect(c).toHaveLength(2);
-        expect(c[0]!.q).not.toBe(c[1]!.q);
+      // Three ridges, on three different edges, two spaces long, one sometimes three.
+      expect(ridges).toHaveLength(3);
+      const edge = (h: Hex) =>
+        `${h.q < 0 ? 'left' : 'right'} ${2 * h.r + h.q < 0 ? 'top' : 'bottom'}`;
+      expect(new Set(ridges.map((c) => edge(c[0]!))).size).toBe(3);
+      for (const c of ridges) {
+        expect(new Set(c.map(edge)).size).toBe(1);
+        expect(c.length).toBeGreaterThanOrEqual(2);
+        expect(c.length).toBeLessThanOrEqual(3);
       }
-      // One or two beacon towers, apart from each other and the mountains,
-      // covering at most 8 spaces with them.
+      lengths.add(mountains.length);
+      // One beacon tower, apart from the ridges, within 3 of the centre.
       const towers = Object.keys(s.tiles)
         .filter((k) => s.tiles[k] === 'obstacle')
         .map((k) => k.split(',').map(Number) as [number, number])
         .map(([q, r]) => ({q, r}));
-      expect(towers.length).toBeGreaterThanOrEqual(1);
-      expect(towers.length).toBeLessThanOrEqual(2);
-      towerCounts.add(towers.length);
+      expect(towers).toHaveLength(1);
       expect(mountains.length + towers.length).toBeLessThanOrEqual(MAX_COVERED);
-      expect(MAX_COVERED).toBe(8);
-      for (const t of towers) {
-        expect(hexDistance(t, {q: 0, r: 0})).toBeLessThanOrEqual(3);
-        for (const o of [...towers, ...mountains])
-          if (o !== t) expect(hexDistance(t, o)).toBeGreaterThan(1);
-      }
+      expect(hexDistance(towers[0]!, {q: 0, r: 0})).toBeLessThanOrEqual(3);
+      for (const m of mountains) expect(hexDistance(towers[0]!, m)).toBeGreaterThan(1);
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
     }
-    // Ridges reach the board's slanted edges in some fights.
-    expect(onEdge).toBeGreaterThan(0);
-    expect([...towerCounts].sort()).toEqual([1, 2]);
+    expect([...lengths].sort()).toEqual([6, 7]);
   });
 
   it('names the ground after the map’s look', () => {

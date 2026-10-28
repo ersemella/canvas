@@ -123,7 +123,22 @@ tuning. This file has no combat-design section number.
   It replaced gullied sandstone
   ridges with flames added on their crests: a separate flame per crest
   read as a lid on the peak, then animated frames made the mountains look
-  as if they shook (owner, 2026-10-26). The mountains stand not along an
+  as if they shook (owner, 2026-10-26). **Redesigned (owner,
+  2026-10-28)** from the owner's photo of the real Flaming Mountains, a
+  long gullied red escarpment over a flat plain: the mountains stand as
+  **ridges along the rim**, on three of the board's four slanted edges
+  picked at random, two spaces each along the edge and one sometimes
+  three, so ridges side by side join into one escarpment and the middle
+  stays open (`mountainPlaces`: `'ridges'`, `edgeRidges` in map.ts), with
+  **one beacon tower** (`obstacles.counts`: `[1]`). The ridge art
+  (`tiles/mountain-ridge.png`, 42 × 39 a frame, 8 frames) was redrawn
+  after the photo on the Steppe mountains' base: a flat, toothed crest in
+  dark red, its face cut by gullies fanning down from it, each rib lit on
+  its left and shadowed on its right, pale talus mounds at its foot; set
+  alight as in the myth (owner, 2026-10-28), the tops of its gullies glow
+  and fire burns along the whole crest, flames 1 to 5 pixels in waves with
+  tongues and embers, the rock never changing. What follows is the design
+  before. The mountains stood not along an
   edge, as the Steppe's, but in **three pairs**, each side by side in neighbouring columns,
   never one above the other, so each reads as one ridge running across
   the board (owner, 2026-10-26; two clumps of 2 to 4 before, which

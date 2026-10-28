@@ -94,18 +94,23 @@ const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
 const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
 
 /**
- * The Flaming Mountains' (owner, 2026-10-26): a low ridge, made from the
- * Steppe's twin peak so it is drawn as the other mountains are and fits
- * its hex the same way: its base, the hex's lower half, as it was, the
- * peaks above it lowered to 0.65 of their height into a ridge of two low
- * humps, its six shades the red earth's own colours and its border's, so
- * it blends with the ground (owner, 2026-10-26). Only the fire along its crest
- * moves, in 8 frames (`mountainFrames`): flames 1 to 5 pixels tall in
- * waves, a tongue flaring every few pixels, embers rising; the rock never
- * changes. It replaced a burning cone (`mountain-burning.png`), which read
- * as a volcano; then the owner's ridge (AI-assisted), wider than its hex,
- * and ridges drawn in code across a clump, which were too detailed and
- * the only thing on the board spanning spaces (owner, 2026-10-26).
+ * The Flaming Mountains' (owner, 2026-10-28): a long, low escarpment drawn
+ * after the owner's photo of the real ones, so ridges standing side by
+ * side along the board's rim join into one: a flat, toothed crest in dark
+ * red, its face cut by gullies fanning down from it, each rib lit on its
+ * left and shadowed on its right, and pale talus mounds burying their
+ * ends at the foot, in the red earth's own colours and a sunlit ochre. Its
+ * base, the hex's lower half, is the Steppe mountains', so it fits its hex
+ * the same way. Set alight as in the myth (owner, 2026-10-28): the tops
+ * of its gullies glow, and only the fire along its crest moves, in 8
+ * frames (`mountainFrames`): flames 1 to 5 pixels tall in waves, a tongue
+ * flaring every few pixels, embers rising; the rock never changes. It
+ * replaced a burning ridge of two low humps (2026-10-26) and, before
+ * that, a burning cone
+ * (`mountain-burning.png`), which read as a volcano; then the owner's
+ * ridge (AI-assisted), wider than its hex, and ridges drawn in code across
+ * a clump, which were too detailed and the only thing on the board
+ * spanning spaces (owner, 2026-10-26).
  */
 const FLAMING_MOUNTAINS = [burningRidgeImage];
 
