@@ -458,12 +458,12 @@ export const ABILITY = {
    * place of one within `range`.
    * `lasts` (owner's question, 2026-10-28; balance.md, "A lasting
    * Shield"), off as built: a Blessing's Shield stays until damage spends
-   * it, not until the ally's next turn, a unit holding at most `cap` × the
-   * Priest's power of it.
+   * it, not until the ally's next turn, a unit holding at most `cap` of it
+   * (3, the Priest's power; an absolute number since 2026-10-28).
    */
   blessing: {
     lasts: false as boolean,
-    cap: 1 as number,
+    cap: 3 as number,
     range: 2 as number,
     heal: true as boolean,
     shape: 'unit' as 'unit' | 'aura',

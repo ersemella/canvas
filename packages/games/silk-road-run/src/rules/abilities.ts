@@ -953,9 +953,9 @@ export function blessingOf(user: Unit, u: Unit): {heal: number; shield: number} 
   const given = ABILITY.blessing.heal
     ? (overheal ? user.power - healed : 0) + extra
     : user.power + extra;
-  // `lasts`: a unit holds at most `cap` × his power of lasting Shield.
+  // `lasts`: a unit holds at most `cap` of lasting Shield.
   const room = ABILITY.blessing.lasts
-    ? Math.max(0, ABILITY.blessing.cap * user.power - (u.lastingShield ?? 0))
+    ? Math.max(0, ABILITY.blessing.cap - (u.lastingShield ?? 0))
     : Infinity;
   return {heal: healed, shield: Math.min(given, room)};
 }
@@ -1006,12 +1006,12 @@ const blessing: AbilityDef = {
         ? `Every ally within ${radius} of you${self ? ', yourself too' : ''}`
         : `An ally within ${range}${self ? ', yourself too' : ''}`;
     const until = ABILITY.blessing.lasts
-      ? `until spent, at most ${ABILITY.blessing.cap * user.power} on a unit`
+      ? `until spent, at most ${ABILITY.blessing.cap} on a unit`
       : `until ${shape === 'aura' ? 'their' : 'its'} next turn`;
     if (!ABILITY.blessing.heal) return `${who}: Shield ${user.power + extra} ${until}.`;
     const shields = [
       overheal ? 'what it can’t heal becomes Shield' : '',
-      extra ? `Shield ${extra} more` : '',
+      extra ? `Shield ${extra}${overheal ? ' more' : ''}` : '',
     ].filter(Boolean);
     const smite = ABILITY.blessing.smite ? ` An enemy within ${range} is hit instead.` : '';
     return `${who}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, ${until}` : ''}.${smite}`;

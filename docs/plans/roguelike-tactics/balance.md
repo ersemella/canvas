@@ -3792,7 +3792,7 @@ turn, so each covers a full round whoever acts first.
 
 Asked for (the owner): can the Shield be permanent? `ABILITY.blessing.lasts`:
 a Blessing's Shield stays until damage spends it, not until the ally's
-next turn, a unit holding at most `cap` × the Priest's power of it (so
+next turn, a unit holding at most `cap` of it (3, his power; so
 he can't stack it without end). `experiments/priest-lasting.mjs`, the
 seats and 400 fights of "The Priest" (about ±2.5 points).
 
@@ -3816,6 +3816,30 @@ seats and 400 fights of "The Priest" (about ±2.5 points).
   ally, for the front-line reason in "Blessing as a Shield".
 
 **Built as measured**: `lasts` off, the owner to choose.
+
+### A heal and a lasting Shield of 1 (2026-10-28)
+
+Asked for (the owner): Blessing healing the Priest's power, and on top a
+Shield of 1 that stays until damage breaks it. `experiments/priest-heal-shield1.mjs`:
+`overheal` off, `shield` 1, `lasts`, a unit holding at most `cap` (1, no
+stacking; 2; 3), the seats and 400 fights of "The Priest".
+
+| Blessing | Steppe | China | Persia |
+|---|---:|---:|---:|
+| *Heal 3, the rest Shield until the ally's turn (as built)* | *42.7%* | *22.8%* | *41.6%* |
+| *A lasting Shield of 3, one ally ("A lasting Shield")* | *44.6%* | *44.5%* | *45.9%* |
+| Heal 3 and a lasting Shield of 1, at most 1 on a unit | 35.8% | 39.0% | 40.7% |
+| The same, at most 2 | 34.1% | 35.0% | 39.5% |
+| The same, at most 3 | 34.5% | 34.3% | 37.6% |
+
+- **Better than built in China** (39% from 22.8%), the lasting Shield's
+  doing, but **6–9 points under a lasting Shield of 3** in every seat,
+  and under the built overheal on the Steppe: the heal is worth less
+  than the Shield when most hits fall on allies at full health, and 1
+  is little against hits of 2 or 3.
+- Stacking makes it worse again (the AI piles it on one ally).
+
+**Built as measured**: off, the owner to choose.
 
 ## Principles for re-tuning
 

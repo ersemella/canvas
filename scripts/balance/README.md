@@ -173,6 +173,8 @@ him (a smite on enemies, range, speed, defence, the AI's Shield worth);
 (`.heal` off), on one ally or every ally within a radius (`.shape: 'aura'`).
 `priest-lasting.mjs` the same with a Shield lasting until spent
 (`.lasts`, `.cap`).
+`priest-heal-shield1.mjs` a heal with a lasting Shield of 1 on top, at
+`cap` 1, 2 and 3; `cap` is an absolute amount since then (3 his power).
 
 ## Ability and stat ablation
 
