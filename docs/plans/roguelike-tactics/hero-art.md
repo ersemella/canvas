@@ -490,6 +490,10 @@ in `HERO_ART` beside `HERO_SPRITE` in `src/client/board/units.ts`.
 sprite; a hero not in `HERO_ART` still shows its sprite.
 
 **The Vanguard, the Duelist and the Alchemist (2026-10-28)**, the same
-way. The other six (the Juggernaut, the Ranger, the Magus, the
-Cataphract, the Barbarian, the Priest) were made the same day; each is
-added the same way.
+way.
+
+**The Juggernaut, the Ranger and the Magus (2026-10-28)**, the same way,
+the Magus's astrolabe with four pixels of magenta left in its openwork
+given their neighbours' colour. The other three (the Cataphract, the
+Barbarian, the Priest) were made the same day; each is added the same
+way.

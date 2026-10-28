@@ -24,6 +24,7 @@ import {
 import alchemistArt from '../sprites/alchemist-art.png';
 import alchemistPortrait from '../sprites/alchemist-portrait.png';
 import alchemistSprite from '../sprites/alchemist.png';
+import archerArt from '../sprites/archer-art.png';
 import archerPortrait from '../sprites/archer-portrait.png';
 import archerSprite from '../sprites/archer.png';
 import bokhArt from '../sprites/bokh-art.png';
@@ -42,8 +43,10 @@ import modaoSprite from '../sprites/modao.png';
 import stormArt from '../sprites/storm-art.png';
 import stormPortrait from '../sprites/storm-portrait.png';
 import stormSprite from '../sprites/storm.png';
+import magusArt from '../sprites/magus-art.png';
 import magusPortrait from '../sprites/magus-portrait.png';
 import magusSprite from '../sprites/magus.png';
+import mahoutArt from '../sprites/mahout-art.png';
 import mahoutPortrait from '../sprites/mahout-portrait.png';
 import mahoutSprite from '../sprites/mahout.png';
 import varangianPortrait from '../sprites/varangian-portrait.png';
@@ -129,6 +132,11 @@ export const HERO_ART: Partial<Record<Unit['hero'], string>> = {
   modao: modaoArt,
   youxia: youxiaArt,
   alchemist: alchemistArt,
+  mahout: mahoutArt,
+  archer: archerArt,
+  // Four pixels of magenta left in the astrolabe's openwork, given their
+  // neighbours' gold by hand.
+  magus: magusArt,
 };
 /** Track portraits (32×32, facing right), filling the card; `faceX` is the face's column. */
 export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
