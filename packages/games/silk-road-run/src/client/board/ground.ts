@@ -133,15 +133,14 @@ const FLAMING_MOUNTAINS = [burningRidgeImage];
  * brings back the desert board's art from before the Steppe: the sand
  * stamped per hex, as it was (2026-10-22), and, in place of the yurts,
  * the crumbling sandstone ruin until an oasis took its place (owner,
- * 2026-10-28; China's map again): after the owner's art (AI-assisted),
- * the Flaming Mountains' beacon tower, narrowed and shortened, right of
- * the middle on a sandy island 32 wide so it stays in its space, a spring
- * pool in front, rocks, reeds and two poplars on its left
- * (`scripts/oasis-sheet.py`, 46 × 53 a frame, as the art shrunk whole
- * left the roof a blob; two date palms over a pool, drawn in code, for a
- * few hours before). In 4 frames the pennant flies, as the tower's, and a
- * glint crosses the water. It rises over the space behind, as the tower
- * did, and blocks as any obstacle. The Flaming Mountains (owner,
+ * 2026-10-28; China's map again): the owner's art (AI-assisted), a Han
+ * beacon tower by a spring pool with poplars, reeds and rocks, in 4
+ * frames, cut to the sprites' grid (`scripts/oasis-sheet.py`, 36 × 49 a
+ * frame, so its island stays in its space): only the pennant flies and
+ * the water glints, the rest one frame's. It rises over the space behind,
+ * as the tower did, and blocks as any obstacle. (The same day, before it:
+ * two date palms over a pool drawn in code, then the Flaming Mountains'
+ * tower composed by hand on an island.) The Flaming Mountains (owner,
  * 2026-10-26): the owner's cracked red earth (AI-assisted, cut to 128
  * pixels and 5 colours); under the mountains, the Steppe's rock in the
  * burning mountain's browns (`rock-red.png`); its obstacle a Han beacon
@@ -442,7 +441,7 @@ export function drawExit(
  * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
  * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
  * sandstone ruin and the mudbrick wall are 32 × 32, the beacon tower
- * 38 × 46, the Gobi's oasis 46 × 53. `map` gives the look.
+ * 38 × 46, the Gobi's oasis 36 × 49. `map` gives the look.
  */
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,

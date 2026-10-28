@@ -100,16 +100,18 @@ tuning. This file has no combat-design section number.
   of the ruins, combined with the Flaming Mountains' beacon tower (owner,
   2026-10-28): from the owner's art (AI-assisted, from the prompt below),
   a beacon tower on the bank of a spring pool with poplars, reeds and
-  rocks round it, as at Dunhuang's oases. Shrunk whole to the grid, its
-  roof became a blob and its poplars vanished, so it is drawn on the grid
-  after it (`tiles/oasis.png`, 46 × 53 a frame, `scripts/oasis-sheet.py`):
-  the beacon tower's own pixels, its body narrowed to 17–19 wide and
-  shortened to 25 rows, right of the middle on a sandy island 32 wide so
-  it stays in its space, an ink-outlined spring pool in front, rocks and
-  reed tufts round it and two poplars on its left, lit on their left.
-  In 4 frames at `FLAME_FPS` the pennant flies, as the tower's, and a
-  glint crosses the water. It rises over the space behind, as the tower
-  did. The page calls it Oasis, blocking as any obstacle, and the open
+  rocks round it, as at Dunhuang's oases, in 4 frames, its pennant
+  flying and its water glinting. It is cut to the grid
+  (`tiles/oasis.png`, 36 × 49 a frame, `scripts/oasis-sheet.py`), 36 wide
+  so the island stays in its space: each art pixel the colour most of its
+  block is, in one 24-colour palette for all four frames (an average
+  blurred the roof and the poplars), with a dark outline. The frames were
+  drawn apart, so their rocks and reeds differ; all but the pennant and
+  the water come from one frame, so only those move, at `FLAME_FPS`. It
+  rises over the space behind, as the tower did. Its roof is only a few
+  pixels at this size; the owner kept it so (2026-10-28) over a sprite
+  composed by hand from the beacon tower's own pixels on an island, which
+  kept a crisp roof. The page calls it Oasis, blocking as any obstacle, and the open
   ground Sand. Two date palms over a pool, drawn in code, stood there for
   a few hours first. The prompt: a pixel-art Han beacon tower (banded
   rammed earth, a grey tiled pavilion roof with upswept corners, red

@@ -198,7 +198,7 @@ export const STEPPE: MapData = {
  * as its way in (2026-10-25), then kept for the Arabia region while the
  * Flaming Mountains were China's (owner, 2026-10-26). The Steppe's board
  * on sand, no mountains, whatever the stage, and its yurts' places
- * **oases**, a beacon tower by a spring pool (owner, 2026-10-28; sandstone ruins
+ * **oases**, a beacon tower by a spring pool (owner, 2026-10-28, from the owner's art; sandstone ruins
  * of the old frontier posts before). Two or three of them (owner,
  * 2026-10-28; four or five from 2026-10-25, as there are no mountains to
  * break up the board), within 3 hexes of the centre, still off the
