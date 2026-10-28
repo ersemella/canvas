@@ -2,13 +2,13 @@
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
  * grass, yurts and their smoke, the Gobi's sand and sandstone ruins, the
  * Flaming Mountains' red earth, beacon towers and burning ridges, the Salt
- * Flats' salt crust and their one salt dome, and the scorched ground beside
- * the burning ridges; exits (cached per map), and
+ * Flats' salt crust and their one salt dome, and the Flaming Mountains'
+ * patches of scorched ground; exits (cached per map), and
  * falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {DOME, scorched, tileAt} from '../../rules/map';
+import {DOME, tileAt} from '../../rules/map';
 import type {MapData, Tile} from '../../rules/map';
 import {BOARD_LAYOUT, SCENE_SIZE} from '../layout';
 import {PALETTE} from '../palette';
@@ -101,7 +101,8 @@ const MOUNTAIN_FEET = Math.floor((Math.sqrt(3) / 2) * BOARD_LAYOUT.size);
 const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
 
 /**
- * The Flaming Mountains' (owner, 2026-10-28): a long, low escarpment drawn
+ * The Flaming Mountains' (owner, 2026-10-28; none stand in its fights since
+ * the same day, when scorched ground took their place): a long, low escarpment drawn
  * after the owner's photo of the real ones, so a pair standing side by
  * side reads as one ridge: a flat, toothed crest, its face cut by
  * gullies fanning down from it, each rib lit on its left and shadowed on
@@ -183,9 +184,9 @@ const LOOKS: Record<string, Look> = {
     obstacleFrames: 4,
     mountains: FLAMING_MOUNTAINS,
     mountainFrames: 8,
-    // The scorched earth, as the ridge is in its colours and its foot
-    // shows the ground (owner, 2026-10-28; the red earth from 2026-10-26,
-    // the Steppe's rock in redder browns before).
+    // No mountains stand on it now (owner, 2026-10-28); the ridge and the
+    // ground under it stay as its look's, in the scorched earth's colours
+    // (the red earth from 2026-10-26, the Steppe's rock before).
     mountainGround: scorchedEarthImage,
     scorchedGround: scorchedEarthImage,
     dome: null,
@@ -240,13 +241,13 @@ export const FLAME_FPS = 3;
 
 /**
  * A tile's ground texture on a map: the map's open ground, its mountains'
- * ground under one (rock, owner, 2026-10-24), or on a scorched space
- * (`burnt`) its scorched ground (owner, 2026-10-28).
+ * ground under one (rock, owner, 2026-10-24), or its scorched ground
+ * (owner, 2026-10-28).
  */
-const textureOf = (look: Look, tile: Tile, burnt = false): string =>
+const textureOf = (look: Look, tile: Tile): string =>
   tile === 'mountain'
     ? look.mountainGround
-    : burnt && look.scorchedGround
+    : tile === 'scorched' && look.scorchedGround
       ? look.scorchedGround
       : look.ground;
 
@@ -310,7 +311,7 @@ let ground: {canvas: HTMLCanvasElement; key: string} | null = null;
 export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
   const look = lookOf(map);
   if (typeof document === 'undefined') {
-    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), look, scorched(map, h));
+    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), look);
     return;
   }
   let mapKey = mapKeys.get(map);
@@ -330,7 +331,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     const g = canvas.getContext('2d')!;
     g.setTransform(scale, 0, 0, scale, 0, 0);
     g.clearRect(0, 0, SCENE_SIZE.width, SCENE_SIZE.height);
-    for (const h of map.hexes) drawTile(g, h, tileAt(map, h), look, scorched(map, h));
+    for (const h of map.hexes) drawTile(g, h, tileAt(map, h), look);
     ground = {canvas, key};
   }
   ctx.save();
@@ -345,14 +346,8 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
  * look's flat colour shows. Yurts, ruins and mountains stand on it and are
  * drawn later, by `drawObstacle`.
  */
-function drawTile(
-  ctx: CanvasRenderingContext2D,
-  h: Hex,
-  tile: Tile,
-  look: Look,
-  burnt = false
-): void {
-  const ground = assetLoader.requestImage(textureOf(look, tile, burnt));
+function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, look: Look): void {
+  const ground = assetLoader.requestImage(textureOf(look, tile));
   if (ground) {
     if (look.stamp && tile !== 'mountain') stampHex(ctx, h, ground, (h.q * 7 + h.r * 13) % 2 !== 0);
     else fillHexTexture(ctx, h, ground);

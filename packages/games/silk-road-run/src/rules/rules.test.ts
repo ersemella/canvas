@@ -60,7 +60,6 @@ import {
   FLAMING,
   GOBI,
   MAPS,
-  MAX_COVERED,
   SALT,
   STEPPE,
   blocks,
@@ -617,75 +616,61 @@ describe('the board', () => {
     }
   });
 
-  it('raises the Flaming Mountains in every fight, in one or two side-by-side pairs in the middle, with one beacon tower', () => {
-    let onEdge = 0;
-    const pairCounts = new Set<number>();
+  it('spreads patches of scorched ground over the Flaming Mountains, with no mountains and one beacon tower', () => {
+    const counts = new Set<number>();
     for (let seed = 0; seed < 40; seed++) {
-      // Not a stage that asks for mountains: the map raises them itself.
-      const s = createFight(seed, undefined, undefined, false, [], FLAMING);
+      // Even a stage that asks for mountains gets none here.
+      const s = createFight(seed, undefined, undefined, true, [], FLAMING);
       expect(s.mapId).toBe('flaming');
       expect(mapOf(s).name).toBe('The Burning Mountains');
-      // At most two pairs between the starting columns, apart, off the
-      // starting columns and Temee's road, not next to its start or exit.
-      const mountains = Object.keys(s.tiles)
-        .filter((k) => s.tiles[k] === 'mountain')
-        .map((k) => k.split(',').map(Number) as [number, number])
-        .map(([q, r]) => ({q, r}));
-      for (const m of mountains) {
-        expect(Math.abs(m.q)).toBeLessThan(3);
-        expect(m.q).not.toBe(0);
-        if (hexDistance(m, {q: 0, r: 0}) === 4) onEdge++;
+      const of = (tile: string) =>
+        Object.keys(s.tiles)
+          .filter((k) => s.tiles[k] === tile)
+          .map((k) => k.split(',').map(Number) as [number, number])
+          .map(([q, r]) => ({q, r}));
+      expect(of('mountain')).toEqual([]);
+      const burnt = of('scorched');
+      // Off the starting columns and Temee's road, not next to its start or exit.
+      for (const h of burnt) {
+        expect(Math.abs(h.q)).toBeLessThan(3);
+        expect(h.q).not.toBe(0);
         for (const x of [FLAMING.camelStart, ...FLAMING.exits])
-          expect(hexDistance(m, x)).toBeGreaterThan(1);
+          expect(hexDistance(h, x)).toBeGreaterThan(1);
       }
-      const clumps: Hex[][] = [];
-      for (const m of mountains) {
-        const touching = clumps.filter((c) => c.some((n) => hexDistance(n, m) === 1));
+      // Four or five patches of one or two spaces, apart.
+      const patches: Hex[][] = [];
+      for (const m of burnt) {
+        const touching = patches.filter((c) => c.some((n) => hexDistance(n, m) === 1));
         const merged = [m, ...touching.flat()];
-        for (const c of touching) clumps.splice(clumps.indexOf(c), 1);
-        clumps.push(merged);
+        for (const c of touching) patches.splice(patches.indexOf(c), 1);
+        patches.push(merged);
       }
-      expect(clumps.length).toBeGreaterThanOrEqual(1);
-      expect(clumps.length).toBeLessThanOrEqual(2);
-      pairCounts.add(clumps.length);
-      // Each pair side by side, in neighbouring columns, never one above the other.
-      for (const c of clumps) {
-        expect(c).toHaveLength(2);
-        expect(c[0]!.q).not.toBe(c[1]!.q);
-      }
-      // One beacon tower, apart from the mountains, covering at most 8
-      // spaces with them.
-      const towers = Object.keys(s.tiles)
-        .filter((k) => s.tiles[k] === 'obstacle')
-        .map((k) => k.split(',').map(Number) as [number, number])
-        .map(([q, r]) => ({q, r}));
+      expect(patches.length).toBeGreaterThanOrEqual(4);
+      expect(patches.length).toBeLessThanOrEqual(5);
+      for (const c of patches) expect(c.length).toBeLessThanOrEqual(2);
+      counts.add(burnt.length);
+      // One beacon tower, never on scorched ground.
+      const towers = of('obstacle');
       expect(towers).toHaveLength(1);
-      expect(mountains.length + towers.length).toBeLessThanOrEqual(MAX_COVERED);
-      expect(MAX_COVERED).toBe(8);
-      for (const t of towers) {
-        expect(hexDistance(t, {q: 0, r: 0})).toBeLessThanOrEqual(3);
-        for (const o of [...towers, ...mountains])
-          if (o !== t) expect(hexDistance(t, o)).toBeGreaterThan(1);
+      expect(hexDistance(towers[0]!, {q: 0, r: 0})).toBeLessThanOrEqual(3);
+      for (const u of s.units) {
+        expect(canMove(s, mapOf(s), u)).toBe(true);
+        // No unit starts on it.
+        expect(scorched(mapOf(s), u.hex!)).toBe(false);
       }
-      for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
     }
-    // Ridges reach the board's slanted edges in some fights.
-    expect(onEdge).toBeGreaterThan(0);
-    // Two pairs in most fights.
-    expect(pairCounts.has(2)).toBe(true);
+    expect(counts.size).toBeGreaterThan(1);
   });
 
-  it('scorches the ground beside the Flaming Mountains’ ridges: Moved onto it or ending a turn there burns, walking across doesn’t', () => {
+  it('burns on scorched ground: Moved onto it or ending a turn there, not walking across', () => {
     const s = setup({'p-bokh': {q: 0, r: 0}, 'e-bokh': {q: 0, r: 2}});
     s.mapId = FLAMING.id;
-    s.tiles = {[hexKey({q: 2, r: 0})]: 'mountain'};
+    s.tiles = {[hexKey({q: 1, r: 0})]: 'scorched', [hexKey({q: 1, r: 1})]: 'scorched'};
     const map = mapOf(s);
-    const fire = {q: 2, r: 0};
-    for (const h of hexNeighbors(fire)) expect(scorched(map, h)).toBe(true);
-    expect(scorched(map, fire)).toBe(false);
+    expect(scorched(map, {q: 1, r: 0})).toBe(true);
     expect(scorched(map, {q: 0, r: 0})).toBe(false);
-    // Only on a map that scorches.
-    expect(scorched({...STEPPE, tiles: s.tiles}, {q: 1, r: 0})).toBe(false);
+    // It blocks nothing.
+    expect(blocks('scorched')).toBe(false);
     const b = unit(s, 'p-bokh');
     // Walking across it, ending off it: no burn.
     s.awaiting = b.id;
@@ -701,7 +686,7 @@ describe('the board', () => {
     s.awaiting = b.id;
     applyTurn(s, b, {move: [{q: 1, r: 0}], action: {ability: 'hold'}});
     expect(b.hp).toBe(b.maxHp - RULES.scorch);
-    // Moved onto it burns, each time.
+    // Moved onto it burns.
     const e = unit(s, 'e-bokh');
     const ctx: Ctx = {state: s, map, slot: 0};
     e.hex = {q: 1, r: 2};
@@ -709,7 +694,7 @@ describe('the board', () => {
     displace(ctx, e, dir, 1, 'push');
     expect(e.hex).toEqual({q: 1, r: 1});
     expect(e.hp).toBe(e.maxHp - RULES.scorch);
-    expect(tileInfo('flaming', 'mountain').name).toBe('Burning mountains');
+    expect(tileInfo('flaming', 'scorched').name).toBe('Scorched ground');
   });
 
   it('names the ground after the map’s look', () => {

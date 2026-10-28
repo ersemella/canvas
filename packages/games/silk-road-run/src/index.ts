@@ -69,7 +69,6 @@ export {
   CAMEL_RULE,
   EXIT_INFO,
   KEYWORD_INFO,
-  SCORCHED_INFO,
   TILE_INFO,
   hailInfo,
   shotInfo,
@@ -105,7 +104,6 @@ export {
   STEPPE,
   mapById,
   onMap,
-  scorched,
   tileAt,
 } from './rules/map';
 export type {MapData, Tile} from './rules/map';

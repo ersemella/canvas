@@ -124,8 +124,13 @@ tuning. This file has no combat-design section number.
   ridges with flames added on their crests: a separate flame per crest
   read as a lid on the peak, then animated frames made the mountains look
   as if they shook (owner, 2026-10-26). **Redesigned (owner,
-  2026-10-28)** from the owner's photo of the real Flaming Mountains, a
-  long gullied red escarpment over a flat plain. The mountains stand in
+  2026-10-28)**, the same day, to **no mountains at all**: four or five
+  small patches of scorched ground, one or two spaces each, spread over
+  the board (`scorchedPatches` in map.ts, a `scorched` tile), off the
+  starting columns and Temee's road, with one beacon tower. The ridge
+  art below stays as the look's mountains but no fight has any. Before
+  that, from the owner's photo of the real Flaming Mountains, a
+  long gullied red escarpment over a flat plain, the mountains stood in
   the middle in **one or two side-by-side pairs** (`MIDDLE_CLUMP.count`:
   2; three before; for a few hours the same day they stood as ridges
   along the board's rim instead, then went back to the middle, owner),
@@ -230,7 +235,7 @@ tuning. This file has no combat-design section number.
 
 ## Prompts for scorched ground (2026-10-28)
 
-The scorched ground beside the Flaming Mountains' ridges, which should
+The Flaming Mountains' scorched ground, which should
 read as burnt at a glance (prompt 1 made `tiles/scorched-earth.png`). Like
 the red earth (`tiles/red-earth.png`, 128 × 128, 5 colours, laid across
 the board as one field), it is a **seamless texture**, laid the same way

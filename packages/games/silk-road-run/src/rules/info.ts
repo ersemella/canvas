@@ -28,6 +28,12 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
     short: 'Blocks movement and arrows',
     detail: 'Blocks movement and arrows.',
   },
+  // The Flaming Mountains' (map.ts, `scorched`; owner, 2026-10-28).
+  scorched: {
+    name: 'Scorched ground',
+    short: `Burns ${RULES.scorch} when Moved here or ending a turn here`,
+    detail: `A unit Moved here, or ending its turn here, takes ${RULES.scorch} damage. Walking across doesn’t burn.`,
+  },
 };
 
 /**
@@ -84,13 +90,6 @@ export const EXIT_INFO: HexInfo = {
   name: 'Road out',
   short: `${HEROES.camel.name} reaching it wins`,
   detail: `${HEROES.camel.name} reaching it wins.`,
-};
-
-/** Scorched ground (map.ts, `scorched`): beside the Flaming Mountains' burning ridges. */
-export const SCORCHED_INFO: HexInfo = {
-  name: 'Scorched ground',
-  short: `Burns ${RULES.scorch} when Moved here or ending a turn here`,
-  detail: `A unit Moved here, or ending its turn here, takes ${RULES.scorch} damage. Walking across doesn’t burn.`,
 };
 
 /** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2; timeline.md, 3.2). */

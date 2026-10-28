@@ -1,5 +1,5 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Flaming Mountains: the Alchemist, the Vanguard and the Oathblade against the three Steppe heroes, starting kits; random yurts bring one or two pairs of burning mountains, scorched ground beside them, and one beacon tower.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Flaming Mountains: the Alchemist, the Vanguard and the Oathblade against the three Steppe heroes, starting kits; random yurts bring patches of scorched ground spread over the board and one beacon tower.",
   "seed": null,
   "map": "flaming",
   "yurts": "random",

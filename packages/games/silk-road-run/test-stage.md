@@ -17,8 +17,8 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 The committed file, fought in the Flaming Mountains: the
 Alchemist, the Vanguard and the Oathblade against the three Steppe
 heroes, every kit the starting one. Its `"random"` yurts bring
-the Flaming Mountains' one or two pairs of burning mountains in the middle, the scorched
-ground beside them, and one beacon tower.
+the Flaming Mountains' patches of scorched ground spread over the board, and one beacon
+tower.
 
 ```json
 {
@@ -44,7 +44,7 @@ ground beside them, and one beacon tower.
 | Field | What it is | Left out |
 |---|---|---|
 | `seed` | A whole number: the same seed lays out the yurts, mountains and units the same way every time. `null`: a new scatter each time. | `null` |
-| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far), `"gobi"` (the Gobi Crossing, its desert kept for the Arabia region: sand and sandstone ruins, which block as yurts do, four or five a fight in place of two or three yurts, and never mountains, whatever `yurts` says), `"flaming"` (the Flaming Mountains, the China region's: red earth, one or two pairs of burning mountains between the starting columns, each side by side in neighbouring columns, anywhere from the centre out to the board's slanted edges, and one beacon tower in place of yurts, whenever `yurts` is `"random"` or `"mountains"`; yurts placed by hand are beacon towers too; the open spaces beside a mountain are scorched ground, burning 1 on a unit Moved onto it or ending its turn there) or `"salt"` (the Salt Flats, the Persia region's: a salt crust and one large salt dome over the centre and the six spaces around it, in every fight whatever `yurts` says, and nothing else: no yurts unless placed by hand, drawn as sandstone ruins; no unit can start inside the dome). The board itself is the same. | `"steppe"` |
+| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far), `"gobi"` (the Gobi Crossing, its desert kept for the Arabia region: sand and sandstone ruins, which block as yurts do, four or five a fight in place of two or three yurts, and never mountains, whatever `yurts` says), `"flaming"` (the Flaming Mountains, the China region's: red earth, four or five patches of scorched ground of one or two spaces, spread over the board off the starting columns and the middle column, burning 1 on a unit Moved onto it or ending its turn there, and one beacon tower in place of yurts, whenever `yurts` is `"random"` or `"mountains"`, and never mountains; yurts placed by hand are beacon towers too) or `"salt"` (the Salt Flats, the Persia region's: a salt crust and one large salt dome over the centre and the six spaces around it, in every fight whatever `yurts` says, and nothing else: no yurts unless placed by hand, drawn as sandstone ruins; no unit can start inside the dome). The board itself is the same. | `"steppe"` |
 | `yurts` | `"random"` (as in a normal fight: two or three yurts near the middle, and a range of 3 to 5 mountains in about half of fights), `"mountains"` (the same, always with the mountains, as in a run's first three stages), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
