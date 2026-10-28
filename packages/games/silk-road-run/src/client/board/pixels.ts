@@ -39,7 +39,7 @@ export const HERO_COLOR = {
   archer: '#0369a1',
   // The Barbarian's disc, shown while its sprite loads.
   varangian: '#57534e',
-  // The Priest's disc: it has no sprite yet.
+  // The Priest's disc, shown while its sprite loads.
   priest: '#ca8a04',
   // The Cataphract's disc: it has no sprite yet.
   cataphract: '#a16207',
@@ -48,6 +48,9 @@ export const HERO_COLOR = {
   fox: '#c2410c',
   // The One-Eyed Giant's disc, shown while its sprite loads.
   giant: '#57534e',
+  // China's boss, the Ox King and the Fan Lady: discs too, until their art exists.
+  oxKing: '#7c2d12',
+  fanLady: '#be185d',
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to

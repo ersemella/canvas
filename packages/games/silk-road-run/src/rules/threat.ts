@@ -87,6 +87,17 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           if (!board.has(k)) break;
           mark(hexes, k, power);
         }
+    // A charge (Stomp's first build, Gore): the spaces it walks into, `steps` each way.
+    const charge = (steps: number) => {
+      if (isImmobilized(e)) return;
+      for (const [dq, dr] of AXIAL)
+        for (let i = 1; i <= steps; i++) {
+          const k = id(fq + dq * i, fr + dr * i);
+          const tile = board.get(k);
+          if (tile === undefined || blocks(tile)) break;
+          mark(hexes, k, power);
+        }
+    };
     // Stomp: the spaces next to it, and those it may step to first; as the
     // charge (first built), the spaces it walks into, `steps` each way.
     if (has('stomp') && ABILITY.stomp.mode === 'stomp') {
@@ -94,14 +105,9 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       for (let dq = -reach; dq <= reach; dq++)
         for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
           if (dq || dr) mark(hexes, id(fq + dq, fr + dr), power);
-    } else if (has('stomp') && !isImmobilized(e))
-      for (const [dq, dr] of AXIAL)
-        for (let i = 1; i <= ABILITY.stomp.steps; i++) {
-          const k = id(fq + dq * i, fr + dr * i);
-          const tile = board.get(k);
-          if (tile === undefined || blocks(tile)) break;
-          mark(hexes, k, power);
-        }
+    } else if (has('stomp')) charge(ABILITY.stomp.steps);
+    // Gore: Stomp's charge, the Ox King's.
+    if (has('gore')) charge(ABILITY.gore.steps);
     // Charge: each of its lanes to yurts or the map's edge, the first unit
     // in it carried and a second one met, so past one unit and up to a
     // second.

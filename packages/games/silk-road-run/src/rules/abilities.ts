@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), the Priest's and the Cataphract's, the wolf's, and the One-Eyed Giant's (owner, 2026-10-28). Each lists its legal targets from a hex (for validation,
+ * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), the Priest's, the Cataphract's, the wolf's, the One-Eyed Giant's, and the Ox King's and the Fan Lady's (owner, 2026-10-28). Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -948,8 +948,27 @@ const blessingTakes =
  */
 export function blessingOf(user: Unit, u: Unit): {heal: number; shield: number} {
   const {overheal, shield: extra} = ABILITY.blessing;
+  // `heal` off: a Shield of his power in place of the heal.
+  if (!ABILITY.blessing.heal) return {heal: 0, shield: user.power + extra};
   const healed = Math.min(user.power, Math.max(0, u.maxHp - u.hp));
   return {heal: healed, shield: (overheal ? user.power - healed : 0) + extra};
+}
+
+/**
+ * The allies a Blessing from `from` aimed at `target` reaches: the one on
+ * `target`, or with `ABILITY.blessing.shape` `aura` every ally within
+ * `radius` of the Priest.
+ */
+export function blessingCaught(state: FightState, user: Unit, from: Hex, target: Hex): Unit[] {
+  const {shape, radius} = ABILITY.blessing;
+  if (shape === 'unit') return [unitAt(state, target)].filter(blessingTakes(user));
+  return state.units.filter(
+    (u) =>
+      u.side === user.side &&
+      u.hex !== null &&
+      hexDistance(u.id === user.id ? from : u.hex, from) <= radius &&
+      blessingTakes(user)(u)
+  );
 }
 
 /**
@@ -965,39 +984,51 @@ const blessing: AbilityDef = {
   name: 'Blessing',
   kind: 'support',
   damages: false,
-  targetsUnit: true,
+  get targetsUnit() {
+    return ABILITY.blessing.shape === 'unit';
+  },
   get bothSides() {
     return ABILITY.blessing.smite;
   },
   get range() {
-    return ABILITY.blessing.range;
+    return ABILITY.blessing.shape === 'aura' ? 0 : ABILITY.blessing.range;
   },
   summary(user) {
-    const {range, self, overheal, shield: extra} = ABILITY.blessing;
+    const {range, self, overheal, shield: extra, shape, radius} = ABILITY.blessing;
+    const who =
+      shape === 'aura'
+        ? `Every ally within ${radius} of you${self ? ', yourself too' : ''}`
+        : `An ally within ${range}${self ? ', yourself too' : ''}`;
+    if (!ABILITY.blessing.heal)
+      return `${who}: Shield ${user.power + extra} until ${shape === 'aura' ? 'their' : 'its'} next turn.`;
     const shields = [
       overheal ? 'what it can’t heal becomes Shield' : '',
       extra ? `Shield ${extra} more` : '',
     ].filter(Boolean);
     const smite = ABILITY.blessing.smite ? ` An enemy within ${range} is hit instead.` : '';
-    return `An ally within ${range}${self ? ', yourself too' : ''}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, until its next turn` : ''}.${smite}`;
+    return `${who}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, until its next turn` : ''}.${smite}`;
   },
   targets(state, map, user, from) {
+    if (ABILITY.blessing.shape === 'aura')
+      return blessingCaught(state, user, from, from).length > 0 ? [{hex: {...from}}] : [];
     return spacesWithin(map, from, ABILITY.blessing.range)
       .map((h) => unitAt(state, h))
       .filter(blessingTakes(user))
       .map((u) => ({hex: u.hex!}));
   },
   resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    if (u.side !== user.side) {
+    const u = unitAt(ctx.state, target.hex!);
+    if (u && u.side !== user.side) {
       log(ctx, `${unitName(user)} smites ${unitName(u)}.`);
       hit(ctx, user, u, 'The smiting');
       return;
     }
-    const given = blessingOf(user, u);
-    log(ctx, `${unitName(user)} blesses ${unitName(u)}.`);
-    heal(ctx, u, given.heal);
-    shield(ctx, u, given.shield);
+    for (const a of blessingCaught(ctx.state, user, user.hex!, target.hex!)) {
+      const given = blessingOf(user, a);
+      log(ctx, `${unitName(user)} blesses ${unitName(a)}.`);
+      heal(ctx, a, given.heal);
+      shield(ctx, a, given.shield);
+    }
   },
 };
 
@@ -1161,6 +1192,19 @@ export function stompPlan(
     const caught = stompCaught(state, target).filter((u) => !hexEquals(u.hex!, from));
     return {caught: shoved ? [...caught, shoved] : caught, end: target};
   }
+  return chargePlan(state, map, from, target);
+}
+
+/**
+ * What a charge (Stomp's `charge` mode, the Ox King's Gore) from `from`
+ * toward `target` would do, as `stompPlan`: whom it hits and where it ends.
+ */
+export function chargePlan(
+  state: FightState,
+  map: MapData,
+  from: Hex,
+  target: Hex
+): {caught: Unit[]; end: Hex} {
   const dir = hexDirectionTo(from, target)!;
   const caught = new Set<Unit>();
   let at = from;
@@ -1281,38 +1325,54 @@ const stomp: AbilityDef = {
       }
       return out;
     }
-    if (isImmobilized(user)) return [];
-    const out: ActionTarget[] = [];
-    for (const dir of DIRECTIONS)
-      for (const hex of laneFrom(map, from, dir).slice(0, ABILITY.stomp.steps)) out.push({hex});
-    return sortByHex(out, (t) => t.hex!);
+    return chargeTargets(map, user, from, ABILITY.stomp.steps);
   },
   resolve(ctx, user, target) {
     if (ABILITY.stomp.mode === 'stomp') return resolveStomp(ctx, user, target.hex!);
-    const dir = hexDirectionTo(user.hex!, target.hex!)!;
-    log(ctx, `${unitName(user)} charges.`);
-    const struck = new Set<string>();
-    for (let i = hexDistance(user.hex!, target.hex!); i > 0 && user.alive && user.hex; i--) {
-      const next = hexNeighbor(user.hex, dir);
-      if (!walkable(ctx.map, next)) break;
-      for (const u of rowFrom(ctx.state, next, dir))
-        if (!struck.has(u.id)) {
-          struck.add(u.id);
-          hit(ctx, user, u, 'The charge');
-        }
-      // Those still standing are Pushed, the farthest first, so each has room.
-      const row = rowFrom(ctx.state, next, dir);
-      if (row.length > 0 && !rowGives(ctx.state, ctx.map, row, dir)) {
-        log(ctx, `${unitName(user)} is stopped.`);
-        break;
-      }
-      for (const u of [...row].reverse()) displace(ctx, u, dir, 1, 'push');
-      if (unitAt(ctx.state, next) || !user.alive) break;
-      enterHex(ctx, user, next, 'walk', true);
-    }
-    if (user.alive) endGrapplesApart(ctx, user);
+    resolveCharge(ctx, user, target.hex!, 'The charge');
   },
 };
+
+/** A charge's targets (`resolveCharge`): 1 to `steps` spaces straight out, up to yurts or the map's edge. */
+function chargeTargets(map: MapData, user: Unit, from: Hex, steps: number): ActionTarget[] {
+  if (isImmobilized(user)) return [];
+  const out: ActionTarget[] = [];
+  for (const dir of DIRECTIONS)
+    for (const hex of laneFrom(map, from, dir).slice(0, steps)) out.push({hex});
+  return sortByHex(out, (t) => t.hex!);
+}
+
+/**
+ * A charge toward `to`, straight out from `user` (Stomp's `charge` mode;
+ * the Ox King's Gore): each unit in its way, a whole row together, takes
+ * `user`'s power once (`what` hits it), and the row is Pushed back ahead
+ * of it, a space for each it walks, the farthest first; a row that can't
+ * be Pushed stops it behind.
+ */
+function resolveCharge(ctx: Ctx, user: Unit, to: Hex, what: string): void {
+  const dir = hexDirectionTo(user.hex!, to)!;
+  log(ctx, `${unitName(user)} charges.`);
+  const struck = new Set<string>();
+  for (let i = hexDistance(user.hex!, to); i > 0 && user.alive && user.hex; i--) {
+    const next = hexNeighbor(user.hex, dir);
+    if (!walkable(ctx.map, next)) break;
+    for (const u of rowFrom(ctx.state, next, dir))
+      if (!struck.has(u.id)) {
+        struck.add(u.id);
+        hit(ctx, user, u, what);
+      }
+    // Those still standing are Pushed, the farthest first, so each has room.
+    const row = rowFrom(ctx.state, next, dir);
+    if (row.length > 0 && !rowGives(ctx.state, ctx.map, row, dir)) {
+      log(ctx, `${unitName(user)} is stopped.`);
+      break;
+    }
+    for (const u of [...row].reverse()) displace(ctx, u, dir, 1, 'push');
+    if (unitAt(ctx.state, next) || !user.alive) break;
+    enterHex(ctx, user, next, 'walk', true);
+  }
+  if (user.alive) endGrapplesApart(ctx, user);
+}
 
 // ─── Cataphract ──────────────────────────────────────────────────────────────
 
@@ -1342,7 +1402,7 @@ function chargeLane(state: FightState, map: MapData, from: Hex, dir: number): He
  * no one falls and nothing on the way changes the board (hail's hits,
  * Rebound). For the AI's guess.
  */
-export function chargePlan(
+export function ridePlan(
   state: FightState,
   map: MapData,
   user: Unit,
@@ -1586,6 +1646,117 @@ const boulder: AbilityDef = {
   },
 };
 
+// ─── Ox King and Fan Lady ────────────────────────────────────────────────────
+
+/**
+ * Gore (owner, 2026-10-28), the Ox King's horns: Trample as first built
+ * (`ABILITY.stomp.mode: 'charge'`), a walk of up to `ABILITY.gore.steps`
+ * in a line, every unit in its way hit and Pushed back ahead of him
+ * (`resolveCharge`).
+ */
+const gore: AbilityDef = {
+  id: 'gore',
+  name: 'Gore',
+  kind: 'attack',
+  summary: () =>
+    `Charge up to ${ABILITY.gore.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
+  targets: (_state, map, user, from) => chargeTargets(map, user, from, ABILITY.gore.steps),
+  resolve(ctx, user, target) {
+    resolveCharge(ctx, user, target.hex!, 'The horns');
+  },
+};
+
+/** The Banana-leaf Fan's line from `from` holding `target`: up to `reach` spaces straight out, up to yurts or the map's edge. */
+function fanLine(map: MapData, from: Hex, target: Hex): Hex[] {
+  const dir = hexDirectionTo(from, target);
+  return dir === null ? [] : laneFrom(map, from, dir).slice(0, ABILITY.bananaFan.reach);
+}
+
+/**
+ * The Banana-leaf Fan (owner, 2026-10-28): every unit in a line of
+ * `ABILITY.bananaFan.reach` straight out from the Fan Lady, ally or enemy,
+ * is Pushed `ABILITY.bananaFan.push` along it, the farthest first so each
+ * has room; no damage, but a unit blown into fire burns as any entering it.
+ * Aimed at the line's first space, as Cleave.
+ */
+const bananaFan: AbilityDef = {
+  id: 'bananaFan',
+  name: 'Banana-leaf Fan',
+  kind: 'control',
+  damages: false,
+  area: fanLine,
+  summary: () =>
+    `A line of ${ABILITY.bananaFan.reach} spaces straight out from you, any way: every unit in it, allies included, is Pushed ${ABILITY.bananaFan.push}.`,
+  targets(state, map, user, from) {
+    const out: ActionTarget[] = [];
+    for (const dir of DIRECTIONS) {
+      const line = laneFrom(map, from, dir).slice(0, ABILITY.bananaFan.reach);
+      if (line.some((h) => unitAt(state, h) && unitAt(state, h) !== user))
+        out.push({hex: line[0]!});
+    }
+    return out;
+  },
+  resolve(ctx, user, target) {
+    const line = fanLine(ctx.map, user.hex!, target.hex!);
+    const dir = hexDirectionTo(user.hex!, target.hex!)!;
+    log(ctx, `${unitName(user)} sweeps the Banana-leaf Fan.`);
+    const caught = line.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
+    for (const u of caught.reverse())
+      if (u.alive) displace(ctx, u, dir, ABILITY.bananaFan.push, 'push');
+  },
+};
+
+/** The spaces Fan the Flames sets alight from the ridge on `ridge`: the open ones next to it. */
+export function flamesAround(map: MapData, ridge: Hex): Hex[] {
+  return stepsFrom(map, ridge);
+}
+
+/**
+ * Fan the Flames (owner, 2026-10-28): the Fan Lady fans one burning ridge
+ * (a mountain, anywhere on the board), and the open spaces next to it
+ * catch fire until her next turn (`FireEffect`), any fire of hers before
+ * going out. Lighting a space doesn't burn whoever stands there; entering
+ * one does (`enterHex`).
+ */
+const fanFlames: AbilityDef = {
+  id: 'fanFlames',
+  name: 'Fan the Flames',
+  kind: 'control',
+  area: (map, _from, target) => flamesAround(map, target),
+  summary: () =>
+    `A burning ridge anywhere: the spaces next to it catch fire until your next turn. Entering fire burns ${ABILITY.fanFlames.burn}.`,
+  targets: (_state, map) =>
+    map.hexes
+      .filter((h) => tileAt(map, h) === 'mountain' && flamesAround(map, h).length > 0)
+      .map((hex) => ({hex})),
+  resolve(ctx, user, target) {
+    const others = (ctx.state.fires ?? []).filter((f) => f.source !== user.id);
+    const lit = flamesAround(ctx.map, target.hex!).filter(
+      (h) => !others.some((f) => hexEquals(f.hex, h))
+    );
+    ctx.state.fires = [...others, ...lit.map((hex) => ({hex: {...hex}, source: user.id}))];
+    log(ctx, `${unitName(user)} fans the flames.`);
+  },
+};
+
+/**
+ * The Banana-leaf Fan, borrowed (owner, 2026-10-28, as Sun Wukong borrows
+ * it): a hero carrying the fan the Fan Lady dropped (`Unit.fan`) spends a
+ * turn putting out every flame on the board; the fan is then spent.
+ */
+const quench: AbilityDef = {
+  id: 'quench',
+  name: 'Borrowed Fan',
+  kind: 'support',
+  summary: () => 'Put out every fire on the board. The fan is then spent.',
+  targets: (state) => (state.fires?.length ? [{}] : []),
+  resolve(ctx, user) {
+    delete ctx.state.fires;
+    delete user.fan;
+    log(ctx, `${unitName(user)} fans out the flames.`);
+  },
+};
+
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   snapShot,
@@ -1604,6 +1775,10 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   reave,
   smash,
   boulder,
+  gore,
+  bananaFan,
+  fanFlames,
+  quench,
   charge,
   shove,
   haul,

@@ -142,13 +142,20 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
     !map.exits.some((e) => hexEquals(e, h)) &&
     !unitAt(state, h) &&
     !state.effects.some((e) => hexEquals(e.hex, h)) &&
+    !fireOn(state, h) &&
+    !(state.fan && hexEquals(state.fan, h)) &&
     !state.shots?.some((s) => shotLane(state, map, s).some((l) => hexEquals(l, h)))
   );
 }
 
-/** The abilities `unit` has: its hero's starting kit, or the test stage's (`Unit.loadout`). */
+/**
+ * The abilities `unit` has: its hero's starting kit, or the test stage's
+ * (`Unit.loadout`), and while it carries the Fan Lady's fan, putting out
+ * the flames with it (`quench`; owner, 2026-10-28).
+ */
 export function kitOf(unit: Unit): AbilityId[] {
-  return unit.loadout?.abilities ?? HEROES[unit.hero].abilities;
+  const kit = unit.loadout?.abilities ?? HEROES[unit.hero].abilities;
+  return unit.fan ? [...kit, 'quench'] : kit;
 }
 
 /**
@@ -251,6 +258,11 @@ export function movementCap(unit: Unit): number {
   return HEROES[unit.hero].moveCap ?? RULES.movementCap;
 }
 
+/** Fire on `h` (the Fan Lady's Fan the Flames): entering it burns (`FireEffect`). */
+export function fireOn(state: FightState, h: Hex): boolean {
+  return Boolean(state.fires?.some((f) => hexEquals(f.hex, h)));
+}
+
 /** Hail on `h`: entering it Immobilizes (and hits, `ABILITY.hail.entry`), so a move that enters it ends there. */
 export function hailOn(state: FightState, h: Hex): boolean {
   return state.effects.some((e) => hexEquals(e.hex, h));
@@ -310,7 +322,14 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
         const other = occupant.get(key);
         if (other && (!through || hostile(other, unit))) continue;
         if (other && fromFree && !swaps.has(key)) swaps.set(key, [...fromPath, h]);
-        if (best.has(key)) continue;
+        // Of the walks as short, one through fewer fires (`fireOn`): each burns.
+        const known = best.get(key);
+        if (known) {
+          const path = [...fromPath, h];
+          if (known.length === path.length && burnsOn(state, path) < burnsOn(state, known))
+            best.set(key, path);
+          continue;
+        }
         best.set(key, [...fromPath, h]);
         // Hail stops the walk where it enters, unless Unstoppable.
         if (!stopsWalk(state, unit, h)) next.push(h);
@@ -326,6 +345,11 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
     out.filter((r) => mayEndOn(map, unit, r.hex)),
     (r) => r.hex
   );
+}
+
+/** How many of `path`'s spaces are on fire. */
+function burnsOn(state: FightState, path: Hex[]): number {
+  return state.fires?.length ? path.filter((h) => fireOn(state, h)).length : 0;
 }
 
 /**
@@ -470,7 +494,8 @@ export function roadToExit(map: MapData, from: Hex): Hex[] {
  * The camel's next step from where it stands (owner, 2026-10-22): one hex
  * along a shortest walk to the exit around yurts and the other units, so
  * it keeps to its road when nothing is in the way and walks around what
- * is, off scorched ground where a step as near is (owner, 2026-10-28). A
+ * is, off scorched ground and fire where a step as near is (owner,
+ * 2026-10-28). A
  * unit standing on the exit itself only blocks the last step. When
  * units shut every way around, a step along its road if that hex is free.
  * Undefined at the exit, or with nowhere to step.
@@ -502,7 +527,10 @@ export function stepToExit(state: FightState, map: MapData, unit: Unit): Hex | u
     d === undefined
       ? []
       : hexNeighbors(unit.hex).filter((h) => dist.get(hexNumber(h)) === d - 1 && free(h));
-  const around = nearer.find((h) => !scorched(map, h)) ?? nearer[0];
+  const around =
+    nearer.find((h) => !scorched(map, h) && !fireOn(state, h)) ??
+    nearer.find((h) => !fireOn(state, h)) ??
+    nearer[0];
   if (around) return around;
   const road = roadToExit(map, unit.hex)[0];
   return road && free(road) ? road : undefined;

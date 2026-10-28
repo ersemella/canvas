@@ -20,6 +20,7 @@ import {allowedTargets, onlyHold} from './choices';
 import {
   checkEnd,
   ageHail,
+  fanOut,
   endTurnEffects,
   enterHex,
   haste,
@@ -298,8 +299,10 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
       if (state.phase !== 'fight') return;
       if (!unit.alive) continue;
     }
-    // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25).
+    // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25),
+    // the Fan Lady's fire until her next (owner, 2026-10-28).
     ageHail(state, unit);
+    fanOut(state, unit);
     // An Empower or Weaken lasts until the end of this turn.
     if (unit.empower) unit.empowerStarted = true;
     if (unit.weaken) unit.weakenStarted = true;
@@ -499,6 +502,8 @@ export function cloneFight(state: FightState, keepLog = false): FightState {
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
     ...(state.shots ? {shots: state.shots.map((v) => ({...v}))} : {}),
+    ...(state.fires ? {fires: state.fires.map((f) => ({...f, hex: {...f.hex}}))} : {}),
+    ...(state.fan ? {fan: {...state.fan}} : {}),
     log: keepLog ? state.log.map((l) => ({...l})) : [],
   };
 }

@@ -43,7 +43,7 @@ import {
   ABILITIES,
   abilitiesOf,
   arrowLanes,
-  chargePlan,
+  ridePlan,
   stompPlan,
   unusableReason,
 } from './abilities';
@@ -583,7 +583,7 @@ describe('the track', () => {
 
 describe('the board', () => {
   it('has a map per region, each the Steppe’s board under another look', () => {
-    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'salt', 'tuff']);
+    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'ridges', 'salt', 'tuff']);
     expect(mapById('gobi')).toBe(GOBI);
     expect(mapById('flaming')).toBe(FLAMING);
     expect(mapById('salt')).toBe(SALT);
@@ -619,19 +619,21 @@ describe('the board', () => {
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
   });
 
-  it('stands five or six fairy chimneys near the middle of the Fairy Chimneys, with no mountains', () => {
+  it('scatters seven or eight fairy chimneys over the Fairy Chimneys, none side by side, with no mountains', () => {
     for (let seed = 0; seed < 40; seed++) {
       // Even a stage that asks for mountains gets none here.
       const s = createFight(seed, undefined, undefined, true, [], TUFF);
       expect(s.mapId).toBe('tuff');
       expect(mapOf(s).name).toBe('The Fairy Chimneys');
       const chimneys = Object.keys(s.tiles).filter((k) => s.tiles[k] === 'obstacle');
-      // Five or six (owner, 2026-10-28; three before).
-      expect([5, 6]).toContain(chimneys.length);
+      // Seven or eight (owner, 2026-10-28; three, then five or six, before).
+      expect([7, 8]).toContain(chimneys.length);
       expect(Object.values(s.tiles).every((t) => t === 'obstacle')).toBe(true);
-      for (const k of chimneys) {
-        const [q, r] = k.split(',').map(Number);
-        expect(hexDistance({q: q!, r: r!}, {q: 0, r: 0})).toBeLessThanOrEqual(3);
+      const at = chimneys.map((k) => k.split(',').map(Number)).map(([q, r]) => ({q: q!, r: r!}));
+      for (const h of at) {
+        // Out to the edge, but off the starting columns.
+        expect(Math.abs(h.q)).toBeLessThan(3);
+        for (const x of at) if (x !== h) expect(hexDistance(x, h)).toBeGreaterThan(1);
       }
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
     }
@@ -2362,7 +2364,7 @@ describe('the Cataphract', () => {
       [{}, 3],
     ] as const) {
       const {s, k} = ready(placements);
-      const plan = chargePlan(s, mapOf(s), k, c, along(c, dir, n));
+      const plan = ridePlan(s, mapOf(s), k, c, along(c, dir, n));
       const caught = plan.caught.map((u) => u.id).sort();
       charge(s, k, along(c, dir, n));
       expect(k.hex).toEqual(plan.end);
@@ -2452,6 +2454,40 @@ describe('the Priest', () => {
     expect(ally.shield).toBe(1);
     startTurnPassives(ctx, ally);
     expect(ally.shield).toBeUndefined();
+  });
+
+  it('as a Shield (`heal` off), Shields its power in place of healing', () => {
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0)});
+    const blessing = ABILITY.blessing as {heal: boolean};
+    onTestFinished(() => {
+      blessing.heal = true;
+    });
+    blessing.heal = false;
+    const ally = unit(s, 'p-bokh');
+    ally.hp = 2;
+    bless(s, p, ally);
+    expect(ally.hp).toBe(2);
+    expect(ally.shield).toBe(3);
+  });
+
+  it('as an aura, Shields every ally within its radius, the Priest too', () => {
+    const {s, p} = ready({
+      'p-bokh': hexNeighbor(c, 0),
+      'p-storm': hexNeighbor(hexNeighbor(c, 3), 3),
+    });
+    const blessing = ABILITY.blessing as {heal: boolean; shape: string; radius: number};
+    const saved = {...blessing};
+    onTestFinished(() => {
+      Object.assign(blessing, saved);
+    });
+    Object.assign(blessing, {heal: false, shape: 'aura', radius: 1});
+    expect(ABILITIES.blessing.targets(s, mapOf(s), p, c)).toEqual([{hex: c}]);
+    applyTurn(s, p, {action: {ability: 'blessing', target: {hex: c}}});
+    expect([p.shield, unit(s, 'p-bokh').shield, unit(s, 'p-storm').shield]).toEqual([
+      3,
+      3,
+      undefined,
+    ]);
   });
 
   it('the AI blesses a hurt ally rather than hold', () => {

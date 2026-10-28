@@ -14,8 +14,10 @@ export type Side = 'player' | 'enemy';
  * Ranger (owner, 2026-10-27), the Barbarian (`varangian`, owner,
  * 2026-10-28), the Priest and the Cataphract (owner, 2026-10-28), the
  * caravan's camel (camel.md), a unit that isn't a
- * hero, the enemy NPCs, the wolf and the fox, and the Steppe's boss, the
- * One-Eyed Giant (`giant`, owner, 2026-10-28; enemies.md).
+ * hero, the enemy NPCs, the wolf and the fox, the Steppe's boss, the
+ * One-Eyed Giant (`giant`, owner, 2026-10-28; enemies.md), and China's,
+ * the Ox King and the Fan Lady (`oxKing`, `fanLady`, owner, 2026-10-28;
+ * enemies.md).
  */
 export type HeroId =
   | 'bokh'
@@ -33,7 +35,9 @@ export type HeroId =
   | 'camel'
   | 'wolf'
   | 'fox'
-  | 'giant';
+  | 'giant'
+  | 'oxKing'
+  | 'fanLady';
 export type AbilityId =
   | 'hold'
   | 'snapShot'
@@ -54,6 +58,12 @@ export type AbilityId =
   // The One-Eyed Giant's (owner, 2026-10-28).
   | 'smash'
   | 'boulder'
+  // The Ox King's and the Fan Lady's (owner, 2026-10-28), and the fan she
+  // drops (`quench`).
+  | 'gore'
+  | 'bananaFan'
+  | 'fanFlames'
+  | 'quench'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
@@ -94,8 +104,10 @@ export type PassiveId =
   | 'loneWolf'
   | 'rally'
   | 'vengeance'
-  // A boss's own, not in 19.8's pool: the One-Eyed Giant's (owner, 2026-10-28).
-  | 'oneEye';
+  // A boss's own, not in 19.8's pool: the One-Eyed Giant's (owner, 2026-10-28),
+  // and the Ox King's and the Fan Lady's (owner, 2026-10-28).
+  | 'oneEye'
+  | 'devoted';
 
 /** The stats a provision raises (heroes-and-gear.md, 9.1). */
 export type StatId = 'speed' | 'defence' | 'power';
@@ -208,6 +220,11 @@ export interface Unit {
    */
   facing?: number;
   /**
+   * It carries the Fan Lady's fan, picked up where she fell (`FightState.fan`):
+   * it may spend a turn putting out every flame (`quench`). Absent otherwise.
+   */
+  fan?: boolean;
+  /**
    * Its passives that work once a fight (Second Wind, Hardened, Last Stand,
    * Iron Will) and have been used this fight. Absent while none has.
    */
@@ -289,6 +306,18 @@ export interface HailEffect {
 }
 
 /**
+ * A burning space (the Fan Lady's Fan the Flames, owner, 2026-10-28): a
+ * unit entering it, by walking or Moved there, takes `ABILITY.fanFlames.burn`.
+ * It goes out as its source's next turn starts; once she has fallen, only
+ * the fan she drops puts it out (`quench`).
+ */
+export interface FireEffect {
+  hex: Hex;
+  /** The Fan Lady's unit id. */
+  source: string;
+}
+
+/**
  * A charged Skirmish shot in the air: its Outrider's unit id, and the hex
  * direction the arrow flies from the Outrider when the charging card comes
  * back, hitting the first unit in that lane then (`shotLane` in board.ts).
@@ -337,6 +366,8 @@ export interface BoardSnapshot {
   units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped'>[];
   effects: HailEffect[];
   shots?: ShotInAir[];
+  fires?: FireEffect[];
+  fan?: Hex;
 }
 
 export type RecordedEvent = FightEvent & {after: BoardSnapshot};
@@ -360,6 +391,13 @@ export interface FightState {
    * Outrider's charging card comes back.
    */
   shots?: ShotInAir[];
+  /** Burning spaces (`FireEffect`); absent with none. */
+  fires?: FireEffect[];
+  /**
+   * Where the Fan Lady's fan lies, dropped where she fell (owner,
+   * 2026-10-28): a hero entering the space picks it up (`Unit.fan`).
+   */
+  fan?: Hex;
   log: LogEntry[];
   /**
    * What the last action set off, the player's turn and the AI turns after
