@@ -1487,7 +1487,7 @@ describe('the Magus', () => {
 
   it('Conjunction as `swap` (the first built) swaps two cards within 2 before its next turn', () => {
     const was = {...ABILITY.conjunction};
-    Object.assign(ABILITY.conjunction, {mode: 'swap'});
+    Object.assign(ABILITY.conjunction, {mode: 'swap', range: 2});
     try {
       const s = setup(
         {
@@ -1516,8 +1516,9 @@ describe('the Magus', () => {
     }
   });
 
-  it('Conjunction puts the first card next and the second just after its next turn', () => {
+  it('Conjunction as `bracket` puts the first card next and the second just after its next turn', () => {
     const was = {...ABILITY.conjunction};
+    Object.assign(ABILITY.conjunction, {mode: 'bracket', range: 2});
     try {
       const s = setup(
         {
@@ -1538,7 +1539,7 @@ describe('the Magus', () => {
       applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!, to: e.hex!}}});
       expect([b.slot, e.slot]).toEqual([s.currentSlot + 1, actionCost(m) + 1]);
       expect(m.slot).toBe(actionCost(m));
-      // As built, the Horse Archer can be put back again before it acts.
+      // With no guard, the Horse Archer can be put back again before it acts.
       s.currentSlot = actionCost(m);
       s.awaiting = m.id;
       b.slot = actionCost(m) + 2;
@@ -1554,7 +1555,7 @@ describe('the Magus', () => {
 
   it('Conjunction as `before` puts the first card next and the second just before its next turn', () => {
     const was = {...ABILITY.conjunction};
-    Object.assign(ABILITY.conjunction, {mode: 'before'});
+    Object.assign(ABILITY.conjunction, {mode: 'before', range: 2});
     try {
       const s = setup(
         {
@@ -1581,10 +1582,10 @@ describe('the Magus', () => {
     }
   });
 
-  it('Conjunction as `omen` aims one unit: an ally acts next, an enemy after its next turn', () => {
+  it('Conjunction (Omen) aims one unit within 3: an ally acts next, an enemy after its next turn', () => {
     const was = {...ABILITY.conjunction};
-    Object.assign(ABILITY.conjunction, {mode: 'omen'});
     try {
+      expect([ABILITY.conjunction.mode, ABILITY.conjunction.range]).toEqual(['omen', 3]);
       const s = setup(
         {
           'p-magus': c,
@@ -1619,40 +1620,46 @@ describe('the Magus', () => {
     }
   });
 
-  it('Conjunction passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
-    const s = setup(
-      {
-        'p-magus': c,
-        'e-mangudai': hexNeighbor(c, 0),
-        'e-bokh': hexNeighbor(c, 1),
-        'p-bokh': hexNeighbor(c, 2),
-        'p-mangudai': at(4, 7),
-        'p-camel': hexNeighbor(c, 4),
-      },
-      party
-    );
-    const m = unit(s, 'p-magus');
-    m.slot = s.currentSlot;
-    const next = aimSlot(s, m);
-    unit(s, 'e-mangudai').slot = next - 1;
-    unit(s, 'e-bokh').slot = next + 1;
-    unit(s, 'p-bokh').slot = 2;
-    unit(s, 'p-bokh').passives = ['steadyGait'];
-    unit(s, 'p-mangudai').slot = 3;
-    unit(s, 'p-camel').slot = 4;
-    // Only the Horse Archer next to it and Humphrey remain: one pair, either way round.
-    const ids = conjunction(s, m).map((t) => [unitAt(s, t.hex!)!.id, unitAt(s, t.to!)!.id]);
-    expect(ids).toEqual(
-      expect.arrayContaining([
-        ['e-mangudai', 'p-camel'],
-        ['p-camel', 'e-mangudai'],
-      ])
-    );
-    expect(ids).toHaveLength(2);
-    // With one unit left, there is nothing to swap.
-    unit(s, 'p-camel').slot = next + 2;
-    expect(conjunction(s, m)).toEqual([]);
-    expect(offeredTargets(s, mapOf(s), m, ABILITIES.conjunction)).toEqual([]);
+  it('Conjunction as `bracket` passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
+    const was = {...ABILITY.conjunction};
+    Object.assign(ABILITY.conjunction, {mode: 'bracket', range: 2});
+    try {
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': hexNeighbor(c, 0),
+          'e-bokh': hexNeighbor(c, 1),
+          'p-bokh': hexNeighbor(c, 2),
+          'p-mangudai': at(4, 7),
+          'p-camel': hexNeighbor(c, 4),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      m.slot = s.currentSlot;
+      const next = aimSlot(s, m);
+      unit(s, 'e-mangudai').slot = next - 1;
+      unit(s, 'e-bokh').slot = next + 1;
+      unit(s, 'p-bokh').slot = 2;
+      unit(s, 'p-bokh').passives = ['steadyGait'];
+      unit(s, 'p-mangudai').slot = 3;
+      unit(s, 'p-camel').slot = 4;
+      // Only the Horse Archer next to it and Humphrey remain: one pair, either way round.
+      const ids = conjunction(s, m).map((t) => [unitAt(s, t.hex!)!.id, unitAt(s, t.to!)!.id]);
+      expect(ids).toEqual(
+        expect.arrayContaining([
+          ['e-mangudai', 'p-camel'],
+          ['p-camel', 'e-mangudai'],
+        ])
+      );
+      expect(ids).toHaveLength(2);
+      // With one unit left, there is nothing to swap.
+      unit(s, 'p-camel').slot = next + 2;
+      expect(conjunction(s, m)).toEqual([]);
+      expect(offeredTargets(s, mapOf(s), m, ABILITIES.conjunction)).toEqual([]);
+    } finally {
+      Object.assign(ABILITY.conjunction, was);
+    }
   });
 
   it('an Inevitable card is still bumped on by a collision', () => {

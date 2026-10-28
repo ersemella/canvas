@@ -3594,7 +3594,9 @@ production, in a Steppe mirror with a Magus on each side (its side's wins):
   putting each other's side back stall; with no guard an Omen can still
   hold one enemy back each turn, and two Magi can each hold one.
 
-Not changed: the owner's call.
+**Built since** (the owner, 2026-10-28): Omen at range 3, no rider
+(`mode: 'omen'`, `range: 3` by default). The files measuring the Magus
+before it set the mode and range they were measured with.
 
 ## Principles for re-tuning
 

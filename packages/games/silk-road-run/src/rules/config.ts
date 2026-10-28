@@ -460,18 +460,22 @@ export const ABILITY = {
    */
   swiftStrike: {haste: 3 as number},
   /**
-   * Conjunction (owner, 2026-10-27; roster.md), the Magus's: two units
-   * within `range` (2), of either side, the camel too, neither Inevitable,
-   * whose cards both come before the Magus's next turn: the first's card
-   * put just after his current turn, the second's just after his next
-   * (`mode: 'bracket'`, owner, 2026-10-27; balance.md, "Longshot stopped by
-   * the first unit, and Conjunction as a bracket"), with no guard against
-   * putting the same unit back each turn (`once` off, the owner's call).
+   * Conjunction (owner, 2026-10-27; roster.md), the Magus's: as Omen
+   * since 2026-10-28 (owner; balance.md, "Omen": 48.8% in the Steppe's
+   * support seat, 51.7% in China's, the widest skill span measured), one
+   * unit within `range` (3), of either side, the camel too, not
+   * Inevitable, whose card comes before the Magus's next turn: an ally's
+   * card put just after his current turn, an enemy's just after his next,
+   * with no guard against putting the same enemy back each turn. Built
+   * first as a swap of two cards (`mode: 'swap'`), then on 2026-10-27 as a
+   * bracket of two (`mode: 'bracket'`), both at range 2.
    * Switches for measuring buffs (balance.md, "Archer nerfs and Magus
    * buffs"), off as built: `hit`, each enemy swapped hit for the Magus's
    * power; `delay`, each enemy swapped then Delayed this much more.
-   * `mode`: `bracket` (as built), or `swap`, the first built (the two
-   * cards swap places, one Hastened and the other Delayed by the gap); `before`, the second's just before his
+   * `mode`: `omen` (as built), `swap`, the first built (the two cards
+   * swap places, one Hastened and the other Delayed by the gap), or
+   * `bracket`, the first of two units' cards put just after his current
+   * turn and the second's just after his next; `before`, the second's just before his
    * next turn instead; `once` (with `bracket`), a unit put after his next
    * turn can't be put there again until it has acted; `omen` (balance.md,
    * "Omen"), one unit in place of two, an ally's card put just after his
@@ -480,10 +484,10 @@ export const ABILITY = {
    * Weakened, this much.
    */
   conjunction: {
-    range: 2 as number,
+    range: 3 as number,
     hit: false as boolean,
     delay: 0 as number,
-    mode: 'bracket' as 'swap' | 'bracket' | 'before' | 'omen',
+    mode: 'omen' as 'swap' | 'bracket' | 'before' | 'omen',
     once: false as boolean,
     rider: 0 as number,
   },

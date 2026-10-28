@@ -5,7 +5,7 @@
 // enemy Weakened 1 (`.rider`). In the support seat of a Steppe and a China
 // mirror, as archer-magus.mjs; and skill, as roster-check.mjs, the Magus played
 // a decision deep or four deep in a Steppe mirror with a Magus on each side,
-// for Omen and for Conjunction as built (the bracket).
+// for Omen and for Conjunction as then built (the bracket, range 2).
 const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['youxia', 'modao', 'alchemist'];
 const seat = (party, i, hero) => party.map((h, j) => (j === i ? hero : h));
@@ -28,7 +28,7 @@ for (const [v, patch] of Object.entries(variants))
     experiments[`magus-${v}-${name}`] = {party, patch, mod: {party: seat(party, 2, 'magus')}};
 const party = seat(steppe, 2, 'magus');
 for (const [v, patch] of [
-  ['bracket', () => {}],
+  ['bracket', (c) => Object.assign(c.ABILITY.conjunction, {mode: 'bracket', range: 2})],
   ['omen', variants.omen],
   ['omen+range3', variants['omen+range3']],
 ])

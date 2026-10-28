@@ -79,7 +79,7 @@ for (const [hero, variants, steppeSeat, chinaSeat] of [
         // (any unit on its lines, no Pierce or Delay), both built until
         // later that day.
         patch: (c) => {
-          c.ABILITY.conjunction.mode = 'swap';
+          Object.assign(c.ABILITY.conjunction, {mode: 'swap', range: 2});
           Object.assign(c.ABILITY.longshot, {first: false, pierce: false, delay: 0});
           patch(c);
         },

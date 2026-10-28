@@ -19,7 +19,7 @@ const archer = {
 // The baseline swap is set by archer-magus.mjs; these set their own mode.
 const magus = {
   bracket: (c) => {
-    c.ABILITY.conjunction.mode = 'bracket';
+    Object.assign(c.ABILITY.conjunction, {mode: 'bracket', range: 2});
   },
   'bracket+range3': (c) => {
     c.ABILITY.conjunction.mode = 'bracket';
