@@ -1470,8 +1470,7 @@ describe('the Swordsman', () => {
 describe('the Magus', () => {
   const party: HeroId[] = ['magus', 'mangudai', 'bokh'];
   const c = at(4, 4);
-  const conjunction = (s: FightState, m: Unit) =>
-    ABILITIES.conjunction.targets(s, mapOf(s), m, m.hex!);
+  const omenTargets = (s: FightState, m: Unit) => ABILITIES.omen.targets(s, mapOf(s), m, m.hex!);
 
   it('has speed 2, power 0, defence 1, and is Inevitable from the start', () => {
     const s = setup({'p-magus': c}, party);
@@ -1485,9 +1484,9 @@ describe('the Magus', () => {
     expect(m.slot).toBe(was);
   });
 
-  it('Conjunction as `swap` (the first built) swaps two cards within 2 before its next turn', () => {
-    const was = {...ABILITY.conjunction};
-    Object.assign(ABILITY.conjunction, {mode: 'swap', range: 2});
+  it('Omen as `swap` (the first built) swaps two cards within 2 before its next turn', () => {
+    const was = {...ABILITY.omen};
+    Object.assign(ABILITY.omen, {mode: 'swap', range: 2});
     try {
       const s = setup(
         {
@@ -1503,22 +1502,22 @@ describe('the Magus', () => {
       m.slot = s.currentSlot;
       e.slot = 1;
       b.slot = 7;
-      const targets = conjunction(s, m);
+      const targets = omenTargets(s, m);
       expect(targets).toHaveLength(2);
       // Either way round is the same swap.
-      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: e.hex!, to: b.hex!}}});
+      applyTurn(s, m, {action: {ability: 'omen', target: {hex: e.hex!, to: b.hex!}}});
       expect([e.slot, b.slot]).toEqual([7, 1]);
       expect(m.slot).toBe(actionCost(m));
       expect(m.power).toBe(0);
       expect(e.hp).toBe(e.maxHp);
     } finally {
-      Object.assign(ABILITY.conjunction, was);
+      Object.assign(ABILITY.omen, was);
     }
   });
 
-  it('Conjunction as `bracket` puts the first card next and the second just after its next turn', () => {
-    const was = {...ABILITY.conjunction};
-    Object.assign(ABILITY.conjunction, {mode: 'bracket', range: 2});
+  it('Omen as `bracket` puts the first card next and the second just after its next turn', () => {
+    const was = {...ABILITY.omen};
+    Object.assign(ABILITY.omen, {mode: 'bracket', range: 2});
     try {
       const s = setup(
         {
@@ -1535,27 +1534,27 @@ describe('the Magus', () => {
       e.slot = 1;
       b.slot = 7;
       // Which is aimed first matters: both orders are offered.
-      expect(conjunction(s, m)).toHaveLength(2);
-      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!, to: e.hex!}}});
+      expect(omenTargets(s, m)).toHaveLength(2);
+      applyTurn(s, m, {action: {ability: 'omen', target: {hex: b.hex!, to: e.hex!}}});
       expect([b.slot, e.slot]).toEqual([s.currentSlot + 1, actionCost(m) + 1]);
       expect(m.slot).toBe(actionCost(m));
       // With no guard, the Horse Archer can be put back again before it acts.
       s.currentSlot = actionCost(m);
       s.awaiting = m.id;
       b.slot = actionCost(m) + 2;
-      const seconds = () => conjunction(s, m).map((t) => unitAt(s, t.to!)!.id);
+      const seconds = () => omenTargets(s, m).map((t) => unitAt(s, t.to!)!.id);
       expect(seconds().sort()).toEqual(['e-mangudai', 'p-bokh']);
       // With `once` (a switch, off), not until it has acted: only aimed first.
-      Object.assign(ABILITY.conjunction, {once: true});
+      Object.assign(ABILITY.omen, {once: true});
       expect(seconds()).toEqual(['p-bokh']);
     } finally {
-      Object.assign(ABILITY.conjunction, was);
+      Object.assign(ABILITY.omen, was);
     }
   });
 
-  it('Conjunction as `before` puts the first card next and the second just before its next turn', () => {
-    const was = {...ABILITY.conjunction};
-    Object.assign(ABILITY.conjunction, {mode: 'before', range: 2});
+  it('Omen as `before` puts the first card next and the second just before its next turn', () => {
+    const was = {...ABILITY.omen};
+    Object.assign(ABILITY.omen, {mode: 'before', range: 2});
     try {
       const s = setup(
         {
@@ -1571,21 +1570,21 @@ describe('the Magus', () => {
       m.slot = s.currentSlot;
       e.slot = 1;
       b.slot = 7;
-      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!, to: e.hex!}}});
+      applyTurn(s, m, {action: {ability: 'omen', target: {hex: b.hex!, to: e.hex!}}});
       expect([b.slot, e.slot, m.slot]).toEqual([
         s.currentSlot + 1,
         actionCost(m) - 1,
         actionCost(m),
       ]);
     } finally {
-      Object.assign(ABILITY.conjunction, was);
+      Object.assign(ABILITY.omen, was);
     }
   });
 
-  it('Conjunction (Omen) aims one unit within 3: an ally acts next, an enemy after its next turn', () => {
-    const was = {...ABILITY.conjunction};
+  it('Omen aims one unit within 3: an ally acts next, an enemy after its next turn', () => {
+    const was = {...ABILITY.omen};
     try {
-      expect([ABILITY.conjunction.mode, ABILITY.conjunction.range]).toEqual(['omen', 3]);
+      expect([ABILITY.omen.mode, ABILITY.omen.range]).toEqual(['single', 3]);
       const s = setup(
         {
           'p-magus': c,
@@ -1600,29 +1599,29 @@ describe('the Magus', () => {
       m.slot = s.currentSlot;
       e.slot = 1;
       b.slot = 7;
-      expect(conjunction(s, m).map((t) => [unitAt(s, t.hex!)!.id, t.to])).toEqual(
+      expect(omenTargets(s, m).map((t) => [unitAt(s, t.hex!)!.id, t.to])).toEqual(
         expect.arrayContaining([
           ['e-mangudai', undefined],
           ['p-bokh', undefined],
         ])
       );
-      applyTurn(s, m, {action: {ability: 'conjunction', target: {hex: b.hex!}}});
+      applyTurn(s, m, {action: {ability: 'omen', target: {hex: b.hex!}}});
       expect(b.slot).toBe(s.currentSlot + 1);
       const s2 = setup({'p-magus': c, 'e-mangudai': hexNeighbor(c, 0)}, party);
       const m2 = unit(s2, 'p-magus');
       const e2 = unit(s2, 'e-mangudai');
       m2.slot = s2.currentSlot;
       e2.slot = 1;
-      applyTurn(s2, m2, {action: {ability: 'conjunction', target: {hex: e2.hex!}}});
+      applyTurn(s2, m2, {action: {ability: 'omen', target: {hex: e2.hex!}}});
       expect(e2.slot).toBe(actionCost(m2) + 1);
     } finally {
-      Object.assign(ABILITY.conjunction, was);
+      Object.assign(ABILITY.omen, was);
     }
   });
 
-  it('Conjunction as `bracket` passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
-    const was = {...ABILITY.conjunction};
-    Object.assign(ABILITY.conjunction, {mode: 'bracket', range: 2});
+  it('Omen as `bracket` passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
+    const was = {...ABILITY.omen};
+    Object.assign(ABILITY.omen, {mode: 'bracket', range: 2});
     try {
       const s = setup(
         {
@@ -1645,7 +1644,7 @@ describe('the Magus', () => {
       unit(s, 'p-mangudai').slot = 3;
       unit(s, 'p-camel').slot = 4;
       // Only the Horse Archer next to it and Humphrey remain: one pair, either way round.
-      const ids = conjunction(s, m).map((t) => [unitAt(s, t.hex!)!.id, unitAt(s, t.to!)!.id]);
+      const ids = omenTargets(s, m).map((t) => [unitAt(s, t.hex!)!.id, unitAt(s, t.to!)!.id]);
       expect(ids).toEqual(
         expect.arrayContaining([
           ['e-mangudai', 'p-camel'],
@@ -1655,10 +1654,10 @@ describe('the Magus', () => {
       expect(ids).toHaveLength(2);
       // With one unit left, there is nothing to swap.
       unit(s, 'p-camel').slot = next + 2;
-      expect(conjunction(s, m)).toEqual([]);
-      expect(offeredTargets(s, mapOf(s), m, ABILITIES.conjunction)).toEqual([]);
+      expect(omenTargets(s, m)).toEqual([]);
+      expect(offeredTargets(s, mapOf(s), m, ABILITIES.omen)).toEqual([]);
     } finally {
-      Object.assign(ABILITY.conjunction, was);
+      Object.assign(ABILITY.omen, was);
     }
   });
 

@@ -125,11 +125,11 @@ export interface AbilityDef {
    */
   bothSides?: boolean;
   /**
-   * Aimed at two units, `hex` and `to`, either way round (Conjunction): the
+   * Aimed at two units, `hex` and `to`, either way round (Omen as `bracket` or `swap`): the
    * page aims one and then the other, and the AI tries each pair once.
    */
   pairs?: boolean;
-  /** With `pairs`, which unit is aimed first matters (Conjunction as `bracket`). */
+  /** With `pairs`, which unit is aimed first matters (Omen as `bracket`). */
   ordered?: boolean;
   /**
    * The unit a target aims at, when it isn't simply the one on its hex
@@ -909,11 +909,11 @@ const swiftStrike: AbilityDef = {
 // ─── Magus ───────────────────────────────────────────────────────────────────
 
 /**
- * The units Conjunction can take from `from`: within its range, not the
+ * The units Omen can take from `from`: within its range, not the
  * Magus, not Inevitable, and with a card before the Magus's next turn
  * (its action cost on from now), so each still acts before it does again.
  */
-export function conjunctionTakes(state: FightState, user: Unit, from: Hex): Unit[] {
+export function omenTakes(state: FightState, user: Unit, from: Hex): Unit[] {
   const next = aimSlot(state, user);
   return state.units.filter(
     (u) =>
@@ -923,46 +923,46 @@ export function conjunctionTakes(state: FightState, user: Unit, from: Hex): Unit
       u.slot !== null &&
       u.slot > state.currentSlot &&
       u.slot < next &&
-      hexDistance(u.hex, from) <= ABILITY.conjunction.range &&
+      hexDistance(u.hex, from) <= ABILITY.omen.range &&
       !hasPassive(u, 'steadyGait')
   );
 }
 
 /**
- * Conjunction (owner, 2026-10-27; roster.md): two units within
- * `ABILITY.conjunction.range`, of either side, the camel too, swap places
- * on the track (`swapCards`), both cards before the Magus's next turn.
+ * Omen (owner, 2026-10-28; roster.md), the Magus's: one unit, an ally to
+ * act next, an enemy after his next turn (`mode: 'single'`). Named
+ * Conjunction until then, when it was two units (`swap`, then `bracket`).
  */
-const conjunction: AbilityDef = {
-  id: 'conjunction',
-  name: 'Conjunction',
+const omen: AbilityDef = {
+  id: 'omen',
+  name: 'Omen',
   kind: 'control',
   damages: false,
   bothSides: true,
   // Omen aims one unit.
   get pairs() {
-    return ABILITY.conjunction.mode !== 'omen';
+    return ABILITY.omen.mode !== 'single';
   },
   get ordered() {
-    return ABILITY.conjunction.mode !== 'swap';
+    return ABILITY.omen.mode !== 'swap';
   },
   targetsUnit: true,
   get range() {
-    return ABILITY.conjunction.range;
+    return ABILITY.omen.range;
   },
   summary: () =>
-    ABILITY.conjunction.mode === 'omen'
-      ? `A unit within ${ABILITY.conjunction.range} whose turn comes before your next: an ally acts next, an enemy just after your next turn.`
-      : ABILITY.conjunction.mode === 'before'
-        ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just before your next turn.`
-        : ABILITY.conjunction.mode === 'bracket'
-          ? `Two units within ${ABILITY.conjunction.range} whose turns come before your next: the first acts next, the second just after your next turn.`
-          : `Two units within ${ABILITY.conjunction.range} whose turns come before your next swap places on the track.`,
+    ABILITY.omen.mode === 'single'
+      ? `A unit within ${ABILITY.omen.range} whose turn comes before your next: an ally acts next, an enemy just after your next turn.`
+      : ABILITY.omen.mode === 'before'
+        ? `Two units within ${ABILITY.omen.range} whose turns come before your next: the first acts next, the second just before your next turn.`
+        : ABILITY.omen.mode === 'bracket'
+          ? `Two units within ${ABILITY.omen.range} whose turns come before your next: the first acts next, the second just after your next turn.`
+          : `Two units within ${ABILITY.omen.range} whose turns come before your next swap places on the track.`,
   targets(state, _map, user, from) {
-    const units = sortByHex(conjunctionTakes(state, user, from), (u) => u.hex!);
-    const {mode, once} = ABILITY.conjunction;
+    const units = sortByHex(omenTakes(state, user, from), (u) => u.hex!);
+    const {mode, once} = ABILITY.omen;
     const out: ActionTarget[] = [];
-    if (mode === 'omen') return units.map((u) => ({hex: {...u.hex!}}));
+    if (mode === 'single') return units.map((u) => ({hex: {...u.hex!}}));
     for (const a of units)
       for (const b of units)
         if (a !== b && !(mode === 'bracket' && once && b.bracketed))
@@ -971,8 +971,8 @@ const conjunction: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const a = unitAt(ctx.state, target.hex!)!;
-    if (ABILITY.conjunction.mode === 'omen') {
-      const {rider} = ABILITY.conjunction;
+    if (ABILITY.omen.mode === 'single') {
+      const {rider} = ABILITY.omen;
       log(ctx, `${unitName(user)} reads an omen in the stars.`);
       if (a.side === user.side) {
         setCard(ctx, a, ctx.state.currentSlot + 1);
@@ -987,20 +987,20 @@ const conjunction: AbilityDef = {
     }
     const b = unitAt(ctx.state, target.to!)!;
     log(ctx, `${unitName(user)} reads a conjunction in the stars.`);
-    if (ABILITY.conjunction.mode === 'bracket') {
+    if (ABILITY.omen.mode === 'bracket') {
       setCard(ctx, a, ctx.state.currentSlot + 1);
       setCard(ctx, b, aimSlot(ctx.state, user) + 1);
       b.bracketed = true;
       log(ctx, `${unitName(a)} acts next; ${unitName(b)} after ${unitName(user)} again.`);
-    } else if (ABILITY.conjunction.mode === 'before') {
+    } else if (ABILITY.omen.mode === 'before') {
       setCard(ctx, a, ctx.state.currentSlot + 1);
       setCard(ctx, b, aimSlot(ctx.state, user) - 1);
       log(ctx, `${unitName(a)} acts next; ${unitName(b)} just before ${unitName(user)} again.`);
     } else swapCards(ctx, a, b);
     for (const u of [a, b]) {
       if (u.side === user.side) continue;
-      if (ABILITY.conjunction.hit) hit(ctx, user, u, `${unitName(user)}'s stars`);
-      delay(ctx, u, ABILITY.conjunction.delay);
+      if (ABILITY.omen.hit) hit(ctx, user, u, `${unitName(user)}'s stars`);
+      delay(ctx, u, ABILITY.omen.delay);
     }
   },
 };
@@ -1136,7 +1136,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   cleave,
   elixir,
   swiftStrike,
-  conjunction,
+  omen,
   trample,
   longshot,
   shove,

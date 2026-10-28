@@ -149,9 +149,12 @@ bracket (`ABILITY.conjunction.mode`, `.once`), against `archer-magus.mjs`'s
 with its second unit before the Magus's next turn (`mode: 'before'`), and
 Longshot with Delay, Weaken or a pin in place of Push (`.delay`, `.weaken`,
 `.pin`). Conjunction is the bracket since 2026-10-27, so `roster-nine.mjs` and
-`archer-magus.mjs` set `mode: 'swap'`, as they were measured.
+`archer-magus.mjs` set `mode: 'swap'`, as they were measured. Conjunction was
+renamed Omen on 2026-10-28 (`ABILITY.omen`; mode `omen` became `single`); the
+experiment files use the new names, the notes above the old.
 `omen.mjs` (2026-10-27) measures Omen, the Magus's ability on one unit
-(`ABILITY.conjunction.mode: 'omen'`, `.rider`), in the support seats and its
+(`ABILITY.conjunction.mode: 'omen'`, `.rider`; since 2026-10-28 the ability is
+Omen, `ABILITY.omen`, its mode `single`), in the support seats and its
 skill span against the bracket.
 
 ## Ability and stat ablation

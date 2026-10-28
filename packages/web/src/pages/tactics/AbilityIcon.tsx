@@ -274,7 +274,7 @@ const ICON: Record<IconId, Icon> = {
     ],
   },
   // Two stars meeting, the brighter one the accent.
-  conjunction: {
+  omen: {
     kind: 'control',
     rows: [
       '............', //

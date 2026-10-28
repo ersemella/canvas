@@ -33,7 +33,7 @@ const archer = {
 const magus = {
   built: () => {},
   range3: (c) => {
-    c.ABILITY.conjunction.range = 3;
+    c.ABILITY.omen.range = 3;
   },
   speed3: (c) => {
     c.HEROES.magus.speed = 3;
@@ -43,24 +43,24 @@ const magus = {
   },
   // Each enemy swapped hit for the Magus's power, at power 1 or 2.
   hit1: (c) => {
-    c.ABILITY.conjunction.hit = true;
+    c.ABILITY.omen.hit = true;
     c.HEROES.magus.power = 1;
   },
   hit2: (c) => {
-    c.ABILITY.conjunction.hit = true;
+    c.ABILITY.omen.hit = true;
     c.HEROES.magus.power = 2;
   },
   // Each enemy swapped then Delayed 2 or 3 more.
   delay2: (c) => {
-    c.ABILITY.conjunction.delay = 2;
+    c.ABILITY.omen.delay = 2;
   },
   delay3: (c) => {
-    c.ABILITY.conjunction.delay = 3;
+    c.ABILITY.omen.delay = 3;
   },
   'hit1+range3': (c) => {
-    c.ABILITY.conjunction.hit = true;
+    c.ABILITY.omen.hit = true;
     c.HEROES.magus.power = 1;
-    c.ABILITY.conjunction.range = 3;
+    c.ABILITY.omen.range = 3;
   },
 };
 export const experiments = {};
@@ -79,7 +79,7 @@ for (const [hero, variants, steppeSeat, chinaSeat] of [
         // (any unit on its lines, no Pierce or Delay), both built until
         // later that day.
         patch: (c) => {
-          Object.assign(c.ABILITY.conjunction, {mode: 'swap', range: 2});
+          Object.assign(c.ABILITY.omen, {mode: 'swap', range: 2});
           Object.assign(c.ABILITY.longshot, {first: false, pierce: false, delay: 0});
           patch(c);
         },

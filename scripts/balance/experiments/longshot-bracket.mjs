@@ -3,7 +3,7 @@
 // first unit or yurt in line and Piercing, power 3 kept (`ABILITY.longshot.first`,
 // `.pierce`), and Conjunction putting its first unit's card just after the
 // Magus's current turn and its second's just after his next, in place of a
-// swap (`ABILITY.conjunction.mode: 'bracket'`).
+// swap (`ABILITY.omen.mode: 'bracket'`).
 // Longshot's Delay is 3 as built since 2026-10-27, so each Archer row sets its own.
 const steppe = ['bokh', 'mangudai', 'storm'];
 const china = ['youxia', 'modao', 'alchemist'];
@@ -19,11 +19,11 @@ const archer = {
 // The baseline swap is set by archer-magus.mjs; these set their own mode.
 const magus = {
   bracket: (c) => {
-    Object.assign(c.ABILITY.conjunction, {mode: 'bracket', range: 2});
+    Object.assign(c.ABILITY.omen, {mode: 'bracket', range: 2});
   },
   'bracket+range3': (c) => {
-    c.ABILITY.conjunction.mode = 'bracket';
-    c.ABILITY.conjunction.range = 3;
+    c.ABILITY.omen.mode = 'bracket';
+    c.ABILITY.omen.range = 3;
   },
 };
 export const experiments = {};
@@ -46,7 +46,7 @@ for (const [name, party] of [
   for (const range of [2, 3])
     experiments[`magus-bracket+once${range === 3 ? '+range3' : ''}-${name}`] = {
       party,
-      patch: (c) => Object.assign(c.ABILITY.conjunction, {mode: 'bracket', once: true, range}),
+      patch: (c) => Object.assign(c.ABILITY.omen, {mode: 'bracket', once: true, range}),
       mod: {party: seat(party, 2, 'magus')},
     };
 // Then (2026-10-27): the first-unit Longshot with Push 1 or 2, and Conjunction
@@ -65,7 +65,7 @@ for (const [name, party, archerSeat] of [
   for (const range of [2, 3])
     experiments[`magus-before${range === 3 ? '+range3' : ''}-${name}`] = {
       party,
-      patch: (c) => Object.assign(c.ABILITY.conjunction, {mode: 'before', range}),
+      patch: (c) => Object.assign(c.ABILITY.omen, {mode: 'before', range}),
       mod: {party: seat(party, 2, 'magus')},
     };
 }

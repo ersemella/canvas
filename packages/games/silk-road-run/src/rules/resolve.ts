@@ -274,7 +274,7 @@ export function haste(ctx: Ctx, u: Unit, n: number): void {
 }
 
 /**
- * Swaps two cards' places on the track (the Magus's Conjunction): each
+ * Swaps two cards' places on the track (the Magus's Omen as `swap`): each
  * takes the slot the other leaves, so nothing collides. The later one is
  * Hastened and the earlier Delayed by the same gap, neither if either is
  * Inevitable (17.3).
@@ -288,7 +288,7 @@ export function swapCards(ctx: Ctx, a: Unit, b: Unit): void {
 
 /**
  * Puts `u`'s card on `slot` exactly, a card already there moved on (the
- * Magus's Conjunction as `bracket`), unless `u` is Inevitable (17.3).
+ * Magus's Omen as `bracket`), unless `u` is Inevitable (17.3).
  */
 export function setCard(ctx: Ctx, u: Unit, slot: number): void {
   if (!u.alive || u.slot === null || inevitable(ctx, u)) return;

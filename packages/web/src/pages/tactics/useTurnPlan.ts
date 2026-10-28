@@ -31,7 +31,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   grapple: 'No one within reach to grapple whom you aren’t grappling already.',
   bite: 'No enemy next to you.',
   swiftStrike: 'No enemy next to you.',
-  conjunction: 'No unit within 3 whose turn comes before your next.',
+  omen: 'No unit within 3 whose turn comes before your next.',
   trample: 'Nowhere to walk in a straight line.',
   longshot: 'No one in any of your lanes.',
   shove: 'No one next to you to shove.',
@@ -42,12 +42,12 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
 /**
  * Abilities picked in two taps, the unit aimed at and a space (`to`), and
  * the prompt for the space: Feigned Retreat's target, then where it falls
- * back to; Conjunction's two units, one then the other; for an ability that steps first (Skirmish, `steps`), the space, then the target
+ * back to; Omen's two units (as `bracket` or `swap`), one then the other; for an ability that steps first (Skirmish, `steps`), the space, then the target
  * in line from there.
  */
 const SECOND_PICK: Partial<Record<AbilityId, string>> = {
   feignedRetreat: 'Pick where to fall back',
-  conjunction: 'Pick the unit to wait until after your next turn',
+  omen: 'Pick the unit to wait until after your next turn',
   skirmish: 'Pick where to step',
 };
 const stepsFirst = (id: AbilityId | null) => Boolean(id && ABILITIES[id].steps);

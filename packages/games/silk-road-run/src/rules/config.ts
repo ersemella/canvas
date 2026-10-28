@@ -185,7 +185,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Magus (owner, 2026-10-27; roster.md): Persia's support, a track
    * controller. Speed 2, defence 1 (health 4) and power 0 are the owner's:
    * no ability of its deals damage. Inevitable from the start (Steady
-   * Gait): nothing Delays or Hastens its card, its own Conjunction
+   * Gait): nothing Delays or Hastens its card, its own Omen
    * included, though a collision still bumps it (3.3; owner, 2026-10-27).
    */
   magus: {
@@ -194,7 +194,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 2,
     defence: 1,
     power: 0,
-    abilities: ['conjunction', 'hold'],
+    abilities: ['omen', 'hold'],
     passives: ['steadyGait'],
   },
   /**
@@ -460,8 +460,8 @@ export const ABILITY = {
    */
   swiftStrike: {haste: 3 as number},
   /**
-   * Conjunction (owner, 2026-10-27; roster.md), the Magus's: as Omen
-   * since 2026-10-28 (owner; balance.md, "Omen": 48.8% in the Steppe's
+   * Omen (owner, 2026-10-28; roster.md), the Magus's, named Conjunction
+   * until then (balance.md, "Omen": 48.8% in the Steppe's
    * support seat, 51.7% in China's, the widest skill span measured), one
    * unit within `range` (3), of either side, the camel too, not
    * Inevitable, whose card comes before the Magus's next turn: an ally's
@@ -472,22 +472,22 @@ export const ABILITY = {
    * Switches for measuring buffs (balance.md, "Archer nerfs and Magus
    * buffs"), off as built: `hit`, each enemy swapped hit for the Magus's
    * power; `delay`, each enemy swapped then Delayed this much more.
-   * `mode`: `omen` (as built), `swap`, the first built (the two cards
+   * `mode`: `single` (as built), `swap`, the first built (the two cards
    * swap places, one Hastened and the other Delayed by the gap), or
    * `bracket`, the first of two units' cards put just after his current
    * turn and the second's just after his next; `before`, the second's just before his
    * next turn instead; `once` (with `bracket`), a unit put after his next
-   * turn can't be put there again until it has acted; `omen` (balance.md,
+   * turn can't be put there again until it has acted; `single` (balance.md,
    * "Omen"), one unit in place of two, an ally's card put just after his
    * current turn and an enemy's just after his next, the Elixir's choice
-   * of side. `rider` (with `omen`): the ally Empowered, the enemy
+   * of side. `rider` (with `single`): the ally Empowered, the enemy
    * Weakened, this much.
    */
-  conjunction: {
+  omen: {
     range: 3 as number,
     hit: false as boolean,
     delay: 0 as number,
-    mode: 'omen' as 'swap' | 'bracket' | 'before' | 'omen',
+    mode: 'single' as 'swap' | 'bracket' | 'before' | 'single',
     once: false as boolean,
     rider: 0 as number,
   },

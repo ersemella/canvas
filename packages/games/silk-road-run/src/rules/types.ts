@@ -39,7 +39,7 @@ export type AbilityId =
   | 'cleave'
   | 'elixir'
   | 'swiftStrike'
-  | 'conjunction'
+  | 'omen'
   | 'trample'
   | 'longshot'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
@@ -218,8 +218,8 @@ export interface Unit {
    */
   hasteDue?: number;
   /**
-   * Put after the Magus's next turn by a Conjunction (`bracket`) and not
-   * yet acted since: with `ABILITY.conjunction.once`, not put there again.
+   * Put after the Magus's next turn by an Omen (`bracket`) and not
+   * yet acted since: with `ABILITY.omen.once`, not put there again.
    */
   bracketed?: boolean;
   /** It took a unit off the board this turn (Momentum, 19.8). */

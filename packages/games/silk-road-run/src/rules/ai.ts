@@ -305,7 +305,7 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
       const key = `${def.id}:${target.hex ? hexKey(target.hex) : ''}:${target.to ? hexKey(target.to) : ''}`;
       if (tried.has(key)) continue;
       tried.add(key);
-      // A pair either way round is one turn (Conjunction).
+      // A pair either way round is one turn (Omen as `bracket` or `swap`).
       if (def.pairs && !def.ordered)
         tried.add(`${def.id}:${hexKey(target.to!)}:${hexKey(target.hex!)}`);
       inputs.push({action: {ability: def.id, target}});
@@ -403,32 +403,29 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     }
     return closing + value;
   }
-  // Conjunction: the share of a turn each card loses (an enemy's, a gain)
+  // Omen: the share of a turn each card loses (an enemy's, a gain)
   // or gains (an ally's), as Cleave's Delay is weighed.
-  if (ability === 'conjunction') {
+  if (ability === 'omen') {
     const a = unitAt(state, target!.hex!)!;
     const later = (u: Unit, by: number) =>
       ((hostile(u, unit) ? 1 : -1) * turnValue(u) * by) / cardCost(u);
     // Omen: one unit, an ally to act next, an enemy after the Magus's next turn.
-    if (ABILITY.conjunction.mode === 'omen') {
+    if (ABILITY.omen.mode === 'single') {
       const to = hostile(a, unit) ? aimSlot(state, unit) + 1 : state.currentSlot + 1;
-      return closing + later(a, to - a.slot!) + (ABILITY.conjunction.rider ? 1 : 0);
+      return closing + later(a, to - a.slot!) + (ABILITY.omen.rider ? 1 : 0);
     }
     const b = unitAt(state, target!.to!)!;
     // Its switches (off as built): a hit and a Delay on each enemy swapped.
     let extra = 0;
     for (const u of [a, b]) {
       if (!hostile(u, unit)) continue;
-      if (ABILITY.conjunction.hit) extra += Math.min(damageOf(unit), u.hp);
-      extra += (turnValue(u) * ABILITY.conjunction.delay) / cardCost(u);
+      if (ABILITY.omen.hit) extra += Math.min(damageOf(unit), u.hp);
+      extra += (turnValue(u) * ABILITY.omen.delay) / cardCost(u);
     }
     const moves =
-      ABILITY.conjunction.mode !== 'swap'
+      ABILITY.omen.mode !== 'swap'
         ? later(a, state.currentSlot + 1 - a.slot!) +
-          later(
-            b,
-            aimSlot(state, unit) + (ABILITY.conjunction.mode === 'before' ? -1 : 1) - b.slot!
-          )
+          later(b, aimSlot(state, unit) + (ABILITY.omen.mode === 'before' ? -1 : 1) - b.slot!)
         : later(a, b.slot! - a.slot!) + later(b, a.slot! - b.slot!);
     return closing + moves + extra;
   }
