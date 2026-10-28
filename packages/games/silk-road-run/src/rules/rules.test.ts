@@ -2739,6 +2739,23 @@ describe('the caravan’s camel', () => {
     expect(s.phase).toBe('won');
   });
 
+  it('lets an enemy walk through the exit but not end its move there', () => {
+    const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': {q: -3, r: 4}});
+    const map = mapOf(s);
+    const exit = map.exits[0]!;
+    expect(exit).toEqual({q: -4, r: 4});
+    const e = unit(s, 'e-bokh');
+    expect(invalidPath(s, map, e, [exit])).toBe('An enemy can’t end its move on the exit.');
+    expect(invalidPath(s, map, e, [exit, {q: -4, r: 3}])).toBeNull();
+    const reach = reachableHexes(s, map, e);
+    expect(reach.some((r) => hexEquals(r.hex, exit))).toBe(false);
+    expect(reach.some((r) => hexEquals(r.hex, {q: -4, r: 3}))).toBe(true);
+    // The party may still stand on it.
+    const b = unit(s, 'p-bokh');
+    b.hex = {q: -3, r: 3};
+    expect(reachableHexes(s, map, b).some((r) => hexEquals(r.hex, exit))).toBe(true);
+  });
+
   it('is game over when it dies, even if the last enemy falls with it', () => {
     const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     kill({state: s, map: mapOf(s), slot: 0}, unit(s, 'p-camel'));

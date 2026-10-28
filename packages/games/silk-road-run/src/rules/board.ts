@@ -225,6 +225,11 @@ export interface Reach {
   path: Hex[];
 }
 
+/** An enemy's move may cross an exit but not end on one, so it can't park on the camel's goal. */
+export function mayEndOn(map: MapData, unit: Unit, h: Hex): boolean {
+  return unit.side !== 'enemy' || !map.exits.some((e) => hexEquals(e, h));
+}
+
 /** Light Step (19.8): the unit walks through allies, and may end on one, swapping places. */
 export function passesAllies(unit: Unit): boolean {
   return hasPassive(unit, 'lightStep');
@@ -237,7 +242,8 @@ export function passesAllies(unit: Unit): boolean {
  * hail ends there (it Immobilizes), unless the unit is Unstoppable. With Light Step (19.8) allies don't
  * block, and a walk may end on one whose space it entered from a free one
  * (or its start): the two swap, the ally Moved to that space (`walk` in
- * resolve.ts). A unit that `movesStraight` goes along the six lanes
+ * resolve.ts). An enemy walks through an exit but never ends on one
+ * (`mayEndOn`). A unit that `movesStraight` goes along the six lanes
  * instead (`straightReaches`).
  */
 export function reachableHexes(state: FightState, map: MapData, unit: Unit): Reach[] {
@@ -277,7 +283,10 @@ export function reachableHexes(state: FightState, map: MapData, unit: Unit): Rea
     .filter(([key]) => !occupant.has(key))
     .map(([, path]) => ({hex: path[path.length - 1] ?? unit.hex!, path}));
   for (const path of swaps.values()) out.push({hex: path[path.length - 1]!, path});
-  return sortByHex(out, (r) => r.hex);
+  return sortByHex(
+    out.filter((r) => mayEndOn(map, unit, r.hex)),
+    (r) => r.hex
+  );
 }
 
 /**
@@ -297,7 +306,7 @@ function straightReaches(state: FightState, map: MapData, unit: Unit, cap: numbe
         // Light Step passes allies, and may end on one entered from a free space.
         if (other && (!passesAllies(unit) || hostile(other, unit))) break;
         path.push(h);
-        if (!other || prevFree) out.push({hex: h, path: [...path]});
+        if ((!other || prevFree) && mayEndOn(map, unit, h)) out.push({hex: h, path: [...path]});
         prevFree = !other;
         if (stopsWalk(state, unit, h)) break;
       }
@@ -308,16 +317,21 @@ function straightReaches(state: FightState, map: MapData, unit: Unit, cap: numbe
 
 /**
  * Whether the unit can move at all this turn: `reachableHexes` has a hex
- * other than its own, without listing them: a walkable neighbour with no
- * one on it, a one-hex move, without which no path can start.
+ * other than its own, without listing them unless it must: a walkable
+ * neighbour with no one on it, a one-hex move, without which no path can
+ * start. An enemy can't stop on an exit (`mayEndOn`), so one whose only
+ * such neighbour is the exit has its walks listed.
  */
 export function canMove(state: FightState, map: MapData, unit: Unit): boolean {
   if (!unit.hex || movementCap(unit) === 0) return false;
-  return steps(map, unit.hex).some((h) => {
+  const open = steps(map, unit.hex).filter((h) => {
     const other = unitAt(state, h);
     // With Light Step, an ally next to it is a swap.
     return !other || (passesAllies(unit) && !hostile(other, unit));
   });
+  if (open.some((h) => mayEndOn(map, unit, h))) return true;
+  // An enemy next to the exit may only pass through it: list the walks.
+  return open.length > 0 && reachableHexes(state, map, unit).some((r) => r.path.length > 0);
 }
 
 /** Checks a submitted path; returns a player-facing reason if it's illegal. */
@@ -353,6 +367,7 @@ export function invalidPath(
       return 'Hail stops a move where it enters.';
     from = h;
   }
+  if (!mayEndOn(map, unit, from)) return 'An enemy can’t end its move on the exit.';
   if (other(from)) {
     if (!passesAllies(unit)) return 'A move can’t end on another unit.';
     // A swap: the ally goes to the space the walk came from, which must be free.
