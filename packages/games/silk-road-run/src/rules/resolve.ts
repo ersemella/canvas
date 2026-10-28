@@ -378,6 +378,7 @@ export function applyDamage(
   const stunned = isStunned(target);
   const standing = target.hp - amount <= 0 && spendPassive(target, 'lastStand');
   target.hp = standing ? 1 : Math.max(0, target.hp - amount);
+  target.damaged = true;
   log(ctx, `${text}.`);
   record(ctx.state, {kind: 'damage', unitId: target.id, amount});
   if (target.hp === 0) {

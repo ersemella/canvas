@@ -89,6 +89,7 @@ import {
   endTurnEffects,
   stun,
   unswap,
+  heal,
 } from './resolve';
 import type {Ctx} from './resolve';
 import {
@@ -3044,6 +3045,7 @@ describe('previews, the AI and the run', () => {
     // Win the first stage with the Outrider fallen.
     const won = {...run, fight: cloneFight(run.fight)};
     won.fight.phase = 'won';
+    won.fight.units.find((u) => u.hero === 'camel')!.damaged = true;
     const m = won.fight.units.find((u) => u.id === 'p-mangudai')!;
     m.alive = false;
     m.hex = null;
@@ -3087,6 +3089,7 @@ describe('previews, the AI and the run', () => {
     won.fight.phase = 'won';
     const camel = won.fight.units.find((u) => u.hero === 'camel')!;
     camel.hp = camel.maxHp - 7;
+    camel.damaged = true;
     camel.statuses = [{kind: 'immobilized'}];
     const bokh = won.fight.units.find((u) => u.id === 'p-bokh')!;
     bokh.hp = 1;
@@ -3106,6 +3109,8 @@ describe('previews, the AI and the run', () => {
     const win = (r: RunState): RunState => {
       const fight = cloneFight(r.fight);
       fight.phase = 'won';
+      // The camel hurt in it: no extra provision (Humphrey unhurt earns one).
+      fight.units.find((u) => u.hero === 'camel')!.damaged = true;
       return {...r, fight};
     };
     const run = createRun(7);
@@ -3205,6 +3210,8 @@ describe('previews, the AI and the run', () => {
       const fight = cloneFight(r.fight);
       fight.phase = 'won';
       if (camelHp !== undefined) fight.units.find((u) => u.hero === 'camel')!.hp = camelHp;
+      // The camel hurt in it: no extra provision (Humphrey unhurt earns one).
+      fight.units.find((u) => u.hero === 'camel')!.damaged = true;
       return {...r, fight};
     };
     const camelAfter = (r: RunState) => {
@@ -3256,10 +3263,124 @@ describe('previews, the AI and the run', () => {
     ).toThrow(RuleError);
   });
 
+  it('the caravanserai: Humphrey unhurt all stage earns an extra provision, taken the same way', () => {
+    const run = createRun(7);
+    const win = (r: RunState, camelHp?: number): RunState => {
+      const fight = cloneFight(r.fight);
+      fight.phase = 'won';
+      if (camelHp !== undefined) fight.units.find((u) => u.hero === 'camel')!.hp = camelHp;
+      return {...r, fight};
+    };
+    const camelOf = (r: RunState) => r.fight.units.find((u) => u.hero === 'camel')!;
+    const maxHp = camelOf(run).maxHp;
+
+    // Damage marks it, healed back or not; a Shield taking it whole doesn't.
+    const s = cloneFight(run.fight);
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    const camel = s.units.find((u) => u.hero === 'camel')!;
+    camel.shield = 2;
+    applyDamage(ctx, camel, 2, 'Hit');
+    expect(camel.damaged).toBeUndefined();
+    applyDamage(ctx, camel, 1, 'Hit');
+    heal(ctx, camel, 1);
+    expect([camel.hp, camel.damaged]).toEqual([maxHp, true]);
+    expect(runView({...run, fight: {...s, phase: 'won'}}).extraProvision).toBe(false);
+
+    // Unhurt: two provisions, each owed.
+    const won = win(run);
+    expect(runView(won)).toMatchObject({provision: true, extraProvision: true});
+    expect(() =>
+      handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'power'}})
+    ).toThrow(RuleError);
+    const two = handleRunAction(won, {
+      type: 'next',
+      provision: {hero: 'bokh', stat: 'power'},
+      extra: {hero: 'bokh', stat: 'power'},
+    });
+    expect(two.provisions).toEqual([
+      {hero: 'bokh', stat: 'power'},
+      {hero: 'bokh', stat: 'power'},
+    ]);
+    expect(two.fight.units.find((u) => u.id === 'p-bokh')!.power).toBe(HEROES.bokh.power + 2);
+    // A new stage starts with the camel unmarked.
+    expect(camelOf(two).damaged).toBeFalsy();
+    // Malformed, or both a stat and a heal, refused.
+    expect(() =>
+      handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'power'}, extra: 'x'})
+    ).toThrow(RuleError);
+    expect(() =>
+      handleRunAction(win(run, maxHp - 7), {
+        type: 'next',
+        heal: true,
+        extra: {hero: 'bokh', stat: 'power'},
+        extraHeal: true,
+      })
+    ).toThrow(RuleError);
+
+    // Both as heals: carried health hurt before this stage, healed twice, up to full.
+    const camelAfter = (r: RunState) => {
+      const c = camelOf(r);
+      const taken = r.fight
+        .events!.filter((e) => e.kind === 'damage' && e.unitId === c.id)
+        .reduce((sum, e) => sum + (e as {amount: number}).amount, 0);
+      return c.hp + taken;
+    };
+    const hurt = win(run, maxHp - 10);
+    expect(camelAfter(handleRunAction(hurt, {type: 'next', heal: true, extraHeal: true}))).toBe(
+      maxHp - 2
+    );
+    // The second heal needs the camel still hurt after the first.
+    expect(() =>
+      handleRunAction(win(run, maxHp - 3), {type: 'next', heal: true, extraHeal: true})
+    ).toThrow(RuleError);
+
+    // The cap counts the first: a stat at 9 takes one, not two.
+    const nine = win(run);
+    Object.assign(nine.fight.units.find((u) => u.id === 'p-bokh')!, {
+      power: RULES.statMax - 1,
+      provisions: {power: RULES.statMax - 1},
+    });
+    expect(() =>
+      handleRunAction(nine, {
+        type: 'next',
+        provision: {hero: 'bokh', stat: 'power'},
+        extra: {hero: 'bokh', stat: 'power'},
+      })
+    ).toThrow(RuleError);
+
+    // Nothing left to raise or heal after the first: the extra is let go.
+    const last = win(run);
+    for (const u of last.fight.units.filter((u) => u.side === 'player' && u.hero !== 'camel'))
+      Object.assign(u, {
+        speed: 10,
+        defence: 10,
+        power: u.hero === 'bokh' ? 9 : 10,
+        provisions: {speed: 10, defence: 10, power: 10},
+      });
+    expect(
+      handleRunAction(last, {type: 'next', provision: {hero: 'bokh', stat: 'power'}}).stage
+    ).toBe(1);
+
+    // Between regions too, alongside the passive; never after the run's last, nor on a test stage.
+    const between = win({...run, stage: 2});
+    const view = runView(between);
+    expect(view).toMatchObject({provision: false, extraProvision: true});
+    const china = handleRunAction(between, {
+      type: 'next',
+      passive: {hero: 'bokh', passive: view.passives[0]!},
+      extra: {hero: 'storm', stat: 'speed'},
+    });
+    expect(china.provisions).toEqual([{hero: 'storm', stat: 'speed'}]);
+    expect(runView(win({...run, stage: STAGES.length - 1})).extraProvision).toBe(false);
+    expect(runView(win(createRun(7, {test: true}))).extraProvision).toBe(false);
+  });
+
   it('the caravanserai between regions: three passives at random, one taken by a survivor for the rest of the run', () => {
     const win = (r: RunState): RunState => {
       const fight = cloneFight(r.fight);
       fight.phase = 'won';
+      // The camel hurt in it: no extra provision (Humphrey unhurt earns one).
+      fight.units.find((u) => u.hero === 'camel')!.damaged = true;
       return {...r, fight};
     };
     const at = (r: RunState, stage: number): RunState => ({...r, stage});

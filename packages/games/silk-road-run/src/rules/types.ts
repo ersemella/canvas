@@ -224,6 +224,11 @@ export interface Unit {
   bracketed?: boolean;
   /** It took a unit off the board this turn (Momentum, 19.8). */
   tookOff?: boolean;
+  /**
+   * It has lost health this fight, healed back or not: Humphrey unhurt all
+   * fight earns an extra provision (camel.md, 18.4). Absent while it hasn't.
+   */
+  damaged?: boolean;
   /** The slots its last two turns started on, the latest last (Opportunist, 19.8). */
   turns?: number[];
   /**
@@ -368,6 +373,14 @@ export type RunAction =
    * stage won earned, if it earned one (`STAGES[stage].provision`), and the
    * passive taken from its offer, if it made one (`STAGES[stage].passive`).
    * `heal` takes the provision as a heal of the camel (RULES.camelHeal), in
-   * place of a stat: one or the other.
+   * place of a stat: one or the other. `extra` and `extraHeal` are the same
+   * for the extra provision Humphrey earns by taking no damage in the stage.
    */
-  | {type: 'next'; provision?: Provision; passive?: PassivePick; heal?: boolean};
+  | {
+      type: 'next';
+      provision?: Provision;
+      passive?: PassivePick;
+      heal?: boolean;
+      extra?: Provision;
+      extraHeal?: boolean;
+    };

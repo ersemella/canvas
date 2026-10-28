@@ -3,7 +3,7 @@
  * against a bigger enemy band. Heroes who fall are gone for the run; the
  * survivors and the camel go on to the next stage, by way of the
  * caravanserai, where a stage that earns one gives a provision, or heals
- * the camel in its place, and the last stage of a region offers three
+ * the camel in its place, one more if the camel took no damage in it, and the last stage of a region offers three
  * passives, one taken. The heroes start each stage at full health; the
  * camel keeps the health it ended the last one with, unless healed there
  * (camel.md, 18.4). The run keeps the seed;
@@ -59,7 +59,7 @@ import type {
  * removed or reinterpreted): older runs are then ended rather than
  * patched (`runOutdated`), so the rules never handle an old shape.
  */
-export const RUN_FORMAT = 12;
+export const RUN_FORMAT = 13;
 
 export interface RunState {
   /** `RUN_FORMAT` when the run was created; missing in runs from before it existed. */
@@ -91,6 +91,11 @@ export interface RunView {
    * the way to the next, or taken as a heal of the camel (RULES.camelHeal).
    */
   provision: boolean;
+  /**
+   * Winning this stage earns an extra provision, taken the same way: the
+   * camel took no damage in it (camel.md, 18.4).
+   */
+  extraProvision: boolean;
   /**
    * The passives the caravanserai offers once this stage is won, one to be
    * taken: the region's last stage, short of the run's last; none otherwise.
@@ -223,6 +228,22 @@ function provisionOwed(run: RunState): boolean {
 }
 
 /**
+ * Whether winning the run's stage earns the extra provision: the camel took
+ * no damage in it, healed back or not (owner, 2026-10-28), at any
+ * caravanserai, unless there is nothing to raise or heal.
+ */
+function extraOwed(run: RunState): boolean {
+  const camel = run.fight.units.find((u) => u.hero === CAMEL);
+  return (
+    !run.test &&
+    run.stage < stageCount(run) - 1 &&
+    camel !== undefined &&
+    !camel.damaged &&
+    (raisable(run.fight).length > 0 || camelHurt(run.fight))
+  );
+}
+
+/**
  * The passives the caravanserai offers once the run's stage is won: on a
  * region's last stage (STAGES) short of the run's last, `PASSIVE_OFFER` of
  * the pool at random from the run's seed and the stage, so a reload offers
@@ -273,23 +294,25 @@ function parseHex(raw: unknown): Hex {
   return {q: h.q, r: h.r};
 }
 
+function parseProvision(raw: unknown): Provision {
+  const p = raw as {hero?: unknown; stat?: unknown} | null;
+  if (
+    !p ||
+    typeof p !== 'object' ||
+    !ROSTER.includes(p.hero as HeroId) ||
+    !STATS.includes(p.stat as StatId)
+  )
+    throw new RuleError('Malformed provision.');
+  return {hero: p.hero as HeroId, stat: p.stat as StatId};
+}
+
 /** Checks an action from the network and copies only the fields the rules read. */
 export function parseAction(raw: unknown): RunAction {
   const a = raw as Record<string, unknown> | null;
   if (!a || typeof a !== 'object') throw new RuleError('Malformed action.');
   if (a.type === 'next') {
     const out: RunAction = {type: 'next'};
-    if (a.provision !== undefined) {
-      const p = a.provision as {hero?: unknown; stat?: unknown} | null;
-      if (
-        !p ||
-        typeof p !== 'object' ||
-        !ROSTER.includes(p.hero as HeroId) ||
-        !STATS.includes(p.stat as StatId)
-      )
-        throw new RuleError('Malformed provision.');
-      out.provision = {hero: p.hero as HeroId, stat: p.stat as StatId};
-    }
+    if (a.provision !== undefined) out.provision = parseProvision(a.provision);
     if (a.passive !== undefined) {
       const p = a.passive as {hero?: unknown; passive?: unknown} | null;
       if (
@@ -305,6 +328,11 @@ export function parseAction(raw: unknown): RunAction {
     if (a.heal !== undefined) {
       if (a.heal !== true) throw new RuleError('Malformed heal.');
       out.heal = true;
+    }
+    if (a.extra !== undefined) out.extra = parseProvision(a.extra);
+    if (a.extraHeal !== undefined) {
+      if (a.extraHeal !== true) throw new RuleError('Malformed heal.');
+      out.extraHeal = true;
     }
     return out;
   }
@@ -342,7 +370,8 @@ export function parseAction(raw: unknown): RunAction {
  * next is worked out; then the track runs on to the next decision, either
  * side's. Or, once a stage short of the last is won, on to the next, with
  * the provision it earned given to one of the survivors, or taken as a heal
- * of the camel (RULES.camelHeal) instead, and on leaving a region one of the
+ * of the camel (RULES.camelHeal) instead, the extra one the same way if the
+ * camel took no damage in it (`extra`, `extraHeal`), and on leaving a region one of the
  * passives offered (`passiveOffer`) to one of them; the camel takes its
  * health on with it. Given
  * a clock (`context.now`) the AI looks as deep as it gets in
@@ -359,26 +388,40 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
     const provisions = [...(run.provisions ?? [])];
     const camel = run.fight.units.find((u) => u.hero === CAMEL)!;
     let camelHp = camel.hp;
-    if (provisionOwed(run) && action.heal) {
-      // The provision heals the camel in place of a stat.
-      if (action.provision)
-        throw new RuleError(`Raise a stat or heal ${HEROES[CAMEL].name}, not both.`);
-      if (!camelHurt(run.fight))
-        throw new RuleError(`${HEROES[CAMEL].name} is already at full health.`);
-      camelHp = Math.min(camel.hp + RULES.camelHeal, camel.maxHp);
-    } else if (provisionOwed(run)) {
-      if (!action.provision)
+    // The provisions taken here: each counts towards the cap of the next.
+    const taken: Provision[] = [];
+    const raised = (unit: Unit, stat: StatId) =>
+      unit[stat] + taken.filter((p) => p.hero === unit.hero && p.stat === stat).length;
+    /** One provision owed: a stat raised, or the camel healed in its place. */
+    const take = (provision: Provision | undefined, heal: boolean | undefined) => {
+      if (heal) {
+        if (provision) throw new RuleError(`Raise a stat or heal ${HEROES[CAMEL].name}, not both.`);
+        if (camelHp >= camel.maxHp)
+          throw new RuleError(`${HEROES[CAMEL].name} is already at full health.`);
+        camelHp = Math.min(camelHp + RULES.camelHeal, camel.maxHp);
+        return;
+      }
+      if (!provision)
         throw new RuleError(`Choose a hero and a stat to raise, or heal ${HEROES[CAMEL].name}.`);
-      const {hero, stat} = action.provision;
+      const {hero, stat} = provision;
       if (!party.includes(hero))
         throw new RuleError('Only a hero still in the party can take a provision.');
       const unit = run.fight.units.find((u) => u.side === 'player' && u.hero === hero)!;
-      if (unit[stat] >= RULES.statMax)
+      if (raised(unit, stat) >= RULES.statMax)
         throw new RuleError(`No stat can go above ${RULES.statMax}.`);
-      provisions.push(action.provision);
-    } else if (action.provision || action.heal) {
-      throw new RuleError('There is no provision to take.');
-    }
+      taken.push(provision);
+    };
+    if (provisionOwed(run)) take(action.provision, action.heal);
+    else if (action.provision || action.heal) throw new RuleError('There is no provision to take.');
+    // The extra one, unless the first left nothing to raise or heal.
+    const left =
+      camelHp < camel.maxHp ||
+      raisable(run.fight).some((u) => STATS.some((s) => raised(u, s) < RULES.statMax));
+    if (extraOwed(run) && (left || action.extra || action.extraHeal))
+      take(action.extra, action.extraHeal);
+    else if (action.extra || action.extraHeal)
+      throw new RuleError('There is no extra provision to take.');
+    provisions.push(...taken);
     const passives = [...(run.passives ?? [])];
     const offer = passiveOffer(run);
     if (offer.length > 0) {
@@ -436,6 +479,7 @@ export function runView(run: RunState): RunView {
     stage: run.stage,
     stages: stageCount(run),
     provision: provisionOwed(run),
+    extraProvision: extraOwed(run),
     passives: passiveOffer(run),
     fight: due ? {...run.fight, awaiting: null} : run.fight,
     aiDue: due,

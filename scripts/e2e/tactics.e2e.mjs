@@ -717,7 +717,8 @@ try {
     await shot(page, 'end-phone');
   }
   // Next stage opens the caravanserai, where one survivor takes a provision
-  // (1 more of a stat), or Humphrey is healed instead; Set out there starts the run's next stage, against a
+  // (1 more of a stat), or Humphrey is healed instead, and another if he
+  // took no damage; Set out there starts the run's next stage, against a
   // bigger band, with the survivors.
   if (nextAhead) {
     const before = (await state()).view;
@@ -740,7 +741,16 @@ try {
       survivors
     );
     await page.getByTestId(`provision-${raised.hero}-power`).click();
-    check('a stat picked, Set out is ready', await setOut.isEnabled());
+    // Humphrey unhurt all stage: an extra provision, Set out waiting on it too.
+    if (before.extraProvision) {
+      check('the extra provision: Set out waits on it', await setOut.isDisabled());
+      await page.getByTestId(`extra-${raised.hero}-speed`).click();
+    }
+    check(
+      'a stat picked, Set out is ready',
+      (await setOut.isEnabled()) &&
+        (await page.getByTestId('extra-picks').count()) === (before.extraProvision ? 1 : 0)
+    );
     await shot(page, 'caravanserai-phone');
     await setOut.click();
     await page.waitForFunction((x) => window.__tactics.run.view.stage > x, before.stage, {

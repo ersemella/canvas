@@ -3,7 +3,7 @@
 // camel going on at full health, until a stage is lost or the last is won.
 // The production AI plays both sides, the player's heroes included, at its
 // fixed work cap, so a seed always plays the same run.
-import {createRun, handleRunAction, passiveOffer, runStatus} from '@balance-rules/run';
+import {createRun, handleRunAction, passiveOffer, runStatus, runView} from '@balance-rules/run';
 import type {RunState} from '@balance-rules/run';
 import {actingUnit, advanceToDecision, applyTurn} from '@balance-rules/fight';
 import {chooseAiTurn} from '@balance-rules/ai';
@@ -139,31 +139,42 @@ function chooseWith({depth, work}: {depth: number; work: number}) {
 
 /**
  * The caravanserai's choices after a won stage: the provision owed (the
- * view's `provision`) to the weakest survivor, and the first passive offered
+ * view's `provision`), and the extra one (`extraProvision`), each to the
+ * weakest survivor, and the first passive offered
  * to the first survivor not carrying it.
  */
 function caravanserai(state: RunState, stat: StatId) {
   const standing = state.fight.units
     .filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive)
     .sort((a, b) => a.partyIndex - b.partyIndex);
-  const out: {provision?: {hero: HeroId; stat: StatId}; passive?: {hero: HeroId; passive: string}} =
-    {};
-  if (STAGES[state.stage]!.provision) {
-    const total = (u: (typeof standing)[number]) => u.speed + u.defence + u.power;
-    // At RULES.statMax for everyone standing, the first stat still below it.
+  type Pick = {hero: HeroId; stat: StatId};
+  const out: {provision?: Pick; extra?: Pick; passive?: {hero: HeroId; passive: string}} = {};
+  const total = (u: (typeof standing)[number]) => u.speed + u.defence + u.power;
+  // The provisions taken here so far, counted towards the stats they raise.
+  const taken: Pick[] = [];
+  const raised = (u: (typeof standing)[number], s: StatId) =>
+    u[s] + taken.filter((p) => p.hero === u.hero && p.stat === s).length;
+  /** The weakest survivor's stat; at RULES.statMax for everyone standing, the first still below it. */
+  const pick = (): Pick | undefined => {
     const stats: StatId[] = [stat, 'defence', 'power', 'speed'];
     for (const s of stats) {
       const weakest = standing
-        .filter((u) => u[s] < RULES.statMax)
+        .filter((u) => raised(u, s) < RULES.statMax)
         .reduce<
           (typeof standing)[number] | undefined
         >((best, u) => (!best || total(u) < total(best) ? u : best), undefined);
       if (weakest) {
-        out.provision = {hero: weakest.hero, stat: s};
-        break;
+        const p = {hero: weakest.hero, stat: s};
+        taken.push(p);
+        return p;
       }
     }
-  }
+    return undefined;
+  };
+  const view = runView(state);
+  if (view.provision) out.provision = pick();
+  // Humphrey unhurt all stage: an extra one, the same way.
+  if (view.extraProvision) out.extra = pick();
   for (const passive of passiveOffer(state)) {
     const taker = standing.find((u) => !hasPassive(u, passive));
     if (taker) {

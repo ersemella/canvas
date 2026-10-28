@@ -25,8 +25,11 @@ const STAT_RULE: Record<StatId, string> = {
   defence: 'It has 2 more health.',
 };
 
-/** The camel's health once healed at the caravanserai, up to its full health. */
-const healed = (camel: Unit) => Math.min(camel.hp + RULES.camelHeal, camel.maxHp);
+/** The camel's health `hp` once healed at the caravanserai, up to its full health. */
+const healed = (camel: Unit, hp = camel.hp) => Math.min(hp + RULES.camelHeal, camel.maxHp);
+
+/** A hero's stat, or the camel's heal (`'heal'`): one or the other. */
+type Pick = Provision | 'heal' | null;
 
 /** What the caravan takes with it from the caravanserai. */
 export interface SetOut {
@@ -34,6 +37,9 @@ export interface SetOut {
   passive?: PassivePick;
   /** The provision taken as a heal of the camel (RULES.camelHeal), in place of a stat. */
   heal?: boolean;
+  /** The extra provision, Humphrey unhurt all stage: a stat, or `extraHeal`. */
+  extra?: Provision;
+  extraHeal?: boolean;
 }
 
 /**
@@ -43,21 +49,23 @@ export interface SetOut {
  * healed RULES.camelHeal instead, and the caravan sets out. When the stage
  * offers passives (`passives`, 19.3's passive slot) one of three is taken,
  * and one hero standing carries it for the rest of the run. Unless healed,
- * the camel goes on with the health it ended the stage with. After a stage
- * that earns nothing the caravan only rests.
+ * the camel goes on with the health it ended the stage with. If the camel
+ * took no damage in the stage (`extraProvision`), one more provision is
+ * taken the same way. After a stage that earns nothing the caravan only rests.
  */
 export function Caravanserai(props: {
   fight: FightState;
   stage: number;
   stages: number;
   provision: boolean;
+  extraProvision: boolean;
   passives: PassiveId[];
   busy: boolean;
   error: string | null;
   onSetOut: (choices: SetOut) => void;
 }) {
-  // A hero's stat, or the camel's heal (`'heal'`): one or the other.
-  const [picked, setPicked] = useState<Provision | 'heal' | null>(null);
+  const [picked, setPicked] = useState<Pick>(null);
+  const [extra, setExtra] = useState<Pick>(null);
   const [passive, setPassive] = useState<PassiveId | null>(null);
   const [carrier, setCarrier] = useState<Unit['hero'] | null>(null);
   const offered = props.passives.length > 0;
@@ -68,6 +76,17 @@ export function Caravanserai(props: {
     .sort((a, b) => a.partyIndex - b.partyIndex);
   const camel = props.fight.units.find((u) => u.side === 'player' && HEROES[u.hero].walksRoad);
   const camelName = camel ? HEROES[camel.hero].name : '';
+  const twice = props.provision && props.extraProvision;
+  const choose = props.provision || props.extraProvision;
+  /** The first pick, as the extra one sees it: the camel's health after a heal, a stat after a raise. */
+  const camelHp = camel && props.provision && picked === 'heal' ? healed(camel) : camel?.hp;
+  const after = (p: Pick) => (p && p !== 'heal' && props.provision ? p : null);
+  const first = after(picked);
+  // Picking the first again can leave the extra one over the cap: start it over.
+  const pickFirst = (p: Pick) => {
+    setPicked(p);
+    setExtra(null);
+  };
 
   return (
     <Stack
@@ -88,11 +107,14 @@ export function Caravanserai(props: {
             <Text>
               Stage {props.stage + 1} of {props.stages} won. The caravan rests behind the inn’s
               walls before the road goes on
-              {props.provision
-                ? `: raise one stat of one hero by 1, for the rest of the run, or heal ${camelName} ${RULES.camelHeal}.`
-                : offered
-                  ? ': take one of three passives for one hero, for the rest of the run.'
-                  : '.'}
+              {choose
+                ? twice
+                  ? `: twice over, raise one stat of one hero by 1, for the rest of the run, or heal ${camelName} ${RULES.camelHeal}`
+                  : `: raise one stat of one hero by 1, for the rest of the run, or heal ${camelName} ${RULES.camelHeal}`
+                : ''}
+              {offered
+                ? `${choose ? '; and' : ':'} take one of three passives for one hero, for the rest of the run.`
+                : '.'}
             </Text>
             {camel && (
               <Text fz="sm" c="dimmed" data-testid="camel-health">
@@ -161,33 +183,42 @@ export function Caravanserai(props: {
           )}
 
           {props.provision && (
-            <div className={styles.heroPicks} data-testid="provision-picks">
-              {heroes.map((unit) => (
-                <ProvisionRow
-                  key={unit.id}
-                  unit={unit}
-                  picked={picked !== 'heal' && picked?.hero === unit.hero ? picked.stat : null}
-                  onPick={(stat) => setPicked({hero: unit.hero, stat})}
-                />
-              ))}
-              {camel && (
-                <HealRow
-                  camel={camel}
-                  picked={picked === 'heal'}
-                  onPick={() => setPicked('heal')}
-                />
-              )}
-            </div>
+            <ProvisionPicks
+              heroes={heroes}
+              camel={camel}
+              picked={picked}
+              onPick={pickFirst}
+              testId="provision-picks"
+            />
+          )}
+
+          {props.extraProvision && (
+            <Stack gap="xs">
+              <Text fz="sm" c="dimmed" data-testid="extra-provision">
+                {camelName} took no damage this stage: an extra provision.
+              </Text>
+              <ProvisionPicks
+                heroes={heroes}
+                camel={camel}
+                camelHp={camelHp}
+                raised={first}
+                picked={extra}
+                onPick={setExtra}
+                extra
+                testId="extra-picks"
+              />
+            </Stack>
           )}
 
           <Stack gap="xs">
             {props.provision && (
               <Text c="dimmed" fz="sm" ta="center" mih="1.5em" data-testid="provision-rule">
-                {picked === 'heal'
-                  ? camel && `${camelName} sets out with ${healed(camel)} of ${camel.maxHp} health.`
-                  : picked
-                    ? `${HEROES[picked.hero].name}: ${STAT_RULE[picked.stat]}`
-                    : `Choose a hero’s stat to raise, or heal ${camelName} ${RULES.camelHeal}.`}
+                {pickRule(picked, camel, camel?.hp, camelName)}
+              </Text>
+            )}
+            {props.extraProvision && (
+              <Text c="dimmed" fz="sm" ta="center" mih="1.5em" data-testid="extra-rule">
+                {pickRule(extra, camel, camelHp, camelName)}
               </Text>
             )}
             {offered && (
@@ -204,11 +235,17 @@ export function Caravanserai(props: {
               className={styles.seal!}
               fw="bold"
               loading={props.busy}
-              disabled={(props.provision && !picked) || (offered && !(passive && carrier))}
+              disabled={
+                (props.provision && !picked) ||
+                (props.extraProvision && !extra) ||
+                (offered && !(passive && carrier))
+              }
               onClick={() =>
                 props.onSetOut({
                   ...(props.provision && picked === 'heal' ? {heal: true} : {}),
                   ...(props.provision && picked && picked !== 'heal' ? {provision: picked} : {}),
+                  ...(props.extraProvision && extra === 'heal' ? {extraHeal: true} : {}),
+                  ...(props.extraProvision && extra && extra !== 'heal' ? {extra} : {}),
                   ...(offered && passive && carrier ? {passive: {hero: carrier, passive}} : {}),
                 })
               }
@@ -223,11 +260,76 @@ export function Caravanserai(props: {
   );
 }
 
+/** A hero as a provision just taken leaves it: 1 more of `stat`, and its health with defence. */
+function raise(unit: Unit, stat: StatId): Unit {
+  const out = {...unit, [stat]: unit[stat] + 1};
+  if (stat === 'defence')
+    out.maxHp = unit.maxHp + healthOf(unit.defence + 1) - healthOf(unit.defence);
+  return out;
+}
+
+/** What a pick does, under the choices: the camel's health after a heal from `hp`, or a stat's rule. */
+function pickRule(
+  picked: Pick,
+  camel: Unit | undefined,
+  hp: number | undefined,
+  camelName: string
+) {
+  if (picked === 'heal')
+    return camel && `${camelName} sets out with ${healed(camel, hp)} of ${camel.maxHp} health.`;
+  if (picked) return `${HEROES[picked.hero].name}: ${STAT_RULE[picked.stat]}`;
+  return `Choose a hero’s stat to raise, or heal ${camelName} ${RULES.camelHeal}.`;
+}
+
+/**
+ * A provision's choices: each hero standing's stats, and the camel's heal.
+ * The extra provision (`extra`) sees the first one taken: `raised`, a stat
+ * already 1 higher, and `camelHp`, the camel's health after a heal.
+ */
+function ProvisionPicks(props: {
+  heroes: Unit[];
+  camel: Unit | undefined;
+  camelHp?: number | undefined;
+  raised?: Provision | null;
+  picked: Pick;
+  onPick: (p: Pick) => void;
+  extra?: boolean;
+  testId: string;
+}) {
+  const {picked, raised} = props;
+  return (
+    <div className={styles.heroPicks} data-testid={props.testId}>
+      {props.heroes.map((unit) => (
+        <ProvisionRow
+          key={unit.id}
+          unit={raised?.hero === unit.hero ? raise(unit, raised.stat) : unit}
+          picked={picked !== 'heal' && picked?.hero === unit.hero ? picked.stat : null}
+          onPick={(stat) => props.onPick({hero: unit.hero, stat})}
+          extra={props.extra}
+        />
+      ))}
+      {props.camel && (
+        <HealRow
+          camel={{...props.camel, hp: props.camelHp ?? props.camel.hp}}
+          picked={picked === 'heal'}
+          onPick={() => props.onPick('heal')}
+          extra={props.extra}
+        />
+      )}
+    </div>
+  );
+}
+
 /**
  * One hero standing: portrait and name, and a choice for each stat, showing
  * what 1 more makes it; a stat already at RULES.statMax can't be chosen.
  */
-function ProvisionRow(props: {unit: Unit; picked: StatId | null; onPick: (stat: StatId) => void}) {
+function ProvisionRow(props: {
+  unit: Unit;
+  picked: StatId | null;
+  onPick: (stat: StatId) => void;
+  extra?: boolean | undefined;
+}) {
   const {unit} = props;
   const hero = HEROES[unit.hero];
   const portrait = HERO_PORTRAIT[unit.hero]?.src;
@@ -249,7 +351,7 @@ function ProvisionRow(props: {unit: Unit; picked: StatId | null; onPick: (stat: 
               className={`${styles.provisionStat} ${on ? styles.heroPicked : ''}`}
               aria-pressed={on}
               disabled={full}
-              data-testid={`provision-${unit.hero}-${stat}`}
+              data-testid={`${props.extra ? 'extra' : 'provision'}-${unit.hero}-${stat}`}
               onClick={() => props.onPick(stat)}
             >
               <span>{label}</span>
@@ -282,7 +384,12 @@ function ProvisionRow(props: {unit: Unit; picked: StatId | null; onPick: (stat: 
  * RULES.camelHeal, up to its full health, in place of a stat; at full
  * health it can't be chosen.
  */
-function HealRow(props: {camel: Unit; picked: boolean; onPick: () => void}) {
+function HealRow(props: {
+  camel: Unit;
+  picked: boolean;
+  onPick: () => void;
+  extra?: boolean | undefined;
+}) {
   const {camel} = props;
   const hero = HEROES[camel.hero];
   const portrait = HERO_PORTRAIT[camel.hero]?.src;
@@ -299,7 +406,7 @@ function HealRow(props: {camel: Unit; picked: boolean; onPick: () => void}) {
           className={`${styles.provisionStat} ${props.picked ? styles.heroPicked : ''}`}
           aria-pressed={props.picked}
           disabled={full}
-          data-testid="provision-heal"
+          data-testid={props.extra ? 'extra-heal' : 'provision-heal'}
           onClick={props.onPick}
         >
           <span>Heal {RULES.camelHeal}</span>

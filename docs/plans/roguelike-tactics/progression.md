@@ -59,7 +59,9 @@ Each one adds 1 to one hero's speed, defence or power (9.1).
   before Set out (`next` with its `provision`; the run keeps them in
   `RunState.provisions`, each unit in `Unit.provisions`), or the provision
   heals Humphrey 4 instead (`RULES.camelHeal`) (`next` with `heal`, owner,
-  2026-10-28; [camel.md](camel.md), 18.4). **No stat goes
+  2026-10-28; [camel.md](camel.md), 18.4). Humphrey taking no damage in
+  a stage earns an **extra provision** at any caravanserai (`extra` or
+  `extraHeal`, owner, 2026-10-28; camel.md, 18.4). **No stat goes
   above 10** (owner, 2026-10-25; `RULES.statMax`): a stat at 10 can't
   take a provision, and with every stat of every hero standing at 10 there
   is none to take. Nothing happens

@@ -150,7 +150,13 @@ export const localRuns = {
    */
   next: (
     runId: string,
-    choices: {provision?: Provision; passive?: PassivePick; heal?: boolean} = {}
+    choices: {
+      provision?: Provision;
+      passive?: PassivePick;
+      heal?: boolean;
+      extra?: Provision;
+      extraHeal?: boolean;
+    } = {}
   ) => act(runId, {type: 'next', ...choices}),
 };
 

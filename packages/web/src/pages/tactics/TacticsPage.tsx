@@ -433,6 +433,7 @@ export function TacticsPage() {
         stage={run.view.stage}
         stages={stages}
         provision={run.view.provision}
+        extraProvision={run.view.extraProvision}
         passives={run.view.passives}
         busy={busy}
         error={error}

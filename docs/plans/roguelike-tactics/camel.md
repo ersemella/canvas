@@ -120,6 +120,17 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
   (about 1% with carried health, 12.5% without). Not measured:
   the balance runner plays single fights, so how often a run now ends on
   the camel in a later stage is unknown.
+- **Built (2026-10-28, owner):** if Humphrey **takes no damage in a
+  stage**, winning it earns an **extra provision**, taken the same way (a
+  stat, or a heal of 4): damage healed back still counts (`Unit.damaged`,
+  set wherever health is lost, `applyDamage` in `src/rules/resolve.ts`;
+  a Shield taking it whole doesn't). It is earned at every caravanserai,
+  between regions too, beside the passive, but not after the run's last
+  stage nor on the test stage (`extraOwed` in `src/rules/run.ts`; `next`
+  with `extra` or `extraHeal`; the view's `extraProvision`). The
+  caravanserai shows a second row of choices under the first; the two can
+  raise the same stat, the cap counting both, or heal twice. Not measured:
+  how often the AI-played runs earn it.
 
 ### 18.5 Rationale
 - **It ends stalled fights.** Before the camel, a fight ended only when
