@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Swordsman's (owner, 2026-10-26), the Magus's, the Elephant Rider's and the Archer's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * Oathblade's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Deadeye's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -169,7 +169,7 @@ const hold: AbilityDef = {
   resolve: (ctx, user) => log(ctx, `${unitName(user)} holds.`),
 };
 
-// ─── Horse Archer ────────────────────────────────────────────────────────────
+// ─── Harrier ─────────────────────────────────────────────────────────────────
 
 /** An arrow's flight along one hex direction: the hexes it crosses, and the unit it stops at. */
 export interface ArrowLane {
@@ -214,7 +214,7 @@ const snapShot: AbilityDef = {
   },
 };
 
-// ─── Archer ──────────────────────────────────────────────────────────────────
+// ─── Deadeye ─────────────────────────────────────────────────────────────────
 
 /**
  * Longshot's six lines from `from`, as first built (`ABILITY.longshot.first` off): each runs to the
@@ -227,7 +227,7 @@ export function longshotLines(map: MapData, from: Hex): Hex[][] {
 
 /**
  * Longshot (owner, 2026-10-27; roster.md): any unit on one of the six
- * straight lines from the Archer, at any range, ally or enemy; it flies
+ * straight lines from the Deadeye, at any range, ally or enemy; it flies
  * over everything in between.
  */
 const longshot: AbilityDef = {
@@ -294,7 +294,7 @@ const longshot: AbilityDef = {
 
 /**
  * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
- * space next to the Horse Archer (not while Immobilized), then Snap Shot's shot
+ * space next to the Harrier (not while Immobilized), then Snap Shot's shot
  * from there, its old space no longer in the way. The step is taken by
  * `applyTurn` before the action, as a walk (`steps`). Charged
  * (`ABILITY.skirmish.charge`), the arrow flies when the charging card comes
@@ -417,7 +417,7 @@ const sunlight: AbilityDef = {
   },
 };
 
-// ─── Grappler ────────────────────────────────────────────────────────────────
+// ─── Bonebreaker ─────────────────────────────────────────────────────────────
 
 /** Whether `user` is grappling `u`. */
 export function grappling(user: Unit, u: Unit): boolean {
@@ -432,7 +432,7 @@ function heldNextTo(state: FightState, user: Unit, from: Hex): Unit | undefined 
 }
 
 /**
- * Whether `target` is a throw: a space without a unit, or the Grappler's
+ * Whether `target` is a throw: a space without a unit, or the Bonebreaker's
  * own (a swap), rather than a unit to grapple.
  */
 function isThrow(state: FightState, user: Unit, target: ActionTarget): boolean {
@@ -442,13 +442,13 @@ function isThrow(state: FightState, user: Unit, target: ActionTarget): boolean {
 
 /**
  * Grapple, with Throw folded in (owner, 2026-10-24; separate abilities
- * before). On a unit next to the Grappler, not the one it holds: grapples
+ * before). On a unit next to the Bonebreaker, not the one it holds: grapples
  * it. While it holds one, on a free space next to it: Throw (owner,
- * 2026-10-23), the held unit Moved there; on the Grappler's own space: the
+ * 2026-10-23), the held unit Moved there; on the Bonebreaker's own space: the
  * two swap places. Neither hits (owner, 2026-10-26: the squeeze is the
- * grapple's damage, so a held unit takes the Grappler's power once a turn,
+ * grapple's damage, so a held unit takes the Bonebreaker's power once a turn,
  * not twice). Either way the two stay next to each other, so the grapple
- * holds. An Immobilized Grappler
+ * holds. An Immobilized Bonebreaker
  * still swaps (owner, 2026-10-25): the swap is the grapple's move, not a
  * walk of its own.
  */
@@ -504,7 +504,7 @@ const grapple: AbilityDef = {
 };
 
 // ─── Upgrades of 2026-10-24 ──────────────────────────────────────────────────
-// Shove and Haul (the Grappler), Feigned Retreat and Volley (the Horse Archer)
+// Shove and Haul (the Bonebreaker), Feigned Retreat and Volley (the Harrier)
 // and Gale (the Storm Caller): owner, 2026-10-24, as measured (balance.md,
 // "Second abilities measured").
 
@@ -529,7 +529,7 @@ const shove: AbilityDef = {
   },
 };
 
-/** Haul: the first unit in a lane within range, not next to the Grappler, Pulled 2. No damage. */
+/** Haul: the first unit in a lane within range, not next to the Bonebreaker, Pulled 2. No damage. */
 const haul: AbilityDef = {
   id: 'haul',
   name: 'Haul',
@@ -639,7 +639,7 @@ const gale: AbilityDef = {
 /**
  * Volley: arrows from above on a space within range, no line of fire,
  * charged as Skirmish (`ABILITY.volley.charge`): whoever stands there when
- * the Horse Archer's card comes back takes its power (`landShots`).
+ * the Harrier's card comes back takes its power (`landShots`).
  */
 const volley: AbilityDef = {
   id: 'volley',
@@ -888,10 +888,10 @@ const elixir: AbilityDef = {
   },
 };
 
-// ─── Swordsman ───────────────────────────────────────────────────────────────
+// ─── Oathblade ───────────────────────────────────────────────────────────────
 
 /**
- * Swift Strike (owner, 2026-10-26): melee, the Swordsman's power; when it
+ * Swift Strike (owner, 2026-10-26): melee, the Oathblade's power; when it
  * hits, its card is Hastened `ABILITY.swiftStrike.haste`, taken off as its
  * card is placed after this turn (`haste`).
  */
@@ -1009,7 +1009,7 @@ const omen: AbilityDef = {
   },
 };
 
-// ─── Elephant Rider ──────────────────────────────────────────────────────────
+// ─── Juggernaut ──────────────────────────────────────────────────────────────
 
 /** The units standing in a row from `h` along direction `dir`, `h`'s first; none if it is free. */
 function rowFrom(state: FightState, h: Hex, dir: number): Unit[] {
@@ -1031,7 +1031,7 @@ function rowGives(state: FightState, map: MapData, row: Unit[], dir: number): bo
 
 /**
  * What a Trample from `from` toward `target` would do, without doing it:
- * the units it would hit, and where the Elephant Rider would end, if no
+ * the units it would hit, and where the Juggernaut would end, if no
  * one falls and nothing it enters on the way changes the board (hail's
  * hits, Rebound). For the AI's guess.
  */
@@ -1063,14 +1063,14 @@ export function tramplePlan(
 }
 
 /**
- * Trample (owner, 2026-10-27; roster.md): the Elephant Rider walks 1 to
+ * Trample (owner, 2026-10-27; roster.md): the Juggernaut walks 1 to
  * `ABILITY.trample.steps` spaces straight out in any of the six
  * directions, stopped by yurts and the map's edge; with no one in its way
  * it is just that walk. The units in its way, ally or enemy, the whole row
  * when they stand in a line, each take its power once and are Pushed back
  * ahead of it, a space for each it walks, the farthest first. A row that
  * can't be Pushed (yurts, a unit past it, the map's edge, or a Rooted or
- * Unstoppable unit in it) stops the Elephant Rider behind it, hit all the
+ * Unstoppable unit in it) stops the Juggernaut behind it, hit all the
  * same. Its walk goes through hail, which hits but can't hold it
  * (Unstoppable); a unit Pushed into hail is held and hit as any entering it.
  */

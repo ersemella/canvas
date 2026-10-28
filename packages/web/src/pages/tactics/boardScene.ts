@@ -223,7 +223,7 @@ export function buildScene(input: SceneInput): BoardScene {
     } else {
       // Picked second: Feigned Retreat's walk.
       const second = targets.some((t) => t.to) && target?.hex;
-      // A Grapple's throw: a space without a unit, or the Grappler's own.
+      // A Grapple's throw: a space without a unit, or the Bonebreaker's own.
       const throws = (h: Hex) => {
         if (ability !== 'grapple') return false;
         const u = unitAt(fight, h);

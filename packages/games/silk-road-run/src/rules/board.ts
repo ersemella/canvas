@@ -157,7 +157,7 @@ export function abilityCount(kit: AbilityId[]): number {
 /**
  * Whether a kit has room for another ability (`RULES.maxAbilities`): an
  * upgrade adding one is offered only then. Each hero starts with 1 and
- * takes one of its upgrades: the Grappler Haul or Shove, the Horse Archer one
+ * takes one of its upgrades: the Bonebreaker Haul or Shove, the Harrier one
  * of Skirmish, Volley and Feigned Retreat, the Storm Caller Sunlight or Gale.
  */
 export function hasRoomForAbility(kit: AbilityId[]): boolean {
@@ -188,7 +188,7 @@ export function isStunned(unit: Unit): boolean {
 
 /**
  * Unstoppable (keywords.md, 17.4): can't be Pushed, Pulled, Immobilized or
- * Stunned, from the Unstoppable passive (the Elephant Rider's, owner,
+ * Stunned, from the Unstoppable passive (the Juggernaut's, owner,
  * 2026-10-27) or for a while (an Elixir, a switch). So it can't be
  * grappled (a grapple's hold is a Stun), and hail, which ends a walk by
  * Immobilizing, doesn't stop its walk.
@@ -499,9 +499,9 @@ export function firstInLane(
 }
 
 /**
- * A shot in the air's lane, as it would fly now: from its Horse Archer's space
+ * A shot in the air's lane, as it would fly now: from its Harrier's space
  * along its direction, up to and including the first unit in it, or to
- * yurts or the map's edge. Empty once its Horse Archer is gone.
+ * yurts or the map's edge. Empty once its Harrier is gone.
  */
 export function shotLane(state: FightState, map: MapData, shot: ShotInAir): Hex[] {
   const archer = state.units.find((u) => u.id === shot.source);
