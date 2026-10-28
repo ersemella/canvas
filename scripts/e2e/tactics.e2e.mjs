@@ -110,13 +110,13 @@ try {
   for (let i = 0; i < 3; i++) await toggleHero(i);
   check('with no hero taken, Start is disabled', await startButton.isDisabled());
   for (let i = 0; i < 3; i++) await toggleHero(i);
-  // A phone: no details panel, each hero a card with Add (or Leave) and View;
-  // one is left behind from its card, then taken again from its full-screen view.
+  // A phone: no details panel, each hero a card whose portrait is its checkbox,
+  // and View; one is left behind from its card, then taken again from its full-screen view.
   await page.setViewportSize({width: 390, height: 844});
   const cards = page.getByTestId('hero-card');
   await cards.first().waitFor();
   check(
-    'phone: twelve hero cards, each with its own Add (or Leave) and View, no details panel',
+    'phone: twelve hero cards, each with its own checkbox and View, no details panel',
     (await cards.count()) === 12 &&
       (await page.getByTestId('hero-card-toggle').count()) === 12 &&
       (await page.getByTestId('hero-card-view').count()) === 12 &&
@@ -124,9 +124,9 @@ try {
   );
   await cards.nth(1).getByTestId('hero-card-toggle').click();
   check(
-    'phone: Leave on a card leaves the hero behind, and Add appears',
+    'phone: unticking a card’s checkbox leaves the hero behind',
     (await cards.nth(1).getAttribute('data-picked')) === 'false' &&
-      (await cards.nth(1).getByTestId('hero-card-toggle').textContent()) === 'Add'
+      (await cards.nth(1).getByTestId('hero-card-toggle').getAttribute('aria-checked')) === 'false'
   );
   check(
     'phone: the start menu doesn’t scroll sideways',

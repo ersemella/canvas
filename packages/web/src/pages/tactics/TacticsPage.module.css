@@ -906,7 +906,7 @@
     height: 72px;
   }
 }
-/* A phone's hero: a tile that isn't itself a button, its Add (or Leave) and View under its name. */
+/* A phone's hero: a tile that isn't itself a button; its portrait is its checkbox, View under its name. */
 .heroPick.heroCard {
   cursor: default;
 }
@@ -915,6 +915,44 @@
 }
 .heroPick.heroCard.heroPicked:hover {
   background: var(--c-lapisDark);
+}
+.heroPick > .heroPickPortrait.heroCardPortrait {
+  padding: 0;
+  color: var(--c-ivory);
+  font: inherit;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.heroCardPortrait:disabled {
+  cursor: default;
+}
+.heroCardPortrait:focus-visible {
+  outline: var(--px) solid var(--c-goldLight);
+  outline-offset: calc(-2 * var(--px));
+}
+/* The box in the portrait's corner: empty dusk when left behind, gold and ticked when taken, dimmed when it can't be. */
+.heroCardCheck {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--c-ink);
+  border: var(--px) solid var(--c-ivory);
+  background: var(--c-dusk0);
+}
+.heroPicked .heroCardCheck {
+  border-color: var(--c-ink);
+  background: var(--c-goldLight);
+}
+.heroCardPortrait:disabled .heroCardCheck {
+  opacity: 0.4;
 }
 .heroCardButton {
   min-height: 30px;
@@ -926,9 +964,6 @@
   border: var(--px) solid var(--c-ink);
   background: var(--c-dusk2);
   clip-path: var(--notch);
-}
-.heroCardButton.heroCardAdd {
-  background: var(--c-lapis);
 }
 .heroCardButton:disabled {
   color: var(--c-dusk4);

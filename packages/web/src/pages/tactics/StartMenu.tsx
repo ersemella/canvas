@@ -251,9 +251,11 @@ export function StartMenu(props: {
 }
 
 /**
- * One hero on a phone's start menu: its portrait over its name, as on
- * desktop, then its two buttons, Add (or Leave) taking it into the caravan
- * or leaving it behind, and View opening it full screen.
+ * One hero on a phone's start menu: its portrait, a checkbox taking it into
+ * the caravan or leaving it behind (the whole portrait is the box's target,
+ * its tick in the corner, empty when left behind), over its name, then View
+ * opening it full screen. With the caravan full, a hero left behind can't
+ * be ticked.
  */
 function HeroCard(props: {
   hero: HeroId;
@@ -272,21 +274,22 @@ function HeroCard(props: {
       data-testid="hero-card"
       style={props.style}
     >
-      <span className={styles.heroPickPortrait}>
-        {portrait ? <img src={portrait} alt="" /> : stats.letter}
-        {props.picked && <span className={styles.heroPickCheck}>✓</span>}
-      </span>
-      <span className={styles.heroPickName}>{stats.name}</span>
       <button
         type="button"
-        className={`${styles.heroCardButton} ${props.picked ? '' : styles.heroCardAdd}`}
-        aria-label={`${props.picked ? 'Leave behind' : 'Add to caravan'}: ${stats.name}`}
+        role="checkbox"
+        aria-checked={props.picked}
+        aria-label={`${stats.name} in the caravan`}
         disabled={!props.picked && props.full}
+        className={`${styles.heroPickPortrait} ${styles.heroCardPortrait}`}
         onClick={props.onToggle}
         data-testid="hero-card-toggle"
       >
-        {props.picked ? 'Leave' : props.full ? 'Full' : 'Add'}
+        {portrait ? <img src={portrait} alt="" /> : stats.letter}
+        <span className={styles.heroCardCheck} aria-hidden>
+          {props.picked && '✓'}
+        </span>
       </button>
+      <span className={styles.heroPickName}>{stats.name}</span>
       <button
         type="button"
         className={styles.heroCardButton}
