@@ -457,13 +457,13 @@ export function StatSheet({
 
 /**
  * A unit's portrait, on its track card's ground (its side's two bands) and
- * facing as its card does: enemies to the left. Its hero's letter if it has none.
+ * facing as its card does: the party to the left, the enemy to the right. Its hero's letter if it has none.
  */
 function SheetPortrait({unit}: {unit: Unit}) {
   const src = HERO_PORTRAIT[unit.hero]?.src;
   return (
     <div
-      className={`${styles.sheetPortrait} ${unit.side === 'enemy' ? styles.sheetPortraitEnemy : ''}`}
+      className={`${styles.sheetPortrait} ${unit.side === 'enemy' ? styles.sheetPortraitEnemy : styles.sheetPortraitPlayer}`}
       data-testid="sheet-portrait"
     >
       {src ? <img src={src} alt="" /> : HEROES[unit.hero].letter}

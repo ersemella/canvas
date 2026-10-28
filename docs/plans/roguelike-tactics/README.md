@@ -103,14 +103,18 @@ the kits.**
   page, Move fills its own row over a hero's two abilities.
 - Still pared back from 2026-10-22: the Vanguard out of the
   roster; a move of at most 2 spaces (3 until 2026-10-24); Temee not player
-  controlled, walking itself one space a turn from the board's top point
-  to the only exit, its bottom point, around units in its way. The board
-  is a hexagon of 61 flat-top hexes, 4 from the centre, the sides starting
-  on its straight outer columns of 5 (owner, 2026-10-24; 64 pointy-top
-  hexes in 9 rows before); every Steppe fight has mountains at the top
-  (owner, 2026-10-27): a range of 3 to 5 along the top slanted edge to the
-  left of Humphrey's start, to its right, or one on each (never the sides,
-  nor Humphrey's middle column), which block movement and arrows; before,
+  controlled, walking itself one space a turn from the top-right or the
+  bottom-right corner, at random, to the only exit, the opposite corner,
+  around units in its way (owner, 2026-10-28; the top point to the bottom
+  one from 2026-10-24). The board is a hexagon of 61 flat-top hexes, 4
+  from the centre, the sides starting on its straight outer columns of 5
+  (owner, 2026-10-24; 64 pointy-top hexes in 9 rows before), the party on
+  the right facing left and the enemy on the left facing right (owner,
+  2026-10-28; the other way round before); every Steppe fight has
+  mountains at the top: one or two ranges of 3 to 5 anywhere along the
+  top edge, at random, sometimes all along it (owner, 2026-10-28; from
+  2026-10-27 to the left of Humphrey's start at the top point, to its
+  right, or one on each; never the sides), which block movement and arrows; before,
   about half of fights, and every fight of a run's first three stages
   (`MOUNTAIN_STAGES`), had one range on any of the four slanted edges. **No ruins**
   (owner, 2026-10-24; six a fight before): the board is the wide open

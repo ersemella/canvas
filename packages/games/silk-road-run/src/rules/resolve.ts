@@ -21,7 +21,7 @@ import {
   unitAt,
   walkable,
 } from './board';
-import {MAPS, scorched} from './map';
+import {scorched} from './map';
 import {hasPassive, spendPassive} from './passives';
 import {placeCard, simultaneousOrder} from './track';
 import type {MapData} from './map';
@@ -448,7 +448,7 @@ export function camelOf(state: FightState): Unit | undefined {
 
 /** Whether `h` is one of the fight's exits, which the camel wins by reaching. */
 export function atExit(state: FightState, h: Hex): boolean {
-  return MAPS[state.mapId]!.exits.some((e) => hexEquals(e, h));
+  return state.route.exits.some((e) => hexEquals(e, h));
 }
 
 // ─── Hail ────────────────────────────────────────────────────────────────────

@@ -60,6 +60,7 @@ import {
   FLAMING,
   GOBI,
   MAPS,
+  ROUTES,
   SALT,
   STEPPE,
   blocks,
@@ -143,8 +144,9 @@ function upgrade(hero: HeroId, abilities = HEROES[hero].upgrades!.slice(0, 1)): 
  */
 function setup(placements: Record<string, Hex>, party: HeroId[] = PARTY): FightState {
   const state = createFight(0, party, party);
-  // The fixed layout, which these tests place units around.
+  // The fixed layout, which these tests place units around, and the map's first road.
   state.tiles = {...STEPPE.tiles};
+  state.route = ROUTES[0]!;
   state.phase = 'fight';
   state.units = state.units.filter((u) => u.hero !== 'camel' || u.id in placements);
   let slot = 100;
@@ -486,7 +488,7 @@ describe('the track', () => {
       expect(JSON.stringify(createFight(seed))).toBe(JSON.stringify(s));
       for (const side of ['player', 'enemy'] as const) {
         const column = new Set(map.startColumns[side].map(hexKey));
-        // The camel starts at the top point (tested with the camel).
+        // The camel starts at a right-hand corner (tested with the camel).
         const hexes = s.units
           .filter((u) => u.side === side && u.hero !== 'camel')
           .map((u) => hexKey(u.hex!));
@@ -501,14 +503,15 @@ describe('the track', () => {
     expect(starts.size).toBeGreaterThan(10);
     // Both columns are used.
     expect(columns).toEqual(new Set([-4, -3, 3, 4]));
-    // The hexagon's two columns on each side: the straight edge, five hexes, and six in from it.
+    // The hexagon's two columns on each side: the straight edge, five hexes, and six in from it;
+    // the party on the right, the enemy on the left.
     expect(map.startColumns.player.map((h) => h.q)).toEqual([
-      ...Array(5).fill(-4),
-      ...Array(6).fill(-3),
-    ]);
-    expect(map.startColumns.enemy.map((h) => h.q)).toEqual([
       ...Array(5).fill(4),
       ...Array(6).fill(3),
+    ]);
+    expect(map.startColumns.enemy.map((h) => h.q)).toEqual([
+      ...Array(5).fill(-4),
+      ...Array(6).fill(-3),
     ]);
   });
 
@@ -630,12 +633,13 @@ describe('the board', () => {
           .map(([q, r]) => ({q, r}));
       expect(of('mountain')).toEqual([]);
       const burnt = of('scorched');
-      // Off the starting columns and Temee's road, not next to its start or exit.
+      // Off the starting columns and Humphrey's road, not next to its start or exit.
+      const {camelStart, exits} = mapOf(s);
+      const length = hexDistance(camelStart, exits[0]!);
       for (const h of burnt) {
         expect(Math.abs(h.q)).toBeLessThan(3);
-        expect(h.q).not.toBe(0);
-        for (const x of [FLAMING.camelStart, ...FLAMING.exits])
-          expect(hexDistance(h, x)).toBeGreaterThan(1);
+        expect(hexDistance(camelStart, h) + hexDistance(h, exits[0]!)).toBeGreaterThan(length);
+        for (const x of [camelStart, ...exits]) expect(hexDistance(h, x)).toBeGreaterThan(1);
       }
       // Four or five patches of one or two spaces, apart.
       const patches: Hex[][] = [];
@@ -740,9 +744,9 @@ describe('the board', () => {
       (q) => map.hexes.filter((h) => h.q === q).length
     );
     expect(lengths).toEqual([5, 6, 7, 8, 9, 8, 7, 6, 5]);
-    // Top to bottom: the camel's top point first, the exit last.
-    expect(map.hexes[0]).toEqual(map.camelStart);
-    expect(map.hexes.at(-1)).toEqual(map.exits[0]);
+    // Top to bottom: the top point first, the bottom one last.
+    expect(map.hexes[0]).toEqual({q: 0, r: -4});
+    expect(map.hexes.at(-1)).toEqual({q: 0, r: 4});
     // Mirror about the centre column: flat-top hexes keep their height, r + q/2.
     const mirror = (h: Hex): Hex => ({q: -h.q, r: h.r + h.q});
     for (const h of map.hexes) expect(onMap(map, mirror(h))).toBe(true);
@@ -753,52 +757,45 @@ describe('the board', () => {
       const {col, row} = spaceOf(h);
       expect(spaceAt(col, row)).toEqual(h);
     }
-    expect(spaceAt(0, 0)).toEqual(map.startColumns.player[0]);
-    expect(spaceAt(4, 0)).toEqual(map.camelStart);
+    expect(spaceAt(8, 0)).toEqual(map.startColumns.player[0]);
+    expect(spaceAt(0, 0)).toEqual(map.startColumns.enemy[0]);
+    expect(spaceAt(8, 0)).toEqual(ROUTES[0]!.camelStart);
+    expect(spaceAt(8, 4)).toEqual(ROUTES[1]!.camelStart);
   });
 
-  it('raises mountains at the top in every Steppe fight, left of Humphrey, right of it or both, off the sides, the middle and the centre', () => {
+  it('raises mountains along the top edge in every Steppe fight, anywhere along it at random, off the sides and the centre', () => {
     const centre: Hex = {q: 0, r: 0};
-    const sides = new Set<string>();
+    const inFromTop = (h: Hex) => h.r + Math.min(h.q, 0) + 4;
+    const edge = STEPPE.hexes.filter((h) => inFromTop(h) === 0 && Math.abs(h.q) < 4);
+    const covered = new Set<string>();
+    const counts = new Set<number>();
     for (let seed = 0; seed < 60; seed++) {
       const tiles = createFight(seed).tiles;
       const mountains = Object.keys(tiles)
         .filter((k) => tiles[k] === 'mountain')
         .map(hexFromKey);
-      const left = mountains.filter((m) => m.q < 0);
-      const right = mountains.filter((m) => m.q > 0);
-      // Never down the middle column.
-      expect(left.length + right.length).toBe(mountains.length);
-      for (const range of [left, right]) {
-        if (!range.length) continue;
-        expect(range.length).toBeGreaterThanOrEqual(3);
-        expect(range.length).toBeLessThanOrEqual(5);
-        // One clump: every mountain reachable from the first through mountains.
-        const seen = new Set([hexKey(range[0]!)]);
-        const queue = [range[0]!];
-        for (let h; (h = queue.shift()); )
-          for (const n of range)
-            if (hexDistance(h, n) === 1 && !seen.has(hexKey(n))) {
-              seen.add(hexKey(n));
-              queue.push(n);
-            }
-        expect(seen.size).toBe(range.length);
-        for (const m of range) {
-          // In the top half, never near the centre, never on or next to the sides.
-          expect(depth(m)).toBeLessThan(0);
-          expect(hexDistance(m, centre)).toBeGreaterThanOrEqual(3);
-          expect(Math.abs(m.q)).toBeLessThan(4);
-          if (Math.abs(m.q) === 3) expect(hexDistance(m, centre)).toBe(4);
-        }
-        // Hugging the edge: a hex in from it only once the edge's three are taken.
-        const onEdge = range.filter((m) => hexDistance(m, centre) === 4).length;
-        expect(onEdge).toBe(Math.min(3, range.length));
+      // One range or two, of 3 to 5 each.
+      expect(mountains.length).toBeGreaterThanOrEqual(3);
+      expect(mountains.length).toBeLessThanOrEqual(10);
+      for (const m of mountains) {
+        // In the top half, never near the centre, never on or next to the sides.
+        expect(depth(m)).toBeLessThan(0);
+        expect(hexDistance(m, centre)).toBeGreaterThanOrEqual(3);
+        expect(Math.abs(m.q)).toBeLessThan(4);
+        if (Math.abs(m.q) === 3) expect(inFromTop(m)).toBe(0);
+        // On the top edge, or one in from it next to a mountain on it.
+        expect(inFromTop(m)).toBeLessThanOrEqual(1);
+        if (inFromTop(m) === 1)
+          expect(mountains.some((n) => inFromTop(n) === 0 && hexDistance(m, n) === 1)).toBe(true);
       }
-      sides.add(`${left.length > 0} ${right.length > 0}`);
-      expect(sides.has('false false')).toBe(false);
+      const onEdge = mountains.filter((m) => inFromTop(m) === 0);
+      onEdge.forEach((m) => covered.add(hexKey(m)));
+      counts.add(onEdge.length);
     }
-    // Left alone, right alone and both all come up.
-    expect([...sides].sort()).toEqual(['false true', 'true false', 'true true']);
+    // Every space along the top edge comes up, some fights take only part of it and some all of it.
+    expect(covered).toEqual(new Set(edge.map(hexKey)));
+    expect(Math.min(...counts)).toBeLessThanOrEqual(4);
+    expect(counts.has(edge.length)).toBe(true);
   });
 
   it('always raises mountains in the first three stages of a run', () => {
@@ -2608,47 +2605,57 @@ describe('the caravan’s camel', () => {
     }
   });
 
-  it('joins the player’s side at the top point, with high defence and the health it gives', () => {
-    for (const seed of [1, 2, 3]) {
+  it('joins the player’s side at the top-right or bottom-right corner, with high defence and the health it gives', () => {
+    const starts = new Set<string>();
+    for (let seed = 0; seed < 20; seed++) {
       const s = createFight(seed);
       const camel = unit(s, 'p-camel');
       expect(camel.side).toBe('player');
       expect(camel.controller).toBe('ai');
-      expect(camel.hex).toEqual(STEPPE.camelStart);
-      expect(camel.hex).toEqual({q: 0, r: -4});
+      expect(camel.hex).toEqual(s.route.camelStart);
+      expect(mapOf(s).camelStart).toEqual(s.route.camelStart);
+      expect(ROUTES).toContain(s.route);
+      starts.add(hexKey(camel.hex!));
       expect(camel.defence).toBe(HEROES.camel.defence);
       expect(camel.hp).toBe((1 + camel.defence) * 2);
       expect(s.units.filter((u) => u.hex && hexKey(u.hex) === hexKey(camel.hex!))).toHaveLength(1);
       expect(s.units.filter((u) => u.side === 'enemy' && u.hero === 'camel')).toHaveLength(0);
+      // No one else starts on the exit.
+      expect(s.units.some((u) => hexKey(u.hex!) === hexKey(s.route.exits[0]!))).toBe(false);
     }
+    expect(starts).toEqual(new Set(['4,-4', '4,0']));
   });
 
-  it('wins by reaching the one exit, at the bottom point', () => {
-    expect(STEPPE.exits).toEqual([{q: 0, r: 4}]);
+  it('wins by reaching the one exit, the corner opposite its start', () => {
+    expect(ROUTES).toEqual([
+      {camelStart: {q: 4, r: -4}, exits: [{q: -4, r: 4}]},
+      {camelStart: {q: 4, r: 0}, exits: [{q: -4, r: 0}]},
+    ]);
+    for (const {camelStart, exits} of ROUTES) expect(hexDistance(camelStart, exits[0]!)).toBe(8);
   });
 
   it('follows a fixed shortest road around the yurts to the exit', () => {
     for (let seed = 0; seed < 20; seed++) {
       const map = mapOf(createFight(seed));
-      const road = roadToExit(map, STEPPE.camelStart);
+      const road = roadToExit(map, map.camelStart);
       // Every step to a neighbour, never onto yurts, ending on the exit.
-      let from = STEPPE.camelStart;
+      let from = map.camelStart;
       for (const h of road) {
         expect(hexDistance(from, h)).toBe(1);
         expect(blocks(tileAt(map, h))).toBe(false);
         from = h;
       }
-      expect(road[road.length - 1]).toEqual(STEPPE.exits[0]);
+      expect(road[road.length - 1]).toEqual(map.exits[0]);
       // Shortest: no walk around the yurts is shorter.
-      const dist = new Map([[hexKey(STEPPE.camelStart), 0]]);
-      const queue = [STEPPE.camelStart];
+      const dist = new Map([[hexKey(map.camelStart), 0]]);
+      const queue = [map.camelStart];
       for (let h; (h = queue.shift()); )
         for (const n of hexNeighbors(h))
           if (onMap(map, n) && !blocks(tileAt(map, n)) && !dist.has(hexKey(n))) {
             dist.set(hexKey(n), dist.get(hexKey(h))! + 1);
             queue.push(n);
           }
-      expect(road).toHaveLength(dist.get(hexKey(STEPPE.exits[0]!))!);
+      expect(road).toHaveLength(dist.get(hexKey(map.exits[0]!))!);
       // Fixed: the road from a hex on it is the rest of it.
       expect(roadToExit(map, road[2]!)).toEqual(road.slice(3));
     }
@@ -2717,10 +2724,10 @@ describe('the caravan’s camel', () => {
   });
 
   it('wins the fight on reaching the exit, with enemies still standing', () => {
-    const s = setup({'p-camel': at(4, 7), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
+    const s = setup({'p-camel': {q: -3, r: 3}, 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     unit(s, 'p-camel').slot = 50;
     expect(advanceToDecision(s)).toBeUndefined();
-    expect(unit(s, 'p-camel').hex).toEqual(at(5, 7));
+    expect(unit(s, 'p-camel').hex).toEqual({q: -4, r: 4});
     expect(s.phase).toBe('won');
   });
 
@@ -3065,6 +3072,62 @@ describe('previews, the AI and the run', () => {
     ).toThrow(RuleError);
     // A test stage earns none either.
     expect(runView(createRun(7, {test: true})).provision).toBe(false);
+  });
+
+  it('the caravanserai: the provision heals the camel 4, up to its full health, in place of a stat', () => {
+    const win = (r: RunState, camelHp?: number): RunState => {
+      const fight = cloneFight(r.fight);
+      fight.phase = 'won';
+      if (camelHp !== undefined) fight.units.find((u) => u.hero === 'camel')!.hp = camelHp;
+      return {...r, fight};
+    };
+    const camelAfter = (r: RunState) => {
+      const camel = r.fight.units.find((u) => u.hero === 'camel')!;
+      const taken = r.fight
+        .events!.filter((e) => e.kind === 'damage' && e.unitId === camel.id)
+        .reduce((sum, e) => sum + (e as {amount: number}).amount, 0);
+      return camel.hp + taken;
+    };
+    const run = createRun(7);
+    const maxHp = run.fight.units.find((u) => u.hero === 'camel')!.maxHp;
+    const hurt = win(run, maxHp - 7);
+
+    const healed = handleRunAction(hurt, {type: 'next', heal: true});
+    expect(RULES.camelHeal).toBe(4);
+    expect(camelAfter(healed)).toBe(maxHp - 3);
+    // Never past its full health.
+    expect(camelAfter(handleRunAction(win(run, maxHp - 2), {type: 'next', heal: true}))).toBe(
+      maxHp
+    );
+    expect(healed.provisions).toEqual([]);
+    for (const u of healed.fight.units) expect(u.provisions).toBeUndefined();
+    // One or the other, never both; not at full health; nothing but `true`.
+    expect(() =>
+      handleRunAction(hurt, {type: 'next', heal: true, provision: {hero: 'bokh', stat: 'power'}})
+    ).toThrow(RuleError);
+    expect(() => handleRunAction(win(run), {type: 'next', heal: true})).toThrow(RuleError);
+    expect(() => handleRunAction(hurt, {type: 'next', heal: 'yes'})).toThrow(RuleError);
+    // A stat taken instead leaves the camel's wounds.
+    const raised = handleRunAction(hurt, {type: 'next', provision: {hero: 'bokh', stat: 'power'}});
+    expect(camelAfter(raised)).toBe(maxHp - 7);
+
+    // With every stat of every hero at the most, a hurt camel still earns its heal.
+    const maxed = win(run, maxHp - 7);
+    for (const u of maxed.fight.units.filter((u) => u.side === 'player' && u.hero !== 'camel'))
+      Object.assign(u, {
+        speed: 10,
+        defence: 10,
+        power: 10,
+        provisions: {speed: 10, defence: 10, power: 10},
+      });
+    expect(runView(maxed).provision).toBe(true);
+    expect(() => handleRunAction(maxed, {type: 'next'})).toThrow(RuleError);
+    expect(camelAfter(handleRunAction(maxed, {type: 'next', heal: true}))).toBe(maxHp - 3);
+
+    // No heal where no provision is earned: between regions.
+    expect(() =>
+      handleRunAction(win({...run, stage: 2}, maxHp - 7), {type: 'next', heal: true})
+    ).toThrow(RuleError);
   });
 
   it('the caravanserai between regions: three passives at random, one taken by a survivor for the rest of the run', () => {

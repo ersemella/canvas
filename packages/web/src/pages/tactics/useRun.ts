@@ -211,7 +211,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
    * for the board to mount again, as a new run's does.
    */
   const nextStage = useCallback(
-    (choices: {provision?: Provision; passive?: PassivePick} = {}) => {
+    (choices: {provision?: Provision; passive?: PassivePick; heal?: boolean} = {}) => {
       if (!run || busy) return;
       void send(() => localRuns.next(run.runId, choices), 'run');
     },

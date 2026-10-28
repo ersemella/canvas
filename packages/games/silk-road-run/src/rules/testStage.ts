@@ -16,7 +16,17 @@ import {CAMEL, HEROES, RULES} from './config';
 import {RuleError, makeUnit, mapOf, seededRandom} from './fight';
 import {PASSIVES} from './passives';
 import {log} from './resolve';
-import {MAPS, STEPPE, blocks, fixedTiles, mapById, onMap, randomTiles, spaceAt} from './map';
+import {
+  MAPS,
+  ROUTES,
+  STEPPE,
+  blocks,
+  fixedTiles,
+  mapById,
+  onMap,
+  randomTiles,
+  spaceAt,
+} from './map';
 import type {MapData, Tile} from './map';
 import {placeStartingCards, shuffled} from './track';
 import type {AbilityId, FightState, HeroId, Loadout, PassiveId, Unit} from './types';
@@ -168,7 +178,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     taken.set(hexKey(h), where);
   };
   if (Array.isArray(yurts)) yurts.forEach((h, i) => claim(`yurts[${i}]`, h));
-  if (camel) claim('camel', camel.at ?? STEPPE.camelStart);
+  if (camel?.at) claim('camel', camel.at);
   for (const side of ['player', 'enemy'] as const)
     setup[side].forEach((u, i) => u.at && claim(`${side}[${i}]`, u.at));
   return setup;
@@ -176,8 +186,8 @@ export function parseTestStage(raw: unknown): TestSetup {
 
 /**
  * The test stage's fight, already under way: the units on their spaces,
- * the rest scattered over their side's two starting columns (the player's left,
- * the enemy's right), the yurts as set; with random yurts, scattered again
+ * the rest scattered over their side's two starting columns (the player's right,
+ * the enemy's left), off the camel's road's ends, the yurts as set; with random yurts, scattered again
  * until no unit starts boxed in, as in a stage's fight (`createFight`).
  */
 export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): FightState {
@@ -206,9 +216,14 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
     ]),
   ];
   const units = placed.map(([u]) => u);
+  // The camel's road, at random (`ROUTES`), off any space a unit is set on.
+  const setOn = (h: Hex) => placed.some(([u, {at}]) => at && hexEquals(at, h) && u.hero !== CAMEL);
+  const roads = ROUTES.filter((r) => !setOn(r.camelStart));
+  const route = roads[Math.floor(random() * roads.length)] ?? ROUTES[0]!;
   const state: FightState = {
     mapId: map.id,
     tiles: {},
+    route,
     mode: 'solo',
     phase: 'fight',
     currentSlot: 0,
@@ -218,7 +233,9 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
     awaiting: null,
   };
   const camel = units.find((u) => u.hero === CAMEL);
-  for (const [u, {at}] of placed) u.hex = at ?? (u === camel ? map.camelStart : null);
+  for (const [u, {at}] of placed) u.hex = at ?? (u === camel ? route.camelStart : null);
+  if (camel && !setup.camel?.at && setOn(route.camelStart))
+    fail('A unit starts on both of the camel\'s starting corners: give the camel an "at".');
   const fixed = units.filter((u) => u.hex).map((u) => u.hex!);
   // The Salt Flats' dome can't be cleared: it is drawn as one.
   const dome = fixedTiles(map);
@@ -226,13 +243,15 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
     if (dome[hexKey(h)]) fail(`No unit can start inside the salt dome (${hexKey(h)}).`);
 
   for (let attempt = 0; ; attempt++) {
-    state.tiles = tilesFor(setup.yurts, random, map);
+    state.tiles = tilesFor(setup.yurts, random, {...map, ...route});
     // A placed unit's space is never a yurt.
     for (const h of fixed) delete state.tiles[hexKey(h)];
     for (const side of ['player', 'enemy'] as const) {
       const loose = placed.filter(([u, {at}]) => u.side === side && !at && u !== camel);
       const free = map.startColumns[side].filter(
-        (h) => !fixed.some((f) => hexEquals(f, h)) && !blocks(state.tiles[hexKey(h)])
+        (h) =>
+          ![...fixed, route.camelStart, ...route.exits].some((f) => hexEquals(f, h)) &&
+          !blocks(state.tiles[hexKey(h)])
       );
       if (loose.length > free.length)
         fail(

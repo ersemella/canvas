@@ -26,7 +26,7 @@ import {
   walk,
 } from './resolve';
 import type {Ctx} from './resolve';
-import {MAPS, STEPPE, blocks, randomTiles} from './map';
+import {MAPS, ROUTES, STEPPE, blocks, randomTiles} from './map';
 import type {MapData, Tile} from './map';
 import {hasPassive} from './passives';
 import {aimSlot, chargeOf, nextCard, placeCard, placeStartingCards, shuffled} from './track';
@@ -49,11 +49,11 @@ export class RuleError extends Error {}
 
 const fightMaps = new WeakMap<Record<string, Tile>, MapData>();
 
-/** The fight's map, with the fight's own yurts. */
+/** The fight's map, with the fight's own yurts and the camel's road. */
 export function mapOf(state: FightState): MapData {
   const map = MAPS[state.mapId]!;
   let own = fightMaps.get(state.tiles);
-  if (!own) fightMaps.set(state.tiles, (own = {...map, tiles: state.tiles}));
+  if (!own) fightMaps.set(state.tiles, (own = {...map, ...state.route, tiles: state.tiles}));
   return own;
 }
 
@@ -141,10 +141,13 @@ export function makeUnit(
 
 /**
  * A new fight on the Steppe Crossing, already under way: the seed scatters the
- * yurts, the player's party over the two leftmost columns and
- * the enemy's over the two rightmost (owner, 2026-10-25; the outermost
- * column alone from 2026-10-20; there is no deployment step). The player's camel
- * starts at the board's top point (camel.md, 18.1; owner, 2026-10-24). The player brings
+ * yurts, the player's party over the two rightmost columns and
+ * the enemy's over the two leftmost (owner, 2026-10-28; the other way round
+ * from 2026-10-25, the outermost column alone from 2026-10-20; there is no
+ * deployment step). The seed picks the camel's road (`ROUTES`): it starts at
+ * the top-right or the bottom-right corner and walks to the opposite one
+ * (camel.md, 18.1; owner, 2026-10-28; the top point to the bottom one from
+ * 2026-10-24), no other unit starting on either end. The player brings
  * the heroes chosen on the start menu; the enemy brings `enemies`, all three
  * heroes unless the run's stage says otherwise (STAGES). No unit starts
  * boxed in by yurts and the units beside it: the seed scatters again until
@@ -164,9 +167,11 @@ export function createFight(
   passives: PassivePick[] = []
 ): FightState {
   const random = seededRandom(seed);
+  const route = ROUTES[Math.floor(random() * ROUTES.length)]!;
   const state: FightState = {
     mapId: map.id,
     tiles: {},
+    route,
     mode: 'solo',
     phase: 'fight',
     currentSlot: 0,
@@ -192,13 +197,16 @@ export function createFight(
     awaiting: null,
   };
   const camel = state.units.find((u) => u.hero === CAMEL)!;
-  camel.hex = map.camelStart;
+  camel.hex = route.camelStart;
   do {
-    state.tiles = randomTiles(random, mountains, map);
+    state.tiles = randomTiles(random, mountains, {...map, ...route});
     for (const side of ['player', 'enemy'] as const) {
-      // A mountain may stand in the inner of the two columns.
+      // A mountain may stand in the inner of the two columns. Off the
+      // camel's start and its exit.
       const free = map.startColumns[side].filter(
-        (h) => !hexEquals(h, map.camelStart) && !blocks(state.tiles[hexKey(h)])
+        (h) =>
+          ![route.camelStart, ...route.exits].some((x) => hexEquals(h, x)) &&
+          !blocks(state.tiles[hexKey(h)])
       );
       const hexes = shuffled(free, random);
       state.units

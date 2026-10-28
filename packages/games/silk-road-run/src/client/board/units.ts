@@ -230,14 +230,14 @@ export function drawUnit(
   const img = sprite && assetLoader.requestImage(sprite);
   if (img) {
     // A sheet of square frames side by side (one frame for a still sprite).
-    // Unsmoothed, so the pixels stay crisp; enemies face left.
+    // Unsmoothed, so the pixels stay crisp; the party faces left, the enemy right.
     const side = img.height;
     const frames = Math.max(1, Math.round(img.width / side));
     const size = side * SPRITE_SCALE;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     ctx.translate(Math.round(c.x), Math.round(c.y + SPRITE_FEET - size));
-    if (u.side === 'enemy') ctx.scale(-1, 1);
+    if (u.side === 'player') ctx.scale(-1, 1);
     ctx.drawImage(img, (opts.frame % frames) * side, 0, side, side, -size / 2, 0, size, size);
     ctx.restore();
   } else {

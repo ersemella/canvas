@@ -717,7 +717,7 @@ try {
     await shot(page, 'end-phone');
   }
   // Next stage opens the caravanserai, where one survivor takes a provision
-  // (1 more of a stat); Set out there starts the run's next stage, against a
+  // (1 more of a stat), or Humphrey is healed instead; Set out there starts the run's next stage, against a
   // bigger band, with the survivors.
   if (nextAhead) {
     const before = (await state()).view;
@@ -731,9 +731,10 @@ try {
     await page.getByTestId('caravanserai').waitFor({timeout: 15_000});
     const setOut = page.getByRole('button', {name: 'Set out'});
     check(
-      'the caravanserai: a choice for each stat of each hero standing, Set out waiting on one',
+      'the caravanserai: a choice for each stat of each hero standing and Humphrey’s heal, Set out waiting on one',
       (await page.locator('[data-testid^="provision-"][aria-pressed]').count()) ===
-        3 * survivors.filter((h) => h !== 'camel').length &&
+        3 * survivors.filter((h) => h !== 'camel').length + 1 &&
+        (await page.getByTestId('provision-heal').count()) === 1 &&
         (await page.getByTestId('provision-camel-power').count()) === 0 &&
         (await setOut.isDisabled()),
       survivors

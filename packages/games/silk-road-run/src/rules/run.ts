@@ -2,10 +2,11 @@
  * A run: its stages (STAGES in config.ts) one after another, each a fight
  * against a bigger enemy band. Heroes who fall are gone for the run; the
  * survivors and the camel go on to the next stage, by way of the
- * caravanserai, where a stage that earns one gives a provision, and the
- * last stage of a region offers three passives, one taken. The heroes start
- * each stage at full health; the camel keeps the health it ended the last
- * one with (camel.md, 18.4). The run keeps the seed;
+ * caravanserai, where a stage that earns one gives a provision, or heals
+ * the camel in its place, and the last stage of a region offers three
+ * passives, one taken. The heroes start each stage at full health; the
+ * camel keeps the health it ended the last one with, unless healed there
+ * (camel.md, 18.4). The run keeps the seed;
  * the view is the fight, which never contains it.
  */
 import type {Hex, RunContext} from '@canvas/engine/server';
@@ -14,6 +15,7 @@ import {chooseAiTurn} from './ai';
 import {
   AI,
   CAMEL,
+  HEROES,
   MOUNTAIN_STAGES,
   PARTY,
   PASSIVE_OFFER,
@@ -56,7 +58,7 @@ import type {
  * removed or reinterpreted): older runs are then ended rather than
  * patched (`runOutdated`), so the rules never handle an old shape.
  */
-export const RUN_FORMAT = 10;
+export const RUN_FORMAT = 11;
 
 export interface RunState {
   /** `RUN_FORMAT` when the run was created; missing in runs from before it existed. */
@@ -83,7 +85,10 @@ export interface RunView {
   /** Which stage of the run this is, from 0, of `stages`. */
   stage: number;
   stages: number;
-  /** Winning this stage earns a provision, assigned at the caravanserai on the way to the next. */
+  /**
+   * Winning this stage earns a provision, assigned at the caravanserai on
+   * the way to the next, or taken as a heal of the camel (RULES.camelHeal).
+   */
   provision: boolean;
   /**
    * The passives the caravanserai offers once this stage is won, one to be
@@ -188,12 +193,23 @@ function raisable(fight: FightState): Unit[] {
   );
 }
 
+/** The camel is hurt, so a provision can heal it. */
+function camelHurt(fight: FightState): boolean {
+  const camel = fight.units.find((u) => u.hero === CAMEL);
+  return camel !== undefined && camel.hp < camel.maxHp;
+}
+
 /**
  * Whether winning the run's stage earns a provision: one that earns them
- * (STAGES), unless every hero standing has every stat at RULES.statMax.
+ * (STAGES), unless every hero standing has every stat at RULES.statMax and
+ * the camel is at full health.
  */
 function provisionOwed(run: RunState): boolean {
-  return !run.test && Boolean(STAGES[run.stage]?.provision) && raisable(run.fight).length > 0;
+  return (
+    !run.test &&
+    Boolean(STAGES[run.stage]?.provision) &&
+    (raisable(run.fight).length > 0 || camelHurt(run.fight))
+  );
 }
 
 /**
@@ -276,6 +292,10 @@ export function parseAction(raw: unknown): RunAction {
         throw new RuleError('Malformed passive.');
       out.passive = {hero: p.hero as HeroId, passive: p.passive as PassiveId};
     }
+    if (a.heal !== undefined) {
+      if (a.heal !== true) throw new RuleError('Malformed heal.');
+      out.heal = true;
+    }
     return out;
   }
   if (a.type === 'continue') return {type: 'continue'};
@@ -311,9 +331,10 @@ export function parseAction(raw: unknown): RunAction {
  * (`continue`), each on its own, so the page can play one back while the
  * next is worked out; then the track runs on to the next decision, either
  * side's. Or, once a stage short of the last is won, on to the next, with
- * the provision it earned given to one of the survivors, and on leaving a
- * region one of the passives offered (`passiveOffer`) to one of them; the
- * camel takes its health on with it. Given
+ * the provision it earned given to one of the survivors, or taken as a heal
+ * of the camel (RULES.camelHeal) instead, and on leaving a region one of the
+ * passives offered (`passiveOffer`) to one of them; the camel takes its
+ * health on with it. Given
  * a clock (`context.now`) the AI looks as deep as it gets in
  * AI.browser.thinkMs; without one it keeps to AI.maxSimulations, the same
  * turn on every machine (tests, balance).
@@ -326,8 +347,18 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
       throw new RuleError('There is no next stage to go on to.');
     const party = survivors(run.fight);
     const provisions = [...(run.provisions ?? [])];
-    if (provisionOwed(run)) {
-      if (!action.provision) throw new RuleError('Choose a hero and a stat to raise.');
+    const camel = run.fight.units.find((u) => u.hero === CAMEL)!;
+    let camelHp = camel.hp;
+    if (provisionOwed(run) && action.heal) {
+      // The provision heals the camel in place of a stat.
+      if (action.provision)
+        throw new RuleError(`Raise a stat or heal ${HEROES[CAMEL].name}, not both.`);
+      if (!camelHurt(run.fight))
+        throw new RuleError(`${HEROES[CAMEL].name} is already at full health.`);
+      camelHp = Math.min(camel.hp + RULES.camelHeal, camel.maxHp);
+    } else if (provisionOwed(run)) {
+      if (!action.provision)
+        throw new RuleError(`Choose a hero and a stat to raise, or heal ${HEROES[CAMEL].name}.`);
       const {hero, stat} = action.provision;
       if (!party.includes(hero))
         throw new RuleError('Only a hero still in the party can take a provision.');
@@ -335,7 +366,7 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
       if (unit[stat] >= RULES.statMax)
         throw new RuleError(`No stat can go above ${RULES.statMax}.`);
       provisions.push(action.provision);
-    } else if (action.provision) {
+    } else if (action.provision || action.heal) {
       throw new RuleError('There is no provision to take.');
     }
     const passives = [...(run.passives ?? [])];
@@ -352,8 +383,7 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
     } else if (action.passive) {
       throw new RuleError('There is no passive to take.');
     }
-    const camel = run.fight.units.find((u) => u.hero === CAMEL)!;
-    const fight = stageFight(run.seed, stage + 1, party, provisions, passives, camel.hp);
+    const fight = stageFight(run.seed, stage + 1, party, provisions, passives, camelHp);
     return {...run, version: run.version + 1, stage: stage + 1, provisions, passives, fight};
   }
   const fight = cloneFight(run.fight, true);

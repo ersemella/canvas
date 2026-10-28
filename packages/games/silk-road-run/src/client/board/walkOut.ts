@@ -7,7 +7,7 @@ import {CAMEL} from '../../rules/config';
 import {unitAt, walkable} from '../../rules/board';
 import {mapOf} from '../../rules/fight';
 import type {FightState, Unit} from '../../rules/types';
-import {BOARD_LAYOUT} from '../layout';
+import {pastExit} from '../../rules/map';
 import {center, lerp} from './pixels';
 import type {Point} from './pixels';
 
@@ -26,7 +26,7 @@ export interface Walk {
  * A won fight's walk out (camel.md): the camel heads for its nearest exit,
  * and every living hero for the same one, each along its shortest walkable
  * path (around any enemies still standing where there is a way), then one
- * hex further, off the board's edge. Nearest first, they reach the exit one
+ * hex further, off the board's edge the way the road goes. Nearest first, they reach the exit one
  * hex's time apart, so no two stand on it at once. A unit that can't reach
  * it stays put. Null if the camel can't reach an exit.
  */
@@ -51,10 +51,8 @@ export function walkOutPlan(fight: FightState): Map<string, Walk> | null {
   for (const {u, path} of paths) {
     const steps = path.length - 1;
     arrival = Math.max(steps, arrival + 1);
-    const route = path.map(center);
-    const end = route[route.length - 1]!;
-    // The exit is the board's bottom point: walk on one hex down past it.
-    route.push({x: end.x, y: end.y + Math.sqrt(3) * BOARD_LAYOUT.size});
+    // Then on one hex past the exit, off the board the way the road goes.
+    const route = [...path.map(center), center(pastExit(map, exit))];
     walks.set(u.id, {route, delay: (arrival - steps) * WALK_OUT_HEX_SECONDS});
   }
   return walks;
