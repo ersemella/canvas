@@ -192,6 +192,7 @@ Always read this file first. Then:
 | The caravan's camel; how a fight is won and lost; ending stalled fights | [camel.md](camel.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |
+| The heroes' large, detailed art for the start menu's full-screen hero view on a phone: prompts in one consistent style (proposed 2026-10-28) | [hero-art.md](hero-art.md) |
 | Persia's map, the Salt Flats with one large salt dome in the middle, and the prompts for its art | [salt-flats.md](salt-flats.md) |
 | The Byzantine's map, the Fairy Chimneys (Cappadocia's tuff, fairy chimneys, a tuff cliff with a rock-cut church), and the prompts for its art (proposed 2026-10-28; built the same day with the chimneys only, seven or eight a fight out to the edge, shown on the test stage) | [cappadocia.md](cappadocia.md) |
 | Rival caravans, the pool, rewards, the ledger | [ghosts.md](ghosts.md) |
