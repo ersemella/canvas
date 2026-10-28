@@ -3,6 +3,7 @@
  * statuses (map.md, section 6; keywords.md, 17.5).
  */
 import {
+  hexDirectionTo,
   hexEquals,
   hexLineSides,
   hexNeighbor,
@@ -172,6 +173,34 @@ export function isRanged(unit: Unit): boolean {
 
 export function hostile(a: Unit, b: Unit): boolean {
   return a.side !== b.side;
+}
+
+// ─── Facing ──────────────────────────────────────────────────────────────────
+
+/**
+ * Whether `h` is in `unit`'s front lane (One Eye, owner, 2026-10-28):
+ * straight out from it the way it faces, at any distance, whatever stands
+ * between.
+ */
+export function inFrontLane(unit: Unit, h: Hex): boolean {
+  return (
+    unit.facing !== undefined && unit.hex !== null && hexDirectionTo(unit.hex, h) === unit.facing
+  );
+}
+
+/**
+ * The way a unit with One Eye faces as the fight starts: across the board
+ * toward the other side (the enemy's start on the left, the party's on the
+ * right), up or down that side, whichever has more board in front of it.
+ */
+export function startFacing(map: MapData, unit: Unit): number {
+  const [a, b] = unit.side === 'enemy' ? [0, 1] : [3, 4];
+  return line(map, unit.hex!, b).length > line(map, unit.hex!, a).length ? b : a;
+}
+
+/** Faces every unit with One Eye the way it starts (`startFacing`), once the units are placed. */
+export function faceStart(state: FightState, map: MapData): void {
+  for (const u of state.units) if (u.hex && hasPassive(u, 'oneEye')) u.facing = startFacing(map, u);
 }
 
 // ─── Statuses ────────────────────────────────────────────────────────────────

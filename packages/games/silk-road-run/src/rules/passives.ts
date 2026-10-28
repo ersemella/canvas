@@ -8,6 +8,7 @@
  * one yet: the test stage gives them (`Loadout.passives`), and an upgrade
  * offer's passive slot (19.3) will.
  */
+import {ONE_EYE} from './config';
 import type {PassiveId, Unit} from './types';
 
 export type PassiveGroup = 'track' | 'board' | 'damage' | 'control' | 'allies';
@@ -144,14 +145,20 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'allies',
     'When an ally falls, its card is Hastened 3 and it is Empowered 1 for its next turn.'
   ),
+  oneEye: def(
+    'oneEye',
+    'One Eye',
+    'damage',
+    `Armour ${ONE_EYE.armour} against hits from anyone not standing in the lane its eye faces. It turns toward whatever it walks to or aims at.`
+  ),
 };
 
 /**
  * Passives a hero starts with that the caravanserai doesn't offer:
- * Unstoppable, the Juggernaut's (owner, 2026-10-27), isn't in 19.8's
- * pool.
+ * Unstoppable, the Juggernaut's (owner, 2026-10-27), and One Eye, the
+ * One-Eyed Giant's (owner, 2026-10-28), aren't in 19.8's pool.
  */
-export const NOT_OFFERED: readonly PassiveId[] = ['unstoppable'];
+export const NOT_OFFERED: readonly PassiveId[] = ['unstoppable', 'oneEye'];
 
 /** Whether `unit` carries the passive `id`. */
 export function hasPassive(unit: Unit, id: PassiveId): boolean {

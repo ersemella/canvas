@@ -11,7 +11,7 @@ import {hexEquals, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import config from '../../test-stage.json';
 import {ABILITIES} from './abilities';
-import {abilityCount, canMove} from './board';
+import {abilityCount, canMove, faceStart} from './board';
 import {CAMEL, HEROES, RULES} from './config';
 import {RuleError, makeUnit, mapOf, seededRandom} from './fight';
 import {PASSIVES} from './passives';
@@ -264,6 +264,7 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
     if ((setup.yurts !== 'random' && setup.yurts !== 'mountains') || attempt >= 50) break;
     if (units.every((u) => canMove(state, mapOf(state), u))) break;
   }
+  faceStart(state, mapOf(state));
   placeStartingCards(state);
   log({state, map: mapOf(state), slot: 0}, 'The test stage begins.');
   return state;

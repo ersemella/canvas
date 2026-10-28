@@ -13,7 +13,8 @@ export type Side = 'player' | 'enemy';
  * (owner, 2026-10-27), the Juggernaut (`mahout`, owner, 2026-10-27), the
  * Ranger (owner, 2026-10-27), the
  * caravan's camel (camel.md), a unit that isn't a
- * hero, and the enemy NPCs, the wolf and the fox.
+ * hero, the enemy NPCs, the wolf and the fox, and the Steppe's boss, the
+ * One-Eyed Giant (`giant`, owner, 2026-10-28; enemies.md).
  */
 export type HeroId =
   | 'bokh'
@@ -27,7 +28,8 @@ export type HeroId =
   | 'archer'
   | 'camel'
   | 'wolf'
-  | 'fox';
+  | 'fox'
+  | 'giant';
 export type AbilityId =
   | 'hold'
   | 'snapShot'
@@ -42,6 +44,9 @@ export type AbilityId =
   | 'omen'
   | 'stomp'
   | 'longshot'
+  // The One-Eyed Giant's (owner, 2026-10-28).
+  | 'smash'
+  | 'boulder'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
@@ -81,7 +86,9 @@ export type PassiveId =
   | 'flanker'
   | 'loneWolf'
   | 'rally'
-  | 'vengeance';
+  | 'vengeance'
+  // A boss's own, not in 19.8's pool: the One-Eyed Giant's (owner, 2026-10-28).
+  | 'oneEye';
 
 /** The stats a provision raises (heroes-and-gear.md, 9.1). */
 export type StatId = 'speed' | 'defence' | 'power';
@@ -181,6 +188,12 @@ export interface Unit {
   weakenStarted?: boolean;
   /** Its passives (progression.md, 19.8); absent with none. */
   passives?: PassiveId[];
+  /**
+   * The hex direction (0 to 5) it faces, for One Eye: set as the fight
+   * starts, turned by its walks and its abilities (`faceAfterTurn` in
+   * fight.ts), kept when it is displaced. Absent for a unit without it.
+   */
+  facing?: number;
   /**
    * Its passives that work once a fight (Second Wind, Hardened, Last Stand,
    * Iron Will) and have been used this fight. Absent while none has.
