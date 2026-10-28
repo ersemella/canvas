@@ -105,7 +105,7 @@ try {
     'tapping a hero shows it without taking it, and the party full, it can’t be taken',
     (await picks.nth(4).getAttribute('data-picked')) === 'false' &&
       (await heroToggle.isDisabled()) &&
-      (await heroToggle.textContent()) === 'Party full'
+      (await heroToggle.textContent()) === 'Caravan full'
   );
   for (let i = 0; i < 3; i++) await toggleHero(i);
   check('with no hero taken, Start is disabled', await startButton.isDisabled());
@@ -117,11 +117,17 @@ try {
     'phone: the start menu doesn’t scroll sideways',
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
   );
-  const lastPick = await picks.nth(11).boundingBox();
+  const gridBox = async () => page.getByTestId('hero-picks').boundingBox();
+  const detailsBox = await page.getByTestId('hero-details').boundingBox();
+  const gridBefore = await gridBox();
   check(
-    'phone: every hero shows on the first screen',
-    lastPick !== null && lastPick.y + lastPick.height <= 844
+    'phone: the hero shown, its abilities listed, sits above the grid',
+    detailsBox.y + detailsBox.height <= gridBefore.y &&
+      (await page.getByTestId('hero-details').getByText('Snap Shot', {exact: true}).isVisible())
   );
+  await picks.nth(7).click();
+  await picks.nth(1).click();
+  check('phone: showing other heroes doesn’t move the grid', (await gridBox()).y === gridBefore.y);
   await shot(page, 'start-menu-phone');
   await toggleHero(1);
   await page.setViewportSize({width: 1300, height: 900});
@@ -758,15 +764,15 @@ try {
       survivors
     );
     await page.getByTestId(`provision-${raised.hero}-power`).click();
-    // Humphrey unhurt all stage: an extra provision, Set out waiting on it too.
+    // Humphrey unhurt all stage: an extra provision in the same choices, Set out waiting on it too.
     if (before.extraProvision) {
       check('the extra provision: Set out waits on it', await setOut.isDisabled());
-      await page.getByTestId(`extra-${raised.hero}-speed`).click();
+      await page.getByTestId(`provision-${raised.hero}-speed`).click();
     }
     check(
       'a stat picked, Set out is ready',
       (await setOut.isEnabled()) &&
-        (await page.getByTestId('extra-picks').count()) === (before.extraProvision ? 1 : 0)
+        (await page.getByTestId('extra-provision').count()) === (before.extraProvision ? 1 : 0)
     );
     await shot(page, 'caravanserai-phone');
     await setOut.click();

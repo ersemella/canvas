@@ -2,9 +2,18 @@ import {useState} from 'react';
 import type {CSSProperties} from 'react';
 import {Link} from 'react-router-dom';
 import {Button, Paper, Stack, Text} from '@mantine/core';
-import {HEROES, HERO_PORTRAIT, PARTY, ROSTER} from '@canvas/games-silk-road-run';
+import {
+  HEROES,
+  HERO_PORTRAIT,
+  PARTY,
+  abilitiesOf,
+  ROSTER,
+  makeUnit,
+  passivesOf,
+} from '@canvas/games-silk-road-run';
 import type {HeroId} from '@canvas/games-silk-road-run';
-import {PALETTE_VARS} from './TacticsPanels';
+import {Glossary, GlossaryBox, KeywordText} from './Keywords';
+import {AbilityDetail, PALETTE_VARS} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 const PARTY_STORAGE = 'canvas:tactics:party';
@@ -131,19 +140,24 @@ export function StartMenu(props: {
             <Text>
               Lead a caravan down a long road across the world. Humphrey, your camel, carries the
               cargo and walks the road on its own: guard it against rival caravans and the spirits
-              and monsters of every land you cross. Your heroes start every fight fresh, but
-              Humphrey’s wounds stay with it all the way down the road.
+              and monsters of every land you cross.
             </Text>
           </Stack>
 
           <Stack gap="xs">
             <Text className={styles.display!} fw="bold">
-              Choose your party{' '}
+              Assemble your caravan{' '}
               <Text span c="dimmed" fz="sm" fw="normal">
                 {party.length} of {MAX_PARTY}
               </Text>
             </Text>
             <div className={styles.heroSelect}>
+              <HeroDetails
+                hero={shown}
+                picked={party.includes(shown)}
+                full={party.length >= MAX_PARTY}
+                onToggle={() => toggle(shown)}
+              />
               <div className={styles.heroPicks} data-testid="hero-picks">
                 {ROLES.map((role, row) => (
                   <span key={role} className={styles.heroPicksRole} style={{gridRow: row + 1}}>
@@ -163,12 +177,6 @@ export function StartMenu(props: {
                   ))
                 )}
               </div>
-              <HeroDetails
-                hero={shown}
-                picked={party.includes(shown)}
-                full={party.length >= MAX_PARTY}
-                onToggle={() => toggle(shown)}
-              />
             </div>
           </Stack>
 
@@ -230,7 +238,7 @@ function HeroTile(props: {
       className={`${styles.heroPick} ${props.picked ? styles.heroPicked : ''} ${
         props.shown ? styles.heroShown : ''
       }`}
-      aria-label={`${stats.name}${props.picked ? ', in the party' : ''}`}
+      aria-label={`${stats.name}${props.picked ? ', in the caravan' : ''}`}
       aria-current={props.shown || undefined}
       data-picked={props.picked}
       style={props.style}
@@ -245,13 +253,46 @@ function HeroTile(props: {
   );
 }
 
-/** The hero shown: portrait, story and stat meters, and the button taking it or leaving it behind. */
+/**
+ * The hero shown, over the grid: portrait, role and stat meters, its story
+ * and its abilities, and the button adding it to the caravan or leaving it
+ * behind. Every hero's details are laid in the same place, only the one
+ * shown visible, so the card is the tallest's height and the grid under it
+ * never moves as heroes are tapped.
+ */
 function HeroDetails(props: {hero: HeroId; picked: boolean; full: boolean; onToggle: () => void}) {
+  return (
+    <div className={styles.heroDetails} data-testid="hero-details">
+      <Glossary slotted>
+        <div className={styles.heroDetailsStack}>
+          {GRID.flat().map((hero) => (
+            <HeroInfo key={hero} hero={hero} shown={hero === props.hero} />
+          ))}
+        </div>
+        <GlossaryBox />
+      </Glossary>
+      <Button
+        className={`${styles.tile} ${styles.heroDetailsToggle}`}
+        onClick={props.onToggle}
+        disabled={!props.picked && props.full}
+        data-testid="hero-toggle"
+      >
+        {props.picked ? 'Leave behind' : props.full ? 'Caravan full' : 'Add to caravan'}
+      </Button>
+    </div>
+  );
+}
+
+/** One hero's details; hidden (but still taking its room, and out of reach of keys and screen readers) unless it's the one shown. */
+function HeroInfo(props: {hero: HeroId; shown: boolean}) {
   const stats = HEROES[props.hero];
   const lore = LORE[props.hero];
   const portrait = HERO_PORTRAIT[props.hero]?.src;
+  // The hero as it starts a run, for its abilities' damage.
+  const unit = makeUnit('player', 0, props.hero);
+  const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold');
   return (
-    <div className={styles.heroDetails} data-testid="hero-details">
+    <div className={`${styles.heroInfo} ${props.shown ? '' : styles.heroInfoHidden}`}>
       <div className={`${styles.heroPickPortrait} ${styles.heroDetailsPortrait}`}>
         {portrait ? <img src={portrait} alt="" /> : stats.letter}
       </div>
@@ -277,14 +318,20 @@ function HeroDetails(props: {hero: HeroId; picked: boolean; full: boolean; onTog
         </div>
       </div>
       {lore && <div className={styles.heroPickBlurb}>{lore}</div>}
-      <Button
-        className={`${styles.tile} ${styles.heroDetailsToggle}`}
-        onClick={props.onToggle}
-        disabled={!props.picked && props.full}
-        data-testid="hero-toggle"
-      >
-        {props.picked ? 'Leave behind' : props.full ? 'Party full' : 'Take into the party'}
-      </Button>
+      <div className={styles.heroAbilities}>
+        {abilities.map((def) => (
+          <AbilityDetail key={def.id} unit={unit} def={def} />
+        ))}
+        {passivesOf(unit).map((def) => (
+          <Text key={def.id} fz="xs">
+            <b>{def.name}</b> · Passive
+            <br />
+            <span className={styles.abilitySummary}>
+              <KeywordText text={def.rule} />
+            </span>
+          </Text>
+        ))}
+      </div>
     </div>
   );
 }

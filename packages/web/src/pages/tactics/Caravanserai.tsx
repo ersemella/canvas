@@ -19,18 +19,16 @@ const STATS: {stat: StatId; label: string}[] = [
   {stat: 'defence', label: 'Defence'},
 ];
 
-/** What a stat point does, under the choices once one is picked. */
-const STAT_RULE: Record<StatId, string> = {
-  speed: 'Its card comes round the track sooner, so it acts more often.',
-  power: 'Each of its abilities deals 1 more damage.',
-  defence: 'It has 2 more health.',
+/** What `n` stat points do, under the choices once picked. */
+const STAT_RULE: Record<StatId, (n: number) => string> = {
+  speed: () => 'Its card comes round the track sooner, so it acts more often.',
+  power: (n) => `Each of its abilities deals ${n} more damage.`,
+  defence: (n) => `It has ${2 * n} more health.`,
 };
 
-/** The camel's health `hp` once healed at the caravanserai, up to its full health. */
-const healed = (camel: Unit, hp = camel.hp) => Math.min(hp + RULES.camelHeal, camel.maxHp);
-
-/** A hero's stat, or the camel's heal (`'heal'`): one or the other. */
-type Pick = Provision | 'heal' | null;
+/** The camel's health once healed `heals` times at the caravanserai, up to its full health. */
+const healed = (camel: Unit, heals = 1) =>
+  Math.min(camel.hp + heals * RULES.camelHeal, camel.maxHp);
 
 /** What the caravan takes with it from the caravanserai. */
 export interface SetOut {
@@ -65,8 +63,7 @@ export function Caravanserai(props: {
   error: string | null;
   onSetOut: (choices: SetOut) => void;
 }) {
-  const [picked, setPicked] = useState<Pick>(null);
-  const [extra, setExtra] = useState<Pick>(null);
+  const [picks, setPicks] = useState<Choice[]>([]);
   const [passive, setPassive] = useState<PassiveId | null>(null);
   const [carrier, setCarrier] = useState<Unit['hero'] | null>(null);
   const offered = props.passives.length > 0;
@@ -77,24 +74,43 @@ export function Caravanserai(props: {
     .sort((a, b) => a.partyIndex - b.partyIndex);
   const camel = props.fight.units.find((u) => u.side === 'player' && HEROES[u.hero].walksRoad);
   const camelName = camel ? HEROES[camel.hero].name : '';
-  const choose = props.provision || props.extraProvision;
-  /** The first pick, as the extra one sees it: the camel's health after a heal, a stat after a raise. */
-  const camelHp = camel && props.provision && picked === 'heal' ? healed(camel) : camel?.hp;
-  const after = (p: Pick) => (p && p !== 'heal' && props.provision ? p : null);
-  const first = after(picked);
-  // Picking the first again can leave the extra one over the cap: start it over.
-  const pickFirst = (p: Pick) => {
-    setPicked(p);
-    setExtra(null);
-  };
+  /** The provisions to spend: the stage's, and the extra one if Humphrey took no damage. */
+  const count = Number(props.provision) + Number(props.extraProvision);
+  const choose = count > 0;
+  const tally = (c: Choice) => picks.filter((p) => same(p, c)).length;
+  /** A stat or heal can take one more pick: no stat above RULES.statMax, no heal past full health. */
+  const room = (c: Choice) =>
+    c === 'heal'
+      ? camel !== undefined && healed(camel, tally('heal') + 1) > healed(camel, tally('heal'))
+      : (heroes.find((u) => u.hero === c.hero)?.[c.stat] ?? RULES.statMax) + tally(c) <
+        RULES.statMax;
+  const anyRoom = [
+    ...heroes.flatMap((u) => STATS.map(({stat}) => ({hero: u.hero, stat}))),
+    ...(camel ? ['heal' as const] : []),
+  ].some(room);
+  // Done when every provision is spent, or the ones spent left nothing to raise or heal.
+  const provisionsDone = picks.length === count || (picks.length > 0 && !anyRoom);
+  /**
+   * A tap on a choice: another pick on it while there are provisions left
+   * and it has room; else, if picked, it's cleared; else it takes the last
+   * pick's place.
+   */
+  const tap = (c: Choice) =>
+    setPicks((p) => {
+      const on = p.filter((x) => same(x, c)).length;
+      if (p.length < count && room(c)) return [...p, c];
+      if (on) return p.filter((x) => !same(x, c));
+      return [...p.slice(0, -1), c];
+    });
 
   /** What's still to choose before the caravan can set out, if anything. */
   const missing = [
-    props.provision && !picked && 'a provision',
-    props.extraProvision && !extra && 'the extra provision',
+    choose && !provisionsDone && (count > 1 && picks.length ? 'one more provision' : 'a provision'),
     offered && !passive && 'a passive',
     offered && passive && !carrier && 'who carries it',
   ].filter(Boolean);
+  // The stage's provision first, then the extra one.
+  const [first, second] = props.provision ? picks : [undefined, picks[0]];
 
   return (
     <Stack
@@ -120,46 +136,40 @@ export function Caravanserai(props: {
 
           {camel && <CamelHealth camel={camel} />}
 
-          {props.provision && (
+          {choose && (
             <Section
-              title="Provision"
-              done={Boolean(picked)}
-              lead={`Raise one hero’s stat by 1 for the rest of the run, or heal ${camelName} ${RULES.camelHeal}.`}
-              rule={pickRule(picked, camel, camel?.hp, camelName)}
+              title={count > 1 ? 'Provisions' : 'Provision'}
+              done={provisionsDone}
+              count={count > 1 ? `${picks.length} of ${count}` : undefined}
+              lead={
+                <>
+                  {props.extraProvision && (
+                    <span data-testid="extra-provision">
+                      {camelName} took no damage this stage:{' '}
+                      {count > 1 ? 'an extra provision' : 'a provision'}.{' '}
+                    </span>
+                  )}
+                  {count > 1
+                    ? `For each, raise one hero’s stat by 1 for the rest of the run (the same one twice if you like), or heal ${camelName} ${RULES.camelHeal}.`
+                    : `Raise one hero’s stat by 1 for the rest of the run, or heal ${camelName} ${RULES.camelHeal}.`}
+                </>
+              }
+              rule={pickRule(picks, camel, camelName)}
               ruleTestId="provision-rule"
             >
-              <ProvisionPicks
-                heroes={heroes}
-                camel={camel}
-                picked={picked}
-                onPick={pickFirst}
-                testId="provision-picks"
-              />
-            </Section>
-          )}
-
-          {props.extraProvision && (
-            <Section
-              title="Extra provision"
-              done={Boolean(extra)}
-              lead={
-                <span data-testid="extra-provision">
-                  {camelName} took no damage this stage: one more provision.
-                </span>
-              }
-              rule={pickRule(extra, camel, camelHp, camelName)}
-              ruleTestId="extra-rule"
-            >
-              <ProvisionPicks
-                heroes={heroes}
-                camel={camel}
-                camelHp={camelHp}
-                raised={first}
-                picked={extra}
-                onPick={setExtra}
-                extra
-                testId="extra-picks"
-              />
+              <div className={styles.provisionList} data-testid="provision-picks">
+                {heroes.map((unit) => (
+                  <ProvisionRow key={unit.id} unit={unit} tally={tally} room={room} onPick={tap} />
+                ))}
+                {camel && (
+                  <HealRow
+                    camel={camel}
+                    picks={tally('heal')}
+                    room={room('heal')}
+                    onPick={() => tap('heal')}
+                  />
+                )}
+              </div>
             </Section>
           )}
 
@@ -244,10 +254,8 @@ export function Caravanserai(props: {
               disabled={missing.length > 0}
               onClick={() =>
                 props.onSetOut({
-                  ...(props.provision && picked === 'heal' ? {heal: true} : {}),
-                  ...(props.provision && picked && picked !== 'heal' ? {provision: picked} : {}),
-                  ...(props.extraProvision && extra === 'heal' ? {extraHeal: true} : {}),
-                  ...(props.extraProvision && extra && extra !== 'heal' ? {extra} : {}),
+                  ...(first === 'heal' ? {heal: true} : first ? {provision: first} : {}),
+                  ...(second === 'heal' ? {extraHeal: true} : second ? {extra: second} : {}),
                   ...(offered && passive && carrier ? {passive: {hero: carrier, passive}} : {}),
                 })
               }
@@ -269,6 +277,8 @@ export function Caravanserai(props: {
 function Section(props: {
   title: string;
   done: boolean;
+  /** How many of its picks are made, when it takes more than one. */
+  count?: string | undefined;
   lead: ReactNode;
   rule: ReactNode;
   ruleTestId: string;
@@ -279,6 +289,7 @@ function Section(props: {
       <div>
         <div className={`${styles.display} ${styles.sectionTitle}`}>
           {props.title}
+          {props.count && <span className={styles.sectionCount}>{props.count}</span>}
           {props.done && <span className={styles.sectionDone}>✓</span>}
         </div>
         <div className={styles.sectionLead}>{props.lead}</div>
@@ -341,75 +352,43 @@ function CamelHealth(props: {camel: Unit}) {
   );
 }
 
-/** A hero as a provision just taken leaves it: 1 more of `stat`, and its health with defence. */
-function raise(unit: Unit, stat: StatId): Unit {
-  const out = {...unit, [stat]: unit[stat] + 1};
-  if (stat === 'defence')
-    out.maxHp = unit.maxHp + healthOf(unit.defence + 1) - healthOf(unit.defence);
-  return out;
+/** A provision's pick: a hero's stat raised, or the camel healed. */
+type Choice = Provision | 'heal';
+
+const same = (a: Choice, b: Choice) =>
+  a === 'heal' || b === 'heal' ? a === b : a.hero === b.hero && a.stat === b.stat;
+
+/** What the picks do, under the choices: each stat raised, and the camel's health after its heals. */
+function pickRule(picks: Choice[], camel: Unit | undefined, camelName: string) {
+  if (!picks.length)
+    return `Choose a hero’s stat to raise, or heal ${camelName} ${RULES.camelHeal}.`;
+  const lines: string[] = [];
+  for (const p of picks) {
+    if (p === 'heal' || picks.findIndex((x) => same(x, p)) !== picks.indexOf(p)) continue;
+    const n = picks.filter((x) => same(x, p)).length;
+    lines.push(`${HEROES[p.hero].name}: ${STAT_RULE[p.stat](n)}`);
+  }
+  const heals = picks.filter((p) => p === 'heal').length;
+  if (heals && camel)
+    lines.push(`${camelName} sets out with ${healed(camel, heals)} of ${camel.maxHp} health.`);
+  return lines.map((l) => <div key={l}>{l}</div>);
 }
 
-/** What a pick does, under the choices: the camel's health after a heal from `hp`, or a stat's rule. */
-function pickRule(
-  picked: Pick,
-  camel: Unit | undefined,
-  hp: number | undefined,
-  camelName: string
-) {
-  if (picked === 'heal')
-    return camel && `${camelName} sets out with ${healed(camel, hp)} of ${camel.maxHp} health.`;
-  if (picked) return `${HEROES[picked.hero].name}: ${STAT_RULE[picked.stat]}`;
-  return `Choose a hero’s stat to raise, or heal ${camelName} ${RULES.camelHeal}.`;
-}
-
-/**
- * A provision's choices: each hero standing's stats, and the camel's heal.
- * The extra provision (`extra`) sees the first one taken: `raised`, a stat
- * already 1 higher, and `camelHp`, the camel's health after a heal.
- */
-function ProvisionPicks(props: {
-  heroes: Unit[];
-  camel: Unit | undefined;
-  camelHp?: number | undefined;
-  raised?: Provision | null;
-  picked: Pick;
-  onPick: (p: Pick) => void;
-  extra?: boolean;
-  testId: string;
-}) {
-  const {picked, raised} = props;
-  return (
-    <div className={styles.provisionList} data-testid={props.testId}>
-      {props.heroes.map((unit) => (
-        <ProvisionRow
-          key={unit.id}
-          unit={raised?.hero === unit.hero ? raise(unit, raised.stat) : unit}
-          picked={picked !== 'heal' && picked?.hero === unit.hero ? picked.stat : null}
-          onPick={(stat) => props.onPick({hero: unit.hero, stat})}
-          extra={props.extra}
-        />
-      ))}
-      {props.camel && (
-        <HealRow
-          camel={{...props.camel, hp: props.camelHp ?? props.camel.hp}}
-          picked={picked === 'heal'}
-          onPick={() => props.onPick('heal')}
-          extra={props.extra}
-        />
-      )}
-    </div>
-  );
+/** A pick count on a choice, when it has any. */
+function Tally({n}: {n: number}) {
+  return n ? <span className={styles.provisionTally}>+{n}</span> : null;
 }
 
 /**
  * One hero standing: portrait and name, and a choice for each stat, showing
- * what 1 more makes it; a stat already at RULES.statMax can't be chosen.
+ * what its picks make it (or one more would); a stat already at
+ * RULES.statMax can't be chosen.
  */
 function ProvisionRow(props: {
   unit: Unit;
-  picked: StatId | null;
-  onPick: (stat: StatId) => void;
-  extra?: boolean | undefined;
+  tally: (c: Choice) => number;
+  room: (c: Choice) => boolean;
+  onPick: (c: Choice) => void;
 }) {
   const {unit} = props;
   const hero = HEROES[unit.hero];
@@ -421,20 +400,24 @@ function ProvisionRow(props: {
       </div>
       <div className={styles.provisionStats}>
         {STATS.map(({stat, label}) => {
-          const on = props.picked === stat;
-          // No stat goes above RULES.statMax.
-          const full = unit[stat] >= RULES.statMax;
+          const choice = {hero: unit.hero, stat};
+          const n = props.tally(choice);
+          const full = !n && !props.room(choice);
+          const to = unit[stat] + Math.max(n, 1);
           return (
             <button
               key={stat}
               type="button"
-              className={`${styles.provisionStat} ${on ? styles.heroPicked : ''}`}
-              aria-pressed={on}
+              className={`${styles.provisionStat} ${n ? styles.heroPicked : ''}`}
+              aria-pressed={n > 0}
               disabled={full}
-              data-testid={`${props.extra ? 'extra' : 'provision'}-${unit.hero}-${stat}`}
-              onClick={() => props.onPick(stat)}
+              data-testid={`provision-${unit.hero}-${stat}`}
+              onClick={() => props.onPick(choice)}
             >
-              <span className={styles.provisionLabel}>{label}</span>
+              <span className={styles.provisionLabel}>
+                {label}
+                <Tally n={n} />
+              </span>
               <span className={styles.provisionValue}>
                 {full ? (
                   <>
@@ -442,13 +425,13 @@ function ProvisionRow(props: {
                   </>
                 ) : (
                   <>
-                    {unit[stat]} → <b>{unit[stat] + 1}</b>
+                    {unit[stat]} → <b>{to}</b>
                   </>
                 )}
               </span>
               {stat === 'defence' && !full && (
                 <span className={styles.provisionNote}>
-                  health {unit.maxHp} → {healthOf(unit.defence + 1)}
+                  health {unit.maxHp} → {unit.maxHp + healthOf(to) - healthOf(unit.defence)}
                 </span>
               )}
             </button>
@@ -460,19 +443,15 @@ function ProvisionRow(props: {
 }
 
 /**
- * The camel: portrait and name, and the provision taken as a heal of
+ * The camel: portrait and name, and a provision taken as a heal of
  * RULES.camelHeal, up to its full health, in place of a stat; at full
  * health it can't be chosen.
  */
-function HealRow(props: {
-  camel: Unit;
-  picked: boolean;
-  onPick: () => void;
-  extra?: boolean | undefined;
-}) {
+function HealRow(props: {camel: Unit; picks: number; room: boolean; onPick: () => void}) {
   const {camel} = props;
   const hero = HEROES[camel.hero];
-  const full = camel.hp >= camel.maxHp;
+  const full = !props.picks && !props.room;
+  const to = healed(camel, Math.max(props.picks, 1));
   return (
     <div className={styles.provisionHero}>
       <div className={styles.provisionWho}>
@@ -482,13 +461,16 @@ function HealRow(props: {
       <div className={styles.provisionStats}>
         <button
           type="button"
-          className={`${styles.provisionStat} ${styles.provisionHeal} ${props.picked ? styles.heroPicked : ''}`}
-          aria-pressed={props.picked}
+          className={`${styles.provisionStat} ${styles.provisionHeal} ${props.picks ? styles.heroPicked : ''}`}
+          aria-pressed={props.picks > 0}
           disabled={full}
-          data-testid={props.extra ? 'extra-heal' : 'provision-heal'}
+          data-testid="provision-heal"
           onClick={props.onPick}
         >
-          <span className={styles.provisionLabel}>Heal {RULES.camelHeal}</span>
+          <span className={styles.provisionLabel}>
+            Heal {RULES.camelHeal}
+            <Tally n={props.picks} />
+          </span>
           <span className={styles.provisionValue}>
             {full ? (
               <>
@@ -496,12 +478,12 @@ function HealRow(props: {
               </>
             ) : (
               <>
-                {camel.hp} → <b>{healed(camel)}</b>{' '}
+                {camel.hp} → <b>{to}</b>{' '}
                 <span className={styles.provisionNote}>of {camel.maxHp} health</span>
               </>
             )}
           </span>
-          <HealthBar hp={camel.hp} max={camel.maxHp} to={healed(camel)} />
+          <HealthBar hp={camel.hp} max={camel.maxHp} to={to} />
         </button>
       </div>
     </div>
