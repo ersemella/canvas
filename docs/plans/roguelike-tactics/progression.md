@@ -25,7 +25,8 @@ tuning. Section numbers are the combat design's.
   each award a provision; stage 4 is the region's **boss** (enemies.md),
   and winning it offers the upgrade (built: the passive offer, three of the
   pool at random, one taken), except after the run's last. The Steppe's
-  boss is the One-Eyed Giant with two wolves (enemies.md, 11.3a); China and
+  boss is the Cyclops with two wolves, in its cave (enemies.md, 11.3a;
+  each boss fight on a map of its own, owner, 2026-10-28); China and
   Persia have none built yet, so their stage 4 brings their three heroes
   again. The rhythm below, of three stages, is superseded.
 - Every stage is a fight. Stage numbers count across regions, as
@@ -154,7 +155,7 @@ passive is lost or returns to the party is question 63.
 | 1 | 2 wolves and 1 hero |
 | 2 | 1 wolf and 2 heroes |
 | 3 | 3 heroes |
-| 4 | The region's boss (owner, 2026-10-28; the Steppe's the One-Eyed Giant and 2 wolves; until a region's boss is built, its 3 heroes); the Byzantine's, the final boss (19.6) |
+| 4 | The region's boss (owner, 2026-10-28; the Steppe's the Cyclops and 2 wolves, in its cave; until a region's boss is built, its 3 heroes); the Byzantine's, the final boss (19.6) |
 
 - **Wolves** may be reskinned per region (the setting's creatures, 15.7)
   and get a **small stat increase each region**. Their numbers per region

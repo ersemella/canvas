@@ -35,10 +35,11 @@ tuning. Section numbers are the combat design's.
 | Build | **Mimic:** copies the last ability used against it. | Build variety; punishes one-dimensional builds |
 | Build | **Summoner:** schedules reinforcements on the track. | Burst builds (kill before arrival) versus sustain builds (outlast) |
 
-### 11.3a The One-Eyed Giant, the Steppe's boss (Built 2026-10-28; the Steppe's stage 4 since later that day)
+### 11.3a The Cyclops, the Steppe's boss (Built 2026-10-28; the Steppe's stage 4 since later that day)
 Tepegöz of the *Book of Dede Korkut* (setting.md, 15.6a), the one-eyed
 giant whose hide turned Basat's arrows until Basat struck the eye. In the
-game's text, the One-Eyed Giant (no real names, roster.md). Its bent rule
+game's text **the Cyclops** (owner, 2026-10-28: the bosses are named
+directly; the One-Eyed Giant before, under roster.md's no real names). Its bent rule
 is **vulnerable only from the front** (11.3's "vulnerable only when
 flanked", turned around), and its kit is the Steppe's own: a hit like the
 wolves', and Snap Shot's lanes.
@@ -46,8 +47,7 @@ wolves', and Snap Shot's lanes.
 - **Stats (the builder's first numbers, untested):** speed 1, defence 5
   (health 12), power 3. `giant` in config.ts; not in the ROSTER, so the
   start menu doesn't offer it. The Steppe's fourth stage brings it with
-  two wolves (`REGIONS.steppe.boss`; progression.md, 19.1), and so does
-  the test stage (test-stage.json, as committed). Its sprite and portrait
+  two wolves (`REGIONS.steppe.boss`; progression.md, 19.1). Its sprite and portrait
   are the owner's AI-assisted art (2026-10-28; art-direction.md), its
   facing still drawn as an eye on its hex's edge.
 - **One Eye** (a passive, `oneEye`, not offered at the caravanserai):
@@ -76,10 +76,17 @@ wolves', and Snap Shot's lanes.
   giant doesn't stop the camel. The AI found the front lane easily (about
   150 to 200 hits by the eye against 250 to 330 taken off by its hide).
   To tune before it enters a run.
+- **Its map, the Cyclops's cave** (`cave`, owner, 2026-10-28: each boss
+  fight on a map of its own): the Steppe's board on a cave's stone floor
+  with nothing on it, no mountains and no yurts (`CAVE` in map.ts); the
+  Steppe's fourth stage is fought there (`STAGES`). The floor is drawn in
+  code (`scripts/cave-floor.py`) until the owner's art comes
+  (art-direction.md, "Prompts for the cave floor").
 
-### 11.3b The Ox King and the Fan Lady, China's boss (Built 2026-10-28, on the test stage only)
-The Bull Demon King and Princess Iron Fan of *Journey to the West*, as
-the Ox King and the Fan Lady (no real names, roster.md). Their bent rule
+### 11.3b The Bull Demon King and Princess Iron Fan, China's boss (Built 2026-10-28, on the test stage only)
+The Bull Demon King and Princess Iron Fan of *Journey to the West*,
+named so in the game's text too (owner, 2026-10-28; the Ox King and the
+Fan Lady before, under roster.md's no real names). Their bent rule
 is **two units whose cards are linked** (11.3's "two heads, two turns"),
 and they are fought in the Flaming Mountains, from the same novel: the
 fire hazard the art doc kept for the region's boss (art-direction.md).
@@ -88,7 +95,8 @@ fire hazard the art doc kept for the region's boss (art-direction.md).
   power 3; the Fan Lady speed 3, defence 2 (health 6), power 1. `oxKing`
   and `fanLady` in config.ts; not in the ROSTER, so neither the start
   menu nor a run's stages bring them. The test stage does (test-stage.json,
-  as committed: China's three heroes against the two of them on `ridges`).
+  as committed: China's three heroes against the two of them on
+  `fireMountain`).
   Their sprites and portraits are the owner's AI-assisted art
   (2026-10-28; art-direction.md).
 - **Devoted** (a passive, `devoted`, both carry it, not offered at the
@@ -103,29 +111,40 @@ fire hazard the art doc kept for the region's boss (art-direction.md).
   every unit in its way, a whole row together, hit for his power and Pushed
   back ahead of him; a row that can't be Pushed stops him behind it.
   Gore is a charge whatever Stomp's mode.
-- **Banana-leaf Fan** (the Fan Lady's): every unit in a line of 3 straight
+- **Iron Fan** (the Fan Lady's; the Banana-leaf Fan until 2026-10-28,
+  renamed with her fan's redesign): every unit in a line of 3 straight
   out from her (`ABILITY.bananaFan`), ally or enemy, is Pushed 2 along it,
   the farthest first. No damage of its own: the fire does it.
-- **Fan the Flames** (the Fan Lady's): aimed at one burning ridge (a
-  mountain tile, anywhere on the board; the builder's reading of "one
-  burning ridge", no range given), the open spaces next to it catch fire
+- **Fan the Flames** (the Fan Lady's): aimed at an open space within 3
+  (`ABILITY.fanFlames.range`; owner, 2026-10-28, once her map lost its
+  ridges), it and the open spaces next to it, up to seven, catch fire
   until her next turn (`FireEffect`, `FightState.fires`), any fire of hers
   before going out. Lighting a space doesn't burn whoever stands there;
   **entering** one deals 1 (`ABILITY.fanFlames.burn`), as the fissures
   tried on 2026-10-26 did, walking or Moved in, a space at a time, credited
   to her. Walks of the same length prefer the one through fewer fires,
   and Humphrey steps round fire where a step as near is.
-- **The map, `ridges`** (the builder's, untested): the Flaming Mountains'
-  red earth and beacon tower, no scorched ground, and two or three burning
-  ridges, single mountain spaces within 3 of the centre, none side by side
-  or next to the tower, off the columns next to the starting ones and off
-  Humphrey's road (`RIDGES` in map.ts). `flaming` itself has had no
-  mountains since 2026-10-28 (owner), so it is left as it was.
+- **The map, `fireMountain`** (owner, 2026-10-28: each boss fight on a
+  map of its own, theirs the Flaming Mountains with no obstacles shown):
+  the Flaming Mountains' red earth with nothing on it, no beacon tower,
+  scorched ground or mountains (`FIRE_MOUNTAIN` in map.ts), so the only
+  fire is hers. Before it, the same day, `ridges`: the red earth and
+  beacon tower with two or three burning ridges, single mountain spaces
+  within 3 of the centre, Fan the Flames aimed at one of them anywhere on
+  the board and its open neighbours alight; a fight saved there still
+  loads (`MAPS.ridges`). China's stages are still in the Gobi: the pair
+  isn't in a run yet.
 - **China's tools against them** (as the owner set out; each checked in
   `bosses.test.ts`): the Vanguard's Cleave through both Hastens each by 3
   and then Delays each by 8, a net Delay of 5 on both; the Duelist,
   Empowered 2 by the Alchemist, fells the Fan Lady in two strikes; the
   Alchemist's Weaken 2 on the Ox King cuts Gore to 1.
+- **Her fan, redesigned** (owner, 2026-10-28): an **iron folding fan**,
+  for Princess Iron Fan, in place of the green banana leaf. The fan she
+  drops is drawn in code as one, open, grey iron pleats under a gilt rim
+  on dark sticks and a gold rivet (`drawFan` in ground.ts); her sprite
+  and portrait still hold the leaf until the owner's art from the prompts
+  in art-direction.md ("Prompts for Princess Iron Fan's iron fan").
 - **The fan she drops** (the owner's optional extra, built): when the Fan
   Lady falls her fan lies where she fell (`FightState.fan`), and the fires
   she set burn on, as her next turn won't come (the builder's reading). A

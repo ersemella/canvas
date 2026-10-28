@@ -15,8 +15,8 @@ export type Side = 'player' | 'enemy';
  * 2026-10-28), the Priest and the Cataphract (owner, 2026-10-28), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, the enemy NPCs, the wolf and the fox, the Steppe's boss, the
- * One-Eyed Giant (`giant`, owner, 2026-10-28; enemies.md), and China's,
- * the Ox King and the Fan Lady (`oxKing`, `fanLady`, owner, 2026-10-28;
+ * Cyclops (`giant`, owner, 2026-10-28; enemies.md), and China's,
+ * the Bull Demon King and Princess Iron Fan (`oxKing`, `fanLady`, owner, 2026-10-28;
  * enemies.md).
  */
 export type HeroId =
@@ -55,10 +55,10 @@ export type AbilityId =
   | 'blessing'
   | 'reave'
   | 'charge'
-  // The One-Eyed Giant's (owner, 2026-10-28).
+  // The Cyclops's (owner, 2026-10-28).
   | 'smash'
   | 'boulder'
-  // The Ox King's and the Fan Lady's (owner, 2026-10-28), and the fan she
+  // The Bull Demon King's and Princess Iron Fan's (owner, 2026-10-28), and the fan she
   // drops (`quench`).
   | 'gore'
   | 'bananaFan'
@@ -104,8 +104,8 @@ export type PassiveId =
   | 'loneWolf'
   | 'rally'
   | 'vengeance'
-  // A boss's own, not in 19.8's pool: the One-Eyed Giant's (owner, 2026-10-28),
-  // and the Ox King's and the Fan Lady's (owner, 2026-10-28).
+  // A boss's own, not in 19.8's pool: the Cyclops's (owner, 2026-10-28),
+  // and the Bull Demon King's and Princess Iron Fan's (owner, 2026-10-28).
   | 'oneEye'
   | 'devoted';
 
@@ -221,7 +221,7 @@ export interface Unit {
    */
   facing?: number;
   /**
-   * It carries the Fan Lady's fan, picked up where she fell (`FightState.fan`):
+   * It carries Princess Iron Fan's fan, picked up where she fell (`FightState.fan`):
    * it may spend a turn putting out every flame (`quench`). Absent otherwise.
    */
   fan?: boolean;
@@ -313,14 +313,14 @@ export interface HailEffect {
 }
 
 /**
- * A burning space (the Fan Lady's Fan the Flames, owner, 2026-10-28): a
+ * A burning space (Princess Iron Fan's Fan the Flames, owner, 2026-10-28): a
  * unit entering it, by walking or Moved there, takes `ABILITY.fanFlames.burn`.
  * It goes out as its source's next turn starts; once she has fallen, only
  * the fan she drops puts it out (`quench`).
  */
 export interface FireEffect {
   hex: Hex;
-  /** The Fan Lady's unit id. */
+  /** Princess Iron Fan's unit id. */
   source: string;
 }
 
@@ -401,7 +401,7 @@ export interface FightState {
   /** Burning spaces (`FireEffect`); absent with none. */
   fires?: FireEffect[];
   /**
-   * Where the Fan Lady's fan lies, dropped where she fell (owner,
+   * Where Princess Iron Fan's fan lies, dropped where she fell (owner,
    * 2026-10-28): a hero entering the space picks it up (`Unit.fan`).
    */
   fan?: Hex;

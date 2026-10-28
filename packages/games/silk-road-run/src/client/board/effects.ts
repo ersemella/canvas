@@ -785,7 +785,7 @@ function drawBite(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): void
     }
 }
 
-/** The One-Eyed Giant's club: dark wood, its grain, and the knots studding its head. */
+/** The Cyclops's club: dark wood, its grain, and the knots studding its head. */
 const CLUB = {wood: '#7c4a21', grain: '#a0662f', knot: '#5a3417'};
 
 /**
@@ -840,7 +840,7 @@ function drawDustRing(
 }
 
 /**
- * Smash: the One-Eyed Giant's knotted club swings up and over and comes
+ * Smash: the Cyclops's knotted club swings up and over and comes
  * down on the unit, a starburst where it lands, then a puff of dust round
  * the unit's feet and chips of earth flying.
  */
@@ -954,7 +954,7 @@ function drawRock(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
 }
 
 /**
- * Boulder: the One-Eyed Giant heaves a boulder, which turns over as it
+ * Boulder: the Cyclops heaves a boulder, which turns over as it
  * arcs down the lane, its shadow running along the ground beneath, and
  * lands on the unit: it shatters into chips, a ring of dust bursts out,
  * and chevrons drive over the spaces round it, the way the units there are

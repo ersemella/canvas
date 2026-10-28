@@ -466,7 +466,7 @@ function devotion(ctx: Ctx, target: Unit): void {
 /**
  * `unit` falls, `killer` (if any) having taken it off the board
  * (Momentum); each ally of its with Vengeance is Hastened 3 and Empowered
- * 1 for its next turn (19.8). The Fan Lady drops her fan where she fell
+ * 1 for its next turn (19.8). Princess Iron Fan drops her fan where she fell
  * (`FightState.fan`), and the fires she set burn on: her next turn, when
  * they would go out, won't come.
  */
@@ -482,7 +482,7 @@ export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
   clearHail(ctx.state, unit);
   if (at && unit.hero === 'fanLady' && !ctx.state.fan) {
     ctx.state.fan = {...at};
-    log(ctx, `${unitName(unit)} drops the Banana-leaf Fan.`);
+    log(ctx, `${unitName(unit)} drops the Iron Fan.`);
   }
   if (ctx.state.shots) ctx.state.shots = ctx.state.shots.filter((v) => v.source !== unit.id);
   if (killer) killer.tookOff = true;
@@ -789,7 +789,7 @@ export function enterHex(
 }
 
 /**
- * Fire on `h` (the Fan Lady's Fan the Flames) burns `unit`, just entering
+ * Fire on `h` (Princess Iron Fan's Fan the Flames) burns `unit`, just entering
  * it: `ABILITY.fanFlames.burn`, from no one's power, credited to her.
  */
 function burn(ctx: Ctx, unit: Unit, h: Hex): void {
@@ -801,7 +801,7 @@ function burn(ctx: Ctx, unit: Unit, h: Hex): void {
 }
 
 /**
- * A hero entering the space where the Fan Lady's fan lies picks it up
+ * A hero entering the space where Princess Iron Fan's fan lies picks it up
  * (owner, 2026-10-28): it may spend a turn putting out the flames
  * (`quench`). Not Humphrey, nor the enemy.
  */
@@ -811,10 +811,10 @@ function pickUpFan(ctx: Ctx, unit: Unit): void {
   if (unit.side !== 'player' || unit.hero === CAMEL) return;
   delete ctx.state.fan;
   unit.fan = true;
-  log(ctx, `${unitName(unit)} picks up the Banana-leaf Fan.`);
+  log(ctx, `${unitName(unit)} picks up the Iron Fan.`);
 }
 
-/** The Fan Lady's turn starts: the fires she set go out (`FireEffect`). */
+/** Princess Iron Fan's turn starts: the fires she set go out (`FireEffect`). */
 export function fanOut(state: FightState, unit: Unit): void {
   if (!state.fires?.some((f) => f.source === unit.id)) return;
   state.fires = state.fires.filter((f) => f.source !== unit.id);

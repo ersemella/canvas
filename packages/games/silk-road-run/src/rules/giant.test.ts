@@ -1,4 +1,4 @@
-// The One-Eyed Giant (owner, 2026-10-28; enemies.md): One Eye's Armour,
+// The Cyclops (owner, 2026-10-28; enemies.md): One Eye's Armour,
 // its facing, Smash and Boulder.
 import {describe, expect, it} from 'vitest';
 import {hexNeighbor} from '@canvas/engine/server';
@@ -48,7 +48,7 @@ function act(s: FightState, id: string, ability: AbilityId, target: ActionTarget
   applyTurn(s, u, {action: {ability, target}});
 }
 
-describe('the One-Eyed Giant', () => {
+describe('the Cyclops', () => {
   it('starts the fight facing across the board, toward the party', () => {
     const s = createFight(0, PARTY, ['giant']);
     expect([0, 1]).toContain(unit(s, 'e-giant').facing);

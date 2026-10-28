@@ -1,9 +1,10 @@
 /**
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
  * grass, yurts and their smoke, the Gobi's sand and oases, the
- * Flaming Mountains' red earth, beacon towers and burning ridges, the Salt
+ * Flaming Mountains' red earth and beacon towers, the Salt
  * Flats' salt crust and their one salt dome, the Fairy Chimneys' tuff
- * and chimneys, and the Flaming Mountains' patches of scorched ground; exits (cached per map), and
+ * and chimneys, the Cyclops's cave's stone floor, and the Flaming
+ * Mountains' patches of scorched ground; exits (cached per map), and
  * falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
@@ -39,6 +40,7 @@ import saltCrustImage from '../tiles/salt-crust.png';
 import saltDomeImage from '../tiles/salt-dome.png';
 import tuffImage from '../tiles/tuff.png';
 import fairyChimneyImage from '../tiles/fairy-chimney.png';
+import caveFloorImage from '../tiles/cave-floor.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
@@ -256,8 +258,19 @@ const LOOKS: Record<string, Look> = {
   },
 };
 
-// The Flaming Mountains with their ridges burning (map.ts, `RIDGES`): the same look.
-LOOKS.ridges = LOOKS.flaming!;
+// The Flaming Mountains for China's boss (map.ts, `FIRE_MOUNTAIN`): the same look, nothing on it.
+LOOKS.fireMountain = LOOKS.flaming!;
+// The Cyclops's cave (map.ts, `CAVE`, 2026-10-28): a cave's stone floor, worn plates with
+// dark seams, drawn in code (`scripts/cave-floor.py`, 128 pixels, 6 colours) until the
+// owner's art comes; nothing stands on it but a yurt placed there by hand.
+LOOKS.cave = {
+  ...LOOKS.steppe!,
+  ground: caveFloorImage,
+  colour: '#6e665e',
+  border: '#2a2421',
+  smoke: null,
+  mountainGround: caveFloorImage,
+};
 
 /** A map's look; the Steppe's for a map without one of its own. */
 export function lookOf(map: MapData): Look {
@@ -737,7 +750,7 @@ const FIRE_TONGUES = 7;
 const FIRE_COLORS = ['#7c2d12', '#c2410c', '#f59e0b', '#fde68a'];
 
 /**
- * A burning space (the Fan Lady's Fan the Flames): the ground glowing, and
+ * A burning space (Princess Iron Fan's Fan the Flames): the ground glowing, and
  * tongues of flame 2 to 6 art pixels tall flickering over it, each from a
  * spot the hex picks, so hexes don't flicker in step. Drawn under the
  * units, so a unit standing in it stands in the flames. `time` null: still.
@@ -773,34 +786,38 @@ export function drawFire(ctx: CanvasRenderingContext2D, h: Hex, time: number | n
 }
 
 /**
- * The Banana-leaf Fan lying where the Fan Lady fell, in art pixels: `o`
- * the outline, `#` the leaf, `=` its ribs, `|` the handle.
+ * The Iron Fan lying where Princess Iron Fan fell, in art pixels (owner,
+ * 2026-10-28: an iron folding fan, open; a green banana leaf on a handle
+ * before): `o` the outline, `g` its gilt rim, `#` and `+` its iron pleats,
+ * light and dark in turn, `|` the sticks and `p` the gold rivet they turn on.
  */
 const FAN = [
-  '....ooooooo....', //
-  '..oo#######oo..',
-  '.o##=##=##=##o.',
-  'o###=##=##=###o',
-  'o####=#=#=####o',
-  '.o####===####o.',
-  '..oo###=###oo..',
-  '....oo#=#oo....',
-  '......o|o......',
-  '......o|o......',
-  '......o|o......',
-  '.......o.......',
+  '.....ooooooo.....', //
+  '...oogggggggoo...',
+  '..ogg#+#+#+#ggo..',
+  '.og#+#+#+#+#+#go.',
+  '.og#+#+#+#+#+#go.',
+  'og+#+#+#+#+#+#+go',
+  'og+#+#+#+#+#+#+go',
+  'og+#+#+#o#+#+#+go',
+  '.og#+#o|o|o#+#go.',
+  '..oooooo|oooooo..',
+  '.......opo.......',
+  '........o........',
 ];
 const FAN_COLOR: Record<string, string> = {
   o: PALETTE.ink,
-  '#': '#65a30d',
-  '=': '#3f6212',
-  '|': '#92400e',
+  g: '#ca8a04',
+  '#': '#a8a29e',
+  '+': '#57534e',
+  '|': '#44403c',
+  p: '#facc15',
 };
 
 /** The dropped fan on `h`, on the ground. */
 export function drawFan(ctx: CanvasRenderingContext2D, h: Hex): void {
   const c = center(h);
-  const left = Math.round(c.x / SPRITE_SCALE) - 7;
+  const left = Math.round(c.x / SPRITE_SCALE) - 8;
   const top = Math.round(c.y / SPRITE_SCALE) - 6;
   FAN.forEach((row, dy) =>
     [...row].forEach((ch, dx) => {

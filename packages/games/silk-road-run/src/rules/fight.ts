@@ -310,7 +310,7 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
       if (!unit.alive) continue;
     }
     // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25),
-    // the Fan Lady's fire until her next (owner, 2026-10-28).
+    // Princess Iron Fan's fire until her next (owner, 2026-10-28).
     ageHail(state, unit);
     fanOut(state, unit);
     // An Empower or Weaken lasts until the end of this turn.
