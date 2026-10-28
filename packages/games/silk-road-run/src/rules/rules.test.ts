@@ -2947,43 +2947,94 @@ describe('previews, the AI and the run', () => {
     expect(createRun(5).fight.units.filter((u) => u.side === 'player')).toHaveLength(4);
   });
 
-  it('the stages: per region, its first enemy and two creatures, it, a random other and a creature, then three', () => {
-    expect(STAGES).toEqual([
-      {region: 'steppe', heroes: 1, creatures: 2, provision: true, passive: false, map: 'steppe'},
-      {region: 'steppe', heroes: 2, creatures: 1, provision: true, passive: false, map: 'steppe'},
-      {region: 'steppe', heroes: 3, creatures: 0, provision: false, passive: true, map: 'steppe'},
-      {region: 'china', heroes: 1, creatures: 2, provision: true, passive: false, map: 'gobi'},
-      {region: 'china', heroes: 2, creatures: 1, provision: true, passive: false, map: 'gobi'},
-      {region: 'china', heroes: 3, creatures: 0, provision: false, passive: false, map: 'gobi'},
+  it('the stages: per region, its first enemy and two creatures or outsiders, it, another and one more, then its three', () => {
+    const row = (
+      region: string,
+      heroes: number,
+      outsiders: number,
+      creatures: number,
+      map: string
+    ) => ({
+      region,
+      heroes,
+      outsiders,
+      creatures,
+      map,
+    });
+    expect(STAGES.map((s) => row(s.region, s.heroes, s.outsiders, s.creatures, s.map))).toEqual([
+      row('steppe', 1, 0, 2, 'steppe'),
+      row('steppe', 2, 0, 1, 'steppe'),
+      row('steppe', 3, 0, 0, 'steppe'),
+      row('china', 1, 2, 0, 'gobi'),
+      row('china', 2, 1, 0, 'gobi'),
+      row('china', 3, 0, 0, 'gobi'),
+      row('persia', 1, 2, 0, 'salt'),
+      row('persia', 2, 1, 0, 'salt'),
+      row('persia', 3, 0, 0, 'salt'),
+    ]);
+    // Provisions after a region's stages 1 and 2, a passive after its 3, but the run's last.
+    expect(STAGES.map((s) => [s.provision, s.passive])).toEqual([
+      ...[1, 2].flatMap(() => [
+        [true, false],
+        [true, false],
+        [false, true],
+      ]),
+      [true, false],
+      [true, false],
+      [false, false],
     ]);
     expect(FIRST_ENEMY).toBe('mangudai');
-    expect(REGIONS.steppe).toMatchObject({creature: 'wolf', firstEnemy: 'mangudai'});
-    expect(REGIONS.china).toMatchObject({creature: 'fox', firstEnemy: 'youxia'});
+    expect(REGIONS).toEqual({
+      steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf'},
+      china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null},
+      persia: {heroes: ['archer', 'mahout', 'magus'], creature: null},
+    });
+    expect(
+      Object.values(REGIONS)
+        .flatMap((r) => r.heroes)
+        .sort()
+    ).toEqual([...ROSTER].sort());
     const seconds = new Set<HeroId>();
+    const outsiders = new Set<HeroId>();
     for (let seed = 0; seed < 30; seed++) {
-      STAGES.forEach(({region, heroes, creatures}, stage) => {
-        const {creature, firstEnemy} = REGIONS[region];
+      STAGES.forEach(({region, heroes, outsiders: count, creatures}, stage) => {
+        const own = REGIONS[region].heroes;
+        const regions = Object.keys(REGIONS) as (keyof typeof REGIONS)[];
+        const before = regions.slice(0, regions.indexOf(region)).flatMap((r) => REGIONS[r].heroes);
         const enemies = stageEnemies(seed, stage);
-        const picked = enemies.filter((h) => h !== creature);
-        expect(picked).toHaveLength(heroes);
+        expect(enemies).toHaveLength(heroes + count + creatures);
+        const picked = enemies.slice(0, heroes);
         expect(new Set(picked).size).toBe(heroes);
-        expect(picked.every((h) => ROSTER.includes(h))).toBe(true);
-        expect(picked[0]).toBe(firstEnemy);
-        expect(enemies.filter((h) => h === creature)).toHaveLength(creatures);
+        expect(picked.every((h) => own.includes(h))).toBe(true);
+        expect(picked[0]).toBe(own[0]);
+        const others = enemies.slice(heroes, heroes + count);
+        expect(new Set(others).size).toBe(count);
+        expect(others.every((h) => before.includes(h))).toBe(true);
+        if (region === 'persia') others.forEach((h) => outsiders.add(h));
+        expect(enemies.slice(heroes + count)).toEqual(
+          Array<HeroId | null>(creatures).fill(REGIONS[region].creature)
+        );
+        // No fox spirits, nor any creature, past the Steppe.
+        if (region !== 'steppe') expect(creatures).toBe(0);
         // The same seed, the same enemy.
         expect(stageEnemies(seed, stage)).toEqual(enemies);
-        // Each stage brings the last one's heroes in its region, and more.
+        // Each stage brings the last one's heroes in its region, and more,
+        // and of the last one's outsiders all it brings.
         if (stage > 0 && STAGES[stage - 1]!.region === region) {
-          const before = stageEnemies(seed, stage - 1).filter((h) => h !== creature);
-          expect(picked.slice(0, before.length)).toEqual(before);
+          const last = STAGES[stage - 1]!;
+          const prev = stageEnemies(seed, stage - 1);
+          expect(picked.slice(0, last.heroes)).toEqual(prev.slice(0, last.heroes));
+          expect(others).toEqual(prev.slice(last.heroes, last.heroes + count));
         }
       });
       // The first stage always brings the Outrider.
       expect(stageEnemies(seed, 0)[0]).toBe(FIRST_ENEMY);
       seconds.add(stageEnemies(seed, 1)[1]!);
     }
-    // Random after that: every other hero of the roster is the second to come for some seed.
-    expect(seconds.size).toBe(ROSTER.length - 1);
+    // Random after that: either other Steppe hero is the second to come for some seed.
+    expect(seconds.size).toBe(2);
+    // Persia's outsiders are any of the Steppe's and China's heroes.
+    expect(outsiders.size).toBe(6);
   });
 
   it('winning a stage before the last goes on to the next, with the survivors', () => {
@@ -3260,11 +3311,10 @@ describe('previews, the AI and the run', () => {
     expect(china.stage).toBe(3);
     expect(china.passives).toEqual([{hero: 'storm', passive: pick}]);
     expect(china.fight.mapId).toBe('gobi');
-    expect(china.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual([
-      'youxia',
-      'fox',
-      'fox',
-    ]);
+    expect(china.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
+      stageEnemies(run.seed, 3)
+    );
+    expect(china.fight.units.filter((u) => u.side === 'enemy')[0]!.hero).toBe('youxia');
     expect(runView(china)).toMatchObject({provision: true, passives: []});
     const storm = china.fight.units.find((u) => u.id === 'p-storm')!;
     expect(storm.passives).toEqual([pick]);

@@ -166,6 +166,18 @@ passive is lost or returns to the party is question 63.
   Flaming Mountains. The creatures' stat increase per region and enemy
   heroes' upgrades and stats aren't built: China's fights are the Steppe's
   with other units.
+- **Built (2026-10-28), for three regions, no fox spirits:** each region
+  has its own three heroes (`REGIONS`): the Steppe's the Outrider first,
+  the Grappler and the Storm Caller; China's the Duelist first, the Vanguard and the Alchemist;
+  Persia's the Ranger first, the Juggernaut and the Magus. The Steppe
+  brings 1 of its heroes and 2 wolves, 2 and 1 wolf, then its 3; China
+  brings 1 of its heroes and 2 of the Steppe's, 2 and 1 of the Steppe's,
+  then its 3; Persia (on the Salt Flats) 1 of its heroes and 2 of the
+  Steppe's or China's, 2 and 1 of them, then its 3 (owner). A region's own
+  heroes come in one order from the run's seed, its first enemy first, and
+  so do the heroes of the regions before (`outsiders` in `STAGES`), so
+  each stage brings the last one's and one more. China's last stage now
+  offers a passive; Persia's is the run's last.
 
 ### 19.6 The Final Boss (Decided, owner 2026-10-24)
 The Byzantine's stage 4, the run's last fight, is a boss that **counters
