@@ -38,16 +38,17 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
 
 /**
  * Where a map's look renames a tile (map.ts): the Gobi's open ground is
- * gravel and its yurts are ruins of the old frontier posts; the Flaming
+ * sand and its yurts are oases (owner, 2026-10-28; ruins of the old
+ * frontier posts on gravel before); the Flaming
  * Mountains' is red earth, a yurt placed there by hand a ruin and their
  * mountains on fire, though they block as any do; the Salt Flats' is salt,
  * their mountains one salt dome and a yurt placed there by hand a ruin.
  */
 const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
   gobi: {
-    sand: {name: 'Gravel', short: 'Open ground', detail: 'No effect.'},
+    sand: {name: 'Sand', short: 'Open ground', detail: 'No effect.'},
     obstacle: {
-      name: 'Ruins',
+      name: 'Oasis',
       short: 'Blocks movement and arrows',
       detail: 'Blocks movement and arrows.',
     },

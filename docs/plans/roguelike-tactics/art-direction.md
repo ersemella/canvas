@@ -94,8 +94,35 @@ tuning. This file has no combat-design section number.
   has two or three yurts within 2. The page calls them Ruins, and the open ground
   Gravel (`tileInfo` in info.ts). The Gobi's desert was kept for the
   Arabia region (owner, 2026-10-26) until that region was cut the same
-  day; it has no region now. **The Flaming Mountains**
-  (`flaming`, owner, 2026-10-26) are the China region's map: the red
+  day. **The Gobi is China's map again** (owner, 2026-10-28), renamed the
+  Gobi Desert, in place of the Flaming Mountains: the same sand, no
+  mountains and two or three obstacles (owner, 2026-10-28; four or five before), which are now **oases** in place
+  of the ruins, combined with the Flaming Mountains' beacon tower (owner,
+  2026-10-28): from the owner's art (AI-assisted, from the prompt below),
+  a beacon tower on the bank of a spring pool with poplars, reeds and
+  rocks round it, as at Dunhuang's oases, in 4 frames, its pennant
+  flying and its water glinting. It is cut to the grid
+  (`tiles/oasis.png`, 36 × 49 a frame, `scripts/oasis-sheet.py`), 36 wide
+  so the island stays in its space: each art pixel the colour most of its
+  block is, in one 24-colour palette for all four frames (an average
+  blurred the roof and the poplars), with a dark outline. The frames were
+  drawn apart, so their rocks and reeds differ; all but the pennant and
+  the water come from one frame, so only those move, at `FLAME_FPS`.
+  Blended into the map (owner, 2026-10-28): its colours taken 15% of the
+  way to the Gobi's sand at the top and 35% at the island's foot, the
+  near-blacks lifted, and the outline fading from ink to the hex borders'
+  colour (`sandDark`) down the island, so it sits in the ground. It
+  rises over the space behind, as the tower did. Its roof is only a few
+  pixels at this size; the owner kept it so (2026-10-28) over a sprite
+  composed by hand from the beacon tower's own pixels on an island, which
+  kept a crisp roof. The page calls it Oasis, blocking as any obstacle, and the open
+  ground Sand. Two date palms over a pool, drawn in code, stood there for
+  a few hours first. The prompt: a pixel-art Han beacon tower (banded
+  rammed earth, a grey tiled pavilion roof with upswept corners, red
+  posts and pennant) on the bank of a small spring pool with poplars or
+  tamarisk and reeds, a transparent background, 608 × 736. **The Flaming Mountains**
+  (`flaming`, owner, 2026-10-26) were the China region's map until then,
+  kept for saved runs and the test stage: the red
   sandstone ridges near Turpan, set alight as in *Journey to the West*.
   All the art is the owner's (AI-assisted), cut to the sprites' grid: a
   cracked red earth (`tiles/red-earth.png`, 128 pixels, 5 colours, laid

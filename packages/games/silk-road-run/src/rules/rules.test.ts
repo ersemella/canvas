@@ -592,10 +592,10 @@ describe('the board', () => {
       // Even a stage that always has mountains has none in the Gobi.
       const s = createFight(seed, undefined, undefined, true, [], GOBI);
       expect(s.mapId).toBe('gobi');
-      expect(mapOf(s).name).toBe('The Desert Crossing');
+      expect(mapOf(s).name).toBe('The Gobi Desert');
       const tiles = Object.values(s.tiles);
-      // More ruins than the Steppe's yurts, since there are no mountains.
-      expect([4, 5]).toContain(tiles.filter((t) => t === 'obstacle').length);
+      // Two or three oases, as many as the Steppe's yurts (owner, 2026-10-28).
+      expect([2, 3]).toContain(tiles.filter((t) => t === 'obstacle').length);
       // None next to the camel's start or the exit.
       for (const [key, t] of Object.entries(s.tiles)) {
         const [q, r] = key.split(',').map(Number);
@@ -703,8 +703,8 @@ describe('the board', () => {
 
   it('names the ground after the map’s look', () => {
     expect(tileInfo('steppe', 'obstacle').name).toBe('Tent');
-    expect(tileInfo('gobi', 'obstacle').name).toBe('Ruins');
-    expect(tileInfo('gobi', 'sand').name).toBe('Gravel');
+    expect(tileInfo('gobi', 'obstacle').name).toBe('Oasis');
+    expect(tileInfo('gobi', 'sand').name).toBe('Sand');
     expect(tileInfo('gobi', 'mountain').name).toBe('Mountains');
     expect(tileInfo('flaming', 'sand').name).toBe('Red earth');
     expect(tileInfo('flaming', 'obstacle').name).toBe('Beacon tower');
@@ -1983,7 +1983,7 @@ describe('the Ranger', () => {
     }
   });
 
-  it('Longshot hits the first unit in line, Piercing, and Pushes it 1', () => {
+  it('Longshot hits the first unit in line, Piercing, and stays put', () => {
     const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
     const bokh = unit(s, 'e-bokh');
     bokh.passives = ['hardened'];
@@ -1993,8 +1993,21 @@ describe('the Ranger', () => {
     applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
     // Armour 1 (Hardened) Pierced: the full 3.
     expect(bokh.hp).toBe(bokh.maxHp - 3);
-    expect(bokh.hex).toEqual(along(c, 0, 3));
+    expect(bokh.hex).toEqual(along(c, 0, 2));
     expect(bokh.slot).toBe(5);
+  });
+
+  it('Longshot with `push` Pushes the unit it hits', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {push: 1});
+    try {
+      const {s, a} = ready({'e-bokh': along(c, 0, 2)});
+      const bokh = unit(s, 'e-bokh');
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+      expect(bokh.hex).toEqual(along(c, 0, 3));
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
   });
 
   it('Longshot flies over a unit next to the Ranger and hits the first one beyond', () => {
@@ -2768,6 +2781,23 @@ describe('the caravan’s camel', () => {
     expect(s.phase).toBe('won');
   });
 
+  it('lets an enemy walk through the exit but not end its move there', () => {
+    const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': {q: -3, r: 4}});
+    const map = mapOf(s);
+    const exit = map.exits[0]!;
+    expect(exit).toEqual({q: -4, r: 4});
+    const e = unit(s, 'e-bokh');
+    expect(invalidPath(s, map, e, [exit])).toBe('An enemy can’t end its move on the exit.');
+    expect(invalidPath(s, map, e, [exit, {q: -4, r: 3}])).toBeNull();
+    const reach = reachableHexes(s, map, e);
+    expect(reach.some((r) => hexEquals(r.hex, exit))).toBe(false);
+    expect(reach.some((r) => hexEquals(r.hex, {q: -4, r: 3}))).toBe(true);
+    // The party may still stand on it.
+    const b = unit(s, 'p-bokh');
+    b.hex = {q: -3, r: 3};
+    expect(reachableHexes(s, map, b).some((r) => hexEquals(r.hex, exit))).toBe(true);
+  });
+
   it('is game over when it dies, even if the last enemy falls with it', () => {
     const s = setup({'p-camel': at(2, 4), 'p-bokh': at(0, 0), 'e-bokh': at(6, 0)});
     kill({state: s, map: mapOf(s), slot: 0}, unit(s, 'p-camel'));
@@ -2914,9 +2944,9 @@ describe('previews, the AI and the run', () => {
       {region: 'steppe', heroes: 1, creatures: 2, provision: true, passive: false, map: 'steppe'},
       {region: 'steppe', heroes: 2, creatures: 1, provision: true, passive: false, map: 'steppe'},
       {region: 'steppe', heroes: 3, creatures: 0, provision: false, passive: true, map: 'steppe'},
-      {region: 'china', heroes: 1, creatures: 2, provision: true, passive: false, map: 'flaming'},
-      {region: 'china', heroes: 2, creatures: 1, provision: true, passive: false, map: 'flaming'},
-      {region: 'china', heroes: 3, creatures: 0, provision: false, passive: false, map: 'flaming'},
+      {region: 'china', heroes: 1, creatures: 2, provision: true, passive: false, map: 'gobi'},
+      {region: 'china', heroes: 2, creatures: 1, provision: true, passive: false, map: 'gobi'},
+      {region: 'china', heroes: 3, creatures: 0, provision: false, passive: false, map: 'gobi'},
     ]);
     expect(FIRST_ENEMY).toBe('mangudai');
     expect(REGIONS.steppe).toMatchObject({creature: 'wolf', firstEnemy: 'mangudai'});
@@ -3221,7 +3251,7 @@ describe('previews, the AI and the run', () => {
     const china = handleRunAction(last, {type: 'next', passive: {hero: 'storm', passive: pick}});
     expect(china.stage).toBe(3);
     expect(china.passives).toEqual([{hero: 'storm', passive: pick}]);
-    expect(china.fight.mapId).toBe('flaming');
+    expect(china.fight.mapId).toBe('gobi');
     expect(china.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual([
       'youxia',
       'fox',

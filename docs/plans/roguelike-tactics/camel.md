@@ -73,6 +73,10 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
   rows 2, 4, 6 and 8 counting from 1 (column 7 of odd rows 1, 3, 5 and 7 in
   `src/rules/map.ts`). The enemy has three units, so it can't stand on all
   of them.
+- **Enemies can't park on the exit** (owner, 2026-10-28): an enemy may walk
+  through an exit but can't end its move there (`mayEndOn` in
+  `src/rules/board.ts`). Being Pushed or Pulled onto one isn't a move, so
+  that can still leave it there.
 - **The player loses** when the camel dies: it is **game over**, as a party
   wipe is.
 - *(Proposed:* if one action both kills the camel and defeats the last
