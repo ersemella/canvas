@@ -4,7 +4,7 @@
  * previews.
  */
 import type {Hex} from '@canvas/engine/server';
-import type {Tile} from './map';
+import type {Route, Tile} from './map';
 
 export type Side = 'player' | 'enemy';
 /**
@@ -311,6 +311,8 @@ export interface FightState {
   mapId: string;
   /** This fight's tiles by hex key (its yurts are random per fight). */
   tiles: Record<string, Tile>;
+  /** The camel's road this fight, one of the map's `ROUTES` at random (owner, 2026-10-28). */
+  route: Route;
   mode: 'solo';
   phase: FightPhase;
   /** The slot the track has reached. */

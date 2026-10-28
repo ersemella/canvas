@@ -52,9 +52,13 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
   2026-10-23; it acted first, at slot 0, from 2026-10-21): its card starts
   at slot 12, after every other card's starting slot (3.4).
 - Its card goes 12 slots a turn (speed 0, owner, 2026-10-23: 3.2). Its road
-  from the board's top point to the exit at its bottom point is 8 steps
-  across open ground (since 2026-10-24; about 12 from the top-left corner
-  of the board of rows before), so a fight
+  runs from the top-right or the bottom-right corner, the seed picks which,
+  to the exit at the opposite corner, a straight line through the centre, 8
+  steps across open ground (owner, 2026-10-28; from the board's top point to
+  its bottom point from 2026-10-24, about 12 from the top-left corner of the
+  board of rows before). The party starts on the right, facing left, the
+  enemy on the left, facing right, and Humphrey faces left with the party
+  (owner, 2026-10-28), so a fight
   lasts at most about 150 slots unless the enemy holds it back.
 - **It isn't a hero:** it doesn't take one of the party's four places
   (10.1), and has no gear, upgrades or ultimate. *(Proposed.)*

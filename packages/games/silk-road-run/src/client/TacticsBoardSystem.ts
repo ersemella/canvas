@@ -2,7 +2,7 @@ import {assetLoader, BaseSystem, hexKey} from '@canvas/engine';
 import type {EventBus, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
 import {shotLane, unitAt} from '../rules/board';
-import {tileAt} from '../rules/map';
+import {pastExit, tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {FightState} from '../rules/types';
 import {trackCards} from './layout';
@@ -322,7 +322,7 @@ export class TacticsBoardSystem extends BaseSystem {
     // Hail, the turn arrow, the exit's chevrons, the yurts' smoke and the mountains' fire move with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
-    for (const h of map.exits) drawExit(ctx, h, t);
+    for (const h of map.exits) drawExit(ctx, h, pastExit(map, h), t);
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
     // A frame mid-motion: the next draws again whatever the key says.

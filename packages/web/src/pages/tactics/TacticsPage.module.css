@@ -121,7 +121,7 @@
   height: 100%;
   image-rendering: pixelated;
 }
-.sheetPortraitEnemy img {
+.sheetPortraitPlayer img {
   transform: scaleX(-1);
 }
 

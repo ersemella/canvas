@@ -5,8 +5,12 @@
  * smaller boards, from 2026-10-19). Its nine columns run 5, 6, 7, 8, 9, 8,
  * 7, 6, 5 hexes from left to right, so the outermost columns are straight,
  * five hexes each. Each side starts in the two columns on its edge (owner,
- * 2026-10-25; the outermost column alone before). The camel starts at the top
- * point and the only exit is the bottom one, the board's length apart.
+ * 2026-10-25; the outermost column alone before): the party on the right,
+ * facing left, the enemy on the left, facing right (owner, 2026-10-28; the
+ * other way round before). The camel starts at the top-right or the
+ * bottom-right corner, at random each fight, and the only exit is the
+ * opposite corner, the board's length apart (owner, 2026-10-28; the top
+ * point and the bottom one before; `ROUTES`).
  *
  * Hexes are axial, the centre hex {q: 0, r: 0}; on screen q runs left to
  * right and r down each column. A space can also be named as a column (0
@@ -14,8 +18,9 @@
  * (`spaceAt`), as the test stage's file does.
  *
  * The open steppe: each fight pitches two or three yurts near the board's
- * middle and raises mountains at the top, to Humphrey's left, right or
- * both (owner, 2026-10-27; see `randomTiles`); the ruins scattered before are gone (owner,
+ * middle and raises mountains anywhere along the top edge, at random
+ * (owner, 2026-10-28; to the left or right of Humphrey's start at the top
+ * point, or both, from 2026-10-27; see `randomTiles`); the ruins scattered before are gone (owner,
  * 2026-10-24). The fixed layout of four yurts below is the map's own,
  * which tests place units around, and the test stage's `"map"`. Quicksand and the sandstorm were removed
  * with their keywords (owner, 2026-10-23).
@@ -53,9 +58,13 @@ export interface MapData {
   tiles: Record<string, Tile>;
   /** Where each side may start: the board's two outermost columns on its edge. */
   startColumns: {player: Hex[]; enemy: Hex[]};
-  /** The player's camel's starting hex (camel.md, 18.1). */
+  /**
+   * The player's camel's starting hex (camel.md, 18.1): on a map of
+   * `MAPS`, its first route's (`ROUTES`); on a fight's own (`mapOf`), the
+   * fight's.
+   */
   camelStart: Hex;
-  /** The camel reaching one of these wins the fight (camel.md, 18.2). */
+  /** The camel reaching one of these wins the fight (camel.md, 18.2); as `camelStart`. */
   exits: Hex[];
   /**
    * Whether its fights raise a range of mountains (`randomTiles`): in about
@@ -65,9 +74,10 @@ export interface MapData {
    */
   mountains: 'sometimes' | 'never' | 'always';
   /**
-   * Where they stand: a range along one or both of the board's top
-   * slanted edges, either side of Humphrey's start (the Steppe's; any of
-   * the four slanted edges until 2026-10-27), or one salt dome on
+   * Where they stand: one or two ranges anywhere along the board's top
+   * edge, its two top slanted edges (the Steppe's, owner, 2026-10-28;
+   * either side of Humphrey's start at the top point from 2026-10-27, any
+   * of the four slanted edges before), or one salt dome on
    * the centre and the six spaces around it, the same in every fight (the
    * Salt Flats', owner, 2026-10-26; `DOME`).
    */
@@ -121,6 +131,37 @@ function boardHexes(): Hex[] {
 
 const column = (q: number): Hex[] => columnRs(q).map((r) => ({q, r}));
 
+/** A road for the camel: where it starts and the exit it walks to. */
+export interface Route {
+  camelStart: Hex;
+  exits: Hex[];
+}
+
+/**
+ * The camel's two roads (owner, 2026-10-28), one at random each fight
+ * (`createFight`): from the top-right corner to the bottom-left one, or
+ * from the bottom-right to the top-left, each a straight line through the
+ * centre, 8 hexes long.
+ */
+export const ROUTES: Route[] = [
+  {camelStart: {q: RADIUS, r: -RADIUS}, exits: [{q: -RADIUS, r: RADIUS}]},
+  {camelStart: {q: RADIUS, r: 0}, exits: [{q: -RADIUS, r: 0}]},
+];
+
+/**
+ * The hex just past `map`'s exit `exit`, off the board, carrying on the
+ * camel's road the way it was going (the walk out's last step, and the
+ * way the exit's chevrons point).
+ */
+export function pastExit(map: MapData, exit: Hex): Hex {
+  const from = map.camelStart;
+  const d = Math.max(1, hexDistance(from, exit));
+  return {
+    q: exit.q + Math.round((exit.q - from.q) / d),
+    r: exit.r + Math.round((exit.r - from.r) / d),
+  };
+}
+
 const special: [Hex, Tile][] = [
   // Yurts: two per half, around the centre (the ruins' places before).
   [{q: -1, r: -1}, 'obstacle'],
@@ -134,17 +175,15 @@ export const STEPPE: MapData = {
   name: 'The Grassland Crossing',
   hexes: boardHexes(),
   tiles: Object.fromEntries(special.map(([h, t]) => [hexKey(h), t])),
+  // The party on the right, the enemy on the left (owner, 2026-10-28).
   startColumns: {
-    player: [...column(-RADIUS), ...column(1 - RADIUS)],
-    enemy: [...column(RADIUS), ...column(RADIUS - 1)],
+    player: [...column(RADIUS), ...column(RADIUS - 1)],
+    enemy: [...column(-RADIUS), ...column(1 - RADIUS)],
   },
-  // The top point (owner, 2026-10-24; the top-left corner on the board of
-  // rows before).
-  camelStart: {q: 0, r: -RADIUS},
-  // The bottom point, the only exit (owner, 2026-10-24; the bottom-right
-  // corner before).
-  exits: [{q: 0, r: RADIUS}],
-  // Always, at the top (owner, 2026-10-27; about half of fights, on any
+  // A right-hand corner to the opposite one, at random each fight (owner,
+  // 2026-10-28; `ROUTES`); the top point to the bottom one from 2026-10-24.
+  ...ROUTES[0]!,
+  // Always, along the top (owner, 2026-10-27; about half of fights, on any
   // slanted edge, before).
   mountains: 'always',
   mountainPlaces: 'edge',
@@ -242,30 +281,24 @@ export function mapById(id: string): MapData {
 
 /**
  * Mountains (owner, 2026-10-24): on a map that raises them along its
- * edges (the Steppe's, in every fight since 2026-10-27), one range or two,
- * each 3 to 5 hexes in one clump along one of the hexagon's two top
- * slanted edges, to the left of Humphrey's start, to its right, or one on
- * each (owner, 2026-10-27; one range on any of the four slanted edges
- * before), starting on that edge and at most one hex in from it. Never on
- * the sides (the starting columns and the hexes in from them), never down
- * the middle column, where Humphrey walks, so never directly in front of
- * Humphrey, and never within `MOUNTAIN_CENTRE_GAP` − 1 hexes of the centre.
+ * edges (the Steppe's, in every fight since 2026-10-27), one range or two
+ * (`MOUNTAIN_RANGES`), each 3 to 5 hexes in one clump starting anywhere
+ * along the hexagon's top edge, its two top slanted edges and the point
+ * between them, and at most one hex in from it, so that together they may
+ * run all along it (owner, 2026-10-28, once Humphrey no longer started at
+ * the top point; left of it, right of it or both from 2026-10-27, one
+ * range on any of the four slanted edges before). Never on the sides (the
+ * starting columns and the hexes in from them), and never within
+ * `MOUNTAIN_CENTRE_GAP` − 1 hexes of the centre.
  */
 const MOUNTAIN_CHANCE = 0.5;
 const MOUNTAIN_SIZES = [3, 4, 5];
+const MOUNTAIN_RANGES = [1, 2];
 const MOUNTAIN_CENTRE_GAP = 3;
 const CENTRE: Hex = {q: 0, r: 0};
 
-/**
- * The two top slanted edges, left and right of Humphrey's start: which
- * side of the middle column each is on, and how far in from it a hex is
- * (0 on the edge).
- */
-type Edge = {left: boolean; inFrom: (h: Hex) => number};
-const TOP_LEFT: Edge = {left: true, inFrom: (h) => h.q + h.r + RADIUS};
-const TOP_RIGHT: Edge = {left: false, inFrom: (h) => h.r + RADIUS};
-/** Where a fight's ranges go, one of these at random: left, right or both. */
-const MOUNTAIN_SIDES: Edge[][] = [[TOP_LEFT], [TOP_RIGHT], [TOP_LEFT, TOP_RIGHT]];
+/** How far in from the board's top edge a hex is: 0 on it. */
+const inFromTop = (h: Hex): number => h.r + Math.min(h.q, 0) + RADIUS;
 
 /**
  * A fight's own tiles, from `random` in [0, 1): a range of mountains in
@@ -293,16 +326,13 @@ export function randomTiles(
   const {counts, reach} = map.obstacles;
   const roll = () => counts[Math.floor(random() * counts.length)]!;
   if (raise && !fixed) {
-    const sides = MOUNTAIN_SIDES[Math.floor(random() * MOUNTAIN_SIDES.length)]!;
-    const inFrontOfHumphrey: Hex = {q: 0, r: map.camelStart.r + 1};
-    for (const edge of sides) {
+    const ranges = MOUNTAIN_RANGES[Math.floor(random() * MOUNTAIN_RANGES.length)]!;
+    const allowed = candidates
+      .filter((h) => inFromTop(h) === 0 || (inFromTop(h) === 1 && Math.abs(h.q) < RADIUS - 1))
+      .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP);
+    for (let i = 0; i < ranges; i++) {
       const size = MOUNTAIN_SIZES[Math.floor(random() * MOUNTAIN_SIZES.length)]!;
-      const allowed = candidates
-        .filter((h) => (edge.left ? h.q < 0 : h.q > 0))
-        .filter((h) => edge.inFrom(h) === 0 || (edge.inFrom(h) === 1 && Math.abs(h.q) < RADIUS - 1))
-        .filter((h) => hexDistance(h, CENTRE) >= MOUNTAIN_CENTRE_GAP)
-        .filter((h) => hexDistance(h, inFrontOfHumphrey) > 0);
-      mountainRange(map, tiles, allowed, edge.inFrom, size, random);
+      mountainRange(map, tiles, allowed, inFromTop, size, random);
     }
   }
   // Yurts (owner, 2026-10-24), or ruins: as many as the map
@@ -347,9 +377,8 @@ function mountainRange(
   random: () => number
 ): Hex[] {
   const range: Hex[] = [];
-  const inRange = (h: Hex) => range.some((m) => hexDistance(m, h) === 0);
   while (range.length < size) {
-    let free = allowed.filter((h) => !inRange(h) && connectedWithout(map, tiles, h));
+    let free = allowed.filter((h) => !tiles[hexKey(h)] && connectedWithout(map, tiles, h));
     if (!range.length) free = free.filter((h) => inFrom(h) === 0);
     if (range.length) {
       const touching = (h: Hex) => range.filter((m) => hexDistance(m, h) === 1).length;
@@ -370,8 +399,8 @@ function mountainRange(
 /**
  * The Flaming Mountains' scorched ground (owner, 2026-10-28), spread over
  * the board: `patches` patches, each a first space and, for a size of 2,
- * one beside it, off the starting columns and Temee's road down the middle
- * column, not next to its start or exit, and each patch at least 3 spaces
+ * one beside it, off the starting columns and Humphrey's road (`onRoad`),
+ * not next to its start or exit, and each patch at least 3 spaces
  * from the others where it can be (2 where it can't), so they spread
  * rather than clump.
  */
@@ -385,7 +414,7 @@ function scorchedPatches(
   const reserved = [map.camelStart, ...map.exits];
   const pick = <T>(list: T[]): T => list[Math.floor(random() * list.length)]!;
   const allowed = candidates
-    .filter((h) => Math.abs(h.q) < RADIUS - 1 && h.q !== 0 && !tiles[hexKey(h)])
+    .filter((h) => Math.abs(h.q) < RADIUS - 1 && !onRoad(map, h) && !tiles[hexKey(h)])
     .filter((h) => reserved.every((x) => hexDistance(x, h) > 1));
   const placed: Hex[] = [];
   const count = pick(scorch.patches);
@@ -413,6 +442,13 @@ function scorchedPatches(
  */
 export function scorched(map: MapData, h: Hex): boolean {
   return map.tiles[hexKey(h)] === 'scorched';
+}
+
+/** Whether `h` is on the straight road from `map`'s camel start to its exit (`ROUTES`). */
+function onRoad(map: MapData, h: Hex): boolean {
+  const start = map.camelStart;
+  const exit = map.exits[0]!;
+  return hexDistance(start, h) + hexDistance(h, exit) === hexDistance(start, exit);
 }
 
 /** Whether every open hex of `map` can still walk to every other with `extra` blocked too. */

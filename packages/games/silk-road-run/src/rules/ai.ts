@@ -38,7 +38,6 @@ import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
 import {camelOf, damageOf, healthAfterSwap, shotEmpower} from './resolve';
-import {MAPS} from './map';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
@@ -193,7 +192,7 @@ function camelDistance(state: FightState): number {
   const road = roadDistance(mapOf(state), camel.hex);
   if (Number.isFinite(road)) return road;
   let nearest = Infinity;
-  for (const e of MAPS[state.mapId]!.exits) nearest = Math.min(nearest, hexDistance(camel.hex, e));
+  for (const e of mapOf(state).exits) nearest = Math.min(nearest, hexDistance(camel.hex, e));
   return nearest;
 }
 

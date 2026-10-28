@@ -281,15 +281,15 @@ function drawCard(
     const img = portrait && assetLoader.requestImage(portrait.src);
     if (img) {
       // The portrait fills the card, full height; its face sits where the unit
-      // would (the strip that shows, on a card behind). Enemies face left.
+      // would (the strip that shows, on a card behind). The party faces left.
       const scale = Math.max(h, deck.cardW) / img.height;
-      const faceX = (u.side === 'enemy' ? img.width - portrait.faceX : portrait.faceX) * scale;
+      const faceX = (u.side === 'player' ? img.width - portrait.faceX : portrait.faceX) * scale;
       ctx.save();
       pixelRect(ctx, cx, cy, deck.cardW, h, 3);
       ctx.clip();
       ctx.imageSmoothingEnabled = false;
       ctx.translate(Math.round(mid - faceX), Math.round(cy));
-      if (u.side === 'enemy') {
+      if (u.side === 'player') {
         ctx.translate(img.width * scale, 0);
         ctx.scale(-1, 1);
       }

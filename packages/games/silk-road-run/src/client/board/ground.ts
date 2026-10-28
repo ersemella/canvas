@@ -385,11 +385,16 @@ export function exitArrowPush(time: number): number {
 
 /**
  * An exit, the road out (camel.md, 18.2): a worn ivory border and two
- * chevrons pointing down off the board's bottom point, outlined in ink
+ * chevrons pointing off the board towards `out` (`pastExit`), outlined in ink
  * like the sprites. The chevrons bounce (`exitArrowPush`), unless the
  * device asks for reduced motion (`time` null).
  */
-export function drawExit(ctx: CanvasRenderingContext2D, h: Hex, time: number | null = null): void {
+export function drawExit(
+  ctx: CanvasRenderingContext2D,
+  h: Hex,
+  out: Hex,
+  time: number | null = null
+): void {
   ctx.save();
   hexPath(ctx, h, 3);
   ctx.setLineDash([4, 3]);
@@ -398,9 +403,10 @@ export function drawExit(ctx: CanvasRenderingContext2D, h: Hex, time: number | n
   ctx.stroke();
   ctx.setLineDash([]);
   const c = center(h);
+  const to = center(out);
   ctx.translate(Math.round(c.x), Math.round(c.y));
   ctx.scale(HEX_SCALE, HEX_SCALE);
-  ctx.rotate(Math.PI / 2);
+  ctx.rotate(Math.atan2(to.y - c.y, to.x - c.x));
   ctx.lineJoin = 'miter';
   const push = time === null ? 0 : exitArrowPush(time);
   for (const at of [-6, 3]) {
