@@ -42,6 +42,8 @@ export const HERO_COLOR = {
   camel: '#a8742f',
   wolf: '#6b7280',
   fox: '#c2410c',
+  // The One-Eyed Giant's disc: it has no sprite yet.
+  giant: '#57534e',
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to

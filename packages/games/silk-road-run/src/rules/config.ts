@@ -302,7 +302,33 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 1,
     abilities: ['bite', 'hold'],
   },
+  /**
+   * The Steppe's boss (owner, 2026-10-28; enemies.md, "The One-Eyed
+   * Giant"), Tepegöz of the *Book of Dede Korkut*, whose hide turned
+   * Basat's arrows until he struck the eye: One Eye (Armour
+   * `ONE_EYE.armour` against hits from outside the lane it faces), Smash
+   * (melee) and Boulder (Snap Shot's lanes, the units next to where it lands
+   * Pushed). Not in the ROSTER: the test stage brings it. Speed 1, defence
+   * 5 (health 12) and power 3 are the builder's first numbers, untested.
+   */
+  giant: {
+    name: 'One-Eyed Giant',
+    letter: 'E',
+    speed: 1,
+    defence: 5,
+    power: 3,
+    abilities: ['smash', 'boulder', 'hold'],
+    passives: ['oneEye'],
+  },
 };
+
+/**
+ * One Eye (owner, 2026-10-28), the One-Eyed Giant's passive: a hit on it
+ * from a unit not standing in its front lane, straight out the way it
+ * faces at any distance, loses `armour` (17.6's Armour, so a Piercing hit
+ * ignores it). The builder's first number.
+ */
+export const ONE_EYE = {armour: 3 as number};
 
 /** Each ability's shape. Damage is never listed: it is the user's power. */
 export const ABILITY = {
@@ -536,6 +562,14 @@ export const ABILITY = {
    */
   stomp: {steps: 2 as number, mode: 'stomp' as 'charge' | 'stomp', step: 1 as number},
   /**
+   * Boulder (owner, 2026-10-28), the One-Eyed Giant's: thrown down any of
+   * Snap Shot's six lanes, the first unit in it hit for the giant's power,
+   * then every other unit next to where it lands, ally or enemy, Pushed
+   * `push` away from it, no damage (as Stomp's Push, but around the
+   * landing).
+   */
+  boulder: {push: 1 as number},
+  /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
    * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
@@ -619,6 +653,8 @@ export const AI = {
     camel: 0,
     wolf: 1,
     fox: 1,
+    // A boss walks into reach, as a tank does.
+    giant: 0,
   } as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   /**

@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), the wolf's, and the One-Eyed Giant's (owner, 2026-10-28). Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -1272,6 +1272,59 @@ const bite: AbilityDef = {
   },
 };
 
+// ─── One-Eyed Giant ──────────────────────────────────────────────────────────
+
+/** Smash (owner, 2026-10-28): the One-Eyed Giant's club, a plain melee hit for its power. */
+const smash: AbilityDef = {
+  id: 'smash',
+  name: 'Smash',
+  kind: 'attack',
+  summary: () => 'Melee.',
+  targetsUnit: true,
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} smashes ${unitName(u)}.`);
+    hit(ctx, user, u, 'The club');
+  },
+};
+
+/** The spaces next to where a boulder lands, but its thrower's: those it Pushes. */
+function boulderRing(map: MapData, from: Hex, target: Hex): Hex[] {
+  return hexNeighbors(target).filter((h) => onMap(map, h) && !hexEquals(h, from));
+}
+
+/**
+ * Boulder (owner, 2026-10-28): the One-Eyed Giant hurls a boulder down
+ * one of Snap Shot's lanes. The first unit in it takes the giant's power;
+ * then every other unit next to where it lands, ally or enemy, the giant
+ * aside, is Pushed `ABILITY.boulder.push` away from it, one at a time in
+ * the order for cards placed at the same moment, as Stomp's.
+ */
+const boulder: AbilityDef = {
+  id: 'boulder',
+  name: 'Boulder',
+  kind: 'attack',
+  area: (map, from, target) => [target, ...boulderRing(map, from, target)],
+  summary: () =>
+    `Throw straight: hits the first unit in line, and every unit next to it is Pushed ${ABILITY.boulder.push} away.`,
+  targetsUnit: true,
+  targets: (state, map, user, from) => snapShot.targets(state, map, user, from),
+  resolve(ctx, user, target) {
+    const at = target.hex!;
+    const u = unitAt(ctx.state, at)!;
+    log(ctx, `${unitName(user)} hurls a boulder.`);
+    hit(ctx, user, u, 'The boulder');
+    const around = boulderRing(ctx.map, user.hex!, at)
+      .map((h) => unitAt(ctx.state, h))
+      .filter((o): o is Unit => o !== undefined && o !== user);
+    for (const o of simultaneousOrder(around)) {
+      if (!o.alive || !o.hex || hexDistance(o.hex, at) !== 1) continue;
+      displace(ctx, o, hexDirectionTo(at, o.hex)!, ABILITY.boulder.push, 'push');
+    }
+  },
+};
+
 export const ABILITIES: Record<AbilityId, AbilityDef> = {
   hold,
   snapShot,
@@ -1287,6 +1340,8 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   stomp,
   longshot,
   hew,
+  smash,
+  boulder,
   shove,
   haul,
   feignedRetreat,
