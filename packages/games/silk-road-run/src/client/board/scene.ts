@@ -38,8 +38,6 @@ export interface BoardScene {
   displaced?: [Hex, Hex][];
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
-  /** The slot the planned turn aims at (3.2); when it's taken, the card yields on to `previewSlot`. */
-  aimSlot?: number | null;
   /** Cards the planned turn's landing moves on, by unit id (`TurnPreview.bumped`). */
   previewBumps?: Record<string, number>;
   /**
