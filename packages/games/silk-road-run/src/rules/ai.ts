@@ -28,6 +28,7 @@ import {
   elixirSwaps,
   elixirImmortal,
   grappling,
+  longshotLanes,
   tramplePlan,
   unusableReason,
 } from './abilities';
@@ -943,8 +944,11 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
   const dr = at.r - target.hex!.r;
   const steps = Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr));
   if (steps > 0) return steps;
-  // Longshot: nothing in the way blocks it.
-  if (kitOf(me).includes('longshot') && !ABILITY.longshot.first) return 0;
+  // Longshot: nothing in the way blocks it, or nothing next to it.
+  if (kitOf(me).includes('longshot')) {
+    if (!ABILITY.longshot.first) return 0;
+    return longshotLanes(state, mapOf(state), at, me).some((l) => l.hit === target) ? 0 : 1;
+  }
   const map = mapOf(state);
   return [0, 1, 2, 3, 4, 5].some((d) => firstInLane(state, map, at, d, me) === target) ? 0 : 1;
 }

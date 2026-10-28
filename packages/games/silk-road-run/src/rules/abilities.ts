@@ -226,6 +226,36 @@ export function longshotLines(map: MapData, from: Hex): Hex[][] {
 }
 
 /**
+ * Longshot's six lanes from `from` (`ABILITY.longshot.first` on): the arrow
+ * flies over the spaces nearer than `minRange` (the ones next to the Ranger,
+ * as built), units and yurts there included (owner, 2026-10-28), then hits
+ * the first unit in line, stopped by yurts, the map's edge or `range`.
+ * `ignore`: the Ranger itself, when `from` is not its space.
+ */
+export function longshotLanes(
+  state: FightState,
+  map: MapData,
+  from: Hex,
+  ignore?: Unit
+): ArrowLane[] {
+  const {minRange, range} = ABILITY.longshot;
+  return DIRECTIONS.map((dir) => {
+    const lane: ArrowLane = {hexes: []};
+    for (const [i, h] of lineFrom(map, from, dir).slice(0, range).entries()) {
+      const over = i + 1 < minRange;
+      if (!over && !walkable(map, h)) break;
+      lane.hexes.push(h);
+      const u = over ? undefined : unitAt(state, h);
+      if (u && u !== ignore) {
+        lane.hit = u;
+        break;
+      }
+    }
+    return lane;
+  });
+}
+
+/**
  * Longshot (owner, 2026-10-27; roster.md): any unit on one of the six
  * straight lines from the Ranger, at any range, ally or enemy; it flies
  * over everything in between.
@@ -237,7 +267,7 @@ const longshot: AbilityDef = {
   summary: () => {
     const {first, minRange, pierce, push, delay: slots} = ABILITY.longshot;
     const shot = first
-      ? `Shoot straight: hits the first unit in line${minRange > 1 ? ', not next to it' : ''}`
+      ? `Shoot straight: hits the first unit in line${minRange > 1 ? ', flying over the spaces next to you' : ''}`
       : 'Shoot straight at any unit in line: nothing blocks it';
     const more = [
       pierce && 'Pierces',
@@ -249,14 +279,10 @@ const longshot: AbilityDef = {
   targetsUnit: true,
   targets(state, map, _user, from) {
     const out: ActionTarget[] = [];
-    const {first, minRange, range, camel} = ABILITY.longshot;
+    const {first, camel} = ABILITY.longshot;
     if (first) {
-      for (const dir of DIRECTIONS) {
-        const u = firstInLane(state, map, from, dir, _user);
-        const d = u ? hexDistance(from, u.hex!) : 0;
-        if (u && d >= minRange && d <= range && (camel || u.hero !== CAMEL))
-          out.push({hex: {...u.hex!}});
-      }
+      for (const {hit: u} of longshotLanes(state, map, from, _user))
+        if (u && (camel || u.hero !== CAMEL)) out.push({hex: {...u.hex!}});
       return out;
     }
     for (const l of longshotLines(map, from))

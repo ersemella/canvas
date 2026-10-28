@@ -18,6 +18,7 @@ import {
   ABILITIES,
   ABILITY,
   arrowLanes,
+  longshotLanes,
   longshotLines,
   mapOf,
   onMap,
@@ -145,12 +146,11 @@ export function buildScene(input: SceneInput): BoardScene {
           onMap(map, h)
       );
     }
-    // The Bow's lanes: Snap Shot's, Longshot's (stopped by the first unit),
+    // The Bow's lanes: Snap Shot's,
     // Feigned Retreat's before its target is
     // picked; Haul's, as far as it reaches.
     const lanesShown =
       ability === 'snapShot' ||
-      (ability === 'longshot' && ABILITY.longshot.first) ||
       (ability === 'feignedRetreat' && !target?.hex) ||
       ability === 'haul';
     if (from && lanesShown)
@@ -158,6 +158,15 @@ export function buildScene(input: SceneInput): BoardScene {
         from,
         lanes: arrowLanes(fight, mapOf(fight), from).map((l) => ({
           hexes: def.range ? l.hexes.slice(0, def.range) : l.hexes,
+          target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
+        })),
+      };
+    // Longshot's: over the spaces next to the Ranger, then stopped by the first unit.
+    if (from && ability === 'longshot' && ABILITY.longshot.first)
+      out.lanes = {
+        from,
+        lanes: longshotLanes(fight, mapOf(fight), from).map((l) => ({
+          hexes: l.hexes,
           target: targets.some((t) => t.hex && l.hit?.hex && hexEquals(t.hex, l.hit.hex)),
         })),
       };

@@ -303,7 +303,8 @@ export const ABILITY = {
    * Switches for measuring nerfs (balance.md, "Archer nerfs and Magus
    * buffs"), off as built but `minRange` and `push`: `minRange`, the nearest space
    * it shoots, 2 (owner, 2026-10-28: no shot at the spaces next to the
-   * Ranger; a unit there still stops its arrow, as the Bow's 2026-10-23);
+   * Ranger; owner, later 2026-10-28: its arrow flies over them, units and
+   * yurts there included, and hits the first unit beyond);
    * `camel`, whether it may shoot the camel; `falloff`, the range past
    * which its hit is 1 less; `first`, stopped by the first unit or yurt
    * in its line, as Snap Shot; `pierce`, its hit Pierces Armour (17.6);

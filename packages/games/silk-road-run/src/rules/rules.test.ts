@@ -1893,10 +1893,36 @@ describe('the Ranger', () => {
     expect(bokh.slot).toBe(5);
   });
 
-  it('Longshot never hits the spaces next to the Ranger, and a unit there stops its arrow', () => {
-    const {s, a} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
+  it('Longshot flies over a unit next to the Ranger and hits the first one beyond', () => {
+    const {s, a} = ready({
+      'e-bokh': along(c, 0, 1),
+      'e-storm': along(c, 0, 3),
+      'p-bokh': along(c, 0, 4),
+    });
     expect(isTarget(s, a, unit(s, 'e-bokh').hex!)).toBe(false);
-    expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
+    expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(true);
+    expect(isTarget(s, a, unit(s, 'p-bokh').hex!)).toBe(false);
+    const storm = unit(s, 'e-storm');
+    applyTurn(s, a, {action: {ability: 'longshot', target: {hex: storm.hex!}}});
+    expect(storm.hp).toBe(storm.maxHp - 3);
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp);
+  });
+
+  it('Longshot flies over a yurt next to the Ranger', () => {
+    const {s, a} = ready({'e-storm': along(c, 0, 3)});
+    s.tiles = {...s.tiles, [`${along(c, 0, 1).q},${along(c, 0, 1).r}`]: 'obstacle'};
+    expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(true);
+  });
+
+  it('threatens past a unit next to the Ranger, but not the space it stands on', () => {
+    const {s} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
+    for (const u of s.units) u.side = u.id === 'p-archer' ? 'enemy' : 'player';
+    const archer = threatsTo(s, mapOf(s), unit(s, 'e-storm')).find(
+      (t) => t.enemyId === 'p-archer'
+    )!;
+    const key = (h: Hex) => (h.q + 64) * 128 + (h.r + 64);
+    expect(archer.hexes.get(key(unit(s, 'e-storm').hex!))).toBe(3);
+    expect(archer.hexes.get(key(unit(s, 'e-bokh').hex!))).toBeUndefined();
   });
 
   it('Longshot stops at a yurt in line', () => {

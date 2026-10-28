@@ -63,7 +63,14 @@ export type {
   TacticsHoverPayload,
   TacticsTapPayload,
 } from './client/TacticsInputSystem';
-export {ABILITIES, abilitiesOf, arrowLanes, longshotLines, unusableReason} from './rules/abilities';
+export {
+  ABILITIES,
+  abilitiesOf,
+  arrowLanes,
+  longshotLanes,
+  longshotLines,
+  unusableReason,
+} from './rules/abilities';
 export type {AbilityDef, AbilityKind, ArrowLane} from './rules/abilities';
 export {
   CAMEL_RULE,

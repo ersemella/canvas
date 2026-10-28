@@ -61,18 +61,23 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple') || has('swiftStrike'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
-    const lanes = (oq: number, or: number, d: number) => {
+    // `over`: the spaces nearest it flown over, whatever is on them (Longshot's).
+    const lanes = (oq: number, or: number, d: number, range = ABILITY.snapShot.range, over = 0) => {
       for (const [dq, dr] of AXIAL) {
-        for (let i = 1; i <= ABILITY.snapShot.range; i++) {
+        for (let i = 1; i <= range; i++) {
           const k = id(oq + dq * i, or + dr * i);
           const tile = board.get(k);
-          if (tile === undefined || blocks(tile)) break;
+          if (tile === undefined) break;
+          if (i <= over) continue;
+          if (blocks(tile)) break;
           if (k !== id(fq, fr)) mark(hexes, k, d);
           if (occupied.has(k) && k !== id(fq, fr)) break;
         }
       }
     };
-    if (has('snapShot') || (has('longshot') && ABILITY.longshot.first)) lanes(fq, fr, power);
+    if (has('snapShot')) lanes(fq, fr, power);
+    if (has('longshot') && ABILITY.longshot.first)
+      lanes(fq, fr, power, ABILITY.longshot.range, ABILITY.longshot.minRange - 1);
     // Longshot built first (`first` off): its six lines to the map's edge,
     // through units and yurts.
     else if (has('longshot'))
