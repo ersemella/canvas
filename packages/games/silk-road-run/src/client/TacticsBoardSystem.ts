@@ -494,8 +494,8 @@ export class TacticsBoardSystem extends BaseSystem {
       fight,
       trackCards(fight, scene.previewSlot ?? null, scene.previewBumps),
       scene.previewSlot ?? null,
-      scene.aimSlot ?? null,
       scene.previewBumps ?? {},
+      scene.previewMoves ?? {},
       this.advance,
       this.slides,
       {

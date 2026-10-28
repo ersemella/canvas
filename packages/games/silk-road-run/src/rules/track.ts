@@ -57,6 +57,39 @@ export function freeSlotFrom(state: FightState, slot: number, ignore?: Unit): nu
 }
 
 /**
+ * One leg of a card's move on the track, for the turn preview's arrows
+ * (3.3): `placed` where a placement aimed it (its cost, a Haste, a Delay),
+ * `bumped` on past taken slots (it yielded, or a faster card took its slot).
+ */
+export interface TrackStep {
+  from: number;
+  to: number;
+  cause: 'placed' | 'bumped';
+}
+
+/** While a preview traces a turn (`traceTrack`), every card's moves, by unit id. */
+let trace: Map<string, TrackStep[]> | null = null;
+
+/** Notes a leg of `unit`'s move while a turn is traced (`traceTrack`). */
+export function noteStep(unit: Unit, from: number, to: number, cause: TrackStep['cause']): void {
+  if (!trace || from === to) return;
+  if (!trace.has(unit.id)) trace.set(unit.id, []);
+  trace.get(unit.id)!.push({from, to, cause});
+}
+
+/** Runs `fn`, returning what it returns and every card move it made, in order (`noteStep`). */
+export function traceTrack<T>(fn: () => T): {result: T; steps: Map<string, TrackStep[]>} {
+  const outer = trace;
+  const steps = new Map<string, TrackStep[]>();
+  trace = steps;
+  try {
+    return {result: fn(), steps};
+  } finally {
+    trace = outer;
+  }
+}
+
+/**
  * Places a unit's card at `slot`, resolving collisions by speed (3.3;
  * owner, 2026-10-23): a faster arriving card takes the slot and the card
  * there moves on to the next, colliding again by the same rule; an equal
@@ -65,6 +98,8 @@ export function freeSlotFrom(state: FightState, slot: number, ignore?: Unit): nu
  * above. Returns the unit's slot.
  */
 export function placeCard(state: FightState, unit: Unit, slot: number, push = false): number {
+  const before = trace && new Map(state.units.map((u) => [u, u.slot]));
+  const from = unit.slot;
   unit.slot = null;
   let moving = unit;
   let s = slot;
@@ -78,6 +113,12 @@ export function placeCard(state: FightState, unit: Unit, slot: number, push = fa
     s++;
   }
   moving.slot = s;
+  if (before) {
+    if (from !== null) noteStep(unit, from, slot, 'placed');
+    noteStep(unit, slot, unit.slot!, 'bumped');
+    for (const [u, was] of before)
+      if (u !== unit && was !== null && u.slot !== null) noteStep(u, was, u.slot, 'bumped');
+  }
   return unit.slot!;
 }
 
