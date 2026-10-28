@@ -3757,6 +3757,37 @@ tunings are the smite at power 2 (power 3 already overshoots the
 Steppe), or a Shield of 1 on top with a second, damaging ability as an
 upgrade; neither is measured yet.
 
+### Blessing as a Shield, on one ally or every ally near (2026-10-28)
+
+Asked for (the owner): Blessing giving Shield equal to the Priest's power
+in place of the heal, and whether on every nearby ally it's too strong.
+`experiments/priest-shield.mjs`, the seats and 400 fights of "The Priest"
+(about ±2.5 points); `ABILITY.blessing.heal` off, `shape` `unit` (one
+ally within 2) or `aura` (every ally within `radius` of him, himself
+too).
+
+| Blessing | Steppe | China | Persia |
+|---|---:|---:|---:|
+| *Heal 3, the rest Shield (as built, "The Priest")* | *42.7%* | *22.8%* | *41.6%* |
+| Shield 3, one ally within 2 | 36.3% | 20.8% | 30.1% |
+| Shield 3, every ally within 1 | 27.4% | 16.8% | 23.6% |
+| Shield 2, every ally within 1 | 25.6% | 15.0% | 18.8% |
+| Shield 2, every ally within 2 | 37.1% | 18.0% | 35.4% |
+| Shield 1, every ally within 2 | 21.8% | 13.5% | 21.9% |
+
+- **A Shield alone is worth less than the heal** by 2–12 points: it goes
+  at the ally's next turn, so a Shield on an ally who acts before the
+  enemy reaches it is wasted, where a heal keeps.
+- **Not too strong on every ally: weaker.** Within 1 he must stand in
+  the front line to reach two allies, and as a 4-health hero dies there;
+  within 2 (Shield 2) it is about the single Shield's worth, not more.
+- Part of the gap may be the AI's (it values a Shield by the hits that
+  could reach the ally now); not measured.
+
+**Built as measured**: the heal and overheal stay; `heal` and `shape`
+are switches, off. Untried: a Shield lasting until the Priest's next
+turn, so each covers a full round whoever acts first.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
