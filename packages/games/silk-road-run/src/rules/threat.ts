@@ -59,7 +59,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     out.push({enemyId: e.id, hexes});
     const has = (a: AbilityId) => kitOf(e).includes(a);
     const {q: fq, r: fr} = e.hex;
-    if (has('bite') || has('grapple') || has('swiftStrike') || has('smash'))
+    if (has('bite') || has('grapple') || has('swiftStrike') || has('smash') || has('hew'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
     // `over`: the spaces nearest it flown over, whatever is on them (Longshot's).
     const lanes = (oq: number, or: number, d: number, range = ABILITY.snapShot.range, over = 0) => {

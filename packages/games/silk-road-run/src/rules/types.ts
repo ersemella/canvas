@@ -11,7 +11,8 @@ export type Side = 'player' | 'enemy';
  * The three prototype heroes, the Vanguard and the Alchemist
  * (owner, 2026-10-25), the Duelist (owner, 2026-10-26), the Magus
  * (owner, 2026-10-27), the Juggernaut (`mahout`, owner, 2026-10-27), the
- * Ranger (owner, 2026-10-27), the
+ * Ranger (owner, 2026-10-27), the Barbarian (`varangian`, owner,
+ * 2026-10-28), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, the enemy NPCs, the wolf and the fox, and the Steppe's boss, the
  * One-Eyed Giant (`giant`, owner, 2026-10-28; enemies.md).
@@ -26,6 +27,7 @@ export type HeroId =
   | 'magus'
   | 'mahout'
   | 'archer'
+  | 'varangian'
   | 'camel'
   | 'wolf'
   | 'fox'
@@ -44,6 +46,7 @@ export type AbilityId =
   | 'omen'
   | 'stomp'
   | 'longshot'
+  | 'hew'
   // The One-Eyed Giant's (owner, 2026-10-28).
   | 'smash'
   | 'boulder'
