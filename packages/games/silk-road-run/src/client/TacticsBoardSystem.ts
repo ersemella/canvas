@@ -43,6 +43,7 @@ import {
   MARK,
   drawDamage,
   drawGrappleFists,
+  drawThrownAxes,
   drawHealthBar,
   drawRug,
   drawStatusMark,
@@ -424,6 +425,7 @@ export class TacticsBoardSystem extends BaseSystem {
 
     // Not on a party walking out, off their hexes.
     drawGrappleFists(ctx, fight, (u) => (walking?.has(u.id) ? null : u.hex));
+    drawThrownAxes(ctx, fight);
 
     // Where Temee walks next, as things stand (and as the planned turn would leave them).
     const camelStep = playing || walking ? undefined : camelNextStep(fight, scene.preview);

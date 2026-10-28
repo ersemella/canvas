@@ -45,6 +45,8 @@ import wolfPortrait from '../sprites/wolf-portrait.png';
 import wolfSprite from '../sprites/wolf.png';
 import foxPortrait from '../sprites/fox-portrait.png';
 import foxSprite from '../sprites/fox.png';
+import giantPortrait from '../sprites/giant-portrait.png';
+import giantSprite from '../sprites/giant.png';
 
 /**
  * The rug a unit stands on, filling its hex: a field in its side's colour,
@@ -56,7 +58,7 @@ const RUG = {
 };
 /**
  * Board sprites, facing right: square frames (32×32, 36×36 for a mounted
- * hero, the camel, the wolf or the fox, or 44×44 for the Juggernaut,
+ * hero, the camel, the wolf or the fox, or 44×44 for the Juggernaut and the One-Eyed Giant,
  * whose head and rider rise above its hex) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
@@ -79,6 +81,9 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // From the owner's AI-assisted art (2026-10-25): cut out, shrunk to the
   // wolf's frame, 10 colours, inked at the edge, the wolf's shadow.
   fox: foxSprite,
+  // From the owner's AI-assisted art (2026-10-28): shrunk to 44×44, the
+  // Juggernaut's frame, its eye redrawn by hand.
+  giant: giantSprite,
 };
 /** Track portraits (32×32, facing right), filling the card; `faceX` is the face's column. */
 export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
@@ -95,6 +100,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},
+  giant: {src: giantPortrait, faceX: 20},
 };
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
 export const HEALTH_BAR = {w: 60, h: 10, y: 50};
@@ -387,26 +393,65 @@ export function drawGrappleFists(
   }
 }
 
-/** The fists centred at (`x`, `y`): an ink outline one art pixel round them, then the art. */
+/** The fists centred at (`x`, `y`). */
 function drawFists(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  drawInkedArt(ctx, FISTS_ROWS, FISTS_COLORS, x, y);
+}
+
+/** Pixel art `rows` centred at (`x`, `y`): an ink outline one art pixel round it, then the art. */
+function drawInkedArt(
+  ctx: CanvasRenderingContext2D,
+  rows: string[],
+  colors: Record<string, string>,
+  x: number,
+  y: number
+): void {
   const px = SPRITE_SCALE;
-  const left = Math.round(x - (FISTS_ROWS[0]!.length * px) / 2);
-  const top = Math.round(y - (FISTS_ROWS.length * px) / 2);
+  const left = Math.round(x - (rows[0]!.length * px) / 2);
+  const top = Math.round(y - (rows.length * px) / 2);
   ctx.save();
   ctx.fillStyle = PALETTE.ink;
-  FISTS_ROWS.forEach((row, ay) =>
+  rows.forEach((row, ay) =>
     [...row].forEach((c, ax) => {
       if (c !== '.') ctx.fillRect(left + (ax - 1) * px, top + (ay - 1) * px, 3 * px, 3 * px);
     })
   );
-  FISTS_ROWS.forEach((row, ay) =>
+  rows.forEach((row, ay) =>
     [...row].forEach((c, ax) => {
       if (c === '.') return;
-      ctx.fillStyle = FISTS_COLORS[c]!;
+      ctx.fillStyle = colors[c]!;
       ctx.fillRect(left + ax * px, top + ay * px, px, px);
     })
   );
   ctx.restore();
+}
+
+/** A great axe lying on the ground, its haft to the left and its broad blade to the right. */
+const AXE_ROWS = [
+  '........###.',
+  '.......#####',
+  '.......####+',
+  '==========#+',
+  '.......####+',
+  '.......#####',
+  '........###.',
+];
+const AXE_COLORS: Record<string, string> = {
+  '#': '#9ca3af',
+  '+': '#e5e7eb',
+  '=': '#7c4a1e',
+};
+
+/**
+ * Each thrown axe (Reave) where it lies, low in its hex, so it shows beside
+ * a unit standing on it; it goes when its Barbarian picks it up or falls.
+ */
+export function drawThrownAxes(ctx: CanvasRenderingContext2D, fight: FightState): void {
+  for (const u of fight.units) {
+    if (!u.alive || !u.axe) continue;
+    const c = center(u.axe);
+    drawInkedArt(ctx, AXE_ROWS, AXE_COLORS, c.x + 8, c.y + 20);
+  }
 }
 
 /** Each status's marker: its letter and colour, in the order a row shows them. */
@@ -422,13 +467,17 @@ export const EMPOWER_MARK: [string, string] = ['E', PALETTE.jade];
 /** Weaken's marker, like Empower's (`Unit.weaken`). */
 export const WEAKEN_MARK: [string, string] = ['D', PALETTE.madderLight];
 
-/** A unit's status markers: I(mmobilized), S(tunned), E(nhanced), D(egraded). */
+/** Shield's marker (`Unit.shield`, keywords.md 17.6), like Empower's: P(rotected). */
+export const SHIELD_MARK: [string, string] = ['P', PALETTE.skyLight];
+
+/** A unit's status markers: I(mmobilized), S(tunned), E(nhanced), D(egraded), P(rotected). */
 export function statusMarks(u: Unit): [string, string][] {
   const marks = STATUS_KINDS.filter((kind) => u.statuses.some((s) => s.kind === kind)).map(
     (kind) => STATUS_MARK[kind]
   );
   if (u.empower) marks.push(EMPOWER_MARK);
   if (u.weaken) marks.push(WEAKEN_MARK);
+  if (u.shield) marks.push(SHIELD_MARK);
   return marks;
 }
 

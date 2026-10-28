@@ -4,6 +4,7 @@
  */
 import {
   hexDirectionTo,
+  hexDistance,
   hexEquals,
   hexLineSides,
   hexNeighbor,
@@ -155,6 +156,15 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
 export function kitOf(unit: Unit): AbilityId[] {
   const kit = unit.loadout?.abilities ?? HEROES[unit.hero].abilities;
   return unit.fan ? [...kit, 'quench'] : kit;
+}
+
+/**
+ * Its axe thrown (Reave) and lying more than a space from it: it can only
+ * move and Hold until it enters a space on or next to the axe, picking it
+ * up (`enterHex`).
+ */
+export function disarmed(unit: Unit): boolean {
+  return unit.axe !== undefined && unit.hex !== null && hexDistance(unit.hex, unit.axe) > 1;
 }
 
 /** How many abilities a kit has besides Hold (and moving, which isn't one). */

@@ -39,10 +39,12 @@ export const HERO_COLOR = {
   archer: '#0369a1',
   // The Barbarian's disc: it has no sprite yet.
   varangian: '#57534e',
+  // The Priest's disc: it has no sprite yet.
+  priest: '#ca8a04',
   camel: '#a8742f',
   wolf: '#6b7280',
   fox: '#c2410c',
-  // The One-Eyed Giant's disc: it has no sprite yet.
+  // The One-Eyed Giant's disc, shown while its sprite loads.
   giant: '#57534e',
   // China's boss, the Ox King and the Fan Lady: discs too, until their art exists.
   oxKing: '#7c2d12',

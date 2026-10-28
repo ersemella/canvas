@@ -32,6 +32,10 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
       if (e.ability === 'hold') return 0;
       // The sunbeam takes longer to read.
       if (e.ability === 'sunlight') return 0.85;
+      // The Boulder's flight, then its landing.
+      if (e.ability === 'boulder') return 0.9;
+      // The club's swing up and over.
+      if (e.ability === 'smash') return 0.6;
       return 0.5;
     case 'land':
       return 0.5;

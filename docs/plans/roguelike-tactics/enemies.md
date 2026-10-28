@@ -35,7 +35,7 @@ tuning. Section numbers are the combat design's.
 | Build | **Mimic:** copies the last ability used against it. | Build variety; punishes one-dimensional builds |
 | Build | **Summoner:** schedules reinforcements on the track. | Burst builds (kill before arrival) versus sustain builds (outlast) |
 
-### 11.3a The One-Eyed Giant, the Steppe's boss (Built 2026-10-28, on the test stage only)
+### 11.3a The One-Eyed Giant, the Steppe's boss (Built 2026-10-28; the Steppe's stage 4 since later that day)
 Tepegöz of the *Book of Dede Korkut* (setting.md, 15.6a), the one-eyed
 giant whose hide turned Basat's arrows until Basat struck the eye. In the
 game's text, the One-Eyed Giant (no real names, roster.md). Its bent rule
@@ -44,10 +44,12 @@ flanked", turned around), and its kit is the Steppe's own: a hit like the
 wolves', and Snap Shot's lanes.
 
 - **Stats (the builder's first numbers, untested):** speed 1, defence 5
-  (health 12), power 3. `giant` in config.ts; not in the ROSTER, so neither
-  the start menu nor a run's stages bring it. The test stage does
-  (test-stage.json, as committed: the Steppe's three heroes against it and
-  two wolves). No sprite yet: a lettered disc, its eye drawn on its hex.
+  (health 12), power 3. `giant` in config.ts; not in the ROSTER, so the
+  start menu doesn't offer it. The Steppe's fourth stage brings it with
+  two wolves (`REGIONS.steppe.boss`; progression.md, 19.1), and so does
+  the test stage (test-stage.json, as committed). Its sprite and portrait
+  are the owner's AI-assisted art (2026-10-28; art-direction.md), its
+  facing still drawn as an eye on its hex's edge.
 - **One Eye** (a passive, `oneEye`, not offered at the caravanserai):
   Armour 3 (`ONE_EYE.armour`) against a hit, or a grapple's squeeze, from
   a unit not standing in its front lane, the line straight out the way it
@@ -141,6 +143,10 @@ fire hazard the art doc kept for the region's boss (art-direction.md).
   burns from the fire across the 20, 131 Devoted Hastes; the Fan Lady fanned the
   flames 67 times and swept the fan 22, the Ox King gored 41 times. Like
   the giant, too easy as it stands: to tune before it enters a run.
+- **Not China's stage 4 yet** (`REGIONS.china.boss` is still null, so
+  that stage brings China's three heroes in the Gobi): a region's `boss`
+  is one hero and its stage's map the region's, so putting them in takes a
+  list of bosses and stage 4 fought on `ridges`.
 
 ---
 

@@ -22,7 +22,7 @@ describe('the test stage', () => {
     expect(gobi.mapId).toBe('gobi');
     expect(Object.values(gobi.tiles).filter((t) => t === 'obstacle')).toHaveLength(4);
     expect(() => parseTestStage({...units, map: 'atlantis'})).toThrow(
-      'map must be one of "steppe", "gobi", "flaming", "ridges", "salt".'
+      'map must be one of "steppe", "gobi", "flaming", "ridges", "salt", "tuff".'
     );
   });
 

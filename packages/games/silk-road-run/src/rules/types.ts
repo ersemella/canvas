@@ -12,7 +12,7 @@ export type Side = 'player' | 'enemy';
  * (owner, 2026-10-25), the Duelist (owner, 2026-10-26), the Magus
  * (owner, 2026-10-27), the Juggernaut (`mahout`, owner, 2026-10-27), the
  * Ranger (owner, 2026-10-27), the Barbarian (`varangian`, owner,
- * 2026-10-28), the
+ * 2026-10-28), the Priest (owner, 2026-10-28), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, the enemy NPCs, the wolf and the fox, the Steppe's boss, the
  * One-Eyed Giant (`giant`, owner, 2026-10-28; enemies.md), and China's,
@@ -29,6 +29,7 @@ export type HeroId =
   | 'magus'
   | 'mahout'
   | 'archer'
+  | 'priest'
   | 'varangian'
   | 'camel'
   | 'wolf'
@@ -50,7 +51,8 @@ export type AbilityId =
   | 'omen'
   | 'stomp'
   | 'longshot'
-  | 'hew'
+  | 'blessing'
+  | 'reave'
   // The One-Eyed Giant's (owner, 2026-10-28).
   | 'smash'
   | 'boulder'
@@ -204,6 +206,12 @@ export interface Unit {
   /** Its passives (progression.md, 19.8); absent with none. */
   passives?: PassiveId[];
   /**
+   * Where its thrown axe lies (the Barbarian's Reave): until it enters a
+   * space on or next to it, it can only move and Hold (`disarmed` in
+   * board.ts). Absent while it holds its axe.
+   */
+  axe?: Hex;
+  /**
    * The hex direction (0 to 5) it faces, for One Eye: set as the fight
    * starts, turned by its walks and its abilities (`faceAfterTurn` in
    * fight.ts), kept when it is displaced. Absent for a unit without it.
@@ -221,7 +229,8 @@ export interface Unit {
   spent?: PassiveId[];
   /**
    * Shield (keywords.md, 17.6): a pool reduced before health, until the
-   * start of the unit's next turn (Rally). Absent when it has none.
+   * start of the unit's next turn (Rally, the Priest's Blessing). Absent
+   * when it has none.
    */
   shield?: number;
   /**

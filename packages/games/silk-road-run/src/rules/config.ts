@@ -241,9 +241,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * The Barbarian (owner, 2026-10-28; roster.md): Byzantium's damage hero,
    * a Varangian guardsman with a great axe, slow and hard-hitting. Speed 1,
-   * defence 2 (health 6) and power 3 are the owner's. Hew, a plain melee
-   * blow (`hew` in abilities.ts), is the builder's placeholder until the owner
-   * picks its kit from the ideas in roster.md.
+   * defence 2 (health 6) and power 3 are the owner's. Reave (owner,
+   * 2026-10-28; `ABILITY.reave`): the axe swung through three spaces next
+   * to it, or thrown down a line of three, left lying where it lands.
    */
   varangian: {
     name: 'Barbarian',
@@ -251,7 +251,21 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 1,
     defence: 2,
     power: 3,
-    abilities: ['hew', 'hold'],
+    abilities: ['reave', 'hold'],
+  },
+  /**
+   * The Priest (owner, 2026-10-28; roster.md): Byzantium's support, a
+   * healer. Speed 2, defence 1 (health 4) and power 3 are the owner's.
+   * Blessing heals an ally his power, and what it can't heal becomes
+   * Shield (`ABILITY.blessing`).
+   */
+  priest: {
+    name: 'Priest',
+    letter: 'P',
+    speed: 2,
+    defence: 1,
+    power: 3,
+    abilities: ['blessing', 'hold'],
   },
   /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
@@ -411,6 +425,24 @@ export const ABILITY = {
     delay: 0 as number,
     weaken: 0 as number,
     pin: false as boolean,
+  },
+  /**
+   * Blessing (owner, 2026-10-28; roster.md), the Priest's: one ally within
+   * `range` (2), the Priest himself too (`self`) and the camel too
+   * (`camel`), no line of fire, heals the Priest's power; with `overheal`,
+   * the heal beyond the ally's missing health becomes Shield (keywords.md,
+   * 17.6), and `shield` more is given on top whatever it heals. A Shield lasts until the start of the ally's next turn and adds
+   * to one it has. Nothing on an enemy, unless `smite`: an enemy within
+   * range is hit for the Priest's power instead (a switch for measuring,
+   * off as built). `shield` 0 as built: the overheal is the Shield.
+   */
+  blessing: {
+    range: 2 as number,
+    smite: false as boolean,
+    self: true as boolean,
+    camel: true as boolean,
+    overheal: true as boolean,
+    shield: 0 as number,
   },
   /**
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
@@ -609,6 +641,16 @@ export const ABILITY = {
    */
   boulder: {push: 1 as number},
   /**
+   * Reave (owner, 2026-10-28; roster.md), the Barbarian's great axe, one
+   * ability aimed two ways. A **swipe**: a space next to it and the two
+   * either side of that one, every unit there hit, allies and Humphrey
+   * too. A **throw**: a line of `throwRange` spaces straight out from it,
+   * stopped early by a yurt or the map's edge (at least 2 spaces), every
+   * unit along it hit; the axe lands on its last space, and until the
+   * Barbarian enters a space on or next to it, it can only move and Hold.
+   */
+  reave: {throwRange: 3 as number},
+  /**
    * Gore (owner, 2026-10-28), the Ox King's: Stomp's charge
    * (`stomp.mode: 'charge'`, Trample as first built), a walk of up to
    * `steps` in a line, every unit in its way hit and the row Pushed back.
@@ -709,6 +751,7 @@ export const AI = {
     mahout: 0,
     archer: 1,
     varangian: 1,
+    priest: 1,
     camel: 0,
     wolf: 1,
     fox: 1,
@@ -718,6 +761,12 @@ export const AI = {
     fanLady: 1,
   } as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
+  /**
+   * A Shield (Blessing, Rally) is worth this share of the damage it could
+   * absorb before the unit's next turn: the hits the enemies acting before
+   * then could deal it, at most its Shield. PLACEHOLDER.
+   */
+  shieldShare: 0.75,
   /**
    * A charged shot in the air on a unit that acts before it lands and can
    * walk is worth this share of the hit: it can step out. PLACEHOLDER.
@@ -737,6 +786,12 @@ export const AI = {
    * forever; small next to any hit.
    */
   perHexFromEnemy: 0.2,
+  /**
+   * The Barbarian with its axe thrown (Reave): it closes in on the axe
+   * first, and lying out the axe counts as this many spaces more, so
+   * picking it up is progress and a throw costs it. PLACEHOLDER.
+   */
+  axeOut: 5,
   /**
    * The caravan's camel (camel.md): its health is worth this much a point,
    * and each space it stands from the exit is worth `perCamelHex` to the
@@ -801,6 +856,7 @@ export const ROSTER: HeroId[] = [
   'mahout',
   'archer',
   'varangian',
+  'priest',
 ];
 /**
  * The regions a run passes through, in order (setting.md, 15.3a), so far
@@ -808,14 +864,22 @@ export const ROSTER: HeroId[] = [
  * and its basic creature, the wolf's unit reskinned (progression.md,
  * 19.5), if its stages bring one: only the Steppe's do (owner,
  * 2026-10-28; China's fox spirits taken out). Byzantium has no stages
- * yet, so no enemy brings its Barbarian.
+ * yet, so no enemy brings its Barbarian or its Priest.
  */
 export type RegionId = 'steppe' | 'china' | 'persia' | 'byzantium';
-export const REGIONS: Record<RegionId, {heroes: HeroId[]; creature: HeroId | null}> = {
-  steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf'},
-  china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null},
-  persia: {heroes: ['archer', 'mahout', 'magus'], creature: null},
-  byzantium: {heroes: ['varangian'], creature: null},
+/**
+ * `boss`: the region's boss, the enemy of its last stage (owner,
+ * 2026-10-28; enemies.md), the One-Eyed Giant on the Steppe; null while
+ * the region has none built, and its last stage brings its heroes.
+ */
+export const REGIONS: Record<
+  RegionId,
+  {heroes: HeroId[]; creature: HeroId | null; boss: HeroId | null}
+> = {
+  steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: 'giant'},
+  china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: null},
+  persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
+  byzantium: {heroes: ['varangian', 'priest'], creature: null, boss: null},
 };
 /**
  * A run's stages, in order (owner, 2026-10-24; for a while four, from three
@@ -827,8 +891,13 @@ export const REGIONS: Record<RegionId, {heroes: HeroId[]; creature: HeroId | nul
  * random order from the run's seed, the first of them random too (owner,
  * 2026-10-28; the Outrider and then each region's damage hero before), and so do the heroes of the regions before, so each stage brings
  * the last one's own heroes and one more. The last is won to win the run.
+ * Four stages a region (owner, 2026-10-28; three before), the fourth its
+ * boss's (`boss`): the region's boss (REGIONS) and `creatures` of its
+ * creatures, or, for a region with no boss built yet, its heroes as for
+ * the others.
  * `provision`: winning it earns a provision, assigned at the caravanserai
- * before the next (progression.md, 19.2: a region's stages 1 and 2).
+ * before the next (progression.md, 19.2: a region's stages 1, 2 and 3,
+ * owner, 2026-10-28; 1 and 2 before).
  * `passive`: winning it, the region's last, offers a passive at the
  * caravanserai on the way to the next region (19.3's passive slot, alone
  * for now: three of the pool at random, one taken).
@@ -839,6 +908,7 @@ export const REGIONS: Record<RegionId, {heroes: HeroId[]; creature: HeroId | nul
  */
 export interface Stage {
   region: RegionId;
+  boss: boolean;
   heroes: number;
   outsiders: number;
   creatures: number;
@@ -849,6 +919,7 @@ export interface Stage {
 export const STAGES: Stage[] = [
   {
     region: 'steppe',
+    boss: false,
     heroes: 1,
     outsiders: 0,
     creatures: 2,
@@ -858,6 +929,7 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'steppe',
+    boss: false,
     heroes: 2,
     outsiders: 0,
     creatures: 1,
@@ -867,15 +939,27 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'steppe',
+    boss: false,
     heroes: 3,
     outsiders: 0,
     creatures: 0,
+    provision: true,
+    passive: false,
+    map: 'steppe',
+  },
+  {
+    region: 'steppe',
+    boss: true,
+    heroes: 3,
+    outsiders: 0,
+    creatures: 2,
     provision: false,
     passive: true,
     map: 'steppe',
   },
   {
     region: 'china',
+    boss: false,
     heroes: 1,
     outsiders: 2,
     creatures: 0,
@@ -885,6 +969,7 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'china',
+    boss: false,
     heroes: 2,
     outsiders: 1,
     creatures: 0,
@@ -894,6 +979,17 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'china',
+    boss: false,
+    heroes: 3,
+    outsiders: 0,
+    creatures: 0,
+    provision: true,
+    passive: false,
+    map: 'gobi',
+  },
+  {
+    region: 'china',
+    boss: true,
     heroes: 3,
     outsiders: 0,
     creatures: 0,
@@ -903,6 +999,7 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'persia',
+    boss: false,
     heroes: 1,
     outsiders: 2,
     creatures: 0,
@@ -912,6 +1009,7 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'persia',
+    boss: false,
     heroes: 2,
     outsiders: 1,
     creatures: 0,
@@ -921,6 +1019,17 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'persia',
+    boss: false,
+    heroes: 3,
+    outsiders: 0,
+    creatures: 0,
+    provision: true,
+    passive: false,
+    map: 'salt',
+  },
+  {
+    region: 'persia',
+    boss: true,
     heroes: 3,
     outsiders: 0,
     creatures: 0,
@@ -931,7 +1040,10 @@ export const STAGES: Stage[] = [
 ];
 /** How many passives the caravanserai between regions offers, one to be taken. */
 export const PASSIVE_OFFER = 3;
-/** How many of a run's first stages always have mountains (owner, 2026-10-24; randomTiles). */
-export const MOUNTAIN_STAGES = 3;
+/**
+ * How many of a run's first stages always have mountains (owner, 2026-10-24;
+ * randomTiles): the Steppe's, four since 2026-10-28.
+ */
+export const MOUNTAIN_STAGES = 4;
 /** The player's camel, after the party in slot order; the enemy has none (camel.md). */
 export const CAMEL: HeroId = 'camel';

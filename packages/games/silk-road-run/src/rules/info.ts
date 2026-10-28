@@ -42,7 +42,8 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
  * frontier posts on gravel before); the Flaming
  * Mountains' is red earth, a yurt placed there by hand a ruin and their
  * mountains on fire, though they block as any do; the Salt Flats' is salt,
- * their mountains one salt dome and a yurt placed there by hand a ruin.
+ * their mountains one salt dome and a yurt placed there by hand a ruin;
+ * the Fairy Chimneys' is tuff and their yurts fairy chimneys.
  */
 const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
   gobi: {
@@ -62,6 +63,14 @@ const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
     },
     mountain: {
       name: 'Salt dome',
+      short: 'Blocks movement and arrows',
+      detail: 'Blocks movement and arrows.',
+    },
+  },
+  tuff: {
+    sand: {name: 'Tuff', short: 'Open ground', detail: 'No effect.'},
+    obstacle: {
+      name: 'Fairy chimney',
       short: 'Blocks movement and arrows',
       detail: 'Blocks movement and arrows.',
     },

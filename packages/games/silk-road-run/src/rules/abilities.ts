@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), the wolf's, the One-Eyed Giant's, and the Ox King's and the Fan Lady's (owner, 2026-10-28). Each lists its legal targets from a hex (for validation,
+ * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), the Priest's, the wolf's, the One-Eyed Giant's, and the Ox King's and the Fan Lady's (owner, 2026-10-28). Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -18,6 +18,7 @@ import {
   addStatus,
   hostile,
   cleaveAreas,
+  disarmed,
   firstInLane,
   isImmobilized,
   isUnstoppable,
@@ -55,6 +56,7 @@ import {
   stun,
   swapCards,
   setCard,
+  shield,
   unitName,
   walk,
 } from './resolve';
@@ -922,6 +924,81 @@ const elixir: AbilityDef = {
   },
 };
 
+// ─── Priest ──────────────────────────────────────────────────────────────────
+
+/**
+ * Whether Blessing can take `u`: an ally of `user`'s, the Priest himself
+ * with `ABILITY.blessing.self`, the camel with `.camel`.
+ */
+const blessingTakes =
+  (user: Unit) =>
+  (u: Unit | undefined): u is Unit =>
+    u !== undefined &&
+    u.alive &&
+    (u.side === user.side || ABILITY.blessing.smite) &&
+    (ABILITY.blessing.self || u.id !== user.id) &&
+    (ABILITY.blessing.camel || u.hero !== CAMEL);
+
+/**
+ * What Blessing gives `u` from `user`: the health it heals (the Priest's
+ * power, up to what `u` is missing) and the Shield it gains (the rest of
+ * the heal, with `overheal`, and `ABILITY.blessing.shield` more).
+ */
+export function blessingOf(user: Unit, u: Unit): {heal: number; shield: number} {
+  const {overheal, shield: extra} = ABILITY.blessing;
+  const healed = Math.min(user.power, Math.max(0, u.maxHp - u.hp));
+  return {heal: healed, shield: (overheal ? user.power - healed : 0) + extra};
+}
+
+/**
+ * Blessing (owner, 2026-10-28; roster.md): one ally within
+ * `ABILITY.blessing.range` (2), the Priest himself too, the camel too, no
+ * line of fire, heals the Priest's power; what the heal can't restore
+ * becomes Shield until the start of the ally's next turn (keywords.md,
+ * 17.6). Nothing on an enemy, unless `ABILITY.blessing.smite`: then it
+ * hits an enemy for the Priest's power.
+ */
+const blessing: AbilityDef = {
+  id: 'blessing',
+  name: 'Blessing',
+  kind: 'support',
+  damages: false,
+  targetsUnit: true,
+  get bothSides() {
+    return ABILITY.blessing.smite;
+  },
+  get range() {
+    return ABILITY.blessing.range;
+  },
+  summary(user) {
+    const {range, self, overheal, shield: extra} = ABILITY.blessing;
+    const shields = [
+      overheal ? 'what it can’t heal becomes Shield' : '',
+      extra ? `Shield ${extra} more` : '',
+    ].filter(Boolean);
+    const smite = ABILITY.blessing.smite ? ` An enemy within ${range} is hit instead.` : '';
+    return `An ally within ${range}${self ? ', yourself too' : ''}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, until its next turn` : ''}.${smite}`;
+  },
+  targets(state, map, user, from) {
+    return spacesWithin(map, from, ABILITY.blessing.range)
+      .map((h) => unitAt(state, h))
+      .filter(blessingTakes(user))
+      .map((u) => ({hex: u.hex!}));
+  },
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    if (u.side !== user.side) {
+      log(ctx, `${unitName(user)} smites ${unitName(u)}.`);
+      hit(ctx, user, u, 'The smiting');
+      return;
+    }
+    const given = blessingOf(user, u);
+    log(ctx, `${unitName(user)} blesses ${unitName(u)}.`);
+    heal(ctx, u, given.heal);
+    shield(ctx, u, given.shield);
+  },
+};
+
 // ─── Duelist ─────────────────────────────────────────────────────────────────
 
 /**
@@ -1266,22 +1343,68 @@ function resolveCharge(ctx: Ctx, user: Unit, to: Hex, what: string): void {
 
 // ─── Barbarian ───────────────────────────────────────────────────────────────
 
+/** Reave's swipe toward direction `dir`: that space next to `from` and the two either side of it, yurts left out. */
+function reaveSwipe(map: MapData, from: Hex, dir: number): Hex[] {
+  return [dir - 1, dir, dir + 1].map((d) => hexNeighbor(from, d)).filter((h) => walkable(map, h));
+}
+
+/** Reave's throw toward direction `dir`: up to `throwRange` spaces straight out, to a yurt or the map's edge. */
+function reaveThrow(map: MapData, from: Hex, dir: number): Hex[] {
+  return laneFrom(map, from, dir).slice(0, ABILITY.reave.throwRange);
+}
+
 /**
- * Hew (2026-10-28), the Barbarian's great axe: melee, its power. The
- * builder's placeholder, the Bite's shape, until the owner picks the
- * Barbarian's kit (roster.md).
+ * The spaces Reave covers aimed at `target`: a swipe when it is next to
+ * `from` (the arc's middle), a throw when it is further (where the axe lands).
  */
-const hew: AbilityDef = {
-  id: 'hew',
-  name: 'Hew',
+function reaveArea(map: MapData, from: Hex, target: Hex): Hex[] {
+  const dir = hexDirectionTo(from, target);
+  if (dir === null) return [];
+  return hexDistance(from, target) === 1 ? reaveSwipe(map, from, dir) : reaveThrow(map, from, dir);
+}
+
+/** Whether Reave aimed at `target` from `from` throws the axe. */
+export const reaveThrows = (from: Hex, target: Hex): boolean => hexDistance(from, target) > 1;
+
+/**
+ * Reave (owner, 2026-10-28): the Barbarian's great axe, swiped through
+ * three spaces next to it or thrown down a line of three, every unit in
+ * them hit for its power, allies too. A thrown axe lies where it lands
+ * (`Unit.axe`) until the Barbarian enters a space on or next to it; until
+ * then it can only move and Hold (`disarmed`). Swipes are offered first,
+ * so a tap next to the Barbarian swipes and one further out throws
+ * (`targetAt` in choices.ts).
+ */
+const reave: AbilityDef = {
+  id: 'reave',
+  name: 'Reave',
   kind: 'attack',
-  summary: () => 'Melee.',
-  targetsUnit: true,
-  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  summary: () =>
+    `Swipe three spaces next to you, or throw your axe down a line of ${ABILITY.reave.throwRange}: hits every unit there, allies included. A thrown axe must be picked up, by moving on or next to it, before you can use an ability again.`,
+  area: reaveArea,
+  targets(state, map, user, from) {
+    const catches = (area: Hex[]) =>
+      area.some((h) => {
+        const u = unitAt(state, h);
+        return u !== undefined && u !== user;
+      });
+    const swipes: ActionTarget[] = [];
+    const throws: ActionTarget[] = [];
+    for (const dir of DIRECTIONS) {
+      const middle = hexNeighbor(from, dir);
+      if (walkable(map, middle) && catches(reaveSwipe(map, from, dir))) swipes.push({hex: middle});
+      const line = reaveThrow(map, from, dir);
+      if (line.length >= 2 && catches(line)) throws.push({hex: line[line.length - 1]!});
+    }
+    return [...swipes, ...throws];
+  },
   resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    log(ctx, `${unitName(user)} hews at ${unitName(u)} with the axe.`);
-    hit(ctx, user, u, 'The axe');
+    const throws = reaveThrows(user.hex!, target.hex!);
+    const area = reaveArea(ctx.map, user.hex!, target.hex!);
+    log(ctx, `${unitName(user)} ${throws ? 'throws its axe' : 'swings its axe'}.`);
+    const caught = area.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
+    for (const u of caught) hit(ctx, user, u, 'The axe');
+    if (throws) user.axe = {...target.hex!};
   },
 };
 
@@ -1479,7 +1602,8 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   omen,
   stomp,
   longshot,
-  hew,
+  blessing,
+  reave,
   smash,
   boulder,
   gore,
@@ -1500,6 +1624,8 @@ export function abilitiesOf(unit: Unit): AbilityDef[] {
 /** Why the unit can't use the ability at all right now, or null if it can. */
 export function unusableReason(unit: Unit, ability: AbilityDef): string | null {
   if (!kitOf(unit).includes(ability.id)) return 'That unit doesn’t have that ability.';
+  if (ability.id !== 'hold' && disarmed(unit))
+    return 'Its axe lies where it was thrown: move on or next to it to pick it up.';
   return null;
 }
 

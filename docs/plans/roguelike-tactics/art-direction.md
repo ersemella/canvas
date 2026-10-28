@@ -261,6 +261,12 @@ tuning. This file has no combat-design section number.
   sandstone ruin stands in for its windcatcher until that art is in. The
   test stage's `"map"` shows it. Its look, how the art was cut and the
   prompts for it are in [salt-flats.md](salt-flats.md).
+- **The Fairy Chimneys** (`tuff`, owner, 2026-10-28), the Byzantine's
+  map: the owner's tuff (128 pixels, 7 colours, laid as one field) and
+  three fairy chimneys (30 × 55, cones of tuff under grey-brown basalt
+  caps), no mountains. The test stage's `"map"` shows it. Its look, how
+  the art was cut and the prompts for it are in
+  [cappadocia.md](cappadocia.md).
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct
   shape, not only a distinct colour: quicksand and sandstorm must read
   apart on a sand board.
@@ -397,6 +403,229 @@ of a drawn arrow show at the right edge.
 Framing: head and shoulders, facing right in three-quarter view, the face
 in the middle of the frame and large, the cap touching the top edge, cropped
 at the shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours, warm skin tones as in the references. Flat magenta (#FF00FF)
+background. One portrait only, no text, no border.
+```
+
+## Prompts for the One-Eyed Giant (2026-10-28)
+
+**Built from the owner's art (2026-10-28):** the sprite shrunk to
+44 × 44 with `shrink-sprite.py`, its eye redrawn by hand (3 × 2, the
+pupil looking right) since shrinking lost it, and a 2-frame idle split at
+row 33; the portrait cropped to the face (`--crop 380,120,1254,994
+--lines 0.5`). The prompts it came from:
+
+The Steppe's boss (enemies.md, 11.3a), a lettered disc (`giant` in
+`HERO_COLOR`) until its art came. A **44 × 44** board sprite facing right,
+the Juggernaut's frame, so it outsizes the heroes and rises above its hex,
+split into the 2-frame idle by `scripts/idle-sheet.py` (88 × 44 in all);
+and a **32 × 32** track portrait (`giant.png` and `giant-portrait.png` in
+`src/client/sprites/`). The board draws its facing as an eye on its hex's
+edge, so the sprite's own eye only needs to read as one big eye.
+
+- **Attach the references**, scaled up 8× with nearest-neighbour:
+  `mahout.png` (the 44 × 44 frame) and `bokh.png` (a Steppe figure on
+  foot) for the sprite; `bokh-portrait.png` and `mahout-portrait.png`
+  for the portrait.
+- One asset per image, on flat magenta (#FF00FF), as the Archer's.
+- If the eye is lost at size: "make the single eye much bigger, white
+  with a black pupil, the brightest thing on the sprite".
+
+### 1. Board sprite
+
+```
+Pixel art sprite of a single creature for a hex-grid tactics game, in the
+exact style, viewpoint and dark outline of the attached sprites.
+
+Subject: a hulking one-eyed giant from the folk tales of the Central Asian
+steppe. Huge stooped shoulders and long thick arms, a big belly, short
+bowed legs. A single large round eye in the middle of the forehead, white
+with a black pupil, under one heavy brow; a wide mouth with tusk-like
+teeth, wild black hair and a ragged beard. Weathered grey-olive skin.
+Dressed in crudely stitched sheepskins with the fleece showing, a rope
+belt, bare forearms and bare feet. In its right hand a huge knotted wooden
+club resting on its shoulder; in its left hand a rough grey boulder held
+low, ready to throw. Menacing, heavy stance.
+
+Framing: full body, facing right, three-quarter view from slightly above,
+as the attached sprites. The figure fills a 44 x 44 pixel frame with about
+2 pixels free on each side, clearly bigger and bulkier than a human hero.
+
+Style: 44 x 44 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 14 colours. Earthy colours (grey-olive
+skin, cream and brown fleece, dark wood, stone grey) so it stands out on
+grass and sand; no red, which the game keeps for the enemy's rug, and no
+light blue, kept for targeting. A small soft grey oval shadow under the
+feet. Flat magenta (#FF00FF) background. One sprite only, no text, no
+frame, no extra poses.
+```
+
+### 2. Track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same one-eyed giant: a huge brutish face with a single large
+round eye in the middle of the forehead, white with a black pupil, glaring
+right; one heavy brow, a broad flat nose, a wide mouth with tusk-like
+teeth, wild black hair and a ragged beard, weathered grey-olive skin;
+shaggy sheepskin at the shoulders, the knotted club's head showing behind
+one shoulder.
+
+Framing: head and shoulders, facing right in three-quarter view, the face
+filling most of the frame, the hair touching the top edge, cropped at the
+shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours. Flat magenta (#FF00FF) background. One portrait only, no text,
+no border.
+```
+
+## Prompts for the Priest (2026-10-28)
+
+The Priest (roster.md), Byzantium's support, plays as a lettered disc
+(`priest` in `HERO_COLOR`) until his art comes. As the Archer's: a
+**32 × 32** board sprite facing right, split into the 2-frame idle by
+`scripts/idle-sheet.py` (64 × 32 in all), and a **32 × 32** track portrait
+(`priest.png` and `priest-portrait.png` in `src/client/sprites/`).
+Keep him a role, not a saint (roster.md, 15.5): no halo of his own (the
+Blessing's halo is the playback's), no icon, relic or holy figure, and no
+cross large enough to be the first thing read.
+
+- **Attach the references**, scaled up 8× with nearest-neighbour:
+  `magus.png` and `alchemist.png` (robed heroes on foot) for the sprite;
+  `magus-portrait.png` and `alchemist-portrait.png` for the portrait.
+- One asset per image, on flat magenta (#FF00FF), as the Archer's.
+- His colours: cream and gold over dark brown, apart from the Magus's
+  plum and the Alchemist's teal; no red (the enemy's) and no light blue
+  (targeting, and the Shield marker).
+- If it comes back too detailed: "halve the detail and use fewer, larger
+  pixel clusters"; if the censer is lost at size: "make the censer bigger,
+  a bright gold ball on a dark chain, with a small puff of pale smoke".
+
+### 1. Board sprite
+
+```
+Pixel art sprite of a single character for a hex-grid tactics game, in the
+exact style, size, viewpoint and dark outline of the attached sprites.
+
+Subject: a Byzantine army priest of late antiquity, a healer who walks
+with the soldiers. A sturdy middle-aged man with a full dark beard, in a
+long dark brown cassock to the ankles, under a wide cream outer robe with
+a broad gold border at the hem and the edges, falling to the knees. A
+tall dark brown cylindrical brimless cap. In his right hand, held out in
+front, a small gold censer on a dark chain, a thin puff of pale smoke
+rising from it; his left hand raised, palm forward, in a blessing.
+Calm, steady stance, feet together.
+
+Framing: full body, facing right, three-quarter view from slightly above,
+as the attached sprites. The figure fills a 32 x 32 pixel frame with about
+2 pixels free on each side; the censer must stay readable at that size.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 12 colours. Cream, gold and dark brown,
+with warm skin; no red and no light blue, which the game keeps for its
+own markings. A small soft grey oval shadow under the feet. Flat magenta
+(#FF00FF) background. One sprite only, no text, no frame, no extra poses.
+```
+
+### 2. Track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same Byzantine army priest: a kindly, weathered face with a
+full dark beard touched with grey, dark eyes looking right, a tall dark
+brown cylindrical brimless cap, the cream outer robe with its broad gold
+border at the shoulders. A little pale censer smoke drifting up at the
+right edge.
+
+Framing: head and shoulders, facing right in three-quarter view, the face
+in the middle of the frame and large, the cap touching the top edge,
+cropped at the shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours, warm skin tones as in the references. Flat magenta (#FF00FF)
+background. One portrait only, no text, no border.
+```
+
+## Prompts for the Barbarian (2026-10-28)
+
+The Barbarian (roster.md), Byzantium's damage hero, a Varangian guardsman,
+plays as a lettered disc (`varangian` in `HERO_COLOR`) until his art
+comes. As the Archer's: a **32 × 32** board sprite facing right, split
+into the 2-frame idle by `scripts/idle-sheet.py` (64 × 32 in all), and a
+**32 × 32** track portrait (`varangian.png` and `varangian-portrait.png`
+in `src/client/sprites/`). Reave swipes and throws his axe, so the axe is
+what must read at size; the board draws a thrown axe on its own
+(`drawThrownAxes`), so the sprite always holds it.
+
+- **Attach the references**, scaled up 8× with nearest-neighbour:
+  `bokh.png` and `youxia.png` (heroes on foot) for the sprite;
+  `bokh-portrait.png` and `archer-portrait.png` for the portrait.
+- One asset per image, on flat magenta (#FF00FF), as the Archer's.
+- His colours: steel-grey mail, a dark forest-green cloak, straw-blond
+  hair and beard, dark wood and bright steel for the axe, apart from the
+  Priest's cream and gold; no red (the enemy's) and no light blue
+  (targeting). Gold only as a small trim: the emperor's pay.
+- If it comes back too detailed: "halve the detail and use fewer, larger
+  pixel clusters"; if the axe is lost at size: "make the axe head bigger,
+  a broad bright steel crescent with a dark outline, on a long dark haft".
+
+### 1. Board sprite
+
+```
+Pixel art sprite of a single character for a hex-grid tactics game, in the
+exact style, size, viewpoint and dark outline of the attached sprites.
+
+Subject: a Varangian guardsman of the Byzantine emperor, a Norse warrior
+far from home. A big, broad-shouldered man with a long straw-blond beard
+and braided hair, in a knee-length steel-grey mail shirt over a dark
+forest-green tunic, a dark green cloak pinned at one shoulder with a small
+gold brooch, a wide leather belt, dark trousers wrapped at the shins and
+leather boots. A conical steel helmet with a nose guard. In both hands a
+great two-handed axe: a long dark wooden haft and a broad bright steel
+crescent blade, held across the body, blade up and forward, ready to
+swing. Heavy, grounded stance, feet wide.
+
+Framing: full body, facing right, three-quarter view from slightly above,
+as the attached sprites. The figure fills a 32 x 32 pixel frame with about
+2 pixels free on each side; the whole axe stays inside the frame and must
+stay readable at that size.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 12 colours. Steel grey, dark forest green,
+straw blond, dark wood and warm skin; no red and no light blue, which the
+game keeps for its own markings. A small soft grey oval shadow under the
+feet. Flat magenta (#FF00FF) background. One sprite only, no text, no
+frame, no extra poses.
+```
+
+### 2. Track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same Varangian guardsman: a weathered, fierce face with pale
+eyes looking right, a long straw-blond beard in a braid, a conical steel
+helmet with a nose guard, steel-grey mail at the shoulders under a dark
+green cloak with a small gold brooch. The broad steel crescent of his axe
+head rises behind one shoulder at the right edge.
+
+Framing: head and shoulders, facing right in three-quarter view, the face
+in the middle of the frame and large, the helmet's point touching the top
+edge, cropped at the shoulders, as the attached portraits.
 
 Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
 anti-aliasing, no gradients, no dithering, a dark outline, at most 14
