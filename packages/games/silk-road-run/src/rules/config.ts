@@ -506,20 +506,18 @@ export const ABILITY = {
     rider: 0 as number,
   },
   /**
-   * Trample (owner, 2026-10-27; roster.md), the Juggernaut's: a walk of
-   * 1 to `steps` spaces straight out in any of the six directions, stopped
-   * by yurts and the map's edge, a plain walk with no one in the way. The
-   * units in its way, ally or enemy, a row of them together, each take its
-   * power and are Pushed back ahead of it, one space for each it walks; a
-   * row that can't be Pushed stops it behind.
+   * Trample (owner, 2026-10-28; balance.md, "Trample as a stomp"), the
+   * Juggernaut's, `mode: 'stomp'`: it steps 1 space or stays (`step: 1`;
+   * 0, in place only), and every unit next to it, ally or enemy, takes its
+   * power and is Pushed 1 away.
    *
-   * `mode` (an experiment, 2026-10-28; balance.md): `'charge'`, the walk
-   * as built; `'stomp'`, the Juggernaut stays where it is, and every unit
-   * next to it, ally or enemy, takes its power and is Pushed 1 away.
-   * `step` (with the stomp): 1, it may step 1 space first, as Skirmish's,
-   * and stomps where it lands; 0, in place only.
+   * `mode: 'charge'`, as first built (2026-10-27; roster.md): a walk of 1
+   * to `steps` spaces straight out in any of the six directions, stopped
+   * by yurts and the map's edge. The units in its way, ally or enemy, a row
+   * of them together, each take its power and are Pushed back ahead of it,
+   * one space for each it walks; a row that can't be Pushed stops it behind.
    */
-  trample: {steps: 2 as number, mode: 'charge' as 'charge' | 'stomp', step: 0 as number},
+  trample: {steps: 2 as number, mode: 'stomp' as 'charge' | 'stomp', step: 1 as number},
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within

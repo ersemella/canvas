@@ -1715,6 +1715,17 @@ describe('the Juggernaut', () => {
   };
   const trample = (s: FightState, e: Unit, hex: Hex) =>
     applyTurn(s, e, {action: {ability: 'trample', target: {hex}}});
+  /** `fn` with Trample switched to `patch` (the charge, as first built, or the stomp in place). */
+  const withTrample = (patch: Partial<typeof ABILITY.trample>, fn: () => void) => {
+    const was = {...ABILITY.trample};
+    Object.assign(ABILITY.trample, patch);
+    try {
+      fn();
+    } finally {
+      Object.assign(ABILITY.trample, was);
+    }
+  };
+  const charge = {mode: 'charge'} as const;
 
   it('has speed 1, defence 3, power 2, and is Unstoppable from the start', () => {
     const {s, e} = ready({});
@@ -1734,70 +1745,73 @@ describe('the Juggernaut', () => {
     expect(ABILITIES.grapple.targets(s, mapOf(s), g, g.hex!)).toEqual([]);
   });
 
-  it('Trample with no one in the way is a walk of up to 2 in a straight line', () => {
-    const {s, e} = ready({});
-    const targets = ABILITIES.trample.targets(s, mapOf(s), e, c);
-    expect(targets).toHaveLength(12);
-    trample(s, e, along(c, 0, 2));
-    expect(e.hex).toEqual(along(c, 0, 2));
-    expect(e.hp).toBe(e.maxHp);
-  });
+  it('the charge (first built): trample with no one in the way is a walk of up to 2 in a straight line', () =>
+    withTrample(charge, () => {
+      const {s, e} = ready({});
+      const targets = ABILITIES.trample.targets(s, mapOf(s), e, c);
+      expect(targets).toHaveLength(12);
+      trample(s, e, along(c, 0, 2));
+      expect(e.hex).toEqual(along(c, 0, 2));
+      expect(e.hp).toBe(e.maxHp);
+    }));
 
-  it('Trample hits every unit lined up in its way and Pushes the whole row back', () => {
-    // Direction 2, the longest line from the middle: room for the row to go.
-    const {s, e} = ready({'e-bokh': along(c, 2, 1), 'p-bokh': along(c, 2, 2)});
-    trample(s, e, along(c, 2, 2));
-    // Each takes the Juggernaut's power once, its ally too, and is Pushed 2.
-    for (const [id, n] of [
-      ['e-bokh', 3],
-      ['p-bokh', 4],
-    ] as const) {
-      expect(unit(s, id).hex).toEqual(along(c, 2, n));
-      expect(unit(s, id).hp).toBe(unit(s, id).maxHp - 2);
-    }
-    expect(e.hex).toEqual(along(c, 2, 2));
-  });
+  it('the charge (first built): trample hits every unit lined up in its way and Pushes the whole row back', () =>
+    withTrample(charge, () => {
+      // Direction 2, the longest line from the middle: room for the row to go.
+      const {s, e} = ready({'e-bokh': along(c, 2, 1), 'p-bokh': along(c, 2, 2)});
+      trample(s, e, along(c, 2, 2));
+      // Each takes the Juggernaut's power once, its ally too, and is Pushed 2.
+      for (const [id, n] of [
+        ['e-bokh', 3],
+        ['p-bokh', 4],
+      ] as const) {
+        expect(unit(s, id).hex).toEqual(along(c, 2, n));
+        expect(unit(s, id).hp).toBe(unit(s, id).maxHp - 2);
+      }
+      expect(e.hex).toEqual(along(c, 2, 2));
+    }));
 
-  it('a row that can’t be Pushed stops the Juggernaut behind it, hit all the same', () => {
-    const {s, e} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 2)});
-    unit(s, 'e-storm').passives = ['rooted'];
-    trample(s, e, along(c, 0, 2));
-    expect(e.hex).toEqual(c);
-    expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 1));
-    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
-    expect(unit(s, 'e-storm').hp).toBe(unit(s, 'e-storm').maxHp - 2);
-  });
+  it('the charge (first built): a row that can’t be Pushed stops the Juggernaut behind it, hit all the same', () =>
+    withTrample(charge, () => {
+      const {s, e} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 2)});
+      unit(s, 'e-storm').passives = ['rooted'];
+      trample(s, e, along(c, 0, 2));
+      expect(e.hex).toEqual(c);
+      expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 1));
+      expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+      expect(unit(s, 'e-storm').hp).toBe(unit(s, 'e-storm').maxHp - 2);
+    }));
 
-  it('a row Pushed after a step only once it is reached: a unit 2 away is Pushed 1', () => {
-    const {s, e} = ready({'e-bokh': along(c, 0, 2)});
-    trample(s, e, along(c, 0, 2));
-    expect(e.hex).toEqual(along(c, 0, 2));
-    expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 3));
-    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
-  });
+  it('the charge (first built): a row Pushed after a step only once it is reached: a unit 2 away is Pushed 1', () =>
+    withTrample(charge, () => {
+      const {s, e} = ready({'e-bokh': along(c, 0, 2)});
+      trample(s, e, along(c, 0, 2));
+      expect(e.hex).toEqual(along(c, 0, 2));
+      expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 3));
+      expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+    }));
 
-  it('walks through hail, hit but not held, and a unit Pushed into hail is held', () => {
-    const {s, e} = ready({'e-storm': at(0, 0), 'e-bokh': along(c, 0, 2)});
-    s.effects.push({kind: 'hail', hex: along(c, 0, 1), source: 'e-storm', turns: 2});
-    s.effects.push({kind: 'hail', hex: along(c, 0, 3), source: 'e-storm', turns: 2});
-    // An ordinary walk goes on through hail too.
-    const past = hexNeighbor(along(c, 0, 1), 1);
-    expect(invalidPath(s, mapOf(s), e, [along(c, 0, 1), past])).toBeNull();
-    expect(reachableHexes(s, mapOf(s), e).some((r) => hexEquals(r.hex, past))).toBe(true);
-    trample(s, e, along(c, 0, 2));
-    expect(e.hex).toEqual(along(c, 0, 2));
-    expect(e.statuses).toEqual([]);
-    // The hail's sting on entering: the Storm Caller's power.
-    expect(e.hp).toBe(e.maxHp - unit(s, 'e-storm').power);
-    const b = unit(s, 'e-bokh');
-    expect(b.hex).toEqual(along(c, 0, 3));
-    expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
-  });
+  it('the charge (first built): walks through hail, hit but not held, and a unit Pushed into hail is held', () =>
+    withTrample(charge, () => {
+      const {s, e} = ready({'e-storm': at(0, 0), 'e-bokh': along(c, 0, 2)});
+      s.effects.push({kind: 'hail', hex: along(c, 0, 1), source: 'e-storm', turns: 2});
+      s.effects.push({kind: 'hail', hex: along(c, 0, 3), source: 'e-storm', turns: 2});
+      // An ordinary walk goes on through hail too.
+      const past = hexNeighbor(along(c, 0, 1), 1);
+      expect(invalidPath(s, mapOf(s), e, [along(c, 0, 1), past])).toBeNull();
+      expect(reachableHexes(s, mapOf(s), e).some((r) => hexEquals(r.hex, past))).toBe(true);
+      trample(s, e, along(c, 0, 2));
+      expect(e.hex).toEqual(along(c, 0, 2));
+      expect(e.statuses).toEqual([]);
+      // The hail's sting on entering: the Storm Caller's power.
+      expect(e.hp).toBe(e.maxHp - unit(s, 'e-storm').power);
+      const b = unit(s, 'e-bokh');
+      expect(b.hex).toEqual(along(c, 0, 3));
+      expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
+    }));
 
-  it('Trample as a stomp stays put, hits every unit next to it and Pushes each 1 away', () => {
-    const was = {...ABILITY.trample};
-    Object.assign(ABILITY.trample, {mode: 'stomp'});
-    try {
+  it('Trample stomped in place hits every unit next to it and Pushes each 1 away', () =>
+    withTrample({step: 0}, () => {
       // An ally caught too; a unit behind another isn't Pushed into it.
       const {s, e} = ready({
         'e-bokh': along(c, 0, 1),
@@ -1816,52 +1830,46 @@ describe('the Juggernaut', () => {
       expect(unit(s, 'e-storm').alive).toBe(false);
       expect(unit(s, 'p-storm').hp).toBe(unit(s, 'p-storm').maxHp);
       expect(unit(s, 'p-storm').hex).toEqual(along(c, 2, 2));
-    } finally {
-      Object.assign(ABILITY.trample, was);
-    }
-  });
+    }));
 
   it('a stomped unit with no room behind it is hit but stays', () => {
-    const was = {...ABILITY.trample};
-    Object.assign(ABILITY.trample, {mode: 'stomp'});
-    try {
-      const {s, e} = ready({'e-bokh': along(c, 0, 1), 'p-bokh': along(c, 0, 2)});
-      trample(s, e, c);
-      expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 1));
-      expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
-      expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
-      // The AI plays it too.
-      e.controller = 'ai';
-      e.slot = s.currentSlot;
-      s.awaiting = e.id;
-      applyTurn(s, e, chooseAiTurn(s, e));
-    } finally {
-      Object.assign(ABILITY.trample, was);
-    }
+    const {s, e} = ready({'e-bokh': along(c, 0, 1), 'p-bokh': along(c, 0, 2)});
+    trample(s, e, c);
+    expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 1));
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+    expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
+    // The AI plays it too.
+    e.controller = 'ai';
+    e.slot = s.currentSlot;
+    s.awaiting = e.id;
+    applyTurn(s, e, chooseAiTurn(s, e));
   });
 
-  it('a stomp with a step steps 1 first, or stays, and stomps where it lands', () => {
-    const was = {...ABILITY.trample};
-    Object.assign(ABILITY.trample, {mode: 'stomp', step: 1});
-    try {
-      const {s, e} = ready({'e-bokh': along(c, 0, 2)});
-      // In place, or onto any of the six free spaces next to it.
-      expect(ABILITIES.trample.targets(s, mapOf(s), e, c)).toHaveLength(7);
-      const to = along(c, 0, 1);
-      applyTurn(s, e, {action: {ability: 'trample', target: {hex: to, to}}});
-      expect(e.hex).toEqual(to);
-      expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 3));
-      expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
-      // The AI steps in to stomp an enemy 2 away.
-      const t = ready({'e-bokh': along(c, 2, 2), 'e-storm': at(8, 8)});
-      t.e.controller = 'ai';
-      const turn = chooseAiTurn(t.s, t.e);
-      expect(turn.action.ability).toBe('trample');
-      applyTurn(t.s, t.e, turn);
-      expect(unit(t.s, 'e-bokh').hp).toBe(unit(t.s, 'e-bokh').maxHp - 2);
-    } finally {
-      Object.assign(ABILITY.trample, was);
-    }
+  it('Trample steps 1 first, or stays, and stomps where it lands', () => {
+    const {s, e} = ready({'e-bokh': along(c, 0, 2)});
+    // In place, or onto any of the six free spaces next to it.
+    expect(ABILITIES.trample.targets(s, mapOf(s), e, c)).toHaveLength(7);
+    const to = along(c, 0, 1);
+    trample(s, e, to);
+    expect(e.hex).toEqual(to);
+    expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 3));
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+    // The AI steps in to stomp an enemy 2 away.
+    const t = ready({'e-bokh': along(c, 2, 2), 'e-storm': at(8, 8)});
+    t.e.controller = 'ai';
+    const turn = chooseAiTurn(t.s, t.e);
+    expect(turn.action.ability).toBe('trample');
+    applyTurn(t.s, t.e, turn);
+    expect(unit(t.s, 'e-bokh').hp).toBe(unit(t.s, 'e-bokh').maxHp - 2);
+  });
+
+  it('a Juggernaut felled by hail on its step doesn’t stomp', () => {
+    const {s, e} = ready({'e-storm': at(0, 0), 'e-bokh': along(c, 0, 2)});
+    s.effects.push({kind: 'hail', hex: along(c, 0, 1), source: 'e-storm', turns: 2});
+    e.hp = 1;
+    trample(s, e, along(c, 0, 1));
+    expect(e.alive).toBe(false);
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp);
   });
 
   it('the AI weighs Trample and plays a legal turn with it', () => {

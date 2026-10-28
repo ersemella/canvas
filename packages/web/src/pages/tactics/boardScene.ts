@@ -237,6 +237,14 @@ export function buildScene(input: SceneInput): BoardScene {
         const u = unitAt(fight, h);
         return !u || u.id === acting.id;
       };
+      // A stomp's spaces: the free ones it may step to, as a move's, its own
+      // too, and the step to the one hovered or picked drawn.
+      if (def.stepsTo && from) {
+        for (const t of targets)
+          if (!unitAt(fight, t.hex!) || hexEquals(t.hex!, from)) show(t.hex, 'landing');
+        const to = target?.hex ?? (hovered && targets.find((t) => hexEquals(t.hex!, hovered))?.hex);
+        if (to && !hexEquals(to, from)) out.step = [from, to];
+      }
       // Cleave's line: every unit each swing would hit, not just the
       // space it's aimed at, so a swing that catches several shows them all.
       if (def.area && from)

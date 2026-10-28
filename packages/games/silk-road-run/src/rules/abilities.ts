@@ -57,7 +57,7 @@ import {
   walk,
 } from './resolve';
 import type {Ctx} from './resolve';
-import {blocks, tileAt} from './map';
+import {blocks, onMap, tileAt} from './map';
 import {aimSlot, chargeOf, simultaneousOrder} from './track';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
@@ -93,7 +93,7 @@ export interface AbilityDef {
    * rather than around its target (Cleave's line): the page and the
    * playback light these up in place of `radius`'s.
    */
-  area?(map: MapData, from: Hex, target: Hex): Hex[];
+  area?: ((map: MapData, from: Hex, target: Hex) => Hex[]) | undefined;
   /** One line for the side panel, with its damage (the user's power). Range is left out. */
   summary(user: Unit): string;
   /**
@@ -129,6 +129,12 @@ export interface AbilityDef {
    * page aims one and then the other, and the AI tries each pair once.
    */
   pairs?: boolean;
+  /**
+   * Its target is a space its user may step to first, or its own, and the
+   * ability resolves from there (Trample's stomp): the page shows the free
+   * ones as a move's, and draws the step.
+   */
+  stepsTo?: boolean;
   /** With `pairs`, which unit is aimed first matters (Omen as `bracket`). */
   ordered?: boolean;
   /**
@@ -1102,12 +1108,17 @@ function stompCaught(state: FightState, from: Hex): Unit[] {
 }
 
 /**
- * Trample as a stomp (`ABILITY.trample.mode: 'stomp'`, an experiment): the
- * Juggernaut stays where it is; each unit next to it, ally or enemy, takes
- * its power, then those still standing are Pushed 1 away from it, one at a
- * time in the order for cards placed at the same moment, as Rebound's.
+ * Trample as a stomp (owner, 2026-10-28; balance.md): the Juggernaut steps
+ * onto `to`, a free space next to it (`ABILITY.trample.step`), or stays;
+ * each unit next to it there, ally or enemy, takes its power, then those
+ * still standing are Pushed 1 away from it, one at a time in the order for
+ * cards placed at the same moment, as Rebound's.
  */
-function stomp(ctx: Ctx, user: Unit): void {
+function stomp(ctx: Ctx, user: Unit, to: Hex): void {
+  if (!hexEquals(to, user.hex!)) {
+    enterHex(ctx, user, to);
+    log(ctx, `${unitName(user)} steps.`);
+  }
   // Felled by hail on its step: no stomp.
   if (!user.alive || !user.hex) return;
   log(ctx, `${unitName(user)} stomps.`);
@@ -1121,7 +1132,8 @@ function stomp(ctx: Ctx, user: Unit): void {
 }
 
 /**
- * Trample (owner, 2026-10-27; roster.md): the Juggernaut walks 1 to
+ * Trample as first built, a charge (`ABILITY.trample.mode: 'charge'`;
+ * owner, 2026-10-27; roster.md): the Juggernaut walks 1 to
  * `ABILITY.trample.steps` spaces straight out in any of the six
  * directions, stopped by yurts and the map's edge; with no one in its way
  * it is just that walk. The units in its way, ally or enemy, the whole row
@@ -1136,20 +1148,26 @@ const trample: AbilityDef = {
   id: 'trample',
   name: 'Trample',
   kind: 'attack',
-  // A stomp with a step first, as Skirmish's (`ABILITY.trample.step`).
-  get steps() {
-    return ABILITY.trample.mode === 'stomp' && ABILITY.trample.step > 0;
+  // The stomp: aimed at where it stomps from, the ring around it lit.
+  get stepsTo() {
+    return ABILITY.trample.mode === 'stomp';
+  },
+  get area() {
+    return ABILITY.trample.mode === 'stomp'
+      ? (map: MapData, from: Hex, target: Hex) =>
+          hexNeighbors(target).filter((h) => onMap(map, h) && !hexEquals(h, from))
+      : undefined;
   },
   summary: () =>
     ABILITY.trample.mode === 'stomp'
-      ? `${ABILITY.trample.step > 0 ? 'Step 1 space, or stay. ' : ''}Every unit next to you is hit and Pushed 1 away.`
+      ? `${ABILITY.trample.step > 0 ? 'Step 1 space or stay, then stomp: e' : 'E'}very unit next to you is hit and Pushed 1 away.`
       : `Walk up to ${ABILITY.trample.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
   targets(state, map, user, from) {
     if (ABILITY.trample.mode === 'stomp') {
       if (ABILITY.trample.step <= 0 || isImmobilized(user)) return [{hex: from}];
       const out: ActionTarget[] = [{hex: from}];
       for (const to of sortByHex(stepsFrom(map, from), (h) => h))
-        if (!unitAt(state, to)) out.push({hex: to, to});
+        if (!unitAt(state, to)) out.push({hex: to});
       return out;
     }
     if (isImmobilized(user)) return [];
@@ -1159,7 +1177,7 @@ const trample: AbilityDef = {
     return sortByHex(out, (t) => t.hex!);
   },
   resolve(ctx, user, target) {
-    if (ABILITY.trample.mode === 'stomp') return stomp(ctx, user);
+    if (ABILITY.trample.mode === 'stomp') return stomp(ctx, user, target.hex!);
     const dir = hexDirectionTo(user.hex!, target.hex!)!;
     log(ctx, `${unitName(user)} tramples.`);
     const struck = new Set<string>();
