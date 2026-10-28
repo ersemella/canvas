@@ -3957,6 +3957,66 @@ only before); the Barbarian's Reave replaced by Axe Throw (any unit
 within 3 in line, over everything, hit and Pushed 1, no pickup); Cleave's
 Delay 6 (8 before).
 
+### All twelve heroes, after the owner's changes (2026-10-28)
+
+Asked for: "All twelve heroes" again, on the owner's changes of later
+2026-10-28 (Charge carrying a row, Axe Throw in place of Reave, Cleave's
+Delay 6). `experiments/roster-twelve.mjs` unchanged, 400 fights each
+(about ±2.5 points), the same seeds; rows with none of the three changed
+heroes repeat the first run exactly.
+
+Party against party (the second side's wins; before in brackets):
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| China | 49.8% (57.5%) | | |
+| Persia | 66.9% (66.9%) | 52.5% (49.8%) | |
+| **Byzantium** | **31.3%** (8.6%) | **26.8%** (9.8%) | **37.5%** (24.8%) |
+
+| Tank seat of | Steppe | China | Persia | Byzantium |
+|---|---:|---:|---:|---:|
+| Grappler | | 57.4% | 42.9% | 80.5% |
+| Vanguard | 49% | | 53% | 78.3% |
+| Juggernaut | 62.8% | 51.8% | | 77.9% |
+| Cataphract | 36.8% | 35.6% | 47% | |
+
+| Damage seat of | Steppe | China | Persia | Byzantium |
+|---|---:|---:|---:|---:|
+| Outrider | | 49.8% | 45.2% | 41.8% |
+| Duelist | 53% | | 41.6% | 40.8% |
+| Ranger | 50.5% | 44.3% | | 36.3% |
+| Barbarian | 50% | 49.1% | 35.9% | |
+
+| Support seat of | Steppe | China | Persia | Byzantium |
+|---|---:|---:|---:|---:|
+| Storm Caller | | 42.5% | 43.2% | 46.3% |
+| Alchemist | 60% | | 52.4% | 46.6% |
+| Magus | 50.8% | 40.5% | | 49.5% |
+| Priest | 50.3% | 42.3% | 50.9% | |
+
+Means (in the nine seats of the other regions; its side's wins with each
+of the nine others in its seat): the Vanguard 51.5% and 49.9% (60.3%,
+61.5%), the Barbarian 44.9% and 55.9% (34%, 42.4%), the Cataphract 33.3%
+and 28.8% (32.4%, 36.9%); the other nine within 2 points of before.
+
+- **The Vanguard is even**: 49–53% in the Steppe's and Persia's tank
+  seats, any other tank in China's 52–57%; China against the Steppe
+  49.8%. Its 78% in Byzantium's seat is the Cataphract's weakness.
+- **The Barbarian is fixed**: 36–50% in the damage seats (26–39%), and
+  the other damage heroes in his seat 36–42%, so Axe Throw is now the
+  better hero in Byzantium's party. Weak only in Persia's seat (35.9%),
+  where the Ranger outranges him.
+- **The Cataphract is still far too weak**: 36–47% in the tank seats
+  (20–47%), any other tank in its seat **78–81%**. Carrying a row helped
+  most in China (20.3% to 35.6%), little elsewhere. Byzantium's party is
+  27–38% because of it alone.
+- Unfinished fights up to 10% with the Storm Caller or the Magus in
+  Byzantium's party (two heroes that never hit beside the Priest).
+
+Not changed. Next, the Cataphract's buffs measured: Charge Delaying what
+it hits (the Vanguard's kind of control, which tanks win by), a walk of
+1, power 2.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
