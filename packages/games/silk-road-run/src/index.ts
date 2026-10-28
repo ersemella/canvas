@@ -67,6 +67,7 @@ export {
   ABILITIES,
   abilitiesOf,
   arrowLanes,
+  axeLines,
   longshotLanes,
   longshotLines,
   unusableReason,

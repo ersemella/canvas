@@ -1521,22 +1521,59 @@ describe('the Barbarian', () => {
     for (let i = 0; i < n; i++) h = hexNeighbor(h, dir);
     return h;
   };
-  /** A fight with no yurts and the Barbarian at `c` to act. */
-  const ready = (placements: Record<string, Hex>, who = 'p-varangian') => {
+  /**
+   * A fight with no yurts and the Barbarian at `c` to act; with `reave`,
+   * carrying Reave in place of Axe Throw, as first built.
+   */
+  const ready = (placements: Record<string, Hex>, who = 'p-varangian', reave = true) => {
     const s = setup({[who]: c, ...placements}, party);
     s.tiles = {};
     const b = unit(s, who);
+    if (reave) b.loadout = {abilities: ['reave', 'hold']};
     b.slot = s.currentSlot;
     s.awaiting = b.id;
     return {s, b};
   };
+  const throwing = (placements: Record<string, Hex>, who = 'p-varangian') =>
+    ready(placements, who, false);
   const hp = (s: FightState, id: string) => unit(s, id).maxHp - unit(s, id).hp;
 
-  it('has speed 1, power 3, defence 2, Reave, and is on the roster', () => {
-    const {b} = ready({});
+  it('has speed 1, power 3, defence 2, Axe Throw, and is on the roster', () => {
+    const {b} = throwing({});
     expect([b.speed, b.power, b.defence, b.maxHp]).toEqual([1, 3, 2, healthOf(2)]);
-    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['reave', 'hold']);
+    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['axeThrow', 'hold']);
     expect(ROSTER).toContain('varangian');
+  });
+
+  it('Axe Throw reaches any unit within 3 on its six lines, over yurts and units in between', () => {
+    const {s, b} = throwing({
+      'p-modao': along(c, 3, 1),
+      'e-modao': along(c, 3, 3),
+      'e-mangudai': along(c, 3, 4),
+    });
+    s.tiles = {[hexKey(along(c, 3, 2))]: 'obstacle'};
+    const targets = ABILITIES.axeThrow.targets(s, mapOf(s), b, b.hex!);
+    // The ally next to it and the enemy past it and the yurts; not the one 4 away.
+    expect(targets).toEqual([{hex: along(c, 3, 1)}, {hex: along(c, 3, 3)}]);
+  });
+
+  it('Axe Throw hits for its power and Pushes the unit 1 away, and the axe needs no fetching', () => {
+    const {s, b} = throwing({'p-modao': along(c, 3, 1), 'e-modao': along(c, 3, 3)});
+    applyTurn(s, b, {action: {ability: 'axeThrow', target: {hex: along(c, 3, 3)}}});
+    expect([hp(s, 'p-modao'), hp(s, 'e-modao')]).toEqual([0, 3]);
+    expect(unit(s, 'e-modao').hex).toEqual(along(c, 3, 4));
+    expect(b.axe).toBeUndefined();
+    expect(unusableReason(b, ABILITIES.axeThrow)).toBeNull();
+  });
+
+  it('the AI throws its axe at an enemy in line, and counts it a threat down its lines', () => {
+    const {s, b} = throwing({'p-modao': along(c, 3, 3), 'p-mangudai': at(0, 8)}, 'e-varangian');
+    b.controller = 'ai';
+    const turn = chooseAiTurn(s, b);
+    expect(turn.action.ability).toBe('axeThrow');
+    const m = unit(s, 'p-modao');
+    const threat = threatsTo(s, mapOf(s), m).find((t) => t.enemyId === b.id)!;
+    expect(threatDamage([threat], s, m)).toBe(b.power);
   });
 
   it('Reave swipes three spaces next to it, hitting allies too, and keeps the axe', () => {
@@ -2301,18 +2338,36 @@ describe('the Cataphract', () => {
     expect(hexDistance(k2.hex!, end)).toBe(1);
   });
 
-  it('a second unit in the way stops the carried one: both are hit, neither Pushed', () => {
+  it('a second unit in the way joins the row: both hit once and carried on together', () => {
     const {s, k} = ready({'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 3)});
-    // Aimed at past one unit and up to the second, no farther.
-    expect(isTarget(s, k, along(c, dir, 3))).toBe(true);
-    expect(isTarget(s, k, along(c, dir, 4))).toBe(false);
-    charge(s, k, along(c, dir, 3));
+    // Aimed past both.
+    expect(isTarget(s, k, along(c, dir, 5))).toBe(true);
+    charge(s, k, along(c, dir, 4));
     const b = unit(s, 'e-bokh');
     const st = unit(s, 'e-storm');
-    expect(b.hex).toEqual(along(c, dir, 2));
-    expect(st.hex).toEqual(along(c, dir, 3));
+    expect(b.hex).toEqual(along(c, dir, 4));
+    expect(st.hex).toEqual(along(c, dir, 5));
     expect(b.hp).toBe(b.maxHp - k.power);
     expect(st.hp).toBe(st.maxHp - k.power);
+    expect(k.hex).toEqual(along(c, dir, 3));
+  });
+
+  it('a row of three is carried as far as there is room, yurts stopping it', () => {
+    const {s, k} = ready({
+      'e-bokh': along(c, dir, 1),
+      'e-storm': along(c, dir, 2),
+      'p-bokh': along(c, dir, 3),
+    });
+    s.tiles[hexKey(along(c, dir, 5))] = 'obstacle';
+    charge(s, k, along(c, dir, 4));
+    // One space of room before the yurts: the row moves 1, and stops.
+    expect(['e-bokh', 'e-storm', 'p-bokh'].map((id) => unit(s, id).hex)).toEqual([
+      along(c, dir, 2),
+      along(c, dir, 3),
+      along(c, dir, 4),
+    ]);
+    for (const id of ['e-bokh', 'e-storm', 'p-bokh'])
+      expect(unit(s, id).hp).toBe(unit(s, id).maxHp - k.power);
     expect(k.hex).toEqual(along(c, dir, 1));
   });
 
@@ -2326,7 +2381,9 @@ describe('the Cataphract', () => {
   it('a Rooted unit isn’t carried: hit, it stops the Cataphract behind it', () => {
     const {s, k} = ready({'e-bokh': along(c, dir, 2)});
     unit(s, 'e-bokh').passives = ['rooted'];
-    charge(s, k, along(c, dir, 4));
+    // Nothing past it to aim at: the charge would end the same.
+    expect(isTarget(s, k, along(c, dir, 3))).toBe(false);
+    charge(s, k, along(c, dir, 2));
     expect(unit(s, 'e-bokh').hex).toEqual(along(c, dir, 2));
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - k.power);
     expect(k.hex).toEqual(along(c, dir, 1));
@@ -2353,6 +2410,7 @@ describe('the Cataphract', () => {
     for (const [placements, n] of [
       [{'e-bokh': along(c, dir, 2)}, 4],
       [{'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 3)}, 3],
+      [{'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 3)}, 5],
       [{'e-bokh': along(c, dir, 1)}, 2],
       [{}, 3],
     ] as const) {
@@ -2993,15 +3051,15 @@ describe('the Vanguard and the Alchemist', () => {
     expect(slow.slot).toBe(7);
   });
 
-  it('Cleave Delays every unit it leaves standing 8 slots, and not the ones it kills', () => {
+  it('Cleave Delays every unit it leaves standing 6 slots, and not the ones it kills', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
-    expect(ABILITY.cleave.delay).toBe(8);
+    expect(ABILITY.cleave.delay).toBe(6);
     const m = unit(s, 'e-mangudai');
     const before = m.slot!;
     applyTurn(s, unit(s, 'p-modao'), {action: {ability: 'cleave', target: {hex: at(2, 3)}}});
     expect(m.alive).toBe(true);
-    expect(m.slot).toBeGreaterThanOrEqual(before + 8);
-    expect(s.log.some((l) => l.text.endsWith('is Delayed 8.'))).toBe(true);
+    expect(m.slot).toBeGreaterThanOrEqual(before + 6);
+    expect(s.log.some((l) => l.text.endsWith('is Delayed 6.'))).toBe(true);
     const k = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);
     unit(k, 'e-mangudai').hp = 1;
     applyTurn(k, unit(k, 'p-modao'), {action: {ability: 'cleave', target: {hex: at(2, 3)}}});

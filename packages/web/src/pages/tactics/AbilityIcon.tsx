@@ -327,6 +327,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // A great axe in flight, turned on its side, with lines behind it.
+  axeThrow: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '.......###..',
+      '......#####.',
+      '=.....#####.',
+      '......+###..',
+      '==.====+....',
+      '......+.....',
+      '=.....+.....',
+      '............',
+      '............',
+      '............',
+      '............',
+    ],
+  },
   // A knotted club, its studs the accent.
   smash: {
     kind: 'attack',

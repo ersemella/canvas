@@ -70,7 +70,7 @@ function turnValue(u: Unit): number {
   return u.hero === CAMEL ? AI.perCamelHex : Math.max(1, u.power);
 }
 
-/** A unit whose attack reaches beyond its neighbours (Snap Shot, Longshot, Hail, Gale, Volley, Cleave). */
+/** A unit whose attack reaches beyond its neighbours (Snap Shot, Longshot, Axe Throw, Hail, Gale, Volley, Cleave). */
 function attacksFromAfar(u: Unit): boolean {
   const kit = kitOf(u);
   return (
@@ -221,6 +221,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if ((has('snapShot') || has('longshot') || has('boulder')) && inLine) return true;
     // Reave's throw: a line of `throwRange`.
     if (has('reave') && inLine && d <= ABILITY.reave.throwRange) return true;
+    // Axe Throw: a line of `range`, over everything.
+    if (has('axeThrow') && inLine && d <= ABILITY.axeThrow.range) return true;
     // Cleave: any space of its lines.
     if (
       has('cleave') &&
@@ -451,9 +453,6 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (ability === 'cleave' && ABILITY.cleave.delay > 0 && damage < u.hp)
         value += sided(u, (turnValue(u) * ABILITY.cleave.delay) / cardCost(u));
     }
-    // A thrown axe leaves it disarmed until it walks back (`AI.axeOut`).
-    if (ability === 'reave' && reaveThrows(unit.hex!, target!.hex!))
-      value -= AI.axeOut * AI.perHexFromEnemy;
     // A thrown axe leaves it disarmed until it walks back (`AI.axeOut`).
     if (ability === 'reave' && reaveThrows(unit.hex!, target!.hex!))
       value -= AI.axeOut * AI.perHexFromEnemy;
@@ -1101,6 +1100,9 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
   const dr = at.r - target.hex!.r;
   const steps = Math.min(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr));
   if (steps > 0) return steps;
+  // Axe Throw: nothing blocks it, but it reaches only `range`.
+  if (kitOf(me).includes('axeThrow'))
+    return Math.max(0, hexDistance(at, target.hex!) - ABILITY.axeThrow.range);
   // Longshot: nothing in the way blocks it, or nothing next to it.
   if (kitOf(me).includes('longshot')) {
     if (!ABILITY.longshot.first) return 0;

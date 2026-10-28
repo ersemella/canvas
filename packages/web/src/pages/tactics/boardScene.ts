@@ -18,6 +18,7 @@ import {
   ABILITIES,
   ABILITY,
   arrowLanes,
+  axeLines,
   longshotLanes,
   longshotLines,
   mapOf,
@@ -172,20 +173,21 @@ export function buildScene(input: SceneInput): BoardScene {
         })),
       };
     // Longshot as first built (`first` off): its six lines, to the map's edge through everything, an arrow
-    // to each unit it may hit along them.
-    if (from && ability === 'longshot' && !ABILITY.longshot.first)
+    // to each unit it may hit along them; Axe Throw's the same, to its range.
+    if (from && ((ability === 'longshot' && !ABILITY.longshot.first) || ability === 'axeThrow'))
       out.lanes = {
         from,
-        lanes: longshotLines(mapOf(fight), from).flatMap(
-          (line): NonNullable<BoardScene['lanes']>['lanes'] => {
-            const hits = targets.filter((t) => t.hex && line.some((h) => hexEquals(h, t.hex!)));
-            if (!hits.length) return [{hexes: line, target: false}];
-            return hits.map((t) => ({
-              hexes: line.slice(0, line.findIndex((h) => hexEquals(h, t.hex!)) + 1),
-              target: true,
-            }));
-          }
-        ),
+        lanes: (ability === 'axeThrow'
+          ? axeLines(mapOf(fight), from)
+          : longshotLines(mapOf(fight), from)
+        ).flatMap((line): NonNullable<BoardScene['lanes']>['lanes'] => {
+          const hits = targets.filter((t) => t.hex && line.some((h) => hexEquals(h, t.hex!)));
+          if (!hits.length) return [{hexes: line, target: false}];
+          return hits.map((t) => ({
+            hexes: line.slice(0, line.findIndex((h) => hexEquals(h, t.hex!)) + 1),
+            target: true,
+          }));
+        }),
       };
     // Who the turn Pushes or Pulls (Shove, Haul, Gale), and where to; a
     // second pick's move (Throw's landing) is drawn as `step` instead.

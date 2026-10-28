@@ -241,9 +241,12 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * The Barbarian (owner, 2026-10-28; roster.md): Byzantium's damage hero,
    * a Varangian guardsman with a great axe, slow and hard-hitting. Speed 1,
-   * defence 2 (health 6) and power 3 are the owner's. Reave (owner,
-   * 2026-10-28; `ABILITY.reave`): the axe swung through three spaces next
-   * to it, or thrown down a line of three, left lying where it lands.
+   * defence 2 (health 6) and power 3 are the owner's. Axe Throw (owner,
+   * later 2026-10-28; `ABILITY.axeThrow`): any unit within 3 in a straight
+   * line, over whatever is in between, hit and Pushed 1; in place of Reave
+   * (the axe swung through three spaces next to it, or thrown down a line
+   * of three and left lying where it lands; balance.md, "All twelve
+   * heroes": 26–39% in the damage seats), kept for measuring.
    */
   varangian: {
     name: 'Barbarian',
@@ -251,7 +254,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 1,
     defence: 2,
     power: 3,
-    abilities: ['reave', 'hold'],
+    abilities: ['axeThrow', 'hold'],
   },
   /**
    * The Priest (owner, 2026-10-28; roster.md): Byzantium's support, a
@@ -271,8 +274,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Cataphract (owner, 2026-10-28; roster.md): Byzantium's tank,
    * armoured heavy cavalry. Speed 2, defence 3 (health 8) and power 1 are
    * the owner's. It has no walk of its own (`moveCap` 0): it moves only by
-   * Charge, any distance straight, carrying the first unit in its way
-   * ahead of it (`charge` in abilities.ts).
+   * Charge, any distance straight, carrying every unit in its way ahead of
+   * it while there is room (`charge` in abilities.ts; owner, later
+   * 2026-10-28: the first unit only before, a second it met stopping it).
    */
   cataphract: {
     name: 'Cataphract',
@@ -525,9 +529,11 @@ export const ABILITY = {
    * of 2 six ways"; from 2026-10-26 a line up or down or a cone of 3 to one
    * side; board.ts, `cleaveAreas`); each unit in it,
    * ally or enemy, takes the Vanguard's power, and each
-   * one still standing is Delayed `delay` slots (keywords.md 17.3): 8
-   * (owner, 2026-10-26; 5 from 2026-10-25; balance.md, "The Vanguard's buffs other than speed": China
-   * against the Steppe 52.5% with Swift Strike's Haste 3).
+   * one still standing is Delayed `delay` slots (keywords.md 17.3): 6
+   * (owner, 2026-10-28; balance.md, "All twelve heroes": at 8 the Vanguard
+   * won 54–79% in the tank seats); 8 from 2026-10-26 (5 from 2026-10-25;
+   * balance.md, "The Vanguard's buffs other than speed": China against the
+   * Steppe 52.5% with Swift Strike's Haste 3).
    */
   /**
    * `shape`, a switch for measuring (board.ts, `cleaveAreas`): `built` as
@@ -535,7 +541,7 @@ export const ABILITY = {
    * side, six ways; `cones`, two diagonal neighbours and the space straight
    * across beyond them, six ways.
    */
-  cleave: {reach: 2, delay: 8 as number, shape: 'built' as 'built' | 'arcs' | 'cones'},
+  cleave: {reach: 2, delay: 6 as number, shape: 'built' as 'built' | 'arcs' | 'cones'},
   /**
    * Elixir (owner, 2026-10-25; as built since 2026-10-27, as measured in
    * balance.md, "The Elixir on one unit within 2, Empower 2 and Weaken
@@ -679,6 +685,14 @@ export const ABILITY = {
    * Barbarian enters a space on or next to it, it can only move and Hold.
    */
   reave: {throwRange: 3 as number},
+  /**
+   * Axe Throw (owner, 2026-10-28; roster.md), the Barbarian's: any unit on
+   * one of the six straight lines from him, 1 to `range` (3) spaces away,
+   * ally or enemy, the camel too; the axe flies over yurts and units in
+   * between, hits the unit for his power and Pushes it `push` (1) away
+   * (17.4). The axe comes back: nothing to pick up.
+   */
+  axeThrow: {range: 3 as number, push: 1 as number},
   /**
    * Gore (owner, 2026-10-28), the Ox King's: Stomp's charge
    * (`stomp.mode: 'charge'`, Trample as first built), a walk of up to

@@ -3951,6 +3951,12 @@ the Cataphract and the Barbarian measured with buffs (a walk for the
 Cataphract, or Charge hitting harder; speed 2 for the Barbarian); then
 the Vanguard looked at, the one hero over the band.
 
+**Changed** (the owner, later 2026-10-28), not yet measured: Charge
+carries every unit in its way as a row while there is room (the first
+only before); the Barbarian's Reave replaced by Axe Throw (any unit
+within 3 in line, over everything, hit and Pushed 1, no pickup); Cleave's
+Delay 6 (8 before).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

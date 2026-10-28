@@ -1391,15 +1391,16 @@ function pushable(u: Unit): boolean {
 
 /**
  * The spaces a Charge from `from` may be aimed at along `dir`: every one to
- * yurts or the map's edge, past the first unit in the way and up to the
- * second's, aimed at for the collision; farther ones would do the same.
+ * yurts or the map's edge, up to the first unit that can't be Pushed
+ * (Rooted or Unstoppable), which stops any row it is in; farther ones would
+ * do the same.
  */
 function chargeLane(state: FightState, map: MapData, from: Hex, dir: number): Hex[] {
   const out: Hex[] = [];
-  let units = 0;
   for (const h of laneFrom(map, from, dir)) {
     out.push(h);
-    if (unitAt(state, h) && ++units === 2) break;
+    const u = unitAt(state, h);
+    if (u && !pushable(u)) break;
   }
   return out;
 }
@@ -1418,49 +1419,44 @@ export function ridePlan(
   target: Hex
 ): {caught: Unit[]; end: Hex} {
   const dir = hexDirectionTo(from, target)!;
-  const caught: Unit[] = [];
+  const caught = new Set<Unit>();
+  // A copy of the units' spaces, the row Pushed along in it.
+  const view: FightState = {
+    ...state,
+    units: state.units.map((u) => (u.hex ? {...u, hex: {...u.hex}} : u)),
+  };
+  const real = (u: Unit) => state.units.find((o) => o.id === u.id)!;
   let at = from;
-  // The unit carried ahead, and its space.
-  let ahead: Unit | undefined;
-  let aheadAt = from;
-  for (;;) {
+  while (!hexEquals(at, target)) {
     const next = hexNeighbor(at, dir);
-    if (!ahead) {
-      if (hexEquals(at, target) || !walkable(map, next)) break;
-      ahead = unitAt(state, next);
-      if (ahead) {
-        caught.push(ahead);
-        aheadAt = next;
-        continue;
-      }
-    } else {
-      if (hexEquals(aheadAt, target)) break;
-      const past = hexNeighbor(aheadAt, dir);
-      const behind = unitAt(state, past);
-      if (behind) {
-        caught.push(behind);
+    if (!walkable(map, next)) break;
+    const row = rowFrom(view, next, dir);
+    if (row.length > 0) {
+      if (hexEquals(next, target)) {
+        caught.add(real(row[0]!));
         break;
       }
-      if (!walkable(map, past) || !pushable(ahead)) break;
-      aheadAt = past;
+      for (const u of row) caught.add(real(u));
+      if (!rowGives(view, map, row, dir)) break;
+      for (const u of row) u.hex = hexNeighbor(u.hex!, dir);
     }
     at = next;
     if (stopsWalk(state, user, at)) break;
   }
-  return {caught, end: at};
+  return {caught: [...caught], end: at};
 }
 
 /**
  * Charge (owner, 2026-10-28; roster.md), the Cataphract's, and its only
  * way to move: it rides any number of spaces straight out along one of the
  * six directions, as the Outrider does, stopped by yurts and the map's
- * edge, and by hail, which ends a walk where it enters. The first unit in
- * its way, ally or enemy, takes its power and is Pushed on ahead of it, a
- * space at a time, to the space it was aimed at, the Cataphract riding in
- * behind. Yurts or the map's edge stop the Push short; so does a second
- * unit in the way, which takes the Cataphract's power too and isn't
- * Pushed. A Rooted or Unstoppable unit isn't Pushed at all. Either way the
- * Cataphract stops behind the unit it carries; if that unit falls, the way
+ * edge, and by hail, which ends a walk where it enters. Each unit in its
+ * way, ally or enemy, takes its power once and is Pushed on ahead of it, a
+ * whole row together (owner, later 2026-10-28; the first unit only
+ * before, a second it met stopping both), until the nearest reaches the
+ * space it was aimed at, the Cataphract riding in behind. Yurts or the
+ * map's edge past the row, or a Rooted or Unstoppable unit in it, stop the
+ * row and the Cataphract behind it; if the units in its way fall, the way
  * is clear and it rides on.
  */
 const charge: AbilityDef = {
@@ -1469,7 +1465,7 @@ const charge: AbilityDef = {
   kind: 'attack',
   stepsTo: true,
   summary: () =>
-    'Ride any distance straight. The first unit in the way is hit and carried ahead to the space aimed at; a second unit it meets is hit too, and both stop.',
+    'Ride any distance straight. Every unit in the way is hit and carried ahead, as far as there is room, the nearest to the space aimed at.',
   targets(state, map, user, from) {
     if (isImmobilized(user)) return [];
     const out: ActionTarget[] = [];
@@ -1492,21 +1488,22 @@ const charge: AbilityDef = {
     while (user.alive && user.hex && !hexEquals(user.hex, goal)) {
       const next = hexNeighbor(user.hex, dir);
       if (!walkable(ctx.map, next)) break;
-      const u = unitAt(ctx.state, next);
-      if (u) {
-        strike(u);
-        // Still standing: carried on ahead, unless it has reached the goal.
-        if (u.alive && u.hex) {
-          if (hexEquals(u.hex, goal)) break;
-          const past = hexNeighbor(u.hex, dir);
-          const behind = unitAt(ctx.state, past);
-          if (behind) {
-            log(ctx, `${unitName(u)} is driven into ${unitName(behind)}.`);
-            strike(behind);
+      if (unitAt(ctx.state, next)) {
+        // The nearest carried to the space aimed at: no farther.
+        if (hexEquals(next, goal)) {
+          strike(unitAt(ctx.state, next)!);
+          break;
+        }
+        for (const u of rowFrom(ctx.state, next, dir)) strike(u);
+        if (!user.alive || !user.hex) break;
+        // Those still standing are Pushed, the farthest first, so each has room.
+        const row = rowFrom(ctx.state, next, dir);
+        if (row.length > 0) {
+          if (!rowGives(ctx.state, ctx.map, row, dir)) {
+            log(ctx, `${unitName(user)} is stopped.`);
             break;
           }
-          if (!walkable(ctx.map, past)) break;
-          displace(ctx, u, dir, 1, 'push');
+          for (const u of [...row].reverse()) displace(ctx, u, dir, 1, 'push');
         }
         if (!user.alive || !user.hex || unitAt(ctx.state, next)) break;
       }
@@ -1582,6 +1579,42 @@ const reave: AbilityDef = {
     const caught = area.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
     for (const u of caught) hit(ctx, user, u, 'The axe');
     if (throws) user.axe = {...target.hex!};
+  },
+};
+
+/**
+ * Axe Throw's six lines from `from`: 1 to `range` spaces straight out, to
+ * the map's edge, through units and yurts, since the axe flies over them.
+ */
+export function axeLines(map: MapData, from: Hex): Hex[][] {
+  return DIRECTIONS.map((dir) => lineFrom(map, from, dir).slice(0, ABILITY.axeThrow.range));
+}
+
+/**
+ * Axe Throw (owner, 2026-10-28; roster.md), the Barbarian's in place of
+ * Reave: any unit on one of his six lines within `range`, ally or enemy,
+ * the camel too, the axe flying over whatever is in between; it hits for
+ * his power and Pushes the unit `push` away. Nothing to pick up.
+ */
+const axeThrow: AbilityDef = {
+  id: 'axeThrow',
+  name: 'Axe Throw',
+  kind: 'attack',
+  summary: () =>
+    `Throw your axe at any unit within ${ABILITY.axeThrow.range} in a straight line, over anything in between. It is hit and Pushed ${ABILITY.axeThrow.push}.`,
+  targetsUnit: true,
+  targets(state, map, _user, from) {
+    const out: ActionTarget[] = [];
+    for (const l of axeLines(map, from))
+      for (const h of l) if (unitAt(state, h)) out.push({hex: h});
+    return out;
+  },
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} throws its axe.`);
+    hit(ctx, user, u, 'The axe');
+    if (u.alive && u.hex)
+      displace(ctx, u, directionTo(user.hex!, u.hex), ABILITY.axeThrow.push, 'push');
   },
 };
 
@@ -1781,6 +1814,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   longshot,
   blessing,
   reave,
+  axeThrow,
   smash,
   boulder,
   gore,

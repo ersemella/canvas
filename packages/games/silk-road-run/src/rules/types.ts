@@ -54,6 +54,7 @@ export type AbilityId =
   | 'longshot'
   | 'blessing'
   | 'reave'
+  | 'axeThrow'
   | 'charge'
   // The One-Eyed Giant's (owner, 2026-10-28).
   | 'smash'

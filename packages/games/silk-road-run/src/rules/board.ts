@@ -182,10 +182,10 @@ export function hasRoomForAbility(kit: AbilityId[]): boolean {
   return abilityCount(kit) < RULES.maxAbilities;
 }
 
-/** A unit with a ranged attack (Snap Shot, Longshot). */
+/** A unit with a ranged attack (Snap Shot, Longshot, Axe Throw). */
 export function isRanged(unit: Unit): boolean {
   const kit = kitOf(unit);
-  return kit.includes('snapShot') || kit.includes('longshot');
+  return kit.includes('snapShot') || kit.includes('longshot') || kit.includes('axeThrow');
 }
 
 export function hostile(a: Unit, b: Unit): boolean {

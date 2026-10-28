@@ -65,7 +65,7 @@ the kits.**
   Push, Pull, Move, Immobilized, Unstoppable, Stunned, Burn, Shield,
   Pierce, Empower, Weaken, Armour, Immortal ([keywords.md](keywords.md));
   Immobilized, Stunned, Move, Push, Pull, Empower, Weaken and Delay
-  (Cleave's Delay 8, owner, 2026-10-26; 5 before) are built.
+  (Cleave's Delay 6, owner, 2026-10-28; 8 from 2026-10-26, 5 before) are built.
 - **The kits** ([roster.md](roster.md)): Snap Shot (the Bow until 2026-10-27), unchanged in shape; Hail,
   one space exactly 2 away (a ring; within 3 until 2026-10-24) until the
   Storm Caller's next turn, Immobilizing

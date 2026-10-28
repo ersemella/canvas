@@ -40,11 +40,11 @@ const LORE: Partial<Record<HeroId, string>> = {
   archer:
     'A foot archer of the royal army, whose heavy arrows punch through armour. The Ranger hits harder than anyone, and the first unit in its line staggers, losing time, but it is frail and must be kept out of reach.',
   varangian:
-    'A guardsman from the far north, sworn to the emperor and paid in gold. The Barbarian is slow, but its great axe hits harder than anyone’s, swung through every foe at its side or hurled through a line of them, though then it must fetch the axe back.',
+    'A guardsman from the far north, sworn to the emperor and paid in gold. The Barbarian is slow, but its great axe hits harder than anyone’s, hurled over everything in between at a foe up to three spaces away in a straight line, knocking it back.',
   priest:
     'A priest of the imperial city, who walks with the army to tend the wounded. The Priest strikes no blow of his own, but his blessing mends an ally within reach, himself too, and what it cannot mend, and a little more, becomes a ward that holds until it is broken.',
   cataphract:
-    'An armoured horseman of the imperial cavalry, rider and horse alike clad in iron. The Cataphract never walks: it charges, as far as it likes in a straight line, carrying the first foe in its way before it and smashing it into whoever stands behind.',
+    'An armoured horseman of the imperial cavalry, rider and horse alike clad in iron. The Cataphract never walks: it charges, as far as it likes in a straight line, carrying everyone in its way before it, as far as there is room.',
   magus:
     'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but reads an omen for one unit: an ally acts at once, an enemy must wait until the Magus has acted again, while its own course is fixed and cannot be hurried or held back.',
 };

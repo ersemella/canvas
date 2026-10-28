@@ -183,7 +183,7 @@ describe('Devoted', () => {
     expect(lady.slot).toBe(before - DEVOTED.haste);
   });
 
-  it('the Vanguard’s Cleave through both: Hastened 3 each, then Delayed 8, a net Delay of 5', () => {
+  it('the Vanguard’s Cleave through both: Hastened 3 each, then Delayed 6, a net Delay of 3', () => {
     const s = setup({'p-modao': centre, 'e-oxKing': out(0, 1), 'e-fanLady': out(0, 2)});
     const king = unit(s, 'e-oxKing');
     const lady = unit(s, 'e-fanLady');

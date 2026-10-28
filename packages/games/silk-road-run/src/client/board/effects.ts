@@ -1,7 +1,7 @@
 /**
  * Abilities' effects as a turn plays back (Sunlight's beam, Gale's gusts,
  * a Volley's arrows falling, Shove's blow, Haul's rope, Cleave's swing,
- * Swift Strike's thrust, Reave's swing and throw, Elixir's flask, Omen's clock,
+ * Swift Strike's thrust, Reave's swing and throw, Axe Throw's axe, Elixir's flask, Omen's clock,
  * Blessing's halo, Stomp's quake, Bite's jaws, Smash's club, the Boulder's
  * flight; Snap Shot's and Feigned Retreat's arrows are drawn by the
  * playback, Hail's stones and Grapple's fists by the board).
@@ -46,6 +46,7 @@ export const ABILITY_EFFECT: Partial<
   haul: drawHaul,
   cleave: drawCleave,
   reave: drawReave,
+  axeThrow: drawAxeThrow,
   swiftStrike: drawSwiftStrike,
   elixir: drawElixir,
   omen: drawOmen,
@@ -390,9 +391,20 @@ function drawCleave(ctx: CanvasRenderingContext2D, {from, area, k}: EffectFrame)
  * spinning down its line to where it lands, slashing each space it passes.
  */
 function drawReave(ctx: CanvasRenderingContext2D, f: EffectFrame): void {
+  if (!f.from) return;
+  if (hexDistance(f.from, f.target) <= 1) return drawCleave(ctx, f);
+  drawFlyingAxe(ctx, f);
+}
+
+/** Axe Throw: Reave's spinning axe, flown over everything to the one unit it hits. */
+function drawAxeThrow(ctx: CanvasRenderingContext2D, f: EffectFrame): void {
+  drawFlyingAxe(ctx, {...f, area: [f.target]});
+}
+
+/** The axe spinning from `from` to `target`, slashing each space of `area` as it passes. */
+function drawFlyingAxe(ctx: CanvasRenderingContext2D, f: EffectFrame): void {
   const {from, target, area, k} = f;
   if (!from) return;
-  if (hexDistance(from, target) <= 1) return drawCleave(ctx, f);
   const fade = fadeOut(k, 0.75);
   if (fade <= 0) return;
   const a = center(from);

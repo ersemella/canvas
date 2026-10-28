@@ -87,6 +87,14 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           if (!board.has(k)) break;
           mark(hexes, k, power);
         }
+    // Axe Throw: its six lines to `range`, over units and yurts.
+    if (has('axeThrow'))
+      for (const [dq, dr] of AXIAL)
+        for (let i = 1; i <= ABILITY.axeThrow.range; i++) {
+          const k = id(fq + dq * i, fr + dr * i);
+          if (!board.has(k)) break;
+          mark(hexes, k, power);
+        }
     // A charge (Stomp's first build, Gore): the spaces it walks into, `steps` each way.
     const charge = (steps: number) => {
       if (isImmobilized(e)) return;
@@ -108,20 +116,16 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     } else if (has('stomp')) charge(ABILITY.stomp.steps);
     // Gore: Stomp's charge, the Ox King's.
     if (has('gore')) charge(ABILITY.gore.steps);
-    // Charge: each of its lanes to yurts or the map's edge, the first unit
-    // in it carried and a second one met, so past one unit and up to a
-    // second.
+    // Charge: each of its lanes to yurts or the map's edge, every unit in
+    // it carried along as a row.
     if (has('charge') && !isImmobilized(e))
-      for (const [dq, dr] of AXIAL) {
-        let passed = 0;
+      for (const [dq, dr] of AXIAL)
         for (let i = 1; ; i++) {
           const k = id(fq + dq * i, fr + dr * i);
           const tile = board.get(k);
           if (tile === undefined || blocks(tile)) break;
           mark(hexes, k, power);
-          if (occupied.has(k) && ++passed === 2) break;
         }
-      }
     // Cleave: its line of `reach` each way.
     if (has('cleave'))
       for (const area of cleaveAreas(map, e.hex))
