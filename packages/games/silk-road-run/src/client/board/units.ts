@@ -88,9 +88,10 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   alchemist: {src: alchemistPortrait, faceX: 19},
   youxia: {src: youxiaPortrait, faceX: 19},
   magus: {src: magusPortrait, faceX: 20},
-  // Redrawn by hand around the elephant's face (owner, 2026-10-28), the
-  // rider's saffron turban (apart from the Magus's) behind its ear.
-  mahout: {src: mahoutPortrait, faceX: 24},
+  // Redrawn by hand (owner, 2026-10-28): the rider, his turban saffron apart
+  // from the Magus's, and his elephant's head share the card; faceX between
+  // their eyes, so a card behind shows both.
+  mahout: {src: mahoutPortrait, faceX: 19},
   archer: {src: archerPortrait, faceX: 18},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
