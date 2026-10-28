@@ -88,7 +88,7 @@ export function buildScene(input: SceneInput): BoardScene {
     turnArrow: !phone,
     preview: [],
     previewSlot: preview?.slot ?? null,
-    previewMoves: preview?.moves ?? {},
+    aimSlot: preview?.aimSlot ?? null,
     previewBumps: preview?.bumped ?? {},
   };
   if (!fight) return out;

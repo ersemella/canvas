@@ -7,8 +7,7 @@ import {hexEquals} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {isImmobilized, isStunned} from './board';
 import {scoreOptions, simulate} from './ai';
-import {aimSlot, traceTrack} from './track';
-import type {TrackStep} from './track';
+import {aimSlot} from './track';
 import type {AbilityId, FightState, TurnInput, Unit} from './types';
 
 export interface UnitChange {
@@ -33,24 +32,6 @@ export interface TurnPreview {
   aimSlot: number | null;
   /** Other cards the acting card's landing moves on (3.3: a faster card takes a slower one's slot), by unit id. */
   bumped: Record<string, number>;
-  /**
-   * Every card the turn moves, by unit id, leg by leg as it goes: the
-   * acting card's from `aimSlot`, the others' from the slot they hold now.
-   * The track draws each leg by its cause, so a card both Hastened and
-   * bumped on shows both.
-   */
-  moves: Record<string, CardLeg[]>;
-}
-
-/**
- * One leg of a card's move on the track: `earlier` or `later` where the
- * turn sends it (a Haste, a Delay, Omen, a swap), `bumped` on past taken
- * slots (3.3: it yields, or a faster card takes its slot).
- */
-export interface CardLeg {
-  from: number;
-  to: number;
-  cause: 'earlier' | 'later' | 'bumped';
 }
 
 function statusWords(before: Unit, after: Unit): string[] {
@@ -70,64 +51,15 @@ export function previewTurn(
   unitId: string,
   input: TurnInput
 ): TurnPreview | null {
-  const {result: after, steps} = traceTrack(() => simulate(state, unitId, input));
+  const after = simulate(state, unitId, input);
   if (!after) return null;
   const unit = after.units.find((u) => u.id === unitId)!;
-  const aim = unit.alive ? aimSlot(after, unit, after.currentSlot, input.action.ability) : null;
   return {
     changes: diff(state, after),
     slot: unit.slot,
-    aimSlot: aim,
+    aimSlot: unit.alive ? aimSlot(after, unit, after.currentSlot, input.action.ability) : null,
     bumped: bumpedCards(state, after, unitId),
-    moves: cardMoves(state, after, unitId, aim, steps),
   };
-}
-
-/**
- * Each card's legs (`TurnPreview.moves`) from the traced steps: the acting
- * card's from the slot its cost aims at, consecutive legs of one cause
- * joined. Should the steps not lead from where a card was to where it
- * lands, it is drawn as one leg.
- */
-function cardMoves(
-  before: FightState,
-  after: FightState,
-  actor: string,
-  aim: number | null,
-  steps: Map<string, TrackStep[]>
-): Record<string, CardLeg[]> {
-  const out: Record<string, CardLeg[]> = {};
-  for (const a of after.units) {
-    const b = before.units.find((u) => u.id === a.id)!;
-    if (!a.alive || !b.alive || a.slot === null || b.slot === null) continue;
-    let traced = steps.get(a.id) ?? [];
-    let start = b.slot;
-    if (a.id === actor) {
-      if (aim === null) continue;
-      // The turn's own placement leaves from the slot it aims at (`aimSlot`), not the current one.
-      const i = traced.findIndex((s) => s.cause === 'placed' && s.from === b.slot);
-      if (i < 0) continue;
-      traced = [{...traced[i]!, from: aim}, ...traced.slice(i + 1)];
-      start = aim;
-    }
-    const legs: CardLeg[] = [];
-    for (const s of traced) {
-      if (s.from === s.to) continue;
-      const cause = s.cause === 'bumped' ? 'bumped' : s.to < s.from ? 'earlier' : 'later';
-      const last = legs[legs.length - 1];
-      if (last && last.cause === cause && last.to === s.from) last.to = s.to;
-      else legs.push({from: s.from, to: s.to, cause});
-    }
-    const joined =
-      legs.length > 0 &&
-      legs[0]!.from === start &&
-      legs[legs.length - 1]!.to === a.slot &&
-      legs.every((l, k) => k === 0 || legs[k - 1]!.to === l.from);
-    if (joined) out[a.id] = legs;
-    else if (start !== a.slot)
-      out[a.id] = [{from: start, to: a.slot, cause: a.slot < start ? 'earlier' : 'later'}];
-  }
-  return out;
 }
 
 function bumpedCards(before: FightState, after: FightState, actor: string): Record<string, number> {
