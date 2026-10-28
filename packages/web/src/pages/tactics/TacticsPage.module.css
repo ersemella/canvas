@@ -885,25 +885,99 @@
 }
 
 /*
- * The caravanserai: a hero standing, a row like the start menu's, with a
- * tile for each stat to raise; the picked one raised lapis.
+ * The caravanserai: Humphrey's health, then a panel for each choice, its
+ * title and a line on it over its choices and what the pick does; Set out
+ * kept on screen at the bottom.
  */
+.camelHealth {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.camelHealthBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.camelHealthHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+/* Health in the track's green, a heal's gain lighter behind it. */
+.healthBar {
+  position: relative;
+  display: block;
+  height: 8px;
+  background: var(--c-dusk0);
+  box-shadow: inset var(--px) var(--px) 0 var(--c-ink);
+}
+.healthBar > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--c-jade);
+}
+.healthBar > i.healthBarGain {
+  background: var(--c-goldLight);
+}
+.provisionSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--c-dusk0);
+  clip-path: var(--notch);
+}
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: bold;
+}
+.sectionDone {
+  padding: 0 5px;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--c-ink);
+  background: var(--c-goldLight);
+}
+.sectionLead,
+.sectionLabel {
+  font-size: 15px;
+  color: var(--c-dusk4);
+}
+/* What the pick does: dim while there's none, bright once there is. */
+.sectionRule {
+  min-height: 1.5em;
+  font-size: 15px;
+  color: var(--c-dusk4);
+}
+.sectionRuleDone {
+  color: var(--c-goldLight);
+}
+/* A hero standing, a row: who, then its three stats in even columns; the camel's heal spans them. */
+.provisionList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 .provisionHero {
   display: grid;
-  grid-template-columns: 64px 1fr;
-  grid-template-areas:
-    'portrait name'
-    'portrait stats';
+  grid-template-columns: 150px 1fr;
   align-items: center;
   gap: 6px 12px;
-  padding: 10px;
-  background: var(--c-dusk0);
 }
-.provisionHero > .heroPickPortrait {
-  grid-area: portrait;
+.provisionWho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 .provisionStats {
-  grid-area: stats;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
@@ -916,7 +990,7 @@
   padding: 6px 8px;
   color: var(--c-ivory);
   font: inherit;
-  font-size: 13px;
+  font-size: 15px;
   text-align: left;
   cursor: pointer;
   border: var(--px) solid var(--c-ink);
@@ -925,7 +999,24 @@
     inset var(--px) var(--px) 0 var(--c-dusk2),
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
 }
-/* A stat already at the most it can reach. */
+/* A tap leaves a phone "hovering": only a real pointer lights a choice not yet picked. */
+@media (hover: hover) {
+  .provisionStat:not(.heroPicked):hover:not(:disabled) {
+    background: var(--c-dusk2);
+  }
+}
+.provisionHeal {
+  grid-column: 1 / -1;
+  align-items: stretch;
+}
+.provisionLabel {
+  font-size: 13px;
+  color: var(--c-sandDark);
+}
+.provisionValue {
+  font-size: 18px;
+}
+/* A stat already at the most it can reach, or the camel at full health. */
 .provisionStat:disabled {
   cursor: default;
   opacity: 0.45;
@@ -939,20 +1030,24 @@
   box-shadow:
     inset var(--px) var(--px) 0 var(--c-lapis),
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-ink);
+  border-color: var(--c-lapisLight);
+}
+.heroPicked .provisionLabel {
+  color: var(--c-lapisLight);
 }
 .provisionStat b {
   color: var(--c-goldLight);
 }
 .provisionNote {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--c-sandDark);
 }
 .heroPicked .provisionNote {
   color: var(--c-lapisLight);
 }
 /*
- * Between regions: three passives side by side, each a tile like a stat's,
- * its name over its rule; then who carries it, a row of heroes.
+ * The passives side by side, each a tile like a stat's, its name over its
+ * rule; then who carries it, a row of heroes.
  */
 .passiveOffer {
   display: grid;
@@ -978,7 +1073,9 @@
   gap: 10px;
   padding: 6px 12px 6px 6px;
 }
+/* A small portrait on the track card's ground, facing left as the party does. */
 .carrierPortrait {
+  flex: none;
   display: grid;
   place-items: center;
   width: 40px;
@@ -993,12 +1090,20 @@
   image-rendering: pixelated;
   transform: scaleX(-1);
 }
-/* A phone: the stats under the portrait and name, full width; the passives stacked. */
+/* Set out, kept at the screen's bottom while the choices scroll under it. */
+.setOutBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin: 0 -8px -8px;
+  padding: 10px 8px 8px;
+  background: var(--c-dusk1);
+  box-shadow: 0 calc(-1 * var(--px)) 0 var(--c-ink);
+}
+/* A phone: a hero's name over its stats, full width; the passives stacked. */
 @media (max-width: 560px) {
   .provisionHero {
-    grid-template-areas:
-      'portrait name'
-      'stats stats';
+    grid-template-columns: 1fr;
   }
   .passiveOffer {
     grid-template-columns: 1fr;
