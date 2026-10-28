@@ -1074,13 +1074,12 @@ export function stompPlan(
   from: Hex,
   target: Hex
 ): {caught: Unit[]; end: Hex} {
-  // A stomp's target is where it steps, an enemy there shoved on ahead,
-  // next to it again; where it can't be, the stomp is in place.
+  // A stomp's target is where it lands, an enemy there shoved on ahead,
+  // next to it again.
   if (ABILITY.stomp.mode === 'stomp') {
-    const end = stompFrom(state, map, from, target);
-    const shoved = hexEquals(end, from) ? undefined : unitAt(state, target);
-    const caught = stompCaught(state, end).filter((u) => !hexEquals(u.hex!, from));
-    return {caught: shoved ? [...caught, shoved] : caught, end};
+    const shoved = hexEquals(target, from) ? undefined : unitAt(state, target);
+    const caught = stompCaught(state, target).filter((u) => !hexEquals(u.hex!, from));
+    return {caught: shoved ? [...caught, shoved] : caught, end: target};
   }
   const dir = hexDirectionTo(from, target)!;
   const caught = new Set<Unit>();
@@ -1114,15 +1113,6 @@ function shoveGives(state: FightState, map: MapData, u: Unit, dir: number): bool
   );
 }
 
-/**
- * Where a stomp aimed at `to` lands: `to`, or `from` when an enemy there
- * can't be shoved on (`shoveGives`).
- */
-function stompFrom(state: FightState, map: MapData, from: Hex, to: Hex): Hex {
-  const u = unitAt(state, to);
-  return !u || shoveGives(state, map, u, hexDirectionTo(from, to)!) ? to : from;
-}
-
 /** The units next to `from`: those a stomp catches. */
 function stompCaught(state: FightState, from: Hex): Unit[] {
   return hexNeighbors(from)
@@ -1133,10 +1123,11 @@ function stompCaught(state: FightState, from: Hex): Unit[] {
 /**
  * Stomp (owner, 2026-10-28; balance.md; Trample until renamed that day): the Juggernaut steps
  * onto `to`, a space next to it (`ABILITY.stomp.step`), or stays. An
- * enemy on `to` is first Pushed 1 on along the step; if it can't be (a
- * unit or yurts past it, the map's edge, Rooted or Unstoppable), the
- * Juggernaut stomps where it stands. Each unit next to it then, ally or
- * enemy, the shoved one too, takes its power, and those still standing
+ * enemy on `to` is first Pushed 1 on along the step; one that can't be (a
+ * unit or yurts past it, the map's edge, Rooted or Unstoppable) isn't a
+ * target, so the stomp never lands where it started unless aimed there.
+ * Each unit next to where it lands, ally or enemy, the shoved one too,
+ * takes its power, and those still standing
  * are Pushed 1 away from it, one at a time in the order for cards placed
  * at the same moment, as Rebound's.
  */
@@ -1144,17 +1135,14 @@ function resolveStomp(ctx: Ctx, user: Unit, to: Hex): void {
   const from = user.hex!;
   if (!hexEquals(to, from)) {
     const u = unitAt(ctx.state, to);
-    if (!u || shoveGives(ctx.state, ctx.map, u, hexDirectionTo(from, to)!)) {
-      if (u) {
-        log(ctx, `${unitName(user)} shoves ${unitName(u)} aside.`);
-        displace(ctx, u, hexDirectionTo(from, to)!, 1, 'push');
-      }
-      // Pushed into hail and felled, or Rebounding: step only onto free ground.
-      if (!unitAt(ctx.state, to)) {
-        enterHex(ctx, user, to);
-        log(ctx, `${unitName(user)} steps.`);
-      }
+    if (u) {
+      log(ctx, `${unitName(user)} shoves ${unitName(u)} aside.`);
+      displace(ctx, u, hexDirectionTo(from, to)!, 1, 'push');
     }
+    // Still held (its target checked, so not as aimed): no step, no stomp.
+    if (unitAt(ctx.state, to)) return;
+    enterHex(ctx, user, to);
+    log(ctx, `${unitName(user)} steps.`);
   }
   // Felled by hail on its step: no stomp.
   if (!user.alive || !user.hex) return;
@@ -1203,10 +1191,11 @@ const stomp: AbilityDef = {
     if (ABILITY.stomp.mode === 'stomp') {
       if (ABILITY.stomp.step <= 0 || isImmobilized(user)) return [{hex: from}];
       const out: ActionTarget[] = [{hex: from}];
-      // Free spaces, and enemies' (shoved on ahead, `stomp`).
+      // Free spaces, and enemies' that can be shoved on ahead (`resolveStomp`).
       for (const to of sortByHex(stepsFrom(map, from), (h) => h)) {
         const u = unitAt(state, to);
-        if (!u || hostile(u, user)) out.push({hex: to});
+        if (!u || (hostile(u, user) && shoveGives(state, map, u, hexDirectionTo(from, to)!)))
+          out.push({hex: to});
       }
       return out;
     }

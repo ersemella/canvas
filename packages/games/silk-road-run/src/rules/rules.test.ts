@@ -1879,17 +1879,25 @@ describe('the Juggernaut', () => {
     expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
   });
 
-  it('an enemy that can’t be shoved on means a stomp in place', () => {
-    const {s, e} = ready({'e-bokh': along(c, 0, 1), 'p-bokh': along(c, 0, 2)});
-    stomp(s, e, along(c, 0, 1));
-    expect(e.hex).toEqual(c);
-    const b = unit(s, 'e-bokh');
-    expect(b.hex).toEqual(along(c, 0, 1));
-    expect(b.hp).toBe(b.maxHp - 2);
-    expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
-    // The AI's guess agrees: in place, the enemy caught.
+  it('an enemy that can’t be shoved on isn’t a target', () => {
+    const {s, e} = ready({
+      'e-bokh': along(c, 0, 1),
+      'p-bokh': along(c, 0, 2),
+      'e-storm': along(c, 1, 1),
+    });
+    unit(s, 'e-storm').passives = ['rooted'];
+    const targets = ABILITIES.stomp.targets(s, mapOf(s), e, c);
+    // Blocked by an ally behind it, and Rooted: neither space offered.
+    for (const h of [along(c, 0, 1), along(c, 1, 1)])
+      expect(targets.some((t) => hexEquals(t.hex!, h))).toBe(false);
+    expect(() => stomp(s, e, along(c, 0, 1))).toThrow();
+  });
+
+  it('the AI’s guess at a stomp counts only the units next to where it lands', () => {
+    const {s} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 3, 1)});
     const plan = stompPlan(s, mapOf(s), c, along(c, 0, 1));
-    expect(plan.end).toEqual(c);
+    expect(plan.end).toEqual(along(c, 0, 1));
+    expect(plan.caught.map((u) => u.id)).toEqual(['e-bokh']);
   });
 
   it('a Juggernaut felled by hail on its step doesn’t stomp', () => {
