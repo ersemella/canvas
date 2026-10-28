@@ -3841,6 +3841,33 @@ stacking; 2; 3), the seats and 400 fights of "The Priest".
 
 **Built as measured**: off, the owner to choose.
 
+### A heal, its excess and 1 more as a lasting Shield (2026-10-28)
+
+Asked for (the owner): heal the Priest's power, the heal beyond the
+ally's missing health becoming Shield, and 1 more on top, all of it
+lasting until damage spends it. `experiments/priest-overheal-shield1.mjs`:
+`overheal`, `shield` 1, `lasts`, a unit holding at most `cap` (3, his
+power; 4, one Blessing on an unhurt ally; 8), the seats and 400 fights
+of "The Priest" (about ±2.5 points).
+
+| Blessing | Steppe | China | Persia |
+|---|---:|---:|---:|
+| *As first built: the excess Shield until the ally's turn* | *42.7%* | *22.8%* | *41.6%* |
+| *A lasting Shield of 3, no heal ("A lasting Shield")* | *44.6%* | *44.5%* | *45.9%* |
+| *Heal and a lasting Shield of 1 ("A heal and a lasting Shield of 1")* | *35.8%* | *39.0%* | *40.7%* |
+| **Heal, the excess and 1 more lasting, at most 3** | **50.3%** | **50.3%** | **52.0%** |
+| The same, at most 4 | 54.5% | 50.9% | 53.0% |
+| The same, at most 8 | 43.2% | 50.5% | 52.8% |
+
+- **Even in every seat at cap 3**, the first version of the Priest inside
+  the band everywhere: the heal mends the hurt, the overheal shields the
+  unhurt, and the 1 on top gives a badly hurt ally a Shield too.
+- Cap 4 is 1–4 points stronger, still in the band but at its top on the
+  Steppe; cap 8 lets the AI pile Shield on one unit, worse on the Steppe.
+
+**Built** (the owner, later 2026-10-28): `overheal`, `shield` 1, `lasts`,
+`cap` 3.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
