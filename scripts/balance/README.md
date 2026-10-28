@@ -121,8 +121,8 @@ guess at its risk at 0.5 and 0 (`AI.swapRisk`), against the built Elixir.
 
 `trample-stomp.mjs` (2026-10-28) measures Trample as a stomp, the
 Juggernaut staying put and every unit next to it hit and Pushed 1 away
-(`ABILITY.trample.mode: 'stomp'`), and after a step of 1 (`.step`),
-against the charge as built.
+(`ABILITY.trample.mode: 'stomp'`, now `ABILITY.stomp`, the ability renamed
+Stomp), and after a step of 1 (`.step`), against the charge as built.
 
 `elixir-immortal.mjs` (2026-10-27) measures the Elixir granting Immortal
 until the ally's next turn (`ABILITY.elixir.immortal`), on heroes and on

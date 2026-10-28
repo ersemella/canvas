@@ -14,10 +14,10 @@ const seat = (party, i, hero) => party.map((h, j) => (j === i ? hero : h));
 const novice = {depth: 1, work: 220};
 const expert = {depth: 4, work: 4 * 220};
 const modes = {
-  charge: (c) => Object.assign(c.ABILITY.trample, {mode: 'charge', step: 0}),
-  stomp: (c) => Object.assign(c.ABILITY.trample, {mode: 'stomp', step: 0}),
+  charge: (c) => Object.assign(c.ABILITY.stomp, {mode: 'charge', step: 0}),
+  stomp: (c) => Object.assign(c.ABILITY.stomp, {mode: 'stomp', step: 0}),
   // Added later that day: a step of 1 first, or none, then the stomp (`step`).
-  'step-stomp': (c) => Object.assign(c.ABILITY.trample, {mode: 'stomp', step: 1}),
+  'step-stomp': (c) => Object.assign(c.ABILITY.stomp, {mode: 'stomp', step: 1}),
 };
 export const experiments = {};
 for (const [m, patch] of Object.entries(modes)) {
