@@ -57,7 +57,9 @@ Each one adds 1 to one hero's speed, defence or power (9.1).
   Next stage, to the **caravanserai** screen (`Caravanserai.tsx` in the
   web package), where one surviving hero takes +1 speed, power or defence
   before Set out (`next` with its `provision`; the run keeps them in
-  `RunState.provisions`, each unit in `Unit.provisions`). **No stat goes
+  `RunState.provisions`, each unit in `Unit.provisions`), or the provision
+  heals Humphrey to full health instead (`next` with `heal`, owner,
+  2026-10-28; [camel.md](camel.md), 18.4). **No stat goes
   above 10** (owner, 2026-10-25; `RULES.statMax`): a stat at 10 can't
   take a provision, and with every stat of every hero standing at 10 there
   is none to take. Nothing happens

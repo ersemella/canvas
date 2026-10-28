@@ -103,9 +103,16 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
   from consumables (9.6), so route choices weigh the camel's health.)
 - **Built (2026-10-27, owner):** on Next stage the camel starts the new
   fight with the health it ended the last with (`stageFight` in
-  `src/rules/run.ts`), its statuses cleared; nothing restores it yet, so
-  20 health is the whole run's. The caravanserai says how much it goes on
-  with, and the start menu that its wounds stay with it. Not measured:
+  `src/rules/run.ts`), its statuses cleared. The caravanserai says how
+  much it goes on with, and the start menu that its wounds stay with it.
+- **Built (2026-10-28, owner):** at a caravanserai that earns a provision
+  (after a region's stages 1 and 2), the provision can **heal the camel
+  to full health in place of a stat** (`next` with `heal`; a tile beside
+  the heroes' stats, disabled at full health): one or the other, never
+  both. A hurt camel earns the provision even when every hero standing
+  has every stat at 10. The caravanserai between regions offers passives
+  only, no heal. Not measured: how much this lifts the run's win rate
+  (about 1% with carried health, 12.5% without). Not measured:
   the balance runner plays single fights, so how often a run now ends on
   the camel in a later stage is unknown.
 
@@ -171,8 +178,8 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
   (`sprites/camel-portrait.png`), both from ChatGPT images through
   `scripts/shrink-sprite.py` (the portrait without `--lines`, which muddied
   the face).
-- **Still to do:** recovering the camel's health between fights (18.4,
-  open question); the balance runner's camel only waits at its start
+- **Still to do:** the balance runner always takes a stat, never the
+  heal (18.4); the balance runner's camel only waits at its start
   unless the AI moves it. Its health carries over since 2026-10-27.
 
 ## Decision log

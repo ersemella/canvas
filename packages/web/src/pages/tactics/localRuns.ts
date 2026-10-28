@@ -148,8 +148,10 @@ export const localRuns = {
    * On to the next stage, with the provision the stage won earned
    * (`view.provision`) and the passive taken from its offer (`view.passives`).
    */
-  next: (runId: string, choices: {provision?: Provision; passive?: PassivePick} = {}) =>
-    act(runId, {type: 'next', ...choices}),
+  next: (
+    runId: string,
+    choices: {provision?: Provision; passive?: PassivePick; heal?: boolean} = {}
+  ) => act(runId, {type: 'next', ...choices}),
 };
 
 /**
