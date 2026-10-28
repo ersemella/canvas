@@ -9,7 +9,7 @@ sprite scaled up until this art exists.
 > The board sprites' and portraits' prompts, and the style they follow,
 > are in [art-direction.md](art-direction.md).
 
-**Proposed (2026-10-28).** The owner's first five tries (the Grappler,
+**Built (2026-10-28) for all twelve heroes.** The owner's first five tries (the Grappler,
 the Vanguard, a swordsman, the Storm Caller, the Barbarian) came out in
 five styles: a pixel grid from about 40 to about 250 art pixels across,
 outlines thick on one and missing on another, rim light on some, one on
@@ -494,6 +494,8 @@ way.
 
 **The Juggernaut, the Ranger and the Magus (2026-10-28)**, the same way,
 the Magus's astrolabe with four pixels of magenta left in its openwork
-given their neighbours' colour. The other three (the Cataphract, the
-Barbarian, the Priest) were made the same day; each is added the same
-way.
+given their neighbours' colour.
+
+**The Cataphract, the Barbarian and the Priest (2026-10-28)**, the same
+way: all twelve heroes have their art. A hero added later gets its own
+from the prompts above, the same way.
