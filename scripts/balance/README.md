@@ -167,7 +167,10 @@ over the spaces next to the Ranger) with Push 0, 1 and 2
 `priest.mjs` (2026-10-28) measures the Priest in the support seat of a
 Steppe, a China and a Persia mirror, as built and at power 2, without the
 overheal (`ABILITY.blessing.overheal`), with a Shield of 1 on top
-(`.shield`) and without Humphrey as a target (`.camel`).
+(`.shield`) and without Humphrey as a target (`.camel`); `priest-buffs.mjs` buffs for
+him (a smite on enemies, range, speed, defence, the AI's Shield worth);
+`priest-shield.mjs` Blessing as a Shield in place of the heal
+(`.heal` off), on one ally or every ally within a radius (`.shape: 'aura'`).
 
 ## Ability and stat ablation
 
