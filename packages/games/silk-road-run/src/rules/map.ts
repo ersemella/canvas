@@ -266,9 +266,10 @@ export const SALT: MapData = {
 
 /**
  * The Fairy Chimneys (owner, 2026-10-28), the Byzantine region's map:
- * Cappadocia's pale volcanic tuff, with no mountains and three **fairy
- * chimneys**, cones of tuff under basalt caps, as its obstacles, within 3
- * of the centre (cappadocia.md). The cliff with a rock-cut church designed
+ * Cappadocia's pale volcanic tuff, with no mountains and five or six
+ * **fairy chimneys** (owner, 2026-10-28; three before), cones of tuff
+ * under basalt caps, as its obstacles, within 3 of the centre, no two
+ * side by side (cappadocia.md). The cliff with a rock-cut church designed
  * with it waits: only the chimneys for now (owner, 2026-10-28).
  */
 export const TUFF: MapData = {
@@ -276,7 +277,7 @@ export const TUFF: MapData = {
   id: 'tuff',
   name: 'The Fairy Chimneys',
   mountains: 'never',
-  obstacles: {counts: [3], reach: 3},
+  obstacles: {counts: [5, 6], reach: 3},
 };
 
 export const MAPS: Record<string, MapData> = {
