@@ -41,8 +41,8 @@ The road is divided into four **regions**, one for each civilization the caravan
 |---|---|---|---|
 | 1 | **Steppe** | Mongol and Turkic | Horse Archer, Grappler (Mongol); Storm Caller (Turkic) |
 | 2 | **China** | Tang China | Vanguard, Swordsman, Alchemist |
-| 3 | **Persia** | Persia and Sogdiana, with the Abbasid *Nights*' folklore | Elephant Rider, Cataphract, Magus |
-| 4 | **Byzantine** | Byzantium | Barbarian (tank and support open, question 33 in [roster.md](roster.md)) |
+| 3 | **Persia** | Persia and Sogdiana, with the Abbasid *Nights*' folklore | Juggernaut (the Elephant Rider), Ranger, Magus (the Cataphract until 2026-10-28) |
+| 4 | **Byzantine** | Byzantium | Barbarian, Cataphract (tank, 2026-10-28), Priest (support, 2026-10-28) |
 
 - **The order is fixed,** the same in every run; route choices (the route map) vary within a region, not the order of regions.
 - **The road runs east to west** and ends in the Byzantine region, where the ruler at the road's end grants the Charter (15.2).

@@ -37,8 +37,9 @@ import {
   hasRoomForAbility,
   isImmobilized,
   disarmed,
+  lane,
 } from './board';
-import {ABILITIES, abilitiesOf, arrowLanes, stompPlan, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, arrowLanes, ridePlan, stompPlan, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {offeredTargets, onlyHold, targetAt} from './choices';
@@ -2209,6 +2210,177 @@ describe('the Ranger', () => {
   });
 });
 
+describe('the Cataphract', () => {
+  const party: HeroId[] = ['cataphract', 'bokh', 'storm'];
+  const c = at(4, 4);
+  /** `n` spaces from `h` along direction `dir`. */
+  const along = (h: Hex, dir: number, n: number): Hex => {
+    for (let i = 0; i < n; i++) h = hexNeighbor(h, dir);
+    return h;
+  };
+  /** A fight on open ground with the Cataphract at `c` to act, and units where `placements` puts them. */
+  const ready = (placements: Record<string, Hex>) => {
+    const s = setup({'p-cataphract': c, ...placements}, party);
+    s.tiles = Object.fromEntries(
+      Object.entries(s.tiles).map(([k, t]) => [k, t === 'obstacle' ? 'sand' : t])
+    );
+    const k = unit(s, 'p-cataphract');
+    k.slot = s.currentSlot;
+    s.awaiting = k.id;
+    return {s, k};
+  };
+  const charge = (s: FightState, k: Unit, hex: Hex) =>
+    applyTurn(s, k, {action: {ability: 'charge', target: {hex}}});
+  const isTarget = (s: FightState, k: Unit, h: Hex) =>
+    ABILITIES.charge.targets(s, mapOf(s), k, k.hex!).some((t) => hexEquals(t.hex!, h));
+  // Direction 2, the longest line from the middle.
+  const dir = 2;
+
+  it('has speed 2, defence 3, power 1, and no walk of its own: it moves by Charge', () => {
+    const {s, k} = ready({});
+    expect([k.speed, k.defence, k.power, k.maxHp]).toEqual([2, 3, 1, healthOf(3)]);
+    expect(HEROES.cataphract.abilities).toEqual(['charge', 'hold']);
+    expect(ROSTER).toContain('cataphract');
+    expect(canMove(s, mapOf(s), k)).toBe(false);
+    expect(tryTurn(s, k.id, {move: [hexNeighbor(c, 0)], action: {ability: 'hold'}})).toThrow(
+      RuleError
+    );
+  });
+
+  it('with no one in the way rides any distance straight, to a lane’s end', () => {
+    const {s, k} = ready({});
+    const end = lane(mapOf(s), c, dir).at(-1)!;
+    expect(hexDistance(c, end)).toBeGreaterThan(2);
+    // Every space of all six lanes.
+    const all = [0, 1, 2, 3, 4, 5].flatMap((d) => lane(mapOf(s), c, d));
+    expect(ABILITIES.charge.targets(s, mapOf(s), k, c)).toHaveLength(all.length);
+    charge(s, k, end);
+    expect(k.hex).toEqual(end);
+    expect(k.hp).toBe(k.maxHp);
+  });
+
+  it('hits the first unit in its way and carries it on to the space aimed at, riding in behind', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 2)});
+    charge(s, k, along(c, dir, 4));
+    const b = unit(s, 'e-bokh');
+    expect(b.hex).toEqual(along(c, dir, 4));
+    expect(b.hp).toBe(b.maxHp - k.power);
+    expect(k.hex).toEqual(along(c, dir, 3));
+  });
+
+  it('hits an ally in its way too', () => {
+    const {s, k} = ready({'p-bokh': along(c, dir, 1)});
+    charge(s, k, along(c, dir, 3));
+    const b = unit(s, 'p-bokh');
+    expect(b.hex).toEqual(along(c, dir, 3));
+    expect(b.hp).toBe(b.maxHp - k.power);
+  });
+
+  it('aimed at the unit’s own space hits it where it stands', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 3)});
+    charge(s, k, along(c, dir, 3));
+    expect(unit(s, 'e-bokh').hex).toEqual(along(c, dir, 3));
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - k.power);
+    expect(k.hex).toEqual(along(c, dir, 2));
+  });
+
+  it('yurts stop the unit it carries short, and the Cataphract behind it', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 1)});
+    s.tiles[hexKey(along(c, dir, 3))] = 'obstacle';
+    // The lane ends at the yurts.
+    expect(isTarget(s, k, along(c, dir, 2))).toBe(true);
+    expect(isTarget(s, k, along(c, dir, 3))).toBe(false);
+    charge(s, k, along(c, dir, 2));
+    expect(unit(s, 'e-bokh').hex).toEqual(along(c, dir, 2));
+    expect(k.hex).toEqual(along(c, dir, 1));
+    // The map's edge stops it the same way.
+    const {s: s2, k: k2} = ready({'e-bokh': along(c, dir, 1)});
+    const end = lane(mapOf(s2), c, dir).at(-1)!;
+    charge(s2, k2, end);
+    expect(unit(s2, 'e-bokh').hex).toEqual(end);
+    expect(hexDistance(k2.hex!, end)).toBe(1);
+  });
+
+  it('a second unit in the way stops the carried one: both are hit, neither Pushed', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 3)});
+    // Aimed at past one unit and up to the second, no farther.
+    expect(isTarget(s, k, along(c, dir, 3))).toBe(true);
+    expect(isTarget(s, k, along(c, dir, 4))).toBe(false);
+    charge(s, k, along(c, dir, 3));
+    const b = unit(s, 'e-bokh');
+    const st = unit(s, 'e-storm');
+    expect(b.hex).toEqual(along(c, dir, 2));
+    expect(st.hex).toEqual(along(c, dir, 3));
+    expect(b.hp).toBe(b.maxHp - k.power);
+    expect(st.hp).toBe(st.maxHp - k.power);
+    expect(k.hex).toEqual(along(c, dir, 1));
+  });
+
+  it('aimed short of the second unit carries the first there, with no collision', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 4)});
+    charge(s, k, along(c, dir, 3));
+    expect(unit(s, 'e-bokh').hex).toEqual(along(c, dir, 3));
+    expect(unit(s, 'e-storm').hp).toBe(unit(s, 'e-storm').maxHp);
+  });
+
+  it('a Rooted unit isn’t carried: hit, it stops the Cataphract behind it', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 2)});
+    unit(s, 'e-bokh').passives = ['rooted'];
+    charge(s, k, along(c, dir, 4));
+    expect(unit(s, 'e-bokh').hex).toEqual(along(c, dir, 2));
+    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - k.power);
+    expect(k.hex).toEqual(along(c, dir, 1));
+  });
+
+  it('rides on when the unit in its way falls to the hit', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 1)});
+    unit(s, 'e-bokh').hp = 1;
+    charge(s, k, along(c, dir, 3));
+    expect(unit(s, 'e-bokh').alive).toBe(false);
+    expect(k.hex).toEqual(along(c, dir, 3));
+  });
+
+  it('hail ends the ride where it enters, and Immobilized it can’t charge', () => {
+    const {s, k} = ready({'e-storm': at(0, 0)});
+    s.effects.push({kind: 'hail', hex: along(c, dir, 2), source: 'e-storm', turns: 2});
+    charge(s, k, along(c, dir, 4));
+    expect(k.hex).toEqual(along(c, dir, 2));
+    expect(isImmobilized(k)).toBe(true);
+    expect(ABILITIES.charge.targets(s, mapOf(s), k, k.hex!)).toEqual([]);
+  });
+
+  it('its plan for the AI matches what it does', () => {
+    for (const [placements, n] of [
+      [{'e-bokh': along(c, dir, 2)}, 4],
+      [{'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 3)}, 3],
+      [{'e-bokh': along(c, dir, 1)}, 2],
+      [{}, 3],
+    ] as const) {
+      const {s, k} = ready(placements);
+      const plan = ridePlan(s, mapOf(s), k, c, along(c, dir, n));
+      const caught = plan.caught.map((u) => u.id).sort();
+      charge(s, k, along(c, dir, n));
+      expect(k.hex).toEqual(plan.end);
+      expect(
+        s.units
+          .filter((u) => u.hp < u.maxHp)
+          .map((u) => u.id)
+          .sort()
+      ).toEqual(caught);
+    }
+  });
+
+  it('the AI charges an enemy in line, and counts it a threat down its lanes', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 3)});
+    k.controller = 'ai';
+    const turn = chooseAiTurn(s, k);
+    expect(turn.action.ability).toBe('charge');
+    const b = unit(s, 'e-bokh');
+    const threat = threatsTo(s, mapOf(s), b).find((t) => t.enemyId === k.id)!;
+    expect(threatDamage([threat], s, b)).toBe(k.power);
+  });
+});
+
 describe('the Priest', () => {
   const party: HeroId[] = ['priest', 'bokh', 'storm'];
   const c = at(1, 4);
@@ -2309,6 +2481,38 @@ describe('the Priest', () => {
       3,
       undefined,
     ]);
+  });
+
+  it('with `lasts`, the Shield stays past the ally’s turn until spent, at most his power', () => {
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0), 'e-priest': at(5, 4)});
+    const blessing = ABILITY.blessing as {lasts: boolean; heal: boolean};
+    onTestFinished(() => {
+      blessing.lasts = false;
+      blessing.heal = true;
+    });
+    blessing.lasts = true;
+    blessing.heal = false;
+    const ally = unit(s, 'p-bokh');
+    const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    bless(s, p, ally);
+    expect([ally.shield, ally.lastingShield]).toEqual([3, 3]);
+    // At most his power: a second Blessing adds nothing.
+    p.slot = s.currentSlot;
+    s.awaiting = p.id;
+    bless(s, p, ally);
+    expect(ally.shield).toBe(3);
+    startTurnPassives(ctx, ally);
+    expect(ally.shield).toBe(3);
+    // Rally's Shield on top goes first, and the lasting part with the hit.
+    ally.shield = 4;
+    hit(ctx, unit(s, 'e-priest'), ally, 'The blow');
+    expect([ally.shield, ally.lastingShield]).toEqual([1, 1]);
+    startTurnPassives(ctx, ally);
+    expect(ally.shield).toBe(1);
+    hit(ctx, unit(s, 'e-priest'), ally, 'The blow');
+    expect(ally.shield).toBeUndefined();
+    expect(ally.lastingShield).toBeUndefined();
+    expect(ally.hp).toBe(ally.maxHp - 2);
   });
 
   it('the AI blesses a hurt ally rather than hold', () => {
@@ -3236,7 +3440,7 @@ describe('previews, the AI and the run', () => {
       steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: 'giant'},
       china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: null},
       persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
-      byzantium: {heroes: ['varangian', 'priest'], creature: null, boss: null},
+      byzantium: {heroes: ['varangian', 'cataphract', 'priest'], creature: null, boss: null},
     });
     expect(
       Object.values(REGIONS)
@@ -3736,6 +3940,7 @@ describe('previews, the AI and the run', () => {
       'archer',
       'varangian',
       'priest',
+      'cataphract',
     ]);
     expect(() => createRun(5, {party: ['modao', 'alchemist']})).not.toThrow();
     for (const party of [

@@ -20,12 +20,20 @@ function choiceAbilities(unit: Unit) {
 }
 
 /**
+ * Whether a unit's turn offers Move: not for a hero with no walk of its own
+ * (the Cataphract, which moves only by Charge).
+ */
+function walks(unit: Unit): boolean {
+  return HEROES[unit.hero].moveCap !== 0;
+}
+
+/**
  * Move and a hero's ability side by side; with two abilities, Move fills
  * its own row and the two share the row under it. Move alone (the camel)
- * fills the row.
+ * fills the row, and so does an ability alone without Move.
  */
 function choiceColumns(unit: Unit): number {
-  return choiceAbilities(unit).length === 0 ? 1 : 2;
+  return choiceAbilities(unit).length + (walks(unit) ? 1 : 0) <= 1 ? 1 : 2;
 }
 
 /** Move fills its row when the abilities fill the rows under it. */
@@ -37,6 +45,7 @@ function moveSpansRow(unit: Unit): boolean {
 export function choiceRows(unit: Unit): number {
   const abilities = choiceAbilities(unit).length;
   const columns = choiceColumns(unit);
+  if (!walks(unit)) return Math.max(1, Math.ceil(abilities / columns));
   return moveSpansRow(unit) ? 1 + abilities / columns : Math.ceil((abilities + 1) / columns);
 }
 
@@ -138,33 +147,35 @@ export function TurnControls(props: {
           } as React.CSSProperties
         }
       >
-        <Button
-          size="lg"
-          className={`${styles.tile} ${plannedMove && confirm ? styles.tileConfirm : ''}`}
-          style={moveSpansRow(unit) ? {gridColumn: '1 / -1'} : undefined}
-          disabled={!props.canMove || props.waiting || Boolean(plannedMove && confirm?.blocked)}
-          data-choice="move"
-          data-key={props.keys ? 1 : undefined}
-          aria-pressed={moving || plannedMove !== null}
-          title={
-            props.waiting
-              ? 'Not this unit’s turn yet'
-              : plannedMove
-                ? (confirm?.title ?? 'Move there; tap the hex again to confirm')
-                : moving
-                  ? 'Pick where to move, or tap to put Move down'
-                  : props.canMove
-                    ? 'Move instead of using an ability; units block the path'
-                    : 'Can’t move now'
-          }
-          onClick={plannedMove && confirm ? props.onConfirm : props.onMove}
-        >
-          {plannedMove && confirmLabel
-            ? confirmLabel
-            : moving && !plannedMove
-              ? asking('Move', <AbilityIcon id="move" />)
-              : label('Move', <AbilityIcon id="move" />)}
-        </Button>
+        {walks(unit) && (
+          <Button
+            size="lg"
+            className={`${styles.tile} ${plannedMove && confirm ? styles.tileConfirm : ''}`}
+            style={moveSpansRow(unit) ? {gridColumn: '1 / -1'} : undefined}
+            disabled={!props.canMove || props.waiting || Boolean(plannedMove && confirm?.blocked)}
+            data-choice="move"
+            data-key={props.keys ? 1 : undefined}
+            aria-pressed={moving || plannedMove !== null}
+            title={
+              props.waiting
+                ? 'Not this unit’s turn yet'
+                : plannedMove
+                  ? (confirm?.title ?? 'Move there; tap the hex again to confirm')
+                  : moving
+                    ? 'Pick where to move, or tap to put Move down'
+                    : props.canMove
+                      ? 'Move instead of using an ability; units block the path'
+                      : 'Can’t move now'
+            }
+            onClick={plannedMove && confirm ? props.onConfirm : props.onMove}
+          >
+            {plannedMove && confirmLabel
+              ? confirmLabel
+              : moving && !plannedMove
+                ? asking('Move', <AbilityIcon id="move" />)
+                : label('Move', <AbilityIcon id="move" />)}
+          </Button>
+        )}
         {defs.map((def, i) => {
           const blocked = ability !== def.id ? props.outOfReach.get(def.id) : undefined;
           const reason = unusableReason(unit, def) ?? blocked?.why ?? null;
@@ -177,7 +188,7 @@ export function TurnControls(props: {
               className={`${styles.tile} ${ready ? styles.tileConfirm : ''}`}
               disabled={reason !== null || props.waiting || Boolean(ready && confirm?.blocked)}
               data-choice={def.id}
-              data-key={props.keys ? i + 2 : undefined}
+              data-key={props.keys ? i + (walks(unit) ? 2 : 1) : undefined}
               aria-pressed={picked}
               title={
                 props.waiting

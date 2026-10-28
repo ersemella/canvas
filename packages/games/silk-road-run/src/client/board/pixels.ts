@@ -41,6 +41,8 @@ export const HERO_COLOR = {
   varangian: '#57534e',
   // The Priest's disc, shown while its sprite loads.
   priest: '#ca8a04',
+  // The Cataphract's disc: it has no sprite yet.
+  cataphract: '#a16207',
   camel: '#a8742f',
   wolf: '#6b7280',
   fox: '#c2410c',

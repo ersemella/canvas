@@ -11,21 +11,21 @@ Rules are marked **Decided** or **Proposed**; numbers marked TBD are
 tuning. Section numbers are the combat design's.
 
 ### 15.8 Hero Roster (Decided, working roster)
-Each of the four regions ([setting.md](setting.md), 15.3a) has **three heroes: a tank, a damage hero and a support** (owner, 2026-10-26). Eleven are chosen, from **five cultures**: the Steppe's Mongol heroes and the Turkic Storm Caller, three from Tang China, three from Persia and Sogdiana, and two from Byzantium, the Barbarian and the Priest (owner, 2026-10-28), whose tank is open (open question 33). The India and Arabia heroes went with their regions (2026-10-26; the Juggernaut returned as Persia's tank). Every hero is based on a **role** (a profession, unit or folklore type) or a **named fictional character** (from a novel, epic or folk tale); never a real historical individual, since real figures can be culturally sensitive. Figures still worshipped today stay out (15.5).
+Each of the four regions ([setting.md](setting.md), 15.3a) has **three heroes: a tank, a damage hero and a support** (owner, 2026-10-26). Twelve are chosen, from **five cultures**: the Steppe's Mongol heroes and the Turkic Storm Caller, three from Tang China, three from Persia and Sogdiana, and three from Byzantium, the Barbarian, the Priest and the Cataphract, its tank (owner, 2026-10-28). The India and Arabia heroes went with their regions (2026-10-26; the Juggernaut returned as Persia's tank). Every hero is based on a **role** (a profession, unit or folklore type) or a **named fictional character** (from a novel, epic or folk tale); never a real historical individual, since real figures can be culturally sensitive. Figures still worshipped today stay out (15.5).
 
 **Mechanical roles**
 - **Tank:** protects allies, absorbs or prevents damage, holds space.
 - **Damage:** primary source of kills.
 - **Support:** heals, buffs, or controls the board and the track.
 
-The roster is balanced at **4 tanks, 4 damage, 4 support**, one of each per region, so that limited, random recruitment offers (10.6) can usually supply each role. Until Byzantium's tank is chosen it has 3 tanks, 4 damage and 4 supports.
+The roster is balanced at **4 tanks, 4 damage, 4 support**, one of each per region, so that limited, random recruitment offers (10.6) can usually supply each role. With the Cataphract as Byzantium's tank (owner, 2026-10-28) it is complete, Persia's damage hero the Ranger.
 
 **Identity and role**
 
 | # | Name | Culture | Inspiration (historical, folklore or mythical role) | Type | Fantasy RPG archetype | Mechanical role | Specialty | Mount | Signature weapon (proposed) |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | Alchemist | Tang China | The fangshi ("masters of methods"), Chinese alchemists and healers, and *waidan* ("external alchemy"), the making of elixirs by heating minerals and metals in sealed crucibles; Chinese alchemists seeking an elixir of life discovered gunpowder | Historical | Alchemist | Support | Elixirs: heals and Empowers an ally, hits and Weakens an enemy (2026-10-27; heal, Empower and Haste on an ally late 2026-10-26; Haste and Delay in a burst earlier that day, Empower and Weaken before that, a healer before) | None | Elixir gourd |
-| 2 | Cataphract | Persia and Sogdiana | The cataphracts, armoured heavy cavalry; in Persia the savaran (aswaran), the Sasanian armoured noble cavalry, shock troops whose lance charge broke enemy lines. Heavy cavalry of this kind served many armies on the road | Historical | Knight / lancer | Damage (Tank until 2026-10-26) | Charger: a lance charge, burst damage at the end of a run in | Armoured horse | Heavy lance |
+| 2 | Cataphract | Byzantium (Persia and Sogdiana until 2026-10-28) | The cataphracts, armoured heavy cavalry, horse and rider clad in mail and lamellar; the Byzantine *kataphraktoi* of the 10th century, whose wedge charged home with lance and mace, and before them the Sasanian savaran (aswaran). Heavy cavalry of this kind served many armies on the road | Historical | Knight / lancer | Tank (owner, 2026-10-28; Damage from 2026-10-26, Tank before) | Charger: rides any distance in a straight line, carrying the first unit in its way before it (Charge, built 2026-10-28) | Armoured horse | Heavy lance |
 | 3 | Magus | Persia and Sogdiana | The magi as star-readers: the *Shahnameh*'s astrologers and sages, who read the stars at a king's command (they foretell Zahhak's fall and read the stars over Zal and Rudaba's marriage), and the Greek and Roman picture of the *magos* as astrologer, from which "magic" comes | Historical | Astrologer / seer | Support | Track controller: reads the stars to move turns, Delaying enemies and Hastening allies (Proposed) | None | Astrolabe and star charts (proposed, unverified) |
 | 4 | Outrider | Mongol | The mangudai, units of the Mongol army (sources disagree on what they were: light cavalry, vanguards or "suicide troops"); Mongol warriors fought as mounted archers | Historical | Ranger | Damage | Ranged: line of fire matters most | Horse | Composite bow |
 | 5 | Grappler | Mongol | Champion wrestlers (bökh), the highlight of the naadam games and of feasts in the epics | Historical | Brawler / grappler | Tank | Grappler: grabs, pins and throws enemies to hold the front line | None | Bare hands (wrestling vest) |
@@ -43,7 +43,7 @@ These bands predate the stats' rework (owner, 2026-10-23; [heroes-and-gear.md](h
 | Name | Health | Speed | Defence | Power |
 |---|---|---|---|---|
 | Alchemist | Medium | Medium | Low | Medium |
-| Cataphract | Medium | Medium | Medium | High |
+| Cataphract | High | Medium | High | Low (set, owner 2026-10-28: speed 2, defence 3, power 1, so health 8) |
 | Magus | Low | Medium | Low | None (set, owner 2026-10-27: speed 2, defence 1, power 0, so health 4) |
 | Outrider | Low | High | Low | High |
 | Grappler | High | Medium | Medium | Low |
@@ -140,6 +140,22 @@ beard it read as the Alchemist.
 |---|---|---|---|---|---|---|---|
 | Duelist | 3 | 1 | 2 | 4 | 3 (the ordinary cap is 2) | Swift Strike | Melee, a *jian* stroke for the Duelist's power (named Ten Paces, after Li Bai's swordsman who "kills one man every ten paces", until the owner asked for a more familiar name the same day); when it hits, the Duelist's card is **Hastened 3** ([keywords.md](keywords.md) 17.3; 2 until 2026-10-26), taken off as its card is placed after the turn: 5 slots to its next turn after a strike instead of its usual 8. |
 
+**Built 2026-10-28 (owner): the Cataphract**, Byzantium's tank
+(`cataphract` in config.ts), on the start menu and in Byzantium's heroes (`REGIONS`), which
+no enemy brings until the region's stages are built. No sprite or
+portrait yet: a lettered disc (K). It has **no walk of its own**
+(`moveCap` 0, no Move button): it moves only by Charge.
+
+| Hero | Speed | Defence | Power | Health | Walk | Ability | Effect |
+|---|---|---|---|---|---|---|---|
+| Cataphract | 2 | 3 | 1 | 8 | None | Charge | Rides **any number of spaces in a straight line**, along any of the six directions, as the Outrider moves, stopped by ruins, the map's edge and hail (which ends a walk where it enters). The **first unit in its way**, ally or enemy, takes the Cataphract's power and is **Pushed** on ahead of it, a space at a time, **to the space the charge was aimed at**, the Cataphract riding in behind it. Ruins or the map's edge stop the Push short; a **second unit** in the way stops it too and takes the Cataphract's power as well, Pushed no further. A Rooted or Unstoppable unit (the Juggernaut) isn't Pushed at all. The Cataphract stops behind the unit it carries; if that unit falls to the hit, the way is clear and it rides on. Aimed at any space of a lane up to ruins or the edge, past one unit and up to a second, whose space aims the collision (farther spaces would do the same). An enemy Cataphract can't ride onto the camel's exit with no one to carry there. |
+
+Builder's choices, for the owner to confirm: the unit carried ends **on**
+the space aimed at (so a charge at a unit's own space hits it where it
+stands); allies in the way are hit too, as every ability reaches both
+sides (6.7); and the AI counts it a tank (`AI.caution` 0), its threat any
+space of its lanes past one unit and up to a second. Untested in balance.
+
 **Mounts (Decided)**
 - Mounts have **no mechanics of their own**. Mounted heroes follow all normal rules (one hex, conceal, line of fire).
 - A mount is reflected only in the hero's **base stats**: a horse raises speed; the Cataphract's armoured horse offsets the speed cost of its armour; the Juggernaut's war elephant gives very high defence and health at very low speed.
@@ -161,7 +177,7 @@ beard it read as the Alchemist.
     4. **Appointed Hour:** a space within 3 foretold, marked on the board and at the Magus's next slot; a unit on it when that turn comes has its next turn skipped.
   - **Interactions to measure:** a swap with a charging Outrider moves when its arrow lands; Hastening the Storm Caller ends its hail sooner (hail lasts until its next turn); Hastening the Grappler squeezes sooner; swapping Humphrey forward walks it out sooner, and an enemy Magus swapping it back slows the fight's clock; two Magi can't swap each other.
   - **Open:** whether his range for other abilities is 3 on the board or anywhere; the delay and haste limits (17.3) before an upgrade that Delays or Hastens outright.
-- **The Cataphract as damage** (2026-10-26, owner; named the Persian Cataphract, then the Sasanian Cataphract, until the same day): the savaran were shock cavalry, so its lance charge is a burst of damage rather than a way to hold a line. Mounted like the Outrider, but it closes in where the Outrider shoots from afar.
+- **The Cataphract as Byzantium's tank** (owner, 2026-10-28): moved from Persia, where the Ranger took the damage slot, and built with Charge (above). Before: **the Cataphract as damage** (2026-10-26, owner; named the Persian Cataphract, then the Sasanian Cataphract, until the same day): the savaran were shock cavalry, so its lance charge is a burst of damage rather than a way to hold a line. Mounted like the Outrider, but it closes in where the Outrider shoots from afar.
 - **The Ranger (owner, 2026-10-27; built the same day, `archer`, on the start menu and in the enemy's draw; its sprite and portrait from the owner's art, from the prompts in [art-direction.md](art-direction.md)):** a candidate for Persia's damage hero beside the Cataphract, which holds the slot. The Sasanian foot archers, whose massed arrows Byzantine writers describe; a bow, not a crossbow, which was Tang China's weapon in the setting's century and reached the west later. Stats: speed 2, defence 1 (health 4), power 3, the highest power on the roster.
   - **Longshot** (its starting ability, `ABILITY.longshot`; the name taken from the Outrider's ability, now Snap Shot): **since 2026-10-28 (owner), the first unit in any of its six lanes, 2 or more spaces away (`minRange` 2: never the spaces next to the Ranger; since later 2026-10-28 (owner) the arrow flies over them, a unit or ruin there included, and hits the first unit beyond), ally or enemy, stopped by ruins as Snap Shot; its hit Pierces (Armour ignored; nothing has Armour yet but Hardened, for later).** It Pushed the unit hit 1 away from the Ranger (`push` 1) from 2026-10-28 until later that day, when the owner dropped it (measured below). From later 2026-10-27 to 2026-10-28 it hit adjacent units too and Delayed the unit hit 3 in place of the Push. Measured in this shape later 2026-10-28 ([balance.md](balance.md), "Longshot's Push, flying over the spaces next to the Ranger"): 55.2% in the Steppe's damage seat and 48.9% in China's; without the Push, 49.6% and 46.6%, built (owner). Built first aimed at a **space** on its lines, hitting whoever stood there with nothing blocking it, units and ruins passed over; too strong (below).
   - **Measured (2026-10-27, [balance.md](balance.md#the-archer-and-longshot-2026-10-27)):** too strong as first built, its side winning 56–67% in every seat; Longshot's range 4 brought it to 48.5–52% with power 3 kept (power 2: 48–54%). Stopped by the first unit and Piercing it measured 47.6% and 42.1%; with Delay 3, **49.4% in the Steppe's damage seat and 50.9% in China's** (balance.md, "Longshot's effect": Push, Weaken and a pin measured beside it), built.
@@ -240,7 +256,7 @@ Egypt, Silla Korea, Nara Japan, Tibet, Srivijaya and Java, the Swahili coast (wi
 
 ## Open questions (from section 14, original numbers)
 
-33. Hero roster. **Byzantium's tank** (since 2026-10-26, three heroes per region; its support the Priest since 2026-10-28): Byzantium has the Barbarian (damage; built 2026-10-28 with stats speed 1, defence 2, power 3, and Reave, its upgrades open) and the Priest (support). Ideas: an *akritas*, a border warrior of the Taurus frontier from the *Digenis Akritas* epic, as the tank (a Byzantine automaton engineer, *mechanikos*, was the support idea before the Priest). The Steppe, China (the Duelist filled its damage slot, 2026-10-26) and Persia (the Juggernaut, Cataphract and Magus) are complete. Also open: signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
+33. Hero roster. ~~**Byzantium's tank**~~ (answered 2026-10-28, owner: the Cataphract, built; three heroes per region since 2026-10-26; its support the Priest since 2026-10-28): Byzantium has the Barbarian (damage; built 2026-10-28 with stats speed 1, defence 2, power 3, and Reave, its upgrades open) and the Priest (support), and the Cataphract (tank). Ideas before: an *akritas*, a border warrior of the Taurus frontier from the *Digenis Akritas* epic, as the tank (a Byzantine automaton engineer, *mechanikos*, was the support idea before the Priest). The Steppe, China (the Duelist filled its damage slot, 2026-10-26) and Persia (the Juggernaut, the Ranger and the Magus) are complete, and so is Byzantium. Also open: signature weapon accuracy, tuned stat values, each hero's abilities and ultimate, and which heroes to prototype first (6 to 8, per 10.8).
 
 **Passives:** an always-on trait rather than an action. The Vanguard's Hold the Line and the Grappler's Inevitable (2026-10-22)
 were built and removed again on 2026-10-23; no hero has one now. The

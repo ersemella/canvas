@@ -308,7 +308,16 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
       rest: unit.weakenStarted ? 'until the end of this turn' : 'until the end of its next turn',
     });
   if (unit.shield)
-    out.push({id: 'shield', label: `Shield ${unit.shield}`, rest: 'until its next turn'});
+    out.push({
+      id: 'shield',
+      label: `Shield ${unit.shield}`,
+      rest:
+        unit.lastingShield === unit.shield
+          ? 'until spent'
+          : unit.lastingShield
+            ? `until its next turn, ${unit.lastingShield} of it until spent`
+            : 'until its next turn',
+    });
   if (unit.unstoppable)
     out.push({id: 'unstoppable', label: 'Unstoppable', rest: 'until its next turn'});
   return out;

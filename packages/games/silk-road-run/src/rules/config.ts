@@ -268,6 +268,22 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['blessing', 'hold'],
   },
   /**
+   * The Cataphract (owner, 2026-10-28; roster.md): Byzantium's tank,
+   * armoured heavy cavalry. Speed 2, defence 3 (health 8) and power 1 are
+   * the owner's. It has no walk of its own (`moveCap` 0): it moves only by
+   * Charge, any distance straight, carrying the first unit in its way
+   * ahead of it (`charge` in abilities.ts).
+   */
+  cataphract: {
+    name: 'Cataphract',
+    letter: 'K',
+    speed: 2,
+    defence: 3,
+    power: 1,
+    abilities: ['charge', 'hold'],
+    moveCap: 0,
+  },
+  /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
@@ -440,8 +456,14 @@ export const ABILITY = {
    * heal, the ally Shielded the Priest's power (and `shield` more);
    * `shape` `aura`, every ally within `radius` of the Priest at once, in
    * place of one within `range`.
+   * `lasts` (owner's question, 2026-10-28; balance.md, "A lasting
+   * Shield"), off as built: a Blessing's Shield stays until damage spends
+   * it, not until the ally's next turn, a unit holding at most `cap` × the
+   * Priest's power of it.
    */
   blessing: {
+    lasts: false as boolean,
+    cap: 1 as number,
     range: 2 as number,
     heal: true as boolean,
     shape: 'unit' as 'unit' | 'aura',
@@ -760,6 +782,8 @@ export const AI = {
     archer: 1,
     varangian: 1,
     priest: 1,
+    // A tank, as the Grappler and the Vanguard.
+    cataphract: 0,
     camel: 0,
     wolf: 1,
     fox: 1,
@@ -775,6 +799,11 @@ export const AI = {
    * then could deal it, at most its Shield. PLACEHOLDER.
    */
   shieldShare: 0.75,
+  /**
+   * A lasting Shield (`ABILITY.blessing.lasts`) is worth at least this share
+   * of it: it stays until spent. PLACEHOLDER.
+   */
+  lastingShieldShare: 0.75,
   /**
    * A charged shot in the air on a unit that acts before it lands and can
    * walk is worth this share of the hit: it can step out. PLACEHOLDER.
@@ -865,6 +894,7 @@ export const ROSTER: HeroId[] = [
   'archer',
   'varangian',
   'priest',
+  'cataphract',
 ];
 /**
  * The regions a run passes through, in order (setting.md, 15.3a), so far
@@ -872,7 +902,7 @@ export const ROSTER: HeroId[] = [
  * and its basic creature, the wolf's unit reskinned (progression.md,
  * 19.5), if its stages bring one: only the Steppe's do (owner,
  * 2026-10-28; China's fox spirits taken out). Byzantium has no stages
- * yet, so no enemy brings its Barbarian or its Priest.
+ * yet, so no enemy brings its Barbarian, its Cataphract or its Priest.
  */
 export type RegionId = 'steppe' | 'china' | 'persia' | 'byzantium';
 /**
@@ -887,7 +917,7 @@ export const REGIONS: Record<
   steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: 'giant'},
   china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: null},
   persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
-  byzantium: {heroes: ['varangian', 'priest'], creature: null, boss: null},
+  byzantium: {heroes: ['varangian', 'cataphract', 'priest'], creature: null, boss: null},
 };
 /**
  * A run's stages, in order (owner, 2026-10-24; for a while four, from three

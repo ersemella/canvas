@@ -12,7 +12,7 @@ export type Side = 'player' | 'enemy';
  * (owner, 2026-10-25), the Duelist (owner, 2026-10-26), the Magus
  * (owner, 2026-10-27), the Juggernaut (`mahout`, owner, 2026-10-27), the
  * Ranger (owner, 2026-10-27), the Barbarian (`varangian`, owner,
- * 2026-10-28), the Priest (owner, 2026-10-28), the
+ * 2026-10-28), the Priest and the Cataphract (owner, 2026-10-28), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, the enemy NPCs, the wolf and the fox, the Steppe's boss, the
  * One-Eyed Giant (`giant`, owner, 2026-10-28; enemies.md), and China's,
@@ -31,6 +31,7 @@ export type HeroId =
   | 'archer'
   | 'priest'
   | 'varangian'
+  | 'cataphract'
   | 'camel'
   | 'wolf'
   | 'fox'
@@ -53,6 +54,7 @@ export type AbilityId =
   | 'longshot'
   | 'blessing'
   | 'reave'
+  | 'charge'
   // The One-Eyed Giant's (owner, 2026-10-28).
   | 'smash'
   | 'boulder'
@@ -233,6 +235,12 @@ export interface Unit {
    * when it has none.
    */
   shield?: number;
+  /**
+   * The part of its Shield that stays until damage spends it, not going at
+   * its next turn (a Blessing with `ABILITY.blessing.lasts`). Absent when
+   * none does.
+   */
+  lastingShield?: number;
   /**
    * Unstoppable (keywords.md, 17.4): can't be Pushed, Pulled, Immobilized
    * or Stunned, until the start of the unit's next turn (an Elixir, a
