@@ -152,7 +152,12 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (d <= 1) return true;
     if (has('hail') && d === ABILITY.hail.range) return true;
     if (has('volley') && d <= ABILITY.volley.range) return true;
-    if (has('trample') && d <= ABILITY.trample.steps && hexDirectionTo(u.hex!, e.hex) !== null)
+    if (
+      has('trample') &&
+      ABILITY.trample.mode === 'charge' &&
+      d <= ABILITY.trample.steps &&
+      hexDirectionTo(u.hex!, e.hex) !== null
+    )
       return true;
     if (has('gale') && d <= ABILITY.gale.range + 1) return true;
     const dq = e.hex.q - u.hex!.q;

@@ -1797,6 +1797,52 @@ describe('the Juggernaut', () => {
     expect(b.statuses.some((x) => x.kind === 'immobilized')).toBe(true);
   });
 
+  it('Trample as a stomp stays put, hits every unit next to it and Pushes each 1 away', () => {
+    const was = {...ABILITY.trample};
+    Object.assign(ABILITY.trample, {mode: 'stomp'});
+    try {
+      // An ally caught too; a unit behind another isn't Pushed into it.
+      const {s, e} = ready({
+        'e-bokh': along(c, 0, 1),
+        'p-bokh': along(c, 3, 1),
+        'e-storm': along(c, 2, 1),
+        'p-storm': along(c, 2, 2),
+      });
+      unit(s, 'e-storm').hp = 2;
+      expect(ABILITIES.trample.targets(s, mapOf(s), e, c)).toEqual([{hex: c}]);
+      trample(s, e, c);
+      expect(e.hex).toEqual(c);
+      expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 2));
+      expect(unit(s, 'p-bokh').hex).toEqual(along(c, 3, 2));
+      for (const id of ['e-bokh', 'p-bokh']) expect(unit(s, id).hp).toBe(unit(s, id).maxHp - 2);
+      // Felled by the hit, so not Pushed; the one past it untouched.
+      expect(unit(s, 'e-storm').alive).toBe(false);
+      expect(unit(s, 'p-storm').hp).toBe(unit(s, 'p-storm').maxHp);
+      expect(unit(s, 'p-storm').hex).toEqual(along(c, 2, 2));
+    } finally {
+      Object.assign(ABILITY.trample, was);
+    }
+  });
+
+  it('a stomped unit with no room behind it is hit but stays', () => {
+    const was = {...ABILITY.trample};
+    Object.assign(ABILITY.trample, {mode: 'stomp'});
+    try {
+      const {s, e} = ready({'e-bokh': along(c, 0, 1), 'p-bokh': along(c, 0, 2)});
+      trample(s, e, c);
+      expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 1));
+      expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+      expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
+      // The AI plays it too.
+      e.controller = 'ai';
+      e.slot = s.currentSlot;
+      s.awaiting = e.id;
+      applyTurn(s, e, chooseAiTurn(s, e));
+    } finally {
+      Object.assign(ABILITY.trample, was);
+    }
+  });
+
   it('the AI weighs Trample and plays a legal turn with it', () => {
     const {s, e} = ready({'e-bokh': hexNeighbor(c, 0), 'e-storm': at(8, 8)});
     e.controller = 'ai';

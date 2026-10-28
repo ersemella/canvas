@@ -507,8 +507,12 @@ export const ABILITY = {
    * units in its way, ally or enemy, a row of them together, each take its
    * power and are Pushed back ahead of it, one space for each it walks; a
    * row that can't be Pushed stops it behind.
+   *
+   * `mode` (an experiment, 2026-10-28; balance.md): `'charge'`, the walk
+   * as built; `'stomp'`, the Juggernaut stays where it is, and every unit
+   * next to it, ally or enemy, takes its power and is Pushed 1 away.
    */
-  trample: {steps: 2 as number},
+  trample: {steps: 2 as number, mode: 'charge' as 'charge' | 'stomp'},
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within

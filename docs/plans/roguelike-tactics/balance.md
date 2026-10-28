@@ -3600,6 +3600,52 @@ production, in a Steppe mirror with a Magus on each side (its side's wins):
 names of the day they were written. The files measuring the Magus
 before it set the mode and range they were measured with.
 
+### Trample as a stomp (2026-10-28)
+
+Asked for: Trample with the Juggernaut staying where it is, every unit
+next to it, ally or enemy, hit for its power and Pushed 1 away
+(`ABILITY.trample.mode: 'stomp'`, off as built), against the charge as
+built (a walk of up to 2 in a line, the row in its way hit and Pushed
+back). `experiments/trample-stomp.mjs`, **1,600 fights each** (about
+±1.25 points), seeds from 1000, `modWinPct` throughout. The stomp is
+resolved as Rebound's push: the hits first, then each unit still standing
+next to it Pushed 1 straight away, one at a time in the order for cards
+placed at the same moment; one with a unit or yurts behind it stays, hit.
+
+| | Charge (built) | Stomp |
+|---|---:|---:|
+| Juggernaut in the Grappler's seat, Steppe mirror | 53.8% | **39%** |
+| Juggernaut in the Vanguard's seat, China mirror | 33.9% | **26.3%** |
+| Grappler in its seat, Persia mirror (lower is better for it) | 47.3% | **60.3%** |
+| Vanguard in its seat, Persia mirror | 56.1% | 61% |
+| Persia against the Steppe | 60.4% | **44.8%** |
+| Persia against China | 45.9% | **37.3%** |
+| Played by a novice, Steppe seat on both sides | 46% | 44.3% |
+| Played by an expert | 52% | 53.9% |
+| Span | 6 | 9.6 |
+
+Its turns (the Juggernaut's share, in its Steppe seat): the charge 37%
+Trample, 55% walks, 9% Hold; the stomp 21% Trample, 63% walks, 17% Hold.
+
+- **The stomp is 8–15 points weaker than the charge in every seat**, and
+  turns Persia from even-to-ahead into behind both other regions. The
+  Grappler and the Vanguard now beat it in its own seat (60–61%).
+- **It's a speed-1 melee hit that throws its targets out of reach.** The
+  charge closes up to 2 spaces and hits in the same turn; the stomp needs
+  units already next to it, so the Juggernaut walks more and Holds about
+  twice as often (nothing next to it, or only allies). And each enemy it
+  Pushes 1 away must be walked back to before the next stomp, while the
+  charge ends next to the row it drove.
+- **It rewards play a little more** (span 9.6 against 6): when to wait for
+  enemies to close, and keeping allies off its sides, matter more than
+  lining up a charge.
+- Unfinished fights 0.1–2.8%, as the charge's.
+- Not measured: a stomp without the Push (a plain hit all round), or with
+  power 3; either would close part of the gap, as the Push is what
+  costs it its next turn's targets.
+
+Not built: the charge stays (`mode: 'charge'` by default).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

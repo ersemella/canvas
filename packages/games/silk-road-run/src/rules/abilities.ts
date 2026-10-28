@@ -58,7 +58,7 @@ import {
 } from './resolve';
 import type {Ctx} from './resolve';
 import {blocks, tileAt} from './map';
-import {aimSlot, chargeOf} from './track';
+import {aimSlot, chargeOf, simultaneousOrder} from './track';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
@@ -1067,6 +1067,7 @@ export function tramplePlan(
   from: Hex,
   target: Hex
 ): {caught: Unit[]; end: Hex} {
+  if (ABILITY.trample.mode === 'stomp') return {caught: stompCaught(state, from), end: from};
   const dir = hexDirectionTo(from, target)!;
   const caught = new Set<Unit>();
   let at = from;
@@ -1088,6 +1089,30 @@ export function tramplePlan(
   return {caught: [...caught], end: at};
 }
 
+/** The units next to `from`: those a stomp catches. */
+function stompCaught(state: FightState, from: Hex): Unit[] {
+  return hexNeighbors(from)
+    .map((h) => unitAt(state, h))
+    .filter((u): u is Unit => u !== undefined);
+}
+
+/**
+ * Trample as a stomp (`ABILITY.trample.mode: 'stomp'`, an experiment): the
+ * Juggernaut stays where it is; each unit next to it, ally or enemy, takes
+ * its power, then those still standing are Pushed 1 away from it, one at a
+ * time in the order for cards placed at the same moment, as Rebound's.
+ */
+function stomp(ctx: Ctx, user: Unit): void {
+  log(ctx, `${unitName(user)} stomps.`);
+  const caught = stompCaught(ctx.state, user.hex!);
+  for (const u of caught) hit(ctx, user, u, 'The stomp');
+  for (const u of simultaneousOrder(caught)) {
+    if (!u.alive || !u.hex || !user.alive || !user.hex || hexDistance(u.hex, user.hex) !== 1)
+      continue;
+    displace(ctx, u, hexDirectionTo(user.hex, u.hex)!, 1, 'push');
+  }
+}
+
 /**
  * Trample (owner, 2026-10-27; roster.md): the Juggernaut walks 1 to
  * `ABILITY.trample.steps` spaces straight out in any of the six
@@ -1105,8 +1130,11 @@ const trample: AbilityDef = {
   name: 'Trample',
   kind: 'attack',
   summary: () =>
-    `Walk up to ${ABILITY.trample.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
+    ABILITY.trample.mode === 'stomp'
+      ? 'Every unit next to you is hit and Pushed 1 away.'
+      : `Walk up to ${ABILITY.trample.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
   targets(state, map, user, from) {
+    if (ABILITY.trample.mode === 'stomp') return [{hex: from}];
     if (isImmobilized(user)) return [];
     const out: ActionTarget[] = [];
     for (const dir of DIRECTIONS)
@@ -1114,6 +1142,7 @@ const trample: AbilityDef = {
     return sortByHex(out, (t) => t.hex!);
   },
   resolve(ctx, user, target) {
+    if (ABILITY.trample.mode === 'stomp') return stomp(ctx, user);
     const dir = hexDirectionTo(user.hex!, target.hex!)!;
     log(ctx, `${unitName(user)} tramples.`);
     const struck = new Set<string>();
