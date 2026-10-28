@@ -54,7 +54,7 @@ import {
   mapOf,
   refreshStats,
 } from './fight';
-import {PASSIVES} from './passives';
+import {PASSIVES, draftPick} from './passives';
 import {previewTurn} from './preview';
 import {
   DOME,
@@ -101,6 +101,7 @@ import {
   runOutdated,
   runStatus,
   runView,
+  rivalPicks,
   stageEnemies,
 } from './run';
 import type {RunState} from './run';
@@ -3853,9 +3854,17 @@ describe('previews, the AI and the run', () => {
     const between = win({...run, stage: 3});
     const view = runView(between);
     expect(view).toMatchObject({provision: false, extraProvision: true});
+    const [first, , , fourth] = view.passives;
+    const second =
+      rivalPicks(view.passives, view.rivals, [first!])[0]!.passive === fourth
+        ? view.passives[1]!
+        : fourth!;
     const china = handleRunAction(between, {
       type: 'next',
-      passive: {hero: 'bokh', passive: view.passives[0]!},
+      passives: [
+        {hero: 'bokh', passive: first!},
+        {hero: 'bokh', passive: second},
+      ],
       extra: {hero: 'storm', stat: 'speed'},
     });
     expect(china.provisions).toEqual([{hero: 'storm', stat: 'speed'}]);
@@ -3863,7 +3872,7 @@ describe('previews, the AI and the run', () => {
     expect(runView(win(createRun(7, {test: true}))).extraProvision).toBe(false);
   });
 
-  it('the caravanserai between regions: three passives at random, one taken by a survivor for the rest of the run', () => {
+  it('the caravanserai between regions: four passives drafted, two to the party and two to the rival’s next heroes, for the rest of the run', () => {
     const win = (r: RunState): RunState => {
       const fight = cloneFight(r.fight);
       fight.phase = 'won';
@@ -3873,13 +3882,13 @@ describe('previews, the AI and the run', () => {
     };
     const at = (r: RunState, stage: number): RunState => ({...r, stage});
     const run = createRun(11);
-    expect(runView(run).passives).toEqual([]);
+    expect(runView(run)).toMatchObject({passives: [], rivals: []});
     // No passive on a stage that offers none.
     expect(() =>
       handleRunAction(win(run), {
         type: 'next',
         provision: {hero: 'bokh', stat: 'power'},
-        passive: {hero: 'bokh', passive: 'rooted'},
+        passives: [{hero: 'bokh', passive: 'rooted'}],
       })
     ).toThrow(RuleError);
 
@@ -3887,9 +3896,13 @@ describe('previews, the AI and the run', () => {
     const view = runView(last);
     expect(view.provision).toBe(false);
     const offer = view.passives;
+    expect(PASSIVE_OFFER).toBe(4);
     expect(offer).toHaveLength(PASSIVE_OFFER);
     expect(new Set(offer).size).toBe(PASSIVE_OFFER);
     expect(offer.every((id) => Object.hasOwn(PASSIVES, id))).toBe(true);
+    // The rival drafts for China's first two heroes, in the order they come.
+    expect(view.rivals).toEqual(stageEnemies(run.seed, 5).slice(0, 2));
+    expect(REGIONS.china.heroes).toEqual(expect.arrayContaining(view.rivals));
     // The same offer on a reload; another run's differs for some seed.
     expect(runView(last).passives).toEqual(offer);
     const offers = new Set<string>();
@@ -3897,60 +3910,152 @@ describe('previews, the AI and the run', () => {
       offers.add(runView(win(at(createRun(seed), 3))).passives.join());
     expect(offers.size).toBeGreaterThan(10);
 
-    const [pick, other] = offer as [PassiveId, PassiveId];
+    // The party picks; the rival answers with what fits its first hero best, then takes the last.
+    const [a] = offer as [PassiveId];
+    const [first] = rivalPicks(offer, view.rivals, [a]);
+    expect(first).toEqual({
+      hero: view.rivals[0],
+      passive: draftPick(
+        view.rivals[0]!,
+        offer.filter((id) => id !== a)
+      ),
+    });
+    const b = offer.find((id) => id !== a && id !== first!.passive)!;
+    const lastOne = offer.find((id) => ![a, b, first!.passive].includes(id))!;
+    expect(rivalPicks(offer, view.rivals, [a, b])).toEqual([
+      first,
+      {hero: view.rivals[1], passive: lastOne},
+    ]);
+
     const notOffered = (Object.keys(PASSIVES) as PassiveId[]).find((id) => !offer.includes(id))!;
-    // A passive is owed: none, a malformed one, one not offered, or for the camel, refused.
-    for (const passive of [
+    // Two picks are owed: none, one, a malformed one, one not offered, the
+    // rival's, the same twice, three, or one for the camel, refused.
+    for (const passives of [
       undefined,
-      {hero: 'bokh'},
-      {hero: 'bokh', passive: 'flying'},
-      {hero: 'bokh', passive: notOffered},
-      {hero: 'camel', passive: pick},
-      {hero: 'wolf', passive: pick},
+      [{hero: 'bokh', passive: a}],
+      [{hero: 'bokh'}, {hero: 'bokh', passive: b}],
+      [
+        {hero: 'bokh', passive: 'flying'},
+        {hero: 'bokh', passive: b},
+      ],
+      [
+        {hero: 'bokh', passive: notOffered},
+        {hero: 'bokh', passive: b},
+      ],
+      [
+        {hero: 'bokh', passive: a},
+        {hero: 'storm', passive: first!.passive},
+      ],
+      [
+        {hero: 'bokh', passive: a},
+        {hero: 'storm', passive: a},
+      ],
+      [
+        {hero: 'bokh', passive: a},
+        {hero: 'storm', passive: b},
+        {hero: 'mangudai', passive: lastOne},
+      ],
+      [
+        {hero: 'camel', passive: a},
+        {hero: 'bokh', passive: b},
+      ],
+      [
+        {hero: 'wolf', passive: a},
+        {hero: 'bokh', passive: b},
+      ],
     ])
-      expect(() => handleRunAction(last, {type: 'next', passive})).toThrow(RuleError);
+      expect(() => handleRunAction(last, {type: 'next', passives})).toThrow(RuleError);
     // Only to a hero still standing.
     const fallen = win(at(run, 3));
     Object.assign(fallen.fight.units.find((u) => u.id === 'p-storm')!, {alive: false, hex: null});
     expect(() =>
-      handleRunAction(fallen, {type: 'next', passive: {hero: 'storm', passive: pick}})
+      handleRunAction(fallen, {
+        type: 'next',
+        passives: [
+          {hero: 'storm', passive: a},
+          {hero: 'bokh', passive: b},
+        ],
+      })
     ).toThrow(RuleError);
 
-    const china = handleRunAction(last, {type: 'next', passive: {hero: 'storm', passive: pick}});
+    const china = handleRunAction(last, {
+      type: 'next',
+      passives: [
+        {hero: 'storm', passive: a},
+        {hero: 'bokh', passive: b},
+      ],
+    });
     expect(china.stage).toBe(4);
-    expect(china.passives).toEqual([{hero: 'storm', passive: pick}]);
+    expect(china.passives).toEqual([
+      {hero: 'storm', passive: a},
+      {hero: 'bokh', passive: b},
+    ]);
+    expect(china.rivalPassives).toEqual(rivalPicks(offer, view.rivals, [a, b]));
     expect(china.fight.mapId).toBe('gobi');
     expect(china.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
       stageEnemies(run.seed, 4)
     );
-    expect(runView(china)).toMatchObject({provision: true, passives: []});
-    const storm = china.fight.units.find((u) => u.id === 'p-storm')!;
-    expect(storm.passives).toEqual([pick]);
-    // Never the enemy's copy, nor another hero.
-    for (const u of china.fight.units.filter((u) => u.id !== 'p-storm'))
-      expect(u.passives).toBeUndefined();
-    // Carried into the stages after.
+    expect(runView(china)).toMatchObject({provision: true, passives: [], rivals: []});
+    expect(china.fight.units.find((u) => u.id === 'p-storm')!.passives).toEqual([a]);
+    expect(china.fight.units.find((u) => u.id === 'p-bokh')!.passives).toEqual([b]);
+    // The region's first hero carries the rival's first pick, beside its own.
+    const rival = china.fight.units.find((u) => u.side === 'enemy' && u.hero === view.rivals[0])!;
+    expect(rival.passives).toContain(first!.passive);
+    // No one else: not the party's other heroes, nor the enemy's outsiders.
+    for (const u of china.fight.units.filter(
+      (u) => u.id !== 'p-storm' && u.id !== 'p-bokh' && u !== rival
+    ))
+      expect(u.passives).toEqual(HEROES[u.hero].passives);
+    // Carried into the stages after, the second hero's pick with it once it comes.
     const next = handleRunAction(win(china), {
       type: 'next',
       provision: {hero: 'bokh', stat: 'power'},
     });
-    expect(next.fight.units.find((u) => u.id === 'p-storm')!.passives).toEqual([pick]);
-    expect(next.passives).toEqual([{hero: 'storm', passive: pick}]);
+    expect(next.fight.units.find((u) => u.id === 'p-storm')!.passives).toEqual([a]);
+    expect(next.rivalPassives).toEqual(china.rivalPassives);
+    const second = next.fight.units.find((u) => u.side === 'enemy' && u.hero === view.rivals[1])!;
+    expect(second.passives).toContain(lastOne);
     // A hero can't take one it already carries; another hero can.
-    const again = win(at({...run, passives: [{hero: 'storm', passive: pick}]}, 3));
-    again.fight.units.find((u) => u.id === 'p-storm')!.passives = [pick];
+    const again = win(at({...run, passives: [{hero: 'storm', passive: a}]}, 3));
+    again.fight.units.find((u) => u.id === 'p-storm')!.passives = [a];
     expect(() =>
-      handleRunAction(again, {type: 'next', passive: {hero: 'storm', passive: pick}})
+      handleRunAction(again, {
+        type: 'next',
+        passives: [
+          {hero: 'storm', passive: a},
+          {hero: 'bokh', passive: b},
+        ],
+      })
     ).toThrow(RuleError);
     expect(
-      handleRunAction(again, {type: 'next', passive: {hero: 'bokh', passive: other}}).passives
+      handleRunAction(again, {
+        type: 'next',
+        passives: [
+          {hero: 'bokh', passive: a},
+          {hero: 'storm', passive: b},
+        ],
+      }).passives
     ).toEqual([
-      {hero: 'storm', passive: pick},
-      {hero: 'bokh', passive: other},
+      {hero: 'storm', passive: a},
+      {hero: 'bokh', passive: a},
+      {hero: 'storm', passive: b},
     ]);
     // The run's last stage offers none, nor does a test stage.
     expect(runView(win(at(run, STAGES.length - 1))).passives).toEqual([]);
     expect(runView(win(createRun(7, {test: true}))).passives).toEqual([]);
+  });
+
+  it('the rival drafts the passive that supplements its hero most', () => {
+    // The Duelist keeps its tempo; it never takes Steady Gait, which would undo Swift Strike's Haste.
+    expect(draftPick('youxia', ['rooted', 'momentum', 'steadyGait'])).toBe('momentum');
+    expect(draftPick('youxia', ['steadyGait', 'rebound'])).toBe('rebound');
+    // A slow tank holds the line.
+    expect(draftPick('modao', ['glassCannon', 'loneWolf', 'bulwark'])).toBe('bulwark');
+    // Nothing the Juggernaut's Unstoppable already gives it, nor the Magus's own Steady Gait.
+    expect(draftPick('mahout', ['rooted', 'ironWill', 'patient'])).toBe('patient');
+    expect(draftPick('magus', ['steadyGait', 'glassCannon'])).toBe('glassCannon');
+    // With one left, that one.
+    expect(draftPick('archer', ['bulwark'])).toBe('bulwark');
   });
 
   it('a party must be one to three different heroes of the roster', () => {

@@ -142,7 +142,12 @@ export function StartMenu(props: {
       gap="lg"
       px={{base: 'xs', sm: 'md'}}
     >
-      <Paper className={styles.plaque!} p={{base: 'md', sm: 'xl'}} maw={760} w="100%">
+      <Paper
+        className={styles.plaque!}
+        p={{base: 'md', sm: 'xl'}}
+        maw={{base: 760, lg: 1180}}
+        w="100%"
+      >
         <Stack gap="lg">
           <Stack gap="xs">
             <Text component="h1" className={styles.display!} fz={28} fw="bold" m={0}>
@@ -195,7 +200,12 @@ export function StartMenu(props: {
                         hero={hero}
                         picked={party.includes(hero)}
                         shown={hero === shown}
+                        full={full}
                         onShow={() => setShown(hero)}
+                        onToggle={() => {
+                          toggle(hero);
+                          setShown(hero);
+                        }}
                         style={{gridRow: row + 1, gridColumn: col + 2}}
                       />
                     )
@@ -305,8 +315,7 @@ function HeroCard(props: {
 }
 
 /**
- * A hero full screen, on a phone: its large art (else its board sprite,
- * scaled up and idling), facing left as the party does in a fight, then its name, role
+ * A hero full screen, on a phone: its figure, then its name, role
  * and meters, its story and its abilities, and the button adding it to the
  * caravan or leaving it behind. The ×, Back or Escape closes it; the page
  * under it doesn't scroll while it's open.
@@ -320,9 +329,6 @@ function HeroView(props: {
 }) {
   const {onClose} = props;
   const stats = HEROES[props.hero];
-  const art = HERO_ART[props.hero];
-  const sprite = HERO_SPRITE[props.hero];
-  const portrait = HERO_PORTRAIT[props.hero]?.src;
   useEffect(() => {
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -345,17 +351,7 @@ function HeroView(props: {
       <div className={styles.heroViewBar}>
         <CloseButton size="lg" aria-label="Close" onClick={onClose} c="var(--c-ivory)" />
       </div>
-      <div className={styles.heroFigure}>
-        {art ? (
-          <img src={art} alt="" />
-        ) : sprite ? (
-          <i style={{backgroundImage: `url(${sprite})`}} />
-        ) : portrait ? (
-          <img src={portrait} alt="" />
-        ) : (
-          stats.letter
-        )}
-      </div>
+      <HeroFigure hero={props.hero} />
       <Glossary>
         <Stack gap="md" className={styles.heroViewBody!}>
           <div className={styles.heroViewHead}>
@@ -391,46 +387,67 @@ function HeroView(props: {
 
 /**
  * One hero on the start menu, a tile in its region's column and its role's
- * row: its portrait, facing left as the party
- * does in a fight, over its name; a tap shows its story and stats. A hero in
- * the party is raised lapis with a check; the one shown is outlined gold.
+ * row: its portrait, facing left as the party does in a fight, over its
+ * name; a click shows its story and stats. In the portrait's corner a
+ * checkbox takes it into the caravan or leaves it behind (and shows it),
+ * dimmed when the caravan is full. A hero in the party is raised lapis; the
+ * one shown is outlined gold.
  */
 function HeroTile(props: {
   hero: HeroId;
   picked: boolean;
   shown: boolean;
+  full: boolean;
   onShow: () => void;
+  onToggle: () => void;
   style: CSSProperties;
 }) {
   const stats = HEROES[props.hero];
   const portrait = HERO_PORTRAIT[props.hero]?.src;
   return (
-    <button
-      type="button"
-      className={`${styles.heroPick} ${props.picked ? styles.heroPicked : ''} ${
-        props.shown ? styles.heroShown : ''
-      }`}
-      aria-label={`${stats.name}${props.picked ? ', in the caravan' : ''}`}
-      aria-current={props.shown || undefined}
-      data-picked={props.picked}
+    <div
+      className={`${styles.heroTile} ${props.picked ? styles.heroPicked : ''}`}
       style={props.style}
-      onClick={props.onShow}
     >
-      <span className={styles.heroPickPortrait}>
-        {portrait ? <img src={portrait} alt="" /> : stats.letter}
-        {props.picked && <span className={styles.heroPickCheck}>✓</span>}
-      </span>
-      <span className={styles.heroPickName}>{stats.name}</span>
-    </button>
+      <button
+        type="button"
+        className={`${styles.heroPick} ${props.picked ? styles.heroPicked : ''} ${
+          props.shown ? styles.heroShown : ''
+        }`}
+        aria-label={`${stats.name}${props.picked ? ', in the caravan' : ''}`}
+        aria-current={props.shown || undefined}
+        data-picked={props.picked}
+        onClick={props.onShow}
+      >
+        <span className={styles.heroPickPortrait}>
+          {portrait ? <img src={portrait} alt="" /> : stats.letter}
+        </span>
+        <span className={styles.heroPickName}>{stats.name}</span>
+      </button>
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={props.picked}
+        aria-label={`${stats.name} in the caravan`}
+        disabled={!props.picked && props.full}
+        className={styles.heroTileCheck}
+        onClick={props.onToggle}
+        data-testid="hero-tile-toggle"
+      >
+        <span className={styles.heroCardCheck} aria-hidden>
+          {props.picked && '✓'}
+        </span>
+      </button>
+    </div>
   );
 }
 
 /**
- * The hero shown, over the grid: portrait, role and stat meters, its story
- * and its abilities, and the button adding it to the caravan or leaving it
- * behind. Every hero's details are laid in the same place, only the one
- * shown visible, so the card is the tallest's height and the grid under it
- * never moves as heroes are tapped.
+ * The hero shown, over the grid (on a wide screen, beside it): its figure,
+ * name, role and stat meters, its story and its abilities, and the button
+ * adding it to the caravan or leaving it behind. Every hero's details are
+ * laid in the same place, only the one shown visible, so the card is the
+ * tallest's height and the grid never moves as heroes are tapped.
  */
 function HeroDetails(props: {hero: HeroId; picked: boolean; full: boolean; onToggle: () => void}) {
   return (
@@ -459,12 +476,9 @@ function HeroDetails(props: {hero: HeroId; picked: boolean; full: boolean; onTog
 function HeroInfo(props: {hero: HeroId; shown: boolean}) {
   const stats = HEROES[props.hero];
   const lore = LORE[props.hero];
-  const portrait = HERO_PORTRAIT[props.hero]?.src;
   return (
     <div className={`${styles.heroInfo} ${props.shown ? '' : styles.heroInfoHidden}`}>
-      <div className={`${styles.heroPickPortrait} ${styles.heroDetailsPortrait}`}>
-        {portrait ? <img src={portrait} alt="" /> : stats.letter}
-      </div>
+      <HeroFigure hero={props.hero} className={styles.heroDetailsFigure!} />
       <div className={styles.heroDetailsHead}>
         <div>
           <div className={`${styles.display} ${styles.heroDetailsName}`}>{stats.name}</div>
@@ -474,6 +488,29 @@ function HeroInfo(props: {hero: HeroId; shown: boolean}) {
       </div>
       {lore && <div className={styles.heroPickBlurb}>{lore}</div>}
       <HeroAbilities hero={props.hero} />
+    </div>
+  );
+}
+
+/**
+ * A hero's figure, large: its art, else its board sprite scaled up and
+ * idling, else its portrait; facing left, as the party does in a fight.
+ */
+function HeroFigure(props: {hero: HeroId; className?: string}) {
+  const art = HERO_ART[props.hero];
+  const sprite = HERO_SPRITE[props.hero];
+  const portrait = HERO_PORTRAIT[props.hero]?.src;
+  return (
+    <div className={`${styles.heroFigure} ${props.className ?? ''}`}>
+      {art ? (
+        <img src={art} alt="" />
+      ) : sprite ? (
+        <i style={{backgroundImage: `url(${sprite})`}} />
+      ) : portrait ? (
+        <img src={portrait} alt="" />
+      ) : (
+        HEROES[props.hero].letter
+      )}
     </div>
   );
 }

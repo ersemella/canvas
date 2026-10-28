@@ -333,8 +333,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['bite', 'hold'],
   },
   /**
-   * The Steppe's boss (owner, 2026-10-28; enemies.md, "The One-Eyed
-   * Giant"), Tepegöz of the *Book of Dede Korkut*, whose hide turned
+   * The Steppe's boss, the Cyclops (owner, 2026-10-28; enemies.md, "The
+   * Cyclops"), Tepegöz of the *Book of Dede Korkut*, whose hide turned
    * Basat's arrows until he struck the eye: One Eye (Armour
    * `ONE_EYE.armour` against hits from outside the lane it faces), Smash
    * (melee) and Boulder (Snap Shot's lanes, the units next to where it lands
@@ -353,7 +353,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * China's boss, one of two (owner, 2026-10-28; enemies.md, "The Bull Demon King
    * and Princess Iron Fan"): the Bull Demon King of *Journey to the West*. Gore
-   * is Trample as first built, a charge (`ABILITY.gore`). Devoted to the
+   * is Trample as first built, a charge (`ABILITY.gore`). Devoted to
    * Princess Iron Fan (`DEVOTED`). Not in the ROSTER: the test stage brings them.
    * Speed 1, defence 5 (health 12), power 3 are the owner's.
    */
@@ -1077,8 +1077,13 @@ export const STAGES: Stage[] = [
     map: 'salt',
   },
 ];
-/** How many passives the caravanserai between regions offers, one to be taken. */
-export const PASSIVE_OFFER = 3;
+/**
+ * How many passives the caravanserai between regions offers, drafted
+ * (progression.md, 19.3a; owner, 2026-10-28; three, one taken, before):
+ * the party picks one, the rival one, the party another, and the last
+ * goes to the rival.
+ */
+export const PASSIVE_OFFER = 4;
 /**
  * How many of a run's first stages always have mountains (owner, 2026-10-24;
  * randomTiles): the Steppe's, four since 2026-10-28.

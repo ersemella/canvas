@@ -164,7 +164,8 @@ export function makeUnit(
  * every one has a free hex to step to. With `mountains` the board always
  * has a range of mountains (randomTiles). The party's heroes come with
  * the run's `provisions` (progression.md, 19.2) and the passives taken
- * at its caravanserais (`passives`, 19.3). It is fought on `map`,
+ * at its caravanserais (`passives`, 19.3), the enemy's heroes those the
+ * rival drafted there (`rivalPassives`, 19.3a). It is fought on `map`,
  * the Steppe's unless a stage says otherwise (STAGES).
  */
 export function createFight(
@@ -174,7 +175,8 @@ export function createFight(
   mountains = false,
   provisions: Provision[] = [],
   map: MapData = STEPPE,
-  passives: PassivePick[] = []
+  passives: PassivePick[] = [],
+  rivalPassives: PassivePick[] = []
 ): FightState {
   const random = seededRandom(seed);
   const route = ROUTES[Math.floor(random() * ROUTES.length)]!;
@@ -199,7 +201,15 @@ export function createFight(
       ),
       makeUnit('player', party.length, CAMEL),
       ...enemies.map((hero, i) =>
-        makeUnit('enemy', i, hero, enemies.slice(0, i).filter((h) => h === hero).length)
+        makeUnit(
+          'enemy',
+          i,
+          hero,
+          enemies.slice(0, i).filter((h) => h === hero).length,
+          undefined,
+          undefined,
+          rivalPassives.filter((p) => p.hero === hero).map((p) => p.passive)
+        )
       ),
     ],
     effects: [],

@@ -1,7 +1,14 @@
 import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {Button, Paper, Stack, Text} from '@mantine/core';
-import {HEROES, HERO_PORTRAIT, PASSIVES, RULES, healthOf} from '@canvas/games-silk-road-run';
+import {
+  HEROES,
+  HERO_PORTRAIT,
+  PASSIVES,
+  RULES,
+  healthOf,
+  rivalPicks,
+} from '@canvas/games-silk-road-run';
 import type {
   FightState,
   PassiveId,
@@ -33,7 +40,8 @@ const healed = (camel: Unit, heals = 1) =>
 /** What the caravan takes with it from the caravanserai. */
 export interface SetOut {
   provision?: Provision;
-  passive?: PassivePick;
+  /** The party's two picks of the passives drafted, in the order picked. */
+  passives?: PassivePick[];
   /** The provision taken as a heal of the camel (RULES.camelHeal), in place of a stat. */
   heal?: boolean;
   /** The extra provision, Humphrey unhurt all stage: a stat, or `extraHeal`. */
@@ -46,8 +54,10 @@ export interface SetOut {
  * 19.2): after a stage that earns a provision, one hero still standing
  * takes 1 more of one stat, for the rest of the run, or the camel is
  * healed RULES.camelHeal instead, and the caravan sets out. When the stage
- * offers passives (`passives`, 19.3's passive slot) one of three is taken,
- * and one hero standing carries it for the rest of the run. Unless healed,
+ * offers passives (`passives`, 19.3a) four are drafted: the party picks
+ * one, the rival one for the next region's first hero (`rivals`), the
+ * party another, and the last goes to the rival's second; each a hero
+ * standing, or the rival's, carries for the rest of the run. Unless healed,
  * the camel goes on with the health it ended the stage with. If the camel
  * took no damage in the stage (`extraProvision`), one more provision is
  * taken the same way. After a stage that earns nothing the caravan only rests.
@@ -59,14 +69,41 @@ export function Caravanserai(props: {
   provision: boolean;
   extraProvision: boolean;
   passives: PassiveId[];
+  /** The enemy heroes the rival drafts for, its first pick's then its second's. */
+  rivals: Unit['hero'][];
   busy: boolean;
   error: string | null;
   onSetOut: (choices: SetOut) => void;
 }) {
   const [picks, setPicks] = useState<Choice[]>([]);
-  const [passive, setPassive] = useState<PassiveId | null>(null);
-  const [carrier, setCarrier] = useState<Unit['hero'] | null>(null);
+  /** The party's draft picks so far, in order; the last may wait for its carrier. */
+  const [draft, setDraft] = useState<{passive: PassiveId; carrier: Unit['hero'] | null}[]>([]);
   const offered = props.passives.length > 0;
+  /** The rival's picks, each following the party's pick before it. */
+  const rival = rivalPicks(
+    props.passives,
+    props.rivals,
+    draft.filter((p) => p.carrier !== null).map((p) => p.passive)
+  );
+  const rivalOf = (id: PassiveId) => rival.find((p) => p.passive === id);
+  const mineOf = (id: PassiveId) => draft.findIndex((p) => p.passive === id);
+  /** The pick being made: the last, while it waits for a carrier or there is another to make. */
+  const active = draft.at(-1);
+  const draftDone = draft.length === 2 && draft.every((p) => p.carrier !== null);
+  /**
+   * A tap on a passive: one of the party's un-picks it (and the pick after
+   * it); an open one becomes the pick being made, or starts the next.
+   */
+  const tapPassive = (id: PassiveId) =>
+    setDraft((d) => {
+      const at = d.findIndex((p) => p.passive === id);
+      if (at >= 0) return d.slice(0, at);
+      if (d.at(-1)?.carrier === null) return [...d.slice(0, -1), {passive: id, carrier: null}];
+      if (d.length < 2) return [...d, {passive: id, carrier: null}];
+      return d;
+    });
+  const setCarrier = (hero: Unit['hero']) =>
+    setDraft((d) => (d.length ? [...d.slice(0, -1), {...d.at(-1)!, carrier: hero}] : d));
   const carries = (unit: Unit, id: PassiveId | null) =>
     id !== null && (unit.passives?.includes(id) ?? false);
   const heroes = props.fight.units
@@ -106,8 +143,13 @@ export function Caravanserai(props: {
   /** What's still to choose before the caravan can set out, if anything. */
   const missing = [
     choose && !provisionsDone && (count > 1 && picks.length ? 'one more provision' : 'a provision'),
-    offered && !passive && 'a passive',
-    offered && passive && !carrier && 'who carries it',
+    offered &&
+      !draftDone &&
+      (active?.carrier === null
+        ? 'who carries it'
+        : draft.length
+          ? 'your second passive'
+          : 'a passive'),
   ].filter(Boolean);
   // The stage's provision first, then the extra one.
   const [first, second] = props.provision ? picks : [undefined, picks[0]];
@@ -175,66 +217,84 @@ export function Caravanserai(props: {
 
           {offered && (
             <Section
-              title="Passive"
-              done={Boolean(passive && carrier)}
-              lead="Take one of three, carried by one hero for the rest of the run."
-              rule={
-                passive && carrier
-                  ? `${HEROES[carrier].name} carries ${PASSIVES[passive].name}.`
-                  : passive
-                    ? 'Choose a hero to carry it.'
-                    : 'Choose a passive.'
+              title="Passive draft"
+              done={draftDone}
+              count={`${draft.filter((p) => p.carrier !== null).length} of 2`}
+              lead={
+                <>
+                  Four passives, drafted: you pick one, the rival caravan one for its{' '}
+                  {rivalName(props.rivals[0])}, you another, and the last goes to its{' '}
+                  {rivalName(props.rivals[1])}, the first two heroes of the region ahead. Each is
+                  carried for the rest of the run.
+                </>
               }
+              rule={draftRule(draft, rival)}
               ruleTestId="passive-rule"
             >
               <div className={styles.passiveOffer} data-testid="passive-offer">
                 {props.passives.map((id) => {
                   const def = PASSIVES[id];
-                  const on = passive === id;
+                  const mine = mineOf(id);
+                  const theirs = rivalOf(id);
+                  const pick = draft[mine];
                   return (
                     <button
                       key={id}
                       type="button"
-                      className={`${styles.provisionStat} ${styles.passiveCard} ${on ? styles.heroPicked : ''}`}
-                      aria-pressed={on}
+                      className={`${styles.provisionStat} ${styles.passiveCard} ${mine >= 0 ? styles.heroPicked : ''} ${theirs ? styles.passiveRival : ''}`}
+                      aria-pressed={mine >= 0}
+                      disabled={Boolean(theirs) || (draftDone && mine < 0)}
                       data-testid={`passive-${id}`}
-                      onClick={() => {
-                        setPassive(id);
-                        // A hero already carrying it can't take it again.
-                        const unit = heroes.find((u) => u.hero === carrier);
-                        if (unit && carries(unit, id)) setCarrier(null);
-                      }}
+                      data-rival={theirs ? theirs.hero : undefined}
+                      onClick={() => tapPassive(id)}
                     >
                       <span className={`${styles.display} ${styles.passiveName}`}>{def.name}</span>
                       <span>{def.rule}</span>
+                      {pick && (
+                        <span className={styles.passiveTaken}>
+                          Your pick {mine + 1}
+                          {pick.carrier ? `: ${HEROES[pick.carrier].name}` : ''}
+                        </span>
+                      )}
+                      {theirs && (
+                        <span className={styles.passiveTaken}>
+                          Rival’s: {HEROES[theirs.hero].name}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
               </div>
-              <div className={styles.sectionLabel}>Who carries it?</div>
-              <div className={styles.carriers} data-testid="passive-carriers">
-                {heroes.map((unit) => {
-                  const on = carrier === unit.hero;
-                  const has = carries(unit, passive);
-                  return (
-                    <button
-                      key={unit.id}
-                      type="button"
-                      className={`${styles.provisionStat} ${styles.carrier} ${on ? styles.heroPicked : ''}`}
-                      aria-pressed={on}
-                      disabled={has}
-                      data-testid={`carrier-${unit.hero}`}
-                      onClick={() => setCarrier(unit.hero)}
-                    >
-                      <Portrait unit={unit} className={styles.carrierPortrait} />
-                      <span>
-                        {HEROES[unit.hero].name}
-                        {has && <span className={styles.provisionNote}> carries it</span>}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+              {active && !draftDone && (
+                <>
+                  <div className={styles.sectionLabel}>
+                    Who carries {PASSIVES[active.passive].name}?
+                  </div>
+                  <div className={styles.carriers} data-testid="passive-carriers">
+                    {heroes.map((unit) => {
+                      const on = active.carrier === unit.hero;
+                      const has = carries(unit, active.passive);
+                      return (
+                        <button
+                          key={unit.id}
+                          type="button"
+                          className={`${styles.provisionStat} ${styles.carrier} ${on ? styles.heroPicked : ''}`}
+                          aria-pressed={on}
+                          disabled={has}
+                          data-testid={`carrier-${unit.hero}`}
+                          onClick={() => setCarrier(unit.hero)}
+                        >
+                          <Portrait unit={unit} className={styles.carrierPortrait} />
+                          <span>
+                            {HEROES[unit.hero].name}
+                            {has && <span className={styles.provisionNote}> carries it</span>}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </Section>
           )}
 
@@ -256,7 +316,9 @@ export function Caravanserai(props: {
                 props.onSetOut({
                   ...(first === 'heal' ? {heal: true} : first ? {provision: first} : {}),
                   ...(second === 'heal' ? {extraHeal: true} : second ? {extra: second} : {}),
-                  ...(offered && passive && carrier ? {passive: {hero: carrier, passive}} : {}),
+                  ...(offered && draftDone
+                    ? {passives: draft.map((p) => ({hero: p.carrier!, passive: p.passive}))}
+                    : {}),
                 })
               }
             >
@@ -350,6 +412,29 @@ function CamelHealth(props: {camel: Unit}) {
       </div>
     </div>
   );
+}
+
+/** A rival hero's name, as the draft's lead names it. */
+const rivalName = (hero: Unit['hero'] | undefined) => (hero ? HEROES[hero].name : 'hero');
+
+/** What the draft so far does: each pick and who carries it, the party's and the rival's in turn. */
+function draftRule(
+  draft: {passive: PassiveId; carrier: Unit['hero'] | null}[],
+  rival: PassivePick[]
+) {
+  if (!draft.length) return 'Choose a passive.';
+  const lines: string[] = [];
+  draft.forEach((p, i) => {
+    lines.push(
+      p.carrier
+        ? `${HEROES[p.carrier].name} carries ${PASSIVES[p.passive].name}.`
+        : `Choose a hero to carry ${PASSIVES[p.passive].name}.`
+    );
+    const r = rival[i];
+    if (r) lines.push(`The rival’s ${HEROES[r.hero].name} takes ${PASSIVES[r.passive].name}.`);
+  });
+  if (draft.length === 1 && draft[0]!.carrier) lines.push('Choose your second passive.');
+  return lines.map((l) => <div key={l}>{l}</div>);
 }
 
 /** A provision's pick: a hero's stat raised, or the camel healed. */

@@ -32,6 +32,7 @@ import bokhPortrait from '../sprites/bokh-portrait.png';
 import bokhSprite from '../sprites/bokh.png';
 import camelPortrait from '../sprites/camel-portrait.png';
 import camelSprite from '../sprites/camel.png';
+import cataphractArt from '../sprites/cataphract-art.png';
 import cataphractPortrait from '../sprites/cataphract-portrait.png';
 import cataphractSprite from '../sprites/cataphract.png';
 import mangudaiArt from '../sprites/mangudai-art.png';
@@ -49,8 +50,10 @@ import magusSprite from '../sprites/magus.png';
 import mahoutArt from '../sprites/mahout-art.png';
 import mahoutPortrait from '../sprites/mahout-portrait.png';
 import mahoutSprite from '../sprites/mahout.png';
+import varangianArt from '../sprites/varangian-art.png';
 import varangianPortrait from '../sprites/varangian-portrait.png';
 import varangianSprite from '../sprites/varangian.png';
+import priestArt from '../sprites/priest-art.png';
 import priestPortrait from '../sprites/priest-portrait.png';
 import priestSprite from '../sprites/priest.png';
 import youxiaArt from '../sprites/youxia-art.png';
@@ -114,7 +117,7 @@ export const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // Juggernaut's frame, its eye redrawn by hand.
   giant: giantSprite,
   // From the owner's AI-assisted art (2026-10-28): their purple shadows made
-  // grey first; the Bull Demon King shrunk to 44×44, his eye put back by hand, the
+  // grey first; the Bull Demon King shrunk to 44×44, his eye put back by hand,
   // Princess Iron Fan to 32×32, hers too.
   oxKing: oxKingSprite,
   fanLady: fanLadySprite,
@@ -137,6 +140,9 @@ export const HERO_ART: Partial<Record<Unit['hero'], string>> = {
   // Four pixels of magenta left in the astrolabe's openwork, given their
   // neighbours' gold by hand.
   magus: magusArt,
+  cataphract: cataphractArt,
+  varangian: varangianArt,
+  priest: priestArt,
 };
 /** Track portraits (32×32, facing right), filling the card; `faceX` is the face's column. */
 export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {

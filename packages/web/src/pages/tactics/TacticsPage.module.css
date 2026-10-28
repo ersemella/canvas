@@ -706,12 +706,28 @@
 /*
  * The start menu: what the game is, then the heroes to take. The roster is a
  * grid of portraits, a column a region and a row a role, under the hero
- * shown: its stats, story and abilities, and the button adding it.
+ * shown (on a wide screen, the grid on the left and the hero beside it): its
+ * figure, stats, story and abilities, and the button adding it.
  */
 .heroSelect {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+@media (min-width: 75em) {
+  .heroSelect {
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    gap: 24px;
+  }
+  .heroSelect > .heroDetails {
+    flex: 1;
+    min-width: 0;
+  }
+  .heroSelect > .heroPicks {
+    flex: none;
+    width: 440px;
+  }
 }
 .heroPicks {
   display: grid;
@@ -774,16 +790,6 @@
 .heroPick:not(.heroPicked) > .heroPickPortrait {
   filter: saturate(0.6) brightness(0.8);
 }
-.heroPickCheck {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0 4px;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--c-ink);
-  background: var(--c-goldLight);
-}
 .heroPickName {
   font-size: 12px;
   line-height: 1.2;
@@ -822,17 +828,18 @@
   display: grid;
 }
 /*
- * One hero's details: portrait and the name over the meters, then the story
- * and abilities beside them (on a phone, under them).
+ * One hero's details: its figure, and beside it the name and meters over
+ * the story and the abilities.
  */
 .heroInfo {
   grid-area: 1 / 1;
   display: grid;
-  grid-template-columns: auto minmax(150px, auto) 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: auto 1fr;
   grid-template-areas:
-    'portrait head blurb'
-    'portrait head abilities';
+    'figure head'
+    'figure blurb'
+    'figure abilities';
+  grid-template-rows: auto auto 1fr;
   /* A shorter hero's spare room goes under its details, not between them. */
   align-content: start;
   align-items: start;
@@ -841,29 +848,33 @@
 .heroInfoHidden {
   visibility: hidden;
 }
-.heroInfo > .heroPickPortrait {
-  grid-area: portrait;
-}
 .heroAbilities {
   grid-area: abilities;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.heroPickPortrait.heroDetailsPortrait {
-  width: 96px;
-  height: 96px;
+.heroFigure.heroDetailsFigure {
+  grid-area: figure;
+  width: 176px;
+  margin: 0;
+  font-size: 64px;
+}
+@media (min-width: 75em) {
+  .heroFigure.heroDetailsFigure {
+    width: 224px;
+  }
 }
 .heroDetailsHead {
   grid-area: head;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 16px;
   min-width: 0;
 }
 .heroDetailsName {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
 }
 .heroDetailsRole {
@@ -882,7 +893,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-width: 140px;
+  width: 130px;
+  flex: none;
   font-size: 13px;
 }
 .heroPickStats > div {
@@ -890,21 +902,6 @@
   justify-content: space-between;
   align-items: center;
   gap: 6px;
-}
-/* A phone: the story and abilities under the portrait and meters, the portrait smaller. */
-@media (max-width: 640px) {
-  .heroInfo {
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto;
-    grid-template-areas:
-      'portrait head'
-      'blurb blurb'
-      'abilities abilities';
-  }
-  .heroPickPortrait.heroDetailsPortrait {
-    width: 72px;
-    height: 72px;
-  }
 }
 /* A phone's hero: a tile that isn't itself a button; its portrait is its checkbox, View under its name. */
 .heroPick.heroCard {
@@ -951,8 +948,36 @@
   border-color: var(--c-ink);
   background: var(--c-goldLight);
 }
-.heroCardPortrait:disabled .heroCardCheck {
+.heroCardPortrait:disabled .heroCardCheck,
+.heroTileCheck:disabled .heroCardCheck {
   opacity: 0.4;
+}
+/* A desktop's hero: its tile, and over the portrait's corner its checkbox, a little bigger to click than it looks. */
+.heroTile {
+  position: relative;
+  display: grid;
+}
+.heroTileCheck {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.heroTileCheck:disabled {
+  cursor: default;
+}
+.heroTileCheck:focus-visible {
+  outline: var(--px) solid var(--c-goldLight);
+  outline-offset: calc(-2 * var(--px));
+}
+.heroTileCheck > .heroCardCheck {
+  top: 5px;
+  right: 5px;
 }
 .heroCardButton {
   min-height: 30px;
@@ -1254,7 +1279,7 @@
  */
 .passiveOffer {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 }
 .passiveCard {
@@ -1264,6 +1289,22 @@
 .passiveName {
   font-size: 18px;
   font-weight: bold;
+}
+/* Who a drafted passive went to: the party's pick, or the rival's. */
+.passiveTaken {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--c-lapisLight);
+}
+/* The rival's pick: out of the draft, in the enemy's madder. */
+.provisionStat.passiveRival:disabled {
+  opacity: 1;
+  border-color: var(--c-madder);
+  background: var(--c-madderDark);
+}
+.passiveRival .passiveTaken {
+  color: var(--c-madderLight);
 }
 .carriers {
   display: flex;

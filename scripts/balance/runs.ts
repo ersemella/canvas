@@ -3,7 +3,14 @@
 // camel going on at full health, until a stage is lost or the last is won.
 // The production AI plays both sides, the player's heroes included, at its
 // fixed work cap, so a seed always plays the same run.
-import {createRun, handleRunAction, passiveOffer, runStatus, runView} from '@balance-rules/run';
+import {
+  createRun,
+  handleRunAction,
+  passiveOffer,
+  rivalPicks,
+  runStatus,
+  runView,
+} from '@balance-rules/run';
 import type {RunState} from '@balance-rules/run';
 import {actingUnit, advanceToDecision, applyTurn} from '@balance-rules/fight';
 import {chooseAiTurn} from '@balance-rules/ai';
@@ -140,15 +147,16 @@ function chooseWith({depth, work}: {depth: number; work: number}) {
 /**
  * The caravanserai's choices after a won stage: the provision owed (the
  * view's `provision`), and the extra one (`extraProvision`), each to the
- * weakest survivor, and the first passive offered
- * to the first survivor not carrying it.
+ * weakest survivor, and the party's two picks of the passives drafted, each
+ * the first left in the offer, to the first survivor not carrying it (the
+ * rival's picks following from them).
  */
 function caravanserai(state: RunState, stat: StatId) {
   const standing = state.fight.units
     .filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive)
     .sort((a, b) => a.partyIndex - b.partyIndex);
   type Pick = {hero: HeroId; stat: StatId};
-  const out: {provision?: Pick; extra?: Pick; passive?: {hero: HeroId; passive: string}} = {};
+  const out: {provision?: Pick; extra?: Pick; passives?: {hero: HeroId; passive: string}[]} = {};
   const total = (u: (typeof standing)[number]) => u.speed + u.defence + u.power;
   // The provisions taken here so far, counted towards the stats they raise.
   const taken: Pick[] = [];
@@ -175,12 +183,26 @@ function caravanserai(state: RunState, stat: StatId) {
   if (view.provision) out.provision = pick();
   // Humphrey unhurt all stage: an extra one, the same way.
   if (view.extraProvision) out.extra = pick();
-  for (const passive of passiveOffer(state)) {
-    const taker = standing.find((u) => !hasPassive(u, passive));
-    if (taker) {
-      out.passive = {hero: taker.hero, passive};
-      break;
+  const offer = passiveOffer(state);
+  if (offer.length) {
+    const mine: {hero: HeroId; passive: (typeof offer)[number]}[] = [];
+    while (mine.length < 2) {
+      const gone = [
+        ...mine.map((p) => p.passive),
+        ...rivalPicks(
+          offer,
+          view.rivals,
+          mine.map((p) => p.passive)
+        ).map((p) => p.passive),
+      ];
+      const next = offer
+        .filter((id) => !gone.includes(id))
+        .map((passive) => ({passive, taker: standing.find((u) => !hasPassive(u, passive))}))
+        .find((c) => c.taker);
+      if (!next) break;
+      mine.push({hero: next.taker!.hero, passive: next.passive});
     }
+    out.passives = mine;
   }
   return out;
 }

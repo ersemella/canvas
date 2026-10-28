@@ -117,6 +117,25 @@ random from one pool:
   hero and wildcard slots, the provisions' reassignment, and moving a
   passive between heroes (question 63) aren't built; a fallen hero's
   passive goes with them.
+- **19.3a The passive draft (Decided, owner 2026-10-28; built).** The
+  caravanserai between regions offers **4 passives** (`PASSIVE_OFFER`),
+  drafted: the player picks one and its carrier; the rival (the enemy
+  AI) then takes the one left that best supplements the **first hero of
+  the next region** (the first of its heroes in the run's order,
+  `draftRivals` in run.ts); the player picks another; and the last goes
+  to the rival for the next region's **second hero**. `next` carries the
+  party's two picks (`passives`, in order); the rival's follow from them
+  (`rivalPicks`), so the page shows the rival's answer as soon as the
+  first pick has a carrier. The rival's picks are kept in
+  `RunState.rivalPassives`, and that enemy hero carries its passive in
+  every stage it fights for the rest of the run, as an outsider in later
+  regions too. How the rival judges "supplements most" is
+  `DRAFT_FIT` in passives.ts: per hero, a list of the passives it likes,
+  best first, and those that do it no good (last); the builder's first
+  reading of each kit, **not yet measured** (the balance runs could rank
+  them by win rate). The last passive goes to the second hero whatever it
+  is, so a poor fit (Steady Gait on the Duelist) can be forced on it:
+  that is the draft's denial play.
 - **At most two abilities** besides moving and Hold (owner, 2026-10-25;
   three from 2026-10-24; [roster.md](roster.md)): the hero slot offers a
   new ability only to a hero with fewer than two (`hasRoomForAbility` in
