@@ -391,7 +391,8 @@ function scorchedPatches(
   const count = pick(scorch.patches);
   for (let i = 0; i < count; i++) {
     const size = pick(scorch.sizes);
-    const apart = (gap: number) => allowed.filter((h) => placed.every((p) => hexDistance(p, h) >= gap));
+    const apart = (gap: number) =>
+      allowed.filter((h) => placed.every((p) => hexDistance(p, h) >= gap));
     const open = apart(3).length ? apart(3) : apart(2);
     if (!open.length) break;
     const first = pick(open);
@@ -416,10 +417,7 @@ export function scorched(map: MapData, h: Hex): boolean {
 
 /** Whether every open hex of `map` can still walk to every other with `extra` blocked too. */
 function connectedWithout(map: MapData, tiles: Record<string, Tile>, extra: Hex): boolean {
-  const blocked = new Set([
-    ...Object.keys(tiles).filter((k) => blocks(tiles[k])),
-    hexKey(extra),
-  ]);
+  const blocked = new Set([...Object.keys(tiles).filter((k) => blocks(tiles[k])), hexKey(extra)]);
   const all = new Set(map.hexes.map(hexKey));
   const open = map.hexes.filter((h) => !blocked.has(hexKey(h)));
   const seen = new Set([hexKey(open[0]!)]);
