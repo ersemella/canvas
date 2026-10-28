@@ -17,7 +17,7 @@ designing the map for Byzantine"), from setting.md's Byzantine biome:
 churches, underground cities such as Derinkuyu". **Built** the same day
 from the owner's art (see Built), **with the chimneys only** (owner,
 2026-10-28: "let's just stick with the chimneys for now"): the tuff and
-five or six fairy chimneys (three at first), no cliff, shown on the test
+seven or eight fairy chimneys out to the edge (three at first), no cliff, shown on the test
 stage.
 
 ## The place
@@ -256,11 +256,13 @@ From the owner's tuff and fairy chimney (AI-assisted, from prompts 1 and
 2), cut by `scripts/cappadocia-art.py`:
 
 - **Rules** (map.ts): `TUFF`, the Steppe's board with no mountains
-  (`mountains: 'never'`) and **five or six fairy chimneys** a fight
-  (`obstacles.counts` `[5, 6]`; owner, 2026-10-28: "add more chimneys";
-  three at first), within 3 of the centre, as the Steppe's yurts are
-  placed: no two side by side, never cutting the board in two. Six
-  always fit (400 seeds measured). The page names the tiles Tuff and Fairy chimney
+  (`mountains: 'never'`) and **seven or eight fairy chimneys** a fight
+  (`obstacles.counts` `[7, 8]`, `reach` 4), anywhere out to the board's
+  edge but the starting columns (owner, 2026-10-28: "never side by side,
+  but they can appear on the edge"), placed as the Steppe's yurts are: no
+  two side by side, never cutting the board in two. Three at first, then
+  five or six within 3 of the centre ("add more chimneys"). Packed to the
+  limit, 8 to 13 fit (1,000 seeds measured), so eight always do. The page names the tiles Tuff and Fairy chimney
   (info.ts). No stage is fought there yet: the Byzantine has no stages.
 - **The tuff** (`tiles/tuff.png`): the picture was drawn on a grid of
   about 128, so it is cut to 128, seamless, in **7 colours** picked from

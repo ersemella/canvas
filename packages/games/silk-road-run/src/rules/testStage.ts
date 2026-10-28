@@ -106,7 +106,8 @@ function parseUnit(where: string, v: unknown, camel = false): UnitSetup {
     loadout[stat] = n as number;
   }
   if (raw.abilities !== undefined) {
-    const ids = Object.keys(ABILITIES);
+    // The borrowed fan is picked up in the fight, never a kit's.
+    const ids = Object.keys(ABILITIES).filter((a) => a !== 'quench');
     if (
       !Array.isArray(raw.abilities) ||
       raw.abilities.some((a) => typeof a !== 'string' || !ids.includes(a))

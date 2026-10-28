@@ -575,7 +575,7 @@ describe('the track', () => {
 
 describe('the board', () => {
   it('has a map per region, each the Steppe’s board under another look', () => {
-    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'salt', 'tuff']);
+    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'ridges', 'salt', 'tuff']);
     expect(mapById('gobi')).toBe(GOBI);
     expect(mapById('flaming')).toBe(FLAMING);
     expect(mapById('salt')).toBe(SALT);
@@ -611,19 +611,21 @@ describe('the board', () => {
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
   });
 
-  it('stands five or six fairy chimneys near the middle of the Fairy Chimneys, with no mountains', () => {
+  it('scatters seven or eight fairy chimneys over the Fairy Chimneys, none side by side, with no mountains', () => {
     for (let seed = 0; seed < 40; seed++) {
       // Even a stage that asks for mountains gets none here.
       const s = createFight(seed, undefined, undefined, true, [], TUFF);
       expect(s.mapId).toBe('tuff');
       expect(mapOf(s).name).toBe('The Fairy Chimneys');
       const chimneys = Object.keys(s.tiles).filter((k) => s.tiles[k] === 'obstacle');
-      // Five or six (owner, 2026-10-28; three before).
-      expect([5, 6]).toContain(chimneys.length);
+      // Seven or eight (owner, 2026-10-28; three, then five or six, before).
+      expect([7, 8]).toContain(chimneys.length);
       expect(Object.values(s.tiles).every((t) => t === 'obstacle')).toBe(true);
-      for (const k of chimneys) {
-        const [q, r] = k.split(',').map(Number);
-        expect(hexDistance({q: q!, r: r!}, {q: 0, r: 0})).toBeLessThanOrEqual(3);
+      const at = chimneys.map((k) => k.split(',').map(Number)).map(([q, r]) => ({q: q!, r: r!}));
+      for (const h of at) {
+        // Out to the edge, but off the starting columns.
+        expect(Math.abs(h.q)).toBeLessThan(3);
+        for (const x of at) if (x !== h) expect(hexDistance(x, h)).toBeGreaterThan(1);
       }
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
     }

@@ -21,6 +21,9 @@ import {
   flies,
   drawExit,
   drawFallingHail,
+  drawFan,
+  drawFire,
+  FIRE_FPS,
   drawGround,
   drawObstacle,
   drawObstacleSmoke,
@@ -178,6 +181,7 @@ export class TacticsBoardSystem extends BaseSystem {
     if (!this.still) {
       for (const u of fight.units) if (u.alive && u.hex) parts.push(idleFrame(u.id, time));
       if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
+      if (fight.fires?.length) parts.push(Math.floor(time * FIRE_FPS));
       if (this.scene.turnArrow !== false) parts.push(turnArrowBob(time));
       if (mapOf(fight).exits.length > 0) parts.push(exitArrowPush(time));
       if (smokes(mapOf(fight)) && Object.values(fight.tiles).includes('obstacle'))
@@ -324,6 +328,9 @@ export class TacticsBoardSystem extends BaseSystem {
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h, pastExit(map, h), t);
+    // The Fan Lady's fires and the fan she drops, on the ground under the units.
+    for (const f of fight.fires ?? []) drawFire(ctx, f.hex, t);
+    if (fight.fan) drawFan(ctx, fight.fan);
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.
     const walking = playing ? null : this.walkingParty(fight);
     // A frame mid-motion: the next draws again whatever the key says.

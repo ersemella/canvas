@@ -59,8 +59,10 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
  */
 export function displayFight(base: FightState, e: RecordedEvent, actor: string | null): FightState {
   const after = e.after;
+  // The fires and the fan as they were then, not as the turn left them.
+  const {fires: _fires, fan: _fan, ...rest} = base;
   return {
-    ...base,
+    ...rest,
     phase: 'fight',
     currentSlot: after.currentSlot,
     effects:
@@ -68,6 +70,8 @@ export function displayFight(base: FightState, e: RecordedEvent, actor: string |
         ? castHail(after.effects, e.unitId, e.target)
         : after.effects,
     shots: after.shots ?? [],
+    ...(after.fires ? {fires: after.fires} : {}),
+    ...(after.fan ? {fan: after.fan} : {}),
     awaiting: actor,
     units: base.units.map((u) => ({...u, ...after.units.find((v) => v.id === u.id)})),
   };
