@@ -44,6 +44,9 @@ export const HERO_COLOR = {
   fox: '#c2410c',
   // The One-Eyed Giant's disc: it has no sprite yet.
   giant: '#57534e',
+  // China's boss, the Ox King and the Fan Lady: discs too, until their art exists.
+  oxKing: '#7c2d12',
+  fanLady: '#be185d',
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to

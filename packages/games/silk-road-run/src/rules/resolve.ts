@@ -10,9 +10,10 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, HEROES, ONE_EYE, RULES} from './config';
+import {ABILITY, CAMEL, DEVOTED, HEROES, ONE_EYE, RULES} from './config';
 import {
   addStatus,
+  fireOn,
   hailOn,
   inFrontLane,
   isImmobilized,
@@ -77,6 +78,8 @@ function snapshot(state: FightState): BoardSnapshot {
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
     ...(state.shots?.length ? {shots: state.shots.map((v) => ({...v}))} : {}),
+    ...(state.fires?.length ? {fires: state.fires.map((f) => ({...f, hex: {...f.hex}}))} : {}),
+    ...(state.fan ? {fan: {...state.fan}} : {}),
   };
 }
 
@@ -378,7 +381,8 @@ export function endTurnEffects(unit: Unit): void {
  * grapples (owner, 2026-10-23); damage a Shield absorbs whole isn't taken.
  * Then the passives that answer damage (19.8): Shake Loose, Last Stand,
  * Second Wind. `source`, the unit dealing it, if any, is credited with a
- * kill (Momentum).
+ * kill (Momentum). Any damage coming at a Devoted unit, whatever takes it,
+ * Hastens its partner first (`devotion`).
  */
 export function applyDamage(
   ctx: Ctx,
@@ -388,6 +392,7 @@ export function applyDamage(
   source?: Unit
 ): void {
   if (!target.alive || amount <= 0) return;
+  devotion(ctx, target);
   if (target.shield) {
     const absorbed = Math.min(target.shield, amount);
     target.shield -= absorbed;
@@ -428,9 +433,24 @@ export function applyDamage(
 }
 
 /**
+ * Devoted (owner, 2026-10-28; `DEVOTED`): `target` is hit, so each other
+ * Devoted unit of its side still standing, its partner, is Hastened.
+ */
+function devotion(ctx: Ctx, target: Unit): void {
+  if (!hasPassive(target, 'devoted')) return;
+  for (const u of ctx.state.units) {
+    if (u === target || !u.alive || u.side !== target.side || !hasPassive(u, 'devoted')) continue;
+    log(ctx, `${unitName(u)} rushes to ${unitName(target)}’s side.`);
+    haste(ctx, u, DEVOTED.haste);
+  }
+}
+
+/**
  * `unit` falls, `killer` (if any) having taken it off the board
  * (Momentum); each ally of its with Vengeance is Hastened 3 and Empowered
- * 1 for its next turn (19.8).
+ * 1 for its next turn (19.8). The Fan Lady drops her fan where she fell
+ * (`FightState.fan`), and the fires she set burn on: her next turn, when
+ * they would go out, won't come.
  */
 export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
   const at = unit.hex;
@@ -442,6 +462,10 @@ export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
   // Its hail lasted until a turn of its, which won't come; its shots until its card came back.
   clearHail(ctx.state, unit);
+  if (at && unit.hero === 'fanLady' && !ctx.state.fan) {
+    ctx.state.fan = {...at};
+    log(ctx, `${unitName(unit)} drops the Banana-leaf Fan.`);
+  }
   if (ctx.state.shots) ctx.state.shots = ctx.state.shots.filter((v) => v.source !== unit.id);
   if (killer) killer.tookOff = true;
   checkEnd(ctx.state);
@@ -735,7 +759,43 @@ export function enterHex(
   }
   // Moved onto scorched ground, not walking there: it burns (owner, 2026-10-28).
   if (how !== 'walk') scorch(ctx, unit);
+  // Fire burns whoever enters it, walking or Moved (owner, 2026-10-28).
+  burn(ctx, unit, h);
+  pickUpFan(ctx, unit);
   hailHolds(ctx, unit);
+}
+
+/**
+ * Fire on `h` (the Fan Lady's Fan the Flames) burns `unit`, just entering
+ * it: `ABILITY.fanFlames.burn`, from no one's power, credited to her.
+ */
+function burn(ctx: Ctx, unit: Unit, h: Hex): void {
+  if (!unit.alive || !fireOn(ctx.state, h)) return;
+  const fire = ctx.state.fires!.find((f) => hexEquals(f.hex, h))!;
+  const source = ctx.state.units.find((u) => u.id === fire.source && u.alive);
+  const n = ABILITY.fanFlames.burn;
+  applyDamage(ctx, unit, n, `The flames burn ${unitName(unit)} for ${n}`, source);
+}
+
+/**
+ * A hero entering the space where the Fan Lady's fan lies picks it up
+ * (owner, 2026-10-28): it may spend a turn putting out the flames
+ * (`quench`). Not Humphrey, nor the enemy.
+ */
+function pickUpFan(ctx: Ctx, unit: Unit): void {
+  const fan = ctx.state.fan;
+  if (!fan || !unit.alive || !unit.hex || !hexEquals(fan, unit.hex)) return;
+  if (unit.side !== 'player' || unit.hero === CAMEL) return;
+  delete ctx.state.fan;
+  unit.fan = true;
+  log(ctx, `${unitName(unit)} picks up the Banana-leaf Fan.`);
+}
+
+/** The Fan Lady's turn starts: the fires she set go out (`FireEffect`). */
+export function fanOut(state: FightState, unit: Unit): void {
+  if (!state.fires?.some((f) => f.source === unit.id)) return;
+  state.fires = state.fires.filter((f) => f.source !== unit.id);
+  if (!state.fires.length) delete state.fires;
 }
 
 /**

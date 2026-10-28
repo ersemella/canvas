@@ -573,7 +573,7 @@ describe('the track', () => {
 
 describe('the board', () => {
   it('has a map per region, each the Steppe’s board under another look', () => {
-    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'salt']);
+    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'ridges', 'salt']);
     expect(mapById('gobi')).toBe(GOBI);
     expect(mapById('flaming')).toBe(FLAMING);
     expect(mapById('salt')).toBe(SALT);

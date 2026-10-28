@@ -75,8 +75,10 @@ export type {AbilityDef, AbilityKind, ArrowLane} from './rules/abilities';
 export {
   CAMEL_RULE,
   EXIT_INFO,
+  FAN_INFO,
   KEYWORD_INFO,
   TILE_INFO,
+  fireInfo,
   hailInfo,
   shotInfo,
   tileInfo,

@@ -6,7 +6,7 @@
 import {ABILITY, HEROES, RULES} from './config';
 import {hailEnds} from './resolve';
 import type {Tile} from './map';
-import type {FightState, HailEffect, ShotInAir} from './types';
+import type {FightState, FireEffect, HailEffect, ShotInAir} from './types';
 
 export interface HexInfo {
   name: string;
@@ -80,6 +80,16 @@ const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
     },
   },
 };
+// The Flaming Mountains with their ridges burning, for China's boss (map.ts, `RIDGES`).
+MAP_TILE_INFO.ridges = {
+  ...MAP_TILE_INFO.flaming,
+  mountain: {
+    name: 'Burning ridge',
+    short: 'Blocks movement and arrows; the Fan Lady fans it',
+    detail:
+      'Blocks movement and arrows. The Fan Lady’s Fan the Flames sets the spaces next to it alight.',
+  },
+};
 
 /** What a tile is called and does on the map `mapId`. */
 export function tileInfo(mapId: string, tile: Tile): HexInfo {
@@ -110,6 +120,28 @@ export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
     detail: `Units here or entering are Immobilized until ${until}${ABILITY.hail.entry ? `; entering takes ${caster ? caster.power : 'its caster’s power'} damage` : ''}.`,
   };
 }
+
+/** A burning space (`FireEffect`): until its Fan Lady's next turn, or for good once she has fallen. */
+export function fireInfo(fire: FireEffect, state: FightState): HexInfo {
+  const lady = state.units.find((u) => u.id === fire.source);
+  const n = ABILITY.fanFlames.burn;
+  const until = lady?.alive
+    ? `It goes out at the start of the ${HEROES[lady.hero].name}’s next turn.`
+    : 'Its fanner has fallen: it burns until put out with her fan.';
+  return {
+    name: 'Fire',
+    short: `Burns ${n} on a unit entering it`,
+    detail: `A unit entering it, walking or Moved, takes ${n} damage. ${until}`,
+  };
+}
+
+/** The fan the Fan Lady drops where she falls (`FightState.fan`). */
+export const FAN_INFO: HexInfo = {
+  name: 'Banana-leaf Fan',
+  short: 'A hero entering picks it up',
+  detail:
+    'Dropped by the Fan Lady. A hero entering this space picks it up, and may spend a turn with it putting out every fire on the board.',
+};
 
 export function shotInfo(shot: ShotInAir, state: FightState): HexInfo {
   const archer = state.units.find((u) => u.id === shot.source);

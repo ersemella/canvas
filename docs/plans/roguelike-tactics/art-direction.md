@@ -242,9 +242,14 @@ tuning. This file has no combat-design section number.
   red browns (`rock-red.png`) are no longer used. Tried before
   and taken out, as they didn't look good (owner, 2026-10-26): two or
   three mudbrick ruins (`tiles/ruins.png`, as the ruins of Gaochang, now
-  unused) and one or two fissures, a hazard burning 1 on each entry. The flames are only drawn: the mountains block as any do; a
-  fire hazard waits for the region's boss ([setting.md](setting.md), the
-  Bull Demon King's fire mountain). The page calls the tiles Red earth,
+  unused) and one or two fissures, a hazard burning 1 on each entry. The flames are only drawn: the mountains block as any do; the
+  fire hazard waited for the region's boss ([setting.md](setting.md), the
+  Bull Demon King's fire mountain), and came with it (2026-10-28;
+  [enemies.md](enemies.md), 11.3b): on `ridges`, the same look with two or
+  three burning ridges, the Fan Lady sets the spaces next to one alight,
+  drawn in code as the ground glowing orange under flickering tongues of
+  flame (`drawFire` in ground.ts), and the fan she drops as a small green
+  leaf on a handle (`drawFan`). The page calls the tiles Red earth,
   Beacon tower and Flaming Mountains. Every stage of a run is still the
   Steppe's (`STAGES` in config.ts); the test stage's `"map"` showed the
   Flaming Mountains until the Salt Flats (below).

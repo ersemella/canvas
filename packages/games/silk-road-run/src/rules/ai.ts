@@ -2,11 +2,19 @@
  * Deterministic selective lookahead: rank actions with the preview heuristic,
  * then search actual timeline decisions with budgeted alpha-beta minimax.
  */
-import {hexDirectionTo, hexDistance, hexEquals, hexKey, hexNeighbors} from '@canvas/engine/server';
+import {
+  hexDirectionTo,
+  hexDistance,
+  hexEquals,
+  hexKey,
+  hexNeighbor,
+  hexNeighbors,
+} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, AI, CAMEL, RULES} from './config';
 import {
   cleaveAreas,
+  fireOn,
   hostile,
   isImmobilized,
   firstInLane,
@@ -18,6 +26,7 @@ import {
   roadDistance,
   shotLane,
   unitAt,
+  walkable as walkableHex,
 } from './board';
 import {
   ABILITIES,
@@ -28,6 +37,7 @@ import {
   elixirSwaps,
   elixirImmortal,
   grappling,
+  chargePlan,
   longshotLanes,
   stompPlan,
   unusableReason,
@@ -159,6 +169,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
       hexDirectionTo(u.hex!, e.hex) !== null
     )
       return true;
+    if (has('gore') && d <= ABILITY.gore.steps && hexDirectionTo(u.hex!, e.hex) !== null)
+      return true;
     if (has('gale') && d <= ABILITY.gale.range + 1) return true;
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
@@ -234,6 +246,25 @@ function shotPoints(state: FightState, side: Side): number {
   return score;
 }
 
+/**
+ * What the fires on the board are worth to `side` (`AI.fireShare`): each
+ * unit next to a burning space and not in it, a share of the burn, for the
+ * fire's side against the other.
+ */
+function firePoints(state: FightState, side: Side): number {
+  if (!state.fires?.length) return 0;
+  let score = 0;
+  for (const u of state.units) {
+    if (!u.alive || !u.hex || fireOn(state, u.hex)) continue;
+    const fire = state.fires.find((f) => hexDistance(f.hex, u.hex!) === 1);
+    if (!fire) continue;
+    const source = state.units.find((s) => s.id === fire.source);
+    if (!source || !hostile(source, u)) continue;
+    score += (source.side === side ? 1 : -1) * ABILITY.fanFlames.burn * AI.fireShare;
+  }
+  return score;
+}
+
 /** Scores the fight after a turn by `actor`, from its side's point of view. */
 export function scoreOutcome(
   before: FightState,
@@ -269,6 +300,7 @@ export function scoreOutcome(
   else {
     score += camelProgress(after, actor.side) - camelProgress(before, actor.side);
     score += shotPoints(after, actor.side) - shotPoints(before, actor.side);
+    score += firePoints(after, actor.side) - firePoints(before, actor.side);
   }
   const me = after.units.find((u) => u.id === actor.id)!;
   // What enemies could do to it before its next turn (one step of lookahead),
@@ -334,11 +366,13 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
  */
 function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: boolean): number {
   const target = input.action.target;
-  // Stomp: whom it hits, and where it ends (`stompPlan`).
+  // Stomp and Gore: whom it hits, and where it ends (`stompPlan`, `chargePlan`).
   const plan =
     input.action.ability === 'stomp'
       ? stompPlan(state, mapOf(state), unit.hex!, target!.hex!)
-      : undefined;
+      : input.action.ability === 'gore'
+        ? chargePlan(state, mapOf(state), unit.hex!, target!.hex!)
+        : undefined;
   const end = input.move?.length
     ? input.move[input.move.length - 1]!
     : plan
@@ -368,6 +402,22 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       // Cleave's Delay: the share of a turn its card loses.
       if (ability === 'cleave' && ABILITY.cleave.delay > 0 && damage < u.hp)
         value += sided(u, (turnValue(u) * ABILITY.cleave.delay) / cardCost(u));
+    }
+    return closing + value;
+  }
+  // The Banana-leaf Fan: the fire each unit in its line would be blown into.
+  if (ability === 'bananaFan') {
+    let value = 0;
+    const map = mapOf(state);
+    const dir = hexDirectionTo(unit.hex!, target!.hex!)!;
+    for (const h of ABILITIES.bananaFan.area!(map, unit.hex!, target!.hex!)) {
+      const u = unitAt(state, h);
+      if (!u) continue;
+      const burns = blownPath(state, h, dir, ABILITY.bananaFan.push).filter((x) =>
+        fireOn(state, x)
+      ).length;
+      const damage = Math.min(burns * ABILITY.fanFlames.burn, u.hp);
+      value += sided(u, damage + (damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0));
     }
     return closing + value;
   }
@@ -468,6 +518,20 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     value -= chargeCost(unit, input);
   }
   return closing + (hostile(hit, unit) ? 1 + value : -1 - value * AI.friendlyDamageFactor);
+}
+
+/** The spaces a unit on `from` would be Pushed through, `n` along `dir`, up to yurts, a unit or the map's edge. */
+function blownPath(state: FightState, from: Hex, dir: number, n: number): Hex[] {
+  const map = mapOf(state);
+  const out: Hex[] = [];
+  let at = from;
+  for (let i = 0; i < n; i++) {
+    const next = hexNeighbor(at, dir);
+    if (!walkableHex(map, next) || unitAt(state, next)) break;
+    out.push(next);
+    at = next;
+  }
+  return out;
 }
 
 /** An ability whose `to` is where its user ends up (Skirmish's step, Feigned Retreat's walk). */

@@ -75,6 +75,73 @@ wolves', and Snap Shot's lanes.
   150 to 200 hits by the eye against 250 to 330 taken off by its hide).
   To tune before it enters a run.
 
+### 11.3b The Ox King and the Fan Lady, China's boss (Built 2026-10-28, on the test stage only)
+The Bull Demon King and Princess Iron Fan of *Journey to the West*, as
+the Ox King and the Fan Lady (no real names, roster.md). Their bent rule
+is **two units whose cards are linked** (11.3's "two heads, two turns"),
+and they are fought in the Flaming Mountains, from the same novel: the
+fire hazard the art doc kept for the region's boss (art-direction.md).
+
+- **Stats (the owner's):** the Ox King speed 1, defence 5 (health 12),
+  power 3; the Fan Lady speed 3, defence 2 (health 6), power 1. `oxKing`
+  and `fanLady` in config.ts; not in the ROSTER, so neither the start
+  menu nor a run's stages bring them. The test stage does (test-stage.json,
+  as committed: China's three heroes against the two of them on `ridges`).
+  No sprites yet: lettered discs (K and L).
+- **Devoted** (a passive, `devoted`, both carry it, not offered at the
+  caravanserai): whenever one of them is hit, any damage coming at it
+  (a Shield's too, not damage Armour takes off whole), the other's card is
+  Hastened 3 (`DEVOTED.haste`, Swift Strike's number). A fire's burn
+  counts, so the Fan Lady blowing the Ox King into her own fire Hastens
+  her.
+- **Gore** (the Ox King's): Trample as first built, still in the code as
+  `ABILITY.stomp.mode: 'charge'` and now shared with it (`resolveCharge`
+  in abilities.ts): a walk of up to 2 (`ABILITY.gore.steps`) in a line,
+  every unit in its way, a whole row together, hit for his power and Pushed
+  back ahead of him; a row that can't be Pushed stops him behind it.
+  Gore is a charge whatever Stomp's mode.
+- **Banana-leaf Fan** (the Fan Lady's): every unit in a line of 3 straight
+  out from her (`ABILITY.bananaFan`), ally or enemy, is Pushed 2 along it,
+  the farthest first. No damage of its own: the fire does it.
+- **Fan the Flames** (the Fan Lady's): aimed at one burning ridge (a
+  mountain tile, anywhere on the board; the builder's reading of "one
+  burning ridge", no range given), the open spaces next to it catch fire
+  until her next turn (`FireEffect`, `FightState.fires`), any fire of hers
+  before going out. Lighting a space doesn't burn whoever stands there;
+  **entering** one deals 1 (`ABILITY.fanFlames.burn`), as the fissures
+  tried on 2026-10-26 did, walking or Moved in, a space at a time, credited
+  to her. Walks of the same length prefer the one through fewer fires,
+  and Humphrey steps round fire where a step as near is.
+- **The map, `ridges`** (the builder's, untested): the Flaming Mountains'
+  red earth and beacon tower, no scorched ground, and two or three burning
+  ridges, single mountain spaces within 3 of the centre, none side by side
+  or next to the tower, off the columns next to the starting ones and off
+  Humphrey's road (`RIDGES` in map.ts). `flaming` itself has had no
+  mountains since 2026-10-28 (owner), so it is left as it was.
+- **China's tools against them** (as the owner set out; each checked in
+  `bosses.test.ts`): the Vanguard's Cleave through both Hastens each by 3
+  and then Delays each by 8, a net Delay of 5 on both; the Duelist,
+  Empowered 2 by the Alchemist, fells the Fan Lady in two strikes; the
+  Alchemist's Weaken 2 on the Ox King cuts Gore to 1.
+- **The fan she drops** (the owner's optional extra, built): when the Fan
+  Lady falls her fan lies where she fell (`FightState.fan`), and the fires
+  she set burn on, as her next turn won't come (the builder's reading). A
+  hero entering the space picks it up (`Unit.fan`; not Humphrey, not the
+  enemy) and gains a third action, **Borrowed Fan** (`quench`): a turn
+  putting out every fire on the board, the fan then spent, as Sun Wukong
+  borrows it in the novel.
+- **The AI:** the search plays the fire as it plays hail; its first
+  guess counts what the Fan's line would be blown into, and a turn's score
+  counts each unit next to a fire of the other side as half a burn
+  (`AI.fireShare`, a PLACEHOLDER) so lighting fire by enemies is worth
+  something before anyone is Pushed in.
+- **First measured (2026-10-28, 20 AI fights, the production AI on both
+  sides, Humphrey in play, the committed test stage):** China's party won
+  20 of 20, 12 by felling both, 8 by Humphrey reaching the road out; 19
+  burns from the fire across the 20, 131 Devoted Hastes; the Fan Lady fanned the
+  flames 67 times and swept the fan 22, the Ox King gored 41 times. Like
+  the giant, too easy as it stands: to tune before it enters a run.
+
 ---
 
 ### 11.4 Difficulty Scaling (Decided)

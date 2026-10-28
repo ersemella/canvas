@@ -6,11 +6,13 @@ import type {Hex} from '@canvas/engine';
 import {
   CAMEL_RULE,
   EXIT_INFO,
+  FAN_INFO,
   HEROES,
   HERO_PORTRAIT,
   PALETTE,
   abilitiesOf,
   atExit,
+  fireInfo,
   hailEnds,
   hailInfo,
   mapOf,
@@ -226,6 +228,8 @@ export function HexInspector({
 }) {
   const tile = tileAt(mapOf(fight), hex);
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
+  const fire = fight.fires?.find((f) => hexEquals(f.hex, hex));
+  const fan = fight.fan && hexEquals(fight.fan, hex);
   const shots = (fight.shots ?? []).filter((v) =>
     shotLane(fight, mapOf(fight), v).some((h) => hexEquals(h, hex))
   );
@@ -238,6 +242,10 @@ export function HexInspector({
         <GroundCard info={EXIT_INFO} color="var(--c-lapisLight)" dense={dense} />
       )}
       {hail && <GroundCard info={hailInfo(hail, fight)} color="var(--c-skyLight)" dense={dense} />}
+      {fire && (
+        <GroundCard info={fireInfo(fire, fight)} color="var(--c-madderLight)" dense={dense} />
+      )}
+      {fan && <GroundCard info={FAN_INFO} color="var(--c-jade)" dense={dense} />}
       {shots.map((v) => (
         <GroundCard
           key={v.source}

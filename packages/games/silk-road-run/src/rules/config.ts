@@ -320,7 +320,46 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['smash', 'boulder', 'hold'],
     passives: ['oneEye'],
   },
+  /**
+   * China's boss, one of two (owner, 2026-10-28; enemies.md, "The Ox King
+   * and the Fan Lady"): the Bull Demon King of *Journey to the West*. Gore
+   * is Trample as first built, a charge (`ABILITY.gore`). Devoted to the
+   * Fan Lady (`DEVOTED`). Not in the ROSTER: the test stage brings them.
+   * Speed 1, defence 5 (health 12), power 3 are the owner's.
+   */
+  oxKing: {
+    name: 'Ox King',
+    letter: 'K',
+    speed: 1,
+    defence: 5,
+    power: 3,
+    abilities: ['gore', 'hold'],
+    passives: ['devoted'],
+  },
+  /**
+   * The Ox King's wife (owner, 2026-10-28), Princess Iron Fan: the
+   * Banana-leaf Fan blows a line of units back (`ABILITY.bananaFan`), and
+   * Fan the Flames sets the spaces by a burning ridge alight
+   * (`ABILITY.fanFlames`). Devoted (`DEVOTED`). Speed 3, defence 2 (health
+   * 6), power 1 are the owner's.
+   */
+  fanLady: {
+    name: 'Fan Lady',
+    letter: 'L',
+    speed: 3,
+    defence: 2,
+    power: 1,
+    abilities: ['bananaFan', 'fanFlames', 'hold'],
+    passives: ['devoted'],
+  },
 };
+
+/**
+ * Devoted (owner, 2026-10-28), the Ox King's and the Fan Lady's: whenever
+ * one of them is hit (any damage coming at it, a Shield's or not), the
+ * other's card is Hastened `haste`, Swift Strike's number.
+ */
+export const DEVOTED = {haste: 3 as number};
 
 /**
  * One Eye (owner, 2026-10-28), the One-Eyed Giant's passive: a hit on it
@@ -570,6 +609,26 @@ export const ABILITY = {
    */
   boulder: {push: 1 as number},
   /**
+   * Gore (owner, 2026-10-28), the Ox King's: Stomp's charge
+   * (`stomp.mode: 'charge'`, Trample as first built), a walk of up to
+   * `steps` in a line, every unit in its way hit and the row Pushed back.
+   */
+  gore: {steps: 2 as number},
+  /**
+   * The Banana-leaf Fan (owner, 2026-10-28), the Fan Lady's: every unit in
+   * a line of `reach` straight out from her, ally or enemy, is Pushed
+   * `push` away along it, the farthest first. No damage: the fire does it.
+   */
+  bananaFan: {reach: 3 as number, push: 2 as number},
+  /**
+   * Fan the Flames (owner, 2026-10-28), the Fan Lady's: the open spaces
+   * next to one burning ridge (a mountain tile, anywhere on the board)
+   * catch fire until her next turn; entering one, by walking or Moved
+   * there, deals `burn` (the fissures' hazard, tried 2026-10-26), from no
+   * one's power.
+   */
+  fanFlames: {burn: 1 as number},
+  /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
    * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
@@ -655,6 +714,8 @@ export const AI = {
     fox: 1,
     // A boss walks into reach, as a tank does.
     giant: 0,
+    oxKing: 0,
+    fanLady: 1,
   } as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   /**
@@ -662,6 +723,13 @@ export const AI = {
    * walk is worth this share of the hit: it can step out. PLACEHOLDER.
    */
   dodgeShare: 0.25,
+  /**
+   * Fire (the Fan Lady's Fan the Flames): each unit standing next to a
+   * burning space, not in it, is worth this share of the burn to the
+   * fire's side (`firePoints` in ai.ts), as it may be Pushed in or have to
+   * walk through. The builder's PLACEHOLDER.
+   */
+  fireShare: 0.5,
   /**
    * Minus this per space between the unit and what it closes in on after
    * its turn (for the enemy, Temee once no hero is in its reach; otherwise

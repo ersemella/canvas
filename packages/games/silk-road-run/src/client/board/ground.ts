@@ -16,10 +16,12 @@ import {
   HEX_SCALE,
   SPRITE_FEET,
   SPRITE_SCALE,
+  artPixel,
   center,
   hexPath,
   hexRandom,
   insideHex,
+  tintHex,
 } from './pixels';
 import yurtImage from '../tiles/yurt.png';
 import sandstoneRuinsImage from '../tiles/ruins-sandstone.png';
@@ -230,6 +232,9 @@ const LOOKS: Record<string, Look> = {
     dome: saltDomeImage,
   },
 };
+
+// The Flaming Mountains with their ridges burning (map.ts, `RIDGES`): the same look.
+LOOKS.ridges = LOOKS.flaming!;
 
 /** A map's look; the Steppe's for a map without one of its own. */
 export function lookOf(map: MapData): Look {
@@ -700,4 +705,84 @@ export function drawFallingHail(ctx: CanvasRenderingContext2D, h: Hex, time: num
     }
   }
   ctx.restore();
+}
+
+/** Frames a second a fire's flames flicker in. */
+export const FIRE_FPS = 6;
+const FIRE_TONGUES = 7;
+/** A tongue's colours, its base to its tip. */
+const FIRE_COLORS = ['#7c2d12', '#c2410c', '#f59e0b', '#fde68a'];
+
+/**
+ * A burning space (the Fan Lady's Fan the Flames): the ground glowing, and
+ * tongues of flame 2 to 6 art pixels tall flickering over it, each from a
+ * spot the hex picks, so hexes don't flicker in step. Drawn under the
+ * units, so a unit standing in it stands in the flames. `time` null: still.
+ */
+export function drawFire(ctx: CanvasRenderingContext2D, h: Hex, time: number | null): void {
+  const c = center(h);
+  const px = SPRITE_SCALE;
+  const frame = time === null ? 0 : Math.floor(time * FIRE_FPS);
+  const next = hexRandom(h, 7);
+  ctx.save();
+  tintHex(ctx, h, '#ea580c', 0.32);
+  for (let i = 0; i < FIRE_TONGUES; i++) {
+    let lx = 0;
+    let ly = 0;
+    for (let tries = 0; tries < 8; tries++) {
+      lx = Math.round((next() - 0.5) * 26);
+      ly = Math.round((next() - 0.5) * 22);
+      if (insideHex(lx, ly, 4)) break;
+    }
+    const phase = Math.floor(next() * 4);
+    const height = 2 + ((frame + phase) % 4) + (i % 2);
+    const x0 = Math.round(c.x / px) + lx;
+    const y0 = Math.round(c.y / px) + ly;
+    for (let dy = 0; dy < height; dy++) {
+      const color = FIRE_COLORS[Math.min(3, Math.floor((dy / height) * 4))]!;
+      // Wider at the base, a flicker to one side at the tip.
+      const sway = dy === height - 1 ? ((frame + i) % 3) - 1 : 0;
+      const width = dy < height / 2 ? 2 : 1;
+      for (let dx = 0; dx < width; dx++) artPixel(ctx, x0 + dx + sway, y0 - dy, color);
+    }
+  }
+  ctx.restore();
+}
+
+/**
+ * The Banana-leaf Fan lying where the Fan Lady fell, in art pixels: `o`
+ * the outline, `#` the leaf, `=` its ribs, `|` the handle.
+ */
+const FAN = [
+  '....ooooooo....', //
+  '..oo#######oo..',
+  '.o##=##=##=##o.',
+  'o###=##=##=###o',
+  'o####=#=#=####o',
+  '.o####===####o.',
+  '..oo###=###oo..',
+  '....oo#=#oo....',
+  '......o|o......',
+  '......o|o......',
+  '......o|o......',
+  '.......o.......',
+];
+const FAN_COLOR: Record<string, string> = {
+  o: PALETTE.ink,
+  '#': '#65a30d',
+  '=': '#3f6212',
+  '|': '#92400e',
+};
+
+/** The dropped fan on `h`, on the ground. */
+export function drawFan(ctx: CanvasRenderingContext2D, h: Hex): void {
+  const c = center(h);
+  const left = Math.round(c.x / SPRITE_SCALE) - 7;
+  const top = Math.round(c.y / SPRITE_SCALE) - 6;
+  FAN.forEach((row, dy) =>
+    [...row].forEach((ch, dx) => {
+      const color = FAN_COLOR[ch];
+      if (color) artPixel(ctx, left + dx, top + dy, color);
+    })
+  );
 }
