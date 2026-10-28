@@ -89,7 +89,8 @@ fire hazard the art doc kept for the region's boss (art-direction.md).
   and `fanLady` in config.ts; not in the ROSTER, so neither the start
   menu nor a run's stages bring them. The test stage does (test-stage.json,
   as committed: China's three heroes against the two of them on `ridges`).
-  No sprites yet: lettered discs (K and L).
+  Their sprites and portraits are the owner's AI-assisted art
+  (2026-10-28; art-direction.md).
 - **Devoted** (a passive, `devoted`, both carry it, not offered at the
   caravanserai): whenever one of them is hit, any damage coming at it
   (a Shield's too, not damage Armour takes off whole), the other's card is
