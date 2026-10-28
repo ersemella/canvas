@@ -1,8 +1,9 @@
 /**
  * Abilities' effects as a turn plays back (Sunlight's beam, Gale's gusts,
  * a Volley's arrows falling, Shove's blow, Haul's rope, Cleave's swing,
- * Swift Strike's thrust; Snap Shot's and
- * Feigned Retreat's arrows are drawn by the playback).
+ * Swift Strike's thrust, Elixir's flask, Omen's clock, Stomp's quake,
+ * Bite's jaws; Snap Shot's and Feigned Retreat's arrows are drawn by the
+ * playback, Hail's stones and Grapple's fists by the board).
  */
 import type {Hex} from '@canvas/engine';
 import type {AbilityId} from '../../rules/types';
@@ -43,6 +44,10 @@ export const ABILITY_EFFECT: Partial<
   haul: drawHaul,
   cleave: drawCleave,
   swiftStrike: drawSwiftStrike,
+  elixir: drawElixir,
+  omen: drawOmen,
+  stomp: drawStomp,
+  bite: drawBite,
 };
 
 /** Fades an effect out over the last part of its event, from `start` (0 to 1) on. */
@@ -435,6 +440,256 @@ function drawSwiftStrike(ctx: CanvasRenderingContext2D, {from, target, k}: Effec
       ))
         if (fade > 0.4 || (cx + cy) % 2 === 0)
           artPixel(ctx, cx, cy, m < 0.5 ? '#86efac' : '#5bb26f');
+    }
+}
+
+/** How high the Alchemist's flask arcs, in scene pixels, and the drops it bursts into. */
+const ELIXIR_ARC = 46;
+const ELIXIR_DROPS = 10;
+
+/**
+ * Elixir: the Alchemist lobs a stoppered flask, turning, in an arc onto
+ * the unit's space, where it bursts in a splash of green droplets and a
+ * pool that soaks away. On itself, the flask just bursts.
+ */
+function drawElixir(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame): void {
+  const a = from ? center(from) : center(target);
+  const b = center(target);
+  const flight = from && (from.q !== target.q || from.r !== target.r) ? 0.45 : 0;
+  if (k < flight) {
+    const t = k / flight;
+    const x = lerp(a.x, b.x, t);
+    const y = lerp(a.y - 22, b.y - 14, t) - Math.sin(Math.PI * t) * ELIXIR_ARC;
+    const [fx, fy] = artCell(x, y);
+    // The flask, upright or tipped as it turns: a round green belly, a cork.
+    const tipped = Math.floor(t * 4) % 2 === 1;
+    const body: [number, number][] = [
+      [-1, 0],
+      [0, 0],
+      [1, 0],
+      [-1, 1],
+      [0, 1],
+      [1, 1],
+      [0, 2],
+    ];
+    for (const [ox, oy] of body)
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ] as const)
+        artPixel(ctx, fx + ox + dx, fy + oy + dy, OUTLINE);
+    for (const [ox, oy] of body) artPixel(ctx, fx + ox, fy + oy, oy === 0 ? '#86efac' : '#5bb26f');
+    artPixel(ctx, fx - 1, fy, '#ffffff');
+    // The neck and cork, pointing up or off to the side.
+    const [nx, ny] = tipped ? [2, 0] : [0, -1];
+    const [cx, cy] = tipped ? [3, 0] : [0, -2];
+    artPixel(ctx, fx + nx, fy + ny, '#bbf7d0');
+    artPixel(ctx, fx + cx, fy + cy, '#a16207');
+    return;
+  }
+  // The burst: a ring of drops thrown up and falling, a pool soaking away.
+  const m = flight < 1 ? (k - flight) / (1 - flight) : 1;
+  const fade = fadeOut(m, 0.6);
+  if (fade <= 0) return;
+  const pool = ditherFill(ctx, '#5bb26f', 5 * fade);
+  if (pool) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(b.x, b.y + 8, 14 + m * 16, 8 + m * 9, 0, 0, Math.PI * 2);
+    ctx.fillStyle = pool;
+    ctx.fill();
+    ctx.restore();
+  }
+  const next = hexRandom(target, 13);
+  for (let i = 0; i < ELIXIR_DROPS; i++) {
+    const ang = (i / ELIXIR_DROPS) * Math.PI * 2 + next() * 0.4;
+    const speed = 18 + next() * 14;
+    const x = b.x + Math.cos(ang) * speed * m;
+    // Up and out, then falling back.
+    const y = b.y - 10 + Math.sin(ang) * speed * m * 0.5 - Math.sin(Math.PI * m) * 16;
+    const [dx, dy] = artCell(x, y);
+    if (fade <= 0.4 && (dx + dy) % 2 !== 0) continue;
+    artPixel(ctx, dx, dy, i % 3 === 0 ? '#ffffff' : i % 2 ? '#86efac' : '#5bb26f');
+  }
+  // The flask's shards, glinting.
+  if (m < 0.35)
+    for (const [ox, oy] of [
+      [-2, -1],
+      [2, -2],
+      [0, 1],
+    ] as const) {
+      const [gx, gy] = artCell(b.x, b.y - 12);
+      artPixel(
+        ctx,
+        gx + ox * (1 + Math.round(m * 6)),
+        gy + oy * (1 + Math.round(m * 4)),
+        '#e5e7eb'
+      );
+    }
+}
+
+/** Omen's clock face, its rim's radius in art pixels, and the ticks round it. */
+const OMEN_RADIUS = 9;
+const OMEN_TICKS = 12;
+
+/**
+ * Omen: a clock face of starlight over the unit, its ticks lit in turn as
+ * its hand sweeps a full round (time turned for the unit's card), the
+ * other hand set, then it fades.
+ */
+function drawOmen(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): void {
+  const c = center(target);
+  const appear = Math.min(1, k / 0.15);
+  const fade = fadeOut(k, 0.75) * appear;
+  if (fade <= 0) return;
+  const [ox, oy] = artCell(c.x, c.y - 52);
+  const keep = (x: number, y: number) => fade > 0.4 || (x + y) % 2 === 0;
+  const put = (x: number, y: number, color: string) => {
+    if (keep(x, y)) artPixel(ctx, x, y, color);
+  };
+  // The face: a dark dial, a plum rim, outlined.
+  const r = Math.max(2, Math.round(OMEN_RADIUS * appear));
+  for (let y = -r - 1; y <= r + 1; y++)
+    for (let x = -r - 1; x <= r + 1; x++) {
+      const d = Math.hypot(x, y);
+      if (d <= r - 1) put(ox + x, oy + y, '#1f3a6e');
+      else if (d <= r + 0.2) put(ox + x, oy + y, '#e3aee4');
+      else if (d <= r + 1.2) put(ox + x, oy + y, OUTLINE);
+    }
+  // The sweep: from twelve round, over the middle of the effect.
+  const sweep = Math.min(1, Math.max(0, (k - 0.15) / 0.55));
+  const hand = -Math.PI / 2 + sweep * Math.PI * 2;
+  for (let i = 0; i < OMEN_TICKS; i++) {
+    const a = -Math.PI / 2 + (i / OMEN_TICKS) * Math.PI * 2;
+    const lit = i / OMEN_TICKS <= sweep;
+    const tx = ox + Math.round(Math.cos(a) * (r - 2));
+    const ty = oy + Math.round(Math.sin(a) * (r - 2));
+    put(tx, ty, lit ? '#ffdf5e' : '#8d4a92');
+  }
+  // The hour hand, set; the minute hand sweeping, a star at the pin.
+  for (let j = 1; j <= Math.round((r - 3) * 0.6); j++) put(ox + j, oy, '#d4ebff');
+  for (let j = 1; j <= r - 3; j++)
+    put(ox + Math.round(Math.cos(hand) * j), oy + Math.round(Math.sin(hand) * j), '#ffffff');
+  put(ox, oy, '#ffdf5e');
+  // Motes of starlight drifting off the face once the hand comes round.
+  if (sweep >= 1) {
+    const next = hexRandom(target, 17);
+    const m = (k - 0.7) / 0.3;
+    for (let i = 0; i < 6; i++) {
+      const a = next() * Math.PI * 2;
+      const d = r + 2 + m * 10 * (0.5 + next());
+      put(
+        ox + Math.round(Math.cos(a) * d),
+        oy + Math.round(Math.sin(a) * d),
+        i % 2 ? '#e3aee4' : '#ffffff'
+      );
+    }
+  }
+}
+
+/**
+ * Stomp: the Juggernaut's foot comes down where it stands, a ring of dust
+ * bursting out round it, the ground cracking, and chevrons drive out over
+ * each space next to it, the way the units there are Pushed.
+ */
+function drawStomp(ctx: CanvasRenderingContext2D, {target, area, k}: EffectFrame): void {
+  const c = center(target);
+  const fade = fadeOut(k, 0.65);
+  if (fade <= 0) return;
+  // Cracks spreading from under its feet.
+  const next = hexRandom(target, 19);
+  const crack = Math.min(1, k / 0.25);
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2 + next() * 0.6;
+    const len = (16 + next() * 10) * crack;
+    for (const [ax, ay] of artLine(
+      c.x,
+      c.y + 8,
+      c.x + Math.cos(a) * len,
+      c.y + 8 + Math.sin(a) * len * 0.55
+    ))
+      if (fade > 0.4 || (ax + ay) % 2 === 0) artPixel(ctx, ax, ay, '#5b4c68');
+  }
+  // The shockwave: a ring of dust spreading out flat over the ground.
+  const wave = Math.min(1, k / 0.55);
+  const rx = 14 + wave * 44;
+  for (let i = 0; i < 36; i++) {
+    const a = (i / 36) * Math.PI * 2;
+    const [ax, ay] = artCell(c.x + Math.cos(a) * rx, c.y + 8 + Math.sin(a) * rx * 0.55);
+    if ((fade <= 0.4 || wave >= 1) && (ax + ay) % 2 !== 0) continue;
+    artPixel(ctx, ax, ay, i % 3 === 0 ? '#efdcbc' : '#d4b483');
+    artPixel(ctx, ax, ay - 1, '#8c7350');
+  }
+  // Chevrons over each space next to it, driving outward.
+  for (const h of area) {
+    const n = center(h);
+    const len = Math.hypot(n.x - c.x, n.y - c.y) || 1;
+    const ux = (n.x - c.x) / len;
+    const uy = (n.y - c.y) / len;
+    const t = Math.min(1, Math.max(0, (k - 0.15) / 0.5));
+    if (t <= 0) continue;
+    const tip = {x: n.x + ux * (t * 18 - 6), y: n.y + uy * (t * 18 - 6) - 10};
+    for (const side of [1, -1])
+      for (const [ax, ay] of artLine(
+        tip.x,
+        tip.y,
+        tip.x - ux * 10 + side * uy * 10,
+        tip.y - uy * 10 - side * ux * 10
+      )) {
+        if (fade <= 0.4 && (ax + ay) % 2 !== 0) continue;
+        artPixel(ctx, ax, ay + 1, OUTLINE);
+        artPixel(ctx, ax, ay, '#f5f5f4');
+      }
+  }
+}
+
+/** A row of teeth for Bite's jaws: art pixels across, the fangs longer. */
+const BITE_TEETH = [2, 1, 1, 1, 2];
+
+/**
+ * Bite: jaws snap shut on the unit, the upper and lower rows of teeth
+ * closing from above and below, then a flash where they meet.
+ */
+function drawBite(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): void {
+  const c = center(target);
+  const fade = fadeOut(k, 0.6);
+  if (fade <= 0) return;
+  const [ox, oy] = artCell(c.x, c.y - 14);
+  // Open wide, then snapped shut by 0.35, a jolt as they close.
+  const close = Math.min(1, k / 0.35);
+  const gap = Math.round((1 - close * close) * 9);
+  const keep = (x: number, y: number) => fade > 0.4 || (x + y) % 2 === 0;
+  const half = BITE_TEETH.length;
+  for (const dir of [-1, 1]) {
+    const gumY = oy + dir * (gap + 3);
+    // The jaw's gum line, its ends curving round to the other jaw's, as a mouth's.
+    for (let x = -half * 2; x <= half * 2; x++) {
+      const y = gumY - dir * Math.round((x * x) / 30);
+      if (!keep(ox + x, y)) continue;
+      artPixel(ctx, ox + x, y + dir, OUTLINE);
+      artPixel(ctx, ox + x, y, '#b0402e');
+    }
+    // Its teeth, pointing at the other jaw.
+    BITE_TEETH.forEach((len, i) => {
+      for (const side of [-1, 1]) {
+        const x = side * (i * 2 + 1);
+        const base = gumY - dir * Math.round((x * x) / 30);
+        for (let j = 1; j <= len; j++) {
+          const y = base - dir * j;
+          if (keep(ox + x, y)) artPixel(ctx, ox + x, y, j === len ? '#e5e7eb' : '#ffffff');
+        }
+      }
+    });
+  }
+  // The snap: a burst of red where they meet.
+  if (close >= 1 && k < 0.6)
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const d = 6 + Math.round(((k - 0.35) / 0.25) * 6);
+      const [bx, by] = artCell(c.x + Math.cos(a) * d * 2, c.y - 14 + Math.sin(a) * d);
+      artPixel(ctx, bx, by, i % 2 ? '#f2a48e' : '#ffffff');
     }
 }
 

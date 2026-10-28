@@ -50,6 +50,7 @@ import {
   log,
   makeImmortal,
   makeUnstoppable,
+  record,
   swapSpeedHealth,
   stun,
   swapCards,
@@ -1147,6 +1148,8 @@ function resolveStomp(ctx: Ctx, user: Unit, to: Hex): void {
   // Felled by hail on its step: no stomp.
   if (!user.alive || !user.hex) return;
   log(ctx, `${unitName(user)} stomps.`);
+  // The stomp itself, once the Juggernaut is in place, for the playback's flourish.
+  record(ctx.state, {kind: 'land', unitId: user.id, ability: 'stomp', target: {...user.hex}});
   const caught = stompCaught(ctx.state, user.hex!);
   for (const u of caught) hit(ctx, user, u, 'The stomp');
   for (const u of simultaneousOrder(caught)) {

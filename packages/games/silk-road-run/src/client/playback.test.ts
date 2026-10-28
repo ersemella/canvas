@@ -70,6 +70,48 @@ describe('playback', () => {
     expect(shown.statuses.map((s) => s.kind)).toEqual(['stunned']);
   });
 
+  it('shows Hail falling on its space as soon as it is cast', () => {
+    const {from, to} = played();
+    const storm = from.units.find((u) => u.alive && u.hex)!;
+    const target = {q: 0, r: 0};
+    const e = {
+      kind: 'action' as const,
+      unitId: storm.id,
+      ability: 'hail' as const,
+      target,
+      after: {...to.events![0]!.after, effects: []},
+    };
+    expect(displayFight(from, e, null).effects).toMatchObject([
+      {kind: 'hail', hex: target, source: storm.id},
+    ]);
+  });
+
+  it('shows a Grapple’s hold, and so its fists, as soon as it is used', () => {
+    const {from, to} = played();
+    const [grappler, held] = from.units.filter((u) => u.alive && u.hex);
+    const after = to.events![0]!.after;
+    const action = {
+      kind: 'action' as const,
+      unitId: grappler!.id,
+      ability: 'grapple' as const,
+      target: held!.hex!,
+      // A snapshot as the rules take it: no statuses.
+      after: {
+        ...after,
+        units: from.units.map(({id, hex, hp, alive, slot}) => ({id, hex, hp, alive, slot})),
+      },
+    };
+    const turn = {kind: 'turn' as const, unitId: held!.id, after: action.after};
+    const play = new Playback({from, to: {...to, events: [action, turn, turn]}});
+    const grip = (p: Playback) =>
+      p.display.units.find((u) => u.id === held!.id)!.statuses.find((s) => s.grapple)?.grapple;
+    expect(grip(play)).toEqual({champion: grappler!.id, target: held!.id});
+    // It holds through the events after it.
+    play.step(eventSeconds(action, false) + 0.01);
+    expect(play.index).toBe(1);
+    expect(grip(play)).toEqual({champion: grappler!.id, target: held!.id});
+  });
+
   it('plays a new fight’s opening from the cards as first placed, Temee on its corner', () => {
     const to = createRun(0).fight;
     const {from} = openingPlayback(to)!;
