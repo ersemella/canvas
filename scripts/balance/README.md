@@ -144,6 +144,8 @@ parties by a novice and an expert (`search`, the player's heroes' search).
 `roster-nine.mjs` (2026-10-27) does the same for all nine heroes: each in
 every seat of a Steppe, a China and a Persia mirror, the regions' parties
 against each other, and the Persian heroes by a novice and an expert.
+`roster-twelve.mjs` (2026-10-28) does the same for all twelve, Byzantium's
+three too, without the skill rows.
 `archer-magus.mjs` (2026-10-27) measures Ranger nerfs (`ABILITY.longshot.minRange`,
 `.camel`, `.falloff`, power, defence) and Magus buffs (`ABILITY.conjunction.hit`,
 `.delay`, range, speed, defence), each switch off as built.
