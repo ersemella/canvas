@@ -33,7 +33,9 @@ the closest to the game. What follows keeps them alike.
    (the sprite sheet's first frame; for the portrait, the same without
    the crop).
 4. **A new chat for each hero**, with the anchor attached. A long chat
-   drifts, each picture a little further from the first.
+   drifts, each picture a little further from the first, and earlier
+   heroes' costumes bleed into later ones. Fixes to one hero ("If it
+   comes back wrong", below) stay in that hero's chat.
 5. **The same grid afterwards.** ChatGPT's pixels only look like pixels.
    Run every result through `scripts/shrink-sprite.py` at the same size,
    which snaps it to a true grid, a clean 1-pixel outline and a small
@@ -45,7 +47,8 @@ the closest to the game. What follows keeps them alike.
 
 ## The style block
 
-Paste this after each hero's subject, unchanged:
+Already in every hero's prompt below, unchanged; here on its own for
+reference:
 
 ```
 Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
@@ -70,8 +73,9 @@ border, no ground, no scenery, no second pose.
 
 ## The heroes
 
-Each is a subject paragraph to paste before the style block. Attach the
-anchor (once you have it) and that hero's sprite and portrait. Every
+Each prompt is complete, the style block already in it: paste the whole
+block into a new chat. Attach the anchor (once you have it) and that
+hero's sprite and portrait. Every
 hero is in an action pose with its signature weapon or gift, the one its
 ability uses, and matches its board sprite's costume and colours.
 
@@ -87,6 +91,25 @@ wrestling briefs. Tall black boots with upturned toes and red stitched
 bands. Black hair, short on top, the sides shaved. A wrestler's crouch,
 knees bent wide, both arms reaching forward with open hands to seize an
 opponent, eyes fixed ahead.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 2. The Outrider (`mangudai`)
@@ -100,6 +123,25 @@ cream fur brim; dark beard, dark eyes. Twisting in the saddle, he draws a
 short dark recurved composite bow to the right, an arrow nocked; a quiver
 at the hip. The horse and rider together fill the frame, the horse's legs
 mid-stride.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 3. The Storm Caller (`storm`)
@@ -113,6 +155,25 @@ with a dark brown upturned brim. His right arm is raised high, holding a
 smooth white rain stone, with white and very pale blue wind swirling
 round it and round his arm; his left hand points down and forward at the
 ground, as if bringing down hail. Stern, intent face.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 4. The Vanguard (`modao`)
@@ -127,6 +188,25 @@ armoured boots. A rounded iron helmet with a gold rim and a red plume.
 Short dark beard. Feet planted wide, he holds a long two-handed blade on a
 pole (a modao) diagonally up and forward to the right, ready to cut
 through the line.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 5. The Duelist (`youxia`)
@@ -140,6 +220,25 @@ brown sash, over pale trousers bound into dark wrapped boots. In the right
 hand a straight double-edged sword (a jian) held low and level across the
 body, the empty scabbard in the left hand behind. A low, balanced fencing
 stance, weight forward, about to strike.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 6. The Alchemist (`alchemist`)
@@ -153,6 +252,25 @@ ankles, with red accents at the collar and a red sash. In his raised right
 hand a small round gourd flask of elixir, its stopper out, a wisp of
 amber vapour rising; more small flasks hang from his sash. Calm, knowing
 expression, about to throw.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 7. The Juggernaut (`mahout`)
@@ -166,6 +284,25 @@ neck behind the ears: a bearded man in a saffron turban and a teal tunic,
 holding a gold-tipped goad. The elephant faces right, mid-stomp, one
 foreleg raised high to crash down, trunk curled. The elephant fills the
 frame from side to side, the driver near the top.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 8. The Ranger (`archer`)
@@ -179,6 +316,25 @@ trousers tucked into soft brown boots, and a soft rounded indigo cap with
 a red ribbon trailing behind. A quiver at the hip. Drawing a large dark
 recurved composite bow to full stretch, the arrow pointing right, feet
 apart, weight back, aiming a long shot.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 9. The Magus (`magus`)
@@ -191,6 +347,25 @@ cream turban. A long blue robe over a dark indigo under-robe to the
 ground. In his raised hands a round gold astrolabe, held up as if reading
 the stars through it, a few small pale stars glinting round it. Upright,
 still, absorbed.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 10. The Cataphract (`cataphract`)
@@ -204,6 +379,25 @@ wears steel and gilded scale armour, a rounded steel helmet with a gold
 band and a mail veil hiding the face below the eyes. Charging at full
 gallop to the right, a long lance couched level and pointing forward.
 Horse and rider together fill the frame.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 11. The Barbarian (`varangian`)
@@ -217,6 +411,25 @@ to the thighs, a dark green cloak, brown trousers with leg wrappings and
 brown boots. He swings a huge long-handled axe with a broad crescent
 blade in both hands, back and across the body, about to sweep it through
 everything beside him. Fierce, wide stance.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ### 12. The Priest (`priest`)
@@ -230,6 +443,25 @@ wide cream outer robe with a broad gold border, a tall dark brown
 cylindrical brimless cap. In his right hand a small gold censer on a dark
 chain, a thin puff of pale smoke rising; his left hand raised, palm
 forward, in a blessing. No halo, icon or large cross. Calm, steady.
+
+Style: detailed pixel art on a 128 x 128 grid, shown scaled up with every
+art pixel a hard, even square block (8 x 8 on a 1024 x 1024 image): no
+anti-aliasing, no gradients, no blur, no dithering, no rim light or glow.
+A 1-pixel dark brown-black outline all the way round the silhouette, and
+dark lines inside it only where forms overlap. Light from the upper left,
+two or three flat shades per colour, at most 32 colours in all. Warm,
+saturated colours as in the attached references; no light blue except
+where the subject says so. The same chunky, readable look as the attached
+style reference: a 16-bit console game's character art, not a painting.
+
+Framing: one full-length figure, facing right, in a three-quarter view
+from slightly above, as the attached sprite. The figure fills the square,
+its height about 85% of the frame, its feet on the same line near the
+bottom with about 6% of the frame free below them, centred left to right.
+Under the feet a flat dark grey (#444444) oval shadow, with no other
+colour in it. Flat magenta (#FF00FF) background filling the frame, with no
+other magenta anywhere in the picture. One figure only: no text, no
+border, no ground, no scenery, no second pose.
 ```
 
 ## If it comes back wrong
