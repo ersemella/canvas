@@ -399,6 +399,77 @@ colours, warm skin tones as in the references. Flat magenta (#FF00FF)
 background. One portrait only, no text, no border.
 ```
 
+## Prompts for the One-Eyed Giant (2026-10-28)
+
+The Steppe's boss (enemies.md, 11.3a), a lettered disc (`giant` in
+`HERO_COLOR`) until its art comes. A **44 × 44** board sprite facing right,
+the Juggernaut's frame, so it outsizes the heroes and rises above its hex,
+split into the 2-frame idle by `scripts/idle-sheet.py` (88 × 44 in all);
+and a **32 × 32** track portrait (`giant.png` and `giant-portrait.png` in
+`src/client/sprites/`). The board draws its facing as an eye on its hex's
+edge, so the sprite's own eye only needs to read as one big eye.
+
+- **Attach the references**, scaled up 8× with nearest-neighbour:
+  `mahout.png` (the 44 × 44 frame) and `bokh.png` (a Steppe figure on
+  foot) for the sprite; `bokh-portrait.png` and `mahout-portrait.png`
+  for the portrait.
+- One asset per image, on flat magenta (#FF00FF), as the Archer's.
+- If the eye is lost at size: "make the single eye much bigger, white
+  with a black pupil, the brightest thing on the sprite".
+
+### 1. Board sprite
+
+```
+Pixel art sprite of a single creature for a hex-grid tactics game, in the
+exact style, viewpoint and dark outline of the attached sprites.
+
+Subject: a hulking one-eyed giant from the folk tales of the Central Asian
+steppe. Huge stooped shoulders and long thick arms, a big belly, short
+bowed legs. A single large round eye in the middle of the forehead, white
+with a black pupil, under one heavy brow; a wide mouth with tusk-like
+teeth, wild black hair and a ragged beard. Weathered grey-olive skin.
+Dressed in crudely stitched sheepskins with the fleece showing, a rope
+belt, bare forearms and bare feet. In its right hand a huge knotted wooden
+club resting on its shoulder; in its left hand a rough grey boulder held
+low, ready to throw. Menacing, heavy stance.
+
+Framing: full body, facing right, three-quarter view from slightly above,
+as the attached sprites. The figure fills a 44 x 44 pixel frame with about
+2 pixels free on each side, clearly bigger and bulkier than a human hero.
+
+Style: 44 x 44 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 14 colours. Earthy colours (grey-olive
+skin, cream and brown fleece, dark wood, stone grey) so it stands out on
+grass and sand; no red, which the game keeps for the enemy's rug, and no
+light blue, kept for targeting. A small soft grey oval shadow under the
+feet. Flat magenta (#FF00FF) background. One sprite only, no text, no
+frame, no extra poses.
+```
+
+### 2. Track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same one-eyed giant: a huge brutish face with a single large
+round eye in the middle of the forehead, white with a black pupil, glaring
+right; one heavy brow, a broad flat nose, a wide mouth with tusk-like
+teeth, wild black hair and a ragged beard, weathered grey-olive skin;
+shaggy sheepskin at the shoulders, the knotted club's head showing behind
+one shoulder.
+
+Framing: head and shoulders, facing right in three-quarter view, the face
+filling most of the frame, the hair touching the top edge, cropped at the
+shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours. Flat magenta (#FF00FF) background. One portrait only, no text,
+no border.
+```
+
 ## Palette (Proposed)
 
 - **One fixed palette** of about **24–32 colours** across every culture.

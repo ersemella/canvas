@@ -725,10 +725,18 @@ export const ROSTER: HeroId[] = [
  * 2026-10-28; China's fox spirits taken out).
  */
 export type RegionId = 'steppe' | 'china' | 'persia';
-export const REGIONS: Record<RegionId, {heroes: HeroId[]; creature: HeroId | null}> = {
-  steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf'},
-  china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null},
-  persia: {heroes: ['archer', 'mahout', 'magus'], creature: null},
+/**
+ * `boss`: the region's boss, the enemy of its last stage (owner,
+ * 2026-10-28; enemies.md), the One-Eyed Giant on the Steppe; null while
+ * the region has none built, and its last stage brings its heroes.
+ */
+export const REGIONS: Record<
+  RegionId,
+  {heroes: HeroId[]; creature: HeroId | null; boss: HeroId | null}
+> = {
+  steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: 'giant'},
+  china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: null},
+  persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
 };
 /**
  * A run's stages, in order (owner, 2026-10-24; for a while four, from three
@@ -740,8 +748,13 @@ export const REGIONS: Record<RegionId, {heroes: HeroId[]; creature: HeroId | nul
  * random order from the run's seed, the first of them random too (owner,
  * 2026-10-28; the Outrider and then each region's damage hero before), and so do the heroes of the regions before, so each stage brings
  * the last one's own heroes and one more. The last is won to win the run.
+ * Four stages a region (owner, 2026-10-28; three before), the fourth its
+ * boss's (`boss`): the region's boss (REGIONS) and `creatures` of its
+ * creatures, or, for a region with no boss built yet, its heroes as for
+ * the others.
  * `provision`: winning it earns a provision, assigned at the caravanserai
- * before the next (progression.md, 19.2: a region's stages 1 and 2).
+ * before the next (progression.md, 19.2: a region's stages 1, 2 and 3,
+ * owner, 2026-10-28; 1 and 2 before).
  * `passive`: winning it, the region's last, offers a passive at the
  * caravanserai on the way to the next region (19.3's passive slot, alone
  * for now: three of the pool at random, one taken).
@@ -752,6 +765,7 @@ export const REGIONS: Record<RegionId, {heroes: HeroId[]; creature: HeroId | nul
  */
 export interface Stage {
   region: RegionId;
+  boss: boolean;
   heroes: number;
   outsiders: number;
   creatures: number;
@@ -762,6 +776,7 @@ export interface Stage {
 export const STAGES: Stage[] = [
   {
     region: 'steppe',
+    boss: false,
     heroes: 1,
     outsiders: 0,
     creatures: 2,
@@ -771,6 +786,7 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'steppe',
+    boss: false,
     heroes: 2,
     outsiders: 0,
     creatures: 1,
@@ -780,15 +796,27 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'steppe',
+    boss: false,
     heroes: 3,
     outsiders: 0,
     creatures: 0,
+    provision: true,
+    passive: false,
+    map: 'steppe',
+  },
+  {
+    region: 'steppe',
+    boss: true,
+    heroes: 3,
+    outsiders: 0,
+    creatures: 2,
     provision: false,
     passive: true,
     map: 'steppe',
   },
   {
     region: 'china',
+    boss: false,
     heroes: 1,
     outsiders: 2,
     creatures: 0,
@@ -798,6 +826,7 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'china',
+    boss: false,
     heroes: 2,
     outsiders: 1,
     creatures: 0,
@@ -807,6 +836,17 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'china',
+    boss: false,
+    heroes: 3,
+    outsiders: 0,
+    creatures: 0,
+    provision: true,
+    passive: false,
+    map: 'gobi',
+  },
+  {
+    region: 'china',
+    boss: true,
     heroes: 3,
     outsiders: 0,
     creatures: 0,
@@ -816,6 +856,7 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'persia',
+    boss: false,
     heroes: 1,
     outsiders: 2,
     creatures: 0,
@@ -825,6 +866,7 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'persia',
+    boss: false,
     heroes: 2,
     outsiders: 1,
     creatures: 0,
@@ -834,6 +876,17 @@ export const STAGES: Stage[] = [
   },
   {
     region: 'persia',
+    boss: false,
+    heroes: 3,
+    outsiders: 0,
+    creatures: 0,
+    provision: true,
+    passive: false,
+    map: 'salt',
+  },
+  {
+    region: 'persia',
+    boss: true,
     heroes: 3,
     outsiders: 0,
     creatures: 0,
@@ -844,7 +897,10 @@ export const STAGES: Stage[] = [
 ];
 /** How many passives the caravanserai between regions offers, one to be taken. */
 export const PASSIVE_OFFER = 3;
-/** How many of a run's first stages always have mountains (owner, 2026-10-24; randomTiles). */
-export const MOUNTAIN_STAGES = 3;
+/**
+ * How many of a run's first stages always have mountains (owner, 2026-10-24;
+ * randomTiles): the Steppe's, four since 2026-10-28.
+ */
+export const MOUNTAIN_STAGES = 4;
 /** The player's camel, after the party in slot order; the enemy has none (camel.md). */
 export const CAMEL: HeroId = 'camel';
