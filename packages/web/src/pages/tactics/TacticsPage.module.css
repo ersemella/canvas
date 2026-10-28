@@ -705,8 +705,8 @@
 
 /*
  * The start menu: what the game is, then the heroes to take. The roster is a
- * grid of portraits, a column a region, beside (on a phone, over) the hero
- * shown: its story, its stats and the button taking it.
+ * grid of portraits, a column a region and a row a role, beside (on a phone,
+ * over) the hero shown: its story, its stats and the button taking it.
  */
 .heroSelect {
   display: grid;
@@ -716,10 +716,19 @@
 }
 .heroPicks {
   display: grid;
-  grid-template-rows: repeat(3, auto);
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
+  grid-template-columns: auto repeat(4, minmax(0, 1fr));
   gap: 6px;
+}
+/* A row's role, read bottom to top down its left edge. */
+.heroPicksRole {
+  grid-column: 1;
+  align-self: center;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-sandDark);
 }
 /* A hero, a tile: a flat dusk tile when left behind, raised lapis when taken. */
 .heroPick {
@@ -820,6 +829,10 @@
 .heroDetailsName {
   font-size: 18px;
   font-weight: bold;
+}
+.heroDetailsRole {
+  font-size: 12px;
+  color: var(--c-sandDark);
 }
 .heroPickBlurb {
   grid-column: 1 / -1;

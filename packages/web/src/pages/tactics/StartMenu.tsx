@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import type {CSSProperties} from 'react';
 import {Link} from 'react-router-dom';
 import {Button, Paper, Stack, Text} from '@mantine/core';
 import {HEROES, HERO_PORTRAIT, PARTY, ROSTER} from '@canvas/games-silk-road-run';
@@ -48,6 +49,22 @@ const METERS: {label: string; value: (h: (typeof HEROES)[HeroId]) => number}[] =
   {label: 'Power', value: (h) => h.power},
   {label: 'Defence', value: (h) => h.defence},
 ];
+
+/** The rows of the menu's grid: each region's heroes are a tank, a damage hero and a support (roster.md). */
+const ROLES = ['Tank', 'Damage', 'Support'] as const;
+
+/** The roster on the menu: a column a region, the Steppe to Byzantium, its heroes in ROLES's order. */
+const GRID: [HeroId, HeroId, HeroId][] = [
+  ['bokh', 'mangudai', 'storm'],
+  ['modao', 'youxia', 'alchemist'],
+  ['mahout', 'archer', 'magus'],
+  ['cataphract', 'varangian', 'priest'],
+];
+
+/** Each hero's role, from its row. */
+const ROLE = Object.fromEntries(
+  GRID.flatMap((column) => column.map((hero, row) => [hero, ROLES[row]]))
+) as Partial<Record<HeroId, (typeof ROLES)[number]>>;
 
 /** A party's most heroes: the default party's size. */
 const MAX_PARTY = PARTY.length;
@@ -128,15 +145,23 @@ export function StartMenu(props: {
             </Text>
             <div className={styles.heroSelect}>
               <div className={styles.heroPicks} data-testid="hero-picks">
-                {ROSTER.map((hero) => (
-                  <HeroTile
-                    key={hero}
-                    hero={hero}
-                    picked={party.includes(hero)}
-                    shown={hero === shown}
-                    onShow={() => setShown(hero)}
-                  />
+                {ROLES.map((role, row) => (
+                  <span key={role} className={styles.heroPicksRole} style={{gridRow: row + 1}}>
+                    {role}
+                  </span>
                 ))}
+                {GRID.map((column, col) =>
+                  column.map((hero, row) => (
+                    <HeroTile
+                      key={hero}
+                      hero={hero}
+                      picked={party.includes(hero)}
+                      shown={hero === shown}
+                      onShow={() => setShown(hero)}
+                      style={{gridRow: row + 1, gridColumn: col + 2}}
+                    />
+                  ))
+                )}
               </div>
               <HeroDetails
                 hero={shown}
@@ -185,11 +210,18 @@ export function StartMenu(props: {
 }
 
 /**
- * One hero on the start menu, a tile: its portrait, facing left as the party
+ * One hero on the start menu, a tile in its region's column and its role's
+ * row: its portrait, facing left as the party
  * does in a fight, over its name; a tap shows its story and stats. A hero in
  * the party is raised lapis with a check; the one shown is outlined gold.
  */
-function HeroTile(props: {hero: HeroId; picked: boolean; shown: boolean; onShow: () => void}) {
+function HeroTile(props: {
+  hero: HeroId;
+  picked: boolean;
+  shown: boolean;
+  onShow: () => void;
+  style: CSSProperties;
+}) {
   const stats = HEROES[props.hero];
   const portrait = HERO_PORTRAIT[props.hero]?.src;
   return (
@@ -201,6 +233,7 @@ function HeroTile(props: {hero: HeroId; picked: boolean; shown: boolean; onShow:
       aria-label={`${stats.name}${props.picked ? ', in the party' : ''}`}
       aria-current={props.shown || undefined}
       data-picked={props.picked}
+      style={props.style}
       onClick={props.onShow}
     >
       <span className={styles.heroPickPortrait}>
@@ -223,7 +256,10 @@ function HeroDetails(props: {hero: HeroId; picked: boolean; full: boolean; onTog
         {portrait ? <img src={portrait} alt="" /> : stats.letter}
       </div>
       <div className={styles.heroDetailsHead}>
-        <span className={`${styles.display} ${styles.heroDetailsName}`}>{stats.name}</span>
+        <div>
+          <div className={`${styles.display} ${styles.heroDetailsName}`}>{stats.name}</div>
+          <div className={styles.heroDetailsRole}>{ROLE[props.hero]}</div>
+        </div>
         <div className={styles.heroPickStats}>
           {METERS.map(({label, value}) => {
             const filled = value(stats);
