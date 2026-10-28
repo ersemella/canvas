@@ -1,5 +1,5 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Gobi Desert: the Alchemist, the Vanguard and the Duelist against the three Steppe heroes, starting kits; random yurts bring four or five oases.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Gobi Desert: the Alchemist, the Vanguard and the Duelist against the three Steppe heroes, starting kits; random yurts bring two or three oases.",
   "seed": null,
   "map": "gobi",
   "yurts": "random",

@@ -96,7 +96,7 @@ tuning. This file has no combat-design section number.
   Arabia region (owner, 2026-10-26) until that region was cut the same
   day. **The Gobi is China's map again** (owner, 2026-10-28), renamed the
   Gobi Desert, in place of the Flaming Mountains: the same sand, no
-  mountains and four or five obstacles, which are now **oases** in place
+  mountains and two or three obstacles (owner, 2026-10-28; four or five before), which are now **oases** in place
   of the ruins, the beacon tower redrawn as one on its grid
   (`tiles/oasis.png`, 38 × 46 a frame, 4 frames at `FLAME_FPS`, drawn in
   code): a pool in a damp sand rim, 26 wide so it stays in its space,
@@ -105,7 +105,13 @@ tuning. This file has no combat-design section number.
   sway a pixel, the reeds' tips and ripples shift and a glint crosses the
   water. The palms rise over the space behind, as the tower did. The
   page calls it Oasis, blocking as any obstacle, and the open ground
-  Sand. **The Flaming Mountains**
+  Sand.
+  To be replaced (owner, 2026-10-28) by the owner's art (AI-assisted)
+  combining the oasis with the Flaming Mountains' beacon tower: a Han
+  beacon tower standing on the bank of a small spring pool, poplars or
+  tamarisk and reeds round it, as at Dunhuang's oases; asked for at 16×
+  the sprite grid (608 × 736) in a 38 × 46 frame, so it can be cut to
+  the grid and to the tower's palette as the tower was. **The Flaming Mountains**
   (`flaming`, owner, 2026-10-26) were the China region's map until then,
   kept for saved runs and the test stage: the red
   sandstone ridges near Turpan, set alight as in *Journey to the West*.

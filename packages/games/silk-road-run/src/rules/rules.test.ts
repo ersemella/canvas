@@ -594,8 +594,8 @@ describe('the board', () => {
       expect(s.mapId).toBe('gobi');
       expect(mapOf(s).name).toBe('The Gobi Desert');
       const tiles = Object.values(s.tiles);
-      // More ruins than the Steppe's yurts, since there are no mountains.
-      expect([4, 5]).toContain(tiles.filter((t) => t === 'obstacle').length);
+      // Two or three oases, as many as the Steppe's yurts (owner, 2026-10-28).
+      expect([2, 3]).toContain(tiles.filter((t) => t === 'obstacle').length);
       // None next to the camel's start or the exit.
       for (const [key, t] of Object.entries(s.tiles)) {
         const [q, r] = key.split(',').map(Number);

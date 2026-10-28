@@ -199,16 +199,17 @@ export const STEPPE: MapData = {
  * Flaming Mountains were China's (owner, 2026-10-26). The Steppe's board
  * on sand, no mountains, whatever the stage, and its yurts' places
  * **oases**, a pool under date palms (owner, 2026-10-28; sandstone ruins
- * of the old frontier posts before). With no mountains to break up the
- * board, more of them (owner, 2026-10-25): four or five, within 3 hexes
- * of the centre, still off the starting columns.
+ * of the old frontier posts before). Two or three of them (owner,
+ * 2026-10-28; four or five from 2026-10-25, as there are no mountains to
+ * break up the board), within 3 hexes of the centre, still off the
+ * starting columns.
  */
 export const GOBI: MapData = {
   ...STEPPE,
   id: 'gobi',
   name: 'The Gobi Desert',
   mountains: 'never',
-  obstacles: {counts: [4, 5], reach: 3},
+  obstacles: {counts: [2, 3], reach: 3},
 };
 
 /**
