@@ -6,7 +6,7 @@
  * the burning ridges; exits (cached per map), and
  * falling hail.
  */
-import {assetLoader, hexKey, hexNeighbors} from '@canvas/engine';
+import {assetLoader, hexKey} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {DOME, scorched, tileAt} from '../../rules/map';
 import type {MapData, Tile} from '../../rules/map';
@@ -17,7 +17,6 @@ import {
   SPRITE_FEET,
   SPRITE_SCALE,
   center,
-  dithered,
   hexPath,
   hexRandom,
   insideHex,
@@ -32,6 +31,7 @@ import grassImage from '../tiles/grass-soft.png';
 import redEarthImage from '../tiles/red-earth.png';
 import burningRidgeImage from '../tiles/mountain-ridge.png';
 import beaconTowerImage from '../tiles/beacon-tower.png';
+import scorchedEarthImage from '../tiles/scorched-earth.png';
 import saltCrustImage from '../tiles/salt-crust.png';
 import saltDomeImage from '../tiles/salt-dome.png';
 
@@ -72,6 +72,11 @@ export interface Look {
   /** The ground under a mountain, a seamless tile laid like the grass. */
   mountainGround: string;
   /**
+   * Scorched ground's texture (map.ts, `scorched`), a seamless tile laid
+   * like the grass on the scorched spaces; `null` on a map without it.
+   */
+  scorchedGround: string | null;
+  /**
    * One image for all the mountains, drawn once over the Salt Flats' seven
    * spaces (`DOME`) in place of one a hex; `null` on the other maps.
    */
@@ -98,13 +103,15 @@ const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
 /**
  * The Flaming Mountains' (owner, 2026-10-28): a long, low escarpment drawn
  * after the owner's photo of the real ones, so a pair standing side by
- * side reads as one ridge: a flat, toothed crest in dark
- * red, its face cut by gullies fanning down from it, each rib lit on its
- * left and shadowed on its right, and pale talus mounds burying their
- * ends at the foot, in the red earth's own colours and a sunlit ochre. Its
- * base, the hex's lower half, is the Steppe mountains', so it fits its hex
- * the same way. Set alight as in the myth (owner, 2026-10-28): the tops
- * of its gullies glow, and only the fire along its crest moves, in 8
+ * side reads as one ridge: a flat, toothed crest, its face cut by
+ * gullies fanning down from it, each rib lit on its left and shadowed on
+ * its right, and rubble mounds burying their ends at the foot, below
+ * which the scorched ground under it shows through. In the scorched
+ * earth's own colours, so it rises out of the scorched ground around it
+ * (owner, 2026-10-28; in the red earth's, it looked out of place there).
+ * Its outline is the Steppe mountains', so it fits its hex the same way.
+ * Set alight as in the myth (owner, 2026-10-28): its gullies glow like
+ * the scorched earth's cracks, and only the fire along its crest moves, in 8
  * frames (`mountainFrames`): flames 1 to 5 pixels tall in waves, a tongue
  * flaring every few pixels, embers rising; the rock never changes. It
  * replaced a burning ridge of two low humps (2026-10-26) and, before
@@ -148,6 +155,7 @@ const LOOKS: Record<string, Look> = {
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
+    scorchedGround: null,
     dome: null,
   },
   gobi: {
@@ -161,6 +169,7 @@ const LOOKS: Record<string, Look> = {
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
+    scorchedGround: null,
     dome: null,
   },
   flaming: {
@@ -174,9 +183,11 @@ const LOOKS: Record<string, Look> = {
     obstacleFrames: 4,
     mountains: FLAMING_MOUNTAINS,
     mountainFrames: 8,
-    // The red earth itself, as the ridge is in its colours (owner,
-    // 2026-10-26; the Steppe's rock in redder browns before).
-    mountainGround: redEarthImage,
+    // The scorched earth, as the ridge is in its colours and its foot
+    // shows the ground (owner, 2026-10-28; the red earth from 2026-10-26,
+    // the Steppe's rock in redder browns before).
+    mountainGround: scorchedEarthImage,
+    scorchedGround: scorchedEarthImage,
     dome: null,
   },
   // The Salt Flats (owner, 2026-10-26): the owner's salt crust and salt
@@ -201,6 +212,7 @@ const LOOKS: Record<string, Look> = {
     mountains: [],
     mountainFrames: 1,
     mountainGround: saltCrustImage,
+    scorchedGround: null,
     dome: saltDomeImage,
   },
 };
@@ -226,9 +238,17 @@ export const flies = (map: MapData): boolean => lookOf(map).obstacleFrames > 1;
  */
 export const FLAME_FPS = 3;
 
-/** A tile's ground texture on a map: the map's open ground, or its mountains' ground under one (rock, owner, 2026-10-24). */
-const textureOf = (look: Look, tile: Tile): string =>
-  tile === 'mountain' ? look.mountainGround : look.ground;
+/**
+ * A tile's ground texture on a map: the map's open ground, its mountains'
+ * ground under one (rock, owner, 2026-10-24), or on a scorched space
+ * (`burnt`) its scorched ground (owner, 2026-10-28).
+ */
+const textureOf = (look: Look, tile: Tile, burnt = false): string =>
+  tile === 'mountain'
+    ? look.mountainGround
+    : burnt && look.scorchedGround
+      ? look.scorchedGround
+      : look.ground;
 
 /**
  * Fills a hex with a seamless pixel-art texture at the sprites' scale,
@@ -290,8 +310,7 @@ let ground: {canvas: HTMLCanvasElement; key: string} | null = null;
 export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
   const look = lookOf(map);
   if (typeof document === 'undefined') {
-    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), look);
-    for (const h of map.hexes) if (scorched(map, h)) drawScorch(ctx, map, h);
+    for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), look, scorched(map, h));
     return;
   }
   let mapKey = mapKeys.get(map);
@@ -299,7 +318,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     mapKey = `${map.id}|${map.hexes.map((h) => `${hexKey(h)}:${tileAt(map, h)}`).join(' ')}`;
     mapKeys.set(map, mapKey);
   }
-  const loaded = [look.ground, look.mountainGround]
+  const loaded = [look.ground, look.mountainGround, look.scorchedGround ?? look.ground]
     .map((src) => (assetLoader.requestImage(src) ? 1 : 0))
     .join('');
   const scale = ctx.getTransform().a;
@@ -311,8 +330,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     const g = canvas.getContext('2d')!;
     g.setTransform(scale, 0, 0, scale, 0, 0);
     g.clearRect(0, 0, SCENE_SIZE.width, SCENE_SIZE.height);
-    for (const h of map.hexes) drawTile(g, h, tileAt(map, h), look);
-    for (const h of map.hexes) if (scorched(map, h)) drawScorch(g, map, h);
+    for (const h of map.hexes) drawTile(g, h, tileAt(map, h), look, scorched(map, h));
     ground = {canvas, key};
   }
   ctx.save();
@@ -327,8 +345,14 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
  * look's flat colour shows. Yurts, ruins and mountains stand on it and are
  * drawn later, by `drawObstacle`.
  */
-function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, look: Look): void {
-  const ground = assetLoader.requestImage(textureOf(look, tile));
+function drawTile(
+  ctx: CanvasRenderingContext2D,
+  h: Hex,
+  tile: Tile,
+  look: Look,
+  burnt = false
+): void {
+  const ground = assetLoader.requestImage(textureOf(look, tile, burnt));
   if (ground) {
     if (look.stamp && tile !== 'mountain') stampHex(ctx, h, ground, (h.q * 7 + h.r * 13) % 2 !== 0);
     else fillHexTexture(ctx, h, ground);
@@ -349,45 +373,6 @@ function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, look: Look)
     ctx.stroke();
     ctx.restore();
   }
-}
-
-/** Scorched ground's colours: charred earth, and the embers glowing in it. */
-const SCORCH = {char: '#4a2216', ember: '#ec6a1e', hot: '#f8a432'};
-
-/**
- * Scorched ground (map.ts, `scorched`; owner, 2026-10-28), drawn in art
- * pixels over the red earth: charred, the char thickest on the side of
- * each burning ridge beside it and dithered away from it, embers glowing
- * in it, more of them nearer the fire. Still, as the ground is drawn once.
- */
-function drawScorch(ctx: CanvasRenderingContext2D, map: MapData, h: Hex): void {
-  const c = center(h);
-  const toFire = hexNeighbors(h)
-    .filter((n) => tileAt(map, n) === 'mountain')
-    .map((n) => {
-      const m = center(n);
-      const len = Math.hypot(m.x - c.x, m.y - c.y);
-      return {x: (m.x - c.x) / len, y: (m.y - c.y) / len};
-    });
-  const reach = BOARD_LAYOUT.size / SPRITE_SCALE;
-  const random = hexRandom(h, 5);
-  const ox = Math.round(c.x / SPRITE_SCALE);
-  const oy = Math.round(c.y / SPRITE_SCALE);
-  ctx.save();
-  for (let y = -reach; y <= reach; y++)
-    for (let x = -reach; x <= reach; x++) {
-      if (!insideHex(x, y, 1.5)) continue;
-      // 0 on the far side of the hex, 1 at the edge it shares with the fire.
-      const heat = Math.max(...toFire.map((d) => (x * d.x + y * d.y) / reach / 2 + 0.5));
-      const roll = random();
-      let colour: string | null = null;
-      if (roll < 0.05 * heat * heat) colour = roll < 0.015 * heat ? SCORCH.hot : SCORCH.ember;
-      else if (dithered(x + ox, y + oy, heat * 13 - 2)) colour = SCORCH.char;
-      if (!colour) continue;
-      ctx.fillStyle = colour;
-      ctx.fillRect((ox + x) * SPRITE_SCALE, (oy + y) * SPRITE_SCALE, SPRITE_SCALE, SPRITE_SCALE);
-    }
-  ctx.restore();
 }
 
 /**

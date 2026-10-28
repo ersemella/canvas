@@ -133,10 +133,20 @@ tuning. This file has no combat-design section number.
   spaces beside them are **scorched ground** (`scorched` in map.ts,
   `RULES.scorch`), burning 1 on a unit Moved onto it or ending its turn
   there, not on one walking across, and Temee steps round it where a step
-  as near is. Until its own art is in (prompt below), it is drawn in code
-  over the red earth (`drawScorch` in ground.ts): char dithered thickest
-  towards the fire and a scatter of embers, which the owner found didn't
-  read as scorched at a glance (2026-10-28). The ridge art
+  as near is. It is the owner's scorched earth (AI-assisted, from the
+  prompt below; `tiles/scorched-earth.png`, `Look.scorchedGround`),
+  charred plates with glowing cracks, cut to 128 pixels (box-averaged
+  from the picture) and 6 colours, its soot and plates lifted towards the
+  red earth's own browns and its ash warmed, so it reads as the same
+  ground burnt (owner, 2026-10-28), laid as one field like the red earth
+  on the scorched spaces only. It replaced char and embers drawn in code
+  over the red earth, which didn't read as scorched at a glance (owner,
+  2026-10-28). With it, the ridges in the red earth's browns looked out of
+  place (owner, 2026-10-28), so the ridge was recoloured in the scorched
+  earth's own colours, its gullies glowing like its cracks, its flat base
+  cut away below the rubble at its foot, and the ground under the
+  mountains (`mountainGround`) made the scorched earth too, so each ridge
+  rises out of the scorched ground. The ridge art
   (`tiles/mountain-ridge.png`, 42 × 39 a frame, 8 frames) was redrawn
   after the photo on the Steppe mountains' base: a flat, toothed crest in
   dark red, its face cut by gullies fanning down from it, each rib lit on
@@ -220,8 +230,8 @@ tuning. This file has no combat-design section number.
 
 ## Prompts for scorched ground (2026-10-28)
 
-The scorched ground beside the Flaming Mountains' ridges is drawn in code
-until the owner's art is in; it should read as burnt at a glance. Like
+The scorched ground beside the Flaming Mountains' ridges, which should
+read as burnt at a glance (prompt 1 made `tiles/scorched-earth.png`). Like
 the red earth (`tiles/red-earth.png`, 128 × 128, 5 colours, laid across
 the board as one field), it is a **seamless texture**, laid the same way
 on the scorched spaces only, so it must sit beside the red earth without
