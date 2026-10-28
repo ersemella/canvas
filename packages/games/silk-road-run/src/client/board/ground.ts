@@ -1,6 +1,6 @@
 /**
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
- * grass, yurts and their smoke, the Gobi's sand and sandstone ruins, the
+ * grass, yurts and their smoke, the Gobi's sand and oases, the
  * Flaming Mountains' red earth, beacon towers and burning ridges, the Salt
  * Flats' salt crust and their one salt dome, and the Flaming Mountains'
  * patches of scorched ground; exits (cached per map), and
@@ -23,6 +23,7 @@ import {
 } from './pixels';
 import yurtImage from '../tiles/yurt.png';
 import sandstoneRuinsImage from '../tiles/ruins-sandstone.png';
+import oasisImage from '../tiles/oasis.png';
 import sandImage from '../tiles/sand.png';
 import mountainPeakImage from '../tiles/mountain-peak.png';
 import mountainTwinImage from '../tiles/mountain-twin.png';
@@ -58,7 +59,8 @@ export interface Look {
   smoke: Smoke | null;
   /**
    * How many frames each obstacle image holds, side by side, looping at
-   * `FLAME_FPS`: 1, a still image, but for the beacon tower's pennant.
+   * `FLAME_FPS`: 1, a still image, but for the beacon tower's pennant and
+   * the oasis's palms.
    */
   obstacleFrames: number;
   /** The mountains' shapes, each hex picking one. */
@@ -129,8 +131,15 @@ const FLAMING_MOUNTAINS = [burningRidgeImage];
  * softened: its blotches at 60% of their contrast and a touch greener,
  * since at full strength it read as mud on a phone. The Gobi (2026-10-25)
  * brings back the desert board's art from before the Steppe: the sand
- * stamped per hex and the crumbling sandstone ruin, as they were
- * (2026-10-22), in place of the yurts. The Flaming Mountains (owner,
+ * stamped per hex, as it was (2026-10-22), and, in place of the yurts,
+ * the crumbling sandstone ruin until the beacon tower was redrawn as an
+ * oasis for it (owner, 2026-10-28; China's map again): on the tower's
+ * grid (38 × 46 a frame), a pool in a damp sand rim, 26 wide so it stays
+ * in its space, ringed with reeds, under two date palms, the near one
+ * taller and leaning left, dates under their crowns; in 4 frames the
+ * fronds sway a pixel, the reeds' tips and ripples shift and a glint
+ * crosses the water. Its palms rise over the space behind, as the tower
+ * did, and block as any obstacle. The Flaming Mountains (owner,
  * 2026-10-26): the owner's cracked red earth (AI-assisted, cut to 128
  * pixels and 5 colours); under the mountains, the Steppe's rock in the
  * burning mountain's browns (`rock-red.png`); its obstacle a Han beacon
@@ -164,9 +173,10 @@ const LOOKS: Record<string, Look> = {
     stamp: true,
     colour: PALETTE.sand,
     border: PALETTE.sandDark,
-    obstacles: [sandstoneRuinsImage],
+    obstacles: [oasisImage],
     smoke: null,
-    obstacleFrames: 1,
+    // Its palms sway in 4 frames.
+    obstacleFrames: 4,
     mountains: STEPPE_MOUNTAINS,
     mountainFrames: 1,
     mountainGround: rockImage,
@@ -201,7 +211,7 @@ const LOOKS: Record<string, Look> = {
   // to the crust's, its pinks to a dusty clay, and its outline the hex
   // borders' grey, as in the art's own whites and pinks, and with a dark
   // outline, it stood out; owner, 2026-10-26). A yurt placed there by hand
-  // is the Gobi's sandstone ruin; its fights have none (salt-flats.md).
+  // is the sandstone ruin; its fights have none (salt-flats.md).
   salt: {
     ground: saltCrustImage,
     stamp: false,
@@ -229,11 +239,11 @@ export const smokes = (map: MapData): boolean => lookOf(map).smoke !== null;
 /** Whether a map's mountains burn (move), so the board keeps drawing frames for it. */
 export const burns = (map: MapData): boolean => lookOf(map).mountainFrames > 1;
 
-/** Whether a map's obstacles move (a pennant flying), so the board keeps drawing frames for it. */
+/** Whether a map's obstacles move (a pennant flying, palms swaying), so the board keeps drawing frames for it. */
 export const flies = (map: MapData): boolean => lookOf(map).obstacleFrames > 1;
 
 /**
- * The Flaming Mountains' fire and the beacon towers' pennants, in frames a
+ * The Flaming Mountains' fire, the beacon towers' pennants and the oases' palms, in frames a
  * second: 3 (owner, 2026-10-26; 8 at first, quicker than the units' idles,
  * which change every 0.6 seconds).
  */
@@ -429,8 +439,8 @@ export function drawExit(
  * A yurt, a ruin or a mountain standing on its hex like a unit: over hail,
  * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
  * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
- * Gobi's sandstone ruin and the mudbrick wall are 32 × 32, the beacon
- * tower 38 × 46. `map` gives the look.
+ * sandstone ruin and the mudbrick wall are 32 × 32, the beacon tower and
+ * the Gobi's oasis 38 × 46. `map` gives the look.
  */
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,

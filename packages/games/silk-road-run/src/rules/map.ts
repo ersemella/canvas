@@ -27,10 +27,11 @@
  *
  * Each region has a map of its own (2026-10-25; setting.md, 15.3a), the
  * same board under another look: the Steppe's (`STEPPE`), the Gobi
- * Crossing (`GOBI`), where the `obstacle` tile is a sandstone ruin rather
- * than a yurt, and the Flaming Mountains (`FLAMING`), the China region's
- * (owner, 2026-10-26), its obstacle a beacon tower and patches of
- * scorched ground spread over it (`scorched`) in place of mountains,
+ * Desert (`GOBI`), the China region's (owner, 2026-10-28), where the
+ * `obstacle` tile is an oasis rather than a yurt, the Flaming Mountains
+ * (`FLAMING`), China's from 2026-10-26 and no region's now, its obstacle a
+ * beacon tower and patches of scorched ground spread over it (`scorched`)
+ * in place of mountains,
  * and the Salt Flats (`SALT`), the Persia region's (owner, 2026-10-26),
  * one large salt dome over the middle seven spaces. A
  * stage names its map (`STAGES` in config.ts); the page draws each map's
@@ -40,7 +41,7 @@ import {hexDistance, hexKey, hexNeighbors} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 
 /**
- * `obstacle` is a yurt on the Steppe, a ruin in the Gobi and a beacon tower in the Flaming Mountains (ruins everywhere until 2026-10-24; saved runs keep the name).
+ * `obstacle` is a yurt on the Steppe, an oasis in the Gobi and a beacon tower in the Flaming Mountains (ruins everywhere until 2026-10-24; saved runs keep the name).
  * `scorched` is open ground that burns (`scorched`; owner, 2026-10-28): walkable, it blocks nothing.
  */
 export type Tile = 'sand' | 'obstacle' | 'mountain' | 'scorched';
@@ -193,23 +194,27 @@ export const STEPPE: MapData = {
 };
 
 /**
- * The Gobi Crossing (2026-10-25), made as the China region's way in; the
- * Flaming Mountains took its place there and its desert was kept for the
- * Arabia region (owner, 2026-10-26), cut the same day; no region has it now. The Steppe's board, its yurts' places now sandstone ruins of the old frontier
- * posts, on gravel desert, and no mountains, whatever the stage. With no
- * mountains to break up the board, more ruins (owner, 2026-10-25): four or
- * five, within 3 hexes of the centre, still off the starting columns.
+ * The Gobi Desert (owner, 2026-10-28), the China region's map again: made
+ * as its way in (2026-10-25), then kept for the Arabia region while the
+ * Flaming Mountains were China's (owner, 2026-10-26). The Steppe's board
+ * on sand, no mountains, whatever the stage, and its yurts' places
+ * **oases**, a pool under date palms (owner, 2026-10-28; sandstone ruins
+ * of the old frontier posts before). With no mountains to break up the
+ * board, more of them (owner, 2026-10-25): four or five, within 3 hexes
+ * of the centre, still off the starting columns.
  */
 export const GOBI: MapData = {
   ...STEPPE,
   id: 'gobi',
-  name: 'The Desert Crossing',
+  name: 'The Gobi Desert',
   mountains: 'never',
   obstacles: {counts: [4, 5], reach: 3},
 };
 
 /**
- * The Flaming Mountains (owner, 2026-10-26), the China region's map: the
+ * The Flaming Mountains (owner, 2026-10-26), the China region's map until
+ * the Gobi took its place (owner, 2026-10-28), kept so a run saved there
+ * still loads, and on the test stage: the
  * red earth of *Journey to the West*'s burning mountains, with no
  * mountains on it (owner, 2026-10-28) but **scorched ground** spread over
  * it in every fight, four or five small patches of one or two spaces

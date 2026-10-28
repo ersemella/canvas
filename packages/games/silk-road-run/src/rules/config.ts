@@ -706,9 +706,9 @@ export const REGIONS: Record<RegionId, {creature: HeroId; firstEnemy: HeroId}> =
  * caravanserai on the way to the next region (19.3's passive slot, alone
  * for now: three of the pool at random, one taken).
  * `map`: the id of the map it is fought on (MAPS in map.ts): the Steppe's
- * stages on the Steppe Crossing, China's on the Flaming Mountains; the Gobi
- * (`gobi`) was kept for the Arabia region, cut 2026-10-26, and has no
- * region now.
+ * stages on the Steppe Crossing, China's in the Gobi Desert (`gobi`; owner,
+ * 2026-10-28; the Flaming Mountains, `flaming`, from 2026-10-26, kept so
+ * a run saved there still loads).
  */
 export interface Stage {
   region: RegionId;
@@ -722,9 +722,9 @@ export const STAGES: Stage[] = [
   {region: 'steppe', heroes: 1, creatures: 2, provision: true, passive: false, map: 'steppe'},
   {region: 'steppe', heroes: 2, creatures: 1, provision: true, passive: false, map: 'steppe'},
   {region: 'steppe', heroes: 3, creatures: 0, provision: false, passive: true, map: 'steppe'},
-  {region: 'china', heroes: 1, creatures: 2, provision: true, passive: false, map: 'flaming'},
-  {region: 'china', heroes: 2, creatures: 1, provision: true, passive: false, map: 'flaming'},
-  {region: 'china', heroes: 3, creatures: 0, provision: false, passive: false, map: 'flaming'},
+  {region: 'china', heroes: 1, creatures: 2, provision: true, passive: false, map: 'gobi'},
+  {region: 'china', heroes: 2, creatures: 1, provision: true, passive: false, map: 'gobi'},
+  {region: 'china', heroes: 3, creatures: 0, provision: false, passive: false, map: 'gobi'},
 ];
 /** How many passives the caravanserai between regions offers, one to be taken. */
 export const PASSIVE_OFFER = 3;

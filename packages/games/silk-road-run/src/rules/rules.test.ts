@@ -592,7 +592,7 @@ describe('the board', () => {
       // Even a stage that always has mountains has none in the Gobi.
       const s = createFight(seed, undefined, undefined, true, [], GOBI);
       expect(s.mapId).toBe('gobi');
-      expect(mapOf(s).name).toBe('The Desert Crossing');
+      expect(mapOf(s).name).toBe('The Gobi Desert');
       const tiles = Object.values(s.tiles);
       // More ruins than the Steppe's yurts, since there are no mountains.
       expect([4, 5]).toContain(tiles.filter((t) => t === 'obstacle').length);
@@ -703,8 +703,8 @@ describe('the board', () => {
 
   it('names the ground after the map’s look', () => {
     expect(tileInfo('steppe', 'obstacle').name).toBe('Tent');
-    expect(tileInfo('gobi', 'obstacle').name).toBe('Ruins');
-    expect(tileInfo('gobi', 'sand').name).toBe('Gravel');
+    expect(tileInfo('gobi', 'obstacle').name).toBe('Oasis');
+    expect(tileInfo('gobi', 'sand').name).toBe('Sand');
     expect(tileInfo('gobi', 'mountain').name).toBe('Mountains');
     expect(tileInfo('flaming', 'sand').name).toBe('Red earth');
     expect(tileInfo('flaming', 'obstacle').name).toBe('Beacon tower');
@@ -2877,9 +2877,9 @@ describe('previews, the AI and the run', () => {
       {region: 'steppe', heroes: 1, creatures: 2, provision: true, passive: false, map: 'steppe'},
       {region: 'steppe', heroes: 2, creatures: 1, provision: true, passive: false, map: 'steppe'},
       {region: 'steppe', heroes: 3, creatures: 0, provision: false, passive: true, map: 'steppe'},
-      {region: 'china', heroes: 1, creatures: 2, provision: true, passive: false, map: 'flaming'},
-      {region: 'china', heroes: 2, creatures: 1, provision: true, passive: false, map: 'flaming'},
-      {region: 'china', heroes: 3, creatures: 0, provision: false, passive: false, map: 'flaming'},
+      {region: 'china', heroes: 1, creatures: 2, provision: true, passive: false, map: 'gobi'},
+      {region: 'china', heroes: 2, creatures: 1, provision: true, passive: false, map: 'gobi'},
+      {region: 'china', heroes: 3, creatures: 0, provision: false, passive: false, map: 'gobi'},
     ]);
     expect(FIRST_ENEMY).toBe('mangudai');
     expect(REGIONS.steppe).toMatchObject({creature: 'wolf', firstEnemy: 'mangudai'});
@@ -3184,7 +3184,7 @@ describe('previews, the AI and the run', () => {
     const china = handleRunAction(last, {type: 'next', passive: {hero: 'storm', passive: pick}});
     expect(china.stage).toBe(3);
     expect(china.passives).toEqual([{hero: 'storm', passive: pick}]);
-    expect(china.fight.mapId).toBe('flaming');
+    expect(china.fight.mapId).toBe('gobi');
     expect(china.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual([
       'youxia',
       'fox',

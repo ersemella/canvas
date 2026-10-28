@@ -94,8 +94,20 @@ tuning. This file has no combat-design section number.
   has two or three yurts within 2. The page calls them Ruins, and the open ground
   Gravel (`tileInfo` in info.ts). The Gobi's desert was kept for the
   Arabia region (owner, 2026-10-26) until that region was cut the same
-  day; it has no region now. **The Flaming Mountains**
-  (`flaming`, owner, 2026-10-26) are the China region's map: the red
+  day. **The Gobi is China's map again** (owner, 2026-10-28), renamed the
+  Gobi Desert, in place of the Flaming Mountains: the same sand, no
+  mountains and four or five obstacles, which are now **oases** in place
+  of the ruins, the beacon tower redrawn as one on its grid
+  (`tiles/oasis.png`, 38 × 46 a frame, 4 frames at `FLAME_FPS`, drawn in
+  code): a pool in a damp sand rim, 26 wide so it stays in its space,
+  ringed with reeds, under two date palms, the near one taller and
+  leaning left, dates under their crowns, all ink-outlined; the fronds
+  sway a pixel, the reeds' tips and ripples shift and a glint crosses the
+  water. The palms rise over the space behind, as the tower did. The
+  page calls it Oasis, blocking as any obstacle, and the open ground
+  Sand. **The Flaming Mountains**
+  (`flaming`, owner, 2026-10-26) were the China region's map until then,
+  kept for saved runs and the test stage: the red
   sandstone ridges near Turpan, set alight as in *Journey to the West*.
   All the art is the owner's (AI-assisted), cut to the sprites' grid: a
   cracked red earth (`tiles/red-earth.png`, 128 pixels, 5 colours, laid
