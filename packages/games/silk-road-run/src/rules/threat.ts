@@ -88,9 +88,12 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           mark(hexes, k, power);
         }
     // Trample: the spaces it walks into, `steps` each way; as a stomp, those next to it.
-    if (has('trample') && ABILITY.trample.mode === 'stomp')
-      for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
-    else if (has('trample') && !isImmobilized(e))
+    if (has('trample') && ABILITY.trample.mode === 'stomp') {
+      const reach = 1 + (isImmobilized(e) ? 0 : ABILITY.trample.step);
+      for (let dq = -reach; dq <= reach; dq++)
+        for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
+          if (dq || dr) mark(hexes, id(fq + dq, fr + dr), power);
+    } else if (has('trample') && !isImmobilized(e))
       for (const [dq, dr] of AXIAL)
         for (let i = 1; i <= ABILITY.trample.steps; i++) {
           const k = id(fq + dq * i, fr + dr * i);

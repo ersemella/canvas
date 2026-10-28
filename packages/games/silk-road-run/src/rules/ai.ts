@@ -152,6 +152,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (d <= 1) return true;
     if (has('hail') && d === ABILITY.hail.range) return true;
     if (has('volley') && d <= ABILITY.volley.range) return true;
+    if (has('trample') && ABILITY.trample.mode === 'stomp' && d <= 1 + ABILITY.trample.step)
+      return true;
     if (
       has('trample') &&
       ABILITY.trample.mode === 'charge' &&

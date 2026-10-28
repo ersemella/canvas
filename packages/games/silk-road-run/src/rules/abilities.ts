@@ -1067,7 +1067,12 @@ export function tramplePlan(
   from: Hex,
   target: Hex
 ): {caught: Unit[]; end: Hex} {
-  if (ABILITY.trample.mode === 'stomp') return {caught: stompCaught(state, from), end: from};
+  // A stomp's target is where it stomps from, after any step.
+  if (ABILITY.trample.mode === 'stomp')
+    return {
+      caught: stompCaught(state, target).filter((u) => !hexEquals(u.hex!, from)),
+      end: target,
+    };
   const dir = hexDirectionTo(from, target)!;
   const caught = new Set<Unit>();
   let at = from;
@@ -1103,6 +1108,8 @@ function stompCaught(state: FightState, from: Hex): Unit[] {
  * time in the order for cards placed at the same moment, as Rebound's.
  */
 function stomp(ctx: Ctx, user: Unit): void {
+  // Felled by hail on its step: no stomp.
+  if (!user.alive || !user.hex) return;
   log(ctx, `${unitName(user)} stomps.`);
   const caught = stompCaught(ctx.state, user.hex!);
   for (const u of caught) hit(ctx, user, u, 'The stomp');
@@ -1129,12 +1136,22 @@ const trample: AbilityDef = {
   id: 'trample',
   name: 'Trample',
   kind: 'attack',
+  // A stomp with a step first, as Skirmish's (`ABILITY.trample.step`).
+  get steps() {
+    return ABILITY.trample.mode === 'stomp' && ABILITY.trample.step > 0;
+  },
   summary: () =>
     ABILITY.trample.mode === 'stomp'
-      ? 'Every unit next to you is hit and Pushed 1 away.'
+      ? `${ABILITY.trample.step > 0 ? 'Step 1 space, or stay. ' : ''}Every unit next to you is hit and Pushed 1 away.`
       : `Walk up to ${ABILITY.trample.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
   targets(state, map, user, from) {
-    if (ABILITY.trample.mode === 'stomp') return [{hex: from}];
+    if (ABILITY.trample.mode === 'stomp') {
+      if (ABILITY.trample.step <= 0 || isImmobilized(user)) return [{hex: from}];
+      const out: ActionTarget[] = [{hex: from}];
+      for (const to of sortByHex(stepsFrom(map, from), (h) => h))
+        if (!unitAt(state, to)) out.push({hex: to, to});
+      return out;
+    }
     if (isImmobilized(user)) return [];
     const out: ActionTarget[] = [];
     for (const dir of DIRECTIONS)

@@ -3646,6 +3646,41 @@ Trample, 55% walks, 9% Hold; the stomp 21% Trample, 63% walks, 17% Hold.
 
 Not built: the charge stays (`mode: 'charge'` by default).
 
+**A step first** (later that day): the stomp after a step of 1, as
+Skirmish's, or none (`step: 1`): the Juggernaut steps onto any free space
+next to it, or stays, and stomps where it ends. Same seats, seeds and
+1,600 fights:
+
+| | Charge (built) | Stomp | **Step, then stomp** |
+|---|---:|---:|---:|
+| Juggernaut in the Grappler's seat, Steppe mirror | 53.8% | 39% | **56.5%** |
+| Juggernaut in the Vanguard's seat, China mirror | 33.9% | 26.3% | **41.2%** |
+| Grappler in its seat, Persia mirror (lower is better for it) | 47.3% | 60.3% | 48.2% |
+| Vanguard in its seat, Persia mirror | 56.1% | 61% | **52.5%** |
+| Persia against the Steppe | 60.4% | 44.8% | **66.6%** |
+| Persia against China | 45.9% | 37.3% | **49.7%** |
+| Played by a novice | 46% | 44.3% | 44.8% |
+| Played by an expert | 52% | 53.9% | 54% |
+| Span | 6 | 9.6 | 9.2 |
+
+Its turns in its Steppe seat: 42.5% Trample, 46.7% walks, 10.8% Hold.
+
+- **The step makes the stomp the stronger Trample**: 1–7 points over the
+  charge in every seat but the Grappler's swap (even, 48.2% to 47.3%), and
+  15–17 points over the stomp in place. It now reaches as far as the
+  charge (a unit 2 away), and an enemy it Pushes is a step away for the
+  next one, so it walks less and Tramples more than either.
+- **China is still its weak mirror**, 41.2%, but 7 points closer than the
+  charge's 33.9%; the Vanguard no longer beats it clearly in its own seat
+  (52.5%).
+- **Persia against the Steppe goes to 66.6%**, 6 over the charge; the
+  Archer's surplus (above) is most of Persia's lead there already.
+- It keeps the stomp's reward for play (span 9.2, the charge's 6).
+- Unfinished fights 0.1–2.6%, as the others'. A Juggernaut felled by hail
+  on its step doesn't stomp.
+
+Not built: the owner's call (`step: 0` by default).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

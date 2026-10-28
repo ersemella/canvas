@@ -1843,6 +1843,30 @@ describe('the Juggernaut', () => {
     }
   });
 
+  it('a stomp with a step steps 1 first, or stays, and stomps where it lands', () => {
+    const was = {...ABILITY.trample};
+    Object.assign(ABILITY.trample, {mode: 'stomp', step: 1});
+    try {
+      const {s, e} = ready({'e-bokh': along(c, 0, 2)});
+      // In place, or onto any of the six free spaces next to it.
+      expect(ABILITIES.trample.targets(s, mapOf(s), e, c)).toHaveLength(7);
+      const to = along(c, 0, 1);
+      applyTurn(s, e, {action: {ability: 'trample', target: {hex: to, to}}});
+      expect(e.hex).toEqual(to);
+      expect(unit(s, 'e-bokh').hex).toEqual(along(c, 0, 3));
+      expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 2);
+      // The AI steps in to stomp an enemy 2 away.
+      const t = ready({'e-bokh': along(c, 2, 2), 'e-storm': at(8, 8)});
+      t.e.controller = 'ai';
+      const turn = chooseAiTurn(t.s, t.e);
+      expect(turn.action.ability).toBe('trample');
+      applyTurn(t.s, t.e, turn);
+      expect(unit(t.s, 'e-bokh').hp).toBe(unit(t.s, 'e-bokh').maxHp - 2);
+    } finally {
+      Object.assign(ABILITY.trample, was);
+    }
+  });
+
   it('the AI weighs Trample and plays a legal turn with it', () => {
     const {s, e} = ready({'e-bokh': hexNeighbor(c, 0), 'e-storm': at(8, 8)});
     e.controller = 'ai';
