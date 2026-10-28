@@ -1,10 +1,12 @@
 /**
  * Abilities' effects as a turn plays back (Sunlight's beam, Gale's gusts,
  * a Volley's arrows falling, Shove's blow, Haul's rope, Cleave's swing,
- * Swift Strike's thrust, Elixir's flask, Omen's clock, Blessing's halo, Stomp's quake,
- * Bite's jaws, Smash's club, the Boulder's flight; Snap Shot's and Feigned Retreat's arrows are drawn by the
+ * Swift Strike's thrust, Reave's swing and throw, Elixir's flask, Omen's clock,
+ * Blessing's halo, Stomp's quake, Bite's jaws, Smash's club, the Boulder's
+ * flight; Snap Shot's and Feigned Retreat's arrows are drawn by the
  * playback, Hail's stones and Grapple's fists by the board).
  */
+import {hexDistance} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import type {AbilityId} from '../../rules/types';
 import {
@@ -43,6 +45,7 @@ export const ABILITY_EFFECT: Partial<
   shove: drawShove,
   haul: drawHaul,
   cleave: drawCleave,
+  reave: drawReave,
   swiftStrike: drawSwiftStrike,
   elixir: drawElixir,
   omen: drawOmen,
@@ -379,6 +382,46 @@ function drawCleave(ctx: CanvasRenderingContext2D, {from, area, k}: EffectFrame)
     const t = Math.min(1, (k - at) / 0.12);
     // Across the swing's path there, tilted the way it travels.
     drawSlash(ctx, p.c.x, p.c.y - 12, mean + rel[i]! + Math.PI / 2 + 0.5, 20, t, fade);
+  });
+}
+
+/**
+ * Reave: a swipe swings as Cleave's arc does; a throw sends the axe
+ * spinning down its line to where it lands, slashing each space it passes.
+ */
+function drawReave(ctx: CanvasRenderingContext2D, f: EffectFrame): void {
+  const {from, target, area, k} = f;
+  if (!from) return;
+  if (hexDistance(from, target) <= 1) return drawCleave(ctx, f);
+  const fade = fadeOut(k, 0.75);
+  if (fade <= 0) return;
+  const a = center(from);
+  const b = center(target);
+  const t = Math.min(1, k / 0.6);
+  const x = lerp(a.x, b.x, t);
+  const y = lerp(a.y, b.y, t) - 14;
+  // The axe: a haft and a blade at its end, turning a quarter each frame.
+  const spin = Math.floor(k * 24) * (Math.PI / 2);
+  const [ux, uy] = [Math.cos(spin), Math.sin(spin)];
+  for (const [cx, cy] of artLine(x - ux * 10, y - uy * 10, x + ux * 10, y + uy * 10))
+    artPixel(ctx, cx, cy, '#7c4a1e');
+  const [bx, by] = artCell(x + ux * 10, y + uy * 10);
+  for (let dx = -1; dx <= 1; dx++)
+    for (let dy = -1; dy <= 1; dy++) artPixel(ctx, bx + dx, by + dy, dx || dy ? '#9ca3af' : EDGE);
+  // Each space slashed as the axe passes over it.
+  area.forEach((h, i) => {
+    const at = (i + 1) / area.length;
+    if (t < at * 0.95) return;
+    const c = center(h);
+    drawSlash(
+      ctx,
+      c.x,
+      c.y - 12,
+      Math.atan2(b.y - a.y, b.x - a.x) + Math.PI / 2,
+      20,
+      Math.min(1, (t - at * 0.95) / 0.2 + 0.4),
+      fade
+    );
   });
 }
 

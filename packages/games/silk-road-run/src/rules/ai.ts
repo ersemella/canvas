@@ -30,6 +30,7 @@ import {
   blessingOf,
   grappling,
   longshotLanes,
+  reaveThrows,
   stompPlan,
   unusableReason,
 } from './abilities';
@@ -193,6 +194,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const dr = e.hex.r - u.hex!.r;
     const inLine = dq === 0 || dr === 0 || dq === -dr;
     if ((has('snapShot') || has('longshot') || has('boulder')) && inLine) return true;
+    // Reave's throw: a line of `throwRange`.
+    if (has('reave') && inLine && d <= ABILITY.reave.throwRange) return true;
     // Cleave: any space of its lines.
     if (
       has('cleave') &&
@@ -384,8 +387,8 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   const caughtBy =
     ability === 'gale'
       ? hexNeighbors(target!.hex!)
-      : ability === 'cleave'
-        ? ABILITIES.cleave.area!(mapOf(state), unit.hex!, target!.hex!)
+      : ability === 'cleave' || ability === 'reave'
+        ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!)
         : plan?.caught.map((u) => u.hex!);
   if (caughtBy) {
     let value = -1;
@@ -398,6 +401,12 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (ability === 'cleave' && ABILITY.cleave.delay > 0 && damage < u.hp)
         value += sided(u, (turnValue(u) * ABILITY.cleave.delay) / cardCost(u));
     }
+    // A thrown axe leaves it disarmed until it walks back (`AI.axeOut`).
+    if (ability === 'reave' && reaveThrows(unit.hex!, target!.hex!))
+      value -= AI.axeOut * AI.perHexFromEnemy;
+    // A thrown axe leaves it disarmed until it walks back (`AI.axeOut`).
+    if (ability === 'reave' && reaveThrows(unit.hex!, target!.hex!))
+      value -= AI.axeOut * AI.perHexFromEnemy;
     return closing + value;
   }
   // Elixir: what it gives each unit it reaches (`elixirCaught`, by its shape).
@@ -1014,6 +1023,8 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
 /** `quarryGap` were `me` standing on `at`. */
 function gapFrom(state: FightState, me: Unit, at: Hex, hunting: boolean): number {
   if (me.hero === CAMEL) return 0;
+  // Its axe thrown (Reave): to a space on or next to it first.
+  if (me.axe) return Math.max(0, hexDistance(at, me.axe) - 1) + AI.axeOut;
   const gap = (target: Unit) =>
     isRanged(me) ? shotGap(state, me, at, target) : hexDistance(at, target.hex!);
   const camel = hunting ? camelOf(state) : undefined;

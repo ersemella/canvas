@@ -264,11 +264,27 @@ export const SALT: MapData = {
   scorch: null,
 };
 
+/**
+ * The Fairy Chimneys (owner, 2026-10-28), the Byzantine region's map:
+ * Cappadocia's pale volcanic tuff, with no mountains and three **fairy
+ * chimneys**, cones of tuff under basalt caps, as its obstacles, within 3
+ * of the centre (cappadocia.md). The cliff with a rock-cut church designed
+ * with it waits: only the chimneys for now (owner, 2026-10-28).
+ */
+export const TUFF: MapData = {
+  ...STEPPE,
+  id: 'tuff',
+  name: 'The Fairy Chimneys',
+  mountains: 'never',
+  obstacles: {counts: [3], reach: 3},
+};
+
 export const MAPS: Record<string, MapData> = {
   [STEPPE.id]: STEPPE,
   [GOBI.id]: GOBI,
   [FLAMING.id]: FLAMING,
   [SALT.id]: SALT,
+  [TUFF.id]: TUFF,
 };
 
 /** A map's mountains that stand in every fight, the same each time: the Salt Flats' dome; none elsewhere. */

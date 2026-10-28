@@ -14,7 +14,10 @@ prompts for making its art in ChatGPT.
 Everything here is **Proposed** (2026-10-28, from the owner's brief: "start
 designing the map for Byzantine"), from setting.md's Byzantine biome:
 "Cappadocia's volcanic tuff: fairy chimneys as obstacles, rock-cut
-churches, underground cities such as Derinkuyu". Nothing is built.
+churches, underground cities such as Derinkuyu". **Built** the same day
+from the owner's art (see Built), **with the chimneys only** (owner,
+2026-10-28: "let's just stick with the chimneys for now"): the tuff and
+three fairy chimneys, no cliff, shown on the test stage.
 
 ## The place
 
@@ -246,6 +249,34 @@ colour. 42 x 36 pixels, magenta (#FF00FF) outside the hexagon, at most 6
 colours, hard pixels.
 ```
 
+## Built (2026-10-28)
+
+From the owner's tuff and fairy chimney (AI-assisted, from prompts 1 and
+2), cut by `scripts/cappadocia-art.py`:
+
+- **Rules** (map.ts): `TUFF`, the Steppe's board with no mountains
+  (`mountains: 'never'`) and **three fairy chimneys** a fight
+  (`obstacles.counts` `[3]`), within 3 of the centre, as the Steppe's
+  yurts are placed. The page names the tiles Tuff and Fairy chimney
+  (info.ts). No stage is fought there yet: the Byzantine has no stages.
+- **The tuff** (`tiles/tuff.png`): the picture was drawn on a grid of
+  about 128, so it is cut to 128, seamless, in **7 colours** picked from
+  it (cream, apricot, rose, the runnels' warm grey, the basalt pebbles
+  and the scrub's two olives): a palette worked out from the picture
+  merged the few scrub pixels into the pebbles' grey. Hex borders
+  `#967868`.
+- **The fairy chimney** (`tiles/fairy-chimney.png`, **30 × 55**): cut out
+  of its magenta, 28 wide, each pixel the colour most of its block is in
+  9 of its own colours (k-means; a median cut turned the cap's greys
+  brown), the picture's own outline replaced by one in dark warm brown
+  fading to the hex borders' colour at its foot. Its cap is the
+  picture's grey-brown. One variant, unmirrored; the twin waits.
+- **The test stage** (`test-stage.json`) is on the Fairy Chimneys, its
+  units unchanged (the One-Eyed Giant and two wolves).
+
+Still to do: the twin chimney, the pigeons if wanted, and the cliff if
+the owner brings it back.
+
 ## Later
 
 - **The underground city** (prompt 4): two shafts on the board, joined
@@ -262,8 +293,8 @@ colours, hard pixels.
 
 - The map's name: **The Fairy Chimneys** (proposed), or **The Tuff
   Valley**, or a name for the place as in Persia's.
-- Whether the cliff belongs on this map, or the chimneys stand alone, as
-  the owner took the Salt Flats down to its dome only.
+- ~~Whether the cliff belongs on this map~~: the chimneys alone for now
+  (owner, 2026-10-28); the cliff's prompts are kept above.
 - Whether three chimneys is enough to read as Cappadocia, or a cluster
   (two or three in neighbouring spaces) reads better than three apart.
 - Whether the rose in the tuff reads too close to the enemy's madder on

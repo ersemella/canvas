@@ -48,7 +48,7 @@ export type AbilityId =
   | 'stomp'
   | 'longshot'
   | 'blessing'
-  | 'hew'
+  | 'reave'
   // The One-Eyed Giant's (owner, 2026-10-28).
   | 'smash'
   | 'boulder'
@@ -193,6 +193,12 @@ export interface Unit {
   weakenStarted?: boolean;
   /** Its passives (progression.md, 19.8); absent with none. */
   passives?: PassiveId[];
+  /**
+   * Where its thrown axe lies (the Barbarian's Reave): until it enters a
+   * space on or next to it, it can only move and Hold (`disarmed` in
+   * board.ts). Absent while it holds its axe.
+   */
+  axe?: Hex;
   /**
    * The hex direction (0 to 5) it faces, for One Eye: set as the fight
    * starts, turned by its walks and its abilities (`faceAfterTurn` in

@@ -193,7 +193,7 @@ Always read this file first. Then:
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |
 | Persia's map, the Salt Flats with one large salt dome in the middle, and the prompts for its art | [salt-flats.md](salt-flats.md) |
-| The Byzantine's map, the Fairy Chimneys (Cappadocia's tuff, fairy chimneys, a tuff cliff with a rock-cut church), and the prompts for its art (proposed 2026-10-28) | [cappadocia.md](cappadocia.md) |
+| The Byzantine's map, the Fairy Chimneys (Cappadocia's tuff, fairy chimneys, a tuff cliff with a rock-cut church), and the prompts for its art (proposed 2026-10-28; built the same day with the chimneys only, shown on the test stage) | [cappadocia.md](cappadocia.md) |
 | Rival caravans, the pool, rewards, the ledger | [ghosts.md](ghosts.md) |
 | Server classes, routes, previews, platform constraints, Free-plan limits | [architecture.md](architecture.md) |
 | Building Phase 1 | [phase-1-brief.md](phase-1-brief.md) and [phases.md](phases.md#phase-1-one-fight), then the topic files the brief cites |
