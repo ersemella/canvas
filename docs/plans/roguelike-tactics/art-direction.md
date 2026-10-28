@@ -484,8 +484,16 @@ no border.
 
 ## Prompts for the Priest (2026-10-28)
 
-The Priest (roster.md), Byzantium's support, plays as a lettered disc
-(`priest` in `HERO_COLOR`) until his art comes. As the Archer's: a
+**Built from the owner's art (2026-10-28):** ChatGPT's shadow came back
+purple, which `shrink-sprite.py` reads as background, so it was made
+grey (#444444) first; the sprite shrunk to 32 × 32, the censer (lost at
+size) and an eye put back by hand, the smoke taken out, and a 2-frame
+idle split at row 23, the robe's hem; the portrait cropped to the face
+(`--crop 130,0,1180,1050 --lines 0.3`), its censer smoke taken out. The
+prompts it came from:
+
+The Priest (roster.md), Byzantium's support, played as a lettered disc
+(`priest` in `HERO_COLOR`) until then. As the Archer's: a
 **32 × 32** board sprite facing right, split into the 2-frame idle by
 `scripts/idle-sheet.py` (64 × 32 in all), and a **32 × 32** track portrait
 (`priest.png` and `priest-portrait.png` in `src/client/sprites/`).

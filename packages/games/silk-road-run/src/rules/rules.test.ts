@@ -2277,9 +2277,11 @@ describe('the Priest', () => {
 
   it('as a Shield (`heal` off), Shields its power in place of healing', () => {
     const {s, p} = ready({'p-bokh': hexNeighbor(c, 0)});
-    const saved = {...ABILITY.blessing};
-    onTestFinished(() => Object.assign(ABILITY.blessing, saved));
-    ABILITY.blessing.heal = false;
+    const blessing = ABILITY.blessing as {heal: boolean};
+    onTestFinished(() => {
+      blessing.heal = true;
+    });
+    blessing.heal = false;
     const ally = unit(s, 'p-bokh');
     ally.hp = 2;
     bless(s, p, ally);
@@ -2292,9 +2294,12 @@ describe('the Priest', () => {
       'p-bokh': hexNeighbor(c, 0),
       'p-storm': hexNeighbor(hexNeighbor(c, 3), 3),
     });
-    const saved = {...ABILITY.blessing};
-    onTestFinished(() => Object.assign(ABILITY.blessing, saved));
-    Object.assign(ABILITY.blessing, {heal: false, shape: 'aura', radius: 1});
+    const blessing = ABILITY.blessing as {heal: boolean; shape: string; radius: number};
+    const saved = {...blessing};
+    onTestFinished(() => {
+      Object.assign(blessing, saved);
+    });
+    Object.assign(blessing, {heal: false, shape: 'aura', radius: 1});
     expect(ABILITIES.blessing.targets(s, mapOf(s), p, c)).toEqual([{hex: c}]);
     applyTurn(s, p, {action: {ability: 'blessing', target: {hex: c}}});
     expect([p.shield, unit(s, 'p-bokh').shield, unit(s, 'p-storm').shield]).toEqual([

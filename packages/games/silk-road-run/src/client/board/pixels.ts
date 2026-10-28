@@ -39,7 +39,7 @@ export const HERO_COLOR = {
   archer: '#0369a1',
   // The Barbarian's disc, shown while its sprite loads.
   varangian: '#57534e',
-  // The Priest's disc: it has no sprite yet.
+  // The Priest's disc, shown while its sprite loads.
   priest: '#ca8a04',
   camel: '#a8742f',
   wolf: '#6b7280',
