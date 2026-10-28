@@ -74,9 +74,21 @@ interface Picks {
    * hexes plan (or change) the move, which stays open until Confirm; other taps inspect.
    */
   moving: boolean;
+  /**
+   * The space tapped to aim an ability whose area runs out from its user
+   * (Cleave's line), when it isn't the target itself: a second tap there
+   * confirms, as on the target.
+   */
+  tapped: Hex | null;
 }
 
-const NO_PICKS: Picks = {plannedMove: null, ability: null, target: null, moving: false};
+const NO_PICKS: Picks = {
+  plannedMove: null,
+  ability: null,
+  target: null,
+  moving: false,
+  tapped: null,
+};
 
 export type TurnPlan = ReturnType<typeof useTurnPlan>;
 
@@ -95,7 +107,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     picks: NO_PICKS,
   });
   const picks = saved.fight === fight ? saved.picks : NO_PICKS;
-  const {plannedMove, ability, target, moving} = picks;
+  const {plannedMove, ability, target, moving, tapped} = picks;
   const pick = useCallback(
     (change: Partial<Picks>) =>
       setSaved((s) => ({fight, picks: {...(s.fight === fight ? s.picks : NO_PICKS), ...change}})),
@@ -171,15 +183,20 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   /** The hex picked last: the destination, the target, Feigned Retreat's fall-back, or Skirmish's step before its target. */
   const lastPicked =
     plannedMove?.hex ??
+    (target?.hex && tapped) ??
     (stepsFirst(ability) ? (target?.hex ?? target?.to) : (target?.to ?? target?.hex)) ??
     null;
 
-  const clearMove = useCallback(() => pick({plannedMove: null, moving: false}), [pick]);
+  const clearMove = useCallback(
+    () => pick({plannedMove: null, moving: false, tapped: null}),
+    [pick]
+  );
 
   /** Selecting an ability replaces any planned move. */
   const chooseAbility = useCallback(
     (id: AbilityId | null) => {
-      if (!id) return pick({plannedMove: null, moving: false, ability: null, target: null});
+      if (!id)
+        return pick({plannedMove: null, moving: false, ability: null, target: null, tapped: null});
       // Abilities with no target (Hold) preview at once.
       const own =
         fight && acting ? ABILITIES[id].targets(fight, mapOf(fight), acting, acting.hex!) : [];
@@ -187,6 +204,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         plannedMove: null,
         moving: false,
         ability: id,
+        tapped: null,
         target: own.length === 1 && own[0]!.hex === undefined ? {} : null,
       });
     },
@@ -194,7 +212,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   );
 
   const chooseTarget = useCallback(
-    (t: ActionTarget) => pick({plannedMove: null, moving: false, target: t}),
+    (t: ActionTarget, tapped: Hex | null = null) =>
+      pick({plannedMove: null, moving: false, target: t, tapped}),
     [pick]
   );
 
@@ -203,7 +222,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
    */
   const toggleMove = useCallback(() => {
     if (plannedMove || moving) return clearMove();
-    pick({ability: null, target: null, moving: true});
+    pick({ability: null, target: null, tapped: null, moving: true});
   }, [moving, plannedMove, clearMove, pick]);
 
   /**
@@ -261,13 +280,31 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       const match =
         fight && acting.hex && targetAt(mapOf(fight), acting.hex, ABILITIES[ability], targets, h);
       if (!match) return false;
-      // Tapping the chosen target again un-picks it (the button confirms).
-      if (target?.hex && hexEquals(target.hex, match.hex!)) pick({target: null});
-      else if (secondPick(ability)) chooseTarget({hex: match.hex!});
-      else chooseTarget(match);
+      // Where in the line it was tapped, if not on the target: a second tap there confirms.
+      const at = hexEquals(match.hex!, h) ? null : h;
+      if (target?.hex && hexEquals(target.hex, match.hex!)) {
+        // Another space of the chosen line moves the tap there; the
+        // chosen space again un-picks it (a second tap on the hex just
+        // picked confirms, before this).
+        if (hexEquals(tapped ?? target.hex, h)) pick({target: null, tapped: null});
+        else pick({tapped: at});
+      } else if (secondPick(ability)) chooseTarget({hex: match.hex!});
+      else chooseTarget(match, at);
       return true;
     },
-    [fight, acting, moveMode, reaches, plannedMove, ability, target, targets, chooseTarget, pick]
+    [
+      fight,
+      acting,
+      moveMode,
+      reaches,
+      plannedMove,
+      ability,
+      target,
+      tapped,
+      targets,
+      chooseTarget,
+      pick,
+    ]
   );
 
   /**
@@ -277,7 +314,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   const stepBack = useCallback((): boolean => {
     if (stepsFirst(ability) && target?.hex) pick({target: {to: target.to!}});
     else if (target?.to && !stepsFirst(ability)) pick({target: {hex: target.hex!}});
-    else if (target?.hex || target?.to) pick({target: null});
+    else if (target?.hex || target?.to) pick({target: null, tapped: null});
     else if (ability) chooseAbility(null);
     else if (plannedMove) pick({plannedMove: null});
     else if (moving) pick({moving: false});
