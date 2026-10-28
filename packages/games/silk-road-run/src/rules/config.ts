@@ -239,6 +239,21 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['longshot', 'hold'],
   },
   /**
+   * The Barbarian (owner, 2026-10-28; roster.md): Byzantium's damage hero,
+   * a Varangian guardsman with a great axe, slow and hard-hitting. Speed 1,
+   * defence 2 (health 6) and power 3 are the owner's. Hew, a plain melee
+   * blow (`hew` in abilities.ts), is the builder's placeholder until the owner
+   * picks its kit from the ideas in roster.md.
+   */
+  varangian: {
+    name: 'Barbarian',
+    letter: 'B',
+    speed: 1,
+    defence: 2,
+    power: 3,
+    abilities: ['hew', 'hold'],
+  },
+  /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
@@ -600,6 +615,7 @@ export const AI = {
     // A tank, as the Grappler and the Vanguard.
     mahout: 0,
     archer: 1,
+    varangian: 1,
     camel: 0,
     wolf: 1,
     fox: 1,
@@ -680,19 +696,22 @@ export const ROSTER: HeroId[] = [
   'magus',
   'mahout',
   'archer',
+  'varangian',
 ];
 /**
  * The regions a run passes through, in order (setting.md, 15.3a), so far
  * the three whose stages are built: each names its own three heroes
  * and its basic creature, the wolf's unit reskinned (progression.md,
  * 19.5), if its stages bring one: only the Steppe's do (owner,
- * 2026-10-28; China's fox spirits taken out).
+ * 2026-10-28; China's fox spirits taken out). Byzantium has no stages
+ * yet, so no enemy brings its Barbarian.
  */
-export type RegionId = 'steppe' | 'china' | 'persia';
+export type RegionId = 'steppe' | 'china' | 'persia' | 'byzantium';
 export const REGIONS: Record<RegionId, {heroes: HeroId[]; creature: HeroId | null}> = {
   steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf'},
   china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null},
   persia: {heroes: ['archer', 'mahout', 'magus'], creature: null},
+  byzantium: {heroes: ['varangian'], creature: null},
 };
 /**
  * A run's stages, in order (owner, 2026-10-24; for a while four, from three

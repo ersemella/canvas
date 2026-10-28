@@ -1488,6 +1488,45 @@ describe('the Duelist', () => {
   });
 });
 
+describe('the Barbarian', () => {
+  const party: HeroId[] = ['varangian', 'modao', 'mangudai'];
+  const c = at(4, 4);
+
+  it('has speed 1, power 3, defence 2, and is on the roster', () => {
+    const s = setup({'p-varangian': c}, party);
+    const b = unit(s, 'p-varangian');
+    expect([b.speed, b.power, b.defence, b.maxHp]).toEqual([1, 3, 2, healthOf(2)]);
+    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['hew', 'hold']);
+    expect(ROSTER).toContain('varangian');
+  });
+
+  it('Hew hits a unit next to it for its power', () => {
+    const s = setup(
+      {'p-varangian': c, 'e-modao': hexNeighbor(c, 0), 'e-mangudai': at(4, 7)},
+      party
+    );
+    const b = unit(s, 'p-varangian');
+    expect(ABILITIES.hew.targets(s, mapOf(s), b, b.hex!)).toEqual([{hex: hexNeighbor(c, 0)}]);
+    b.slot = s.currentSlot;
+    applyTurn(s, b, {action: {ability: 'hew', target: {hex: hexNeighbor(c, 0)}}});
+    expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - 3);
+    expect(b.slot).toBe(actionCost(b));
+  });
+
+  it('the AI hews an enemy next to it', () => {
+    const s = setup(
+      {'e-varangian': c, 'p-modao': hexNeighbor(c, 0), 'p-mangudai': at(4, 8)},
+      party
+    );
+    const b = unit(s, 'e-varangian');
+    b.controller = 'ai';
+    b.slot = s.currentSlot;
+    s.awaiting = b.id;
+    const turn = chooseAiTurn(s, b);
+    expect(turn.action.ability).toBe('hew');
+  });
+});
+
 describe('the Magus', () => {
   const party: HeroId[] = ['magus', 'mangudai', 'bokh'];
   const c = at(4, 4);
@@ -2987,6 +3026,7 @@ describe('previews, the AI and the run', () => {
       steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf'},
       china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null},
       persia: {heroes: ['archer', 'mahout', 'magus'], creature: null},
+      byzantium: {heroes: ['varangian'], creature: null},
     });
     expect(
       Object.values(REGIONS)
@@ -3027,8 +3067,10 @@ describe('previews, the AI and the run', () => {
       });
       for (const stage of [0, 3, 6]) firsts.add(stageEnemies(seed, stage)[0]!);
     }
-    // Random from the first: each region's every hero leads its stages for some seed.
-    expect(firsts.size).toBe(ROSTER.length);
+    // Random from the first: each region's every hero leads its stages for
+    // some seed, but Byzantium's, which has no stages yet.
+    expect(firsts.size).toBe(ROSTER.length - REGIONS.byzantium.heroes.length);
+    expect(STAGES.some((s) => s.region === 'byzantium')).toBe(false);
     // Persia's outsiders are any of the Steppe's and China's heroes.
     expect(outsiders.size).toBe(6);
   });
@@ -3461,7 +3503,16 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a party must be one to three different heroes of the roster', () => {
-    expect(ROSTER).toEqual([...PARTY, 'modao', 'alchemist', 'youxia', 'magus', 'mahout', 'archer']);
+    expect(ROSTER).toEqual([
+      ...PARTY,
+      'modao',
+      'alchemist',
+      'youxia',
+      'magus',
+      'mahout',
+      'archer',
+      'varangian',
+    ]);
     expect(() => createRun(5, {party: ['modao', 'alchemist']})).not.toThrow();
     for (const party of [
       ['modao', 'alchemist', 'storm', 'bokh'],

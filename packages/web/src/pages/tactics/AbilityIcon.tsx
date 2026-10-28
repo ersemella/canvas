@@ -309,6 +309,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // A bearded axe, its edge the accent, its haft the shade.
+  hew: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '.....####...',
+      '....######+.',
+      '....=######+',
+      '....=.#####+',
+      '....=...###+',
+      '....=.....#+',
+      '....=.......',
+      '....=.......',
+      '....=.......',
+      '....=.......',
+      '............',
+    ],
+  },
   // An elephant's foot coming down, the dust it raises the accent.
   stomp: {
     kind: 'attack',

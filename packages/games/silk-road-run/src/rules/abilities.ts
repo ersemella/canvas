@@ -1235,6 +1235,27 @@ const stomp: AbilityDef = {
   },
 };
 
+// ─── Barbarian ───────────────────────────────────────────────────────────────
+
+/**
+ * Hew (2026-10-28), the Barbarian's great axe: melee, its power. The
+ * builder's placeholder, the Bite's shape, until the owner picks the
+ * Barbarian's kit (roster.md).
+ */
+const hew: AbilityDef = {
+  id: 'hew',
+  name: 'Hew',
+  kind: 'attack',
+  summary: () => 'Melee.',
+  targetsUnit: true,
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} hews at ${unitName(u)} with the axe.`);
+    hit(ctx, user, u, 'The axe');
+  },
+};
+
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 
 const bite: AbilityDef = {
@@ -1265,6 +1286,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   omen,
   stomp,
   longshot,
+  hew,
   shove,
   haul,
   feignedRetreat,
