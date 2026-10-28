@@ -29,6 +29,8 @@ import bokhPortrait from '../sprites/bokh-portrait.png';
 import bokhSprite from '../sprites/bokh.png';
 import camelPortrait from '../sprites/camel-portrait.png';
 import camelSprite from '../sprites/camel.png';
+import cataphractPortrait from '../sprites/cataphract-portrait.png';
+import cataphractSprite from '../sprites/cataphract.png';
 import mangudaiSprite from '../sprites/mangudai.png';
 import mangudaiPortrait from '../sprites/mangudai-portrait.png';
 import modaoPortrait from '../sprites/modao-portrait.png';
@@ -86,6 +88,9 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // From the owner's AI-assisted art (2026-10-28): shrunk to 32×32, its
   // purple shadow made grey first, the censer and the eye put back by hand.
   priest: priestSprite,
+  // From the owner's AI-assisted art (2026-10-28): shrunk to 36×36, a
+  // mounted frame, with a 2-frame idle split at the saddle.
+  cataphract: cataphractSprite,
   camel: camelSprite,
   wolf: wolfSprite,
   // From the owner's AI-assisted art (2026-10-25): cut out, shrunk to the
@@ -109,6 +114,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   archer: {src: archerPortrait, faceX: 18},
   varangian: {src: varangianPortrait, faceX: 16},
   priest: {src: priestPortrait, faceX: 17},
+  cataphract: {src: cataphractPortrait, faceX: 17},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},

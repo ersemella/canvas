@@ -778,6 +778,14 @@ portrait only, no text, no border.
 
 ## Prompts for the Cataphract (2026-10-28)
 
+**Built from the owner's art (2026-10-28):** the shadow came back flat
+grey as asked, so no repainting; the sprite shrunk to 36 × 36 with
+`shrink-sprite.py` (a mounted frame, as the Outrider's) and a 2-frame
+idle split at the saddle (`--split 22`); the portrait cropped to the
+face (`--crop 260,0,1214,954 --lines 0.6`: at 0.3 the mail's dark lines
+between its scales turned the aventail black), `faceX` 17. The prompts
+it came from:
+
 The Cataphract (roster.md), Byzantium's tank, armoured heavy cavalry,
 played as a lettered disc (`cataphract` in `HERO_COLOR`) until its art
 comes. Mounted, as the Outrider: a **36 × 36** board sprite facing right,
