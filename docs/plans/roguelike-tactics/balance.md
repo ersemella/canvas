@@ -3681,7 +3681,9 @@ Its turns in its Steppe seat: 42.5% Trample, 46.7% walks, 10.8% Hold.
 
 **Built since** (the owner, 2026-10-28): the step, then the stomp
 (`mode: 'stomp'`, `step: 1` by default). `trample-stomp.mjs` sets the mode
-and step of each row, so it still reproduces.
+and step of each row, so it still reproduces. Since then a step may
+also go onto an enemy next to it, shoving it 1 on first (roster.md),
+which these rows didn't measure.
 
 ## Principles for re-tuning
 

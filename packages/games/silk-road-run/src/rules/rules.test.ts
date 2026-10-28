@@ -38,7 +38,7 @@ import {
   hasRoomForAbility,
   isImmobilized,
 } from './board';
-import {ABILITIES, abilitiesOf, arrowLanes, unusableReason} from './abilities';
+import {ABILITIES, abilitiesOf, arrowLanes, tramplePlan, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {offeredTargets, onlyHold, targetAt} from './choices';
@@ -1861,6 +1861,35 @@ describe('the Juggernaut', () => {
     expect(turn.action.ability).toBe('trample');
     applyTurn(t.s, t.e, turn);
     expect(unit(t.s, 'e-bokh').hp).toBe(unit(t.s, 'e-bokh').maxHp - 2);
+  });
+
+  it('Trample steps into an enemy next to it, shoving it on, then stomps it again', () => {
+    const {s, e} = ready({'e-bokh': along(c, 0, 1), 'p-bokh': along(c, 3, 1)});
+    // An enemy's space is a target; an ally's isn't.
+    const targets = ABILITIES.trample.targets(s, mapOf(s), e, c);
+    expect(targets.some((t) => hexEquals(t.hex!, along(c, 0, 1)))).toBe(true);
+    expect(targets.some((t) => hexEquals(t.hex!, along(c, 3, 1)))).toBe(false);
+    trample(s, e, along(c, 0, 1));
+    expect(e.hex).toEqual(along(c, 0, 1));
+    // Shoved 1 along the step, then Pushed 1 more by the stomp, hit once.
+    const b = unit(s, 'e-bokh');
+    expect(b.hex).toEqual(along(c, 0, 3));
+    expect(b.hp).toBe(b.maxHp - 2);
+    // The ally it stepped away from is no longer next to it.
+    expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
+  });
+
+  it('an enemy that can’t be shoved on means a stomp in place', () => {
+    const {s, e} = ready({'e-bokh': along(c, 0, 1), 'p-bokh': along(c, 0, 2)});
+    trample(s, e, along(c, 0, 1));
+    expect(e.hex).toEqual(c);
+    const b = unit(s, 'e-bokh');
+    expect(b.hex).toEqual(along(c, 0, 1));
+    expect(b.hp).toBe(b.maxHp - 2);
+    expect(unit(s, 'p-bokh').hp).toBe(unit(s, 'p-bokh').maxHp);
+    // The AI's guess agrees: in place, the enemy caught.
+    const plan = tramplePlan(s, mapOf(s), c, along(c, 0, 1));
+    expect(plan.end).toEqual(c);
   });
 
   it('a Juggernaut felled by hail on its step doesn’t stomp', () => {

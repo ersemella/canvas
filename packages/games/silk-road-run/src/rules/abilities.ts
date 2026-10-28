@@ -16,6 +16,7 @@ import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL} from './config';
 import {
   addStatus,
+  hostile,
   cleaveAreas,
   firstInLane,
   isImmobilized,
@@ -1073,12 +1074,14 @@ export function tramplePlan(
   from: Hex,
   target: Hex
 ): {caught: Unit[]; end: Hex} {
-  // A stomp's target is where it stomps from, after any step.
-  if (ABILITY.trample.mode === 'stomp')
-    return {
-      caught: stompCaught(state, target).filter((u) => !hexEquals(u.hex!, from)),
-      end: target,
-    };
+  // A stomp's target is where it steps, an enemy there shoved on ahead,
+  // next to it again; where it can't be, the stomp is in place.
+  if (ABILITY.trample.mode === 'stomp') {
+    const end = stompFrom(state, map, from, target);
+    const shoved = hexEquals(end, from) ? undefined : unitAt(state, target);
+    const caught = stompCaught(state, end).filter((u) => !hexEquals(u.hex!, from));
+    return {caught: shoved ? [...caught, shoved] : caught, end};
+  }
   const dir = hexDirectionTo(from, target)!;
   const caught = new Set<Unit>();
   let at = from;
@@ -1100,6 +1103,26 @@ export function tramplePlan(
   return {caught: [...caught], end: at};
 }
 
+/**
+ * Whether a stomp's step onto `to` shoves `u`, standing there, 1 on along
+ * the step: not Rooted or Unstoppable, and free ground past it.
+ */
+function shoveGives(state: FightState, map: MapData, u: Unit, dir: number): boolean {
+  const past = hexNeighbor(u.hex!, dir);
+  return (
+    walkable(map, past) && !unitAt(state, past) && !isUnstoppable(u) && !hasPassive(u, 'rooted')
+  );
+}
+
+/**
+ * Where a stomp aimed at `to` lands: `to`, or `from` when an enemy there
+ * can't be shoved on (`shoveGives`).
+ */
+function stompFrom(state: FightState, map: MapData, from: Hex, to: Hex): Hex {
+  const u = unitAt(state, to);
+  return !u || shoveGives(state, map, u, hexDirectionTo(from, to)!) ? to : from;
+}
+
 /** The units next to `from`: those a stomp catches. */
 function stompCaught(state: FightState, from: Hex): Unit[] {
   return hexNeighbors(from)
@@ -1109,15 +1132,29 @@ function stompCaught(state: FightState, from: Hex): Unit[] {
 
 /**
  * Trample as a stomp (owner, 2026-10-28; balance.md): the Juggernaut steps
- * onto `to`, a free space next to it (`ABILITY.trample.step`), or stays;
- * each unit next to it there, ally or enemy, takes its power, then those
- * still standing are Pushed 1 away from it, one at a time in the order for
- * cards placed at the same moment, as Rebound's.
+ * onto `to`, a space next to it (`ABILITY.trample.step`), or stays. An
+ * enemy on `to` is first Pushed 1 on along the step; if it can't be (a
+ * unit or yurts past it, the map's edge, Rooted or Unstoppable), the
+ * Juggernaut stomps where it stands. Each unit next to it then, ally or
+ * enemy, the shoved one too, takes its power, and those still standing
+ * are Pushed 1 away from it, one at a time in the order for cards placed
+ * at the same moment, as Rebound's.
  */
 function stomp(ctx: Ctx, user: Unit, to: Hex): void {
-  if (!hexEquals(to, user.hex!)) {
-    enterHex(ctx, user, to);
-    log(ctx, `${unitName(user)} steps.`);
+  const from = user.hex!;
+  if (!hexEquals(to, from)) {
+    const u = unitAt(ctx.state, to);
+    if (!u || shoveGives(ctx.state, ctx.map, u, hexDirectionTo(from, to)!)) {
+      if (u) {
+        log(ctx, `${unitName(user)} shoves ${unitName(u)} aside.`);
+        displace(ctx, u, hexDirectionTo(from, to)!, 1, 'push');
+      }
+      // Pushed into hail and felled, or Rebounding: step only onto free ground.
+      if (!unitAt(ctx.state, to)) {
+        enterHex(ctx, user, to);
+        log(ctx, `${unitName(user)} steps.`);
+      }
+    }
   }
   // Felled by hail on its step: no stomp.
   if (!user.alive || !user.hex) return;
@@ -1160,14 +1197,17 @@ const trample: AbilityDef = {
   },
   summary: () =>
     ABILITY.trample.mode === 'stomp'
-      ? `${ABILITY.trample.step > 0 ? 'Step 1 space or stay, then stomp: e' : 'E'}very unit next to you is hit and Pushed 1 away.`
+      ? `${ABILITY.trample.step > 0 ? 'Step 1 space or stay, shoving an enemy there on ahead, then stomp: e' : 'E'}very unit next to you is hit and Pushed 1 away.`
       : `Walk up to ${ABILITY.trample.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
   targets(state, map, user, from) {
     if (ABILITY.trample.mode === 'stomp') {
       if (ABILITY.trample.step <= 0 || isImmobilized(user)) return [{hex: from}];
       const out: ActionTarget[] = [{hex: from}];
-      for (const to of sortByHex(stepsFrom(map, from), (h) => h))
-        if (!unitAt(state, to)) out.push({hex: to});
+      // Free spaces, and enemies' (shoved on ahead, `stomp`).
+      for (const to of sortByHex(stepsFrom(map, from), (h) => h)) {
+        const u = unitAt(state, to);
+        if (!u || hostile(u, user)) out.push({hex: to});
+      }
       return out;
     }
     if (isImmobilized(user)) return [];
