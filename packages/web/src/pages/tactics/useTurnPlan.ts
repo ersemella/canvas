@@ -50,6 +50,8 @@ const SECOND_PICK: Partial<Record<AbilityId, string>> = {
   omen: 'Pick the unit to wait until after your next turn',
   skirmish: 'Pick where to step',
 };
+/** The second pick's prompt, if `id` takes two; none for Omen on one unit (`pairs` off, as built). */
+const secondPick = (id: AbilityId) => (ABILITIES[id].pairs === false ? undefined : SECOND_PICK[id]);
 const stepsFirst = (id: AbilityId | null) => Boolean(id && ABILITIES[id].steps);
 
 /** What the player has picked for the acting unit's turn so far. */
@@ -118,7 +120,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   /** The action with its target chosen, ready to preview. */
   const action = useMemo(() => {
     if (!ability || !target) return null;
-    if (SECOND_PICK[ability] && (!target.to || !target.hex)) return null;
+    if (secondPick(ability) && (!target.to || !target.hex)) return null;
     return {ability, target};
   }, [ability, target]);
 
@@ -130,9 +132,9 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         ? stepsFirst(ability)
           ? target?.to
             ? 'Pick a target'
-            : SECOND_PICK[ability]!
-          : SECOND_PICK[ability] && target?.hex
-            ? SECOND_PICK[ability]
+            : secondPick(ability)!
+          : secondPick(ability) && target?.hex
+            ? secondPick(ability)!
             : 'Pick a target'
         : null;
 
@@ -233,7 +235,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         chooseTarget({to: step.to!});
         return true;
       }
-      if (SECOND_PICK[ability] && target?.hex) {
+      if (secondPick(ability) && target?.hex) {
         // Where Feigned Retreat falls back to.
         const second = targets.find(
           (t) => hexEquals(t.hex!, target.hex!) && t.to && hexEquals(t.to, h)
@@ -251,7 +253,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       if (!match) return false;
       // Tapping the chosen target again un-picks it (the button confirms).
       if (target?.hex && hexEquals(target.hex, match.hex!)) pick({target: null});
-      else if (SECOND_PICK[ability]) chooseTarget({hex: match.hex!});
+      else if (secondPick(ability)) chooseTarget({hex: match.hex!});
       else chooseTarget(match);
       return true;
     },
