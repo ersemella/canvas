@@ -487,5 +487,9 @@ the owner's art: each run through `shrink-sprite.py` at 128 as it came
 `src/client/sprites/<hero>-art.png` (128 × 128, facing right) and listed
 in `HERO_ART` beside `HERO_SPRITE` in `src/client/board/units.ts`.
 `HeroView` shows it, flipped to face left, in place of the scaled-up
-sprite; a hero not in `HERO_ART` still shows its sprite. The other nine
-were made the same day; each is added the same way.
+sprite; a hero not in `HERO_ART` still shows its sprite.
+
+**The Vanguard, the Duelist and the Alchemist (2026-10-28)**, the same
+way. The other six (the Juggernaut, the Ranger, the Magus, the
+Cataphract, the Barbarian, the Priest) were made the same day; each is
+added the same way.

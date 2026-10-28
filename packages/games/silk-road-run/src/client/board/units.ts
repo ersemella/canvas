@@ -21,6 +21,7 @@ import {
   label,
   pixelRect,
 } from './pixels';
+import alchemistArt from '../sprites/alchemist-art.png';
 import alchemistPortrait from '../sprites/alchemist-portrait.png';
 import alchemistSprite from '../sprites/alchemist.png';
 import archerPortrait from '../sprites/archer-portrait.png';
@@ -35,6 +36,7 @@ import cataphractSprite from '../sprites/cataphract.png';
 import mangudaiArt from '../sprites/mangudai-art.png';
 import mangudaiSprite from '../sprites/mangudai.png';
 import mangudaiPortrait from '../sprites/mangudai-portrait.png';
+import modaoArt from '../sprites/modao-art.png';
 import modaoPortrait from '../sprites/modao-portrait.png';
 import modaoSprite from '../sprites/modao.png';
 import stormArt from '../sprites/storm-art.png';
@@ -48,6 +50,7 @@ import varangianPortrait from '../sprites/varangian-portrait.png';
 import varangianSprite from '../sprites/varangian.png';
 import priestPortrait from '../sprites/priest-portrait.png';
 import priestSprite from '../sprites/priest.png';
+import youxiaArt from '../sprites/youxia-art.png';
 import youxiaPortrait from '../sprites/youxia-portrait.png';
 import youxiaSprite from '../sprites/youxia.png';
 import wolfPortrait from '../sprites/wolf-portrait.png';
@@ -123,6 +126,9 @@ export const HERO_ART: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhArt,
   mangudai: mangudaiArt,
   storm: stormArt,
+  modao: modaoArt,
+  youxia: youxiaArt,
+  alchemist: alchemistArt,
 };
 /** Track portraits (32×32, facing right), filling the card; `faceX` is the face's column. */
 export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
