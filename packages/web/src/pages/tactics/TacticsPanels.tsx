@@ -46,9 +46,10 @@ export const PALETTE_VARS = Object.fromEntries(
 
 /**
  * When the unit's next turn comes after a previewed turn, in slots from
- * now: "+3", or, when the slot the turn aims at (3.2) is taken and the
- * card yields further on (3.3), "+3 → +5", the aim and then where the
- * card lands, as the track draws it; "+8 → +5" when the turn Hastens it. Null with no preview.
+ * now: "+3", or, when the turn moves its card off the slot its speed aims
+ * at (3.2), "+3 → +5", the aim and then where the card lands, as the track
+ * draws it ("+8 → +5" when the turn Hastens it), its title saying why, leg
+ * by leg: Hastened, Delayed, or yielding past taken slots (3.3). Null with no preview.
  */
 export function nextTurn(
   fight: FightState,
@@ -60,12 +61,15 @@ export function nextTurn(
   const aim = preview.aimSlot ?? slot;
   if (slot === null) return {text: ''};
   if (aim === null || slot === aim) return {text: `+${slot - now}`};
+  const legs = (fight.awaiting && preview.moves[fight.awaiting]) || [];
+  const why = legs.map((l) =>
+    l.cause === 'bumped'
+      ? `+${l.from - now} is taken, so it yields to +${l.to - now}`
+      : `this turn ${l.cause === 'earlier' ? 'brings it on' : 'sends it back'} to +${l.to - now}`
+  );
   return {
     text: `+${aim - now} → +${slot - now}`,
-    title:
-      slot > aim
-        ? `Your speed aims at slot +${aim - now}, but cards hold the slots up to +${slot - now - 1}: yours yields to the first free one.`
-        : `Your speed aims at slot +${aim - now}, but this turn brings your card on to +${slot - now}.`,
+    title: `Your speed aims at slot +${aim - now}${why.length > 0 ? `; ${why.join('; then ')}` : `, but your card lands at +${slot - now}`}.`,
   };
 }
 

@@ -2,6 +2,7 @@
  * What the page sends the board to draw (`tactics:board`).
  */
 import type {Hex} from '@canvas/engine';
+import type {CardLeg} from '../../rules/preview';
 import type {FightState} from '../../rules/types';
 
 export type HighlightKind = 'path' | 'target' | 'landing' | 'chosen' | 'area';
@@ -38,8 +39,8 @@ export interface BoardScene {
   displaced?: [Hex, Hex][];
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
-  /** The slot the planned turn aims at (3.2); when it's taken, the card yields on to `previewSlot`. */
-  aimSlot?: number | null;
+  /** Every card the planned turn moves on the track, leg by leg (`TurnPreview.moves`). */
+  previewMoves?: Record<string, CardLeg[]>;
   /** Cards the planned turn's landing moves on, by unit id (`TurnPreview.bumped`). */
   previewBumps?: Record<string, number>;
   /**

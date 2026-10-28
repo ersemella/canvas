@@ -95,7 +95,7 @@ export {aimSlot, chargeOf} from './rules/track';
 export {previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';
 export {allowedTargets, offeredTargets, onlyHold, targetAt} from './rules/choices';
-export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
+export type {CardLeg, EnemyOption, TurnPreview, UnitChange} from './rules/preview';
 export {
   DOME,
   FLAMING,

@@ -1497,6 +1497,25 @@ describe('the Swordsman', () => {
     expect(y.slot).toBe(actionCost(y) - ABILITY.swiftStrike.haste);
   });
 
+  it('previews a Haste onto a taken slot as the Haste and then the yield, leg by leg', () => {
+    const s = setup({'p-youxia': c, 'e-modao': hexNeighbor(c, 0), 'e-mangudai': at(4, 7)}, party);
+    const y = unit(s, 'p-youxia');
+    y.slot = s.currentSlot;
+    const aim = s.currentSlot + actionCost(y);
+    const hasted = aim - ABILITY.swiftStrike.haste;
+    // The Horse Archer, as fast, holds the slot the Haste brings it to: it yields one on.
+    unit(s, 'e-mangudai').slot = hasted;
+    const preview = previewTurn(s, y.id, {
+      action: {ability: 'swiftStrike', target: {hex: hexNeighbor(c, 0)}},
+    })!;
+    expect(preview).toMatchObject({aimSlot: aim, slot: hasted + 1});
+    expect(preview.moves[y.id]).toEqual([
+      {from: aim, to: hasted, cause: 'earlier'},
+      {from: hasted, to: hasted + 1, cause: 'bumped'},
+    ]);
+    expect(preview.moves['e-mangudai']).toBeUndefined();
+  });
+
   it('a walk and Hold leave its card where it was due', () => {
     const s = setup({'p-youxia': c, 'e-modao': at(4, 7)}, party);
     const y = unit(s, 'p-youxia');

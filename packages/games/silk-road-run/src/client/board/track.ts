@@ -4,6 +4,7 @@
  */
 import {assetLoader} from '@canvas/engine';
 import {HEROES} from '../../rules/config';
+import type {CardLeg} from '../../rules/preview';
 import type {FightState, Unit} from '../../rules/types';
 import {TRACK_AREA, trackSlots} from '../layout';
 import type {TrackBumps, TrackCard, TrackSlots} from '../layout';
@@ -103,9 +104,9 @@ function bandCard(
  * and each later one tucked behind the one before, showing a strip with
  * its unit. The planned turn's landing card is dashed; when it lands off
  * the slot its cost aimed at (it yields past taken slots, or is Hastened),
- * that slot is marked too, with an arrow on to where it lands, and so is
+ * that slot is marked too, with arrows on to where it lands, and so is
  * every other card the turn moves (Hastened, Delayed or bumped on), from
- * its slot now to where it goes (`drawMoves`). The acting unit's card stands a little taller in
+ * its slot now to where it goes, a leg per cause (`drawMoves`). The acting unit's card stands a little taller in
  * front. After a turn, its card slides back to its new slot over the
  * others, and the empty cards it passed lift up off the track one by one,
  * the rest sliding forward, until the next turn's card is in front.
@@ -115,8 +116,8 @@ export function drawTrack(
   fight: FightState,
   cards: TrackCard[],
   previewSlot: number | null,
-  aimSlot: number | null,
   bumps: TrackBumps,
+  moves: Record<string, CardLeg[]>,
   advance: TrackAdvance | null,
   slides: Map<string, CardSlide>,
   opts: {selected: string | null; hovered: string | null}
@@ -175,41 +176,22 @@ export function drawTrack(
       opts
     );
   }
-  if (!advance && previewSlot !== null)
-    drawMoves(ctx, deck, trackMoves(fight, previewSlot, aimSlot, bumps));
+  if (!advance && previewSlot !== null) drawMoves(ctx, deck, trackMoves(fight, moves));
 }
 
-/**
- * A card the planned turn moves on the track, from the slot it holds (or,
- * for the acting card, the slot its cost aims at) to where it lands.
- */
+/** A card the planned turn moves on the track, leg by leg (`TurnPreview.moves`). */
 interface TrackMove {
-  from: number;
-  to: number;
-  /** The acting unit's own card: it yields on, or is Hastened back. */
+  legs: CardLeg[];
+  /** The acting unit's own card: from the slot its cost aims at. */
   acting: boolean;
 }
 
-/**
- * Every card the planned turn moves: the acting card when it lands off the
- * slot its cost aims at (it yields, 3.3, or is Hastened), and every other
- * card it Hastens, Delays or bumps on (`TurnPreview.bumped`).
- */
-function trackMoves(
-  fight: FightState,
-  previewSlot: number,
-  aimSlot: number | null,
-  bumps: TrackBumps
-): TrackMove[] {
-  const moves: TrackMove[] = [];
-  if (aimSlot !== null && aimSlot !== previewSlot)
-    moves.push({from: aimSlot, to: previewSlot, acting: true});
-  for (const u of fight.units) {
-    const to = bumps[u.id];
-    if (u.id === fight.awaiting || to === undefined || u.slot === null || to === u.slot) continue;
-    moves.push({from: u.slot, to, acting: false});
-  }
-  return moves;
+/** Every card the planned turn moves, the acting card's first (its arrows on the bottom rows). */
+function trackMoves(fight: FightState, moves: Record<string, CardLeg[]>): TrackMove[] {
+  return Object.entries(moves)
+    .filter(([, legs]) => legs.length > 0)
+    .map(([id, legs]) => ({legs, acting: id === fight.awaiting}))
+    .sort((a, b) => Number(b.acting) - Number(a.acting) || a.legs[0]!.from - b.legs[0]!.from);
 }
 
 /** Whether `u`'s card is out charging (a drawn arrow of its in the air): drawn greyed. */
@@ -367,80 +349,140 @@ function drawSkipMark(ctx: CanvasRenderingContext2D, x: number, y: number): void
   ctx.restore();
 }
 
-/**
- * The planned turn's moves on the track (3.3, Haste and Delay): for each,
- * the strip of the slot it leaves (or, for the acting card, the slot its
- * cost aimed at) outlined dashed, and an arrow below the units from there
- * to where it lands, over the cards in the way: blue for the acting card,
- * jade for a card brought earlier, gold for one sent later. Arrows whose
- * spans overlap sit on rows one above another, so each reads.
- */
-function drawMoves(ctx: CanvasRenderingContext2D, deck: TrackSlots, moves: TrackMove[]): void {
-  const rows: {lo: number; hi: number}[][] = [];
-  // The acting card's first, on the bottom row; then the rest, nearest first.
-  const ordered = [...moves].sort((a, b) => Number(b.acting) - Number(a.acting) || a.from - b.from);
-  for (const m of ordered) {
-    const lo = Math.min(m.from, m.to);
-    const hi = Math.max(m.from, m.to);
-    let row = rows.findIndex((r) => r.every((o) => hi < o.lo || lo > o.hi));
-    if (row < 0) row = rows.push([]) - 1;
-    rows[row]!.push({lo, hi});
-    const color = m.acting ? PALETTE.lapisLight : m.to < m.from ? PALETTE.jade : PALETTE.gold;
-    drawMove(ctx, deck, m.from, m.to, color, row);
-  }
-}
+/** A leg's colour by its cause: jade brought earlier, gold sent later, ivory bumped on. */
+const LEG_COLOR: Record<CardLeg['cause'], string> = {
+  earlier: PALETTE.jade,
+  later: PALETTE.gold,
+  bumped: PALETTE.ivory,
+};
 
 /** Pixels between rows of move arrows. */
 const MOVE_ROW_STEP = 9;
 
 /**
- * One move (`drawMoves`): the strip of slot `from` outlined dashed in
- * `color`, and an arrow `row` rows up from the bottom from there to `to`.
+ * The planned turn's moves on the track (3.3, Haste and Delay): for each
+ * card, the strip of the slot it leaves (or, for the acting card, the slot
+ * its cost aimed at) outlined dashed, blue for the acting card and else in
+ * its first leg's colour, and arrows below the units from there to where
+ * it lands, over the cards in the way, one leg per cause: solid jade where
+ * the turn brings it earlier, solid gold where it sends it later, and a
+ * dotted ivory leg, starting at a spark, where it collides and is bumped
+ * on (it yields, or a faster card takes its slot). A card Hastened onto a
+ * taken slot so reads as a jade arrow and then a bump, not one arrow
+ * whose length is neither. A leg turning back steps up a row; moves whose
+ * spans overlap sit on rows one above another, so each reads.
+ */
+function drawMoves(ctx: CanvasRenderingContext2D, deck: TrackSlots, moves: TrackMove[]): void {
+  const rows: {lo: number; hi: number}[][] = [];
+  const placed: {m: TrackMove; rows: number[]}[] = [];
+  const fits = (row: number, lo: number, hi: number) =>
+    (rows[row] ?? []).every((o) => hi < o.lo || lo > o.hi);
+  for (const m of moves) {
+    // Each leg's row above the chain's first: one more each time it turns back.
+    const up: number[] = [];
+    m.legs.forEach((l, k) => {
+      const prev = m.legs[k - 1];
+      const turns =
+        prev !== undefined && Math.sign(l.to - l.from) !== Math.sign(prev.to - prev.from);
+      up.push(k === 0 ? 0 : up[k - 1]! + Number(turns));
+    });
+    const span = (l: CardLeg) => [Math.min(l.from, l.to), Math.max(l.from, l.to)] as const;
+    let base = 0;
+    while (!m.legs.every((l, k) => fits(base + up[k]!, ...span(l)))) base++;
+    m.legs.forEach((l, k) => {
+      const [lo, hi] = span(l);
+      (rows[base + up[k]!] ??= []).push({lo, hi});
+    });
+    placed.push({m, rows: up.map((u) => base + u)});
+  }
+  // The acting card's drawn last, so its outline shows over any card that leaves the same slot.
+  for (const {m, rows: at} of placed.reverse())
+    drawMove(ctx, deck, m.legs, at, m.acting ? PALETTE.lapisLight : LEG_COLOR[m.legs[0]!.cause]);
+}
+
+/**
+ * One card's move (`drawMoves`): the strip of its first leg's slot
+ * outlined dashed in `outline`, and each leg an arrow `rows[k]` rows up
+ * from the bottom, joined where the move turns back.
  */
 function drawMove(
   ctx: CanvasRenderingContext2D,
   deck: TrackSlots,
-  from: number,
-  to: number,
-  color: string,
-  row: number
+  legs: CardLeg[],
+  rows: number[],
+  outline: string
 ): void {
   // The middle of a slot's showing strip: the right `w` of its card.
   const mid = (slot: number) => deck.x0 + (slot - deck.start) * deck.w + deck.cardW - deck.w / 2;
-  const left = mid(from) - deck.w / 2;
+  const rowY = (row: number) => deck.y + deck.h - 18 - row * MOVE_ROW_STEP;
+  const left = mid(legs[0]!.from) - deck.w / 2;
   ctx.save();
   ctx.setLineDash([3, 2]);
-  ctx.strokeStyle = color;
+  ctx.strokeStyle = outline;
   ctx.lineWidth = 2;
   pixelRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
   ctx.stroke();
   ctx.setLineDash([]);
-  const y = deck.y + deck.h - 18 - row * MOVE_ROW_STEP;
-  // Pointing right to a later slot, left to an earlier one.
-  const dir = to > from ? 1 : -1;
-  const x1 = mid(from);
-  const x2 = mid(to) - 4 * dir;
-  // Dark under the colour, so it reads over any card.
-  for (const [stroke, width] of [
-    [PALETTE.ink, 4],
-    [color, 2],
-  ] as const) {
-    ctx.strokeStyle = stroke;
-    ctx.fillStyle = stroke;
-    ctx.lineWidth = width;
-    ctx.beginPath();
-    ctx.moveTo(x1, y);
-    ctx.lineTo(x2 - 2 * dir, y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x2 + (width / 2 + 2) * dir, y);
-    ctx.lineTo(x2 - 5 * dir, y - 4 - width / 2);
-    ctx.lineTo(x2 - 5 * dir, y + 4 + width / 2);
-    ctx.closePath();
-    ctx.fill();
+  // Dark under the colour, so it reads over any card: the whole move in ink first.
+  for (const pass of ['ink', 'colour'] as const) {
+    const width = pass === 'ink' ? 4 : 2;
+    legs.forEach((l, k) => {
+      const color = pass === 'ink' ? PALETTE.ink : LEG_COLOR[l.cause];
+      const y = rowY(rows[k]!);
+      // Pointing right to a later slot, left to an earlier one; stopping short for the arrowhead.
+      const dir = Math.sign(l.to - l.from);
+      const x1 = mid(l.from);
+      const x2 = mid(l.to) - 4 * dir;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width;
+      // A bump dotted, over its ink, so it reads as no effect of the turn's own.
+      ctx.setLineDash(pass === 'colour' && l.cause === 'bumped' ? [2, 2] : []);
+      ctx.beginPath();
+      // Turning back: up from the leg before's row at the joint.
+      ctx.moveTo(x1, rowY(k > 0 ? rows[k - 1]! : rows[k]!));
+      ctx.lineTo(x1, y);
+      ctx.lineTo(x2 - 2 * dir, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(x2 + (width / 2 + 2) * dir, y);
+      ctx.lineTo(x2 - 5 * dir, y - 4 - width / 2);
+      ctx.lineTo(x2 - 5 * dir, y + 4 + width / 2);
+      ctx.closePath();
+      ctx.fill();
+    });
   }
-  ctx.beginPath();
-  ctx.arc(x1, y, 2.5, 0, Math.PI * 2);
-  ctx.fill();
+  // Where it leaves from, a dot; where a leg collides and is bumped on, a spark.
+  legs.forEach((l, k) => {
+    const x = mid(l.from);
+    const y = rowY(rows[k]!);
+    if (l.cause === 'bumped') drawSpark(ctx, x, y);
+    else if (k === 0) {
+      ctx.fillStyle = LEG_COLOR[l.cause];
+      ctx.beginPath();
+      ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
   ctx.restore();
+}
+
+/** A collision's spark (`drawMove`): a small four-pointed star in ivory, outlined in ink. */
+function drawSpark(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  const star = (r: number, waist: number) => {
+    ctx.beginPath();
+    for (let k = 0; k < 8; k++) {
+      const a = (k * Math.PI) / 4;
+      const d = k % 2 === 0 ? r : waist;
+      ctx.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d);
+    }
+    ctx.closePath();
+  };
+  star(6, 2.5);
+  ctx.fillStyle = PALETTE.ink;
+  ctx.fill();
+  star(4.5, 1.5);
+  ctx.fillStyle = PALETTE.ivory;
+  ctx.fill();
 }
