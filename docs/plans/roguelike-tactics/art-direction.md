@@ -263,7 +263,7 @@ tuning. This file has no combat-design section number.
   prompts for it are in [salt-flats.md](salt-flats.md).
 - **The Fairy Chimneys** (`tuff`, owner, 2026-10-28), the Byzantine's
   map: the owner's tuff (128 pixels, 7 colours, laid as one field) and
-  three fairy chimneys (30 × 55, cones of tuff under grey-brown basalt
+  five or six fairy chimneys (three at first; 30 × 55, cones of tuff under grey-brown basalt
   caps), no mountains. The test stage's `"map"` shows it. Its look, how
   the art was cut and the prompts for it are in
   [cappadocia.md](cappadocia.md).
@@ -560,9 +560,17 @@ background. One portrait only, no text, no border.
 
 ## Prompts for the Barbarian (2026-10-28)
 
+**Built from the owner's art (2026-10-28):** the sprite's purple shadow
+painted the script's flat grey, the figure cropped square to its feet and
+shrunk to 32 × 32 with `shrink-sprite.py`, its eye put back by hand (a
+white pixel and a dark one under the helmet's rim), and a 2-frame idle
+split at the knees (`--split 25`); the portrait cropped to the face
+(`--crop 300,120,1180,1000 --lines 0.4`), two pixels of magenta fringe
+inked. The prompts it came from:
+
 The Barbarian (roster.md), Byzantium's damage hero, a Varangian guardsman,
-plays as a lettered disc (`varangian` in `HERO_COLOR`) until his art
-comes. As the Archer's: a **32 × 32** board sprite facing right, split
+played as a lettered disc (`varangian` in `HERO_COLOR`) until his art
+came. As the Archer's: a **32 × 32** board sprite facing right, split
 into the 2-frame idle by `scripts/idle-sheet.py` (64 × 32 in all), and a
 **32 × 32** track portrait (`varangian.png` and `varangian-portrait.png`
 in `src/client/sprites/`). Reave swipes and throws his axe, so the axe is
