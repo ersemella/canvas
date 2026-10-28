@@ -142,18 +142,20 @@ export const localRuns = {
     return runResponse(silkRoadRun, record);
   },
   turn: (runId: string, body: TurnInput) => act(runId, {...body, type: 'turn'}),
+  /** The party's first pick in the caravanserai's passive draft, kept for good. */
+  draft: (runId: string, passive: PassivePick) => act(runId, {type: 'draft', passive}),
   /** The AI's turn that is due (`view.aiDue`), as deep as this device gets in its time. */
   continue: (runId: string) => act(runId, {type: 'continue'}),
   /**
    * On to the next stage, with the provision the stage won earned
-   * (`view.provision`) and the party's two picks of the passives drafted
-   * (`view.passives`).
+   * (`view.provision`) and the party's second pick of the passives drafted
+   * (`view.passives`), its first made before (`draft`).
    */
   next: (
     runId: string,
     choices: {
       provision?: Provision;
-      passives?: PassivePick[];
+      passive?: PassivePick;
       heal?: boolean;
       extra?: Provision;
       extraHeal?: boolean;

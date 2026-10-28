@@ -446,6 +446,11 @@ export type RunAction =
   /** The AI's turn that is due, one per request (owner, 2026-10-24). */
   | {type: 'continue'}
   /**
+   * The party's first pick in the caravanserai's passive draft, kept for
+   * good (progression.md, 19.3a): the rival answers it at once.
+   */
+  | {type: 'draft'; passive: PassivePick}
+  /**
    * On to the next stage from the caravanserai, with the provision the
    * stage won earned, if it earned one (`STAGES[stage].provision`), and the
    * party's two picks of the passives drafted there, in the order picked, if
@@ -458,7 +463,7 @@ export type RunAction =
   | {
       type: 'next';
       provision?: Provision;
-      passives?: PassivePick[];
+      passive?: PassivePick;
       heal?: boolean;
       extra?: Provision;
       extraHeal?: boolean;

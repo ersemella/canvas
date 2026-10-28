@@ -206,7 +206,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
 
   /**
    * On to the run's next stage, once this one is won, with the provision
-   * and the passives drafted at the caravanserai if it earned them: a new board, its opening
+   * and the second passive drafted at the caravanserai if it earned them: a new board, its opening
    * played back. The caravanserai closes the board, so the opening waits
    * for the board to mount again, as a new run's does.
    */
@@ -214,7 +214,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     (
       choices: {
         provision?: Provision;
-        passives?: PassivePick[];
+        passive?: PassivePick;
         heal?: boolean;
         extra?: Provision;
         extraHeal?: boolean;
@@ -222,6 +222,18 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     ) => {
       if (!run || busy) return;
       void send(() => localRuns.next(run.runId, choices), 'run');
+    },
+    [run, send, busy]
+  );
+
+  /**
+   * The party's first pick in the caravanserai's passive draft, kept for
+   * good: the answer carries the rival's pick in reply.
+   */
+  const draftPassive = useCallback(
+    (passive: PassivePick) => {
+      if (!run || busy) return;
+      void send(() => localRuns.draft(run.runId, passive), 'turn');
     },
     [run, send, busy]
   );
@@ -254,6 +266,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     startTest,
     sendTurn,
     nextStage,
+    draftPassive,
     playbackDone,
     boardReady,
   };

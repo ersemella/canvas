@@ -3921,14 +3921,15 @@ describe('previews, the AI and the run', () => {
     const between = win({...run, stage: 3});
     const view = runView(between);
     expect(view).toMatchObject({provision: false, extraProvision: true});
-    const [first, , , fourth] = view.passives;
-    const second = view.rivalTakes[first!] === fourth ? view.passives[1]! : fourth!;
-    const china = handleRunAction(between, {
+    const drafted = handleRunAction(between, {
+      type: 'draft',
+      passive: {hero: 'bokh', passive: view.passives[0]!},
+    });
+    const took = runView(drafted).rivalTook;
+    const second = view.passives.find((id) => id !== view.passives[0] && id !== took)!;
+    const china = handleRunAction(drafted, {
       type: 'next',
-      passives: [
-        {hero: 'bokh', passive: first!},
-        {hero: 'bokh', passive: second},
-      ],
+      passive: {hero: 'bokh', passive: second},
       extra: {hero: 'storm', stat: 'speed'},
     });
     expect(china.provisions).toEqual([{hero: 'storm', stat: 'speed'}]);
@@ -3946,13 +3947,13 @@ describe('previews, the AI and the run', () => {
     };
     const at = (r: RunState, stage: number): RunState => ({...r, stage});
     const run = createRun(11);
-    expect(runView(run)).toMatchObject({passives: [], rivalTakes: {}});
+    expect(runView(run)).toMatchObject({passives: [], drafted: null, rivalTook: null});
     // No passive on a stage that offers none.
     expect(() =>
       handleRunAction(win(run), {
         type: 'next',
         provision: {hero: 'bokh', stat: 'power'},
-        passives: [{hero: 'bokh', passive: 'rooted'}],
+        passive: {hero: 'bokh', passive: 'rooted'},
       })
     ).toThrow(RuleError);
 
@@ -3968,11 +3969,8 @@ describe('previews, the AI and the run', () => {
     const rivals = draftRivals(last);
     expect(rivals).toEqual(stageEnemies(run.seed, 5).slice(0, 2));
     expect(REGIONS.china.heroes).toEqual(expect.arrayContaining(rivals));
-    // The view tells the page what the rival takes, never who it drafts for.
-    expect(Object.keys(view)).not.toContain('rivals');
-    expect(JSON.stringify(view.rivalTakes)).not.toMatch(new RegExp(rivals.join('|')));
-    for (const id of offer)
-      expect(view.rivalTakes[id]).toBe(rivalPicks(offer, rivals, [id])[0]!.passive);
+    // Before the party's first pick the view shows nothing of the rival's.
+    expect(view).toMatchObject({drafted: null, rivalTook: null});
     // The same offer on a reload; another run's differs for some seed.
     expect(runView(last).passives).toEqual(offer);
     const offers = new Set<string>();
@@ -3995,48 +3993,55 @@ describe('previews, the AI and the run', () => {
     expect(rivalPicks(offer, rivals, [a, b])).toEqual([first, {hero: rivals[1], passive: lastOne}]);
 
     const notOffered = (Object.keys(PASSIVES) as PassiveId[]).find((id) => !offer.includes(id))!;
-    // Two picks are owed: none, one, a malformed one, one not offered, the
-    // rival's, the same twice, three, or one for the camel, refused.
-    for (const passives of [
+    // The first pick: a malformed one, one not offered, or for the camel, refused.
+    for (const passive of [
       undefined,
-      [{hero: 'bokh', passive: a}],
-      [{hero: 'bokh'}, {hero: 'bokh', passive: b}],
-      [
-        {hero: 'bokh', passive: 'flying'},
-        {hero: 'bokh', passive: b},
-      ],
-      [
-        {hero: 'bokh', passive: notOffered},
-        {hero: 'bokh', passive: b},
-      ],
-      [
-        {hero: 'bokh', passive: a},
-        {hero: 'storm', passive: first!.passive},
-      ],
-      [
-        {hero: 'bokh', passive: a},
-        {hero: 'storm', passive: a},
-      ],
-      [
-        {hero: 'bokh', passive: a},
-        {hero: 'storm', passive: b},
-        {hero: 'mangudai', passive: lastOne},
-      ],
-      [
-        {hero: 'camel', passive: a},
-        {hero: 'bokh', passive: b},
-      ],
-      [
-        {hero: 'wolf', passive: a},
-        {hero: 'bokh', passive: b},
-      ],
+      {hero: 'bokh'},
+      {hero: 'bokh', passive: 'flying'},
+      {hero: 'bokh', passive: notOffered},
+      {hero: 'camel', passive: a},
+      {hero: 'wolf', passive: a},
     ])
-      expect(() => handleRunAction(last, {type: 'next', passives})).toThrow(RuleError);
+      expect(() => handleRunAction(last, {type: 'draft', passive})).toThrow(RuleError);
     // Only to a hero still standing.
     const fallen = win(at(run, 3));
     Object.assign(fallen.fight.units.find((u) => u.id === 'p-storm')!, {alive: false, hex: null});
     expect(() =>
-      handleRunAction(fallen, {
+      handleRunAction(fallen, {type: 'draft', passive: {hero: 'storm', passive: a}})
+    ).toThrow(RuleError);
+    // No setting out before the first pick, nor drafting where nothing is offered.
+    expect(() =>
+      handleRunAction(last, {type: 'next', passive: {hero: 'bokh', passive: b}})
+    ).toThrow(RuleError);
+    expect(() =>
+      handleRunAction(win(run), {type: 'draft', passive: {hero: 'bokh', passive: a}})
+    ).toThrow(RuleError);
+
+    // The first pick is kept, and the rival answers it, showing what it took and nothing more.
+    const drafted = handleRunAction(last, {type: 'draft', passive: {hero: 'storm', passive: a}});
+    expect(drafted.drafted).toEqual({hero: 'storm', passive: a});
+    expect(drafted.version).toBe(last.version + 1);
+    expect(runView(drafted)).toMatchObject({
+      drafted: {hero: 'storm', passive: a},
+      rivalTook: first!.passive,
+    });
+    expect(JSON.stringify(runView(drafted))).not.toMatch(new RegExp(`"(${rivals.join('|')})"`));
+    // Never undone or changed: a second draft is refused.
+    for (const passive of [a, b])
+      expect(() =>
+        handleRunAction(drafted, {type: 'draft', passive: {hero: 'bokh', passive}})
+      ).toThrow(RuleError);
+    // The second pick: owed, from what is left (not the first, nor the rival's), to a hero without it.
+    for (const passive of [
+      undefined,
+      {hero: 'bokh', passive: a},
+      {hero: 'bokh', passive: first!.passive},
+      {hero: 'bokh', passive: notOffered},
+      {hero: 'camel', passive: b},
+    ])
+      expect(() => handleRunAction(drafted, {type: 'next', passive})).toThrow(RuleError);
+    expect(() =>
+      handleRunAction(drafted, {
         type: 'next',
         passives: [
           {hero: 'storm', passive: a},
@@ -4045,13 +4050,8 @@ describe('previews, the AI and the run', () => {
       })
     ).toThrow(RuleError);
 
-    const china = handleRunAction(last, {
-      type: 'next',
-      passives: [
-        {hero: 'storm', passive: a},
-        {hero: 'bokh', passive: b},
-      ],
-    });
+    const china = handleRunAction(drafted, {type: 'next', passive: {hero: 'bokh', passive: b}});
+    expect(china.drafted).toBeUndefined();
     expect(china.stage).toBe(4);
     expect(china.passives).toEqual([
       {hero: 'storm', passive: a},
@@ -4062,7 +4062,12 @@ describe('previews, the AI and the run', () => {
     expect(china.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
       stageEnemies(run.seed, 4)
     );
-    expect(runView(china)).toMatchObject({provision: true, passives: [], rivalTakes: {}});
+    expect(runView(china)).toMatchObject({
+      provision: true,
+      passives: [],
+      drafted: null,
+      rivalTook: null,
+    });
     expect(china.fight.units.find((u) => u.id === 'p-storm')!.passives).toEqual([a]);
     expect(china.fight.units.find((u) => u.id === 'p-bokh')!.passives).toEqual([b]);
     // The region's first hero carries the rival's first pick, beside its own.
@@ -4086,22 +4091,11 @@ describe('previews, the AI and the run', () => {
     const again = win(at({...run, passives: [{hero: 'storm', passive: a}]}, 3));
     again.fight.units.find((u) => u.id === 'p-storm')!.passives = [a];
     expect(() =>
-      handleRunAction(again, {
-        type: 'next',
-        passives: [
-          {hero: 'storm', passive: a},
-          {hero: 'bokh', passive: b},
-        ],
-      })
+      handleRunAction(again, {type: 'draft', passive: {hero: 'storm', passive: a}})
     ).toThrow(RuleError);
+    const bokhA = handleRunAction(again, {type: 'draft', passive: {hero: 'bokh', passive: a}});
     expect(
-      handleRunAction(again, {
-        type: 'next',
-        passives: [
-          {hero: 'bokh', passive: a},
-          {hero: 'storm', passive: b},
-        ],
-      }).passives
+      handleRunAction(bokhA, {type: 'next', passive: {hero: 'storm', passive: b}}).passives
     ).toEqual([
       {hero: 'storm', passive: a},
       {hero: 'bokh', passive: a},

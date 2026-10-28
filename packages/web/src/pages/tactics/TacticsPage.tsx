@@ -98,6 +98,7 @@ export function TacticsPage() {
     startTest,
     sendTurn,
     nextStage: goToNextStage,
+    draftPassive,
     playbackDone,
     boardReady,
   } = useRun(eventsRef);
@@ -435,7 +436,9 @@ export function TacticsPage() {
         provision={run.view.provision}
         extraProvision={run.view.extraProvision}
         passives={run.view.passives}
-        rivalTakes={run.view.rivalTakes}
+        drafted={run.view.drafted}
+        rivalTook={run.view.rivalTook}
+        onDraft={draftPassive}
         busy={busy}
         error={error}
         onSetOut={setOut}

@@ -124,13 +124,15 @@ random from one pool:
   AI) then takes the one left that best supplements the **first hero of
   the next region** (the first of its heroes in the run's order,
   `draftRivals` in run.ts); the player picks another; and the last goes
-  to the rival for the next region's **second hero**. `next` carries the
-  party's two picks (`passives`, in order); the rival's follow from them
-  (`rivalPicks`), so the page shows the rival's answer as soon as the
-  first pick has a carrier. **The heroes ahead stay hidden (owner,
+  to the rival for the next region's **second hero**. The rival's picks
+  follow from the party's (`rivalPicks`). **The heroes ahead stay hidden (owner,
   2026-10-28):** the caravanserai says only that a rival caravan takes a
-  passive, never which hero carries it; the view carries the rival's
-  answer to each possible first pick (`rivalTakes`), not its heroes. The rival's picks are kept in
+  passive, never which hero carries it. **The first pick is final (owner,
+  2026-10-28):** it is its own action (`draft`), kept in the run
+  (`RunState.drafted`) and never undone, and only then does the view show
+  the rival's answer (`rivalTook`), so a player can't try picks to learn
+  the rival's preferences; `next` carries the second pick (`passive`),
+  which can change until the caravan sets out. The rival's picks are kept in
   `RunState.rivalPassives`, and that enemy hero carries its passive in
   every stage it fights for the rest of the run, as an outsider in later
   regions too. How the rival judges "supplements most" is

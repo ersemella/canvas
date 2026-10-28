@@ -3,15 +3,7 @@
 // camel going on at full health, until a stage is lost or the last is won.
 // The production AI plays both sides, the player's heroes included, at its
 // fixed work cap, so a seed always plays the same run.
-import {
-  createRun,
-  draftRivals,
-  handleRunAction,
-  passiveOffer,
-  rivalPicks,
-  runStatus,
-  runView,
-} from '@balance-rules/run';
+import {createRun, handleRunAction, passiveOffer, runStatus, runView} from '@balance-rules/run';
 import type {RunState} from '@balance-rules/run';
 import {actingUnit, advanceToDecision, applyTurn} from '@balance-rules/fight';
 import {chooseAiTurn} from '@balance-rules/ai';
@@ -106,6 +98,7 @@ function run({runs, seed, maxTurns, party, provision = 'defence', search}: Optio
         for (const u of heroes()) finishedWith[u.hero] = (finishedWith[u.hero] ?? 0) + 1;
         break;
       }
+      state = draftFirst(state);
       state = handleRunAction(state, {type: 'next', ...caravanserai(state, provision)});
     }
   }
@@ -146,18 +139,33 @@ function chooseWith({depth, work}: {depth: number; work: number}) {
 }
 
 /**
+ * The draft's first pick, where the caravanserai drafts passives: the first
+ * offered to the first survivor not carrying it.
+ */
+function draftFirst(state: RunState): RunState {
+  const standing = state.fight.units
+    .filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive)
+    .sort((a, b) => a.partyIndex - b.partyIndex);
+  for (const passive of passiveOffer(state)) {
+    const taker = standing.find((u) => !hasPassive(u, passive));
+    if (taker) return handleRunAction(state, {type: 'draft', passive: {hero: taker.hero, passive}});
+  }
+  return state;
+}
+
+/**
  * The caravanserai's choices after a won stage: the provision owed (the
  * view's `provision`), and the extra one (`extraProvision`), each to the
- * weakest survivor, and the party's two picks of the passives drafted, each
- * the first left in the offer, to the first survivor not carrying it (the
- * rival's picks following from them).
+ * weakest survivor, and the party's second pick of the passives drafted
+ * (its first made before, `draftFirst`), the first left in the offer, to
+ * the first survivor not carrying it.
  */
 function caravanserai(state: RunState, stat: StatId) {
   const standing = state.fight.units
     .filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive)
     .sort((a, b) => a.partyIndex - b.partyIndex);
   type Pick = {hero: HeroId; stat: StatId};
-  const out: {provision?: Pick; extra?: Pick; passives?: {hero: HeroId; passive: string}[]} = {};
+  const out: {provision?: Pick; extra?: Pick; passive?: {hero: HeroId; passive: string}} = {};
   const total = (u: (typeof standing)[number]) => u.speed + u.defence + u.power;
   // The provisions taken here so far, counted towards the stats they raise.
   const taken: Pick[] = [];
@@ -184,26 +192,14 @@ function caravanserai(state: RunState, stat: StatId) {
   if (view.provision) out.provision = pick();
   // Humphrey unhurt all stage: an extra one, the same way.
   if (view.extraProvision) out.extra = pick();
-  const offer = passiveOffer(state);
-  if (offer.length) {
-    const mine: {hero: HeroId; passive: (typeof offer)[number]}[] = [];
-    while (mine.length < 2) {
-      const gone = [
-        ...mine.map((p) => p.passive),
-        ...rivalPicks(
-          offer,
-          draftRivals(state),
-          mine.map((p) => p.passive)
-        ).map((p) => p.passive),
-      ];
-      const next = offer
-        .filter((id) => !gone.includes(id))
-        .map((passive) => ({passive, taker: standing.find((u) => !hasPassive(u, passive))}))
-        .find((c) => c.taker);
-      if (!next) break;
-      mine.push({hero: next.taker!.hero, passive: next.passive});
+  // The draft's second pick: the first passive left, after the party's first and the rival's answer.
+  const gone = [state.drafted?.passive, view.rivalTook];
+  for (const passive of passiveOffer(state).filter((id) => !gone.includes(id))) {
+    const taker = standing.find((u) => !hasPassive(u, passive));
+    if (taker) {
+      out.passive = {hero: taker.hero, passive};
+      break;
     }
-    out.passives = mine;
   }
   return out;
 }

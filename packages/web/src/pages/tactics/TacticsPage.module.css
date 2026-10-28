@@ -1302,6 +1302,10 @@
   font-weight: bold;
   color: var(--c-lapisLight);
 }
+/* The party's first pick, locked in: still shown as theirs, not faded. */
+.provisionStat.passiveCard.heroPicked:disabled {
+  opacity: 1;
+}
 /* The rival's pick: out of the draft, in the enemy's madder. */
 .provisionStat.passiveRival:disabled {
   opacity: 1;
