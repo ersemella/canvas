@@ -1,10 +1,12 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import type {CSSProperties} from 'react';
+import {createPortal} from 'react-dom';
 import {Link} from 'react-router-dom';
-import {Button, Paper, Stack, Text} from '@mantine/core';
+import {Button, CloseButton, Paper, Stack, Text} from '@mantine/core';
 import {
   HEROES,
   HERO_PORTRAIT,
+  HERO_SPRITE,
   PARTY,
   abilitiesOf,
   ROSTER,
@@ -12,11 +14,15 @@ import {
   passivesOf,
 } from '@canvas/games-silk-road-run';
 import type {HeroId} from '@canvas/games-silk-road-run';
+import {useMediaQuery} from 'components/useIsPhone';
 import {Glossary, GlossaryBox, KeywordText} from './Keywords';
 import {AbilityDetail, PALETTE_VARS} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 const PARTY_STORAGE = 'canvas:tactics:party';
+
+/** A phone: each tile carries Add and View, and View opens the hero full screen (the start menu's own breakpoint). */
+const PHONE_MENU = '(max-width: 640px)';
 
 /**
  * Each hero in a line or two of story (roster.md, 15.8): who they are, not
@@ -107,6 +113,10 @@ export function StartMenu(props: {
   const [party, setParty] = useState<HeroId[]>(savedParty);
   // The hero whose story and stats show: the party's first at first.
   const [shown, setShown] = useState<HeroId>(() => party[0] ?? ROSTER[0]!);
+  const phone = useMediaQuery(PHONE_MENU);
+  // On a phone, the hero open full screen, if any.
+  const [viewing, setViewing] = useState<HeroId | null>(null);
+  const full = party.length >= MAX_PARTY;
   const toggle = (hero: HeroId) =>
     setParty((p) =>
       !p.includes(hero) && p.length >= MAX_PARTY
@@ -152,12 +162,14 @@ export function StartMenu(props: {
               </Text>
             </Text>
             <div className={styles.heroSelect}>
-              <HeroDetails
-                hero={shown}
-                picked={party.includes(shown)}
-                full={party.length >= MAX_PARTY}
-                onToggle={() => toggle(shown)}
-              />
+              {!phone && (
+                <HeroDetails
+                  hero={shown}
+                  picked={party.includes(shown)}
+                  full={full}
+                  onToggle={() => toggle(shown)}
+                />
+              )}
               <div className={styles.heroPicks} data-testid="hero-picks">
                 {ROLES.map((role, row) => (
                   <span key={role} className={styles.heroPicksRole} style={{gridRow: row + 1}}>
@@ -165,16 +177,28 @@ export function StartMenu(props: {
                   </span>
                 ))}
                 {GRID.map((column, col) =>
-                  column.map((hero, row) => (
-                    <HeroTile
-                      key={hero}
-                      hero={hero}
-                      picked={party.includes(hero)}
-                      shown={hero === shown}
-                      onShow={() => setShown(hero)}
-                      style={{gridRow: row + 1, gridColumn: col + 2}}
-                    />
-                  ))
+                  column.map((hero, row) =>
+                    phone ? (
+                      <HeroCard
+                        key={hero}
+                        hero={hero}
+                        picked={party.includes(hero)}
+                        full={full}
+                        onToggle={() => toggle(hero)}
+                        onView={() => setViewing(hero)}
+                        style={{gridRow: row + 1, gridColumn: col + 2}}
+                      />
+                    ) : (
+                      <HeroTile
+                        key={hero}
+                        hero={hero}
+                        picked={party.includes(hero)}
+                        shown={hero === shown}
+                        onShow={() => setShown(hero)}
+                        style={{gridRow: row + 1, gridColumn: col + 2}}
+                      />
+                    )
+                  )
                 )}
               </div>
             </div>
@@ -213,7 +237,148 @@ export function StartMenu(props: {
           </Stack>
         </Stack>
       </Paper>
+      {phone && viewing && (
+        <HeroView
+          hero={viewing}
+          picked={party.includes(viewing)}
+          full={full}
+          onToggle={() => toggle(viewing)}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </Stack>
+  );
+}
+
+/**
+ * One hero on a phone's start menu: its portrait over its name, as on
+ * desktop, then its two buttons, Add (or Leave) taking it into the caravan
+ * or leaving it behind, and View opening it full screen.
+ */
+function HeroCard(props: {
+  hero: HeroId;
+  picked: boolean;
+  full: boolean;
+  onToggle: () => void;
+  onView: () => void;
+  style: CSSProperties;
+}) {
+  const stats = HEROES[props.hero];
+  const portrait = HERO_PORTRAIT[props.hero]?.src;
+  return (
+    <div
+      className={`${styles.heroPick} ${styles.heroCard} ${props.picked ? styles.heroPicked : ''}`}
+      data-picked={props.picked}
+      data-testid="hero-card"
+      style={props.style}
+    >
+      <span className={styles.heroPickPortrait}>
+        {portrait ? <img src={portrait} alt="" /> : stats.letter}
+        {props.picked && <span className={styles.heroPickCheck}>✓</span>}
+      </span>
+      <span className={styles.heroPickName}>{stats.name}</span>
+      <button
+        type="button"
+        className={`${styles.heroCardButton} ${props.picked ? '' : styles.heroCardAdd}`}
+        aria-label={`${props.picked ? 'Leave behind' : 'Add to caravan'}: ${stats.name}`}
+        disabled={!props.picked && props.full}
+        onClick={props.onToggle}
+        data-testid="hero-card-toggle"
+      >
+        {props.picked ? 'Leave' : props.full ? 'Full' : 'Add'}
+      </button>
+      <button
+        type="button"
+        className={styles.heroCardButton}
+        aria-label={`View ${stats.name}`}
+        onClick={props.onView}
+        data-testid="hero-card-view"
+      >
+        View
+      </button>
+    </div>
+  );
+}
+
+/**
+ * A hero full screen, on a phone: its whole figure as on the board, large
+ * and idling, facing left as the party does in a fight, then its name, role
+ * and meters, its story and its abilities, and the button adding it to the
+ * caravan or leaving it behind. The ×, Back or Escape closes it; the page
+ * under it doesn't scroll while it's open.
+ */
+function HeroView(props: {
+  hero: HeroId;
+  picked: boolean;
+  full: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}) {
+  const {onClose} = props;
+  const stats = HEROES[props.hero];
+  const sprite = HERO_SPRITE[props.hero];
+  const portrait = HERO_PORTRAIT[props.hero]?.src;
+  useEffect(() => {
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [onClose]);
+  return createPortal(
+    <div
+      className={`${styles.page} ${styles.heroView}`}
+      style={PALETTE_VARS}
+      role="dialog"
+      aria-modal
+      aria-label={stats.name}
+      data-testid="hero-view"
+    >
+      <div className={styles.heroViewBar}>
+        <CloseButton size="lg" aria-label="Close" onClick={onClose} c="var(--c-ivory)" />
+      </div>
+      <div className={styles.heroFigure}>
+        {sprite ? (
+          <i style={{backgroundImage: `url(${sprite})`}} />
+        ) : portrait ? (
+          <img src={portrait} alt="" />
+        ) : (
+          stats.letter
+        )}
+      </div>
+      <Glossary>
+        <Stack gap="md" className={styles.heroViewBody!}>
+          <div className={styles.heroViewHead}>
+            <div>
+              <div className={`${styles.display} ${styles.heroViewName}`}>{stats.name}</div>
+              <div className={styles.heroDetailsRole}>{ROLE[props.hero]}</div>
+            </div>
+            <HeroMeters hero={props.hero} />
+          </div>
+          {LORE[props.hero] && <Text fz="sm">{LORE[props.hero]}</Text>}
+          <HeroAbilities hero={props.hero} />
+        </Stack>
+      </Glossary>
+      <div className={styles.heroViewActions}>
+        <Button
+          size="lg"
+          fullWidth
+          className={`${styles.tile} ${styles.heroDetailsToggle}`}
+          onClick={props.onToggle}
+          disabled={!props.picked && props.full}
+          data-testid="hero-view-toggle"
+        >
+          {props.picked ? 'Leave behind' : props.full ? 'Caravan full' : 'Add to caravan'}
+        </Button>
+        <Button variant="subtle" color="yellow" fullWidth onClick={onClose}>
+          Back
+        </Button>
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -288,9 +453,6 @@ function HeroInfo(props: {hero: HeroId; shown: boolean}) {
   const stats = HEROES[props.hero];
   const lore = LORE[props.hero];
   const portrait = HERO_PORTRAIT[props.hero]?.src;
-  // The hero as it starts a run, for its abilities' damage.
-  const unit = makeUnit('player', 0, props.hero);
-  const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold');
   return (
     <div className={`${styles.heroInfo} ${props.shown ? '' : styles.heroInfoHidden}`}>
       <div className={`${styles.heroPickPortrait} ${styles.heroDetailsPortrait}`}>
@@ -301,37 +463,55 @@ function HeroInfo(props: {hero: HeroId; shown: boolean}) {
           <div className={`${styles.display} ${styles.heroDetailsName}`}>{stats.name}</div>
           <div className={styles.heroDetailsRole}>{ROLE[props.hero]}</div>
         </div>
-        <div className={styles.heroPickStats}>
-          {METERS.map(({label, value}) => {
-            const filled = value(stats);
-            return (
-              <div key={label} role="img" aria-label={`${label}: ${filled}`}>
-                <span>{label}</span>
-                <span className={styles.meter}>
-                  {[1, 2, 3].map((pip) => (
-                    <i key={pip} className={pip <= filled ? styles.meterOn : undefined} />
-                  ))}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        <HeroMeters hero={props.hero} />
       </div>
       {lore && <div className={styles.heroPickBlurb}>{lore}</div>}
-      <div className={styles.heroAbilities}>
-        {abilities.map((def) => (
-          <AbilityDetail key={def.id} unit={unit} def={def} />
-        ))}
-        {passivesOf(unit).map((def) => (
-          <Text key={def.id} fz="xs">
-            <b>{def.name}</b> · Passive
-            <br />
-            <span className={styles.abilitySummary}>
-              <KeywordText text={def.rule} />
+      <HeroAbilities hero={props.hero} />
+    </div>
+  );
+}
+
+/** A hero's stats, a meter of three pips each. */
+function HeroMeters(props: {hero: HeroId}) {
+  const stats = HEROES[props.hero];
+  return (
+    <div className={styles.heroPickStats}>
+      {METERS.map(({label, value}) => {
+        const filled = value(stats);
+        return (
+          <div key={label} role="img" aria-label={`${label}: ${filled}`}>
+            <span>{label}</span>
+            <span className={styles.meter}>
+              {[1, 2, 3].map((pip) => (
+                <i key={pip} className={pip <= filled ? styles.meterOn : undefined} />
+              ))}
             </span>
-          </Text>
-        ))}
-      </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** A hero's abilities (not Hold) and passives, as it starts a run. */
+function HeroAbilities(props: {hero: HeroId}) {
+  // The hero as it starts a run, for its abilities' damage.
+  const unit = makeUnit('player', 0, props.hero);
+  const abilities = abilitiesOf(unit).filter((def) => def.id !== 'hold');
+  return (
+    <div className={styles.heroAbilities}>
+      {abilities.map((def) => (
+        <AbilityDetail key={def.id} unit={unit} def={def} />
+      ))}
+      {passivesOf(unit).map((def) => (
+        <Text key={def.id} fz="xs">
+          <b>{def.name}</b> · Passive
+          <br />
+          <span className={styles.abilitySummary}>
+            <KeywordText text={def.rule} />
+          </span>
+        </Text>
+      ))}
     </div>
   );
 }

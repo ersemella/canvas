@@ -72,7 +72,7 @@ const RUG = {
  * whose head and rider rise above its hex) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
-const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
+export const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   bokh: bokhSprite,
   mangudai: mangudaiSprite,
   storm: stormSprite,
