@@ -3788,6 +3788,35 @@ too).
 are switches, off. Untried: a Shield lasting until the Priest's next
 turn, so each covers a full round whoever acts first.
 
+### A lasting Shield (2026-10-28)
+
+Asked for (the owner): can the Shield be permanent? `ABILITY.blessing.lasts`:
+a Blessing's Shield stays until damage spends it, not until the ally's
+next turn, a unit holding at most `cap` × the Priest's power of it (so
+he can't stack it without end). `experiments/priest-lasting.mjs`, the
+seats and 400 fights of "The Priest" (about ±2.5 points).
+
+| Blessing | Steppe | China | Persia |
+|---|---:|---:|---:|
+| *Heal 3, the rest Shield until the ally's turn (as built)* | *42.7%* | *22.8%* | *41.6%* |
+| Heal 3, the rest a lasting Shield | 41.9% | 47.0% | 47.4% |
+| **A lasting Shield of 3, one ally within 2** | **44.6%** | **44.5%** | **45.9%** |
+| The same, up to 6 on a unit (`cap` 2) | 40.4% | 39.5% | 45.9% |
+| A lasting Shield of 3, every ally within 1 | 40.3% | 39.0% | 37.7% |
+| A lasting Shield of 2, every ally within 2 | 44.2% | 39.5% | 36.5% |
+
+- **Lasting fixes China**: 22.8% to 44.5–47%, the first version of the
+  Priest even in all three seats without a smite. A Shield that waits for
+  the hit is never wasted on an ally the enemy doesn't reach first.
+- **A lasting Shield of 3 on one ally** is the most even (44.5–45.9%),
+  a little under the band; the heal with a lasting overheal is as good
+  in China and Persia, 42% on the Steppe.
+- **Stacking to 6 is worse**, not better: the AI piles it on one unit.
+- **Every ally is still not too strong**: 37–44%, under the single
+  ally, for the front-line reason in "Blessing as a Shield".
+
+**Built as measured**: `lasts` off, the owner to choose.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

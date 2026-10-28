@@ -171,6 +171,8 @@ overheal (`ABILITY.blessing.overheal`), with a Shield of 1 on top
 him (a smite on enemies, range, speed, defence, the AI's Shield worth);
 `priest-shield.mjs` Blessing as a Shield in place of the heal
 (`.heal` off), on one ally or every ally within a radius (`.shape: 'aura'`).
+`priest-lasting.mjs` the same with a Shield lasting until spent
+(`.lasts`, `.cap`).
 
 ## Ability and stat ablation
 
