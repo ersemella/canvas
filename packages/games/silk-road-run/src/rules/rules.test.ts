@@ -2416,37 +2416,54 @@ describe('the Priest', () => {
     expect(isTarget(s, p, unit(s, 'e-bokh').hex!)).toBe(false);
   });
 
-  it('heals its power, and what it can’t heal becomes Shield', () => {
+  it('heals its power; what it can’t heal and 1 more become Shield, at most 3', () => {
     const {s, p} = ready({'p-bokh': hexNeighbor(c, 0)});
     const ally = unit(s, 'p-bokh');
-    ally.hp = ally.maxHp - 1;
+    ally.hp = ally.maxHp - 2;
     bless(s, p, ally);
     expect(ally.hp).toBe(ally.maxHp);
     expect(ally.shield).toBe(2);
+    // Unhurt: 3 and 1 more, held to 3.
+    p.slot = s.currentSlot;
+    s.awaiting = p.id;
+    bless(s, p, ally);
+    expect(ally.shield).toBe(3);
   });
 
-  it('a badly hurt ally heals the whole power and gains no Shield', () => {
+  it('a badly hurt ally heals the whole power and gains Shield 1', () => {
     const {s, p} = ready({'p-bokh': hexNeighbor(c, 0)});
     const ally = unit(s, 'p-bokh');
     ally.hp = 2;
     bless(s, p, ally);
     expect(ally.hp).toBe(5);
-    expect(ally.shield).toBeUndefined();
+    expect(ally.shield).toBe(1);
   });
 
-  it('the Shield takes hits first, adds to one it has, and goes at the ally’s next turn', () => {
+  it('the Shield takes hits first, stays past the ally’s turn, and goes when spent', () => {
     const {s, p} = ready({'p-bokh': hexNeighbor(c, 0), 'e-priest': at(5, 4)});
     const ally = unit(s, 'p-bokh');
-    ally.shield = 1;
     bless(s, p, ally);
-    expect(ally.shield).toBe(4);
+    expect(ally.shield).toBe(3);
     const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    startTurnPassives(ctx, ally);
+    expect(ally.shield).toBe(3);
     // A hit of 3 from the enemy's Priest, its power.
     hit(ctx, unit(s, 'e-priest'), ally, 'The blow');
     expect(ally.hp).toBe(ally.maxHp);
-    expect(ally.shield).toBe(1);
-    startTurnPassives(ctx, ally);
     expect(ally.shield).toBeUndefined();
+    hit(ctx, unit(s, 'e-priest'), ally, 'The blow');
+    expect(ally.hp).toBe(ally.maxHp - 3);
+  });
+
+  it('a Shield that isn’t his (Rally’s) adds to his and still goes at the ally’s turn', () => {
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0)});
+    const ally = unit(s, 'p-bokh');
+    ally.hp = 2;
+    ally.shield = 1;
+    bless(s, p, ally);
+    expect([ally.shield, ally.lastingShield]).toEqual([2, 1]);
+    startTurnPassives({state: s, map: mapOf(s), slot: s.currentSlot}, ally);
+    expect(ally.shield).toBe(1);
   });
 
   it('as a Shield (`heal` off), Shields its power in place of healing', () => {
@@ -2483,14 +2500,12 @@ describe('the Priest', () => {
     ]);
   });
 
-  it('with `lasts`, the Shield stays past the ally’s turn until spent, at most his power', () => {
+  it('as a Shield, it stays past the ally’s turn until spent, at most 3', () => {
     const {s, p} = ready({'p-bokh': hexNeighbor(c, 0), 'e-priest': at(5, 4)});
-    const blessing = ABILITY.blessing as {lasts: boolean; heal: boolean};
+    const blessing = ABILITY.blessing as {heal: boolean};
     onTestFinished(() => {
-      blessing.lasts = false;
       blessing.heal = true;
     });
-    blessing.lasts = true;
     blessing.heal = false;
     const ally = unit(s, 'p-bokh');
     const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};

@@ -256,8 +256,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * The Priest (owner, 2026-10-28; roster.md): Byzantium's support, a
    * healer. Speed 2, defence 1 (health 4) and power 3 are the owner's.
-   * Blessing heals an ally his power, and what it can't heal becomes
-   * Shield (`ABILITY.blessing`).
+   * Blessing heals an ally his power, and what it can't heal and 1 more
+   * become Shield until spent (`ABILITY.blessing`).
    */
   priest: {
     name: 'Priest',
@@ -447,22 +447,21 @@ export const ABILITY = {
    * `range` (2), the Priest himself too (`self`) and the camel too
    * (`camel`), no line of fire, heals the Priest's power; with `overheal`,
    * the heal beyond the ally's missing health becomes Shield (keywords.md,
-   * 17.6), and `shield` more is given on top whatever it heals. A Shield lasts until the start of the ally's next turn and adds
-   * to one it has. Nothing on an enemy, unless `smite`: an enemy within
-   * range is hit for the Priest's power instead (a switch for measuring,
-   * off as built). `shield` 0 as built: the overheal is the Shield.
-   * Switches for a Shield in place of the heal (owner, 2026-10-28;
-   * balance.md, "Blessing as a Shield"), off as built: `heal` false, no
-   * heal, the ally Shielded the Priest's power (and `shield` more);
-   * `shape` `aura`, every ally within `radius` of the Priest at once, in
-   * place of one within `range`.
-   * `lasts` (owner's question, 2026-10-28; balance.md, "A lasting
-   * Shield"), off as built: a Blessing's Shield stays until damage spends
-   * it, not until the ally's next turn, a unit holding at most `cap` of it
-   * (3, the Priest's power; an absolute number since 2026-10-28).
+   * 17.6), and `shield` (1) more is given on top whatever it heals. With
+   * `lasts` the Shield stays until damage spends it, a unit holding at most
+   * `cap` (3, his power) of it; otherwise until the ally's next turn.
+   * Built so later 2026-10-28 (owner; balance.md, "A heal, its excess and
+   * 1 more as a lasting Shield": 50.3%, 50.3% and 52.0% in the support
+   * seats); before, no Shield on top and none lasting (42.7%, 22.8%,
+   * 41.6%). Nothing on an enemy, unless `smite`: an enemy within range is
+   * hit for the Priest's power instead (a switch for measuring, off).
+   * Switches for a Shield in place of the heal (balance.md, "Blessing as
+   * a Shield"), off: `heal` false, no heal, the ally Shielded the Priest's
+   * power (and `shield` more); `shape` `aura`, every ally within `radius`
+   * of the Priest at once, in place of one within `range`.
    */
   blessing: {
-    lasts: false as boolean,
+    lasts: true as boolean,
     cap: 3 as number,
     range: 2 as number,
     heal: true as boolean,
@@ -472,7 +471,7 @@ export const ABILITY = {
     self: true as boolean,
     camel: true as boolean,
     overheal: true as boolean,
-    shield: 0 as number,
+    shield: 1 as number,
   },
   /**
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a

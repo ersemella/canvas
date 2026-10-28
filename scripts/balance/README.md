@@ -175,6 +175,11 @@ him (a smite on enemies, range, speed, defence, the AI's Shield worth);
 (`.lasts`, `.cap`).
 `priest-heal-shield1.mjs` a heal with a lasting Shield of 1 on top, at
 `cap` 1, 2 and 3; `cap` is an absolute amount since then (3 his power).
+`priest-overheal-shield1.mjs` the heal with its excess and 1 more as a
+lasting Shield, at `cap` 3 (built), 4 and 8. Blessing's built defaults
+changed then (`overheal`, `shield` 1, `lasts`, `cap` 3), so `priest.mjs`,
+`priest-buffs.mjs` and `priest-shield.mjs` reproduce only at their
+revision.
 
 ## Ability and stat ablation
 
