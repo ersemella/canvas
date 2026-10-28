@@ -2275,6 +2275,35 @@ describe('the Priest', () => {
     expect(ally.shield).toBeUndefined();
   });
 
+  it('as a Shield (`heal` off), Shields its power in place of healing', () => {
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0)});
+    const saved = {...ABILITY.blessing};
+    onTestFinished(() => Object.assign(ABILITY.blessing, saved));
+    ABILITY.blessing.heal = false;
+    const ally = unit(s, 'p-bokh');
+    ally.hp = 2;
+    bless(s, p, ally);
+    expect(ally.hp).toBe(2);
+    expect(ally.shield).toBe(3);
+  });
+
+  it('as an aura, Shields every ally within its radius, the Priest too', () => {
+    const {s, p} = ready({
+      'p-bokh': hexNeighbor(c, 0),
+      'p-storm': hexNeighbor(hexNeighbor(c, 3), 3),
+    });
+    const saved = {...ABILITY.blessing};
+    onTestFinished(() => Object.assign(ABILITY.blessing, saved));
+    Object.assign(ABILITY.blessing, {heal: false, shape: 'aura', radius: 1});
+    expect(ABILITIES.blessing.targets(s, mapOf(s), p, c)).toEqual([{hex: c}]);
+    applyTurn(s, p, {action: {ability: 'blessing', target: {hex: c}}});
+    expect([p.shield, unit(s, 'p-bokh').shield, unit(s, 'p-storm').shield]).toEqual([
+      3,
+      3,
+      undefined,
+    ]);
+  });
+
   it('the AI blesses a hurt ally rather than hold', () => {
     const {s, p} = ready({'p-bokh': hexNeighbor(c, 0), 'e-bokh': at(6, 4)});
     p.controller = 'ai';

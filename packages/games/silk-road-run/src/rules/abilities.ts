@@ -946,8 +946,27 @@ const blessingTakes =
  */
 export function blessingOf(user: Unit, u: Unit): {heal: number; shield: number} {
   const {overheal, shield: extra} = ABILITY.blessing;
+  // `heal` off: a Shield of his power in place of the heal.
+  if (!ABILITY.blessing.heal) return {heal: 0, shield: user.power + extra};
   const healed = Math.min(user.power, Math.max(0, u.maxHp - u.hp));
   return {heal: healed, shield: (overheal ? user.power - healed : 0) + extra};
+}
+
+/**
+ * The allies a Blessing from `from` aimed at `target` reaches: the one on
+ * `target`, or with `ABILITY.blessing.shape` `aura` every ally within
+ * `radius` of the Priest.
+ */
+export function blessingCaught(state: FightState, user: Unit, from: Hex, target: Hex): Unit[] {
+  const {shape, radius} = ABILITY.blessing;
+  if (shape === 'unit') return [unitAt(state, target)].filter(blessingTakes(user));
+  return state.units.filter(
+    (u) =>
+      u.side === user.side &&
+      u.hex !== null &&
+      hexDistance(u.id === user.id ? from : u.hex, from) <= radius &&
+      blessingTakes(user)(u)
+  );
 }
 
 /**
@@ -963,39 +982,51 @@ const blessing: AbilityDef = {
   name: 'Blessing',
   kind: 'support',
   damages: false,
-  targetsUnit: true,
+  get targetsUnit() {
+    return ABILITY.blessing.shape === 'unit';
+  },
   get bothSides() {
     return ABILITY.blessing.smite;
   },
   get range() {
-    return ABILITY.blessing.range;
+    return ABILITY.blessing.shape === 'aura' ? 0 : ABILITY.blessing.range;
   },
   summary(user) {
-    const {range, self, overheal, shield: extra} = ABILITY.blessing;
+    const {range, self, overheal, shield: extra, shape, radius} = ABILITY.blessing;
+    const who =
+      shape === 'aura'
+        ? `Every ally within ${radius} of you${self ? ', yourself too' : ''}`
+        : `An ally within ${range}${self ? ', yourself too' : ''}`;
+    if (!ABILITY.blessing.heal)
+      return `${who}: Shield ${user.power + extra} until ${shape === 'aura' ? 'their' : 'its'} next turn.`;
     const shields = [
       overheal ? 'what it can’t heal becomes Shield' : '',
       extra ? `Shield ${extra} more` : '',
     ].filter(Boolean);
     const smite = ABILITY.blessing.smite ? ` An enemy within ${range} is hit instead.` : '';
-    return `An ally within ${range}${self ? ', yourself too' : ''}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, until its next turn` : ''}.${smite}`;
+    return `${who}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, until its next turn` : ''}.${smite}`;
   },
   targets(state, map, user, from) {
+    if (ABILITY.blessing.shape === 'aura')
+      return blessingCaught(state, user, from, from).length > 0 ? [{hex: {...from}}] : [];
     return spacesWithin(map, from, ABILITY.blessing.range)
       .map((h) => unitAt(state, h))
       .filter(blessingTakes(user))
       .map((u) => ({hex: u.hex!}));
   },
   resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
-    if (u.side !== user.side) {
+    const u = unitAt(ctx.state, target.hex!);
+    if (u && u.side !== user.side) {
       log(ctx, `${unitName(user)} smites ${unitName(u)}.`);
       hit(ctx, user, u, 'The smiting');
       return;
     }
-    const given = blessingOf(user, u);
-    log(ctx, `${unitName(user)} blesses ${unitName(u)}.`);
-    heal(ctx, u, given.heal);
-    shield(ctx, u, given.shield);
+    for (const a of blessingCaught(ctx.state, user, user.hex!, target.hex!)) {
+      const given = blessingOf(user, a);
+      log(ctx, `${unitName(user)} blesses ${unitName(a)}.`);
+      heal(ctx, a, given.heal);
+      shield(ctx, a, given.shield);
+    }
   },
 };
 
