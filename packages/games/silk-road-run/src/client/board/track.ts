@@ -101,11 +101,10 @@ function bandCard(
  * The track as a fanned deck, as in Mana Khemia: a card for every
  * slot from now on, empty ones blank, the current one in front at the left
  * and each later one tucked behind the one before, showing a strip with
- * its unit. The planned turn's landing card is dashed; when it lands off
- * the slot its cost aimed at (it yields past taken slots, or is Hastened),
- * that slot is marked too, with an arrow on to where it lands, and so is
- * every other card the turn moves (Hastened, Delayed or bumped on), from
- * its slot now to where it goes (`drawMoves`). The acting unit's card stands a little taller in
+ * its unit. The planned turn's landing card is dashed, with an arrow from
+ * the acting card to it, and every other card the turn moves (Hastened,
+ * Delayed or bumped on) has one too, from its slot now to where it goes
+ * (`drawMoves`). The acting unit's card stands a little taller in
  * front. After a turn, its card slides back to its new slot over the
  * others, and the empty cards it passed lift up off the track one by one,
  * the rest sliding forward, until the next turn's card is in front.
@@ -115,7 +114,6 @@ export function drawTrack(
   fight: FightState,
   cards: TrackCard[],
   previewSlot: number | null,
-  aimSlot: number | null,
   bumps: TrackBumps,
   advance: TrackAdvance | null,
   slides: Map<string, CardSlide>,
@@ -175,35 +173,27 @@ export function drawTrack(
       opts
     );
   }
-  if (!advance && previewSlot !== null)
-    drawMoves(ctx, deck, trackMoves(fight, previewSlot, aimSlot, bumps));
+  if (!advance && previewSlot !== null) drawMoves(ctx, deck, trackMoves(fight, previewSlot, bumps));
 }
 
-/**
- * A card the planned turn moves on the track, from the slot it holds (or,
- * for the acting card, the slot its cost aims at) to where it lands.
- */
+/** A card the planned turn moves on the track, from the slot it holds to where it lands. */
 interface TrackMove {
   from: number;
   to: number;
-  /** The acting unit's own card: it yields on, or is Hastened back. */
+  /** The acting unit's own card, from the front to its landing, however it gets there. */
   acting: boolean;
 }
 
 /**
- * Every card the planned turn moves: the acting card when it lands off the
- * slot its cost aims at (it yields, 3.3, or is Hastened), and every other
- * card it Hastens, Delays or bumps on (`TurnPreview.bumped`).
+ * Every card the planned turn moves, one arrow each for its whole move
+ * (owner, 2026-10-28): the acting card, from the front to where it lands
+ * (its cost, yielding and any Haste in one), and every other card it
+ * Hastens, Delays or bumps on (`TurnPreview.bumped`).
  */
-function trackMoves(
-  fight: FightState,
-  previewSlot: number,
-  aimSlot: number | null,
-  bumps: TrackBumps
-): TrackMove[] {
+function trackMoves(fight: FightState, previewSlot: number, bumps: TrackBumps): TrackMove[] {
   const moves: TrackMove[] = [];
-  if (aimSlot !== null && aimSlot !== previewSlot)
-    moves.push({from: aimSlot, to: previewSlot, acting: true});
+  if (fight.awaiting && previewSlot !== fight.currentSlot)
+    moves.push({from: fight.currentSlot, to: previewSlot, acting: true});
   for (const u of fight.units) {
     const to = bumps[u.id];
     if (u.id === fight.awaiting || to === undefined || u.slot === null || to === u.slot) continue;
@@ -369,10 +359,10 @@ function drawSkipMark(ctx: CanvasRenderingContext2D, x: number, y: number): void
 
 /**
  * The planned turn's moves on the track (3.3, Haste and Delay): for each,
- * the strip of the slot it leaves (or, for the acting card, the slot its
- * cost aimed at) outlined dashed, and an arrow below the units from there
- * to where it lands, over the cards in the way: blue for the acting card,
- * jade for a card brought earlier, gold for one sent later. Arrows whose
+ * the strip of the slot it leaves outlined dashed (not the acting card's,
+ * which stays in front), and an arrow below the units from there to where
+ * it lands, over the cards in the way: jade for a card brought earlier,
+ * gold for one sent later, the acting card's as any other's. Arrows whose
  * spans overlap sit on rows one above another, so each reads.
  */
 function drawMoves(ctx: CanvasRenderingContext2D, deck: TrackSlots, moves: TrackMove[]): void {
@@ -385,8 +375,8 @@ function drawMoves(ctx: CanvasRenderingContext2D, deck: TrackSlots, moves: Track
     let row = rows.findIndex((r) => r.every((o) => hi < o.lo || lo > o.hi));
     if (row < 0) row = rows.push([]) - 1;
     rows[row]!.push({lo, hi});
-    const color = m.acting ? PALETTE.lapisLight : m.to < m.from ? PALETTE.jade : PALETTE.gold;
-    drawMove(ctx, deck, m.from, m.to, color, row);
+    const color = m.to < m.from ? PALETTE.jade : PALETTE.gold;
+    drawMove(ctx, deck, m.from, m.to, color, row, !m.acting);
   }
 }
 
@@ -394,8 +384,8 @@ function drawMoves(ctx: CanvasRenderingContext2D, deck: TrackSlots, moves: Track
 const MOVE_ROW_STEP = 9;
 
 /**
- * One move (`drawMoves`): the strip of slot `from` outlined dashed in
- * `color`, and an arrow `row` rows up from the bottom from there to `to`.
+ * One move (`drawMoves`): with `outline`, the strip of slot `from` outlined
+ * dashed in `color`; and an arrow `row` rows up from the bottom from there to `to`.
  */
 function drawMove(
   ctx: CanvasRenderingContext2D,
@@ -403,18 +393,21 @@ function drawMove(
   from: number,
   to: number,
   color: string,
-  row: number
+  row: number,
+  outline: boolean
 ): void {
   // The middle of a slot's showing strip: the right `w` of its card.
   const mid = (slot: number) => deck.x0 + (slot - deck.start) * deck.w + deck.cardW - deck.w / 2;
   const left = mid(from) - deck.w / 2;
   ctx.save();
-  ctx.setLineDash([3, 2]);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  pixelRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  if (outline) {
+    ctx.setLineDash([3, 2]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    pixelRect(ctx, left + 1, deck.y + 1, deck.w - 2, deck.h - 2, 4);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
   const y = deck.y + deck.h - 18 - row * MOVE_ROW_STEP;
   // Pointing right to a later slot, left to an earlier one.
   const dir = to > from ? 1 : -1;
