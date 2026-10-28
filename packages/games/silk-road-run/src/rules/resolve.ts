@@ -23,7 +23,7 @@ import {
 } from './board';
 import {MAPS, scorched} from './map';
 import {hasPassive, spendPassive} from './passives';
-import {noteStep, placeCard, simultaneousOrder} from './track';
+import {placeCard, simultaneousOrder} from './track';
 import type {MapData} from './map';
 import type {
   BoardSnapshot,
@@ -282,8 +282,6 @@ export function haste(ctx: Ctx, u: Unit, n: number): void {
 export function swapCards(ctx: Ctx, a: Unit, b: Unit): void {
   if (!a.alive || !b.alive || a.slot === null || b.slot === null) return;
   if (inevitable(ctx, a) || inevitable(ctx, b)) return;
-  noteStep(a, a.slot, b.slot, 'placed');
-  noteStep(b, b.slot, a.slot, 'placed');
   [a.slot, b.slot] = [b.slot, a.slot];
   log(ctx, `${unitName(a)} and ${unitName(b)} swap places on the track.`);
 }
