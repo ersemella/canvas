@@ -27,6 +27,7 @@ import {
   elixirHeals,
   elixirSwaps,
   elixirImmortal,
+  blessingCaught,
   blessingOf,
   grappling,
   longshotLanes,
@@ -449,9 +450,9 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   }
   // Blessing: the health it heals, as any heal is weighed, and the Shield's worth.
   if (ability === 'blessing') {
-    const u = unitAt(state, target!.hex!)!;
+    const u = unitAt(state, target!.hex!);
     // `ABILITY.blessing.smite`: a hit, as any attack's.
-    if (hostile(u, unit)) {
+    if (u && hostile(u, unit)) {
       const damage = Math.min(damageOf(unit), u.hp);
       return (
         closing +
@@ -459,13 +460,16 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         (damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0)
       );
     }
-    const given = blessingOf(unit, u);
-    return (
-      closing +
-      given.heal * (u.hero === CAMEL ? AI.camelHealthWeight : 1) +
-      shieldWorth(state, u, (u.shield ?? 0) + given.shield) -
-      shieldWorth(state, u, u.shield ?? 0)
-    );
+    // Each ally it reaches (`blessingCaught`, by its shape).
+    let value = 0;
+    for (const a of blessingCaught(state, unit, unit.hex!, target!.hex!)) {
+      const given = blessingOf(unit, a);
+      value +=
+        given.heal * (a.hero === CAMEL ? AI.camelHealthWeight : 1) +
+        shieldWorth(state, a, (a.shield ?? 0) + given.shield) -
+        shieldWorth(state, a, a.shield ?? 0);
+    }
+    return closing + value;
   }
   // Omen: the share of a turn each card loses (an enemy's, a gain)
   // or gains (an ally's), as Cleave's Delay is weighed.

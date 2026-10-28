@@ -396,9 +396,17 @@ export const ABILITY = {
    * to one it has. Nothing on an enemy, unless `smite`: an enemy within
    * range is hit for the Priest's power instead (a switch for measuring,
    * off as built). `shield` 0 as built: the overheal is the Shield.
+   * Switches for a Shield in place of the heal (owner, 2026-10-28;
+   * balance.md, "Blessing as a Shield"), off as built: `heal` false, no
+   * heal, the ally Shielded the Priest's power (and `shield` more);
+   * `shape` `aura`, every ally within `radius` of the Priest at once, in
+   * place of one within `range`.
    */
   blessing: {
     range: 2 as number,
+    heal: true as boolean,
+    shape: 'unit' as 'unit' | 'aura',
+    radius: 1 as number,
     smite: false as boolean,
     self: true as boolean,
     camel: true as boolean,
