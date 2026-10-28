@@ -17,6 +17,7 @@ import {
   landShots,
   log,
   record,
+  scorch,
   squeezeGrapples,
   startTurnPassives,
   takeHasteDue,
@@ -345,11 +346,22 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId): void
   if (unit.swapped) unswap(ctx, unit);
 }
 
+/**
+ * A turn ending with `unit` on scorched ground (map.ts) burns it (owner,
+ * 2026-10-28), whatever the turn was, a skipped one or Temee's included.
+ */
+function endTurnOn(ctx: Ctx, unit: Unit): void {
+  if (ctx.state.phase !== 'fight') return;
+  scorch(ctx, unit);
+  checkEnd(ctx.state);
+}
+
 /** A turn it can't take, or with only Hold to choose: its card marked as skipped, placed as after any turn. */
 function skipTurn(ctx: Ctx, unit: Unit, text: string): void {
   unit.skipped = true;
   log(ctx, text);
   record(ctx.state, {kind: 'skip', unitId: unit.id});
+  endTurnOn(ctx, unit);
   endTurnEffects(unit);
   endTurn(ctx, unit, true);
 }
@@ -372,6 +384,7 @@ function walkRoad(ctx: Ctx, unit: Unit): void {
     record(ctx.state, {kind: 'skip', unitId: unit.id});
   }
   checkEnd(ctx.state);
+  endTurnOn(ctx, unit);
   endTurnEffects(unit);
   endTurn(ctx, unit, !next);
 }
@@ -426,6 +439,7 @@ export function applyTurn(
   }
   state.awaiting = null;
   checkEnd(state);
+  endTurnOn(ctx, unit);
   endTurnEffects(unit);
   // A charged ability's card is pushed out to its charge, the cards there moving on.
   endTurn(ctx, unit, path.length === 0 && def.id === 'hold', def.id);

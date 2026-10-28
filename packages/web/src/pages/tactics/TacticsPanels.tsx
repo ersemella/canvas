@@ -9,12 +9,14 @@ import {
   HEROES,
   HERO_PORTRAIT,
   PALETTE,
+  SCORCHED_INFO,
   abilitiesOf,
   atExit,
   hailEnds,
   hailInfo,
   mapOf,
   passivesOf,
+  scorched,
   tileAt,
   tileInfo,
   unitName,
@@ -211,7 +213,7 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
 /**
  * What's on a hex (D11), a card each: the unit standing there first (it's
  * what was tapped), then the ground under it: its tile unless that's sand
- * (which says nothing), and any hail, each on its own card. Every
+ * (which says nothing), scorched ground, and any hail, each on its own card. Every
  * card explains its own keywords inside itself. `dense`: the phone's
  * tooltip, everything in as little room as it takes.
  */
@@ -234,6 +236,9 @@ export function HexInspector({
     <Stack gap={dense ? 6 : 8} data-testid="hex-info">
       {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
       {tile !== 'sand' && <GroundCard info={tileInfo(fight.mapId, tile)} dense={dense} />}
+      {scorched(mapOf(fight), hex) && (
+        <GroundCard info={SCORCHED_INFO} color="var(--c-madderLight)" dense={dense} />
+      )}
       {atExit(fight, hex) && (
         <GroundCard info={EXIT_INFO} color="var(--c-lapisLight)" dense={dense} />
       )}

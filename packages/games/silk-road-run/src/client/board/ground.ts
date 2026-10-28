@@ -2,12 +2,13 @@
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
  * grass, yurts and their smoke, the Gobi's sand and sandstone ruins, the
  * Flaming Mountains' red earth, beacon towers and burning ridges, the Salt
- * Flats' salt crust and their one salt dome; exits (cached per map), and
+ * Flats' salt crust and their one salt dome, and the scorched ground beside
+ * the burning ridges; exits (cached per map), and
  * falling hail.
  */
-import {assetLoader, hexKey} from '@canvas/engine';
+import {assetLoader, hexKey, hexNeighbors} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
-import {DOME, tileAt} from '../../rules/map';
+import {DOME, scorched, tileAt} from '../../rules/map';
 import type {MapData, Tile} from '../../rules/map';
 import {BOARD_LAYOUT, SCENE_SIZE} from '../layout';
 import {PALETTE} from '../palette';
@@ -16,6 +17,7 @@ import {
   SPRITE_FEET,
   SPRITE_SCALE,
   center,
+  dithered,
   hexPath,
   hexRandom,
   insideHex,
@@ -95,8 +97,8 @@ const STEPPE_MOUNTAINS = [mountainPeakImage, mountainTwinImage];
 
 /**
  * The Flaming Mountains' (owner, 2026-10-28): a long, low escarpment drawn
- * after the owner's photo of the real ones, so ridges standing side by
- * side along the board's rim join into one: a flat, toothed crest in dark
+ * after the owner's photo of the real ones, so a pair standing side by
+ * side reads as one ridge: a flat, toothed crest in dark
  * red, its face cut by gullies fanning down from it, each rib lit on its
  * left and shadowed on its right, and pale talus mounds burying their
  * ends at the foot, in the red earth's own colours and a sunlit ochre. Its
@@ -289,6 +291,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
   const look = lookOf(map);
   if (typeof document === 'undefined') {
     for (const h of map.hexes) drawTile(ctx, h, tileAt(map, h), look);
+    for (const h of map.hexes) if (scorched(map, h)) drawScorch(ctx, map, h);
     return;
   }
   let mapKey = mapKeys.get(map);
@@ -309,6 +312,7 @@ export function drawGround(ctx: CanvasRenderingContext2D, map: MapData): void {
     g.setTransform(scale, 0, 0, scale, 0, 0);
     g.clearRect(0, 0, SCENE_SIZE.width, SCENE_SIZE.height);
     for (const h of map.hexes) drawTile(g, h, tileAt(map, h), look);
+    for (const h of map.hexes) if (scorched(map, h)) drawScorch(g, map, h);
     ground = {canvas, key};
   }
   ctx.save();
@@ -345,6 +349,45 @@ function drawTile(ctx: CanvasRenderingContext2D, h: Hex, tile: Tile, look: Look)
     ctx.stroke();
     ctx.restore();
   }
+}
+
+/** Scorched ground's colours: charred earth, and the embers glowing in it. */
+const SCORCH = {char: '#4a2216', ember: '#ec6a1e', hot: '#f8a432'};
+
+/**
+ * Scorched ground (map.ts, `scorched`; owner, 2026-10-28), drawn in art
+ * pixels over the red earth: charred, the char thickest on the side of
+ * each burning ridge beside it and dithered away from it, embers glowing
+ * in it, more of them nearer the fire. Still, as the ground is drawn once.
+ */
+function drawScorch(ctx: CanvasRenderingContext2D, map: MapData, h: Hex): void {
+  const c = center(h);
+  const toFire = hexNeighbors(h)
+    .filter((n) => tileAt(map, n) === 'mountain')
+    .map((n) => {
+      const m = center(n);
+      const len = Math.hypot(m.x - c.x, m.y - c.y);
+      return {x: (m.x - c.x) / len, y: (m.y - c.y) / len};
+    });
+  const reach = BOARD_LAYOUT.size / SPRITE_SCALE;
+  const random = hexRandom(h, 5);
+  const ox = Math.round(c.x / SPRITE_SCALE);
+  const oy = Math.round(c.y / SPRITE_SCALE);
+  ctx.save();
+  for (let y = -reach; y <= reach; y++)
+    for (let x = -reach; x <= reach; x++) {
+      if (!insideHex(x, y, 1.5)) continue;
+      // 0 on the far side of the hex, 1 at the edge it shares with the fire.
+      const heat = Math.max(...toFire.map((d) => (x * d.x + y * d.y) / reach / 2 + 0.5));
+      const roll = random();
+      let colour: string | null = null;
+      if (roll < 0.05 * heat * heat) colour = roll < 0.015 * heat ? SCORCH.hot : SCORCH.ember;
+      else if (dithered(x + ox, y + oy, heat * 13 - 2)) colour = SCORCH.char;
+      if (!colour) continue;
+      ctx.fillStyle = colour;
+      ctx.fillRect((ox + x) * SPRITE_SCALE, (oy + y) * SPRITE_SCALE, SPRITE_SCALE, SPRITE_SCALE);
+    }
+  ctx.restore();
 }
 
 /**

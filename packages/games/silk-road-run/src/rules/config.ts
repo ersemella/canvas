@@ -36,6 +36,11 @@ export const RULES = {
   movementCap: 2,
   /** The most any stat (speed, defence or power) can reach (owner, 2026-10-25). */
   statMax: 10,
+  /**
+   * Scorched ground's burn (owner, 2026-10-28; `scorched` in map.ts): the
+   * damage a unit takes Moved onto it, or ending its turn on it.
+   */
+  scorch: 1,
 } as const;
 
 /** Health from defence (owner, 2026-10-23): (1 + defence) × 2. */

@@ -24,7 +24,8 @@
  * same board under another look: the Steppe's (`STEPPE`), the Gobi
  * Crossing (`GOBI`), where the `obstacle` tile is a sandstone ruin rather
  * than a yurt, and the Flaming Mountains (`FLAMING`), the China region's
- * (owner, 2026-10-26), its obstacle a beacon tower and its mountains gullied red ridges on the board's rim,
+ * (owner, 2026-10-26), its obstacle a beacon tower, its mountains on fire
+ * and the ground beside them scorched (`scorched`),
  * and the Salt Flats (`SALT`), the Persia region's (owner, 2026-10-26),
  * one large salt dome over the middle seven spaces. A
  * stage names its map (`STAGES` in config.ts); the page draws each map's
@@ -63,18 +64,22 @@ export interface MapData {
   /**
    * Where they stand: a range along one or both of the board's top
    * slanted edges, either side of Humphrey's start (the Steppe's; any of
-   * the four slanted edges until 2026-10-27), short ridges along three of
-   * the four slanted edges (the Flaming Mountains', owner, 2026-10-28;
-   * `edgeRidges`; three side-by-side pairs in the middle from 2026-10-26), or one salt dome on
+   * the four slanted edges until 2026-10-27), three side-by-side pairs in its middle (the Flaming
+   * Mountains', owner, 2026-10-26; `middleClumps`), or one salt dome on
    * the centre and the six spaces around it, the same in every fight (the
    * Salt Flats', owner, 2026-10-26; `DOME`).
    */
-  mountainPlaces: 'edge' | 'ridges' | 'centre';
+  mountainPlaces: 'edge' | 'middle' | 'centre';
   /**
    * Its fights' yurts (ruins): how many, one of `counts` at random, and
    * how far from the centre they may stand (`randomTiles`).
    */
   obstacles: {counts: number[]; reach: number};
+  /**
+   * Whether the open spaces next to its mountains are scorched ground
+   * (`scorched`): the Flaming Mountains' (owner, 2026-10-28).
+   */
+  scorches: boolean;
 }
 
 /** How far the board reaches from its centre hex. */
@@ -142,6 +147,7 @@ export const STEPPE: MapData = {
   mountainPlaces: 'edge',
   // Two or three yurts, within 2 hexes of the centre (owner, 2026-10-24).
   obstacles: {counts: [2, 3], reach: 2},
+  scorches: false,
 };
 
 /**
@@ -162,24 +168,28 @@ export const GOBI: MapData = {
 
 /**
  * The Flaming Mountains (owner, 2026-10-26), the China region's map: red
- * earth below the gullied red ridges of *Journey to the West*, which stand
- * in every fight along the board's rim, on three of its four slanted
- * edges (owner, 2026-10-28; `edgeRidges`; three side-by-side pairs in the
- * middle before), leaving the middle open, and one Han **beacon tower**
- * (owner, 2026-10-28; one or two before), the rammed-earth watchtowers
- * along the Hexi Corridor, as its `obstacle`, within 3 of the centre and
- * not next to a mountain. Mountains and the tower together cover at most
- * `MAX_COVERED` spaces. The mudbrick ruins first scattered there, and
- * fissures burning whoever entered them, were taken out (owner,
- * 2026-10-26).
+ * earth below the burning ridges of *Journey to the West*, which stand in
+ * every fight, in one or two side-by-side pairs between the starting
+ * columns (owner, 2026-10-28; three pairs before), reaching the slanted
+ * edges too (owner, 2026-10-27; kept off them from 2026-10-26), and one
+ * Han **beacon tower** (owner, 2026-10-28; one or two before), the
+ * rammed-earth watchtowers along the Hexi Corridor, as its `obstacle`,
+ * within 3 of the centre and not next to a mountain. Mountains and the
+ * tower together cover at most `MAX_COVERED` spaces. The ground beside
+ * the ridges is **scorched** (owner, 2026-10-28; `scorched`): it burns a
+ * unit Moved onto it or ending its turn there. The mudbrick ruins first
+ * scattered there, and fissures burning whoever entered them, were taken
+ * out (owner, 2026-10-26); the ridges were briefly along the board's rim
+ * (owner, 2026-10-28) and went back to the middle the same day.
  */
 export const FLAMING: MapData = {
   ...STEPPE,
   id: 'flaming',
   name: 'The Burning Mountains',
   mountains: 'always',
-  mountainPlaces: 'ridges',
+  mountainPlaces: 'middle',
   obstacles: {counts: [1], reach: 3},
+  scorches: true,
 };
 
 /**
@@ -205,6 +215,7 @@ export const SALT: MapData = {
   mountains: 'always',
   mountainPlaces: 'centre',
   obstacles: {counts: [0], reach: 3},
+  scorches: false,
 };
 
 export const MAPS: Record<string, MapData> = {
@@ -252,8 +263,6 @@ const CENTRE: Hex = {q: 0, r: 0};
 type Edge = {left: boolean; inFrom: (h: Hex) => number};
 const TOP_LEFT: Edge = {left: true, inFrom: (h) => h.q + h.r + RADIUS};
 const TOP_RIGHT: Edge = {left: false, inFrom: (h) => h.r + RADIUS};
-const BOTTOM_LEFT: Edge = {left: true, inFrom: (h) => RADIUS - h.r};
-const BOTTOM_RIGHT: Edge = {left: false, inFrom: (h) => RADIUS - h.q - h.r};
 /** Where a fight's ranges go, one of these at random: left, right or both. */
 const MOUNTAIN_SIDES: Edge[][] = [[TOP_LEFT], [TOP_RIGHT], [TOP_LEFT, TOP_RIGHT]];
 
@@ -261,7 +270,7 @@ const MOUNTAIN_SIDES: Edge[][] = [[TOP_LEFT], [TOP_RIGHT], [TOP_LEFT, TOP_RIGHT]
  * A fight's own tiles, from `random` in [0, 1): a range of mountains in
  * about half of fights, or always with `mountains` or on a map that always
  * has them, never on a map without them (`MapData.mountains`), along the
- * top edges or as ridges along the rim as the map says (`mountainPlaces`), off
+ * top edges or in clumps in the middle as the map says (`mountainPlaces`), off
  * the starting columns, the camel's start and the exit, or the Salt Flats'
  * dome (`fixedTiles`), then two or three yurts near the
  * middle (not mirrored), on `map`'s board.
@@ -280,16 +289,16 @@ export function randomTiles(
   // Rolled even when forced, so a seed's other draws stay the same.
   const rolled = random() < MOUNTAIN_CHANCE;
   const raise = map.mountains !== 'never' && (rolled || mountains || map.mountains === 'always');
-  const ridges = raise && map.mountainPlaces === 'ridges';
-  // Kept apart from the mountains, as by the ridges.
-  const apart = ridges || fixed;
-  // How many yurts (ruins, towers): on a map of ridges, rolled before
-  // them, so the ridges leave the obstacles room under `MAX_COVERED`;
-  // after the mountains elsewhere, as it always was.
+  const middle = raise && map.mountainPlaces === 'middle';
+  // Kept apart from the mountains, as among the middle clumps.
+  const apart = middle || fixed;
+  // How many yurts (ruins, towers): on a map of middle clumps, rolled
+  // before them, so the clumps leave the obstacles room under
+  // `MAX_COVERED`; after the mountains elsewhere, as it always was.
   const {counts, reach} = map.obstacles;
   const roll = () => counts[Math.floor(random() * counts.length)]!;
-  let count = ridges ? roll() : 0;
-  if (ridges) edgeRidges(map, tiles, candidates, random, MAX_COVERED - count);
+  let count = middle ? roll() : 0;
+  if (middle) middleClumps(map, tiles, candidates, random, MAX_COVERED - count);
   else if (raise && !fixed) {
     const sides = MOUNTAIN_SIDES[Math.floor(random() * MOUNTAIN_SIDES.length)]!;
     const inFrontOfHumphrey: Hex = {q: 0, r: map.camelStart.r + 1};
@@ -307,10 +316,10 @@ export function randomTiles(
   // says, within its reach of the centre and off the starting columns, not
   // next to the camel's start or the exit, no two side by side, never
   // cutting the board in two.
-  // By the ridges or the dome, not next to a mountain either, so a tower
-  // stands on its own rather than reading as part of a ridge.
+  // Among middle clumps or by the dome, not next to a mountain either, so
+  // a tower stands on its own rather than reading as part of a clump.
   const yurts: Hex[] = [];
-  if (!ridges) count = roll();
+  if (!middle) count = roll();
   const mountainHexes = apart ? map.hexes.filter((h) => tiles[hexKey(h)] === 'mountain') : [];
   for (let i = 0; i < count; i++) {
     const free = candidates
@@ -364,47 +373,97 @@ function mountainRange(
 }
 
 /**
- * The Flaming Mountains' (owner, 2026-10-28): short ridges on the board's
- * rim, after the owner's photo of the real ones, a long gullied
- * escarpment over a flat plain. Three of the four slanted edges, picked
- * at random, each get one ridge of 2 hexes along the edge, one of them
- * sometimes 3, all on the edge itself, so each reads as one escarpment
- * running along the rim and the middle of the board stays open. At most
- * `budget` in all (`MAX_COVERED` less the beacon tower). Only on the
- * edge's three spaces between Temee's road down the middle column and the
- * outermost column, and never cutting the board in two (`mountainRange`).
- * Three pairs in the middle of the board until 2026-10-28.
+ * The Flaming Mountains' (owner, 2026-10-26): two pairs of mountains in
+ * the middle of the board (at most two, owner, 2026-10-28; three before),
+ * at most `budget` in all (8 less the beacon tower, `MAX_COVERED`), each
+ * pair side by side in neighbouring columns, never one above the other,
+ * so each reads as one ridge running across
+ * the board (owner, 2026-10-26; clumps of 2 to 4 before, which stacked
+ * ridges one above another). With the mountains kept to the two columns
+ * either side of the middle, a pair is the most that can stand side by
+ * side without two in one column touching. Each pair's first hex is within
+ * `MIDDLE_CLUMP.start` of the centre, its second within
+ * `MIDDLE_CLUMP.reach`, so a ridge may reach the board's slanted edges
+ * (owner, 2026-10-27; within 2 and 3 of the centre before, never on an
+ * edge). Off the starting columns, off Temee's road down
+ * the middle column, not next to the camel's start or the exit, the pairs
+ * apart, and never cutting the board in two.
  */
-const RIDGE = {edges: 3, size: 2, longer: 0.5};
+const MIDDLE_CLUMP = {count: 2, start: 3, reach: RADIUS};
 
 /**
- * On a map of ridges, the most spaces its mountains and obstacles (the
- * beacon tower) cover together (owner, 2026-10-26), so the board stays
- * open enough to manoeuvre.
+ * On a map of middle clumps, the most spaces its mountains and obstacles
+ * (the beacon towers) cover together (owner, 2026-10-26), so the board
+ * stays open enough to manoeuvre.
  */
 export const MAX_COVERED = 8;
 
-function edgeRidges(
+function middleClumps(
   map: MapData,
   tiles: Record<string, Tile>,
   candidates: Hex[],
   random: () => number,
   budget: number
 ): void {
-  const edges = [TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT];
-  const picked: Edge[] = [];
-  while (picked.length < RIDGE.edges)
-    picked.push(edges.splice(Math.floor(random() * edges.length), 1)[0]!);
-  const longer = random() < RIDGE.longer ? Math.floor(random() * picked.length) : -1;
-  let left = budget;
-  picked.forEach((edge, i) => {
-    const size = Math.min(RIDGE.size + (i === longer ? 1 : 0), left);
-    if (size < 2) return;
-    const allowed = candidates.filter(
-      (h) => h.q !== 0 && (edge.left ? h.q < 0 : h.q > 0) && edge.inFrom(h) === 0
+  const reserved = [map.camelStart, ...map.exits];
+  const placed: Hex[] = [];
+  const allowed = candidates
+    .filter((h) => Math.abs(h.q) < RADIUS - 1 && h.q !== 0)
+    .filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.reach)
+    .filter((h) => reserved.every((x) => hexDistance(x, h) > 1));
+  for (let c = 0; c < MIDDLE_CLUMP.count && budget - placed.length >= 2; c++) {
+    // Apart from the pairs before it.
+    let open = allowed.filter((h) => placed.every((p) => hexDistance(p, h) > 1));
+    let pair: Hex[] = [];
+    // A pair stuck at one mountain, with nowhere free beside it, is taken
+    // back and started again elsewhere, a few times at most.
+    for (let tries = 0; tries < 6 && pair.length < 2; tries++) {
+      for (const h of pair) delete tiles[hexKey(h)];
+      if (pair.length) open = open.filter((h) => hexDistance(h, pair[0]!) > 0);
+      pair = growPair(map, tiles, open, random);
+    }
+    if (pair.length < 2) for (const h of pair) delete tiles[hexKey(h)];
+    else placed.push(...pair);
+  }
+}
+
+/**
+ * One pair of mountains among `open`, marked in `tiles` (`middleClumps`):
+ * a first hex, then one beside it in a neighbouring column; just the first
+ * if there's none.
+ */
+function growPair(
+  map: MapData,
+  tiles: Record<string, Tile>,
+  open: Hex[],
+  random: () => number
+): Hex[] {
+  const pair: Hex[] = [];
+  while (pair.length < 2) {
+    let free = open.filter(
+      (h) => !pair.some((m) => hexDistance(m, h) === 0) && connectedWithout(map, tiles, h)
     );
-    left -= mountainRange(map, tiles, allowed, edge.inFrom, size, random).length;
-  });
+    free = pair.length
+      ? free.filter((h) => hexDistance(pair[0]!, h) === 1 && h.q !== pair[0]!.q)
+      : free.filter((h) => hexDistance(h, CENTRE) <= MIDDLE_CLUMP.start);
+    if (!free.length) break;
+    const h = free[Math.floor(random() * free.length)]!;
+    tiles[hexKey(h)] = 'mountain';
+    pair.push(h);
+  }
+  return pair;
+}
+
+/**
+ * Scorched ground (owner, 2026-10-28): on a map that scorches
+ * (`MapData.scorches`, the Flaming Mountains'), an open space next to one
+ * of its burning mountains. It burns a unit Moved onto it (Pushed, Pulled,
+ * thrown or swapped there, each space it enters) or ending its turn there
+ * (`scorch` in resolve.ts); walking across it doesn't.
+ */
+export function scorched(map: MapData, h: Hex): boolean {
+  if (!map.scorches || !onMap(map, h) || blocks(map.tiles[hexKey(h)])) return false;
+  return hexNeighbors(h).some((n) => map.tiles[hexKey(n)] === 'mountain');
 }
 
 /** Whether every open hex of `map` can still walk to every other with `extra` blocked too. */

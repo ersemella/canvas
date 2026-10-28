@@ -125,12 +125,18 @@ tuning. This file has no combat-design section number.
   read as a lid on the peak, then animated frames made the mountains look
   as if they shook (owner, 2026-10-26). **Redesigned (owner,
   2026-10-28)** from the owner's photo of the real Flaming Mountains, a
-  long gullied red escarpment over a flat plain: the mountains stand as
-  **ridges along the rim**, on three of the board's four slanted edges
-  picked at random, two spaces each along the edge and one sometimes
-  three, so ridges side by side join into one escarpment and the middle
-  stays open (`mountainPlaces`: `'ridges'`, `edgeRidges` in map.ts), with
-  **one beacon tower** (`obstacles.counts`: `[1]`). The ridge art
+  long gullied red escarpment over a flat plain. The mountains stand in
+  the middle in **one or two side-by-side pairs** (`MIDDLE_CLUMP.count`:
+  2; three before; for a few hours the same day they stood as ridges
+  along the board's rim instead, then went back to the middle, owner),
+  with **one beacon tower** (`obstacles.counts`: `[1]`), and the open
+  spaces beside them are **scorched ground** (`scorched` in map.ts,
+  `RULES.scorch`), burning 1 on a unit Moved onto it or ending its turn
+  there, not on one walking across, and Temee steps round it where a step
+  as near is. Until its own art is in (prompt below), it is drawn in code
+  over the red earth (`drawScorch` in ground.ts): char dithered thickest
+  towards the fire and a scatter of embers, which the owner found didn't
+  read as scorched at a glance (2026-10-28). The ridge art
   (`tiles/mountain-ridge.png`, 42 × 39 a frame, 8 frames) was redrawn
   after the photo on the Steppe mountains' base: a flat, toothed crest in
   dark red, its face cut by gullies fanning down from it, each rib lit on
@@ -211,6 +217,63 @@ tuning. This file has no combat-design section number.
 - **Tile types** (obstacle, hazard, conceal; 6.4) each get a distinct
   shape, not only a distinct colour: quicksand and sandstorm must read
   apart on a sand board.
+
+## Prompts for scorched ground (2026-10-28)
+
+The scorched ground beside the Flaming Mountains' ridges is drawn in code
+until the owner's art is in; it should read as burnt at a glance. Like
+the red earth (`tiles/red-earth.png`, 128 × 128, 5 colours, laid across
+the board as one field), it is a **seamless texture**, laid the same way
+on the scorched spaces only, so it must sit beside the red earth without
+a seam in colour. Attach `tiles/red-earth.png` and
+`tiles/mountain-ridge.png` (its first 42 × 39 frame), scaled up 8× with
+nearest-neighbour, with each prompt. Cut the result to 128 × 128 and at
+most 6 colours, keeping the red earth's own browns for the unburnt bits.
+
+### 1. Scorched earth (seamless)
+
+```
+Pixel art terrain texture, top-down view, seamlessly tileable on all four
+edges, for a hex-grid tactics game in the style of Into the Breach. It
+sits next to the attached red earth texture and must look like the same
+ground, burnt.
+
+Subject: the red earth at the foot of a burning mountain, scorched black.
+The same cracked red-brown earth as the attached texture, but most of it
+charred to a dark sooty brown-black, the cracks between the plates
+glowing: thin lines of hot orange, with a few brighter yellow-orange
+points where the glow is strongest, as if embers are still alive in
+them. A few small patches of grey ash. No flames standing up, no smoke,
+no rocks, no plants.
+
+Style: 128 x 128 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering noise. At most 6 colours: a
+near-black charcoal brown, a dark burnt brown, one of the attached red
+earth's mid browns, an ash grey, a glowing orange and one hot
+yellow-orange for the brightest points. Charred plates about 10 to 20
+pixels across, the glowing cracks 1 pixel wide, so the glow reads as a
+web of lines rather than a fill. Match the pixel density and restraint
+of the attached references.
+```
+
+If it comes back too busy, ask it to "halve the number of glowing cracks
+and keep them 1 pixel wide"; if it reads as lava, "the ground is solid
+burnt earth, only the cracks glow".
+
+### 2. Optional: the glowing edge
+
+If one texture on every scorched space looks too uniform, a second, a
+hex-sized stamp drawn over it on the side facing the ridge, can make the
+fire's side hotter:
+
+```
+Pixel art overlay on a transparent background, 42 x 36 pixels: one
+flat-topped hexagon seen from above, filled only along its top edge with
+glowing embers and orange-hot cracks fading out by its middle, as if the
+burning mountain just beyond that edge is heating the ground. The rest
+of the hexagon fully transparent. Same palette and pixel style as the
+scorched earth texture. Hard square pixels, no anti-aliasing.
+```
 
 ## Prompts for the Archer (2026-10-27)
 

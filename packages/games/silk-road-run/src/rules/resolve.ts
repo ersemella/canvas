@@ -10,7 +10,7 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, HEROES} from './config';
+import {ABILITY, CAMEL, HEROES, RULES} from './config';
 import {
   addStatus,
   hailOn,
@@ -21,7 +21,7 @@ import {
   unitAt,
   walkable,
 } from './board';
-import {MAPS} from './map';
+import {MAPS, scorched} from './map';
 import {hasPassive, spendPassive} from './passives';
 import {placeCard, simultaneousOrder} from './track';
 import type {MapData} from './map';
@@ -704,7 +704,25 @@ export function enterHex(
     const caster = ctx.state.units.find((u) => u.id === source);
     if (caster) hit(ctx, caster, unit, 'The hail', 0);
   }
+  // Moved onto scorched ground, not walking there: it burns (owner, 2026-10-28).
+  if (how !== 'walk') scorch(ctx, unit);
   hailHolds(ctx, unit);
+}
+
+/**
+ * Scorched ground burns `unit` if it stands on it (`scorched` in map.ts):
+ * `RULES.scorch` damage from no one, taken as any damage is (a Shield
+ * first). On a unit Moved onto it (`enterHex`) or ending its turn there
+ * (`endTurnOn` in fight.ts).
+ */
+export function scorch(ctx: Ctx, unit: Unit): void {
+  if (!unit.alive || !unit.hex || !scorched(ctx.map, unit.hex)) return;
+  applyDamage(
+    ctx,
+    unit,
+    RULES.scorch,
+    `The scorched ground burns ${unitName(unit)} for ${RULES.scorch}`
+  );
 }
 
 /**

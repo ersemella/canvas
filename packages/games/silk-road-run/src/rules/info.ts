@@ -3,7 +3,7 @@
  * tooltip (D11: everything on the board can be looked up). Built from the
  * rule values, so the text follows config.ts.
  */
-import {ABILITY, HEROES} from './config';
+import {ABILITY, HEROES, RULES} from './config';
 import {hailEnds} from './resolve';
 import type {Tile} from './map';
 import type {FightState, HailEffect, ShotInAir} from './types';
@@ -84,6 +84,13 @@ export const EXIT_INFO: HexInfo = {
   name: 'Road out',
   short: `${HEROES.camel.name} reaching it wins`,
   detail: `${HEROES.camel.name} reaching it wins.`,
+};
+
+/** Scorched ground (map.ts, `scorched`): beside the Flaming Mountains' burning ridges. */
+export const SCORCHED_INFO: HexInfo = {
+  name: 'Scorched ground',
+  short: `Burns ${RULES.scorch} when Moved here or ending a turn here`,
+  detail: `A unit Moved here, or ending its turn here, takes ${RULES.scorch} damage. Walking across doesn’t burn.`,
 };
 
 /** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2; timeline.md, 3.2). */

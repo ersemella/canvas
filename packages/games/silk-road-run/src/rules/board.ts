@@ -11,7 +11,7 @@ import {
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, HEROES, RULES} from './config';
-import {blocks, depth, hexNumber, onMap, tileAt} from './map';
+import {blocks, depth, hexNumber, onMap, scorched, tileAt} from './map';
 import {hasPassive} from './passives';
 import type {MapData, Tile} from './map';
 import type {AbilityId, FightState, ShotInAir, Status, Unit} from './types';
@@ -416,7 +416,8 @@ export function roadToExit(map: MapData, from: Hex): Hex[] {
  * The camel's next step from where it stands (owner, 2026-10-22): one hex
  * along a shortest walk to the exit around yurts and the other units, so
  * it keeps to its road when nothing is in the way and walks around what
- * is. A unit standing on the exit itself only blocks the last step. When
+ * is, off scorched ground where a step as near is (owner, 2026-10-28). A
+ * unit standing on the exit itself only blocks the last step. When
  * units shut every way around, a step along its road if that hex is free.
  * Undefined at the exit, or with nowhere to step.
  */
@@ -442,10 +443,12 @@ export function stepToExit(state: FightState, map: MapData, unit: Unit): Hex | u
   }
   const d = dist.get(start);
   if (d === 0) return undefined;
-  const around =
+  // Of the steps as near, one off scorched ground first (map.ts).
+  const nearer =
     d === undefined
-      ? undefined
-      : hexNeighbors(unit.hex).find((h) => dist.get(hexNumber(h)) === d - 1 && free(h));
+      ? []
+      : hexNeighbors(unit.hex).filter((h) => dist.get(hexNumber(h)) === d - 1 && free(h));
+  const around = nearer.find((h) => !scorched(map, h)) ?? nearer[0];
   if (around) return around;
   const road = roadToExit(map, unit.hex)[0];
   return road && free(road) ? road : undefined;
