@@ -134,8 +134,7 @@ export function createRun(seed: number, setup?: unknown): RunState {
 
 /**
  * The enemy for a stage: its number of its region's heroes, the first of
- * one order for its whole region, the region's first enemy then the rest at
- * random from the run's seed, so a stage brings the heroes of the one before
+ * one random order for its whole region from the run's seed, so a stage brings the heroes of the one before
  * it in the region and more; then its outsiders, the first of one random
  * order of the heroes of the regions before; then the region's creatures
  * (wolves on the Steppe).
@@ -144,9 +143,8 @@ export function stageEnemies(seed: number, stage: number): HeroId[] {
   const {region, heroes, outsiders, creatures} = STAGES[stage]!;
   const regions = Object.keys(REGIONS) as RegionId[];
   const regionIndex = regions.indexOf(region);
-  const [first, ...rest] = REGIONS[region].heroes;
   const random = seededRandom((seed ^ 0x5bd1e995) + regionIndex * 0x9e3779b9);
-  const picked = [first!, ...shuffled(rest, random)];
+  const picked = shuffled(REGIONS[region].heroes, random);
   const before = regions.slice(0, regionIndex).flatMap((r) => REGIONS[r].heroes);
   const others = shuffled(before, random);
   const creature = REGIONS[region].creature;

@@ -683,8 +683,7 @@ export const ROSTER: HeroId[] = [
 ];
 /**
  * The regions a run passes through, in order (setting.md, 15.3a), so far
- * the three whose stages are built: each names its own three heroes, its
- * first enemy (and so the first of every one of its stages) the first,
+ * the three whose stages are built: each names its own three heroes
  * and its basic creature, the wolf's unit reskinned (progression.md,
  * 19.5), if its stages bring one: only the Steppe's do (owner,
  * 2026-10-28; China's fox spirits taken out).
@@ -692,9 +691,7 @@ export const ROSTER: HeroId[] = [
 export type RegionId = 'steppe' | 'china' | 'persia';
 export const REGIONS: Record<RegionId, {heroes: HeroId[]; creature: HeroId | null}> = {
   steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf'},
-  // The Duelist, China's damage hero, as the Outrider is the Steppe's.
   china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null},
-  // The Ranger, Persia's damage hero.
   persia: {heroes: ['archer', 'mahout', 'magus'], creature: null},
 };
 /**
@@ -704,8 +701,8 @@ export const REGIONS: Record<RegionId, {heroes: HeroId[]; creature: HeroId | nul
  * region's creatures the enemy brings to each (owner, 2026-10-28: the
  * Steppe's heroes and wolves, then China's heroes and the Steppe's, then
  * Persia's and the Steppe's or China's). In a region its heroes come in one
- * order, its first enemy then the rest in a random order from the run's
- * seed, and so do the heroes of the regions before, so each stage brings
+ * random order from the run's seed, the first of them random too (owner,
+ * 2026-10-28; the Outrider and then each region's damage hero before), and so do the heroes of the regions before, so each stage brings
  * the last one's own heroes and one more. The last is won to win the run.
  * `provision`: winning it earns a provision, assigned at the caravanserai
  * before the next (progression.md, 19.2: a region's stages 1 and 2).
@@ -811,8 +808,6 @@ export const STAGES: Stage[] = [
 ];
 /** How many passives the caravanserai between regions offers, one to be taken. */
 export const PASSIVE_OFFER = 3;
-/** The enemy hero of the first stage, and so of every Steppe stage (owner, 2026-10-24; was random). */
-export const FIRST_ENEMY: HeroId = REGIONS.steppe.heroes[0]!;
 /** How many of a run's first stages always have mountains (owner, 2026-10-24; randomTiles). */
 export const MOUNTAIN_STAGES = 3;
 /** The player's camel, after the party in slot order; the enemy has none (camel.md). */

@@ -14,7 +14,6 @@ import type {Hex} from '@canvas/engine/server';
 import {
   ABILITY,
   AI,
-  FIRST_ENEMY,
   HEROES,
   PARTY,
   PASSIVE_OFFER,
@@ -2948,7 +2947,7 @@ describe('previews, the AI and the run', () => {
     expect(createRun(5).fight.units.filter((u) => u.side === 'player')).toHaveLength(4);
   });
 
-  it('the stages: per region, its first enemy and two creatures or outsiders, it, another and one more, then its three', () => {
+  it('the stages: per region, one of its heroes at random and two creatures or outsiders, it, another and one more, then its three', () => {
     const row = (
       region: string,
       heroes: number,
@@ -2984,7 +2983,6 @@ describe('previews, the AI and the run', () => {
       [true, false],
       [false, false],
     ]);
-    expect(FIRST_ENEMY).toBe('mangudai');
     expect(REGIONS).toEqual({
       steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf'},
       china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null},
@@ -2995,7 +2993,7 @@ describe('previews, the AI and the run', () => {
         .flatMap((r) => r.heroes)
         .sort()
     ).toEqual([...ROSTER].sort());
-    const seconds = new Set<HeroId>();
+    const firsts = new Set<HeroId>();
     const outsiders = new Set<HeroId>();
     for (let seed = 0; seed < 30; seed++) {
       STAGES.forEach(({region, heroes, outsiders: count, creatures}, stage) => {
@@ -3007,7 +3005,6 @@ describe('previews, the AI and the run', () => {
         const picked = enemies.slice(0, heroes);
         expect(new Set(picked).size).toBe(heroes);
         expect(picked.every((h) => own.includes(h))).toBe(true);
-        expect(picked[0]).toBe(own[0]);
         const others = enemies.slice(heroes, heroes + count);
         expect(new Set(others).size).toBe(count);
         expect(others.every((h) => before.includes(h))).toBe(true);
@@ -3028,12 +3025,10 @@ describe('previews, the AI and the run', () => {
           expect(others).toEqual(prev.slice(last.heroes, last.heroes + count));
         }
       });
-      // The first stage always brings the Outrider.
-      expect(stageEnemies(seed, 0)[0]).toBe(FIRST_ENEMY);
-      seconds.add(stageEnemies(seed, 1)[1]!);
+      for (const stage of [0, 3, 6]) firsts.add(stageEnemies(seed, stage)[0]!);
     }
-    // Random after that: either other Steppe hero is the second to come for some seed.
-    expect(seconds.size).toBe(2);
+    // Random from the first: each region's every hero leads its stages for some seed.
+    expect(firsts.size).toBe(ROSTER.length);
     // Persia's outsiders are any of the Steppe's and China's heroes.
     expect(outsiders.size).toBe(6);
   });
@@ -3435,7 +3430,6 @@ describe('previews, the AI and the run', () => {
     expect(china.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
       stageEnemies(run.seed, 3)
     );
-    expect(china.fight.units.filter((u) => u.side === 'enemy')[0]!.hero).toBe('youxia');
     expect(runView(china)).toMatchObject({provision: true, passives: []});
     const storm = china.fight.units.find((u) => u.id === 'p-storm')!;
     expect(storm.passives).toEqual([pick]);

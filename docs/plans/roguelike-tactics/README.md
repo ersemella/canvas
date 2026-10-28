@@ -12,17 +12,17 @@ are now the page's `localRuns` calls of the same names.
 The page opens on a start menu (2026-10-21): the game in brief, which of
 the heroes to take (one to three of the three; the camel always comes), and Start;
 `POST /runs` takes the `party`. A run is three stages, each a fight (owner, 2026-10-24;
-`STAGES` in `src/rules/config.ts`): the enemy brings the Outrider
-(`FIRST_ENEMY`) and two wolves, then the Outrider, one of the other two at
-random and a wolf, then all three heroes.
+`STAGES` in `src/rules/config.ts`): the enemy brings one of the Steppe's
+heroes at random and two wolves, then it, another and a wolf, then all
+three (the first random since 2026-10-28; the Outrider before).
 Winning a stage offers Next stage (`POST /runs/:id/next`); the surviving
 heroes go on at full health, the camel with the health it ended the
 stage with (2026-10-27, [camel.md](camel.md), 18.4), the fallen are gone for the
 run; winning the last stage wins the run. **Three regions** (2026-10-28):
 the Steppe's three stages, then China's three in the Gobi, its own heroes
-with the Steppe's in place of fox spirits, the Duelist first, then
+with the Steppe's in place of fox spirits, then
 Persia's three on the Salt Flats, its own heroes with the Steppe's or
-China's, the Ranger first ([progression.md](progression.md), 19.5). Between stages the caravan
+China's, each region's first hero random ([progression.md](progression.md), 19.5). Between stages the caravan
 stops at a **caravanserai** (2026-10-25): after a region's stages 1 and 2 one
 survivor takes a provision, +1 to one stat for the rest of the run
 ([progression.md](progression.md), 19.2); between the regions it offers
