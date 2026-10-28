@@ -43,7 +43,8 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
  * Mountains' is red earth, a yurt placed there by hand a ruin and their
  * mountains on fire, though they block as any do; the Salt Flats' is salt,
  * their mountains one salt dome and a yurt placed there by hand a ruin;
- * the Fairy Chimneys' is tuff and their yurts fairy chimneys.
+ * the Fairy Chimneys' is tuff and their yurts fairy chimneys; the
+ * Cyclops's cave's is its stone floor.
  */
 const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
   gobi: {
@@ -89,16 +90,11 @@ const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
     },
   },
 };
-// The Flaming Mountains with their ridges burning, for China's boss (map.ts, `RIDGES`).
-MAP_TILE_INFO.ridges = {
-  ...MAP_TILE_INFO.flaming,
-  mountain: {
-    name: 'Burning ridge',
-    short: 'Blocks movement and arrows; the Fan Lady fans it',
-    detail:
-      'Blocks movement and arrows. The Fan Lady’s Fan the Flames sets the spaces next to it alight.',
-  },
-};
+// China's boss's Flaming Mountains (map.ts, `FIRE_MOUNTAIN`), and `ridges`, a fight saved there before.
+MAP_TILE_INFO.fireMountain = MAP_TILE_INFO.flaming!;
+MAP_TILE_INFO.ridges = MAP_TILE_INFO.flaming!;
+// The Cyclops's cave (map.ts, `CAVE`): nothing stands on its floor.
+MAP_TILE_INFO.cave = {sand: {name: 'Cave floor', short: 'Open ground', detail: 'No effect.'}};
 
 /** What a tile is called and does on the map `mapId`. */
 export function tileInfo(mapId: string, tile: Tile): HexInfo {
@@ -130,12 +126,12 @@ export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   };
 }
 
-/** A burning space (`FireEffect`): until its Fan Lady's next turn, or for good once she has fallen. */
+/** A burning space (`FireEffect`): until Princess Iron Fan's next turn, or for good once she has fallen. */
 export function fireInfo(fire: FireEffect, state: FightState): HexInfo {
   const lady = state.units.find((u) => u.id === fire.source);
   const n = ABILITY.fanFlames.burn;
   const until = lady?.alive
-    ? `It goes out at the start of the ${HEROES[lady.hero].name}’s next turn.`
+    ? `It goes out at the start of ${HEROES[lady.hero].name}’s next turn.`
     : 'Its fanner has fallen: it burns until put out with her fan.';
   return {
     name: 'Fire',
@@ -144,12 +140,12 @@ export function fireInfo(fire: FireEffect, state: FightState): HexInfo {
   };
 }
 
-/** The fan the Fan Lady drops where she falls (`FightState.fan`). */
+/** The fan Princess Iron Fan drops where she falls (`FightState.fan`). */
 export const FAN_INFO: HexInfo = {
-  name: 'Banana-leaf Fan',
+  name: 'Iron Fan',
   short: 'A hero entering picks it up',
   detail:
-    'Dropped by the Fan Lady. A hero entering this space picks it up, and may spend a turn with it putting out every fire on the board.',
+    'Dropped by Princess Iron Fan. A hero entering this space picks it up, and may spend a turn with it putting out every fire on the board.',
 };
 
 export function shotInfo(shot: ShotInAir, state: FightState): HexInfo {

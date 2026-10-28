@@ -77,7 +77,7 @@ const RUG = {
 };
 /**
  * Board sprites, facing right: square frames (32×32, 36×36 for a mounted
- * hero, the camel, the wolf or the fox, or 44×44 for the Juggernaut, the One-Eyed Giant, the Ox King and the Cataphract,
+ * hero, the camel, the wolf or the fox, or 44×44 for the Juggernaut, the Cyclops, the Bull Demon King and the Cataphract,
  * whose head and rider rise above its hex) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
@@ -114,8 +114,8 @@ export const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // Juggernaut's frame, its eye redrawn by hand.
   giant: giantSprite,
   // From the owner's AI-assisted art (2026-10-28): their purple shadows made
-  // grey first; the Ox King shrunk to 44×44, his eye put back by hand, the
-  // Fan Lady to 32×32, hers too.
+  // grey first; the Bull Demon King shrunk to 44×44, his eye put back by hand, the
+  // Princess Iron Fan to 32×32, hers too.
   oxKing: oxKingSprite,
   fanLady: fanLadySprite,
 };

@@ -245,14 +245,27 @@ tuning. This file has no combat-design section number.
   unused) and one or two fissures, a hazard burning 1 on each entry. The flames are only drawn: the mountains block as any do; the
   fire hazard waited for the region's boss ([setting.md](setting.md), the
   Bull Demon King's fire mountain), and came with it (2026-10-28;
-  [enemies.md](enemies.md), 11.3b): on `ridges`, the same look with two or
-  three burning ridges, the Fan Lady sets the spaces next to one alight,
+  [enemies.md](enemies.md), 11.3b): on `fireMountain`, the same red earth
+  with nothing on it (owner, 2026-10-28; `ridges` before, two or three
+  burning ridges she set the spaces next to alight), Princess Iron Fan
+  sets a space within 3 and those next to it alight,
   drawn in code as the ground glowing orange under flickering tongues of
-  flame (`drawFire` in ground.ts), and the fan she drops as a small green
-  leaf on a handle (`drawFan`). The page calls the tiles Red earth,
+  flame (`drawFire` in ground.ts), and the fan she drops as an open iron
+  folding fan, grey pleats under a gilt rim (`drawFan`; a small green
+  leaf on a handle until her fan's redesign, owner, 2026-10-28). The page calls the tiles Red earth,
   Beacon tower and Flaming Mountains. Every stage of a run is still the
   Steppe's (`STAGES` in config.ts); the test stage's `"map"` showed the
   Flaming Mountains until the Salt Flats (below).
+- **The Cyclops's cave** (`cave`, owner, 2026-10-28), the Steppe's boss
+  fight: the Steppe's board on a cave's stone floor, nothing on it. The
+  floor is drawn in code until the owner's art comes
+  (`scripts/cave-floor.py`, `tiles/cave-floor.png`): a seamless 128-pixel
+  tile in 6 cool grey-browns, worn stone plates a third of a hex or so
+  across, some a shade darker as if damp, their seams only a little darker
+  than the stone, so the hex borders (`#2a2421`) still read over them
+  (seams as dark as the borders, at first, hid the grid). The page calls
+  it Cave floor. Prompts for the art are below ("Prompts for the cave
+  floor").
 - **The Salt Flats** (`salt`, owner, 2026-10-26), Persia's map: the
   owner's salt crust (156 pixels, 5 colours, its cracks softened so the
   hex borders show) and one large salt dome (100 × 108, within its spaces, its colours taken most of the way to
@@ -781,6 +794,94 @@ of the great green banana-leaf fan rising behind one shoulder.
 Framing: head and shoulders, facing right in three-quarter view, the face
 filling most of the frame, the hair touching the top edge, cropped at the
 shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours. No red, no light blue. Flat magenta (#FF00FF) background. One
+portrait only, no text, no border.
+```
+
+## Prompts for the cave floor (2026-10-28)
+
+The Cyclops's cave (`cave`), the Steppe's boss fight, has only its floor:
+no mountains, no yurts. Until this art comes the floor is drawn in code
+(`tiles/cave-floor.png`, from `scripts/cave-floor.py`). Like the red
+earth and the tuff it is a **seamless texture** laid across the board as
+one field, so the hex borders are drawn over it: keep its lines soft.
+Attach `tiles/rock.png` (the Steppe's rock) and `tiles/red-earth.png`,
+scaled up 8× with nearest-neighbour. Cut the result to 128 × 128 and at
+most 6 colours.
+
+```
+Pixel art terrain texture, top-down view, seamlessly tileable on all four
+edges, for a hex-grid tactics game in the style of Into the Breach,
+matching the pixel density and restraint of the attached textures.
+
+Subject: the floor of a giant's cave in the Central Asian steppe hills.
+Worn bedrock and packed earth, cool grey-brown, broken into a few large
+flat stone slabs with shallow cracks between them, a scatter of small
+pebbles and gravel, one or two faint pale bones half buried, a few damp
+darker patches. Lit softly from the top left. No walls, no stalagmites,
+no fire, no plants, nothing standing up.
+
+Style: 128 x 128 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering noise. At most 6 colours, all
+muted cool grey-browns close in value, so a dark hex grid drawn on top
+still reads: the cracks only a little darker than the stone, never
+black. Slabs about 20 to 40 pixels across.
+```
+
+If the grid gets lost in it: "halve the contrast of the cracks; they
+must be lighter than a dark grid line drawn over the texture".
+
+## Prompts for Princess Iron Fan's iron fan (2026-10-28)
+
+Her fan redesigned (owner, 2026-10-28): an **iron folding fan**, as her
+name says, in place of the green banana leaf she holds in `fanLady.png`
+and `fanLady-portrait.png`. The fan she drops is drawn in code already,
+open, grey iron pleats under a gilt rim on dark sticks and a gold rivet
+(`drawFan` in ground.ts); match it. The rest of her stays as it is.
+Attach her current sprite and portrait (`fanLady.png`'s first 32 × 32
+frame, `fanLady-portrait.png`), scaled up 8× with nearest-neighbour,
+and ask for the same figure with only the fan changed. Then split the
+idle at row 24 as before (`scripts/idle-sheet.py`) and paint the shadow
+grey (#444444).
+
+- One asset per image, on flat magenta (#FF00FF).
+- No red, no light blue: the iron is warm grey, its rim gold.
+- If the fan is lost at size: "make the fan bigger, as wide as her
+  body, with clear light and dark pleats and a bright gold rim".
+
+### 1. Her board sprite
+
+```
+Pixel art sprite of a single character for a hex-grid tactics game. Redraw
+the attached sprite exactly, same pose, robes, colours, outline and size,
+changing only the fan.
+
+The fan: a large iron war fan from Chinese myth, a folding fan opened
+wide into a half circle, held in her right hand and swept back over her
+shoulder ready to blow a great gust, as big as her upper body. Its leaf
+is made of thin iron plates in pleats, alternating light warm grey and
+dark grey, with a polished gold rim along the curved edge, dark iron
+sticks meeting at a gold rivet at her hand. No green, no leaf.
+
+Framing and style: as the attached sprite, 32 x 32 pixel art, full body,
+facing right, about 1 pixel free on each side, the fan reaching near the
+top edge. Hard square pixels, no anti-aliasing, no gradients, no
+dithering, a dark brown-black outline, at most 14 colours. No red, no
+light blue. A small soft grey oval shadow under the feet. Flat magenta
+(#FF00FF) background. One sprite only, no text.
+```
+
+### 2. Her track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track. Redraw the
+attached portrait exactly, same face, hair, robes, colours and size,
+changing only the fan behind her shoulder: in place of the green leaf,
+the edge of a great iron folding fan rising behind one shoulder, light
+and dark grey iron pleats under a polished gold rim. No green.
 
 Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
 anti-aliasing, no gradients, no dithering, a dark outline, at most 14

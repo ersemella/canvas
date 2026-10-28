@@ -162,7 +162,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
 /**
  * Passives a hero starts with that the caravanserai doesn't offer:
  * Unstoppable, the Juggernaut's (owner, 2026-10-27), One Eye, the
- * One-Eyed Giant's, and Devoted, the Ox King's and the Fan Lady's (owner,
+ * Cyclops's, and Devoted, the Bull Demon King's and Princess Iron Fan's (owner,
  * 2026-10-28), aren't in 19.8's pool.
  */
 export const NOT_OFFERED: readonly PassiveId[] = ['unstoppable', 'oneEye', 'devoted'];

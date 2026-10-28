@@ -46,9 +46,9 @@ export const HERO_COLOR = {
   camel: '#a8742f',
   wolf: '#6b7280',
   fox: '#c2410c',
-  // The One-Eyed Giant's disc, shown while its sprite loads.
+  // The Cyclops's disc, shown while its sprite loads.
   giant: '#57534e',
-  // China's boss, the Ox King and the Fan Lady: their discs, shown while their sprites load.
+  // China's boss, the Bull Demon King and Princess Iron Fan: their discs, shown while their sprites load.
   oxKing: '#7c2d12',
   fanLady: '#be185d',
 };

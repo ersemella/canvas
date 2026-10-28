@@ -576,7 +576,16 @@ describe('the track', () => {
 
 describe('the board', () => {
   it('has a map per region, each the Steppe’s board under another look', () => {
-    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'ridges', 'salt', 'tuff']);
+    expect(Object.keys(MAPS)).toEqual([
+      'steppe',
+      'gobi',
+      'flaming',
+      'fireMountain',
+      'cave',
+      'salt',
+      'tuff',
+      'ridges',
+    ]);
     expect(mapById('gobi')).toBe(GOBI);
     expect(mapById('flaming')).toBe(FLAMING);
     expect(mapById('salt')).toBe(SALT);
@@ -3427,7 +3436,7 @@ describe('previews, the AI and the run', () => {
       row('steppe', false, 1, 0, 2, 'steppe'),
       row('steppe', false, 2, 0, 1, 'steppe'),
       row('steppe', false, 3, 0, 0, 'steppe'),
-      row('steppe', true, 3, 0, 2, 'steppe'),
+      row('steppe', true, 3, 0, 2, 'cave'),
       row('china', false, 1, 2, 0, 'gobi'),
       row('china', false, 2, 1, 0, 'gobi'),
       row('china', false, 3, 0, 0, 'gobi'),
@@ -3462,7 +3471,7 @@ describe('previews, the AI and the run', () => {
         .flatMap((r) => r.heroes)
         .sort()
     ).toEqual([...ROSTER].sort());
-    // The Steppe's boss stage: the One-Eyed Giant and two wolves, whatever the seed.
+    // The Steppe's boss stage: the Cyclops and two wolves, whatever the seed.
     for (let seed = 0; seed < 5; seed++)
       expect(stageEnemies(seed, 3)).toEqual(['giant', 'wolf', 'wolf']);
     const firsts = new Set<HeroId>();
