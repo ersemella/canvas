@@ -90,7 +90,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   magus: {src: magusPortrait, faceX: 20},
   // Its turban recoloured saffron (owner, 2026-10-27), apart from the Magus's.
   mahout: {src: mahoutPortrait, faceX: 24},
-  archer: {src: archerPortrait, faceX: 17},
+  archer: {src: archerPortrait, faceX: 18},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},
