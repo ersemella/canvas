@@ -862,7 +862,12 @@
 }
 @media (min-width: 75em) {
   .heroFigure.heroDetailsFigure {
-    width: 224px;
+    width: 288px;
+  }
+}
+@media (min-width: 88em) {
+  .heroFigure.heroDetailsFigure {
+    width: 384px;
   }
 }
 .heroDetailsHead {

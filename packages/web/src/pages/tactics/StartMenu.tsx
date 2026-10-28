@@ -145,7 +145,7 @@ export function StartMenu(props: {
       <Paper
         className={styles.plaque!}
         p={{base: 'md', sm: 'xl'}}
-        maw={{base: 760, lg: 1180}}
+        maw={{base: 760, lg: 1180, xl: 1360}}
         w="100%"
       >
         <Stack gap="lg">
