@@ -11,7 +11,7 @@ export type Side = 'player' | 'enemy';
  * The three prototype heroes, the Vanguard and the Alchemist
  * (owner, 2026-10-25), the Duelist (owner, 2026-10-26), the Magus
  * (owner, 2026-10-27), the Juggernaut (`mahout`, owner, 2026-10-27), the
- * Ranger (owner, 2026-10-27), the
+ * Ranger (owner, 2026-10-27), the Cataphract (owner, 2026-10-28), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, and the enemy NPCs, the wolf and the fox.
  */
@@ -25,6 +25,7 @@ export type HeroId =
   | 'magus'
   | 'mahout'
   | 'archer'
+  | 'cataphract'
   | 'camel'
   | 'wolf'
   | 'fox';
@@ -42,6 +43,7 @@ export type AbilityId =
   | 'omen'
   | 'stomp'
   | 'longshot'
+  | 'charge'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'

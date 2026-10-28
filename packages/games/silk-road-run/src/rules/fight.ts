@@ -5,7 +5,7 @@
  */
 import {hexEquals, hexKey} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
-import {canMove, invalidPath, isImmobilized, isStunned, stepToExit} from './board';
+import {canMove, invalidPath, isImmobilized, isStunned, stepToExit, steps} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
 import {
@@ -213,7 +213,15 @@ export function createFight(
         .filter((u) => u.side === side && u !== camel)
         .forEach((u, i) => (u.hex = hexes[i]!));
     }
-  } while (state.units.some((u) => !canMove(state, mapOf(state), u)));
+    // No unit boxed in: each can walk, or, with no walk of its own (the
+    // Cataphract), has a lane to charge down.
+  } while (
+    state.units.some((u) =>
+      HEROES[u.hero].moveCap === 0
+        ? steps(mapOf(state), u.hex!).length === 0
+        : !canMove(state, mapOf(state), u)
+    )
+  );
   placeStartingCards(state);
   log({state, map: mapOf(state), slot: 0}, 'The fight begins.');
   return state;

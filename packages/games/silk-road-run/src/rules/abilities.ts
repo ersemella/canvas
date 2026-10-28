@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), and the wolf's. Each lists its legal targets from a hex (for validation,
+ * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), the Cataphract's (owner, 2026-10-28), and the wolf's. Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -24,10 +24,12 @@ import {
   kitOf,
   lane as laneFrom,
   line as lineFrom,
+  mayEndOn,
   reachableHexes,
   sortByHex,
   spacesWithin,
   steps as stepsFrom,
+  stopsWalk,
   unitAt,
   walkable,
 } from './board';
@@ -1235,6 +1237,142 @@ const stomp: AbilityDef = {
   },
 };
 
+// ─── Cataphract ──────────────────────────────────────────────────────────────
+
+/** Whether a unit can be Pushed: not Rooted (19.8) or Unstoppable (17.4). */
+function pushable(u: Unit): boolean {
+  return !isUnstoppable(u) && !hasPassive(u, 'rooted');
+}
+
+/**
+ * The spaces a Charge from `from` may be aimed at along `dir`: every one to
+ * yurts or the map's edge, past the first unit in the way and up to the
+ * second's, aimed at for the collision; farther ones would do the same.
+ */
+function chargeLane(state: FightState, map: MapData, from: Hex, dir: number): Hex[] {
+  const out: Hex[] = [];
+  let units = 0;
+  for (const h of laneFrom(map, from, dir)) {
+    out.push(h);
+    if (unitAt(state, h) && ++units === 2) break;
+  }
+  return out;
+}
+
+/**
+ * What a Charge by `user` from `from` aimed at `target` would do, without
+ * doing it: the units it would hit, and where the Cataphract would end, if
+ * no one falls and nothing on the way changes the board (hail's hits,
+ * Rebound). For the AI's guess.
+ */
+export function chargePlan(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  from: Hex,
+  target: Hex
+): {caught: Unit[]; end: Hex} {
+  const dir = hexDirectionTo(from, target)!;
+  const caught: Unit[] = [];
+  let at = from;
+  // The unit carried ahead, and its space.
+  let ahead: Unit | undefined;
+  let aheadAt = from;
+  for (;;) {
+    const next = hexNeighbor(at, dir);
+    if (!ahead) {
+      if (hexEquals(at, target) || !walkable(map, next)) break;
+      ahead = unitAt(state, next);
+      if (ahead) {
+        caught.push(ahead);
+        aheadAt = next;
+        continue;
+      }
+    } else {
+      if (hexEquals(aheadAt, target)) break;
+      const past = hexNeighbor(aheadAt, dir);
+      const behind = unitAt(state, past);
+      if (behind) {
+        caught.push(behind);
+        break;
+      }
+      if (!walkable(map, past) || !pushable(ahead)) break;
+      aheadAt = past;
+    }
+    at = next;
+    if (stopsWalk(state, user, at)) break;
+  }
+  return {caught, end: at};
+}
+
+/**
+ * Charge (owner, 2026-10-28; roster.md), the Cataphract's, and its only
+ * way to move: it rides any number of spaces straight out along one of the
+ * six directions, as the Outrider does, stopped by yurts and the map's
+ * edge, and by hail, which ends a walk where it enters. The first unit in
+ * its way, ally or enemy, takes its power and is Pushed on ahead of it, a
+ * space at a time, to the space it was aimed at, the Cataphract riding in
+ * behind. Yurts or the map's edge stop the Push short; so does a second
+ * unit in the way, which takes the Cataphract's power too and isn't
+ * Pushed. A Rooted or Unstoppable unit isn't Pushed at all. Either way the
+ * Cataphract stops behind the unit it carries; if that unit falls, the way
+ * is clear and it rides on.
+ */
+const charge: AbilityDef = {
+  id: 'charge',
+  name: 'Charge',
+  kind: 'attack',
+  stepsTo: true,
+  summary: () =>
+    'Ride any distance straight. The first unit in the way is hit and carried ahead to the space aimed at; a second unit it meets is hit too, and both stop.',
+  targets(state, map, user, from) {
+    if (isImmobilized(user)) return [];
+    const out: ActionTarget[] = [];
+    for (const dir of DIRECTIONS)
+      for (const hex of chargeLane(state, map, from, dir))
+        // An enemy can't ride onto the camel's exit (`mayEndOn`) with no one to carry there.
+        if (unitAt(state, hex) || mayEndOn(map, user, hex)) out.push({hex});
+    return sortByHex(out, (t) => t.hex!);
+  },
+  resolve(ctx, user, target) {
+    const goal = target.hex!;
+    const dir = hexDirectionTo(user.hex!, goal)!;
+    log(ctx, `${unitName(user)} charges.`);
+    const struck = new Set<string>();
+    const strike = (u: Unit) => {
+      if (struck.has(u.id)) return;
+      struck.add(u.id);
+      hit(ctx, user, u, 'The charge');
+    };
+    while (user.alive && user.hex && !hexEquals(user.hex, goal)) {
+      const next = hexNeighbor(user.hex, dir);
+      if (!walkable(ctx.map, next)) break;
+      const u = unitAt(ctx.state, next);
+      if (u) {
+        strike(u);
+        // Still standing: carried on ahead, unless it has reached the goal.
+        if (u.alive && u.hex) {
+          if (hexEquals(u.hex, goal)) break;
+          const past = hexNeighbor(u.hex, dir);
+          const behind = unitAt(ctx.state, past);
+          if (behind) {
+            log(ctx, `${unitName(u)} is driven into ${unitName(behind)}.`);
+            strike(behind);
+            break;
+          }
+          if (!walkable(ctx.map, past)) break;
+          displace(ctx, u, dir, 1, 'push');
+        }
+        if (!user.alive || !user.hex || unitAt(ctx.state, next)) break;
+      }
+      enterHex(ctx, user, next, 'walk', true);
+      // Hail ends the ride where it enters (it Immobilizes).
+      if (isImmobilized(user)) break;
+    }
+    if (user.alive) endGrapplesApart(ctx, user);
+  },
+};
+
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 
 const bite: AbilityDef = {
@@ -1265,6 +1403,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   omen,
   stomp,
   longshot,
+  charge,
   shove,
   haul,
   feignedRetreat,

@@ -239,6 +239,22 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['longshot', 'hold'],
   },
   /**
+   * The Cataphract (owner, 2026-10-28; roster.md): Byzantium's tank,
+   * armoured heavy cavalry. Speed 2, defence 3 (health 8) and power 1 are
+   * the owner's. It has no walk of its own (`moveCap` 0): it moves only by
+   * Charge, any distance straight, carrying the first unit in its way
+   * ahead of it (`charge` in abilities.ts).
+   */
+  cataphract: {
+    name: 'Cataphract',
+    letter: 'K',
+    speed: 2,
+    defence: 3,
+    power: 1,
+    abilities: ['charge', 'hold'],
+    moveCap: 0,
+  },
+  /**
    * The caravan's camel (owner, 2026-10-21; camel.md): it can't attack, and
    * walks itself one space a turn along the shortest road from the top-left
    * corner to the exit in the bottom-right, around units in its way (owner,
@@ -600,6 +616,8 @@ export const AI = {
     // A tank, as the Grappler and the Vanguard.
     mahout: 0,
     archer: 1,
+    // A tank, as the Grappler and the Vanguard.
+    cataphract: 0,
     camel: 0,
     wolf: 1,
     fox: 1,
@@ -680,6 +698,7 @@ export const ROSTER: HeroId[] = [
   'magus',
   'mahout',
   'archer',
+  'cataphract',
 ];
 /**
  * The regions a run passes through, in order (setting.md, 15.3a), so far

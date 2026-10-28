@@ -30,6 +30,7 @@ import {
   grappling,
   longshotLanes,
   stompPlan,
+  chargePlan,
   unusableReason,
 } from './abilities';
 import {allowedTargets} from './choices';
@@ -159,6 +160,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
       hexDirectionTo(u.hex!, e.hex) !== null
     )
       return true;
+    // Charge: anyone in line, carried or met (`chargePlan`).
+    if (has('charge') && hexDirectionTo(u.hex!, e.hex) !== null) return true;
     if (has('gale') && d <= ABILITY.gale.range + 1) return true;
     const dq = e.hex.q - u.hex!.q;
     const dr = e.hex.r - u.hex!.r;
@@ -334,11 +337,13 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
  */
 function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: boolean): number {
   const target = input.action.target;
-  // Stomp: whom it hits, and where it ends (`stompPlan`).
+  // Stomp and Charge: whom they hit, and where they end (`stompPlan`, `chargePlan`).
   const plan =
     input.action.ability === 'stomp'
       ? stompPlan(state, mapOf(state), unit.hex!, target!.hex!)
-      : undefined;
+      : input.action.ability === 'charge'
+        ? chargePlan(state, mapOf(state), unit, unit.hex!, target!.hex!)
+        : undefined;
   const end = input.move?.length
     ? input.move[input.move.length - 1]!
     : plan
@@ -349,7 +354,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
   if (input.move?.length || input.action.ability === 'hold') return closing;
   const ability = input.action.ability;
-  // What catching a unit in Gale, Cleave or Stomp is worth, by its side.
+  // What catching a unit in Gale, Cleave, Stomp or Charge is worth, by its side.
   const sided = (u: Unit, value: number) =>
     hostile(u, unit) ? value : -value * AI.friendlyDamageFactor;
   const caughtBy =
@@ -917,8 +922,10 @@ function actionCost(before: FightState, unit: Unit, option: ScoredOption): numbe
  */
 function huntsTemee(state: FightState, me: Unit): boolean {
   if (me.side !== 'enemy' || !me.hex || !camelOf(state)?.alive) return false;
-  // The Outrider's straight move has no cap: weighed as an ordinary walk.
-  const reach = Math.min(movementCap(me), RULES.movementCap) + 1;
+  // The Outrider's straight move has no cap: weighed as an ordinary walk,
+  // and so is the Cataphract's Charge, its only move.
+  const charges = kitOf(me).includes('charge') && !isImmobilized(me);
+  const reach = (charges ? RULES.movementCap : Math.min(movementCap(me), RULES.movementCap)) + 1;
   return !state.units.some(
     (e) =>
       e.alive && e.hex && hostile(e, me) && e.hero !== CAMEL && hexDistance(me.hex!, e.hex) <= reach

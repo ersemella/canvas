@@ -327,6 +327,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // A couched lance, its pennant and the dust of the charge the accents.
+  charge: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '...++.......',
+      '...+++......',
+      '...++.......',
+      '...#.##.....',
+      '...######...',
+      '...#########',
+      '...######...',
+      '...#.##.....',
+      '............',
+      '=.=.........',
+      '.=.=........',
+    ],
+  },
   // An elixir gourd, its stopper the accent.
   elixir: {
     kind: 'support',

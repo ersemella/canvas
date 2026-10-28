@@ -102,6 +102,20 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           if (tile === undefined || blocks(tile)) break;
           mark(hexes, k, power);
         }
+    // Charge: each of its lanes to yurts or the map's edge, the first unit
+    // in it carried and a second one met, so past one unit and up to a
+    // second.
+    if (has('charge') && !isImmobilized(e))
+      for (const [dq, dr] of AXIAL) {
+        let passed = 0;
+        for (let i = 1; ; i++) {
+          const k = id(fq + dq * i, fr + dr * i);
+          const tile = board.get(k);
+          if (tile === undefined || blocks(tile)) break;
+          mark(hexes, k, power);
+          if (occupied.has(k) && ++passed === 2) break;
+        }
+      }
     // Cleave: its line of `reach` each way.
     if (has('cleave'))
       for (const area of cleaveAreas(map, e.hex))
