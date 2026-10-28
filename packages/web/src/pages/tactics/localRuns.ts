@@ -146,13 +146,14 @@ export const localRuns = {
   continue: (runId: string) => act(runId, {type: 'continue'}),
   /**
    * On to the next stage, with the provision the stage won earned
-   * (`view.provision`) and the passive taken from its offer (`view.passives`).
+   * (`view.provision`) and the party's two picks of the passives drafted
+   * (`view.passives`).
    */
   next: (
     runId: string,
     choices: {
       provision?: Provision;
-      passive?: PassivePick;
+      passives?: PassivePick[];
       heal?: boolean;
       extra?: Provision;
       extraHeal?: boolean;

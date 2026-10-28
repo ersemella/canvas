@@ -1279,7 +1279,7 @@
  */
 .passiveOffer {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 }
 .passiveCard {
@@ -1289,6 +1289,22 @@
 .passiveName {
   font-size: 18px;
   font-weight: bold;
+}
+/* Who a drafted passive went to: the party's pick, or the rival's. */
+.passiveTaken {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--c-lapisLight);
+}
+/* The rival's pick: out of the draft, in the enemy's madder. */
+.provisionStat.passiveRival:disabled {
+  opacity: 1;
+  border-color: var(--c-madder);
+  background: var(--c-madderDark);
+}
+.passiveRival .passiveTaken {
+  color: var(--c-madderLight);
 }
 .carriers {
   display: flex;

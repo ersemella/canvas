@@ -106,5 +106,6 @@ export {allowedTargets, offeredTargets, onlyHold, targetAt} from './rules/choice
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
 export {DOME, FLAMING, GOBI, MAPS, SALT, STEPPE, TUFF, mapById, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';
+export {rivalPicks} from './rules/run';
 export type {RunView} from './rules/run';
 export type * from './rules/types';

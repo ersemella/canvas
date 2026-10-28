@@ -1075,8 +1075,13 @@ export const STAGES: Stage[] = [
     map: 'salt',
   },
 ];
-/** How many passives the caravanserai between regions offers, one to be taken. */
-export const PASSIVE_OFFER = 3;
+/**
+ * How many passives the caravanserai between regions offers, drafted
+ * (progression.md, 19.3a; owner, 2026-10-28; three, one taken, before):
+ * the party picks one, the rival one, the party another, and the last
+ * goes to the rival.
+ */
+export const PASSIVE_OFFER = 4;
 /**
  * How many of a run's first stages always have mountains (owner, 2026-10-24;
  * randomTiles): the Steppe's, four since 2026-10-28.
