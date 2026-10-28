@@ -651,8 +651,20 @@ background. One portrait only, no text, no border.
 
 ## Prompts for the Ox King and the Fan Lady (2026-10-28)
 
+**Built from the owner's art (2026-10-28):** both shadows came back
+purple, so they were painted grey (#444444) first, only near the feet as
+the Fan Lady's robes are plum; the Ox King shrunk to 44 × 44 and the Fan
+Lady to 32 × 32 with `shrink-sprite.py` (a mode filter first, to calm the
+Ox King's scale armour, left stray red pixels, so neither has one), an eye
+put back by hand on each (his gold, between dark pixels; hers dark), and
+2-frame idles split at row 34 and row 24; the portraits cropped to the
+head (his `--crop 250,60,1210,1020 --lines 0.4`, hers `--crop
+350,150,1150,950` with no `--lines`, which buried her face in her hair),
+two strands of her hair over the face painted skin. The prompts they came
+from:
+
 China's boss (enemies.md, 11.3b), two lettered discs (`oxKing` and
-`fanLady` in `HERO_COLOR`) until their art comes. The **Ox King** is a
+`fanLady` in `HERO_COLOR`) until their art came. The **Ox King** is a
 boss and takes the giant's frame: a **44 × 44** board sprite facing right,
 rising above its hex, split into the 2-frame idle by
 `scripts/idle-sheet.py` (88 × 44 in all). The **Fan Lady** is the heroes'

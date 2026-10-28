@@ -53,6 +53,10 @@ import foxPortrait from '../sprites/fox-portrait.png';
 import foxSprite from '../sprites/fox.png';
 import giantPortrait from '../sprites/giant-portrait.png';
 import giantSprite from '../sprites/giant.png';
+import oxKingPortrait from '../sprites/oxKing-portrait.png';
+import oxKingSprite from '../sprites/oxKing.png';
+import fanLadyPortrait from '../sprites/fanLady-portrait.png';
+import fanLadySprite from '../sprites/fanLady.png';
 
 /**
  * The rug a unit stands on, filling its hex: a field in its side's colour,
@@ -64,7 +68,7 @@ const RUG = {
 };
 /**
  * Board sprites, facing right: square frames (32×32, 36×36 for a mounted
- * hero, the camel, the wolf or the fox, or 44×44 for the Juggernaut and the One-Eyed Giant,
+ * hero, the camel, the wolf or the fox, or 44×44 for the Juggernaut, the One-Eyed Giant and the Ox King,
  * whose head and rider rise above its hex) side by side, a 2-frame idle from scripts/idle-sheet.py. Heroes
  * without one are drawn as a lettered disc.
  */
@@ -99,6 +103,11 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // From the owner's AI-assisted art (2026-10-28): shrunk to 44×44, the
   // Juggernaut's frame, its eye redrawn by hand.
   giant: giantSprite,
+  // From the owner's AI-assisted art (2026-10-28): their purple shadows made
+  // grey first; the Ox King shrunk to 44×44, his eye put back by hand, the
+  // Fan Lady to 32×32, hers too.
+  oxKing: oxKingSprite,
+  fanLady: fanLadySprite,
 };
 /** Track portraits (32×32, facing right), filling the card; `faceX` is the face's column. */
 export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
@@ -119,6 +128,8 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},
   giant: {src: giantPortrait, faceX: 20},
+  oxKing: {src: oxKingPortrait, faceX: 22},
+  fanLady: {src: fanLadyPortrait, faceX: 19},
 };
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
 export const HEALTH_BAR = {w: 60, h: 10, y: 50};

@@ -949,9 +949,15 @@ const blessingTakes =
 export function blessingOf(user: Unit, u: Unit): {heal: number; shield: number} {
   const {overheal, shield: extra} = ABILITY.blessing;
   // `heal` off: a Shield of his power in place of the heal.
-  if (!ABILITY.blessing.heal) return {heal: 0, shield: user.power + extra};
-  const healed = Math.min(user.power, Math.max(0, u.maxHp - u.hp));
-  return {heal: healed, shield: (overheal ? user.power - healed : 0) + extra};
+  const healed = ABILITY.blessing.heal ? Math.min(user.power, Math.max(0, u.maxHp - u.hp)) : 0;
+  const given = ABILITY.blessing.heal
+    ? (overheal ? user.power - healed : 0) + extra
+    : user.power + extra;
+  // `lasts`: a unit holds at most `cap` × his power of lasting Shield.
+  const room = ABILITY.blessing.lasts
+    ? Math.max(0, ABILITY.blessing.cap * user.power - (u.lastingShield ?? 0))
+    : Infinity;
+  return {heal: healed, shield: Math.min(given, room)};
 }
 
 /**
@@ -999,14 +1005,16 @@ const blessing: AbilityDef = {
       shape === 'aura'
         ? `Every ally within ${radius} of you${self ? ', yourself too' : ''}`
         : `An ally within ${range}${self ? ', yourself too' : ''}`;
-    if (!ABILITY.blessing.heal)
-      return `${who}: Shield ${user.power + extra} until ${shape === 'aura' ? 'their' : 'its'} next turn.`;
+    const until = ABILITY.blessing.lasts
+      ? `until spent, at most ${ABILITY.blessing.cap * user.power} on a unit`
+      : `until ${shape === 'aura' ? 'their' : 'its'} next turn`;
+    if (!ABILITY.blessing.heal) return `${who}: Shield ${user.power + extra} ${until}.`;
     const shields = [
       overheal ? 'what it can’t heal becomes Shield' : '',
       extra ? `Shield ${extra} more` : '',
     ].filter(Boolean);
     const smite = ABILITY.blessing.smite ? ` An enemy within ${range} is hit instead.` : '';
-    return `${who}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, until its next turn` : ''}.${smite}`;
+    return `${who}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, ${until}` : ''}.${smite}`;
   },
   targets(state, map, user, from) {
     if (ABILITY.blessing.shape === 'aura')
@@ -1027,7 +1035,7 @@ const blessing: AbilityDef = {
       const given = blessingOf(user, a);
       log(ctx, `${unitName(user)} blesses ${unitName(a)}.`);
       heal(ctx, a, given.heal);
-      shield(ctx, a, given.shield);
+      shield(ctx, a, given.shield, ABILITY.blessing.lasts);
     }
   },
 };

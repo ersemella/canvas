@@ -48,7 +48,7 @@ export const HERO_COLOR = {
   fox: '#c2410c',
   // The One-Eyed Giant's disc, shown while its sprite loads.
   giant: '#57534e',
-  // China's boss, the Ox King and the Fan Lady: discs too, until their art exists.
+  // China's boss, the Ox King and the Fan Lady: their discs, shown while their sprites load.
   oxKing: '#7c2d12',
   fanLady: '#be185d',
 };
