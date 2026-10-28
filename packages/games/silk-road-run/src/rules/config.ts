@@ -212,7 +212,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * mahout on a war elephant. Speed 1, defence 3 (health 8) and power 2
    * are the owner's. Unstoppable from the start (17.4): no Push, Pull,
    * Immobilized or Stunned, so no grapple, and hail doesn't stop its walk.
-   * Trample drives units in its way back ahead of it (`ABILITY.trample`).
+   * Stomp hits every unit around it and drives them back (`ABILITY.stomp`).
    */
   mahout: {
     name: 'Juggernaut',
@@ -220,7 +220,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 1,
     defence: 3,
     power: 2,
-    abilities: ['trample', 'hold'],
+    abilities: ['stomp', 'hold'],
     passives: ['unstoppable'],
   },
   /**
@@ -508,8 +508,8 @@ export const ABILITY = {
     rider: 0 as number,
   },
   /**
-   * Trample (owner, 2026-10-28; balance.md, "Trample as a stomp"), the
-   * Juggernaut's, `mode: 'stomp'`: it steps 1 space or stays (`step: 1`;
+   * Stomp (owner, 2026-10-28; balance.md, "Trample as a stomp"; Trample
+   * until renamed that day), the Juggernaut's, `mode: 'stomp'`: it steps 1 space or stays (`step: 1`;
    * 0, in place only), and every unit next to it, ally or enemy, takes its
    * power and is Pushed 1 away.
    *
@@ -519,7 +519,7 @@ export const ABILITY = {
    * of them together, each take its power and are Pushed back ahead of it,
    * one space for each it walks; a row that can't be Pushed stops it behind.
    */
-  trample: {steps: 2 as number, mode: 'stomp' as 'charge' | 'stomp', step: 1 as number},
+  stomp: {steps: 2 as number, mode: 'stomp' as 'charge' | 'stomp', step: 1 as number},
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within

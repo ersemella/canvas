@@ -3683,7 +3683,9 @@ Its turns in its Steppe seat: 42.5% Trample, 46.7% walks, 10.8% Hold.
 (`mode: 'stomp'`, `step: 1` by default). `trample-stomp.mjs` sets the mode
 and step of each row, so it still reproduces. Since then a step may
 also go onto an enemy next to it, shoving it 1 on first (roster.md),
-which these rows didn't measure.
+which these rows didn't measure. The ability was then renamed Stomp
+(`ABILITY.stomp`, id `stomp`); the notes above keep the name of the day
+they were written.
 
 ### Longshot's Push, flying over the spaces next to the Ranger (2026-10-28)
 

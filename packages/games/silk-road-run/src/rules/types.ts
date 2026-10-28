@@ -40,7 +40,7 @@ export type AbilityId =
   | 'elixir'
   | 'swiftStrike'
   | 'omen'
-  | 'trample'
+  | 'stomp'
   | 'longshot'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'

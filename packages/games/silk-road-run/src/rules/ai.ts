@@ -29,7 +29,7 @@ import {
   elixirImmortal,
   grappling,
   longshotLanes,
-  tramplePlan,
+  stompPlan,
   unusableReason,
 } from './abilities';
 import {allowedTargets} from './choices';
@@ -151,12 +151,11 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (d <= 1) return true;
     if (has('hail') && d === ABILITY.hail.range) return true;
     if (has('volley') && d <= ABILITY.volley.range) return true;
-    if (has('trample') && ABILITY.trample.mode === 'stomp' && d <= 1 + ABILITY.trample.step)
-      return true;
+    if (has('stomp') && ABILITY.stomp.mode === 'stomp' && d <= 1 + ABILITY.stomp.step) return true;
     if (
-      has('trample') &&
-      ABILITY.trample.mode === 'charge' &&
-      d <= ABILITY.trample.steps &&
+      has('stomp') &&
+      ABILITY.stomp.mode === 'charge' &&
+      d <= ABILITY.stomp.steps &&
       hexDirectionTo(u.hex!, e.hex) !== null
     )
       return true;
@@ -335,10 +334,10 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
  */
 function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: boolean): number {
   const target = input.action.target;
-  // Trample: whom it hits, and where it ends (`tramplePlan`).
+  // Stomp: whom it hits, and where it ends (`stompPlan`).
   const plan =
-    input.action.ability === 'trample'
-      ? tramplePlan(state, mapOf(state), unit.hex!, target!.hex!)
+    input.action.ability === 'stomp'
+      ? stompPlan(state, mapOf(state), unit.hex!, target!.hex!)
       : undefined;
   const end = input.move?.length
     ? input.move[input.move.length - 1]!
@@ -350,7 +349,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
   if (input.move?.length || input.action.ability === 'hold') return closing;
   const ability = input.action.ability;
-  // What catching a unit in Gale, Cleave or Trample is worth, by its side.
+  // What catching a unit in Gale, Cleave or Stomp is worth, by its side.
   const sided = (u: Unit, value: number) =>
     hostile(u, unit) ? value : -value * AI.friendlyDamageFactor;
   const caughtBy =

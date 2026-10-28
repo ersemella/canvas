@@ -310,7 +310,7 @@ const ICON: Record<IconId, Icon> = {
     ],
   },
   // An elephant's foot coming down, the dust it raises the accent.
-  trample: {
+  stomp: {
     kind: 'attack',
     rows: [
       '............', //

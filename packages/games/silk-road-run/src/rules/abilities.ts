@@ -132,7 +132,7 @@ export interface AbilityDef {
   pairs?: boolean;
   /**
    * Its target is a space its user may step to first, or its own, and the
-   * ability resolves from there (Trample's stomp): the page shows the free
+   * ability resolves from there (Stomp): the page shows the free
    * ones as a move's, and draws the step.
    */
   stepsTo?: boolean;
@@ -1063,12 +1063,12 @@ function rowGives(state: FightState, map: MapData, row: Unit[], dir: number): bo
 }
 
 /**
- * What a Trample from `from` toward `target` would do, without doing it:
+ * What a Stomp from `from` aimed at `target` would do, without doing it:
  * the units it would hit, and where the Juggernaut would end, if no
  * one falls and nothing it enters on the way changes the board (hail's
  * hits, Rebound). For the AI's guess.
  */
-export function tramplePlan(
+export function stompPlan(
   state: FightState,
   map: MapData,
   from: Hex,
@@ -1076,7 +1076,7 @@ export function tramplePlan(
 ): {caught: Unit[]; end: Hex} {
   // A stomp's target is where it steps, an enemy there shoved on ahead,
   // next to it again; where it can't be, the stomp is in place.
-  if (ABILITY.trample.mode === 'stomp') {
+  if (ABILITY.stomp.mode === 'stomp') {
     const end = stompFrom(state, map, from, target);
     const shoved = hexEquals(end, from) ? undefined : unitAt(state, target);
     const caught = stompCaught(state, end).filter((u) => !hexEquals(u.hex!, from));
@@ -1131,8 +1131,8 @@ function stompCaught(state: FightState, from: Hex): Unit[] {
 }
 
 /**
- * Trample as a stomp (owner, 2026-10-28; balance.md): the Juggernaut steps
- * onto `to`, a space next to it (`ABILITY.trample.step`), or stays. An
+ * Stomp (owner, 2026-10-28; balance.md; Trample until renamed that day): the Juggernaut steps
+ * onto `to`, a space next to it (`ABILITY.stomp.step`), or stays. An
  * enemy on `to` is first Pushed 1 on along the step; if it can't be (a
  * unit or yurts past it, the map's edge, Rooted or Unstoppable), the
  * Juggernaut stomps where it stands. Each unit next to it then, ally or
@@ -1140,7 +1140,7 @@ function stompCaught(state: FightState, from: Hex): Unit[] {
  * are Pushed 1 away from it, one at a time in the order for cards placed
  * at the same moment, as Rebound's.
  */
-function stomp(ctx: Ctx, user: Unit, to: Hex): void {
+function resolveStomp(ctx: Ctx, user: Unit, to: Hex): void {
   const from = user.hex!;
   if (!hexEquals(to, from)) {
     const u = unitAt(ctx.state, to);
@@ -1169,9 +1169,9 @@ function stomp(ctx: Ctx, user: Unit, to: Hex): void {
 }
 
 /**
- * Trample as first built, a charge (`ABILITY.trample.mode: 'charge'`;
+ * Stomp's charge, Trample as first built (`ABILITY.stomp.mode: 'charge'`;
  * owner, 2026-10-27; roster.md): the Juggernaut walks 1 to
- * `ABILITY.trample.steps` spaces straight out in any of the six
+ * `ABILITY.stomp.steps` spaces straight out in any of the six
  * directions, stopped by yurts and the map's edge; with no one in its way
  * it is just that walk. The units in its way, ally or enemy, the whole row
  * when they stand in a line, each take its power once and are Pushed back
@@ -1181,27 +1181,27 @@ function stomp(ctx: Ctx, user: Unit, to: Hex): void {
  * same. Its walk goes through hail, which hits but can't hold it
  * (Unstoppable); a unit Pushed into hail is held and hit as any entering it.
  */
-const trample: AbilityDef = {
-  id: 'trample',
-  name: 'Trample',
+const stomp: AbilityDef = {
+  id: 'stomp',
+  name: 'Stomp',
   kind: 'attack',
   // The stomp: aimed at where it stomps from, the ring around it lit.
   get stepsTo() {
-    return ABILITY.trample.mode === 'stomp';
+    return ABILITY.stomp.mode === 'stomp';
   },
   get area() {
-    return ABILITY.trample.mode === 'stomp'
+    return ABILITY.stomp.mode === 'stomp'
       ? (map: MapData, from: Hex, target: Hex) =>
           hexNeighbors(target).filter((h) => onMap(map, h) && !hexEquals(h, from))
       : undefined;
   },
   summary: () =>
-    ABILITY.trample.mode === 'stomp'
-      ? `${ABILITY.trample.step > 0 ? 'Step 1 space or stay, shoving an enemy there on ahead, then stomp: e' : 'E'}very unit next to you is hit and Pushed 1 away.`
-      : `Walk up to ${ABILITY.trample.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
+    ABILITY.stomp.mode === 'stomp'
+      ? `${ABILITY.stomp.step > 0 ? 'Step 1 space or stay, shoving an enemy there on ahead, then stomp: e' : 'E'}very unit next to you is hit and Pushed 1 away.`
+      : `Walk up to ${ABILITY.stomp.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
   targets(state, map, user, from) {
-    if (ABILITY.trample.mode === 'stomp') {
-      if (ABILITY.trample.step <= 0 || isImmobilized(user)) return [{hex: from}];
+    if (ABILITY.stomp.mode === 'stomp') {
+      if (ABILITY.stomp.step <= 0 || isImmobilized(user)) return [{hex: from}];
       const out: ActionTarget[] = [{hex: from}];
       // Free spaces, and enemies' (shoved on ahead, `stomp`).
       for (const to of sortByHex(stepsFrom(map, from), (h) => h)) {
@@ -1213,13 +1213,13 @@ const trample: AbilityDef = {
     if (isImmobilized(user)) return [];
     const out: ActionTarget[] = [];
     for (const dir of DIRECTIONS)
-      for (const hex of laneFrom(map, from, dir).slice(0, ABILITY.trample.steps)) out.push({hex});
+      for (const hex of laneFrom(map, from, dir).slice(0, ABILITY.stomp.steps)) out.push({hex});
     return sortByHex(out, (t) => t.hex!);
   },
   resolve(ctx, user, target) {
-    if (ABILITY.trample.mode === 'stomp') return stomp(ctx, user, target.hex!);
+    if (ABILITY.stomp.mode === 'stomp') return resolveStomp(ctx, user, target.hex!);
     const dir = hexDirectionTo(user.hex!, target.hex!)!;
-    log(ctx, `${unitName(user)} tramples.`);
+    log(ctx, `${unitName(user)} charges.`);
     const struck = new Set<string>();
     for (let i = hexDistance(user.hex!, target.hex!); i > 0 && user.alive && user.hex; i--) {
       const next = hexNeighbor(user.hex, dir);
@@ -1227,7 +1227,7 @@ const trample: AbilityDef = {
       for (const u of rowFrom(ctx.state, next, dir))
         if (!struck.has(u.id)) {
           struck.add(u.id);
-          hit(ctx, user, u, 'The trample');
+          hit(ctx, user, u, 'The charge');
         }
       // Those still standing are Pushed, the farthest first, so each has room.
       const row = rowFrom(ctx.state, next, dir);
@@ -1271,7 +1271,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   elixir,
   swiftStrike,
   omen,
-  trample,
+  stomp,
   longshot,
   shove,
   haul,
