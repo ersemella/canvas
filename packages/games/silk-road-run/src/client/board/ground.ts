@@ -2,8 +2,8 @@
  * The ground under everything, in each map's look (`LOOKS`): the Steppe's
  * grass, yurts and their smoke, the Gobi's sand and oases, the
  * Flaming Mountains' red earth, beacon towers and burning ridges, the Salt
- * Flats' salt crust and their one salt dome, and the Flaming Mountains'
- * patches of scorched ground; exits (cached per map), and
+ * Flats' salt crust and their one salt dome, the Fairy Chimneys' tuff
+ * and chimneys, and the Flaming Mountains' patches of scorched ground; exits (cached per map), and
  * falling hail.
  */
 import {assetLoader, hexKey} from '@canvas/engine';
@@ -35,6 +35,8 @@ import beaconTowerImage from '../tiles/beacon-tower.png';
 import scorchedEarthImage from '../tiles/scorched-earth.png';
 import saltCrustImage from '../tiles/salt-crust.png';
 import saltDomeImage from '../tiles/salt-dome.png';
+import tuffImage from '../tiles/tuff.png';
+import fairyChimneyImage from '../tiles/fairy-chimney.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
@@ -228,6 +230,27 @@ const LOOKS: Record<string, Look> = {
     mountainGround: saltCrustImage,
     scorchedGround: null,
     dome: saltDomeImage,
+  },
+  // The Fairy Chimneys (owner, 2026-10-28): the owner's tuff and fairy
+  // chimney (AI-assisted), cut to the grid by `scripts/cappadocia-art.py`:
+  // the tuff a seamless 128-pixel tile in 7 of the picture's colours (the
+  // cream, apricot and rose, the runnels' grey, the pebbles and the
+  // scrub's two olives), the chimney 30 × 55 with its outline, dark warm
+  // brown fading to the hex borders' colour at its foot. No mountains
+  // stand on it (map.ts); the tuff is their ground if any did.
+  tuff: {
+    ground: tuffImage,
+    stamp: false,
+    colour: '#f2dbc2',
+    border: '#967868',
+    obstacles: [fairyChimneyImage],
+    smoke: null,
+    obstacleFrames: 1,
+    mountains: STEPPE_MOUNTAINS,
+    mountainFrames: 1,
+    mountainGround: tuffImage,
+    scorchedGround: null,
+    dome: null,
   },
 };
 
@@ -443,7 +466,7 @@ export function drawExit(
  * so it always reads as blocked. The yurt (owner, 2026-10-24) is redrawn
  * from the owner's art on the sprites' grid: 32 × 24 art pixels; the
  * sandstone ruin and the mudbrick wall are 32 × 32, the beacon tower
- * 38 × 46, the Gobi's oasis 36 × 49. `map` gives the look.
+ * 38 × 46, the Gobi's oasis 36 × 49, the fairy chimney 30 × 55. `map` gives the look.
  */
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,

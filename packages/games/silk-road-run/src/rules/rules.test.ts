@@ -63,6 +63,7 @@ import {
   ROUTES,
   SALT,
   STEPPE,
+  TUFF,
   blocks,
   depth,
   mapById,
@@ -574,12 +575,13 @@ describe('the track', () => {
 
 describe('the board', () => {
   it('has a map per region, each the Steppe’s board under another look', () => {
-    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'salt']);
+    expect(Object.keys(MAPS)).toEqual(['steppe', 'gobi', 'flaming', 'salt', 'tuff']);
     expect(mapById('gobi')).toBe(GOBI);
     expect(mapById('flaming')).toBe(FLAMING);
     expect(mapById('salt')).toBe(SALT);
+    expect(mapById('tuff')).toBe(TUFF);
     expect(() => mapById('atlantis')).toThrow();
-    for (const map of [GOBI, FLAMING, SALT]) {
+    for (const map of [GOBI, FLAMING, SALT, TUFF]) {
       expect(map.hexes).toBe(STEPPE.hexes);
       expect(map.camelStart).toEqual(STEPPE.camelStart);
       expect(map.exits).toEqual(STEPPE.exits);
@@ -607,6 +609,23 @@ describe('the board', () => {
       for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
     }
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
+  });
+
+  it('stands three fairy chimneys near the middle of the Fairy Chimneys, with no mountains', () => {
+    for (let seed = 0; seed < 40; seed++) {
+      // Even a stage that asks for mountains gets none here.
+      const s = createFight(seed, undefined, undefined, true, [], TUFF);
+      expect(s.mapId).toBe('tuff');
+      expect(mapOf(s).name).toBe('The Fairy Chimneys');
+      const chimneys = Object.keys(s.tiles).filter((k) => s.tiles[k] === 'obstacle');
+      expect(chimneys).toHaveLength(3);
+      expect(Object.values(s.tiles).every((t) => t === 'obstacle')).toBe(true);
+      for (const k of chimneys) {
+        const [q, r] = k.split(',').map(Number);
+        expect(hexDistance({q: q!, r: r!}, {q: 0, r: 0})).toBeLessThanOrEqual(3);
+      }
+      for (const u of s.units) expect(canMove(s, mapOf(s), u)).toBe(true);
+    }
   });
 
   it('stands one salt dome over the Salt Flats’ middle seven spaces in every fight, and nothing else', () => {
