@@ -5,6 +5,7 @@ import {Link} from 'react-router-dom';
 import {Button, CloseButton, Paper, Stack, Text} from '@mantine/core';
 import {
   HEROES,
+  HERO_ART,
   HERO_PORTRAIT,
   HERO_SPRITE,
   PARTY,
@@ -304,8 +305,8 @@ function HeroCard(props: {
 }
 
 /**
- * A hero full screen, on a phone: its whole figure as on the board, large
- * and idling, facing left as the party does in a fight, then its name, role
+ * A hero full screen, on a phone: its large art (else its board sprite,
+ * scaled up and idling), facing left as the party does in a fight, then its name, role
  * and meters, its story and its abilities, and the button adding it to the
  * caravan or leaving it behind. The ×, Back or Escape closes it; the page
  * under it doesn't scroll while it's open.
@@ -319,6 +320,7 @@ function HeroView(props: {
 }) {
   const {onClose} = props;
   const stats = HEROES[props.hero];
+  const art = HERO_ART[props.hero];
   const sprite = HERO_SPRITE[props.hero];
   const portrait = HERO_PORTRAIT[props.hero]?.src;
   useEffect(() => {
@@ -344,7 +346,9 @@ function HeroView(props: {
         <CloseButton size="lg" aria-label="Close" onClick={onClose} c="var(--c-ivory)" />
       </div>
       <div className={styles.heroFigure}>
-        {sprite ? (
+        {art ? (
+          <img src={art} alt="" />
+        ) : sprite ? (
           <i style={{backgroundImage: `url(${sprite})`}} />
         ) : portrait ? (
           <img src={portrait} alt="" />

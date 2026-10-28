@@ -479,9 +479,13 @@ border, no ground, no scenery, no second pose.
   as the party does in a fight.
 - **Cropped:** "Show the whole figure, feet and weapon inside the frame."
 
-## Building it (to do)
+## Built
 
-Each hero's art, once cut, goes in `src/client/sprites/` as
-`<hero>-art.png` (128 × 128, facing right), with a `HERO_ART` map beside
-`HERO_SPRITE` in `src/client/board/units.ts`; `HeroView` shows it in place
-of the scaled-up sprite, the sprite still where a hero has none.
+**The Grappler, the Outrider and the Storm Caller (2026-10-28)**, from
+the owner's art: each run through `shrink-sprite.py` at 128 as it came
+(the Outrider's thin bowstring lost at size), saved as
+`src/client/sprites/<hero>-art.png` (128 × 128, facing right) and listed
+in `HERO_ART` beside `HERO_SPRITE` in `src/client/board/units.ts`.
+`HeroView` shows it, flipped to face left, in place of the scaled-up
+sprite; a hero not in `HERO_ART` still shows its sprite. The other nine
+were made the same day; each is added the same way.

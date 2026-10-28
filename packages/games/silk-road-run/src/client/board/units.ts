@@ -25,16 +25,19 @@ import alchemistPortrait from '../sprites/alchemist-portrait.png';
 import alchemistSprite from '../sprites/alchemist.png';
 import archerPortrait from '../sprites/archer-portrait.png';
 import archerSprite from '../sprites/archer.png';
+import bokhArt from '../sprites/bokh-art.png';
 import bokhPortrait from '../sprites/bokh-portrait.png';
 import bokhSprite from '../sprites/bokh.png';
 import camelPortrait from '../sprites/camel-portrait.png';
 import camelSprite from '../sprites/camel.png';
 import cataphractPortrait from '../sprites/cataphract-portrait.png';
 import cataphractSprite from '../sprites/cataphract.png';
+import mangudaiArt from '../sprites/mangudai-art.png';
 import mangudaiSprite from '../sprites/mangudai.png';
 import mangudaiPortrait from '../sprites/mangudai-portrait.png';
 import modaoPortrait from '../sprites/modao-portrait.png';
 import modaoSprite from '../sprites/modao.png';
+import stormArt from '../sprites/storm-art.png';
 import stormPortrait from '../sprites/storm-portrait.png';
 import stormSprite from '../sprites/storm.png';
 import magusPortrait from '../sprites/magus-portrait.png';
@@ -109,6 +112,17 @@ export const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // Fan Lady to 32×32, hers too.
   oxKing: oxKingSprite,
   fanLady: fanLadySprite,
+};
+/**
+ * Each hero's large art (128×128, facing right), for the start menu's
+ * full-screen hero view on a phone: the owner's AI-assisted art from the
+ * prompts in hero-art.md (2026-10-28), put on the grid by
+ * scripts/shrink-sprite.py at 128. A hero without one shows its board sprite.
+ */
+export const HERO_ART: Partial<Record<Unit['hero'], string>> = {
+  bokh: bokhArt,
+  mangudai: mangudaiArt,
+  storm: stormArt,
 };
 /** Track portraits (32×32, facing right), filling the card; `faceX` is the face's column. */
 export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: number}>> = {
