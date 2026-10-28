@@ -200,7 +200,12 @@ export function StartMenu(props: {
                         hero={hero}
                         picked={party.includes(hero)}
                         shown={hero === shown}
+                        full={full}
                         onShow={() => setShown(hero)}
+                        onToggle={() => {
+                          toggle(hero);
+                          setShown(hero);
+                        }}
                         style={{gridRow: row + 1, gridColumn: col + 2}}
                       />
                     )
@@ -382,37 +387,58 @@ function HeroView(props: {
 
 /**
  * One hero on the start menu, a tile in its region's column and its role's
- * row: its portrait, facing left as the party
- * does in a fight, over its name; a tap shows its story and stats. A hero in
- * the party is raised lapis with a check; the one shown is outlined gold.
+ * row: its portrait, facing left as the party does in a fight, over its
+ * name; a click shows its story and stats. In the portrait's corner a
+ * checkbox takes it into the caravan or leaves it behind (and shows it),
+ * dimmed when the caravan is full. A hero in the party is raised lapis; the
+ * one shown is outlined gold.
  */
 function HeroTile(props: {
   hero: HeroId;
   picked: boolean;
   shown: boolean;
+  full: boolean;
   onShow: () => void;
+  onToggle: () => void;
   style: CSSProperties;
 }) {
   const stats = HEROES[props.hero];
   const portrait = HERO_PORTRAIT[props.hero]?.src;
   return (
-    <button
-      type="button"
-      className={`${styles.heroPick} ${props.picked ? styles.heroPicked : ''} ${
-        props.shown ? styles.heroShown : ''
-      }`}
-      aria-label={`${stats.name}${props.picked ? ', in the caravan' : ''}`}
-      aria-current={props.shown || undefined}
-      data-picked={props.picked}
+    <div
+      className={`${styles.heroTile} ${props.picked ? styles.heroPicked : ''}`}
       style={props.style}
-      onClick={props.onShow}
     >
-      <span className={styles.heroPickPortrait}>
-        {portrait ? <img src={portrait} alt="" /> : stats.letter}
-        {props.picked && <span className={styles.heroPickCheck}>✓</span>}
-      </span>
-      <span className={styles.heroPickName}>{stats.name}</span>
-    </button>
+      <button
+        type="button"
+        className={`${styles.heroPick} ${props.picked ? styles.heroPicked : ''} ${
+          props.shown ? styles.heroShown : ''
+        }`}
+        aria-label={`${stats.name}${props.picked ? ', in the caravan' : ''}`}
+        aria-current={props.shown || undefined}
+        data-picked={props.picked}
+        onClick={props.onShow}
+      >
+        <span className={styles.heroPickPortrait}>
+          {portrait ? <img src={portrait} alt="" /> : stats.letter}
+        </span>
+        <span className={styles.heroPickName}>{stats.name}</span>
+      </button>
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={props.picked}
+        aria-label={`${stats.name} in the caravan`}
+        disabled={!props.picked && props.full}
+        className={styles.heroTileCheck}
+        onClick={props.onToggle}
+        data-testid="hero-tile-toggle"
+      >
+        <span className={styles.heroCardCheck} aria-hidden>
+          {props.picked && '✓'}
+        </span>
+      </button>
+    </div>
   );
 }
 

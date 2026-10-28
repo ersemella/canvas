@@ -110,6 +110,26 @@ try {
   for (let i = 0; i < 3; i++) await toggleHero(i);
   check('with no hero taken, Start is disabled', await startButton.isDisabled());
   for (let i = 0; i < 3; i++) await toggleHero(i);
+  // Each tile's own checkbox takes or leaves a hero in one click, and shows it.
+  const tileChecks = page.getByTestId('hero-tile-toggle');
+  check(
+    'each hero tile has its own checkbox, those left behind dimmed with the caravan full',
+    (await tileChecks.count()) === 12 &&
+      (await tileChecks.nth(0).getAttribute('aria-checked')) === 'true' &&
+      (await tileChecks.nth(4).isDisabled())
+  );
+  await tileChecks.nth(0).click();
+  check(
+    'a tile’s checkbox leaves its hero behind and shows it',
+    (await picks.nth(0).getAttribute('data-picked')) === 'false' &&
+      (await picks.nth(0).getAttribute('aria-current')) === 'true' &&
+      !(await tileChecks.nth(4).isDisabled())
+  );
+  await tileChecks.nth(0).click();
+  check(
+    'and a second click takes it again',
+    (await picks.nth(0).getAttribute('data-picked')) === 'true'
+  );
   // A phone: no details panel, each hero a card whose portrait is its checkbox,
   // and View; one is left behind from its card, then taken again from its full-screen view.
   await page.setViewportSize({width: 390, height: 844});

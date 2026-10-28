@@ -790,16 +790,6 @@
 .heroPick:not(.heroPicked) > .heroPickPortrait {
   filter: saturate(0.6) brightness(0.8);
 }
-.heroPickCheck {
-  position: absolute;
-  top: 0;
-  right: 0;
-  padding: 0 4px;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--c-ink);
-  background: var(--c-goldLight);
-}
 .heroPickName {
   font-size: 12px;
   line-height: 1.2;
@@ -958,8 +948,36 @@
   border-color: var(--c-ink);
   background: var(--c-goldLight);
 }
-.heroCardPortrait:disabled .heroCardCheck {
+.heroCardPortrait:disabled .heroCardCheck,
+.heroTileCheck:disabled .heroCardCheck {
   opacity: 0.4;
+}
+/* A desktop's hero: its tile, and over the portrait's corner its checkbox, a little bigger to click than it looks. */
+.heroTile {
+  position: relative;
+  display: grid;
+}
+.heroTileCheck {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.heroTileCheck:disabled {
+  cursor: default;
+}
+.heroTileCheck:focus-visible {
+  outline: var(--px) solid var(--c-goldLight);
+  outline-offset: calc(-2 * var(--px));
+}
+.heroTileCheck > .heroCardCheck {
+  top: 5px;
+  right: 5px;
 }
 .heroCardButton {
   min-height: 30px;
