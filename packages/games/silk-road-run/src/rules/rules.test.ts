@@ -3050,7 +3050,7 @@ describe('previews, the AI and the run', () => {
     expect(runView(createRun(7, {test: true})).provision).toBe(false);
   });
 
-  it('the caravanserai: the provision heals the camel to full health in place of a stat', () => {
+  it('the caravanserai: the provision heals the camel 4, up to its full health, in place of a stat', () => {
     const win = (r: RunState, camelHp?: number): RunState => {
       const fight = cloneFight(r.fight);
       fight.phase = 'won';
@@ -3069,7 +3069,12 @@ describe('previews, the AI and the run', () => {
     const hurt = win(run, maxHp - 7);
 
     const healed = handleRunAction(hurt, {type: 'next', heal: true});
-    expect(camelAfter(healed)).toBe(maxHp);
+    expect(RULES.camelHeal).toBe(4);
+    expect(camelAfter(healed)).toBe(maxHp - 3);
+    // Never past its full health.
+    expect(camelAfter(handleRunAction(win(run, maxHp - 2), {type: 'next', heal: true}))).toBe(
+      maxHp
+    );
     expect(healed.provisions).toEqual([]);
     for (const u of healed.fight.units) expect(u.provisions).toBeUndefined();
     // One or the other, never both; not at full health; nothing but `true`.
@@ -3093,7 +3098,7 @@ describe('previews, the AI and the run', () => {
       });
     expect(runView(maxed).provision).toBe(true);
     expect(() => handleRunAction(maxed, {type: 'next'})).toThrow(RuleError);
-    expect(camelAfter(handleRunAction(maxed, {type: 'next', heal: true}))).toBe(maxHp);
+    expect(camelAfter(handleRunAction(maxed, {type: 'next', heal: true}))).toBe(maxHp - 3);
 
     // No heal where no provision is earned: between regions.
     expect(() =>

@@ -107,7 +107,8 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
   much it goes on with, and the start menu that its wounds stay with it.
 - **Built (2026-10-28, owner):** at a caravanserai that earns a provision
   (after a region's stages 1 and 2), the provision can **heal the camel
-  to full health in place of a stat** (`next` with `heal`; a tile beside
+  4 in place of a stat** (`RULES.camelHeal`, up to its full health;
+  full health at first, 4 since the same day; `next` with `heal`; a tile beside
   the heroes' stats, disabled at full health): one or the other, never
   both. A hurt camel earns the provision even when every hero standing
   has every stat at 10. The caravanserai between regions offers passives

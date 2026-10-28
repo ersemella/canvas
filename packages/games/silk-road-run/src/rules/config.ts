@@ -37,6 +37,11 @@ export const RULES = {
   /** The most any stat (speed, defence or power) can reach (owner, 2026-10-25). */
   statMax: 10,
   /**
+   * The health a caravanserai's provision heals the camel, taken in place of
+   * a stat, up to its full health (owner, 2026-10-28; full health before).
+   */
+  camelHeal: 4,
+  /**
    * Scorched ground's burn (owner, 2026-10-28; `scorched` in map.ts): the
    * damage a unit takes Moved onto it, or ending its turn on it.
    */

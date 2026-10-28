@@ -367,7 +367,7 @@ export type RunAction =
    * On to the next stage from the caravanserai, with the provision the
    * stage won earned, if it earned one (`STAGES[stage].provision`), and the
    * passive taken from its offer, if it made one (`STAGES[stage].passive`).
-   * `heal` takes the provision as a heal of the camel to full health, in
+   * `heal` takes the provision as a heal of the camel (RULES.camelHeal), in
    * place of a stat: one or the other.
    */
   | {type: 'next'; provision?: Provision; passive?: PassivePick; heal?: boolean};

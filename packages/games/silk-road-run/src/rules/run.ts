@@ -87,7 +87,7 @@ export interface RunView {
   stages: number;
   /**
    * Winning this stage earns a provision, assigned at the caravanserai on
-   * the way to the next, or taken as a heal of the camel to full health.
+   * the way to the next, or taken as a heal of the camel (RULES.camelHeal).
    */
   provision: boolean;
   /**
@@ -332,7 +332,7 @@ export function parseAction(raw: unknown): RunAction {
  * next is worked out; then the track runs on to the next decision, either
  * side's. Or, once a stage short of the last is won, on to the next, with
  * the provision it earned given to one of the survivors, or taken as a heal
- * of the camel to full health instead, and on leaving a region one of the
+ * of the camel (RULES.camelHeal) instead, and on leaving a region one of the
  * passives offered (`passiveOffer`) to one of them; the camel takes its
  * health on with it. Given
  * a clock (`context.now`) the AI looks as deep as it gets in
@@ -355,7 +355,7 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
         throw new RuleError(`Raise a stat or heal ${HEROES[CAMEL].name}, not both.`);
       if (!camelHurt(run.fight))
         throw new RuleError(`${HEROES[CAMEL].name} is already at full health.`);
-      camelHp = camel.maxHp;
+      camelHp = Math.min(camel.hp + RULES.camelHeal, camel.maxHp);
     } else if (provisionOwed(run)) {
       if (!action.provision)
         throw new RuleError(`Choose a hero and a stat to raise, or heal ${HEROES[CAMEL].name}.`);
