@@ -235,11 +235,15 @@ const longshot: AbilityDef = {
   name: 'Longshot',
   kind: 'attack',
   summary: () => {
-    const {first, pierce, delay: slots} = ABILITY.longshot;
+    const {first, minRange, pierce, push, delay: slots} = ABILITY.longshot;
     const shot = first
-      ? 'Shoot straight: hits the first unit in line'
+      ? `Shoot straight: hits the first unit in line${minRange > 1 ? ', not next to it' : ''}`
       : 'Shoot straight at any unit in line: nothing blocks it';
-    const more = [pierce && 'Pierces', slots > 0 && `Delays it ${slots}`].filter(Boolean);
+    const more = [
+      pierce && 'Pierces',
+      push > 0 && `Pushes it ${push}`,
+      slots > 0 && `Delays it ${slots}`,
+    ].filter(Boolean);
     return more.length ? `${shot}. ${more.join(', ')}.` : `${shot}.`;
   },
   targetsUnit: true,
