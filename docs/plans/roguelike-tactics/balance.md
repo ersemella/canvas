@@ -3868,6 +3868,89 @@ of "The Priest" (about ±2.5 points).
 **Built** (the owner, later 2026-10-28): `overheal`, `shield` 1, `lasts`,
 `cap` 3.
 
+### All twelve heroes (2026-10-28)
+
+Asked for: a balance check of all twelve heroes, the nine of "All nine
+heroes" as built today (Omen, Longshot first-in-line with Pierce and
+Delay 3, Stomp) and Byzantium's three (Cataphract, Barbarian, Priest).
+`experiments/roster-twelve.mjs`, `modWinPct`, **400 fights each** (about
+±2.5 points), seeds from 1000, production AI on both sides; each region's
+party one per role, tank, damage, support. Unfinished fights 0–1.3%, up
+to 7.8% with the Priest or the Storm Caller in Byzantium's party.
+
+Party against party (the second side's wins):
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| China | 57.5% | | |
+| Persia | 66.9% | 49.8% | |
+| **Byzantium** | **8.6%** | **9.8%** | **24.8%** |
+
+Each hero in its role's seat of the other regions' mirrors (the side with
+the swap wins; 50% is the hero's equal there):
+
+| Tank seat of | Steppe | China | Persia | Byzantium |
+|---|---:|---:|---:|---:|
+| Grappler | | 47.5% | 42.9% | 73.2% |
+| Vanguard | 54.3% | | 57.2% | 79.3% |
+| Juggernaut | 62.8% | 39.6% | | 68.6% |
+| Cataphract | 36.5% | 20.3% | 46.5% | |
+
+| Damage seat of | Steppe | China | Persia | Byzantium |
+|---|---:|---:|---:|---:|
+| Outrider | | 54.8% | 45.2% | 52.2% |
+| Duelist | 53% | | 41.6% | 52.5% |
+| Ranger | 50.5% | 45.3% | | 51.1% |
+| Barbarian | 39% | 38.8% | 25.6% | |
+
+| Support seat of | Steppe | China | Persia | Byzantium |
+|---|---:|---:|---:|---:|
+| Storm Caller | | 44.5% | 43.2% | 70% |
+| Alchemist | 60% | | 52.4% | 54.5% |
+| Magus | 50.8% | 46% | | 48.9% |
+| Priest | 50.3% | 44.5% | 50.9% | |
+
+Each hero's mean: in the nine seats of the other regions (any role), and
+its side's wins when each of the nine others takes its seat:
+
+| | In others' seats | Kept in its own |
+|---|---:|---:|
+| Grappler | 54.7% | 50.5% |
+| Outrider | 49.8% | 49.1% |
+| Storm Caller | 55% | 49.8% |
+| Vanguard | **60.3%** | **61.5%** |
+| Duelist | 50.1% | 51.5% |
+| Alchemist | 53.1% | 62.4% |
+| Juggernaut | 54.1% | 52.8% |
+| Ranger | 48.7% | 59.2% |
+| Magus | 48.9% | 56.4% |
+| Cataphract | **32.4%** | **36.9%** |
+| Barbarian | **34%** | 42.4% |
+| Priest | 47.4% | 39.1% |
+
+- **The first nine are now within the band** but for the Vanguard: the
+  Ranger (45–51% in the damage seats) and the Magus (46–51% in the
+  support seats) are no longer the outliers of "All nine heroes", their
+  reworks (Longshot first-in-line, Omen) closing 15–20 points each.
+  Persia beats the Steppe 66.9% and holds China even.
+- **The Vanguard is the strongest hero**: 54–79% in the tank seats, 60%
+  over all seats, and China's seat holds against every other tank
+  (the Grappler 47.5%, the Juggernaut 39.6%, the Cataphract 20.3%).
+- **Byzantium is far too weak, the Cataphract and the Barbarian both**:
+  its party wins 9–25%; the Cataphract 20–47% in the tank seats, any other
+  tank in its seat 69–79%; the Barbarian 26–39% in the damage seats,
+  any other in its seat about even (51–52%), so his loss is his own.
+  Speed 1 and Reave, and Charge with no walk of its own, cost each about
+  15 points.
+- **The Priest is about even** (44.5–50.9%), as measured when Blessing
+  was built; his party's 39% when others take his seat is the weak tank
+  and damage hero around him, not his.
+
+Not changed: the numbers are the owner's. What would most help, in order:
+the Cataphract and the Barbarian measured with buffs (a walk for the
+Cataphract, or Charge hitting harder; speed 2 for the Barbarian); then
+the Vanguard looked at, the one hero over the band.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
