@@ -12,15 +12,15 @@ are now the page's `localRuns` calls of the same names.
 The page opens on a start menu (2026-10-21): the game in brief, which of
 the heroes to take (one to three of the three; the camel always comes), and Start;
 `POST /runs` takes the `party`. A run is three stages, each a fight (owner, 2026-10-24;
-`STAGES` in `src/rules/config.ts`): the enemy brings the Horse Archer
-(`FIRST_ENEMY`) and two wolves, then the Horse Archer, one of the other two at
+`STAGES` in `src/rules/config.ts`): the enemy brings the Harrier
+(`FIRST_ENEMY`) and two wolves, then the Harrier, one of the other two at
 random and a wolf, then all three heroes.
 Winning a stage offers Next stage (`POST /runs/:id/next`); the surviving
 heroes go on at full health, the camel with the health it ended the
 stage with (2026-10-27, [camel.md](camel.md), 18.4), the fallen are gone for the
 run; winning the last stage wins the run. **Two regions** (2026-10-26):
 the Steppe's three stages, then China's three on the Flaming Mountains
-against fox spirits and the Swordsman first
+against fox spirits and the Oathblade first
 ([progression.md](progression.md), 19.5). Between stages the caravan
 stops at a **caravanserai** (2026-10-25): after a region's stages 1 and 2 one
 survivor takes a provision, +1 to one stat for the rest of the run
@@ -49,8 +49,8 @@ the kits.**
 
 - **Stats** are small whole numbers: health is (1 + defence) × 2, and
   every ability deals exactly its user's power
-  ([heroes-and-gear.md](heroes-and-gear.md), 9.1–9.2). Grappler speed
-  2, defence 3, power 1; Horse Archer 3, 1, 2; Storm Caller
+  ([heroes-and-gear.md](heroes-and-gear.md), 9.1–9.2). Bonebreaker speed
+  2, defence 3, power 1; Harrier 3, 1, 2; Storm Caller
   2, 2, 2 (power 2 since 2026-10-27).
 - **The track:** after any turn a unit's card goes 60 ÷ (speed + 5) slots
   on, rounded, Temee's included, so the faster act more often. A fight starts from
@@ -67,27 +67,27 @@ the kits.**
   Storm Caller's next turn, Immobilizing
   whoever is in it or enters it; Grapple (melee; reach 2, stepping in, until
   the owner's call of 2026-10-23), Stunning
-  its target until the Grappler takes damage, is Stunned or ends a turn
-  no longer next to it, 1 more damage at each of the Grappler's turns
+  its target until the Bonebreaker takes damage, is Stunned or ends a turn
+  no longer next to it, 1 more damage at each of the Bonebreaker's turns
   meanwhile, never on the unit it already grapples, and while it holds one,
   throwing it (part of Grapple since 2026-10-24, owner), Moving it to a
-  space next to the Grappler, or swapping places with it, so the grapple
+  space next to the Bonebreaker, or swapping places with it, so the grapple
   holds; Skirmish
   (owner, 2026-10-23, in place of Volley), a step of one space and then
-  Snap Shot's shot from there, charged: the Horse Archer's card is pushed half
+  Snap Shot's shot from there, charged: the Harrier's card is pushed half
   its action cost on (4 slots), greyed; when it comes back the arrow flies
   down the lane it was aimed along, hitting the first unit in it then,
-  with no turn for the Horse Archer, and the card goes its action cost on;
+  with no turn for the Harrier, and the card goes its action cost on;
   Sunlight (owner, 2026-10-23), Empower 2 on a unit within 3, melting hail
   there. **Skirmish and Sunlight are upgrades** (owner, 2026-10-24), out
-  of the starting kits: the Horse Archer starts with Snap Shot, the Storm Caller
+  of the starting kits: the Harrier starts with Snap Shot, the Storm Caller
   with Hail, each earning the other from a region's upgrade offer
   ([progression.md](progression.md), 19.3), not built yet. **Also
   upgrades** (owner, 2026-10-24, as measured in
   [balance.md](balance.md#second-abilities-measured-2026-10-24)): Shove
-  (melee Push 2) and Haul (Pull 2) for the Grappler, Volley (a space within
+  (melee Push 2) and Haul (Pull 2) for the Bonebreaker, Volley (a space within
   3, charged) and Feigned Retreat (Snap Shot, then a walk of up to 2) for the
-  Horse Archer, Gale (each unit next to a space hit and Pushed 1) for the Storm
+  Harrier, Gale (each unit next to a space hit and Pushed 1) for the Storm
   Caller.
 - **Deleted with their code:** the Vanguard's kit, ultimates and
   charged abilities, Leap, Shove, quicksand and the sandstorm,

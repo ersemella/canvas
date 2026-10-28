@@ -9,9 +9,9 @@ import type {Tile} from './map';
 export type Side = 'player' | 'enemy';
 /**
  * The three prototype heroes, the Vanguard and the Alchemist
- * (owner, 2026-10-25), the Swordsman (owner, 2026-10-26), the Magus
- * (owner, 2026-10-27), the Elephant Rider (`mahout`, owner, 2026-10-27), the
- * Archer (owner, 2026-10-27), the
+ * (owner, 2026-10-25), the Oathblade (owner, 2026-10-26), the Magus
+ * (owner, 2026-10-27), the Juggernaut (`mahout`, owner, 2026-10-27), the
+ * Deadeye (owner, 2026-10-27), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, and the enemy NPCs, the wolf and the fox.
  */
@@ -53,7 +53,7 @@ export type AbilityId =
  * The passives (progression.md, 19.8; owner, 2026-10-24): hero-agnostic
  * rules a unit carries, from an upgrade offer's passive slot (19.3), or
  * from the start (`HeroStats.passives`: the Magus's Steady Gait, the
- * Elephant Rider's Unstoppable); the test
+ * Juggernaut's Unstoppable); the test
  * stage gives them too (`Loadout.passives`).
  */
 export type PassiveId =
@@ -257,8 +257,8 @@ export interface HailEffect {
 }
 
 /**
- * A charged Skirmish shot in the air: its Horse Archer's unit id, and the hex
- * direction the arrow flies from the Horse Archer when the charging card comes
+ * A charged Skirmish shot in the air: its Harrier's unit id, and the hex
+ * direction the arrow flies from the Harrier when the charging card comes
  * back, hitting the first unit in that lane then (`shotLane` in board.ts).
  */
 export interface ShotInAir {
@@ -268,7 +268,7 @@ export interface ShotInAir {
   /** A Volley's space: whoever stands there when it lands is hit. */
   hex?: Hex;
   /**
-   * The Horse Archer's Empower when it drew: the arrow carries it, though the
+   * The Harrier's Empower when it drew: the arrow carries it, though the
    * Empower itself ends with that turn. Absent when it had none.
    */
   empower?: number;
@@ -319,7 +319,7 @@ export interface FightState {
   effects: HailEffect[];
   /**
    * Skirmish shots in the air: each flies down its lane when its
-   * Horse Archer's charging card comes back.
+   * Harrier's charging card comes back.
    */
   shots?: ShotInAir[];
   log: LogEntry[];

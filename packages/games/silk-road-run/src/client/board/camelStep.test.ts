@@ -4,7 +4,7 @@ import {STEPPE} from '../../rules/map';
 import type {FightState} from '../../rules/types';
 import {camelNextStep} from './camelStep';
 
-/** A fight with Temee at its start and the Grappler where `bokh` says. */
+/** A fight with Temee at its start and the Bonebreaker where `bokh` says. */
 function setup(bokh: {q: number; r: number}): FightState {
   const s = createFight(0);
   s.tiles = {...STEPPE.tiles};

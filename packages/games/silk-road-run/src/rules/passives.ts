@@ -148,7 +148,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
 
 /**
  * Passives a hero starts with that the caravanserai doesn't offer:
- * Unstoppable, the Elephant Rider's (owner, 2026-10-27), isn't in 19.8's
+ * Unstoppable, the Juggernaut's (owner, 2026-10-27), isn't in 19.8's
  * pool.
  */
 export const NOT_OFFERED: readonly PassiveId[] = ['unstoppable'];
