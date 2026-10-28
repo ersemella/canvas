@@ -161,6 +161,9 @@ experiment files use the new names, the notes above the old.
 (`ABILITY.conjunction.mode: 'omen'`, `.rider`; since 2026-10-28 the ability is
 Omen, `ABILITY.omen`, its mode `single`), in the support seats and its
 skill span against the bracket.
+`longshot-push.mjs` (2026-10-28) measures Longshot as built that day (flying
+over the spaces next to the Ranger) with Push 0, 1 and 2
+(`ABILITY.longshot.push`).
 
 ## Ability and stat ablation
 

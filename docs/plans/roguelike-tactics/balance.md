@@ -3683,6 +3683,31 @@ Its turns in its Steppe seat: 42.5% Trample, 46.7% walks, 10.8% Hold.
 (`mode: 'stomp'`, `step: 1` by default). `trample-stomp.mjs` sets the mode
 and step of each row, so it still reproduces.
 
+### Longshot's Push, flying over the spaces next to the Ranger (2026-10-28)
+
+Asked for (the owner): is Longshot weak without its Push, now that it
+flies over the spaces next to the Ranger (`minRange` 2, a unit or yurt
+there passed over) and hits the first unit beyond? `experiments/longshot-push.mjs`,
+the seats, seeds and 800 fights of "Longshot's effect" (about ±1.8
+points); `ABILITY.longshot.push` 0, 1 (as built) and 2, no Delay.
+
+| Push | Steppe | China |
+|---|---:|---:|
+| *Stopped by the next space, no effect ("Longshot's effect")* | *47.6%* | *42.1%* |
+| *Stopped by the next space, Push 1 (the same)* | *50.3%* | *45.6%* |
+| None | 49.6% | 46.6% |
+| **1 (as built)** | **55.2%** | **48.9%** |
+| 2 | 54.5% | 47.9% |
+
+- **Not weak without the Push**: no Push is even on the Steppe and 3
+  under in China, both inside the target band. Flying over the next
+  space is worth 2–4 points on its own (the front line no longer
+  shields the enemy behind it), about what the Push was worth before.
+- **With the Push it now overshoots on the Steppe** (55.2%, 5 over) and
+  is about even in China; Push 2 changes nothing over Push 1.
+
+Not changed: the owner's call.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
