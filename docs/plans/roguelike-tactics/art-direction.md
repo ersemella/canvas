@@ -107,7 +107,11 @@ tuning. This file has no combat-design section number.
   block is, in one 24-colour palette for all four frames (an average
   blurred the roof and the poplars), with a dark outline. The frames were
   drawn apart, so their rocks and reeds differ; all but the pennant and
-  the water come from one frame, so only those move, at `FLAME_FPS`. It
+  the water come from one frame, so only those move, at `FLAME_FPS`.
+  Blended into the map (owner, 2026-10-28): its colours taken 15% of the
+  way to the Gobi's sand at the top and 35% at the island's foot, the
+  near-blacks lifted, and the outline fading from ink to the hex borders'
+  colour (`sandDark`) down the island, so it sits in the ground. It
   rises over the space behind, as the tower did. Its roof is only a few
   pixels at this size; the owner kept it so (2026-10-28) over a sprite
   composed by hand from the beacon tower's own pixels on an island, which

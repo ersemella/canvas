@@ -7,7 +7,10 @@ in its space, each art pixel the colour most of its block is in one
 24-colour palette for all four (an average of the block blurred the roof
 and the poplars). The frames were drawn apart, so their rocks and reeds
 differ: all but the pennant and the water come from one frame, so only
-those move. Then gaps of one pixel are filled and the shape outlined.
+those move. Then gaps of one pixel are filled and the shape outlined, and
+it is blended into the board: its colours taken a little towards the
+Gobi's sand, more at the island's foot, the darkest lifted, and the
+outline fading from ink to the hex borders' colour down the island.
 
   python3 scripts/oasis-sheet.py art.png oasis.png
 
@@ -23,6 +26,15 @@ WIDTH = 36
 COLOURS = 24
 BASE = 1
 INK = np.array([52, 28, 18, 255], np.uint8)
+# Blending into the board (owner, 2026-10-28): the Gobi's sand and the hex
+# borders' colour (palette.ts, `sand`, `sandDark`).
+SAND = np.array([211, 177, 134], float)
+SAND_DARK = np.array([140, 115, 80], float)
+# How far each colour is taken towards the sand: a little at the top, more
+# at the island's foot, so it sits in the ground while the tower reads.
+PULL_TOP, PULL_FOOT = 0.15, 0.35
+# The darkest colours lifted to at least this, as near-black stood out.
+FLOOR = 44
 
 
 def cut(src):
@@ -100,8 +112,26 @@ def finish(frames):
         sil = o[..., 3] > 0
         ring = ndimage.binary_dilation(sil, np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])) & ~sil
         o[ring] = INK
-        out.append(o)
+        out.append(blend(o, ring))
     return np.concatenate(out, axis=1)
+
+
+def blend(o, ring):
+    """Colours taken towards the sand, more at the foot; the outline ink at the top, the hex borders' colour lower down."""
+    h = o.shape[0]
+    t = (np.arange(h) / (h - 1))[:, None, None]
+    pull = PULL_TOP + (PULL_FOOT - PULL_TOP) * t**2
+    rgb = o[..., :3].astype(float)
+    rgb = np.maximum(rgb, FLOOR)
+    rgb = rgb * (1 - pull) + SAND * pull
+    # The outline: ink above the island, fading to the borders' colour at its foot.
+    fade = np.clip((t - 0.55) / 0.45, 0, 1)
+    line = INK[:3].astype(float) * (1 - fade) + SAND_DARK * fade
+    line = np.broadcast_to(line, rgb.shape)
+    rgb[ring] = line[ring]
+    out = o.copy()
+    out[..., :3] = np.clip(np.round(rgb), 0, 255).astype(np.uint8)
+    return out
 
 
 Image.fromarray(finish(cut(sys.argv[1])), 'RGBA').save(sys.argv[2])

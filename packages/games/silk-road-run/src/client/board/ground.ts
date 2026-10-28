@@ -137,7 +137,9 @@ const FLAMING_MOUNTAINS = [burningRidgeImage];
  * beacon tower by a spring pool with poplars, reeds and rocks, in 4
  * frames, cut to the sprites' grid (`scripts/oasis-sheet.py`, 36 × 49 a
  * frame, so its island stays in its space): only the pennant flies and
- * the water glints, the rest one frame's. It rises over the space behind,
+ * the water glints, the rest one frame's; blended into the sand, more at
+ * its island's foot, its outline fading to the hex borders' colour
+ * there. It rises over the space behind,
  * as the tower did, and blocks as any obstacle. (The same day, before it:
  * two date palms over a pool drawn in code, then the Flaming Mountains'
  * tower composed by hand on an island.) The Flaming Mountains (owner,
