@@ -703,64 +703,84 @@
   background: var(--c-dusk1);
 }
 
-/* The start menu: what the game is, then the heroes to take. */
+/*
+ * The start menu: what the game is, then the heroes to take. The roster is a
+ * grid of portraits, a column a region, beside (on a phone, over) the hero
+ * shown: its story, its stats and the button taking it.
+ */
+.heroSelect {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+  align-items: start;
+  gap: 12px;
+}
 .heroPicks {
+  display: grid;
+  grid-template-rows: repeat(3, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+/* A hero, a tile: a flat dusk tile when left behind, raised lapis when taken. */
+.heroPick {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-/*
- * A hero, a row: a flat dusk tile when left behind, raised lapis when taken.
- * The portrait sits left of the name and story, the meters stacked at the
- * right; on a phone the story and meters go full width under the name.
- */
-.heroPick {
-  display: grid;
-  grid-template-columns: 64px 1fr auto;
-  grid-template-areas:
-    'portrait head stats'
-    'portrait blurb stats';
-  align-items: start;
-  gap: 4px 12px;
-  padding: 10px;
-  text-align: left;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px 4px 6px;
   color: var(--c-ivory);
-  font-size: 14px;
+  font: inherit;
   cursor: pointer;
   border: var(--px) solid var(--c-ink);
   background: var(--c-dusk0);
-  opacity: 0.75;
   clip-path: var(--notch);
 }
-.heroPick:hover:not(:disabled) {
-  opacity: 1;
-}
-/* The party is full: a hero left behind can't be taken until one is left out. */
-.heroPick:disabled {
-  cursor: default;
-  opacity: 0.45;
+.heroPick:hover {
+  background: var(--c-dusk2);
 }
 .heroPick:focus-visible {
   outline: var(--px) solid var(--c-goldLight);
   outline-offset: calc(-2 * var(--px));
 }
-.heroPicked {
-  opacity: 1;
+.heroPick.heroPicked {
   background: var(--c-lapisDark);
   box-shadow:
     inset var(--px) var(--px) 0 var(--c-lapis),
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-ink);
 }
-.heroPickHead {
-  grid-area: head;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 10px;
+/* The hero shown beside the grid. */
+.heroPick.heroShown {
+  border-color: var(--c-goldLight);
+  box-shadow: inset 0 0 0 var(--px) var(--c-goldLight);
 }
-/* Twice its 32px art, on the track card's ground. */
+.heroPick > .heroPickPortrait {
+  position: relative;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  box-sizing: border-box;
+}
+.heroPick:not(.heroPicked) > .heroPickPortrait {
+  filter: saturate(0.6) brightness(0.8);
+}
+.heroPickCheck {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--c-ink);
+  background: var(--c-goldLight);
+}
+.heroPickName {
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+/* Twice its 32px art, on the track card's ground; facing left, as the party does in a fight. */
 .heroPickPortrait {
-  grid-area: portrait;
   display: grid;
   place-items: center;
   width: 64px;
@@ -774,24 +794,49 @@
   width: 100%;
   height: 100%;
   image-rendering: pixelated;
+  transform: scaleX(-1);
 }
-.heroPickMark {
-  font-size: 12px;
-  color: var(--c-lapisLight);
+/* The hero shown: portrait and name over the meters, the story, its button. */
+.heroDetails {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 12px;
+  padding: 12px;
+  font-size: 14px;
+  background: var(--c-dusk0);
+  clip-path: var(--notch);
 }
-.heroPick:not(.heroPicked) .heroPickMark {
-  color: var(--c-sandDark);
+.heroPickPortrait.heroDetailsPortrait {
+  width: 96px;
+  height: 96px;
+}
+.heroDetailsHead {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+.heroDetailsName {
+  font-size: 18px;
+  font-weight: bold;
 }
 .heroPickBlurb {
-  grid-area: blurb;
+  grid-column: 1 / -1;
   font-size: 13px;
 }
+.heroDetailsToggle.heroDetailsToggle {
+  grid-column: 1 / -1;
+}
+/* Mantine's hover would turn it its own green. */
+.heroDetailsToggle.heroDetailsToggle:hover:not(:disabled) {
+  background: var(--c-lapisDark);
+}
 .heroPickStats {
-  grid-area: stats;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 112px;
+  max-width: 140px;
   font-size: 13px;
 }
 .heroPickStats > div {
@@ -800,29 +845,14 @@
   align-items: center;
   gap: 6px;
 }
-/* A phone: the portrait beside the name only, the meters in a line under the story. */
-@media (max-width: 560px) {
-  .heroPick {
-    grid-template-columns: 64px 1fr;
-    grid-template-areas:
-      'portrait head'
-      'blurb blurb'
-      'stats stats';
-    align-items: center;
-    gap: 8px 10px;
+/* A phone: the hero shown under the grid, its portrait smaller. */
+@media (max-width: 640px) {
+  .heroSelect {
+    grid-template-columns: minmax(0, 1fr);
   }
-  .heroPickHead {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .heroPickStats {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 4px 16px;
-    min-width: 0;
-  }
-  .heroPickStats > div {
-    justify-content: flex-start;
+  .heroPickPortrait.heroDetailsPortrait {
+    width: 72px;
+    height: 72px;
   }
 }
 /* A stat's band: three pips, gold up to it, sunken dusk after. */
@@ -948,6 +978,7 @@
   width: 100%;
   height: 100%;
   image-rendering: pixelated;
+  transform: scaleX(-1);
 }
 /* A phone: the stats under the portrait and name, full width; the passives stacked. */
 @media (max-width: 560px) {

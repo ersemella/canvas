@@ -79,6 +79,8 @@ export function StartMenu(props: {
   onTest: () => void;
 }) {
   const [party, setParty] = useState<HeroId[]>(savedParty);
+  // The hero whose story and stats show: the party's first at first.
+  const [shown, setShown] = useState<HeroId>(() => party[0] ?? ROSTER[0]!);
   const toggle = (hero: HeroId) =>
     setParty((p) =>
       !p.includes(hero) && p.length >= MAX_PARTY
@@ -124,16 +126,24 @@ export function StartMenu(props: {
                 {party.length} of {MAX_PARTY}
               </Text>
             </Text>
-            <div className={styles.heroPicks} data-testid="hero-picks">
-              {ROSTER.map((hero) => (
-                <HeroPick
-                  key={hero}
-                  hero={hero}
-                  picked={party.includes(hero)}
-                  full={party.length >= MAX_PARTY}
-                  onToggle={() => toggle(hero)}
-                />
-              ))}
+            <div className={styles.heroSelect}>
+              <div className={styles.heroPicks} data-testid="hero-picks">
+                {ROSTER.map((hero) => (
+                  <HeroTile
+                    key={hero}
+                    hero={hero}
+                    picked={party.includes(hero)}
+                    shown={hero === shown}
+                    onShow={() => setShown(hero)}
+                  />
+                ))}
+              </div>
+              <HeroDetails
+                hero={shown}
+                picked={party.includes(shown)}
+                full={party.length >= MAX_PARTY}
+                onToggle={() => toggle(shown)}
+              />
             </div>
           </Stack>
 
@@ -174,44 +184,71 @@ export function StartMenu(props: {
   );
 }
 
-/** One hero on the start menu, a row: portrait, story and stat meters; tap to take or leave it. */
-function HeroPick(props: {hero: HeroId; picked: boolean; full: boolean; onToggle: () => void}) {
+/**
+ * One hero on the start menu, a tile: its portrait, facing left as the party
+ * does in a fight, over its name; a tap shows its story and stats. A hero in
+ * the party is raised lapis with a check; the one shown is outlined gold.
+ */
+function HeroTile(props: {hero: HeroId; picked: boolean; shown: boolean; onShow: () => void}) {
   const stats = HEROES[props.hero];
-  const lore = LORE[props.hero];
   const portrait = HERO_PORTRAIT[props.hero]?.src;
   return (
     <button
       type="button"
-      className={`${styles.heroPick} ${props.picked ? styles.heroPicked : ''}`}
-      aria-pressed={props.picked}
-      disabled={!props.picked && props.full}
-      onClick={props.onToggle}
+      className={`${styles.heroPick} ${props.picked ? styles.heroPicked : ''} ${
+        props.shown ? styles.heroShown : ''
+      }`}
+      aria-label={`${stats.name}${props.picked ? ', in the party' : ''}`}
+      aria-current={props.shown || undefined}
+      data-picked={props.picked}
+      onClick={props.onShow}
     >
-      <div className={styles.heroPickPortrait}>
+      <span className={styles.heroPickPortrait}>
+        {portrait ? <img src={portrait} alt="" /> : stats.letter}
+        {props.picked && <span className={styles.heroPickCheck}>✓</span>}
+      </span>
+      <span className={styles.heroPickName}>{stats.name}</span>
+    </button>
+  );
+}
+
+/** The hero shown: portrait, story and stat meters, and the button taking it or leaving it behind. */
+function HeroDetails(props: {hero: HeroId; picked: boolean; full: boolean; onToggle: () => void}) {
+  const stats = HEROES[props.hero];
+  const lore = LORE[props.hero];
+  const portrait = HERO_PORTRAIT[props.hero]?.src;
+  return (
+    <div className={styles.heroDetails} data-testid="hero-details">
+      <div className={`${styles.heroPickPortrait} ${styles.heroDetailsPortrait}`}>
         {portrait ? <img src={portrait} alt="" /> : stats.letter}
       </div>
-      <div className={styles.heroPickHead}>
-        <span className={styles.display}>{stats.name}</span>
-        <span className={styles.heroPickMark}>
-          {props.picked ? '✓ In the party' : props.full ? 'Party full' : 'Left behind'}
-        </span>
+      <div className={styles.heroDetailsHead}>
+        <span className={`${styles.display} ${styles.heroDetailsName}`}>{stats.name}</span>
+        <div className={styles.heroPickStats}>
+          {METERS.map(({label, value}) => {
+            const filled = value(stats);
+            return (
+              <div key={label} role="img" aria-label={`${label}: ${filled}`}>
+                <span>{label}</span>
+                <span className={styles.meter}>
+                  {[1, 2, 3].map((pip) => (
+                    <i key={pip} className={pip <= filled ? styles.meterOn : undefined} />
+                  ))}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
       {lore && <div className={styles.heroPickBlurb}>{lore}</div>}
-      <div className={styles.heroPickStats}>
-        {METERS.map(({label, value}) => {
-          const filled = value(stats);
-          return (
-            <div key={label} role="img" aria-label={`${label}: ${filled}`}>
-              <span>{label}</span>
-              <span className={styles.meter}>
-                {[1, 2, 3].map((pip) => (
-                  <i key={pip} className={pip <= filled ? styles.meterOn : undefined} />
-                ))}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </button>
+      <Button
+        className={`${styles.tile} ${styles.heroDetailsToggle}`}
+        onClick={props.onToggle}
+        disabled={!props.picked && props.full}
+        data-testid="hero-toggle"
+      >
+        {props.picked ? 'Leave behind' : props.full ? 'Party full' : 'Take into the party'}
+      </Button>
+    </div>
   );
 }

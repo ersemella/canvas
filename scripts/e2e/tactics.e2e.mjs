@@ -89,23 +89,41 @@ try {
   check(
     'the three prototype heroes start in the party',
     JSON.stringify(
-      await picks.evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-pressed')))
+      await picks.evaluateAll((bs) => bs.map((b) => b.getAttribute('data-picked')))
     ) === JSON.stringify(['true', 'true', 'true', ...Array(9).fill('false')])
   );
   await shot(page, 'start-menu');
   const startButton = page.getByRole('button', {name: 'Start', exact: true});
-  for (let i = 0; i < 3; i++) await picks.nth(i).click();
+  const heroToggle = page.getByTestId('hero-toggle');
+  /** Taps a hero's portrait, then the button taking it or leaving it behind. */
+  const toggleHero = async (i) => {
+    await picks.nth(i).click();
+    await heroToggle.click();
+  };
+  await picks.nth(4).click();
+  check(
+    'tapping a hero shows it without taking it, and the party full, it can’t be taken',
+    (await picks.nth(4).getAttribute('data-picked')) === 'false' &&
+      (await heroToggle.isDisabled()) &&
+      (await heroToggle.textContent()) === 'Party full'
+  );
+  for (let i = 0; i < 3; i++) await toggleHero(i);
   check('with no hero taken, Start is disabled', await startButton.isDisabled());
-  for (let i = 0; i < 3; i++) await picks.nth(i).click();
-  // A phone: the heroes stack, with no sideways scroll; one is left behind.
+  for (let i = 0; i < 3; i++) await toggleHero(i);
+  // A phone: the grid over the hero shown, with no sideways scroll; one is left behind.
   await page.setViewportSize({width: 390, height: 844});
-  await picks.nth(1).click();
+  await toggleHero(1);
   check(
     'phone: the start menu doesn’t scroll sideways',
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
   );
+  const lastPick = await picks.nth(11).boundingBox();
+  check(
+    'phone: every hero shows on the first screen',
+    lastPick !== null && lastPick.y + lastPick.height <= 844
+  );
   await shot(page, 'start-menu-phone');
-  await picks.nth(1).click();
+  await toggleHero(1);
   await page.setViewportSize({width: 1300, height: 900});
   await startButton.click();
   await page
