@@ -641,6 +641,133 @@ colours, warm skin tones as in the references. Flat magenta (#FF00FF)
 background. One portrait only, no text, no border.
 ```
 
+## Prompts for the Ox King and the Fan Lady (2026-10-28)
+
+China's boss (enemies.md, 11.3b), two lettered discs (`oxKing` and
+`fanLady` in `HERO_COLOR`) until their art comes. The **Ox King** is a
+boss and takes the giant's frame: a **44 × 44** board sprite facing right,
+rising above its hex, split into the 2-frame idle by
+`scripts/idle-sheet.py` (88 × 44 in all). The **Fan Lady** is the heroes'
+size: a **32 × 32** board sprite facing right (64 × 32 with its idle). Each
+has a **32 × 32** track portrait (`oxKing.png`, `oxKing-portrait.png`,
+`fanLady.png` and `fanLady-portrait.png` in `src/client/sprites/`). The
+two should read as a pair: the same black and gold trim on both.
+
+- **Attach the references**, scaled up 8× with nearest-neighbour:
+  `giant.png` (the 44 × 44 boss frame) and `modao.png` (China's armour)
+  for the Ox King's sprite; `alchemist.png` and `youxia.png` (China's
+  figures on foot, the 32 × 32 frame) for the Fan Lady's; `giant-portrait.png`,
+  `modao-portrait.png` and `alchemist-portrait.png` for both portraits.
+- One asset per image, on flat magenta (#FF00FF), as the others.
+- No red: the game keeps it for the enemy's rug, so the Ox King's armour
+  and the Fan Lady's robes are gold, black, bronze, jade and plum.
+- If the fan is lost at size: "make the fan much bigger, a broad green
+  leaf shape as wide as her body, the brightest green on the sprite".
+- If the Ox King reads as a man in a helmet: "make the head a bull's head,
+  with a broad muzzle and big curved horns, not a helmet".
+
+### 1. The Ox King's board sprite
+
+```
+Pixel art sprite of a single creature for a hex-grid tactics game, in the
+exact style, viewpoint and dark outline of the attached sprites.
+
+Subject: a mighty demon king with the head of a bull, from Chinese myth.
+A huge bull's head with a broad dark muzzle, flaring nostrils with a brass
+nose ring, small fierce eyes and two great curved horns sweeping forward
+and up. A massive muscular body standing upright on two legs, dark
+brown-black hide. He wears ornate Chinese warlord armour: gilded scale
+armour over the chest and belly, round gold shoulder guards shaped like
+beast faces, a broad belt with a gold buckle, armoured skirt panels and
+heavy boots, a short black cape. In both hands a long iron staff held
+low across the body, ready to charge. Head lowered, horns forward, a
+charging stance.
+
+Framing: full body, facing right, three-quarter view from slightly above,
+as the attached sprites. The figure fills a 44 x 44 pixel frame with about
+2 pixels free on each side, clearly bigger and bulkier than a human hero,
+the horns near the top edge.
+
+Style: 44 x 44 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 14 colours. Dark hide, gold and bronze
+armour, black cloth, iron grey; no red, which the game keeps for the
+enemy's rug, and no light blue, kept for targeting. A small soft grey oval
+shadow under the feet. Flat magenta (#FF00FF) background. One sprite
+only, no text, no frame, no extra poses.
+```
+
+### 2. The Ox King's track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same bull-headed demon king: a huge bull's head facing
+right, a broad dark muzzle with a brass nose ring, small fierce eyes
+glaring, two great curved horns sweeping forward and up, dark
+brown-black hide; gilded armour with a gold beast-face shoulder guard at
+the shoulders.
+
+Framing: head and shoulders, facing right in three-quarter view, the head
+filling most of the frame, the horns touching the top edge, cropped at
+the shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours. No red, no light blue. Flat magenta (#FF00FF) background. One
+portrait only, no text, no border.
+```
+
+### 3. The Fan Lady's board sprite
+
+```
+Pixel art sprite of a single character for a hex-grid tactics game, in
+the exact style, viewpoint and dark outline of the attached sprites.
+
+Subject: a proud demon princess from Chinese myth, wife of the bull demon
+king. A tall slender woman in flowing Tang-dynasty court robes of plum
+purple and black with gold trim, long wide sleeves, a gold sash; black
+hair piled high in an elaborate bun held with gold hairpins. In her right
+hand an enormous magic fan made from a single broad green banana leaf on
+a short handle, as big as her body, swept back over her shoulder ready to
+blow a great gust. Her left hand raised, a small orange flame flickering
+above the palm. Haughty, poised stance.
+
+Framing: full body, facing right, three-quarter view from slightly above,
+as the attached sprites. The figure fills a 32 x 32 pixel frame with about
+1 pixel free on each side, the fan reaching near the top edge.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 14 colours. Plum, black and gold robes, a
+bright leaf-green fan, a touch of orange in the flame; no red, which the
+game keeps for the enemy's rug, and no light blue, kept for targeting. A
+small soft grey oval shadow under the feet. Flat magenta (#FF00FF)
+background. One sprite only, no text, no frame, no extra poses.
+```
+
+### 4. The Fan Lady's track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same demon princess: a proud, beautiful face facing right,
+sharp dark eyes, pale skin, black hair piled high in a bun with gold
+hairpins; plum and black robes with gold trim at the shoulders; the edge
+of the great green banana-leaf fan rising behind one shoulder.
+
+Framing: head and shoulders, facing right in three-quarter view, the face
+filling most of the frame, the hair touching the top edge, cropped at the
+shoulders, as the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours. No red, no light blue. Flat magenta (#FF00FF) background. One
+portrait only, no text, no border.
+```
+
 ## Palette (Proposed)
 
 - **One fixed palette** of about **24–32 colours** across every culture.
