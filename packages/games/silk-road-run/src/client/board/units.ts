@@ -39,6 +39,8 @@ import magusPortrait from '../sprites/magus-portrait.png';
 import magusSprite from '../sprites/magus.png';
 import mahoutPortrait from '../sprites/mahout-portrait.png';
 import mahoutSprite from '../sprites/mahout.png';
+import varangianPortrait from '../sprites/varangian-portrait.png';
+import varangianSprite from '../sprites/varangian.png';
 import youxiaPortrait from '../sprites/youxia-portrait.png';
 import youxiaSprite from '../sprites/youxia.png';
 import wolfPortrait from '../sprites/wolf-portrait.png';
@@ -76,6 +78,9 @@ const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // From the owner's AI-assisted art (2026-10-27): shrunk to 32×32, the bow
   // traced back in from the art, the face redrawn by hand.
   archer: archerSprite,
+  // From the owner's AI-assisted art (2026-10-28): shrunk to 32×32, the eye
+  // put back by hand.
+  varangian: varangianSprite,
   camel: camelSprite,
   wolf: wolfSprite,
   // From the owner's AI-assisted art (2026-10-25): cut out, shrunk to the
@@ -97,6 +102,7 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   // Its turban recoloured saffron (owner, 2026-10-27), apart from the Magus's.
   mahout: {src: mahoutPortrait, faceX: 24},
   archer: {src: archerPortrait, faceX: 18},
+  varangian: {src: varangianPortrait, faceX: 16},
   camel: {src: camelPortrait, faceX: 19},
   wolf: {src: wolfPortrait, faceX: 22},
   fox: {src: foxPortrait, faceX: 22},
