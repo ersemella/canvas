@@ -3679,7 +3679,9 @@ Its turns in its Steppe seat: 42.5% Trample, 46.7% walks, 10.8% Hold.
 - Unfinished fights 0.1–2.6%, as the others'. A Juggernaut felled by hail
   on its step doesn't stomp.
 
-Not built: the owner's call (`step: 0` by default).
+**Built since** (the owner, 2026-10-28): the step, then the stomp
+(`mode: 'stomp'`, `step: 1` by default). `trample-stomp.mjs` sets the mode
+and step of each row, so it still reproduces.
 
 ## Principles for re-tuning
 

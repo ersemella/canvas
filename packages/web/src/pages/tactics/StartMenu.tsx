@@ -26,7 +26,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   youxia:
     'A wandering knight-errant, sworn to keep their word and avenge wrongs. The Duelist travels light with a straight sword, and every stroke that lands quickens the next.',
   mahout:
-    'A driver of war elephants, perched behind the ears of a beast no one can shift. The Juggernaut tramples through whatever stands in the way, driving a whole line of foes back before it, and neither a wrestler’s grip nor the hail can hold it.',
+    'A driver of war elephants, perched behind the ears of a beast no one can shift. The Juggernaut stamps down among its foes, battering everyone around it and driving them back, and neither a wrestler’s grip nor the hail can hold it.',
   archer:
     'A foot archer of the royal army, whose heavy arrows punch through armour. The Ranger hits harder than anyone, and the first unit in its line staggers, losing time, but it is frail and must be kept out of reach.',
   magus:
