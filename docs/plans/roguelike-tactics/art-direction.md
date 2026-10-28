@@ -97,21 +97,24 @@ tuning. This file has no combat-design section number.
   day. **The Gobi is China's map again** (owner, 2026-10-28), renamed the
   Gobi Desert, in place of the Flaming Mountains: the same sand, no
   mountains and two or three obstacles (owner, 2026-10-28; four or five before), which are now **oases** in place
-  of the ruins, the beacon tower redrawn as one on its grid
-  (`tiles/oasis.png`, 38 × 46 a frame, 4 frames at `FLAME_FPS`, drawn in
-  code): a pool in a damp sand rim, 26 wide so it stays in its space,
-  ringed with reeds, under two date palms, the near one taller and
-  leaning left, dates under their crowns, all ink-outlined; the fronds
-  sway a pixel, the reeds' tips and ripples shift and a glint crosses the
-  water. The palms rise over the space behind, as the tower did. The
-  page calls it Oasis, blocking as any obstacle, and the open ground
-  Sand.
-  To be replaced (owner, 2026-10-28) by the owner's art (AI-assisted)
-  combining the oasis with the Flaming Mountains' beacon tower: a Han
-  beacon tower standing on the bank of a small spring pool, poplars or
-  tamarisk and reeds round it, as at Dunhuang's oases; asked for at 16×
-  the sprite grid (608 × 736) in a 38 × 46 frame, so it can be cut to
-  the grid and to the tower's palette as the tower was. **The Flaming Mountains**
+  of the ruins, combined with the Flaming Mountains' beacon tower (owner,
+  2026-10-28): from the owner's art (AI-assisted, from the prompt below),
+  a beacon tower on the bank of a spring pool with poplars, reeds and
+  rocks round it, as at Dunhuang's oases. Shrunk whole to the grid, its
+  roof became a blob and its poplars vanished, so it is drawn on the grid
+  after it (`tiles/oasis.png`, 46 × 53 a frame, `scripts/oasis-sheet.py`):
+  the beacon tower's own pixels, its body narrowed to 17–19 wide and
+  shortened to 25 rows, right of the middle on a sandy island 32 wide so
+  it stays in its space, an ink-outlined spring pool in front, rocks and
+  reed tufts round it and two poplars on its left, lit on their left.
+  In 4 frames at `FLAME_FPS` the pennant flies, as the tower's, and a
+  glint crosses the water. It rises over the space behind, as the tower
+  did. The page calls it Oasis, blocking as any obstacle, and the open
+  ground Sand. Two date palms over a pool, drawn in code, stood there for
+  a few hours first. The prompt: a pixel-art Han beacon tower (banded
+  rammed earth, a grey tiled pavilion roof with upswept corners, red
+  posts and pennant) on the bank of a small spring pool with poplars or
+  tamarisk and reeds, a transparent background, 608 × 736. **The Flaming Mountains**
   (`flaming`, owner, 2026-10-26) were the China region's map until then,
   kept for saved runs and the test stage: the red
   sandstone ridges near Turpan, set alight as in *Journey to the West*.
