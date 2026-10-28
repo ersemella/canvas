@@ -146,9 +146,11 @@ export function parseTestStage(raw: unknown): TestSetup {
   const v = raw as Record<string, unknown>;
   onlyKeys('The file', v, ['seed', 'map', 'yurts', 'camel', 'player', 'enemy']);
   const map = v.map ?? STEPPE.id;
-  if (typeof map !== 'string' || !MAPS[map])
+  // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
+  if (typeof map !== 'string' || MAPS[map]?.id !== map)
     fail(
       `map must be one of ${Object.keys(MAPS)
+        .filter((id) => MAPS[id]!.id === id)
         .map((id) => `"${id}"`)
         .join(', ')}.`
     );

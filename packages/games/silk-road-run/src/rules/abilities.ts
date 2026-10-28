@@ -1,7 +1,7 @@
 /**
  * The three prototype heroes' abilities (roster.md; owner, 2026-10-23),
  * the Vanguard's and the Alchemist's (owner, 2026-10-25), the
- * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), the Priest's, the Cataphract's, the wolf's, the One-Eyed Giant's, and the Ox King's and the Fan Lady's (owner, 2026-10-28). Each lists its legal targets from a hex (for validation,
+ * Duelist's (owner, 2026-10-26), the Magus's, the Juggernaut's and the Ranger's (owner, 2026-10-27), the Priest's, the Cataphract's, the wolf's, the Cyclops's, and the Bull Demon King's and Princess Iron Fan's (owner, 2026-10-28). Each lists its legal targets from a hex (for validation,
  * previews and the AI) and resolves on the fight state. Every ability
  * deals exactly its user's power in damage; shapes come from config.ts.
  */
@@ -1204,7 +1204,7 @@ export function stompPlan(
 }
 
 /**
- * What a charge (Stomp's `charge` mode, the Ox King's Gore) from `from`
+ * What a charge (Stomp's `charge` mode, the Bull Demon King's Gore) from `from`
  * toward `target` would do, as `stompPlan`: whom it hits and where it ends.
  */
 export function chargePlan(
@@ -1352,7 +1352,7 @@ function chargeTargets(map: MapData, user: Unit, from: Hex, steps: number): Acti
 
 /**
  * A charge toward `to`, straight out from `user` (Stomp's `charge` mode;
- * the Ox King's Gore): each unit in its way, a whole row together, takes
+ * the Bull Demon King's Gore): each unit in its way, a whole row together, takes
  * `user`'s power once (`what` hits it), and the row is Pushed back ahead
  * of it, a space for each it walks, the farthest first; a row that can't
  * be Pushed stops it behind.
@@ -1634,9 +1634,9 @@ const bite: AbilityDef = {
   },
 };
 
-// ─── One-Eyed Giant ──────────────────────────────────────────────────────────
+// ─── Cyclops ──────────────────────────────────────────────────────────
 
-/** Smash (owner, 2026-10-28): the One-Eyed Giant's club, a plain melee hit for its power. */
+/** Smash (owner, 2026-10-28): the Cyclops's club, a plain melee hit for its power. */
 const smash: AbilityDef = {
   id: 'smash',
   name: 'Smash',
@@ -1657,7 +1657,7 @@ function boulderRing(map: MapData, from: Hex, target: Hex): Hex[] {
 }
 
 /**
- * Boulder (owner, 2026-10-28): the One-Eyed Giant hurls a boulder down
+ * Boulder (owner, 2026-10-28): the Cyclops hurls a boulder down
  * one of Snap Shot's lanes. The first unit in it takes the giant's power;
  * then every other unit next to where it lands, ally or enemy, the giant
  * aside, is Pushed `ABILITY.boulder.push` away from it, one at a time in
@@ -1687,10 +1687,10 @@ const boulder: AbilityDef = {
   },
 };
 
-// ─── Ox King and Fan Lady ────────────────────────────────────────────────────
+// ─── Bull Demon King and Princess Iron Fan ────────────────────────────────────────────────────
 
 /**
- * Gore (owner, 2026-10-28), the Ox King's horns: Trample as first built
+ * Gore (owner, 2026-10-28), the Bull Demon King's horns: Trample as first built
  * (`ABILITY.stomp.mode: 'charge'`), a walk of up to `ABILITY.gore.steps`
  * in a line, every unit in its way hit and Pushed back ahead of him
  * (`resolveCharge`).
@@ -1707,22 +1707,22 @@ const gore: AbilityDef = {
   },
 };
 
-/** The Banana-leaf Fan's line from `from` holding `target`: up to `reach` spaces straight out, up to yurts or the map's edge. */
+/** The Iron Fan's line from `from` holding `target`: up to `reach` spaces straight out, up to yurts or the map's edge. */
 function fanLine(map: MapData, from: Hex, target: Hex): Hex[] {
   const dir = hexDirectionTo(from, target);
   return dir === null ? [] : laneFrom(map, from, dir).slice(0, ABILITY.bananaFan.reach);
 }
 
 /**
- * The Banana-leaf Fan (owner, 2026-10-28): every unit in a line of
- * `ABILITY.bananaFan.reach` straight out from the Fan Lady, ally or enemy,
+ * The Iron Fan (owner, 2026-10-28): every unit in a line of
+ * `ABILITY.bananaFan.reach` straight out from Princess Iron Fan, ally or enemy,
  * is Pushed `ABILITY.bananaFan.push` along it, the farthest first so each
  * has room; no damage, but a unit blown into fire burns as any entering it.
  * Aimed at the line's first space, as Cleave.
  */
 const bananaFan: AbilityDef = {
   id: 'bananaFan',
-  name: 'Banana-leaf Fan',
+  name: 'Iron Fan',
   kind: 'control',
   damages: false,
   area: fanLine,
@@ -1740,36 +1740,37 @@ const bananaFan: AbilityDef = {
   resolve(ctx, user, target) {
     const line = fanLine(ctx.map, user.hex!, target.hex!);
     const dir = hexDirectionTo(user.hex!, target.hex!)!;
-    log(ctx, `${unitName(user)} sweeps the Banana-leaf Fan.`);
+    log(ctx, `${unitName(user)} sweeps the Iron Fan.`);
     const caught = line.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
     for (const u of caught.reverse())
       if (u.alive) displace(ctx, u, dir, ABILITY.bananaFan.push, 'push');
   },
 };
 
-/** The spaces Fan the Flames sets alight from the ridge on `ridge`: the open ones next to it. */
-export function flamesAround(map: MapData, ridge: Hex): Hex[] {
-  return stepsFrom(map, ridge);
+/** The spaces Fan the Flames sets alight aimed at `hex`: it and the open ones next to it. */
+export function flamesAround(map: MapData, hex: Hex): Hex[] {
+  return [hex, ...stepsFrom(map, hex)];
 }
 
 /**
- * Fan the Flames (owner, 2026-10-28): the Fan Lady fans one burning ridge
- * (a mountain, anywhere on the board), and the open spaces next to it
- * catch fire until her next turn (`FireEffect`), any fire of hers before
- * going out. Lighting a space doesn't burn whoever stands there; entering
- * one does (`enterHex`).
+ * Fan the Flames (owner, 2026-10-28), Princess Iron Fan's: aimed at an
+ * open space within `ABILITY.fanFlames.range`, it and the open spaces
+ * next to it catch fire until her next turn (`FireEffect`), any fire of
+ * hers before going out. Lighting a space doesn't burn whoever stands
+ * there; entering one does (`enterHex`). First aimed at a burning ridge
+ * anywhere, its open neighbours alight, until her map lost its ridges
+ * (owner, the same day).
  */
 const fanFlames: AbilityDef = {
   id: 'fanFlames',
   name: 'Fan the Flames',
   kind: 'control',
+  range: ABILITY.fanFlames.range,
   area: (map, _from, target) => flamesAround(map, target),
   summary: () =>
-    `A burning ridge anywhere: the spaces next to it catch fire until your next turn. Entering fire burns ${ABILITY.fanFlames.burn}.`,
-  targets: (_state, map) =>
-    map.hexes
-      .filter((h) => tileAt(map, h) === 'mountain' && flamesAround(map, h).length > 0)
-      .map((hex) => ({hex})),
+    `A space within ${ABILITY.fanFlames.range}: it and the spaces next to it catch fire until your next turn. Entering fire burns ${ABILITY.fanFlames.burn}.`,
+  targets: (_state, map, _user, from) =>
+    hexesWithin(map, from, ABILITY.fanFlames.range, (h) => !blocks(tileAt(map, h))),
   resolve(ctx, user, target) {
     const others = (ctx.state.fires ?? []).filter((f) => f.source !== user.id);
     const lit = flamesAround(ctx.map, target.hex!).filter(
@@ -1781,8 +1782,8 @@ const fanFlames: AbilityDef = {
 };
 
 /**
- * The Banana-leaf Fan, borrowed (owner, 2026-10-28, as Sun Wukong borrows
- * it): a hero carrying the fan the Fan Lady dropped (`Unit.fan`) spends a
+ * The Iron Fan, borrowed (owner, 2026-10-28, as Sun Wukong borrows
+ * it): a hero carrying the fan Princess Iron Fan dropped (`Unit.fan`) spends a
  * turn putting out every flame on the board; the fan is then spent.
  */
 const quench: AbilityDef = {

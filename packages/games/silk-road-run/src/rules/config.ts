@@ -337,8 +337,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['bite', 'hold'],
   },
   /**
-   * The Steppe's boss (owner, 2026-10-28; enemies.md, "The One-Eyed
-   * Giant"), Tepegöz of the *Book of Dede Korkut*, whose hide turned
+   * The Steppe's boss, the Cyclops (owner, 2026-10-28; enemies.md, "The
+   * Cyclops"), Tepegöz of the *Book of Dede Korkut*, whose hide turned
    * Basat's arrows until he struck the eye: One Eye (Armour
    * `ONE_EYE.armour` against hits from outside the lane it faces), Smash
    * (melee) and Boulder (Snap Shot's lanes, the units next to where it lands
@@ -346,7 +346,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * 5 (health 12) and power 3 are the builder's first numbers, untested.
    */
   giant: {
-    name: 'One-Eyed Giant',
+    name: 'Cyclops',
     letter: 'E',
     speed: 1,
     defence: 5,
@@ -355,14 +355,14 @@ export const HEROES: Record<HeroId, HeroStats> = {
     passives: ['oneEye'],
   },
   /**
-   * China's boss, one of two (owner, 2026-10-28; enemies.md, "The Ox King
-   * and the Fan Lady"): the Bull Demon King of *Journey to the West*. Gore
-   * is Trample as first built, a charge (`ABILITY.gore`). Devoted to the
-   * Fan Lady (`DEVOTED`). Not in the ROSTER: the test stage brings them.
+   * China's boss, one of two (owner, 2026-10-28; enemies.md, "The Bull Demon King
+   * and Princess Iron Fan"): the Bull Demon King of *Journey to the West*. Gore
+   * is Trample as first built, a charge (`ABILITY.gore`). Devoted to
+   * Princess Iron Fan (`DEVOTED`). Not in the ROSTER: China's fourth stage brings them (owner, 2026-10-28), as the test stage does.
    * Speed 1, defence 5 (health 12), power 3 are the owner's.
    */
   oxKing: {
-    name: 'Ox King',
+    name: 'Bull Demon King',
     letter: 'K',
     speed: 1,
     defence: 5,
@@ -371,14 +371,14 @@ export const HEROES: Record<HeroId, HeroStats> = {
     passives: ['devoted'],
   },
   /**
-   * The Ox King's wife (owner, 2026-10-28), Princess Iron Fan: the
-   * Banana-leaf Fan blows a line of units back (`ABILITY.bananaFan`), and
-   * Fan the Flames sets the spaces by a burning ridge alight
+   * The Bull Demon King's wife (owner, 2026-10-28), Princess Iron Fan: the
+   * Iron Fan (the Banana-leaf Fan until 2026-10-28) blows a line of units back (`ABILITY.bananaFan`), and
+   * Fan the Flames sets a space within 3 and those next to it alight
    * (`ABILITY.fanFlames`). Devoted (`DEVOTED`). Speed 3, defence 2 (health
    * 6), power 1 are the owner's.
    */
   fanLady: {
-    name: 'Fan Lady',
+    name: 'Princess Iron Fan',
     letter: 'L',
     speed: 3,
     defence: 2,
@@ -389,14 +389,14 @@ export const HEROES: Record<HeroId, HeroStats> = {
 };
 
 /**
- * Devoted (owner, 2026-10-28), the Ox King's and the Fan Lady's: whenever
+ * Devoted (owner, 2026-10-28), the Bull Demon King's and Princess Iron Fan's: whenever
  * one of them is hit (any damage coming at it, a Shield's or not), the
  * other's card is Hastened `haste`, Swift Strike's number.
  */
 export const DEVOTED = {haste: 3 as number};
 
 /**
- * One Eye (owner, 2026-10-28), the One-Eyed Giant's passive: a hit on it
+ * One Eye (owner, 2026-10-28), the Cyclops's passive: a hit on it
  * from a unit not standing in its front lane, straight out the way it
  * faces at any distance, loses `armour` (17.6's Armour, so a Piercing hit
  * ignores it). The builder's first number.
@@ -668,7 +668,7 @@ export const ABILITY = {
    */
   stomp: {steps: 2 as number, mode: 'stomp' as 'charge' | 'stomp', step: 1 as number},
   /**
-   * Boulder (owner, 2026-10-28), the One-Eyed Giant's: thrown down any of
+   * Boulder (owner, 2026-10-28), the Cyclops's: thrown down any of
    * Snap Shot's six lanes, the first unit in it hit for the giant's power,
    * then every other unit next to where it lands, ally or enemy, Pushed
    * `push` away from it, no damage (as Stomp's Push, but around the
@@ -694,25 +694,26 @@ export const ABILITY = {
    */
   axeThrow: {range: 3 as number, push: 1 as number},
   /**
-   * Gore (owner, 2026-10-28), the Ox King's: Stomp's charge
+   * Gore (owner, 2026-10-28), the Bull Demon King's: Stomp's charge
    * (`stomp.mode: 'charge'`, Trample as first built), a walk of up to
    * `steps` in a line, every unit in its way hit and the row Pushed back.
    */
   gore: {steps: 2 as number},
   /**
-   * The Banana-leaf Fan (owner, 2026-10-28), the Fan Lady's: every unit in
+   * The Iron Fan (owner, 2026-10-28), Princess Iron Fan's: every unit in
    * a line of `reach` straight out from her, ally or enemy, is Pushed
    * `push` away along it, the farthest first. No damage: the fire does it.
    */
   bananaFan: {reach: 3 as number, push: 2 as number},
   /**
-   * Fan the Flames (owner, 2026-10-28), the Fan Lady's: the open spaces
-   * next to one burning ridge (a mountain tile, anywhere on the board)
-   * catch fire until her next turn; entering one, by walking or Moved
-   * there, deals `burn` (the fissures' hazard, tried 2026-10-26), from no
-   * one's power.
+   * Fan the Flames (owner, 2026-10-28), Princess Iron Fan's: an open space
+   * within `range` and the open spaces next to it catch fire until her
+   * next turn (aimed at a burning ridge anywhere, its neighbours alight,
+   * until her map lost its ridges the same day); entering one, by walking
+   * or Moved there, deals `burn` (the fissures' hazard, tried 2026-10-26),
+   * from no one's power.
    */
-  fanFlames: {burn: 1 as number},
+  fanFlames: {range: 3 as number, burn: 1 as number},
   /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
@@ -823,7 +824,7 @@ export const AI = {
    */
   dodgeShare: 0.25,
   /**
-   * Fire (the Fan Lady's Fan the Flames): each unit standing next to a
+   * Fire (Princess Iron Fan's Fan the Flames): each unit standing next to a
    * burning space, not in it, is worth this share of the burn to the
    * fire's side (`firePoints` in ai.ts), as it may be Pushed in or have to
    * walk through. The builder's PLACEHOLDER.
@@ -920,15 +921,16 @@ export const ROSTER: HeroId[] = [
 export type RegionId = 'steppe' | 'china' | 'persia' | 'byzantium';
 /**
  * `boss`: the region's boss, the enemy of its last stage (owner,
- * 2026-10-28; enemies.md), the One-Eyed Giant on the Steppe; null while
- * the region has none built, and its last stage brings its heroes.
+ * 2026-10-28; enemies.md), one unit or two: the Cyclops on the Steppe,
+ * the Bull Demon King and Princess Iron Fan in China (owner, 2026-10-28);
+ * null while the region has none built, and its last stage brings its heroes.
  */
 export const REGIONS: Record<
   RegionId,
-  {heroes: HeroId[]; creature: HeroId | null; boss: HeroId | null}
+  {heroes: HeroId[]; creature: HeroId | null; boss: HeroId[] | null}
 > = {
-  steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: 'giant'},
-  china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: null},
+  steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: ['giant']},
+  china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: ['oxKing', 'fanLady']},
   persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
   byzantium: {heroes: ['varangian', 'cataphract', 'priest'], creature: null, boss: null},
 };
@@ -953,9 +955,11 @@ export const REGIONS: Record<
  * caravanserai on the way to the next region (19.3's passive slot, alone
  * for now: three of the pool at random, one taken).
  * `map`: the id of the map it is fought on (MAPS in map.ts): the Steppe's
- * stages on the Steppe Crossing, China's in the Gobi Desert (`gobi`; owner,
+ * stages on the Steppe Crossing, its boss's in the Cyclops's cave (`cave`;
+ * owner, 2026-10-28: each boss fight on a map of its own), China's in the Gobi Desert (`gobi`; owner,
  * 2026-10-28; the Flaming Mountains, `flaming`, from 2026-10-26, kept so
- * a run saved there still loads), Persia's on the Salt Flats (`salt`).
+ * a run saved there still loads), its boss's in the Flaming Mountains
+ * with nothing on them (`fireMountain`; owner, 2026-10-28), Persia's on the Salt Flats (`salt`).
  */
 export interface Stage {
   region: RegionId;
@@ -1006,7 +1010,7 @@ export const STAGES: Stage[] = [
     creatures: 2,
     provision: false,
     passive: true,
-    map: 'steppe',
+    map: 'cave',
   },
   {
     region: 'china',
@@ -1046,7 +1050,7 @@ export const STAGES: Stage[] = [
     creatures: 0,
     provision: false,
     passive: true,
-    map: 'gobi',
+    map: 'fireMountain',
   },
   {
     region: 'persia',
@@ -1089,8 +1093,13 @@ export const STAGES: Stage[] = [
     map: 'salt',
   },
 ];
-/** How many passives the caravanserai between regions offers, one to be taken. */
-export const PASSIVE_OFFER = 3;
+/**
+ * How many passives the caravanserai between regions offers, drafted
+ * (progression.md, 19.3a; owner, 2026-10-28; three, one taken, before):
+ * the party picks one, the rival one, the party another, and the last
+ * goes to the rival.
+ */
+export const PASSIVE_OFFER = 4;
 /**
  * How many of a run's first stages always have mountains (owner, 2026-10-24;
  * randomTiles): the Steppe's, four since 2026-10-28.

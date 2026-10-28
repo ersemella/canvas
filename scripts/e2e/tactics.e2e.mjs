@@ -110,26 +110,71 @@ try {
   for (let i = 0; i < 3; i++) await toggleHero(i);
   check('with no hero taken, Start is disabled', await startButton.isDisabled());
   for (let i = 0; i < 3; i++) await toggleHero(i);
-  // A phone: the grid over the hero shown, with no sideways scroll; one is left behind.
+  // Each tile's own checkbox takes or leaves a hero in one click, and shows it.
+  const tileChecks = page.getByTestId('hero-tile-toggle');
+  check(
+    'each hero tile has its own checkbox, those left behind dimmed with the caravan full',
+    (await tileChecks.count()) === 12 &&
+      (await tileChecks.nth(0).getAttribute('aria-checked')) === 'true' &&
+      (await tileChecks.nth(4).isDisabled())
+  );
+  await tileChecks.nth(0).click();
+  check(
+    'a tile’s checkbox leaves its hero behind and shows it',
+    (await picks.nth(0).getAttribute('data-picked')) === 'false' &&
+      (await picks.nth(0).getAttribute('aria-current')) === 'true' &&
+      !(await tileChecks.nth(4).isDisabled())
+  );
+  await tileChecks.nth(0).click();
+  check(
+    'and a second click takes it again',
+    (await picks.nth(0).getAttribute('data-picked')) === 'true'
+  );
+  // A phone: no details panel, each hero a card whose portrait is its checkbox,
+  // and View; one is left behind from its card, then taken again from its full-screen view.
   await page.setViewportSize({width: 390, height: 844});
-  await toggleHero(1);
+  const cards = page.getByTestId('hero-card');
+  await cards.first().waitFor();
+  check(
+    'phone: twelve hero cards, each with its own checkbox and View, no details panel',
+    (await cards.count()) === 12 &&
+      (await page.getByTestId('hero-card-toggle').count()) === 12 &&
+      (await page.getByTestId('hero-card-view').count()) === 12 &&
+      !(await page.getByTestId('hero-details').count())
+  );
+  await cards.nth(1).getByTestId('hero-card-toggle').click();
+  check(
+    'phone: unticking a card’s checkbox leaves the hero behind',
+    (await cards.nth(1).getAttribute('data-picked')) === 'false' &&
+      (await cards.nth(1).getByTestId('hero-card-toggle').getAttribute('aria-checked')) === 'false'
+  );
   check(
     'phone: the start menu doesn’t scroll sideways',
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
   );
-  const gridBox = async () => page.getByTestId('hero-picks').boundingBox();
-  const detailsBox = await page.getByTestId('hero-details').boundingBox();
-  const gridBefore = await gridBox();
-  check(
-    'phone: the hero shown, its abilities listed, sits above the grid',
-    detailsBox.y + detailsBox.height <= gridBefore.y &&
-      (await page.getByTestId('hero-details').getByText('Snap Shot', {exact: true}).isVisible())
-  );
-  await picks.nth(7).click();
-  await picks.nth(1).click();
-  check('phone: showing other heroes doesn’t move the grid', (await gridBox()).y === gridBefore.y);
   await shot(page, 'start-menu-phone');
-  await toggleHero(1);
+  await cards.nth(1).getByTestId('hero-card-view').click();
+  const heroView = page.getByTestId('hero-view');
+  await heroView.waitFor();
+  const viewBox = await heroView.boundingBox();
+  check(
+    'phone: View opens the hero full screen, with its story and abilities',
+    viewBox.x === 0 &&
+      viewBox.y === 0 &&
+      viewBox.width === 390 &&
+      viewBox.height === 844 &&
+      (await heroView.getByText(/mounted archer/).isVisible()) &&
+      (await heroView.getByText('Snap Shot', {exact: true}).isVisible())
+  );
+  await shot(page, 'hero-view-phone');
+  await heroView.getByTestId('hero-view-toggle').click();
+  check(
+    'phone: the full-screen view’s button takes the hero',
+    (await cards.nth(1).getAttribute('data-picked')) === 'true' &&
+      (await heroView.getByTestId('hero-view-toggle').textContent()) === 'Leave behind'
+  );
+  await page.keyboard.press('Escape');
+  check('phone: Escape closes the full-screen view', !(await heroView.count()));
   await page.setViewportSize({width: 1300, height: 900});
   await startButton.click();
   await page

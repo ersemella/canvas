@@ -26,8 +26,10 @@ China's, each region's first hero random ([progression.md](progression.md), 19.5
 stops at a **caravanserai** (2026-10-25): after a region's stages 1 and 2 one
 survivor takes a provision, +1 to one stat for the rest of the run
 ([progression.md](progression.md), 19.2); between the regions it offers
-**three passives at random**, one taken by a survivor for the rest of the
-run (2026-10-26; 19.3's passive slot alone).
+**four passives at random, drafted** (2026-10-28; three, one taken,
+from 2026-10-26): the player picks one, the rival one for the next
+region's first hero, the player another, the last to the rival's second
+hero, each carried for the rest of the run ([progression.md](progression.md), 19.3a).
 **Maps per region** (2026-10-25): each stage names its map (`STAGES`,
 `MAPS` in map.ts), every one so far the Steppe's; the **Gobi Crossing**
 (`gobi`) is the same board in the desert's look, sand and sandstone ruins
@@ -192,6 +194,7 @@ Always read this file first. Then:
 | The caravan's camel; how a fight is won and lost; ending stalled fights | [camel.md](camel.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |
+| The heroes' large, detailed art for the start menu's full-screen hero view on a phone: prompts in one consistent style, built for all twelve (2026-10-28) | [hero-art.md](hero-art.md) |
 | Persia's map, the Salt Flats with one large salt dome in the middle, and the prompts for its art | [salt-flats.md](salt-flats.md) |
 | The Byzantine's map, the Fairy Chimneys (Cappadocia's tuff, fairy chimneys, a tuff cliff with a rock-cut church), and the prompts for its art (proposed 2026-10-28; built the same day with the chimneys only, seven or eight a fight out to the edge, shown on the test stage) | [cappadocia.md](cappadocia.md) |
 | Rival caravans, the pool, rewards, the ledger | [ghosts.md](ghosts.md) |

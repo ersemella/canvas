@@ -32,7 +32,7 @@ export function playbackScene(play: Playback): BoardScene {
 
 /**
  * How far, in scene pixels, a unit moves toward its target as it attacks,
- * at `k` (0 to 1) through the attack's playback: the One-Eyed Giant rears
+ * at `k` (0 to 1) through the attack's playback: the Cyclops rears
  * back and lunges into its Smash, or rears back, heaves and follows
  * through its Boulder; then settles back. Other attacks don't move their
  * unit.

@@ -114,7 +114,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         for (let dr = Math.max(-reach, -dq - reach); dr <= Math.min(reach, -dq + reach); dr++)
           if (dq || dr) mark(hexes, id(fq + dq, fr + dr), power);
     } else if (has('stomp')) charge(ABILITY.stomp.steps);
-    // Gore: Stomp's charge, the Ox King's.
+    // Gore: Stomp's charge, the Bull Demon King's.
     if (has('gore')) charge(ABILITY.gore.steps);
     // Charge: each of its lanes to yurts or the map's edge, every unit in
     // it carried along as a row.

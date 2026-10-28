@@ -25,9 +25,11 @@ tuning. Section numbers are the combat design's.
   each award a provision; stage 4 is the region's **boss** (enemies.md),
   and winning it offers the upgrade (built: the passive offer, three of the
   pool at random, one taken), except after the run's last. The Steppe's
-  boss is the One-Eyed Giant with two wolves (enemies.md, 11.3a); China and
-  Persia have none built yet, so their stage 4 brings their three heroes
-  again. The rhythm below, of three stages, is superseded.
+  boss is the Cyclops with two wolves, in its cave (enemies.md, 11.3a;
+  each boss fight on a map of its own, owner, 2026-10-28); China's the
+  Bull Demon King and Princess Iron Fan in the Flaming Mountains
+  (11.3b, owner, 2026-10-28); Persia has none built yet, so its stage 4
+  brings its three heroes again. The rhythm below, of three stages, is superseded.
 - Every stage is a fight. Stage numbers count across regions, as
   the glossary's **stage** already does.
 - **The rhythm of a region:** stages 1 and 2 each award provisions
@@ -116,6 +118,25 @@ random from one pool:
   hero and wildcard slots, the provisions' reassignment, and moving a
   passive between heroes (question 63) aren't built; a fallen hero's
   passive goes with them.
+- **19.3a The passive draft (Decided, owner 2026-10-28; built).** The
+  caravanserai between regions offers **4 passives** (`PASSIVE_OFFER`),
+  drafted: the player picks one and its carrier; the rival (the enemy
+  AI) then takes the one left that best supplements the **first hero of
+  the next region** (the first of its heroes in the run's order,
+  `draftRivals` in run.ts); the player picks another; and the last goes
+  to the rival for the next region's **second hero**. `next` carries the
+  party's two picks (`passives`, in order); the rival's follow from them
+  (`rivalPicks`), so the page shows the rival's answer as soon as the
+  first pick has a carrier. The rival's picks are kept in
+  `RunState.rivalPassives`, and that enemy hero carries its passive in
+  every stage it fights for the rest of the run, as an outsider in later
+  regions too. How the rival judges "supplements most" is
+  `DRAFT_FIT` in passives.ts: per hero, a list of the passives it likes,
+  best first, and those that do it no good (last); the builder's first
+  reading of each kit, **not yet measured** (the balance runs could rank
+  them by win rate). The last passive goes to the second hero whatever it
+  is, so a poor fit (Steady Gait on the Duelist) can be forced on it:
+  that is the draft's denial play.
 - **At most two abilities** besides moving and Hold (owner, 2026-10-25;
   three from 2026-10-24; [roster.md](roster.md)): the hero slot offers a
   new ability only to a hero with fewer than two (`hasRoomForAbility` in
@@ -135,7 +156,7 @@ passive is lost or returns to the party is question 63.
 | 1 | 2 wolves and 1 hero |
 | 2 | 1 wolf and 2 heroes |
 | 3 | 3 heroes |
-| 4 | The region's boss (owner, 2026-10-28; the Steppe's the One-Eyed Giant and 2 wolves; until a region's boss is built, its 3 heroes); the Byzantine's, the final boss (19.6) |
+| 4 | The region's boss (owner, 2026-10-28; the Steppe's the Cyclops and 2 wolves, in its cave; China's the Bull Demon King and Princess Iron Fan, in the Flaming Mountains; until a region's boss is built, its 3 heroes); the Byzantine's, the final boss (19.6) |
 
 - **Wolves** may be reskinned per region (the setting's creatures, 15.7)
   and get a **small stat increase each region**. Their numbers per region

@@ -458,7 +458,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       value -= AI.axeOut * AI.perHexFromEnemy;
     return closing + value;
   }
-  // The Banana-leaf Fan: the fire each unit in its line would be blown into.
+  // The Iron Fan: the fire each unit in its line would be blown into.
   if (ability === 'bananaFan') {
     let value = 0;
     const map = mapOf(state);

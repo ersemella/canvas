@@ -328,7 +328,7 @@ export class TacticsBoardSystem extends BaseSystem {
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
     for (const h of map.exits) drawExit(ctx, h, pastExit(map, h), t);
-    // The Fan Lady's fires and the fan she drops, on the ground under the units.
+    // Princess Iron Fan's fires and the fan she drops, on the ground under the units.
     for (const f of fight.fires ?? []) drawFire(ctx, f.hex, t);
     if (fight.fan) drawFan(ctx, fight.fan);
     // A won fight: the party walks out, off their hexes (no rugs), once the playback ends.

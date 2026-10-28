@@ -51,7 +51,7 @@ export default silkRoadRun;
 // What the platform's page uses: the board's drawing contract and the
 // rules, run locally for previews (D11).
 export {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem};
-export {HERO_PORTRAIT, hexOverlaySpan} from './client/board/units';
+export {HERO_ART, HERO_PORTRAIT, HERO_SPRITE, hexOverlaySpan} from './client/board/units';
 export {TRACK_AREA, trackCards} from './client/layout';
 export {openingPlayback} from './client/playback';
 export type {PlaybackPayload} from './client/playback';
@@ -107,5 +107,6 @@ export {allowedTargets, offeredTargets, onlyHold, targetAt} from './rules/choice
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
 export {DOME, FLAMING, GOBI, MAPS, SALT, STEPPE, TUFF, mapById, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';
+export {rivalPicks} from './rules/run';
 export type {RunView} from './rules/run';
 export type * from './rules/types';

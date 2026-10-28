@@ -94,13 +94,6 @@ export interface MapData {
    * of `sizes` spaces (`scorchedPatches`); `null` on a map without it.
    */
   scorch: {patches: number[]; sizes: number[]} | null;
-  /**
-   * Its fights' burning ridges, single mountain spaces near the middle (the
-   * Flaming Mountains' ridges for China's boss, `RIDGES`): how many, one of
-   * `counts` at random, within `reach` of the centre (`randomTiles`);
-   * `null` on a map without them.
-   */
-  ridges: {counts: number[]; reach: number} | null;
 }
 
 /** How far the board reaches from its centre hex. */
@@ -198,7 +191,6 @@ export const STEPPE: MapData = {
   // Two or three yurts, within 2 hexes of the centre (owner, 2026-10-24).
   obstacles: {counts: [2, 3], reach: 2},
   scorch: null,
-  ridges: null,
 };
 
 /**
@@ -247,20 +239,33 @@ export const FLAMING: MapData = {
 };
 
 /**
- * The Flaming Mountains with their ridges burning (2026-10-28), for China's
- * boss, the Ox King and the Fan Lady (enemies.md): the red earth and the
- * beacon tower of `FLAMING`, no scorched ground, and two or three burning
- * ridges, single mountain spaces within 3 of the centre, none side by side
- * or next to the tower, off the starting columns and Humphrey's road. The
- * Fan Lady's Fan the Flames sets the spaces next to one alight. The
- * builder's layout, untested; the test stage's `"map"` shows it.
+ * The Flaming Mountains for China's boss, the Bull Demon King and Princess
+ * Iron Fan (owner, 2026-10-28; enemies.md): the red earth of `FLAMING`
+ * and nothing on it, no beacon tower, no scorched ground and no mountains,
+ * so the only fire is hers (Fan the Flames, aimed at a space within 3).
+ * Before, the same day, `ridges`: two or three burning ridges near the
+ * middle, which she set alight; a fight saved there still loads
+ * (`MAPS.ridges`), its ridges in its own tiles.
  */
-export const RIDGES: MapData = {
+export const FIRE_MOUNTAIN: MapData = {
   ...FLAMING,
-  id: 'ridges',
+  id: 'fireMountain',
   name: 'The Flaming Mountains',
+  obstacles: {counts: [0], reach: 3},
   scorch: null,
-  ridges: {counts: [2, 3], reach: 3},
+};
+
+/**
+ * The Cyclops's cave (owner, 2026-10-28), the Steppe's boss fight: the
+ * Steppe's board on a cave's stone floor, with nothing on it, no
+ * mountains and no yurts.
+ */
+export const CAVE: MapData = {
+  ...STEPPE,
+  id: 'cave',
+  name: 'The Cyclops’s Cave',
+  mountains: 'never',
+  obstacles: {counts: [0], reach: 2},
 };
 
 /**
@@ -287,7 +292,6 @@ export const SALT: MapData = {
   mountainPlaces: 'centre',
   obstacles: {counts: [0], reach: 3},
   scorch: null,
-  ridges: null,
 };
 
 /**
@@ -311,10 +315,14 @@ export const MAPS: Record<string, MapData> = {
   [STEPPE.id]: STEPPE,
   [GOBI.id]: GOBI,
   [FLAMING.id]: FLAMING,
-  [RIDGES.id]: RIDGES,
+  [FIRE_MOUNTAIN.id]: FIRE_MOUNTAIN,
+  [CAVE.id]: CAVE,
   [SALT.id]: SALT,
   [TUFF.id]: TUFF,
 };
+
+// China's boss's map's name until it lost its ridges (2026-10-28), so a fight saved there loads.
+MAPS.ridges = FIRE_MOUNTAIN;
 
 /** A map's mountains that stand in every fight, the same each time: the Salt Flats' dome; none elsewhere. */
 export function fixedTiles(map: MapData): Record<string, Tile> {
@@ -356,8 +364,7 @@ const inFromTop = (h: Hex): number => h.r + Math.min(h.q, 0) + RADIUS;
  * about half of fights, or always with `mountains` or on a map that always
  * has them, never on a map without them (`MapData.mountains`), along the
  * top edges (`mountainPlaces`), off the starting columns, the camel's
- * start and the exit, or the Salt Flats' dome (`fixedTiles`), then the
- * map's burning ridges (`ridgeSpaces`), then its scorched ground
+ * start and the exit, or the Salt Flats' dome (`fixedTiles`), then its scorched ground
  * (`scorchedPatches`), then two or three yurts near the middle (not
  * mirrored), on `map`'s board.
  */
@@ -393,11 +400,10 @@ export function randomTiles(
   // cutting the board in two.
   // By the dome, not next to a mountain either, so a ruin stands on its
   // own rather than reading as part of it. Never on scorched ground.
-  const ridges = map.ridges ? ridgeSpaces(map, map.ridges, tiles, candidates, random) : [];
   if (map.scorch) scorchedPatches(map, map.scorch, tiles, candidates, random);
   const yurts: Hex[] = [];
   const count = roll();
-  const mountainHexes = fixed ? map.hexes.filter((h) => tiles[hexKey(h)] === 'mountain') : ridges;
+  const mountainHexes = fixed ? map.hexes.filter((h) => tiles[hexKey(h)] === 'mountain') : [];
   for (let i = 0; i < count; i++) {
     const free = candidates
       .filter((h) => !tiles[hexKey(h)])
@@ -447,37 +453,6 @@ function mountainRange(
     range.push(h);
   }
   return range;
-}
-
-/**
- * Burning ridges (`MapData.ridges`; `RIDGES`): single mountain spaces
- * within `reach` of the centre, off the columns next to the starting ones
- * and Humphrey's road, not next to its start or exit, no two side by side,
- * never cutting the board in two.
- */
-function ridgeSpaces(
-  map: MapData,
-  ridges: NonNullable<MapData['ridges']>,
-  tiles: Record<string, Tile>,
-  candidates: Hex[],
-  random: () => number
-): Hex[] {
-  const reserved = [map.camelStart, ...map.exits];
-  const count = ridges.counts[Math.floor(random() * ridges.counts.length)]!;
-  const placed: Hex[] = [];
-  for (let i = 0; i < count; i++) {
-    const free = candidates
-      .filter((h) => !tiles[hexKey(h)] && Math.abs(h.q) < RADIUS - 1 && !onRoad(map, h))
-      .filter((h) => hexDistance(h, CENTRE) <= ridges.reach)
-      .filter((h) => reserved.every((x) => hexDistance(x, h) > 1))
-      .filter((h) => placed.every((p) => hexDistance(p, h) > 1))
-      .filter((h) => connectedWithout(map, tiles, h));
-    if (!free.length) break;
-    const h = free[Math.floor(random() * free.length)]!;
-    tiles[hexKey(h)] = 'mountain';
-    placed.push(h);
-  }
-  return placed;
 }
 
 /**

@@ -435,6 +435,7 @@ export function TacticsPage() {
         provision={run.view.provision}
         extraProvision={run.view.extraProvision}
         passives={run.view.passives}
+        rivals={run.view.rivals}
         busy={busy}
         error={error}
         onSetOut={setOut}

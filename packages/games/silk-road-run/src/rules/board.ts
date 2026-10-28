@@ -150,7 +150,7 @@ export function plainSand(state: FightState, map: MapData, h: Hex): boolean {
 
 /**
  * The abilities `unit` has: its hero's starting kit, or the test stage's
- * (`Unit.loadout`), and while it carries the Fan Lady's fan, putting out
+ * (`Unit.loadout`), and while it carries Princess Iron Fan's fan, putting out
  * the flames with it (`quench`; owner, 2026-10-28).
  */
 export function kitOf(unit: Unit): AbilityId[] {
@@ -258,7 +258,7 @@ export function movementCap(unit: Unit): number {
   return HEROES[unit.hero].moveCap ?? RULES.movementCap;
 }
 
-/** Fire on `h` (the Fan Lady's Fan the Flames): entering it burns (`FireEffect`). */
+/** Fire on `h` (Princess Iron Fan's Fan the Flames): entering it burns (`FireEffect`). */
 export function fireOn(state: FightState, h: Hex): boolean {
   return Boolean(state.fires?.some((f) => hexEquals(f.hex, h)));
 }
