@@ -294,18 +294,17 @@ scorched earth texture. Hard square pixels, no anti-aliasing.
 
 **Built from the owner's art (2026-10-27):** the sprite shrunk to
 32 × 32, the whole bow inside the frame (the body filling it at first,
-then a little smaller, owner; its head redrawn by hand to the second
-portrait's look, a tall pointed crimson cap with a brown band and a
-moustache, so the three Persians' portraits don't read alike),
-the bow traced back in from the art where shrinking broke it, the face
-(cap, eye, beard) redrawn by hand, and a 2-frame idle split at the knees
-(`--split 25`) so the bow moves with the body; the portrait cropped to
-the face with the bow behind, cut to 14 colours, the cap's felt smoothed
-into a few tones and the eye put back by hand. Then replaced (owner, 2026-10-27) by a
-second portrait in a tall pointed crimson cap with a brown band and a
-moustache, from the revised prompt, since the first's cream cap and beard
-read like the Magus's and the Elephant Rider's; cut to 14 colours, its
-eye and the profile's outline put back by hand. The prompts it came from:
+then a little smaller, owner), the bow traced back in from the art where
+shrinking broke it, the face (cap, eye, beard) redrawn by hand, and a
+2-frame idle split at the knees (`--split 25`) so the bow moves with the
+body; the portrait cropped to the face with the bow behind, cut to 14
+colours, the cap's felt smoothed into a few tones and the eye put back by
+hand. **Its cap indigo** (owner, 2026-10-28), on the sprite and the
+portrait, since in cream the three Persians' portraits read alike (the
+Elephant Rider's turban went saffron for the same reason). A second
+portrait and sprite head in a tall pointed crimson cap with a brown band
+and a moustache were tried the day before and dropped for this (owner).
+The prompts it came from:
 
 The Archer (roster.md) played as a lettered disc (`archer` in
 `HERO_COLOR`) until then. Like the other heroes' art, it
