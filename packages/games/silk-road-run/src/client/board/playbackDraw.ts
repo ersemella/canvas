@@ -79,15 +79,18 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
     case 'land': {
       const def = ABILITIES[e.ability];
       // A charged ability is only aimed now: its flourish plays as it lands.
-      const charged = e.kind === 'action' && chargeOf(u, e.ability) > 0;
-      const name = e.kind === 'land' ? `${def.name} lands` : def.name;
+      // A Stomp too: the Juggernaut steps into place first (a 'land' event follows).
+      const charged = e.kind === 'action' && (chargeOf(u, e.ability) > 0 || e.ability === 'stomp');
+      const name = e.kind === 'land' && e.ability !== 'stomp' ? `${def.name} lands` : def.name;
       // The area the playback lights up when it lands; the target hex alone for the rest.
       const radius = def.radius ?? 0;
       const area = !e.target
         ? []
-        : def.area && u.hex
-          ? def.area(map, u.hex, e.target)
-          : map.hexes.filter((h) => hexDistance(h, e.target!) <= radius);
+        : charged && e.ability === 'stomp'
+          ? [e.target]
+          : def.area && u.hex
+            ? def.area(map, u.hex, e.target)
+            : map.hexes.filter((h) => hexDistance(h, e.target!) <= radius);
       const effect = charged ? undefined : ABILITY_EFFECT[e.ability];
       // Effects move in steps, as pixel art does.
       const steps = eventSeconds(e, false) * EFFECT_FPS;

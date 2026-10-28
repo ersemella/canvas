@@ -3736,6 +3736,28 @@ describe('events for playback', () => {
     expect(s.events[0]).toMatchObject({kind: 'step', unitId: 'e-bokh', how: 'throw'});
   });
 
+  it('records a Stomp landing once the Juggernaut has stepped, before its hits', () => {
+    const c = at(3, 3);
+    const s = setup({'p-mahout': c, 'e-bokh': hexNeighbor(hexNeighbor(c, 0), 0)}, [
+      'mahout',
+      'bokh',
+      'storm',
+    ]);
+    s.tiles = Object.fromEntries(
+      Object.entries(s.tiles).map(([k, t]) => [k, t === 'obstacle' ? 'sand' : t])
+    );
+    const e = unit(s, 'p-mahout');
+    e.slot = s.currentSlot;
+    s.awaiting = e.id;
+    s.events = [];
+    const to = hexNeighbor(c, 0);
+    applyTurn(s, e, {action: {ability: 'stomp', target: {hex: to}}});
+    const kinds = s.events.map((ev) => ev.kind);
+    expect(kinds.slice(0, 5)).toEqual(['action', 'step', 'land', 'damage', 'step']);
+    expect(s.events[2]).toMatchObject({unitId: 'p-mahout', ability: 'stomp', target: to});
+    expect(s.events[2]!.after.units.find((u) => u.id === 'p-mahout')!.hex).toEqual(to);
+  });
+
   it('copies for previews and the AI record nothing', () => {
     const s = setup({'p-bokh': at(1, 3), 'e-bokh': at(6, 6)});
     s.events = [];

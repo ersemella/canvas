@@ -292,7 +292,11 @@ export type FightEvent =
   | {kind: 'turn'; unitId: string}
   | {kind: 'step'; unitId: string; from: Hex; to: Hex; how: Motion}
   | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex}
-  /** A charged ability landing as its user's charging card comes back: a Skirmish shot, at what it hits (or the lane's end). */
+  /**
+   * An ability landing after its user's action: a charged one as its
+   * user's charging card comes back (a Skirmish shot, at what it hits, or
+   * the lane's end), or a Stomp once the Juggernaut has stepped, where it stomps.
+   */
   | {kind: 'land'; unitId: string; ability: AbilityId; target: Hex}
   | {kind: 'damage'; unitId: string; amount: number}
   | {kind: 'heal'; unitId: string; amount: number}
