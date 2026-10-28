@@ -2,7 +2,7 @@
  * Abilities' effects as a turn plays back (Sunlight's beam, Gale's gusts,
  * a Volley's arrows falling, Shove's blow, Haul's rope, Cleave's swing,
  * Swift Strike's thrust, Elixir's flask, Omen's clock, Blessing's halo, Stomp's quake,
- * Bite's jaws; Snap Shot's and Feigned Retreat's arrows are drawn by the
+ * Bite's jaws, Smash's club, the Boulder's flight; Snap Shot's and Feigned Retreat's arrows are drawn by the
  * playback, Hail's stones and Grapple's fists by the board).
  */
 import type {Hex} from '@canvas/engine';
@@ -49,6 +49,8 @@ export const ABILITY_EFFECT: Partial<
   blessing: drawBlessing,
   stomp: drawStomp,
   bite: drawBite,
+  smash: drawSmash,
+  boulder: drawBoulder,
 };
 
 /** Fades an effect out over the last part of its event, from `start` (0 to 1) on. */
@@ -738,6 +740,236 @@ function drawBite(ctx: CanvasRenderingContext2D, {target, k}: EffectFrame): void
       const [bx, by] = artCell(c.x + Math.cos(a) * d * 2, c.y - 14 + Math.sin(a) * d);
       artPixel(ctx, bx, by, i % 2 ? '#f2a48e' : '#ffffff');
     }
+}
+
+/** The One-Eyed Giant's club: dark wood, its grain, and the knots studding its head. */
+const CLUB = {wood: '#7c4a21', grain: '#a0662f', knot: '#5a3417'};
+
+/**
+ * Chevrons over each of `area`'s spaces but `from`'s own, driving outward
+ * from `from` (Stomp's, the Boulder's Push), `t` 0 to 1 along their run.
+ */
+function drawPushChevrons(
+  ctx: CanvasRenderingContext2D,
+  from: Hex,
+  area: Hex[],
+  t: number,
+  fade: number
+): void {
+  if (t <= 0) return;
+  const c = center(from);
+  for (const h of area) {
+    if (h.q === from.q && h.r === from.r) continue;
+    const n = center(h);
+    const len = Math.hypot(n.x - c.x, n.y - c.y) || 1;
+    const ux = (n.x - c.x) / len;
+    const uy = (n.y - c.y) / len;
+    const tip = {x: n.x + ux * (t * 18 - 6), y: n.y + uy * (t * 18 - 6) - 10};
+    for (const side of [1, -1])
+      for (const [ax, ay] of artLine(
+        tip.x,
+        tip.y,
+        tip.x - ux * 10 + side * uy * 10,
+        tip.y - uy * 10 - side * ux * 10
+      )) {
+        if (fade <= 0.4 && (ax + ay) % 2 !== 0) continue;
+        artPixel(ctx, ax, ay + 1, OUTLINE);
+        artPixel(ctx, ax, ay, '#f5f5f4');
+      }
+  }
+}
+
+/** A flat ring of dust spreading over the ground round (x, y), `rx` wide. */
+function drawDustRing(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  rx: number,
+  fade: number
+): void {
+  for (let i = 0; i < 28; i++) {
+    const a = (i / 28) * Math.PI * 2;
+    const [ax, ay] = artCell(x + Math.cos(a) * rx, y + Math.sin(a) * rx * 0.55);
+    if (fade <= 0.4 && (ax + ay) % 2 !== 0) continue;
+    artPixel(ctx, ax, ay, i % 3 === 0 ? '#efdcbc' : '#d4b483');
+    artPixel(ctx, ax, ay - 1, '#8c7350');
+  }
+}
+
+/**
+ * Smash: the One-Eyed Giant's knotted club swings up and over and comes
+ * down on the unit, a starburst where it lands, then a puff of dust round
+ * the unit's feet and chips of earth flying.
+ */
+function drawSmash(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame): void {
+  if (!from) return;
+  const a = center(from);
+  const b = center(target);
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const ux = (b.x - a.x) / len;
+  const fade = fadeOut(k, 0.7);
+  if (fade <= 0) return;
+  // The swing, until it lands at 0.35: the club turns about the giant's
+  // shoulder from raised behind it to down on the unit's head.
+  if (k < 0.45) {
+    const pivot = {x: lerp(a.x, b.x, 0.3), y: lerp(a.y, b.y, 0.3) - 34};
+    const head = {x: b.x, y: b.y - 16};
+    const down = Math.atan2(head.y - pivot.y, head.x - pivot.x);
+    // Raised: back over the shoulder, away from the unit.
+    const raised = -Math.PI / 2 - Math.sign(ux || 1) * 0.9;
+    const swing = Math.min(1, k / 0.35);
+    const angle = lerp(raised, down, swing * swing);
+    const reach = Math.hypot(head.x - pivot.x, head.y - pivot.y);
+    const tip = {x: pivot.x + Math.cos(angle) * reach, y: pivot.y + Math.sin(angle) * reach};
+    const grip = {x: lerp(pivot.x, tip.x, 0.25), y: lerp(pivot.y, tip.y, 0.25)};
+    // A blur of where it has been, just before it lands.
+    if (swing > 0.5 && swing < 1)
+      for (const back of [0.18, 0.32]) {
+        const ba = lerp(raised, down, Math.max(0, swing - back) ** 2);
+        for (const [cx, cy] of artLine(
+          pivot.x + Math.cos(ba) * reach * 0.7,
+          pivot.y + Math.sin(ba) * reach * 0.7,
+          pivot.x + Math.cos(ba) * reach,
+          pivot.y + Math.sin(ba) * reach
+        ))
+          if ((cx + cy) % 2 === 0) artPixel(ctx, cx, cy, '#f5f5f4');
+      }
+    // The shaft, thickening to its head, outlined.
+    const cells = artLine(grip.x, grip.y, tip.x, tip.y);
+    cells.forEach(([cx, cy], i) => {
+      const w = i < cells.length * 0.4 ? 1 : i < cells.length * 0.75 ? 2 : 3;
+      for (let dx = -w; dx <= w; dx++)
+        for (let dy = -w; dy <= w; dy++) {
+          const edge = Math.abs(dx) === w || Math.abs(dy) === w;
+          artPixel(ctx, cx + dx, cy + dy, edge ? OUTLINE : i % 3 ? CLUB.wood : CLUB.grain);
+        }
+    });
+    // The knots studding its head.
+    const [hx, hy] = artCell(tip.x, tip.y);
+    for (const [dx, dy] of [
+      [-4, -1],
+      [2, -4],
+      [4, 2],
+      [-1, 4],
+    ] as const) {
+      artPixel(ctx, hx + dx, hy + dy, OUTLINE);
+      artPixel(ctx, hx + Math.sign(dx) * (Math.abs(dx) - 1), hy + dy, CLUB.knot);
+    }
+  }
+  // The blow lands: a starburst over the unit's head.
+  if (k >= 0.33 && k < 0.6) {
+    const t = (k - 0.33) / 0.27;
+    const [cx, cy] = artCell(b.x, b.y - 16);
+    for (let i = 0; i < 10; i++) {
+      const r = (i / 10) * Math.PI * 2;
+      const inner = 2 + t * 4;
+      const outer = (i % 2 ? 6 : 10) + t * 4;
+      for (let d = inner; d <= outer; d++)
+        artPixel(
+          ctx,
+          cx + Math.round(Math.cos(r) * d),
+          cy + Math.round(Math.sin(r) * d * 0.8),
+          d > outer - 2 ? '#fde047' : '#ffffff'
+        );
+    }
+  }
+  // Dust round its feet, and chips of earth thrown up.
+  if (k >= 0.35) {
+    const t = Math.min(1, (k - 0.35) / 0.4);
+    drawDustRing(ctx, b.x, b.y + 8, 10 + t * 22, fade);
+    const next = hexRandom(target, 23);
+    for (let i = 0; i < 6; i++) {
+      const dir = (next() - 0.5) * 2.4;
+      const speed = 14 + next() * 14;
+      const x = b.x + Math.sin(dir) * speed * t;
+      const y = b.y + 8 - Math.cos(dir) * speed * t * 1.4 + 40 * t * t;
+      if (fade > 0.4 || i % 2 === 0) artPixel(ctx, ...artCell(x, y), i % 2 ? '#8c7350' : '#5b4c68');
+    }
+  }
+}
+
+/** The Boulder: its flight's top, by the distance thrown, and its radius, in art pixels. */
+const BOULDER = {arc: 0.45, minArc: 26, maxArc: 70, r: 6};
+/** The share of the Boulder's playback spent in the air. */
+const BOULDER_FLIGHT = 0.5;
+
+/** A rough grey boulder, `r` art pixels round, centred on art cell (cx, cy), its light turning with `spin`. */
+function drawRock(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, spin: number) {
+  const lx = Math.round(Math.cos(spin) * r * 0.5);
+  const ly = Math.round(Math.sin(spin) * r * 0.5);
+  for (let dx = -r - 1; dx <= r + 1; dx++)
+    for (let dy = -r - 1; dy <= r + 1; dy++) {
+      const d = Math.hypot(dx, dy * 1.1);
+      if (d > r + 0.6) continue;
+      let color = d > r - 0.4 ? OUTLINE : '#7d8288';
+      if (color !== OUTLINE) {
+        if (Math.hypot(dx + lx, dy + ly) < r * 0.5) color = '#b8bcc1';
+        else if (Math.hypot(dx - lx, dy - ly) < r * 0.6) color = '#5c6066';
+      }
+      artPixel(ctx, cx + dx, cy + dy, color);
+    }
+}
+
+/**
+ * Boulder: the One-Eyed Giant heaves a boulder, which turns over as it
+ * arcs down the lane, its shadow running along the ground beneath, and
+ * lands on the unit: it shatters into chips, a ring of dust bursts out,
+ * and chevrons drive over the spaces round it, the way the units there are
+ * Pushed.
+ */
+function drawBoulder(ctx: CanvasRenderingContext2D, {from, target, area, k}: EffectFrame): void {
+  const a = from ? center(from) : center(target);
+  const b = center(target);
+  const len = Math.hypot(b.x - a.x, b.y - a.y);
+  if (k < BOULDER_FLIGHT) {
+    const t = k / BOULDER_FLIGHT;
+    const top = Math.min(BOULDER.maxArc, Math.max(BOULDER.minArc, len * BOULDER.arc));
+    const x = lerp(a.x, b.x, t);
+    const ground = lerp(a.y, b.y, t);
+    // Its shadow, dithered, smaller the higher it flies.
+    const lift = Math.sin(Math.PI * t) * top;
+    const [sx, sy] = artCell(x, ground + 6);
+    const sr = Math.max(1, Math.round(BOULDER.r * (1 - (lift / top) * 0.5)));
+    for (let dx = -sr; dx <= sr; dx++)
+      if ((sx + dx + sy) % 2 === 0) artPixel(ctx, sx + dx, sy, '#3b3226');
+    // Out of the giant's hand above its head, over to the unit's.
+    const [cx, cy] = artCell(x, ground - 24 - lift);
+    drawRock(ctx, cx, cy, BOULDER.r, t * Math.PI * 3);
+    return;
+  }
+  const t = (k - BOULDER_FLIGHT) / (1 - BOULDER_FLIGHT);
+  const fade = fadeOut(t, 0.6);
+  if (fade <= 0) return;
+  // The impact: a flash, the boulder squashed on the unit for a moment.
+  const [cx, cy] = artCell(b.x, b.y - 16);
+  if (t < 0.15) drawRock(ctx, cx, cy + 1, BOULDER.r, 0);
+  if (t < 0.3)
+    for (let i = 0; i < 8; i++) {
+      const r = (i / 8) * Math.PI * 2;
+      for (let d = 3; d <= 7 + t * 10; d++)
+        artPixel(
+          ctx,
+          cx + Math.round(Math.cos(r) * d),
+          cy + Math.round(Math.sin(r) * d * 0.8),
+          d % 3 ? '#ffffff' : '#fde047'
+        );
+    }
+  // It shatters: chips arcing out and falling.
+  const next = hexRandom(target, 29);
+  for (let i = 0; i < 9; i++) {
+    const dir = (i / 9) * Math.PI * 2 + next() * 0.5;
+    const speed = 22 + next() * 16;
+    const x = b.x + Math.cos(dir) * speed * t;
+    const y = b.y - 16 + Math.sin(dir) * speed * t * 0.6 - 30 * t + 60 * t * t;
+    const [px, py] = artCell(x, y);
+    if (fade <= 0.4 && i % 2) continue;
+    artPixel(ctx, px, py, OUTLINE);
+    artPixel(ctx, px + 1, py, i % 3 ? '#7d8288' : '#b8bcc1');
+    if (i % 2 === 0) artPixel(ctx, px, py - 1, '#5c6066');
+  }
+  // Dust bursting out over the ground, and the Push round where it landed.
+  drawDustRing(ctx, b.x, b.y + 8, 14 + Math.min(1, t / 0.6) * 40, fade);
+  drawPushChevrons(ctx, target, area, Math.min(1, t / 0.5), fade);
 }
 
 /**

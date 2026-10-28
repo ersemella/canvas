@@ -4,6 +4,7 @@
  */
 import {hexDistance} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
+import type {AbilityId} from '../../rules/types';
 import {HEROES} from '../../rules/config';
 import {ABILITIES} from '../../rules/abilities';
 import {isStunned} from '../../rules/board';
@@ -29,9 +30,46 @@ export function playbackScene(play: Playback): BoardScene {
   };
 }
 
-/** Where a unit is drawn while a playback moves it (between two hexes), or undefined. */
+/**
+ * How far, in scene pixels, a unit moves toward its target as it attacks,
+ * at `k` (0 to 1) through the attack's playback: the One-Eyed Giant rears
+ * back and lunges into its Smash, or rears back, heaves and follows
+ * through its Boulder; then settles back. Other attacks don't move their
+ * unit.
+ */
+function attackLunge(ability: AbilityId, k: number): {toward: number; up: number} {
+  const ease = (t: number) => Math.min(1, Math.max(0, t));
+  if (ability === 'smash') {
+    if (k < 0.2) return {toward: -5 * ease(k / 0.2), up: 2 * ease(k / 0.2)};
+    if (k < 0.35) return {toward: lerp(-5, 12, ease((k - 0.2) / 0.15)), up: 0};
+    return {toward: 12 * (1 - ease((k - 0.5) / 0.35)), up: 0};
+  }
+  if (ability === 'boulder') {
+    if (k < 0.15) return {toward: -6 * ease(k / 0.15), up: 3 * ease(k / 0.15)};
+    if (k < 0.25) return {toward: lerp(-6, 7, ease((k - 0.15) / 0.1)), up: 0};
+    return {toward: 7 * (1 - ease((k - 0.3) / 0.3)), up: 0};
+  }
+  return {toward: 0, up: 0};
+}
+
+/**
+ * Where a unit is drawn while a playback moves it (between two hexes, or
+ * lunging into an attack: `attackLunge`), or undefined.
+ */
 export function steppingAt(play: Playback, unitId: string): {x: number; y: number} | undefined {
   const e = play.current;
+  if (e?.kind === 'action' && e.unitId === unitId && e.target) {
+    const u = play.display.units.find((v) => v.id === unitId);
+    const lunge = attackLunge(e.ability, play.progress);
+    if (!u?.hex || (lunge.toward === 0 && lunge.up === 0)) return undefined;
+    const a = center(u.hex);
+    const b = center(e.target);
+    const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    return {
+      x: Math.round(a.x + ((b.x - a.x) / len) * lunge.toward),
+      y: Math.round(a.y + ((b.y - a.y) / len) * lunge.toward - lunge.up),
+    };
+  }
   if (e?.kind !== 'step' || e.unitId !== unitId) return undefined;
   const k = play.progress;
   const a = center(e.from);
