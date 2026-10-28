@@ -227,8 +227,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Ranger (owner, 2026-10-27; roster.md): a Persian foot archer, a
    * candidate for Persia's damage hero beside the Cataphract. Speed 2,
    * defence 1 (health 4) and power 3, the most of any hero, are the
-   * owner's. Longshot hits the first unit in line, Piercing, and Pushes it
-   * 1 (`ABILITY.longshot`).
+   * owner's. Longshot hits the first unit in line, Piercing
+   * (`ABILITY.longshot`).
    */
   archer: {
     name: 'Ranger',
@@ -299,14 +299,16 @@ export const ABILITY = {
   /**
    * Longshot (owner, 2026-10-27; roster.md), the Ranger's: down any of
    * its six lines, at any range, the first unit in line hit, stopped by
-   * yurts as Snap Shot (`first`), Piercing (`pierce`), and Pushed 1
-   * (`push`; owner, 2026-10-28; Delayed 3, `delay`, from later
+   * yurts as Snap Shot (`first`), and Piercing (`pierce`); Pushed 1
+   * (`push`) from 2026-10-28 until later that day (owner: balance.md,
+   * "Longshot's Push, flying over the spaces next to the Ranger", 55.2%
+   * in the Steppe's damage seat with it, 49.6% without); Delayed 3, `delay`, from later
    * 2026-10-27: balance.md, "Longshot's effect", 49.4% in the Steppe's
    * damage seat, 50.9% in China's). Built first hitting any unit on its
    * lines, past everything (`first` off, no Pierce or Delay): 58–67% in
    * every seat.
    * Switches for measuring nerfs (balance.md, "Archer nerfs and Magus
-   * buffs"), off as built but `minRange` and `push`: `minRange`, the nearest space
+   * buffs"), off as built but `minRange`: `minRange`, the nearest space
    * it shoots, 2 (owner, 2026-10-28: no shot at the spaces next to the
    * Ranger; owner, later 2026-10-28: its arrow flies over them, units and
    * yurts there included, and hits the first unit beyond);
@@ -325,7 +327,7 @@ export const ABILITY = {
     falloff: Infinity as number,
     first: true as boolean,
     pierce: true as boolean,
-    push: 1 as number,
+    push: 0 as number,
     delay: 0 as number,
     weaken: 0 as number,
     pin: false as boolean,

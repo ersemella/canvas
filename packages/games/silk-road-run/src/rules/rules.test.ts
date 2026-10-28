@@ -1954,7 +1954,7 @@ describe('the Ranger', () => {
     }
   });
 
-  it('Longshot hits the first unit in line, Piercing, and Pushes it 1', () => {
+  it('Longshot hits the first unit in line, Piercing, and stays put', () => {
     const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
     const bokh = unit(s, 'e-bokh');
     bokh.passives = ['hardened'];
@@ -1964,8 +1964,21 @@ describe('the Ranger', () => {
     applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
     // Armour 1 (Hardened) Pierced: the full 3.
     expect(bokh.hp).toBe(bokh.maxHp - 3);
-    expect(bokh.hex).toEqual(along(c, 0, 3));
+    expect(bokh.hex).toEqual(along(c, 0, 2));
     expect(bokh.slot).toBe(5);
+  });
+
+  it('Longshot with `push` Pushes the unit it hits', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {push: 1});
+    try {
+      const {s, a} = ready({'e-bokh': along(c, 0, 2)});
+      const bokh = unit(s, 'e-bokh');
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+      expect(bokh.hex).toEqual(along(c, 0, 3));
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
   });
 
   it('Longshot flies over a unit next to the Ranger and hits the first one beyond', () => {

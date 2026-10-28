@@ -3706,7 +3706,8 @@ points); `ABILITY.longshot.push` 0, 1 (as built) and 2, no Delay.
 - **With the Push it now overshoots on the Steppe** (55.2%, 5 over) and
   is about even in China; Push 2 changes nothing over Push 1.
 
-Not changed: the owner's call.
+**Built since** (the owner, 2026-10-28): no Push (`push: 0` by default).
+`longshot-push.mjs` sets the Push of each row, so it still reproduces.
 
 ## Principles for re-tuning
 
