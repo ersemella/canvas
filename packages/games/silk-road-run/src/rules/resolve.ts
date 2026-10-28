@@ -348,7 +348,7 @@ export function endTurnEffects(unit: Unit): void {
 
 /**
  * Damage taken (17.6, steps 3 and 4): its Shield takes it first, health
- * the rest. A Bonebreaker that takes damage lets go of the unit it
+ * the rest. A Grappler that takes damage lets go of the unit it
  * grapples (owner, 2026-10-23); damage a Shield absorbs whole isn't taken.
  * Then the passives that answer damage (19.8): Shake Loose, Last Stand,
  * Second Wind. `source`, the unit dealing it, if any, is credited with a
@@ -557,7 +557,7 @@ export function clearHail(state: FightState, caster: Unit): void {
 
 /**
  * `user`'s shots fly, its charging card having come back: each down its
- * lane from where the Harrier stands now, the first unit in it taking its
+ * lane from where the Outrider stands now, the first unit in it taking its
  * power (`shotLane`).
  */
 export function landShots(ctx: Ctx, user: Unit): void {
@@ -618,8 +618,8 @@ export function endGrapples(ctx: Ctx, ends: (g: Grapple) => boolean, quiet = fal
 }
 
 /**
- * Stuns `u`, unless it is Unstoppable (17.4) or Iron Will turns it (19.8). A Stunned Bonebreaker lets go of the unit it grapples
- * (owner, 2026-10-23), and a Stunned Harrier loses the arrow it has drawn
+ * Stuns `u`, unless it is Unstoppable (17.4) or Iron Will turns it (19.8). A Stunned Grappler lets go of the unit it grapples
+ * (owner, 2026-10-23), and a Stunned Outrider loses the arrow it has drawn
  * (owner, 2026-10-24): its card comes back as an ordinary turn, skipped
  * while it is Stunned.
  */
@@ -642,7 +642,7 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 }
 
 /**
- * At the start of a Bonebreaker's turn, each unit it still grapples takes
+ * At the start of a Grappler's turn, each unit it still grapples takes
  * `ABILITY.grapple.squeeze` (owner, 2026-10-23).
  */
 export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
@@ -670,7 +670,7 @@ export function endGrapplesApart(ctx: Ctx, unit: Unit): void {
 /**
  * A grapple lasts while the two stay next to each other (owner,
  * 2026-10-22): being moved away ends it, and so does a walk that ends
- * away; the Bonebreaker may walk while it grapples, round its target
+ * away; the Grappler may walk while it grapples, round its target
  * (owner, 2026-10-23).
  */
 function apart(state: FightState, g: Grapple): boolean {

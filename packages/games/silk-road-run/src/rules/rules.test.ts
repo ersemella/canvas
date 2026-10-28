@@ -288,7 +288,7 @@ describe('the track', () => {
     expect(bokh.hp).toBe(bokh.maxHp);
     expect(s.shots).toHaveLength(1);
     expect(shotLane(s, mapOf(s), s.shots![0]!).at(-1)).toEqual(bokh.hex);
-    // Everyone else holds, so the next decision of the Harrier's is its turn after the shot.
+    // Everyone else holds, so the next decision of the Outrider's is its turn after the shot.
     s.units.forEach((u) => (u.controller = 'human'));
     for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
       applyTurn(s, d, {action: {ability: 'hold'}});
@@ -331,7 +331,7 @@ describe('the track', () => {
     const lane = shotLane(s, mapOf(s), s.shots![0]!);
     expect(lane.at(-1)).toEqual(bokh.hex);
     expect(lane.length).toBeGreaterThan(1);
-    // The Bonebreaker steps out of the line; the Storm Caller steps into it, nearer.
+    // The Grappler steps out of the line; the Storm Caller steps into it, nearer.
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
     const away = hexNeighbors(bokh.hex!).find(
       (h) => onMap(STEPPE, h) && !unitAt(s, h) && !lane.some((l) => hexKey(l) === hexKey(h))
@@ -346,7 +346,7 @@ describe('the track', () => {
     expect(s.shots).toEqual([]);
   });
 
-  it('a drawn arrow carries the Empower its Harrier drew with, though the Empower ends with that turn', () => {
+  it('a drawn arrow carries the Empower its Outrider drew with, though the Empower ends with that turn', () => {
     upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
@@ -362,7 +362,7 @@ describe('the track', () => {
     expect(bokh.hp).toBe(bokh.maxHp - m.power - 2);
   });
 
-  it('a drawn arrow is lost when its Harrier falls first', () => {
+  it('a drawn arrow is lost when its Outrider falls first', () => {
     upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
@@ -371,7 +371,7 @@ describe('the track', () => {
     expect(s.shots).toEqual([]);
   });
 
-  it('a drawn arrow is lost when its Harrier is Stunned first, and its card comes back as a skipped turn', () => {
+  it('a drawn arrow is lost when its Outrider is Stunned first, and its card comes back as a skipped turn', () => {
     upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
@@ -381,7 +381,7 @@ describe('the track', () => {
     stun({state: s, map: mapOf(s), slot: s.currentSlot}, m, {kind: 'stunned'});
     expect(s.shots).toEqual([]);
     expect(charging(s, m)).toBe(false);
-    // Everyone else holds until the Harrier's card has come back.
+    // Everyone else holds until the Outrider's card has come back.
     s.units.forEach((u) => (u.controller = 'human'));
     for (let d = advanceToDecision(s); d && s.currentSlot <= back!; d = advanceToDecision(s))
       applyTurn(s, d, {action: {ability: 'hold'}});
@@ -419,7 +419,7 @@ describe('the track', () => {
     expect(unit(held, m.id).slot).toBe(33);
   });
 
-  it('gives the faster more turns: Harriers before Bonebreaker, Bonebreaker before Temee', () => {
+  it('gives the faster more turns: Outriders before Grappler, Grappler before Temee', () => {
     // A sparse track, so yielding doesn't blur the costs.
     const s = setup({
       'p-camel': at(0, 0),
@@ -464,12 +464,12 @@ describe('the track', () => {
       'p-camel': at(0, 2),
       'e-bokh': at(8, 0),
     });
-    // Storm Caller (2) at 10, Temee (0) at 11, Bonebreaker (2) at 12.
+    // Storm Caller (2) at 10, Temee (0) at 11, Grappler (2) at 12.
     unit(s, 'p-storm').slot = 10;
     unit(s, 'p-camel').slot = 11;
     unit(s, 'e-bokh').slot = 12;
-    // The Harrier (3) takes 10; the Storm Caller, moved on, takes Temee's
-    // 11; Temee, slower than Bonebreaker, yields past 12 to 13.
+    // The Outrider (3) takes 10; the Storm Caller, moved on, takes Temee's
+    // 11; Temee, slower than Grappler, yields past 12 to 13.
     expect(placeCard(s, unit(s, 'p-mangudai'), 10)).toBe(10);
     expect(unit(s, 'p-storm').slot).toBe(11);
     expect(unit(s, 'p-camel').slot).toBe(13);
@@ -522,7 +522,7 @@ describe('the track', () => {
   it('orders simultaneous placement: speed, then the player’s side first, then party order', () => {
     const s = createFight(0);
     const order = simultaneousOrder(s.units).map((u) => u.id);
-    // Harriers are fastest; the heroes after them tie, the player's
+    // Outriders are fastest; the heroes after them tie, the player's
     // first; the camel, slowest, is last.
     expect(order).toEqual([
       'p-mangudai',
@@ -984,7 +984,7 @@ describe('stats and damage', () => {
     expect(storm.empower).toBeUndefined();
   });
 
-  it('a Bonebreaker’s Empower adds to its squeeze when the rule says so, as it does in play', () => {
+  it('a Grappler’s Empower adds to its squeeze when the rule says so, as it does in play', () => {
     const squeezed = (empoweredSqueeze: boolean) => {
       const grapple = ABILITY.grapple as {empoweredSqueeze: boolean};
       const saved = grapple.empoweredSqueeze;
@@ -1135,7 +1135,7 @@ describe('abilities', () => {
     expect(unit(s, 'p-bokh').hp).toBeLessThan(hp);
   });
 
-  it('Grapple: its power in damage, then the target is Stunned; the Bonebreaker stays free', () => {
+  it('Grapple: its power in damage, then the target is Stunned; the Grappler stays free', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
@@ -1160,7 +1160,7 @@ describe('abilities', () => {
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Grapple ends when the Bonebreaker walks away', () => {
+  it('Grapple ends when the Grappler walks away', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
@@ -1172,7 +1172,7 @@ describe('abilities', () => {
     expect(target.statuses).toEqual([]);
   });
 
-  it('Grapple isn’t offered on the unit the Bonebreaker already grapples', () => {
+  it('Grapple isn’t offered on the unit the Grappler already grapples', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     expect(ABILITIES.grapple.targets(s, STEPPE, b, b.hex!)).toEqual([{hex: at(2, 1)}]);
@@ -1186,7 +1186,7 @@ describe('abilities', () => {
     );
   });
 
-  it('Grapple holds while the Bonebreaker walks, if the walk ends next to its target', () => {
+  it('Grapple holds while the Grappler walks, if the walk ends next to its target', () => {
     const s = setup({'p-bokh': at(3, 3), 'e-storm': at(4, 3), 'e-mangudai': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
@@ -1208,7 +1208,7 @@ describe('abilities', () => {
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Grapple: each of the Bonebreaker’s turns while it lasts, its target takes 1', () => {
+  it('Grapple: each of the Grappler’s turns while it lasts, its target takes 1', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(8, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const b = unit(s, 'p-bokh');
@@ -1223,7 +1223,7 @@ describe('abilities', () => {
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Grapple ends when the Bonebreaker takes damage, or is Stunned', () => {
+  it('Grapple ends when the Grappler takes damage, or is Stunned', () => {
     const s = setup({
       'p-bokh': at(1, 1),
       'e-storm': at(2, 1),
@@ -1233,7 +1233,7 @@ describe('abilities', () => {
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
-    // Struck by the Harrier.
+    // Struck by the Outrider.
     const struck = cloneFight(s);
     hit(
       {state: struck, map: mapOf(struck), slot: 0},
@@ -1243,13 +1243,13 @@ describe('abilities', () => {
     );
     expect(unit(struck, 'p-bokh').hp).toBe(b.hp - 2);
     expect(unit(struck, 'e-storm').statuses).toEqual([]);
-    // The enemy Bonebreaker grapples it: Stunned, it lets go.
+    // The enemy Grappler grapples it: Stunned, it lets go.
     applyTurn(s, unit(s, 'e-bokh'), {action: {ability: 'grapple', target: {hex: b.hex!}}});
     expect(b.statuses.map((x) => x.kind)).toEqual(['stunned']);
     expect(target.statuses).toEqual([]);
   });
 
-  it('Grapple is melee: only a unit next to the Bonebreaker, with no step in', () => {
+  it('Grapple is melee: only a unit next to the Grappler, with no step in', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(3, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
@@ -1277,7 +1277,7 @@ describe('abilities', () => {
     expect(second.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Grapple throws the held unit: Moved to the free space picked next to the Bonebreaker, not struck; the grapple holds', () => {
+  it('Grapple throws the held unit: Moved to the free space picked next to the Grappler, not struck; the grapple holds', () => {
     const s = setup({
       'p-bokh': at(3, 4),
       'e-storm': hexNeighbors(at(3, 4))[0]!,
@@ -1289,8 +1289,8 @@ describe('abilities', () => {
     expect(ABILITIES.grapple.targets(s, STEPPE, b, b.hex!)).toEqual([{hex: target.hex!}]);
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
     const throws = ABILITIES.grapple.targets(s, STEPPE, b, b.hex!);
-    // Every free space around the Bonebreaker, not around the target, and the
-    // Bonebreaker's own (a swap): one tap, the held unit implied.
+    // Every free space around the Grappler, not around the target, and the
+    // Grappler's own (a swap): one tap, the held unit implied.
     expect(throws.length).toBe(6);
     for (const t of throws) {
       expect(t.to).toBeUndefined();
@@ -1308,7 +1308,7 @@ describe('abilities', () => {
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Grapple on the Bonebreaker’s own space swaps: the two trade spaces, it is not struck, and the grapple holds, Immobilized or not', () => {
+  it('Grapple on the Grappler’s own space swaps: the two trade spaces, it is not struck, and the grapple holds, Immobilized or not', () => {
     const s = setup({
       'p-bokh': at(3, 4),
       'e-storm': hexNeighbors(at(3, 4))[0]!,
@@ -1324,7 +1324,7 @@ describe('abilities', () => {
     // Only the grapple hit: the throw deals nothing.
     expect(target.hp).toBe(target.maxHp - b.power);
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
-    // An Immobilized Bonebreaker (in hail, say) still swaps back.
+    // An Immobilized Grappler (in hail, say) still swaps back.
     b.statuses.push({kind: 'immobilized'});
     const landings = ABILITIES.grapple.targets(s, STEPPE, b, b.hex!).map((t) => t.hex!);
     expect(landings.some((h) => hexDistance(h, b.hex!) === 0)).toBe(true);
@@ -1412,24 +1412,24 @@ describe('abilities', () => {
     expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
   });
 
-  it('a Bonebreaker in hail grapples its caster: the hail hit came first, so the grapple holds and the caster’s turn is skipped', () => {
+  it('a Grappler in hail grapples its caster: the hail hit came first, so the grapple holds and the caster’s turn is skipped', () => {
     const s = setup({'e-storm': at(2, 1), 'p-bokh': at(0, 1), 'e-mangudai': at(8, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const storm = unit(s, 'e-storm');
     const b = unit(s, 'p-bokh');
-    // The Storm Caller hails the Bonebreaker's space, two away.
+    // The Storm Caller hails the Grappler's space, two away.
     s.awaiting = storm.id;
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: b.hex!}}});
     expect(b.hp).toBe(b.maxHp - storm.power);
     expect(b.statuses).toEqual([{kind: 'immobilized', hail: 'e-storm', at: at(0, 1)}]);
     // Moved next to it (by a Haul, say), it stays Immobilized.
     b.hex = at(1, 1);
-    // The Bonebreaker's turn, with the Storm Caller's next.
+    // The Grappler's turn, with the Storm Caller's next.
     b.slot = 1;
     storm.slot = 2;
     unit(s, 'e-mangudai').slot = 500;
     expect(advanceToDecision(s)!.id).toBe('p-bokh');
-    // Immobilized doesn't stop a melee Grapple: the Bonebreaker doesn't move.
+    // Immobilized doesn't stop a melee Grapple: the Grappler doesn't move.
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: storm.hex!}}});
     expect(storm.statuses).toEqual([
       {kind: 'stunned', grapple: {champion: 'p-bokh', target: 'e-storm'}},
@@ -1460,7 +1460,7 @@ describe('abilities', () => {
   });
 });
 
-describe('the Oathblade', () => {
+describe('the Duelist', () => {
   const party: HeroId[] = ['youxia', 'modao', 'mangudai'];
   const c = at(4, 4);
 
@@ -1562,7 +1562,7 @@ describe('the Magus', () => {
       applyTurn(s, m, {action: {ability: 'omen', target: {hex: b.hex!, to: e.hex!}}});
       expect([b.slot, e.slot]).toEqual([s.currentSlot + 1, actionCost(m) + 1]);
       expect(m.slot).toBe(actionCost(m));
-      // With no guard, the Harrier can be put back again before it acts.
+      // With no guard, the Outrider can be put back again before it acts.
       s.currentSlot = actionCost(m);
       s.awaiting = m.id;
       b.slot = actionCost(m) + 2;
@@ -1667,7 +1667,7 @@ describe('the Magus', () => {
       unit(s, 'p-bokh').passives = ['steadyGait'];
       unit(s, 'p-mangudai').slot = 3;
       unit(s, 'p-camel').slot = 4;
-      // Only the Harrier next to it and Humphrey remain: one pair, either way round.
+      // Only the Outrider next to it and Humphrey remain: one pair, either way round.
       const ids = omenTargets(s, m).map((t) => [unitAt(s, t.hex!)!.id, unitAt(s, t.to!)!.id]);
       expect(ids).toEqual(
         expect.arrayContaining([
@@ -1807,7 +1807,7 @@ describe('the Juggernaut', () => {
   });
 });
 
-describe('the Deadeye', () => {
+describe('the Ranger', () => {
   const party: HeroId[] = ['archer', 'bokh', 'storm'];
   const c = at(1, 4);
   /** `n` spaces from `h` along direction `dir`. */
@@ -1815,7 +1815,7 @@ describe('the Deadeye', () => {
     for (let i = 0; i < n; i++) h = hexNeighbor(h, dir);
     return h;
   };
-  /** A fight with the Deadeye at `c` to act, and units where `placements` puts them. */
+  /** A fight with the Ranger at `c` to act, and units where `placements` puts them. */
   const ready = (placements: Record<string, Hex>) => {
     const s = setup({'p-archer': c, ...placements}, party);
     const a = unit(s, 'p-archer');
@@ -1842,7 +1842,7 @@ describe('the Deadeye', () => {
         'e-bokh': along(c, 0, 2),
         'e-storm': along(c, 0, 4),
       });
-      // A yurt in the line too, between the Bonebreaker and the Storm Caller.
+      // A yurt in the line too, between the Grappler and the Storm Caller.
       s.tiles = {...s.tiles, [`${along(c, 0, 3).q},${along(c, 0, 3).r}`]: 'obstacle'};
       for (const id of ['p-bokh', 'e-bokh', 'e-storm'])
         expect(isTarget(s, a, unit(s, id).hex!)).toBe(true);
@@ -1893,7 +1893,7 @@ describe('the Deadeye', () => {
     expect(bokh.slot).toBe(5);
   });
 
-  it('Longshot never hits the spaces next to the Deadeye, and a unit there stops its arrow', () => {
+  it('Longshot never hits the spaces next to the Ranger, and a unit there stops its arrow', () => {
     const {s, a} = ready({'e-bokh': along(c, 0, 1), 'e-storm': along(c, 0, 3)});
     expect(isTarget(s, a, unit(s, 'e-bokh').hex!)).toBe(false);
     expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
@@ -2565,7 +2565,7 @@ describe('the caravan’s camel', () => {
     camel.slot = 90;
     unit(s, 'p-bokh').slot = 95;
     expect(abilitiesOf(camel).map((d) => d.id)).toEqual(['hold']);
-    // Bonebreaker's card is at 95: the camel's turn comes first, with no decision.
+    // Grappler's card is at 95: the camel's turn comes first, with no decision.
     expect(advanceToDecision(s)!.id).toBe('p-bokh');
     expect(camel.hex).toEqual(road[0]);
     expect(camel.slot).toBe(90 + actionCost(camel));
@@ -2680,7 +2680,7 @@ describe('previews, the AI and the run', () => {
       };
       const aim = s.currentSlot + actionCost(actor);
       unit(s, 'e-bokh').slot = aim;
-      // The Harrier (3) is faster than Bonebreaker (2): it takes the slot, and the preview says Bonebreaker moves on.
+      // The Outrider (3) is faster than Grappler (2): it takes the slot, and the preview says Grappler moves on.
       expect(previewTurn(s, actor.id, input)).toMatchObject({
         aimSlot: aim,
         slot: aim,
@@ -2708,7 +2708,7 @@ describe('previews, the AI and the run', () => {
     ).toBe(2);
   });
 
-  it('moves the Harrier any number of spaces straight, up to the first unit', () => {
+  it('moves the Outrider any number of spaces straight, up to the first unit', () => {
     const s = setup({'p-mangudai': at(0, 0), 'e-bokh': at(7, 0)});
     const outrider = unit(s, 'p-mangudai');
     const reaches = reachableHexes(s, mapOf(s), outrider);
@@ -2800,7 +2800,7 @@ describe('previews, the AI and the run', () => {
           expect(picked.slice(0, before.length)).toEqual(before);
         }
       });
-      // The first stage always brings the Harrier.
+      // The first stage always brings the Outrider.
       expect(stageEnemies(seed, 0)[0]).toBe(FIRST_ENEMY);
       seconds.add(stageEnemies(seed, 1)[1]!);
     }
@@ -2812,7 +2812,7 @@ describe('previews, the AI and the run', () => {
     const run = createRun(5);
     expect(runView(run)).toMatchObject({stage: 0, stages: STAGES.length});
     expect(() => handleRunAction(run, {type: 'next'})).toThrow(RuleError);
-    // Win the first stage with the Harrier fallen.
+    // Win the first stage with the Outrider fallen.
     const won = {...run, fight: cloneFight(run.fight)};
     won.fight.phase = 'won';
     const m = won.fight.units.find((u) => u.id === 'p-mangudai')!;
@@ -3107,7 +3107,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('plays each AI turn in a request of its own, and only when it is due', () => {
-    // An enemy Harrier, the fastest, acts before a party without one.
+    // An enemy Outrider, the fastest, acts before a party without one.
     const runs = Array.from({length: 30}, (_, seed) => createRun(seed, {party: ['storm']}));
     const run = runs.find((r) => runView(r).aiDue)!;
     expect(run).toBeDefined();
@@ -3246,7 +3246,7 @@ describe('previews, the AI and the run', () => {
     // A Stunned enemy threatens nothing.
     unit(s, 'e-mangudai').statuses.push({kind: 'stunned'});
     expect(at3(at(2, 0))).toBe(0);
-    // The Bonebreaker, a tank, ignores the threat when choosing.
+    // The Grappler, a tank, ignores the threat when choosing.
     expect(AI.caution.bokh).toBe(0);
   });
 

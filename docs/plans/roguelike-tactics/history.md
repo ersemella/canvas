@@ -571,14 +571,15 @@ Learned:
   Archer (H, M before); the Swordsman keeps Y, as S is the Storm
   Caller's. Hero ids (`bokh`, `mangudai`, `youxia` and so on) and file
   names are unchanged.
-- **Six heroes** (2026-10-28): renamed at the owner's request for cooler
-  names, still English and naming no culture: the **Bonebreaker**
-  (Grappler), **Harrier** (Horse Archer), **Juggernaut** (Elephant Rider),
-  **Deadeye** (Archer), **Oathblade** (Swordsman) and **Reaver**
-  (Barbarian, not built). The Storm Caller, Vanguard, Magus and Alchemist
-  kept theirs, as did the Cataphract. Board letters followed: B, H, J, D
-  and O (G, H, E, R and Y before). Hero ids, file names and balance.md's
-  records are unchanged.
+- **Four heroes** (2026-10-28): renamed for cooler names, still English
+  and naming no culture: the **Outrider** (Horse Archer), **Juggernaut**
+  (Elephant Rider), **Ranger** (Archer) and **Duelist** (Swordsman);
+  owner's calls. Briefly the same day the Grappler was the Bonebreaker,
+  the Barbarian the Reaver, the Outrider the Harrier, the Duelist the
+  Oathblade and the Ranger the Deadeye, before the owner kept the
+  Grappler and Barbarian and picked the rest. Board letters followed: the
+  Outrider O, Juggernaut J and Duelist D (H, E and Y before); the Ranger
+  keeps R. Hero ids, file names and balance.md's records are unchanged.
 - Package and folder names `roguelite` and `roguelike-tactics`: the game
   is **Silk Road Run** (`packages/games/silk-road-run`). Other
   titles considered: Silk Road Caravans, Caravans of the Silk Road, Silk

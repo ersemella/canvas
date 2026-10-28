@@ -25,7 +25,7 @@ against Hail alone.
 Hold Loose, Hip Toss, Squall Line, Tailwind and Overwatch, measured with
 them, were removed with their code. A changed ability against its original
 uses `mod.kits`, the modified side's kits by hero.
-`outrider-straight.mjs` (2026-10-25) measures the Harrier's straight move
+`outrider-straight.mjs` (2026-10-25) measures the Outrider's straight move
 against the walk of 2 it replaced (it runs on the current rules);
 `outrider-ai.mjs` and `outrider-ai-2.mjs` the AI's variants for it, whose
 switches (`AI.standoff`, `AI.linesUp`, `AI.clearShot`) were removed once
@@ -41,7 +41,7 @@ Delay by their switches (`ABILITY.elixir.shape`, `ABILITY.cleave.delay`).
 Weaken of 1 and a hit on an enemy (`ABILITY.elixir.fixed`), and with a
 heal on allies (`ABILITY.elixir.heal`), and at power 0 with Haste and
 Delay (`ABILITY.elixir.tempo`).
-`china-steppe.mjs` (2026-10-26) measures the China party (Oathblade, Vanguard,
+`china-steppe.mjs` (2026-10-26) measures the China party (Duelist, Vanguard,
 Alchemist) against the Steppe party, and each Chinese hero in each Steppe
 hero's seat; `china-buffs.mjs` (2026-10-26) whether the AI is why China
 loses (`mod.search`, the modified side's own horizon and work cap) and
@@ -59,7 +59,7 @@ files touching the Alchemist that don't set every one of these
 `hail-elixir.mjs` sets them all.
 `storm-speed.mjs` (2026-10-26) measures the Storm Caller at speed 3.
 `storm-power.mjs` (2026-10-27) measures the Storm Caller at power 2; its
-`p*-bokh-for-storm` rows crash on two Bonebreakers on a side.
+`p*-bokh-for-storm` rows crash on two Grapplers on a side.
 `elixir-tempo.mjs` (2026-10-26) measures the burst Elixir with Haste and
 Delay in place of Empower and Weaken (`ABILITY.elixir.tempo`), counting
 Delays on a unit already Delayed since its last turn (`delaysPerFight`)
@@ -139,7 +139,7 @@ parties by a novice and an expert (`search`, the player's heroes' search).
 `roster-nine.mjs` (2026-10-27) does the same for all nine heroes: each in
 every seat of a Steppe, a China and a Persia mirror, the regions' parties
 against each other, and the Persian heroes by a novice and an expert.
-`archer-magus.mjs` (2026-10-27) measures Deadeye nerfs (`ABILITY.longshot.minRange`,
+`archer-magus.mjs` (2026-10-27) measures Ranger nerfs (`ABILITY.longshot.minRange`,
 `.camel`, `.falloff`, power, defence) and Magus buffs (`ABILITY.conjunction.hit`,
 `.delay`, range, speed, defence), each switch off as built.
 `longshot-bracket.mjs` (2026-10-27) measures Longshot stopped by the first

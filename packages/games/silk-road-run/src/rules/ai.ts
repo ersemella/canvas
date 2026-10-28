@@ -75,11 +75,11 @@ function statusPoints(state: FightState, u: Unit): number {
 
 /**
  * What a grappled unit's status is less worth while one of its side's units
- * that can act could strike the Bonebreaker holding it (`strikable`): a hit
+ * that can act could strike the Grappler holding it (`strikable`): a hit
  * breaks the grapple. `AI.rescueShare` of it, so stepping into reach of the
- * Bonebreaker counts and the hit that frees the unit still does. Without it a
+ * Grappler counts and the hit that frees the unit still does. Without it a
  * wolf behind its grappled packmate Held: the hit was past the search's
- * horizon, and the Bonebreaker's threat outweighed closing in.
+ * horizon, and the Grappler's threat outweighed closing in.
  */
 function rescueGain(state: FightState, u: Unit): number {
   const held = u.statuses.find((x) => x.grapple?.target === u.id)?.grapple;
@@ -101,7 +101,7 @@ function rescueGain(state: FightState, u: Unit): number {
 /**
  * What an Empower is worth (balance.md): its extra damage on `u`'s next
  * hit, if an enemy is within reach (`strikable`), plus a kill's worth if
- * that hit would kill only with it, and for a Bonebreaker grappling a unit
+ * that hit would kill only with it, and for a Grappler grappling a unit
  * the squeeze's extra too (`ABILITY.grapple.empoweredSqueeze`), all times
  * `AI.empoweredShare`, the share of Empowers that get used. Once its turn
  * has begun it is being spent, so it no longer counts: spending it on a
@@ -140,7 +140,7 @@ function weakenLoss(state: FightState, u: Unit): number {
  * The enemies standing where `u` could hit them from where it is, roughly:
  * next to it for melee, on hail's ring for the Storm Caller, on one of
  * Snap Shot's lines, or of Skirmish's from a space next to it (ignoring what
- * blocks them), for the Harrier, or on Longshot's, for the Deadeye.
+ * blocks them), for the Outrider, or on Longshot's, for the Ranger.
  */
 function strikable(state: FightState, u: Unit): Unit[] {
   if (!u.hex) return [];
@@ -452,7 +452,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   if (input.action.ability === 'grapple' && !throws) value += turnValue(hit) * AI.stunnedShare;
   if (input.action.ability === 'hail') value += turnValue(hit) * AI.immobilizedShare.melee;
   // A drawn arrow (Skirmish): its target may step out before it lands, and
-  // the charge holds the Harrier back (`shotPoints`, `chargeCost`).
+  // the charge holds the Outrider back (`shotPoints`, `chargeCost`).
   if (chargeOf(unit, input.action.ability) > 0) {
     if (!isStunned(hit) && !isImmobilized(hit)) value *= AI.dodgeShare;
     value -= chargeCost(unit, input);
@@ -505,8 +505,8 @@ function weakenGuess(state: FightState, u: Unit, amount: number): number {
  * a turn's statuses and shots: the enemy's statuses (an Empower with
  * someone in reach, a grappled unit an ally could free) and the shots in
  * the air. A walk's guess is this where it ends, less where it starts:
- * stepping out of an Empowered Bonebreaker's reach, or into reach of the
- * Bonebreaker grappling an ally.
+ * stepping out of an Empowered Grappler's reach, or into reach of the
+ * Grappler grappling an ally.
  */
 function standing(state: FightState, unit: Unit): number {
   let value = shotPoints(state, unit.side);
@@ -911,7 +911,7 @@ function actionCost(before: FightState, unit: Unit, option: ScoredOption): numbe
  */
 function huntsTemee(state: FightState, me: Unit): boolean {
   if (me.side !== 'enemy' || !me.hex || !camelOf(state)?.alive) return false;
-  // The Harrier's straight move has no cap: weighed as an ordinary walk.
+  // The Outrider's straight move has no cap: weighed as an ordinary walk.
   const reach = Math.min(movementCap(me), RULES.movementCap) + 1;
   return !state.units.some(
     (e) =>
@@ -935,7 +935,7 @@ function quarryGap(state: FightState, me: Unit, hunting: boolean): number {
  * How far `me` on `at` is from shooting `target` (an archer, `isRanged`):
  * 0 with a clear shot down a lane (on any of its lines, for Longshot), 1 on
  * one of its lines with a unit in the way, otherwise the steps onto the nearest of its lines. Snap Shot has
- * no range, so closing in by spaces only walked the Harrier into melee
+ * no range, so closing in by spaces only walked the Outrider into melee
  * once its move became Snap Shot's shape (balance.md, "The Horse Archer's AI").
  */
 function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {

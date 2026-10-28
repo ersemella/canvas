@@ -74,7 +74,7 @@ export interface HeroStats {
   /**
    * Moves the way Snap Shot flies: any number of spaces straight along one of
    * the six directions, up to the first unit, yurts or the map's edge (the
-   * Harrier; owner, 2026-10-25). Hail still ends the move where it enters.
+   * Outrider; owner, 2026-10-25). Hail still ends the move where it enters.
    */
   movesStraight?: boolean;
   /** Its card starts the fight last, at RULES.camelStartSlot, whatever its speed (the camel). */
@@ -94,8 +94,8 @@ export interface HeroStats {
  */
 export const HEROES: Record<HeroId, HeroStats> = {
   bokh: {
-    name: 'Bonebreaker',
-    letter: 'B',
+    name: 'Grappler',
+    letter: 'G',
     speed: 2,
     defence: 3,
     power: 1,
@@ -107,8 +107,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     upgrades: ['haul', 'shove'],
   },
   mangudai: {
-    name: 'Harrier',
-    letter: 'H',
+    name: 'Outrider',
+    letter: 'O',
     speed: 3,
     defence: 1,
     power: 2,
@@ -126,7 +126,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 2,
     defence: 2,
     // 2 since 2026-10-27 (owner; balance.md, "The Storm Caller at power
-    // 2"): at 1 the Oathblade and Vanguard in its seat won 63%. 1 from
+    // 2"): at 1 the Duelist and Vanguard in its seat won 63%. 1 from
     // 2026-10-23: at 0 Hail dealt nothing and couldn't break a grapple.
     power: 2,
     abilities: ['hail', 'hold'],
@@ -172,14 +172,14 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['elixir', 'hold'],
   },
   /**
-   * The Oathblade (owner, 2026-10-26; roster.md): China's fast
+   * The Duelist (owner, 2026-10-26; roster.md): China's fast
    * melee striker. Speed 3, power 2, defence 1 (health 4) and a walk of 3
    * are the owner's; Swift Strike, its sword stroke, Hastens it when it hits
    * (`ABILITY.swiftStrike`).
    */
   youxia: {
-    name: 'Oathblade',
-    letter: 'O',
+    name: 'Duelist',
+    letter: 'D',
     speed: 3,
     defence: 1,
     power: 2,
@@ -219,15 +219,15 @@ export const HEROES: Record<HeroId, HeroStats> = {
     passives: ['unstoppable'],
   },
   /**
-   * The Deadeye (owner, 2026-10-27; roster.md): a Persian foot archer, a
+   * The Ranger (owner, 2026-10-27; roster.md): a Persian foot archer, a
    * candidate for Persia's damage hero beside the Cataphract. Speed 2,
    * defence 1 (health 4) and power 3, the most of any hero, are the
    * owner's. Longshot hits the first unit in line, Piercing, and Pushes it
    * 1 (`ABILITY.longshot`).
    */
   archer: {
-    name: 'Deadeye',
-    letter: 'D',
+    name: 'Ranger',
+    letter: 'R',
     speed: 2,
     defence: 1,
     power: 3,
@@ -292,7 +292,7 @@ export const ABILITY = {
    */
   snapShot: {range: Infinity},
   /**
-   * Longshot (owner, 2026-10-27; roster.md), the Deadeye's: down any of
+   * Longshot (owner, 2026-10-27; roster.md), the Ranger's: down any of
    * its six lines, at any range, the first unit in line hit, stopped by
    * yurts as Snap Shot (`first`), Piercing (`pierce`), and Pushed 1
    * (`push`; owner, 2026-10-28; Delayed 3, `delay`, from later
@@ -303,11 +303,11 @@ export const ABILITY = {
    * Switches for measuring nerfs (balance.md, "Archer nerfs and Magus
    * buffs"), off as built but `minRange` and `push`: `minRange`, the nearest space
    * it shoots, 2 (owner, 2026-10-28: no shot at the spaces next to the
-   * Deadeye; a unit there still stops its arrow, as the Bow's 2026-10-23);
+   * Ranger; a unit there still stops its arrow, as the Bow's 2026-10-23);
    * `camel`, whether it may shoot the camel; `falloff`, the range past
    * which its hit is 1 less; `first`, stopped by the first unit or yurt
    * in its line, as Snap Shot; `pierce`, its hit Pierces Armour (17.6);
-   * `push`, the unit hit then Pushed this far away from the Deadeye (17.4);
+   * `push`, the unit hit then Pushed this far away from the Ranger (17.4);
    * in its place (balance.md, "Longshot's effect"), `delay`, the unit hit
    * Delayed this much (17.3); `weaken`, Weakened this much (17.6); `pin`,
    * Immobilized through its next turn (17.5), unless Unstoppable.
@@ -350,23 +350,23 @@ export const ABILITY = {
   sunlight: {range: 3, empower: 2, self: true as boolean, melts: true as boolean},
   /**
    * Skirmish (owner, 2026-10-23, in place of Volley): one step to a free
-   * space next to the Harrier, then Snap Shot's shot from there, charged:
-   * the Harrier's card is pushed `charge` of its action cost on, rounded
-   * (half: 4 slots for the Harrier's 8), greyed while it charges; when it
+   * space next to the Outrider, then Snap Shot's shot from there, charged:
+   * the Outrider's card is pushed `charge` of its action cost on, rounded
+   * (half: 4 slots for the Outrider's 8), greyed while it charges; when it
    * comes back the arrow flies down the lane it was aimed along and the
-   * first unit in it then takes the Harrier's power, with no turn for the
-   * Harrier, and its card goes its action cost on to its next turn. At 0
+   * first unit in it then takes the Outrider's power, with no turn for the
+   * Outrider, and its card goes its action cost on to its next turn. At 0
    * it shoots at once (measured: a better Snap Shot rather than a second
    * ability; balance.md).
    */
   skirmish: {charge: 0.5 as number},
   /**
-   * Each of the Bonebreaker's turns that a grapple lasts, its target takes
+   * Each of the Grappler's turns that a grapple lasts, its target takes
    * this (owner, 2026-10-23), on top of the grapple's first hit.
    */
   grapple: {
     squeeze: 1,
-    /** Whether a Bonebreaker's Empower adds to its squeeze: yes (owner, 2026-10-23; balance.md). */
+    /** Whether a Grappler's Empower adds to its squeeze: yes (owner, 2026-10-23; balance.md). */
     empoweredSqueeze: true,
   },
   /**
@@ -463,7 +463,7 @@ export const ABILITY = {
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),
-   * the Oathblade's *jian*: melee, and when it hits, the Oathblade's card is Hastened `haste` slots (keywords.md
+   * the Duelist's *jian*: melee, and when it hits, the Duelist's card is Hastened `haste` slots (keywords.md
    * 17.3). 3 (owner, 2026-10-26; 2 the builder's first; balance.md, "The Vanguard's buffs other than speed").
    */
   swiftStrike: {haste: 3 as number},
@@ -542,7 +542,7 @@ export const AI = {
   empoweredShare: 0.5 as number,
   /**
    * The share of a grappled unit's status cost the AI takes off while an
-   * ally could strike the Bonebreaker holding it (`rescueGain` in ai.ts): the
+   * ally could strike the Grappler holding it (`rescueGain` in ai.ts): the
    * hit, which breaks the grapple, comes only on that ally's next turn.
    */
   rescueShare: 0.5,
@@ -573,7 +573,7 @@ export const AI = {
    */
   threatFactor: 1,
   /**
-   * Per hero, how much the threat counts. The Bonebreaker's is 0: a
+   * Per hero, how much the threat counts. The Grappler's is 0: a
    * tank's job is to take hits, and at 1 it held back out of reach; the
    * Vanguard's too, for the same reason (untested).
    */
@@ -585,7 +585,7 @@ export const AI = {
     alchemist: 1,
     youxia: 1,
     magus: 1,
-    // A tank, as the Bonebreaker and the Vanguard.
+    // A tank, as the Grappler and the Vanguard.
     mahout: 0,
     archer: 1,
     camel: 0,
@@ -609,7 +609,7 @@ export const AI = {
    * The caravan's camel (camel.md): its health is worth this much a point,
    * and each space it stands from the exit is worth `perCamelHex` to the
    * enemy. A hero's or wolf's point is worth 1, plus `kill` when it falls:
-   * at most 2 a point spread over its health (a wolf's or the Harrier's 4).
+   * at most 2 a point spread over its health (a wolf's or the Outrider's 4).
    * Temee's death is the enemy's victory, so it has no kill value; at 2 a
    * point, a hit on it is never worth less than the same hit's share of
    * any other unit, and only a finishing blow outranks it. PLACEHOLDERS;
@@ -678,7 +678,7 @@ export const ROSTER: HeroId[] = [
 export type RegionId = 'steppe' | 'china';
 export const REGIONS: Record<RegionId, {creature: HeroId; firstEnemy: HeroId}> = {
   steppe: {creature: 'wolf', firstEnemy: 'mangudai'},
-  // The Oathblade, China's damage hero, as the Harrier is the Steppe's.
+  // The Duelist, China's damage hero, as the Outrider is the Steppe's.
   china: {creature: 'fox', firstEnemy: 'youxia'},
 };
 /**

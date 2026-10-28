@@ -204,7 +204,7 @@ function drawGale(ctx: CanvasRenderingContext2D, {target, area, k}: EffectFrame)
 }
 
 /**
- * Shove: the Bonebreaker's blow lands, a burst on the struck unit's side
+ * Shove: the Grappler's blow lands, a burst on the struck unit's side
  * facing it, and chevrons drive on the way it is Pushed.
  */
 function drawShove(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame): void {
@@ -247,7 +247,7 @@ function drawShove(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame
 }
 
 /**
- * Haul: a rope flies from the Bonebreaker to the unit and draws taut, then
+ * Haul: a rope flies from the Grappler to the unit and draws taut, then
  * slackens as it is Pulled in.
  */
 function drawHaul(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame): void {
@@ -375,9 +375,9 @@ function drawCleave(ctx: CanvasRenderingContext2D, {from, area, k}: EffectFrame)
 }
 
 /**
- * Swift Strike: the Oathblade's jian darts out to the unit in a thin
+ * Swift Strike: the Duelist's jian darts out to the unit in a thin
  * bright streak, two quick cuts cross on it, and jade speed lines run back
- * past the Oathblade as its card is Hastened.
+ * past the Duelist as its card is Hastened.
  */
 function drawSwiftStrike(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame): void {
   if (!from) return;
@@ -414,7 +414,7 @@ function drawSwiftStrike(ctx: CanvasRenderingContext2D, {from, target, k}: Effec
       artPixel(ctx, gx, gy + i, i === 0 ? EDGE : '#a5f3fc');
     }
   }
-  // Haste: speed lines running back past the Oathblade.
+  // Haste: speed lines running back past the Duelist.
   const run = (k - 0.35) / 0.65;
   if (run > 0)
     for (const [side, lag] of [

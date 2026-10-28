@@ -9,9 +9,9 @@ import type {Tile} from './map';
 export type Side = 'player' | 'enemy';
 /**
  * The three prototype heroes, the Vanguard and the Alchemist
- * (owner, 2026-10-25), the Oathblade (owner, 2026-10-26), the Magus
+ * (owner, 2026-10-25), the Duelist (owner, 2026-10-26), the Magus
  * (owner, 2026-10-27), the Juggernaut (`mahout`, owner, 2026-10-27), the
- * Deadeye (owner, 2026-10-27), the
+ * Ranger (owner, 2026-10-27), the
  * caravan's camel (camel.md), a unit that isn't a
  * hero, and the enemy NPCs, the wolf and the fox.
  */
@@ -257,8 +257,8 @@ export interface HailEffect {
 }
 
 /**
- * A charged Skirmish shot in the air: its Harrier's unit id, and the hex
- * direction the arrow flies from the Harrier when the charging card comes
+ * A charged Skirmish shot in the air: its Outrider's unit id, and the hex
+ * direction the arrow flies from the Outrider when the charging card comes
  * back, hitting the first unit in that lane then (`shotLane` in board.ts).
  */
 export interface ShotInAir {
@@ -268,7 +268,7 @@ export interface ShotInAir {
   /** A Volley's space: whoever stands there when it lands is hit. */
   hex?: Hex;
   /**
-   * The Harrier's Empower when it drew: the arrow carries it, though the
+   * The Outrider's Empower when it drew: the arrow carries it, though the
    * Empower itself ends with that turn. Absent when it had none.
    */
   empower?: number;
@@ -319,7 +319,7 @@ export interface FightState {
   effects: HailEffect[];
   /**
    * Skirmish shots in the air: each flies down its lane when its
-   * Harrier's charging card comes back.
+   * Outrider's charging card comes back.
    */
   shots?: ShotInAir[];
   log: LogEntry[];

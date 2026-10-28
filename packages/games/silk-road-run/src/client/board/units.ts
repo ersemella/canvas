@@ -326,7 +326,7 @@ const FISTS_COLORS: Record<string, string> = {
 };
 
 /**
- * Fists on the edge between each Bonebreaker and the unit it grapples,
+ * Fists on the edge between each Grappler and the unit it grapples,
  * always shown, so it's plain who holds whom; they go when the grapple
  * does. `hexOf` is where each unit is drawn (null: not on the board).
  */
