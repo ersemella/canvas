@@ -29,6 +29,10 @@ const LORE: Partial<Record<HeroId, string>> = {
     'A driver of war elephants, perched behind the ears of a beast no one can shift. The Juggernaut stamps down among its foes, battering everyone around it and driving them back, and neither a wrestler’s grip nor the hail can hold it.',
   archer:
     'A foot archer of the royal army, whose heavy arrows punch through armour. The Ranger hits harder than anyone, and the first unit in its line staggers, losing time, but it is frail and must be kept out of reach.',
+  varangian:
+    'A guardsman from the far north, sworn to the emperor and paid in gold. The Barbarian is slow, but its great axe hits harder than anyone’s, swung through every foe at its side or hurled through a line of them, though then it must fetch the axe back.',
+  priest:
+    'A priest of the imperial city, who walks with the army to tend the wounded. The Priest strikes no blow of his own, but his blessing mends an ally within reach, himself too, and what it cannot mend becomes a ward against the next blows.',
   cataphract:
     'An armoured horseman of the imperial cavalry, rider and horse alike clad in iron. The Cataphract never walks: it charges, as far as it likes in a straight line, carrying the first foe in its way before it and smashing it into whoever stands behind.',
   magus:

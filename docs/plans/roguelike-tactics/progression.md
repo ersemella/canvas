@@ -21,6 +21,13 @@ tuning. Section numbers are the combat design's.
   Byzantine, which had **4**: 19 stages in a run. How many stages each of
   the four has is open (question 66): kept at 3 (the Byzantine 4), a run
   is 13 stages.
+- **Four stages a region (owner, 2026-10-28; built):** stages 1, 2 and 3
+  each award a provision; stage 4 is the region's **boss** (enemies.md),
+  and winning it offers the upgrade (built: the passive offer, three of the
+  pool at random, one taken), except after the run's last. The Steppe's
+  boss is the One-Eyed Giant with two wolves (enemies.md, 11.3a); China and
+  Persia have none built yet, so their stage 4 brings their three heroes
+  again. The rhythm below, of three stages, is superseded.
 - Every stage is a fight. Stage numbers count across regions, as
   the glossary's **stage** already does.
 - **The rhythm of a region:** stages 1 and 2 each award provisions
@@ -128,7 +135,7 @@ passive is lost or returns to the party is question 63.
 | 1 | 2 wolves and 1 hero |
 | 2 | 1 wolf and 2 heroes |
 | 3 | 3 heroes |
-| 4 (Byzantine only) | The final boss (19.6) |
+| 4 | The region's boss (owner, 2026-10-28; the Steppe's the One-Eyed Giant and 2 wolves; until a region's boss is built, its 3 heroes); the Byzantine's, the final boss (19.6) |
 
 - **Wolves** may be reskinned per region (the setting's creatures, 15.7)
   and get a **small stat increase each region**. Their numbers per region
@@ -351,7 +358,8 @@ choice:
     displacement (Throw) triggers it.~~ Answered 2026-10-24 (owner): every
     unit next to the hero's final position, allies included, whoever
     displaced the hero.
-66. How many stages each of the four regions has (2026-10-26; with six,
+66. ~~How many stages each of the four regions has~~ Answered 2026-10-28
+    (owner): four, the fourth the region's boss (19.1). (2026-10-26; with six,
     3 each and the Byzantine 4). Keeping 3 makes a run of 13 stages, 8
     provisions and 4 upgrades; longer regions keep the run's length but
     need a new rhythm for provisions and the high point (19.1).

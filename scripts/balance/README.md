@@ -164,6 +164,10 @@ skill span against the bracket.
 `longshot-push.mjs` (2026-10-28) measures Longshot as built that day (flying
 over the spaces next to the Ranger) with Push 0, 1 and 2
 (`ABILITY.longshot.push`).
+`priest.mjs` (2026-10-28) measures the Priest in the support seat of a
+Steppe, a China and a Persia mirror, as built and at power 2, without the
+overheal (`ABILITY.blessing.overheal`), with a Shield of 1 on top
+(`.shield`) and without Humphrey as a target (`.camel`).
 
 ## Ability and stat ablation
 

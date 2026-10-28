@@ -59,7 +59,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     out.push({enemyId: e.id, hexes});
     const has = (a: AbilityId) => kitOf(e).includes(a);
     const {q: fq, r: fr} = e.hex;
-    if (has('bite') || has('grapple') || has('swiftStrike'))
+    if (has('bite') || has('grapple') || has('swiftStrike') || has('smash') || has('reave'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
     // `over`: the spaces nearest it flown over, whatever is on them (Longshot's).
     const lanes = (oq: number, or: number, d: number, range = ABILITY.snapShot.range, over = 0) => {
@@ -75,7 +75,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
         }
       }
     };
-    if (has('snapShot')) lanes(fq, fr, power);
+    if (has('snapShot') || has('boulder')) lanes(fq, fr, power);
     if (has('longshot') && ABILITY.longshot.first)
       lanes(fq, fr, power, ABILITY.longshot.range, ABILITY.longshot.minRange - 1);
     // Longshot built first (`first` off): its six lines to the map's edge,
@@ -155,8 +155,8 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
 
 /**
  * The damage `me` could take, where it stands in `after`, from the enemies
- * whose cards come before its own next card: each one's best hit, summed.
- * A Stunned enemy can't act.
+ * whose cards come before its own next card: each one's best hit, summed,
+ * less its Shield. A Stunned enemy can't act.
  */
 export function threatDamage(threats: Threat[], after: FightState, me: Unit): number {
   if (!me.alive || !me.hex || me.slot === null) return 0;
@@ -167,5 +167,6 @@ export function threatDamage(threats: Threat[], after: FightState, me: Unit): nu
     if (!e?.alive || e.slot === null || e.slot >= me.slot || isStunned(e)) continue;
     total += t.hexes.get(key) ?? 0;
   }
-  return total;
+  // A Shield (17.6) lasts until its next turn, so it takes these hits first.
+  return Math.max(0, total - (me.shield ?? 0));
 }

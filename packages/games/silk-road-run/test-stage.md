@@ -14,36 +14,47 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 
 ## Example
 
-The committed file, fought in the Gobi Desert: the
-Alchemist, the Vanguard and the Duelist against the three Steppe
-heroes, every kit the starting one. Its `"random"` yurts bring
-two or three oases and no mountains.
+The committed file, fought on the Fairy Chimneys, the Byzantine's map
+(owner, 2026-10-28; the Steppe with its mountains before): the three
+Steppe heroes, every kit the starting one, against the One-Eyed Giant,
+the Steppe's boss (owner, 2026-10-28; not in a run yet), and two wolves.
 
 ```json
 {
   "seed": null,
-  "map": "gobi",
+  "map": "tuff",
   "yurts": "random",
   "camel": {},
   "player": [
-    {"hero": "alchemist"},
-    {"hero": "modao"},
-    {"hero": "youxia"}
-  ],
-  "enemy": [
     {"hero": "bokh"},
     {"hero": "mangudai"},
     {"hero": "storm"}
+  ],
+  "enemy": [
+    {"hero": "giant"},
+    {"hero": "wolf"},
+    {"hero": "wolf"}
   ]
 }
 ```
+
+**The One-Eyed Giant** (`giant`): speed 1, defence 5 (health 12), power
+3. **One Eye**: Armour 3 against a hit (or a grapple's squeeze) from any
+unit not standing in its front lane, straight out the way its eye faces
+at any distance; a Piercing hit (Longshot) ignores it. The eye is drawn
+on the edge of its hex it faces. It starts facing across the board, and
+turns the way it last stepped on a walk, or toward what it aims at;
+being Pushed or Pulled doesn't turn it. **Smash**: melee, its power.
+**Boulder**: down any of Snap Shot's lanes, the first unit hit for its
+power, then every other unit next to where it lands Pushed 1 away from
+it, unhurt.
 
 ## Fields
 
 | Field | What it is | Left out |
 |---|---|---|
 | `seed` | A whole number: the same seed lays out the yurts, mountains and units the same way every time. `null`: a new scatter each time. | `null` |
-| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far), `"gobi"` (the Gobi Desert, the China region's: sand and oases, which block as yurts do, two or three a fight within 3 of the centre, and never mountains, whatever `yurts` says; yurts placed by hand are oases too), `"flaming"` (the Flaming Mountains, China's before the Gobi, no region's now: red earth, four or five patches of scorched ground of one or two spaces, spread over the board off the starting columns and the camel's road, burning 1 on a unit Moved onto it or ending its turn there, and one beacon tower in place of yurts, whenever `yurts` is `"random"` or `"mountains"`, and never mountains; yurts placed by hand are beacon towers too) or `"salt"` (the Salt Flats, the Persia region's: a salt crust and one large salt dome over the centre and the six spaces around it, in every fight whatever `yurts` says, and nothing else: no yurts unless placed by hand, drawn as sandstone ruins; no unit can start inside the dome). The board itself is the same. | `"steppe"` |
+| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far), `"gobi"` (the Gobi Desert, the China region's: sand and oases, which block as yurts do, two or three a fight within 3 of the centre, and never mountains, whatever `yurts` says; yurts placed by hand are oases too), `"flaming"` (the Flaming Mountains, China's before the Gobi, no region's now: red earth, four or five patches of scorched ground of one or two spaces, spread over the board off the starting columns and the camel's road, burning 1 on a unit Moved onto it or ending its turn there, and one beacon tower in place of yurts, whenever `yurts` is `"random"` or `"mountains"`, and never mountains; yurts placed by hand are beacon towers too), `"salt"` (the Salt Flats, the Persia region's: a salt crust and one large salt dome over the centre and the six spaces around it, in every fight whatever `yurts` says, and nothing else: no yurts unless placed by hand, drawn as sandstone ruins; no unit can start inside the dome) or `"tuff"` (the Fairy Chimneys, the Byzantine region's: pale tuff and five or six fairy chimneys within 3 of the centre, no two side by side in place of yurts, whenever `yurts` is `"random"` or `"mountains"`, and never mountains; yurts placed by hand are fairy chimneys too). The board itself is the same. | `"steppe"` |
 | `yurts` | `"random"` (as in a normal fight: two or three yurts near the middle, and a range of 3 to 5 mountains in about half of fights), `"mountains"` (the same, always with the mountains, as in a run's first three stages), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
@@ -55,12 +66,12 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 
 | Field | What it is | Left out |
 |---|---|---|
-| `hero` | `"bokh"` (Grappler), `"mangudai"` (Outrider), `"storm"` (Storm Caller), `"modao"` (Vanguard), `"alchemist"` (Alchemist), `"youxia"` (Duelist), `"magus"` (Magus, Inevitable from the start), `"mahout"` (Juggernaut, Unstoppable from the start), `"cataphract"` (Cataphract, no walk of its own: it moves by Charge), `"wolf"` or `"fox"` (the Fox Spirit: the wolf's stats and Bite, the China region's creature). A hero may appear more than once, on either side. | required |
+| `hero` | `"bokh"` (Grappler), `"mangudai"` (Outrider), `"storm"` (Storm Caller), `"modao"` (Vanguard), `"alchemist"` (Alchemist), `"youxia"` (Duelist), `"magus"` (Magus, Inevitable from the start), `"mahout"` (Juggernaut, Unstoppable from the start), `"archer"` (Ranger), `"varangian"` (Barbarian), `"cataphract"` (Cataphract, no walk of its own: it moves by Charge), `"wolf"` or `"fox"` (the Fox Spirit: the wolf's stats and Bite, the China region's creature) or `"giant"` (the One-Eyed Giant, above, One Eye from the start). A hero may appear more than once, on either side. | required |
 | `speed` | 0 to 30. Its card goes 60 ÷ (speed + 5) slots on after each turn, rounded. | the hero's |
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
-| `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"stomp"`, `"longshot"`, `"charge"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
-| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, on any unit. Shown on its stat sheet. | none |
+| `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"reave"`, `"smash"`, `"boulder"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
+| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, or `"oneEye"` (the giant's: it faces a way only with it), on any unit. Shown on its stat sheet. | none |
 | `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's two starting columns (yours the two on the right edge, the enemy's the two on the left), never the camel's starting corner or its exit |
 
 The heroes' own numbers and starting kits are `HEROES` in

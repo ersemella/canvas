@@ -3,9 +3,18 @@
  * card, start-of-turn effects (hail lifting, grapples squeezing, Stunned turns skipped) and applying
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
-import {hexEquals, hexKey} from '@canvas/engine/server';
+import {hexDirectionTo, hexEquals, hexKey} from '@canvas/engine/server';
+import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
-import {canMove, invalidPath, isImmobilized, isStunned, stepToExit, steps} from './board';
+import {
+  canMove,
+  faceStart,
+  invalidPath,
+  isImmobilized,
+  isStunned,
+  stepToExit,
+  steps,
+} from './board';
 import {ABILITIES, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
 import {
@@ -222,6 +231,7 @@ export function createFight(
         : !canMove(state, mapOf(state), u)
     )
   );
+  faceStart(state, mapOf(state));
   placeStartingCards(state);
   log({state, map: mapOf(state), slot: 0}, 'The fight begins.');
   return state;
@@ -434,8 +444,10 @@ export function applyTurn(
     const bad = invalidPath(state, map, unit, path);
     if (bad) throw new RuleError(bad);
     // A grapple ends only if the walk ends apart (owner, 2026-10-23).
+    const before = path.length > 1 ? path[path.length - 2]! : unit.hex!;
     walk(ctx, unit, path);
     log(ctx, `${unitName(unit)} moves.`);
+    face(unit, before, path[path.length - 1]);
   } else {
     const target = input.action.target ?? {};
     if (!trustTarget && !allowedTargets(state, map, unit, def).some((t) => sameTarget(t, target)))
@@ -451,7 +463,9 @@ export function applyTurn(
       ability: def.id,
       ...(target.hex ? {target: target.hex} : {}),
     });
+    const from = unit.hex!;
     def.resolve(ctx, unit, target);
+    face(unit, from, target.hex);
   }
   state.awaiting = null;
   checkEnd(state);
@@ -459,6 +473,17 @@ export function applyTurn(
   endTurnEffects(unit);
   // A charged ability's card is pushed out to its charge, the cards there moving on.
   endTurn(ctx, unit, path.length === 0 && def.id === 'hold', def.id);
+}
+
+/**
+ * One Eye (owner, 2026-10-28): a unit that faces a way turns to the way it
+ * last stepped on a walk, or toward what it aimed at from `from`, if that
+ * is in a straight line; otherwise it keeps facing as it was.
+ */
+function face(unit: Unit, from: Hex, to: Hex | undefined): void {
+  if (unit.facing === undefined || !unit.alive || !to) return;
+  const dir = hexDirectionTo(from, to);
+  if (dir !== null) unit.facing = dir;
 }
 
 /** A deep copy for previews and the AI; drops the log unless asked, and the events always. */

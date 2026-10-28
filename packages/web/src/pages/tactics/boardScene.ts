@@ -146,11 +146,12 @@ export function buildScene(input: SceneInput): BoardScene {
           onMap(map, h)
       );
     }
-    // The Bow's lanes: Snap Shot's,
+    // The Bow's lanes: Snap Shot's, the Boulder's,
     // Feigned Retreat's before its target is
     // picked; Haul's, as far as it reaches.
     const lanesShown =
       ability === 'snapShot' ||
+      ability === 'boulder' ||
       (ability === 'feignedRetreat' && !target?.hex) ||
       ability === 'haul';
     if (from && lanesShown)

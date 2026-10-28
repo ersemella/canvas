@@ -1,9 +1,9 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Gobi Desert: the Alchemist, the Vanguard and the Duelist against the three Steppe heroes, starting kits; random yurts bring two or three oases.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, on the Fairy Chimneys, the Byzantine's map: the three Steppe heroes, starting kits, against the One-Eyed Giant, the Steppe's boss, and two wolves.",
   "seed": null,
-  "map": "gobi",
+  "map": "tuff",
   "yurts": "random",
   "camel": {},
-  "player": [{"hero": "alchemist"}, {"hero": "modao"}, {"hero": "youxia"}],
-  "enemy": [{"hero": "bokh"}, {"hero": "mangudai"}, {"hero": "storm"}]
+  "player": [{"hero": "bokh"}, {"hero": "mangudai"}, {"hero": "storm"}],
+  "enemy": [{"hero": "giant"}, {"hero": "wolf"}, {"hero": "wolf"}]
 }

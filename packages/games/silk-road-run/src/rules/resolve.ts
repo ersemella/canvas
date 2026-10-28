@@ -10,10 +10,11 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, HEROES, RULES} from './config';
+import {ABILITY, CAMEL, HEROES, ONE_EYE, RULES} from './config';
 import {
   addStatus,
   hailOn,
+  inFrontLane,
   isImmobilized,
   isStunned,
   isUnstoppable,
@@ -89,9 +90,9 @@ export function unitName(u: Unit): string {
  * 2026-10-23), plus its Empower (or `empower`, one the hit carries from
  * when it was made) and its passives' (Glass Cannon, Lone Wolf, and
  * against this target Opportunist and Flanker), less its Weaken; then
- * the target's Armour (Hardened) unless it Pierces (Piercing Eye), and an
- * ally's Bulwark (17.6's damage order; 19.8). Power 0 deals none, and
- * says nothing.
+ * the target's Armour (Hardened, One Eye's) unless it Pierces (Piercing
+ * Eye), and an ally's Bulwark (17.6's damage order; 19.8). Power 0 deals
+ * none, and says nothing.
  */
 export function hit(
   ctx: Ctx,
@@ -118,10 +119,35 @@ export function hit(
       log(ctx, `Armour takes off 1.`);
     }
   }
+  amount -= eyeArmour(ctx, target, attacker.hex, pierces);
   if (amount <= 0) return;
   amount = bulwark(ctx, attacker, target, amount);
   if (amount <= 0) return;
   applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`, attacker);
+}
+
+/**
+ * One Eye (owner, 2026-10-28): the Armour `target` has against a hit from a
+ * unit on `from`, none if it stands in the target's front lane or the hit
+ * Pierces, said in the log when there is a `ctx`.
+ */
+export function eyeArmour(
+  ctx: Ctx | undefined,
+  target: Unit,
+  from: Hex | null,
+  pierces = false
+): number {
+  if (!hasPassive(target, 'oneEye')) return 0;
+  if (pierces) {
+    if (ctx) log(ctx, `The hit Pierces ${unitName(target)}’s hide.`);
+    return 0;
+  }
+  if (from && inFrontLane(target, from)) {
+    if (ctx) log(ctx, `It strikes ${unitName(target)} from the front, by its eye.`);
+    return 0;
+  }
+  if (ctx) log(ctx, `${unitName(target)}’s hide takes off ${ONE_EYE.armour}.`);
+  return ONE_EYE.armour;
 }
 
 /**
@@ -222,6 +248,16 @@ export function heal(ctx: Ctx, u: Unit, amount: number): void {
   u.hp += healed;
   log(ctx, `${unitName(u)} heals ${healed}.`);
   record(ctx.state, {kind: 'heal', unitId: u.id, amount: healed});
+}
+
+/**
+ * Shields `u` by `amount` more (keywords.md, 17.6; the Priest's Blessing),
+ * added to any Shield it has, until the start of its next turn.
+ */
+export function shield(ctx: Ctx, u: Unit, amount: number): void {
+  if (!u.alive || amount <= 0) return;
+  u.shield = (u.shield ?? 0) + amount;
+  log(ctx, `${unitName(u)} gains Shield ${amount}: Shield ${u.shield}.`);
 }
 
 /** Weakens `u` by `amount` until the end of its next turn, replacing any Weaken it had. */
@@ -650,12 +686,14 @@ export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
   for (const u of ctx.state.units) {
     if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
     const empowered = (champion.empower ?? 0) + passiveEmpower(champion, ctx.state);
-    const amount = Math.max(
+    const squeeze = Math.max(
       0,
       ABILITY.grapple.squeeze +
         (ABILITY.grapple.empoweredSqueeze ? empowered : 0) -
         (champion.weaken ?? 0)
     );
+    // One Eye's Armour holds against the squeeze as against a hit.
+    const amount = squeeze > 0 ? Math.max(0, squeeze - eyeArmour(ctx, u, champion.hex)) : 0;
     applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`, champion);
   }
 }
@@ -697,6 +735,11 @@ export function enterHex(
 ): void {
   const from = unit.hex;
   unit.hex = h;
+  // On or next to its thrown axe (Reave): it picks it up.
+  if (unit.axe && hexDistance(h, unit.axe) <= 1) {
+    delete unit.axe;
+    log(ctx, `${unitName(unit)} picks up its axe.`);
+  }
   if (from) record(ctx.state, {kind: 'step', unitId: unit.id, from, to: h, how});
   if (!midWalk) endGrapplesApart(ctx, unit);
   if (ABILITY.hail.entry && hailOn(ctx.state, h)) {
