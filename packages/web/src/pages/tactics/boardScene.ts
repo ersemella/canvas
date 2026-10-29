@@ -19,10 +19,10 @@ import {
   ABILITY,
   arrowLanes,
   axeLines,
+  castableSpaces,
   longshotLanes,
   longshotLines,
   mapOf,
-  offeredTargets,
   onMap,
   reachableHexes,
   targetAt,
@@ -86,8 +86,8 @@ export interface SceneInput {
 
 /**
  * What an enemy looked at threatens: with one of its abilities explained,
- * every space that ability can be cast on from where it stands (and the
- * spaces each swing of an area ability would hit); else every space it can
+ * every space that ability can be cast on from where it stands, whether or
+ * not one of yours stands there (`castableSpaces`); else every space it can
  * move to.
  */
 function threatOf(
@@ -103,14 +103,7 @@ function threatOf(
   }
   const def = ABILITIES[abilityId];
   if (unusableReason(unit, def)) return [];
-  const hexes = new Map<string, Hex>();
-  for (const t of offeredTargets(fight, map, unit, def)) {
-    if (!t.hex) continue;
-    hexes.set(hexKey(t.hex), t.hex);
-    if (def.area && unit.hex)
-      for (const h of def.area(map, unit.hex, t.hex)) hexes.set(hexKey(h), h);
-  }
-  return [...hexes.values()].map((hex) => ({hex, kind: 'threatTarget'}));
+  return castableSpaces(fight, map, unit, def).map((hex) => ({hex, kind: 'threatTarget'}));
 }
 
 export function buildScene(input: SceneInput): BoardScene {

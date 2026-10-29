@@ -31,6 +31,7 @@ import {
   reachableHexes,
   roadToExit,
   unitAt,
+  walkable,
   firstInLane,
   shotLane,
   abilityCount,
@@ -43,7 +44,7 @@ import {
 import {ABILITIES, abilitiesOf, arrowLanes, ridePlan, stompPlan, unusableReason} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
-import {offeredTargets, onlyHold, targetAt} from './choices';
+import {castableSpaces, offeredTargets, onlyHold, targetAt} from './choices';
 import {
   RuleError,
   actingUnit,
@@ -226,6 +227,22 @@ describe('the track', () => {
     // An enemy beside it gives it a bite.
     unit(s, 'e-bokh').hex = hexNeighbors(w.hex!).find((h) => !unitAt(s, h) && onMap(STEPPE, h))!;
     expect(onlyHold(s, mapOf(s), w)).toBe(false);
+  });
+
+  it('shows where a melee attack could land with no foe beside it', () => {
+    // Inspecting an enemy wolf: Bite reaches every free space next to it.
+    const s = setup({'p-wolf': at(6, 6), 'p-bokh': at(0, 0), 'e-wolf': at(3, 3)}, ['wolf', 'bokh']);
+    const w = unit(s, 'e-wolf');
+    const map = mapOf(s);
+    expect(offeredTargets(s, map, w, ABILITIES.bite).length).toBe(0);
+    const free = hexNeighbors(w.hex!).filter((h) => walkable(map, h) && !unitAt(s, h));
+    const spaces = castableSpaces(s, map, w, ABILITIES.bite);
+    expect(spaces.map(hexKey).sort()).toEqual(free.map(hexKey).sort());
+    // A foe beside it is still among them, and nothing further away is.
+    unit(s, 'p-bokh').hex = free[0]!;
+    const withFoe = castableSpaces(s, map, w, ABILITIES.bite);
+    expect(withFoe.some((h) => hexKey(h) === hexKey(free[0]!))).toBe(true);
+    expect(withFoe.every((h) => hexDistance(h, w.hex!) === 1)).toBe(true);
   });
 
   /** A Skirmish on `target`: the first of its steps that has it in line. */

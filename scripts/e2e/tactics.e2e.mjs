@@ -540,7 +540,9 @@ try {
     after
   );
   run = await state();
-  const enemy = run.view.fight.units.find((u) => u.side === 'enemy' && u.alive);
+  // A wolf if there is one: its Bite, a melee attack, shows its reach with no one beside it.
+  const enemies = run.view.fight.units.filter((u) => u.side === 'enemy' && u.alive);
+  const enemy = enemies.find((u) => u.hero === 'wolf') ?? enemies[0];
   await tapHex(enemy.hex);
   const sheet = page.getByTestId('stat-sheet');
   check(
@@ -567,7 +569,7 @@ try {
     const casts = await threat();
     check(
       'an enemy’s ability explained shows where it can be cast in place of its moves',
-      casts.every((h) => h.kind === 'threatTarget'),
+      casts.length > 0 && casts.every((h) => h.kind === 'threatTarget'),
       casts
     );
     await shot(page, 'enemy-ability-reach');
