@@ -90,6 +90,12 @@ export interface HeroStats {
    * (the camel).
    */
   walksRoad?: boolean;
+  /**
+   * A region's boss (enemies.md): while one stands, the road out is
+   * sealed, so the camel can't win by reaching it (`exitSealed` in
+   * board.ts; owner, 2026-10-29). Not Zahhak's serpents.
+   */
+  boss?: boolean;
 }
 
 /**
@@ -356,6 +362,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 3,
     abilities: ['smash', 'boulder', 'hold'],
     passives: ['oneEye'],
+    boss: true,
   },
   /**
    * China's boss, one of two (owner, 2026-10-28; enemies.md, "The Bull Demon King
@@ -372,6 +379,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 3,
     abilities: ['gore', 'hold'],
     passives: ['devoted'],
+    boss: true,
   },
   /**
    * The Bull Demon King's wife (owner, 2026-10-28), Princess Iron Fan: the
@@ -388,6 +396,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 1,
     abilities: ['bananaFan', 'fanFlames', 'hold'],
     passives: ['devoted'],
+    boss: true,
   },
   /**
    * Persia's boss (2026-10-29; enemies.md, "Zahhak"): the serpent-shouldered
@@ -407,6 +416,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 3,
     abilities: ['feed', 'hold'],
     passives: ['serpentKing'],
+    boss: true,
   },
   /**
    * The serpents on Zahhak's shoulders (2026-10-29), two of them, each its

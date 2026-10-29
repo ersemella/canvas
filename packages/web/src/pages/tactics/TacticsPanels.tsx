@@ -6,12 +6,14 @@ import type {Hex} from '@canvas/engine';
 import {
   CAMEL_RULE,
   EXIT_INFO,
+  SEALED_EXIT_INFO,
   FAN_INFO,
   HEROES,
   HERO_PORTRAIT,
   PALETTE,
   abilitiesOf,
   atExit,
+  exitSealed,
   fireInfo,
   hailEnds,
   hailInfo,
@@ -239,7 +241,11 @@ export function HexInspector({
       {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
       {tile !== 'sand' && <GroundCard info={tileInfo(fight.mapId, tile)} dense={dense} />}
       {atExit(fight, hex) && (
-        <GroundCard info={EXIT_INFO} color="var(--c-lapisLight)" dense={dense} />
+        <GroundCard
+          info={exitSealed(fight) ? SEALED_EXIT_INFO : EXIT_INFO}
+          color="var(--c-lapisLight)"
+          dense={dense}
+        />
       )}
       {hail && <GroundCard info={hailInfo(hail, fight)} color="var(--c-skyLight)" dense={dense} />}
       {fire && (

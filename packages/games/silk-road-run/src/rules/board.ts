@@ -491,6 +491,15 @@ export function roadToExit(map: MapData, from: Hex): Hex[] {
 }
 
 /**
+ * Whether the road out is sealed (owner, 2026-10-29): a boss of the fight
+ * (`HeroStats.boss`) still stands, so the camel waits at the exit, and
+ * reaching it doesn't win, until the last of them falls.
+ */
+export function exitSealed(state: FightState): boolean {
+  return state.units.some((u) => u.alive && HEROES[u.hero].boss);
+}
+
+/**
  * The camel's next step from where it stands (owner, 2026-10-22): one hex
  * along a shortest walk to the exit around yurts and the other units, so
  * it keeps to its road when nothing is in the way and walks around what
@@ -498,7 +507,8 @@ export function roadToExit(map: MapData, from: Hex): Hex[] {
  * 2026-10-28). A
  * unit standing on the exit itself only blocks the last step. When
  * units shut every way around, a step along its road if that hex is free.
- * Undefined at the exit, or with nowhere to step.
+ * Undefined at the exit, next to it while it is sealed (`exitSealed`), or
+ * with nowhere to step.
  */
 export function stepToExit(state: FightState, map: MapData, unit: Unit): Hex | undefined {
   if (!unit.hex) return undefined;
@@ -522,6 +532,8 @@ export function stepToExit(state: FightState, map: MapData, unit: Unit): Hex | u
   }
   const d = dist.get(start);
   if (d === 0) return undefined;
+  // Next to a sealed exit, it waits there.
+  if (d === 1 && exitSealed(state)) return undefined;
   // Of the steps as near, one off scorched ground first (map.ts).
   const nearer =
     d === undefined
@@ -533,7 +545,8 @@ export function stepToExit(state: FightState, map: MapData, unit: Unit): Hex | u
     nearer[0];
   if (around) return around;
   const road = roadToExit(map, unit.hex)[0];
-  return road && free(road) ? road : undefined;
+  const ontoSealed = road && exitSealed(state) && map.exits.some((e) => hexEquals(e, road));
+  return road && free(road) && !ontoSealed ? road : undefined;
 }
 
 // ─── Line of fire ────────────────────────────────────────────────────────────

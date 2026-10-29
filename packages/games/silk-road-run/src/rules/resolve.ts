@@ -13,6 +13,7 @@ import type {Hex} from '@canvas/engine/server';
 import {ABILITY, ARMOURED, CAMEL, DEVOTED, HEROES, ONE_EYE, REGROW, RULES} from './config';
 import {
   addStatus,
+  exitSealed,
   fireOn,
   hailOn,
   inFrontLane,
@@ -555,7 +556,8 @@ export function checkEnd(state: FightState): void {
   // enemy, or carries the camel onto an exit as it dies, is a loss.
   if (camel && !camel.alive) state.phase = 'lost';
   else if (!state.units.some((u) => u.alive && u.side === 'enemy')) state.phase = 'won';
-  else if (camel?.hex && atExit(state, camel.hex)) {
+  // A sealed exit (a boss standing) wins nothing: Moved onto it, it waits for the boss to fall.
+  else if (camel?.hex && atExit(state, camel.hex) && !exitSealed(state)) {
     state.phase = 'won';
     logAt(state, state.currentSlot, `${unitName(camel)} reaches the road out.`);
   } else if (!state.units.some((u) => u.alive && u.side === 'player' && u !== camel))

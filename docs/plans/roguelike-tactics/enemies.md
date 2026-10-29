@@ -232,6 +232,27 @@ and first numbers, untested; the owner's to change.
   run's last stage is fair: Regrow's slots, his health, and the AI's
   score of a hit that a guard turns away.
 
+### 11.3d The road out sealed while a boss stands (Built 2026-10-29)
+The owner's call (2026-10-29), for every boss: while one stands, the road
+out is **sealed**. Humphrey walks up to the exit and waits beside it, and
+reaching it wins nothing, until the last boss falls; then his next step
+out wins as before. Moved onto the exit meanwhile, he stands there and wins
+as the last boss falls. A boss is a hero with `boss: true` (`HeroStats.boss`
+in config.ts): the Cyclops, the Bull Demon King and Princess Iron Fan (both
+must fall), and Zahhak, not his serpents, who stop growing back once he
+falls. The wolves don't keep it shut. `exitSealed` (board.ts) is the rule;
+`stepToExit` and `checkEnd` (resolve.ts) apply it. The board draws a
+sealed exit with a solid border and a still cross in place of the
+bouncing chevrons, and its card reads "Road out, sealed".
+
+- **Why** (2026-10-28 measurements, `boss-seal.mjs`'s question): in fresh
+  fights against every party of three, 60% to 90% of the boss wins ended
+  with an enemy still standing, Humphrey walking out; in whole runs the
+  boss stages were won about 30 points more often than the stage before
+  each (the Cyclops 77.3% against Steppe 3's 48.6%, the Bull Demon King
+  and Princess Iron Fan 88.2% against China 3's 52.5%).
+- **Measured** (`scripts/balance/experiments/boss-seal.mjs`): running.
+
 ---
 
 ### 11.4 Difficulty Scaling (Decided)

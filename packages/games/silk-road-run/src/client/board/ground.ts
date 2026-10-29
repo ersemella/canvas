@@ -446,22 +446,42 @@ export function exitArrowPush(time: number): number {
  * An exit, the road out (camel.md, 18.2): a worn ivory border and two
  * chevrons pointing off the board towards `out` (`pastExit`), outlined in ink
  * like the sprites. The chevrons bounce (`exitArrowPush`), unless the
- * device asks for reduced motion (`time` null).
+ * device asks for reduced motion (`time` null). `sealed` (a boss standing,
+ * `exitSealed`): a solid border and a cross in place of the chevrons, still.
  */
 export function drawExit(
   ctx: CanvasRenderingContext2D,
   h: Hex,
   out: Hex,
-  time: number | null = null
+  time: number | null = null,
+  sealed = false
 ): void {
   ctx.save();
   hexPath(ctx, h, 3);
-  ctx.setLineDash([4, 3]);
+  if (!sealed) ctx.setLineDash([4, 3]);
   ctx.strokeStyle = PALETTE.ivory;
   ctx.lineWidth = 2;
   ctx.stroke();
   ctx.setLineDash([]);
   const c = center(h);
+  if (sealed) {
+    ctx.translate(Math.round(c.x), Math.round(c.y));
+    ctx.scale(HEX_SCALE, HEX_SCALE);
+    ctx.beginPath();
+    ctx.moveTo(-6, -6);
+    ctx.lineTo(6, 6);
+    ctx.moveTo(6, -6);
+    ctx.lineTo(-6, 6);
+    ctx.lineCap = 'square';
+    ctx.strokeStyle = PALETTE.ink;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.strokeStyle = PALETTE.ivory;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
   const to = center(out);
   ctx.translate(Math.round(c.x), Math.round(c.y));
   ctx.scale(HEX_SCALE, HEX_SCALE);

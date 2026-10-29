@@ -119,6 +119,10 @@ either core's side, and a Storm Caller that can't hurt keeping back
 speed and health (`ABILITY.elixir.swap`, `.swapUntil`), the AI's first
 guess at its risk at 0.5 and 0 (`AI.swapRisk`), against the built Elixir.
 
+`boss-seal.mjs` (2026-10-29) plays whole runs for every party of three
+with the road out sealed while a boss stands, as built (`sealed`), and
+with the seal off (`open`, no hero a boss), on the same seeds.
+
 `trample-stomp.mjs` (2026-10-28) measures Trample as a stomp, the
 Juggernaut staying put and every unit next to it hit and Pushed 1 away
 (`ABILITY.trample.mode: 'stomp'`, now `ABILITY.stomp`, the ability renamed

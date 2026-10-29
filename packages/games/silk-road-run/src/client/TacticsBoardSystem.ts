@@ -1,7 +1,7 @@
 import {assetLoader, BaseSystem, hexKey} from '@canvas/engine';
 import type {EventBus, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
-import {shotLane, unitAt} from '../rules/board';
+import {exitSealed, shotLane, unitAt} from '../rules/board';
 import {pastExit, tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {FightState} from '../rules/types';
@@ -183,7 +183,7 @@ export class TacticsBoardSystem extends BaseSystem {
       if (fight.effects.length > 0) parts.push(Math.floor(time * HAIL_FPS));
       if (fight.fires?.length) parts.push(Math.floor(time * FIRE_FPS));
       if (this.scene.turnArrow !== false) parts.push(turnArrowBob(time));
-      if (mapOf(fight).exits.length > 0) parts.push(exitArrowPush(time));
+      if (mapOf(fight).exits.length > 0 && !exitSealed(fight)) parts.push(exitArrowPush(time));
       if (smokes(mapOf(fight)) && Object.values(fight.tiles).includes('obstacle'))
         parts.push(Math.floor(time * SMOKE_FPS));
       if (burns(mapOf(fight)) && Object.values(fight.tiles).includes('mountain'))
@@ -327,7 +327,9 @@ export class TacticsBoardSystem extends BaseSystem {
     // Hail, the turn arrow, the exit's chevrons, the yurts' smoke and the mountains' fire move with time, unless the device asks for reduced motion.
     const t = this.still ? null : this.time;
     drawGround(ctx, map);
-    for (const h of map.exits) drawExit(ctx, h, pastExit(map, h), t);
+    // Sealed while a boss stands: a cross, still.
+    const sealed = exitSealed(fight);
+    for (const h of map.exits) drawExit(ctx, h, pastExit(map, h), t, sealed);
     // Princess Iron Fan's fires and the fan she drops, on the ground under the units.
     for (const f of fight.fires ?? []) drawFire(ctx, f.hex, t);
     if (fight.fan) drawFan(ctx, fight.fan);
