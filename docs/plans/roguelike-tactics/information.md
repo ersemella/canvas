@@ -25,7 +25,7 @@ tuning. Section numbers are the combat design's.
 | Stats (health, speed, defence, power) | Yes, every unit | Every unit has a stat sheet, enemies included (D11). |
 | Action outcomes | Yes, before committing | Previews show full numbers (section 7.2). |
 | Gear and recruits you're offered | Yes | Exact stats shown before you choose. **Players have full information;** only opponents' intent is hidden (D11). |
-| Enemy options | Yes | Each enemy's ability options can be previewed with their effects (7.2). |
+| Enemy options | Yes | Each enemy's ability options can be previewed with their effects (7.2). Inspecting an enemy on the board shows, in its side's madder, every space it can move to; tapping one of its abilities on its stat sheet shows the spaces that ability can be cast on from where it stands instead (owner, 2026-10-29). |
 | Enemy intent (what an enemy plans to do next) | No | Not shown. |
 
 ### 7.2 Previews (Decided)

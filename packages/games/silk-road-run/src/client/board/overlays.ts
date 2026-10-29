@@ -7,7 +7,7 @@ import {hexCorners, hexKey, pixelToHex} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {BOARD_LAYOUT} from '../layout';
 import {PALETTE, paletteAlpha} from '../palette';
-import {TARGET_RGB, center, pixelShadow} from './pixels';
+import {ENEMY_CHARGE_RED, TARGET_RGB, center, pixelShadow} from './pixels';
 import type {HighlightStyle} from './pixels';
 import type {BowLane, HighlightKind} from './scene';
 
@@ -25,6 +25,14 @@ export const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   /** The whole area an aimed ability strikes, around its target. */
   area: targeting(0.42, 1),
   chosen: targeting(0.6, 1),
+  /** Where an inspected enemy can move: its side's madder, faint, so it never reads as your own move. */
+  threatMove: {
+    fill: `rgba(${ENEMY_CHARGE_RED},0.28)`,
+    stroke: paletteAlpha('madderLight', 0.85),
+    dash: [6, 4],
+  },
+  /** Where an inspected enemy's ability, opened on its stat sheet, can be cast: madder, outlined solid. */
+  threatTarget: {fill: `rgba(${ENEMY_CHARGE_RED},0.38)`, stroke: PALETTE.madderLight},
 };
 
 /** The hovered hex's outline. */

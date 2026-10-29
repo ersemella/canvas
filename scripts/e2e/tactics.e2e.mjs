@@ -552,6 +552,32 @@ try {
     !(await sheet.textContent()).includes('Could do next turn')
   );
   check('the sheet doesn’t list Hold', !(await sheet.textContent()).includes('Hold'));
+  {
+    // The board shows where the enemy can move, and, once one of its
+    // abilities is explained, where that can be cast instead.
+    const threat = () => page.evaluate(() => window.__tactics.threat);
+    const moves = await threat();
+    check(
+      'an inspected enemy’s moves show on the board',
+      moves.length > 0 && moves.every((h) => h.kind === 'threatMove'),
+      moves
+    );
+    await sheet.locator('[data-ability]').first().click();
+    await sleep(150);
+    const casts = await threat();
+    check(
+      'an enemy’s ability explained shows where it can be cast in place of its moves',
+      casts.every((h) => h.kind === 'threatTarget'),
+      casts
+    );
+    await shot(page, 'enemy-ability-reach');
+    await sheet.locator('[data-ability]').first().click();
+    await sleep(150);
+    check(
+      'putting the ability’s explanation away shows the enemy’s moves again',
+      JSON.stringify(await threat()) === JSON.stringify(moves)
+    );
+  }
   // Abilities by name; a click explains one, with its damage (the user's power).
   await sheet.locator('[data-ability]').first().click();
   const about = page.getByTestId('ability-info');

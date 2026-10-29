@@ -1,4 +1,4 @@
-import {createContext, useContext, useRef, useState} from 'react';
+import {createContext, useContext, useEffect, useRef, useState} from 'react';
 import {CloseButton, Text} from '@mantine/core';
 import {KEYWORD_INFO} from '@canvas/games-silk-road-run';
 import type {KeywordId} from '@canvas/games-silk-road-run';
@@ -28,16 +28,25 @@ const InBoxContext = createContext(false);
  * a scrolling tooltip), or, with `slotted`, wherever a GlossaryBox in them
  * puts it. An ability's text has keywords of its own: tapping one adds its
  * rule under the ability's. Tapping the same thing again, or the box's ×,
- * hides it.
+ * hides it. `onAbility` hears which ability's name is explained, if any.
  */
 export function Glossary({
   slotted = false,
+  onAbility,
   children,
 }: {
   slotted?: boolean;
+  onAbility?: ((id: string | null) => void) | undefined;
   children: React.ReactNode;
 }) {
   const [shown, setShown] = useState<Shown | null>(null);
+  const onAbilityRef = useRef(onAbility);
+  onAbilityRef.current = onAbility;
+  const shownAbility = shown?.kind === 'ability' ? shown.id : null;
+  useEffect(() => {
+    onAbilityRef.current?.(shownAbility);
+    return () => onAbilityRef.current?.(null);
+  }, [shownAbility]);
   const bodies = useRef(new Map<string, React.ReactNode>()).current;
   const showKeyword = (id: KeywordId) =>
     setShown((s) => (s?.kind === 'keyword' && s.id === id ? null : {kind: 'keyword', id}));

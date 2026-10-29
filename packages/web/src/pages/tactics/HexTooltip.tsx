@@ -42,6 +42,8 @@ export function HexTooltip(props: {
   floor: () => number | undefined;
   /** A tap on the tooltip, anywhere but a keyword, an ability's name or a button: close it. */
   onDismiss: () => void;
+  /** Which of the unit's abilities its stat sheet explains (see `StatSheet`). */
+  onAbility?: ((unitId: string, id: string | null) => void) | undefined;
 }) {
   const [place, setPlace] = useState<Placement | null>(null);
   const ref = useRef<HTMLDivElement>(null);
@@ -116,7 +118,7 @@ export function HexTooltip(props: {
       }}
     >
       <div>
-        <HexInspector fight={props.fight} hex={props.hex} dense />
+        <HexInspector fight={props.fight} hex={props.hex} dense onAbility={props.onAbility} />
       </div>
     </div>
   );
