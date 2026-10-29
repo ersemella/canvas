@@ -4449,6 +4449,121 @@ free slot just before the Grappler's next card once it ends (the fight's
   speed point 1–2 points less, its power point 2 more; all within the
   noise. Stalls as by turns.
 
+### A provision against a passive or an upgrade (2026-10-29)
+
+Asked for: how strong a provision is against a passive or a generic
+ability upgrade. `experiments/provision-vs-card.mjs`, `modWinPct`, 400
+fights each (about ±2.5 points a row), seeds from 1000: in each region's
+mirror, one hero of the modified side takes +1 speed, defence or power
+(a provision) or one of the caravanserai's 40 cards (`mod.passives`),
+every hero and every card, 516 rows. Run on `5423ac3`; the last 24
+Byzantium rows on `ffbd809` (the commits between change only the test
+stage's `"rules"`, and Axe Throw's crash below). One fight, not a run:
+how often each comes up, and that a run's provisions add up, aren't
+measured.
+
+**Each card and stat over the twelve heroes**, best first, with the
+rarity it has (19.3b):
+
+| | Mean | Best hero | Next | Heroes at 55%+ | Rarity |
+|---|---:|---|---|---:|---|
+| Concussive | 68.1% | Cataphract 89.7% | Duelist 85.8% | 9 | Legendary |
+| Glass Cannon | 60.0% | Alchemist 72% | Ranger 71.7% | 8 | Epic |
+| **Power +1 (provision)** | 59.6% | Alchemist 73.8% | Ranger 72.2% | 9 |  |
+| **Speed +1 (provision)** | 57.9% | Duelist 76% | Juggernaut 62.5% | 9 |  |
+| Hamstring | 56.8% | Barbarian 69.4% | Alchemist 63.3% | 6 | Epic |
+| Staggering | 55.6% | Duelist 68% | Cataphract 61.8% | 8 | Rare |
+| Forked | 55.1% | Alchemist 83% | Magus 68.1% | 3 | Legendary |
+| **Defence +1 (provision)** | 54.6% | Duelist 60.3% | Juggernaut 58.6% | 4 |  |
+| Lone Wolf | 54.4% | Duelist 61% | Cataphract 60.1% | 4 | Rare |
+| Opportunist | 53.4% | Cataphract 62.1% | Duelist 60.8% | 3 | Epic |
+| Last Stand | 52.5% | Juggernaut 59.9% | Magus 53.9% | 1 | Epic |
+| Crippling | 52.1% | Storm Caller 55.5% | Cataphract 54.9% | 1 | Epic |
+| Hardened | 52.0% | Grappler 55.8% | Alchemist 55.5% | 2 | Rare |
+| Vengeance | 51.6% | Outrider 54% | Ranger 52.8% | 0 | Rare |
+| Rally | 51.5% | Duelist 55.3% | Alchemist 53.3% | 1 | Epic |
+| Steady Gait | 51.0% | Barbarian 61.4% | Vanguard 56.5% | 2 | Uncommon |
+| Second Wind | 51.0% | Juggernaut 52.8% | Alchemist 52.5% | 0 | Rare |
+| Lethargy | 50.9% | Alchemist 60.5% | Cataphract 50% | 1 | Common |
+| Lockdown | 50.8% | Storm Caller 59.8% | Cataphract 50% | 1 | Rare |
+| Sundering | 50.8% | Cataphract 55.1% | Barbarian 54.5% | 1 | Uncommon |
+| Rooted | 50.8% | Barbarian 59.6% | Cataphract 51.2% | 1 | Uncommon |
+| Iron Will | 50.7% | Grappler 53.8% | Outrider 53.8% | 0 | Epic |
+| Mending Strike | 50.6% | Duelist 54.3% | Juggernaut 54.2% | 0 | Epic |
+| Ward | 50.5% | Alchemist 54.3% | Priest 52.2% | 0 | Rare |
+| Inspire | 50.5% | Alchemist 56.3% | Cataphract 50% | 1 | Uncommon |
+| Quickening | 50.5% | Alchemist 57% | Cataphract 50% | 1 | Rare |
+| Defy Fate | 50.4% | Ranger 53.2% | Juggernaut 51.8% | 0 | Common |
+| Fortify | 50.4% | Alchemist 55.3% | Cataphract 50% | 1 | Epic |
+| Flanker | 50.4% | Cataphract 52.6% | Juggernaut 51.3% | 0 | Rare |
+| Invigorate | 50.4% | Priest 54.8% | Cataphract 50% | 0 | Epic |
+| Immovable Object | 50.4% | Juggernaut 52.5% | Ranger 51.9% | 0 | Common |
+| Wearying | 50.3% | Vanguard 53.5% | Cataphract 50% | 0 | Uncommon |
+| Mending Shot | 50.3% | Ranger 54.7% | Barbarian 52.3% | 0 | Legendary |
+| Light Step | 50.0% | Duelist 55.5% | Vanguard 52% | 1 | Uncommon |
+| Fervour | 50.0% | Cataphract 50% | Priest 50% | 0 | Common |
+| Piercing Eye | 50.0% | Cataphract 50% | Priest 50% | 0 | Common |
+| Momentum | 50.0% | Alchemist 50.8% | Storm Caller 50.5% | 0 | Common |
+| Bulwark | 49.8% | Vanguard 52.3% | Barbarian 51.4% | 0 | Common |
+| Shake Loose | 49.8% | Cataphract 50% | Priest 50% | 0 | Uncommon |
+| Rebound | 49.7% | Outrider 50.8% | Barbarian 50.5% | 0 | Uncommon |
+| Patient | 49.4% | Vanguard 50.5% | Juggernaut 50.3% | 0 | Common |
+| Forceful | 49.3% | Outrider 57% | Ranger 55.2% | 2 | Rare |
+| Reel In | 49.3% | Vanguard 51.5% | Alchemist 50.6% | 0 | Uncommon |
+
+**Each hero's best provision against its best card** (bold: its best
+provision):
+
+| Hero | Speed | Defence | Power | Best card | Next | Cards above its best provision |
+|---|---:|---:|---:|---|---|---:|
+| Cataphract (Byzantium) | 53.8% | 53.7% | **67.6%** | Concussive 89.7% | Glass Cannon 68% | 2 |
+| Priest (Byzantium) | 50.4% | **50.8%** | **50.8%** | Invigorate 54.8% | Steady Gait 54.2% | 4 |
+| Barbarian (Byzantium) | **61.2%** | 53% | 55.1% | Concussive 78% | Hamstring 69.4% | 3 |
+| Alchemist (China) | 57.3% | 57.3% | **73.8%** | Forked 83% | Concussive 79.8% | 2 |
+| Vanguard (China) | **57.8%** | 54% | 55.5% | Concussive 67.8% | Steady Gait 56.5% | 1 |
+| Duelist (China) | **76%** | 60.3% | 63.8% | Concussive 85.8% | Staggering 68% | 1 |
+| Ranger (Persia) | 59.5% | 52.9% | **72.2%** | Glass Cannon 71.7% | Concussive 67.7% | 0 |
+| Magus (Persia) | 43.2% | **54.6%** | 50% | Forked 68.1% | Last Stand 53.9% | 1 |
+| Juggernaut (Persia) | **62.5%** | 58.6% | 57.4% | Last Stand 59.9% | Concussive 58.1% | 0 |
+| Grappler (Steppe) | **56.5%** | 56.3% | 51.5% | Hardened 55.8% | Iron Will 53.8% | 0 |
+| Outrider (Steppe) | 56% | 50.5% | **59.6%** | Concussive 74.7% | Hamstring 61.8% | 3 |
+| Storm Caller (Steppe) | **60.3%** | 53.8% | 58.1% | Concussive 62.8% | Lockdown 59.8% | 1 |
+
+- **A provision is worth about as much as the best cards.** Over the
+  twelve heroes, power +1 (59.6%) and speed +1 (57.9%) rank third and
+  fourth of 43, behind only Concussive (68.1%) and Glass Cannon (60%).
+  Defence +1 (54.6%) is eighth. On each hero's best stat, a provision
+  wins 62.7% on average. That hero's best card wins 71%, or 64.7% without
+  Concussive. Only 18 of 480 hero-and-card pairs beat that hero's best
+  provision, 7 of them Concussive.
+- **Most cards are worth nothing on most heroes**: 33 of the 40 average
+  49.3–52.5%, and many are exactly 50% on most heroes (Fervour and
+  Piercing Eye on all twelve): the card's condition never happens (a
+  heal on a hero that can't heal, Pierce with no Armour on the board,
+  Defy Fate with no Inevitable enemy). As the
+  draft gives them, to a hero the player picks, they are worth what they
+  are on the right hero, which the "Best hero" column shows: the healing
+  upgrades on the Alchemist or the Priest are still only 54–57%.
+- **Concussive is too strong**: 89.7% on the Cataphract, 85.8% on the
+  Duelist, 9 heroes at 55% or more, the fights with it up to 10.3%
+  unfinished. **Forked** on the Alchemist (83%) and the Magus (68.1%), and
+  **Glass Cannon** (Epic, the best passive), are next.
+- **The rarity tiers are partly wrong**: Mending Shot (Legendary) is
+  worth nothing (50.3%, at most 54.7%); Staggering (Rare) is the fourth
+  best card; Rally, Iron Will, Crippling, Mending Strike, Fortify and
+  Invigorate (Epic) average 50.4–52.1%; Hamstring and Glass Cannon hold
+  their Epic.
+- **A provision helps the support heroes least**: the Priest's best is
+  50.8%, the Magus's 54.6%, and the Magus's speed +1 loses (43.2%). Not
+  traced.
+- **Steady Gait, Forceful and Reel In** are below 50% on some heroes;
+  Steady Gait helps the Barbarian (61.4%) and the Vanguard (56.5%).
+- **The run found a crash**, fixed in `ffbd809`: a Barbarian with
+  Bulwark throwing its axe at an ally next to it took 1 of the hit, could
+  die of it, and the throw then pushed from its empty space.
+
+Not changed: the numbers and rarities are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

@@ -163,6 +163,7 @@ three too, without the skill rows.
 `track-time-ai.mjs` (2026-10-29) measures the same with the AI counting windows (`AI.windows`), that AI against the one that doesn't (`mod.ai`), and Rally on each region's tank (`mod.passives`).
 `durations-elixir.mjs` (2026-10-29) measures the Elixir's Empower and Weaken lasting slots that the Alchemist's power lengthens and the target's defence shortens (`rules`, the fight's own, as the test stage's `"rules"`).
 The switches these three files patch (`RULES.trackTime`, `RULES.stunAsDelay`, `AI.windows`, the fight's `ticks`) were removed for the fight's `slots` (durations in a fixed number of slots, the test stage's `"rules"`): `track-time.mjs` reproduces only at `80be4c2`, `track-time-ai.mjs` at `d36fdb6`, `durations-elixir.mjs` at `c524b53`. `durations-slots.mjs` (2026-10-29) measures `slots`. `grapple-off-track.mjs` (2026-10-29) measures the fight's `grapple: 'offTrack'`, alone and with `slots`.
+`provision-vs-card.mjs` (2026-10-29) measures a provision (+1 speed, defence or power) against each passive and generic upgrade, on every hero in its region's mirror (`mod.stats`, `mod.passives`); see balance.md, "A provision against a passive or an upgrade".
 `archer-magus.mjs` (2026-10-27) measures Ranger nerfs (`ABILITY.longshot.minRange`,
 `.camel`, `.falloff`, power, defence) and Magus buffs (`ABILITY.conjunction.hit`,
 `.delay`, range, speed, defence), each switch off as built.
