@@ -4389,6 +4389,36 @@ Power and defence would show on an effect that every slot of counts, a
 Delay or hail standing, rather than one used once a turn; or with
 several slots a point (3 or 4, a third of a turn).
 
+### Durations in a fixed number of slots (2026-10-29)
+
+`experiments/durations-slots.mjs`, on the rules of `2d394de`: every
+effect that lasted until a unit's next turn lasting a fixed number of
+slots from when it is given, hail its own, a Stun for a turn a Delay
+(the fight's `slots`, the test stage's `"rules"`; no run has it): `s10`,
+10, 18 and 6 (the test stage's); `s8`, 8, 16 and 6. 400 fights each, the
+same seeds. In these parties only the Elixir's Empower and Weaken and
+hail change. Not built.
+
+| | By turns | s10 | s8 |
+|---|---:|---:|---:|
+| Speed +1, mean of the six Steppe and China heroes | 60.7% | 62.1% | **61.2%** |
+| the Alchemist | 57.3% | 60.5% | **56.3%** |
+| the Duelist | 76% | 78.3% | 77.5% |
+| the Storm Caller | 60.3% | 61% | 60.8% |
+| A side without the Elixir (China) | 9.5% | 5% | 6.8% |
+| without hail (Steppe) | 15.5% | 15% | 14.8% |
+| China against the Steppe | 49.8% | 52.5% | 51.5% |
+| against Persia, Byzantium | 47.5%, 36.3% | 44.3%, 38.8% | 45%, 37.3% |
+| The Steppe against Persia, Byzantium | 33.1%, 48.6% | 33.5%, 47.1% | 32.5%, 47.3% |
+
+- **8 slots is the closer to turns**: speed worth half a point more
+  (1.4 at 10), the Alchemist's speed point no more than by turns (3.2
+  more at 10), the Elixir a little more (a side without it 6.8%, 5% at
+  10). 8 is the fastest hero's turn, so an Empower rarely lasts two of its
+  turns.
+- Hail at 16 or 18 slots as by turns (its two turns of the Storm
+  Caller's 9). Party against party within the noise either way.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
