@@ -16,7 +16,7 @@ import {
   exitSealed,
   fireInfo,
   hailEnds,
-  inSlots,
+  inRules,
   hailInfo,
   mapOf,
   passivesOf,
@@ -311,7 +311,7 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
         ? throughSlot(fight, s.until)
         : ''
       : s.grapple
-        ? `by ${unitName(holder)}’s grapple`
+        ? `by ${unitName(holder)}’s grapple${unit.heldBy ? ', its card off the track until it ends' : ''}`
         : hail?.until !== undefined
           ? `by hail, ${throughSlot(fight, hail.until)}`
           : `by hail, until ${hailEnds(hail?.turns ?? 1, `${unitName(holder)}’s`)}`;
@@ -492,7 +492,7 @@ export function StatSheet({
                     <Text fz="xs">
                       <b>{p.name}</b> · Passive
                       <br />
-                      <KeywordText text={inSlots(p.rule, fight.rules)} />
+                      <KeywordText text={inRules(p.rule, fight.rules)} />
                     </Text>
                   }
                 >
@@ -538,7 +538,7 @@ export function AbilityDetail({
 }: {
   unit: Unit;
   def: AbilityDef;
-  /** The fight's own rules: with durations in slots, the summary says them (`inSlots`). */
+  /** The fight's own rules: with durations in slots, the summary says them (`inRules`). */
   rules?: FightState['rules'];
 }) {
   return (
@@ -559,7 +559,7 @@ export function AbilityDetail({
       {!def.kind && <b>{def.name}</b>}
       <br />
       <span className={styles.abilitySummary}>
-        <KeywordText text={inSlots(def.summary(unit), rules)} />
+        <KeywordText text={inRules(def.summary(unit), rules)} />
       </span>
     </Text>
   );

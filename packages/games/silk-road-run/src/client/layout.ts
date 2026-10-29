@@ -8,6 +8,7 @@ import {hexKey, pixelToHex} from '@canvas/engine';
 import type {Hex, HexLayout} from '@canvas/engine';
 import {RULES} from '../rules/config';
 import {onMap} from '../rules/map';
+import {returnSlot} from '../rules/resolve';
 import type {MapData} from '../rules/map';
 import type {FightState} from '../rules/types';
 
@@ -35,6 +36,11 @@ export interface TrackCard {
   slot: number;
   /** Where the acting unit's card would land after the planned turn. */
   ghost: boolean;
+  /**
+   * A card a grapple holds off the track (`FightRules.grapple`), drawn
+   * greyed where it would come back were the grapple to end now.
+   */
+  held?: boolean;
   x: number;
   y: number;
   w: number;
@@ -72,9 +78,14 @@ function trackEntries(fight: FightState, previewSlot: number | null, bumps: Trac
     previewSlot !== null ? (bumps[u.id] ?? u.slot!) : u.slot!;
   const entries = fight.units
     .filter((u) => u.alive && u.slot !== null)
-    .map((u) => ({unitId: u.id, slot: shown(u), ghost: false}));
+    .map((u) => ({unitId: u.id, slot: shown(u), ghost: false, held: false}));
+  // Held off the track: where it would come back now, if a slot is free there.
+  for (const u of fight.units) {
+    const back = u.alive && u.heldBy !== undefined ? returnSlot(fight, u) : null;
+    if (back !== null) entries.push({unitId: u.id, slot: back, ghost: false, held: true});
+  }
   if (fight.awaiting && previewSlot !== null)
-    entries.push({unitId: fight.awaiting, slot: previewSlot, ghost: true});
+    entries.push({unitId: fight.awaiting, slot: previewSlot, ghost: true, held: false});
   return entries.sort((a, b) => a.slot - b.slot || Number(a.ghost) - Number(b.ghost));
 }
 

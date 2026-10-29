@@ -96,7 +96,7 @@ function statusPoints(state: FightState, u: Unit): number {
 }
 
 /** Whether `state`'s durations are in slots (`FightRules.slots`), so the AI counts them so. */
-function inSlots(state: FightState): boolean {
+function inRules(state: FightState): boolean {
   return Boolean(state.rules?.slots);
 }
 
@@ -130,7 +130,7 @@ function lastingWorth(
 function shieldWorth(state: FightState, u: Unit, amount: number, until?: number): number {
   if (amount <= 0 || !u.alive || u.slot === null) return 0;
   // In slots: the enemies acting while it lasts, before `u`'s next turn or after.
-  const within = (e: Unit) => (inSlots(state) ? e.slot! <= (until ?? -1) : e.slot! < u.slot!);
+  const within = (e: Unit) => (inRules(state) ? e.slot! <= (until ?? -1) : e.slot! < u.slot!);
   let incoming = 0;
   for (const e of state.units)
     if (
@@ -282,7 +282,7 @@ function statusCost(u: Unit, state?: FightState): number {
   if (isStunned(u)) return turnValue(u) * AI.stunnedShare;
   if (!isImmobilized(u)) return 0;
   // In slots: hail that lifts before `u`'s card holds nothing.
-  if (state && inSlots(state) && u.slot !== null) {
+  if (state && inRules(state) && u.slot !== null) {
     const holds = u.statuses.filter((s) => s.kind === 'immobilized');
     const lifts = (s: (typeof holds)[number]) =>
       Boolean(s.hail) &&
@@ -621,7 +621,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
           a,
           (a.shield ?? 0) + given.shield,
           (a.lastingShield ?? 0) + (ABILITY.blessing.lasts ? given.shield : 0),
-          inSlots(state) ? Math.max(a.shieldUntil ?? 0, lastsThrough(state)!) : undefined
+          inRules(state) ? Math.max(a.shieldUntil ?? 0, lastsThrough(state)!) : undefined
         ) -
         lastingWorth(state, a, a.shield ?? 0, a.lastingShield ?? 0, a.shieldUntil);
     }

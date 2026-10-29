@@ -58,6 +58,7 @@ import {
   swapSpeedHealth,
   stun,
   stunForATurn,
+  takeOffTrack,
   lastsThrough,
   swapCards,
   setCard,
@@ -559,6 +560,7 @@ const grapple: AbilityDef = {
     // One target at a time: an earlier grapple lets go.
     endGrapples(ctx, (g) => g.champion === user.id);
     stun(ctx, u, {kind: 'stunned', grapple: {champion: user.id, target: u.id}});
+    if (ctx.state.rules?.grapple === 'offTrack' && grappling(user, u)) takeOffTrack(ctx, u, user);
   },
 };
 

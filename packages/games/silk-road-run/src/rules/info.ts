@@ -246,14 +246,19 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
 };
 
 /**
- * A rule text as it reads in a fight whose durations are in slots
- * (`FightRules.slots`): "until its next turn", "until the end of its next
+ * A rule text as it reads under a fight's own rules (`FightRules`). With
+ * durations in slots: "until its next turn", "until the end of its next
  * turn", "through its next turn" and "for its next turn" become "for N
- * slots", hail's "until
- * your turn after next" its slots, and a Stun for a turn its Delay.
- * Unchanged by turns.
+ * slots", hail's "until your turn after next" its slots, and a Stun for a
+ * turn its Delay. With the grapple off the track, Grapple says so.
+ * Unchanged with none.
  */
-export function inSlots(text: string, rules: FightRules | undefined): string {
+export function inRules(text: string, rules: FightRules | undefined): string {
+  if (rules?.grapple === 'offTrack')
+    text = text.replace(
+      'it is Stunned until you take damage or are Stunned',
+      'its card leaves the track until you take damage or are Stunned, then comes back just before your next turn'
+    );
   const slots = rules?.slots;
   if (!slots) return text;
   const whose = '(?:its|their|your|her|his|that ally’s|the ally’s)';

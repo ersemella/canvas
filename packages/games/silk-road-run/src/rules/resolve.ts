@@ -1236,6 +1236,54 @@ export function walk(ctx: Ctx, unit: Unit, path: Hex[]): void {
   displaced(ctx, ally);
 }
 
+// ─── A grapple off the track ─────────────────────────────────────────────────
+
+/**
+ * `u`, just grappled by `champion` with the grapple off the track
+ * (`FightRules.grapple`): its card leaves the track until the grapple ends.
+ */
+export function takeOffTrack(ctx: Ctx, u: Unit, champion: Unit): void {
+  u.slot = null;
+  u.heldBy = champion.id;
+  log(ctx, `${unitName(u)}’s card is taken off the track.`);
+}
+
+/**
+ * Where a held unit's card would come back now (`returnFreed`): the free
+ * slot nearest before its Grappler's card, after the slot the track is on;
+ * null when there is none (or no Grappler's card).
+ */
+export function returnSlot(state: FightState, u: Unit): number | null {
+  const champion = state.units.find((c) => c.id === u.heldBy);
+  if (!champion?.alive || champion.slot === null) return null;
+  for (let s = champion.slot - 1; s > state.currentSlot; s--)
+    if (!state.units.some((v) => v.alive && v.slot === s)) return s;
+  return null;
+}
+
+/**
+ * Each held card whose grapple has ended comes back (`FightRules.grapple`):
+ * just before its Grappler's next card (`returnSlot`), or with no slot free
+ * there, in its Grappler's own slot, the Grappler's card moving on; with its
+ * Grappler fallen, or its card not yet placed, at the next slot. After each
+ * turn, once the Grappler's card is placed, and as the track goes on.
+ */
+export function returnFreed(state: FightState): void {
+  for (const u of state.units) {
+    if (u.heldBy === undefined) continue;
+    if (u.alive && u.statuses.some((s) => s.grapple?.target === u.id)) continue;
+    const champion = state.units.find((c) => c.id === u.heldBy);
+    const at = u.alive ? returnSlot(state, u) : null;
+    delete u.heldBy;
+    if (!u.alive) continue;
+    if (at !== null) u.slot = at;
+    else if (champion?.alive && champion.slot !== null && champion.slot > state.currentSlot)
+      placeCard(state, u, champion.slot, true);
+    else placeCard(state, u, state.currentSlot + 1);
+    logAt(state, state.currentSlot, `${unitName(u)}’s card comes back, at slot ${u.slot}.`);
+  }
+}
+
 // ─── Durations in slots ──────────────────────────────────────────────────────
 
 /**

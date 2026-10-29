@@ -83,7 +83,7 @@ export {
   TILE_INFO,
   fireInfo,
   hailInfo,
-  inSlots,
+  inRules,
   shotInfo,
   tileInfo,
 } from './rules/info';

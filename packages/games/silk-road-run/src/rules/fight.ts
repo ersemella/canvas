@@ -23,6 +23,7 @@ import {
   fanOut,
   endTurnEffects,
   enterHex,
+  returnFreed,
   expireDurations,
   haste,
   landShots,
@@ -294,6 +295,7 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
   const map = mapOf(state);
   // A safety bound; a fight never takes anywhere near this many cards.
   for (let guard = 0; guard < 10_000 && state.phase === 'fight' && !state.awaiting; guard++) {
+    returnFreed(state);
     const unit = nextCard(state);
     if (!unit) return;
     spend?.();
@@ -512,6 +514,8 @@ export function applyTurn(
   endTurnEffects(unit);
   // A charged ability's card is pushed out to its charge, the cards there moving on.
   endTurn(ctx, unit, path.length === 0 && def.id === 'hold', def.id);
+  // A card a grapple held off the track comes back once the grapple is over.
+  returnFreed(state);
 }
 
 /**

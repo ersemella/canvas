@@ -299,6 +299,11 @@ export interface Unit {
   /** With durations in slots, the last slot its Armour lasts through. */
   armourUntil?: number;
   /**
+   * The Grappler holding its card off the track (`FightRules.grapple`);
+   * absent otherwise. Cleared as its card comes back (`returnFreed`).
+   */
+  heldBy?: string;
+  /**
    * The part of its Shield that stays until damage spends it, not going at
    * its next turn (a Blessing with `ABILITY.blessing.lasts`). Absent when
    * none does.
@@ -465,6 +470,13 @@ export interface FightRules {
    * turns.
    */
   slots?: {turn: number; hail: number; stun: number};
+  /**
+   * `offTrack` (2026-10-29): a grappled unit's card is taken off the track
+   * while the grapple holds, in place of being Stunned turn after turn;
+   * once it ends, the card comes back just before its Grappler's next card
+   * (`returnFreed` in resolve.ts), so the freed unit always acts first.
+   */
+  grapple?: 'offTrack';
 }
 
 export interface FightState {

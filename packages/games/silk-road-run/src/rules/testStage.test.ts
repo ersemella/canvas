@@ -22,8 +22,14 @@ describe('the test stage', () => {
       createTestFight(1, {...units, rules: {slots: {turn: 8, hail: 16, stun: 4}}}).rules
     ).toEqual({slots: {turn: 8, hail: 16, stun: 4}});
     expect(createTestFight(1, {...units, rules: {slots: {}}}).rules).toEqual({
-      slots: {turn: 10, hail: 18, stun: 6},
+      slots: {turn: 8, hail: 16, stun: 6},
     });
+    expect(createTestFight(1, {...units, rules: {grapple: 'offTrack'}}).rules).toEqual({
+      grapple: 'offTrack',
+    });
+    expect(() => parseTestStage({...units, rules: {grapple: 'stun'}})).toThrow(
+      'rules.grapple must be "offTrack".'
+    );
     expect(() => parseTestStage({...units, rules: {ticks: {}}})).toThrow(
       'rules has an unknown field "ticks"'
     );

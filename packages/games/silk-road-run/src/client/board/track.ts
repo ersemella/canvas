@@ -159,7 +159,8 @@ export function drawTrack(
     const acting = Boolean(card && !ghost && u!.id === fight.awaiting);
     // The card of the unit acting grows as it comes to the front.
     const grow = acting ? Math.max(0, 1 - i) : 0;
-    const charging = Boolean(u && !ghost && !spent && isCharging(fight, u));
+    // A charging card, or one a grapple holds off the track, greyed.
+    const charging = Boolean(u && !ghost && !spent && (card?.held || isCharging(fight, u)));
     drawCard(ctx, deck, u, {i, lift, ghost, acting, grow, charging}, opts);
   }
   for (const {u, i} of sliding) {

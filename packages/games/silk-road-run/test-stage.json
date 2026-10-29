@@ -1,10 +1,10 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, durations in slots (2026-10-29): China's three heroes against the Steppe's, on the Gobi, every effect that lasted until a unit's next turn lasting 10 slots, hail 18, a Stun for a turn a Delay of 6. Delete \"rules\" to play the same fight by turns.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, durations in slots (2026-10-29): China's three heroes against the Steppe's, on the Gobi, every effect that lasted until a unit's next turn lasting 8 slots, hail 16, a Stun for a turn a Delay of 6, and a grappled unit's card off the track until the grapple ends, then back just before the Grappler's next turn. Delete \"rules\" to play the same fight by turns.",
   "seed": null,
   "map": "gobi",
   "yurts": "random",
   "camel": {},
-  "rules": {"slots": {"turn": 10, "hail": 18, "stun": 6}},
+  "rules": {"slots": {"turn": 8, "hail": 16, "stun": 6}, "grapple": "offTrack"},
   "player": [{"hero": "modao"}, {"hero": "youxia"}, {"hero": "alchemist"}],
   "enemy": [{"hero": "bokh"}, {"hero": "mangudai"}, {"hero": "storm"}]
 }

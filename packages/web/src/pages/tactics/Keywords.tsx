@@ -1,6 +1,6 @@
 import {createContext, useContext, useEffect, useRef, useState} from 'react';
 import {CloseButton, Text} from '@mantine/core';
-import {KEYWORD_INFO, inSlots} from '@canvas/games-silk-road-run';
+import {KEYWORD_INFO, inRules} from '@canvas/games-silk-road-run';
 import type {FightState, KeywordId} from '@canvas/games-silk-road-run';
 import styles from './TacticsPage.module.css';
 
@@ -30,7 +30,7 @@ const InBoxContext = createContext(false);
  * rule under the ability's. Tapping the same thing again, or the box's ×,
  * hides it. `onAbility` hears which ability's name is explained, if any.
  * `rules`, the fight's own: with durations in slots, a keyword's rule says
- * them (`inSlots`).
+ * them (`inRules`).
  */
 export function Glossary({
   slotted = false,
@@ -62,7 +62,7 @@ export function Glossary({
     setShown((s) => (s?.kind === 'ability' ? {...s, keyword: s.keyword === id ? null : id} : s));
   const rule = (id: KeywordId) => (
     <Text fz="xs" data-testid="keyword-info">
-      <b>{KEYWORD_INFO[id].name}.</b> {inSlots(KEYWORD_INFO[id].detail, rules)}
+      <b>{KEYWORD_INFO[id].name}.</b> {inRules(KEYWORD_INFO[id].detail, rules)}
     </Text>
   );
   const box = (className?: string) =>

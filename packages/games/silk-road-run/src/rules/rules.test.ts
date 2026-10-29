@@ -76,7 +76,7 @@ import {
   spaceOf,
   tileAt,
 } from './map';
-import {inSlots, tileInfo} from './info';
+import {inRules, tileInfo} from './info';
 import {
   checkEnd,
   damageOf,
@@ -88,6 +88,7 @@ import {
   haste,
   hit,
   kill,
+  returnSlot,
   applyDamage,
   startTurnPassives,
   endTurnEffects,
@@ -1367,6 +1368,66 @@ describe('abilities', () => {
     applyTurn(s, unit(s, 'e-bokh'), {action: {ability: 'grapple', target: {hex: b.hex!}}});
     expect(b.statuses.map((x) => x.kind)).toEqual(['stunned']);
     expect(target.statuses).toEqual([]);
+  });
+
+  it('Grapple off the track: the target’s card leaves the track, and comes back just before the Grappler’s next', () => {
+    const grappled = () => {
+      const s = setup({
+        'p-bokh': at(1, 1),
+        'p-mangudai': at(8, 6),
+        'e-storm': at(2, 1),
+        'e-mangudai': at(1, 4),
+      });
+      s.rules = {grapple: 'offTrack'};
+      s.units.forEach((u) => (u.controller = 'human'));
+      const b = unit(s, 'p-bokh');
+      const target = unit(s, 'e-storm');
+      const preview = previewTurn(s, b.id, {
+        action: {ability: 'grapple', target: {hex: at(2, 1)}},
+      })!;
+      expect(preview.changes.find((c) => c.unitId === target.id)!.statuses).toContain(
+        'Off the track'
+      );
+      applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+      return {s, b, target};
+    };
+    const {s, b, target} = grappled();
+    expect(target.slot).toBeNull();
+    expect(target.heldBy).toBe(b.id);
+    expect(inRules(ABILITIES.grapple.summary(b), s.rules)).toContain(
+      'its card leaves the track until you take damage or are Stunned, then comes back just before your next turn'
+    );
+    // Shown where it would come back now: just before the Grappler's card.
+    expect(returnSlot(s, target)).toBe(b.slot! - 1);
+    // Its turns don't come: the Grappler's does.
+    expect(advanceToDecision(s)!.id).toBe(b.id);
+    applyTurn(s, b, {action: {ability: 'hold'}});
+    expect(target.slot).toBeNull();
+    // Struck, the Grappler lets go: the card comes back just before its next.
+    hit({state: s, map: mapOf(s), slot: s.currentSlot}, unit(s, 'e-mangudai'), b, 'An arrow');
+    expect(advanceToDecision(s)!.id).toBe(target.id);
+    expect(target.slot).toBe(b.slot! - 1);
+    expect(target.heldBy).toBeUndefined();
+
+    // No free slot before the Grappler's card: the freed card takes its slot.
+    const two = grappled();
+    two.b.slot = two.s.currentSlot + 1;
+    hit({state: two.s, map: mapOf(two.s), slot: 0}, unit(two.s, 'e-mangudai'), two.b, 'An arrow');
+    expect(advanceToDecision(two.s)!.id).toBe(two.target.id);
+    expect(two.b.slot).toBe(two.s.currentSlot + 1);
+
+    // The Grappler fallen: the card comes back at the next slot.
+    const three = grappled();
+    three.b.hp = 1;
+    hit(
+      {state: three.s, map: mapOf(three.s), slot: 0},
+      unit(three.s, 'e-mangudai'),
+      three.b,
+      'An arrow'
+    );
+    expect(three.b.alive).toBe(false);
+    expect(advanceToDecision(three.s)!.id).toBe(three.target.id);
+    expect(three.target.slot).toBe(three.s.currentSlot);
   });
 
   it('Grapple is melee: only a unit next to the Grappler, with no step in', () => {
@@ -2892,10 +2953,10 @@ describe('the Vanguard and the Alchemist', () => {
     s.units.forEach((u) => (u.controller = 'human'));
     const alchemist = unit(s, 'p-alchemist');
     const ally = unit(s, 'p-mangudai');
-    expect(inSlots(ABILITIES.elixir.summary(alchemist), s.rules)).toBe(
+    expect(inRules(ABILITIES.elixir.summary(alchemist), s.rules)).toBe(
       'A unit within 2, yourself too: allies heal 1 and are Empowered 2, enemies are hit, then Weakened 2, for 10 slots.'
     );
-    expect(inSlots(ABILITIES.elixir.summary(alchemist), undefined)).toBe(
+    expect(inRules(ABILITIES.elixir.summary(alchemist), undefined)).toBe(
       ABILITIES.elixir.summary(alchemist)
     );
     const preview = previewTurn(s, alchemist.id, {

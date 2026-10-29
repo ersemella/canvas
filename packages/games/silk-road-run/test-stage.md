@@ -17,9 +17,11 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 The committed file (2026-10-29), durations in slots (`"rules"`, below):
 China's three heroes against the Steppe's, on the Gobi. Every effect
 that lasted until a unit's next turn (here the Elixir's Empower and
-Weaken) lasts 10 slots, hail 18, whatever turns come in between: the
-abilities' text, the turn preview and a unit's statuses say so. Delete
-`"rules"` to play the same fight by turns.
+Weaken) lasts 8 slots, hail 16, whatever turns come in between: the
+abilities' text, the turn preview and a unit's statuses say so. And the
+Grappler's grapple takes its target's card off the track until it ends,
+then puts it back just before the Grappler's next card. Delete `"rules"`
+to play the same fight by turns, or either part to try the other alone.
 
 ```json
 {
@@ -27,7 +29,7 @@ abilities' text, the turn preview and a unit's statuses say so. Delete
   "map": "gobi",
   "yurts": "random",
   "camel": {},
-  "rules": {"slots": {"turn": 10, "hail": 18, "stun": 6}},
+  "rules": {"slots": {"turn": 8, "hail": 16, "stun": 6}, "grapple": "offTrack"},
   "player": [
     {"hero": "modao"},
     {"hero": "youxia"},
@@ -93,7 +95,7 @@ it, unhurt.
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
 | `enemy` | The AI’s units, 1 to 9 (at most 11 without an `at`). | required |
-| `rules` | This fight's own rules, which no run has. `{"slots": {"turn": t, "hail": h, "stun": s}}`: durations in slots in place of turns (2026-10-29). Every effect that lasted until a unit's next turn (Empower, Weaken, a Shield but a lasting one, Fortify's Armour, the Immobilized of a pin or Hamstring, Princess Iron Fan's fire) lasts `t` slots from the slot it is given, hail `h`; each ends as the track passes its last slot, whatever turns come in between, so a fast unit can fit two Empowered turns in and a Delay can carry a card past its Weaken. A Stun for a unit's next turn (Last Stand, Concussive, Lockdown, Defy Fate, a slam with `ABILITY.charge.slam` at `stun`) is a Delay of `s` instead, which Unstoppable and Iron Will still stop. Whole numbers 1 to 60; left out, 10, 18 and 6. A grapple's hold, which lasts until the Grappler is hit, is unchanged. | none: every duration by turns |
+| `rules` | This fight's own rules, which no run has, either or both of these. `"slots": {"turn": t, "hail": h, "stun": s}}`: durations in slots in place of turns (2026-10-29). Every effect that lasted until a unit's next turn (Empower, Weaken, a Shield but a lasting one, Fortify's Armour, the Immobilized of a pin or Hamstring, Princess Iron Fan's fire) lasts `t` slots from the slot it is given, hail `h`; each ends as the track passes its last slot, whatever turns come in between, so a fast unit can fit two Empowered turns in and a Delay can carry a card past its Weaken. A Stun for a unit's next turn (Last Stand, Concussive, Lockdown, Defy Fate, a slam with `ABILITY.charge.slam` at `stun`) is a Delay of `s` instead, which Unstoppable and Iron Will still stop. Whole numbers 1 to 60; left out, 8, 16 and 6 (balance.md, "Durations in a fixed number of slots": 8, the fastest hero's turn, plays closest to turns). `"grapple": "offTrack"` (2026-10-29): Grapple takes its target's card off the track while it holds, in place of Stunning it turn after turn (drawn greyed on the track where it would come back); once the grapple ends (the Grappler hit, Stunned or Moved apart, or the target Unstoppable), the card comes back on the free slot just before the Grappler's next card, so the freed unit always acts first; with none free, in the Grappler's slot, the Grappler's card moving on, and with the Grappler fallen, at the next slot. A held card can't be Delayed or Hastened. | none: every duration by turns |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
 
