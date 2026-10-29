@@ -280,8 +280,8 @@ LOOKS.cave = {
 LOOKS.palace = {
   ...LOOKS.salt!,
   ground: palaceFloorImage,
-  colour: '#dcc192',
-  border: '#5a4632',
+  colour: '#c0ab8f',
+  border: '#5c4f42',
   mountainGround: palaceFloorImage,
   dome: null,
 };

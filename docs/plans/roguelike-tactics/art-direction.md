@@ -1153,8 +1153,10 @@ portrait only, no text, no border.
 **Built from the owner's art (2026-10-29):** `tiles/palace-floor.png`,
 cut by `scripts/palace-floor.py` from ChatGPT's 1254-pixel picture of this
 prompt, which came back seamless: five of its stone creams and ochres by
-k-means and the tiles' teal and cobalt kept apart, 7 colours; the hex
-borders drawn darker than the grout (`#5a4632`). The prompt it came from:
+k-means and the tiles' teal and cobalt kept apart, 7 colours; then
+calmed (owner, 2026-10-29: it stood out too much), every colour pulled
+45% of the way to the stone's mean and its saturation cut to 60%; the hex
+borders a dark grey-brown (`#5c4f42`). The prompt it came from:
 
 Zahhak's palace (`palace`), Persia's boss fight, has only its floor: no
 dome, no mountains, no obstacles. Like the cave floor it is
