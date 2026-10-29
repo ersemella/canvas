@@ -214,9 +214,9 @@ and first numbers, untested; the owner's to change.
   ending within 2 of him) is the owner's to add if they read wrong.
 - **Bite** (the serpents', the wolf's): melee, their power.
 - **The map, `palace`**: Zahhak's palace, the Steppe's board with
-  nothing on it (`PALACE` in map.ts), as the other bosses' maps; drawn
-  with the Salt Flats' crust (`LOOKS.palace`) until the owner's floor art
-  from the prompt in art-direction.md ("Prompts for Zahhak's palace
+  nothing on it (`PALACE` in map.ts), as the other bosses' maps; its
+  floor the owner's art (AI-assisted, 2026-10-29), cracked limestone with
+  glazed tile fragments (art-direction.md, "Prompts for Zahhak's palace
   floor"). Mount Damavand, where he is chained, was the other choice; the
   palace, where Fereydun found him, keeps the region's turquoise tile.
 - **First measured (2026-10-29, 12 AI fights a line-up, the production
