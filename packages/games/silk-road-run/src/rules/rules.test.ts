@@ -2335,10 +2335,9 @@ describe('the Cataphract', () => {
     );
   });
 
-  it('Armoured (no longer its own): every hit on it is 1 less, unless it Pierces', () => {
+  it('is Armoured: every hit on it is 1 less, unless it Pierces', () => {
     const {s, k} = ready({'e-bokh': hexNeighbor(c, 0), 'e-storm': along(c, dir, 3)});
-    expect(k.passives).toBeUndefined();
-    k.passives = ['armoured'];
+    expect(k.passives).toEqual(['armoured']);
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
     // The Grappler's power 1, all taken off.
     hit(ctx, unit(s, 'e-bokh'), k, 'A test hit');

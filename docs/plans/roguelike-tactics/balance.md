@@ -4175,6 +4175,8 @@ Between Delay 6 alone and this: Delay 4 with Armoured (Delay 4 measured
 2–12 points under 6 without it), or Delay 6 Armoured only against hits
 from in front.
 
+**Built** (the owner, 2026-10-29, "for now"): Delay 6 with Armoured.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
