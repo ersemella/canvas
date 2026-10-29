@@ -251,7 +251,25 @@ bouncing chevrons, and its card reads "Road out, sealed".
   boss stages were won about 30 points more often than the stage before
   each (the Cyclops 77.3% against Steppe 3's 48.6%, the Bull Demon King
   and Princess Iron Fan 88.2% against China 3's 52.5%).
-- **Measured** (`scripts/balance/experiments/boss-seal.mjs`): running.
+- **Measured** (2026-10-29, `scripts/balance/experiments/boss-seal.mjs`:
+  every party of three, 30 whole runs each, the production AI on both
+  sides, sealed and open on the same seeds; a stalled fight, 400 actions
+  without an end, counted lost):
+
+  | Boss stage | Open | Sealed | Stage before it |
+  |---|---|---|---|
+  | The Cyclops (Steppe 4) | 79.5% | 53.4% (241 stalls) | 55.3% |
+  | The Bull Demon King and Princess Iron Fan (China 4) | 90.2% | 75.0% (25 stalls) | 50.4% |
+  | Zahhak (Persia 4) | 93.7% | 2.2% (1 of 45; 9 stalls) | 69.2% |
+
+  Runs won fell from 0.89% to 0.01% (1 of 6,600). The Cyclops is now about
+  as hard as the stage before it; parties of the Outrider and the Storm
+  Caller with no tank won none of their attempts (One Eye's Armour turns
+  their hits). China's pair is still the region's easiest stage. Zahhak,
+  who fell in none of his first 24 fights, almost never falls: his
+  serpents grow back, Humphrey waits at the sealed exit, and the enemy
+  wears him down. Not merged to `main` until the owner decides how to
+  tune Zahhak.
 
 ---
 
