@@ -285,9 +285,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     defence: 3,
     power: 1,
     abilities: ['charge', 'hold'],
-    // Armoured (owner, 2026-10-29; balance.md, "All twelve heroes, after
-    // the owner's changes": any other tank in its seat won 78–81%).
-    passives: ['armoured'],
+    // Armoured from earlier 2026-10-29 until the slam (owner; balance.md,
+    // "Charge's slam": both together 63–86% in the other tank seats).
     moveCap: 0,
   },
   /**
@@ -453,8 +452,9 @@ export const REGROW = {slots: 12 as number};
 export const ONE_EYE = {armour: 3 as number};
 
 /**
- * Armoured (owner, 2026-10-29), the Cataphract's: Armour `armour` against
- * every hit (17.6), unless it Pierces.
+ * Armoured (owner, 2026-10-29), the Cataphract's until the slam replaced it
+ * later that day (`ABILITY.charge.stun`), kept for measuring: Armour
+ * `armour` against every hit (17.6), unless it Pierces.
  */
 export const ARMOURED = {armour: 1 as number};
 

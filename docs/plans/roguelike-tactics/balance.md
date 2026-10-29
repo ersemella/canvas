@@ -4084,6 +4084,9 @@ alone gave 47–58%, the slam on top 15–28 points more); or the slam kept
 with Armour but a Delay (say 4) in place of the Stun, or only against
 ruins, not the map's edge.
 
+**Changed** (the owner, 2026-10-29): the slam kept, Armoured taken off
+the Cataphract.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
