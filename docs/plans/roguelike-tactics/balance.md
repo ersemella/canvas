@@ -4222,6 +4222,53 @@ Persia 47% (53.8%), the Steppe 45.6% (41.5%); a side without Charge
 18.1% (7.7%); stalls 0–2% (5–11%). Between Delay 6 ("The slam as a
 Delay") and the Stun, as Delay 8 would be.
 
+### Track time with an AI that counts windows (2026-10-29)
+
+`experiments/track-time-ai.mjs`, on the rules of `d36fdb6` (the slam
+Delaying 6, the Cataphract Armoured): "Track time" again with the AI
+counting windows (`AI.windows`): an Empower or Weaken once for each of the
+unit's turns within it (so a Delay out of one, or a Haste into one,
+counts), a Shield only against the enemies acting while it lasts, and hail
+lifting before the unit it holds acts as holding nothing. Also Rally (19.8)
+on each region's tank, the only Shield the window changes (the Blessing's
+is lasting). 400 fights each, the same seeds. Not built.
+
+The AI counting windows against the one that doesn't (its side's wins):
+
+| | own | 10 | 12 |
+|---|---:|---:|---:|
+| Steppe mirror | 49.5% | 49.8% | 50% |
+| China mirror | 50% | 50.8% | 51.4% |
+| With Rally on every tank: Steppe | 52.5% | 53.3% | 51% |
+| China | 50.8% | 51.5% | 53.1% |
+| Persia | 53.6% | 54.2% | 52.6% |
+| Byzantium | 49.2% | 49.2% | 51.1% |
+
+| | By turns | own | 10 | 12 |
+|---|---:|---:|---:|---:|
+| A side with Rally on its tank: Steppe | 51% | 55.5% | 55.8% | 54.8% |
+| China, Persia, Byzantium | 47.6–51.8% | 48.5–51.5% | 50–51.5% | 48.5–52.3% |
+| A side without the Elixir (China) | 9.5% | 8.8% | 5% | 4% |
+| Speed +1, mean of the six Steppe and China heroes | 60.7% | 62.1% | 62.2% | 62.3% |
+| the Duelist | 76% | 78.3% | 78.3% | **83.3%** |
+| Party against party | 49.8–66.9% | within 2 points | within 3 | within 4 |
+
+- **Counting windows is worth little**: nothing with the Elixir and hail
+  alone (49.5–51.4%), 1–2 points with Rally's Shield (52% over its
+  rows). The timing choices track time adds are there, but small in
+  these kits: few effects last long enough, or are Delayed or Hastened
+  often enough, for a window to matter.
+- **The rest as with the first AI**: speed 1.5 points more, the Elixir
+  worth more the longer the window, a fixed 12 the most (the Duelist's
+  speed point 83%), party against party within the noise.
+- Rally is worth 4–5 points more in the Steppe's party with a window (55%
+  against 51%), and the same elsewhere.
+
+A first run of this file let a hero's `passives` set by one experiment
+leak into the next (the config's restore kept a key a patch added); fixed
+in `d36fdb6` and rerun. Earlier files set every key they add
+(`slam-armour.mjs`), so none was affected.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

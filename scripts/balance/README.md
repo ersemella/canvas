@@ -153,6 +153,7 @@ three too, without the skill rows.
 `slam-delay.mjs` (2026-10-29) measures the Cataphract's slam as a Delay of 4 and 6 in those of its rows with the Cataphract in them.
 `slam-armour.mjs` (2026-10-29) measures the slam Delaying 6 with the Cataphract Armoured again, in the same rows.
 `track-time.mjs` (2026-10-29) measures the effects that last by turns lasting a window of slots (`RULES.trackTime`: `own`, 10, 12), and a one-turn Stun as a Delay of the unit's action cost (`RULES.stunAsDelay`); see balance.md, "Track time".
+`track-time-ai.mjs` (2026-10-29) measures the same with the AI counting windows (`AI.windows`), that AI against the one that doesn't (`mod.ai`), and Rally on each region's tank (`mod.passives`).
 `archer-magus.mjs` (2026-10-27) measures Ranger nerfs (`ABILITY.longshot.minRange`,
 `.camel`, `.falloff`, power, defence) and Magus buffs (`ABILITY.conjunction.hit`,
 `.delay`, range, speed, defence), each switch off as built.
