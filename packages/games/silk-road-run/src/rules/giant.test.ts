@@ -140,6 +140,18 @@ describe('the Cyclops', () => {
     expect(unit(s, 'e-giant').facing).toBe(2);
   });
 
+  it('Boulder: still lands when the hit fells the Cyclops (its Bulwark taking 1 for its wolf)', () => {
+    const at = out(2, 1);
+    const s = setup({'e-giant': centre, 'e-wolf': at, 'p-mangudai': out(1, 1, at)});
+    const giant = unit(s, 'e-giant');
+    giant.passives = ['bulwark'];
+    giant.hp = 1;
+    act(s, 'e-giant', 'boulder', {hex: at});
+    expect(giant.alive).toBe(false);
+    // The Outrider next to where it landed is Pushed away all the same.
+    expect(unit(s, 'p-mangudai').hex).toEqual(out(1, 2, at));
+  });
+
   it('Boulder: stops at the first unit, as Snap Shot does', () => {
     const s = setup({'e-giant': centre, 'p-bokh': out(2, 2), 'p-mangudai': out(2, 4)});
     act(s, 'e-giant', 'boulder', {hex: out(2, 2)});

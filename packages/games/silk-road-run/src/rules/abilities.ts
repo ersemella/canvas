@@ -1766,9 +1766,11 @@ const boulder: AbilityDef = {
   resolve(ctx, user, target) {
     const at = target.hex!;
     const u = unitAt(ctx.state, at)!;
+    // Where it threw from: the hit's answers (a Bulwark, Last Stand) may fell the thrower.
+    const from = user.hex!;
     log(ctx, `${unitName(user)} hurls a boulder.`);
     hit(ctx, user, u, 'The boulder');
-    const around = boulderRing(ctx.map, user.hex!, at)
+    const around = boulderRing(ctx.map, from, at)
       .map((h) => unitAt(ctx.state, h))
       .filter((o): o is Unit => o !== undefined && o !== user);
     for (const o of simultaneousOrder(around)) {

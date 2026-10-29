@@ -4566,6 +4566,37 @@ provision):
 
 Not changed: the numbers and rarities are the owner's.
 
+### Every duration in slots and Grapple off the track, built (2026-10-29)
+
+`experiments/slots-check.mjs` and `slots-check-runs.mjs`: the rules of
+`e21e411` (every duration in slots, 8/16/6, a Stun for a turn a Delay
+of 6, Grapple off the track, the squeeze, Bulwark and Opportunist in
+slots) against those just before (`20cdc90`), the same seeds. The
+regions' parties against each other, 400 fights each:
+
+| | Before | After |
+|---|---:|---:|
+| China against the Steppe | 49.8% | 52.3% |
+| Persia against the Steppe | 66.9% | 68.8% |
+| Byzantium against the Steppe | 51.4% | 53.4% |
+| Persia against China | 52.5% | 55% |
+| Byzantium against China | 63.8% | 62.8% |
+| Byzantium against Persia | 54.8% | 54.8% |
+
+Whole runs, 100 each party: none won either way (as before); Persia and
+Byzantium reach the Cyclops in 62% and 41% of runs (63%, 41% before) and
+China in 32% and 24% (33%, 22%). The Steppe's and China's runs also ended
+where they did, but their win at the Cyclops moved more on few runs (the
+Steppe's 44.8% to 25.9% of about 27): within the noise, to watch.
+
+- **Balance as it was**: every matchup within 2.5 points, about the
+  noise. The Steppe 2 points lower against each region, as with Grapple
+  off the track alone ("Grapple off the track").
+- The whole runs found a crash, there before these rules: a Cyclops with
+  a drafted Bulwark, hitting its own wolf with Boulder, fell to the 1 it
+  took for it, and Boulder then read its space. Fixed: it pushes from
+  where it threw.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
