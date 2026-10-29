@@ -14,26 +14,43 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 
 ## Example
 
-The committed file, fought in the Flaming Mountains: China's three heroes, every kit the starting one, against China's
-boss, the Bull Demon King and Princess Iron Fan (owner, 2026-10-28; not in a run yet).
+The committed file, fought in Zahhak's palace: Persia's three heroes,
+every kit the starting one, against Persia's boss, Zahhak and his two
+serpents (2026-10-29; also Persia's stage 4).
 
 ```json
 {
   "seed": null,
-  "map": "fireMountain",
+  "map": "palace",
   "yurts": "random",
   "camel": {},
   "player": [
-    {"hero": "youxia"},
-    {"hero": "modao"},
-    {"hero": "alchemist"}
+    {"hero": "archer"},
+    {"hero": "mahout"},
+    {"hero": "magus"}
   ],
   "enemy": [
-    {"hero": "oxKing"},
-    {"hero": "fanLady"}
+    {"hero": "zahhak"},
+    {"hero": "serpent"},
+    {"hero": "serpent"}
   ]
 }
 ```
+
+**Zahhak** (`zahhak`): speed 1, defence 4 (health 10), power 3. **Feed the
+Serpents**: melee, his power, and each serpent growing back grows back 3
+slots sooner. **Serpent King**: while either serpent is on the board, no
+damage reaches his health. **The serpents** (`serpent`, two): speed 3,
+defence 0 (health 2), power 1, **Bite** (melee). **Regrow**: a serpent cut
+down while Zahhak stands grows back 12 slots later on the open space next
+to him nearest the party, at full health, its card greyed on the track
+until then, and takes its turn as it does. Once Zahhak falls, none grows
+back. To beat him: cut both serpents down, then hit him before they come
+back.
+
+To fight China's boss instead, the Bull Demon King and Princess Iron Fan:
+`"map": "fireMountain"`, China's three heroes (`youxia`, `modao`,
+`alchemist`) against `oxKing` and `fanLady`.
 
 **The Bull Demon King** (`oxKing`): speed 1, defence 5 (health 12), power 3.
 **Gore**: a charge of up to 2 in a line, every unit in its way hit and
@@ -64,7 +81,7 @@ it, unhurt.
 | Field | What it is | Left out |
 |---|---|---|
 | `seed` | A whole number: the same seed lays out the yurts, mountains and units the same way every time. `null`: a new scatter each time. | `null` |
-| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far), `"gobi"` (the Gobi Desert, the China region's: sand and oases, which block as yurts do, two or three a fight within 3 of the centre, and never mountains, whatever `yurts` says; yurts placed by hand are oases too), `"flaming"` (the Flaming Mountains, China's before the Gobi, no region's now: red earth, four or five patches of scorched ground of one or two spaces, spread over the board off the starting columns and the camel's road, burning 1 on a unit Moved onto it or ending its turn there, and one beacon tower in place of yurts, whenever `yurts` is `"random"` or `"mountains"`, and never mountains; yurts placed by hand are beacon towers too), `"salt"` (the Salt Flats, the Persia region's: a salt crust and one large salt dome over the centre and the six spaces around it, in every fight whatever `yurts` says, and nothing else: no yurts unless placed by hand, drawn as sandstone ruins; no unit can start inside the dome), `"fireMountain"` (the Flaming Mountains for China's boss: the same red earth with nothing on it, no beacon tower, scorched ground or mountains, unless yurts are placed by hand, drawn as beacon towers), `"cave"` (the Cyclops's cave, the Steppe's boss fight: a cave's stone floor with nothing on it, no yurts or mountains, unless yurts are placed by hand, drawn as yurts) or `"tuff"` (the Fairy Chimneys, the Byzantine region's: pale tuff and seven or eight fairy chimneys anywhere out to the edge but the starting columns, no two side by side in place of yurts, whenever `yurts` is `"random"` or `"mountains"`, and never mountains; yurts placed by hand are fairy chimneys too). The board itself is the same. | `"steppe"` |
+| `map` | The map, which sets the board's look: `"steppe"` (grass and yurts, every stage of a run so far), `"gobi"` (the Gobi Desert, the China region's: sand and oases, which block as yurts do, two or three a fight within 3 of the centre, and never mountains, whatever `yurts` says; yurts placed by hand are oases too), `"flaming"` (the Flaming Mountains, China's before the Gobi, no region's now: red earth, four or five patches of scorched ground of one or two spaces, spread over the board off the starting columns and the camel's road, burning 1 on a unit Moved onto it or ending its turn there, and one beacon tower in place of yurts, whenever `yurts` is `"random"` or `"mountains"`, and never mountains; yurts placed by hand are beacon towers too), `"salt"` (the Salt Flats, the Persia region's: a salt crust and one large salt dome over the centre and the six spaces around it, in every fight whatever `yurts` says, and nothing else: no yurts unless placed by hand, drawn as sandstone ruins; no unit can start inside the dome), `"fireMountain"` (the Flaming Mountains for China's boss: the same red earth with nothing on it, no beacon tower, scorched ground or mountains, unless yurts are placed by hand, drawn as beacon towers), `"cave"` (the Cyclops's cave, the Steppe's boss fight: a cave's stone floor with nothing on it, no yurts or mountains, unless yurts are placed by hand, drawn as yurts), `"palace"` (Zahhak's palace, Persia's boss fight: nothing on it, no yurts or mountains, unless yurts are placed by hand, drawn as sandstone ruins) or `"tuff"` (the Fairy Chimneys, the Byzantine region's: pale tuff and seven or eight fairy chimneys anywhere out to the edge but the starting columns, no two side by side in place of yurts, whenever `yurts` is `"random"` or `"mountains"`, and never mountains; yurts placed by hand are fairy chimneys too). The board itself is the same. | `"steppe"` |
 | `yurts` | `"random"` (as in a normal fight: two or three yurts near the middle, and a range of 3 to 5 mountains in about half of fights), `"mountains"` (the same, always with the mountains, as in a run's first three stages), `"none"`, `"map"` (the map's fixed four), or a list of spaces, e.g. `[{"col": 3, "row": 3}]`. | `"random"` |
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |

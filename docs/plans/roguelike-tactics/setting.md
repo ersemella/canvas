@@ -121,7 +121,7 @@ Named fictional characters and folklore creatures. Each suggests a mechanic from
 | **The kings of Hor** | Tibet | *Epic of King Gesar*: they raid Gesar's kingdom and abduct his queen while he is away | Summoner: a raiding host; a rescue objective |
 | **Tepegöz** | Turkic steppe | *Book of Dede Korkut*: the one-eyed giant slain by Basat | Vulnerable only when flanked, or only in its one eye |
 | **The White Div** | Persia | *Shahnameh*: the last of Rostam's Seven Labours | Terrain shaper: a div's darkness and sorcery over the map |
-| **Zahhak**, the serpent-shouldered king | Persia | *Shahnameh* | Two heads, two turns: the serpents on his shoulders act on their own entries |
+| **Zahhak**, the serpent-shouldered king | Persia | *Shahnameh* | Two heads, two turns: the serpents on his shoulders act on their own entries. **Built 2026-10-29** as Persia's boss ([enemies.md](enemies.md), 11.3c): the serpents are units of their own that grow back while he stands, and no damage reaches him while one is on the board |
 
 - **Gesar himself is never fought.** He is venerated in Tibetan and Mongolian tradition (15.5) and his epic is still performed as a sacred tradition; the bosses are his enemies, and he stays off-screen as the epic's hero.
 - **Sun Wukong** is a boss, not a hero, since he is also worshipped in some temples (15.5); keep to the novel's trickster, not the deity. Owner's call.

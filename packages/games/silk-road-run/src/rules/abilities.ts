@@ -21,6 +21,7 @@ import {
   disarmed,
   firstInLane,
   isImmobilized,
+  isStunned,
   isUnstoppable,
   kitOf,
   lane as laneFrom,
@@ -1417,7 +1418,7 @@ export function ridePlan(
   user: Unit,
   from: Hex,
   target: Hex
-): {caught: Unit[]; end: Hex} {
+): {caught: Unit[]; end: Hex; slammed: Unit[]} {
   const dir = hexDirectionTo(from, target)!;
   const caught = new Set<Unit>();
   // A copy of the units' spaces, the row Pushed along in it.
@@ -1443,7 +1444,18 @@ export function ridePlan(
     at = next;
     if (stopsWalk(state, user, at)) break;
   }
-  return {caught: [...caught], end: at};
+  const slammed = [...caught].filter((u) =>
+    slams(map, view.units.find((o) => o.id === u.id)!, dir)
+  );
+  return {caught: [...caught], end: at, slammed};
+}
+
+/**
+ * Whether a unit a Charge along `dir` has hit is slammed into yurts or the
+ * map's edge right behind it (`ABILITY.charge.stun`).
+ */
+function slams(map: MapData, u: Unit, dir: number): boolean {
+  return ABILITY.charge.stun && u.hex !== null && !walkable(map, hexNeighbor(u.hex, dir));
 }
 
 /**
@@ -1465,7 +1477,7 @@ const charge: AbilityDef = {
   kind: 'attack',
   stepsTo: true,
   summary: () =>
-    'Ride any distance straight. Every unit in the way is hit and carried ahead, as far as there is room, the nearest to the space aimed at.',
+    `Ride any distance straight. Every unit in the way is hit and carried ahead, as far as there is room, the nearest to the space aimed at.${ABILITY.charge.stun ? ' One left against yurts or the edge is Stunned for its next turn.' : ''}`,
   targets(state, map, user, from) {
     if (isImmobilized(user)) return [];
     const out: ActionTarget[] = [];
@@ -1511,6 +1523,16 @@ const charge: AbilityDef = {
       // Hail ends the ride where it enters (it Immobilizes).
       if (isImmobilized(user)) break;
     }
+    // Each unit it hit left against yurts or the map's edge: slammed into them.
+    for (const u of ctx.state.units)
+      if (struck.has(u.id) && u.alive && slams(ctx.map, u, dir)) {
+        const into = onMap(ctx.map, hexNeighbor(u.hex!, dir))
+          ? 'the obstacle behind it'
+          : 'the map’s edge';
+        log(ctx, `${unitName(u)} is slammed into ${into}.`);
+        stun(ctx, u, {kind: 'stunned', slammed: true});
+        if (isStunned(u)) log(ctx, `${unitName(u)} is Stunned for its next turn.`);
+      }
     if (user.alive) endGrapplesApart(ctx, user);
   },
 };
@@ -1648,6 +1670,32 @@ const smash: AbilityDef = {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} smashes ${unitName(u)}.`);
     hit(ctx, user, u, 'The club');
+  },
+};
+
+// ─── Zahhak ───────────────────────────────────────────────────────────
+
+/**
+ * Feed the Serpents (2026-10-29), Zahhak's: melee, his power, and each of
+ * his serpents growing back (Regrow) does so `ABILITY.feed.sooner` slots
+ * sooner, at the soonest on the next slot.
+ */
+const feed: AbilityDef = {
+  id: 'feed',
+  name: 'Feed the Serpents',
+  kind: 'attack',
+  summary: () => `Melee. Each serpent growing back grows back ${ABILITY.feed.sooner} slots sooner.`,
+  targetsUnit: true,
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} seizes ${unitName(u)} for his serpents.`);
+    hit(ctx, user, u, 'The serpents’ feast');
+    for (const s of ctx.state.units) {
+      if (s.side !== user.side || s.regrowAt === undefined) continue;
+      s.regrowAt = Math.max(ctx.slot + 1, s.regrowAt - ABILITY.feed.sooner);
+      log(ctx, `${unitName(s)} grows back sooner.`);
+    }
   },
 };
 
@@ -1822,6 +1870,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   bananaFan,
   fanFlames,
   quench,
+  feed,
   charge,
   shove,
   haul,

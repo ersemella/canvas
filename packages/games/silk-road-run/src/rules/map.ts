@@ -311,12 +311,26 @@ export const TUFF: MapData = {
   obstacles: {counts: [7, 8], reach: 4},
 };
 
+/**
+ * Zahhak's palace (2026-10-29), Persia's boss fight: the Steppe's board on
+ * the glazed tiles of the serpent king's courtyard, with nothing on it, no
+ * dome, no mountains and no obstacles, as the other bosses' maps.
+ */
+export const PALACE: MapData = {
+  ...STEPPE,
+  id: 'palace',
+  name: 'Zahhak’s Palace',
+  mountains: 'never',
+  obstacles: {counts: [0], reach: 2},
+};
+
 export const MAPS: Record<string, MapData> = {
   [STEPPE.id]: STEPPE,
   [GOBI.id]: GOBI,
   [FLAMING.id]: FLAMING,
   [FIRE_MOUNTAIN.id]: FIRE_MOUNTAIN,
   [CAVE.id]: CAVE,
+  [PALACE.id]: PALACE,
   [SALT.id]: SALT,
   [TUFF.id]: TUFF,
 };

@@ -73,6 +73,10 @@ function trackEntries(fight: FightState, previewSlot: number | null, bumps: Trac
   const entries = fight.units
     .filter((u) => u.alive && u.slot !== null)
     .map((u) => ({unitId: u.id, slot: shown(u), ghost: false}));
+  // A serpent of Zahhak's growing back: its card, greyed, where it comes up (Regrow).
+  for (const u of fight.units)
+    if (!u.alive && u.regrowAt !== undefined)
+      entries.push({unitId: u.id, slot: u.regrowAt, ghost: false});
   if (fight.awaiting && previewSlot !== null)
     entries.push({unitId: fight.awaiting, slot: previewSlot, ghost: true});
   return entries.sort((a, b) => a.slot - b.slot || Number(a.ghost) - Number(b.ghost));

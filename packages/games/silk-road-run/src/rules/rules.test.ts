@@ -36,6 +36,7 @@ import {
   abilityCount,
   hasRoomForAbility,
   isImmobilized,
+  isStunned,
   disarmed,
   lane,
 } from './board';
@@ -584,6 +585,7 @@ describe('the board', () => {
       'flaming',
       'fireMountain',
       'cave',
+      'palace',
       'salt',
       'tuff',
       'ridges',
@@ -2415,6 +2417,32 @@ describe('the Cataphract', () => {
     expect(k.hex).toEqual(along(c, dir, 1));
   });
 
+  it('slams a unit into yurts behind it: Stunned for its next turn, and only that one', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 2)});
+    s.tiles[hexKey(along(c, dir, 4))] = 'obstacle';
+    charge(s, k, along(c, dir, 3));
+    const [b, st] = [unit(s, 'e-bokh'), unit(s, 'e-storm')];
+    // The row carried 1, the Storm Caller against the yurts.
+    expect([b.hex, st.hex]).toEqual([along(c, dir, 2), along(c, dir, 3)]);
+    expect(isStunned(st)).toBe(true);
+    expect(isStunned(b)).toBe(false);
+    // Its next turn skipped, and the Stun gone with it.
+    st.slot = s.currentSlot;
+    advanceToDecision(s);
+    expect(isStunned(st)).toBe(false);
+    expect(s.log.some((l) => l.text.includes('Storm Caller is Stunned: turn skipped'))).toBe(true);
+  });
+
+  it('slams a unit into the map’s edge, but not one left short of it', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 1)});
+    const end = lane(mapOf(s), c, dir).at(-1)!;
+    charge(s, k, end);
+    expect(isStunned(unit(s, 'e-bokh'))).toBe(true);
+    const {s: s2, k: k2} = ready({'e-bokh': along(c, dir, 1)});
+    charge(s2, k2, along(c, dir, 2));
+    expect(isStunned(unit(s2, 'e-bokh'))).toBe(false);
+  });
+
   it('rides on when the unit in its way falls to the hit', () => {
     const {s, k} = ready({'e-bokh': along(c, dir, 1)});
     unit(s, 'e-bokh').hp = 1;
@@ -3519,7 +3547,7 @@ describe('previews, the AI and the run', () => {
       row('persia', false, 1, 2, 0, 'salt'),
       row('persia', false, 2, 1, 0, 'salt'),
       row('persia', false, 3, 0, 0, 'salt'),
-      row('persia', true, 3, 0, 0, 'salt'),
+      row('persia', true, 3, 0, 0, 'palace'),
     ]);
     // Provisions after a region's stages 1, 2 and 3 (owner, 2026-10-28), a
     // passive after its 4th, the boss's, but the run's last.
@@ -3542,7 +3570,11 @@ describe('previews, the AI and the run', () => {
         creature: null,
         boss: ['oxKing', 'fanLady'],
       },
-      persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
+      persia: {
+        heroes: ['archer', 'mahout', 'magus'],
+        creature: null,
+        boss: ['zahhak', 'serpent', 'serpent'],
+      },
       byzantium: {heroes: ['varangian', 'cataphract', 'priest'], creature: null, boss: null},
     });
     expect(
@@ -3557,6 +3589,10 @@ describe('previews, the AI and the run', () => {
     for (let seed = 0; seed < 5; seed++)
       expect(stageEnemies(seed, 7)).toEqual(['oxKing', 'fanLady']);
     expect(STAGES[7]!.map).toBe('fireMountain');
+    // Persia's: Zahhak and his two serpents, in his palace.
+    for (let seed = 0; seed < 5; seed++)
+      expect(stageEnemies(seed, 11)).toEqual(['zahhak', 'serpent', 'serpent']);
+    expect(STAGES[11]!.map).toBe('palace');
     const firsts = new Set<HeroId>();
     const outsiders = new Set<HeroId>();
     for (let seed = 0; seed < 30; seed++) {

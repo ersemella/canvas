@@ -9,7 +9,7 @@
  * caravanserai between regions drafts them (19.3a): the party's two picks,
  * the rival's two (`draftPick`).
  */
-import {ARMOURED, DEVOTED, HEROES, ONE_EYE} from './config';
+import {ARMOURED, DEVOTED, HEROES, ONE_EYE, REGROW} from './config';
 import type {HeroId, PassiveId, Unit} from './types';
 
 export type PassiveGroup = 'track' | 'board' | 'damage' | 'control' | 'allies';
@@ -164,16 +164,36 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'damage',
     `Armour ${ARMOURED.armour} against every hit, unless it Pierces.`
   ),
+  serpentKing: def(
+    'serpentKing',
+    'Serpent King',
+    'damage',
+    'While either of its serpents is on the board, no damage reaches its health.'
+  ),
+  regrow: def(
+    'regrow',
+    'Regrow',
+    'damage',
+    `Cut down while Zahhak stands, it grows back next to him ${REGROW.slots} slots later, at full health.`
+  ),
 };
 
 /**
  * Passives a hero starts with that the caravanserai doesn't offer:
  * Unstoppable, the Juggernaut's (owner, 2026-10-27), One Eye, the
  * Cyclops's, Devoted, the Bull Demon King's and Princess Iron Fan's (owner,
- * 2026-10-28), and Armoured, the Cataphract's (owner, 2026-10-29), aren't
+ * 2026-10-28), Armoured, the Cataphract's (owner, 2026-10-29), and the
+ * Serpent King and Regrow, Zahhak's and his serpents' (2026-10-29), aren't
  * in 19.8's pool.
  */
-export const NOT_OFFERED: readonly PassiveId[] = ['unstoppable', 'oneEye', 'devoted', 'armoured'];
+export const NOT_OFFERED: readonly PassiveId[] = [
+  'unstoppable',
+  'oneEye',
+  'devoted',
+  'armoured',
+  'serpentKing',
+  'regrow',
+];
 
 /** Whether `unit` carries the passive `id`. */
 export function hasPassive(unit: Unit, id: PassiveId): boolean {

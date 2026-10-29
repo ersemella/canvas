@@ -28,8 +28,8 @@ tuning. Section numbers are the combat design's.
   boss is the Cyclops with two wolves, in its cave (enemies.md, 11.3a;
   each boss fight on a map of its own, owner, 2026-10-28); China's the
   Bull Demon King and Princess Iron Fan in the Flaming Mountains
-  (11.3b, owner, 2026-10-28); Persia has none built yet, so its stage 4
-  brings its three heroes again. The rhythm below, of three stages, is superseded.
+  (11.3b, owner, 2026-10-28); Persia's Zahhak and his two serpents in
+  his palace (11.3c, 2026-10-29). The rhythm below, of three stages, is superseded.
 - Every stage is a fight. Stage numbers count across regions, as
   the glossary's **stage** already does.
 - **The rhythm of a region:** stages 1 and 2 each award provisions

@@ -69,6 +69,10 @@ import oxKingPortrait from '../sprites/oxKing-portrait.png';
 import oxKingSprite from '../sprites/oxKing.png';
 import fanLadyPortrait from '../sprites/fanLady-portrait.png';
 import fanLadySprite from '../sprites/fanLady.png';
+import zahhakPortrait from '../sprites/zahhak-portrait.png';
+import zahhakSprite from '../sprites/zahhak.png';
+import serpentPortrait from '../sprites/serpent-portrait.png';
+import serpentSprite from '../sprites/serpent.png';
 
 /**
  * The rug a unit stands on, filling its hex: a field in its side's colour,
@@ -121,6 +125,12 @@ export const HERO_SPRITE: Partial<Record<Unit['hero'], string>> = {
   // Princess Iron Fan to 32×32, hers too.
   oxKing: oxKingSprite,
   fanLady: fanLadySprite,
+  // From the owner's AI-assisted art (2026-10-29): their purple shadows made
+  // grey first; Zahhak shrunk to 44×44, the serpent to the wolf's 36×36 by an
+  // area resize to 24 colours (the block vote left its scales as noise), its
+  // gold eye put back by hand.
+  zahhak: zahhakSprite,
+  serpent: serpentSprite,
 };
 /**
  * Each hero's large art (128×128, facing right), for the start menu's
@@ -165,6 +175,8 @@ export const HERO_PORTRAIT: Partial<Record<Unit['hero'], {src: string; faceX: nu
   giant: {src: giantPortrait, faceX: 20},
   oxKing: {src: oxKingPortrait, faceX: 22},
   fanLady: {src: fanLadyPortrait, faceX: 19},
+  zahhak: {src: zahhakPortrait, faceX: 16},
+  serpent: {src: serpentPortrait, faceX: 22},
 };
 /** The health bar over an inspected unit: centred on the hex, its bottom edge `HEALTH_BAR.y` above the centre. */
 export const HEALTH_BAR = {w: 60, h: 10, y: 50};
