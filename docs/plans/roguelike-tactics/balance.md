@@ -4149,6 +4149,32 @@ Between the Delay and the Stun lies what the Cataphract wants: Delay 8
 (the Vanguard's first Cleave), or Delay 6 with Armoured back, are the
 next to try.
 
+### The slam's Delay 6 with Armoured back (2026-10-29)
+
+`experiments/slam-armour.mjs`: the Cataphract's 39 rows, the slam Delaying
+6 and the Cataphract Armoured, 400 fights each, the same seeds. Not built.
+
+| | Delay 6 | **Delay 6, Armoured** | Stun, no Armour | Armoured alone |
+|---|---:|---:|---:|---:|
+| Byzantium against the Steppe | 34.8% | **51.4%** | 41.5% | 45.8% |
+| against China | 46.5% | **63.8%** | 69.1% | 40.8% |
+| against Persia | 45.2% | **54.8%** | 53.8% | 50.3% |
+| The Cataphract in the Steppe's tank seat | 42% | **57%** | 50.1% | 46.8% |
+| in China's | 53.5% | **71.8%** | 74.7% | 58% |
+| in Persia's | 53.6% | **60%** | 60.6% | 53.2% |
+| Another tank in Byzantium's seat | 59–69% | **43–52%** | 47–51% | 62–65% |
+
+- **The gap in its own party is closed** (another tank 43–52%), as with
+  the Stun, and Byzantium even with the Steppe and Persia (51.4%, 54.8%).
+- **Strong again against China**: 71.8% in China's seat, Byzantium 63.8%;
+  a little strong in the Steppe's and Persia's (57%, 60%). China is the
+  outlier in every version with the slam or Armour; not traced.
+- Stalls normal (at most 11%).
+
+Between Delay 6 alone and this: Delay 4 with Armoured (Delay 4 measured
+2–12 points under 6 without it), or Delay 6 Armoured only against hits
+from in front.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
