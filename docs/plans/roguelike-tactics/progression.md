@@ -355,6 +355,79 @@ choice:
   Vengeance softens the death spiral (10.6); Glass Cannon and Lone Wolf
   are deliberate risk picks.
 
+### 19.9 Generic Ability Upgrades (Decided, owner 2026-10-29; not built)
+Upgrades that change **how a hero's abilities work, whatever they are**:
+each keys off a keyword an ability already applies (17.1) or a kind of
+ability (an attack, a ranged attack, a single target), not off a named
+ability, so any hero can carry one. They sit between the hero slot's
+upgrades, which change one named ability (19.3), and the passives, which
+mostly bend rules outside abilities (19.8). Which slot offers them, and
+whether they can move between heroes as passives may, is open (question
+67). Values marked TBD are the builder's first reading, not the owner's.
+
+**Track**
+
+| Upgrade | Rule |
+|---|---|
+| **Wearying** | When this hero's ability Delays an enemy, the enemy is also Weakened 1 (TBD). |
+| **Lethargy** | When this hero's ability Weakens an enemy, the enemy is also Delayed 2 (TBD). |
+| **Inspire** | When this hero's ability Empowers an ally, the ally is also Hastened 2 (TBD). |
+| **Fervour** | When this hero's ability Hastens an ally, the ally is also Empowered 1 (TBD). |
+
+**Board**
+
+| Upgrade | Rule |
+|---|---|
+| **Forceful** | This hero's attacks Push the target 1. An attack that already Pushes doesn't Push further. |
+| **Reel In** | This hero's ranged attacks (a target not next to it) Pull the target 1. |
+
+**Control**
+
+| Upgrade | Rule |
+|---|---|
+| **Lockdown** | When this hero's ability Immobilizes a unit, the unit is also Stunned for its next turn. |
+| **Exposed** | When this hero's ability Stuns a unit, the unit is also Vulnerable 1 (TBD) while the Stun lasts. |
+| **Defy Fate** | This hero's attacks Stun an Inevitable target for its next turn. |
+| **Immovable Object** | This hero's attacks Delay an Unstoppable target 2 (TBD). |
+
+**Support and targeting**
+
+| Upgrade | Rule |
+|---|---|
+| **Overheal** | Healing beyond a unit's missing health becomes Shield, lasting until damage spends it, as Blessing's does (roster.md). |
+| **Martyr** | Whenever this hero's ability targets an ally, this hero is Weakened 1 (TBD). |
+| **Forked** | This hero's single-target abilities take a second target (TBD), each target meeting the ability's own range and conditions. |
+
+- **Vulnerable comes back as a keyword** for Exposed: **Vulnerable N**,
+  damage the unit takes is increased by N, the reverse of Armour (17.6).
+  It was a 50% damage-taken status in the list of 2026-10-16, dropped
+  with the keywords' rework of 2026-10-23 ([history.md](history.md)); as
+  a small whole number it fits the new list.
+- **The builder's readings, to confirm:**
+  - **An attack** is an ability that deals damage to an enemy (Forceful,
+    Reel In, Defy Fate, Immovable Object); a ranged attack is one whose
+    target isn't next to the hero.
+  - **The rider follows the keyword:** Wearying's Weaken needs the Delay
+    to happen, so it does nothing on an Inevitable enemy; Fervour's
+    Empower likewise; Forceful does nothing on a Rooted or Unstoppable
+    target, and Lockdown's Stun nothing on an Unstoppable one (which
+    can't be Immobilized anyway).
+  - **Riders chain, each once:** Lockdown's Stun can set off Exposed, and
+    Wearying with Lethargy turns a Delay into a Weaken and a further Delay;
+    each upgrade triggers at most once per use of an ability, so no pair
+    loops.
+  - **Forceful with Reel In** on a ranged attack: the Pull wins (the
+    ranged hero wants the target near). Unconfirmed.
+  - **Defy Fate on the Magus**, the only Inevitable hero (Steady Gait):
+    so it is mostly a counter to a Steady Gait passive, and to Inevitable
+    bosses if any come.
+  - **Overheal on the Priest** changes nothing (Blessing already does it),
+    so it isn't offered to him.
+- **Martyr** as written is only a cost; whether it pays for something
+  (an ally's effect stronger, or a cheaper action) is open (question 68).
+- **Forked** doubles a single-target ability's worth; the second target's
+  damage or count likely needs to be less (TBD; question 68).
+
 ## Decision log
 
 | Area | Decision | Alternatives considered | Reason |
@@ -364,6 +437,7 @@ choice:
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |
 | Final boss (2026-10-24, owner) | Counters the player's build | A fixed boss | The run ends on a test of the build the player made |
+| Generic ability upgrades (2026-10-29, owner) | Thirteen upgrades keyed off keywords and kinds of ability, any hero (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
 
 ## Open questions
 
@@ -389,3 +463,7 @@ choice:
     3 each and the Byzantine 4). Keeping 3 makes a run of 13 stages, 8
     provisions and 4 upgrades; longer regions keep the run's length but
     need a new rhythm for provisions and the high point (19.1).
+67. Generic ability upgrades (19.9): which slot offers them (hero,
+    passive, or a fourth), and whether they move between heroes.
+68. Martyr's payoff, and how many targets Forked adds and what each
+    takes (19.9).
