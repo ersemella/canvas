@@ -795,11 +795,12 @@ export const ABILITY = {
    * Charge (owner, 2026-10-28; roster.md), the Cataphract's slam (owner,
    * 2026-10-29): each unit it hits that ends the charge with yurts or the
    * map's edge right behind it, along the charge, is slammed into them,
-   * with `slam` `delay`, Delayed `delay` slots (owner, later 2026-10-29);
+   * with `slam` `delay`, Delayed `delay` slots (owner, later 2026-10-29;
+   * 6, balance.md, "The slam as a Delay": 4 was weaker in every seat);
    * with `stun`, Stunned for its next turn, as first built (balance.md,
    * "The slam without Armour": 74.7% in China's tank seat); `none`, no slam.
    */
-  charge: {slam: 'delay' as 'delay' | 'stun' | 'none', delay: 4 as number},
+  charge: {slam: 'delay' as 'delay' | 'stun' | 'none', delay: 6 as number},
   /**
    * Axe Throw (owner, 2026-10-28; roster.md), the Barbarian's: any unit on
    * one of the six straight lines from him, 1 to `range` (3) spaces away,

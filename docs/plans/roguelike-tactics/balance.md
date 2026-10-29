@@ -4121,6 +4121,34 @@ end the stalls.
 **Changed** (the owner, later 2026-10-29): the slam Delays in place of
 the Stun, Delay 4 the builder's first number (`ABILITY.charge.delay`).
 
+### The slam as a Delay (2026-10-29)
+
+`experiments/slam-delay.mjs`: the Cataphract's 39 rows with the slam
+Delaying 4 and 6, no Armour, 400 fights each, the same seeds. The Stun
+("The slam without Armour") in brackets.
+
+| | Delay 4 | **Delay 6** | (Stun) |
+|---|---:|---:|---:|
+| Byzantium against the Steppe | 29.6% | **34.8%** | (41.5%) |
+| against China | 35% | **46.5%** | (69.1%) |
+| against Persia | 44.4% | **45.2%** | (53.8%) |
+| The Cataphract in the Steppe's tank seat | 40.3% | **42%** | (50.1%) |
+| in China's | 53% | **53.5%** | (74.7%) |
+| in Persia's | 51.1% | **53.6%** | (60.6%) |
+| Another tank in Byzantium's seat | 67–74% | **59–69%** | (47–51%) |
+
+- **Delay 6 is better than 4 everywhere**, and built.
+- **In the band in China's and Persia's seats** (53.5%, 53.6%), a little
+  under in the Steppe's (42%); China's surplus with the Stun gone.
+- **Byzantium's party 35–47%**, weakest against the Steppe, and another
+  tank in its own seat still wins 59–69%: the gap the Stun closed is back,
+  smaller than Armoured alone left it (62–65%).
+- Stalls back to normal (at most 11% of fights, from 15–26%).
+
+Between the Delay and the Stun lies what the Cataphract wants: Delay 8
+(the Vanguard's first Cleave), or Delay 6 with Armoured back, are the
+next to try.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

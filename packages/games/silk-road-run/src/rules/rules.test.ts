@@ -2456,8 +2456,8 @@ describe('the Cataphract', () => {
     expect(k.hex).toEqual(along(c, dir, 1));
   });
 
-  it('slams a unit into yurts behind it: Delayed 4, and only that one', () => {
-    expect(ABILITY.charge).toEqual({slam: 'delay', delay: 4});
+  it('slams a unit into yurts behind it: Delayed 6, and only that one', () => {
+    expect(ABILITY.charge).toEqual({slam: 'delay', delay: 6});
     const {s, k} = ready({'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 2)});
     s.tiles[hexKey(along(c, dir, 4))] = 'obstacle';
     const [b, st] = [unit(s, 'e-bokh'), unit(s, 'e-storm')];
@@ -2465,9 +2465,9 @@ describe('the Cataphract', () => {
     charge(s, k, along(c, dir, 3));
     // The row carried 1, the Storm Caller against the yurts.
     expect([b.hex, st.hex]).toEqual([along(c, dir, 2), along(c, dir, 3)]);
-    expect(st.slot).toBeGreaterThanOrEqual(stSlot + 4);
+    expect(st.slot).toBeGreaterThanOrEqual(stSlot + 6);
     expect(b.slot).toBe(bSlot);
-    expect(s.log.some((l) => l.text.endsWith('Storm Caller is Delayed 4.'))).toBe(true);
+    expect(s.log.some((l) => l.text.endsWith('Storm Caller is Delayed 6.'))).toBe(true);
   });
 
   it('slams a unit into the map’s edge, but not one left short of it', () => {
@@ -2475,7 +2475,7 @@ describe('the Cataphract', () => {
     const before = unit(s, 'e-bokh').slot!;
     const end = lane(mapOf(s), c, dir).at(-1)!;
     charge(s, k, end);
-    expect(unit(s, 'e-bokh').slot).toBeGreaterThanOrEqual(before + 4);
+    expect(unit(s, 'e-bokh').slot).toBeGreaterThanOrEqual(before + 6);
     const {s: s2, k: k2} = ready({'e-bokh': along(c, dir, 1)});
     charge(s2, k2, along(c, dir, 2));
     expect(unit(s2, 'e-bokh').slot).toBe(before);
