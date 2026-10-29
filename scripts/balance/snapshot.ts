@@ -23,6 +23,8 @@ export function snapshot(config: Config) {
   });
   return () => {
     const restore = (target: any, from: any) => {
+      // A key the experiment added (a hero's `passives`) goes too.
+      for (const k of Object.keys(target)) if (!(k in from)) delete target[k];
       for (const [k, v] of Object.entries(from)) {
         if (v && typeof v === 'object' && !Array.isArray(v)) restore(target[k], v);
         else target[k] = v;
