@@ -414,6 +414,8 @@ hero is still question 63.
 | **Quickening** | When this hero's ability heals an ally, the ally is also Hastened 2 (TBD). |
 | **Fortify** | When this hero's ability heals an ally, the ally also gains Armour 1 (TBD) until its next turn. |
 | **Ward** | When this hero's ability heals an ally, the ally also gains Shield 1 (TBD) until its next turn. |
+| **Mending Strike** | This hero's melee attacks can be used on an ally, healing it this hero's power instead of damaging it. |
+| **Mending Shot** | This hero's ranged attacks can be used on an ally, healing it this hero's power instead of damaging it. |
 
 **Support and targeting**
 
@@ -430,7 +432,16 @@ hero is still question 63.
   - **An attack** is an ability that damages an enemy. A **ranged
     attack** is an attack on a target not on a space next to the hero.
   - **A heal** is an ability restoring an ally's health (the builder's
-    reading): today the Priest's Blessing and the Alchemist's Elixir.
+    reading): today the Priest's Blessing and the Alchemist's Elixir, and
+    any attack under Mending Strike or Shot. A **melee attack** is one on
+    a target next to the hero (the reverse of a ranged attack).
+  - **Mending Strike and Shot (builder's readings):** the heal is the
+    hero's power, Empower and Weaken not counted, and can't take the ally
+    above its health; only the heal reaches the ally, not the attack's
+    other effects (a Push, a Stun); an area attack still hits the allies
+    in it as it does today, and only an ally it is aimed at is healed. The
+    heal sets off the Healing upgrades, and Martyr, as any heal on an
+    ally does.
   - **An upgrade's effect applies only if the original keyword does:**
     Wearying's Weaken needs the Delay to happen, so it does nothing on an
     Inevitable enemy; Fervour's Empower likewise; Forceful does nothing on
@@ -460,7 +471,7 @@ hero is still question 63.
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |
 | Final boss (2026-10-24, owner) | Counters the player's build | A fixed boss | The run ends on a test of the build the player made |
-| Generic ability upgrades (2026-10-29, owner) | Twenty upgrades keyed off keywords and kinds of ability, any hero, offered with the passives at the caravanserai, 4 offerings at a time (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
+| Generic ability upgrades (2026-10-29, owner) | Twenty-two upgrades keyed off keywords and kinds of ability, any hero, offered with the passives at the caravanserai, 4 offerings at a time (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
 
 ## Open questions
 
