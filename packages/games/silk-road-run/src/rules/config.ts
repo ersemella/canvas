@@ -458,6 +458,28 @@ export const ONE_EYE = {armour: 3 as number};
  */
 export const ARMOURED = {armour: 1 as number};
 
+/**
+ * The generic ability upgrades' amounts (progression.md, 19.9; owner,
+ * 2026-10-29): the builder's first readings, marked TBD there. Each Delay,
+ * Haste, Weaken, Empower, Armour and Shield is the keyword's own (17.3,
+ * 17.6), Push and Pull 1 (17.4).
+ */
+export const UPGRADE = {
+  wearying: {weaken: 1},
+  lethargy: {delay: 2},
+  inspire: {haste: 2},
+  fervour: {empower: 1},
+  forceful: {push: 1},
+  reelIn: {pull: 1},
+  staggering: {delay: 2},
+  crippling: {weaken: 1},
+  immovableObject: {delay: 2},
+  invigorate: {empower: 1},
+  quickening: {haste: 2},
+  fortify: {armour: 1},
+  ward: {shield: 1},
+} as const;
+
 /** Each ability's shape. Damage is never listed: it is the user's power. */
 export const ABILITY = {
   /**
@@ -1176,6 +1198,20 @@ export const STAGES: Stage[] = [
  * goes to the rival.
  */
 export const PASSIVE_OFFER = 4;
+/**
+ * The rarities (progression.md, 19.3b; owner, 2026-10-29): each passive
+ * and generic upgrade the caravanserai offers has one, set by how strong it
+ * is (the builder's tiers, unmeasured), and is drawn with its rarity's
+ * weight, so a legendary one is 8 times rarer than a common one.
+ */
+export type Rarity = 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common';
+export const RARITY_WEIGHT: Record<Rarity, number> = {
+  legendary: 1,
+  epic: 2,
+  rare: 4,
+  uncommon: 6,
+  common: 8,
+};
 /**
  * How many of a run's first stages always have mountains (owner, 2026-10-24;
  * randomTiles): the Steppe's, four since 2026-10-28.

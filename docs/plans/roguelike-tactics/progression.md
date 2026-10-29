@@ -141,7 +141,27 @@ random from one pool:
   reading of each kit, **not yet measured** (the balance runs could rank
   them by win rate). The last passive goes to the second hero whatever it
   is, so a poor fit (Steady Gait on the Duelist) can be forced on it:
-  that is the draft's denial play.
+  that is the draft's denial play. Since 2026-10-29 the draft holds the
+  generic ability upgrades too (19.9): the rival takes, after its `likes`,
+  an upgrade its hero's kit can use, the rarest first (`fitsKit`, from
+  each ability's traits in `TRAITS`), and one it can't use last.
+- **19.3b Rarity (Decided, owner 2026-10-29; built).** Each passive and
+  generic upgrade the caravanserai offers has a rarity set by how strong it
+  is, and the 4 offerings are drawn one at a time, each as often as its
+  rarity's weight (`RARITY_WEIGHT` in config.ts; `weightedDraw` in run.ts),
+  so the stronger, the rarer. The caravanserai shows each card's rarity.
+  The tiers are the builder's estimate (2026-10-29), **not measured**:
+
+  | Rarity | Weight | Passives | Upgrades |
+  |---|---|---|---|
+  | **Legendary** (too strong as written) | 1 | none | Concussive, Forked, Mending Shot |
+  | **Epic** (strong) | 2 | Glass Cannon, Opportunist, Rally, Iron Will, Last Stand | Crippling, Hamstring, Mending Strike, Fortify, Invigorate |
+  | **Rare** (solid) | 4 | Hardened, Second Wind, Lone Wolf, Flanker, Vengeance | Ward, Staggering, Forceful, Quickening, Lockdown |
+  | **Uncommon** (situational) | 6 | Shake Loose, Rooted, Steady Gait, Light Step, Rebound | Reel In, Sundering, Wearying, Inspire |
+  | **Common** (close to nothing) | 8 | Momentum, Patient, Bulwark, Piercing Eye | Lethargy, Fervour, Defy Fate, Immovable Object |
+
+  With all 40 open, some legendary card is in about 1 offer in 15, and
+  any one common card in about 1 in 6.
 - **At most two abilities** besides moving and Hold (owner, 2026-10-25;
   three from 2026-10-24; [roster.md](roster.md)): the hero slot offers a
   new ability only to a hero with fewer than two (`hasRoomForAbility` in
@@ -355,7 +375,7 @@ choice:
   Vengeance softens the death spiral (10.6); Glass Cannon and Lone Wolf
   are deliberate risk picks.
 
-### 19.9 Generic Ability Upgrades (Decided, owner 2026-10-29; not built)
+### 19.9 Generic Ability Upgrades (Decided, owner 2026-10-29; built 2026-10-29)
 Upgrades that change **how a hero's abilities work, whatever they are**:
 each keys off a keyword an ability already applies (17.1) or a kind of
 ability (an attack, a heal, a ranged attack, a single target), not off a named
@@ -423,6 +443,37 @@ hero is still question 63.
 |---|---|
 | **Forked** | This hero's single-target abilities take one extra target, each target meeting the ability's own range and conditions. |
 
+- **Built (2026-10-29):** each upgrade is a `PassiveId` with `kind:
+  'upgrade'` (`PASSIVES` in passives.ts; its amounts `UPGRADE` in
+  config.ts), carried, shown and given on the test stage as a passive is,
+  and drawn by rarity (19.3b). The effects are in resolve.ts: the attack
+  upgrades in `hit` (`attackRiders`), Forceful's and Reel In's
+  displacement once the ability has resolved (`settle`), the keyword ones
+  in `delay`, `weaken`, `empower`, `haste` and `immobilize` (given the
+  ability's user as `by`), the healing ones in `heal`, Mending in `hit`
+  (`mends`), and Forked in `applyTurn` (`ActionTarget.also`; the page
+  picks the second target with a second tap, the AI tries each pair).
+  Tested in `genericUpgrades.test.ts`. The builder's readings:
+  - **"At most once"** is once for each unit during one use of an
+    ability: an area attack's Staggering Delays everyone it hits, but
+    Wearying and Lethargy go round at most once on any one of them.
+  - **An ally** is another unit of the hero's side, not the hero itself
+    (so Swift Strike's Haste on the Duelist doesn't set off Fervour).
+  - **The healing upgrades** fire on any heal on an ally, even one at full
+    health.
+  - **Concussive's, Lockdown's and Defy Fate's Stun** lasts the unit's
+    next turn; **Hamstring's Immobilize** lasts through it, as Longshot's
+    pin does.
+  - **Forceful** Pushes away from the attacker (the nearest way when the
+    target isn't in a straight line from it); an ability that Pushes of its
+    own (Shove, Gale, Stomp, Charge, Axe Throw, a Pushing Longshot, the
+    bosses') gets none. A grappled target Pushed away is let go.
+  - **Hail** is an ability: its hit on a unit entering it sets off the
+    caster's attack upgrades, and Lockdown Stuns whoever it holds, allies
+    too, as Lockdown says "a unit".
+  - **Forked** takes Snap Shot, Longshot, Swift Strike, Axe Throw,
+    Sunlight, Shove, Haul, Bite, and Elixir, Blessing and Omen as built; the
+    second target resolves only if it is still a target once the first has.
 - **Removed (owner, 2026-10-29):** **Exposed** (a Stun also making the
   unit Vulnerable 1), so Vulnerable stays out of the keywords (17.1);
   **Overheal** (healing beyond a unit's missing health becoming Shield);
@@ -469,7 +520,7 @@ hero is still question 63.
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |
 | Final boss (2026-10-24, owner) | Counters the player's build | A fixed boss | The run ends on a test of the build the player made |
-| Generic ability upgrades (2026-10-29, owner) | Twenty-one upgrades keyed off keywords and kinds of ability, any hero, offered with the passives at the caravanserai, 4 offerings at a time (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
+| Generic ability upgrades (2026-10-29, owner) | Twenty-one upgrades keyed off keywords and kinds of ability, any hero, offered with the passives at the caravanserai, 4 offerings at a time, drawn by rarity (19.9, 19.3b) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
 
 ## Open questions
 

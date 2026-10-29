@@ -15,7 +15,7 @@ import {
   stepToExit,
   steps,
 } from './board';
-import {ABILITIES, sameTarget, unusableReason} from './abilities';
+import {ABILITIES, forks, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
 import {
   checkEnd,
@@ -30,6 +30,7 @@ import {
   regrow,
   regrowing,
   scorch,
+  settle,
   squeezeGrapples,
   startTurnPassives,
   takeHasteDue,
@@ -335,8 +336,8 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     }
     if (isStunned(unit)) {
       skipTurn(ctx, unit, `${unitName(unit)} is Stunned: turn skipped.`);
-      // Last Stand's Stun (19.8) and a Charge's slam last this one turn.
-      unit.statuses = unit.statuses.filter((s) => !s.lastStand && !s.slammed);
+      // Last Stand's Stun (19.8), a Charge's slam and an upgrade's (19.9) last this one turn.
+      unit.statuses = unit.statuses.filter((s) => !s.lastStand && !s.slammed && !s.dazed);
       continue;
     }
     // Nothing to do but Hold: the track goes on without asking.
@@ -363,7 +364,9 @@ export function charging(state: FightState, unit: Unit): boolean {
  * cost on (3.2), to the unit's next turn.
  */
 function landCharge(ctx: Ctx, unit: Unit): void {
+  ctx.user = unit;
   landShots(ctx, unit);
+  settle(ctx);
   checkEnd(ctx.state);
   if (unit.alive) {
     placeCard(ctx.state, unit, aimSlot(ctx.state, unit, ctx.slot));
@@ -452,9 +455,9 @@ export function applyTurn(
   trustTarget = false
 ): void {
   const map = mapOf(state);
-  const ctx: Ctx = {state, map, slot: state.currentSlot};
   const def = ABILITIES[input.action.ability];
   if (!def) throw new RuleError('Unknown ability.');
+  const ctx: Ctx = {state, map, slot: state.currentSlot, user: unit, pushes: Boolean(def.pushes)};
   const reason = unusableReason(unit, def);
   if (reason) throw new RuleError(reason);
   const path = input.move ?? [];
@@ -471,9 +474,17 @@ export function applyTurn(
     log(ctx, `${unitName(unit)} moves.`);
     face(unit, before, path[path.length - 1]);
   } else {
-    const target = input.action.target ?? {};
+    const {also, ...target} = input.action.target ?? {};
     if (!trustTarget && !allowedTargets(state, map, unit, def).some((t) => sameTarget(t, target)))
       throw new RuleError(`${def.name} can’t target that.`);
+    // Forked (19.9): a second target, another of the ability's own.
+    const second = also ? {hex: also} : undefined;
+    if (second) {
+      if (!forks(unit, def) || target.to || (target.hex && hexEquals(target.hex, second.hex)))
+        throw new RuleError(`${def.name} can’t take a second target.`);
+      if (!trustTarget && !allowedTargets(state, map, unit, def).some((t) => sameTarget(t, second)))
+        throw new RuleError(`${def.name} can’t target that.`);
+    }
     // A step before the ability (Skirmish), a walk of one space.
     if (def.steps) {
       enterHex(ctx, unit, target.to!);
@@ -487,8 +498,20 @@ export function applyTurn(
     });
     const from = unit.hex!;
     def.resolve(ctx, unit, target);
+    // The second, if still a target once the first has resolved (it may have fallen or moved).
+    if (
+      second &&
+      state.phase === 'fight' &&
+      unit.alive &&
+      unit.hex &&
+      allowedTargets(state, map, unit, def).some((t) => sameTarget(t, second))
+    ) {
+      record(state, {kind: 'action', unitId: unit.id, ability: def.id, target: second.hex});
+      def.resolve(ctx, unit, second);
+    }
     face(unit, from, target.hex);
   }
+  settle(ctx);
   state.awaiting = null;
   checkEnd(state);
   endTurnOn(ctx, unit);

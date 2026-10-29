@@ -38,6 +38,7 @@ import {
   elixirSwaps,
   elixirImmortal,
   blessingCaught,
+  forks,
   blessingOf,
   grappling,
   chargePlan,
@@ -395,6 +396,15 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
       if (def.pairs && !def.ordered)
         tried.add(`${def.id}:${hexKey(target.to!)}:${hexKey(target.hex!)}`);
       inputs.push({action: {ability: def.id, target}});
+    }
+    // Forked (19.9): each pair of its single targets, once either way round.
+    if (forks(unit, def)) {
+      const ones = allowedTargets(state, map, unit, def).filter((t) => t.hex && !t.to);
+      ones.forEach((a, i) => {
+        for (const b of ones.slice(i + 1))
+          if (!hexEquals(a.hex!, b.hex!))
+            inputs.push({action: {ability: def.id, target: {hex: a.hex!, also: b.hex!}}});
+      });
     }
   }
   // Walks need no such check: one path to each space.

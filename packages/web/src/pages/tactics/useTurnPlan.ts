@@ -6,6 +6,7 @@ import {
   abilitiesOf,
   actingUnit,
   aimSlot,
+  forks,
   mapOf,
   offeredTargets,
   previewTurn,
@@ -183,6 +184,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   /** The hex picked last: the destination, the target, Feigned Retreat's fall-back, or Skirmish's step before its target. */
   const lastPicked =
     plannedMove?.hex ??
+    target?.also ??
     (target?.hex && tapped) ??
     (stepsFirst(ability) ? (target?.hex ?? target?.to) : (target?.to ?? target?.hex)) ??
     null;
@@ -280,6 +282,12 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       const match =
         fight && acting.hex && targetAt(mapOf(fight), acting.hex, ABILITIES[ability], targets, h);
       if (!match) return false;
+      // Forked (19.9): with a target picked, another of its targets is the second, tapped again un-picked.
+      if (forks(acting, ABILITIES[ability]) && target?.hex && !hexEquals(target.hex, match.hex!)) {
+        if (target.also && hexEquals(target.also, match.hex!)) pick({target: {hex: target.hex}});
+        else chooseTarget({hex: target.hex, also: match.hex!});
+        return true;
+      }
       // Where in the line it was tapped, if not on the target: a second tap there confirms.
       const at = hexEquals(match.hex!, h) ? null : h;
       if (target?.hex && hexEquals(target.hex, match.hex!)) {
@@ -312,7 +320,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
    * destination, then the ability or Move. False when nothing is picked.
    */
   const stepBack = useCallback((): boolean => {
-    if (stepsFirst(ability) && target?.hex) pick({target: {to: target.to!}});
+    if (target?.also) pick({target: {hex: target.hex!}});
+    else if (stepsFirst(ability) && target?.hex) pick({target: {to: target.to!}});
     else if (target?.to && !stepsFirst(ability)) pick({target: {hex: target.hex!}});
     else if (target?.hex || target?.to) pick({target: null, tapped: null});
     else if (ability) chooseAbility(null);

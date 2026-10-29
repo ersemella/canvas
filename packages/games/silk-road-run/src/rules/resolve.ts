@@ -10,11 +10,12 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, ARMOURED, CAMEL, DEVOTED, HEROES, ONE_EYE, REGROW, RULES} from './config';
+import {ABILITY, ARMOURED, CAMEL, DEVOTED, HEROES, ONE_EYE, REGROW, RULES, UPGRADE} from './config';
 import {
   addStatus,
   fireOn,
   hailOn,
+  hostile,
   inFrontLane,
   isImmobilized,
   isStunned,
@@ -33,6 +34,7 @@ import type {
   FightState,
   HailEffect,
   Motion,
+  PassiveId,
   ShotInAir,
   Status,
   Unit,
@@ -43,6 +45,18 @@ export interface Ctx {
   map: MapData;
   /** The slot the turn happens on. */
   slot: number;
+  /** The unit whose ability (or landing shot) this is, if any. */
+  user?: Unit;
+  /** That ability Pushes of its own, so Forceful adds none (19.9). */
+  pushes?: boolean;
+  /**
+   * The generic upgrades (19.9) that have fired during this ability, each
+   * with the unit it fired on: each fires at most once a unit, so no pair
+   * loops (Wearying with Lethargy).
+   */
+  fired?: Set<string>;
+  /** Pushes and Pulls from Forceful and Reel In, made once the ability has resolved (`settle`). */
+  pending?: (() => void)[];
 }
 
 export function log(ctx: Ctx, text: string): void {
@@ -107,14 +121,38 @@ export function hit(
   pierce = false
 ): void {
   if (!target.alive) return;
+  // Mending Strike and Shot (19.9): an ally is healed instead.
+  if (mends(attacker, target)) {
+    const amount = damageOf(attacker, empower, ctx.state);
+    log(ctx, `${what} mends ${unitName(target)}.`);
+    heal(ctx, target, amount, attacker);
+    return;
+  }
   const bonus = passiveEmpower(attacker, ctx.state) + bonusAgainst(ctx.state, attacker, target);
   const full = attacker.power + empower + bonus;
   if (attacker.weaken && full > 0) log(ctx, `Weaken takes off ${Math.min(full, attacker.weaken)}.`);
-  let amount = Math.max(0, full - (attacker.weaken ?? 0));
+  const amount = Math.max(0, full - (attacker.weaken ?? 0));
   if (amount <= 0) return;
   if (empower) log(ctx, `Empower adds ${empower}.`);
   if (bonus) log(ctx, `Passives add ${bonus}.`);
-  const pierces = pierce || (hasPassive(attacker, 'piercingEye') && isImmobilized(target));
+  const pierces =
+    pierce ||
+    (hasPassive(attacker, 'piercingEye') && isImmobilized(target)) ||
+    (hasPassive(attacker, 'sundering') && hostile(attacker, target));
+  land(ctx, attacker, target, what, amount, pierces);
+  // An attack (19.9): an ability that damages an enemy, Armour or a Shield taking it or not.
+  if (hostile(attacker, target)) attackRiders(ctx, attacker, target);
+}
+
+/** A hit's `amount` after Armour and Bulwark (`hit`), taken by `target`. */
+function land(
+  ctx: Ctx,
+  attacker: Unit,
+  target: Unit,
+  what: string,
+  amount: number,
+  pierces: boolean
+): void {
   // Hardened: Armour 1 against the first hit each fight, spent even when Pierced.
   if (spendPassive(target, 'hardened')) {
     if (pierces) log(ctx, `The hit Pierces ${unitName(target)}’s Armour.`);
@@ -130,6 +168,149 @@ export function hit(
   applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`, attacker);
 }
 
+// ─── Generic ability upgrades (19.9) ─────────────────────────────────────────
+
+/**
+ * Whether `by` carries the generic upgrade `id` and it hasn't fired on `u`
+ * yet during this ability, marking it fired if so: an upgrade can set off
+ * another, each at most once a unit (owner, 2026-10-29).
+ */
+function fires(ctx: Ctx, by: Unit | undefined, id: PassiveId, u: Unit): boolean {
+  if (!by || !hasPassive(by, id) || !u.alive) return false;
+  const key = `${id}:${u.id}`;
+  ctx.fired ??= new Set();
+  if (ctx.fired.has(key)) return false;
+  ctx.fired.add(key);
+  return true;
+}
+
+/** Whether `u` is an ally of `by`'s, not `by` itself (19.9's "an ally"). */
+const allyOf = (by: Unit | undefined, u: Unit): by is Unit =>
+  by !== undefined && by !== u && !hostile(by, u);
+
+/**
+ * Whether `attacker`'s hit on `target`, an ally, heals it instead (Mending
+ * Strike next to it, Mending Shot further off; 19.9).
+ */
+export function mends(attacker: Unit, target: Unit): boolean {
+  if (!allyOf(attacker, target) || !attacker.hex || !target.hex) return false;
+  const melee = hexDistance(attacker.hex, target.hex) === 1;
+  return hasPassive(attacker, melee ? 'mendingStrike' : 'mendingShot');
+}
+
+/** A Stun for the unit's next turn, from an upgrade (Concussive, Lockdown, Defy Fate). */
+const DAZED: Status = {kind: 'stunned', dazed: true};
+
+/**
+ * What `attacker`'s upgrades do to `target`, an enemy its attack has just
+ * hit (19.9): Staggering, Crippling, Hamstring, Concussive, Defy Fate and
+ * Immovable Object at once; Forceful's Push and Reel In's Pull once the
+ * ability has resolved (`settle`), so the ability's own effects land
+ * where it aimed them. Each only if its keyword takes (`delay`, `stun`).
+ */
+function attackRiders(ctx: Ctx, attacker: Unit, target: Unit): void {
+  if (!target.alive || !target.hex || !attacker.hex) return;
+  const ranged = hexDistance(attacker.hex, target.hex) > 1;
+  if (fires(ctx, attacker, 'staggering', target))
+    delay(ctx, target, UPGRADE.staggering.delay, attacker);
+  if (fires(ctx, attacker, 'crippling', target))
+    weaken(ctx, target, Math.max(target.weaken ?? 0, UPGRADE.crippling.weaken), attacker);
+  if (fires(ctx, attacker, 'hamstring', target))
+    immobilize(ctx, target, {kind: 'immobilized', pinned: true}, attacker);
+  if (fires(ctx, attacker, 'concussive', target)) stun(ctx, target, {...DAZED});
+  if (hasPassive(target, 'steadyGait') && fires(ctx, attacker, 'defyFate', target)) {
+    log(ctx, `${unitName(attacker)} defies fate.`);
+    stun(ctx, target, {...DAZED});
+  }
+  if (isUnstoppable(target) && fires(ctx, attacker, 'immovableObject', target))
+    delay(ctx, target, UPGRADE.immovableObject.delay, attacker);
+  // Forceful and Reel In on one ranged attack cancel: the target stays put.
+  const push =
+    hasPassive(attacker, 'forceful') &&
+    !(ctx.pushes && ctx.user === attacker) &&
+    !(ranged && hasPassive(attacker, 'reelIn'));
+  const pull = ranged && hasPassive(attacker, 'reelIn') && !hasPassive(attacker, 'forceful');
+  if (
+    (push && fires(ctx, attacker, 'forceful', target)) ||
+    (pull && fires(ctx, attacker, 'reelIn', target))
+  )
+    (ctx.pending ??= []).push(() => {
+      if (!target.alive || !target.hex || !attacker.alive || !attacker.hex) return;
+      if (hexEquals(target.hex, attacker.hex)) return;
+      const dir = push
+        ? awayFrom(attacker.hex, target.hex)
+        : awayFrom(target.hex, attacker.hex, true);
+      log(ctx, `${unitName(target)} is ${push ? 'Pushed' : 'Pulled'} by the blow.`);
+      displace(
+        ctx,
+        target,
+        dir,
+        push ? UPGRADE.forceful.push : UPGRADE.reelIn.pull,
+        push ? 'push' : 'pull'
+      );
+    });
+}
+
+/**
+ * The hex direction from `to` that leads farthest from `from` (a Push from
+ * `from`: straight away along a line, else the nearest way to it), or with
+ * `toward`, the direction from `from` nearest toward `to` (a Pull).
+ */
+function awayFrom(from: Hex, to: Hex, toward = false): number {
+  const exact = hexDirectionTo(from, to);
+  if (exact !== null) return exact;
+  const at = toward ? from : to;
+  const score = (d: number) => {
+    const n = hexDistance(toward ? to : from, hexNeighbor(at, d));
+    return toward ? -n : n;
+  };
+  return [0, 1, 2, 3, 4, 5].reduce((best, d) => (score(d) > score(best) ? d : best));
+}
+
+/** Makes the Pushes and Pulls `attackRiders` left for once the ability has resolved. */
+export function settle(ctx: Ctx): void {
+  const pending = ctx.pending;
+  delete ctx.pending;
+  for (const go of pending ?? []) {
+    if (ctx.state.phase !== 'fight') return;
+    go();
+  }
+}
+
+/**
+ * What `by`'s upgrades do to `u`, an ally its ability has just healed
+ * (19.9): Invigorate's Empower, Quickening's Haste, Fortify's Armour and
+ * Ward's Shield, whatever the heal restored.
+ */
+function healRiders(ctx: Ctx, by: Unit, u: Unit): void {
+  if (fires(ctx, by, 'invigorate', u)) empowerAtLeast(ctx, u, UPGRADE.invigorate.empower, by);
+  if (fires(ctx, by, 'quickening', u)) haste(ctx, u, UPGRADE.quickening.haste, by);
+  if (fires(ctx, by, 'fortify', u)) {
+    u.armour = Math.max(u.armour ?? 0, UPGRADE.fortify.armour);
+    log(ctx, `${unitName(u)} is fortified: Armour ${u.armour} until its next turn.`);
+  }
+  if (fires(ctx, by, 'ward', u)) shield(ctx, u, UPGRADE.ward.shield);
+}
+
+/**
+ * Immobilizes `u` with `status` (keywords.md, 17.4), unless it is
+ * Unstoppable; by `by`'s ability, its Lockdown Stuns it too (19.9).
+ */
+export function immobilize(ctx: Ctx, u: Unit, status: Status, by?: Unit): boolean {
+  if (!u.alive) return false;
+  if (isUnstoppable(u)) {
+    log(ctx, `${unitName(u)} is Unstoppable: not Immobilized.`);
+    return false;
+  }
+  addStatus(u, status);
+  if (status.pinned) log(ctx, `${unitName(u)} is Immobilized through its next turn.`);
+  if (fires(ctx, by, 'lockdown', u)) {
+    log(ctx, `${unitName(u)} is locked down.`);
+    stun(ctx, u, {...DAZED});
+  }
+  return true;
+}
+
 /**
  * The lasting Armour `target` has against a hit from a unit on `from`
  * (17.6), none if it Pierces: One Eye's (`eyeArmour`) and Armoured's (the
@@ -143,6 +324,15 @@ export function armourOf(
   pierces = false
 ): number {
   let armour = eyeArmour(ctx, target, from, pierces);
+  // Fortify's (19.9), until the unit's next turn.
+  if (target.armour) {
+    if (pierces) {
+      if (ctx) log(ctx, `The hit Pierces ${unitName(target)}’s Armour.`);
+    } else {
+      armour += target.armour;
+      if (ctx) log(ctx, `${unitName(target)}’s Armour takes off ${target.armour}.`);
+    }
+  }
   if (hasPassive(target, 'armoured')) {
     if (pierces) {
       if (ctx) log(ctx, `The hit Pierces ${unitName(target)}’s Armour.`);
@@ -262,20 +452,36 @@ export function shotEmpower(user: Unit, shot: ShotInAir): number {
   return Math.max(shot.empower ?? 0, user.empower ?? 0);
 }
 
-/** Empowers `u` by `amount` until the end of its next turn, replacing any Empower it had. */
-export function empower(ctx: Ctx, u: Unit, amount: number): void {
+/**
+ * Empowers `u` by `amount` until the end of its next turn, replacing any
+ * Empower it had. An ally Empowered by `by`'s ability is Hastened too with
+ * its Inspire (19.9).
+ */
+export function empower(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   u.empower = amount;
   delete u.empowerStarted;
   log(ctx, `${unitName(u)} is Empowered ${amount}.`);
+  empowered(ctx, u, by);
 }
 
-/** Heals `u` by `amount`, up to its health (Elixir). */
-export function heal(ctx: Ctx, u: Unit, amount: number): void {
+/** Inspire (19.9): an ally `by`'s ability Empowers is Hastened too. */
+function empowered(ctx: Ctx, u: Unit, by?: Unit): void {
+  if (allyOf(by, u) && fires(ctx, by, 'inspire', u)) haste(ctx, u, UPGRADE.inspire.haste, by);
+}
+
+/**
+ * Heals `u` by `amount`, up to its health (Elixir). A heal by `by`'s
+ * ability on an ally sets off its healing upgrades (19.9), whatever it
+ * restores.
+ */
+export function heal(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   const healed = Math.min(amount, u.maxHp - u.hp);
-  if (healed <= 0) return;
-  u.hp += healed;
-  log(ctx, `${unitName(u)} heals ${healed}.`);
-  record(ctx.state, {kind: 'heal', unitId: u.id, amount: healed});
+  if (healed > 0) {
+    u.hp += healed;
+    log(ctx, `${unitName(u)} heals ${healed}.`);
+    record(ctx.state, {kind: 'heal', unitId: u.id, amount: healed});
+  }
+  if (allyOf(by, u)) healRiders(ctx, by, u);
 }
 
 /**
@@ -289,21 +495,29 @@ export function shield(ctx: Ctx, u: Unit, amount: number, lasting = false): void
   log(ctx, `${unitName(u)} gains Shield ${amount}: Shield ${u.shield}.`);
 }
 
-/** Weakens `u` by `amount` until the end of its next turn, replacing any Weaken it had. */
-export function weaken(ctx: Ctx, u: Unit, amount: number): void {
+/**
+ * Weakens `u` by `amount` until the end of its next turn, replacing any
+ * Weaken it had. An enemy Weakened by `by`'s ability is Delayed too with its
+ * Lethargy (19.9).
+ */
+export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   u.weaken = amount;
   delete u.weakenStarted;
   log(ctx, `${unitName(u)} is Weakened ${amount}.`);
+  if (by && hostile(by, u) && fires(ctx, by, 'lethargy', u))
+    delay(ctx, u, UPGRADE.lethargy.delay, by);
 }
 
 /**
  * Empowers `u` by at least `amount` until the end of its next turn
- * (Vengeance, 19.8): a stronger Empower it has stays, and lasts as long.
+ * (Vengeance, 19.8; Fervour and Invigorate, 19.9): a stronger Empower it has
+ * stays, and lasts as long.
  */
-export function empowerAtLeast(ctx: Ctx, u: Unit, amount: number): void {
+export function empowerAtLeast(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   u.empower = Math.max(u.empower ?? 0, amount);
   delete u.empowerStarted;
   log(ctx, `${unitName(u)} is Empowered ${u.empower}.`);
+  empowered(ctx, u, by);
 }
 
 /** Inevitable (17.3; Steady Gait, 19.8): the card can't be Delayed or Hastened. */
@@ -318,10 +532,13 @@ function inevitable(ctx: Ctx, u: Unit): boolean {
  * resolved by speed as any placement is (3.3; owner, 2026-10-26). The delay
  * limit (3.6) is not built.
  */
-export function delay(ctx: Ctx, u: Unit, n: number): void {
+export function delay(ctx: Ctx, u: Unit, n: number, by?: Unit): void {
   if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
   placeCard(ctx.state, u, u.slot + n);
   log(ctx, `${unitName(u)} is Delayed ${n}.`);
+  // Wearying (19.9): an enemy `by`'s ability Delays is Weakened too.
+  if (by && hostile(by, u) && fires(ctx, by, 'wearying', u))
+    weaken(ctx, u, Math.max(u.weaken ?? 0, UPGRADE.wearying.weaken), by);
 }
 
 /**
@@ -331,11 +548,14 @@ export function delay(ctx: Ctx, u: Unit, n: number): void {
  * landing), its card not yet placed, the Haste is taken off as the card is
  * placed (`Unit.hasteDue`). The haste limit is not built.
  */
-export function haste(ctx: Ctx, u: Unit, n: number): void {
+export function haste(ctx: Ctx, u: Unit, n: number, by?: Unit): void {
   if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
   log(ctx, `${unitName(u)} is Hastened ${n}.`);
   if (u.slot <= ctx.state.currentSlot) u.hasteDue = (u.hasteDue ?? 0) + n;
   else placeCard(ctx.state, u, Math.max(ctx.state.currentSlot + 1, u.slot - n));
+  // Fervour (19.9): an ally `by`'s ability Hastens is Empowered too.
+  if (allyOf(by, u) && fires(ctx, by, 'fervour', u))
+    empowerAtLeast(ctx, u, UPGRADE.fervour.empower, by);
 }
 
 /**
@@ -382,6 +602,8 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
   else delete unit.shield;
   delete unit.unstoppable;
   delete unit.immortal;
+  // Fortify's Armour (19.9) lasted until now.
+  delete unit.armour;
   // A delayed Immortal begins now, lasting until the start of its next turn.
   if (unit.immortalDue) {
     delete unit.immortalDue;
@@ -602,7 +824,14 @@ export function regrow(ctx: Ctx, unit: Unit, next: number | null): void {
   state.currentSlot = Math.max(state.currentSlot, slot);
   delete unit.regrowAt;
   Object.assign(unit, {alive: true, hex: {...at}, hp: unit.maxHp, statuses: []});
-  for (const k of ['empower', 'empowerStarted', 'weaken', 'weakenStarted', 'shield'] as const)
+  for (const k of [
+    'empower',
+    'empowerStarted',
+    'weaken',
+    'weakenStarted',
+    'shield',
+    'armour',
+  ] as const)
     delete unit[k];
   delete unit.lastingShield;
   delete unit.skipped;
@@ -762,12 +991,15 @@ export function hailHolds(ctx: Ctx, unit: Unit): void {
   const hail = ctx.state.effects.find((e) => hexEquals(e.hex, unit.hex!))!;
   if (unit.statuses.some((s) => s.hail === hail.source && (!s.at || hexEquals(s.at, hail.hex))))
     return;
-  addStatus(unit, {
-    kind: 'immobilized',
-    hail: hail.source,
-    ...(ABILITY.hail.max > 1 ? {at: {...hail.hex}} : {}),
-  });
   log(ctx, `Hail holds ${unitName(unit)} fast.`);
+  // The caster's Lockdown (19.9) Stuns whoever its hail holds.
+  const caster = ctx.state.units.find((u) => u.id === hail.source);
+  immobilize(
+    ctx,
+    unit,
+    {kind: 'immobilized', hail: hail.source, ...(ABILITY.hail.max > 1 ? {at: {...hail.hex}} : {})},
+    caster
+  );
 }
 
 // ─── Grapples ────────────────────────────────────────────────────────────────

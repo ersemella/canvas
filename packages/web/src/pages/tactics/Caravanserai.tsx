@@ -7,11 +7,21 @@ import type {
   PassiveId,
   PassivePick,
   Provision,
+  Rarity,
   StatId,
   Unit,
 } from '@canvas/games-silk-road-run';
 import {PALETTE_VARS} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
+
+/** Each rarity's name on a drafted card (progression.md, 19.3b). */
+const RARITY_NAME: Record<Rarity, string> = {
+  legendary: 'Legendary',
+  epic: 'Epic',
+  rare: 'Rare',
+  uncommon: 'Uncommon',
+  common: 'Common',
+};
 
 const STATS: {stat: StatId; label: string}[] = [
   {stat: 'speed', label: 'Speed'},
@@ -231,9 +241,10 @@ export function Caravanserai(props: {
               count={`${draft.filter((p) => p.carrier !== null).length} of 2`}
               lead={
                 <>
-                  Four passives, drafted: you pick one, a rival caravan on the road ahead takes one,
-                  you pick another, and the rivals take the last. Each is carried for the rest of
-                  the run. Your first pick is final once locked in.
+                  Four passives and ability upgrades, drafted: you pick one, a rival caravan on the
+                  road ahead takes one, you pick another, and the rivals take the last. Each is
+                  carried for the rest of the run. The stronger, the rarer. Your first pick is final
+                  once locked in.
                 </>
               }
               rule={draftRule(draft, rival)}
@@ -258,6 +269,14 @@ export function Caravanserai(props: {
                       onClick={() => tapPassive(id)}
                     >
                       <span className={`${styles.display} ${styles.passiveName}`}>{def.name}</span>
+                      <span
+                        className={styles.passiveRarity}
+                        data-rarity={def.rarity}
+                        data-testid={`passive-rarity-${id}`}
+                      >
+                        {RARITY_NAME[def.rarity ?? 'common']}{' '}
+                        {def.kind === 'upgrade' ? 'ability upgrade' : 'passive'}
+                      </span>
                       <span>{def.rule}</span>
                       {pick && (
                         <span className={styles.passiveTaken}>

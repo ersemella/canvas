@@ -118,7 +118,35 @@ export type PassiveId =
   | 'serpentKing'
   | 'regrow'
   // A hero's own, not in 19.8's pool: the Cataphract's (owner, 2026-10-29).
-  | 'armoured';
+  | 'armoured'
+  // The generic ability upgrades (progression.md, 19.9; owner, 2026-10-29),
+  // drafted with the passives. Track
+  | 'wearying'
+  | 'lethargy'
+  | 'inspire'
+  | 'fervour'
+  // Board
+  | 'forceful'
+  | 'reelIn'
+  // Attacks
+  | 'staggering'
+  | 'hamstring'
+  | 'concussive'
+  | 'sundering'
+  | 'crippling'
+  // Control
+  | 'lockdown'
+  | 'defyFate'
+  | 'immovableObject'
+  // Healing
+  | 'invigorate'
+  | 'quickening'
+  | 'fortify'
+  | 'ward'
+  | 'mendingStrike'
+  | 'mendingShot'
+  // Targeting
+  | 'forked';
 
 /** The stats a provision raises (heroes-and-gear.md, 9.1). */
 export type StatId = 'speed' | 'defence' | 'power';
@@ -162,8 +190,13 @@ export interface Status {
   lastStand?: boolean;
   /** From a Charge slamming it into yurts or the map's edge: Stunned for its next turn, ending with it. */
   slammed?: boolean;
-  /** From a pinning Longshot (`ABILITY.longshot.pin`): Immobilized until the end of the unit's next turn. */
+  /**
+   * From a pinning Longshot (`ABILITY.longshot.pin`) or Hamstring (19.9):
+   * Immobilized until the end of the unit's next turn.
+   */
   pinned?: boolean;
+  /** From Concussive, Lockdown or Defy Fate (19.9): Stunned for the unit's next turn, ending with it. */
+  dazed?: boolean;
 }
 
 /**
@@ -249,6 +282,11 @@ export interface Unit {
    * when it has none.
    */
   shield?: number;
+  /**
+   * Armour (keywords.md, 17.6) until the start of its next turn, from an
+   * ally's Fortify (19.9). Absent when it has none.
+   */
+  armour?: number;
   /**
    * The part of its Shield that stays until damage spends it, not going at
    * its next turn (a Blessing with `ABILITY.blessing.lasts`). Absent when
@@ -445,6 +483,12 @@ export interface FightState {
 export interface ActionTarget {
   hex?: Hex;
   to?: Hex;
+  /**
+   * A second target for a single-target ability, with Forked (19.9): the
+   * ability resolves on `hex`, then again on this one, if it is still a
+   * target then.
+   */
+  also?: Hex;
 }
 
 export interface TurnAction {

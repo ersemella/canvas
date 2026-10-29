@@ -68,6 +68,7 @@ export {
   abilitiesOf,
   arrowLanes,
   axeLines,
+  forks,
   longshotLanes,
   longshotLines,
   unusableReason,
@@ -86,6 +87,7 @@ export {
 } from './rules/info';
 export type {HexInfo, KeywordId} from './rules/info';
 export {ABILITY, HEROES, PARTY, ROSTER, RULES, healthOf} from './rules/config';
+export type {Rarity} from './rules/config';
 export {PASSIVES, passivesOf} from './rules/passives';
 export type {PassiveDef, PassiveGroup} from './rules/passives';
 export {

@@ -298,6 +298,8 @@ export function buildScene(input: SceneInput): BoardScene {
       highlights.push({hex: target.hex, kind: 'chosen'});
     }
     if (target?.to) highlights.push({hex: target.to, kind: 'chosen'});
+    // Forked's second target (19.9).
+    if (target?.also) highlights.push({hex: target.also, kind: 'chosen'});
   }
   if (preview) {
     out.preview = preview.changes.map((c) => ({

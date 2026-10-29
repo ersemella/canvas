@@ -15,7 +15,6 @@ import {
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, CAMEL} from './config';
 import {
-  addStatus,
   hostile,
   cleaveAreas,
   disarmed,
@@ -51,6 +50,7 @@ import {
   haste,
   heal,
   hit,
+  immobilize,
   log,
   makeImmortal,
   makeUnstoppable,
@@ -144,6 +144,13 @@ export interface AbilityDef {
   stepsTo?: boolean;
   /** With `pairs`, which unit is aimed first matters (Omen as `bracket`). */
   ordered?: boolean;
+  /** It Pushes what it hits of its own (Gale, Axe Throw), so Forceful adds none (19.9). */
+  pushes?: boolean;
+  /**
+   * Aimed at one unit or space, nothing more (Snap Shot, Blessing): with
+   * Forked (19.9) it takes one extra target (`ActionTarget.also`).
+   */
+  single?: boolean;
   /**
    * The unit a target aims at, when it isn't simply the one on its hex
    * (Grapple's throw: the held unit, aimed by where it lands). For the
@@ -212,6 +219,7 @@ export function arrowLanes(state: FightState, map: MapData, from: Hex): ArrowLan
 
 const snapShot: AbilityDef = {
   id: 'snapShot',
+  single: true,
   name: 'Snap Shot',
   kind: 'attack',
   summary: () => 'Shoot straight: hits the first unit in line.',
@@ -275,6 +283,10 @@ export function longshotLanes(
  */
 const longshot: AbilityDef = {
   id: 'longshot',
+  single: true,
+  get pushes() {
+    return ABILITY.longshot.push > 0;
+  },
   name: 'Longshot',
   kind: 'attack',
   summary: () => {
@@ -319,14 +331,11 @@ const longshot: AbilityDef = {
     const {push, delay: slots, weaken: less, pin} = ABILITY.longshot;
     if (!u.alive || !u.hex) return;
     if (push) displace(ctx, u, directionTo(user.hex!, u.hex), push, 'push');
-    delay(ctx, u, slots);
-    if (less) weaken(ctx, u, less);
+    delay(ctx, u, slots, user);
+    if (less) weaken(ctx, u, less, user);
     if (pin) {
-      if (isUnstoppable(u)) log(ctx, `${unitName(u)} is Unstoppable: not pinned.`);
-      else {
-        addStatus(u, {kind: 'immobilized', pinned: true});
-        log(ctx, `${unitName(u)} is pinned: Immobilized through its next turn.`);
-      }
+      log(ctx, `${unitName(u)} is pinned.`);
+      immobilize(ctx, u, {kind: 'immobilized', pinned: true}, user);
     }
   },
 };
@@ -425,6 +434,7 @@ const hail: AbilityDef = {
  */
 const sunlight: AbilityDef = {
   id: 'sunlight',
+  single: true,
   name: 'Sunlight',
   kind: 'support',
   range: ABILITY.sunlight.range,
@@ -452,7 +462,7 @@ const sunlight: AbilityDef = {
       }
     }
     const u = unitAt(ctx.state, hex);
-    if (u) empower(ctx, u, ABILITY.sunlight.empower);
+    if (u) empower(ctx, u, ABILITY.sunlight.empower, user);
   },
 };
 
@@ -555,6 +565,8 @@ function directionTo(from: Hex, to: Hex): number {
 /** Shove: melee, Push 2, no damage. */
 const shove: AbilityDef = {
   id: 'shove',
+  pushes: true,
+  single: true,
   name: 'Shove',
   kind: 'control',
   damages: false,
@@ -571,6 +583,7 @@ const shove: AbilityDef = {
 /** Haul: the first unit in a lane within range, not next to the Grappler, Pulled 2. No damage. */
 const haul: AbilityDef = {
   id: 'haul',
+  single: true,
   name: 'Haul',
   kind: 'control',
   damages: false,
@@ -652,6 +665,7 @@ const feignedRetreat: AbilityDef = {
  */
 const gale: AbilityDef = {
   id: 'gale',
+  pushes: true,
   name: 'Gale',
   kind: 'control',
   range: ABILITY.gale.range,
@@ -746,7 +760,7 @@ const cleave: AbilityDef = {
     // Who stands in the area as it swings: a kill doesn't let the blade reach further.
     const caught = area.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
     for (const u of caught) hit(ctx, user, u, 'The cleave');
-    for (const u of caught) delay(ctx, u, ABILITY.cleave.delay);
+    for (const u of caught) delay(ctx, u, ABILITY.cleave.delay, user);
   },
 };
 
@@ -824,6 +838,9 @@ export function elixirCaught(state: FightState, user: Unit, from: Hex, target: H
  */
 const elixir: AbilityDef = {
   id: 'elixir',
+  get single() {
+    return ABILITY.elixir.shape === 'unit';
+  },
   name: 'Elixir',
   kind: 'support',
   damages: false,
@@ -909,19 +926,19 @@ const elixir: AbilityDef = {
     for (const u of caught) {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
       if (u.side === user.side) {
-        if (elixirHeals(u)) heal(ctx, u, user.power);
+        if (elixirHeals(u)) heal(ctx, u, user.power, user);
         // An amount of 0 gives none, rather than replacing an Empower it has.
         const empowers = elixirAmount('empower');
-        if (u.power > 0 && empowers > 0) empower(ctx, u, empowers);
-        haste(ctx, u, hastes);
+        if (u.power > 0 && empowers > 0) empower(ctx, u, empowers, user);
+        haste(ctx, u, hastes, user);
         if (unstoppable) makeUnstoppable(ctx, u);
         if (elixirSwaps(u)) swapSpeedHealth(ctx, u);
         if (elixirImmortal(u)) makeImmortal(ctx, u);
       } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
         const weakens = elixirAmount('weaken');
-        if (u.alive && u.power > 0 && weakens > 0) weaken(ctx, u, weakens);
-        delay(ctx, u, delays);
+        if (u.alive && u.power > 0 && weakens > 0) weaken(ctx, u, weakens, user);
+        delay(ctx, u, delays, user);
       }
     }
   },
@@ -988,6 +1005,9 @@ export function blessingCaught(state: FightState, user: Unit, from: Hex, target:
  */
 const blessing: AbilityDef = {
   id: 'blessing',
+  get single() {
+    return ABILITY.blessing.shape === 'unit';
+  },
   name: 'Blessing',
   kind: 'support',
   damages: false,
@@ -1035,7 +1055,7 @@ const blessing: AbilityDef = {
     for (const a of blessingCaught(ctx.state, user, user.hex!, target.hex!)) {
       const given = blessingOf(user, a);
       log(ctx, `${unitName(user)} blesses ${unitName(a)}.`);
-      heal(ctx, a, given.heal);
+      heal(ctx, a, given.heal, user);
       shield(ctx, a, given.shield, ABILITY.blessing.lasts);
     }
   },
@@ -1050,6 +1070,7 @@ const blessing: AbilityDef = {
  */
 const swiftStrike: AbilityDef = {
   id: 'swiftStrike',
+  single: true,
   name: 'Swift Strike',
   kind: 'attack',
   summary: () => `Melee. When it hits, its card is Hastened ${ABILITY.swiftStrike.haste}.`,
@@ -1092,6 +1113,9 @@ export function omenTakes(state: FightState, user: Unit, from: Hex): Unit[] {
  */
 const omen: AbilityDef = {
   id: 'omen',
+  get single() {
+    return ABILITY.omen.mode === 'single';
+  },
   name: 'Omen',
   kind: 'control',
   damages: false,
@@ -1134,11 +1158,11 @@ const omen: AbilityDef = {
       if (a.side === user.side) {
         setCard(ctx, a, ctx.state.currentSlot + 1);
         log(ctx, `${unitName(a)} acts next.`);
-        if (rider) empower(ctx, a, rider);
+        if (rider) empower(ctx, a, rider, user);
       } else {
         setCard(ctx, a, aimSlot(ctx.state, user) + 1);
         log(ctx, `${unitName(a)} waits until after ${unitName(user)} again.`);
-        if (rider) weaken(ctx, a, rider);
+        if (rider) weaken(ctx, a, rider, user);
       }
       return;
     }
@@ -1157,7 +1181,7 @@ const omen: AbilityDef = {
     for (const u of [a, b]) {
       if (u.side === user.side) continue;
       if (ABILITY.omen.hit) hit(ctx, user, u, `${unitName(user)}'s stars`);
-      delay(ctx, u, ABILITY.omen.delay);
+      delay(ctx, u, ABILITY.omen.delay, user);
     }
   },
 };
@@ -1306,6 +1330,7 @@ function resolveStomp(ctx: Ctx, user: Unit, to: Hex): void {
  */
 const stomp: AbilityDef = {
   id: 'stomp',
+  pushes: true,
   name: 'Stomp',
   kind: 'attack',
   // The stomp: aimed at where it stomps from, the ring around it lit.
@@ -1473,6 +1498,7 @@ function slams(map: MapData, u: Unit, dir: number): boolean {
  */
 const charge: AbilityDef = {
   id: 'charge',
+  pushes: true,
   name: 'Charge',
   kind: 'attack',
   stepsTo: true,
@@ -1620,6 +1646,8 @@ export function axeLines(map: MapData, from: Hex): Hex[][] {
  */
 const axeThrow: AbilityDef = {
   id: 'axeThrow',
+  pushes: true,
+  single: true,
   name: 'Axe Throw',
   kind: 'attack',
   summary: () =>
@@ -1644,6 +1672,7 @@ const axeThrow: AbilityDef = {
 
 const bite: AbilityDef = {
   id: 'bite',
+  single: true,
   name: 'Bite',
   kind: 'attack',
   summary: () => 'Melee.',
@@ -1713,6 +1742,7 @@ function boulderRing(map: MapData, from: Hex, target: Hex): Hex[] {
  */
 const boulder: AbilityDef = {
   id: 'boulder',
+  pushes: true,
   name: 'Boulder',
   kind: 'attack',
   area: (map, from, target) => [target, ...boulderRing(map, from, target)],
@@ -1745,6 +1775,7 @@ const boulder: AbilityDef = {
  */
 const gore: AbilityDef = {
   id: 'gore',
+  pushes: true,
   name: 'Gore',
   kind: 'attack',
   summary: () =>
@@ -1770,6 +1801,7 @@ function fanLine(map: MapData, from: Hex, target: Hex): Hex[] {
  */
 const bananaFan: AbilityDef = {
   id: 'bananaFan',
+  pushes: true,
   name: 'Iron Fan',
   kind: 'control',
   damages: false,
@@ -1895,4 +1927,9 @@ export function sameTarget(a: ActionTarget, b: ActionTarget): boolean {
   const eq = (x?: Hex, y?: Hex) =>
     x === undefined ? y === undefined : y !== undefined && hexEquals(x, y);
   return eq(a.hex, b.hex) && eq(a.to, b.to);
+}
+
+/** Whether `unit`'s `def` takes one extra target: a single-target ability, with Forked (19.9). */
+export function forks(unit: Unit, def: AbilityDef): boolean {
+  return Boolean(def.single) && hasPassive(unit, 'forked');
 }

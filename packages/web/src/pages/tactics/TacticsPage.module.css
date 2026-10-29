@@ -1295,6 +1295,26 @@
   font-size: 18px;
   font-weight: bold;
 }
+/* A drafted card's rarity (progression.md, 19.3b): the stronger, the rarer, the brighter. */
+.passiveRarity {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-dusk4);
+}
+.passiveRarity[data-rarity='uncommon'] {
+  color: var(--c-jade);
+}
+.passiveRarity[data-rarity='rare'] {
+  color: var(--c-lapisLight);
+}
+.passiveRarity[data-rarity='epic'] {
+  color: var(--c-plumLight);
+}
+.passiveRarity[data-rarity='legendary'] {
+  color: var(--c-goldLight);
+}
 /* Who a drafted passive went to: the party's pick, or the rival's. */
 .passiveTaken {
   margin-top: 2px;

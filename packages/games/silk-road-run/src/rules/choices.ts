@@ -8,6 +8,7 @@ import type {Hex} from '@canvas/engine/server';
 import {abilitiesOf, unusableReason} from './abilities';
 import type {AbilityDef} from './abilities';
 import {canMove, unitAt} from './board';
+import {mends} from './resolve';
 import type {MapData} from './map';
 import type {ActionTarget, FightState, Unit} from './types';
 
@@ -27,7 +28,8 @@ export function allowedTargets(
  * (Sunlight) only its own side and spaces without a unit, and for one that
  * helps allies and hinders enemies (Elixir) both. The rules allow
  * friendly fire and helping enemies; a player isn't offered either (hail
- * can still catch allies).
+ * can still catch allies), but an ally its attack would heal (Mending
+ * Strike and Shot, 19.9) is.
  */
 export function offeredTargets(
   state: FightState,
@@ -45,7 +47,7 @@ export function offeredTargets(
   if (!def.targetsUnit) return targets;
   return targets.filter((t) => {
     const u = def.aimedAt ? def.aimedAt(state, unit, t) : t.hex && unitAt(state, t.hex);
-    return u && u.side !== unit.side;
+    return u && (u.side !== unit.side || mends(unit, u));
   });
 }
 

@@ -21,6 +21,7 @@ import {
   MOUNTAIN_STAGES,
   PARTY,
   PASSIVE_OFFER,
+  RARITY_WEIGHT,
   REGIONS,
   ROSTER,
   RULES,
@@ -271,10 +272,12 @@ function extraOwed(run: RunState): boolean {
 }
 
 /**
- * The passives the caravanserai drafts once the run's stage is won: on a
- * region's last stage (STAGES) short of the run's last, `PASSIVE_OFFER` of
- * the pool at random from the run's seed and the stage, so a reload offers
- * the same ones. A passive every hero standing already carries isn't offered.
+ * The passives and generic upgrades (19.9) the caravanserai drafts once the
+ * run's stage is won: on a region's last stage (STAGES) short of the run's
+ * last, `PASSIVE_OFFER` of the pool, drawn one at a time from the run's seed
+ * and the stage, so a reload offers the same ones, each as often as its
+ * rarity's weight (`RARITY_WEIGHT`; 19.3b). One every hero standing already
+ * carries isn't offered.
  */
 export function passiveOffer(run: RunState): PassiveId[] {
   const {stage} = run;
@@ -285,10 +288,31 @@ export function passiveOffer(run: RunState): PassiveId[] {
   const open = (Object.keys(PASSIVES) as PassiveId[]).filter(
     (id) => !NOT_OFFERED.includes(id) && standing.some((u) => !hasPassive(u, id))
   );
-  return shuffled(open, seededRandom(stageSeed(run.seed, stage) ^ 0x27d4eb2f)).slice(
-    0,
+  return weightedDraw(
+    open,
+    (id) => RARITY_WEIGHT[PASSIVES[id].rarity ?? 'common'],
+    seededRandom(stageSeed(run.seed, stage) ^ 0x27d4eb2f),
     PASSIVE_OFFER
   );
+}
+
+/** `n` of `items` drawn one at a time without putting back, each as often as its `weight`. */
+export function weightedDraw<T>(
+  items: readonly T[],
+  weight: (item: T) => number,
+  random: () => number,
+  n: number
+): T[] {
+  const left = [...items];
+  const out: T[] = [];
+  while (out.length < n && left.length > 0) {
+    const total = left.reduce((sum, item) => sum + weight(item), 0);
+    let r = random() * total;
+    let i = 0;
+    while (i < left.length - 1 && (r -= weight(left[i]!)) >= 0) i++;
+    out.push(...left.splice(i, 1));
+  }
+  return out;
 }
 
 /**
