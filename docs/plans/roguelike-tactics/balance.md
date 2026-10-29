@@ -4177,6 +4177,51 @@ from in front.
 
 **Built** (the owner, 2026-10-29, "for now"): Delay 6 with Armoured.
 
+### Track time (2026-10-29)
+
+`experiments/track-time.mjs`: the effects that last by turns lasting a
+window of slots instead (`RULES.trackTime`): `own`, a turn of slots the
+unit's action cost when given; 10 and 12 slots a turn for every unit. The
+regions' parties against each other, the abilities with those effects
+(one side without), a point of speed on each hero in its region's mirror,
+and the China boss stage; 400 fights each, the same seeds. Run on the
+rules of `31f251f` (the slam a Stun, no Armour) with the switches of
+`80be4c2`; on later rules the `own-stun` rows need `ABILITY.charge.slam`
+at `stun`. Not built.
+
+In the kits as built only the Elixir's Empower and Weaken and the Storm
+Caller's hail change: the Priest's Blessing Shield is lasting, Rally is
+not drafted, and Princess Iron Fan's stage is won 98–100% either way.
+Persia's and Byzantium's own rows came out exactly the same in every mode.
+
+| | By turns | own | 10 | 12 |
+|---|---:|---:|---:|---:|
+| A side without the Elixir (China) | 9.5% | 8.5% | 6.5% | **4%** |
+| without hail (Steppe) | 15.5% | 15.5% | 14.8% | 14.3% |
+| Speed +1, mean of the six Steppe and China heroes | 60.7% | 62% | 61.9% | 62.5% |
+| the Duelist | 76% | 78% | 77.3% | **81.2%** |
+| the Alchemist | 57.3% | 61.3% | 61.8% | 61% |
+| the Storm Caller | 60.3% | 60.5% | 61.5% | 62.5% |
+| China against the Steppe | 49.8% | 52% | 53% | 49.8% |
+| Persia against China | 52.5% | 54.5% | 54.8% | 53.5% |
+| Byzantium against China | 69.1% | 68% | 67.2% | 65.3% |
+
+- **Balance barely moves**: party against party within 3 points of by
+  turns in every mode, inside the noise (about ±5 points at 400 fights),
+  and fights as long.
+- **Speed is worth a little more, as feared, but only 1–2 points**, most
+  with a fixed 12 (the Duelist, already the strongest speed point, 81%).
+- **The Elixir is worth more the longer the window** (its side without
+  it 9.5% to 4%): a fast unit gets more than one Empowered action from it.
+- The AI doesn't plan for windows (a Haste into one, a Delay out of one),
+  so the timing choices track time adds aren't played here.
+
+The slam as a Delay of the unit's action cost (`RULES.stunAsDelay`, with
+`own`), the Stun in brackets: Byzantium against China 57.5% (69.1%),
+Persia 47% (53.8%), the Steppe 45.6% (41.5%); a side without Charge
+18.1% (7.7%); stalls 0–2% (5–11%). Between Delay 6 ("The slam as a
+Delay") and the Stun, as Delay 8 would be.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
