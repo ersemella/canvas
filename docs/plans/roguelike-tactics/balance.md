@@ -4118,6 +4118,9 @@ Untried: the slam Delaying (say 4–6) in place of the Stun, or Stunning
 only against ruins, not the map's edge, to bring China's seat down and
 end the stalls.
 
+**Changed** (the owner, later 2026-10-29): the slam Delays in place of
+the Stun, Delay 4 the builder's first number (`ABILITY.charge.delay`).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
