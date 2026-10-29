@@ -438,8 +438,9 @@ hero is still question 63.
   - **Mending Strike and Shot (builder's readings):** the heal is the
     hero's power, Empower and Weaken not counted, and can't take the ally
     above its health; only the heal reaches the ally, not the attack's
-    other effects (a Push, a Stun); an area attack still hits the allies
-    in it as it does today, and only an ally it is aimed at is healed. The
+    other effects (a Push, a Stun); on an area attack, only an ally it
+    is aimed at is healed, and any other ally in the area is treated as
+    it is today. The
     heal sets off the Healing upgrades, and Martyr, as any heal on an
     ally does.
   - **An upgrade's effect applies only if the original keyword does:**
