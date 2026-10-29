@@ -178,10 +178,10 @@ shoulders Iblis's kisses grew two serpents, which grew back each time
 they were cut off; Fereydun beat him and chained him under Mount Damavand.
 The boss setting.md proposed for "two heads, two turns": **each serpent
 is its own unit with its own card** (11.3), and the rule bent is
-**Immortal** (17.6), held by the serpents, with 11.3's Summoner: a fallen
-serpent's return is a card on the track. The answer is to cut both
-serpents down, then hit the king before they grow back. Builder's design
-and first numbers, untested; the owner's to change.
+**Immortal** (17.6), held by the serpents, with 11.3's Summoner: he spends
+his turns bringing them back. The answer is to cut both serpents down,
+then hit the king before his next turn regrows one. Builder's design and
+first numbers, untested; the owner's to change.
 
 - **Stats (the builder's first numbers):** Zahhak speed 1, defence 4
   (health 10), power 3; each serpent speed 3, defence 0 (health 2), power
@@ -195,42 +195,44 @@ and first numbers, untested; the owner's to change.
   caravanserai): while either serpent is on the board, no damage reaches
   his health (`guarded` in resolve.ts), as Immortal: a Shield still takes
   it first. Pierce doesn't get past it.
-- **Regrow** (the serpents' passive, `regrow`, not offered): a serpent
-  cut down while Zahhak stands grows back `REGROW.slots` (12) slots after
-  it fell, about one turn of every unit on the board, its card greyed on
-  the track meanwhile (`Unit.regrowAt`). When the card comes up it returns
-  at full health, with nothing on it, on the open space next to him
-  nearest the party, and takes its turn there (as any card placed on a
-  slot, 3.3). With every space next to him taken it waits until after
-  the next card. Once Zahhak falls, neither grows back, and the fight is
-  won when he and the serpents are all down. The greyed card can't be
-  Delayed or Hastened: only a unit on the board can.
-- **Feed the Serpents** (Zahhak's, `feed`): melee, his power, and each
-  serpent growing back does so `ABILITY.feed.sooner` (3) slots sooner, at
-  the soonest the next slot. The *Shahnameh*'s serpents were fed on
-  young men's brains; the game says only that he seizes a unit for them.
+- **Regrow** (Zahhak's, `regrowSerpent`; owner, 2026-10-29: only on his
+  turn): his action, aimed at an open space next to him, a fallen serpent
+  grows back there at full health with nothing on it, its card placed as
+  after a turn of its own, its action cost on (3.2). One serpent a turn.
+  A serpent cut down stays down, its card off the track, until he does
+  (`regrow`, the serpents' passive, not offered, says so). **Built first**
+  (the same day) as a timer: a serpent cut down grew back on its own 12
+  slots later, its card greyed on the track meanwhile, and Feed the
+  Serpents brought it 3 slots sooner; the owner wanted it only on his
+  turn.
+- **Feed the Serpents** (Zahhak's, `feed`): melee, his power. The
+  *Shahnameh*'s serpents were fed on young men's brains; the game says
+  only that he seizes a unit for them.
 - **The serpents walk free**, as wolves do, though they grow from his
   shoulders: the builder's simplest reading. A tether (a serpent's walk
   ending within 2 of him) is the owner's to add if they read wrong.
 - **Bite** (the serpents', the wolf's): melee, their power.
+- **The AI:** a turn bringing a unit back scores its health and a kill's
+  worth (`scoreOutcome`, `guessValue` in ai.ts); without it the AI never
+  regrew a serpent, since the screening only counted units alive before
+  the turn.
 - **The map, `palace`**: Zahhak's palace, the Steppe's board with
   nothing on it (`PALACE` in map.ts), as the other bosses' maps; its
   floor the owner's art (AI-assisted, 2026-10-29), cracked limestone with
-  glazed tile fragments (art-direction.md, "Prompts for Zahhak's palace
-  floor"). Mount Damavand, where he is chained, was the other choice; the
-  palace, where Fereydun found him, keeps the region's turquoise tile.
-- **First measured (2026-10-29, 12 AI fights a line-up, the production
-  AI on both sides, Humphrey in play):** much harder than the Cyclops or
-  the Bull Demon King, and won by the camel, not by killing him. Persia's
-  party (Ranger, Juggernaut, Magus) won 7 of 12, every one by Humphrey
-  reaching the road out, and lost 5; China's party won 10 of 12, again
-  all by Humphrey. Zahhak fell in none of the 24. With the serpents
-  growing back after 20 slots Persia's party won 11 of 12 (all by
-  Humphrey), after 30 slots 12 of 12 (one by killing him). The AI hits
-  him while he is guarded (about 17 wasted hits a fight in China's
-  party): it doesn't yet aim for the serpents first. To tune before the
-  run's last stage is fair: Regrow's slots, his health, and the AI's
-  score of a hit that a guard turns away.
+  glazed tile fragments, toned down (art-direction.md, "Prompts for
+  Zahhak's palace floor"). Mount Damavand, where he is chained, was the
+  other choice; the palace, where Fereydun found him, keeps the region's
+  turquoise tile.
+- **Measured (2026-10-29, 12 AI fights a line-up, the production AI on
+  both sides, Humphrey in play).** With Regrow on his turn: Persia's party
+  (Ranger, Juggernaut, Magus) won 12 of 12, 3 by killing him, 9 by
+  Humphrey reaching the road out, the serpents regrown about 4.7 times a
+  fight; the Steppe's won 10 of 12 (5 by killing him), China's 10 of 12
+  (none by killing him). China's party wastes about 20 hits a fight on him
+  while a serpent guards him: the AI doesn't yet aim for the serpents
+  first. With the first build's timer he was much harder: Persia's party
+  won 7 of 12, every one by Humphrey, and he fell in none of 24 fights.
+  Untuned, as the other bosses.
 
 ---
 

@@ -1,10 +1,13 @@
-// Zahhak (2026-10-29; enemies.md): the Serpent King's guard, his serpents
-// growing back (Regrow) and Feed the Serpents.
+// Zahhak (2026-10-29; enemies.md): the Serpent King's guard, Regrow (his
+// serpents grown back on his turn) and Feed the Serpents.
 import {describe, expect, it} from 'vitest';
-import {hexDistance, hexNeighbor} from '@canvas/engine/server';
+import {hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, PARTY, REGIONS, REGROW, STAGES} from './config';
-import {advanceToDecision, applyTurn, createFight} from './fight';
+import {ABILITIES} from './abilities';
+import {allowedTargets} from './choices';
+import {PARTY, REGIONS, STAGES} from './config';
+import {advanceToDecision, applyTurn, createFight, mapOf} from './fight';
+import {actionCost} from './track';
 import {STEPPE} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
@@ -61,77 +64,78 @@ describe('Zahhak', () => {
     expect(zahhak.hp).toBe(zahhak.maxHp - unit(s, 'p-mangudai').power);
   });
 
-  it('Regrow: a serpent cut down starts growing back, and he loses his guard', () => {
+  it('a serpent cut down stays down, its card off the track, and he loses his guard', () => {
     const s = setup({'e-zahhak': centre, 'e-serpent': out(0, 2), 'p-mangudai': out(0, 4)});
-    s.currentSlot = 5;
     act(s, 'p-mangudai', 'snapShot', {hex: out(0, 2)});
     const serpent = unit(s, 'e-serpent');
     expect(serpent.alive).toBe(false);
-    expect(serpent.regrowAt).toBe(5 + REGROW.slots);
-  });
-
-  it('Regrow: it grows back next to him, at full health, as its card comes up', () => {
-    const s = setup({'e-zahhak': centre, 'p-mangudai': out(0, 4)});
-    const serpent = unit(s, 'e-serpent');
-    serpent.hp = 0;
-    serpent.regrowAt = 20;
-    // Every other card later than the regrowth.
+    expect(serpent.slot).toBeNull();
+    // Nothing brings it back as the track runs on: only Zahhak, on his turn.
     for (const u of s.units) if (u.alive) u.slot = 60;
     const next = advanceToDecision(s);
-    expect(serpent.alive).toBe(true);
-    expect(serpent.regrowAt).toBeUndefined();
-    expect(serpent.hp).toBe(serpent.maxHp);
-    expect(hexDistance(serpent.hex!, centre)).toBe(1);
-    // The open space next to him nearest the party, along direction 0.
-    expect(serpent.hex).toEqual(out(0, 1));
-    // It takes its turn as it grows back.
-    expect(next?.id).toBe('e-serpent');
-    expect(s.currentSlot).toBe(20);
-  });
-
-  it('Regrow: with every space next to him taken, it waits for the next card', () => {
-    const s = setup({'e-zahhak': centre, 'p-mangudai': out(0, 4)});
-    // Wolves of the party's in every space next to him (the test's own).
-    for (let d = 0; d < 6; d++) {
-      const w = {...unit(s, 'p-mangudai'), id: `p-wall-${d}`, hex: out(d, 1), slot: 200 + d};
-      s.units.push(w);
-    }
-    const serpent = unit(s, 'e-serpent');
-    serpent.regrowAt = 20;
-    unit(s, 'p-mangudai').slot = 30;
-    advanceToDecision(s);
+    expect(next?.id).not.toBe('e-serpent');
     expect(serpent.alive).toBe(false);
-    expect(serpent.regrowAt).toBe(31);
   });
 
-  it('once he falls, his serpents grow back no more', () => {
-    const s = setup({'e-zahhak': centre, 'p-mangudai': out(0, 3)});
-    const zahhak = unit(s, 'e-zahhak');
-    zahhak.hp = 1;
-    unit(s, 'e-serpent').regrowAt = 40;
-    act(s, 'p-mangudai', 'snapShot', {hex: centre});
-    expect(zahhak.alive).toBe(false);
-    expect(unit(s, 'e-serpent').regrowAt).toBeUndefined();
-    expect(s.phase).toBe('won');
-  });
-
-  it('the fight isn’t won while a serpent grows back and he stands', () => {
+  it('the fight isn’t won while he stands with his serpents down', () => {
     const s = setup({'e-zahhak': centre, 'e-serpent': out(0, 2), 'p-mangudai': out(0, 4)});
     act(s, 'p-mangudai', 'snapShot', {hex: out(0, 2)});
     expect(s.phase).toBe('fight');
   });
 
-  it('Feed the Serpents: melee, his power, and his serpents grow back sooner', () => {
-    const s = setup({'e-zahhak': centre, 'p-bokh': out(0, 1)});
+  it('Regrow: on his turn, a fallen serpent grows back next to him at full health', () => {
+    const s = setup({'e-zahhak': centre, 'p-mangudai': out(0, 4)});
     s.currentSlot = 10;
-    unit(s, 'e-serpent').regrowAt = 30;
-    unit(s, 'e-serpent-2').regrowAt = 12;
+    const serpent = unit(s, 'e-serpent');
+    serpent.hp = 0;
+    const options = allowedTargets(s, mapOf(s), unit(s, 'e-zahhak'), ABILITIES.regrowSerpent);
+    // Each open space next to him.
+    expect(options).toHaveLength(6);
+    act(s, 'e-zahhak', 'regrowSerpent', {hex: out(3, 1)});
+    expect(serpent.alive).toBe(true);
+    expect(serpent.hex).toEqual(out(3, 1));
+    expect(serpent.hp).toBe(serpent.maxHp);
+    // Its card placed as after a turn of its own.
+    expect(serpent.slot).toBe(10 + actionCost(serpent));
+    // The other serpent grows back only on a turn of his own.
+    expect(unit(s, 'e-serpent-2').alive).toBe(false);
+    // And his guard is back.
+    act(s, 'p-mangudai', 'snapShot', {hex: centre});
+    expect(unit(s, 'e-zahhak').hp).toBe(unit(s, 'e-zahhak').maxHp);
+  });
+
+  it('Regrow: nothing to do with both serpents standing, or no space next to him', () => {
+    const s = setup({
+      'e-zahhak': centre,
+      'e-serpent': out(0, 2),
+      'e-serpent-2': out(3, 2),
+      'p-mangudai': out(0, 4),
+    });
+    const zahhak = unit(s, 'e-zahhak');
+    expect(allowedTargets(s, mapOf(s), zahhak, ABILITIES.regrowSerpent)).toEqual([]);
+    unit(s, 'e-serpent').alive = false;
+    unit(s, 'e-serpent').hex = null;
+    for (let d = 0; d < 6; d++) {
+      const w = {...unit(s, 'p-mangudai'), id: `p-wall-${d}`, hex: out(d, 1), slot: 200 + d};
+      s.units.push(w);
+    }
+    expect(allowedTargets(s, mapOf(s), zahhak, ABILITIES.regrowSerpent)).toEqual([]);
+  });
+
+  it('once he falls with his serpents down, the fight is won', () => {
+    const s = setup({'e-zahhak': centre, 'p-mangudai': out(0, 3)});
+    const zahhak = unit(s, 'e-zahhak');
+    zahhak.hp = 1;
+    act(s, 'p-mangudai', 'snapShot', {hex: centre});
+    expect(zahhak.alive).toBe(false);
+    expect(s.phase).toBe('won');
+  });
+
+  it('Feed the Serpents: melee, his power', () => {
+    const s = setup({'e-zahhak': centre, 'p-bokh': out(0, 1)});
     const bokh = unit(s, 'p-bokh');
     act(s, 'e-zahhak', 'feed', {hex: out(0, 1)});
     expect(bokh.hp).toBe(bokh.maxHp - unit(s, 'e-zahhak').power);
-    expect(unit(s, 'e-serpent').regrowAt).toBe(30 - ABILITY.feed.sooner);
-    // At the soonest the next slot.
-    expect(unit(s, 'e-serpent-2').regrowAt).toBe(11);
   });
 
   it('is Persia’s boss: its stage 4 brings him and two serpents, in his palace', () => {

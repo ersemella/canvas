@@ -9,7 +9,7 @@
  * caravanserai between regions drafts them (19.3a): the party's two picks,
  * the rival's two (`draftPick`).
  */
-import {ARMOURED, DEVOTED, HEROES, ONE_EYE, REGROW} from './config';
+import {ARMOURED, DEVOTED, HEROES, ONE_EYE} from './config';
 import type {HeroId, PassiveId, Unit} from './types';
 
 export type PassiveGroup = 'track' | 'board' | 'damage' | 'control' | 'allies';
@@ -172,9 +172,9 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
   ),
   regrow: def(
     'regrow',
-    'Regrow',
-    'damage',
-    `Cut down while Zahhak stands, it grows back next to him ${REGROW.slots} slots later, at full health.`
+    'Zahhak’s Serpent',
+    'allies',
+    'Cut down, it can be grown back by Zahhak on his turn, next to him at full health.'
   ),
 };
 

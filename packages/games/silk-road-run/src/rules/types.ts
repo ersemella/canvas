@@ -70,6 +70,7 @@ export type AbilityId =
   | 'quench'
   // Zahhak's (2026-10-29).
   | 'feed'
+  | 'regrowSerpent'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
@@ -284,13 +285,6 @@ export interface Unit {
    * yet acted since: with `ABILITY.omen.once`, not put there again.
    */
   bracketed?: boolean;
-  /**
-   * A fallen serpent of Zahhak's growing back (Regrow, `REGROW`): the slot
-   * its card comes up on, greyed on the track, when it returns to a space
-   * next to him at full health. Absent otherwise; a unit with it is not
-   * `alive` until then.
-   */
-  regrowAt?: number;
   /** It took a unit off the board this turn (Momentum, 19.8). */
   tookOff?: boolean;
   /**
@@ -382,15 +376,13 @@ export type FightEvent =
   | {kind: 'damage'; unitId: string; amount: number}
   | {kind: 'heal'; unitId: string; amount: number}
   | {kind: 'death'; unitId: string; hex: Hex}
-  /** A serpent of Zahhak's grown back (Regrow) on `hex`. */
-  | {kind: 'regrow'; unitId: string; hex: Hex}
   /** Its turn came up with nothing to do but Hold, so the track went on without it. */
   | {kind: 'skip'; unitId: string};
 
 /** What the board looks like right after an event: enough to draw it, not to play on. */
 export interface BoardSnapshot {
   currentSlot: number;
-  units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped' | 'regrowAt'>[];
+  units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped'>[];
   effects: HailEffect[];
   shots?: ShotInAir[];
   fires?: FireEffect[];

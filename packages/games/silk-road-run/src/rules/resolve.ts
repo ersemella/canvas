@@ -10,7 +10,7 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, ARMOURED, CAMEL, DEVOTED, HEROES, ONE_EYE, REGROW, RULES} from './config';
+import {ABILITY, ARMOURED, CAMEL, DEVOTED, HEROES, ONE_EYE, RULES} from './config';
 import {
   addStatus,
   fireOn,
@@ -75,7 +75,6 @@ function snapshot(state: FightState): BoardSnapshot {
       alive: u.alive,
       slot: u.slot,
       skipped: u.skipped ?? false,
-      ...(u.regrowAt !== undefined ? {regrowAt: u.regrowAt} : {}),
     })),
     effects: state.effects.map((e) => ({...e, hex: {...e.hex}})),
     ...(state.shots?.length ? {shots: state.shots.map((v) => ({...v}))} : {}),
@@ -510,8 +509,7 @@ function devotion(ctx: Ctx, target: Unit): void {
  * (Momentum); each ally of its with Vengeance is Hastened 3 and Empowered
  * 1 for its next turn (19.8). Princess Iron Fan drops her fan where she fell
  * (`FightState.fan`), and the fires she set burn on: her next turn, when
- * they would go out, won't come. A serpent of Zahhak's cut down while he
- * stands starts growing back (`REGROW`); once he falls, none does.
+ * they would go out, won't come.
  */
 export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
   const at = unit.hex;
@@ -519,15 +517,6 @@ export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
   unit.slot = null;
   unit.hex = null;
   log(ctx, `${unitName(unit)} falls.`);
-  const king = ctx.state.units.find(
-    (u) => u.alive && u.side === unit.side && hasPassive(u, 'serpentKing')
-  );
-  if (hasPassive(unit, 'regrow') && king) {
-    unit.regrowAt = ctx.slot + REGROW.slots;
-    log(ctx, `It will grow back from ${unitName(king)}’s shoulder.`);
-  }
-  if (hasPassive(unit, 'serpentKing'))
-    for (const u of ctx.state.units) if (u.side === unit.side) delete u.regrowAt;
   if (at) record(ctx.state, {kind: 'death', unitId: unit.id, hex: at});
   endGrapples(ctx, (g) => g.champion === unit.id || g.target === unit.id, true);
   // Its hail lasted until a turn of its, which won't come; its shots until its card came back.
@@ -560,55 +549,6 @@ export function checkEnd(state: FightState): void {
     logAt(state, state.currentSlot, `${unitName(camel)} reaches the road out.`);
   } else if (!state.units.some((u) => u.alive && u.side === 'player' && u !== camel))
     state.phase = 'lost';
-}
-
-/**
- * The serpent growing back soonest (Regrow, `REGROW`), if any: a fallen
- * unit with a `regrowAt`.
- */
-export function regrowing(state: FightState): Unit | undefined {
-  let best: Unit | undefined;
-  for (const u of state.units)
-    if (!u.alive && u.regrowAt !== undefined && (!best || u.regrowAt < best.regrowAt!)) best = u;
-  return best;
-}
-
-/**
- * A serpent grows back (Regrow, 2026-10-29) at its `regrowAt`: on the open
- * space next to Zahhak nearest a unit of the other side (the first of
- * them in hex direction order), at full health and with nothing on it,
- * its card placed at that slot as any card is (3.3), so it takes its turn
- * there unless a faster card holds the slot. With every space next to him
- * taken it tries again on the slot after `next`, the next card's.
- */
-export function regrow(ctx: Ctx, unit: Unit, next: number | null): void {
-  const {state, map} = ctx;
-  const slot = unit.regrowAt!;
-  const king = state.units.find(
-    (u) => u.alive && u.hex && u.side === unit.side && hasPassive(u, 'serpentKing')
-  );
-  if (!king) {
-    delete unit.regrowAt;
-    return;
-  }
-  const foes = state.units.filter((u) => u.alive && u.hex && u.side !== unit.side);
-  const near = (h: Hex) => Math.min(99, ...foes.map((u) => hexDistance(u.hex!, h)));
-  const open = hexNeighbors(king.hex!).filter((h) => walkable(map, h) && !unitAt(state, h));
-  if (open.length === 0) {
-    unit.regrowAt = Math.max(slot, next ?? slot) + 1;
-    return;
-  }
-  const at = open.reduce((a, b) => (near(b) < near(a) ? b : a));
-  state.currentSlot = Math.max(state.currentSlot, slot);
-  delete unit.regrowAt;
-  Object.assign(unit, {alive: true, hex: {...at}, hp: unit.maxHp, statuses: []});
-  for (const k of ['empower', 'empowerStarted', 'weaken', 'weakenStarted', 'shield'] as const)
-    delete unit[k];
-  delete unit.lastingShield;
-  delete unit.skipped;
-  logAt(state, slot, `${unitName(unit)} grows back from ${unitName(king)}’s shoulder.`);
-  record(state, {kind: 'regrow', unitId: unit.id, hex: {...at}});
-  placeCard(state, unit, slot);
 }
 
 /** The player's camel (camel.md). */

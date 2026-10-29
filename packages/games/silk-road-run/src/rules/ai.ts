@@ -321,8 +321,12 @@ export function scoreOutcome(
 ): number {
   let score = 0;
   for (const b of before.units) {
-    if (!b.alive) continue;
     const a = after.units.find((u) => u.id === b.id)!;
+    // A unit brought back (Zahhak's Regrow): a kill undone, its health back.
+    if (!b.alive) {
+      if (a.alive) score += (hostile(b, actor) ? -1 : 1) * (healthAfterSwap(a) + AI.kill);
+      continue;
+    }
     // A swapped unit (`ABILITY.elixir.swap`) by the health it will have back.
     const lost = healthAfterSwap(b) - healthAfterSwap(a);
     const statusDelta = statusPoints(after, a) - statusPoints(before, b);
@@ -433,6 +437,13 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
   if (input.move?.length || input.action.ability === 'hold') return closing;
   const ability = input.action.ability;
+  // Regrow: a fallen serpent back, as `scoreOutcome` counts it.
+  if (ability === 'regrowSerpent') {
+    const back = state.units.find(
+      (u) => !u.alive && u.side === unit.side && u.passives?.includes('regrow')
+    );
+    return closing + (back ? back.maxHp + AI.kill : 0);
+  }
   // What catching a unit in Gale, Cleave, Stomp or Charge is worth, by its side.
   const sided = (u: Unit, value: number) =>
     hostile(u, unit) ? value : -value * AI.friendlyDamageFactor;

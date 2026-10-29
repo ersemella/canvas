@@ -202,12 +202,8 @@ function trackMoves(fight: FightState, previewSlot: number, bumps: TrackBumps): 
   return moves;
 }
 
-/**
- * Whether `u`'s card is out charging (a drawn arrow of its in the air), or
- * is a serpent's growing back (Regrow): drawn greyed.
- */
+/** Whether `u`'s card is out charging (a drawn arrow of its in the air): drawn greyed. */
 function isCharging(fight: FightState, u: Unit): boolean {
-  if (!u.alive && u.regrowAt !== undefined) return true;
   return Boolean(fight.shots?.some((v) => v.source === u.id));
 }
 

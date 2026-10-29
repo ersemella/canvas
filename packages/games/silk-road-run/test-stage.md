@@ -38,15 +38,13 @@ serpents (2026-10-29; also Persia's stage 4).
 ```
 
 **Zahhak** (`zahhak`): speed 1, defence 4 (health 10), power 3. **Feed the
-Serpents**: melee, his power, and each serpent growing back grows back 3
-slots sooner. **Serpent King**: while either serpent is on the board, no
-damage reaches his health. **The serpents** (`serpent`, two): speed 3,
-defence 0 (health 2), power 1, **Bite** (melee). **Regrow**: a serpent cut
-down while Zahhak stands grows back 12 slots later on the open space next
-to him nearest the party, at full health, its card greyed on the track
-until then, and takes its turn as it does. Once Zahhak falls, none grows
-back. To beat him: cut both serpents down, then hit him before they come
-back.
+Serpents**: melee, his power. **Regrow**: his turn's action, a fallen
+serpent grows back on an open space next to him at full health.
+**Serpent King**: while either serpent is on the board, no damage reaches
+his health. **The serpents** (`serpent`, two): speed 3, defence 0 (health
+2), power 1, **Bite** (melee). Cut down, a serpent stays down until
+Zahhak regrows it; once he falls, the fight is won. To beat him: cut both
+serpents down, then hit him before his next turn.
 
 To fight China's boss instead, the Bull Demon King and Princess Iron Fan:
 `"map": "fireMountain"`, China's three heroes (`youxia`, `modao`,
