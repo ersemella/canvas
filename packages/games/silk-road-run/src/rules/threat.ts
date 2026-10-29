@@ -6,10 +6,11 @@
  * (walking and attacking are separate turns), with the units now on the
  * board blocking arrows (the acting unit aside, since it is the one moving).
  */
-import {ABILITY, AI} from './config';
+import {ABILITY, AI, ARMOURED} from './config';
 import {cleaveAreas, hostile, isImmobilized, isStunned, kitOf} from './board';
 import {damageOf} from './resolve';
 import {blocks, tileAt} from './map';
+import {hasPassive} from './passives';
 import type {MapData} from './map';
 import type {AbilityId, FightState, Unit} from './types';
 
@@ -175,7 +176,9 @@ export function threatDamage(threats: Threat[], after: FightState, me: Unit): nu
   for (const t of threats) {
     const e = after.units.find((u) => u.id === t.enemyId);
     if (!e?.alive || e.slot === null || e.slot >= me.slot || isStunned(e)) continue;
-    total += t.hexes.get(key) ?? 0;
+    // Armoured's Armour takes off each enemy's hit.
+    const hits = t.hexes.get(key) ?? 0;
+    total += hits > 0 ? Math.max(0, hits - (hasPassive(me, 'armoured') ? ARMOURED.armour : 0)) : 0;
   }
   // A Shield (17.6) lasts until its next turn, so it takes these hits first.
   return Math.max(0, total - (me.shield ?? 0));

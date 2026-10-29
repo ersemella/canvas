@@ -9,7 +9,7 @@
  * caravanserai between regions drafts them (19.3a): the party's two picks,
  * the rival's two (`draftPick`).
  */
-import {DEVOTED, HEROES, ONE_EYE} from './config';
+import {ARMOURED, DEVOTED, HEROES, ONE_EYE} from './config';
 import type {HeroId, PassiveId, Unit} from './types';
 
 export type PassiveGroup = 'track' | 'board' | 'damage' | 'control' | 'allies';
@@ -158,15 +158,22 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'allies',
     `Whenever its Devoted partner is hit, its card is Hastened ${DEVOTED.haste}.`
   ),
+  armoured: def(
+    'armoured',
+    'Armoured',
+    'damage',
+    `Armour ${ARMOURED.armour} against every hit, unless it Pierces.`
+  ),
 };
 
 /**
  * Passives a hero starts with that the caravanserai doesn't offer:
  * Unstoppable, the Juggernaut's (owner, 2026-10-27), One Eye, the
- * Cyclops's, and Devoted, the Bull Demon King's and Princess Iron Fan's (owner,
- * 2026-10-28), aren't in 19.8's pool.
+ * Cyclops's, Devoted, the Bull Demon King's and Princess Iron Fan's (owner,
+ * 2026-10-28), and Armoured, the Cataphract's (owner, 2026-10-29), aren't
+ * in 19.8's pool.
  */
-export const NOT_OFFERED: readonly PassiveId[] = ['unstoppable', 'oneEye', 'devoted'];
+export const NOT_OFFERED: readonly PassiveId[] = ['unstoppable', 'oneEye', 'devoted', 'armoured'];
 
 /** Whether `unit` carries the passive `id`. */
 export function hasPassive(unit: Unit, id: PassiveId): boolean {

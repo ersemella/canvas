@@ -108,7 +108,9 @@ export type PassiveId =
   // A boss's own, not in 19.8's pool: the Cyclops's (owner, 2026-10-28),
   // and the Bull Demon King's and Princess Iron Fan's (owner, 2026-10-28).
   | 'oneEye'
-  | 'devoted';
+  | 'devoted'
+  // A hero's own, not in 19.8's pool: the Cataphract's (owner, 2026-10-29).
+  | 'armoured';
 
 /** The stats a provision raises (heroes-and-gear.md, 9.1). */
 export type StatId = 'speed' | 'defence' | 'power';

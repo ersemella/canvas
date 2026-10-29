@@ -4017,6 +4017,9 @@ Not changed. Next, the Cataphract's buffs measured: Charge Delaying what
 it hits (the Vanguard's kind of control, which tanks win by), a walk of
 1, power 2.
 
+**Changed** (the owner, 2026-10-29): the Cataphract Armoured, Armour 1
+against every hit unless it Pierces.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

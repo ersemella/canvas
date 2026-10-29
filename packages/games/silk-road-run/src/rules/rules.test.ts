@@ -2295,6 +2295,21 @@ describe('the Cataphract', () => {
     );
   });
 
+  it('is Armoured: every hit on it is 1 less, unless it Pierces', () => {
+    const {s, k} = ready({'e-bokh': hexNeighbor(c, 0), 'e-storm': along(c, dir, 3)});
+    expect(k.passives).toEqual(['armoured']);
+    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    // The Grappler's power 1, all taken off.
+    hit(ctx, unit(s, 'e-bokh'), k, 'A test hit');
+    expect(k.hp).toBe(k.maxHp);
+    // The Storm Caller's 2, less 1.
+    hit(ctx, unit(s, 'e-storm'), k, 'A test hit');
+    expect(k.hp).toBe(k.maxHp - 1);
+    // A Piercing hit takes its full 2.
+    hit(ctx, unit(s, 'e-storm'), k, 'A test hit', 0, true);
+    expect(k.hp).toBe(k.maxHp - 3);
+  });
+
   it('with no one in the way rides any distance straight, to a lane’s end', () => {
     const {s, k} = ready({});
     const end = lane(mapOf(s), c, dir).at(-1)!;

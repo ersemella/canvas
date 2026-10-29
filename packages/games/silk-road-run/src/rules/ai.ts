@@ -51,7 +51,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
-import {camelOf, damageOf, eyeArmour, healthAfterSwap, shotEmpower} from './resolve';
+import {armourOf, camelOf, damageOf, healthAfterSwap, shotEmpower} from './resolve';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
@@ -582,9 +582,10 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   }
   // Grapple's throw (on the unit it grapples) hits nothing (owner, 2026-10-26).
   const throws = input.action.ability === 'grapple' && grappling(unit, hit);
-  // One Eye's Armour, unless it stands in the lane the eye faces (Longshot Pierces it).
+  // Armour: One Eye's, unless it stands in the lane the eye faces, and
+  // Armoured's (Longshot Pierces both).
   const pierces = input.action.ability === 'longshot' && ABILITY.longshot.pierce;
-  const armour = eyeArmour(undefined, hit, unit.hex, pierces);
+  const armour = armourOf(undefined, hit, unit.hex, pierces);
   const damage =
     def.damages === false || throws ? 0 : Math.min(Math.max(0, damageOf(unit) - armour), hit.hp);
   let value = damage * (hit.hero === CAMEL ? AI.camelHealthWeight : 1);

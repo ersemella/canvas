@@ -10,7 +10,7 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, DEVOTED, HEROES, ONE_EYE, RULES} from './config';
+import {ABILITY, ARMOURED, CAMEL, DEVOTED, HEROES, ONE_EYE, RULES} from './config';
 import {
   addStatus,
   fireOn,
@@ -93,7 +93,7 @@ export function unitName(u: Unit): string {
  * 2026-10-23), plus its Empower (or `empower`, one the hit carries from
  * when it was made) and its passives' (Glass Cannon, Lone Wolf, and
  * against this target Opportunist and Flanker), less its Weaken; then
- * the target's Armour (Hardened, One Eye's) unless it Pierces (Piercing
+ * the target's Armour (Hardened, One Eye's, Armoured) unless it Pierces (Piercing
  * Eye), and an ally's Bulwark (17.6's damage order; 19.8). Power 0 deals
  * none, and says nothing.
  */
@@ -122,11 +122,35 @@ export function hit(
       log(ctx, `Armour takes off 1.`);
     }
   }
-  amount -= eyeArmour(ctx, target, attacker.hex, pierces);
+  amount -= armourOf(ctx, target, attacker.hex, pierces);
   if (amount <= 0) return;
   amount = bulwark(ctx, attacker, target, amount);
   if (amount <= 0) return;
   applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`, attacker);
+}
+
+/**
+ * The lasting Armour `target` has against a hit from a unit on `from`
+ * (17.6), none if it Pierces: One Eye's (`eyeArmour`) and Armoured's (the
+ * Cataphract's), said in the log when there is a `ctx`. Hardened's, once a
+ * fight, is spent in `hit`.
+ */
+export function armourOf(
+  ctx: Ctx | undefined,
+  target: Unit,
+  from: Hex | null,
+  pierces = false
+): number {
+  let armour = eyeArmour(ctx, target, from, pierces);
+  if (hasPassive(target, 'armoured')) {
+    if (pierces) {
+      if (ctx) log(ctx, `The hit Pierces ${unitName(target)}’s Armour.`);
+    } else {
+      armour += ARMOURED.armour;
+      if (ctx) log(ctx, `${unitName(target)}’s Armour takes off ${ARMOURED.armour}.`);
+    }
+  }
+  return armour;
 }
 
 /**
@@ -724,8 +748,8 @@ export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
         (ABILITY.grapple.empoweredSqueeze ? empowered : 0) -
         (champion.weaken ?? 0)
     );
-    // One Eye's Armour holds against the squeeze as against a hit.
-    const amount = squeeze > 0 ? Math.max(0, squeeze - eyeArmour(ctx, u, champion.hex)) : 0;
+    // Armour (One Eye's, Armoured) holds against the squeeze as against a hit.
+    const amount = squeeze > 0 ? Math.max(0, squeeze - armourOf(ctx, u, champion.hex)) : 0;
     applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`, champion);
   }
 }
