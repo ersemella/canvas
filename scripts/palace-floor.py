@@ -5,7 +5,9 @@ floor"): a seamless tile cut to 128 pixels in 7 colours, as cave-floor.py
 cuts the cave's: five of the stone's creams and ochres found by k-means
 over it, and the glazed tiles' teal and cobalt kept apart, as so few pixels
 would be merged into the stone. Each art pixel is the colour most of its
-block is.
+block is. Then calmed (owner, 2026-10-29: it stood out too much): every
+colour pulled `CALM` of the way to the stone's mean, and its saturation cut
+to `SATURATION`, so the units and the grid stand out on it.
 
   python3 scripts/palace-floor.py picture.png packages/games/silk-road-run/src/client/tiles/palace-floor.png
 
@@ -20,6 +22,8 @@ SIZE = 128
 STONES = 5
 TEAL = (47, 104, 96)
 COBALT = (46, 66, 120)
+CALM = 0.45
+SATURATION = 0.6
 
 
 def kmeans(px: np.ndarray, k: int) -> np.ndarray:
@@ -46,5 +50,14 @@ for y in range(SIZE):
         blk = src[round(y * step) : round((y + 1) * step), round(x * step) : round((x + 1) * step)]
         img = Image.fromarray(blk.astype(np.uint8), 'RGB').quantize(palette=pal, dither=0)
         out[y, x] = palette[np.bincount(np.asarray(img).ravel()).argmax()]
+mean = np.array(palette[:STONES]).mean(0)
+calm = []
+for c in palette:
+    v = np.array(c) + (mean - np.array(c)) * CALM
+    grey = v.mean()
+    calm.append(tuple(int(round(x)) for x in grey + (v - grey) * SATURATION))
+for old, new in zip(palette, calm):
+    out[(out == old).all(2)] = new
+palette = calm
 Image.fromarray(out, 'RGB').save(sys.argv[2])
 print('palette', palette)
