@@ -187,6 +187,12 @@ export interface Status {
   at?: Hex;
   /** From a Grapple: ends when the grapple does (`breakGrapples` in resolve.ts). */
   grapple?: {champion: string; target: string};
+  /**
+   * With `grapple` and durations in slots (`FightRules.slots`): the slot of
+   * its next squeeze, every `turn` slots in place of each of the
+   * Grappler's turns (`squeezeDue` in resolve.ts).
+   */
+  squeezeAt?: number;
   /** From Last Stand (19.8): Stunned for the unit's next turn, ending with it. */
   lastStand?: boolean;
   /** From a Charge slamming it into yurts or the map's edge: Stunned for its next turn, ending with it. */
@@ -310,27 +316,6 @@ export interface Unit {
    */
   lastingShield?: number;
   /**
-   * Unstoppable (keywords.md, 17.4): can't be Pushed, Pulled, Immobilized
-   * or Stunned, until the start of the unit's next turn (an Elixir, a
-   * switch: `ABILITY.elixir.unstoppable`); always with the Unstoppable
-   * passive (`isUnstoppable`). Absent when it isn't.
-   */
-  unstoppable?: boolean;
-  /**
-   * Its speed and health swapped by an Elixir (a switch:
-   * `ABILITY.elixir.swap`), with the speed and health it had before.
-   * Absent when they aren't.
-   */
-  swapped?: {speed: number; hp: number};
-  /**
-   * Immortal (keywords.md, 17.6): its health can't be reduced, until the
-   * start of its next turn (an Elixir, a switch: `ABILITY.elixir.immortal`).
-   * Absent when it isn't.
-   */
-  immortal?: boolean;
-  /** An Immortal due from the start of its next turn (`ABILITY.elixir.immortalWhen: 'delayed'`). */
-  immortalDue?: boolean;
-  /**
    * Haste (keywords.md, 17.3) given while its own turn was under way, its
    * card not yet placed: taken off as the card is placed at the turn's end.
    */
@@ -354,6 +339,12 @@ export interface Unit {
    * turn (Bulwark, 19.8), by unit id. Absent while none has.
    */
   covered?: string[];
+  /**
+   * With durations in slots (`FightRules.slots`), in place of `covered`:
+   * the slot each ally next to it last had a hit taken for it (Bulwark,
+   * once every `turn` slots), by unit id. Absent while none has.
+   */
+  coveredAt?: Record<string, number>;
   /**
    * Its last turn was skipped (it could only Hold): its card shows it until
    * it next acts.

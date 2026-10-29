@@ -35,8 +35,6 @@ import {
   elixirAmount,
   elixirCaught,
   elixirHeals,
-  elixirSwaps,
-  elixirImmortal,
   blessingCaught,
   forks,
   blessingOf,
@@ -53,7 +51,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
-import {armourOf, camelOf, damageOf, healthAfterSwap, lastsThrough, shotEmpower} from './resolve';
+import {armourOf, camelOf, damageOf, lastsThrough, shotEmpower} from './resolve';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
@@ -381,11 +379,10 @@ export function scoreOutcome(
     const a = after.units.find((u) => u.id === b.id)!;
     // A unit brought back (Zahhak's Regrow): a kill undone, its health back.
     if (!b.alive) {
-      if (a.alive) score += (hostile(b, actor) ? -1 : 1) * (healthAfterSwap(a) + AI.kill);
+      if (a.alive) score += (hostile(b, actor) ? -1 : 1) * (a.hp + AI.kill);
       continue;
     }
-    // A swapped unit (`ABILITY.elixir.swap`) by the health it will have back.
-    const lost = healthAfterSwap(b) - healthAfterSwap(a);
+    const lost = b.hp - a.hp;
     const statusDelta = statusPoints(after, a) - statusPoints(before, b);
     // `AI.trackWorth`: a card moved by the turn, the share of a turn it moved
     // (later is worse for its side), not counting the actor's own placement.
@@ -414,8 +411,7 @@ export function scoreOutcome(
   // What enemies could do to it before its next turn (one step of lookahead),
   // weighed by the share of its health it would lose and by the hero's caution.
   const caution = AI.threatFactor * AI.caution[me.hero];
-  // Immortal until its next turn (`ABILITY.elixir.immortal`), it has nothing to fear before then.
-  if (caution > 0 && me.alive && !me.immortal) {
+  if (caution > 0 && me.alive) {
     const threat = threatDamage(threats, after, me);
     if (threat > 0) {
       score -= Math.min(threat, me.hp) * Math.min(1, threat / me.hp) * caution;
@@ -563,7 +559,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // Elixir: what it gives each unit it reaches (`elixirCaught`, by its shape).
   if (ability === 'elixir') {
     let value = 0;
-    const {fixed, haste, delay, unstoppable} = ABILITY.elixir;
+    const {fixed, haste, delay} = ABILITY.elixir;
     for (const u of elixirCaught(state, unit, unit.hex!, target!.hex!)) {
       if (!hostile(u, unit)) {
         if (elixirHeals(u))
@@ -574,18 +570,6 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
           value += u.empower ? 0 : 1 + empowerGuess(state, u, empowers);
         // `haste`: the share of a turn its card gains, as Cleave's Delay is weighed.
         if (haste) value += (turnValue(u) * haste) / cardCost(u);
-        // `unstoppable`: the hail holding it lets go (what else it stops is the search's).
-        if (unstoppable && u.statuses.some((x) => x.hail)) value += statusCost(u);
-        if (elixirSwaps(u)) value += swapGuess(u);
-        // A delayed `immortal`: a turn of its taken without fear (`AI.immortalWorth`).
-        if (elixirImmortal(u) && ABILITY.elixir.immortalWhen === 'delayed')
-          value += turnValue(u) * AI.immortalWorth;
-        // `immortal` now: the damage it would take before its next turn, and its fall.
-        else if (elixirImmortal(u)) {
-          const threat = threatDamage(threatsTo(state, mapOf(state), u), state, u);
-          value += Math.min(threat, u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
-          if (threat >= u.hp && u.hero !== CAMEL) value += AI.kill;
-        }
         continue;
       }
       // With `fixed`, a hit first, as any attack's.
@@ -704,22 +688,6 @@ function blownPath(state: FightState, from: Hex, dir: number, n: number): Hex[] 
 }
 
 /** An ability whose `to` is where its user ends up (Skirmish's step, Feigned Retreat's walk). */
-/**
- * An Elixir's swap of `u`'s speed and health (`ABILITY.elixir.swap`): lasting
- * through its next turn, the share of a turn its card gains or loses then, as
- * Haste is weighed; with `pool`, health it gains as a heal; health it loses
- * for now at `AI.swapRisk` (whether it is struck meanwhile is the search's).
- */
-function swapGuess(u: Unit): number {
-  let value = 0;
-  if (ABILITY.elixir.swapUntil === 'end')
-    value += (turnValue(u) * (cardCost(u) - cardCost({...u, speed: u.hp}))) / cardCost(u);
-  const gain = u.speed - u.hp;
-  if (gain < 0) value += gain * AI.swapRisk;
-  else if (ABILITY.elixir.swap === 'pool') value += gain;
-  return value;
-}
-
 function endsElsewhere(ability: AbilityId): boolean {
   return ability === 'skirmish' || ability === 'feignedRetreat';
 }
@@ -912,9 +880,7 @@ export function evaluatePosition(state: FightState, side: Side): number {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
     const value =
-      u.hero === CAMEL
-        ? u.hp * AI.camelHealthWeight
-        : healthAfterSwap(u) + AI.kill - statusPoints(state, u);
+      u.hero === CAMEL ? u.hp * AI.camelHealthWeight : u.hp + AI.kill - statusPoints(state, u);
     score += (u.side === side ? 1 : -1) * value;
   }
   return score;

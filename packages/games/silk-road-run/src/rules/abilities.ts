@@ -52,10 +52,7 @@ import {
   hit,
   immobilize,
   log,
-  makeImmortal,
-  makeUnstoppable,
   record,
-  swapSpeedHealth,
   stun,
   stunForATurn,
   takeOffTrack,
@@ -559,7 +556,12 @@ const grapple: AbilityDef = {
     if (!u.alive) return;
     // One target at a time: an earlier grapple lets go.
     endGrapples(ctx, (g) => g.champion === user.id);
-    stun(ctx, u, {kind: 'stunned', grapple: {champion: user.id, target: u.id}});
+    const every = ctx.state.rules?.slots?.turn;
+    stun(ctx, u, {
+      kind: 'stunned',
+      grapple: {champion: user.id, target: u.id},
+      ...(every ? {squeezeAt: ctx.state.currentSlot + every} : {}),
+    });
     if (ctx.state.rules?.grapple === 'offTrack' && grappling(user, u)) takeOffTrack(ctx, u, user);
   },
 };
@@ -788,34 +790,15 @@ const elixirTakes =
   (user: Unit) =>
   (u: Unit | undefined): u is Unit => {
     if (u === undefined || (!ABILITY.elixir.self && u.id === user.id)) return false;
-    const {fixed, haste, delay, unstoppable} = ABILITY.elixir;
+    const {fixed, haste, delay} = ABILITY.elixir;
     if (u.side !== user.side)
       return fixed > 0 || delay > 0 || (u.power > 0 && elixirAmount('weaken') > 0);
     return (
-      elixirSwaps(u) ||
-      elixirImmortal(u) ||
       haste > 0 ||
-      unstoppable ||
       (u.power > 0 && elixirAmount('empower') > 0) ||
       (elixirHeals(u) && u.hp < u.maxHp)
     );
   };
-
-/**
- * Whether Elixir swaps `u`'s speed and health (`ABILITY.elixir.swap`): an
- * ally but the camel (its speed 0 would be its health), not already swapped,
- * whose speed and health differ.
- */
-export const elixirSwaps = (u: Unit): boolean =>
-  Boolean(ABILITY.elixir.swap) && u.hero !== CAMEL && !u.swapped && u.speed !== u.hp;
-
-/** Whether Elixir makes `u` Immortal (`ABILITY.elixir.immortal`): an ally not already, the camel with `all`. */
-export const elixirImmortal = (u: Unit): boolean => {
-  const {immortal} = ABILITY.elixir;
-  return (
-    Boolean(immortal) && !u.immortal && !u.immortalDue && (immortal === 'all' || u.hero !== CAMEL)
-  );
-};
 
 /** Elixir's Empower or Weaken: `ABILITY.elixir`'s own amount if set, else `fixed` (0: none). */
 export const elixirAmount = (which: 'empower' | 'weaken'): number =>
@@ -870,16 +853,7 @@ const elixir: AbilityDef = {
     return ABILITY.elixir.shape === 'unit';
   },
   summary(user) {
-    const {
-      shape,
-      range,
-      radius,
-      fixed,
-      heal,
-      haste: hastes,
-      delay: delays,
-      unstoppable,
-    } = ABILITY.elixir;
+    const {shape, range, radius, fixed, heal, haste: hastes, delay: delays} = ABILITY.elixir;
     const empowers = elixirAmount('empower');
     const weakens = elixirAmount('weaken');
     const effect = (them: string) => {
@@ -887,15 +861,6 @@ const elixir: AbilityDef = {
       const ally = [
         empowers ? `Empowered ${empowers}` : '',
         hastes ? `Hastened ${hastes}` : '',
-        unstoppable ? `Unstoppable until ${them} next turn` : '',
-        ABILITY.elixir.immortal
-          ? ABILITY.elixir.immortalWhen === 'delayed'
-            ? `Immortal from the start of ${them} next turn until the turn after`
-            : `Immortal until ${them} next turn`
-          : '',
-        ABILITY.elixir.swap
-          ? `swapped speed for health until the ${ABILITY.elixir.swapUntil} of ${them} next turn`
-          : '',
       ].filter(Boolean);
       const enemy = [
         weakens ? `Weakened ${weakens}` : '',
@@ -934,7 +899,7 @@ const elixir: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const caught = elixirCaught(ctx.state, user, user.hex!, target.hex!);
-    const {fixed, haste: hastes, delay: delays, unstoppable} = ABILITY.elixir;
+    const {fixed, haste: hastes, delay: delays} = ABILITY.elixir;
     for (const u of caught) {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
       if (u.side === user.side) {
@@ -943,9 +908,6 @@ const elixir: AbilityDef = {
         const empowers = elixirAmount('empower');
         if (u.power > 0 && empowers > 0) empower(ctx, u, empowers, user);
         haste(ctx, u, hastes, user);
-        if (unstoppable) makeUnstoppable(ctx, u);
-        if (elixirSwaps(u)) swapSpeedHealth(ctx, u);
-        if (elixirImmortal(u)) makeImmortal(ctx, u);
       } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
         const weakens = elixirAmount('weaken');

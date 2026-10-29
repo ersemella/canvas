@@ -235,12 +235,12 @@ export function isStunned(unit: Unit): boolean {
 /**
  * Unstoppable (keywords.md, 17.4): can't be Pushed, Pulled, Immobilized or
  * Stunned, from the Unstoppable passive (the Juggernaut's, owner,
- * 2026-10-27) or for a while (an Elixir, a switch). So it can't be
+ * 2026-10-27). So it can't be
  * grappled (a grapple's hold is a Stun), and hail, which ends a walk by
  * Immobilizing, doesn't stop its walk.
  */
 export function isUnstoppable(unit: Unit): boolean {
-  return Boolean(unit.unstoppable) || hasPassive(unit, 'unstoppable');
+  return hasPassive(unit, 'unstoppable');
 }
 
 /** Whether a walk of `unit`'s ends on entering `h`: hail there would Immobilize it. */

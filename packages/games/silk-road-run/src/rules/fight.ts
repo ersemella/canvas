@@ -5,7 +5,7 @@
  */
 import {hexDirectionTo, hexEquals, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
+import {CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
 import {
   canMove,
   faceStart,
@@ -31,11 +31,11 @@ import {
   record,
   scorch,
   settle,
+  squeezeDue,
   squeezeGrapples,
   startTurnPassives,
   takeHasteDue,
   unitName,
-  unswap,
   walk,
 } from './resolve';
 import type {Ctx} from './resolve';
@@ -302,18 +302,15 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     expireDurations(state, unit.slot!);
     const ctx: Ctx = {state, map, slot: unit.slot!};
     state.currentSlot = unit.slot!;
+    // In slots, a grapple squeezes every so many slots, whoever's card is here.
+    squeezeDue(ctx, unit.slot!);
+    if (state.phase !== 'fight') return;
     if (charging(state, unit)) {
       landCharge(ctx, unit);
       continue;
     }
     record(state, {kind: 'turn', unitId: unit.id});
     startTurnPassives(ctx, unit);
-    // An Elixir's swap lasting until the start of this turn ends (`ABILITY.elixir.swapUntil`).
-    if (unit.swapped && ABILITY.elixir.swapUntil === 'start') {
-      unswap(ctx, unit);
-      if (state.phase !== 'fight') return;
-      if (!unit.alive) continue;
-    }
     // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25),
     // Princess Iron Fan's fire until her next (owner, 2026-10-28).
     ageHail(state, unit);
@@ -389,8 +386,6 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId): void
   if (idle && hasPassive(unit, 'patient')) slot = Math.max(now + 1, slot - 2);
   placeCard(state, unit, slot, ability !== undefined && chargeOf(unit, ability) > 0);
   takeHasteDue(state, unit);
-  // An Elixir's swap ends with this turn, its card placed at the swapped speed.
-  if (unit.swapped) unswap(ctx, unit);
 }
 
 /**

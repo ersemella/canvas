@@ -8,9 +8,10 @@ import {
   SCENE_SIZE,
   abilitiesOf,
   chargeOf,
+  inRules,
   unusableReason,
 } from '@canvas/games-silk-road-run';
-import type {AbilityId, Reach, Unit} from '@canvas/games-silk-road-run';
+import type {AbilityId, FightState, Reach, Unit} from '@canvas/games-silk-road-run';
 import {AbilityIcon, abilityIcon} from './AbilityIcon';
 import styles from './TacticsPage.module.css';
 
@@ -66,6 +67,8 @@ export function TurnControls(props: {
    */
   outOfReach: Map<AbilityId, {why: string}>;
   unit: Unit;
+  /** The fight's own rules: with durations in slots, a button's rule says them (`inRules`). */
+  rules?: FightState['rules'];
   ability: AbilityId | null;
   plannedMove: Reach | null;
   moving: boolean;
@@ -197,7 +200,7 @@ export function TurnControls(props: {
                     ? (confirm?.title ?? `${def.name} there; tap the target again to confirm`)
                     : picked
                       ? `Pick a target, or tap to put ${def.name} down`
-                      : (reason ?? def.summary(unit))
+                      : (reason ?? inRules(def.summary(unit), props.rules))
               }
               onClick={ready ? props.onConfirm : () => props.onAbility(picked ? null : def.id)}
             >

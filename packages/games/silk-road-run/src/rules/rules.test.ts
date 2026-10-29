@@ -94,7 +94,6 @@ import {
   endTurnEffects,
   stun,
   stunForATurn,
-  unswap,
   heal,
 } from './resolve';
 import type {Ctx} from './resolve';
@@ -1397,6 +1396,9 @@ describe('abilities', () => {
     expect(inRules(ABILITIES.grapple.summary(b), s.rules)).toContain(
       'its card leaves the track until you take damage or are Stunned, then comes back just before your next turn'
     );
+    expect(
+      inRules(ABILITIES.grapple.summary(b), {...s.rules, slots: {turn: 8, hail: 16, stun: 6}})
+    ).toContain('taking 1 more damage every 8 slots');
     // Shown where it would come back now: just before the Grappler's card.
     expect(returnSlot(s, target)).toBe(b.slot! - 1);
     // Its turns don't come: the Grappler's does.
@@ -1428,6 +1430,26 @@ describe('abilities', () => {
     expect(three.b.alive).toBe(false);
     expect(advanceToDecision(three.s)!.id).toBe(three.target.id);
     expect(three.target.slot).toBe(three.s.currentSlot);
+  });
+
+  it('Grapple in slots: its target squeezed every so many slots, not each of the Grappler’s turns', () => {
+    const s = setup({'p-bokh': at(1, 1), 'p-mangudai': at(8, 6), 'e-storm': at(2, 1)});
+    s.rules = {slots: {turn: 8, hail: 16, stun: 6}};
+    s.units.forEach((u) => (u.controller = 'human'));
+    const b = unit(s, 'p-bokh');
+    const target = unit(s, 'e-storm');
+    target.hp = target.maxHp = 20;
+    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+    const hp = target.hp;
+    // The Grappler's card at 25: squeezes due at 8, 16 and 24, none more as its turn starts.
+    b.slot = 25;
+    expect(advanceToDecision(s)!.id).toBe(b.id);
+    expect(target.hp).toBe(hp - 3);
+    // Its next turn 7 slots on: one more, at 32.
+    applyTurn(s, b, {action: {ability: 'hold'}});
+    b.slot = 32;
+    expect(advanceToDecision(s)!.id).toBe(b.id);
+    expect(target.hp).toBe(hp - 4);
   });
 
   it('Grapple is melee: only a unit next to the Grappler, with no step in', () => {
@@ -3157,151 +3179,6 @@ describe('the Vanguard and the Alchemist', () => {
       applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
       expect(unit(s, 'p-camel').hp).toBe(unit(s, 'p-camel').maxHp - 2);
     }));
-
-  it('the single-unit Elixir within 3 (switches) heals an ally its power and makes it Unstoppable until its next turn', () =>
-    withElixir({...single, range: 3, fixed: 0, self: false, unstoppable: true}, 1, () => {
-      const s = setup(
-        {
-          'p-alchemist': at(1, 3),
-          'p-mangudai': at(4, 3),
-          'e-mangudai': at(2, 3),
-          'e-modao': at(8, 6),
-        },
-        party
-      );
-      const alchemist = unit(s, 'p-alchemist');
-      // Allies only, the Alchemist not, healthy or not: nothing it does reaches an enemy.
-      expect(
-        offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir).map((t) => hexKey(t.hex!))
-      ).toEqual([hexKey(at(4, 3))]);
-      expect(ABILITIES.elixir.summary(alchemist)).toBe(
-        'A unit within 3: allies heal 1 and are Unstoppable until its next turn.'
-      );
-      const m = unit(s, 'p-mangudai');
-      m.hp -= 2;
-      m.statuses.push({kind: 'immobilized', hail: 'e-storm'});
-      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(4, 3)}}});
-      expect(m.hp).toBe(m.maxHp - 1);
-      expect(m.unstoppable).toBe(true);
-      // The hail holding it lets go, and a Push doesn't move it.
-      expect(m.statuses).toEqual([]);
-      const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
-      displace(ctx, m, 0, 2, 'push');
-      expect(m.hex).toEqual(at(4, 3));
-      // Its next turn starts: no longer Unstoppable.
-      startTurnPassives(ctx, m);
-      expect(m.unstoppable).toBeUndefined();
-    }));
-
-  it('the Elixir swapping speed and health (a switch) lasts through the ally’s next turn', () =>
-    withElixir(
-      {...single, range: 3, fixed: 0, heal: false, self: false, swap: 'carry', swapUntil: 'end'},
-      0,
-      () => {
-        const s = setup(
-          {
-            'p-alchemist': at(1, 3),
-            'p-modao': at(3, 3),
-            'e-mangudai': at(8, 3),
-            'e-modao': at(8, 6),
-          },
-          party
-        );
-        const v = unit(s, 'p-modao');
-        applyTurn(s, unit(s, 'p-alchemist'), {
-          action: {ability: 'elixir', target: {hex: at(3, 3)}},
-        });
-        expect([v.speed, v.hp]).toEqual([8, 1]);
-        // Its next turn: its card goes on at speed 8, then its own speed and health come back.
-        s.currentSlot = 20;
-        s.awaiting = v.id;
-        applyTurn(s, v, {action: {ability: 'hold'}});
-        expect(v.slot).toBe(20 + actionCost({...v, speed: 8}));
-        expect([v.speed, v.hp, v.swapped]).toEqual([1, 8, undefined]);
-      }
-    ));
-
-  it('a swapped unit’s health comes back whole (`pool`) or less what it lost (`carry`)', () => {
-    for (const swap of ['pool', 'carry'] as const)
-      withElixir({...single, range: 3, fixed: 0, heal: false, self: false, swap}, 0, () => {
-        const s = setup(
-          {'p-alchemist': at(1, 3), 'p-mangudai': at(3, 3), 'e-modao': at(8, 6)},
-          party
-        );
-        const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
-        const m = unit(s, 'p-mangudai');
-        m.hp = 1;
-        applyTurn(s, unit(s, 'p-alchemist'), {
-          action: {ability: 'elixir', target: {hex: at(3, 3)}},
-        });
-        expect([m.speed, m.hp]).toEqual([1, 3]);
-        applyDamage(ctx, m, 2, 'Hit');
-        unswap(ctx, m);
-        expect(m.speed).toBe(3);
-        // `pool`: its own 1 back; `carry`: 1 less the 2 it lost, so it falls.
-        expect(m.alive).toBe(swap === 'pool');
-      });
-  });
-
-  it('the Elixir making an ally Immortal (a switch) keeps its health until its next turn', () =>
-    withElixir(
-      {...single, range: 3, fixed: 0, heal: false, self: false, immortal: 'heroes'},
-      0,
-      () => {
-        const s = setup(
-          {'p-alchemist': at(1, 3), 'p-mangudai': at(3, 3), 'e-modao': at(8, 6)},
-          party
-        );
-        const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
-        const m = unit(s, 'p-mangudai');
-        applyTurn(s, unit(s, 'p-alchemist'), {
-          action: {ability: 'elixir', target: {hex: at(3, 3)}},
-        });
-        expect(m.immortal).toBe(true);
-        m.shield = 1;
-        applyDamage(ctx, m, 9, 'Hit');
-        // Its Shield still takes damage; its health none.
-        expect([m.shield, m.hp]).toEqual([undefined, m.maxHp]);
-        startTurnPassives(ctx, m);
-        applyDamage(ctx, m, 1, 'Hit');
-        expect(m.hp).toBe(m.maxHp - 1);
-      }
-    ));
-
-  it('a delayed Immortal (a switch) begins with the ally’s next turn and lasts until the turn after', () =>
-    withElixir(
-      {
-        ...single,
-        range: 3,
-        fixed: 0,
-        heal: false,
-        self: false,
-        immortal: 'heroes',
-        immortalWhen: 'delayed',
-      },
-      0,
-      () => {
-        const s = setup(
-          {'p-alchemist': at(1, 3), 'p-mangudai': at(3, 3), 'e-modao': at(8, 6)},
-          party
-        );
-        const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
-        const m = unit(s, 'p-mangudai');
-        applyTurn(s, unit(s, 'p-alchemist'), {
-          action: {ability: 'elixir', target: {hex: at(3, 3)}},
-        });
-        // Not yet: a hit before its turn takes health.
-        expect([m.immortal, m.immortalDue]).toEqual([undefined, true]);
-        applyDamage(ctx, m, 1, 'Hit');
-        expect(m.hp).toBe(m.maxHp - 1);
-        // Its turn starts: Immortal through it and until the next.
-        startTurnPassives(ctx, m);
-        applyDamage(ctx, m, 1, 'Hit');
-        expect(m.hp).toBe(m.maxHp - 1);
-        startTurnPassives(ctx, m);
-        expect(m.immortal).toBeUndefined();
-      }
-    ));
 
   it('a card Delayed or Hastened onto a taken slot collides by speed', () => {
     const s = setup({'p-modao': at(1, 3), 'e-mangudai': at(2, 3), 'e-modao': at(8, 6)}, party);

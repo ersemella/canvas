@@ -524,6 +524,7 @@ export function TacticsPage() {
         slotsLater={slotsLater}
         outOfReach={outOfReach}
         unit={upcoming}
+        rules={fight.rules}
         ability={ability}
         plannedMove={plannedMove}
         moving={moving}

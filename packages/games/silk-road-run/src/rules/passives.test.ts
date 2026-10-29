@@ -10,6 +10,8 @@ import {STEPPE} from './map';
 import {delay, haste, hit, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {parseTestStage} from './testStage';
+import {inRules} from './info';
+import {PASSIVES} from './passives';
 import {actionCost} from './track';
 import type {AbilityId, ActionTarget, FightState, PassiveId, Unit} from './types';
 
@@ -237,6 +239,59 @@ describe('the passives: damage and survival', () => {
     hit(ctxOf(s), archer, ally, 'The arrow');
     expect(ally.hp).toBe(ally.maxHp - 2 * archer.power + 1);
     expect(guard.hp).toBe(guard.maxHp - 1);
+  });
+
+  it('In slots, Opportunist: 1 more to a unit whose card is behind its own next card', () => {
+    const s = setup({'p-mangudai': centre, 'e-bokh': out(0, 3)});
+    s.rules = {slots: {turn: 8, hail: 16, stun: 6}};
+    const archer = give(s, 'p-mangudai', 'opportunist');
+    const target = unit(s, 'e-bokh');
+    s.currentSlot = 10;
+    // Its turn now, its card landing its cost on: a card behind that, 1 more.
+    archer.slot = 10;
+    target.slot = 10 + actionCost(archer) + 1;
+    hit(ctxOf(s), archer, target, 'The arrow');
+    expect(target.hp).toBe(target.maxHp - archer.power - 1);
+    // A card before it: no more.
+    target.slot = 10 + actionCost(archer) - 1;
+    const hp = target.hp;
+    hit(ctxOf(s), archer, target, 'The arrow');
+    expect(target.hp).toBe(hp - archer.power);
+    // Off the track (held by a grapple): 1 more.
+    target.slot = null;
+    const hp2 = target.hp;
+    hit(ctxOf(s), archer, target, 'The arrow');
+    expect(target.hp).toBe(hp2 - archer.power - 1);
+  });
+
+  it('In slots, Opportunist and Bulwark say so', () => {
+    const rules = {slots: {turn: 8, hail: 16, stun: 6}};
+    expect(inRules(PASSIVES.opportunist.rule, rules)).toBe(
+      'Its attacks deal 1 more to a unit whose card is behind its own next card, or off the track.'
+    );
+    expect(inRules(PASSIVES.bulwark.rule, rules)).toBe(
+      'When an ally next to it takes its first hit in 8 slots, the ally takes 1 less and this unit takes that 1.'
+    );
+  });
+
+  it('In slots, Bulwark: once every so many slots for each ally', () => {
+    const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
+    s.rules = {slots: {turn: 8, hail: 16, stun: 6}};
+    const guard = give(s, 'p-bokh', 'bulwark');
+    const ally = unit(s, 'p-storm');
+    ally.hp = ally.maxHp = 20;
+    const archer = unit(s, 'e-mangudai');
+    s.currentSlot = 10;
+    hit(ctxOf(s), archer, ally, 'The arrow');
+    expect(guard.hp).toBe(guard.maxHp - 1);
+    // 7 slots on: not yet.
+    s.currentSlot = 17;
+    hit(ctxOf(s), archer, ally, 'The arrow');
+    expect(guard.hp).toBe(guard.maxHp - 1);
+    // 8 on: again, whatever its turns.
+    s.currentSlot = 18;
+    hit(ctxOf(s), archer, ally, 'The arrow');
+    expect(guard.hp).toBe(guard.maxHp - 2);
   });
 
   it('Glass Cannon: Empower 1, starting each fight at half its health', () => {

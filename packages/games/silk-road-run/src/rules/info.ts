@@ -250,7 +250,8 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
  * durations in slots: "until its next turn", "until the end of its next
  * turn", "through its next turn" and "for its next turn" become "for N
  * slots", hail's "until your turn after next" its slots, and a Stun for a
- * turn its Delay. With the grapple off the track, Grapple says so.
+ * turn its Delay; Grapple's squeeze, Bulwark and Opportunist their slots.
+ * With the grapple off the track, Grapple says so.
  * Unchanged with none.
  */
 export function inRules(text: string, rules: FightRules | undefined): string {
@@ -261,6 +262,14 @@ export function inRules(text: string, rules: FightRules | undefined): string {
     );
   const slots = rules?.slots;
   if (!slots) return text;
+  text = text
+    // Grapple's squeeze, Bulwark and Opportunist in slots (`squeezeDue`, `bulwark`, `bonusAgainst`).
+    .replace(/damage each of your turns/g, `damage every ${slots.turn} slots`)
+    .replace(/its first hit between this unit’s turns/g, `its first hit in ${slots.turn} slots`)
+    .replace(
+      /a unit that hasn’t had a turn since its own last turn/g,
+      'a unit whose card is behind its own next card, or off the track'
+    );
   const whose = '(?:its|their|your|her|his|that ally’s|the ally’s)';
   return text
     .replace(/Stunned for (?:its|their) next turn/g, `Delayed ${slots.stun}`)

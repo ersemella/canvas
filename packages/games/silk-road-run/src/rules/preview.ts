@@ -51,7 +51,6 @@ function statusWords(before: Unit, after: Unit, now: number): string[] {
     out.push(`Empowered ${after.empower}${forSlots(after.empowerUntil, now)}`);
   if (after.weaken && (after.weaken !== before.weaken || after.weakenUntil !== before.weakenUntil))
     out.push(`Weakened ${after.weaken}${forSlots(after.weakenUntil, now)}`);
-  if (after.unstoppable && !before.unstoppable) out.push('Unstoppable');
   // A grapple off the track (`FightRules.grapple`).
   if (after.heldBy && !before.heldBy) out.push('Off the track');
   if (before.heldBy && !after.heldBy && after.alive) out.push('Back on the track');

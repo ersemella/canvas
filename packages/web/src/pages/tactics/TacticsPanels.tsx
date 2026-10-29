@@ -348,8 +348,6 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
           ? 'until spent'
           : `${unit.shieldUntil !== undefined ? throughSlot(fight, unit.shieldUntil) : 'until its next turn'}${unit.lastingShield ? `, ${unit.lastingShield} of it until spent` : ''}`,
     });
-  if (unit.unstoppable)
-    out.push({id: 'unstoppable', label: 'Unstoppable', rest: 'until its next turn'});
   return out;
 }
 

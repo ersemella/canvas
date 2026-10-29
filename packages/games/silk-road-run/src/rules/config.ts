@@ -656,27 +656,17 @@ export const ABILITY = {
    * (1 and 0 as built; 0 and 0 with the Haste burst, 2 and 1 before); 0
    * falls back to `fixed`, and at 0 too gives none (it fell back to power
    * too until the Alchemist's power was 1 again, 2026-10-26).
-   * `unstoppable`, a switch for measuring (2026-10-26): an ally is also
-   * Unstoppable (keywords.md, 17.4) until the start of its next turn; off
-   * as built.
    * `self`: whether the Alchemist takes its own Elixir; on as built
    * (owner, 2026-10-27: its own Empower 2 lasting through the end of its
    * next turn); off from 2026-10-26 (with it, it Hastened itself on every
    * Elixir and kept the enemy beside it from acting), so a burst or aura
    * passed it over and it couldn't be aimed at itself.
-   * `swap`, a switch for measuring (2026-10-27): an ally but the camel
-   * swaps its speed and its health (`swapSpeedHealth` in resolve.ts),
-   * until the end of its next turn (`swapUntil: 'end'`, its card placed
-   * after that turn at the swapped speed) or the start of it (`'start'`);
-   * `pool`, the swapped health a pool of its own, the unit's own health
-   * back untouched unless it fell, or `carry`, the health it gains or loses
-   * meanwhile carried back, falling if none is left; off as built.
-   * `immortal`, a switch for measuring (2026-10-27): an ally is also
-   * Immortal (keywords.md, 17.6) until the start of its next turn, `all`
-   * the camel too, `heroes` not; off as built. `immortalWhen`: `now`, from
-   * the Elixir until the start of its next turn, or `delayed`, from the
-   * start of its next turn until the start of the turn after (so it acts
-   * Immortal).
+   * Its switches for measuring an ally made Unstoppable, Immortal, or
+   * swapping its speed and health until its next turn (2026-10-26 and 27,
+   * all off) were removed on 2026-10-29 with every other effect lasting by
+   * turns (balance.md, "Elixir on one ally within 3: a heal and
+   * Unstoppable", "The Elixir swapping speed and health", "The Elixir
+   * granting Immortal").
    */
   elixir: {
     range: 2 as number,
@@ -689,11 +679,6 @@ export const ABILITY = {
     empower: 2 as number,
     weaken: 2 as number,
     self: true as boolean,
-    unstoppable: false as boolean,
-    swap: false as false | 'pool' | 'carry',
-    immortal: false as false | 'all' | 'heroes',
-    immortalWhen: 'now' as 'now' | 'delayed',
-    swapUntil: 'end' as 'start' | 'end',
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),
@@ -849,17 +834,6 @@ export const AI = {
    * that ordering and where the search plays the turn they move.
    */
   trackWorth: 0 as number,
-  /**
-   * An Elixir's swap (`ABILITY.elixir.swap`, a switch for measuring): each
-   * point of health the ally loses for now, in the AI's first guess (the
-   * search sees whether it is struck meanwhile).
-   */
-  swapRisk: 0.5 as number,
-  /**
-   * An Elixir's delayed Immortal (`ABILITY.elixir.immortalWhen`), in the
-   * AI's first guess: this share of a turn of the ally's, taken without fear.
-   */
-  immortalWorth: 1 as number,
   /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends

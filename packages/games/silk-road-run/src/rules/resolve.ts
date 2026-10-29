@@ -27,7 +27,7 @@ import {
 } from './board';
 import {scorched} from './map';
 import {hasPassive, spendPassive} from './passives';
-import {placeCard, simultaneousOrder} from './track';
+import {aimSlot, placeCard, simultaneousOrder} from './track';
 import type {MapData} from './map';
 import type {
   BoardSnapshot,
@@ -412,7 +412,17 @@ export function passiveEmpower(u: Unit, state?: FightState): number {
  */
 export function bonusAgainst(state: FightState, attacker: Unit, target: Unit): number {
   let n = 0;
-  if (hasPassive(attacker, 'opportunist')) {
+  if (hasPassive(attacker, 'opportunist') && state.rules?.slots) {
+    // In slots: a target whose card is behind the attacker's next card
+    // (where it lies, or lands this turn), or off the track.
+    const next =
+      attacker.slot === null
+        ? null
+        : attacker.slot <= state.currentSlot
+          ? aimSlot(state, attacker)
+          : attacker.slot;
+    if (target.slot === null || (next !== null && target.slot > next)) n += 1;
+  } else if (hasPassive(attacker, 'opportunist')) {
     const mine = attacker.turns ?? [];
     const acting = mine[mine.length - 1] === state.currentSlot;
     const since = acting ? mine[mine.length - 2] : mine[mine.length - 1];
@@ -436,9 +446,17 @@ function bulwark(ctx: Ctx, attacker: Unit, target: Unit, amount: number): number
   let guard: Unit | undefined;
   for (const g of ctx.state.units) {
     if (g === target || !g.alive || g.side !== target.side || !hasPassive(g, 'bulwark')) continue;
-    if (g.covered?.includes(target.id)) continue;
-    // A new list: copies of a fight share a unit's arrays.
-    g.covered = [...(g.covered ?? []), target.id];
+    const every = ctx.state.rules?.slots?.turn;
+    if (every) {
+      // In slots: once every `turn` slots for each ally.
+      const last = g.coveredAt?.[target.id];
+      if (last !== undefined && ctx.state.currentSlot - last < every) continue;
+      g.coveredAt = {...g.coveredAt, [target.id]: ctx.state.currentSlot};
+    } else {
+      if (g.covered?.includes(target.id)) continue;
+      // A new list: copies of a fight share a unit's arrays.
+      g.covered = [...(g.covered ?? []), target.id];
+    }
     if (!guard && g.hex && target.hex && hexDistance(g.hex, target.hex) === 1) guard = g;
   }
   if (!guard) return amount;
@@ -621,14 +639,6 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
     else delete unit.shield;
     delete unit.armour;
   }
-  delete unit.unstoppable;
-  delete unit.immortal;
-  // A delayed Immortal begins now, lasting until the start of its next turn.
-  if (unit.immortalDue) {
-    delete unit.immortalDue;
-    unit.immortal = true;
-    log(ctx, `${unitName(unit)} is Immortal until its next turn.`);
-  }
   delete unit.covered;
   delete unit.tookOff;
   delete unit.bracketed;
@@ -686,11 +696,6 @@ export function applyDamage(
     amount -= absorbed;
     log(ctx, `${unitName(target)}’s Shield takes ${absorbed}.`);
     if (amount <= 0) return;
-  }
-  // Immortal (17.6): what reaches health becomes 0.
-  if (target.immortal) {
-    log(ctx, `${unitName(target)} is Immortal: no damage.`);
-    return;
   }
   // The Serpent King: so too while a serpent of his is on the board.
   if (guarded(ctx.state, target)) {
@@ -840,72 +845,6 @@ export function liftHail(state: FightState, hail: HailEffect): void {
     );
 }
 
-/**
- * `unit` is made Unstoppable (keywords.md, 17.4): the hail holding it lets
- * go, and a Stun on it ends, a grapple with it.
- */
-export function makeUnstoppable(ctx: Ctx, unit: Unit): void {
-  unit.unstoppable = true;
-  endGrapples(ctx, (g) => g.target === unit.id);
-  unit.statuses = unit.statuses.filter(
-    (s) => !(s.kind === 'immobilized' && s.hail) && s.kind !== 'stunned'
-  );
-  log(ctx, `${unitName(unit)} is Unstoppable until its next turn.`);
-}
-
-/**
- * An Elixir's swap (`ABILITY.elixir.swap`, a switch for measuring): `unit`'s
- * speed becomes its health and its health its speed, until `unswap`.
- */
-export function swapSpeedHealth(ctx: Ctx, unit: Unit): void {
-  unit.swapped = {speed: unit.speed, hp: unit.hp};
-  [unit.speed, unit.hp] = [unit.hp, unit.speed];
-  log(ctx, `${unitName(unit)} swaps its speed and health: speed ${unit.speed}, health ${unit.hp}.`);
-}
-
-/**
- * Its speed and health back from a swap: its own speed, and its own health
- * (`pool`) or that less what it lost while swapped, or more what it gained
- * (`carry`, falling if none is left), up to its health.
- */
-export function unswap(ctx: Ctx, unit: Unit): void {
-  const was = unit.swapped;
-  if (!was) return;
-  delete unit.swapped;
-  if (!unit.alive) return;
-  const hp = ABILITY.elixir.swap === 'carry' ? was.hp + unit.hp - was.speed : was.hp;
-  unit.speed = was.speed;
-  unit.hp = Math.min(unit.maxHp, Math.max(0, hp));
-  log(
-    ctx,
-    `${unitName(unit)}’s speed and health swap back: speed ${unit.speed}, health ${unit.hp}.`
-  );
-  if (unit.hp === 0) kill(ctx, unit);
-}
-
-/** The health `unit` will have once a swap ends (`unswap`); its health when not swapped. */
-export function healthAfterSwap(unit: Unit): number {
-  const was = unit.swapped;
-  if (!was || !unit.alive) return unit.hp;
-  const hp = ABILITY.elixir.swap === 'carry' ? was.hp + unit.hp - was.speed : was.hp;
-  return Math.min(unit.maxHp, Math.max(0, hp));
-}
-
-/**
- * `unit` is made Immortal until the start of its next turn (keywords.md,
- * 17.6), or with `ABILITY.elixir.immortalWhen` `delayed` from then until the
- * start of the turn after (`startTurnPassives`).
- */
-export function makeImmortal(ctx: Ctx, unit: Unit): void {
-  if (ABILITY.elixir.immortalWhen === 'delayed') {
-    unit.immortalDue = true;
-    log(ctx, `${unitName(unit)} will be Immortal from its next turn.`);
-    return;
-  }
-  unit.immortal = true;
-  log(ctx, `${unitName(unit)} is Immortal until its next turn.`);
-}
-
 export function clearHail(state: FightState, caster: Unit): void {
   state.effects = state.effects.filter((e) => e.source !== caster.id);
   for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);
@@ -1039,19 +978,46 @@ export function stunForATurn(ctx: Ctx, u: Unit, status: Status, defies = false):
  * `ABILITY.grapple.squeeze` (owner, 2026-10-23).
  */
 export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
+  // In slots, every `turn` slots instead (`squeezeDue`).
+  if (ctx.state.rules?.slots) return;
   for (const u of ctx.state.units) {
     if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
-    const empowered = (champion.empower ?? 0) + passiveEmpower(champion, ctx.state);
-    const squeeze = Math.max(
-      0,
-      ABILITY.grapple.squeeze +
-        (ABILITY.grapple.empoweredSqueeze ? empowered : 0) -
-        (champion.weaken ?? 0)
-    );
-    // Armour (One Eye's, Armoured) holds against the squeeze as against a hit.
-    const amount = squeeze > 0 ? Math.max(0, squeeze - armourOf(ctx, u, champion.hex)) : 0;
-    applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`, champion);
+    squeeze(ctx, champion, u);
   }
+}
+
+/**
+ * With durations in slots (`FightRules.slots`), the track reaching `slot`:
+ * each grapple squeezes for every `turn` slots passed since its last
+ * squeeze, whoever's card is there.
+ */
+export function squeezeDue(ctx: Ctx, slot: number): void {
+  const every = ctx.state.rules?.slots?.turn;
+  if (!every) return;
+  for (const u of ctx.state.units)
+    for (const s of u.statuses) {
+      while (s.grapple && s.squeezeAt !== undefined && s.squeezeAt <= slot) {
+        s.squeezeAt += every;
+        const champion = ctx.state.units.find((c) => c.id === s.grapple!.champion);
+        if (!u.alive || !champion?.alive) break;
+        squeeze(ctx, champion, u);
+        if (ctx.state.phase !== 'fight') return;
+      }
+    }
+}
+
+/** One squeeze of `champion`'s grapple on `u`: its squeeze, Empowered, Weakened, less Armour. */
+function squeeze(ctx: Ctx, champion: Unit, u: Unit): void {
+  const empowered = (champion.empower ?? 0) + passiveEmpower(champion, ctx.state);
+  const strength = Math.max(
+    0,
+    ABILITY.grapple.squeeze +
+      (ABILITY.grapple.empoweredSqueeze ? empowered : 0) -
+      (champion.weaken ?? 0)
+  );
+  // Armour (One Eye's, Armoured) holds against the squeeze as against a hit.
+  const amount = strength > 0 ? Math.max(0, strength - armourOf(ctx, u, champion.hex)) : 0;
+  applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`, champion);
 }
 
 /**
