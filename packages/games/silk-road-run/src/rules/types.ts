@@ -153,8 +153,8 @@ export type PassiveId =
 export type StatId = 'speed' | 'defence' | 'power';
 
 /**
- * A provision (progression.md, 19.2): 1 more of one stat for one hero of
- * the party, from the stage it was earned on for the rest of the run.
+ * A stat provision (progression.md, 19.2): 1 more of one stat for one hero
+ * of the party, from the stage it was drafted after for the rest of the run.
  */
 export interface Provision {
   hero: HeroId;
@@ -162,15 +162,26 @@ export interface Provision {
 }
 
 /**
- * A passive drafted at the caravanserai between regions (progression.md,
- * 19.3a): one hero carries it from the next stage for the rest of the
- * run, of the party (`RunState.passives`) or of the rival's
- * (`RunState.rivalPassives`).
+ * A passive or ability upgrade drafted at a caravanserai (progression.md,
+ * 19.3): one hero of the party carries it from the next stage for the rest
+ * of the run (`RunState.passives`).
  */
 export interface PassivePick {
   hero: HeroId;
   passive: PassiveId;
 }
+
+/**
+ * A provision card the caravanserai drafts (progression.md, 19.3; owner,
+ * 2026-10-29): a stat (`StatId`, +1 of it), a passive or an ability upgrade.
+ */
+export type CardId = StatId | PassiveId;
+
+/**
+ * One of the party's picks in a caravanserai's draft: a card and the hero
+ * who takes it, or, in its place, Humphrey healed (RULES.camelHeal).
+ */
+export type DraftPick = {hero: HeroId; card: CardId} | {heal: true};
 
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';
@@ -542,25 +553,9 @@ export type RunAction =
   /** The AI's turn that is due, one per request (owner, 2026-10-24). */
   | {type: 'continue'}
   /**
-   * The party's first pick in the caravanserai's passive draft, kept for
-   * good (progression.md, 19.3a): the rival answers it at once.
+   * One of the party's picks in the caravanserai's draft, kept for good
+   * (progression.md, 19.3): the rival answers it at once.
    */
-  | {type: 'draft'; passive: PassivePick}
-  /**
-   * On to the next stage from the caravanserai, with the provision the
-   * stage won earned, if it earned one (`STAGES[stage].provision`), and the
-   * party's two picks of the passives drafted there, in the order picked, if
-   * it offered them (`STAGES[stage].passive`; the rival's picks follow from
-   * them, `draftPicks` in run.ts).
-   * `heal` takes the provision as a heal of the camel (RULES.camelHeal), in
-   * place of a stat: one or the other. `extra` and `extraHeal` are the same
-   * for the extra provision Humphrey earns by taking no damage in the stage.
-   */
-  | {
-      type: 'next';
-      provision?: Provision;
-      passive?: PassivePick;
-      heal?: boolean;
-      extra?: Provision;
-      extraHeal?: boolean;
-    };
+  | {type: 'draft'; pick: DraftPick}
+  /** On to the next stage from the caravanserai, every pick of its draft made. */
+  | {type: 'next'};

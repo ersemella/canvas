@@ -1,12 +1,20 @@
 import {useState} from 'react';
 import type {ReactNode} from 'react';
 import {Button, Paper, Stack, Text} from '@mantine/core';
-import {HEROES, HERO_PORTRAIT, PASSIVES, RULES, healthOf} from '@canvas/games-silk-road-run';
+import {
+  HEROES,
+  HERO_PORTRAIT,
+  PASSIVES,
+  RULES,
+  cardRarity,
+  healthOf,
+  isStatCard,
+} from '@canvas/games-silk-road-run';
 import type {
+  CardId,
+  DraftPick,
+  DraftView,
   FightState,
-  PassiveId,
-  PassivePick,
-  Provision,
   Rarity,
   StatId,
   Unit,
@@ -23,155 +31,101 @@ const RARITY_NAME: Record<Rarity, string> = {
   common: 'Common',
 };
 
-const STATS: {stat: StatId; label: string}[] = [
-  {stat: 'speed', label: 'Speed'},
-  {stat: 'power', label: 'Power'},
-  {stat: 'defence', label: 'Defence'},
-];
+const STAT_NAME: Record<StatId, string> = {speed: 'Speed', defence: 'Defence', power: 'Power'};
 
-/** What `n` stat points do, under the choices once picked. */
-const STAT_RULE: Record<StatId, (n: number) => string> = {
-  speed: () => 'Its card comes round the track sooner, so it acts more often.',
-  power: (n) => `Each of its abilities deals ${n} more damage.`,
-  defence: (n) => `It has ${2 * n} more health.`,
+/** What a stat point does. */
+const STAT_RULE: Record<StatId, string> = {
+  speed: 'Its card comes round the track sooner, so it acts more often.',
+  power: 'Each of its abilities deals 1 more damage.',
+  defence: 'It has 2 more health.',
 };
 
-/** The camel's health once healed `heals` times at the caravanserai, up to its full health. */
-const healed = (camel: Unit, heals = 1) =>
-  Math.min(camel.hp + heals * RULES.camelHeal, camel.maxHp);
+/** A provision card's name: a stat's +1, or the passive's or upgrade's. */
+const cardName = (card: CardId) =>
+  isStatCard(card) ? `${STAT_NAME[card]} +1` : PASSIVES[card].name;
 
-/** What the caravan takes with it from the caravanserai. */
-export interface SetOut {
-  provision?: Provision;
-  /** The party's second pick of the passives drafted; its first is locked in before (`onDraft`). */
-  passive?: PassivePick;
-  /** The provision taken as a heal of the camel (RULES.camelHeal), in place of a stat. */
-  heal?: boolean;
-  /** The extra provision, Humphrey unhurt all stage: a stat, or `extraHeal`. */
-  extra?: Provision;
-  extraHeal?: boolean;
-}
+/** What kind of provision a card is, after its rarity. */
+const cardKind = (card: CardId) =>
+  isStatCard(card) ? 'stat' : PASSIVES[card].kind === 'upgrade' ? 'ability upgrade' : 'passive';
+
+/** What a card does, on it. */
+const cardRule = (card: CardId) => (isStatCard(card) ? STAT_RULE[card] : PASSIVES[card].rule);
+
+/** A pick in the making: a card (its taker chosen next) or the camel healed. */
+type Pending = {card: CardId; hero: Unit['hero'] | null} | 'heal';
 
 /**
  * The caravanserai, between a won stage and the next (progression.md,
- * 19.2): after a stage that earns a provision, one hero still standing
- * takes 1 more of one stat, for the rest of the run, or the camel is
- * healed RULES.camelHeal instead, and the caravan sets out. When the stage
- * offers passives (`passives`, 19.3a) four are drafted: the party picks
- * one and locks it in (`onDraft`, never undone, so the rival's answer to
- * another pick is never seen), a rival caravan takes one in answer
- * (`rivalTook`), the party picks another, and the last goes to the rivals
- * too; each pick is carried by a hero standing for the rest of the run.
- * Which rival hero carries what is never shown. Unless healed,
- * the camel goes on with the health it ended the stage with. If the camel
- * took no damage in the stage (`extraProvision`), one more provision is
- * taken the same way. After a stage that earns nothing the caravan only rests.
+ * 19.3): its draft of provisions, stats, passives and ability upgrades,
+ * drawn by rarity. The party picks one and the rival caravan one in turn,
+ * until each has its share (one after a regular stage, two after a boss);
+ * the rest are discarded. Each of the party's picks goes to a hero
+ * standing for the rest of the run, or heals the camel instead, and is
+ * kept once locked in (`onPick`): only then does the rival's answer show.
+ * The rival's provisions go to the enemies of every stage to come. Unless
+ * healed, the camel goes on with the health it ended the stage with; one
+ * more card is drawn if it took no damage in the stage.
  */
 export function Caravanserai(props: {
   fight: FightState;
   stage: number;
   stages: number;
-  provision: boolean;
-  extraProvision: boolean;
-  passives: PassiveId[];
-  /** The party's first pick, once locked in; null before. */
-  drafted: PassivePick | null;
-  /** The passive a rival caravan took in answer to it; null before. */
-  rivalTook: PassiveId | null;
+  draft: DraftView | null;
   busy: boolean;
   error: string | null;
-  /** Locks in the party's first pick: the rules answer with the rival's. */
-  onDraft: (pick: PassivePick) => void;
-  onSetOut: (choices: SetOut) => void;
+  /** Locks in one of the party's picks: the rules answer with the rival's. */
+  onPick: (pick: DraftPick) => void;
+  onSetOut: () => void;
 }) {
-  const [picks, setPicks] = useState<Choice[]>([]);
-  /**
-   * The pick being made: the first until it is locked in, then the second,
-   * which can change until the caravan sets out (the last card's fate shows
-   * nothing new).
-   */
-  const [pending, setPending] = useState<{passive: PassiveId; carrier: Unit['hero'] | null} | null>(
-    null
-  );
-  const offered = props.passives.length > 0;
-  const firstPick = props.drafted;
-  // A pending pick made before the first was locked in is the first: it is spent now.
-  const making = pending && pending.passive !== firstPick?.passive ? pending : null;
-  const secondPick = firstPick && making?.carrier ? making : null;
-  /** The rivals' picks: the answer to the first, then the last left once the second is made. */
-  const rival: PassiveId[] = [];
-  if (props.rivalTook) rival.push(props.rivalTook);
-  if (firstPick && secondPick) {
-    const last = props.passives.find(
-      (id) => id !== firstPick.passive && id !== secondPick.passive && !rival.includes(id)
-    );
-    if (last) rival.push(last);
-  }
-  const rivalOf = (id: PassiveId) => rival.includes(id);
-  /** The party's picks so far, in order, the one being made last. */
-  const draft = [
-    ...(firstPick ? [{passive: firstPick.passive, carrier: firstPick.hero}] : []),
-    ...(making ? [making] : []),
-  ];
-  const mineOf = (id: PassiveId) => draft.findIndex((p) => p.passive === id);
-  const draftDone = Boolean(firstPick && secondPick);
-  /** A tap on a passive: an open one becomes the pick being made; the one being made is put down. */
-  const tapPassive = (id: PassiveId) => {
-    if (id === firstPick?.passive || rivalOf(id)) return;
-    setPending((p) => (p?.passive === id ? null : {passive: id, carrier: null}));
-  };
-  const setCarrier = (hero: Unit['hero']) => setPending((p) => (p ? {...p, carrier: hero} : p));
-  const carries = (unit: Unit, id: PassiveId | null) =>
-    id !== null && (unit.passives?.includes(id) ?? false);
+  const [pending, setPending] = useState<Pending | null>(null);
+  const draft = props.draft;
+  const offer = draft?.offer ?? [];
+  const mine = draft?.mine ?? [];
+  const rival = draft?.rival ?? [];
+  const done = !draft || mine.length >= draft.picks;
   const heroes = props.fight.units
     .filter((u) => u.side === 'player' && u.alive && !HEROES[u.hero].walksRoad)
     .sort((a, b) => a.partyIndex - b.partyIndex);
   const camel = props.fight.units.find((u) => u.side === 'player' && HEROES[u.hero].walksRoad);
   const camelName = camel ? HEROES[camel.hero].name : '';
-  /** The provisions to spend: the stage's, and the extra one if Humphrey took no damage. */
-  const count = Number(props.provision) + Number(props.extraProvision);
-  const choose = count > 0;
-  const tally = (c: Choice) => picks.filter((p) => same(p, c)).length;
-  /** A stat or heal can take one more pick: no stat above RULES.statMax, no heal past full health. */
-  const room = (c: Choice) =>
-    c === 'heal'
-      ? camel !== undefined && healed(camel, tally('heal') + 1) > healed(camel, tally('heal'))
-      : (heroes.find((u) => u.hero === c.hero)?.[c.stat] ?? RULES.statMax) + tally(c) <
-        RULES.statMax;
-  const anyRoom = [
-    ...heroes.flatMap((u) => STATS.map(({stat}) => ({hero: u.hero, stat}))),
-    ...(camel ? ['heal' as const] : []),
-  ].some(room);
-  // Done when every provision is spent, or the ones spent left nothing to raise or heal.
-  const provisionsDone = picks.length === count || (picks.length > 0 && !anyRoom);
-  /**
-   * A tap on a choice: another pick on it while there are provisions left
-   * and it has room; else, if picked, it's cleared; else it takes the last
-   * pick's place.
-   */
-  const tap = (c: Choice) =>
-    setPicks((p) => {
-      const on = p.filter((x) => same(x, c)).length;
-      if (p.length < count && room(c)) return [...p, c];
-      if (on) return p.filter((x) => !same(x, c));
-      return [...p.slice(0, -1), c];
-    });
-
-  /** What's still to choose before the caravan can set out, if anything. */
-  const missing = [
-    choose && !provisionsDone && (count > 1 && picks.length ? 'one more provision' : 'a provision'),
-    offered &&
-      !draftDone &&
-      (making && !making.carrier
-        ? 'who carries it'
-        : !firstPick
-          ? making
-            ? 'to lock in your first passive'
-            : 'a passive'
-          : 'your second passive'),
-  ].filter(Boolean);
-  // The stage's provision first, then the extra one.
-  const [first, second] = props.provision ? picks : [undefined, picks[0]];
+  const heals = mine.filter((p) => 'heal' in p).length;
+  const camelHp = camel ? Math.min(camel.hp + heals * RULES.camelHeal, camel.maxHp) : 0;
+  const canHeal = Boolean(camel && camelHp < camel.maxHp && !done);
+  const myIndex = (card: CardId) => mine.findIndex((p) => 'card' in p && p.card === card);
+  const taken = (card: CardId) => myIndex(card) >= 0 || rival.includes(card);
+  const making = pending !== null && pending !== 'heal' && !taken(pending.card) ? pending : null;
+  const healing = pending === 'heal' && canHeal;
+  /** A hero's stat, its stat picks made here included. */
+  const statOf = (unit: Unit, stat: StatId) =>
+    unit[stat] + mine.filter((p) => 'card' in p && p.hero === unit.hero && p.card === stat).length;
+  /** Whether a hero can take a card: a stat below RULES.statMax, a passive it doesn't carry. */
+  const canTake = (unit: Unit, card: CardId) =>
+    isStatCard(card)
+      ? statOf(unit, card) < RULES.statMax
+      : !(unit.passives?.includes(card) ?? false) &&
+        !mine.some((p) => 'card' in p && p.hero === unit.hero && p.card === card);
+  const tapCard = (card: CardId) => {
+    if (done || taken(card)) return;
+    setPending((p) => (p !== null && p !== 'heal' && p.card === card ? null : {card, hero: null}));
+  };
+  const lock = (pick: DraftPick) => {
+    props.onPick(pick);
+    setPending(null);
+  };
+  const lead = draft ? (
+    <>
+      {draft.extra && (
+        <span data-testid="extra-provision">
+          {camelName} took no damage this stage: one more drawn.{' '}
+        </span>
+      )}
+      {offer.length} provisions drawn, stats, passives and ability upgrades, the stronger the rarer:
+      you pick one and a rival caravan on the road ahead takes one
+      {draft.picks > 1 ? `, until each has ${draft.picks}` : ''}; the rest are discarded. Each is
+      kept for the rest of the run, the rival’s by the enemies ahead. Every pick is final once
+      locked in. Instead of a pick, you can heal {camelName} {RULES.camelHeal}.
+    </>
+  ) : null;
 
   return (
     <Stack
@@ -195,154 +149,166 @@ export function Caravanserai(props: {
             </Text>
           </Stack>
 
-          {camel && <CamelHealth camel={camel} />}
+          {camel && <CamelHealth camel={camel} hp={camelHp} />}
 
-          {choose && (
+          {draft && offer.length > 0 && (
             <Section
-              title={count > 1 ? 'Provisions' : 'Provision'}
-              done={provisionsDone}
-              count={count > 1 ? `${picks.length} of ${count}` : undefined}
-              lead={
-                <>
-                  {props.extraProvision && (
-                    <span data-testid="extra-provision">
-                      {camelName} took no damage this stage:{' '}
-                      {count > 1 ? 'an extra provision' : 'a provision'}.{' '}
-                    </span>
-                  )}
-                  {count > 1
-                    ? `For each, raise one hero’s stat by 1 for the rest of the run (the same one twice if you like), or heal ${camelName} ${RULES.camelHeal}.`
-                    : `Raise one hero’s stat by 1 for the rest of the run, or heal ${camelName} ${RULES.camelHeal}.`}
-                </>
-              }
-              rule={pickRule(picks, camel, camelName)}
-              ruleTestId="provision-rule"
+              title="Provisions"
+              done={done}
+              count={draft.picks > 1 ? `${mine.length} of ${draft.picks}` : undefined}
+              lead={lead}
+              rule={draftRule(mine, rival, offer, done, camelName)}
+              ruleTestId="draft-rule"
             >
-              <div className={styles.provisionList} data-testid="provision-picks">
-                {heroes.map((unit) => (
-                  <ProvisionRow key={unit.id} unit={unit} tally={tally} room={room} onPick={tap} />
-                ))}
-                {camel && (
-                  <HealRow
-                    camel={camel}
-                    picks={tally('heal')}
-                    room={room('heal')}
-                    onPick={() => tap('heal')}
-                  />
-                )}
-              </div>
-            </Section>
-          )}
-
-          {offered && (
-            <Section
-              title="Passive draft"
-              done={draftDone}
-              count={`${draft.filter((p) => p.carrier !== null).length} of 2`}
-              lead={
-                <>
-                  Four passives and ability upgrades, drafted: you pick one, a rival caravan on the
-                  road ahead takes one, you pick another, and the rivals take the last. Each is
-                  carried for the rest of the run. The stronger, the rarer. Your first pick is final
-                  once locked in.
-                </>
-              }
-              rule={draftRule(draft, rival)}
-              ruleTestId="passive-rule"
-            >
-              <div className={styles.passiveOffer} data-testid="passive-offer">
-                {props.passives.map((id) => {
-                  const def = PASSIVES[id];
-                  const mine = mineOf(id);
-                  const theirs = rivalOf(id);
-                  const pick = draft[mine];
-                  const locked = id === firstPick?.passive;
+              <div className={styles.passiveOffer} data-testid="draft-offer">
+                {offer.map((card) => {
+                  const rarity = cardRarity(card);
+                  const i = myIndex(card);
+                  const pick = mine[i];
+                  const theirs = rival.includes(card);
+                  const discarded = done && i < 0 && !theirs;
+                  const on = making?.card === card;
                   return (
                     <button
-                      key={id}
+                      key={card}
                       type="button"
-                      className={`${styles.provisionStat} ${styles.passiveCard} ${mine >= 0 ? styles.heroPicked : ''} ${theirs ? styles.passiveRival : ''}`}
-                      aria-pressed={mine >= 0}
-                      disabled={theirs || locked || props.busy}
-                      data-testid={`passive-${id}`}
+                      className={`${styles.provisionStat} ${styles.passiveCard} ${i >= 0 || on ? styles.heroPicked : ''} ${theirs ? styles.passiveRival : ''}`}
+                      aria-pressed={i >= 0 || on}
+                      disabled={i >= 0 || theirs || done || props.busy}
+                      data-testid={`card-${card}`}
                       data-rival={theirs ? 'true' : undefined}
-                      onClick={() => tapPassive(id)}
+                      data-discarded={discarded ? 'true' : undefined}
+                      onClick={() => tapCard(card)}
                     >
-                      <span className={`${styles.display} ${styles.passiveName}`}>{def.name}</span>
+                      <span className={`${styles.display} ${styles.passiveName}`}>
+                        {cardName(card)}
+                      </span>
                       <span
                         className={styles.passiveRarity}
-                        data-rarity={def.rarity}
-                        data-testid={`passive-rarity-${id}`}
+                        data-rarity={rarity}
+                        data-testid={`card-rarity-${card}`}
                       >
-                        {RARITY_NAME[def.rarity ?? 'common']}{' '}
-                        {def.kind === 'upgrade' ? 'ability upgrade' : 'passive'}
+                        {RARITY_NAME[rarity]} {cardKind(card)}
                       </span>
-                      <span>{def.rule}</span>
-                      {pick && (
+                      <span>{cardRule(card)}</span>
+                      {pick && 'card' in pick && (
                         <span className={styles.passiveTaken}>
-                          Your pick {mine + 1}
-                          {pick.carrier ? `: ${HEROES[pick.carrier].name}` : ''}
-                          {locked ? ' (locked in)' : ''}
+                          Your pick {i + 1}: {HEROES[pick.hero].name}
                         </span>
                       )}
                       {theirs && (
                         <span className={styles.passiveTaken}>Taken by a rival caravan</span>
                       )}
+                      {discarded && <span className={styles.provisionNote}>Discarded</span>}
                     </button>
                   );
                 })}
               </div>
+
+              {!done && camel && (
+                <button
+                  type="button"
+                  className={`${styles.provisionStat} ${styles.provisionHeal} ${healing ? styles.heroPicked : ''}`}
+                  aria-pressed={healing}
+                  disabled={!canHeal || props.busy}
+                  data-testid="draft-heal"
+                  onClick={() => setPending((p) => (p === 'heal' ? null : 'heal'))}
+                >
+                  <span className={styles.provisionLabel}>
+                    Instead, heal {camelName} {RULES.camelHeal}
+                  </span>
+                  <span className={styles.provisionValue}>
+                    {canHeal ? (
+                      <>
+                        {camelHp} → <b>{Math.min(camelHp + RULES.camelHeal, camel.maxHp)}</b>{' '}
+                        <span className={styles.provisionNote}>of {camel.maxHp} health</span>
+                      </>
+                    ) : (
+                      <>
+                        {camelHp} <span className={styles.provisionNote}>at full health</span>
+                      </>
+                    )}
+                  </span>
+                  <HealthBar
+                    hp={camelHp}
+                    max={camel.maxHp}
+                    to={Math.min(camelHp + RULES.camelHeal, camel.maxHp)}
+                  />
+                </button>
+              )}
+
               {making && (
                 <>
-                  <div className={styles.sectionLabel}>
-                    Who carries {PASSIVES[making.passive].name}?
-                  </div>
-                  <div className={styles.carriers} data-testid="passive-carriers">
+                  <div className={styles.sectionLabel}>Who takes {cardName(making.card)}?</div>
+                  <div className={styles.carriers} data-testid="draft-carriers">
                     {heroes.map((unit) => {
-                      const on = making.carrier === unit.hero;
-                      const has = carries(unit, making.passive);
+                      const on = making.hero === unit.hero;
+                      const can = canTake(unit, making.card);
+                      const stat = isStatCard(making.card) ? making.card : null;
                       return (
                         <button
                           key={unit.id}
                           type="button"
                           className={`${styles.provisionStat} ${styles.carrier} ${on ? styles.heroPicked : ''}`}
                           aria-pressed={on}
-                          disabled={has}
+                          disabled={!can}
                           data-testid={`carrier-${unit.hero}`}
-                          onClick={() => setCarrier(unit.hero)}
+                          onClick={() => setPending({card: making.card, hero: unit.hero})}
                         >
                           <Portrait unit={unit} className={styles.carrierPortrait} />
                           <span>
                             {HEROES[unit.hero].name}
-                            {has && <span className={styles.provisionNote}> carries it</span>}
+                            {stat && (
+                              <span className={styles.provisionNote}>
+                                {' '}
+                                {can
+                                  ? `${statOf(unit, stat)} → ${statOf(unit, stat) + 1}`
+                                  : 'at most'}
+                                {stat === 'defence' &&
+                                  can &&
+                                  `, health ${healthOf(statOf(unit, stat))} → ${healthOf(statOf(unit, stat) + 1)}`}
+                              </span>
+                            )}
+                            {!stat && !can && (
+                              <span className={styles.provisionNote}> carries it</span>
+                            )}
                           </span>
                         </button>
                       );
                     })}
                   </div>
-                  {!firstPick && making.carrier && (
-                    <Button
-                      className={styles.seal!}
-                      fw="bold"
-                      loading={props.busy}
-                      data-testid="passive-lock"
-                      onClick={() =>
-                        props.onDraft({hero: making.carrier!, passive: making.passive})
-                      }
-                    >
-                      Lock in {PASSIVES[making.passive].name} for {HEROES[making.carrier].name}
-                    </Button>
-                  )}
                 </>
+              )}
+              {making?.hero && (
+                <Button
+                  className={styles.seal!}
+                  fw="bold"
+                  loading={props.busy}
+                  data-testid="draft-lock"
+                  onClick={() => lock({hero: making.hero!, card: making.card})}
+                >
+                  Lock in {cardName(making.card)} for {HEROES[making.hero].name}
+                </Button>
+              )}
+              {healing && (
+                <Button
+                  className={styles.seal!}
+                  fw="bold"
+                  loading={props.busy}
+                  data-testid="draft-lock"
+                  onClick={() => lock({heal: true})}
+                >
+                  Lock in: heal {camelName} {RULES.camelHeal}
+                </Button>
               )}
             </Section>
           )}
 
           <Stack gap={6} className={styles.setOutBar!}>
             <Text c="dimmed" fz="sm" ta="center">
-              {missing.length
-                ? `Still to choose: ${missing.join(', ')}.`
-                : !choose && !offered
+              {!done
+                ? `Still to choose: ${mine.length ? 'your next provision' : 'a provision'}.`
+                : !draft || offer.length === 0
                   ? 'Nothing to choose this time: the caravan only rests.'
                   : 'Ready to set out.'}
             </Text>
@@ -351,16 +317,9 @@ export function Caravanserai(props: {
               className={styles.seal!}
               fw="bold"
               loading={props.busy}
-              disabled={missing.length > 0}
-              onClick={() =>
-                props.onSetOut({
-                  ...(first === 'heal' ? {heal: true} : first ? {provision: first} : {}),
-                  ...(second === 'heal' ? {extraHeal: true} : second ? {extra: second} : {}),
-                  ...(offered && secondPick
-                    ? {passive: {hero: secondPick.carrier!, passive: secondPick.passive}}
-                    : {}),
-                })
-              }
+              disabled={!done}
+              data-testid="set-out"
+              onClick={props.onSetOut}
             >
               Set out
             </Button>
@@ -374,7 +333,7 @@ export function Caravanserai(props: {
 
 /**
  * One choice to make here, a panel: its title (ticked once chosen) over a
- * line on what it is, its choices, and what the pick does.
+ * line on what it is, its choices, and what the picks do.
  */
 function Section(props: {
   title: string;
@@ -430,8 +389,11 @@ function HealthBar(props: {hp: number; max: number; to?: number}) {
   );
 }
 
-/** The camel's health as the caravan goes on: wounds stay from stage to stage unless healed here. */
-function CamelHealth(props: {camel: Unit}) {
+/**
+ * The camel's health as the caravan goes on, `hp` once the heals picked
+ * here are taken: wounds stay from stage to stage unless healed here.
+ */
+function CamelHealth(props: {camel: Unit; hp: number}) {
   const {camel} = props;
   const name = HEROES[camel.hero].name;
   return (
@@ -441,10 +403,10 @@ function CamelHealth(props: {camel: Unit}) {
         <div className={styles.camelHealthHead}>
           <span className={styles.display}>{name}</span>
           <span>
-            {camel.hp} of {camel.maxHp} health
+            {props.hp} of {camel.maxHp} health
           </span>
         </div>
-        <HealthBar hp={camel.hp} max={camel.maxHp} />
+        <HealthBar hp={props.hp} max={camel.maxHp} />
         <div className={styles.sectionLead}>
           Its wounds stay with it from stage to stage unless healed here; the heroes start each
           stage at full health.
@@ -454,160 +416,30 @@ function CamelHealth(props: {camel: Unit}) {
   );
 }
 
-/** What the draft so far does: each pick and who carries it, and what the rivals take in turn. */
+/** What the draft so far does: each pick, the rival's answer to it, and what's discarded. */
 function draftRule(
-  draft: {passive: PassiveId; carrier: Unit['hero'] | null}[],
-  rival: PassiveId[]
+  mine: DraftPick[],
+  rival: CardId[],
+  offer: CardId[],
+  done: boolean,
+  camelName: string
 ) {
-  if (!draft.length) return 'Choose a passive.';
+  if (!mine.length) return 'Choose a provision, and who takes it.';
   const lines: string[] = [];
-  draft.forEach((p, i) => {
+  mine.forEach((p, i) => {
     lines.push(
-      p.carrier
-        ? `${HEROES[p.carrier].name} carries ${PASSIVES[p.passive].name}.`
-        : `Choose a hero to carry ${PASSIVES[p.passive].name}.`
+      'card' in p
+        ? `${HEROES[p.hero].name} takes ${cardName(p.card)}.`
+        : `${camelName} is healed ${RULES.camelHeal}.`
     );
     const r = rival[i];
-    if (r) lines.push(`A rival caravan takes ${PASSIVES[r].name}.`);
+    if (r) lines.push(`A rival caravan takes ${cardName(r)}.`);
   });
-  if (draft.length === 1 && draft[0]!.carrier) lines.push('Choose your second passive.');
+  if (done) {
+    const gone = offer.filter(
+      (c) => !rival.includes(c) && !mine.some((p) => 'card' in p && p.card === c)
+    );
+    if (gone.length) lines.push(`Discarded: ${gone.map(cardName).join(', ')}.`);
+  } else lines.push('Choose your next provision.');
   return lines.map((l) => <div key={l}>{l}</div>);
-}
-
-/** A provision's pick: a hero's stat raised, or the camel healed. */
-type Choice = Provision | 'heal';
-
-const same = (a: Choice, b: Choice) =>
-  a === 'heal' || b === 'heal' ? a === b : a.hero === b.hero && a.stat === b.stat;
-
-/** What the picks do, under the choices: each stat raised, and the camel's health after its heals. */
-function pickRule(picks: Choice[], camel: Unit | undefined, camelName: string) {
-  if (!picks.length)
-    return `Choose a hero’s stat to raise, or heal ${camelName} ${RULES.camelHeal}.`;
-  const lines: string[] = [];
-  for (const p of picks) {
-    if (p === 'heal' || picks.findIndex((x) => same(x, p)) !== picks.indexOf(p)) continue;
-    const n = picks.filter((x) => same(x, p)).length;
-    lines.push(`${HEROES[p.hero].name}: ${STAT_RULE[p.stat](n)}`);
-  }
-  const heals = picks.filter((p) => p === 'heal').length;
-  if (heals && camel)
-    lines.push(`${camelName} sets out with ${healed(camel, heals)} of ${camel.maxHp} health.`);
-  return lines.map((l) => <div key={l}>{l}</div>);
-}
-
-/** A pick count on a choice, when it has any. */
-function Tally({n}: {n: number}) {
-  return n ? <span className={styles.provisionTally}>+{n}</span> : null;
-}
-
-/**
- * One hero standing: portrait and name, and a choice for each stat, showing
- * what its picks make it (or one more would); a stat already at
- * RULES.statMax can't be chosen.
- */
-function ProvisionRow(props: {
-  unit: Unit;
-  tally: (c: Choice) => number;
-  room: (c: Choice) => boolean;
-  onPick: (c: Choice) => void;
-}) {
-  const {unit} = props;
-  const hero = HEROES[unit.hero];
-  return (
-    <div className={styles.provisionHero}>
-      <div className={styles.provisionWho}>
-        <Portrait unit={unit} className={styles.carrierPortrait} />
-        <span className={styles.display}>{hero.name}</span>
-      </div>
-      <div className={styles.provisionStats}>
-        {STATS.map(({stat, label}) => {
-          const choice = {hero: unit.hero, stat};
-          const n = props.tally(choice);
-          const full = !n && !props.room(choice);
-          const to = unit[stat] + Math.max(n, 1);
-          return (
-            <button
-              key={stat}
-              type="button"
-              className={`${styles.provisionStat} ${n ? styles.heroPicked : ''}`}
-              aria-pressed={n > 0}
-              disabled={full}
-              data-testid={`provision-${unit.hero}-${stat}`}
-              onClick={() => props.onPick(choice)}
-            >
-              <span className={styles.provisionLabel}>
-                {label}
-                <Tally n={n} />
-              </span>
-              <span className={styles.provisionValue}>
-                {full ? (
-                  <>
-                    {unit[stat]} <span className={styles.provisionNote}>at most</span>
-                  </>
-                ) : (
-                  <>
-                    {unit[stat]} → <b>{to}</b>
-                  </>
-                )}
-              </span>
-              {stat === 'defence' && !full && (
-                <span className={styles.provisionNote}>
-                  health {unit.maxHp} → {unit.maxHp + healthOf(to) - healthOf(unit.defence)}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/**
- * The camel: portrait and name, and a provision taken as a heal of
- * RULES.camelHeal, up to its full health, in place of a stat; at full
- * health it can't be chosen.
- */
-function HealRow(props: {camel: Unit; picks: number; room: boolean; onPick: () => void}) {
-  const {camel} = props;
-  const hero = HEROES[camel.hero];
-  const full = !props.picks && !props.room;
-  const to = healed(camel, Math.max(props.picks, 1));
-  return (
-    <div className={styles.provisionHero}>
-      <div className={styles.provisionWho}>
-        <Portrait unit={camel} className={styles.carrierPortrait} />
-        <span className={styles.display}>{hero.name}</span>
-      </div>
-      <div className={styles.provisionStats}>
-        <button
-          type="button"
-          className={`${styles.provisionStat} ${styles.provisionHeal} ${props.picks ? styles.heroPicked : ''}`}
-          aria-pressed={props.picks > 0}
-          disabled={full}
-          data-testid="provision-heal"
-          onClick={props.onPick}
-        >
-          <span className={styles.provisionLabel}>
-            Heal {RULES.camelHeal}
-            <Tally n={props.picks} />
-          </span>
-          <span className={styles.provisionValue}>
-            {full ? (
-              <>
-                {camel.hp} <span className={styles.provisionNote}>at full health</span>
-              </>
-            ) : (
-              <>
-                {camel.hp} → <b>{to}</b>{' '}
-                <span className={styles.provisionNote}>of {camel.maxHp} health</span>
-              </>
-            )}
-          </span>
-          <HealthBar hp={camel.hp} max={camel.maxHp} to={to} />
-        </button>
-      </div>
-    </div>
-  );
 }

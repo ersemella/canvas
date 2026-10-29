@@ -55,15 +55,15 @@ tuning. Section numbers are the combat design's.
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |
 | **Milestone upgrade** | Replaced 2026-10-24 by the upgrade offer (19.3). Was: a hero-specific adjustment to one of that hero's abilities, chosen at set points in a run (10.9). |
-| **Provisions** | The run's stat points (named by the owner, 2026-10-24): 1 at the end of each region's first and second stages, each +1 to one hero's speed, defence or power; the region's own can be reassigned after its third stage's fight, then locked (19.2). |
-| **Upgrade offer** | After each region's third stage's fight, 3 upgrades from fixed slots (hero, passive, wildcard), of which the party picks 1 (19.3). |
+| **Provisions** | Everything the caravanserai drafts (owner, 2026-10-29): stat provisions (+1 to one hero's speed, defence or power, Epic), passives and ability upgrades, drawn by rarity; the party and the rival pick in turn (19.3c). Until 2026-10-29, the run's stat points alone (19.2). |
+| **Upgrade offer** | Superseded 2026-10-29 by the caravanserai's draft (19.3c). Was: after each region's third stage's fight, 3 upgrades from fixed slots (hero, passive, wildcard), of which the party picks 1 (19.3). |
 | **Keyword** | A named, shared condition or effect (for example Burn, Push, Stunned) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |
 | **Ghost team / ghost build** | A saved party build from another player, used as an opponent. **Decided 2026-10-15:** ghosts are **rival caravans**, met as a fight; see [ghosts.md](ghosts.md) (D8). |
 | **Deployment zone** | The set of hexes where a side places its units before a fight (6.6). |
 | **Elite affix** | A single rule-bending trait, drawn from the boss toolkit, carried by a stronger regular enemy (11.4). |
 | **Tank / Damage / Support** | The three mechanical roles of heroes: protecting allies, dealing damage, and healing, buffing or controlling (15.8). |
-| **Caravanserai** | A roadside inn on the Silk Road; in the setting, a rest point between fights (15.3). |
+| **Caravanserai** | A roadside inn on the Silk Road; in the setting, a rest point between fights (15.3); in a run, the draft of provisions after every stage but the last (19.3c). |
 | **Preview** | A display of an action's exact outcome, shown before the player commits to it. |
 | **Deterministic** | Producing the same result every time given the same inputs. No chance-based outcomes. |
 | **Rarity** | A tier assigned to gear indicating its relative power. |

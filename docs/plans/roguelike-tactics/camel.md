@@ -115,6 +115,11 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
   fight with the health it ended the last with (`stageFight` in
   `src/rules/run.ts`), its statuses cleared. The caravanserai says how
   much it goes on with, and the start menu that its wounds stay with it.
+- **Since 2026-10-29 (owner), in the caravanserai's draft**
+  ([progression.md](progression.md), 19.3c): any of the party's picks can
+  heal Humphrey 4 in place of a card, and his taking no damage in a stage
+  draws one more card into the draft (discarded with the rest), in place
+  of the extra provision. The two notes below are the record of before.
 - **Built (2026-10-28, owner):** at a caravanserai that earns a provision
   (after a region's stages 1 and 2), the provision can **heal the camel
   4 in place of a stat** (`RULES.camelHeal`, up to its full health;

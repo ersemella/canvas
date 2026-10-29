@@ -812,40 +812,52 @@ try {
     );
     await shot(page, 'end-phone');
   }
-  // Next stage opens the caravanserai, where one survivor takes a provision
-  // (1 more of a stat), or Humphrey is healed instead, and another if he
-  // took no damage; Set out there starts the run's next stage, against a
-  // bigger band, with the survivors.
+  // Next stage opens the caravanserai's draft (progression.md, 19.3): three
+  // provisions drawn (a fourth with Humphrey unhurt), one picked for a hero
+  // standing, a rival caravan taking another, the rest discarded; Set out
+  // there starts the run's next stage, against a bigger band, with the
+  // survivors.
   if (nextAhead) {
     const before = (await state()).view;
     const survivors = before.fight.units
       .filter((u) => u.side === 'player' && u.alive)
       .map((u) => u.hero);
-    const raised = before.fight.units.find(
-      (u) => u.side === 'player' && u.alive && u.hero !== 'camel'
-    );
+    const {offer} = before.draft;
     await page.getByRole('button', {name: 'Next stage'}).click();
     await page.getByTestId('caravanserai').waitFor({timeout: 15_000});
     const setOut = page.getByRole('button', {name: 'Set out'});
     check(
-      'the caravanserai: a choice for each stat of each hero standing and Humphrey’s heal, Set out waiting on one',
-      (await page.locator('[data-testid^="provision-"][aria-pressed]').count()) ===
-        3 * survivors.filter((h) => h !== 'camel').length + 1 &&
-        (await page.getByTestId('provision-heal').count()) === 1 &&
-        (await page.getByTestId('provision-camel-power').count()) === 0 &&
+      'the caravanserai: the draft’s cards, each with its rarity, Humphrey’s heal instead, Set out waiting on a pick',
+      offer.length === (before.draft.extra ? 4 : 3) &&
+        (await page.locator('[data-testid^="card-rarity-"]').count()) === offer.length &&
+        (await page.getByTestId('draft-heal').count()) === 1 &&
+        (await page.getByTestId('extra-provision').count()) === (before.draft.extra ? 1 : 0) &&
         (await setOut.isDisabled()),
-      survivors
+      offer
     );
-    await page.getByTestId(`provision-${raised.hero}-power`).click();
-    // Humphrey unhurt all stage: an extra provision in the same choices, Set out waiting on it too.
-    if (before.extraProvision) {
-      check('the extra provision: Set out waits on it', await setOut.isDisabled());
-      await page.getByTestId(`provision-${raised.hero}-speed`).click();
-    }
+    const card = offer[0];
+    await page.getByTestId(`card-${card}`).click();
+    const takers = page.locator('[data-testid^="carrier-"]:enabled');
     check(
-      'a stat picked, Set out is ready',
-      (await setOut.isEnabled()) &&
-        (await page.getByTestId('extra-provision').count()) === (before.extraProvision ? 1 : 0)
+      'a card picked asks who takes it, among the heroes standing',
+      (await page.locator('[data-testid^="carrier-"]').count()) ===
+        survivors.filter((h) => h !== 'camel').length && (await takers.count()) > 0
+    );
+    const taker = (await takers.first().getAttribute('data-testid')).replace('carrier-', '');
+    const raised = before.fight.units.find((u) => u.side === 'player' && u.hero === taker);
+    await takers.first().click();
+    await page.getByTestId('draft-lock').click();
+    await page.waitForFunction(() => window.__tactics.run.view.draft.mine.length === 1, null, {
+      timeout: 15_000,
+    });
+    const rival = (await state()).view.draft.rival;
+    check(
+      'locked in: a rival caravan answers, the rest discarded, Set out ready',
+      rival.length === 1 &&
+        (await page.getByTestId(`card-${rival[0]}`).getAttribute('data-rival')) === 'true' &&
+        (await page.locator('[data-discarded="true"]').count()) === offer.length - 2 &&
+        (await setOut.isEnabled()),
+      rival
     );
     await shot(page, 'caravanserai-phone');
     await setOut.click();
@@ -864,10 +876,13 @@ try {
         enemies.filter((u) => u.hero !== 'wolf').length === after.stage + 1,
       after.fight.units.map((u) => u.id)
     );
+    const now = after.fight.units.find((u) => u.id === raised.id);
     check(
-      'Set out: the hero picked at the caravanserai has 1 more power',
-      after.fight.units.find((u) => u.id === raised.id)?.power === raised.power + 1,
-      after.fight.units.find((u) => u.id === raised.id)
+      'Set out: the hero picked at the caravanserai has what it took',
+      ['speed', 'defence', 'power'].includes(card)
+        ? now?.[card] === raised[card] + 1
+        : (now?.passives ?? []).includes(card),
+      [card, now]
     );
   }
   // New run opens the start menu; Start there starts a fresh fight, ready for a turn.

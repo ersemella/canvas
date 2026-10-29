@@ -3,14 +3,14 @@
 // camel going on at full health, until a stage is lost or the last is won.
 // The production AI plays both sides, the player's heroes included, at its
 // fixed work cap, so a seed always plays the same run.
-import {createRun, handleRunAction, passiveOffer, runStatus, runView} from '@balance-rules/run';
+import {createRun, handleRunAction, isStatCard, runStatus, runView} from '@balance-rules/run';
 import type {RunState} from '@balance-rules/run';
 import {actingUnit, advanceToDecision, applyTurn} from '@balance-rules/fight';
 import {chooseAiTurn} from '@balance-rules/ai';
 import {ABILITY, AI, CAMEL, HEROES, RULES, STAGES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import {hasPassive} from '@balance-rules/passives';
-import type {HeroId, StatId} from '@balance-rules/types';
+import type {CardId, HeroId, PassiveId, StatId} from '@balance-rules/types';
 import {snapshot, type Config} from './snapshot';
 
 export type RunExperiment = {
@@ -19,9 +19,11 @@ export type RunExperiment = {
   /** Changes the config for both sides, undone afterwards (as ablate.ts's `patch`). */
   patch?: (config: Config) => void;
   /**
-   * The stat each provision raises (progression.md, 19.2), on the survivor
-   * with the lowest stat total, party order breaking ties: `defence` by
-   * default. The same policy for every party, so it doesn't favour one.
+   * The stat the caravanserai's draft takes first when it is drawn
+   * (progression.md, 19.3), on the survivor with the lowest stat total,
+   * party order breaking ties: `defence` by default; then the other stats,
+   * then the first passive or upgrade left. The same policy for every party,
+   * so it doesn't favour one.
    */
   provision?: StatId;
   /**
@@ -98,8 +100,7 @@ function run({runs, seed, maxTurns, party, provision = 'defence', search}: Optio
         for (const u of heroes()) finishedWith[u.hero] = (finishedWith[u.hero] ?? 0) + 1;
         break;
       }
-      state = draftFirst(state);
-      state = handleRunAction(state, {type: 'next', ...caravanserai(state, provision)});
+      state = handleRunAction(draftAll(state, provision), {type: 'next'});
     }
   }
 
@@ -139,67 +140,42 @@ function chooseWith({depth, work}: {depth: number; work: number}) {
 }
 
 /**
- * The draft's first pick, where the caravanserai drafts passives: the first
- * offered to the first survivor not carrying it.
+ * The party's picks in the caravanserai's draft after a won stage, each the
+ * first of these open: `stat`, then defence, power and speed, to the
+ * weakest survivor below RULES.statMax; then the first passive or upgrade
+ * left, to the first survivor not carrying it.
  */
-function draftFirst(state: RunState): RunState {
-  const standing = state.fight.units
-    .filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive)
-    .sort((a, b) => a.partyIndex - b.partyIndex);
-  for (const passive of passiveOffer(state)) {
-    const taker = standing.find((u) => !hasPassive(u, passive));
-    if (taker) return handleRunAction(state, {type: 'draft', passive: {hero: taker.hero, passive}});
-  }
-  return state;
-}
-
-/**
- * The caravanserai's choices after a won stage: the provision owed (the
- * view's `provision`), and the extra one (`extraProvision`), each to the
- * weakest survivor, and the party's second pick of the passives drafted
- * (its first made before, `draftFirst`), the first left in the offer, to
- * the first survivor not carrying it.
- */
-function caravanserai(state: RunState, stat: StatId) {
-  const standing = state.fight.units
-    .filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive)
-    .sort((a, b) => a.partyIndex - b.partyIndex);
-  type Pick = {hero: HeroId; stat: StatId};
-  const out: {provision?: Pick; extra?: Pick; passive?: {hero: HeroId; passive: string}} = {};
-  const total = (u: (typeof standing)[number]) => u.speed + u.defence + u.power;
-  // The provisions taken here so far, counted towards the stats they raise.
-  const taken: Pick[] = [];
-  const raised = (u: (typeof standing)[number], s: StatId) =>
-    u[s] + taken.filter((p) => p.hero === u.hero && p.stat === s).length;
-  /** The weakest survivor's stat; at RULES.statMax for everyone standing, the first still below it. */
-  const pick = (): Pick | undefined => {
-    const stats: StatId[] = [stat, 'defence', 'power', 'speed'];
-    for (const s of stats) {
+function draftAll(state: RunState, stat: StatId): RunState {
+  const order: StatId[] = [stat, 'defence', 'power', 'speed'];
+  for (let view = runView(state); view.draft && view.draft.mine.length < view.draft.picks; ) {
+    const {offer, mine, rival} = view.draft;
+    const gone: CardId[] = [...mine.flatMap((p) => ('card' in p ? [p.card] : [])), ...rival];
+    const open = offer.filter((c) => !gone.includes(c));
+    const standing = state.fight.units
+      .filter((u) => u.side === 'player' && u.hero !== CAMEL && u.alive)
+      .sort((a, b) => a.partyIndex - b.partyIndex);
+    const total = (u: (typeof standing)[number]) => u.speed + u.defence + u.power;
+    const raised = (u: (typeof standing)[number], s: StatId) =>
+      u[s] + mine.filter((p) => 'card' in p && p.hero === u.hero && p.card === s).length;
+    let pick: {hero: HeroId; card: CardId} | undefined;
+    for (const s of order.filter((c) => open.includes(c))) {
       const weakest = standing
         .filter((u) => raised(u, s) < RULES.statMax)
         .reduce<
           (typeof standing)[number] | undefined
         >((best, u) => (!best || total(u) < total(best) ? u : best), undefined);
       if (weakest) {
-        const p = {hero: weakest.hero, stat: s};
-        taken.push(p);
-        return p;
+        pick = {hero: weakest.hero, card: s};
+        break;
       }
     }
-    return undefined;
-  };
-  const view = runView(state);
-  if (view.provision) out.provision = pick();
-  // Humphrey unhurt all stage: an extra one, the same way.
-  if (view.extraProvision) out.extra = pick();
-  // The draft's second pick: the first passive left, after the party's first and the rival's answer.
-  const gone = [state.drafted?.passive, view.rivalTook];
-  for (const passive of passiveOffer(state).filter((id) => !gone.includes(id))) {
-    const taker = standing.find((u) => !hasPassive(u, passive));
-    if (taker) {
-      out.passive = {hero: taker.hero, passive};
-      break;
+    for (const card of open.filter((c) => !isStatCard(c))) {
+      if (pick) break;
+      const taker = standing.find((u) => !hasPassive(u, card as PassiveId));
+      if (taker) pick = {hero: taker.hero, card};
     }
+    state = handleRunAction(state, {type: 'draft', pick: pick ?? {heal: true}});
+    view = runView(state);
   }
-  return out;
+  return state;
 }

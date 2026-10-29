@@ -37,7 +37,6 @@ import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {useIsPhone} from 'components/useIsPhone';
 import {createModuleFor, findGame} from 'registry/games';
 import {Caravanserai} from './Caravanserai';
-import type {SetOut} from './Caravanserai';
 import {StartMenu} from './StartMenu';
 import {HexTooltip} from './HexTooltip';
 import {Glossary} from './Keywords';
@@ -99,7 +98,7 @@ export function TacticsPage() {
     startTest,
     sendTurn,
     nextStage: goToNextStage,
-    draftPassive,
+    draftPick,
     playbackDone,
     boardReady,
   } = useRun(eventsRef);
@@ -188,19 +187,16 @@ export function TacticsPage() {
     [input, sendTurn]
   );
 
-  /** Next stage: by way of the caravanserai, which gives the provision or passive the stage earned. */
+  /** Next stage: by way of the caravanserai, which drafts provisions. */
   const nextStage = useCallback(() => {
     if (busy) return;
     stopLooking();
     setAtCaravanserai(true);
   }, [busy, stopLooking]);
-  const setOut = useCallback(
-    (choices: SetOut) => {
-      if (busy) return;
-      goToNextStage(choices);
-    },
-    [busy, goToNextStage]
-  );
+  const setOut = useCallback(() => {
+    if (busy) return;
+    goToNextStage();
+  }, [busy, goToNextStage]);
   // The caravanserai closes once the next stage is under way, or a new run starts.
   const stage = run?.view.stage;
   useEffect(() => setAtCaravanserai(false), [stage, run?.runId]);
@@ -468,12 +464,8 @@ export function TacticsPage() {
         fight={fight}
         stage={run.view.stage}
         stages={stages}
-        provision={run.view.provision}
-        extraProvision={run.view.extraProvision}
-        passives={run.view.passives}
-        drafted={run.view.drafted}
-        rivalTook={run.view.rivalTook}
-        onDraft={draftPassive}
+        draft={run.view.draft}
+        onPick={draftPick}
         busy={busy}
         error={error}
         onSetOut={setOut}

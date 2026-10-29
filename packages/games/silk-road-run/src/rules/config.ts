@@ -37,8 +37,9 @@ export const RULES = {
   /** The most any stat (speed, defence or power) can reach (owner, 2026-10-25). */
   statMax: 10,
   /**
-   * The health a caravanserai's provision heals the camel, taken in place of
-   * a stat, up to its full health (owner, 2026-10-28; full health before).
+   * The health a pick in the caravanserai's draft heals the camel, taken in
+   * place of a card, up to its full health (owner, 2026-10-28; full health
+   * before; a pick of the draft since 2026-10-29).
    */
   camelHeal: 4,
   /**
@@ -1018,12 +1019,9 @@ export const REGIONS: Record<
  * boss's (`boss`): the region's boss (REGIONS) and `creatures` of its
  * creatures, or, for a region with no boss built yet, its heroes as for
  * the others.
- * `provision`: winning it earns a provision, assigned at the caravanserai
- * before the next (progression.md, 19.2: a region's stages 1, 2 and 3,
- * owner, 2026-10-28; 1 and 2 before).
- * `passive`: winning it, the region's last, offers a passive at the
- * caravanserai on the way to the next region (19.3's passive slot, alone
- * for now: three of the pool at random, one taken).
+ * Winning any stage short of the run's last leads to the caravanserai's
+ * draft (`DRAFT`; progression.md, 19.3, owner 2026-10-29): a boss stage's
+ * the bigger.
  * `map`: the id of the map it is fought on (MAPS in map.ts): the Steppe's
  * stages on the Steppe Crossing, its boss's in the Cyclops's cave (`cave`;
  * owner, 2026-10-28: each boss fight on a map of its own), China's in the Gobi Desert (`gobi`; owner,
@@ -1038,8 +1036,6 @@ export interface Stage {
   heroes: number;
   outsiders: number;
   creatures: number;
-  provision: boolean;
-  passive: boolean;
   map: string;
 }
 export const STAGES: Stage[] = [
@@ -1049,8 +1045,6 @@ export const STAGES: Stage[] = [
     heroes: 1,
     outsiders: 0,
     creatures: 2,
-    provision: true,
-    passive: false,
     map: 'steppe',
   },
   {
@@ -1059,8 +1053,6 @@ export const STAGES: Stage[] = [
     heroes: 2,
     outsiders: 0,
     creatures: 1,
-    provision: true,
-    passive: false,
     map: 'steppe',
   },
   {
@@ -1069,8 +1061,6 @@ export const STAGES: Stage[] = [
     heroes: 3,
     outsiders: 0,
     creatures: 0,
-    provision: true,
-    passive: false,
     map: 'steppe',
   },
   {
@@ -1079,8 +1069,6 @@ export const STAGES: Stage[] = [
     heroes: 3,
     outsiders: 0,
     creatures: 2,
-    provision: false,
-    passive: true,
     map: 'cave',
   },
   {
@@ -1089,8 +1077,6 @@ export const STAGES: Stage[] = [
     heroes: 1,
     outsiders: 2,
     creatures: 0,
-    provision: true,
-    passive: false,
     map: 'gobi',
   },
   {
@@ -1099,8 +1085,6 @@ export const STAGES: Stage[] = [
     heroes: 2,
     outsiders: 1,
     creatures: 0,
-    provision: true,
-    passive: false,
     map: 'gobi',
   },
   {
@@ -1109,8 +1093,6 @@ export const STAGES: Stage[] = [
     heroes: 3,
     outsiders: 0,
     creatures: 0,
-    provision: true,
-    passive: false,
     map: 'gobi',
   },
   {
@@ -1119,8 +1101,6 @@ export const STAGES: Stage[] = [
     heroes: 3,
     outsiders: 0,
     creatures: 0,
-    provision: false,
-    passive: true,
     map: 'fireMountain',
   },
   {
@@ -1129,8 +1109,6 @@ export const STAGES: Stage[] = [
     heroes: 1,
     outsiders: 2,
     creatures: 0,
-    provision: true,
-    passive: false,
     map: 'salt',
   },
   {
@@ -1139,8 +1117,6 @@ export const STAGES: Stage[] = [
     heroes: 2,
     outsiders: 1,
     creatures: 0,
-    provision: true,
-    passive: false,
     map: 'salt',
   },
   {
@@ -1149,8 +1125,6 @@ export const STAGES: Stage[] = [
     heroes: 3,
     outsiders: 0,
     creatures: 0,
-    provision: true,
-    passive: false,
     map: 'salt',
   },
   {
@@ -1159,23 +1133,29 @@ export const STAGES: Stage[] = [
     heroes: 3,
     outsiders: 0,
     creatures: 0,
-    provision: false,
-    passive: false,
     map: 'palace',
   },
 ];
 /**
- * How many passives the caravanserai between regions offers, drafted
- * (progression.md, 19.3a; owner, 2026-10-28; three, one taken, before):
- * the party picks one, the rival one, the party another, and the last
- * goes to the rival.
+ * The caravanserai's draft after each stage short of the run's last
+ * (progression.md, 19.3; owner, 2026-10-29): `offer` provisions drawn, the
+ * party picking one, the rival one, until each has taken `picks`; the rest
+ * are discarded. After a regular stage 3, 1 each; after a boss 5, 2 each.
+ * Humphrey taking no damage in the stage draws one more, discarded too
+ * (camel.md, 18.4).
  */
-export const PASSIVE_OFFER = 4;
+export const DRAFT = {stage: {offer: 3, picks: 1}, boss: {offer: 5, picks: 2}};
 /**
- * The rarities (progression.md, 19.3b; owner, 2026-10-29): each passive
- * and generic upgrade the caravanserai offers has one, set by how strong it
- * is (the builder's tiers, unmeasured), and is drawn with its rarity's
- * weight, so a legendary one is 8 times rarer than a common one.
+ * The enemy units that carry none of the rival's provisions (progression.md,
+ * 19.3; owner, 2026-10-29): the creatures, Zahhak's serpents among them.
+ */
+export const CREATURES: readonly HeroId[] = ['wolf', 'fox', 'serpent'];
+/**
+ * The rarities (progression.md, 19.3b; owner, 2026-10-29): each provision
+ * the caravanserai offers has one, set by how strong it is (measured,
+ * balance.md, "A provision against a passive or an upgrade"), and is drawn
+ * with its rarity's weight, so a legendary one is 8 times rarer than a
+ * common one.
  */
 export type Rarity = 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common';
 export const RARITY_WEIGHT: Record<Rarity, number> = {
@@ -1185,6 +1165,8 @@ export const RARITY_WEIGHT: Record<Rarity, number> = {
   uncommon: 6,
   common: 8,
 };
+/** A stat provision's rarity (owner, 2026-10-29: Epic, as measured). */
+export const STAT_RARITY: Rarity = 'epic';
 /**
  * How many of a run's first stages always have mountains (owner, 2026-10-24;
  * randomTiles): the Steppe's, four since 2026-10-28.

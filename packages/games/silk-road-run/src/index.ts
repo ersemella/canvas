@@ -112,5 +112,6 @@ export {allowedTargets, castableSpaces, offeredTargets, onlyHold, targetAt} from
 export type {EnemyOption, TurnPreview, UnitChange} from './rules/preview';
 export {DOME, FLAMING, GOBI, MAPS, SALT, STEPPE, TUFF, mapById, onMap, tileAt} from './rules/map';
 export type {MapData, Tile} from './rules/map';
-export type {RunView} from './rules/run';
+export {cardRarity, isStatCard} from './rules/run';
+export type {DraftView, RunView} from './rules/run';
 export type * from './rules/types';

@@ -2,13 +2,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import type {MutableRefObject} from 'react';
 import type {EventBus} from '@canvas/engine';
 import {openingPlayback} from '@canvas/games-silk-road-run';
-import type {
-  HeroId,
-  PassivePick,
-  PlaybackPayload,
-  Provision,
-  TurnInput,
-} from '@canvas/games-silk-road-run';
+import type {DraftPick, HeroId, PlaybackPayload, TurnInput} from '@canvas/games-silk-road-run';
 import {claimTab, localRuns} from './localRuns';
 import type {RunResponse} from './localRuns';
 
@@ -205,35 +199,21 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
   );
 
   /**
-   * On to the run's next stage, once this one is won, with the provision
-   * and the second passive drafted at the caravanserai if it earned them: a new board, its opening
-   * played back. The caravanserai closes the board, so the opening waits
-   * for the board to mount again, as a new run's does.
+   * On to the run's next stage, once this one is won and the caravanserai's
+   * draft picked: a new board, its opening played back. The caravanserai
+   * closes the board, so the opening waits for the board to mount again, as
+   * a new run's does.
    */
-  const nextStage = useCallback(
-    (
-      choices: {
-        provision?: Provision;
-        passive?: PassivePick;
-        heal?: boolean;
-        extra?: Provision;
-        extraHeal?: boolean;
-      } = {}
-    ) => {
-      if (!run || busy) return;
-      void send(() => localRuns.next(run.runId, choices), 'run');
-    },
-    [run, send, busy]
-  );
+  const nextStage = useCallback(() => {
+    if (!run || busy) return;
+    void send(() => localRuns.next(run.runId), 'run');
+  }, [run, send, busy]);
 
-  /**
-   * The party's first pick in the caravanserai's passive draft, kept for
-   * good: the answer carries the rival's pick in reply.
-   */
-  const draftPassive = useCallback(
-    (passive: PassivePick) => {
+  /** One of the party's picks in the caravanserai's draft, kept for good: the answer carries the rival's. */
+  const draftPick = useCallback(
+    (pick: DraftPick) => {
       if (!run || busy) return;
-      void send(() => localRuns.draft(run.runId, passive), 'turn');
+      void send(() => localRuns.draft(run.runId, pick), 'turn');
     },
     [run, send, busy]
   );
@@ -266,7 +246,7 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     startTest,
     sendTurn,
     nextStage,
-    draftPassive,
+    draftPick,
     playbackDone,
     boardReady,
   };

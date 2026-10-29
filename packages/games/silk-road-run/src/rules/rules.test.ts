@@ -15,8 +15,8 @@ import {
   ABILITY,
   AI,
   HEROES,
+  DRAFT,
   PARTY,
-  PASSIVE_OFFER,
   REGIONS,
   ROSTER,
   RULES,
@@ -104,8 +104,12 @@ import {
   runOutdated,
   runStatus,
   runView,
+  cardRarity,
+  draftOffer,
   draftRivals,
+  rivalPick,
   rivalPicks,
+  rivalShares,
   stageEnemies,
 } from './run';
 import type {RunState} from './run';
@@ -118,7 +122,7 @@ import {
   placeCard,
   simultaneousOrder,
 } from './track';
-import type {FightState, HeroId, PassiveId, TurnInput, Unit} from './types';
+import type {CardId, DraftPick, FightState, HeroId, PassiveId, TurnInput, Unit} from './types';
 
 /**
  * A space written as the old board of rows' column and row (pointy-top,
@@ -3510,6 +3514,44 @@ describe('the caravan’s camel', () => {
   });
 });
 
+/** The run's stage won, the camel hurt in it unless `unhurt` (no extra card drawn). */
+function winStage(r: RunState, unhurt = false): RunState {
+  const fight = cloneFight(r.fight);
+  fight.phase = 'won';
+  fight.units.find((u) => u.hero === 'camel')!.damaged = !unhurt;
+  return {...r, fight};
+}
+
+/**
+ * The party's picks in the caravanserai's draft, each the first card open
+ * to the first hero standing who can take it.
+ */
+function pickAll(r: RunState): RunState {
+  let run = r;
+  for (let view = runView(run); view.draft && view.draft.mine.length < view.draft.picks; ) {
+    const gone = [
+      ...view.draft.mine.flatMap((p) => ('card' in p ? [p.card] : [])),
+      ...view.draft.rival,
+    ];
+    let picked = false;
+    for (const card of view.draft.offer.filter((c) => !gone.includes(c))) {
+      for (const hero of ['bokh', 'mangudai', 'storm'] as HeroId[]) {
+        try {
+          run = handleRunAction(run, {type: 'draft', pick: {hero, card}});
+          picked = true;
+          break;
+        } catch {
+          // Not this hero.
+        }
+      }
+      if (picked) break;
+    }
+    if (!picked) throw new Error('nothing to pick');
+    view = runView(run);
+  }
+  return run;
+}
+
 describe('previews, the AI and the run', () => {
   it('rejects walking plus an ability without mutating the fight', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3)});
@@ -3653,20 +3695,6 @@ describe('previews, the AI and the run', () => {
       row('persia', false, 3, 0, 0, 'salt'),
       row('persia', true, 3, 0, 0, 'palace'),
     ]);
-    // Provisions after a region's stages 1, 2 and 3 (owner, 2026-10-28), a
-    // passive after its 4th, the boss's, but the run's last.
-    expect(STAGES.map((s) => [s.provision, s.passive])).toEqual([
-      ...[1, 2].flatMap(() => [
-        [true, false],
-        [true, false],
-        [true, false],
-        [false, true],
-      ]),
-      [true, false],
-      [true, false],
-      [true, false],
-      [false, false],
-    ]);
     expect(REGIONS).toEqual({
       steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: ['giant']},
       china: {
@@ -3753,9 +3781,11 @@ describe('previews, the AI and the run', () => {
     m.alive = false;
     m.hex = null;
     expect(runStatus(won)).toBe('active');
-    const next = handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'power'}});
+    // The draft's picks first.
+    expect(() => handleRunAction(won, {type: 'next'})).toThrow(RuleError);
+    const next = handleRunAction(pickAll(won), {type: 'next'});
     expect(next.stage).toBe(1);
-    expect(next.version).toBe(run.version + 1);
+    expect(next.version).toBe(run.version + 2);
     expect(next.fight.phase).toBe('fight');
     expect(next.fight.units.filter((u) => u.side === 'player').map((u) => u.hero)).toEqual([
       'bokh',
@@ -3779,9 +3809,7 @@ describe('previews, the AI and the run', () => {
     last.fight.phase = 'won';
     expect(runStatus(last)).toBe('won');
     expect(() => handleRunAction(last, {type: 'next'})).toThrow(RuleError);
-    expect(() =>
-      handleRunAction(last, {type: 'next', provision: {hero: 'bokh', stat: 'power'}})
-    ).toThrow(RuleError);
+    expect(runView(last).draft).toBeNull();
     // A lost stage loses the run, whatever its number.
     expect(runStatus({...run, fight: {...run.fight, phase: 'lost'}})).toBe('lost');
   });
@@ -3796,7 +3824,7 @@ describe('previews, the AI and the run', () => {
     camel.statuses = [{kind: 'immobilized'}];
     const bokh = won.fight.units.find((u) => u.id === 'p-bokh')!;
     bokh.hp = 1;
-    const next = handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'speed'}});
+    const next = handleRunAction(pickAll(won), {type: 'next'});
     const taken = (id: string) =>
       next.fight
         .events!.filter((e) => e.kind === 'damage' && e.unitId === id)
@@ -3808,457 +3836,207 @@ describe('previews, the AI and the run', () => {
     expect(fresh.hp + taken(fresh.id)).toBe(fresh.maxHp);
   });
 
-  it("the caravanserai after stages 1 and 2: a provision raises one survivor's stat for the rest of the run", () => {
-    const win = (r: RunState): RunState => {
-      const fight = cloneFight(r.fight);
-      fight.phase = 'won';
-      // The camel hurt in it: no extra provision (Humphrey unhurt earns one).
-      fight.units.find((u) => u.hero === 'camel')!.damaged = true;
-      return {...r, fight};
-    };
+  it('the caravanserai drafts after every stage short of the last: 3 drawn after a regular stage, 5 after a boss, 1 more with Humphrey unhurt', () => {
     const run = createRun(7);
-    expect(runView(run).provision).toBe(true);
-    const won = win(run);
-    // A provision is owed: none, or a malformed one, is refused.
-    for (const provision of [
-      undefined,
-      {hero: 'bokh'},
-      {hero: 'bokh', stat: 'health'},
-      {hero: 'wolf', stat: 'power'},
-      {hero: 'camel', stat: 'speed'},
-      'bokh',
-    ])
-      expect(() => handleRunAction(won, {type: 'next', provision})).toThrow(RuleError);
-    // Only to a hero still standing.
-    const fallen = win(run);
-    const s = fallen.fight.units.find((u) => u.id === 'p-storm')!;
-    s.alive = false;
-    s.hex = null;
-    expect(() =>
-      handleRunAction(fallen, {type: 'next', provision: {hero: 'storm', stat: 'power'}})
-    ).toThrow(RuleError);
-
-    const second = handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'defence'}});
-    expect(second.provisions).toEqual([{hero: 'bokh', stat: 'defence'}]);
-    const bokh = second.fight.units.find((u) => u.id === 'p-bokh')!;
-    expect(bokh).toMatchObject({
-      defence: HEROES.bokh.defence + 1,
-      maxHp: healthOf(HEROES.bokh.defence + 1),
-      provisions: {defence: 1},
-    });
-    // Never the enemy's copy of the hero, and the others untouched.
-    for (const u of second.fight.units.filter((u) => u.id !== 'p-bokh')) {
-      expect(u.provisions).toBeUndefined();
-      expect(u.defence).toBe(HEROES[u.hero].defence);
+    // Not before the stage is won.
+    expect(runView(run).draft).toBeNull();
+    expect(DRAFT).toEqual({stage: {offer: 3, picks: 1}, boss: {offer: 5, picks: 2}});
+    const at = (stage: number) => ({...run, stage});
+    for (let stage = 0; stage < STAGES.length - 1; stage++) {
+      const {offer, picks} = STAGES[stage]!.boss ? DRAFT.boss : DRAFT.stage;
+      for (const unhurt of [false, true]) {
+        const won = winStage(at(stage), unhurt);
+        const draft = runView(won).draft!;
+        expect(draft.offer).toHaveLength(offer + (unhurt ? 1 : 0));
+        expect(new Set(draft.offer).size).toBe(draft.offer.length);
+        expect(draft).toMatchObject({picks, extra: unhurt, mine: [], rival: []});
+        // A reload draws the same.
+        expect(draftOffer(won)).toEqual(draft.offer);
+      }
     }
-    // Kept when the stats are refreshed, and into the stage after, with the next one.
-    expect(runView(second).fight.units.find((u) => u.id === 'p-bokh')!.defence).toBe(
-      HEROES.bokh.defence + 1
-    );
-    expect(runView(second).provision).toBe(true);
-    const third = handleRunAction(win(second), {
-      type: 'next',
-      provision: {hero: 'bokh', stat: 'speed'},
-    });
-    expect(third.fight.units.find((u) => u.id === 'p-bokh')).toMatchObject({
-      speed: HEROES.bokh.speed + 1,
-      defence: HEROES.bokh.defence + 1,
-      provisions: {speed: 1, defence: 1},
-    });
-    // The third earns one too (owner, 2026-10-28); the fourth, the boss's,
-    // none but the passive offer (its upgrade isn't built).
-    expect(runView(third).provision).toBe(true);
-    expect(runView(third).passives).toEqual([]);
-    const fourth = handleRunAction(win(third), {
-      type: 'next',
-      provision: {hero: 'bokh', stat: 'power'},
-    });
-    expect(fourth.fight.units.find((u) => u.id === 'p-bokh')!.power).toBe(HEROES.bokh.power + 1);
-    expect(runView(fourth).provision).toBe(false);
-    expect(runView(fourth).passives).toHaveLength(PASSIVE_OFFER);
-    // No stat goes above RULES.statMax: not by a provision, nor at all.
-    expect(RULES.statMax).toBe(10);
-    const capped = win(run);
-    Object.assign(capped.fight.units.find((u) => u.id === 'p-bokh')!, {
-      power: RULES.statMax,
-      provisions: {power: RULES.statMax},
-    });
-    expect(() =>
-      handleRunAction(capped, {type: 'next', provision: {hero: 'bokh', stat: 'power'}})
-    ).toThrow(RuleError);
-    expect(
-      handleRunAction(capped, {type: 'next', provision: {hero: 'bokh', stat: 'speed'}}).provisions
-    ).toEqual([{hero: 'bokh', stat: 'speed'}]);
-    const piled = {
-      ...run,
-      provisions: Array.from({length: 12}, () => ({hero: 'bokh' as const, stat: 'power' as const})),
-    };
-    const over = handleRunAction(win(piled), {
-      type: 'next',
-      provision: {hero: 'storm', stat: 'power'},
-    });
-    expect(over.fight.units.find((u) => u.id === 'p-bokh')!.power).toBe(RULES.statMax);
-    // Every stat of every hero standing at the most: no provision to take.
-    const full = win(run);
-    for (const u of full.fight.units.filter((u) => u.side === 'player' && u.hero !== 'camel'))
-      Object.assign(u, {
-        speed: 10,
-        defence: 10,
-        power: 10,
-        provisions: {speed: 10, defence: 10, power: 10},
-      });
-    expect(runView(full).provision).toBe(false);
-    expect(handleRunAction(full, {type: 'next'}).stage).toBe(1);
-    expect(() =>
-      handleRunAction(full, {type: 'next', provision: {hero: 'bokh', stat: 'speed'}})
-    ).toThrow(RuleError);
-    // A test stage earns none either.
-    expect(runView(createRun(7, {test: true})).provision).toBe(false);
+    // None after the run's last stage, nor the test stage's.
+    expect(runView(winStage(at(STAGES.length - 1))).draft).toBeNull();
+    expect(runView(winStage(createRun(7, {test: true}))).draft).toBeNull();
   });
 
-  it('the caravanserai: the provision heals the camel 4, up to its full health, in place of a stat', () => {
-    const win = (r: RunState, camelHp?: number): RunState => {
-      const fight = cloneFight(r.fight);
-      fight.phase = 'won';
-      if (camelHp !== undefined) fight.units.find((u) => u.hero === 'camel')!.hp = camelHp;
-      // The camel hurt in it: no extra provision (Humphrey unhurt earns one).
-      fight.units.find((u) => u.hero === 'camel')!.damaged = true;
-      return {...r, fight};
-    };
-    const camelAfter = (r: RunState) => {
-      const camel = r.fight.units.find((u) => u.hero === 'camel')!;
-      const taken = r.fight
-        .events!.filter((e) => e.kind === 'damage' && e.unitId === camel.id)
-        .reduce((sum, e) => sum + (e as {amount: number}).amount, 0);
-      return camel.hp + taken;
-    };
+  it('the stats are drafted as Epic provisions, beside the passives and upgrades; a stat no hero standing can raise isn\u2019t drawn', () => {
+    expect(['speed', 'defence', 'power'].map((c) => cardRarity(c as CardId))).toEqual([
+      'epic',
+      'epic',
+      'epic',
+    ]);
+    expect(cardRarity('concussive')).toBe('legendary');
+    const seen = new Set<CardId>();
+    const maxed = new Set<CardId>();
+    for (let seed = 0; seed < 60; seed++) {
+      const won = winStage(createRun(seed));
+      draftOffer(won).forEach((c) => seen.add(c));
+      for (const u of won.fight.units) u.speed = RULES.statMax;
+      draftOffer(won).forEach((c) => maxed.add(c));
+    }
+    expect(['speed', 'defence', 'power'].every((c) => seen.has(c as CardId))).toBe(true);
+    expect(seen.has('glassCannon')).toBe(true);
+    expect(maxed.has('speed')).toBe(false);
+    expect(maxed.has('power')).toBe(true);
+  });
+
+  it('a regular stage\u2019s draft: the party picks one for good, the rival answers, the last is discarded; setting out applies them', () => {
+    const won = winStage(createRun(7));
+    const {offer} = runView(won).draft!;
+    const rivals = draftRivals(won);
+    expect(rivals).toEqual(stageEnemies(7, 1).filter((h) => h !== 'wolf'));
+    const card = offer[0]!;
+    const pick: DraftPick = {hero: 'storm', card};
+    const picked = handleRunAction(won, {type: 'draft', pick});
+    expect(picked.version).toBe(won.version + 1);
+    const answer = rivalPick(rivals, offer.slice(1));
+    expect(runView(picked).draft).toMatchObject({mine: [pick], rival: [answer]});
+    expect(rivalPicks(offer, rivals, [pick])).toEqual([answer]);
+    // One pick after a regular stage: no more.
+    const left = offer.find((c) => c !== card && c !== answer)!;
+    expect(() =>
+      handleRunAction(picked, {type: 'draft', pick: {hero: 'bokh', card: left}})
+    ).toThrow(RuleError);
+    const next = handleRunAction(picked, {type: 'next'});
+    expect(next.picks).toBeUndefined();
+    const storm = next.fight.units.find((u) => u.id === 'p-storm')!;
+    if (card === 'speed' || card === 'defence' || card === 'power') {
+      expect(next.provisions).toEqual([{hero: 'storm', stat: card}]);
+      expect(storm[card]).toBe(HEROES.storm[card] + 1);
+    } else {
+      expect(next.passives).toEqual([{hero: 'storm', passive: card}]);
+      expect(storm.passives).toContain(card);
+    }
+    // The rival's provision goes to the next stage's enemy.
+    expect(next.rivalCards).toEqual([answer]);
+    const enemies = stageEnemies(7, 1);
+    const shares = rivalShares(enemies, [answer]);
+    next.fight.units
+      .filter((u) => u.side === 'enemy')
+      .forEach((u, i) => {
+        for (const [stat, n] of Object.entries(shares[i]!.provisions ?? {}))
+          expect(u[stat as 'speed']).toBe(HEROES[u.hero][stat as 'speed'] + n);
+        for (const id of shares[i]!.passives) expect(u.passives).toContain(id);
+      });
+  });
+
+  it('a boss stage\u2019s draft: five drawn, the party and the rival two each in turn, the last discarded', () => {
+    const won = winStage({...createRun(9), stage: 3});
+    const {offer} = runView(won).draft!;
+    expect(offer).toHaveLength(5);
+    // Setting out waits on every pick.
+    expect(() => handleRunAction(won, {type: 'next'})).toThrow(RuleError);
+    const one = handleRunAction(won, {type: 'draft', pick: {hero: 'bokh', card: offer[0]!}});
+    expect(() => handleRunAction(one, {type: 'next'})).toThrow(RuleError);
+    const [answer] = runView(one).draft!.rival;
+    // Neither the party's pick nor the rival's can be picked again.
+    for (const card of [offer[0]!, answer!])
+      expect(() => handleRunAction(one, {type: 'draft', pick: {hero: 'storm', card}})).toThrow(
+        RuleError
+      );
+    const second = offer.find((c) => c !== offer[0] && c !== answer)!;
+    const two = handleRunAction(one, {type: 'draft', pick: {hero: 'storm', card: second}});
+    const draft = runView(two).draft!;
+    expect(draft.rival).toHaveLength(2);
+    expect(draft.rival).toEqual(rivalPicks(offer, draftRivals(won), draft.mine));
+    const kept = [offer[0]!, second, ...draft.rival];
+    expect(new Set(kept).size).toBe(4);
+    const next = handleRunAction(two, {type: 'next'});
+    expect(next.stage).toBe(4);
+    expect(next.rivalCards).toEqual(draft.rival);
+  });
+
+  it('a pick can heal Humphrey 4 instead, the rival picking from every card', () => {
     const run = createRun(7);
-    const maxHp = run.fight.units.find((u) => u.hero === 'camel')!.maxHp;
-    const hurt = win(run, maxHp - 7);
+    const won = winStage(run);
+    const camel = won.fight.units.find((u) => u.hero === 'camel')!;
+    // At full health it can't be healed.
+    expect(() => handleRunAction(won, {type: 'draft', pick: {heal: true}})).toThrow(RuleError);
+    camel.hp = camel.maxHp - 6;
+    const healed = handleRunAction(won, {type: 'draft', pick: {heal: true}});
+    const {offer} = runView(won).draft!;
+    expect(runView(healed).draft!.rival).toEqual([rivalPick(draftRivals(won), offer)]);
+    const next = handleRunAction(healed, {type: 'next'});
+    const after = next.fight.units.find((u) => u.hero === 'camel')!;
+    const taken = next.fight
+      .events!.filter((e) => e.kind === 'damage' && e.unitId === after.id)
+      .reduce((sum, e) => sum + (e as {amount: number}).amount, 0);
+    expect(after.hp + taken).toBe(camel.maxHp - 6 + RULES.camelHeal);
+    expect(next.provisions).toEqual([]);
+    expect(next.passives).toEqual([]);
+  });
 
-    const healed = handleRunAction(hurt, {type: 'next', heal: true});
-    expect(RULES.camelHeal).toBe(4);
-    expect(camelAfter(healed)).toBe(maxHp - 3);
-    // Never past its full health.
-    expect(camelAfter(handleRunAction(win(run, maxHp - 2), {type: 'next', heal: true}))).toBe(
-      maxHp
-    );
-    expect(healed.provisions).toEqual([]);
-    for (const u of healed.fight.units) expect(u.provisions).toBeUndefined();
-    // One or the other, never both; not at full health; nothing but `true`.
+  it('a pick is refused unless open, to a hero standing who can take it', () => {
+    const won = winStage(createRun(7));
+    const {offer} = runView(won).draft!;
+    const card = offer[0]!;
+    const not = (['speed', 'concussive', 'patient', 'glassCannon'] as CardId[]).find(
+      (c) => !offer.includes(c)
+    )!;
+    const refused = (pick: unknown) =>
+      expect(() => handleRunAction(won, {type: 'draft', pick})).toThrow(RuleError);
+    refused({hero: 'bokh', card: not});
+    refused({hero: 'priest', card});
+    refused({hero: 'bokh', card: 'nonsense'});
+    refused({heal: 'yes'});
+    refused(undefined);
+    // A fallen hero takes nothing.
+    const fallen = cloneFight(won.fight);
+    const m = fallen.units.find((u) => u.id === 'p-mangudai')!;
+    m.alive = false;
     expect(() =>
-      handleRunAction(hurt, {type: 'next', heal: true, provision: {hero: 'bokh', stat: 'power'}})
+      handleRunAction({...won, fight: fallen}, {type: 'draft', pick: {hero: 'mangudai', card}})
     ).toThrow(RuleError);
-    expect(() => handleRunAction(win(run), {type: 'next', heal: true})).toThrow(RuleError);
-    expect(() => handleRunAction(hurt, {type: 'next', heal: 'yes'})).toThrow(RuleError);
-    // A stat taken instead leaves the camel's wounds.
-    const raised = handleRunAction(hurt, {type: 'next', provision: {hero: 'bokh', stat: 'power'}});
-    expect(camelAfter(raised)).toBe(maxHp - 7);
-
-    // With every stat of every hero at the most, a hurt camel still earns its heal.
-    const maxed = win(run, maxHp - 7);
-    for (const u of maxed.fight.units.filter((u) => u.side === 'player' && u.hero !== 'camel'))
-      Object.assign(u, {
-        speed: 10,
-        defence: 10,
-        power: 10,
-        provisions: {speed: 10, defence: 10, power: 10},
-      });
-    expect(runView(maxed).provision).toBe(true);
-    expect(() => handleRunAction(maxed, {type: 'next'})).toThrow(RuleError);
-    expect(camelAfter(handleRunAction(maxed, {type: 'next', heal: true}))).toBe(maxHp - 3);
-
-    // No heal where no provision is earned: between regions.
+    // A stat at its most, a passive carried.
+    const full = cloneFight(won.fight);
+    for (const u of full.units) {
+      u.speed = u.defence = u.power = RULES.statMax;
+      u.passives = Object.keys(PASSIVES) as PassiveId[];
+    }
     expect(() =>
-      handleRunAction(win({...run, stage: 3}, maxHp - 7), {type: 'next', heal: true})
+      handleRunAction({...won, fight: full}, {type: 'draft', pick: {hero: 'bokh', card}})
+    ).toThrow(RuleError);
+    // Nothing to pick during a fight.
+    expect(() =>
+      handleRunAction(createRun(7), {type: 'draft', pick: {hero: 'bokh', card}})
     ).toThrow(RuleError);
   });
 
-  it('the caravanserai: Humphrey unhurt all stage earns an extra provision, taken the same way', () => {
-    const run = createRun(7);
-    const win = (r: RunState, camelHp?: number): RunState => {
-      const fight = cloneFight(r.fight);
-      fight.phase = 'won';
-      if (camelHp !== undefined) fight.units.find((u) => u.hero === 'camel')!.hp = camelHp;
-      return {...r, fight};
-    };
-    const camelOf = (r: RunState) => r.fight.units.find((u) => u.hero === 'camel')!;
-    const maxHp = camelOf(run).maxHp;
-
-    // Damage marks it, healed back or not; a Shield taking it whole doesn't.
-    const s = cloneFight(run.fight);
-    const ctx: Ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
-    const camel = s.units.find((u) => u.hero === 'camel')!;
-    camel.shield = 2;
-    applyDamage(ctx, camel, 2, 'Hit');
-    expect(camel.damaged).toBeUndefined();
-    applyDamage(ctx, camel, 1, 'Hit');
-    heal(ctx, camel, 1);
-    expect([camel.hp, camel.damaged]).toEqual([maxHp, true]);
-    expect(runView({...run, fight: {...s, phase: 'won'}}).extraProvision).toBe(false);
-
-    // Unhurt: two provisions, each owed.
-    const won = win(run);
-    expect(runView(won)).toMatchObject({provision: true, extraProvision: true});
-    expect(() =>
-      handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'power'}})
-    ).toThrow(RuleError);
-    const two = handleRunAction(won, {
-      type: 'next',
-      provision: {hero: 'bokh', stat: 'power'},
-      extra: {hero: 'bokh', stat: 'power'},
-    });
-    expect(two.provisions).toEqual([
-      {hero: 'bokh', stat: 'power'},
-      {hero: 'bokh', stat: 'power'},
-    ]);
-    expect(two.fight.units.find((u) => u.id === 'p-bokh')!.power).toBe(HEROES.bokh.power + 2);
-    // A new stage starts with the camel unmarked.
-    expect(camelOf(two).damaged).toBeFalsy();
-    // Malformed, or both a stat and a heal, refused.
-    expect(() =>
-      handleRunAction(won, {type: 'next', provision: {hero: 'bokh', stat: 'power'}, extra: 'x'})
-    ).toThrow(RuleError);
-    expect(() =>
-      handleRunAction(win(run, maxHp - 7), {
-        type: 'next',
-        heal: true,
-        extra: {hero: 'bokh', stat: 'power'},
-        extraHeal: true,
-      })
-    ).toThrow(RuleError);
-
-    // Both as heals: carried health hurt before this stage, healed twice, up to full.
-    const camelAfter = (r: RunState) => {
-      const c = camelOf(r);
-      const taken = r.fight
-        .events!.filter((e) => e.kind === 'damage' && e.unitId === c.id)
-        .reduce((sum, e) => sum + (e as {amount: number}).amount, 0);
-      return c.hp + taken;
-    };
-    const hurt = win(run, maxHp - 10);
-    expect(camelAfter(handleRunAction(hurt, {type: 'next', heal: true, extraHeal: true}))).toBe(
-      maxHp - 2
-    );
-    // The second heal needs the camel still hurt after the first.
-    expect(() =>
-      handleRunAction(win(run, maxHp - 3), {type: 'next', heal: true, extraHeal: true})
-    ).toThrow(RuleError);
-
-    // The cap counts the first: a stat at 9 takes one, not two.
-    const nine = win(run);
-    Object.assign(nine.fight.units.find((u) => u.id === 'p-bokh')!, {
-      power: RULES.statMax - 1,
-      provisions: {power: RULES.statMax - 1},
-    });
-    expect(() =>
-      handleRunAction(nine, {
-        type: 'next',
-        provision: {hero: 'bokh', stat: 'power'},
-        extra: {hero: 'bokh', stat: 'power'},
-      })
-    ).toThrow(RuleError);
-
-    // Nothing left to raise or heal after the first: the extra is let go.
-    const last = win(run);
-    for (const u of last.fight.units.filter((u) => u.side === 'player' && u.hero !== 'camel'))
-      Object.assign(u, {
-        speed: 10,
-        defence: 10,
-        power: u.hero === 'bokh' ? 9 : 10,
-        provisions: {speed: 10, defence: 10, power: 10},
-      });
-    expect(
-      handleRunAction(last, {type: 'next', provision: {hero: 'bokh', stat: 'power'}}).stage
-    ).toBe(1);
-
-    // Between regions too, alongside the passive; never after the run's last, nor on a test stage.
-    const between = win({...run, stage: 3});
-    const view = runView(between);
-    expect(view).toMatchObject({provision: false, extraProvision: true});
-    const drafted = handleRunAction(between, {
-      type: 'draft',
-      passive: {hero: 'bokh', passive: view.passives[0]!},
-    });
-    const took = runView(drafted).rivalTook;
-    const second = view.passives.find((id) => id !== view.passives[0] && id !== took)!;
-    const china = handleRunAction(drafted, {
-      type: 'next',
-      passive: {hero: 'bokh', passive: second},
-      extra: {hero: 'storm', stat: 'speed'},
-    });
-    expect(china.provisions).toEqual([{hero: 'storm', stat: 'speed'}]);
-    expect(runView(win({...run, stage: STAGES.length - 1})).extraProvision).toBe(false);
-    expect(runView(win(createRun(7, {test: true}))).extraProvision).toBe(false);
+  it('the rival takes the rarest provision its next enemy can use', () => {
+    // Concussive (Legendary) before a stat (Epic) before Patient (Common).
+    expect(rivalPick(['mangudai'], ['patient', 'speed', 'concussive'])).toBe('concussive');
+    expect(rivalPick(['mangudai'], ['patient', 'power'])).toBe('power');
+    // An upgrade no rival's kit can use comes after one that does them good.
+    expect(rivalPick(['bokh'], ['ward', 'patient'])).toBe('patient');
+    expect(rivalPick(['priest'], ['ward', 'patient'])).toBe('ward');
   });
 
-  it('the caravanserai between regions: four passives drafted, two to the party and two to the rival’s next heroes, for the rest of the run', () => {
-    const win = (r: RunState): RunState => {
-      const fight = cloneFight(r.fight);
-      fight.phase = 'won';
-      // The camel hurt in it: no extra provision (Humphrey unhurt earns one).
-      fight.units.find((u) => u.hero === 'camel')!.damaged = true;
-      return {...r, fight};
-    };
-    const at = (r: RunState, stage: number): RunState => ({...r, stage});
-    const run = createRun(11);
-    expect(runView(run)).toMatchObject({passives: [], drafted: null, rivalTook: null});
-    // No passive on a stage that offers none.
-    expect(() =>
-      handleRunAction(win(run), {
-        type: 'next',
-        provision: {hero: 'bokh', stat: 'power'},
-        passive: {hero: 'bokh', passive: 'rooted'},
-      })
-    ).toThrow(RuleError);
-
-    const last = win(at(run, 3));
-    const view = runView(last);
-    expect(view.provision).toBe(false);
-    const offer = view.passives;
-    expect(PASSIVE_OFFER).toBe(4);
-    expect(offer).toHaveLength(PASSIVE_OFFER);
-    expect(new Set(offer).size).toBe(PASSIVE_OFFER);
-    expect(offer.every((id) => Object.hasOwn(PASSIVES, id))).toBe(true);
-    // The rival drafts for China's first two heroes, in the order they come.
-    const rivals = draftRivals(last);
-    expect(rivals).toEqual(stageEnemies(run.seed, 5).slice(0, 2));
-    expect(REGIONS.china.heroes).toEqual(expect.arrayContaining(rivals));
-    // Before the party's first pick the view shows nothing of the rival's.
-    expect(view).toMatchObject({drafted: null, rivalTook: null});
-    // The same offer on a reload; another run's differs for some seed.
-    expect(runView(last).passives).toEqual(offer);
-    const offers = new Set<string>();
-    for (let seed = 0; seed < 20; seed++)
-      offers.add(runView(win(at(createRun(seed), 3))).passives.join());
-    expect(offers.size).toBeGreaterThan(10);
-
-    // The party picks; the rival answers with what fits its first hero best, then takes the last.
-    const [a] = offer as [PassiveId];
-    const [first] = rivalPicks(offer, rivals, [a]);
-    expect(first).toEqual({
-      hero: rivals[0],
-      passive: draftPick(
-        rivals[0]!,
-        offer.filter((id) => id !== a)
-      ),
-    });
-    const b = offer.find((id) => id !== a && id !== first!.passive)!;
-    const lastOne = offer.find((id) => ![a, b, first!.passive].includes(id))!;
-    expect(rivalPicks(offer, rivals, [a, b])).toEqual([first, {hero: rivals[1], passive: lastOne}]);
-
-    const notOffered = (Object.keys(PASSIVES) as PassiveId[]).find((id) => !offer.includes(id))!;
-    // The first pick: a malformed one, one not offered, or for the camel, refused.
-    for (const passive of [
-      undefined,
-      {hero: 'bokh'},
-      {hero: 'bokh', passive: 'flying'},
-      {hero: 'bokh', passive: notOffered},
-      {hero: 'camel', passive: a},
-      {hero: 'wolf', passive: a},
-    ])
-      expect(() => handleRunAction(last, {type: 'draft', passive})).toThrow(RuleError);
-    // Only to a hero still standing.
-    const fallen = win(at(run, 3));
-    Object.assign(fallen.fight.units.find((u) => u.id === 'p-storm')!, {alive: false, hex: null});
-    expect(() =>
-      handleRunAction(fallen, {type: 'draft', passive: {hero: 'storm', passive: a}})
-    ).toThrow(RuleError);
-    // No setting out before the first pick, nor drafting where nothing is offered.
-    expect(() =>
-      handleRunAction(last, {type: 'next', passive: {hero: 'bokh', passive: b}})
-    ).toThrow(RuleError);
-    expect(() =>
-      handleRunAction(win(run), {type: 'draft', passive: {hero: 'bokh', passive: a}})
-    ).toThrow(RuleError);
-
-    // The first pick is kept, and the rival answers it, showing what it took and nothing more.
-    const drafted = handleRunAction(last, {type: 'draft', passive: {hero: 'storm', passive: a}});
-    expect(drafted.drafted).toEqual({hero: 'storm', passive: a});
-    expect(drafted.version).toBe(last.version + 1);
-    expect(runView(drafted)).toMatchObject({
-      drafted: {hero: 'storm', passive: a},
-      rivalTook: first!.passive,
-    });
-    expect(JSON.stringify(runView(drafted))).not.toMatch(new RegExp(`"(${rivals.join('|')})"`));
-    // Never undone or changed: a second draft is refused.
-    for (const passive of [a, b])
-      expect(() =>
-        handleRunAction(drafted, {type: 'draft', passive: {hero: 'bokh', passive}})
-      ).toThrow(RuleError);
-    // The second pick: owed, from what is left (not the first, nor the rival's), to a hero without it.
-    for (const passive of [
-      undefined,
-      {hero: 'bokh', passive: a},
-      {hero: 'bokh', passive: first!.passive},
-      {hero: 'bokh', passive: notOffered},
-      {hero: 'camel', passive: b},
-    ])
-      expect(() => handleRunAction(drafted, {type: 'next', passive})).toThrow(RuleError);
-    expect(() =>
-      handleRunAction(drafted, {
-        type: 'next',
-        passives: [
-          {hero: 'storm', passive: a},
-          {hero: 'bokh', passive: b},
-        ],
-      })
-    ).toThrow(RuleError);
-
-    const china = handleRunAction(drafted, {type: 'next', passive: {hero: 'bokh', passive: b}});
-    expect(china.drafted).toBeUndefined();
-    expect(china.stage).toBe(4);
-    expect(china.passives).toEqual([
-      {hero: 'storm', passive: a},
-      {hero: 'bokh', passive: b},
-    ]);
-    expect(china.rivalPassives).toEqual(rivalPicks(offer, rivals, [a, b]));
-    expect(china.fight.mapId).toBe('gobi');
-    expect(china.fight.units.filter((u) => u.side === 'enemy').map((u) => u.hero)).toEqual(
-      stageEnemies(run.seed, 4)
+  it("the rival's provisions shared out over a stage's enemy: stats to the fewest held, passives where they fit, none to a creature", () => {
+    const shares = rivalShares(
+      ['youxia', 'modao', 'wolf'],
+      ['speed', 'power', 'hardened', 'defence', 'concussive']
     );
-    expect(runView(china)).toMatchObject({
-      provision: true,
-      passives: [],
-      drafted: null,
-      rivalTook: null,
-    });
-    expect(china.fight.units.find((u) => u.id === 'p-storm')!.passives).toEqual([a]);
-    expect(china.fight.units.find((u) => u.id === 'p-bokh')!.passives).toEqual([b]);
-    // The region's first hero carries the rival's first pick, beside its own.
-    const rival = china.fight.units.find((u) => u.side === 'enemy' && u.hero === rivals[0])!;
-    expect(rival.passives).toContain(first!.passive);
-    // No one else: not the party's other heroes, nor the enemy's outsiders.
-    for (const u of china.fight.units.filter(
-      (u) => u.id !== 'p-storm' && u.id !== 'p-bokh' && u !== rival
-    ))
-      expect(u.passives).toEqual(HEROES[u.hero].passives);
-    // Carried into the stages after, the second hero's pick with it once it comes.
-    const next = handleRunAction(win(china), {
-      type: 'next',
-      provision: {hero: 'bokh', stat: 'power'},
-    });
-    expect(next.fight.units.find((u) => u.id === 'p-storm')!.passives).toEqual([a]);
-    expect(next.rivalPassives).toEqual(china.rivalPassives);
-    const second = next.fight.units.find((u) => u.side === 'enemy' && u.hero === rivals[1])!;
-    expect(second.passives).toContain(lastOne);
-    // A hero can't take one it already carries; another hero can.
-    const again = win(at({...run, passives: [{hero: 'storm', passive: a}]}, 3));
-    again.fight.units.find((u) => u.id === 'p-storm')!.passives = [a];
-    expect(() =>
-      handleRunAction(again, {type: 'draft', passive: {hero: 'storm', passive: a}})
-    ).toThrow(RuleError);
-    const bokhA = handleRunAction(again, {type: 'draft', passive: {hero: 'bokh', passive: a}});
-    expect(
-      handleRunAction(bokhA, {type: 'next', passive: {hero: 'storm', passive: b}}).passives
-    ).toEqual([
-      {hero: 'storm', passive: a},
-      {hero: 'bokh', passive: a},
-      {hero: 'storm', passive: b},
+    // The wolf carries nothing.
+    expect(shares[2]).toEqual({passives: []});
+    // The stats go round, the fewest held first; Hardened to the Vanguard,
+    // which likes it more (DRAFT_FIT); Concussive, which suits both, to the
+    // first with the fewest so far.
+    expect(shares[0]).toEqual({provisions: {speed: 1, defence: 1}, passives: ['concussive']});
+    expect(shares[1]).toEqual({provisions: {power: 1}, passives: ['hardened']});
+    // A stat at its most goes to the next; none can take it, it's left out.
+    const max = RULES.statMax;
+    const many = Array<CardId>(2 * max).fill('speed');
+    const out = rivalShares(['mangudai', 'bokh'], many);
+    expect(out.map((o) => o.provisions?.speed)).toEqual([
+      max - HEROES.mangudai.speed,
+      max - HEROES.bokh.speed,
     ]);
-    // The run's last stage offers none, nor does a test stage.
-    expect(runView(win(at(run, STAGES.length - 1))).passives).toEqual([]);
-    expect(runView(win(createRun(7, {test: true}))).passives).toEqual([]);
+    // Every stage after has them: the Cyclops carries them alone, its wolves none.
+    expect(rivalShares(['giant', 'wolf', 'wolf'], ['power', 'speed'])).toEqual([
+      {provisions: {power: 1, speed: 1}, passives: []},
+      {passives: []},
+      {passives: []},
+    ]);
   });
 
   it('the rival drafts the passive that supplements its hero most', () => {

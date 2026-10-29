@@ -99,6 +99,15 @@ function provisionsOf(hero: HeroId, provisions: Provision[]): Unit['provisions']
 }
 
 /**
+ * What one enemy unit carries of the rival's provisions (progression.md,
+ * 19.3): its stat points and passives.
+ */
+export interface EnemyCards {
+  provisions?: Unit['provisions'];
+  passives: PassiveId[];
+}
+
+/**
  * Brings a saved fight's unit stats up to date with config.ts. A fight
  * keeps the stats its units started with, so without this a run in
  * progress would play on with the numbers it started with after they're
@@ -167,8 +176,8 @@ export function makeUnit(
  * every one has a free hex to step to. With `mountains` the board always
  * has a range of mountains (randomTiles). The party's heroes come with
  * the run's `provisions` (progression.md, 19.2) and the passives taken
- * at its caravanserais (`passives`, 19.3), the enemy's heroes those the
- * rival drafted there (`rivalPassives`, 19.3a). It is fought on `map`,
+ * at its caravanserais (`passives`, 19.3), each enemy unit its share of
+ * the rival's (`rivalCards`, by its place in `enemies`). It is fought on `map`,
  * the Steppe's unless a stage says otherwise (STAGES).
  */
 export function createFight(
@@ -179,7 +188,7 @@ export function createFight(
   provisions: Provision[] = [],
   map: MapData = STEPPE,
   passives: PassivePick[] = [],
-  rivalPassives: PassivePick[] = []
+  rivalCards: EnemyCards[] = []
 ): FightState {
   const random = seededRandom(seed);
   const route = ROUTES[Math.floor(random() * ROUTES.length)]!;
@@ -210,8 +219,8 @@ export function createFight(
           hero,
           enemies.slice(0, i).filter((h) => h === hero).length,
           undefined,
-          undefined,
-          rivalPassives.filter((p) => p.hero === hero).map((p) => p.passive)
+          rivalCards[i]?.provisions,
+          rivalCards[i]?.passives
         )
       ),
     ],

@@ -2,14 +2,15 @@
  * A run: its stages (STAGES in config.ts) one after another, each a fight
  * against a bigger enemy band. Heroes who fall are gone for the run; the
  * survivors and the camel go on to the next stage, by way of the
- * caravanserai, where a stage that earns one gives a provision, or heals
- * the camel in its place, one more if the camel took no damage in it, and the last stage of a region offers four
- * passives, drafted: the party picks one, the rival one for the next
- * region's first hero, the party another, and the last goes to the
- * rival's second (progression.md, 19.3a). The heroes start each stage at full health; the
- * camel keeps the health it ended the last one with, unless healed there
- * (camel.md, 18.4). The run keeps the seed;
- * the view is the fight, which never contains it.
+ * caravanserai, which drafts provisions (progression.md, 19.3; owner,
+ * 2026-10-29): stats, passives and ability upgrades, drawn by rarity, the
+ * party picking one and the rival one in turn, the rest discarded; 3 drawn
+ * and 1 each after a regular stage, 5 and 2 each after a boss, one more
+ * drawn if the camel took no damage. A pick can heal the camel instead.
+ * The rival's provisions go to the enemy of every stage after. The heroes
+ * start each stage at full health; the camel keeps the health it ended the
+ * last one with, unless healed there (camel.md, 18.4). The run keeps the
+ * seed; the view is the fight, which never contains it.
  */
 import type {Hex, RunContext} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
@@ -17,15 +18,18 @@ import {chooseAiTurn} from './ai';
 import {
   AI,
   CAMEL,
+  CREATURES,
+  DRAFT,
   HEROES,
   MOUNTAIN_STAGES,
   PARTY,
-  PASSIVE_OFFER,
   RARITY_WEIGHT,
   REGIONS,
   ROSTER,
   RULES,
   STAGES,
+  STAT_RARITY,
+  type Rarity,
   type RegionId,
 } from './config';
 import {
@@ -37,14 +41,17 @@ import {
   createFight,
   refreshStats,
   seededRandom,
+  type EnemyCards,
 } from './fight';
 import {mapById} from './map';
-import {NOT_OFFERED, PASSIVES, draftPick, hasPassive} from './passives';
+import {NOT_OFFERED, PASSIVES, RARITY_ORDER, fitRank, hasPassive} from './passives';
 import {createTestFight} from './testStage';
 import {shuffled} from './track';
 import type {
   AbilityId,
   ActionTarget,
+  CardId,
+  DraftPick,
   FightState,
   HeroId,
   PassiveId,
@@ -62,7 +69,7 @@ import type {
  * removed or reinterpreted): older runs are then ended rather than
  * patched (`runOutdated`), so the rules never handle an old shape.
  */
-export const RUN_FORMAT = 15;
+export const RUN_FORMAT = 16;
 
 export interface RunState {
   /** `RUN_FORMAT` when the run was created; missing in runs from before it existed. */
@@ -75,20 +82,20 @@ export interface RunState {
   /** A test stage (test-stage.json; `testStage.ts`): one fight, its own line-up, won to win the run. */
   test?: boolean;
   /**
-   * The provisions earned so far, in the order earned (progression.md,
+   * The party's stat provisions so far, in the order drafted (progression.md,
    * 19.2), a fallen hero's included; missing in runs from before them.
    */
   provisions?: Provision[];
-  /** The passives the party drafted at the caravanserais between regions, in the order taken. */
+  /** The passives and upgrades the party drafted at the caravanserais, in the order taken. */
   passives?: PassivePick[];
-  /** The passives the rival drafted there for the enemy's heroes, in the order taken. */
-  rivalPassives?: PassivePick[];
+  /** The rival's provisions, in the order taken: every stage's enemy shares them out (`rivalShares`). */
+  rivalCards?: CardId[];
   /**
-   * The party's first pick in the caravanserai's draft, once made (`draft`):
-   * kept, never undone, so the rival's answer to another first pick is
-   * never shown (owner, 2026-10-28). Cleared on setting out.
+   * The party's picks so far in the caravanserai's draft (`draft`), each
+   * kept for good, so the rival's answer to another pick is never shown
+   * (owner, 2026-10-28). Cleared on setting out.
    */
-  drafted?: PassivePick;
+  picks?: DraftPick[];
   fight: FightState;
 }
 
@@ -97,29 +104,8 @@ export interface RunView {
   /** Which stage of the run this is, from 0, of `stages`. */
   stage: number;
   stages: number;
-  /**
-   * Winning this stage earns a provision, assigned at the caravanserai on
-   * the way to the next, or taken as a heal of the camel (RULES.camelHeal).
-   */
-  provision: boolean;
-  /**
-   * Winning this stage earns an extra provision, taken the same way: the
-   * camel took no damage in it (camel.md, 18.4).
-   */
-  extraProvision: boolean;
-  /**
-   * The passives the caravanserai drafts once this stage is won: the
-   * region's last stage, short of the run's last; none otherwise.
-   */
-  passives: PassiveId[];
-  /** The party's first pick in the draft, once made (`draft`); null before. */
-  drafted: PassivePick | null;
-  /**
-   * The passive the rival took in answer to `drafted`, once it is made;
-   * null before. Neither which of the next region's heroes carries it nor
-   * the rival's answer to any other pick is shown (owner, 2026-10-28).
-   */
-  rivalTook: PassiveId | null;
+  /** The caravanserai's draft once this stage is won; null after the run's last, or before it is won. */
+  draft: DraftView | null;
   /**
    * The fight. While an AI unit's turn is due its `awaiting` is null: the
    * page has no unit to control.
@@ -127,6 +113,20 @@ export interface RunView {
   fight: FightState;
   /** An AI unit's turn is due: the page asks for it (`continue`), one a request. */
   aiDue: boolean;
+}
+
+/** The caravanserai's draft as the page shows it (progression.md, 19.3). */
+export interface DraftView {
+  /** The provisions drawn, in the order drawn. */
+  offer: CardId[];
+  /** How many the party picks, and the rival as many. */
+  picks: number;
+  /** One more was drawn: the camel took no damage in the stage (camel.md, 18.4). */
+  extra: boolean;
+  /** The party's picks so far. */
+  mine: DraftPick[];
+  /** The rival's answer to each of them so far. */
+  rival: CardId[];
 }
 
 /**
@@ -190,7 +190,8 @@ const stageSeed = (seed: number, stage: number) => (seed + stage * 0x9e3779b9) >
  * A stage's fight, on its map, advanced to its first decision, the player's
  * or the AI's; the first `MOUNTAIN_STAGES` always have mountains. The camel
  * starts it with `camelHp`, the health it ended the stage before with; at
- * full health on the first.
+ * full health on the first. The enemy shares out the rival's provisions
+ * (`rivalShares`).
  */
 function stageFight(
   seed: number,
@@ -199,17 +200,18 @@ function stageFight(
   provisions: Provision[] = [],
   passives: PassivePick[] = [],
   camelHp?: number,
-  rivalPassives: PassivePick[] = []
+  rivalCards: CardId[] = []
 ): FightState {
+  const enemies = stageEnemies(seed, stage);
   const fight = createFight(
     stageSeed(seed, stage),
     party,
-    stageEnemies(seed, stage),
+    enemies,
     stage < MOUNTAIN_STAGES,
     provisions,
     mapById(STAGES[stage]!.map),
     passives,
-    rivalPassives
+    rivalShares(enemies, rivalCards)
   );
   const camel = fight.units.find((u) => u.hero === CAMEL)!;
   if (camelHp !== undefined) camel.hp = Math.min(camelHp, camel.maxHp);
@@ -228,72 +230,97 @@ function survivors(fight: FightState): HeroId[] {
 
 const STATS: StatId[] = ['speed', 'defence', 'power'];
 
-/** The party's heroes standing, as a provision sees them: any with a stat below RULES.statMax. */
-function raisable(fight: FightState): Unit[] {
-  return fight.units.filter(
-    (u) =>
-      u.side === 'player' && u.hero !== CAMEL && u.alive && STATS.some((s) => u[s] < RULES.statMax)
-  );
+/** Whether a provision card is a stat, +1 of it. */
+export const isStatCard = (card: CardId): card is StatId => STATS.includes(card as StatId);
+
+/** A provision card's rarity (progression.md, 19.3b): the stats' `STAT_RARITY`. */
+export const cardRarity = (card: CardId): Rarity =>
+  isStatCard(card) ? STAT_RARITY : (PASSIVES[card].rarity ?? 'common');
+
+/** The enemy units of a line-up that can carry the rival's provisions: not its creatures. */
+const carriers = (enemies: readonly HeroId[]) =>
+  enemies.flatMap((hero, i) => (CREATURES.includes(hero) ? [] : [i]));
+
+/**
+ * The rival's provisions shared out over a stage's `enemies` (progression.md,
+ * 19.3; owner, 2026-10-29), each in the order taken, never to a creature: a
+ * stat to the unit with the fewest of them so far that can still take it
+ * (RULES.statMax); a passive or upgrade to the unit it suits best
+ * (`fitRank`) that doesn't carry it yet, the fewest so far breaking a tie.
+ * One no unit can take is left out. By the enemy's place in `enemies`.
+ */
+export function rivalShares(enemies: readonly HeroId[], cards: readonly CardId[]): EnemyCards[] {
+  const out: EnemyCards[] = enemies.map(() => ({passives: []}));
+  const held = enemies.map(() => 0);
+  for (const card of cards) {
+    const options = carriers(enemies).filter((i) => {
+      const hero = enemies[i]!;
+      if (isStatCard(card))
+        return HEROES[hero][card] + (out[i]!.provisions?.[card] ?? 0) < RULES.statMax;
+      return !(HEROES[hero].passives ?? []).includes(card) && !out[i]!.passives.includes(card);
+    });
+    const key = (i: number) => (isStatCard(card) ? 0 : fitRank(enemies[i]!, card)) * 100 + held[i]!;
+    const to = options.reduce<number | null>(
+      (best, i) => (best === null || key(i) < key(best) ? i : best),
+      null
+    );
+    if (to === null) continue;
+    const share = out[to]!;
+    if (isStatCard(card))
+      share.provisions = {...share.provisions, [card]: (share.provisions?.[card] ?? 0) + 1};
+    else share.passives.push(card);
+    held[to]!++;
+  }
+  return out;
 }
 
-/** The camel is hurt, so a provision can heal it. */
-function camelHurt(fight: FightState): boolean {
+/** The camel took no damage in the stage, healed back or not (owner, 2026-10-28). */
+function camelUnhurt(fight: FightState): boolean {
   const camel = fight.units.find((u) => u.hero === CAMEL);
-  return camel !== undefined && camel.hp < camel.maxHp;
+  return camel !== undefined && !camel.damaged;
 }
 
 /**
- * Whether winning the run's stage earns a provision: one that earns them
- * (STAGES), unless every hero standing has every stat at RULES.statMax and
- * the camel is at full health.
+ * The caravanserai's draft once the run's stage is won (`DRAFT`): its size
+ * and how many each side picks; null after the run's last stage.
  */
-function provisionOwed(run: RunState): boolean {
-  return (
-    !run.test &&
-    Boolean(STAGES[run.stage]?.provision) &&
-    (raisable(run.fight).length > 0 || camelHurt(run.fight))
-  );
+function draftSize(run: RunState): {offer: number; picks: number} | null {
+  if (run.test || run.fight.phase !== 'won' || run.stage >= stageCount(run) - 1) return null;
+  const {offer, picks} = STAGES[run.stage]!.boss ? DRAFT.boss : DRAFT.stage;
+  return {offer: offer + (camelUnhurt(run.fight) ? 1 : 0), picks};
 }
 
 /**
- * Whether winning the run's stage earns the extra provision: the camel took
- * no damage in it, healed back or not (owner, 2026-10-28), at any
- * caravanserai, unless there is nothing to raise or heal.
+ * The provisions the caravanserai draws once the run's stage is won (`DRAFT`,
+ * progression.md, 19.3): from the stats and the passives and upgrades of the
+ * pool, one at a time from the run's seed and the stage, so a reload offers
+ * the same, each as often as its rarity's weight (`RARITY_WEIGHT`; 19.3b).
+ * A stat every hero standing has at RULES.statMax, and a passive every hero
+ * standing already carries, isn't drawn.
  */
-function extraOwed(run: RunState): boolean {
-  const camel = run.fight.units.find((u) => u.hero === CAMEL);
-  return (
-    !run.test &&
-    run.stage < stageCount(run) - 1 &&
-    camel !== undefined &&
-    !camel.damaged &&
-    (raisable(run.fight).length > 0 || camelHurt(run.fight))
-  );
-}
-
-/**
- * The passives and generic upgrades (19.9) the caravanserai drafts once the
- * run's stage is won: on a region's last stage (STAGES) short of the run's
- * last, `PASSIVE_OFFER` of the pool, drawn one at a time from the run's seed
- * and the stage, so a reload offers the same ones, each as often as its
- * rarity's weight (`RARITY_WEIGHT`; 19.3b). One every hero standing already
- * carries isn't offered.
- */
-export function passiveOffer(run: RunState): PassiveId[] {
-  const {stage} = run;
-  if (run.test || !STAGES[stage]?.passive || stage >= stageCount(run) - 1) return [];
+export function draftOffer(run: RunState): CardId[] {
+  const size = draftSize(run);
+  if (!size) return [];
   const standing = run.fight.units.filter(
     (u) => u.side === 'player' && u.hero !== CAMEL && u.alive
   );
-  const open = (Object.keys(PASSIVES) as PassiveId[]).filter(
-    (id) => !NOT_OFFERED.includes(id) && standing.some((u) => !hasPassive(u, id))
-  );
+  const open: CardId[] = [
+    ...STATS.filter((stat) => standing.some((u) => u[stat] < RULES.statMax)),
+    ...(Object.keys(PASSIVES) as PassiveId[]).filter(
+      (id) => !NOT_OFFERED.includes(id) && standing.some((u) => !hasPassive(u, id))
+    ),
+  ];
   return weightedDraw(
     open,
-    (id) => RARITY_WEIGHT[PASSIVES[id].rarity ?? 'common'],
-    seededRandom(stageSeed(run.seed, stage) ^ 0x27d4eb2f),
-    PASSIVE_OFFER
+    (card) => RARITY_WEIGHT[cardRarity(card)],
+    seededRandom(stageSeed(run.seed, run.stage) ^ 0x27d4eb2f),
+    size.offer
   );
+}
+
+/** How many picks the party makes in the caravanserai's draft: none when it draws nothing. */
+function picksOwed(run: RunState): number {
+  return draftOffer(run).length > 0 ? draftSize(run)!.picks : 0;
 }
 
 /** `n` of `items` drawn one at a time without putting back, each as often as its `weight`. */
@@ -316,55 +343,85 @@ export function weightedDraw<T>(
 }
 
 /**
- * The enemy heroes the rival drafts for (progression.md, 19.3a; owner,
- * 2026-10-28): the next region's first hero, then its second, in the
- * order they come (`stageEnemies`); none when the stage drafts nothing.
+ * The enemy the rival drafts for (progression.md, 19.3): the next stage's
+ * units that carry provisions (not its creatures).
  */
 export function draftRivals(run: RunState): HeroId[] {
-  if (passiveOffer(run).length === 0) return [];
-  return regionOrder(run.seed, STAGES[run.stage + 1]!.region).picked.slice(0, 2);
+  const enemies = stageEnemies(run.seed, run.stage + 1);
+  return carriers(enemies).map((i) => enemies[i]!);
+}
+
+/**
+ * The rival's pick from `open`, for `rivals`: the rarest provision one of
+ * them can use (a stat; a passive or upgrade some rival's `fitRank` puts
+ * under 500), the one that suits a rival best breaking a tie, then the
+ * draw's order; with none of use, the same over the rest.
+ */
+export function rivalPick(rivals: readonly HeroId[], open: readonly CardId[]): CardId {
+  const fit = (card: CardId) =>
+    isStatCard(card) ? 0 : Math.min(...rivals.map((hero) => fitRank(hero, card)));
+  const key = (card: CardId) =>
+    (fit(card) < 500 ? 0 : 100_000) + RARITY_ORDER.indexOf(cardRarity(card)) * 10_000 + fit(card);
+  return open.reduce((best, card) => (key(card) < key(best) ? card : best));
 }
 
 /**
  * The rival's picks in a draft of `offer`, given the party's so far
- * (`mine`, in the order picked): after the party's first, the passive left
- * that supplements its first hero most (`draftPick`); after the party's
- * second, the last one left, for its second hero.
+ * (`mine`, in the order picked): after each, the rival's pick
+ * (`rivalPick`) from those left. A heal takes no card.
  */
 export function rivalPicks(
-  offer: readonly PassiveId[],
+  offer: readonly CardId[],
   rivals: readonly HeroId[],
-  mine: readonly PassiveId[]
-): PassivePick[] {
-  const picks: PassivePick[] = [];
-  const open = () =>
-    offer.filter(
-      (id) => !mine.slice(0, picks.length + 1).includes(id) && !picks.some((p) => p.passive === id)
-    );
-  rivals.slice(0, mine.length).forEach((hero, i) => {
-    const left = open();
-    if (left.length === 0) return;
-    picks.push({hero, passive: i === 0 ? draftPick(hero, left) : left[0]!});
+  mine: readonly DraftPick[]
+): CardId[] {
+  const picks: CardId[] = [];
+  mine.forEach((_, i) => {
+    const gone = [...mine.slice(0, i + 1).flatMap((p) => ('card' in p ? [p.card] : [])), ...picks];
+    const left = offer.filter((card) => !gone.includes(card));
+    if (left.length > 0) picks.push(rivalPick(rivals, left));
   });
   return picks;
 }
 
-/** The rival's answer to the party's first pick, once made. */
-function rivalTook(run: RunState): PassiveId | null {
-  if (!run.drafted || run.fight.phase !== 'won') return null;
-  return rivalPicks(passiveOffer(run), draftRivals(run), [run.drafted.passive])[0]?.passive ?? null;
+/** The camel's health once the heals among `picks` are taken. */
+function healedCamel(fight: FightState, picks: readonly DraftPick[]): number {
+  const camel = fight.units.find((u) => u.hero === CAMEL)!;
+  const heals = picks.filter((p) => 'heal' in p).length;
+  return Math.min(camel.hp + heals * RULES.camelHeal, camel.maxHp);
 }
 
 /**
- * Checks one of the party's draft picks: open (`open`), to a hero still
- * standing who doesn't carry it yet.
+ * Checks one of the party's draft picks against the picks before it: a
+ * card still open, to a hero still standing who can take it (a stat below
+ * RULES.statMax, counting the picks before; a passive it doesn't carry
+ * yet); or a heal, the camel still hurt.
  */
-function checkPick(run: RunState, {hero, passive}: PassivePick, open: PassiveId[]): void {
-  if (!open.includes(passive)) throw new RuleError('That passive isn’t on offer.');
-  if (!survivors(run.fight).includes(hero))
-    throw new RuleError('Only a hero still in the party can take a passive.');
-  const unit = run.fight.units.find((u) => u.side === 'player' && u.hero === hero)!;
-  if (hasPassive(unit, passive)) throw new RuleError('That hero already carries it.');
+function checkPick(run: RunState, pick: DraftPick): void {
+  const before = run.picks ?? [];
+  if ('heal' in pick) {
+    const camel = run.fight.units.find((u) => u.hero === CAMEL)!;
+    if (healedCamel(run.fight, before) >= camel.maxHp)
+      throw new RuleError(`${HEROES[CAMEL].name} is already at full health.`);
+    return;
+  }
+  const offer = draftOffer(run);
+  const gone = [
+    ...before.flatMap((p) => ('card' in p ? [p.card] : [])),
+    ...rivalPicks(offer, draftRivals(run), before),
+  ];
+  if (!offer.includes(pick.card) || gone.includes(pick.card))
+    throw new RuleError('That provision isn’t on offer.');
+  if (!survivors(run.fight).includes(pick.hero))
+    throw new RuleError('Only a hero still in the party can take a provision.');
+  const unit = run.fight.units.find((u) => u.side === 'player' && u.hero === pick.hero)!;
+  if (isStatCard(pick.card)) {
+    const more = before.filter((p) => 'card' in p && p.hero === pick.hero && p.card === pick.card);
+    if (unit[pick.card] + more.length >= RULES.statMax)
+      throw new RuleError(`No stat can go above ${RULES.statMax}.`);
+  } else if (hasPassive(unit, pick.card)) {
+    throw new RuleError('That hero already carries it.');
+  }
 }
 
 /** How many stages the run has: STAGES, or the test stage alone. */
@@ -397,51 +454,27 @@ function parseHex(raw: unknown): Hex {
   return {q: h.q, r: h.r};
 }
 
-function parseProvision(raw: unknown): Provision {
-  const p = raw as {hero?: unknown; stat?: unknown} | null;
+function parsePick(raw: unknown): DraftPick {
+  const p = raw as {hero?: unknown; card?: unknown; heal?: unknown} | null;
+  if (p && typeof p === 'object' && p.heal === true && p.hero === undefined && p.card === undefined)
+    return {heal: true};
   if (
     !p ||
     typeof p !== 'object' ||
     !ROSTER.includes(p.hero as HeroId) ||
-    !STATS.includes(p.stat as StatId)
+    typeof p.card !== 'string' ||
+    !(STATS.includes(p.card as StatId) || Object.hasOwn(PASSIVES, p.card))
   )
-    throw new RuleError('Malformed provision.');
-  return {hero: p.hero as HeroId, stat: p.stat as StatId};
-}
-
-function parsePick(raw: unknown): PassivePick {
-  const p = raw as {hero?: unknown; passive?: unknown} | null;
-  if (
-    !p ||
-    typeof p !== 'object' ||
-    !ROSTER.includes(p.hero as HeroId) ||
-    typeof p.passive !== 'string' ||
-    !Object.hasOwn(PASSIVES, p.passive)
-  )
-    throw new RuleError('Malformed passive.');
-  return {hero: p.hero as HeroId, passive: p.passive as PassiveId};
+    throw new RuleError('Malformed pick.');
+  return {hero: p.hero as HeroId, card: p.card as CardId};
 }
 
 /** Checks an action from the network and copies only the fields the rules read. */
 export function parseAction(raw: unknown): RunAction {
   const a = raw as Record<string, unknown> | null;
   if (!a || typeof a !== 'object') throw new RuleError('Malformed action.');
-  if (a.type === 'next') {
-    const out: RunAction = {type: 'next'};
-    if (a.provision !== undefined) out.provision = parseProvision(a.provision);
-    if (a.passive !== undefined) out.passive = parsePick(a.passive);
-    if (a.heal !== undefined) {
-      if (a.heal !== true) throw new RuleError('Malformed heal.');
-      out.heal = true;
-    }
-    if (a.extra !== undefined) out.extra = parseProvision(a.extra);
-    if (a.extraHeal !== undefined) {
-      if (a.extraHeal !== true) throw new RuleError('Malformed heal.');
-      out.extraHeal = true;
-    }
-    return out;
-  }
-  if (a.type === 'draft') return {type: 'draft', passive: parsePick(a.passive)};
+  if (a.type === 'next') return {type: 'next'};
+  if (a.type === 'draft') return {type: 'draft', pick: parsePick(a.pick)};
   if (a.type === 'continue') return {type: 'continue'};
   if (a.type === 'turn') {
     const action = a.action as
@@ -474,115 +507,64 @@ export function parseAction(raw: unknown): RunAction {
  * One action: the player's turn, or the AI's turn that is due
  * (`continue`), each on its own, so the page can play one back while the
  * next is worked out; then the track runs on to the next decision, either
- * side's. Or, once a stage short of the last is won, on to the next, with
- * the provision it earned given to one of the survivors, or taken as a heal
- * of the camel (RULES.camelHeal) instead, the extra one the same way if the
- * camel took no damage in it (`extra`, `extraHeal`), and on leaving a region the
- * party's second pick of the passives drafted (`passiveOffer`), its first
- * made before (`draft`, kept in `drafted`), the rival's two following
- * (`rivalPicks`); the camel takes its
- * health on with it. Given
- * a clock (`context.now`) the AI looks as deep as it gets in
- * AI.browser.thinkMs; without one it keeps to AI.maxSimulations, the same
- * turn on every machine (tests, balance).
+ * side's. Or, once a stage short of the last is won, a pick in the
+ * caravanserai's draft (`draft`, kept for good, the rival answering it at
+ * once), and with every pick made, on to the next stage (`next`): the
+ * party's stats raised and passives carried, the camel healed for each
+ * heal, the rival's picks added to its provisions; the camel takes its
+ * health on with it. Given a clock (`context.now`) the AI looks as deep as
+ * it gets in AI.browser.thinkMs; without one it keeps to AI.maxSimulations,
+ * the same turn on every machine (tests, balance).
  */
 export function handleRunAction(run: RunState, raw: unknown, context?: RunContext): RunState {
   const action = parseAction(raw);
   const {stage} = run;
   if (action.type === 'draft') {
-    // The party's first pick, for good: the rival answers it at once.
-    const offer = passiveOffer(run);
-    if (run.fight.phase !== 'won' || offer.length === 0)
-      throw new RuleError('There is no passive to take.');
-    if (run.drafted) throw new RuleError('Your first passive is already taken.');
-    checkPick(run, action.passive, offer);
+    const picks = run.picks ?? [];
+    if (picks.length >= picksOwed(run)) throw new RuleError('There is nothing to pick.');
+    checkPick(run, action.pick);
     return {
       ...run,
       version: run.version + 1,
-      drafted: action.passive,
+      picks: [...picks, action.pick],
       fight: {...run.fight, events: []},
     };
   }
   if (action.type === 'next') {
     if (run.fight.phase !== 'won' || stage >= stageCount(run) - 1)
       throw new RuleError('There is no next stage to go on to.');
+    const picks = run.picks ?? [];
+    if (picks.length < picksOwed(run)) throw new RuleError('Make your picks before setting out.');
     const party = survivors(run.fight);
     const provisions = [...(run.provisions ?? [])];
-    const camel = run.fight.units.find((u) => u.hero === CAMEL)!;
-    let camelHp = camel.hp;
-    // The provisions taken here: each counts towards the cap of the next.
-    const taken: Provision[] = [];
-    const raised = (unit: Unit, stat: StatId) =>
-      unit[stat] + taken.filter((p) => p.hero === unit.hero && p.stat === stat).length;
-    /** One provision owed: a stat raised, or the camel healed in its place. */
-    const take = (provision: Provision | undefined, heal: boolean | undefined) => {
-      if (heal) {
-        if (provision) throw new RuleError(`Raise a stat or heal ${HEROES[CAMEL].name}, not both.`);
-        if (camelHp >= camel.maxHp)
-          throw new RuleError(`${HEROES[CAMEL].name} is already at full health.`);
-        camelHp = Math.min(camelHp + RULES.camelHeal, camel.maxHp);
-        return;
-      }
-      if (!provision)
-        throw new RuleError(`Choose a hero and a stat to raise, or heal ${HEROES[CAMEL].name}.`);
-      const {hero, stat} = provision;
-      if (!party.includes(hero))
-        throw new RuleError('Only a hero still in the party can take a provision.');
-      const unit = run.fight.units.find((u) => u.side === 'player' && u.hero === hero)!;
-      if (raised(unit, stat) >= RULES.statMax)
-        throw new RuleError(`No stat can go above ${RULES.statMax}.`);
-      taken.push(provision);
-    };
-    if (provisionOwed(run)) take(action.provision, action.heal);
-    else if (action.provision || action.heal) throw new RuleError('There is no provision to take.');
-    // The extra one, unless the first left nothing to raise or heal.
-    const left =
-      camelHp < camel.maxHp ||
-      raisable(run.fight).some((u) => STATS.some((s) => raised(u, s) < RULES.statMax));
-    if (extraOwed(run) && (left || action.extra || action.extraHeal))
-      take(action.extra, action.extraHeal);
-    else if (action.extra || action.extraHeal)
-      throw new RuleError('There is no extra provision to take.');
-    provisions.push(...taken);
     const passives = [...(run.passives ?? [])];
-    const rivalPassives = [...(run.rivalPassives ?? [])];
-    const offer = passiveOffer(run);
-    if (offer.length > 0) {
-      if (!run.drafted) throw new RuleError('Choose your first passive and who carries it.');
-      if (!action.passive) throw new RuleError('Choose your second passive and who carries it.');
-      const taken = rivalTook(run);
-      const open = offer.filter((id) => id !== run.drafted!.passive && id !== taken);
-      checkPick(run, action.passive, open);
-      const mine = [run.drafted, action.passive];
-      passives.push(...mine);
-      rivalPassives.push(
-        ...rivalPicks(
-          offer,
-          draftRivals(run),
-          mine.map((p) => p.passive)
-        )
-      );
-    } else if (action.passive) {
-      throw new RuleError('There is no passive to take.');
+    for (const pick of picks) {
+      if (!('card' in pick)) continue;
+      if (isStatCard(pick.card)) provisions.push({hero: pick.hero, stat: pick.card});
+      else passives.push({hero: pick.hero, passive: pick.card});
     }
+    const rivalCards = [
+      ...(run.rivalCards ?? []),
+      ...rivalPicks(draftOffer(run), draftRivals(run), picks),
+    ];
     const fight = stageFight(
       run.seed,
       stage + 1,
       party,
       provisions,
       passives,
-      camelHp,
-      rivalPassives
+      healedCamel(run.fight, picks),
+      rivalCards
     );
     // The draft is spent.
-    const {drafted: _drafted, ...rest} = run;
+    const {picks: _picks, ...rest} = run;
     return {
       ...rest,
       version: run.version + 1,
       stage: stage + 1,
       provisions,
       passives,
-      ...(rivalPassives.length ? {rivalPassives} : {}),
+      ...(rivalCards.length ? {rivalCards} : {}),
       fight,
     };
   }
@@ -625,13 +607,24 @@ export function runView(run: RunState): RunView {
     version: run.version,
     stage: run.stage,
     stages: stageCount(run),
-    provision: provisionOwed(run),
-    extraProvision: extraOwed(run),
-    passives: passiveOffer(run),
-    drafted: run.drafted ?? null,
-    rivalTook: rivalTook(run),
+    draft: draftView(run),
     fight: due ? {...run.fight, awaiting: null} : run.fight,
     aiDue: due,
+  };
+}
+
+/** The caravanserai's draft for the page; null when there is none. */
+function draftView(run: RunState): DraftView | null {
+  const offer = draftOffer(run);
+  const size = draftSize(run);
+  if (!size) return null;
+  const mine = run.picks ?? [];
+  return {
+    offer,
+    picks: picksOwed(run),
+    extra: camelUnhurt(run.fight),
+    mine,
+    rival: rivalPicks(offer, draftRivals(run), mine),
   };
 }
 

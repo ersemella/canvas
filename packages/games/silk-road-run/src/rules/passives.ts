@@ -5,9 +5,9 @@
  * where each bends one: damage (`hit`, `applyDamage` in resolve.ts), the
  * track (`haste`, `delay`, the card's placement in fight.ts), walking
  * (`reachableHexes` in board.ts) and statuses (`stun`). No hero carries
- * one yet: the test stage gives them (`Loadout.passives`), and the
- * caravanserai between regions drafts them (19.3a): the party's two picks,
- * the rival's two (`draftPick`).
+ * one yet: the test stage gives them (`Loadout.passives`), and every
+ * caravanserai drafts them with the stat provisions (19.3): the party's
+ * picks, and the rival's for the enemy (`fitRank`).
  */
 import {ARMOURED, DEVOTED, HEROES, ONE_EYE, UPGRADE} from './config';
 import type {Rarity} from './config';
@@ -410,9 +410,9 @@ export function passivesOf(unit: Unit): PassiveDef[] {
 }
 
 /**
- * How the rival drafts at the caravanserai between regions (progression.md,
- * 19.3a; owner, 2026-10-28): for the hero it drafts for, the passives
- * that supplement it most, best first (`likes`), and those that do it
+ * How well a passive suits a hero (progression.md, 19.3a, 19.3c; owner,
+ * 2026-10-28), for the rival's draft and for which enemy unit carries its
+ * picks (`fitRank`): the passives that supplement it most, best first (`likes`), and those that do it
  * little or no good (`useless`, last). The rest come between, in the
  * pool's order. Builder's first reading of each kit, unmeasured: a slow
  * tank wants to hold the line (Bulwark, Rally), a fast striker to keep
@@ -534,27 +534,29 @@ export function fitsKit(hero: HeroId, id: PassiveId): boolean {
 }
 
 /** The rarities, strongest first, for the rival's draft. */
-const RARITY_ORDER: Rarity[] = ['legendary', 'epic', 'rare', 'uncommon', 'common'];
+export const RARITY_ORDER: Rarity[] = ['legendary', 'epic', 'rare', 'uncommon', 'common'];
 
 /**
- * The rival's pick for `hero` from the passives and upgrades still open:
- * the passive that supplements it most (`DRAFT_FIT`); then an upgrade its
- * kit can use, the rarest (strongest) first; then the other passives, in the
- * pool's order; then those that do it no good, and upgrades its kit can't
- * use; one its hero already starts with (the Magus's Steady Gait) last of all.
+ * How well the passive or upgrade `id` suits `hero`, lower the better: a
+ * passive that supplements it most (`DRAFT_FIT`, 0 to 5); an upgrade its kit
+ * can use, the rarest (strongest) first (50s); the other passives, in the
+ * pool's order (100s); those that do it no good, and upgrades its kit can't
+ * use (500s); one its hero already starts with (the Magus's Steady Gait),
+ * 1000. Under 500, it does the hero some good.
  */
-export function draftPick(hero: HeroId, open: readonly PassiveId[]): PassiveId {
+export function fitRank(hero: HeroId, id: PassiveId): number {
   const fit = DRAFT_FIT[hero];
-  const own = HEROES[hero].passives ?? [];
-  const rank = (id: PassiveId) => {
-    if (own.includes(id)) return 1000;
-    const like = fit?.likes.indexOf(id) ?? -1;
-    if (like >= 0) return like;
-    const pool = Object.keys(PASSIVES).indexOf(id);
-    const def = PASSIVES[id];
-    if (def.kind === 'upgrade')
-      return fitsKit(hero, id) ? 50 + RARITY_ORDER.indexOf(def.rarity!) : 500 + pool;
-    return (fit?.useless.includes(id) ? 500 : 100) + pool;
-  };
-  return [...open].sort((a, b) => rank(a) - rank(b))[0]!;
+  if ((HEROES[hero].passives ?? []).includes(id)) return 1000;
+  const like = fit?.likes.indexOf(id) ?? -1;
+  if (like >= 0) return like;
+  const pool = Object.keys(PASSIVES).indexOf(id);
+  const def = PASSIVES[id];
+  if (def.kind === 'upgrade')
+    return fitsKit(hero, id) ? 50 + RARITY_ORDER.indexOf(def.rarity!) : 500 + pool;
+  return (fit?.useless.includes(id) ? 500 : 100) + pool;
+}
+
+/** The passive or upgrade of `open` that suits `hero` best (`fitRank`). */
+export function draftPick(hero: HeroId, open: readonly PassiveId[]): PassiveId {
+  return [...open].sort((a, b) => fitRank(hero, a) - fitRank(hero, b))[0]!;
 }
