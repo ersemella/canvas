@@ -44,8 +44,6 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
       return 0.45;
     case 'death':
       return 0.5;
-    case 'regrow':
-      return 0.6;
     case 'skip':
       return 0.7;
   }

@@ -9,7 +9,7 @@
  * caravanserai between regions drafts them (19.3a): the party's two picks,
  * the rival's two (`draftPick`).
  */
-import {ARMOURED, DEVOTED, HEROES, ONE_EYE, REGROW, UPGRADE} from './config';
+import {ARMOURED, DEVOTED, HEROES, ONE_EYE, UPGRADE} from './config';
 import type {Rarity} from './config';
 import type {AbilityId, HeroId, PassiveId, Unit} from './types';
 
@@ -221,9 +221,9 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
   ),
   regrow: def(
     'regrow',
-    'Regrow',
-    'damage',
-    `Cut down while Zahhak stands, it grows back next to him ${REGROW.slots} slots later, at full health.`
+    'Zahhak’s Serpent',
+    'allies',
+    'Cut down, it can be grown back by Zahhak on his turn, next to him at full health.'
   ),
   // The generic ability upgrades (19.9; owner, 2026-10-29), rarer the stronger.
   wearying: upgrade(

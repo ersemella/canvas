@@ -196,10 +196,6 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
           PALETTE.dusk4
         );
       return;
-    case 'regrow':
-      // A serpent of Zahhak's growing back: named over it.
-      title(e.hex, 'Grows back', SIDE_LIGHT[u.side]);
-      return;
     case 'step':
       return;
   }

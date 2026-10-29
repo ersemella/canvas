@@ -67,7 +67,7 @@ import {
 } from './resolve';
 import type {Ctx} from './resolve';
 import {blocks, onMap, tileAt} from './map';
-import {aimSlot, chargeOf, simultaneousOrder} from './track';
+import {aimSlot, chargeOf, placeCard, simultaneousOrder} from './track';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
@@ -1725,27 +1725,62 @@ const smash: AbilityDef = {
 
 // ─── Zahhak ───────────────────────────────────────────────────────────
 
-/**
- * Feed the Serpents (2026-10-29), Zahhak's: melee, his power, and each of
- * his serpents growing back (Regrow) does so `ABILITY.feed.sooner` slots
- * sooner, at the soonest on the next slot.
- */
+/** Feed the Serpents (2026-10-29), Zahhak's: he seizes a unit next to him for his serpents, a melee hit for his power. */
 const feed: AbilityDef = {
   id: 'feed',
   name: 'Feed the Serpents',
   kind: 'attack',
-  summary: () => `Melee. Each serpent growing back grows back ${ABILITY.feed.sooner} slots sooner.`,
+  summary: () => 'Melee.',
   targetsUnit: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} seizes ${unitName(u)} for his serpents.`);
     hit(ctx, user, u, 'The serpents’ feast');
-    for (const s of ctx.state.units) {
-      if (s.side !== user.side || s.regrowAt === undefined) continue;
-      s.regrowAt = Math.max(ctx.slot + 1, s.regrowAt - ABILITY.feed.sooner);
-      log(ctx, `${unitName(s)} grows back sooner.`);
-    }
+  },
+};
+
+/** The first of `user`'s serpents (Zahhak's Serpent) that has fallen, if any. */
+function fallenSerpent(state: FightState, user: Unit): Unit | undefined {
+  return state.units.find((u) => !u.alive && u.side === user.side && hasPassive(u, 'regrow'));
+}
+
+/**
+ * Regrow (owner, 2026-10-29), Zahhak's: only on his turn, his action. A
+ * fallen serpent of his grows back on an open space next to him, at full
+ * health and with nothing on it; its card is placed as after a turn of its
+ * own, its action cost on (3.2).
+ */
+const regrowSerpent: AbilityDef = {
+  id: 'regrowSerpent',
+  name: 'Regrow',
+  kind: 'support',
+  summary: () => 'A fallen serpent grows back on an open space next to you, at full health.',
+  targets(state, map, user, from) {
+    if (!fallenSerpent(state, user)) return [];
+    return hexNeighbors(from)
+      .filter((h) => walkable(map, h) && !unitAt(state, h))
+      .map((h) => ({hex: h}));
+  },
+  resolve(ctx, user, target) {
+    const serpent = fallenSerpent(ctx.state, user)!;
+    Object.assign(serpent, {alive: true, hex: {...target.hex!}, hp: serpent.maxHp, statuses: []});
+    for (const k of [
+      'empower',
+      'empowerStarted',
+      'empowerUntil',
+      'weaken',
+      'weakenStarted',
+      'weakenUntil',
+      'shield',
+      'shieldUntil',
+      'armour',
+    ] as const)
+      delete serpent[k];
+    delete serpent.lastingShield;
+    delete serpent.skipped;
+    placeCard(ctx.state, serpent, aimSlot(ctx.state, serpent, ctx.slot));
+    log(ctx, `${unitName(serpent)} grows back from ${unitName(user)}’s shoulder.`);
   },
 };
 
@@ -1928,6 +1963,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   fanFlames,
   quench,
   feed,
+  regrowSerpent,
   charge,
   shove,
   haul,
