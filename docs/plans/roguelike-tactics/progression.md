@@ -43,8 +43,8 @@ tuning. Section numbers are the combat design's.
 
 ### 19.2 Provisions (Decided, owner 2026-10-24)
 > **Superseded 2026-10-29 (owner) by the caravanserai's draft (19.3c):**
-> "provisions" now names everything the caravanserai drafts, stats,
-> passives and ability upgrades alike; a stat provision is a card in the
+> "provisions" now names everything the caravanserai drafts, stat,
+> passive and ability upgrades alike; a stat upgrade is a card in the
 > draft, **Epic** (19.3b), no longer earned per stage. The stat cap, and
 > the heal of the camel in place of a pick, carry over; the reassignment
 > after stage 3 was never built and is dropped. The section is kept as
@@ -182,7 +182,7 @@ random from one pool:
   | **Uncommon** | 6 | Hardened, Light Step, Rally | Forceful, Quickening, Inspire, Crippling, Fortify, Sundering |
   | **Common** | 8 | Vengeance, Iron Will, Second Wind, Flanker, Bulwark, Momentum, Rebound, Patient, Piercing Eye, Shake Loose | Invigorate, Mending Shot, Mending Strike, Ward, Wearying, Defy Fate, Immovable Object, Reel In, Fervour |
 
-  **Stat provisions are Epic** (owner, 2026-10-29; `STAT_RARITY`): each
+  **Stat upgrades are Epic** (owner, 2026-10-29; `STAT_RARITY`): each
   of +1 speed, defence and power is a card of the draft (19.3c), at
   Epic's weight; on its hero's best stat a provision wins 50.8–76%, the
   best in each region's party 60–76%.
@@ -195,9 +195,11 @@ random from one pool:
   than its tier.
 - **19.3c The caravanserai's draft (Decided, owner 2026-10-29; built).**
   Every caravanserai drafts **provisions**, the one name now for
-  everything it gives: the stats (+1 speed, defence or power, each a card,
-  Epic, 19.3b), the passives (19.8) and the generic ability upgrades
-  (19.9), drawn one at a time by rarity (`draftOffer` in run.ts, from the
+  everything it gives, in three categories (owner, 2026-10-29), each
+  card showing its own: **stat upgrades** (+1 speed, defence or power,
+  each a card, Epic, 19.3b), **passive upgrades** (the passives, 19.8)
+  and **ability upgrades** (the generic ability upgrades, 19.9), drawn
+  one at a time by rarity (`draftOffer` in run.ts, from the
   run's seed and the stage, so a reload draws the same), never a stat
   every hero standing has at 10 nor a passive every hero standing carries.
   - **After a regular stage, 3 are drawn**: the party picks 1, the rival
@@ -582,7 +584,7 @@ hero is still question 63.
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Run length (2026-10-24, owner) | 6 regions of 3 stages, the last of 4: 19 fights | Several levels per region, TBD (15.3a); 3 to 4 stages per region | A fixed rhythm per region: build up, commit, the hard fight |
-| The caravanserai's draft (2026-10-29, owner) | Every caravanserai drafts provisions (stats, Epic; passives; upgrades) by rarity: 3 after a regular stage, 1 each, 5 after a boss, 2 each, the rest discarded; a pick can heal Humphrey instead, his no-damage stage draws one more; the rival's provisions go to every later stage's enemy (19.3c) | Stat provisions earned per stage and a passive draft between regions (19.2, 19.3a) | One decision, the same at every rest, with the enemy growing as the party does |
+| The caravanserai's draft (2026-10-29, owner) | Every caravanserai drafts provisions (stat upgrades, Epic; passive upgrades; ability upgrades) by rarity: 3 after a regular stage, 1 each, 5 after a boss, 2 each, the rest discarded; a pick can heal Humphrey instead, his no-damage stage draws one more; the rival's provisions go to every later stage's enemy (19.3c) | Stat provisions earned per stage and a passive draft between regions (19.2, 19.3a) | One decision, the same at every rest, with the enemy growing as the party does |
 | Stat growth (2026-10-24, owner) | Provisions: 2 per region, assigned when earned, reassignable after stage 3's fight within the region, then locked | No stat growth outside gear (10.9); 1 point per stage, swappable every stage; swappable only between regions | Small, steady growth with one commitment per region |
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |

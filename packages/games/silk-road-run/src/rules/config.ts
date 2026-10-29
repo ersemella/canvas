@@ -1165,7 +1165,7 @@ export const RARITY_WEIGHT: Record<Rarity, number> = {
   uncommon: 6,
   common: 8,
 };
-/** A stat provision's rarity (owner, 2026-10-29: Epic, as measured). */
+/** A stat upgrade's rarity (owner, 2026-10-29: Epic, as measured). */
 export const STAT_RARITY: Rarity = 'epic';
 /**
  * How many of a run's first stages always have mountains (owner, 2026-10-24;

@@ -44,9 +44,13 @@ const STAT_RULE: Record<StatId, string> = {
 const cardName = (card: CardId) =>
   isStatCard(card) ? `${STAT_NAME[card]} +1` : PASSIVES[card].name;
 
-/** What kind of provision a card is, after its rarity. */
+/** A card's category, after its rarity (progression.md, 19.3c; owner, 2026-10-29). */
 const cardKind = (card: CardId) =>
-  isStatCard(card) ? 'stat' : PASSIVES[card].kind === 'upgrade' ? 'ability upgrade' : 'passive';
+  isStatCard(card)
+    ? 'stat upgrade'
+    : PASSIVES[card].kind === 'upgrade'
+      ? 'ability upgrade'
+      : 'passive upgrade';
 
 /** What a card does, on it. */
 const cardRule = (card: CardId) => (isStatCard(card) ? STAT_RULE[card] : PASSIVES[card].rule);
@@ -56,7 +60,7 @@ type Pending = {card: CardId; hero: Unit['hero'] | null} | 'heal';
 
 /**
  * The caravanserai, between a won stage and the next (progression.md,
- * 19.3): its draft of provisions, stats, passives and ability upgrades,
+ * 19.3): its draft of provisions, stat, passive and ability upgrades,
  * drawn by rarity. The party picks one and the rival caravan one in turn,
  * until each has its share (one after a regular stage, two after a boss);
  * the rest are discarded. Each of the party's picks goes to a hero
@@ -119,7 +123,7 @@ export function Caravanserai(props: {
           {camelName} took no damage this stage: one more drawn.{' '}
         </span>
       )}
-      {offer.length} provisions drawn, stats, passives and ability upgrades, the stronger the rarer:
+      {offer.length} provisions drawn, stat, passive and ability upgrades, the stronger the rarer:
       you pick one and a rival caravan on the road ahead takes one
       {draft.picks > 1 ? `, until each has ${draft.picks}` : ''}; the rest are discarded. Each is
       kept for the rest of the run, the rival’s by the enemies ahead. Every pick is final once

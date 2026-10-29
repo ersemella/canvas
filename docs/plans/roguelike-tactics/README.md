@@ -24,7 +24,7 @@ with the Steppe's in place of fox spirits, then
 Persia's three on the Salt Flats, its own heroes with the Steppe's or
 China's, each region's first hero random ([progression.md](progression.md), 19.5). Between stages the caravan
 stops at a **caravanserai** (2026-10-25), which since 2026-10-29 drafts
-**provisions** (stats, Epic; passives; ability upgrades) by rarity: 3
+**provisions** (stat upgrades, Epic; passive upgrades; ability upgrades) by rarity: 3
 after a regular stage, the player and the rival 1 each, 5 after a boss, 2
 each, the rest discarded; a pick can heal Humphrey instead, and the
 rival's provisions go to every later stage's enemy
@@ -197,7 +197,7 @@ Always read this file first. Then:
 | Tuning numbers, or balancing a new hero, ability, keyword or gear: what each ability and stat is worth, measured; the proposed tuning; principles for re-tuning | [balance.md](balance.md) |
 | The heroes, three per region | [roster.md](roster.md) |
 | Enemies, bosses, difficulty | [enemies.md](enemies.md) |
-| Run progression: regions and stages, provisions and the caravanserai's draft (stats, passives, upgrades), the enemy line-up per stage, the final boss | [progression.md](progression.md) |
+| Run progression: regions and stages, provisions and the caravanserai's draft (stat, passive and ability upgrades), the enemy line-up per stage, the final boss | [progression.md](progression.md) |
 | The caravan's camel; how a fight is won and lost; ending stalled fights | [camel.md](camel.md) |
 | Setting, cultures, folklore | [setting.md](setting.md) |
 | Art style, sprites, palette, rendering scale | [art-direction.md](art-direction.md) |
@@ -247,7 +247,7 @@ design work), passing through four **regions** (six until 2026-10-26; how many s
 ending in a boss that counters the player's build, in
 a fixed order: Steppe, China, Persia, Byzantine
 ([setting.md](setting.md), 15.3a; [progression.md](progression.md), owner 2026-10-24 and 2026-10-26); the party grows by
-**provisions** drafted at every caravanserai (stats, passives and upgrades; 19.3c); route maps, encounters and recruitment offers come from the
+**provisions** drafted at every caravanserai (stat, passive and ability upgrades; 19.3c); route maps, encounters and recruitment offers come from the
 run's seed. **Multiplayer and architecture** decisions are numbered:
 
 | | Decision | File |

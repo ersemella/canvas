@@ -3,7 +3,7 @@
  * against a bigger enemy band. Heroes who fall are gone for the run; the
  * survivors and the camel go on to the next stage, by way of the
  * caravanserai, which drafts provisions (progression.md, 19.3; owner,
- * 2026-10-29): stats, passives and ability upgrades, drawn by rarity, the
+ * 2026-10-29): stat, passive and ability upgrades, drawn by rarity, the
  * party picking one and the rival one in turn, the rest discarded; 3 drawn
  * and 1 each after a regular stage, 5 and 2 each after a boss, one more
  * drawn if the camel took no damage. A pick can heal the camel instead.

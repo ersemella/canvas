@@ -55,7 +55,7 @@ tuning. Section numbers are the combat design's.
 | **Signature weapon** | A hero's unique weapon. Part of the hero's identity and abilities; not a gear slot and not swappable. |
 | **Consumable** | A single-use item held in the party's shared inventory, used only between fights: a stat buff or status for the next combat, or health recovery (9.6). |
 | **Milestone upgrade** | Replaced 2026-10-24 by the upgrade offer (19.3). Was: a hero-specific adjustment to one of that hero's abilities, chosen at set points in a run (10.9). |
-| **Provisions** | Everything the caravanserai drafts (owner, 2026-10-29): stat provisions (+1 to one hero's speed, defence or power, Epic), passives and ability upgrades, drawn by rarity; the party and the rival pick in turn (19.3c). Until 2026-10-29, the run's stat points alone (19.2). |
+| **Provisions** | Everything the caravanserai drafts (owner, 2026-10-29), in three categories: **stat upgrades** (+1 to one hero's speed, defence or power, Epic), **passive upgrades** (the passives, 19.8) and **ability upgrades** (19.9), drawn by rarity; the party and the rival pick in turn (19.3c). Until 2026-10-29, the run's stat points alone (19.2). |
 | **Upgrade offer** | Superseded 2026-10-29 by the caravanserai's draft (19.3c). Was: after each region's third stage's fight, 3 upgrades from fixed slots (hero, passive, wildcard), of which the party picks 1 (19.3). |
 | **Keyword** | A named, shared condition or effect (for example Burn, Push, Stunned) that abilities, gear and upgrades all reference. The keyword vocabulary is the main source of synergy (10.8); the list is in [keywords.md](keywords.md). |
 | **Recruitment offer** | A small, random set of heroes offered between fights, from which the player may recruit (10.6). |
