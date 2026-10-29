@@ -1,4 +1,4 @@
-import {createBrowserRouter} from 'react-router-dom';
+import {createBrowserRouter, Navigate} from 'react-router-dom';
 import {AppShell} from '@mantine/core';
 import {HomePage} from 'pages/HomePage';
 import {GamePage} from 'pages/GamePage';
@@ -46,14 +46,19 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
     ),
   },
   {
-    // Its own page: the run lives on the server (a RunRoom), not in the browser.
+    // Caravan (package id `silk-road-run`): its own page, the run played in the browser.
     // No top bar: the board gets the whole screen.
-    path: '/play/silk-road-run',
+    path: '/play/caravan',
     element: (
       <Layout bare>
         <TacticsPage />
       </Layout>
     ),
+  },
+  {
+    // Caravan's old address, kept for bookmarks.
+    path: '/play/silk-road-run',
+    element: <Navigate to="/play/caravan" replace />,
   },
   {
     path: '/play/:gameId',

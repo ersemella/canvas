@@ -16,7 +16,7 @@ export function GameCard({game}: Props) {
       <Text fz="sm" c="dimmed" mb="md" className={styles.description!}>
         {game.description}
       </Text>
-      <Button component={Link} to={`/play/${game.id}`} color="green" size="sm" fw={600}>
+      <Button component={Link} to={game.path} color="green" size="sm" fw={600}>
         Play
       </Button>
     </Card>

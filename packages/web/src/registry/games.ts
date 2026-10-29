@@ -6,6 +6,8 @@ export interface GameDescriptor {
   id: string;
   title: string;
   description: string;
+  /** The game's page. */
+  path: string;
   load: () => Promise<{default: GameModule}>;
 }
 
@@ -19,10 +21,14 @@ export function findGame(id: string): GameDefinition | undefined {
   return PLATFORM_GAMES.find((g) => g.id === id);
 }
 
+/** Games whose page isn't `/play/<id>`: Caravan keeps its package id, `silk-road-run`. */
+const PATHS: Record<string, string> = {'silk-road-run': '/play/caravan'};
+
 const descriptors: GameDescriptor[] = PLATFORM_GAMES.map((game) => ({
   id: game.id,
   title: game.manifest.meta?.title ?? game.id,
   description: game.manifest.meta?.description ?? '',
+  path: PATHS[game.id] ?? `/play/${game.id}`,
   load: () => Promise.resolve({default: createModuleFor(game)}),
 }));
 

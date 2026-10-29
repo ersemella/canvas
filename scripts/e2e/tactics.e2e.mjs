@@ -80,7 +80,7 @@ async function abandonOn(p) {
 }
 
 try {
-  await page.goto(`${WEB_URL}/play/silk-road-run`);
+  await page.goto(`${WEB_URL}/play/caravan`);
   // the start menu: the game in brief, the twelve heroes (the three
   // prototype heroes taken at first), Start.
   const picks = page.getByTestId('hero-picks').getByRole('button');
@@ -648,7 +648,7 @@ try {
   // Only one tab plays the run (owner, 2026-10-25): a second one says so.
   {
     const second = await desktop.newPage();
-    await second.goto(`${WEB_URL}/play/silk-road-run`);
+    await second.goto(`${WEB_URL}/play/caravan`);
     check(
       'a second tab is refused while the first has the run',
       await second
@@ -890,7 +890,7 @@ try {
     const runId = (await state()).runId;
     const second = await desktop.newPage();
     second.on('pageerror', (e) => pageErrors.push(e.message));
-    await second.goto(`${WEB_URL}/play/silk-road-run`);
+    await second.goto(`${WEB_URL}/play/caravan`);
     await second.getByTestId('run-elsewhere').waitFor({timeout: 15_000});
     await page.close();
     check(
@@ -909,7 +909,7 @@ try {
     await noWorkers.addInitScript(() => delete window.Worker);
     const p = await noWorkers.newPage();
     p.on('pageerror', (e) => pageErrors.push(e.message));
-    await p.goto(`${WEB_URL}/play/silk-road-run`);
+    await p.goto(`${WEB_URL}/play/caravan`);
     await p.getByRole('button', {name: 'Start', exact: true}).click();
     await p.getByTestId('turn-controls').waitFor({timeout: 15_000});
     const settled = (v) =>
@@ -940,7 +940,7 @@ try {
   // A phone: board on top, details in a tooltip over it, the action section
   // pinned to the bottom of the screen; no heading or hints; no scrolling.
   const phone = await browser.newPage({...devices['iPhone 13']});
-  await phone.goto(`${WEB_URL}/play/silk-road-run`);
+  await phone.goto(`${WEB_URL}/play/caravan`);
   await phone.getByRole('button', {name: 'Start', exact: true}).click();
   const phoneMove = phone.locator('[data-choice="move"]');
   await phoneMove.waitFor({timeout: 15_000});
