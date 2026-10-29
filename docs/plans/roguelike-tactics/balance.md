@@ -4048,6 +4048,76 @@ Before (from the run above) in brackets.
   allies (the Barbarian and the Priest stand near it), and its lack of a
   walk leaves it out of place after a charge.
 
+**Changed** (the owner, 2026-10-29): Charge's slam, a unit it hits left
+against ruins or the map's edge Stunned for its next turn.
+
+### Charge's slam (2026-10-29)
+
+`experiments/roster-twelve.mjs`, the Cataphract's 39 rows again, Armoured
+and with the slam (`ABILITY.charge.stun`), 400 fights each, the same
+seeds. Armoured alone ("The Cataphract Armoured") in brackets.
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| Byzantium against | **56.1%** (45.8%) | **80.6%** (40.8%) | **63.4%** (50.3%) |
+
+| | Steppe's tank seat | China's | Persia's |
+|---|---:|---:|---:|
+| The Cataphract | 63.4% (46.8%) | **85.6%** (58%) | 70.7% (53.2%) |
+
+| In Byzantium's tank seat | Grappler | Vanguard | Juggernaut |
+|---|---:|---:|---:|
+| Its side wins | 34.3% (65%) | 33.6% (61.8%) | 27.1% (62.3%) |
+
+- **Far too strong now**: 63–86% in the other tank seats, the strongest
+  hero on the roster (69.7% over all nine seats; the Vanguard at 8 was
+  60.3%). Byzantium beats China 80.6%. Each slam costs the enemy a whole
+  turn, the most a single ability takes; Stunning only the front of a row
+  doesn't hold it back, since most charges carry one unit.
+- **Stalls in the Byzantine mirror**: with a Cataphract on each side (a
+  hero in the Barbarian's seat), 24–50% of fights reach the 400-action
+  cutoff unfinished (0.5–7% elsewhere); the two Stun each other against
+  the edge. Those rows' win rates mean little.
+
+Untried, likeliest to land in the band: the slam without Armour (Armour
+alone gave 47–58%, the slam on top 15–28 points more); or the slam kept
+with Armour but a Delay (say 4) in place of the Stun, or only against
+ruins, not the map's edge.
+
+**Changed** (the owner, 2026-10-29): the slam kept, Armoured taken off
+the Cataphract.
+
+### The slam without Armour (2026-10-29)
+
+The Cataphract's 39 rows again, the slam and no Armour, 400 fights each,
+the same seeds. Armoured alone, then Armoured with the slam, in brackets.
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| Byzantium against | **41.5%** (45.8%, 56.1%) | **69.1%** (40.8%, 80.6%) | **53.8%** (50.3%, 63.4%) |
+
+| | Steppe's tank seat | China's | Persia's |
+|---|---:|---:|---:|
+| The Cataphract | 50.1% (46.8%, 63.4%) | **74.7%** (58%, 85.6%) | 60.6% (53.2%, 70.7%) |
+
+| In Byzantium's tank seat | Grappler | Vanguard | Juggernaut |
+|---|---:|---:|---:|
+| Its side wins | 48.9% (65%, 34.3%) | 47.4% (61.8%, 33.6%) | 51.4% (62.3%, 27.1%) |
+
+- **The gap in its own party is closed**: any other tank in Byzantium's
+  seat 47–51%, even with it, the first time.
+- **Even in the Steppe's party (50.1%), a little strong in Persia's
+  (60.6%), far too strong in China's (74.7%)**, and Byzantium beats China
+  69.1%. Not traced; China's Duelist and Alchemist have 4 health and the
+  Vanguard acts every 10 slots, so a lost turn may cost it most.
+- Stalls in the Byzantine mirror lower but still 15–26% of fights with
+  the Storm Caller or the Magus in Byzantium's party (24–50% with
+  Armour).
+
+Untried: the slam Delaying (say 4–6) in place of the Stun, or Stunning
+only against ruins, not the map's edge, to bring China's seat down and
+end the stalls.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

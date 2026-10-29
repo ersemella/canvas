@@ -1001,6 +1001,16 @@ background. One portrait only, no text, no border.
 
 ## Prompts for Zahhak and his serpents (2026-10-29)
 
+**Built from the owner's art (2026-10-29):** both shadows came back
+purple, so they were painted grey (#444444) first. Zahhak shrunk to
+44 × 44 with `shrink-sprite.py`, a 2-frame idle split at row 24; the
+serpent shrunk to 36 × 36 by an area resize to 24 colours instead (the
+script's block vote left its scales as noise and its eyes red), its gold
+eye put back by hand, the idle split at row 22. The portraits: Zahhak's
+cropped to his face, crown and one serpent (`--crop 380,200,1000,820`, no
+`--lines`; the whole picture lost his face), the serpent's `--crop
+40,60,1240,1260`. The prompts they came from:
+
 Persia's boss (enemies.md, 11.3c), three lettered discs (`zahhak` and
 `serpent` in `HERO_COLOR`) until their art comes. **Zahhak** is a boss
 and takes the giant's frame: a **44 × 44** board sprite facing right,
@@ -1140,9 +1150,16 @@ portrait only, no text, no border.
 
 ## Prompts for Zahhak's palace floor (2026-10-29)
 
+**Built from the owner's art (2026-10-29):** `tiles/palace-floor.png`,
+cut by `scripts/palace-floor.py` from ChatGPT's 1254-pixel picture of this
+prompt, which came back seamless: five of its stone creams and ochres by
+k-means and the tiles' teal and cobalt kept apart, 7 colours; then
+calmed (owner, 2026-10-29: it stood out too much), every colour pulled
+45% of the way to the stone's mean and its saturation cut to 60%; the hex
+borders a dark grey-brown (`#5c4f42`). The prompt it came from:
+
 Zahhak's palace (`palace`), Persia's boss fight, has only its floor: no
-dome, no mountains, no obstacles. It shows the Salt Flats' crust until
-this art comes (`LOOKS.palace` in ground.ts). Like the cave floor it is
+dome, no mountains, no obstacles. Like the cave floor it is
 a **seamless texture** laid across the board as one field, with the hex
 borders drawn over it, so its lines must stay soft, and its pattern must
 not be a strong square grid, which would fight the hexes. Written for

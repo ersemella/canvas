@@ -36,6 +36,7 @@ import {
   abilityCount,
   hasRoomForAbility,
   isImmobilized,
+  isStunned,
   disarmed,
   lane,
 } from './board';
@@ -2296,9 +2297,10 @@ describe('the Cataphract', () => {
     );
   });
 
-  it('is Armoured: every hit on it is 1 less, unless it Pierces', () => {
+  it('Armoured (no longer its own): every hit on it is 1 less, unless it Pierces', () => {
     const {s, k} = ready({'e-bokh': hexNeighbor(c, 0), 'e-storm': along(c, dir, 3)});
-    expect(k.passives).toEqual(['armoured']);
+    expect(k.passives).toBeUndefined();
+    k.passives = ['armoured'];
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
     // The Grappler's power 1, all taken off.
     hit(ctx, unit(s, 'e-bokh'), k, 'A test hit');
@@ -2414,6 +2416,32 @@ describe('the Cataphract', () => {
     expect(unit(s, 'e-bokh').hex).toEqual(along(c, dir, 2));
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - k.power);
     expect(k.hex).toEqual(along(c, dir, 1));
+  });
+
+  it('slams a unit into yurts behind it: Stunned for its next turn, and only that one', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 2)});
+    s.tiles[hexKey(along(c, dir, 4))] = 'obstacle';
+    charge(s, k, along(c, dir, 3));
+    const [b, st] = [unit(s, 'e-bokh'), unit(s, 'e-storm')];
+    // The row carried 1, the Storm Caller against the yurts.
+    expect([b.hex, st.hex]).toEqual([along(c, dir, 2), along(c, dir, 3)]);
+    expect(isStunned(st)).toBe(true);
+    expect(isStunned(b)).toBe(false);
+    // Its next turn skipped, and the Stun gone with it.
+    st.slot = s.currentSlot;
+    advanceToDecision(s);
+    expect(isStunned(st)).toBe(false);
+    expect(s.log.some((l) => l.text.includes('Storm Caller is Stunned: turn skipped'))).toBe(true);
+  });
+
+  it('slams a unit into the map’s edge, but not one left short of it', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 1)});
+    const end = lane(mapOf(s), c, dir).at(-1)!;
+    charge(s, k, end);
+    expect(isStunned(unit(s, 'e-bokh'))).toBe(true);
+    const {s: s2, k: k2} = ready({'e-bokh': along(c, dir, 1)});
+    charge(s2, k2, along(c, dir, 2));
+    expect(isStunned(unit(s2, 'e-bokh'))).toBe(false);
   });
 
   it('rides on when the unit in its way falls to the hit', () => {

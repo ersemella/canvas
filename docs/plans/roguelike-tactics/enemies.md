@@ -188,9 +188,9 @@ and first numbers, untested; the owner's to change.
   1. `zahhak` and `serpent` in config.ts, not in the ROSTER. Persia's
   fourth stage brings Zahhak and two serpents, nothing else
   (`REGIONS.persia.boss`), and so does the test stage as committed,
-  against Persia's three heroes. Lettered discs (Z, N) until their art,
-  from the prompts in art-direction.md ("Prompts for Zahhak and his
-  serpents").
+  against Persia's three heroes. Their sprites and portraits are the owner's
+  AI-assisted art (2026-10-29), from the prompts in art-direction.md
+  ("Prompts for Zahhak and his serpents").
 - **Serpent King** (Zahhak's passive, `serpentKing`, not offered at the
   caravanserai): while either serpent is on the board, no damage reaches
   his health (`guarded` in resolve.ts), as Immortal: a Shield still takes
@@ -214,9 +214,9 @@ and first numbers, untested; the owner's to change.
   ending within 2 of him) is the owner's to add if they read wrong.
 - **Bite** (the serpents', the wolf's): melee, their power.
 - **The map, `palace`**: Zahhak's palace, the Steppe's board with
-  nothing on it (`PALACE` in map.ts), as the other bosses' maps; drawn
-  with the Salt Flats' crust (`LOOKS.palace`) until the owner's floor art
-  from the prompt in art-direction.md ("Prompts for Zahhak's palace
+  nothing on it (`PALACE` in map.ts), as the other bosses' maps; its
+  floor the owner's art (AI-assisted, 2026-10-29), cracked limestone with
+  glazed tile fragments (art-direction.md, "Prompts for Zahhak's palace
   floor"). Mount Damavand, where he is chained, was the other choice; the
   palace, where Fereydun found him, keeps the region's turquoise tile.
 - **First measured (2026-10-29, 12 AI fights a line-up, the production

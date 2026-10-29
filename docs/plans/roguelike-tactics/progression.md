@@ -355,6 +355,111 @@ choice:
   Vengeance softens the death spiral (10.6); Glass Cannon and Lone Wolf
   are deliberate risk picks.
 
+### 19.9 Generic Ability Upgrades (Decided, owner 2026-10-29; not built)
+Upgrades that change **how a hero's abilities work, whatever they are**:
+each keys off a keyword an ability already applies (17.1) or a kind of
+ability (an attack, a heal, a ranged attack, a single target), not off a named
+ability, so any hero can carry one. They sit between the hero slot's
+upgrades, which change one named ability (19.3), and the passives, which
+mostly bend rules outside abilities (19.8). Values marked TBD are the
+builder's first reading, not the owner's.
+
+**Offered with the passives (owner, 2026-10-29):** the caravanserai at a
+region's end draws its offer from the passives and these upgrades
+together, **still 4 offerings at a time**, drafted as the passives are
+(19.3a): the player's picks and their carriers, the rival's for the next
+region's heroes. An upgrade, like a passive, is carried by the hero it
+goes to for the rest of the run. Whether either can later move to another
+hero is still question 63.
+
+**Track**
+
+| Upgrade | Rule |
+|---|---|
+| **Wearying** | When this hero's ability Delays an enemy, the enemy is also Weakened 1 (TBD). |
+| **Lethargy** | When this hero's ability Weakens an enemy, the enemy is also Delayed 2 (TBD). |
+| **Inspire** | When this hero's ability Empowers an ally, the ally is also Hastened 2 (TBD). |
+| **Fervour** | When this hero's ability Hastens an ally, the ally is also Empowered 1 (TBD). |
+
+**Board**
+
+| Upgrade | Rule |
+|---|---|
+| **Forceful** | This hero's attacks Push the target 1. An attack that already Pushes doesn't Push further. |
+| **Reel In** | This hero's ranged attacks (a target not next to it) Pull the target 1. |
+
+**Attacks** (owner, 2026-10-29, later)
+
+| Upgrade | Rule |
+|---|---|
+| **Staggering** | This hero's attacks Delay the target 2 (TBD). |
+| **Hamstring** | This hero's attacks Immobilize the target until the end of its next turn (TBD). |
+| **Concussive** | This hero's attacks Stun the target for its next turn. |
+| **Sundering** | This hero's attacks Pierce. |
+| **Crippling** | This hero's attacks Weaken the target 1 (TBD). |
+
+**Control**
+
+| Upgrade | Rule |
+|---|---|
+| **Lockdown** | When this hero's ability Immobilizes a unit, the unit is also Stunned for its next turn. |
+| **Defy Fate** | This hero's attacks Stun an Inevitable target for its next turn. |
+| **Immovable Object** | This hero's attacks Delay an Unstoppable target 2 (TBD). |
+
+**Healing** (Invigorate to Ward: owner, 2026-10-29, later)
+
+| Upgrade | Rule |
+|---|---|
+| **Invigorate** | When this hero's ability heals an ally, the ally is also Empowered 1 (TBD). |
+| **Quickening** | When this hero's ability heals an ally, the ally is also Hastened 2 (TBD). |
+| **Fortify** | When this hero's ability heals an ally, the ally also gains Armour 1 (TBD) until its next turn. |
+| **Ward** | When this hero's ability heals an ally, the ally also gains Shield 1 (TBD) until its next turn. |
+| **Mending Strike** | This hero's melee attacks can be used on an ally, healing it this hero's power instead of damaging it. |
+| **Mending Shot** | This hero's ranged attacks can be used on an ally, healing it this hero's power instead of damaging it. |
+
+**Targeting**
+
+| Upgrade | Rule |
+|---|---|
+| **Forked** | This hero's single-target abilities take one extra target, each target meeting the ability's own range and conditions. |
+
+- **Removed (owner, 2026-10-29):** **Exposed** (a Stun also making the
+  unit Vulnerable 1), so Vulnerable stays out of the keywords (17.1);
+  **Overheal** (healing beyond a unit's missing health becoming Shield);
+  and **Martyr** (this hero Weakened 1 whenever its ability targets an
+  ally). Each was named on 2026-10-29 and removed the same day.
+- **Rules (owner, 2026-10-29):**
+  - **An attack** is an ability that damages an enemy. A **ranged
+    attack** is an attack on a target not on a space next to the hero.
+  - **A heal** is an ability restoring an ally's health (the builder's
+    reading): today the Priest's Blessing and the Alchemist's Elixir, and
+    any attack under Mending Strike or Shot. A **melee attack** is one on
+    a target next to the hero (the reverse of a ranged attack).
+  - **Mending Strike and Shot (owner, 2026-10-29):** the heal is the
+    hero's power, Empower adding to it and Weaken taking from it (to at
+    least 0), and can't take the ally above its full health. The attack's other effects reach the ally too (a Push, a
+    Stun). On an area attack, every ally in the area is healed. The heal
+    sets off the other Healing upgrades (Invigorate, Quickening, Fortify,
+    Ward), as any heal on an ally does.
+  - **An upgrade's effect applies only if the original keyword does:**
+    Wearying's Weaken needs the Delay to happen, so it does nothing on an
+    Inevitable enemy; Fervour's Empower likewise; Forceful does nothing on
+    a Rooted or Unstoppable target, and Concussive nothing on an
+    Unstoppable one.
+  - **One upgrade can set off another:** Hamstring's Immobilize sets off
+    Lockdown, Crippling's Weaken Lethargy, Staggering's Delay Wearying.
+  - **Each upgrade fires at most once** per use of an ability, so no pair
+    (Wearying with Lethargy, Inspire with Fervour) loops.
+  - **Forceful with Reel In:** on a ranged attack the Push and the Pull
+    cancel, and the target stays in place; a melee attack is still Pushed.
+  - **Defy Fate counters Steady Gait**, the passive and the Magus's own
+    (the only Inevitable hero), and any Inevitable boss to come. It is
+    Concussive narrowed to Inevitable targets, so the two don't stack.
+- **To watch:** Concussive, and Hamstring with Lockdown, Stun on every
+  attack, the lockout Grapple already shows (17.5, question 56); on an
+  area attack, every unit hit. Forked doubles a single-target ability's
+  reach. Either may need a cost or a limit once measured (TBD).
+
 ## Decision log
 
 | Area | Decision | Alternatives considered | Reason |
@@ -364,6 +469,7 @@ choice:
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |
 | Final boss (2026-10-24, owner) | Counters the player's build | A fixed boss | The run ends on a test of the build the player made |
+| Generic ability upgrades (2026-10-29, owner) | Twenty-one upgrades keyed off keywords and kinds of ability, any hero, offered with the passives at the caravanserai, 4 offerings at a time (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
 
 ## Open questions
 
@@ -389,3 +495,8 @@ choice:
     3 each and the Byzantine 4). Keeping 3 makes a run of 13 stages, 8
     provisions and 4 upgrades; longer regions keep the run's length but
     need a new rhythm for provisions and the high point (19.1).
+67. ~~Which slot offers the generic ability upgrades (19.9).~~ Answered
+    2026-10-29 (owner): the caravanserai at a region's end, with the
+    passives, 4 offerings at a time.
+68. ~~Martyr's payoff, and how many targets Forked adds.~~ Answered
+    2026-10-29 (owner): Martyr removed; Forked adds one.
