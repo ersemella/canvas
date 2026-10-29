@@ -268,8 +268,7 @@ bouncing chevrons, and its card reads "Road out, sealed".
   their hits). China's pair is still the region's easiest stage. Zahhak,
   who fell in none of his first 24 fights, almost never falls: his
   serpents grow back, Humphrey waits at the sealed exit, and the enemy
-  wears him down. Not merged to `main` until the owner decides how to
-  tune Zahhak.
+  wears him down. Merged as it is, to be tuned later (owner, 2026-10-29).
 
 ---
 
