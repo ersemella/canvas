@@ -584,6 +584,7 @@ describe('the board', () => {
       'flaming',
       'fireMountain',
       'cave',
+      'palace',
       'salt',
       'tuff',
       'ridges',
@@ -3519,7 +3520,7 @@ describe('previews, the AI and the run', () => {
       row('persia', false, 1, 2, 0, 'salt'),
       row('persia', false, 2, 1, 0, 'salt'),
       row('persia', false, 3, 0, 0, 'salt'),
-      row('persia', true, 3, 0, 0, 'salt'),
+      row('persia', true, 3, 0, 0, 'palace'),
     ]);
     // Provisions after a region's stages 1, 2 and 3 (owner, 2026-10-28), a
     // passive after its 4th, the boss's, but the run's last.
@@ -3542,7 +3543,11 @@ describe('previews, the AI and the run', () => {
         creature: null,
         boss: ['oxKing', 'fanLady'],
       },
-      persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
+      persia: {
+        heroes: ['archer', 'mahout', 'magus'],
+        creature: null,
+        boss: ['zahhak', 'serpent', 'serpent'],
+      },
       byzantium: {heroes: ['varangian', 'cataphract', 'priest'], creature: null, boss: null},
     });
     expect(
@@ -3557,6 +3562,10 @@ describe('previews, the AI and the run', () => {
     for (let seed = 0; seed < 5; seed++)
       expect(stageEnemies(seed, 7)).toEqual(['oxKing', 'fanLady']);
     expect(STAGES[7]!.map).toBe('fireMountain');
+    // Persia's: Zahhak and his two serpents, in his palace.
+    for (let seed = 0; seed < 5; seed++)
+      expect(stageEnemies(seed, 11)).toEqual(['zahhak', 'serpent', 'serpent']);
+    expect(STAGES[11]!.map).toBe('palace');
     const firsts = new Set<HeroId>();
     const outsiders = new Set<HeroId>();
     for (let seed = 0; seed < 30; seed++) {

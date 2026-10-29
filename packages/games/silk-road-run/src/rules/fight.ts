@@ -27,6 +27,8 @@ import {
   landShots,
   log,
   record,
+  regrow,
+  regrowing,
   scorch,
   squeezeGrapples,
   startTurnPassives,
@@ -293,6 +295,13 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
   // A safety bound; a fight never takes anywhere near this many cards.
   for (let guard = 0; guard < 10_000 && state.phase === 'fight' && !state.awaiting; guard++) {
     const unit = nextCard(state);
+    // A serpent of Zahhak's grows back as its greyed card comes up (Regrow).
+    const grows = regrowing(state);
+    if (grows && (!unit || grows.regrowAt! <= unit.slot!)) {
+      spend?.();
+      regrow({state, map, slot: grows.regrowAt!}, grows, unit?.slot ?? null);
+      continue;
+    }
     if (!unit) return;
     spend?.();
     const ctx: Ctx = {state, map, slot: unit.slot!};

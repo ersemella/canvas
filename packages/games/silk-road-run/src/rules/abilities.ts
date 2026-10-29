@@ -1651,6 +1651,32 @@ const smash: AbilityDef = {
   },
 };
 
+// ─── Zahhak ───────────────────────────────────────────────────────────
+
+/**
+ * Feed the Serpents (2026-10-29), Zahhak's: melee, his power, and each of
+ * his serpents growing back (Regrow) does so `ABILITY.feed.sooner` slots
+ * sooner, at the soonest on the next slot.
+ */
+const feed: AbilityDef = {
+  id: 'feed',
+  name: 'Feed the Serpents',
+  kind: 'attack',
+  summary: () => `Melee. Each serpent growing back grows back ${ABILITY.feed.sooner} slots sooner.`,
+  targetsUnit: true,
+  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!)!;
+    log(ctx, `${unitName(user)} seizes ${unitName(u)} for his serpents.`);
+    hit(ctx, user, u, 'The serpents’ feast');
+    for (const s of ctx.state.units) {
+      if (s.side !== user.side || s.regrowAt === undefined) continue;
+      s.regrowAt = Math.max(ctx.slot + 1, s.regrowAt - ABILITY.feed.sooner);
+      log(ctx, `${unitName(s)} grows back sooner.`);
+    }
+  },
+};
+
 /** The spaces next to where a boulder lands, but its thrower's: those it Pushes. */
 function boulderRing(map: MapData, from: Hex, target: Hex): Hex[] {
   return hexNeighbors(target).filter((h) => onMap(map, h) && !hexEquals(h, from));
@@ -1822,6 +1848,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   bananaFan,
   fanFlames,
   quench,
+  feed,
   charge,
   shove,
   haul,

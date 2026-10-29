@@ -17,7 +17,8 @@ export type Side = 'player' | 'enemy';
  * hero, the enemy NPCs, the wolf and the fox, the Steppe's boss, the
  * Cyclops (`giant`, owner, 2026-10-28; enemies.md), and China's,
  * the Bull Demon King and Princess Iron Fan (`oxKing`, `fanLady`, owner, 2026-10-28;
- * enemies.md).
+ * enemies.md), and Persia's, Zahhak and the serpents on his shoulders
+ * (`zahhak`, `serpent`, 2026-10-29; enemies.md).
  */
 export type HeroId =
   | 'bokh'
@@ -37,7 +38,9 @@ export type HeroId =
   | 'fox'
   | 'giant'
   | 'oxKing'
-  | 'fanLady';
+  | 'fanLady'
+  | 'zahhak'
+  | 'serpent';
 export type AbilityId =
   | 'hold'
   | 'snapShot'
@@ -65,6 +68,8 @@ export type AbilityId =
   | 'bananaFan'
   | 'fanFlames'
   | 'quench'
+  // Zahhak's (2026-10-29).
+  | 'feed'
   // Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured").
   | 'shove'
   | 'haul'
@@ -109,6 +114,9 @@ export type PassiveId =
   // and the Bull Demon King's and Princess Iron Fan's (owner, 2026-10-28).
   | 'oneEye'
   | 'devoted'
+  // Zahhak's and his serpents' (2026-10-29).
+  | 'serpentKing'
+  | 'regrow'
   // A hero's own, not in 19.8's pool: the Cataphract's (owner, 2026-10-29).
   | 'armoured';
 
@@ -276,6 +284,13 @@ export interface Unit {
    * yet acted since: with `ABILITY.omen.once`, not put there again.
    */
   bracketed?: boolean;
+  /**
+   * A fallen serpent of Zahhak's growing back (Regrow, `REGROW`): the slot
+   * its card comes up on, greyed on the track, when it returns to a space
+   * next to him at full health. Absent otherwise; a unit with it is not
+   * `alive` until then.
+   */
+  regrowAt?: number;
   /** It took a unit off the board this turn (Momentum, 19.8). */
   tookOff?: boolean;
   /**
@@ -367,13 +382,15 @@ export type FightEvent =
   | {kind: 'damage'; unitId: string; amount: number}
   | {kind: 'heal'; unitId: string; amount: number}
   | {kind: 'death'; unitId: string; hex: Hex}
+  /** A serpent of Zahhak's grown back (Regrow) on `hex`. */
+  | {kind: 'regrow'; unitId: string; hex: Hex}
   /** Its turn came up with nothing to do but Hold, so the track went on without it. */
   | {kind: 'skip'; unitId: string};
 
 /** What the board looks like right after an event: enough to draw it, not to play on. */
 export interface BoardSnapshot {
   currentSlot: number;
-  units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped'>[];
+  units: Pick<Unit, 'id' | 'hex' | 'hp' | 'alive' | 'slot' | 'skipped' | 'regrowAt'>[];
   effects: HailEffect[];
   shots?: ShotInAir[];
   fires?: FireEffect[];

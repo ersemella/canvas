@@ -454,6 +454,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // A serpent's head striking, jaws open, its forked tongue the accent.
+  feed: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '.....####...',
+      '....##=###..',
+      '...###.###+.',
+      '..###...+.+.',
+      '..##.###....',
+      '..##.####...',
+      '..###.......',
+      '...###......',
+      '....=###....',
+      '.....=####..',
+      '.......===..',
+    ],
+  },
   // An elephant's foot coming down, the dust it raises the accent.
   stomp: {
     kind: 'attack',

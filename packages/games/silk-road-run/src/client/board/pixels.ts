@@ -51,6 +51,9 @@ export const HERO_COLOR = {
   // China's boss, the Bull Demon King and Princess Iron Fan: their discs, shown while their sprites load.
   oxKing: '#7c2d12',
   fanLady: '#be185d',
+  // Persia's boss, Zahhak and his serpents: their discs, shown until their sprites come.
+  zahhak: '#3f3f46',
+  serpent: '#4d7c0f',
 };
 /**
  * Board decorations were drawn for hexes of size 32; this scales them to

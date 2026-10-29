@@ -389,6 +389,42 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['bananaFan', 'fanFlames', 'hold'],
     passives: ['devoted'],
   },
+  /**
+   * Persia's boss (2026-10-29; enemies.md, "Zahhak"): the serpent-shouldered
+   * king of the *Shahnameh*, whose two serpents, kissed onto his shoulders
+   * by Iblis, grew back each time they were cut off. The Serpent King
+   * (`serpentKing`): no damage reaches his health while either of his
+   * serpents is on the board. Feed the Serpents (`ABILITY.feed`): melee,
+   * and his fallen serpents grow back sooner. Not in the ROSTER. Speed 1,
+   * defence 4 (health 10) and power 3 are the builder's first numbers,
+   * untested.
+   */
+  zahhak: {
+    name: 'Zahhak',
+    letter: 'Z',
+    speed: 1,
+    defence: 4,
+    power: 3,
+    abilities: ['feed', 'hold'],
+    passives: ['serpentKing'],
+  },
+  /**
+   * The serpents on Zahhak's shoulders (2026-10-29), two of them, each its
+   * own unit with its own card: the boss's "two heads, two turns"
+   * (enemies.md, 11.3; setting.md). Bite, as the wolf's. Regrow
+   * (`REGROW`): cut down while Zahhak stands, it grows back next to him.
+   * Speed 3, defence 0 (health 2) and power 1 are the builder's first
+   * numbers, untested.
+   */
+  serpent: {
+    name: 'Serpent',
+    letter: 'N',
+    speed: 3,
+    defence: 0,
+    power: 1,
+    abilities: ['bite', 'hold'],
+    passives: ['regrow'],
+  },
 };
 
 /**
@@ -397,6 +433,16 @@ export const HEROES: Record<HeroId, HeroStats> = {
  * other's card is Hastened `haste`, Swift Strike's number.
  */
 export const DEVOTED = {haste: 3 as number};
+
+/**
+ * Regrow (2026-10-29), Zahhak's serpents': a serpent cut down while Zahhak
+ * stands grows back `slots` slots after it fell, on the open space next to
+ * him nearest his enemies, at full health, its card greyed on the track
+ * until then; it takes its turn as it grows back. One that can't (every
+ * space next to him taken) tries again after the next card. Once Zahhak
+ * falls, none grows back. 12: about one turn of every unit on the board.
+ */
+export const REGROW = {slots: 12 as number};
 
 /**
  * One Eye (owner, 2026-10-28), the Cyclops's passive: a hit on it
@@ -724,6 +770,12 @@ export const ABILITY = {
    */
   fanFlames: {range: 3 as number, burn: 1 as number},
   /**
+   * Feed the Serpents (2026-10-29), Zahhak's: melee, his power, and each of
+   * his serpents growing back (`REGROW`) grows back `sooner` slots sooner,
+   * at the soonest the next slot.
+   */
+  feed: {sooner: 3 as number},
+  /**
    * Upgrades (owner, 2026-10-24; balance.md, "Second abilities measured"):
    * Shove (melee, Push), Haul (Pull the first unit in a lane within
    * `range`), Feigned Retreat (the Bow, then a walk of up to `steps`), Gale
@@ -814,6 +866,9 @@ export const AI = {
     giant: 0,
     oxKing: 0,
     fanLady: 1,
+    zahhak: 0,
+    // As the wolf: a serpent cut down grows back, but not soon.
+    serpent: 1,
   } as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   /**
@@ -931,8 +986,8 @@ export type RegionId = 'steppe' | 'china' | 'persia' | 'byzantium';
 /**
  * `boss`: the region's boss, the enemy of its last stage (owner,
  * 2026-10-28; enemies.md), one unit or two: the Cyclops on the Steppe,
- * the Bull Demon King and Princess Iron Fan in China (owner, 2026-10-28);
- * null while the region has none built, and its last stage brings its heroes.
+ * the Bull Demon King and Princess Iron Fan in China (owner, 2026-10-28),
+ * Zahhak and his two serpents in Persia (2026-10-29); null while the region has none built, and its last stage brings its heroes.
  */
 export const REGIONS: Record<
   RegionId,
@@ -940,7 +995,11 @@ export const REGIONS: Record<
 > = {
   steppe: {heroes: ['mangudai', 'bokh', 'storm'], creature: 'wolf', boss: ['giant']},
   china: {heroes: ['youxia', 'modao', 'alchemist'], creature: null, boss: ['oxKing', 'fanLady']},
-  persia: {heroes: ['archer', 'mahout', 'magus'], creature: null, boss: null},
+  persia: {
+    heroes: ['archer', 'mahout', 'magus'],
+    creature: null,
+    boss: ['zahhak', 'serpent', 'serpent'],
+  },
   byzantium: {heroes: ['varangian', 'cataphract', 'priest'], creature: null, boss: null},
 };
 /**
@@ -968,7 +1027,8 @@ export const REGIONS: Record<
  * owner, 2026-10-28: each boss fight on a map of its own), China's in the Gobi Desert (`gobi`; owner,
  * 2026-10-28; the Flaming Mountains, `flaming`, from 2026-10-26, kept so
  * a run saved there still loads), its boss's in the Flaming Mountains
- * with nothing on them (`fireMountain`; owner, 2026-10-28), Persia's on the Salt Flats (`salt`).
+ * with nothing on them (`fireMountain`; owner, 2026-10-28), Persia's on the Salt Flats (`salt`),
+ * its boss's in Zahhak's palace (`palace`, 2026-10-29).
  */
 export interface Stage {
   region: RegionId;
@@ -1099,7 +1159,7 @@ export const STAGES: Stage[] = [
     creatures: 0,
     provision: false,
     passive: false,
-    map: 'salt',
+    map: 'palace',
   },
 ];
 /**

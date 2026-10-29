@@ -1,9 +1,9 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in the Flaming Mountains: China's three heroes, starting kits, against China's boss, the Bull Demon King and Princess Iron Fan.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in Zahhak's palace: Persia's three heroes, starting kits, against Persia's boss, Zahhak and his two serpents.",
   "seed": null,
-  "map": "fireMountain",
+  "map": "palace",
   "yurts": "random",
   "camel": {},
-  "player": [{"hero": "youxia"}, {"hero": "modao"}, {"hero": "alchemist"}],
-  "enemy": [{"hero": "oxKing"}, {"hero": "fanLady"}]
+  "player": [{"hero": "archer"}, {"hero": "mahout"}, {"hero": "magus"}],
+  "enemy": [{"hero": "zahhak"}, {"hero": "serpent"}, {"hero": "serpent"}]
 }

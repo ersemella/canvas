@@ -272,6 +272,11 @@ LOOKS.cave = {
   mountainGround: caveFloorImage,
 };
 
+// Zahhak's palace (map.ts, `PALACE`, 2026-10-29): the Salt Flats' crust in its
+// place, without the dome, until the owner's tiled floor comes (art-direction.md,
+// "Prompts for Zahhak's palace floor").
+LOOKS.palace = {...LOOKS.salt!, dome: null};
+
 /** A map's look; the Steppe's for a map without one of its own. */
 export function lookOf(map: MapData): Look {
   return LOOKS[map.id] ?? LOOKS.steppe!;

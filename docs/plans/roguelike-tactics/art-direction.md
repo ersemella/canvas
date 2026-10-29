@@ -999,6 +999,198 @@ colours, warm skin tones as in the references. Flat magenta (#FF00FF)
 background. One portrait only, no text, no border.
 ```
 
+## Prompts for Zahhak and his serpents (2026-10-29)
+
+Persia's boss (enemies.md, 11.3c), three lettered discs (`zahhak` and
+`serpent` in `HERO_COLOR`) until their art comes. **Zahhak** is a boss
+and takes the giant's frame: a **44 × 44** board sprite facing right,
+rising above its hex, split into the 2-frame idle by
+`scripts/idle-sheet.py` (88 × 44 in all). **The serpent** is the wolf's
+size: a **36 × 36** board sprite facing right (72 × 36 with its idle);
+both serpents use it. Each has a **32 × 32** track portrait
+(`zahhak.png`, `zahhak-portrait.png`, `serpent.png` and
+`serpent-portrait.png` in `src/client/sprites/`). The serpents on the
+board are the ones on his shoulders: the same scales, so the three read
+as one boss.
+
+- **Attach the references**, scaled up 8× with nearest-neighbour:
+  `giant.png` (the 44 × 44 boss frame) and `magus.png` (Persia's robes)
+  for Zahhak's sprite; `wolf.png` (the 36 × 36 creature frame) for the
+  serpent's; `giant-portrait.png`, `magus-portrait.png` and
+  `wolf-portrait.png` for the portraits.
+- One asset per image, on flat magenta (#FF00FF), as the others.
+- No red (the enemy's rug) and no light blue (targeting): Zahhak in
+  black, deep purple and gold; the serpents dark olive and bronze with
+  pale yellow bellies. Keep his serpents' green the same as the board
+  serpent's.
+- If his serpents are lost at size: "make the two serpents on his
+  shoulders bigger and brighter, thick green necks rising above his
+  head, each with an open mouth".
+- If he reads as a plain king: "the two serpents must grow out of his
+  shoulders themselves, not be held or worn".
+- If the serpent reads as a worm or an eel: "a thick-bodied serpent with
+  a broad flat head, raised in an S-curve to strike, its mouth open".
+- To shrink them: `shrink-sprite.py` to 44 and 36, paint the shadow grey
+  (#444444) if it comes back purple, then split each idle with
+  `idle-sheet.py`; crop the portraits to the face.
+
+### 1. Zahhak's board sprite
+
+```
+Pixel art sprite of a single character for a hex-grid tactics game, in
+the exact style, viewpoint and dark outline of the attached sprites.
+
+Subject: Zahhak, the serpent-shouldered tyrant king of the Persian
+Book of Kings (Shahnameh). A tall, gaunt king with a cruel face, a long
+black beard curled in ringlets, and a tall gold crown of ancient Persia.
+Two great serpents grow out of his shoulders, one from each: thick dark
+olive-green scaly necks with pale yellow bellies rising above his head
+and curving forward, their flat heads with open fanged mouths and forked
+tongues. He wears long royal robes of black and deep purple with gold
+borders, a broad gold belt, a gold collar, and a short dark cape. In one
+hand a gold sceptre topped with a serpent's head; the other hand
+reaching forward, clawed fingers open. Menacing, upright stance.
+
+Framing: full body, facing right, three-quarter view from slightly
+above, as the attached sprites. The figure fills a 44 x 44 pixel frame
+with about 2 pixels free on each side, clearly taller than a human hero,
+the serpents' heads near the top edge.
+
+Style: 44 x 44 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 14 colours. Black, deep purple, gold,
+dark olive green, pale yellow, warm skin; no red, which the game keeps
+for the enemy's rug, and no light blue, kept for targeting. A small soft
+grey oval shadow under the feet. Flat magenta (#FF00FF) background. One
+sprite only, no text, no frame, no extra poses.
+```
+
+### 2. Zahhak's track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same serpent-shouldered tyrant king: a gaunt, cruel face
+with narrow eyes looking right, a long black beard curled in ringlets,
+a tall gold crown of ancient Persia; at each shoulder a thick dark
+olive-green serpent rising, pale yellow bellied, its open fanged mouth
+level with his face, one either side of him; black and gold robes at the
+shoulders.
+
+Framing: head and shoulders, facing right in three-quarter view, the
+face in the middle of the frame and large, the crown touching the top
+edge, the two serpents' heads framing it, cropped at the shoulders, as
+the attached portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 14
+colours. No red, no light blue. Flat magenta (#FF00FF) background. One
+portrait only, no text, no border.
+```
+
+### 3. The serpent's board sprite
+
+```
+Pixel art sprite of a single creature for a hex-grid tactics game, in
+the exact style, viewpoint and dark outline of the attached sprite.
+
+Subject: one of the two great serpents that grew from the shoulders of
+Zahhak, the tyrant king of the Persian Book of Kings. A thick-bodied
+serpent coiled on the ground, the front of its body raised high in an
+S-curve, ready to strike. Dark olive-green scales with a darker bronze
+diamond pattern down its back, a pale yellow belly, a broad flat head
+with small fierce gold eyes, its mouth open to show two white fangs and
+a forked dark tongue.
+
+Framing: the whole serpent, facing right, three-quarter view from
+slightly above, as the attached sprite. It fills a 36 x 36 pixel frame
+with about 2 pixels free on each side, the raised head near the top
+edge, the coils wide at the bottom.
+
+Style: 36 x 36 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering. A dark brown-black outline all
+round, chunky clusters, at most 10 colours. Dark olive green, bronze,
+pale yellow, gold, white; no red and no light blue, which the game keeps
+for its own markings. A small soft grey oval shadow under the coils.
+Flat magenta (#FF00FF) background. One sprite only, no text, no frame,
+no extra poses.
+```
+
+### 4. The serpent's track portrait
+
+```
+Pixel art portrait for a tactics game's turn-order track, in the exact
+style, size and dark outline of the attached portraits.
+
+Subject: the same great serpent: its broad flat head facing right, small
+fierce gold eyes, mouth open to show two white fangs and a forked dark
+tongue, dark olive-green scales with a bronze diamond pattern, a pale
+yellow throat, its neck rising from the bottom of the frame.
+
+Framing: the head and neck, facing right in three-quarter view, the head
+filling most of the frame, cropped at the neck, as the attached
+portraits.
+
+Style: 32 x 32 pixel art shown scaled up with hard square pixels, no
+anti-aliasing, no gradients, no dithering, a dark outline, at most 12
+colours. No red, no light blue. Flat magenta (#FF00FF) background. One
+portrait only, no text, no border.
+```
+
+## Prompts for Zahhak's palace floor (2026-10-29)
+
+Zahhak's palace (`palace`), Persia's boss fight, has only its floor: no
+dome, no mountains, no obstacles. It shows the Salt Flats' crust until
+this art comes (`LOOKS.palace` in ground.ts). Like the cave floor it is
+a **seamless texture** laid across the board as one field, with the hex
+borders drawn over it, so its lines must stay soft, and its pattern must
+not be a strong square grid, which would fight the hexes. Written for
+ChatGPT's image generation; optionally attach `tiles/cave-floor.png` and
+`tiles/salt-crust.png`, scaled up 8× with nearest-neighbour, as style
+references. Cut the result to 128 × 128 and at most 7 colours, as
+`scripts/cave-floor.py` cuts the cave's (the stone's colours by k-means,
+the tiles' teal and cobalt kept apart in place of the bones' pale).
+
+```
+Create a single square pixel-art texture tile of a palace courtyard
+floor, seen straight from above, for a top-down hex-grid tactics game
+(style like Into the Breach). It must tile seamlessly: its left edge
+continues into its right edge and its top edge into its bottom edge,
+with no visible seam, border or frame.
+
+Subject: the worn floor of an ancient Persian tyrant king's palace
+courtyard. Large, irregular cream and pale ochre limestone flagstones,
+old and cracked, with fragments of faded glazed tiles set between some
+of them: small eight-pointed stars and crosses in dusty deep teal and
+dark cobalt, many chipped or missing. A few fine grey cracks, a scatter
+of grit, and two or three faint darker stains on the stone. Soft light
+from the top left. Completely flat ground only: no walls, no columns, no
+fountains, no plants, no rugs, no shadows of objects, no characters, no
+text.
+
+Style: true pixel art at 128 x 128 pixels, shown scaled up with hard
+square pixels: no anti-aliasing, no gradients, no blur, no dithering
+noise. At most 7 colours: warm creams and ochres close in value (from
+about #C9B79A to #E8DCC4), with the tile fragments in muted deep teal
+(about #2F5E5B) and dark cobalt (about #2E3F6B), never bright or light
+blue. The cracks only a little darker than the stone, never black,
+because a dark hex grid will be drawn on top and must stay readable.
+Flagstones of uneven sizes, about 20 to 45 pixels across, laid in no
+regular grid. Calm and low in contrast, so game pieces stand out on it.
+
+Output: one square image, the texture filling the whole canvas edge to
+edge.
+```
+
+If the grid gets lost in it: "halve the contrast of the cracks and the
+tiles; they must be lighter than a dark grid line drawn over the
+texture". If it comes back as a regular square tiling: "irregular
+flagstones of different sizes, like an old worn floor, with no straight
+lines running across the whole image". If it comes back as a scene with
+walls or depth: "flat ground only, seen from directly above, like a
+floor texture in a game".
+
 ## Palette (Proposed)
 
 - **One fixed palette** of about **24–32 colours** across every culture.
