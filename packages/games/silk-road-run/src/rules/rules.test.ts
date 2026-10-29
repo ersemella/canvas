@@ -2735,6 +2735,31 @@ describe('the Priest', () => {
     p.shield = 1;
     expect(threatDamage(threats, s, p)).toBe(bare - 1);
   });
+
+  it('with track time, the AI counts a Shield only against the enemies acting within its window', () => {
+    const rules = RULES as {trackTime: false | 'own' | number};
+    rules.trackTime = 'own';
+    onTestFinished(() => {
+      rules.trackTime = false;
+    });
+    const {s, p} = ready({'e-bokh': hexNeighbor(c, 3)});
+    unit(s, 'e-bokh').slot = 20;
+    p.slot = 50;
+    const threats = threatsTo(s, mapOf(s), p);
+    const bare = threatDamage(threats, s, p);
+    p.shield = 1;
+    p.shieldUntil = 20;
+    expect(threatDamage(threats, s, p)).toBe(bare - 1);
+    // Gone before the Grappler acts: no help, unless the AI ignores windows.
+    p.shieldUntil = 19;
+    expect(threatDamage(threats, s, p)).toBe(bare);
+    const ai = AI as {windows: boolean};
+    ai.windows = false;
+    onTestFinished(() => {
+      ai.windows = true;
+    });
+    expect(threatDamage(threats, s, p)).toBe(bare - 1);
+  });
 });
 
 describe('the Vanguard and the Alchemist', () => {

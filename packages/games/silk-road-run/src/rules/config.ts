@@ -863,6 +863,17 @@ export const AI = {
   immobilizedShare: {ranged: 0.1, melee: 0.4},
   stunnedShare: 1,
   /**
+   * With `RULES.trackTime` (a switch for measuring, 2026-10-29; on): the
+   * AI counts an effect's window in turns, each of the unit's turns it
+   * holds (an Empower or Weaken used that many times, a Delay carrying a
+   * card out of one, a Haste into one), a Shield against the enemies acting
+   * within it, and hail lifting before the unit it holds acts. Off, it
+   * counts an Empower or Weaken once if it outlasts the unit's next card,
+   * and a Shield and hail by turns, as first measured (balance.md, "Track
+   * time").
+   */
+  windows: true as boolean,
+  /**
    * The share of an Empower's worth the AI counts (`empowerGain` in
    * ai.ts): its extra damage, and a kill it makes, happen only if its unit
    * gets to hit on its next turn. ½ (2026-10-23; balance.md): at 1
