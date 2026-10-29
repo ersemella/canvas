@@ -358,7 +358,7 @@ choice:
 ### 19.9 Generic Ability Upgrades (Decided, owner 2026-10-29; not built)
 Upgrades that change **how a hero's abilities work, whatever they are**:
 each keys off a keyword an ability already applies (17.1) or a kind of
-ability (an attack, a ranged attack, a single target), not off a named
+ability (an attack, a heal, a ranged attack, a single target), not off a named
 ability, so any hero can carry one. They sit between the hero slot's
 upgrades, which change one named ability (19.3), and the passives, which
 mostly bend rules outside abilities (19.8). Which slot offers them, and
@@ -381,38 +381,59 @@ whether they can move between heroes as passives may, is open (question
 | **Forceful** | This hero's attacks Push the target 1. An attack that already Pushes doesn't Push further. |
 | **Reel In** | This hero's ranged attacks (a target not next to it) Pull the target 1. |
 
+**Attacks** (owner, 2026-10-29, later)
+
+| Upgrade | Rule |
+|---|---|
+| **Staggering** | This hero's attacks Delay the target 2 (TBD). |
+| **Hamstring** | This hero's attacks Immobilize the target until the end of its next turn (TBD). |
+| **Concussive** | This hero's attacks Stun the target for its next turn. |
+| **Sundering** | This hero's attacks Pierce. |
+| **Crippling** | This hero's attacks Weaken the target 1 (TBD). |
+
 **Control**
 
 | Upgrade | Rule |
 |---|---|
 | **Lockdown** | When this hero's ability Immobilizes a unit, the unit is also Stunned for its next turn. |
-| **Exposed** | When this hero's ability Stuns a unit, the unit is also Vulnerable 1 (TBD) while the Stun lasts. |
 | **Defy Fate** | This hero's attacks Stun an Inevitable target for its next turn. |
 | **Immovable Object** | This hero's attacks Delay an Unstoppable target 2 (TBD). |
+
+**Healing** (Invigorate to Ward: owner, 2026-10-29, later)
+
+| Upgrade | Rule |
+|---|---|
+| **Invigorate** | When this hero's ability heals an ally, the ally is also Empowered 1 (TBD). |
+| **Quickening** | When this hero's ability heals an ally, the ally is also Hastened 2 (TBD). |
+| **Fortify** | When this hero's ability heals an ally, the ally also gains Armour 1 (TBD) until its next turn. |
+| **Ward** | When this hero's ability heals an ally, the ally also gains Shield 1 (TBD) until its next turn. |
+| **Overheal** | Healing beyond a unit's missing health becomes Shield, lasting until damage spends it, as Blessing's does (roster.md). |
 
 **Support and targeting**
 
 | Upgrade | Rule |
 |---|---|
-| **Overheal** | Healing beyond a unit's missing health becomes Shield, lasting until damage spends it, as Blessing's does (roster.md). |
 | **Martyr** | Whenever this hero's ability targets an ally, this hero is Weakened 1 (TBD). |
 | **Forked** | This hero's single-target abilities take a second target (TBD), each target meeting the ability's own range and conditions. |
 
-- **Vulnerable comes back as a keyword** for Exposed: **Vulnerable N**,
-  damage the unit takes is increased by N, the reverse of Armour (17.6).
-  It was a 50% damage-taken status in the list of 2026-10-16, dropped
-  with the keywords' rework of 2026-10-23 ([history.md](history.md)); as
-  a small whole number it fits the new list.
+- **Exposed** (a Stun also making the unit Vulnerable 1) was named on
+  2026-10-29 and removed the same day (owner), so Vulnerable stays out of
+  the keywords (17.1).
 - **The builder's readings, to confirm:**
-  - **An attack** is an ability that deals damage to an enemy (Forceful,
-    Reel In, Defy Fate, Immovable Object); a ranged attack is one whose
-    target isn't next to the hero.
+  - **An attack** is an ability that deals damage to an enemy, once per
+    target it hits (the Attacks group, Forceful, Reel In, Defy Fate,
+    Immovable Object); a ranged attack is one whose target isn't next to
+    the hero. A grapple's squeeze and Burn aren't attacks.
+  - **A heal** is an ability restoring an ally's health, even when it is
+    at full health (the Healing group): today the Priest's Blessing and
+    the Alchemist's Elixir.
   - **The rider follows the keyword:** Wearying's Weaken needs the Delay
     to happen, so it does nothing on an Inevitable enemy; Fervour's
     Empower likewise; Forceful does nothing on a Rooted or Unstoppable
     target, and Lockdown's Stun nothing on an Unstoppable one (which
     can't be Immobilized anyway).
-  - **Riders chain, each once:** Lockdown's Stun can set off Exposed, and
+  - **Riders chain, each once:** Hamstring's Immobilize sets off Lockdown,
+    Crippling's Weaken Lethargy, Staggering's Delay Wearying, and
     Wearying with Lethargy turns a Delay into a Weaken and a further Delay;
     each upgrade triggers at most once per use of an ability, so no pair
     loops.
@@ -422,7 +443,15 @@ whether they can move between heroes as passives may, is open (question
     so it is mostly a counter to a Steady Gait passive, and to Inevitable
     bosses if any come.
   - **Overheal on the Priest** changes nothing (Blessing already does it),
-    so it isn't offered to him.
+    so it isn't offered to him. Ward is any heal's Shield 1 whatever is
+    healed, and goes at the ally's next turn as Rally's does; with
+    Overheal both apply.
+  - **Defy Fate** is Concussive narrowed to Inevitable targets, so the two
+    don't stack; Concussive on an Unstoppable target does nothing.
+- **To watch:** Concussive, and Hamstring with Lockdown, Stun on every
+  attack, the lockout Grapple already shows (17.5, question 56); on an
+  area attack, every unit hit. Likely strong enough to need a cost or a
+  first-attack-each-turn limit (TBD).
 - **Martyr** as written is only a cost; whether it pays for something
   (an ally's effect stronger, or a cheaper action) is open (question 68).
 - **Forked** doubles a single-target ability's worth; the second target's
@@ -437,7 +466,7 @@ whether they can move between heroes as passives may, is open (question
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |
 | Final boss (2026-10-24, owner) | Counters the player's build | A fixed boss | The run ends on a test of the build the player made |
-| Generic ability upgrades (2026-10-29, owner) | Thirteen upgrades keyed off keywords and kinds of ability, any hero (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
+| Generic ability upgrades (2026-10-29, owner) | Twenty-one upgrades keyed off keywords and kinds of ability, any hero (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
 
 ## Open questions
 
