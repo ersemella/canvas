@@ -1065,6 +1065,14 @@ describe('stats and damage', () => {
     storm.passives = ['ironWill'];
     stunForATurn(ctx, storm, {kind: 'stunned', slammed: true});
     expect(storm.slot).toBe(slot + 6);
+    // As a Stun did, it makes a Grappler let go.
+    const g = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
+    g.rules = {slots: {turn: 10, hail: 18, stun: 6}};
+    const bokh = unit(g, 'p-bokh');
+    applyTurn(g, bokh, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
+    expect(isStunned(unit(g, 'e-storm'))).toBe(true);
+    stunForATurn({state: g, map: mapOf(g), slot: 0}, bokh, {kind: 'stunned', dazed: true});
+    expect(isStunned(unit(g, 'e-storm'))).toBe(false);
     // By turns, a Stun.
     delete s.rules;
     stunForATurn(ctx, storm, {kind: 'stunned', slammed: true});

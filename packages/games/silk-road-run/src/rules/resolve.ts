@@ -993,6 +993,14 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
     return;
   }
   addStatus(u, status);
+  interrupt(ctx, u);
+}
+
+/**
+ * What a Stun breaks besides the turn: a grapple `u` holds lets go, and an
+ * arrow it has drawn is lost (owner, 2026-10-24).
+ */
+function interrupt(ctx: Ctx, u: Unit): void {
   endGrapples(ctx, (g) => g.champion === u.id);
   if (ctx.state.shots?.some((v) => v.source === u.id)) {
     ctx.state.shots = ctx.state.shots.filter((v) => v.source !== u.id);
@@ -1004,8 +1012,9 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
  * A Stun for the unit's next turn (a Charge's slam, Last Stand's, and
  * Concussive's, Lockdown's and Defy Fate's, 19.9): in slots
  * (`FightRules.slots`), a Delay of `stun` slots instead, which Unstoppable
- * and Iron Will still stop; Defy Fate's (`defies`) Delays an Inevitable
- * unit too, as its Stun reached one.
+ * and Iron Will still stop, breaking what a Stun breaks (`interrupt`);
+ * Defy Fate's (`defies`) Delays an Inevitable unit too, as its Stun
+ * reached one.
  */
 export function stunForATurn(ctx: Ctx, u: Unit, status: Status, defies = false): void {
   const slots = ctx.state.rules?.slots;
@@ -1018,6 +1027,7 @@ export function stunForATurn(ctx: Ctx, u: Unit, status: Status, defies = false):
     log(ctx, `${unitName(u)}’s iron will holds: not Delayed.`);
     return;
   }
+  interrupt(ctx, u);
   if (!defies) return delay(ctx, u, slots.stun);
   if (!u.alive || u.slot === null) return;
   placeCard(ctx.state, u, u.slot + slots.stun);
