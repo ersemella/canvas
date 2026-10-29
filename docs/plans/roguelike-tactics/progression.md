@@ -417,17 +417,17 @@ hero is still question 63.
 | **Mending Strike** | This hero's melee attacks can be used on an ally, healing it this hero's power instead of damaging it. |
 | **Mending Shot** | This hero's ranged attacks can be used on an ally, healing it this hero's power instead of damaging it. |
 
-**Support and targeting**
+**Targeting**
 
 | Upgrade | Rule |
 |---|---|
-| **Martyr** | Whenever this hero's ability targets an ally, this hero is Weakened 1 (TBD). |
 | **Forked** | This hero's single-target abilities take one extra target, each target meeting the ability's own range and conditions. |
 
-- **Exposed** (a Stun also making the unit Vulnerable 1) and **Overheal**
-  (healing beyond a unit's missing health becoming Shield) were named on
-  2026-10-29 and removed the same day (owner); Vulnerable stays out of the
-  keywords (17.1).
+- **Removed (owner, 2026-10-29):** **Exposed** (a Stun also making the
+  unit Vulnerable 1), so Vulnerable stays out of the keywords (17.1);
+  **Overheal** (healing beyond a unit's missing health becoming Shield);
+  and **Martyr** (this hero Weakened 1 whenever its ability targets an
+  ally). Each was named on 2026-10-29 and removed the same day.
 - **Rules (owner, 2026-10-29):**
   - **An attack** is an ability that damages an enemy. A **ranged
     attack** is an attack on a target not on a space next to the hero.
@@ -437,11 +437,10 @@ hero is still question 63.
     a target next to the hero (the reverse of a ranged attack).
   - **Mending Strike and Shot (owner, 2026-10-29):** the heal is the
     hero's power, Empower adding to it and Weaken taking from it (to at
-    least 0), and can't take the ally above its health (the builder's
-    reading). The attack's other effects reach the ally too (a Push, a
+    least 0), and can't take the ally above its full health. The attack's other effects reach the ally too (a Push, a
     Stun). On an area attack, every ally in the area is healed. The heal
     sets off the other Healing upgrades (Invigorate, Quickening, Fortify,
-    Ward), and Martyr, as any heal on an ally does.
+    Ward), as any heal on an ally does.
   - **An upgrade's effect applies only if the original keyword does:**
     Wearying's Weaken needs the Delay to happen, so it does nothing on an
     Inevitable enemy; Fervour's Empower likewise; Forceful does nothing on
@@ -456,7 +455,6 @@ hero is still question 63.
   - **Defy Fate counters Steady Gait**, the passive and the Magus's own
     (the only Inevitable hero), and any Inevitable boss to come. It is
     Concussive narrowed to Inevitable targets, so the two don't stack.
-  - **Martyr is only a cost** (owner): it stays as written.
 - **To watch:** Concussive, and Hamstring with Lockdown, Stun on every
   attack, the lockout Grapple already shows (17.5, question 56); on an
   area attack, every unit hit. Forked doubles a single-target ability's
@@ -471,7 +469,7 @@ hero is still question 63.
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |
 | Final boss (2026-10-24, owner) | Counters the player's build | A fixed boss | The run ends on a test of the build the player made |
-| Generic ability upgrades (2026-10-29, owner) | Twenty-two upgrades keyed off keywords and kinds of ability, any hero, offered with the passives at the caravanserai, 4 offerings at a time (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
+| Generic ability upgrades (2026-10-29, owner) | Twenty-one upgrades keyed off keywords and kinds of ability, any hero, offered with the passives at the caravanserai, 4 offerings at a time (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
 
 ## Open questions
 
@@ -501,4 +499,4 @@ hero is still question 63.
     2026-10-29 (owner): the caravanserai at a region's end, with the
     passives, 4 offerings at a time.
 68. ~~Martyr's payoff, and how many targets Forked adds.~~ Answered
-    2026-10-29 (owner): Martyr stays a cost only; Forked adds one.
+    2026-10-29 (owner): Martyr removed; Forked adds one.
