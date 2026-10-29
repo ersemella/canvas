@@ -1154,8 +1154,8 @@ export const STAGES: Stage[] = [
  * (progression.md, 19.3; owner, 2026-10-29): `offer` provisions drawn, the
  * party picking one, the rival one, until each has taken `picks`; the rest
  * are discarded. After a regular stage 3, 1 each; after a boss 5, 2 each.
- * Humphrey taking no damage in the stage draws one more, discarded too
- * (camel.md, 18.4).
+ * Humphrey taking no damage in the stage draws one more, and the party
+ * picks one more, its last (owner, 2026-10-29; camel.md, 18.4).
  */
 export const DRAFT = {stage: {offer: 3, picks: 1}, boss: {offer: 5, picks: 2}};
 /**

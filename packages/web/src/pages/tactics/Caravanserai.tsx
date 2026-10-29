@@ -67,8 +67,9 @@ type Pending = {card: CardId; hero: Unit['hero'] | null} | 'heal';
  * standing for the rest of the run, or heals the camel instead, and is
  * kept once locked in (`onPick`): only then does the rival's answer show.
  * The rival's provisions go to the enemies of every stage to come. Unless
- * healed, the camel goes on with the health it ended the stage with; one
- * more card is drawn if it took no damage in the stage.
+ * healed, the camel goes on with the health it ended the stage with. If
+ * it took no damage in the stage, one more card is drawn and the party
+ * picks one more, last (`extra`).
  */
 export function Caravanserai(props: {
   fight: FightState;
@@ -120,14 +121,16 @@ export function Caravanserai(props: {
     <>
       {draft.extra && (
         <span data-testid="extra-provision">
-          {camelName} took no damage this stage: one more drawn.{' '}
+          {camelName} took no damage this stage: an extra provision for you, and one more
+          drawn.{' '}
         </span>
       )}
       {offer.length} provisions drawn, stat, passive and ability upgrades, the stronger the rarer:
       you pick one and a rival caravan on the road ahead takes one
-      {draft.picks > 1 ? `, until each has ${draft.picks}` : ''}; the rest are discarded. Each is
-      kept for the rest of the run, the rival’s by the enemies ahead. Every pick is final once
-      locked in. Instead of a pick, you can heal {camelName} {RULES.camelHeal}.
+      {draft.rivalPicks > 1 ? `, until it has ${draft.rivalPicks}` : ''}
+      {draft.extra ? ', then you take one more' : ''}; the rest are discarded. Each is kept for the
+      rest of the run, the rival’s by the enemies ahead. Every pick is final once locked in. Instead
+      of a pick, you can heal {camelName} {RULES.camelHeal}.
     </>
   ) : null;
 

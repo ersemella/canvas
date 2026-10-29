@@ -3817,7 +3817,14 @@ describe('previews, the AI and the run', () => {
         const draft = runView(won).draft!;
         expect(draft.offer).toHaveLength(offer + (unhurt ? 1 : 0));
         expect(new Set(draft.offer).size).toBe(draft.offer.length);
-        expect(draft).toMatchObject({picks, extra: unhurt, mine: [], rival: []});
+        // Humphrey unhurt: one more drawn, and the party picks one more.
+        expect(draft).toMatchObject({
+          picks: picks + (unhurt ? 1 : 0),
+          rivalPicks: picks,
+          extra: unhurt,
+          mine: [],
+          rival: [],
+        });
         // A reload draws the same.
         expect(draftOffer(won)).toEqual(draft.offer);
       }
@@ -3912,6 +3919,32 @@ describe('previews, the AI and the run', () => {
     const next = handleRunAction(two, {type: 'next'});
     expect(next.stage).toBe(4);
     expect(next.rivalCards).toEqual(draft.rival);
+  });
+
+  it('Humphrey unhurt all stage: 4 drawn, the party picks 2, the rival 1 after the first, 1 discarded', () => {
+    const won = winStage(createRun(7), true);
+    const {offer, picks, rivalPicks: theirs} = runView(won).draft!;
+    expect([offer.length, picks, theirs]).toEqual([4, 2, 1]);
+    const one = handleRunAction(won, {type: 'draft', pick: {hero: 'bokh', card: offer[0]!}});
+    const [answer] = runView(one).draft!.rival;
+    // The extra pick is still owed.
+    expect(() => handleRunAction(one, {type: 'next'})).toThrow(RuleError);
+    const second = offer.find((c) => c !== offer[0] && c !== answer)!;
+    const two = handleRunAction(one, {type: 'draft', pick: {hero: 'storm', card: second}});
+    // The rival answers only the first.
+    expect(runView(two).draft!.rival).toEqual([answer]);
+    expect(() =>
+      handleRunAction(two, {
+        type: 'draft',
+        pick: {hero: 'mangudai', card: offer.find((c) => ![offer[0], answer, second].includes(c))!},
+      })
+    ).toThrow(RuleError);
+    const next = handleRunAction(two, {type: 'next'});
+    expect(next.rivalCards).toEqual([answer]);
+    expect([...(next.provisions ?? []), ...(next.passives ?? [])]).toHaveLength(2);
+    // After a boss: 6 drawn, the party 3, the rival 2.
+    const boss = runView(winStage({...createRun(9), stage: 3}, true)).draft!;
+    expect([boss.offer.length, boss.picks, boss.rivalPicks]).toEqual([6, 3, 2]);
   });
 
   it('a pick can heal Humphrey 4 instead, the rival picking from every card', () => {

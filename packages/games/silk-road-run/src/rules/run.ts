@@ -5,8 +5,9 @@
  * caravanserai, which drafts provisions (progression.md, 19.3; owner,
  * 2026-10-29): stat, passive and ability upgrades, drawn by rarity, the
  * party picking one and the rival one in turn, the rest discarded; 3 drawn
- * and 1 each after a regular stage, 5 and 2 each after a boss, one more
- * drawn if the camel took no damage. A pick can heal the camel instead.
+ * and 1 each after a regular stage, 5 and 2 each after a boss; if the
+ * camel took no damage, one more drawn and one more pick for the party,
+ * its last. A pick can heal the camel instead.
  * The rival's provisions go to the enemy of every stage after. The heroes
  * start each stage at full health; the camel keeps the health it ended the
  * last one with, unless healed there (camel.md, 18.4). The run keeps the
@@ -119,9 +120,14 @@ export interface RunView {
 export interface DraftView {
   /** The provisions drawn, in the order drawn. */
   offer: CardId[];
-  /** How many the party picks, and the rival as many. */
+  /** How many the party picks: one more than the rival with `extra`. */
   picks: number;
-  /** One more was drawn: the camel took no damage in the stage (camel.md, 18.4). */
+  /** How many the rival picks. */
+  rivalPicks: number;
+  /**
+   * The camel took no damage in the stage (camel.md, 18.4): one more card
+   * drawn, and the party picks one more.
+   */
   extra: boolean;
   /** The party's picks so far. */
   mine: DraftPick[];
@@ -281,14 +287,20 @@ function camelUnhurt(fight: FightState): boolean {
 }
 
 /**
- * The caravanserai's draft once the run's stage is won (`DRAFT`): its size
- * and how many each side picks; null after the run's last stage.
+ * The caravanserai's draft once the run's stage is won (`DRAFT`): its size,
+ * how many the party picks and how many the rival; null after the run's
+ * last stage. The camel unhurt in the stage, one more card is drawn and
+ * the party picks one more (owner, 2026-10-29), its last pick.
  */
-function draftSize(run: RunState): {offer: number; picks: number} | null {
+function draftSize(run: RunState): {offer: number; picks: number; rival: number} | null {
   if (run.test || run.fight.phase !== 'won' || run.stage >= stageCount(run) - 1) return null;
   const {offer, picks} = STAGES[run.stage]!.boss ? DRAFT.boss : DRAFT.stage;
-  return {offer: offer + (camelUnhurt(run.fight) ? 1 : 0), picks};
+  const extra = camelUnhurt(run.fight) ? 1 : 0;
+  return {offer: offer + extra, picks: picks + extra, rival: picks};
 }
+
+/** How many picks the rival makes in the caravanserai's draft. */
+const rivalOwed = (run: RunState) => draftSize(run)?.rival ?? 0;
 
 /**
  * The provisions the caravanserai draws once the run's stage is won (`DRAFT`,
@@ -368,15 +380,17 @@ export function rivalPick(rivals: readonly HeroId[], open: readonly CardId[]): C
 /**
  * The rival's picks in a draft of `offer`, given the party's so far
  * (`mine`, in the order picked): after each, the rival's pick
- * (`rivalPick`) from those left. A heal takes no card.
+ * (`rivalPick`) from those left, until it has `most`. A heal takes no card.
  */
 export function rivalPicks(
   offer: readonly CardId[],
   rivals: readonly HeroId[],
-  mine: readonly DraftPick[]
+  mine: readonly DraftPick[],
+  most = Infinity
 ): CardId[] {
   const picks: CardId[] = [];
   mine.forEach((_, i) => {
+    if (picks.length >= most) return;
     const gone = [...mine.slice(0, i + 1).flatMap((p) => ('card' in p ? [p.card] : [])), ...picks];
     const left = offer.filter((card) => !gone.includes(card));
     if (left.length > 0) picks.push(rivalPick(rivals, left));
@@ -408,7 +422,7 @@ function checkPick(run: RunState, pick: DraftPick): void {
   const offer = draftOffer(run);
   const gone = [
     ...before.flatMap((p) => ('card' in p ? [p.card] : [])),
-    ...rivalPicks(offer, draftRivals(run), before),
+    ...rivalPicks(offer, draftRivals(run), before, rivalOwed(run)),
   ];
   if (!offer.includes(pick.card) || gone.includes(pick.card))
     throw new RuleError('That provision isn’t on offer.');
@@ -545,7 +559,7 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
     }
     const rivalCards = [
       ...(run.rivalCards ?? []),
-      ...rivalPicks(draftOffer(run), draftRivals(run), picks),
+      ...rivalPicks(draftOffer(run), draftRivals(run), picks, rivalOwed(run)),
     ];
     const fight = stageFight(
       run.seed,
@@ -622,9 +636,10 @@ function draftView(run: RunState): DraftView | null {
   return {
     offer,
     picks: picksOwed(run),
+    rivalPicks: offer.length > 0 ? size.rival : 0,
     extra: camelUnhurt(run.fight),
     mine,
-    rival: rivalPicks(offer, draftRivals(run), mine),
+    rival: rivalPicks(offer, draftRivals(run), mine, size.rival),
   };
 }
 

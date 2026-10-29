@@ -118,8 +118,9 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
 - **Since 2026-10-29 (owner), in the caravanserai's draft**
   ([progression.md](progression.md), 19.3c): any of the party's picks can
   heal Humphrey 4 in place of a card, and his taking no damage in a stage
-  draws one more card into the draft (discarded with the rest), in place
-  of the extra provision. The two notes below are the record of before.
+  draws one more card into the draft and gives the party **one more
+  pick**, its last, still the extra provision (owner, 2026-10-29; a
+  wider choice alone, briefly, the same day). The two notes below are the record of before.
 - **Built (2026-10-28, owner):** at a caravanserai that earns a provision
   (after a region's stages 1 and 2), the provision can **heal the camel
   4 in place of a stat** (`RULES.camelHeal`, up to its full health;

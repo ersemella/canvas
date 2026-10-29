@@ -214,8 +214,12 @@ random from one pool:
   - **Humphrey (camel.md, 18.4; owner, 2026-10-29):** a pick can heal him
     4 instead of taking a card (`RULES.camelHeal`; not at full health);
     the rival then picks from every card left. Taking **no damage in a
-    stage draws one more** card (4, or 6 after a boss), discarded with the
-    rest, so it widens the choice; it replaces the extra provision.
+    stage earns an extra provision** (owner, 2026-10-29): one more card is
+    drawn and the party picks one more, its last, after the rival's
+    answers. After a regular stage 4 are drawn, the party picks 2 and the
+    rival 1 (party, rival, party), 1 discarded; after a boss 6, the party
+    3 and the rival 2, 1 discarded. (For part of 2026-10-29 the extra card
+    only widened the choice, discarded with the rest.)
   - **The rival's provisions go to the enemy of every stage after
     (owner, 2026-10-29):** all of them, kept in `RunState.rivalCards`,
     are shared out over each stage's enemy at its start (`rivalShares`):
@@ -586,7 +590,7 @@ hero is still question 63.
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Run length (2026-10-24, owner) | 6 regions of 3 stages, the last of 4: 19 fights | Several levels per region, TBD (15.3a); 3 to 4 stages per region | A fixed rhythm per region: build up, commit, the hard fight |
-| The caravanserai's draft (2026-10-29, owner) | Every caravanserai drafts provisions (stat upgrades, Epic; passive upgrades; ability upgrades) by rarity: 3 after a regular stage, 1 each, 5 after a boss, 2 each, the rest discarded; a pick can heal Humphrey instead, his no-damage stage draws one more; the rival's provisions go to every later stage's enemy (19.3c) | Stat provisions earned per stage and a passive draft between regions (19.2, 19.3a) | One decision, the same at every rest, with the enemy growing as the party does |
+| The caravanserai's draft (2026-10-29, owner) | Every caravanserai drafts provisions (stat upgrades, Epic; passive upgrades; ability upgrades) by rarity: 3 after a regular stage, 1 each, 5 after a boss, 2 each, the rest discarded; a pick can heal Humphrey instead, his no-damage stage draws one more card and gives the party one more pick; the rival's provisions go to every later stage's enemy (19.3c) | Stat provisions earned per stage and a passive draft between regions (19.2, 19.3a) | One decision, the same at every rest, with the enemy growing as the party does |
 | Stat growth (2026-10-24, owner) | Provisions: 2 per region, assigned when earned, reassignable after stage 3's fight within the region, then locked | No stat growth outside gear (10.9); 1 point per stage, swappable every stage; swappable only between regions | Small, steady growth with one commitment per region |
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |

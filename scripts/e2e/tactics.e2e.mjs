@@ -813,8 +813,9 @@ try {
     await shot(page, 'end-phone');
   }
   // Next stage opens the caravanserai's draft (progression.md, 19.3): three
-  // provisions drawn (a fourth with Humphrey unhurt), one picked for a hero
-  // standing, a rival caravan taking another, the rest discarded; Set out
+  // provisions drawn, one picked for a hero standing, a rival caravan taking
+  // another, the rest discarded (with Humphrey unhurt, a fourth drawn and a
+  // second pick); Set out
   // there starts the run's next stage, against a bigger band, with the
   // survivors.
   if (nextAhead) {
@@ -851,14 +852,35 @@ try {
       timeout: 15_000,
     });
     const rival = (await state()).view.draft.rival;
+    // Humphrey unhurt all stage: one more pick, after the rival's answer.
+    const extra = before.draft.extra;
     check(
-      'locked in: a rival caravan answers, the rest discarded, Set out ready',
-      rival.length === 1 &&
+      extra
+        ? 'locked in: a rival caravan answers, Set out waiting on the extra pick'
+        : 'locked in: a rival caravan answers, the rest discarded, Set out ready',
+      before.draft.picks === (extra ? 2 : 1) &&
+        rival.length === 1 &&
         (await page.getByTestId(`card-${rival[0]}`).getAttribute('data-rival')) === 'true' &&
-        (await page.locator('[data-discarded="true"]').count()) === offer.length - 2 &&
-        (await setOut.isEnabled()),
+        (await page.locator('[data-discarded="true"]').count()) ===
+          (extra ? 0 : offer.length - 2) &&
+        (await setOut.isEnabled()) === !extra,
       rival
     );
+    if (extra) {
+      const more = offer.find((c) => c !== card && c !== rival[0]);
+      await page.getByTestId(`card-${more}`).click();
+      await page.locator('[data-testid^="carrier-"]:enabled').first().click();
+      await page.getByTestId('draft-lock').click();
+      await page.waitForFunction(() => window.__tactics.run.view.draft.mine.length === 2, null, {
+        timeout: 15_000,
+      });
+      check(
+        'the extra pick locked in: the rival takes no more, the last discarded, Set out ready',
+        (await state()).view.draft.rival.length === 1 &&
+          (await page.locator('[data-discarded="true"]').count()) === offer.length - 3 &&
+          (await setOut.isEnabled())
+      );
+    }
     await shot(page, 'caravanserai-phone');
     await setOut.click();
     await page.waitForFunction((x) => window.__tactics.run.view.stage > x, before.stage, {
