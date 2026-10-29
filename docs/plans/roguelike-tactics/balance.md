@@ -4020,6 +4020,34 @@ it hits (the Vanguard's kind of control, which tanks win by), a walk of
 **Changed** (the owner, 2026-10-29): the Cataphract Armoured, Armour 1
 against every hit unless it Pierces.
 
+### The Cataphract Armoured (2026-10-29)
+
+`experiments/roster-twelve.mjs`, only its 39 rows the Cataphract is in
+(the rest unchanged from the run above), 400 fights each, the same seeds.
+Before (from the run above) in brackets.
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| Byzantium against | **45.8%** (31.3%) | **40.8%** (26.8%) | **50.3%** (37.5%) |
+
+| | In Steppe's tank seat | China's | Persia's |
+|---|---:|---:|---:|
+| The Cataphract | 46.8% (36.8%) | 58% (35.6%) | 53.2% (47%) |
+
+| In Byzantium's tank seat | Grappler | Vanguard | Juggernaut |
+|---|---:|---:|---:|
+| Its side wins | 65% (80.5%) | 61.8% (78.3%) | 62.3% (77.9%) |
+
+- **In the band away from home**: 47–58% in the other regions' tank
+  seats, the top of the band in China's; 44.9% over all nine seats
+  (33.3%).
+- **Byzantium's party 41–50%** (27–38%), the first time inside or near
+  the band, lowest against China.
+- **Still the weakest tank in its own party**: any other tank there wins
+  62–65%. Untraced; a guess is that its Charge carries and hits its own
+  allies (the Barbarian and the Priest stand near it), and its lack of a
+  walk leaves it out of place after a charge.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
