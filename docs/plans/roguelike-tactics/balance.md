@@ -4419,6 +4419,36 @@ hail change. Not built.
 - Hail at 16 or 18 slots as by turns (its two turns of the Storm
   Caller's 9). Party against party within the noise either way.
 
+### Grapple off the track (2026-10-29)
+
+`experiments/grapple-off-track.mjs`, on the rules of `2631e44`: a
+grappled unit's card off the track while the grapple holds, back on the
+free slot just before the Grappler's next card once it ends (the fight's
+`grapple: 'offTrack'`, the test stage's `"rules"`; no run has it), alone
+(`off`) and with durations in slots 8/16/6 (`s8-off`, the test stage's).
+400 fights each, the same seeds. Not built.
+
+| | Stunned by turns | off | s8-off |
+|---|---:|---:|---:|
+| The Steppe without Grapple | 18.5% | 17.5% | 17% |
+| The Grappler's speed +1 | 56.5% | 55.5% | 54.3% |
+| its power +1 | 51.5% | 53.8% | 53.8% |
+| The Steppe against China | 50.3% | 46.8% | 46.5% |
+| against Persia | 33.1% | 31.6% | 31.5% |
+| against Byzantium | 48.6% | 47.6% | 46.1% |
+| The Grappler in China's tank seat | 57.4% | 56.3% | 60.9% |
+| in Persia's | 42.9% | 43.2% | 43.2% |
+| in Byzantium's | 51.5% | 54.9% | 54.9% |
+
+- **Grapple is worth as much**: a side without it wins 17–17.5% (18.5%
+  by turns), and is used as often (28% of the Grappler's turns). The
+  freed unit acting first costs it little: a grapple mostly ends with the
+  Grappler hit, by the held unit's allies, whose cards come before its
+  next turn either way.
+- The Steppe 1–3.5 points lower against each region, the Grappler's
+  speed point 1–2 points less, its power point 2 more; all within the
+  noise. Stalls as by turns.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
