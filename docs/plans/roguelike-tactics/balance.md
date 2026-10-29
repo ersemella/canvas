@@ -4269,6 +4269,88 @@ leak into the next (the config's restore kept a key a patch added); fixed
 in `d36fdb6` and rerun. Earlier files set every key they add
 (`slam-armour.mjs`), so none was affected.
 
+### Skill on all twelve heroes and whole runs (2026-10-29)
+
+Asked for: whether the game still rewards play, on the latest rules, as
+"The roster checked again" measured it on 2026-10-27. A **novice** looks
+one decision ahead, production three, an **expert** four with four times
+the work. `experiments/skill-fights.mjs`, `modWinPct`, 400 fights each
+(about ±2.5 points a row, ±3.5 a span), seeds from 1000: one hero played
+by a novice or an expert in its role's seat of a Steppe mirror on both
+sides, the rest of both sides by production; and each region's whole
+party. Run on `df7d211`; the commits since change only Zahhak, who isn't
+in these fights. `experiments/skill-runs.mjs` (`runs.mjs`, 400 runs each,
+on `6815c7e`, Zahhak's Regrow built): each region's party through all
+three regions, bosses and the sealed road included, played at each depth,
+the enemy always production's.
+
+**In a fight** (its side's wins; the span on 2026-10-27 in brackets):
+
+| Hero | Novice | Expert | Span |
+|---|---:|---:|---:|
+| Elephant Rider (Stomp) | 40% | 53% | **13** (9.2) |
+| Magus (Omen) | 39% | 51.8% | **12.8** (15.2) |
+| Storm Caller | 44.8% | 55.3% | 10.5 (10.5) |
+| Vanguard | 47% | 55% | 8 (7.6) |
+| Archer (Longshot) | 48.5% | 55.6% | 7.1 (4.1) |
+| Cataphract | 49% | 55.8% | 6.8 |
+| Grappler | 42.8% | 49.5% | 6.7 (6.4) |
+| Alchemist | 45.5% | 50.3% | 4.8 (9.5) |
+| Swordsman | 46.3% | 51% | 4.7 (6.9) |
+| Horse Archer | 45.8% | 50% | 4.2 (8.7) |
+| Barbarian (Axe Throw) | 47.8% | 51.3% | **3.5** |
+| Priest (Blessing) | 49.5% | 50.6% | **1.1** |
+
+| Whole party | Novice | Expert | Span |
+|---|---:|---:|---:|
+| Persia | 29.3% | 60.7% | **31.4** |
+| Steppe | 34% | 58.3% | 24.3 (26.9) |
+| China | 35.2% | 54.6% | 19.4 (26.8) |
+| Byzantium | 37.9% | 56.8% | 18.9 |
+
+Unfinished fights 0–1.5%, up to 3.3% with the Priest and 6.3% in
+Byzantium's novice party.
+
+- **Play is still worth 19–31 points a fight**, Persia's party the most:
+  the Elephant Rider's Stomp (13) and the Magus's Omen (12.8) reward play
+  most of the twelve, and Longshot stopped by the first unit nearly
+  doubled the Archer's span (4.1 to 7.1), as blocking was meant to.
+- **The Priest rewards play least, about not at all** (1.1): a novice's
+  Blessing does as well as an expert's, healing and Shielding an ally
+  within 2 leaving little to choose. The Barbarian's Axe Throw (3.5) is
+  next.
+- **China's party fell about 7 points**, the Alchemist 9.5 to 4.8, the
+  Horse Archer 8.7 to 4.2, the Swordsman 6.9 to 4.7. Each is within about
+  two spans' noise, but all falling at once looks real; not traced (the
+  Steppe's mountains in every fight since, or the AI's changes).
+
+**In whole runs** (% of runs reaching each point, novice / production /
+expert; in brackets, the experts' wins over Zahhak of those reaching him):
+
+| Party | The Cyclops | China | The Bull Demon King | Persia | Zahhak (won) | Runs won |
+|---|---|---|---|---|---|---|
+| Steppe | 24 / 41 / 53 | 4 / 21 / 36 | 0 / 1 / 1 | 0 / 1 / 1 | 0 / 0.3 / 0.3 (1 of 1) | 0 / 0 / 0.3 |
+| China | 26 / 46 / 59 | 11 / 33 / 46 | 0.3 / 2 / 2 | 0 / 2 / 2 | 0 / 0.5 / 1 (0 of 4) | 0 / 0 / 0 |
+| Persia | 30 / 66 / 78 | 9 / 40 / 62 | 1 / 5 / 16 | 0 / 3 / 13 | 0 / 0.5 / 3.5 (9 of 14) | 0 / 0.3 / 2.3 |
+| Byzantium | 40 / 53 / 62 | 29 / 32 / 45 | 7 / 9 / 16 | 5 / 8 / 13 | 2.5 / 3 / 8 (4 of 32) | 0 / 0 / 1 |
+
+- **In a run, play shows in how far it gets, still not in runs won**: an
+  expert reaches China 1.5–7 times as often as a novice, but no party at
+  any depth wins more than 2.3% of runs (the experts 0.9% on average).
+- **China's regular stages end nearly every run**: of the 32–62% reaching
+  China, 1–16% reach the Bull Demon King, at every depth.
+- **Zahhak with Regrow can be beaten**: Persia's experts win 9 of 14
+  (64%), Byzantium's 4 of 32; before Regrow (a first run of this file on
+  `df7d211`, the same runs up to him), one win in his 78 fights over every
+  party and depth.
+- **Many losses to the Cyclops are unfinished**: 20–34 runs at production
+  and expert depth for Persia's and Byzantium's parties (14 for their
+  novices), 0–13 for the Steppe's and China's.
+
+Not changed: the numbers are the owner's. What would most help skill
+decide runs, measured above: something to choose in Blessing (and Axe
+Throw), China's stages 5 to 7, and the Cyclops's stalls.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

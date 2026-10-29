@@ -123,6 +123,13 @@ guess at its risk at 0.5 and 0 (`AI.swapRisk`), against the built Elixir.
 with the road out sealed while a boss stands, as built (`sealed`), and
 with the seal off (`open`, no hero a boss), on the same seeds.
 
+`skill-fights.mjs` (2026-10-29) measures skill as `roster-check.mjs` did, for
+all twelve heroes in their role's seat of a Steppe mirror and each region's
+party (`mod.search`, `mod.searchHeroes`); `skill-runs.mjs` (`runs.mjs`)
+plays each region's party through whole runs at a novice's, production's and
+an expert's depth (`search`). See balance.md, "Skill on all twelve heroes
+and whole runs".
+
 `trample-stomp.mjs` (2026-10-28) measures Trample as a stomp, the
 Juggernaut staying put and every unit next to it hit and Pushed 1 away
 (`ABILITY.trample.mode: 'stomp'`, now `ABILITY.stomp`, the ability renamed
