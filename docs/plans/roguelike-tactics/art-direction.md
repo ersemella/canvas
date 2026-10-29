@@ -1001,6 +1001,16 @@ background. One portrait only, no text, no border.
 
 ## Prompts for Zahhak and his serpents (2026-10-29)
 
+**Built from the owner's art (2026-10-29):** both shadows came back
+purple, so they were painted grey (#444444) first. Zahhak shrunk to
+44 × 44 with `shrink-sprite.py`, a 2-frame idle split at row 24; the
+serpent shrunk to 36 × 36 by an area resize to 24 colours instead (the
+script's block vote left its scales as noise and its eyes red), its gold
+eye put back by hand, the idle split at row 22. The portraits: Zahhak's
+cropped to his face, crown and one serpent (`--crop 380,200,1000,820`, no
+`--lines`; the whole picture lost his face), the serpent's `--crop
+40,60,1240,1260`. The prompts they came from:
+
 Persia's boss (enemies.md, 11.3c), three lettered discs (`zahhak` and
 `serpent` in `HERO_COLOR`) until their art comes. **Zahhak** is a boss
 and takes the giant's frame: a **44 × 44** board sprite facing right,
