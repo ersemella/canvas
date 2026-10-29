@@ -597,7 +597,11 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       ((hostile(u, unit) ? 1 : -1) * turnValue(u) * by) / cardCost(u);
     // Omen: one unit, an ally to act next, an enemy after the Magus's next turn.
     if (ABILITY.omen.mode === 'single') {
-      const to = hostile(a, unit) ? aimSlot(state, unit) + 1 : state.currentSlot + 1;
+      const to = !hostile(a, unit)
+        ? state.currentSlot + 1
+        : ABILITY.omen.enemyDelay > 0
+          ? a.slot! + ABILITY.omen.enemyDelay
+          : aimSlot(state, unit) + 1;
       return closing + later(a, to - a.slot!) + (ABILITY.omen.rider ? 1 : 0);
     }
     const b = unitAt(state, target!.to!)!;

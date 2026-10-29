@@ -722,7 +722,9 @@ export const ABILITY = {
    * "Omen"), one unit in place of two, an ally's card put just after his
    * current turn and an enemy's just after his next, the Elixir's choice
    * of side. `rider` (with `single`): the ally Empowered, the enemy
-   * Weakened, this much.
+   * Weakened, this much. `enemyDelay` (with `single`), above 0: an enemy
+   * Delayed this many slots in place of put just after his next turn, so
+   * one under his action cost (9) can't hold the same enemy back for good.
    */
   omen: {
     range: 3 as number,
@@ -731,6 +733,7 @@ export const ABILITY = {
     mode: 'single' as 'swap' | 'bracket' | 'before' | 'single',
     once: false as boolean,
     rider: 0 as number,
+    enemyDelay: 0 as number,
   },
   /**
    * Stomp (owner, 2026-10-28; balance.md, "Trample as a stomp"; Trample

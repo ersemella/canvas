@@ -1101,7 +1101,11 @@ const omen: AbilityDef = {
   },
   summary: () =>
     ABILITY.omen.mode === 'single'
-      ? `A unit within ${ABILITY.omen.range} whose turn comes before your next: an ally acts next, an enemy just after your next turn.`
+      ? `A unit within ${ABILITY.omen.range} whose turn comes before your next: an ally acts next, ${
+          ABILITY.omen.enemyDelay > 0
+            ? `an enemy is Delayed ${ABILITY.omen.enemyDelay}.`
+            : 'an enemy just after your next turn.'
+        }`
       : ABILITY.omen.mode === 'before'
         ? `Two units within ${ABILITY.omen.range} whose turns come before your next: the first acts next, the second just before your next turn.`
         : ABILITY.omen.mode === 'bracket'
@@ -1127,6 +1131,8 @@ const omen: AbilityDef = {
         setCard(ctx, a, ctx.state.currentSlot + 1);
         log(ctx, `${unitName(a)} acts next.`);
         if (rider) empower(ctx, a, rider, user);
+      } else if (ABILITY.omen.enemyDelay > 0) {
+        delay(ctx, a, ABILITY.omen.enemyDelay, user);
       } else {
         setCard(ctx, a, aimSlot(ctx.state, user) + 1);
         log(ctx, `${unitName(a)} waits until after ${unitName(user)} again.`);

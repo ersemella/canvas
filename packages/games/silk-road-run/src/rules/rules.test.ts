@@ -1955,6 +1955,23 @@ describe('the Magus', () => {
     }
   });
 
+  it('Omen with `enemyDelay` Delays an enemy that much, so it still acts before the Magus again', () => {
+    const was = {...ABILITY.omen};
+    try {
+      Object.assign(ABILITY.omen, {mode: 'single', enemyDelay: 4});
+      const s = setup({'p-magus': c, 'e-mangudai': hexNeighbor(c, 0)}, party);
+      const m = unit(s, 'p-magus');
+      const e = unit(s, 'e-mangudai');
+      m.slot = s.currentSlot;
+      e.slot = 1;
+      applyTurn(s, m, {action: {ability: 'omen', target: {hex: e.hex!}}});
+      expect(e.slot).toBe(5);
+      expect(e.slot!).toBeLessThan(m.slot!);
+    } finally {
+      Object.assign(ABILITY.omen, was);
+    }
+  });
+
   it('Omen as `bracket` passes over cards after its next turn, units beyond 2, the Inevitable and itself', () => {
     const was = {...ABILITY.omen};
     Object.assign(ABILITY.omen, {mode: 'bracket', range: 2});
