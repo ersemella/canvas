@@ -232,6 +232,15 @@ random from one pool:
   - **The rival picks** the rarest card some unit of the next stage's
     enemy can use (a stat always; a passive or upgrade its `fitRank` puts
     under 500), the best fit breaking a tie (`rivalPick`).
+  - **A provision is drawn once a run (owner, 2026-10-29):** once a
+    card has been offered at a caravanserai, picked by either side or
+    discarded, it is never drawn again in the run (`RunState.offered`).
+    This covers the three stat cards too: each of +1 speed, defence and
+    power is offered at most once a run. With 43 cards in the pool (the
+    three stats and 40 passives and upgrades) and up to 48 drawn in a run
+    of three regions, late drafts can run short: fewer are drawn, and the
+    party picks only while a card is left after the picks and answers
+    before (`picksOwed`); with none left, there is no draft.
   - Not measured: how much harder runs are with the enemy growing every
     stage, nor whether the rival's picks (rarest first) are its best.
 - **At most two abilities** besides moving and Hold (owner, 2026-10-25;
@@ -590,7 +599,7 @@ hero is still question 63.
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Run length (2026-10-24, owner) | 6 regions of 3 stages, the last of 4: 19 fights | Several levels per region, TBD (15.3a); 3 to 4 stages per region | A fixed rhythm per region: build up, commit, the hard fight |
-| The caravanserai's draft (2026-10-29, owner) | Every caravanserai drafts provisions (stat upgrades, Epic; passive upgrades; ability upgrades) by rarity: 3 after a regular stage, 1 each, 5 after a boss, 2 each, the rest discarded; a pick can heal Humphrey instead, his no-damage stage draws one more card and gives the party one more pick; the rival's provisions go to every later stage's enemy (19.3c) | Stat provisions earned per stage and a passive draft between regions (19.2, 19.3a) | One decision, the same at every rest, with the enemy growing as the party does |
+| The caravanserai's draft (2026-10-29, owner) | Every caravanserai drafts provisions (stat upgrades, Epic; passive upgrades; ability upgrades) by rarity: 3 after a regular stage, 1 each, 5 after a boss, 2 each, the rest discarded; a pick can heal Humphrey instead, his no-damage stage draws one more card and gives the party one more pick; the rival's provisions go to every later stage's enemy; a card once drawn is never drawn again in the run (19.3c) | Stat provisions earned per stage and a passive draft between regions (19.2, 19.3a) | One decision, the same at every rest, with the enemy growing as the party does |
 | Stat growth (2026-10-24, owner) | Provisions: 2 per region, assigned when earned, reassignable after stage 3's fight within the region, then locked | No stat growth outside gear (10.9); 1 point per stage, swappable every stage; swappable only between regions | Small, steady growth with one commitment per region |
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |

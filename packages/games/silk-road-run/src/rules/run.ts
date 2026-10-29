@@ -7,7 +7,8 @@
  * party picking one and the rival one in turn, the rest discarded; 3 drawn
  * and 1 each after a regular stage, 5 and 2 each after a boss; if the
  * camel took no damage, one more drawn and one more pick for the party,
- * its last. A pick can heal the camel instead.
+ * its last. A pick can heal the camel instead. A provision once drawn is
+ * never drawn again in the run.
  * The rival's provisions go to the enemy of every stage after. The heroes
  * start each stage at full health; the camel keeps the health it ended the
  * last one with, unless healed there (camel.md, 18.4). The run keeps the
@@ -70,7 +71,7 @@ import type {
  * removed or reinterpreted): older runs are then ended rather than
  * patched (`runOutdated`), so the rules never handle an old shape.
  */
-export const RUN_FORMAT = 17;
+export const RUN_FORMAT = 18;
 
 export interface RunState {
   /** `RUN_FORMAT` when the run was created; missing in runs from before it existed. */
@@ -91,6 +92,11 @@ export interface RunState {
   passives?: PassivePick[];
   /** The rival's provisions, in the order taken: every stage's enemy shares them out (`rivalShares`). */
   rivalCards?: CardId[];
+  /**
+   * Every provision the caravanserais have drawn so far, picked or
+   * discarded, in the order drawn: none is drawn again (owner, 2026-10-29).
+   */
+  offered?: CardId[];
   /**
    * The party's picks so far in the caravanserai's draft (`draft`), each
    * kept for good, so the rival's answer to another pick is never shown
@@ -307,8 +313,10 @@ const rivalOwed = (run: RunState) => draftSize(run)?.rival ?? 0;
  * progression.md, 19.3): from the stats and the passives and upgrades of the
  * pool, one at a time from the run's seed and the stage, so a reload offers
  * the same, each as often as its rarity's weight (`RARITY_WEIGHT`; 19.3b).
- * A stat every hero standing has at RULES.statMax, and a passive every hero
- * standing already carries, isn't drawn.
+ * A provision drawn at an earlier caravanserai, picked or not, isn't drawn
+ * again in the run (`offered`; owner, 2026-10-29); nor is a stat every hero
+ * standing has at RULES.statMax, or a passive every hero standing already
+ * carries. Late in a run the pool can run short, and fewer are drawn.
  */
 export function draftOffer(run: RunState): CardId[] {
   const size = draftSize(run);
@@ -316,12 +324,13 @@ export function draftOffer(run: RunState): CardId[] {
   const standing = run.fight.units.filter(
     (u) => u.side === 'player' && u.hero !== CAMEL && u.alive
   );
+  const offered = run.offered ?? [];
   const open: CardId[] = [
     ...STATS.filter((stat) => standing.some((u) => u[stat] < RULES.statMax)),
     ...(Object.keys(PASSIVES) as PassiveId[]).filter(
       (id) => !NOT_OFFERED.includes(id) && standing.some((u) => !hasPassive(u, id))
     ),
-  ];
+  ].filter((card) => !offered.includes(card));
   return weightedDraw(
     open,
     (card) => RARITY_WEIGHT[cardRarity(card)],
@@ -330,9 +339,19 @@ export function draftOffer(run: RunState): CardId[] {
   );
 }
 
-/** How many picks the party makes in the caravanserai's draft: none when it draws nothing. */
+/**
+ * How many picks the party makes in the caravanserai's draft: none when it
+ * draws nothing, and, with fewer drawn than the draft's size, only those
+ * that still find a card left after the picks and the rival's answers
+ * before them.
+ */
 function picksOwed(run: RunState): number {
-  return draftOffer(run).length > 0 ? draftSize(run)!.picks : 0;
+  const drawn = draftOffer(run).length;
+  const size = draftSize(run);
+  if (!size || drawn === 0) return 0;
+  let owed = 0;
+  while (owed < size.picks && owed + Math.min(owed, size.rival) < drawn) owed++;
+  return owed;
 }
 
 /** `n` of `items` drawn one at a time without putting back, each as often as its `weight`. */
@@ -557,10 +576,12 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
       if (isStatCard(pick.card)) provisions.push({hero: pick.hero, stat: pick.card});
       else passives.push({hero: pick.hero, passive: pick.card});
     }
+    const offer = draftOffer(run);
     const rivalCards = [
       ...(run.rivalCards ?? []),
-      ...rivalPicks(draftOffer(run), draftRivals(run), picks, rivalOwed(run)),
+      ...rivalPicks(offer, draftRivals(run), picks, rivalOwed(run)),
     ];
+    const offered = [...(run.offered ?? []), ...offer];
     const fight = stageFight(
       run.seed,
       stage + 1,
@@ -579,6 +600,7 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
       provisions,
       passives,
       ...(rivalCards.length ? {rivalCards} : {}),
+      ...(offered.length ? {offered} : {}),
       fight,
     };
   }

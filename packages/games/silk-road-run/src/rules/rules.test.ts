@@ -3921,6 +3921,40 @@ describe('previews, the AI and the run', () => {
     expect(next.rivalCards).toEqual(draft.rival);
   });
 
+  it('a provision once drawn, picked or discarded, is never drawn again in the run', () => {
+    for (const seed of [3, 7, 11]) {
+      let run = createRun(seed);
+      const drawn: CardId[] = [];
+      for (let stage = 0; stage < STAGES.length - 1; stage++) {
+        const won = winStage(run, stage % 2 === 0);
+        const {offer} = runView(won).draft!;
+        expect(offer.filter((c) => drawn.includes(c))).toEqual([]);
+        drawn.push(...offer);
+        run = handleRunAction(pickAll(won), {type: 'next'});
+        expect(run.offered).toEqual(drawn);
+      }
+    }
+  });
+
+  it('with the pool run short, fewer are drawn, and the party picks only while a card is left', () => {
+    const won = winStage({...createRun(9), stage: 3});
+    const all = runView(won).draft!.offer;
+    const pool = ['speed', 'defence', 'power', ...Object.keys(PASSIVES)] as CardId[];
+    const short = (left: number) => ({
+      ...won,
+      offered: pool.filter((c) => !all.slice(0, left).includes(c)),
+    });
+    // Two left: the party picks one, the rival answers with the other.
+    expect(runView(short(2)).draft).toMatchObject({offer: all.slice(0, 2), picks: 1});
+    // Three left: the party's second pick still finds one.
+    expect(runView(short(3)).draft).toMatchObject({picks: 2});
+    const next = handleRunAction(pickAll(short(2)), {type: 'next'});
+    expect(next.stage).toBe(4);
+    // None left: no draft to make, and the party sets out at once.
+    expect(runView(short(0)).draft).toMatchObject({offer: [], picks: 0});
+    expect(handleRunAction(short(0), {type: 'next'}).stage).toBe(4);
+  });
+
   it('Humphrey unhurt all stage: 4 drawn, the party picks 2, the rival 1 after the first, 1 discarded', () => {
     const won = winStage(createRun(7), true);
     const {offer, picks, rivalPicks: theirs} = runView(won).draft!;

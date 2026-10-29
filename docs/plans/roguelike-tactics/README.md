@@ -28,7 +28,8 @@ stops at a **caravanserai** (2026-10-25), which since 2026-10-29 drafts
 after a regular stage, the player and the rival 1 each, 5 after a boss, 2
 each, the rest discarded; a pick can heal Humphrey instead, and the
 rival's provisions go to every later stage's enemy; Humphrey unhurt
-in a stage draws one more card and gives the player one more pick
+in a stage draws one more card and gives the player one more pick; a
+card once drawn, picked or discarded, is never drawn again in the run
 ([progression.md](progression.md), 19.3c).
 **Maps per region** (2026-10-25): each stage names its map (`STAGES`,
 `MAPS` in map.ts), every one so far the Steppe's; the **Gobi Crossing**
