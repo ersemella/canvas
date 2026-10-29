@@ -435,14 +435,13 @@ hero is still question 63.
     reading): today the Priest's Blessing and the Alchemist's Elixir, and
     any attack under Mending Strike or Shot. A **melee attack** is one on
     a target next to the hero (the reverse of a ranged attack).
-  - **Mending Strike and Shot (builder's readings):** the heal is the
-    hero's power, Empower and Weaken not counted, and can't take the ally
-    above its health; only the heal reaches the ally, not the attack's
-    other effects (a Push, a Stun); on an area attack, only an ally it
-    is aimed at is healed, and any other ally in the area is treated as
-    it is today. The
-    heal sets off the Healing upgrades, and Martyr, as any heal on an
-    ally does.
+  - **Mending Strike and Shot (owner, 2026-10-29):** the heal is the
+    hero's power, Empower adding to it and Weaken taking from it (to at
+    least 0), and can't take the ally above its health (the builder's
+    reading). The attack's other effects reach the ally too (a Push, a
+    Stun). On an area attack, every ally in the area is healed. The heal
+    sets off the other Healing upgrades (Invigorate, Quickening, Fortify,
+    Ward), and Martyr, as any heal on an ally does.
   - **An upgrade's effect applies only if the original keyword does:**
     Wearying's Weaken needs the Delay to happen, so it does nothing on an
     Inevitable enemy; Fervour's Empower likewise; Forceful does nothing on
