@@ -29,7 +29,7 @@ import {
 } from './map';
 import type {MapData, Tile} from './map';
 import {placeStartingCards, shuffled} from './track';
-import type {AbilityId, FightState, HeroId, Loadout, PassiveId, Unit} from './types';
+import type {AbilityId, FightRules, FightState, HeroId, Loadout, PassiveId, Unit} from './types';
 
 /** The committed test-stage.json. */
 export const TEST_STAGE: unknown = config;
@@ -51,6 +51,8 @@ interface TestSetup {
   camel: UnitSetup | null;
   player: UnitSetup[];
   enemy: UnitSetup[];
+  /** The fight's own rules (`FightRules`); absent: config.ts's, as in a run. */
+  rules?: FightRules;
 }
 
 /** The most units a side may bring (those without an "at" must also fit its starting columns). */
@@ -83,6 +85,27 @@ function parseSpace(where: string, v: unknown): Hex {
   const hex = spaceAt(col, row);
   if (!onMap(STEPPE, hex)) fail(`${where} {"col": ${col}, "row": ${row}} is off the board.`);
   return hex;
+}
+
+/**
+ * `"rules"`: `{"ticks": {"power": p, "defence": d}}` (`FightRules.ticks`),
+ * whole numbers 0 to 10.
+ */
+function parseRules(v: unknown): FightRules {
+  if (!isObject(v)) fail('rules must be an object like {"ticks": {"power": 1, "defence": 1}}.');
+  onlyKeys('rules', v as Record<string, unknown>, ['ticks']);
+  const ticks = (v as Record<string, unknown>).ticks;
+  if (ticks === undefined) return {};
+  if (!isObject(ticks)) fail('rules.ticks must be an object like {"power": 1, "defence": 1}.');
+  const t = ticks as Record<string, unknown>;
+  onlyKeys('rules.ticks', t, ['power', 'defence']);
+  const n = (k: 'power' | 'defence') => {
+    const x = t[k] ?? 0;
+    if (!Number.isInteger(x) || (x as number) < 0 || (x as number) > 10)
+      fail(`rules.ticks.${k} must be a whole number from 0 to 10.`);
+    return x as number;
+  };
+  return {ticks: {power: n('power'), defence: n('defence')}};
 }
 
 function parseUnit(where: string, v: unknown, camel = false): UnitSetup {
@@ -144,7 +167,7 @@ function parseSide(where: string, v: unknown): UnitSetup[] {
 export function parseTestStage(raw: unknown): TestSetup {
   if (!isObject(raw)) fail('must be an object.');
   const v = raw as Record<string, unknown>;
-  onlyKeys('The file', v, ['seed', 'map', 'yurts', 'camel', 'player', 'enemy']);
+  onlyKeys('The file', v, ['seed', 'map', 'yurts', 'camel', 'player', 'enemy', 'rules']);
   const map = v.map ?? STEPPE.id;
   // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
   if (typeof map !== 'string' || MAPS[map]?.id !== map)
@@ -173,6 +196,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     camel,
     player: parseSide('player', v.player),
     enemy: parseSide('enemy', v.enemy),
+    ...(v.rules === undefined ? {} : {rules: parseRules(v.rules)}),
   };
   const taken = new Map<string, string>();
   const claim = (where: string, h: Hex) => {
@@ -234,6 +258,7 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
     effects: [],
     log: [],
     awaiting: null,
+    ...(setup.rules ? {rules: setup.rules} : {}),
   };
   const camel = units.find((u) => u.hero === CAMEL);
   for (const [u, {at}] of placed) u.hex = at ?? (u === camel ? route.camelStart : null);

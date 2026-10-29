@@ -443,8 +443,26 @@ export type RecordedEvent = FightEvent & {after: BoardSnapshot};
 
 export type FightPhase = 'fight' | 'won' | 'lost';
 
+/**
+ * Rules for one fight in place of config.ts's, which only the test stage
+ * (`"rules"` in test-stage.json) and the balance experiments set, so a run
+ * never has them.
+ */
+export interface FightRules {
+  /**
+   * Durations in slots that power lengthens and defence shortens, step 1
+   * (2026-10-29; the Elixir's Empower and Weaken only): a turn of the
+   * target's slots (its action cost), plus `power` slots for each point of
+   * the Alchemist's power, and for a Weaken less `defence` for each point
+   * of the target's defence, at least 1 (`elixirUntil` in resolve.ts).
+   */
+  ticks?: {power: number; defence: number};
+}
+
 export interface FightState {
   mapId: string;
+  /** This fight's own rules (`FightRules`); absent in every run's fight. */
+  rules?: FightRules;
   /** This fight's tiles by hex key (its yurts are random per fight). */
   tiles: Record<string, Tile>;
   /** The camel's road this fight, one of the map's `ROUTES` at random (owner, 2026-10-28). */

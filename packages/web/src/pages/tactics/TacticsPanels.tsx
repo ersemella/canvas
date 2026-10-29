@@ -293,6 +293,11 @@ function GroundCard({
   );
 }
 
+/** How long an effect with a last slot lasts (`Unit.empowerUntil`), from where the track is. */
+function throughSlot(fight: FightState, until: number): string {
+  return `for ${until - fight.currentSlot} more slots, through slot ${until}`;
+}
+
 /** A unit's statuses, each led by its keyword, with what holds it. */
 function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: string; rest: string}[] {
   const byId = (id: string) => fight.units.find((u) => u.id === id);
@@ -310,13 +315,23 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
     out.push({
       id: 'empowered',
       label: `Empowered ${unit.empower}`,
-      rest: unit.empowerStarted ? 'until the end of this turn' : 'until the end of its next turn',
+      rest:
+        unit.empowerUntil !== undefined
+          ? throughSlot(fight, unit.empowerUntil)
+          : unit.empowerStarted
+            ? 'until the end of this turn'
+            : 'until the end of its next turn',
     });
   if (unit.weaken)
     out.push({
       id: 'weakened',
       label: `Weakened ${unit.weaken}`,
-      rest: unit.weakenStarted ? 'until the end of this turn' : 'until the end of its next turn',
+      rest:
+        unit.weakenUntil !== undefined
+          ? throughSlot(fight, unit.weakenUntil)
+          : unit.weakenStarted
+            ? 'until the end of this turn'
+            : 'until the end of its next turn',
     });
   if (unit.shield)
     out.push({

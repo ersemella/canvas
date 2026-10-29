@@ -2857,6 +2857,62 @@ describe('the Vanguard and the Alchemist', () => {
     expect(tap(across)).toBeUndefined();
   });
 
+  it('with tick durations, the Elixir lasts a turn of the target’s slots, longer by power, shorter by defence', () => {
+    const s = setup(
+      {
+        'p-alchemist': at(1, 3),
+        'e-mangudai': at(2, 3),
+        'p-mangudai': at(3, 3),
+        'e-modao': at(8, 6),
+      },
+      party
+    );
+    s.rules = {ticks: {power: 2, defence: 1}};
+    s.units.forEach((u) => (u.controller = 'human'));
+    const alchemist = unit(s, 'p-alchemist');
+    alchemist.power = 3;
+    const ally = unit(s, 'p-mangudai');
+    const enemy = unit(s, 'e-mangudai');
+    enemy.hp = enemy.maxHp = 20;
+    enemy.defence = 2;
+    // The preview says how long, in slots.
+    const preview = previewTurn(s, alchemist.id, {
+      action: {ability: 'elixir', target: {hex: at(3, 3)}},
+    })!;
+    const lasts = actionCost(ally) + 2 * 3;
+    expect(preview.changes.find((c) => c.unitId === ally.id)!.statuses).toContain(
+      `Empowered 2, ${lasts} slots`
+    );
+    applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
+    expect(ally.empowerUntil).toBe(lasts);
+    // Its turn doesn't end it: the window does.
+    s.units.forEach((u) => (u.slot = u.slot === null ? null : 1000 + u.slot));
+    ally.slot = lasts;
+    expect(advanceToDecision(s)!.id).toBe(ally.id);
+    applyTurn(s, ally, {action: {ability: 'hold'}});
+    expect(ally.empower).toBe(2);
+    ally.slot = lasts + 1;
+    expect(advanceToDecision(s)!.id).toBe(ally.id);
+    expect(ally.empower).toBeUndefined();
+    // On an enemy, its defence takes off a slot a point, to at least 1.
+    const t = setup({'p-alchemist': at(1, 3), 'e-mangudai': at(2, 3)}, party);
+    t.rules = {ticks: {power: 2, defence: 1}};
+    const a = unit(t, 'p-alchemist');
+    a.power = 3;
+    const e = unit(t, 'e-mangudai');
+    e.hp = e.maxHp = 20;
+    e.defence = 2;
+    applyTurn(t, a, {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
+    expect(e.weakenUntil).toBe(actionCost(e) + 2 * 3 - 2);
+    const u = setup({'p-alchemist': at(1, 3), 'e-mangudai': at(2, 3)}, party);
+    u.rules = {ticks: {power: 0, defence: 5}};
+    const tank = unit(u, 'e-mangudai');
+    tank.hp = tank.maxHp = 20;
+    tank.defence = 9;
+    applyTurn(u, unit(u, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
+    expect(tank.weakenUntil).toBe(1);
+  });
+
   it('the built Elixir: a unit within 2, the Alchemist too; an ally healed 1 and Empowered 2, an enemy hit for 1 and Weakened 2', () => {
     const s = setup(
       {

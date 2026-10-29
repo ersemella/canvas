@@ -457,10 +457,12 @@ export function shotEmpower(user: Unit, shot: ShotInAir): number {
  * Empower it had. An ally Empowered by `by`'s ability is Hastened too with
  * its Inspire (19.9).
  */
-export function empower(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
+export function empower(ctx: Ctx, u: Unit, amount: number, by?: Unit, until?: number): void {
   u.empower = amount;
   delete u.empowerStarted;
-  if (RULES.trackTime) u.empowerUntil = lastsThrough(ctx.state, u);
+  if (until !== undefined) u.empowerUntil = until;
+  else if (RULES.trackTime) u.empowerUntil = lastsThrough(ctx.state, u);
+  else delete u.empowerUntil;
   log(ctx, `${unitName(u)} is Empowered ${amount}.`);
   empowered(ctx, u, by);
 }
@@ -502,10 +504,12 @@ export function shield(ctx: Ctx, u: Unit, amount: number, lasting = false): void
  * Weaken it had. An enemy Weakened by `by`'s ability is Delayed too with its
  * Lethargy (19.9).
  */
-export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
+export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit, until?: number): void {
   u.weaken = amount;
   delete u.weakenStarted;
-  if (RULES.trackTime) u.weakenUntil = lastsThrough(ctx.state, u);
+  if (until !== undefined) u.weakenUntil = until;
+  else if (RULES.trackTime) u.weakenUntil = lastsThrough(ctx.state, u);
+  else delete u.weakenUntil;
   log(ctx, `${unitName(u)} is Weakened ${amount}.`);
   if (by && hostile(by, u) && fires(ctx, by, 'lethargy', u))
     delay(ctx, u, UPGRADE.lethargy.delay, by);
@@ -517,7 +521,10 @@ export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
  * stays, and lasts as long.
  */
 export function empowerAtLeast(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
-  if (RULES.trackTime && (u.empower ?? 0) <= amount) u.empowerUntil = lastsThrough(ctx.state, u);
+  if ((u.empower ?? 0) <= amount) {
+    if (RULES.trackTime) u.empowerUntil = lastsThrough(ctx.state, u);
+    else delete u.empowerUntil;
+  }
   u.empower = Math.max(u.empower ?? 0, amount);
   delete u.empowerStarted;
   log(ctx, `${unitName(u)} is Empowered ${u.empower}.`);
@@ -1220,12 +1227,32 @@ export function lastsThrough(state: FightState, anchor: Unit, turns = 1): number
 }
 
 /**
- * The track reaches `slot` (`RULES.trackTime`): every effect whose last
+ * The last slot an Elixir's Empower (`hostile` false) or Weaken on `u`
+ * lasts through, with the fight's tick durations (`FightRules.ticks`): a
+ * turn of `u`'s slots, plus `power` for each point of `caster`'s power, and
+ * for a Weaken less `defence` for each point of `u`'s defence, at least 1.
+ * Undefined without them: the Elixir lasts by turns.
+ */
+export function elixirUntil(
+  state: FightState,
+  caster: Unit,
+  u: Unit,
+  hostile: boolean
+): number | undefined {
+  const ticks = state.rules?.ticks;
+  if (!ticks) return undefined;
+  const span =
+    actionCost(u) + ticks.power * caster.power - (hostile ? ticks.defence * u.defence : 0);
+  return state.currentSlot + Math.max(1, span);
+}
+
+/**
+ * The track reaches `slot` (`RULES.trackTime`, or the fight's tick durations): every effect whose last
  * slot is behind it ends, before the card there acts. A fire stays for good
  * once its Princess Iron Fan has fallen, as by turns.
  */
 export function expireTrackTime(state: FightState, slot: number): void {
-  if (!RULES.trackTime) return;
+  if (!RULES.trackTime && !state.rules?.ticks) return;
   for (const u of state.units) {
     if (u.empowerUntil !== undefined && u.empowerUntil < slot) {
       delete u.empower;

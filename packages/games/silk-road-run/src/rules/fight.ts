@@ -316,10 +316,10 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     // Princess Iron Fan's fire until her next (owner, 2026-10-28).
     ageHail(state, unit);
     fanOut(state, unit);
-    // An Empower or Weaken lasts until the end of this turn (with
-    // `RULES.trackTime`, through its window instead).
-    if (unit.empower && !RULES.trackTime) unit.empowerStarted = true;
-    if (unit.weaken && !RULES.trackTime) unit.weakenStarted = true;
+    // An Empower or Weaken lasts until the end of this turn (one with a
+    // last slot, through that instead).
+    if (unit.empower && unit.empowerUntil === undefined) unit.empowerStarted = true;
+    if (unit.weaken && unit.weakenUntil === undefined) unit.weakenStarted = true;
     squeezeGrapples(ctx, unit);
     // The squeeze can end the fight.
     if (state.phase !== 'fight') return;

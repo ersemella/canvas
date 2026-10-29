@@ -1,9 +1,10 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, in Zahhak's palace: Persia's three heroes, starting kits, against Persia's boss, Zahhak and his two serpents.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, step 1 of durations by power and defence (2026-10-29): China's three heroes, the Alchemist at power 3, against the Steppe's, on the Gobi, the Elixir's Empower and Weaken lasting a turn of the target's slots, 1 more a point of the Alchemist's power, a Weaken 1 fewer a point of the target's defence.",
   "seed": null,
-  "map": "palace",
+  "map": "gobi",
   "yurts": "random",
   "camel": {},
-  "player": [{"hero": "archer"}, {"hero": "mahout"}, {"hero": "magus"}],
-  "enemy": [{"hero": "zahhak"}, {"hero": "serpent"}, {"hero": "serpent"}]
+  "rules": {"ticks": {"power": 1, "defence": 1}},
+  "player": [{"hero": "modao"}, {"hero": "youxia"}, {"hero": "alchemist", "power": 3}],
+  "enemy": [{"hero": "bokh"}, {"hero": "mangudai"}, {"hero": "storm"}]
 }

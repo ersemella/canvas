@@ -34,13 +34,23 @@ export interface TurnPreview {
   bumped: Record<string, number>;
 }
 
-function statusWords(before: Unit, after: Unit): string[] {
+/** ", N slots" for an Empower or Weaken with a last slot (`Unit.empowerUntil`), `now` the turn's slot. */
+function forSlots(until: number | undefined, now: number): string {
+  return until === undefined ? '' : `, ${until - now} slots`;
+}
+
+function statusWords(before: Unit, after: Unit, now: number): string[] {
   const out: string[] = [];
   if (isStunned(after) && !isStunned(before)) out.push('Stunned');
   else if (isImmobilized(after) && !isImmobilized(before)) out.push('Immobilized');
   if (after.alive && !isStunned(after) && isStunned(before)) out.push('Released');
-  if (after.empower && after.empower !== before.empower) out.push(`Empowered ${after.empower}`);
-  if (after.weaken && after.weaken !== before.weaken) out.push(`Weakened ${after.weaken}`);
+  if (
+    after.empower &&
+    (after.empower !== before.empower || after.empowerUntil !== before.empowerUntil)
+  )
+    out.push(`Empowered ${after.empower}${forSlots(after.empowerUntil, now)}`);
+  if (after.weaken && (after.weaken !== before.weaken || after.weakenUntil !== before.weakenUntil))
+    out.push(`Weakened ${after.weaken}${forSlots(after.weakenUntil, now)}`);
   if (after.unstoppable && !before.unstoppable) out.push('Unstoppable');
   return out;
 }
@@ -78,7 +88,7 @@ export function diff(before: FightState, after: FightState): UnitChange[] {
     if (!b.alive) continue;
     const a = after.units.find((u) => u.id === b.id)!;
     const moved = a.hex && b.hex ? !hexEquals(a.hex, b.hex) : a.hex !== b.hex;
-    const statuses = statusWords(b, a);
+    const statuses = statusWords(b, a, before.currentSlot);
     if (a.hp === b.hp && !moved && statuses.length === 0 && a.alive) continue;
     out.push({
       unitId: b.id,

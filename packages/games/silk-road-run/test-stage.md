@@ -14,28 +14,38 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 
 ## Example
 
-The committed file, fought in Zahhak's palace: Persia's three heroes,
-every kit the starting one, against Persia's boss, Zahhak and his two
-serpents (2026-10-29; also Persia's stage 4).
+The committed file (2026-10-29), step 1 of durations by power and
+defence (`"rules"`, below): China's three heroes, the Alchemist at power
+3, against the Steppe's, on the Gobi. Each Elixir's preview and the
+unit's statuses say how many slots its Empower or Weaken lasts: against
+the Grappler (defence 3) a Weaken lasts 2 slots fewer than against the
+Outrider (defence 1). Delete `"rules"` to play the same fight by
+turns, or set the Alchemist's `power` to compare.
 
 ```json
 {
   "seed": null,
-  "map": "palace",
+  "map": "gobi",
   "yurts": "random",
   "camel": {},
+  "rules": {"ticks": {"power": 1, "defence": 1}},
   "player": [
-    {"hero": "archer"},
-    {"hero": "mahout"},
-    {"hero": "magus"}
+    {"hero": "modao"},
+    {"hero": "youxia"},
+    {"hero": "alchemist", "power": 3}
   ],
   "enemy": [
-    {"hero": "zahhak"},
-    {"hero": "serpent"},
-    {"hero": "serpent"}
+    {"hero": "bokh"},
+    {"hero": "mangudai"},
+    {"hero": "storm"}
   ]
 }
 ```
+
+To fight Persia's boss, Zahhak and his two serpents, in his palace
+(committed until 2026-10-29; also Persia's stage 4): `"map": "palace"`,
+Persia's three heroes (`archer`, `mahout`, `magus`) against `zahhak` and
+two `serpent`, no `"rules"`.
 
 **Zahhak** (`zahhak`): speed 1, defence 4 (health 10), power 3. **Feed the
 Serpents**: melee, his power. **Regrow**: his turn's action, a fallen
@@ -84,6 +94,7 @@ it, unhurt.
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
 | `enemy` | The AI’s units, 1 to 9 (at most 11 without an `at`). | required |
+| `rules` | This fight's own rules, which no run has. `{"ticks": {"power": p, "defence": d}}`: durations by power and defence, step 1 (2026-10-29), so far the Alchemist's Elixir only. Its Empower and Weaken last a turn of the target's slots (60 ÷ (its speed + 5), rounded, as by turns), plus `p` slots for each point of the Alchemist's power, and a Weaken `d` fewer for each point of the target's defence, at least 1; it ends as the track passes its last slot, whatever turns come in between, so a Haste can fit in a second Empowered turn and a Delay can carry a card past its Weaken. `p` and `d` are whole numbers 0 to 10, 0 if left out. | none: every duration by turns |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
 

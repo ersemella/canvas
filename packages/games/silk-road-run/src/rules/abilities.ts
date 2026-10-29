@@ -58,6 +58,7 @@ import {
   swapSpeedHealth,
   stun,
   stunForATurn,
+  elixirUntil,
   lastsThrough,
   swapCards,
   setCard,
@@ -937,7 +938,8 @@ const elixir: AbilityDef = {
         if (elixirHeals(u)) heal(ctx, u, user.power, user);
         // An amount of 0 gives none, rather than replacing an Empower it has.
         const empowers = elixirAmount('empower');
-        if (u.power > 0 && empowers > 0) empower(ctx, u, empowers, user);
+        if (u.power > 0 && empowers > 0)
+          empower(ctx, u, empowers, user, elixirUntil(ctx.state, user, u, false));
         haste(ctx, u, hastes, user);
         if (unstoppable) makeUnstoppable(ctx, u);
         if (elixirSwaps(u)) swapSpeedHealth(ctx, u);
@@ -945,7 +947,8 @@ const elixir: AbilityDef = {
       } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
         const weakens = elixirAmount('weaken');
-        if (u.alive && u.power > 0 && weakens > 0) weaken(ctx, u, weakens, user);
+        if (u.alive && u.power > 0 && weakens > 0)
+          weaken(ctx, u, weakens, user, elixirUntil(ctx.state, user, u, true));
         delay(ctx, u, delays, user);
       }
     }
