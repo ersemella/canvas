@@ -1150,9 +1150,14 @@ portrait only, no text, no border.
 
 ## Prompts for Zahhak's palace floor (2026-10-29)
 
+**Built from the owner's art (2026-10-29):** `tiles/palace-floor.png`,
+cut by `scripts/palace-floor.py` from ChatGPT's 1254-pixel picture of this
+prompt, which came back seamless: five of its stone creams and ochres by
+k-means and the tiles' teal and cobalt kept apart, 7 colours; the hex
+borders drawn darker than the grout (`#5a4632`). The prompt it came from:
+
 Zahhak's palace (`palace`), Persia's boss fight, has only its floor: no
-dome, no mountains, no obstacles. It shows the Salt Flats' crust until
-this art comes (`LOOKS.palace` in ground.ts). Like the cave floor it is
+dome, no mountains, no obstacles. Like the cave floor it is
 a **seamless texture** laid across the board as one field, with the hex
 borders drawn over it, so its lines must stay soft, and its pattern must
 not be a strong square grid, which would fight the hexes. Written for

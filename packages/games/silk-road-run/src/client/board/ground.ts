@@ -41,6 +41,7 @@ import saltDomeImage from '../tiles/salt-dome.png';
 import tuffImage from '../tiles/tuff.png';
 import fairyChimneyImage from '../tiles/fairy-chimney.png';
 import caveFloorImage from '../tiles/cave-floor.png';
+import palaceFloorImage from '../tiles/palace-floor.png';
 
 /** How a map looks (map.ts): its open ground, what its `obstacle` tile is and whether that smokes, and its mountains. */
 export interface Look {
@@ -272,10 +273,18 @@ LOOKS.cave = {
   mountainGround: caveFloorImage,
 };
 
-// Zahhak's palace (map.ts, `PALACE`, 2026-10-29): the Salt Flats' crust in its
-// place, without the dome, until the owner's tiled floor comes (art-direction.md,
-// "Prompts for Zahhak's palace floor").
-LOOKS.palace = {...LOOKS.salt!, dome: null};
+// Zahhak's palace (map.ts, `PALACE`, 2026-10-29): the owner's palace floor (AI-assisted),
+// cracked limestone flagstones with glazed tile fragments, cut to a seamless 128-pixel tile in
+// 7 colours (`scripts/palace-floor.py`); nothing stands on it but a yurt placed there by hand,
+// drawn as the Salt Flats' sandstone ruin. Its hex borders darker than the grout between the stones.
+LOOKS.palace = {
+  ...LOOKS.salt!,
+  ground: palaceFloorImage,
+  colour: '#dcc192',
+  border: '#5a4632',
+  mountainGround: palaceFloorImage,
+  dome: null,
+};
 
 /** A map's look; the Steppe's for a map without one of its own. */
 export function lookOf(map: MapData): Look {
