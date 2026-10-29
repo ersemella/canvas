@@ -10,14 +10,7 @@ import {ABILITY, AI, CAMEL, HEROES, RULES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import {unitName} from '@balance-rules/resolve';
 import {MAPS} from '@balance-rules/map';
-import type {
-  AbilityId,
-  FightRules,
-  FightState,
-  HeroId,
-  PassiveId,
-  Side,
-} from '@balance-rules/types';
+import type {AbilityId, FightState, HeroId, PassiveId, Side} from '@balance-rules/types';
 import {snapshot, type Config} from './snapshot';
 
 export type {Config};
@@ -57,8 +50,6 @@ export type Experiment = {
   enemies?: HeroId[];
   /** The map (`MAPS` in map.ts): `steppe` by default; `gobi` never has mountains. */
   map?: string;
-  /** Each fight's own rules (`FightRules`), as the test stage's `"rules"` sets them. */
-  rules?: FightRules;
 };
 type Options = Experiment & {fights: number; seed: number; maxTurns: number};
 
@@ -117,7 +108,7 @@ export function ablate(options: Options) {
   }
 }
 
-function run({fights, seed, maxTurns, mod, party, enemies, map, rules}: Options) {
+function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
   const kits = Object.fromEntries(Object.entries(HEROES).map(([h, s]) => [h, [...s.abilities]]));
   // Abilities are listed per hero, not per unit, so the modified side's kit is
   // swapped in for its own decisions only. Its search then also assumes the
@@ -183,7 +174,6 @@ function run({fights, seed, maxTurns, mod, party, enemies, map, rules}: Options)
       MAPS[map ?? 'steppe']
     );
     for (const u of state.units) u.controller = 'human';
-    if (rules) state.rules = rules;
     if (mod?.passives)
       for (const u of state.units.filter((u) => u.side === modSide))
         u.passives = [...(u.passives ?? []), ...(mod.passives[u.hero] ?? [])];

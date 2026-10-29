@@ -29,7 +29,7 @@ import {
 } from './map';
 import type {MapData, Tile} from './map';
 import {placeStartingCards, shuffled} from './track';
-import type {AbilityId, FightRules, FightState, HeroId, Loadout, PassiveId, Unit} from './types';
+import type {AbilityId, FightState, HeroId, Loadout, PassiveId, Unit} from './types';
 
 /** The committed test-stage.json. */
 export const TEST_STAGE: unknown = config;
@@ -51,8 +51,6 @@ interface TestSetup {
   camel: UnitSetup | null;
   player: UnitSetup[];
   enemy: UnitSetup[];
-  /** The fight's own rules (`FightRules`); absent: config.ts's, as in a run. */
-  rules?: FightRules;
 }
 
 /** The most units a side may bring (those without an "at" must also fit its starting columns). */
@@ -85,36 +83,6 @@ function parseSpace(where: string, v: unknown): Hex {
   const hex = spaceAt(col, row);
   if (!onMap(STEPPE, hex)) fail(`${where} {"col": ${col}, "row": ${row}} is off the board.`);
   return hex;
-}
-
-/**
- * `"rules"` (`FightRules`): `"slots": {"turn": t, "hail": h, "stun": s}`,
- * each a whole number of slots 1 to 60, by default 8, 16 and 6; and
- * `"grapple": "offTrack"`.
- */
-function parseRules(v: unknown): FightRules {
-  if (!isObject(v))
-    fail('rules must be an object like {"slots": {"turn": 8, "hail": 16, "stun": 6}}.');
-  const raw = v as Record<string, unknown>;
-  onlyKeys('rules', raw, ['slots', 'grapple']);
-  const rules: FightRules = {};
-  if (raw.grapple !== undefined) {
-    if (raw.grapple !== 'offTrack') fail('rules.grapple must be "offTrack".');
-    rules.grapple = 'offTrack';
-  }
-  if (raw.slots === undefined) return rules;
-  if (!isObject(raw.slots))
-    fail('rules.slots must be an object like {"turn": 8, "hail": 16, "stun": 6}.');
-  const t = raw.slots as Record<string, unknown>;
-  onlyKeys('rules.slots', t, ['turn', 'hail', 'stun']);
-  const n = (k: 'turn' | 'hail' | 'stun', fallback: number) => {
-    const x = t[k] ?? fallback;
-    if (!Number.isInteger(x) || (x as number) < 1 || (x as number) > 60)
-      fail(`rules.slots.${k} must be a whole number of slots from 1 to 60.`);
-    return x as number;
-  };
-  rules.slots = {turn: n('turn', 8), hail: n('hail', 16), stun: n('stun', 6)};
-  return rules;
 }
 
 function parseUnit(where: string, v: unknown, camel = false): UnitSetup {
@@ -176,7 +144,7 @@ function parseSide(where: string, v: unknown): UnitSetup[] {
 export function parseTestStage(raw: unknown): TestSetup {
   if (!isObject(raw)) fail('must be an object.');
   const v = raw as Record<string, unknown>;
-  onlyKeys('The file', v, ['seed', 'map', 'yurts', 'camel', 'player', 'enemy', 'rules']);
+  onlyKeys('The file', v, ['seed', 'map', 'yurts', 'camel', 'player', 'enemy']);
   const map = v.map ?? STEPPE.id;
   // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
   if (typeof map !== 'string' || MAPS[map]?.id !== map)
@@ -205,7 +173,6 @@ export function parseTestStage(raw: unknown): TestSetup {
     camel,
     player: parseSide('player', v.player),
     enemy: parseSide('enemy', v.enemy),
-    ...(v.rules === undefined ? {} : {rules: parseRules(v.rules)}),
   };
   const taken = new Map<string, string>();
   const claim = (where: string, h: Hex) => {
@@ -267,7 +234,6 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
     effects: [],
     log: [],
     awaiting: null,
-    ...(setup.rules ? {rules: setup.rules} : {}),
   };
   const camel = units.find((u) => u.hero === CAMEL);
   for (const [u, {at}] of placed) u.hex = at ?? (u === camel ? route.camelStart : null);

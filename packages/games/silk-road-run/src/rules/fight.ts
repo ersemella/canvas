@@ -19,9 +19,6 @@ import {ABILITIES, forks, sameTarget, unusableReason} from './abilities';
 import {allowedTargets, onlyHold} from './choices';
 import {
   checkEnd,
-  ageHail,
-  fanOut,
-  endTurnEffects,
   enterHex,
   returnFreed,
   expireDurations,
@@ -32,7 +29,6 @@ import {
   scorch,
   settle,
   squeezeDue,
-  squeezeGrapples,
   startTurnPassives,
   takeHasteDue,
   unitName,
@@ -311,7 +307,7 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     expireDurations(state, unit.slot!);
     const ctx: Ctx = {state, map, slot: unit.slot!};
     state.currentSlot = unit.slot!;
-    // In slots, a grapple squeezes every so many slots, whoever's card is here.
+    // A grapple squeezes every so many slots, whoever's card is here.
     squeezeDue(ctx, unit.slot!);
     if (state.phase !== 'fight') return;
     if (charging(state, unit)) {
@@ -320,17 +316,6 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     }
     record(state, {kind: 'turn', unitId: unit.id});
     startTurnPassives(ctx, unit);
-    // Its hail lasts `ABILITY.hail.turns` of its turns (owner, 2026-10-25),
-    // Princess Iron Fan's fire until her next (owner, 2026-10-28).
-    ageHail(state, unit);
-    fanOut(state, unit);
-    // An Empower or Weaken lasts until the end of this turn (one with a
-    // last slot, through that instead).
-    if (unit.empower && unit.empowerUntil === undefined) unit.empowerStarted = true;
-    if (unit.weaken && unit.weakenUntil === undefined) unit.weakenStarted = true;
-    squeezeGrapples(ctx, unit);
-    // The squeeze can end the fight.
-    if (state.phase !== 'fight') return;
     // The camel isn't a decision: it walks its road.
     if (HEROES[unit.hero].walksRoad) {
       walkRoad(ctx, unit);
@@ -338,8 +323,6 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     }
     if (isStunned(unit)) {
       skipTurn(ctx, unit, `${unitName(unit)} is Stunned: turn skipped.`);
-      // Last Stand's Stun (19.8), a Charge's slam and an upgrade's (19.9) last this one turn.
-      unit.statuses = unit.statuses.filter((s) => !s.lastStand && !s.slammed && !s.dazed);
       continue;
     }
     // Nothing to do but Hold: the track goes on without asking.
@@ -413,7 +396,6 @@ function skipTurn(ctx: Ctx, unit: Unit, text: string): void {
   log(ctx, text);
   record(ctx.state, {kind: 'skip', unitId: unit.id});
   endTurnOn(ctx, unit);
-  endTurnEffects(unit);
   endTurn(ctx, unit, true);
 }
 
@@ -436,7 +418,6 @@ function walkRoad(ctx: Ctx, unit: Unit): void {
   }
   checkEnd(ctx.state);
   endTurnOn(ctx, unit);
-  endTurnEffects(unit);
   endTurn(ctx, unit, !next);
 }
 
@@ -515,7 +496,6 @@ export function applyTurn(
   state.awaiting = null;
   checkEnd(state);
   endTurnOn(ctx, unit);
-  endTurnEffects(unit);
   // A charged ability's card is pushed out to its charge, the cards there moving on.
   endTurn(ctx, unit, path.length === 0 && def.id === 'hold', def.id);
   // A card a grapple held off the track comes back once the grapple is over.

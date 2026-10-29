@@ -84,6 +84,18 @@ puts it on another space.
   disappears, Grapple's Stunned until the grapple ends), or as a passive,
   always. A duration in slots that ends on the affected unit's turn
   covers that turn (3.9).
+- **No duration counts turns (owner, 2026-10-29).** Every effect that
+  lasted until a unit's next turn lasts a fixed number of slots from the
+  slot it is given, whatever turns come in between, and ends as the track
+  passes its last slot: Empower, Weaken, a Shield (but the Blessing's,
+  lasting until spent), Fortify's Armour, the Immobilized of Hamstring or
+  a pin, and Princess Iron Fan's fire, **8** slots; hail **16**
+  (`RULES.durations`). 8 is the fastest hero's turn, so an Empower seldom
+  lasts two of a unit's turns ([balance.md](balance.md), "Durations in a
+  fixed number of slots"). A Delay or Haste no longer stretches or
+  shortens them. Effects show their slots: the turn preview ("Empowered
+  2, 8 slots"), the unit's statuses ("for 5 more slots, through slot 23"),
+  hail's and fire's spaces.
 - **The same status twice:** the source states how it combines with one
   already on the unit (add, replace, or keep the stronger). Different
   statuses always combine.
@@ -135,27 +147,40 @@ between its own turns.
 
 | Keyword | Rule |
 |---|---|
-| **Stunned** | The unit can't take any action, moving included: its turn comes up and is skipped, its card placed as after any turn (3.2). |
+| **Stunned** | The unit can't take any action, moving included. Only a grapple's hold Stuns (2026-10-29): the held unit's card leaves the track while it holds. |
 
 Immobilized (17.4) is the lesser control: the unit still acts.
 
-**A skipped turn is still a turn:** it resets the delay and haste limits,
-and the unit's card is placed by the usual rule, so Stunned costs a turn,
-not a place on the track. Stunned has **no lockout guard** for now
-(owner, 2026-10-23): a Grappler can hold a unit Stunned turn after
-turn while its grapple lasts. Its counters are the grapple's own ends:
-damaging the Grappler, Stunning it, or moving either unit apart. Whether
-a guard is needed is open question 56.
+**A grapple holds its target's card off the track (owner, 2026-10-29):**
+no turn of the target's comes while the grapple lasts. Once it ends
+(the Grappler is hit, grappled, or Delayed by what was a Stun, the two
+are moved apart, or the target turns Unstoppable), its card comes back on
+the free slot just before the Grappler's next card, so the freed unit
+always acts first: the lockout guard open question 56 asked for. With no
+slot free there, it takes the Grappler's slot, the Grappler's card moving
+on; with the Grappler fallen, the next slot. A held card can't be
+Delayed or Hastened. The squeeze comes every 8 slots
+(`RULES.durations.turn`), whoever's card comes up. The track shows a held
+card greyed where it would come back. Measured even with the Stun
+([balance.md](balance.md), "Grapple off the track").
+
+**What was a Stun for a unit's next turn is a Delay of 6 (owner,
+2026-10-29):** Last Stand's, Concussive's, Lockdown's and Defy Fate's
+(Defy Fate's reaching an Inevitable unit, as its Stun did), and a
+Charge's slam in its `stun` mode (`RULES.durations.stun`). Unstoppable and
+Iron Will still stop it, and it still breaks a grapple the unit holds and
+an arrow it has drawn. Until 2026-10-29 such a Stun skipped the unit's
+next turn, which still counted as a turn.
 
 ### 17.6 Damage effects (Decided)
 
 | Keyword | Rule |
 |---|---|
 | **Burn N** | The unit takes N damage at the start of each of its turns while it lasts. |
-| **Shield N** | A separate pool of N, reduced before health. Damage the Shield can't absorb carries on to health. |
+| **Shield N** | A separate pool of N, reduced before health, for 8 slots (17.2), or until spent. Damage the Shield can't absorb carries on to health. |
 | **Pierce** | The attack's damage ignores Armour. |
-| **Empower N** | The unit's abilities deal N more damage. |
-| **Weaken N** | The unit's abilities deal N less damage, to at least 0. |
+| **Empower N** | The unit's abilities deal N more damage, for 8 slots (17.2). |
+| **Weaken N** | The unit's abilities deal N less damage, to at least 0, for 8 slots (17.2). |
 | **Armour N** | Damage the unit takes is reduced by N, to at least 0. A flat reduction, not a percentage. |
 | **Immortal** | The unit's health can't be reduced: damage that reaches health becomes 0. Damage still reduces and breaks its Shield. |
 
@@ -191,6 +216,8 @@ unless the Burn Pierces; TBD, open question 57).
 | Armour (2026-10-23) | A flat reduction, Pierce ignoring it; defence only sets health | Defence as a percentage reduction (9.1, until 2026-10-23) | Owner's call: with damage of 1 or 2, a percentage rounds away |
 | Immobilized (2026-10-19, kept) | The unit can't move by itself but still acts, and can still be displaced | Immobilized preventing displacement too | Owner's call (2026-10-19); Unstoppable is the answer to displacement. The 2026-10-23 wording ("cannot move to a different space") is read the same way; see open question 54 |
 | Stunned (2026-10-23) | No action and no move: the turn is skipped | Dazed: no action but movement allowed, with a one-turn lockout guard | Owner's call; Grapple's hold |
+| Durations (2026-10-29) | Fixed slots: 8 for an effect that lasted until a unit's next turn, 16 for hail; a Stun for a turn a Delay of 6 | By turns (until then); a turn of the unit's slots (speed-neutral); slots that the caster's power lengthens and the target's defence shortens | Owner's call: one clock, the track, for every effect; 8 measured closest to turns ([balance.md](balance.md)) |
+| Grapple (2026-10-29) | The target's card off the track while held, back just before the Grappler's next card | The target Stunned, its turns skipped (until then) | Owner's call: shown on the track, and the freed unit always acts first |
 
 ## Open questions (original numbers continue from 53)
 
@@ -199,5 +226,7 @@ unless the Burn Pierces; TBD, open question 57).
     read here) should also stop others displacing the unit.
 55. Collision damage when a Push or Pull is stopped early (none is built:
     no current ability Pushes or Pulls).
-56. Whether Stunned needs a lockout guard, as Dazed had.
+56. ~~Whether Stunned needs a lockout guard, as Dazed had.~~ Settled
+    (owner, 2026-10-29): a grapple's held card comes back before the
+    Grappler's next turn (17.5).
 57. Whether Armour applies to Burn.

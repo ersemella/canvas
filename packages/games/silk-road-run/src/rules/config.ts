@@ -47,6 +47,19 @@ export const RULES = {
    * damage a unit takes Moved onto it, or ending its turn on it.
    */
   scorch: 1,
+  /**
+   * Durations in slots (owner, 2026-10-29; balance.md, "Durations in a
+   * fixed number of slots"), in place of turns: every effect that lasted
+   * until a unit's next turn (Empower, Weaken, a Shield but a lasting one,
+   * Fortify's Armour, the Immobilized of Hamstring or a pin, Princess Iron
+   * Fan's fire) lasts `turn` slots from the slot it is given, hail `hail`,
+   * whatever turns come in between, ending as the track passes its last
+   * slot (`expireDurations` in resolve.ts); a Stun for a unit's next turn
+   * is a Delay of `stun` (`stunForATurn`). A grapple squeezes every `turn`
+   * slots, Bulwark covers each ally once every `turn` slots. 8 is the
+   * fastest hero's turn, so an Empower seldom lasts two of a unit's turns.
+   */
+  durations: {turn: 8 as number, hail: 16 as number, stun: 6 as number},
 } as const;
 
 /** Health from defence (owner, 2026-10-23): (1 + defence) × 2. */
@@ -561,10 +574,10 @@ export const ABILITY = {
    * One space exactly `range` from the Storm Caller (owner, 2026-10-24: a
    * ring, so the spaces next to it and 3 or more away are safe; within 3
    * from 2026-10-23, and before that a radius-1 area with damage and a
-   * track Push). It stays for `turns` of its caster's turns: it lifts as
-   * the last of them starts (2, the turn after next, since 2026-10-25; 1,
-   * the next turn, before). A unit in the space when it lands, or that
-   * enters it, is Immobilized until it disappears.
+   * track Push). It stays `RULES.durations.hail` slots (16, owner,
+   * 2026-10-29; 2 of its caster's turns from 2026-10-25, 1 before). A unit
+   * in the space when it lands, or that enters it, is Immobilized until it
+   * disappears.
    * `max`: how many of a caster's hails stand at once, a new one past it
    * replacing the oldest; each lifts on its own, freeing only whoever it
    * held. 2 (owner, 2026-10-26; 1, one hail a caster, before).
@@ -572,7 +585,7 @@ export const ABILITY = {
    * power (owner, 2026-10-26). Both as measured, changing little
    * (balance.md, "Two hails, hail on entry, and a melee Elixir").
    */
-  hail: {range: 2, turns: 2, max: 2 as number, entry: true as boolean},
+  hail: {range: 2, max: 2 as number, entry: true as boolean},
   /**
    * Sunlight (owner, 2026-10-23): a unit within `range` that hits (not
    * Temee), not already Empowered, is Empowered `empower` until the end of

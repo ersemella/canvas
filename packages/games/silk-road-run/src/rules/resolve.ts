@@ -198,9 +198,6 @@ export function mends(attacker: Unit, target: Unit): boolean {
   return hasPassive(attacker, melee ? 'mendingStrike' : 'mendingShot');
 }
 
-/** A Stun for the unit's next turn, from an upgrade (Concussive, Lockdown, Defy Fate). */
-const DAZED: Status = {kind: 'stunned', dazed: true};
-
 /**
  * What `attacker`'s upgrades do to `target`, an enemy its attack has just
  * hit (19.9): Staggering, Crippling, Hamstring, Concussive, Defy Fate and
@@ -217,10 +214,10 @@ function attackRiders(ctx: Ctx, attacker: Unit, target: Unit): void {
     weaken(ctx, target, Math.max(target.weaken ?? 0, UPGRADE.crippling.weaken), attacker);
   if (fires(ctx, attacker, 'hamstring', target))
     immobilize(ctx, target, {kind: 'immobilized', pinned: true}, attacker);
-  if (fires(ctx, attacker, 'concussive', target)) stunForATurn(ctx, target, {...DAZED});
+  if (fires(ctx, attacker, 'concussive', target)) stunForATurn(ctx, target);
   if (hasPassive(target, 'steadyGait') && fires(ctx, attacker, 'defyFate', target)) {
     log(ctx, `${unitName(attacker)} defies fate.`);
-    stunForATurn(ctx, target, {...DAZED}, true);
+    stunForATurn(ctx, target, true);
   }
   if (isUnstoppable(target) && fires(ctx, attacker, 'immovableObject', target))
     delay(ctx, target, UPGRADE.immovableObject.delay, attacker);
@@ -287,8 +284,7 @@ function healRiders(ctx: Ctx, by: Unit, u: Unit): void {
   if (fires(ctx, by, 'quickening', u)) haste(ctx, u, UPGRADE.quickening.haste, by);
   if (fires(ctx, by, 'fortify', u)) {
     u.armour = Math.max(u.armour ?? 0, UPGRADE.fortify.armour);
-    const until = lastsThrough(ctx.state);
-    if (until !== undefined) u.armourUntil = Math.max(u.armourUntil ?? 0, until);
+    u.armourUntil = Math.max(u.armourUntil ?? 0, lastsThrough(ctx.state));
     log(ctx, `${unitName(u)} is fortified: Armour ${u.armour}.`);
   }
   if (fires(ctx, by, 'ward', u)) shield(ctx, u, UPGRADE.ward.shield);
@@ -304,12 +300,11 @@ export function immobilize(ctx: Ctx, u: Unit, status: Status, by?: Unit): boolea
     log(ctx, `${unitName(u)} is Unstoppable: not Immobilized.`);
     return false;
   }
-  const until = status.pinned ? lastsThrough(ctx.state) : undefined;
-  addStatus(u, until === undefined ? status : {...status, until});
+  addStatus(u, status.pinned ? {...status, until: lastsThrough(ctx.state)} : status);
   if (status.pinned) log(ctx, `${unitName(u)} is Immobilized.`);
   if (fires(ctx, by, 'lockdown', u)) {
     log(ctx, `${unitName(u)} is locked down.`);
-    stunForATurn(ctx, u, {...DAZED});
+    stunForATurn(ctx, u);
   }
   return true;
 }
@@ -405,16 +400,15 @@ export function passiveEmpower(u: Unit, state?: FightState): number {
 
 /**
  * What `attacker`'s passives add to a hit on `target` (19.8): Opportunist's
- * 1 if the target hasn't had a turn since the attacker's last one (its turn
- * before this one, if this is its turn); Flanker's 1 if an ally of the
+ * 1 if the target's card is behind the attacker's next card (where it
+ * lies, or lands this turn), or off the track (owner, 2026-10-29; until
+ * then, if the target hadn't had a turn since the attacker's last); Flanker's 1 if an ally of the
  * attacker stands on the target's far side, along the straight line from
  * the attacker (none off a straight line).
  */
 export function bonusAgainst(state: FightState, attacker: Unit, target: Unit): number {
   let n = 0;
-  if (hasPassive(attacker, 'opportunist') && state.rules?.slots) {
-    // In slots: a target whose card is behind the attacker's next card
-    // (where it lies, or lands this turn), or off the track.
+  if (hasPassive(attacker, 'opportunist')) {
     const next =
       attacker.slot === null
         ? null
@@ -422,12 +416,6 @@ export function bonusAgainst(state: FightState, attacker: Unit, target: Unit): n
           ? aimSlot(state, attacker)
           : attacker.slot;
     if (target.slot === null || (next !== null && target.slot > next)) n += 1;
-  } else if (hasPassive(attacker, 'opportunist')) {
-    const mine = attacker.turns ?? [];
-    const acting = mine[mine.length - 1] === state.currentSlot;
-    const since = acting ? mine[mine.length - 2] : mine[mine.length - 1];
-    const theirs = target.turns?.[target.turns.length - 1];
-    if (theirs === undefined || (since !== undefined && theirs < since)) n += 1;
   }
   if (hasPassive(attacker, 'flanker') && attacker.hex && target.hex) {
     const dir = hexDirectionTo(attacker.hex, target.hex);
@@ -438,25 +426,19 @@ export function bonusAgainst(state: FightState, attacker: Unit, target: Unit): n
 }
 
 /**
- * Bulwark (19.8): a hit on `target` is its first since each Bulwark ally's
- * last turn, or not; the first Bulwark ally next to it whose first it is
- * takes 1 of the damage. Returns what is left for the target.
+ * Bulwark (19.8): a hit on `target` is its first in `RULES.durations.turn`
+ * slots for each Bulwark ally, or not (owner, 2026-10-29; since the
+ * Bulwark ally's last turn until then); the first Bulwark ally next to it
+ * whose first it is takes 1 of the damage. Returns what is left for the target.
  */
 function bulwark(ctx: Ctx, attacker: Unit, target: Unit, amount: number): number {
   let guard: Unit | undefined;
   for (const g of ctx.state.units) {
     if (g === target || !g.alive || g.side !== target.side || !hasPassive(g, 'bulwark')) continue;
-    const every = ctx.state.rules?.slots?.turn;
-    if (every) {
-      // In slots: once every `turn` slots for each ally.
-      const last = g.coveredAt?.[target.id];
-      if (last !== undefined && ctx.state.currentSlot - last < every) continue;
-      g.coveredAt = {...g.coveredAt, [target.id]: ctx.state.currentSlot};
-    } else {
-      if (g.covered?.includes(target.id)) continue;
-      // A new list: copies of a fight share a unit's arrays.
-      g.covered = [...(g.covered ?? []), target.id];
-    }
+    const last = g.coveredAt?.[target.id];
+    if (last !== undefined && ctx.state.currentSlot - last < RULES.durations.turn) continue;
+    // A new record: copies of a fight share a unit's objects.
+    g.coveredAt = {...g.coveredAt, [target.id]: ctx.state.currentSlot};
     if (!guard && g.hex && target.hex && hexDistance(g.hex, target.hex) === 1) guard = g;
   }
   if (!guard) return amount;
@@ -474,16 +456,13 @@ export function shotEmpower(user: Unit, shot: ShotInAir): number {
 }
 
 /**
- * Empowers `u` by `amount` until the end of its next turn, replacing any
+ * Empowers `u` by `amount` for `RULES.durations.turn` slots, replacing any
  * Empower it had. An ally Empowered by `by`'s ability is Hastened too with
  * its Inspire (19.9).
  */
 export function empower(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   u.empower = amount;
-  delete u.empowerStarted;
-  const until = lastsThrough(ctx.state);
-  if (until !== undefined) u.empowerUntil = until;
-  else delete u.empowerUntil;
+  u.empowerUntil = lastsThrough(ctx.state);
   log(ctx, `${unitName(u)} is Empowered ${amount}.`);
   empowered(ctx, u, by);
 }
@@ -510,46 +489,38 @@ export function heal(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
 
 /**
  * Shields `u` by `amount` more (keywords.md, 17.6; the Priest's Blessing),
- * added to any Shield it has, until the start of its next turn.
+ * added to any Shield it has, for `RULES.durations.turn` slots (a lasting
+ * one until spent).
  */
 export function shield(ctx: Ctx, u: Unit, amount: number, lasting = false): void {
   if (!u.alive || amount <= 0) return;
   u.shield = (u.shield ?? 0) + amount;
-  const until = lastsThrough(ctx.state);
-  if (until !== undefined) u.shieldUntil = Math.max(u.shieldUntil ?? 0, until);
+  u.shieldUntil = Math.max(u.shieldUntil ?? 0, lastsThrough(ctx.state));
   if (lasting) u.lastingShield = (u.lastingShield ?? 0) + amount;
   log(ctx, `${unitName(u)} gains Shield ${amount}: Shield ${u.shield}.`);
 }
 
 /**
- * Weakens `u` by `amount` until the end of its next turn, replacing any
+ * Weakens `u` by `amount` for `RULES.durations.turn` slots, replacing any
  * Weaken it had. An enemy Weakened by `by`'s ability is Delayed too with its
  * Lethargy (19.9).
  */
 export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   u.weaken = amount;
-  delete u.weakenStarted;
-  const until = lastsThrough(ctx.state);
-  if (until !== undefined) u.weakenUntil = until;
-  else delete u.weakenUntil;
+  u.weakenUntil = lastsThrough(ctx.state);
   log(ctx, `${unitName(u)} is Weakened ${amount}.`);
   if (by && hostile(by, u) && fires(ctx, by, 'lethargy', u))
     delay(ctx, u, UPGRADE.lethargy.delay, by);
 }
 
 /**
- * Empowers `u` by at least `amount` until the end of its next turn
+ * Empowers `u` by at least `amount` for `RULES.durations.turn` slots
  * (Vengeance, 19.8; Fervour and Invigorate, 19.9): a stronger Empower it has
  * stays, and lasts as long.
  */
 export function empowerAtLeast(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
-  if ((u.empower ?? 0) <= amount) {
-    const until = lastsThrough(ctx.state);
-    if (until !== undefined) u.empowerUntil = until;
-    else delete u.empowerUntil;
-  }
+  if ((u.empower ?? 0) <= amount) u.empowerUntil = lastsThrough(ctx.state);
   u.empower = Math.max(u.empower ?? 0, amount);
-  delete u.empowerStarted;
   log(ctx, `${unitName(u)} is Empowered ${u.empower}.`);
   empowered(ctx, u, by);
 }
@@ -623,23 +594,11 @@ export function takeHasteDue(state: FightState, unit: Unit): void {
 }
 
 /**
- * At the start of `unit`'s turn, its passives' bookkeeping (19.8): the
- * turn noted (Opportunist), its Shield and Unstoppable gone (Rally's and
- * the Elixir's last until now), a
- * fresh count of its allies' first hits (Bulwark) and of what it takes off
- * the board (Momentum); then Rally Shields each ally next to it.
+ * At the start of `unit`'s turn, its passives' bookkeeping (19.8): a fresh
+ * count of what it takes off the board (Momentum); then Rally Shields each
+ * ally next to it.
  */
 export function startTurnPassives(ctx: Ctx, unit: Unit): void {
-  unit.turns = [...(unit.turns ?? []).slice(-1), ctx.slot];
-  // A lasting Shield (`Unit.lastingShield`) stays; the rest goes, and
-  // Fortify's Armour (19.9) (in slots, `FightRules.slots`, as their slots
-  // run out instead: `expireDurations`).
-  if (!ctx.state.rules?.slots) {
-    if (unit.lastingShield) unit.shield = unit.lastingShield;
-    else delete unit.shield;
-    delete unit.armour;
-  }
-  delete unit.covered;
   delete unit.tookOff;
   delete unit.bracketed;
   if (!hasPassive(unit, 'rally') || !unit.hex) return;
@@ -647,23 +606,9 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
     const a = unitAt(ctx.state, h);
     if (!a || a.side !== unit.side) continue;
     a.shield = Math.max(a.shield ?? 0, 1);
-    const until = lastsThrough(ctx.state);
-    if (until !== undefined) a.shieldUntil = Math.max(a.shieldUntil ?? 0, until);
+    a.shieldUntil = Math.max(a.shieldUntil ?? 0, lastsThrough(ctx.state));
     log(ctx, `${unitName(unit)} rallies ${unitName(a)}: Shield ${a.shield}.`);
   }
-}
-
-/** At the end of a unit's turn: an Empower or Weaken whose turn this was ends. */
-export function endTurnEffects(unit: Unit): void {
-  if (unit.empowerStarted) {
-    delete unit.empower;
-    delete unit.empowerStarted;
-  }
-  if (unit.weakenStarted) {
-    delete unit.weaken;
-    delete unit.weakenStarted;
-  }
-  unit.statuses = unit.statuses.filter((s) => !s.pinned || s.until !== undefined);
 }
 
 /**
@@ -720,7 +665,7 @@ export function applyDamage(
   }
   if (standing) {
     log(ctx, `${unitName(target)} makes a last stand.`);
-    stunForATurn(ctx, target, {kind: 'stunned', lastStand: true});
+    stunForATurn(ctx, target);
   }
   if (target.hp * 2 <= target.maxHp && spendPassive(target, 'secondWind')) {
     log(ctx, `${unitName(target)} finds a second wind.`);
@@ -817,25 +762,6 @@ export function atExit(state: FightState, h: Hex): boolean {
  * `caster`'s hail disappears (it fell, or casts it again), and with it the
  * Immobilized it gave.
  */
-/** When hail with `turns` of its caster's turns to go lifts, for the rule text: `whose` turn. */
-export function hailEnds(turns: number, whose: string): string {
-  if (turns <= 1) return `${whose} next turn`;
-  if (turns === 2) return `${whose} turn after next`;
-  return `${whose} turn ${turns} turns from now`;
-}
-
-/**
- * `caster`'s turn starts: its hail has a turn fewer to stand, and lifts if
- * this was its last.
- */
-export function ageHail(state: FightState, caster: Unit): void {
-  if (state.rules?.slots) return;
-  for (const hail of state.effects.filter((e) => e.source === caster.id)) {
-    hail.turns = (hail.turns ?? 1) - 1;
-    if (hail.turns <= 0) liftHail(state, hail);
-  }
-}
-
 /** One hail lifts, freeing whoever it held (`ABILITY.hail.max` lets a caster have more than one). */
 export function liftHail(state: FightState, hail: HailEffect): void {
   state.effects = state.effects.filter((e) => e !== hail);
@@ -948,16 +874,15 @@ function interrupt(ctx: Ctx, u: Unit): void {
 }
 
 /**
- * A Stun for the unit's next turn (a Charge's slam, Last Stand's, and
- * Concussive's, Lockdown's and Defy Fate's, 19.9): in slots
- * (`FightRules.slots`), a Delay of `stun` slots instead, which Unstoppable
- * and Iron Will still stop, breaking what a Stun breaks (`interrupt`);
- * Defy Fate's (`defies`) Delays an Inevitable unit too, as its Stun
- * reached one.
+ * What was a Stun for the unit's next turn (a Charge's slam in `stun` mode,
+ * Last Stand's, and Concussive's, Lockdown's and Defy Fate's, 19.9): a
+ * Delay of `RULES.durations.stun` slots (owner, 2026-10-29), which
+ * Unstoppable and Iron Will still stop, breaking what a Stun breaks
+ * (`interrupt`); Defy Fate's (`defies`) Delays an Inevitable unit too, as
+ * its Stun reached one.
  */
-export function stunForATurn(ctx: Ctx, u: Unit, status: Status, defies = false): void {
-  const slots = ctx.state.rules?.slots;
-  if (!slots) return stun(ctx, u, status);
+export function stunForATurn(ctx: Ctx, u: Unit, defies = false): void {
+  const n = RULES.durations.stun;
   if (isUnstoppable(u)) {
     log(ctx, `${unitName(u)} is Unstoppable: not Delayed.`);
     return;
@@ -967,33 +892,20 @@ export function stunForATurn(ctx: Ctx, u: Unit, status: Status, defies = false):
     return;
   }
   interrupt(ctx, u);
-  if (!defies) return delay(ctx, u, slots.stun);
+  if (!defies) return delay(ctx, u, n);
   if (!u.alive || u.slot === null) return;
-  placeCard(ctx.state, u, u.slot + slots.stun);
-  log(ctx, `${unitName(u)} is Delayed ${slots.stun}.`);
+  placeCard(ctx.state, u, u.slot + n);
+  log(ctx, `${unitName(u)} is Delayed ${n}.`);
 }
 
 /**
- * At the start of a Grappler's turn, each unit it still grapples takes
- * `ABILITY.grapple.squeeze` (owner, 2026-10-23).
- */
-export function squeezeGrapples(ctx: Ctx, champion: Unit): void {
-  // In slots, every `turn` slots instead (`squeezeDue`).
-  if (ctx.state.rules?.slots) return;
-  for (const u of ctx.state.units) {
-    if (!u.alive || !u.statuses.some((s) => s.grapple?.champion === champion.id)) continue;
-    squeeze(ctx, champion, u);
-  }
-}
-
-/**
- * With durations in slots (`FightRules.slots`), the track reaching `slot`:
- * each grapple squeezes for every `turn` slots passed since its last
- * squeeze, whoever's card is there.
+ * The track reaching `slot`: each grapple squeezes for every
+ * `RULES.durations.turn` slots passed since its last squeeze, whoever's
+ * card is there (owner, 2026-10-29; at the start of each of the Grappler's
+ * turns from 2026-10-23).
  */
 export function squeezeDue(ctx: Ctx, slot: number): void {
-  const every = ctx.state.rules?.slots?.turn;
-  if (!every) return;
+  const every = RULES.durations.turn;
   for (const u of ctx.state.units)
     for (const s of u.statuses) {
       while (s.grapple && s.squeezeAt !== undefined && s.squeezeAt <= slot) {
@@ -1104,14 +1016,6 @@ function pickUpFan(ctx: Ctx, unit: Unit): void {
   log(ctx, `${unitName(unit)} picks up the Iron Fan.`);
 }
 
-/** Princess Iron Fan's turn starts: the fires she set go out (`FireEffect`). */
-export function fanOut(state: FightState, unit: Unit): void {
-  if (state.rules?.slots) return;
-  if (!state.fires?.some((f) => f.source === unit.id)) return;
-  state.fires = state.fires.filter((f) => f.source !== unit.id);
-  if (!state.fires.length) delete state.fires;
-}
-
 /**
  * Scorched ground burns `unit` if it stands on it (`scorched` in map.ts):
  * `RULES.scorch` damage from no one, taken as any damage is (a Shield
@@ -1205,8 +1109,8 @@ export function walk(ctx: Ctx, unit: Unit, path: Hex[]): void {
 // ─── A grapple off the track ─────────────────────────────────────────────────
 
 /**
- * `u`, just grappled by `champion` with the grapple off the track
- * (`FightRules.grapple`): its card leaves the track until the grapple ends.
+ * `u`, just grappled by `champion`: its card leaves the track until the
+ * grapple ends (owner, 2026-10-29; Stunned, its turns skipped, before).
  */
 export function takeOffTrack(ctx: Ctx, u: Unit, champion: Unit): void {
   u.slot = null;
@@ -1228,7 +1132,7 @@ export function returnSlot(state: FightState, u: Unit): number | null {
 }
 
 /**
- * Each held card whose grapple has ended comes back (`FightRules.grapple`):
+ * Each held card whose grapple has ended comes back:
  * just before its Grappler's next card (`returnSlot`), or with no slot free
  * there, in its Grappler's own slot, the Grappler's card moving on; with its
  * Grappler fallen, or its card not yet placed, at the next slot. After each
@@ -1253,23 +1157,19 @@ export function returnFreed(state: FightState): void {
 // ─── Durations in slots ──────────────────────────────────────────────────────
 
 /**
- * The last slot an effect given now lasts through, `n` slots on (by
- * default `turn`), when the fight's durations are in slots
- * (`FightRules.slots`); undefined by turns.
+ * The last slot an effect given now lasts through: `n` slots on, by
+ * default `RULES.durations.turn` (owner, 2026-10-29).
  */
-export function lastsThrough(state: FightState, n?: number): number | undefined {
-  const slots = state.rules?.slots;
-  return slots ? state.currentSlot + (n ?? slots.turn) : undefined;
+export function lastsThrough(state: FightState, n: number = RULES.durations.turn): number {
+  return state.currentSlot + n;
 }
 
 /**
- * The track reaches `slot`, the fight's durations in slots
- * (`FightRules.slots`): every effect whose last slot is behind it ends,
- * before the card there acts. A fire stays for good once its Princess Iron
- * Fan has fallen, as by turns.
+ * The track reaches `slot`: every effect whose last slot is behind it
+ * ends, before the card there acts (`RULES.durations`). A fire stays for
+ * good once its Princess Iron Fan has fallen.
  */
 export function expireDurations(state: FightState, slot: number): void {
-  if (!state.rules?.slots) return;
   for (const u of state.units) {
     if (u.empowerUntil !== undefined && u.empowerUntil < slot) {
       delete u.empower;
@@ -1290,13 +1190,10 @@ export function expireDurations(state: FightState, slot: number): void {
     }
     u.statuses = u.statuses.filter((x) => x.until === undefined || x.until >= slot);
   }
-  for (const hail of state.effects.filter((e) => e.until !== undefined && e.until < slot))
-    liftHail(state, hail);
+  for (const hail of state.effects.filter((e) => e.until < slot)) liftHail(state, hail);
   if (state.fires) {
     const standing = (id: string) => state.units.some((u) => u.id === id && u.alive);
-    state.fires = state.fires.filter(
-      (f) => f.until === undefined || f.until >= slot || !standing(f.source)
-    );
+    state.fires = state.fires.filter((f) => f.until >= slot || !standing(f.source));
     if (!state.fires.length) delete state.fires;
   }
 }

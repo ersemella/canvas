@@ -4,9 +4,8 @@
  * rule values, so the text follows config.ts.
  */
 import {ABILITY, HEROES, RULES} from './config';
-import {hailEnds} from './resolve';
 import type {Tile} from './map';
-import type {FightRules, FightState, FireEffect, HailEffect, ShotInAir} from './types';
+import type {FightState, FireEffect, HailEffect, ShotInAir} from './types';
 
 export interface HexInfo {
   name: string;
@@ -120,10 +119,7 @@ export const CAMEL_RULE = `Can’t attack. Walks 1 space a turn toward the road 
 
 export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   const caster = state.units.find((u) => u.id === hail.source);
-  const lasts =
-    hail.until !== undefined
-      ? `for ${hail.until - state.currentSlot} more slots, through slot ${hail.until}`
-      : `until ${hailEnds(hail.turns ?? 1, caster ? `the ${HEROES[caster.hero].name}’s` : 'its caster’s')}`;
+  const lasts = `for ${hail.until - state.currentSlot} more slots, through slot ${hail.until}`;
   return {
     name: 'Hail',
     short: ABILITY.hail.entry
@@ -133,15 +129,13 @@ export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   };
 }
 
-/** A burning space (`FireEffect`): until Princess Iron Fan's next turn, or for good once she has fallen. */
+/** A burning space (`FireEffect`): through its last slot, or for good once Princess Iron Fan has fallen. */
 export function fireInfo(fire: FireEffect, state: FightState): HexInfo {
   const lady = state.units.find((u) => u.id === fire.source);
   const n = ABILITY.fanFlames.burn;
   const until = !lady?.alive
     ? 'Its fanner has fallen: it burns until put out with her fan.'
-    : fire.until !== undefined
-      ? `It burns ${fire.until - state.currentSlot} more slots, through slot ${fire.until}.`
-      : `It goes out at the start of ${HEROES[lady.hero].name}’s next turn.`;
+    : `It burns ${fire.until - state.currentSlot} more slots, through slot ${fire.until}.`;
   return {
     name: 'Fire',
     short: `Burns ${n} on a unit entering it`,
@@ -209,20 +203,19 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
   },
   stunned: {
     name: 'Stunned',
-    detail: 'Turns skipped.',
+    detail: 'Can’t act or move: held by a grapple, its card off the track.',
   },
   empowered: {
     name: 'Empowered',
-    detail: 'Its abilities deal that much more damage until the end of its next turn.',
+    detail: `Its abilities deal that much more damage, for ${RULES.durations.turn} slots.`,
   },
   weakened: {
     name: 'Weakened',
-    detail:
-      'Its abilities deal that much less damage, to at least 0, until the end of its next turn.',
+    detail: `Its abilities deal that much less damage, to at least 0, for ${RULES.durations.turn} slots.`,
   },
   shield: {
     name: 'Shield',
-    detail: 'Takes damage before health, until the start of its next turn.',
+    detail: `Takes damage before health, for ${RULES.durations.turn} slots or until spent.`,
   },
   unstoppable: {
     name: 'Unstoppable',
@@ -244,40 +237,3 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
     detail: 'Moved that many spaces straight toward it, stopping at anything in the way.',
   },
 };
-
-/**
- * A rule text as it reads under a fight's own rules (`FightRules`). With
- * durations in slots: "until its next turn", "until the end of its next
- * turn", "through its next turn" and "for its next turn" become "for N
- * slots", hail's "until your turn after next" its slots, and a Stun for a
- * turn its Delay; Grapple's squeeze, Bulwark and Opportunist their slots.
- * With the grapple off the track, Grapple says so.
- * Unchanged with none.
- */
-export function inRules(text: string, rules: FightRules | undefined): string {
-  if (rules?.grapple === 'offTrack')
-    text = text.replace(
-      'it is Stunned until you take damage or are Stunned',
-      'its card leaves the track until you take damage or are Stunned, then comes back just before your next turn'
-    );
-  const slots = rules?.slots;
-  if (!slots) return text;
-  text = text
-    // Grapple's squeeze, Bulwark and Opportunist in slots (`squeezeDue`, `bulwark`, `bonusAgainst`).
-    .replace(/damage each of your turns/g, `damage every ${slots.turn} slots`)
-    .replace(/its first hit between this unit’s turns/g, `its first hit in ${slots.turn} slots`)
-    .replace(
-      /a unit that hasn’t had a turn since its own last turn/g,
-      'a unit whose card is behind its own next card, or off the track'
-    );
-  const whose = '(?:its|their|your|her|his|that ally’s|the ally’s)';
-  return text
-    .replace(/Stunned for (?:its|their) next turn/g, `Delayed ${slots.stun}`)
-    .replace(/Stun ([^.]*?) for (?:its|their) next turn/g, `Delay $1 ${slots.stun}`)
-    .replace(/until your turn after next/g, `for ${slots.hail} slots`)
-    .replace(/for (?:its|their) next turn/g, `for ${slots.turn} slots`)
-    .replace(
-      new RegExp(`(?:until (?:the (?:start|end) of )?|through )${whose} next turn`, 'g'),
-      `for ${slots.turn} slots`
-    );
-}

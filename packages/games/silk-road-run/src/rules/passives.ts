@@ -9,7 +9,7 @@
  * caravanserai drafts them with the stat provisions (19.3): the party's
  * picks, and the rival's for the enemy (`fitRank`).
  */
-import {ARMOURED, DEVOTED, HEROES, ONE_EYE, UPGRADE} from './config';
+import {ARMOURED, DEVOTED, HEROES, ONE_EYE, RULES, UPGRADE} from './config';
 import type {Rarity} from './config';
 import type {AbilityId, HeroId, PassiveId, Unit} from './types';
 
@@ -122,7 +122,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'lastStand',
     'Last Stand',
     'damage',
-    'The first time each fight it would fall, it is left at 1 health instead, Stunned for its next turn.',
+    `The first time each fight it would fall, it is left at 1 health instead, Delayed ${RULES.durations.stun}.`,
     'rare'
   ),
   piercingEye: def(
@@ -136,14 +136,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'opportunist',
     'Opportunist',
     'damage',
-    'Its attacks deal 1 more to a unit that hasn’t had a turn since its own last turn.',
+    'Its attacks deal 1 more to a unit whose card is behind its own next card, or off the track.',
     'rare'
   ),
   bulwark: def(
     'bulwark',
     'Bulwark',
     'damage',
-    'When an ally next to it takes its first hit between this unit’s turns, the ally takes 1 less and this unit takes that 1.',
+    `When an ally next to it takes its first hit in ${RULES.durations.turn} slots, the ally takes 1 less and this unit takes that 1.`,
     'common'
   ),
   glassCannon: def(
@@ -185,14 +185,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'rally',
     'Rally',
     'allies',
-    'At the start of its turn, each ally next to it gains Shield 1 until that ally’s next turn.',
+    `At the start of its turn, each ally next to it gains Shield 1 for ${RULES.durations.turn} slots.`,
     'uncommon'
   ),
   vengeance: def(
     'vengeance',
     'Vengeance',
     'allies',
-    'When an ally falls, its card is Hastened 3 and it is Empowered 1 for its next turn.',
+    `When an ally falls, its card is Hastened 3 and it is Empowered 1 for ${RULES.durations.turn} slots.`,
     'common'
   ),
   oneEye: def(
@@ -279,14 +279,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'hamstring',
     'Hamstring',
     'attacks',
-    'Its attacks Immobilize the target until the end of its next turn.',
+    `Its attacks Immobilize the target for ${RULES.durations.turn} slots.`,
     'epic'
   ),
   concussive: upgrade(
     'concussive',
     'Concussive',
     'attacks',
-    'Its attacks Stun the target for its next turn.',
+    `Its attacks Delay the target ${RULES.durations.stun}.`,
     'legendary'
   ),
   sundering: upgrade('sundering', 'Sundering', 'attacks', 'Its attacks Pierce.', 'uncommon'),
@@ -301,14 +301,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'lockdown',
     'Lockdown',
     'control',
-    'When its ability Immobilizes a unit, the unit is also Stunned for its next turn.',
+    `When its ability Immobilizes a unit, the unit is also Delayed ${RULES.durations.stun}.`,
     'rare'
   ),
   defyFate: upgrade(
     'defyFate',
     'Defy Fate',
     'control',
-    'Its attacks Stun an Inevitable target for its next turn.',
+    `Its attacks Delay an Inevitable target ${RULES.durations.stun}, though Inevitable.`,
     'common'
   ),
   immovableObject: upgrade(
@@ -336,14 +336,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'fortify',
     'Fortify',
     'healing',
-    `When its ability heals an ally, the ally also gains Armour ${UPGRADE.fortify.armour} until its next turn.`,
+    `When its ability heals an ally, the ally also gains Armour ${UPGRADE.fortify.armour} for ${RULES.durations.turn} slots.`,
     'uncommon'
   ),
   ward: upgrade(
     'ward',
     'Ward',
     'healing',
-    `When its ability heals an ally, the ally also gains Shield ${UPGRADE.ward.shield} until its next turn.`,
+    `When its ability heals an ally, the ally also gains Shield ${UPGRADE.ward.shield} for ${RULES.durations.turn} slots.`,
     'common'
   ),
   mendingStrike: upgrade(

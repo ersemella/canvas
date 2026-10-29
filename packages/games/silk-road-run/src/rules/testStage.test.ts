@@ -15,30 +15,6 @@ describe('the test stage', () => {
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
 
-  it('sets the fight’s own rules only when given, and checks them', () => {
-    const units = {player: [{hero: 'alchemist'}], enemy: [{hero: 'wolf'}]};
-    expect(createTestFight(1, units).rules).toBeUndefined();
-    expect(
-      createTestFight(1, {...units, rules: {slots: {turn: 8, hail: 16, stun: 4}}}).rules
-    ).toEqual({slots: {turn: 8, hail: 16, stun: 4}});
-    expect(createTestFight(1, {...units, rules: {slots: {}}}).rules).toEqual({
-      slots: {turn: 8, hail: 16, stun: 6},
-    });
-    expect(createTestFight(1, {...units, rules: {grapple: 'offTrack'}}).rules).toEqual({
-      grapple: 'offTrack',
-    });
-    expect(() => parseTestStage({...units, rules: {grapple: 'stun'}})).toThrow(
-      'rules.grapple must be "offTrack".'
-    );
-    expect(() => parseTestStage({...units, rules: {ticks: {}}})).toThrow(
-      'rules has an unknown field "ticks"'
-    );
-    expect(() => parseTestStage({...units, rules: {slots: {turn: 0}}})).toThrow(
-      'rules.slots.turn must be a whole number of slots from 1 to 60.'
-    );
-    // A run's fights never have them.
-    expect(createRun(1).fight.rules).toBeUndefined();
-  });
   it('fights on the map named, the Steppe’s if none, and says which maps there are', () => {
     const units = {player: [{hero: 'bokh'}], enemy: [{hero: 'wolf'}]};
     expect(createTestFight(1, units).mapId).toBe('steppe');

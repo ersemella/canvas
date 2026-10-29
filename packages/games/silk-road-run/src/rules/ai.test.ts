@@ -251,12 +251,12 @@ describe('the search timeline', () => {
     expect(rescue(hex(0, 1)).action).toEqual({ability: 'bite', target: {hex: hex(0, 0)}});
   });
 
-  it('lifts its own hail on its last turn before stopping for an AI decision, only once (a hail without a count, saved before it had one, lasts 1)', () => {
+  it('lifts hail past its last slot before stopping for an AI decision, only once', () => {
     const s = setup({'e-storm': hex(0, 0), 'p-bokh': hex(3, 0)});
     const me = unit(s, 'e-storm');
     const held = unit(s, 'p-bokh');
     me.slot = 3;
-    s.effects = [{kind: 'hail', hex: hex(3, 0), source: me.id}];
+    s.effects = [{kind: 'hail', hex: hex(3, 0), source: me.id, until: 2}];
     held.statuses = [{kind: 'immobilized', hail: me.id}];
     expect(advanceToDecision(s)?.id).toBe(me.id);
     expect(s.currentSlot).toBe(3);

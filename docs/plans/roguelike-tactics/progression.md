@@ -367,26 +367,28 @@ choice:
   Neither the delay nor the haste limit (17.3) is built.
 - **Patient** counts any turn without a move or an ability: Hold, and a
   skipped turn, a Stunned one included.
-- **Momentum** counts a kill on the hero's turn (a squeeze at its start
-  included), not one by a charged shot landing, which isn't a turn.
+- **Momentum** counts a kill on the hero's turn, not one by a squeeze or
+  a charged shot landing, which aren't its turn.
 - **Light Step's swap** puts the ally on the space the walk came from,
   which must be free (so not an ally walked through); an Horse Archer's
   straight walk passes allies too. The ally is Moved (Rebound triggers).
 - **Rebound** triggers only when the hero actually changes space; a
   Grapple's throw and swap Move the held unit. Rebounds can set off
   Rebounds, to a safety depth of 12.
-- **Opportunist** compares turns: the target's last turn came before the
-  hero's last one (its previous one, during its own turn), or the target
-  hasn't had one. A skipped turn is a turn (17.5).
+- **Opportunist** reads the track (owner, 2026-10-29): the target's card
+  is behind the hero's next card (where it lies, or lands this turn), or
+  off the track, held by a grapple. Until then it compared turns: the
+  target's last turn before the hero's last one.
 - **Flanker** needs the target in a straight line from the hero; the ally
   is on the next space beyond it along that line.
-- **Bulwark** follows each ally's first hit between the Bulwark's turns
+- **Bulwark** follows each ally's first hit in 8 slots
+  (`RULES.durations.turn`; between the Bulwark's turns until 2026-10-29)
   wherever it is; only a hit landing next to the Bulwark is shared, and
   the first such Bulwark (party order) takes the 1. Its 1 isn't a hit.
-- **Last Stand's Stun** goes after the one turn it skips; Iron Will turns
-  it, Shake Loose doesn't (it is given after the damage).
+- **Last Stand's Delay** (a Stun for one turn until 2026-10-29): Iron Will
+  turns it, Shake Loose doesn't (it is given after the damage).
 - **Vengeance's Empower** keeps a stronger one the hero has, and lasts
-  until the end of its next turn.
+  8 slots.
 - **Glass Cannon** starts at half health, rounded up.
 
 **Track**
@@ -411,10 +413,10 @@ choice:
 | Passive | Rule |
 |---|---|
 | **Hardened** | Armour 1 against the first hit this hero takes each fight. |
-| **Last Stand** | The first time each fight this hero would die, it is left at 1 health instead and is Stunned for its next turn. |
+| **Last Stand** | The first time each fight this hero would die, it is left at 1 health instead and is Delayed 6 (Stunned for its next turn until 2026-10-29). |
 | **Piercing Eye** | This hero's attacks Pierce against a unit that is Immobilized or Stunned. |
-| **Opportunist** | This hero's attacks deal 1 more damage (as Empower 1) to a unit that hasn't had a turn since this hero's last turn. |
-| **Bulwark** | When an ally next to this hero takes its first hit between this hero's turns, the ally takes 1 less damage and this hero takes that 1. |
+| **Opportunist** | This hero's attacks deal 1 more damage (as Empower 1) to a unit whose card is behind this hero's next card, or off the track (2026-10-29; a unit that hadn't had a turn since this hero's last before). |
+| **Bulwark** | When an ally next to this hero takes its first hit in 8 slots (between this hero's turns until 2026-10-29), the ally takes 1 less damage and this hero takes that 1. |
 | **Glass Cannon** | Empower 1 always, but this hero starts each fight at half its health. |
 
 **Control**
@@ -430,8 +432,8 @@ choice:
 |---|---|
 | **Flanker** | This hero's attacks deal 1 more damage when an ally stands on the far side of the target, opposite this hero. |
 | **Lone Wolf** | Empower 1 while no ally is within 2 spaces. |
-| **Rally** | At the start of this hero's turn, each ally next to it gains Shield 1 until that ally's next turn. |
-| **Vengeance** | When an ally dies, this hero's card is Hastened 3 and it gains Empower 1 for its next turn. |
+| **Rally** | At the start of this hero's turn, each ally next to it gains Shield 1 for 8 slots. |
+| **Vengeance** | When an ally dies, this hero's card is Hastened 3 and it gains Empower 1 for 8 slots. |
 
 - Rationale: each bends one rule rather than adding a system (17.7), and
   several answer a measured problem: Iron Will and Shake Loose counter
@@ -481,8 +483,8 @@ hero is still question 63.
 | Upgrade | Rule |
 |---|---|
 | **Staggering** | This hero's attacks Delay the target 2 (TBD). |
-| **Hamstring** | This hero's attacks Immobilize the target until the end of its next turn (TBD). |
-| **Concussive** | This hero's attacks Stun the target for its next turn. |
+| **Hamstring** | This hero's attacks Immobilize the target for 8 slots. |
+| **Concussive** | This hero's attacks Delay the target 6 (a Stun for its next turn until 2026-10-29). |
 | **Sundering** | This hero's attacks Pierce. |
 | **Crippling** | This hero's attacks Weaken the target 1 (TBD). |
 
@@ -490,8 +492,8 @@ hero is still question 63.
 
 | Upgrade | Rule |
 |---|---|
-| **Lockdown** | When this hero's ability Immobilizes a unit, the unit is also Stunned for its next turn. |
-| **Defy Fate** | This hero's attacks Stun an Inevitable target for its next turn. |
+| **Lockdown** | When this hero's ability Immobilizes a unit, the unit is also Delayed 6. |
+| **Defy Fate** | This hero's attacks Delay an Inevitable target 6, though Inevitable. |
 | **Immovable Object** | This hero's attacks Delay an Unstoppable target 2 (TBD). |
 
 **Healing** (Invigorate to Ward: owner, 2026-10-29, later)
@@ -500,8 +502,8 @@ hero is still question 63.
 |---|---|
 | **Invigorate** | When this hero's ability heals an ally, the ally is also Empowered 1 (TBD). |
 | **Quickening** | When this hero's ability heals an ally, the ally is also Hastened 2 (TBD). |
-| **Fortify** | When this hero's ability heals an ally, the ally also gains Armour 1 (TBD) until its next turn. |
-| **Ward** | When this hero's ability heals an ally, the ally also gains Shield 1 (TBD) until its next turn. |
+| **Fortify** | When this hero's ability heals an ally, the ally also gains Armour 1 for 8 slots. |
+| **Ward** | When this hero's ability heals an ally, the ally also gains Shield 1 for 8 slots. |
 | **Mending Strike** | This hero's melee attacks can be used on an ally, healing it this hero's power instead of damaging it. |
 | **Mending Shot** | This hero's ranged attacks can be used on an ally, healing it this hero's power instead of damaging it. |
 

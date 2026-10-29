@@ -62,7 +62,8 @@ Units that enter mid-combat (summons, reinforcements) are placed by the placemen
 Reinforcements (Decided): their arrival is shown on the track in advance, with a known arrival slot and spawn location (section 7.4).
 
 ### 3.9 Durations and Effects Over Time (Decided)
-- An effect lasts as its source states: a number of slots, until something happens (hail until its caster's turn after next), or always. Effects **do not occupy slots** and are not cards.
+- An effect lasts as its source states: a number of slots, until something happens (a grapple's hold until it breaks), or always. Effects **do not occupy slots** and are not cards.
+- **No duration counts turns (owner, 2026-10-29):** an effect that lasted until a unit's next turn lasts **8 slots** from the slot it is given, hail **16**, whatever turns come in between, and ends as the track passes its last slot; a Stun for a turn is a **Delay of 6**; a grapple's held card leaves the track until it ends (`RULES.durations`; [keywords.md](keywords.md), 17.2 and 17.5).
 - An effect that acts over time acts at a stated moment: Burn at the start of each of the unit's turns ([keywords.md](keywords.md), 17.6).
 - A duration in slots that ends on the slot of the affected unit's turn **expires after that unit acts**, so it still covers that turn.
 

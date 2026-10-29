@@ -6,7 +6,8 @@ import type {Hex} from '@canvas/engine/server';
 import {ONE_EYE, PARTY} from './config';
 import {applyTurn, createFight, mapOf} from './fight';
 import {STEPPE} from './map';
-import {squeezeGrapples} from './resolve';
+import {squeezeDue} from './resolve';
+import {RULES} from './config';
 import type {AbilityId, ActionTarget, FightState, Unit} from './types';
 
 const centre: Hex = {q: 0, r: 0};
@@ -83,11 +84,12 @@ describe('the Cyclops', () => {
     const giant = unit(s, 'e-giant');
     const grappler = unit(s, 'p-bokh');
     act(s, 'p-bokh', 'grapple', {hex: centre});
-    squeezeGrapples({state: s, map: mapOf(s), slot: s.currentSlot}, grappler);
+    const every = RULES.durations.turn;
+    squeezeDue({state: s, map: mapOf(s), slot: s.currentSlot}, s.currentSlot + every);
     expect(giant.hp).toBe(giant.maxHp);
     // From the front the squeeze gets through.
     grappler.hex = out(0, 1);
-    squeezeGrapples({state: s, map: mapOf(s), slot: s.currentSlot}, grappler);
+    squeezeDue({state: s, map: mapOf(s), slot: s.currentSlot}, s.currentSlot + 2 * every);
     expect(giant.hp).toBe(giant.maxHp - 1);
   });
 

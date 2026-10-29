@@ -3,14 +3,13 @@
 import {describe, expect, it} from 'vitest';
 import {hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {PARTY} from './config';
+import {PARTY, RULES} from './config';
 import {reachableHexes, isStunned, invalidPath} from './board';
 import {advanceToDecision, applyTurn, cloneFight, createFight, makeUnit, mapOf} from './fight';
 import {STEPPE} from './map';
 import {delay, haste, hit, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {parseTestStage} from './testStage';
-import {inRules} from './info';
 import {PASSIVES} from './passives';
 import {actionCost} from './track';
 import type {AbilityId, ActionTarget, FightState, PassiveId, Unit} from './types';
@@ -171,29 +170,26 @@ describe('the passives: damage and survival', () => {
     const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
     give(s, 'p-bokh', 'hardened', 'bulwark');
     unit(s, 'p-bokh').spent = [];
-    unit(s, 'p-bokh').covered = [];
+    unit(s, 'p-bokh').coveredAt = {};
     const copy = cloneFight(s);
     hit(ctxOf(copy), unit(copy, 'e-mangudai'), unit(copy, 'p-bokh'), 'The arrow');
     hit(ctxOf(copy), unit(copy, 'e-mangudai'), unit(copy, 'p-storm'), 'The arrow');
     expect(unit(copy, 'p-bokh').spent).toEqual(['hardened']);
     expect(unit(s, 'p-bokh').spent).toEqual([]);
-    expect(unit(s, 'p-bokh').covered).toEqual([]);
+    expect(unit(s, 'p-bokh').coveredAt).toEqual({});
   });
 
-  it('Last Stand: left at 1 health the first time it would fall, Stunned for its next turn', () => {
+  it('Last Stand: left at 1 health the first time it would fall, Delayed `RULES.durations.stun`', () => {
     const s = setup({'p-mangudai': centre, 'e-bokh': out(0, 3)});
     const u = give(s, 'p-mangudai', 'lastStand');
     const foe = unit(s, 'e-bokh');
     foe.power = 10;
+    const before = u.slot!;
     hit(ctxOf(s), foe, u, 'The blow');
     expect(u.alive).toBe(true);
     expect(u.hp).toBe(1);
-    expect(isStunned(u)).toBe(true);
-    // Its next turn is skipped, and the Stun goes with it: the turn after is its own.
-    u.slot = 1;
-    expect(advanceToDecision(s)?.id).toBe('p-mangudai');
-    expect(u.slot).toBe(1 + actionCost(u));
     expect(isStunned(u)).toBe(false);
+    expect(u.slot).toBe(before + RULES.durations.stun);
     hit(ctxOf(s), foe, u, 'The blow');
     expect(u.alive).toBe(false);
   });
@@ -207,28 +203,7 @@ describe('the passives: damage and survival', () => {
     expect(target.hp).toBe(target.maxHp - archer.power);
   });
 
-  it('Opportunist: 1 more to a unit that hasn’t had a turn since its last', () => {
-    const s = setup({'p-mangudai': centre, 'e-bokh': out(0, 3)});
-    const archer = give(s, 'p-mangudai', 'opportunist');
-    const target = unit(s, 'e-bokh');
-    // Neither has had a turn: the target hasn't had one since the fight began.
-    hit(ctxOf(s), archer, target, 'The arrow');
-    expect(target.hp).toBe(target.maxHp - archer.power - 1);
-    // The archer at slot 10, then the target at 20, then the archer again at 30.
-    archer.turns = [10, 30];
-    target.turns = [20];
-    s.currentSlot = 30;
-    const hp = target.hp;
-    hit(ctxOf(s), archer, target, 'The arrow');
-    expect(target.hp).toBe(hp - archer.power);
-    // The target's last turn came before the archer's last one.
-    target.turns = [5];
-    const hp2 = target.hp;
-    hit(ctxOf(s), archer, target, 'The arrow');
-    expect(target.hp).toBe(hp2 - archer.power - 1);
-  });
-
-  it('Bulwark: an ally next to it takes 1 less of its first hit between its turns, the Bulwark 1', () => {
+  it('Bulwark: an ally next to it takes 1 less of its first hit, the Bulwark 1', () => {
     const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
     const guard = give(s, 'p-bokh', 'bulwark');
     const ally = unit(s, 'p-storm');
@@ -241,9 +216,8 @@ describe('the passives: damage and survival', () => {
     expect(guard.hp).toBe(guard.maxHp - 1);
   });
 
-  it('In slots, Opportunist: 1 more to a unit whose card is behind its own next card', () => {
+  it('Opportunist: 1 more to a unit whose card is behind its own next card', () => {
     const s = setup({'p-mangudai': centre, 'e-bokh': out(0, 3)});
-    s.rules = {slots: {turn: 8, hail: 16, stun: 6}};
     const archer = give(s, 'p-mangudai', 'opportunist');
     const target = unit(s, 'e-bokh');
     s.currentSlot = 10;
@@ -264,19 +238,17 @@ describe('the passives: damage and survival', () => {
     expect(target.hp).toBe(hp2 - archer.power - 1);
   });
 
-  it('In slots, Opportunist and Bulwark say so', () => {
-    const rules = {slots: {turn: 8, hail: 16, stun: 6}};
-    expect(inRules(PASSIVES.opportunist.rule, rules)).toBe(
+  it('Opportunist and Bulwark say so', () => {
+    expect(PASSIVES.opportunist.rule).toBe(
       'Its attacks deal 1 more to a unit whose card is behind its own next card, or off the track.'
     );
-    expect(inRules(PASSIVES.bulwark.rule, rules)).toBe(
+    expect(PASSIVES.bulwark.rule).toBe(
       'When an ally next to it takes its first hit in 8 slots, the ally takes 1 less and this unit takes that 1.'
     );
   });
 
-  it('In slots, Bulwark: once every so many slots for each ally', () => {
+  it('Bulwark: once every `RULES.durations.turn` slots for each ally', () => {
     const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
-    s.rules = {slots: {turn: 8, hail: 16, stun: 6}};
     const guard = give(s, 'p-bokh', 'bulwark');
     const ally = unit(s, 'p-storm');
     ally.hp = ally.maxHp = 20;

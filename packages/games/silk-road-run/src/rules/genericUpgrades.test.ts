@@ -7,7 +7,7 @@ import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {isImmobilized, isStunned} from './board';
 import {offeredTargets} from './choices';
-import {ABILITY, PARTY, RARITY_WEIGHT} from './config';
+import {ABILITY, PARTY, RARITY_WEIGHT, RULES} from './config';
 import {RuleError, advanceToDecision, applyTurn, createFight} from './fight';
 import {STEPPE} from './map';
 import {PASSIVES, draftPick, fitsKit} from './passives';
@@ -56,18 +56,14 @@ function act(s: FightState, id: string, ability: AbilityId, target: ActionTarget
 }
 
 describe('generic upgrades: attacks', () => {
-  it('Concussive Stuns the target for its next turn, which it then skips', () => {
+  it('Concussive Delays the target `RULES.durations.stun` (a Stun for its next turn until 2026-10-29)', () => {
     const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
     give(s, 'p-bokh', 'concussive');
-    act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
     const foe = unit(s, 'e-bokh');
-    expect(isStunned(foe)).toBe(true);
-    // Its next turn comes up and is skipped; the Stun goes with it.
-    foe.slot = s.currentSlot + 1;
-    unit(s, 'p-bokh').slot = 400;
-    advanceToDecision(s);
-    expect(s.log.some((l) => l.text.endsWith('is Stunned: turn skipped.'))).toBe(true);
+    const before = foe.slot!;
+    act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
     expect(isStunned(foe)).toBe(false);
+    expect(foe.slot).toBe(before + RULES.durations.stun);
   });
 
   it('Staggering Delays 2, Crippling Weakens 1, Sundering Pierces Armour', () => {
@@ -84,19 +80,27 @@ describe('generic upgrades: attacks', () => {
     expect(foe.hp).toBe(foe.maxHp - 2);
   });
 
-  it('Hamstring Immobilizes through the target’s next turn, and sets off Lockdown', () => {
+  it('Hamstring Immobilizes for `RULES.durations.turn` slots, and sets off Lockdown', () => {
     const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
     give(s, 'p-bokh', 'hamstring');
+    const now = s.currentSlot;
     act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
     const foe = unit(s, 'e-bokh');
     expect(isImmobilized(foe)).toBe(true);
+    expect(foe.statuses[0]!.until).toBe(now + RULES.durations.turn);
     expect(isStunned(foe)).toBe(false);
+    // Past its last slot it ends, whatever turns come in between.
+    unit(s, 'p-bokh').slot = 400;
+    foe.slot = now + RULES.durations.turn + 1;
+    advanceToDecision(s);
+    expect(isImmobilized(foe)).toBe(false);
 
     const t = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
     give(t, 'p-bokh', 'hamstring', 'lockdown');
+    const before = unit(t, 'e-bokh').slot!;
     act(t, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
     expect(isImmobilized(unit(t, 'e-bokh'))).toBe(true);
-    expect(isStunned(unit(t, 'e-bokh'))).toBe(true);
+    expect(unit(t, 'e-bokh').slot).toBe(before + RULES.durations.stun);
   });
 
   it('only an enemy is an attack’s target: an ally hit takes none of it', () => {
@@ -109,13 +113,14 @@ describe('generic upgrades: attacks', () => {
     expect(ally.slot).toBe(before);
   });
 
-  it('Defy Fate Stuns an Inevitable target; Immovable Object Delays an Unstoppable one 2', () => {
+  it('Defy Fate Delays an Inevitable target, though Inevitable; Immovable Object Delays an Unstoppable one 2', () => {
     const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1), 'e-storm': out(3, 1)});
     give(s, 'p-bokh', 'defyFate', 'immovableObject');
     give(s, 'e-bokh', 'steadyGait');
     const big = give(s, 'e-storm', 'unstoppable');
+    const fated = unit(s, 'e-bokh').slot!;
     act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(isStunned(unit(s, 'e-bokh'))).toBe(true);
+    expect(unit(s, 'e-bokh').slot).toBe(fated + RULES.durations.stun);
     const before = big.slot!;
     s.currentSlot += 1;
     act(s, 'p-bokh', 'swiftStrike', {hex: out(3, 1)});

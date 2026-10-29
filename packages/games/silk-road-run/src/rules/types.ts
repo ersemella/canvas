@@ -187,8 +187,8 @@ export type DraftPick = {hero: HeroId; card: CardId} | {heal: true};
 export type StatusKind = 'immobilized' | 'stunned';
 
 /**
- * A status from an ability. None has a duration in slots: each lasts as
- * long as what gave it (owner, 2026-10-23), named here, and ends with it.
+ * A status from an ability: each lasts as long as what gave it (owner,
+ * 2026-10-23), named here, and ends with it, or through `until`.
  */
 export interface Status {
   kind: StatusKind;
@@ -199,24 +199,17 @@ export interface Status {
   /** From a Grapple: ends when the grapple does (`breakGrapples` in resolve.ts). */
   grapple?: {champion: string; target: string};
   /**
-   * With `grapple` and durations in slots (`FightRules.slots`): the slot of
-   * its next squeeze, every `turn` slots in place of each of the
-   * Grappler's turns (`squeezeDue` in resolve.ts).
+   * With `grapple`: the slot of its next squeeze, every
+   * `RULES.durations.turn` slots (`squeezeDue` in resolve.ts).
    */
   squeezeAt?: number;
-  /** From Last Stand (19.8): Stunned for the unit's next turn, ending with it. */
-  lastStand?: boolean;
-  /** From a Charge slamming it into yurts or the map's edge: Stunned for its next turn, ending with it. */
-  slammed?: boolean;
   /**
    * From a pinning Longshot (`ABILITY.longshot.pin`) or Hamstring (19.9):
-   * Immobilized until the end of the unit's next turn.
+   * Immobilized through `until`.
    */
   pinned?: boolean;
-  /** With durations in slots (`FightRules.slots`), the last slot it lasts through (a pin's). */
+  /** The last slot it lasts through (a pin's, `RULES.durations.turn` slots). */
   until?: number;
-  /** From Concussive, Lockdown or Defy Fate (19.9): Stunned for the unit's next turn, ending with it. */
-  dazed?: boolean;
 }
 
 /**
@@ -257,24 +250,19 @@ export interface Unit {
   /** Its provisions, stat by stat, added to its hero's or loadout's stats; absent with none. */
   provisions?: Partial<Record<StatId, number>>;
   /**
-   * Empower (keywords.md, 17.6): its abilities deal this much more until
-   * the end of its next turn (the Storm Caller's Sunlight). Absent when it
-   * has none.
+   * Empower (keywords.md, 17.6): its abilities deal this much more through
+   * `empowerUntil` (the Storm Caller's Sunlight). Absent when it has none.
    */
   empower?: number;
-  /** Its turn has begun since it was Empowered, so the Empower ends with that turn. */
-  empowerStarted?: boolean;
-  /** With durations in slots (`FightRules.slots`), the last slot its Empower lasts through. */
+  /** The last slot its Empower lasts through (`RULES.durations.turn` slots on). */
   empowerUntil?: number;
   /**
    * Weaken (keywords.md, 17.6): its abilities deal this much less, to at
-   * least 0, until the end of its next turn (the Alchemist's
-   * Elixir). Absent when it has none.
+   * least 0, through `weakenUntil` (the Alchemist's Elixir). Absent when it
+   * has none.
    */
   weaken?: number;
-  /** Its turn has begun since it was Weakened, so the Weaken ends with that turn. */
-  weakenStarted?: boolean;
-  /** With durations in slots, the last slot its Weaken lasts through. */
+  /** The last slot its Weaken lasts through (`RULES.durations.turn` slots on). */
   weakenUntil?: number;
   /** Its passives (progression.md, 19.8); absent with none. */
   passives?: PassiveId[];
@@ -301,28 +289,28 @@ export interface Unit {
    */
   spent?: PassiveId[];
   /**
-   * Shield (keywords.md, 17.6): a pool reduced before health, until the
-   * start of the unit's next turn (Rally, the Priest's Blessing). Absent
-   * when it has none.
+   * Shield (keywords.md, 17.6): a pool reduced before health, through
+   * `shieldUntil` (Rally, Ward), or until spent (`lastingShield`, the
+   * Priest's Blessing). Absent when it has none.
    */
   shield?: number;
-  /** With durations in slots, the last slot its Shield (but a lasting one) lasts through. */
+  /** The last slot its Shield, but a lasting one, lasts through. */
   shieldUntil?: number;
   /**
-   * Armour (keywords.md, 17.6) until the start of its next turn, from an
-   * ally's Fortify (19.9). Absent when it has none.
+   * Armour (keywords.md, 17.6) through `armourUntil`, from an ally's
+   * Fortify (19.9). Absent when it has none.
    */
   armour?: number;
-  /** With durations in slots, the last slot its Armour lasts through. */
+  /** The last slot its Fortify Armour lasts through. */
   armourUntil?: number;
   /**
-   * The Grappler holding its card off the track (`FightRules.grapple`);
-   * absent otherwise. Cleared as its card comes back (`returnFreed`).
+   * The Grappler holding its card off the track (a grapple, owner,
+   * 2026-10-29); absent otherwise. Cleared as its card comes back (`returnFreed`).
    */
   heldBy?: string;
   /**
-   * The part of its Shield that stays until damage spends it, not going at
-   * its next turn (a Blessing with `ABILITY.blessing.lasts`). Absent when
+   * The part of its Shield that stays until damage spends it, not going as
+   * its slots run out (a Blessing with `ABILITY.blessing.lasts`). Absent when
    * none does.
    */
   lastingShield?: number;
@@ -343,17 +331,10 @@ export interface Unit {
    * fight earns an extra provision (camel.md, 18.4). Absent while it hasn't.
    */
   damaged?: boolean;
-  /** The slots its last two turns started on, the latest last (Opportunist, 19.8). */
-  turns?: number[];
   /**
-   * The allies next to it that have taken their first hit since its last
-   * turn (Bulwark, 19.8), by unit id. Absent while none has.
-   */
-  covered?: string[];
-  /**
-   * With durations in slots (`FightRules.slots`), in place of `covered`:
-   * the slot each ally next to it last had a hit taken for it (Bulwark,
-   * once every `turn` slots), by unit id. Absent while none has.
+   * The slot each ally next to it last had a hit taken for it (Bulwark,
+   * 19.8, once every `RULES.durations.turn` slots), by unit id. Absent while
+   * none has.
    */
   coveredAt?: Record<string, number>;
   /**
@@ -374,27 +355,22 @@ export interface HailEffect {
   hex: Hex;
   /** The caster's unit id. */
   source: string;
-  /**
-   * Its caster's turns still to start before it lifts, counting the one it
-   * lifts on. Absent in runs saved before 2026-10-25, when hail lasted 1.
-   */
-  turns?: number;
-  /** With durations in slots, the last slot it stands through, in place of `turns`. */
-  until?: number;
+  /** The last slot it stands through (`RULES.durations.hail` slots on). */
+  until: number;
 }
 
 /**
  * A burning space (Princess Iron Fan's Fan the Flames, owner, 2026-10-28): a
  * unit entering it, by walking or Moved there, takes `ABILITY.fanFlames.burn`.
- * It goes out as its source's next turn starts; once she has fallen, only
+ * It goes out after `until`; once she has fallen, only
  * the fan she drops puts it out (`quench`).
  */
 export interface FireEffect {
   hex: Hex;
   /** Princess Iron Fan's unit id. */
   source: string;
-  /** With durations in slots, the last slot it burns through while she stands. */
-  until?: number;
+  /** The last slot it burns through while she stands (`RULES.durations.turn` slots on). */
+  until: number;
 }
 
 /**
@@ -454,37 +430,8 @@ export type RecordedEvent = FightEvent & {after: BoardSnapshot};
 
 export type FightPhase = 'fight' | 'won' | 'lost';
 
-/**
- * Rules for one fight in place of config.ts's, which only the test stage
- * (`"rules"` in test-stage.json) and the balance experiments set, so a run
- * never has them.
- */
-export interface FightRules {
-  /**
-   * Durations in a fixed number of slots, in place of turns (2026-10-29):
-   * every effect that lasted until a unit's next turn (Empower, Weaken, a
-   * Shield but a lasting one, Fortify's Armour, the Immobilized of a pin or
-   * Hamstring, Princess Iron Fan's fire) lasts `turn` slots from the slot
-   * it is given, hail `hail`, whatever turns come in between; a Stun for a
-   * unit's next turn is a Delay of `stun` (`stunForATurn` in resolve.ts).
-   * An effect ends as the track passes its last slot (`expireDurations`).
-   * The Elixir's Unstoppable, Immortal and swap (switches, off) stay by
-   * turns.
-   */
-  slots?: {turn: number; hail: number; stun: number};
-  /**
-   * `offTrack` (2026-10-29): a grappled unit's card is taken off the track
-   * while the grapple holds, in place of being Stunned turn after turn;
-   * once it ends, the card comes back just before its Grappler's next card
-   * (`returnFreed` in resolve.ts), so the freed unit always acts first.
-   */
-  grapple?: 'offTrack';
-}
-
 export interface FightState {
   mapId: string;
-  /** This fight's own rules (`FightRules`); absent in every run's fight. */
-  rules?: FightRules;
   /** This fight's tiles by hex key (its yurts are random per fight). */
   tiles: Record<string, Tile>;
   /** The camel's road this fight, one of the map's `ROUTES` at random (owner, 2026-10-28). */

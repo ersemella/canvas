@@ -6,7 +6,7 @@
  * draw at each step. The board system draws it and each event's flourish.
  */
 import {hexDistance, hexEquals} from '@canvas/engine/server';
-import {ABILITY} from '../rules/config';
+import {ABILITY, RULES} from '../rules/config';
 import type {Hex} from '@canvas/engine/server';
 import type {FightState, HailEffect, RecordedEvent} from '../rules/types';
 
@@ -67,7 +67,7 @@ export function displayFight(base: FightState, e: RecordedEvent, actor: string |
     currentSlot: after.currentSlot,
     effects:
       e.kind === 'action' && e.ability === 'hail' && e.target
-        ? castHail(after.effects, e.unitId, e.target)
+        ? castHail(after.effects, e.unitId, e.target, after.currentSlot)
         : after.effects,
     shots: after.shots ?? [],
     ...(after.fires ? {fires: after.fires} : {}),
@@ -83,12 +83,17 @@ export function displayFight(base: FightState, e: RecordedEvent, actor: string |
  * rules place it (Hail's `resolve`): over any on its space, the caster's
  * oldest lifting past `ABILITY.hail.max`.
  */
-function castHail(effects: HailEffect[], source: string, hex: HailEffect['hex']): HailEffect[] {
+function castHail(
+  effects: HailEffect[],
+  source: string,
+  hex: HailEffect['hex'],
+  now: number
+): HailEffect[] {
   const mine = effects.filter((h) => h.source === source);
   const lifts = mine.slice(0, Math.max(0, mine.length - Math.max(1, ABILITY.hail.max) + 1));
   return [
     ...effects.filter((h) => !lifts.includes(h) && !hexEquals(h.hex, hex)),
-    {kind: 'hail', hex, source, turns: ABILITY.hail.turns},
+    {kind: 'hail', hex, source, until: now + RULES.durations.hail},
   ];
 }
 

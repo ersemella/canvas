@@ -83,7 +83,6 @@ export {
   TILE_INFO,
   fireInfo,
   hailInfo,
-  inRules,
   shotInfo,
   tileInfo,
 } from './rules/info';
@@ -104,7 +103,7 @@ export {
 } from './rules/board';
 export type {Reach} from './rules/board';
 export {actingUnit, cloneFight, makeUnit, mapOf} from './rules/fight';
-export {atExit, camelOf, enterHex, hailEnds, unitName} from './rules/resolve';
+export {atExit, camelOf, enterHex, unitName} from './rules/resolve';
 export {aimSlot, chargeOf} from './rules/track';
 export {previewTurn, unitOptions} from './rules/preview';
 export {chooseAiTurn} from './rules/ai';

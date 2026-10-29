@@ -173,9 +173,8 @@ export function threatDamage(threats: Threat[], after: FightState, me: Unit): nu
   if (!me.alive || !me.hex || me.slot === null) return 0;
   const key = id(me.hex.q, me.hex.r);
   let total = 0;
-  // With durations in slots (`FightRules.slots`), the hits after its Shield's slots.
+  // The hits after its Shield's slots.
   let late = 0;
-  const windowed = Boolean(after.rules?.slots);
   for (const t of threats) {
     const e = after.units.find((u) => u.id === t.enemyId);
     if (!e?.alive || e.slot === null || e.slot >= me.slot || isStunned(e)) continue;
@@ -183,11 +182,11 @@ export function threatDamage(threats: Threat[], after: FightState, me: Unit): nu
     const hits = t.hexes.get(key) ?? 0;
     const hit =
       hits > 0 ? Math.max(0, hits - (hasPassive(me, 'armoured') ? ARMOURED.armour : 0)) : 0;
-    if (windowed && e.slot > (me.shieldUntil ?? -1)) late += hit;
+    if (e.slot > (me.shieldUntil ?? -1)) late += hit;
     else total += hit;
   }
-  // A Shield (17.6) lasts until its next turn, so it takes these hits first;
-  // windowed, those within its window, its lasting part (if any is left) the rest.
+  // A Shield (17.6) takes the hits within its slots first, its lasting part
+  // (if any is left) the rest.
   const shield = me.shield ?? 0;
   const left = Math.min(me.lastingShield ?? 0, Math.max(0, shield - total));
   return Math.max(0, total - shield) + Math.max(0, late - left);

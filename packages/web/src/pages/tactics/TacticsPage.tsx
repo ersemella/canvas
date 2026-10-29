@@ -516,7 +516,6 @@ export function TacticsPage() {
         slotsLater={slotsLater}
         outOfReach={outOfReach}
         unit={upcoming}
-        rules={fight.rules}
         ability={ability}
         plannedMove={plannedMove}
         moving={moving}
@@ -594,8 +593,8 @@ export function TacticsPage() {
   // Desktop: the chosen ability explained, at the foot of the panel.
   const chosen = acting && ability && (
     <Paper className={styles.plaque!} p="sm" data-testid="chosen-ability">
-      <Glossary rules={fight.rules}>
-        <AbilityDetail unit={acting} def={ABILITIES[ability]} rules={fight.rules} />
+      <Glossary>
+        <AbilityDetail unit={acting} def={ABILITIES[ability]} />
       </Glossary>
     </Paper>
   );

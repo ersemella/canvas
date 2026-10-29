@@ -76,7 +76,7 @@ import {
   spaceOf,
   tileAt,
 } from './map';
-import {inRules, tileInfo} from './info';
+import {tileInfo} from './info';
 import {
   checkEnd,
   damageOf,
@@ -89,12 +89,10 @@ import {
   hit,
   kill,
   returnSlot,
-  applyDamage,
   startTurnPassives,
-  endTurnEffects,
+  expireDurations,
   stun,
   stunForATurn,
-  heal,
 } from './resolve';
 import type {Ctx} from './resolve';
 import {
@@ -376,18 +374,19 @@ describe('the track', () => {
     expect(s.shots).toEqual([]);
   });
 
-  it('a drawn arrow carries the Empower its Outrider drew with, though the Empower ends with that turn', () => {
+  it('a drawn arrow carries the Empower its Outrider drew with, though the Empower has run out', () => {
     upgrade('mangudai');
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(5, 4), 'e-storm': at(8, 6)});
     const m = unit(s, 'p-mangudai');
     const bokh = unit(s, 'e-bokh');
     empower({state: s, map: mapOf(s), slot: s.currentSlot}, m, 2);
-    m.empowerStarted = true;
+    // Its last slot this one.
+    m.empowerUntil = s.currentSlot;
     applyTurn(s, m, skirmishOn(s, m, bokh));
-    expect(m.empower).toBeUndefined();
     s.units.forEach((u) => (u.controller = 'human'));
     for (let d = advanceToDecision(s); d && d !== m; d = advanceToDecision(s))
       applyTurn(s, d, {action: {ability: 'hold'}});
+    expect(m.empower).toBeUndefined();
     expect(s.shots).toEqual([]);
     expect(bokh.hp).toBe(bokh.maxHp - m.power - 2);
   });
@@ -936,7 +935,7 @@ describe('the board', () => {
     expect(before.path).toHaveLength(2);
     // Hail on both ways there: it can be reached, but not passed.
     for (const h of [at(3, 4), at(4, 4)])
-      s.effects.push({kind: 'hail', hex: h, source: 'e-storm', turns: 1});
+      s.effects.push({kind: 'hail', hex: h, source: 'e-storm', until: 999});
     const reach = reachableHexes(s, mapOf(s), b);
     expect(reach.some((r) => hexKey(r.hex) === hexKey(dest))).toBe(false);
     expect(reach.some((r) => hexKey(r.hex) === hexKey(at(3, 4)))).toBe(true);
@@ -1011,44 +1010,31 @@ describe('stats and damage', () => {
     expect(storm.power).toBe(2);
   });
 
-  it('Empower adds to a hit until the end of the unit’s next turn, then ends', () => {
+  it('Empower lasts `RULES.durations.turn` slots, through whatever turns come, then ends', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const m = unit(s, 'p-mangudai');
     const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
     empower(ctx, m, 1);
+    expect(m.empowerUntil).toBe(RULES.durations.turn);
     m.slot = 1;
     expect(advanceToDecision(s)!.id).toBe('p-mangudai');
     applyTurn(s, m, {action: {ability: 'snapShot', target: {hex: at(4, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 3);
+    // Its turn doesn't end it; its slots running out does.
+    expect(m.empower).toBe(1);
+    m.slot = RULES.durations.turn + 1;
+    expect(advanceToDecision(s)!.id).toBe('p-mangudai');
     expect(m.empower).toBeUndefined();
   });
 
-  it('Empower given on the unit’s own turn lasts through its next one', () => {
-    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(7, 6)});
-    s.units.forEach((u) => (u.controller = 'human'));
-    const storm = unit(s, 'p-storm');
-    storm.slot = 1;
-    expect(advanceToDecision(s)!.id).toBe('p-storm');
-    empower({state: s, map: mapOf(s), slot: s.currentSlot}, storm, 1);
-    applyTurn(s, storm, {action: {ability: 'hold'}});
-    expect(storm.empower).toBe(1);
-    storm.slot = s.currentSlot + 1;
-    expect(advanceToDecision(s)!.id).toBe('p-storm');
-    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
-    expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 3);
-    expect(storm.empower).toBeUndefined();
-  });
-
-  it('with durations in slots, an Empower lasts its slots, so a Delay can carry the card past it', () => {
+  it('an Empower lasts its slots, so a Delay can carry the card past it', () => {
     const hitAt = (late: number) => {
       const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
-      s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
       s.units.forEach((u) => (u.controller = 'human'));
       const m = unit(s, 'p-mangudai');
       empower({state: s, map: mapOf(s), slot: 0}, m, 1);
-      expect(m.empowerUntil).toBe(10);
-      m.slot = 10 + late;
+      m.slot = RULES.durations.turn + late;
       expect(advanceToDecision(s)!.id).toBe('p-mangudai');
       applyTurn(s, m, {action: {ability: 'snapShot', target: {hex: at(4, 3)}}});
       return unit(s, 'e-bokh').maxHp - unit(s, 'e-bokh').hp;
@@ -1057,42 +1043,37 @@ describe('stats and damage', () => {
     expect(hitAt(0)).toBe(3);
     expect(hitAt(1)).toBe(2);
   });
-  it('with durations in slots, a Stun for a turn is a Delay of its slots, which Iron Will still stops', () => {
+
+  it('what was a Stun for a turn is a Delay of `RULES.durations.stun`, which Iron Will still stops, and a Grappler lets go', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
-    s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
     const storm = unit(s, 'e-storm');
     const slot = storm.slot!;
     const ctx = {state: s, map: mapOf(s), slot: 0};
-    stunForATurn(ctx, storm, {kind: 'stunned', slammed: true});
+    stunForATurn(ctx, storm);
     expect(isStunned(storm)).toBe(false);
-    expect(storm.slot).toBe(slot + 6);
+    expect(storm.slot).toBe(slot + RULES.durations.stun);
     storm.passives = ['ironWill'];
-    stunForATurn(ctx, storm, {kind: 'stunned', slammed: true});
-    expect(storm.slot).toBe(slot + 6);
+    stunForATurn(ctx, storm);
+    expect(storm.slot).toBe(slot + RULES.durations.stun);
     // As a Stun did, it makes a Grappler let go.
-    const g = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
-    g.rules = {slots: {turn: 10, hail: 18, stun: 6}};
+    const g = setup({'p-bokh': at(1, 1), 'p-mangudai': at(8, 6), 'e-storm': at(2, 1)});
     const bokh = unit(g, 'p-bokh');
     applyTurn(g, bokh, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     expect(isStunned(unit(g, 'e-storm'))).toBe(true);
-    stunForATurn({state: g, map: mapOf(g), slot: 0}, bokh, {kind: 'stunned', dazed: true});
+    stunForATurn({state: g, map: mapOf(g), slot: 0}, bokh);
     expect(isStunned(unit(g, 'e-storm'))).toBe(false);
-    // By turns, a Stun.
-    delete s.rules;
-    stunForATurn(ctx, storm, {kind: 'stunned', slammed: true});
-    expect(isStunned(storm)).toBe(true);
   });
 
-  it('with durations in slots, hail stands its slots, whatever its caster’s turns', () => {
+  it('hail stands `RULES.durations.hail` slots, whatever its caster’s turns', () => {
     const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(8, 6)});
-    s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
     s.units.forEach((u) => (u.controller = 'human'));
     const storm = unit(s, 'p-storm');
     const bokh = unit(s, 'e-bokh');
     storm.slot = 1;
     expect(advanceToDecision(s)!.id).toBe(storm.id);
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
-    expect(s.effects[0]!.until).toBe(1 + 18);
+    const until = 1 + RULES.durations.hail;
+    expect(s.effects[0]!.until).toBe(until);
     expect(isImmobilized(bokh)).toBe(true);
     // Two of its turns come and go: the hail stands.
     for (const t of [5, 9]) {
@@ -1102,12 +1083,13 @@ describe('stats and damage', () => {
     }
     expect(s.effects).toHaveLength(1);
     // Past its last slot it lifts, before the card there acts.
-    bokh.slot = 20;
-    storm.slot = 30;
+    bokh.slot = until + 1;
+    storm.slot = until + 20;
     expect(advanceToDecision(s)!.id).toBe(bokh.id);
     expect(s.effects).toHaveLength(0);
     expect(isImmobilized(bokh)).toBe(false);
   });
+
   it('a Grappler’s Empower adds to its squeeze when the rule says so, as it does in play', () => {
     const squeezed = (empoweredSqueeze: boolean) => {
       const grapple = ABILITY.grapple as {empoweredSqueeze: boolean};
@@ -1121,7 +1103,8 @@ describe('stats and damage', () => {
         applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
         empower({state: s, map: mapOf(s), slot: s.currentSlot}, b, 1);
         const hp = target.hp;
-        b.slot = 1;
+        // Its first squeeze, `RULES.durations.turn` slots on.
+        b.slot = RULES.durations.turn;
         advanceToDecision(s);
         return hp - target.hp;
       } finally {
@@ -1175,8 +1158,8 @@ describe('stats and damage', () => {
     const storm = unit(s, 'p-storm');
     const m = unit(s, 'p-mangudai');
     s.effects = [
-      {kind: 'hail', hex: at(2, 3), source: 'e-storm', turns: 1},
-      {kind: 'hail', hex: at(1, 4), source: 'p-other', turns: 1},
+      {kind: 'hail', hex: at(2, 3), source: 'e-storm', until: 999},
+      {kind: 'hail', hex: at(1, 4), source: 'p-other', until: 999},
     ];
     m.statuses = [{kind: 'immobilized', hail: 'e-storm'}];
     expect(
@@ -1259,28 +1242,35 @@ describe('abilities', () => {
     expect(unit(s, 'p-bokh').hp).toBeLessThan(hp);
   });
 
-  it('Grapple: its power in damage, then the target is Stunned; the Grappler stays free', () => {
+  it('Grapple: its power in damage, then the target is Stunned, its card off the track; the Grappler stays free', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-bokh': at(8, 6)});
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     expect(target.hp).toBe(target.maxHp - b.power);
     expect(target.statuses).toEqual([
-      {kind: 'stunned', grapple: {champion: 'p-bokh', target: 'e-storm'}},
+      {
+        kind: 'stunned',
+        grapple: {champion: 'p-bokh', target: 'e-storm'},
+        squeezeAt: RULES.durations.turn,
+      },
     ]);
+    expect(target.slot).toBeNull();
     expect(b.statuses).toEqual([]);
   });
 
-  it('Grapple: a Stunned unit’s turns are skipped while the grapple lasts', () => {
+  it('Grapple: the held unit gets no turns while the grapple lasts', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(8, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     applyTurn(s, unit(s, 'p-bokh'), {action: {ability: 'grapple', target: {hex: at(2, 1)}}});
     const target = unit(s, 'e-storm');
-    target.slot = 1;
     s.events = [];
-    expect(advanceToDecision(s)!.id).not.toBe('e-storm');
-    expect(s.events.some((e) => e.kind === 'skip' && e.unitId === 'e-storm')).toBe(true);
-    expect(target.skipped).toBe(true);
+    for (let i = 0; i < 4; i++) {
+      const d = advanceToDecision(s)!;
+      expect(d.id).not.toBe('e-storm');
+      applyTurn(s, d, {action: {ability: 'hold'}});
+    }
+    expect(target.slot).toBeNull();
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
@@ -1332,21 +1322,6 @@ describe('abilities', () => {
     expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
-  it('Grapple: each of the Grappler’s turns while it lasts, its target takes 1', () => {
-    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1), 'e-mangudai': at(8, 6)});
-    s.units.forEach((u) => (u.controller = 'human'));
-    const b = unit(s, 'p-bokh');
-    const target = unit(s, 'e-storm');
-    applyTurn(s, b, {action: {ability: 'grapple', target: {hex: target.hex!}}});
-    const hp = target.hp;
-    b.slot = 1;
-    s.events = [];
-    expect(advanceToDecision(s)!.id).toBe('p-bokh');
-    expect(target.hp).toBe(hp - 1);
-    expect(s.events.some((e) => e.kind === 'damage' && e.unitId === 'e-storm')).toBe(true);
-    expect(target.statuses.map((x) => x.kind)).toEqual(['stunned']);
-  });
-
   it('Grapple ends when the Grappler takes damage, or is Stunned', () => {
     const s = setup({
       'p-bokh': at(1, 1),
@@ -1381,7 +1356,6 @@ describe('abilities', () => {
         'e-storm': at(2, 1),
         'e-mangudai': at(1, 4),
       });
-      s.rules = {grapple: 'offTrack'};
       s.units.forEach((u) => (u.controller = 'human'));
       const b = unit(s, 'p-bokh');
       const target = unit(s, 'e-storm');
@@ -1397,12 +1371,9 @@ describe('abilities', () => {
     const {s, b, target} = grappled();
     expect(target.slot).toBeNull();
     expect(target.heldBy).toBe(b.id);
-    expect(inRules(ABILITIES.grapple.summary(b), s.rules)).toContain(
-      'its card leaves the track until you take damage or are Stunned, then comes back just before your next turn'
+    expect(ABILITIES.grapple.summary(b)).toContain(
+      'its card leaves the track until you take damage or are grappled, then comes back just before your next turn; it takes 1 more damage every 8 slots'
     );
-    expect(
-      inRules(ABILITIES.grapple.summary(b), {...s.rules, slots: {turn: 8, hail: 16, stun: 6}})
-    ).toContain('taking 1 more damage every 8 slots');
     // Shown where it would come back now: just before the Grappler's card.
     expect(returnSlot(s, target)).toBe(b.slot! - 1);
     // Its turns don't come: the Grappler's does.
@@ -1436,9 +1407,8 @@ describe('abilities', () => {
     expect(three.target.slot).toBe(three.s.currentSlot);
   });
 
-  it('Grapple in slots: its target squeezed every so many slots, not each of the Grappler’s turns', () => {
+  it('Grapple: its target squeezed every `RULES.durations.turn` slots, not each of the Grappler’s turns', () => {
     const s = setup({'p-bokh': at(1, 1), 'p-mangudai': at(8, 6), 'e-storm': at(2, 1)});
-    s.rules = {slots: {turn: 8, hail: 16, stun: 6}};
     s.units.forEach((u) => (u.controller = 'human'));
     const b = unit(s, 'p-bokh');
     const target = unit(s, 'e-storm');
@@ -1540,7 +1510,7 @@ describe('abilities', () => {
     expect(target.hex).toEqual(tAt);
   });
 
-  it('hail covers one space exactly two away: a unit there is Immobilized until the caster’s turn after next', () => {
+  it('hail covers one space exactly two away: a unit there is Immobilized for `RULES.durations.hail` slots', () => {
     const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
     const storm = unit(s, 'p-storm');
     const targets = ABILITIES.hail.targets(s, STEPPE, storm, storm.hex!);
@@ -1548,19 +1518,22 @@ describe('abilities', () => {
     expect(targets.every((t) => hexDistance(t.hex!, storm.hex!) === 2)).toBe(true);
     s.awaiting = storm.id;
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
-    expect(s.effects).toEqual([{kind: 'hail', hex: at(4, 3), source: 'p-storm', turns: 2}]);
+    expect(s.effects).toEqual([
+      {kind: 'hail', hex: at(4, 3), source: 'p-storm', until: RULES.durations.hail},
+    ]);
     const m = unit(s, 'e-mangudai');
     expect(m.statuses).toEqual([{kind: 'immobilized', hail: 'p-storm', at: at(4, 3)}]);
     // Moved out of it, it stays Immobilized until the hail is gone.
     enterHex({state: s, map: mapOf(s), slot: s.currentSlot}, m, at(5, 3), 'throw');
     expect(m.statuses.map((x) => x.kind)).toEqual(['immobilized']);
-    // The caster's next turn: the hail stays, and its hold with it.
+    // The caster's next turn, within its slots: the hail stays, and its hold with it.
     s.units.forEach((u) => (u.controller = 'human'));
     for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
     expect(advanceToDecision(s)!.id).toBe('p-storm');
-    expect(s.effects).toEqual([{kind: 'hail', hex: at(4, 3), source: 'p-storm', turns: 1}]);
+    expect(s.currentSlot).toBeLessThanOrEqual(RULES.durations.hail);
+    expect(s.effects).toHaveLength(1);
     expect(m.statuses.map((x) => x.kind)).toEqual(['immobilized']);
-    // The turn after: it lifts.
+    // The turn after, past them: it lifts.
     applyTurn(s, storm, {action: {ability: 'hold'}});
     for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
     expect(advanceToDecision(s)!.id).toBe('p-storm');
@@ -1585,7 +1558,9 @@ describe('abilities', () => {
         .targets(s, STEPPE, storm, storm.hex!)
         .find((t) => !unitAt(s, t.hex!))!.hex!;
       applyTurn(s, storm, {action: {ability: 'hail', target: {hex: other}}});
-      expect(s.effects).toEqual([{kind: 'hail', hex: other, source: 'p-storm', turns: 2}]);
+      expect(s.effects).toEqual([
+        {kind: 'hail', hex: other, source: 'p-storm', until: s.currentSlot + RULES.durations.hail},
+      ]);
       expect(m.statuses).toEqual([]);
     } finally {
       Object.assign(hail, saved);
@@ -1604,22 +1579,23 @@ describe('abilities', () => {
       .targets(s, STEPPE, storm, storm.hex!)
       .find((t) => !unitAt(s, t.hex!))!.hex!;
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: other}}});
-    expect(s.effects.map((e) => e.turns)).toEqual([1, 2]);
+    const second = s.currentSlot + RULES.durations.hail;
+    expect(s.effects.map((e) => e.until)).toEqual([RULES.durations.hail, second]);
     expect(m.statuses.map((x) => x.kind)).toEqual(['immobilized']);
     // A unit walking into the second takes the caster's power and is held.
     const b = unit(s, 'e-bokh');
     enterHex({state: s, map: mapOf(s), slot: s.currentSlot}, b, other);
     expect(b.hp).toBe(b.maxHp - storm.power);
     expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
-    // The caster's next turn: the first lifts, freeing only whoever it held.
+    // The caster's next turn, past the first's slots: it lifts, freeing only whoever it held.
     for (const u of s.units) if (u !== storm && u.alive) u.slot = storm.slot! + 10;
     expect(advanceToDecision(s)!.id).toBe('p-storm');
-    expect(s.effects).toEqual([{kind: 'hail', hex: other, source: 'p-storm', turns: 1}]);
+    expect(s.effects).toEqual([{kind: 'hail', hex: other, source: 'p-storm', until: second}]);
     expect(m.statuses).toEqual([]);
     expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
   });
 
-  it('a Grappler in hail grapples its caster: the hail hit came first, so the grapple holds and the caster’s turn is skipped', () => {
+  it('a Grappler in hail grapples its caster: the hail hit came first, so the grapple holds, and the hail lifts after its slots, the caster held', () => {
     const s = setup({'e-storm': at(2, 1), 'p-bokh': at(0, 1), 'e-mangudai': at(8, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const storm = unit(s, 'e-storm');
@@ -1638,22 +1614,13 @@ describe('abilities', () => {
     expect(advanceToDecision(s)!.id).toBe('p-bokh');
     // Immobilized doesn't stop a melee Grapple: the Grappler doesn't move.
     applyTurn(s, b, {action: {ability: 'grapple', target: {hex: storm.hex!}}});
-    expect(storm.statuses).toEqual([
-      {kind: 'stunned', grapple: {champion: 'p-bokh', target: 'e-storm'}},
-    ]);
-    // The Storm Caller's turn: Stunned, it skips the turn; its hail, cast
-    // last turn, stays until the turn after.
-    const hp = b.hp;
-    storm.slot = 2;
-    b.slot = 400;
-    s.events = [];
-    expect(advanceToDecision(s)!.id).not.toBe('e-storm');
-    const skips = s.events.filter((e) => e.kind === 'skip' && e.unitId === 'e-storm');
-    expect(skips[0]!.after.effects.map((e) => e.turns)).toEqual([1]);
-    // Its next turn, Stunned still, skipped too: the hail lifts.
-    expect(skips[1]!.after.effects).toEqual([]);
+    expect(storm.statuses.map((x) => x.kind)).toEqual(['stunned']);
+    expect(storm.slot).toBeNull();
+    // The hail lifts after its slots, though its caster is held.
+    b.slot = RULES.durations.hail + 1;
+    expect(advanceToDecision(s)!.id).toBe('p-bokh');
+    expect(s.effects).toEqual([]);
     expect(b.statuses).toEqual([]);
-    expect(b.hp).toBe(hp);
     expect(storm.statuses.map((x) => x.kind)).toEqual(['stunned']);
   });
 
@@ -2142,8 +2109,8 @@ describe('the Juggernaut', () => {
   it('the charge (first built): walks through hail, hit but not held, and a unit Pushed into hail is held', () =>
     withStomp(charge, () => {
       const {s, e} = ready({'e-storm': at(0, 0), 'e-bokh': along(c, 0, 2)});
-      s.effects.push({kind: 'hail', hex: along(c, 0, 1), source: 'e-storm', turns: 2});
-      s.effects.push({kind: 'hail', hex: along(c, 0, 3), source: 'e-storm', turns: 2});
+      s.effects.push({kind: 'hail', hex: along(c, 0, 1), source: 'e-storm', until: 999});
+      s.effects.push({kind: 'hail', hex: along(c, 0, 3), source: 'e-storm', until: 999});
       // An ordinary walk goes on through hail too.
       const past = hexNeighbor(along(c, 0, 1), 1);
       expect(invalidPath(s, mapOf(s), e, [along(c, 0, 1), past])).toBeNull();
@@ -2250,7 +2217,7 @@ describe('the Juggernaut', () => {
 
   it('a Juggernaut felled by hail on its step doesn’t stomp', () => {
     const {s, e} = ready({'e-storm': at(0, 0), 'e-bokh': along(c, 0, 2)});
-    s.effects.push({kind: 'hail', hex: along(c, 0, 1), source: 'e-storm', turns: 2});
+    s.effects.push({kind: 'hail', hex: along(c, 0, 1), source: 'e-storm', until: 999});
     e.hp = 1;
     stomp(s, e, along(c, 0, 1));
     expect(e.alive).toBe(false);
@@ -2418,7 +2385,7 @@ describe('the Ranger', () => {
     }
   });
 
-  it('Longshot with `pin` Immobilizes the unit it hits through its next turn', () => {
+  it('Longshot with `pin` Immobilizes the unit it hits for `RULES.durations.turn` slots', () => {
     const was = {...ABILITY.longshot};
     Object.assign(ABILITY.longshot, {first: true, pin: true});
     try {
@@ -2426,7 +2393,9 @@ describe('the Ranger', () => {
       const bokh = unit(s, 'e-bokh');
       applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
       expect(isImmobilized(bokh)).toBe(true);
-      endTurnEffects(bokh);
+      expireDurations(s, s.currentSlot + RULES.durations.turn);
+      expect(isImmobilized(bokh)).toBe(true);
+      expireDurations(s, s.currentSlot + RULES.durations.turn + 1);
       expect(isImmobilized(bokh)).toBe(false);
     } finally {
       Object.assign(ABILITY.longshot, was);
@@ -2625,22 +2594,19 @@ describe('the Cataphract', () => {
     expect(unit(s2, 'e-bokh').slot).toBe(before);
   });
 
-  it('as first built (`slam` `stun`), the slam Stuns for one turn instead', () => {
+  it('as first built (`slam` `stun`), the slam Delays `RULES.durations.stun` instead, a Stun for a turn until 2026-10-29', () => {
     Object.assign(ABILITY.charge, {slam: 'stun'});
     onTestFinished(() => {
       Object.assign(ABILITY.charge, {slam: 'delay'});
     });
     const {s, k} = ready({'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 2)});
     s.tiles[hexKey(along(c, dir, 4))] = 'obstacle';
-    charge(s, k, along(c, dir, 3));
     const [b, st] = [unit(s, 'e-bokh'), unit(s, 'e-storm')];
-    expect(isStunned(st)).toBe(true);
-    expect(isStunned(b)).toBe(false);
-    // Its next turn skipped, and the Stun gone with it.
-    st.slot = s.currentSlot;
-    advanceToDecision(s);
+    const [bSlot, stSlot] = [b.slot!, st.slot!];
+    charge(s, k, along(c, dir, 3));
     expect(isStunned(st)).toBe(false);
-    expect(s.log.some((l) => l.text.includes('Storm Caller is Stunned: turn skipped'))).toBe(true);
+    expect(st.slot).toBe(stSlot + RULES.durations.stun);
+    expect(b.slot).toBe(bSlot);
   });
 
   it('rides on when the unit in its way falls to the hit', () => {
@@ -2653,7 +2619,7 @@ describe('the Cataphract', () => {
 
   it('hail ends the ride where it enters, and Immobilized it can’t charge', () => {
     const {s, k} = ready({'e-storm': at(0, 0)});
-    s.effects.push({kind: 'hail', hex: along(c, dir, 2), source: 'e-storm', turns: 2});
+    s.effects.push({kind: 'hail', hex: along(c, dir, 2), source: 'e-storm', until: 999});
     charge(s, k, along(c, dir, 4));
     expect(k.hex).toEqual(along(c, dir, 2));
     expect(isImmobilized(k)).toBe(true);
@@ -2767,14 +2733,15 @@ describe('the Priest', () => {
     expect(ally.hp).toBe(ally.maxHp - 3);
   });
 
-  it('a Shield that isn’t his (Rally’s) adds to his and still goes at the ally’s turn', () => {
+  it('a Shield that isn’t his (Rally’s) adds to his and still goes as its slots run out', () => {
     const {s, p} = ready({'p-bokh': hexNeighbor(c, 0)});
     const ally = unit(s, 'p-bokh');
     ally.hp = 2;
     ally.shield = 1;
+    ally.shieldUntil = s.currentSlot + RULES.durations.turn;
     bless(s, p, ally);
     expect([ally.shield, ally.lastingShield]).toEqual([2, 1]);
-    startTurnPassives({state: s, map: mapOf(s), slot: s.currentSlot}, ally);
+    expireDurations(s, ally.shieldUntil + 1);
     expect(ally.shield).toBe(1);
   });
 
@@ -2861,12 +2828,12 @@ describe('the Priest', () => {
     const bare = threatDamage(threats, s, p);
     expect(bare).toBeGreaterThan(0);
     p.shield = 1;
+    p.shieldUntil = 50;
     expect(threatDamage(threats, s, p)).toBe(bare - 1);
   });
 
   it('with durations in slots, the AI counts a Shield only against the enemies acting within its slots', () => {
     const {s, p} = ready({'e-bokh': hexNeighbor(c, 3)});
-    s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
     unit(s, 'e-bokh').slot = 20;
     p.slot = 50;
     const threats = threatsTo(s, mapOf(s), p);
@@ -2975,7 +2942,7 @@ describe('the Vanguard and the Alchemist', () => {
     expect(tap(across)).toBeUndefined();
   });
 
-  it('with durations in slots, the Elixir’s Empower lasts 10 slots, and its text and preview say so', () => {
+  it('the Elixir’s Empower lasts `RULES.durations.turn` slots, and its text and preview say so', () => {
     const s = setup(
       {
         'p-alchemist': at(1, 3),
@@ -2985,31 +2952,27 @@ describe('the Vanguard and the Alchemist', () => {
       },
       party
     );
-    s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
     s.units.forEach((u) => (u.controller = 'human'));
     const alchemist = unit(s, 'p-alchemist');
     const ally = unit(s, 'p-mangudai');
-    expect(inRules(ABILITIES.elixir.summary(alchemist), s.rules)).toBe(
-      'A unit within 2, yourself too: allies heal 1 and are Empowered 2, enemies are hit, then Weakened 2, for 10 slots.'
-    );
-    expect(inRules(ABILITIES.elixir.summary(alchemist), undefined)).toBe(
-      ABILITIES.elixir.summary(alchemist)
+    expect(ABILITIES.elixir.summary(alchemist)).toBe(
+      'A unit within 2, yourself too: allies heal 1 and are Empowered 2, enemies are hit, then Weakened 2, for 8 slots.'
     );
     const preview = previewTurn(s, alchemist.id, {
       action: {ability: 'elixir', target: {hex: at(3, 3)}},
     })!;
     expect(preview.changes.find((c) => c.unitId === ally.id)!.statuses).toContain(
-      'Empowered 2, 10 slots'
+      'Empowered 2, 8 slots'
     );
     applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
-    expect(ally.empowerUntil).toBe(10);
+    expect(ally.empowerUntil).toBe(8);
     // Its turn doesn't end it: the slots do.
     s.units.forEach((u) => (u.slot = u.slot === null ? null : 1000 + u.slot));
     ally.slot = 5;
     expect(advanceToDecision(s)!.id).toBe(ally.id);
     applyTurn(s, ally, {action: {ability: 'hold'}});
     expect(ally.empower).toBe(2);
-    ally.slot = 11;
+    ally.slot = 9;
     expect(advanceToDecision(s)!.id).toBe(ally.id);
     expect(ally.empower).toBeUndefined();
   });
@@ -3035,7 +2998,7 @@ describe('the Vanguard and the Alchemist', () => {
         .sort()
     ).toEqual([at(1, 3), at(2, 3), at(3, 3)].map(hexKey).sort());
     expect(ABILITIES.elixir.summary(alchemist)).toBe(
-      'A unit within 2, yourself too: allies heal 1 and are Empowered 2, enemies are hit, then Weakened 2, until the end of its next turn.'
+      'A unit within 2, yourself too: allies heal 1 and are Empowered 2, enemies are hit, then Weakened 2, for 8 slots.'
     );
     // An ally down 2 heals 1 and is Empowered 2, its card not Hastened.
     const a = cloneFight(s);
@@ -3053,7 +3016,7 @@ describe('the Vanguard and the Alchemist', () => {
     expect(unit(e, 'e-mangudai').weaken).toBe(2);
   });
 
-  it('the Alchemist’s Elixir on itself heals it and Empowers it 2 through the end of its next turn', () => {
+  it('the Alchemist’s Elixir on itself heals it and Empowers it 2 for `RULES.durations.turn` slots', () => {
     const s = setup({'p-alchemist': at(1, 3), 'e-mangudai': at(3, 3), 'e-modao': at(8, 6)}, party);
     s.units.forEach((u) => (u.controller = 'human'));
     const alchemist = unit(s, 'p-alchemist');
@@ -3064,11 +3027,14 @@ describe('the Vanguard and the Alchemist', () => {
     expect(alchemist.hp).toBe(alchemist.maxHp - 1);
     // Its own turn ending doesn't take it off.
     expect(alchemist.empower).toBe(2);
+    const until = alchemist.empowerUntil!;
     alchemist.slot = s.currentSlot + 1;
     expect(advanceToDecision(s)!.id).toBe('p-alchemist');
-    // Its next turn: a hit of its power 1 + Empower 2, then the Empower ends.
+    // Its next turn: a hit of its power 1 + Empower 2; past its slots, the Empower ends.
     applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
     expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - 3);
+    alchemist.slot = until + 1;
+    expect(advanceToDecision(s)!.id).toBe('p-alchemist');
     expect(alchemist.empower).toBeUndefined();
   });
 
@@ -3290,7 +3256,7 @@ describe('the Vanguard and the Alchemist', () => {
     }
   });
 
-  it('Weaken takes off a hit until the end of the unit’s next turn, then ends', () => {
+  it('Weaken takes off a hit for `RULES.durations.turn` slots, then ends', () => {
     const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
     const m = unit(s, 'p-mangudai');
@@ -3299,6 +3265,8 @@ describe('the Vanguard and the Alchemist', () => {
     expect(advanceToDecision(s)!.id).toBe('p-mangudai');
     applyTurn(s, m, {action: {ability: 'snapShot', target: {hex: at(4, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - (m.power - 1));
+    m.slot = RULES.durations.turn + 1;
+    expect(advanceToDecision(s)!.id).toBe('p-mangudai');
     expect(m.weaken).toBeUndefined();
   });
 

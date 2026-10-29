@@ -4,7 +4,7 @@
 import {describe, expect, it} from 'vitest';
 import {hexDistance, hexKey, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, DEVOTED} from './config';
+import {ABILITY, DEVOTED, RULES} from './config';
 import {advanceToDecision, applyTurn, createFight, mapOf, seededRandom} from './fight';
 import {exitSealed, kitOf, reachableHexes, roadToExit} from './board';
 import {checkEnd, kill} from './resolve';
@@ -146,14 +146,22 @@ describe('Princess Iron Fan', () => {
     expect(vanguard.hp).toBe(vanguard.maxHp - 2 * ABILITY.fanFlames.burn);
   });
 
-  it('her fire goes out as her next turn starts', () => {
+  it('her fire burns its slots, then goes out', () => {
     const s = setup({'e-fanLady': centre, 'p-modao': out(3, 4)});
     act(s, 'e-fanLady', 'fanFlames', {hex: out(1, 2)});
     expect(s.fires?.length).toBeGreaterThan(0);
+    const until = s.fires![0]!.until;
+    expect(until).toBe(s.currentSlot + RULES.durations.turn);
     const lady = unit(s, 'e-fanLady');
     s.units.filter((u) => u !== lady).forEach((u) => (u.slot = u.alive ? 900 : null));
-    const next = advanceToDecision(s);
-    expect(next).toBe(lady);
+    // Her next card on its last slot: still burning.
+    lady.slot = until;
+    expect(advanceToDecision(s)).toBe(lady);
+    expect(s.fires?.length).toBeGreaterThan(0);
+    act(s, 'e-fanLady', 'hold');
+    // Past it: out.
+    lady.slot = until + 1;
+    expect(advanceToDecision(s)).toBe(lady);
     expect(s.fires).toBeUndefined();
   });
 

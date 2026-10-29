@@ -15,8 +15,6 @@ import {
   atExit,
   exitSealed,
   fireInfo,
-  hailEnds,
-  inRules,
   hailInfo,
   mapOf,
   passivesOf,
@@ -311,33 +309,21 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
         ? throughSlot(fight, s.until)
         : ''
       : s.grapple
-        ? `by ${unitName(holder)}’s grapple${unit.heldBy ? ', its card off the track until it ends' : ''}`
-        : hail?.until !== undefined
-          ? `by hail, ${throughSlot(fight, hail.until)}`
-          : `by hail, until ${hailEnds(hail?.turns ?? 1, `${unitName(holder)}’s`)}`;
+        ? `by ${unitName(holder)}’s grapple, its card off the track until it ends`
+        : `by hail${hail ? `, ${throughSlot(fight, hail.until)}` : ''}`;
     out.push({id: s.kind, label: s.kind === 'stunned' ? 'Stunned' : 'Immobilized', rest});
   }
   if (unit.empower)
     out.push({
       id: 'empowered',
       label: `Empowered ${unit.empower}`,
-      rest:
-        unit.empowerUntil !== undefined
-          ? throughSlot(fight, unit.empowerUntil)
-          : unit.empowerStarted
-            ? 'until the end of this turn'
-            : 'until the end of its next turn',
+      rest: unit.empowerUntil !== undefined ? throughSlot(fight, unit.empowerUntil) : '',
     });
   if (unit.weaken)
     out.push({
       id: 'weakened',
       label: `Weakened ${unit.weaken}`,
-      rest:
-        unit.weakenUntil !== undefined
-          ? throughSlot(fight, unit.weakenUntil)
-          : unit.weakenStarted
-            ? 'until the end of this turn'
-            : 'until the end of its next turn',
+      rest: unit.weakenUntil !== undefined ? throughSlot(fight, unit.weakenUntil) : '',
     });
   if (unit.shield)
     out.push({
@@ -346,7 +332,7 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
       rest:
         unit.lastingShield === unit.shield
           ? 'until spent'
-          : `${unit.shieldUntil !== undefined ? throughSlot(fight, unit.shieldUntil) : 'until its next turn'}${unit.lastingShield ? `, ${unit.lastingShield} of it until spent` : ''}`,
+          : `${unit.shieldUntil !== undefined ? throughSlot(fight, unit.shieldUntil) : ''}${unit.lastingShield ? `, ${unit.lastingShield} of it until spent` : ''}`,
     });
   return out;
 }
@@ -408,11 +394,7 @@ export function StatSheet({
        * leaves), so the sheet grows no taller than the board; below them in
        * the phone's tooltip.
        */}
-      <Glossary
-        slotted={!dense}
-        rules={fight.rules}
-        onAbility={onAbility && ((id) => onAbility(unit.id, id))}
-      >
+      <Glossary slotted={!dense} onAbility={onAbility && ((id) => onAbility(unit.id, id))}>
         {dense ? (
           <>
             <Group justify="space-between" gap={6} mb={2}>
@@ -476,7 +458,7 @@ export function StatSheet({
                 <AbilityName
                   key={def.id}
                   id={def.id}
-                  body={<AbilityDetail unit={unit} def={def} rules={fight.rules} />}
+                  body={<AbilityDetail unit={unit} def={def} />}
                 >
                   {abilityIcon(def)}
                   {def.name}
@@ -490,7 +472,7 @@ export function StatSheet({
                     <Text fz="xs">
                       <b>{p.name}</b> · Passive
                       <br />
-                      <KeywordText text={inRules(p.rule, fight.rules)} />
+                      <KeywordText text={p.rule} />
                     </Text>
                   }
                 >
@@ -529,16 +511,7 @@ function SheetPortrait({unit}: {unit: Unit}) {
  * power), then what it does, its keywords tappable in turn. For a name
  * tapped on a stat sheet, and on desktop for the ability picked for the turn.
  */
-export function AbilityDetail({
-  unit,
-  def,
-  rules,
-}: {
-  unit: Unit;
-  def: AbilityDef;
-  /** The fight's own rules: with durations in slots, the summary says them (`inRules`). */
-  rules?: FightState['rules'];
-}) {
+export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
   return (
     <Text fz="xs">
       {def.kind && (
@@ -557,7 +530,7 @@ export function AbilityDetail({
       {!def.kind && <b>{def.name}</b>}
       <br />
       <span className={styles.abilitySummary}>
-        <KeywordText text={inRules(def.summary(unit), rules)} />
+        <KeywordText text={def.summary(unit)} />
       </span>
     </Text>
   );

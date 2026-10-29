@@ -13,14 +13,13 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL} from './config';
+import {ABILITY, CAMEL, RULES} from './config';
 import {
   hostile,
   cleaveAreas,
   disarmed,
   firstInLane,
   isImmobilized,
-  isStunned,
   isUnstoppable,
   kitOf,
   lane as laneFrom,
@@ -44,7 +43,6 @@ import {
   endGrapplesApart,
   empower,
   enterHex,
-  hailEnds,
   hailHolds,
   liftHail,
   haste,
@@ -396,7 +394,7 @@ const hail: AbilityDef = {
   minRange: ABILITY.hail.range,
   radius: 0,
   summary: () =>
-    `A space exactly ${ABILITY.hail.range} away, until ${hailEnds(ABILITY.hail.turns, 'your')}: hits a unit there; units there or entering are Immobilized, and entering hits them too. Up to ${ABILITY.hail.max} stand at once.`,
+    `A space exactly ${ABILITY.hail.range} away, for ${RULES.durations.hail} slots: hits a unit there; units there or entering are Immobilized, and entering hits them too. Up to ${ABILITY.hail.max} stand at once.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(
       map,
@@ -419,10 +417,7 @@ const hail: AbilityDef = {
       kind: 'hail',
       hex,
       source: user.id,
-      turns: ABILITY.hail.turns,
-      ...(ctx.state.rules?.slots
-        ? {until: lastsThrough(ctx.state, ctx.state.rules.slots.hail)!}
-        : {}),
+      until: lastsThrough(ctx.state, RULES.durations.hail),
     });
     log(ctx, `${unitName(user)} calls down hail.`);
     const u = unitAt(ctx.state, hex);
@@ -447,7 +442,7 @@ const sunlight: AbilityDef = {
   kind: 'support',
   range: ABILITY.sunlight.range,
   summary: () =>
-    `A space within ${ABILITY.sunlight.range}: hail there melts; a unit there is Empowered ${ABILITY.sunlight.empower}.`,
+    `A space within ${ABILITY.sunlight.range}: hail there melts; a unit there is Empowered ${ABILITY.sunlight.empower} for ${RULES.durations.turn} slots.`,
   targets(state, map, user, from) {
     const {range, self, melts} = ABILITY.sunlight;
     return hexesWithin(map, from, range, (h) => {
@@ -514,7 +509,7 @@ const grapple: AbilityDef = {
   name: 'Grapple',
   kind: 'attack',
   summary: () =>
-    `Melee: hits it, and it is Stunned until you take damage or are Stunned, taking ${ABILITY.grapple.squeeze} more damage each of your turns. While grappling: Move it to a free space next to you, or swap places.`,
+    `Melee: hits it, and its card leaves the track until you take damage or are grappled, then comes back just before your next turn; it takes ${ABILITY.grapple.squeeze} more damage every ${RULES.durations.turn} slots. While grappling: Move it to a free space next to you, or swap places.`,
   targetsUnit: true,
   // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before),
   // and not the unit it already grapples: that one is thrown instead. Nor
@@ -556,13 +551,12 @@ const grapple: AbilityDef = {
     if (!u.alive) return;
     // One target at a time: an earlier grapple lets go.
     endGrapples(ctx, (g) => g.champion === user.id);
-    const every = ctx.state.rules?.slots?.turn;
     stun(ctx, u, {
       kind: 'stunned',
       grapple: {champion: user.id, target: u.id},
-      ...(every ? {squeezeAt: ctx.state.currentSlot + every} : {}),
+      squeezeAt: lastsThrough(ctx.state),
     });
-    if (ctx.state.rules?.grapple === 'offTrack' && grappling(user, u)) takeOffTrack(ctx, u, user);
+    if (grappling(user, u)) takeOffTrack(ctx, u, user);
   },
 };
 
@@ -856,7 +850,7 @@ const elixir: AbilityDef = {
     const {shape, range, radius, fixed, heal, haste: hastes, delay: delays} = ABILITY.elixir;
     const empowers = elixirAmount('empower');
     const weakens = elixirAmount('weaken');
-    const effect = (them: string) => {
+    const effect = () => {
       // Each side's part, the amounts at 0 left out (with Haste and Delay alone, only those).
       const ally = [
         empowers ? `Empowered ${empowers}` : '',
@@ -876,13 +870,13 @@ const elixir: AbilityDef = {
         : enemy.length
           ? `enemies ${enemy.join(' and ')}`
           : '';
-      return `${[allies, enemies].filter(Boolean).join(', ')}${empowers || weakens ? `, until the end of ${them} next turn` : ''}.`;
+      return `${[allies, enemies].filter(Boolean).join(', ')}${empowers || weakens ? `, for ${RULES.durations.turn} slots` : ''}.`;
     };
     const who = `${hastes || delays ? 'unit' : 'unit that hits'}${ABILITY.elixir.self ? '' : ' but you'}`;
     if (shape === 'burst')
-      return `${range === 1 ? 'A space next to you, or your own' : `A space within ${range}`}, and every ${who} within ${radius} of it: ${effect('their')}`;
-    if (shape === 'aura') return `Every ${who} within ${radius} of you: ${effect('their')}`;
-    return `A unit within ${range}${ABILITY.elixir.self ? ', yourself too' : ''}: ${effect('its')}`;
+      return `${range === 1 ? 'A space next to you, or your own' : `A space within ${range}`}, and every ${who} within ${radius} of it: ${effect()}`;
+    if (shape === 'aura') return `Every ${who} within ${radius} of you: ${effect()}`;
+    return `A unit within ${range}${ABILITY.elixir.self ? ', yourself too' : ''}: ${effect()}`;
   },
   targets(state, map, user, from) {
     const {shape, range} = ABILITY.elixir;
@@ -1002,7 +996,7 @@ const blessing: AbilityDef = {
         : `An ally within ${range}${self ? ', yourself too' : ''}`;
     const until = ABILITY.blessing.lasts
       ? `until spent, at most ${ABILITY.blessing.cap} on a unit`
-      : `until ${shape === 'aura' ? 'their' : 'its'} next turn`;
+      : `for ${RULES.durations.turn} slots`;
     if (!ABILITY.blessing.heal) return `${who}: Shield ${user.power + extra} ${until}.`;
     const shields = [
       overheal ? 'what it can’t heal becomes Shield' : '',
@@ -1453,7 +1447,7 @@ export function ridePlan(
 function slamSays(): string {
   const {slam, delay: slots} = ABILITY.charge;
   if (slam === 'none') return '';
-  const what = slam === 'delay' ? `Delayed ${slots}` : 'Stunned for its next turn';
+  const what = `Delayed ${slam === 'delay' ? slots : RULES.durations.stun}`;
   return ` One left against yurts or the edge is ${what}.`;
 }
 
@@ -1541,10 +1535,7 @@ const charge: AbilityDef = {
           : 'the map’s edge';
         log(ctx, `${unitName(u)} is slammed into ${into}.`);
         if (ABILITY.charge.slam === 'delay') delay(ctx, u, ABILITY.charge.delay);
-        else {
-          stunForATurn(ctx, u, {kind: 'stunned', slammed: true});
-          if (isStunned(u)) log(ctx, `${unitName(u)} is Stunned for its next turn.`);
-        }
+        else stunForATurn(ctx, u);
       }
     if (user.alive) endGrapplesApart(ctx, user);
   },
@@ -1734,10 +1725,8 @@ const regrowSerpent: AbilityDef = {
     Object.assign(serpent, {alive: true, hex: {...target.hex!}, hp: serpent.maxHp, statuses: []});
     for (const k of [
       'empower',
-      'empowerStarted',
       'empowerUntil',
       'weaken',
-      'weakenStarted',
       'weakenUntil',
       'shield',
       'shieldUntil',
@@ -1872,7 +1861,7 @@ const fanFlames: AbilityDef = {
   range: ABILITY.fanFlames.range,
   area: (map, _from, target) => flamesAround(map, target),
   summary: () =>
-    `A space within ${ABILITY.fanFlames.range}: it and the spaces next to it catch fire until your next turn. Entering fire burns ${ABILITY.fanFlames.burn}.`,
+    `A space within ${ABILITY.fanFlames.range}: it and the spaces next to it catch fire for ${RULES.durations.turn} slots. Entering fire burns ${ABILITY.fanFlames.burn}.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.fanFlames.range, (h) => !blocks(tileAt(map, h))),
   resolve(ctx, user, target) {
@@ -1880,12 +1869,8 @@ const fanFlames: AbilityDef = {
     const lit = flamesAround(ctx.map, target.hex!).filter(
       (h) => !others.some((f) => hexEquals(f.hex, h))
     );
-    const last = lastsThrough(ctx.state);
-    const until = last === undefined ? {} : {until: last};
-    ctx.state.fires = [
-      ...others,
-      ...lit.map((hex) => ({hex: {...hex}, source: user.id, ...until})),
-    ];
+    const until = lastsThrough(ctx.state);
+    ctx.state.fires = [...others, ...lit.map((hex) => ({hex: {...hex}, source: user.id, until}))];
     log(ctx, `${unitName(user)} fans the flames.`);
   },
 };
