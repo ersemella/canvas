@@ -335,8 +335,8 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     }
     if (isStunned(unit)) {
       skipTurn(ctx, unit, `${unitName(unit)} is Stunned: turn skipped.`);
-      // Last Stand's Stun lasts this one turn (19.8).
-      unit.statuses = unit.statuses.filter((s) => !s.lastStand);
+      // Last Stand's Stun (19.8) and a Charge's slam last this one turn.
+      unit.statuses = unit.statuses.filter((s) => !s.lastStand && !s.slammed);
       continue;
     }
     // Nothing to do but Hold: the track goes on without asking.

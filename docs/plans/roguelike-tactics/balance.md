@@ -4048,6 +4048,9 @@ Before (from the run above) in brackets.
   allies (the Barbarian and the Priest stand near it), and its lack of a
   walk leaves it out of place after a charge.
 
+**Changed** (the owner, 2026-10-29): Charge's slam, a unit it hits left
+against ruins or the map's edge Stunned for its next turn.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

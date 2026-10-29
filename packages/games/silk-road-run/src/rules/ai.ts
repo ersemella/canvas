@@ -20,6 +20,7 @@ import {
   firstInLane,
   isRanged,
   isStunned,
+  isUnstoppable,
   kitOf,
   movementCap,
   reachableHexes,
@@ -453,6 +454,12 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (ability === 'cleave' && ABILITY.cleave.delay > 0 && damage < u.hp)
         value += sided(u, (turnValue(u) * ABILITY.cleave.delay) / cardCost(u));
     }
+    // A Charge's slam: a Stun on each unit it leaves standing against
+    // yurts or the edge, weighed as Grapple's.
+    if (ability === 'charge' && plan && 'slammed' in plan)
+      for (const u of plan.slammed as Unit[])
+        if (u.hp > damageOf(unit) && !isUnstoppable(u))
+          value += sided(u, turnValue(u) * AI.stunnedShare);
     // A thrown axe leaves it disarmed until it walks back (`AI.axeOut`).
     if (ability === 'reave' && reaveThrows(unit.hex!, target!.hex!))
       value -= AI.axeOut * AI.perHexFromEnemy;
