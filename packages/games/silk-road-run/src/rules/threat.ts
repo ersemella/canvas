@@ -6,7 +6,7 @@
  * (walking and attacking are separate turns), with the units now on the
  * board blocking arrows (the acting unit aside, since it is the one moving).
  */
-import {ABILITY, AI, ARMOURED, RULES} from './config';
+import {ABILITY, AI, ARMOURED} from './config';
 import {cleaveAreas, hostile, isImmobilized, isStunned, kitOf} from './board';
 import {damageOf} from './resolve';
 import {blocks, tileAt} from './map';
@@ -173,9 +173,9 @@ export function threatDamage(threats: Threat[], after: FightState, me: Unit): nu
   if (!me.alive || !me.hex || me.slot === null) return 0;
   const key = id(me.hex.q, me.hex.r);
   let total = 0;
-  // With `RULES.trackTime` and `AI.windows`, the hits after its Shield's window.
+  // With durations in slots (`FightRules.slots`), the hits after its Shield's slots.
   let late = 0;
-  const windowed = RULES.trackTime && AI.windows;
+  const windowed = Boolean(after.rules?.slots);
   for (const t of threats) {
     const e = after.units.find((u) => u.id === t.enemyId);
     if (!e?.alive || e.slot === null || e.slot >= me.slot || isStunned(e)) continue;

@@ -46,25 +46,6 @@ export const RULES = {
    * damage a unit takes Moved onto it, or ending its turn on it.
    */
   scorch: 1,
-  /**
-   * Track time, a switch for measuring (2026-10-29; off as built): the
-   * effects lasting by turns last a window of slots instead, from the slot
-   * they are given through `turns` × a turn's slots, ending as the track
-   * passes it (`expireTrackTime` in resolve.ts), so a Delay or Haste no
-   * longer stretches or shortens them. Empower, Weaken and Shield (a turn
-   * of the unit's), hail (`ABILITY.hail.turns` of its caster's) and Princess
-   * Iron Fan's fire (one of hers). `false`, by turns as built; `'own'`, a
-   * turn is that unit's action cost (3.2) when given; a number, that many
-   * slots for every unit.
-   */
-  trackTime: false as false | 'own' | number,
-  /**
-   * A switch for measuring (2026-10-29; off as built): a one-turn Stun (a
-   * Charge's slam with `ABILITY.charge.slam` at `stun`, Last Stand's) is a
-   * Delay of the unit's action cost instead, still blocked by Unstoppable
-   * and Iron Will.
-   */
-  stunAsDelay: false as boolean,
 } as const;
 
 /** Health from defence (owner, 2026-10-23): (1 + defence) × 2. */
@@ -847,17 +828,6 @@ export const AI = {
    */
   immobilizedShare: {ranged: 0.1, melee: 0.4},
   stunnedShare: 1,
-  /**
-   * With `RULES.trackTime` (a switch for measuring, 2026-10-29; on): the
-   * AI counts an effect's window in turns, each of the unit's turns it
-   * holds (an Empower or Weaken used that many times, a Delay carrying a
-   * card out of one, a Haste into one), a Shield against the enemies acting
-   * within it, and hail lifting before the unit it holds acts. Off, it
-   * counts an Empower or Weaken once if it outlasts the unit's next card,
-   * and a Shield and hail by turns, as first measured (balance.md, "Track
-   * time").
-   */
-  windows: true as boolean,
   /**
    * The share of an Empower's worth the AI counts (`empowerGain` in
    * ai.ts): its extra damage, and a kill it makes, happen only if its unit

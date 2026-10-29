@@ -6,7 +6,7 @@
 import {ABILITY, HEROES, RULES} from './config';
 import {hailEnds} from './resolve';
 import type {Tile} from './map';
-import type {FightState, FireEffect, HailEffect, ShotInAir} from './types';
+import type {FightRules, FightState, FireEffect, HailEffect, ShotInAir} from './types';
 
 export interface HexInfo {
   name: string;
@@ -120,16 +120,16 @@ export const CAMEL_RULE = `Can’t attack. Walks 1 space a turn toward the road 
 
 export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   const caster = state.units.find((u) => u.id === hail.source);
-  const until = hailEnds(
-    hail.turns ?? 1,
-    caster ? `the ${HEROES[caster.hero].name}’s` : 'its caster’s'
-  );
+  const lasts =
+    hail.until !== undefined
+      ? `for ${hail.until - state.currentSlot} more slots, through slot ${hail.until}`
+      : `until ${hailEnds(hail.turns ?? 1, caster ? `the ${HEROES[caster.hero].name}’s` : 'its caster’s')}`;
   return {
     name: 'Hail',
     short: ABILITY.hail.entry
       ? 'Hits and Immobilizes a unit that enters it'
       : 'Immobilizes a unit that enters it',
-    detail: `Units here or entering are Immobilized until ${until}${ABILITY.hail.entry ? `; entering takes ${caster ? caster.power : 'its caster’s power'} damage` : ''}.`,
+    detail: `Units here or entering are Immobilized ${lasts}${ABILITY.hail.entry ? `; entering takes ${caster ? caster.power : 'its caster’s power'} damage` : ''}.`,
   };
 }
 
@@ -137,9 +137,11 @@ export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
 export function fireInfo(fire: FireEffect, state: FightState): HexInfo {
   const lady = state.units.find((u) => u.id === fire.source);
   const n = ABILITY.fanFlames.burn;
-  const until = lady?.alive
-    ? `It goes out at the start of ${HEROES[lady.hero].name}’s next turn.`
-    : 'Its fanner has fallen: it burns until put out with her fan.';
+  const until = !lady?.alive
+    ? 'Its fanner has fallen: it burns until put out with her fan.'
+    : fire.until !== undefined
+      ? `It burns ${fire.until - state.currentSlot} more slots, through slot ${fire.until}.`
+      : `It goes out at the start of ${HEROES[lady.hero].name}’s next turn.`;
   return {
     name: 'Fire',
     short: `Burns ${n} on a unit entering it`,
@@ -242,3 +244,26 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
     detail: 'Moved that many spaces straight toward it, stopping at anything in the way.',
   },
 };
+
+/**
+ * A rule text as it reads in a fight whose durations are in slots
+ * (`FightRules.slots`): "until its next turn", "until the end of its next
+ * turn", "through its next turn" and "for its next turn" become "for N
+ * slots", hail's "until
+ * your turn after next" its slots, and a Stun for a turn its Delay.
+ * Unchanged by turns.
+ */
+export function inSlots(text: string, rules: FightRules | undefined): string {
+  const slots = rules?.slots;
+  if (!slots) return text;
+  const whose = '(?:its|their|your|her|his|that ally’s|the ally’s)';
+  return text
+    .replace(/Stunned for (?:its|their) next turn/g, `Delayed ${slots.stun}`)
+    .replace(/Stun ([^.]*?) for (?:its|their) next turn/g, `Delay $1 ${slots.stun}`)
+    .replace(/until your turn after next/g, `for ${slots.hail} slots`)
+    .replace(/for (?:its|their) next turn/g, `for ${slots.turn} slots`)
+    .replace(
+      new RegExp(`(?:until (?:the (?:start|end) of )?|through )${whose} next turn`, 'g'),
+      `for ${slots.turn} slots`
+    );
+}

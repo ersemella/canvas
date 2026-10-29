@@ -1,10 +1,10 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, step 1 of durations by power and defence (2026-10-29): China's three heroes, the Alchemist at power 3, against the Steppe's, on the Gobi, the Elixir's Empower and Weaken lasting a turn of the target's slots, 1 more a point of the Alchemist's power, a Weaken 1 fewer a point of the target's defence.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, durations in slots (2026-10-29): China's three heroes against the Steppe's, on the Gobi, every effect that lasted until a unit's next turn lasting 10 slots, hail 18, a Stun for a turn a Delay of 6. Delete \"rules\" to play the same fight by turns.",
   "seed": null,
   "map": "gobi",
   "yurts": "random",
   "camel": {},
-  "rules": {"ticks": {"power": 1, "defence": 1}},
-  "player": [{"hero": "modao"}, {"hero": "youxia"}, {"hero": "alchemist", "power": 3}],
+  "rules": {"slots": {"turn": 10, "hail": 18, "stun": 6}},
+  "player": [{"hero": "modao"}, {"hero": "youxia"}, {"hero": "alchemist"}],
   "enemy": [{"hero": "bokh"}, {"hero": "mangudai"}, {"hero": "storm"}]
 }

@@ -196,6 +196,8 @@ export interface Status {
    * Immobilized until the end of the unit's next turn.
    */
   pinned?: boolean;
+  /** With durations in slots (`FightRules.slots`), the last slot it lasts through (a pin's). */
+  until?: number;
   /** From Concussive, Lockdown or Defy Fate (19.9): Stunned for the unit's next turn, ending with it. */
   dazed?: boolean;
 }
@@ -245,7 +247,7 @@ export interface Unit {
   empower?: number;
   /** Its turn has begun since it was Empowered, so the Empower ends with that turn. */
   empowerStarted?: boolean;
-  /** With `RULES.trackTime`, the last slot its Empower lasts through. */
+  /** With durations in slots (`FightRules.slots`), the last slot its Empower lasts through. */
   empowerUntil?: number;
   /**
    * Weaken (keywords.md, 17.6): its abilities deal this much less, to at
@@ -255,7 +257,7 @@ export interface Unit {
   weaken?: number;
   /** Its turn has begun since it was Weakened, so the Weaken ends with that turn. */
   weakenStarted?: boolean;
-  /** With `RULES.trackTime`, the last slot its Weaken lasts through. */
+  /** With durations in slots, the last slot its Weaken lasts through. */
   weakenUntil?: number;
   /** Its passives (progression.md, 19.8); absent with none. */
   passives?: PassiveId[];
@@ -287,13 +289,15 @@ export interface Unit {
    * when it has none.
    */
   shield?: number;
-  /** With `RULES.trackTime`, the last slot its Shield (but a lasting one) lasts through. */
+  /** With durations in slots, the last slot its Shield (but a lasting one) lasts through. */
   shieldUntil?: number;
   /**
    * Armour (keywords.md, 17.6) until the start of its next turn, from an
    * ally's Fortify (19.9). Absent when it has none.
    */
   armour?: number;
+  /** With durations in slots, the last slot its Armour lasts through. */
+  armourUntil?: number;
   /**
    * The part of its Shield that stays until damage spends it, not going at
    * its next turn (a Blessing with `ABILITY.blessing.lasts`). Absent when
@@ -368,7 +372,7 @@ export interface HailEffect {
    * lifts on. Absent in runs saved before 2026-10-25, when hail lasted 1.
    */
   turns?: number;
-  /** With `RULES.trackTime`, the last slot it stands through, in place of `turns`. */
+  /** With durations in slots, the last slot it stands through, in place of `turns`. */
   until?: number;
 }
 
@@ -382,7 +386,7 @@ export interface FireEffect {
   hex: Hex;
   /** Princess Iron Fan's unit id. */
   source: string;
-  /** With `RULES.trackTime`, the last slot it burns through while she stands. */
+  /** With durations in slots, the last slot it burns through while she stands. */
   until?: number;
 }
 
@@ -450,13 +454,17 @@ export type FightPhase = 'fight' | 'won' | 'lost';
  */
 export interface FightRules {
   /**
-   * Durations in slots that power lengthens and defence shortens, step 1
-   * (2026-10-29; the Elixir's Empower and Weaken only): a turn of the
-   * target's slots (its action cost), plus `power` slots for each point of
-   * the Alchemist's power, and for a Weaken less `defence` for each point
-   * of the target's defence, at least 1 (`elixirUntil` in resolve.ts).
+   * Durations in a fixed number of slots, in place of turns (2026-10-29):
+   * every effect that lasted until a unit's next turn (Empower, Weaken, a
+   * Shield but a lasting one, Fortify's Armour, the Immobilized of a pin or
+   * Hamstring, Princess Iron Fan's fire) lasts `turn` slots from the slot
+   * it is given, hail `hail`, whatever turns come in between; a Stun for a
+   * unit's next turn is a Delay of `stun` (`stunForATurn` in resolve.ts).
+   * An effect ends as the track passes its last slot (`expireDurations`).
+   * The Elixir's Unstoppable, Immortal and swap (switches, off) stay by
+   * turns.
    */
-  ticks?: {power: number; defence: number};
+  slots?: {turn: number; hail: number; stun: number};
 }
 
 export interface FightState {

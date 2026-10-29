@@ -14,13 +14,12 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 
 ## Example
 
-The committed file (2026-10-29), step 1 of durations by power and
-defence (`"rules"`, below): China's three heroes, the Alchemist at power
-3, against the Steppe's, on the Gobi. Each Elixir's preview and the
-unit's statuses say how many slots its Empower or Weaken lasts: against
-the Grappler (defence 3) a Weaken lasts 2 slots fewer than against the
-Outrider (defence 1). Delete `"rules"` to play the same fight by
-turns, or set the Alchemist's `power` to compare.
+The committed file (2026-10-29), durations in slots (`"rules"`, below):
+China's three heroes against the Steppe's, on the Gobi. Every effect
+that lasted until a unit's next turn (here the Elixir's Empower and
+Weaken) lasts 10 slots, hail 18, whatever turns come in between: the
+abilities' text, the turn preview and a unit's statuses say so. Delete
+`"rules"` to play the same fight by turns.
 
 ```json
 {
@@ -28,11 +27,11 @@ turns, or set the Alchemist's `power` to compare.
   "map": "gobi",
   "yurts": "random",
   "camel": {},
-  "rules": {"ticks": {"power": 1, "defence": 1}},
+  "rules": {"slots": {"turn": 10, "hail": 18, "stun": 6}},
   "player": [
     {"hero": "modao"},
     {"hero": "youxia"},
-    {"hero": "alchemist", "power": 3}
+    {"hero": "alchemist"}
   ],
   "enemy": [
     {"hero": "bokh"},
@@ -94,7 +93,7 @@ it, unhurt.
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
 | `enemy` | The AI’s units, 1 to 9 (at most 11 without an `at`). | required |
-| `rules` | This fight's own rules, which no run has. `{"ticks": {"power": p, "defence": d}}`: durations by power and defence, step 1 (2026-10-29), so far the Alchemist's Elixir only. Its Empower and Weaken last a turn of the target's slots (60 ÷ (its speed + 5), rounded, as by turns), plus `p` slots for each point of the Alchemist's power, and a Weaken `d` fewer for each point of the target's defence, at least 1; it ends as the track passes its last slot, whatever turns come in between, so a Haste can fit in a second Empowered turn and a Delay can carry a card past its Weaken. `p` and `d` are whole numbers 0 to 10, 0 if left out. | none: every duration by turns |
+| `rules` | This fight's own rules, which no run has. `{"slots": {"turn": t, "hail": h, "stun": s}}`: durations in slots in place of turns (2026-10-29). Every effect that lasted until a unit's next turn (Empower, Weaken, a Shield but a lasting one, Fortify's Armour, the Immobilized of a pin or Hamstring, Princess Iron Fan's fire) lasts `t` slots from the slot it is given, hail `h`; each ends as the track passes its last slot, whatever turns come in between, so a fast unit can fit two Empowered turns in and a Delay can carry a card past its Weaken. A Stun for a unit's next turn (Last Stand, Concussive, Lockdown, Defy Fate, a slam with `ABILITY.charge.slam` at `stun`) is a Delay of `s` instead, which Unstoppable and Iron Will still stop. Whole numbers 1 to 60; left out, 10, 18 and 6. A grapple's hold, which lasts until the Grappler is hit, is unchanged. | none: every duration by turns |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
 

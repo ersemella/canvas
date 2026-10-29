@@ -88,24 +88,27 @@ function parseSpace(where: string, v: unknown): Hex {
 }
 
 /**
- * `"rules"`: `{"ticks": {"power": p, "defence": d}}` (`FightRules.ticks`),
- * whole numbers 0 to 10.
+ * `"rules"`: `{"slots": {"turn": t, "hail": h, "stun": s}}`
+ * (`FightRules.slots`), each a whole number of slots 1 to 60, by default 10,
+ * 18 and 6.
  */
 function parseRules(v: unknown): FightRules {
-  if (!isObject(v)) fail('rules must be an object like {"ticks": {"power": 1, "defence": 1}}.');
-  onlyKeys('rules', v as Record<string, unknown>, ['ticks']);
-  const ticks = (v as Record<string, unknown>).ticks;
-  if (ticks === undefined) return {};
-  if (!isObject(ticks)) fail('rules.ticks must be an object like {"power": 1, "defence": 1}.');
-  const t = ticks as Record<string, unknown>;
-  onlyKeys('rules.ticks', t, ['power', 'defence']);
-  const n = (k: 'power' | 'defence') => {
-    const x = t[k] ?? 0;
-    if (!Number.isInteger(x) || (x as number) < 0 || (x as number) > 10)
-      fail(`rules.ticks.${k} must be a whole number from 0 to 10.`);
+  if (!isObject(v))
+    fail('rules must be an object like {"slots": {"turn": 10, "hail": 18, "stun": 6}}.');
+  onlyKeys('rules', v as Record<string, unknown>, ['slots']);
+  const slots = (v as Record<string, unknown>).slots;
+  if (slots === undefined) return {};
+  if (!isObject(slots))
+    fail('rules.slots must be an object like {"turn": 10, "hail": 18, "stun": 6}.');
+  const t = slots as Record<string, unknown>;
+  onlyKeys('rules.slots', t, ['turn', 'hail', 'stun']);
+  const n = (k: 'turn' | 'hail' | 'stun', fallback: number) => {
+    const x = t[k] ?? fallback;
+    if (!Number.isInteger(x) || (x as number) < 1 || (x as number) > 60)
+      fail(`rules.slots.${k} must be a whole number of slots from 1 to 60.`);
     return x as number;
   };
-  return {ticks: {power: n('power'), defence: n('defence')}};
+  return {slots: {turn: n('turn', 10), hail: n('hail', 18), stun: n('stun', 6)}};
 }
 
 function parseUnit(where: string, v: unknown, camel = false): UnitSetup {

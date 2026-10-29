@@ -27,7 +27,7 @@ import {
 } from './board';
 import {scorched} from './map';
 import {hasPassive, spendPassive} from './passives';
-import {actionCost, placeCard, simultaneousOrder} from './track';
+import {placeCard, simultaneousOrder} from './track';
 import type {MapData} from './map';
 import type {
   BoardSnapshot,
@@ -217,10 +217,10 @@ function attackRiders(ctx: Ctx, attacker: Unit, target: Unit): void {
     weaken(ctx, target, Math.max(target.weaken ?? 0, UPGRADE.crippling.weaken), attacker);
   if (fires(ctx, attacker, 'hamstring', target))
     immobilize(ctx, target, {kind: 'immobilized', pinned: true}, attacker);
-  if (fires(ctx, attacker, 'concussive', target)) stun(ctx, target, {...DAZED});
+  if (fires(ctx, attacker, 'concussive', target)) stunForATurn(ctx, target, {...DAZED});
   if (hasPassive(target, 'steadyGait') && fires(ctx, attacker, 'defyFate', target)) {
     log(ctx, `${unitName(attacker)} defies fate.`);
-    stun(ctx, target, {...DAZED});
+    stunForATurn(ctx, target, {...DAZED}, true);
   }
   if (isUnstoppable(target) && fires(ctx, attacker, 'immovableObject', target))
     delay(ctx, target, UPGRADE.immovableObject.delay, attacker);
@@ -287,7 +287,9 @@ function healRiders(ctx: Ctx, by: Unit, u: Unit): void {
   if (fires(ctx, by, 'quickening', u)) haste(ctx, u, UPGRADE.quickening.haste, by);
   if (fires(ctx, by, 'fortify', u)) {
     u.armour = Math.max(u.armour ?? 0, UPGRADE.fortify.armour);
-    log(ctx, `${unitName(u)} is fortified: Armour ${u.armour} until its next turn.`);
+    const until = lastsThrough(ctx.state);
+    if (until !== undefined) u.armourUntil = Math.max(u.armourUntil ?? 0, until);
+    log(ctx, `${unitName(u)} is fortified: Armour ${u.armour}.`);
   }
   if (fires(ctx, by, 'ward', u)) shield(ctx, u, UPGRADE.ward.shield);
 }
@@ -302,11 +304,12 @@ export function immobilize(ctx: Ctx, u: Unit, status: Status, by?: Unit): boolea
     log(ctx, `${unitName(u)} is Unstoppable: not Immobilized.`);
     return false;
   }
-  addStatus(u, status);
-  if (status.pinned) log(ctx, `${unitName(u)} is Immobilized through its next turn.`);
+  const until = status.pinned ? lastsThrough(ctx.state) : undefined;
+  addStatus(u, until === undefined ? status : {...status, until});
+  if (status.pinned) log(ctx, `${unitName(u)} is Immobilized.`);
   if (fires(ctx, by, 'lockdown', u)) {
     log(ctx, `${unitName(u)} is locked down.`);
-    stun(ctx, u, {...DAZED});
+    stunForATurn(ctx, u, {...DAZED});
   }
   return true;
 }
@@ -457,11 +460,11 @@ export function shotEmpower(user: Unit, shot: ShotInAir): number {
  * Empower it had. An ally Empowered by `by`'s ability is Hastened too with
  * its Inspire (19.9).
  */
-export function empower(ctx: Ctx, u: Unit, amount: number, by?: Unit, until?: number): void {
+export function empower(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   u.empower = amount;
   delete u.empowerStarted;
+  const until = lastsThrough(ctx.state);
   if (until !== undefined) u.empowerUntil = until;
-  else if (RULES.trackTime) u.empowerUntil = lastsThrough(ctx.state, u);
   else delete u.empowerUntil;
   log(ctx, `${unitName(u)} is Empowered ${amount}.`);
   empowered(ctx, u, by);
@@ -494,7 +497,8 @@ export function heal(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
 export function shield(ctx: Ctx, u: Unit, amount: number, lasting = false): void {
   if (!u.alive || amount <= 0) return;
   u.shield = (u.shield ?? 0) + amount;
-  if (RULES.trackTime) u.shieldUntil = Math.max(u.shieldUntil ?? 0, lastsThrough(ctx.state, u));
+  const until = lastsThrough(ctx.state);
+  if (until !== undefined) u.shieldUntil = Math.max(u.shieldUntil ?? 0, until);
   if (lasting) u.lastingShield = (u.lastingShield ?? 0) + amount;
   log(ctx, `${unitName(u)} gains Shield ${amount}: Shield ${u.shield}.`);
 }
@@ -504,11 +508,11 @@ export function shield(ctx: Ctx, u: Unit, amount: number, lasting = false): void
  * Weaken it had. An enemy Weakened by `by`'s ability is Delayed too with its
  * Lethargy (19.9).
  */
-export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit, until?: number): void {
+export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   u.weaken = amount;
   delete u.weakenStarted;
+  const until = lastsThrough(ctx.state);
   if (until !== undefined) u.weakenUntil = until;
-  else if (RULES.trackTime) u.weakenUntil = lastsThrough(ctx.state, u);
   else delete u.weakenUntil;
   log(ctx, `${unitName(u)} is Weakened ${amount}.`);
   if (by && hostile(by, u) && fires(ctx, by, 'lethargy', u))
@@ -522,7 +526,8 @@ export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit, until?: num
  */
 export function empowerAtLeast(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   if ((u.empower ?? 0) <= amount) {
-    if (RULES.trackTime) u.empowerUntil = lastsThrough(ctx.state, u);
+    const until = lastsThrough(ctx.state);
+    if (until !== undefined) u.empowerUntil = until;
     else delete u.empowerUntil;
   }
   u.empower = Math.max(u.empower ?? 0, amount);
@@ -608,16 +613,16 @@ export function takeHasteDue(state: FightState, unit: Unit): void {
  */
 export function startTurnPassives(ctx: Ctx, unit: Unit): void {
   unit.turns = [...(unit.turns ?? []).slice(-1), ctx.slot];
-  // A lasting Shield (`Unit.lastingShield`) stays; the rest goes (with
-  // `RULES.trackTime`, as its window passes instead).
-  if (!RULES.trackTime) {
+  // A lasting Shield (`Unit.lastingShield`) stays; the rest goes, and
+  // Fortify's Armour (19.9) (in slots, `FightRules.slots`, as their slots
+  // run out instead: `expireDurations`).
+  if (!ctx.state.rules?.slots) {
     if (unit.lastingShield) unit.shield = unit.lastingShield;
     else delete unit.shield;
+    delete unit.armour;
   }
   delete unit.unstoppable;
   delete unit.immortal;
-  // Fortify's Armour (19.9) lasted until now.
-  delete unit.armour;
   // A delayed Immortal begins now, lasting until the start of its next turn.
   if (unit.immortalDue) {
     delete unit.immortalDue;
@@ -632,7 +637,8 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
     const a = unitAt(ctx.state, h);
     if (!a || a.side !== unit.side) continue;
     a.shield = Math.max(a.shield ?? 0, 1);
-    if (RULES.trackTime) a.shieldUntil = Math.max(a.shieldUntil ?? 0, lastsThrough(ctx.state, a));
+    const until = lastsThrough(ctx.state);
+    if (until !== undefined) a.shieldUntil = Math.max(a.shieldUntil ?? 0, until);
     log(ctx, `${unitName(unit)} rallies ${unitName(a)}: Shield ${a.shield}.`);
   }
 }
@@ -647,7 +653,7 @@ export function endTurnEffects(unit: Unit): void {
     delete unit.weaken;
     delete unit.weakenStarted;
   }
-  unit.statuses = unit.statuses.filter((s) => !s.pinned);
+  unit.statuses = unit.statuses.filter((s) => !s.pinned || s.until !== undefined);
 }
 
 /**
@@ -818,7 +824,7 @@ export function hailEnds(turns: number, whose: string): string {
  * this was its last.
  */
 export function ageHail(state: FightState, caster: Unit): void {
-  if (RULES.trackTime) return;
+  if (state.rules?.slots) return;
   for (const hail of state.effects.filter((e) => e.source === caster.id)) {
     hail.turns = (hail.turns ?? 1) - 1;
     if (hail.turns <= 0) liftHail(state, hail);
@@ -995,12 +1001,15 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 }
 
 /**
- * A Stun for the unit's next turn (a Charge's slam, Last Stand's): with
- * `RULES.stunAsDelay`, a Delay of its action cost instead, which
- * Unstoppable and Iron Will still stop.
+ * A Stun for the unit's next turn (a Charge's slam, Last Stand's, and
+ * Concussive's, Lockdown's and Defy Fate's, 19.9): in slots
+ * (`FightRules.slots`), a Delay of `stun` slots instead, which Unstoppable
+ * and Iron Will still stop; Defy Fate's (`defies`) Delays an Inevitable
+ * unit too, as its Stun reached one.
  */
-export function stunForATurn(ctx: Ctx, u: Unit, status: Status): void {
-  if (!RULES.stunAsDelay) return stun(ctx, u, status);
+export function stunForATurn(ctx: Ctx, u: Unit, status: Status, defies = false): void {
+  const slots = ctx.state.rules?.slots;
+  if (!slots) return stun(ctx, u, status);
   if (isUnstoppable(u)) {
     log(ctx, `${unitName(u)} is Unstoppable: not Delayed.`);
     return;
@@ -1009,7 +1018,10 @@ export function stunForATurn(ctx: Ctx, u: Unit, status: Status): void {
     log(ctx, `${unitName(u)}’s iron will holds: not Delayed.`);
     return;
   }
-  delay(ctx, u, actionCost(u));
+  if (!defies) return delay(ctx, u, slots.stun);
+  if (!u.alive || u.slot === null) return;
+  placeCard(ctx.state, u, u.slot + slots.stun);
+  log(ctx, `${unitName(u)} is Delayed ${slots.stun}.`);
 }
 
 /**
@@ -1118,7 +1130,7 @@ function pickUpFan(ctx: Ctx, unit: Unit): void {
 
 /** Princess Iron Fan's turn starts: the fires she set go out (`FireEffect`). */
 export function fanOut(state: FightState, unit: Unit): void {
-  if (RULES.trackTime) return;
+  if (state.rules?.slots) return;
   if (!state.fires?.some((f) => f.source === unit.id)) return;
   state.fires = state.fires.filter((f) => f.source !== unit.id);
   if (!state.fires.length) delete state.fires;
@@ -1214,45 +1226,26 @@ export function walk(ctx: Ctx, unit: Unit, path: Hex[]): void {
   displaced(ctx, ally);
 }
 
-// ─── Track time ──────────────────────────────────────────────────────────────
+// ─── Durations in slots ──────────────────────────────────────────────────────
 
 /**
- * The last slot an effect given now lasts through, with `RULES.trackTime`:
- * `turns` of `anchor`'s turns on, each its action cost when given (`'own'`)
- * or a fixed number of slots.
+ * The last slot an effect given now lasts through, `n` slots on (by
+ * default `turn`), when the fight's durations are in slots
+ * (`FightRules.slots`); undefined by turns.
  */
-export function lastsThrough(state: FightState, anchor: Unit, turns = 1): number {
-  const t = RULES.trackTime;
-  return state.currentSlot + turns * (t === 'own' ? actionCost(anchor) : Number(t));
+export function lastsThrough(state: FightState, n?: number): number | undefined {
+  const slots = state.rules?.slots;
+  return slots ? state.currentSlot + (n ?? slots.turn) : undefined;
 }
 
 /**
- * The last slot an Elixir's Empower (`hostile` false) or Weaken on `u`
- * lasts through, with the fight's tick durations (`FightRules.ticks`): a
- * turn of `u`'s slots, plus `power` for each point of `caster`'s power, and
- * for a Weaken less `defence` for each point of `u`'s defence, at least 1.
- * Undefined without them: the Elixir lasts by turns.
+ * The track reaches `slot`, the fight's durations in slots
+ * (`FightRules.slots`): every effect whose last slot is behind it ends,
+ * before the card there acts. A fire stays for good once its Princess Iron
+ * Fan has fallen, as by turns.
  */
-export function elixirUntil(
-  state: FightState,
-  caster: Unit,
-  u: Unit,
-  hostile: boolean
-): number | undefined {
-  const ticks = state.rules?.ticks;
-  if (!ticks) return undefined;
-  const span =
-    actionCost(u) + ticks.power * caster.power - (hostile ? ticks.defence * u.defence : 0);
-  return state.currentSlot + Math.max(1, span);
-}
-
-/**
- * The track reaches `slot` (`RULES.trackTime`, or the fight's tick durations): every effect whose last
- * slot is behind it ends, before the card there acts. A fire stays for good
- * once its Princess Iron Fan has fallen, as by turns.
- */
-export function expireTrackTime(state: FightState, slot: number): void {
-  if (!RULES.trackTime && !state.rules?.ticks) return;
+export function expireDurations(state: FightState, slot: number): void {
+  if (!state.rules?.slots) return;
   for (const u of state.units) {
     if (u.empowerUntil !== undefined && u.empowerUntil < slot) {
       delete u.empower;
@@ -1267,6 +1260,11 @@ export function expireTrackTime(state: FightState, slot: number): void {
       else delete u.shield;
       delete u.shieldUntil;
     }
+    if (u.armourUntil !== undefined && u.armourUntil < slot) {
+      delete u.armour;
+      delete u.armourUntil;
+    }
+    u.statuses = u.statuses.filter((x) => x.until === undefined || x.until >= slot);
   }
   for (const hail of state.effects.filter((e) => e.until !== undefined && e.until < slot))
     liftHail(state, hail);

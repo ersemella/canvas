@@ -16,6 +16,7 @@ import {
   exitSealed,
   fireInfo,
   hailEnds,
+  inSlots,
   hailInfo,
   mapOf,
   passivesOf,
@@ -304,11 +305,16 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
   const out: {id: KeywordId; label: string; rest: string}[] = [];
   for (const s of unit.statuses) {
     const holder = s.grapple ? byId(s.grapple.champion) : s.hail ? byId(s.hail) : undefined;
+    const hail = s.hail ? fight.effects.find((e) => e.source === s.hail) : undefined;
     const rest = !holder
-      ? ''
+      ? s.until !== undefined
+        ? throughSlot(fight, s.until)
+        : ''
       : s.grapple
         ? `by ${unitName(holder)}’s grapple`
-        : `by hail, until ${hailEnds(fight.effects.find((e) => e.source === holder.id)?.turns ?? 1, `${unitName(holder)}’s`)}`;
+        : hail?.until !== undefined
+          ? `by hail, ${throughSlot(fight, hail.until)}`
+          : `by hail, until ${hailEnds(hail?.turns ?? 1, `${unitName(holder)}’s`)}`;
     out.push({id: s.kind, label: s.kind === 'stunned' ? 'Stunned' : 'Immobilized', rest});
   }
   if (unit.empower)
@@ -340,9 +346,7 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
       rest:
         unit.lastingShield === unit.shield
           ? 'until spent'
-          : unit.lastingShield
-            ? `until its next turn, ${unit.lastingShield} of it until spent`
-            : 'until its next turn',
+          : `${unit.shieldUntil !== undefined ? throughSlot(fight, unit.shieldUntil) : 'until its next turn'}${unit.lastingShield ? `, ${unit.lastingShield} of it until spent` : ''}`,
     });
   if (unit.unstoppable)
     out.push({id: 'unstoppable', label: 'Unstoppable', rest: 'until its next turn'});
@@ -406,7 +410,11 @@ export function StatSheet({
        * leaves), so the sheet grows no taller than the board; below them in
        * the phone's tooltip.
        */}
-      <Glossary slotted={!dense} onAbility={onAbility && ((id) => onAbility(unit.id, id))}>
+      <Glossary
+        slotted={!dense}
+        rules={fight.rules}
+        onAbility={onAbility && ((id) => onAbility(unit.id, id))}
+      >
         {dense ? (
           <>
             <Group justify="space-between" gap={6} mb={2}>
@@ -470,7 +478,7 @@ export function StatSheet({
                 <AbilityName
                   key={def.id}
                   id={def.id}
-                  body={<AbilityDetail unit={unit} def={def} />}
+                  body={<AbilityDetail unit={unit} def={def} rules={fight.rules} />}
                 >
                   {abilityIcon(def)}
                   {def.name}
@@ -484,7 +492,7 @@ export function StatSheet({
                     <Text fz="xs">
                       <b>{p.name}</b> · Passive
                       <br />
-                      <KeywordText text={p.rule} />
+                      <KeywordText text={inSlots(p.rule, fight.rules)} />
                     </Text>
                   }
                 >
@@ -523,7 +531,16 @@ function SheetPortrait({unit}: {unit: Unit}) {
  * power), then what it does, its keywords tappable in turn. For a name
  * tapped on a stat sheet, and on desktop for the ability picked for the turn.
  */
-export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
+export function AbilityDetail({
+  unit,
+  def,
+  rules,
+}: {
+  unit: Unit;
+  def: AbilityDef;
+  /** The fight's own rules: with durations in slots, the summary says them (`inSlots`). */
+  rules?: FightState['rules'];
+}) {
   return (
     <Text fz="xs">
       {def.kind && (
@@ -542,7 +559,7 @@ export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
       {!def.kind && <b>{def.name}</b>}
       <br />
       <span className={styles.abilitySummary}>
-        <KeywordText text={def.summary(unit)} />
+        <KeywordText text={inSlots(def.summary(unit), rules)} />
       </span>
     </Text>
   );

@@ -13,7 +13,7 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, RULES} from './config';
+import {ABILITY, CAMEL} from './config';
 import {
   hostile,
   cleaveAreas,
@@ -58,7 +58,6 @@ import {
   swapSpeedHealth,
   stun,
   stunForATurn,
-  elixirUntil,
   lastsThrough,
   swapCards,
   setCard,
@@ -423,7 +422,9 @@ const hail: AbilityDef = {
       hex,
       source: user.id,
       turns: ABILITY.hail.turns,
-      ...(RULES.trackTime ? {until: lastsThrough(ctx.state, user, ABILITY.hail.turns)} : {}),
+      ...(ctx.state.rules?.slots
+        ? {until: lastsThrough(ctx.state, ctx.state.rules.slots.hail)!}
+        : {}),
     });
     log(ctx, `${unitName(user)} calls down hail.`);
     const u = unitAt(ctx.state, hex);
@@ -938,8 +939,7 @@ const elixir: AbilityDef = {
         if (elixirHeals(u)) heal(ctx, u, user.power, user);
         // An amount of 0 gives none, rather than replacing an Empower it has.
         const empowers = elixirAmount('empower');
-        if (u.power > 0 && empowers > 0)
-          empower(ctx, u, empowers, user, elixirUntil(ctx.state, user, u, false));
+        if (u.power > 0 && empowers > 0) empower(ctx, u, empowers, user);
         haste(ctx, u, hastes, user);
         if (unstoppable) makeUnstoppable(ctx, u);
         if (elixirSwaps(u)) swapSpeedHealth(ctx, u);
@@ -947,8 +947,7 @@ const elixir: AbilityDef = {
       } else {
         if (fixed) hit(ctx, user, u, 'The elixir');
         const weakens = elixirAmount('weaken');
-        if (u.alive && u.power > 0 && weakens > 0)
-          weaken(ctx, u, weakens, user, elixirUntil(ctx.state, user, u, true));
+        if (u.alive && u.power > 0 && weakens > 0) weaken(ctx, u, weakens, user);
         delay(ctx, u, delays, user);
       }
     }
@@ -1778,6 +1777,7 @@ const regrowSerpent: AbilityDef = {
       'shield',
       'shieldUntil',
       'armour',
+      'armourUntil',
     ] as const)
       delete serpent[k];
     delete serpent.lastingShield;
@@ -1915,7 +1915,8 @@ const fanFlames: AbilityDef = {
     const lit = flamesAround(ctx.map, target.hex!).filter(
       (h) => !others.some((f) => hexEquals(f.hex, h))
     );
-    const until = RULES.trackTime ? {until: lastsThrough(ctx.state, user)} : {};
+    const last = lastsThrough(ctx.state);
+    const until = last === undefined ? {} : {until: last};
     ctx.state.fires = [
       ...others,
       ...lit.map((hex) => ({hex: {...hex}, source: user.id, ...until})),

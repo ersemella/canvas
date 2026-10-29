@@ -1,7 +1,7 @@
 import {createContext, useContext, useEffect, useRef, useState} from 'react';
 import {CloseButton, Text} from '@mantine/core';
-import {KEYWORD_INFO} from '@canvas/games-silk-road-run';
-import type {KeywordId} from '@canvas/games-silk-road-run';
+import {KEYWORD_INFO, inSlots} from '@canvas/games-silk-road-run';
+import type {FightState, KeywordId} from '@canvas/games-silk-road-run';
 import styles from './TacticsPage.module.css';
 
 /** What the box explains: a keyword, or an ability (with a keyword from its text under it). */
@@ -29,14 +29,18 @@ const InBoxContext = createContext(false);
  * puts it. An ability's text has keywords of its own: tapping one adds its
  * rule under the ability's. Tapping the same thing again, or the box's ×,
  * hides it. `onAbility` hears which ability's name is explained, if any.
+ * `rules`, the fight's own: with durations in slots, a keyword's rule says
+ * them (`inSlots`).
  */
 export function Glossary({
   slotted = false,
   onAbility,
+  rules,
   children,
 }: {
   slotted?: boolean;
   onAbility?: ((id: string | null) => void) | undefined;
+  rules?: FightState['rules'];
   children: React.ReactNode;
 }) {
   const [shown, setShown] = useState<Shown | null>(null);
@@ -58,7 +62,7 @@ export function Glossary({
     setShown((s) => (s?.kind === 'ability' ? {...s, keyword: s.keyword === id ? null : id} : s));
   const rule = (id: KeywordId) => (
     <Text fz="xs" data-testid="keyword-info">
-      <b>{KEYWORD_INFO[id].name}.</b> {KEYWORD_INFO[id].detail}
+      <b>{KEYWORD_INFO[id].name}.</b> {inSlots(KEYWORD_INFO[id].detail, rules)}
     </Text>
   );
   const box = (className?: string) =>

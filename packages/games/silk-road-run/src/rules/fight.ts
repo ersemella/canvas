@@ -23,7 +23,7 @@ import {
   fanOut,
   endTurnEffects,
   enterHex,
-  expireTrackTime,
+  expireDurations,
   haste,
   landShots,
   log,
@@ -297,7 +297,7 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     const unit = nextCard(state);
     if (!unit) return;
     spend?.();
-    expireTrackTime(state, unit.slot!);
+    expireDurations(state, unit.slot!);
     const ctx: Ctx = {state, map, slot: unit.slot!};
     state.currentSlot = unit.slot!;
     if (charging(state, unit)) {

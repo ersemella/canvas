@@ -76,7 +76,7 @@ import {
   spaceOf,
   tileAt,
 } from './map';
-import {tileInfo} from './info';
+import {inSlots, tileInfo} from './info';
 import {
   checkEnd,
   damageOf,
@@ -1036,20 +1036,15 @@ describe('stats and damage', () => {
     expect(storm.empower).toBeUndefined();
   });
 
-  it('with track time, an Empower lasts a window of slots, so a Delay can carry the card past it', () => {
-    const rules = RULES as {trackTime: false | 'own' | number};
-    const saved = rules.trackTime;
-    rules.trackTime = 'own';
-    onTestFinished(() => {
-      rules.trackTime = saved;
-    });
+  it('with durations in slots, an Empower lasts its slots, so a Delay can carry the card past it', () => {
     const hitAt = (late: number) => {
       const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
+      s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
       s.units.forEach((u) => (u.controller = 'human'));
       const m = unit(s, 'p-mangudai');
       empower({state: s, map: mapOf(s), slot: 0}, m, 1);
-      expect(m.empowerUntil).toBe(actionCost(m));
-      m.slot = actionCost(m) + late;
+      expect(m.empowerUntil).toBe(10);
+      m.slot = 10 + late;
       expect(advanceToDecision(s)!.id).toBe('p-mangudai');
       applyTurn(s, m, {action: {ability: 'snapShot', target: {hex: at(4, 3)}}});
       return unit(s, 'e-bokh').maxHp - unit(s, 'e-bokh').hp;
@@ -1058,21 +1053,49 @@ describe('stats and damage', () => {
     expect(hitAt(0)).toBe(3);
     expect(hitAt(1)).toBe(2);
   });
-
-  it('with stunAsDelay, a one-turn Stun is a Delay of the unit’s action cost', () => {
-    const rules = RULES as {stunAsDelay: boolean};
-    rules.stunAsDelay = true;
-    onTestFinished(() => {
-      rules.stunAsDelay = false;
-    });
+  it('with durations in slots, a Stun for a turn is a Delay of its slots, which Iron Will still stops', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
+    s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
     const storm = unit(s, 'e-storm');
     const slot = storm.slot!;
-    stunForATurn({state: s, map: mapOf(s), slot: 0}, storm, {kind: 'stunned', slammed: true});
+    const ctx = {state: s, map: mapOf(s), slot: 0};
+    stunForATurn(ctx, storm, {kind: 'stunned', slammed: true});
     expect(isStunned(storm)).toBe(false);
-    expect(storm.slot).toBe(slot + actionCost(storm));
+    expect(storm.slot).toBe(slot + 6);
+    storm.passives = ['ironWill'];
+    stunForATurn(ctx, storm, {kind: 'stunned', slammed: true});
+    expect(storm.slot).toBe(slot + 6);
+    // By turns, a Stun.
+    delete s.rules;
+    stunForATurn(ctx, storm, {kind: 'stunned', slammed: true});
+    expect(isStunned(storm)).toBe(true);
   });
 
+  it('with durations in slots, hail stands its slots, whatever its caster’s turns', () => {
+    const s = setup({'p-storm': at(1, 3), 'e-bokh': at(3, 3), 'e-mangudai': at(8, 6)});
+    s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
+    s.units.forEach((u) => (u.controller = 'human'));
+    const storm = unit(s, 'p-storm');
+    const bokh = unit(s, 'e-bokh');
+    storm.slot = 1;
+    expect(advanceToDecision(s)!.id).toBe(storm.id);
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
+    expect(s.effects[0]!.until).toBe(1 + 18);
+    expect(isImmobilized(bokh)).toBe(true);
+    // Two of its turns come and go: the hail stands.
+    for (const t of [5, 9]) {
+      storm.slot = t;
+      expect(advanceToDecision(s)!.id).toBe(storm.id);
+      applyTurn(s, storm, {action: {ability: 'hold'}});
+    }
+    expect(s.effects).toHaveLength(1);
+    // Past its last slot it lifts, before the card there acts.
+    bokh.slot = 20;
+    storm.slot = 30;
+    expect(advanceToDecision(s)!.id).toBe(bokh.id);
+    expect(s.effects).toHaveLength(0);
+    expect(isImmobilized(bokh)).toBe(false);
+  });
   it('a Grappler’s Empower adds to its squeeze when the rule says so, as it does in play', () => {
     const squeezed = (empoweredSqueeze: boolean) => {
       const grapple = ABILITY.grapple as {empoweredSqueeze: boolean};
@@ -2736,13 +2759,9 @@ describe('the Priest', () => {
     expect(threatDamage(threats, s, p)).toBe(bare - 1);
   });
 
-  it('with track time, the AI counts a Shield only against the enemies acting within its window', () => {
-    const rules = RULES as {trackTime: false | 'own' | number};
-    rules.trackTime = 'own';
-    onTestFinished(() => {
-      rules.trackTime = false;
-    });
+  it('with durations in slots, the AI counts a Shield only against the enemies acting within its slots', () => {
     const {s, p} = ready({'e-bokh': hexNeighbor(c, 3)});
+    s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
     unit(s, 'e-bokh').slot = 20;
     p.slot = 50;
     const threats = threatsTo(s, mapOf(s), p);
@@ -2750,15 +2769,9 @@ describe('the Priest', () => {
     p.shield = 1;
     p.shieldUntil = 20;
     expect(threatDamage(threats, s, p)).toBe(bare - 1);
-    // Gone before the Grappler acts: no help, unless the AI ignores windows.
+    // Gone before the Grappler acts: no help.
     p.shieldUntil = 19;
     expect(threatDamage(threats, s, p)).toBe(bare);
-    const ai = AI as {windows: boolean};
-    ai.windows = false;
-    onTestFinished(() => {
-      ai.windows = true;
-    });
-    expect(threatDamage(threats, s, p)).toBe(bare - 1);
   });
 });
 
@@ -2857,7 +2870,7 @@ describe('the Vanguard and the Alchemist', () => {
     expect(tap(across)).toBeUndefined();
   });
 
-  it('with tick durations, the Elixir lasts a turn of the target’s slots, longer by power, shorter by defence', () => {
+  it('with durations in slots, the Elixir’s Empower lasts 10 slots, and its text and preview say so', () => {
     const s = setup(
       {
         'p-alchemist': at(1, 3),
@@ -2867,52 +2880,34 @@ describe('the Vanguard and the Alchemist', () => {
       },
       party
     );
-    s.rules = {ticks: {power: 2, defence: 1}};
+    s.rules = {slots: {turn: 10, hail: 18, stun: 6}};
     s.units.forEach((u) => (u.controller = 'human'));
     const alchemist = unit(s, 'p-alchemist');
-    alchemist.power = 3;
     const ally = unit(s, 'p-mangudai');
-    const enemy = unit(s, 'e-mangudai');
-    enemy.hp = enemy.maxHp = 20;
-    enemy.defence = 2;
-    // The preview says how long, in slots.
+    expect(inSlots(ABILITIES.elixir.summary(alchemist), s.rules)).toBe(
+      'A unit within 2, yourself too: allies heal 1 and are Empowered 2, enemies are hit, then Weakened 2, for 10 slots.'
+    );
+    expect(inSlots(ABILITIES.elixir.summary(alchemist), undefined)).toBe(
+      ABILITIES.elixir.summary(alchemist)
+    );
     const preview = previewTurn(s, alchemist.id, {
       action: {ability: 'elixir', target: {hex: at(3, 3)}},
     })!;
-    const lasts = actionCost(ally) + 2 * 3;
     expect(preview.changes.find((c) => c.unitId === ally.id)!.statuses).toContain(
-      `Empowered 2, ${lasts} slots`
+      'Empowered 2, 10 slots'
     );
     applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: at(3, 3)}}});
-    expect(ally.empowerUntil).toBe(lasts);
-    // Its turn doesn't end it: the window does.
+    expect(ally.empowerUntil).toBe(10);
+    // Its turn doesn't end it: the slots do.
     s.units.forEach((u) => (u.slot = u.slot === null ? null : 1000 + u.slot));
-    ally.slot = lasts;
+    ally.slot = 5;
     expect(advanceToDecision(s)!.id).toBe(ally.id);
     applyTurn(s, ally, {action: {ability: 'hold'}});
     expect(ally.empower).toBe(2);
-    ally.slot = lasts + 1;
+    ally.slot = 11;
     expect(advanceToDecision(s)!.id).toBe(ally.id);
     expect(ally.empower).toBeUndefined();
-    // On an enemy, its defence takes off a slot a point, to at least 1.
-    const t = setup({'p-alchemist': at(1, 3), 'e-mangudai': at(2, 3)}, party);
-    t.rules = {ticks: {power: 2, defence: 1}};
-    const a = unit(t, 'p-alchemist');
-    a.power = 3;
-    const e = unit(t, 'e-mangudai');
-    e.hp = e.maxHp = 20;
-    e.defence = 2;
-    applyTurn(t, a, {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
-    expect(e.weakenUntil).toBe(actionCost(e) + 2 * 3 - 2);
-    const u = setup({'p-alchemist': at(1, 3), 'e-mangudai': at(2, 3)}, party);
-    u.rules = {ticks: {power: 0, defence: 5}};
-    const tank = unit(u, 'e-mangudai');
-    tank.hp = tank.maxHp = 20;
-    tank.defence = 9;
-    applyTurn(u, unit(u, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
-    expect(tank.weakenUntil).toBe(1);
   });
-
   it('the built Elixir: a unit within 2, the Alchemist too; an ally healed 1 and Empowered 2, an enemy hit for 1 and Weakened 2', () => {
     const s = setup(
       {

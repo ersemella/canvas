@@ -53,15 +53,7 @@ import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
-import {
-  armourOf,
-  camelOf,
-  damageOf,
-  elixirUntil,
-  healthAfterSwap,
-  lastsThrough,
-  shotEmpower,
-} from './resolve';
+import {armourOf, camelOf, damageOf, healthAfterSwap, lastsThrough, shotEmpower} from './resolve';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
@@ -103,9 +95,9 @@ function statusPoints(state: FightState, u: Unit): number {
   );
 }
 
-/** Whether the AI counts effects' windows in turns (`AI.windows`, with `RULES.trackTime`). */
-function windowed(): boolean {
-  return Boolean(RULES.trackTime) && AI.windows;
+/** Whether `state`'s durations are in slots (`FightRules.slots`), so the AI counts them so. */
+function inSlots(state: FightState): boolean {
+  return Boolean(state.rules?.slots);
 }
 
 /** How many of `u`'s turns start within a window lasting through `until`, its card as it lies. */
@@ -137,9 +129,8 @@ function lastingWorth(
  */
 function shieldWorth(state: FightState, u: Unit, amount: number, until?: number): number {
   if (amount <= 0 || !u.alive || u.slot === null) return 0;
-  // Windowed (`AI.windows`): the enemies acting while it lasts, before
-  // `u`'s next turn or after.
-  const within = (e: Unit) => (windowed() ? e.slot! <= (until ?? -1) : e.slot! < u.slot!);
+  // In slots: the enemies acting while it lasts, before `u`'s next turn or after.
+  const within = (e: Unit) => (inSlots(state) ? e.slot! <= (until ?? -1) : e.slot! < u.slot!);
   let incoming = 0;
   for (const e of state.units)
     if (
@@ -182,22 +173,20 @@ function rescueGain(state: FightState, u: Unit): number {
 /**
  * How many times an Empower or Weaken on `u` will count: by turns, none
  * once its turn has begun, otherwise once; with a last slot (`until`,
- * `RULES.trackTime` or the fight's tick durations), once if it lasts to
- * `u`'s card, or with `AI.windows`, each of `u`'s turns within it.
+ * durations in slots), each of `u`'s turns within it.
  */
 function usesLeft(u: Unit, started: boolean | undefined, until: number | undefined): number {
-  if (until === undefined) return RULES.trackTime || started ? 0 : 1;
-  if (AI.windows) return turnsWithin(u, until);
-  return until < (u.slot ?? 0) ? 0 : 1;
+  if (until === undefined) return started ? 0 : 1;
+  return turnsWithin(u, until);
 }
 
 /**
- * How many of `u`'s turns an Empower or Weaken given now would last: to
- * `until` if it has a last slot (`elixirUntil`), otherwise once by turns.
+ * How many of `u`'s turns an Empower or Weaken given now would last: in
+ * slots, those within its slots; by turns, one.
  */
-function usesIfGiven(state: FightState, u: Unit, until?: number): number {
-  if (until !== undefined) return AI.windows ? turnsWithin(u, until) : until < u.slot! ? 0 : 1;
-  return windowed() ? turnsWithin(u, lastsThrough(state, u)) : 1;
+function usesIfGiven(state: FightState, u: Unit): number {
+  const until = lastsThrough(state);
+  return until === undefined ? 1 : turnsWithin(u, until);
 }
 
 /**
@@ -292,8 +281,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
 function statusCost(u: Unit, state?: FightState): number {
   if (isStunned(u)) return turnValue(u) * AI.stunnedShare;
   if (!isImmobilized(u)) return 0;
-  // Windowed (`AI.windows`): hail that lifts before `u`'s card holds nothing.
-  if (state && windowed() && u.slot !== null) {
+  // In slots: hail that lifts before `u`'s card holds nothing.
+  if (state && inSlots(state) && u.slot !== null) {
     const holds = u.statuses.filter((s) => s.kind === 'immobilized');
     const lifts = (s: (typeof holds)[number]) =>
       Boolean(s.hail) &&
@@ -582,9 +571,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
             Math.min(unit.power, u.maxHp - u.hp) * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
         const empowers = elixirAmount('empower');
         if (u.power > 0 && empowers > 0)
-          value += u.empower
-            ? 0
-            : 1 + empowerGuess(state, u, empowers, elixirUntil(state, unit, u, false));
+          value += u.empower ? 0 : 1 + empowerGuess(state, u, empowers);
         // `haste`: the share of a turn its card gains, as Cleave's Delay is weighed.
         if (haste) value += (turnValue(u) * haste) / cardCost(u);
         // `unstoppable`: the hail holding it lets go (what else it stops is the search's).
@@ -606,9 +593,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       value += damage * (u.hero === CAMEL ? AI.camelHealthWeight : 1);
       if (damage > 0 && damage >= u.hp && u.hero !== CAMEL) value += AI.kill;
       else if (u.power > 0 && elixirAmount('weaken') > 0)
-        value += u.weaken
-          ? 0
-          : 1 + weakenGuess(state, u, elixirAmount('weaken'), elixirUntil(state, unit, u, true));
+        value += u.weaken ? 0 : 1 + weakenGuess(state, u, elixirAmount('weaken'));
       if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
     }
     return closing + value;
@@ -636,7 +621,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
           a,
           (a.shield ?? 0) + given.shield,
           (a.lastingShield ?? 0) + (ABILITY.blessing.lasts ? given.shield : 0),
-          RULES.trackTime ? Math.max(a.shieldUntil ?? 0, lastsThrough(state, a)) : undefined
+          inSlots(state) ? Math.max(a.shieldUntil ?? 0, lastsThrough(state)!) : undefined
         ) -
         lastingWorth(state, a, a.shield ?? 0, a.lastingShield ?? 0, a.shieldUntil);
     }
@@ -740,22 +725,22 @@ function endsElsewhere(ability: AbilityId): boolean {
 }
 
 /** What an Empower of `amount` on `u` might be worth (`empowerGain`, before it has an Empower). */
-function empowerGuess(state: FightState, u: Unit, amount: number, until?: number): number {
+function empowerGuess(state: FightState, u: Unit, amount: number): number {
   const targets = strikable(state, u);
   if (targets.length === 0) return 0;
   const reach = u.power + amount;
   const kill = targets.some((t) => t.hero !== CAMEL && t.hp > u.power && t.hp <= reach);
-  return AI.empoweredShare * (usesIfGiven(state, u, until) * amount + (kill ? AI.kill : 0));
+  return AI.empoweredShare * (usesIfGiven(state, u) * amount + (kill ? AI.kill : 0));
 }
 
 /** What a Weaken of `amount` on `u` might be worth (`weakenLoss`, before it has a Weaken). */
-function weakenGuess(state: FightState, u: Unit, amount: number, until?: number): number {
+function weakenGuess(state: FightState, u: Unit, amount: number): number {
   const targets = strikable(state, u);
   if (targets.length === 0) return 0;
   const full = damageOf(u);
   const left = Math.max(0, full - amount);
   const kill = targets.some((t) => t.hero !== CAMEL && t.hp > left && t.hp <= full);
-  return AI.empoweredShare * (usesIfGiven(state, u, until) * (full - left) + (kill ? AI.kill : 0));
+  return AI.empoweredShare * (usesIfGiven(state, u) * (full - left) + (kill ? AI.kill : 0));
 }
 
 /**
