@@ -244,6 +244,8 @@ export interface Unit {
   empower?: number;
   /** Its turn has begun since it was Empowered, so the Empower ends with that turn. */
   empowerStarted?: boolean;
+  /** With `RULES.trackTime`, the last slot its Empower lasts through. */
+  empowerUntil?: number;
   /**
    * Weaken (keywords.md, 17.6): its abilities deal this much less, to at
    * least 0, until the end of its next turn (the Alchemist's
@@ -252,6 +254,8 @@ export interface Unit {
   weaken?: number;
   /** Its turn has begun since it was Weakened, so the Weaken ends with that turn. */
   weakenStarted?: boolean;
+  /** With `RULES.trackTime`, the last slot its Weaken lasts through. */
+  weakenUntil?: number;
   /** Its passives (progression.md, 19.8); absent with none. */
   passives?: PassiveId[];
   /**
@@ -282,6 +286,8 @@ export interface Unit {
    * when it has none.
    */
   shield?: number;
+  /** With `RULES.trackTime`, the last slot its Shield (but a lasting one) lasts through. */
+  shieldUntil?: number;
   /**
    * Armour (keywords.md, 17.6) until the start of its next turn, from an
    * ally's Fortify (19.9). Absent when it has none.
@@ -368,6 +374,8 @@ export interface HailEffect {
    * lifts on. Absent in runs saved before 2026-10-25, when hail lasted 1.
    */
   turns?: number;
+  /** With `RULES.trackTime`, the last slot it stands through, in place of `turns`. */
+  until?: number;
 }
 
 /**
@@ -380,6 +388,8 @@ export interface FireEffect {
   hex: Hex;
   /** Princess Iron Fan's unit id. */
   source: string;
+  /** With `RULES.trackTime`, the last slot it burns through while she stands. */
+  until?: number;
 }
 
 /**

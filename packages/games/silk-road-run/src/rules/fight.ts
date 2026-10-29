@@ -23,6 +23,7 @@ import {
   fanOut,
   endTurnEffects,
   enterHex,
+  expireTrackTime,
   haste,
   landShots,
   log,
@@ -305,6 +306,7 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     }
     if (!unit) return;
     spend?.();
+    expireTrackTime(state, unit.slot!);
     const ctx: Ctx = {state, map, slot: unit.slot!};
     state.currentSlot = unit.slot!;
     if (charging(state, unit)) {
@@ -323,9 +325,10 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     // Princess Iron Fan's fire until her next (owner, 2026-10-28).
     ageHail(state, unit);
     fanOut(state, unit);
-    // An Empower or Weaken lasts until the end of this turn.
-    if (unit.empower) unit.empowerStarted = true;
-    if (unit.weaken) unit.weakenStarted = true;
+    // An Empower or Weaken lasts until the end of this turn (with
+    // `RULES.trackTime`, through its window instead).
+    if (unit.empower && !RULES.trackTime) unit.empowerStarted = true;
+    if (unit.weaken && !RULES.trackTime) unit.weakenStarted = true;
     squeezeGrapples(ctx, unit);
     // The squeeze can end the fight.
     if (state.phase !== 'fight') return;

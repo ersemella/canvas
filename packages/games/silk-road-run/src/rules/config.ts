@@ -46,6 +46,25 @@ export const RULES = {
    * damage a unit takes Moved onto it, or ending its turn on it.
    */
   scorch: 1,
+  /**
+   * Track time, a switch for measuring (2026-10-29; off as built): the
+   * effects lasting by turns last a window of slots instead, from the slot
+   * they are given through `turns` × a turn's slots, ending as the track
+   * passes it (`expireTrackTime` in resolve.ts), so a Delay or Haste no
+   * longer stretches or shortens them. Empower, Weaken and Shield (a turn
+   * of the unit's), hail (`ABILITY.hail.turns` of its caster's) and Princess
+   * Iron Fan's fire (one of hers). `false`, by turns as built; `'own'`, a
+   * turn is that unit's action cost (3.2) when given; a number, that many
+   * slots for every unit.
+   */
+  trackTime: false as false | 'own' | number,
+  /**
+   * A switch for measuring (2026-10-29; off as built): a one-turn Stun (a
+   * Charge's slam with `ABILITY.charge.slam` at `stun`, Last Stand's) is a
+   * Delay of the unit's action cost instead, still blocked by Unstoppable
+   * and Iron Will.
+   */
+  stunAsDelay: false as boolean,
 } as const;
 
 /** Health from defence (owner, 2026-10-23): (1 + defence) × 2. */

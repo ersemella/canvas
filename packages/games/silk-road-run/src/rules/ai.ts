@@ -152,6 +152,14 @@ function rescueGain(state: FightState, u: Unit): number {
 }
 
 /**
+ * Whether an Empower or Weaken on `u` no longer counts: its turn has begun,
+ * or with `RULES.trackTime`, it ends before `u`'s card comes up.
+ */
+function spent(u: Unit, started: boolean | undefined, until: number | undefined): boolean {
+  return RULES.trackTime ? until === undefined || until < (u.slot ?? 0) : Boolean(started);
+}
+
+/**
  * What an Empower is worth (balance.md): its extra damage on `u`'s next
  * hit, if an enemy is within reach (`strikable`), plus a kill's worth if
  * that hit would kill only with it, and for a Grappler grappling a unit
@@ -161,7 +169,7 @@ function rescueGain(state: FightState, u: Unit): number {
  * hit must not score as losing it.
  */
 function empowerGain(state: FightState, u: Unit): number {
-  if (!u.empower || u.empowerStarted || u.power <= 0) return 0;
+  if (!u.empower || spent(u, u.empowerStarted, u.empowerUntil) || u.power <= 0) return 0;
   const targets = strikable(state, u);
   if (targets.length === 0) return 0;
   const squeezes =
@@ -180,7 +188,7 @@ function empowerGain(state: FightState, u: Unit): number {
  * counts.
  */
 function weakenLoss(state: FightState, u: Unit): number {
-  if (!u.weaken || u.weakenStarted || u.power <= 0) return 0;
+  if (!u.weaken || spent(u, u.weakenStarted, u.weakenUntil) || u.power <= 0) return 0;
   const targets = strikable(state, u);
   if (targets.length === 0) return 0;
   const full = u.power + (u.empower ?? 0);

@@ -91,6 +91,7 @@ import {
   startTurnPassives,
   endTurnEffects,
   stun,
+  stunForATurn,
   unswap,
   heal,
 } from './resolve';
@@ -1016,6 +1017,43 @@ describe('stats and damage', () => {
     applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(3, 3)}}});
     expect(unit(s, 'e-bokh').hp).toBe(unit(s, 'e-bokh').maxHp - 3);
     expect(storm.empower).toBeUndefined();
+  });
+
+  it('with track time, an Empower lasts a window of slots, so a Delay can carry the card past it', () => {
+    const rules = RULES as {trackTime: false | 'own' | number};
+    const saved = rules.trackTime;
+    rules.trackTime = 'own';
+    onTestFinished(() => {
+      rules.trackTime = saved;
+    });
+    const hitAt = (late: number) => {
+      const s = setup({'p-mangudai': at(1, 3), 'e-bokh': at(4, 3), 'e-mangudai': at(7, 6)});
+      s.units.forEach((u) => (u.controller = 'human'));
+      const m = unit(s, 'p-mangudai');
+      empower({state: s, map: mapOf(s), slot: 0}, m, 1);
+      expect(m.empowerUntil).toBe(actionCost(m));
+      m.slot = actionCost(m) + late;
+      expect(advanceToDecision(s)!.id).toBe('p-mangudai');
+      applyTurn(s, m, {action: {ability: 'snapShot', target: {hex: at(4, 3)}}});
+      return unit(s, 'e-bokh').maxHp - unit(s, 'e-bokh').hp;
+    };
+    // Its last slot reached: Empowered. One slot later: gone before it acts.
+    expect(hitAt(0)).toBe(3);
+    expect(hitAt(1)).toBe(2);
+  });
+
+  it('with stunAsDelay, a one-turn Stun is a Delay of the unit’s action cost', () => {
+    const rules = RULES as {stunAsDelay: boolean};
+    rules.stunAsDelay = true;
+    onTestFinished(() => {
+      rules.stunAsDelay = false;
+    });
+    const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
+    const storm = unit(s, 'e-storm');
+    const slot = storm.slot!;
+    stunForATurn({state: s, map: mapOf(s), slot: 0}, storm, {kind: 'stunned', slammed: true});
+    expect(isStunned(storm)).toBe(false);
+    expect(storm.slot).toBe(slot + actionCost(storm));
   });
 
   it('a Grappler’s Empower adds to its squeeze when the rule says so, as it does in play', () => {

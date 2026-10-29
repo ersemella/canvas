@@ -13,7 +13,7 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL} from './config';
+import {ABILITY, CAMEL, RULES} from './config';
 import {
   hostile,
   cleaveAreas,
@@ -57,6 +57,8 @@ import {
   record,
   swapSpeedHealth,
   stun,
+  stunForATurn,
+  lastsThrough,
   swapCards,
   setCard,
   shield,
@@ -415,7 +417,13 @@ const hail: AbilityDef = {
         liftHail(ctx.state, old);
     }
     ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, hex));
-    ctx.state.effects.push({kind: 'hail', hex, source: user.id, turns: ABILITY.hail.turns});
+    ctx.state.effects.push({
+      kind: 'hail',
+      hex,
+      source: user.id,
+      turns: ABILITY.hail.turns,
+      ...(RULES.trackTime ? {until: lastsThrough(ctx.state, user, ABILITY.hail.turns)} : {}),
+    });
     log(ctx, `${unitName(user)} calls down hail.`);
     const u = unitAt(ctx.state, hex);
     if (!u) return;
@@ -1568,7 +1576,7 @@ const charge: AbilityDef = {
         log(ctx, `${unitName(u)} is slammed into ${into}.`);
         if (ABILITY.charge.slam === 'delay') delay(ctx, u, ABILITY.charge.delay);
         else {
-          stun(ctx, u, {kind: 'stunned', slammed: true});
+          stunForATurn(ctx, u, {kind: 'stunned', slammed: true});
           if (isStunned(u)) log(ctx, `${unitName(u)} is Stunned for its next turn.`);
         }
       }
@@ -1869,7 +1877,11 @@ const fanFlames: AbilityDef = {
     const lit = flamesAround(ctx.map, target.hex!).filter(
       (h) => !others.some((f) => hexEquals(f.hex, h))
     );
-    ctx.state.fires = [...others, ...lit.map((hex) => ({hex: {...hex}, source: user.id}))];
+    const until = RULES.trackTime ? {until: lastsThrough(ctx.state, user)} : {};
+    ctx.state.fires = [
+      ...others,
+      ...lit.map((hex) => ({hex: {...hex}, source: user.id, ...until})),
+    ];
     log(ctx, `${unitName(user)} fans the flames.`);
   },
 };
