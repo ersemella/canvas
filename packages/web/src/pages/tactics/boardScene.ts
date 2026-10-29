@@ -22,9 +22,12 @@ import {
   longshotLanes,
   longshotLines,
   mapOf,
+  offeredTargets,
   onMap,
+  reachableHexes,
   targetAt,
   unitAt,
+  unusableReason,
 } from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
@@ -75,6 +78,39 @@ export interface SceneInput {
   plannedMove: Reach | null;
   hoverReach: Reach | undefined;
   reaches: Reach[];
+  /** An enemy being looked at (tapped, hovered or its track card): where it can move, or cast `inspectedAbility`. */
+  inspected?: Unit | undefined;
+  /** The inspected enemy's ability explained on its stat sheet, if any. */
+  inspectedAbility?: AbilityId | null;
+}
+
+/**
+ * What an enemy looked at threatens: with one of its abilities explained,
+ * every space that ability can be cast on from where it stands (and the
+ * spaces each swing of an area ability would hit); else every space it can
+ * move to.
+ */
+function threatOf(
+  fight: FightState,
+  unit: Unit,
+  abilityId: AbilityId | null
+): {hex: Hex; kind: HighlightKind}[] {
+  const map = mapOf(fight);
+  if (!abilityId) {
+    return reachableHexes(fight, map, unit)
+      .filter((r) => r.path.length > 0)
+      .map((r) => ({hex: r.hex, kind: 'threatMove'}));
+  }
+  const def = ABILITIES[abilityId];
+  if (unusableReason(unit, def)) return [];
+  const hexes = new Map<string, Hex>();
+  for (const t of offeredTargets(fight, map, unit, def)) {
+    if (!t.hex) continue;
+    hexes.set(hexKey(t.hex), t.hex);
+    if (def.area && unit.hex)
+      for (const h of def.area(map, unit.hex, t.hex)) hexes.set(hexKey(h), h);
+  }
+  return [...hexes.values()].map((hex) => ({hex, kind: 'threatTarget'}));
 }
 
 export function buildScene(input: SceneInput): BoardScene {
@@ -93,6 +129,9 @@ export function buildScene(input: SceneInput): BoardScene {
     previewBumps: preview?.bumped ?? {},
   };
   if (!fight) return out;
+  // An enemy looked at while no move or ability is being picked: what it threatens.
+  if (input.inspected && !ability && !moving && !plannedMove && !hoverReach)
+    highlights.push(...threatOf(fight, input.inspected, input.inspectedAbility ?? null));
   if (!acting) return out;
   if (ability && isAttack(ability)) {
     // An attack: every enemy, and the allies in the line of fire: those it

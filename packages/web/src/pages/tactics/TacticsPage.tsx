@@ -23,6 +23,7 @@ import {
   unitAt,
 } from '@canvas/games-silk-road-run';
 import type {
+  AbilityId,
   BoardScene,
   FightState,
   TacticsCardPayload,
@@ -108,6 +109,12 @@ export function TacticsPage() {
   /** The hex last tapped to inspect (touch can't hover). */
   const [pinnedHex, setPinnedHex] = useState<Hex | null>(null);
   const [hover, setHover] = useState<TacticsHoverPayload>({hex: null, unitId: null});
+  /** The ability whose explanation a unit's stat sheet has open, by unit. */
+  const [explained, setExplained] = useState<{unitId: string; id: string} | null>(null);
+  const onAbility = useCallback(
+    (unitId: string, id: string | null) => setExplained(id ? {unitId, id} : null),
+    []
+  );
   const stopLooking = useCallback(() => {
     setPinnedHex(null);
     setSelectedId(null);
@@ -291,6 +298,28 @@ export function TacticsPage() {
     ? ((inspectHex ? inspectedUnit?.id : (selectedId ?? acting?.id)) ?? null)
     : null;
 
+  /**
+   * The enemy whose details show (on the hex looked at, else whose track card
+   * is hovered or was tapped): the board shows where it can move, or cast the
+   * ability its stat sheet explains. Not while a turn plays back, nor once the fight is over.
+   */
+  const lookedAt = inspectHex
+    ? inspectedUnit
+    : fight?.units.find((u) => u.id === (hover.unitId ?? selectedId));
+  const inspected =
+    lookedAt?.side === 'enemy' &&
+    lookedAt.alive &&
+    lookedAt.hex &&
+    !playing &&
+    fight?.phase !== 'won' &&
+    fight?.phase !== 'lost'
+      ? lookedAt
+      : undefined;
+  const inspectedAbility =
+    inspected && explained?.unitId === inspected.id && explained.id in ABILITIES
+      ? (explained.id as AbilityId)
+      : null;
+
   const {target, moveMode, hoverReach} = plan;
   const scene: BoardScene = useMemo(
     () =>
@@ -310,6 +339,8 @@ export function TacticsPage() {
         plannedMove,
         hoverReach,
         reaches,
+        inspected,
+        inspectedAbility,
       }),
     [
       fight,
@@ -327,6 +358,8 @@ export function TacticsPage() {
       plannedMove,
       hoverReach,
       reaches,
+      inspected,
+      inspectedAbility,
     ]
   );
 
@@ -387,13 +420,15 @@ export function TacticsPage() {
       /** The chosen ability's targets and the acting unit's moves, since starts are random. */
       targets,
       reaches,
+      /** What the board shows an inspected enemy threatening: where it can move, or cast the ability explained. */
+      threat: scene.highlights.filter((h) => h.kind === 'threatMove' || h.kind === 'threatTarget'),
       autoTurn: () => {
         if (!fight || !acting) return false;
         commit(chooseAiTurn(fight, acting));
         return true;
       },
     };
-  }, [run, busy, playing, fight, acting, commit, targets, reaches, preview]);
+  }, [run, busy, playing, fight, acting, commit, targets, reaches, preview, scene]);
 
   // ── Layout ─────────────────────────────────────────────────────────────────
 
@@ -544,12 +579,13 @@ export function TacticsPage() {
         boardSize={boardSize}
         floor={tooltipFloor}
         onDismiss={stopLooking}
+        onAbility={onAbility}
       />
     );
   const details = inspectHex ? (
-    <HexInspector fight={fight} hex={inspectHex} />
+    <HexInspector fight={fight} hex={inspectHex} onAbility={onAbility} />
   ) : (
-    selected && <StatSheet fight={fight} unit={selected} />
+    selected && <StatSheet key={selected.id} fight={fight} unit={selected} onAbility={onAbility} />
   );
   // Desktop: the picked turn's Confirm beside the hex picked last, so the
   // turn is confirmed where the eyes are (a second click on the hex does too).

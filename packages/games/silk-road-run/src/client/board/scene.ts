@@ -4,7 +4,14 @@
 import type {Hex} from '@canvas/engine';
 import type {FightState} from '../../rules/types';
 
-export type HighlightKind = 'path' | 'target' | 'landing' | 'chosen' | 'area';
+export type HighlightKind =
+  | 'path'
+  | 'target'
+  | 'landing'
+  | 'chosen'
+  | 'area'
+  | 'threatMove'
+  | 'threatTarget';
 
 /** What the page wants drawn over the board, sent as a `tactics:board` event. */
 export interface BoardScene {

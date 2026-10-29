@@ -217,16 +217,18 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
  * what was tapped), then the ground under it: its tile unless that's sand
  * (which says nothing), and any hail, each on its own card. Every
  * card explains its own keywords inside itself. `dense`: the phone's
- * tooltip, everything in as little room as it takes.
+ * tooltip, everything in as little room as it takes. `onAbility`: see `StatSheet`.
  */
 export function HexInspector({
   fight,
   hex,
   dense = false,
+  onAbility,
 }: {
   fight: FightState;
   hex: Hex;
   dense?: boolean;
+  onAbility?: ((unitId: string, id: string | null) => void) | undefined;
 }) {
   const tile = tileAt(mapOf(fight), hex);
   const hail = fight.effects.find((e) => hexEquals(e.hex, hex));
@@ -238,7 +240,10 @@ export function HexInspector({
   const unit = fight.units.find((u) => u.alive && u.hex && hexEquals(u.hex, hex));
   return (
     <Stack gap={dense ? 6 : 8} data-testid="hex-info">
-      {unit && <StatSheet fight={fight} unit={unit} dense={dense} />}
+      {unit && (
+        // Keyed by unit, so an explanation open for one doesn't carry over to the next.
+        <StatSheet key={unit.id} fight={fight} unit={unit} dense={dense} onAbility={onAbility} />
+      )}
       {tile !== 'sand' && <GroundCard info={tileInfo(fight.mapId, tile)} dense={dense} />}
       {atExit(fight, hex) && (
         <GroundCard
@@ -333,15 +338,19 @@ function statusesOf(fight: FightState, unit: Unit): {id: KeywordId; label: strin
  * Every unit's stat sheet, enemies' included: its name and health, stats,
  * statuses and its abilities' names (D11), a tap explaining a keyword or an
  * ability. `dense` (the phone's tooltip): the stats on one line.
+ * `onAbility` hears which of the unit's abilities is explained, if any (the
+ * board shows where an enemy's can be cast).
  */
 export function StatSheet({
   fight,
   unit,
   dense = false,
+  onAbility,
 }: {
   fight: FightState;
   unit: Unit;
   dense?: boolean;
+  onAbility?: ((unitId: string, id: string | null) => void) | undefined;
 }) {
   const statuses = statusesOf(fight, unit);
   // Hold isn't offered as an action (End turn is).
@@ -382,7 +391,7 @@ export function StatSheet({
        * leaves), so the sheet grows no taller than the board; below them in
        * the phone's tooltip.
        */}
-      <Glossary slotted={!dense}>
+      <Glossary slotted={!dense} onAbility={onAbility && ((id) => onAbility(unit.id, id))}>
         {dense ? (
           <>
             <Group justify="space-between" gap={6} mb={2}>
