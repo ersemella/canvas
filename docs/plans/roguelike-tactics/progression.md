@@ -361,9 +361,16 @@ each keys off a keyword an ability already applies (17.1) or a kind of
 ability (an attack, a heal, a ranged attack, a single target), not off a named
 ability, so any hero can carry one. They sit between the hero slot's
 upgrades, which change one named ability (19.3), and the passives, which
-mostly bend rules outside abilities (19.8). Which slot offers them, and
-whether they can move between heroes as passives may, is open (question
-67). Values marked TBD are the builder's first reading, not the owner's.
+mostly bend rules outside abilities (19.8). Values marked TBD are the
+builder's first reading, not the owner's.
+
+**Offered with the passives (owner, 2026-10-29):** the caravanserai at a
+region's end draws its offer from the passives and these upgrades
+together, **still 4 offerings at a time**, drafted as the passives are
+(19.3a): the player's picks and their carriers, the rival's for the next
+region's heroes. An upgrade, like a passive, is carried by the hero it
+goes to for the rest of the run. Whether either can later move to another
+hero is still question 63.
 
 **Track**
 
@@ -407,55 +414,42 @@ whether they can move between heroes as passives may, is open (question
 | **Quickening** | When this hero's ability heals an ally, the ally is also Hastened 2 (TBD). |
 | **Fortify** | When this hero's ability heals an ally, the ally also gains Armour 1 (TBD) until its next turn. |
 | **Ward** | When this hero's ability heals an ally, the ally also gains Shield 1 (TBD) until its next turn. |
-| **Overheal** | Healing beyond a unit's missing health becomes Shield, lasting until damage spends it, as Blessing's does (roster.md). |
 
 **Support and targeting**
 
 | Upgrade | Rule |
 |---|---|
 | **Martyr** | Whenever this hero's ability targets an ally, this hero is Weakened 1 (TBD). |
-| **Forked** | This hero's single-target abilities take a second target (TBD), each target meeting the ability's own range and conditions. |
+| **Forked** | This hero's single-target abilities take one extra target, each target meeting the ability's own range and conditions. |
 
-- **Exposed** (a Stun also making the unit Vulnerable 1) was named on
-  2026-10-29 and removed the same day (owner), so Vulnerable stays out of
-  the keywords (17.1).
-- **The builder's readings, to confirm:**
-  - **An attack** is an ability that deals damage to an enemy, once per
-    target it hits (the Attacks group, Forceful, Reel In, Defy Fate,
-    Immovable Object); a ranged attack is one whose target isn't next to
-    the hero. A grapple's squeeze and Burn aren't attacks.
-  - **A heal** is an ability restoring an ally's health, even when it is
-    at full health (the Healing group): today the Priest's Blessing and
-    the Alchemist's Elixir.
-  - **The rider follows the keyword:** Wearying's Weaken needs the Delay
-    to happen, so it does nothing on an Inevitable enemy; Fervour's
-    Empower likewise; Forceful does nothing on a Rooted or Unstoppable
-    target, and Lockdown's Stun nothing on an Unstoppable one (which
-    can't be Immobilized anyway).
-  - **Riders chain, each once:** Hamstring's Immobilize sets off Lockdown,
-    Crippling's Weaken Lethargy, Staggering's Delay Wearying, and
-    Wearying with Lethargy turns a Delay into a Weaken and a further Delay;
-    each upgrade triggers at most once per use of an ability, so no pair
-    loops.
-  - **Forceful with Reel In** on a ranged attack: the Pull wins (the
-    ranged hero wants the target near). Unconfirmed.
-  - **Defy Fate on the Magus**, the only Inevitable hero (Steady Gait):
-    so it is mostly a counter to a Steady Gait passive, and to Inevitable
-    bosses if any come.
-  - **Overheal on the Priest** changes nothing (Blessing already does it),
-    so it isn't offered to him. Ward is any heal's Shield 1 whatever is
-    healed, and goes at the ally's next turn as Rally's does; with
-    Overheal both apply.
-  - **Defy Fate** is Concussive narrowed to Inevitable targets, so the two
-    don't stack; Concussive on an Unstoppable target does nothing.
+- **Exposed** (a Stun also making the unit Vulnerable 1) and **Overheal**
+  (healing beyond a unit's missing health becoming Shield) were named on
+  2026-10-29 and removed the same day (owner); Vulnerable stays out of the
+  keywords (17.1).
+- **Rules (owner, 2026-10-29):**
+  - **An attack** is an ability that damages an enemy. A **ranged
+    attack** is an attack on a target not on a space next to the hero.
+  - **A heal** is an ability restoring an ally's health (the builder's
+    reading): today the Priest's Blessing and the Alchemist's Elixir.
+  - **An upgrade's effect applies only if the original keyword does:**
+    Wearying's Weaken needs the Delay to happen, so it does nothing on an
+    Inevitable enemy; Fervour's Empower likewise; Forceful does nothing on
+    a Rooted or Unstoppable target, and Concussive nothing on an
+    Unstoppable one.
+  - **One upgrade can set off another:** Hamstring's Immobilize sets off
+    Lockdown, Crippling's Weaken Lethargy, Staggering's Delay Wearying.
+  - **Each upgrade fires at most once** per use of an ability, so no pair
+    (Wearying with Lethargy, Inspire with Fervour) loops.
+  - **Forceful with Reel In:** on a ranged attack the Push and the Pull
+    cancel, and the target stays in place; a melee attack is still Pushed.
+  - **Defy Fate counters Steady Gait**, the passive and the Magus's own
+    (the only Inevitable hero), and any Inevitable boss to come. It is
+    Concussive narrowed to Inevitable targets, so the two don't stack.
+  - **Martyr is only a cost** (owner): it stays as written.
 - **To watch:** Concussive, and Hamstring with Lockdown, Stun on every
   attack, the lockout Grapple already shows (17.5, question 56); on an
-  area attack, every unit hit. Likely strong enough to need a cost or a
-  first-attack-each-turn limit (TBD).
-- **Martyr** as written is only a cost; whether it pays for something
-  (an ally's effect stronger, or a cheaper action) is open (question 68).
-- **Forked** doubles a single-target ability's worth; the second target's
-  damage or count likely needs to be less (TBD; question 68).
+  area attack, every unit hit. Forked doubles a single-target ability's
+  reach. Either may need a cost or a limit once measured (TBD).
 
 ## Decision log
 
@@ -466,7 +460,7 @@ whether they can move between heroes as passives may, is open (question
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
 | Enemy line-up (2026-10-24, owner) | Per region: 2 wolves and a hero, a wolf and 2 heroes, 3 heroes; wolves grow per region; enemy heroes up to 10 points and 4 upgrades | Four fixed stages for a whole run (built 2026-10-24) | Difficulty rises within each region and across the run |
 | Final boss (2026-10-24, owner) | Counters the player's build | A fixed boss | The run ends on a test of the build the player made |
-| Generic ability upgrades (2026-10-29, owner) | Twenty-one upgrades keyed off keywords and kinds of ability, any hero (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
+| Generic ability upgrades (2026-10-29, owner) | Twenty upgrades keyed off keywords and kinds of ability, any hero, offered with the passives at the caravanserai, 4 offerings at a time (19.9) | Only upgrades to one named ability (10.9, 19.3) | Builds that mix keywords across heroes |
 
 ## Open questions
 
@@ -492,7 +486,8 @@ whether they can move between heroes as passives may, is open (question
     3 each and the Byzantine 4). Keeping 3 makes a run of 13 stages, 8
     provisions and 4 upgrades; longer regions keep the run's length but
     need a new rhythm for provisions and the high point (19.1).
-67. Generic ability upgrades (19.9): which slot offers them (hero,
-    passive, or a fourth), and whether they move between heroes.
-68. Martyr's payoff, and how many targets Forked adds and what each
-    takes (19.9).
+67. ~~Which slot offers the generic ability upgrades (19.9).~~ Answered
+    2026-10-29 (owner): the caravanserai at a region's end, with the
+    passives, 4 offerings at a time.
+68. ~~Martyr's payoff, and how many targets Forked adds.~~ Answered
+    2026-10-29 (owner): Martyr stays a cost only; Forked adds one.

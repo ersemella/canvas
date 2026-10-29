@@ -105,8 +105,9 @@ the kits.**
   2026-10-26 the caravanserai between the Steppe and China offers three,
   one taken; the rest of the upgrade offer isn't built.
 - **Generic ability upgrades** (progression.md, 19.9; owner, 2026-10-29):
-  twenty-one named upgrades keyed off keywords, attacks and heals
-  (Wearying, Forceful, Concussive, Sundering, Ward, Forked…), any hero;
+  twenty named upgrades keyed off keywords, attacks and heals
+  (Wearying, Forceful, Concussive, Sundering, Ward, Forked…), any hero,
+  offered with the passives at the caravanserai, 4 offerings at a time;
   not built.
 - **At most two abilities** a hero, besides moving and Hold (owner,
   2026-10-25; three from 2026-10-24; [roster.md](roster.md)): on the
