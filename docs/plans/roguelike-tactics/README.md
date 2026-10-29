@@ -104,6 +104,9 @@ the kits.**
   unit can carry them on the test stage (`"passives"`), and since
   2026-10-26 the caravanserai between the Steppe and China offers three,
   one taken; the rest of the upgrade offer isn't built.
+- **Generic ability upgrades** (progression.md, 19.9; owner, 2026-10-29):
+  thirteen named upgrades keyed off keywords (Wearying, Forceful,
+  Lockdown, Overheal, Forked…), any hero; not built.
 - **At most two abilities** a hero, besides moving and Hold (owner,
   2026-10-25; three from 2026-10-24; [roster.md](roster.md)): on the
   page, Move fills its own row over a hero's two abilities.
