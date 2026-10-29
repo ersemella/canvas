@@ -109,7 +109,8 @@ the kits.**
   (Wearying, Forceful, Concussive, Sundering, Ward, Forked…), any hero,
   offered with the passives at the caravanserai, 4 offerings at a time;
   built 2026-10-29, each passive and upgrade drawn by its rarity
-  (legendary to common, the stronger the rarer; 19.3b).
+  (legendary to common, the stronger the rarer; 19.3b), the tiers measured
+  since 2026-10-29.
 - **At most two abilities** a hero, besides moving and Hold (owner,
   2026-10-25; three from 2026-10-24; [roster.md](roster.md)): on the
   page, Move fills its own row over a hero's two abilities.

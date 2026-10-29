@@ -150,18 +150,29 @@ random from one pool:
   is, and the 4 offerings are drawn one at a time, each as often as its
   rarity's weight (`RARITY_WEIGHT` in config.ts; `weightedDraw` in run.ts),
   so the stronger, the rarer. The caravanserai shows each card's rarity.
-  The tiers are the builder's estimate (2026-10-29), **not measured**:
+  The tiers were the builder's estimate (2026-10-29); **since 2026-10-29
+  (owner) they are measured**: each card's win rate on the hero it does
+  most for, one hero of a side carrying it in its region's mirror
+  ([balance.md](balance.md), "A provision against a passive or an
+  upgrade"; 50% is worth nothing, ±2.5 points a figure). Legendary 80%
+  and up, Epic 65–80%, Rare 58–65%, Uncommon 55–58%, Common below 55%.
+  For scale, a provision (+1 to a hero's best stat) is worth 50.8–76%,
+  62.7% on average:
 
   | Rarity | Weight | Passives | Upgrades |
   |---|---|---|---|
-  | **Legendary** (too strong as written) | 1 | none | Concussive, Forked, Mending Shot |
-  | **Epic** (strong) | 2 | Glass Cannon, Opportunist, Rally, Iron Will, Last Stand | Crippling, Hamstring, Mending Strike, Fortify, Invigorate |
-  | **Rare** (solid) | 4 | Hardened, Second Wind, Lone Wolf, Flanker, Vengeance | Ward, Staggering, Forceful, Quickening, Lockdown |
-  | **Uncommon** (situational) | 6 | Shake Loose, Rooted, Steady Gait, Light Step, Rebound | Reel In, Sundering, Wearying, Inspire |
-  | **Common** (close to nothing) | 8 | Momentum, Patient, Bulwark, Piercing Eye | Lethargy, Fervour, Defy Fate, Immovable Object |
+  | **Legendary** | 1 | none | Concussive (89.7%), Forked (83%) |
+  | **Epic** | 2 | Glass Cannon (72%) | Hamstring (69.4%), Staggering (68%) |
+  | **Rare** | 4 | Opportunist, Steady Gait, Lone Wolf, Last Stand, Rooted | Lethargy, Lockdown |
+  | **Uncommon** | 6 | Hardened, Light Step, Rally | Forceful, Quickening, Inspire, Crippling, Fortify, Sundering |
+  | **Common** | 8 | Vengeance, Iron Will, Second Wind, Flanker, Bulwark, Momentum, Rebound, Patient, Piercing Eye, Shake Loose | Invigorate, Mending Shot, Mending Strike, Ward, Wearying, Defy Fate, Immovable Object, Reel In, Fervour |
 
-  With all 40 open, some legendary card is in about 1 offer in 15, and
-  any one common card in about 1 in 6.
+  With all 40 open, some legendary card is in about 1 offer in 29, any
+  one common card in about 1 in 7.5, and about 62% of the cards offered
+  are common. Measured in the regions' mirrors only: a card for a
+  situation those fights lack (Defy Fate against Inevitable
+  enemies, Sundering against more Armour, the bosses) may be worth more
+  than its tier.
 - **At most two abilities** besides moving and Hold (owner, 2026-10-25;
   three from 2026-10-24; [roster.md](roster.md)): the hero slot offers a
   new ability only to a hero with fewer than two (`hasRoomForAbility` in

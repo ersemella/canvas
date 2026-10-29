@@ -61,14 +61,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Steady Gait',
     'track',
     'Inevitable: its card can’t be Delayed or Hastened.',
-    'uncommon'
+    'rare'
   ),
   secondWind: def(
     'secondWind',
     'Second Wind',
     'track',
     'The first time each fight it is at half its health or less, its card is Hastened 2.',
-    'rare'
+    'common'
   ),
   patient: def(
     'patient',
@@ -89,7 +89,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Rooted',
     'board',
     'Can’t be Pushed or Pulled. Can still be Immobilized and Moved.',
-    'uncommon'
+    'rare'
   ),
   unstoppable: def(
     'unstoppable',
@@ -109,21 +109,21 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Rebound',
     'board',
     'When it is Pushed, Pulled or Moved, each unit next to where it ends, allies included, is Pushed 1 away from it.',
-    'uncommon'
+    'common'
   ),
   hardened: def(
     'hardened',
     'Hardened',
     'damage',
     'Armour 1 against the first hit it takes each fight.',
-    'rare'
+    'uncommon'
   ),
   lastStand: def(
     'lastStand',
     'Last Stand',
     'damage',
     'The first time each fight it would fall, it is left at 1 health instead, Stunned for its next turn.',
-    'epic'
+    'rare'
   ),
   piercingEye: def(
     'piercingEye',
@@ -137,7 +137,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Opportunist',
     'damage',
     'Its attacks deal 1 more to a unit that hasn’t had a turn since its own last turn.',
-    'epic'
+    'rare'
   ),
   bulwark: def(
     'bulwark',
@@ -158,21 +158,21 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Iron Will',
     'control',
     'The first time each fight it would be Stunned, it isn’t.',
-    'epic'
+    'common'
   ),
   shakeLoose: def(
     'shakeLoose',
     'Shake Loose',
     'control',
     'When it takes damage while Stunned, the Stun ends.',
-    'uncommon'
+    'common'
   ),
   flanker: def(
     'flanker',
     'Flanker',
     'allies',
     'Its attacks deal 1 more when an ally stands on the far side of the target, opposite it.',
-    'rare'
+    'common'
   ),
   loneWolf: def(
     'loneWolf',
@@ -186,14 +186,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Rally',
     'allies',
     'At the start of its turn, each ally next to it gains Shield 1 until that ally’s next turn.',
-    'epic'
+    'uncommon'
   ),
   vengeance: def(
     'vengeance',
     'Vengeance',
     'allies',
     'When an ally falls, its card is Hastened 3 and it is Empowered 1 for its next turn.',
-    'rare'
+    'common'
   ),
   oneEye: def(
     'oneEye',
@@ -231,14 +231,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Wearying',
     'track',
     `When its ability Delays an enemy, the enemy is also Weakened ${UPGRADE.wearying.weaken}.`,
-    'uncommon'
+    'common'
   ),
   lethargy: upgrade(
     'lethargy',
     'Lethargy',
     'track',
     `When its ability Weakens an enemy, the enemy is also Delayed ${UPGRADE.lethargy.delay}.`,
-    'common'
+    'rare'
   ),
   inspire: upgrade(
     'inspire',
@@ -259,21 +259,21 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Forceful',
     'board',
     `Its attacks Push the target ${UPGRADE.forceful.push}; not one that already Pushes.`,
-    'rare'
+    'uncommon'
   ),
   reelIn: upgrade(
     'reelIn',
     'Reel In',
     'board',
     `Its ranged attacks Pull the target ${UPGRADE.reelIn.pull}. With Forceful, the target stays put.`,
-    'uncommon'
+    'common'
   ),
   staggering: upgrade(
     'staggering',
     'Staggering',
     'attacks',
     `Its attacks Delay the target ${UPGRADE.staggering.delay}.`,
-    'rare'
+    'epic'
   ),
   hamstring: upgrade(
     'hamstring',
@@ -295,7 +295,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Crippling',
     'attacks',
     `Its attacks Weaken the target ${UPGRADE.crippling.weaken}.`,
-    'epic'
+    'uncommon'
   ),
   lockdown: upgrade(
     'lockdown',
@@ -323,42 +323,42 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Invigorate',
     'healing',
     `When its ability heals an ally, the ally is also Empowered ${UPGRADE.invigorate.empower}.`,
-    'epic'
+    'common'
   ),
   quickening: upgrade(
     'quickening',
     'Quickening',
     'healing',
     `When its ability heals an ally, the ally is also Hastened ${UPGRADE.quickening.haste}.`,
-    'rare'
+    'uncommon'
   ),
   fortify: upgrade(
     'fortify',
     'Fortify',
     'healing',
     `When its ability heals an ally, the ally also gains Armour ${UPGRADE.fortify.armour} until its next turn.`,
-    'epic'
+    'uncommon'
   ),
   ward: upgrade(
     'ward',
     'Ward',
     'healing',
     `When its ability heals an ally, the ally also gains Shield ${UPGRADE.ward.shield} until its next turn.`,
-    'rare'
+    'common'
   ),
   mendingStrike: upgrade(
     'mendingStrike',
     'Mending Strike',
     'healing',
     'Its melee attacks heal an ally they hit its power, Empower and Weaken counted, instead of hurting it.',
-    'epic'
+    'common'
   ),
   mendingShot: upgrade(
     'mendingShot',
     'Mending Shot',
     'healing',
     'Its ranged attacks heal an ally they hit its power, Empower and Weaken counted, instead of hurting it.',
-    'legendary'
+    'common'
   ),
   forked: upgrade(
     'forked',

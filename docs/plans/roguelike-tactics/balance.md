@@ -4552,7 +4552,9 @@ provision):
   worth nothing (50.3%, at most 54.7%); Staggering (Rare) is the fourth
   best card; Rally, Iron Will, Crippling, Mending Strike, Fortify and
   Invigorate (Epic) average 50.4–52.1%; Hamstring and Glass Cannon hold
-  their Epic.
+  their Epic. The rarity column is the one they had then; they were retiered
+  from their best hero's figure the same day (owner; progression.md,
+  19.3b).
 - **A provision helps the support heroes least**: the Priest's best is
   50.8%, the Magus's 54.6%, and the Magus's speed +1 loses (43.2%). Not
   traced.
