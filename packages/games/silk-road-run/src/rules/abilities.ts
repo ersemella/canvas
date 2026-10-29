@@ -1475,12 +1475,22 @@ export function ridePlan(
   return {caught: [...caught], end: at, slammed};
 }
 
+/** What Charge's summary says of the slam (`ABILITY.charge.slam`). */
+function slamSays(): string {
+  const {slam, delay: slots} = ABILITY.charge;
+  if (slam === 'none') return '';
+  const what = slam === 'delay' ? `Delayed ${slots}` : 'Stunned for its next turn';
+  return ` One left against yurts or the edge is ${what}.`;
+}
+
 /**
  * Whether a unit a Charge along `dir` has hit is slammed into yurts or the
  * map's edge right behind it (`ABILITY.charge.stun`).
  */
 function slams(map: MapData, u: Unit, dir: number): boolean {
-  return ABILITY.charge.stun && u.hex !== null && !walkable(map, hexNeighbor(u.hex, dir));
+  return (
+    ABILITY.charge.slam !== 'none' && u.hex !== null && !walkable(map, hexNeighbor(u.hex, dir))
+  );
 }
 
 /**
@@ -1503,7 +1513,7 @@ const charge: AbilityDef = {
   kind: 'attack',
   stepsTo: true,
   summary: () =>
-    `Ride any distance straight. Every unit in the way is hit and carried ahead, as far as there is room, the nearest to the space aimed at.${ABILITY.charge.stun ? ' One left against yurts or the edge is Stunned for its next turn.' : ''}`,
+    `Ride any distance straight. Every unit in the way is hit and carried ahead, as far as there is room, the nearest to the space aimed at.${slamSays()}`,
   targets(state, map, user, from) {
     if (isImmobilized(user)) return [];
     const out: ActionTarget[] = [];
@@ -1556,8 +1566,11 @@ const charge: AbilityDef = {
           ? 'the obstacle behind it'
           : 'the map’s edge';
         log(ctx, `${unitName(u)} is slammed into ${into}.`);
-        stun(ctx, u, {kind: 'stunned', slammed: true});
-        if (isStunned(u)) log(ctx, `${unitName(u)} is Stunned for its next turn.`);
+        if (ABILITY.charge.slam === 'delay') delay(ctx, u, ABILITY.charge.delay);
+        else {
+          stun(ctx, u, {kind: 'stunned', slammed: true});
+          if (isStunned(u)) log(ctx, `${unitName(u)} is Stunned for its next turn.`);
+        }
       }
     if (user.alive) endGrapplesApart(ctx, user);
   },

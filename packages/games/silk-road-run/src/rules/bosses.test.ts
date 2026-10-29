@@ -6,9 +6,10 @@ import {hexDistance, hexKey, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITY, DEVOTED} from './config';
 import {advanceToDecision, applyTurn, createFight, mapOf, seededRandom} from './fight';
-import {kitOf, reachableHexes} from './board';
+import {exitSealed, kitOf, reachableHexes, roadToExit} from './board';
+import {checkEnd, kill} from './resolve';
 import {CAVE, FIRE_MOUNTAIN, STEPPE, randomTiles} from './map';
-import type {AbilityId, ActionTarget, FightState, Unit} from './types';
+import type {AbilityId, ActionTarget, FightState, HeroId, Unit} from './types';
 
 const centre: Hex = {q: 0, r: 0};
 /** `n` spaces from `from` along direction `dir`. */
@@ -232,5 +233,72 @@ describe('the bosses’ maps', () => {
     for (const map of [FIRE_MOUNTAIN, CAVE])
       for (let seed = 1; seed <= 30; seed++)
         expect(Object.keys(randomTiles(seededRandom(seed), true, map))).toEqual([]);
+  });
+});
+
+// The road out sealed while a boss stands (owner, 2026-10-29).
+describe('a sealed road out', () => {
+  /** The Grappler and Humphrey against `enemies`, Humphrey a step from the exit; cards far apart. */
+  function nearExit(enemies: HeroId[]): FightState {
+    const s = createFight(0, ['bokh'], enemies);
+    s.tiles = Object.fromEntries(Object.keys(STEPPE.tiles).map((k) => [k, 'sand']));
+    const road = roadToExit(mapOf(s), s.route.camelStart);
+    const spare = [centre, out(1, 1), out(2, 1), out(3, 1)];
+    let slot = 100;
+    for (const u of s.units) {
+      u.hex = u.hero === 'camel' ? road[road.length - 2]! : spare.shift()!;
+      u.slot = slot;
+      slot += 50;
+    }
+    unit(s, 'p-camel').slot = 10;
+    s.currentSlot = 0;
+    return s;
+  }
+
+  it('holds Humphrey beside the exit while a boss stands, and opens when the last falls', () => {
+    const s = nearExit(['giant', 'wolf']);
+    const camel = unit(s, 'p-camel');
+    const before = camel.hex;
+    expect(exitSealed(s)).toBe(true);
+    advanceToDecision(s);
+    expect(camel.hex).toEqual(before);
+    expect(camel.skipped).toBe(true);
+    expect(s.phase).toBe('fight');
+
+    // The Cyclops down with a wolf still standing: the road is open, and the step out wins.
+    const open = nearExit(['giant', 'wolf']);
+    Object.assign(unit(open, 'e-giant'), {alive: false, hex: null, slot: null});
+    expect(exitSealed(open)).toBe(false);
+    advanceToDecision(open);
+    expect(unit(open, 'p-camel').hex).toEqual(open.route.exits[0]);
+    expect(open.phase).toBe('won');
+  });
+
+  it('wins nothing Moved onto the exit while a boss stands, and wins as the boss falls', () => {
+    const s = nearExit(['giant']);
+    const camel = unit(s, 'p-camel');
+    camel.hex = s.route.exits[0]!;
+    checkEnd(s);
+    expect(s.phase).toBe('fight');
+    const giant = unit(s, 'e-giant');
+    giant.hp = 1;
+    kill({state: s, map: mapOf(s), slot: s.currentSlot}, giant);
+    expect(s.phase).toBe('won');
+  });
+
+  it('stays sealed until both of China’s pair fall, and not for Zahhak’s serpents', () => {
+    const pair = nearExit(['oxKing', 'fanLady']);
+    unit(pair, 'e-oxKing').alive = false;
+    expect(exitSealed(pair)).toBe(true);
+    unit(pair, 'e-fanLady').alive = false;
+    expect(exitSealed(pair)).toBe(false);
+
+    const persia = nearExit(['zahhak', 'serpent', 'serpent']);
+    unit(persia, 'e-zahhak').alive = false;
+    expect(exitSealed(persia)).toBe(false);
+  });
+
+  it('never seals an ordinary fight', () => {
+    expect(exitSealed(nearExit(['bokh', 'wolf']))).toBe(false);
   });
 });

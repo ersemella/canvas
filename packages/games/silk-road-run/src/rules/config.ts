@@ -90,6 +90,12 @@ export interface HeroStats {
    * (the camel).
    */
   walksRoad?: boolean;
+  /**
+   * A region's boss (enemies.md): while one stands, the road out is
+   * sealed, so the camel can't win by reaching it (`exitSealed` in
+   * board.ts; owner, 2026-10-29). Not Zahhak's serpents.
+   */
+  boss?: boolean;
 }
 
 /**
@@ -355,6 +361,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 3,
     abilities: ['smash', 'boulder', 'hold'],
     passives: ['oneEye'],
+    boss: true,
   },
   /**
    * China's boss, one of two (owner, 2026-10-28; enemies.md, "The Bull Demon King
@@ -371,6 +378,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 3,
     abilities: ['gore', 'hold'],
     passives: ['devoted'],
+    boss: true,
   },
   /**
    * The Bull Demon King's wife (owner, 2026-10-28), Princess Iron Fan: the
@@ -387,6 +395,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 1,
     abilities: ['bananaFan', 'fanFlames', 'hold'],
     passives: ['devoted'],
+    boss: true,
   },
   /**
    * Persia's boss (2026-10-29; enemies.md, "Zahhak"): the serpent-shouldered
@@ -406,6 +415,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 3,
     abilities: ['feed', 'hold'],
     passives: ['serpentKing'],
+    boss: true,
   },
   /**
    * The serpents on Zahhak's shoulders (2026-10-29), two of them, each its
@@ -763,12 +773,14 @@ export const ABILITY = {
    */
   reave: {throwRange: 3 as number},
   /**
-   * Charge (owner, 2026-10-28; roster.md), the Cataphract's: `stun`, each
-   * unit it hits that ends the charge with yurts or the map's edge right
-   * behind it, along the charge, is slammed into them and Stunned for its
-   * next turn (owner, 2026-10-29).
+   * Charge (owner, 2026-10-28; roster.md), the Cataphract's slam (owner,
+   * 2026-10-29): each unit it hits that ends the charge with yurts or the
+   * map's edge right behind it, along the charge, is slammed into them,
+   * with `slam` `delay`, Delayed `delay` slots (owner, later 2026-10-29);
+   * with `stun`, Stunned for its next turn, as first built (balance.md,
+   * "The slam without Armour": 74.7% in China's tank seat); `none`, no slam.
    */
-  charge: {stun: true as boolean},
+  charge: {slam: 'delay' as 'delay' | 'stun' | 'none', delay: 4 as number},
   /**
    * Axe Throw (owner, 2026-10-28; roster.md), the Barbarian's: any unit on
    * one of the six straight lines from him, 1 to `range` (3) spaces away,

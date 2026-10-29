@@ -68,6 +68,12 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
 ### 18.2 Winning and Losing (Decided)
 - **The player wins** when the camel reaches an **exit hex**, or when
   every enemy is defeated.
+- **The road out is sealed while a boss stands** (owner, 2026-10-29;
+  enemies.md, 11.3d): in a fight with a boss (`HeroStats.boss`: the
+  Cyclops, the Bull Demon King, Princess Iron Fan, Zahhak), the camel
+  walks up to the exit and waits beside it, and the exit wins nothing,
+  until the last boss falls (`exitSealed` in `src/rules/board.ts`). Moved
+  onto it meanwhile, it stands there, and wins as the last boss falls.
 - **Exit hexes:** the **four hexes sticking out on the right edge**, the
   enemy's side (owner): the last hex of each row shoved half a hex right,
   rows 2, 4, 6 and 8 counting from 1 (column 7 of odd rows 1, 3, 5 and 7 in
