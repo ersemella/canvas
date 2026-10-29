@@ -4351,6 +4351,44 @@ Not changed: the numbers are the owner's. What would most help skill
 decide runs, measured above: something to choose in Blessing (and Axe
 Throw), China's stages 5 to 7, and the Cyclops's stalls.
 
+### Durations by power and defence, step 1: the Elixir (2026-10-29)
+
+`experiments/durations-elixir.mjs`, on the rules of `c524b53`: the
+Elixir's Empower and Weaken lasting a turn of the target's slots, plus
+`power` slots a point of the Alchemist's power, a Weaken `defence` fewer
+a point of the target's defence, at least 1 (`FightRules.ticks`, the
+test stage's `"rules"`; no run has it). `t0`: slots with neither; `k1`,
+1 and 1; `k2`, 2 and 2. China's mirror (the modified side's wins) and
+China against each region, 400 fights each, the same seeds. Not built.
+
+| | By turns | t0 | k1 | k2 |
+|---|---:|---:|---:|---:|
+| The Alchemist's power +1 | 73.8% | 74.8% | 70.5% | 71.3% |
+| its speed +1 | 57.3% | 61.5% | 62.5% | **64.3%** |
+| its defence +1 | 57.3% | 51.5% | 55.8% | 55.3% |
+| The Vanguard's defence +1 | 54% | 56.3% | 56.5% | 56.5% |
+| The Duelist's defence +1 | 60.3% | 58.3% | 56.3% | 56.5% |
+| A side without the Elixir | 9.5% | 8.8% | 10.3% | 11% |
+| China against the Steppe | 49.8% | 51.8% | 49.8% | 49% |
+| against Persia | 47.5% | 45.5% | 47% | 44.5% |
+| against Byzantium | 36.3% | 37.3% | 38.5% | 36.3% |
+
+- **Power and defence don't move**: the Alchemist's power point is worth
+  no more with k1 or k2 (70.5%, 71.3%, against 73.8% by turns), and a
+  point of defence on the units it Weakens no more than with `t0`. An
+  Empower or Weaken counts once for each of the unit's turns it lasts to,
+  and a turn is 8 to 10 slots: 1 or 2 slots more or fewer seldom changes
+  how many turns that is.
+- **The Alchemist's speed point is worth more with slots** (57.3% to
+  61.5–64.3%), as in "Track time" (61–62%) and "Track time with an AI
+  that counts windows" (59.5–62.8%): about 4–7 points, every run. Not
+  traced.
+- Party against party, and the Elixir's worth, as by turns.
+
+Power and defence would show on an effect that every slot of counts, a
+Delay or hail standing, rather than one used once a turn; or with
+several slots a point (3 or 4, a third of a turn).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
