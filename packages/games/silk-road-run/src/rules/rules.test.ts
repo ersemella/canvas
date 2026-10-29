@@ -1726,6 +1726,16 @@ describe('the Barbarian', () => {
     expect(unusableReason(b, ABILITIES.axeThrow)).toBeNull();
   });
 
+  it('Axe Throw at an ally next to it, the Barbarian falling to its own Bulwark, Pushes no one', () => {
+    const {s, b} = throwing({'p-modao': along(c, 3, 1), 'e-modao': along(c, 3, 3)});
+    b.passives = ['bulwark'];
+    b.hp = 1;
+    applyTurn(s, b, {action: {ability: 'axeThrow', target: {hex: along(c, 3, 1)}}});
+    expect(b.alive).toBe(false);
+    expect(hp(s, 'p-modao')).toBe(b.power - 1);
+    expect(unit(s, 'p-modao').hex).toEqual(along(c, 3, 1));
+  });
+
   it('the AI throws its axe at an enemy in line, and counts it a threat down its lines', () => {
     const {s, b} = throwing({'p-modao': along(c, 3, 3), 'p-mangudai': at(0, 8)}, 'e-varangian');
     b.controller = 'ai';

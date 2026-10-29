@@ -333,7 +333,7 @@ const longshot: AbilityDef = {
     );
     const {push, delay: slots, weaken: less, pin} = ABILITY.longshot;
     if (!u.alive || !u.hex) return;
-    if (push) displace(ctx, u, directionTo(user.hex!, u.hex), push, 'push');
+    if (push && user.hex) displace(ctx, u, directionTo(user.hex, u.hex), push, 'push');
     delay(ctx, u, slots, user);
     if (less) weaken(ctx, u, less, user);
     if (pin) {
@@ -1688,7 +1688,8 @@ const axeThrow: AbilityDef = {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} throws its axe.`);
     hit(ctx, user, u, 'The axe');
-    if (u.alive && u.hex)
+    // The thrower can fall to its own throw (Bulwark on an ally next to it).
+    if (u.alive && u.hex && user.hex)
       displace(ctx, u, directionTo(user.hex!, u.hex), ABILITY.axeThrow.push, 'push');
   },
 };
