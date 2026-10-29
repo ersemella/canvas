@@ -10,7 +10,7 @@ import {ABILITY, AI, CAMEL, HEROES, RULES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import {unitName} from '@balance-rules/resolve';
 import {MAPS} from '@balance-rules/map';
-import type {AbilityId, FightState, HeroId, Side} from '@balance-rules/types';
+import type {AbilityId, FightState, HeroId, PassiveId, Side} from '@balance-rules/types';
 import {snapshot, type Config} from './snapshot';
 
 export type {Config};
@@ -34,6 +34,10 @@ export type Mod = {
   search?: {depth: number; work: number};
   /** Only these heroes of the modified side use `search`; the rest, production's. */
   searchHeroes?: HeroId[];
+  /** Passives added to the modified side's units, by hero. */
+  passives?: Partial<Record<HeroId, PassiveId[]>>;
+  /** AI settings (config.ts's `AI`) in place of production's while the modified side chooses. */
+  ai?: Record<string, unknown>;
 };
 export type Experiment = {
   patch?: (config: Config) => void;
@@ -65,6 +69,19 @@ const SOURCES: [RegExp, string][] = [
 ];
 const ACTOR =
   /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the jian| gives .+ an elixir)/;
+
+/** Runs `choose` with `settings` in place of production's AI settings (`Mod.ai`). */
+function withAi<T>(settings: Record<string, unknown> | undefined, choose: () => T): T {
+  if (!settings) return choose();
+  const ai = AI as Record<string, unknown>;
+  const saved = Object.fromEntries(Object.keys(settings).map((k) => [k, ai[k]]));
+  Object.assign(ai, settings);
+  try {
+    return choose();
+  } finally {
+    Object.assign(ai, saved);
+  }
+}
 
 /** chooseAiTurn with its own horizon and work cap (as mirror.ts's `chooser`). */
 function searchWith({depth, work}: {depth: number; work: number}) {
@@ -157,6 +174,9 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
       MAPS[map ?? 'steppe']
     );
     for (const u of state.units) u.controller = 'human';
+    if (mod?.passives)
+      for (const u of state.units.filter((u) => u.side === modSide))
+        u.passives = [...(u.passives ?? []), ...(mod.passives[u.hero] ?? [])];
     if (mod?.stats) {
       for (const u of state.units.filter((u) => u.side === modSide)) {
         const extra = mod.stats[u.hero] ?? {};
@@ -251,12 +271,13 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
         const caster = state.units.find((v) => v.id === hold.hail);
         held[caster?.side === u.side ? 'ally' : 'enemy']++;
       }
-      const input =
+      const input = withAi(u.side === modSide ? mod?.ai : undefined, () =>
         u.side === modSide &&
         mod?.search &&
         (!mod.searchHeroes || mod.searchHeroes.includes(u.hero))
           ? searchWith(mod.search)(state, u)
-          : chooseAiTurn(state, u);
+          : chooseAiTurn(state, u)
+      );
       const moving = (input.move?.length ?? 0) > 0;
       const swap =
         input.action.ability === 'grapple' &&
